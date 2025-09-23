@@ -88,6 +88,60 @@
 <ldesign-switch checked loading></ldesign-switch>
 ```
 
+## 不同颜色
+
+用于表示不同语义状态的颜色风格。
+
+<div class="demo-container">
+  <ldesign-switch color="brand" checked></ldesign-switch>
+  <ldesign-switch color="success" checked></ldesign-switch>
+  <ldesign-switch color="warning" checked></ldesign-switch>
+  <ldesign-switch color="error" checked></ldesign-switch>
+  <ldesign-switch color="neutral" checked></ldesign-switch>
+</div>
+
+```html
+<ldesign-switch color="brand" checked></ldesign-switch>
+<ldesign-switch color="success" checked></ldesign-switch>
+<ldesign-switch color="warning" checked></ldesign-switch>
+<ldesign-switch color="error" checked></ldesign-switch>
+<ldesign-switch color="neutral" checked></ldesign-switch>
+```
+
+## 外观风格
+
+通过 `variant` 控制不同的视觉风格。
+
+<div class="demo-container">
+  <ldesign-switch variant="solid" checked></ldesign-switch>
+  <ldesign-switch variant="soft" checked></ldesign-switch>
+  <ldesign-switch variant="outline" checked></ldesign-switch>
+  <ldesign-switch variant="ghost" checked></ldesign-switch>
+</div>
+
+```html
+<ldesign-switch variant="solid" checked></ldesign-switch>
+<ldesign-switch variant="soft" checked></ldesign-switch>
+<ldesign-switch variant="outline" checked></ldesign-switch>
+<ldesign-switch variant="ghost" checked></ldesign-switch>
+```
+
+## 形状
+
+通过 `shape` 控制轨道与滑块的圆角。
+
+<div class="demo-container">
+  <ldesign-switch shape="pill" checked></ldesign-switch>
+  <ldesign-switch shape="rounded" checked></ldesign-switch>
+  <ldesign-switch shape="square" checked></ldesign-switch>
+</div>
+
+```html
+<ldesign-switch shape="pill" checked></ldesign-switch>
+<ldesign-switch shape="rounded" checked></ldesign-switch>
+<ldesign-switch shape="square" checked></ldesign-switch>
+```
+
 ## API
 
 ### 属性
@@ -98,6 +152,9 @@
 | `disabled` | `boolean` | `false` | 是否禁用 |
 | `loading` | `boolean` | `false` | 是否加载中 |
 | `size` | `'small' \| 'medium' \| 'large'` | `'medium'` | 开关的尺寸 |
+| `color` | `'brand' \| 'success' \| 'warning' \| 'error' \| 'neutral'` | `'brand'` | 颜色风格 |
+| `variant` | `'solid' \| 'soft' \| 'outline' \| 'ghost'` | `'solid'` | 外观风格 |
+| `shape` | `'pill' \| 'rounded' \| 'square'` | `'pill'` | 形状（轨道与滑块圆角） |
 | `checked-value` | `string \| number \| boolean` | `true` | 选中时的值 |
 | `unchecked-value` | `string \| number \| boolean` | `false` | 未选中时的值 |
 | `checked-text` | `string` | `-` | 选中时的文字描述 |

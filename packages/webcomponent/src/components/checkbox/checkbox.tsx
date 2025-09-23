@@ -24,6 +24,11 @@ export class LdesignCheckbox {
   @Prop() value?: string | number;
 
   /**
+   * 原生表单 name，用于表单提交/分组
+   */
+  @Prop() name?: string;
+
+  /**
    * 是否禁用
    */
   @Prop() disabled: boolean = false;
@@ -34,12 +39,12 @@ export class LdesignCheckbox {
   @Prop() indeterminate: boolean = false;
 
   /**
-   * 是否显示边框
+   * 是否显示边框（兼容旧 API）
    */
   @Prop() border: boolean = false;
 
   /**
-   * 是否为按钮样式
+   * 是否为按钮样式（兼容旧 API）
    */
   @Prop() button: boolean = false;
 
@@ -47,6 +52,30 @@ export class LdesignCheckbox {
    * 多选框的尺寸
    */
   @Prop() size: Size = 'medium';
+
+  /**
+   * 外观主题颜色
+   * @default 'brand'
+   */
+  @Prop() status: 'brand' | 'success' | 'warning' | 'danger' | 'info' = 'brand';
+
+  /**
+   * 外观变体
+   * @default 'default'
+   */
+  @Prop() variant: 'default' | 'outline' | 'filled' | 'button' = 'default';
+
+  /**
+   * 形状
+   * @default 'square'
+   */
+  @Prop() shape: 'square' | 'round' = 'square';
+
+  /**
+   * 标签位置
+   * @default 'right'
+   */
+  @Prop() labelPlacement: 'left' | 'right' = 'right';
 
   /**
    * 内部状态：是否聚焦
@@ -89,16 +118,22 @@ export class LdesignCheckbox {
   }
 
   /**
-   * 处理点击事件
+   * 处理变更事件（使用原生 change 语义，提升可访问性与一致性）
    */
-  private handleClick = (event: Event) => {
-    event.preventDefault();
-    
-    if (this.disabled) {
-      return;
+  private handleChange = (event: Event) => {
+    if (this.disabled) return;
+
+    const input = event.target as HTMLInputElement;
+    this.checked = input.checked;
+
+    // 常规交互中，半选在变更后应被清除
+    if (this.indeterminate) {
+      this.indeterminate = false;
+      if (this.checkboxElement) {
+        this.checkboxElement.indeterminate = false;
+      }
     }
 
-    this.checked = !this.checked;
     this.ldesignChange.emit(this.checked);
   };
 
@@ -114,16 +149,6 @@ export class LdesignCheckbox {
    */
   private handleBlur = () => {
     this.isFocused = false;
-  };
-
-  /**
-   * 处理键盘事件
-   */
-  private handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === ' ' || event.key === 'Enter') {
-      event.preventDefault();
-      this.handleClick(event);
-    }
   };
 
   /**
@@ -154,8 +179,24 @@ export class LdesignCheckbox {
       classes.push('ldesign-checkbox--border');
     }
 
-    if (this.button) {
+    if (this.button || this.variant === 'button') {
       classes.push('ldesign-checkbox--button');
+    }
+
+    if (this.variant && this.variant !== 'default' && this.variant !== 'button') {
+      classes.push(`ldesign-checkbox--variant-${this.variant}`);
+    }
+
+    if (this.status && this.status !== 'brand') {
+      classes.push(`ldesign-checkbox--status-${this.status}`);
+    }
+
+    if (this.shape === 'round') {
+      classes.push('ldesign-checkbox--shape-round');
+    }
+
+    if (this.labelPlacement === 'left') {
+      classes.push('ldesign-checkbox--label-left');
     }
 
     return classes.join(' ');
@@ -188,13 +229,13 @@ export class LdesignCheckbox {
             ref={(el) => (this.checkboxElement = el)}
             type="checkbox"
             class="ldesign-checkbox__input"
+            name={this.name}
             checked={this.checked}
             disabled={this.disabled}
             value={this.value}
-            onClick={this.handleClick}
+            onChange={this.handleChange}
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}
-            onKeyDown={this.handleKeyDown}
             tabindex={this.disabled ? -1 : 0}
             aria-checked={this.indeterminate ? 'mixed' : this.checked.toString()}
             aria-disabled={this.disabled.toString()}
@@ -202,15 +243,9 @@ export class LdesignCheckbox {
           <span class="ldesign-checkbox__inner">
             {this.renderCheckboxIcon()}
           </span>
-          {this.button ? (
-            <span class="ldesign-checkbox__label">
-              <slot />
-            </span>
-          ) : (
-            <span class="ldesign-checkbox__label">
-              <slot />
-            </span>
-          )}
+          <span class="ldesign-checkbox__label">
+            <slot />
+          </span>
         </label>
       </Host>
     );

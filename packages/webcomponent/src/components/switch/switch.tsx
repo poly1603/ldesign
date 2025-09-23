@@ -44,6 +44,24 @@ export class LdesignSwitch {
   @Prop() size: Size = 'medium';
 
   /**
+   * 颜色风格
+   * 可选：brand | success | warning | error | neutral
+   */
+  @Prop() color: 'brand' | 'success' | 'warning' | 'error' | 'neutral' = 'brand';
+
+  /**
+   * 外观样式
+   * 可选：solid | soft | outline | ghost
+   */
+  @Prop() variant: 'solid' | 'soft' | 'outline' | 'ghost' = 'solid';
+
+  /**
+   * 形状
+   * 可选：pill（胶囊）| rounded（圆角）| square（直角）
+   */
+  @Prop() shape: 'pill' | 'rounded' | 'square' = 'pill';
+
+  /**
    * 选中时的文本
    */
   @Prop() checkedText?: string;
@@ -138,6 +156,9 @@ export class LdesignSwitch {
     const classes = ['ldesign-switch'];
 
     classes.push(`ldesign-switch--${this.size}`);
+    classes.push(`ldesign-switch--variant-${this.variant}`);
+    classes.push(`ldesign-switch--color-${this.color}`);
+    classes.push(`ldesign-switch--shape-${this.shape}`);
 
     if (this.checked) {
       classes.push('ldesign-switch--checked');
@@ -159,7 +180,7 @@ export class LdesignSwitch {
   }
 
   /**
-   * 渲染开关内容
+   * 渲染开关内容（图标放在滑块内）
    */
   private renderSwitchContent() {
     if (this.loading) {
@@ -170,18 +191,29 @@ export class LdesignSwitch {
       if (this.checkedIcon) {
         return <ldesign-icon name={this.checkedIcon} size="small" />;
       }
-      if (this.checkedText) {
-        return <span class="ldesign-switch__text">{this.checkedText}</span>;
-      }
     } else {
       if (this.uncheckedIcon) {
         return <ldesign-icon name={this.uncheckedIcon} size="small" />;
       }
-      if (this.uncheckedText) {
-        return <span class="ldesign-switch__text">{this.uncheckedText}</span>;
-      }
     }
 
+    return null;
+  }
+
+  /**
+   * 渲染轨道上的文本（可读性优先，不再放在thumb里）
+   */
+  private renderSwitchLabel() {
+    if (this.loading) return null;
+
+    const text = this.checked ? this.checkedText : this.uncheckedText;
+    if (text) {
+      return (
+        <span class="ldesign-switch__label">
+          <span class="ldesign-switch__text">{text}</span>
+        </span>
+      );
+    }
     return null;
   }
 
@@ -209,6 +241,7 @@ export class LdesignSwitch {
             role="switch"
           />
           <span class="ldesign-switch__track">
+            {this.renderSwitchLabel()}
             <span class="ldesign-switch__thumb">
               {this.renderSwitchContent()}
             </span>

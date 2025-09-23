@@ -89,6 +89,14 @@ export class LdesignRadioGroup {
   }
 
   /**
+   * 可用单选项列表
+   */
+  private getEnabledRadios(): HTMLElement[] {
+    const all = Array.from(this.el.querySelectorAll('ldesign-radio')) as HTMLElement[];
+    return all.filter((r: any) => !r.disabled);
+  }
+
+  /**
    * 更新单选框状态
    */
   private updateRadioStates() {
@@ -109,6 +117,61 @@ export class LdesignRadioGroup {
       this.value = newValue;
       this.ldesignChange.emit(newValue);
     }
+  };
+
+  /**
+   * 处理方向键导航（WAI-ARIA 推荐：方向键切换选项并选中）
+   */
+  private handleKeyDown = (event: KeyboardEvent) => {
+    if (this.disabled) return;
+
+    const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
+    if (!keys.includes(event.key)) return;
+
+    const radios = this.getEnabledRadios();
+    if (radios.length === 0) return;
+
+    const active = (event.target as HTMLElement)?.closest('ldesign-radio') as HTMLElement | null;
+
+    let currentIndex = radios.findIndex(r => r === active);
+    if (currentIndex === -1) {
+      // 如果没有聚焦项，则以已选中项为基准
+      currentIndex = radios.findIndex((r: any) => r.checked);
+      if (currentIndex === -1) currentIndex = 0;
+    }
+
+    let nextIndex = currentIndex;
+    switch (event.key) {
+      case 'ArrowRight':
+      case 'ArrowDown':
+        nextIndex = (currentIndex + 1) % radios.length;
+        break;
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        nextIndex = (currentIndex - 1 + radios.length) % radios.length;
+        break;
+      case 'Home':
+        nextIndex = 0;
+        break;
+      case 'End':
+        nextIndex = radios.length - 1;
+        break;
+    }
+
+    const nextRadio = radios[nextIndex] as any;
+    const nextValue = nextRadio.value;
+
+    if (nextValue !== this.value) {
+      this.value = nextValue;
+      this.ldesignChange.emit(nextValue);
+      this.updateRadioStates();
+    }
+
+    // 聚焦到目标 input
+    (nextRadio.querySelector('input[type="radio"]') as HTMLInputElement | null)?.focus();
+
+    event.preventDefault();
+    event.stopPropagation();
   };
 
   /**
@@ -134,6 +197,7 @@ export class LdesignRadioGroup {
         class={classes}
         role="radiogroup"
         aria-disabled={this.disabled ? 'true' : 'false'}
+        onKeyDown={this.handleKeyDown}
       >
         <slot></slot>
       </Host>

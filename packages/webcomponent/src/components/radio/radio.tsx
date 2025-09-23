@@ -78,64 +78,17 @@ export class LdesignRadio {
   }
 
   /**
-   * 处理点击事件
+   * 使用原生 change 语义处理变更
    */
-  private handleClick = (event: Event) => {
-    event.preventDefault();
+  private handleChange = (_event: Event) => {
+    if (this.disabled) return;
 
-    if (this.disabled) {
-      return;
+    // 单选框一旦变更即为选中
+    if (!this.checked) {
+      this.checked = true;
+      this.ldesignChange.emit(this.value);
     }
-
-    // 如果已经选中，不做任何操作（单选框不能取消选中）
-    if (this.checked) {
-      return;
-    }
-
-    // 先取消同组其他单选框的选中状态
-    this.uncheckOtherRadios();
-
-    // 设置当前单选框为选中状态
-    this.checked = true;
-
-    this.ldesignChange.emit(this.value);
   };
-
-  /**
-   * 取消同组其他单选框的选中状态
-   */
-  private uncheckOtherRadios() {
-    // 查找同组的单选框（通过name属性或者父级RadioGroup）
-    const groupName = this.name || this.getRadioGroupName();
-
-    if (groupName) {
-      const radios = document.querySelectorAll(`ldesign-radio[name="${groupName}"]`);
-      radios.forEach((radio: any) => {
-        if (radio !== this.radioElement?.closest('ldesign-radio') && radio.checked) {
-          radio.checked = false;
-        }
-      });
-    } else {
-      // 如果没有name，查找父级RadioGroup中的所有Radio
-      const radioGroup = this.radioElement?.closest('ldesign-radio-group');
-      if (radioGroup) {
-        const radios = radioGroup.querySelectorAll('ldesign-radio');
-        radios.forEach((radio: any) => {
-          if (radio !== this.radioElement?.closest('ldesign-radio') && radio.checked) {
-            radio.checked = false;
-          }
-        });
-      }
-    }
-  }
-
-  /**
-   * 获取RadioGroup的name属性
-   */
-  private getRadioGroupName(): string | null {
-    const radioGroup = this.radioElement?.closest('ldesign-radio-group');
-    return radioGroup?.getAttribute('name') || null;
-  }
 
   /**
    * 处理聚焦事件
@@ -149,16 +102,6 @@ export class LdesignRadio {
    */
   private handleBlur = () => {
     this.isFocused = false;
-  };
-
-  /**
-   * 处理键盘事件
-   */
-  private handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === ' ' || event.key === 'Enter') {
-      event.preventDefault();
-      this.handleClick(event);
-    }
   };
 
   /**
@@ -208,10 +151,9 @@ export class LdesignRadio {
             disabled={this.disabled}
             name={this.name}
             value={this.value}
-            onClick={this.handleClick}
+            onChange={this.handleChange}
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}
-            onKeyDown={this.handleKeyDown}
             tabindex={this.disabled ? -1 : 0}
             aria-checked={this.checked.toString()}
             aria-disabled={this.disabled.toString()}
@@ -219,15 +161,9 @@ export class LdesignRadio {
           <span class="ldesign-radio__inner">
             {this.checked && <span class="ldesign-radio__dot" />}
           </span>
-          {this.button ? (
-            <span class="ldesign-radio__label">
-              <slot />
-            </span>
-          ) : (
-            <span class="ldesign-radio__label">
-              <slot />
-            </span>
-          )}
+          <span class="ldesign-radio__label">
+            <slot />
+          </span>
         </label>
       </Host>
     );

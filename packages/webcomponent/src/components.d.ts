@@ -89,12 +89,12 @@ export namespace Components {
      */
     interface LdesignCheckbox {
         /**
-          * 是否显示边框
+          * 是否显示边框（兼容旧 API）
           * @default false
          */
         "border": boolean;
         /**
-          * 是否为按钮样式
+          * 是否为按钮样式（兼容旧 API）
           * @default false
          */
         "button": boolean;
@@ -114,14 +114,92 @@ export namespace Components {
          */
         "indeterminate": boolean;
         /**
+          * 标签位置
+          * @default 'right'
+         */
+        "labelPlacement": 'left' | 'right';
+        /**
+          * 原生表单 name，用于表单提交/分组
+         */
+        "name"?: string;
+        /**
+          * 形状
+          * @default 'square'
+         */
+        "shape": 'square' | 'round';
+        /**
           * 多选框的尺寸
           * @default 'medium'
          */
         "size": Size;
         /**
+          * 外观主题颜色
+          * @default 'brand'
+         */
+        "status": 'brand' | 'success' | 'warning' | 'danger' | 'info';
+        /**
           * 选中状态的值
          */
         "value"?: string | number;
+        /**
+          * 外观变体
+          * @default 'default'
+         */
+        "variant": 'default' | 'outline' | 'filled' | 'button';
+    }
+    /**
+     * CheckboxGroup 复选框组组件
+     * 管理一组复选框的状态
+     */
+    interface LdesignCheckboxGroup {
+        /**
+          * 组方向
+          * @default 'horizontal'
+         */
+        "direction": 'horizontal' | 'vertical';
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 统一标签位置（可被子项覆盖）
+          * @default 'right'
+         */
+        "labelPlacement": 'left' | 'right';
+        /**
+          * 最大可选数量
+         */
+        "max"?: number;
+        /**
+          * 最小可选数量
+         */
+        "min"?: number;
+        /**
+          * 统一形状（可被子项覆盖）
+          * @default 'square'
+         */
+        "shape": 'square' | 'round';
+        /**
+          * 复选框组尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 统一外观主题（可被子项覆盖）
+          * @default 'brand'
+         */
+        "status": 'brand' | 'success' | 'warning' | 'danger' | 'info';
+        /**
+          * 绑定值
+          * @default []
+         */
+        "value": Array<string | number>;
+        /**
+          * 统一变体（可被子项覆盖）
+          * @default 'default'
+         */
+        "variant": 'default' | 'outline' | 'filled' | 'button';
     }
     /**
      * Icon 图标组件
@@ -376,6 +454,16 @@ export namespace Components {
          */
         "arrow": boolean;
         /**
+          * 是否允许 Esc 键关闭
+          * @default true
+         */
+        "closeOnEsc": boolean;
+        /**
+          * 点击浮层外是否关闭（仅在 trigger = 'click' 时常用）
+          * @default true
+         */
+        "closeOnOutside": boolean;
+        /**
           * 弹出层内容
          */
         "content"?: string;
@@ -389,6 +477,11 @@ export namespace Components {
           * @default 0
          */
         "hideDelay": number;
+        /**
+          * 是否允许在弹出层上进行交互（仅 hover 触发时有意义）
+          * @default true
+         */
+        "interactive": boolean;
         /**
           * 最大宽度
          */
@@ -404,6 +497,11 @@ export namespace Components {
          */
         "placement": PopupPlacement;
         /**
+          * 内容区域的语义角色
+          * @default 'dialog'
+         */
+        "popupRole": string;
+        /**
           * 弹出层标题
          */
         "popupTitle"?: string;
@@ -412,6 +510,11 @@ export namespace Components {
           * @default 0
          */
         "showDelay": number;
+        /**
+          * 主题风格
+          * @default 'light'
+         */
+        "theme": 'light' | 'dark';
         /**
           * 触发方式
           * @default 'hover'
@@ -519,6 +622,11 @@ export namespace Components {
          */
         "checkedValue"?: string | number | boolean;
         /**
+          * 颜色风格 可选：brand | success | warning | error | neutral
+          * @default 'brand'
+         */
+        "color": 'brand' | 'success' | 'warning' | 'error' | 'neutral';
+        /**
           * 是否禁用
           * @default false
          */
@@ -528,6 +636,11 @@ export namespace Components {
           * @default false
          */
         "loading": boolean;
+        /**
+          * 形状 可选：pill（胶囊）| rounded（圆角）| square（直角）
+          * @default 'pill'
+         */
+        "shape": 'pill' | 'rounded' | 'square';
         /**
           * 开关尺寸
           * @default 'medium'
@@ -546,11 +659,15 @@ export namespace Components {
           * @default false
          */
         "uncheckedValue"?: string | number | boolean;
+        /**
+          * 外观样式 可选：solid | soft | outline | ghost
+          * @default 'solid'
+         */
+        "variant": 'solid' | 'soft' | 'outline' | 'ghost';
     }
     /**
      * Tooltip 工具提示组件
-     * 基于
-     * @floating-ui /dom 实现的简化版弹出层
+     * 基于 Popup 的轻量封装
      */
     interface LdesignTooltip {
         /**
@@ -588,7 +705,7 @@ export namespace Components {
          */
         "showDelay": number;
         /**
-          * 主题
+          * 主题：深色/浅色（默认深色）
           * @default 'dark'
          */
         "theme": 'dark' | 'light';
@@ -601,6 +718,10 @@ export interface LdesignButtonCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignCheckboxCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignCheckboxElement;
+}
+export interface LdesignCheckboxGroupCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignCheckboxGroupElement;
 }
 export interface LdesignInputCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -678,6 +799,27 @@ declare global {
     var HTMLLdesignCheckboxElement: {
         prototype: HTMLLdesignCheckboxElement;
         new (): HTMLLdesignCheckboxElement;
+    };
+    interface HTMLLdesignCheckboxGroupElementEventMap {
+        "ldesignChange": Array<string | number>;
+    }
+    /**
+     * CheckboxGroup 复选框组组件
+     * 管理一组复选框的状态
+     */
+    interface HTMLLdesignCheckboxGroupElement extends Components.LdesignCheckboxGroup, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignCheckboxGroupElementEventMap>(type: K, listener: (this: HTMLLdesignCheckboxGroupElement, ev: LdesignCheckboxGroupCustomEvent<HTMLLdesignCheckboxGroupElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignCheckboxGroupElementEventMap>(type: K, listener: (this: HTMLLdesignCheckboxGroupElement, ev: LdesignCheckboxGroupCustomEvent<HTMLLdesignCheckboxGroupElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignCheckboxGroupElement: {
+        prototype: HTMLLdesignCheckboxGroupElement;
+        new (): HTMLLdesignCheckboxGroupElement;
     };
     /**
      * Icon 图标组件
@@ -823,8 +965,7 @@ declare global {
     };
     /**
      * Tooltip 工具提示组件
-     * 基于
-     * @floating-ui /dom 实现的简化版弹出层
+     * 基于 Popup 的轻量封装
      */
     interface HTMLLdesignTooltipElement extends Components.LdesignTooltip, HTMLStencilElement {
     }
@@ -836,6 +977,7 @@ declare global {
         "base-component": HTMLBaseComponentElement;
         "ldesign-button": HTMLLdesignButtonElement;
         "ldesign-checkbox": HTMLLdesignCheckboxElement;
+        "ldesign-checkbox-group": HTMLLdesignCheckboxGroupElement;
         "ldesign-icon": HTMLLdesignIconElement;
         "ldesign-input": HTMLLdesignInputElement;
         "ldesign-modal": HTMLLdesignModalElement;
@@ -926,12 +1068,12 @@ declare namespace LocalJSX {
      */
     interface LdesignCheckbox {
         /**
-          * 是否显示边框
+          * 是否显示边框（兼容旧 API）
           * @default false
          */
         "border"?: boolean;
         /**
-          * 是否为按钮样式
+          * 是否为按钮样式（兼容旧 API）
           * @default false
          */
         "button"?: boolean;
@@ -951,18 +1093,100 @@ declare namespace LocalJSX {
          */
         "indeterminate"?: boolean;
         /**
+          * 标签位置
+          * @default 'right'
+         */
+        "labelPlacement"?: 'left' | 'right';
+        /**
+          * 原生表单 name，用于表单提交/分组
+         */
+        "name"?: string;
+        /**
           * 当绑定值变化时触发的事件
          */
         "onLdesignChange"?: (event: LdesignCheckboxCustomEvent<boolean>) => void;
+        /**
+          * 形状
+          * @default 'square'
+         */
+        "shape"?: 'square' | 'round';
         /**
           * 多选框的尺寸
           * @default 'medium'
          */
         "size"?: Size;
         /**
+          * 外观主题颜色
+          * @default 'brand'
+         */
+        "status"?: 'brand' | 'success' | 'warning' | 'danger' | 'info';
+        /**
           * 选中状态的值
          */
         "value"?: string | number;
+        /**
+          * 外观变体
+          * @default 'default'
+         */
+        "variant"?: 'default' | 'outline' | 'filled' | 'button';
+    }
+    /**
+     * CheckboxGroup 复选框组组件
+     * 管理一组复选框的状态
+     */
+    interface LdesignCheckboxGroup {
+        /**
+          * 组方向
+          * @default 'horizontal'
+         */
+        "direction"?: 'horizontal' | 'vertical';
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 统一标签位置（可被子项覆盖）
+          * @default 'right'
+         */
+        "labelPlacement"?: 'left' | 'right';
+        /**
+          * 最大可选数量
+         */
+        "max"?: number;
+        /**
+          * 最小可选数量
+         */
+        "min"?: number;
+        /**
+          * 当绑定值变化时触发的事件
+         */
+        "onLdesignChange"?: (event: LdesignCheckboxGroupCustomEvent<Array<string | number>>) => void;
+        /**
+          * 统一形状（可被子项覆盖）
+          * @default 'square'
+         */
+        "shape"?: 'square' | 'round';
+        /**
+          * 复选框组尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 统一外观主题（可被子项覆盖）
+          * @default 'brand'
+         */
+        "status"?: 'brand' | 'success' | 'warning' | 'danger' | 'info';
+        /**
+          * 绑定值
+          * @default []
+         */
+        "value"?: Array<string | number>;
+        /**
+          * 统一变体（可被子项覆盖）
+          * @default 'default'
+         */
+        "variant"?: 'default' | 'outline' | 'filled' | 'button';
     }
     /**
      * Icon 图标组件
@@ -1225,6 +1449,16 @@ declare namespace LocalJSX {
          */
         "arrow"?: boolean;
         /**
+          * 是否允许 Esc 键关闭
+          * @default true
+         */
+        "closeOnEsc"?: boolean;
+        /**
+          * 点击浮层外是否关闭（仅在 trigger = 'click' 时常用）
+          * @default true
+         */
+        "closeOnOutside"?: boolean;
+        /**
           * 弹出层内容
          */
         "content"?: string;
@@ -1238,6 +1472,11 @@ declare namespace LocalJSX {
           * @default 0
          */
         "hideDelay"?: number;
+        /**
+          * 是否允许在弹出层上进行交互（仅 hover 触发时有意义）
+          * @default true
+         */
+        "interactive"?: boolean;
         /**
           * 最大宽度
          */
@@ -1257,6 +1496,11 @@ declare namespace LocalJSX {
          */
         "placement"?: PopupPlacement;
         /**
+          * 内容区域的语义角色
+          * @default 'dialog'
+         */
+        "popupRole"?: string;
+        /**
           * 弹出层标题
          */
         "popupTitle"?: string;
@@ -1265,6 +1509,11 @@ declare namespace LocalJSX {
           * @default 0
          */
         "showDelay"?: number;
+        /**
+          * 主题风格
+          * @default 'light'
+         */
+        "theme"?: 'light' | 'dark';
         /**
           * 触发方式
           * @default 'hover'
@@ -1380,6 +1629,11 @@ declare namespace LocalJSX {
          */
         "checkedValue"?: string | number | boolean;
         /**
+          * 颜色风格 可选：brand | success | warning | error | neutral
+          * @default 'brand'
+         */
+        "color"?: 'brand' | 'success' | 'warning' | 'error' | 'neutral';
+        /**
           * 是否禁用
           * @default false
          */
@@ -1393,6 +1647,11 @@ declare namespace LocalJSX {
           * 当绑定值变化时触发的事件
          */
         "onLdesignChange"?: (event: LdesignSwitchCustomEvent<string | number | boolean>) => void;
+        /**
+          * 形状 可选：pill（胶囊）| rounded（圆角）| square（直角）
+          * @default 'pill'
+         */
+        "shape"?: 'pill' | 'rounded' | 'square';
         /**
           * 开关尺寸
           * @default 'medium'
@@ -1411,11 +1670,15 @@ declare namespace LocalJSX {
           * @default false
          */
         "uncheckedValue"?: string | number | boolean;
+        /**
+          * 外观样式 可选：solid | soft | outline | ghost
+          * @default 'solid'
+         */
+        "variant"?: 'solid' | 'soft' | 'outline' | 'ghost';
     }
     /**
      * Tooltip 工具提示组件
-     * 基于
-     * @floating-ui /dom 实现的简化版弹出层
+     * 基于 Popup 的轻量封装
      */
     interface LdesignTooltip {
         /**
@@ -1453,7 +1716,7 @@ declare namespace LocalJSX {
          */
         "showDelay"?: number;
         /**
-          * 主题
+          * 主题：深色/浅色（默认深色）
           * @default 'dark'
          */
         "theme"?: 'dark' | 'light';
@@ -1462,6 +1725,7 @@ declare namespace LocalJSX {
         "base-component": BaseComponent;
         "ldesign-button": LdesignButton;
         "ldesign-checkbox": LdesignCheckbox;
+        "ldesign-checkbox-group": LdesignCheckboxGroup;
         "ldesign-icon": LdesignIcon;
         "ldesign-input": LdesignInput;
         "ldesign-modal": LdesignModal;
@@ -1491,6 +1755,11 @@ declare module "@stencil/core" {
              * 在一组备选项中进行多选
              */
             "ldesign-checkbox": LocalJSX.LdesignCheckbox & JSXBase.HTMLAttributes<HTMLLdesignCheckboxElement>;
+            /**
+             * CheckboxGroup 复选框组组件
+             * 管理一组复选框的状态
+             */
+            "ldesign-checkbox-group": LocalJSX.LdesignCheckboxGroup & JSXBase.HTMLAttributes<HTMLLdesignCheckboxGroupElement>;
             /**
              * Icon 图标组件
              * 基于 Lucide 图标库
@@ -1528,8 +1797,7 @@ declare module "@stencil/core" {
             "ldesign-switch": LocalJSX.LdesignSwitch & JSXBase.HTMLAttributes<HTMLLdesignSwitchElement>;
             /**
              * Tooltip 工具提示组件
-             * 基于
-             * @floating-ui /dom 实现的简化版弹出层
+             * 基于 Popup 的轻量封装
              */
             "ldesign-tooltip": LocalJSX.LdesignTooltip & JSXBase.HTMLAttributes<HTMLLdesignTooltipElement>;
         }

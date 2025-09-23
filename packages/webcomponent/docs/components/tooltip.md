@@ -11,8 +11,7 @@
     <ldesign-tooltip content="这是一个提示">
       <ldesign-button>悬停显示提示</ldesign-button>
     </ldesign-tooltip>
-    
-    <ldesign-tooltip content="这是一个较长的提示信息，用来演示文本换行效果">
+    <ldesign-tooltip content="这是一个较长的提示信息，用来演示文本换行效">
       <span style="text-decoration: underline; cursor: help;">长文本提示</span>
     </ldesign-tooltip>
   </div>
@@ -43,7 +42,6 @@
     <ldesign-tooltip content="Top Right" placement="top-end">
       <ldesign-button>TR</ldesign-button>
     </ldesign-tooltip>
-    
     <ldesign-tooltip content="Left Top" placement="left-start">
       <ldesign-button>LT</ldesign-button>
     </ldesign-tooltip>
@@ -51,7 +49,6 @@
     <ldesign-tooltip content="Right Top" placement="right-start">
       <ldesign-button>RT</ldesign-button>
     </ldesign-tooltip>
-    
     <ldesign-tooltip content="Left" placement="left">
       <ldesign-button>Left</ldesign-button>
     </ldesign-tooltip>
@@ -59,7 +56,6 @@
     <ldesign-tooltip content="Right" placement="right">
       <ldesign-button>Right</ldesign-button>
     </ldesign-tooltip>
-    
     <ldesign-tooltip content="Left Bottom" placement="left-end">
       <ldesign-button>LB</ldesign-button>
     </ldesign-tooltip>
@@ -67,7 +63,6 @@
     <ldesign-tooltip content="Right Bottom" placement="right-end">
       <ldesign-button>RB</ldesign-button>
     </ldesign-tooltip>
-    
     <ldesign-tooltip content="Bottom Left" placement="bottom-start">
       <ldesign-button>BL</ldesign-button>
     </ldesign-tooltip>
@@ -89,7 +84,6 @@
     <ldesign-tooltip content="深色主题（默认）" theme="dark">
       <ldesign-button>深色主题</ldesign-button>
     </ldesign-tooltip>
-    
     <ldesign-tooltip content="浅色主题" theme="light">
       <ldesign-button>浅色主题</ldesign-button>
     </ldesign-tooltip>
@@ -115,11 +109,9 @@
     <ldesign-tooltip content="延迟500ms显示" show-delay="500">
       <ldesign-button>延迟显示</ldesign-button>
     </ldesign-tooltip>
-    
     <ldesign-tooltip content="延迟1000ms隐藏" hide-delay="1000">
       <ldesign-button>延迟隐藏</ldesign-button>
     </ldesign-tooltip>
-    
     <ldesign-tooltip content="无延迟" show-delay="0" hide-delay="0">
       <ldesign-button>无延迟</ldesign-button>
     </ldesign-tooltip>
@@ -149,7 +141,6 @@
     <ldesign-tooltip content="这是一个很长很长很长很长很长很长的提示信息" max-width="150">
       <ldesign-button>最大宽度150px</ldesign-button>
     </ldesign-tooltip>
-    
     <ldesign-tooltip content="这是一个很长很长很长很长很长很长的提示信息" max-width="300">
       <ldesign-button>最大宽度300px</ldesign-button>
     </ldesign-tooltip>
@@ -175,7 +166,6 @@
     <ldesign-tooltip content="显示箭头（默认）" arrow="true">
       <ldesign-button>显示箭头</ldesign-button>
     </ldesign-tooltip>
-    
     <ldesign-tooltip content="隐藏箭头" arrow="false">
       <ldesign-button>隐藏箭头</ldesign-button>
     </ldesign-tooltip>
@@ -210,34 +200,34 @@
 
 ## 在文本中使用
 
-Tooltip 可以与文本内容结合使用。
+Tooltip 可以与文本内容结合使用（为避免 HTML 块级元素嵌套问题，示例中不再使用 p 包裹，自定义元素用 span 包裹）。
 
 <div class="demo-container">
-  <p>
-    这是一段包含
+  <div style="line-height: 1.7;">
+    <span>这是一段包含 </span>
     <ldesign-tooltip content="这是一个行内提示">
       <span style="color: #3b82f6; text-decoration: underline; cursor: help;">提示文字</span>
     </ldesign-tooltip>
-    的文本内容。你可以将鼠标悬停在
+    <span> 的文本内容。你可以将鼠标悬停在 </span>
     <ldesign-tooltip content="另一个提示信息" theme="light">
       <strong style="cursor: help;">重要文字</strong>
     </ldesign-tooltip>
-    上查看提示。
-  </p>
+    <span> 上查看提示。</span>
+  </div>
 </div>
 
 ```html
-<p>
-  这是一段包含
+<div>
+  <span>这是一段包含 </span>
   <ldesign-tooltip content="这是一个行内提示">
     <span>提示文字</span>
   </ldesign-tooltip>
-  的文本内容。你可以将鼠标悬停在
+  <span> 的文本内容。你可以将鼠标悬停在 </span>
   <ldesign-tooltip content="另一个提示信息" theme="light">
     <strong>重要文字</strong>
   </ldesign-tooltip>
-  上查看提示。
-</p>
+  <span> 上查看提示。</span>
+</div>
 ```
 
 ## API

@@ -23,15 +23,13 @@
 支持多种触发方式：`hover`、`click`、`focus`、`manual`。
 
 <div class="demo-container">
-  <div class="demo-row">
+  <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
     <ldesign-popup content="悬停触发" trigger="hover">
       <ldesign-button slot="trigger">悬停触发</ldesign-button>
     </ldesign-popup>
-    
     <ldesign-popup content="点击触发" trigger="click">
       <ldesign-button slot="trigger">点击触发</ldesign-button>
     </ldesign-popup>
-    
     <ldesign-popup content="聚焦触发" trigger="focus">
       <ldesign-button slot="trigger">聚焦触发</ldesign-button>
     </ldesign-popup>
@@ -57,50 +55,24 @@
 支持 12 个方向的弹出位置。
 
 <div class="demo-container">
-  <div class="demo-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
-    <ldesign-popup content="Top Left" placement="top-start">
-      <ldesign-button slot="trigger">TL</ldesign-button>
-    </ldesign-popup>
-    <ldesign-popup content="Top" placement="top">
-      <ldesign-button slot="trigger">Top</ldesign-button>
-    </ldesign-popup>
-    <ldesign-popup content="Top Right" placement="top-end">
-      <ldesign-button slot="trigger">TR</ldesign-button>
-    </ldesign-popup>
-    
-    <ldesign-popup content="Left Top" placement="left-start">
-      <ldesign-button slot="trigger">LT</ldesign-button>
-    </ldesign-popup>
-    <div></div>
-    <ldesign-popup content="Right Top" placement="right-start">
-      <ldesign-button slot="trigger">RT</ldesign-button>
-    </ldesign-popup>
-    
-    <ldesign-popup content="Left" placement="left">
-      <ldesign-button slot="trigger">Left</ldesign-button>
-    </ldesign-popup>
-    <div></div>
-    <ldesign-popup content="Right" placement="right">
-      <ldesign-button slot="trigger">Right</ldesign-button>
-    </ldesign-popup>
-    
-    <ldesign-popup content="Left Bottom" placement="left-end">
-      <ldesign-button slot="trigger">LB</ldesign-button>
-    </ldesign-popup>
-    <div></div>
-    <ldesign-popup content="Right Bottom" placement="right-end">
-      <ldesign-button slot="trigger">RB</ldesign-button>
-    </ldesign-popup>
-    
-    <ldesign-popup content="Bottom Left" placement="bottom-start">
-      <ldesign-button slot="trigger">BL</ldesign-button>
-    </ldesign-popup>
-    <ldesign-popup content="Bottom" placement="bottom">
-      <ldesign-button slot="trigger">Bottom</ldesign-button>
-    </ldesign-popup>
-    <ldesign-popup content="Bottom Right" placement="bottom-end">
-      <ldesign-button slot="trigger">BR</ldesign-button>
-    </ldesign-popup>
+  <div class="placement-sandbox" style="padding: 60px 120px; display: flex; justify-content: center;">
+    <div class="demo-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
+      <div><ldesign-popup content="Top Left" placement="top-start"><ldesign-button slot="trigger">TL</ldesign-button></ldesign-popup></div>
+      <div><ldesign-popup content="Top" placement="top"><ldesign-button slot="trigger">Top</ldesign-button></ldesign-popup></div>
+      <div><ldesign-popup content="Top Right" placement="top-end"><ldesign-button slot="trigger">TR</ldesign-button></ldesign-popup></div>
+      <div><ldesign-popup content="Left Top" placement="left-start"><ldesign-button slot="trigger">LT</ldesign-button></ldesign-popup></div>
+      <div></div>
+      <div><ldesign-popup content="Right Top" placement="right-start"><ldesign-button slot="trigger">RT</ldesign-button></ldesign-popup></div>
+      <div><ldesign-popup content="Left" placement="left"><ldesign-button slot="trigger">Left</ldesign-button></ldesign-popup></div>
+      <div></div>
+      <div><ldesign-popup content="Right" placement="right"><ldesign-button slot="trigger">Right</ldesign-button></ldesign-popup></div>
+      <div><ldesign-popup content="Left Bottom" placement="left-end"><ldesign-button slot="trigger">LB</ldesign-button></ldesign-popup></div>
+      <div></div>
+      <div><ldesign-popup content="Right Bottom" placement="right-end"><ldesign-button slot="trigger">RB</ldesign-button></ldesign-popup></div>
+      <div><ldesign-popup content="Bottom Left" placement="bottom-start"><ldesign-button slot="trigger">BL</ldesign-button></ldesign-popup></div>
+      <div><ldesign-popup content="Bottom" placement="bottom"><ldesign-button slot="trigger">Bottom</ldesign-button></ldesign-popup></div>
+      <div><ldesign-popup content="Bottom Right" placement="bottom-end"><ldesign-button slot="trigger">BR</ldesign-button></ldesign-popup></div>
+</div>
   </div>
 </div>
 
@@ -161,7 +133,6 @@
     <ldesign-popup content="延迟500ms显示" show-delay="500">
       <ldesign-button slot="trigger">延迟显示</ldesign-button>
     </ldesign-popup>
-    
     <ldesign-popup content="延迟1000ms隐藏" hide-delay="1000">
       <ldesign-button slot="trigger">延迟隐藏</ldesign-button>
     </ldesign-popup>
@@ -177,6 +148,124 @@
   <ldesign-button slot="trigger">延迟隐藏</ldesign-button>
 </ldesign-popup>
 ```
+
+## 交互内容（可悬停在浮层上）
+
+默认情况下，hover 模式可以把鼠标移入弹出层继续交互（interactive=true）。为了更平滑地从触发器移动到浮层，建议设置一个小的 `hide-delay`（150–300ms）。
+
+<div class="demo-container">
+  <ldesign-popup popup-title="可交互" content="把鼠标移到浮层上可继续操作" interactive hide-delay="200">
+    <ldesign-button slot="trigger">可交互浮层</ldesign-button>
+  </ldesign-popup>
+</div>
+
+```html
+<ldesign-popup popup-title="可交互" content="把鼠标移到浮层上可继续操作" interactive hide-delay="200">
+  <ldesign-button slot="trigger">可交互浮层</ldesign-button>
+</ldesign-popup>
+```
+
+如果你希望 hover 离开触发器后立刻关闭，可设置 `interactive="false"` 或将 `hide-delay` 设为 `0`。
+
+## 右键（contextmenu）触发
+
+通过 `trigger="contextmenu"` 可以用鼠标右键打开弹出层。
+
+<div class="demo-container">
+  <ldesign-popup trigger="contextmenu" content="右键打开，点击外部或 Esc 关闭">
+    <div slot="trigger" style="padding:8px 12px;border:1px dashed #ccc;display:inline-block;">在此处右键试试</div>
+  </ldesign-popup>
+</div>
+
+```html
+<ldesign-popup trigger="contextmenu" content="右键打开，点击外部或 Esc 关闭">
+  <div slot="trigger" style="padding:8px 12px;border:1px dashed #ccc;display:inline-block;">在此处右键试试</div>
+</ldesign-popup>
+```
+
+## 主题（浅色/深色）
+
+Popup 支持内置的浅色（默认）与深色主题，通过 `theme` 设置。
+
+<div class="demo-container">
+  <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+    <ldesign-popup content="Light" placement="top">
+      <ldesign-button slot="trigger">Light</ldesign-button>
+    </ldesign-popup>
+    <ldesign-popup content="Dark" placement="top" theme="dark">
+      <ldesign-button slot="trigger">Dark</ldesign-button>
+    </ldesign-popup>
+  </div>
+</div>
+
+```html
+<ldesign-popup content="Light" placement="top">
+  <ldesign-button slot="trigger">Light</ldesign-button>
+</ldesign-popup>
+
+<ldesign-popup content="Dark" placement="top" theme="dark">
+  <ldesign-button slot="trigger">Dark</ldesign-button>
+</ldesign-popup>
+```
+
+## 手动控制显示（manual）
+
+通过 `trigger="manual"` 与 `visible` 属性，可以完全由代码控制显示/隐藏。
+
+<div class="demo-container">
+  <ldesign-button id="btn-open" style="margin-right: 8px;">打开</ldesign-button>
+  <ldesign-button id="btn-close" type="outline">关闭</ldesign-button>
+  <ldesign-popup id="popup-manual" trigger="manual" content="由代码控制的弹出层">
+    <ldesign-button slot="trigger">手动控制</ldesign-button>
+  </ldesign-popup>
+</div>
+
+<script setup>
+import { onMounted, onUnmounted } from 'vue'
+
+let eventListeners = []
+
+function addEventListenerSafe(el, evt, handler) {
+  if (el) {
+    el.addEventListener(evt, handler)
+    eventListeners.push({ el, evt, handler })
+  }
+}
+
+function cleanup() {
+  eventListeners.forEach(({ el, evt, handler }) => el.removeEventListener(evt, handler))
+  eventListeners = []
+}
+
+onMounted(() => {
+  cleanup()
+  const popup = document.getElementById('popup-manual')
+  const openBtn = document.getElementById('btn-open')
+  const closeBtn = document.getElementById('btn-close')
+
+  if (openBtn && popup) addEventListenerSafe(openBtn, 'click', () => { popup.visible = true })
+  if (closeBtn && popup) addEventListenerSafe(closeBtn, 'click', () => { popup.visible = false })
+})
+
+onUnmounted(() => cleanup())
+</script>
+
+```html
+<ldesign-popup id="popup-manual" trigger="manual" content="由代码控制的弹出层">
+  <ldesign-button slot="trigger">手动控制</ldesign-button>
+</ldesign-popup>
+
+<script>
+  const p = document.getElementById('popup-manual');
+  document.getElementById('btn-open').onclick = () => p.visible = true;
+  document.getElementById('btn-close').onclick = () => p.visible = false;
+</script>
+```
+
+## 键盘与外部点击关闭
+
+- 按下 Esc 会关闭弹出层（`close-on-esc`，默认开启）
+- 点击浮层外会关闭（`close-on-outside`，默认开启）
 
 ## 禁用状态
 
@@ -198,20 +287,24 @@
 
 ### 属性
 
-| 属性名 | 类型 | 默认值 | 说明 |
-|--------|------|--------|------|
-| `visible` | `boolean` | `false` | 是否显示弹出层 |
-| `placement` | `PopupPlacement` | `'bottom'` | 弹出位置 |
-| `trigger` | `'hover' \| 'click' \| 'focus' \| 'manual'` | `'hover'` | 触发方式 |
-| `content` | `string` | - | 弹出层内容 |
-| `popup-title` | `string` | - | 弹出层标题 |
-| `offset-distance` | `number` | `8` | 偏移距离 |
-| `disabled` | `boolean` | `false` | 是否禁用 |
-| `arrow` | `boolean` | `true` | 是否显示箭头 |
-| `width` | `number \| string` | - | 弹出层宽度 |
-| `max-width` | `number \| string` | - | 最大宽度 |
-| `show-delay` | `number` | `0` | 延迟显示时间（毫秒） |
-| `hide-delay` | `number` | `0` | 延迟隐藏时间（毫秒） |
+|| 属性名 | 类型 | 默认值 | 说明 |
+||--------|------|--------|------|
+|| `visible` | `boolean` | `false` | 是否显示弹出层 |
+|| `placement` | `PopupPlacement` | `'bottom'` | 弹出位置 |
+|| `trigger` | `'hover' \| 'click' \| 'focus' \| 'manual' \| 'contextmenu'` | `'hover'` | 触发方式 |
+|| `interactive` | `boolean` | `true` | hover 触发时，鼠标移入弹出层是否保持打开 |
+|| `close-on-outside` | `boolean` | `true` | 是否点击浮层外关闭（常用于 click 触发） |
+|| `close-on-esc` | `boolean` | `true` | 是否支持 Esc 键关闭 |
+|| `content` | `string` | - | 弹出层内容 |
+|| `popup-title` | `string` | - | 弹出层标题 |
+|| `offset-distance` | `number` | `8` | 偏移距离 |
+|| `disabled` | `boolean` | `false` | 是否禁用 |
+|| `arrow` | `boolean` | `true` | 是否显示箭头 |
+|| `width` | `number \| string` | - | 弹出层宽度 |
+|| `max-width` | `number \| string` | - | 最大宽度 |
+|| `theme` | `'light' \| 'dark'` | `'light'` | 主题风格（浅色/深色） |
+|| `show-delay` | `number` | `0` | 延迟显示时间（毫秒） |
+|| `hide-delay` | `number` | `0` | 延迟隐藏时间（毫秒） |
 
 ### 事件
 
