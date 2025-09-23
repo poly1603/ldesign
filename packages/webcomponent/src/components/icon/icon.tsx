@@ -1,6 +1,17 @@
 import { Component, Prop, State, Watch, h, Host } from '@stencil/core';
 import { Size } from '../../types';
 
+// 全局缓存，避免重复动态导入与重复构建 SVG
+let __lucidePromise: Promise<any> | null = null;
+const __svgCache = new Map<string, string>(); // key: `${name}@${strokeWidth}`
+
+function getLucideModule() {
+  if (!__lucidePromise) {
+    __lucidePromise = import('lucide');
+  }
+  return __lucidePromise;
+}
+
 /**
  * Icon 图标组件
  * 基于 Lucide 图标库
@@ -51,6 +62,13 @@ export class LdesignIcon {
     }
   }
 
+  @Watch('strokeWidth')
+  async watchStrokeWidth() {
+    if (this.name) {
+      await this.loadIcon(this.name);
+    }
+  }
+
   /**
    * 组件加载完成
    */
@@ -64,17 +82,37 @@ export class LdesignIcon {
    * 加载图标
    */
   private async loadIcon(iconName: string) {
+    const name = (iconName || '').toLowerCase();
+    const cacheKey = `${name}@${this.strokeWidth}`;
+
+    const cached = __svgCache.get(cacheKey);
+    if (cached) {
+      this.svgContent = cached;
+      return;
+    }
+
     try {
-      // 动态导入lucide图标
-      const lucideModule = await import('lucide');
-      const iconData = lucideModule.icons[iconName];
+      // 优先从 lucide 的图标字典读取
+      const lucideModule = await getLucideModule();
+      let iconData = lucideModule?.icons?.[name];
+
+      // 未命中时，按需动态导入单个图标模块
+      if (!iconData) {
+        try {
+          const mod = await import(/* @vite-ignore */ `lucide/icons/${name}.js`).catch(async () => {
+            return await import(/* @vite-ignore */ `lucide/dist/esm/icons/${name}.js`);
+          });
+          iconData = (mod && (mod.default || (mod as any)[name])) as any;
+        } catch (e) {
+          // ignore，走默认
+        }
+      }
 
       if (iconData) {
-        // 构建SVG字符串
         const svgContent = this.buildSVGFromLucideData(iconData);
+        __svgCache.set(cacheKey, svgContent);
         this.svgContent = svgContent;
       } else {
-        // 如果图标不存在，使用默认图标
         this.svgContent = this.getDefaultIcon();
       }
     } catch (error) {

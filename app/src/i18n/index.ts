@@ -6,6 +6,8 @@
  */
 
 import { createI18nEnginePlugin } from '@ldesign/i18n/vue'
+// 导入 i18n 样式文件
+import '@ldesign/i18n/es/index.css'
 // 导入语言包 - 使用 TypeScript 文件
 import zhCN from './locales/zh-CN'
 import en from './locales/en'
