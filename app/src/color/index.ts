@@ -12,6 +12,10 @@ import { createColorEnginePlugin } from '@ldesign/color/vue'
 import { globalThemeApplier } from '@ldesign/color'
 import type { ColorMode } from '@ldesign/color'
 
+// 导入color包的样式文件
+// 通过别名配置，在开发和生产环境中都指向源码目录
+import '@ldesign/color/es/index.css'
+
 // 暴露全局主题应用器到window对象，供组件使用
 if (typeof window !== 'undefined') {
   (window as any).globalThemeApplier = globalThemeApplier

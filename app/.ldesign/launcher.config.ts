@@ -31,6 +31,8 @@ export default defineConfig({
       { find: '@ldesign/template/es/index.css', replacement: resolve(__dirname, '../../packages/template/src/styles/index.css'), stages: ['dev', 'build'] },
       { find: '@ldesign/template', replacement: resolve(__dirname, '../../packages/template/src'), stages: ['dev', 'build'] },
       { find: '@ldesign/i18n/es/index.css', replacement: resolve(__dirname, '../../packages/i18n/src/styles/index.css'), stages: ['dev', 'build'] },
+      { find: '@ldesign/size/es/index.css', replacement: resolve(__dirname, '../../packages/size/src/styles/index.css'), stages: ['dev', 'build'] },
+      { find: '@ldesign/color/es/index.css', replacement: resolve(__dirname, '../../packages/color/src/styles/index.css'), stages: ['dev', 'build'] },
 
       // @ldesign 包的开发时别名 - 指向源码目录（仅在 dev 阶段）
       { find: '@ldesign/api', replacement: resolve(__dirname, '../../packages/api/src'), stages: ['dev'] },

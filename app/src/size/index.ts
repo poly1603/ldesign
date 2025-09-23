@@ -11,6 +11,10 @@
 import { createSizeEnginePlugin } from '@ldesign/size'
 import type { SizeMode } from '@ldesign/size'
 
+// 导入size包的样式文件
+// 通过别名配置，在开发和生产环境中都指向源码目录
+import '@ldesign/size/es/index.css'
+
 /**
  * 创建尺寸管理插件
  *

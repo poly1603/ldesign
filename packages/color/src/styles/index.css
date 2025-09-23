@@ -1,0 +1,29 @@
+/*
+ * @ldesign/color 样式入口文件
+ * 导入所有颜色主题相关的组件样式
+ */
+
+/* 导入暗色模式切换按钮样式 */
+@import '../vue/components/DarkModeToggle.less';
+
+/* 导入主题选择器组件样式 */
+@import '../vue/components/ThemeSelector.less';
+
+/* 基础颜色系统样式类 */
+.color-system {
+  /* 颜色系统基础样式 */
+  --theme-transition: all 0.3s ease;
+}
+
+/* 主题模式样式类 */
+.theme-mode-light {
+  color-scheme: light;
+}
+
+.theme-mode-dark {
+  color-scheme: dark;
+}
+
+.theme-mode-auto {
+  color-scheme: light dark;
+}

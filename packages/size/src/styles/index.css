@@ -1,0 +1,33 @@
+/*
+ * @ldesign/size 样式入口文件
+ * 导入所有尺寸相关的组件样式
+ */
+
+/* 导入尺寸切换器组件样式 */
+@import '../vue/SizeSwitcher.less';
+
+/* 导入Vue组件通用样式 */
+@import '../vue/styles.less';
+
+/* 基础尺寸样式类 */
+.size-system {
+  /* 尺寸系统基础样式 */
+  --size-transition: all 0.3s ease;
+}
+
+/* 尺寸模式样式类 */
+.size-mode-small {
+  font-size: var(--ls-font-size-xs, 12px);
+}
+
+.size-mode-medium {
+  font-size: var(--ls-font-size-sm, 14px);
+}
+
+.size-mode-large {
+  font-size: var(--ls-font-size-base, 16px);
+}
+
+.size-mode-extra-large {
+  font-size: var(--ls-font-size-lg, 18px);
+}

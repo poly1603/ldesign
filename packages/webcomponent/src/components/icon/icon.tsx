@@ -12,6 +12,23 @@ function getLucideModule() {
   return __lucidePromise;
 }
 
+// 规范化图标名：支持 alarmClock / AlarmClock / alarm_clock / " alarm-clock " 等传入
+function normalizeIconName(name: string): string {
+  if (!name) return '';
+  let s = String(name).trim();
+  // camelCase -> kebab-case（userIcon -> user-icon）
+  s = s.replace(/([a-z0-9])([A-Z])/g, '$1-$2');
+  // 下划线、空格 -> 连字符
+  s = s.replace(/[_\s]+/g, '-');
+  // 多个连字符合并
+  s = s.replace(/-+/g, '-');
+  // 全小写
+  s = s.toLowerCase();
+  // 去掉首尾 -
+  s = s.replace(/^-+|-+$/g, '');
+  return s;
+}
+
 /**
  * Icon 图标组件
  * 基于 Lucide 图标库
@@ -82,7 +99,7 @@ export class LdesignIcon {
    * 加载图标
    */
   private async loadIcon(iconName: string) {
-    const name = (iconName || '').toLowerCase();
+    const name = normalizeIconName(iconName || '');
     const cacheKey = `${name}@${this.strokeWidth}`;
 
     const cached = __svgCache.get(cacheKey);
@@ -92,19 +109,22 @@ export class LdesignIcon {
     }
 
     try {
-      // 优先从 lucide 的图标字典读取
+      // 将图标名转换为PascalCase以匹配导出名
+      const pascalName = name.split('-')
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('');
+      
+      // 动态导入lucide模块并获取指定图标
       const lucideModule = await getLucideModule();
-      let iconData = lucideModule?.icons?.[name];
-
-      // 未命中时，按需动态导入单个图标模块
+      let iconData = lucideModule?.[pascalName];
+      
+      // 如果没找到，尝试直接导入单个图标
       if (!iconData) {
         try {
-          const mod = await import(/* @vite-ignore */ `lucide/icons/${name}.js`).catch(async () => {
-            return await import(/* @vite-ignore */ `lucide/dist/esm/icons/${name}.js`);
-          });
-          iconData = (mod && (mod.default || (mod as any)[name])) as any;
+          const iconModule = await import(/* @vite-ignore */ `lucide`);
+          iconData = iconModule[pascalName];
         } catch (e) {
-          // ignore，走默认
+          console.warn(`Icon "${pascalName}" not found in lucide exports`);
         }
       }
 
@@ -113,6 +133,7 @@ export class LdesignIcon {
         __svgCache.set(cacheKey, svgContent);
         this.svgContent = svgContent;
       } else {
+        console.warn(`Icon "${iconName}" (${pascalName}) not found`);
         this.svgContent = this.getDefaultIcon();
       }
     } catch (error) {

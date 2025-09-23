@@ -119,6 +119,23 @@ Lucide 图标默认描边宽度为 2，你可以通过 `stroke-width` 调整：
 <ldesign-icon name="search" stroke-width="3"></ldesign-icon>
 ```
 
+## 命名规范
+
+你可以传入以下任意形式，都会被自动规范化为 Lucide 的 kebab-case 名称：
+
+- `alarm-clock`（推荐，和 Lucide 一致）
+- `alarmClock`
+- `AlarmClock`
+- `alarm_clock`
+- `  alarm-clock  `（会自动去掉空格）
+
+```html
+<ldesign-icon name="alarm-clock"></ldesign-icon>
+<ldesign-icon name="alarmClock"></ldesign-icon>
+<ldesign-icon name="AlarmClock"></ldesign-icon>
+<ldesign-icon name="alarm_clock"></ldesign-icon>
+```
+
 ## 在文本中使用
 
 图标可以与文字组合，提供更好的视觉效果：

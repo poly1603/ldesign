@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Icon Test</title>
+  <script type="module">
+    import './dist/ldesign-webcomponent/ldesign-webcomponent.esm.js';
+    
+    // 测试lucide导入
+    import * as lucide from './node_modules/lucide/dist/esm/lucide.js';
+    console.log('Lucide exports:', Object.keys(lucide).slice(0, 20));
+    console.log('Home icon:', lucide.Home);
+    console.log('User icon:', lucide.User);
+    
+    window.lucide = lucide;
+  </script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body {
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    .test {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+    .item {
+      text-align: center;
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Icon Test</h1>
+  
+  <div class="test">
+    <div class="item">
+      <ldesign-icon name="home" size="large"></ldesign-icon>
+      <div>home</div>
+    </div>
+    <div class="item">
+      <ldesign-icon name="user" size="large"></ldesign-icon>
+      <div>user</div>
+    </div>
+    <div class="item">
+      <ldesign-icon name="settings" size="large"></ldesign-icon>
+      <div>settings</div>
+    </div>
+    <div class="item">
+      <ldesign-icon name="search" size="large"></ldesign-icon>
+      <div>search</div>
+    </div>
+  </div>
+  
+  <script>
+    setTimeout(() => {
+      const icons = document.querySelectorAll('ldesign-icon');
+      icons.forEach(icon => {
+        const svg = icon.querySelector('svg');
+        const name = icon.getAttribute('name');
+        console.log(`Icon ${name}:`, svg ? 'SVG found' : 'No SVG');
+        if (svg) {
+          const paths = svg.querySelectorAll('path, circle, line, rect, polygon, polyline');
+          console.log(`  - Contains ${paths.length} shape elements`);
+        }
+      });
+    }, 500);
+  </script>
+</body>
+</html>
