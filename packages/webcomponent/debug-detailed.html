@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>详细调试分析</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body { padding: 20px; font-family: Arial; }
+    .test { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+    .debug { 
+      margin: 10px 0; 
+      padding: 10px; 
+      background: #f0f0f0; 
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre;
+    }
+    button { margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>详细问题调试</h1>
+
+  <div class="test">
+    <h2>1. Textarea 高度计算调试</h2>
+    <ldesign-input type="textarea" id="textarea1" placeholder="测试textarea"></ldesign-input>
+    <div>
+      <button onclick="setAutosize()">设置autosize</button>
+      <button onclick="addLine()">添加一行</button>
+      <button onclick="checkHeight()">检查高度</button>
+      <button onclick="manualAdjust()">手动调整高度</button>
+    </div>
+    <div class="debug" id="textarea-debug"></div>
+  </div>
+
+  <div class="test">
+    <h2>2. 输入限制调试</h2>
+    <ldesign-input id="input1" placeholder="测试输入限制"></ldesign-input>
+    <div>
+      <button onclick="setAllowInput()">设置只允许数字</button>
+      <button onclick="testInput('123')">输入123</button>
+      <button onclick="testInput('abc')">输入abc</button>
+      <button onclick="testInput('123abc')">输入123abc</button>
+    </div>
+    <div class="debug" id="input-debug"></div>
+  </div>
+
+  <script>
+    let textarea1, input1;
+    let lineCount = 1;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      textarea1 = document.getElementById('textarea1');
+      input1 = document.getElementById('input1');
+      
+      // 初始值
+      textarea1.value = "第一行";
+      
+      // 监听组件内部事件
+      textarea1.addEventListener('input', (e) => {
+        console.log('textarea input event:', e);
+        setTimeout(checkHeight, 100);
+      });
+      
+      input1.addEventListener('input', (e) => {
+        console.log('input event:', e);
+        updateInputDebug();
+      });
+      
+      input1.addEventListener('ldesignInput', (e) => {
+        console.log('ldesignInput event:', e.detail);
+        updateInputDebug();
+      });
+    });
+
+    function setAutosize() {
+      console.log('Setting autosize...');
+      textarea1.autosize = { minRows: 2, maxRows: 5 };
+      log('textarea-debug', 'autosize设置为: ' + JSON.stringify(textarea1.autosize));
+      
+      // 触发组件更新
+      setTimeout(() => {
+        const event = new Event('input', { bubbles: true });
+        const textareaEl = textarea1.querySelector('textarea');
+        if (textareaEl) {
+          textareaEl.dispatchEvent(event);
+        }
+        checkHeight();
+      }, 100);
+    }
+
+    function addLine() {
+      lineCount++;
+      const textareaEl = textarea1.querySelector('textarea');
+      if (textareaEl) {
+        textareaEl.value += '\n第' + lineCount + '行';
+        textareaEl.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+
+    function checkHeight() {
+      const textareaEl = textarea1.querySelector('textarea');
+      if (!textareaEl) {
+        log('textarea-debug', 'textarea元素未找到');
+        return;
+      }
+      
+      const style = window.getComputedStyle(textareaEl);
+      const lines = textareaEl.value.split('\n');
+      
+      // 创建临时元素测量行高
+      const temp = document.createElement('div');
+      temp.style.cssText = `
+        position: absolute;
+        visibility: hidden;
+        font-family: ${style.fontFamily};
+        font-size: ${style.fontSize};
+        line-height: ${style.lineHeight};
+        white-space: pre-wrap;
+        width: ${textareaEl.offsetWidth}px;
+      `;
+      temp.textContent = 'M';
+      document.body.appendChild(temp);
+      const actualLineHeight = temp.offsetHeight;
+      document.body.removeChild(temp);
+      
+      const info = {
+        当前行数: lines.length,
+        实际行高: actualLineHeight + 'px',
+        计算的lineHeight: style.lineHeight,
+        fontSize: style.fontSize,
+        padding: `${style.paddingTop} ${style.paddingBottom}`,
+        height: style.height,
+        scrollHeight: textareaEl.scrollHeight + 'px',
+        clientHeight: textareaEl.clientHeight + 'px',
+        offsetHeight: textareaEl.offsetHeight + 'px',
+        overflow: style.overflow,
+        overflowY: style.overflowY,
+        有滚动条: textareaEl.scrollHeight > textareaEl.clientHeight,
+        autosize属性: JSON.stringify(textarea1.autosize)
+      };
+      
+      log('textarea-debug', JSON.stringify(info, null, 2));
+    }
+
+    function manualAdjust() {
+      const textareaEl = textarea1.querySelector('textarea');
+      if (!textareaEl) return;
+      
+      // 手动触发高度调整
+      const component = textarea1;
+      if (component && component.adjustTextareaHeight) {
+        console.log('调用组件的adjustTextareaHeight方法');
+        component.adjustTextareaHeight();
+      } else {
+        console.log('组件方法不可用');
+      }
+      
+      setTimeout(checkHeight, 100);
+    }
+
+    function setAllowInput() {
+      input1.allowInput = /^\d*$/;
+      log('input-debug', 'allowInput设置为: /^\\d*$/');
+      updateInputDebug();
+    }
+
+    function testInput(value) {
+      const inputEl = input1.querySelector('input');
+      if (!inputEl) return;
+      
+      log('input-debug', `\n测试输入: "${value}"`);
+      
+      // 保存原值
+      const oldValue = inputEl.value;
+      log('input-debug', `原值: "${oldValue}"`);
+      
+      // 模拟输入
+      inputEl.value = value;
+      inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+      
+      setTimeout(() => {
+        const newValue = inputEl.value;
+        log('input-debug', `新值: "${newValue}"`);
+        log('input-debug', `是否被拦截: ${newValue !== value ? '是' : '否'}`);
+      }, 100);
+    }
+
+    function updateInputDebug() {
+      const inputEl = input1.querySelector('input');
+      if (!inputEl) return;
+      
+      const info = {
+        当前值: inputEl.value,
+        allowInput: input1.allowInput ? input1.allowInput.toString() : 'undefined',
+        组件value属性: input1.value
+      };
+      
+      log('input-debug', '\n当前状态:\n' + JSON.stringify(info, null, 2));
+    }
+
+    function log(elementId, message) {
+      const el = document.getElementById(elementId);
+      el.textContent = message + '\n' + el.textContent;
+      
+      // 保持日志在合理长度
+      const lines = el.textContent.split('\n');
+      if (lines.length > 50) {
+        el.textContent = lines.slice(0, 50).join('\n');
+      }
+    }
+  </script>
+</body>
+</html>

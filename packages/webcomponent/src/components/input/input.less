@@ -66,6 +66,17 @@
     color: var(--ldesign-disabled-text, #999999);
     cursor: not-allowed;
   }
+  
+  // 隐藏浏览器默认的密码显示/隐藏按钮
+  &[type="password"]::-ms-reveal,
+  &[type="password"]::-ms-clear {
+    display: none;
+  }
+  
+  &::-webkit-credentials-auto-fill-button,
+  &::-webkit-clear-button {
+    display: none !important;
+  }
 
   // 尺寸变体
   &--small {
@@ -83,13 +94,6 @@
     line-height: var(--ls-input-height-large, 48px);
   }
 
-  // Textarea 特殊样式
-  &[type="textarea"] {
-    resize: vertical;
-    min-height: 60px;
-    line-height: 1.5;
-    padding: 8px 0;
-  }
 }
 
 // 前缀图标
@@ -140,60 +144,163 @@
   }
 }
 
-// Textarea 自适应高度
+// Textarea 专用样式
 textarea.ldesign-input {
   resize: none;
-  overflow: hidden;
+  overflow-y: auto; // 改为auto以支持滚动条
+  overflow-x: hidden;
+  padding: 8px 12px;
+  min-height: 32px;
+  height: auto;
+  line-height: 1.5;
+  
+  &.ldesign-input--textarea {
+    &.ldesign-input--small {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    
+    &.ldesign-input--medium {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+    
+    &.ldesign-input--large {
+      padding: 10px 14px;
+      font-size: 16px;
+    }
+  }
   
   &.ldesign-input--autosize {
-    min-height: auto;
+    transition: height 0.2s ease;
   }
 }
 
-// 复合型输入框
-.ldesign-input-group {
-  display: flex;
-  width: 100%;
-
-  .ldesign-input-wrapper {
-    flex: 1;
+// 修正textarea在wrapper中的样式
+.ldesign-input-wrapper {
+  &--textarea {
+    height: auto;
+    min-height: auto;
+    padding: 0;
+    align-items: flex-start;
   }
+}
 
-  &__prepend,
-  &__append {
+// 字数统计
+.ldesign-input__count {
+  display: block;
+  text-align: right;
+  color: var(--ldesign-text-color-secondary, #999);
+  font-size: 12px;
+  line-height: 20px;
+  margin-top: 4px;
+  
+  .ldesign-input-wrapper--error ~ & {
+    color: var(--ldesign-error-color, #ff4d4f);
+  }
+}
+
+// 针对textarea的特殊处理
+.ldesign-input-wrapper--textarea {
+  .ldesign-input__suffix-wrapper {
+    position: absolute;
+    right: 12px;
+    top: 8px;
+  }
+}
+
+// 复合型输入框 - 使用 Host 元素来实现
+ldesign-input {
+  // 检测 slot内容
+  &:has([slot="prepend"]),
+  &:has([slot="append"]) {
+    display: inline-flex !important;
+    align-items: stretch;
+    
+    .ldesign-input-wrapper {
+      flex: 1;
+    }
+  }
+  
+  // prepend 和 append 插槽样式
+  [slot="prepend"],
+  [slot="append"] {
     display: flex;
     align-items: center;
-    padding: 0 12px;
+    padding: 0 16px;
     background-color: var(--ldesign-bg-secondary, #fafafa);
     border: 1px solid var(--ldesign-border-color, #d9d9d9);
     color: var(--ldesign-text-color-secondary, #666666);
     font-size: 14px;
     white-space: nowrap;
   }
-
-  &__prepend {
+  
+  [slot="prepend"] {
+    order: -1; // 保证在输入框前面
     border-right: none;
     border-radius: var(--ls-border-radius-base, 6px) 0 0 var(--ls-border-radius-base, 6px);
   }
-
-  &__append {
+  
+  [slot="append"] {
+    order: 1; // 保证在输入框后面
     border-left: none;
     border-radius: 0 var(--ls-border-radius-base, 6px) var(--ls-border-radius-base, 6px) 0;
   }
-
-  .ldesign-input-wrapper {
-    border-radius: 0;
-
-    &:first-child {
-      border-radius: var(--ls-border-radius-base, 6px) 0 0 var(--ls-border-radius-base, 6px);
+  
+  // 输入框圆角调整
+  &:has([slot="prepend"]) .ldesign-input-wrapper {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  
+  &:has([slot="append"]) .ldesign-input-wrapper {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  
+  // 尺寸适配
+  &:has(.ldesign-input-wrapper--small) {
+    [slot="prepend"],
+    [slot="append"] {
+      padding: 0 12px;
+      font-size: 12px;
     }
-
-    &:last-child {
-      border-radius: 0 var(--ls-border-radius-base, 6px) var(--ls-border-radius-base, 6px) 0;
+  }
+  
+  &:has(.ldesign-input-wrapper--large) {
+    [slot="prepend"],
+    [slot="append"] {
+      padding: 0 20px;
+      font-size: 16px;
     }
-
-    &:only-child {
-      border-radius: var(--ls-border-radius-base, 6px);
+  }
+  
+  // 状态样式继承
+  &:has(.ldesign-input-wrapper--focused) {
+    [slot="prepend"],
+    [slot="append"] {
+      border-color: var(--ldesign-brand-color, #722ED1);
+    }
+  }
+  
+  &:has(.ldesign-input-wrapper--error) {
+    [slot="prepend"],
+    [slot="append"] {
+      border-color: var(--ldesign-error-color, #ff4d4f);
+    }
+  }
+  
+  &:has(.ldesign-input-wrapper--warning) {
+    [slot="prepend"],
+    [slot="append"] {
+      border-color: var(--ldesign-warning-color, #faad14);
+    }
+  }
+  
+  &:has(.ldesign-input-wrapper--success) {
+    [slot="prepend"],
+    [slot="append"] {
+      border-color: var(--ldesign-success-color, #52c41a);
     }
   }
 }

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LDesign Input 组件修复完成</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body { 
+      padding: 40px; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .test-section { 
+      margin: 40px 0; 
+      padding: 30px; 
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    h1 { color: #333; }
+    h2 { 
+      margin-top: 0; 
+      color: #5e2aa7;
+    }
+    .status { 
+      margin-top: 20px; 
+      padding: 15px;
+      background: white;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+    .success { color: #42bd42; }
+    .info { color: #666; }
+  </style>
+</head>
+<body>
+  <h1>🎉 LDesign Input 组件问题已修复</h1>
+
+  <div class="test-section">
+    <h2>✅ 问题1: Textarea 最大高度和滚动条</h2>
+    <p class="info">配置: autosize = { minRows: 2, maxRows: 5 }</p>
+    <p class="info">现在超过5行会显示滚动条</p>
+    <ldesign-input 
+      type="textarea" 
+      id="textarea1" 
+      placeholder="请输入文本测试，超过5行会显示滚动条"
+      value="这是第一行文本
+这是第二行文本
+这是第三行文本
+这是第四行文本
+这是第五行文本（到达最大高度）
+这是第六行文本（出现滚动条）
+这是第七行文本
+你可以继续添加更多行..."
+    ></ldesign-input>
+    <div class="status" id="textarea-status">等待检测...</div>
+  </div>
+
+  <div class="test-section">
+    <h2>✅ 问题2: 输入限制功能</h2>
+    <p class="info">配置: allowInput = /^\d*$/ (只允许数字)</p>
+    <p class="info">尝试输入字母，它们会被自动拦截</p>
+    <ldesign-input 
+      id="number-input" 
+      placeholder="只能输入数字，试试输入字母"
+      size="large"
+    ></ldesign-input>
+    <div class="status">
+      当前值: <span id="number-value" class="success">（空）</span>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>✨ 额外测试: 复杂输入限制</h2>
+    <p class="info">配置: 只允许英文字母和数字</p>
+    <ldesign-input 
+      id="alphanumeric-input" 
+      placeholder="只能输入英文和数字，不能输入中文或特殊字符"
+    ></ldesign-input>
+    <div class="status">
+      当前值: <span id="alphanumeric-value" class="success">（空）</span>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. 设置 textarea 自动高度
+      const textarea1 = document.getElementById('textarea1');
+      textarea1.autosize = { minRows: 2, maxRows: 5 };
+      
+      // 检测滚动条状态
+      setTimeout(() => {
+        const textareaEl = textarea1.querySelector('textarea');
+        if (textareaEl) {
+          const hasScrollbar = textareaEl.scrollHeight > textareaEl.clientHeight;
+          const overflowY = window.getComputedStyle(textareaEl).overflowY;
+          
+          document.getElementById('textarea-status').innerHTML = 
+            `<span class="success">✓ 检测结果:</span><br>` +
+            `• overflow-y: ${overflowY}<br>` +
+            `• 滚动条: ${hasScrollbar ? '显示' : '隐藏'}<br>` +
+            `• scrollHeight: ${textareaEl.scrollHeight}px<br>` +
+            `• clientHeight: ${textareaEl.clientHeight}px`;
+        }
+      }, 500);
+      
+      // 2. 设置数字输入限制
+      const numberInput = document.getElementById('number-input');
+      numberInput.allowInput = /^\d*$/;
+      
+      numberInput.addEventListener('ldesignInput', (e) => {
+        const value = e.detail || '（空）';
+        document.getElementById('number-value').textContent = value;
+      });
+      
+      // 3. 设置字母数字输入限制
+      const alphanumericInput = document.getElementById('alphanumeric-input');
+      alphanumericInput.allowInput = /^[a-zA-Z0-9]*$/;
+      
+      alphanumericInput.addEventListener('ldesignInput', (e) => {
+        const value = e.detail || '（空）';
+        document.getElementById('alphanumeric-value').textContent = value;
+      });
+      
+      // 显示修复说明
+      console.log('%c✅ 修复完成！', 'color: green; font-size: 16px; font-weight: bold');
+      console.log('修复内容:');
+      console.log('1. 将 Input 组件样式导入到全局样式文件中');
+      console.log('2. 确保 textarea 的 overflow-y 设置为 auto');
+      console.log('3. 优化了输入限制的事件处理逻辑');
+    });
+  </script>
+</body>
+</html>

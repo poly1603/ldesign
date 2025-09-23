@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Verify Input Fixes</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body { padding: 20px; font-family: Arial; }
+    .test { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+    h3 { margin-top: 0; }
+  </style>
+</head>
+<body>
+  <h1>验证Input组件修复</h1>
+
+  <div class="test">
+    <h3>1. Textarea 自动高度（最大5行）</h3>
+    <p>请输入多行文本，测试是否在第5行后显示滚动条：</p>
+    <ldesign-input type="textarea" placeholder="输入多行文本测试" id="textarea1"></ldesign-input>
+  </div>
+
+  <div class="test">
+    <h3>2. 输入限制（只允许数字）</h3>
+    <p>尝试输入字母，应该被阻止：</p>
+    <ldesign-input placeholder="只能输入数字" id="input1"></ldesign-input>
+    <p>当前值：<span id="value1"></span></p>
+  </div>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. 设置textarea自动高度
+      const textarea1 = document.getElementById('textarea1');
+      textarea1.autosize = { minRows: 2, maxRows: 5 };
+      
+      // 2. 设置输入限制
+      const input1 = document.getElementById('input1');
+      const value1 = document.getElementById('value1');
+      
+      // 只允许数字
+      input1.allowInput = /^\d*$/;
+      
+      // 监听输入
+      input1.addEventListener('ldesignInput', (e) => {
+        value1.textContent = e.detail;
+        console.log('Input value:', e.detail);
+      });
+      
+      console.log('Settings applied:', {
+        textarea1_autosize: textarea1.autosize,
+        input1_allowInput: input1.allowInput
+      });
+    });
+  </script>
+</body>
+</html>

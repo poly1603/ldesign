@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>深度调试Input组件</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body { padding: 20px; font-family: Arial; }
+    .test { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+    .debug-info { 
+      margin: 10px 0; 
+      padding: 10px; 
+      background: #f0f0f0; 
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>深度调试 Input 组件</h1>
+
+  <div class="test">
+    <h3>1. 检查组件属性</h3>
+    <ldesign-input type="textarea" id="textarea-debug" placeholder="测试textarea"></ldesign-input>
+    <button onclick="checkTextareaProps()">检查Textarea属性</button>
+    <div class="debug-info" id="textarea-props"></div>
+  </div>
+
+  <div class="test">
+    <h3>2. 输入限制测试（手动）</h3>
+    <ldesign-input id="input-debug" placeholder="手动输入测试"></ldesign-input>
+    <button onclick="checkInputProps()">检查Input属性</button>
+    <div class="debug-info" id="input-props"></div>
+    <div class="debug-info" id="input-events"></div>
+  </div>
+
+  <script>
+    let eventLog = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // 设置textarea
+      const textarea = document.getElementById('textarea-debug');
+      console.log('设置前textarea.autosize:', textarea.autosize);
+      
+      // 尝试不同的设置方式
+      textarea.autosize = { minRows: 2, maxRows: 5 };
+      
+      setTimeout(() => {
+        console.log('设置后textarea.autosize:', textarea.autosize);
+        // 手动触发高度调整
+        const textareaEl = textarea.querySelector('textarea');
+        if (textareaEl) {
+          textareaEl.value = "第一行\n第二行\n第三行\n第四行\n第五行\n第六行";
+          textareaEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }, 500);
+
+      // 设置输入限制
+      const input = document.getElementById('input-debug');
+      console.log('设置前input.allowInput:', input.allowInput);
+      
+      // 设置只允许数字
+      input.allowInput = /^\d*$/;
+      
+      console.log('设置后input.allowInput:', input.allowInput);
+
+      // 监听所有事件
+      ['input', 'beforeinput', 'ldesignInput', 'keydown', 'keypress', 'keyup'].forEach(eventName => {
+        input.addEventListener(eventName, (e) => {
+          const log = `${eventName}: value="${e.target?.value || ''}", key="${e.key || ''}"`;
+          eventLog.push(log);
+          if (eventLog.length > 10) eventLog.shift();
+          updateEventLog();
+        });
+      });
+    });
+
+    function checkTextareaProps() {
+      const textarea = document.getElementById('textarea-debug');
+      const textareaEl = textarea.querySelector('textarea');
+      
+      const info = {
+        'autosize属性': textarea.autosize,
+        'type属性': textarea.type,
+        'rows属性': textarea.rows,
+        'textarea元素存在': !!textareaEl
+      };
+      
+      if (textareaEl) {
+        const style = window.getComputedStyle(textareaEl);
+        info['textarea样式'] = {
+          height: style.height,
+          maxHeight: style.maxHeight,
+          overflowY: style.overflowY,
+          lineHeight: style.lineHeight,
+          rows: textareaEl.rows,
+          scrollHeight: textareaEl.scrollHeight + 'px',
+          clientHeight: textareaEl.clientHeight + 'px'
+        };
+      }
+      
+      document.getElementById('textarea-props').innerHTML = 
+        '<pre>' + JSON.stringify(info, null, 2) + '</pre>';
+    }
+
+    function checkInputProps() {
+      const input = document.getElementById('input-debug');
+      const inputEl = input.querySelector('input');
+      
+      const info = {
+        'allowInput属性': input.allowInput?.toString() || 'undefined',
+        'value属性': input.value,
+        'input元素存在': !!inputEl,
+        'input元素value': inputEl?.value || ''
+      };
+      
+      document.getElementById('input-props').innerHTML = 
+        '<pre>' + JSON.stringify(info, null, 2) + '</pre>';
+    }
+
+    function updateEventLog() {
+      document.getElementById('input-events').innerHTML = 
+        '<b>事件日志：</b><br>' + eventLog.join('<br>');
+    }
+
+    // 全局调试
+    window.debugInput = () => {
+      const inputs = document.querySelectorAll('ldesign-input');
+      inputs.forEach((input, i) => {
+        console.log(`Input ${i}:`, {
+          type: input.type,
+          value: input.value,
+          autosize: input.autosize,
+          allowInput: input.allowInput,
+          element: input
+        });
+      });
+    };
+  </script>
+</body>
+</html>

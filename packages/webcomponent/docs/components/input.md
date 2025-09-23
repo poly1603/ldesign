@@ -85,20 +85,36 @@
 可前置或后置元素，一般为标签或按钮。
 
 <div class="demo-container">
-  <ldesign-input placeholder="请输入内容">
-    <template slot="prepend">Http://</template>
-  </ldesign-input>
-  <ldesign-input placeholder="请输入内容">
-    <template slot="append">.com</template>
-  </ldesign-input>
+  <div style="margin-bottom: 16px;">
+    <ldesign-input placeholder="请输入网址">
+      <span slot="prepend">https://</span>
+    </ldesign-input>
+  </div>
+  <div style="margin-bottom: 16px;">
+    <ldesign-input placeholder="请输入域名">
+      <span slot="append">.com</span>
+    </ldesign-input>
+  </div>
+  <div style="margin-bottom: 16px;">
+    <ldesign-input placeholder="请输入网站名">
+      <span slot="prepend">https://</span>
+      <span slot="append">.com</span>
+    </ldesign-input>
+  </div>
 </div>
 
 ```html
-<ldesign-input placeholder="请输入内容">
-  <template slot="prepend">Http://</template>
+<ldesign-input placeholder="请输入网址">
+  <span slot="prepend">https://</span>
 </ldesign-input>
-<ldesign-input placeholder="请输入内容">
-  <template slot="append">.com</template>
+
+<ldesign-input placeholder="请输入域名">
+  <span slot="append">.com</span>
+</ldesign-input>
+
+<ldesign-input placeholder="请输入网站名">
+  <span slot="prepend">https://</span>
+  <span slot="append">.com</span>
 </ldesign-input>
 ```
 
@@ -119,11 +135,133 @@
 通过设置 `autosize` 属性可以使得文本域的高度能够根据文本内容自动进行调整。
 
 <div class="demo-container">
-  <ldesign-input type="textarea" placeholder="请输入内容" autosize></ldesign-input>
+  <div style="margin-bottom: 20px;">
+    <p style="margin-bottom: 10px;">基础自动高度：</p>
+    <ldesign-input type="textarea" placeholder="请输入内容，高度会自动调整" autosize></ldesign-input>
+  </div>
+  <div style="margin-bottom: 20px;">
+    <p style="margin-bottom: 10px;">限制最小和最大行数：</p>
+    <ldesign-input 
+      type="textarea" 
+      placeholder="最少2行，最大5行" 
+      id="textarea-limit-demo"
+      value="这是第一行&#10;这是第二行"
+    ></ldesign-input>
+  </div>
 </div>
 
 ```html
+<!-- 基础自动高度 -->
 <ldesign-input type="textarea" placeholder="请输入内容" autosize></ldesign-input>
+
+<!-- 限制最小和最大行数 -->
+<ldesign-input 
+  type="textarea" 
+  placeholder="最少2行，最大5行" 
+  id="textarea-with-limit"
+></ldesign-input>
+```
+
+```javascript
+// 通过JavaScript设置autosize配置
+const textarea = document.getElementById('textarea-with-limit');
+textarea.autosize = { minRows: 2, maxRows: 5 };
+```
+
+
+## 字数统计
+
+通过 `show-count` 属性可以显示字数统计，需要配合 `maxlength` 使用。
+
+<div class="demo-container">
+  <div style="margin-bottom: 20px;">
+    <ldesign-input placeholder="最多20个字符" maxlength="20" show-count></ldesign-input>
+  </div>
+  <div>
+    <ldesign-input type="textarea" placeholder="最多100个字符" maxlength="100" show-count rows="3"></ldesign-input>
+  </div>
+</div>
+
+```html
+<ldesign-input placeholder="最多20个字符" maxlength="20" show-count></ldesign-input>
+<ldesign-input type="textarea" placeholder="最多100个字符" maxlength="100" show-count rows="3"></ldesign-input>
+```
+
+## 输入框状态
+
+通过 `status` 属性可以设置输入框的状态。
+
+<div class="demo-container">
+  <div style="margin-bottom: 16px;">
+    <ldesign-input placeholder="错误状态" status="error" value="错误内容"></ldesign-input>
+  </div>
+  <div style="margin-bottom: 16px;">
+    <ldesign-input placeholder="警告状态" status="warning" value="警告内容"></ldesign-input>
+  </div>
+  <div style="margin-bottom: 16px;">
+    <ldesign-input placeholder="成功状态" status="success" value="成功内容"></ldesign-input>
+  </div>
+</div>
+
+```html
+<ldesign-input placeholder="错误状态" status="error" value="错误内容"></ldesign-input>
+<ldesign-input placeholder="警告状态" status="warning" value="警告内容"></ldesign-input>
+<ldesign-input placeholder="成功状态" status="success" value="成功内容"></ldesign-input>
+```
+
+## 输入限制
+
+通过 `allowInput` 属性可以限制输入内容。
+
+<div class="demo-container">
+  <div style="margin-bottom: 16px;">
+    <p style="margin-bottom: 8px;">只允许输入数字：</p>
+    <ldesign-input placeholder="只能输入数字" id="input-number-only"></ldesign-input>
+  </div>
+  <div style="margin-bottom: 16px;">
+    <p style="margin-bottom: 8px;">只允许输入字母：</p>
+    <ldesign-input placeholder="只能输入字母" id="input-letter-only"></ldesign-input>
+  </div>
+</div>
+
+<script>
+// 统一的页面初始化脚本
+if (typeof window !== 'undefined') {
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      // 设置textarea autosize配置
+      const textareaDemo = document.getElementById('textarea-limit-demo');
+      if (textareaDemo) {
+        textareaDemo.autosize = { minRows: 2, maxRows: 5 };
+      }
+      const textareaLimit = document.getElementById('textarea-with-limit');
+      if (textareaLimit) {
+        textareaLimit.autosize = { minRows: 2, maxRows: 5 };
+      }
+      
+      // 设置输入限制
+      const numberOnly = document.getElementById('input-number-only');
+      if (numberOnly) {
+        numberOnly.allowInput = /^\d*$/;
+      }
+      
+      const letterOnly = document.getElementById('input-letter-only');
+      if (letterOnly) {
+        letterOnly.allowInput = /^[a-zA-Z]*$/;
+      }
+    }, 100);
+  });
+}
+</script>
+
+```javascript
+// 使用正则表达式限制
+input.allowInput = /^\d*$/; // 只允许数字
+
+// 使用函数限制
+input.allowInput = (value) => {
+  return value.length <= 10; // 限制长度
+};
 ```
 
 ## API
@@ -144,8 +282,12 @@
 | `suffix-icon` | `string` | `-` | 输入框尾部图标 |
 | `maxlength` | `number` | `-` | 最大输入长度 |
 | `minlength` | `number` | `-` | 最小输入长度 |
-| `autosize` | `boolean` | `false` | 自适应内容高度（仅对 textarea 有效） |
+| `autosize` | `boolean \| { minRows?: number; maxRows?: number }` | `false` | 自适应内容高度（仅对 textarea 有效） |
 | `rows` | `number` | `2` | 输入框行数（仅对 textarea 有效） |
+| `show-count` | `boolean` | `false` | 是否显示字数统计 |
+| `status` | `'error' \| 'warning' \| 'success'` | `-` | 输入框状态 |
+| `allow-input` | `RegExp \| Function` | `-` | 输入限制 |
+| `controlled` | `boolean` | `false` | 是否受控组件 |
 
 ### 事件
 

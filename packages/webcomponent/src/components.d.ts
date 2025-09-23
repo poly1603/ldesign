@@ -158,15 +158,24 @@ export namespace Components {
      */
     interface LdesignInput {
         /**
+          * 输入限制，只允许输入指定字符
+         */
+        "allowInput"?: RegExp | ((value: string) => boolean);
+        /**
           * 自适应内容高度（仅对 textarea 有效）
           * @default false
          */
-        "autosize": boolean;
+        "autosize": boolean | { minRows?: number; maxRows?: number };
         /**
           * 是否可清空
           * @default false
          */
         "clearable": boolean;
+        /**
+          * 是否受控组件
+          * @default false
+         */
+        "controlled": boolean;
         /**
           * 是否禁用
           * @default false
@@ -199,6 +208,11 @@ export namespace Components {
          */
         "rows": number;
         /**
+          * 是否显示输入数量统计
+          * @default false
+         */
+        "showCount": boolean;
+        /**
           * 是否显示切换密码图标
           * @default false
          */
@@ -208,6 +222,10 @@ export namespace Components {
           * @default 'medium'
          */
         "size": Size;
+        /**
+          * 输入框的状态
+         */
+        "status"?: 'error' | 'warning' | 'success';
         /**
           * 输入框尾部图标
          */
@@ -981,15 +999,24 @@ declare namespace LocalJSX {
      */
     interface LdesignInput {
         /**
+          * 输入限制，只允许输入指定字符
+         */
+        "allowInput"?: RegExp | ((value: string) => boolean);
+        /**
           * 自适应内容高度（仅对 textarea 有效）
           * @default false
          */
-        "autosize"?: boolean;
+        "autosize"?: boolean | { minRows?: number; maxRows?: number };
         /**
           * 是否可清空
           * @default false
          */
         "clearable"?: boolean;
+        /**
+          * 是否受控组件
+          * @default false
+         */
+        "controlled"?: boolean;
         /**
           * 是否禁用
           * @default false
@@ -1042,6 +1069,11 @@ declare namespace LocalJSX {
          */
         "rows"?: number;
         /**
+          * 是否显示输入数量统计
+          * @default false
+         */
+        "showCount"?: boolean;
+        /**
           * 是否显示切换密码图标
           * @default false
          */
@@ -1051,6 +1083,10 @@ declare namespace LocalJSX {
           * @default 'medium'
          */
         "size"?: Size;
+        /**
+          * 输入框的状态
+         */
+        "status"?: 'error' | 'warning' | 'success';
         /**
           * 输入框尾部图标
          */
