@@ -11,23 +11,28 @@ Modal 模态框组件
 
 ## Properties
 
-| Property         | Attribute          | Description | Type                                       | Default     |
-| ---------------- | ------------------ | ----------- | ------------------------------------------ | ----------- |
-| `centered`       | `centered`         | 是否居中显示      | `boolean`                                  | `false`     |
-| `closable`       | `closable`         | 是否显示关闭按钮    | `boolean`                                  | `true`      |
-| `destroyOnClose` | `destroy-on-close` | 是否销毁子元素     | `boolean`                                  | `false`     |
-| `height`         | `height`           | 自定义高度       | `number \| string`                         | `undefined` |
-| `isDraggable`    | `is-draggable`     | 是否可拖拽       | `boolean`                                  | `false`     |
-| `keyboard`       | `keyboard`         | 按ESC键是否关闭   | `boolean`                                  | `true`      |
-| `mask`           | `mask`             | 是否显示遮罩层     | `boolean`                                  | `true`      |
-| `maskClosable`   | `mask-closable`    | 点击遮罩层是否关闭   | `boolean`                                  | `true`      |
-| `modalTitle`     | `modal-title`      | 模态框标题       | `string`                                   | `undefined` |
-| `resizable`      | `resizable`        | 是否可调整大小     | `boolean`                                  | `false`     |
-| `size`           | `size`             | 模态框尺寸       | `"full" \| "large" \| "medium" \| "small"` | `'medium'`  |
-| `top`            | `top`              | 距离顶部的距离     | `number \| string`                         | `undefined` |
-| `visible`        | `visible`          | 是否显示模态框     | `boolean`                                  | `false`     |
-| `width`          | `width`            | 自定义宽度       | `number \| string`                         | `undefined` |
-| `zIndex`         | `z-index`          | z-index     | `number`                                   | `1000`      |
+| Property         | Attribute          | Description | Type                                                                              | Default        |
+| ---------------- | ------------------ | ----------- | --------------------------------------------------------------------------------- | -------------- |
+| `animation`      | `animation`        | 动画效果类型      | `"fade" \| "slide-down" \| "slide-left" \| "slide-right" \| "slide-up" \| "zoom"` | `'zoom'`       |
+| `centered`       | `centered`         | 是否居中显示      | `boolean`                                                                         | `false`        |
+| `closable`       | `closable`         | 是否显示关闭按钮    | `boolean`                                                                         | `true`         |
+| `closeIcon`      | `close-icon`       | 图标可配置       | `string`                                                                          | `'x'`          |
+| `destroyOnClose` | `destroy-on-close` | 是否销毁子元素     | `boolean`                                                                         | `false`        |
+| `height`         | `height`           | 自定义高度       | `number \| string`                                                                | `undefined`    |
+| `isDraggable`    | `is-draggable`     | 是否可拖拽       | `boolean`                                                                         | `false`        |
+| `keyboard`       | `keyboard`         | 按ESC键是否关闭   | `boolean`                                                                         | `true`         |
+| `mask`           | `mask`             | 是否显示遮罩层     | `boolean`                                                                         | `true`         |
+| `maskClosable`   | `mask-closable`    | 点击遮罩层是否关闭   | `boolean`                                                                         | `true`         |
+| `maximizable`    | `maximizable`      | 是否可最大化      | `boolean`                                                                         | `false`        |
+| `maximizeIcon`   | `maximize-icon`    |             | `string`                                                                          | `'maximize-2'` |
+| `modalTitle`     | `modal-title`      | 模态框标题       | `string`                                                                          | `undefined`    |
+| `resizable`      | `resizable`        | 是否可调整大小     | `boolean`                                                                         | `false`        |
+| `restoreIcon`    | `restore-icon`     |             | `string`                                                                          | `'minimize-2'` |
+| `size`           | `size`             | 模态框尺寸       | `"full" \| "large" \| "medium" \| "small"`                                        | `'medium'`     |
+| `top`            | `top`              | 距离顶部的距离     | `number \| string`                                                                | `undefined`    |
+| `visible`        | `visible`          | 是否显示模态框     | `boolean`                                                                         | `false`        |
+| `width`          | `width`            | 自定义宽度       | `number \| string`                                                                | `undefined`    |
+| `zIndex`         | `z-index`          | z-index     | `number`                                                                          | `1000`         |
 
 
 ## Events
@@ -39,18 +44,81 @@ Modal 模态框组件
 | `ldesignVisibleChange` | 显示状态变化事件    | `CustomEvent<boolean>` |
 
 
+## Methods
+
+### `close() => Promise<void>`
+
+关闭模态框
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `hide() => Promise<void>`
+
+隐藏模态框
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `maximize() => Promise<void>`
+
+最大化模态框
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `restore() => Promise<void>`
+
+恢复模态框
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `show() => Promise<void>`
+
+显示模态框
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `toggleMaximize() => Promise<void>`
+
+切换最大化状态
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+
 ## Dependencies
 
 ### Depends on
 
-- [ldesign-icon](../icon)
 - [ldesign-button](../button)
+- [ldesign-icon](../icon)
 
 ### Graph
 ```mermaid
 graph TD;
-  ldesign-modal --> ldesign-icon
   ldesign-modal --> ldesign-button
+  ldesign-modal --> ldesign-icon
   ldesign-button --> ldesign-icon
   style ldesign-modal fill:#f9f,stroke:#333,stroke-width:4px
 ```

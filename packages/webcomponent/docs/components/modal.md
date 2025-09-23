@@ -161,6 +161,87 @@ onMounted(() => {
       noMaskCloseModal.visible = false
     })
   }
+
+  // 动画效果
+  const animationButtons = [
+    { id: 'fade-btn', modalId: 'fade-modal' },
+    { id: 'zoom-btn', modalId: 'zoom-modal' },
+    { id: 'slide-down-btn', modalId: 'slide-down-modal' },
+    { id: 'slide-up-btn', modalId: 'slide-up-modal' },
+    { id: 'slide-left-btn', modalId: 'slide-left-modal' },
+    { id: 'slide-right-btn', modalId: 'slide-right-modal' }
+  ]
+
+  animationButtons.forEach(({ id, modalId }) => {
+    const btn = document.getElementById(id)
+    const modal = document.getElementById(modalId)
+
+    if (btn && modal) {
+      addEventListenerSafe(btn, 'click', () => {
+        modal.visible = true
+      })
+
+      addEventListenerSafe(modal, 'ldesignClose', () => {
+        modal.visible = false
+      })
+    }
+  })
+
+  // 最大化功能
+  const maximizableBtn = document.getElementById('maximizable-btn')
+  const maximizableModal = document.getElementById('maximizable-modal')
+
+  if (maximizableBtn && maximizableModal) {
+    addEventListenerSafe(maximizableBtn, 'click', () => {
+      maximizableModal.visible = true
+    })
+
+    addEventListenerSafe(maximizableModal, 'ldesignClose', () => {
+      maximizableModal.visible = false
+    })
+  }
+
+  // 拖拽功能
+  const draggableBtn = document.getElementById('draggable-btn')
+  const draggableModal = document.getElementById('draggable-modal')
+
+  if (draggableBtn && draggableModal) {
+    addEventListenerSafe(draggableBtn, 'click', () => {
+      draggableModal.visible = true
+    })
+
+    addEventListenerSafe(draggableModal, 'ldesignClose', () => {
+      draggableModal.visible = false
+    })
+  }
+
+  // 调整大小功能
+  const resizableBtn = document.getElementById('resizable-btn')
+  const resizableModal = document.getElementById('resizable-modal')
+
+  if (resizableBtn && resizableModal) {
+    addEventListenerSafe(resizableBtn, 'click', () => {
+      resizableModal.visible = true
+    })
+
+    addEventListenerSafe(resizableModal, 'ldesignClose', () => {
+      resizableModal.visible = false
+    })
+  }
+
+  // 高级功能
+  const advancedBtn = document.getElementById('advanced-btn')
+  const advancedModal = document.getElementById('advanced-modal')
+
+  if (advancedBtn && advancedModal) {
+    addEventListenerSafe(advancedBtn, 'click', () => {
+      advancedModal.visible = true
+    })
+
+    addEventListenerSafe(advancedModal, 'ldesignClose', () => {
+      advancedModal.visible = false
+    })
+  }
 })
 
 onUnmounted(() => {
@@ -328,6 +409,169 @@ modal.addEventListener('ldesignClose', () => {
 </ldesign-modal>
 ```
 
+## 动画效果
+
+Modal 支持多种动画效果，通过 `animation` 属性设置。
+
+<div class="demo-container">
+  <ldesign-button id="fade-btn">淡入淡出</ldesign-button>
+  <ldesign-button id="zoom-btn">缩放动画</ldesign-button>
+  <ldesign-button id="slide-down-btn">向下滑动</ldesign-button>
+  <ldesign-button id="slide-up-btn">向上滑动</ldesign-button>
+  <ldesign-button id="slide-left-btn">向左滑动</ldesign-button>
+  <ldesign-button id="slide-right-btn">向右滑动</ldesign-button>
+
+  <ldesign-modal id="fade-modal" modal-title="淡入淡出效果" animation="fade">
+    <p>这是淡入淡出动画效果。</p>
+  </ldesign-modal>
+
+  <ldesign-modal id="zoom-modal" modal-title="缩放动画效果" animation="zoom">
+    <p>这是缩放动画效果（默认）。</p>
+  </ldesign-modal>
+
+  <ldesign-modal id="slide-down-modal" modal-title="向下滑动效果" animation="slide-down">
+    <p>这是向下滑动动画效果。</p>
+  </ldesign-modal>
+
+  <ldesign-modal id="slide-up-modal" modal-title="向上滑动效果" animation="slide-up">
+    <p>这是向上滑动动画效果。</p>
+  </ldesign-modal>
+
+  <ldesign-modal id="slide-left-modal" modal-title="向左滑动效果" animation="slide-left">
+    <p>这是向左滑动动画效果。</p>
+  </ldesign-modal>
+
+  <ldesign-modal id="slide-right-modal" modal-title="向右滑动效果" animation="slide-right">
+    <p>这是向右滑动动画效果。</p>
+  </ldesign-modal>
+</div>
+
+```html
+<ldesign-modal modal-title="淡入淡出效果" animation="fade">
+  <p>这是淡入淡出动画效果。</p>
+</ldesign-modal>
+
+<ldesign-modal modal-title="缩放动画效果" animation="zoom">
+  <p>这是缩放动画效果（默认）。</p>
+</ldesign-modal>
+
+<ldesign-modal modal-title="向下滑动效果" animation="slide-down">
+  <p>这是向下滑动动画效果。</p>
+</ldesign-modal>
+
+<ldesign-modal modal-title="向上滑动效果" animation="slide-up">
+  <p>这是向上滑动动画效果。</p>
+</ldesign-modal>
+
+<ldesign-modal modal-title="向左滑动效果" animation="slide-left">
+  <p>这是向左滑动动画效果。</p>
+</ldesign-modal>
+
+<ldesign-modal modal-title="向右滑动效果" animation="slide-right">
+  <p>这是向右滑动动画效果。</p>
+</ldesign-modal>
+```
+
+## 最大化功能
+
+通过 `maximizable` 属性启用最大化功能，用户可以点击最大化按钮将模态框全屏显示。
+
+<div class="demo-container">
+  <ldesign-button id="maximizable-btn">可最大化模态框</ldesign-button>
+  <ldesign-modal id="maximizable-modal" modal-title="可最大化模态框" maximizable>
+    <p>这个模态框支持最大化功能。</p>
+    <p>点击标题栏右侧的最大化按钮可以全屏显示。</p>
+    <p>再次点击可以恢复原始大小。</p>
+  </ldesign-modal>
+</div>
+
+```html
+<ldesign-modal modal-title="可最大化模态框" maximizable>
+  <p>这个模态框支持最大化功能。</p>
+  <p>点击标题栏右侧的最大化按钮可以全屏显示。</p>
+  <p>再次点击可以恢复原始大小。</p>
+</ldesign-modal>
+```
+
+## 拖拽功能
+
+通过 `is-draggable` 属性启用拖拽功能，用户可以通过拖拽标题栏来移动模态框位置。
+
+<div class="demo-container">
+  <ldesign-button id="draggable-btn">可拖拽模态框</ldesign-button>
+  <ldesign-modal id="draggable-modal" modal-title="可拖拽模态框" is-draggable>
+    <p>这个模态框支持拖拽功能。</p>
+    <p>你可以通过拖拽标题栏来移动模态框的位置。</p>
+    <p>拖拽时鼠标会变成移动图标。</p>
+  </ldesign-modal>
+</div>
+
+```html
+<ldesign-modal modal-title="可拖拽模态框" is-draggable>
+  <p>这个模态框支持拖拽功能。</p>
+  <p>你可以通过拖拽标题栏来移动模态框的位置。</p>
+  <p>拖拽时鼠标会变成移动图标。</p>
+</ldesign-modal>
+```
+
+## 调整大小功能
+
+通过 `resizable` 属性启用调整大小功能，用户可以通过拖拽边缘和角落来调整模态框大小。
+
+<div class="demo-container">
+  <ldesign-button id="resizable-btn">可调整大小模态框</ldesign-button>
+  <ldesign-modal id="resizable-modal" modal-title="可调整大小模态框" resizable>
+    <p>这个模态框支持调整大小功能。</p>
+    <p>你可以通过拖拽模态框的边缘和角落来调整大小。</p>
+    <p>鼠标悬停在边缘时会显示调整大小的光标。</p>
+  </ldesign-modal>
+</div>
+
+```html
+<ldesign-modal modal-title="可调整大小模态框" resizable>
+  <p>这个模态框支持调整大小功能。</p>
+  <p>你可以通过拖拽模态框的边缘和角落来调整大小。</p>
+  <p>鼠标悬停在边缘时会显示调整大小的光标。</p>
+</ldesign-modal>
+```
+
+## 综合功能
+
+可以同时启用多种功能，创建功能丰富的模态框。
+
+<div class="demo-container">
+  <ldesign-button id="advanced-btn">高级功能模态框</ldesign-button>
+  <ldesign-modal id="advanced-modal" modal-title="高级功能模态框" maximizable is-draggable resizable animation="slide-down">
+    <p>这个模态框同时支持：</p>
+    <ul>
+      <li>最大化和恢复功能</li>
+      <li>拖拽移动位置</li>
+      <li>调整大小</li>
+      <li>自定义动画效果</li>
+    </ul>
+    <p>你可以尝试各种交互操作。</p>
+  </ldesign-modal>
+</div>
+
+```html
+<ldesign-modal
+  modal-title="高级功能模态框"
+  maximizable
+  is-draggable
+  resizable
+  animation="slide-down"
+>
+  <p>这个模态框同时支持：</p>
+  <ul>
+    <li>最大化和恢复功能</li>
+    <li>拖拽移动位置</li>
+    <li>调整大小</li>
+    <li>自定义动画效果</li>
+  </ul>
+  <p>你可以尝试各种交互操作。</p>
+</ldesign-modal>
+```
+
 ## API
 
 ### 属性
@@ -349,6 +593,8 @@ modal.addEventListener('ldesignClose', () => {
 | `top` | `number \| string` | - | 距离顶部的距离 |
 | `z-index` | `number` | `1000` | z-index |
 | `destroy-on-close` | `boolean` | `false` | 是否销毁子元素 |
+| `animation` | `'fade' \| 'zoom' \| 'slide-down' \| 'slide-up' \| 'slide-left' \| 'slide-right'` | `'zoom'` | 动画效果类型 |
+| `maximizable` | `boolean` | `false` | 是否可最大化 |
 
 ### 事件
 
@@ -372,6 +618,9 @@ modal.addEventListener('ldesignClose', () => {
 | `show()` | 显示模态框 | - |
 | `hide()` | 隐藏模态框 | - |
 | `close()` | 关闭模态框 | - |
+| `maximize()` | 最大化模态框 | - |
+| `restore()` | 恢复模态框 | - |
+| `toggleMaximize()` | 切换最大化状态 | - |
 
 ## 设计指南
 

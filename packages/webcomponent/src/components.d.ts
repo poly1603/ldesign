@@ -6,11 +6,11 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { ButtonShape, ButtonType, Size, Theme } from "./types";
-import { ModalSize } from "./components/modal/modal";
+import { ModalAnimation, ModalSize } from "./components/modal/modal";
 import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 export { ButtonShape, ButtonType, Size, Theme } from "./types";
-export { ModalSize } from "./components/modal/modal";
+export { ModalAnimation, ModalSize } from "./components/modal/modal";
 export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
 export namespace Components {
@@ -228,6 +228,11 @@ export namespace Components {
      */
     interface LdesignModal {
         /**
+          * 动画效果类型
+          * @default 'zoom'
+         */
+        "animation": ModalAnimation;
+        /**
           * 是否居中显示
           * @default false
          */
@@ -238,6 +243,15 @@ export namespace Components {
          */
         "closable": boolean;
         /**
+          * 关闭模态框
+         */
+        "close": () => Promise<void>;
+        /**
+          * 图标可配置
+          * @default 'x'
+         */
+        "closeIcon": string;
+        /**
           * 是否销毁子元素
           * @default false
          */
@@ -246,6 +260,10 @@ export namespace Components {
           * 自定义高度
          */
         "height"?: number | string;
+        /**
+          * 隐藏模态框
+         */
+        "hide": () => Promise<void>;
         /**
           * 是否可拖拽
           * @default false
@@ -267,6 +285,19 @@ export namespace Components {
          */
         "maskClosable": boolean;
         /**
+          * 是否可最大化
+          * @default false
+         */
+        "maximizable": boolean;
+        /**
+          * 最大化模态框
+         */
+        "maximize": () => Promise<void>;
+        /**
+          * @default 'maximize-2'
+         */
+        "maximizeIcon": string;
+        /**
           * 模态框标题
          */
         "modalTitle"?: string;
@@ -276,10 +307,26 @@ export namespace Components {
          */
         "resizable": boolean;
         /**
+          * 恢复模态框
+         */
+        "restore": () => Promise<void>;
+        /**
+          * @default 'minimize-2'
+         */
+        "restoreIcon": string;
+        /**
+          * 显示模态框
+         */
+        "show": () => Promise<void>;
+        /**
           * 模态框尺寸
           * @default 'medium'
          */
         "size": ModalSize;
+        /**
+          * 切换最大化状态
+         */
+        "toggleMaximize": () => Promise<void>;
         /**
           * 距离顶部的距离
          */
@@ -1024,6 +1071,11 @@ declare namespace LocalJSX {
      */
     interface LdesignModal {
         /**
+          * 动画效果类型
+          * @default 'zoom'
+         */
+        "animation"?: ModalAnimation;
+        /**
           * 是否居中显示
           * @default false
          */
@@ -1033,6 +1085,11 @@ declare namespace LocalJSX {
           * @default true
          */
         "closable"?: boolean;
+        /**
+          * 图标可配置
+          * @default 'x'
+         */
+        "closeIcon"?: string;
         /**
           * 是否销毁子元素
           * @default false
@@ -1063,6 +1120,15 @@ declare namespace LocalJSX {
          */
         "maskClosable"?: boolean;
         /**
+          * 是否可最大化
+          * @default false
+         */
+        "maximizable"?: boolean;
+        /**
+          * @default 'maximize-2'
+         */
+        "maximizeIcon"?: string;
+        /**
           * 模态框标题
          */
         "modalTitle"?: string;
@@ -1083,6 +1149,10 @@ declare namespace LocalJSX {
           * @default false
          */
         "resizable"?: boolean;
+        /**
+          * @default 'minimize-2'
+         */
+        "restoreIcon"?: string;
         /**
           * 模态框尺寸
           * @default 'medium'

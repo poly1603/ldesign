@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal 组件测试</title>
+    <script type="module" src="../../dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    <link rel="stylesheet" href="../../dist/ldesign-webcomponent/ldesign-webcomponent.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #f3f4f6;
+        }
+        button.primary {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        button.primary:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Modal 组件功能测试</h1>
+
+    <!-- 测试基本功能 -->
+    <div class="test-section">
+        <h2>基本功能测试</h2>
+        <div class="button-group">
+            <button onclick="testBasicModal()">打开基本模态框</button>
+            <button onclick="testNoMask()">无遮罩模态框</button>
+            <button onclick="testNoClosable()">不可关闭模态框</button>
+        </div>
+    </div>
+
+    <!-- 测试尺寸 -->
+    <div class="test-section">
+        <h2>尺寸测试</h2>
+        <div class="button-group">
+            <button onclick="testSmallModal()">小尺寸</button>
+            <button onclick="testMediumModal()">中尺寸</button>
+            <button onclick="testLargeModal()">大尺寸</button>
+            <button onclick="testFullModal()">全屏尺寸</button>
+        </div>
+    </div>
+
+    <!-- 测试动画效果 -->
+    <div class="test-section">
+        <h2>动画效果测试</h2>
+        <div class="button-group">
+            <button onclick="testAnimation('fade')">淡入淡出</button>
+            <button onclick="testAnimation('zoom')">缩放</button>
+            <button onclick="testAnimation('slide-down')">下滑</button>
+            <button onclick="testAnimation('slide-up')">上滑</button>
+            <button onclick="testAnimation('slide-left')">左滑</button>
+            <button onclick="testAnimation('slide-right')">右滑</button>
+        </div>
+    </div>
+
+    <!-- 测试高级功能 -->
+    <div class="test-section">
+        <h2>高级功能测试</h2>
+        <div class="button-group">
+            <button onclick="testDraggable()">可拖拽模态框</button>
+            <button onclick="testResizable()">可调整大小模态框</button>
+            <button onclick="testMaximizable()">可最大化模态框</button>
+            <button onclick="testAll()">全功能模态框</button>
+        </div>
+    </div>
+
+    <!-- 测试方法调用 -->
+    <div class="test-section">
+        <h2>方法调用测试</h2>
+        <div class="button-group">
+            <button onclick="testMethods()">测试公开方法</button>
+        </div>
+    </div>
+
+    <!-- 模态框定义 -->
+    <ldesign-modal id="basicModal" modal-title="基本模态框">
+        <p>这是一个基本的模态框内容。</p>
+        <p>支持任意内容的嵌入。</p>
+    </ldesign-modal>
+
+    <ldesign-modal id="sizeModal" modal-title="尺寸测试">
+        <p>这个模态框可以切换不同的尺寸。</p>
+    </ldesign-modal>
+
+    <ldesign-modal id="animationModal" modal-title="动画效果测试">
+        <p>这个模态框展示不同的动画效果。</p>
+    </ldesign-modal>
+
+    <ldesign-modal id="advancedModal" modal-title="高级功能模态框">
+        <p>这个模态框具有高级功能：</p>
+        <ul>
+            <li>可拖拽（点击标题栏拖动）</li>
+            <li>可调整大小（拖动边缘和角落）</li>
+            <li>可最大化（点击最大化按钮）</li>
+        </ul>
+    </ldesign-modal>
+
+    <script>
+        // 基本功能测试
+        function testBasicModal() {
+            const modal = document.getElementById('basicModal');
+            modal.visible = true;
+        }
+
+        function testNoMask() {
+            const modal = document.getElementById('basicModal');
+            modal.mask = false;
+            modal.visible = true;
+            
+            // 3秒后恢复
+            setTimeout(() => {
+                modal.mask = true;
+                modal.visible = false;
+            }, 3000);
+        }
+
+        function testNoClosable() {
+            const modal = document.getElementById('basicModal');
+            modal.closable = false;
+            modal.maskClosable = false;
+            modal.keyboard = false;
+            modal.visible = true;
+            
+            // 3秒后恢复并关闭
+            setTimeout(() => {
+                modal.closable = true;
+                modal.maskClosable = true;
+                modal.keyboard = true;
+                modal.visible = false;
+            }, 3000);
+        }
+
+        // 尺寸测试
+        function testSmallModal() {
+            const modal = document.getElementById('sizeModal');
+            modal.size = 'small';
+            modal.visible = true;
+        }
+
+        function testMediumModal() {
+            const modal = document.getElementById('sizeModal');
+            modal.size = 'medium';
+            modal.visible = true;
+        }
+
+        function testLargeModal() {
+            const modal = document.getElementById('sizeModal');
+            modal.size = 'large';
+            modal.visible = true;
+        }
+
+        function testFullModal() {
+            const modal = document.getElementById('sizeModal');
+            modal.size = 'full';
+            modal.visible = true;
+        }
+
+        // 动画效果测试
+        function testAnimation(type) {
+            const modal = document.getElementById('animationModal');
+            modal.animation = type;
+            modal.visible = true;
+        }
+
+        // 高级功能测试
+        function testDraggable() {
+            const modal = document.getElementById('advancedModal');
+            modal.isDraggable = true;
+            modal.resizable = false;
+            modal.maximizable = false;
+            modal.visible = true;
+        }
+
+        function testResizable() {
+            const modal = document.getElementById('advancedModal');
+            modal.isDraggable = false;
+            modal.resizable = true;
+            modal.maximizable = false;
+            modal.visible = true;
+        }
+
+        function testMaximizable() {
+            const modal = document.getElementById('advancedModal');
+            modal.isDraggable = false;
+            modal.resizable = false;
+            modal.maximizable = true;
+            modal.visible = true;
+        }
+
+        function testAll() {
+            const modal = document.getElementById('advancedModal');
+            modal.isDraggable = true;
+            modal.resizable = true;
+            modal.maximizable = true;
+            modal.visible = true;
+        }
+
+        // 测试方法调用
+        async function testMethods() {
+            const modal = document.getElementById('basicModal');
+            
+            console.log('测试 show() 方法...');
+            await modal.show();
+            
+            setTimeout(async () => {
+                console.log('测试 hide() 方法...');
+                await modal.hide();
+                
+                setTimeout(async () => {
+                    console.log('测试 maximize() 方法...');
+                    modal.maximizable = true;
+                    await modal.show();
+                    await modal.maximize();
+                    
+                    setTimeout(async () => {
+                        console.log('测试 restore() 方法...');
+                        await modal.restore();
+                        
+                        setTimeout(async () => {
+                            console.log('测试 toggleMaximize() 方法...');
+                            await modal.toggleMaximize();
+                            
+                            setTimeout(async () => {
+                                console.log('测试 close() 方法...');
+                                await modal.close();
+                                console.log('所有方法测试完成！');
+                            }, 1000);
+                        }, 1000);
+                    }, 1000);
+                }, 1000);
+            }, 1000);
+        }
+
+        // 监听事件
+        document.querySelectorAll('ldesign-modal').forEach(modal => {
+            modal.addEventListener('ldesignVisibleChange', (e) => {
+                console.log(`Modal visible changed:`, e.detail);
+            });
+            
+            modal.addEventListener('ldesignClose', () => {
+                console.log('Modal closed');
+            });
+            
+            modal.addEventListener('ldesignOk', () => {
+                console.log('Modal OK clicked');
+                modal.visible = false;
+            });
+        });
+    </script>
+</body>
+</html>
