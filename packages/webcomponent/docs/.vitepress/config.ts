@@ -79,6 +79,7 @@ export default defineConfig({
             { text: 'Popup 弹出层', link: '/components/popup' },
             { text: 'Tooltip 工具提示', link: '/components/tooltip' },
             { text: 'Modal 模态框', link: '/components/modal' },
+            { text: 'Message 全局提示', link: '/components/message' },
           ]
         }
       ],

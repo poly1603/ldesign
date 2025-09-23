@@ -16,3 +16,4 @@ export { LdesignSwitch } from './switch/switch';
 export { LdesignPopup } from './popup/popup';
 export { LdesignTooltip } from './tooltip/tooltip';
 export { LdesignModal } from './modal/modal';
+export { LdesignMessage } from './message/message';

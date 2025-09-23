@@ -6,10 +6,12 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { ButtonShape, ButtonType, Size, Theme } from "./types";
+import { MessageType } from "./components/message/message";
 import { ModalAnimation, ModalSize } from "./components/modal/modal";
 import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 export { ButtonShape, ButtonType, Size, Theme } from "./types";
+export { MessageType } from "./components/message/message";
 export { ModalAnimation, ModalSize } from "./components/modal/modal";
 export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
@@ -318,6 +320,50 @@ export namespace Components {
           * @default ''
          */
         "value": string;
+    }
+    /**
+     * Message 全局提示
+     * 轻量级的全局反馈，常用于操作后的轻量提示
+     */
+    interface LdesignMessage {
+        /**
+          * 是否显示关闭按钮
+          * @default false
+         */
+        "closable": boolean;
+        /**
+          * 手动关闭（带高度收起动画，带动后续消息平滑上移）
+         */
+        "close": () => Promise<void>;
+        /**
+          * 自动关闭的时长（毫秒）；设为 0 则不自动关闭
+          * @default 3000
+         */
+        "duration": number;
+        /**
+          * 简单文本内容（也可使用 slot 自定义内容）
+         */
+        "message"?: string;
+        /**
+          * 悬浮时是否暂停计时
+          * @default true
+         */
+        "pauseOnHover": boolean;
+        /**
+          * 出现位置（当前仅支持 top，预留 bottom 扩展）
+          * @default 'top'
+         */
+        "placement": 'top' | 'bottom';
+        /**
+          * 是否显示图标
+          * @default true
+         */
+        "showIcon": boolean;
+        /**
+          * 提示类型
+          * @default 'info'
+         */
+        "type": MessageType;
     }
     /**
      * Modal 模态框组件
@@ -727,6 +773,10 @@ export interface LdesignInputCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignInputElement;
 }
+export interface LdesignMessageCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignMessageElement;
+}
 export interface LdesignModalCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignModalElement;
@@ -856,6 +906,27 @@ declare global {
         prototype: HTMLLdesignInputElement;
         new (): HTMLLdesignInputElement;
     };
+    interface HTMLLdesignMessageElementEventMap {
+        "ldesignClose": void;
+    }
+    /**
+     * Message 全局提示
+     * 轻量级的全局反馈，常用于操作后的轻量提示
+     */
+    interface HTMLLdesignMessageElement extends Components.LdesignMessage, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignMessageElementEventMap>(type: K, listener: (this: HTMLLdesignMessageElement, ev: LdesignMessageCustomEvent<HTMLLdesignMessageElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignMessageElementEventMap>(type: K, listener: (this: HTMLLdesignMessageElement, ev: LdesignMessageCustomEvent<HTMLLdesignMessageElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignMessageElement: {
+        prototype: HTMLLdesignMessageElement;
+        new (): HTMLLdesignMessageElement;
+    };
     interface HTMLLdesignModalElementEventMap {
         "ldesignVisibleChange": boolean;
         "ldesignClose": void;
@@ -980,6 +1051,7 @@ declare global {
         "ldesign-checkbox-group": HTMLLdesignCheckboxGroupElement;
         "ldesign-icon": HTMLLdesignIconElement;
         "ldesign-input": HTMLLdesignInputElement;
+        "ldesign-message": HTMLLdesignMessageElement;
         "ldesign-modal": HTMLLdesignModalElement;
         "ldesign-popup": HTMLLdesignPopupElement;
         "ldesign-radio": HTMLLdesignRadioElement;
@@ -1325,6 +1397,50 @@ declare namespace LocalJSX {
           * @default ''
          */
         "value"?: string;
+    }
+    /**
+     * Message 全局提示
+     * 轻量级的全局反馈，常用于操作后的轻量提示
+     */
+    interface LdesignMessage {
+        /**
+          * 是否显示关闭按钮
+          * @default false
+         */
+        "closable"?: boolean;
+        /**
+          * 自动关闭的时长（毫秒）；设为 0 则不自动关闭
+          * @default 3000
+         */
+        "duration"?: number;
+        /**
+          * 简单文本内容（也可使用 slot 自定义内容）
+         */
+        "message"?: string;
+        /**
+          * 关闭事件
+         */
+        "onLdesignClose"?: (event: LdesignMessageCustomEvent<void>) => void;
+        /**
+          * 悬浮时是否暂停计时
+          * @default true
+         */
+        "pauseOnHover"?: boolean;
+        /**
+          * 出现位置（当前仅支持 top，预留 bottom 扩展）
+          * @default 'top'
+         */
+        "placement"?: 'top' | 'bottom';
+        /**
+          * 是否显示图标
+          * @default true
+         */
+        "showIcon"?: boolean;
+        /**
+          * 提示类型
+          * @default 'info'
+         */
+        "type"?: MessageType;
     }
     /**
      * Modal 模态框组件
@@ -1728,6 +1844,7 @@ declare namespace LocalJSX {
         "ldesign-checkbox-group": LdesignCheckboxGroup;
         "ldesign-icon": LdesignIcon;
         "ldesign-input": LdesignInput;
+        "ldesign-message": LdesignMessage;
         "ldesign-modal": LdesignModal;
         "ldesign-popup": LdesignPopup;
         "ldesign-radio": LdesignRadio;
@@ -1770,6 +1887,11 @@ declare module "@stencil/core" {
              * 通过鼠标或键盘输入内容，是最基础的表单域的包装
              */
             "ldesign-input": LocalJSX.LdesignInput & JSXBase.HTMLAttributes<HTMLLdesignInputElement>;
+            /**
+             * Message 全局提示
+             * 轻量级的全局反馈，常用于操作后的轻量提示
+             */
+            "ldesign-message": LocalJSX.LdesignMessage & JSXBase.HTMLAttributes<HTMLLdesignMessageElement>;
             /**
              * Modal 模态框组件
              */
