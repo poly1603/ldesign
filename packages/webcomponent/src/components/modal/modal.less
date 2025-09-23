@@ -98,6 +98,13 @@
     justify-content: space-between;
     flex-shrink: 0;
 
+    &--shadow {
+      border-bottom-color: transparent;
+      box-shadow: 0 6px 12px -8px rgba(0, 0, 0, 0.25);
+      z-index: 1;
+      background: var(--ldesign-bg-color, #ffffff);
+    }
+
     .ldesign-modal--draggable & {
       cursor: move;
       user-select: none;
@@ -172,6 +179,13 @@
     justify-content: flex-end;
     gap: 12px;
     flex-shrink: 0;
+
+    &--shadow {
+      border-top-color: transparent;
+      box-shadow: 0 -6px 12px -8px rgba(0, 0, 0, 0.25);
+      z-index: 1;
+      background: var(--ldesign-bg-color, #ffffff);
+    }
   }
 
   // 居中显示

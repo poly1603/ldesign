@@ -126,9 +126,20 @@ export class LdesignModal {
   @State() isMaximized: boolean = false;
 
   /**
+   * 滚动阴影状态
+   */
+  @State() showHeaderShadow: boolean = false;
+  @State() showFooterShadow: boolean = false;
+
+  /**
    * 模态框元素引用
    */
   private modalElement?: HTMLElement;
+
+  /**
+   * 可滚动主体区域引用
+   */
+  private bodyElement?: HTMLElement;
 
   /**
    * 遮罩层元素引用
@@ -156,6 +167,12 @@ export class LdesignModal {
   private modalStartHeight: number = 0;
   private modalStartLeft: number = 0;
   private modalStartTop: number = 0;
+
+  /**
+   * 非可拖拽调整大小时，记录开始时的中心点（相对 wrap）
+   */
+  private modalCenterX: number = 0;
+  private modalCenterY: number = 0;
 
   /**
    * 记忆上次关闭时的位置/尺寸（相对 wrap）
@@ -206,6 +223,7 @@ export class LdesignModal {
   componentDidLoad() {
     this.modalElement = this.el.querySelector('.ldesign-modal__dialog') as HTMLElement;
     this.maskElement = this.el.querySelector('.ldesign-modal__mask') as HTMLElement;
+    this.bodyElement = this.el.querySelector('.ldesign-modal__body') as HTMLElement;
 
     if (this.visible) {
       this.setVisible(true);
@@ -237,6 +255,9 @@ export class LdesignModal {
       cancelAnimationFrame(this.resizeRaf);
       this.resizeRaf = undefined;
     }
+
+    // 取消滚动监听
+    this.unbindBodyScroll();
     
     // 恢复 body 滚动状态
     if (this.isVisible) {
@@ -404,7 +425,6 @@ export class LdesignModal {
     if (!this.resizable || !this.modalElement) return;
 
     this.isResizing = true;
-    this.hasUserMoved = true;
     this.resizeDirection = direction;
     this.resizeStartX = event.clientX;
     this.resizeStartY = event.clientY;
@@ -413,18 +433,26 @@ export class LdesignModal {
     this.modalElement.classList.add('resizing');
 
     const rect = this.modalElement.getBoundingClientRect();
+    const wrap = this.el.querySelector('.ldesign-modal__wrap') as HTMLElement;
+    const wrapRect = wrap.getBoundingClientRect();
+
     this.modalStartWidth = rect.width;
     this.modalStartHeight = rect.height;
-    this.modalStartLeft = rect.left;
-    this.modalStartTop = rect.top;
+    this.modalStartLeft = rect.left - wrapRect.left;
+    this.modalStartTop = rect.top - wrapRect.top;
 
+    // 非拖拽时记录中心点（相对 wrap）
+    if (!this.isDraggable) {
+      this.modalCenterX = this.modalStartLeft + this.modalStartWidth / 2;
+      this.modalCenterY = this.modalStartTop + this.modalStartHeight / 2;
+    }
 
-    // 确保模态框使用绝对定位
+    // 确保模态框使用绝对定位（相对 wrap）
     const computedStyle = window.getComputedStyle(this.modalElement);
     if (computedStyle.position !== 'absolute') {
       this.modalElement.style.position = 'absolute';
-      this.modalElement.style.left = `${rect.left}px`;
-      this.modalElement.style.top = `${rect.top}px`;
+      this.modalElement.style.left = `${this.modalStartLeft}px`;
+      this.modalElement.style.top = `${this.modalStartTop}px`;
       this.modalElement.style.transform = 'none';
       this.modalElement.style.margin = '0';
     }
@@ -448,74 +476,77 @@ export class LdesignModal {
     let newLeft = this.modalStartLeft;
     let newTop = this.modalStartTop;
 
-    // 根据调整方向计算新的尺寸
-    if (this.resizeDirection.includes('right')) {
-      newWidth = Math.max(200, this.modalStartWidth + deltaX);
-    } else if (this.resizeDirection.includes('left')) {
-      newWidth = Math.max(200, this.modalStartWidth - deltaX);
-    }
-    
-    if (this.resizeDirection.includes('bottom')) {
-      newHeight = Math.max(150, this.modalStartHeight + deltaY);
-    } else if (this.resizeDirection.includes('top')) {
-      newHeight = Math.max(150, this.modalStartHeight - deltaY);
-    }
-
     const wrap = this.el.querySelector('.ldesign-modal__wrap') as HTMLElement;
     const maxWidth = wrap.clientWidth;
     const maxHeight = wrap.clientHeight;
 
-    // 限制最大尺寸不超过容器
-    newWidth = Math.min(newWidth, maxWidth);
-    newHeight = Math.min(newHeight, maxHeight);
-
-    // 如果支持拖拽，按原来的逻辑调整位置
     if (this.isDraggable) {
-      if (this.resizeDirection.includes('left')) {
+      // 单边调整，位置跟随边缘，中心不固定
+      if (this.resizeDirection.includes('right')) {
+        newWidth = Math.max(200, this.modalStartWidth + deltaX);
+      } else if (this.resizeDirection.includes('left')) {
+        newWidth = Math.max(200, this.modalStartWidth - deltaX);
         newLeft = this.modalStartLeft + (this.modalStartWidth - newWidth);
       }
-      if (this.resizeDirection.includes('top')) {
+
+      if (this.resizeDirection.includes('bottom')) {
+        newHeight = Math.max(150, this.modalStartHeight + deltaY);
+      } else if (this.resizeDirection.includes('top')) {
+        newHeight = Math.max(150, this.modalStartHeight - deltaY);
         newTop = this.modalStartTop + (this.modalStartHeight - newHeight);
       }
 
-      // 边界约束，确保不出容器
+      // 最大尺寸不超过容器
+      newWidth = Math.min(newWidth, maxWidth);
+      newHeight = Math.min(newHeight, maxHeight);
+
+      // 边界约束
       const maxLeft = Math.max(0, maxWidth - newWidth);
       const maxTop = Math.max(0, maxHeight - newHeight);
       newLeft = Math.min(Math.max(0, newLeft), maxLeft);
       newTop = Math.min(Math.max(0, newTop), maxTop);
 
-      // 应用新的尺寸和位置
-      this.modalElement.style.width = `${newWidth}px`;
-      this.modalElement.style.height = `${newHeight}px`;
-      this.modalElement.style.left = `${newLeft}px`;
-      this.modalElement.style.top = `${newTop}px`;
-      this.modalElement.style.transform = 'none';
-
-      // 记忆
-      this.lastLeft = newLeft;
-      this.lastTop = newTop;
-      this.lastWidth = newWidth;
-      this.lastHeight = newHeight;
     } else {
-      // 如果不支持拖拽，保持居中
-      newLeft = Math.max(0, wrap.scrollLeft + (maxWidth - newWidth) / 2);
-      newTop = Math.max(0, wrap.scrollTop + (maxHeight - newHeight) / 2);
+      // 非可拖拽：以开始时的中心为锚点，双向等距伸缩
+      let deltaW = 0;
+      let deltaH = 0;
+      if (this.resizeDirection.includes('right')) deltaW = 2 * deltaX;
+      else if (this.resizeDirection.includes('left')) deltaW = -2 * deltaX;
+      if (this.resizeDirection.includes('bottom')) deltaH = 2 * deltaY;
+      else if (this.resizeDirection.includes('top')) deltaH = -2 * deltaY;
 
-      // 应用新的尺寸和位置
-      this.modalElement.style.width = `${newWidth}px`;
-      this.modalElement.style.height = `${newHeight}px`;
-      this.modalElement.style.left = `${newLeft}px`;
-      this.modalElement.style.top = `${newTop}px`;
-      this.modalElement.style.transform = 'none';
-      this.modalElement.style.position = 'absolute';
-      this.modalElement.style.margin = '0';
+      newWidth = Math.max(200, this.modalStartWidth + deltaW);
+      newHeight = Math.max(150, this.modalStartHeight + deltaH);
 
-      // 记忆
-      this.lastLeft = newLeft;
-      this.lastTop = newTop;
-      this.lastWidth = newWidth;
-      this.lastHeight = newHeight;
+      // 限制不超过容器
+      newWidth = Math.min(newWidth, maxWidth);
+      newHeight = Math.min(newHeight, maxHeight);
+
+      // 以固定中心点计算位置
+      newLeft = this.modalCenterX - newWidth / 2;
+      newTop = this.modalCenterY - newHeight / 2;
+
+      // 边界约束（尽量保持中心，如有冲突优先不越界）
+      const maxLeft = Math.max(0, maxWidth - newWidth);
+      const maxTop = Math.max(0, maxHeight - newHeight);
+      newLeft = Math.min(Math.max(0, newLeft), maxLeft);
+      newTop = Math.min(Math.max(0, newTop), maxTop);
     }
+
+    // 应用新的尺寸和位置
+    this.modalElement.style.width = `${newWidth}px`;
+    this.modalElement.style.height = `${newHeight}px`;
+    this.modalElement.style.left = `${newLeft}px`;
+    this.modalElement.style.top = `${newTop}px`;
+    this.modalElement.style.transform = 'none';
+    this.modalElement.style.position = 'absolute';
+    this.modalElement.style.margin = '0';
+
+    // 记忆
+    this.lastLeft = newLeft;
+    this.lastTop = newTop;
+    this.lastWidth = newWidth;
+    this.lastHeight = newHeight;
   };
 
   /**
@@ -588,15 +619,29 @@ export class LdesignModal {
     const computedStyle = window.getComputedStyle(this.modalElement);
 
     // 保存原始状态到dataset（相对 wrap 的像素值与尺寸）
-    this.modalElement.dataset.originalLeft = (rect.left - wrapRect.left).toString();
-    this.modalElement.dataset.originalTop = (rect.top - wrapRect.top).toString();
-    this.modalElement.dataset.originalWidth = this.modalElement.offsetWidth.toString();
-    this.modalElement.dataset.originalHeight = this.modalElement.offsetHeight.toString();
+    const origLeft = rect.left - wrapRect.left;
+    const origTop = rect.top - wrapRect.top;
+    const origWidth = this.modalElement.offsetWidth;
+    const origHeight = this.modalElement.offsetHeight;
+
+    this.modalElement.dataset.originalLeft = origLeft.toString();
+    this.modalElement.dataset.originalTop = origTop.toString();
+    this.modalElement.dataset.originalWidth = origWidth.toString();
+    this.modalElement.dataset.originalHeight = origHeight.toString();
     this.modalElement.dataset.originalPosition = computedStyle.position;
     this.modalElement.dataset.originalTransform = computedStyle.transform;
     this.modalElement.dataset.originalMargin = computedStyle.margin;
 
-    // 设置最大化状态
+    // 确保起始状态为绝对像素值（便于过渡）
+    this.modalElement.style.position = 'absolute';
+    this.modalElement.style.left = `${origLeft}px`;
+    this.modalElement.style.top = `${origTop}px`;
+    this.modalElement.style.width = `${origWidth}px`;
+    this.modalElement.style.height = `${origHeight}px`;
+    this.modalElement.style.transform = 'none';
+    this.modalElement.style.margin = '0';
+
+    // 设置最大化状态（触发过渡）
     this.isMaximized = true;
   }
 
@@ -618,27 +663,14 @@ export class LdesignModal {
       const originalTop = this.modalElement.dataset.originalTop;
       const originalWidth = this.modalElement.dataset.originalWidth;
       const originalHeight = this.modalElement.dataset.originalHeight;
-      const originalPosition = this.modalElement.dataset.originalPosition;
-      const originalTransform = this.modalElement.dataset.originalTransform;
-      const originalMargin = this.modalElement.dataset.originalMargin;
 
       if (originalLeft && originalTop && originalWidth && originalHeight) {
-        // 如果之前是绝对定位（拖拽或调整大小过），恢复绝对定位
-        if (originalPosition === 'absolute' || this.isDraggable || this.resizable) {
-          this.modalElement.style.position = 'absolute';
-          this.modalElement.style.left = `${originalLeft}px`;
-          this.modalElement.style.top = `${originalTop}px`;
-          this.modalElement.style.transform = 'none';
-          this.modalElement.style.margin = '0';
-        } else {
-          // 否则恢复居中定位
-          this.modalElement.style.position = originalPosition || 'relative';
-          this.modalElement.style.left = '';
-          this.modalElement.style.top = '';
-          this.modalElement.style.transform = originalTransform || '';
-          this.modalElement.style.margin = originalMargin || '';
-        }
-
+        // 恢复为绝对定位 + 原像素尺寸/位置，保证过渡连贯
+        this.modalElement.style.position = 'absolute';
+        this.modalElement.style.left = `${originalLeft}px`;
+        this.modalElement.style.top = `${originalTop}px`;
+        this.modalElement.style.transform = 'none';
+        this.modalElement.style.margin = '0';
         this.modalElement.style.width = `${originalWidth}px`;
         this.modalElement.style.height = `${originalHeight}px`;
       }
@@ -673,7 +705,7 @@ export class LdesignModal {
       document.body.style.overflow = 'hidden';
 
       // 定位逻辑：优先恢复上次位置，否则按需居中
-      if ((this.isDraggable || this.resizable || this.centered) && this.modalElement) {
+      if ((this.isDraggable || this.resizable || this.centered || this.maximizable) && this.modalElement) {
         this.modalElement.style.visibility = 'hidden';
         requestAnimationFrame(() => {
           if (this.isVisible) {
@@ -682,6 +714,9 @@ export class LdesignModal {
           }
         });
       }
+
+      // 绑定滚动阴影
+      this.bindBodyScrollSoon();
 
       // 动画结束后重置状态
       setTimeout(() => {
@@ -914,6 +949,44 @@ export class LdesignModal {
   @Watch('centered') onCenteredChange() { this.repositionIfNeeded(); }
 
   /**
+   * 绑定 body 滚动事件，稍后执行以等待 DOM 稳定
+   */
+  private bindBodyScrollSoon() {
+    requestAnimationFrame(() => {
+      this.bodyElement = this.el.querySelector('.ldesign-modal__body') as HTMLElement;
+      this.unbindBodyScroll();
+      if (this.bodyElement) {
+        this.bodyElement.addEventListener('scroll', this.handleBodyScroll, { passive: true });
+        this.updateScrollShadows();
+      }
+    });
+  }
+
+  private unbindBodyScroll() {
+    if (this.bodyElement) {
+      this.bodyElement.removeEventListener('scroll', this.handleBodyScroll);
+    }
+  }
+
+  private handleBodyScroll = () => {
+    this.updateScrollShadows();
+  };
+
+  private updateScrollShadows() {
+    const body = this.el.querySelector('.ldesign-modal__body') as HTMLElement | null;
+    if (!body) {
+      this.showHeaderShadow = false;
+      this.showFooterShadow = false;
+      return;
+    }
+    const st = body.scrollTop;
+    const sh = body.scrollHeight;
+    const ch = body.clientHeight;
+    this.showHeaderShadow = st > 0;
+    this.showFooterShadow = st + ch < sh - 1;
+  }
+
+  /**
    * 打开时优先恢复上次位置，否则按需居中
    */
   private applyLastPositionOrCenter() {
@@ -976,7 +1049,7 @@ export class LdesignModal {
             <div class={this.getContentClass()}>
               {(this.modalTitle || this.closable) && (
                 <div
-                  class={`ldesign-modal__header ${this.isDraggable ? 'ldesign-modal__header--draggable' : ''}`}
+                  class={`ldesign-modal__header ${this.isDraggable ? 'ldesign-modal__header--draggable' : ''} ${this.showHeaderShadow ? 'ldesign-modal__header--shadow' : ''}`}
                   onMouseDown={this.isDraggable ? this.handleDragStart : null}
                   style={this.isDraggable ? { cursor: 'move' } : {}}
                 >
@@ -1016,7 +1089,7 @@ export class LdesignModal {
                 <slot />
               </div>
 
-              <div class="ldesign-modal__footer">
+              <div class={`ldesign-modal__footer ${this.showFooterShadow ? 'ldesign-modal__footer--shadow' : ''}`}>
                 <slot name="footer">
                   <ldesign-button onClick={this.handleCloseClick}>
                     取消
