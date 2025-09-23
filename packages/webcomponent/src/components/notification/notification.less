@@ -56,7 +56,8 @@
   margin-top: 12px;
 
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease, height 0.2s ease, margin 0.2s ease, padding 0.2s ease, border-width 0.2s ease;
+  will-change: transform, opacity, height, margin, padding, border-width;
+  transition: opacity 0.25s ease, transform 0.25s ease, height 0.25s ease, margin 0.25s ease, padding 0.25s ease, border-width 0.25s ease;
 }
 
 /* 顶部容器内第一个元素不需要上边距 */
@@ -72,14 +73,14 @@
 }
 
 /* 入场方向与可见态 */
-.ldesign-notification--from-right { transform: translateX(12px); }
-.ldesign-notification--from-left { transform: translateX(-12px); }
+.ldesign-notification--from-right { transform: translateX(120%); }
+.ldesign-notification--from-left { transform: translateX(-120%); }
 .ldesign-notification--visible { opacity: 1; transform: translateX(0); }
 
-/* 离场：透明、侧向位移 + 高度、内边距与外边距收起 */
+/* 离场：透明、侧向位移到屏幕外 + 高度、内边距与外边距收起 */
 .ldesign-notification--leaving.ldesign-notification--from-right {
   opacity: 0;
-  transform: translateX(12px);
+  transform: translateX(120%);
   height: 0 !important;
   margin-top: 0 !important;
   padding-top: 0 !important;
@@ -90,7 +91,7 @@
 
 .ldesign-notification--leaving.ldesign-notification--from-left {
   opacity: 0;
-  transform: translateX(-12px);
+  transform: translateX(-120%);
   height: 0 !important;
   margin-top: 0 !important;
   padding-top: 0 !important;
