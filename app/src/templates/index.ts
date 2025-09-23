@@ -1,7 +1,7 @@
 import { createTemplateEnginePlugin } from "@ldesign/template";
+
 // 导入template包的样式文件
-// 在开发环境中，这些路径会通过别名解析到源码目录
-// 在生产环境中，会使用构建后的包中的样式文件
+// 通过别名配置，在开发和生产环境中都指向源码目录
 import "@ldesign/template/es/index.css";
 
 

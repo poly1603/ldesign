@@ -133,42 +133,49 @@
 </p>
 ```
 
-## 可用图标
+## 全量图标预览（Lucide）
 
-当前版本包含以下图标：
+> 说明：下表运行时从 lucide 动态获取所有图标名称，并使用 `<ldesign-icon>` 逐一渲染，支持搜索过滤。
 
 <div class="demo-container">
-  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px;">
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-      <ldesign-icon name="heart" size="large"></ldesign-icon>
-      <code style="font-size: 12px;">heart</code>
-    </div>
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-      <ldesign-icon name="star" size="large"></ldesign-icon>
-      <code style="font-size: 12px;">star</code>
-    </div>
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-      <ldesign-icon name="download" size="large"></ldesign-icon>
-      <code style="font-size: 12px;">download</code>
-    </div>
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-      <ldesign-icon name="search" size="large"></ldesign-icon>
-      <code style="font-size: 12px;">search</code>
-    </div>
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-      <ldesign-icon name="plus" size="large"></ldesign-icon>
-      <code style="font-size: 12px;">plus</code>
-    </div>
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-      <ldesign-icon name="loader-2" size="large"></ldesign-icon>
-      <code style="font-size: 12px;">loader-2</code>
-    </div>
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-      <ldesign-icon name="refresh-cw" size="large"></ldesign-icon>
-      <code style="font-size: 12px;">refresh-cw</code>
-    </div>
+  <div style="margin-bottom: 12px; display: flex; gap: 8px; align-items: center;">
+    <input id="icon-search" placeholder="搜索图标名称" style="padding:6px 10px; border:1px solid #e5e7eb; border-radius:6px; width: 260px;" />
+    <span style="color:#666; font-size:12px">数据来源：lucide</span>
   </div>
+  <div id="icon-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px;"></div>
 </div>
+
+<script type="module">
+  import * as lucide from 'lucide';
+  const grid = document.getElementById('icon-grid');
+  const input = document.getElementById('icon-search');
+  const names = Object.keys(lucide.icons).sort();
+
+  function render(list){
+    grid.innerHTML='';
+    const frag = document.createDocumentFragment();
+    list.forEach(n=>{
+      const item = document.createElement('div');
+      item.style.cssText='display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px;border:1px solid #f0f0f0;border-radius:8px;';
+      const ic = document.createElement('ldesign-icon');
+      ic.setAttribute('name', n);
+      ic.setAttribute('size', 'large');
+      const lab = document.createElement('code');
+      lab.style.fontSize='12px'; lab.textContent = n;
+      item.appendChild(ic);
+      item.appendChild(lab);
+      frag.appendChild(item);
+    });
+    grid.appendChild(frag);
+  }
+
+  render(names);
+  input.addEventListener('input', ()=>{
+    const q = input.value.trim().toLowerCase();
+    const list = q ? names.filter(n=>n.includes(q)) : names;
+    render(list);
+  });
+</script>
 
 ## API
 

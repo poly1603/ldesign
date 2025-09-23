@@ -27,6 +27,10 @@ export default defineConfig({
       { find: '@assets', replacement: './src/assets', stages: ['dev', 'build', 'preview'] },
       { find: '@styles', replacement: './src/styles', stages: ['dev', 'build', 'preview'] },
 
+      // 开发和生产环境别名：指向 packages 源码
+      { find: '@ldesign/template/es/index.css', replacement: resolve(__dirname, '../../packages/template/src/styles/index.css'), stages: ['dev', 'build'] },
+      { find: '@ldesign/template', replacement: resolve(__dirname, '../../packages/template/src'), stages: ['dev', 'build'] },
+
       // @ldesign 包的开发时别名 - 指向源码目录（仅在 dev 阶段）
       { find: '@ldesign/api', replacement: resolve(__dirname, '../../packages/api/src'), stages: ['dev'] },
       { find: '@ldesign/builder', replacement: resolve(__dirname, '../../packages/builder/src'), stages: ['dev'] },
@@ -46,7 +50,7 @@ export default defineConfig({
       { find: '@ldesign/form', replacement: resolve(__dirname, '../../packages/form/src'), stages: ['dev'] },
       { find: '@ldesign/git', replacement: resolve(__dirname, '../../packages/git/src'), stages: ['dev'] },
       { find: '@ldesign/http', replacement: resolve(__dirname, '../../packages/http/src'), stages: ['dev'] },
-      { find: '@ldesign/i18n', replacement: resolve(__dirname, '../../packages/i18n/src'), stages: ['dev'] },
+      { find: '@ldesign/i18n', replacement: resolve(__dirname, '../../packages/i18n/src'), stages: ['dev', 'build'] },
       { find: '@ldesign/icons', replacement: resolve(__dirname, '../../packages/icons/packages'), stages: ['dev'] },
       { find: '@ldesign/kit', replacement: resolve(__dirname, '../../packages/kit/src'), stages: ['dev'] },
       { find: '@ldesign/launcher', replacement: resolve(__dirname, '../../packages/launcher/src'), stages: ['dev'] },
