@@ -88,7 +88,6 @@ export class LdesignPopup {
 
   /**
    * 与触发元素的距离（单位 px）。
-   * 当开启箭头时，该距离表示“触发元素到箭头尖端”的间隙。
    */
   @Prop() offsetDistance: number | string = 8;
 
@@ -537,32 +536,6 @@ export class LdesignPopup {
     return this.isNestedInPopup() ? 'absolute' : 'fixed';
   }
 
-  /**
-   * 计算有效的间距：
-   * - 使用者设置的 offsetDistance 表示"触发元素到箭头尖端"的距离；
-   * - 当存在箭头时，箭头会向外突出 4px（-4px 静态边偏移），需要额外加上这 4px，
-   *   以保证最终'箭头尖端'到触发元素的间隙等于 offsetDistance。
-   */
-  private getEffectiveOffsetDistance(): number {
-    const base = this.toNumber(this.offsetDistance, 0);
-    const arrowProtrude = this.arrow ? 4 : 0;
-    // 为了让"箭头尖端到触发元素"的间隙等于 offset-distance，这里在 offset 中补上箭头外凸量
-    return Math.max(0, base + arrowProtrude);
-  }
-
-  /**
-   * 获取特定方向的偏移补偿
-   * 由于 drop-shadow 在垂直方向有 6px 的偏移，视觉上会"吃掉"部分间距
-   * 需要为上下方向添加额外补偿，确保视觉间距一致
-   */
-  private getDirectionalCompensation(placement: string): number {
-    const basePlacement = placement.split('-')[0];
-    // 上下方向需要补偿阴影的垂直偏移
-    if (basePlacement === 'top' || basePlacement === 'bottom') {
-      return 6; // 补偿 drop-shadow 的垂直偏移
-    }
-    return 0;
-  }
 
 
   /**
@@ -587,11 +560,14 @@ export class LdesignPopup {
 
     const strategy = this.getStrategy();
     const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
+    
+    // 使用 floating-ui 的 offset 中间件来处理间距
+    const offsetValue = this.toNumber(this.offsetDistance, 8);
+    
     const middleware = [
-      // 不使用 offset 中间件，改为手动沿主轴加距离，避免任何实现差异
+      offset(offsetValue), // 使用 floating-ui 的 offset 中间件
       flip({ boundary } as any),
-      // 主轴不做位移，严格保持我们手动添加的间距；仅在交叉轴做防溢出
-      shift({ padding: 8, boundary, mainAxis: false, crossAxis: true } as any),
+      shift({ padding: 8, boundary } as any), // 允许主轴和交叉轴都进行调整
     ];
 
     if (this.arrow && this.arrowElement) {
@@ -599,7 +575,7 @@ export class LdesignPopup {
     }
 
     const currentPlacement = this.getCurrentPlacement();
-    let { x, y, placement: resolvedPlacement, middlewareData } = await computePosition(
+    const { x, y, placement: resolvedPlacement, middlewareData } = await computePosition(
       this.triggerElement,
       this.popupElement,
       {
@@ -609,17 +585,7 @@ export class LdesignPopup {
       }
     );
 
-    // 手动在主轴方向添加 offset 距离，保证上下左右行为一致
-    const eff = this.getEffectiveOffsetDistance();
-    const compensation = this.getDirectionalCompensation(resolvedPlacement);
-    const totalOffset = eff + compensation;
-    const basePlacement = resolvedPlacement.split('-')[0] as 'top' | 'right' | 'bottom' | 'left';
-    if (basePlacement === 'top') y -= totalOffset;
-    else if (basePlacement === 'bottom') y += totalOffset;
-    else if (basePlacement === 'left') x -= eff;
-    else if (basePlacement === 'right') x += eff;
-
-    // 先按初值设置一次位置
+    // 直接使用 floating-ui 计算的位置，不需要手动调整
     Object.assign(this.popupElement.style, {
       left: `${x}px`,
       top: `${y}px`,
@@ -629,33 +595,25 @@ export class LdesignPopup {
     // 标记当前方向，便于样式控制
     this.popupElement.setAttribute('data-placement', resolvedPlacement);
 
-    // 设置箭头位置
-    if (this.arrow && this.arrowElement) {
-      // 先重置四个方向，避免遗留样式影响
+    // 设置箭头位置 - 使用 floating-ui 提供的箭头位置
+    if (this.arrow && this.arrowElement && middlewareData.arrow) {
+      const { x: arrowX, y: arrowY } = middlewareData.arrow;
+      const staticSide = {
+        top: 'bottom',
+        right: 'left',
+        bottom: 'top',
+        left: 'right',
+      }[resolvedPlacement.split('-')[0]] as 'top' | 'right' | 'bottom' | 'left';
+
       Object.assign(this.arrowElement.style, {
-        left: '',
-        top: '',
+        left: arrowX != null ? `${arrowX}px` : '',
+        top: arrowY != null ? `${arrowY}px` : '',
         right: '',
         bottom: '',
+        [staticSide]: '-4px', // 箭头突出 4px
       });
 
-      if (middlewareData.arrow) {
-        const { x: arrowX, y: arrowY } = middlewareData.arrow;
-        const staticSide = {
-          top: 'bottom',
-          right: 'left',
-          bottom: 'top',
-          left: 'right',
-        }[resolvedPlacement.split('-')[0]] as 'top' | 'right' | 'bottom' | 'left';
-
-        Object.assign(this.arrowElement.style, {
-          left: arrowX != null ? `${arrowX}px` : '',
-          top: arrowY != null ? `${arrowY}px` : '',
-          [staticSide]: '-4px',
-        });
-
-        this.arrowElement.setAttribute('data-placement', resolvedPlacement);
-      }
+      this.arrowElement.setAttribute('data-placement', resolvedPlacement);
     }
 
 
@@ -694,9 +652,14 @@ export class LdesignPopup {
 
     const strategy = this.getStrategy();
     const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
+    
+    // 使用 floating-ui 的 offset 中间件来处理间距
+    const offsetValue = this.toNumber(this.offsetDistance, 8);
+    
     const middleware = [
+      offset(offsetValue), // 使用 floating-ui 的 offset 中间件
       flip({ boundary } as any),
-      shift({ padding: 8, boundary, mainAxis: false, crossAxis: true } as any),
+      shift({ padding: 8, boundary } as any), // 允许主轴和交叉轴都进行调整
     ];
 
     if (this.arrow && this.arrowElement) {
@@ -704,7 +667,7 @@ export class LdesignPopup {
     }
 
     const currentPlacement = this.getCurrentPlacement();
-    let { x, y, placement: resolvedPlacement, middlewareData } = await computePosition(
+    const { x, y, placement: resolvedPlacement, middlewareData } = await computePosition(
       this.triggerElement,
       this.popupElement,
       {
@@ -714,17 +677,7 @@ export class LdesignPopup {
       }
     );
 
-    // 手动添加主轴距离
-    const eff = this.getEffectiveOffsetDistance();
-    const compensation = this.getDirectionalCompensation(resolvedPlacement);
-    const totalOffset = eff + compensation;
-    const basePlacement = resolvedPlacement.split('-')[0] as 'top' | 'right' | 'bottom' | 'left';
-    if (basePlacement === 'top') y -= totalOffset;
-    else if (basePlacement === 'bottom') y += totalOffset;
-    else if (basePlacement === 'left') x -= eff;
-    else if (basePlacement === 'right') x += eff;
-
-    // 先按初值设置一次位置
+    // 直接使用 floating-ui 计算的位置，不需要手动调整
     Object.assign(this.popupElement.style, {
       left: `${x}px`,
       top: `${y}px`,
@@ -732,25 +685,25 @@ export class LdesignPopup {
 
     this.popupElement.setAttribute('data-placement', resolvedPlacement);
 
-    if (this.arrow && this.arrowElement) {
-      Object.assign(this.arrowElement.style, { left: '', top: '', right: '', bottom: '' });
-      if (middlewareData.arrow) {
-        const { x: arrowX, y: arrowY } = middlewareData.arrow;
-        const staticSide = {
-          top: 'bottom',
-          right: 'left',
-          bottom: 'top',
-          left: 'right',
-        }[resolvedPlacement.split('-')[0]] as 'top' | 'right' | 'bottom' | 'left';
+    // 设置箭头位置 - 使用 floating-ui 提供的箭头位置
+    if (this.arrow && this.arrowElement && middlewareData.arrow) {
+      const { x: arrowX, y: arrowY } = middlewareData.arrow;
+      const staticSide = {
+        top: 'bottom',
+        right: 'left',
+        bottom: 'top',
+        left: 'right',
+      }[resolvedPlacement.split('-')[0]] as 'top' | 'right' | 'bottom' | 'left';
 
-        Object.assign(this.arrowElement.style, {
-          left: arrowX != null ? `${arrowX}px` : '',
-          top: arrowY != null ? `${arrowY}px` : '',
-          [staticSide]: '-4px',
-        });
+      Object.assign(this.arrowElement.style, {
+        left: arrowX != null ? `${arrowX}px` : '',
+        top: arrowY != null ? `${arrowY}px` : '',
+        right: '',
+        bottom: '',
+        [staticSide]: '-4px', // 箭头突出 4px
+      });
 
-        this.arrowElement.setAttribute('data-placement', resolvedPlacement);
-      }
+      this.arrowElement.setAttribute('data-placement', resolvedPlacement);
     }
 
 

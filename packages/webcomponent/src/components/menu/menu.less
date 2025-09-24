@@ -10,6 +10,7 @@
   --menu-color-active: var(--ldesign-brand-color, #5e2aa7);
   --menu-collapse-duration: 200ms;
   --menu-collapse-easing: ease;
+  --menu-fly-duration: 140ms;
 
   width: 100%;
   display: block;
@@ -185,6 +186,24 @@
     border: 1px solid var(--ldesign-border-color, #e5e7eb);
     border-radius: 6px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, .1);
+
+    // 动画：默认隐藏（透明 + 轻微右移 + 不响应事件）
+    opacity: 0;
+    transform: translateX(6px);
+    transform-origin: left top;
+    visibility: hidden;
+    pointer-events: none;
+    will-change: transform, opacity;
+    transition: transform var(--menu-fly-duration) ease, opacity var(--menu-fly-duration) ease, visibility 0s linear var(--menu-fly-duration);
+  }
+
+  // 展开时显现
+  &__node--fly-open > .ldesign-menu__fly-children {
+    opacity: 1;
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+    transition: transform var(--menu-fly-duration) ease, opacity var(--menu-fly-duration) ease, visibility 0s;
   }
 
   &__fly-children .ldesign-menu__item {

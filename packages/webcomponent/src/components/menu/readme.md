@@ -73,10 +73,75 @@
 <ldesign-menu id="menu-fly" mode="vertical" vertical-expand="flyout" submenu-trigger="hover"></ldesign-menu>
 <script>
   const items = [
-    { key: 'catalog', label: '菜单1', children: [
-      { key: 'g1', label: '子菜单1-1', children: new Array(10).fill(0).map((_,i)=>({key:'g1-'+i,label:'子菜单1-1-'+(i+1)})) },
-      { key: 'g2', label: '子菜单1-2' }
-    ]},
+    {
+      key: 'catalog',
+      label: '菜单1',
+      children: [
+        {
+          key: 'm1-1',
+          label: '子菜单1-1',
+          children: [
+            {
+              key: 'm1-1-a',
+              label: '子菜单1-1-A',
+              children: [
+                { key: 'm1-1-a-1', label: '子菜单1-1-A-1' },
+                { key: 'm1-1-a-2', label: '子菜单1-1-A-2' },
+                { key: 'm1-1-a-3', label: '子菜单1-1-A-3' },
+                { key: 'm1-1-a-4', label: '子菜单1-1-A-4' },
+                { key: 'm1-1-a-5', label: '子菜单1-1-A-5' }
+              ]
+            },
+            {
+              key: 'm1-1-b',
+              label: '子菜单1-1-B',
+              children: new Array(8).fill(0).map((_, i) => ({ key: `m1-1-b-${i+1}`, label: `子菜单1-1-B-${i+1}` }))
+            },
+            { key: 'm1-1-c', label: '子菜单1-1-C' },
+            { key: 'm1-1-d', label: '子菜单1-1-D' }
+          ]
+        },
+        {
+          key: 'm1-2',
+          label: '子菜单1-2',
+          children: new Array(12).fill(0).map((_, i) => ({ key: `m1-2-${i+1}`, label: `子菜单1-2-${i+1}` }))
+        },
+        {
+          key: 'm1-3',
+          label: '子菜单1-3',
+          children: [
+            { key: 'm1-3-1', label: '子菜单1-3-1' },
+            { key: 'm1-3-2', label: '子菜单1-3-2' },
+            { key: 'm1-3-3', label: '子菜单1-3-3', children: [
+              { key: 'm1-3-3-1', label: '子菜单1-3-3-1' },
+              { key: 'm1-3-3-2', label: '子菜单1-3-3-2' },
+              { key: 'm1-3-3-3', label: '子菜单1-3-3-3' }
+            ] }
+          ]
+        }
+      ]
+    },
+    {
+      key: 'solutions',
+      label: '菜单2',
+      children: [
+        {
+          key: 'm2-1',
+          label: '子菜单2-1',
+          children: [
+            { key: 'm2-1-1', label: '子菜单2-1-1' },
+            { key: 'm2-1-2', label: '子菜单2-1-2', children: [
+              { key: 'm2-1-2-1', label: '子菜单2-1-2-1' },
+              { key: 'm2-1-2-2', label: '子菜单2-1-2-2' },
+              { key: 'm2-1-2-3', label: '子菜单2-1-2-3' },
+              { key: 'm2-1-2-4', label: '子菜单2-1-2-4' }
+            ]},
+            { key: 'm2-1-3', label: '子菜单2-1-3' }
+          ]
+        },
+        { key: 'm2-2', label: '子菜单2-2', children: new Array(10).fill(0).map((_, i) => ({ key: `m2-2-${i+1}`, label: `子菜单2-2-${i+1}` })) }
+      ]
+    },
     { key: 'profile', label: '个人中心', icon: 'user' },
     { key: 'video', label: '视频区', icon: 'play' }
   ];

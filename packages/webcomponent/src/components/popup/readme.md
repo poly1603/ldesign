@@ -9,8 +9,7 @@ Popup 弹出层组件（不覆盖触发元素）
 ## 不遮挡触发元素与距离设置
 
 - 本组件基于 `@floating-ui/dom` 进行定位，使用 `offset-distance` 作为触发元素与弹层之间的间距。
-- 当 `arrow=true` 时，箭头会向外突出 4px；组件已自动将这 4px 计入计算，使得“箭头尖端到触发元素”的实际间距严格等于 `offset-distance`。
-- 当 `arrow=false` 时，`offset-distance` 即“弹层边缘到触发元素”的距离。
+- `offset-distance` 表示触发元素与弹层之间的距离，floating-ui 会自动处理箭头位置和间距。
 
 示例：
 
@@ -62,7 +61,7 @@ Popup 弹出层组件
 | `interactive`    | `interactive`      | 是否允许在弹出层上进行交互（仅 hover 触发时有意义）                                                                                                   | `boolean`                                                                                                                                                            | `true`      |
 | `lockOnScroll`   | `lock-on-scroll`   | 滚动时是否锁定位置（不随滚动而重新定位）。 - 适用于 click 等场景：打开后滚动页面，弹层保持在打开时的视口位置。 - 仅影响滚动行为，仍会在窗口尺寸变化/元素尺寸变化时更新位置。                                   | `boolean`                                                                                                                                                            | `false`     |
 | `maxWidth`       | `max-width`        | 最大宽度                                                                                                                            | `number \| string`                                                                                                                                                   | `undefined` |
-| `offsetDistance` | `offset-distance`  | 与触发元素的距离（单位 px）。 当开启箭头时，该距离表示“触发元素到箭头尖端”的间隙。                                                                                    | `number \| string`                                                                                                                                                   | `8`         |
+| `offsetDistance` | `offset-distance`  | 与触发元素的距离（单位 px）。                                                                                    | `number \| string`                                                                                                                                                   | `8`         |
 | `placement`      | `placement`        | 弹出层位置                                                                                                                           | `"bottom" \| "bottom-end" \| "bottom-start" \| "left" \| "left-end" \| "left-start" \| "right" \| "right-end" \| "right-start" \| "top" \| "top-end" \| "top-start"` | `'bottom'`  |
 | `popupRole`      | `popup-role`       | 内容区域的语义角色                                                                                                                       | `string`                                                                                                                                                             | `'dialog'`  |
 | `popupTitle`     | `popup-title`      | 弹出层标题                                                                                                                           | `string`                                                                                                                                                             | `undefined` |

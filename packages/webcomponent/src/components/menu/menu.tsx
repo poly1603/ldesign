@@ -337,9 +337,8 @@ export class LdesignMenu {
     const li = menuEl.parentElement as HTMLElement | null;
     if (!li) return;
 
-    // 使其可见以便测量
+    // 元素保持常驻（通过透明度+位移控制显隐），无需切换 display 即可测量
     const prevDisplay = menuEl.style.display;
-    if (getComputedStyle(menuEl).display === 'none') menuEl.style.display = 'block';
 
     const vh = window.innerHeight;
     const vw = window.innerWidth;
@@ -363,7 +362,7 @@ export class LdesignMenu {
       menuEl.style.left = `calc(100% + ${gap}px)`;
     }
 
-    // 复原 display（若之前是 none）
+    // 复原 display（一般为空字符串，此处保持兼容）
     menuEl.style.display = prevDisplay;
   }
 
@@ -425,7 +424,7 @@ export class LdesignMenu {
           <span class="ldesign-menu__title">{item.label}</span>
           {this.renderArrow(open)}
         </div>
-        <ul class="ldesign-menu__fly-children" role="menu" ref={this.registerFlyChildrenRef(item.key)} style={{ display: open ? 'block' : 'none' }}>
+        <ul class="ldesign-menu__fly-children" role="menu" ref={this.registerFlyChildrenRef(item.key)}>
           {(item.children || []).map(child => this.renderMenuNode(child, level + 1))}
         </ul>
       </li>

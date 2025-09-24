@@ -1027,7 +1027,7 @@ export namespace Components {
          */
         "maxWidth"?: number | string;
         /**
-          * 与触发元素的距离（单位 px）。 当开启箭头时，该距离表示“触发元素到箭头尖端”的间隙。
+          * 与触发元素的距离（单位 px）。
           * @default 8
          */
         "offsetDistance": number | string;
@@ -2921,7 +2921,7 @@ declare namespace LocalJSX {
          */
         "maxWidth"?: number | string;
         /**
-          * 与触发元素的距离（单位 px）。 当开启箭头时，该距离表示“触发元素到箭头尖端”的间隙。
+          * 与触发元素的距离（单位 px）。
           * @default 8
          */
         "offsetDistance"?: number | string;
