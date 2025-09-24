@@ -68,6 +68,7 @@ export default defineConfig({
           text: '布局组件',
           items: [
             { text: 'Affix 固钉', link: '/components/affix' },
+            { text: 'BackTop 返回顶部', link: '/components/backtop' },
           ]
         },
         {

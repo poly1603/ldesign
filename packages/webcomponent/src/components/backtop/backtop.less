@@ -1,0 +1,62 @@
+@import '../../styles/var.less';
+
+.ldesign-backtop {
+  position: fixed;
+  right: 40px;
+  bottom: 40px;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--ls-border-radius-full);
+  background: var(--ldesign-brand-color);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--ls-shadow-base);
+  cursor: pointer;
+  user-select: none;
+  /* 初始为隐藏状态（用于过渡动画） */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(8px) scale(0.96);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  z-index: 1000;
+}
+
+/* 可见状态：启用交互并淡入 */
+.ldesign-backtop--visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+/* 仅在可见时应用 hover/active 的位移动效，避免隐藏状态参与计算 */
+.ldesign-backtop--visible:hover {
+  background: var(--ldesign-brand-color-hover);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--ls-shadow-lg);
+}
+
+.ldesign-backtop--visible:active {
+  background: var(--ldesign-brand-color-active);
+  transform: translateY(0) scale(1);
+  box-shadow: var(--ls-shadow-base);
+}
+
+.ldesign-backtop__icon {
+  width: 20px;
+  height: 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ldesign-backtop {
+    transition: none;
+    transform: none;
+  }
+  .ldesign-backtop--visible:hover,
+  .ldesign-backtop--visible:active {
+    transform: none;
+  }
+}

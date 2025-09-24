@@ -83,6 +83,28 @@ export namespace Components {
         "zIndex": number;
     }
     /**
+     * BackTop 返回顶部组件
+     * - 支持窗口根滚动回到顶部
+     * - 支持指定容器内部滚动回到顶部（通过 target 选择器）
+     * - 支持设置滚动动画速度（px/s）
+     */
+    interface LdesignBacktop {
+        /**
+          * 滚动动画速度（像素/秒）。值越大，速度越快。  最终动画时长 = 当前滚动距离 / speed  当 speed <= 0 时，将立即跳到顶部
+          * @default 1200
+         */
+        "speed": number;
+        /**
+          * 指定滚动容器（CSS 选择器）。不传则使用 window 例如：'#scrollable' 或 '.scroll-area'
+         */
+        "target"?: string;
+        /**
+          * 出现的滚动阈值（px）。当滚动距离超过该值时显示返回顶部按钮
+          * @default 200
+         */
+        "visibilityHeight": number;
+    }
+    /**
      * Button 按钮组件
      * 用于触发操作或导航
      */
@@ -1081,6 +1103,18 @@ declare global {
         prototype: HTMLLdesignAffixElement;
         new (): HTMLLdesignAffixElement;
     };
+    /**
+     * BackTop 返回顶部组件
+     * - 支持窗口根滚动回到顶部
+     * - 支持指定容器内部滚动回到顶部（通过 target 选择器）
+     * - 支持设置滚动动画速度（px/s）
+     */
+    interface HTMLLdesignBacktopElement extends Components.LdesignBacktop, HTMLStencilElement {
+    }
+    var HTMLLdesignBacktopElement: {
+        prototype: HTMLLdesignBacktopElement;
+        new (): HTMLLdesignBacktopElement;
+    };
     interface HTMLLdesignButtonElementEventMap {
         "ldesignClick": MouseEvent;
     }
@@ -1386,6 +1420,7 @@ declare global {
     interface HTMLElementTagNameMap {
         "base-component": HTMLBaseComponentElement;
         "ldesign-affix": HTMLLdesignAffixElement;
+        "ldesign-backtop": HTMLLdesignBacktopElement;
         "ldesign-button": HTMLLdesignButtonElement;
         "ldesign-checkbox": HTMLLdesignCheckboxElement;
         "ldesign-checkbox-group": HTMLLdesignCheckboxGroupElement;
@@ -1467,6 +1502,28 @@ declare namespace LocalJSX {
           * @default 1000
          */
         "zIndex"?: number;
+    }
+    /**
+     * BackTop 返回顶部组件
+     * - 支持窗口根滚动回到顶部
+     * - 支持指定容器内部滚动回到顶部（通过 target 选择器）
+     * - 支持设置滚动动画速度（px/s）
+     */
+    interface LdesignBacktop {
+        /**
+          * 滚动动画速度（像素/秒）。值越大，速度越快。  最终动画时长 = 当前滚动距离 / speed  当 speed <= 0 时，将立即跳到顶部
+          * @default 1200
+         */
+        "speed"?: number;
+        /**
+          * 指定滚动容器（CSS 选择器）。不传则使用 window 例如：'#scrollable' 或 '.scroll-area'
+         */
+        "target"?: string;
+        /**
+          * 出现的滚动阈值（px）。当滚动距离超过该值时显示返回顶部按钮
+          * @default 200
+         */
+        "visibilityHeight"?: number;
     }
     /**
      * Button 按钮组件
@@ -2424,6 +2481,7 @@ declare namespace LocalJSX {
     interface IntrinsicElements {
         "base-component": BaseComponent;
         "ldesign-affix": LdesignAffix;
+        "ldesign-backtop": LdesignBacktop;
         "ldesign-button": LdesignButton;
         "ldesign-checkbox": LdesignCheckbox;
         "ldesign-checkbox-group": LdesignCheckboxGroup;
@@ -2456,6 +2514,13 @@ declare module "@stencil/core" {
              * - 默认基于窗口滚动容器，支持设置 offsetTop、target(container) 与 zIndex
              */
             "ldesign-affix": LocalJSX.LdesignAffix & JSXBase.HTMLAttributes<HTMLLdesignAffixElement>;
+            /**
+             * BackTop 返回顶部组件
+             * - 支持窗口根滚动回到顶部
+             * - 支持指定容器内部滚动回到顶部（通过 target 选择器）
+             * - 支持设置滚动动画速度（px/s）
+             */
+            "ldesign-backtop": LocalJSX.LdesignBacktop & JSXBase.HTMLAttributes<HTMLLdesignBacktopElement>;
             /**
              * Button 按钮组件
              * 用于触发操作或导航
