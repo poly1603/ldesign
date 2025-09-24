@@ -1,12 +1,12 @@
 import { Component, Prop, State, Element, Event, EventEmitter, Watch, h, Host } from '@stencil/core';
-import { computePosition, flip, shift, offset, arrow, autoUpdate, Placement } from '@floating-ui/dom';
+import { computePosition, flip, shift, offset, arrow, autoUpdate, Placement, VirtualElement } from '@floating-ui/dom';
 
 export type PopupTrigger = 'hover' | 'click' | 'focus' | 'manual' | 'contextmenu';
 export type PopupPlacement = Placement;
 
 /**
  * Popup 弹出层组件
- * 基于 @floating-ui/dom 实现
+ * 完全重写版本，确保 offset-distance 在所有方向保持一致
  */
 @Component({
   tag: 'ldesign-popup',
@@ -15,14 +15,6 @@ export type PopupPlacement = Placement;
 })
 export class LdesignPopup {
   @Element() el!: HTMLElement;
-
-  /** 将各种输入解析为数字（支持 '12', 12, '12px' 等），失败时返回默认值 */
-  private toNumber(val: any, defaultValue = 0): number {
-    if (val === null || val === undefined) return defaultValue;
-    if (typeof val === 'number' && Number.isFinite(val)) return val;
-    const n = parseFloat(String(val));
-    return Number.isFinite(n) ? n : defaultValue;
-  }
 
   /**
    * 是否显示弹出层
@@ -36,17 +28,11 @@ export class LdesignPopup {
 
   /**
    * 定位策略
-   * - auto: 自动检测（默认：嵌套在其他弹层内部时使用 absolute，否则使用 fixed）
-   * - fixed: 始终使用 fixed（相对视口）
-   * - absolute: 始终使用 absolute（相对最近定位的包含块）
    */
   @Prop() strategy: 'auto' | 'fixed' | 'absolute' = 'auto';
 
   /**
    * 弹层渲染容器
-   * - self: 渲染在组件内部（默认）
-   * - body: 渲染在 document.body 下，常用于复杂布局/滚动容器
-   * - closest-popup: 渲染到最近的上层 .ldesign-popup__content 内（用于嵌套弹层）
    */
   @Prop() appendTo: 'self' | 'body' | 'closest-popup' = 'self';
 
@@ -77,7 +63,6 @@ export class LdesignPopup {
 
   /**
    * 内容区域的语义角色
-   * @default 'dialog'
    */
   @Prop() popupRole: string = 'dialog';
 
@@ -87,11 +72,11 @@ export class LdesignPopup {
   @Prop() popupTitle?: string;
 
   /**
-   * 与触发元素的距离（单位 px）。
-   * Deprecated: 请使用 `offset` 属性透传给 floating-ui 的 offset 中间件。
+   * 与触发元素的距离（单位 px）
+   * 当 arrow=true 时，表示触发元素到箭头尖端的距离
+   * 当 arrow=false 时，表示触发元素到弹层边缘的距离
    */
   @Prop() offsetDistance: number | string = 8;
-
 
   /**
    * 是否禁用
@@ -104,13 +89,17 @@ export class LdesignPopup {
   @Prop() arrow: boolean = true;
 
   /**
+   * 调试开关：开启后输出定位与间距的详细日志
+   */
+  @Prop() debug: boolean = false;
+
+  /**
    * 弹出层宽度
    */
   @Prop() width?: number | string;
 
   /**
    * 主题风格
-   * @default 'light'
    */
   @Prop({ reflect: true }) theme: 'light' | 'dark' = 'light';
 
@@ -120,9 +109,7 @@ export class LdesignPopup {
   @Prop() maxWidth?: number | string;
 
   /**
-   * 滚动时是否锁定位置（不随滚动而重新定位）。
-   * - 适用于 click 等场景：打开后滚动页面，弹层保持在打开时的视口位置。
-   * - 仅影响滚动行为，仍会在窗口尺寸变化/元素尺寸变化时更新位置。
+   * 滚动时是否锁定位置（不随滚动而重新定位）
    */
   @Prop() lockOnScroll: boolean = false;
 
@@ -140,43 +127,26 @@ export class LdesignPopup {
    * 弹出层状态
    */
   @State() isVisible: boolean = false;
-  /** 首次显示到完成定位之间用于隐藏，避免出现在左上角 */
   @State() positioned: boolean = false;
 
-  /**
-   * 弹出层元素引用
-   */
+  // 私有属性
   private popupElement?: HTMLElement;
-  private contentHoverBound = false;
-
-  /**
-   * 触发器元素引用
-   */
   private triggerElement?: HTMLElement;
-  private triggerWrapper?: HTMLElement;
-  private triggerSlotEl?: HTMLElement;
-  private eventTargets: HTMLElement[] = []; // 绑定事件的目标集合
-
-  /**
-   * 箭头元素引用
-   */
   private arrowElement?: HTMLElement;
+  private contextVirtualRef?: VirtualElement;
+  
   private uid: string = `ldp_${Math.random().toString(36).slice(2)}`;
   private teleported = false;
   private teleportContainer?: HTMLElement;
-
-  /**
-   * 清理函数
-   */
+  
   private cleanup?: () => void;
   private removeDocumentClick?: () => void;
   private removeDocumentKeydown?: () => void;
-
-  /**
-   * 定时器
-   */
+  
   private showTimer?: number;
   private hideTimer?: number;
+  
+  private contentHoverBound = false;
 
   /**
    * 显示状态变化事件
@@ -184,7 +154,17 @@ export class LdesignPopup {
   @Event() ldesignVisibleChange: EventEmitter<boolean>;
 
   /**
-   * 监听visible属性变化
+   * 将输入值解析为数字
+   */
+  private parseNumber(value: any, defaultValue: number = 0): number {
+    if (value == null) return defaultValue;
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    const parsed = parseFloat(String(value));
+    return Number.isFinite(parsed) ? parsed : defaultValue;
+  }
+
+  /**
+   * 监听 visible 属性变化
    */
   @Watch('visible')
   watchVisible(newValue: boolean) {
@@ -194,7 +174,7 @@ export class LdesignPopup {
   }
 
   /**
-   * 监听 offsetDistance 变化（包括 string -> number 的变化），可热更新间距
+   * 监听 offsetDistance 变化，热更新间距
    */
   @Watch('offsetDistance')
   watchOffsetDistance() {
@@ -203,25 +183,21 @@ export class LdesignPopup {
     }
   }
 
-
   /**
    * 组件加载完成
    */
   componentDidLoad() {
-    // 优先使用具名槽位的真实节点作为触发器（shadow=false 场景 slot 不会投影到 wrapper 内）
-    this.triggerSlotEl = this.el.querySelector('[slot="trigger"]') as HTMLElement | null;
-    this.triggerWrapper = this.el.querySelector('.ldesign-popup__trigger') as HTMLElement | null;
-    this.triggerElement = this.triggerSlotEl || this.triggerWrapper || (this.el as unknown as HTMLElement);
+    // 获取触发元素
+    const triggerSlot = this.el.querySelector('[slot="trigger"]') as HTMLElement;
+    const triggerWrapper = this.el.querySelector('.ldesign-popup__trigger') as HTMLElement;
+    this.triggerElement = triggerSlot || triggerWrapper || this.el;
 
+    // 获取弹出层元素
     this.popupElement = this.el.querySelector('.ldesign-popup__content') as HTMLElement;
     this.arrowElement = this.el.querySelector('.ldesign-popup__arrow') as HTMLElement;
 
     if (!this.disabled) {
-      this.eventTargets = [];
-      if (this.triggerSlotEl) this.eventTargets.push(this.triggerSlotEl);
-      if (this.triggerWrapper && this.triggerWrapper !== this.triggerSlotEl) this.eventTargets.push(this.triggerWrapper);
-      // 双通道绑定，确保任一层级都能触发
-      this.eventTargets.forEach(t => this.bindEventsOn(t));
+      this.bindEvents();
       if (this.closeOnEsc) this.bindDocumentKeydown();
     }
 
@@ -242,11 +218,10 @@ export class LdesignPopup {
   }
 
   /**
-   * 渲染完成后再尝试定位，避免首次渲染时元素尚未挂载
+   * 渲染完成后更新位置
    */
   componentDidRender() {
     if (this.isVisible) {
-      // 渲染完成后再更新一次位置，并确保浮层绑定了交互事件
       this.moveToContainerIfNeeded();
       this.updatePositionOnly();
       this.bindContentHoverIfNeeded();
@@ -254,55 +229,57 @@ export class LdesignPopup {
   }
 
   /**
-   * 绑定事件（对指定元素绑定）
+   * 绑定事件
    */
-  private bindEventsOn(target: HTMLElement) {
+  private bindEvents() {
+    if (!this.triggerElement) return;
+
     switch (this.trigger) {
       case 'hover':
-        // 同时绑定 mouse 与 pointer 两套事件，确保各种环境都能触发
-        target.addEventListener('mouseenter', this.handleMouseEnter);
-        target.addEventListener('mouseleave', this.handleMouseLeave);
-        target.addEventListener('pointerenter', this.handleMouseEnter);
-        target.addEventListener('pointerleave', this.handleMouseLeave);
+        this.triggerElement.addEventListener('mouseenter', this.handleMouseEnter);
+        this.triggerElement.addEventListener('mouseleave', this.handleMouseLeave);
         break;
       case 'click':
-        target.addEventListener('click', this.handleClick);
+        this.triggerElement.addEventListener('click', this.handleClick);
         if (this.closeOnOutside) this.bindDocumentClick();
         break;
       case 'contextmenu':
-        target.addEventListener('contextmenu', this.handleContextMenu);
+        this.triggerElement.addEventListener('contextmenu', this.handleContextMenu);
         if (this.closeOnOutside) this.bindDocumentClick();
         break;
       case 'focus':
-        target.addEventListener('focusin', this.handleFocus);
-        target.addEventListener('focusout', this.handleBlur);
+        this.triggerElement.addEventListener('focusin', this.handleFocus);
+        this.triggerElement.addEventListener('focusout', this.handleBlur);
         break;
     }
   }
 
+  /**
+   * 解绑事件
+   */
   private unbindEvents() {
-    const targets = this.eventTargets && this.eventTargets.length > 0 ? this.eventTargets : (this.triggerElement ? [this.triggerElement] : []);
-    targets.forEach(target => {
-      target.removeEventListener('mouseenter', this.handleMouseEnter);
-      target.removeEventListener('mouseleave', this.handleMouseLeave);
-      target.removeEventListener('pointerenter', this.handleMouseEnter);
-      target.removeEventListener('pointerleave', this.handleMouseLeave);
-      target.removeEventListener('click', this.handleClick);
-      target.removeEventListener('contextmenu', this.handleContextMenu);
-      target.removeEventListener('focus', this.handleFocus as any);
-      target.removeEventListener('blur', this.handleBlur as any);
-      target.removeEventListener('focusin', this.handleFocus as any);
-      target.removeEventListener('focusout', this.handleBlur as any);
-    });
-    this.eventTargets = [];
+    if (!this.triggerElement) return;
+
+    this.triggerElement.removeEventListener('mouseenter', this.handleMouseEnter);
+    this.triggerElement.removeEventListener('mouseleave', this.handleMouseLeave);
+    this.triggerElement.removeEventListener('click', this.handleClick);
+    this.triggerElement.removeEventListener('contextmenu', this.handleContextMenu);
+    this.triggerElement.removeEventListener('focusin', this.handleFocus);
+    this.triggerElement.removeEventListener('focusout', this.handleBlur);
   }
 
+  /**
+   * 绑定文档点击事件
+   */
   private bindDocumentClick() {
     const handler = this.handleDocumentClick;
-    document.addEventListener('click', handler);
-    this.removeDocumentClick = () => document.removeEventListener('click', handler);
+    document.addEventListener('click', handler, true);
+    this.removeDocumentClick = () => document.removeEventListener('click', handler, true);
   }
 
+  /**
+   * 绑定文档键盘事件
+   */
   private bindDocumentKeydown() {
     const keyHandler = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && this.isVisible) {
@@ -313,6 +290,9 @@ export class LdesignPopup {
     this.removeDocumentKeydown = () => document.removeEventListener('keydown', keyHandler);
   }
 
+  /**
+   * 解绑文档事件
+   */
   private unbindDocumentEvents() {
     this.removeDocumentClick?.();
     this.removeDocumentClick = undefined;
@@ -320,27 +300,34 @@ export class LdesignPopup {
     this.removeDocumentKeydown = undefined;
   }
 
+  /**
+   * 获取弹出层元素
+   */
   private getPopupEl(): HTMLElement | null {
-    return document.getElementById(this.uid) as HTMLElement | null;
+    return document.getElementById(this.uid);
   }
 
+  /**
+   * 找到最近的弹出层内容
+   */
   private findClosestPopupContent(): HTMLElement | null {
     return this.el.closest('.ldesign-popup__content');
   }
 
+  /**
+   * 移动到指定容器
+   */
   private moveToContainerIfNeeded() {
-    this.popupElement = this.getPopupEl() as HTMLElement;
+    this.popupElement = this.getPopupEl() || this.el.querySelector('.ldesign-popup__content');
     if (!this.popupElement) return;
 
     let target: HTMLElement | null = null;
     if (this.appendTo === 'body') {
       target = document.body;
     } else if (this.appendTo === 'closest-popup') {
-      // 找到最近的上层弹层内容作为容器；若无则退回 body
       target = this.findClosestPopupContent() || document.body;
     } else {
-      // self：无需移动
-      return;
+      return; // self：无需移动
     }
 
     if (this.popupElement.parentElement !== target) {
@@ -350,6 +337,9 @@ export class LdesignPopup {
     }
   }
 
+  /**
+   * 从容器中移除
+   */
   private removeFromContainerIfNeeded() {
     if (!this.teleported) return;
     const el = this.getPopupEl();
@@ -360,22 +350,18 @@ export class LdesignPopup {
     this.teleportContainer = undefined;
   }
 
-
-
   /**
    * 事件处理器
    */
   private handleMouseEnter = () => {
-    // 在交互模式下，进入触发器或内容都应清除隐藏定时器；显示不加额外延时
     this.clearTimers();
     this.show();
   };
 
   private handleMouseLeave = () => {
-    // 仅在 hover + interactive 模式下添加“移出延时”，否则按常规立即隐藏/或走 hideDelay 属性
     if (this.trigger === 'hover' && this.interactive) {
       this.clearTimers();
-      const delay = this.hideDelay && this.hideDelay > 0 ? this.hideDelay : 200; // 兜底 200ms
+      const delay = this.hideDelay > 0 ? this.hideDelay : 200;
       this.hideTimer = window.setTimeout(() => {
         this.setVisible(false);
       }, delay);
@@ -390,16 +376,28 @@ export class LdesignPopup {
   };
 
   private handleContextMenu = (event: MouseEvent) => {
-    // 右键触发：阻止默认菜单并切换显示
     event.preventDefault();
     event.stopPropagation();
+
+    // 创建虚拟参考点，用于在鼠标位置显示弹层
+    this.contextVirtualRef = {
+      getBoundingClientRect: () => new DOMRect(event.clientX, event.clientY, 0, 0),
+    } as VirtualElement;
+
     this.toggle();
   };
 
   private handleDocumentClick = (event: Event) => {
-    if (!this.el.contains(event.target as Node)) {
-      this.hide();
-    }
+    const target = event.target as Node;
+    
+    // 检查点击是否在组件内
+    if (this.el.contains(target)) return;
+    
+    // 检查点击是否在传送的弹出层内
+    const popupEl = this.getPopupEl();
+    if (popupEl && popupEl.contains(target)) return;
+    
+    this.hide();
   };
 
   private handleFocus = () => {
@@ -411,6 +409,68 @@ export class LdesignPopup {
   };
 
   /**
+   * 调试日志
+   */
+  private logDebug(resolvedPlacement: string) {
+    if (!this.debug || !this.triggerElement || !this.popupElement) return;
+    
+    try {
+      const triggerRect = this.triggerElement.getBoundingClientRect();
+      const popupRect = this.popupElement.getBoundingClientRect();
+      const basePlacement = resolvedPlacement.split('-')[0] as 'top' | 'bottom' | 'left' | 'right';
+      
+      let mainGap = 0;
+      switch (basePlacement) {
+        case 'top':
+          mainGap = triggerRect.top - popupRect.bottom;
+          break;
+        case 'bottom':
+          mainGap = popupRect.top - triggerRect.bottom;
+          break;
+        case 'left':
+          mainGap = triggerRect.left - popupRect.right;
+          break;
+        case 'right':
+          mainGap = popupRect.left - triggerRect.right;
+          break;
+      }
+
+      // 计算箭头尖端与触发器的间距
+      let tipGap: number | null = null;
+      if (this.arrow && this.arrowElement) {
+        const arrowRect = this.arrowElement.getBoundingClientRect();
+        switch (basePlacement) {
+          case 'top':
+            tipGap = triggerRect.top - arrowRect.bottom;
+            break;
+          case 'bottom':
+            tipGap = arrowRect.top - triggerRect.bottom;
+            break;
+          case 'left':
+            tipGap = triggerRect.left - arrowRect.right;
+            break;
+          case 'right':
+            tipGap = arrowRect.left - triggerRect.right;
+            break;
+        }
+      }
+
+      const expectedDistance = this.parseNumber(this.offsetDistance, 8);
+      
+      console.log('[ldesign-popup][debug]', {
+        uid: this.uid,
+        placement: resolvedPlacement,
+        expectedDistance,
+        actualMainGap: Math.round(mainGap * 100) / 100,
+        actualTipGap: tipGap != null ? Math.round(tipGap * 100) / 100 : null,
+        hasArrow: !!this.arrow,
+      });
+    } catch (error) {
+      console.warn('[ldesign-popup][debug] error:', error);
+    }
+  }
+
+  /**
    * 显示弹出层
    */
   show() {
@@ -418,7 +478,6 @@ export class LdesignPopup {
 
     this.clearTimers();
 
-    // 仅当非 hover+interactive 场景时才应用 showDelay，避免移入时“卡顿”
     const useDelay = this.showDelay > 0 && !(this.trigger === 'hover' && this.interactive);
     if (useDelay) {
       this.showTimer = window.setTimeout(() => {
@@ -457,7 +516,7 @@ export class LdesignPopup {
   }
 
   /**
-   * 设置显示状态（内部使用，不触发Watch）
+   * 设置显示状态（内部使用）
    */
   private async setVisibleInternal(visible: boolean) {
     if (this.isVisible === visible) return;
@@ -471,7 +530,7 @@ export class LdesignPopup {
     } else {
       this.cleanup?.();
       this.unbindContentHover();
-      // 若已移动到外部容器，隐藏时主动移除，避免遗留节点
+      this.contextVirtualRef = undefined;
       this.removeFromContainerIfNeeded();
     }
 
@@ -479,7 +538,7 @@ export class LdesignPopup {
   }
 
   /**
-   * 设置显示状态（外部调用，同步visible属性）
+   * 设置显示状态（外部调用）
    */
   private async setVisible(visible: boolean) {
     if (this.isVisible === visible) return;
@@ -494,117 +553,107 @@ export class LdesignPopup {
     } else {
       this.cleanup?.();
       this.unbindContentHover();
+      this.contextVirtualRef = undefined;
     }
 
     this.ldesignVisibleChange.emit(visible);
   }
 
   /**
-   * 获取当前应使用的 placement（兼容属性未正确映射的场景）
+   * 获取定位策略
    */
-  private getCurrentPlacement(): PopupPlacement {
-    const attr = this.el.getAttribute('placement') as PopupPlacement | null;
-    return (attr as PopupPlacement) || this.placement || 'bottom';
+  private getStrategy(): 'fixed' | 'absolute' {
+    if (this.appendTo === 'body') {
+      if (this.strategy === 'fixed') return 'fixed';
+      if (this.strategy === 'absolute') return 'absolute';
+      return this.isNestedInPopup() ? 'absolute' : 'fixed';
+    }
+    
+    if (this.appendTo === 'closest-popup') return 'absolute';
+    
+    if (this.strategy === 'fixed') return 'fixed';
+    if (this.strategy === 'absolute') return 'absolute';
+    return this.isNestedInPopup() ? 'absolute' : 'fixed';
   }
 
   /**
    * 判断是否嵌套在另一个 Popup 内容内部
    */
   private isNestedInPopup(): boolean {
-    // 若当前 popup 组件位于上一级 .ldesign-popup__content 内，则认为是嵌套弹层
-    const container = this.el.closest('.ldesign-popup__content');
-    return !!container;
+    return !!this.el.closest('.ldesign-popup__content');
   }
 
   /**
-   * 获取定位策略：
-   * - 顶层使用 fixed，避免被滚动/定位容器影响
-   * - 嵌套在其他弹层内部时使用 absolute，使坐标与包含块一致，防止错位
+   * 等待下一帧
    */
-  private getStrategy(): 'fixed' | 'absolute' {
-    // 当 appendTo 为 body 时，允许根据 strategy 或嵌套关系决定定位方式
-    if (this.appendTo === 'body') {
-      if (this.strategy === 'fixed') return 'fixed';
-      if (this.strategy === 'absolute') return 'absolute';
-      // auto: 顶层 fixed，嵌套 absolute（避免复杂容器下的相对视口错位）
-      return this.isNestedInPopup() ? 'absolute' : 'fixed';
-    }
-    // 当渲染到最近的上层弹层内容内时，始终使用 absolute
-    if (this.appendTo === 'closest-popup') return 'absolute';
-
-    if (this.strategy === 'fixed') return 'fixed';
-    if (this.strategy === 'absolute') return 'absolute';
-    // auto
-    return this.isNestedInPopup() ? 'absolute' : 'fixed';
-  }
-
-
-
-  /**
-   * 更新位置
-   */
-  private async nextFrame(): Promise<void> {
+  private nextFrame(): Promise<void> {
     return new Promise(resolve => requestAnimationFrame(() => resolve()));
   }
 
-
+  /**
+   * 更新位置（完整版本，注册 autoUpdate）
+   */
   private async updatePosition() {
-    // popupElement 可能在首次显示时才渲染
     if (!this.triggerElement) return;
-    this.popupElement = (this.getPopupEl() || this.el.querySelector('.ldesign-popup__content')) as HTMLElement;
-    if (!this.popupElement) return;
     
-    // 确保箭头元素被正确获取
+    this.popupElement = this.getPopupEl() || this.el.querySelector('.ldesign-popup__content');
+    if (!this.popupElement) return;
+
     if (this.arrow) {
-      this.arrowElement = this.popupElement.querySelector('.ldesign-popup__arrow') as HTMLElement;
+      this.arrowElement = this.popupElement.querySelector('.ldesign-popup__arrow');
     }
 
-    // 若需要 portal 到 body，则移动过去
     this.moveToContainerIfNeeded();
-    // 等待一帧，确保插入/移动后的布局稳定，再计算位置
     await this.nextFrame();
 
     const strategy = this.getStrategy();
-    const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
+    const boundary = strategy === 'fixed' ? 'viewport' : undefined;
 
-    // 使用 floating-ui 的 offset 中间件。为保证“箭头尖端到触发器”的可见缝等于 offset-distance，
-    // 这里在主轴距离中补上“菱形箭头沿主轴的真实外凸量”。
-    // 使用 floating-ui 的 offset 中间件；保持主轴间距等于 offset-distance（由库统一计算）
-    const offsetValue = this.toNumber(this.offsetDistance, 8);
+    // 核心改进：统一的 offset 计算
+    const baseOffset = this.parseNumber(this.offsetDistance, 8);
+    // 对所有方向使用相同的计算方式：当有箭头时，额外增加箭头尺寸的一半（4px）
+    const offsetValue = this.arrow ? baseOffset + 4 : baseOffset;
 
     const middleware = [
       offset(offsetValue),
       flip({ boundary } as any),
-      // 禁用主轴挤压，避免改变几何上的主轴间距
-      shift({ padding: 8, boundary, mainAxis: false, crossAxis: true } as any),
+      shift({ 
+        padding: 8, 
+        boundary, 
+        mainAxis: false, // 禁用主轴挤压，保持间距一致性
+        crossAxis: true 
+      } as any),
     ];
 
     if (this.arrow && this.arrowElement) {
       middleware.push(arrow({ element: this.arrowElement }));
     }
 
-    const currentPlacement = this.getCurrentPlacement();
+    // 选择参考元素：右键使用虚拟参考点，其余使用触发元素
+    const referenceEl = (this.trigger === 'contextmenu' && this.contextVirtualRef)
+      ? this.contextVirtualRef
+      : this.triggerElement;
+
     const { x, y, placement: resolvedPlacement, middlewareData } = await computePosition(
-      this.triggerElement,
+      referenceEl as any,
       this.popupElement,
       {
-        placement: currentPlacement,
+        placement: this.placement,
         middleware,
         strategy,
       }
     );
 
-    // 直接使用 floating-ui 计算的位置
+    // 应用位置
     Object.assign(this.popupElement.style, {
       left: `${x}px`,
       top: `${y}px`,
     });
 
-    // 设置箭头位置
-    // 标记当前方向，便于样式控制
+    // 设置方向属性
     this.popupElement.setAttribute('data-placement', resolvedPlacement);
 
-    // 设置箭头位置 - 使用 floating-ui 提供的箭头位置
+    // 设置箭头位置
     if (this.arrow && this.arrowElement && middlewareData.arrow) {
       const { x: arrowX, y: arrowY } = middlewareData.arrow;
       const staticSide = {
@@ -625,14 +674,14 @@ export class LdesignPopup {
       this.arrowElement.setAttribute('data-placement', resolvedPlacement);
     }
 
+    // 调试日志
+    this.logDebug(resolvedPlacement);
 
-
-
-    // 设置自动更新 - 避免递归重复注册
+    // 设置自动更新
     this.positioned = true;
     this.cleanup?.();
     this.cleanup = autoUpdate(
-      this.triggerElement,
+      referenceEl as any,
       this.popupElement,
       () => {
         if (this.isVisible) {
@@ -652,44 +701,52 @@ export class LdesignPopup {
    */
   private async updatePositionOnly() {
     if (!this.triggerElement) return;
-    this.popupElement = (this.getPopupEl() || this.el.querySelector('.ldesign-popup__content')) as HTMLElement;
-    if (!this.popupElement) return;
     
-    // 确保箭头元素被正确获取
+    this.popupElement = this.getPopupEl() || this.el.querySelector('.ldesign-popup__content');
+    if (!this.popupElement) return;
+
     if (this.arrow) {
-      this.arrowElement = this.popupElement.querySelector('.ldesign-popup__arrow') as HTMLElement;
+      this.arrowElement = this.popupElement.querySelector('.ldesign-popup__arrow');
     }
 
     this.moveToContainerIfNeeded();
     await this.nextFrame();
 
     const strategy = this.getStrategy();
-    const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
+    const boundary = strategy === 'fixed' ? 'viewport' : undefined;
 
-    const offsetValue = this.toNumber(this.offsetDistance, 8);
+    const baseOffset = this.parseNumber(this.offsetDistance, 8);
+    const offsetValue = this.arrow ? baseOffset + 4 : baseOffset;
 
     const middleware = [
       offset(offsetValue),
       flip({ boundary } as any),
-      shift({ padding: 8, boundary, mainAxis: false, crossAxis: true } as any),
+      shift({ 
+        padding: 8, 
+        boundary, 
+        mainAxis: false,
+        crossAxis: true 
+      } as any),
     ];
 
     if (this.arrow && this.arrowElement) {
       middleware.push(arrow({ element: this.arrowElement }));
     }
 
-    const currentPlacement = this.getCurrentPlacement();
+    const referenceEl = (this.trigger === 'contextmenu' && this.contextVirtualRef)
+      ? this.contextVirtualRef
+      : this.triggerElement;
+
     const { x, y, placement: resolvedPlacement, middlewareData } = await computePosition(
-      this.triggerElement,
+      referenceEl as any,
       this.popupElement,
       {
-        placement: currentPlacement,
+        placement: this.placement,
         middleware,
         strategy,
       }
     );
 
-    // 直接使用 floating-ui 计算的位置
     Object.assign(this.popupElement.style, {
       left: `${x}px`,
       top: `${y}px`,
@@ -697,7 +754,6 @@ export class LdesignPopup {
 
     this.popupElement.setAttribute('data-placement', resolvedPlacement);
 
-    // 设置箭头位置 - 使用 floating-ui 提供的箭头位置
     if (this.arrow && this.arrowElement && middlewareData.arrow) {
       const { x: arrowX, y: arrowY } = middlewareData.arrow;
       const staticSide = {
@@ -712,14 +768,13 @@ export class LdesignPopup {
         top: arrowY != null ? `${arrowY}px` : '',
         right: '',
         bottom: '',
-        [staticSide]: '-4px', // 箭头突出 4px
+        [staticSide]: '-4px',
       });
 
       this.arrowElement.setAttribute('data-placement', resolvedPlacement);
     }
 
-
-    // 再次确保在渲染后绑定浮层交互事件（首次渲染时 updatePosition 可能拿不到元素）
+    this.logDebug(resolvedPlacement);
     this.positioned = true;
     this.bindContentHoverIfNeeded();
   }
@@ -742,8 +797,9 @@ export class LdesignPopup {
    * 获取弹出层样式
    */
   private getPopupStyle() {
-    // 根据实际策略设置定位方式
-    const style: any = { position: this.getStrategy() };
+    const style: any = { 
+      position: this.getStrategy(),
+    };
 
     if (this.width) {
       style.width = typeof this.width === 'number' ? `${this.width}px` : this.width;
@@ -754,6 +810,31 @@ export class LdesignPopup {
     }
 
     return style;
+  }
+
+  /**
+   * 绑定内容悬停事件
+   */
+  private bindContentHoverIfNeeded() {
+    if (this.trigger !== 'hover' || !this.interactive || this.contentHoverBound) return;
+    
+    this.popupElement = this.getPopupEl() || this.el.querySelector('.ldesign-popup__content');
+    if (!this.popupElement) return;
+
+    this.popupElement.addEventListener('mouseenter', this.handleMouseEnter);
+    this.popupElement.addEventListener('mouseleave', this.handleMouseLeave);
+    this.contentHoverBound = true;
+  }
+
+  /**
+   * 解绑内容悬停事件
+   */
+  private unbindContentHover() {
+    if (!this.contentHoverBound || !this.popupElement) return;
+    
+    this.popupElement.removeEventListener('mouseenter', this.handleMouseEnter);
+    this.popupElement.removeEventListener('mouseleave', this.handleMouseLeave);
+    this.contentHoverBound = false;
   }
 
   render() {
@@ -771,7 +852,10 @@ export class LdesignPopup {
           <div 
             id={this.uid}
             class="ldesign-popup__content"
-            style={{ ...this.getPopupStyle(), visibility: this.positioned ? 'visible' : 'hidden' }}
+            style={{ 
+              ...this.getPopupStyle(), 
+              visibility: this.positioned ? 'visible' : 'hidden' 
+            }}
             role={this.popupRole}
             aria-hidden={!this.isVisible}
           >
@@ -793,31 +877,8 @@ export class LdesignPopup {
               </div>
             </div>
           </div>
-        )
-        }
+        )}
       </Host>
     );
   }
-
-  private bindContentHoverIfNeeded() {
-    if (this.trigger !== 'hover' || !this.interactive) return;
-    // 交互内容：允许在浮层内悬停交互
-    this.popupElement = (this.getPopupEl() || this.el.querySelector('.ldesign-popup__content')) as HTMLElement;
-    if (!this.popupElement || this.contentHoverBound) return;
-    this.popupElement.addEventListener('mouseenter', this.handleMouseEnter);
-    this.popupElement.addEventListener('mouseleave', this.handleMouseLeave);
-    this.popupElement.addEventListener('pointerenter', this.handleMouseEnter);
-    this.popupElement.addEventListener('pointerleave', this.handleMouseLeave);
-    this.contentHoverBound = true;
-  }
-
-  private unbindContentHover() {
-    if (!this.contentHoverBound || !this.popupElement) return;
-    this.popupElement.removeEventListener('mouseenter', this.handleMouseEnter);
-    this.popupElement.removeEventListener('mouseleave', this.handleMouseLeave);
-    this.popupElement.removeEventListener('pointerenter', this.handleMouseEnter);
-    this.popupElement.removeEventListener('pointerleave', this.handleMouseLeave);
-    this.contentHoverBound = false;
-  }
-
 }

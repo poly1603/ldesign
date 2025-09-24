@@ -101,6 +101,85 @@
     opacity: 0;
   }
 
+  /* 横向模式：顶层横向排列，子菜单下拉 */
+  &--horizontal {
+    // 主容器不需额外样式
+  }
+
+  &--horizontal>.ldesign-menu__list {
+    display: flex;
+    align-items: center;
+    gap: var(--menu-gap);
+  }
+
+  &--horizontal>.ldesign-menu__list>li {
+    position: relative;
+    margin: 0 !important;
+  }
+
+  &--horizontal>.ldesign-menu__list>li>.ldesign-menu__item {
+    width: auto; // 顶层横向项宽度自适应内容
+  }
+
+  /* 下拉（横向一级） */
+  &__node--dropdown {
+    position: relative;
+  }
+
+  // 下拉展开时，高亮当前触发项
+  &__node--dropdown-open>.ldesign-menu__item::before {
+    background: var(--menu-bg-hover);
+  }
+
+  // 若同时处于选中状态，优先使用选中背景
+  &__node--dropdown-open>.ldesign-menu__item.ldesign-menu__item--active::before {
+    background: var(--menu-bg-active);
+  }
+
+  &__down-children {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 1000;
+    margin: 0;
+    padding: 8px 8px 8px 8px !important;
+    list-style: none;
+    min-width: 160px;
+    background: var(--ldesign-bg-color, #ffffff);
+    border: 1px solid var(--ldesign-border-color, #e5e7eb);
+    border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .1);
+
+    // 动画：默认隐藏（透明 + 轻微下移 + 不响应事件）
+    opacity: 0;
+    transform: translateY(6px);
+    transform-origin: left top;
+    visibility: hidden;
+    pointer-events: none;
+    will-change: transform, opacity;
+    transition: transform var(--menu-fly-duration) ease, opacity var(--menu-fly-duration) ease, visibility 0s linear var(--menu-fly-duration);
+  }
+
+  // 展开时显现
+  &__node--dropdown-open>.ldesign-menu__down-children {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    pointer-events: auto;
+    transition: transform var(--menu-fly-duration) ease, opacity var(--menu-fly-duration) ease, visibility 0s;
+  }
+
+  &__down-children .ldesign-menu__item {
+    width: 100%;
+    height: 36px;
+    border-radius: 4px;
+    padding: 0 8px;
+  }
+
+  &__down-children .ldesign-menu__icon {
+    margin-left: 0;
+  }
+
   /* 纵向行内展开时，给图标左边增加一点空间，视觉更均衡 */
   &--vertical .ldesign-menu__icon {
     // margin-left: 8px;
@@ -225,11 +304,12 @@
   }
 
   // flyout 展开时，高亮当前触发项
-  &__node--fly-open > .ldesign-menu__item::before {
+  &__node--fly-open>.ldesign-menu__item::before {
     background: var(--menu-bg-hover);
   }
+
   // 若同时处于选中状态，优先使用选中背景
-  &__node--fly-open > .ldesign-menu__item.ldesign-menu__item--active::before {
+  &__node--fly-open>.ldesign-menu__item.ldesign-menu__item--active::before {
     background: var(--menu-bg-active);
   }
 

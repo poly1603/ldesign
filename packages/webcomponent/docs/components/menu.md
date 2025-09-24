@@ -177,8 +177,107 @@ onMounted(() => {
       })
     }
   }
+  // 横向菜单示例（hover/click 两种触发）
+  const hzHover = document.getElementById('menu-doc-hz-hover')
+  const hzClick = document.getElementById('menu-doc-hz-click')
+  if (hzHover || hzClick) {
+    const menuData = [
+      { key: 'home', label: '首页', icon: 'home' },
+      {
+        key: 'products', label: '产品', icon: 'package', children: [
+          {
+            key: 'software', label: '软件产品', children: [
+              { key: 'desktop', label: '桌面软件', children: [
+                { key: 'windows', label: 'Windows 应用' },
+                { key: 'mac', label: 'Mac 应用' },
+                { key: 'linux', label: 'Linux 应用' }
+              ] },
+              { key: 'mobile', label: '移动应用', children: [
+                { key: 'ios', label: 'iOS 应用' },
+                { key: 'android', label: 'Android 应用' }
+              ] },
+              { key: 'web', label: 'Web 应用' }
+            ]
+          },
+          {
+            key: 'hardware', label: '硬件产品', children: [
+              { key: 'laptop', label: '笔记本电脑' },
+              { key: 'tablet', label: '平板电脑' },
+              { key: 'phone', label: '智能手机' }
+            ]
+          },
+          { key: 'cloud', label: '云服务' }
+        ]
+      },
+      {
+        key: 'services', label: '服务', icon: 'server', children: [
+          { key: 'consulting', label: '咨询服务', children: [
+            { key: 'tech-consulting', label: '技术咨询' },
+            { key: 'business-consulting', label: '业务咨询' }
+          ] },
+          { key: 'support', label: '技术支持', children: [
+            { key: 'standard', label: '标准支持' },
+            { key: 'premium', label: '高级支持' },
+            { key: 'enterprise', label: '企业支持' }
+          ] },
+          { key: 'training', label: '培训服务' }
+        ]
+      },
+      {
+        key: 'resources', label: '资源', icon: 'book-open', children: [
+          { key: 'docs', label: '文档中心' },
+          { key: 'blog', label: '技术博客' },
+          { key: 'community', label: '社区论坛' },
+          { key: 'downloads', label: '下载中心' }
+        ]
+      },
+      { key: 'about', label: '关于', icon: 'info-circle' }
+    ]
+    if (hzHover) hzHover.setAttribute('items', JSON.stringify(menuData))
+    if (hzClick) hzClick.setAttribute('items', JSON.stringify(menuData))
+  }
 })
 </script>
+
+## 横向 horizontal
+
+<div style="background:#f5f5f5; padding:12px; border-radius:8px; margin-bottom: 24px;">
+  <div style="background:white; padding:10px; border-radius:6px; margin-bottom:12px;">
+    <div style="font-size:14px; color:#666; margin-bottom:8px;">Hover 触发</div>
+    <ldesign-menu id="menu-doc-hz-hover" mode="horizontal" submenu-trigger="hover"></ldesign-menu>
+  </div>
+  <div style="background:white; padding:10px; border-radius:6px;">
+    <div style="font-size:14px; color:#666; margin-bottom:8px;">Click 触发</div>
+    <ldesign-menu id="menu-doc-hz-click" mode="horizontal" submenu-trigger="click"></ldesign-menu>
+  </div>
+</div>
+
+```html
+<div style="padding:10px; border:1px dashed #ddd; border-radius:6px;">
+  <ldesign-menu mode="horizontal" submenu-trigger="hover"></ldesign-menu>
+</div>
+<script>
+  const items = [
+    { key: 'home', label: '首页', icon: 'home' },
+    { key: 'products', label: '产品', children: [
+      { key: 'software', label: '软件产品', children: [
+        { key: 'desktop', label: '桌面软件' },
+        { key: 'mobile', label: '移动应用' },
+        { key: 'web', label: 'Web 应用' }
+      ] },
+      { key: 'hardware', label: '硬件产品' },
+      { key: 'cloud', label: '云服务' }
+    ] },
+    { key: 'services', label: '服务', children: [
+      { key: 'consulting', label: '咨询服务' },
+      { key: 'support', label: '技术支持' }
+    ] },
+    { key: 'about', label: '关于' }
+  ];
+  const menu = document.querySelector('ldesign-menu[mode="horizontal"]');
+  menu.items = items;
+</script>
+```
 
 ## 纵向 inline（内嵌展开）
 <div style="display:flex; gap:16px; align-items:flex-start;">
@@ -356,4 +455,4 @@ onMounted(() => {
 </script>
 ```
 
-> 混合（mixed）与横向模式已从本页移除，如需查看可参考组件 README 或历史版本。
+> 混合（mixed）暂未在本页展示；横向模式示例见本页上方。

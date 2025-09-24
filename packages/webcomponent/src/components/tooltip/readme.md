@@ -26,6 +26,10 @@ Tooltip 工具提示组件
 
 ## Dependencies
 
+### Used by
+
+ - [ldesign-menu](../menu)
+
 ### Depends on
 
 - [ldesign-popup](../popup)
@@ -34,6 +38,7 @@ Tooltip 工具提示组件
 ```mermaid
 graph TD;
   ldesign-tooltip --> ldesign-popup
+  ldesign-menu --> ldesign-tooltip
   style ldesign-tooltip fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

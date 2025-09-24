@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ldesign-popup 间距一致性演示</title>
+    <style>
+      :root { --gap: 24px; }
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Microsoft Yahei", "Noto Sans", sans-serif; padding: 24px; color: #111827; background: #f8fafc; }
+      h2 { margin: 24px 0 12px; }
+      .grid { display: grid; grid-template-columns: repeat(4, minmax(0, max-content)); gap: var(--gap); align-items: center; }
+      .cell { display: flex; align-items: center; justify-content: center; height: 72px; background: #ffffff; border: 1px dashed #e5e7eb; border-radius: 10px; padding: 8px 12px; }
+      .btn { appearance: none; border: none; outline: none; padding: 10px 16px; border-radius: 10px; background: #6d3ae2; color: #fff; font-weight: 600; cursor: pointer; }
+      .row-title { grid-column: 1 / -1; margin-top: 8px; font-size: 14px; color: #6b7280; }
+      .panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+      .desc { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+    </style>
+    <script type="module">
+      // 使用构建后生成的 loader 注册所有自定义元素
+      import { defineCustomElements } from '../../../loader/index.js';
+      defineCustomElements();
+    </script>
+  </head>
+  <body>
+    <div class="panel">
+      <h2>带箭头（arrow=true），offset-distance=8</h2>
+      <div class="desc">观察按钮与弹层之间的可见缝应一致（上下左右均为 8px）。打开控制台查看调试日志。</div>
+      <div class="grid">
+        <div class="cell">
+          <ldesign-popup placement="top-start" content="Top Start" offset-distance="8" trigger="hover" debug>
+            <button class="btn" slot="trigger">Top Start</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="top" content="Top" offset-distance="8" trigger="hover" debug>
+            <button class="btn" slot="trigger">Top</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="top-end" content="Top End" offset-distance="8" trigger="hover" debug>
+            <button class="btn" slot="trigger">Top End</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="right-start" content="Right Start" offset-distance="8" trigger="hover" debug>
+            <button class="btn" slot="trigger">Right Start</button>
+          </ldesign-popup>
+        </div>
+
+        <div class="cell">
+          <ldesign-popup placement="left" content="Left" offset-distance="8" trigger="hover" debug>
+            <button class="btn" slot="trigger">Left</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="right" content="Right" offset-distance="8" trigger="hover" debug>
+            <button class="btn" slot="trigger">Right</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="bottom-start" content="Bottom Start" offset-distance="8" trigger="hover" debug>
+            <button class="btn" slot="trigger">Bottom Start</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="bottom" content="Bottom" offset-distance="8" trigger="hover" debug>
+            <button class="btn" slot="trigger">Bottom</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="bottom-end" content="Bottom End" offset-distance="8" trigger="hover" debug>
+            <button class="btn" slot="trigger">Bottom End</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="left-start" content="Left Start" offset-distance="8" trigger="hover" debug>
+            <button class="btn" slot="trigger">Left Start</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="right-end" content="Right End" offset-distance="8" trigger="hover" debug>
+            <button class="btn" slot="trigger">Right End</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="left-end" content="Left End" offset-distance="8" trigger="hover" debug>
+            <button class="btn" slot="trigger">Left End</button>
+          </ldesign-popup>
+        </div>
+
+        <div class="row-title">↑ 上一行/下一行包含所有 12 个方向（含 -start/-end）</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>不带箭头（arrow=false），offset-distance=12</h2>
+      <div class="desc">不带箭头时，弹层边框与按钮之间的缝直接等于 offset-distance。打开控制台查看调试日志。</div>
+      <div class="grid">
+        <div class="cell">
+          <ldesign-popup placement="top" content="Top" offset-distance="12" arrow="false" trigger="hover" debug>
+            <button class="btn" slot="trigger">Top</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="right" content="Right" offset-distance="12" arrow="false" trigger="hover" debug>
+            <button class="btn" slot="trigger">Right</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="bottom" content="Bottom" offset-distance="12" arrow="false" trigger="hover" debug>
+            <button class="btn" slot="trigger">Bottom</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="left" content="Left" offset-distance="12" arrow="false" trigger="hover" debug>
+            <button class="btn" slot="trigger">Left</button>
+          </ldesign-popup>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>右键菜单（contextmenu）</h2>
+      <div class="desc">在任意地方点击右键，弹层会出现在鼠标点击处，并保持与 offset-distance 一致的间距。</div>
+      <ldesign-popup trigger="contextmenu" placement="bottom-start" append-to="body" offset-distance="10" content="右键菜单示例（在空白处右键试试）" debug>
+        <div slot="trigger" style="display:block;width:100%;height:120px;border:1px dashed #ddd;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;">空白区域（右键）</div>
+      </ldesign-popup>
+    </div>
+
+    <div class="panel">
+      <h2>offset 一致性对比测试</h2>
+      <div class="desc">同一个 offset-distance 值在不同方向应该产生相同的视觉间距。</div>
+      <div class="grid">
+        <div class="cell">
+          <ldesign-popup placement="top" content="向上 offset=6" offset-distance="6" trigger="hover" debug>
+            <button class="btn" slot="trigger">↑ Top 6px</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="bottom" content="向下 offset=6" offset-distance="6" trigger="hover" debug>
+            <button class="btn" slot="trigger">↓ Bottom 6px</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="left" content="向左 offset=6" offset-distance="6" trigger="hover" debug>
+            <button class="btn" slot="trigger">← Left 6px</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup placement="right" content="向右 offset=6" offset-distance="6" trigger="hover" debug>
+            <button class="btn" slot="trigger">→ Right 6px</button>
+          </ldesign-popup>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

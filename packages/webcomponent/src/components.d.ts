@@ -533,7 +533,7 @@ export namespace Components {
          */
         "accordion": boolean;
         /**
-          * 折叠模式：仅显示一级图标，悬停右侧弹出；无子级时显示 tooltip
+          * 折叠模式：仅显示一级图标，悬停右侧弹出；无子级时显示 tooltip（仅纵向）
           * @default false
          */
         "collapse": boolean;
@@ -557,6 +557,11 @@ export namespace Components {
          */
         "items": string | MenuItem[];
         /**
+          * 展示模式：vertical（纵向）| horizontal（横向）
+          * @default 'vertical'
+         */
+        "mode": 'vertical' | 'horizontal';
+        /**
           * 当前打开的子菜单 key 列表（受控）
          */
         "openKeys"?: string[];
@@ -566,7 +571,7 @@ export namespace Components {
          */
         "requireTopIcon": boolean;
         /**
-          * 弹出子菜单的触发方式（仅在 flyout/mixed 生效）
+          * 弹出子菜单的触发方式（仅在 flyout/mixed 生效；横向模式同样适用）
           * @default 'hover'
          */
         "submenuTrigger": SubmenuTrigger;
@@ -979,12 +984,11 @@ export namespace Components {
     }
     /**
      * Popup 弹出层组件
-     * 基于
-     * @floating-ui /dom 实现
+     * 完全重写版本，确保 offset-distance 在所有方向保持一致
      */
     interface LdesignPopup {
         /**
-          * 弹层渲染容器 - self: 渲染在组件内部（默认） - body: 渲染在 document.body 下，常用于复杂布局/滚动容器 - closest-popup: 渲染到最近的上层 .ldesign-popup__content 内（用于嵌套弹层）
+          * 弹层渲染容器
           * @default 'self'
          */
         "appendTo": 'self' | 'body' | 'closest-popup';
@@ -1008,6 +1012,11 @@ export namespace Components {
          */
         "content"?: string;
         /**
+          * 调试开关：开启后输出定位与间距的详细日志
+          * @default false
+         */
+        "debug": boolean;
+        /**
           * 是否禁用
           * @default false
          */
@@ -1023,7 +1032,7 @@ export namespace Components {
          */
         "interactive": boolean;
         /**
-          * 滚动时是否锁定位置（不随滚动而重新定位）。 - 适用于 click 等场景：打开后滚动页面，弹层保持在打开时的视口位置。 - 仅影响滚动行为，仍会在窗口尺寸变化/元素尺寸变化时更新位置。
+          * 滚动时是否锁定位置（不随滚动而重新定位）
           * @default false
          */
         "lockOnScroll": boolean;
@@ -1032,7 +1041,7 @@ export namespace Components {
          */
         "maxWidth"?: number | string;
         /**
-          * 与触发元素的距离（单位 px）。 Deprecated: 请使用 `offset` 属性透传给 floating-ui 的 offset 中间件。
+          * 与触发元素的距离（单位 px） 当 arrow=true 时，表示触发元素到箭头尖端的距离 当 arrow=false 时，表示触发元素到弹层边缘的距离
           * @default 8
          */
         "offsetDistance": number | string;
@@ -1056,7 +1065,7 @@ export namespace Components {
          */
         "showDelay": number;
         /**
-          * 定位策略 - auto: 自动检测（默认：嵌套在其他弹层内部时使用 absolute，否则使用 fixed） - fixed: 始终使用 fixed（相对视口） - absolute: 始终使用 absolute（相对最近定位的包含块）
+          * 定位策略
           * @default 'auto'
          */
         "strategy": 'auto' | 'fixed' | 'absolute';
@@ -1733,8 +1742,7 @@ declare global {
     }
     /**
      * Popup 弹出层组件
-     * 基于
-     * @floating-ui /dom 实现
+     * 完全重写版本，确保 offset-distance 在所有方向保持一致
      */
     interface HTMLLdesignPopupElement extends Components.LdesignPopup, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignPopupElementEventMap>(type: K, listener: (this: HTMLLdesignPopupElement, ev: LdesignPopupCustomEvent<HTMLLdesignPopupElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -2416,7 +2424,7 @@ declare namespace LocalJSX {
          */
         "accordion"?: boolean;
         /**
-          * 折叠模式：仅显示一级图标，悬停右侧弹出；无子级时显示 tooltip
+          * 折叠模式：仅显示一级图标，悬停右侧弹出；无子级时显示 tooltip（仅纵向）
           * @default false
          */
         "collapse"?: boolean;
@@ -2440,6 +2448,11 @@ declare namespace LocalJSX {
          */
         "items"?: string | MenuItem[];
         /**
+          * 展示模式：vertical（纵向）| horizontal（横向）
+          * @default 'vertical'
+         */
+        "mode"?: 'vertical' | 'horizontal';
+        /**
           * 展开/收起事件
          */
         "onLdesignOpenChange"?: (event: LdesignMenuCustomEvent<{ key: string; open: boolean; openKeys: string[] }>) => void;
@@ -2457,7 +2470,7 @@ declare namespace LocalJSX {
          */
         "requireTopIcon"?: boolean;
         /**
-          * 弹出子菜单的触发方式（仅在 flyout/mixed 生效）
+          * 弹出子菜单的触发方式（仅在 flyout/mixed 生效；横向模式同样适用）
           * @default 'hover'
          */
         "submenuTrigger"?: SubmenuTrigger;
@@ -2878,12 +2891,11 @@ declare namespace LocalJSX {
     }
     /**
      * Popup 弹出层组件
-     * 基于
-     * @floating-ui /dom 实现
+     * 完全重写版本，确保 offset-distance 在所有方向保持一致
      */
     interface LdesignPopup {
         /**
-          * 弹层渲染容器 - self: 渲染在组件内部（默认） - body: 渲染在 document.body 下，常用于复杂布局/滚动容器 - closest-popup: 渲染到最近的上层 .ldesign-popup__content 内（用于嵌套弹层）
+          * 弹层渲染容器
           * @default 'self'
          */
         "appendTo"?: 'self' | 'body' | 'closest-popup';
@@ -2907,6 +2919,11 @@ declare namespace LocalJSX {
          */
         "content"?: string;
         /**
+          * 调试开关：开启后输出定位与间距的详细日志
+          * @default false
+         */
+        "debug"?: boolean;
+        /**
           * 是否禁用
           * @default false
          */
@@ -2922,7 +2939,7 @@ declare namespace LocalJSX {
          */
         "interactive"?: boolean;
         /**
-          * 滚动时是否锁定位置（不随滚动而重新定位）。 - 适用于 click 等场景：打开后滚动页面，弹层保持在打开时的视口位置。 - 仅影响滚动行为，仍会在窗口尺寸变化/元素尺寸变化时更新位置。
+          * 滚动时是否锁定位置（不随滚动而重新定位）
           * @default false
          */
         "lockOnScroll"?: boolean;
@@ -2931,7 +2948,7 @@ declare namespace LocalJSX {
          */
         "maxWidth"?: number | string;
         /**
-          * 与触发元素的距离（单位 px）。 Deprecated: 请使用 `offset` 属性透传给 floating-ui 的 offset 中间件。
+          * 与触发元素的距离（单位 px） 当 arrow=true 时，表示触发元素到箭头尖端的距离 当 arrow=false 时，表示触发元素到弹层边缘的距离
           * @default 8
          */
         "offsetDistance"?: number | string;
@@ -2959,7 +2976,7 @@ declare namespace LocalJSX {
          */
         "showDelay"?: number;
         /**
-          * 定位策略 - auto: 自动检测（默认：嵌套在其他弹层内部时使用 absolute，否则使用 fixed） - fixed: 始终使用 fixed（相对视口） - absolute: 始终使用 absolute（相对最近定位的包含块）
+          * 定位策略
           * @default 'auto'
          */
         "strategy"?: 'auto' | 'fixed' | 'absolute';
@@ -3373,8 +3390,7 @@ declare module "@stencil/core" {
             "ldesign-popconfirm": LocalJSX.LdesignPopconfirm & JSXBase.HTMLAttributes<HTMLLdesignPopconfirmElement>;
             /**
              * Popup 弹出层组件
-             * 基于
-             * @floating-ui /dom 实现
+             * 完全重写版本，确保 offset-distance 在所有方向保持一致
              */
             "ldesign-popup": LocalJSX.LdesignPopup & JSXBase.HTMLAttributes<HTMLLdesignPopupElement>;
             /**
