@@ -8,4 +8,3 @@
 - ThemeManagerOptions, ThemeManagerInstance
 
 详见 `src/core/types.ts`。
-

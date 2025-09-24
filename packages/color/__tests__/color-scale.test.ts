@@ -92,7 +92,7 @@ describe('colorScaleGenerator', () => {
       expect(scales.gray).toBeDefined()
 
       // 验证每个色阶都有正确的结构
-      Object.values(scales).forEach((scale) => {
+      Object.values(scales).forEach(scale => {
         expect(scale.colors).toHaveLength(10)
         expect(scale.indices).toBeDefined()
         expect(Object.keys(scale.indices)).toHaveLength(10)
@@ -129,7 +129,7 @@ describe('colorScaleGenerator', () => {
       expect(neutralColors.shadow).toBeDefined()
 
       // 验证每个中性色类别都有完整的色阶
-      Object.values(neutralColors).forEach((scale) => {
+      Object.values(neutralColors).forEach(scale => {
         expect(scale.colors).toHaveLength(10)
         expect(scale.indices).toBeDefined()
       })

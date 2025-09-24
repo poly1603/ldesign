@@ -149,7 +149,7 @@ function generateScale(payload: {
   if (mode === 'light' || mode === 'both') {
     // 生成亮色阶
     for (let i = 1; i <= count / 2; i++) {
-      const lightness = 50 + (i * 10)
+      const lightness = 50 + i * 10
       scales.push(ColorUtils.adjustBrightness(baseColor, lightness / 100))
     }
   }
@@ -157,7 +157,7 @@ function generateScale(payload: {
   if (mode === 'dark' || mode === 'both') {
     // 生成暗色阶
     for (let i = 1; i <= count / 2; i++) {
-      const darkness = 50 - (i * 10)
+      const darkness = 50 - i * 10
       scales.push(ColorUtils.adjustBrightness(baseColor, darkness / 100))
     }
   }

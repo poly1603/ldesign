@@ -410,7 +410,9 @@ export class RealtimeCollaboration extends SimpleEventEmitter {
    */
   private async connectWebSocket(sessionId: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.ws = new WebSocket(`${this.config.wsUrl}?session=${sessionId}&user=${this.config.userId}`)
+      this.ws = new WebSocket(
+        `${this.config.wsUrl}?session=${sessionId}&user=${this.config.userId}`,
+      )
 
       this.ws.onopen = () => {
         console.log('WebSocket connected')
@@ -661,8 +663,10 @@ export class RealtimeCollaboration extends SimpleEventEmitter {
       this.baseState = { ...remoteState }
       this.emit('state-changed', remoteState)
     }
-    else if (remoteState.version === this.localState.version
-      && remoteState.lastModified > this.localState.lastModified) {
+    else if (
+      remoteState.version === this.localState.version
+      && remoteState.lastModified > this.localState.lastModified
+    ) {
       // 版本相同但远程更新，应用远程
       this.localState = remoteState
       this.baseState = { ...remoteState }
@@ -670,7 +674,6 @@ export class RealtimeCollaboration extends SimpleEventEmitter {
     }
     else if (remoteState.version < this.localState.version) {
       // 本地更新，忽略远程
-
     }
     else {
       // 检测到冲突

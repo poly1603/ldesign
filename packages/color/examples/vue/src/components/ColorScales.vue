@@ -16,14 +16,10 @@ const categoryNames = {
 
 const colorScales = computed(() => {
   const generatedTheme = themeManager.getGeneratedTheme(currentTheme.value)
-  if (!generatedTheme)
-    return {}
+  if (!generatedTheme) return {}
 
   const scales = generatedTheme[currentMode.value].scales
-  const result: Record<
-    string,
-    { colors: string[], indices: Record<string, string>, baseColor: string }
-  > = {}
+  const result: Record<string, { colors: string[]; indices: Record<string, string>; baseColor: string }> = {}
 
   // 转换色阶数据格式
   for (const [category, scale] of Object.entries(scales)) {
@@ -82,7 +78,7 @@ function hexToRgb(hex: string) {
 }
 
 function getLuminance(r: number, g: number, b: number): number {
-  const [rs, gs, bs] = [r, g, b].map((c) => {
+  const [rs, gs, bs] = [r, g, b].map(c => {
     c = c / 255
     return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
   })
@@ -97,8 +93,7 @@ async function copyColor(color: string) {
   try {
     await navigator.clipboard.writeText(color)
     showNotification(`已复制 ${color}`, 'success')
-  }
-  catch {
+  } catch {
     showNotification('复制失败', 'error')
   }
 }
@@ -106,19 +101,11 @@ async function copyColor(color: string) {
 
 <template>
   <div class="card">
-    <h2 class="card-title">
-      🌈 色阶展示
-    </h2>
-    <p class="card-description">
-      当前主题的完整色阶展示，点击色块可复制颜色值
-    </p>
+    <h2 class="card-title">🌈 色阶展示</h2>
+    <p class="card-description">当前主题的完整色阶展示，点击色块可复制颜色值</p>
 
     <div class="scales-container">
-      <div
-        v-for="(scale, category) in colorScales"
-        :key="category"
-        class="color-palette-card"
-      >
+      <div v-for="(scale, category) in colorScales" :key="category" class="color-palette-card">
         <!-- 卡片头部 -->
         <div
           class="palette-header"

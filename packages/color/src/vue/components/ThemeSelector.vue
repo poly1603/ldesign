@@ -57,9 +57,10 @@ const emit = defineEmits<{
 }>()
 
 // 获取主题管理器 - 尝试多种注入方式
-const themeManager = inject<any>('themeManager', null)
-  || inject<any>('$themeManager', null)
-  || (typeof window !== 'undefined' && (window as any).themeManager)
+const themeManager
+  = inject<any>('themeManager', null)
+    || inject<any>('$themeManager', null)
+    || (typeof window !== 'undefined' && (window as any).themeManager)
 
 // 检查主题管理器是否可用
 if (!themeManager && import.meta.env.DEV) {
@@ -77,9 +78,7 @@ const showSelectDropdown = ref(false)
 // 合并主题列表（内置主题 + 用户自定义主题）
 const mergedThemes = computed(() => {
   // 过滤掉被禁用的内置主题
-  const enabledBuiltinThemes = presetThemes.filter(
-    theme => !props.disabledBuiltinThemes.includes(theme.name),
-  )
+  const enabledBuiltinThemes = presetThemes.filter(theme => !props.disabledBuiltinThemes.includes(theme.name))
 
   // 合并内置主题和用户自定义主题（自定义优先显示）
   return [...props.customThemes, ...enabledBuiltinThemes]
@@ -312,7 +311,7 @@ onMounted(() => {
     try {
       // 优先使用主题管理器的状态
       if (typeof themeManager.getCurrentTheme === 'function') {
-        selectedTheme.value = themeManager.getCurrentTheme() || (mergedThemes.value[0]?.name || 'blue')
+        selectedTheme.value = themeManager.getCurrentTheme() || mergedThemes.value[0]?.name || 'blue'
       }
       if (typeof themeManager.getCurrentMode === 'function') {
         currentMode.value = themeManager.getCurrentMode() || 'light'
@@ -329,7 +328,7 @@ onMounted(() => {
       }
       // 回退到本地存储逻辑
       const { theme: savedTheme, mode: savedMode } = loadThemeFromStorage()
-      selectedTheme.value = savedTheme || (mergedThemes.value[0]?.name || 'blue')
+      selectedTheme.value = savedTheme || mergedThemes.value[0]?.name || 'blue'
       currentMode.value = savedMode
       applyTheme(selectedTheme.value)
     }
@@ -351,27 +350,35 @@ onMounted(() => {
 })
 
 // 监听主题变化
-watch(() => props.customThemes, () => {
-  // 当自定义主题变化时，重新检查当前选中的主题是否仍然有效
-  if (selectedTheme.value && !mergedThemes.value.find(t => t.name === selectedTheme.value)) {
-    // 如果当前主题不再可用，选择第一个可用主题
-    if (mergedThemes.value.length > 0) {
-      selectedTheme.value = mergedThemes.value[0].name
-      handleThemeChange()
+watch(
+  () => props.customThemes,
+  () => {
+    // 当自定义主题变化时，重新检查当前选中的主题是否仍然有效
+    if (selectedTheme.value && !mergedThemes.value.find(t => t.name === selectedTheme.value)) {
+      // 如果当前主题不再可用，选择第一个可用主题
+      if (mergedThemes.value.length > 0) {
+        selectedTheme.value = mergedThemes.value[0].name
+        handleThemeChange()
+      }
     }
-  }
-}, { deep: true })
+  },
+  { deep: true },
+)
 
-watch(() => props.disabledBuiltinThemes, () => {
-  // 当禁用列表变化时，重新检查当前选中的主题是否仍然有效
-  if (selectedTheme.value && !mergedThemes.value.find(t => t.name === selectedTheme.value)) {
-    // 如果当前主题被禁用，选择第一个可用主题
-    if (mergedThemes.value.length > 0) {
-      selectedTheme.value = mergedThemes.value[0].name
-      handleThemeChange()
+watch(
+  () => props.disabledBuiltinThemes,
+  () => {
+    // 当禁用列表变化时，重新检查当前选中的主题是否仍然有效
+    if (selectedTheme.value && !mergedThemes.value.find(t => t.name === selectedTheme.value)) {
+      // 如果当前主题被禁用，选择第一个可用主题
+      if (mergedThemes.value.length > 0) {
+        selectedTheme.value = mergedThemes.value[0].name
+        handleThemeChange()
+      }
     }
-  }
-}, { deep: true })
+  },
+  { deep: true },
+)
 
 // 监听键盘事件
 watch(showDialog, (visible) => {
@@ -401,8 +408,14 @@ onUnmounted(() => {
     <!-- 美化的下拉选择形式 -->
     <div v-if="mode === 'select'" class="theme-selector__select-wrapper">
       <LSelect
-        :model-value="selectedTheme" :options="selectOptions" :placeholder="placeholder" :disabled="disabled"
-        :size="size" :show-color="showPreview" :show-description="true" :animation="selectAnimation"
+        :model-value="selectedTheme"
+        :options="selectOptions"
+        :placeholder="placeholder"
+        :disabled="disabled"
+        :size="size"
+        :show-color="showPreview"
+        :show-description="true"
+        :animation="selectAnimation"
         @update:model-value="selectTheme"
       />
     </div>
@@ -428,7 +441,8 @@ onUnmounted(() => {
             </div>
             <div class="theme-selector__themes-grid theme-selector__themes-grid--compact">
               <div
-                v-for="theme in mergedThemes" :key="theme.name"
+                v-for="theme in mergedThemes"
+                :key="theme.name"
                 class="theme-selector__theme-card theme-selector__theme-card--compact"
                 :class="{ 'theme-selector__theme-card--active': selectedTheme === theme.name }"
                 @click="selectTheme(theme.name)"
@@ -473,24 +487,31 @@ onUnmounted(() => {
           <label class="theme-selector__themes-label">内置主题</label>
           <div class="theme-selector__themes-grid">
             <div
-              v-for="theme in categorizedThemes.builtin" :key="theme.name" class="theme-selector__theme-card"
-              :class="{ active: selectedTheme === theme.name }" @click="selectTheme(theme.name)"
+              v-for="theme in categorizedThemes.builtin"
+              :key="theme.name"
+              class="theme-selector__theme-card"
+              :class="{ active: selectedTheme === theme.name }"
+              @click="selectTheme(theme.name)"
             >
               <div class="theme-selector__theme-preview">
                 <div
-                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'primary') }"
+                  class="theme-selector__color-dot"
+                  :style="{ backgroundColor: getThemeColor(theme, 'primary') }"
                   :title="`主色: ${getThemeColor(theme, 'primary')}`"
                 />
                 <div
-                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'success') }"
+                  class="theme-selector__color-dot"
+                  :style="{ backgroundColor: getThemeColor(theme, 'success') }"
                   :title="`成功色: ${getThemeColor(theme, 'success')}`"
                 />
                 <div
-                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'warning') }"
+                  class="theme-selector__color-dot"
+                  :style="{ backgroundColor: getThemeColor(theme, 'warning') }"
                   :title="`警告色: ${getThemeColor(theme, 'warning')}`"
                 />
                 <div
-                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'danger') }"
+                  class="theme-selector__color-dot"
+                  :style="{ backgroundColor: getThemeColor(theme, 'danger') }"
                   :title="`危险色: ${getThemeColor(theme, 'danger')}`"
                 />
               </div>
@@ -509,24 +530,31 @@ onUnmounted(() => {
           <label class="theme-selector__themes-label">自定义主题</label>
           <div class="theme-selector__themes-grid">
             <div
-              v-for="theme in categorizedThemes.custom" :key="theme.name" class="theme-selector__theme-card"
-              :class="{ active: selectedTheme === theme.name }" @click="selectTheme(theme.name)"
+              v-for="theme in categorizedThemes.custom"
+              :key="theme.name"
+              class="theme-selector__theme-card"
+              :class="{ active: selectedTheme === theme.name }"
+              @click="selectTheme(theme.name)"
             >
               <div class="theme-selector__theme-preview">
                 <div
-                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'primary') }"
+                  class="theme-selector__color-dot"
+                  :style="{ backgroundColor: getThemeColor(theme, 'primary') }"
                   :title="`主色: ${getThemeColor(theme, 'primary')}`"
                 />
                 <div
-                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'success') }"
+                  class="theme-selector__color-dot"
+                  :style="{ backgroundColor: getThemeColor(theme, 'success') }"
                   :title="`成功色: ${getThemeColor(theme, 'success')}`"
                 />
                 <div
-                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'warning') }"
+                  class="theme-selector__color-dot"
+                  :style="{ backgroundColor: getThemeColor(theme, 'warning') }"
                   :title="`警告色: ${getThemeColor(theme, 'warning')}`"
                 />
                 <div
-                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'danger') }"
+                  class="theme-selector__color-dot"
+                  :style="{ backgroundColor: getThemeColor(theme, 'danger') }"
                   :title="`危险色: ${getThemeColor(theme, 'danger')}`"
                 />
               </div>

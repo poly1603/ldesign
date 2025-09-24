@@ -44,7 +44,7 @@ function createMockDocument() {
         tagName: tagName.toUpperCase(),
         remove() {
           if (this.parentNode && (this.parentNode as any).removeChild) {
-            (this.parentNode as any).removeChild(this)
+            ;(this.parentNode as any).removeChild(this)
           }
         },
       }
@@ -111,7 +111,7 @@ function createTestEnvironment() {
         },
         remove() {
           if (this.parentNode && (this.parentNode as any).removeChild) {
-            (this.parentNode as any).removeChild(this)
+            ;(this.parentNode as any).removeChild(this)
           }
         },
       }

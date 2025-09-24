@@ -3,13 +3,7 @@
  * 使用优化的HSL算法实现高质量的色阶生成，确保亮色和暗色模式都有正确的色阶效果
  */
 
-import type {
-  ColorCategory,
-  ColorMode,
-  ColorScale,
-  ColorValue,
-  NeutralColors,
-} from '../core/types'
+import type { ColorCategory, ColorMode, ColorScale, ColorValue, NeutralColors } from '../core/types'
 import { hexToHsl, hslToHex, isValidHex, normalizeHex } from './color-converter'
 
 /**
@@ -18,10 +12,14 @@ import { hexToHsl, hslToHex, isValidHex, normalizeHex } from './color-converter'
  */
 const SCALE_CONFIGS = {
   primary: { count: 10, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+  secondary: { count: 10, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+  accent: { count: 10, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
   success: { count: 10, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
   warning: { count: 10, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
   danger: { count: 10, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+  info: { count: 10, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
   gray: { count: 10, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+  neutral: { count: 10, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
 } as const
 
 /**
@@ -31,11 +29,7 @@ export class ColorScaleGenerator {
   /**
    * 生成单个颜色的色阶
    */
-  generateScale(
-    baseColor: string,
-    category: ColorCategory,
-    mode: ColorMode = 'light',
-  ): ColorScale {
+  generateScale(baseColor: string, category: ColorCategory, mode: ColorMode = 'light'): ColorScale {
     if (!isValidHex(baseColor)) {
       throw new Error(`Invalid hex color: ${baseColor}`)
     }
@@ -71,11 +65,7 @@ export class ColorScaleGenerator {
    * 直接拷贝自官方源码，不使用硬编码
    * 暗黑模式下色阶反转：1是最深的，10是最浅的
    */
-  private generateColorScale(
-    baseColor: string,
-    count: number,
-    mode: ColorMode,
-  ): string[] {
+  private generateColorScale(baseColor: string, count: number, mode: ColorMode): string[] {
     const colors: string[] = []
 
     // 使用Arco Design的原始算法生成10级色阶
@@ -153,8 +143,7 @@ export class ColorScaleGenerator {
     function getNewSaturation(isLight: boolean, index: number): number {
       let newSaturation: number
       if (isLight) {
-        newSaturation
-          = s <= minSaturationStep ? s : s - ((s - minSaturationStep) / 5) * index
+        newSaturation = s <= minSaturationStep ? s : s - ((s - minSaturationStep) / 5) * index
       }
       else {
         newSaturation = s + ((maxSaturationStep - s) / 4) * index
@@ -195,10 +184,7 @@ export class ColorScaleGenerator {
   /**
    * 生成额外的浅色（用于扩展到12级或14级）
    */
-  private generateExtraLightColor(
-    baseColor: string,
-    extraIndex: number,
-  ): string {
+  private generateExtraLightColor(baseColor: string, extraIndex: number): string {
     const baseHsl = hexToHsl(baseColor)
     if (!baseHsl) {
       throw new Error(`Failed to parse color: ${baseColor}`)
@@ -247,11 +233,7 @@ export class ColorScaleGenerator {
   /**
    * RGB转HSV - 完全按照Arco Design的算法
    */
-  private rgbToHsv(
-    r: number,
-    g: number,
-    b: number,
-  ): { h: number, s: number, v: number } {
+  private rgbToHsv(r: number, g: number, b: number): { h: number, s: number, v: number } {
     r = r / 255
     g = g / 255
     b = b / 255
@@ -285,11 +267,7 @@ export class ColorScaleGenerator {
   /**
    * HSV转RGB - 完全按照Arco Design的算法
    */
-  private hsvToRgb(
-    h: number,
-    s: number,
-    v: number,
-  ): { r: number, g: number, b: number } {
+  private hsvToRgb(h: number, s: number, v: number): { r: number, g: number, b: number } {
     s = s / 100
     v = v / 100
 
@@ -342,11 +320,7 @@ export class ColorScaleGenerator {
   /**
    * 生成灰色色阶 - 直接使用Arco Design的预设灰色
    */
-  private generateGrayScale(
-    _baseColor: string,
-    count: number,
-    mode: ColorMode,
-  ): string[] {
+  private generateGrayScale(_baseColor: string, count: number, mode: ColorMode): string[] {
     if (mode === 'dark') {
       // 优化的暗色模式中性灰色（从深到浅）
       const neutralGrayDark = [
@@ -390,24 +364,14 @@ export class ColorScaleGenerator {
   ): Record<T, ColorScale> {
     const scales: Record<T, ColorScale> = {} as Record<T, ColorScale>
 
-    for (const [category, color] of Object.entries(colors) as [
-      T,
-      ColorValue,
-    ][]) {
+    for (const [category, color] of Object.entries(colors) as [T, ColorValue][]) {
       try {
-        scales[category] = this.generateScale(
-          color,
-          category as ColorCategory,
-          mode,
-        )
+        scales[category] = this.generateScale(color, category as ColorCategory, mode)
       }
       catch (error) {
         console.warn(`Failed to generate scale for ${category}:`, error)
         // 提供回退色阶
-        scales[category] = this.createFallbackScale(
-          category as ColorCategory,
-          mode,
-        )
+        scales[category] = this.createFallbackScale(category as ColorCategory, mode)
       }
     }
 
@@ -417,10 +381,7 @@ export class ColorScaleGenerator {
   /**
    * 创建回退色阶
    */
-  private createFallbackScale(
-    category: ColorCategory,
-    _mode: ColorMode,
-  ): ColorScale {
+  private createFallbackScale(category: ColorCategory, _mode: ColorMode): ColorScale {
     const config = SCALE_CONFIGS[category]
     const colors: string[] = []
 

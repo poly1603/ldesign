@@ -39,10 +39,12 @@ import { createColorPlugin } from '@ldesign/color/vue'
 
 const app = createApp(App)
 
-app.use(createColorPlugin({
-  defaultTheme: 'default',
-  defaultMode: 'light',
-}))
+app.use(
+  createColorPlugin({
+    defaultTheme: 'default',
+    defaultMode: 'light',
+  })
+)
 
 app.mount('#app')
 ```
@@ -74,4 +76,3 @@ const { currentTheme, currentMode, setTheme, toggleMode } = useTheme()
 
 - 包含完整的 d.ts 类型定义
 - `strict: true` 环境下可获得完善的类型提示
-

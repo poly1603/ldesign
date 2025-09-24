@@ -27,11 +27,9 @@ describe('accessibility', () => {
 
       if (result.contrastRatio >= 7) {
         expect(result.level).toBe('AAA')
-      }
-      else if (result.contrastRatio >= 4.5) {
+      } else if (result.contrastRatio >= 4.5) {
         expect(result.level).toBe('AA')
-      }
-      else {
+      } else {
         expect(result.level).toBeNull()
       }
     })
@@ -114,7 +112,7 @@ describe('accessibility', () => {
 
       expect(results).toHaveLength(3) // 默认检查3种颜色盲类型
 
-      results.forEach((result) => {
+      results.forEach(result => {
         expect(['protanopia', 'deuteranopia', 'tritanopia']).toContain(result.type)
         expect(Array.isArray(result.issues)).toBe(true)
       })
@@ -138,7 +136,7 @@ describe('accessibility', () => {
       expect(Array.isArray(suggestions)).toBe(true)
 
       // 验证建议的颜色确实符合标准
-      suggestions.slice(0, 3).forEach((suggestion) => {
+      suggestions.slice(0, 3).forEach(suggestion => {
         const result = checkAccessibility(suggestion.foreground, suggestion.background, 'normal')
         expect(result.isAccessible).toBe(true)
         expect(result.level).toBeTruthy()
@@ -154,7 +152,7 @@ describe('accessibility', () => {
 
       // AAA标准更严格，建议数量可能更少
       if (aaaSuggestions.length > 0) {
-        aaaSuggestions.slice(0, 2).forEach((suggestion) => {
+        aaaSuggestions.slice(0, 2).forEach(suggestion => {
           const result = checkAccessibility(suggestion.foreground, suggestion.background)
           expect(result.contrastRatio).toBeGreaterThanOrEqual(7)
         })

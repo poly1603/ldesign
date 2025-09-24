@@ -13,7 +13,7 @@ const mockLocalStorage = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
-  clear: vi.fn()
+  clear: vi.fn(),
 }
 
 // Mock window.matchMedia
@@ -25,8 +25,8 @@ vi.mock('vue', async () => {
   return {
     ...actual,
     inject: vi.fn(() => null), // 默认返回null，表示没有主题管理器
-    onMounted: vi.fn((fn) => fn()), // 立即执行onMounted回调
-    onUnmounted: vi.fn() // 不执行onUnmounted回调
+    onMounted: vi.fn(fn => fn()), // 立即执行onMounted回调
+    onUnmounted: vi.fn(), // 不执行onUnmounted回调
   }
 })
 
@@ -38,24 +38,24 @@ describe('Vue组合式API', () => {
     // 设置localStorage mock
     Object.defineProperty(window, 'localStorage', {
       value: mockLocalStorage,
-      writable: true
+      writable: true,
     })
 
     // 设置matchMedia mock
     Object.defineProperty(window, 'matchMedia', {
       value: mockMatchMedia,
-      writable: true
+      writable: true,
     })
 
     // 默认localStorage行为
     mockLocalStorage.getItem.mockReturnValue(null)
-    mockLocalStorage.setItem.mockImplementation(() => { })
+    mockLocalStorage.setItem.mockImplementation(() => {})
 
     // 默认matchMedia行为
     mockMatchMedia.mockReturnValue({
       matches: false,
       addEventListener: vi.fn(),
-      removeEventListener: vi.fn()
+      removeEventListener: vi.fn(),
     })
   })
 
@@ -65,13 +65,8 @@ describe('Vue组合式API', () => {
 
   describe('useThemeSelector', () => {
     it('应该正确初始化', () => {
-      const {
-        currentTheme,
-        currentMode,
-        availableThemes,
-        isDark,
-        themeConfigs
-      } = useThemeSelector()
+      const { currentTheme, currentMode, availableThemes, isDark, themeConfigs } =
+        useThemeSelector()
 
       expect(currentTheme.value).toBe('default')
       expect(currentMode.value).toBe('light')
@@ -88,18 +83,14 @@ describe('Vue组合式API', () => {
           description: '测试主题',
           builtin: false,
           light: { primary: '#ff0000' },
-          dark: { primary: '#ff4444' }
-        }
+          dark: { primary: '#ff4444' },
+        },
       ]
 
-      const {
-        currentTheme,
-        currentMode,
-        availableThemes
-      } = useThemeSelector({
+      const { currentTheme, currentMode, availableThemes } = useThemeSelector({
         customThemes,
         defaultTheme: 'custom',
-        defaultMode: 'dark'
+        defaultMode: 'dark',
       })
 
       expect(currentTheme.value).toBe('custom')
@@ -127,11 +118,7 @@ describe('Vue组合式API', () => {
     })
 
     it('应该获取主题信息', () => {
-      const {
-        getThemeConfig,
-        getThemeDisplayName,
-        getThemeDescription
-      } = useThemeSelector()
+      const { getThemeConfig, getThemeDisplayName, getThemeDescription } = useThemeSelector()
 
       const config = getThemeConfig('default')
       expect(config).toBeDefined()
@@ -148,7 +135,7 @@ describe('Vue组合式API', () => {
       const storageKey = 'test-theme-selector'
       const { selectTheme, setMode } = useThemeSelector({
         storageKey,
-        autoSave: true
+        autoSave: true,
       })
 
       await selectTheme('green')
@@ -167,11 +154,7 @@ describe('Vue组合式API', () => {
 
   describe('useThemeToggle', () => {
     it('应该正确初始化', () => {
-      const {
-        currentMode,
-        isDark,
-        isLight
-      } = useThemeToggle()
+      const { currentMode, isDark, isLight } = useThemeToggle()
 
       expect(currentMode.value).toBe('light')
       expect(isDark.value).toBe(false)
@@ -180,7 +163,7 @@ describe('Vue组合式API', () => {
 
     it('应该支持自定义默认模式', () => {
       const { currentMode, isDark } = useThemeToggle({
-        defaultMode: 'dark'
+        defaultMode: 'dark',
       })
 
       expect(currentMode.value).toBe('dark')
@@ -188,13 +171,7 @@ describe('Vue组合式API', () => {
     })
 
     it('应该正确切换模式', async () => {
-      const {
-        toggle,
-        setLight,
-        setDark,
-        currentMode,
-        isDark
-      } = useThemeToggle()
+      const { toggle, setLight, setDark, currentMode, isDark } = useThemeToggle()
 
       await toggle()
       expect(currentMode.value).toBe('dark')
@@ -215,7 +192,7 @@ describe('Vue组合式API', () => {
 
       const { toggle } = useThemeToggle({
         onBeforeToggle,
-        onAfterToggle
+        onAfterToggle,
       })
 
       await toggle()
@@ -228,7 +205,7 @@ describe('Vue组合式API', () => {
       const storageKey = 'test-theme-toggle'
       const { toggle } = useThemeToggle({
         storageKey,
-        autoSave: true
+        autoSave: true,
       })
 
       await toggle()
@@ -242,13 +219,8 @@ describe('Vue组合式API', () => {
 
   describe('useSystemThemeSync', () => {
     it('应该正确初始化', () => {
-      const {
-        systemTheme,
-        isSystemDark,
-        isSystemLight,
-        isSupported,
-        isSyncing
-      } = useSystemThemeSync()
+      const { systemTheme, isSystemDark, isSystemLight, isSupported, isSyncing } =
+        useSystemThemeSync()
 
       expect(systemTheme.value).toBe('light')
       expect(isSystemDark.value).toBe(false)
@@ -262,13 +234,13 @@ describe('Vue组合式API', () => {
       mockMatchMedia.mockReturnValue({
         matches: true,
         addEventListener: vi.fn(),
-        removeEventListener: vi.fn()
+        removeEventListener: vi.fn(),
       })
 
       // 重新设置window.matchMedia
       Object.defineProperty(window, 'matchMedia', {
         value: mockMatchMedia,
-        writable: true
+        writable: true,
       })
 
       const { systemTheme, isSystemDark } = useSystemThemeSync()
@@ -285,14 +257,10 @@ describe('Vue组合式API', () => {
       mockMatchMedia.mockReturnValue({
         matches: false,
         addEventListener: mockAddEventListener,
-        removeEventListener: mockRemoveEventListener
+        removeEventListener: mockRemoveEventListener,
       })
 
-      const {
-        startSync,
-        stopSync,
-        isSyncing
-      } = useSystemThemeSync()
+      const { startSync, stopSync, isSyncing } = useSystemThemeSync()
 
       startSync()
       expect(isSyncing.value).toBe(true)
@@ -307,7 +275,7 @@ describe('Vue组合式API', () => {
       mockMatchMedia.mockReturnValue({
         matches: false,
         addEventListener: vi.fn(),
-        removeEventListener: vi.fn()
+        removeEventListener: vi.fn(),
       })
 
       const { toggleSync, isSyncing } = useSystemThemeSync()
@@ -327,11 +295,11 @@ describe('Vue组合式API', () => {
       mockMatchMedia.mockReturnValue({
         matches: true,
         addEventListener: vi.fn(),
-        removeEventListener: vi.fn()
+        removeEventListener: vi.fn(),
       })
 
       const { syncWithSystem } = useSystemThemeSync({
-        onSync
+        onSync,
       })
 
       await syncWithSystem()
@@ -347,7 +315,7 @@ describe('Vue组合式API', () => {
       })
 
       const { syncWithSystem } = useSystemThemeSync({
-        onError
+        onError,
       })
 
       await syncWithSystem()
@@ -358,11 +326,11 @@ describe('Vue组合式API', () => {
       mockMatchMedia.mockReturnValue({
         matches: false,
         addEventListener: vi.fn(),
-        removeEventListener: vi.fn()
+        removeEventListener: vi.fn(),
       })
 
       const { isSyncing } = useSystemThemeSync({
-        autoStart: true
+        autoStart: true,
       })
 
       // 由于我们mock了onMounted会立即执行，autoStart会立即生效

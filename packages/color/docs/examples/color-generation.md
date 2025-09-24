@@ -4,4 +4,3 @@
 import { generateColorConfig } from '@ldesign/color'
 console.log(generateColorConfig('#1890ff'))
 ```
-

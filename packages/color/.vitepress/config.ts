@@ -128,9 +128,7 @@ export default defineConfig({
     },
 
     // 社交链接
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/ldesign/color' },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/ldesign/color' }],
 
     // 页脚
     footer: {

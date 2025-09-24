@@ -18,9 +18,15 @@ export { default as ThemeSelector } from './components/ThemeSelector.vue'
 export { useColorTheme } from './composables/useColorTheme'
 export type { UseColorThemeOptions, UseColorThemeReturn } from './composables/useColorTheme'
 export { useSystemThemeSync } from './composables/useSystemThemeSync'
-export type { UseSystemThemeSyncOptions, UseSystemThemeSyncReturn } from './composables/useSystemThemeSync'
+export type {
+  UseSystemThemeSyncOptions,
+  UseSystemThemeSyncReturn,
+} from './composables/useSystemThemeSync'
 export { useThemeSelector } from './composables/useThemeSelector'
-export type { UseThemeSelectorOptions, UseThemeSelectorReturn } from './composables/useThemeSelector'
+export type {
+  UseThemeSelectorOptions,
+  UseThemeSelectorReturn,
+} from './composables/useThemeSelector'
 export { useThemeToggle } from './composables/useThemeToggle'
 export type { UseThemeToggleOptions, UseThemeToggleReturn } from './composables/useThemeToggle'
 // 导出插件

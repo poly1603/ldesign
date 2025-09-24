@@ -11,7 +11,7 @@ import {
 ```
 
 常用能力：
+
 - injectVariables / injectVariablesWithComments
 - injectThemeVariables(lightVars, darkVars, themeInfo)
 - removeVariables()
-

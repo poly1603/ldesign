@@ -17,7 +17,9 @@
         }
 
         document.getElementById('result').innerHTML =
-          '<span style="color: green;">✅ ESM 加载成功</span><br>' + '导出: ' + Object.keys(module).join(', ')
+          '<span style="color: green;">✅ ESM 加载成功</span><br>' +
+          '导出: ' +
+          Object.keys(module).join(', ')
 
         window.testResult = { success: true, message: 'ESM 加载成功' }
       } catch (error) {

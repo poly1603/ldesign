@@ -141,7 +141,7 @@ describe('eventEmitterImpl', () => {
       expect(normalListener).toHaveBeenCalled() // 应该仍然被调用
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error in event listener for theme-changed:',
-        expect.any(Error),
+        expect.any(Error)
       )
 
       consoleSpy.mockRestore()

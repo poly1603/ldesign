@@ -16,6 +16,10 @@
 - [颜色生成](/api/color-generator) - 智能颜色生成器
 - [色阶生成](/api/color-scales) - 色阶生成系统
 - [CSS 注入](/api/css-injector) - CSS 变量注入器
+- [颜色处理](/api/color-processing) - 颜色处理和分析工具
+- [调色板](/api/palette) - 调色板生成和管理
+- [错误处理](/api/error-handling) - 错误处理和验证机制
+- [类型守卫](/api/type-guards) - 运行时类型检查和断言
 
 ### Vue API
 
@@ -83,7 +87,12 @@ export type { CSSInjectionOptions } from './utils/css-injector'
 
 ```typescript
 // Vue 组合式 API
-export { useSystemThemeSync, useTheme, useThemeSelector, useThemeToggle } from './vue'
+export {
+  useSystemThemeSync,
+  useTheme,
+  useThemeSelector,
+  useThemeToggle,
+} from './vue'
 
 // Vue 插件
 export { installThemePlugin, ThemePlugin } from './vue'
@@ -148,8 +157,7 @@ const { currentTheme, setTheme } = useTheme()
 try {
   const themeManager = await createThemeManagerWithPresets()
   await themeManager.setTheme('nonexistent-theme')
-}
-catch (error) {
+} catch (error) {
   console.error('主题操作失败:', error.message)
 }
 ```
@@ -200,7 +208,7 @@ const themeManager = await createThemeManagerWithPresets({
   onThemeChanged: (theme, mode) => {
     console.log(`[DEBUG] 主题变化: ${theme} - ${mode}`)
   },
-  onError: (error) => {
+  onError: error => {
     console.error('[DEBUG] 主题错误:', error)
   },
 })

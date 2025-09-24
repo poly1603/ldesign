@@ -27,20 +27,20 @@
 <template>
   <div class="color-converter">
     <h3>颜色转换器</h3>
-    
+
     <div class="input-group">
       <label>输入颜色 (HEX):</label>
-      <input 
-        v-model="hexColor" 
-        type="text" 
+      <input
+        v-model="hexColor"
+        type="text"
         placeholder="#1890ff"
         @input="convertColor"
       />
     </div>
-    
+
     <div class="results" v-if="results">
       <div class="color-preview" :style="{ backgroundColor: hexColor }"></div>
-      
+
       <div class="conversions">
         <p><strong>RGB:</strong> {{ results.rgb }}</p>
         <p><strong>HSL:</strong> {{ results.hsl }}</p>
@@ -58,7 +58,7 @@ const hexColor = ref('#1890ff')
 const results = reactive({
   rgb: null,
   hsl: null,
-  hsv: null
+  hsv: null,
 })
 
 function convertColor() {
@@ -66,10 +66,10 @@ function convertColor() {
     const rgb = hexToRgb(hexColor.value)
     if (rgb) {
       results.rgb = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`
-      
+
       const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b)
       results.hsl = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`
-      
+
       const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b)
       results.hsv = `hsv(${hsv.h}, ${hsv.s}%, ${hsv.v}%)`
     }
@@ -136,14 +136,14 @@ convertColor()
 <template>
   <div class="palette-generator">
     <h3>调色板生成器</h3>
-    
+
     <div class="controls">
       <div class="input-group">
         <label>基础颜色:</label>
         <input v-model="baseColor" type="color" @change="generatePalettes" />
         <input v-model="baseColor" type="text" @input="generatePalettes" />
       </div>
-      
+
       <div class="input-group">
         <label>调色板类型:</label>
         <select v-model="paletteType" @change="generatePalettes">
@@ -154,10 +154,10 @@ convertColor()
         </select>
       </div>
     </div>
-    
+
     <div class="palette" v-if="palette.length">
-      <div 
-        v-for="(color, index) in palette" 
+      <div
+        v-for="(color, index) in palette"
         :key="index"
         class="color-swatch"
         :style="{ backgroundColor: color }"
@@ -171,11 +171,11 @@ convertColor()
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { 
+import {
   generateMonochromaticPalette,
   generateAnalogousPalette,
   generateComplementaryPalette,
-  generateTriadicPalette
+  generateTriadicPalette,
 } from '@ldesign/color'
 
 const baseColor = ref('#1890ff')
@@ -185,9 +185,9 @@ const palette = reactive([])
 function generatePalettes() {
   try {
     palette.length = 0
-    
+
     let newPalette = []
-    
+
     switch (paletteType.value) {
       case 'monochromatic':
         newPalette = generateMonochromaticPalette(baseColor.value, 5)
@@ -202,7 +202,7 @@ function generatePalettes() {
         newPalette = generateTriadicPalette(baseColor.value)
         break
     }
-    
+
     palette.push(...newPalette)
   } catch (error) {
     console.error('调色板生成失败:', error)
@@ -246,7 +246,7 @@ generatePalettes()
   font-size: 14px;
 }
 
-.input-group input[type="color"] {
+.input-group input[type='color'] {
   width: 50px;
   height: 40px;
   padding: 0;
@@ -297,12 +297,16 @@ generatePalettes()
 <template>
   <div class="theme-demo">
     <h3>主题管理演示</h3>
-    
+
     <div class="theme-info">
-      <p>当前主题: <strong>{{ currentTheme }}</strong></p>
-      <p>当前模式: <strong>{{ currentMode }}</strong></p>
+      <p>
+        当前主题: <strong>{{ currentTheme }}</strong>
+      </p>
+      <p>
+        当前模式: <strong>{{ currentMode }}</strong>
+      </p>
     </div>
-    
+
     <div class="theme-controls">
       <div class="theme-selector">
         <label>选择主题:</label>
@@ -312,12 +316,12 @@ generatePalettes()
           </option>
         </select>
       </div>
-      
+
       <button @click="toggleMode" class="mode-toggle">
         切换到 {{ isDark ? '亮色' : '暗色' }} 模式
       </button>
     </div>
-    
+
     <div class="color-showcase">
       <div class="color-item" style="background: var(--color-primary)">
         <span>主色</span>
@@ -344,7 +348,7 @@ const {
   isDark,
   availableThemes,
   setTheme,
-  toggleMode
+  toggleMode,
 } = useTheme()
 </script>
 

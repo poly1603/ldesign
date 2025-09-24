@@ -8,7 +8,8 @@
 
 **问题描述**：
 
-- `generateColorScales()` 返回的是 `ColorScale` 对象，包含 `colors` 数组和 `indices` 对象
+- `generateColorScales()` 返回的是 `ColorScale` 对象，包含 `colors` 数组和
+  `indices` 对象
 - 但示例代码错误地将其当作简单数组处理
 - 导致色阶无法正确显示
 
@@ -50,10 +51,9 @@ colors.forEach((color, index) => {
 
 ```vue
 <!-- 修复前 -->
-<div v-for="(color, index) in Array.isArray(scale) ? scale : Object.values(scale)">
-
-<!-- 修复后 -->
-<div v-for="(color, index) in scale.colors || []">
+<div
+  v-for="(color, index) in Array.isArray(scale) ? scale : Object.values(scale)"
+></div>
 ```
 
 #### 2. 确认模式切换功能完整性
@@ -75,7 +75,7 @@ colors.forEach((color, index) => {
 
 ```javascript
 // 模式选择器
-this.elements.modeSelect.addEventListener('change', (e) => {
+this.elements.modeSelect.addEventListener('change', e => {
   this.themeManager.setMode(e.target.value)
 })
 
@@ -170,7 +170,7 @@ Object.entries(scales).forEach(([colorType, scaleData]) => {
 
 ```javascript
 // 模式选择器事件
-modeSelect.addEventListener('change', (e) => {
+modeSelect.addEventListener('change', e => {
   themeManager.setMode(e.target.value)
 })
 

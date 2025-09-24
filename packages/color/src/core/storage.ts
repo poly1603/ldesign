@@ -10,9 +10,7 @@ import type { CacheItem, CacheOptions, LRUCache, Storage } from './types'
 export class LocalStorage implements Storage {
   getItem(key: string): string | null {
     try {
-      return typeof localStorage !== 'undefined'
-        ? localStorage.getItem(key)
-        : null
+      return typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null
     }
     catch {
       return null
@@ -59,9 +57,7 @@ export class LocalStorage implements Storage {
 export class SessionStorage implements Storage {
   getItem(key: string): string | null {
     try {
-      return typeof sessionStorage !== 'undefined'
-        ? sessionStorage.getItem(key)
-        : null
+      return typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(key) : null
     }
     catch {
       return null
@@ -352,9 +348,7 @@ export function createStorage(
 /**
  * 创建 LRU 缓存实例
  */
-export function createLRUCache<T = unknown>(
-  options?: CacheOptions,
-): LRUCache<T> {
+export function createLRUCache<T = unknown>(options?: CacheOptions): LRUCache<T> {
   return new LRUCacheImpl<T>(options)
 }
 

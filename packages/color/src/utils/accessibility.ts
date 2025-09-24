@@ -135,14 +135,14 @@ export function getAccessibleColorSuggestions(
 
   // 去重并按对比度排序
   const uniqueSuggestions = suggestions
-    .filter((item, index, self) =>
-      index === self.findIndex(t =>
-        t.foreground === item.foreground && t.background === item.background,
-      ),
+    .filter(
+      (item, index, self) =>
+        index
+        === self.findIndex(t => t.foreground === item.foreground && t.background === item.background),
     )
-    .sort((a, b) =>
-      getContrastRatio(b.foreground, b.background)
-      - getContrastRatio(a.foreground, a.background),
+    .sort(
+      (a, b) =>
+        getContrastRatio(b.foreground, b.background) - getContrastRatio(a.foreground, a.background),
     )
 
   return uniqueSuggestions.slice(0, 10) // 返回前10个建议
@@ -228,9 +228,7 @@ export function checkColorBlindnessAccessibility(
     const issues: { color1: string, color2: string, problem: string }[] = []
 
     // 模拟所有颜色
-    const simulatedColors = colors.map(color =>
-      simulateColorBlindness(color, type).simulated,
-    )
+    const simulatedColors = colors.map(color => simulateColorBlindness(color, type).simulated)
 
     // 检查颜色是否变得难以区分
     for (let i = 0; i < colors.length; i++) {

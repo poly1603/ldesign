@@ -18,7 +18,7 @@ console.log(getDefaultProcessorStatus())
 ## 主题预生成
 
 ```ts
-await themeManager.preGenerateAllThemes()   // 或单个：preGenerateTheme('green')
+await themeManager.preGenerateAllThemes() // 或单个：preGenerateTheme('green')
 ```
 
 ## 缓存配置
@@ -35,4 +35,3 @@ const themeManager = await createThemeManagerWithPresets({
 - 应用启动后预生成常用主题
 - 在交互前（首屏）避免大计算，改在 idle 阶段完成
 - 使用按需导入减少打包体积
-

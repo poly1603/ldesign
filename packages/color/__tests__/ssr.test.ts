@@ -11,7 +11,12 @@ describe('SSR API', () => {
   })
 
   it('renderThemeCSS 应该生成包含 light/dark 两段的 CSS 字符串', async () => {
-    const tm = new ThemeManager({ themes: [defaultTheme, greenTheme], cssPrefix: '--color', idleProcessing: false, autoDetect: false })
+    const tm = new ThemeManager({
+      themes: [defaultTheme, greenTheme],
+      cssPrefix: '--color',
+      idleProcessing: false,
+      autoDetect: false,
+    })
     await tm.preGenerateTheme('default')
 
     const css = await tm.renderThemeCSS('default', 'light', { includeComments: true })
@@ -27,7 +32,12 @@ describe('SSR API', () => {
     style.textContent = ':root{ --color-primary: #165DFF; }'
     document.head.appendChild(style)
 
-    const tm = new ThemeManager({ themes: [defaultTheme], cssPrefix: '--color', idleProcessing: false, autoDetect: false })
+    const tm = new ThemeManager({
+      themes: [defaultTheme],
+      cssPrefix: '--color',
+      idleProcessing: false,
+      autoDetect: false,
+    })
     tm.hydrateMountedStyles('ldesign-theme-variables')
 
     // 再执行 removeTheme，应该能移除该样式
@@ -35,4 +45,3 @@ describe('SSR API', () => {
     expect(document.getElementById('ldesign-theme-variables')).toBeFalsy()
   })
 })
-

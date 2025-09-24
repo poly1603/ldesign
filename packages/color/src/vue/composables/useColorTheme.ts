@@ -136,8 +136,8 @@ export function useColorTheme(options: UseColorThemeOptions = {}): UseColorTheme
       try {
         const builtinThemes = themeManager.getAvailableThemes()
         if (Array.isArray(builtinThemes)) {
-          themes = builtinThemes.filter((theme: ThemeConfig) =>
-            !disabledBuiltinThemes.includes(theme.name),
+          themes = builtinThemes.filter(
+            (theme: ThemeConfig) => !disabledBuiltinThemes.includes(theme.name),
           )
         }
       }
@@ -170,10 +170,13 @@ export function useColorTheme(options: UseColorThemeOptions = {}): UseColorTheme
       return
 
     try {
-      localStorage.setItem(storageKey, JSON.stringify({
-        theme: currentTheme.value,
-        mode: currentMode.value,
-      }))
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          theme: currentTheme.value,
+          mode: currentMode.value,
+        }),
+      )
     }
     catch (error) {
       if (import.meta.env.DEV) {

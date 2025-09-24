@@ -4,4 +4,3 @@
 import { addIdleTask } from '@ldesign/color'
 addIdleTask(() => console.log('idle work'))
 ```
-

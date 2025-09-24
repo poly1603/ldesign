@@ -116,7 +116,10 @@ describe('cacheImpl', () => {
     })
 
     it('应该支持从可迭代对象初始化', () => {
-      const initialData = [['x', 10], ['y', 20]] as [string, number][]
+      const initialData = [
+        ['x', 10],
+        ['y', 20],
+      ] as [string, number][]
       const cache = new CacheImpl(initialData)
 
       expect(cache.get('x')).toBe(10)
@@ -333,7 +336,10 @@ describe('工厂函数', () => {
   })
 
   it('createCache应该支持初始数据', () => {
-    const initialData = new Map([['a', 1], ['b', 2]])
+    const initialData = new Map([
+      ['a', 1],
+      ['b', 2],
+    ])
     const cache = createCache(initialData)
 
     expect(cache.get('a')).toBe(1)
@@ -355,7 +361,10 @@ describe('工厂函数', () => {
   })
 
   it('createLRUCache应该支持初始数据', () => {
-    const initialData = [['a', 1], ['b', 2]] as [string, number][]
+    const initialData = [
+      ['a', 1],
+      ['b', 2],
+    ] as [string, number][]
     const cache = createLRUCache(3, initialData)
 
     expect(cache.get('a')).toBe(1)

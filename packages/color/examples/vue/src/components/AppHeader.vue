@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useTheme } from '@ldesign/color/vue'
 
-const { currentTheme, currentMode, isDark, availableThemes, toggleMode }
-  = useTheme()
+const { currentTheme, currentMode, isDark, availableThemes, toggleMode } = useTheme()
 </script>
 
 <template>
@@ -10,20 +9,12 @@ const { currentTheme, currentMode, isDark, availableThemes, toggleMode }
     <div class="container">
       <div class="header-content">
         <div class="logo-section">
-          <h1 class="title">
-            @ldesign/color
-          </h1>
-          <p class="subtitle">
-            Vue 3 集成示例
-          </p>
+          <h1 class="title">@ldesign/color</h1>
+          <p class="subtitle">Vue 3 集成示例</p>
         </div>
 
         <div class="header-actions">
-          <button
-            class="btn btn-secondary btn-sm"
-            :title="`切换到${isDark ? '亮色' : '暗色'}模式`"
-            @click="toggleMode"
-          >
+          <button class="btn btn-secondary btn-sm" :title="`切换到${isDark ? '亮色' : '暗色'}模式`" @click="toggleMode">
             <span class="icon">{{ isDark ? '☀️' : '🌙' }}</span>
             {{ isDark ? '亮色' : '暗色' }}
           </button>

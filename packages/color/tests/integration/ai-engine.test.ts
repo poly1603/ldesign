@@ -143,9 +143,7 @@ describe('aIColorEngine Integration Tests', () => {
     ]
 
     const predictions = await Promise.all(
-      inputs.map(input =>
-        engine.predictNextColor(input.baseColor, input.context),
-      ),
+      inputs.map(input => engine.predictNextColor(input.baseColor, input.context)),
     )
 
     expect(predictions).toHaveLength(3)
@@ -199,9 +197,9 @@ describe('aIColorEngine Integration Tests', () => {
     const startTime = Date.now()
 
     // Perform multiple operations
-    const operations = Array.from({ length: 10 }).fill(null).map((_, i) =>
-      engine.getRecommendations(`#${i.toString(16).padStart(6, '0')}`, {}),
-    )
+    const operations = Array.from({ length: 10 })
+      .fill(null)
+      .map((_, i) => engine.getRecommendations(`#${i.toString(16).padStart(6, '0')}`, {}))
 
     await Promise.all(operations)
 

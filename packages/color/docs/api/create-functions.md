@@ -14,5 +14,5 @@ import {
 - createThemeManager(options?): ThemeManagerInstance
 - createThemeManagerWithPresets(options?): Promise<ThemeManagerInstance>
 - createSimpleThemeManager(options?): Promise<ThemeManagerInstance>
-- createCustomThemeManager(primaryColor, options?): Promise<ThemeManagerInstance>
-
+- createCustomThemeManager(primaryColor, options?):
+  Promise<ThemeManagerInstance>

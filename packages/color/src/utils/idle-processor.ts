@@ -242,9 +242,7 @@ export class IdleProcessorImpl implements IdleProcessor {
 /**
  * 创建闲时处理器实例
  */
-export function createIdleProcessor(
-  options?: IdleProcessorOptions,
-): IdleProcessor {
+export function createIdleProcessor(options?: IdleProcessorOptions): IdleProcessor {
   return new IdleProcessorImpl(options)
 }
 
@@ -256,10 +254,7 @@ export const defaultIdleProcessor = new IdleProcessorImpl()
 /**
  * 便捷函数：添加闲时任务到默认处理器
  */
-export function addIdleTask(
-  task: () => void | Promise<void>,
-  priority?: number,
-): void {
+export function addIdleTask(task: () => void | Promise<void>, priority?: number): void {
   defaultIdleProcessor.addTask(task, priority)
 }
 

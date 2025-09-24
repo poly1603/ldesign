@@ -57,7 +57,12 @@ export interface ColorPluginOptions {
 /**
  * 默认配置
  */
-const defaultOptions: Required<Omit<ColorPluginOptions, 'customThemes' | 'disabledBuiltinThemes' | 'onReady' | 'onThemeChanged' | 'onError'>> & {
+const defaultOptions: Required<
+  Omit<
+    ColorPluginOptions,
+    'customThemes' | 'disabledBuiltinThemes' | 'onReady' | 'onThemeChanged' | 'onError'
+  >
+> & {
   customThemes: ColorPluginOptions['customThemes']
   disabledBuiltinThemes: ColorPluginOptions['disabledBuiltinThemes']
   onReady: ColorPluginOptions['onReady']
@@ -105,17 +110,14 @@ function processThemeConfig(config: ColorPluginOptions): ThemeConfig[] {
         builtin: false,
         light: {
           // 确保 primary 存在，避免类型错误
-          primary: (customTheme.light as any)?.primary
-            ?? customTheme.colors?.primary
-            ?? '#1890ff',
-          ...(customTheme.light || {} as any),
+          primary: (customTheme.light as any)?.primary ?? customTheme.colors?.primary ?? '#1890ff',
+          ...(customTheme.light || ({} as any)),
         } as any,
         dark: customTheme.dark
           ? ({
-              primary: (customTheme.dark as any)?.primary
-                ?? customTheme.colors?.primary
-                ?? '#177ddc',
-              ...(customTheme.dark || {} as any),
+              primary:
+                (customTheme.dark as any)?.primary ?? customTheme.colors?.primary ?? '#177ddc',
+              ...(customTheme.dark || ({} as any)),
             } as any)
           : undefined,
         colors: customTheme.colors,
@@ -185,7 +187,7 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
     async install(engine: any) {
       try {
         // 获取 Vue 应用实例
-        const app = engine.getApp ? engine.getApp() : (engine.app || engine)
+        const app = engine.getApp ? engine.getApp() : engine.app || engine
 
         if (!app) {
           throw new Error('无法获取 Vue 应用实例')
@@ -222,7 +224,7 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
 
         // 同时添加到 window 对象作为备用方案
         if (typeof window !== 'undefined') {
-          (window as any).themeManager = themeManager
+          ;(window as any).themeManager = themeManager
         }
 
         // 注册组件 (暂时注释掉，等待 Vue 构建支持)
@@ -240,7 +242,10 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
           console.log('🎨 Color Engine 插件安装成功')
           console.log('🎯 主题管理器:', themeManager)
           console.log('⚙️ 配置:', config)
-          console.log('🎨 可用主题:', themeManagerConfig.themes.map(t => t.name))
+          console.log(
+            '🎨 可用主题:',
+            themeManagerConfig.themes.map(t => t.name),
+          )
         }
 
         // 将配置存储到引擎中
@@ -400,7 +405,7 @@ export function createColorPlugin(options: ColorPluginOptions = {}): Plugin {
 
         // 同时添加到 window 对象作为备用方案
         if (typeof window !== 'undefined') {
-          (window as any).themeManager = themeManager
+          ;(window as any).themeManager = themeManager
         }
 
         // 注册组件 (暂时注释掉，等待 Vue 构建支持)
@@ -497,21 +502,25 @@ export function useTheme(): UseThemeReturn {
       isLight: computed(() => true),
       availableThemes: computed(() => [] as string[]),
       themeManager: null,
-      setTheme: async () => { /* no-op */ },
-      setMode: async () => { /* no-op */ },
-      toggleMode: async () => { /* no-op */ },
+      setTheme: async () => {
+        /* no-op */
+      },
+      setMode: async () => {
+        /* no-op */
+      },
+      toggleMode: async () => {
+        /* no-op */
+      },
       getCurrentTheme: () => 'blue',
       getCurrentMode: () => 'light' as const,
     }
   }
 
   // 响应式状态（通过公开方法而非私有字段获取）
-  const initialTheme = typeof themeManager.getCurrentTheme === 'function'
-    ? themeManager.getCurrentTheme()
-    : 'blue'
-  const initialMode = typeof themeManager.getCurrentMode === 'function'
-    ? themeManager.getCurrentMode()
-    : 'light'
+  const initialTheme
+    = typeof themeManager.getCurrentTheme === 'function' ? themeManager.getCurrentTheme() : 'blue'
+  const initialMode
+    = typeof themeManager.getCurrentMode === 'function' ? themeManager.getCurrentMode() : 'light'
 
   const currentTheme = ref<string>(initialTheme)
   const currentMode = ref<'light' | 'dark'>(initialMode)
@@ -554,7 +563,9 @@ export function useTheme(): UseThemeReturn {
 
   const setMode = async (mode: 'light' | 'dark') => {
     try {
-      await themeManager.setMode ? themeManager.setMode(mode) : themeManager.setTheme(currentTheme.value, mode)
+      ;(await themeManager.setMode)
+        ? themeManager.setMode(mode)
+        : themeManager.setTheme(currentTheme.value, mode)
       currentMode.value = mode
     }
     catch (error) {
@@ -579,8 +590,14 @@ export function useTheme(): UseThemeReturn {
     setTheme,
     setMode,
     toggleMode,
-    getCurrentTheme: () => (typeof themeManager.getCurrentTheme === 'function' ? themeManager.getCurrentTheme() : currentTheme.value),
-    getCurrentMode: () => (typeof themeManager.getCurrentMode === 'function' ? themeManager.getCurrentMode() : currentMode.value),
+    getCurrentTheme: () =>
+      typeof themeManager.getCurrentTheme === 'function'
+        ? themeManager.getCurrentTheme()
+        : currentTheme.value,
+    getCurrentMode: () =>
+      typeof themeManager.getCurrentMode === 'function'
+        ? themeManager.getCurrentMode()
+        : currentMode.value,
   }
 }
 

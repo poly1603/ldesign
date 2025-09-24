@@ -13,11 +13,11 @@ export interface ColorPickerOptions {
   showInput?: boolean
   paletteColors?: string[]
   maxHistory?: number
-  onChange?: (color: ColorValue) => void
-  onSave?: (color: ColorValue) => void
+  onChange?: (color: ColorPickerValue) => void
+  onSave?: (color: ColorPickerValue) => void
 }
 
-export interface ColorValue {
+export interface ColorPickerValue {
   hex: string
   rgb: { r: number, g: number, b: number, a?: number }
   hsl: { h: number, s: number, l: number, a?: number }
@@ -27,7 +27,7 @@ export interface ColorValue {
 export class AdvancedColorPicker {
   private container: HTMLElement
   private options: Required<ColorPickerOptions>
-  private currentColor: ColorValue
+  private currentColor: ColorPickerValue
   private history: string[] = []
   private isDragging = false
 
@@ -118,8 +118,9 @@ export class AdvancedColorPicker {
               </div>
             </div>
             
-            ${this.options.showAlpha
-              ? `
+            ${
+              this.options.showAlpha
+                ? `
               <div class="slider-group">
                 <label>Alpha</label>
                 <div class="alpha-slider" id="alpha-slider">
@@ -128,12 +129,14 @@ export class AdvancedColorPicker {
                 </div>
               </div>
             `
-              : ''}
+                : ''
+            }
           </div>
           
           <!-- Input Fields -->
-          ${this.options.showInput
-            ? `
+          ${
+            this.options.showInput
+              ? `
             <div class="input-section">
               <div class="input-tabs">
                 <button class="tab-btn active" data-format="hex">HEX</button>
@@ -166,31 +169,39 @@ export class AdvancedColorPicker {
               </div>
             </div>
           `
-            : ''}
+              : ''
+          }
           
           <!-- Palette -->
-          ${this.options.showPalette
-            ? `
+          ${
+            this.options.showPalette
+              ? `
             <div class="palette-section">
               <h4>Quick Colors</h4>
               <div class="palette-colors">
-                ${this.options.paletteColors.map(color =>
-                  `<div class="palette-color" data-color="${color}" style="background: ${color}"></div>`,
-                ).join('')}
+                ${this.options.paletteColors
+                  .map(
+                    color =>
+                      `<div class="palette-color" data-color="${color}" style="background: ${color}"></div>`,
+                  )
+                  .join('')}
               </div>
             </div>
           `
-            : ''}
+              : ''
+          }
           
           <!-- History -->
-          ${this.options.showHistory
-            ? `
+          ${
+            this.options.showHistory
+              ? `
             <div class="history-section">
               <h4>Recent Colors</h4>
               <div class="history-colors" id="history-colors"></div>
             </div>
           `
-            : ''}
+              : ''
+          }
         </div>
         
         <div class="picker-footer">
@@ -244,7 +255,7 @@ export class AdvancedColorPicker {
     tabs.forEach((tab) => {
       tab.addEventListener('click', (e) => {
         const el = e.currentTarget as HTMLElement
-        const format = (el.getAttribute('data-format') || 'hex')
+        const format = el.getAttribute('data-format') || 'hex'
         this.switchInputFormat(format)
       })
     })
@@ -646,7 +657,7 @@ export class AdvancedColorPicker {
   }
 
   // Color conversion methods
-  private parseColor(color: string): ColorValue {
+  private parseColor(color: string): ColorPickerValue {
     // Parse hex color
     const hex = color
     const rgb = this.hexToRgb(hex)
@@ -678,7 +689,12 @@ export class AdvancedColorPicker {
     return hex.toUpperCase()
   }
 
-  private rgbToHsl(rgb: { r: number, g: number, b: number, a?: number }): { h: number, s: number, l: number, a?: number } {
+  private rgbToHsl(rgb: { r: number, g: number, b: number, a?: number }): {
+    h: number
+    s: number
+    l: number
+    a?: number
+  } {
     const r = rgb.r / 255
     const g = rgb.g / 255
     const b = rgb.b / 255
@@ -710,7 +726,12 @@ export class AdvancedColorPicker {
     return { h: h * 360, s: s * 100, l: l * 100, a: rgb.a }
   }
 
-  private hslToRgb(h: number, s: number, l: number, a?: number): { r: number, g: number, b: number, a?: number } {
+  private hslToRgb(
+    h: number,
+    s: number,
+    l: number,
+    a?: number,
+  ): { r: number, g: number, b: number, a?: number } {
     h = h / 360
     s = s / 100
     l = l / 100
@@ -751,7 +772,12 @@ export class AdvancedColorPicker {
     }
   }
 
-  private rgbToHsv(rgb: { r: number, g: number, b: number, a?: number }): { h: number, s: number, v: number, a?: number } {
+  private rgbToHsv(rgb: { r: number, g: number, b: number, a?: number }): {
+    h: number
+    s: number
+    v: number
+    a?: number
+  } {
     const r = rgb.r / 255
     const g = rgb.g / 255
     const b = rgb.b / 255
@@ -783,7 +809,12 @@ export class AdvancedColorPicker {
     return { h: h * 360, s: s * 100, v: v * 100, a: rgb.a }
   }
 
-  private hsvToRgb(h: number, s: number, v: number, a?: number): { r: number, g: number, b: number, a?: number } {
+  private hsvToRgb(
+    h: number,
+    s: number,
+    v: number,
+    a?: number,
+  ): { r: number, g: number, b: number, a?: number } {
     h = h / 360
     s = s / 100
     v = v / 100
@@ -797,13 +828,38 @@ export class AdvancedColorPicker {
     let r, g, b
 
     switch (i % 6) {
-      case 0: r = v; g = t; b = p; break
-      case 1: r = q; g = v; b = p; break
-      case 2: r = p; g = v; b = t; break
-      case 3: r = p; g = q; b = v; break
-      case 4: r = t; g = p; b = v; break
-      case 5: r = v; g = p; b = q; break
-      default: r = g = b = 0
+      case 0:
+        r = v
+        g = t
+        b = p
+        break
+      case 1:
+        r = q
+        g = v
+        b = p
+        break
+      case 2:
+        r = p
+        g = v
+        b = t
+        break
+      case 3:
+        r = p
+        g = q
+        b = v
+        break
+      case 4:
+        r = t
+        g = p
+        b = v
+        break
+      case 5:
+        r = v
+        g = p
+        b = q
+        break
+      default:
+        r = g = b = 0
     }
 
     return {
@@ -863,7 +919,7 @@ export class AdvancedColorPicker {
     this.setColorFromHSV(h, s, v, a)
   }
 
-  getColor(): ColorValue {
+  getColor(): ColorPickerValue {
     return { ...this.currentColor }
   }
 
@@ -925,9 +981,12 @@ export class AdvancedColorPicker {
     if (!historyContainer)
       return
 
-    historyContainer.innerHTML = this.history.map(color =>
-      `<div class="history-color" data-color="${color}" style="background: ${color}"></div>`,
-    ).join('')
+    historyContainer.innerHTML = this.history
+      .map(
+        color =>
+          `<div class="history-color" data-color="${color}" style="background: ${color}"></div>`,
+      )
+      .join('')
 
     // Add click handlers
     historyContainer.querySelectorAll('.history-color').forEach((el) => {

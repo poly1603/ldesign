@@ -60,7 +60,7 @@ describe('color-utils', () => {
 
       const modes = ['multiply', 'screen', 'overlay', 'soft-light', 'hard-light']
 
-      modes.forEach((mode) => {
+      modes.forEach(mode => {
         const result = blendColors(base, overlay, mode as any, 0.5)
         expect(result).toMatch(/^#[0-9a-f]{6}$/i)
       })
@@ -139,7 +139,7 @@ describe('color-utils', () => {
     it('应该生成单色调色板', () => {
       const palette = generateMonochromaticPalette('#1890ff', 5)
       expect(palette).toHaveLength(5)
-      palette.forEach((color) => {
+      palette.forEach(color => {
         expect(color).toMatch(/^#[0-9a-f]{6}$/i)
       })
     })
@@ -147,7 +147,7 @@ describe('color-utils', () => {
     it('应该生成类似色调色板', () => {
       const palette = generateAnalogousPalette('#1890ff', 5)
       expect(palette).toHaveLength(5)
-      palette.forEach((color) => {
+      palette.forEach(color => {
         expect(color).toMatch(/^#[0-9a-f]{6}$/i)
       })
     })
@@ -155,7 +155,7 @@ describe('color-utils', () => {
     it('应该生成互补色调色板', () => {
       const palette = generateComplementaryPalette('#1890ff')
       expect(palette).toHaveLength(2)
-      palette.forEach((color) => {
+      palette.forEach(color => {
         expect(color).toMatch(/^#[0-9a-f]{6}$/i)
       })
     })
@@ -163,7 +163,7 @@ describe('color-utils', () => {
     it('应该生成三元色调色板', () => {
       const palette = generateTriadicPalette('#1890ff')
       expect(palette).toHaveLength(3)
-      palette.forEach((color) => {
+      palette.forEach(color => {
         expect(color).toMatch(/^#[0-9a-f]{6}$/i)
       })
     })
@@ -171,7 +171,7 @@ describe('color-utils', () => {
     it('应该生成四元色调色板', () => {
       const palette = generateTetradicPalette('#1890ff')
       expect(palette).toHaveLength(4)
-      palette.forEach((color) => {
+      palette.forEach(color => {
         expect(color).toMatch(/^#[0-9a-f]{6}$/i)
       })
     })

@@ -15,6 +15,7 @@ import type {
   SystemThemeDetector,
   TextSize,
   ThemeConfig,
+  ThemeEventDataMap,
   ThemeEventListener,
   ThemeEventType,
   ThemeManagerInstance,
@@ -68,9 +69,7 @@ const DEFAULT_OPTIONS: Required<
  * - 空闲时预生成主题数据以提升性能
  */
 export class ThemeManager implements ThemeManagerInstance {
-  private options: Required<
-    Omit<ThemeManagerOptions, 'onThemeChanged' | 'onError' | 'themes'>
-  > & {
+  private options: Required<Omit<ThemeManagerOptions, 'onThemeChanged' | 'onError' | 'themes'>> & {
     onThemeChanged?: (theme: string, mode: ColorMode) => void
     onError?: (error: Error) => void
     themes: ThemeConfig[]
@@ -173,6 +172,7 @@ export class ThemeManager implements ThemeManagerInstance {
       this.eventEmitter.emit('theme-changed', {
         theme: this.currentTheme,
         mode: this.currentMode,
+        timestamp: Date.now(),
       })
     }
     catch (error) {
@@ -232,8 +232,9 @@ export class ThemeManager implements ThemeManagerInstance {
       this.eventEmitter.emit('theme-changed', {
         theme: this.currentTheme,
         mode: this.currentMode,
-        oldTheme,
-        oldMode,
+        previousTheme: oldTheme,
+        previousMode: oldMode,
+        timestamp: Date.now(),
       })
 
       // 调用回调
@@ -278,9 +279,7 @@ export class ThemeManager implements ThemeManagerInstance {
    */
   registerTheme(config: ThemeConfig): void {
     // 检查主题是否已存在
-    const existingIndex = this.options.themes.findIndex(
-      t => t.name === config.name,
-    )
+    const existingIndex = this.options.themes.findIndex(t => t.name === config.name)
 
     if (existingIndex >= 0) {
       // 更新现有主题
@@ -291,7 +290,7 @@ export class ThemeManager implements ThemeManagerInstance {
       this.options.themes.push(config)
     }
 
-    this.eventEmitter.emit('theme-registered', { theme: config.name })
+    this.eventEmitter.emit('theme-registered', { theme: config.name, config })
 
     // 如果启用了闲时处理，预生成主题
     if (this.options.idleProcessing && this.isInitialized) {
@@ -367,7 +366,7 @@ export class ThemeManager implements ThemeManagerInstance {
       const generatedTheme = await this.generateThemeData(config)
       this.cache.set(cacheKey, generatedTheme)
 
-      this.eventEmitter.emit('theme-generated', { theme: name })
+      this.eventEmitter.emit('theme-generated', { theme: name, mode: 'light' })
     }
     catch (error) {
       this.handleError(error as Error)
@@ -382,9 +381,7 @@ export class ThemeManager implements ThemeManagerInstance {
    * 预生成所有已注册主题的数据
    */
   async preGenerateAllThemes(): Promise<void> {
-    const tasks = this.getThemeNames().map(
-      name => () => this.preGenerateTheme(name),
-    )
+    const tasks = this.getThemeNames().map(name => () => this.preGenerateTheme(name))
 
     if (this.options.idleProcessing) {
       // 使用闲时处理
@@ -430,7 +427,10 @@ export class ThemeManager implements ThemeManagerInstance {
         const dark = generatedTheme.dark.cssVariables
         // 如果实现了 injectThemeVariables 则优先使用
         if (this.cssInjector.injectThemeVariables) {
-          this.cssInjector.injectThemeVariables(light, dark, { name, primaryColor: light[`${this.options.cssPrefix}-primary`] as string || '#165DFF' })
+          this.cssInjector.injectThemeVariables(light, dark, {
+            name,
+            primaryColor: (light[`${this.options.cssPrefix}-primary`] as string) || '#165DFF',
+          })
         }
         else {
           const modeData = generatedTheme[mode]
@@ -458,7 +458,11 @@ export class ThemeManager implements ThemeManagerInstance {
   /**
    * 渲染（SSR）指定主题的完整 CSS 文本
    */
-  async renderThemeCSS(name: string, mode: ColorMode = 'light', options?: { includeComments?: boolean }): Promise<string> {
+  async renderThemeCSS(
+    name: string,
+    mode: ColorMode = 'light',
+    options?: { includeComments?: boolean },
+  ): Promise<string> {
     const config = this.getThemeConfig(name)
     if (!config) {
       throw new Error(`Theme config for \"${name}\" not found`)
@@ -475,18 +479,22 @@ export class ThemeManager implements ThemeManagerInstance {
 
     // 优先使用注入器的构建能力
     if (this.cssInjector.buildThemeCSSText) {
-      const primary = (generated[mode].cssVariables[`${this.options.cssPrefix}-primary`] as string) || '#165DFF'
+      const primary
+        = (generated[mode].cssVariables[`${this.options.cssPrefix}-primary`] as string) || '#165DFF'
       return this.cssInjector.buildThemeCSSText(light, dark, { name, primaryColor: primary })
     }
 
     // 退回到手动拼接
-    const makeDecls = (vars: Record<string, string>) => Object.entries(vars)
-      .map(([k, v]) => `  ${k}: ${v};`)
-      .join('\n')
+    const makeDecls = (vars: Record<string, string>) =>
+      Object.entries(vars)
+        .map(([k, v]) => `  ${k}: ${v};`)
+        .join('\n')
 
     const lightDecls = makeDecls(light)
     const darkDecls = makeDecls(dark)
-    const head = options?.includeComments ? `/* LDesign Theme: ${name} | Generated: ${new Date().toISOString()} */\n` : ''
+    const head = options?.includeComments
+      ? `/* LDesign Theme: ${name} | Generated: ${new Date().toISOString()} */\n`
+      : ''
     return `${head}:root {\n${lightDecls}\n}\n\n:root[data-theme-mode=\"dark\"] {\n${darkDecls}\n}`
   }
 
@@ -498,7 +506,10 @@ export class ThemeManager implements ThemeManagerInstance {
       if (typeof document === 'undefined')
         return
       const id = idOrSelector || 'ldesign-theme-variables'
-      const el = id.startsWith('#') || id.startsWith('.') ? document.querySelector(id) : document.getElementById(id)
+      const el
+        = id.startsWith('#') || id.startsWith('.')
+          ? document.querySelector(id)
+          : document.getElementById(id)
       if (el && this.cssInjector.hydrate) {
         const targetId = (el as HTMLElement).id || 'ldesign-theme-variables'
         this.cssInjector.hydrate(targetId)
@@ -553,13 +564,18 @@ export class ThemeManager implements ThemeManagerInstance {
     })
 
     if (scopedInjector.injectThemeVariables) {
-      scopedInjector.injectThemeVariables(light, dark, { name, primaryColor: light[`${this.options.cssPrefix}-primary`] as string || '#165DFF' })
+      scopedInjector.injectThemeVariables(light, dark, {
+        name,
+        primaryColor: (light[`${this.options.cssPrefix}-primary`] as string) || '#165DFF',
+      })
     }
     else {
       // 退回：仅注入当前模式的扁平变量
       const modeVars = targetMode === 'dark' ? dark : light
-        // 简易注入
-        ; (scopedInjector as any).updateVariables ? scopedInjector.updateVariables(modeVars) : this.cssInjector.injectVariables(modeVars)
+      // 简易注入
+      ;(scopedInjector as any).updateVariables
+        ? scopedInjector.updateVariables(modeVars)
+        : this.cssInjector.injectVariables(modeVars)
     }
   }
 
@@ -573,7 +589,7 @@ export class ThemeManager implements ThemeManagerInstance {
     const el = document.getElementById(`ldesign-theme-variables-${scopeId}`)
     if (el)
       el.remove()
-    ; (root as HTMLElement).removeAttribute('data-theme-scope')
+    ;(root as HTMLElement).removeAttribute('data-theme-scope')
   }
 
   /**
@@ -630,13 +646,9 @@ export class ThemeManager implements ThemeManagerInstance {
 
     switch (this.options.storage) {
       case 'localStorage':
-        return typeof localStorage !== 'undefined'
-          ? localStorage
-          : this.createMemoryStorage()
+        return typeof localStorage !== 'undefined' ? localStorage : this.createMemoryStorage()
       case 'sessionStorage':
-        return typeof sessionStorage !== 'undefined'
-          ? sessionStorage
-          : this.createMemoryStorage()
+        return typeof sessionStorage !== 'undefined' ? sessionStorage : this.createMemoryStorage()
       case 'memory':
       default:
         return this.createMemoryStorage()
@@ -670,10 +682,7 @@ export class ThemeManager implements ThemeManagerInstance {
    */
   private createCache(): LRUCache<GeneratedTheme> {
     const cache = new Map<string, { value: GeneratedTheme, accessed: number }>()
-    const maxSize
-      = typeof this.options.cache === 'object'
-        ? this.options.cache.maxSize || 50
-        : 50
+    const maxSize = typeof this.options.cache === 'object' ? this.options.cache.maxSize || 50 : 50
 
     // 优化的LRU淘汰策略：使用双向链表概念但基于Map实现
     let accessOrder: string[] = []
@@ -766,13 +775,11 @@ export class ThemeManager implements ThemeManagerInstance {
     }
 
     // 监听系统主题变化
-    this.systemThemeWatcher = this.systemThemeDetector.watchSystemTheme(
-      (mode) => {
-        if (this.currentTheme === 'system') {
-          this.setMode(mode)
-        }
-      },
-    )
+    this.systemThemeWatcher = this.systemThemeDetector.watchSystemTheme((mode) => {
+      if (this.currentTheme === 'system') {
+        this.setMode(mode)
+      }
+    })
   }
 
   /**
@@ -848,9 +855,7 @@ export class ThemeManager implements ThemeManagerInstance {
    * @param config 主题配置
    * @throws 当主题配置缺失必要信息时抛出错误
    */
-  private async generateThemeData(
-    config: ThemeConfig,
-  ): Promise<GeneratedTheme> {
+  private async generateThemeData(config: ThemeConfig): Promise<GeneratedTheme> {
     // 验证主题配置的完整性
     if (!config.light?.primary) {
       throw new Error(`Theme \"${config.name}\" is missing light.primary color`)
@@ -879,22 +884,18 @@ export class ThemeManager implements ThemeManagerInstance {
       : lightColorConfig
 
     // 生成色阶
-    const lightScales = this.scaleGenerator.generateScales(
-      lightColorConfig,
-      'light',
-    )
-    const darkScales = this.scaleGenerator.generateScales(
-      darkColorConfig,
-      'dark',
-    )
+    const lightScales = this.scaleGenerator.generateScales(lightColorConfig, 'light')
+    const darkScales = this.scaleGenerator.generateScales(darkColorConfig, 'dark')
 
     // 生成完整的 CSS 变量（包含色阶、主色、语义化变量，带注释）
     const lightCompleteVariables = this.cssVariableGenerator.generateCompleteVariables(lightScales)
-    const lightSemanticVariables = this.cssVariableGenerator.generateCompleteSemanticVariables(lightScales)
+    const lightSemanticVariables
+      = this.cssVariableGenerator.generateCompleteSemanticVariables(lightScales)
     const lightCSSVariableGroups = [...lightCompleteVariables, ...lightSemanticVariables]
 
     const darkCompleteVariables = this.cssVariableGenerator.generateCompleteVariables(darkScales)
-    const darkSemanticVariables = this.cssVariableGenerator.generateCompleteSemanticVariables(darkScales)
+    const darkSemanticVariables
+      = this.cssVariableGenerator.generateCompleteSemanticVariables(darkScales)
     const darkCSSVariableGroups = [...darkCompleteVariables, ...darkSemanticVariables]
 
     // 为兼容性生成扁平的CSS变量
@@ -944,35 +945,31 @@ export class ThemeManager implements ThemeManagerInstance {
    * 统一错误处理：触发事件并调用错误回调
    */
   private handleError(error: Error): void {
-    this.eventEmitter.emit('error', error)
+    this.eventEmitter.emit('error', {
+      message: error.message,
+      code: error.name,
+      details: error,
+      timestamp: Date.now(),
+    })
     if (this.options.onError) {
       this.options.onError(error)
     }
   }
 
   // EventEmitter 方法代理
-  on<T = unknown>(
-    event: ThemeEventType,
-    listener: ThemeEventListener<T>,
-  ): void {
+  on<K extends ThemeEventType>(event: K, listener: ThemeEventListener<K>): void {
     this.eventEmitter.on(event, listener)
   }
 
-  off<T = unknown>(
-    event: ThemeEventType,
-    listener: ThemeEventListener<T>,
-  ): void {
+  off<K extends ThemeEventType>(event: K, listener: ThemeEventListener<K>): void {
     this.eventEmitter.off(event, listener)
   }
 
-  emit<T = unknown>(event: ThemeEventType, data?: T): void {
+  emit<K extends ThemeEventType>(event: K, data: ThemeEventDataMap[K]): void {
     this.eventEmitter.emit(event, data)
   }
 
-  once<T = unknown>(
-    event: ThemeEventType,
-    listener: ThemeEventListener<T>,
-  ): void {
+  once<K extends ThemeEventType>(event: K, listener: ThemeEventListener<K>): void {
     this.eventEmitter.once(event, listener)
   }
 
@@ -1059,7 +1056,7 @@ ${overridesDark.join('\n')}
     // 使用注入器注入覆盖层（单独 styleId）
     if ((this.cssInjector as any).updateStyleElement) {
       // 通过 injectVariables 注入固定文本不可行，这里直接走底层更新方法
-      ; (this.cssInjector as any).updateStyleElement(styleId, css)
+      ;(this.cssInjector as any).updateStyleElement(styleId, css)
     }
     else {
       // 回退：创建独立 <style>
@@ -1084,7 +1081,7 @@ ${overridesDark.join('\n')}
     const styleId = 'ldesign-theme-variables-contrast'
     // 通过注入器清理（如果可能）
     if ((this.cssInjector as any).removeVariables) {
-      (this.cssInjector as any).removeVariables(styleId)
+      ;(this.cssInjector as any).removeVariables(styleId)
     }
     const el = document.getElementById(styleId)
     if (el)

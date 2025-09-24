@@ -31,44 +31,44 @@ interface SimulationMatrix {
 const SIMULATION_MATRICES: SimulationMatrix = {
   // Protanopia (Red-blind) - Missing L cones
   protanopia: [
-    [0.567, 0.433, 0.000],
-    [0.558, 0.442, 0.000],
-    [0.000, 0.242, 0.758],
+    [0.567, 0.433, 0.0],
+    [0.558, 0.442, 0.0],
+    [0.0, 0.242, 0.758],
   ],
 
   // Protanomaly (Red-weak) - Anomalous L cones
   protanomaly: [
-    [0.817, 0.183, 0.000],
-    [0.333, 0.667, 0.000],
-    [0.000, 0.125, 0.875],
+    [0.817, 0.183, 0.0],
+    [0.333, 0.667, 0.0],
+    [0.0, 0.125, 0.875],
   ],
 
   // Deuteranopia (Green-blind) - Missing M cones
   deuteranopia: [
-    [0.625, 0.375, 0.000],
-    [0.700, 0.300, 0.000],
-    [0.000, 0.300, 0.700],
+    [0.625, 0.375, 0.0],
+    [0.7, 0.3, 0.0],
+    [0.0, 0.3, 0.7],
   ],
 
   // Deuteranomaly (Green-weak) - Anomalous M cones
   deuteranomaly: [
-    [0.800, 0.200, 0.000],
-    [0.258, 0.742, 0.000],
-    [0.000, 0.142, 0.858],
+    [0.8, 0.2, 0.0],
+    [0.258, 0.742, 0.0],
+    [0.0, 0.142, 0.858],
   ],
 
   // Tritanopia (Blue-blind) - Missing S cones
   tritanopia: [
-    [0.950, 0.050, 0.000],
-    [0.000, 0.433, 0.567],
-    [0.000, 0.475, 0.525],
+    [0.95, 0.05, 0.0],
+    [0.0, 0.433, 0.567],
+    [0.0, 0.475, 0.525],
   ],
 
   // Tritanomaly (Blue-weak) - Anomalous S cones
   tritanomaly: [
-    [0.967, 0.033, 0.000],
-    [0.000, 0.733, 0.267],
-    [0.000, 0.183, 0.817],
+    [0.967, 0.033, 0.0],
+    [0.0, 0.733, 0.267],
+    [0.0, 0.183, 0.817],
   ],
 
   // Achromatopsia (Complete color blindness)
@@ -80,9 +80,9 @@ const SIMULATION_MATRICES: SimulationMatrix = {
 
   // Achromatomaly (Partial color blindness)
   achromatomaly: [
-    [0.618, 0.320, 0.062],
+    [0.618, 0.32, 0.062],
     [0.163, 0.775, 0.062],
-    [0.163, 0.320, 0.516],
+    [0.163, 0.32, 0.516],
   ],
 }
 
@@ -168,11 +168,7 @@ export class ColorBlindnessSimulator {
       severity: 'low' | 'medium' | 'high'
     }> = []
 
-    const types: ColorBlindnessType[] = [
-      'protanopia',
-      'deuteranopia',
-      'tritanopia',
-    ]
+    const types: ColorBlindnessType[] = ['protanopia', 'deuteranopia', 'tritanopia']
 
     for (const type of types) {
       const conflicts: Array<[number, number]> = []
@@ -186,16 +182,21 @@ export class ColorBlindnessSimulator {
       }
 
       if (conflicts.length > 0) {
-        const severity = conflicts.length > colors.length / 2
-          ? 'high'
-          : conflicts.length > colors.length / 4 ? 'medium' : 'low'
+        const severity
+          = conflicts.length > colors.length / 2
+            ? 'high'
+            : conflicts.length > colors.length / 4
+              ? 'medium'
+              : 'low'
 
         issues.push({ type, conflicts, severity })
       }
     }
 
-    const score = Math.max(0, 100 - (issues.length * 10)
-      - issues.filter(i => i.severity === 'high').length * 20)
+    const score = Math.max(
+      0,
+      100 - issues.length * 10 - issues.filter(i => i.severity === 'high').length * 20,
+    )
 
     const recommendations = this.generateRecommendations(issues, colors)
 
@@ -289,10 +290,7 @@ export class ColorBlindnessSimulator {
     if (type) {
       const simFg = this.simulateColorBlindness(foreground, type)
       const simBg = this.simulateColorBlindness(background, type)
-      simulatedContrast = this.calculateContrast(
-        this.hexToRgb(simFg),
-        this.hexToRgb(simBg),
-      )
+      simulatedContrast = this.calculateContrast(this.hexToRgb(simFg), this.hexToRgb(simBg))
     }
 
     const minContrast = Math.min(normalContrast, simulatedContrast)
@@ -333,7 +331,7 @@ export class ColorBlindnessSimulator {
       switch (preferredHarmony) {
         case 'monochromatic':
           // Vary lightness
-          const lightness = (baseHsl.l + (palette.length * 15)) % 100
+          const lightness = (baseHsl.l + palette.length * 15) % 100
           candidate = this.hslToRgb({ ...baseHsl, l: lightness })
           break
 
@@ -357,7 +355,7 @@ export class ColorBlindnessSimulator {
 
         case 'triadic':
           // Three equidistant hues
-          const triadicHue = (baseHsl.h + (120 * palette.length)) % 360
+          const triadicHue = (baseHsl.h + 120 * palette.length) % 360
           candidate = this.hslToRgb({ ...baseHsl, h: triadicHue })
           break
       }
@@ -416,9 +414,7 @@ export class ColorBlindnessSimulator {
   private toLinearRgb(rgb: RGB): RGB {
     const toLinear = (c: number) => {
       const normalized = c / 255
-      return normalized <= 0.04045
-        ? normalized / 12.92
-        : ((normalized + 0.055) / 1.055) ** 2.4
+      return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4
     }
 
     return {
@@ -430,9 +426,7 @@ export class ColorBlindnessSimulator {
 
   private fromLinearRgb(linear: RGB): RGB {
     const fromLinear = (c: number) => {
-      const value = c <= 0.0031308
-        ? c * 12.92
-        : 1.055 * c ** (1 / 2.4) - 0.055
+      const value = c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055
 
       return Math.round(Math.max(0, Math.min(255, value * 255)))
     }
@@ -465,20 +459,14 @@ export class ColorBlindnessSimulator {
   }
 
   private calculateColorDistance(rgb1: RGB, rgb2: RGB): number {
-    return Math.sqrt(
-      (rgb2.r - rgb1.r) ** 2
-      + (rgb2.g - rgb1.g) ** 2
-      + (rgb2.b - rgb1.b) ** 2,
-    )
+    return Math.sqrt((rgb2.r - rgb1.r) ** 2 + (rgb2.g - rgb1.g) ** 2 + (rgb2.b - rgb1.b) ** 2)
   }
 
   private calculateContrast(rgb1: RGB, rgb2: RGB): number {
     const getLuminance = (rgb: RGB) => {
       const [r, g, b] = [rgb.r, rgb.g, rgb.b].map((c) => {
         const normalized = c / 255
-        return normalized <= 0.03928
-          ? normalized / 12.92
-          : ((normalized + 0.055) / 1.055) ** 2.4
+        return normalized <= 0.03928 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4
       })
 
       return 0.2126 * r + 0.7152 * g + 0.0722 * b
@@ -589,8 +577,7 @@ export class ColorBlindnessSimulator {
     }
 
     // Sort by most problematic
-    const sortedProblems = Array.from(problemCounts.entries())
-      .sort((a, b) => b[1] - a[1])
+    const sortedProblems = Array.from(problemCounts.entries()).sort((a, b) => b[1] - a[1])
 
     if (sortedProblems.length > 0) {
       const [colorIndex, conflictCount] = sortedProblems[0]

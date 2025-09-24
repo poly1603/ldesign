@@ -41,9 +41,7 @@ test.describe('Vue 主题集成测试', () => {
 
     // 验证CSS变量已更新
     const primaryColor = await page.evaluate(() => {
-      return getComputedStyle(document.body).getPropertyValue(
-        '--l-color-primary',
-      )
+      return getComputedStyle(document.body).getPropertyValue('--l-color-primary')
     })
     expect(primaryColor.trim()).toBe('#1890ff')
   })

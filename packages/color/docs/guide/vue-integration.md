@@ -11,10 +11,12 @@ import App from './App.vue'
 import { createColorPlugin } from '@ldesign/color/vue'
 
 const app = createApp(App)
-app.use(createColorPlugin({
-  defaultTheme: 'default',
-  defaultMode: 'light',
-}))
+app.use(
+  createColorPlugin({
+    defaultTheme: 'default',
+    defaultMode: 'light',
+  })
+)
 app.mount('#app')
 ```
 
@@ -24,7 +26,14 @@ app.mount('#app')
 <script setup lang="ts">
 import { useTheme } from '@ldesign/color/vue'
 
-const { currentTheme, currentMode, isDark, setTheme, toggleMode, availableThemes } = useTheme()
+const {
+  currentTheme,
+  currentMode,
+  isDark,
+  setTheme,
+  toggleMode,
+  availableThemes,
+} = useTheme()
 </script>
 
 <template>
@@ -39,4 +48,3 @@ const { currentTheme, currentMode, isDark, setTheme, toggleMode, availableThemes
 ```
 
 更多组合式 API 详见 API - Vue 组合式。
-

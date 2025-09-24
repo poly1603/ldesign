@@ -250,9 +250,7 @@ function blendSoftLight(base: RGB, overlay: RGB, opacity: number): RGB {
       return 255 * (base - (1 - 2 * overlay) * base * (1 - base))
     }
     else {
-      const d = base < 0.25
-        ? ((16 * base - 12) * base + 4) * base
-        : Math.sqrt(base)
+      const d = base < 0.25 ? ((16 * base - 12) * base + 4) * base : Math.sqrt(base)
       return 255 * (base + (2 * overlay - 1) * (d - base))
     }
   }
@@ -453,7 +451,11 @@ export function interpolateColors(color1: string, color2: string, factor: number
  * @param steps 步数
  * @returns 颜色数组
  */
-export function generateColorGradient(startColor: string, endColor: string, steps: number): string[] {
+export function generateColorGradient(
+  startColor: string,
+  endColor: string,
+  steps: number,
+): string[] {
   if (steps < 2) {
     throw new Error('Steps must be at least 2')
   }
@@ -609,11 +611,7 @@ export function generateComplementaryPalette(baseColor: string): string[] {
  * @returns 调色板颜色数组
  */
 export function generateTriadicPalette(baseColor: string): string[] {
-  return [
-    baseColor,
-    adjustHue(baseColor, 120),
-    adjustHue(baseColor, 240),
-  ]
+  return [baseColor, adjustHue(baseColor, 120), adjustHue(baseColor, 240)]
 }
 
 /**
@@ -622,12 +620,7 @@ export function generateTriadicPalette(baseColor: string): string[] {
  * @returns 调色板颜色数组
  */
 export function generateTetradicPalette(baseColor: string): string[] {
-  return [
-    baseColor,
-    adjustHue(baseColor, 90),
-    adjustHue(baseColor, 180),
-    adjustHue(baseColor, 270),
-  ]
+  return [baseColor, adjustHue(baseColor, 90), adjustHue(baseColor, 180), adjustHue(baseColor, 270)]
 }
 
 /**
@@ -648,9 +641,22 @@ export function getPerceivedBrightness(color: string): number {
 
 /**
  * 判断颜色是否为深色
- * @param color 颜色 (hex)
- * @param threshold 阈值 (0-255)
- * @returns 是否为深色
+ *
+ * 基于感知亮度计算，使用人眼对不同颜色的敏感度权重。
+ * 默认阈值 128 是基于经验值，可根据具体需求调整。
+ *
+ * @param color 颜色值 (hex 格式，如 '#ff0000')
+ * @param threshold 判断阈值 (0-255)，默认 128。低于此值认为是深色
+ * @returns 如果颜色感知亮度低于阈值则返回 true
+ * @throws {Error} 当颜色格式无效时抛出错误
+ *
+ * @example
+ * ```typescript
+ * isDark('#000000') // true - 黑色
+ * isDark('#ffffff') // false - 白色
+ * isDark('#808080') // false - 中灰色（亮度 128）
+ * isDark('#404040') // true - 深灰色
+ * ```
  */
 export function isDark(color: string, threshold: number = 128): boolean {
   return getPerceivedBrightness(color) < threshold
@@ -658,18 +664,47 @@ export function isDark(color: string, threshold: number = 128): boolean {
 
 /**
  * 判断颜色是否为浅色
- * @param color 颜色 (hex)
- * @param threshold 阈值 (0-255)
- * @returns 是否为浅色
+ *
+ * 与 isDark 函数相反，判断颜色是否为浅色。
+ * 实际上是 isDark 的逻辑取反。
+ *
+ * @param color 颜色值 (hex 格式，如 '#ff0000')
+ * @param threshold 判断阈值 (0-255)，默认 128。高于此值认为是浅色
+ * @returns 如果颜色感知亮度高于或等于阈值则返回 true
+ * @throws {Error} 当颜色格式无效时抛出错误
+ *
+ * @example
+ * ```typescript
+ * isLight('#ffffff') // true - 白色
+ * isLight('#000000') // false - 黑色
+ * isLight('#c0c0c0') // true - 浅灰色
+ * ```
  */
 export function isLight(color: string, threshold: number = 128): boolean {
   return !isDark(color, threshold)
 }
 
 /**
- * 获取最佳文本颜色（黑色或白色）
- * @param backgroundColor 背景颜色 (hex)
- * @returns 最佳文本颜色 (hex)
+ * 获取在指定背景色上最佳的文本颜色
+ *
+ * 根据背景色的明暗程度自动选择黑色或白色文本，
+ * 确保文本具有良好的可读性和对比度。
+ *
+ * 算法逻辑：
+ * - 如果背景色较深，返回白色文本 (#ffffff)
+ * - 如果背景色较浅，返回黑色文本 (#000000)
+ *
+ * @param backgroundColor 背景颜色 (hex 格式)
+ * @returns 最佳文本颜色，'#ffffff' 或 '#000000'
+ * @throws {Error} 当背景色格式无效时抛出错误
+ *
+ * @example
+ * ```typescript
+ * getBestTextColor('#000000') // '#ffffff' - 黑色背景用白色文字
+ * getBestTextColor('#ffffff') // '#000000' - 白色背景用黑色文字
+ * getBestTextColor('#1890ff') // '#ffffff' - 蓝色背景用白色文字
+ * getBestTextColor('#f0f0f0') // '#000000' - 浅灰背景用黑色文字
+ * ```
  */
 export function getBestTextColor(backgroundColor: string): string {
   return isDark(backgroundColor) ? '#ffffff' : '#000000'

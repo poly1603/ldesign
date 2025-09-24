@@ -116,19 +116,19 @@ const screen = blendColors('#ff0000', '#0000ff', 'screen', 0.5)
 ### 支持的混合模式
 
 ```typescript
-type BlendMode = 
-  | 'normal'      // 正常
-  | 'multiply'    // 正片叠底
-  | 'screen'      // 滤色
-  | 'overlay'     // 叠加
-  | 'soft-light'  // 柔光
-  | 'hard-light'  // 强光
+type BlendMode =
+  | 'normal' // 正常
+  | 'multiply' // 正片叠底
+  | 'screen' // 滤色
+  | 'overlay' // 叠加
+  | 'soft-light' // 柔光
+  | 'hard-light' // 强光
   | 'color-dodge' // 颜色减淡
-  | 'color-burn'  // 颜色加深
-  | 'darken'      // 变暗
-  | 'lighten'     // 变亮
-  | 'difference'  // 差值
-  | 'exclusion'   // 排除
+  | 'color-burn' // 颜色加深
+  | 'darken' // 变暗
+  | 'lighten' // 变亮
+  | 'difference' // 差值
+  | 'exclusion' // 排除
 ```
 
 ## 颜色插值
@@ -172,8 +172,8 @@ const config = {
   stops: [
     { color: '#ff0000', position: 0 },
     { color: '#00ff00', position: 50 },
-    { color: '#0000ff', position: 100 }
-  ]
+    { color: '#0000ff', position: 100 },
+  ],
 }
 
 const css = generateLinearGradient(config)
@@ -188,7 +188,7 @@ import { generateRadialGradient } from '@ldesign/color'
 
 const stops = [
   { color: '#ff0000', position: 0 },
-  { color: '#0000ff', position: 100 }
+  { color: '#0000ff', position: 100 },
 ]
 
 const css = generateRadialGradient(stops, 'circle', 'closest-side')
@@ -256,8 +256,13 @@ interface GradientConfig {
   stops: GradientStop[]
 }
 
-type GradientDirection = 
-  | 'to-right' | 'to-left' | 'to-bottom' | 'to-top'
-  | 'to-bottom-right' | 'to-bottom-left' 
-  | 'to-top-right' | 'to-top-left'
+type GradientDirection =
+  | 'to-right'
+  | 'to-left'
+  | 'to-bottom'
+  | 'to-top'
+  | 'to-bottom-right'
+  | 'to-bottom-left'
+  | 'to-top-right'
+  | 'to-top-left'
 ```

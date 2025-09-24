@@ -64,11 +64,13 @@ describe('smartCache Integration Tests', () => {
 
   it('should handle compression when enabled', async () => {
     const largeData = {
-      colors: Array.from({ length: 1000 }).fill(null).map((_, i) => ({
-        id: i,
-        hex: `#${i.toString(16).padStart(6, '0')}`,
-        rgb: [i % 256, (i * 2) % 256, (i * 3) % 256],
-      })),
+      colors: Array.from({ length: 1000 })
+        .fill(null)
+        .map((_, i) => ({
+          id: i,
+          hex: `#${i.toString(16).padStart(6, '0')}`,
+          rgb: [i % 256, (i * 2) % 256, (i * 3) % 256],
+        })),
     }
 
     await cache.set('compressed', largeData, 'lru')
@@ -85,14 +87,10 @@ describe('smartCache Integration Tests', () => {
     ]
 
     // Batch set
-    await Promise.all(
-      batchData.map(item => cache.set(item.key, item.value, 'lru')),
-    )
+    await Promise.all(batchData.map(item => cache.set(item.key, item.value, 'lru')))
 
     // Batch get
-    const results = await Promise.all(
-      batchData.map(item => cache.get(item.key)),
-    )
+    const results = await Promise.all(batchData.map(item => cache.get(item.key)))
 
     expect(results).toEqual(batchData.map(item => item.value))
   })
@@ -134,20 +132,18 @@ describe('smartCache Integration Tests', () => {
   })
 
   it('should handle concurrent operations', async () => {
-    const operations = Array.from({ length: 100 }).fill(null).map((_, i) => ({
-      key: `concurrent-${i}`,
-      value: { index: i },
-    }))
+    const operations = Array.from({ length: 100 })
+      .fill(null)
+      .map((_, i) => ({
+        key: `concurrent-${i}`,
+        value: { index: i },
+      }))
 
     // Concurrent writes
-    await Promise.all(
-      operations.map(op => cache.set(op.key, op.value, 'lru')),
-    )
+    await Promise.all(operations.map(op => cache.set(op.key, op.value, 'lru')))
 
     // Concurrent reads
-    const results = await Promise.all(
-      operations.map(op => cache.get(op.key)),
-    )
+    const results = await Promise.all(operations.map(op => cache.get(op.key)))
 
     results.forEach((result, i) => {
       expect(result).toEqual({ index: i })

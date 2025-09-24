@@ -8,4 +8,3 @@
 ```ts
 import { createColorPlugin, createColorEnginePlugin } from '@ldesign/color/vue'
 ```
-

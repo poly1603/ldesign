@@ -3,9 +3,42 @@
  */
 
 /**
- * 颜色值类型 - 支持 hex、rgb、hsl 等格式
+ * HEX 颜色值类型 - 支持 #RRGGBB 和 #RGB 格式
  */
-export type ColorValue = string
+export type HexColor = `#${string}`
+
+/**
+ * RGB 颜色值类型 - 支持 rgb() 和 rgba() 格式
+ */
+export type RgbColor = `rgb(${string})` | `rgba(${string})`
+
+/**
+ * HSL 颜色值类型 - 支持 hsl() 和 hsla() 格式
+ */
+export type HslColor = `hsl(${string})` | `hsla(${string})`
+
+/**
+ * HSV 颜色值类型 - 支持 hsv() 格式
+ */
+export type HsvColor = `hsv(${string})`
+
+/**
+ * CSS 命名颜色类型
+ */
+export type NamedColor =
+  | 'red'
+  | 'green'
+  | 'blue'
+  | 'white'
+  | 'black'
+  | 'transparent'
+  | 'currentColor'
+  | string
+
+/**
+ * 颜色值类型 - 支持 hex、rgb、hsl、hsv 等格式
+ */
+export type ColorValue = HexColor | RgbColor | HslColor | HsvColor | NamedColor
 
 /**
  * 颜色模式
@@ -18,14 +51,29 @@ export type ColorMode = 'light' | 'dark'
 export type ThemeType = 'system' | 'light' | 'dark' | 'custom'
 
 /**
- * 颜色类别
+ * 颜色格式类型
  */
-export type ColorCategory =
-  | 'primary'
-  | 'success'
-  | 'warning'
-  | 'danger'
-  | 'gray'
+export type ColorFormat = 'hex' | 'rgb' | 'hsl' | 'hsv' | 'lab' | 'named'
+
+/**
+ * 颜色空间类型
+ */
+export type ColorSpace = 'srgb' | 'p3' | 'rec2020' | 'lab' | 'xyz'
+
+/**
+ * 基础颜色类别（向后兼容）
+ */
+export type BaseColorCategory = 'primary' | 'success' | 'warning' | 'danger' | 'gray'
+
+/**
+ * 扩展颜色类别
+ */
+export type ExtendedColorCategory = 'secondary' | 'accent' | 'info' | 'neutral'
+
+/**
+ * 完整颜色类别
+ */
+export type ColorCategory = BaseColorCategory | ExtendedColorCategory
 
 /**
  * WCAG 对比度等级
@@ -38,25 +86,78 @@ export type WCAGLevel = 'AA' | 'AAA'
 export type TextSize = 'small' | 'normal' | 'large'
 
 /**
- * 中性色类别
+ * 颜色验证结果接口
  */
-export type NeutralColorCategory =
-  | 'border'
-  | 'background'
-  | 'text'
-  | 'white'
-  | 'shadow'
+export interface ColorValidationResult {
+  /** 是否有效 */
+  isValid: boolean
+  /** 错误信息 */
+  error?: string
+  /** 规范化后的颜色值 */
+  normalized?: ColorValue
+  /** 检测到的颜色格式 */
+  format?: ColorFormat
+}
 
 /**
- * 颜色配置接口
+ * 颜色转换选项接口
  */
-export interface ColorConfig {
+export interface ColorConversionOptions {
+  /** 目标颜色格式 */
+  targetFormat: ColorFormat
+  /** 是否保留透明度 */
+  preserveAlpha?: boolean
+  /** 精度（小数位数） */
+  precision?: number
+  /** 是否使用缓存 */
+  useCache?: boolean
+}
+
+/**
+ * 颜色分析结果接口
+ */
+export interface ColorAnalysisResult {
+  /** 颜色值 */
+  color: ColorValue
+  /** 亮度 (0-100) */
+  brightness: number
+  /** 饱和度 (0-100) */
+  saturation: number
+  /** 色相 (0-360) */
+  hue: number
+  /** 是否为暗色 */
+  isDark: boolean
+  /** 是否为亮色 */
+  isLight: boolean
+  /** 主导色调 */
+  dominantTone: 'warm' | 'cool' | 'neutral'
+  /** 颜色温度 */
+  temperature: number
+}
+
+/**
+ * 中性色类别
+ */
+export type NeutralColorCategory = 'border' | 'background' | 'text' | 'white' | 'shadow'
+
+/**
+ * 基础颜色配置接口
+ */
+export interface BaseColorConfig {
   /** 主色调 */
   primary: ColorValue
+}
+
+/**
+ * 完整颜色配置接口
+ */
+export interface ColorConfig extends BaseColorConfig {
   /** 次要色调 - 可选，不提供时自动生成 */
   secondary?: ColorValue
   /** 强调色 - 可选，不提供时自动生成 */
   accent?: ColorValue
+  /** 信息色 - 可选，不提供时自动生成 */
+  info?: ColorValue
   /** 成功色 - 可选，不提供时自动生成 */
   success?: ColorValue
   /** 警告色 - 可选，不提供时自动生成 */
@@ -65,16 +166,34 @@ export interface ColorConfig {
   danger?: ColorValue
   /** 灰色 - 可选，不提供时自动生成 */
   gray?: ColorValue
+  /** 中性色 - 可选，不提供时自动生成 */
+  neutral?: ColorValue
 }
+
+/**
+ * 严格的颜色配置接口（所有颜色都必须提供）
+ */
+export interface StrictColorConfig extends Required<ColorConfig> {}
 
 /**
  * 色阶配置
  */
-export interface ColorScale {
+export interface ColorScale<T extends ColorValue = ColorValue> {
   /** 色阶数组，从浅到深 */
-  colors: ColorValue[]
+  colors: T[]
   /** 色阶索引映射 */
-  indices: Record<number, ColorValue>
+  indices: Record<number, T>
+  /** 色阶元数据 */
+  metadata?: {
+    /** 基础颜色 */
+    baseColor: T
+    /** 生成算法 */
+    algorithm: 'linear' | 'bezier' | 'perceptual'
+    /** 色阶数量 */
+    steps: number
+    /** 生成时间戳 */
+    timestamp: number
+  }
 }
 
 /**
@@ -94,25 +213,63 @@ export interface NeutralColors {
 }
 
 /**
- * 主题配置接口
+ * 主题元数据接口
  */
-export interface ThemeConfig {
-  /** 主题名称 */
+export interface ThemeMetadata {
+  /** 主题作者 */
+  author?: string
+  /** 主题版本 */
+  version?: string
+  /** 主题标签 */
+  tags?: string[]
+  /** 创建时间 */
+  createdAt?: string
+  /** 更新时间 */
+  updatedAt?: string
+  /** 主题预览图 */
+  preview?: string
+  /** 是否支持暗色模式 */
+  supportsDarkMode?: boolean
+  /** 推荐使用场景 */
+  recommendedFor?: ('web' | 'mobile' | 'desktop' | 'print')[]
+}
+
+/**
+ * 基础主题配置接口
+ */
+export interface BaseThemeConfig {
+  /** 主题名称（唯一标识符） */
   name: string
   /** 主题显示名称 */
   displayName?: string
   /** 主题描述 */
   description?: string
+  /** 是否为内置主题 */
+  builtin?: boolean
+  /** 主题元数据 */
+  meta?: ThemeMetadata
+}
+
+/**
+ * 主题配置接口
+ */
+export interface ThemeConfig extends BaseThemeConfig {
   /** 亮色模式颜色配置 */
   light: ColorConfig
   /** 暗色模式颜色配置 */
   dark?: ColorConfig
-  /** 是否为内置主题 */
-  builtin?: boolean
-  /** 主题元数据 */
-  meta?: Record<string, unknown>
   /** 简化的颜色配置（用于快速配置） */
-  colors?: Record<string, string>
+  colors?: Record<string, ColorValue>
+}
+
+/**
+ * 严格的主题配置接口（必须包含暗色模式）
+ */
+export interface StrictThemeConfig extends BaseThemeConfig {
+  /** 亮色模式颜色配置 */
+  light: StrictColorConfig
+  /** 暗色模式颜色配置 */
+  dark: StrictColorConfig
 }
 
 /**
@@ -134,7 +291,7 @@ export interface GeneratedTheme {
   /** 亮色模式数据 */
   light: {
     /** 各颜色类别的色阶 */
-    scales: Record<ColorCategory, ColorScale>
+    scales: Record<string, ColorScale>
     /** CSS 变量组 */
     cssVariableGroups: CSSVariableGroup[]
     /** CSS 变量（兼容旧版本） */
@@ -143,7 +300,7 @@ export interface GeneratedTheme {
   /** 暗色模式数据 */
   dark: {
     /** 各颜色类别的色阶 */
-    scales: Record<ColorCategory, ColorScale>
+    scales: Record<string, ColorScale>
     /** CSS 变量组 */
     cssVariableGroups: CSSVariableGroup[]
     /** CSS 变量（兼容旧版本） */
@@ -317,7 +474,10 @@ export interface ThemeManagerInstance extends EventEmitter {
   destroy: () => void
 
   /** 启用/禁用高对比度覆盖 */
-  enableHighContrast: (enable: boolean, options?: { level?: WCAGLevel, textSize?: TextSize }) => void
+  enableHighContrast: (
+    enable: boolean,
+    options?: { level?: WCAGLevel, textSize?: TextSize }
+  ) => void
 
   /** 是否启用了高对比度覆盖 */
   isHighContrastEnabled: () => boolean
@@ -330,38 +490,96 @@ export type ThemeEventType =
   | 'theme-changed'
   | 'mode-changed'
   | 'theme-registered'
+  | 'theme-unregistered'
   | 'theme-generated'
+  | 'theme-applied'
+  | 'theme-removed'
+  | 'cache-cleared'
   | 'error'
+  | 'warning'
+
+/**
+ * 主题变更事件数据
+ */
+export interface ThemeChangeEventData {
+  /** 主题名称 */
+  theme: string
+  /** 颜色模式 */
+  mode: ColorMode
+  /** 之前的主题 */
+  previousTheme?: string
+  /** 之前的模式 */
+  previousMode?: ColorMode
+  /** 变更时间戳 */
+  timestamp: number
+}
+
+/**
+ * 模式变更事件数据
+ */
+export interface ModeChangeEventData {
+  /** 新模式 */
+  mode: ColorMode
+  /** 之前的模式 */
+  previousMode: ColorMode
+  /** 主题名称 */
+  theme: string
+  /** 变更时间戳 */
+  timestamp: number
+}
+
+/**
+ * 错误事件数据
+ */
+export interface ErrorEventData {
+  /** 错误信息 */
+  message: string
+  /** 错误代码 */
+  code?: string
+  /** 错误详情 */
+  details?: unknown
+  /** 错误时间戳 */
+  timestamp: number
+}
+
+/**
+ * 事件数据类型映射
+ */
+export interface ThemeEventDataMap {
+  'theme-changed': ThemeChangeEventData
+  'mode-changed': ModeChangeEventData
+  'theme-registered': { theme: string, config: ThemeConfig }
+  'theme-unregistered': { theme: string }
+  'theme-generated': { theme: string, mode: ColorMode }
+  'theme-applied': { theme: string, mode: ColorMode }
+  'theme-removed': { theme: string }
+  'cache-cleared': { type: 'all' | 'theme' | 'color' }
+  'error': ErrorEventData
+  'warning': { message: string, details?: unknown }
+}
 
 /**
  * 事件监听器
  */
-export type ThemeEventListener<T = unknown> = (data: T) => void
+export type ThemeEventListener<K extends ThemeEventType = ThemeEventType> = (
+  data: ThemeEventDataMap[K]
+) => void
 
 /**
  * 事件发射器接口
  */
 export interface EventEmitter {
   /** 添加事件监听器 */
-  on: <T = unknown>(
-    event: ThemeEventType,
-    listener: ThemeEventListener<T>
-  ) => void
+  on: <K extends ThemeEventType>(event: K, listener: ThemeEventListener<K>) => void
 
   /** 移除事件监听器 */
-  off: <T = unknown>(
-    event: ThemeEventType,
-    listener: ThemeEventListener<T>
-  ) => void
+  off: <K extends ThemeEventType>(event: K, listener: ThemeEventListener<K>) => void
 
   /** 触发事件 */
-  emit: <T = unknown>(event: ThemeEventType, data?: T) => void
+  emit: <K extends ThemeEventType>(event: K, data: ThemeEventDataMap[K]) => void
 
   /** 添加一次性事件监听器 */
-  once: <T = unknown>(
-    event: ThemeEventType,
-    listener: ThemeEventListener<T>
-  ) => void
+  once: <K extends ThemeEventType>(event: K, listener: ThemeEventListener<K>) => void
 
   /** 移除所有监听器 */
   removeAllListeners: (event?: ThemeEventType) => void
@@ -399,9 +617,7 @@ export interface ColorGenerator {
   getCurrentMode: () => ColorMode
 
   /** 根据当前模式生成颜色 */
-  generateColorsForCurrentMode: (
-    primary: ColorValue
-  ) => Omit<ColorConfig, 'primary'>
+  generateColorsForCurrentMode: (primary: ColorValue) => Omit<ColorConfig, 'primary'>
 }
 
 /**
@@ -447,21 +663,18 @@ export interface CSSInjector {
   injectVariables: (
     variables: Record<string, ColorValue>,
     id?: string,
-    themeInfo?: { name?: string, mode?: string, primaryColor?: string },
+    themeInfo?: { name?: string, mode?: string, primaryColor?: string }
   ) => void
 
   /** 注入带注释的 CSS 变量 */
-  injectVariablesWithComments: (
-    variableGroups: CSSVariableGroup[],
-    id?: string
-  ) => void
+  injectVariablesWithComments: (variableGroups: CSSVariableGroup[], id?: string) => void
 
   /** 注入主题变量（亮暗两套）并带注释 */
   injectThemeVariables?: (
     lightVariables: Record<string, string>,
     darkVariables: Record<string, string>,
     themeInfo?: { name: string, primaryColor: string },
-    id?: string,
+    id?: string
   ) => void
 
   /** 构建主题 CSS 文本（不注入，仅返回字符串） */

@@ -13,8 +13,7 @@ const _props = defineProps<Props>()
 // 计算对比度
 function getContrastRatio(color: string): string {
   const rgb = hexToRgb(color)
-  if (!rgb)
-    return '0.00'
+  if (!rgb) return '0.00'
 
   const luminance = getLuminance(rgb.r, rgb.g, rgb.b)
   const whiteLuminance = 1
@@ -24,8 +23,7 @@ function getContrastRatio(color: string): string {
   const contrastWithBlack = (luminance + 0.05) / (blackLuminance + 0.05)
 
   const contrast = Math.max(contrastWithWhite, contrastWithBlack)
-  const rating
-    = contrast >= 7 ? 'AAA' : contrast >= 4.5 ? 'AA' : contrast >= 3 ? 'A' : ''
+  const rating = contrast >= 7 ? 'AAA' : contrast >= 4.5 ? 'AA' : contrast >= 3 ? 'A' : ''
 
   return `${contrast.toFixed(2)} (${rating})`
 }
@@ -33,8 +31,7 @@ function getContrastRatio(color: string): string {
 // 获取对比色
 function getContrastColor(color: string): string {
   const rgb = hexToRgb(color)
-  if (!rgb)
-    return '#000000'
+  if (!rgb) return '#000000'
 
   const luminance = getLuminance(rgb.r, rgb.g, rgb.b)
   return luminance > 0.5 ? '#000000' : '#ffffff'
@@ -45,14 +42,13 @@ async function copyColor(color: string) {
   try {
     await navigator.clipboard.writeText(color)
     // Color copied to clipboard
-  }
-  catch (err) {
+  } catch (err) {
     console.error('复制失败:', err)
   }
 }
 
 // 工具函数
-function hexToRgb(hex: string): { r: number, g: number, b: number } | null {
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   return result
     ? {
@@ -64,7 +60,7 @@ function hexToRgb(hex: string): { r: number, g: number, b: number } | null {
 }
 
 function getLuminance(r: number, g: number, b: number): number {
-  const [rs, gs, bs] = [r, g, b].map((c) => {
+  const [rs, gs, bs] = [r, g, b].map(c => {
     c = c / 255
     return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
   })
@@ -105,9 +101,7 @@ function getLuminance(r: number, g: number, b: number): number {
         :style="{ backgroundColor: color }"
         @click="copyColor(color)"
       >
-        <div class="color-name">
-          {{ colorName }}-{{ index + 1 }}
-        </div>
+        <div class="color-name">{{ colorName }}-{{ index + 1 }}</div>
         <div class="color-contrast">
           {{ getContrastRatio(color) }}
         </div>

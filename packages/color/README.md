@@ -5,6 +5,7 @@
 ## ✨ 核心特性
 
 ### 🎨 智能颜色处理
+
 - **智能颜色生成** - 基于 a-nice-red 算法生成和谐配色
 - **完整颜色转换** - 支持 HEX、RGB、HSL、HSV 格式互转
 - **颜色混合** - 支持 12 种混合模式（正常、正片叠底、滤色等）
@@ -12,34 +13,46 @@
 - **渐变生成** - 线性和径向渐变 CSS 生成
 
 ### 🌈 调色板生成
+
 - **单色调色板** - 基于单一颜色生成明暗变化
 - **类似色调色板** - 生成相邻色相的和谐配色
 - **互补色调色板** - 生成对比强烈的配色方案
 - **三元色/四元色** - 专业的配色理论支持
 
 ### ♿ 可访问性检查
+
 - **WCAG 标准** - 支持 AA/AAA 级别对比度检查
 - **颜色盲模拟** - 8 种颜色盲类型模拟
 - **智能建议** - 自动生成符合标准的配色建议
 - **批量检查** - 一键检查整套配色方案
 
 ### 🎯 主题管理
+
 - **动态主题切换** - 无缝切换明暗主题
 - **系统主题检测** - 自动跟随系统主题
 - **自定义主题** - 灵活的主题配置系统
 - **CSS 变量注入** - 自动管理 CSS 自定义属性
 
 ### ⚡ 性能优化
+
 - **闲时处理** - 利用浏览器空闲时间处理任务
 - **LRU 缓存** - 智能缓存提升性能
 - **预生成策略** - 预先计算常用颜色
 - **内存管理** - 自动清理过期缓存
 
 ### 🔧 框架集成
+
 - **Vue 3 支持** - 完整的组合式 API 和组件
 - **TypeScript** - 100% TypeScript 编写，完整类型定义
 - **现代构建** - ESM/CJS 双格式输出
 - **Tree Shaking** - 按需引入，减小包体积
+
+### 🛡️ 类型安全
+
+- **运行时类型检查** - 完整的类型守卫函数
+- **错误处理机制** - 自定义错误类型和安全操作
+- **类型断言** - 严格的类型验证和断言
+- **格式检测** - 智能颜色格式识别
 
 ## 🚀 快速开始
 
@@ -59,11 +72,11 @@ pnpm add @ldesign/color
 ### 基础使用
 
 ```typescript
-import { 
-  hexToRgb, 
+import {
+  hexToRgb,
   generateMonochromaticPalette,
   checkAccessibility,
-  blendColors 
+  blendColors,
 } from '@ldesign/color'
 
 // 颜色转换
@@ -91,19 +104,19 @@ console.log(mixed) // '#800080'
   <div>
     <!-- 颜色选择器 -->
     <ColorPicker v-model:color="selectedColor" />
-    
+
     <!-- 主题切换器 -->
     <ThemeToggle />
-    
+
     <!-- 调色板生成器 -->
-    <PaletteGenerator 
+    <PaletteGenerator
       :base-color="selectedColor"
       palette-type="monochromatic"
       @palette-change="onPaletteChange"
     />
-    
+
     <!-- 可访问性检查器 -->
-    <AccessibilityChecker 
+    <AccessibilityChecker
       :foreground-color="textColor"
       :background-color="backgroundColor"
     />
@@ -112,11 +125,11 @@ console.log(mixed) // '#800080'
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { 
-  ColorPicker, 
-  ThemeToggle, 
+import {
+  ColorPicker,
+  ThemeToggle,
   PaletteGenerator,
-  AccessibilityChecker 
+  AccessibilityChecker,
 } from '@ldesign/color/vue'
 
 const selectedColor = ref('#1890ff')
@@ -173,8 +186,8 @@ const customThemes = [
     displayName: '紫色主题',
     description: '优雅的紫色配色方案',
     light: { primary: '#722ed1' },
-    dark: { primary: '#531dab' }
-  }
+    dark: { primary: '#531dab' },
+  },
 ]
 
 const handleThemeChange = (theme: string) => {
@@ -213,6 +226,7 @@ const handleBeforeChange = (isDark: boolean) => {
 ```
 
 **支持的动画类型：**
+
 - `circle` - 圆形扩散动画（需要 View Transition API）
 - `slide` - 滑动动画
 - `fade` - 淡入淡出
@@ -242,7 +256,7 @@ const colorPlugin = createColorEnginePlugin({
   // 自定义背景色
   customBackgroundColors: {
     light: ['#ffffff', '#f8f9fa', '#f1f3f4'],
-    dark: ['#1a1a1a', '#2d2d2d', '#404040']
+    dark: ['#1a1a1a', '#2d2d2d', '#404040'],
   },
 
   // 自定义主题
@@ -253,8 +267,8 @@ const colorPlugin = createColorEnginePlugin({
       description: '符合品牌调性的配色方案',
       light: { primary: '#ff6b35' },
       dark: { primary: '#ff8c69' },
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   ],
 
   // 禁用内置主题
@@ -262,11 +276,11 @@ const colorPlugin = createColorEnginePlugin({
 
   // 回调函数
   onReady: () => console.log('颜色引擎已就绪'),
-  onThemeChanged: (theme) => console.log('主题已切换:', theme),
-  onError: (error) => console.error('颜色引擎错误:', error),
+  onThemeChanged: theme => console.log('主题已切换:', theme),
+  onError: error => console.error('颜色引擎错误:', error),
 
   // 调试模式
-  debug: process.env.NODE_ENV === 'development'
+  debug: process.env.NODE_ENV === 'development',
 })
 
 // 在 Vue 应用中使用
@@ -308,10 +322,19 @@ adjustHue('#1890ff', 60) // '#1890ff' -> '#18ff90'
 
 ```typescript
 // 支持的混合模式
-type BlendMode = 
-  | 'normal' | 'multiply' | 'screen' | 'overlay'
-  | 'soft-light' | 'hard-light' | 'color-dodge' | 'color-burn'
-  | 'darken' | 'lighten' | 'difference' | 'exclusion'
+type BlendMode =
+  | 'normal'
+  | 'multiply'
+  | 'screen'
+  | 'overlay'
+  | 'soft-light'
+  | 'hard-light'
+  | 'color-dodge'
+  | 'color-burn'
+  | 'darken'
+  | 'lighten'
+  | 'difference'
+  | 'exclusion'
 
 blendColors('#ff0000', '#0000ff', 'multiply', 0.5)
 ```
@@ -362,7 +385,7 @@ simulateColorBlindness('#ff0000', 'protanopia')
 ### ColorPicker - 颜色选择器
 
 ```vue
-<ColorPicker 
+<ColorPicker
   v-model:color="color"
   :show-alpha="true"
   :show-presets="true"
@@ -373,7 +396,7 @@ simulateColorBlindness('#ff0000', 'protanopia')
 ### PaletteGenerator - 调色板生成器
 
 ```vue
-<PaletteGenerator 
+<PaletteGenerator
   :base-color="baseColor"
   palette-type="monochromatic"
   :count="5"
@@ -384,7 +407,7 @@ simulateColorBlindness('#ff0000', 'protanopia')
 ### AccessibilityChecker - 可访问性检查器
 
 ```vue
-<AccessibilityChecker 
+<AccessibilityChecker
   :foreground-color="textColor"
   :background-color="bgColor"
   level="AA"
@@ -395,7 +418,7 @@ simulateColorBlindness('#ff0000', 'protanopia')
 ### ColorMixer - 颜色混合器
 
 ```vue
-<ColorMixer 
+<ColorMixer
   :base-color="color1"
   :overlay-color="color2"
   mode="multiply"
@@ -414,17 +437,17 @@ import { ThemeManager } from '@ldesign/color'
 const themeManager = new ThemeManager({
   themes: {
     light: { primary: '#1890ff', background: '#ffffff' },
-    dark: { primary: '#177ddc', background: '#000000' }
+    dark: { primary: '#177ddc', background: '#000000' },
   },
   defaultTheme: 'light',
-  storage: 'localStorage'
+  storage: 'localStorage',
 })
 
 // 切换主题
 themeManager.setTheme('dark')
 
 // 监听主题变化
-themeManager.on('themeChange', (theme) => {
+themeManager.on('themeChange', theme => {
   console.log('主题已切换到:', theme)
 })
 ```
@@ -446,6 +469,40 @@ const cache = createLRUCache<string, string>(100)
 cache.set('color1', '#1890ff')
 ```
 
+### 类型安全和错误处理
+
+```typescript
+import {
+  isColorValue,
+  validateHexColor,
+  safeConvertColor,
+  ColorError,
+  ValidationError
+} from '@ldesign/color'
+
+// 类型守卫
+function processColor(input: unknown) {
+  if (isColorValue(input)) {
+    console.log('有效的颜色:', input)
+  }
+}
+
+// 安全操作
+const result = safeConvertColor('#ff0000', 'hex', 'rgb')
+if (result) {
+  console.log('转换成功:', result)
+}
+
+// 错误处理
+try {
+  validateHexColor(userInput)
+} catch (error) {
+  if (error instanceof ValidationError) {
+    console.log('验证失败:', error.message)
+  }
+}
+```
+
 ## 📖 更多文档
 
 - [完整 API 文档](./docs/api/README.md)
@@ -463,9 +520,11 @@ MIT License
 
 ## 🛠 变更说明（2025-09）
 
-- 修复：generateMonochromaticPalette 与 generateAnalogousPalette 在 count=1 时的除零问题（现在将返回 [baseColor]）
+- 修复：generateMonochromaticPalette 与 generateAnalogousPalette 在 count=1 时的除零问题（现在将返回
+  [baseColor]）
 - 修复：Vue 插件类型错误（ThemeConfig 导入路径修正），并在自定义主题未提供 primary 时使用默认主色确保类型安全
-- 改进：新增 .vue SFC 类型声明（src/types/vue-shim.d.ts），解决导入 .vue 文件的类型检查报错
+- 改进：新增 .vue
+  SFC 类型声明（src/types/vue-shim.d.ts），解决导入 .vue 文件的类型检查报错
 - 改进：优化 ESLint 忽略配置，排除构建产物、测试与文档目录，减少无关噪声
 
 ## 🧩 组件别名与兼容性

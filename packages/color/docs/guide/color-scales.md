@@ -1,6 +1,7 @@
 # 色阶系统
 
-通过 `ColorScaleGenerator` 为每个颜色生成 10 级（可扩展）色阶，并自动映射为 CSS 变量。
+通过 `ColorScaleGenerator`
+为每个颜色生成 10 级（可扩展）色阶，并自动映射为 CSS 变量。
 
 ## 快速示例
 
@@ -11,17 +12,14 @@ const colors = {
   primary: '#1890ff',
   success: '#52c41a',
   warning: '#faad14',
-  danger:  '#ff4d4f',
-  gray:    '#8c8c8c',
+  danger: '#ff4d4f',
+  gray: '#8c8c8c',
 }
 
 const lightScales = generateColorScales(colors, 'light')
 
 // 注入 CSS 变量（亮/暗两套可分别注入）
-injectThemeVariables(
-  { primary: '#1890ff' },
-  { primary: lightScales.primary },
-)
+injectThemeVariables({ primary: '#1890ff' }, { primary: lightScales.primary })
 ```
 
 ## 使用索引
@@ -46,7 +44,7 @@ injectThemeVariables(
 ## 语义化变量
 
 库会自动生成部分语义化变量：
+
 - 文本：`--color-text-primary/secondary/...`
 - 背景：`--color-bg-primary/secondary/...`
 - 边框：`--color-border-primary/secondary/...`
-

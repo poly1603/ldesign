@@ -549,8 +549,7 @@ export class SmartCache {
    */
   private updateAvgAccessTime(time: number): void {
     const alpha = 0.1 // 指数加权移动平均系数
-    this.stats.avgAccessTime
-      = this.stats.avgAccessTime * (1 - alpha) + time * alpha
+    this.stats.avgAccessTime = this.stats.avgAccessTime * (1 - alpha) + time * alpha
   }
 
   /**
@@ -662,24 +661,23 @@ export function createThemeCache(): SmartCache {
 /**
  * 缓存装饰器
  */
-export function cached(options: {
-  key?: string | ((args: any[]) => string)
-  ttl?: number
-  cache?: SmartCache
-} = {}) {
+export function cached(
+  options: {
+    key?: string | ((args: any[]) => string)
+    ttl?: number
+    cache?: SmartCache
+  } = {},
+) {
   const cache = options.cache || new SmartCache()
 
-  return function (
-    _target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor,
-  ) {
+  return function (_target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
 
     descriptor.value = async function (...args: any[]) {
-      const cacheKey = typeof options.key === 'function'
-        ? options.key(args)
-        : options.key || `${propertyKey}:${JSON.stringify(args)}`
+      const cacheKey
+        = typeof options.key === 'function'
+          ? options.key(args)
+          : options.key || `${propertyKey}:${JSON.stringify(args)}`
 
       // 尝试从缓存获取
       const cached = await cache.get(cacheKey)

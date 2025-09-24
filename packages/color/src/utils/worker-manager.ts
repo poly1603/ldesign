@@ -51,10 +51,7 @@ class WorkerInstance {
 
     try {
       // 尝试创建 Worker
-      this.worker = new Worker(
-        new URL(this.workerPath, import.meta.url),
-        { type: 'module' },
-      )
+      this.worker = new Worker(new URL(this.workerPath, import.meta.url), { type: 'module' })
 
       // 监听消息
       this.worker.addEventListener('message', (event: MessageEvent<WorkerResponse>) => {
@@ -238,10 +235,7 @@ export class WorkerPool {
 
       // 清理空闲超时的 Worker
       this.workers = this.workers.filter((worker) => {
-        if (
-          worker.getIsIdle()
-          && now - worker.getLastUsedTime() > this.options.terminateDelay
-        ) {
+        if (worker.getIsIdle() && now - worker.getLastUsedTime() > this.options.terminateDelay) {
           worker.terminate()
           return false
         }
@@ -302,10 +296,7 @@ export function getDefaultWorkerPool(): WorkerPool {
 /**
  * 使用 Worker 执行颜色计算
  */
-export async function executeInWorker<T>(
-  type: WorkerMessage['type'],
-  payload: any,
-): Promise<T> {
+export async function executeInWorker<T>(type: WorkerMessage['type'], payload: any): Promise<T> {
   const pool = getDefaultWorkerPool()
   return pool.execute<T>({ type, payload })
 }
@@ -368,12 +359,7 @@ export class WorkerColorGenerator {
   /**
    * 混合颜色
    */
-  async blend(
-    color1: string,
-    color2: string,
-    ratio?: number,
-    mode?: string,
-  ): Promise<string> {
+  async blend(color1: string, color2: string, ratio?: number, mode?: string): Promise<string> {
     return this.pool.execute({
       type: 'blend',
       payload: { color1, color2, ratio, mode },

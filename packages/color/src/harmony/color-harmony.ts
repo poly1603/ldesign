@@ -48,48 +48,57 @@ export interface ColorRelationship {
 
 export class ColorHarmonyAnalyzer {
   private readonly GOLDEN_RATIO = 0.618033988749895
-  private readonly moods: Record<string, { hueRanges: [number, number][], saturations: [number, number], lightness: [number, number] }> = {
-    energetic: {
-      hueRanges: [[0, 60], [300, 360]], // Reds, oranges, magentas
-      saturations: [70, 100],
-      lightness: [40, 70],
-    },
-    calm: {
-      hueRanges: [[180, 260]], // Blues, cyans
-      saturations: [30, 60],
-      lightness: [50, 80],
-    },
-    natural: {
-      hueRanges: [[60, 150]], // Greens, yellow-greens
-      saturations: [30, 70],
-      lightness: [30, 70],
-    },
-    elegant: {
-      hueRanges: [[0, 360]], // Any hue
-      saturations: [10, 40],
-      lightness: [20, 40],
-    },
-    playful: {
-      hueRanges: [[0, 360]], // Any hue
-      saturations: [60, 100],
-      lightness: [50, 80],
-    },
-    sophisticated: {
-      hueRanges: [[0, 30], [200, 280]], // Deep reds, purples, blues
-      saturations: [20, 50],
-      lightness: [20, 50],
-    },
-    fresh: {
-      hueRanges: [[60, 180]], // Greens, cyans
-      saturations: [50, 80],
-      lightness: [60, 90],
-    },
-    dramatic: {
-      hueRanges: [[0, 360]], // Any hue
-      saturations: [0, 100],
-      lightness: [0, 30],
-    },
-  }
+  private readonly moods: Record<
+    string,
+    { hueRanges: [number, number][], saturations: [number, number], lightness: [number, number] }
+  > = {
+      energetic: {
+        hueRanges: [
+          [0, 60],
+          [300, 360],
+        ], // Reds, oranges, magentas
+        saturations: [70, 100],
+        lightness: [40, 70],
+      },
+      calm: {
+        hueRanges: [[180, 260]], // Blues, cyans
+        saturations: [30, 60],
+        lightness: [50, 80],
+      },
+      natural: {
+        hueRanges: [[60, 150]], // Greens, yellow-greens
+        saturations: [30, 70],
+        lightness: [30, 70],
+      },
+      elegant: {
+        hueRanges: [[0, 360]], // Any hue
+        saturations: [10, 40],
+        lightness: [20, 40],
+      },
+      playful: {
+        hueRanges: [[0, 360]], // Any hue
+        saturations: [60, 100],
+        lightness: [50, 80],
+      },
+      sophisticated: {
+        hueRanges: [
+          [0, 30],
+          [200, 280],
+        ], // Deep reds, purples, blues
+        saturations: [20, 50],
+        lightness: [20, 50],
+      },
+      fresh: {
+        hueRanges: [[60, 180]], // Greens, cyans
+        saturations: [50, 80],
+        lightness: [60, 90],
+      },
+      dramatic: {
+        hueRanges: [[0, 360]], // Any hue
+        saturations: [0, 100],
+        lightness: [0, 30],
+      },
+    }
 
   /**
    * Generate a harmonious color palette based on color theory
@@ -255,11 +264,14 @@ export class ColorHarmonyAnalyzer {
   /**
    * Suggest improvements to make a palette more harmonious
    */
-  improveHarmony(colors: string[], targetType?: HarmonyType): {
-    original: string[]
-    improved: string[]
-    changes: Array<{ index: number, from: string, to: string, reason: string }>
-  } {
+  improveHarmony(
+    colors: string[],
+    targetType?: HarmonyType,
+  ): {
+      original: string[]
+      improved: string[]
+      changes: Array<{ index: number, from: string, to: string, reason: string }>
+    } {
     const original = [...colors]
     const improved = [...colors]
     const changes: Array<{ index: number, from: string, to: string, reason: string }> = []
@@ -278,7 +290,8 @@ export class ColorHarmonyAnalyzer {
       const current = hslColors[i]
       const distance = this.calculateColorDistance(current, ideal)
 
-      if (distance > 10) { // Threshold for adjustment
+      if (distance > 10) {
+        // Threshold for adjustment
         const adjusted = this.blendColors(current, ideal, 0.7) // 70% towards ideal
         const newHex = this.hslToHex(adjusted)
 
@@ -397,11 +410,13 @@ export class ColorHarmonyAnalyzer {
   }
 
   private generateComplementary(base: HSL, variation: number): HSL[] {
-    return [{
-      h: (base.h + 180) % 360,
-      s: base.s * (1 - variation * 0.1),
-      l: base.l,
-    }]
+    return [
+      {
+        h: (base.h + 180) % 360,
+        s: base.s * (1 - variation * 0.1),
+        l: base.l,
+      },
+    ]
   }
 
   private generateSplitComplementary(base: HSL, variation: number): HSL[] {
@@ -562,8 +577,8 @@ export class ColorHarmonyAnalyzer {
   }
 
   private determineTemperature(colors: HSL[]): 'cool' | 'warm' | 'neutral' {
-    const warmCount = colors.filter(c =>
-      (c.h >= 0 && c.h <= 60) || (c.h >= 300 && c.h <= 360),
+    const warmCount = colors.filter(
+      c => (c.h >= 0 && c.h <= 60) || (c.h >= 300 && c.h <= 360),
     ).length
 
     // const coolCount = colors.filter(c => c.h >= 120 && c.h <= 240).length
@@ -585,15 +600,13 @@ export class ColorHarmonyAnalyzer {
       const required = colors.length * 0.6
 
       for (const color of colors) {
-        const hueMatch = criteria.hueRanges.some(range =>
-          color.h >= range[0] && color.h <= range[1],
+        const hueMatch = criteria.hueRanges.some(
+          range => color.h >= range[0] && color.h <= range[1],
         )
 
-        const satMatch = color.s >= criteria.saturations[0]
-          && color.s <= criteria.saturations[1]
+        const satMatch = color.s >= criteria.saturations[0] && color.s <= criteria.saturations[1]
 
-        const lightMatch = color.l >= criteria.lightness[0]
-          && color.l <= criteria.lightness[1]
+        const lightMatch = color.l >= criteria.lightness[0] && color.l <= criteria.lightness[1]
 
         if (hueMatch && satMatch && lightMatch) {
           matches++
@@ -703,15 +716,13 @@ export class ColorHarmonyAnalyzer {
 
     // Ideal angles for harmony
     const idealAngles = [0, 30, 60, 90, 120, 180]
-    const angleScore = Math.max(...idealAngles.map(ideal =>
-      1 - Math.abs(hueAngle - ideal) / 180,
-    ))
+    const angleScore = Math.max(...idealAngles.map(ideal => 1 - Math.abs(hueAngle - ideal) / 180))
 
     // Balanced differences are better
     const satScore = 1 - Math.abs(satDiff - 30) / 100
     const lightScore = 1 - Math.abs(lightDiff - 20) / 100
 
-    return (angleScore * 0.5 + satScore * 0.25 + lightScore * 0.25)
+    return angleScore * 0.5 + satScore * 0.25 + lightScore * 0.25
   }
 
   private calculateIdealPositions(base: HSL, type: HarmonyType, count: number): HSL[] {
@@ -722,10 +733,7 @@ export class ColorHarmonyAnalyzer {
         positions.push({ ...base, h: (base.h + 180) % 360 })
         break
       case 'triadic':
-        positions.push(
-          { ...base, h: (base.h + 120) % 360 },
-          { ...base, h: (base.h + 240) % 360 },
-        )
+        positions.push({ ...base, h: (base.h + 120) % 360 }, { ...base, h: (base.h + 240) % 360 })
         break
       case 'analogous':
         for (let i = 1; i < count; i++) {
@@ -804,7 +812,7 @@ export class ColorHarmonyAnalyzer {
   }
 
   private hasTriadic(angles: number[]): boolean {
-    return angles.filter(a => (a >= 110 && a <= 130)).length >= 2
+    return angles.filter(a => a >= 110 && a <= 130).length >= 2
   }
 
   private hasTetradic(angles: number[]): boolean {
@@ -816,8 +824,7 @@ export class ColorHarmonyAnalyzer {
   }
 
   private hasSplitComplementary(angles: number[]): boolean {
-    return angles.some(a => a >= 150 && a <= 170)
-      && angles.some(a => a >= 190 && a <= 210)
+    return angles.some(a => a >= 150 && a <= 170) && angles.some(a => a >= 190 && a <= 210)
   }
 
   private standardDeviation(values: number[]): number {

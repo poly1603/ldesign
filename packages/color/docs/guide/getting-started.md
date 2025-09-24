@@ -100,7 +100,14 @@ app.mount('#app')
 <script setup>
 import { useTheme } from '@ldesign/color/vue'
 
-const { currentTheme, currentMode, isDark, availableThemes, setTheme, toggleMode } = useTheme()
+const {
+  currentTheme,
+  currentMode,
+  isDark,
+  availableThemes,
+  setTheme,
+  toggleMode,
+} = useTheme()
 </script>
 
 <template>
@@ -243,7 +250,7 @@ const themeManager = await createThemeManagerWithPresets({
 console.log('系统主题:', getSystemTheme()) // 'light' | 'dark'
 
 // 监听系统主题变化
-const unwatch = watchSystemTheme((mode) => {
+const unwatch = watchSystemTheme(mode => {
   console.log('系统主题变化:', mode)
   themeManager.setMode(mode)
 })

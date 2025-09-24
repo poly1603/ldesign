@@ -3,11 +3,15 @@
 ## 工具函数
 
 ```ts
-import { getSystemTheme, watchSystemTheme, isSystemThemeSupported } from '@ldesign/color'
+import {
+  getSystemTheme,
+  watchSystemTheme,
+  isSystemThemeSupported,
+} from '@ldesign/color'
 
 console.log(getSystemTheme()) // 'light' | 'dark'
 
-const unwatch = watchSystemTheme((mode) => console.log('system:', mode))
+const unwatch = watchSystemTheme(mode => console.log('system:', mode))
 // ... 需要时取消：unwatch()
 
 console.log(isSystemThemeSupported())
@@ -19,7 +23,8 @@ console.log(isSystemThemeSupported())
 <script setup lang="ts">
 import { useSystemThemeSync } from '@ldesign/color/vue'
 
-const { systemTheme, isSupported, isSyncing, toggleSync } = useSystemThemeSync({ autoStart: true })
+const { systemTheme, isSupported, isSyncing, toggleSync } = useSystemThemeSync({
+  autoStart: true,
+})
 </script>
 ```
-

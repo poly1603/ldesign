@@ -179,7 +179,7 @@ describe('idleProcessorImpl', () => {
 
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('Idle task task-1 failed:'),
-        expect.any(Error),
+        expect.any(Error)
       )
 
       consoleSpy.mockRestore()

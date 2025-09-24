@@ -59,8 +59,7 @@ class ColorDemo {
       this.displayCurrentThemeScales()
 
       this.showNotification('Vanilla JavaScript 示例已加载完成！', 'success')
-    }
-    catch (error) {
+    } catch (error) {
       console.error('初始化失败:', error)
       this.showError(`初始化失败: ${error.message}`)
     }
@@ -147,7 +146,7 @@ class ColorDemo {
         this.updateUI()
         this.displayCurrentThemeScales()
       },
-      onError: (error) => {
+      onError: error => {
         console.error('主题管理器错误:', error)
         this.showError(`主题错误: ${error.message}`)
       },
@@ -161,7 +160,7 @@ class ColorDemo {
     const themes = this.themeManager.getThemeNames()
     this.elements.themeSelect.innerHTML = ''
 
-    themes.forEach((themeName) => {
+    themes.forEach(themeName => {
       const option = document.createElement('option')
       option.value = themeName
       option.textContent = this.getThemeDisplayName(themeName)
@@ -178,7 +177,7 @@ class ColorDemo {
     const themes = this.themeManager.getThemeNames()
     this.elements.themesContainer.innerHTML = ''
 
-    themes.forEach((themeName) => {
+    themes.forEach(themeName => {
       const themeCard = this.createThemeCard(themeName)
       this.elements.themesContainer.appendChild(themeCard)
     })
@@ -198,17 +197,14 @@ class ColorDemo {
     // 生成完整的颜色配置
     let previewColors
     try {
-      const generatedColors = generateColorConfig(
-        themeConfig?.light?.primary || '#1890ff',
-      )
+      const generatedColors = generateColorConfig(themeConfig?.light?.primary || '#1890ff')
       previewColors = {
         primary: themeConfig?.light?.primary || '#1890ff',
         success: generatedColors.success || '#52c41a',
         warning: generatedColors.warning || '#faad14',
         danger: generatedColors.danger || '#f5222d',
       }
-    }
-    catch {
+    } catch {
       // 降级到默认颜色
       previewColors = {
         primary: themeConfig?.light?.primary || '#1890ff',
@@ -219,7 +215,7 @@ class ColorDemo {
     }
 
     const colorTypes = ['primary', 'success', 'warning', 'danger']
-    colorTypes.forEach((type) => {
+    colorTypes.forEach(type => {
       const colorDiv = document.createElement('div')
       colorDiv.className = 'theme-color'
       colorDiv.style.backgroundColor = previewColors[type]
@@ -259,16 +255,13 @@ class ColorDemo {
     const themeConfig = this.themeManager.getThemeConfig(currentTheme)
 
     if (!themeConfig) {
-      this.elements.currentScalesContainer.innerHTML
-        = '<p>无法获取当前主题配置</p>'
+      this.elements.currentScalesContainer.innerHTML = '<p>无法获取当前主题配置</p>'
       return
     }
 
-    const modeColors
-      = currentMode === 'light' ? themeConfig.light : themeConfig.dark
+    const modeColors = currentMode === 'light' ? themeConfig.light : themeConfig.dark
     if (!modeColors) {
-      this.elements.currentScalesContainer.innerHTML
-        = '<p>当前模式下无颜色配置</p>'
+      this.elements.currentScalesContainer.innerHTML = '<p>当前模式下无颜色配置</p>'
       return
     }
 
@@ -277,8 +270,7 @@ class ColorDemo {
     let generatedColors = null
     try {
       generatedColors = generateColorConfig(modeColors.primary)
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('生成颜色配置失败:', error)
     }
 
@@ -293,8 +285,7 @@ class ColorDemo {
     try {
       const scales = generateColorScales(colors, currentMode)
       this.renderScales(scales)
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('生成色阶失败:', error)
       this.elements.currentScalesContainer.innerHTML = '<p>生成色阶失败</p>'
     }
@@ -352,7 +343,7 @@ class ColorDemo {
     }
 
     this.elements.inputColor.addEventListener('input', updateConvertedColors)
-    this.elements.inputColorText.addEventListener('input', (e) => {
+    this.elements.inputColorText.addEventListener('input', e => {
       this.elements.inputColor.value = e.target.value
       updateConvertedColors()
     })
@@ -378,11 +369,11 @@ class ColorDemo {
 
     this.elements.mixerColor1.addEventListener('input', updateMixedColor)
     this.elements.mixerColor2.addEventListener('input', updateMixedColor)
-    this.elements.mixerColor1Text.addEventListener('input', (e) => {
+    this.elements.mixerColor1Text.addEventListener('input', e => {
       this.elements.mixerColor1.value = e.target.value
       updateMixedColor()
     })
-    this.elements.mixerColor2Text.addEventListener('input', (e) => {
+    this.elements.mixerColor2Text.addEventListener('input', e => {
       this.elements.mixerColor2.value = e.target.value
       updateMixedColor()
     })
@@ -427,7 +418,7 @@ class ColorDemo {
 
     this.elements.paletteBaseColor.addEventListener('input', generatePalette)
     this.elements.paletteType.addEventListener('change', generatePalette)
-    this.elements.paletteBaseColorText.addEventListener('input', (e) => {
+    this.elements.paletteBaseColorText.addEventListener('input', e => {
       this.elements.paletteBaseColor.value = e.target.value
       generatePalette()
     })
@@ -457,11 +448,11 @@ class ColorDemo {
 
     this.elements.accessibilityFg.addEventListener('input', checkColorAccessibility)
     this.elements.accessibilityBg.addEventListener('input', checkColorAccessibility)
-    this.elements.accessibilityFgText.addEventListener('input', (e) => {
+    this.elements.accessibilityFgText.addEventListener('input', e => {
       this.elements.accessibilityFg.value = e.target.value
       checkColorAccessibility()
     })
-    this.elements.accessibilityBgText.addEventListener('input', (e) => {
+    this.elements.accessibilityBgText.addEventListener('input', e => {
       this.elements.accessibilityBg.value = e.target.value
       checkColorAccessibility()
     })
@@ -471,12 +462,12 @@ class ColorDemo {
 
   bindEvents() {
     // 主题选择器
-    this.elements.themeSelect.addEventListener('change', (e) => {
+    this.elements.themeSelect.addEventListener('change', e => {
       this.themeManager.setTheme(e.target.value)
     })
 
     // 模式选择器
-    this.elements.modeSelect.addEventListener('change', (e) => {
+    this.elements.modeSelect.addEventListener('change', e => {
       this.themeManager.setMode(e.target.value)
       // 强制刷新色阶显示
       setTimeout(() => {
@@ -498,12 +489,9 @@ class ColorDemo {
     const currentTheme = this.themeManager.getCurrentTheme()
     const currentMode = this.themeManager.getCurrentMode()
 
-    this.elements.currentTheme.textContent
-      = this.getThemeDisplayName(currentTheme)
-    this.elements.currentMode.textContent
-      = currentMode === 'light' ? '亮色' : '暗色'
-    this.elements.systemTheme.textContent
-      = currentMode === 'light' ? '亮色' : '暗色'
+    this.elements.currentTheme.textContent = this.getThemeDisplayName(currentTheme)
+    this.elements.currentMode.textContent = currentMode === 'light' ? '亮色' : '暗色'
+    this.elements.systemTheme.textContent = currentMode === 'light' ? '亮色' : '暗色'
 
     this.elements.themeSelect.value = currentTheme
     this.elements.modeSelect.value = currentMode
@@ -513,8 +501,7 @@ class ColorDemo {
     try {
       await navigator.clipboard.writeText(color)
       this.showNotification(`已复制颜色值: ${color}`, 'success')
-    }
-    catch {
+    } catch {
       // 降级方案
       const textArea = document.createElement('textarea')
       textArea.value = color
@@ -546,8 +533,7 @@ class ColorDemo {
     try {
       await navigator.clipboard.writeText(color)
       this.showNotification(`已复制颜色值: ${color}`, 'success')
-    }
-    catch {
+    } catch {
       this.showNotification('复制失败', 'error')
     }
   }

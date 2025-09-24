@@ -51,10 +51,12 @@ const emit = defineEmits<{
 const contextColorTheme = inject<ReturnType<typeof useColorTheme>>('colorTheme', null)
 
 // 如果没有上下文，创建自己的实例
-const colorTheme = contextColorTheme || useColorTheme({
-  autoSave: true,
-  enableSystemSync: false,
-})
+const colorTheme
+  = contextColorTheme
+    || useColorTheme({
+      autoSave: true,
+      enableSystemSync: false,
+    })
 
 const { currentMode, isDark, toggleMode } = colorTheme
 
@@ -107,18 +109,13 @@ const buttonClass = computed(() => {
 })
 
 // 当前显示的图标和文本
-const currentIcon = computed(() => isDark.value ? props.lightIcon : props.darkIcon)
-const currentText = computed(() => isDark.value ? props.lightText : props.darkText)
+const currentIcon = computed(() => (isDark.value ? props.lightIcon : props.darkIcon))
+const currentText = computed(() => (isDark.value ? props.lightText : props.darkText))
 const currentTitle = computed(() => `切换到${isDark.value ? '亮色' : '暗色'}模式`)
 </script>
 
 <template>
-  <button
-    :class="buttonClass"
-    :disabled="disabled"
-    :title="currentTitle"
-    @click="handleToggle"
-  >
+  <button :class="buttonClass" :disabled="disabled" :title="currentTitle" @click="handleToggle">
     <span class="simple-theme-toggle__icon">{{ currentIcon }}</span>
     <span v-if="showText" class="simple-theme-toggle__text">{{ currentText }}</span>
   </button>

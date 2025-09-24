@@ -33,12 +33,7 @@ function getIcon(type: NotificationItem['type']) {
               {{ notification.message }}
             </span>
           </div>
-          <button
-            class="notification-close"
-            @click="removeNotification(notification.id)"
-          >
-            ×
-          </button>
+          <button class="notification-close" @click="removeNotification(notification.id)">×</button>
         </div>
       </TransitionGroup>
     </div>

@@ -23,8 +23,9 @@ const colors = generateColorConfig('#1890ff')
 import { COLOR_GENERATION_PRESETS, createColorGenerator } from '@ldesign/color'
 
 // 使用预设（vibrant/soft 等）
-const colorsVibrant = createColorGenerator(COLOR_GENERATION_PRESETS.vibrant)
-  .generateColors('#1890ff')
+const colorsVibrant = createColorGenerator(
+  COLOR_GENERATION_PRESETS.vibrant
+).generateColors('#1890ff')
 
 // 自定义配置
 const generator = createColorGenerator({
@@ -49,4 +50,3 @@ const darkColors = g.generateColorsForCurrentMode('#1890ff')
 
 - 主色建议为 HEX 格式，保证算法一致性
 - 主题场景下建议结合色阶系统使用（见“色阶系统”）
-

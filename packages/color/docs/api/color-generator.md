@@ -11,4 +11,3 @@ import {
 - generateColorConfig(primary: string)
 - createColorGenerator(presetOrConfig)
 - ColorGeneratorImpl（类）
-

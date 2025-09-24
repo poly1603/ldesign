@@ -119,7 +119,7 @@ import { getSystemTheme, watchSystemTheme } from '@ldesign/color'
 const systemTheme = getSystemTheme() // 'light' | 'dark'
 
 // 监听系统主题变化
-const unwatch = watchSystemTheme((mode) => {
+const unwatch = watchSystemTheme(mode => {
   console.log('系统主题变化:', mode)
   themeManager.setMode(mode)
 })
@@ -220,7 +220,7 @@ const themeManager = await createThemeManagerWithPresets({
 2. **监听主题变化**：
 
    ```javascript
-   themeManager.on('theme-changed', (data) => {
+   themeManager.on('theme-changed', data => {
      console.log('主题变化:', data)
    })
    ```

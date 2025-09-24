@@ -83,7 +83,8 @@ class NeuralLayer {
     activation: (x: number) => number = x => Math.max(0, x), // ReLU
   ) {
     // 初始化权重（Xavier 初始化）
-    this.weights = Array.from({ length: outputSize }, () => Array.from({ length: inputSize }, () => (Math.random() - 0.5) * Math.sqrt(2 / inputSize)))
+    this.weights = Array.from({ length: outputSize }, () =>
+      Array.from({ length: inputSize }, () => (Math.random() - 0.5) * Math.sqrt(2 / inputSize)))
 
     // 初始化偏置
     this.biases = Array.from({ length: outputSize }, () => 0)
@@ -92,8 +93,7 @@ class NeuralLayer {
 
   forward(input: number[]): number[] {
     return this.weights.map((neuronWeights, i) => {
-      const sum = neuronWeights.reduce((acc, weight, j) =>
-        acc + weight * input[j], this.biases[i])
+      const sum = neuronWeights.reduce((acc, weight, j) => acc + weight * input[j], this.biases[i])
       return this.activation(sum)
     })
   }
@@ -108,15 +108,12 @@ class SimpleNeuralNetwork {
   constructor(architecture: number[]) {
     this.layers = []
     for (let i = 0; i < architecture.length - 1; i++) {
-      const activation = i === architecture.length - 2
-        ? (x: number) => 1 / (1 + Math.exp(-x)) // Sigmoid for output
-        : (x: number) => Math.max(0, x) // ReLU for hidden layers
+      const activation
+        = i === architecture.length - 2
+          ? (x: number) => 1 / (1 + Math.exp(-x)) // Sigmoid for output
+          : (x: number) => Math.max(0, x) // ReLU for hidden layers
 
-      this.layers.push(new NeuralLayer(
-        architecture[i],
-        architecture[i + 1],
-        activation,
-      ))
+      this.layers.push(new NeuralLayer(architecture[i], architecture[i + 1], activation))
     }
   }
 
@@ -236,9 +233,7 @@ class KMeansClustering {
   }
 
   private euclideanDistance(a: number[], b: number[]): number {
-    return Math.sqrt(
-      a.reduce((sum, val, i) => sum + (val - b[i]) ** 2, 0),
-    )
+    return Math.sqrt(a.reduce((sum, val, i) => sum + (val - b[i]) ** 2, 0))
   }
 
   private hasConverged(old: number[][], new_: number[][]): boolean {
@@ -374,10 +369,7 @@ export class AIColorEngine {
   /**
    * 学习用户偏好
    */
-  async learnFromInteraction(
-    userId: string,
-    interaction: ColorInteraction,
-  ): Promise<void> {
+  async learnFromInteraction(userId: string, interaction: ColorInteraction): Promise<void> {
     let userPref = this.userPreferences.get(userId)
 
     if (!userPref) {
@@ -442,10 +434,7 @@ export class AIColorEngine {
   /**
    * 提取特征向量
    */
-  private extractFeatures(
-    userPref: UserPreference,
-    context?: any,
-  ): number[] {
+  private extractFeatures(userPref: UserPreference, context?: any): number[] {
     const features: number[] = []
 
     // 用户历史偏好特征
@@ -520,8 +509,8 @@ export class AIColorEngine {
     // 从每个簇中选择代表颜色
     const representatives: string[] = []
     for (let i = 0; i < this.clustering.k; i++) {
-      const clusterColors = colors.filter((_, idx) =>
-        this.clustering.predict(colorVectors[idx]) === i,
+      const clusterColors = colors.filter(
+        (_, idx) => this.clustering.predict(colorVectors[idx]) === i,
       )
       if (clusterColors.length > 0) {
         representatives.push(clusterColors[0])
@@ -534,10 +523,7 @@ export class AIColorEngine {
   /**
    * 结合趋势数据
    */
-  private incorporateTrends(
-    colors: string[],
-    _context?: any,
-  ): string[] {
+  private incorporateTrends(colors: string[], _context?: any): string[] {
     return colors.map((color) => {
       const trend = this.trendData.get(color)
       if (trend && trend.trendScore > 50) {
@@ -559,10 +545,7 @@ export class AIColorEngine {
   /**
    * 生成推理说明
    */
-  private generateReasoning(
-    userPref: UserPreference,
-    context?: any,
-  ): string[] {
+  private generateReasoning(userPref: UserPreference, context?: any): string[] {
     const reasoning: string[] = []
 
     if (userPref.favoriteColors.length > 0) {
@@ -663,16 +646,13 @@ export class AIColorEngine {
 
   private generateTriadic(color: string): string[] {
     // 简化实现
-    return [
-      this.generateAnalogous(color, 120),
-      this.generateAnalogous(color, 240),
-    ]
+    return [this.generateAnalogous(color, 120), this.generateAnalogous(color, 240)]
   }
 
   private generateNeutrals(_baseColor: string, count: number): string[] {
     const neutrals: string[] = []
     for (let i = 0; i < count; i++) {
-      const gray = 240 - (i * 30)
+      const gray = 240 - i * 30
       neutrals.push(rgbToHex(gray, gray, gray))
     }
     return neutrals
@@ -814,9 +794,7 @@ export class AIColorEngine {
         continue
 
       const distance = Math.sqrt(
-        (rgb.r - tRgb.r) ** 2
-        + (rgb.g - tRgb.g) ** 2
-        + (rgb.b - tRgb.b) ** 2,
+        (rgb.r - tRgb.r) ** 2 + (rgb.g - tRgb.g) ** 2 + (rgb.b - tRgb.b) ** 2,
       )
 
       if (distance < minDistance && distance < 50) {

@@ -1,6 +1,7 @@
 # Vue 组合式 API
 
-这个目录包含了 @ldesign/color 的 Vue 3 组合式 API 实现，提供了一套完整的主题管理解决方案。
+这个目录包含了 @ldesign/color 的 Vue
+3 组合式 API 实现，提供了一套完整的主题管理解决方案。
 
 ## 📁 文件结构
 
@@ -26,10 +27,12 @@ import App from './App.vue'
 
 const app = createApp(App)
 
-app.use(createColorPlugin({
-  defaultTheme: 'blue',
-  defaultMode: 'light'
-}))
+app.use(
+  createColorPlugin({
+    defaultTheme: 'blue',
+    defaultMode: 'light',
+  })
+)
 
 app.mount('#app')
 ```
@@ -58,12 +61,14 @@ const { currentTheme, currentMode, setTheme, toggleMode } = useTheme()
 主要的主题管理 API，提供基础的主题控制功能。
 
 **特性：**
+
 - ✅ 响应式主题状态
 - ✅ 主题和模式切换
 - ✅ 与主题管理器集成
 - ✅ 自动状态同步
 
 **适用场景：**
+
 - 基础主题切换需求
 - 简单的明暗模式切换
 - 与现有主题管理器集成
@@ -73,12 +78,14 @@ const { currentTheme, currentMode, setTheme, toggleMode } = useTheme()
 高级主题选择器 API，提供完整的主题管理功能。
 
 **特性：**
+
 - ✅ 支持自定义主题
 - ✅ 主题配置管理
 - ✅ 自动存储同步
 - ✅ 主题信息获取
 
 **适用场景：**
+
 - 复杂的主题选择界面
 - 需要自定义主题的应用
 - 主题配置管理
@@ -88,12 +95,14 @@ const { currentTheme, currentMode, setTheme, toggleMode } = useTheme()
 简单的主题模式切换 API，专注于明暗模式切换。
 
 **特性：**
+
 - ✅ 简单的 API 设计
 - ✅ 系统主题检测
 - ✅ 切换回调支持
 - ✅ 自动存储管理
 
 **适用场景：**
+
 - 只需要明暗模式切换
 - 简单的切换按钮
 - 系统主题跟随
@@ -103,12 +112,14 @@ const { currentTheme, currentMode, setTheme, toggleMode } = useTheme()
 系统主题同步 API，与操作系统主题保持同步。
 
 **特性：**
+
 - ✅ 实时系统主题检测
 - ✅ 自动同步机制
 - ✅ 页面可见性优化
 - ✅ 错误处理
 
 **适用场景：**
+
 - 需要跟随系统主题
 - 自动主题切换
 - 用户体验优化
@@ -121,10 +132,10 @@ const { currentTheme, currentMode, setTheme, toggleMode } = useTheme()
 
 ```vue
 <script setup>
-import { 
-  useTheme, 
-  useThemeSelector, 
-  useSystemThemeSync 
+import {
+  useTheme,
+  useThemeSelector,
+  useSystemThemeSync,
 } from '@ldesign/color/vue'
 
 // 基础主题管理
@@ -139,17 +150,17 @@ const selector = useThemeSelector({
       description: '符合品牌色彩的主题',
       builtin: false,
       light: { primary: '#1890ff' },
-      dark: { primary: '#177ddc' }
-    }
-  ]
+      dark: { primary: '#177ddc' },
+    },
+  ],
 })
 
 // 系统主题同步
 const systemSync = useSystemThemeSync({
   autoStart: true,
-  onSync: async (systemTheme) => {
+  onSync: async systemTheme => {
     await theme.setMode(systemTheme)
-  }
+  },
 })
 </script>
 ```
@@ -160,7 +171,7 @@ const systemSync = useSystemThemeSync({
 const selector = useThemeSelector({
   autoSave: true,
   storageKey: 'my-app-theme',
-  defaultTheme: 'custom'
+  defaultTheme: 'custom',
 })
 ```
 
@@ -168,15 +179,15 @@ const selector = useThemeSelector({
 
 ```typescript
 const toggle = useThemeToggle({
-  onBeforeToggle: async (newMode) => {
+  onBeforeToggle: async newMode => {
     // 切换前的准备工作
     console.log('准备切换到:', newMode)
   },
-  onAfterToggle: async (newMode) => {
+  onAfterToggle: async newMode => {
     // 切换后的清理工作
     console.log('已切换到:', newMode)
     // 可以在这里触发其他副作用
-  }
+  },
 })
 ```
 
@@ -204,10 +215,10 @@ provide('theme', theme)
 
 ```typescript
 const systemSync = useSystemThemeSync({
-  onError: (error) => {
+  onError: error => {
     console.error('系统主题同步失败:', error)
     // 可以显示用户友好的错误信息
-  }
+  },
 })
 ```
 
@@ -222,7 +233,7 @@ const customThemes: ThemeConfig[] = [
 
 const selector = useThemeSelector({
   customThemes,
-  defaultMode: 'light' as ColorMode
+  defaultMode: 'light' as ColorMode,
 })
 ```
 
@@ -248,11 +259,17 @@ if (process.env.NODE_ENV === 'development') {
   <div v-if="process.env.NODE_ENV === 'development'">
     <details>
       <summary>主题调试信息</summary>
-      <pre>{{ JSON.stringify({
-        currentTheme: theme.currentTheme,
-        currentMode: theme.currentMode,
-        availableThemes: theme.availableThemes
-      }, null, 2) }}</pre>
+      <pre>{{
+        JSON.stringify(
+          {
+            currentTheme: theme.currentTheme,
+            currentMode: theme.currentMode,
+            availableThemes: theme.availableThemes,
+          },
+          null,
+          2
+        )
+      }}</pre>
     </details>
   </div>
 </template>

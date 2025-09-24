@@ -3,19 +3,8 @@
  * 参考：https://github.com/Jahallahan/a-nice-red
  */
 
-import type {
-  ColorConfig,
-  ColorGenerator,
-  ColorMode,
-  ColorScale,
-} from '../core/types'
-import {
-  hexToHsl,
-  hslToHex,
-  isValidHex,
-  normalizeHex,
-  normalizeHue,
-} from './color-converter'
+import type { ColorConfig, ColorGenerator, ColorMode, ColorScale } from '../core/types'
+import { hexToHsl, hslToHex, isValidHex, normalizeHex, normalizeHue } from './color-converter'
 
 /**
  * 颜色生成配置
@@ -91,11 +80,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
    * 生成成功色（绿色系）
    * 基于色彩和谐理论，生成与主色调协调的绿色
    */
-  private generateSuccessColor(primaryHsl: {
-    h: number
-    s: number
-    l: number
-  }): string {
+  private generateSuccessColor(primaryHsl: { h: number, s: number, l: number }): string {
     // 使用类似色或三角色和谐理论
     // 成功色使用绿色系，但要与主色调保持和谐关系
     let hue: number
@@ -136,11 +121,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
    * 生成警告色（橙色系）
    * 基于色彩和谐理论，生成与主色调协调的橙色
    */
-  private generateWarningColor(primaryHsl: {
-    h: number
-    s: number
-    l: number
-  }): string {
+  private generateWarningColor(primaryHsl: { h: number, s: number, l: number }): string {
     let hue: number
 
     if (primaryHsl.h >= 20 && primaryHsl.h <= 70) {
@@ -173,11 +154,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
    * 生成危险色（红色系）
    * 基于色彩和谐理论，生成与主色调协调的红色
    */
-  private generateDangerColor(primaryHsl: {
-    h: number
-    s: number
-    l: number
-  }): string {
+  private generateDangerColor(primaryHsl: { h: number, s: number, l: number }): string {
     let hue: number
 
     if (primaryHsl.h >= 330 || primaryHsl.h <= 30) {
@@ -210,11 +187,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
    * 生成灰色系
    * 基于配置选择生成纯中性灰色或带有主色调倾向的灰色
    */
-  private generateGrayColor(primaryHsl: {
-    h: number
-    s: number
-    l: number
-  }): string {
+  private generateGrayColor(primaryHsl: { h: number, s: number, l: number }): string {
     if (this.config.grayMixPrimary) {
       // 混入主色调的灰色
       const hue = primaryHsl.h
@@ -337,18 +310,10 @@ export class ColorGeneratorImpl implements ColorGenerator {
     if (this.currentMode === 'dark') {
       // 暗色模式下调整颜色
       return {
-        success: baseColors.success
-          ? this.adjustColorForDarkMode(baseColors.success)
-          : undefined,
-        warning: baseColors.warning
-          ? this.adjustColorForDarkMode(baseColors.warning)
-          : undefined,
-        danger: baseColors.danger
-          ? this.adjustColorForDarkMode(baseColors.danger)
-          : undefined,
-        gray: baseColors.gray
-          ? this.adjustColorForDarkMode(baseColors.gray)
-          : undefined,
+        success: baseColors.success ? this.adjustColorForDarkMode(baseColors.success) : undefined,
+        warning: baseColors.warning ? this.adjustColorForDarkMode(baseColors.warning) : undefined,
+        danger: baseColors.danger ? this.adjustColorForDarkMode(baseColors.danger) : undefined,
+        gray: baseColors.gray ? this.adjustColorForDarkMode(baseColors.gray) : undefined,
       }
     }
 
@@ -424,12 +389,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
 
     // 色阶变量
     for (const [category, scale] of Object.entries(scales)) {
-      if (
-        scale
-        && typeof scale === 'object'
-        && 'indices' in scale
-        && scale.indices
-      ) {
+      if (scale && typeof scale === 'object' && 'indices' in scale && scale.indices) {
         for (const [index, color] of Object.entries(scale.indices)) {
           variables[`${prefix}-${category}-${index}`] = color as string
         }
@@ -439,12 +399,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
     // 中性色变量
     if (neutralColors) {
       for (const [category, scale] of Object.entries(neutralColors)) {
-        if (
-          scale
-          && typeof scale === 'object'
-          && 'indices' in scale
-          && scale.indices
-        ) {
+        if (scale && typeof scale === 'object' && 'indices' in scale && scale.indices) {
           for (const [index, color] of Object.entries(scale.indices)) {
             variables[`${prefix}-${category}-${index}`] = color as string
           }
@@ -497,9 +452,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
 /**
  * 创建颜色生成器实例
  */
-export function createColorGenerator(
-  config?: Partial<ColorGenerationConfig>,
-): ColorGenerator {
+export function createColorGenerator(config?: Partial<ColorGenerationConfig>): ColorGenerator {
   return new ColorGeneratorImpl(config)
 }
 
@@ -518,9 +471,7 @@ export function createNeutralGrayGenerator(): ColorGenerator {
  * 创建带主色调倾向的灰色生成器
  * 生成带有主色调倾向的灰色
  */
-export function createTintedGrayGenerator(
-  saturation: number = 8,
-): ColorGenerator {
+export function createTintedGrayGenerator(saturation: number = 8): ColorGenerator {
   return new ColorGeneratorImpl({
     grayMixPrimary: true,
     graySaturation: saturation,
@@ -539,9 +490,7 @@ export function generateColorConfig(
   primary: string,
   config?: Partial<ColorGenerationConfig>,
 ): ColorConfig {
-  const generator = config
-    ? new ColorGeneratorImpl(config)
-    : defaultColorGenerator
+  const generator = config ? new ColorGeneratorImpl(config) : defaultColorGenerator
   const generatedColors = generator.generateColors(primary)
 
   return {

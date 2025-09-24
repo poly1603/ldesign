@@ -3,12 +3,7 @@
  * 用于将生成的颜色注入到CSS自定义属性中
  */
 
-import type {
-  ColorConfig,
-  ColorMode,
-  ColorScale,
-  NeutralColors,
-} from '../core/types'
+import type { ColorConfig, ColorMode, ColorScale, NeutralColors } from '../core/types'
 
 /**
  * CSS变量配置接口
@@ -166,7 +161,10 @@ export class CSSVariableInjector {
   /**
    * 生成CSS文本
    */
-  private generateCSSText(variables: Record<string, string>, variableInfos?: ColorVariableInfo[]): string {
+  private generateCSSText(
+    variables: Record<string, string>,
+    variableInfos?: ColorVariableInfo[],
+  ): string {
     let cssContent = ''
 
     if (this.config.includeComments) {
@@ -316,7 +314,10 @@ export class CSSVariableInjector {
   /**
    * 生成背景色变量
    */
-  generateBackgroundColors(primaryColor: string, mode: 'light' | 'dark' = 'light'): Record<string, string> {
+  generateBackgroundColors(
+    primaryColor: string,
+    mode: 'light' | 'dark' = 'light',
+  ): Record<string, string> {
     const backgrounds: Record<string, string> = {}
     const prefix = `--${this.config.prefix}`
 
@@ -324,16 +325,26 @@ export class CSSVariableInjector {
       case 'primary-based':
         if (this.config.generateBackgroundFromPrimary) {
           // 基于主色调生成背景色
-          backgrounds[`${prefix}-bg-primary`] = this.adjustColorOpacity(primaryColor, mode === 'light' ? 0.05 : 0.1)
-          backgrounds[`${prefix}-bg-secondary`] = this.adjustColorOpacity(primaryColor, mode === 'light' ? 0.03 : 0.08)
-          backgrounds[`${prefix}-bg-tertiary`] = this.adjustColorOpacity(primaryColor, mode === 'light' ? 0.02 : 0.05)
+          backgrounds[`${prefix}-bg-primary`] = this.adjustColorOpacity(
+            primaryColor,
+            mode === 'light' ? 0.05 : 0.1,
+          )
+          backgrounds[`${prefix}-bg-secondary`] = this.adjustColorOpacity(
+            primaryColor,
+            mode === 'light' ? 0.03 : 0.08,
+          )
+          backgrounds[`${prefix}-bg-tertiary`] = this.adjustColorOpacity(
+            primaryColor,
+            mode === 'light' ? 0.02 : 0.05,
+          )
         }
         break
       case 'custom':
         if (this.config.customBackgroundColors) {
-          const colors = mode === 'light'
-            ? this.config.customBackgroundColors.light
-            : this.config.customBackgroundColors.dark
+          const colors
+            = mode === 'light'
+              ? this.config.customBackgroundColors.light
+              : this.config.customBackgroundColors.dark
           if (colors) {
             colors.forEach((color, index) => {
               backgrounds[`${prefix}-bg-${index + 1}`] = color
@@ -413,7 +424,9 @@ export const globalCSSInjector = new CSSVariableInjector()
 /**
  * 创建配置化的CSS变量注入器
  */
-export function createCSSVariableInjector(config?: Partial<CSSVariableConfig>): CSSVariableInjector {
+export function createCSSVariableInjector(
+  config?: Partial<CSSVariableConfig>,
+): CSSVariableInjector {
   return new CSSVariableInjector(config)
 }
 
@@ -523,7 +536,10 @@ export function injectThemeVariables(
   }
 
   // 生成背景色
-  if (injector.getConfig().backgroundStrategy !== 'neutral' || injector.getConfig().generateBackgroundFromPrimary) {
+  if (
+    injector.getConfig().backgroundStrategy !== 'neutral'
+    || injector.getConfig().generateBackgroundFromPrimary
+  ) {
     const backgroundColors = injector.generateBackgroundColors(colors.primary, mode)
     Object.assign(variables, backgroundColors)
 
@@ -599,7 +615,12 @@ export class EnhancedThemeApplier {
    * @param themeConfig 主题配置
    * @param saveToCache 是否保存到缓存
    */
-  applyTheme(primaryColor: string, currentMode: 'light' | 'dark', themeConfig?: any, saveToCache: boolean = true): void {
+  applyTheme(
+    primaryColor: string,
+    currentMode: 'light' | 'dark',
+    themeConfig?: any,
+    saveToCache: boolean = true,
+  ): void {
     try {
       // 更新当前状态
       this.currentMode = currentMode
@@ -628,8 +649,12 @@ export class EnhancedThemeApplier {
       }
 
       if (this.debugMode) {
-        console.log(`🎨 主题已应用: ${themeInfo.name} (${primaryColor}) - 当前模式: ${currentMode}${saveToCache ? ' [已缓存]' : ''}`)
-        console.log(`📊 已生成完整色彩系统 - 亮色变量: ${Object.keys(lightVariables).length}个, 暗色变量: ${Object.keys(darkVariables).length}个`)
+        console.log(
+          `🎨 主题已应用: ${themeInfo.name} (${primaryColor}) - 当前模式: ${currentMode}${saveToCache ? ' [已缓存]' : ''}`,
+        )
+        console.log(
+          `📊 已生成完整色彩系统 - 亮色变量: ${Object.keys(lightVariables).length}个, 暗色变量: ${Object.keys(darkVariables).length}个`,
+        )
       }
     }
     catch (error) {
@@ -980,16 +1005,24 @@ export class EnhancedThemeApplier {
 
     const max = Math.max(r, g, b)
     const min = Math.min(r, g, b)
-    let h = 0; let s = 0; const l = (max + min) / 2
+    let h = 0
+    let s = 0
+    const l = (max + min) / 2
 
     if (max !== min) {
       const d = max - min
       s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
 
       switch (max) {
-        case r: h = (g - b) / d + (g < b ? 6 : 0); break
-        case g: h = (b - r) / d + 2; break
-        case b: h = (r - g) / d + 4; break
+        case r:
+          h = (g - b) / d + (g < b ? 6 : 0)
+          break
+        case g:
+          h = (b - r) / d + 2
+          break
+        case b:
+          h = (r - g) / d + 4
+          break
       }
       h /= 6
     }
@@ -1190,9 +1223,7 @@ export function toggleThemeMode(
 export function getCSSVariableValue(name: string): string {
   if (typeof document === 'undefined')
     return ''
-  return getComputedStyle(document.documentElement)
-    .getPropertyValue(name)
-    .trim()
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 }
 
 /**

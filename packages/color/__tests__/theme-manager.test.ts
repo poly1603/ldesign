@@ -65,7 +65,7 @@ describe('themeManager', () => {
 
     it('应该抛出错误当主题不存在时', async () => {
       await expect(themeManager.setTheme('nonexistent')).rejects.toThrow(
-        'Theme "nonexistent" not found',
+        'Theme "nonexistent" not found'
       )
     })
   })
@@ -120,8 +120,9 @@ describe('themeManager', () => {
       expect(mockListener).toHaveBeenCalledWith({
         theme: 'green',
         mode: 'light',
-        oldTheme: 'default',
-        oldMode: 'light',
+        previousTheme: 'default',
+        previousMode: 'light',
+        timestamp: expect.any(Number),
       })
     })
 
@@ -208,7 +209,7 @@ describe('themeManager', () => {
       themeManager.registerTheme(invalidTheme)
 
       await expect(themeManager.preGenerateTheme('invalid')).rejects.toThrow(
-        'Theme "invalid" is missing light.primary color',
+        'Theme "invalid" is missing light.primary color'
       )
     })
 
@@ -225,8 +226,7 @@ describe('themeManager', () => {
 
       try {
         await themeManager.preGenerateTheme('invalid')
-      }
-      catch {
+      } catch {
         // 忽略错误，我们只关心事件
       }
 
@@ -300,8 +300,7 @@ describe('themeManager', () => {
 
       try {
         await manager.setTheme('nonexistent')
-      }
-      catch {
+      } catch {
         // 忽略错误
       }
 

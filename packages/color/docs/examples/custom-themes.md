@@ -2,6 +2,7 @@
 
 ```ts
 import { createCustomThemeManager } from '@ldesign/color'
-const manager = await createCustomThemeManager('#ff6b35', { themeName: 'brand' })
+const manager = await createCustomThemeManager('#ff6b35', {
+  themeName: 'brand',
+})
 ```
-

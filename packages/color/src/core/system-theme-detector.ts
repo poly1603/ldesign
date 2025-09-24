@@ -78,9 +78,7 @@ export class BrowserSystemThemeDetector implements SystemThemeDetector {
    * 检查是否支持系统主题检测
    */
   isSupported(): boolean {
-    return (
-      typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-    )
+    return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
   }
 
   /**
@@ -251,9 +249,7 @@ export function getSystemTheme(): ColorMode {
 /**
  * 便捷函数：监听系统主题变化
  */
-export function watchSystemTheme(
-  callback: (mode: ColorMode) => void,
-): () => void {
+export function watchSystemTheme(callback: (mode: ColorMode) => void): () => void {
   return browserDetector.watchSystemTheme(callback)
 }
 

@@ -3,11 +3,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { 
-  CSSVariableInjector, 
+import {
+  CSSVariableInjector,
   createCSSVariableInjector,
   injectThemeVariables,
-  globalCSSInjector 
+  globalCSSInjector,
 } from '../../src/utils/css-variables'
 import type { CSSVariableConfig, ColorVariableInfo } from '../../src/utils/css-variables'
 
@@ -38,7 +38,7 @@ describe('CSSVariableInjector', () => {
   it('应该正确注入CSS变量', () => {
     const variables = {
       '--test-color': '#ff0000',
-      '--test-size': '16px'
+      '--test-size': '16px',
     }
 
     injector.injectVariables(variables)
@@ -51,12 +51,12 @@ describe('CSSVariableInjector', () => {
   it('应该正确注入主题变量', () => {
     const lightVariables = {
       '--primary': '#1890ff',
-      '--success': '#52c41a'
+      '--success': '#52c41a',
     }
 
     const darkVariables = {
       '--primary': '#177ddc',
-      '--success': '#389e0d'
+      '--success': '#389e0d',
     }
 
     const themeInfo = {
@@ -64,14 +64,14 @@ describe('CSSVariableInjector', () => {
       displayName: '蓝色主题',
       description: '经典蓝色主题',
       primaryColor: '#1890ff',
-      version: '1.0.0'
+      version: '1.0.0',
     }
 
     injector.injectThemeVariables(lightVariables, darkVariables, themeInfo)
 
     const styleElement = document.getElementById('ldesign-color-variables') as HTMLStyleElement
     const content = styleElement.textContent || ''
-    
+
     expect(content).toContain('蓝色主题')
     expect(content).toContain('#1890ff')
     expect(content).toContain(':root')
@@ -80,7 +80,7 @@ describe('CSSVariableInjector', () => {
 
   it('应该正确清除变量', () => {
     const variables = {
-      '--test-color': '#ff0000'
+      '--test-color': '#ff0000',
     }
 
     injector.injectVariables(variables)
@@ -103,7 +103,7 @@ describe('createCSSVariableInjector', () => {
     const config: Partial<CSSVariableConfig> = {
       prefix: 'custom',
       includeComments: false,
-      backgroundStrategy: 'primary-based'
+      backgroundStrategy: 'primary-based',
     }
 
     const injector = createCSSVariableInjector(config)
@@ -118,7 +118,7 @@ describe('createCSSVariableInjector', () => {
   it('应该正确生成背景色', () => {
     const config: Partial<CSSVariableConfig> = {
       prefix: 'test',
-      backgroundStrategy: 'neutral'
+      backgroundStrategy: 'neutral',
     }
 
     const injector = createCSSVariableInjector(config)
@@ -135,7 +135,7 @@ describe('createCSSVariableInjector', () => {
     const config: Partial<CSSVariableConfig> = {
       prefix: 'test',
       backgroundStrategy: 'primary-based',
-      generateBackgroundFromPrimary: true
+      generateBackgroundFromPrimary: true,
     }
 
     const injector = createCSSVariableInjector(config)
@@ -153,8 +153,8 @@ describe('createCSSVariableInjector', () => {
       backgroundStrategy: 'custom',
       customBackgroundColors: {
         light: ['#ffffff', '#f8f9fa'],
-        dark: ['#1a1a1a', '#2d2d2d']
-      }
+        dark: ['#1a1a1a', '#2d2d2d'],
+      },
     }
 
     const injector = createCSSVariableInjector(config)
@@ -186,7 +186,7 @@ describe('injectThemeVariables', () => {
       success: '#52c41a',
       warning: '#faad14',
       danger: '#ff4d4f',
-      gray: '#8c8c8c'
+      gray: '#8c8c8c',
     }
 
     const scales = {
@@ -194,16 +194,16 @@ describe('injectThemeVariables', () => {
         indices: {
           '1': '#e6f7ff',
           '2': '#bae7ff',
-          '3': '#91d5ff'
-        }
-      }
+          '3': '#91d5ff',
+        },
+      },
     }
 
     injectThemeVariables(colors, scales, undefined, 'light', '--test')
 
     const styleElement = document.getElementById('ldesign-color-variables') as HTMLStyleElement
     const content = styleElement.textContent || ''
-    
+
     expect(content).toContain('--test-primary: #1890ff')
     expect(content).toContain('--test-success: #52c41a')
     expect(content).toContain('--test-primary-1: #e6f7ff')
@@ -211,21 +211,21 @@ describe('injectThemeVariables', () => {
 
   it('应该正确处理自定义配置', () => {
     const colors = {
-      primary: '#1890ff'
+      primary: '#1890ff',
     }
 
     const config: Partial<CSSVariableConfig> = {
       prefix: 'custom',
       includeComments: true,
       backgroundStrategy: 'primary-based',
-      generateBackgroundFromPrimary: true
+      generateBackgroundFromPrimary: true,
     }
 
     injectThemeVariables(colors, {}, undefined, 'light', '--custom', config)
 
     const customInjector = createCSSVariableInjector(config)
     expect(customInjector.getConfig().prefix).toBe('custom')
-    
+
     customInjector.destroy()
   })
 })

@@ -394,7 +394,7 @@ function setupSystemThemeListener(): void {
 
   // 现代浏览器
   if (typeof (mediaQuery as any).addEventListener === 'function') {
-    (mediaQuery as any).addEventListener('change', handleSystemThemeChange)
+    ;(mediaQuery as any).addEventListener('change', handleSystemThemeChange)
   }
   else if (typeof (mediaQuery as any).addListener === 'function') {
     // 兼容旧浏览器
@@ -461,7 +461,9 @@ onMounted(() => {
 // 向测试环境暴露必要的内部状态与属性（仅用于测试）
 const exposedIsAnimating = computed({
   get: () => isAnimating.value,
-  set: (v: boolean) => { isAnimating.value = v },
+  set: (v: boolean) => {
+    isAnimating.value = v
+  },
 })
 
 defineExpose({
@@ -480,35 +482,27 @@ defineExpose({
 
 <template>
   <button
-    class="dark-mode-toggle" :class="[
+    class="dark-mode-toggle"
+    :class="[
       sizeClass,
       {
         'dark-mode-toggle--dark': isDark,
         'dark-mode-toggle--disabled': disabled,
         'dark-mode-toggle--animating': isAnimating,
       },
-    ]" :disabled="disabled" :title="isDark ? '切换到亮色模式' : '切换到暗色模式'" @click="handleToggle"
+    ]"
+    :disabled="disabled"
+    :title="isDark ? '切换到亮色模式' : '切换到暗色模式'"
+    @click="handleToggle"
   >
     <!-- 太阳图标 (亮色模式) -->
-    <Sun
-      v-if="!isDark && !isAnimating"
-      class="dark-mode-toggle__icon dark-mode-toggle__sun"
-      :size="20"
-    />
+    <Sun v-if="!isDark && !isAnimating" class="dark-mode-toggle__icon dark-mode-toggle__sun" :size="20" />
 
     <!-- 月亮图标 (暗色模式) -->
-    <Moon
-      v-if="isDark && !isAnimating"
-      class="dark-mode-toggle__icon dark-mode-toggle__moon"
-      :size="20"
-    />
+    <Moon v-if="isDark && !isAnimating" class="dark-mode-toggle__icon dark-mode-toggle__moon" :size="20" />
 
     <!-- 加载动画 -->
-    <Loader2
-      v-if="isAnimating"
-      class="dark-mode-toggle__icon dark-mode-toggle__spinner"
-      :size="20"
-    />
+    <Loader2 v-if="isAnimating" class="dark-mode-toggle__icon dark-mode-toggle__spinner" :size="20" />
   </button>
 </template>
 
@@ -535,11 +529,11 @@ defineExpose({
 }
 
 /* 滑动动画 */
-[data-animation="slide"] ::view-transition-old(root) {
+[data-animation='slide'] ::view-transition-old(root) {
   animation: slide-out var(--animation-duration, 300ms) ease-in-out;
 }
 
-[data-animation="slide"] ::view-transition-new(root) {
+[data-animation='slide'] ::view-transition-new(root) {
   animation: slide-in var(--animation-duration, 300ms) ease-in-out;
 }
 
@@ -556,11 +550,11 @@ defineExpose({
 }
 
 /* 翻转动画 */
-[data-animation="flip"] ::view-transition-old(root) {
+[data-animation='flip'] ::view-transition-old(root) {
   animation: flip-out var(--animation-duration, 300ms) ease-in-out;
 }
 
-[data-animation="flip"] ::view-transition-new(root) {
+[data-animation='flip'] ::view-transition-new(root) {
   animation: flip-in var(--animation-duration, 300ms) ease-in-out;
 }
 
@@ -577,11 +571,11 @@ defineExpose({
 }
 
 /* 缩放动画 */
-[data-animation="zoom"] ::view-transition-old(root) {
+[data-animation='zoom'] ::view-transition-old(root) {
   animation: zoom-out var(--animation-duration, 300ms) ease-in-out;
 }
 
-[data-animation="zoom"] ::view-transition-new(root) {
+[data-animation='zoom'] ::view-transition-new(root) {
   animation: zoom-in var(--animation-duration, 300ms) ease-in-out;
 }
 
@@ -598,12 +592,12 @@ defineExpose({
 }
 
 /* 擦除动画 */
-[data-animation="wipe"] ::view-transition-old(root) {
+[data-animation='wipe'] ::view-transition-old(root) {
   mask: linear-gradient(90deg, transparent 0%, black 100%);
   animation: wipe-out var(--animation-duration, 300ms) ease-in-out;
 }
 
-[data-animation="wipe"] ::view-transition-new(root) {
+[data-animation='wipe'] ::view-transition-new(root) {
   mask: linear-gradient(90deg, black 0%, transparent 100%);
   animation: wipe-in var(--animation-duration, 300ms) ease-in-out;
 }

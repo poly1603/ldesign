@@ -17,8 +17,7 @@ export class ColorPaletteCard {
   // 计算对比度
   getContrastRatio(color) {
     const rgb = this.hexToRgb(color)
-    if (!rgb)
-      return '0.00'
+    if (!rgb) return '0.00'
 
     const luminance = this.getLuminance(rgb.r, rgb.g, rgb.b)
     const whiteLuminance = 1
@@ -28,8 +27,7 @@ export class ColorPaletteCard {
     const contrastWithBlack = (luminance + 0.05) / (blackLuminance + 0.05)
 
     const contrast = Math.max(contrastWithWhite, contrastWithBlack)
-    const rating
-      = contrast >= 7 ? 'AAA' : contrast >= 4.5 ? 'AA' : contrast >= 3 ? 'A' : ''
+    const rating = contrast >= 7 ? 'AAA' : contrast >= 4.5 ? 'AA' : contrast >= 3 ? 'A' : ''
 
     return `${contrast.toFixed(2)} (${rating})`
   }
@@ -37,8 +35,7 @@ export class ColorPaletteCard {
   // 获取对比色
   getContrastColor(color) {
     const rgb = this.hexToRgb(color)
-    if (!rgb)
-      return '#000000'
+    if (!rgb) return '#000000'
 
     const luminance = this.getLuminance(rgb.r, rgb.g, rgb.b)
     return luminance > 0.5 ? '#000000' : '#ffffff'
@@ -49,8 +46,7 @@ export class ColorPaletteCard {
     try {
       await navigator.clipboard.writeText(color)
       this.showNotification(`已复制颜色: ${color}`)
-    }
-    catch (err) {
+    } catch (err) {
       console.error('复制失败:', err)
       this.showNotification('复制失败', 'error')
     }
@@ -83,7 +79,7 @@ export class ColorPaletteCard {
   }
 
   getLuminance(r, g, b) {
-    const [rs, gs, bs] = [r, g, b].map((c) => {
+    const [rs, gs, bs] = [r, g, b].map(c => {
       c = c / 255
       return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
     })

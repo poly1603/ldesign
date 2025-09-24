@@ -36,62 +36,64 @@
 
             <!-- 主题控制面板 -->
             <section class="card">
-            <h2 class="card-title">🎛️ 主题控制</h2>
+              <h2 class="card-title">🎛️ 主题控制</h2>
 
-            <div class="control-group">
-              <label for="theme-select">选择主题:</label>
-              <select id="theme-select" class="theme-select">
-                <option value="">加载中...</option>
-              </select>
-            </div>
-
-            <div class="control-group">
-              <label for="mode-select">颜色模式:</label>
-              <select id="mode-select" class="mode-select">
-                <option value="light">亮色模式</option>
-                <option value="dark">暗色模式</option>
-              </select>
-            </div>
-
-            <div class="control-group">
-              <button id="toggle-mode" class="btn btn-primary">切换模式</button>
-            </div>
-
-            <div class="status-info">
-              <div class="status-item">
-                <span class="label">当前主题:</span>
-                <span id="current-theme" class="value">-</span>
+              <div class="control-group">
+                <label for="theme-select">选择主题:</label>
+                <select id="theme-select" class="theme-select">
+                  <option value="">加载中...</option>
+                </select>
               </div>
-              <div class="status-item">
-                <span class="label">当前模式:</span>
-                <span id="current-mode" class="value">-</span>
+
+              <div class="control-group">
+                <label for="mode-select">颜色模式:</label>
+                <select id="mode-select" class="mode-select">
+                  <option value="light">亮色模式</option>
+                  <option value="dark">暗色模式</option>
+                </select>
               </div>
-              <div class="status-item">
-                <span class="label">系统主题:</span>
-                <span id="system-theme" class="value">-</span>
+
+              <div class="control-group">
+                <button id="toggle-mode" class="btn btn-primary">切换模式</button>
               </div>
-            </div>
-          </section>
 
-          <!-- 主题预览 -->
-          <section class="card">
-            <h2 class="card-title">🎨 主题预览</h2>
-            <p class="card-description">选择一个预设主题来快速应用，这些主题都是精心设计的美观配色方案</p>
+              <div class="status-info">
+                <div class="status-item">
+                  <span class="label">当前主题:</span>
+                  <span id="current-theme" class="value">-</span>
+                </div>
+                <div class="status-item">
+                  <span class="label">当前模式:</span>
+                  <span id="current-mode" class="value">-</span>
+                </div>
+                <div class="status-item">
+                  <span class="label">系统主题:</span>
+                  <span id="system-theme" class="value">-</span>
+                </div>
+              </div>
+            </section>
 
-            <div id="themes-container" class="theme-grid">
-              <!-- 主题将在这里显示 -->
-            </div>
-          </section>
+            <!-- 主题预览 -->
+            <section class="card">
+              <h2 class="card-title">🎨 主题预览</h2>
+              <p class="card-description">
+                选择一个预设主题来快速应用，这些主题都是精心设计的美观配色方案
+              </p>
 
-          <!-- 当前主题色阶展示 -->
-          <section class="card">
-            <h2 class="card-title">🌈 当前主题色阶</h2>
-            <p class="card-description">当前主题在当前模式下的完整色阶体系</p>
+              <div id="themes-container" class="theme-grid">
+                <!-- 主题将在这里显示 -->
+              </div>
+            </section>
 
-            <div id="current-scales-container" class="scales-container">
-              <!-- 色阶将在这里显示 -->
-            </div>
-          </section>
+            <!-- 当前主题色阶展示 -->
+            <section class="card">
+              <h2 class="card-title">🌈 当前主题色阶</h2>
+              <p class="card-description">当前主题在当前模式下的完整色阶体系</p>
+
+              <div id="current-scales-container" class="scales-container">
+                <!-- 色阶将在这里显示 -->
+              </div>
+            </section>
           </div>
 
           <!-- 颜色转换演示 -->
@@ -212,9 +214,7 @@
                 </div>
 
                 <div class="accessibility-result">
-                  <div class="text-preview" id="accessibility-preview">
-                    示例文本 Sample Text
-                  </div>
+                  <div class="text-preview" id="accessibility-preview">示例文本 Sample Text</div>
 
                   <div class="result-info">
                     <div class="result-item">

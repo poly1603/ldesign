@@ -8,15 +8,15 @@ import DarkModeToggle from '../../../src/vue/components/DarkModeToggle.vue'
 
 // 模拟 View Transition API
 Object.defineProperty(document, 'startViewTransition', {
-  value: vi.fn((callback) => {
+  value: vi.fn(callback => {
     callback()
     return {
       finished: Promise.resolve(),
-      ready: Promise.resolve()
+      ready: Promise.resolve(),
     }
   }),
   writable: true,
-  configurable: true
+  configurable: true,
 })
 
 describe('DarkModeToggle', () => {
@@ -25,17 +25,17 @@ describe('DarkModeToggle', () => {
     document.head.innerHTML = ''
     document.body.innerHTML = ''
     document.documentElement.setAttribute('data-theme-mode', 'light')
-    
+
     // 模拟 localStorage
     const localStorageMock = {
       getItem: vi.fn(),
       setItem: vi.fn(),
       removeItem: vi.fn(),
-      clear: vi.fn()
+      clear: vi.fn(),
     }
     Object.defineProperty(window, 'localStorage', {
       value: localStorageMock,
-      writable: true
+      writable: true,
     })
   })
 
@@ -75,19 +75,19 @@ describe('DarkModeToggle', () => {
 
   it('应该正确处理不同尺寸', () => {
     const sizes = ['small', 'medium', 'large'] as const
-    
+
     sizes.forEach(size => {
       const wrapper = mount(DarkModeToggle, {
-        props: { size }
+        props: { size },
       })
-      
+
       expect(wrapper.find(`.dark-mode-toggle--${size}`).exists()).toBe(true)
     })
   })
 
   it('应该正确处理禁用状态', () => {
     const wrapper = mount(DarkModeToggle, {
-      props: { disabled: true }
+      props: { disabled: true },
     })
 
     expect(wrapper.find('.dark-mode-toggle--disabled').exists()).toBe(true)
@@ -95,7 +95,7 @@ describe('DarkModeToggle', () => {
 
   it('应该正确处理禁用状态下的点击', async () => {
     const wrapper = mount(DarkModeToggle, {
-      props: { disabled: true }
+      props: { disabled: true },
     })
 
     const initialMode = wrapper.vm.isDark
@@ -108,19 +108,19 @@ describe('DarkModeToggle', () => {
 
   it('应该正确处理不同动画类型', () => {
     const animationTypes = ['circle', 'slide', 'fade', 'flip', 'zoom', 'wipe'] as const
-    
+
     animationTypes.forEach(animationType => {
       const wrapper = mount(DarkModeToggle, {
-        props: { animationType }
+        props: { animationType },
       })
-      
+
       expect(wrapper.vm.animationType).toBe(animationType)
     })
   })
 
   it('应该正确处理自定义动画持续时间', () => {
     const wrapper = mount(DarkModeToggle, {
-      props: { animationDuration: 500 }
+      props: { animationDuration: 500 },
     })
 
     expect(wrapper.vm.animationDuration).toBe(500)
@@ -128,7 +128,7 @@ describe('DarkModeToggle', () => {
 
   it('应该正确处理自动检测', () => {
     const wrapper = mount(DarkModeToggle, {
-      props: { autoDetect: true }
+      props: { autoDetect: true },
     })
 
     expect(wrapper.vm.autoDetect).toBe(true)
@@ -137,7 +137,7 @@ describe('DarkModeToggle', () => {
   it('应该正确处理存储键配置', () => {
     const customKey = 'custom-dark-mode'
     const wrapper = mount(DarkModeToggle, {
-      props: { storageKey: customKey }
+      props: { storageKey: customKey },
     })
 
     expect(wrapper.vm.storageKey).toBe(customKey)
@@ -185,7 +185,7 @@ describe('DarkModeToggle', () => {
 
   it('应该正确处理触发点动画', () => {
     const wrapper = mount(DarkModeToggle, {
-      props: { enableTriggerAnimation: true }
+      props: { enableTriggerAnimation: true },
     })
 
     expect(wrapper.vm.enableTriggerAnimation).toBe(true)
@@ -193,12 +193,12 @@ describe('DarkModeToggle', () => {
 
   it('应该正确处理圆形动画的点击位置', async () => {
     const wrapper = mount(DarkModeToggle, {
-      props: { animationType: 'circle' }
+      props: { animationType: 'circle' },
     })
 
     await wrapper.find('.dark-mode-toggle').trigger('click', {
       clientX: 100,
-      clientY: 200
+      clientY: 200,
     })
 
     // 验证 CSS 变量被设置
@@ -218,7 +218,7 @@ describe('DarkModeToggle', () => {
 
   it('应该正确处理错误情况', async () => {
     const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    
+
     // 模拟 View Transition 错误
     ;(document as any).startViewTransition = vi.fn(() => {
       throw new Error('View Transition 错误')
@@ -228,7 +228,7 @@ describe('DarkModeToggle', () => {
     await wrapper.find('.dark-mode-toggle').trigger('click')
 
     expect(consoleWarnSpy).toHaveBeenCalled()
-    
+
     consoleWarnSpy.mockRestore()
   })
 })

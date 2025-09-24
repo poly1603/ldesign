@@ -174,7 +174,8 @@ export class LRUCacheImpl<K, V> implements LRUCache<K, V> {
       // 更新现有项 - 需要重新插入以更新Map中的位置
       this.data.get(key)
       this.data.delete(key) // 先删除
-      this.data.set(key, { // 再重新插入到最后
+      this.data.set(key, {
+        // 再重新插入到最后
         value,
         accessTime: now,
         expireTime,
@@ -245,8 +246,9 @@ export class LRUCacheImpl<K, V> implements LRUCache<K, V> {
 
   entries(): IterableIterator<[K, V]> {
     this.cleanupExpired()
-    const entries = Array.from(this.data.entries())
-      .map(([key, item]) => [key, item.value] as [K, V])
+    const entries = Array.from(this.data.entries()).map(
+      ([key, item]) => [key, item.value] as [K, V],
+    )
 
     return entries[Symbol.iterator]()
   }
@@ -308,9 +310,6 @@ export function createCache<K, V>(entries?: Iterable<[K, V]> | Map<K, V>): Cache
 /**
  * 创建LRU缓存
  */
-export function createLRUCache<K, V>(
-  capacity: number,
-  entries?: Iterable<[K, V]>,
-): LRUCache<K, V> {
+export function createLRUCache<K, V>(capacity: number, entries?: Iterable<[K, V]>): LRUCache<K, V> {
   return new LRUCacheImpl(capacity, entries)
 }

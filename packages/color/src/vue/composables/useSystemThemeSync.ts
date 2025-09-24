@@ -81,13 +81,10 @@ export interface UseSystemThemeSyncOptions {
  * </template>
  * ```
  */
-export function useSystemThemeSync(options: UseSystemThemeSyncOptions = {}): UseSystemThemeSyncReturn {
-  const {
-    autoStart = false,
-    onSync,
-    onError,
-    syncOnVisibilityChange = true,
-  } = options
+export function useSystemThemeSync(
+  options: UseSystemThemeSyncOptions = {},
+): UseSystemThemeSyncReturn {
+  const { autoStart = false, onSync, onError, syncOnVisibilityChange = true } = options
 
   // 获取主题管理器
   const themeManager = inject<any>('themeManager', null)
@@ -105,9 +102,9 @@ export function useSystemThemeSync(options: UseSystemThemeSyncOptions = {}): Use
   const isSystemDark = computed(() => systemTheme.value === 'dark')
   const isSystemLight = computed(() => systemTheme.value === 'light')
   const isSupported = computed(() => {
-    return typeof window !== 'undefined'
-      && window.matchMedia
-      && typeof window.matchMedia === 'function'
+    return (
+      typeof window !== 'undefined' && window.matchMedia && typeof window.matchMedia === 'function'
+    )
   })
 
   // 方法

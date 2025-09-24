@@ -7,4 +7,3 @@
   console.log(generateColorConfig('#1890ff'))
 </script>
 ```
-

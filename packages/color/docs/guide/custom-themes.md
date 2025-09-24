@@ -19,11 +19,18 @@ await manager.setMode('dark')
 import { createThemeManager } from '@ldesign/color'
 
 const themes = [
-  { name: 'brand-blue', light: { primary: '#0066cc' }, dark: { primary: '#4d94ff' } },
-  { name: 'brand-green', light: { primary: '#00a854' }, dark: { primary: '#49aa19' } },
+  {
+    name: 'brand-blue',
+    light: { primary: '#0066cc' },
+    dark: { primary: '#4d94ff' },
+  },
+  {
+    name: 'brand-green',
+    light: { primary: '#00a854' },
+    dark: { primary: '#49aa19' },
+  },
 ]
 
 const manager = new ThemeManager({ themes, defaultTheme: 'brand-blue' })
 await manager.init()
 ```
-

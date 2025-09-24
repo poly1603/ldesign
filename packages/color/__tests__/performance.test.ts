@@ -45,7 +45,7 @@ describe('性能测试', () => {
     const start = performance.now()
 
     for (let i = 0; i < iterations; i++) {
-      colors.forEach((color) => {
+      colors.forEach(color => {
         colorGenerator.generateColors(color)
       })
     }
@@ -104,9 +104,9 @@ describe('性能测试', () => {
 
   it('内存使用测试', async () => {
     if (
-      typeof window !== 'undefined'
-      && 'performance' in window
-      && 'memory' in (window.performance as any)
+      typeof window !== 'undefined' &&
+      'performance' in window &&
+      'memory' in (window.performance as any)
     ) {
       const memory = (window.performance as any).memory
       const initialMemory = memory.usedJSHeapSize
@@ -124,8 +124,7 @@ describe('性能测试', () => {
 
       // Memory increase tracked
       expect(memoryIncrease).toBeLessThan(5) // 内存增长应该小于5MB
-    }
-    else {
+    } else {
       // Browser doesn't support memory monitoring
     }
   })

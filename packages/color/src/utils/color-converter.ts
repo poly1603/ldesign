@@ -1,9 +1,13 @@
 /**
  * 颜色转换工具函数
+ *
+ * 提供高性能的颜色格式转换功能，支持 HEX、RGB、HSL、HSV 等格式。
+ * 所有转换函数都包含输入验证、缓存优化和详细的错误处理。
  */
 
 /**
- * HSL 颜色接口
+ * HSL 颜色接口（兼容性保留）
+ * @deprecated 请使用 PreciseHSL 类型
  */
 export interface HSL {
   h: number // 色相 (0-360)
@@ -12,7 +16,8 @@ export interface HSL {
 }
 
 /**
- * RGB 颜色接口
+ * RGB 颜色接口（兼容性保留）
+ * @deprecated 请使用 PreciseRGB 类型
  */
 export interface RGB {
   r: number // 红色 (0-255)
@@ -21,7 +26,8 @@ export interface RGB {
 }
 
 /**
- * HSV 颜色接口
+ * HSV 颜色接口（兼容性保留）
+ * @deprecated 请使用 PreciseHSV 类型
  */
 export interface HSV {
   h: number // 色相 (0-360)
@@ -30,7 +36,8 @@ export interface HSV {
 }
 
 /**
- * LAB 颜色接口
+ * LAB 颜色接口（兼容性保留）
+ * @deprecated 请使用 LABColor 类型
  */
 export interface LAB {
   l: number // 亮度 (0-100)
@@ -39,22 +46,58 @@ export interface LAB {
 }
 
 /**
- * 颜色转换结果缓存
+ * LRU 缓存实现
  * 用于提高频繁转换的性能
  */
-const conversionCache = new Map<string, any>()
-const CACHE_MAX_SIZE = 1000
+class LRUCache<K, V> {
+  private cache = new Map<K, V>()
+  private readonly maxSize: number
 
-/**
- * 清理缓存（当缓存过大时）
- */
-function cleanCache(): void {
-  if (conversionCache.size > CACHE_MAX_SIZE) {
-    // 删除一半的缓存项
-    const keysToDelete = Array.from(conversionCache.keys()).slice(0, CACHE_MAX_SIZE / 2)
-    keysToDelete.forEach(key => conversionCache.delete(key))
+  constructor(maxSize: number = 500) {
+    this.maxSize = maxSize
+  }
+
+  get(key: K): V | undefined {
+    const value = this.cache.get(key)
+    if (value !== undefined) {
+      // 重新插入以更新访问顺序
+      this.cache.delete(key)
+      this.cache.set(key, value)
+    }
+    return value
+  }
+
+  set(key: K, value: V): void {
+    if (this.cache.has(key)) {
+      this.cache.delete(key)
+    }
+    else if (this.cache.size >= this.maxSize) {
+      // 删除最久未使用的项
+      const firstKey = this.cache.keys().next().value
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey)
+      }
+    }
+    this.cache.set(key, value)
+  }
+
+  has(key: K): boolean {
+    return this.cache.has(key)
+  }
+
+  clear(): void {
+    this.cache.clear()
+  }
+
+  get size(): number {
+    return this.cache.size
   }
 }
+
+/**
+ * 颜色转换结果缓存
+ */
+const conversionCache = new LRUCache<string, any>(500)
 
 /**
  * 验证并规范化hex颜色值
@@ -71,7 +114,10 @@ export function normalizeHex(hex: string): string | null {
 
   // 支持3位和6位hex格式
   if (hex.length === 3) {
-    hex = hex.split('').map(char => char + char).join('')
+    hex = hex
+      .split('')
+      .map(char => char + char)
+      .join('')
   }
 
   // 验证格式
@@ -123,7 +169,6 @@ export function hexToRgb(hex: string): RGB | null {
 
   // 缓存结果
   if (rgb) {
-    cleanCache()
     conversionCache.set(cacheKey, rgb)
   }
 
@@ -150,10 +195,18 @@ export function clamp(value: number, min: number, max: number): number {
  */
 function isValidRgb(r: number, g: number, b: number): boolean {
   return (
-    typeof r === 'number' && r >= 0 && r <= 255
-    && typeof g === 'number' && g >= 0 && g <= 255
-    && typeof b === 'number' && b >= 0 && b <= 255
-    && !Number.isNaN(r) && !Number.isNaN(g) && !Number.isNaN(b)
+    typeof r === 'number'
+    && r >= 0
+    && r <= 255
+    && typeof g === 'number'
+    && g >= 0
+    && g <= 255
+    && typeof b === 'number'
+    && b >= 0
+    && b <= 255
+    && !Number.isNaN(r)
+    && !Number.isNaN(g)
+    && !Number.isNaN(b)
   )
 }
 
@@ -175,7 +228,9 @@ export function rgbToHex(r: number, g: number, b: number): string {
 
   // 验证和限制输入值
   if (!isValidRgb(r, g, b)) {
-    console.warn(`Invalid RGB values: r=${r}, g=${g}, b=${b}. Values will be clamped to 0-255 range.`)
+    console.warn(
+      `Invalid RGB values: r=${r}, g=${g}, b=${b}. Values will be clamped to 0-255 range.`,
+    )
   }
 
   // 限制值在有效范围内
@@ -192,7 +247,6 @@ export function rgbToHex(r: number, g: number, b: number): string {
   const result = `#${toHex(r)}${toHex(g)}${toHex(b)}`
 
   // 缓存结果
-  cleanCache()
   conversionCache.set(cacheKey, result)
 
   return result
@@ -217,10 +271,18 @@ export function normalizeHue(hue: number): number {
  */
 function isValidHsl(h: number, s: number, l: number): boolean {
   return (
-    typeof h === 'number' && h >= 0 && h <= 360
-    && typeof s === 'number' && s >= 0 && s <= 100
-    && typeof l === 'number' && l >= 0 && l <= 100
-    && !Number.isNaN(h) && !Number.isNaN(s) && !Number.isNaN(l)
+    typeof h === 'number'
+    && h >= 0
+    && h <= 360
+    && typeof s === 'number'
+    && s >= 0
+    && s <= 100
+    && typeof l === 'number'
+    && l >= 0
+    && l <= 100
+    && !Number.isNaN(h)
+    && !Number.isNaN(s)
+    && !Number.isNaN(l)
   )
 }
 
@@ -242,7 +304,9 @@ export function rgbToHsl(r: number, g: number, b: number): HSL {
 
   // 验证和限制输入值
   if (!isValidRgb(r, g, b)) {
-    console.warn(`Invalid RGB values: r=${r}, g=${g}, b=${b}. Values will be clamped to 0-255 range.`)
+    console.warn(
+      `Invalid RGB values: r=${r}, g=${g}, b=${b}. Values will be clamped to 0-255 range.`,
+    )
   }
 
   // 限制值在有效范围内并转换为0-1范围
@@ -286,7 +350,6 @@ export function rgbToHsl(r: number, g: number, b: number): HSL {
   }
 
   // 缓存结果
-  cleanCache()
   conversionCache.set(cacheKey, result)
 
   return result
@@ -361,7 +424,6 @@ export function hslToRgb(h: number, s: number, l: number): RGB {
   }
 
   // 缓存结果
-  cleanCache()
   conversionCache.set(cacheKey, result)
 
   return result

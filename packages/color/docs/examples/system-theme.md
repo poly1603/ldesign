@@ -2,6 +2,5 @@
 
 ```ts
 import { watchSystemTheme } from '@ldesign/color'
-const unwatch = watchSystemTheme((m) => console.log(m))
+const unwatch = watchSystemTheme(m => console.log(m))
 ```
-

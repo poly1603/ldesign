@@ -156,9 +156,7 @@ export function getColorName(color: string): string {
       continue
 
     const distance = Math.sqrt(
-      (rgb.r - targetRgb.r) ** 2
-      + (rgb.g - targetRgb.g) ** 2
-      + (rgb.b - targetRgb.b) ** 2,
+      (rgb.r - targetRgb.r) ** 2 + (rgb.g - targetRgb.g) ** 2 + (rgb.b - targetRgb.b) ** 2,
     )
 
     if (distance < minDistance) {
@@ -249,7 +247,7 @@ function analyzeTemperature(hsl: { h: number, s: number, l: number }): ColorTemp
   const { h } = hsl
 
   if ((h >= 0 && h < 60) || h >= 300) {
-    return (h < 30 || h >= 330) ? 'hot' : 'warm'
+    return h < 30 || h >= 330 ? 'hot' : 'warm'
   }
   else if (h >= 60 && h < 150) {
     return 'neutral'
@@ -337,19 +335,21 @@ function generateSuggestions(
 
   // 行业推荐
   for (const [industry, colors] of Object.entries(INDUSTRY_COLORS)) {
-    if (colors.some((c) => {
-      const industryRgb = hexToRgb(c)
-      const colorRgb = hexToRgb(color)
-      if (!industryRgb || !colorRgb)
-        return false
+    if (
+      colors.some((c) => {
+        const industryRgb = hexToRgb(c)
+        const colorRgb = hexToRgb(color)
+        if (!industryRgb || !colorRgb)
+          return false
 
-      const distance = Math.sqrt(
-        (colorRgb.r - industryRgb.r) ** 2
-        + (colorRgb.g - industryRgb.g) ** 2
-        + (colorRgb.b - industryRgb.b) ** 2,
-      )
-      return distance < 50
-    })) {
+        const distance = Math.sqrt(
+          (colorRgb.r - industryRgb.r) ** 2
+          + (colorRgb.g - industryRgb.g) ** 2
+          + (colorRgb.b - industryRgb.b) ** 2,
+        )
+        return distance < 50
+      })
+    ) {
       industries.push(industry)
     }
   }
@@ -417,16 +417,14 @@ function calculatePopularityScore(color: string): number {
       continue
 
     const distance = Math.sqrt(
-      (rgb.r - popRgb.r) ** 2
-      + (rgb.g - popRgb.g) ** 2
-      + (rgb.b - popRgb.b) ** 2,
+      (rgb.r - popRgb.r) ** 2 + (rgb.g - popRgb.g) ** 2 + (rgb.b - popRgb.b) ** 2,
     )
 
     minDistance = Math.min(minDistance, distance)
   }
 
   // 距离越小，流行度越高
-  const score = Math.max(0, 100 - (minDistance / 255 * 100))
+  const score = Math.max(0, 100 - (minDistance / 255) * 100)
   return Math.round(score)
 }
 
@@ -440,10 +438,7 @@ export function analyzeColors(colors: string[]): ColorAnalysis[] {
 /**
  * 查找相似颜色
  */
-export function findSimilarColors(
-  color: string,
-  threshold: number = 30,
-): string[] {
+export function findSimilarColors(color: string, threshold: number = 30): string[] {
   const rgb = hexToRgb(color)
   if (!rgb)
     return []
@@ -563,7 +558,7 @@ export function calculateHarmonyScore(colors: string[]): number {
       const lightnessBalance = 100 - Math.abs(hsl1.l - hsl2.l)
 
       // 综合评分
-      const pairScore = (hueScore * 0.6 + saturationBalance * 0.2 + lightnessBalance * 0.2)
+      const pairScore = hueScore * 0.6 + saturationBalance * 0.2 + lightnessBalance * 0.2
 
       totalScore += pairScore
       comparisons++
@@ -580,28 +575,42 @@ function hslToHex(h: number, s: number, l: number): string {
   l = l / 100
 
   const c = (1 - Math.abs(2 * l - 1)) * s
-  const x = c * (1 - Math.abs((h / 60) % 2 - 1))
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
   const m = l - c / 2
 
-  let r = 0; let g = 0; let b = 0
+  let r = 0
+  let g = 0
+  let b = 0
 
   if (h >= 0 && h < 60) {
-    r = c; g = x; b = 0
+    r = c
+    g = x
+    b = 0
   }
   else if (h >= 60 && h < 120) {
-    r = x; g = c; b = 0
+    r = x
+    g = c
+    b = 0
   }
   else if (h >= 120 && h < 180) {
-    r = 0; g = c; b = x
+    r = 0
+    g = c
+    b = x
   }
   else if (h >= 180 && h < 240) {
-    r = 0; g = x; b = c
+    r = 0
+    g = x
+    b = c
   }
   else if (h >= 240 && h < 300) {
-    r = x; g = 0; b = c
+    r = x
+    g = 0
+    b = c
   }
   else if (h >= 300 && h < 360) {
-    r = c; g = 0; b = x
+    r = c
+    g = 0
+    b = x
   }
 
   r = Math.round((r + m) * 255)

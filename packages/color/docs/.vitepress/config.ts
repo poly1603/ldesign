@@ -127,8 +127,7 @@ export default defineConfig({
     },
 
     editLink: {
-      pattern:
-        'https://github.com/ldesign/color/edit/main/packages/color/docs/:path',
+      pattern: 'https://github.com/ldesign/color/edit/main/packages/color/docs/:path',
       text: '在 GitHub 上编辑此页',
     },
 

@@ -4,6 +4,7 @@
 
 import type {
   EventEmitter,
+  ThemeEventDataMap,
   ThemeEventListener,
   ThemeEventType,
 } from '../core/types'
@@ -17,10 +18,7 @@ export class EventEmitterImpl implements EventEmitter {
   /**
    * 添加事件监听器
    */
-  on<T = unknown>(
-    event: ThemeEventType,
-    listener: ThemeEventListener<T>,
-  ): void {
+  on<K extends ThemeEventType>(event: K, listener: ThemeEventListener<K>): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set())
     }
@@ -30,10 +28,7 @@ export class EventEmitterImpl implements EventEmitter {
   /**
    * 移除事件监听器
    */
-  off<T = unknown>(
-    event: ThemeEventType,
-    listener: ThemeEventListener<T>,
-  ): void {
+  off<K extends ThemeEventType>(event: K, listener: ThemeEventListener<K>): void {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
       eventListeners.delete(listener as ThemeEventListener)
@@ -46,7 +41,7 @@ export class EventEmitterImpl implements EventEmitter {
   /**
    * 触发事件
    */
-  emit<T = unknown>(event: ThemeEventType, data?: T): void {
+  emit<K extends ThemeEventType>(event: K, data: ThemeEventDataMap[K]): void {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
       eventListeners.forEach((listener) => {
@@ -63,11 +58,8 @@ export class EventEmitterImpl implements EventEmitter {
   /**
    * 添加一次性事件监听器
    */
-  once<T = unknown>(
-    event: ThemeEventType,
-    listener: ThemeEventListener<T>,
-  ): void {
-    const onceListener = (data: T) => {
+  once<K extends ThemeEventType>(event: K, listener: ThemeEventListener<K>): void {
+    const onceListener = (data: ThemeEventDataMap[K]) => {
       listener(data)
       this.off(event, onceListener)
     }

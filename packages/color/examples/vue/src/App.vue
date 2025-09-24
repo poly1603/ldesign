@@ -9,19 +9,12 @@ import {
   generateAnalogousPalette,
   generateComplementaryPalette,
   generateColorConfig,
-  generateColorScales
+  generateColorScales,
 } from '@ldesign/color'
 import { useTheme, useThemeSelector } from '@ldesign/color/vue'
 import ColorPaletteCard from './components/ColorPaletteCard.vue'
 
-const {
-  currentTheme,
-  currentMode,
-  availableThemes,
-  setTheme,
-  setMode,
-  toggleMode,
-} = useTheme()
+const { currentTheme, currentMode, availableThemes, setTheme, setMode, toggleMode } = useTheme()
 const { themeConfigs } = useThemeSelector()
 
 // 当前选中的演示标签
@@ -43,19 +36,16 @@ const currentThemeConfig = computed(() => {
 // 获取当前主题的颜色配置
 const currentColors = computed(() => {
   const config = currentThemeConfig.value
-  if (!config)
-    return null
+  if (!config) return null
 
   const modeColors = currentMode.value === 'light' ? config.light : config.dark
-  if (!modeColors)
-    return null
+  if (!modeColors) return null
 
   // 如果主题配置中没有定义完整的颜色，使用生成的颜色配置
   let generatedColors = null
   try {
     generatedColors = generateColorConfig(modeColors.primary)
-  }
-  catch (_error) {
+  } catch (_error) {
     console.warn('生成颜色配置失败:', _error)
   }
 
@@ -70,13 +60,11 @@ const currentColors = computed(() => {
 
 // 生成当前主题的色阶
 const currentScales = computed(() => {
-  if (!currentColors.value)
-    return null
+  if (!currentColors.value) return null
 
   try {
     return generateColorScales(currentColors.value, currentMode.value)
-  }
-  catch (error) {
+  } catch (error) {
     console.warn('生成色阶失败:', error)
     return null
   }
@@ -85,8 +73,7 @@ const currentScales = computed(() => {
 // 获取主题的预览颜色（使用生成的完整颜色配置）
 function getThemePreviewColors(themeName: string) {
   const themeConfig = themeConfigs.value.find(t => t.name === themeName)
-  if (!themeConfig)
-    return null
+  if (!themeConfig) return null
 
   // 使用主题管理器生成完整的颜色配置
   try {
@@ -97,8 +84,7 @@ function getThemePreviewColors(themeName: string) {
       warning: colors.warning || '#faad14',
       danger: colors.danger || '#f5222d',
     }
-  }
-  catch {
+  } catch {
     // 降级到默认颜色
     return {
       primary: themeConfig.light.primary,
@@ -113,7 +99,7 @@ function getThemePreviewColors(themeName: string) {
 const inputColor = ref('#1890ff')
 const convertedColors = ref({
   rgb: { r: 24, g: 144, b: 255 },
-  hsl: { h: 210, s: 100, l: 55 }
+  hsl: { h: 210, s: 100, l: 55 },
 })
 
 const updateConvertedColors = () => {
@@ -176,7 +162,7 @@ const checkColorAccessibility = () => {
     const result = checkAccessibility(accessibilityFg.value, accessibilityBg.value, 'normal')
     accessibilityResult.value = {
       ratio: result.ratio,
-      level: result.level
+      level: result.level,
     }
   } catch (error) {
     console.error('可访问性检查失败:', error)
@@ -184,9 +170,7 @@ const checkColorAccessibility = () => {
 }
 
 // 通知系统
-const notifications = ref<Array<{ id: number, message: string, type: string }>>(
-  [],
-)
+const notifications = ref<Array<{ id: number; message: string; type: string }>>([])
 let notificationId = 0
 
 function showNotification(message: string, type: string = 'info') {
@@ -205,8 +189,7 @@ async function copyColor(color: string) {
   try {
     await navigator.clipboard.writeText(color)
     showNotification(`已复制颜色值: ${color}`, 'success')
-  }
-  catch {
+  } catch {
     showNotification('复制失败', 'error')
   }
 }
@@ -232,10 +215,6 @@ checkColorAccessibility()
 onMounted(() => {
   showNotification('Vue 示例已加载完成！', 'success')
 })
-
-
-
-
 </script>
 
 <template>
@@ -282,15 +261,8 @@ onMounted(() => {
                 class="form-control"
                 @change="setTheme(($event.target as HTMLSelectElement).value)"
               >
-                <option
-                  v-for="themeName in availableThemes"
-                  :key="themeName"
-                  :value="themeName"
-                >
-                  {{
-                    themeConfigs.find(t => t.name === themeName)?.displayName
-                      || themeName
-                  }}
+                <option v-for="themeName in availableThemes" :key="themeName" :value="themeName">
+                  {{ themeConfigs.find(t => t.name === themeName)?.displayName || themeName }}
                 </option>
               </select>
             </div>
@@ -300,23 +272,15 @@ onMounted(() => {
               <select
                 :value="currentMode"
                 class="form-control"
-                @change="
-                  setMode(($event.target as HTMLSelectElement).value as any)
-                "
+                @change="setMode(($event.target as HTMLSelectElement).value as any)"
               >
-                <option value="light">
-                  亮色模式
-                </option>
-                <option value="dark">
-                  暗色模式
-                </option>
+                <option value="light">亮色模式</option>
+                <option value="dark">暗色模式</option>
               </select>
             </div>
 
             <div class="control-group">
-              <button class="btn btn-primary" @click="toggleMode">
-                切换模式
-              </button>
+              <button class="btn btn-primary" @click="toggleMode">切换模式</button>
             </div>
 
             <div class="status-info">
@@ -334,9 +298,7 @@ onMounted(() => {
           <!-- 主题预览 -->
           <section class="card">
             <h3 class="card-title">🎨 主题预览</h3>
-            <p class="card-description">
-              选择一个预设主题来快速应用，这些主题都是精心设计的美观配色方案
-            </p>
+            <p class="card-description">选择一个预设主题来快速应用，这些主题都是精心设计的美观配色方案</p>
 
             <div class="theme-grid">
               <div
@@ -350,43 +312,33 @@ onMounted(() => {
                   <div
                     class="theme-color"
                     :style="{
-                      backgroundColor:
-                        getThemePreviewColors(themeName)?.primary || '#1890ff',
+                      backgroundColor: getThemePreviewColors(themeName)?.primary || '#1890ff',
                     }"
                   />
                   <div
                     class="theme-color"
                     :style="{
-                      backgroundColor:
-                        getThemePreviewColors(themeName)?.success || '#52c41a',
+                      backgroundColor: getThemePreviewColors(themeName)?.success || '#52c41a',
                     }"
                   />
                   <div
                     class="theme-color"
                     :style="{
-                      backgroundColor:
-                        getThemePreviewColors(themeName)?.warning || '#faad14',
+                      backgroundColor: getThemePreviewColors(themeName)?.warning || '#faad14',
                     }"
                   />
                   <div
                     class="theme-color"
                     :style="{
-                      backgroundColor:
-                        getThemePreviewColors(themeName)?.danger || '#f5222d',
+                      backgroundColor: getThemePreviewColors(themeName)?.danger || '#f5222d',
                     }"
                   />
                 </div>
                 <div class="theme-name">
-                  {{
-                    themeConfigs.find(t => t.name === themeName)?.displayName
-                      || themeName
-                  }}
+                  {{ themeConfigs.find(t => t.name === themeName)?.displayName || themeName }}
                 </div>
                 <div class="theme-description">
-                  {{
-                    themeConfigs.find(t => t.name === themeName)?.description
-                      || '精美的主题配色方案'
-                  }}
+                  {{ themeConfigs.find(t => t.name === themeName)?.description || '精美的主题配色方案' }}
                 </div>
               </div>
             </div>
@@ -427,17 +379,8 @@ onMounted(() => {
           <div class="converter-demo">
             <div class="input-group">
               <label>输入颜色 (HEX):</label>
-              <input
-                v-model="inputColor"
-                type="color"
-                @input="updateConvertedColors"
-              />
-              <input
-                v-model="inputColor"
-                type="text"
-                @input="updateConvertedColors"
-                placeholder="#1890ff"
-              />
+              <input v-model="inputColor" type="color" @input="updateConvertedColors" />
+              <input v-model="inputColor" type="text" @input="updateConvertedColors" placeholder="#1890ff" />
             </div>
 
             <div class="color-preview" :style="{ backgroundColor: inputColor }">
@@ -465,30 +408,14 @@ onMounted(() => {
           <div class="mixer-demo">
             <div class="input-group">
               <label>颜色 1:</label>
-              <input
-                v-model="mixerColor1"
-                type="color"
-                @input="updateMixedColor"
-              />
-              <input
-                v-model="mixerColor1"
-                type="text"
-                @input="updateMixedColor"
-              />
+              <input v-model="mixerColor1" type="color" @input="updateMixedColor" />
+              <input v-model="mixerColor1" type="text" @input="updateMixedColor" />
             </div>
 
             <div class="input-group">
               <label>颜色 2:</label>
-              <input
-                v-model="mixerColor2"
-                type="color"
-                @input="updateMixedColor"
-              />
-              <input
-                v-model="mixerColor2"
-                type="text"
-                @input="updateMixedColor"
-              />
+              <input v-model="mixerColor2" type="color" @input="updateMixedColor" />
+              <input v-model="mixerColor2" type="text" @input="updateMixedColor" />
             </div>
 
             <div class="color-preview" :style="{ backgroundColor: mixedColor }">
@@ -505,16 +432,8 @@ onMounted(() => {
           <div class="palette-demo">
             <div class="input-group">
               <label>基础颜色:</label>
-              <input
-                v-model="paletteBaseColor"
-                type="color"
-                @input="generatePalette"
-              />
-              <input
-                v-model="paletteBaseColor"
-                type="text"
-                @input="generatePalette"
-              />
+              <input v-model="paletteBaseColor" type="color" @input="generatePalette" />
+              <input v-model="paletteBaseColor" type="text" @input="generatePalette" />
             </div>
 
             <div class="input-group">
@@ -548,30 +467,14 @@ onMounted(() => {
           <div class="accessibility-demo">
             <div class="input-group">
               <label>前景色 (文字):</label>
-              <input
-                v-model="accessibilityFg"
-                type="color"
-                @input="checkColorAccessibility"
-              />
-              <input
-                v-model="accessibilityFg"
-                type="text"
-                @input="checkColorAccessibility"
-              />
+              <input v-model="accessibilityFg" type="color" @input="checkColorAccessibility" />
+              <input v-model="accessibilityFg" type="text" @input="checkColorAccessibility" />
             </div>
 
             <div class="input-group">
               <label>背景色:</label>
-              <input
-                v-model="accessibilityBg"
-                type="color"
-                @input="checkColorAccessibility"
-              />
-              <input
-                v-model="accessibilityBg"
-                type="text"
-                @input="checkColorAccessibility"
-              />
+              <input v-model="accessibilityBg" type="color" @input="checkColorAccessibility" />
+              <input v-model="accessibilityBg" type="text" @input="checkColorAccessibility" />
             </div>
 
             <div class="accessibility-result">
@@ -579,16 +482,14 @@ onMounted(() => {
                 class="text-preview"
                 :style="{
                   color: accessibilityFg,
-                  backgroundColor: accessibilityBg
+                  backgroundColor: accessibilityBg,
                 }"
               >
                 示例文本 Sample Text
               </div>
 
               <div class="result-info">
-                <div class="result-item">
-                  <strong>对比度比值:</strong> {{ accessibilityResult.ratio.toFixed(2) }}:1
-                </div>
+                <div class="result-item"><strong>对比度比值:</strong> {{ accessibilityResult.ratio.toFixed(2) }}:1</div>
                 <div class="result-item">
                   <strong>WCAG 等级:</strong>
                   <span :class="['level', accessibilityResult.level.toLowerCase()]">
@@ -608,12 +509,7 @@ onMounted(() => {
     </footer>
 
     <!-- 通知 -->
-    <div
-      v-for="notification in notifications"
-      :key="notification.id"
-      class="notification"
-      :class="[notification.type]"
-    >
+    <div v-for="notification in notifications" :key="notification.id" class="notification" :class="[notification.type]">
       {{ notification.message }}
     </div>
   </div>
@@ -747,7 +643,7 @@ onMounted(() => {
   min-width: 120px;
 }
 
-.input-group input[type="color"] {
+.input-group input[type='color'] {
   width: 60px;
   height: 40px;
   border: 1px solid #e5e5e5;
@@ -755,7 +651,7 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.input-group input[type="text"] {
+.input-group input[type='text'] {
   padding: 8px 12px;
   border: 1px solid #e5e5e5;
   border-radius: 6px;

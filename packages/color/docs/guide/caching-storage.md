@@ -21,4 +21,3 @@ import { createLRUCache } from '@ldesign/color'
 const cache = createLRUCache({ maxSize: 100, defaultTTL: 60_000 })
 cache.set('key', { foo: 1 })
 ```
-

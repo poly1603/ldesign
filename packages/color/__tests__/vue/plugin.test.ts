@@ -15,9 +15,9 @@ describe('createColorEnginePlugin', () => {
     app = createApp({})
     mockEngine = {
       getApp: () => app,
-      config: {}
+      config: {},
     }
-    
+
     // 模拟 DOM 环境
     document.head.innerHTML = ''
     document.body.innerHTML = ''
@@ -25,7 +25,7 @@ describe('createColorEnginePlugin', () => {
 
   it('应该正确创建插件', () => {
     const plugin = createColorEnginePlugin()
-    
+
     expect(plugin).toBeDefined()
     expect(plugin.name).toBe('color')
     expect(plugin.version).toBe('1.0.0')
@@ -34,7 +34,7 @@ describe('createColorEnginePlugin', () => {
 
   it('应该使用默认配置', () => {
     const plugin = createColorEnginePlugin()
-    
+
     expect(plugin).toBeDefined()
   })
 
@@ -50,29 +50,29 @@ describe('createColorEnginePlugin', () => {
           displayName: '自定义主题',
           description: '这是一个自定义主题',
           light: { primary: '#ff0000' },
-          dark: { primary: '#cc0000' }
-        }
+          dark: { primary: '#cc0000' },
+        },
       ],
-      disabledBuiltinThemes: ['green']
+      disabledBuiltinThemes: ['green'],
     }
 
     const plugin = createColorEnginePlugin(customConfig)
-    
+
     expect(plugin).toBeDefined()
   })
 
   it('应该正确安装插件', async () => {
     const plugin = createColorEnginePlugin({
-      debug: true
+      debug: true,
     })
 
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    
+
     await plugin.install(mockEngine)
-    
+
     expect(mockEngine.config.color).toBeDefined()
     expect(consoleSpy).toHaveBeenCalled()
-    
+
     consoleSpy.mockRestore()
   })
 
@@ -81,9 +81,9 @@ describe('createColorEnginePlugin', () => {
     const invalidEngine = null
 
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    
+
     await expect(plugin.install(invalidEngine)).rejects.toThrow()
-    
+
     consoleErrorSpy.mockRestore()
   })
 
@@ -95,22 +95,22 @@ describe('createColorEnginePlugin', () => {
     const plugin = createColorEnginePlugin({
       onReady: onReadyMock,
       onThemeChanged: onThemeChangedMock,
-      onError: onErrorMock
+      onError: onErrorMock,
     })
 
     await plugin.install(mockEngine)
-    
+
     expect(onReadyMock).toHaveBeenCalled()
   })
 
   it('应该正确处理缓存配置', async () => {
     const plugin = createColorEnginePlugin({
       enableCache: true,
-      cacheStorage: 'sessionStorage'
+      cacheStorage: 'sessionStorage',
     })
 
     await plugin.install(mockEngine)
-    
+
     expect(mockEngine.config.color.enableCache).toBe(true)
     expect(mockEngine.config.color.cacheStorage).toBe('sessionStorage')
   })
@@ -118,11 +118,11 @@ describe('createColorEnginePlugin', () => {
   it('应该正确处理背景色生成配置', async () => {
     const plugin = createColorEnginePlugin({
       backgroundStrategy: 'primary-based',
-      generateBackgroundFromPrimary: true
+      generateBackgroundFromPrimary: true,
     })
 
     await plugin.install(mockEngine)
-    
+
     expect(mockEngine.config.color.backgroundStrategy).toBe('primary-based')
     expect(mockEngine.config.color.generateBackgroundFromPrimary).toBe(true)
   })
@@ -133,21 +133,21 @@ describe('createColorEnginePlugin', () => {
         name: 'theme1',
         displayName: '主题1',
         light: { primary: '#ff0000' },
-        dark: { primary: '#cc0000' }
+        dark: { primary: '#cc0000' },
       },
       {
         name: 'theme2',
         displayName: '主题2',
-        colors: { primary: '#00ff00' }
-      }
+        colors: { primary: '#00ff00' },
+      },
     ]
 
     const plugin = createColorEnginePlugin({
-      customThemes
+      customThemes,
     })
 
     await plugin.install(mockEngine)
-    
+
     expect(mockEngine.config.color.customThemes).toEqual(customThemes)
   })
 
@@ -155,11 +155,11 @@ describe('createColorEnginePlugin', () => {
     const disabledThemes = ['green', 'red']
 
     const plugin = createColorEnginePlugin({
-      disabledBuiltinThemes: disabledThemes
+      disabledBuiltinThemes: disabledThemes,
     })
 
     await plugin.install(mockEngine)
-    
+
     expect(mockEngine.config.color.disabledBuiltinThemes).toEqual(disabledThemes)
   })
 
@@ -167,42 +167,42 @@ describe('createColorEnginePlugin', () => {
     const customPrefix = 'my-design'
 
     const plugin = createColorEnginePlugin({
-      cssVariablePrefix: customPrefix
+      cssVariablePrefix: customPrefix,
     })
 
     await plugin.install(mockEngine)
-    
+
     expect(mockEngine.config.color.cssVariablePrefix).toBe(customPrefix)
   })
 
   it('应该在错误时调用错误回调', async () => {
     const onErrorMock = vi.fn()
-    
+
     const plugin = createColorEnginePlugin({
       onError: onErrorMock,
       onReady: () => {
         throw new Error('测试错误')
-      }
+      },
     })
 
     await plugin.install(mockEngine)
-    
+
     expect(onErrorMock).toHaveBeenCalled()
   })
 
   it('应该正确设置调试模式', async () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    
+
     const plugin = createColorEnginePlugin({
-      debug: true
+      debug: true,
     })
 
     await plugin.install(mockEngine)
-    
+
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('🎨 [ColorEngine] 开始安装插件')
     )
-    
+
     consoleSpy.mockRestore()
   })
 })

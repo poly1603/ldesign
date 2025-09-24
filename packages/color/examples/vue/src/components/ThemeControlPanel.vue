@@ -3,21 +3,13 @@ import { getRandomPresetTheme, getSystemTheme } from '@ldesign/color'
 import { useTheme } from '@ldesign/color/vue'
 import { computed, ref, watch } from 'vue'
 
-const {
-  currentTheme,
-  currentMode,
-  availableThemes,
-  setTheme,
-  setMode,
-  toggleMode,
-  getThemeConfig,
-} = useTheme()
+const { currentTheme, currentMode, availableThemes, setTheme, setMode, toggleMode, getThemeConfig } = useTheme()
 
 const selectedTheme = ref(currentTheme.value)
 const systemTheme = ref(getSystemTheme())
 
 // 监听当前主题变化，同步选择器
-watch(currentTheme, (newTheme) => {
+watch(currentTheme, newTheme => {
   selectedTheme.value = newTheme
 })
 
@@ -73,18 +65,11 @@ async function _resetToDefault() {
 
 <template>
   <div class="card">
-    <h2 class="card-title">
-      🎛️ 主题控制
-    </h2>
+    <h2 class="card-title">🎛️ 主题控制</h2>
 
     <div class="control-group">
       <label for="theme-select">选择主题:</label>
-      <select
-        id="theme-select"
-        v-model="selectedTheme"
-        class="theme-select"
-        @change="handleThemeChange"
-      >
+      <select id="theme-select" v-model="selectedTheme" class="theme-select" @change="handleThemeChange">
         <option v-for="theme in availableThemes" :key="theme" :value="theme">
           {{ getThemeDisplayName(theme) }}
         </option>
@@ -99,12 +84,8 @@ async function _resetToDefault() {
         class="mode-select"
         @change="setMode(($event.target as HTMLSelectElement).value as any)"
       >
-        <option value="light">
-          亮色模式
-        </option>
-        <option value="dark">
-          暗色模式
-        </option>
+        <option value="light">亮色模式</option>
+        <option value="dark">暗色模式</option>
       </select>
     </div>
 
@@ -112,12 +93,8 @@ async function _resetToDefault() {
       <button class="btn btn-primary" @click="toggleMode">
         切换到{{ currentMode === 'light' ? '暗色' : '亮色' }}模式
       </button>
-      <button class="btn btn-secondary" @click="handleRandomTheme">
-        随机主题
-      </button>
-      <button class="btn btn-secondary" @click="syncSystemTheme">
-        同步系统主题
-      </button>
+      <button class="btn btn-secondary" @click="handleRandomTheme">随机主题</button>
+      <button class="btn btn-secondary" @click="syncSystemTheme">同步系统主题</button>
     </div>
 
     <div class="status-info">
@@ -127,9 +104,7 @@ async function _resetToDefault() {
       </div>
       <div class="status-item">
         <span class="label">当前模式:</span>
-        <span class="value">{{
-          currentMode === 'light' ? '亮色模式' : '暗色模式'
-        }}</span>
+        <span class="value">{{ currentMode === 'light' ? '亮色模式' : '暗色模式' }}</span>
       </div>
       <div class="status-item">
         <span class="label">系统主题:</span>

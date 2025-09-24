@@ -1,1 +1,31 @@
-{ "compilerOptions": { "target": "ES2020", "jsx": "preserve", "jsxImportSource": "vue", "lib": ["ES2020", "DOM", "DOM.Iterable"], "useDefineForClassFields": true, "baseUrl": ".", "module": "ESNext", "moduleResolution": "bundler", "paths": { "@/*": ["src/*"], "@tests/*": ["__tests__/*"] }, "resolveJsonModule": true, "types": ["vitest/globals", "node"], "allowJs": false, "strict": true, "noFallthroughCasesInSwitch": true, "noUnusedLocals": false, "noUnusedParameters": false, "declaration": false, "declarationMap": false, "downlevelIteration": true, "sourceMap": true, "allowSyntheticDefaultImports": true, "esModuleInterop": true, "forceConsistentCasingInFileNames": true, "isolatedModules": true, "skipLibCheck": true }, "include": ["src/**/*", "__tests__/**/*", "tests/**/*", "test/**/*", "e2e/**/*"], "exclude": ["node_modules", "dist", "esm", "cjs", "types", "examples"] }
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "useDefineForClassFields": true,
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": { "@/*": ["src/*"], "@tests/*": ["__tests__/*"] },
+    "resolveJsonModule": true,
+    "types": ["vitest/globals", "node"],
+    "allowJs": false,
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "declaration": false,
+    "declarationMap": false,
+    "downlevelIteration": true,
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*", "__tests__/**/*", "tests/**/*", "test/**/*", "e2e/**/*"],
+  "exclude": ["node_modules", "dist", "esm", "cjs", "types", "examples"]
+}

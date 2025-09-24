@@ -15,23 +15,51 @@ export const LSelect = defineComponent({
   emits: ['update:model-value'],
   setup(props, { emit }) {
     const open = ref(false)
-    const onToggle = () => { if (!props.disabled) open.value = !open.value }
-    const onSelect = (val: any) => { emit('update:model-value', val); open.value = false }
-    return () => h('div', { class: 'theme-selector__select-enhanced', onClick: onToggle }, [
-      ((props.modelValue == null) || props.modelValue === '') && props.placeholder
-        ? h('div', { class: 'theme-selector__select-placeholder' }, props.placeholder)
-        : null,
-      open.value && h('div', { class: 'theme-selector__select-dropdown' }, [
-        ...props.options.map((opt: any) =>
-          h('div', { class: 'theme-selector__select-option', onClick: (e: Event) => { e.stopPropagation(); onSelect(opt.value) } }, [
-            h('span', { class: 'theme-selector__select-option-label' }, opt.label ?? String(opt.value)),
-            props.showDescription && opt.description ? h('span', { class: 'theme-selector__select-option-desc' }, opt.description) : null,
-            props.showColor && opt.color ? h('span', { class: 'theme-selector__color-dot', style: { backgroundColor: opt.color } }) : null,
-          ])
-        )
+    const onToggle = () => {
+      if (!props.disabled) open.value = !open.value
+    }
+    const onSelect = (val: any) => {
+      emit('update:model-value', val)
+      open.value = false
+    }
+    return () =>
+      h('div', { class: 'theme-selector__select-enhanced', onClick: onToggle }, [
+        (props.modelValue == null || props.modelValue === '') && props.placeholder
+          ? h('div', { class: 'theme-selector__select-placeholder' }, props.placeholder)
+          : null,
+        open.value &&
+          h('div', { class: 'theme-selector__select-dropdown' }, [
+            ...props.options.map((opt: any) =>
+              h(
+                'div',
+                {
+                  class: 'theme-selector__select-option',
+                  onClick: (e: Event) => {
+                    e.stopPropagation()
+                    onSelect(opt.value)
+                  },
+                },
+                [
+                  h(
+                    'span',
+                    { class: 'theme-selector__select-option-label' },
+                    opt.label ?? String(opt.value)
+                  ),
+                  props.showDescription && opt.description
+                    ? h('span', { class: 'theme-selector__select-option-desc' }, opt.description)
+                    : null,
+                  props.showColor && opt.color
+                    ? h('span', {
+                        class: 'theme-selector__color-dot',
+                        style: { backgroundColor: opt.color },
+                      })
+                    : null,
+                ]
+              )
+            ),
+          ]),
       ])
-    ])
-  }
+  },
 })
 
 export const LPopup = defineComponent({
@@ -44,12 +72,16 @@ export const LPopup = defineComponent({
   },
   setup(props, { slots }) {
     const open = ref(false)
-    const toggle = () => { if (!props.disabled) open.value = !open.value }
-    return () => h('div', { class: 'theme-selector__popup-wrapper-mock', onClick: toggle }, [
-      slots.default ? slots.default() : null,
-      open.value && h('div', { class: 'theme-selector__popup' }, slots.content ? slots.content() : [])
-    ])
-  }
+    const toggle = () => {
+      if (!props.disabled) open.value = !open.value
+    }
+    return () =>
+      h('div', { class: 'theme-selector__popup-wrapper-mock', onClick: toggle }, [
+        slots.default ? slots.default() : null,
+        open.value &&
+          h('div', { class: 'theme-selector__popup' }, slots.content ? slots.content() : []),
+      ])
+  },
 })
 
 export const LDialog = defineComponent({
@@ -62,9 +94,9 @@ export const LDialog = defineComponent({
   },
   emits: ['update:visible'],
   setup(props, { slots }) {
-    return () => props.visible ? h('div', { class: 'theme-selector__dialog' }, [
-      slots.default ? slots.default() : null
-    ]) : null
-  }
+    return () =>
+      props.visible
+        ? h('div', { class: 'theme-selector__dialog' }, [slots.default ? slots.default() : null])
+        : null
+  },
 })
-

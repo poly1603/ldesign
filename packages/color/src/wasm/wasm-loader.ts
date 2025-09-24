@@ -134,8 +134,7 @@ export class WasmLoader {
    * 检查 WebAssembly 支持
    */
   private isWebAssemblySupported(): boolean {
-    return typeof WebAssembly !== 'undefined'
-      && typeof WebAssembly.instantiate === 'function'
+    return typeof WebAssembly !== 'undefined' && typeof WebAssembly.instantiate === 'function'
   }
 
   /**
@@ -188,7 +187,6 @@ export class WasmLoader {
   private async saveToCache(_module: WebAssembly.Module): Promise<void> {
     // Cache saving is not directly supported for compiled modules
     // The browser will cache the fetched WASM file automatically
-
   }
 
   /**
@@ -341,11 +339,7 @@ export class WasmLoader {
           b = hue2rgb(p, q, h - 1 / 3)
         }
 
-        return new Uint8Array([
-          Math.round(r * 255),
-          Math.round(g * 255),
-          Math.round(b * 255),
-        ])
+        return new Uint8Array([Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)])
       },
 
       blend_colors: (color1: number, color2: number, ratio: number): number => {

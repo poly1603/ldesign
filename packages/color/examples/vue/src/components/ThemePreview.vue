@@ -20,8 +20,7 @@ async function applyTheme(themeName: string) {
   try {
     await setTheme(themeName, currentMode.value)
     showNotification(`已应用 ${getThemeDisplayName(themeName)} 主题`, 'success')
-  }
-  catch (error) {
+  } catch (error) {
     showNotification('主题应用失败', 'error')
     console.error('Failed to apply theme:', error)
   }
@@ -53,18 +52,12 @@ function isCurrentTheme(themeName: string): boolean {
 
 <template>
   <div class="card">
-    <h2 class="card-title">
-      🎨 主题预览
-    </h2>
-    <p class="card-description">
-      选择一个预设主题来快速应用，这些主题都是精心设计的美观配色方案
-    </p>
+    <h2 class="card-title">🎨 主题预览</h2>
+    <p class="card-description">选择一个预设主题来快速应用，这些主题都是精心设计的美观配色方案</p>
 
     <!-- 基础主题 -->
     <div class="theme-section">
-      <h3 class="section-title">
-        基础主题
-      </h3>
+      <h3 class="section-title">基础主题</h3>
       <div class="theme-grid">
         <div
           v-for="theme in categorizedThemes.basic"
@@ -73,10 +66,7 @@ function isCurrentTheme(themeName: string): boolean {
           :class="{ active: isCurrentTheme(theme.name) }"
           @click="applyTheme(theme.name)"
         >
-          <div
-            class="theme-preview"
-            :style="{ backgroundColor: getThemePrimaryColor(theme.name) }"
-          >
+          <div class="theme-preview" :style="{ backgroundColor: getThemePrimaryColor(theme.name) }">
             <div class="theme-overlay">
               <span v-if="isCurrentTheme(theme.name)" class="current-badge">当前</span>
             </div>
@@ -95,9 +85,7 @@ function isCurrentTheme(themeName: string): boolean {
 
     <!-- 彩色主题 -->
     <div class="theme-section">
-      <h3 class="section-title">
-        彩色主题
-      </h3>
+      <h3 class="section-title">彩色主题</h3>
       <div class="theme-grid">
         <div
           v-for="theme in categorizedThemes.colorful"
@@ -106,10 +94,7 @@ function isCurrentTheme(themeName: string): boolean {
           :class="{ active: isCurrentTheme(theme.name) }"
           @click="applyTheme(theme.name)"
         >
-          <div
-            class="theme-preview"
-            :style="{ backgroundColor: getThemePrimaryColor(theme.name) }"
-          >
+          <div class="theme-preview" :style="{ backgroundColor: getThemePrimaryColor(theme.name) }">
             <div class="theme-overlay">
               <span v-if="isCurrentTheme(theme.name)" class="current-badge">当前</span>
             </div>

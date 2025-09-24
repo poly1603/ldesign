@@ -408,7 +408,10 @@ export class ImageColorExtractor {
     const dominant = colors[0] || this.createDefaultColor()
 
     // Calculate average color
-    let totalR = 0; let totalG = 0; let totalB = 0; let totalWeight = 0
+    let totalR = 0
+    let totalG = 0
+    let totalB = 0
+    let totalWeight = 0
 
     for (const color of colors) {
       const weight = color.population
@@ -445,39 +448,27 @@ export class ImageColorExtractor {
   }
 
   private findVibrantColor(colors: ExtractedColor[]): ExtractedColor | undefined {
-    return colors.find(c =>
-      c.hsl.s > 50 && c.hsl.l >= 30 && c.hsl.l <= 70,
-    )
+    return colors.find(c => c.hsl.s > 50 && c.hsl.l >= 30 && c.hsl.l <= 70)
   }
 
   private findMutedColor(colors: ExtractedColor[]): ExtractedColor | undefined {
-    return colors.find(c =>
-      c.hsl.s <= 50 && c.hsl.l >= 30 && c.hsl.l <= 70,
-    )
+    return colors.find(c => c.hsl.s <= 50 && c.hsl.l >= 30 && c.hsl.l <= 70)
   }
 
   private findDarkVibrantColor(colors: ExtractedColor[]): ExtractedColor | undefined {
-    return colors.find(c =>
-      c.hsl.s > 50 && c.hsl.l < 30,
-    )
+    return colors.find(c => c.hsl.s > 50 && c.hsl.l < 30)
   }
 
   private findLightVibrantColor(colors: ExtractedColor[]): ExtractedColor | undefined {
-    return colors.find(c =>
-      c.hsl.s > 50 && c.hsl.l > 70,
-    )
+    return colors.find(c => c.hsl.s > 50 && c.hsl.l > 70)
   }
 
   private findDarkMutedColor(colors: ExtractedColor[]): ExtractedColor | undefined {
-    return colors.find(c =>
-      c.hsl.s <= 50 && c.hsl.l < 30,
-    )
+    return colors.find(c => c.hsl.s <= 50 && c.hsl.l < 30)
   }
 
   private findLightMutedColor(colors: ExtractedColor[]): ExtractedColor | undefined {
-    return colors.find(c =>
-      c.hsl.s <= 50 && c.hsl.l > 70,
-    )
+    return colors.find(c => c.hsl.s <= 50 && c.hsl.l > 70)
   }
 
   private initializeCentroids(pixels: PixelData[], k: number): PixelData[] {
@@ -519,9 +510,12 @@ export class ImageColorExtractor {
   }
 
   private getColorRange(box: PixelData[]): number {
-    let minR = 255; let maxR = 0
-    let minG = 255; let maxG = 0
-    let minB = 255; let maxB = 0
+    let minR = 255
+    let maxR = 0
+    let minG = 255
+    let maxG = 0
+    let minB = 255
+    let maxB = 0
 
     for (const pixel of box) {
       minR = Math.min(minR, pixel.r)
@@ -540,9 +534,12 @@ export class ImageColorExtractor {
   }
 
   private splitBox(box: PixelData[]): [PixelData[], PixelData[]] {
-    let minR = 255; let maxR = 0
-    let minG = 255; let maxG = 0
-    let minB = 255; let maxB = 0
+    let minR = 255
+    let maxR = 0
+    let minG = 255
+    let maxG = 0
+    let minB = 255
+    let maxB = 0
 
     for (const pixel of box) {
       minR = Math.min(minR, pixel.r)
@@ -644,7 +641,7 @@ export class ImageColorExtractor {
     const colors: string[] = []
 
     for (let i = 0; i < 5; i++) {
-      const lightness = 20 + (i * 15)
+      const lightness = 20 + i * 15
       const { r, g, b } = this.hslToRgb(base.h, base.s, lightness)
       colors.push(this.rgbToHex(r, g, b))
     }
@@ -708,7 +705,10 @@ export class ImageColorExtractor {
 
   // Color conversion utilities
   private rgbToHex(r: number, g: number, b: number): string {
-    return `#${[r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase()}`
+    return `#${[r, g, b]
+      .map(x => x.toString(16).padStart(2, '0'))
+      .join('')
+      .toUpperCase()}`
   }
 
   private rgbToHsl(r: number, g: number, b: number): { h: number, s: number, l: number } {
@@ -828,12 +828,14 @@ class OctreeNode {
   getPalette(): OctreePaletteEntry[] {
     const leaves = this.getLeaves()
 
-    return leaves.map((leaf): OctreePaletteEntry => ({
-      r: Math.round(leaf.r / Math.max(1, leaf.pixelCount)),
-      g: Math.round(leaf.g / Math.max(1, leaf.pixelCount)),
-      b: Math.round(leaf.b / Math.max(1, leaf.pixelCount)),
-      pixelCount: leaf.pixelCount,
-    }))
+    return leaves.map(
+      (leaf): OctreePaletteEntry => ({
+        r: Math.round(leaf.r / Math.max(1, leaf.pixelCount)),
+        g: Math.round(leaf.g / Math.max(1, leaf.pixelCount)),
+        b: Math.round(leaf.b / Math.max(1, leaf.pixelCount)),
+        pixelCount: leaf.pixelCount,
+      }),
+    )
   }
 
   private getLeaves(): OctreeNode[] {

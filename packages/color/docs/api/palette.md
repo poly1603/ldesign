@@ -19,6 +19,7 @@ const largePalette = generateMonochromaticPalette('#1890ff', 10)
 ```
 
 **特点：**
+
 - 基于亮度变化生成
 - 保持色相和饱和度一致
 - 适合创建层次感设计
@@ -40,6 +41,7 @@ const triadic = generateAnalogousPalette('#ff6b6b', 3)
 ```
 
 **特点：**
+
 - 色相范围 ±30 度
 - 自然和谐的配色
 - 适合温和的设计风格
@@ -60,6 +62,7 @@ console.log(palette)
 ```
 
 **特点：**
+
 - 色相相差 180 度
 - 强烈的视觉对比
 - 适合突出重点元素
@@ -80,6 +83,7 @@ console.log(palette)
 ```
 
 **特点：**
+
 - 色相间隔 120 度
 - 平衡的视觉效果
 - 适合多元素设计
@@ -100,6 +104,7 @@ console.log(palette)
 ```
 
 **特点：**
+
 - 色相间隔 90 度
 - 丰富的色彩组合
 - 适合复杂的设计系统
@@ -109,10 +114,10 @@ console.log(palette)
 ### 设计系统配色
 
 ```typescript
-import { 
+import {
   generateMonochromaticPalette,
   generateComplementaryPalette,
-  generateTriadicPalette 
+  generateTriadicPalette,
 } from '@ldesign/color'
 
 // 主色调色板
@@ -130,12 +135,12 @@ const designSystem = {
     100: primaryPalette[1],
     200: primaryPalette[2],
     // ... 更多层级
-    900: primaryPalette[9]
+    900: primaryPalette[9],
   },
   secondary,
   success,
   warning,
-  error
+  error,
 }
 ```
 
@@ -149,7 +154,7 @@ function generateChartColors(baseColor: string, count: number) {
   if (count <= 5) {
     return generateAnalogousPalette(baseColor, count)
   }
-  
+
   // 大量颜色时使用插值
   const colors = []
   for (let i = 0; i < count; i++) {
@@ -165,16 +170,16 @@ const chartColors = generateChartColors('#1890ff', 8)
 ### 主题配色生成
 
 ```typescript
-import { 
+import {
   generateMonochromaticPalette,
   generateComplementaryPalette,
-  adjustBrightness 
+  adjustBrightness,
 } from '@ldesign/color'
 
 function generateThemeColors(brandColor: string) {
   const [primary, secondary] = generateComplementaryPalette(brandColor)
   const primaryShades = generateMonochromaticPalette(primary, 9)
-  
+
   return {
     // 主色系
     primary: {
@@ -187,20 +192,20 @@ function generateThemeColors(brandColor: string) {
       600: primaryShades[5],
       700: primaryShades[6],
       800: primaryShades[7],
-      900: primaryShades[8]
+      900: primaryShades[8],
     },
-    
+
     // 辅助色
     secondary,
-    
+
     // 中性色
     gray: generateMonochromaticPalette('#8c8c8c', 9),
-    
+
     // 语义色
     success: '#52c41a',
     warning: '#faad14',
     error: '#ff4d4f',
-    info: primary
+    info: primary,
   }
 }
 
@@ -218,9 +223,7 @@ function analyzePalette(colors: string[]) {
   return colors.map((color, index) => ({
     color,
     brightness: getPerceivedBrightness(color),
-    contrasts: colors.map(otherColor => 
-      getContrastRatio(color, otherColor)
-    )
+    contrasts: colors.map(otherColor => getContrastRatio(color, otherColor)),
   }))
 }
 
@@ -234,14 +237,14 @@ const analysis = analyzePalette(palette)
 import { isAccessible, adjustBrightness } from '@ldesign/color'
 
 function optimizePaletteForAccessibility(
-  colors: string[], 
+  colors: string[],
   backgroundColor: string = '#ffffff'
 ) {
   return colors.map(color => {
     if (isAccessible(color, backgroundColor)) {
       return color
     }
-    
+
     // 尝试调整亮度以满足可访问性
     for (let adjustment = -50; adjustment <= 50; adjustment += 10) {
       const adjusted = adjustBrightness(color, adjustment)
@@ -249,7 +252,7 @@ function optimizePaletteForAccessibility(
         return adjusted
       }
     }
-    
+
     return color // 如果无法优化，返回原色
   })
 }
@@ -265,12 +268,12 @@ const optimizedPalette = optimizePaletteForAccessibility(originalPalette)
 type PaletteGenerator = (baseColor: string, count?: number) => string[]
 
 // 调色板类型
-type PaletteType = 
-  | 'monochromatic'  // 单色
-  | 'analogous'      // 类似色
-  | 'complementary'  // 互补色
-  | 'triadic'        // 三元色
-  | 'tetradic'       // 四元色
+type PaletteType =
+  | 'monochromatic' // 单色
+  | 'analogous' // 类似色
+  | 'complementary' // 互补色
+  | 'triadic' // 三元色
+  | 'tetradic' // 四元色
 
 // 调色板配置
 interface PaletteConfig {
@@ -278,7 +281,7 @@ interface PaletteConfig {
   baseColor: string
   count?: number
   options?: {
-    hueRange?: number      // 色相范围（类似色）
+    hueRange?: number // 色相范围（类似色）
     brightnessRange?: number // 亮度范围（单色）
     saturationRange?: number // 饱和度范围
   }
@@ -313,7 +316,7 @@ import { checkAccessibility } from '@ldesign/color'
 // 检查调色板的可访问性
 function validatePaletteAccessibility(colors: string[]) {
   const results = []
-  
+
   for (let i = 0; i < colors.length; i++) {
     for (let j = i + 1; j < colors.length; j++) {
       const result = checkAccessibility(colors[i], colors[j])
@@ -322,12 +325,12 @@ function validatePaletteAccessibility(colors: string[]) {
           color1: colors[i],
           color2: colors[j],
           ratio: result.contrastRatio,
-          recommendations: result.recommendations
+          recommendations: result.recommendations,
         })
       }
     }
   }
-  
+
   return results
 }
 ```
@@ -340,9 +343,9 @@ function generateResponsivePalette(baseColor: string) {
   return {
     light: generateMonochromaticPalette(baseColor, 9),
     dark: generateMonochromaticPalette(
-      adjustBrightness(baseColor, -20), 
+      adjustBrightness(baseColor, -20),
       9
-    ).reverse() // 深色模式反转顺序
+    ).reverse(), // 深色模式反转顺序
   }
 }
 ```

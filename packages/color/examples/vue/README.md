@@ -1,6 +1,7 @@
 # Vue 3 示例
 
-这是一个完整的 Vue 3 示例项目，展示了 @ldesign/color 的 Vue 集成功能和组合式 API 的使用。
+这是一个完整的 Vue
+3 示例项目，展示了 @ldesign/color 的 Vue 集成功能和组合式 API 的使用。
 
 ## 功能特性
 
@@ -144,16 +145,15 @@ app.mount('#app')
 <script setup>
 import { useTheme } from '@ldesign/color/vue'
 
-const { currentTheme, currentMode, availableThemes, setTheme, toggleMode } = useTheme()
+const { currentTheme, currentMode, availableThemes, setTheme, toggleMode } =
+  useTheme()
 </script>
 
 <template>
   <div>
     <p>当前主题: {{ currentTheme }}</p>
     <p>当前模式: {{ currentMode }}</p>
-    <button @click="toggleMode">
-      切换模式
-    </button>
+    <button @click="toggleMode">切换模式</button>
     <select @change="setTheme($event.target.value)">
       <option v-for="theme in availableThemes" :key="theme" :value="theme">
         {{ theme }}
@@ -173,9 +173,7 @@ const { toggle, isDark } = useThemeToggle()
 </script>
 
 <template>
-  <button @click="toggle">
-    切换到{{ isDark ? '亮色' : '暗色' }}模式
-  </button>
+  <button @click="toggle">切换到{{ isDark ? '亮色' : '暗色' }}模式</button>
 </template>
 ```
 
@@ -213,9 +211,7 @@ const { systemTheme, isSystemDark, syncWithSystem } = useSystemThemeSync()
   <div>
     <p>系统主题: {{ systemTheme }}</p>
     <p>是否系统暗色: {{ isSystemDark ? '是' : '否' }}</p>
-    <button @click="syncWithSystem">
-      同步系统主题
-    </button>
+    <button @click="syncWithSystem">同步系统主题</button>
   </div>
 </template>
 ```

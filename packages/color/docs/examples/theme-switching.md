@@ -10,4 +10,3 @@ const { currentMode, toggleMode } = useTheme()
   <button @click="toggleMode">当前: {{ currentMode }}，点击切换</button>
 </template>
 ```
-

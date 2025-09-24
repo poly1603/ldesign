@@ -286,9 +286,7 @@ export const themeCategories = {
 /**
  * 按分类获取主题
  */
-export function getThemesByCategory(
-  category: keyof typeof themeCategories,
-): ThemeConfig[] {
+export function getThemesByCategory(category: keyof typeof themeCategories): ThemeConfig[] {
   return [...(themeCategories[category] || [])]
 }
 
