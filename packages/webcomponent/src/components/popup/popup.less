@@ -2,6 +2,8 @@
 .ldesign-popup {
   position: relative;
   display: inline-block;
+  // 确保组件不受外部样式影响
+  box-sizing: border-box;
 
   &__trigger {
     display: inline-block;
@@ -14,11 +16,18 @@
     background: var(--ldesign-bg-color, #ffffff);
     border: 1px solid var(--ldesign-border-color, #e5e7eb);
     border-radius: 6px;
-    // 使用对称的 drop-shadow，不影响几何尺寸，避免视觉缝被“吞掉”
+    // 使用对称的 drop-shadow，不影响几何尺寸，避免视觉缝被"吞掉"
     filter: drop-shadow(0 0 16px rgba(0, 0, 0, 0.12)) drop-shadow(0 0 3px rgba(0, 0, 0, 0.06));
     min-width: 120px;
     max-width: 320px;
     overflow: visible; // 让箭头可超出
+    // 重置可能影响定位的样式
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    // 确保不受外部flex/grid布局影响
+    flex: none;
+    grid-area: auto;
   }
 
   &__arrow {
@@ -29,6 +38,10 @@
     border: 1px solid var(--ldesign-border-color, #e5e7eb);
     transform: rotate(45deg);
     z-index: 1; // 箭头置于内容之上，确保尖端可见
+    // 重置可能影响定位的样式
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 
     &[data-placement^="top"] { border-top: none; border-left: none; }
     &[data-placement^="bottom"] { border-bottom: none; border-right: none; }
@@ -36,9 +49,34 @@
     &[data-placement^="right"] { border-right: none; border-top: none; }
   }
 
-  &__inner { padding: 12px 16px; position: relative; z-index: 1; }
-  &__title { font-size: 14px; font-weight: 600; color: var(--ldesign-text-color, #1f2937); margin-bottom: 8px; line-height: 1.4; }
-  &__body { font-size: 14px; color: var(--ldesign-text-color-secondary, #6b7280); line-height: 1.5; }
+  &__inner { 
+    padding: 12px 16px; 
+    position: relative; 
+    z-index: 1; 
+    // 重置可能影响布局的样式
+    margin: 0;
+    box-sizing: border-box;
+  }
+  
+  &__title { 
+    font-size: 14px; 
+    font-weight: 600; 
+    color: var(--ldesign-text-color, #1f2937); 
+    margin-bottom: 8px; 
+    line-height: 1.4; 
+    // 重置外部样式影响
+    margin-top: 0;
+    padding: 0;
+  }
+  
+  &__body { 
+    font-size: 14px; 
+    color: var(--ldesign-text-color-secondary, #6b7280); 
+    line-height: 1.5; 
+    // 重置外部样式影响
+    margin: 0;
+    padding: 0;
+  }
 
   // 主题：dark
   &--dark {

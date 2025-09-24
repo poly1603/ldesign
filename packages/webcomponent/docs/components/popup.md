@@ -95,13 +95,13 @@
 <div class="demo-container">
   <div class="placement-sandbox" style="padding: 60px 120px; display: flex; justify-content: center;">
     <div class="demo-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
-      <div><ldesign-popup content="Top Left" placement="top-start"><ldesign-button slot="trigger">TL</ldesign-button></ldesign-popup></div>
+      <div><ldesign-popup content="Top Left" placement="top-start"><button style="background: red;padding: 0 8px;border-radius: 4px;" slot="trigger">TL</button></ldesign-popup></div>
       <div><ldesign-popup content="Top" placement="top"><ldesign-button slot="trigger">Top</ldesign-button></ldesign-popup></div>
-      <div><ldesign-popup content="Top Right" placement="top-end"><ldesign-button slot="trigger">TR</ldesign-button></ldesign-popup></div>
+      <div><ldesign-popup content="Top Right" placement="top-end"><button style="background: red;padding: 0 8px;border-radius: 4px;" slot="trigger">TR</button></ldesign-popup></div>
       <div><ldesign-popup content="Left Top" placement="left-start"><ldesign-button slot="trigger">LT</ldesign-button></ldesign-popup></div>
       <div></div>
-      <div><ldesign-popup content="Right Top" placement="right-start"><ldesign-button slot="trigger">RT</ldesign-button></ldesign-popup></div>
-      <div><ldesign-popup content="Left" placement="left"><ldesign-button slot="trigger">Left</ldesign-button></ldesign-popup></div>
+      <div><ldesign-popup content="Right Top" placement="right-start"><button style="background: red;padding: 0 8px;border-radius: 4px;" slot="trigger">RT</button></ldesign-popup></div>
+      <div><ldesign-popup content="Left" placement="left"><button style="background: red;padding: 0 8px;border-radius: 4px;" slot="trigger">Left</button></ldesign-popup></div>
       <div></div>
       <div><ldesign-popup content="Right" placement="right"><ldesign-button slot="trigger">Right</ldesign-button></ldesign-popup></div>
       <div><ldesign-popup content="Left Bottom" placement="left-end"><ldesign-button slot="trigger">LB</ldesign-button></ldesign-popup></div>

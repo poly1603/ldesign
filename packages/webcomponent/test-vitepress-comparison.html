@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitePress样式对比测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .test-section {
+            margin-bottom: 40px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        /* 模拟VitePress的demo-container样式 */
+        .demo-container {
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 16px 0;
+            background-color: #ffffff;
+        }
+
+        .demo-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .demo-row:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 无容器样式 */
+        .no-container {
+            margin: 16px 0;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .grid-item {
+            border: 1px dashed #ccc;
+            padding: 16px;
+            border-radius: 6px;
+        }
+
+        .grid-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* 弹出位置测试网格 */
+        .placement-test {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            text-align: center;
+            padding: 60px 120px;
+        }
+    </style>
+</head>
+<body>
+    <h1>VitePress样式对比测试</h1>
+    <p>对比popup组件在有无VitePress样式容器时的表现差异</p>
+
+    <div class="test-section">
+        <div class="test-title">1. 基础间距对比 (offset-distance=8)</div>
+        <div class="comparison-grid">
+            <div class="grid-item">
+                <div class="grid-title">模拟VitePress环境 (.demo-container)</div>
+                <div class="demo-container">
+                    <div class="demo-row">
+                        <ldesign-popup placement="top" offset-distance="8" content="VitePress环境 - 上方">
+                            <ldesign-button slot="trigger">上方</ldesign-button>
+                        </ldesign-popup>
+                        <ldesign-popup placement="bottom" offset-distance="8" content="VitePress环境 - 下方">
+                            <ldesign-button slot="trigger">下方</ldesign-button>
+                        </ldesign-popup>
+                        <ldesign-popup placement="left" offset-distance="8" content="VitePress环境 - 左侧">
+                            <ldesign-button slot="trigger">左侧</ldesign-button>
+                        </ldesign-popup>
+                        <ldesign-popup placement="right" offset-distance="8" content="VitePress环境 - 右侧">
+                            <ldesign-button slot="trigger">右侧</ldesign-button>
+                        </ldesign-popup>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-item">
+                <div class="grid-title">无容器环境</div>
+                <div class="no-container">
+                    <div class="demo-row">
+                        <ldesign-popup placement="top" offset-distance="8" content="无容器环境 - 上方">
+                            <ldesign-button slot="trigger">上方</ldesign-button>
+                        </ldesign-popup>
+                        <ldesign-popup placement="bottom" offset-distance="8" content="无容器环境 - 下方">
+                            <ldesign-button slot="trigger">下方</ldesign-button>
+                        </ldesign-popup>
+                        <ldesign-popup placement="left" offset-distance="8" content="无容器环境 - 左侧">
+                            <ldesign-button slot="trigger">左侧</ldesign-button>
+                        </ldesign-popup>
+                        <ldesign-popup placement="right" offset-distance="8" content="无容器环境 - 右侧">
+                            <ldesign-button slot="trigger">右侧</ldesign-button>
+                        </ldesign-popup>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">2. 不同间距值对比</div>
+        <div class="comparison-grid">
+            <div class="grid-item">
+                <div class="grid-title">VitePress环境 - 不同offset-distance</div>
+                <div class="demo-container">
+                    <div class="demo-row">
+                        <ldesign-popup placement="top" offset-distance="4" content="距离 4px">
+                            <ldesign-button slot="trigger">4px</ldesign-button>
+                        </ldesign-popup>
+                        <ldesign-popup placement="top" offset-distance="8" content="距离 8px">
+                            <ldesign-button slot="trigger">8px</ldesign-button>
+                        </ldesign-popup>
+                        <ldesign-popup placement="top" offset-distance="16" content="距离 16px">
+                            <ldesign-button slot="trigger">16px</ldesign-button>
+                        </ldesign-popup>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-item">
+                <div class="grid-title">无容器环境 - 不同offset-distance</div>
+                <div class="no-container">
+                    <div class="demo-row">
+                        <ldesign-popup placement="top" offset-distance="4" content="距离 4px">
+                            <ldesign-button slot="trigger">4px</ldesign-button>
+                        </ldesign-popup>
+                        <ldesign-popup placement="top" offset-distance="8" content="距离 8px">
+                            <ldesign-button slot="trigger">8px</ldesign-button>
+                        </ldesign-popup>
+                        <ldesign-popup placement="top" offset-distance="16" content="距离 16px">
+                            <ldesign-button slot="trigger">16px</ldesign-button>
+                        </ldesign-popup>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">3. 边界情况测试</div>
+        <div class="comparison-grid">
+            <div class="grid-item">
+                <div class="grid-title">VitePress环境 - 靠近容器边缘</div>
+                <div class="demo-container" style="height: 200px; position: relative;">
+                    <!-- 靠近上边缘 -->
+                    <ldesign-popup placement="top" offset-distance="8" content="靠近上边缘">
+                        <ldesign-button slot="trigger" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%);">上边缘</ldesign-button>
+                    </ldesign-popup>
+                    <!-- 靠近下边缘 -->
+                    <ldesign-popup placement="bottom" offset-distance="8" content="靠近下边缘">
+                        <ldesign-button slot="trigger" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);">下边缘</ldesign-button>
+                    </ldesign-popup>
+                    <!-- 靠近左边缘 -->
+                    <ldesign-popup placement="left" offset-distance="8" content="靠近左边缘">
+                        <ldesign-button slot="trigger" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);">左边缘</ldesign-button>
+                    </ldesign-popup>
+                    <!-- 靠近右边缘 -->
+                    <ldesign-popup placement="right" offset-distance="8" content="靠近右边缘">
+                        <ldesign-button slot="trigger" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">右边缘</ldesign-button>
+                    </ldesign-popup>
+                </div>
+            </div>
+            <div class="grid-item">
+                <div class="grid-title">无容器环境 - 靠近页面边缘</div>
+                <div style="height: 200px; position: relative; border: 1px dashed #ccc;">
+                    <!-- 靠近上边缘 -->
+                    <ldesign-popup placement="top" offset-distance="8" content="靠近上边缘">
+                        <ldesign-button slot="trigger" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%);">上边缘</ldesign-button>
+                    </ldesign-popup>
+                    <!-- 靠近下边缘 -->
+                    <ldesign-popup placement="bottom" offset-distance="8" content="靠近下边缘">
+                        <ldesign-button slot="trigger" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);">下边缘</ldesign-button>
+                    </ldesign-popup>
+                    <!-- 靠近左边缘 -->
+                    <ldesign-popup placement="left" offset-distance="8" content="靠近左边缘">
+                        <ldesign-button slot="trigger" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);">左边缘</ldesign-button>
+                    </ldesign-popup>
+                    <!-- 靠近右边缘 -->
+                    <ldesign-popup placement="right" offset-distance="8" content="靠近右边缘">
+                        <ldesign-button slot="trigger" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">右边缘</ldesign-button>
+                    </ldesign-popup>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 确保组件加载完成后显示页面内容
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

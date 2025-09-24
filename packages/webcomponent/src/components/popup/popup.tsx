@@ -209,6 +209,17 @@ export class LdesignPopup {
   }
 
   // ── Positioning（register autoUpdate） ─────────────────────────
+  private getReferenceTarget(): HTMLElement | VirtualElement | null {
+    if (this.trigger === 'contextmenu' && this.contextVirtualRef) return this.contextVirtualRef;
+    const t = this.triggerElement;
+    if (!t) return null;
+    // 如果触发器是自定义元素（如 ldesign-button），优先使用其第一个元素子节点作为参考
+    // 这样可避免宿主为 inline 元素导致的基线/行高影响，确保与原生 button 一致
+    const isCustomEl = t.tagName.includes('-');
+    if (isCustomEl && t.firstElementChild instanceof HTMLElement) return t.firstElementChild as HTMLElement;
+    return t;
+  }
+
   private async updatePosition() {
     if (!this.triggerElement) return;
     this.popupElement = this.getPopupEl() || this.el.querySelector('.ldesign-popup__content');
@@ -227,7 +238,8 @@ export class LdesignPopup {
     const middleware = [ offset(offsetValue), flip({ boundary } as any), shift({ padding: 8, boundary, mainAxis: false, crossAxis: true } as any) ];
     if (this.arrow && this.arrowElement) middleware.push(arrow({ element: this.arrowElement }));
 
-    const reference = (this.trigger === 'contextmenu' && this.contextVirtualRef) ? this.contextVirtualRef : this.triggerElement;
+    const reference = this.getReferenceTarget();
+    if (!reference) return;
     const { x, y, placement: resolvedPlacement, middlewareData } = await computePosition(reference as any, this.popupElement, { placement: this.placement, middleware, strategy });
 
     Object.assign(this.popupElement.style, { left: `${x}px`, top: `${y}px` });
@@ -260,14 +272,13 @@ export class LdesignPopup {
     const strategy = this.getStrategy();
     const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
     const base = this.toNumber(this.offsetDistance, 8);
-    // 修复箭头几何计算：8px正方形旋转45°后，从中心到尖端的距离是 4*√2 ≈ 5.66px
-    const arrowTipDistance = Math.sqrt(32); // 4 * √2 ≈ 5.66px
-    const offsetValue = base + (this.arrow ? arrowTipDistance : 0);
+    const offsetValue = base + (this.arrow ? 4 : 0);
 
     const middleware = [ offset(offsetValue), flip({ boundary } as any), shift({ padding: 8, boundary, mainAxis: false, crossAxis: true } as any) ];
     if (this.arrow && this.arrowElement) middleware.push(arrow({ element: this.arrowElement }));
 
-    const reference = (this.trigger === 'contextmenu' && this.contextVirtualRef) ? this.contextVirtualRef : this.triggerElement;
+    const reference = this.getReferenceTarget();
+    if (!reference) return;
     const { x, y, placement: resolvedPlacement, middlewareData } = await computePosition(reference as any, this.popupElement, { placement: this.placement, middleware, strategy });
 
     Object.assign(this.popupElement.style, { left: `${x}px`, top: `${y}px` });
@@ -276,9 +287,7 @@ export class LdesignPopup {
     if (this.arrow && this.arrowElement && middlewareData.arrow) {
       const { x: ax, y: ay } = middlewareData.arrow;
       const staticSide = { top: 'bottom', right: 'left', bottom: 'top', left: 'right' }[resolvedPlacement.split('-')[0]] as any;
-      // 使用正确的箭头偏移距离
-      const arrowOffset = `-${arrowTipDistance}px`;
-      Object.assign(this.arrowElement.style, { left: ax != null ? `${ax}px` : '', top: ay != null ? `${ay}px` : '', right: '', bottom: '', [staticSide]: arrowOffset });
+      Object.assign(this.arrowElement.style, { left: ax != null ? `${ax}px` : '', top: ay != null ? `${ay}px` : '', right: '', bottom: '', [staticSide]: '-4px' });
       this.arrowElement.setAttribute('data-placement', resolvedPlacement);
     }
 

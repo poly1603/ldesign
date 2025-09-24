@@ -67,10 +67,11 @@ export class LdesignTabs {
 
   @Watch('value')
   watchValue(newVal?: string) {
-    // 受控：同步内部 currentName 并刷新激活态
+    // 受控：同步内部 currentName 并刷新激活态，并触发一次居中滚动需求
     if (newVal !== undefined) {
       this.currentName = newVal;
       this.updateActivePanels();
+      this.shouldCenterOnUpdate = true;
     }
   }
 
@@ -119,8 +120,15 @@ export class LdesignTabs {
     // 在渲染完成后再计算 ink 位置，确保取到最新的激活按钮尺寸与位置
     requestAnimationFrame(() => {
       this.updateInkBar();
+      // 第一次更新可能导致左右滚动按钮出现/消失，从而改变可视宽度。
+      // 因此先更新按钮状态，再在下一帧执行居中，确保拿到最新的尺寸。
+      const prevPrev = this.canScrollPrev;
+      const prevNext = this.canScrollNext;
       this.updateScrollButtons();
-      this.centerActiveIfNeeded();
+      const buttonsChanged = prevPrev !== this.canScrollPrev || prevNext !== this.canScrollNext;
+      if (this.shouldCenterOnUpdate) {
+        requestAnimationFrame(() => this.centerActiveIfNeeded());
+      }
     });
   }
 
@@ -331,26 +339,28 @@ private getPanels(): (HTMLElement & { name?: string; label?: string; disabled?: 
     const nav = this.getNavScrollEl();
     const activeBtn = this.el.querySelector('.ldesign-tabs__tab.ldesign-tabs__tab--active') as HTMLElement | null;
     if (!nav || !activeBtn) { this.shouldCenterOnUpdate = false; return; }
-    const TOL = 8; // 中心判定容忍度
     const horizontal = this.getTablistOrientation() === 'horizontal';
+
     if (horizontal) {
-      const center = nav.scrollLeft + nav.clientWidth / 2;
-      const tabCenter = activeBtn.offsetLeft + activeBtn.offsetWidth / 2;
-      // 规则：当选中在可视中心线的左侧（含容忍范围）不滚动；仅当在右侧时滚动到中心
-      if (tabCenter > center + TOL) {
-        const target = tabCenter - nav.clientWidth / 2;
+      // 只要存在溢出（左右任何一侧仍有隐藏项），就把激活项居中；到达边界时会被夹紧为 0 或 max
+      if (nav.scrollWidth > nav.clientWidth + 1) {
+        const tabCenter = activeBtn.offsetLeft + activeBtn.offsetWidth / 2;
+        const ideal = tabCenter - nav.clientWidth / 2;
         const max = nav.scrollWidth - nav.clientWidth;
-        const next = Math.max(0, Math.min(target, max));
-        nav.scrollTo({ left: next, behavior: 'smooth' });
+        const target = Math.max(0, Math.min(ideal, max));
+        if (Math.abs(nav.scrollLeft - target) > 1) {
+          nav.scrollTo({ left: target, behavior: 'smooth' });
+        }
       }
     } else {
-      const center = nav.scrollTop + nav.clientHeight / 2;
-      const tabCenter = activeBtn.offsetTop + activeBtn.offsetHeight / 2;
-      if (tabCenter > center + TOL) {
-        const target = tabCenter - nav.clientHeight / 2;
+      if (nav.scrollHeight > nav.clientHeight + 1) {
+        const tabCenter = activeBtn.offsetTop + activeBtn.offsetHeight / 2;
+        const ideal = tabCenter - nav.clientHeight / 2;
         const max = nav.scrollHeight - nav.clientHeight;
-        const next = Math.max(0, Math.min(target, max));
-        nav.scrollTo({ top: next, behavior: 'smooth' });
+        const target = Math.max(0, Math.min(ideal, max));
+        if (Math.abs(nav.scrollTop - target) > 1) {
+          nav.scrollTo({ top: target, behavior: 'smooth' });
+        }
       }
     }
     this.shouldCenterOnUpdate = false;

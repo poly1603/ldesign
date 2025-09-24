@@ -489,6 +489,16 @@ export class LdesignMenu {
     return w;
   }
 
+  private getTopNodeWidth(key: string): number {
+    const li = this.measureItemRefs.get(key) || this.topItemRefs.get(key);
+    if (!li) return 0;
+    // 优先测量内部的 .ldesign-menu__item（在测量层里 li 为 block，会占满一行；测子元素才是内容宽）
+    const inner = li.firstElementChild as HTMLElement | null;
+    const target = inner || (li as any as HTMLElement);
+    const rect = target.getBoundingClientRect();
+    return rect?.width || target.offsetWidth || 0;
+  }
+
   private calcOverflow() {
     if (this.mode !== 'horizontal') {
       if (this.overflowKeys.length) this.overflowKeys = [];
@@ -497,18 +507,17 @@ export class LdesignMenu {
     const list = this.listRef;
     if (!list) return;
 
-    // 直接以列表自身宽度为准，避免宿主额外内边距/边框的影响
-    const containerW = list.clientWidth || (this.el as HTMLElement).clientWidth;
+    // 使用更精确的几何宽度，避免 clientWidth 取整带来的误差；
+    // 优先取列表本身的可视宽度
+    const rect = list.getBoundingClientRect();
+    const containerW = rect?.width || list.clientWidth || (this.el as HTMLElement).clientWidth;
     if (containerW <= 0) return;
 
     // 收集顶层项宽度（使用隐藏测量克隆，确保即使被收纳也能测到）
     const keys = (this.parsedItems || []).map(it => it.key);
     if (!keys.length) { this.overflowKeys = []; return; }
 
-    const widths: number[] = keys.map(k => {
-      const li = this.measureItemRefs.get(k) || this.topItemRefs.get(k);
-      return li ? li.offsetWidth : 0;
-    });
+    const widths: number[] = keys.map(k => this.getTopNodeWidth(k));
 
     // 若某些宽度仍为 0，说明隐藏测量层尚未准备好，延后一次
     if (widths.some(w => w === 0)) {
@@ -517,7 +526,9 @@ export class LdesignMenu {
     }
 
     const style = getComputedStyle(list);
-    const gap = parseFloat(style.columnGap || (style.gap || '0')) || 0;
+    // 兼容性：gap/column-gap/row-gap 都尝试，优先主轴 gap
+    const gapStr = (style as any).gap || (style as any).columnGap || (style as any).rowGap || '0';
+    const gap = parseFloat(String(gapStr)) || 0;
 
     // 前缀和，快速得到前 n 项之和
     const prefix: number[] = new Array(widths.length + 1).fill(0);

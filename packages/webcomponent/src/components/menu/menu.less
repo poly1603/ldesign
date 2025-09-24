@@ -125,11 +125,13 @@
     align-items: center;
     gap: var(--menu-gap);
     width: 100%; // 让“更多”能够推到最右侧
+    flex-wrap: nowrap; // 禁止换行，避免出现第二行导致计算偏差
   }
 
   &--horizontal>.ldesign-menu__list>li {
     position: relative;
     margin: 0 !important;
+    flex: 0 0 auto; // 禁止收缩，保证宽度等于内容测量值
   }
   // 让“更多”尽可能靠右
   &--horizontal>.ldesign-menu__list>.ldesign-menu__node--more {
@@ -202,6 +204,10 @@
   /* 隐藏测量层：保证与横向顶层一致的宽度规则（item 宽度应为 auto）*/
   &__measure .ldesign-menu__item {
     width: auto;
+  }
+  /* 测量层 li 采用 inline-block 以便它的自身宽度与内容一致（避免 block 100% 宽度）*/
+  &__measure li {
+    display: inline-block;
   }
 
   /* 纵向行内展开时，给图标左边增加一点空间，视觉更均衡 */
