@@ -66,6 +66,8 @@ export class LdesignMenu {
   @Watch('items')
   watchItems(val: string | MenuItem[]) {
     this.parsedItems = this.parseItems(val);
+    // 数据变化后，依据当前选中项恢复展开路径
+    if (this.currentKey) this.ensureOpenForKey(this.currentKey);
   }
 
   @Watch('openKeys')
@@ -80,12 +82,14 @@ export class LdesignMenu {
   @Watch('value')
   watchValue(newVal?: string) {
     this.currentKey = newVal;
+    if (newVal) this.ensureOpenForKey(newVal);
   }
 
   componentWillLoad() {
     this.parsedItems = this.parseItems(this.items);
     this.currentKey = this.value ?? this.defaultValue;
     this.internalOpenKeys = this.openKeys ? [...this.openKeys] : [...(this.defaultOpenKeys || [])];
+    if (this.currentKey) this.ensureOpenForKey(this.currentKey);
   }
 
   componentDidRender() {
@@ -142,6 +146,8 @@ export class LdesignMenu {
   private setSelectedKey(key: string) {
     const item = this.findItemByKey(key);
     const path = this.getPathKeys(key);
+    // 自动展开父级（inline/mixed 下会生效）
+    this.ensureOpenForKey(key);
     if (this.value !== undefined) {
       // 受控：仅通知，外部应同步更新 value；内部也先行更新 currentKey 以获得即时视觉效果
       this.currentKey = key;
@@ -258,6 +264,29 @@ export class LdesignMenu {
     el.addEventListener('transitionend', onEnd);
   }
 
+  // 根据选中项，计算并展开其所有祖先（仅对 inline/mixed 的内嵌容器产生视觉效果）
+  private ensureOpenForKey(key?: string) {
+    if (!key) return;
+    const path = this.getPathKeys(key);
+    if (path.length <= 1) {
+      // 顶级或未找到
+      // 若是 accordion，关闭其它
+      if (this.accordion && this.internalOpenKeys.length) {
+        this.runOpenCloseAnimations(this.internalOpenKeys, []);
+        this.internalOpenKeys = [];
+        this.openKeys = [];
+      }
+      return;
+    }
+    const parents = path.slice(0, -1);
+    // 直接替换为父级路径，保证手风琴语义和一致性
+    const prev = this.internalOpenKeys;
+    const next = parents;
+    this.runOpenCloseAnimations(prev, next);
+    this.internalOpenKeys = next;
+    this.openKeys = [...next];
+  }
+
   private renderArrow(open?: boolean) {
     return (
       <span class={{
@@ -338,16 +367,50 @@ export class LdesignMenu {
     menuEl.style.display = prevDisplay;
   }
 
+  /**
+   * 在 flyout/mixed 模式下：当光标进入某个“祖先”菜单项时，若当前组件存在选中项，
+   * 且该祖先位于选中项路径上，则自动沿着选中路径向右展开所有级联菜单，
+   * 直到选中项的父级为止，从而达到“进入一级菜单就能看到选中项所在层级”的体验。
+   */
+  private previewSelectedFromAncestor(startKey: string, level: number) {
+    if (!this.currentKey) return;
+    if (!this.useFlyout(level)) return; // 仅在该层级采用 flyout 时生效
+
+    const path = this.getPathKeys(this.currentKey);
+    const idx = path.indexOf(startKey);
+    if (idx < 0 || idx >= path.length - 1) return; // 不在路径上或本身就是叶子
+
+    // 需要展开的 keys：从 startKey 开始到选中项的父级
+    const toOpen = path.slice(idx, -1);
+
+    // 先全部标记为展开，随后在下一帧统一做定位调整，避免层层测量抖动
+    const nextMap = { ...this.flyoutOpenMap };
+    toOpen.forEach(k => { nextMap[k] = true; });
+    this.flyoutOpenMap = nextMap;
+
+    requestAnimationFrame(() => {
+      toOpen.forEach(k => this.adjustFlyPosition(k));
+    });
+  }
+
   private renderFlyout(item: MenuItem, level: number) {
     const open = !!this.flyoutOpenMap[item.key];
     const trigger = this.submenuTrigger;
 
-    const onEnter = () => { if (trigger === 'hover') this.openFly(item.key); };
+    const onEnter = () => {
+      if (trigger === 'hover') {
+        this.openFly(item.key);
+        // 若当前存在选中项，且该条目位于选中路径上，则自动展开其后续祖先链路
+        this.previewSelectedFromAncestor(item.key, level);
+      }
+    };
     const onLeave = () => { if (trigger === 'hover') this.scheduleCloseFly(item.key); };
     const onClick = (e: MouseEvent) => {
       if (trigger === 'click') {
         e.preventDefault();
         this.setFlyoutOpen(item.key, !open);
+        // 点击展开时同样尝试联动展开后续祖先链路（更贴合“显示当前选中路径”的预期）
+        if (!open) this.previewSelectedFromAncestor(item.key, level);
       }
     };
 

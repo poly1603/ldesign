@@ -539,14 +539,29 @@ export class LdesignPopup {
 
   /**
    * 计算有效的间距：
-   * - 使用者设置的 offsetDistance 表示“触发元素到箭头尖端”的距离；
+   * - 使用者设置的 offsetDistance 表示"触发元素到箭头尖端"的距离；
    * - 当存在箭头时，箭头会向外突出 4px（-4px 静态边偏移），需要额外加上这 4px，
-   *   以保证最终‘箭头尖端’到触发元素的间隙等于 offsetDistance。
+   *   以保证最终'箭头尖端'到触发元素的间隙等于 offsetDistance。
    */
   private getEffectiveOffsetDistance(): number {
-    // 这里直接返回用户设置的距离；最终可见间距由 correctGapByMeasuring 再做精准校正。
     const base = this.toNumber(this.offsetDistance, 0);
-    return Math.max(0, base);
+    const arrowProtrude = this.arrow ? 4 : 0;
+    // 为了让"箭头尖端到触发元素"的间隙等于 offset-distance，这里在 offset 中补上箭头外凸量
+    return Math.max(0, base + arrowProtrude);
+  }
+
+  /**
+   * 获取特定方向的偏移补偿
+   * 由于 drop-shadow 在垂直方向有 6px 的偏移，视觉上会"吃掉"部分间距
+   * 需要为上下方向添加额外补偿，确保视觉间距一致
+   */
+  private getDirectionalCompensation(placement: string): number {
+    const basePlacement = placement.split('-')[0];
+    // 上下方向需要补偿阴影的垂直偏移
+    if (basePlacement === 'top' || basePlacement === 'bottom') {
+      return 6; // 补偿 drop-shadow 的垂直偏移
+    }
+    return 0;
   }
 
 
@@ -557,77 +572,6 @@ export class LdesignPopup {
     return new Promise(resolve => requestAnimationFrame(() => resolve()));
   }
 
-  /**
-   * 以“箭头尖端”为基准做最终校正；当无箭头时，以面板边缘为基准。
-   * 目标：箭头尖端（或面板边缘）与触发元素之间的间隙 = 用户设置的 offsetDistance。
-   */
-  private correctGapByMeasuring(
-    coords: { x: number; y: number },
-    resolvedPlacement: PopupPlacement
-  ): { x: number; y: number } {
-    if (!this.triggerElement || !this.popupElement) return coords;
-
-    const refRect = this.triggerElement.getBoundingClientRect();
-    const popRect = this.popupElement.getBoundingClientRect();
-    const basePlacement = resolvedPlacement.split('-')[0] as 'top' | 'right' | 'bottom' | 'left';
-
-    // 期望：有箭头 -> offsetDistance；无箭头 -> offsetDistance（无需 +4，因为我们要“对齐可见基准”）
-    const expected = this.toNumber(this.offsetDistance, 0);
-
-    let measured = 0;
-    if (this.arrow && this.arrowElement) {
-      const arrowRect = this.arrowElement.getBoundingClientRect();
-      switch (basePlacement) {
-        case 'top':
-          // 箭头朝下，取箭头尖端（arrowRect.bottom）到触发元素顶边（refRect.top）
-          measured = refRect.top - arrowRect.bottom;
-          break;
-        case 'bottom':
-          measured = arrowRect.top - refRect.bottom;
-          break;
-        case 'left':
-          measured = refRect.left - arrowRect.right;
-          break;
-        case 'right':
-          measured = arrowRect.left - refRect.right;
-          break;
-      }
-    } else {
-      // 无箭头：用面板边缘到触发元素的间隙
-      switch (basePlacement) {
-        case 'top':
-          measured = refRect.top - popRect.bottom;
-          break;
-        case 'bottom':
-          measured = popRect.top - refRect.bottom;
-          break;
-        case 'left':
-          measured = refRect.left - popRect.right;
-          break;
-        case 'right':
-          measured = popRect.left - refRect.right;
-          break;
-      }
-    }
-
-    const delta = expected - measured;
-    let { x, y } = coords;
-    switch (basePlacement) {
-      case 'top':
-        y -= delta;
-        break;
-      case 'bottom':
-        y += delta;
-        break;
-      case 'left':
-        x -= delta;
-        break;
-      case 'right':
-        x += delta;
-        break;
-    }
-    return { x, y };
-  }
 
   private async updatePosition() {
     // popupElement 可能在首次显示时才渲染
@@ -644,9 +588,9 @@ export class LdesignPopup {
     const strategy = this.getStrategy();
     const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
     const middleware = [
-      offset(this.getEffectiveOffsetDistance()),
+      // 不使用 offset 中间件，改为手动沿主轴加距离，避免任何实现差异
       flip({ boundary } as any),
-      // 严格保持主轴（placement 方向）上的 offset，不在主轴做位移，仅在交叉轴做防溢出
+      // 主轴不做位移，严格保持我们手动添加的间距；仅在交叉轴做防溢出
       shift({ padding: 8, boundary, mainAxis: false, crossAxis: true } as any),
     ];
 
@@ -655,7 +599,7 @@ export class LdesignPopup {
     }
 
     const currentPlacement = this.getCurrentPlacement();
-    const { x, y, placement: resolvedPlacement, middlewareData } = await computePosition(
+    let { x, y, placement: resolvedPlacement, middlewareData } = await computePosition(
       this.triggerElement,
       this.popupElement,
       {
@@ -664,6 +608,16 @@ export class LdesignPopup {
         strategy,
       }
     );
+
+    // 手动在主轴方向添加 offset 距离，保证上下左右行为一致
+    const eff = this.getEffectiveOffsetDistance();
+    const compensation = this.getDirectionalCompensation(resolvedPlacement);
+    const totalOffset = eff + compensation;
+    const basePlacement = resolvedPlacement.split('-')[0] as 'top' | 'right' | 'bottom' | 'left';
+    if (basePlacement === 'top') y -= totalOffset;
+    else if (basePlacement === 'bottom') y += totalOffset;
+    else if (basePlacement === 'left') x -= eff;
+    else if (basePlacement === 'right') x += eff;
 
     // 先按初值设置一次位置
     Object.assign(this.popupElement.style, {
@@ -706,14 +660,6 @@ export class LdesignPopup {
 
 
 
-    // 依据“箭头尖端/面板边缘”进行最终可视校正（两帧，确保布局稳定）
-    await this.nextFrame();
-    await this.nextFrame();
-    const corrected = this.correctGapByMeasuring({ x, y }, resolvedPlacement);
-    Object.assign(this.popupElement.style, {
-      left: `${corrected.x}px`,
-      top: `${corrected.y}px`,
-    });
 
     // 设置自动更新 - 避免递归重复注册
     this.positioned = true;
@@ -749,9 +695,7 @@ export class LdesignPopup {
     const strategy = this.getStrategy();
     const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
     const middleware = [
-      offset(this.getEffectiveOffsetDistance()),
       flip({ boundary } as any),
-      // 严格保持主轴上的 offset，仅在交叉轴做防溢出
       shift({ padding: 8, boundary, mainAxis: false, crossAxis: true } as any),
     ];
 
@@ -760,7 +704,7 @@ export class LdesignPopup {
     }
 
     const currentPlacement = this.getCurrentPlacement();
-    const { x, y, placement: resolvedPlacement, middlewareData } = await computePosition(
+    let { x, y, placement: resolvedPlacement, middlewareData } = await computePosition(
       this.triggerElement,
       this.popupElement,
       {
@@ -769,6 +713,16 @@ export class LdesignPopup {
         strategy,
       }
     );
+
+    // 手动添加主轴距离
+    const eff = this.getEffectiveOffsetDistance();
+    const compensation = this.getDirectionalCompensation(resolvedPlacement);
+    const totalOffset = eff + compensation;
+    const basePlacement = resolvedPlacement.split('-')[0] as 'top' | 'right' | 'bottom' | 'left';
+    if (basePlacement === 'top') y -= totalOffset;
+    else if (basePlacement === 'bottom') y += totalOffset;
+    else if (basePlacement === 'left') x -= eff;
+    else if (basePlacement === 'right') x += eff;
 
     // 先按初值设置一次位置
     Object.assign(this.popupElement.style, {
@@ -799,15 +753,6 @@ export class LdesignPopup {
       }
     }
 
-
-    // 依据“箭头尖端/面板边缘”进行最终可视校正（两帧，确保布局稳定）
-    await this.nextFrame();
-    await this.nextFrame();
-    const corrected = this.correctGapByMeasuring({ x, y }, resolvedPlacement);
-    Object.assign(this.popupElement.style, {
-      left: `${corrected.x}px`,
-      top: `${corrected.y}px`,
-    });
 
     // 再次确保在渲染后绑定浮层交互事件（首次渲染时 updatePosition 可能拿不到元素）
     this.positioned = true;
