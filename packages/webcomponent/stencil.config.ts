@@ -18,6 +18,8 @@ export const config: Config = {
       type: 'dist-custom-elements',
       customElementsExportBehavior: 'auto-define-custom-elements',
       externalRuntime: false,
+      // 确保样式正确封装
+      includeGlobalScripts: false,
     },
     {
       type: 'docs-readme',
@@ -56,5 +58,11 @@ export const config: Config = {
   },
   extras: {
     enableImportInjection: true,
+    // 确保 Shadow DOM 样式隔离
+    shadowDomShim: true,
+    // 支持旧浏览器
+    scriptDataOpts: true,
+    // 确保 CSS 变量支持
+    appendChildSlotFix: false,
   },
 };

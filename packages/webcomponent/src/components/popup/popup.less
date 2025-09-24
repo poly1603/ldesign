@@ -14,7 +14,9 @@
     background: var(--ldesign-bg-color, #ffffff);
     border: 1px solid var(--ldesign-border-color, #e5e7eb);
     border-radius: 6px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    /* 使用 drop-shadow，使阴影围绕面板与箭头的真实形状，避免上下方向“视觉间距被阴影吃掉” */
+    /* 注意：与 box-shadow 不同，drop-shadow 不会影响元素的几何尺寸，仅影响绘制效果 */
+    filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.12)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.06));
     min-width: 120px;
     max-width: 320px;
     overflow: visible; // 让箭头可以超出容器
@@ -167,7 +169,8 @@
   // 无阴影样式
   &--no-shadow {
     .ldesign-popup__content {
-      box-shadow: none;
+      /* 关闭阴影时同时移除 drop-shadow */
+      filter: none;
     }
   }
 
