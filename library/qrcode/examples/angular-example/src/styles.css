@@ -1,0 +1,305 @@
+/**
+ * Angular 示例应用全局样式
+ * 使用 LDesign 设计系统的 CSS 变量
+ */
+
+/* 导入 LDesign 设计系统变量 */
+:root {
+  /* LDesign 品牌色 */
+  --ldesign-brand-color-1: #f1ecf9;
+  --ldesign-brand-color-2: #d8c8ee;
+  --ldesign-brand-color-3: #bfa4e5;
+  --ldesign-brand-color-4: #a67fdb;
+  --ldesign-brand-color-5: #8c5ad3;
+  --ldesign-brand-color-6: #7334cb;
+  --ldesign-brand-color-7: #5e2aa7;
+  --ldesign-brand-color-8: #491f84;
+  --ldesign-brand-color-9: #35165f;
+  --ldesign-brand-color-10: #200d3b;
+
+  /* 灰色系 */
+  --ldesign-gray-color-1: #f2f2f2;
+  --ldesign-gray-color-2: #dbdbdb;
+  --ldesign-gray-color-3: #c4c4c4;
+  --ldesign-gray-color-4: #adadad;
+  --ldesign-gray-color-5: #969696;
+  --ldesign-gray-color-6: #808080;
+  --ldesign-gray-color-7: #696969;
+  --ldesign-gray-color-8: #525252;
+  --ldesign-gray-color-9: #3b3b3b;
+  --ldesign-gray-color-10: #242424;
+
+  /* 文字颜色 */
+  --ldesign-text-color-primary: rgba(0, 0, 0, 90%);
+  --ldesign-text-color-secondary: rgba(0, 0, 0, 70%);
+  --ldesign-text-color-placeholder: rgba(0, 0, 0, 50%);
+  --ldesign-text-color-disabled: rgba(0, 0, 0, 30%);
+
+  /* 背景色 */
+  --ldesign-bg-color-page: #ffffff;
+  --ldesign-bg-color-container: #ffffff;
+  --ldesign-bg-color-container-hover: #fafafa;
+  --ldesign-bg-color-container-active: #f0f0f0;
+
+  /* 边框色 */
+  --ldesign-border-level-1-color: #e5e5e5;
+  --ldesign-border-level-2-color: #d9d9d9;
+  --ldesign-border-level-3-color: #cccccc;
+
+  /* 阴影 */
+  --ldesign-shadow-1: 0 1px 10px rgba(0, 0, 0, 5%);
+  --ldesign-shadow-2: 0 4px 20px rgba(0, 0, 0, 8%);
+  --ldesign-shadow-3: 0 8px 30px rgba(0, 0, 0, 12%);
+
+  /* 尺寸变量 */
+  --ls-spacing-xs: 6px;
+  --ls-spacing-sm: 12px;
+  --ls-spacing-base: 20px;
+  --ls-spacing-lg: 28px;
+  --ls-spacing-xl: 36px;
+  --ls-spacing-xxl: 56px;
+
+  --ls-border-radius-sm: 3px;
+  --ls-border-radius-base: 6px;
+  --ls-border-radius-lg: 12px;
+  --ls-border-radius-xl: 16px;
+}
+
+/* 全局样式重置 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--ldesign-bg-color-page);
+  color: var(--ldesign-text-color-primary);
+  line-height: 1.6;
+}
+
+/* 应用容器样式 */
+app-root {
+  display: block;
+  min-height: 100vh;
+  background-color: var(--ldesign-bg-color-page);
+}
+
+/* 通用组件样式 */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--ls-spacing-base);
+}
+
+.card {
+  background: var(--ldesign-bg-color-container);
+  border-radius: var(--ls-border-radius-lg);
+  box-shadow: var(--ldesign-shadow-1);
+  padding: var(--ls-spacing-lg);
+  margin-bottom: var(--ls-spacing-base);
+  border: 1px solid var(--ldesign-border-level-1-color);
+}
+
+.card:hover {
+  box-shadow: var(--ldesign-shadow-2);
+  background: var(--ldesign-bg-color-container-hover);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ls-spacing-sm) var(--ls-spacing-base);
+  border: 1px solid var(--ldesign-border-level-2-color);
+  border-radius: var(--ls-border-radius-base);
+  background: var(--ldesign-bg-color-container);
+  color: var(--ldesign-text-color-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  min-height: 40px;
+}
+
+.btn:hover {
+  background: var(--ldesign-bg-color-container-hover);
+  border-color: var(--ldesign-brand-color-6);
+  color: var(--ldesign-brand-color-6);
+}
+
+.btn-primary {
+  background: var(--ldesign-brand-color-6);
+  border-color: var(--ldesign-brand-color-6);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--ldesign-brand-color-7);
+  border-color: var(--ldesign-brand-color-7);
+  color: white;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-group {
+  margin-bottom: var(--ls-spacing-base);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: var(--ls-spacing-xs);
+  font-weight: 500;
+  color: var(--ldesign-text-color-primary);
+}
+
+.form-input {
+  width: 100%;
+  padding: var(--ls-spacing-sm);
+  border: 1px solid var(--ldesign-border-level-2-color);
+  border-radius: var(--ls-border-radius-base);
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  min-height: 40px;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--ldesign-brand-color-6);
+  box-shadow: 0 0 0 2px var(--ldesign-brand-color-2);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.grid {
+  display: grid;
+  gap: var(--ls-spacing-base);
+}
+
+.grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* 页面头部样式 */
+.header {
+  background: linear-gradient(135deg, var(--ldesign-brand-color-6), var(--ldesign-brand-color-8));
+  color: white;
+  padding: var(--ls-spacing-xl) 0;
+  text-align: center;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: var(--ls-spacing-sm);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* 主要内容区域 */
+.main {
+  flex: 1;
+  padding: var(--ls-spacing-xl) 0;
+  min-height: calc(100vh - 200px);
+}
+
+/* 页面底部样式 */
+.footer {
+  background: var(--ldesign-gray-color-1);
+  padding: var(--ls-spacing-base) 0;
+  text-align: center;
+  color: var(--ldesign-text-color-secondary);
+  font-size: 14px;
+  border-top: 1px solid var(--ldesign-border-level-1-color);
+}
+
+/* 组件特定样式 */
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--ldesign-text-color-primary);
+  margin-bottom: var(--ls-spacing-sm);
+}
+
+.section-description {
+  color: var(--ldesign-text-color-secondary);
+  margin-bottom: var(--ls-spacing-lg);
+  line-height: 1.6;
+}
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--ldesign-text-color-primary);
+  margin-bottom: var(--ls-spacing-base);
+  padding-bottom: var(--ls-spacing-xs);
+  border-bottom: 1px solid var(--ldesign-border-level-1-color);
+}
+
+.qr-preview {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--ldesign-border-level-2-color);
+  border-radius: var(--ls-border-radius-lg);
+  padding: var(--ls-spacing-base);
+}
+
+.qr-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--ls-spacing-base);
+}
+
+.placeholder {
+  text-align: center;
+  color: var(--ldesign-text-color-placeholder);
+}
+
+.placeholder-icon {
+  font-size: 3rem;
+  margin-bottom: var(--ls-spacing-sm);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .container {
+    padding: var(--ls-spacing-sm);
+  }
+  
+  .card {
+    padding: var(--ls-spacing-base);
+  }
+  
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+}

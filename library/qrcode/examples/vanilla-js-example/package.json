@@ -1,0 +1,19 @@
+{
+  "name": "@ldesign/qrcode-vanilla-js-example",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Vanilla JavaScript/HTML example for @ldesign/qrcode",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite --port 3003 --open"
+  },
+  "dependencies": {
+    "@ldesign/qrcode": "file:../.."
+  },
+  "devDependencies": {
+    "vite": "^4.5.0"
+  }
+}
