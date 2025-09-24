@@ -1,6 +1,6 @@
 import type { DeviceModule, GeolocationInfo } from '../types'
-import { safeNavigatorAccess } from '../utils'
 import { EventEmitter } from '../core/EventEmitter'
+import { safeNavigatorAccess } from '../utils'
 
 /**
  * 地理位置模块
@@ -35,7 +35,7 @@ export class GeolocationModule extends EventEmitter<{ positionChange: Geolocatio
 
     try {
       // 获取当前位置（不阻塞初始化，避免在测试环境未注入回调时挂起）
-      this.getCurrentPosition().catch(error => {
+      this.getCurrentPosition().catch((error) => {
         // 静默处理权限被拒绝的情况，避免控制台警告
         if (error.message !== 'Permission denied') {
           console.warn('Failed to get initial position:', error)
@@ -249,7 +249,7 @@ export class GeolocationModule extends EventEmitter<{ positionChange: Geolocatio
 
     const a
       = Math.sin(Δφ / 2) * Math.sin(Δφ / 2)
-      + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+        + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
     return R * c

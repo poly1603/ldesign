@@ -21,7 +21,7 @@ let globalDetector: DeviceDetector | null = null
 let elementCount = 0
 
 // 性能优化：批量更新队列
-let updateQueue: Set<ElementWithOrientationData> = new Set()
+const updateQueue: Set<ElementWithOrientationData> = new Set()
 let isUpdateScheduled = false
 
 /**
@@ -60,7 +60,7 @@ function scheduleUpdate(): void {
     updateQueue.clear()
     isUpdateScheduled = false
 
-    elementsToUpdate.forEach(element => {
+    elementsToUpdate.forEach((element) => {
       if (element.isConnected && element.__directiveBinding) {
         const detector = getGlobalDetector()
         const currentOrientation = detector.getDeviceInfo().orientation
@@ -173,25 +173,25 @@ function updateElementVisibility(
 
 /**
  * v-orientation 指令实现
- * 
+ *
  * 根据屏幕方向控制元素的显示和隐藏
- * 
+ *
  * @example
  * ```vue
  * <!-- 只在竖屏时显示 -->
  * <div v-orientation="'portrait'">竖屏内容</div>
- * 
+ *
  * <!-- 只在横屏时显示 -->
  * <div v-orientation="'landscape'">横屏内容</div>
- * 
+ *
  * <!-- 带回调函数 -->
- * <div v-orientation="{ 
- *   orientation: 'portrait', 
- *   callback: (orientation) => console.log('方向变化:', orientation) 
+ * <div v-orientation="{
+ *   orientation: 'portrait',
+ *   callback: (orientation) => console.log('方向变化:', orientation)
  * }">
  *   竖屏内容
  * </div>
- * 
+ *
  * <!-- 反向匹配：除了竖屏都显示 -->
  * <div v-orientation="{ orientation: 'portrait', inverse: true }">
  *   横屏内容
@@ -286,7 +286,7 @@ export const vOrientation: Directive<HTMLElement, Orientation | Orientation[] | 
 
 /**
  * 竖屏方向指令
- * 
+ *
  * @example
  * ```vue
  * <div v-orientation-portrait>只在竖屏显示</div>
@@ -320,7 +320,7 @@ export const vOrientationPortrait: Directive<HTMLElement> = {
 
 /**
  * 横屏方向指令
- * 
+ *
  * @example
  * ```vue
  * <div v-orientation-landscape>只在横屏显示</div>

@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NetworkModule } from '../../src/modules/NetworkModule'
 
-describe('NetworkModule', () => {
+describe('networkModule', () => {
   let networkModule: NetworkModule
   let mockConnection: any
 
@@ -28,7 +28,8 @@ describe('NetworkModule', () => {
           value: undefined,
         })
       }
-    } catch (error) {
+    }
+    catch {
       // 忽略删除错误，继续执行
     }
 
@@ -47,8 +48,8 @@ describe('NetworkModule', () => {
     })
 
     // 模拟 window 事件监听器
-    global.window.addEventListener = vi.fn()
-    global.window.removeEventListener = vi.fn()
+    globalThis.window.addEventListener = vi.fn()
+    globalThis.window.removeEventListener = vi.fn()
 
     networkModule = new NetworkModule()
   })
@@ -142,7 +143,7 @@ describe('NetworkModule', () => {
     it('应该监听网络状态变化事件', () => {
       expect(mockConnection.addEventListener).toHaveBeenCalledWith(
         'change',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
 
@@ -150,11 +151,11 @@ describe('NetworkModule', () => {
       // 检查是否添加了 online 和 offline 事件监听器
       expect(window.addEventListener).toHaveBeenCalledWith(
         'online',
-        expect.any(Function)
+        expect.any(Function),
       )
       expect(window.addEventListener).toHaveBeenCalledWith(
         'offline',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
 
@@ -188,7 +189,7 @@ describe('NetworkModule', () => {
       networkModule.on('networkChange', mockCallback)
 
       // 获取当前网络状态作为基准
-      const initialInfo = networkModule.getNetworkInfo()
+      const _initialInfo = networkModule.getNetworkInfo()
 
       // 确保初始状态是在线的
       Object.defineProperty(navigator, 'onLine', {
@@ -224,7 +225,7 @@ describe('NetworkModule', () => {
         expect.objectContaining({
           online: false,
           status: 'offline',
-        })
+        }),
       )
     })
   })
@@ -239,15 +240,15 @@ describe('NetworkModule', () => {
 
       expect(mockConnection.removeEventListener).toHaveBeenCalledWith(
         'change',
-        expect.any(Function)
+        expect.any(Function),
       )
       expect(window.removeEventListener).toHaveBeenCalledWith(
         'online',
-        expect.any(Function)
+        expect.any(Function),
       )
       expect(window.removeEventListener).toHaveBeenCalledWith(
         'offline',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
 

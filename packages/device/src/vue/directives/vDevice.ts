@@ -21,8 +21,9 @@ let elementCount = 0
 const registeredElements: Set<ElementWithDeviceData> = new Set()
 
 // 性能优化：批量更新队列
-let updateQueue: Set<ElementWithDeviceData> = new Set()
+const updateQueue: Set<ElementWithDeviceData> = new Set()
 let isUpdateScheduled = false
+let isEventListenerSet = false
 
 /**
  * 重置全局状态 - 仅供测试使用
@@ -32,7 +33,8 @@ export function __resetGlobalState(): void {
   if (globalDetector && typeof globalDetector.destroy === 'function') {
     try {
       globalDetector.destroy()
-    } catch (e) {
+    }
+    catch {
       // 忽略销毁错误，可能是mock对象
     }
   }
@@ -60,9 +62,6 @@ export function __setGlobalDetector(detector: DeviceDetector): void {
     isEventListenerSet = true
   }
 }
-
-// 标记是否已设置事件监听器
-let isEventListenerSet = false
 
 /**
  * 获取全局设备检测器实例 - 优化版本
@@ -100,7 +99,7 @@ function scheduleUpdate(): void {
     updateQueue.clear()
     isUpdateScheduled = false
 
-    elementsToUpdate.forEach(element => {
+    elementsToUpdate.forEach((element) => {
       // Check for binding and element connection
       // Note: In test environments, isConnected might be false even for valid elements
       if (element.__directiveBinding) {
@@ -204,17 +203,17 @@ function updateElementVisibility(
 
 /**
  * v-device 指令实现
- * 
+ *
  * 根据设备类型控制元素的显示和隐藏
- * 
+ *
  * @example
  * ```vue
  * <!-- 只在移动设备上显示 -->
  * <div v-device="'mobile'">移动端内容</div>
- * 
+ *
  * <!-- 在平板和桌面设备上显示 -->
  * <div v-device="['tablet', 'desktop']">非移动端内容</div>
- * 
+ *
  * <!-- 反向匹配：除了移动设备都显示 -->
  * <div v-device="{ type: 'mobile', inverse: true }">非移动端内容</div>
  * ```
@@ -305,7 +304,7 @@ export const vDevice: Directive<HTMLElement, DeviceDirectiveValue> = {
 
 /**
  * 设备类型修饰符指令 - 移动设备
- * 
+ *
  * @example
  * ```vue
  * <div v-device-mobile>只在移动设备显示</div>

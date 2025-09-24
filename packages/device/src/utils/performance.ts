@@ -1,14 +1,14 @@
 /**
  * 性能优化工具集
- * 
+ *
  * 提供防抖、节流、缓存等性能优化功能
  */
 
 /**
  * 防抖函数
- * 
+ *
  * 在事件被触发n毫秒后再执行回调，如果在这n毫秒内又被触发，则重新计时
- * 
+ *
  * @param func 要防抖的函数
  * @param wait 延迟执行毫秒数
  * @param immediate 是否立即执行
@@ -31,6 +31,7 @@ export function debounce<T extends (...args: any[]) => any>(
   let result: ReturnType<T>
 
   const debounced = function (this: any, ...args: Parameters<T>) {
+    // eslint-disable-next-line ts/no-this-alias
     const context = this
 
     const later = () => {
@@ -41,13 +42,13 @@ export function debounce<T extends (...args: any[]) => any>(
     }
 
     const callNow = immediate && !timeout
-    
+
     if (timeout) {
       clearTimeout(timeout)
     }
-    
+
     timeout = setTimeout(later, wait)
-    
+
     if (callNow) {
       result = func.apply(context, args)
     }
@@ -68,18 +69,20 @@ export function debounce<T extends (...args: any[]) => any>(
 
 /**
  * 节流函数
- * 
+ *
  * 在一个单位时间内，只能触发一次函数。如果这个单位时间内触发多次函数，只有一次生效
- * 
+ *
  * @param func 要节流的函数
  * @param wait 延迟执行毫秒数
  * @param options 配置选项
+ * @param options.leading 是否在延迟开始前调用
+ * @param options.trailing 是否在延迟结束后调用
  * @returns 节流后的函数
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
   wait: number,
-  options: { leading?: boolean; trailing?: boolean } = {},
+  options: { leading?: boolean, trailing?: boolean } = {},
 ): ThrottledFunction<T> {
   let timeout: ReturnType<typeof setTimeout> | null = null
   let context: any
@@ -100,12 +103,13 @@ export function throttle<T extends (...args: any[]) => any>(
 
   const throttled = function (this: any, ...newArgs: Parameters<T>) {
     const now = Date.now()
-    
+
     if (!previous && leading === false) {
       previous = now
     }
-    
+
     const remaining = wait - (now - previous)
+    // eslint-disable-next-line ts/no-this-alias
     context = this
     args = newArgs
 
@@ -117,7 +121,8 @@ export function throttle<T extends (...args: any[]) => any>(
       previous = now
       result = func.apply(context, args)
       context = args = null
-    } else if (!timeout && trailing !== false) {
+    }
+    else if (!timeout && trailing !== false) {
       timeout = setTimeout(later, remaining)
     }
 
@@ -138,15 +143,15 @@ export function throttle<T extends (...args: any[]) => any>(
 
 /**
  * 内存缓存类
- * 
+ *
  * 提供简单的内存缓存功能，支持过期时间和大小限制
  */
 export class MemoryCache<T = any> {
-  private cache: Map<string, { value: T; expiry?: number }>
+  private cache: Map<string, { value: T, expiry?: number }>
   private maxSize: number
   private defaultTTL?: number
 
-  constructor(options: { maxSize?: number; defaultTTL?: number } = {}) {
+  constructor(options: { maxSize?: number, defaultTTL?: number } = {}) {
     this.cache = new Map()
     this.maxSize = options.maxSize || 100
     this.defaultTTL = options.defaultTTL
@@ -157,7 +162,7 @@ export class MemoryCache<T = any> {
    */
   get(key: string): T | undefined {
     const item = this.cache.get(key)
-    
+
     if (!item) {
       return undefined
     }
@@ -220,7 +225,7 @@ export class MemoryCache<T = any> {
    */
   has(key: string): boolean {
     const item = this.cache.get(key)
-    
+
     if (!item) {
       return false
     }
@@ -246,7 +251,7 @@ export class MemoryCache<T = any> {
    */
   prune(): void {
     const now = Date.now()
-    
+
     for (const [key, item] of this.cache.entries()) {
       if (item.expiry && now > item.expiry) {
         this.cache.delete(key)
@@ -257,9 +262,12 @@ export class MemoryCache<T = any> {
 
 /**
  * 创建一个带缓存的函数
- * 
+ *
  * @param fn 要缓存的函数
  * @param options 缓存选项
+ * @param options.maxSize 缓存最大大小
+ * @param options.ttl 缓存过期时间（毫秒）
+ * @param options.getKey 自定义键生成函数
  * @returns 带缓存的函数
  */
 export function memoize<T extends (...args: any[]) => any>(
@@ -279,7 +287,7 @@ export function memoize<T extends (...args: any[]) => any>(
 
   return ((...args: Parameters<T>): ReturnType<T> => {
     const key = getKey(...args)
-    
+
     // 尝试从缓存获取
     const cached = cache.get(key)
     if (cached !== undefined) {
@@ -289,14 +297,14 @@ export function memoize<T extends (...args: any[]) => any>(
     // 执行函数并缓存结果
     const result = fn(...args)
     cache.set(key, result)
-    
+
     return result
   }) as T
 }
 
 /**
  * 懒加载管理器
- * 
+ *
  * 提供模块和资源的懒加载功能
  */
 export class LazyLoader<T = any> {
@@ -381,7 +389,8 @@ export class LazyLoader<T = any> {
   clear(name?: string): void {
     if (name) {
       this.cache.delete(name)
-    } else {
+    }
+    else {
       this.cache.clear()
     }
   }
@@ -389,9 +398,9 @@ export class LazyLoader<T = any> {
 
 /**
  * 请求动画帧节流
- * 
+ *
  * 使用 requestAnimationFrame 进行节流，适用于动画和滚动事件
- * 
+ *
  * @param callback 要节流的回调函数
  * @returns 节流后的函数
  */
@@ -422,7 +431,7 @@ export function rafThrottle<T extends (...args: any[]) => any>(
 
 /**
  * 批处理执行器
- * 
+ *
  * 将多个调用合并为一次批量执行
  */
 export class BatchExecutor<T, R> {
@@ -455,7 +464,8 @@ export class BatchExecutor<T, R> {
       // 如果达到批处理大小限制，立即执行
       if (this.batch.length >= this.options.maxBatchSize!) {
         this.flush()
-      } else {
+      }
+      else {
         // 否则等待一段时间
         this.scheduleFlush()
       }
@@ -466,7 +476,8 @@ export class BatchExecutor<T, R> {
    * 调度批处理执行
    */
   private scheduleFlush(): void {
-    if (this.timer) return
+    if (this.timer)
+      return
 
     this.timer = setTimeout(() => {
       this.flush()
@@ -482,7 +493,8 @@ export class BatchExecutor<T, R> {
       this.timer = null
     }
 
-    if (this.batch.length === 0) return
+    if (this.batch.length === 0)
+      return
 
     const batch = this.batch
     const promises = this.promises
@@ -492,12 +504,13 @@ export class BatchExecutor<T, R> {
 
     try {
       const results = await this.executor(batch)
-      
+
       results.forEach((result, index) => {
         promises[index].resolve(result)
       })
-    } catch (error) {
-      promises.forEach(promise => {
+    }
+    catch (error) {
+      promises.forEach((promise) => {
         promise.reject(error)
       })
     }

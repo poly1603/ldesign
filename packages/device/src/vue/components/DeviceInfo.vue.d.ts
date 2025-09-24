@@ -23,5 +23,5 @@ interface DeviceInfoEmits {
   error: [error: string]
 }
 
-declare const DeviceInfoComponent: DefineComponent<DeviceInfoProps, {}, any, {}, {}, {}, {}, DeviceInfoEmits>
+declare const DeviceInfoComponent: DefineComponent<DeviceInfoProps, Record<string, never>, any, Record<string, never>, Record<string, never>, Record<string, never>, Record<string, never>, DeviceInfoEmits>
 export default DeviceInfoComponent

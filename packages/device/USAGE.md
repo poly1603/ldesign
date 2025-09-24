@@ -15,8 +15,8 @@ pnpm add @ldesign/device
 #### 插件方式（全局使用）
 
 ```typescript
-import { createApp } from 'vue'
 import DevicePlugin from '@ldesign/device/vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -28,7 +28,7 @@ app.mount('#app')
 
 ```vue
 <script setup>
-import { useDevice, useNetwork, useBattery } from '@ldesign/device/vue'
+import { useBattery, useDevice, useNetwork } from '@ldesign/device/vue'
 
 // 设备信息
 const { deviceType, isMobile, isTablet, isDesktop, orientation } = useDevice()
@@ -46,14 +46,18 @@ const { level, charging, chargingTime } = useBattery()
     <p>设备类型: {{ deviceType }}</p>
     <p>是否移动设备: {{ isMobile }}</p>
     <p>屏幕方向: {{ orientation }}</p>
-    
+
     <h2>网络状态</h2>
     <p>在线状态: {{ isOnline ? '在线' : '离线' }}</p>
     <p>网络类型: {{ networkType }}</p>
-    
+
     <h2>电池信息</h2>
-    <p v-if="level !== null">电量: {{ Math.round(level * 100) }}%</p>
-    <p v-if="charging !== null">充电状态: {{ charging ? '充电中' : '未充电' }}</p>
+    <p v-if="level !== null">
+      电量: {{ Math.round(level * 100) }}%
+    </p>
+    <p v-if="charging !== null">
+      充电状态: {{ charging ? '充电中' : '未充电' }}
+    </p>
   </div>
 </template>
 ```
@@ -63,13 +67,23 @@ const { level, charging, chargingTime } = useBattery()
 ```vue
 <template>
   <!-- 根据设备类型显示不同内容 -->
-  <div v-device-mobile>移动设备专用内容</div>
-  <div v-device-tablet>平板设备专用内容</div>
-  <div v-device-desktop>桌面设备专用内容</div>
-  
+  <div v-device-mobile>
+    移动设备专用内容
+  </div>
+  <div v-device-tablet>
+    平板设备专用内容
+  </div>
+  <div v-device-desktop>
+    桌面设备专用内容
+  </div>
+
   <!-- 通用指令，支持多种条件 -->
-  <div v-device="{ mobile: true, tablet: true }">移动设备和平板显示</div>
-  <div v-device="{ desktop: true }">仅桌面显示</div>
+  <div v-device="{ mobile: true, tablet: true }">
+    移动设备和平板显示
+  </div>
+  <div v-device="{ desktop: true }">
+    仅桌面显示
+  </div>
 </template>
 ```
 
@@ -153,39 +167,39 @@ const { current, isMobile, isTablet, isDesktop, width, height } = useBreakpoints
 <script setup>
 import { useGeolocation } from '@ldesign/device/vue'
 
-const { 
-  position, 
-  error, 
-  loading, 
-  supported, 
-  getCurrentPosition, 
-  watchPosition, 
-  clearWatch 
+const {
+  position,
+  error,
+  loading,
+  supported,
+  getCurrentPosition,
+  watchPosition,
+  clearWatch
 } = useGeolocation()
 
 // 获取当前位置
-const getLocation = async () => {
+async function getLocation() {
   await getCurrentPosition()
 }
 
 // 监听位置变化
-const startWatching = () => {
+function startWatching() {
   watchPosition()
 }
 </script>
 
 <template>
   <div>
-    <button @click="getLocation" :disabled="loading">
+    <button :disabled="loading" @click="getLocation">
       {{ loading ? '获取中...' : '获取位置' }}
     </button>
-    
+
     <div v-if="position">
       <p>纬度: {{ position.latitude }}</p>
       <p>经度: {{ position.longitude }}</p>
       <p>精度: {{ position.accuracy }}米</p>
     </div>
-    
+
     <div v-if="error" class="error">
       错误: {{ error.message }}
     </div>
@@ -198,12 +212,12 @@ const startWatching = () => {
 库提供完整的 TypeScript 类型支持：
 
 ```typescript
-import type { 
-  DeviceInfo, 
-  DeviceType, 
-  NetworkInfo, 
+import type {
   BatteryInfo,
-  UseDeviceReturn 
+  DeviceInfo,
+  DeviceType,
+  NetworkInfo,
+  UseDeviceReturn
 } from '@ldesign/device/vue'
 
 // 完全类型安全的使用

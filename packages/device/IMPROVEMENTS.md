@@ -128,7 +128,7 @@ const microphones = media.getMicrophones()
 
 ### 2. 性能优化工具
 ```typescript
-import { debounce, throttle, MemoryCache, memoize } from '@ldesign/device/utils/performance'
+import { debounce, memoize, MemoryCache, throttle } from '@ldesign/device/utils/performance'
 
 // 防抖处理
 const debouncedResize = debounce(handleResize, 300)

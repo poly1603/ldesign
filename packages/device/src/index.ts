@@ -5,12 +5,17 @@ export { DeviceDetector as default } from './core/DeviceDetector'
 export { EventEmitter } from './core/EventEmitter'
 
 export { ModuleLoader } from './core/ModuleLoader'
+// Engine集成
+export * from './engine'
 export { BatteryModule } from './modules/BatteryModule'
+
 export { GeolocationModule } from './modules/GeolocationModule'
+export { MediaModule } from './modules/MediaModule'
+
+export type { MediaDeviceInfo, MediaDeviceItem, MediaModuleEvents } from './modules/MediaModule'
 
 // 扩展模块
 export { NetworkModule } from './modules/NetworkModule'
-export { MediaModule } from './modules/MediaModule'
 
 // 类型定义
 export type {
@@ -28,8 +33,6 @@ export type {
   NetworkType,
   Orientation,
 } from './types'
-
-export type { MediaDeviceInfo, MediaDeviceItem, MediaModuleEvents } from './modules/MediaModule'
 
 // 工具函数
 export {
@@ -50,6 +53,3 @@ export {
 
 // Vue集成
 export * from './vue'
-
-// Engine集成
-export * from './engine'

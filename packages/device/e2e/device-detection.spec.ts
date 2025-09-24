@@ -95,7 +95,7 @@ test.describe('设备检测功能', () => {
 
         // 存储到 window 对象供后续使用
         ; (window as any).testDetector = detector
-        ; (window as any).deviceChanges = []
+      ; (window as any).deviceChanges = []
 
       detector.on('deviceChange', (info: any) => {
         ; (window as any).deviceChanges.push(info)

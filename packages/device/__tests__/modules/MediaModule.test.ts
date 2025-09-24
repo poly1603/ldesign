@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MediaModule } from '../../src/modules/MediaModule'
 
-describe('MediaModule', () => {
+describe('mediaModule', () => {
   let module: MediaModule
   let mockMediaDevices: any
   let mockPermissions: any
@@ -21,13 +21,13 @@ describe('MediaModule', () => {
       query: vi.fn(),
     }
 
-    Object.defineProperty(global.navigator, 'mediaDevices', {
+    Object.defineProperty(globalThis.navigator, 'mediaDevices', {
       value: mockMediaDevices,
       writable: true,
       configurable: true,
     })
 
-    Object.defineProperty(global.navigator, 'permissions', {
+    Object.defineProperty(globalThis.navigator, 'permissions', {
       value: mockPermissions,
       writable: true,
       configurable: true,
@@ -44,7 +44,7 @@ describe('MediaModule', () => {
     it('应该正确初始化模块', async () => {
       mockMediaDevices.enumerateDevices.mockResolvedValue([])
       await module.init()
-      
+
       expect(module.name).toBe('media')
       expect(module.getData()).toBeDefined()
     })
@@ -70,7 +70,7 @@ describe('MediaModule', () => {
 
     it('应该处理初始化错误', async () => {
       mockMediaDevices.enumerateDevices.mockRejectedValue(new Error('Permission denied'))
-      
+
       // 不应该抛出错误，而是静默处理
       await expect(module.init()).resolves.not.toThrow()
     })
@@ -117,14 +117,14 @@ describe('MediaModule', () => {
     it('应该请求摄像头权限', async () => {
       const mockStream = {
         getTracks: vi.fn().mockReturnValue([
-          { stop: vi.fn() }
+          { stop: vi.fn() },
         ]),
       }
       mockMediaDevices.getUserMedia.mockResolvedValue(mockStream)
       mockMediaDevices.enumerateDevices.mockResolvedValue([])
 
       const result = await module.requestCameraPermission()
-      
+
       expect(result).toBe(true)
       expect(mockMediaDevices.getUserMedia).toHaveBeenCalledWith({ video: true })
       expect(mockStream.getTracks).toHaveBeenCalled()
@@ -134,7 +134,7 @@ describe('MediaModule', () => {
       mockMediaDevices.getUserMedia.mockRejectedValue(new Error('Permission denied'))
 
       const result = await module.requestCameraPermission()
-      
+
       expect(result).toBe(false)
       expect(module.getData().cameraPermission).toBe('denied')
     })
@@ -142,14 +142,14 @@ describe('MediaModule', () => {
     it('应该请求麦克风权限', async () => {
       const mockStream = {
         getTracks: vi.fn().mockReturnValue([
-          { stop: vi.fn() }
+          { stop: vi.fn() },
         ]),
       }
       mockMediaDevices.getUserMedia.mockResolvedValue(mockStream)
       mockMediaDevices.enumerateDevices.mockResolvedValue([])
 
       const result = await module.requestMicrophonePermission()
-      
+
       expect(result).toBe(true)
       expect(mockMediaDevices.getUserMedia).toHaveBeenCalledWith({ audio: true })
       expect(mockStream.getTracks).toHaveBeenCalled()
@@ -159,7 +159,7 @@ describe('MediaModule', () => {
       mockMediaDevices.getUserMedia.mockRejectedValue(new Error('Permission denied'))
 
       const result = await module.requestMicrophonePermission()
-      
+
       expect(result).toBe(false)
       expect(module.getData().microphonePermission).toBe('denied')
     })
@@ -170,13 +170,13 @@ describe('MediaModule', () => {
       const mockStream = {
         getVideoTracks: vi.fn().mockReturnValue([{ id: 'track1' }]),
         getTracks: vi.fn().mockReturnValue([
-          { stop: vi.fn() }
+          { stop: vi.fn() },
         ]),
       }
       mockMediaDevices.getUserMedia.mockResolvedValue(mockStream)
 
       const result = await module.testCamera()
-      
+
       expect(result).toBe(true)
       expect(mockMediaDevices.getUserMedia).toHaveBeenCalledWith({ video: true })
     })
@@ -185,7 +185,7 @@ describe('MediaModule', () => {
       mockMediaDevices.getUserMedia.mockRejectedValue(new Error('No camera'))
 
       const result = await module.testCamera()
-      
+
       expect(result).toBe(false)
     })
 
@@ -193,13 +193,13 @@ describe('MediaModule', () => {
       const mockStream = {
         getAudioTracks: vi.fn().mockReturnValue([{ id: 'track1' }]),
         getTracks: vi.fn().mockReturnValue([
-          { stop: vi.fn() }
+          { stop: vi.fn() },
         ]),
       }
       mockMediaDevices.getUserMedia.mockResolvedValue(mockStream)
 
       const result = await module.testMicrophone()
-      
+
       expect(result).toBe(true)
       expect(mockMediaDevices.getUserMedia).toHaveBeenCalledWith({ audio: true })
     })
@@ -208,7 +208,7 @@ describe('MediaModule', () => {
       mockMediaDevices.getUserMedia.mockRejectedValue(new Error('No microphone'))
 
       const result = await module.testMicrophone()
-      
+
       expect(result).toBe(false)
     })
   })
@@ -219,7 +219,7 @@ describe('MediaModule', () => {
       mockMediaDevices.getUserMedia.mockResolvedValue(mockStream)
 
       const result = await module.getMediaStream()
-      
+
       expect(result).toBe(mockStream)
       expect(mockMediaDevices.getUserMedia).toHaveBeenCalledWith({
         video: true,
@@ -233,7 +233,7 @@ describe('MediaModule', () => {
       mockMediaDevices.getUserMedia.mockResolvedValue(mockStream)
 
       const result = await module.getMediaStream(constraints)
-      
+
       expect(result).toBe(mockStream)
       expect(mockMediaDevices.getUserMedia).toHaveBeenCalledWith(constraints)
     })
@@ -242,7 +242,7 @@ describe('MediaModule', () => {
       mockMediaDevices.getUserMedia.mockRejectedValue(new Error('Failed'))
 
       const result = await module.getMediaStream()
-      
+
       expect(result).toBeNull()
     })
 
@@ -251,7 +251,7 @@ describe('MediaModule', () => {
       mockMediaDevices.getDisplayMedia.mockResolvedValue(mockStream)
 
       const result = await module.getDisplayMedia()
-      
+
       expect(result).toBe(mockStream)
       expect(mockMediaDevices.getDisplayMedia).toHaveBeenCalledWith({
         video: true,
@@ -263,7 +263,7 @@ describe('MediaModule', () => {
       delete mockMediaDevices.getDisplayMedia
 
       const result = await module.getDisplayMedia()
-      
+
       expect(result).toBeNull()
     })
   })
@@ -276,12 +276,12 @@ describe('MediaModule', () => {
       mockMediaDevices.enumerateDevices.mockResolvedValue([
         { deviceId: 'camera1', label: 'Camera', kind: 'videoinput' },
       ])
-      
+
       await module.init()
 
       // 触发设备变化
       const deviceChangeHandler = mockMediaDevices.addEventListener.mock.calls.find(
-        call => call[0] === 'devicechange'
+        call => call[0] === 'devicechange',
       )?.[1]
 
       if (deviceChangeHandler) {
@@ -296,7 +296,7 @@ describe('MediaModule', () => {
 
       const mockStream = {
         getTracks: vi.fn().mockReturnValue([
-          { stop: vi.fn() }
+          { stop: vi.fn() },
         ]),
       }
       mockMediaDevices.getUserMedia.mockResolvedValue(mockStream)

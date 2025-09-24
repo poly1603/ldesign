@@ -37,7 +37,8 @@ const { isMobile, isTablet, orientation } = useDevice()
 // 🎨 响应式设计从未如此简单
 if (isMobile.value) {
   // 移动端专属体验
-} else if (isTablet.value) {
+}
+else if (isTablet.value) {
   // 平板优化界面
 }
 ```
@@ -93,17 +94,19 @@ const detector = new DeviceDetector()
 // 🔍 获取设备信息，就这么简单！
 const device = detector.getDeviceInfo()
 
-console.log(`📱 设备类型: ${device.type}`)        // 'mobile' | 'tablet' | 'desktop'
-console.log(`🔄 屏幕方向: ${device.orientation}`)  // 'portrait' | 'landscape'
+console.log(`📱 设备类型: ${device.type}`) // 'mobile' | 'tablet' | 'desktop'
+console.log(`🔄 屏幕方向: ${device.orientation}`) // 'portrait' | 'landscape'
 console.log(`📏 屏幕尺寸: ${device.width}x${device.height}`)
 console.log(`👆 触摸设备: ${device.isTouchDevice}`)
 
 // 🎯 快捷判断方法
 if (detector.isMobile()) {
   console.log('🎉 欢迎移动用户！')
-} else if (detector.isTablet()) {
+}
+else if (detector.isTablet()) {
   console.log('📱 平板体验优化中...')
-} else {
+}
+else {
   console.log('🖥️ 桌面端完整功能！')
 }
 ```
@@ -114,17 +117,17 @@ if (detector.isMobile()) {
 const detector = new DeviceDetector({
   // 🎛️ 自定义断点 - 精确控制设备分类
   breakpoints: {
-    mobile: 768,    // 📱 移动设备上限
-    tablet: 1024,   // 📱 平板设备上限
+    mobile: 768, // 📱 移动设备上限
+    tablet: 1024, // 📱 平板设备上限
   },
 
   // 🔄 实时监听配置
-  enableResize: true,        // 窗口大小变化
-  enableOrientation: true,   // 屏幕方向变化
-  debounceDelay: 300,       // 防抖延迟（毫秒）
+  enableResize: true, // 窗口大小变化
+  enableOrientation: true, // 屏幕方向变化
+  debounceDelay: 300, // 防抖延迟（毫秒）
 
   // 🎯 性能优化
-  throttleDelay: 100,       // 节流延迟
+  throttleDelay: 100, // 节流延迟
 })
 ```
 
@@ -154,9 +157,10 @@ detector.on('orientationChange', (orientation) => {
   console.log(`🔄 屏幕旋转到: ${orientation}`)
 
   if (orientation === 'landscape') {
-    enableWideScreenMode()  // 🖥️ 横屏模式
-  } else {
-    enablePortraitMode()    // 📱 竖屏模式
+    enableWideScreenMode() // 🖥️ 横屏模式
+  }
+  else {
+    enablePortraitMode() // 📱 竖屏模式
   }
 })
 
@@ -175,30 +179,30 @@ detector.on('resize', ({ width, height }) => {
 
 ```vue
 <script setup lang="ts">
-import { useDevice, useNetwork, useBattery, useGeolocation } from '@ldesign/device/vue'
+import { useBattery, useDevice, useGeolocation, useNetwork } from '@ldesign/device/vue'
 
 // 🎯 一键获取设备信息，自动响应式
 const {
-  deviceType,     // 📱 设备类型 (mobile/tablet/desktop)
-  orientation,    // 🔄 屏幕方向 (portrait/landscape)
-  isMobile,       // 📱 是否移动设备
-  isTablet,       // 📱 是否平板
-  isDesktop,      // 🖥️ 是否桌面
-  deviceInfo,     // 📊 完整设备信息
-  refresh         // 🔄 手动刷新
+  deviceType, // 📱 设备类型 (mobile/tablet/desktop)
+  orientation, // 🔄 屏幕方向 (portrait/landscape)
+  isMobile, // 📱 是否移动设备
+  isTablet, // 📱 是否平板
+  isDesktop, // 🖥️ 是否桌面
+  deviceInfo, // 📊 完整设备信息
+  refresh // 🔄 手动刷新
 } = useDevice()
 
 // 🌐 网络状态监听
 const {
-  isOnline,       // 🌐 是否在线
-  networkType,    // 📶 网络类型 (4g/wifi/etc)
-  saveData        // 💾 省流量模式
+  isOnline, // 🌐 是否在线
+  networkType, // 📶 网络类型 (4g/wifi/etc)
+  saveData // 💾 省流量模式
 } = useNetwork()
 
 // 🔋 电池信息 (支持的设备)
 const {
-  batteryLevel,   // 🔋 电量百分比
-  isCharging      // ⚡ 是否充电中
+  batteryLevel, // 🔋 电量百分比
+  isCharging // ⚡ 是否充电中
 } = useBattery()
 </script>
 
@@ -210,12 +214,14 @@ const {
     <DesktopHeader v-else />
 
     <!-- 📱 响应式布局 -->
-    <main :class="{
-      'mobile-layout': isMobile,
-      'tablet-layout': isTablet,
-      'desktop-layout': isDesktop,
-      'landscape': orientation === 'landscape'
-    }">
+    <main
+      :class="{
+        'mobile-layout': isMobile,
+        'tablet-layout': isTablet,
+        'desktop-layout': isDesktop,
+        'landscape': orientation === 'landscape',
+      }"
+    >
       <!-- 🌐 网络状态提示 -->
       <div v-if="!isOnline" class="offline-banner">
         📡 当前离线，部分功能可能受限
@@ -236,6 +242,12 @@ const {
 ### 🎯 Vue 指令 - 声明式的设备适配
 
 ```vue
+<script setup>
+import { useDevice } from '@ldesign/device/vue'
+
+const { orientation } = useDevice()
+</script>
+
 <template>
   <div>
     <!-- 🎯 根据设备类型显示/隐藏元素 -->
@@ -253,25 +265,19 @@ const {
     </aside>
 
     <!-- 🎨 复杂条件组合 -->
-    <div v-device="'tablet'" v-show="orientation === 'landscape'">
+    <div v-show="orientation === 'landscape'" v-device="'tablet'">
       📱 平板横屏专属内容
     </div>
   </div>
 </template>
-
-<script setup>
-import { useDevice } from '@ldesign/device/vue'
-
-const { orientation } = useDevice()
-</script>
 ```
 
 ### 🔌 Vue 插件 - 全局注册
 
 ```typescript
+import { DevicePlugin } from '@ldesign/device/vue'
 // main.ts
 import { createApp } from 'vue'
-import { DevicePlugin } from '@ldesign/device/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -299,7 +305,9 @@ app.mount('#app')
     <p>屏幕方向: {{ $device.orientation }}</p>
 
     <!-- 🎨 指令自动可用 -->
-    <div v-device="'mobile'">移动端内容</div>
+    <div v-device="'mobile'">
+      移动端内容
+    </div>
   </div>
 </template>
 ```
@@ -495,19 +503,19 @@ const devicePlugin = createDeviceEnginePlugin({
   version: '1.0.0',
 
   // 功能开关
-  enableResize: true,        // 启用窗口大小变化监听
-  enableOrientation: true,   // 启用屏幕方向变化监听
+  enableResize: true, // 启用窗口大小变化监听
+  enableOrientation: true, // 启用屏幕方向变化监听
 
   // 模块配置
   modules: ['network', 'battery', 'geolocation'],
 
   // Vue 集成配置
-  globalPropertyName: '$device',  // 全局属性名
-  autoInstall: true,             // 自动安装 Vue 插件
+  globalPropertyName: '$device', // 全局属性名
+  autoInstall: true, // 自动安装 Vue 插件
 
   // 开发配置
-  debug: false,                           // 调试模式
-  enablePerformanceMonitoring: false,    // 性能监控
+  debug: false, // 调试模式
+  enablePerformanceMonitoring: false, // 性能监控
 })
 
 // 在 Engine 中使用

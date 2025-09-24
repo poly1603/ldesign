@@ -1,103 +1,3 @@
-<template>
-  <div 
-    :class="[
-      'network-status',
-      `network-status--${displayMode}`,
-      `network-status--${networkInfo?.status || 'unknown'}`,
-      {
-        'network-status--loading': isLoading,
-        'network-status--error': hasError
-      }
-    ]"
-  >
-    <!-- 加载状态 -->
-    <div v-if="isLoading" class="network-status__loading">
-      <div class="network-status__spinner"></div>
-      <span v-if="displayMode !== 'icon'">检测网络状态...</span>
-    </div>
-
-    <!-- 错误状态 -->
-    <div v-else-if="hasError" class="network-status__error">
-      <span class="network-status__error-icon">⚠️</span>
-      <span v-if="displayMode !== 'icon'">网络检测失败</span>
-    </div>
-
-    <!-- 网络状态内容 -->
-    <div v-else-if="networkInfo" class="network-status__content">
-      <!-- 图标模式 -->
-      <template v-if="displayMode === 'icon'">
-        <span 
-          :class="['network-status__icon', `network-status__icon--${networkInfo.status}`]"
-          :title="getStatusText(networkInfo.status)"
-        >
-          {{ getStatusIcon(networkInfo.status) }}
-        </span>
-      </template>
-
-      <!-- 文字模式 -->
-      <template v-else-if="displayMode === 'text'">
-        <span class="network-status__text">
-          {{ getStatusText(networkInfo.status) }}
-        </span>
-      </template>
-
-      <!-- 详细模式 -->
-      <template v-else-if="displayMode === 'detailed'">
-        <div class="network-status__detailed">
-          <div class="network-status__main">
-            <span class="network-status__icon">{{ getStatusIcon(networkInfo.status) }}</span>
-            <div class="network-status__info">
-              <div class="network-status__status">{{ getStatusText(networkInfo.status) }}</div>
-              <div class="network-status__type">{{ getConnectionTypeText(networkInfo.type) }}</div>
-            </div>
-          </div>
-          
-          <div v-if="showDetails && networkInfo.status === 'online'" class="network-status__details">
-            <div v-if="networkInfo.downlink" class="network-status__detail">
-              <label>下载速度</label>
-              <span>{{ networkInfo.downlink.toFixed(1) }} Mbps</span>
-            </div>
-            <div v-if="networkInfo.rtt" class="network-status__detail">
-              <label>延迟</label>
-              <span>{{ networkInfo.rtt }} ms</span>
-            </div>
-            <div v-if="networkInfo.saveData !== undefined" class="network-status__detail">
-              <label>省流模式</label>
-              <span>{{ networkInfo.saveData ? '开启' : '关闭' }}</span>
-            </div>
-          </div>
-        </div>
-      </template>
-
-      <!-- 进度条模式 -->
-      <template v-else-if="displayMode === 'progress'">
-        <div class="network-status__progress">
-          <div class="network-status__progress-header">
-            <span>{{ getStatusText(networkInfo.status) }}</span>
-            <span v-if="networkInfo.downlink">{{ networkInfo.downlink.toFixed(1) }} Mbps</span>
-          </div>
-          <div class="network-status__progress-bar">
-            <div 
-              class="network-status__progress-fill"
-              :style="{ width: `${getSpeedPercentage(networkInfo.downlink)}%` }"
-            ></div>
-          </div>
-        </div>
-      </template>
-    </div>
-
-    <!-- 刷新按钮 -->
-    <button 
-      v-if="showRefresh && displayMode !== 'icon'" 
-      @click="refresh" 
-      class="network-status__refresh"
-      :disabled="isLoading"
-    >
-      🔄
-    </button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import type { NetworkInfo, NetworkStatus, NetworkType } from '../../types'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
@@ -201,7 +101,8 @@ function getConnectionTypeText(type: NetworkType): string {
  * 获取网速百分比（用于进度条显示）
  */
 function getSpeedPercentage(speed?: number): number {
-  if (!speed) return 0
+  if (!speed)
+    return 0
   // 假设 100 Mbps 为满速
   return Math.min((speed / 100) * 100, 100)
 }
@@ -213,17 +114,19 @@ async function refresh() {
   try {
     isLoading.value = true
     errorMessage.value = ''
-    
+
     if (!isLoaded.value) {
       await loadModule()
     }
-    
+
     emit('refresh')
-  } catch (error) {
+  }
+  catch (error) {
     const message = error instanceof Error ? error.message : '刷新失败'
     errorMessage.value = message
     emit('error', message)
-  } finally {
+  }
+  finally {
     isLoading.value = false
   }
 }
@@ -264,7 +167,7 @@ onUnmounted(() => {
 watch(networkInfo, (newInfo) => {
   if (newInfo) {
     emit('update', newInfo)
-    
+
     // 检查状态是否变化
     if (lastStatus.value !== newInfo.status) {
       lastStatus.value = newInfo.status
@@ -279,6 +182,109 @@ watch(() => [props.autoRefresh, props.refreshInterval], () => {
   setupAutoRefresh()
 })
 </script>
+
+<template>
+  <div
+    class="network-status" :class="[
+      `network-status--${displayMode}`,
+      `network-status--${networkInfo?.status || 'unknown'}`,
+      {
+        'network-status--loading': isLoading,
+        'network-status--error': hasError,
+      },
+    ]"
+  >
+    <!-- 加载状态 -->
+    <div v-if="isLoading" class="network-status__loading">
+      <div class="network-status__spinner" />
+      <span v-if="displayMode !== 'icon'">检测网络状态...</span>
+    </div>
+
+    <!-- 错误状态 -->
+    <div v-else-if="hasError" class="network-status__error">
+      <span class="network-status__error-icon">⚠️</span>
+      <span v-if="displayMode !== 'icon'">网络检测失败</span>
+    </div>
+
+    <!-- 网络状态内容 -->
+    <div v-else-if="networkInfo" class="network-status__content">
+      <!-- 图标模式 -->
+      <template v-if="displayMode === 'icon'">
+        <span
+          class="network-status__icon" :class="[`network-status__icon--${networkInfo.status}`]"
+          :title="getStatusText(networkInfo.status)"
+        >
+          {{ getStatusIcon(networkInfo.status) }}
+        </span>
+      </template>
+
+      <!-- 文字模式 -->
+      <template v-else-if="displayMode === 'text'">
+        <span class="network-status__text">
+          {{ getStatusText(networkInfo.status) }}
+        </span>
+      </template>
+
+      <!-- 详细模式 -->
+      <template v-else-if="displayMode === 'detailed'">
+        <div class="network-status__detailed">
+          <div class="network-status__main">
+            <span class="network-status__icon">{{ getStatusIcon(networkInfo.status) }}</span>
+            <div class="network-status__info">
+              <div class="network-status__status">
+                {{ getStatusText(networkInfo.status) }}
+              </div>
+              <div class="network-status__type">
+                {{ getConnectionTypeText(networkInfo.type) }}
+              </div>
+            </div>
+          </div>
+
+          <div v-if="showDetails && networkInfo.status === 'online'" class="network-status__details">
+            <div v-if="networkInfo.downlink" class="network-status__detail">
+              <label>下载速度</label>
+              <span>{{ networkInfo.downlink.toFixed(1) }} Mbps</span>
+            </div>
+            <div v-if="networkInfo.rtt" class="network-status__detail">
+              <label>延迟</label>
+              <span>{{ networkInfo.rtt }} ms</span>
+            </div>
+            <div v-if="networkInfo.saveData !== undefined" class="network-status__detail">
+              <label>省流模式</label>
+              <span>{{ networkInfo.saveData ? '开启' : '关闭' }}</span>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- 进度条模式 -->
+      <template v-else-if="displayMode === 'progress'">
+        <div class="network-status__progress">
+          <div class="network-status__progress-header">
+            <span>{{ getStatusText(networkInfo.status) }}</span>
+            <span v-if="networkInfo.downlink">{{ networkInfo.downlink.toFixed(1) }} Mbps</span>
+          </div>
+          <div class="network-status__progress-bar">
+            <div
+              class="network-status__progress-fill"
+              :style="{ width: `${getSpeedPercentage(networkInfo.downlink)}%` }"
+            />
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- 刷新按钮 -->
+    <button
+      v-if="showRefresh && displayMode !== 'icon'"
+      class="network-status__refresh"
+      :disabled="isLoading"
+      @click="refresh"
+    >
+      🔄
+    </button>
+  </div>
+</template>
 
 <style scoped>
 .network-status {

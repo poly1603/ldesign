@@ -17,7 +17,7 @@ export default defineConfig({
   umd: {
     enabled: true,
     minify: true, // UMD版本启用压缩
-    fileName: 'index.js' // 去掉 .umd 后缀
+    fileName: 'index.js', // 去掉 .umd 后缀
   },
 
   // 外部依赖配置
@@ -36,14 +36,14 @@ export default defineConfig({
     'node:url',
     'node:buffer',
     'node:child_process',
-    'node:worker_threads'
-],
+    'node:worker_threads',
+  ],
 
   // 全局变量配置
   globals: {
     'vue': 'Vue',
-    'lucide-vue-next': 'LucideVueNext'
-},
+    'lucide-vue-next': 'LucideVueNext',
+  },
 
   // 日志级别设置为 silent，只显示错误信息
   logLevel: 'silent',
@@ -52,10 +52,9 @@ export default defineConfig({
   build: {
     // 禁用构建警告
     rollupOptions: {
-      onwarn: (warning, warn) => {
+      onwarn: (_warning, _warn) => {
         // 完全静默，不输出任何警告
-        return
-      }
-    }
-  }
+      },
+    },
+  },
 })

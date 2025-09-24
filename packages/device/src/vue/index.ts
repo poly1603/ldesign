@@ -26,14 +26,17 @@ export type {
   UseDeviceReturn,
 } from '../types'
 
+// 组件 - Vue组件
+export { DeviceInfo, NetworkStatus } from './components'
+
 // Composition API - 主要的Vue集成API
 export {
   useBattery,
+  useBreakpoints,
   useDevice,
   useGeolocation,
   useNetwork,
   useOrientation,
-  useBreakpoints,
 } from './composables'
 
 // 指令 - Vue指令集成
@@ -47,9 +50,6 @@ export {
 
 // 插件 - Vue插件系统
 export { createDevicePlugin, DevicePlugin, useDeviceDetector } from './plugin'
-
-// 组件 - Vue组件
-export { DeviceInfo, NetworkStatus } from './components'
 
 // 默认导出插件 - 便于快速使用
 export { DevicePlugin as default } from './plugin'

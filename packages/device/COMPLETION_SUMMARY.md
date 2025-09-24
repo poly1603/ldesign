@@ -12,7 +12,7 @@
 - ✅ **MediaModule 测试** (`__tests__/modules/MediaModule.test.ts`)
   - 24个测试用例，覆盖了所有核心功能
   - 包括初始化、设备检测、权限管理、设备测试、媒体流获取等
-  
+
 - ✅ **性能优化工具测试** (`__tests__/utils/performance.test.ts`)
   - 35个测试用例，覆盖了所有工具函数
   - 包括 debounce、throttle、MemoryCache、memoize、LazyLoader、BatchExecutor 等

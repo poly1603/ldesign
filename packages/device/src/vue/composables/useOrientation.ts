@@ -5,17 +5,17 @@ import { DeviceDetector } from '../../core/DeviceDetector'
 
 /**
  * 屏幕方向检测 Composition API
- * 
+ *
  * 提供屏幕方向检测和变化监听功能
- * 
+ *
  * @param options 设备检测器配置选项
  * @returns 屏幕方向相关的响应式数据和方法
- * 
+ *
  * @example
  * ```vue
  * <script setup>
  * import { useOrientation } from '@ldesign/device/vue'
- * 
+ *
  * const {
  *   orientation,
  *   isPortrait,
@@ -27,20 +27,20 @@ import { DeviceDetector } from '../../core/DeviceDetector'
  * } = useOrientation({
  *   enableOrientation: true
  * })
- * 
+ *
  * // 监听方向变化
  * watch(orientation, (newOrientation) => {
  *   console.log('屏幕方向变化:', newOrientation)
  * })
  * </script>
- * 
+ *
  * <template>
  *   <div>
  *     <p>当前方向: {{ orientation }}</p>
  *     <p>是否竖屏: {{ isPortrait }}</p>
  *     <p>是否横屏: {{ isLandscape }}</p>
  *     <p>旋转角度: {{ angle }}°</p>
- *     
+ *
  *     <button @click="lockOrientation('portrait')">锁定竖屏</button>
  *     <button @click="lockOrientation('landscape')">锁定横屏</button>
  *     <button @click="unlockOrientation">解锁方向</button>
@@ -75,7 +75,7 @@ export function useOrientation(options: DeviceDetectorOptions = {}) {
     if (orientation.value !== deviceInfo.orientation) {
       orientation.value = deviceInfo.orientation
     }
-    
+
     // 更新角度信息
     if (typeof screen !== 'undefined' && screen.orientation) {
       angle.value = screen.orientation.angle || 0
@@ -101,10 +101,12 @@ export function useOrientation(options: DeviceDetectorOptions = {}) {
         await (screen as any).orientation.lock(targetOrientation)
         isLocked.value = true
         error.value = null
-      } else {
+      }
+      else {
         throw new Error('Screen orientation lock is not supported')
       }
-    } catch (err) {
+    }
+    catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to lock orientation'
       error.value = message
       console.warn('Failed to lock orientation:', err)
@@ -121,10 +123,12 @@ export function useOrientation(options: DeviceDetectorOptions = {}) {
         (screen as any).orientation.unlock()
         isLocked.value = false
         error.value = null
-      } else {
+      }
+      else {
         throw new Error('Screen orientation unlock is not supported')
       }
-    } catch (err) {
+    }
+    catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to unlock orientation'
       error.value = message
       console.warn('Failed to unlock orientation:', err)
@@ -136,9 +140,9 @@ export function useOrientation(options: DeviceDetectorOptions = {}) {
    * 检查是否支持方向锁定
    */
   const isOrientationLockSupported = computed(() => {
-    return typeof screen !== 'undefined' && 
-           (screen as any).orientation && 
-           typeof (screen as any).orientation.lock === 'function'
+    return typeof screen !== 'undefined'
+      && (screen as any).orientation
+      && typeof (screen as any).orientation.lock === 'function'
   })
 
   /**
@@ -148,12 +152,12 @@ export function useOrientation(options: DeviceDetectorOptions = {}) {
     // 标准的方向类型
     return [
       'portrait-primary',
-      'portrait-secondary', 
+      'portrait-secondary',
       'landscape-primary',
       'landscape-secondary',
       'portrait',
       'landscape',
-      'natural'
+      'natural',
     ]
   }
 
@@ -227,7 +231,8 @@ export function useOrientation(options: DeviceDetectorOptions = {}) {
       if (isLocked.value) {
         try {
           unlockOrientation()
-        } catch {
+        }
+        catch {
           // 忽略解锁错误
         }
       }

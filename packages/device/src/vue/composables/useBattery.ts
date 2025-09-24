@@ -1,20 +1,21 @@
 import type { Ref } from 'vue'
 import type { BatteryInfo, BatteryModule } from '../../types'
+import process from 'node:process'
 import { computed, onUnmounted, readonly, ref } from 'vue'
 import { DeviceDetector } from '../../core/DeviceDetector'
 
 /**
  * 电池状态检测 Composition API
- * 
+ *
  * 提供设备电池电量、充电状态、电池健康等信息的响应式监听
- * 
+ *
  * @returns 电池状态相关的响应式数据和方法
- * 
+ *
  * @example
  * ```vue
  * <script setup>
  * import { useBattery } from '@ldesign/device/vue'
- * 
+ *
  * const {
  *   batteryInfo,
  *   batteryLevel,
@@ -24,7 +25,7 @@ import { DeviceDetector } from '../../core/DeviceDetector'
  *   loadModule,
  *   unloadModule
  * } = useBattery()
- * 
+ *
  * // 加载电池模块
  * onMounted(async () => {
  *   try {
@@ -34,7 +35,7 @@ import { DeviceDetector } from '../../core/DeviceDetector'
  *   }
  * })
  * </script>
- * 
+ *
  * <template>
  *   <div v-if="isLoaded">
  *     <div class="battery-indicator">
@@ -69,8 +70,9 @@ export function useBattery() {
     batteryInfo.value = info
     batteryLevel.value = info.level
     isCharging.value = info.charging
-    batteryStatus.value = info.chargingTime > 0 ? 'charging' :
-      info.dischargingTime > 0 ? 'discharging' : 'unknown'
+    batteryStatus.value = info.chargingTime > 0
+      ? 'charging'
+      : info.dischargingTime > 0 ? 'discharging' : 'unknown'
   }
 
   /**
@@ -99,7 +101,7 @@ export function useBattery() {
           maybeOn.call(batteryModule, 'batteryChange', batteryChangeHandler)
           // 保存清理函数
           cleanupFunctions.push(
-            () => maybeOff.call(batteryModule, 'batteryChange', batteryChangeHandler)
+            () => maybeOff.call(batteryModule, 'batteryChange', batteryChangeHandler),
           )
         }
       }
@@ -153,7 +155,8 @@ export function useBattery() {
       try {
         const info = batteryModule.getData()
         updateBatteryInfo(info)
-      } catch (err) {
+      }
+      catch (err) {
         error.value = err instanceof Error ? err.message : 'Failed to refresh battery info'
       }
     }

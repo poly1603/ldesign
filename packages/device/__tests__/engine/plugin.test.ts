@@ -2,9 +2,9 @@
  * Device Engine 插件测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createDeviceEnginePlugin, type DeviceEnginePluginOptions } from '../../src/engine/plugin'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DeviceDetector } from '../../src/core/DeviceDetector'
+import { createDeviceEnginePlugin, type DeviceEnginePluginOptions } from '../../src/engine/plugin'
 
 // Mock Vue app
 const mockVueApp = {
@@ -40,7 +40,7 @@ const mockContext = {
   events: mockEngine.events,
 }
 
-describe('Device Engine Plugin', () => {
+describe('device Engine Plugin', () => {
   beforeEach(() => {
     // 重置所有 mock
     vi.clearAllMocks()
@@ -99,11 +99,11 @@ describe('Device Engine Plugin', () => {
 
       // 验证日志记录
       expect(mockEngine.logger.info).toHaveBeenCalledWith(
-        expect.stringContaining('performInstall called')
+        expect.stringContaining('performInstall called'),
       )
       expect(mockEngine.logger.info).toHaveBeenCalledWith(
         'Installing device plugin...',
-        expect.any(Object)
+        expect.any(Object),
       )
 
       // 验证状态管理注册
@@ -185,7 +185,7 @@ describe('Device Engine Plugin', () => {
       await plugin.install!(mockContext)
 
       expect(mockEngine.logger.info).toHaveBeenCalledWith(
-        expect.stringContaining('Performance monitoring enabled')
+        expect.stringContaining('Performance monitoring enabled'),
       )
     })
 
@@ -202,7 +202,7 @@ describe('Device Engine Plugin', () => {
       }
 
       await expect(plugin.install!(contextWithError)).rejects.toThrow(
-        'Failed to install device plugin: Test error'
+        'Failed to install device plugin: Test error',
       )
 
       expect(mockEngine.logger.error).toHaveBeenCalled()
@@ -236,7 +236,7 @@ describe('Device Engine Plugin', () => {
 
       // 验证日志记录
       expect(mockEngine.logger.info).toHaveBeenCalledWith(
-        expect.stringContaining('device plugin uninstalled successfully')
+        expect.stringContaining('device plugin uninstalled successfully'),
       )
     })
 
@@ -256,7 +256,7 @@ describe('Device Engine Plugin', () => {
       }
 
       await expect(plugin.uninstall!(contextWithError)).rejects.toThrow(
-        'Failed to uninstall device plugin: Test uninstall error'
+        'Failed to uninstall device plugin: Test uninstall error',
       )
 
       expect(mockEngine.logger.error).toHaveBeenCalled()
@@ -287,7 +287,7 @@ describe('Device Engine Plugin', () => {
 
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('[Device Plugin] createDeviceEnginePlugin called with options:'),
-        expect.any(Object)
+        expect.any(Object),
       )
 
       consoleSpy.mockRestore()

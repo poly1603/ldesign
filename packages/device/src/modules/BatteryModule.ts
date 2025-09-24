@@ -271,10 +271,11 @@ export class BatteryModule implements DeviceModule {
   private emit(event: string, data: any): void {
     const handlers = this.customEventHandlers.get(event)
     if (handlers) {
-      handlers.forEach(handler => {
+      handlers.forEach((handler) => {
         try {
           handler(data)
-        } catch (error) {
+        }
+        catch (error) {
           console.warn(`Error in battery event handler for ${event}:`, error)
         }
       })

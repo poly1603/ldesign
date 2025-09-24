@@ -74,22 +74,22 @@ class DeviceDetector {
   private config: DeviceDetectorOptions
 
   constructor(options?: DeviceDetectorOptions)
-  
+
   // 核心 API
   getDeviceInfo(): DeviceInfo
   getDeviceType(): DeviceType
   isMobile(): boolean
   isTablet(): boolean
   isDesktop(): boolean
-  
+
   // 模块管理
   loadModule<T>(name: string): Promise<T>
   unloadModule(name: string): Promise<void>
-  
+
   // 事件系统
-  on(event: string, handler: Function): void
-  off(event: string, handler: Function): void
-  
+  on(event: string, handler: (...args: any[]) => void): void
+  off(event: string, handler: (...args: any[]) => void): void
+
   // 生命周期
   destroy(): Promise<void>
 }
@@ -105,14 +105,14 @@ class DeviceDetector {
 
 ```typescript
 class EventEmitter {
-  private events: Map<string, Set<Function>>
+  private events: Map<string, Set<(...args: any[]) => void>>
   private maxListeners: number
-  
-  on(event: string, handler: Function): void
-  off(event: string, handler: Function): void
+
+  on(event: string, handler: (...args: any[]) => void): void
+  off(event: string, handler: (...args: any[]) => void): void
   emit(event: string, ...args: any[]): void
-  once(event: string, handler: Function): void
-  
+  once(event: string, handler: (...args: any[]) => void): void
+
   // 性能优化
   setMaxListeners(n: number): void
   listenerCount(event: string): number
@@ -132,12 +132,12 @@ class EventEmitter {
 class ModuleLoader {
   private modules: Map<string, Module>
   private loadingPromises: Map<string, Promise<Module>>
-  
+
   async loadModule<T>(name: string): Promise<T>
   async unloadModule(name: string): Promise<void>
   isModuleLoaded(name: string): boolean
   getLoadedModules(): string[]
-  
+
   // 性能监控
   getLoadStats(): LoadStats
   clearStats(): void
@@ -158,18 +158,18 @@ class ModuleLoader {
 interface Module {
   name: string
   version: string
-  
+
   // 生命周期
-  init(): Promise<void>
-  destroy(): Promise<void>
-  
+  init: () => Promise<void>
+  destroy: () => Promise<void>
+
   // 数据获取
-  getData(): any
-  isSupported(): boolean
-  
+  getData: () => any
+  isSupported: () => boolean
+
   // 事件系统
-  on?(event: string, handler: Function): void
-  off?(event: string, handler: Function): void
+  on?: (event: string, handler: (...args: any[]) => void) => void
+  off?: (event: string, handler: (...args: any[]) => void) => void
 }
 ```
 
@@ -178,7 +178,7 @@ interface Module {
 ```typescript
 class ModuleRegistry {
   private static modules = new Map<string, ModuleConstructor>()
-  
+
   static register(name: string, constructor: ModuleConstructor): void
   static get(name: string): ModuleConstructor | undefined
   static list(): string[]
@@ -197,12 +197,12 @@ interface UseDeviceReturn {
   deviceType: Readonly<Ref<DeviceType>>
   orientation: Readonly<Ref<Orientation>>
   deviceInfo: Readonly<Ref<DeviceInfo>>
-  
+
   // 计算属性
   isMobile: Readonly<ComputedRef<boolean>>
   isTablet: Readonly<ComputedRef<boolean>>
   isDesktop: Readonly<ComputedRef<boolean>>
-  
+
   // 方法
   refresh: () => void
 }
@@ -270,12 +270,12 @@ interface DeviceInfoEmits {
 class Cache {
   private data: Map<string, CacheEntry>
   private ttl: number
-  
+
   set(key: string, value: any, ttl?: number): void
   get(key: string): any | null
   has(key: string): boolean
   clear(): void
-  
+
   // 自动清理过期缓存
   private cleanup(): void
 }
@@ -287,10 +287,10 @@ class Cache {
 class BatchUpdater {
   private updateQueue: Set<() => void>
   private isScheduled: boolean
-  
+
   schedule(update: () => void): void
   flush(): void
-  
+
   private scheduleFlush(): void
 }
 ```
@@ -300,14 +300,14 @@ class BatchUpdater {
 ```typescript
 // 防抖装饰器
 function debounce(delay: number) {
-  return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     // 实现防抖逻辑
   }
 }
 
 // 节流装饰器
 function throttle(interval: number) {
-  return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     // 实现节流逻辑
   }
 }
@@ -356,12 +356,12 @@ class FeatureDetector {
 ```typescript
 class PerformanceMonitor {
   private metrics: Map<string, Metric>
-  
+
   startTiming(name: string): void
   endTiming(name: string): number
   recordMetric(name: string, value: number): void
   getMetrics(): MetricReport
-  
+
   // 内存使用监控
   getMemoryUsage(): MemoryInfo
   detectMemoryLeaks(): LeakReport[]
@@ -376,7 +376,7 @@ class DeviceDebugger {
   static disable(): void
   static log(message: string, data?: any): void
   static getDebugInfo(): DebugInfo
-  
+
   // 设备信息验证
   static validateDeviceInfo(info: DeviceInfo): ValidationResult
   static compareDetection(expected: DeviceInfo, actual: DeviceInfo): ComparisonResult
@@ -391,13 +391,13 @@ class DeviceDebugger {
 interface Plugin {
   name: string
   version: string
-  install(detector: DeviceDetector): void
-  uninstall?(detector: DeviceDetector): void
+  install: (detector: DeviceDetector) => void
+  uninstall?: (detector: DeviceDetector) => void
 }
 
 class PluginManager {
   private plugins: Map<string, Plugin>
-  
+
   register(plugin: Plugin): void
   unregister(name: string): void
   list(): Plugin[]
@@ -413,14 +413,14 @@ interface DeviceDetectorConfig {
   enableResize?: boolean
   enableOrientation?: boolean
   debounceTime?: number
-  
+
   // 断点配置
   breakpoints?: BreakpointConfig
-  
+
   // 模块配置
   modules?: string[]
   moduleConfig?: Record<string, any>
-  
+
   // 性能配置
   cacheSize?: number
   cacheTTL?: number

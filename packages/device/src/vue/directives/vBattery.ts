@@ -24,7 +24,7 @@ let globalDetector: DeviceDetector | null = null
 let elementCount = 0
 
 // 性能优化：批量更新队列
-let updateQueue: Set<ElementWithBatteryData> = new Set()
+const updateQueue: Set<ElementWithBatteryData> = new Set()
 let isUpdateScheduled = false
 
 /**
@@ -37,7 +37,7 @@ function getGlobalDetector(): DeviceDetector {
     })
 
     // 初始化电池模块
-    globalDetector.loadModule<import('../../types').BatteryModule>('battery').catch(error => {
+    globalDetector.loadModule<import('../../types').BatteryModule>('battery').catch((error) => {
       console.warn('Failed to load battery module:', error)
     })
   }
@@ -58,7 +58,7 @@ function scheduleUpdate(): void {
     updateQueue.clear()
     isUpdateScheduled = false
 
-    elementsToUpdate.forEach(async element => {
+    elementsToUpdate.forEach(async (element) => {
       if (element.isConnected && element.__directiveBinding) {
         const detector = getGlobalDetector()
         try {
@@ -67,7 +67,8 @@ function scheduleUpdate(): void {
             const batteryInfo = batteryModule.getData()
             updateElementVisibility(element, element.__directiveBinding, batteryInfo)
           }
-        } catch (error) {
+        }
+        catch (error) {
           console.warn('Failed to get battery info:', error)
         }
       }
@@ -140,8 +141,8 @@ function shouldShowElement(
   threshold: number,
   inverse: boolean,
 ): boolean {
-  const matches = conditions.some(condition => 
-    checkBatteryCondition(batteryInfo, condition, threshold)
+  const matches = conditions.some(condition =>
+    checkBatteryCondition(batteryInfo, condition, threshold),
   )
   return inverse ? !matches : matches
 }
@@ -151,10 +152,14 @@ function shouldShowElement(
  */
 function getBatteryState(batteryInfo: BatteryInfo, threshold: number): string {
   const states = []
-  if (batteryInfo.charging) states.push('charging')
-  if (batteryInfo.level <= 0.1) states.push('critical')
-  else if (batteryInfo.level <= threshold) states.push('low')
-  if (batteryInfo.level >= 0.95) states.push('full')
+  if (batteryInfo.charging)
+    states.push('charging')
+  if (batteryInfo.level <= 0.1)
+    states.push('critical')
+  else if (batteryInfo.level <= threshold)
+    states.push('low')
+  if (batteryInfo.level >= 0.95)
+    states.push('full')
   return states.join('-') || 'normal'
 }
 
@@ -208,7 +213,7 @@ function updateElementVisibility(
 
     // 添加电池状态相关的 CSS 类
     el.classList.remove('battery-charging', 'battery-low', 'battery-critical', 'battery-full', 'battery-normal')
-    currentState.split('-').forEach(state => {
+    currentState.split('-').forEach((state) => {
       el.classList.add(`battery-${state}`)
     })
 
@@ -221,26 +226,26 @@ function updateElementVisibility(
 
 /**
  * v-battery 指令实现
- * 
+ *
  * 根据电池状态控制元素的显示和隐藏
- * 
+ *
  * @example
  * ```vue
  * <!-- 充电时显示 -->
  * <div v-battery="'charging'">正在充电</div>
- * 
+ *
  * <!-- 低电量时显示 -->
  * <div v-battery="'low'">电量不足</div>
- * 
+ *
  * <!-- 自定义低电量阈值 -->
  * <div v-battery="{ condition: 'low', threshold: 0.3 }">
  *   电量低于30%
  * </div>
- * 
+ *
  * <!-- 带回调函数 -->
- * <div v-battery="{ 
- *   condition: 'charging', 
- *   callback: (battery) => console.log('电池状态:', battery) 
+ * <div v-battery="{
+ *   condition: 'charging',
+ *   callback: (battery) => console.log('电池状态:', battery)
  * }">
  *   充电中
  * </div>
@@ -262,26 +267,27 @@ export const vBattery: Directive<HTMLElement, BatteryCondition | BatteryDirectiv
     try {
       // 加载电池模块并获取初始状态
       const batteryModule = await detector.loadModule<BatteryModule>('battery')
-        if (batteryModule && typeof batteryModule.getData === 'function') {
-          const batteryInfo = batteryModule.getData()
-          updateElementVisibility(elementWithData, binding, batteryInfo)
+      if (batteryModule && typeof batteryModule.getData === 'function') {
+        const batteryInfo = batteryModule.getData()
+        updateElementVisibility(elementWithData, binding, batteryInfo)
 
-          // 监听电池变化
-          const handleBatteryChange = () => {
-            updateQueue.add(elementWithData)
-            scheduleUpdate()
-          }
-
-          // 如果电池模块支持事件监听
-          const maybeOn = (batteryModule as any).on as ((...args: any[]) => any) | undefined
-          if (typeof maybeOn === 'function') {
-            maybeOn.call(batteryModule, 'batteryChange', handleBatteryChange)
-            elementWithData.__batteryChangeHandler = handleBatteryChange
-          }
-
-          elementWithData.__deviceDetector = detector
+        // 监听电池变化
+        const handleBatteryChange = () => {
+          updateQueue.add(elementWithData)
+          scheduleUpdate()
         }
-    } catch (error) {
+
+        // 如果电池模块支持事件监听
+        const maybeOn = (batteryModule as any).on as ((...args: any[]) => any) | undefined
+        if (typeof maybeOn === 'function') {
+          maybeOn.call(batteryModule, 'batteryChange', handleBatteryChange)
+          elementWithData.__batteryChangeHandler = handleBatteryChange
+        }
+
+        elementWithData.__deviceDetector = detector
+      }
+    }
+    catch (error) {
       console.warn('Failed to initialize battery directive:', error)
     }
   },
@@ -294,14 +300,14 @@ export const vBattery: Directive<HTMLElement, BatteryCondition | BatteryDirectiv
     elementWithData.__directiveBinding = binding
 
     if (detector) {
-      detector.loadModule('battery').then(batteryModule => {
+      detector.loadModule('battery').then((batteryModule) => {
         if (batteryModule && typeof batteryModule.getData === 'function') {
           const batteryInfo = batteryModule.getData() as BatteryInfo
           if (batteryInfo) {
             updateElementVisibility(elementWithData, binding, batteryInfo)
           }
         }
-      }).catch(error => {
+      }).catch((error) => {
         console.warn('Failed to update battery directive:', error)
       })
     }
@@ -320,7 +326,7 @@ export const vBattery: Directive<HTMLElement, BatteryCondition | BatteryDirectiv
 
     if (detector && handler) {
       // 如果电池模块支持事件移除
-      detector.loadModule<BatteryModule>('battery').then(batteryModule => {
+      detector.loadModule<BatteryModule>('battery').then((batteryModule) => {
         const maybeOff = (batteryModule as any).off as ((...args: any[]) => any) | undefined
         if (batteryModule && typeof maybeOff === 'function' && handler) {
           maybeOff.call(batteryModule, 'batteryChange', handler)
@@ -344,9 +350,14 @@ export const vBattery: Directive<HTMLElement, BatteryCondition | BatteryDirectiv
     }
     el.removeAttribute('hidden')
     el.classList.remove(
-      'battery-visible', 'battery-hidden',
-      'battery-charging', 'battery-low', 'battery-critical', 'battery-full', 'battery-normal',
-      ...Array.from(el.classList).filter(cls => cls.startsWith('battery-level-'))
+      'battery-visible',
+      'battery-hidden',
+      'battery-charging',
+      'battery-low',
+      'battery-critical',
+      'battery-full',
+      'battery-normal',
+      ...Array.from(el.classList).filter(cls => cls.startsWith('battery-level-')),
     )
 
     // 如果没有元素使用检测器了，清理全局检测器
@@ -359,7 +370,7 @@ export const vBattery: Directive<HTMLElement, BatteryCondition | BatteryDirectiv
 
 /**
  * 充电状态指令
- * 
+ *
  * @example
  * ```vue
  * <div v-battery-charging>充电时显示</div>
@@ -393,7 +404,7 @@ export const vBatteryCharging: Directive<HTMLElement> = {
 
 /**
  * 低电量状态指令
- * 
+ *
  * @example
  * ```vue
  * <div v-battery-low>低电量时显示</div>

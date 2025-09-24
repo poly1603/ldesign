@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
-import { vDevice, vDeviceMobile, vDeviceTablet, vDeviceDesktop, __resetGlobalState, __setGlobalDetector } from '../../../src/vue/directives/vDevice'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
+import { __resetGlobalState, __setGlobalDetector, vDevice, vDeviceDesktop, vDeviceMobile, vDeviceTablet } from '../../../src/vue/directives/vDevice'
 
 // Mock DeviceDetector
 const mockDeviceInfo = {
@@ -342,7 +342,7 @@ describe('vDevice 指令', () => {
 
       // 触发相同的设备变化事件
       const deviceChangeCallback = mockDetector.on.mock.calls.find(
-        call => call[0] === 'deviceChange'
+        call => call[0] === 'deviceChange',
       )?.[1]
 
       if (deviceChangeCallback) {

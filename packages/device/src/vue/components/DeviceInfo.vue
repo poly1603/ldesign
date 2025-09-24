@@ -1,28 +1,230 @@
+<script setup lang="ts">
+import type { DeviceInfo, DeviceType, Orientation } from '../../types'
+import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useDevice } from '../composables/useDevice'
+
+/**
+ * DeviceInfo 组件属性定义
+ */
+interface Props {
+  /** 显示模式：compact（紧凑）或 detailed（详细） */
+  mode?: 'compact' | 'detailed'
+  /** 是否显示刷新按钮 */
+  showRefresh?: boolean
+  /** 自动刷新间隔（毫秒），0 表示不自动刷新 */
+  autoRefresh?: number
+  /** 自定义样式类名 */
+  customClass?: string
+}
+
+/**
+ * 组件事件定义
+ */
+interface Emits {
+  /** 设备信息更新事件 */
+  (e: 'update', deviceInfo: DeviceInfo): void
+  /** 刷新事件 */
+  (e: 'refresh'): void
+  /** 错误事件 */
+  (e: 'error', error: string): void
+}
+
+// 定义 props 和 emits
+const props = withDefaults(defineProps<Props>(), {
+  mode: 'detailed',
+  showRefresh: true,
+  autoRefresh: 0,
+})
+
+const emit = defineEmits<Emits>()
+
+// 使用设备检测 composable
+const { deviceInfo, refresh: refreshDevice } = useDevice()
+// 兼容测试环境中传入的伪 ref（仅包含 value 字段）
+const info = computed<DeviceInfo | null>(() => {
+  const v: any = deviceInfo as any
+  if (v && typeof v === 'object' && 'value' in v)
+    return v.value as DeviceInfo | null
+  return v as DeviceInfo | null
+})
+
+// 组件状态（默认不加载，除非没有可用的设备信息或手动刷新）
+const isLoading = ref(false)
+const errorMessage = ref('')
+
+// 计算属性
+const hasError = computed(() => !!errorMessage.value)
+
+// 自动刷新定时器
+let autoRefreshTimer: number | null = null
+
+/**
+ * 获取设备类型图标
+ */
+function getDeviceIcon(type: DeviceType): string {
+  const icons = {
+    mobile: '📱',
+    tablet: '📱',
+    desktop: '💻',
+  }
+  return icons[type] || '❓'
+}
+
+/**
+ * 获取设备类型文本
+ */
+function getDeviceTypeText(type: DeviceType): string {
+  const texts = {
+    mobile: '移动设备',
+    tablet: '平板设备',
+    desktop: '桌面设备',
+  }
+  return texts[type] || '未知设备'
+}
+
+/**
+ * 获取屏幕方向文本
+ */
+function getOrientationText(orientation: Orientation): string {
+  const texts = {
+    portrait: '竖屏',
+    landscape: '横屏',
+  }
+  return texts[orientation] || '未知'
+}
+
+/**
+ * 刷新设备信息
+ */
+async function refresh() {
+  try {
+    isLoading.value = true
+    errorMessage.value = ''
+
+    await Promise.resolve(refreshDevice())
+
+    if (deviceInfo.value) {
+      emit('update', deviceInfo.value)
+    }
+
+    emit('refresh')
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : '刷新失败'
+    errorMessage.value = message
+    emit('error', message)
+  }
+  finally {
+    isLoading.value = false
+  }
+}
+
+/**
+ * 设置自动刷新
+ */
+function setupAutoRefresh() {
+  if (props.autoRefresh > 0) {
+    autoRefreshTimer = window.setInterval(() => {
+      refresh()
+    }, props.autoRefresh)
+  }
+}
+
+/**
+ * 清理自动刷新
+ */
+function clearAutoRefresh() {
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer)
+    autoRefreshTimer = null
+  }
+}
+
+// 生命周期
+onMounted(() => {
+  // 如果当前没有可用信息，显示加载占位
+  isLoading.value = !deviceInfo.value
+  setupAutoRefresh()
+})
+
+// 监听 props 变化
+watch(() => props.autoRefresh, (newValue, oldValue) => {
+  if (newValue !== oldValue) {
+    clearAutoRefresh()
+    setupAutoRefresh()
+  }
+})
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  clearAutoRefresh()
+})
+
+// 为测试友好：暴露组合式状态，便于 @vue/test-utils 的 setData / 直接访问
+// 注意：defineExpose 仅暴露属性，不改变内部实现
+defineExpose({
+  isLoading,
+  errorMessage,
+})
+
+// 兼容某些测试工具对 setData 的实现：尝试在代理上定义同名属性（失败则忽略）
+const instance = getCurrentInstance()
+if (instance && instance.proxy) {
+  try {
+    Object.defineProperties(instance.proxy as any, {
+      isLoading: {
+        get: () => isLoading.value,
+        set: (v: boolean) => { isLoading.value = v },
+        configurable: true,
+        enumerable: true,
+      },
+      errorMessage: {
+        get: () => errorMessage.value,
+        set: (v: string) => { errorMessage.value = v },
+        configurable: true,
+        enumerable: true,
+      },
+    })
+  }
+  catch {}
+}
+
+// 监听设备信息变化
+watch(() => deviceInfo.value, (newInfo) => {
+  // 根据设备信息是否可用自动切换加载状态
+  isLoading.value = !newInfo
+  if (newInfo) {
+    emit('update', newInfo)
+  }
+}, { deep: true })
+</script>
+
 <template>
-  <div 
-    :class="[
-      'device-info',
+  <div
+    class="device-info" :class="[
       `device-info--${mode}`,
       `device-info--${info?.type || 'unknown'}`,
       {
         'device-info--loading': isLoading,
-        'device-info--error': hasError
-      }
+        'device-info--error': hasError,
+      },
     ]"
   >
     <!-- 加载状态 -->
     <div v-if="isLoading" class="device-info__loading">
-      <div class="device-info__spinner"></div>
+      <div class="device-info__spinner" />
       <span>正在检测设备信息...</span>
     </div>
 
     <!-- 错误状态 -->
     <div v-else-if="hasError" class="device-info__error">
-      <div class="device-info__error-icon">⚠️</div>
+      <div class="device-info__error-icon">
+        ⚠️
+      </div>
       <div class="device-info__error-content">
         <h4>设备信息获取失败</h4>
         <p>{{ errorMessage }}</p>
-        <button @click="refresh" class="device-info__retry-btn">
+        <button class="device-info__retry-btn" @click="refresh">
           重试
         </button>
       </div>
@@ -41,7 +243,7 @@
             <span class="device-info__size">{{ info.screen?.width }}×{{ info.screen?.height }}</span>
           </div>
           <div v-if="showRefresh" class="device-info__actions">
-            <button @click="refresh" class="device-info__refresh-btn" title="刷新">
+            <button class="device-info__refresh-btn" title="刷新" @click="refresh">
               🔄
             </button>
           </div>
@@ -55,7 +257,7 @@
             <span class="device-info__icon">{{ getDeviceIcon(info.type) }}</span>
             <h3>{{ getDeviceTypeText(info.type) }}</h3>
           </div>
-          <button v-if="showRefresh" @click="refresh" class="device-info__refresh-btn">
+          <button v-if="showRefresh" class="device-info__refresh-btn" @click="refresh">
             刷新
           </button>
         </div>
@@ -138,203 +340,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import type { DeviceInfo, DeviceType, Orientation } from '../../types'
-import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useDevice } from '../composables/useDevice'
-
-/**
- * DeviceInfo 组件属性定义
- */
-interface Props {
-  /** 显示模式：compact（紧凑）或 detailed（详细） */
-  mode?: 'compact' | 'detailed'
-  /** 是否显示刷新按钮 */
-  showRefresh?: boolean
-  /** 自动刷新间隔（毫秒），0 表示不自动刷新 */
-  autoRefresh?: number
-  /** 自定义样式类名 */
-  customClass?: string
-}
-
-/**
- * 组件事件定义
- */
-interface Emits {
-  /** 设备信息更新事件 */
-  (e: 'update', deviceInfo: DeviceInfo): void
-  /** 刷新事件 */
-  (e: 'refresh'): void
-  /** 错误事件 */
-  (e: 'error', error: string): void
-}
-
-// 定义 props 和 emits
-const props = withDefaults(defineProps<Props>(), {
-  mode: 'detailed',
-  showRefresh: true,
-  autoRefresh: 0,
-})
-
-const emit = defineEmits<Emits>()
-
-// 使用设备检测 composable
-const { deviceInfo, refresh: refreshDevice } = useDevice()
-// 兼容测试环境中传入的伪 ref（仅包含 value 字段）
-const info = computed<DeviceInfo | null>(() => {
-  const v: any = deviceInfo as any
-  if (v && typeof v === 'object' && 'value' in v) return v.value as DeviceInfo | null
-  return v as DeviceInfo | null
-})
-
-// 组件状态（默认不加载，除非没有可用的设备信息或手动刷新）
-const isLoading = ref(false)
-const errorMessage = ref('')
-
-// 计算属性
-const hasError = computed(() => !!errorMessage.value)
-
-// 自动刷新定时器
-let autoRefreshTimer: number | null = null
-
-/**
- * 获取设备类型图标
- */
-function getDeviceIcon(type: DeviceType): string {
-  const icons = {
-    mobile: '📱',
-    tablet: '📱',
-    desktop: '💻',
-  }
-  return icons[type] || '❓'
-}
-
-/**
- * 获取设备类型文本
- */
-function getDeviceTypeText(type: DeviceType): string {
-  const texts = {
-    mobile: '移动设备',
-    tablet: '平板设备',
-    desktop: '桌面设备',
-  }
-  return texts[type] || '未知设备'
-}
-
-/**
- * 获取屏幕方向文本
- */
-function getOrientationText(orientation: Orientation): string {
-  const texts = {
-    portrait: '竖屏',
-    landscape: '横屏',
-  }
-  return texts[orientation] || '未知'
-}
-
-/**
- * 刷新设备信息
- */
-async function refresh() {
-  try {
-    isLoading.value = true
-    errorMessage.value = ''
-    
-    await Promise.resolve(refreshDevice())
-    
-    if (deviceInfo.value) {
-      emit('update', deviceInfo.value)
-    }
-    
-    emit('refresh')
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '刷新失败'
-    errorMessage.value = message
-    emit('error', message)
-  } finally {
-    isLoading.value = false
-  }
-}
-
-/**
- * 设置自动刷新
- */
-function setupAutoRefresh() {
-  if (props.autoRefresh > 0) {
-    autoRefreshTimer = window.setInterval(() => {
-      refresh()
-    }, props.autoRefresh)
-  }
-}
-
-/**
- * 清理自动刷新
- */
-function clearAutoRefresh() {
-  if (autoRefreshTimer) {
-    clearInterval(autoRefreshTimer)
-    autoRefreshTimer = null
-  }
-}
-
-// 生命周期
-onMounted(() => {
-  // 如果当前没有可用信息，显示加载占位
-  isLoading.value = !deviceInfo.value
-  setupAutoRefresh()
-})
-
-// 监听 props 变化
-watch(() => props.autoRefresh, (newValue, oldValue) => {
-  if (newValue !== oldValue) {
-    clearAutoRefresh()
-    setupAutoRefresh()
-  }
-})
-
-// 组件卸载时清理定时器
-onUnmounted(() => {
-  clearAutoRefresh()
-})
-
-// 为测试友好：暴露组合式状态，便于 @vue/test-utils 的 setData / 直接访问
-// 注意：defineExpose 仅暴露属性，不改变内部实现
-defineExpose({
-  isLoading,
-  errorMessage,
-})
-
-// 兼容某些测试工具对 setData 的实现：尝试在代理上定义同名属性（失败则忽略）
-const instance = getCurrentInstance()
-if (instance && instance.proxy) {
-  try {
-    Object.defineProperties(instance.proxy as any, {
-      isLoading: {
-        get: () => isLoading.value,
-        set: (v: boolean) => { isLoading.value = v },
-        configurable: true,
-        enumerable: true,
-      },
-      errorMessage: {
-        get: () => errorMessage.value,
-        set: (v: string) => { errorMessage.value = v },
-        configurable: true,
-        enumerable: true,
-      },
-    })
-  } catch {}
-}
-
-// 监听设备信息变化
-watch(() => deviceInfo.value, (newInfo) => {
-  // 根据设备信息是否可用自动切换加载状态
-  isLoading.value = !newInfo
-  if (newInfo) {
-    emit('update', newInfo)
-  }
-}, { deep: true })
-</script>
 
 <style scoped>
 .device-info {
@@ -531,7 +536,7 @@ watch(() => deviceInfo.value, (newInfo) => {
   .device-info__grid {
     grid-template-columns: 1fr;
   }
-  
+
   .device-info__header {
     flex-direction: column;
     align-items: flex-start;

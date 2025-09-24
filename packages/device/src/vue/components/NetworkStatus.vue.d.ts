@@ -14,10 +14,10 @@ interface NetworkStatusProps {
 
 interface NetworkStatusEmits {
   /** 网络状态变化事件 */
-  change: [networkInfo: NetworkInfo]
+  'change': [networkInfo: NetworkInfo]
   /** 连接状态变化事件 */
   'connection-change': [online: boolean]
 }
 
-declare const NetworkStatusComponent: DefineComponent<NetworkStatusProps, {}, any, {}, {}, {}, {}, NetworkStatusEmits>
+declare const NetworkStatusComponent: DefineComponent<NetworkStatusProps, Record<string, never>, any, Record<string, never>, Record<string, never>, Record<string, never>, Record<string, never>, NetworkStatusEmits>
 export default NetworkStatusComponent

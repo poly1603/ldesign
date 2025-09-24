@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { EventEmitter } from '../../src/core/EventEmitter'
 
 interface TestEvents {
@@ -9,7 +9,7 @@ interface TestEvents {
   [key: string]: unknown
 }
 
-describe('EventEmitter', () => {
+describe('eventEmitter', () => {
   let emitter: EventEmitter<TestEvents>
 
   beforeEach(() => {
@@ -53,7 +53,7 @@ describe('EventEmitter', () => {
       emitter.on('test', vi.fn()) // 第三个监听器应该触发警告
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Max listeners (2) exceeded for event: test')
+        expect.stringContaining('Max listeners (2) exceeded for event: test'),
       )
 
       consoleSpy.mockRestore()
@@ -120,7 +120,7 @@ describe('EventEmitter', () => {
 
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('Error in event listener for "test"'),
-        expect.any(Error)
+        expect.any(Error),
       )
       expect(normalListener).toHaveBeenCalledWith('hello')
 
@@ -140,14 +140,14 @@ describe('EventEmitter', () => {
 
       expect(errorHandler).toHaveBeenCalledWith(
         expect.any(Error),
-        'test'
+        'test',
       )
     })
 
     it('应该处理非 Error 对象的异常', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
       const errorListener = vi.fn(() => {
-        throw 'String error'
+        throw new Error('String error')
       })
 
       emitter.on('test', errorListener)
@@ -155,7 +155,7 @@ describe('EventEmitter', () => {
 
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('Error in event listener for "test"'),
-        expect.any(Error)
+        expect.any(Error),
       )
 
       consoleSpy.mockRestore()
@@ -248,7 +248,7 @@ describe('EventEmitter', () => {
       const listeners = Array.from({ length: 1000 }, () => vi.fn())
 
       // 添加大量监听器
-      listeners.forEach(listener => {
+      listeners.forEach((listener) => {
         emitter.on('test', listener)
       })
 
@@ -262,7 +262,7 @@ describe('EventEmitter', () => {
       expect(end - start).toBeLessThan(100) // 应该在 100ms 内完成
 
       // 所有监听器都应该被调用
-      listeners.forEach(listener => {
+      listeners.forEach((listener) => {
         expect(listener).toHaveBeenCalledWith('hello')
       })
     })

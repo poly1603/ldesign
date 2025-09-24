@@ -57,8 +57,8 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
 
   // 性能优化：缓存计算结果
   private cachedUserAgent?: string
-  private cachedOS?: { name: string; version: string }
-  private cachedBrowser?: { name: string; version: string }
+  private cachedOS?: { name: string, version: string }
+  private cachedBrowser?: { name: string, version: string }
   private lastDetectionTime = 0
   private readonly minDetectionInterval = 16 // 约60fps
 
@@ -254,7 +254,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
         this.moduleEventUnsubscribers.set(name, unsubs)
       }
     }
-    catch (e) {
+    catch {
       // 忽略桥接错误，不影响模块加载
     }
 
@@ -267,8 +267,11 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   async unloadModule(name: string): Promise<void> {
     const unsubs = this.moduleEventUnsubscribers.get(name)
     if (unsubs && unsubs.length) {
-      unsubs.forEach(fn => {
-        try { fn() } catch {}
+      unsubs.forEach((fn) => {
+        try {
+          fn()
+        }
+        catch {}
       })
       this.moduleEventUnsubscribers.delete(name)
     }
@@ -303,8 +306,11 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
 
     // 先清理模块事件桥接
     this.moduleEventUnsubscribers.forEach((unsubs) => {
-      unsubs.forEach(fn => {
-        try { fn() } catch {}
+      unsubs.forEach((fn) => {
+        try {
+          fn()
+        }
+        catch {}
       })
     })
     this.moduleEventUnsubscribers.clear()
@@ -330,8 +336,8 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
 
     // 计算平均检测时间（使用移动平均）
     const alpha = 0.1 // 平滑因子
-    this.performanceMetrics.averageDetectionTime =
-      this.performanceMetrics.averageDetectionTime * (1 - alpha) + detectionTime * alpha
+    this.performanceMetrics.averageDetectionTime
+      = this.performanceMetrics.averageDetectionTime * (1 - alpha) + detectionTime * alpha
   }
 
   /**
@@ -413,7 +419,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
 
       const pixelRatio = getPixelRatio()
       const touchDevice = isTouchDevice()
-      
+
       const deviceInfo: DeviceInfo = {
         type: getDeviceTypeByWidth(width, this.options.breakpoints),
         orientation: getScreenOrientation(),
@@ -460,7 +466,8 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
       const canvas = document.createElement('canvas')
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
       return !!gl
-    } catch (e) {
+    }
+    catch {
       return false
     }
   }
@@ -522,7 +529,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
         this.currentDeviceInfo = newDeviceInfo
 
         // 批量触发事件以提高性能
-        const events: Array<{ event: keyof DeviceDetectorEvents; data: any }> = []
+        const events: Array<{ event: keyof DeviceDetectorEvents, data: any }> = []
 
         // 检查设备类型是否发生变化
         if (oldDeviceInfo.type !== newDeviceInfo.type) {

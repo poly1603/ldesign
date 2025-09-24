@@ -163,13 +163,13 @@ export type EventListener<T = any> = (data: T) => void
 export interface DeviceDetectorEvents extends Record<string, unknown> {
   deviceChange: DeviceInfo
   orientationChange: Orientation
-  resize: { width: number; height: number }
+  resize: { width: number, height: number }
   networkChange: NetworkInfo
   batteryChange: BatteryInfo
   /** 地理位置变化（来自 geolocation 模块的桥接事件） */
   positionChange: GeolocationInfo
   /** 检测错误事件（内部错误过多时触发） */
-  error: { message: string; count: number; lastError: unknown }
+  error: { message: string, count: number, lastError: unknown }
 }
 
 /**
@@ -274,7 +274,7 @@ export interface DevicePluginOptions extends DeviceDetectorOptions {
 /**
  * 屏幕方向锁定类型
  */
-export type OrientationLockType = 
+export type OrientationLockType =
   | 'any'
   | 'natural'
   | 'landscape'

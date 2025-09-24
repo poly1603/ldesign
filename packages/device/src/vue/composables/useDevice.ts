@@ -3,11 +3,11 @@ import type {
   DeviceDetectorOptions,
   DeviceInfo,
   DeviceType,
-  Orientation,
-  UseDeviceReturn,
   NetworkInfo,
   NetworkModule,
   NetworkType,
+  Orientation,
+  UseDeviceReturn,
 } from '../../types'
 import { computed, onMounted, onUnmounted, readonly, ref } from 'vue'
 import { DeviceDetector } from '../../core/DeviceDetector'

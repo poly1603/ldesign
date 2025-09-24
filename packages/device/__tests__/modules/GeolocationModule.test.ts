@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { GeolocationModule } from '../../src/modules/GeolocationModule'
 
-describe('GeolocationModule', () => {
+describe('geolocationModule', () => {
   let geolocationModule: GeolocationModule
   let mockGeolocation: any
 
@@ -132,7 +132,7 @@ describe('GeolocationModule', () => {
       expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledWith(
         expect.any(Function),
         expect.any(Function),
-        options
+        options,
       )
     })
   })

@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BatteryModule } from '../../src/modules/BatteryModule'
 
-describe('BatteryModule', () => {
+describe('batteryModule', () => {
   let batteryModule: BatteryModule
   let mockBattery: any
 
@@ -98,19 +98,19 @@ describe('BatteryModule', () => {
     it('应该监听电池状态变化事件', () => {
       expect(mockBattery.addEventListener).toHaveBeenCalledWith(
         'levelchange',
-        expect.any(Function)
+        expect.any(Function),
       )
       expect(mockBattery.addEventListener).toHaveBeenCalledWith(
         'chargingchange',
-        expect.any(Function)
+        expect.any(Function),
       )
       expect(mockBattery.addEventListener).toHaveBeenCalledWith(
         'chargingtimechange',
-        expect.any(Function)
+        expect.any(Function),
       )
       expect(mockBattery.addEventListener).toHaveBeenCalledWith(
         'dischargingtimechange',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
 
@@ -139,19 +139,19 @@ describe('BatteryModule', () => {
 
       expect(mockBattery.removeEventListener).toHaveBeenCalledWith(
         'levelchange',
-        expect.any(Function)
+        expect.any(Function),
       )
       expect(mockBattery.removeEventListener).toHaveBeenCalledWith(
         'chargingchange',
-        expect.any(Function)
+        expect.any(Function),
       )
       expect(mockBattery.removeEventListener).toHaveBeenCalledWith(
         'chargingtimechange',
-        expect.any(Function)
+        expect.any(Function),
       )
       expect(mockBattery.removeEventListener).toHaveBeenCalledWith(
         'dischargingtimechange',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
 

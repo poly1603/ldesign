@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
 import DeviceInfo from '../../../src/vue/components/DeviceInfo.vue'
 
 // Mock useDevice composable
@@ -38,7 +38,7 @@ vi.mock('../../../src/vue/composables/useDevice', () => ({
   useDevice: vi.fn(() => mockUseDevice),
 }))
 
-describe('DeviceInfo 组件', () => {
+describe('deviceInfo 组件', () => {
   let wrapper: any
 
   beforeEach(() => {
@@ -66,16 +66,16 @@ describe('DeviceInfo 组件', () => {
 
       // 检查设备类型
       expect(wrapper.text()).toContain('桌面设备')
-      
+
       // 检查屏幕信息
       expect(wrapper.text()).toContain('1920×1080')
-      
+
       // 检查浏览器信息
       expect(wrapper.text()).toContain('Chrome 120.0.0.0')
-      
+
       // 检查操作系统信息
       expect(wrapper.text()).toContain('Windows 10')
-      
+
       // 检查触摸支持
       expect(wrapper.text()).toContain('不支持')
     })
@@ -92,7 +92,7 @@ describe('DeviceInfo 组件', () => {
       // 紧凑模式应该包含基本信息
       expect(wrapper.text()).toContain('桌面设备')
       expect(wrapper.text()).toContain('1920×1080')
-      
+
       // 但不应该包含详细信息的标题
       expect(wrapper.text()).not.toContain('基本信息')
       expect(wrapper.text()).not.toContain('屏幕信息')
@@ -158,7 +158,7 @@ describe('DeviceInfo 组件', () => {
       expect(wrapper.text()).toContain('375×667')
       expect(wrapper.text()).toContain('Safari 17.0')
       expect(wrapper.text()).toContain('iOS 17.2.1')
-      
+
       // 移动设备应该显示手机图标
       expect(wrapper.text()).toContain('📱')
     })
@@ -340,7 +340,7 @@ describe('DeviceInfo 组件', () => {
     })
   })
 
-  describe('CSS 类名', () => {
+  describe('cSS 类名', () => {
     it('应该应用正确的 CSS 类名', async () => {
       // 确保mock返回正确的设备信息
       mockUseDevice.deviceInfo.value = { ...mockDeviceInfo, type: 'desktop' }

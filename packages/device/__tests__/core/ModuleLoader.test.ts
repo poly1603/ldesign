@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ModuleLoader } from '../../src/core/ModuleLoader'
 
 // 模拟模块
@@ -24,7 +24,7 @@ vi.mock('../../src/modules/GeolocationModule', () => ({
   GeolocationModule: vi.fn(() => ({ ...mockModule })),
 }))
 
-describe('ModuleLoader', () => {
+describe('moduleLoader', () => {
   let moduleLoader: ModuleLoader
 
   beforeEach(() => {
@@ -87,7 +87,7 @@ describe('ModuleLoader', () => {
 
     it('应该抛出未知模块错误', async () => {
       await expect(
-        moduleLoader.loadModuleInstance('unknown' as any)
+        moduleLoader.loadModuleInstance('unknown' as any),
       ).rejects.toThrow('Unknown module: unknown')
     })
   })
@@ -113,7 +113,7 @@ describe('ModuleLoader', () => {
 
     it('应该处理卸载不存在的模块', async () => {
       await expect(
-        moduleLoader.unloadModule('nonexistent')
+        moduleLoader.unloadModule('nonexistent'),
       ).resolves.not.toThrow()
     })
 
@@ -168,7 +168,7 @@ describe('ModuleLoader', () => {
       mockModule.init.mockRejectedValue(new Error('Init failed'))
 
       await expect(
-        moduleLoader.loadModuleInstance('network')
+        moduleLoader.loadModuleInstance('network'),
       ).rejects.toThrow('Failed to load module "network" after 3 retries')
     })
 
@@ -193,7 +193,7 @@ describe('ModuleLoader', () => {
 
       // 应该不抛出错误
       await expect(
-        moduleLoader.unloadModule('network')
+        moduleLoader.unloadModule('network'),
       ).resolves.not.toThrow()
     })
   })

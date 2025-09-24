@@ -53,7 +53,7 @@ export interface MediaModuleEvents {
 
 /**
  * 媒体设备检测模块
- * 
+ *
  * 提供摄像头、麦克风、扬声器等媒体设备的检测功能
  */
 export class MediaModule extends EventEmitter<Record<string, unknown>> implements DeviceModule {
@@ -71,18 +71,20 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
    * 初始化模块
    */
   async init(): Promise<void> {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     try {
       // 检测媒体设备
       await this.detectMediaDevices()
-      
+
       // 设置设备变化监听
       this.setupDeviceChangeListener()
-      
+
       // 开始权限状态监控
       this.startPermissionMonitoring()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Media devices detection failed:', error)
     }
   }
@@ -106,9 +108,8 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
    * 检查是否支持媒体设备 API
    */
   isSupported(): boolean {
-    return safeNavigatorAccess(nav => 
-      'mediaDevices' in nav && 'enumerateDevices' in nav.mediaDevices
-    , false)
+    return safeNavigatorAccess(nav =>
+      'mediaDevices' in nav && 'enumerateDevices' in nav.mediaDevices, false)
   }
 
   /**
@@ -157,22 +158,24 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
    * 请求摄像头权限
    */
   async requestCameraPermission(): Promise<boolean> {
-    if (!this.isSupported()) return false
+    if (!this.isSupported())
+      return false
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
       // 立即停止流以释放摄像头
       stream.getTracks().forEach(track => track.stop())
-      
+
       // 更新权限状态
       this.mediaInfo.cameraPermission = 'granted'
       this.emit('permissionChange', { type: 'camera', state: 'granted' })
-      
+
       // 重新检测设备（权限授予后可能有新设备可见）
       await this.detectMediaDevices()
-      
+
       return true
-    } catch (error) {
+    }
+    catch {
       this.mediaInfo.cameraPermission = 'denied'
       this.emit('permissionChange', { type: 'camera', state: 'denied' })
       return false
@@ -183,22 +186,24 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
    * 请求麦克风权限
    */
   async requestMicrophonePermission(): Promise<boolean> {
-    if (!this.isSupported()) return false
+    if (!this.isSupported())
+      return false
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       // 立即停止流以释放麦克风
       stream.getTracks().forEach(track => track.stop())
-      
+
       // 更新权限状态
       this.mediaInfo.microphonePermission = 'granted'
       this.emit('permissionChange', { type: 'microphone', state: 'granted' })
-      
+
       // 重新检测设备
       await this.detectMediaDevices()
-      
+
       return true
-    } catch (error) {
+    }
+    catch {
       this.mediaInfo.microphonePermission = 'denied'
       this.emit('permissionChange', { type: 'microphone', state: 'denied' })
       return false
@@ -233,10 +238,10 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
 
     try {
       this.mediaInfo.supported = true
-      
+
       // 获取设备列表
       const devices = await navigator.mediaDevices.enumerateDevices()
-      
+
       // 分类设备
       const cameras: MediaDeviceItem[] = []
       const microphones: MediaDeviceItem[] = []
@@ -279,7 +284,8 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
 
       // 触发设备变化事件
       this.emit('deviceChange', this.mediaInfo)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to enumerate media devices:', error)
     }
   }
@@ -288,7 +294,8 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
    * 检查权限状态
    */
   private async checkPermissions(): Promise<void> {
-    if (!('permissions' in navigator)) return
+    if (!('permissions' in navigator))
+      return
 
     try {
       // 检查摄像头权限
@@ -300,7 +307,8 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
         this.mediaInfo.cameraPermission = cameraPermission.state
         this.emit('permissionChange', { type: 'camera', state: cameraPermission.state })
       })
-    } catch (error) {
+    }
+    catch {
       // 权限 API 可能不支持 camera
     }
 
@@ -314,7 +322,8 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
         this.mediaInfo.microphonePermission = microphonePermission.state
         this.emit('permissionChange', { type: 'microphone', state: microphonePermission.state })
       })
-    } catch (error) {
+    }
+    catch {
       // 权限 API 可能不支持 microphone
     }
   }
@@ -323,7 +332,8 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
    * 设置设备变化监听器
    */
   private setupDeviceChangeListener(): void {
-    if (!this.isSupported()) return
+    if (!this.isSupported())
+      return
 
     this.deviceChangeHandler = async () => {
       await this.detectMediaDevices()
@@ -336,7 +346,8 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
    * 移除设备变化监听器
    */
   private removeDeviceChangeListener(): void {
-    if (!this.isSupported() || !this.deviceChangeHandler) return
+    if (!this.isSupported() || !this.deviceChangeHandler)
+      return
 
     navigator.mediaDevices.removeEventListener('devicechange', this.deviceChangeHandler)
     this.deviceChangeHandler = undefined
@@ -366,22 +377,24 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
    * 测试摄像头
    */
   async testCamera(constraints?: MediaTrackConstraints): Promise<boolean> {
-    if (!this.isSupported()) return false
+    if (!this.isSupported())
+      return false
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: constraints || true 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: constraints || true,
       })
-      
+
       // 检查是否成功获取视频轨道
       const videoTracks = stream.getVideoTracks()
       const success = videoTracks.length > 0
-      
+
       // 停止所有轨道
       stream.getTracks().forEach(track => track.stop())
-      
+
       return success
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Camera test failed:', error)
       return false
     }
@@ -391,22 +404,24 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
    * 测试麦克风
    */
   async testMicrophone(constraints?: MediaTrackConstraints): Promise<boolean> {
-    if (!this.isSupported()) return false
+    if (!this.isSupported())
+      return false
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: constraints || true 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: constraints || true,
       })
-      
+
       // 检查是否成功获取音频轨道
       const audioTracks = stream.getAudioTracks()
       const success = audioTracks.length > 0
-      
+
       // 停止所有轨道
       stream.getTracks().forEach(track => track.stop())
-      
+
       return success
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Microphone test failed:', error)
       return false
     }
@@ -416,14 +431,16 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
    * 获取媒体流
    */
   async getMediaStream(constraints?: MediaStreamConstraints): Promise<MediaStream | null> {
-    if (!this.isSupported()) return null
+    if (!this.isSupported())
+      return null
 
     try {
       return await navigator.mediaDevices.getUserMedia(constraints || {
         video: true,
         audio: true,
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get media stream:', error)
       return null
     }
@@ -433,7 +450,8 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
    * 获取屏幕共享流
    */
   async getDisplayMedia(constraints?: MediaStreamConstraints): Promise<MediaStream | null> {
-    if (!this.isSupported()) return null
+    if (!this.isSupported())
+      return null
 
     // 检查是否支持屏幕共享
     if (!('getDisplayMedia' in navigator.mediaDevices)) {
@@ -446,7 +464,8 @@ export class MediaModule extends EventEmitter<Record<string, unknown>> implement
         video: true,
         audio: false,
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get display media:', error)
       return null
     }

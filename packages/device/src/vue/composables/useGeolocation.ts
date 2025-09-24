@@ -5,16 +5,16 @@ import { DeviceDetector } from '../../core/DeviceDetector'
 
 /**
  * 地理位置检测 Composition API
- * 
+ *
  * 提供设备地理位置获取、位置监听、精度控制等功能的响应式接口
- * 
+ *
  * @returns 地理位置相关的响应式数据和方法
- * 
+ *
  * @example
  * ```vue
  * <script setup>
  * import { useGeolocation } from '@ldesign/device/vue'
- * 
+ *
  * const {
  *   position,
  *   latitude,
@@ -29,7 +29,7 @@ import { DeviceDetector } from '../../core/DeviceDetector'
  *   startWatching,
  *   stopWatching
  * } = useGeolocation()
- * 
+ *
  * // 加载地理位置模块
  * onMounted(async () => {
  *   try {
@@ -42,7 +42,7 @@ import { DeviceDetector } from '../../core/DeviceDetector'
  *   }
  * })
  * </script>
- * 
+ *
  * <template>
  *   <div>
  *     <div v-if="!isSupported">
@@ -129,6 +129,25 @@ export function useGeolocation() {
   }
 
   /**
+   * 停止监听位置变化
+   */
+  const stopWatching = async () => {
+    if (!geolocationModule || !isWatching.value)
+      return
+
+    try {
+      if (geolocationModule && typeof geolocationModule.stopWatching === 'function') {
+        geolocationModule.stopWatching()
+        isWatching.value = false
+      }
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to stop watching position'
+      throw err
+    }
+  }
+
+  /**
    * 卸载地理位置模块
    */
   const unloadModule = async () => {
@@ -194,7 +213,8 @@ export function useGeolocation() {
       if (!geolocationModule) {
         await loadModule()
       }
-      if (isWatching.value) return
+      if (isWatching.value)
+        return
     }
 
     if (!isSupported.value) {
@@ -226,24 +246,6 @@ export function useGeolocation() {
   }
 
   /**
-   * 停止监听位置变化
-   */
-  const stopWatching = async () => {
-    if (!geolocationModule || !isWatching.value) return
-
-    try {
-      if (geolocationModule && typeof geolocationModule.stopWatching === 'function') {
-        geolocationModule.stopWatching()
-        isWatching.value = false
-      }
-    }
-    catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to stop watching position'
-      throw err
-    }
-  }
-
-  /**
    * 销毁地理位置检测器
    */
   const destroyGeolocation = async () => {
@@ -258,7 +260,8 @@ export function useGeolocation() {
   const hasPosition = computed(() => position.value !== null)
   const isHighAccuracy = computed(() => (accuracy.value ?? 0) < 100)
   const coordinates = computed(() => {
-    if (!latitude.value || !longitude.value) return null
+    if (!latitude.value || !longitude.value)
+      return null
     return {
       lat: latitude.value,
       lng: longitude.value,

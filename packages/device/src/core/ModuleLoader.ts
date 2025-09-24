@@ -1,4 +1,5 @@
 import type { DeviceModule, ModuleLoader as IModuleLoader } from '../types'
+import process from 'node:process'
 
 /**
  * 高性能模块加载器实现

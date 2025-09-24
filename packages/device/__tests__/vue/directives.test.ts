@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, nextTick } from 'vue'
 import { vDevice } from '../../src/vue/directives/vDevice'
 
@@ -28,7 +28,7 @@ vi.mock('../../src/core/DeviceDetector', () => {
   }
 })
 
-describe('Vue 指令', () => {
+describe('vue 指令', () => {
   let mockDetector: any
 
   beforeEach(async () => {
@@ -195,7 +195,7 @@ describe('Vue 指令', () => {
       // 应该移除事件监听器
       expect(mockDetector.off).toHaveBeenCalledWith(
         'deviceChange',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
 

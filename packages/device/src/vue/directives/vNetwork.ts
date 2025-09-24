@@ -22,7 +22,7 @@ let globalDetector: DeviceDetector | null = null
 let elementCount = 0
 
 // 性能优化：批量更新队列
-let updateQueue: Set<ElementWithNetworkData> = new Set()
+const updateQueue: Set<ElementWithNetworkData> = new Set()
 let isUpdateScheduled = false
 
 /**
@@ -35,7 +35,7 @@ function getGlobalDetector(): DeviceDetector {
     })
 
     // 初始化网络模块
-    globalDetector.loadModule('network').catch(error => {
+    globalDetector.loadModule('network').catch((error) => {
       console.warn('Failed to load network module:', error)
     })
   }
@@ -56,7 +56,7 @@ function scheduleUpdate(): void {
     updateQueue.clear()
     isUpdateScheduled = false
 
-    elementsToUpdate.forEach(async element => {
+    elementsToUpdate.forEach(async (element) => {
       if (element.isConnected && element.__directiveBinding) {
         const detector = getGlobalDetector()
         try {
@@ -65,7 +65,8 @@ function scheduleUpdate(): void {
             const networkInfo = networkModule.getData()
             updateElementVisibility(element, element.__directiveBinding, networkInfo)
           }
-        } catch (error) {
+        }
+        catch (error) {
           console.warn('Failed to get network info:', error)
         }
       }
@@ -184,25 +185,25 @@ function updateElementVisibility(
 
 /**
  * v-network 指令实现
- * 
+ *
  * 根据网络状态控制元素的显示和隐藏
- * 
+ *
  * @example
  * ```vue
  * <!-- 只在在线时显示 -->
  * <div v-network="'online'">在线内容</div>
- * 
+ *
  * <!-- 只在离线时显示 -->
  * <div v-network="'offline'">离线提示</div>
- * 
+ *
  * <!-- 带回调函数 -->
- * <div v-network="{ 
- *   status: 'online', 
- *   callback: (networkInfo) => console.log('网络状态:', networkInfo) 
+ * <div v-network="{
+ *   status: 'online',
+ *   callback: (networkInfo) => console.log('网络状态:', networkInfo)
  * }">
  *   在线内容
  * </div>
- * 
+ *
  * <!-- 反向匹配：除了在线都显示 -->
  * <div v-network="{ status: 'online', inverse: true }">
  *   离线或网络异常提示
@@ -254,7 +255,8 @@ export const vNetwork: Directive<HTMLElement, NetworkStatus | NetworkStatus[] | 
         elementWithData.__deviceChangeHandler = handleDeviceChange
         elementWithData.__deviceDetector = detector
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to initialize network directive:', error)
     }
   },
@@ -267,14 +269,14 @@ export const vNetwork: Directive<HTMLElement, NetworkStatus | NetworkStatus[] | 
     elementWithData.__directiveBinding = binding
 
     if (detector) {
-      detector.loadModule('network').then(networkModule => {
+      detector.loadModule('network').then((networkModule) => {
         if (networkModule && typeof networkModule.getData === 'function') {
           const networkInfo = networkModule.getData() as NetworkInfo
           if (networkInfo) {
             updateElementVisibility(elementWithData, binding, networkInfo)
           }
         }
-      }).catch(error => {
+      }).catch((error) => {
         console.warn('Failed to update network directive:', error)
       })
     }
@@ -297,7 +299,7 @@ export const vNetwork: Directive<HTMLElement, NetworkStatus | NetworkStatus[] | 
         detector.off('deviceChange', deviceHandler)
       }
       if (networkHandler) {
-        detector.loadModule<import('../../types').NetworkModule>('network').then(networkModule => {
+        detector.loadModule<import('../../types').NetworkModule>('network').then((networkModule) => {
           if (networkModule && typeof (networkModule as any).off === 'function') {
             (networkModule as any).off('networkChange', networkHandler)
           }
@@ -322,9 +324,14 @@ export const vNetwork: Directive<HTMLElement, NetworkStatus | NetworkStatus[] | 
     }
     el.removeAttribute('hidden')
     el.classList.remove(
-      'network-visible', 'network-hidden', 
-      'network-online', 'network-offline',
-      'network-wifi', 'network-cellular', 'network-ethernet', 'network-unknown'
+      'network-visible',
+      'network-hidden',
+      'network-online',
+      'network-offline',
+      'network-wifi',
+      'network-cellular',
+      'network-ethernet',
+      'network-unknown',
     )
 
     // 如果没有元素使用检测器了，清理全局检测器
@@ -337,7 +344,7 @@ export const vNetwork: Directive<HTMLElement, NetworkStatus | NetworkStatus[] | 
 
 /**
  * 在线状态指令
- * 
+ *
  * @example
  * ```vue
  * <div v-network-online>在线时显示</div>
@@ -371,7 +378,7 @@ export const vNetworkOnline: Directive<HTMLElement> = {
 
 /**
  * 离线状态指令
- * 
+ *
  * @example
  * ```vue
  * <div v-network-offline>离线时显示</div>
@@ -405,7 +412,7 @@ export const vNetworkOffline: Directive<HTMLElement> = {
 
 /**
  * 慢速网络指令（基于网络类型和速度判断）
- * 
+ *
  * @example
  * ```vue
  * <div v-network-slow>网络较慢时显示的提示</div>

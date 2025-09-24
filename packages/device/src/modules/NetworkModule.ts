@@ -4,8 +4,8 @@ import type {
   NetworkStatus,
   NetworkType,
 } from '../types'
-import { safeNavigatorAccess } from '../utils'
 import { EventEmitter } from '../core/EventEmitter'
+import { safeNavigatorAccess } from '../utils'
 
 interface NetworkConnection {
   type?: string
@@ -95,7 +95,8 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
 
     info.downlink = typeof connection?.downlink === 'number' ? connection.downlink : 0
     info.rtt = typeof connection?.rtt === 'number' ? Math.max(0, connection.rtt) : 0
-    if (typeof connection?.saveData === 'boolean') info.saveData = connection.saveData
+    if (typeof connection?.saveData === 'boolean')
+      info.saveData = connection.saveData
 
     return info
   }
@@ -184,18 +185,21 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
     if (connection) {
       if (typeof connection.downlink === 'number') {
         info.downlink = connection.downlink
-      } else {
+      }
+      else {
         info.downlink = 0
       }
       if (typeof connection.rtt === 'number') {
         info.rtt = Math.max(0, connection.rtt)
-      } else {
+      }
+      else {
         info.rtt = 0
       }
       if (typeof connection.saveData === 'boolean') {
         info.saveData = connection.saveData
       }
-    } else {
+    }
+    else {
       // 无连接对象时的默认值
       info.downlink = 0
       info.rtt = 0
@@ -233,14 +237,14 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
     const newInfo = this.detectNetworkInfo()
 
     // 检查是否有变化
-    const hasChanged =
-      oldInfo.online !== newInfo.online ||
-      oldInfo.status !== newInfo.status ||
-      oldInfo.type !== newInfo.type ||
-      oldInfo.effectiveType !== newInfo.effectiveType ||
-      oldInfo.downlink !== newInfo.downlink ||
-      oldInfo.rtt !== newInfo.rtt ||
-      oldInfo.saveData !== newInfo.saveData
+    const hasChanged
+      = oldInfo.online !== newInfo.online
+        || oldInfo.status !== newInfo.status
+        || oldInfo.type !== newInfo.type
+        || oldInfo.effectiveType !== newInfo.effectiveType
+        || oldInfo.downlink !== newInfo.downlink
+        || oldInfo.rtt !== newInfo.rtt
+        || oldInfo.saveData !== newInfo.saveData
 
     this.networkInfo = newInfo
 

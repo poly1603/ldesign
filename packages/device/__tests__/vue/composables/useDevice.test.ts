@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
 import { useDevice } from '../../../src/vue/composables/useDevice'
 
 // Mock DeviceDetector
@@ -84,7 +84,7 @@ describe('useDevice', () => {
   it('应该正确处理移动设备', async () => {
     const { DeviceDetector } = await import('../../../src/core/DeviceDetector')
     const mockDetector = new DeviceDetector()
-    
+
     // 模拟移动设备信息
     vi.mocked(mockDetector.getDeviceInfo).mockReturnValue({
       type: 'mobile',
@@ -141,7 +141,7 @@ describe('useDevice', () => {
   it('应该正确处理平板设备', async () => {
     const { DeviceDetector } = await import('../../../src/core/DeviceDetector')
     const mockDetector = new DeviceDetector()
-    
+
     // 模拟平板设备信息
     vi.mocked(mockDetector.getDeviceInfo).mockReturnValue({
       type: 'tablet',
@@ -283,7 +283,7 @@ describe('useDevice', () => {
 
   it('应该正确处理错误情况', async () => {
     const { DeviceDetector } = await import('../../../src/core/DeviceDetector')
-    
+
     // 模拟构造函数抛出错误
     vi.mocked(DeviceDetector).mockImplementation(() => {
       throw new Error('Device detection failed')
@@ -316,11 +316,11 @@ describe('useDevice', () => {
     const {
       deviceType,
       orientation,
-      deviceInfo,
+      deviceInfo: _deviceInfo,
       isMobile,
-      isTablet,
-      isDesktop,
-      isTouchDevice,
+      isTablet: _isTablet,
+      isDesktop: _isDesktop,
+      isTouchDevice: _isTouchDevice,
     } = wrapper.vm
 
     // 验证返回的引用是只读的

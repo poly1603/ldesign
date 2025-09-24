@@ -31,18 +31,18 @@ const DEFAULT_BREAKPOINTS: BreakpointConfig = {
 
 /**
  * 响应式断点管理 Composition API
- * 
+ *
  * 提供基于屏幕宽度的响应式断点检测和管理功能
- * 
+ *
  * @param breakpoints 自定义断点配置
  * @param options 设备检测器配置选项
  * @returns 断点相关的响应式数据和方法
- * 
+ *
  * @example
  * ```vue
  * <script setup>
  * import { useBreakpoints } from '@ldesign/device/vue'
- * 
+ *
  * const {
  *   current,
  *   width,
@@ -61,23 +61,23 @@ const DEFAULT_BREAKPOINTS: BreakpointConfig = {
  *   tablet: 1024,
  *   desktop: 1200
  * })
- * 
+ *
  * // 监听断点变化
  * watch(current, (newBreakpoint) => {
  *   console.log('当前断点:', newBreakpoint)
  * })
  * </script>
- * 
+ *
  * <template>
  *   <div>
  *     <p>当前断点: {{ current }}</p>
  *     <p>屏幕宽度: {{ width }}px</p>
  *     <p>屏幕高度: {{ height }}px</p>
- *     
+ *
  *     <div v-if="isMobile">移动端布局</div>
  *     <div v-else-if="isTablet">平板布局</div>
  *     <div v-else-if="isDesktop">桌面布局</div>
- *     
+ *
  *     <div v-if="greaterThan('tablet')">大于平板尺寸</div>
  *     <div v-if="between('tablet', 'desktop')">平板到桌面之间</div>
  *   </div>
@@ -105,10 +105,14 @@ export function useBreakpoints(
    * 根据宽度确定当前断点
    */
   const getCurrentBreakpoint = (screenWidth: number): keyof BreakpointConfig => {
-    if (config.xxl && screenWidth >= config.xxl) return 'xxl'
-    if (config.xl && screenWidth >= config.xl) return 'xl'
-    if (screenWidth >= config.desktop) return 'desktop'
-    if (screenWidth >= config.tablet) return 'tablet'
+    if (config.xxl && screenWidth >= config.xxl)
+      return 'xxl'
+    if (config.xl && screenWidth >= config.xl)
+      return 'xl'
+    if (screenWidth >= config.desktop)
+      return 'desktop'
+    if (screenWidth >= config.tablet)
+      return 'tablet'
     return 'mobile'
   }
 
@@ -141,18 +145,18 @@ export function useBreakpoints(
 
   // 计算属性 - 屏幕尺寸类别
   const isSmallScreen = readonly(computed(() => width.value < config.tablet))
-  const isMediumScreen = readonly(computed(() => 
-    width.value >= config.tablet && width.value < config.desktop
+  const isMediumScreen = readonly(computed(() =>
+    width.value >= config.tablet && width.value < config.desktop,
   ))
   const isLargeScreen = readonly(computed(() => width.value >= config.desktop))
 
   // 计算属性 - 屏幕比例
-  const aspectRatio = readonly(computed(() => 
-    height.value > 0 ? width.value / height.value : 0
+  const aspectRatio = readonly(computed(() =>
+    height.value > 0 ? width.value / height.value : 0,
   ))
   const isWideScreen = readonly(computed(() => aspectRatio.value > 1.5))
-  const isSquareScreen = readonly(computed(() => 
-    Math.abs(aspectRatio.value - 1) < 0.2
+  const isSquareScreen = readonly(computed(() =>
+    Math.abs(aspectRatio.value - 1) < 0.2,
   ))
 
   /**
@@ -286,34 +290,34 @@ export function useBreakpoints(
     current: readonly(current),
     width: readonly(width),
     height: readonly(height),
-    
+
     // 断点检查
     isMobile,
     isTablet,
     isDesktop,
     isXL,
     isXXL,
-    
+
     // 屏幕尺寸类别
     isSmallScreen,
     isMediumScreen,
     isLargeScreen,
-    
+
     // 屏幕比例
     aspectRatio,
     isWideScreen,
     isSquareScreen,
-    
+
     // 断点比较方法
     greaterThan: readonly(computed(() => greaterThan)),
     lessThan: readonly(computed(() => lessThan)),
     between: readonly(computed(() => between)),
     matches: readonly(computed(() => matches)),
-    
+
     // 工具方法
     getBreakpointValue,
     refresh,
-    
+
     // 配置信息
     breakpoints: readonly(ref(config)),
   }

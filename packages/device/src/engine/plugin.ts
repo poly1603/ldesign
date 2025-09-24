@@ -1,13 +1,13 @@
 /**
  * Device Engine 插件
- * 
+ *
  * 将 Device 功能集成到 LDesign Engine 中，提供统一的设备检测管理体验
  */
 
-// import type { Plugin } from '@ldesign/engine/types' // 暂时注释，等待外部包安装
-import { DevicePlugin } from '../vue/plugin'
 import type { DevicePluginOptions } from '../types'
 import { DeviceDetector } from '../core/DeviceDetector'
+// import type { Plugin } from '@ldesign/engine/types' // 暂时注释，等待外部包安装
+import { DevicePlugin } from '../vue/plugin'
 
 /**
  * Device Engine 插件配置选项
@@ -59,7 +59,7 @@ const defaultConfig: Partial<DeviceEnginePluginOptions> = {
 
 /**
  * 创建全局 Device 实例
- * 
+ *
  * @param config 配置选项
  * @returns DeviceDetector 实例
  */
@@ -72,7 +72,7 @@ function createGlobalDeviceInstance(config: DeviceEnginePluginOptions): DeviceDe
   } = config
 
   if (debug) {
-    console.info('[Device Plugin] Creating global device instance with config:', {
+    console.warn('[Device Plugin] Creating global device instance with config:', {
       enableResize,
       enableOrientation,
       modules,
@@ -97,7 +97,7 @@ function createGlobalDeviceInstance(config: DeviceEnginePluginOptions): DeviceDe
   }
 
   if (debug) {
-    console.info('[Device Plugin] Global device instance created successfully')
+    console.warn('[Device Plugin] Global device instance created successfully')
   }
 
   return detector
@@ -105,16 +105,16 @@ function createGlobalDeviceInstance(config: DeviceEnginePluginOptions): DeviceDe
 
 /**
  * 创建 Device Engine 插件
- * 
+ *
  * 将 Device 功能集成到 LDesign Engine 中，提供统一的设备检测管理体验
- * 
+ *
  * @param options 插件配置选项
  * @returns Engine 插件实例
- * 
+ *
  * @example
  * ```typescript
  * import { createDeviceEnginePlugin } from '@ldesign/device'
- * 
+ *
  * const devicePlugin = createDeviceEnginePlugin({
  *   enableResize: true,
  *   enableOrientation: true,
@@ -122,7 +122,7 @@ function createGlobalDeviceInstance(config: DeviceEnginePluginOptions): DeviceDe
  *   globalPropertyName: '$device',
  *   enablePerformanceMonitoring: true
  * })
- * 
+ *
  * await engine.use(devicePlugin)
  * ```
  */
@@ -143,7 +143,7 @@ export function createDeviceEnginePlugin(
   } = config
 
   if (debug) {
-    console.log('[Device Plugin] createDeviceEnginePlugin called with options:', options)
+    console.warn('[Device Plugin] createDeviceEnginePlugin called with options:', options)
   }
 
   return {
@@ -154,14 +154,14 @@ export function createDeviceEnginePlugin(
     async install(context: any) {
       try {
         if (debug) {
-          console.log('[Device Plugin] install method called with context:', context)
+          console.warn('[Device Plugin] install method called with context:', context)
         }
 
         // 从上下文中获取引擎实例
         const engine = context.engine || context
 
         if (debug) {
-          console.log('[Device Plugin] engine instance:', !!engine)
+          console.warn('[Device Plugin] engine instance:', !!engine)
         }
 
         // 定义实际的安装逻辑
@@ -233,28 +233,31 @@ export function createDeviceEnginePlugin(
         if (engine.getApp()) {
           // Vue 应用已存在，直接安装
           await performInstall()
-        } else {
+        }
+        else {
           // Vue 应用尚未创建，等待创建事件
           await new Promise<void>((resolve, reject) => {
             engine.events?.once('app:created', async () => {
               try {
                 await performInstall()
                 resolve()
-              } catch (error) {
+              }
+              catch (error) {
                 engine.logger?.error(`[Device Plugin] Failed to install after app creation:`, error)
                 reject(error)
               }
             })
           })
         }
-
-      } catch (error) {
+      }
+      catch (error) {
         const errorMessage = `Failed to install ${name} plugin: ${error instanceof Error ? error.message : String(error)}`
 
         // 记录错误日志
         if (context.engine?.logger) {
           context.engine.logger.error(errorMessage, { error })
-        } else {
+        }
+        else {
           console.error(errorMessage)
         }
 
@@ -265,7 +268,7 @@ export function createDeviceEnginePlugin(
     async uninstall(context: any) {
       try {
         if (debug) {
-          console.log('[Device Plugin] uninstall method called')
+          console.warn('[Device Plugin] uninstall method called')
         }
 
         const engine = context.engine || context
@@ -287,13 +290,14 @@ export function createDeviceEnginePlugin(
         }
 
         engine.logger?.info(`[Device Plugin] ${name} plugin uninstalled successfully`)
-
-      } catch (error) {
+      }
+      catch (error) {
         const errorMessage = `Failed to uninstall ${name} plugin: ${error instanceof Error ? error.message : String(error)}`
 
         if (context.engine?.logger) {
           context.engine.logger.error(errorMessage, { error })
-        } else {
+        }
+        else {
           console.error(errorMessage)
         }
 

@@ -1,15 +1,15 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  debounce,
-  throttle,
-  MemoryCache,
-  memoize,
-  LazyLoader,
-  rafThrottle,
   BatchExecutor,
+  debounce,
+  LazyLoader,
+  memoize,
+  MemoryCache,
+  rafThrottle,
+  throttle,
 } from '../../src/utils/performance'
 
-describe('Performance Utils', () => {
+describe('performance Utils', () => {
   beforeEach(() => {
     vi.useFakeTimers()
   })
@@ -43,7 +43,7 @@ describe('Performance Utils', () => {
       vi.advanceTimersByTime(50)
       debouncedFn()
       vi.advanceTimersByTime(50)
-      
+
       expect(fn).not.toHaveBeenCalled()
 
       vi.advanceTimersByTime(50)
@@ -72,7 +72,7 @@ describe('Performance Utils', () => {
       debouncedFn()
       debouncedFn.cancel()
       vi.advanceTimersByTime(100)
-      
+
       expect(fn).not.toHaveBeenCalled()
     })
   })
@@ -122,19 +122,19 @@ describe('Performance Utils', () => {
 
       throttledFn()
       throttledFn.cancel()
-      
+
       expect(fn).toHaveBeenCalledTimes(1)
-      
+
       vi.advanceTimersByTime(100)
       throttledFn()
       expect(fn).toHaveBeenCalledTimes(2)
     })
   })
 
-  describe('MemoryCache', () => {
+  describe('memoryCache', () => {
     it('应该存储和获取值', () => {
       const cache = new MemoryCache()
-      
+
       cache.set('key1', 'value1')
       expect(cache.get('key1')).toBe('value1')
       expect(cache.has('key1')).toBe(true)
@@ -143,7 +143,7 @@ describe('Performance Utils', () => {
 
     it('应该支持 TTL', () => {
       const cache = new MemoryCache({ defaultTTL: 100 })
-      
+
       cache.set('key1', 'value1')
       expect(cache.get('key1')).toBe('value1')
 
@@ -156,11 +156,11 @@ describe('Performance Utils', () => {
 
     it('应该支持 LRU 淘汰', () => {
       const cache = new MemoryCache({ maxSize: 2 })
-      
+
       cache.set('key1', 'value1')
       cache.set('key2', 'value2')
       cache.set('key3', 'value3')
-      
+
       expect(cache.has('key1')).toBe(false)
       expect(cache.has('key2')).toBe(true)
       expect(cache.has('key3')).toBe(true)
@@ -168,15 +168,15 @@ describe('Performance Utils', () => {
 
     it('应该更新访问顺序', () => {
       const cache = new MemoryCache({ maxSize: 2 })
-      
+
       cache.set('key1', 'value1')
       cache.set('key2', 'value2')
-      
+
       // 访问 key1，使其成为最近使用的
       cache.get('key1')
-      
+
       cache.set('key3', 'value3')
-      
+
       expect(cache.has('key1')).toBe(true)
       expect(cache.has('key2')).toBe(false)
       expect(cache.has('key3')).toBe(true)
@@ -184,7 +184,7 @@ describe('Performance Utils', () => {
 
     it('应该支持删除', () => {
       const cache = new MemoryCache()
-      
+
       cache.set('key1', 'value1')
       expect(cache.delete('key1')).toBe(true)
       expect(cache.has('key1')).toBe(false)
@@ -193,11 +193,11 @@ describe('Performance Utils', () => {
 
     it('应该支持清空', () => {
       const cache = new MemoryCache()
-      
+
       cache.set('key1', 'value1')
       cache.set('key2', 'value2')
       cache.clear()
-      
+
       expect(cache.size).toBe(0)
       expect(cache.has('key1')).toBe(false)
       expect(cache.has('key2')).toBe(false)
@@ -205,14 +205,14 @@ describe('Performance Utils', () => {
 
     it('应该清理过期项', () => {
       const cache = new MemoryCache()
-      
+
       cache.set('key1', 'value1', 50)
       cache.set('key2', 'value2', 100)
       cache.set('key3', 'value3')
-      
+
       vi.advanceTimersByTime(75)
       cache.prune()
-      
+
       expect(cache.has('key1')).toBe(false)
       expect(cache.has('key2')).toBe(true)
       expect(cache.has('key3')).toBe(true)
@@ -220,10 +220,10 @@ describe('Performance Utils', () => {
 
     it('应该返回所有键', () => {
       const cache = new MemoryCache()
-      
+
       cache.set('key1', 'value1')
       cache.set('key2', 'value2')
-      
+
       const keys = cache.keys()
       expect(keys).toContain('key1')
       expect(keys).toContain('key2')
@@ -278,21 +278,21 @@ describe('Performance Utils', () => {
       memoizedFn(1)
       memoizedFn(2)
       memoizedFn(3)
-      
+
       expect(fn).toHaveBeenCalledTimes(3)
-      
+
       memoizedFn(1) // 应该重新计算，因为被淘汰了
       expect(fn).toHaveBeenCalledTimes(4)
     })
   })
 
-  describe('LazyLoader', () => {
+  describe('lazyLoader', () => {
     it('应该懒加载资源', async () => {
       const loader = new LazyLoader<string>()
       const mockLoader = vi.fn().mockResolvedValue('loaded resource')
-      
+
       loader.register('resource1', mockLoader)
-      
+
       const result = await loader.load('resource1')
       expect(result).toBe('loaded resource')
       expect(mockLoader).toHaveBeenCalledTimes(1)
@@ -301,12 +301,12 @@ describe('Performance Utils', () => {
     it('应该缓存已加载的资源', async () => {
       const loader = new LazyLoader<string>()
       const mockLoader = vi.fn().mockResolvedValue('loaded resource')
-      
+
       loader.register('resource1', mockLoader)
-      
+
       await loader.load('resource1')
       await loader.load('resource1')
-      
+
       expect(mockLoader).toHaveBeenCalledTimes(1)
     })
 
@@ -331,15 +331,15 @@ describe('Performance Utils', () => {
     it('应该检查加载状态', async () => {
       const loader = new LazyLoader<string>()
       const mockLoader = vi.fn().mockResolvedValue('loaded')
-      
+
       loader.register('resource1', mockLoader)
-      
+
       expect(loader.isLoaded('resource1')).toBe(false)
       expect(loader.isLoading('resource1')).toBe(false)
-      
+
       const loadPromise = loader.load('resource1')
       expect(loader.isLoading('resource1')).toBe(true)
-      
+
       await loadPromise
       expect(loader.isLoaded('resource1')).toBe(true)
       expect(loader.isLoading('resource1')).toBe(false)
@@ -347,13 +347,13 @@ describe('Performance Utils', () => {
 
     it('应该预加载多个资源', async () => {
       const loader = new LazyLoader<string>()
-      
+
       loader.register('resource1', vi.fn().mockResolvedValue('r1'))
       loader.register('resource2', vi.fn().mockResolvedValue('r2'))
       loader.register('resource3', vi.fn().mockResolvedValue('r3'))
-      
+
       await loader.preload(['resource1', 'resource2'])
-      
+
       expect(loader.isLoaded('resource1')).toBe(true)
       expect(loader.isLoaded('resource2')).toBe(true)
       expect(loader.isLoaded('resource3')).toBe(false)
@@ -362,17 +362,17 @@ describe('Performance Utils', () => {
     it('应该清除缓存', async () => {
       const loader = new LazyLoader<string>()
       const mockLoader = vi.fn().mockResolvedValue('loaded')
-      
+
       loader.register('resource1', mockLoader)
       loader.register('resource2', mockLoader)
-      
+
       await loader.load('resource1')
       await loader.load('resource2')
-      
+
       loader.clear('resource1')
       expect(loader.isLoaded('resource1')).toBe(false)
       expect(loader.isLoaded('resource2')).toBe(true)
-      
+
       loader.clear()
       expect(loader.isLoaded('resource2')).toBe(false)
     })
@@ -380,16 +380,16 @@ describe('Performance Utils', () => {
     it('应该处理加载错误', async () => {
       const loader = new LazyLoader<string>()
       const mockLoader = vi.fn().mockRejectedValue(new Error('Load failed'))
-      
+
       loader.register('resource1', mockLoader)
-      
+
       await expect(loader.load('resource1')).rejects.toThrow('Load failed')
       expect(loader.isLoaded('resource1')).toBe(false)
     })
 
     it('应该处理未注册的资源', async () => {
       const loader = new LazyLoader<string>()
-      
+
       await expect(loader.load('unknown')).rejects.toThrow('Loader for "unknown" not found')
     })
   })
@@ -398,7 +398,7 @@ describe('Performance Utils', () => {
     it('应该使用 requestAnimationFrame 节流', () => {
       const fn = vi.fn()
       const throttledFn = rafThrottle(fn)
-      
+
       // Mock requestAnimationFrame
       let rafCallback: FrameRequestCallback | null = null
       vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
@@ -409,14 +409,14 @@ describe('Performance Utils', () => {
       throttledFn('arg1')
       throttledFn('arg2')
       throttledFn('arg3')
-      
+
       expect(fn).not.toHaveBeenCalled()
-      
+
       // 执行 RAF 回调
       if (rafCallback) {
         rafCallback(0)
       }
-      
+
       expect(fn).toHaveBeenCalledTimes(1)
       expect(fn).toHaveBeenCalledWith('arg1')
     })
@@ -424,21 +424,21 @@ describe('Performance Utils', () => {
     it('应该支持取消', () => {
       const fn = vi.fn()
       const throttledFn = rafThrottle(fn)
-      
+
       const cancelSpy = vi.spyOn(window, 'cancelAnimationFrame')
       vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(1)
 
       throttledFn()
       throttledFn.cancel()
-      
+
       expect(cancelSpy).toHaveBeenCalledWith(1)
     })
   })
 
-  describe('BatchExecutor', () => {
+  describe('batchExecutor', () => {
     it('应该批量执行', async () => {
-      const executor = vi.fn().mockImplementation((batch: number[]) => 
-        batch.map(x => x * 2)
+      const executor = vi.fn().mockImplementation((batch: number[]) =>
+        batch.map(x => x * 2),
       )
       const batchExecutor = new BatchExecutor(executor, {
         maxBatchSize: 3,
@@ -457,8 +457,8 @@ describe('Performance Utils', () => {
     })
 
     it('应该在达到批大小时立即执行', async () => {
-      const executor = vi.fn().mockImplementation((batch: number[]) => 
-        batch.map(x => x * 2)
+      const executor = vi.fn().mockImplementation((batch: number[]) =>
+        batch.map(x => x * 2),
       )
       const batchExecutor = new BatchExecutor(executor, {
         maxBatchSize: 2,
@@ -467,19 +467,19 @@ describe('Performance Utils', () => {
 
       const promise1 = batchExecutor.add(1)
       const promise2 = batchExecutor.add(2)
-      
+
       // 不需要等待，应该立即执行
       const results = await Promise.all([promise1, promise2])
-      
+
       expect(results).toEqual([2, 4])
       expect(executor).toHaveBeenCalledTimes(1)
     })
 
     it('应该在等待时间后执行', async () => {
       vi.useRealTimers() // 使用真实计时器以便 Promise 能正确解析
-      
-      const executor = vi.fn().mockImplementation((batch: number[]) => 
-        batch.map(x => x * 2)
+
+      const executor = vi.fn().mockImplementation((batch: number[]) =>
+        batch.map(x => x * 2),
       )
       const batchExecutor = new BatchExecutor(executor, {
         maxBatchSize: 10,
@@ -487,9 +487,9 @@ describe('Performance Utils', () => {
       })
 
       const promise = batchExecutor.add(1)
-      
+
       await new Promise(resolve => setTimeout(resolve, 60))
-      
+
       const result = await promise
       expect(result).toBe(2)
       expect(executor).toHaveBeenCalledTimes(1)
@@ -497,8 +497,8 @@ describe('Performance Utils', () => {
     })
 
     it('应该支持强制执行', async () => {
-      const executor = vi.fn().mockImplementation((batch: number[]) => 
-        batch.map(x => x * 2)
+      const executor = vi.fn().mockImplementation((batch: number[]) =>
+        batch.map(x => x * 2),
       )
       const batchExecutor = new BatchExecutor(executor, {
         maxBatchSize: 10,
@@ -507,7 +507,7 @@ describe('Performance Utils', () => {
 
       const promise = batchExecutor.add(1)
       await batchExecutor.forceFlush()
-      
+
       const result = await promise
       expect(result).toBe(2)
       expect(executor).toHaveBeenCalledTimes(1)
@@ -521,7 +521,7 @@ describe('Performance Utils', () => {
 
       const promise1 = batchExecutor.add(1)
       const promise2 = batchExecutor.add(2)
-      
+
       await expect(promise1).rejects.toThrow('Execution failed')
       await expect(promise2).rejects.toThrow('Execution failed')
     })
