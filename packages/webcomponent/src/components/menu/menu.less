@@ -15,14 +15,20 @@
   display: block;
 
   &__list {
-    margin: 0;
-    padding: 0;
+    margin: 0 !important;
+    padding: 0 !important;
     list-style: none;
     display: block;
   }
-  &__list > li { list-style: none; }
 
-  &__node { position: relative; list-style: none; }
+  &__list>li {
+    list-style: none;
+  }
+
+  &__node {
+    position: relative;
+    list-style: none;
+  }
 
   &__item {
     display: flex;
@@ -30,6 +36,7 @@
     gap: 8px;
     padding: 0 var(--menu-padding-x);
     height: var(--menu-height);
+    width: 100%;
     border-radius: var(--menu-radius);
     color: var(--menu-color);
     white-space: nowrap;
@@ -37,18 +44,52 @@
     user-select: none;
     transition: background-color .15s ease, color .15s ease;
 
-    &:hover { background: var(--menu-bg-hover); }
+    &:hover {
+      background: var(--menu-bg-hover);
+    }
   }
 
-  &__item--disabled { cursor: not-allowed; opacity: .5; pointer-events: none; }
-  &__item--active { color: var(--menu-color-active); background: var(--menu-bg-active); }
+  &__item--disabled {
+    cursor: not-allowed;
+    opacity: .5;
+    pointer-events: none;
+  }
 
-  &__title { line-height: 1; display: inline-flex; align-items: center; }
-  &__icon { display: inline-flex; width: 20px; justify-content: center; }
-  &__icon--placeholder { opacity: 0; }
+  &__item--active {
+    color: var(--menu-color-active);
+    background: var(--menu-bg-active);
+  }
 
-  &__arrow { margin-left: auto; display: inline-flex; transition: transform .15s ease; }
-  &__node--open > .ldesign-menu__item .ldesign-menu__arrow { transform: rotate(90deg); }
+  &__title {
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  &__icon {
+    display: inline-flex;
+    width: 20px;
+    justify-content: center;
+  }
+
+  &__icon--placeholder {
+    opacity: 0;
+  }
+
+  /* 纵向行内展开时，给图标左边增加一点空间，视觉更均衡 */
+  &--vertical .ldesign-menu__icon {
+    margin-left: 8px;
+  }
+
+  &__arrow {
+    margin-left: auto;
+    display: inline-flex;
+    transition: transform .15s ease;
+  }
+
+  &__node--open>.ldesign-menu__item .ldesign-menu__arrow {
+    transform: rotate(90deg);
+  }
 
   &__inline-children {
     margin: 4px 0 0 0;
@@ -59,12 +100,74 @@
     will-change: height;
     transition: height var(--menu-collapse-duration) var(--menu-collapse-easing);
   }
-  &__inline-children > li { list-style: none; }
-  &__inline-children > li::marker { content: none; }
+
+  &__inline-children>li {
+    list-style: none;
+  }
+
+  &__inline-children>li::marker {
+    content: none;
+  }
 
   &__divider {
     height: 1px;
     margin: 6px 0;
     background: var(--ldesign-border-level-1-color, #e5e5e5);
+  }
+
+  // 弹出层中的列表（用于 flyout）
+  &__popup-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 160px;
+
+    .ldesign-menu__node {
+      display: block;
+    }
+
+    .ldesign-menu__item {
+      width: 100%;
+      height: 36px;
+      border-radius: 4px;
+    }
+
+    .ldesign-menu__arrow {
+      margin-left: auto;
+    }
+  }
+
+  // 内置 flyout（不依赖 popup）：每个 li 相对定位，子级 ul 绝对定位到右侧
+  &__node--fly {
+    position: relative;
+  }
+
+  &__fly-children {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 4px);
+    z-index: 1000;
+    margin: 0;
+    padding: 8px;
+    /* 四边一致 */
+    list-style: none;
+    min-width: 160px;
+    background: var(--ldesign-bg-color, #ffffff);
+    border: 1px solid var(--ldesign-border-color, #e5e7eb);
+    border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .1);
+  }
+
+  &__fly-children .ldesign-menu__item {
+    width: 100%;
+    height: 36px;
+    border-radius: 4px;
+    padding: 0 8px;
+    /* 与面板的 8px padding 共同形成左右一致的留白 */
+  }
+
+  /* flyout 面板内若条目带有图标，不需要额外的左外边距 */
+  &__fly-children .ldesign-menu__icon {
+    margin-left: 0;
   }
 }

@@ -37,6 +37,7 @@ Icon 图标组件
  - [ldesign-notification](../notification)
  - [ldesign-pagination](../pagination)
  - [ldesign-popconfirm](../popconfirm)
+ - [ldesign-select](../select)
  - [ldesign-switch](../switch)
 
 ### Graph
@@ -54,6 +55,7 @@ graph TD;
   ldesign-notification --> ldesign-icon
   ldesign-pagination --> ldesign-icon
   ldesign-popconfirm --> ldesign-icon
+  ldesign-select --> ldesign-icon
   ldesign-switch --> ldesign-icon
   style ldesign-icon fill:#f9f,stroke:#333,stroke-width:4px
 ```

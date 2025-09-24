@@ -4,6 +4,7 @@ Popup 弹出层组件（不覆盖触发元素）
 
 - 默认不会遮挡触发元素。
 - 通过 `offset-distance` 设置“触发元素到箭头尖端”的距离（默认 8px）。
+- 可选 `lock-on-scroll`：点击打开后滚动页面时，弹层保持打开时的视口位置，不随触发元素移动。
 
 ## 不遮挡触发元素与距离设置
 
@@ -59,8 +60,9 @@ Popup 弹出层组件
 | `disabled`       | `disabled`         | 是否禁用                                                                                                                            | `boolean`                                                                                                                                                            | `false`     |
 | `hideDelay`      | `hide-delay`       | 延迟隐藏时间（毫秒）                                                                                                                      | `number`                                                                                                                                                             | `0`         |
 | `interactive`    | `interactive`      | 是否允许在弹出层上进行交互（仅 hover 触发时有意义）                                                                                                   | `boolean`                                                                                                                                                            | `true`      |
+| `lockOnScroll`   | `lock-on-scroll`   | 滚动时是否锁定位置（不随滚动而重新定位）。 - 适用于 click 等场景：打开后滚动页面，弹层保持在打开时的视口位置。 - 仅影响滚动行为，仍会在窗口尺寸变化/元素尺寸变化时更新位置。                                   | `boolean`                                                                                                                                                            | `false`     |
 | `maxWidth`       | `max-width`        | 最大宽度                                                                                                                            | `number \| string`                                                                                                                                                   | `undefined` |
-| `offsetDistance` | `offset-distance`  | 与触发元素的距离（单位 px）。 当开启箭头时，该距离表示“触发元素到箭头尖端”的间隙。                                                                                    | `number`                                                                                                                                                             | `8`         |
+| `offsetDistance` | `offset-distance`  | 与触发元素的距离（单位 px）。 当开启箭头时，该距离表示“触发元素到箭头尖端”的间隙。                                                                                    | `number \| string`                                                                                                                                                   | `8`         |
 | `placement`      | `placement`        | 弹出层位置                                                                                                                           | `"bottom" \| "bottom-end" \| "bottom-start" \| "left" \| "left-end" \| "left-start" \| "right" \| "right-end" \| "right-start" \| "top" \| "top-end" \| "top-start"` | `'bottom'`  |
 | `popupRole`      | `popup-role`       | 内容区域的语义角色                                                                                                                       | `string`                                                                                                                                                             | `'dialog'`  |
 | `popupTitle`     | `popup-title`      | 弹出层标题                                                                                                                           | `string`                                                                                                                                                             | `undefined` |
@@ -86,6 +88,7 @@ Popup 弹出层组件
  - [ldesign-dropdown](../dropdown)
  - [ldesign-pagination](../pagination)
  - [ldesign-popconfirm](../popconfirm)
+ - [ldesign-select](../select)
  - [ldesign-tooltip](../tooltip)
 
 ### Graph
@@ -94,6 +97,7 @@ graph TD;
   ldesign-dropdown --> ldesign-popup
   ldesign-pagination --> ldesign-popup
   ldesign-popconfirm --> ldesign-popup
+  ldesign-select --> ldesign-popup
   ldesign-tooltip --> ldesign-popup
   style ldesign-popup fill:#f9f,stroke:#333,stroke-width:4px
 ```

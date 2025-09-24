@@ -8,22 +8,24 @@ import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
 import { DrawerPlacement } from "./components/drawer/drawer";
 import { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/dropdown/dropdown";
-import { MenuItem } from "./components/menu/menu";
+import { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
 import { MessageType } from "./components/message/message";
 import { ModalAnimation, ModalSize } from "./components/modal/modal";
 import { NotificationPlacement, NotificationType } from "./components/notification/notification";
 import { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
 import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
+import { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 export { ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
 export { DrawerPlacement } from "./components/drawer/drawer";
 export { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/dropdown/dropdown";
-export { MenuItem } from "./components/menu/menu";
+export { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
 export { MessageType } from "./components/message/message";
 export { ModalAnimation, ModalSize } from "./components/modal/modal";
 export { NotificationPlacement, NotificationType } from "./components/notification/notification";
 export { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
 export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
+export { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
 export namespace Components {
     /**
@@ -559,9 +561,19 @@ export namespace Components {
          */
         "requireTopIcon": boolean;
         /**
+          * 弹出子菜单的触发方式（仅在 flyout/mixed 生效）
+          * @default 'hover'
+         */
+        "submenuTrigger": SubmenuTrigger;
+        /**
           * 当前选中项（受控）
          */
         "value"?: string;
+        /**
+          * 垂直模式展开方式：inline（内嵌）、flyout（右侧弹出）、mixed（一级内嵌，其余弹出）
+          * @default 'inline'
+         */
+        "verticalExpand": VerticalExpand;
     }
     /**
      * Message 全局提示
@@ -1006,6 +1018,11 @@ export namespace Components {
          */
         "interactive": boolean;
         /**
+          * 滚动时是否锁定位置（不随滚动而重新定位）。 - 适用于 click 等场景：打开后滚动页面，弹层保持在打开时的视口位置。 - 仅影响滚动行为，仍会在窗口尺寸变化/元素尺寸变化时更新位置。
+          * @default false
+         */
+        "lockOnScroll": boolean;
+        /**
           * 最大宽度
          */
         "maxWidth"?: number | string;
@@ -1013,7 +1030,7 @@ export namespace Components {
           * 与触发元素的距离（单位 px）。 当开启箭头时，该距离表示“触发元素到箭头尖端”的间隙。
           * @default 8
          */
-        "offsetDistance": number;
+        "offsetDistance": number | string;
         /**
           * 弹出层位置
           * @default 'bottom'
@@ -1125,6 +1142,87 @@ export namespace Components {
           * 绑定值
          */
         "value"?: string | number;
+    }
+    /**
+     * Select 选择器
+     * 基于 <ldesign-popup> 实现，支持单选/多选。
+     */
+    interface LdesignSelect {
+        /**
+          * 是否显示箭头（默认不显示）
+          * @default false
+         */
+        "arrow": boolean;
+        /**
+          * 可清空
+          * @default false
+         */
+        "clearable": boolean;
+        /**
+          * 选中项后是否自动关闭（默认：单选 true，多选 false）
+         */
+        "closeOnSelect"?: boolean;
+        /**
+          * 默认值（非受控）
+         */
+        "defaultValue"?: string | string[];
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 列表最大高度（px）
+          * @default 240
+         */
+        "maxHeight": number;
+        /**
+          * 多选时最多展示的标签数量，超过后折叠为 +N
+         */
+        "maxTagCount"?: number;
+        /**
+          * 是否多选
+          * @default false
+         */
+        "multiple": boolean;
+        /**
+          * 选项列表（可传数组或 JSON 字符串）
+          * @default []
+         */
+        "options": string | SelectOption[];
+        /**
+          * 占位文案（无选中项时）
+          * @default '请选择'
+         */
+        "placeholder": string;
+        /**
+          * 出现位置（默认 bottom-start）
+          * @default 'bottom-start'
+         */
+        "placement": SelectPlacement;
+        /**
+          * 主题（浅色/深色），透传给 Popup
+          * @default 'light'
+         */
+        "theme": 'light' | 'dark';
+        /**
+          * 触发方式（Select 多数使用 click 或 manual）
+          * @default 'click'
+         */
+        "trigger": SelectTrigger;
+        /**
+          * 值（受控）。单选时为 string，多选时为 string[]
+         */
+        "value"?: string | string[];
+        /**
+          * 外部受控可见性（仅 trigger = 'manual' 生效）
+          * @default false
+         */
+        "visible": boolean;
+        /**
+          * 列表宽度（可选）
+         */
+        "width"?: number | string;
     }
     /**
      * Switch 开关组件
@@ -1302,6 +1400,10 @@ export interface LdesignRadioCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignRadioGroupCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignRadioGroupElement;
+}
+export interface LdesignSelectCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignSelectElement;
 }
 export interface LdesignSwitchCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -1685,6 +1787,28 @@ declare global {
         prototype: HTMLLdesignRadioGroupElement;
         new (): HTMLLdesignRadioGroupElement;
     };
+    interface HTMLLdesignSelectElementEventMap {
+        "ldesignChange": { value: string | string[] | undefined; options: SelectOption[] };
+        "ldesignVisibleChange": boolean;
+    }
+    /**
+     * Select 选择器
+     * 基于 <ldesign-popup> 实现，支持单选/多选。
+     */
+    interface HTMLLdesignSelectElement extends Components.LdesignSelect, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignSelectElementEventMap>(type: K, listener: (this: HTMLLdesignSelectElement, ev: LdesignSelectCustomEvent<HTMLLdesignSelectElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignSelectElementEventMap>(type: K, listener: (this: HTMLLdesignSelectElement, ev: LdesignSelectCustomEvent<HTMLLdesignSelectElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignSelectElement: {
+        prototype: HTMLLdesignSelectElement;
+        new (): HTMLLdesignSelectElement;
+    };
     interface HTMLLdesignSwitchElementEventMap {
         "ldesignChange": string | number | boolean;
     }
@@ -1736,6 +1860,7 @@ declare global {
         "ldesign-popup": HTMLLdesignPopupElement;
         "ldesign-radio": HTMLLdesignRadioElement;
         "ldesign-radio-group": HTMLLdesignRadioGroupElement;
+        "ldesign-select": HTMLLdesignSelectElement;
         "ldesign-switch": HTMLLdesignSwitchElement;
         "ldesign-tooltip": HTMLLdesignTooltipElement;
     }
@@ -2322,9 +2447,19 @@ declare namespace LocalJSX {
          */
         "requireTopIcon"?: boolean;
         /**
+          * 弹出子菜单的触发方式（仅在 flyout/mixed 生效）
+          * @default 'hover'
+         */
+        "submenuTrigger"?: SubmenuTrigger;
+        /**
           * 当前选中项（受控）
          */
         "value"?: string;
+        /**
+          * 垂直模式展开方式：inline（内嵌）、flyout（右侧弹出）、mixed（一级内嵌，其余弹出）
+          * @default 'inline'
+         */
+        "verticalExpand"?: VerticalExpand;
     }
     /**
      * Message 全局提示
@@ -2777,6 +2912,11 @@ declare namespace LocalJSX {
          */
         "interactive"?: boolean;
         /**
+          * 滚动时是否锁定位置（不随滚动而重新定位）。 - 适用于 click 等场景：打开后滚动页面，弹层保持在打开时的视口位置。 - 仅影响滚动行为，仍会在窗口尺寸变化/元素尺寸变化时更新位置。
+          * @default false
+         */
+        "lockOnScroll"?: boolean;
+        /**
           * 最大宽度
          */
         "maxWidth"?: number | string;
@@ -2784,7 +2924,7 @@ declare namespace LocalJSX {
           * 与触发元素的距离（单位 px）。 当开启箭头时，该距离表示“触发元素到箭头尖端”的间隙。
           * @default 8
          */
-        "offsetDistance"?: number;
+        "offsetDistance"?: number | string;
         /**
           * 显示状态变化事件
          */
@@ -2908,6 +3048,95 @@ declare namespace LocalJSX {
           * 绑定值
          */
         "value"?: string | number;
+    }
+    /**
+     * Select 选择器
+     * 基于 <ldesign-popup> 实现，支持单选/多选。
+     */
+    interface LdesignSelect {
+        /**
+          * 是否显示箭头（默认不显示）
+          * @default false
+         */
+        "arrow"?: boolean;
+        /**
+          * 可清空
+          * @default false
+         */
+        "clearable"?: boolean;
+        /**
+          * 选中项后是否自动关闭（默认：单选 true，多选 false）
+         */
+        "closeOnSelect"?: boolean;
+        /**
+          * 默认值（非受控）
+         */
+        "defaultValue"?: string | string[];
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 列表最大高度（px）
+          * @default 240
+         */
+        "maxHeight"?: number;
+        /**
+          * 多选时最多展示的标签数量，超过后折叠为 +N
+         */
+        "maxTagCount"?: number;
+        /**
+          * 是否多选
+          * @default false
+         */
+        "multiple"?: boolean;
+        /**
+          * 选中变化事件
+         */
+        "onLdesignChange"?: (event: LdesignSelectCustomEvent<{ value: string | string[] | undefined; options: SelectOption[] }>) => void;
+        /**
+          * 对外转发可见性变化
+         */
+        "onLdesignVisibleChange"?: (event: LdesignSelectCustomEvent<boolean>) => void;
+        /**
+          * 选项列表（可传数组或 JSON 字符串）
+          * @default []
+         */
+        "options"?: string | SelectOption[];
+        /**
+          * 占位文案（无选中项时）
+          * @default '请选择'
+         */
+        "placeholder"?: string;
+        /**
+          * 出现位置（默认 bottom-start）
+          * @default 'bottom-start'
+         */
+        "placement"?: SelectPlacement;
+        /**
+          * 主题（浅色/深色），透传给 Popup
+          * @default 'light'
+         */
+        "theme"?: 'light' | 'dark';
+        /**
+          * 触发方式（Select 多数使用 click 或 manual）
+          * @default 'click'
+         */
+        "trigger"?: SelectTrigger;
+        /**
+          * 值（受控）。单选时为 string，多选时为 string[]
+         */
+        "value"?: string | string[];
+        /**
+          * 外部受控可见性（仅 trigger = 'manual' 生效）
+          * @default false
+         */
+        "visible"?: boolean;
+        /**
+          * 列表宽度（可选）
+         */
+        "width"?: number | string;
     }
     /**
      * Switch 开关组件
@@ -3045,6 +3274,7 @@ declare namespace LocalJSX {
         "ldesign-popup": LdesignPopup;
         "ldesign-radio": LdesignRadio;
         "ldesign-radio-group": LdesignRadioGroup;
+        "ldesign-select": LdesignSelect;
         "ldesign-switch": LdesignSwitch;
         "ldesign-tooltip": LdesignTooltip;
     }
@@ -3147,6 +3377,11 @@ declare module "@stencil/core" {
              * 管理一组单选框的状态
              */
             "ldesign-radio-group": LocalJSX.LdesignRadioGroup & JSXBase.HTMLAttributes<HTMLLdesignRadioGroupElement>;
+            /**
+             * Select 选择器
+             * 基于 <ldesign-popup> 实现，支持单选/多选。
+             */
+            "ldesign-select": LocalJSX.LdesignSelect & JSXBase.HTMLAttributes<HTMLLdesignSelectElement>;
             /**
              * Switch 开关组件
              * 表示两种相互对立的状态间的切换，多用于触发「开/关」

@@ -50,6 +50,44 @@
 </ldesign-popup>
 ```
 
+## 距离（offset-distance）
+
+组件不会遮挡触发元素。通过 `offset-distance` 可以控制两者之间的间距：
+
+- 当 `arrow=true`（默认）时，`offset-distance` 表示“触发元素到箭头尖端”的距离。
+- 当 `arrow=false` 时，`offset-distance` 表示“触发元素到弹层边缘”的距离。
+- 默认值为 `8`。
+
+<div class="demo-container">
+  <div class="demo-row" style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+    <ldesign-popup placement="top" offset-distance="4" content="距离 4px">
+      <ldesign-button slot="trigger">距离 4px</ldesign-button>
+    </ldesign-popup>
+    <ldesign-popup placement="top" offset-distance="16" content="距离 16px">
+      <ldesign-button slot="trigger">距离 16px</ldesign-button>
+    </ldesign-popup>
+    <ldesign-popup placement="top" arrow="false" offset-distance="12" content="无箭头，距离 12px">
+      <ldesign-button slot="trigger" type="outline">无箭头 12px</ldesign-button>
+    </ldesign-popup>
+  </div>
+</div>
+
+```html
+<!-- 不同间距 -->
+<ldesign-popup placement="top" offset-distance="4" content="距离 4px">
+  <ldesign-button slot="trigger">距离 4px</ldesign-button>
+</ldesign-popup>
+
+<ldesign-popup placement="top" offset-distance="16" content="距离 16px">
+  <ldesign-button slot="trigger">距离 16px</ldesign-button>
+</ldesign-popup>
+
+<!-- 无箭头也能精确控制间距 -->
+<ldesign-popup placement="top" arrow="false" offset-distance="12" content="无箭头，距离 12px">
+  <ldesign-button slot="trigger" type="outline">无箭头 12px</ldesign-button>
+</ldesign-popup>
+```
+
 ## 弹出位置
 
 支持 12 个方向的弹出位置。
@@ -283,49 +321,68 @@ onUnmounted(() => cleanup())
 </ldesign-popup>
 ```
 
+## 滚动时保持位置
+
+当点击打开弹层后，有时希望滚动页面时弹层仍固定在打开时的视口位置，不随触发元素移动。可开启：
+
+<div class="demo-container">
+  <ldesign-popup trigger="click" lock-on-scroll content="滚动页面时我不会跟随触发元素移动">
+    <ldesign-button slot="trigger">点击后滚动页面</ldesign-button>
+  </ldesign-popup>
+</div>
+
+```html
+<ldesign-popup trigger="click" lock-on-scroll content="滚动页面时我不会跟随触发元素移动">
+  <ldesign-button slot="trigger">点击后滚动页面</ldesign-button>
+</ldesign-popup>
+```
+
+> 说明：开启后仅禁用“滚动导致的自动重定位”，仍会在窗口尺寸变化/元素尺寸变化时保持正确位置。
+
 ## API
 
 ### 属性
 
-|| 属性名 | 类型 | 默认值 | 说明 |
-||--------|------|--------|------|
-|| `visible` | `boolean` | `false` | 是否显示弹出层 |
-|| `placement` | `PopupPlacement` | `'bottom'` | 弹出位置 |
-|| `trigger` | `'hover' \| 'click' \| 'focus' \| 'manual' \| 'contextmenu'` | `'hover'` | 触发方式 |
-|| `interactive` | `boolean` | `true` | hover 触发时，鼠标移入弹出层是否保持打开 |
-|| `close-on-outside` | `boolean` | `true` | 是否点击浮层外关闭（常用于 click 触发） |
-|| `close-on-esc` | `boolean` | `true` | 是否支持 Esc 键关闭 |
-|| `content` | `string` | - | 弹出层内容 |
-|| `popup-title` | `string` | - | 弹出层标题 |
-|| `offset-distance` | `number` | `8` | 偏移距离 |
-|| `disabled` | `boolean` | `false` | 是否禁用 |
-|| `arrow` | `boolean` | `true` | 是否显示箭头 |
-|| `width` | `number \| string` | - | 弹出层宽度 |
-|| `max-width` | `number \| string` | - | 最大宽度 |
-|| `theme` | `'light' \| 'dark'` | `'light'` | 主题风格（浅色/深色） |
-|| `show-delay` | `number` | `0` | 延迟显示时间（毫秒） |
-|| `hide-delay` | `number` | `0` | 延迟隐藏时间（毫秒） |
+||| 属性名 | 类型 | 默认值 | 说明 |
+|||--------|------|--------|------|
+||| `visible` | `boolean` | `false` | 是否显示弹出层 |
+||| `placement` | `PopupPlacement` | `'bottom'` | 弹出位置 |
+||| `trigger` | `'hover' \| 'click' \| 'focus' \| 'manual' \| 'contextmenu'` | `'hover'` | 触发方式 |
+||| `interactive` | `boolean` | `true` | hover 触发时，鼠标移入弹出层是否保持打开 |
+||| `close-on-outside` | `boolean` | `true` | 是否点击浮层外关闭（常用于 click 触发） |
+||| `close-on-esc` | `boolean` | `true` | 是否支持 Esc 键关闭 |
+||| `content` | `string` | - | 弹出层内容 |
+||| `popup-title` | `string` | - | 弹出层标题 |
+||| `offset-distance` | `number` | `8` | 与触发元素的距离；当 `arrow=true` 时表示“到箭头尖端”的距离，`arrow=false` 时表示“到弹层边缘”的距离 |
+||| `disabled` | `boolean` | `false` | 是否禁用 |
+||| `arrow` | `boolean` | `true` | 是否显示箭头 |
+||| `lock-on-scroll` | `boolean` | `false` | 滚动时锁定位置（不随滚动重新定位） |
+||| `width` | `number \\| string` | - | 弹出层宽度 |
+||| `max-width` | `number \| string` | - | 最大宽度 |
+||| `theme` | `'light' \| 'dark'` | `'light'` | 主题风格（浅色/深色） |
+||| `show-delay` | `number` | `0` | 延迟显示时间（毫秒） |
+||| `hide-delay` | `number` | `0` | 延迟隐藏时间（毫秒） |
 
 ### 事件
 
-| 事件名 | 说明 | 回调参数 |
-|--------|------|----------|
-| `ldesignVisibleChange` | 显示状态变化时触发 | `(visible: boolean)` |
+|| 事件名 | 说明 | 回调参数 |
+||--------|------|----------|
+|| `ldesignVisibleChange` | 显示状态变化时触发 | `(visible: boolean)` |
 
 ### 插槽
 
-| 插槽名 | 说明 |
-|--------|------|
-| `trigger` | 触发器内容 |
-| `default` | 弹出层内容（当未设置 content 属性时使用） |
+|| 插槽名 | 说明 |
+||--------|------|
+|| `trigger` | 触发器内容 |
+|| `default` | 弹出层内容（当未设置 content 属性时使用） |
 
 ### 方法
 
-| 方法名 | 说明 | 参数 |
-|--------|------|------|
-| `show()` | 显示弹出层 | - |
-| `hide()` | 隐藏弹出层 | - |
-| `toggle()` | 切换显示状态 | - |
+|| 方法名 | 说明 | 参数 |
+||--------|------|------|
+|| `show()` | 显示弹出层 | - |
+|| `hide()` | 隐藏弹出层 | - |
+|| `toggle()` | 切换显示状态 | - |
 
 ## 设计指南
 

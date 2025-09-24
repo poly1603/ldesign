@@ -1,5 +1,8 @@
 import { Component, Prop, State, Element, Event, EventEmitter, Watch, h, Host } from '@stencil/core';
 
+export type VerticalExpand = 'inline' | 'flyout' | 'mixed';
+export type SubmenuTrigger = 'hover' | 'click';
+
 export interface MenuItem {
   key: string;
   label: string;
@@ -44,12 +47,20 @@ export class LdesignMenu {
   /** 展开/收起事件 */
   @Event() ldesignOpenChange!: EventEmitter<{ key: string; open: boolean; openKeys: string[] }>;
 
+  /** 垂直模式展开方式：inline（内嵌）、flyout（右侧弹出）、mixed（一级内嵌，其余弹出） */
+  @Prop() verticalExpand: VerticalExpand = 'inline';
+  /** 弹出子菜单的触发方式（仅在 flyout/mixed 生效） */
+  @Prop() submenuTrigger: SubmenuTrigger = 'hover';
+
   @State() parsedItems: MenuItem[] = [];
   @State() currentKey?: string;
   @State() internalOpenKeys: string[] = [];
 
   private submenuRefs: Map<string, HTMLUListElement> = new Map();
   private didInitHeights = false;
+  @State() flyoutOpenMap: { [key: string]: boolean } = {};
+  private flyoutTimers: Map<string, number> = new Map();
+  private flyChildrenRefs: Map<string, HTMLUListElement> = new Map();
 
   // 解析 items
   @Watch('items')
@@ -171,6 +182,10 @@ export class LdesignMenu {
 
     const hasChildren = !!item.children?.length;
     if (hasChildren) {
+      // 在 flyout/mixed 场景，父级不进行内嵌展开，交由弹层控制
+      if (this.useFlyout(_level)) {
+        return;
+      }
       const open = this.internalOpenKeys.includes(item.key);
       let next = [...this.internalOpenKeys];
       if (open) {
@@ -261,6 +276,99 @@ export class LdesignMenu {
     return placeholder ? <span class="ldesign-menu__icon ldesign-menu__icon--placeholder"></span> : null;
   }
 
+  private useFlyout(level: number): boolean {
+    if (this.verticalExpand === 'flyout') return true;
+    if (this.verticalExpand === 'inline') return false;
+    return level >= 2; // mixed
+  }
+
+  private setFlyoutOpen = (key: string, open: boolean) => {
+    this.flyoutOpenMap = { ...this.flyoutOpenMap, [key]: open };
+  };
+
+  private openFly(key: string) {
+    clearTimeout(this.flyoutTimers.get(key));
+    this.setFlyoutOpen(key, true);
+    // 下一帧调整位置，确保元素已渲染
+    requestAnimationFrame(() => this.adjustFlyPosition(key));
+  }
+  private scheduleCloseFly(key: string) {
+    clearTimeout(this.flyoutTimers.get(key));
+    const t = window.setTimeout(() => this.setFlyoutOpen(key, false), 150);
+    this.flyoutTimers.set(key, t);
+  }
+
+  private registerFlyChildrenRef = (key: string) => (el: HTMLUListElement | null) => {
+    if (el) this.flyChildrenRefs.set(key, el); else this.flyChildrenRefs.delete(key);
+  };
+
+  private adjustFlyPosition(key: string) {
+    const menuEl = this.flyChildrenRefs.get(key);
+    if (!menuEl) return;
+    const li = menuEl.parentElement as HTMLElement | null;
+    if (!li) return;
+
+    // 使其可见以便测量
+    const prevDisplay = menuEl.style.display;
+    if (getComputedStyle(menuEl).display === 'none') menuEl.style.display = 'block';
+
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+    const gap = 4;
+    const liRect = li.getBoundingClientRect();
+    const rect = menuEl.getBoundingClientRect();
+
+    // 垂直：尽量与父项顶对齐，不足则向上“shift”，也避免跑到顶部之上
+    const maxTop = vh - rect.height - 8; // 8px 安全边距
+    let targetTopViewport = Math.min(Math.max(0, liRect.top), Math.max(0, maxTop));
+    const deltaTop = Math.round(targetTopViewport - liRect.top);
+    menuEl.style.top = `${deltaTop}px`;
+
+    // 水平：若右侧不够，改为从左侧弹出
+    const preferRightX = liRect.right + gap + rect.width;
+    if (preferRightX > vw) {
+      menuEl.style.left = 'auto';
+      (menuEl.style as any).right = `calc(100% + ${gap}px)`;
+    } else {
+      (menuEl.style as any).right = '';
+      menuEl.style.left = `calc(100% + ${gap}px)`;
+    }
+
+    // 复原 display（若之前是 none）
+    menuEl.style.display = prevDisplay;
+  }
+
+  private renderFlyout(item: MenuItem, level: number) {
+    const open = !!this.flyoutOpenMap[item.key];
+    const trigger = this.submenuTrigger;
+
+    const onEnter = () => { if (trigger === 'hover') this.openFly(item.key); };
+    const onLeave = () => { if (trigger === 'hover') this.scheduleCloseFly(item.key); };
+    const onClick = (e: MouseEvent) => {
+      if (trigger === 'click') {
+        e.preventDefault();
+        this.setFlyoutOpen(item.key, !open);
+      }
+    };
+
+    return (
+      <li class="ldesign-menu__node ldesign-menu__node--fly" role="none" onMouseEnter={onEnter} onMouseLeave={onLeave}>
+        <div class={{
+            'ldesign-menu__item': true,
+            'ldesign-menu__item--submenu': true,
+            'ldesign-menu__item--disabled': !!item.disabled,
+          }} role="menuitem" onClick={onClick}>
+          {this.renderIcon(item.icon, this.requireTopIcon && level === 1 && !item.icon)}
+          <span class="ldesign-menu__title">{item.label}</span>
+          {this.renderArrow(open)}
+        </div>
+        <ul class="ldesign-menu__fly-children" role="menu" ref={this.registerFlyChildrenRef(item.key)} style={{ display: open ? 'block' : 'none' }}>
+          {(item.children || []).map(child => this.renderMenuNode(child, level + 1))}
+        </ul>
+      </li>
+    );
+  }
+
   private renderInline(item: MenuItem, level: number) {
     const open = this.internalOpenKeys.includes(item.key);
     const style = { paddingLeft: `${this.indent * (level - 1)}px` };
@@ -299,11 +407,12 @@ export class LdesignMenu {
       'ldesign-menu__item--active': isActive,
       'ldesign-menu__item--disabled': !!item.disabled,
     };
-    const style = { paddingLeft: `${this.indent * (level - 1)}px` };
+    // 在 flyout 模式下，叶子项不需要层级缩进；否则会导致弹出子菜单内部左侧间距过大
+    const style = this.useFlyout(level) ? {} : { paddingLeft: `${this.indent * (level - 1)}px` };
 
     return (
       <li class="ldesign-menu__node" role="none">
-        <div class={classes} style={style} role="menuitem" onClick={(e) => this.handleItemClick(item, level, e)}>
+        <div class={classes} style={style as any} role="menuitem" onClick={(e) => this.handleItemClick(item, level, e)}>
           {this.renderIcon(item.icon, this.requireTopIcon && level === 1 && !item.icon)}
           <span class="ldesign-menu__title">{item.label}</span>
         </div>
@@ -317,7 +426,9 @@ export class LdesignMenu {
     }
 
     const hasChildren = !!item.children?.length;
-    if (hasChildren) return this.renderInline(item, level);
+    if (hasChildren) {
+      return this.useFlyout(level) ? this.renderFlyout(item, level) : this.renderInline(item, level);
+    }
     return this.renderLeaf(item, level);
   }
 
@@ -325,7 +436,8 @@ export class LdesignMenu {
     const classes = {
       'ldesign-menu': true,
       'ldesign-menu--vertical': true,
-      'ldesign-menu--inline': true,
+      'ldesign-menu--inline': this.verticalExpand !== 'flyout',
+      'ldesign-menu--flyout': this.verticalExpand !== 'inline',
     };
 
     return (

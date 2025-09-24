@@ -152,16 +152,18 @@
 
 ## Properties
 
-| Property          | Attribute           | Description                                | Type                   | Default     |
-| ----------------- | ------------------- | ------------------------------------------ | ---------------------- | ----------- |
-| `accordion`       | `accordion`         | 手风琴模式：同层级只允许展开一个                           | `boolean`              | `false`     |
-| `defaultOpenKeys` | `default-open-keys` | 默认打开的子菜单 key 列表（非受控）                       | `string[]`             | `[]`        |
-| `defaultValue`    | `default-value`     | 默认选中项（非受控）                                 | `string`               | `undefined` |
-| `indent`          | `indent`            | 子级缩进（px）                                   | `number`               | `16`        |
-| `items`           | `items`             | 菜单数据（可传入 JSON 字符串或对象数组）                    | `MenuItem[] \| string` | `[]`        |
-| `openKeys`        | `open-keys`         | 当前打开的子菜单 key 列表（受控）                        | `string[]`             | `undefined` |
-| `requireTopIcon`  | `require-top-icon`  | 顶层（一级）是否强制显示图标占位（保证对齐）。若条目没有 icon，将渲染一个占位。 | `boolean`              | `true`      |
-| `value`           | `value`             | 当前选中项（受控）                                  | `string`               | `undefined` |
+| Property          | Attribute           | Description                                       | Type                              | Default     |
+| ----------------- | ------------------- | ------------------------------------------------- | --------------------------------- | ----------- |
+| `accordion`       | `accordion`         | 手风琴模式：同层级只允许展开一个                                  | `boolean`                         | `false`     |
+| `defaultOpenKeys` | `default-open-keys` | 默认打开的子菜单 key 列表（非受控）                              | `string[]`                        | `[]`        |
+| `defaultValue`    | `default-value`     | 默认选中项（非受控）                                        | `string`                          | `undefined` |
+| `indent`          | `indent`            | 子级缩进（px）                                          | `number`                          | `16`        |
+| `items`           | `items`             | 菜单数据（可传入 JSON 字符串或对象数组）                           | `MenuItem[] \| string`            | `[]`        |
+| `openKeys`        | `open-keys`         | 当前打开的子菜单 key 列表（受控）                               | `string[]`                        | `undefined` |
+| `requireTopIcon`  | `require-top-icon`  | 顶层（一级）是否强制显示图标占位（保证对齐）。若条目没有 icon，将渲染一个占位。        | `boolean`                         | `true`      |
+| `submenuTrigger`  | `submenu-trigger`   | 弹出子菜单的触发方式（仅在 flyout/mixed 生效）                    | `"click" \| "hover"`              | `'hover'`   |
+| `value`           | `value`             | 当前选中项（受控）                                         | `string`                          | `undefined` |
+| `verticalExpand`  | `vertical-expand`   | 垂直模式展开方式：inline（内嵌）、flyout（右侧弹出）、mixed（一级内嵌，其余弹出） | `"flyout" \| "inline" \| "mixed"` | `'inline'`  |
 
 
 ## Events

@@ -23,4 +23,5 @@ export { LdesignAffix } from './affix/affix';
 export { LdesignBacktop } from './backtop/backtop';
 export { LdesignMenu } from './menu/menu';
 export { LdesignDropdown } from './dropdown/dropdown';
+export { LdesignSelect } from './select/select';
 export { LdesignPagination } from './pagination/pagination';

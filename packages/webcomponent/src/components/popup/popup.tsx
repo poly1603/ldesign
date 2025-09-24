@@ -16,6 +16,14 @@ export type PopupPlacement = Placement;
 export class LdesignPopup {
   @Element() el!: HTMLElement;
 
+  /** 将各种输入解析为数字（支持 '12', 12, '12px' 等），失败时返回默认值 */
+  private toNumber(val: any, defaultValue = 0): number {
+    if (val === null || val === undefined) return defaultValue;
+    if (typeof val === 'number' && Number.isFinite(val)) return val;
+    const n = parseFloat(String(val));
+    return Number.isFinite(n) ? n : defaultValue;
+  }
+
   /**
    * 是否显示弹出层
    */
@@ -82,7 +90,7 @@ export class LdesignPopup {
    * 与触发元素的距离（单位 px）。
    * 当开启箭头时，该距离表示“触发元素到箭头尖端”的间隙。
    */
-  @Prop() offsetDistance: number = 8;
+  @Prop() offsetDistance: number | string = 8;
 
   /**
    * 是否禁用
@@ -109,6 +117,13 @@ export class LdesignPopup {
    * 最大宽度
    */
   @Prop() maxWidth?: number | string;
+
+  /**
+   * 滚动时是否锁定位置（不随滚动而重新定位）。
+   * - 适用于 click 等场景：打开后滚动页面，弹层保持在打开时的视口位置。
+   * - 仅影响滚动行为，仍会在窗口尺寸变化/元素尺寸变化时更新位置。
+   */
+  @Prop() lockOnScroll: boolean = false;
 
   /**
    * 延迟显示时间（毫秒）
@@ -174,6 +189,17 @@ export class LdesignPopup {
   watchVisible(newValue: boolean) {
     if (newValue !== this.isVisible) {
       this.setVisibleInternal(newValue);
+    }
+  }
+
+  /**
+   * 监听 offsetDistance 变化（包括 string -> number 的变化），可热更新间距
+   */
+  @Watch('offsetDistance')
+  watchOffsetDistance() {
+    if (this.isVisible) {
+      // 重新定位以应用新的间距
+      this.updatePositionOnly();
     }
   }
 
@@ -519,7 +545,58 @@ export class LdesignPopup {
    */
   private getEffectiveOffsetDistance(): number {
     const arrowProtrude = this.arrow ? 4 : 0; // 箭头向弹层外突出的像素
-    return Math.max(0, this.offsetDistance + arrowProtrude);
+    const base = this.toNumber(this.offsetDistance, 0);
+    const dist = Math.max(0, base);
+    return dist + arrowProtrude;
+  }
+
+  /**
+   * 在设置完初始坐标与箭头位置后，进行一次最终校正，保证“可视间距”严格等于 offsetDistance。
+   * 通过实际测量箭头尖端（若有）或弹层边缘与触发元素之间的距离进行微调。
+   */
+  private correctGapAfterStyle(
+    coords: { x: number; y: number },
+    resolvedPlacement: PopupPlacement
+  ): { x: number; y: number } {
+    if (!this.triggerElement || !this.popupElement) return coords;
+
+    const refRect = this.triggerElement.getBoundingClientRect();
+    const popRect = this.popupElement.getBoundingClientRect();
+    const basePlacement = resolvedPlacement.split('-')[0] as 'top' | 'right' | 'bottom' | 'left';
+
+    // 目标改为“面板边缘与触发元素的间距”= offsetDistance（考虑箭头外凸）
+    const expectedEdgeGap = this.getEffectiveOffsetDistance();
+
+    let { x, y } = coords;
+
+    switch (basePlacement) {
+      case 'top': {
+        const currentEdgeGap = refRect.top - popRect.bottom;
+        const delta = expectedEdgeGap - currentEdgeGap;
+        y -= delta;
+        break;
+      }
+      case 'bottom': {
+        const currentEdgeGap = popRect.top - refRect.bottom;
+        const delta = expectedEdgeGap - currentEdgeGap;
+        y += delta;
+        break;
+      }
+      case 'left': {
+        const currentEdgeGap = refRect.left - popRect.right;
+        const delta = expectedEdgeGap - currentEdgeGap;
+        x -= delta;
+        break;
+      }
+      case 'right': {
+        const currentEdgeGap = popRect.left - refRect.right;
+        const delta = expectedEdgeGap - currentEdgeGap;
+        x += delta;
+        break;
+      }
+    }
+
+    return { x, y };
   }
 
   /**
@@ -564,12 +641,13 @@ export class LdesignPopup {
       }
     );
 
-    // 设置弹出层位置
+    // 先按初值设置一次位置
     Object.assign(this.popupElement.style, {
       left: `${x}px`,
       top: `${y}px`,
     });
 
+    // 设置箭头位置
     // 标记当前方向，便于样式控制
     this.popupElement.setAttribute('data-placement', resolvedPlacement);
 
@@ -602,6 +680,15 @@ export class LdesignPopup {
       }
     }
 
+    // 依据真实尺寸与箭头位置进行最终校正（等待一帧，确保布局稳定）
+    await this.nextFrame();
+    const corrected = this.correctGapAfterStyle({ x, y }, resolvedPlacement);
+    Object.assign(this.popupElement.style, {
+      left: `${corrected.x}px`,
+      top: `${corrected.y}px`,
+    });
+
+
     // 设置自动更新 - 避免递归重复注册
     this.positioned = true;
     this.cleanup?.();
@@ -612,6 +699,11 @@ export class LdesignPopup {
         if (this.isVisible) {
           this.updatePositionOnly();
         }
+      },
+      {
+        ancestorScroll: !this.lockOnScroll,
+        ancestorResize: true,
+        elementResize: true,
       }
     );
   }
@@ -651,6 +743,7 @@ export class LdesignPopup {
       }
     );
 
+    // 先按初值设置一次位置
     Object.assign(this.popupElement.style, {
       left: `${x}px`,
       top: `${y}px`,
@@ -678,6 +771,14 @@ export class LdesignPopup {
         this.arrowElement.setAttribute('data-placement', resolvedPlacement);
       }
     }
+
+    // 最终校正（等待一帧，确保布局稳定）
+    await this.nextFrame();
+    const corrected = this.correctGapAfterStyle({ x, y }, resolvedPlacement);
+    Object.assign(this.popupElement.style, {
+      left: `${corrected.x}px`,
+      top: `${corrected.y}px`,
+    });
 
     // 再次确保在渲染后绑定浮层交互事件（首次渲染时 updatePosition 可能拿不到元素）
     this.positioned = true;
