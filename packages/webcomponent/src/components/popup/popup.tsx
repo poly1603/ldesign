@@ -544,10 +544,9 @@ export class LdesignPopup {
    *   以保证最终‘箭头尖端’到触发元素的间隙等于 offsetDistance。
    */
   private getEffectiveOffsetDistance(): number {
-    const arrowProtrude = this.arrow ? 4 : 0; // 箭头向弹层外突出的像素
+    // 这里直接返回用户设置的距离；最终可见间距由 correctGapByMeasuring 再做精准校正。
     const base = this.toNumber(this.offsetDistance, 0);
-    const dist = Math.max(0, base);
-    return dist + arrowProtrude;
+    return Math.max(0, base);
   }
 
 

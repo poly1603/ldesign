@@ -352,7 +352,7 @@ export class LdesignMenu {
     };
 
     return (
-      <li class="ldesign-menu__node ldesign-menu__node--fly" role="none" onMouseEnter={onEnter} onMouseLeave={onLeave}>
+      <li class={{ 'ldesign-menu__node': true, 'ldesign-menu__node--fly': true, 'ldesign-menu__node--fly-open': open }} role="none" onMouseEnter={onEnter} onMouseLeave={onLeave}>
         <div class={{
             'ldesign-menu__item': true,
             'ldesign-menu__item--submenu': true,
@@ -372,7 +372,8 @@ export class LdesignMenu {
   private renderInline(item: MenuItem, level: number) {
     const open = this.internalOpenKeys.includes(item.key);
     const indentPx = this.indent * (level - 1);
-    const style = { paddingLeft: `${indentPx}px`, ['--level-indent' as any]: `${indentPx}px` } as any;
+    const style: any = { ['--level-indent' as any]: `${indentPx}px` };
+    if (indentPx > 0) style.paddingLeft = `${indentPx}px`;
 
     return (
       <li class={{ 'ldesign-menu__node': true, 'ldesign-menu__node--open': open }} role="none">
@@ -411,10 +412,12 @@ export class LdesignMenu {
     // 在 flyout 模式下，叶子项不需要层级缩进；否则会导致弹出子菜单内部左侧间距过大
     const style = this.useFlyout(level)
       ? ({} as any)
-      : ({
-          paddingLeft: `${this.indent * (level - 1)}px`,
-          ['--level-indent' as any]: `${this.indent * (level - 1)}px`,
-        } as any);
+      : (() => {
+          const indentPx = this.indent * (level - 1);
+          const s: any = { ['--level-indent' as any]: `${indentPx}px` };
+          if (indentPx > 0) s.paddingLeft = `${indentPx}px`;
+          return s;
+        })();
 
     return (
       <li class="ldesign-menu__node" role="none">

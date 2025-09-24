@@ -167,6 +167,11 @@
     position: relative;
   }
 
+  // flyout 展开时，高亮当前触发项
+  &__node--fly-open > .ldesign-menu__item::before {
+    background: var(--menu-bg-hover);
+  }
+
   &__fly-children {
     position: absolute;
     top: 0;
