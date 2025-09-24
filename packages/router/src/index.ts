@@ -420,6 +420,74 @@ export async function createFullRouter(options: {
   }
 }
 
+// ==================== 开发工具导出 ====================
+
+export {
+  // 开发调试工具
+  createDevTools,
+  DevToolsPanel,
+  RouteInspector,
+} from './debug/dev-tools'
+
+export {
+  // 测试工具
+  RouterTestUtils,
+  RouteAssertions,
+  RoutePerformanceTester,
+  createTestRouter,
+  createRouteAssertions,
+  createPerformanceTester,
+  setupRouterTest,
+  testRoutes,
+} from './testing/test-utils'
+
+// ==================== 功能扩展导出 ====================
+
+export {
+  // 中间件系统
+  MiddlewareManager,
+  middlewareManager,
+  authMiddleware,
+  permissionMiddleware,
+  roleMiddleware,
+  loggingMiddleware,
+  titleMiddleware,
+  progressMiddleware,
+  createCacheMiddleware,
+  createRateLimitMiddleware,
+} from './middleware'
+
+export type {
+  MiddlewareFunction,
+  MiddlewareContext,
+  MiddlewareConfig,
+} from './middleware'
+
+export {
+  // 路由状态管理
+  RouteStateManager,
+  createRouteStateManager,
+  useRouteState,
+} from './state/route-state'
+
+export type {
+  RouteHistoryItem,
+  RouteState,
+} from './state/route-state'
+
+export {
+  // 路由分析
+  RouteAnalytics,
+  createRouteAnalytics,
+} from './analytics/route-analytics'
+
+export type {
+  RouteVisit,
+  PerformanceMetrics,
+  UserBehaviorEvent,
+  AnalyticsConfig,
+} from './analytics/route-analytics'
+
 // ==================== 默认导出 ====================
 
 // 注意：由于 ES 模块的限制，我们不提供默认导出

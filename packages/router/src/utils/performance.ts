@@ -25,19 +25,72 @@ interface CompiledPattern {
 }
 
 /**
- * 路由模式缓存
+ * 路由模式缓存（增强版）
  */
 const patternCache = new Map<string, CompiledPattern>()
 
 /**
- * 预编译路由模式
+ * 缓存统计信息
+ */
+interface CacheStats {
+  hits: number
+  misses: number
+  size: number
+  maxSize: number
+}
+
+/**
+ * 性能监控器
+ */
+class PerformanceMonitor {
+  private stats: CacheStats = {
+    hits: 0,
+    misses: 0,
+    size: 0,
+    maxSize: 1000
+  }
+
+  recordHit(): void {
+    this.stats.hits++
+  }
+
+  recordMiss(): void {
+    this.stats.misses++
+  }
+
+  getHitRate(): number {
+    const total = this.stats.hits + this.stats.misses
+    return total > 0 ? this.stats.hits / total : 0
+  }
+
+  getStats(): CacheStats {
+    return { ...this.stats }
+  }
+
+  reset(): void {
+    this.stats = {
+      hits: 0,
+      misses: 0,
+      size: this.stats.size,
+      maxSize: this.stats.maxSize
+    }
+  }
+}
+
+const performanceMonitor = new PerformanceMonitor()
+
+/**
+ * 预编译路由模式（增强版）
  */
 export function compilePattern(path: string): CompiledPattern {
   // 检查缓存
   const cached = patternCache.get(path)
   if (cached) {
+    performanceMonitor.recordHit()
     return cached
   }
+
+  performanceMonitor.recordMiss()
 
   const paramNames: string[] = []
   const staticParts: string[] = []
@@ -393,5 +446,134 @@ export class PerformanceCollector {
     this.routeVisits.clear()
     this.cacheHits = 0
     this.cacheMisses = 0
+  }
+}
+
+// ==================== 新增性能优化工具 ====================
+
+/**
+ * 路由预热器 - 预编译常用路由模式
+ */
+export class RoutePrewarmer {
+  private prewarmedRoutes = new Set<string>()
+
+  /**
+   * 预热路由列表
+   */
+  prewarmRoutes(routes: RouteRecordRaw[]): void {
+    const startTime = performance.now()
+
+    for (const route of routes) {
+      this.prewarmRoute(route)
+    }
+
+    const endTime = performance.now()
+    console.log(`路由预热完成，耗时: ${endTime - startTime}ms，预热路由数: ${this.prewarmedRoutes.size}`)
+  }
+
+  private prewarmRoute(route: RouteRecordRaw): void {
+    if (route.path && !this.prewarmedRoutes.has(route.path)) {
+      // 预编译路由模式
+      compilePattern(route.path)
+      this.prewarmedRoutes.add(route.path)
+    }
+
+    // 递归处理子路由
+    if (route.children) {
+      for (const child of route.children) {
+        this.prewarmRoute(child)
+      }
+    }
+  }
+
+  /**
+   * 获取预热统计信息
+   */
+  getStats() {
+    return {
+      prewarmedCount: this.prewarmedRoutes.size,
+      cacheHitRate: performanceMonitor.getHitRate(),
+      cacheStats: performanceMonitor.getStats()
+    }
+  }
+}
+
+/**
+ * 内存优化器
+ */
+export class MemoryOptimizer {
+  private cleanupInterval: number | null = null
+  private readonly maxCacheSize = 1000
+  private readonly cleanupThreshold = 0.8
+
+  /**
+   * 启动自动内存清理
+   */
+  startAutoCleanup(intervalMs = 60000): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval)
+    }
+
+    this.cleanupInterval = setInterval(() => {
+      this.performCleanup()
+    }, intervalMs)
+  }
+
+  /**
+   * 停止自动内存清理
+   */
+  stopAutoCleanup(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval)
+      this.cleanupInterval = null
+    }
+  }
+
+  /**
+   * 执行内存清理
+   */
+  performCleanup(): void {
+    const currentSize = patternCache.size
+
+    if (currentSize > this.maxCacheSize * this.cleanupThreshold) {
+      // 清理最少使用的缓存项
+      const entries = Array.from(patternCache.entries())
+      const toDelete = Math.floor(currentSize * 0.2) // 删除20%的缓存
+
+      // 这里可以根据访问频率等指标来决定删除哪些缓存
+      for (let i = 0; i < toDelete && entries.length > 0; i++) {
+        const [key] = entries.pop()!
+        patternCache.delete(key)
+      }
+
+      console.log(`内存清理完成，删除了 ${toDelete} 个缓存项，当前缓存大小: ${patternCache.size}`)
+    }
+  }
+
+  /**
+   * 获取内存使用情况
+   */
+  getMemoryUsage() {
+    return {
+      cacheSize: patternCache.size,
+      maxCacheSize: this.maxCacheSize,
+      usageRatio: patternCache.size / this.maxCacheSize,
+      needsCleanup: patternCache.size > this.maxCacheSize * this.cleanupThreshold
+    }
+  }
+}
+
+// 导出单例实例
+export const routePrewarmer = new RoutePrewarmer()
+export const memoryOptimizer = new MemoryOptimizer()
+
+/**
+ * 获取性能监控数据
+ */
+export function getPerformanceStats() {
+  return {
+    monitor: performanceMonitor.getStats(),
+    prewarmer: routePrewarmer.getStats(),
+    memory: memoryOptimizer.getMemoryUsage()
   }
 }
