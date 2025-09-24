@@ -24,11 +24,11 @@ export function unique<T>(array: T[]): T[] {
 
 /**
  * 根据指定属性对对象数组去重
- * 
+ *
  * @param array - 要去重的对象数组
- * @param key - 用于去重的属性键
+ * @param key - 用于去重的属性键或函数
  * @returns 去重后的新数组
- * 
+ *
  * @example
  * ```typescript
  * const users = [
@@ -37,18 +37,25 @@ export function unique<T>(array: T[]): T[] {
  *   { id: 1, name: 'John Doe' }
  * ]
  * uniqueBy(users, 'id') // [{ id: 1, name: 'John' }, { id: 2, name: 'Jane' }]
+ * uniqueBy(users, user => user.name.toLowerCase()) // 按名称去重
  * ```
  */
-export function uniqueBy<T, K extends keyof T>(array: T[], key: K): T[] {
+export function uniqueBy<T, K extends keyof T>(
+  array: T[],
+  key: K | ((item: T) => any)
+): T[] {
   const seen = new Set()
-  return array.filter(item => {
-    const value = item[key]
-    if (seen.has(value)) {
-      return false
+  const result: T[] = []
+
+  for (const item of array) {
+    const value = typeof key === 'function' ? key(item) : item[key]
+    if (!seen.has(value)) {
+      seen.add(value)
+      result.push(item)
     }
-    seen.add(value)
-    return true
-  })
+  }
+
+  return result
 }
 
 /**

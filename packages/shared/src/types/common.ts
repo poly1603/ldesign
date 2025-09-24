@@ -117,17 +117,8 @@ export type DeepReadonly<T> = {
   readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P]
 }
 
-/**
- * 提取对象中指定键的类型
- */
-export type Pick<T, K extends keyof T> = {
-  [P in K]: T[P]
-}
-
-/**
- * 排除对象中指定键的类型
- */
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
+// 注意：Pick 和 Omit 是 TypeScript 内置类型，这里不需要重复定义
+// 如果需要使用，直接从全局导入即可
 
 /**
  * 可为空的类型

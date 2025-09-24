@@ -264,6 +264,7 @@ export function findInTree<T>(
       found = node
       return false // 停止遍历
     }
+    return true // 继续遍历
   }, config)
 
   return found

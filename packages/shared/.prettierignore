@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+es/
+lib/
+types/
+types-temp/
+temp_vue_files/
+test-build/
+
+# Coverage reports
+coverage/
+
+# Logs
+*.log
+
+# Cache
+.cache/
+
+# Generated files
+*.d.ts
+*.min.js
+*.min.css
+
+# Package files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Documentation build
+docs/.vitepress/dist/
+docs/.vitepress/cache/

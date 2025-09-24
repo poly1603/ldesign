@@ -130,75 +130,83 @@ export function stripHtml(str: string): string {
   return str.replace(/<[^>]*>/g, '')
 }
 
+// 预定义转义映射表，避免每次调用时重新创建
+const HTML_ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+}
+
 /**
  * 转义 HTML 特殊字符
- * 
+ *
  * @param str - 要转义的字符串
  * @returns 转义后的字符串
- * 
+ *
  * @example
  * ```typescript
- * escapeHtml('<script>alert("xss")</script>') 
+ * escapeHtml('<script>alert("xss")</script>')
  * // '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
  * ```
  */
 export function escapeHtml(str: string): string {
-  const htmlEscapes: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-  }
+  return str.replace(/[&<>"']/g, char => HTML_ESCAPES[char])
+}
 
-  return str.replace(/[&<>"']/g, char => htmlEscapes[char])
+// 预定义反转义映射表
+const HTML_UNESCAPES: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
 }
 
 /**
  * 反转义 HTML 特殊字符
- * 
+ *
  * @param str - 要反转义的字符串
  * @returns 反转义后的字符串
- * 
+ *
  * @example
  * ```typescript
  * unescapeHtml('&lt;div&gt;Hello&lt;/div&gt;') // '<div>Hello</div>'
  * ```
  */
 export function unescapeHtml(str: string): string {
-  const htmlUnescapes: Record<string, string> = {
-    '&amp;': '&',
-    '&lt;': '<',
-    '&gt;': '>',
-    '&quot;': '"',
-    '&#39;': "'",
-  }
-
-  return str.replace(/&(?:amp|lt|gt|quot|#39);/g, entity => htmlUnescapes[entity])
+  return str.replace(/&(?:amp|lt|gt|quot|#39);/g, entity => HTML_UNESCAPES[entity])
 }
+
+// 预定义字符集常量
+const DEFAULT_CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
 /**
  * 生成随机字符串
- * 
+ *
  * @param length - 字符串长度
  * @param charset - 字符集（可选）
  * @returns 随机字符串
- * 
+ *
  * @example
  * ```typescript
  * randomString(8) // 'aBc3Def9'
  * randomString(6, 'ABCDEF0123456789') // 'A3F2E1'
  * ```
  */
-export function randomString(
-  length: number,
-  charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-): string {
-  let result = ''
+export function randomString(length: number, charset = DEFAULT_CHARSET): string {
+  if (length <= 0) return ''
+
+  // 使用数组拼接，性能更好
+  const result: string[] = []
+  const charsetLength = charset.length
+
   for (let i = 0; i < length; i++) {
-    result += charset.charAt(Math.floor(Math.random() * charset.length))
+    result.push(charset.charAt(Math.floor(Math.random() * charsetLength)))
   }
-  return result
+
+  return result.join('')
 }
 
 // 注意：isValidEmail, isValidUrl, formatFileSize 函数已移至 validate.ts 和 format.ts

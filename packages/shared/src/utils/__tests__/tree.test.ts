@@ -146,6 +146,7 @@ describe('tree utils', () => {
         if (node.id === 2) {
           return false // 停止遍历
         }
+        return true // 继续遍历
       })
 
       expect(visited).toEqual([1, 2])
