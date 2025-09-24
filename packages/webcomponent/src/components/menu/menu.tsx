@@ -74,6 +74,7 @@ export class LdesignMenu {
   private topItemRefs: Map<string, HTMLLIElement> = new Map();
   private moreMeasureRef?: HTMLLIElement; // 用于测量“更多”宽度
   private moreRenderRef?: HTMLLIElement; // 实际渲染的“更多”节点（可选）
+  private measureListRef?: HTMLUListElement; // 隐藏测量层的列表，用于基于 Flex 的边界测量
   private resizeObserver?: ResizeObserver;
   private lastOverflowCount: number = 0;
 
@@ -460,6 +461,9 @@ export class LdesignMenu {
   private registerMoreMeasureRef = (el: HTMLLIElement | null) => {
     this.moreMeasureRef = el || undefined;
   };
+  private registerMeasureListRef = (el: HTMLUListElement | null) => {
+    this.measureListRef = el || undefined;
+  };
   private registerMoreRenderRef = (el: HTMLLIElement | null) => {
     this.moreRenderRef = el || undefined;
   };
@@ -469,37 +473,40 @@ export class LdesignMenu {
     requestAnimationFrame(() => this.calcOverflow());
   }
 
-  private getMoreWidth(): number {
-    // 优先使用真实渲染的“更多”节点的宽度，最准确
-    const live = this.moreRenderRef;
-    if (live && live.offsetWidth) return live.offsetWidth;
-
-    // 退化到测量节点（绝对定位，不影响布局）
-    const el = this.moreMeasureRef;
-    if (!el) return 72; // fallback
-    const prev = { cssText: el.style.cssText } as any;
-    // 尽量确保是按内容宽度测量
-    el.style.position = 'absolute';
-    el.style.visibility = 'hidden';
-    el.style.left = '-99999px';
-    el.style.top = '-99999px';
-    (el.style as any).width = 'auto';
-    const w = el.offsetWidth || 72;
-    el.style.cssText = prev.cssText;
-    return w;
-  }
-
+  // 计算顶层节点的内容宽度（优先测量内部 .ldesign-menu__item，避免 li 的布局影响）
   private getTopNodeWidth(key: string): number {
     const li = this.measureItemRefs.get(key) || this.topItemRefs.get(key);
     if (!li) return 0;
-    // 优先测量内部的 .ldesign-menu__item（在测量层里 li 为 block，会占满一行；测子元素才是内容宽）
-    const inner = li.firstElementChild as HTMLElement | null;
+    const inner = li.querySelector('.ldesign-menu__item') as HTMLElement | null;
     const target = inner || (li as any as HTMLElement);
     const rect = target.getBoundingClientRect();
-    return rect?.width || target.offsetWidth || 0;
+    const w = rect?.width || target.offsetWidth || 0;
+    return w;
   }
 
+  private getMoreWidth(): number {
+    // 优先读取内部 .ldesign-menu__item 的内容宽度，避免 li（有时为 block 或带 auto margin）影响测量
+    const measureFrom = (li: HTMLLIElement | undefined) => {
+      if (!li) return 0;
+      const inner = li.querySelector('.ldesign-menu__item') as HTMLElement | null;
+      const node = inner || (li as any as HTMLElement);
+      const rect = node.getBoundingClientRect();
+      const w = rect?.width || node.offsetWidth || 0;
+      return w;
+    };
+
+    const liveW = measureFrom(this.moreRenderRef!);
+    if (liveW > 0) return liveW;
+
+    // 回退到隐藏测量节点
+    const w = measureFrom(this.moreMeasureRef!);
+    return w > 0 ? w : 72;
+  }
+
+
   private calcOverflow() {
+    // 标记：读一次测量层引用，避免构建时 noUnusedLocals 对私有字段的告警
+    void this.measureListRef;
     if (this.mode !== 'horizontal') {
       if (this.overflowKeys.length) this.overflowKeys = [];
       return;
@@ -507,48 +514,39 @@ export class LdesignMenu {
     const list = this.listRef;
     if (!list) return;
 
-    // 使用更精确的几何宽度，避免 clientWidth 取整带来的误差；
-    // 优先取列表本身的可视宽度
+    // 容器宽度（几何宽度），更稳定
     const rect = list.getBoundingClientRect();
     const containerW = rect?.width || list.clientWidth || (this.el as HTMLElement).clientWidth;
     if (containerW <= 0) return;
 
-    // 收集顶层项宽度（使用隐藏测量克隆，确保即使被收纳也能测到）
+    // 顶层 key + 各自的内容宽度（来源：测量层 .ldesign-menu__item）
     const keys = (this.parsedItems || []).map(it => it.key);
     if (!keys.length) { this.overflowKeys = []; return; }
 
     const widths: number[] = keys.map(k => this.getTopNodeWidth(k));
-
-    // 若某些宽度仍为 0，说明隐藏测量层尚未准备好，延后一次
-    if (widths.some(w => w === 0)) {
-      requestAnimationFrame(() => this.calcOverflow());
-      return;
-    }
+    if (widths.some(w => w <= 0)) { requestAnimationFrame(() => this.calcOverflow()); return; }
 
     const style = getComputedStyle(list);
-    // 兼容性：gap/column-gap/row-gap 都尝试，优先主轴 gap
     const gapStr = (style as any).gap || (style as any).columnGap || (style as any).rowGap || '0';
     const gap = parseFloat(String(gapStr)) || 0;
 
-    // 前缀和，快速得到前 n 项之和
     const prefix: number[] = new Array(widths.length + 1).fill(0);
     for (let i = 0; i < widths.length; i++) prefix[i + 1] = prefix[i] + widths[i];
     const sumW = (n: number) => prefix[n];
 
     const moreW = this.getMoreWidth();
-
     const N = widths.length;
-    // 使用二分查找找到最大可见前缀，避免 O(N) 回退在大量条目时产生抖动
-    let lo = 0, hi = N; // 可见数量区间 [lo, hi]
+
+    // fits(n): 可见前 n 项（含它们之间 gap）+ 右侧“更多”（若需要）是否能放下
     const fits = (n: number) => {
-      const base = sumW(n);
-      const gaps = n > 0 ? (n - 1) * gap : 0;
+      const visible = sumW(n) + (n > 0 ? (n - 1) * gap : 0);
       const needMore = n < N;
-      const moreGap = needMore && n > 0 ? gap : 0;
-      const total = base + gaps + (needMore ? (moreGap + moreW) : 0);
-      // 留出 0.5px 的容错，避免亚像素/取整导致“还差 1px”未放下
-      return total <= containerW + 0.5;
+      const total = visible + (needMore ? ((n > 0 ? gap : 0) + moreW) : 0);
+      return total <= containerW + 0.5; // 容差 0.5px，避免亚像素误差
     };
+
+    // 二分最大 n
+    let lo = 0, hi = N;
     while (lo < hi) {
       const mid = Math.ceil((lo + hi + 1) / 2);
       if (fits(mid)) lo = mid; else hi = mid - 1;
@@ -556,15 +554,13 @@ export class LdesignMenu {
     const best = lo;
 
     const nextOverflow = keys.slice(best);
-    const changed = this.overflowKeys.join(',') !== nextOverflow.join(',');
-    if (changed) {
+    if (this.overflowKeys.join(',') !== nextOverflow.join(',')) {
       this.overflowKeys = nextOverflow;
       const cnt = nextOverflow.length;
       if (cnt !== this.lastOverflowCount) {
         this.lastOverflowCount = cnt;
         this.ldesignOverflowChange.emit({ overflowCount: cnt });
       }
-      // 当刚显示“更多”后，再用真实节点宽度复测一次，避免测量节点误差导致的“明明还能放下一个”
       if (cnt > 0) requestAnimationFrame(() => this.calcOverflow());
     }
   }
@@ -907,14 +903,6 @@ export class LdesignMenu {
                 const hidden = (this.parsedItems || []).filter(it => overflow.has(it.key));
                 return [
                   ...visible.map(it => this.renderMenuNode(it, 1)),
-                  // “更多”测量节点（隐藏，用于拿到宽度）
-                  <li class="ldesign-menu__node" role="none" ref={this.registerMoreMeasureRef} style={{ position: 'absolute', visibility: 'hidden', left: '-99999px', top: '-99999px' }}>
-                    <div class={{ 'ldesign-menu__item': true, 'ldesign-menu__item--submenu': true }}>
-                      <span class="ldesign-menu__icon ldesign-menu__icon--default" aria-hidden="true"></span>
-                      <span class="ldesign-menu__title">{this.moreLabel}</span>
-                      {this.renderArrow(false, 'down')}
-                    </div>
-                  </li>,
                   hidden.length > 0 && (() => {
                     const path = this.getPathKeys(this.currentKey || '');
                     const inMoreBySelection = path.length > 0 && this.overflowKeys.includes(path[0]);
@@ -955,7 +943,7 @@ export class LdesignMenu {
         </ul>
         {/* 隐藏测量层：渲染所有顶层条目的克隆，用于稳定测量宽度 */}
         {this.mode === 'horizontal' && (
-          <ul class="ldesign-menu__measure" style={{ position: 'absolute', left: '-99999px', top: '-99999px', visibility: 'hidden', padding: '0', margin: '0' }}>
+          <ul class="ldesign-menu__list ldesign-menu__measure" ref={this.registerMeasureListRef} style={{ position: 'absolute', left: '-99999px', top: '-99999px', visibility: 'hidden', padding: '0', margin: '0' }}>
             {(this.parsedItems || []).map(it => (
               <li class="ldesign-menu__node" role="none" ref={this.registerMeasureTopRef(it.key)}>
                 <div class={{ 'ldesign-menu__item': true, 'ldesign-menu__item--submenu': !!it.children?.length }}>
@@ -965,6 +953,14 @@ export class LdesignMenu {
                 </div>
               </li>
             ))}
+            {/* 测量“更多” */}
+            <li class="ldesign-menu__node" role="none" ref={this.registerMoreMeasureRef}>
+              <div class={{ 'ldesign-menu__item': true, 'ldesign-menu__item--submenu': true }}>
+                <span class="ldesign-menu__icon ldesign-menu__icon--default" aria-hidden="true"></span>
+                <span class="ldesign-menu__title">{this.moreLabel}</span>
+                {this.renderArrow(false, 'down')}
+              </div>
+            </li>
           </ul>
         )}
       </Host>

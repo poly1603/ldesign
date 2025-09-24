@@ -64,6 +64,7 @@ export class LdesignTabs {
   private mutationObserver?: MutationObserver;
   private resizeObserver?: ResizeObserver;
   private shouldCenterOnUpdate = false;
+  private centerTries = 0;
 
   @Watch('value')
   watchValue(newVal?: string) {
@@ -122,10 +123,7 @@ export class LdesignTabs {
       this.updateInkBar();
       // 第一次更新可能导致左右滚动按钮出现/消失，从而改变可视宽度。
       // 因此先更新按钮状态，再在下一帧执行居中，确保拿到最新的尺寸。
-      const prevPrev = this.canScrollPrev;
-      const prevNext = this.canScrollNext;
       this.updateScrollButtons();
-      const buttonsChanged = prevPrev !== this.canScrollPrev || prevNext !== this.canScrollNext;
       if (this.shouldCenterOnUpdate) {
         requestAnimationFrame(() => this.centerActiveIfNeeded());
       }
@@ -338,32 +336,46 @@ private getPanels(): (HTMLElement & { name?: string; label?: string; disabled?: 
     if (!this.shouldCenterOnUpdate) return;
     const nav = this.getNavScrollEl();
     const activeBtn = this.el.querySelector('.ldesign-tabs__tab.ldesign-tabs__tab--active') as HTMLElement | null;
-    if (!nav || !activeBtn) { this.shouldCenterOnUpdate = false; return; }
+    if (!nav || !activeBtn) { this.shouldCenterOnUpdate = false; this.centerTries = 0; return; }
+
     const horizontal = this.getTablistOrientation() === 'horizontal';
+    const canScroll = horizontal ? (nav.scrollWidth > nav.clientWidth + 1) : (nav.scrollHeight > nav.clientHeight + 1);
+    if (!canScroll) { this.shouldCenterOnUpdate = false; this.centerTries = 0; return; }
+
+    // 用矩形差值计算需要滚动的距离，避免 offset 误差与按钮显隐影响
+    const navRect = nav.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
+    const viewportCenter = horizontal ? (navRect.left + nav.clientWidth / 2) : (navRect.top + nav.clientHeight / 2);
+    const tabCenter = horizontal ? (btnRect.left + btnRect.width / 2) : (btnRect.top + btnRect.height / 2);
+    const delta = tabCenter - viewportCenter; // 需要移动的像素：>0 往右/下，<0 往左/上
+
+    const TOL = 1; // 允许 1px 误差
+    if (Math.abs(delta) <= TOL) {
+      // 已经足够接近中心，结束循环
+      this.shouldCenterOnUpdate = false;
+      this.centerTries = 0;
+      return;
+    }
 
     if (horizontal) {
-      // 只要存在溢出（左右任何一侧仍有隐藏项），就把激活项居中；到达边界时会被夹紧为 0 或 max
-      if (nav.scrollWidth > nav.clientWidth + 1) {
-        const tabCenter = activeBtn.offsetLeft + activeBtn.offsetWidth / 2;
-        const ideal = tabCenter - nav.clientWidth / 2;
-        const max = nav.scrollWidth - nav.clientWidth;
-        const target = Math.max(0, Math.min(ideal, max));
-        if (Math.abs(nav.scrollLeft - target) > 1) {
-          nav.scrollTo({ left: target, behavior: 'smooth' });
-        }
-      }
+      const max = nav.scrollWidth - nav.clientWidth;
+      const target = Math.max(0, Math.min(nav.scrollLeft + delta, max));
+      nav.scrollTo({ left: target, behavior: 'smooth' });
     } else {
-      if (nav.scrollHeight > nav.clientHeight + 1) {
-        const tabCenter = activeBtn.offsetTop + activeBtn.offsetHeight / 2;
-        const ideal = tabCenter - nav.clientHeight / 2;
-        const max = nav.scrollHeight - nav.clientHeight;
-        const target = Math.max(0, Math.min(ideal, max));
-        if (Math.abs(nav.scrollTop - target) > 1) {
-          nav.scrollTo({ top: target, behavior: 'smooth' });
-        }
-      }
+      const max = nav.scrollHeight - nav.clientHeight;
+      const target = Math.max(0, Math.min(nav.scrollTop + delta, max));
+      nav.scrollTo({ top: target, behavior: 'smooth' });
     }
-    this.shouldCenterOnUpdate = false;
+
+    // 为了应对滚动过程中按钮显隐变化，循环尝试几次直到稳定居中
+    this.centerTries = (this.centerTries || 0) + 1;
+    if (this.centerTries <= 8) {
+      requestAnimationFrame(() => this.centerActiveIfNeeded());
+    } else {
+      // 超过尝试次数也结束，避免极端情况下的无限循环
+      this.shouldCenterOnUpdate = false;
+      this.centerTries = 0;
+    }
   }
 
   private updateScrollButtons() {

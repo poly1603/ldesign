@@ -1044,6 +1044,21 @@ export namespace Components {
         "lockOnScroll": boolean;
         "maxWidth"?: number | string;
         /**
+          * 动画位移距离（px），用于“朝触发器靠近”的起始位移
+          * @default 10
+         */
+        "motionDistance": number;
+        /**
+          * 动画时长（ms）
+          * @default 200
+         */
+        "motionDuration": number;
+        /**
+          * 是否开启动画（基于 data-placement 的定向靠近/离开）
+          * @default true
+         */
+        "motionEnabled": boolean;
+        /**
           * 与触发元素的距离：参见组件注释中的语义说明
           * @default 8
          */
@@ -1392,6 +1407,11 @@ export namespace Components {
           * @default 250
          */
         "maxWidth": number;
+        /**
+          * 与触发元素的间距（默认 tooltip 更大一些）
+          * @default 16
+         */
+        "offsetDistance": number | string;
         /**
           * 提示位置
           * @default 'top'
@@ -3057,6 +3077,21 @@ declare namespace LocalJSX {
         "lockOnScroll"?: boolean;
         "maxWidth"?: number | string;
         /**
+          * 动画位移距离（px），用于“朝触发器靠近”的起始位移
+          * @default 10
+         */
+        "motionDistance"?: number;
+        /**
+          * 动画时长（ms）
+          * @default 200
+         */
+        "motionDuration"?: number;
+        /**
+          * 是否开启动画（基于 data-placement 的定向靠近/离开）
+          * @default true
+         */
+        "motionEnabled"?: boolean;
+        /**
           * 与触发元素的距离：参见组件注释中的语义说明
           * @default 8
          */
@@ -3438,6 +3473,11 @@ declare namespace LocalJSX {
           * @default 250
          */
         "maxWidth"?: number;
+        /**
+          * 与触发元素的间距（默认 tooltip 更大一些）
+          * @default 16
+         */
+        "offsetDistance"?: number | string;
         /**
           * 提示位置
           * @default 'top'

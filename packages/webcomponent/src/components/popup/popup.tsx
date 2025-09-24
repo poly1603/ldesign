@@ -45,10 +45,17 @@ export class LdesignPopup {
   @Prop() showDelay: number = 0;
   @Prop() hideDelay: number = 0;
   @Prop() debug: boolean = false;
+  /** 是否开启动画（基于 data-placement 的定向靠近/离开） */
+  @Prop({ reflect: true }) motionEnabled: boolean = true;
+  /** 动画时长（ms） */
+  @Prop() motionDuration: number = 200;
+  /** 动画位移距离（px），用于“朝触发器靠近”的起始位移 */
+  @Prop() motionDistance: number = 10;
 
   // ── State ──────────────────────────────────────────────────────
   @State() isVisible: boolean = false;
   @State() positioned: boolean = false; // 首帧定位前隐藏
+  @State() motion: 'closed' | 'opening' | 'open' | 'closing' = 'closed';
 
   // ── Runtime ────────────────────────────────────────────────────
   private popupElement?: HTMLElement;
@@ -323,31 +330,90 @@ export class LdesignPopup {
   }
 
   // ── Visibility ─────────────────────────────────────────────────
+  private async playOpenMotion() {
+    if (!this.motionEnabled) { this.motion = 'open'; return; }
+    this.motion = 'opening';
+    await this.nextFrame();
+    // 强制一次样式计算以刷新初始状态，保证过渡触发
+    try {
+      this.popupElement = this.getPopupEl() || this.el.querySelector('.ldesign-popup__content');
+      // @ts-ignore
+      void this.popupElement?.getBoundingClientRect();
+    } catch {}
+    await this.nextFrame();
+    this.motion = 'open';
+  }
+
   show() {
     if (this.disabled || this.isVisible) return; this.clearTimers();
     const delay = this.showDelay > 0 && !(this.trigger === 'hover' && this.interactive) ? this.showDelay : 0;
-    if (delay) this.showTimer = window.setTimeout(() => this.setVisible(true), delay); else this.setVisible(true);
+    const run = async () => {
+      this.isVisible = true; this.visible = true;
+      this.positioned = false;
+      await this.updatePosition();
+      await this.playOpenMotion();
+      this.bindContentHoverIfNeeded();
+      this.ldesignVisibleChange.emit(true);
+    };
+    if (delay) this.showTimer = window.setTimeout(run, delay); else run();
   }
   hide() {
     if (!this.isVisible) return; this.clearTimers();
+    const finalize = () => {
+      this.isVisible = false; this.visible = false;
+      this.motion = 'closed';
+      this.cleanup?.();
+      this.unbindContentHover();
+      this.contextVirtualRef = undefined;
+      this.removeFromContainerIfNeeded();
+      this.ldesignVisibleChange.emit(false);
+    };
+    const run = () => {
+      if (this.motionEnabled && this.motionDuration > 0) {
+        this.motion = 'closing';
+        window.setTimeout(finalize, this.motionDuration);
+      } else {
+        finalize();
+      }
+    };
     const delay = this.hideDelay > 0 ? this.hideDelay : 0;
-    if (delay) this.hideTimer = window.setTimeout(() => this.setVisible(false), delay); else this.setVisible(false);
+    if (delay) this.hideTimer = window.setTimeout(run, delay); else run();
   }
   toggle() { this.isVisible ? this.hide() : this.show(); }
 
   private async setVisibleInternal(visible: boolean) {
-    if (this.isVisible === visible) return;
-    this.isVisible = visible;
-    if (visible) { this.positioned = false; await this.updatePosition(); this.bindContentHoverIfNeeded(); }
-    else { this.cleanup?.(); this.unbindContentHover(); this.contextVirtualRef = undefined; this.removeFromContainerIfNeeded(); }
-    this.ldesignVisibleChange.emit(visible);
+    // 统一处理外部受控 visible 变更
+    if (visible) {
+      if (this.isVisible) return;
+      this.isVisible = true; this.visible = true;
+      this.positioned = false; await this.updatePosition();
+      await this.playOpenMotion();
+      this.bindContentHoverIfNeeded();
+      this.ldesignVisibleChange.emit(true);
+    } else {
+      if (!this.isVisible) return;
+      if (this.motionEnabled && this.motionDuration > 0) {
+        this.motion = 'closing';
+        window.setTimeout(() => {
+          this.isVisible = false; this.visible = false;
+          this.motion = 'closed';
+          this.cleanup?.();
+          this.unbindContentHover();
+          this.contextVirtualRef = undefined;
+          this.removeFromContainerIfNeeded();
+          this.ldesignVisibleChange.emit(false);
+        }, this.motionDuration);
+      } else {
+        this.isVisible = false; this.visible = false; this.motion = 'closed';
+        this.cleanup?.(); this.unbindContentHover(); this.contextVirtualRef = undefined; this.removeFromContainerIfNeeded();
+        this.ldesignVisibleChange.emit(false);
+      }
+    }
   }
+
   private async setVisible(visible: boolean) {
-    if (this.isVisible === visible) return;
-    this.isVisible = visible; this.visible = visible;
-    if (visible) { this.positioned = false; await this.updatePosition(); this.bindContentHoverIfNeeded(); }
-    else { this.cleanup?.(); this.unbindContentHover(); this.contextVirtualRef = undefined; }
-    this.ldesignVisibleChange.emit(visible);
+    // 不再直接使用，保留以兼容旧调用路径
+    if (visible) this.show(); else this.hide();
   }
 
   private clearTimers() { if (this.showTimer) { clearTimeout(this.showTimer); this.showTimer = undefined; } if (this.hideTimer) { clearTimeout(this.hideTimer); this.hideTimer = undefined; } }
@@ -373,6 +439,8 @@ export class LdesignPopup {
     const style: any = { position: this.getStrategy(), visibility: this.positioned ? 'visible' : 'hidden' };
     const w = this.toPx(this.width); if (w) style.width = w;
     const mw = this.toPx(this.maxWidth); if (mw) style.maxWidth = mw;
+    style['--ldp-motion'] = this.motionEnabled ? `${this.motionDuration}ms` : '0ms';
+    style['--ldp-motion-distance'] = `${this.motionDistance}px`;
     return style;
   }
 
@@ -381,7 +449,7 @@ export class LdesignPopup {
       <Host class={{ 'ldesign-popup': true, 'ldesign-popup--disabled': this.disabled, 'ldesign-popup--dark': this.theme === 'dark' }}>
         <div class="ldesign-popup__trigger"><slot name="trigger" /></div>
         {this.isVisible && (
-          <div id={this.uid} class="ldesign-popup__content" style={this.getPopupStyle()} role={this.popupRole} aria-hidden={!this.isVisible}>
+          <div id={this.uid} class="ldesign-popup__content" data-state={this.motionEnabled ? this.motion : 'open'} style={this.getPopupStyle()} role={this.popupRole} aria-hidden={!this.isVisible}>
             {this.arrow && (<div class="ldesign-popup__arrow"></div>)}
             <div class="ldesign-popup__inner">
               {this.popupTitle && (<div class="ldesign-popup__title">{this.popupTitle}</div>)}

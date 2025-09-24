@@ -8,12 +8,17 @@
 
 /* 保持 Tooltip 文本略小一些，可按需调优 */
 .ldesign-tooltip .ldesign-popup__content {
-  padding: 6px 8px;
+  padding: 0;
   font-size: 12px;
   line-height: 1.4;
   border-radius: 4px;
   word-wrap: break-word;
   white-space: pre-wrap;
+}
+
+/* Tooltip 内边距由 inner 控制，避免与 Popup 内部 padding 叠加 */
+.ldesign-tooltip .ldesign-popup__inner {
+  padding: 4px 8px;
 }
 
 // 动画关键帧

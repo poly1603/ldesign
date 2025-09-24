@@ -205,9 +205,9 @@
   &__measure .ldesign-menu__item {
     width: auto;
   }
-  /* 测量层 li 采用 inline-block 以便它的自身宽度与内容一致（避免 block 100% 宽度）*/
+  /* 测量层用于宽度/边界计算：作为 flex 容器的子项，保持默认 block 即可 */
   &__measure li {
-    display: inline-block;
+    display: block;
   }
 
   /* 纵向行内展开时，给图标左边增加一点空间，视觉更均衡 */

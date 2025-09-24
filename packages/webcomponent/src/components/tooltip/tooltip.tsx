@@ -34,6 +34,9 @@ export class LdesignTooltip {
   /** 最大宽度 */
   @Prop() maxWidth: number = 250;
 
+  /** 与触发元素的间距（默认 tooltip 更大一些） */
+  @Prop() offsetDistance: number | string = 16;
+
   /** 主题：深色/浅色（默认深色） */
   @Prop() theme: 'dark' | 'light' = 'dark';
 
@@ -48,6 +51,7 @@ export class LdesignTooltip {
           hideDelay={this.hideDelay}
           disabled={this.disabled}
           arrow={this.arrow}
+          offset-distance={this.offsetDistance}
           maxWidth={this.maxWidth}
           popupRole="tooltip"
           theme={this.theme}
