@@ -27,6 +27,7 @@ Icon 图标组件
 
  - [ldesign-button](../button)
  - [ldesign-checkbox](../checkbox)
+ - [ldesign-drawer](../drawer)
  - [ldesign-input](../input)
  - [ldesign-message](../message)
  - [ldesign-modal](../modal)
@@ -38,6 +39,7 @@ Icon 图标组件
 graph TD;
   ldesign-button --> ldesign-icon
   ldesign-checkbox --> ldesign-icon
+  ldesign-drawer --> ldesign-icon
   ldesign-input --> ldesign-icon
   ldesign-message --> ldesign-icon
   ldesign-modal --> ldesign-icon

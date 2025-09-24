@@ -6,12 +6,14 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { ButtonShape, ButtonType, Size, Theme } from "./types";
+import { DrawerPlacement } from "./components/drawer/drawer";
 import { MessageType } from "./components/message/message";
 import { ModalAnimation, ModalSize } from "./components/modal/modal";
 import { NotificationPlacement, NotificationType } from "./components/notification/notification";
 import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 export { ButtonShape, ButtonType, Size, Theme } from "./types";
+export { DrawerPlacement } from "./components/drawer/drawer";
 export { MessageType } from "./components/message/message";
 export { ModalAnimation, ModalSize } from "./components/modal/modal";
 export { NotificationPlacement, NotificationType } from "./components/notification/notification";
@@ -204,6 +206,68 @@ export namespace Components {
           * @default 'default'
          */
         "variant": 'default' | 'outline' | 'filled' | 'button';
+    }
+    /**
+     * Drawer 抽屉组件
+     * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
+     */
+    interface LdesignDrawer {
+        /**
+          * 是否显示右上角关闭按钮
+          * @default true
+         */
+        "closable": boolean;
+        /**
+          * 关闭（等价于 hide），同时触发 close 事件
+         */
+        "close": () => Promise<void>;
+        /**
+          * 是否允许按下 ESC 关闭
+          * @default true
+         */
+        "closeOnEsc": boolean;
+        /**
+          * 标题文本（可通过 slot=header 自定义头部）
+         */
+        "drawerTitle"?: string;
+        /**
+          * 隐藏抽屉（带动画）
+         */
+        "hide": () => Promise<void>;
+        /**
+          * 是否显示遮罩层
+          * @default true
+         */
+        "mask": boolean;
+        /**
+          * 点击遮罩是否关闭
+          * @default true
+         */
+        "maskClosable": boolean;
+        /**
+          * 抽屉出现的位置
+          * @default 'right'
+         */
+        "placement": DrawerPlacement;
+        /**
+          * 显示抽屉
+         */
+        "show": (emit?: boolean) => Promise<void>;
+        /**
+          * 面板尺寸（left/right 为宽度，top/bottom 为高度）。可为数字（px）或任意 CSS 长度
+          * @default 360
+         */
+        "size": number | string;
+        /**
+          * 是否显示抽屉
+          * @default false
+         */
+        "visible": boolean;
+        /**
+          * z-index
+          * @default 1000
+         */
+        "zIndex": number;
     }
     /**
      * Icon 图标组件
@@ -819,6 +883,10 @@ export interface LdesignCheckboxGroupCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignCheckboxGroupElement;
 }
+export interface LdesignDrawerCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignDrawerElement;
+}
 export interface LdesignInputCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignInputElement;
@@ -924,6 +992,28 @@ declare global {
     var HTMLLdesignCheckboxGroupElement: {
         prototype: HTMLLdesignCheckboxGroupElement;
         new (): HTMLLdesignCheckboxGroupElement;
+    };
+    interface HTMLLdesignDrawerElementEventMap {
+        "ldesignVisibleChange": boolean;
+        "ldesignClose": void;
+    }
+    /**
+     * Drawer 抽屉组件
+     * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
+     */
+    interface HTMLLdesignDrawerElement extends Components.LdesignDrawer, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignDrawerElementEventMap>(type: K, listener: (this: HTMLLdesignDrawerElement, ev: LdesignDrawerCustomEvent<HTMLLdesignDrawerElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignDrawerElementEventMap>(type: K, listener: (this: HTMLLdesignDrawerElement, ev: LdesignDrawerCustomEvent<HTMLLdesignDrawerElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignDrawerElement: {
+        prototype: HTMLLdesignDrawerElement;
+        new (): HTMLLdesignDrawerElement;
     };
     /**
      * Icon 图标组件
@@ -1124,6 +1214,7 @@ declare global {
         "ldesign-button": HTMLLdesignButtonElement;
         "ldesign-checkbox": HTMLLdesignCheckboxElement;
         "ldesign-checkbox-group": HTMLLdesignCheckboxGroupElement;
+        "ldesign-drawer": HTMLLdesignDrawerElement;
         "ldesign-icon": HTMLLdesignIconElement;
         "ldesign-input": HTMLLdesignInputElement;
         "ldesign-message": HTMLLdesignMessageElement;
@@ -1335,6 +1426,64 @@ declare namespace LocalJSX {
           * @default 'default'
          */
         "variant"?: 'default' | 'outline' | 'filled' | 'button';
+    }
+    /**
+     * Drawer 抽屉组件
+     * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
+     */
+    interface LdesignDrawer {
+        /**
+          * 是否显示右上角关闭按钮
+          * @default true
+         */
+        "closable"?: boolean;
+        /**
+          * 是否允许按下 ESC 关闭
+          * @default true
+         */
+        "closeOnEsc"?: boolean;
+        /**
+          * 标题文本（可通过 slot=header 自定义头部）
+         */
+        "drawerTitle"?: string;
+        /**
+          * 是否显示遮罩层
+          * @default true
+         */
+        "mask"?: boolean;
+        /**
+          * 点击遮罩是否关闭
+          * @default true
+         */
+        "maskClosable"?: boolean;
+        /**
+          * 事件：关闭
+         */
+        "onLdesignClose"?: (event: LdesignDrawerCustomEvent<void>) => void;
+        /**
+          * 事件：可见性变化
+         */
+        "onLdesignVisibleChange"?: (event: LdesignDrawerCustomEvent<boolean>) => void;
+        /**
+          * 抽屉出现的位置
+          * @default 'right'
+         */
+        "placement"?: DrawerPlacement;
+        /**
+          * 面板尺寸（left/right 为宽度，top/bottom 为高度）。可为数字（px）或任意 CSS 长度
+          * @default 360
+         */
+        "size"?: number | string;
+        /**
+          * 是否显示抽屉
+          * @default false
+         */
+        "visible"?: boolean;
+        /**
+          * z-index
+          * @default 1000
+         */
+        "zIndex"?: number;
     }
     /**
      * Icon 图标组件
@@ -1966,6 +2115,7 @@ declare namespace LocalJSX {
         "ldesign-button": LdesignButton;
         "ldesign-checkbox": LdesignCheckbox;
         "ldesign-checkbox-group": LdesignCheckboxGroup;
+        "ldesign-drawer": LdesignDrawer;
         "ldesign-icon": LdesignIcon;
         "ldesign-input": LdesignInput;
         "ldesign-message": LdesignMessage;
@@ -2002,6 +2152,11 @@ declare module "@stencil/core" {
              * 管理一组复选框的状态
              */
             "ldesign-checkbox-group": LocalJSX.LdesignCheckboxGroup & JSXBase.HTMLAttributes<HTMLLdesignCheckboxGroupElement>;
+            /**
+             * Drawer 抽屉组件
+             * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
+             */
+            "ldesign-drawer": LocalJSX.LdesignDrawer & JSXBase.HTMLAttributes<HTMLLdesignDrawerElement>;
             /**
              * Icon 图标组件
              * 基于 Lucide 图标库

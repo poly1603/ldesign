@@ -44,16 +44,39 @@ export default {
   enhanceApp({ app, router, siteData }) {
     // 注册 Web Components
     if (typeof window !== 'undefined') {
-      // 直接导入组件库的ESM版本
-      import('../../../dist/ldesign-webcomponent/ldesign-webcomponent.esm.js')
-        .then(() => {
-          console.log('LDesign WebComponent 组件库已加载')
-          // 初次加载后尝试初始化 demo
-          initInputDemos()
-        })
-        .catch(err => {
-          console.warn('Failed to load LDesign WebComponent:', err)
-        })
+      const loadFromDist = () => import('../../../dist/ldesign-webcomponent/ldesign-webcomponent.esm.js')
+      const loadFromDev = async () => {
+        // 动态追加 dev server 样式
+        const cssHref = 'http://localhost:3333/build/ldesign-webcomponent.css'
+        if (!document.querySelector(`link[href="${cssHref}"]`)) {
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = cssHref
+          document.head.appendChild(link)
+        }
+        // 通过裸 import 加载 ESM
+        return import(/* @vite-ignore */ 'http://localhost:3333/build/ldesign-webcomponent.esm.js')
+      }
+
+      const loadLibrary = async () => {
+        try {
+          await loadFromDist()
+          console.log('LDesign WebComponent 组件库已从 dist 加载')
+        } catch (err) {
+          console.warn('从 dist 加载失败，尝试从 Stencil dev server 加载...', err)
+          try {
+            await loadFromDev()
+            console.log('LDesign WebComponent 组件库已从 dev server 加载')
+          } catch (err2) {
+            console.error('加载 LDesign WebComponent 失败', err2)
+          }
+        }
+      }
+
+      loadLibrary().then(() => {
+        // 初次加载后尝试初始化 demo
+        initInputDemos()
+      })
 
       // 监听路由变化，确保切换页面后 demo 仍生效
       router.onAfterRouteChanged = () => {

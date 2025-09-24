@@ -1,0 +1,128 @@
+// Drawer 抽屉组件样式
+.ldesign-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: none;
+  overscroll-behavior: contain;
+
+  // 可见或关闭动画阶段都需要展示以完成过渡
+  &--visible,
+  &--closing {
+    display: block;
+  }
+
+  &__mask {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+
+    .ldesign-drawer--visible & {
+      opacity: 1;
+    }
+    .ldesign-drawer--closing & {
+      opacity: 0;
+    }
+  }
+
+  &__panel {
+    position: absolute;
+    background: var(--ldesign-bg-color, #ffffff);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    max-width: 100vw;
+    max-height: 100vh;
+    opacity: 1;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &--left,
+    &--right {
+      top: 0;
+      bottom: 0;
+      width: 360px; // 由内联样式覆盖
+    }
+
+    &--top,
+    &--bottom {
+      left: 0;
+      right: 0;
+      height: 360px; // 由内联样式覆盖
+    }
+
+    // 初始位移（隐藏态）
+    &--left { left: 0; transform: translateX(-100%); }
+    &--right { right: 0; transform: translateX(100%); }
+    &--top { top: 0; transform: translateY(-100%); }
+    &--bottom { bottom: 0; transform: translateY(100%); }
+
+    // 打开态
+    &--open&--left,
+    &--open&--right,
+    &--open&--top,
+    &--open&--bottom {
+      transform: translate(0, 0);
+    }
+
+    // 关闭动画阶段
+    &--closing&--left { transform: translateX(-100%); }
+    &--closing&--right { transform: translateX(100%); }
+    &--closing&--top { transform: translateY(-100%); }
+    &--closing&--bottom { transform: translateY(100%); }
+  }
+
+  &__content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ldesign-text-color, #1f2937);
+  }
+
+  &__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    color: var(--ldesign-text-color-secondary, #6b7280);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--ldesign-bg-color-hover, #f3f4f6);
+      color: var(--ldesign-text-color, #1f2937);
+    }
+  }
+
+  &__body {
+    padding: 16px 20px;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    color: var(--ldesign-text-color, #1f2937);
+  }
+}
