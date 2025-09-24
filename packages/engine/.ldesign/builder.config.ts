@@ -50,9 +50,8 @@ export default defineConfig({
   build: {
     // 禁用构建警告
     rollupOptions: {
-      onwarn: (warning, warn) => {
+      onwarn: () => {
         // 完全静默，不输出任何警告
-        return
       }
     }
   }

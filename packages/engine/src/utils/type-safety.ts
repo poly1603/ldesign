@@ -93,7 +93,7 @@ export function safeJsonStringify(value: unknown, space?: string | number): { su
     // 首先检查是否有循环引用
     const hasCircularRef = (() => {
       const seen = new WeakSet()
-      const check = (obj: any): boolean => {
+      const check = (obj: unknown): boolean => {
         if (obj && typeof obj === 'object') {
           if (seen.has(obj)) {
             return true
@@ -101,7 +101,7 @@ export function safeJsonStringify(value: unknown, space?: string | number): { su
           seen.add(obj)
           for (const key in obj) {
             if (Object.prototype.hasOwnProperty.call(obj, key)) {
-              if (check(obj[key])) {
+              if (check((obj as Record<string, unknown>)[key])) {
                 return true
               }
             }
@@ -598,7 +598,7 @@ export class PromiseUtil {
 /**
  * 类型安全的事件发射
  */
-export function typedEmit(emitter: any, eventName: string, data: any): { success: boolean; error?: Error } {
+export function typedEmit(emitter: Record<string, unknown>, eventName: string, data: unknown): { success: boolean; error?: Error } {
   try {
     if (!emitter || typeof emitter.emit !== 'function') {
       return { success: false, error: new Error('Invalid event emitter') }
@@ -622,7 +622,7 @@ export const typedEmit2 = typedEmit
 /**
  * 类型安全的事件监听
  */
-export function typedOn(emitter: any, eventName: string, handler: any): { success: boolean; unsubscribe?: () => void; error?: Error } {
+export function typedOn(emitter: Record<string, unknown>, eventName: string, handler: unknown): { success: boolean; unsubscribe?: () => void; error?: Error } {
   try {
     if (!emitter || typeof emitter.on !== 'function') {
       return { success: false, error: new Error('Invalid event emitter') }
@@ -653,7 +653,7 @@ export function typedOn(emitter: any, eventName: string, handler: any): { succes
 /**
  * 类型安全的配置获取
  */
-export function getTypedConfig(configManager: any, path: string, defaultValue: any): { success: boolean; value?: any; error?: Error } {
+export function getTypedConfig(configManager: Record<string, unknown>, path: string, defaultValue: unknown): { success: boolean; value?: unknown; error?: Error } {
   try {
     if (!configManager || typeof configManager.get !== 'function') {
       return { success: false, error: new Error('Invalid config manager') }
@@ -678,7 +678,7 @@ export function getTypedConfig(configManager: any, path: string, defaultValue: a
 /**
  * 类型安全的配置设置
  */
-export function setTypedConfig(configManager: any, path: string, value: any): { success: boolean; error?: Error } {
+export function setTypedConfig(configManager: Record<string, unknown>, path: string, value: unknown): { success: boolean; error?: Error } {
   try {
     if (!configManager || typeof configManager.set !== 'function') {
       return { success: false, error: new Error('Invalid config manager') }
@@ -695,9 +695,9 @@ export function setTypedConfig(configManager: any, path: string, value: any): { 
  * 输入验证器
  */
 export class InputValidator {
-  private rules: Map<string, Array<(value: any) => boolean | string>> = new Map()
+  private rules: Map<string, Array<(value: unknown) => boolean | string>> = new Map()
 
-  addRule(field: string, validator: (value: any) => boolean | string): void {
+  addRule(field: string, validator: (value: unknown) => boolean | string): void {
     if (!this.rules.has(field)) {
       this.rules.set(field, [])
     }

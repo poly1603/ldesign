@@ -37,7 +37,7 @@ export class BundleOptimizer {
   private loadedModules = new Map<string, any>()
   private loadingPromises = new Map<string, Promise<any>>()
   private codeSplits = new Map<string, CodeSplitConfig>()
-  
+
   // 性能监控
   private loadTimes = new Map<string, number>()
   private loadCounts = new Map<string, number>()
@@ -47,7 +47,7 @@ export class BundleOptimizer {
    */
   registerLazyModule(config: LazyModuleConfig): void {
     this.lazyModules.set(config.name, config)
-    
+
     // 如果需要预加载，添加到预加载队列
     if (config.preload) {
       this.preloadModule(config.name)
@@ -60,7 +60,7 @@ export class BundleOptimizer {
   registerLazyModules(configs: LazyModuleConfig[]): void {
     // 按优先级排序
     const sortedConfigs = configs.sort((a, b) => (b.priority || 0) - (a.priority || 0))
-    
+
     for (const config of sortedConfigs) {
       this.registerLazyModule(config)
     }
@@ -92,16 +92,16 @@ export class BundleOptimizer {
 
     try {
       const module = await loadingPromise
-      
+
       // 记录加载时间和次数
       const loadTime = performance.now() - startTime
       this.loadTimes.set(name, loadTime)
       this.loadCounts.set(name, (this.loadCounts.get(name) || 0) + 1)
-      
+
       // 缓存模块
       this.loadedModules.set(name, module)
       this.loadingPromises.delete(name)
-      
+
       return module
     } catch (error) {
       this.loadingPromises.delete(name)
@@ -153,14 +153,14 @@ export class BundleOptimizer {
    */
   getCodeSplitSuggestions(modules: string[]): Record<string, string[]> {
     const suggestions: Record<string, string[]> = {}
-    
+
     for (const [splitName, config] of this.codeSplits) {
       const matchingModules = modules.filter(config.condition)
       if (matchingModules.length > 0) {
         suggestions[splitName] = matchingModules
       }
     }
-    
+
     return suggestions
   }
 
@@ -176,11 +176,11 @@ export class BundleOptimizer {
   } {
     const totalModules = this.lazyModules.size
     const loadedModules = this.loadedModules.size
-    
+
     // 计算平均加载时间
     const loadTimes = Array.from(this.loadTimes.values())
-    const averageLoadTime = loadTimes.length > 0 
-      ? loadTimes.reduce((sum, time) => sum + time, 0) / loadTimes.length 
+    const averageLoadTime = loadTimes.length > 0
+      ? loadTimes.reduce((sum, time) => sum + time, 0) / loadTimes.length
       : 0
 
     // 找出最慢的模块
@@ -212,8 +212,8 @@ export class BundleOptimizer {
    * 清理未使用的模块
    */
   cleanupUnusedModules(): void {
-    const now = Date.now()
-    const unusedThreshold = 5 * 60 * 1000 // 5分钟
+    const _now = Date.now()
+    const _unusedThreshold = 5 * 60 * 1000 // 5分钟
 
     for (const [name, module] of this.loadedModules) {
       // 如果模块有清理方法，调用它

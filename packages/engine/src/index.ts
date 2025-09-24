@@ -16,273 +16,52 @@
  *
  * engine.createApp(App).mount('#app')
  * ```
+ *
+ * @example 按需导入
+ * ```typescript
+ * // 只导入核心功能
+ * import { createEngine } from '@ldesign/engine/core'
+ *
+ * // 只导入管理器
+ * import { createCacheManager } from '@ldesign/engine/managers'
+ *
+ * // 只导入工具函数
+ * import { debounce, throttle } from '@ldesign/engine/utils'
+ *
+ * // 只导入Vue集成
+ * import { useEngine } from '@ldesign/engine/vue'
+ * ```
  */
 
-// 管理器导出
-// Vue插件安装函数
 import type { App } from 'vue'
 import type { CreateEngineOptions, Engine } from './types'
 
-// 高级缓存管理器导出
-export {
-  AdvancedCacheManager,
-  type AutoUpdateConfig,
-  type CacheStatistics,
-  type LayeredCacheConfig,
-  type PreloadConfig
-} from './cache/advanced-cache'
-export {
-  CacheManagerImpl,
-  CacheStrategy,
-  createCacheManager,
-} from './cache/cache-manager'
-
-export {
-  ConfigManagerImpl,
-  createConfigManager,
-  defaultConfigSchema,
-  NamespacedConfigManager,
-} from './config/config-manager'
-
-// 常量导出
-export * from './constants'
-
-// 核心导出
+// 核心功能 - 最常用的导出
+export { createEngine, createApp, createAndMountApp } from './core/factory'
 export { EngineImpl } from './core/engine'
 
-export { createAndMountApp, createApp, createEngine } from './core/factory'
-
-// Dialog弹窗系统导出
-export * from './dialog'
-
-export {
-  commonDirectives,
-  createDirectiveManager,
-} from './directives/directive-manager'
-
-export { createErrorManager, errorHandlers } from './errors/error-manager'
-
-// 错误恢复系统导出
-export {
-  commonRecoveryStrategies,
-  createErrorRecoveryManager,
-  type ErrorContext,
-  ErrorRecoveryManager,
-  type ErrorReport as ErrorRecoveryReport,
-  type FallbackStrategy,
-  type RecoveryStrategy,
-  type RetryStrategy
-} from './errors/error-recovery'
-
+// 基础管理器 - 最常用的管理器
+export { createConfigManager } from './config/config-manager'
 export { createEventManager, ENGINE_EVENTS } from './events/event-manager'
+export { createLogger } from './logger/logger'
 
-// 请求拦截器导出
-export {
-  createRequestInterceptor,
-  type ErrorInterceptorFn,
-  type InterceptorFn,
-  type ProgressEvent,
-  type RequestConfig,
-  requestInterceptor,
-  RequestInterceptorManager,
-  type ResponseData
-} from './interceptors/request-interceptor'
+// 常用工具函数
+export { debounce, throttle, deepClone, generateId } from './utils/index'
 
-export { createLogger, logFormatters, logTransports } from './logger/logger'
+// Vue集成 - 最常用的Vue功能
+export { useEngine } from './vue/composables/useEngine'
 
-// 消息系统导出
-// 选择性导出消息模块以避免冲突
-export {
-  calculateMessagePosition,
-  createMessageManager,
-  createMessageQueue,
-  generateMessageId,
-  getViewportSize,
-  messageDebounce,
-  messageDeepClone,
-  MessageManager,
-  messageThrottle,
-  validateMessageConfig,
-} from './message'
+// 常量
+export * from './constants'
 
+// 基础类型导出
 export type {
-  MessageConfig,
-  MessageInstance,
-  MessageManagerConfig,
-  MessagePosition,
-  MessageType,
-} from './message'
-
-// 新增中间件系统导出
-export {
-  commonMiddleware,
-  createMiddlewareManager,
-} from './middleware/middleware-manager'
-
-export {
-  createNotificationManager,
-  notificationTypes,
-} from './notifications/notification-manager'
-
-export {
-  createPerformanceManager,
-  PerformanceEventType,
-} from './performance/performance-manager'
-
-// 新增插件系统导出
-export { createPluginManager } from './plugins/plugin-manager'
-
-// 预设配置导出
-export * from './presets'
-
-export {
-  createSecurityManager,
-  SecurityEventType,
-} from './security/security-manager'
-
-export { createStateManager, stateModules } from './state/state-manager'
-
-// 类型导出
-// 选择性导出类型以避免冲突
-export type {
-  // 配置类型
-  ConfigManager,
-
-  // 指令类型
-  DirectiveManager,
-  // 引擎类型
+  Engine,
   EngineConfig,
-  EngineDirective,
-  // 通知类型
-  NotificationManager as EngineNotificationManager,
-  NotificationOptions as EngineNotificationOptions,
-  NotificationProgress as EngineNotificationProgress,
-  EnhancedEngineConfig,
-
-  // 环境类型
-  EnvironmentManager,
-
-  // 事件类型
+  CreateEngineOptions,
+  ConfigManager,
   EventManager,
-  EventMap,
-  I18nAdapter,
-
-  // 生命周期类型
-  LifecycleManager,
-  NotificationAction,
-  NotificationPosition,
-  NotificationTheme,
-  NotificationType,
-  // 性能类型
-  PerformanceManager,
-  // 适配器类型
-  RouterAdapter,
-  // 安全类型
-  SecurityManager,
-  StateAdapter,
-  // 基础类型
-  Stats,
-  ThemeAdapter,
 } from './types'
-
-// 工具函数导出
-export * from './utils'
-
-// 增强配置管理系统导出
-export {
-  type ConfigChangeEvent,
-  type ConfigLoader,
-  type ConfigObject,
-  type ConfigSchema,
-  type ConfigValidator,
-  ConfigValidators,
-  type ConfigValue,
-  createEnhancedConfigManager,
-  EnhancedConfigManager,
-  EnvironmentConfigLoader,
-  JsonConfigLoader,
-  MemoryConfigLoader
-} from './utils/config-manager'
-
-// 日志系统导出
-export {
-  ConsoleLogHandler,
-  createModuleLogger,
-  EnhancedLogger,
-  ErrorTracker,
-  type LogContext,
-  type LogEntry,
-  logger,
-  type ErrorReport as LoggingErrorReport,
-  type LogHandler,
-  LogLevel,
-  LogLevelNames,
-  logMethod,
-  logPerformance,
-  MemoryLogHandler,
-  RemoteLogHandler
-} from './utils/logging-system'
-
-// 内存管理工具导出
-export {
-  createManagedPromise,
-  GlobalMemoryManager,
-  ListenerManager,
-  managedLifecycle,
-  MemoryLeakDetector,
-  memoryManager,
-  ReferenceTracker,
-  ResourceManager,
-  TimerManager
-} from './utils/memory-manager'
-
-// 性能分析工具导出
-export {
-  BatchProcessor,
-  debounce,
-  globalPerformanceAnalyzer,
-  measurePerformance,
-  ObjectPool,
-  PerformanceAnalyzer,
-  type PerformanceMeasure,
-  type PerformanceReport,
-  throttle
-} from './utils/performance-analyzer'
-
-// 类型安全工具导出
-export {
-  createTypedConfigManager,
-  isArray,
-  isBoolean,
-  isFunction,
-  isNumber,
-  isPromise,
-  isString,
-  isValidObject,
-  PromiseUtil,
-  safeAsync,
-  safeDeepClone,
-  safeFilter,
-  safeGet,
-  safeGetNested,
-  safeJsonParse,
-  safeJsonStringify,
-  safeMap,
-  safeMerge,
-  TypedConfigWrapper
-} from './utils/type-safety'
-
-// 打包优化工具导出
-export {
-  BundleOptimizer,
-  globalBundleOptimizer,
-  LazyLoad,
-  dynamicImport,
-  preloadCriticalModules
-} from './utils/bundle-optimizer'
-
-// Vue集成导出
-export * from './vue'
 
 // 版本信息
 export const version = '0.1.0'

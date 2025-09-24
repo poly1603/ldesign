@@ -16,19 +16,35 @@ export class TimerManager {
   private pendingCleanup = new Set<NodeJS.Timeout>()
   private cleanupTimer?: NodeJS.Timeout
 
+  // 内存优化：使用WeakMap存储回调引用，避免循环引用
+  private callbackRefs = new WeakMap<NodeJS.Timeout, any>()
+
   /**
    * 设置超时定时器
    */
   setTimeout(callback: () => void, delay: number): NodeJS.Timeout {
+    // 使用WeakRef避免循环引用（如果支持的话）
+    const callbackRef = typeof (globalThis as any).WeakRef !== 'undefined'
+      ? new (globalThis as any).WeakRef(callback)
+      : { deref: () => callback }
+
     const timer = setTimeout(() => {
       this.timers.delete(timer)
-      try {
-        callback()
-      } catch (error) {
-        console.error('Timer callback error:', error)
+      this.callbackRefs.delete(timer)
+
+      // 检查回调是否仍然存在
+      const cb = callbackRef.deref()
+      if (cb) {
+        try {
+          cb()
+        } catch (error) {
+          console.error('Timer callback error:', error)
+        }
       }
     }, delay)
+
     this.timers.add(timer)
+    this.callbackRefs.set(timer, callbackRef)
     return timer
   }
 
@@ -920,11 +936,58 @@ export class GlobalMemoryManager {
     memory: ReturnType<MemoryLeakDetector['detectLeaks']>
     resources: ReturnType<ResourceManager['getStats']>
     potentialLeaks: number
+    timers: ReturnType<TimerManager['getStats']>
+    listeners: ReturnType<ListenerManager['getStats']>
+    healthScore: number
+    recommendations: string[]
   } {
+    const timerStats = this.timerManager.getStats()
+    const listenerStats = this.listenerManager.getStats()
+    const resourceStats = this.resourceManager.getStats()
+    const potentialLeaks = this.referenceTracker.findPotentialLeaks().length
+
+    // 计算健康分数 (0-100)
+    let healthScore = 100
+    const recommendations: string[] = []
+
+    // 定时器过多扣分
+    if (timerStats.total > 50) {
+      healthScore -= 20
+      recommendations.push('定时器数量过多，建议清理不必要的定时器')
+    }
+
+    // 监听器过多扣分
+    if (listenerStats.totalListeners > 100) {
+      healthScore -= 15
+      recommendations.push('事件监听器数量过多，建议移除不必要的监听器')
+    }
+
+    // 资源过多扣分
+    if (resourceStats.totalResources > 200) {
+      healthScore -= 15
+      recommendations.push('注册资源过多，建议定期清理')
+    }
+
+    // 潜在泄漏扣分
+    if (potentialLeaks > 10) {
+      healthScore -= 30
+      recommendations.push('检测到潜在内存泄漏，建议检查循环引用')
+    }
+
+    // 内存监控未启用扣分
+    if (!this.leakDetector.isMonitoring()) {
+      healthScore -= 10
+      recommendations.push('建议启用内存监控')
+    }
+
     return {
       memory: this.leakDetector.detectLeaks(),
-      resources: this.resourceManager.getStats(),
-      potentialLeaks: this.referenceTracker.findPotentialLeaks().length,
+      resources: resourceStats,
+      potentialLeaks,
+      timers: timerStats,
+      listeners: listenerStats,
+      healthScore: Math.max(0, healthScore),
+      recommendations
     }
   }
 

@@ -109,8 +109,15 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
   })
 
   // 6. 注册插件系统
-  // 使用 Promise.all 并行加载所有插件
-  const pluginPromise = Promise.all(plugins.map(plugin => engine.use(plugin)))
+  // 使用 Promise.all 并行加载所有插件，捕获错误以防止引擎创建失败
+  const pluginPromise = Promise.all(plugins.map(async plugin => {
+    try {
+      await engine.use(plugin)
+    } catch (error) {
+      // 插件安装失败时记录错误但不阻止引擎创建
+      engine.logger.error(`Failed to register plugin "${plugin.name}"`, error)
+    }
+  }))
 
   // 7. 自动创建和挂载 Vue 应用（可选）
   if (rootComponent) {

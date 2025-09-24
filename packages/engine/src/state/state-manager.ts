@@ -50,10 +50,12 @@ export class StateManagerImpl implements StateManager {
     // 清理所有监听器
     this.watchers.clear()
 
-    // 清空状态
-    Object.keys(this.state).forEach(key => {
-      delete this.state[key]
-    })
+    // 清空状态 - 添加防御性检查
+    if (this.state && typeof this.state === 'object') {
+      Object.keys(this.state).forEach(key => {
+        delete this.state[key]
+      })
+    }
   }
 
   watch<T = unknown>(

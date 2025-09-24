@@ -179,8 +179,8 @@ function main() {
   const files = {
     'ES Module': 'es/index.js',
     'CommonJS': 'lib/index.cjs',
-    'UMD Bundle': 'dist/index.umd.js',
-    'TypeScript 定义': 'lib/src/index.d.ts',
+    'UMD Bundle': 'dist/index.js',
+    'TypeScript 定义': 'es/index.d.ts',
   }
 
   // 分析每个文件

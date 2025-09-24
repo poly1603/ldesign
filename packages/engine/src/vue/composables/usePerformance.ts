@@ -1,5 +1,12 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useEngine } from './useEngine'
+import {
+  globalCoreWebVitalsMonitor,
+  globalRealtimePerformanceMonitor,
+  type CoreWebVitalsMetrics,
+  type RealtimePerformanceData,
+  type PerformanceAlert
+} from '../../utils'
 
 /**
  * 性能监控组合式函数
@@ -125,7 +132,7 @@ export function usePerformance() {
       try {
         window.performance.measure(name, `${name}-start`, `${name}-end`)
         updateMetrics()
-      } catch (error) {
+      } catch {
         // Ignore measurement errors
       }
     }
@@ -236,7 +243,7 @@ export function useMemoryManager() {
     getOverallStats: () => ({ totalResources: 0, activeTimers: 0, activeListeners: 0 }),
     registerResource: () => 'mock-id',
     cleanup: () => {},
-    setTimeout: (cb: () => void, delay: number) => setTimeout(cb, delay),
+    setTimeout: (cb: () => void, delay: number) => globalThis.setTimeout(cb, delay),
     addEventListener: () => 'mock-id'
   }
 
@@ -283,12 +290,37 @@ export function useMemoryManager() {
     return memoryManager.addEventListener(target, event, listener, options)
   }
 
+  const removeEventListener = (
+    target: EventTarget,
+    event: string,
+    listener: EventListener
+  ) => {
+    if (typeof memoryManager.removeEventListener === 'function') {
+      return memoryManager.removeEventListener(target, event, listener)
+    } else {
+      // 回退到原生方法
+      target.removeEventListener(event, listener)
+    }
+  }
+
+  // 组件卸载时自动清理
+  onUnmounted(() => {
+    if (statsInterval) {
+      clearInterval(statsInterval)
+    }
+    // 执行内存管理器的清理
+    if (typeof memoryManager.cleanup === 'function') {
+      memoryManager.cleanup()
+    }
+  })
+
   return {
     stats: computed(() => stats.value),
     registerResource,
     cleanup,
     setTimeout,
-    addEventListener
+    addEventListener,
+    removeEventListener
   }
 }
 
@@ -367,5 +399,139 @@ export function useCache() {
     has,
     remove,
     clear
+  }
+}
+
+/**
+ * Core Web Vitals 监控组合式函数
+ *
+ * @returns Core Web Vitals 监控工具
+ *
+ * @example
+ * ```vue
+ * <script setup>
+ * import { useCoreWebVitals } from '@ldesign/engine'
+ *
+ * const { metrics, score, isGood } = useCoreWebVitals()
+ *
+ * watch(metrics, (newMetrics) => {
+ *   console.log('Core Web Vitals updated:', newMetrics)
+ * })
+ * </script>
+ * ```
+ */
+export function useCoreWebVitals() {
+  const metrics = ref<CoreWebVitalsMetrics>({})
+  const score = ref(100)
+
+  onMounted(() => {
+    // 监听Core Web Vitals指标更新
+    globalCoreWebVitalsMonitor.onMetric((newMetrics) => {
+      metrics.value = newMetrics
+      score.value = globalCoreWebVitalsMonitor.getPerformanceScore()
+    })
+
+    // 启动监控
+    globalCoreWebVitalsMonitor.start()
+  })
+
+  onUnmounted(() => {
+    globalCoreWebVitalsMonitor.stop()
+  })
+
+  const isGood = computed(() => {
+    const m = metrics.value
+    return (
+      (!m.lcp || m.lcp.rating === 'good') &&
+      (!m.fcp || m.fcp.rating === 'good') &&
+      (!m.cls || m.cls.rating === 'good') &&
+      (!m.fid || m.fid.rating === 'good')
+    )
+  })
+
+  const hasIssues = computed(() => {
+    const m = metrics.value
+    return (
+      (m.lcp && m.lcp.rating === 'poor') ||
+      (m.fcp && m.fcp.rating === 'poor') ||
+      (m.cls && m.cls.rating === 'poor') ||
+      (m.fid && m.fid.rating === 'poor')
+    )
+  })
+
+  return {
+    metrics: computed(() => metrics.value),
+    score: computed(() => score.value),
+    isGood,
+    hasIssues
+  }
+}
+
+/**
+ * 实时性能监控组合式函数
+ *
+ * @returns 实时性能监控工具
+ *
+ * @example
+ * ```vue
+ * <script setup>
+ * import { useRealtimePerformance } from '@ldesign/engine'
+ *
+ * const { data, alerts, isHealthy } = useRealtimePerformance()
+ *
+ * watch(alerts, (newAlerts) => {
+ *   if (newAlerts.length > 0) {
+ *     console.warn('Performance alerts:', newAlerts)
+ *   }
+ * })
+ * </script>
+ * ```
+ */
+export function useRealtimePerformance() {
+  const data = ref<RealtimePerformanceData | null>(null)
+  const alerts = ref<PerformanceAlert[]>([])
+
+  onMounted(() => {
+    // 监听实时性能数据更新
+    globalRealtimePerformanceMonitor.onData((newData) => {
+      data.value = newData
+    })
+
+    // 监听性能告警
+    globalRealtimePerformanceMonitor.onAlert((alert) => {
+      alerts.value = globalRealtimePerformanceMonitor.getActiveAlerts()
+    })
+
+    // 启动监控
+    globalRealtimePerformanceMonitor.start()
+  })
+
+  onUnmounted(() => {
+    globalRealtimePerformanceMonitor.stop()
+  })
+
+  const isHealthy = computed(() => {
+    return alerts.value.filter(alert => alert.level === 'critical').length === 0
+  })
+
+  const memoryUsage = computed(() => {
+    return data.value?.system.memory.percentage || 0
+  })
+
+  const fps = computed(() => {
+    return data.value?.system.fps || 0
+  })
+
+  const domNodes = computed(() => {
+    return data.value?.dom.nodeCount || 0
+  })
+
+  return {
+    data: computed(() => data.value),
+    alerts: computed(() => alerts.value),
+    isHealthy,
+    memoryUsage,
+    fps,
+    domNodes
   }
 }

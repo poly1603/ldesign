@@ -528,6 +528,10 @@ export class EngineImpl implements Engine {
     // 禁用配置自动保存
     this.config.disableAutoSave()
 
+    // 重置引擎状态
+    this._isReady = false
+    this._mounted = false
+
     this.logger.info('Engine destroyed')
 
     // 执行销毁后的生命周期钩子

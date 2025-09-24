@@ -9,12 +9,12 @@ export default defineConfig({
       'tests/performance/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     ],
     exclude: [
-      'node_modules', 
-      'dist', 
-      'lib', 
-      'es', 
-      'types', 
-      'cjs', 
+      'node_modules',
+      'dist',
+      'lib',
+      'es',
+      'types',
+      'cjs',
       'esm',
       'e2e/**'
     ],

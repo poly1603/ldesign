@@ -11,6 +11,36 @@ export interface CacheOptions {
   metadata?: Record<string, unknown>
 }
 
+// 缓存存储配置
+export interface CacheStorageConfig {
+  prefix?: string
+  maxSize?: number
+  ttl?: number
+  compression?: boolean
+  encryption?: boolean
+  encryptionKey?: string
+  namespace?: string
+}
+
+// 内存缓存配置
+export interface MemoryCacheConfig extends CacheStorageConfig {
+  maxMemoryUsage?: number
+  gcInterval?: number
+}
+
+// 本地存储缓存配置
+export interface LocalStorageCacheConfig extends CacheStorageConfig {
+  storageKey?: string
+  quotaLimit?: number
+}
+
+// IndexedDB缓存配置
+export interface IndexedDBCacheConfig extends CacheStorageConfig {
+  dbName?: string
+  storeName?: string
+  version?: number
+}
+
 export interface CacheItem<T = unknown> {
   value: T
   expiry?: number

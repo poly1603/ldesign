@@ -20,7 +20,7 @@ export interface ValidationRule {
   min?: number
   max?: number
   pattern?: RegExp
-  validator?: (value: any) => boolean | string | Promise<boolean | string>
+  validator?: (value: unknown) => boolean | string | Promise<boolean | string>
   message?: string
 }
 
@@ -176,7 +176,7 @@ export function useForm<T extends Record<string, any>>(
           if (typeof result === 'string') {
             return result
           }
-        } catch (error) {
+        } catch {
           return rule.message || `${String(fieldName)} validation failed`
         }
       }

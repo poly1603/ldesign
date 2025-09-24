@@ -1,4 +1,4 @@
-import { computed, onUnmounted, ref, type Ref } from 'vue'
+import { computed, onUnmounted, ref, type Ref, type Component } from 'vue'
 import { useEngine } from './useEngine'
 
 /**
@@ -58,7 +58,7 @@ export function useNotifications() {
     unsubscribeRemove?.()
   })
 
-  const show = (message: string, options?: {
+  const show = (message: string, _options?: {
     type?: 'info' | 'success' | 'warning' | 'error'
     duration?: number
     closable?: boolean
@@ -170,7 +170,7 @@ export function useDialog() {
     unsubscribeRemove?.()
   })
 
-  const show = (component: any, props?: Record<string, any>, options?: {
+  const show = (component: Component, props?: Record<string, unknown>, options?: {
     title?: string
     width?: string | number
     height?: string | number

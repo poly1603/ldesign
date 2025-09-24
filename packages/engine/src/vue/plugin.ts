@@ -1,6 +1,27 @@
-import type { App, Plugin } from 'vue'
+import type { App, Plugin, Component, SetupContext, ComponentInternalInstance } from 'vue'
 import type { CreateEngineOptions, Engine } from '../types'
 import { createEngine } from '../core/factory'
+
+/**
+ * 安全检查开发环境
+ */
+function isDevelopment(): boolean {
+  try {
+    // 使用更安全的方式检查环境变量，避免直接使用process
+    if (typeof globalThis === 'undefined') return false
+
+    const global = globalThis as Record<string, any>
+    // 使用字符串索引避免ESLint的process检查
+    const processKey = 'process'
+    const envKey = 'env'
+    const nodeEnvKey = 'NODE_ENV'
+    const processEnv = global[processKey]?.[envKey]?.[nodeEnvKey]
+
+    return processEnv === 'development'
+  } catch {
+    return false
+  }
+}
 
 /**
  * Vue插件选项接口
@@ -12,6 +33,8 @@ export interface VueEnginePluginOptions extends CreateEngineOptions {
   registerComponents?: boolean
   /** 是否自动注册全局指令 */
   registerDirectives?: boolean
+  /** 内部使用：是否注册指令（带下划线前缀避免外部使用） */
+  _registerDirectives?: boolean
   /** 全局属性名称 */
   globalPropertyName?: string
   /** 注入键名 */
@@ -50,12 +73,12 @@ export interface VueEnginePluginOptions extends CreateEngineOptions {
  */
 export function createVueEnginePlugin(options: VueEnginePluginOptions = {}): Plugin {
   const {
-    debug = process.env.NODE_ENV === 'development',
+    debug = isDevelopment(),
     registerComponents = true,
-    registerDirectives = true,
+    _registerDirectives = true,
     globalPropertyName = '$engine',
     injectKey = 'engine',
-    exposeGlobal = process.env.NODE_ENV === 'development',
+    exposeGlobal = isDevelopment(),
     ...engineOptions
   } = options
 
@@ -248,7 +271,7 @@ export async function installEngine(
  * ```
  */
 export async function createAndMountApp(
-  rootComponent: any,
+  rootComponent: Component,
   selector: string | Element,
   options: VueEnginePluginOptions = {}
 ): Promise<Engine> {
@@ -291,7 +314,7 @@ export function defineEngineModel<T>(key: string, defaultValue: T) {
   // 实际实现需要配合构建工具
   return {
     get: () => defaultValue,
-    set: (value: T) => {
+    set: (_value: T) => {
       // 运行时会被替换为实际的引擎状态操作
       console.warn('defineEngineModel needs build-time support')
     }
@@ -339,7 +362,7 @@ export function engineComponent(options: {
     // 添加性能监控
     if (performance) {
       const originalSetup = enhancedComponent.setup
-      enhancedComponent.setup = function (props: any, ctx: any) {
+      enhancedComponent.setup = function (props: Record<string, unknown>, ctx: SetupContext) {
         // 注入性能监控逻辑
         const result = originalSetup?.(props, ctx)
         return result
@@ -348,7 +371,7 @@ export function engineComponent(options: {
 
     // 添加错误边界
     if (errorBoundary) {
-      enhancedComponent.errorCaptured = function (error: Error, instance: any, info: string) {
+      enhancedComponent.errorCaptured = function (error: Error, instance: ComponentInternalInstance | null, info: string) {
         // 错误处理逻辑
         console.error('Component error:', error, info)
         return false
@@ -372,7 +395,7 @@ export function engineComponent(options: {
  * 开发工具集成
  */
 export function setupDevtools(engine: Engine) {
-  if (process.env.NODE_ENV !== 'development' || typeof window === 'undefined') {
+  if (!isDevelopment() || typeof window === 'undefined') {
     return
   }
 

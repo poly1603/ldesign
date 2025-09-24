@@ -11,12 +11,12 @@ export default defineConfig({
       '__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     ],
     exclude: [
-      'node_modules', 
-      'dist', 
-      'lib', 
-      'es', 
-      'types', 
-      'cjs', 
+      'node_modules',
+      'dist',
+      'lib',
+      'es',
+      'types',
+      'cjs',
       'esm',
       // 排除 e2e 测试，它们有单独的配置
       'e2e/**'

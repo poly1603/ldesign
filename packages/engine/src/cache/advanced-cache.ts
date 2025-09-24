@@ -3,7 +3,14 @@
  * 🚀 提供分层缓存、智能预加载、自动更新等高级特性
  */
 
-import type { CacheItem, CacheOptions, CacheStorage } from '../types/cache'
+import type {
+  CacheItem,
+  CacheOptions,
+  CacheStorage,
+  MemoryCacheConfig,
+  LocalStorageCacheConfig,
+  IndexedDBCacheConfig
+} from '../types/cache'
 
 /**
  * 分层缓存配置
@@ -466,8 +473,20 @@ export class AdvancedCacheManager {
  */
 class MemoryCache implements CacheStorage {
   private cache = new Map<string, CacheItem>()
+  private config: MemoryCacheConfig & { prefix: string }
 
-  constructor(private config: any) { }
+  constructor(config: MemoryCacheConfig) {
+    this.config = {
+      prefix: 'memory',
+      maxSize: 1000,
+      ttl: 300000,
+      compression: false,
+      encryption: false,
+      maxMemoryUsage: 50 * 1024 * 1024, // 50MB
+      gcInterval: 60000,
+      ...config
+    }
+  }
 
   async get<T>(key: string): Promise<T | null> {
     const item = this.cache.get(key)
@@ -493,7 +512,7 @@ class MemoryCache implements CacheStorage {
     })
 
     // 检查大小限制
-    if (this.cache.size > this.config.maxSize) {
+    if (this.config.maxSize && this.cache.size > this.config.maxSize) {
       // 删除最旧的项
       const firstKey = this.cache.keys().next().value
       if (firstKey) this.cache.delete(firstKey)
@@ -522,7 +541,20 @@ class MemoryCache implements CacheStorage {
  * 本地存储缓存实现
  */
 class LocalStorageCache implements CacheStorage {
-  constructor(private config: any) { }
+  private config: LocalStorageCacheConfig & { prefix: string }
+
+  constructor(config: LocalStorageCacheConfig) {
+    this.config = {
+      prefix: 'ldesign',
+      maxSize: 1000,
+      ttl: 300000,
+      compression: false,
+      encryption: false,
+      storageKey: 'cache',
+      quotaLimit: 5 * 1024 * 1024, // 5MB
+      ...config
+    }
+  }
 
   async get<T>(key: string): Promise<T | null> {
     const prefixedKey = `${this.config.prefix}_${key}`
@@ -596,7 +628,20 @@ class LocalStorageCache implements CacheStorage {
  * 会话存储缓存实现
  */
 class SessionStorageCache implements CacheStorage {
-  constructor(private config: any) { }
+  private config: LocalStorageCacheConfig & { prefix: string }
+
+  constructor(config: LocalStorageCacheConfig) {
+    this.config = {
+      prefix: 'ldesign',
+      maxSize: 1000,
+      ttl: 300000,
+      compression: false,
+      encryption: false,
+      storageKey: 'cache',
+      quotaLimit: 5 * 1024 * 1024, // 5MB
+      ...config
+    }
+  }
 
   async get<T>(key: string): Promise<T | null> {
     const prefixedKey = `${this.config.prefix}_${key}`
@@ -671,8 +716,20 @@ class SessionStorageCache implements CacheStorage {
  */
 class IndexedDBCache implements CacheStorage {
   private db: IDBDatabase | null = null
+  private config: IndexedDBCacheConfig & { prefix: string; dbName: string; storeName: string }
 
-  constructor(private config: any) {
+  constructor(config: IndexedDBCacheConfig) {
+    this.config = {
+      prefix: 'ldesign',
+      maxSize: 1000,
+      ttl: 300000,
+      compression: false,
+      encryption: false,
+      dbName: 'ldesign-cache',
+      storeName: 'cache',
+      version: 1,
+      ...config
+    }
     this.initDB()
   }
 

@@ -8,13 +8,13 @@ import type { ErrorHandler } from '../types/enhanced'
 /**
  * 错误恢复策略
  */
-export interface RecoveryStrategy {
+export interface RecoveryStrategy<T = unknown> {
   /** 策略名称 */
   name: string
   /** 是否可以处理该错误 */
   canHandle: (error: Error) => boolean
   /** 恢复处理 */
-  recover: (error: Error, context?: any) => Promise<any>
+  recover: (error: Error, context?: Record<string, unknown>) => Promise<T>
   /** 优先级（数值越大优先级越高） */
   priority?: number
 }
@@ -36,29 +36,29 @@ export interface RetryStrategy {
 /**
  * 降级策略
  */
-export interface FallbackStrategy {
+export interface FallbackStrategy<T = unknown> {
   /** 降级值或函数 */
-  fallback: any | ((error: Error) => any)
+  fallback: T | ((error: Error) => T)
   /** 是否应该降级 */
   shouldFallback?: (error: Error) => boolean
   /** 降级时的通知 */
-  onFallback?: (error: Error, fallbackValue: any) => void
+  onFallback?: (error: Error, fallbackValue: T) => void
 }
 
 /**
  * 错误上下文
  */
-export interface ErrorContext {
+export interface ErrorContext extends Record<string, unknown> {
   /** 错误发生的组件/模块 */
   component?: string
   /** 错误发生的操作 */
   operation?: string
   /** 用户信息 */
-  user?: any
+  user?: Record<string, unknown>
   /** 请求信息 */
-  request?: any
+  request?: Record<string, unknown>
   /** 附加数据 */
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   /** 错误发生时间 */
   timestamp: number
   /** 错误ID */
@@ -195,7 +195,7 @@ export class ErrorRecoveryManager {
   private async tryRecover(
     error: Error,
     context: ErrorContext
-  ): Promise<{ recovered: boolean; strategy?: string; value?: any }> {
+  ): Promise<{ recovered: boolean; strategy?: string; value?: unknown }> {
     for (const strategy of this.strategies) {
       if (strategy.canHandle(error)) {
         try {
@@ -539,7 +539,7 @@ export const commonRecoveryStrategies = {
         error.message.includes('unauthorized') ||
         error.message.includes('403')
     },
-    recover: async (error: Error, context?: any) => {
+    recover: async (error: Error, context?: Record<string, unknown>) => {
       // 尝试刷新令牌
       if (context?.refreshToken) {
         // 这里应该调用刷新令牌的API

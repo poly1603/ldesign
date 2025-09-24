@@ -47,50 +47,50 @@
 // 缓存管理器优化 - 添加智能清理策略
 class LRUCache<T = unknown> {
   // 新增：自适应清理策略
-  private adaptiveCleanupInterval = 5000; // 初始5秒
-  private lastCleanupPerformance = 0;     // 上次清理耗时
-  
+  private adaptiveCleanupInterval = 5000 // 初始5秒
+  private lastCleanupPerformance = 0 // 上次清理耗时
+
   // 优化清理策略
   private setupCleanupStrategy(): void {
     this.cleanupTimer = setInterval(() => {
-      const startTime = performance.now();
-      
+      const startTime = performance.now()
+
       // 检查缓存使用率来决定是否需要主动清理
-      const usage = this.cache.size / this.maxSize;
-      
+      const usage = this.cache.size / this.maxSize
+
       if (usage > 0.8) {
         // 缓存接近满时，主动清理
-        this.cleanup();
+        this.cleanup()
       } else if (this.cleanupQueue.length > 0) {
         // 只处理队列中的项
-        this.processCleanupQueue();
+        this.processCleanupQueue()
       }
-      
+
       // 计算清理耗时并自适应调整间隔
-      const endTime = performance.now();
-      this.lastCleanupPerformance = endTime - startTime;
-      
+      const endTime = performance.now()
+      this.lastCleanupPerformance = endTime - startTime
+
       // 根据性能动态调整清理间隔
-      this.adjustCleanupInterval();
-    }, this.adaptiveCleanupInterval);
+      this.adjustCleanupInterval()
+    }, this.adaptiveCleanupInterval)
   }
-  
+
   // 动态调整清理间隔
   private adjustCleanupInterval(): void {
     if (this.lastCleanupPerformance > 50) {
       // 清理耗时过长，增加间隔减少频率
-      this.adaptiveCleanupInterval = Math.min(this.adaptiveCleanupInterval * 1.5, 30000);
+      this.adaptiveCleanupInterval = Math.min(this.adaptiveCleanupInterval * 1.5, 30000)
     } else if (this.lastCleanupPerformance < 5 && this.cache.size > this.maxSize * 0.7) {
       // 清理很快且缓存使用率高，可以更频繁清理
-      this.adaptiveCleanupInterval = Math.max(this.adaptiveCleanupInterval * 0.8, 1000);
+      this.adaptiveCleanupInterval = Math.max(this.adaptiveCleanupInterval * 0.8, 1000)
     }
-    
+
     // 重新设置定时器
     if (this.cleanupTimer) {
-      clearInterval(this.cleanupTimer);
+      clearInterval(this.cleanupTimer)
       this.cleanupTimer = setInterval(() => {
-        this.processCleanupQueue();
-      }, this.adaptiveCleanupInterval);
+        this.processCleanupQueue()
+      }, this.adaptiveCleanupInterval)
     }
   }
 }
@@ -111,54 +111,54 @@ class LRUCache<T = unknown> {
 // 事件管理器优化
 export class EventManagerImpl<TEventMap extends EventMap = EventMap> {
   // 使用WeakMap减少内存占用
-  private sortedListenersCache = new WeakMap<EventListener[], EventListener[]>();
-  
+  private sortedListenersCache = new WeakMap<EventListener[], EventListener[]>()
+
   // 优化emit方法
   emit(event: unknown, ...args: unknown[]): void {
-    const key = String(event);
-    this.updateEventStats(key);
+    const key = String(event)
+    this.updateEventStats(key)
 
-    const listeners = this.events.get(key);
+    const listeners = this.events.get(key)
     if (!listeners || listeners.length === 0) {
-      return;
+      return
     }
 
     // 优化：使用弱引用缓存以避免重复排序
-    let listenersToExecute = this.sortedListenersCache.get(listeners);
+    let listenersToExecute = this.sortedListenersCache.get(listeners)
     if (!listenersToExecute) {
       // 只有在没有缓存时才排序
-      listenersToExecute = [...listeners].sort((a, b) => b.priority - a.priority);
-      this.sortedListenersCache.set(listeners, listenersToExecute);
+      listenersToExecute = [...listeners].sort((a, b) => b.priority - a.priority)
+      this.sortedListenersCache.set(listeners, listenersToExecute)
     }
 
     // 使用位图标记需要移除的一次性监听器，避免多次数组操作
-    const removeIndexes = new Uint8Array(listenersToExecute.length);
-    let hasOnceListeners = false;
+    const removeIndexes = new Uint8Array(listenersToExecute.length)
+    let hasOnceListeners = false
 
     // 单次循环处理事件触发和标记移除
     for (let i = 0; i < listenersToExecute.length; i++) {
-      const listener = listenersToExecute[i];
-      
+      const listener = listenersToExecute[i]
+
       try {
-        listener.handler(args[0] as unknown);
+        listener.handler(args[0] as unknown)
       } catch (error) {
         if (this.logger) {
-          this.logger.error(`Error in event handler for "${key}":`, error);
+          this.logger.error(`Error in event handler for "${key}":`, error)
         } else {
-          console.error(`Error in event handler for "${key}":`, error);
+          console.error(`Error in event handler for "${key}":`, error)
         }
       }
 
       // 标记需要移除的一次性监听器
       if (listener.once) {
-        removeIndexes[i] = 1;
-        hasOnceListeners = true;
+        removeIndexes[i] = 1
+        hasOnceListeners = true
       }
     }
 
     // 只有在有一次性监听器时才执行批量移除
     if (hasOnceListeners) {
-      this.batchRemoveIndexedListeners(key, listeners, removeIndexes);
+      this.batchRemoveIndexedListeners(key, listeners, removeIndexes)
     }
   }
 }
@@ -179,24 +179,24 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap> {
 // 插件管理器优化
 export class PluginManagerImpl implements PluginManager {
   // 优化依赖检查
-  private dependencyGraphVersion = 0; // 依赖图版本号
-  
+  private dependencyGraphVersion = 0 // 依赖图版本号
+
   // 获取依赖图 - 版本控制
   getDependencyGraph(): Record<string, string[]> {
     // 使用版本号管理缓存，避免不必要的重新计算
     if (this.dependencyGraphCache && this.dependencyGraphCacheVersion === this.dependencyGraphVersion) {
-      return this.dependencyGraphCache;
+      return this.dependencyGraphCache
     }
 
-    const graph: Record<string, string[]> = {};
-    
+    const graph: Record<string, string[]> = {}
+
     for (const [name, plugin] of this.plugins) {
-      graph[name] = plugin.dependencies ? [...plugin.dependencies] : [];
+      graph[name] = plugin.dependencies ? [...plugin.dependencies] : []
     }
 
-    this.dependencyGraphCache = graph;
-    this.dependencyGraphCacheVersion = this.dependencyGraphVersion;
-    return graph;
+    this.dependencyGraphCache = graph
+    this.dependencyGraphCacheVersion = this.dependencyGraphVersion
+    return graph
   }
 }
 ```
@@ -218,38 +218,38 @@ export class PluginManagerImpl implements PluginManager {
 // 事件管理器内存泄漏修复
 export class EventManagerImpl<TEventMap extends EventMap = EventMap> {
   // 统计数据上限
-  private maxEventStats = 1000;
-  private cleanupInterval = 60000; // 降低到1分钟
-  
+  private maxEventStats = 1000
+  private cleanupInterval = 60000 // 降低到1分钟
+
   constructor(private logger?: Logger) {
     // 更频繁地清理统计数据
-    this.setupCleanupTimer();
+    this.setupCleanupTimer()
   }
-  
+
   // 检查内存使用
   private checkMemoryUsage(): void {
     // 如果事件监听器总数超过警戒线，记录警告
-    const stats = this.getStats();
+    const stats = this.getStats()
     if (stats.totalListeners > 1000) {
       this.logger?.warn('High number of event listeners detected', {
         totalListeners: stats.totalListeners,
         events: Object.entries(stats.events)
           .filter(([_, count]) => count > 20)
           .map(([event, count]) => `${event}: ${count}`)
-      });
+      })
     }
   }
-  
+
   // 销毁方法 - 确保完全清理
   destroy(): void {
-    this.events.clear();
-    this.sortedListenersCache.clear();
-    this.eventStats.clear();
-    this.eventPool.clear();
-    
+    this.events.clear()
+    this.sortedListenersCache.clear()
+    this.eventStats.clear()
+    this.eventPool.clear()
+
     if (this.cleanupTimer) {
-      clearInterval(this.cleanupTimer);
-      this.cleanupTimer = undefined;
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = undefined
     }
   }
 }
@@ -270,42 +270,42 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap> {
 // 缓存管理器内存泄漏修复
 class LRUCache<T = unknown> {
   // 限制清理队列大小
-  private readonly MAX_CLEANUP_QUEUE_SIZE = 1000;
-  
+  private readonly MAX_CLEANUP_QUEUE_SIZE = 1000
+
   // 添加最大缓存项大小限制
-  private readonly maxItemSize = 1024 * 1024; // 默认1MB
-  
+  private readonly maxItemSize = 1024 * 1024 // 默认1MB
+
   // 优化清理队列
   private scheduleCleanup(key: string): void {
     // 限制队列大小
     if (this.cleanupQueue.length >= this.MAX_CLEANUP_QUEUE_SIZE) {
       // 队列太大，直接处理一部分
-      this.processCleanupQueue();
+      this.processCleanupQueue()
     }
-    
+
     if (!this.cleanupQueue.includes(key)) {
-      this.cleanupQueue.push(key);
+      this.cleanupQueue.push(key)
     }
 
     // 如果队列满了，立即处理
     if (this.cleanupQueue.length >= this.CLEANUP_BATCH_SIZE) {
-      this.processCleanupQueue();
+      this.processCleanupQueue()
     }
   }
-  
+
   // 增强的销毁方法
   destroy(): void {
     if (this.cleanupTimer) {
-      clearInterval(this.cleanupTimer);
-      this.cleanupTimer = undefined;
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = undefined
     }
 
-    this.cache.clear();
-    this.cleanupQueue.length = 0;
-    this.stats.size = 0;
-    
+    this.cache.clear()
+    this.cleanupQueue.length = 0
+    this.stats.size = 0
+
     // 确保没有引用残留
-    this.onEvict = undefined;
+    this.onEvict = undefined
   }
 }
 ```
@@ -333,7 +333,7 @@ export function typedEmit<TEventMap extends EventMap, K extends keyof TEventMap>
   event: K,
   data: TEventMap[K]
 ): void {
-  eventManager.emit(event, data);
+  eventManager.emit(event, data)
 }
 
 /**
@@ -344,7 +344,7 @@ export function getConfig<T, K extends keyof T>(
   path: string,
   defaultValue: K
 ): K {
-  return config.get(path, defaultValue) as K;
+  return config.get(path, defaultValue) as K
 }
 
 // 使用类型守卫增强错误处理
@@ -352,7 +352,7 @@ export class EngineImpl implements Engine {
   // 类型安全的配置获取
   getConfig<T = unknown>(path: string, defaultValue?: T): T {
     // 使用泛型约束确保类型安全
-    return this.config.get(path, defaultValue) as T;
+    return this.config.get(path, defaultValue) as T
   }
 }
 ```
@@ -375,10 +375,10 @@ export interface TypedEventMap {
 
 // 类型安全的事件管理器接口
 export interface TypedEventManager<T extends TypedEventMap = TypedEventMap> {
-  on<K extends keyof T>(event: K, handler: (data: T[K]) => void, priority?: number): void;
-  once<K extends keyof T>(event: K, handler: (data: T[K]) => void, priority?: number): void;
-  off<K extends keyof T>(event: K, handler?: (data: T[K]) => void): void;
-  emit<K extends keyof T>(event: K, data: T[K]): void;
+  on: <K extends keyof T>(event: K, handler: (data: T[K]) => void, priority?: number) => void;
+  once: <K extends keyof T>(event: K, handler: (data: T[K]) => void, priority?: number) => void;
+  off: <K extends keyof T>(event: K, handler?: (data: T[K]) => void) => void;
+  emit: <K extends keyof T>(event: K, data: T[K]) => void;
 }
 ```
 
@@ -400,30 +400,30 @@ export interface TypedEventManager<T extends TypedEventMap = TypedEventMap> {
 export class EngineImpl implements Engine {
   // 拆分初始化方法
   constructor(config: EngineConfig = {}) {
-    this.initializeConfigAndLogger(config);
-    this.initializeRegistry();
-    this.initializeEnvironment();
-    this.initializeLifecycle();
-    this.initializeCoreManagers();
-    this.setupErrorHandling();
-    this.setupConfigWatchers();
-    
-    this.logInitializationComplete();
-    this.executeAfterInitHooks();
+    this.initializeConfigAndLogger(config)
+    this.initializeRegistry()
+    this.initializeEnvironment()
+    this.initializeLifecycle()
+    this.initializeCoreManagers()
+    this.setupErrorHandling()
+    this.setupConfigWatchers()
+
+    this.logInitializationComplete()
+    this.executeAfterInitHooks()
   }
-  
+
   // 抽取配置和日志初始化
   private initializeConfigAndLogger(config: EngineConfig): void {
     this.config = createConfigManager({
       debug: false,
       ...config,
-    });
-    
-    this.config.setSchema(defaultConfigSchema);
-    
+    })
+
+    this.config.setSchema(defaultConfigSchema)
+
     this.logger = createLogger(
       this.config.get('debug', false) ? 'debug' : 'info'
-    );
+    )
   }
 }
 ```
@@ -440,30 +440,30 @@ export class ErrorUtil {
   // 统一格式化错误信息
   static formatError(error: unknown): string {
     if (error instanceof Error) {
-      return `${error.name}: ${error.message}`;
+      return `${error.name}: ${error.message}`
     } else if (typeof error === 'string') {
-      return error;
+      return error
     } else {
       try {
-        return JSON.stringify(error);
+        return JSON.stringify(error)
       } catch {
-        return String(error);
+        return String(error)
       }
     }
   }
-  
+
   // 安全执行函数，自动捕获异常
   static async safeExecute<T>(
     fn: () => Promise<T> | T,
     errorHandler?: (error: Error) => void
   ): Promise<T | undefined> {
     try {
-      return await fn();
+      return await fn()
     } catch (error) {
       if (errorHandler) {
-        errorHandler(error instanceof Error ? error : new Error(String(error)));
+        errorHandler(error instanceof Error ? error : new Error(String(error)))
       }
-      return undefined;
+      return undefined
     }
   }
 }
@@ -516,41 +516,41 @@ export class ErrorUtil {
 ```typescript
 // 性能监控工具增强
 export class PerformanceAnalyzer {
-  private measures = new Map<string, number[]>();
-  private marks = new Map<string, number>();
-  private thresholds = new Map<string, number>();
-  private warnings: string[] = [];
-  
+  private measures = new Map<string, number[]>()
+  private marks = new Map<string, number>()
+  private thresholds = new Map<string, number>()
+  private warnings: string[] = []
+
   // 开始计时
   start(name: string): void {
-    this.marks.set(name, performance.now());
+    this.marks.set(name, performance.now())
   }
-  
+
   // 结束计时并记录
   end(name: string, threshold?: number): number {
-    const startMark = this.marks.get(name);
+    const startMark = this.marks.get(name)
     if (startMark === undefined) {
-      console.warn(`No start mark found for "${name}"`);
-      return 0;
+      console.warn(`No start mark found for "${name}"`)
+      return 0
     }
-    
-    const endTime = performance.now();
-    const duration = endTime - startMark;
-    
+
+    const endTime = performance.now()
+    const duration = endTime - startMark
+
     // 记录测量结果
-    const measures = this.measures.get(name) || [];
-    measures.push(duration);
-    this.measures.set(name, measures);
-    
+    const measures = this.measures.get(name) || []
+    measures.push(duration)
+    this.measures.set(name, measures)
+
     // 检查是否超过阈值
-    const existingThreshold = this.thresholds.get(name);
+    const existingThreshold = this.thresholds.get(name)
     if (existingThreshold !== undefined && duration > existingThreshold) {
-      const warning = `Performance warning: "${name}" took ${duration.toFixed(2)}ms, exceeding threshold of ${existingThreshold}ms`;
-      this.warnings.push(warning);
-      console.warn(warning);
+      const warning = `Performance warning: "${name}" took ${duration.toFixed(2)}ms, exceeding threshold of ${existingThreshold}ms`
+      this.warnings.push(warning)
+      console.warn(warning)
     }
-    
-    return duration;
+
+    return duration
   }
 }
 ```

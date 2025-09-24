@@ -149,7 +149,7 @@ export function useRetry<T, Args extends any[] = []>(
   const isRetrying = ref(false)
 
   const retryableFn = async (...args: Args): Promise<T> => {
-    let lastError: Error
+    let lastError: Error | undefined
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
@@ -175,7 +175,7 @@ export function useRetry<T, Args extends any[] = []>(
       }
     }
 
-    throw lastError!
+    throw new Error(lastError?.message || 'Retry failed')
   }
 
   const asyncOperation = useAsyncOperation(retryableFn)

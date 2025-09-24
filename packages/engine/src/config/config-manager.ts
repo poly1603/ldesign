@@ -338,7 +338,7 @@ export class ConfigManagerImpl implements ConfigManager {
 
   import(data: string, format: 'json' | 'yaml' = 'json'): void {
     try {
-      let parsed: any
+      let parsed: Record<string, unknown>
 
       if (format === 'json') {
         parsed = JSON.parse(data)
@@ -351,8 +351,8 @@ export class ConfigManagerImpl implements ConfigManager {
         this.merge(parsed.config)
       }
 
-      if (parsed.environment) {
-        this.setEnvironment(parsed.environment)
+      if (parsed.environment && typeof parsed.environment === 'string') {
+        this.setEnvironment(parsed.environment as 'development' | 'production' | 'test')
       }
 
       this.logger?.info('Configuration imported', { format })

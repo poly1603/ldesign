@@ -4,6 +4,9 @@
  * 提供详细的性能监控、分析和报告功能
  */
 
+import { CoreWebVitalsMonitor, type CoreWebVitalsMetrics } from './core-web-vitals'
+import { RealtimePerformanceMonitor, type RealtimePerformanceData, type PerformanceAlert } from './realtime-performance-monitor'
+
 export interface PerformanceMeasure {
   name: string
   duration: number
@@ -71,6 +74,31 @@ export class PerformanceAnalyzer {
   private cachedReport: PerformanceReportStats | null = null
   private lastReportTime = 0
   private reportCacheTimeout = 5000 // 5秒缓存
+
+  // 内存优化：使用WeakMap存储临时对象引用
+  private objectMetadata = new WeakMap<object, Record<string, unknown>>()
+  private measurementCache = new WeakMap<object, PerformanceMeasure[]>()
+
+  // 内存监控
+  private memoryUsage = {
+    measureCount: 0,
+    metadataCount: 0,
+    lastCleanup: Date.now()
+  }
+
+  // 新增：Core Web Vitals 监控器
+  private coreWebVitalsMonitor = new CoreWebVitalsMonitor()
+
+  // 新增：实时性能监控器
+  private realtimeMonitor = new RealtimePerformanceMonitor()
+
+  // 新增：性能趋势数据
+  private trendData: Array<{
+    timestamp: number
+    averageDuration: number
+    measureCount: number
+    memoryUsage: number
+  }> = []
 
   /**
    * 开始计时
@@ -195,15 +223,22 @@ export class PerformanceAnalyzer {
     }
 
     this.measures.push(fullMeasure)
+    this.memoryUsage.measureCount++
 
     // 限制数据量，性能优化：批量删除
     if (this.measures.length > this.maxMeasures) {
       const removeCount = Math.floor(this.maxMeasures * 0.1)
       this.measures.splice(0, removeCount)
+      this.memoryUsage.measureCount -= removeCount
     }
 
     // 清除缓存的报告
     this.invalidateReportCache()
+
+    // 定期执行内存清理
+    if (this.memoryUsage.measureCount % 100 === 0) {
+      this.performMemoryCleanup()
+    }
   }
 
   /**
@@ -221,6 +256,187 @@ export class PerformanceAnalyzer {
     this.marks.clear()
     this.metadata.clear()
     this.warnings.length = 0
+
+    // 清理缓存
+    this.cachedReport = null
+    this.lastReportTime = 0
+
+    // 更新内存使用统计
+    this.memoryUsage.measureCount = 0
+    this.memoryUsage.metadataCount = 0
+    this.memoryUsage.lastCleanup = Date.now()
+  }
+
+  /**
+   * 智能内存清理 - 定期清理过期数据
+   */
+  performMemoryCleanup(): void {
+    const now = Date.now()
+    const cleanupInterval = 5 * 60 * 1000 // 5分钟
+
+    if (now - this.memoryUsage.lastCleanup < cleanupInterval) {
+      return
+    }
+
+    // 清理过期的测量数据（保留最近的数据）
+    if (this.measures.length > this.maxMeasures) {
+      const keepCount = Math.floor(this.maxMeasures * 0.8) // 保留80%
+      this.measures = this.measures.slice(-keepCount)
+    }
+
+    // 清理过期的警告
+    if (this.warnings.length > this.maxWarnings) {
+      const keepCount = Math.floor(this.maxWarnings * 0.8)
+      this.warnings = this.warnings.slice(-keepCount)
+    }
+
+    // 清理过期的缓存
+    if (now - this.lastReportTime > this.reportCacheTimeout) {
+      this.cachedReport = null
+    }
+
+    this.memoryUsage.lastCleanup = now
+  }
+
+  /**
+   * 启动Core Web Vitals监控
+   */
+  startCoreWebVitalsMonitoring(): void {
+    this.coreWebVitalsMonitor.onMetric((metrics) => {
+      // 将Core Web Vitals数据记录为性能测量
+      if (metrics.lcp) {
+        this.recordMeasure({
+          name: 'core-web-vitals-lcp',
+          duration: metrics.lcp.value,
+          startTime: 0,
+          endTime: metrics.lcp.value,
+          timestamp: metrics.lcp.timestamp,
+          metadata: { rating: metrics.lcp.rating }
+        })
+      }
+
+      if (metrics.fcp) {
+        this.recordMeasure({
+          name: 'core-web-vitals-fcp',
+          duration: metrics.fcp.value,
+          startTime: 0,
+          endTime: metrics.fcp.value,
+          timestamp: metrics.fcp.timestamp,
+          metadata: { rating: metrics.fcp.rating }
+        })
+      }
+
+      if (metrics.cls) {
+        this.recordMeasure({
+          name: 'core-web-vitals-cls',
+          duration: metrics.cls.value,
+          startTime: 0,
+          endTime: metrics.cls.value,
+          timestamp: metrics.cls.timestamp,
+          metadata: { rating: metrics.cls.rating }
+        })
+      }
+    })
+
+    this.coreWebVitalsMonitor.start()
+  }
+
+  /**
+   * 启动实时性能监控
+   */
+  startRealtimeMonitoring(): void {
+    this.realtimeMonitor.onData((data) => {
+      // 记录实时性能数据
+      this.recordMeasure({
+        name: 'realtime-fps',
+        duration: data.system.fps,
+        startTime: 0,
+        endTime: data.system.fps,
+        timestamp: data.timestamp,
+        metadata: {
+          memoryUsage: data.system.memory.percentage,
+          domNodes: data.dom.nodeCount
+        }
+      })
+
+      // 更新趋势数据
+      this.updateTrendData(data)
+    })
+
+    this.realtimeMonitor.onAlert((alert) => {
+      this.addWarning(`性能告警: ${alert.message} (${alert.value} > ${alert.threshold})`)
+    })
+
+    this.realtimeMonitor.start()
+  }
+
+  /**
+   * 停止所有监控
+   */
+  stopAllMonitoring(): void {
+    this.coreWebVitalsMonitor.stop()
+    this.realtimeMonitor.stop()
+  }
+
+  /**
+   * 获取Core Web Vitals数据
+   */
+  getCoreWebVitals(): CoreWebVitalsMetrics {
+    return this.coreWebVitalsMonitor.getMetrics()
+  }
+
+  /**
+   * 获取实时性能数据
+   */
+  getRealtimeData(): RealtimePerformanceData | null {
+    return this.realtimeMonitor.getLatestData()
+  }
+
+  /**
+   * 获取性能告警
+   */
+  getPerformanceAlerts(): PerformanceAlert[] {
+    return this.realtimeMonitor.getActiveAlerts()
+  }
+
+  /**
+   * 更新趋势数据
+   */
+  private updateTrendData(data: RealtimePerformanceData): void {
+    const trendPoint = {
+      timestamp: data.timestamp,
+      averageDuration: this.getAverageDuration(),
+      measureCount: this.measures.length,
+      memoryUsage: data.system.memory.percentage
+    }
+
+    this.trendData.push(trendPoint)
+
+    // 限制趋势数据点数量
+    if (this.trendData.length > 100) {
+      this.trendData.shift()
+    }
+  }
+
+  /**
+   * 获取性能趋势数据
+   */
+  getTrendData(): Array<{
+    timestamp: number
+    averageDuration: number
+    measureCount: number
+    memoryUsage: number
+  }> {
+    return [...this.trendData]
+  }
+
+  /**
+   * 获取平均持续时间
+   */
+  private getAverageDuration(): number {
+    if (this.measures.length === 0) return 0
+    const total = this.measures.reduce((sum, measure) => sum + measure.duration, 0)
+    return total / this.measures.length
   }
 
   /**
@@ -342,7 +558,7 @@ export class PerformanceAnalyzer {
 
     for (const measure of measures) {
       if (measure.metadata) {
-        for (const [key, value] of Object.entries(measure.metadata)) {
+        for (const [_key, value] of Object.entries(measure.metadata)) {
           const groupKey = String(value) // 使用元数据值作为分组键
           if (!metadataGroups[groupKey]) {
             metadataGroups[groupKey] = {
