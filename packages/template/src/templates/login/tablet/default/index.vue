@@ -1,8 +1,9 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed } from 'vue'
 import type { LoginTemplateProps } from '../../types'
 
-// 使用统一的Props接口
+/* 使用统一的Props接口
+ */
 const props = withDefaults(defineProps<LoginTemplateProps>(), {
   title: '平板登录',
   subtitle: '在平板上享受更好的体验',
@@ -16,7 +17,7 @@ const props = withDefaults(defineProps<LoginTemplateProps>(), {
   enableAnimations: true,
 })
 
-// 计算属性
+/* 计算属性 */
 const cssVars = computed(() => ({
   '--primary-color': props.primaryColor,
   '--secondary-color': props.secondaryColor,
@@ -35,7 +36,7 @@ const backgroundStyle = computed(() => {
   return {}
 })
 
-// 配置选择器事件处理方法
+/* 配置选择器事件处理方法 */
 const handleThemeChange = (theme: string) => {
   console.log('主题切换:', theme)
 }
@@ -93,9 +94,9 @@ const handleSizeChange = (size: string) => {
         </slot>
       </div>
 
-      <!-- 配置选择器区域 -->
+      <!-- 配置选择器区域-->
       <div class="ldesign-template-header-selectors">
-        <!-- 语言选择器 -->
+        <!-- 语言选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="language-selector" :on-language-change="handleLanguageChange">
             <!-- 默认语言选择器占位符 -->
@@ -103,7 +104,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 主题色选择器 -->
+        <!-- 主题色选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="color-selector" :on-theme-change="handleThemeChange">
             <!-- 默认主题选择器占位符 -->
@@ -111,7 +112,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 暗黑模式切换器 -->
+        <!-- 暗黑模式切换☰-->
         <div class="ldesign-template-selector-item">
           <slot name="dark-mode-toggle" :on-dark-mode-change="handleDarkModeChange">
             <!-- 默认暗黑模式切换器占位符 -->
@@ -119,7 +120,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 尺寸选择器 -->
+        <!-- 尺寸选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="size-selector" :on-size-change="handleSizeChange">
             <!-- 默认尺寸选择器占位符 -->
@@ -135,7 +136,7 @@ const handleSizeChange = (size: string) => {
           <!-- 内容区域 -->
           <div class="panel-content">
             <slot name="content">
-              <!-- 平板端登录表单内容区域，留空供插槽使用 -->
+              <!-- 平板端登录表单内容区域，留空供插槽使用-->
             </slot>
           </div>
 
@@ -155,7 +156,7 @@ const handleSizeChange = (size: string) => {
 </template>
 
 <style lang="less" scoped>
-// 平板端登录模板样式
+/* 平板端登录模板样式 */
 .ldesign-template-login.ldesign-template-tablet {
   min-height: 100vh;
   position: relative;
@@ -164,7 +165,8 @@ const handleSizeChange = (size: string) => {
   background: linear-gradient(135deg, #48cae4, #023e8a);
 }
 
-// 平板背景
+/* 平板背景
+ */
 .ldesign-template-tablet-background {
   position: absolute;
   top: 0;
@@ -174,7 +176,8 @@ const handleSizeChange = (size: string) => {
   z-index: 1;
 }
 
-// 装饰元素
+/* 装饰元素
+ */
 .ldesign-template-tablet-decorations {
   position: absolute;
   top: 0;
@@ -340,7 +343,7 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 主容器
+/* 主容☰ */
 .tablet-container {
   position: relative;
   z-index: 10;
@@ -350,7 +353,8 @@ const handleSizeChange = (size: string) => {
   padding: var(--ls-padding-lg);
 }
 
-// 头部区域
+/* 头部区域
+ */
 .tablet-header {
   text-align: center;
   padding: var(--ls-padding-xl) 0;
@@ -428,7 +432,8 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 主要内容区域
+/* 主要内容区域
+ */
 .tablet-main {
   flex: 1;
   display: flex;
@@ -436,7 +441,8 @@ const handleSizeChange = (size: string) => {
   justify-content: center;
 }
 
-// 登录面板
+/* 登录面板
+ */
 .login-panel {
   background: var(--ldesign-bg-color-container);
   backdrop-filter: blur(20px);
@@ -451,14 +457,16 @@ const handleSizeChange = (size: string) => {
   flex-direction: column;
 }
 
-// 面板内容
+/* 面板内容
+ */
 .panel-content {
   flex: 1;
   margin: var(--ls-margin-lg) 0;
   min-height: 200px;
 }
 
-// 面板底部
+/* 面板底部
+ */
 .panel-footer {
   margin-top: auto;
   text-align: center;
@@ -484,7 +492,7 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 响应式设计
+/* 响应式设置 */
 @media (max-width: 768px) {
   .tablet-container {
     padding: var(--ls-padding-base);
@@ -500,7 +508,8 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 横屏模式优化
+/* 横屏模式优化
+ */
 @media (orientation: landscape) and (min-width: 768px) {
   .tablet-container {
     flex-direction: row;
@@ -517,3 +526,5 @@ const handleSizeChange = (size: string) => {
   }
 }
 </style>
+
+

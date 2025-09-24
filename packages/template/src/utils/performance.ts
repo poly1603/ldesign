@@ -99,18 +99,66 @@ export class PerformanceMonitor {
 export class PreloadController {
   private preloadQueue: TemplateMetadata[] = []
   private preloadedSet = new Set<string>()
+  private failedSet = new Set<string>()
   private isPreloading = false
   private maxConcurrent = 3
   private currentPreloading = 0
+  private retryCount = new Map<string, number>()
+  private maxRetries = 2
 
   constructor(
     private options: {
       maxConcurrent?: number
       priority?: string[]
       delayMs?: number
+      maxRetries?: number
+      enableIntersectionObserver?: boolean
     } = {},
   ) {
     this.maxConcurrent = options.maxConcurrent || 3
+    this.maxRetries = options.maxRetries || 2
+
+    // 启用交叉观察器进行智能预加载
+    if (options.enableIntersectionObserver && typeof window !== 'undefined') {
+      this.setupIntersectionObserver()
+    }
+  }
+
+  /**
+   * 设置交叉观察器
+   */
+  private setupIntersectionObserver(): void {
+    if (!('IntersectionObserver' in window)) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const templateName = entry.target.getAttribute('data-template')
+            if (templateName) {
+              this.prioritizeTemplate(templateName)
+            }
+          }
+        })
+      },
+      { rootMargin: '50px' }
+    )
+
+    // 观察所有模板容器
+    document.querySelectorAll('[data-template]').forEach((el) => {
+      observer.observe(el)
+    })
+  }
+
+  /**
+   * 优先加载特定模板
+   */
+  private prioritizeTemplate(templateName: string): void {
+    const index = this.preloadQueue.findIndex(t => t.name === templateName)
+    if (index > 0) {
+      const template = this.preloadQueue.splice(index, 1)[0]
+      this.preloadQueue.unshift(template)
+    }
   }
 
   /**
@@ -165,7 +213,7 @@ export class PreloadController {
    */
   private async preloadTemplate(template: TemplateMetadata): Promise<void> {
     const key = this.getTemplateKey(template)
-    if (this.preloadedSet.has(key))
+    if (this.preloadedSet.has(key) || this.failedSet.has(key))
       return
 
     this.currentPreloading++
@@ -176,11 +224,37 @@ export class PreloadController {
         await new Promise(resolve => setTimeout(resolve, this.options.delayMs))
       }
 
-      await componentLoader.preloadComponent(template)
+      // 使用 requestIdleCallback 在空闲时预加载
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        await new Promise<void>((resolve) => {
+          window.requestIdleCallback(() => {
+            componentLoader.preloadComponent(template).then(() => resolve()).catch(() => resolve())
+          })
+        })
+      } else {
+        await componentLoader.preloadComponent(template)
+      }
+
       this.preloadedSet.add(key)
+      this.retryCount.delete(key) // 成功后清除重试计数
     }
     catch (error) {
-      console.warn(`Failed to preload template: ${template.name}`, error)
+      const currentRetries = this.retryCount.get(key) || 0
+
+      if (currentRetries < this.maxRetries) {
+        // 重试机制
+        this.retryCount.set(key, currentRetries + 1)
+        setTimeout(() => {
+          this.preloadQueue.unshift(template) // 重新加入队列头部
+          this.processQueue()
+        }, Math.pow(2, currentRetries) * 1000) // 指数退避
+      } else {
+        // 达到最大重试次数，标记为失败
+        this.failedSet.add(key)
+        if (import.meta.env?.DEV) {
+          console.warn(`Failed to preload template after ${this.maxRetries} retries: ${template.name}`, error)
+        }
+      }
     }
     finally {
       this.currentPreloading--

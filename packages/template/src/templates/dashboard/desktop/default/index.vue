@@ -1,9 +1,10 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { DashboardTemplateProps } from '../../types'
 
 
-// 简化的Props接口，只保留布局相关配置
+/* 简化的Props接口，只保留布局相关配置
+ */
 const props = withDefaults(defineProps<DashboardTemplateProps>(), {
   primaryColor: 'var(--ldesign-brand-color)',
   secondaryColor: 'var(--ldesign-brand-color-6)',
@@ -13,24 +14,25 @@ const props = withDefaults(defineProps<DashboardTemplateProps>(), {
   enableAnimations: true,
 })
 
-// 响应式状态
+/* 响应式状态 */
 const isCollapsed = ref(props.sidebarCollapsed)
 
-// 计算属性
+/* 计算属性 */
 const cssVars = computed(() => ({
   '--primary-color': props.primaryColor,
   '--secondary-color': props.secondaryColor,
   '--sidebar-width': isCollapsed.value ? '64px' : '240px',
 }))
 
-// 方法
+/* 方法
+ */
 const toggleSidebar = () => {
   if (props.collapsibleSidebar) {
     isCollapsed.value = !isCollapsed.value
   }
 }
 
-// 配置选择器事件处理方法
+/* 配置选择器事件处理方法 */
 const handleThemeChange = (theme: string) => {
   console.log('Theme changed:', theme)
 }
@@ -76,7 +78,7 @@ const handleSizeChange = (size: string) => {
       </div>
 
       <div class="ldesign-template-header-selectors">
-        <!-- 语言选择器 -->
+        <!-- 语言选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="language-selector" :on-language-change="handleLanguageChange">
             <!-- 默认语言选择器占位符 -->
@@ -84,7 +86,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 主题色选择器 -->
+        <!-- 主题色选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="color-selector" :on-theme-change="handleThemeChange">
             <!-- 默认主题选择器占位符 -->
@@ -92,7 +94,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 暗黑模式切换器 -->
+        <!-- 暗黑模式切换☰-->
         <div class="ldesign-template-selector-item">
           <slot name="dark-mode-toggle" :on-dark-mode-change="handleDarkModeChange">
             <!-- 默认暗黑模式切换器占位符 -->
@@ -100,7 +102,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 尺寸选择器 -->
+        <!-- 尺寸选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="size-selector" :on-size-change="handleSizeChange">
             <!-- 默认尺寸选择器占位符 -->
@@ -109,17 +111,17 @@ const handleSizeChange = (size: string) => {
         </div>
       </div>
 
-      <!-- 模板选择器区域 -->
+      <!-- 模板选择器区域-->
       <div class="ldesign-template-header-selector">
         <slot name="selector">
-          <!-- 模板选择器将在这里显示 -->
+          <!-- 模板选择器将在这里显示-->
         </slot>
       </div>
     </header>
 
     <!-- 主体区域 -->
     <div class="ldesign-template-dashboard-body">
-      <!-- 侧边栏 -->
+      <!-- 侧边栏-->
       <aside v-if="showSidebar" class="ldesign-template-dashboard-sidebar"
         :class="{ 'ldesign-template-collapsed': isCollapsed }">
         <slot name="sidebar-menu">
@@ -163,7 +165,7 @@ const handleSizeChange = (size: string) => {
   background: var(--ldesign-bg-color-page);
 }
 
-// 头部样式
+/* 头部样式 */
 .ldesign-template-dashboard-header {
   height: 64px;
   background: var(--ldesign-bg-color-container);
@@ -262,14 +264,14 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 主体区域
+/* 主体区域 */
 .ldesign-template-dashboard-body {
   flex: 1;
   display: flex;
   min-height: 0;
 }
 
-// 侧边栏样式
+/* 侧边栏样式*/
 .ldesign-template-dashboard-sidebar {
   width: var(--sidebar-width);
   background: var(--ldesign-bg-color-container);
@@ -310,7 +312,7 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 内容区域
+/* 内容区域 */
 .ldesign-template-dashboard-content {
   flex: 1;
   padding: var(--ls-padding-lg);
@@ -344,7 +346,7 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 底部样式
+/* 底部样式 */
 .ldesign-template-dashboard-footer {
   min-height: 48px;
   background: var(--ldesign-bg-color-container);
@@ -354,7 +356,7 @@ const handleSizeChange = (size: string) => {
   justify-content: center;
 }
 
-// 响应式设计
+/* 响应式设置*/
 @media (max-width: 768px) {
   .ldesign-template-dashboard-header {
     padding: 0 var(--ls-padding-base);
@@ -386,3 +388,5 @@ const handleSizeChange = (size: string) => {
   }
 }
 </style>
+
+

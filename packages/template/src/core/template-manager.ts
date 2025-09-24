@@ -15,6 +15,7 @@ import { defaultConfig } from '../config/default.config'
 import { DeviceAdapter } from './device-adapter'
 import { TemplateScanner } from '../scanner'
 import { TemplateLoader } from './loader'
+import { createSimpleTemplateScanner, createCacheConfig, createDeviceConfig } from '../utils/factory'
 
 /**
  * 模板管理器类
@@ -37,30 +38,18 @@ export class TemplateManager {
       enableCache: true,
       cacheSize: 50,
       enableHMR: true,
-      deviceDetection: {
-        breakpoints: {
-          mobile: 768,
-          tablet: 1024,
-          desktop: 1200,
-        },
-      },
+      deviceDetection: createDeviceConfig(),
     }
 
     // 合并默认配置
     this.config = { ...defaultManagerConfig, ...config }
 
     // 初始化子模块
-    this.scanner = new TemplateScanner({
-      templatesDir: this.config.templateRoot,
-      enableCache: this.config.enableCache,
-      enableHMR: this.config.enableHMR,
-      maxDepth: 5,
-      includeExtensions: ['.vue', '.tsx', '.js', '.ts'],
-      excludePatterns: ['node_modules', '.git', 'dist'],
-      watchMode: false,
-      debounceDelay: 300,
-      batchSize: 10,
-    })
+    this.scanner = createSimpleTemplateScanner(
+      this.config.templateRoot,
+      this.config.enableCache,
+      this.config.enableHMR
+    )
 
     this.loader = new TemplateLoader({
       enabled: this.config.enableCache,

@@ -1,8 +1,9 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed } from 'vue'
 import type { LoginTemplateProps } from '../../types'
 
-// 简化的Props接口
+/* 简化的Props接口
+ */
 const props = withDefaults(defineProps<LoginTemplateProps>(), {
   primaryColor: '#ff6b6b',
   secondaryColor: '#4ecdc4',
@@ -10,7 +11,7 @@ const props = withDefaults(defineProps<LoginTemplateProps>(), {
   enableAnimations: true,
 })
 
-// 计算属性
+/* 计算属性 */
 const cssVars = computed(() => ({
   '--primary-color': props.primaryColor,
   '--secondary-color': props.secondaryColor,
@@ -26,7 +27,7 @@ const backgroundStyle = computed(() => {
   return {}
 })
 
-// 配置选择器事件处理方法
+/* 配置选择器事件处理方法 */
 const handleThemeChange = (theme: string) => {
   console.log('主题切换:', theme)
 }
@@ -89,7 +90,7 @@ const handleSizeChange = (size: string) => {
           <!-- 内容区域 - 空白面板 -->
           <div class="ldesign-template-panel-content">
             <slot name="selector">
-              <!-- 模板选择器将在这里显示 -->
+              <!-- 模板选择器将在这里显示-->
             </slot>
             <slot name="content">
               <div class="ldesign-template-content-placeholder">
@@ -127,7 +128,8 @@ const handleSizeChange = (size: string) => {
   background: linear-gradient(135deg, var(--ldesign-brand-color-2) 0%, var(--ldesign-brand-color-8) 100%);
 }
 
-// 简化的创意背景
+/* 简化的创意背景
+ */
 .ldesign-template-creative-background {
   position: absolute;
   top: 0;
@@ -191,7 +193,7 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 主容器
+/* 主容☰ */
 .ldesign-template-creative-container {
   position: relative;
   z-index: 10;
@@ -199,7 +201,8 @@ const handleSizeChange = (size: string) => {
   min-height: 100vh;
 }
 
-// 左侧装饰区域
+/* 左侧装饰区域
+ */
 .ldesign-template-artwork-section {
   flex: 1;
   display: flex;
@@ -287,7 +290,8 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 右侧登录区域
+/* 右侧登录区域
+ */
 .ldesign-template-login-section {
   width: 500px;
   display: flex;
@@ -311,7 +315,8 @@ const handleSizeChange = (size: string) => {
   overflow: hidden;
 }
 
-// 面板头部
+/* 面板头部
+ */
 .ldesign-template-panel-header {
   text-align: center;
   margin-bottom: var(--ls-margin-lg);
@@ -362,7 +367,8 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 面板内容
+/* 面板内容
+ */
 .ldesign-template-panel-content {
   flex: 1;
   display: flex;
@@ -427,7 +433,8 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 面板底部
+/* 面板底部
+ */
 .ldesign-template-panel-footer {
   margin-top: auto;
   text-align: center;
@@ -439,7 +446,8 @@ const handleSizeChange = (size: string) => {
   justify-content: center;
 }
 
-// 简化的装饰元素
+/* 简化的装饰元素
+ */
 .ldesign-template-creative-decorations {
   position: absolute;
   top: 0;
@@ -485,7 +493,7 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 响应式设计
+/* 响应式设置 */
 @media (max-width: 1024px) {
   .ldesign-template-creative-container {
     flex-direction: column;

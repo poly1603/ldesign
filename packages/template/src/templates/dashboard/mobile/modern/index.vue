@@ -1,8 +1,9 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { DashboardTemplateProps } from '../../types'
 
-// 使用统一的Props接口
+/* 使用统一的Props接口
+ */
 const props = withDefaults(defineProps<DashboardTemplateProps>(), {
   title: '移动管理台',
   logoUrl: '',
@@ -17,21 +18,22 @@ const props = withDefaults(defineProps<DashboardTemplateProps>(), {
   enableAnimations: true,
 })
 
-// 响应式状态
+/* 响应式状态 */
 const showMobileMenu = ref(false)
 
-// 计算属性
+/* 计算属性 */
 const cssVars = computed(() => ({
   '--primary-color': props.primaryColor,
   '--secondary-color': props.secondaryColor,
 }))
 
-// 方法
+/* 方法
+ */
 const toggleMobileMenu = () => {
   showMobileMenu.value = !showMobileMenu.value
 }
 
-// 配置选择器事件处理方法
+/* 配置选择器事件处理方法 */
 const handleThemeChange = (theme: string) => {
   console.log('主题切换:', theme)
 }
@@ -74,9 +76,9 @@ const handleSizeChange = (size: string) => {
         </slot>
       </div>
 
-      <!-- 配置选择器区域 -->
+      <!-- 配置选择器区域-->
       <div class="ldesign-template-header-selectors">
-        <!-- 语言选择器 -->
+        <!-- 语言选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="language-selector" :on-language-change="handleLanguageChange">
             <!-- 默认语言选择器占位符 -->
@@ -84,7 +86,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 主题色选择器 -->
+        <!-- 主题色选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="color-selector" :on-theme-change="handleThemeChange">
             <!-- 默认主题选择器占位符 -->
@@ -92,7 +94,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 暗黑模式切换器 -->
+        <!-- 暗黑模式切换☰-->
         <div class="ldesign-template-selector-item">
           <slot name="dark-mode-toggle" :on-dark-mode-change="handleDarkModeChange">
             <!-- 默认暗黑模式切换器占位符 -->
@@ -100,7 +102,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 尺寸选择器 -->
+        <!-- 尺寸选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="size-selector" :on-size-change="handleSizeChange">
             <!-- 默认尺寸选择器占位符 -->
@@ -110,7 +112,7 @@ const handleSizeChange = (size: string) => {
       </div>
     </header>
 
-    <!-- 移动端菜单 -->
+    <!-- 移动端菜单-->
     <div v-if="showMobileMenu" class="mobile-menu-overlay" @click="toggleMobileMenu">
       <nav class="mobile-menu" @click.stop>
         <slot name="sidebar-menu">
@@ -136,7 +138,7 @@ const handleSizeChange = (size: string) => {
         <slot name="content">
           <div class="content-placeholder">
             <h2>现代风格Dashboard</h2>
-            <p>移动端优化的现代化Dashboard模板。</p>
+            <p>移动端优化的现代化Dashboard模板</p>
           </div>
         </slot>
       </div>
@@ -359,3 +361,5 @@ const handleSizeChange = (size: string) => {
   }
 }
 </style>
+
+

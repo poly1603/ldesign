@@ -60,3 +60,9 @@ export {
 } from './template'
 
 export * from './template-categories'
+
+// 导出工厂函数类型
+export * from './factory'
+
+// 导出性能相关类型
+export * from './performance'

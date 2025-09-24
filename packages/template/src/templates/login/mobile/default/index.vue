@@ -1,8 +1,9 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed } from 'vue'
 import type { LoginTemplateProps } from '../../types'
 
-// 使用统一的Props接口
+/* 使用统一的Props接口
+ */
 const props = withDefaults(defineProps<LoginTemplateProps>(), {
   title: '移动端登录',
   subtitle: '随时随地，安全登录',
@@ -16,7 +17,7 @@ const props = withDefaults(defineProps<LoginTemplateProps>(), {
   enableAnimations: true,
 })
 
-// 计算属性
+/* 计算属性 */
 const cssVars = computed(() => ({
   '--primary-color': props.primaryColor,
   '--secondary-color': props.secondaryColor,
@@ -35,7 +36,7 @@ const backgroundStyle = computed(() => {
   return {}
 })
 
-// 配置选择器事件处理方法
+/* 配置选择器事件处理方法 */
 const handleThemeChange = (theme: string) => {
   console.log('主题切换:', theme)
 }
@@ -55,9 +56,9 @@ const handleSizeChange = (size: string) => {
 
 <template>
   <div class="ldesign-template-login ldesign-template-mobile" :style="cssVars">
-    <!-- 移动端优化背景 -->
+    <!-- 移动端优化背景-->
     <div class="ldesign-template-mobile-background" :style="backgroundStyle">
-      <!-- 移动端专用装饰元素 -->
+      <!-- 移动端专用装饰元素-->
       <div v-if="enableAnimations" class="ldesign-template-mobile-decorations">
         <div class="ldesign-template-decoration-bubble ldesign-template-bubble-1"></div>
         <div class="ldesign-template-decoration-bubble ldesign-template-bubble-2"></div>
@@ -82,9 +83,9 @@ const handleSizeChange = (size: string) => {
         </slot>
       </div>
 
-      <!-- 配置选择器区域 -->
+      <!-- 配置选择器区域-->
       <div class="ldesign-template-header-selectors">
-        <!-- 语言选择器 -->
+        <!-- 语言选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="language-selector" :on-language-change="handleLanguageChange">
             <!-- 默认语言选择器占位符 -->
@@ -92,7 +93,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 主题色选择器 -->
+        <!-- 主题色选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="color-selector" :on-theme-change="handleThemeChange">
             <!-- 默认主题选择器占位符 -->
@@ -100,7 +101,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 暗黑模式切换器 -->
+        <!-- 暗黑模式切换☰-->
         <div class="ldesign-template-selector-item">
           <slot name="dark-mode-toggle" :on-dark-mode-change="handleDarkModeChange">
             <!-- 默认暗黑模式切换器占位符 -->
@@ -108,7 +109,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 尺寸选择器 -->
+        <!-- 尺寸选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="size-selector" :on-size-change="handleSizeChange">
             <!-- 默认尺寸选择器占位符 -->
@@ -124,7 +125,7 @@ const handleSizeChange = (size: string) => {
           <!-- 内容区域 -->
           <div class="ldesign-template-panel-content">
             <slot name="content">
-              <!-- 移动端登录表单内容区域，留空供插槽使用 -->
+              <!-- 移动端登录表单内容区域，留空供插槽使用-->
             </slot>
           </div>
 
@@ -144,7 +145,7 @@ const handleSizeChange = (size: string) => {
 </template>
 
 <style lang="less" scoped>
-// 移动端登录模板样式
+/* 移动端登录模板样式 */
 .ldesign-template-login.ldesign-template-mobile {
   min-height: 100vh;
   position: relative;
@@ -153,7 +154,7 @@ const handleSizeChange = (size: string) => {
   background: linear-gradient(135deg, #ff6b6b, #feca57);
 }
 
-// 移动端背景
+/* 移动端背景 */
 .ldesign-template-mobile-background {
   position: absolute;
   top: 0;
@@ -163,7 +164,8 @@ const handleSizeChange = (size: string) => {
   z-index: 1;
 }
 
-// 装饰元素
+/* 装饰元素
+ */
 .ldesign-template-mobile-decorations {
   position: absolute;
   top: 0;
@@ -252,7 +254,7 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 主容器
+/* 主容☰ */
 .ldesign-template-mobile-container {
   position: relative;
   z-index: 10;
@@ -262,7 +264,8 @@ const handleSizeChange = (size: string) => {
   padding: var(--ls-padding-base);
 }
 
-// 头部区域
+/* 头部区域
+ */
 .ldesign-template-mobile-header {
   text-align: center;
   padding: var(--ls-padding-lg) 0;
@@ -340,7 +343,8 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 主要内容区域
+/* 主要内容区域
+ */
 .ldesign-template-mobile-main {
   flex: 1;
   display: flex;
@@ -349,7 +353,8 @@ const handleSizeChange = (size: string) => {
   padding: var(--ls-padding-base) 0;
 }
 
-// 登录面板
+/* 登录面板
+ */
 .ldesign-template-login-panel {
   background: var(--ldesign-bg-color-container);
   backdrop-filter: blur(20px);
@@ -364,14 +369,16 @@ const handleSizeChange = (size: string) => {
   flex-direction: column;
 }
 
-// 面板内容
+/* 面板内容
+ */
 .ldesign-template-panel-content {
   flex: 1;
   margin: var(--ls-margin-base) 0;
   min-height: 150px;
 }
 
-// 面板底部
+/* 面板底部
+ */
 .ldesign-template-panel-footer {
   margin-top: auto;
   text-align: center;
@@ -397,7 +404,7 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 响应式设计
+/* 响应式设置 */
 @media (max-width: 480px) {
   .ldesign-template-mobile-container {
     padding: var(--ls-padding-sm);
@@ -413,7 +420,8 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 超小屏幕优化
+/* 超小屏幕优化
+ */
 @media (max-width: 320px) {
   .ldesign-template-mobile-container {
     padding: var(--ls-padding-xs);
@@ -424,3 +432,5 @@ const handleSizeChange = (size: string) => {
   }
 }
 </style>
+
+

@@ -17,7 +17,7 @@ function isWebEnvironment(): boolean {
 }
 
 /**
- * 简化版模板扫描�?
+ * 简化版模板扫描器
  */
 class SimpleTemplateScanner {
   private static instance: SimpleTemplateScanner | null = null

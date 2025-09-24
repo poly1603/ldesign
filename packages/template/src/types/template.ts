@@ -5,7 +5,7 @@
 import type { Component, PropType } from 'vue'
 
 /**
- * 导入Ref类型
+ * 导入Vue相关类型
  */
 import type { Ref } from 'vue'
 

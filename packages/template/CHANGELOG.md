@@ -5,6 +5,48 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.1.1] - 2024-09-23
+
+### 🔧 优化改进
+
+#### 代码质量提升
+- **代码清理**: 清理调试信息、测试注释，修复版本号不一致问题
+- **重复代码消除**: 通过工厂函数消除重复代码，提升可维护性
+- **类型安全**: 完善 TypeScript 类型定义，确保类型安全
+
+#### 工厂函数系统
+- **新增工厂函数**: 创建 `createTemplateScanner()`, `createSimpleTemplateScanner()`, `createCacheConfig()`, `createDeviceConfig()` 等工厂函数
+- **配置简化**: 将 24 行重复的 TemplateScanner 配置简化为 2 行
+- **类型定义**: 新增 `src/types/factory.ts` 工厂函数类型定义
+
+#### 性能大幅优化
+- **智能预加载**: 实现 `IntelligentPreloader` 类，支持交叉观察器、重试机制、指数退避
+- **内存监控**: 添加自动内存监控功能，在内存使用率过高时主动清理缓存
+- **缓存优化**: 增强 `AdvancedCache` 类，支持激进清理策略
+- **性能监控**: 实现 `PerformanceMonitor` 类，支持指标记录和统计
+
+#### 构建配置优化
+- **Package.json 简化**: 将复杂的 exports 字段从 120+ 行简化到 ~25 行
+- **构建配置**: 创建 `ldesign.config.ts` 构建配置文件
+- **大小监控**: 更新 `.size-limit.json`，添加新模块的大小限制
+- **构建验证**: 创建 `scripts/validate-build.ts` 构建验证脚本
+
+#### 测试完善
+- **工厂函数测试**: 创建 `tests/utils/factory.test.ts` 工厂函数测试
+- **性能功能测试**: 创建 `tests/utils/performance.test.ts` 性能功能测试
+- **测试工具**: 创建 `src/test-utils/setup.ts` 测试工具设置
+- **内存监控测试**: 为缓存系统的内存监控功能添加测试
+
+#### 文档更新
+- **README 更新**: 添加工厂函数使用示例和性能优化相关文档
+- **API 文档**: 更新 API 文档，包含新的类型定义
+- **使用指南**: 添加性能优化相关的使用指南
+
+### 🐛 修复
+- **类型导出冲突**: 修复 `StrictCacheStats` 重复导出问题
+- **控制台输出**: 优化控制台输出，只在调试模式下显示
+- **Vue 模板语法**: 修复 Vue 模板中的 Less 注释语法问题
+
 ## [0.2.0] - 2024-01-XX
 
 ### 🆕 新增功能

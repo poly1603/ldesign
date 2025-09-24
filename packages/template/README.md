@@ -12,10 +12,10 @@
 - 🎯 **内置模板库** - 丰富的内置模板，涵盖登录、仪表板等常见场景
 - 🚀 **开箱即用** - 零配置启动，智能模板扫描
 - 📱 **响应式设计** - 自动设备检测，完美适配各种屏幕
-- ⚡ **性能优化** - 懒加载、缓存机制、预加载支持
+- ⚡ **性能优化** - 智能预加载、内存监控、缓存优化、懒加载支持
 - 🎬 **流畅动画** - 丰富的动画效果，支持自定义配置和响应式适配
 - 🎯 **类型安全** - 完整的 TypeScript 支持
-- 🔧 **灵活配置** - 支持自定义配置和扩展
+- 🔧 **灵活配置** - 工厂函数、自定义配置和扩展支持
 - 🎪 **多种用法** - Composable、组件、指令、插件
 - 🧪 **测试完备** - 单元测试 + E2E 测试覆盖
 
@@ -545,6 +545,55 @@ const bounceConfig = {
 }
 ```
 
+## 🏭 工厂函数
+
+为了减少重复代码和提高开发效率，我们提供了一系列工厂函数：
+
+### 模板扫描器工厂
+
+```typescript
+import { createTemplateScanner, createSimpleTemplateScanner } from '@ldesign/template'
+
+// 创建完整配置的扫描器
+const scanner = createTemplateScanner(config, {
+  onScanComplete: (result) => {
+    console.log('扫描完成:', result.templates.size)
+  },
+  onScanError: (error) => {
+    console.error('扫描错误:', error)
+  }
+})
+
+// 创建简单扫描器
+const simpleScanner = createSimpleTemplateScanner(
+  'src/templates',  // 模板目录
+  true,            // 启用缓存
+  true             // 启用热更新
+)
+```
+
+### 配置工厂函数
+
+```typescript
+import { createCacheConfig, createDeviceConfig } from '@ldesign/template'
+
+// 创建缓存配置
+const cacheConfig = createCacheConfig(
+  true,      // 启用缓存
+  'lru',     // LRU策略
+  100,       // 最大缓存项数
+  60000,     // TTL (毫秒)
+  120000     // 检查周期 (毫秒)
+)
+
+// 创建设备配置
+const deviceConfig = createDeviceConfig(
+  480,   // 移动端断点
+  768,   // 平板端断点
+  1024   // 桌面端断点
+)
+```
+
 ### 响应式动画
 
 根据设备类型自动调整动画效果：
@@ -604,7 +653,70 @@ const { playStaggered } = useStaggeredAnimation(
 await playStaggered()
 ```
 
-### 性能优化
+## ⚡ 性能优化
+
+### 智能预加载
+
+系统提供智能预加载功能，可以根据用户行为预测并预加载可能需要的模板：
+
+```typescript
+import { PreloadController } from '@ldesign/template'
+
+const preloader = new PreloadController({
+  maxConcurrent: 3,                    // 最大并发预加载数
+  priority: ['login', 'dashboard'],    // 优先级列表
+  delayMs: 100,                       // 延迟时间
+  maxRetries: 2,                      // 最大重试次数
+  enableIntersectionObserver: true     // 启用视口观察器
+})
+
+// 添加模板到预加载队列
+preloader.addToQueue(templateList)
+```
+
+### 内存监控
+
+自动监控内存使用情况，在内存不足时主动清理缓存：
+
+```typescript
+import { AdvancedCache } from '@ldesign/template'
+
+const cache = new AdvancedCache({
+  enableMemoryWarning: true,      // 启用内存警告
+  memoryWarningThreshold: 0.8,    // 内存警告阈值 (80%)
+  strategy: 'LRU',               // 缓存策略
+  maxSize: 100 * 1024 * 1024     // 最大缓存大小 (100MB)
+})
+```
+
+### 性能监控
+
+```typescript
+import { PerformanceMonitor } from '@ldesign/template'
+
+const monitor = new PerformanceMonitor()
+
+// 记录性能指标
+monitor.recordMetric('template-load-time', 150)
+monitor.recordMetric('template-load-time', 200)
+
+// 获取统计信息
+const stats = monitor.getStats('template-load-time')
+console.log(stats)
+// {
+//   count: 2,
+//   avg: 175,
+//   min: 150,
+//   max: 200
+// }
+
+// 监控组件加载时间
+const endMonitoring = monitor.monitorComponentLoad('login-template')
+// ... 组件加载完成后
+endMonitoring()
+```
+
+### 动画性能优化
 
 #### 减少动画偏好
 
@@ -930,6 +1042,67 @@ pnpm test:ui
 - [高级配置](./examples/advanced-config.vue)
 - [自定义模板](./examples/custom-template.vue)
 - [响应式适配](./examples/responsive.vue)
+
+### 工厂函数类型
+
+```typescript
+// 工厂函数配置类型
+interface TemplateScannerFactoryConfig {
+  config: TemplateSystemConfig
+  callbacks?: ScannerEventCallbacks
+}
+
+interface SimpleTemplateScannerFactoryConfig {
+  templatesDir: string
+  enableCache?: boolean
+  enableHMR?: boolean
+}
+
+interface CacheConfigFactoryParams {
+  enabled?: boolean
+  strategy?: 'lru' | 'fifo'
+  maxSize?: number
+  ttl?: number
+  checkPeriod?: number
+}
+
+interface DeviceConfigFactoryParams {
+  mobile?: number
+  tablet?: number
+  desktop?: number
+}
+```
+
+### 性能监控类型
+
+```typescript
+// 性能监控配置
+interface PerformanceMonitorConfig {
+  enabled?: boolean
+  sampleRate?: number
+  bufferSize?: number
+  enableMemoryMonitoring?: boolean
+  memoryCheckInterval?: number
+}
+
+// 智能预加载器配置
+interface IntelligentPreloaderConfig {
+  maxConcurrent?: number
+  priority?: string[]
+  delayMs?: number
+  maxRetries?: number
+  enableIntersectionObserver?: boolean
+  strategy?: 'eager' | 'lazy' | 'idle' | 'viewport'
+}
+
+// 内存使用信息
+interface MemoryUsage {
+  used: number
+  total: number
+  limit: number
+  ratio: number
+}
+```
 
 ## 🚀 性能优化
 

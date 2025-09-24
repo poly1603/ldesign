@@ -142,6 +142,70 @@ export class AdvancedCache<T = any> {
     if (this.config.enablePersistence) {
       this.restore()
     }
+
+    // 设置内存监控
+    this.setupMemoryMonitoring()
+  }
+
+  /**
+   * 设置内存监控
+   */
+  private setupMemoryMonitoring(): void {
+    if (typeof window === 'undefined' || !('performance' in window) || !('memory' in window.performance)) {
+      return
+    }
+
+    // 定期检查内存使用情况
+    setInterval(() => {
+      this.checkMemoryUsage()
+    }, 30000) // 每30秒检查一次
+  }
+
+  /**
+   * 检查内存使用情况
+   */
+  private checkMemoryUsage(): void {
+    if (typeof window === 'undefined' || !window.performance?.memory) {
+      return
+    }
+
+    // @ts-ignore
+    const memory = window.performance.memory
+    const usedRatio = memory.usedJSHeapSize / memory.jsHeapSizeLimit
+
+    if (usedRatio > this.config.memoryWarningThreshold) {
+      // 内存使用率过高，主动清理缓存
+      this.aggressiveCleanup()
+
+      if (this.config.enableStats && import.meta.env?.DEV) {
+        console.warn(`[Cache] High memory usage detected (${Math.round(usedRatio * 100)}%), performing aggressive cleanup`)
+      }
+    }
+  }
+
+  /**
+   * 激进清理策略
+   */
+  private aggressiveCleanup(): void {
+    const targetSize = Math.floor(this.stats.currentSize * 0.5) // 清理到50%
+    let cleanedSize = 0
+
+    // 优先清理过期项
+    this.cleanupExpired()
+
+    // 按访问频率清理
+    const sortedItems = Array.from(this.cache.entries())
+      .sort(([, a], [, b]) => a.meta.accessCount - b.meta.accessCount)
+
+    for (const [key, item] of sortedItems) {
+      if (cleanedSize >= targetSize) break
+
+      cleanedSize += item.meta.size
+      this.cache.delete(key)
+      this.stats.currentSize -= item.meta.size
+      this.stats.currentItems--
+      this.stats.evictions++
+    }
   }
 
   /**
@@ -754,15 +818,7 @@ export class AdvancedCache<T = any> {
     }
   }
 
-  /**
-   * 检查内存使用
-   */
-  private checkMemoryUsage(): void {
-    const usage = this.stats.currentSize / this.config.maxSize
-    if (usage > this.config.memoryWarningThreshold) {
-      console.warn(`Cache memory usage is high: ${(usage * 100).toFixed(2)}%`)
-    }
-  }
+
 
   /**
    * 销毁缓存
@@ -957,4 +1013,3 @@ export function useAdvancedCache<T = any>(config?: AdvancedCacheConfig) {
 // 为了兼容性，导出一些别名
 export { AdvancedCache as CacheManager }
 export { AdvancedCache as LRUCache }
-export type { CacheStats as StrictCacheStats }

@@ -7,6 +7,22 @@ import type { DeviceType } from '../src/types/template'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AdvancedCache, ComponentCache, componentCache } from '../src/utils/cache'
 
+// Mock performance.memory API
+const mockMemory = {
+  usedJSHeapSize: 50 * 1024 * 1024, // 50MB
+  totalJSHeapSize: 100 * 1024 * 1024, // 100MB
+  jsHeapSizeLimit: 200 * 1024 * 1024 // 200MB
+}
+
+Object.defineProperty(global, 'window', {
+  value: {
+    performance: {
+      memory: mockMemory
+    }
+  },
+  writable: true
+})
+
 // 模拟Vue组件
 function createMockComponent(name: string): Component {
   return {
@@ -374,5 +390,80 @@ describe('缓存性能测试', () => {
     const endTime = Date.now()
     expect(endTime - startTime).toBeLessThan(50) // 50ms内完成
     expect(smallCache.size).toBe(100)
+  })
+})
+
+describe('内存监控功能', () => {
+  let cache: AdvancedCache<string>
+
+  beforeEach(() => {
+    cache = new AdvancedCache<string>({
+      strategy: 'LRU',
+      maxItems: 100,
+      enableMemoryWarning: true,
+      memoryWarningThreshold: 0.8
+    })
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('应该在高内存使用时触发清理', () => {
+    // 模拟高内存使用
+    mockMemory.usedJSHeapSize = 180 * 1024 * 1024 // 180MB out of 200MB limit
+
+    // 添加一些缓存项
+    for (let i = 0; i < 50; i++) {
+      cache.set(`key${i}`, `value${i}`)
+    }
+
+    const initialSize = cache.size
+
+    // 触发内存检查
+    vi.advanceTimersByTime(30000) // 30秒后触发内存检查
+
+    // 应该触发激进清理
+    expect(cache.size).toBeLessThanOrEqual(initialSize)
+  })
+
+  it('应该在正常内存使用时不触发清理', () => {
+    // 模拟正常内存使用
+    mockMemory.usedJSHeapSize = 50 * 1024 * 1024 // 50MB out of 200MB limit
+
+    // 添加一些缓存项
+    for (let i = 0; i < 50; i++) {
+      cache.set(`key${i}`, `value${i}`)
+    }
+
+    const initialSize = cache.size
+
+    // 触发内存检查
+    vi.advanceTimersByTime(30000) // 30秒后触发内存检查
+
+    // 不应该触发清理
+    expect(cache.size).toBe(initialSize)
+  })
+
+  it('应该在没有performance.memory时优雅处理', () => {
+    // 临时移除memory API
+    const originalMemory = (global as any).window.performance.memory
+    delete (global as any).window.performance.memory
+
+    // 创建新缓存实例应该不会抛出错误
+    expect(() => {
+      new AdvancedCache<string>({
+        enableMemoryWarning: true
+      })
+    }).not.toThrow()
+
+      // 恢复memory API
+      ; (global as any).window.performance.memory = originalMemory
+  })
+
+  it('应该正确计算内存使用率', () => {
+    const usedRatio = mockMemory.usedJSHeapSize / mockMemory.jsHeapSizeLimit
+    expect(usedRatio).toBe(0.25) // 50MB / 200MB = 0.25
   })
 })

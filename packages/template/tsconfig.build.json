@@ -35,9 +35,6 @@
     "cjs",
     "types",
     "coverage",
-    "src/core/**/*",
-    "src/scanner/**/*",
-    "src/index.ts",
-    "src/plugin.ts"
+    "src/test-utils/**/*"
   ]
 }

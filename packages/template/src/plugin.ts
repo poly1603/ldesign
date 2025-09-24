@@ -11,6 +11,7 @@ import { getConfigManager, TemplateConfigManager } from './config/config-manager
 import { TemplateScanner } from './scanner'
 import { componentCache } from './utils/cache'
 import { getHotReloadManager, type HotReloadManager } from './utils/hot-reload-manager'
+import { createTemplateScanner } from './utils/factory'
 
 /**
  * 转换旧版插件选项为新配置格式
@@ -134,21 +135,22 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
 
   // 转换并合并配置
   const convertedConfig = convertLegacyOptions(options)
-  console.log('[TemplatePlugin] Converting config:', convertedConfig)
 
   let config: any
   try {
     // 直接创建配置管理器实例，避免可能的模块加载问题
-    console.log('[TemplatePlugin] Creating TemplateConfigManager directly...')
     pluginState.configManager = new TemplateConfigManager(convertedConfig)
-    console.log('[TemplatePlugin] Config manager created:', pluginState.configManager)
 
     if (!pluginState.configManager) {
       throw new Error('Config manager is null')
     }
 
     config = pluginState.configManager.getConfig()
-    console.log('[TemplatePlugin] Config loaded:', config)
+
+    // 只在调试模式下输出配置信息
+    if (config.debug) {
+      console.log('[TemplatePlugin] Config loaded:', config)
+    }
   }
   catch (error) {
     console.error('[TemplatePlugin] Error creating config manager:', error)
@@ -167,7 +169,7 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
 
     // 设置热更新监听器
     pluginState.hotReloadManager.addListener((event) => {
-      if (config.devtools.enableLogger) {
+      if (config.debug && config.devtools.enableLogger) {
         console.log('[TemplatePlugin] Hot reload event:', event)
       }
 
@@ -181,29 +183,7 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
   }
 
   // 创建扫描器
-  pluginState.scanner = new TemplateScanner({
-    templatesDir: config.templatesDir,
-    enableCache: config.scanner.enableCache,
-    enableHMR: config.enableHMR,
-    maxDepth: config.scanner.maxDepth,
-    includeExtensions: config.scanner.includeExtensions,
-    excludePatterns: config.scanner.excludePatterns,
-    watchMode: config.scanner.watchMode,
-    debounceDelay: config.scanner.debounceDelay,
-    batchSize: config.scanner.batchSize,
-  }, {
-    onScanComplete: (result) => {
-      if (config.enablePerformanceMonitor || config.devtools.enableLogger) {
-        console.info('[TemplatePlugin] Scan completed:', result.stats)
-      }
-    },
-    onScanError: (error) => {
-      console.error('[TemplatePlugin] Scan error:', error)
-      if (config.errorHandling.enableReporting) {
-        // 这里可以添加错误报告逻辑
-      }
-    },
-  })
+  pluginState.scanner = createTemplateScanner(config)
 
   // 提供全局属性（安全检查）
   if (app && app.config && app.config.globalProperties) {
@@ -260,11 +240,9 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
 
   pluginState.installed = true
 
-  if (config.enablePerformanceMonitor || config.devtools.enableLogger) {
+  if (config.debug && (config.enablePerformanceMonitor || config.devtools.enableLogger)) {
     console.info('[TemplatePlugin] Plugin installed successfully')
-    if (config.debug) {
-      console.info('配置信息:', config)
-    }
+    console.info('配置信息:', config)
   }
 }
 
@@ -277,7 +255,7 @@ function setupHMR(config: TemplateSystemConfig): void {
 
   // 监听模板文件变化
   import.meta.hot.on('template-config-updated', (data) => {
-    if (config.devtools.enableLogger) {
+    if (config.debug && config.devtools.enableLogger) {
       console.log('[TemplatePlugin] Template config updated:', data)
     }
 
@@ -302,7 +280,7 @@ function setupHMR(config: TemplateSystemConfig): void {
 
   // 监听模板组件变化
   import.meta.hot.on('template-component-updated', (data) => {
-    if (config.devtools.enableLogger) {
+    if (config.debug && config.devtools.enableLogger) {
       console.log('[TemplatePlugin] Template component updated:', data)
     }
 
@@ -327,7 +305,7 @@ function setupHMR(config: TemplateSystemConfig): void {
 
   // 监听样式文件变化
   import.meta.hot.on('template-style-updated', (data) => {
-    if (config.devtools.enableLogger) {
+    if (config.debug && config.devtools.enableLogger) {
       console.log('[TemplatePlugin] Template style updated:', data)
     }
 
@@ -347,7 +325,7 @@ function setupHMR(config: TemplateSystemConfig): void {
 
   // 监听配置文件变化
   import.meta.hot.on('template-system-config-updated', (newConfig) => {
-    if (config.devtools.enableLogger) {
+    if (config.debug && config.devtools.enableLogger) {
       console.log('[TemplatePlugin] System config updated')
     }
 
@@ -359,7 +337,7 @@ function setupHMR(config: TemplateSystemConfig): void {
 
   // 监听模板文件添加/删除
   import.meta.hot.on('template-file-changed', (data) => {
-    if (config.devtools.enableLogger) {
+    if (config.debug && config.devtools.enableLogger) {
       console.log('[TemplatePlugin] Template file changed:', data)
     }
 
@@ -392,7 +370,7 @@ function setupPerformanceMonitor(config: TemplateSystemConfig): void {
   // 定期输出缓存统计
   setInterval(() => {
     const stats = componentCache.getStats()
-    if (stats.totalSize > 0 && config.devtools.enableLogger) {
+    if (stats.totalSize > 0 && config.debug && config.devtools.enableLogger) {
       console.info('[TemplatePlugin] Cache stats:', stats)
     }
   }, config.performance.metricsInterval)
@@ -402,7 +380,7 @@ function setupPerformanceMonitor(config: TemplateSystemConfig): void {
     setInterval(() => {
       // @ts-ignore
       const memory = window.performance.memory
-      if (memory && config.devtools.enableLogger) {
+      if (memory && config.debug && config.devtools.enableLogger) {
         console.info('[TemplatePlugin] Memory usage:', {
           used: `${Math.round(memory.usedJSHeapSize / 1024 / 1024)}MB`,
           total: `${Math.round(memory.totalJSHeapSize / 1024 / 1024)}MB`,
@@ -413,7 +391,7 @@ function setupPerformanceMonitor(config: TemplateSystemConfig): void {
   }
 
   // 监控扫描器性能
-  if (pluginState.scanner && config.devtools.enableTimeline) {
+  if (pluginState.scanner && config.debug && config.devtools.enableTimeline) {
     // 这里可以添加更详细的性能监控逻辑
     console.info('[TemplatePlugin] Performance monitoring enabled')
   }

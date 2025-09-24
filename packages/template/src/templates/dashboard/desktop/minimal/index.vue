@@ -1,8 +1,9 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { DashboardTemplateProps } from '../../types'
 
-// 使用统一的Props接口
+/* 使用统一的Props接口
+ */
 const props = withDefaults(defineProps<DashboardTemplateProps>(), {
   title: '简约工作台',
   logoUrl: '',
@@ -17,24 +18,25 @@ const props = withDefaults(defineProps<DashboardTemplateProps>(), {
   enableAnimations: true,
 })
 
-// 响应式状态
+/* 响应式状态 */
 const isCollapsed = ref(props.sidebarCollapsed)
 
-// 计算属性
+/* 计算属性 */
 const cssVars = computed(() => ({
   '--primary-color': props.primaryColor,
   '--secondary-color': props.secondaryColor,
   '--sidebar-width': isCollapsed.value ? '60px' : '200px',
 }))
 
-// 方法
+/* 方法
+ */
 const toggleSidebar = () => {
   if (props.collapsibleSidebar) {
     isCollapsed.value = !isCollapsed.value
   }
 }
 
-// 配置选择器事件处理方法
+/* 配置选择器事件处理方法 */
 const handleThemeChange = (theme: string) => {
   console.log('主题切换:', theme)
 }
@@ -81,40 +83,40 @@ const handleSizeChange = (size: string) => {
         </slot>
       </div>
 
-      <!-- 配置选择器区域 -->
+      <!-- 配置选择器区域-->
       <div class="ldesign-template-header-selectors">
-        <!-- 语言选择器 -->
+        <!-- 语言选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="language-selector" :on-language-change="handleLanguageChange">
             <!-- 默认语言选择器占位符 -->
           </slot>
         </div>
 
-        <!-- 主题色选择器 -->
+        <!-- 主题色选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="color-selector" :on-theme-change="handleThemeChange">
             <!-- 默认主题选择器占位符 -->
           </slot>
         </div>
 
-        <!-- 暗黑模式切换器 -->
+        <!-- 暗黑模式切换☰-->
         <div class="ldesign-template-selector-item">
           <slot name="dark-mode-toggle" :on-dark-mode-change="handleDarkModeChange">
             <!-- 默认暗黑模式切换器占位符 -->
           </slot>
         </div>
 
-        <!-- 尺寸选择器 -->
+        <!-- 尺寸选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="size-selector" :on-size-change="handleSizeChange">
             <!-- 默认尺寸选择器占位符 -->
           </slot>
         </div>
 
-        <!-- 模板选择器区域 -->
+        <!-- 模板选择器区域-->
         <div class="ldesign-template-selector-item">
           <slot name="selector">
-            <!-- 模板选择器将在这里显示 -->
+            <!-- 模板选择器将在这里显示-->
           </slot>
         </div>
       </div>
@@ -122,7 +124,7 @@ const handleSizeChange = (size: string) => {
 
     <!-- 主体区域 -->
     <div class="dashboard-body">
-      <!-- 侧边栏 -->
+      <!-- 侧边栏-->
       <aside v-if="showSidebar" class="dashboard-sidebar" :class="{ collapsed: isCollapsed }">
         <slot name="sidebar-menu">
 
@@ -146,7 +148,7 @@ const handleSizeChange = (size: string) => {
     <footer class="dashboard-footer">
       <slot name="footer">
         <div class="footer-content">
-          <p>简约设计 · 专注内容</p>
+          <p>简约设置· 专注内容</p>
         </div>
       </slot>
     </footer>
@@ -404,3 +406,5 @@ const handleSizeChange = (size: string) => {
   }
 }
 </style>
+
+

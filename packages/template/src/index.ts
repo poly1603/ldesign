@@ -4,10 +4,8 @@
  * 功能强大、性能卓越的 Vue3 模板管理和渲染功能库
  * 支持智能预加载、懒加载、虚拟滚动等性能优化功能
  *
- * 🔥 测试别名热更新功能 - 修改时间: 2025-09-18 18:56 - 第七次测试 - 测试ignored函数配置
- *
  * @author ldesign
- * @version 1.0.0
+ * @version 0.1.0
  */
 
 // 导出组件
@@ -39,4 +37,4 @@ export * from './utils'
 export { simpleTemplateScanner } from './utils/template-scanner-simple'
 
 // 版本信息
-export const version = '1.0.0'
+export const version = '0.1.0'

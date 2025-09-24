@@ -1,8 +1,9 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { DashboardTemplateProps } from '../../types'
 
-// 使用统一的Props接口
+/* 使用统一的Props接口
+ */
 const props = withDefaults(defineProps<DashboardTemplateProps>(), {
   title: '移动管理',
   logoUrl: '',
@@ -17,16 +18,17 @@ const props = withDefaults(defineProps<DashboardTemplateProps>(), {
   enableAnimations: true,
 })
 
-// 响应式状态
+/* 响应式状态 */
 const showDrawer = ref(false)
 
-// 计算属性
+/* 计算属性 */
 const cssVars = computed(() => ({
   '--primary-color': props.primaryColor,
   '--secondary-color': props.secondaryColor,
 }))
 
-// 方法
+/* 方法
+ */
 const toggleDrawer = () => {
   showDrawer.value = !showDrawer.value
 }
@@ -35,7 +37,7 @@ const closeDrawer = () => {
   showDrawer.value = false
 }
 
-// 配置选择器事件处理方法
+/* 配置选择器事件处理方法 */
 const handleThemeChange = (theme: string) => {
   console.log('主题切换:', theme)
 }
@@ -57,7 +59,7 @@ const handleSizeChange = (size: string) => {
   <div class="ldesign-template-dashboard ldesign-template-mobile" :style="cssVars">
     <!-- 头部区域 -->
     <header class="ldesign-template-mobile-header">
-      <!-- Logo和菜单区域 -->
+      <!-- Logo和菜单区域-->
       <div class="ldesign-template-header-left">
         <slot name="header-logo">
           <button class="ldesign-template-menu-button" @click="toggleDrawer">
@@ -93,9 +95,9 @@ const handleSizeChange = (size: string) => {
         </slot>
       </div>
 
-      <!-- 配置选择器区域 -->
+      <!-- 配置选择器区域-->
       <div class="ldesign-template-header-selectors">
-        <!-- 语言选择器 -->
+        <!-- 语言选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="language-selector" :on-language-change="handleLanguageChange">
             <!-- 默认语言选择器占位符 -->
@@ -103,7 +105,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 主题色选择器 -->
+        <!-- 主题色选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="color-selector" :on-theme-change="handleThemeChange">
             <!-- 默认主题选择器占位符 -->
@@ -111,7 +113,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 暗黑模式切换器 -->
+        <!-- 暗黑模式切换☰-->
         <div class="ldesign-template-selector-item">
           <slot name="dark-mode-toggle" :on-dark-mode-change="handleDarkModeChange">
             <!-- 默认暗黑模式切换器占位符 -->
@@ -119,7 +121,7 @@ const handleSizeChange = (size: string) => {
           </slot>
         </div>
 
-        <!-- 尺寸选择器 -->
+        <!-- 尺寸选择器-->
         <div class="ldesign-template-selector-item">
           <slot name="size-selector" :on-size-change="handleSizeChange">
             <!-- 默认尺寸选择器占位符 -->
@@ -172,7 +174,7 @@ const handleSizeChange = (size: string) => {
               <div class="user-role">{{ userInfo?.role || '用户' }}</div>
             </div>
           </div>
-          <button class="close-button" @click="closeDrawer">✕</button>
+          <button class="close-button" @click="closeDrawer">☰</button>
         </div>
 
         <div class="drawer-content">
@@ -215,7 +217,8 @@ const handleSizeChange = (size: string) => {
   background: var(--ldesign-bg-color-page);
 }
 
-// 头部样式
+/* 头部样式
+ */
 .ldesign-template-mobile-header {
   height: 56px;
   background: var(--ldesign-bg-color-container);
@@ -362,7 +365,8 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 主要内容区域
+/* 主要内容区域
+ */
 .mobile-content {
   flex: 1;
   padding: var(--ls-padding-base);
@@ -370,7 +374,8 @@ const handleSizeChange = (size: string) => {
   margin-bottom: 60px; // 为底部导航留出空间
 }
 
-// 底部导航
+/* 底部导航
+ */
 .mobile-bottom-nav {
   position: fixed;
   bottom: 0;
@@ -418,7 +423,8 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 抽屉菜单
+/* 抽屉菜单
+ */
 .drawer-overlay {
   position: fixed;
   top: 0;
@@ -566,7 +572,7 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 响应式设计
+/* 响应式设置 */
 @media (max-width: 480px) {
   .mobile-header {
     padding: 0 var(--ls-padding-sm);
@@ -591,3 +597,5 @@ const handleSizeChange = (size: string) => {
   }
 }
 </style>
+
+

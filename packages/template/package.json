@@ -35,119 +35,26 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
-    "./components": {
-      "types": "./es/components/index.d.ts",
-      "import": "./es/components/index.js",
-      "require": "./lib/components/index.cjs"
+    "./*": {
+      "types": "./es/*/index.d.ts",
+      "import": "./es/*/index.js",
+      "require": "./lib/*/index.cjs"
     },
-    "./components/*": {
-      "types": "./es/components/*.d.ts",
-      "import": "./es/components/*.js",
-      "require": "./lib/components/*.cjs"
+    "./*/": {
+      "types": "./es/*/index.d.ts",
+      "import": "./es/*/index.js",
+      "require": "./lib/*/index.cjs"
     },
-    "./composables": {
-      "types": "./es/composables/index.d.ts",
-      "import": "./es/composables/index.js",
-      "require": "./lib/composables/index.cjs"
+    "./*/*": {
+      "types": "./es/*/*.d.ts",
+      "import": "./es/*/*.js",
+      "require": "./lib/*/*.cjs"
     },
-    "./composables/*": {
-      "types": "./es/composables/*.d.ts",
-      "import": "./es/composables/*.js",
-      "require": "./lib/composables/*.cjs"
-    },
-    "./config": {
-      "types": "./es/config/index.d.ts",
-      "import": "./es/config/index.js",
-      "require": "./lib/config/index.cjs"
-    },
-    "./config/*": {
-      "types": "./es/config/*.d.ts",
-      "import": "./es/config/*.js",
-      "require": "./lib/config/*.cjs"
-    },
-    "./core/*": {
-      "types": "./es/core/*.d.ts",
-      "import": "./es/core/*.js",
-      "require": "./lib/core/*.cjs"
-    },
-    "./locales": {
-      "types": "./es/locales/index.d.ts",
-      "import": "./es/locales/index.js",
-      "require": "./lib/locales/index.cjs"
-    },
-    "./locales/*": {
-      "types": "./es/locales/*.d.ts",
-      "import": "./es/locales/*.js",
-      "require": "./lib/locales/*.cjs"
-    },
-    "./scanner": {
-      "types": "./es/scanner/index.d.ts",
-      "import": "./es/scanner/index.js",
-      "require": "./lib/scanner/index.cjs"
-    },
-    "./scanner/*": {
-      "types": "./es/scanner/*.d.ts",
-      "import": "./es/scanner/*.js",
-      "require": "./lib/scanner/*.cjs"
-    },
-    "./types": {
-      "types": "./es/types/index.d.ts",
-      "import": "./es/types/index.js",
-      "require": "./lib/types/index.cjs"
-    },
-    "./types/*": {
-      "types": "./es/types/*.d.ts",
-      "import": "./es/types/*.js",
-      "require": "./lib/types/*.cjs"
-    },
-    "./utils": {
-      "types": "./es/utils/index.d.ts",
-      "import": "./es/utils/index.js",
-      "require": "./lib/utils/index.cjs"
-    },
-    "./utils/*": {
-      "types": "./es/utils/*.d.ts",
-      "import": "./es/utils/*.js",
-      "require": "./lib/utils/*.cjs"
-    },
-    "./es/components/TemplateConfigPanel.vue.css": "./es/components/TemplateConfigPanel.vue.css",
-    "./es/components/TemplateRenderer.css": "./es/components/TemplateRenderer.css",
-    "./es/components/TemplateSelector.css": "./es/components/TemplateSelector.css",
-    "./es/composables/index.css": "./es/composables/index.css",
-    "./es/index.css": "./es/index.css",
-    "./es/templates/dashboard/desktop/classic/index.vue.css": "./es/templates/dashboard/desktop/classic/index.vue.css",
-    "./es/templates/dashboard/desktop/default/index.vue.css": "./es/templates/dashboard/desktop/default/index.vue.css",
-    "./es/templates/dashboard/desktop/minimal/index.vue.css": "./es/templates/dashboard/desktop/minimal/index.vue.css",
-    "./es/templates/dashboard/desktop/modern/index.vue.css": "./es/templates/dashboard/desktop/modern/index.vue.css",
-    "./es/templates/dashboard/mobile/default/index.vue.css": "./es/templates/dashboard/mobile/default/index.vue.css",
-    "./es/templates/dashboard/mobile/modern/index.vue.css": "./es/templates/dashboard/mobile/modern/index.vue.css",
-    "./es/templates/dashboard/tablet/default/index.vue.css": "./es/templates/dashboard/tablet/default/index.vue.css",
-    "./es/templates/dashboard/tablet/modern/index.vue.css": "./es/templates/dashboard/tablet/modern/index.vue.css",
-    "./es/templates/login/desktop/creative/index.vue.css": "./es/templates/login/desktop/creative/index.vue.css",
-    "./es/templates/login/desktop/default/index.vue.css": "./es/templates/login/desktop/default/index.vue.css",
-    "./es/templates/login/desktop/modern/index.vue.css": "./es/templates/login/desktop/modern/index.vue.css",
-    "./es/templates/login/mobile/default/index.vue.css": "./es/templates/login/mobile/default/index.vue.css",
-    "./es/templates/login/tablet/default/index.vue.css": "./es/templates/login/tablet/default/index.vue.css",
-    "./lib/components/TemplateConfigPanel.vue.css": "./lib/components/TemplateConfigPanel.vue.css",
-    "./lib/components/TemplateRenderer.css": "./lib/components/TemplateRenderer.css",
-    "./lib/components/TemplateSelector.css": "./lib/components/TemplateSelector.css",
-    "./lib/composables/index.css": "./lib/composables/index.css",
-    "./lib/index.css": "./lib/index.css",
-    "./lib/templates/dashboard/desktop/classic/index.vue.css": "./lib/templates/dashboard/desktop/classic/index.vue.css",
-    "./lib/templates/dashboard/desktop/default/index.vue.css": "./lib/templates/dashboard/desktop/default/index.vue.css",
-    "./lib/templates/dashboard/desktop/minimal/index.vue.css": "./lib/templates/dashboard/desktop/minimal/index.vue.css",
-    "./lib/templates/dashboard/desktop/modern/index.vue.css": "./lib/templates/dashboard/desktop/modern/index.vue.css",
-    "./lib/templates/dashboard/mobile/default/index.vue.css": "./lib/templates/dashboard/mobile/default/index.vue.css",
-    "./lib/templates/dashboard/mobile/modern/index.vue.css": "./lib/templates/dashboard/mobile/modern/index.vue.css",
-    "./lib/templates/dashboard/tablet/default/index.vue.css": "./lib/templates/dashboard/tablet/default/index.vue.css",
-    "./lib/templates/dashboard/tablet/modern/index.vue.css": "./lib/templates/dashboard/tablet/modern/index.vue.css",
-    "./lib/templates/login/desktop/creative/index.vue.css": "./lib/templates/login/desktop/creative/index.vue.css",
-    "./lib/templates/login/desktop/default/index.vue.css": "./lib/templates/login/desktop/default/index.vue.css",
-    "./lib/templates/login/desktop/modern/index.vue.css": "./lib/templates/login/desktop/modern/index.vue.css",
-    "./lib/templates/login/mobile/default/index.vue.css": "./lib/templates/login/mobile/default/index.vue.css",
-    "./lib/templates/login/tablet/default/index.vue.css": "./lib/templates/login/tablet/default/index.vue.css",
-    "./dist/index.css": "./dist/index.css",
-    "./dist/index.min.css": "./dist/index.min.css"
+    "./es/*.css": "./es/*.css",
+    "./es/**/*.css": "./es/**/*.css",
+    "./lib/*.css": "./lib/*.css",
+    "./lib/**/*.css": "./lib/**/*.css",
+    "./dist/*.css": "./dist/*.css"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
@@ -165,6 +72,8 @@
   "scripts": {
     "build": "ldesign-builder build",
     "build:watch": "ldesign-builder watch",
+    "build:analyze": "ANALYZE=true ldesign-builder build",
+    "build:prod": "NODE_ENV=production ldesign-builder build",
     "dev": "ldesign-builder watch",
     "type-check": "vue-tsc --noEmit",
     "type-check:src": "vue-tsc --noEmit -p tsconfig.typecheck.json",
@@ -192,10 +101,8 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "build:check": "pnpm run build && node ../../tools/scripts/build/bundle-validator.js",
-    "build:analyze": "pnpm run build && node ../../tools/scripts/build/bundle-analyzer.js",
-    "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
-    "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
+    "build:check": "pnpm run build && tsx scripts/validate-build.ts",
+    "build:validate": "pnpm run build && tsx scripts/validate-build.ts",
     "build:dev": "ldesign-builder build --dev"
   },
   "dependencies": {
@@ -216,7 +123,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@testing-library/vue": "^8.1.0",
     "@types/node": "^22.0.0",
-    "@types/react": "^19.1.12",
+
     "@vitejs/plugin-vue": "^5.0.3",
     "@vitejs/plugin-vue-jsx": "^5.1.1",
     "@vitest/ui": "^3.2.4",
@@ -233,9 +140,7 @@
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-less": "^1.1.3",
     "rollup-plugin-postcss": "^4.0.2",
-    "sass": "^1.89.2",
     "size-limit": "^11.0.0",
-    "stylus": "^0.64.0",
     "tsx": "^4.7.0",
     "typescript": "^5.6.0",
     "vite": "^5.0.12",

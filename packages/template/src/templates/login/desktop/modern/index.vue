@@ -1,8 +1,9 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed } from 'vue'
 import type { LoginTemplateProps } from '../../types'
 
-// 简化的Props接口
+/* 简化的Props接口
+ */
 const props = withDefaults(defineProps<LoginTemplateProps>(), {
   primaryColor: 'var(--ldesign-brand-color)',
   secondaryColor: 'var(--ldesign-brand-color-6)',
@@ -10,7 +11,7 @@ const props = withDefaults(defineProps<LoginTemplateProps>(), {
   enableAnimations: true,
 })
 
-// 计算属性
+/* 计算属性 */
 const cssVars = computed(() => ({
   '--primary-color': props.primaryColor,
   '--secondary-color': props.secondaryColor,
@@ -25,7 +26,7 @@ const backgroundStyle = computed(() => {
   return {}
 })
 
-// 配置选择器事件处理方法
+/* 配置选择器事件处理方法 */
 const handleThemeChange = (theme: string) => {
   console.log('主题切换:', theme)
 }
@@ -78,11 +79,11 @@ const handleSizeChange = (size: string) => {
         <!-- 内容区域 - 空白面板 -->
         <div class="ldesign-template-panel-content">
           <slot name="selector">
-            <!-- 模板选择器将在这里显示 -->
+            <!-- 模板选择器将在这里显示-->
           </slot>
           <slot name="content">
             <div class="ldesign-template-content-placeholder">
-              <div class="ldesign-template-modern-placeholder-icon">✨</div>
+              <div class="ldesign-template-modern-placeholder-icon">🔐</div>
               <p class="ldesign-template-placeholder-text">现代化登录表单内容区域</p>
               <p class="ldesign-template-placeholder-hint">请通过 content 插槽添加登录表单</p>
             </div>
@@ -111,7 +112,8 @@ const handleSizeChange = (size: string) => {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-// 简化的背景容器
+/* 简化的背景容器
+ */
 .ldesign-template-background-container {
   position: absolute;
   top: 0;
@@ -143,7 +145,8 @@ const handleSizeChange = (size: string) => {
     }
   }
 
-  // 简化的毛玻璃装饰球
+  /* 简化的毛玻璃装饰球
+ */
   .ldesign-template-glass-orbs {
     position: absolute;
     top: 0;
@@ -177,7 +180,8 @@ const handleSizeChange = (size: string) => {
     }
   }
 
-  // 简化的几何图案
+  /* 简化的几何图案
+ */
   .ldesign-template-modern-patterns {
     position: absolute;
     top: 0;
@@ -253,7 +257,8 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 登录容器
+/* 登录容器
+ */
 .ldesign-template-login-container {
   position: relative;
   z-index: 10;
@@ -278,7 +283,8 @@ const handleSizeChange = (size: string) => {
   animation: panel-enter 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-// 面板头部
+/* 面板头部
+ */
 .ldesign-template-panel-header {
   text-align: center;
   margin-bottom: var(--ls-margin-lg);
@@ -330,7 +336,8 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 面板内容
+/* 面板内容
+ */
 .ldesign-template-panel-content {
   flex: 1;
   display: flex;
@@ -379,7 +386,8 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-// 面板底部
+/* 面板底部
+ */
 .ldesign-template-panel-footer {
   margin-top: auto;
   text-align: center;
@@ -395,7 +403,7 @@ const handleSizeChange = (size: string) => {
 
 
 
-// 响应式设计
+/* 响应式设置 */
 @media (max-width: 768px) {
   .ldesign-template-login-container {
     padding: var(--ls-padding-sm);

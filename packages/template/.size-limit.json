@@ -1,16 +1,26 @@
 [
   {
-    "name": "Core (ES Module)",
+    "name": "Main Bundle (ESM)",
     "path": "es/index.js",
-    "limit": "50 KB",
+    "limit": "80 KB",
     "gzip": true,
+    "brotli": true,
     "running": false
   },
   {
-    "name": "Core (CommonJS)",
-    "path": "lib/index.js",
-    "limit": "55 KB",
+    "name": "Main Bundle (CJS)",
+    "path": "lib/index.cjs",
+    "limit": "85 KB",
     "gzip": true,
+    "brotli": true,
+    "running": false
+  },
+  {
+    "name": "Plugin Bundle (ESM)",
+    "path": "es/plugin.js",
+    "limit": "20 KB",
+    "gzip": true,
+    "brotli": true,
     "running": false
   },
   {
@@ -35,9 +45,30 @@
     "running": false
   },
   {
-    "name": "Utils Only (ES Module)",
+    "name": "Utils Module (ESM)",
     "path": "es/utils/index.js",
+    "limit": "25 KB",
+    "gzip": true,
+    "running": false
+  },
+  {
+    "name": "Performance Module",
+    "path": "es/utils/performance.js",
     "limit": "15 KB",
+    "gzip": true,
+    "running": false
+  },
+  {
+    "name": "Cache Module",
+    "path": "es/utils/cache.js",
+    "limit": "12 KB",
+    "gzip": true,
+    "running": false
+  },
+  {
+    "name": "Factory Module",
+    "path": "es/utils/factory.js",
+    "limit": "8 KB",
     "gzip": true,
     "running": false
   },

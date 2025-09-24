@@ -1,9 +1,10 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { LoginTemplateProps } from '../../types'
 import TemplateConfigPanel from '../../../../components/TemplateConfigPanel.vue'
 
-// 简化的Props接口，只保留基础配置
+/* 简化的Props接口，只保留基础配置
+ */
 const props = withDefaults(defineProps<LoginTemplateProps>(), {
   primaryColor: 'var(--ldesign-brand-color)',
   secondaryColor: 'var(--ldesign-brand-color-6)',
@@ -11,7 +12,7 @@ const props = withDefaults(defineProps<LoginTemplateProps>(), {
   enableAnimations: true,
 })
 
-// 计算属性
+/* 计算属性 */
 const backgroundStyle = computed(() => {
   if (props.backgroundImage) {
     return {
@@ -21,17 +22,19 @@ const backgroundStyle = computed(() => {
   return {}
 })
 
-// CSS变量
+/* CSS变量
+ */
 const cssVars = computed(() => ({
   '--primary-color': props.primaryColor,
   '--secondary-color': props.secondaryColor,
 }))
 
-// 配置面板状态
+/* 配置面板状态 */
 const showConfigPanel = ref(false)
 const currentTemplate = ref('login-desktop-default')
 
-// 配置面板相关方法
+/* 配置面板相关方法
+ */
 const handleTemplateSelect = (templateName: string) => {
   currentTemplate.value = templateName
   console.log('Selected template:', templateName)
@@ -77,7 +80,7 @@ const handleDarkModeChange = (isDark: boolean) => {
         <div class="ldesign-template-panel-content">
           <slot name="content">
             <slot name="selector">
-              <!-- 模板选择器将在这里显示 -->
+              <!-- 模板选择器将在这里显示-->
             </slot>
             <div class="ldesign-template-content-placeholder">
               <div class="ldesign-template-placeholder-icon">📝</div>
@@ -128,7 +131,8 @@ const handleDarkModeChange = (isDark: boolean) => {
     background: rgba(0, 0, 0, 0.1);
   }
 
-  // 简化的几何装饰
+  /* 简化的几何装饰
+ */
   .ldesign-template-geometric-decoration {
     position: absolute;
     top: 0;
@@ -246,7 +250,7 @@ const handleDarkModeChange = (isDark: boolean) => {
   justify-content: center;
 }
 
-// 响应式设计
+/* 响应式设置 */
 @media (max-width: 768px) {
   .ldesign-template-login-container {
     padding: var(--ls-padding-sm);

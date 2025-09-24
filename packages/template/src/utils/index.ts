@@ -31,3 +31,6 @@ export * from './validation'
 
 // 导出国际化系统
 export * from './i18n'
+
+// 导出工厂函数
+export * from './factory'
