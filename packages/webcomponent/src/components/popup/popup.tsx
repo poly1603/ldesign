@@ -552,8 +552,12 @@ export class LdesignPopup {
     // popupElement 可能在首次显示时才渲染
     if (!this.triggerElement) return;
     this.popupElement = (this.getPopupEl() || this.el.querySelector('.ldesign-popup__content')) as HTMLElement;
-    this.arrowElement = this.popupElement ? (this.popupElement.querySelector('.ldesign-popup__arrow') as HTMLElement) : undefined;
     if (!this.popupElement) return;
+    
+    // 确保箭头元素被正确获取
+    if (this.arrow) {
+      this.arrowElement = this.popupElement.querySelector('.ldesign-popup__arrow') as HTMLElement;
+    }
 
     // 若需要 portal 到 body，则移动过去
     this.moveToContainerIfNeeded();
@@ -563,7 +567,9 @@ export class LdesignPopup {
     const strategy = this.getStrategy();
     const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
 
-    // 使用 floating-ui 的 offset 中间件，主轴间距 = offset-distance
+    // 使用 floating-ui 的 offset 中间件。为保证“箭头尖端到触发器”的可见缝等于 offset-distance，
+    // 这里在主轴距离中补上“菱形箭头沿主轴的真实外凸量”。
+    // 使用 floating-ui 的 offset 中间件；保持主轴间距等于 offset-distance（由库统一计算）
     const offsetValue = this.toNumber(this.offsetDistance, 8);
 
     const middleware = [
@@ -647,8 +653,12 @@ export class LdesignPopup {
   private async updatePositionOnly() {
     if (!this.triggerElement) return;
     this.popupElement = (this.getPopupEl() || this.el.querySelector('.ldesign-popup__content')) as HTMLElement;
-    this.arrowElement = this.popupElement ? (this.popupElement.querySelector('.ldesign-popup__arrow') as HTMLElement) : undefined;
     if (!this.popupElement) return;
+    
+    // 确保箭头元素被正确获取
+    if (this.arrow) {
+      this.arrowElement = this.popupElement.querySelector('.ldesign-popup__arrow') as HTMLElement;
+    }
 
     this.moveToContainerIfNeeded();
     await this.nextFrame();

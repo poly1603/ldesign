@@ -1,0 +1,222 @@
+.ldesign-menu {
+  --menu-height: 40px;
+  --menu-padding-x: 12px;
+  --menu-gap: 4px;
+  --menu-radius: 6px;
+  --menu-color: var(--ldesign-text-color-primary, #1f2937);
+  --menu-bg-hover: var(--ldesign-bg-color-component-hover, #f8f8f8);
+  --menu-bg-active: var(--ldesign-brand-color-focus, #d8c8ee);
+  --menu-color-active: var(--ldesign-brand-color, #5e2aa7);
+  --menu-collapse-duration: 200ms;
+  --menu-collapse-easing: ease;
+  --menu-fly-duration: 140ms;
+  width: 100%;
+  display: block;
+  /* 纵向行内展开时，给图标左边增加一点空间，视觉更均衡 */
+  /* 折叠模式：一级仅显示图标，隐藏标题与箭头 */
+  /* 折叠模式下：包了一层 tooltip 的一级叶子也需要居中，仅显示图标 */
+  /* 关键：Tooltip 内部会用一个 span[slot=trigger] 包裹触发元素，默认是 inline，
+     在折叠模式下需要它占满整行以便内部 .ldesign-menu__item 获得 100% 宽度进行居中 */
+  /* 折叠模式下，tooltip -> popup 链路的每一层都要占满行，避免内联盒子导致的居中偏移 */
+  /* flyout 面板内若条目带有图标，不需要额外的左外边距 */
+}
+.ldesign-menu__list {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none;
+  display: block;
+}
+.ldesign-menu__list > li {
+  list-style: none;
+}
+.ldesign-menu__node {
+  position: relative;
+  list-style: none;
+}
+.ldesign-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 var(--menu-padding-x);
+  height: var(--menu-height);
+  width: 100%;
+  border-radius: var(--menu-radius);
+  color: var(--menu-color);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  z-index: 0;
+  transition: color 0.15s ease;
+  /* 让 hover/active 背景通过伪元素铺满整行（包括缩进区域） */
+}
+.ldesign-menu__item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--level-indent, 0px));
+  right: 0;
+  border-radius: var(--menu-radius);
+  background: transparent;
+  z-index: -1;
+  pointer-events: none;
+  transition: background-color 0.15s ease;
+}
+.ldesign-menu__item:hover:not(.ldesign-menu__item--active)::before {
+  background: var(--menu-bg-hover);
+}
+.ldesign-menu__item--disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.ldesign-menu__item--active {
+  color: var(--menu-color-active);
+}
+.ldesign-menu__item--active::before {
+  background: var(--menu-bg-active);
+}
+.ldesign-menu__title {
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+.ldesign-menu__icon {
+  display: inline-flex;
+  width: 20px;
+  justify-content: center;
+}
+.ldesign-menu__icon--placeholder {
+  opacity: 0;
+}
+.ldesign-menu__arrow {
+  margin-left: auto;
+  display: inline-flex;
+  transition: transform 0.15s ease;
+}
+.ldesign-menu--collapsed {
+  /* 可选：设置一个侧栏宽度变量，用户可自行在容器上控制实际宽度 */
+  --menu-collapsed-gap: 0px;
+}
+.ldesign-menu--collapsed > .ldesign-menu__list > li > .ldesign-menu__item {
+  justify-content: center;
+  gap: var(--menu-collapsed-gap);
+  padding-left: 0;
+  padding-right: 0;
+}
+.ldesign-menu--collapsed > .ldesign-menu__list > li > .ldesign-menu__item .ldesign-menu__title,
+.ldesign-menu--collapsed > .ldesign-menu__list > li > .ldesign-menu__item .ldesign-menu__arrow {
+  display: none;
+}
+.ldesign-menu--collapsed > .ldesign-menu__list > li ldesign-tooltip {
+  display: block;
+  /* 覆盖 tooltip 默认 inline-block，避免收缩 */
+  width: 100%;
+}
+.ldesign-menu--collapsed > .ldesign-menu__list > li ldesign-tooltip .ldesign-menu__item {
+  justify-content: center;
+  gap: var(--menu-collapsed-gap);
+  padding-left: 0;
+  padding-right: 0;
+}
+.ldesign-menu--collapsed > .ldesign-menu__list > li ldesign-tooltip .ldesign-menu__title,
+.ldesign-menu--collapsed > .ldesign-menu__list > li ldesign-tooltip .ldesign-menu__arrow {
+  display: none;
+}
+.ldesign-menu--collapsed > .ldesign-menu__list > li ldesign-tooltip span[slot="trigger"] {
+  display: block;
+  width: 100%;
+}
+.ldesign-menu--collapsed > .ldesign-menu__list > li ldesign-tooltip,
+.ldesign-menu--collapsed > .ldesign-menu__list > li ldesign-tooltip ldesign-popup,
+.ldesign-menu--collapsed > .ldesign-menu__list > li ldesign-tooltip ldesign-popup > .ldesign-popup__trigger {
+  display: block !important;
+  width: 100% !important;
+}
+.ldesign-menu__node--open > .ldesign-menu__item .ldesign-menu__arrow {
+  transform: rotate(90deg);
+}
+.ldesign-menu__inline-children {
+  margin: 4px 0 0 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+  height: 0;
+  will-change: height;
+  transition: height var(--menu-collapse-duration) var(--menu-collapse-easing);
+}
+.ldesign-menu__node--open > .ldesign-menu__inline-children {
+  overflow: visible;
+}
+.ldesign-menu__inline-children > li {
+  list-style: none;
+}
+.ldesign-menu__inline-children > li::marker {
+  content: none;
+}
+.ldesign-menu__divider {
+  height: 1px;
+  margin: 6px 0;
+  background: var(--ldesign-border-level-1-color, #e5e5e5);
+}
+.ldesign-menu__popup-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 160px;
+}
+.ldesign-menu__popup-list .ldesign-menu__node {
+  display: block;
+}
+.ldesign-menu__popup-list .ldesign-menu__item {
+  width: 100%;
+  height: 36px;
+  border-radius: 4px;
+}
+.ldesign-menu__popup-list .ldesign-menu__arrow {
+  margin-left: auto;
+}
+.ldesign-menu__node--fly {
+  position: relative;
+}
+.ldesign-menu__node--fly-open > .ldesign-menu__item::before {
+  background: var(--menu-bg-hover);
+}
+.ldesign-menu__fly-children {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 4px);
+  z-index: 1000;
+  margin: 0;
+  padding: 8px 8px 8px 8px !important;
+  list-style: none;
+  min-width: 160px;
+  background: var(--ldesign-bg-color, #ffffff);
+  border: 1px solid var(--ldesign-border-color, #e5e7eb);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateX(6px);
+  transform-origin: left top;
+  visibility: hidden;
+  pointer-events: none;
+  will-change: transform, opacity;
+  transition: transform var(--menu-fly-duration) ease, opacity var(--menu-fly-duration) ease, visibility 0s linear var(--menu-fly-duration);
+}
+.ldesign-menu__node--fly-open > .ldesign-menu__fly-children {
+  opacity: 1;
+  transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
+  transition: transform var(--menu-fly-duration) ease, opacity var(--menu-fly-duration) ease, visibility 0s;
+}
+.ldesign-menu__fly-children .ldesign-menu__item {
+  width: 100%;
+  height: 36px;
+  border-radius: 4px;
+  padding: 0 8px;
+}
+.ldesign-menu__fly-children .ldesign-menu__icon {
+  margin-left: 0;
+}

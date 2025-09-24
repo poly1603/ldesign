@@ -30,7 +30,7 @@
     background: var(--ldesign-bg-color, #ffffff);
     border: 1px solid var(--ldesign-border-color, #e5e7eb);
     transform: rotate(45deg);
-    z-index: -1; // 放在内容之下以与边框融合
+    z-index: 1; // 提到内容之上，避免被面板边框吃掉尖端，保证可见缝稳定
 
     // 不同方向的箭头样式（去掉两条边使其呈三角效果）
     &[data-placement^="top"] {

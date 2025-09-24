@@ -399,6 +399,7 @@ export class LdesignMenu {
   private renderFlyout(item: MenuItem, level: number) {
     const open = !!this.flyoutOpenMap[item.key];
     const trigger = this.submenuTrigger;
+    const isActive = this.getPathKeys(this.currentKey || '').includes(item.key);
 
     const onEnter = () => {
       if (trigger === 'hover') {
@@ -423,6 +424,7 @@ export class LdesignMenu {
             'ldesign-menu__item': true,
             'ldesign-menu__item--submenu': true,
             'ldesign-menu__item--disabled': !!item.disabled,
+            'ldesign-menu__item--active': isActive,
           }} role="menuitem" onClick={onClick}>
           {this.renderIcon(item.icon, this.requireTopIcon && level === 1 && !item.icon)}
           <span class="ldesign-menu__title">{item.label}</span>
