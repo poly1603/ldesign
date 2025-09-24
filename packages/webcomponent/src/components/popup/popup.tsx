@@ -88,8 +88,10 @@ export class LdesignPopup {
 
   /**
    * 与触发元素的距离（单位 px）。
+   * Deprecated: 请使用 `offset` 属性透传给 floating-ui 的 offset 中间件。
    */
   @Prop() offsetDistance: number | string = 8;
+
 
   /**
    * 是否禁用
@@ -197,10 +199,10 @@ export class LdesignPopup {
   @Watch('offsetDistance')
   watchOffsetDistance() {
     if (this.isVisible) {
-      // 重新定位以应用新的间距
       this.updatePositionOnly();
     }
   }
+
 
   /**
    * 组件加载完成
@@ -560,14 +562,15 @@ export class LdesignPopup {
 
     const strategy = this.getStrategy();
     const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
-    
-    // 使用 floating-ui 的 offset 中间件来处理间距
+
+    // 使用 floating-ui 的 offset 中间件，主轴间距 = offset-distance
     const offsetValue = this.toNumber(this.offsetDistance, 8);
-    
+
     const middleware = [
-      offset(offsetValue), // 使用 floating-ui 的 offset 中间件
+      offset(offsetValue),
       flip({ boundary } as any),
-      shift({ padding: 8, boundary } as any), // 允许主轴和交叉轴都进行调整
+      // 禁用主轴挤压，避免改变几何上的主轴间距
+      shift({ padding: 8, boundary, mainAxis: false, crossAxis: true } as any),
     ];
 
     if (this.arrow && this.arrowElement) {
@@ -585,7 +588,7 @@ export class LdesignPopup {
       }
     );
 
-    // 直接使用 floating-ui 计算的位置，不需要手动调整
+    // 直接使用 floating-ui 计算的位置
     Object.assign(this.popupElement.style, {
       left: `${x}px`,
       top: `${y}px`,
@@ -652,14 +655,13 @@ export class LdesignPopup {
 
     const strategy = this.getStrategy();
     const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
-    
-    // 使用 floating-ui 的 offset 中间件来处理间距
+
     const offsetValue = this.toNumber(this.offsetDistance, 8);
-    
+
     const middleware = [
-      offset(offsetValue), // 使用 floating-ui 的 offset 中间件
+      offset(offsetValue),
       flip({ boundary } as any),
-      shift({ padding: 8, boundary } as any), // 允许主轴和交叉轴都进行调整
+      shift({ padding: 8, boundary, mainAxis: false, crossAxis: true } as any),
     ];
 
     if (this.arrow && this.arrowElement) {
@@ -677,7 +679,7 @@ export class LdesignPopup {
       }
     );
 
-    // 直接使用 floating-ui 计算的位置，不需要手动调整
+    // 直接使用 floating-ui 计算的位置
     Object.assign(this.popupElement.style, {
       left: `${x}px`,
       top: `${y}px`,
@@ -807,4 +809,5 @@ export class LdesignPopup {
     this.popupElement.removeEventListener('pointerleave', this.handleMouseLeave);
     this.contentHoverBound = false;
   }
+
 }

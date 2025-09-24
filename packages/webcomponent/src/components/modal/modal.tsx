@@ -160,7 +160,7 @@ export class LdesignModal {
 
   private keyScrollLockHandler = (e: KeyboardEvent) => {
     if (!this.isVisible) return;
-    const keys = ['PageUp','PageDown','Home','End','ArrowUp','ArrowDown',' '];
+    const keys = ['PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown', ' '];
     if (keys.includes(e.key)) {
       // 若焦点不在内容区，阻止页面滚动
       const body = this.el.querySelector('.ldesign-modal__body') as HTMLElement | null;
@@ -290,7 +290,7 @@ export class LdesignModal {
   disconnectedCallback() {
     // 移除键盘事件
     document.removeEventListener('keydown', this.handleKeyDown);
-    
+
     // 移除拖拽和调整大小事件
     this.unbindDragEvents();
     this.unbindResizeEvents();
@@ -307,16 +307,16 @@ export class LdesignModal {
 
     // 解除滚动锁
     this.unbindScrollLock();
-    
+
     // 恢复 body 滚动状态（考虑到多个 Modal 叠加的情况）
     if (this.isVisible) {
       this.unlockBodyScroll();
     }
-    
+
     // 清理引用
     this.modalElement = undefined;
     this.maskElement = undefined;
-    
+
     // 重置状态
     this.isVisible = false;
     this.isAnimating = false;
@@ -934,15 +934,15 @@ export class LdesignModal {
    */
   private getContentClass() {
     const classes = ['ldesign-modal__content'];
-    
+
     // 如果没有标题和关闭按钮
     if (!this.modalTitle && !this.closable && !this.maximizable) {
       classes.push('ldesign-modal__content--no-header');
     }
-    
+
     // 这里无法判断是否有 footer slot，需要在运行时判断
     // 可以通过检查 slot 内容来实现
-    
+
     return classes.join(' ');
   }
 
@@ -1145,6 +1145,7 @@ export class LdesignModal {
                         type="text"
                         size="small"
                         title="关闭"
+                        shape="square"
                       >
                         <slot name="close-icon">
                           <ldesign-icon name={this.closeIcon} size="small" />
@@ -1161,7 +1162,7 @@ export class LdesignModal {
 
               <div class={`ldesign-modal__footer ${this.showFooterShadow ? 'ldesign-modal__footer--shadow' : ''}`}>
                 <slot name="footer">
-                  <ldesign-button onClick={this.handleCloseClick}>
+                  <ldesign-button type="secondary" onClick={this.handleCloseClick}>
                     取消
                   </ldesign-button>
                   <ldesign-button type="primary" onClick={this.handleOkClick}>

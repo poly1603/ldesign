@@ -533,6 +533,11 @@ export namespace Components {
          */
         "accordion": boolean;
         /**
+          * 折叠模式：仅显示一级图标，悬停右侧弹出；无子级时显示 tooltip
+          * @default false
+         */
+        "collapse": boolean;
+        /**
           * 默认打开的子菜单 key 列表（非受控）
           * @default []
          */
@@ -1027,7 +1032,7 @@ export namespace Components {
          */
         "maxWidth"?: number | string;
         /**
-          * 与触发元素的距离（单位 px）。
+          * 与触发元素的距离（单位 px）。 Deprecated: 请使用 `offset` 属性透传给 floating-ui 的 offset 中间件。
           * @default 8
          */
         "offsetDistance": number | string;
@@ -2411,6 +2416,11 @@ declare namespace LocalJSX {
          */
         "accordion"?: boolean;
         /**
+          * 折叠模式：仅显示一级图标，悬停右侧弹出；无子级时显示 tooltip
+          * @default false
+         */
+        "collapse"?: boolean;
+        /**
           * 默认打开的子菜单 key 列表（非受控）
           * @default []
          */
@@ -2921,7 +2931,7 @@ declare namespace LocalJSX {
          */
         "maxWidth"?: number | string;
         /**
-          * 与触发元素的距离（单位 px）。
+          * 与触发元素的距离（单位 px）。 Deprecated: 请使用 `offset` 属性透传给 floating-ui 的 offset 中间件。
           * @default 8
          */
         "offsetDistance"?: number | string;

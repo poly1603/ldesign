@@ -6,6 +6,7 @@
   &__trigger {
     display: inline-block;
     cursor: pointer;
+    width: 100%;
   }
 
   &__content {
@@ -16,7 +17,7 @@
     border-radius: 6px;
     /* 使用 drop-shadow，使阴影围绕面板与箭头的真实形状，避免上下方向“视觉间距被阴影吃掉” */
     /* 注意：与 box-shadow 不同，drop-shadow 不会影响元素的几何尺寸，仅影响绘制效果 */
-    filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.12)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.06));
+    filter: drop-shadow(0 0 16px rgba(0, 0, 0, 0.12)) drop-shadow(0 0 3px rgba(0, 0, 0, 0.06));
     min-width: 120px;
     max-width: 320px;
     overflow: visible; // 让箭头可以超出容器
@@ -60,10 +61,13 @@
   }
 
   // 根据 content 的方向，给箭头一个参考（可用于额外细节样式）
-  &__content[data-placement^="top"] + &__arrow { }
-  &__content[data-placement^="bottom"] + &__arrow { }
-  &__content[data-placement^="left"] + &__arrow { }
-  &__content[data-placement^="right"] + &__arrow { }
+  &__content[data-placement^="top"]+&__arrow {}
+
+  &__content[data-placement^="bottom"]+&__arrow {}
+
+  &__content[data-placement^="left"]+&__arrow {}
+
+  &__content[data-placement^="right"]+&__arrow {}
 
   &__inner {
     padding: 12px 16px;
@@ -112,13 +116,16 @@
       border-color: var(--ldesign-border-color-dark, #4b5563);
       color: var(--ldesign-text-color-dark, #f9fafb);
     }
+
     .ldesign-popup__arrow {
       background: var(--ldesign-bg-color-dark, #374151);
       border-color: var(--ldesign-border-color-dark, #4b5563);
     }
+
     .ldesign-popup__title {
       color: var(--ldesign-text-color-dark, #f9fafb);
     }
+
     .ldesign-popup__body {
       color: var(--ldesign-text-color-secondary-dark, #d1d5db);
     }
@@ -207,6 +214,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -217,6 +225,7 @@
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -228,6 +237,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);

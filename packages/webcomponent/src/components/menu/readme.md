@@ -171,6 +171,29 @@
 </script>
 ```
 
+## 纵向 - 折叠（仅显示一级图标，右侧弹出）
+
+```html path=null start=null
+<div style="border:1px dashed #ddd; padding:8px; width:280px;">
+  <ldesign-menu id="menu-collapsed" mode="vertical" collapse submenu-trigger="hover"></ldesign-menu>
+</div>
+<script>
+  const items = [
+    {
+      key: 'menu-1', label: '一级菜单', icon: 'list', children: [
+        { key: 'm11', label: '子菜单1-1', children: [
+          { key: 'm111', label: '子菜单1-1-1' },
+          { key: 'm112', label: '子菜单1-1-2' }
+        ]}
+      ]
+    },
+    { key: 'dashboard', label: '仪表盘', icon: 'layout-dashboard' }, // 无子级：悬停显示右侧 tooltip
+    { key: 'profile', label: '个人中心', icon: 'user' }
+  ];
+  document.getElementById('menu-collapsed').items = items;
+</script>
+```
+
 ## 事件绑定
 
 ```html path=null start=null
@@ -199,6 +222,7 @@
 - mode: 'horizontal' | 'vertical' = 'vertical'
 - vertical-expand: 'inline' | 'flyout' | 'mixed' = 'inline'
 - submenu-trigger: 'hover' | 'click' = 'hover'
+- collapse: boolean 折叠模式（仅显示一级图标；悬停右侧弹出；一级无子级时显示右侧 Tooltip）
 - value / default-value：当前选中项 key
 - open-keys / default-open-keys：当前展开项（仅 inline/mixed）
 - accordion: boolean

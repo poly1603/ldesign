@@ -108,6 +108,55 @@
     transition: transform .15s ease;
   }
 
+  /* 折叠模式：一级仅显示图标，隐藏标题与箭头 */
+  &--collapsed {
+    /* 可选：设置一个侧栏宽度变量，用户可自行在容器上控制实际宽度 */
+    --menu-collapsed-gap: 0px;
+  }
+
+  &--collapsed > .ldesign-menu__list > li > .ldesign-menu__item {
+    justify-content: center;
+    gap: var(--menu-collapsed-gap);
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  &--collapsed > .ldesign-menu__list > li > .ldesign-menu__item .ldesign-menu__title,
+  &--collapsed > .ldesign-menu__list > li > .ldesign-menu__item .ldesign-menu__arrow {
+    display: none;
+  }
+
+  /* 折叠模式下：包了一层 tooltip 的一级叶子也需要居中，仅显示图标 */
+  &--collapsed > .ldesign-menu__list > li ldesign-tooltip {
+    display: block; /* 覆盖 tooltip 默认 inline-block，避免收缩 */
+    width: 100%;
+  }
+  &--collapsed > .ldesign-menu__list > li ldesign-tooltip .ldesign-menu__item {
+    justify-content: center;
+    gap: var(--menu-collapsed-gap);
+    padding-left: 0;
+    padding-right: 0;
+  }
+  &--collapsed > .ldesign-menu__list > li ldesign-tooltip .ldesign-menu__title,
+  &--collapsed > .ldesign-menu__list > li ldesign-tooltip .ldesign-menu__arrow {
+    display: none;
+  }
+
+  /* 关键：Tooltip 内部会用一个 span[slot=trigger] 包裹触发元素，默认是 inline，
+     在折叠模式下需要它占满整行以便内部 .ldesign-menu__item 获得 100% 宽度进行居中 */
+  &--collapsed > .ldesign-menu__list > li ldesign-tooltip span[slot="trigger"] {
+    display: block;
+    width: 100%;
+  }
+
+  /* 折叠模式下，tooltip -> popup 链路的每一层都要占满行，避免内联盒子导致的居中偏移 */
+  &--collapsed > .ldesign-menu__list > li ldesign-tooltip,
+  &--collapsed > .ldesign-menu__list > li ldesign-tooltip ldesign-popup,
+  &--collapsed > .ldesign-menu__list > li ldesign-tooltip ldesign-popup > .ldesign-popup__trigger {
+    display: block !important;
+    width: 100% !important;
+  }
+
   &__node--open>.ldesign-menu__item .ldesign-menu__arrow {
     transform: rotate(90deg);
   }

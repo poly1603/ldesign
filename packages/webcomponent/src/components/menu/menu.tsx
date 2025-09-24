@@ -52,6 +52,9 @@ export class LdesignMenu {
   /** 弹出子菜单的触发方式（仅在 flyout/mixed 生效） */
   @Prop() submenuTrigger: SubmenuTrigger = 'hover';
 
+  /** 折叠模式：仅显示一级图标，悬停右侧弹出；无子级时显示 tooltip */
+  @Prop() collapse: boolean = false;
+
   @State() parsedItems: MenuItem[] = [];
   @State() currentKey?: string;
   @State() internalOpenKeys: string[] = [];
@@ -306,6 +309,7 @@ export class LdesignMenu {
   }
 
   private useFlyout(level: number): boolean {
+    if (this.collapse) return true; // 折叠模式下统一使用 flyout 弹出
     if (this.verticalExpand === 'flyout') return true;
     if (this.verticalExpand === 'inline') return false;
     return level >= 2; // mixed
@@ -481,12 +485,21 @@ export class LdesignMenu {
           return s;
         })();
 
+    const inner = (
+      <div class={classes} style={style as any} role="menuitem" onClick={(e) => this.handleItemClick(item, level, e)}>
+        {this.renderIcon(item.icon, this.requireTopIcon && level === 1 && !item.icon)}
+        {!(this.collapse && level === 1) && <span class="ldesign-menu__title">{item.label}</span>}
+      </div>
+    );
+
+    // 折叠模式下：一级叶子显示 tooltip（右侧）
+    const content = this.collapse && level === 1
+      ? (<ldesign-tooltip content={item.label} placement="right">{inner}</ldesign-tooltip>)
+      : inner;
+
     return (
       <li class="ldesign-menu__node" role="none">
-        <div class={classes} style={style as any} role="menuitem" onClick={(e) => this.handleItemClick(item, level, e)}>
-          {this.renderIcon(item.icon, this.requireTopIcon && level === 1 && !item.icon)}
-          <span class="ldesign-menu__title">{item.label}</span>
-        </div>
+        {content}
       </li>
     );
   }
@@ -508,7 +521,8 @@ export class LdesignMenu {
       'ldesign-menu': true,
       'ldesign-menu--vertical': true,
       'ldesign-menu--inline': this.verticalExpand !== 'flyout',
-      'ldesign-menu--flyout': this.verticalExpand !== 'inline',
+      'ldesign-menu--flyout': this.verticalExpand !== 'inline' || this.collapse,
+      'ldesign-menu--collapsed': this.collapse,
     };
 
     return (

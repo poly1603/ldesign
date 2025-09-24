@@ -122,6 +122,61 @@ onMounted(() => {
       })
     }
   }
+
+  const collapsed = document.getElementById('menu-doc-collapsed')
+  if (collapsed) {
+    const dataC = [
+      {
+        key: 'catalog', label: '目录', icon: 'menu', children: [
+          { key: 'c1', label: '子菜单1-1', children: [
+            { key: 'c11', label: '子菜单1-1-1', children: [
+              { key: 'c111', label: '子菜单1-1-1-1' },
+              { key: 'c112', label: '子菜单1-1-1-2' },
+              { key: 'c113', label: '子菜单1-1-1-3' },
+            ]},
+            { key: 'c12', label: '子菜单1-1-2' },
+            { key: 'c13', label: '子菜单1-1-3' },
+          ]},
+          { key: 'c2', label: '子菜单1-2', children: new Array(6).fill(0).map((_,i)=>({ key:`c2-${i+1}`, label:`子菜单1-2-${i+1}` })) },
+        ]
+      },
+      { key: 'dashboard', label: '仪表盘', icon: 'layout-dashboard' },
+      { key: 'report', label: '报表', icon: 'bar-chart-2', children: [
+        { key: 'r1', label: '销售报表' },
+        { key: 'r2', label: '库存报表', children: [
+          { key: 'r21', label: '季度' },
+          { key: 'r22', label: '年度' },
+        ]}
+      ]},
+      { key: 'profile', label: '个人中心', icon: 'user' }
+    ]
+    collapsed.setAttribute('items', JSON.stringify(dataC))
+
+    const selC = document.getElementById('menu-doc-collapsed-select')
+    if (selC) {
+      const flatten = (list, prefix=[]) => {
+        const out = []
+        list.forEach(it => {
+          const text = [...prefix, it.label].join(' / ')
+          out.push({ key: it.key, text })
+          if (it.children) out.push(...flatten(it.children, [...prefix, it.label]))
+        })
+        return out
+      }
+      const opts = flatten(dataC)
+      opts.forEach(o => {
+        const op = document.createElement('option')
+        op.value = o.key; op.textContent = o.text
+        selC.appendChild(op)
+      })
+      selC.addEventListener('change', () => {
+        if (selC.value) collapsed.setAttribute('value', selC.value)
+      })
+      collapsed.addEventListener('ldesignSelect', (e) => {
+        selC.value = e.detail?.key || ''
+      })
+    }
+  }
 })
 </script>
 
@@ -252,6 +307,52 @@ onMounted(() => {
   menu.addEventListener('ldesignSelect', (e) => {
     sel.value = e.detail.key || '';
   });
+</script>
+```
+
+## 纵向 collapse（折叠，仅图标，右侧弹出）
+<div style="display:flex; gap:16px; align-items:flex-start;">
+  <div style="width: 72px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <ldesign-menu id="menu-doc-collapsed" mode="vertical" collapse submenu-trigger="hover"></ldesign-menu>
+  </div>
+  <div style="min-width:320px;">
+    <div style="font-size:14px; color:#555; margin:4px 0 6px;">当前选中子菜单</div>
+    <select id="menu-doc-collapsed-select" style="width:100%; padding:6px 8px; border:1px solid #ddd; border-radius:6px;">
+      <option value="" selected>— 请选择 —</option>
+    </select>
+    <div style="margin-top:8px; color:#666; font-size:13px;">提示：折叠时一级只显示图标；没有子级的一级项悬停会显示右侧 Tooltip。</div>
+  </div>
+</div>
+
+```html
+<div style="display:flex; gap:16px; align-items:flex-start;">
+  <div style="width: 72px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <ldesign-menu id="menu-doc-collapsed" mode="vertical" collapse submenu-trigger="hover"></ldesign-menu>
+  </div>
+  <div style="min-width:320px;">
+    <div style="font-size:14px; color:#555; margin:4px 0 6px;">当前选中子菜单</div>
+    <select id="menu-doc-collapsed-select" style="width:100%; padding:6px 8px; border:1px solid #ddd; border-radius:6px;">
+      <option value="" selected>— 请选择 —</option>
+    </select>
+  </div>
+</div>
+<script>
+  const items = [
+    { key: 'catalog', label: '目录', icon: 'menu', children: [
+      { key: 'c1', label: '子菜单1-1', children: [
+        { key: 'c11', label: '子菜单1-1-1', children: [
+          { key: 'c111', label: '子菜单1-1-1-1' },
+          { key: 'c112', label: '子菜单1-1-1-2' }
+        ]},
+        { key: 'c12', label: '子菜单1-1-2' }
+      ]},
+      { key: 'c2', label: '子菜单1-2' }
+    ]},
+    { key: 'dashboard', label: '仪表盘', icon: 'layout-dashboard' },
+    { key: 'profile', label: '个人中心', icon: 'user' }
+  ];
+  const menu = document.getElementById('menu-doc-collapsed');
+  menu.items = items;
 </script>
 ```
 
