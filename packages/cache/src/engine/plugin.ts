@@ -4,7 +4,14 @@
  * 将 Cache 功能集成到 LDesign Engine 中，提供统一的缓存管理体验
  */
 
-import type { Plugin } from '@ldesign/engine/types'
+// 临时类型定义，等待 @ldesign/engine 包完成
+interface Plugin {
+  name: string
+  version?: string
+  install?: (app: any, options?: any) => void
+}
+
+// import type { Plugin } from '@ldesign/engine/types'
 import type { CacheOptions } from '../types'
 import { CacheManager } from '../core/cache-manager'
 import { StorageEngineFactory } from '../engines/factory'

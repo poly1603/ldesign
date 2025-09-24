@@ -1,6 +1,6 @@
-import type { ComputedRef } from 'vue'
-import type { SerializableValue, SetOptions } from '../types'
 import { computed } from 'vue'
+
+import type { SerializableValue } from '../types'
 import { useCache } from './use-cache'
 
 /**

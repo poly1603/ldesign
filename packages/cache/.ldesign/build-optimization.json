@@ -1,0 +1,84 @@
+{
+  "rollup": {
+    "external": [
+      "vue",
+      "@vue/composition-api",
+      "crypto-js"
+    ],
+    "output": {
+      "manualChunks": {
+        "core": [
+          "src/core/cache-manager.ts"
+        ],
+        "engines": [
+          "src/engines/memory-engine.ts",
+          "src/engines/local-storage-engine.ts",
+          "src/engines/session-storage-engine.ts"
+        ],
+        "advanced-engines": [
+          "src/engines/indexeddb-engine.ts",
+          "src/engines/cookie-engine.ts"
+        ],
+        "security": [
+          "src/security/security-manager.ts",
+          "src/security/aes-crypto.ts",
+          "src/security/key-obfuscator.ts"
+        ],
+        "utils": [
+          "src/utils/event-emitter.ts",
+          "src/utils/error-handler.ts",
+          "src/utils/validator.ts"
+        ],
+        "advanced-utils": [
+          "src/utils/compressor.ts",
+          "src/utils/prefetcher.ts",
+          "src/utils/retry-manager.ts"
+        ],
+        "vue": [
+          "src/vue/use-cache.ts",
+          "src/vue/use-cache-stats.ts",
+          "src/vue/use-cache-helpers.ts"
+        ]
+      }
+    }
+  },
+  "webpack": {
+    "optimization": {
+      "splitChunks": {
+        "chunks": "all",
+        "cacheGroups": {
+          "core": {
+            "name": "core",
+            "test": {},
+            "priority": 10
+          },
+          "engines": {
+            "name": "engines",
+            "test": {},
+            "priority": 8
+          },
+          "security": {
+            "name": "security",
+            "test": {},
+            "priority": 8
+          },
+          "utils": {
+            "name": "utils",
+            "test": {},
+            "priority": 6
+          },
+          "vue": {
+            "name": "vue",
+            "test": {},
+            "priority": 6
+          }
+        }
+      }
+    }
+  },
+  "treeShaking": {
+    "sideEffects": false,
+    "modules": false,
+    "usedExports": true
+  }
+}

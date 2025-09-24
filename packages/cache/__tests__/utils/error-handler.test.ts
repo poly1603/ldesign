@@ -3,7 +3,8 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { ErrorHandler, safeAsync, safeSync, withRetry, normalizeError, isErrorType } from '../../src/utils/error-handler'
+import { ErrorHandler, safeAsync, safeSync, normalizeError, isErrorType } from '../../src/utils/error-handler'
+import { withRetry } from '../../src/utils/retry-manager'
 
 describe('ErrorHandler', () => {
   describe('safeAsync', () => {
@@ -182,7 +183,7 @@ describe('ErrorHandler', () => {
     })
 
     it('withRetry应该工作', async () => {
-      const result = await withRetry(() => Promise.resolve('test'))
+      const result = await ErrorHandler.withRetry(() => Promise.resolve('test'))
       expect(result.success).toBe(true)
       expect(result.data).toBe('test')
     })

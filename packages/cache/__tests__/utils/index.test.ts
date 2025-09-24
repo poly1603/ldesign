@@ -196,18 +196,23 @@ describe('utils', () => {
       const fn = vi.fn()
       const throttledFn = throttle(fn, 100)
 
+      // 第一次调用应该立即执行
       throttledFn('arg1')
-      throttledFn('arg2')
-      throttledFn('arg3')
-
       expect(fn).toHaveBeenCalledTimes(1)
       expect(fn).toHaveBeenCalledWith('arg1')
 
-      vi.advanceTimersByTime(100)
-      throttledFn('arg4')
+      // 在节流期间的调用应该被忽略
+      throttledFn('arg2')
+      throttledFn('arg3')
+      expect(fn).toHaveBeenCalledTimes(1) // 仍然只调用了一次
 
+      // 推进时间，节流期结束
+      vi.advanceTimersByTime(100)
+
+      // 现在再次调用应该立即执行
+      throttledFn('arg4')
       expect(fn).toHaveBeenCalledTimes(2)
-      expect(fn).toHaveBeenCalledWith('arg4')
+      expect(fn).toHaveBeenLastCalledWith('arg4')
     })
   })
 

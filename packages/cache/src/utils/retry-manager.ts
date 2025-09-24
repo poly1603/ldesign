@@ -422,7 +422,7 @@ export class FallbackHandler<T> {
     }
 
     // 所有方案都失败
-    throw new AggregateError(errors, 'All fallback strategies failed')
+    throw new ((globalThis as any).AggregateError || Error)(errors, 'All fallback strategies failed')
   }
 }
 

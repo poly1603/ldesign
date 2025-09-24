@@ -589,11 +589,17 @@ export class CacheAnalyzer {
       const clearIntervalFn = typeof window !== 'undefined'
         ? window.clearInterval
         : globalThis.clearInterval
-      
+
       clearIntervalFn(this.analysisTimer)
       this.analysisTimer = undefined
     }
-    
+
+    // 移除事件监听器
+    this.cache.off('get', this.handleGet.bind(this))
+    this.cache.off('set', this.handleSet.bind(this))
+    this.cache.off('remove', this.handleRemove.bind(this))
+    this.cache.off('error', this.handleError.bind(this))
+
     this.reset()
   }
 }

@@ -252,6 +252,5 @@ export function handleErrors(options: ErrorHandlerOptions = {}) {
  */
 export const safeAsync = ErrorHandler.safeAsync
 export const safeSync = ErrorHandler.safeSync
-export const withRetry = ErrorHandler.withRetry
 export const normalizeError = ErrorHandler.normalizeError
 export const isErrorType = ErrorHandler.isErrorType

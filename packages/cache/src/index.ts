@@ -1,89 +1,200 @@
-// 核心功能
-// 导入类型
+/**
+ * @ldesign/cache - 功能强大的浏览器缓存管理库
+ *
+ * 提供多存储引擎支持、智能存储策略、安全特性和 Vue 3 深度集成
+ *
+ * @author LDesign Team
+ * @version 0.1.0
+ */
+
+// ============================================================================
+// 类型导入
+// ============================================================================
 import type { CacheOptions, SerializableValue } from './types'
 import { CacheManager } from './core/cache-manager'
 import { StorageEngineFactory } from './engines/factory'
 import { getPresetOptions } from './presets'
 
-export { CacheAnalyzer, createCacheAnalyzer } from './core/cache-analyzer'
-export type { AccessPattern, AnalysisReport, PerformanceMetrics as AnalyzerPerformanceMetrics, OptimizationSuggestion } from './core/cache-analyzer'
-export { CacheManager } from './core/cache-manager'
-// 命名空间与同步
-export { CacheNamespace, createNamespace } from './core/namespace-manager'
+// ============================================================================
+// 核心模块导出
+// ============================================================================
 
+// 缓存管理器
+export { CacheManager } from './core/cache-manager'
+
+// 缓存分析器
+export { CacheAnalyzer, createCacheAnalyzer } from './core/cache-analyzer'
+export type {
+  AccessPattern,
+  AnalysisReport,
+  PerformanceMetrics as AnalyzerPerformanceMetrics,
+  OptimizationSuggestion
+} from './core/cache-analyzer'
+
+// 命名空间管理
+export { CacheNamespace, createNamespace } from './core/namespace-manager'
 export type { NamespaceOptions } from './core/namespace-manager'
 
-// 性能监控与容错
+// 性能监控
 export { PerformanceMonitor } from './core/performance-monitor'
-export type { PerformanceMetrics as MonitorPerformanceMetrics, PerformanceMonitorOptions, PerformanceStats } from './core/performance-monitor'
+export type {
+  PerformanceMetrics as MonitorPerformanceMetrics,
+  PerformanceMonitorOptions,
+  PerformanceStats
+} from './core/performance-monitor'
+
+// 跨标签页同步
 export { SyncManager } from './core/sync-manager'
 export type { SyncOptions } from './core/sync-manager'
+
+// 缓存预热
 export { createWarmupManager, WarmupManager } from './core/warmup-manager'
-export { WarmupManager as CacheWarmupManager } from './core/warmup-manager'
-// Engine 插件（按字母序应在 strategies 前）
-export { createCacheEnginePlugin } from './engine/plugin'
 
-export type { CacheEnginePluginOptions } from './engine/plugin'
+// ============================================================================
+// 存储引擎导出
+// ============================================================================
 
-export { BaseStorageEngine } from './engines/base-engine'
-export { CookieEngine } from './engines/cookie-engine'
-
-// 存储引擎
+// 引擎工厂
 export { StorageEngineFactory } from './engines/factory'
+
+// 基础引擎
+export { BaseStorageEngine } from './engines/base-engine'
+
+// 具体引擎实现
+export { CookieEngine } from './engines/cookie-engine'
 export { IndexedDBEngine } from './engines/indexeddb-engine'
 export { LocalStorageEngine } from './engines/local-storage-engine'
 export { MemoryEngine } from './engines/memory-engine'
 export { SessionStorageEngine } from './engines/session-storage-engine'
 
-// 预设工厂（在安全模块之前）
-export { createBrowserCache, createNodeCache, createOfflineCache, createSSRCache, getPresetOptions } from './presets'
+// 引擎插件
+export { createCacheEnginePlugin } from './engine/plugin'
+export type { CacheEnginePluginOptions } from './engine/plugin'
 
-export { AESCrypto } from './security/aes-crypto'
-export { KeyObfuscator } from './security/key-obfuscator'
-// 安全
-export { SecurityManager } from './security/security-manager'
+// ============================================================================
+// 策略模块导出
+// ============================================================================
 
-
-export * from './strategies/eviction-strategies'
-// 策略
+// 存储策略
 export { StorageStrategy } from './strategies/storage-strategy'
 
-// 核心导出
-export * from './types'
-export * from './utils'
+// 淘汰策略
+export * from './strategies/eviction-strategies'
+
+// ============================================================================
+// 安全模块导出
+// ============================================================================
+
+// 安全管理器
+export { SecurityManager } from './security/security-manager'
+
+// 加密和混淆
+export { AESCrypto } from './security/aes-crypto'
+export { KeyObfuscator } from './security/key-obfuscator'
+
+// ============================================================================
+// 工具模块导出
+// ============================================================================
+
+// 重试和容错
 export { CircuitBreaker, RetryManager, withCircuitBreaker, withFallback } from './utils/retry-manager'
 
+// 其他工具
+export * from './utils'
 
+// ============================================================================
+// 预设配置导出
+// ============================================================================
+
+export {
+  createBrowserCache,
+  createNodeCache,
+  createOfflineCache,
+  createSSRCache,
+  getPresetOptions
+} from './presets'
+
+// ============================================================================
+// 类型定义导出
+// ============================================================================
+
+export * from './types'
+
+// ============================================================================
+// 环境检测和预设类型
+// ============================================================================
+
+/**
+ * 支持的环境预设类型
+ */
 type DetectedPreset = 'browser' | 'ssr' | 'node' | 'offline'
 
+/**
+ * 自动检测当前运行环境
+ *
+ * @returns 检测到的环境类型
+ */
 function detectPreset(): DetectedPreset {
-  // 浏览器（含 jsdom）优先
+  // 浏览器环境（含 jsdom 测试环境）
   if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     return 'browser'
   }
-  // 纯 Node 环境
-  if (typeof process !== 'undefined' && (process as any).versions?.node) {
+
+  // Node.js 环境
+  if (typeof process !== 'undefined' && process.versions?.node) {
     return 'node'
   }
-  // 其它环境（如 SSR 渲染器）
+
+  // SSR 或其他服务端渲染环境
   return 'ssr'
 }
 
+// ============================================================================
+// 工厂函数
+// ============================================================================
+
 /**
  * 创建缓存管理器实例
- * - 自动按环境选择预设（browser/node/ssr）
- * - 允许通过 options.preset 显式覆盖
+ *
+ * 自动根据运行环境选择最适合的预设配置，也可以通过 preset 参数显式指定
+ *
+ * @param options - 缓存配置选项
+ * @param options.preset - 显式指定环境预设，覆盖自动检测
+ * @returns 缓存管理器实例
+ *
+ * @example
+ * ```typescript
+ * // 自动检测环境
+ * const cache = createCache()
+ *
+ * // 显式指定浏览器环境
+ * const browserCache = createCache({ preset: 'browser' })
+ *
+ * // 自定义配置
+ * const customCache = createCache({
+ *   defaultEngine: 'localStorage',
+ *   defaultTTL: 24 * 60 * 60 * 1000, // 24小时
+ *   security: {
+ *     encryption: { enabled: true },
+ *     obfuscation: { enabled: true }
+ *   }
+ * })
+ * ```
  */
-export function createCache(options?: CacheOptions & { preset?: DetectedPreset }) {
-  const preset = (options as any)?.preset ?? detectPreset()
-  const { preset: _omit, ...rest } = (options || {}) as any
+export function createCache(options?: CacheOptions & { preset?: DetectedPreset }): CacheManager {
+  const preset = options?.preset ?? detectPreset()
+  const { preset: _omit, ...rest } = options || {}
   const merged = { ...getPresetOptions(preset), ...rest } as CacheOptions
   return new CacheManager(merged)
 }
 
 /**
- * 获取（懒初始化）默认缓存管理器实例
- * 避免在 SSR/Node 环境下提前触发浏览器 API 导致报错
+ * 获取默认缓存管理器实例（懒初始化单例）
+ *
+ * 避免在 SSR/Node 环境下提前触发浏览器 API 导致错误
+ *
+ * @param options - 缓存配置选项（仅在首次调用时生效）
+ * @returns 默认缓存管理器实例
  */
 let _defaultCache: CacheManager | null = null
 export function getDefaultCache(options?: CacheOptions & { preset?: DetectedPreset }): CacheManager {
@@ -93,57 +204,132 @@ export function getDefaultCache(options?: CacheOptions & { preset?: DetectedPres
   return _defaultCache
 }
 
+// ============================================================================
+// 便捷 API
+// ============================================================================
+
 /**
- * 统一简洁的 API：按需获取单例并执行操作（不提前创建实例）
+ * 全局缓存实例的便捷 API
+ *
+ * 提供简洁的缓存操作接口，内部使用懒初始化的默认缓存实例
+ *
+ * @example
+ * ```typescript
+ * import { cache } from '@ldesign/cache'
+ *
+ * // 设置缓存
+ * await cache.set('user', { name: '张三', age: 25 })
+ *
+ * // 获取缓存
+ * const user = await cache.get<User>('user')
+ *
+ * // 记忆函数模式
+ * const userData = await cache.remember('user-data', async () => {
+ *   return await fetchUserFromAPI()
+ * }, { ttl: 5 * 60 * 1000 })
+ * ```
  */
 export const cache = {
-  /** 获取缓存值（泛型推断） */
+  /**
+   * 获取缓存值
+   * @param key - 缓存键
+   * @returns 缓存值或 null
+   */
   get<T extends SerializableValue = SerializableValue>(key: string) {
     return getDefaultCache().get<T>(key)
   },
-  /** 设置缓存值 */
-  set<T extends SerializableValue = SerializableValue>(key: string, value: T, options?: import('./types').SetOptions) {
+
+  /**
+   * 设置缓存值
+   * @param key - 缓存键
+   * @param value - 缓存值
+   * @param options - 设置选项
+   */
+  set<T extends SerializableValue = SerializableValue>(
+    key: string,
+    value: T,
+    options?: import('./types').SetOptions
+  ) {
     return getDefaultCache().set<T>(key, value, options)
   },
-  /** 删除指定键 */
+
+  /**
+   * 删除指定键的缓存
+   * @param key - 缓存键
+   */
   remove(key: string) {
     return getDefaultCache().remove(key)
   },
-  /** 清空缓存（可指定引擎） */
+
+  /**
+   * 清空缓存
+   * @param engine - 可选，指定要清空的存储引擎
+   */
   clear(engine?: import('./types').StorageEngine) {
     return getDefaultCache().clear(engine)
   },
-  /** 判断键是否存在 */
+
+  /**
+   * 检查键是否存在
+   * @param key - 缓存键
+   * @returns 是否存在
+   */
   has(key: string) {
     return getDefaultCache().has(key)
   },
-  /** 获取键列表 */
+
+  /**
+   * 获取所有键名
+   * @param engine - 可选，指定存储引擎
+   * @returns 键名数组
+   */
   keys(engine?: import('./types').StorageEngine) {
     return getDefaultCache().keys(engine)
   },
-  /** 获取统计信息 */
+
+  /**
+   * 获取缓存统计信息
+   * @returns 统计信息
+   */
   getStats() {
     return getDefaultCache().getStats()
   },
-  /** 记忆函数：不存在则计算并写入 */
+
+  /**
+   * 记忆函数：如果缓存不存在则执行 fetcher 并缓存结果
+   * @param key - 缓存键
+   * @param fetcher - 数据获取函数
+   * @param options - 设置选项
+   * @returns 缓存值
+   */
   remember<T extends SerializableValue = SerializableValue>(
     key: string,
     fetcher: () => Promise<T> | T,
-    options?: import('./types').SetOptions & { refresh?: boolean },
+    options?: import('./types').SetOptions & { refresh?: boolean }
   ) {
     return getDefaultCache().remember<T>(key, fetcher, options)
   },
-  /** 获取管理器实例 */
+
+  /**
+   * 获取底层缓存管理器实例
+   * @returns 缓存管理器实例
+   */
   manager(): CacheManager {
     return getDefaultCache()
   },
-}
+} as const
 
+// ============================================================================
 // 默认导出
+// ============================================================================
+
+/**
+ * 默认导出对象，包含主要的类和函数
+ */
 export default {
   CacheManager,
   createCache,
   getDefaultCache,
   cache,
   StorageEngineFactory,
-}
+} as const
