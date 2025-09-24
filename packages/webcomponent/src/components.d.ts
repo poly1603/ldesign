@@ -875,6 +875,11 @@ export namespace Components {
          */
         "showDelay": number;
         /**
+          * 定位策略 - auto: 自动检测（默认：嵌套在其他弹层内部时使用 absolute，否则使用 fixed） - fixed: 始终使用 fixed（相对视口） - absolute: 始终使用 absolute（相对最近定位的包含块）
+          * @default 'auto'
+         */
+        "strategy": 'auto' | 'fixed' | 'absolute';
+        /**
           * 主题风格
           * @default 'light'
          */
@@ -2422,6 +2427,11 @@ declare namespace LocalJSX {
           * @default 0
          */
         "showDelay"?: number;
+        /**
+          * 定位策略 - auto: 自动检测（默认：嵌套在其他弹层内部时使用 absolute，否则使用 fixed） - fixed: 始终使用 fixed（相对视口） - absolute: 始终使用 absolute（相对最近定位的包含块）
+          * @default 'auto'
+         */
+        "strategy"?: 'auto' | 'fixed' | 'absolute';
         /**
           * 主题风格
           * @default 'light'

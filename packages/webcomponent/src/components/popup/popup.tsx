@@ -27,6 +27,14 @@ export class LdesignPopup {
   @Prop() placement: PopupPlacement = 'bottom';
 
   /**
+   * 定位策略
+   * - auto: 自动检测（默认：嵌套在其他弹层内部时使用 absolute，否则使用 fixed）
+   * - fixed: 始终使用 fixed（相对视口）
+   * - absolute: 始终使用 absolute（相对最近定位的包含块）
+   */
+  @Prop() strategy: 'auto' | 'fixed' | 'absolute' = 'auto';
+
+  /**
    * 触发方式
    */
   @Prop() trigger: PopupTrigger = 'hover';
@@ -413,6 +421,27 @@ export class LdesignPopup {
   }
 
   /**
+   * 判断是否嵌套在另一个 Popup 内容内部
+   */
+  private isNestedInPopup(): boolean {
+    // 若当前 popup 组件位于上一级 .ldesign-popup__content 内，则认为是嵌套弹层
+    const container = this.el.closest('.ldesign-popup__content');
+    return !!container;
+  }
+
+  /**
+   * 获取定位策略：
+   * - 顶层使用 fixed，避免被滚动/定位容器影响
+   * - 嵌套在其他弹层内部时使用 absolute，使坐标与包含块一致，防止错位
+   */
+  private getStrategy(): 'fixed' | 'absolute' {
+    if (this.strategy === 'fixed') return 'fixed';
+    if (this.strategy === 'absolute') return 'absolute';
+    // auto
+    return this.isNestedInPopup() ? 'absolute' : 'fixed';
+  }
+
+  /**
    * 更新位置
    */
   private async updatePosition() {
@@ -422,10 +451,13 @@ export class LdesignPopup {
     this.arrowElement = this.el.querySelector('.ldesign-popup__arrow') as HTMLElement;
     if (!this.popupElement) return;
 
+    const isNested = this.isNestedInPopup();
+    const strategy = this.getStrategy();
+    const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
     const middleware = [
       offset(this.offsetDistance),
-      flip(),
-      shift({ padding: 8 }),
+      flip({ boundary } as any),
+      shift({ padding: 8, boundary } as any),
     ];
 
     if (this.arrow && this.arrowElement) {
@@ -439,7 +471,7 @@ export class LdesignPopup {
       {
         placement: currentPlacement,
         middleware,
-        strategy: 'fixed',
+        strategy,
       }
     );
 
@@ -503,10 +535,13 @@ export class LdesignPopup {
     this.arrowElement = this.el.querySelector('.ldesign-popup__arrow') as HTMLElement;
     if (!this.popupElement) return;
 
+    const isNested = this.isNestedInPopup();
+    const strategy = this.getStrategy();
+    const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
     const middleware = [
       offset(this.offsetDistance),
-      flip(),
-      shift({ padding: 8 }),
+      flip({ boundary } as any),
+      shift({ padding: 8, boundary } as any),
     ];
 
     if (this.arrow && this.arrowElement) {
@@ -520,7 +555,7 @@ export class LdesignPopup {
       {
         placement: currentPlacement,
         middleware,
-        strategy: 'fixed',
+        strategy,
       }
     );
 
@@ -574,8 +609,8 @@ export class LdesignPopup {
    * 获取弹出层样式
    */
   private getPopupStyle() {
-    // 与 strategy: 'fixed' 对齐，避免被祖先定位/滚动容器影响
-    const style: any = { position: 'fixed' };
+    // 根据实际策略设置定位方式
+    const style: any = { position: this.getStrategy() };
 
     if (this.width) {
       style.width = typeof this.width === 'number' ? `${this.width}px` : this.width;

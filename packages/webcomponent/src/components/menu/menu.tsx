@@ -407,11 +407,15 @@ export class LdesignMenu {
       if (p && !p.visible) p.visible = true;
     };
 
+    // 横向模式：顶层使用 fixed（相对视口），二级及以上用 auto（由 popup 自动判断：嵌套时 absolute）
+    const strategy = this.mode === 'horizontal' ? (isTopLevel ? 'fixed' : 'auto') : 'auto';
+
     return (
       <ldesign-popup
         ref={setPopupRef as any}
         placement={placement as any}
         trigger={trigger as any}
+        strategy={strategy as any}
         interactive={true}
         arrow={false}
         onLdesignVisibleChange={(e: CustomEvent<boolean>) => this.setFlyoutOpen(item.key, e.detail)}
@@ -541,6 +545,7 @@ export class LdesignMenu {
           <ldesign-popup 
             placement="bottom-end" 
             trigger={this.submenuTrigger as any} 
+            strategy={'fixed' as any}
             interactive={true} 
             arrow={false}
             onLdesignVisibleChange={(e: CustomEvent<boolean>) => this.setFlyoutOpen(moreKey, e.detail)}
