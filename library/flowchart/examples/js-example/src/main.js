@@ -1,0 +1,311 @@
+/**
+ * LDesign Flowchart JavaScript 示例
+ * 演示如何在原生 JavaScript 项目中使用流程图编辑器
+ *
+ * 本示例展示了：
+ * 1. 基础的流程图编辑器初始化
+ * 2. 完整的UI组件（物料面板、属性面板、工具栏）
+ * 3. 节点拖拽和属性编辑功能
+ * 4. 主题切换和数据导出
+ */
+
+import { FlowchartEditor, FlowchartAPI } from '@ldesign/flowchart'
+
+// 全局变量
+let editor = null
+
+/**
+ * 初始化流程图编辑器（带完整UI）
+ */
+function initFlowchart() {
+  try {
+    // 创建编辑器实例，启用完整UI组件
+    editor = new FlowchartEditor({
+      container: '#flowchart',
+      width: 1160,
+      height: 600,
+      // 启用所有UI组件
+      toolbar: {
+        visible: true,
+        tools: ['select',
+          'multi-select',
+          'material-repository',
+          'zoom-fit',
+          'undo',
+          'redo',
+          'delete',
+          'clear',
+          'copy',
+          'paste',
+          'validate',
+          'export',
+          'download']
+      },
+      nodePanel: {
+        visible: true,
+        position: 'left'
+      },
+      propertyPanel: {
+        visible: true,
+        position: 'right'
+      },
+      // 主题配置
+      theme: 'default',
+      // 画布配置
+      background: {
+        color: '#fafafa'
+      },
+      grid: {
+        visible: true,
+        size: 20,
+        color: '#e5e5e5'
+      }
+    })
+
+    // 监听节点点击事件
+    editor.on('node:click', (data) => {
+      console.log('节点被点击:', data)
+    })
+
+    // 监听边点击事件
+    editor.on('edge:click', (data) => {
+      console.log('边被点击:', data)
+    })
+
+    // 监听数据变化事件
+    editor.on('data:change', (data) => {
+      console.log('流程图数据已更新')
+    })
+
+    // 监听节点选中事件（用于属性面板）
+    editor.on('node:select', (data) => {
+      console.log('节点被选中:', data)
+    })
+
+    // 监听主题变化事件
+    editor.on('theme:change', (theme) => {
+      console.log('主题已切换:', theme)
+      // 同步更新主题选择器
+      const themeSelect = document.getElementById('themeSelect')
+      if (themeSelect) {
+        themeSelect.value = theme
+      }
+    })
+
+    // 渲染编辑器
+    editor.render()
+
+    console.log('✅ 流程图编辑器初始化成功')
+    console.log('💡 提示：')
+    console.log('  - 从左侧物料面板拖拽节点到画布')
+    console.log('  - 点击节点查看右侧属性面板')
+    console.log('  - 使用顶部工具栏进行操作')
+  } catch (error) {
+    console.error('❌ 流程图编辑器初始化失败:', error)
+  }
+}
+
+/**
+ * 切换只读模式
+ */
+function toggleReadonly() {
+  if (!editor) return
+
+  const currentReadonly = editor.isReadonly()
+  editor.setReadonly(!currentReadonly)
+
+  console.log(`✅ 切换到${!currentReadonly ? '只读' : '编辑'}模式`)
+}
+
+/**
+ * 切换主题
+ */
+function changeTheme(theme) {
+  if (!editor) return
+  
+  try {
+    editor.setTheme(theme)
+    console.log(`✅ 主题已切换为: ${theme}`)
+  } catch (error) {
+    console.error('❌ 主题切换失败:', error)
+  }
+}
+
+/**
+ * 导出数据
+ */
+function exportData() {
+  if (!editor) return
+
+  const data = editor.getData()
+
+  // 下载为文件
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'flowchart-data.json'
+  a.click()
+  URL.revokeObjectURL(url)
+
+  console.log('✅ 数据已导出')
+  console.log('📊 数据内容:', data)
+}
+
+/**
+ * 加载审批流程模板
+ */
+function loadTemplate() {
+  if (!editor) return
+
+  try {
+    // 使用API创建简单的审批流程模板
+    const template = FlowchartAPI.createApprovalTemplate()
+    editor.setData(template)
+    console.log('✅ 审批流程模板已加载')
+    console.log('📋 模板包含:', template.nodes.length, '个节点，', template.edges.length, '条连线')
+  } catch (error) {
+    console.error('❌ 模板加载失败:', error)
+
+    // 如果API失败，手动创建简单模板
+    try {
+      editor.clearData()
+
+      const startId = editor.addNode({
+        type: 'start',
+        x: 200,
+        y: 150,
+        text: '开始'
+      })
+
+      const approvalId = editor.addNode({
+        type: 'approval',
+        x: 400,
+        y: 150,
+        text: '部门审批',
+        properties: {
+          approver: '部门经理',
+          status: 'pending'
+        }
+      })
+
+      const endId = editor.addNode({
+        type: 'end',
+        x: 600,
+        y: 150,
+        text: '结束'
+      })
+
+      // 添加连接线
+      editor.addEdge({
+        sourceNodeId: startId,
+        targetNodeId: approvalId,
+        text: '提交'
+      })
+
+      editor.addEdge({
+        sourceNodeId: approvalId,
+        targetNodeId: endId,
+        text: '通过'
+      })
+
+      console.log('✅ 手动创建的简单模板已加载')
+    } catch (manualError) {
+      console.error('❌ 手动创建模板也失败:', manualError)
+    }
+  }
+}
+
+/**
+ * 绑定事件监听器
+ */
+function bindEventListeners() {
+  // 工具栏按钮事件
+  document.getElementById('exportData')?.addEventListener('click', exportData)
+  document.getElementById('loadTemplate')?.addEventListener('click', loadTemplate)
+
+  // 主题切换事件
+  document.getElementById('themeSelect')?.addEventListener('change', (e) => {
+    changeTheme(e.target.value)
+  })
+
+  console.log('✅ 事件监听器已绑定')
+}
+
+/**
+ * 测试属性面板更新功能
+ */
+function testPropertyPanelUpdate() {
+  if (!editor) return
+  
+  try {
+    console.log('🧪 开始测试属性面板更新功能')
+    
+    // 清空画布
+    editor.clearData()
+    
+    // 添加一个测试节点
+    const nodeId = editor.addNode({
+      type: 'approval',
+      x: 300,
+      y: 200,
+      text: '测试节点'
+    })
+    
+    console.log('✅ 测试节点已添加:', nodeId)
+    console.log('💡 请按照以下步骤测试:')
+    console.log('  1. 点击画布中的节点选中它')
+    console.log('  2. 在右侧属性面板修改节点文本')
+    console.log('  3. 点击"应用更改"按钮')
+    console.log('  4. 观察画布中的节点是否立即更新')
+    
+  } catch (error) {
+    console.error('❌ 测试准备失败:', error)
+  }
+}
+
+/**
+ * 应用程序入口
+ */
+function main() {
+  console.log('🚀 LDesign Flowchart JavaScript 示例启动')
+  
+  // 等待 DOM 加载完成
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      bindEventListeners()
+      initFlowchart()
+      
+      // 延迟执行测试
+      setTimeout(() => {
+        testPropertyPanelUpdate()
+      }, 2000)
+    })
+  } else {
+    bindEventListeners()
+    initFlowchart()
+    
+    // 延迟执行测试
+    setTimeout(() => {
+      testPropertyPanelUpdate()
+    }, 2000)
+  }
+}
+
+// 启动应用
+main()
+
+// 导出到全局作用域（用于调试）
+window.flowchartDemo = {
+  editor,
+  changeTheme,
+  exportData,
+  loadTemplate,
+  toggleReadonly,
+  // 调试函数
+  getEditor: () => editor,
+  getData: () => editor?.getData(),
+  setData: (data) => editor?.setData(data),
+  addNode: (config) => editor?.addNode(config),
+  addEdge: (config) => editor?.addEdge(config)
+}

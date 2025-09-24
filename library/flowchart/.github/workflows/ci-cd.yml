@@ -1,0 +1,426 @@
+name: Flowchart Package CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'packages/flowchart/**'
+      - '.github/workflows/ci-cd.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'packages/flowchart/**'
+  release:
+    types: [ published ]
+
+# 定义环境变量
+env:
+  NODE_VERSION: '18.x'
+  PNPM_VERSION: '8.x'
+  PACKAGE_PATH: 'packages/flowchart'
+
+jobs:
+  # 代码质量检查
+  quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm install --frozen-lockfile
+    
+    - name: Type checking
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm run type-check
+    
+    - name: Lint checking
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm run lint
+        pnpm run lint:style
+    
+    - name: Format checking
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm run format:check
+    
+    - name: Security audit
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm audit --prod
+      continue-on-error: true
+
+  # 单元测试
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: quality
+    
+    strategy:
+      matrix:
+        node-version: ['16.x', '18.x', '20.x']
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'pnpm'
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm install --frozen-lockfile
+    
+    - name: Run unit tests
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm run test:unit
+    
+    - name: Run integration tests
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm run test:integration
+    
+    - name: Generate coverage report
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm run test:coverage
+    
+    - name: Upload coverage to Codecov
+      if: matrix.os == 'ubuntu-latest' && matrix.node-version == '18.x'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ${{ env.PACKAGE_PATH }}/coverage/lcov.info
+        flags: flowchart
+        name: flowchart-coverage
+
+  # 性能测试
+  performance:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm install --frozen-lockfile
+    
+    - name: Run performance tests
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm run test:performance
+    
+    - name: Generate performance report
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm run perf:report
+    
+    - name: Upload performance artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-report
+        path: ${{ env.PACKAGE_PATH }}/performance-report/
+
+  # 构建测试
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    needs: [quality, test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm install --frozen-lockfile
+    
+    - name: Build package
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm run build
+    
+    - name: Build production bundle
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm run build:prod
+    
+    - name: Analyze bundle size
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm run bundle:analyze
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: |
+          ${{ env.PACKAGE_PATH }}/dist/
+          ${{ env.PACKAGE_PATH }}/bundle-analysis.html
+    
+    - name: Check bundle size
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        # 检查主要 chunk 大小是否超过限制
+        MAIN_SIZE=$(stat -c%s "dist/index.esm.js" 2>/dev/null || echo "0")
+        MAX_SIZE=$((800 * 1024)) # 800KB
+        if [ $MAIN_SIZE -gt $MAX_SIZE ]; then
+          echo "Bundle size ($MAIN_SIZE bytes) exceeds limit ($MAX_SIZE bytes)"
+          exit 1
+        fi
+        echo "Bundle size check passed: $MAIN_SIZE bytes"
+
+  # E2E 测试
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm install --frozen-lockfile
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+        path: ${{ env.PACKAGE_PATH }}/
+    
+    - name: Install Playwright
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm exec playwright install --with-deps chromium
+    
+    - name: Run E2E tests
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm run test:e2e
+    
+    - name: Upload E2E test results
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: e2e-test-results
+        path: |
+          ${{ env.PACKAGE_PATH }}/test-results/
+          ${{ env.PACKAGE_PATH }}/playwright-report/
+
+  # 发布到 npm
+  publish:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    needs: [quality, test, build]
+    if: github.event_name == 'release' && github.event.action == 'published'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+        registry-url: 'https://registry.npmjs.org'
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        pnpm install --frozen-lockfile
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+        path: ${{ env.PACKAGE_PATH }}/
+    
+    - name: Update version
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        # 从 GitHub release tag 中提取版本号
+        VERSION=${GITHUB_REF#refs/tags/}
+        VERSION=${VERSION#v} # 移除 v 前缀
+        npm version $VERSION --no-git-tag-version
+    
+    - name: Publish to npm
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        npm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    
+    - name: Create GitHub release assets
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        # 创建发布包
+        tar -czf ../flowchart-package.tar.gz dist/ package.json README.md
+    
+    - name: Upload release assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: flowchart-package.tar.gz
+        asset_name: flowchart-package.tar.gz
+        asset_content_type: application/gzip
+
+  # 部署到 CDN
+  deploy-cdn:
+    name: Deploy to CDN
+    runs-on: ubuntu-latest
+    needs: [publish]
+    if: github.event_name == 'release' && github.event.action == 'published'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+        path: ${{ env.PACKAGE_PATH }}/
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Deploy to S3
+      run: |
+        cd ${{ env.PACKAGE_PATH }}
+        # 同步到 S3 CDN
+        aws s3 sync dist/ s3://${{ secrets.CDN_BUCKET }}/flowchart/latest/ \
+          --exclude "*.map" \
+          --cache-control "max-age=31536000" \
+          --metadata-directive REPLACE
+        
+        # 创建版本化的副本
+        VERSION=${GITHUB_REF#refs/tags/}
+        VERSION=${VERSION#v}
+        aws s3 sync dist/ s3://${{ secrets.CDN_BUCKET }}/flowchart/$VERSION/ \
+          --exclude "*.map" \
+          --cache-control "max-age=31536000" \
+          --metadata-directive REPLACE
+    
+    - name: Invalidate CloudFront cache
+      run: |
+        aws cloudfront create-invalidation \
+          --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+          --paths "/flowchart/latest/*"
+
+  # 通知
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [publish, deploy-cdn]
+    if: always()
+    
+    steps:
+    - name: Notify Slack on success
+      if: needs.publish.result == 'success'
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_CHANNEL: '#releases'
+        SLACK_COLOR: 'good'
+        SLACK_MESSAGE: |
+          🎉 Flowchart package ${{ github.event.release.tag_name }} has been successfully published!
+          
+          📦 NPM: https://www.npmjs.com/package/@ldesign/flowchart
+          🌐 CDN: Available at latest and versioned endpoints
+          📋 Release Notes: ${{ github.event.release.html_url }}
+    
+    - name: Notify Slack on failure
+      if: needs.publish.result == 'failure' || needs.deploy-cdn.result == 'failure'
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_CHANNEL: '#releases'
+        SLACK_COLOR: 'danger'
+        SLACK_MESSAGE: |
+          ❌ Flowchart package deployment failed!
+          
+          🔗 Check the logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

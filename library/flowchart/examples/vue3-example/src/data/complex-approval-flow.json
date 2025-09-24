@@ -1,0 +1,198 @@
+{
+  "nodes": [
+    {
+      "id": "start_1",
+      "type": "start",
+      "x": 400,
+      "y": 100,
+      "text": "开始",
+      "properties": {}
+    },
+    {
+      "id": "fill_application_2",
+      "type": "user-task",
+      "x": 400,
+      "y": 220,
+      "text": "填写申请",
+      "properties": {
+        "assignee": "申请人",
+        "description": "填写需求申请表单"
+      }
+    },
+    {
+      "id": "project_manager_approval_3",
+      "type": "approval",
+      "x": 400,
+      "y": 340,
+      "text": "项目部负责人审批",
+      "properties": {
+        "approvers": [
+          {
+            "id": "pm_001",
+            "name": "项目经理",
+            "role": "项目部负责人"
+          }
+        ],
+        "timeLimit": 24,
+        "allowDelegate": true
+      }
+    },
+    {
+      "id": "condition_branch_4",
+      "type": "condition",
+      "x": 400,
+      "y": 460,
+      "text": "审批结果",
+      "properties": {
+        "conditions": [
+          {"value": "approved", "label": "通过"},
+          {"value": "rejected", "label": "退回"}
+        ]
+      }
+    },
+    {
+      "id": "check_process_5",
+      "type": "service-task",
+      "x": 600,
+      "y": 580,
+      "text": "核对处理",
+      "properties": {
+        "serviceType": "validation",
+        "description": "系统自动核对申请信息"
+      }
+    },
+    {
+      "id": "actual_process_6",
+      "type": "process",
+      "x": 400,
+      "y": 700,
+      "text": "实际处理",
+      "properties": {
+        "processType": "manual",
+        "description": "执行实际的需求处理工作"
+      }
+    },
+    {
+      "id": "closed_7",
+      "type": "process",
+      "x": 800,
+      "y": 700,
+      "text": "直接关闭",
+      "properties": {
+        "processType": "close",
+        "description": "无需处理直接关闭"
+      }
+    },
+    {
+      "id": "archive_requirement_8",
+      "type": "service-task",
+      "x": 600,
+      "y": 820,
+      "text": "需求归档",
+      "properties": {
+        "serviceType": "archive",
+        "description": "将处理完成的需求进行归档"
+      }
+    },
+    {
+      "id": "end_9",
+      "type": "end",
+      "x": 600,
+      "y": 940,
+      "text": "结束",
+      "properties": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_1_2",
+      "type": "approval-edge",
+      "sourceNodeId": "start_1",
+      "targetNodeId": "fill_application_2",
+      "text": "启动",
+      "properties": {}
+    },
+    {
+      "id": "edge_2_3",
+      "type": "approval-edge",
+      "sourceNodeId": "fill_application_2",
+      "targetNodeId": "project_manager_approval_3",
+      "text": "提交申请",
+      "properties": {}
+    },
+    {
+      "id": "edge_3_4",
+      "type": "approval-edge",
+      "sourceNodeId": "project_manager_approval_3",
+      "targetNodeId": "condition_branch_4",
+      "text": "审批完成",
+      "properties": {}
+    },
+    {
+      "id": "edge_4_5_approve",
+      "type": "approval-edge",
+      "sourceNodeId": "condition_branch_4",
+      "targetNodeId": "check_process_5",
+      "text": "通过",
+      "properties": {
+        "condition": "approved",
+        "priority": 1
+      }
+    },
+    {
+      "id": "edge_4_2_reject",
+      "type": "approval-edge",
+      "sourceNodeId": "condition_branch_4",
+      "targetNodeId": "fill_application_2",
+      "text": "退回修改",
+      "properties": {
+        "condition": "rejected",
+        "priority": 2
+      }
+    },
+    {
+      "id": "edge_5_6",
+      "type": "approval-edge",
+      "sourceNodeId": "check_process_5",
+      "targetNodeId": "actual_process_6",
+      "text": "需要处理",
+      "properties": {
+        "condition": "needsProcessing"
+      }
+    },
+    {
+      "id": "edge_5_7",
+      "type": "approval-edge",
+      "sourceNodeId": "check_process_5",
+      "targetNodeId": "closed_7",
+      "text": "无需处理",
+      "properties": {
+        "condition": "noProcessingNeeded"
+      }
+    },
+    {
+      "id": "edge_6_8",
+      "type": "approval-edge",
+      "sourceNodeId": "actual_process_6",
+      "targetNodeId": "archive_requirement_8",
+      "text": "处理完成",
+      "properties": {}
+    },
+    {
+      "id": "edge_7_8",
+      "type": "approval-edge",
+      "sourceNodeId": "closed_7",
+      "targetNodeId": "archive_requirement_8",
+      "text": "归档",
+      "properties": {}
+    },
+    {
+      "id": "edge_8_9",
+      "type": "approval-edge",
+      "sourceNodeId": "archive_requirement_8",
+      "targetNodeId": "end_9",
+      "text": "完成",
+      "properties": {}
+    }
+  ]
+}
