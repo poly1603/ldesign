@@ -1,0 +1,290 @@
+/**
+ * Less Mixins 工具
+ * 
+ * 提供常用的样式混合器，简化样式编写
+ * 
+ * @author LDesign Team
+ * @since 2.0.0
+ */
+
+// 清除浮动
+.clearfix() {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+// 文本省略
+.text-ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 多行文本省略
+.text-ellipsis-multiline(@lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: @lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// 居中对齐
+.center-absolute() {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.center-flex() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// 按钮基础样式
+.button-base() {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--ldesign-border-radius-base);
+  font-size: var(--ldesign-font-size-sm);
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+  outline: none;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+// 按钮尺寸
+.button-size(@height, @padding-horizontal, @font-size) {
+  height: @height;
+  padding: 0 @padding-horizontal;
+  font-size: @font-size;
+}
+
+// 按钮颜色主题
+.button-theme(@bg-color, @text-color, @border-color: @bg-color) {
+  background-color: @bg-color;
+  color: @text-color;
+  border-color: @border-color;
+
+  &:hover:not(:disabled) {
+    background-color: lighten(@bg-color, 5%);
+    border-color: lighten(@border-color, 5%);
+  }
+
+  &:active:not(:disabled) {
+    background-color: darken(@bg-color, 5%);
+    border-color: darken(@border-color, 5%);
+  }
+
+  &:focus:not(:disabled) {
+    box-shadow: 0 0 0 2px fade(@bg-color, 20%);
+  }
+}
+
+// 输入框基础样式
+.input-base() {
+  width: 100%;
+  padding: var(--ldesign-padding-sm);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ldesign-border-radius-base);
+  font-size: var(--ldesign-font-size-sm);
+  line-height: 1.5;
+  color: var(--ldesign-text-color-primary);
+  background-color: var(--ldesign-bg-color-component);
+  transition: all 0.3s ease;
+  outline: none;
+
+  &::placeholder {
+    color: var(--ldesign-text-color-placeholder);
+  }
+
+  &:hover {
+    border-color: var(--ldesign-border-color-hover);
+  }
+
+  &:focus {
+    border-color: var(--ldesign-border-color-focus);
+    box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+  }
+
+  &:disabled {
+    background-color: var(--ldesign-bg-color-component-disabled);
+    color: var(--ldesign-text-color-disabled);
+    cursor: not-allowed;
+
+    &::placeholder {
+      color: var(--ldesign-text-color-disabled);
+    }
+  }
+}
+
+// 输入框尺寸
+.input-size(@height, @padding-horizontal, @font-size) {
+  height: @height;
+  padding: 0 @padding-horizontal;
+  font-size: @font-size;
+}
+
+// 输入框状态
+.input-state(@border-color, @focus-color) {
+  border-color: @border-color;
+
+  &:focus {
+    border-color: @border-color;
+    box-shadow: 0 0 0 2px fade(@focus-color, 20%);
+  }
+}
+
+// 卡片样式
+.card() {
+  background-color: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-level-1-color);
+  border-radius: var(--ldesign-border-radius-base);
+  box-shadow: var(--ldesign-shadow-1);
+}
+
+// 阴影层级
+.shadow(@level: 1) when (@level =1) {
+  box-shadow: var(--ldesign-shadow-1);
+}
+
+.shadow(@level: 1) when (@level =2) {
+  box-shadow: var(--ldesign-shadow-2);
+}
+
+.shadow(@level: 1) when (@level =3) {
+  box-shadow: var(--ldesign-shadow-3);
+}
+
+// 响应式断点
+.mobile(@rules) {
+  @media (max-width: 767px) {
+    @rules();
+  }
+}
+
+.tablet(@rules) {
+  @media (min-width: 768px) and (max-width: 1023px) {
+    @rules();
+  }
+}
+
+.desktop(@rules) {
+  @media (min-width: 1024px) {
+    @rules();
+  }
+}
+
+// 动画缓动函数
+@ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
+@ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+@ease-in-cubic: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+
+// 过渡动画
+.transition(@property: all, @duration: 0.3s, @timing: @ease-in-out-cubic) {
+  transition: @property @duration @timing;
+}
+
+// 滚动条样式
+.scrollbar(@width: 6px, @track-color: #f1f1f1, @thumb-color: #c1c1c1) {
+  &::-webkit-scrollbar {
+    width: @width;
+    height: @width;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: @track-color;
+    border-radius: @width / 2;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: @thumb-color;
+    border-radius: @width / 2;
+
+    &:hover {
+      background: darken(@thumb-color, 10%);
+    }
+  }
+}
+
+// 隐藏元素（保持可访问性）
+.visually-hidden() {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+// 重置列表样式
+.list-reset() {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// 重置按钮样式
+.button-reset() {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+// 文本选择样式
+.text-selection(@bg-color: var(--ldesign-brand-color), @text-color: white) {
+  &::selection {
+    background-color: @bg-color;
+    color: @text-color;
+  }
+
+  &::-moz-selection {
+    background-color: @bg-color;
+    color: @text-color;
+  }
+}
+
+// 占位符样式
+.placeholder(@color: var(--ldesign-text-color-placeholder)) {
+  &::placeholder {
+    color: @color;
+    opacity: 1;
+  }
+
+  &::-webkit-input-placeholder {
+    color: @color;
+  }
+
+  &::-moz-placeholder {
+    color: @color;
+    opacity: 1;
+  }
+
+  &:-ms-input-placeholder {
+    color: @color;
+  }
+}

@@ -1,0 +1,267 @@
+/**
+ * Upload 组件样式
+ * 
+ * @author LDesign Team
+ * @since 2.0.0
+ */
+
+@import '../utils/mixins.less';
+
+// Upload 组件基础样式
+.ldesign-upload {
+  position: relative;
+  display: inline-block;
+  
+  // 上传区域
+  &__area {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--ls-padding-xl);
+    border: 2px dashed var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+    background: var(--ldesign-bg-color-component);
+    cursor: pointer;
+    transition: all var(--ldesign-form-transition-base);
+    
+    // 悬停状态
+    &:hover {
+      border-color: var(--ldesign-brand-color);
+      background: var(--ldesign-brand-color-focus);
+    }
+    
+    // 拖拽状态
+    &.ldesign-upload-area-dragover {
+      border-color: var(--ldesign-brand-color);
+      background: var(--ldesign-brand-color-focus);
+    }
+    
+    // 禁用状态
+    &.ldesign-upload-area-disabled {
+      background: var(--ldesign-bg-color-component-disabled);
+      border-color: var(--ldesign-border-color);
+      cursor: not-allowed;
+      
+      &:hover {
+        border-color: var(--ldesign-border-color);
+        background: var(--ldesign-bg-color-component-disabled);
+      }
+    }
+  }
+  
+  // 上传图标
+  &__icon {
+    font-size: 48px;
+    color: var(--ldesign-text-color-placeholder);
+    margin-bottom: var(--ls-margin-sm);
+    
+    .ldesign-upload-area-disabled & {
+      color: var(--ldesign-text-color-disabled);
+    }
+  }
+  
+  // 上传文本
+  &__text {
+    color: var(--ldesign-text-color-primary);
+    font-size: var(--ls-font-size-base);
+    margin-bottom: var(--ls-margin-xs);
+    
+    .ldesign-upload-area-disabled & {
+      color: var(--ldesign-text-color-disabled);
+    }
+  }
+  
+  // 提示文本
+  &__hint {
+    color: var(--ldesign-text-color-placeholder);
+    font-size: var(--ls-font-size-xs);
+    
+    .ldesign-upload-area-disabled & {
+      color: var(--ldesign-text-color-disabled);
+    }
+  }
+  
+  // 隐藏的文件输入
+  &__input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+  
+  // 文件列表
+  &__list {
+    margin-top: var(--ls-margin-base);
+  }
+  
+  // 文件项
+  &__item {
+    display: flex;
+    align-items: center;
+    padding: var(--ls-padding-sm);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+    background: var(--ldesign-bg-color-component);
+    margin-bottom: var(--ls-margin-xs);
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    // 文件图标
+    &-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      margin-right: var(--ls-margin-sm);
+      color: var(--ldesign-text-color-secondary);
+    }
+    
+    // 文件信息
+    &-info {
+      flex: 1;
+      min-width: 0;
+      
+      // 文件名
+      &-name {
+        font-size: var(--ls-font-size-sm);
+        color: var(--ldesign-text-color-primary);
+        margin-bottom: 2px;
+        word-break: break-all;
+      }
+      
+      // 文件大小和状态
+      &-meta {
+        font-size: var(--ls-font-size-xs);
+        color: var(--ldesign-text-color-placeholder);
+      }
+    }
+    
+    // 进度条
+    &-progress {
+      width: 100%;
+      height: 4px;
+      background: var(--ldesign-bg-color-component-active);
+      border-radius: 2px;
+      margin-top: var(--ls-margin-xs);
+      overflow: hidden;
+      
+      &-bar {
+        height: 100%;
+        background: var(--ldesign-brand-color);
+        border-radius: 2px;
+        transition: width var(--ldesign-form-transition-base);
+      }
+    }
+    
+    // 操作按钮
+    &-actions {
+      flex-shrink: 0;
+      display: flex;
+      gap: var(--ls-spacing-xs);
+      margin-left: var(--ls-margin-sm);
+      
+      button {
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: transparent;
+        color: var(--ldesign-text-color-secondary);
+        cursor: pointer;
+        border-radius: var(--ls-border-radius-sm);
+        transition: all var(--ldesign-form-transition-base);
+        
+        &:hover {
+          background: var(--ldesign-bg-color-component-hover);
+          color: var(--ldesign-text-color-primary);
+        }
+        
+        &.ldesign-upload-item-remove:hover {
+          color: var(--ldesign-error-color);
+        }
+      }
+    }
+    
+    // 状态样式
+    &--uploading {
+      .ldesign-upload__item-icon {
+        color: var(--ldesign-brand-color);
+      }
+    }
+    
+    &--success {
+      .ldesign-upload__item-icon {
+        color: var(--ldesign-success-color);
+      }
+    }
+    
+    &--error {
+      border-color: var(--ldesign-error-color-3);
+      background: var(--ldesign-error-color-1);
+      
+      .ldesign-upload__item-icon {
+        color: var(--ldesign-error-color);
+      }
+    }
+  }
+  
+  // 按钮样式上传
+  &--button {
+    .ldesign-upload__area {
+      display: inline-flex;
+      flex-direction: row;
+      padding: var(--ls-padding-sm) var(--ls-padding-base);
+      border: 1px solid var(--ldesign-border-color);
+      border-style: solid;
+      background: var(--ldesign-bg-color-component);
+      
+      &:hover {
+        border-color: var(--ldesign-brand-color);
+        background: var(--ldesign-bg-color-component-hover);
+      }
+    }
+    
+    .ldesign-upload__icon {
+      font-size: var(--ls-icon-size-medium);
+      margin: 0 var(--ls-margin-xs) 0 0;
+    }
+    
+    .ldesign-upload__text {
+      margin: 0;
+      font-size: var(--ls-font-size-sm);
+    }
+    
+    .ldesign-upload__hint {
+      display: none;
+    }
+  }
+  
+  // 禁用状态
+  &--disabled {
+    .ldesign-upload__area {
+      background: var(--ldesign-bg-color-component-disabled);
+      border-color: var(--ldesign-border-color);
+      cursor: not-allowed;
+    }
+  }
+}
+
+// 响应式适配
+@media (max-width: 768px) {
+  .ldesign-upload {
+    &__area {
+      padding: var(--ls-padding-base);
+    }
+    
+    &__icon {
+      font-size: 36px;
+    }
+    
+    &__text {
+      font-size: var(--ls-font-size-sm);
+    }
+  }
+}

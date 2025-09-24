@@ -1,0 +1,333 @@
+/**
+ * 基础样式
+ * 
+ * 定义框架无关的表单组件基础样式
+ * 使用LDESIGN设计系统的CSS变量
+ * 
+ * @author LDesign Team
+ * @since 2.0.0
+ */
+
+// 表单容器基础样式
+.ldesign-form {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--ls-font-size-sm);
+  line-height: 1.5;
+  color: var(--ldesign-text-color-primary);
+
+  // 重置表单默认样式
+  * {
+    box-sizing: border-box;
+  }
+
+  // 表单状态样式
+  &.ldesign-form-submitting {
+    pointer-events: none;
+    opacity: 0.7;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+  }
+
+  &.ldesign-form-validating {
+    .ldesign-form-item {
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 12px;
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--ldesign-brand-color);
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: ldesign-spin 1s linear infinite;
+        transform: translateY(-50%);
+      }
+    }
+  }
+
+  &.ldesign-form-valid {
+    .ldesign-form-item {
+      border-color: var(--ldesign-success-color);
+    }
+  }
+
+  &.ldesign-form-invalid {
+    .ldesign-form-item {
+      border-color: var(--ldesign-error-color);
+    }
+  }
+}
+
+// 表单项基础样式
+.ldesign-form-item {
+  margin-bottom: var(--ls-spacing-base);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// 表单标签基础样式
+.ldesign-form-label {
+  display: block;
+  margin-bottom: var(--ls-spacing-xs);
+  font-weight: 500;
+  color: var(--ldesign-text-color-primary);
+  font-size: var(--ls-font-size-sm);
+  line-height: 1.4;
+
+  // 必填标记
+  &.ldesign-form-label-required {
+    &::before {
+      content: '*';
+      color: var(--ldesign-error-color);
+      margin-right: 4px;
+    }
+  }
+
+  // 可选标记
+  &.ldesign-form-label-optional {
+    &::after {
+      content: '(可选)';
+      color: var(--ldesign-text-color-placeholder);
+      font-weight: normal;
+      margin-left: 4px;
+      font-size: var(--ls-font-size-xs);
+    }
+  }
+}
+
+// 表单控件容器基础样式
+.ldesign-form-control {
+  position: relative;
+
+  // 控件基础样式
+  input,
+  textarea,
+  select {
+    width: 100%;
+    padding: var(--ls-padding-sm);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+    font-size: var(--ls-font-size-sm);
+    line-height: 1.5;
+    color: var(--ldesign-text-color-primary);
+    background-color: var(--ldesign-bg-color-component);
+    transition: all 0.3s ease;
+    outline: none;
+
+    &::placeholder {
+      color: var(--ldesign-text-color-placeholder);
+    }
+
+    &:hover {
+      border-color: var(--ldesign-border-color-hover);
+    }
+
+    &:focus {
+      border-color: var(--ldesign-border-color-focus);
+      box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+    }
+
+    &:disabled {
+      background-color: var(--ldesign-bg-color-component-disabled);
+      color: var(--ldesign-text-color-disabled);
+      cursor: not-allowed;
+
+      &::placeholder {
+        color: var(--ldesign-text-color-disabled);
+      }
+    }
+
+    &:read-only {
+      background-color: var(--ldesign-bg-color-container-hover);
+      cursor: default;
+    }
+  }
+
+  // 错误状态样式
+  &.ldesign-form-control-error {
+
+    input,
+    textarea,
+    select {
+      border-color: var(--ldesign-error-color);
+
+      &:focus {
+        border-color: var(--ldesign-error-color);
+        box-shadow: 0 0 0 2px var(--ldesign-error-color-focus);
+      }
+    }
+  }
+
+  // 成功状态样式
+  &.ldesign-form-control-success {
+
+    input,
+    textarea,
+    select {
+      border-color: var(--ldesign-success-color);
+
+      &:focus {
+        border-color: var(--ldesign-success-color);
+        box-shadow: 0 0 0 2px var(--ldesign-success-color-focus);
+      }
+    }
+  }
+
+  // 警告状态样式
+  &.ldesign-form-control-warning {
+
+    input,
+    textarea,
+    select {
+      border-color: var(--ldesign-warning-color);
+
+      &:focus {
+        border-color: var(--ldesign-warning-color);
+        box-shadow: 0 0 0 2px var(--ldesign-warning-color-focus);
+      }
+    }
+  }
+}
+
+// 错误信息基础样式
+.ldesign-form-error {
+  margin-top: var(--ls-spacing-xs);
+  font-size: var(--ls-font-size-xs);
+  color: var(--ldesign-error-color);
+  line-height: 1.4;
+  display: none;
+
+  &.ldesign-form-error-show {
+    display: block;
+  }
+}
+
+// 帮助信息基础样式
+.ldesign-form-help {
+  margin-top: var(--ls-spacing-xs);
+  font-size: var(--ls-font-size-xs);
+  color: var(--ldesign-text-color-placeholder);
+  line-height: 1.4;
+}
+
+// 表单按钮组基础样式
+.ldesign-form-actions {
+  // margin-top: var(--ls-spacing-lg);
+  text-align: left;
+
+  &.ldesign-form-actions-center {
+    text-align: center;
+  }
+
+  &.ldesign-form-actions-right {
+    text-align: right;
+  }
+
+  .ldesign-button {
+    margin-right: var(--ls-spacing-sm);
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .ldesign-form {
+    .ldesign-form-item {
+      margin-bottom: var(--ls-spacing-sm);
+    }
+
+    .ldesign-form-label {
+      font-size: var(--ls-font-size-xs);
+    }
+
+    .ldesign-form-control {
+
+      input,
+      textarea,
+      select {
+        padding: var(--ls-padding-xs);
+        font-size: var(--ls-font-size-xs);
+      }
+    }
+
+    .ldesign-form-actions {
+      text-align: center;
+
+      .ldesign-button {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: var(--ls-spacing-xs);
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+}
+
+// 动画定义
+@keyframes ldesign-spin {
+  0% {
+    transform: translateY(-50%) rotate(0deg);
+  }
+
+  100% {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+@keyframes ldesign-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ldesign-shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+// 错误字段样式
+.ldesign-form-error-field {
+  border-color: var(--ldesign-error-color) !important;
+  box-shadow: 0 0 0 2px var(--ldesign-error-color-focus) !important;
+  animation: ldesign-shake 0.3s ease-in-out;
+}

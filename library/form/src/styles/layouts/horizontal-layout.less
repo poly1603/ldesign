@@ -1,0 +1,396 @@
+/**
+ * 水平布局样式
+ * 
+ * 为表单提供水平布局支持，包括：
+ * - CSS Grid 布局
+ * - 响应式列数调整
+ * - 字段间距控制
+ * - 标签对齐方式
+ * 
+ * @author LDesign Team
+ * @since 2.0.0
+ */
+
+@import '../utils/mixins.less';
+
+// 水平布局基础样式
+.ldesign-form--horizontal {
+
+  // 使用 CSS Grid 布局
+  &.ldesign-form--grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: var(--ldesign-form-row-gap, 16px) var(--ldesign-form-column-gap, 16px);
+
+    // 表单项样式重置
+    .ldesign-form-item {
+      margin-bottom: 0; // Grid 布局使用 gap 控制间距
+
+      // 标签样式调整
+      .ldesign-form-label {
+        margin-bottom: var(--ls-spacing-xs);
+
+        // 水平布局中标签默认左对齐
+        text-align: left;
+
+        // 必填标记
+        &.ldesign-form-label-required::before {
+          content: '*';
+          color: var(--ldesign-error-color);
+          margin-right: 4px;
+          font-weight: bold;
+        }
+      }
+
+      // 控件容器
+      .ldesign-form-control {
+        width: 100%;
+
+        // 输入框样式
+        input,
+        textarea,
+        select {
+          width: 100%;
+          box-sizing: border-box;
+        }
+      }
+
+      // 错误信息样式
+      .ldesign-form-error {
+        margin-top: var(--ls-spacing-xs);
+        font-size: var(--ls-font-size-xs);
+        color: var(--ldesign-error-color);
+        line-height: 1.4;
+      }
+    }
+  }
+
+  // 不同列数的布局
+  &.ldesign-form--columns-1 {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  &.ldesign-form--columns-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  &.ldesign-form--columns-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  &.ldesign-form--columns-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  &.ldesign-form--columns-5 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  &.ldesign-form--columns-6 {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  // 自动填充模式
+  &.ldesign-form--auto-fill {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  // 字段跨列样式
+  .ldesign-form-item {
+
+    // 跨2列
+    &.ldesign-form-item--span-2 {
+      grid-column: span 2;
+    }
+
+    // 跨3列
+    &.ldesign-form-item--span-3 {
+      grid-column: span 3;
+    }
+
+    // 跨4列
+    &.ldesign-form-item--span-4 {
+      grid-column: span 4;
+    }
+
+    // 跨5列
+    &.ldesign-form-item--span-5 {
+      grid-column: span 5;
+    }
+
+    // 跨6列
+    &.ldesign-form-item--span-6 {
+      grid-column: span 6;
+    }
+
+    // 全宽
+    &.ldesign-form-item--full-width {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+// 响应式布局
+@media (max-width: 576px) {
+  .ldesign-form--horizontal {
+    &.ldesign-form--grid {
+      // 小屏幕强制单列
+      grid-template-columns: repeat(1, 1fr) !important;
+
+      // 重置所有跨列设置
+      .ldesign-form-item {
+        grid-column: span 1 !important;
+      }
+    }
+  }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+  .ldesign-form--horizontal {
+    &.ldesign-form--grid {
+
+      // 中小屏幕最多2列
+      &.ldesign-form--columns-3,
+      &.ldesign-form--columns-4,
+      &.ldesign-form--columns-5,
+      &.ldesign-form--columns-6 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      // 调整跨列设置
+      .ldesign-form-item {
+
+        &.ldesign-form-item--span-3,
+        &.ldesign-form-item--span-4,
+        &.ldesign-form-item--span-5,
+        &.ldesign-form-item--span-6 {
+          grid-column: span 2;
+        }
+      }
+    }
+  }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+  .ldesign-form--horizontal {
+    &.ldesign-form--grid {
+
+      // 中等屏幕最多3列
+      &.ldesign-form--columns-4,
+      &.ldesign-form--columns-5,
+      &.ldesign-form--columns-6 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      // 调整跨列设置
+      .ldesign-form-item {
+
+        &.ldesign-form-item--span-4,
+        &.ldesign-form-item--span-5,
+        &.ldesign-form-item--span-6 {
+          grid-column: span 3;
+        }
+      }
+    }
+  }
+}
+
+// 标签对齐方式
+.ldesign-form--horizontal {
+
+  // 顶部对齐
+  &.ldesign-form--label-top {
+    .ldesign-form-item {
+      .ldesign-form-label {
+        text-align: left;
+        margin-bottom: var(--ls-spacing-xs);
+      }
+    }
+  }
+
+  // 左对齐
+  &.ldesign-form--label-left {
+    .ldesign-form-item {
+      .ldesign-form-label {
+        text-align: left;
+      }
+    }
+  }
+
+  // 右对齐
+  &.ldesign-form--label-right {
+    .ldesign-form-item {
+      .ldesign-form-label {
+        text-align: right;
+      }
+    }
+  }
+}
+
+// 水平标签布局（标签和输入框在一行）
+.ldesign-form--horizontal.ldesign-form--label-horizontal {
+  // 表单项之间的间隔
+  gap: var(--ldesign-form-item-spacing, 16px);
+
+  .ldesign-form-item {
+    display: flex;
+    align-items: flex-start; // 默认顶部对齐
+    // 标签和输入框之间的间隔
+    gap: var(--ldesign-form-label-control-spacing, 12px);
+
+    // 智能对齐：普通控件居中对齐
+    &.field-align-center {
+      align-items: center;
+    }
+
+    // 智能对齐：高控件（如textarea）顶部对齐
+    &.field-align-top {
+      align-items: flex-start;
+    }
+
+    .ldesign-form-label {
+      flex-shrink: 0;
+      margin-bottom: 0;
+      padding-top: calc((var(--ls-input-height-medium) - var(--ls-font-size-sm) * 1.4) / 2);
+      line-height: 1.4;
+
+      // 默认右对齐
+      text-align: right;
+
+      // 标签宽度
+      width: var(--ldesign-form-label-width, 120px);
+      min-width: var(--ldesign-form-label-width, 120px);
+    }
+
+    .ldesign-form-control {
+      flex: 1;
+      min-width: 0; // 防止 flex 子元素溢出
+    }
+
+    .ldesign-form-error {
+      margin-top: var(--ls-spacing-xs);
+    }
+  }
+
+  // 标签左对齐
+  &.ldesign-form--label-left {
+    .ldesign-form-item {
+      .ldesign-form-label {
+        text-align: left;
+      }
+    }
+  }
+
+  // 标签右对齐（默认）
+  &.ldesign-form--label-right {
+    .ldesign-form-item {
+      .ldesign-form-label {
+        text-align: right;
+      }
+    }
+  }
+}
+
+// 间距变体
+.ldesign-form--horizontal {
+
+  // 紧凑间距
+  &.ldesign-form--compact {
+    gap: var(--ls-spacing-xs) var(--ls-spacing-sm);
+
+    .ldesign-form-item {
+      .ldesign-form-label {
+        margin-bottom: calc(var(--ls-spacing-xs) / 2);
+      }
+    }
+  }
+
+  // 宽松间距
+  &.ldesign-form--loose {
+    gap: var(--ls-spacing-lg) var(--ls-spacing-xl);
+
+    .ldesign-form-item {
+      .ldesign-form-label {
+        margin-bottom: var(--ls-spacing-sm);
+      }
+    }
+  }
+}
+
+// 表单操作按钮区域
+.ldesign-form--horizontal {
+  .ldesign-form-actions {
+    grid-column: 1 / -1; // 占满整行
+    display: flex;
+    justify-content: flex-end; // 默认右对齐
+    gap: var(--ls-spacing-sm);
+    // margin-top: var(--ls-spacing-base);
+
+    .ldesign-button {
+      min-width: 80px;
+    }
+
+    // 左对齐
+    &.ldesign-form-actions--left {
+      justify-content: flex-start;
+    }
+
+    // 居中对齐
+    &.ldesign-form-actions--center {
+      justify-content: center;
+    }
+
+    // 右对齐（默认）
+    &.ldesign-form-actions--right {
+      justify-content: flex-end;
+    }
+
+    // 两端对齐（展开/收起 和 重置/提交分开）
+    &.ldesign-form-actions--space-between {
+      justify-content: space-between;
+
+      .ldesign-form-collapse-button {
+        order: -1; // 展开/收起按钮在左侧
+      }
+
+      .ldesign-form-action-buttons {
+        display: flex;
+        gap: var(--ls-spacing-sm);
+        order: 1; // 重置/提交按钮在右侧
+      }
+    }
+
+    // 移动端按钮样式
+    @media (max-width: 576px) {
+      flex-direction: column;
+
+      .ldesign-button {
+        width: 100%;
+      }
+    }
+  }
+}
+
+// 深色主题支持
+@media (prefers-color-scheme: dark) {
+  .ldesign-form--horizontal {
+    .ldesign-form-actions {
+      border-top-color: var(--ldesign-border-level-2-color);
+    }
+  }
+}
+
+// 高对比度模式支持
+@media (prefers-contrast: high) {
+  .ldesign-form--horizontal {
+    .ldesign-form-item {
+      .ldesign-form-label {
+        font-weight: bold;
+      }
+    }
+
+    .ldesign-form-actions {
+      border-top-width: 2px;
+    }
+  }
+}

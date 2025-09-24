@@ -1,0 +1,175 @@
+/**
+ * Textarea 组件样式
+ * 
+ * @author LDesign Team
+ * @since 1.0.0
+ */
+
+.ldesign-textarea-wrapper {
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  border: var(--ldesign-input-border-width) var(--ldesign-input-border-style) var(--ldesign-input-border-color);
+  border-radius: var(--ldesign-input-border-radius);
+  background: var(--ldesign-input-background);
+  transition: var(--ldesign-input-transition);
+  
+  // 悬停状态
+  &:hover:not(.ldesign-textarea-wrapper--disabled) {
+    border-color: var(--ldesign-input-hover-border-color);
+  }
+  
+  // 聚焦状态
+  &.ldesign-textarea-wrapper--focused {
+    border-color: var(--ldesign-input-focus-border-color);
+    box-shadow: var(--ldesign-input-focus-shadow);
+    outline: none;
+  }
+  
+  // 错误状态
+  &.ldesign-textarea-wrapper--error {
+    border-color: var(--ldesign-input-error-border-color);
+    
+    &.ldesign-textarea-wrapper--focused {
+      box-shadow: var(--ldesign-input-error-shadow);
+    }
+  }
+  
+  // 禁用状态
+  &.ldesign-textarea-wrapper--disabled {
+    background: var(--ldesign-input-disabled-background);
+    border-color: var(--ldesign-input-disabled-border-color);
+    cursor: not-allowed;
+    
+    .ldesign-textarea {
+      color: var(--ldesign-input-disabled-color);
+      cursor: not-allowed;
+    }
+  }
+  
+  // 只读状态
+  &.ldesign-textarea-wrapper--readonly {
+    background: var(--ldesign-input-readonly-background);
+    
+    .ldesign-textarea {
+      cursor: default;
+    }
+  }
+  
+  // 尺寸变体
+  &.ldesign-textarea-wrapper--small {
+    .ldesign-textarea {
+      padding: var(--ls-padding-xs) var(--ls-padding-sm);
+      font-size: var(--ls-font-size-sm);
+      min-height: 60px;
+    }
+  }
+  
+  &.ldesign-textarea-wrapper--medium {
+    .ldesign-textarea {
+      padding: var(--ldesign-input-padding-vertical) var(--ldesign-input-padding-horizontal);
+      font-size: var(--ldesign-input-font-size);
+      min-height: 80px;
+    }
+  }
+  
+  &.ldesign-textarea-wrapper--large {
+    .ldesign-textarea {
+      padding: var(--ls-padding-sm) var(--ls-padding-base);
+      font-size: var(--ls-font-size-lg);
+      min-height: 100px;
+    }
+  }
+  
+  // 样式变体
+  &.ldesign-textarea-wrapper--outlined {
+    // 默认样式，已在基础样式中定义
+  }
+  
+  &.ldesign-textarea-wrapper--filled {
+    background: var(--ldesign-bg-color-container-hover);
+    border: none;
+    border-bottom: 2px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-sm) var(--ls-border-radius-sm) 0 0;
+    
+    &:hover:not(.ldesign-textarea-wrapper--disabled) {
+      background: var(--ldesign-bg-color-container-active);
+      border-bottom-color: var(--ldesign-input-hover-border-color);
+    }
+    
+    &.ldesign-textarea-wrapper--focused {
+      border-bottom-color: var(--ldesign-input-focus-border-color);
+      box-shadow: none;
+    }
+    
+    &.ldesign-textarea-wrapper--error {
+      border-bottom-color: var(--ldesign-input-error-border-color);
+    }
+  }
+  
+  &.ldesign-textarea-wrapper--borderless {
+    border: none;
+    background: transparent;
+    
+    &:hover,
+    &.ldesign-textarea-wrapper--focused {
+      background: var(--ldesign-bg-color-component-hover);
+    }
+  }
+}
+
+.ldesign-textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 80px;
+  padding: var(--ldesign-input-padding-vertical) var(--ldesign-input-padding-horizontal);
+  color: var(--ldesign-input-color);
+  font-size: var(--ldesign-input-font-size);
+  font-family: inherit;
+  line-height: var(--ldesign-input-line-height);
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: vertical;
+  transition: var(--ldesign-input-transition);
+  
+  &::placeholder {
+    color: var(--ldesign-input-placeholder-color);
+  }
+  
+  // 禁用调整大小
+  &.ldesign-textarea--no-resize {
+    resize: none;
+  }
+  
+  // 自动调整高度
+  &.ldesign-textarea--auto-size {
+    resize: none;
+    overflow: hidden;
+  }
+}
+
+.ldesign-textarea__count {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  color: var(--ldesign-input-count-color);
+  font-size: var(--ldesign-input-count-font-size);
+  line-height: 1;
+  pointer-events: none;
+  background: var(--ldesign-input-background);
+  padding: 2px 4px;
+  border-radius: var(--ls-border-radius-sm);
+}
+
+// 响应式样式
+@media (max-width: 768px) {
+  .ldesign-textarea-wrapper {
+    &.ldesign-textarea-wrapper--large {
+      .ldesign-textarea {
+        font-size: var(--ldesign-input-font-size);
+        min-height: 80px;
+      }
+    }
+  }
+}

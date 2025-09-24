@@ -1,0 +1,22 @@
+{
+  "name": "@ldesign/form-docs",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "@ldesign/form 表单组件库文档",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview",
+    "serve": "vitepress serve",
+    "deploy": "sh deploy.sh"
+  },
+  "dependencies": {
+    "@ldesign/form": "workspace:*",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "typescript": "^5.0.0",
+    "vitepress": "^1.0.0"
+  }
+}
