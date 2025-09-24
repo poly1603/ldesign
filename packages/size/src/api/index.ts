@@ -87,24 +87,24 @@ export function createSize(options?: SizeManagerOptions) {
 
 /**
  * 批量设置尺寸配置
+ * @deprecated 此功能暂未实现，请使用 createSizeManager 创建自定义管理器
  */
 export function configureSizes(_configs: Record<SizeMode, any>): void {
-  // 这里可以扩展为支持批量配置
-  console.warn('configureSizes is not yet implemented')
+  throw new Error('configureSizes is not yet implemented. Please use createSizeManager to create custom managers.')
 }
 
 /**
  * 获取所有可用的尺寸模式
  */
 export function getAvailableSizes(): SizeMode[] {
-  return ['small', 'medium', 'large']
+  return ['small', 'medium', 'large', 'extra-large']
 }
 
 /**
  * 检查是否为有效的尺寸模式
  */
 export function isValidSize(mode: string): mode is SizeMode {
-  return ['small', 'medium', 'large'].includes(mode as SizeMode)
+  return ['small', 'medium', 'large', 'extra-large'].includes(mode as SizeMode)
 }
 
 /**
@@ -298,6 +298,7 @@ export const Size = {
   SMALL: 'small' as const,
   MEDIUM: 'medium' as const,
   LARGE: 'large' as const,
+  EXTRA_LARGE: 'extra-large' as const,
 }
 
 // 默认导出便捷对象

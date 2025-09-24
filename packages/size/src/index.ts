@@ -13,8 +13,6 @@ export * from './core/theme-manager'
 // 默认导出
 export { globalSizeManager as default } from './core/size-manager'
 
-
-
 // 类型导出
 export * from './types'
 

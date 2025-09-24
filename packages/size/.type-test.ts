@@ -4,11 +4,11 @@
 // 测试主模块导入
 import type * as MainModule from '@ldesign/size'
 
-// 测试 Vue 模块导入（如果存在）
-// Vue 模块不存在
+// 测试 Vue 模块导入
+import type * as VueModule from '@ldesign/size/vue'
 
 // 类型测试
 type _TestMainModule = keyof typeof MainModule
-// Vue 模块类型测试跳过
+type _TestVueModule = keyof typeof VueModule
 
 export { }

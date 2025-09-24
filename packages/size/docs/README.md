@@ -136,7 +136,7 @@ const handleSizeChange = (mode) => {
 **了解核心概念** → [尺寸模式](./concepts/size-modes.md) →
 [CSS 变量系统](./concepts/css-variables.md)
 
-**查看完整 API** → [核心 API](./api/core.md) → [类型定义](./api/types.md)
+**查看完整 API** → [核心 API](./api/core.md) → [Vue API](./api/vue.md) → [类型定义](./api/types.md)
 
 **学习最佳实践** → [设计规范](./best-practices/design-guidelines.md) →
 [无障碍访问](./best-practices/accessibility.md)

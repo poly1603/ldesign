@@ -10,8 +10,8 @@ export default defineConfig({
   // 清理输出目录
   clean: true,
 
-  // 不压缩代码（开发阶段）
-  minify: false,
+  // 生产环境压缩代码
+  minify: process.env.NODE_ENV === 'production',
 
   // UMD 构建配置
   umd: {
@@ -23,20 +23,7 @@ export default defineConfig({
   // 外部依赖配置
   external: [
     'vue',
-    'lucide-vue-next',
-    'node:fs',
-    'node:path',
-    'node:os',
-    'node:util',
-    'node:events',
-    'node:stream',
-    'node:crypto',
-    'node:http',
-    'node:https',
-    'node:url',
-    'node:buffer',
-    'node:child_process',
-    'node:worker_threads'
+    'lucide-vue-next'
 ],
 
   // 全局变量配置

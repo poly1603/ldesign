@@ -252,7 +252,9 @@ pnpm build
 ## 🔗 相关链接
 
 - [完整文档](./docs/README.md)
-- [API 参考](./docs/api/README.md)
+- [核心 API](./docs/api/core.md)
+- [Vue API](./docs/api/vue.md)
+- [类型定义](./docs/api/types.md)
 - [最佳实践](./docs/best-practices/README.md)
 - [更新日志](./CHANGELOG.md)
 - [问题反馈](https://github.com/ldesign/ldesign/issues)
@@ -264,98 +266,6 @@ pnpm build
   <p>Made with ❤️ by LDesign Team</p>
 </div>
 
-## 特性
 
-- 🚀 **高性能** - 优化的性能表现
-- 🎯 **类型安全** - 完整的 TypeScript 支持
-- 📦 **轻量级** - 最小化的包体积
-- 🔧 **易于使用** - 简洁的 API 设计
 
-## 安装
 
-```bash
-npm install @ldesign/size
-# 或
-pnpm add @ldesign/size
-# 或
-yarn add @ldesign/size
-```
-
-## 使用
-
-### 基础用法
-
-```typescript
-import { size } from '@ldesign/size'
-
-size()
-```
-
-## API 文档
-
-详细的 API 文档请访问：[文档站点](https://ldesign.github.io/size/)
-
-## 开发
-
-```bash
-# 安装依赖
-pnpm install
-
-# 开发模式
-pnpm dev
-
-# 构建
-pnpm build
-
-# 测试
-pnpm test
-
-# E2E 测试
-pnpm test:e2e
-
-# 文档开发
-pnpm docs:dev
-```
-
-## 🚀 简化使用方式
-
-### 一键安装插件
-
-```javascript
-import { createApp } from 'vue'
-import { installSizePlugin, installWithPreset } from '@ldesign/size/vue'
-
-const app = createApp(App)
-
-// 使用默认配置
-installSizePlugin(app)
-
-// 使用预设配置
-installWithPreset(app, 'responsive') // 响应式
-installWithPreset(app, 'mobile')     // 移动端优先
-installWithPreset(app, 'desktop')    // 桌面端优先
-```
-
-### 高级组合式API
-
-```javascript
-// 智能尺寸管理
-import { useSmartSize } from '@ldesign/size/vue'
-const { currentMode, recommendedMode, resetToRecommended } = useSmartSize({
-  autoDetect: true,
-  responsive: true,
-  remember: true
-})
-
-// 带动画的切换
-import { useSizeAnimation } from '@ldesign/size/vue'
-const { setMode, isAnimating } = useSizeAnimation()
-
-// 状态管理和历史记录
-import { useSizeState } from '@ldesign/size/vue'
-const { canUndo, canRedo, undo, redo } = useSizeState()
-```
-
-## 许可证
-
-MIT © LDesign Team

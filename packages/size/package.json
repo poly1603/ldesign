@@ -15,11 +15,11 @@
   ],
   "author": "LDesign Team",
   "license": "MIT",
-  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/{{PACKAGE_NAME}}#readme",
+  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/size#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/ldesign/ldesign.git",
-    "directory": "packages/{{PACKAGE_NAME}}"
+    "directory": "packages/size"
   },
   "bugs": {
     "url": "https://github.com/ldesign/ldesign/issues"
@@ -150,6 +150,7 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
+    "@size-limit/preset-big-lib": "^11.2.0",
     "@types/node": "^22.0.0",
     "@vitejs/plugin-vue": "^5.0.3",
     "@vitejs/plugin-vue-jsx": "^5.1.0",
@@ -173,8 +174,25 @@
   },
   "size-limit": [
     {
+      "name": "Core Bundle",
       "path": "dist/index.js",
       "limit": "50 KB"
+    },
+    {
+      "name": "Core Bundle (gzipped)",
+      "path": "dist/index.js",
+      "limit": "15 KB",
+      "gzip": true
+    },
+    {
+      "name": "ES Module",
+      "path": "es/index.js",
+      "limit": "30 KB"
+    },
+    {
+      "name": "CommonJS",
+      "path": "lib/index.cjs",
+      "limit": "150 KB"
     }
   ],
   "peerDependenciesMeta": {

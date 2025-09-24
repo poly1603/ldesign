@@ -72,34 +72,53 @@ export class SizeManagerImpl implements SizeManager {
 
   /**
    * 设置尺寸模式
+   * @param mode - 要设置的尺寸模式
+   * @throws {Error} 当传入无效的尺寸模式时抛出错误
    */
   async setMode(mode: SizeMode): Promise<void> {
+    // 输入验证
+    if (!mode || typeof mode !== 'string') {
+      throw new Error('Invalid size mode: mode must be a non-empty string')
+    }
+
+    const validModes: SizeMode[] = ['small', 'medium', 'large', 'extra-large']
+    if (!validModes.includes(mode)) {
+      throw new Error(`Invalid size mode: ${mode}. Valid modes are: ${validModes.join(', ')}`)
+    }
+
     if (mode === this.currentMode) {
       return
     }
 
-    const previousMode = this.currentMode
-    this.currentMode = mode
+    try {
+      const previousMode = this.currentMode
+      this.currentMode = mode
 
-    // 保存到存储
-    if (this.options.enableStorage) {
-      this.storageManager.saveCurrentMode(mode)
+      // 保存到存储
+      if (this.options.enableStorage) {
+        this.storageManager.saveCurrentMode(mode)
+      }
+
+      // 重新注入CSS
+      if (this.options.autoInject) {
+        this.injectCSS()
+      }
+
+      // 触发变化事件
+      const changeEvent = {
+        previousMode,
+        currentMode: mode,
+        timestamp: Date.now(),
+      }
+
+      this.emitSizeChange(changeEvent)
+      this.emit('size-changed', changeEvent)
     }
-
-    // 重新注入CSS
-    if (this.options.autoInject) {
-      this.injectCSS()
+    catch (error) {
+      // 如果出错，恢复之前的模式
+      this.currentMode = this.currentMode
+      throw new Error(`Failed to set size mode: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-
-    // 触发变化事件
-    const changeEvent = {
-      previousMode,
-      currentMode: mode,
-      timestamp: Date.now(),
-    }
-
-    this.emitSizeChange(changeEvent)
-    this.emit('size-changed', changeEvent)
   }
 
   /**

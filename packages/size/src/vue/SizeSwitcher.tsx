@@ -2,12 +2,11 @@
  * 尺寸切换器组件
  */
 
-/* eslint-disable */
 import type { SizeMode } from '../types'
-import { defineComponent, type PropType, computed, ref, onMounted, onUnmounted, h } from 'vue'
+import { computed, defineComponent, h, onMounted, onUnmounted, type PropType, ref } from 'vue'
+import { Maximize2, Minus, Plus, Type } from 'lucide-vue-next'
 import { useSizeSwitcher } from './composables'
 import { createResponsiveSizeWatcher } from '../utils'
-import { Minus, Type, Plus, Maximize2 } from 'lucide-vue-next'
 import './SizeSwitcher.less'
 
 

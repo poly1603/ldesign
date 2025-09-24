@@ -181,7 +181,7 @@ describe('工具函数', () => {
   describe('常量和列表', () => {
     it('应该返回所有可用尺寸', () => {
       const sizes = getAvailableSizes()
-      expect(sizes).toEqual(['small', 'medium', 'large'])
+      expect(sizes).toEqual(['small', 'medium', 'large', 'extra-large'])
     })
   })
 })
@@ -298,10 +298,11 @@ describe('size 便捷对象', () => {
   })
 
   it('应该提供常量', () => {
-    expect(Size.MODES).toEqual(['small', 'medium', 'large'])
+    expect(Size.MODES).toEqual(['small', 'medium', 'large', 'extra-large'])
     expect(Size.SMALL).toBe('small')
     expect(Size.MEDIUM).toBe('medium')
     expect(Size.LARGE).toBe('large')
+    expect(Size.EXTRA_LARGE).toBe('extra-large')
   })
 
   it('应该提供创建工具', () => {

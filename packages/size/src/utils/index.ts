@@ -187,6 +187,11 @@ export function throttle<T extends (...args: any[]) => any>(
   }
 }
 
+/**
+ * 检查输入是否有效（非null且非undefined）
+ * @param input - 要检查的输入值
+ * @returns 如果输入有效则返回true，否则返回false
+ */
 export function isValidInput(input: unknown): boolean {
   return input != null
 }
