@@ -285,7 +285,8 @@ export function withRetry(config: RetryMiddlewareConfig = {}) {
       try {
         attempt++
         return await next()
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error
 
         // 如果已经达到最大尝试次数，或者不应该重试，则抛出错误
@@ -301,8 +302,9 @@ export function withRetry(config: RetryMiddlewareConfig = {}) {
         let delayTime: number
         if (finalConfig.delayFn) {
           delayTime = finalConfig.delayFn(attempt)
-        } else {
-          delayTime = finalConfig.delay * Math.pow(finalConfig.backoffMultiplier, attempt - 1)
+        }
+        else {
+          delayTime = finalConfig.delay * finalConfig.backoffMultiplier ** (attempt - 1)
         }
         await delay(delayTime)
       }

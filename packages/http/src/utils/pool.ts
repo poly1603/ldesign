@@ -58,6 +58,7 @@ export class RequestPool {
     connectionReuse: 0,
     connectionErrors: 0,
   }
+
   private cleanupTimer?: NodeJS.Timeout
 
   constructor(config: PoolConfig = {}) {
@@ -83,12 +84,12 @@ export class RequestPool {
    */
   async getConnection(config: RequestConfig): Promise<ConnectionInfo> {
     const key = this.getConnectionKey(config)
-    let connections = this.connections.get(key) || []
+    const connections = this.connections.get(key) || []
 
     // 查找可用的空闲连接
-    const idleConnection = connections.find(conn => 
-      conn.state === 'idle' && 
-      this.isConnectionValid(conn)
+    const idleConnection = connections.find(conn =>
+      conn.state === 'idle'
+      && this.isConnectionValid(conn),
     )
 
     if (idleConnection) {
@@ -120,7 +121,8 @@ export class RequestPool {
     const key = `${connection.protocol}//${connection.host}:${connection.port}`
     const connections = this.connections.get(key)
 
-    if (!connections) return
+    if (!connections)
+      return
 
     const conn = connections.find(c => c.id === connection.id)
     if (conn) {
@@ -144,7 +146,7 @@ export class RequestPool {
     const connection: ConnectionInfo = {
       id: this.generateId(),
       host: url.hostname,
-      port: parseInt(url.port) || (url.protocol === 'https:' ? 443 : 80),
+      port: Number.parseInt(url.port) || (url.protocol === 'https:' ? 443 : 80),
       protocol: url.protocol,
       createdAt: Date.now(),
       lastUsedAt: Date.now(),
@@ -178,16 +180,17 @@ export class RequestPool {
       // 添加到等待队列
       const checkConnection = () => {
         const connections = this.connections.get(key) || []
-        const idleConnection = connections.find(conn => 
-          conn.state === 'idle' && 
-          this.isConnectionValid(conn)
+        const idleConnection = connections.find(conn =>
+          conn.state === 'idle'
+          && this.isConnectionValid(conn),
         )
 
         if (idleConnection) {
           clearTimeout(timeout)
           this.markConnectionActive(idleConnection)
           resolve(idleConnection)
-        } else {
+        }
+        else {
           // 继续等待
           setTimeout(checkConnection, 100)
         }
@@ -217,8 +220,8 @@ export class RequestPool {
     }
 
     // 检查空闲时间
-    if (connection.state === 'idle' && 
-        now - connection.lastUsedAt > this.config.idleTimeout) {
+    if (connection.state === 'idle'
+      && now - connection.lastUsedAt > this.config.idleTimeout) {
       return false
     }
 
@@ -247,18 +250,18 @@ export class RequestPool {
    */
   private trimIdleConnections(key: string): void {
     const connections = this.connections.get(key)
-    if (!connections) return
+    if (!connections)
+      return
 
     const idleConnections = connections.filter(c => c.state === 'idle')
-    
+
     if (idleConnections.length > this.config.maxIdleConnections) {
       // 按最后使用时间排序，关闭最旧的连接
       idleConnections.sort((a, b) => a.lastUsedAt - b.lastUsedAt)
-      
-      const toClose = idleConnections.slice(0, 
-        idleConnections.length - this.config.maxIdleConnections
+
+      const toClose = idleConnections.slice(0, idleConnections.length - this.config.maxIdleConnections,
       )
-      
+
       for (const conn of toClose) {
         this.closeConnection(conn)
       }
@@ -288,7 +291,7 @@ export class RequestPool {
     this.cleanupTimer = setInterval(() => {
       for (const [key, connections] of this.connections.entries()) {
         // 清理无效连接
-        const validConnections = connections.filter(conn => {
+        const validConnections = connections.filter((conn) => {
           if (!this.isConnectionValid(conn)) {
             this.closeConnection(conn)
             return false
@@ -298,7 +301,8 @@ export class RequestPool {
 
         if (validConnections.length === 0) {
           this.connections.delete(key)
-        } else {
+        }
+        else {
           this.connections.set(key, validConnections)
         }
       }

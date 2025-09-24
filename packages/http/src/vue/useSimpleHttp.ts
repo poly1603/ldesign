@@ -1,6 +1,6 @@
 import type { MaybeRef, Ref } from 'vue'
 import type { HttpClientConfig, RequestConfig } from '../types'
-import { computed, ref, unref, watch, onUnmounted, getCurrentInstance } from 'vue'
+import { computed, getCurrentInstance, onUnmounted, ref, unref, watch } from 'vue'
 import { createHttpClient } from '../factory'
 
 /**
@@ -48,14 +48,14 @@ function createSimpleClient(config?: HttpClientConfig) {
   // 为相对URL提供默认的baseURL
   const defaultConfig: HttpClientConfig = {
     baseURL: typeof window !== 'undefined' ? window.location.origin : 'http://localhost',
-    ...config
+    ...config,
   }
   return createHttpClient(defaultConfig)
 }
 
 /**
  * 简化的HTTP GET请求hook
- * 
+ *
  * @example
  * ```ts
  * const { data, loading, error, execute } = useGet('/api/users')
@@ -64,7 +64,7 @@ function createSimpleClient(config?: HttpClientConfig) {
 export function useGet<T = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: SimpleHttpOptions = {}
+  options: SimpleHttpOptions = {},
 ): SimpleHttpReturn<T> {
   const client = createSimpleClient()
   const data = ref<T | null>(null)
@@ -98,14 +98,16 @@ export function useGet<T = any>(
 
       options.onSuccess?.(response.data)
       return response.data
-    } catch (err) {
+    }
+    catch (err) {
       const errorObj = err as Error
       if (errorObj.name !== 'AbortError') {
         error.value = errorObj
         options.onError?.(errorObj)
       }
       return null
-    } finally {
+    }
+    finally {
       loading.value = false
       finished.value = true
       options.onFinally?.()
@@ -151,7 +153,7 @@ export function useGet<T = any>(
 
 /**
  * 简化的HTTP POST请求hook
- * 
+ *
  * @example
  * ```ts
  * const { data, loading, error, execute } = usePost('/api/users')
@@ -161,7 +163,7 @@ export function useGet<T = any>(
 export function usePost<T = any, D = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: SimpleHttpOptions = {}
+  options: SimpleHttpOptions = {},
 ): SimpleHttpReturn<T> & { execute: (data?: D) => Promise<T | null> } {
   const client = createSimpleClient()
   const responseData = ref<T | null>(null)
@@ -195,14 +197,16 @@ export function usePost<T = any, D = any>(
 
       options.onSuccess?.(response.data)
       return response.data
-    } catch (err) {
+    }
+    catch (err) {
       const errorObj = err as Error
       if (errorObj.name !== 'AbortError') {
         error.value = errorObj
         options.onError?.(errorObj)
       }
       return null
-    } finally {
+    }
+    finally {
       loading.value = false
       finished.value = true
       options.onFinally?.()
@@ -247,7 +251,7 @@ export function usePost<T = any, D = any>(
 export function usePut<T = any, D = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: SimpleHttpOptions = {}
+  options: SimpleHttpOptions = {},
 ): SimpleHttpReturn<T> & { execute: (data?: D) => Promise<T | null> } {
   const client = createSimpleClient()
   const responseData = ref<T | null>(null)
@@ -280,14 +284,16 @@ export function usePut<T = any, D = any>(
 
       options.onSuccess?.(response.data)
       return response.data
-    } catch (err) {
+    }
+    catch (err) {
       const errorObj = err as Error
       if (errorObj.name !== 'AbortError') {
         error.value = errorObj
         options.onError?.(errorObj)
       }
       return null
-    } finally {
+    }
+    finally {
       loading.value = false
       finished.value = true
       options.onFinally?.()
@@ -331,7 +337,7 @@ export function usePut<T = any, D = any>(
 export function useDelete<T = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: SimpleHttpOptions = {}
+  options: SimpleHttpOptions = {},
 ): SimpleHttpReturn<T> {
   const client = createSimpleClient()
   const data = ref<T | null>(null)
@@ -364,14 +370,16 @@ export function useDelete<T = any>(
 
       options.onSuccess?.(response.data)
       return response.data
-    } catch (err) {
+    }
+    catch (err) {
       const errorObj = err as Error
       if (errorObj.name !== 'AbortError') {
         error.value = errorObj
         options.onError?.(errorObj)
       }
       return null
-    } finally {
+    }
+    finally {
       loading.value = false
       finished.value = true
       options.onFinally?.()
@@ -415,7 +423,7 @@ export function useDelete<T = any>(
 export function usePatch<T = any, D = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: SimpleHttpOptions = {}
+  options: SimpleHttpOptions = {},
 ): SimpleHttpReturn<T> & { execute: (data?: D) => Promise<T | null> } {
   const client = createSimpleClient()
   const responseData = ref<T | null>(null)
@@ -448,14 +456,16 @@ export function usePatch<T = any, D = any>(
 
       options.onSuccess?.(response.data)
       return response.data
-    } catch (err) {
+    }
+    catch (err) {
       const errorObj = err as Error
       if (errorObj.name !== 'AbortError') {
         error.value = errorObj
         options.onError?.(errorObj)
       }
       return null
-    } finally {
+    }
+    finally {
       loading.value = false
       finished.value = true
       options.onFinally?.()

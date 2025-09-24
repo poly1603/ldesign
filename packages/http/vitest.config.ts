@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitest/config'
 import path from 'node:path'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
@@ -16,12 +16,12 @@ export default defineConfig({
     onConsoleLog: (log, type) => {
       // 过滤掉预期的错误信息和警告
       if (type === 'stderr' && (
-        log.includes('Recovery strategy') ||
-        log.includes('Cache read error') ||
-        log.includes('Cache write error') ||
-        log.includes('Failed to install http plugin') ||
-        log.includes('[Vue warn]') ||
-        log.includes('Invalid engine context')
+        log.includes('Recovery strategy')
+        || log.includes('Cache read error')
+        || log.includes('Cache write error')
+        || log.includes('Failed to install http plugin')
+        || log.includes('[Vue warn]')
+        || log.includes('Invalid engine context')
       )) {
         return false
       }

@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import type { HttpClientConfig, RequestConfig } from '../types'
-import { computed, ref, onUnmounted, reactive } from 'vue'
+import { computed, onUnmounted, reactive, ref } from 'vue'
 import { createHttpClient } from '../factory'
 
 /**
@@ -83,13 +83,13 @@ export interface FormReturn<T> {
 /**
  * 表单管理hook
  * 提供表单数据管理、验证和提交功能
- * 
+ *
  * @example
  * ```ts
  * const { data, submitting, errors, submit, validate } = useForm<User>({
  *   initialData: { name: '', email: '' }
  * })
- * 
+ *
  * // 设置验证规则
  * const rules = {
  *   name: [{ required: true, message: '姓名不能为空' }],
@@ -98,7 +98,7 @@ export interface FormReturn<T> {
  *     { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: '邮箱格式不正确' }
  *   ]
  * }
- * 
+ *
  * // 提交表单
  * const handleSubmit = async () => {
  *   if (validate()) {
@@ -108,10 +108,10 @@ export interface FormReturn<T> {
  * ```
  */
 export function useForm<T extends Record<string, any>>(
-  options: FormOptions<T> = {}
+  options: FormOptions<T> = {},
 ): FormReturn<T> {
   const client = createHttpClient(options.clientConfig)
-  
+
   // 响应式状态
   const data = reactive({ ...options.initialData } as T)
   const submitting = ref(false)
@@ -133,10 +133,11 @@ export function useForm<T extends Record<string, any>>(
    */
   const validateField = (field: keyof T): boolean => {
     const rules = validationRules.value[field as string]
-    if (!rules || rules.length === 0) return true
+    if (!rules || rules.length === 0)
+      return true
 
     const value = (data as any)[field]
-    
+
     for (const rule of rules) {
       // 必填验证
       if (rule.required && (value === undefined || value === null || value === '')) {
@@ -187,17 +188,17 @@ export function useForm<T extends Record<string, any>>(
    */
   const validate = (): boolean => {
     let isFormValid = true
-    
+
     for (const field in validationRules.value) {
       if (!validateField(field)) {
         isFormValid = false
       }
     }
-    
+
     if (!isFormValid && options.onValidationError) {
       options.onValidationError(errors.value)
     }
-    
+
     return isFormValid
   }
 
@@ -226,17 +227,19 @@ export function useForm<T extends Record<string, any>>(
       }
 
       const response = await client.post(url, data, requestConfig)
-      
+
       options.onSuccess?.(response.data, response)
       return response.data
-    } catch (err) {
+    }
+    catch (err) {
       const errorObj = err as Error
       if (errorObj.name !== 'AbortError') {
         error.value = errorObj
         options.onError?.(errorObj)
       }
       throw errorObj
-    } finally {
+    }
+    finally {
       submitting.value = false
     }
   }

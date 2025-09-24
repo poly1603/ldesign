@@ -114,7 +114,7 @@ export class AlovaAdapter extends BaseAdapter {
 
     // 分离URL和查询参数（因为BaseAdapter已经将params合并到URL中）
     let cleanUrl = url
-    let extractedParams = params || {}
+    const extractedParams = params || {}
 
     // 如果URL包含查询参数，提取它们
     const urlParts = url.split('?')
@@ -127,7 +127,7 @@ export class AlovaAdapter extends BaseAdapter {
       urlParams.forEach((value, key) => {
         // 尝试转换数字字符串回数字
         const numValue = Number(value)
-        extractedParams[key] = !isNaN(numValue) && value !== '' ? numValue : value
+        extractedParams[key] = !Number.isNaN(numValue) && value !== '' ? numValue : value
       })
     }
 
@@ -135,7 +135,7 @@ export class AlovaAdapter extends BaseAdapter {
     let fullUrl = cleanUrl
     if (!cleanUrl.startsWith('http') && !cleanUrl.startsWith('//') && config.baseURL) {
       // 只有在明确提供baseURL时才构建完整URL
-      fullUrl = config.baseURL.replace(/\/$/, '') + '/' + cleanUrl.replace(/^\//, '')
+      fullUrl = `${config.baseURL.replace(/\/$/, '')}/${cleanUrl.replace(/^\//, '')}`
     }
 
     // 构建选项对象
@@ -183,7 +183,8 @@ export class AlovaAdapter extends BaseAdapter {
         default:
           throw new Error(`Unsupported HTTP method: ${method}`)
       }
-    } catch (error: any) {
+    }
+    catch (error: any) {
       throw new Error(`Failed to parse URL from ${url}: ${error.message}`)
     }
 

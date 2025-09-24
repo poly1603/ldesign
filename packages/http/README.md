@@ -6,11 +6,11 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![Vue 3](https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D)
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)
-![Test Coverage](https://img.shields.io/badge/Coverage-98.8%25-brightgreen?style=for-the-badge)
+![Test Coverage](https://img.shields.io/badge/Coverage-51.1%25-yellow?style=for-the-badge)
 
 **🚀 现代化、类型安全的 HTTP 客户端库**
 
-_功能强大 • 类型安全 • 开箱即用 • 340+ 测试用例_
+_功能强大 • 类型安全 • 开箱即用 • 372+ 测试用例_
 
 [快速开始](#-快速开始) • [完整文档](./docs) • [API 参考](./docs/api) • [示例项目](./examples)
 
@@ -29,7 +29,7 @@ _功能强大 • 类型安全 • 开箱即用 • 340+ 测试用例_
 🎯 **TypeScript 优先** - 完整类型支持，丰富的类型工具
 🌟 **Vue 3 深度集成** - 专为 Vue 3 设计的 Composition API
 📊 **性能监控** - 内置统计分析和性能监控
-🧪 **测试友好** - 340+ 测试用例，98.8% 测试通过率
+🧪 **测试友好** - 372+ 测试用例，51.1% 代码覆盖率
 
 ## 🚀 快速开始
 

@@ -61,7 +61,7 @@ export class RequestMonitor {
   private metrics: PerformanceMetrics[] = []
   private metricsIndex = 0 // 循环缓冲区索引
   private config: Required<MonitorConfig>
-  private requestMap = new Map<string, { startTime: number; retries: number }>()
+  private requestMap = new Map<string, { startTime: number, retries: number }>()
 
   constructor(config: MonitorConfig = {}) {
     this.config = {
@@ -79,7 +79,8 @@ export class RequestMonitor {
    * 开始监控请求
    */
   startRequest(requestId: string, _config: RequestConfig): void {
-    if (!this.config.enabled) return
+    if (!this.config.enabled)
+      return
 
     this.requestMap.set(requestId, {
       startTime: Date.now(),
@@ -96,10 +97,12 @@ export class RequestMonitor {
     response?: ResponseData<T>,
     error?: Error,
   ): void {
-    if (!this.config.enabled) return
+    if (!this.config.enabled)
+      return
 
     const requestInfo = this.requestMap.get(requestId)
-    if (!requestInfo) return
+    if (!requestInfo)
+      return
 
     const endTime = Date.now()
     const duration = endTime - requestInfo.startTime
@@ -160,7 +163,8 @@ export class RequestMonitor {
     if (this.metrics.length < this.config.maxMetrics) {
       // 缓冲区未满，直接添加
       this.metrics.push(metrics)
-    } else {
+    }
+    else {
       // 缓冲区已满，使用循环覆盖（O(1)操作）
       this.metrics[this.metricsIndex] = metrics
       this.metricsIndex = (this.metricsIndex + 1) % this.config.maxMetrics
@@ -171,7 +175,8 @@ export class RequestMonitor {
    * 获取响应大小
    */
   private getResponseSize<T>(response?: ResponseData<T>): number {
-    if (!response?.data) return 0
+    if (!response?.data)
+      return 0
 
     if (response.data instanceof Blob) {
       return response.data.size
@@ -237,7 +242,8 @@ export class RequestMonitor {
    * 获取百分位数
    */
   private getPercentile(sortedArray: number[], percentile: number): number {
-    if (sortedArray.length === 0) return 0
+    if (sortedArray.length === 0)
+      return 0
     const index = Math.ceil((percentile / 100) * sortedArray.length) - 1
     return sortedArray[Math.max(0, index)]
   }

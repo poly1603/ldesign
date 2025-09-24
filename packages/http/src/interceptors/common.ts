@@ -306,11 +306,14 @@ export function errorHandlingInterceptor(options: any = {}) {
       // 默认错误处理
       if (error.isNetworkError) {
         error.userMessage = '网络连接失败，请检查网络设置'
-      } else if (error.isTimeoutError) {
+      }
+      else if (error.isTimeoutError) {
         error.userMessage = '请求超时，请重试'
-      } else if (error.response?.status >= 500) {
+      }
+      else if (error.response?.status >= 500) {
         error.userMessage = '服务器内部错误'
-      } else if (error.response?.status >= 400) {
+      }
+      else if (error.response?.status >= 400) {
         error.userMessage = `请求失败 (${error.response.status})`
       }
 

@@ -13,7 +13,8 @@ export class AxiosAdapter extends BaseAdapter {
 
     if (axiosInstance) {
       this.axios = axiosInstance
-    } else {
+    }
+    else {
       try {
         // 动态导入 axios
         // eslint-disable-next-line ts/no-require-imports
@@ -66,8 +67,8 @@ export class AxiosAdapter extends BaseAdapter {
   private convertToAxiosConfig(config: RequestConfig): any {
     // 分离URL和查询参数（因为BaseAdapter已经将params合并到URL中）
     let cleanUrl = config.url || ''
-    let extractedParams = config.params || {}
-    let baseURL = config.baseURL
+    const extractedParams = config.params || {}
+    const baseURL = config.baseURL
 
     // 如果URL包含查询参数，提取它们
     const urlParts = cleanUrl.split('?')
@@ -80,7 +81,7 @@ export class AxiosAdapter extends BaseAdapter {
       urlParams.forEach((value, key) => {
         // 尝试转换数字字符串回数字
         const numValue = Number(value)
-        extractedParams[key] = !isNaN(numValue) && value !== '' ? numValue : value
+        extractedParams[key] = !Number.isNaN(numValue) && value !== '' ? numValue : value
       })
     }
 
@@ -89,7 +90,7 @@ export class AxiosAdapter extends BaseAdapter {
       cleanUrl = cleanUrl.substring(baseURL.length)
       // 确保URL以/开头
       if (!cleanUrl.startsWith('/')) {
-        cleanUrl = '/' + cleanUrl
+        cleanUrl = `/${cleanUrl}`
       }
     }
 

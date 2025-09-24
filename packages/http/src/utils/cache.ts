@@ -7,15 +7,39 @@ import type {
 
 /**
  * 缓存项接口
+ *
+ * 定义缓存中存储的数据项结构
  */
 interface CacheItem<T = any> {
+  /** 缓存的响应数据 */
   data: ResponseData<T>
+  /** 缓存创建时间戳 */
   timestamp: number
+  /** 生存时间（毫秒） */
   ttl: number
 }
 
 /**
  * 内存缓存存储实现
+ *
+ * 基于 Map 的内存缓存存储，支持：
+ * - TTL（生存时间）管理
+ * - 自动过期清理
+ * - 定时器管理
+ *
+ * @example
+ * ```typescript
+ * const storage = new MemoryCacheStorage()
+ *
+ * // 存储数据，5分钟后过期
+ * await storage.set('user:123', userData, 5 * 60 * 1000)
+ *
+ * // 获取数据
+ * const cached = await storage.get('user:123')
+ *
+ * // 删除数据
+ * await storage.delete('user:123')
+ * ```
  */
 export class MemoryCacheStorage implements CacheStorage {
   private cache = new Map<string, CacheItem>()
@@ -212,7 +236,8 @@ export class CacheManager {
     // 更新统计信息
     if (result) {
       this.stats.hits++
-    } else {
+    }
+    else {
       this.stats.misses++
     }
 
@@ -287,13 +312,15 @@ export class CacheManager {
   }
 
   /**
-   * 获取缓存的键（带缓存优化）
+   * 获取缓存的键（性能优化版本）
    */
   protected getCachedKey(config: RequestConfig): string {
-    // 创建一个简单的配置标识符用于缓存查找
-    const configId = `${config.method || 'GET'}:${config.url}:${JSON.stringify(
-      config.params || {},
-    )}:${JSON.stringify(config.data || {})}`
+    // 优化：使用更快的配置标识符生成方式，避免 JSON.stringify
+    const method = config.method || 'GET'
+    const url = config.url || ''
+    const paramsStr = config.params ? this.fastStringify(config.params) : ''
+    const dataStr = config.data ? this.fastStringify(config.data) : ''
+    const configId = `${method}:${url}:${paramsStr}:${dataStr}`
 
     if (this.keyCache.has(configId)) {
       return this.keyCache.get(configId)!
@@ -311,6 +338,29 @@ export class CacheManager {
 
     this.keyCache.set(configId, key)
     return key
+  }
+
+  /**
+   * 快速字符串化对象（比 JSON.stringify 更快）
+   */
+  private fastStringify(obj: any): string {
+    if (obj === null || obj === undefined) {
+      return ''
+    }
+    if (typeof obj === 'string') {
+      return obj
+    }
+    if (typeof obj === 'number' || typeof obj === 'boolean') {
+      return String(obj)
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.fastStringify(item)).join(',')
+    }
+    if (typeof obj === 'object') {
+      const keys = Object.keys(obj).sort()
+      return keys.map(key => `${key}:${this.fastStringify(obj[key])}`).join('|')
+    }
+    return String(obj)
   }
 
   /**
@@ -504,7 +554,8 @@ export class AdvancedCacheManager extends CacheManager {
     // 批量删除优化：如果存储支持批量删除，使用批量操作
     if (this.storage.deleteBatch) {
       await this.storage.deleteBatch(Array.from(keys))
-    } else {
+    }
+    else {
       // 并行删除以提高性能
       await Promise.all(Array.from(keys).map(key => this.storage.delete(key)))
     }
@@ -636,8 +687,6 @@ export class AdvancedCacheManager extends CacheManager {
       this.stats.recentKeys = this.stats.recentKeys.slice(0, 10)
     }
   }
-
-
 
   /**
    * 更新标签索引

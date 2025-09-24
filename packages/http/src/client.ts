@@ -16,32 +16,58 @@ import type {
   DownloadConfig,
   DownloadResult,
 } from './utils/download'
+import type { Priority } from './utils/priority'
 import type {
   UploadConfig,
   UploadResult,
 } from './utils/upload'
-import type { Priority } from './utils/priority'
 import { InterceptorManagerImpl } from './interceptors/manager'
+import { generateId } from './utils'
 import { CacheManager } from './utils/cache'
 import { globalCancelManager } from './utils/cancel'
 import { ConcurrencyManager } from './utils/concurrency'
-import { RetryManager } from './utils/error'
-import { RequestMonitor } from './utils/monitor'
-import { PriorityQueue, determinePriority } from './utils/priority'
-// 静态导入工具函数，避免动态导入冲突
-import { validateFile, createUploadFormData, ProgressCalculator } from './utils/upload'
 import {
+  DownloadProgressCalculator,
   getFilenameFromResponse,
   getFilenameFromURL,
   getMimeTypeFromFilename,
   saveFileToLocal,
-  DownloadProgressCalculator
 } from './utils/download'
+import { RetryManager } from './utils/error'
+import { RequestMonitor } from './utils/monitor'
 import { RequestPool } from './utils/pool'
-import { generateId } from './utils'
+import { determinePriority, PriorityQueue } from './utils/priority'
+// 静态导入工具函数，避免动态导入冲突
+import { createUploadFormData, ProgressCalculator, validateFile } from './utils/upload'
 
 /**
  * HTTP 客户端实现
+ *
+ * 提供完整的 HTTP 请求功能，包括：
+ * - 多适配器支持（Fetch、Axios、Alova）
+ * - 智能缓存系统
+ * - 自动重试机制
+ * - 并发控制和请求去重
+ * - 拦截器链
+ * - 上传/下载功能
+ * - 错误处理和恢复
+ * - 性能监控
+ *
+ * @example
+ * ```typescript
+ * const client = new HttpClientImpl({
+ *   baseURL: 'https://api.example.com',
+ *   timeout: 10000,
+ *   cache: { enabled: true },
+ *   retry: { enabled: true, maxAttempts: 3 }
+ * }, adapter)
+ *
+ * // 发送 GET 请求
+ * const response = await client.get<User[]>('/users')
+ *
+ * // 发送 POST 请求
+ * const newUser = await client.post<User>('/users', { name: 'John' })
+ * ```
  */
 export class HttpClientImpl implements HttpClient {
   private config: HttpClientConfig
@@ -122,7 +148,8 @@ export class HttpClientImpl implements HttpClient {
             const response = await this.executeRequestWithRetry<T>(mergedConfig, requestId)
             this.monitor.endRequest(requestId, mergedConfig, response)
             return response
-          } catch (error) {
+          }
+          catch (error) {
             this.monitor.endRequest(requestId, mergedConfig, undefined, error as Error)
             throw error
           }
@@ -136,7 +163,8 @@ export class HttpClientImpl implements HttpClient {
       const response = await this.executeRequestWithRetry<T>(mergedConfig, requestId)
       this.monitor.endRequest(requestId, mergedConfig, response)
       return response
-    } catch (error) {
+    }
+    catch (error) {
       this.monitor.endRequest(requestId, mergedConfig, undefined, error as Error)
       throw error
     }
@@ -363,7 +391,7 @@ export class HttpClientImpl implements HttpClient {
    */
   addRequestInterceptor(
     fulfilled: (config: RequestConfig) => RequestConfig | Promise<RequestConfig>,
-    rejected?: (error: HttpError) => HttpError | Promise<HttpError>
+    rejected?: (error: HttpError) => HttpError | Promise<HttpError>,
   ): number {
     return this.interceptors.request.use(fulfilled, rejected)
   }
@@ -373,7 +401,7 @@ export class HttpClientImpl implements HttpClient {
    */
   addResponseInterceptor<T = any>(
     fulfilled: (response: ResponseData<T>) => ResponseData<T> | Promise<ResponseData<T>>,
-    rejected?: (error: HttpError) => HttpError | Promise<HttpError>
+    rejected?: (error: HttpError) => HttpError | Promise<HttpError>,
   ): number {
     return this.interceptors.response.use(fulfilled, rejected)
   }
@@ -574,13 +602,13 @@ export class HttpClientImpl implements HttpClient {
       },
       onUploadProgress: config.onProgress
         ? (progressEvent: any) => {
-          const progress = progressCalculator.calculate(
-            progressEvent.loaded,
-            progressEvent.total,
-            file,
-          )
-          config.onProgress!(progress)
-        }
+            const progress = progressCalculator.calculate(
+              progressEvent.loaded,
+              progressEvent.total,
+              file,
+            )
+            config.onProgress!(progress)
+          }
         : undefined,
     }
 
@@ -636,12 +664,12 @@ export class HttpClientImpl implements HttpClient {
       },
       onUploadProgress: config.onProgress
         ? (progressEvent: any) => {
-          const progress = progressCalculator.calculate(
-            progressEvent.loaded,
-            progressEvent.total,
-          )
-          config.onProgress!(progress)
-        }
+            const progress = progressCalculator.calculate(
+              progressEvent.loaded,
+              progressEvent.total,
+            )
+            config.onProgress!(progress)
+          }
         : undefined,
     }
 
@@ -676,13 +704,13 @@ export class HttpClientImpl implements HttpClient {
       responseType: 'blob',
       onDownloadProgress: config.onProgress
         ? (progressEvent: any) => {
-          const progress = progressCalculator.calculate(
-            progressEvent.loaded,
-            progressEvent.total,
-            config.filename,
-          )
-          config.onProgress!(progress)
-        }
+            const progress = progressCalculator.calculate(
+              progressEvent.loaded,
+              progressEvent.total,
+              config.filename,
+            )
+            config.onProgress!(progress)
+          }
         : undefined,
     }
 

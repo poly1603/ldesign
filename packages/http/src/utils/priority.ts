@@ -9,11 +9,11 @@ import type { RequestConfig } from '../types'
  * 请求优先级级别
  */
 export enum Priority {
-  CRITICAL = 0,  // 关键请求（最高优先级）
-  HIGH = 1,      // 高优先级
-  NORMAL = 2,    // 正常优先级
-  LOW = 3,       // 低优先级
-  IDLE = 4,      // 空闲时执行
+  CRITICAL = 0, // 关键请求（最高优先级）
+  HIGH = 1, // 高优先级
+  NORMAL = 2, // 正常优先级
+  LOW = 3, // 低优先级
+  IDLE = 4, // 空闲时执行
 }
 
 /**
@@ -69,6 +69,7 @@ export class PriorityQueue<T = any> {
     waitTimes: [] as number[],
     processTimes: [] as number[],
   }
+
   private processing = false
   private boostTimer?: NodeJS.Timeout
 
@@ -147,12 +148,14 @@ export class PriorityQueue<T = any> {
    * 处理队列
    */
   private async processQueue(): Promise<void> {
-    if (this.processing) return
+    if (this.processing)
+      return
     this.processing = true
 
     while (this.active.size < this.config.maxConcurrent) {
       const item = this.getNextItem()
-      if (!item) break
+      if (!item)
+        break
 
       this.active.add(item.id)
       this.executeItem(item)
@@ -177,10 +180,12 @@ export class PriorityQueue<T = any> {
 
       const processTime = Date.now() - startTime
       this.stats.processTimes.push(processTime)
-    } catch (error) {
+    }
+    catch (error) {
       item.reject(error)
       this.stats.totalFailed++
-    } finally {
+    }
+    finally {
       this.active.delete(item.id)
       // 继续处理队列
       this.processQueue()
@@ -206,7 +211,8 @@ export class PriorityQueue<T = any> {
    */
   private removeItem(item: PriorityItem<T>): boolean {
     const priorityQueue = this.queue.get(item.priority)
-    if (!priorityQueue) return false
+    if (!priorityQueue)
+      return false
 
     const index = priorityQueue.findIndex(i => i.id === item.id)
     if (index !== -1) {
@@ -225,7 +231,8 @@ export class PriorityQueue<T = any> {
 
       // 遍历所有队列，提升等待时间过长的请求
       for (const [priority, items] of this.queue.entries()) {
-        if (priority === Priority.CRITICAL) continue // 已经是最高优先级
+        if (priority === Priority.CRITICAL)
+          continue // 已经是最高优先级
 
         const itemsToBoost = items.filter(
           item => now - item.timestamp > this.config.boostInterval,
@@ -368,7 +375,7 @@ export function determinePriority(config: RequestConfig): Priority {
 
   // 根据URL模式判断
   const url = config.url || ''
-  
+
   // 认证相关请求 - 关键
   if (url.includes('/auth') || url.includes('/login') || url.includes('/token')) {
     return Priority.CRITICAL

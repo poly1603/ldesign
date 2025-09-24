@@ -1,5 +1,8 @@
 // 适配器导出
 
+// 导入用于创建默认实例
+import { createHttpClient } from './factory'
+
 export {
   AdapterFactory,
   AlovaAdapter,
@@ -23,6 +26,18 @@ export {
 
 // Engine 插件类型导出
 export type { HttpEnginePluginOptions } from './engine'
+
+// 重新导出工厂函数
+export { createHttpClient } from './factory'
+
+// 功能中间件导出
+export {
+  withCache,
+} from './features/cache'
+
+export {
+  withRetry,
+} from './features/retry'
 
 // 拦截器导出
 export {
@@ -128,15 +143,6 @@ export {
   MemoryCacheStorage,
 } from './utils/cache'
 
-// 功能中间件导出
-export {
-  withCache,
-} from './features/cache'
-
-export {
-  withRetry,
-} from './features/retry'
-
 // 导出缓存相关类型
 export type {
   AdvancedCacheConfig,
@@ -198,6 +204,12 @@ export {
   TimeoutManager,
 } from './utils/error'
 
+// 导出错误处理相关类型
+export type {
+  ErrorRecoveryStrategy,
+  ErrorStats,
+} from './utils/error'
+
 // 性能监控导出
 export {
   createRequestMonitor,
@@ -210,20 +222,6 @@ export type {
   PerformanceMetrics,
   PerformanceStats,
 } from './utils/monitor'
-
-// 优先级队列导出
-export {
-  createPriorityQueue,
-  determinePriority,
-  Priority,
-  PriorityQueue,
-} from './utils/priority'
-
-export type {
-  PriorityItem,
-  PriorityQueueConfig,
-  PriorityQueueStats,
-} from './utils/priority'
 
 // 连接池导出
 export {
@@ -238,11 +236,19 @@ export type {
   PoolStats,
 } from './utils/pool'
 
-// 导出错误处理相关类型
+// 优先级队列导出
+export {
+  createPriorityQueue,
+  determinePriority,
+  Priority,
+  PriorityQueue,
+} from './utils/priority'
+
 export type {
-  ErrorRecoveryStrategy,
-  ErrorStats,
-} from './utils/error'
+  PriorityItem,
+  PriorityQueueConfig,
+  PriorityQueueStats,
+} from './utils/priority'
 
 // 文件上传下载导出
 export {
@@ -264,12 +270,6 @@ export {
 
 // Vue 相关导出
 export * from './vue'
-
-// 重新导出工厂函数
-export { createHttpClient } from './factory'
-
-// 导入用于创建默认实例
-import { createHttpClient } from './factory'
 
 /**
  * 创建默认的 HTTP 客户端实例

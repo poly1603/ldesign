@@ -427,7 +427,8 @@ export function withCache(config: CacheMiddlewareConfig = {}) {
       if (cached && Date.now() - cached.timestamp < cached.ttl) {
         return cached.data
       }
-    } catch (error) {
+    }
+    catch (error) {
       // 缓存读取错误，继续执行请求
       console.warn('Cache read error:', error)
     }
@@ -444,7 +445,8 @@ export function withCache(config: CacheMiddlewareConfig = {}) {
           ttl: finalConfig.ttl,
           size: JSON.stringify(response).length,
         })
-      } catch (error) {
+      }
+      catch (error) {
         // 缓存写入错误，不影响响应
         console.warn('Cache write error:', error)
       }

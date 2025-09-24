@@ -1,58 +1,124 @@
 import type { HttpError, RequestConfig } from '../types'
 
 /**
- * 合并配置对象
+ * 合并配置对象（性能优化版本）
+ *
+ * 将默认配置和自定义配置合并，自定义配置会覆盖默认配置。
+ * 对于 headers 和 params 对象，会进行深度合并。
+ *
+ * @param defaultConfig - 默认配置对象
+ * @param customConfig - 自定义配置对象，可选
+ * @returns 合并后的配置对象
+ *
+ * @example
+ * ```typescript
+ * const defaultConfig = {
+ *   timeout: 5000,
+ *   headers: { 'Content-Type': 'application/json' }
+ * }
+ *
+ * const customConfig = {
+ *   timeout: 10000,
+ *   headers: { 'Authorization': 'Bearer token' }
+ * }
+ *
+ * const merged = mergeConfig(defaultConfig, customConfig)
+ * // 结果: {
+ * //   timeout: 10000,
+ * //   headers: {
+ * //     'Content-Type': 'application/json',
+ * //     'Authorization': 'Bearer token'
+ * //   }
+ * // }
+ * ```
  */
 export function mergeConfig(
   defaultConfig: RequestConfig,
   customConfig: RequestConfig = {},
 ): RequestConfig {
+  // 如果自定义配置为空，直接返回默认配置的浅拷贝
+  if (!customConfig || Object.keys(customConfig).length === 0) {
+    return { ...defaultConfig }
+  }
+
   const merged: RequestConfig = { ...defaultConfig }
 
-  // 合并基础属性
-  Object.keys(customConfig).forEach((key) => {
-    const value = customConfig[key as keyof RequestConfig]
-    if (value !== undefined) {
-      if (key === 'headers' && typeof value === 'object' && value !== null) {
-        merged.headers = { ...merged.headers, ...value }
-      }
-      else if (
-        key === 'params'
-        && typeof value === 'object'
-        && value !== null
-      ) {
-        merged.params = { ...merged.params, ...value }
-      }
-      else {
-        ;(merged as any)[key] = value
+  // 优化：直接遍历对象属性，避免 Object.keys() 的额外开销
+  for (const key in customConfig) {
+    if (Object.prototype.hasOwnProperty.call(customConfig, key)) {
+      const value = customConfig[key as keyof RequestConfig]
+      if (value !== undefined) {
+        if (key === 'headers' && typeof value === 'object' && value !== null) {
+          merged.headers = { ...merged.headers, ...value }
+        }
+        else if (
+          key === 'params'
+          && typeof value === 'object'
+          && value !== null
+        ) {
+          merged.params = { ...merged.params, ...value }
+        }
+        else {
+          ;(merged as any)[key] = value
+        }
       }
     }
-  })
+  }
 
   return merged
 }
 
 /**
- * 构建查询字符串
+ * 构建查询字符串（性能优化版本）
+ *
+ * 将参数对象转换为 URL 查询字符串格式。
+ * 支持数组值、null/undefined 值过滤。
+ *
+ * @param params - 参数对象
+ * @returns URL 查询字符串，不包含前导 '?'
+ *
+ * @example
+ * ```typescript
+ * const params = {
+ *   name: 'John',
+ *   age: 30,
+ *   tags: ['developer', 'typescript'],
+ *   active: true,
+ *   deleted: null // 会被忽略
+ * }
+ *
+ * const queryString = buildQueryString(params)
+ * // 结果: "name=John&age=30&tags=developer&tags=typescript&active=true"
+ * ```
  */
 export function buildQueryString(params: Record<string, any>): string {
-  const searchParams = new URLSearchParams()
+  if (!params || Object.keys(params).length === 0) {
+    return ''
+  }
 
-  Object.keys(params).forEach((key) => {
-    const value = params[key]
-    if (value !== null && value !== undefined) {
-      if (Array.isArray(value)) {
-        value.forEach((item) => {
-          searchParams.append(key, String(item))
-        })
-      }
-      else {
-        searchParams.append(key, String(value))
+  const parts: string[] = []
+
+  // 优化：直接遍历对象属性，避免创建 URLSearchParams 实例的开销
+  for (const key in params) {
+    if (Object.prototype.hasOwnProperty.call(params, key)) {
+      const value = params[key]
+      if (value !== null && value !== undefined) {
+        const encodedKey = encodeURIComponent(key)
+        if (Array.isArray(value)) {
+          for (let i = 0; i < value.length; i++) {
+            const encodedValue = encodeURIComponent(String(value[i])).replace(/%20/g, '+')
+            parts.push(`${encodedKey}=${encodedValue}`)
+          }
+        }
+        else {
+          const encodedValue = encodeURIComponent(String(value)).replace(/%20/g, '+')
+          parts.push(`${encodedKey}=${encodedValue}`)
+        }
       }
     }
-  })
+  }
 
-  return searchParams.toString()
+  return parts.join('&')
 }
 
 /**
@@ -224,43 +290,48 @@ export const ErrorClassifier = {
    * 判断是否为网络错误
    */
   isNetworkError: (error: any): boolean => {
-    return error?.isNetworkError ||
-           error?.name === 'NetworkError' ||
-           error?.code === 'NETWORK_ERROR' ||
-           (!error?.response && error?.message?.includes('network'))
+    return error?.isNetworkError
+      || error?.name === 'NetworkError'
+      || error?.code === 'NETWORK_ERROR'
+      || (!error?.response && error?.message?.includes('network'))
   },
 
   /**
    * 判断是否为超时错误
    */
   isTimeoutError: (error: any): boolean => {
-    return error?.isTimeoutError ||
-           error?.name === 'TimeoutError' ||
-           error?.code === 'TIMEOUT' ||
-           error?.message?.includes('timeout')
+    return error?.isTimeoutError
+      || error?.name === 'TimeoutError'
+      || error?.code === 'TIMEOUT'
+      || error?.message?.includes('timeout')
   },
 
   /**
    * 判断是否为取消错误
    */
   isCancelError: (error: any): boolean => {
-    return error?.isCancelError ||
-           error?.name === 'AbortError' ||
-           error?.code === 'CANCELED' ||
-           error?.message?.includes('aborted')
+    return error?.isCancelError
+      || error?.name === 'AbortError'
+      || error?.code === 'CANCELED'
+      || error?.message?.includes('aborted')
   },
 
   /**
    * 获取错误类型
    */
   getErrorType: (error: any): string => {
-    if (ErrorClassifier.isNetworkError(error)) return 'network'
-    if (ErrorClassifier.isTimeoutError(error)) return 'timeout'
-    if (ErrorClassifier.isCancelError(error)) return 'cancel'
+    if (ErrorClassifier.isNetworkError(error))
+      return 'network'
+    if (ErrorClassifier.isTimeoutError(error))
+      return 'timeout'
+    if (ErrorClassifier.isCancelError(error))
+      return 'cancel'
     if (error?.response?.status) {
       const status = error.response.status
-      if (HttpStatus.isClientError(status)) return 'client'
-      if (HttpStatus.isServerError(status)) return 'server'
+      if (HttpStatus.isClientError(status))
+        return 'client'
+      if (HttpStatus.isServerError(status))
+        return 'server'
     }
     return 'unknown'
   },
@@ -276,8 +347,8 @@ export const ErrorClassifier = {
       cancel: '请求已取消',
       client: `请求失败 (${error?.response?.status || '客户端错误'})`,
       server: '服务器内部错误，请稍后重试',
-      unknown: '未知错误，请重试'
+      unknown: '未知错误，请重试',
     }
     return messages[type as keyof typeof messages] || messages.unknown
-  }
+  },
 } as const

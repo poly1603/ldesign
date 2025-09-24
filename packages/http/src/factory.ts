@@ -1,6 +1,6 @@
 import type { HttpClientConfig } from './types'
-import { HttpClientImpl } from './client'
 import { createAdapter } from './adapters'
+import { HttpClientImpl } from './client'
 
 /**
  * 创建 HTTP 客户端实例

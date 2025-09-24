@@ -85,16 +85,16 @@ export function createHttpEnginePlugin(
             // 创建或使用提供的 HTTP 客户端
             const httpClient
               = providedClient
-              || (() => {
-                const adapter = createAdapter(clientConfig.adapter)
-                return new HttpClientImpl(
-                  {
-                    ...clientConfig,
-                    ...globalConfig,
-                  },
-                  adapter,
-                )
-              })()
+                || (() => {
+                  const adapter = createAdapter(clientConfig.adapter)
+                  return new HttpClientImpl(
+                    {
+                      ...clientConfig,
+                      ...globalConfig,
+                    },
+                    adapter,
+                  )
+                })()
 
             // 创建HTTP方法的快捷方式
             const httpMethods = {
@@ -115,7 +115,8 @@ export function createHttpEnginePlugin(
                 vueApp.config.globalProperties.$http = httpMethods
                 vueApp.config.globalProperties.$httpClient = httpClient
               }
-            } catch (error) {
+            }
+            catch (error) {
               console.warn('Failed to register global properties:', error)
             }
 
@@ -125,14 +126,16 @@ export function createHttpEnginePlugin(
                 vueApp.provide('http', httpMethods)
                 vueApp.provide('httpClient', httpClient)
               }
-            } catch (error) {
+            }
+            catch (error) {
               console.warn('Failed to provide dependencies:', error)
             }
           }
 
           // 直接执行安装
           await performInstall()
-        } else {
+        }
+        else {
           // 从上下文中获取引擎实例（引擎模式）
           const engine = context.engine || context
 
@@ -155,16 +158,16 @@ export function createHttpEnginePlugin(
             // 创建或使用提供的 HTTP 客户端
             const httpClient
               = providedClient
-              || (() => {
-                const adapter = createAdapter(clientConfig.adapter)
-                return new HttpClientImpl(
-                  {
-                    ...clientConfig,
-                    ...globalConfig,
-                  },
-                  adapter,
-                )
-              })()
+                || (() => {
+                  const adapter = createAdapter(clientConfig.adapter)
+                  return new HttpClientImpl(
+                    {
+                      ...clientConfig,
+                      ...globalConfig,
+                    },
+                    adapter,
+                  )
+                })()
 
             // 安装 HTTP Vue 插件
             vueApp.use(HttpPlugin, {
@@ -214,7 +217,8 @@ export function createHttpEnginePlugin(
                   }
                   await performInstall()
                   resolve()
-                } catch (error) {
+                }
+                catch (error) {
                   if (engine.logger) {
                     engine.logger.error(`[HTTP Plugin] Failed to install after app creation:`, error)
                   }
@@ -262,7 +266,8 @@ export function createHttpEnginePlugin(
         const engine = context.engine || context
         if (engine && engine.logger) {
           engine.logger.error(`Failed to uninstall ${name} plugin:`, error)
-        } else {
+        }
+        else {
           console.error(`Failed to uninstall ${name} plugin:`, error)
         }
         throw error
