@@ -1,4 +1,4 @@
-import { useEffect, type RefObject } from 'react'
+import { type RefObject, useEffect } from 'react'
 
 export interface UseIntersectionOptions {
   root?: Element | null
@@ -12,7 +12,8 @@ export function useIntersectionObserver(
   options: UseIntersectionOptions = {},
 ) {
   useEffect(() => {
-    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') return
+    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined')
+      return
     const root = options.root ?? null
     const rootMargin = options.rootMargin ?? '0px'
     const threshold = options.threshold ?? 0
@@ -22,7 +23,8 @@ export function useIntersectionObserver(
     }, { root, rootMargin, threshold })
 
     const el = target.current
-    if (el) obs.observe(el)
+    if (el)
+      obs.observe(el)
     return () => obs.disconnect()
   }, [target, options.root, options.rootMargin, options.threshold, onIntersect])
 }

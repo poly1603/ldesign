@@ -14,14 +14,16 @@ import type {
   DebounceManager,
   DeduplicationManager,
 } from '../types'
+import type { ErrorReporter } from '../utils/ErrorReporter'
+import type { PerformanceMonitor } from '../utils/PerformanceMonitor'
 import { createHttpClient } from '@ldesign/http'
+import { ApiError, ApiErrorFactory } from '../utils/ApiError'
 import { CacheManager } from '../utils/CacheManager'
 import { DebounceManagerImpl } from '../utils/DebounceManager'
 import { DeduplicationManagerImpl } from '../utils/DeduplicationManager'
+import { getGlobalErrorReporter } from '../utils/ErrorReporter'
+import { getGlobalPerformanceMonitor } from '../utils/PerformanceMonitor'
 import { RequestQueueManager } from '../utils/RequestQueue'
-import { ApiError, ApiErrorFactory, ApiErrorType } from '../utils/ApiError'
-import { ErrorReporter, getGlobalErrorReporter } from '../utils/ErrorReporter'
-import { PerformanceMonitor, getGlobalPerformanceMonitor } from '../utils/PerformanceMonitor'
 import { version as libVersion } from '../version'
 
 /**
@@ -56,7 +58,7 @@ export class ApiEngineImpl implements ApiEngine {
   private destroyed = false
 
   /** 断路器状态 */
-  private readonly circuitStates = new Map<string, { state: 'closed' | 'open' | 'half-open'; failureCount: number; successCount: number; nextTryAt: number }>()
+  private readonly circuitStates = new Map<string, { state: 'closed' | 'open' | 'half-open', failureCount: number, successCount: number, nextTryAt: number }>()
 
   /** 错误报告器 */
   private errorReporter: ErrorReporter | null = null
@@ -338,7 +340,8 @@ export class ApiEngineImpl implements ApiEngine {
               concurrency: effectiveQueue.concurrency ?? 5,
               maxQueue: effectiveQueue.maxQueue ?? 0,
             })
-          } else {
+          }
+          else {
             this.requestQueueManager.updateConfig({
               concurrency: effectiveQueue.concurrency,
               maxQueue: effectiveQueue.maxQueue,
@@ -501,7 +504,7 @@ export class ApiEngineImpl implements ApiEngine {
             const baseDelay = retryConfig.delay || 0
             let delay = baseDelay
             if (retryConfig.backoff === 'exponential') {
-              delay = baseDelay * Math.pow(2, attempt)
+              delay = baseDelay * 2 ** attempt
               if (retryConfig.maxDelay) {
                 delay = Math.min(delay, retryConfig.maxDelay)
               }

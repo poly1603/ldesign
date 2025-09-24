@@ -64,7 +64,7 @@ export interface UseMutationOptions<TResult = unknown, TVars = unknown> extends 
     /** 内置快照策略：'shallow' | 'deep'（当未提供 snapshot/restore 且提供 target 时生效） */
     snapshotStrategy?: 'shallow' | 'deep'
     /** 目标读写器（与 snapshotStrategy 配合使用） */
-    target?: { get: () => unknown; set: (v: unknown) => void }
+    target?: { get: () => unknown, set: (v: unknown) => void }
   }
   /** 是否在进行中时拒绝新的 mutate 调用（默认 false） */
   lockWhilePending?: boolean
@@ -97,49 +97,59 @@ export function useMutation<TResult = unknown, TVars = unknown>(
 
       // onMutate 回滚
       const maybeRollback = options.onMutate?.(variables)
-      if (typeof maybeRollback === 'function') rollbacks.push(maybeRollback)
+      if (typeof maybeRollback === 'function')
+        rollbacks.push(maybeRollback)
 
       // snapshot/restore 回滚（显式）
       if (options.optimistic?.snapshot && options.optimistic?.restore) {
         const snap = options.optimistic.snapshot()
         rollbacks.push(() => {
-          try { options.optimistic!.restore!(snap) } catch {}
+          try { options.optimistic!.restore!(snap) }
+          catch {}
         })
       }
       // snapshotStrategy + target（内置）
       else if (options.optimistic?.target && options.optimistic?.snapshotStrategy) {
         const clone = (val: unknown) => {
           if (options.optimistic!.snapshotStrategy === 'shallow') {
-            if (Array.isArray(val)) return (val as unknown[]).slice()
-            if (val && typeof val === 'object') return { ...(val as Record<string, unknown>) }
+            if (Array.isArray(val))
+              return (val as unknown[]).slice()
+            if (val && typeof val === 'object')
+              return { ...(val as Record<string, unknown>) }
             return val
           }
           // deep
           try {
             // @ts-ignore structuredClone may not exist in some env
-            if (typeof structuredClone === 'function') return structuredClone(val)
-          } catch {}
+            if (typeof structuredClone === 'function')
+              return structuredClone(val)
+          }
+          catch {}
           try {
             return JSON.parse(JSON.stringify(val))
-          } catch {
+          }
+          catch {
             return val
           }
         }
         const snap = clone(options.optimistic.target.get())
         rollbacks.push(() => {
-          try { options.optimistic!.target!.set(snap) } catch {}
+          try { options.optimistic!.target!.set(snap) }
+          catch {}
         })
       }
 
       // apply 回滚
       const optimisticRollback = options.optimistic?.apply?.(variables)
-      if (typeof optimisticRollback === 'function') rollbacks.push(optimisticRollback)
+      if (typeof optimisticRollback === 'function')
+        rollbacks.push(optimisticRollback)
 
       if (rollbacks.length > 0) {
         rollbackFn = () => {
           // 逆序回滚
           for (let i = rollbacks.length - 1; i >= 0; i--) {
-            try { rollbacks[i]() } catch {}
+            try { rollbacks[i]() }
+            catch {}
           }
         }
       }
@@ -164,15 +174,18 @@ export function useMutation<TResult = unknown, TVars = unknown>(
     }
     catch (err) {
       const e = err instanceof ApiError ? err : (err instanceof Error ? err : new Error(String(err)))
-      const apiError = e instanceof ApiError ? e : ApiErrorFactory.fromUnknownError(e, {
-        methodName,
-        params: variables,
-        timestamp: Date.now()
-      })
+      const apiError = e instanceof ApiError
+        ? e
+        : ApiErrorFactory.fromUnknownError(e, {
+            methodName,
+            params: variables,
+            timestamp: Date.now(),
+          })
       error.value = apiError
       options.onError?.(apiError, variables, rollbackFn)
       if (rollbackFn && (options.optimistic?.rollbackOnError ?? true)) {
-        try { rollbackFn() } catch {}
+        try { rollbackFn() }
+        catch {}
       }
       throw apiError
     }
@@ -371,17 +384,19 @@ export function useApiCall<T = unknown>(
         const cancelError = ApiErrorFactory.fromNetworkError(new Error('Request cancelled'), {
           methodName,
           params,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
         return Promise.reject(cancelError)
       }
 
       const e = err instanceof ApiError ? err : (err instanceof Error ? err : new Error(String(err)))
-      const apiError = e instanceof ApiError ? e : ApiErrorFactory.fromUnknownError(e, {
-        methodName,
-        params,
-        timestamp: Date.now()
-      })
+      const apiError = e instanceof ApiError
+        ? e
+        : ApiErrorFactory.fromUnknownError(e, {
+            methodName,
+            params,
+            timestamp: Date.now(),
+          })
       error.value = apiError
 
       if (options.onError) {
@@ -454,13 +469,14 @@ export function useApiCall<T = unknown>(
  */
 export function useApiPolling<T = unknown>(
   methodName: string,
-  options: UseApiCallOptions<T> & { interval: number; params?: unknown; autoStart?: boolean } = { interval: 30000 },
+  options: UseApiCallOptions<T> & { interval: number, params?: unknown, autoStart?: boolean } = { interval: 30000 },
 ) {
   const state = useApiCall<T>(methodName, { ...options, immediate: false })
   let timer: ReturnType<typeof setInterval> | null = null
 
   const start = () => {
-    if (timer) return
+    if (timer)
+      return
     // 立即执行一次
     state.execute(options.params, options).catch(() => {})
     timer = globalThis.setInterval(() => {
@@ -511,10 +527,10 @@ export function useApiPolling<T = unknown>(
  */
 export function useInfiniteApi<T = unknown>(
   methodName: string,
-  options: UseApiCallOptions<{ items: T[]; total: number }> & {
+  options: UseApiCallOptions<{ items: T[], total: number }> & {
     page?: number
     pageSize?: number
-    extract?: (result: any) => { items: T[]; total: number }
+    extract?: (result: any) => { items: T[], total: number }
     query?: Record<string, unknown>
     auto?: boolean
     target?: Ref<Element | null>
@@ -530,14 +546,17 @@ export function useInfiniteApi<T = unknown>(
 
   const extract = options.extract ?? ((res: any) => {
     if (res && typeof res === 'object') {
-      if (Array.isArray(res.items) && typeof res.total === 'number') return { items: res.items as T[], total: res.total as number }
-      if (Array.isArray(res.list) && typeof res.total === 'number') return { items: res.list as T[], total: res.total as number }
-      if (Array.isArray(res.data) && typeof res.total === 'number') return { items: res.data as T[], total: res.total as number }
+      if (Array.isArray(res.items) && typeof res.total === 'number')
+        return { items: res.items as T[], total: res.total as number }
+      if (Array.isArray(res.list) && typeof res.total === 'number')
+        return { items: res.list as T[], total: res.total as number }
+      if (Array.isArray(res.data) && typeof res.total === 'number')
+        return { items: res.data as T[], total: res.total as number }
     }
     return { items: Array.isArray(res) ? res as T[] : [], total: 0 }
   })
 
-  const { loading, error, execute } = useApiCall<{ items: T[]; total: number }>(methodName, { ...options, immediate: false })
+  const { loading, error, execute } = useApiCall<{ items: T[], total: number }>(methodName, { ...options, immediate: false })
 
   const loadMore = async () => {
     const params = { page: page.value, pageSize: pageSize.value, ...(options.query || {}) }
@@ -578,7 +597,8 @@ export function useInfiniteApi<T = unknown>(
 
     const stopWatch = () => {
       const el = options.target!.value
-      if (el) observer!.observe(el)
+      if (el)
+        observer!.observe(el)
     }
 
     // 初次尝试
@@ -735,7 +755,7 @@ export function useSystemApi() {
     getCaptcha: (options: UseApiCallOptions<import('../types').CaptchaInfo> = {}) =>
       useApiCall<import('../types').CaptchaInfo>(
         SYSTEM_API_METHODS.GET_CAPTCHA,
-        options,
+      options,
       ),
 
     /**
@@ -802,13 +822,13 @@ export function useSystemApi() {
  */
 export function usePaginatedApi<T = unknown>(
   methodName: string,
-  options: UseApiCallOptions<{ items: T[]; total: number }> & {
+  options: UseApiCallOptions<{ items: T[], total: number }> & {
     /** 初始页码（从 1 开始） */
     page?: number
     /** 每页条数 */
     pageSize?: number
     /** 提取器，将接口返回值提取为 { items, total } */
-    extract?: (result: any) => { items: T[]; total: number }
+    extract?: (result: any) => { items: T[], total: number }
     /** 额外的查询参数（除 page/pageSize 外） */
     query?: Record<string, unknown>
   } = {},
@@ -820,14 +840,17 @@ export function usePaginatedApi<T = unknown>(
 
   const extract = options.extract ?? ((res: any) => {
     if (res && typeof res === 'object') {
-      if (Array.isArray(res.items) && typeof res.total === 'number') return { items: res.items as T[], total: res.total as number }
-      if (Array.isArray(res.list) && typeof res.total === 'number') return { items: res.list as T[], total: res.total as number }
-      if (Array.isArray(res.data) && typeof res.total === 'number') return { items: res.data as T[], total: res.total as number }
+      if (Array.isArray(res.items) && typeof res.total === 'number')
+        return { items: res.items as T[], total: res.total as number }
+      if (Array.isArray(res.list) && typeof res.total === 'number')
+        return { items: res.list as T[], total: res.total as number }
+      if (Array.isArray(res.data) && typeof res.total === 'number')
+        return { items: res.data as T[], total: res.total as number }
     }
     return { items: Array.isArray(res) ? res as T[] : [], total: 0 }
   })
 
-  const { loading, error, execute } = useApiCall<{ items: T[]; total: number }>(methodName, {
+  const { loading, error, execute } = useApiCall<{ items: T[], total: number }>(methodName, {
     ...options,
     immediate: false,
     onSuccess: (res) => {
@@ -836,7 +859,7 @@ export function usePaginatedApi<T = unknown>(
       total.value = tot
       options.onSuccess?.(res)
     },
-    onError: (e) => options.onError?.(e),
+    onError: e => options.onError?.(e),
     onFinally: () => options.onFinally?.(),
   })
 
@@ -858,7 +881,8 @@ export function usePaginatedApi<T = unknown>(
   const nextPage = () => setPage(page.value + 1)
   const prevPage = () => setPage(Math.max(1, page.value - 1))
 
-  if (options.immediate) run().catch(() => {})
+  if (options.immediate)
+    run().catch(() => {})
 
   return {
     page,

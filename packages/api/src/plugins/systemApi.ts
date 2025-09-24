@@ -363,13 +363,15 @@ export const systemApiPlugin: ApiPlugin = {
       ]
       for (const name of methodNames) {
         const cfg = engine.methods.get(name)
-        if (!cfg) continue
+        if (!cfg)
+          continue
         const original = typeof cfg.config === 'function' ? cfg.config : () => cfg.config
         const newCfg = (params?: unknown) => {
           const rc = original(params)
           // 创建浅拷贝并移除 Authorization 头
           const headers = { ...(rc.headers || {}) }
-          if ('Authorization' in headers) delete (headers as Record<string, unknown>).Authorization
+          if ('Authorization' in headers)
+            delete (headers as Record<string, unknown>).Authorization
           return { ...rc, headers }
         }
         engine.register(name, { ...cfg, config: newCfg })

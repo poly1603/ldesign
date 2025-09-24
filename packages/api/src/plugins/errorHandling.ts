@@ -4,8 +4,9 @@
  */
 
 import type { ApiEngine, ApiPlugin } from '../types'
+import type { ErrorReporter } from '../utils/ErrorReporter'
 import { ApiError, ApiErrorFactory, ApiErrorType, ErrorSeverity } from '../utils/ApiError'
-import { ErrorReporter, createErrorReporter, setGlobalErrorReporter } from '../utils/ErrorReporter'
+import { createErrorReporter, setGlobalErrorReporter } from '../utils/ErrorReporter'
 
 /**
  * 错误处理插件配置
@@ -79,7 +80,7 @@ export function createErrorHandlingPlugin(config: ErrorHandlingPluginConfig = {}
 
       // 添加错误中间件
       const existingErrorMiddlewares = engine.config.middlewares?.error || []
-      
+
       engine.config.middlewares = {
         ...engine.config.middlewares,
         error: [
@@ -159,7 +160,8 @@ function attemptErrorRecovery(error: ApiError, recovery?: ErrorHandlingPluginCon
       if (recovery.networkFallback) {
         try {
           return recovery.networkFallback(error)
-        } catch (e) {
+        }
+        catch (e) {
           console.warn('Network fallback failed:', e)
         }
       }
@@ -169,7 +171,8 @@ function attemptErrorRecovery(error: ApiError, recovery?: ErrorHandlingPluginCon
       if (recovery.serverFallback) {
         try {
           return recovery.serverFallback(error)
-        } catch (e) {
+        }
+        catch (e) {
           console.warn('Server fallback failed:', e)
         }
       }
@@ -191,7 +194,8 @@ function handleSpecialErrors(error: ApiError, config: ErrorHandlingPluginConfig)
       if (config.recovery?.authErrorHandler) {
         try {
           config.recovery.authErrorHandler(error)
-        } catch (e) {
+        }
+        catch (e) {
           console.warn('Auth error handler failed:', e)
         }
       }
@@ -210,7 +214,8 @@ function notifyUser(error: ApiError, customNotify?: (error: ApiError) => void): 
     try {
       customNotify(error)
       return
-    } catch (e) {
+    }
+    catch (e) {
       console.warn('Custom notification failed:', e)
     }
   }

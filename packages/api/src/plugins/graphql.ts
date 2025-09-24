@@ -4,7 +4,7 @@
  */
 import type { ApiMethodConfig, ApiPlugin } from '../types'
 
-export type GraphQLOperation = {
+export interface GraphQLOperation {
   /** GraphQL 文本 */
   query: string
   /** query | mutation */
@@ -43,7 +43,8 @@ export function createGraphqlApiPlugin(options: GraphQLPluginOptions): ApiPlugin
     for (const [k, v] of Object.entries(headers)) {
       try {
         h[k] = typeof v === 'function' ? (v as any)(vars) : v
-      } catch {
+      }
+      catch {
         // ignore
       }
     }

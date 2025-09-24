@@ -11,7 +11,8 @@ export function renameKeysShallow<T extends Record<string, any>>(obj: T, mapping
 }
 
 export function renameKeysDeep(input: any, mapping: Record<string, string>): any {
-  if (Array.isArray(input)) return input.map(i => renameKeysDeep(i, mapping))
+  if (Array.isArray(input))
+    return input.map(i => renameKeysDeep(i, mapping))
   if (input && typeof input === 'object') {
     const out: Record<string, any> = {}
     for (const [k, v] of Object.entries(input)) {

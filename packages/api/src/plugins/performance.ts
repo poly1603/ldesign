@@ -4,7 +4,8 @@
  */
 
 import type { ApiEngine, ApiPlugin } from '../types'
-import { PerformanceMonitor, createPerformanceMonitor, setGlobalPerformanceMonitor } from '../utils/PerformanceMonitor'
+import type { PerformanceMonitor } from '../utils/PerformanceMonitor'
+import { createPerformanceMonitor, setGlobalPerformanceMonitor } from '../utils/PerformanceMonitor'
 
 /**
  * 性能优化插件配置
@@ -32,7 +33,7 @@ export interface PerformancePluginConfig {
     /** 是否启用缓存预热 */
     enableWarmup?: boolean
     /** 预热数据 */
-    warmupData?: Array<{ key: string; data: unknown; ttl?: number }>
+    warmupData?: Array<{ key: string, data: unknown, ttl?: number }>
     /** 是否启用智能缓存 */
     enableSmartCache?: boolean
   }
@@ -58,7 +59,7 @@ export interface PerformancePluginConfig {
  * 性能优化插件
  */
 export function createPerformancePlugin(config: PerformancePluginConfig = {}): ApiPlugin & {
-  warmupCache: (engine: ApiEngine, warmupData: Array<{ key: string; data: unknown; ttl?: number }>) => void
+  warmupCache: (engine: ApiEngine, warmupData: Array<{ key: string, data: unknown, ttl?: number }>) => void
   startAutoTuning: (engine: ApiEngine, autoTuningConfig: NonNullable<PerformancePluginConfig['autoTuning']>) => void
   performAutoTuning: (engine: ApiEngine, thresholds: any) => void
 } {
@@ -160,7 +161,7 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
     },
 
     // 缓存预热
-    warmupCache(engine: ApiEngine, warmupData: Array<{ key: string; data: unknown; ttl?: number }>) {
+    warmupCache(engine: ApiEngine, warmupData: Array<{ key: string, data: unknown, ttl?: number }>) {
       try {
         if ('cacheManager' in engine) {
           const cacheManager = (engine as any).cacheManager
@@ -169,7 +170,8 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
             console.log(`🔥 Cache warmed up with ${warmupData.length} items`)
           }
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Cache warmup failed:', error)
       }
     },
@@ -191,7 +193,8 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
 
     // 执行自动调优
     performAutoTuning(engine: ApiEngine, thresholds: any) {
-      if (!performanceMonitor) return
+      if (!performanceMonitor)
+        return
 
       try {
         const report = performanceMonitor.generateReport()
@@ -200,7 +203,7 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
         // 检查平均响应时间
         if (report.overall.averageTime > thresholds.averageResponseTime) {
           recommendations.push('平均响应时间过长，建议启用更积极的缓存策略')
-          
+
           // 自动调整缓存TTL
           if (engine.config.cache && engine.config.cache.ttl) {
             const newTTL = Math.min(engine.config.cache.ttl * 1.5, 30 * 60 * 1000) // 最大30分钟
@@ -212,7 +215,7 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
         // 检查错误率
         if (report.overall.errorRate > thresholds.errorRate) {
           recommendations.push('错误率过高，建议启用更积极的重试策略')
-          
+
           // 自动调整重试配置
           if (engine.config.retry) {
             engine.config.retry.retries = Math.min((engine.config.retry.retries || 0) + 1, 5)
@@ -227,10 +230,10 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
           if (cacheManager && typeof cacheManager.getEnhancedStats === 'function') {
             const cacheStats = cacheManager.getEnhancedStats()
             const hitRate = cacheStats.hits / (cacheStats.hits + cacheStats.misses)
-            
+
             if (hitRate < thresholds.cacheHitRate) {
               recommendations.push('缓存命中率过低，建议增加缓存大小或调整缓存策略')
-              
+
               // 自动调整缓存大小
               if (engine.config.cache) {
                 engine.config.cache.maxSize = Math.min((engine.config.cache.maxSize || 100) * 1.5, 1000)
@@ -246,7 +249,8 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
           recommendations.forEach(rec => console.log(`• ${rec}`))
           console.groupEnd()
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Auto-tuning failed:', error)
       }
     },

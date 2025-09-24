@@ -1,5 +1,5 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import type { ApiEngine, ApiEngineConfig } from '../types'
+import { createContext, type ReactNode, useContext, useMemo } from 'react'
 import { createApiEngine } from '../core/factory'
 
 /**
@@ -23,7 +23,7 @@ export function ApiProvider({ engine, config, children }: ApiProviderProps) {
 /** 获取 ApiEngine 实例 */
 export function useApi(): ApiEngine {
   const ctx = useContext(ApiEngineContext) as ApiEngine | null
-  if (!ctx) throw new Error('ApiProvider is missing. Please wrap your app with <ApiProvider />')
+  if (!ctx)
+    throw new Error('ApiProvider is missing. Please wrap your app with <ApiProvider />')
   return ctx
 }
-

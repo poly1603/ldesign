@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useApi } from '../provider'
 import type { ApiCallOptions } from '../../types'
+import { useCallback, useEffect, useState } from 'react'
+import { useApi } from '../provider'
 
 /**
  * 批量 API 调用（React 版）
  */
 export function useBatchApiCall<T = unknown>(
-  calls: Array<{ methodName: string; params?: unknown; options?: ApiCallOptions }>,
+  calls: Array<{ methodName: string, params?: unknown, options?: ApiCallOptions }>,
   options: Omit<ApiCallOptions, 'onSuccess' | 'onError'> & {
     immediate?: boolean
     onSuccess?: (results: T[]) => void
@@ -37,7 +37,8 @@ export function useBatchApiCall<T = unknown>(
         if (r.status === 'fulfilled') {
           success.push(r.value)
           errs.push(null)
-        } else {
+        }
+        else {
           success.push(null as unknown as T)
           errs.push(r.reason instanceof Error ? r.reason : new Error(String(r.reason)))
         }
@@ -46,19 +47,21 @@ export function useBatchApiCall<T = unknown>(
       setErrors(errs)
       options.onSuccess?.(success)
       return success
-    } catch (e) {
+    }
+    catch (e) {
       const err = e instanceof Error ? e : new Error(String(e))
       options.onError?.([err])
       throw err
-    } finally {
+    }
+    finally {
       setLoading(false)
       options.onFinally?.()
     }
   }, [api, calls, options])
 
   useEffect(() => {
-    if (options.immediate) void execute()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (options.immediate)
+      void execute()
   }, [])
 
   return {

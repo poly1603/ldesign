@@ -14,7 +14,8 @@ export class RateLimiter {
   private refill() {
     const now = Date.now()
     const elapsed = now - this.lastRefill
-    if (elapsed <= 0) return
+    if (elapsed <= 0)
+      return
     const add = Math.floor((elapsed / this.intervalMs) * this.tokensPerInterval)
     if (add > 0) {
       this.tokens = Math.min(this.capacity, this.tokens + add)

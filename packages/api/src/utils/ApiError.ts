@@ -105,7 +105,7 @@ export class ApiError extends Error {
     context?: ErrorContext
   }) {
     super(options.message)
-    
+
     this.name = 'ApiError'
     this.type = options.type
     this.code = options.code ?? 'UNKNOWN'
@@ -286,30 +286,36 @@ export class ApiErrorFactory {
     const data = response?.data || response?.response?.data
 
     let type: ApiErrorType
-    let code = status || 'UNKNOWN'
+    const code = status || 'UNKNOWN'
     let message = statusText || 'Unknown error'
 
     if (status >= 500) {
       type = ApiErrorType.SERVER_ERROR
-    } else if (status === 401) {
+    }
+    else if (status === 401) {
       type = ApiErrorType.AUTH_ERROR
       message = '身份验证失败'
-    } else if (status === 403) {
+    }
+    else if (status === 403) {
       type = ApiErrorType.PERMISSION_ERROR
       message = '权限不足'
-    } else if (status === 404) {
+    }
+    else if (status === 404) {
       type = ApiErrorType.NOT_FOUND_ERROR
       message = '资源不存在'
-    } else if (status >= 400) {
+    }
+    else if (status >= 400) {
       type = ApiErrorType.CLIENT_ERROR
-    } else {
+    }
+    else {
       type = ApiErrorType.UNKNOWN_ERROR
     }
 
     // 尝试从响应数据中获取更详细的错误信息
     if (data?.message) {
       message = data.message
-    } else if (data?.error) {
+    }
+    else if (data?.error) {
       message = data.error
     }
 

@@ -70,7 +70,7 @@ export class ErrorReporter {
       batchInterval: 5000,
       enableInDevelopment: false,
       filter: () => true,
-      transform: (error) => error.toJSON(),
+      transform: error => error.toJSON(),
       ...config,
     }
 
@@ -149,10 +149,10 @@ export class ErrorReporter {
     this.stats.total++
     this.stats.byType[error.type] = (this.stats.byType[error.type] || 0) + 1
     this.stats.bySeverity[error.severity]++
-    
+
     if (error.context.methodName) {
-      this.stats.byMethod[error.context.methodName] = 
-        (this.stats.byMethod[error.context.methodName] || 0) + 1
+      this.stats.byMethod[error.context.methodName]
+        = (this.stats.byMethod[error.context.methodName] || 0) + 1
     }
 
     this.stats.recent.unshift(error)
@@ -177,10 +177,11 @@ export class ErrorReporter {
    * 通知监听器
    */
   private notifyListeners(error: ApiError): void {
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(error)
-      } catch (e) {
+      }
+      catch (e) {
         console.warn('Error in error listener:', e)
       }
     })
@@ -191,7 +192,7 @@ export class ErrorReporter {
    */
   private logToConsole(error: ApiError): void {
     const style = this.getConsoleStyle(error.severity)
-    
+
     console.group(`%c🚨 API Error [${error.type}]`, style)
     console.error('Message:', error.userMessage)
     console.error('Developer Message:', error.developerMessage)
@@ -253,7 +254,8 @@ export class ErrorReporter {
 
     try {
       await this.sendReport(payload)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to send error report:', error)
       // 将错误重新加入缓存
       this.errorCache.unshift(...errors)
@@ -268,7 +270,7 @@ export class ErrorReporter {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(this.config.apiKey && { 'Authorization': `Bearer ${this.config.apiKey}` }),
+        ...(this.config.apiKey && { Authorization: `Bearer ${this.config.apiKey}` }),
       },
       body: JSON.stringify(payload),
     })
@@ -282,8 +284,8 @@ export class ErrorReporter {
    * 判断是否为开发环境
    */
   private isDevelopment(): boolean {
-    return process.env.NODE_ENV === 'development' || 
-           typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    return process.env.NODE_ENV === 'development'
+      || typeof window !== 'undefined' && window.location.hostname === 'localhost'
   }
 
   /**

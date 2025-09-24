@@ -2,8 +2,8 @@
  * 认证中间件插件
  */
 
-import { SYSTEM_API_METHODS } from '../types'
 import type { ApiEngine, ApiPlugin } from '../types'
+import { SYSTEM_API_METHODS } from '../types'
 
 export interface AuthMiddlewaresOptions {
   getAccessToken?: () => string | null | undefined
@@ -36,8 +36,10 @@ function defaultGet(key: string): string | null | undefined {
 
 function defaultSet(key: string, value: string | null | undefined): void {
   try {
-    if (typeof localStorage === 'undefined') return
-    if (value) localStorage.setItem(key, value)
+    if (typeof localStorage === 'undefined')
+      return
+    if (value)
+      localStorage.setItem(key, value)
     else localStorage.removeItem(key)
   }
   catch {}
@@ -71,7 +73,8 @@ export function createAuthMiddlewaresPlugin(options: AuthMiddlewaresOptions = {}
       }
 
       const errMw = async (err: unknown) => {
-        if (!isUnauthorized(err)) return
+        if (!isUnauthorized(err))
+          return
 
         if (options.refresh) {
           await options.refresh(engine)
@@ -81,8 +84,10 @@ export function createAuthMiddlewaresPlugin(options: AuthMiddlewaresOptions = {}
         if (engine.hasMethod?.(SYSTEM_API_METHODS.REFRESH_TOKEN)) {
           try {
             const result: any = await engine.call(SYSTEM_API_METHODS.REFRESH_TOKEN)
-            if (result?.accessToken) setAccessToken(result.accessToken)
-            if (result?.refreshToken) setRefreshToken(result.refreshToken)
+            if (result?.accessToken)
+              setAccessToken(result.accessToken)
+            if (result?.refreshToken)
+              setRefreshToken(result.refreshToken)
           }
           catch {
             setAccessToken(null)
@@ -106,7 +111,8 @@ export function createAuthMiddlewaresPlugin(options: AuthMiddlewaresOptions = {}
 
     uninstall(engine) {
       const ref = (engine as any).__auth_mw__
-      if (!ref) return
+      if (!ref)
+        return
       const { reqMw, errMw } = ref
       const reqs = engine.config.middlewares?.request || []
       const errs = engine.config.middlewares?.error || []
@@ -118,4 +124,3 @@ export function createAuthMiddlewaresPlugin(options: AuthMiddlewaresOptions = {}
 }
 
 export const authMiddlewaresPlugin = createAuthMiddlewaresPlugin()
-

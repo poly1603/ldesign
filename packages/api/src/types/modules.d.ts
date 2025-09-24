@@ -24,4 +24,3 @@ declare module '@ldesign/engine' {
   }
   export type Plugin = EnginePlugin
 }
-

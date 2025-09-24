@@ -7,8 +7,8 @@ import type { Plugin as EnginePlugin } from '@ldesign/engine'
 import type { ApiEngine, ApiEngineConfig } from '../types'
 import type { ApiVuePluginOptions } from './plugin'
 import { createApiEngine } from '../core/factory'
-import { ApiVuePlugin } from './plugin'
 import { version as libVersion } from '../version'
+import { ApiVuePlugin } from './plugin'
 
 /**
  * API Engine 插件选项
@@ -89,10 +89,10 @@ export function createApiEnginePlugin(
           // 创建或使用提供的 API 引擎
           const apiEngine
             = providedClient
-            || createApiEngine({
-              ...clientConfig,
-              ...globalConfig,
-            })
+              || createApiEngine({
+                ...clientConfig,
+                ...globalConfig,
+              })
 
           // 安装 Vue 插件
           vueApp.use(ApiVuePlugin, {

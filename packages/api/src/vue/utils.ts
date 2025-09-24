@@ -1,9 +1,9 @@
 /**
  * Vue 工具函数
  */
-import type { Ref, ComputedRef } from 'vue'
-import { onUnmounted, watch, ref, computed } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
 import type { ApiEngine } from '../types'
+import { computed, onUnmounted, ref, watch } from 'vue'
 
 /**
  * IntersectionObserver 选项
@@ -41,13 +41,16 @@ export function useIntersectionObserver(
 
   const start = () => {
     const el = target.value
-    if (el) observer.observe(el)
+    if (el)
+      observer.observe(el)
   }
 
   start()
   const stopWatch = watch(target, (el, old) => {
-    if (old) observer.unobserve(old)
-    if (el) observer.observe(el)
+    if (old)
+      observer.unobserve(old)
+    if (el)
+      observer.observe(el)
   })
 
   onUnmounted(() => {
@@ -82,9 +85,9 @@ export function useDebouncedRef<T>(
   initialValue: T,
   delay: number,
 ): {
-  debouncedValue: Ref<T>
-  setValue: (value: T) => void
-} {
+    debouncedValue: Ref<T>
+    setValue: (value: T) => void
+  } {
   const debouncedValue = ref(initialValue)
   const setValue = (value: T) => {
     debouncedValue.value = value
@@ -166,7 +169,8 @@ export function useApiAvailable(): ComputedRef<boolean> {
       const { useApi } = require('./composables')
       useApi()
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   })
@@ -195,7 +199,8 @@ export function useApiStatus() {
     isAvailable.value = true
     engine.value = apiEngine
     error.value = null
-  } catch (err) {
+  }
+  catch (err) {
     isAvailable.value = false
     engine.value = null
     error.value = err instanceof Error ? err : new Error(String(err))

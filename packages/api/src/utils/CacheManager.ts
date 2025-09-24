@@ -4,7 +4,7 @@
  */
 
 import type { CacheConfig, CacheItem, CacheStats } from '../types'
-import { LRUCache, type LRUCacheConfig } from './LRUCache'
+import { LRUCache } from './LRUCache'
 
 /**
  * 缓存存储接口
@@ -177,6 +177,7 @@ export class CacheManager {
     totalItems: 0,
     size: 0,
   }
+
   private cleanupTimer: ReturnType<typeof setInterval> | null = null
 
   constructor(config: CacheConfig) {
@@ -231,7 +232,8 @@ export class CacheManager {
       if (result !== null) {
         this.stats.hits++
         return result
-      } else {
+      }
+      else {
         this.stats.misses++
         return null
       }
@@ -351,8 +353,6 @@ export class CacheManager {
     }
   }
 
-
-
   /**
    * 获取所有缓存键
    */
@@ -445,10 +445,11 @@ export class CacheManager {
 
     this.updateStats()
   }
+
   /**
    * 批量设置缓存
    */
-  setMany<T = unknown>(entries: Array<{ key: string; data: T; ttl?: number }>): void {
+  setMany<T = unknown>(entries: Array<{ key: string, data: T, ttl?: number }>): void {
     if (this.lruCache) {
       this.lruCache.setMany(entries.map(e => ({ key: e.key, value: e.data, ttl: e.ttl })))
       return
@@ -468,7 +469,7 @@ export class CacheManager {
     }
 
     const result = new Map<string, T>()
-    keys.forEach(key => {
+    keys.forEach((key) => {
       const value = this.get<T>(key)
       if (value !== null) {
         result.set(key, value)
@@ -480,7 +481,7 @@ export class CacheManager {
   /**
    * 预热缓存
    */
-  warmup<T = unknown>(entries: Array<{ key: string; data: T; ttl?: number }>): void {
+  warmup<T = unknown>(entries: Array<{ key: string, data: T, ttl?: number }>): void {
     if (this.lruCache) {
       this.lruCache.warmup(entries.map(e => ({ key: e.key, value: e.data, ttl: e.ttl })))
       return
@@ -509,7 +510,8 @@ export class CacheManager {
 
       const item: CacheItem = JSON.parse(itemStr)
       return Date.now() <= item.expireTime
-    } catch {
+    }
+    catch {
       return false
     }
   }

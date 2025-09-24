@@ -2,7 +2,7 @@
  * REST 快速构建插件
  * 统一 CRUD 方法命名与缓存失效策略
  */
-import type { ApiMethodConfig, ApiPlugin, ApiEngine } from '../types'
+import type { ApiEngine, ApiMethodConfig, ApiPlugin } from '../types'
 
 export interface RestPluginOptions<TList = unknown, TItem = unknown, TCreate = unknown, TUpdate = Partial<TItem>> {
   /** 资源名（用于方法命名前缀，如 'user' => user.list/get/create/update/remove） */
@@ -12,7 +12,7 @@ export interface RestPluginOptions<TList = unknown, TItem = unknown, TCreate = u
   /** id 参数名（默认 'id'） */
   idParam?: string
   /** 是否注册各方法 */
-  methods?: { list?: boolean; get?: boolean; create?: boolean; update?: boolean; remove?: boolean }
+  methods?: { list?: boolean, get?: boolean, create?: boolean, update?: boolean, remove?: boolean }
   /** 列表缓存 TTL（毫秒），默认 5 分钟 */
   listCacheTtl?: number
   /** 是否给列表启用缓存，默认启用 */
@@ -80,7 +80,8 @@ export function createRestApiPlugin(options: RestPluginOptions): ApiPlugin {
       const enc = encodeURIComponent(String(val))
       const withColon = result.replace(new RegExp(`:${idParam}(?=$|[\\/\\?&#])`, 'g'), enc)
       const withBraces = withColon.replace(new RegExp(`{${idParam}}`, 'g'), enc)
-      if (withBraces !== result) return withBraces
+      if (withBraces !== result)
+        return withBraces
       return `${result}/${enc}`
     }
     return result
@@ -88,7 +89,8 @@ export function createRestApiPlugin(options: RestPluginOptions): ApiPlugin {
 
   // 从 params 中去除 id 字段，避免重复出现在 query 中
   const stripIdFromParams = (params: Record<string, unknown> | undefined): Record<string, unknown> | undefined => {
-    if (!params) return params
+    if (!params)
+      return params
     const clone: Record<string, unknown> = { ...params }
     delete clone[idParam]
     return clone
@@ -165,13 +167,15 @@ export function createRestApiPlugin(options: RestPluginOptions): ApiPlugin {
       const wrap = (methodName: string, cfg: ApiMethodConfig) => ({
         ...cfg,
         onSuccess: (data: unknown) => {
-          try { cfg.onSuccess?.(data) } catch {}
+          try { cfg.onSuccess?.(data) }
+          catch {}
           if (methodName === names.create || methodName === names.update || methodName === names.remove) {
             // 变更类操作成功后清理相关缓存
             clearList()
             clearGet()
           }
-          try { onSuccess?.(methodName, data, engine) } catch {}
+          try { onSuccess?.(methodName, data, engine) }
+          catch {}
         },
       })
 
@@ -182,4 +186,3 @@ export function createRestApiPlugin(options: RestPluginOptions): ApiPlugin {
     },
   }
 }
-

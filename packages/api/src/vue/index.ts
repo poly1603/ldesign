@@ -12,10 +12,10 @@ export {
   createDevelopmentApiEngine,
   createProductionApiEngine,
   createSingletonApiEngine,
-  createTestApiEngine,
-  destroySingletonApiEngine,
   createSystemApiEngine,
   createSystemApiEngineByEnv,
+  createTestApiEngine,
+  destroySingletonApiEngine,
 } from '../core/factory'
 
 // 重新导出系统 API 插件
@@ -45,24 +45,29 @@ export type {
 // 重新导出系统 API 常量
 export { SYSTEM_API_METHODS } from '../types'
 
+// 版本信息
+export { version } from '../version'
 // 组合式 API
 export {
   useApi,
   useApiCall,
-  useRequest,
   useApiCleanup,
-  useBatchApiCall,
-  useSystemApi,
   useApiPolling,
-  usePaginatedApi,
+  useBatchApiCall,
   useInfiniteApi,
   useMutation,
+  usePaginatedApi,
+  useRequest,
+  useSystemApi,
 } from './composables'
+
 export type {
   ApiCallState,
   UseApiCallOptions,
   UseMutationOptions,
 } from './composables'
+// Vue 指令
+export { vIntersect } from './directives'
 
 // Engine 插件集成
 export {
@@ -73,6 +78,7 @@ export {
   createProductionApiEnginePlugin,
   defaultApiEnginePlugin,
 } from './engine'
+
 export type { ApiEnginePluginOptions } from './engine'
 
 // Vue 插件
@@ -83,21 +89,15 @@ export {
   getApiEngineFromApp,
   installApiVuePlugin,
 } from './plugin'
-
 export type { ApiVuePluginOptions } from './plugin'
 
 // Vue 工具函数
 export {
-  useIntersectionObserver,
-  useDebouncedRef,
-  useApiMethod,
   useApiAvailable,
+  useApiMethod,
   useApiStatus,
+  useDebouncedRef,
+  useIntersectionObserver,
 } from './utils'
+
 export type { UseIntersectionOptions } from './utils'
-
-// Vue 指令
-export { vIntersect } from './directives'
-
-// 版本信息
-export { version } from '../version'

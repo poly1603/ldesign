@@ -88,7 +88,8 @@ export const ApiVuePlugin: Plugin = {
           engineProvided: !!providedEngine,
         })
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('[API Vue Plugin] 插件安装失败:', error)
       throw error
     }

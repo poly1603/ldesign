@@ -30,7 +30,8 @@ export class RequestQueueManager {
   }
 
   enqueue<T>(fn: () => Promise<T>, priority = 0): Promise<T> {
-    if (!this.config.enabled) return fn()
+    if (!this.config.enabled)
+      return fn()
 
     if (this.config.maxQueue > 0 && this.queue.length >= this.config.maxQueue) {
       return Promise.reject(new Error('Request queue overflow'))
@@ -56,8 +57,8 @@ export class RequestQueueManager {
       const task = this.queue.shift()!
       this.running++
       task.run()
-        .then((v) => task.resolve(v as unknown))
-        .catch((e) => task.reject(e))
+        .then(v => task.resolve(v as unknown))
+        .catch(e => task.reject(e))
         .finally(() => {
           this.running--
           this.pump()

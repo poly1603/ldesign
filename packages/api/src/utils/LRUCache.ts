@@ -68,6 +68,7 @@ export class LRUCache<T = unknown> {
     evictions: 0,
     memoryUsage: 0,
   }
+
   private cleanupTimer?: NodeJS.Timeout
 
   constructor(config: LRUCacheConfig) {
@@ -133,10 +134,11 @@ export class LRUCache<T = unknown> {
       existingNode.value = value
       existingNode.expireTime = expireTime
       this.moveToHead(existingNode)
-    } else {
+    }
+    else {
       // 创建新节点
       const newNode = new LRUNode(key, value, expireTime)
-      
+
       // 检查容量限制
       if (this.cache.size >= this.config.maxSize) {
         this.evictLRU()
@@ -231,7 +233,7 @@ export class LRUCache<T = unknown> {
   /**
    * 批量设置
    */
-  setMany(entries: Array<{ key: string; value: T; ttl?: number }>): void {
+  setMany(entries: Array<{ key: string, value: T, ttl?: number }>): void {
     entries.forEach(({ key, value, ttl }) => {
       this.set(key, value, ttl)
     })
@@ -242,7 +244,7 @@ export class LRUCache<T = unknown> {
    */
   getMany(keys: string[]): Map<string, T> {
     const result = new Map<string, T>()
-    keys.forEach(key => {
+    keys.forEach((key) => {
       const value = this.get(key)
       if (value !== null) {
         result.set(key, value)
@@ -254,7 +256,7 @@ export class LRUCache<T = unknown> {
   /**
    * 预热缓存
    */
-  warmup(entries: Array<{ key: string; value: T; ttl?: number }>): void {
+  warmup(entries: Array<{ key: string, value: T, ttl?: number }>): void {
     // 批量设置，但不触发LRU移动（保持插入顺序）
     entries.forEach(({ key, value, ttl }) => {
       if (!this.cache.has(key)) {
@@ -337,7 +339,8 @@ export class LRUCache<T = unknown> {
     // 对象类型，使用JSON序列化长度估算
     try {
       return JSON.stringify(value).length * 2
-    } catch {
+    }
+    catch {
       return 64 // 默认估算
     }
   }
@@ -364,7 +367,7 @@ export class LRUCache<T = unknown> {
       }
     })
 
-    toRemove.forEach(key => {
+    toRemove.forEach((key) => {
       const node = this.cache.get(key)
       if (node) {
         this.removeNode(node)

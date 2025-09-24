@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
 import type { ApiCallOptions } from '../../types'
+import { useCallback, useEffect, useState } from 'react'
 import { ApiError, ApiErrorType } from '../../utils/ApiError'
 import { useApi } from '../provider'
 
@@ -84,26 +84,30 @@ export function useApiCall<T = unknown>(
       setData(res)
       options.onSuccess?.(res)
       return res
-    } catch (e) {
+    }
+    catch (e) {
       const err = e instanceof ApiError ? e : (e instanceof Error ? e : new Error(String(e)))
-      const apiError = err instanceof ApiError ? err : new ApiError({
-        type: ApiErrorType.UNKNOWN_ERROR,
-        message: err.message,
-        originalError: err,
-        context: { methodName, params }
-      })
+      const apiError = err instanceof ApiError
+        ? err
+        : new ApiError({
+          type: ApiErrorType.UNKNOWN_ERROR,
+          message: err.message,
+          originalError: err,
+          context: { methodName, params },
+        })
       setError(apiError)
       options.onError?.(apiError)
       throw apiError
-    } finally {
+    }
+    finally {
       setLoading(false)
       options.onFinally?.()
     }
   }, [api, methodName, options])
 
   useEffect(() => {
-    if (options.immediate) void execute().catch(() => {})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (options.immediate)
+      void execute().catch(() => {})
   }, [])
 
   const reset = useCallback(() => {
@@ -166,4 +170,3 @@ export function useRequest<T = unknown>(
       state.execute(newParams, executeOptions), [params, state]),
   }
 }
-

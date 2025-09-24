@@ -134,11 +134,11 @@ export class PerformanceMonitor {
     }
 
     const startTime = performance.now()
-    
+
     return (error?: Error) => {
       const endTime = performance.now()
       const duration = endTime - startTime
-      
+
       this.recordCall({
         methodName,
         startTime,
@@ -170,7 +170,7 @@ export class PerformanceMonitor {
     if (record.duration > this.config.slowQueryThreshold && this.config.logWarnings) {
       console.warn(
         `🐌 Slow API call detected: ${record.methodName} took ${record.duration.toFixed(2)}ms`,
-        record.params ? { params: record.params } : ''
+        record.params ? { params: record.params } : '',
       )
     }
 
@@ -178,7 +178,7 @@ export class PerformanceMonitor {
     if (!record.success && this.config.logWarnings) {
       console.warn(
         `❌ API call failed: ${record.methodName}`,
-        record.error
+        record.error,
       )
     }
   }
@@ -188,7 +188,7 @@ export class PerformanceMonitor {
    */
   private updateMethodMetrics(record: CallRecord): void {
     const existing = this.metrics.get(record.methodName)
-    
+
     if (existing) {
       existing.callCount++
       existing.totalTime += record.duration
@@ -196,15 +196,17 @@ export class PerformanceMonitor {
       existing.minTime = Math.min(existing.minTime, record.duration)
       existing.maxTime = Math.max(existing.maxTime, record.duration)
       existing.lastCallTime = Date.now()
-      
+
       if (record.success) {
         existing.successCount++
-      } else {
+      }
+      else {
         existing.errorCount++
       }
-      
+
       existing.successRate = existing.successCount / existing.callCount
-    } else {
+    }
+    else {
       this.metrics.set(record.methodName, {
         methodName: record.methodName,
         callCount: 1,
@@ -304,7 +306,7 @@ export class PerformanceMonitor {
   private generateRecommendations(
     methods: PerformanceMetrics[],
     memory: MemoryUsage,
-    overall: any
+    overall: any,
   ): string[] {
     const recommendations: string[] = []
 
@@ -312,7 +314,7 @@ export class PerformanceMonitor {
     const slowMethods = methods.filter(m => m.averageTime > this.config.slowQueryThreshold)
     if (slowMethods.length > 0) {
       recommendations.push(
-        `发现 ${slowMethods.length} 个慢方法，建议优化: ${slowMethods.map(m => m.methodName).join(', ')}`
+        `发现 ${slowMethods.length} 个慢方法，建议优化: ${slowMethods.map(m => m.methodName).join(', ')}`,
       )
     }
 
@@ -320,7 +322,7 @@ export class PerformanceMonitor {
     const highErrorMethods = methods.filter(m => m.errorCount > 0 && m.successRate < 0.95)
     if (highErrorMethods.length > 0) {
       recommendations.push(
-        `发现高错误率方法，建议检查: ${highErrorMethods.map(m => `${m.methodName}(${(m.successRate * 100).toFixed(1)}%)`).join(', ')}`
+        `发现高错误率方法，建议检查: ${highErrorMethods.map(m => `${m.methodName}(${(m.successRate * 100).toFixed(1)}%)`).join(', ')}`,
       )
     }
 
@@ -342,7 +344,7 @@ export class PerformanceMonitor {
     const highFrequencyMethods = methods.filter(m => m.callCount > 100)
     if (highFrequencyMethods.length > 0) {
       recommendations.push(
-        `高频调用方法建议启用缓存: ${highFrequencyMethods.map(m => m.methodName).join(', ')}`
+        `高频调用方法建议启用缓存: ${highFrequencyMethods.map(m => m.methodName).join(', ')}`,
       )
     }
 

@@ -16,33 +16,36 @@ export {
   createDevelopmentApiEngine,
   createProductionApiEngine,
   createSingletonApiEngine,
-  createTestApiEngine,
-  destroySingletonApiEngine,
   createSystemApiEngine,
   createSystemApiEngineByEnv,
+  createTestApiEngine,
+  destroySingletonApiEngine,
 } from './core/factory'
+
+// 认证中间件插件
+export { authMiddlewaresPlugin, createAuthMiddlewaresPlugin } from './plugins/auth'
+export {
+  createErrorHandlingPlugin,
+  errorHandlingPlugin,
+  ErrorHandlingUtils,
+  withErrorHandling,
+} from './plugins/errorHandling'
+export { createGraphqlApiPlugin, gql } from './plugins/graphql'
+export { createLoggingPlugin } from './plugins/logging'
+export { createOfflineCachePlugin } from './plugins/offlineCache'
+export {
+  createPerformancePlugin,
+  performancePlugin,
+  PerformanceUtils,
+  withPerformance,
+} from './plugins/performance'
+export { createRateLimitPlugin } from './plugins/rateLimit'
+export { createRestApiPlugin } from './plugins/rest'
 
 export {
   createCustomSystemApiPlugin,
   systemApiPlugin,
 } from './plugins/systemApi'
-export { createRestApiPlugin } from './plugins/rest'
-export { createGraphqlApiPlugin, gql } from './plugins/graphql'
-export { createOfflineCachePlugin } from './plugins/offlineCache'
-export { createRateLimitPlugin } from './plugins/rateLimit'
-export { createLoggingPlugin } from './plugins/logging'
-export {
-  createErrorHandlingPlugin,
-  errorHandlingPlugin,
-  withErrorHandling,
-  ErrorHandlingUtils
-} from './plugins/errorHandling'
-export {
-  createPerformancePlugin,
-  performancePlugin,
-  withPerformance,
-  PerformanceUtils
-} from './plugins/performance'
 
 // 核心类型
 export type {
@@ -69,21 +72,18 @@ export type {
 // 系统 API 常量和方法
 export { SYSTEM_API_METHODS } from './types'
 
-// 认证中间件插件
-export { authMiddlewaresPlugin, createAuthMiddlewaresPlugin } from './plugins/auth'
-
+// 类型辅助（可选的强类型注册表）
+export type { TypedApiEngine } from './types/typed'
+export { withTypedApi } from './types/typed'
 // 工具类
 export { CacheManager } from './utils/CacheManager'
-export { LRUCache } from './utils/LRUCache'
-export { PerformanceMonitor, createPerformanceMonitor, getGlobalPerformanceMonitor, setGlobalPerformanceMonitor } from './utils/PerformanceMonitor'
-export { renameKeysShallow, renameKeysDeep } from './utils/object'
+export { DebounceManagerImpl } from './utils/DebounceManager'
 
 /**
  * @ldesign/api 主入口文件
  * 导出所有公共 API
  */
 
-export { DebounceManagerImpl } from './utils/DebounceManager'
 // 工具函数
 export {
   createDebounceFunction,
@@ -91,7 +91,6 @@ export {
   debounce,
   keyedDebounce,
 } from './utils/DebounceManager'
-
 export { DeduplicationManagerImpl } from './utils/DeduplicationManager'
 
 export {
@@ -102,23 +101,30 @@ export {
   globalDeduplicationManager,
 } from './utils/DeduplicationManager'
 
-// 类型辅助（可选的强类型注册表）
-export type { TypedApiEngine } from './types/typed'
-export { withTypedApi } from './types/typed'
+export { LRUCache } from './utils/LRUCache'
 
+export { renameKeysDeep, renameKeysShallow } from './utils/object'
+export { createPerformanceMonitor, getGlobalPerformanceMonitor, PerformanceMonitor, setGlobalPerformanceMonitor } from './utils/PerformanceMonitor'
+
+/**
+ * 版本信息
+ */
+export { version } from './version'
 // Vue 集成：组合式 API、Engine 集成、插件、工具
 export {
   useApi,
   useApiCall,
   useApiCleanup,
-  useBatchApiCall,
-  useSystemApi,
   useApiPolling,
-  usePaginatedApi,
+  useBatchApiCall,
   useInfiniteApi,
   useMutation,
+  usePaginatedApi,
+  useSystemApi,
 } from './vue/composables'
+
 export type { ApiCallState, UseApiCallOptions } from './vue/composables'
+export { vIntersect } from './vue/directives'
 
 export {
   apiPlugin,
@@ -140,9 +146,3 @@ export {
 export type { ApiVuePluginOptions } from './vue/plugin'
 
 export { useIntersectionObserver } from './vue/utils'
-export { vIntersect } from './vue/directives'
-
-/**
- * 版本信息
- */
-export { version } from './version'

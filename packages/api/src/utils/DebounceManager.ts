@@ -40,7 +40,7 @@ export class DebounceManagerImpl implements DebounceManager {
       // 取消之前的防抖
       this.cancel(key)
 
-// 创建新的防抖项
+      // 创建新的防抖项
       const timerId = globalThis.setTimeout(async () => {
         try {
           const result = await fn()

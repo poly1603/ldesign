@@ -20,8 +20,10 @@ export function createLoggingPlugin(options: LoggingPluginOptions = {}): ApiPlug
   const level = options.logLevel ?? 'info'
 
   const log = (...args: unknown[]) => {
-    if (!enabled) return
-    if (level === 'debug') console.debug('[API]', ...args)
+    if (!enabled)
+      return
+    if (level === 'debug')
+      console.debug('[API]', ...args)
     else console.info('[API]', ...args)
   }
 

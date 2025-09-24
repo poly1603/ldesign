@@ -15,23 +15,23 @@ export {
   createDevelopmentApiEngine,
   createProductionApiEngine,
   createSingletonApiEngine,
-  createTestApiEngine,
-  destroySingletonApiEngine,
   createSystemApiEngine,
   createSystemApiEngineByEnv,
+  createTestApiEngine,
+  destroySingletonApiEngine,
 } from './core/factory'
+
+// 认证中间件插件
+export { authMiddlewaresPlugin, createAuthMiddlewaresPlugin } from './plugins/auth'
+
+// REST API 插件
+export { createRestApiPlugin } from './plugins/rest'
 
 // 系统 API 插件
 export {
   createCustomSystemApiPlugin,
   systemApiPlugin,
 } from './plugins/systemApi'
-
-// REST API 插件
-export { createRestApiPlugin } from './plugins/rest'
-
-// 认证中间件插件
-export { authMiddlewaresPlugin, createAuthMiddlewaresPlugin } from './plugins/auth'
 
 // 核心类型（仅类型导出）
 export type {
@@ -55,20 +55,30 @@ export type {
 // 系统 API 常量
 export { SYSTEM_API_METHODS } from './types'
 
+// 类型辅助
+export type { TypedApiEngine } from './types/typed'
+export { withTypedApi } from './types/typed'
+
+// 主要工具类
+export { CacheManager } from './utils/CacheManager'
+// 版本信息
+export { version } from './version'
+
 // Vue 组合式 API
 export {
   useApi,
   useApiCall,
   useApiCleanup,
-  useBatchApiCall,
-  useSystemApi,
   useApiPolling,
-  usePaginatedApi,
+  useBatchApiCall,
   useInfiniteApi,
   useMutation,
+  usePaginatedApi,
+  useSystemApi,
 } from './vue/composables'
 export type { ApiCallState, UseApiCallOptions } from './vue/composables'
 
+export { vIntersect } from './vue/directives'
 // Vue Engine 插件集成
 export {
   apiPlugin,
@@ -78,6 +88,7 @@ export {
   createProductionApiEnginePlugin,
   defaultApiEnginePlugin,
 } from './vue/engine'
+
 export type { ApiEnginePluginOptions } from './vue/engine'
 
 // Vue 插件
@@ -92,14 +103,3 @@ export type { ApiVuePluginOptions } from './vue/plugin'
 
 // Vue 工具函数和指令
 export { useIntersectionObserver } from './vue/utils'
-export { vIntersect } from './vue/directives'
-
-// 主要工具类
-export { CacheManager } from './utils/CacheManager'
-
-// 类型辅助
-export type { TypedApiEngine } from './types/typed'
-export { withTypedApi } from './types/typed'
-
-// 版本信息
-export { version } from './version'

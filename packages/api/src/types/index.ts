@@ -4,8 +4,8 @@
  */
 
 import type {
-  HttpClientConfig,
   HttpClient,
+  HttpClientConfig,
   RequestConfig,
   ResponseData,
 } from '@ldesign/http'
@@ -257,68 +257,68 @@ export interface ApiEngine {
   /**
    * 注册插件
    */
-  use(plugin: ApiPlugin): Promise<void>
+  use: (plugin: ApiPlugin) => Promise<void>
 
   /**
    * 卸载插件
    */
-  unuse(pluginName: string): Promise<void>
+  unuse: (pluginName: string) => Promise<void>
 
   /**
    * 注册 API 方法
    */
-  register(methodName: string, config: ApiMethodConfig): void
+  register: (methodName: string, config: ApiMethodConfig) => void
 
   /**
    * 注册多个 API 方法
    */
-  registerBatch(methods: Record<string, ApiMethodConfig>): void
+  registerBatch: (methods: Record<string, ApiMethodConfig>) => void
 
   /**
    * 取消注册 API 方法
    */
-  unregister(methodName: string): void
+  unregister: (methodName: string) => void
 
   /**
    * 调用 API 方法
    */
-  call<T = any>(
+  call: <T = any>(
     methodName: string,
     params?: any,
     options?: ApiCallOptions
-  ): Promise<T>
+  ) => Promise<T>
 
   /**
    * 批量调用 API 方法
    */
-  callBatch<T = any>(
-    calls: Array<{ methodName: string; params?: any; options?: ApiCallOptions }>
-  ): Promise<T[]>
+  callBatch: <T = any>(
+    calls: Array<{ methodName: string, params?: any, options?: ApiCallOptions }>
+  ) => Promise<T[]>
 
   /**
    * 检查方法是否存在
    */
-  hasMethod(methodName: string): boolean
+  hasMethod: (methodName: string) => boolean
 
   /**
    * 获取所有方法名称
    */
-  getMethodNames(): string[]
+  getMethodNames: () => string[]
 
   /**
    * 清除缓存
    */
-  clearCache(methodName?: string): void
+  clearCache: (methodName?: string) => void
 
   /**
    * 获取缓存统计
    */
-  getCacheStats(): CacheStats
+  getCacheStats: () => CacheStats
 
   /**
    * 销毁引擎
    */
-  destroy(): void
+  destroy: () => void
 }
 
 /**
@@ -358,11 +358,11 @@ export interface CacheItem {
  */
 export interface DebounceManager {
   /** 执行防抖函数 */
-  execute<T>(key: string, fn: () => Promise<T>, delay: number): Promise<T>
+  execute: <T>(key: string, fn: () => Promise<T>, delay: number) => Promise<T>
   /** 取消防抖 */
-  cancel(key: string): void
+  cancel: (key: string) => void
   /** 清除所有防抖 */
-  clear(): void
+  clear: () => void
 }
 
 /**
@@ -370,9 +370,9 @@ export interface DebounceManager {
  */
 export interface DeduplicationManager {
   /** 执行去重函数 */
-  execute<T>(key: string, fn: () => Promise<T>): Promise<T>
+  execute: <T>(key: string, fn: () => Promise<T>) => Promise<T>
   /** 清除去重缓存 */
-  clear(): void
+  clear: () => void
 }
 
 /** 请求队列配置 */

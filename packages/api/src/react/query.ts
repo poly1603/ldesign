@@ -3,7 +3,7 @@
  * - 提供构建 queryFn/mutationFn 的工具
  * - 实际项目需自行安装 @tanstack/react-query
  */
-import type { ApiEngine, ApiCallOptions } from '../types'
+import type { ApiCallOptions, ApiEngine } from '../types'
 
 export function buildQueryFn<T = unknown>(engine: ApiEngine, methodName: string, baseOptions?: ApiCallOptions) {
   // 用于 React Query: queryFn: ({ queryKey }) => Promise<T>

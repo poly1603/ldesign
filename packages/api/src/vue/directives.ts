@@ -10,7 +10,7 @@ import type { Directive } from 'vue'
 
 interface IntersectValue {
   callback: (entry: IntersectionObserverEntry) => void
-  options?: { root?: Element | null; rootMargin?: string; threshold?: number }
+  options?: { root?: Element | null, rootMargin?: string, threshold?: number }
   once?: boolean
   delay?: number
 }
@@ -22,7 +22,8 @@ export const vIntersect: Directive<HTMLElement, ((entry: IntersectionObserverEnt
     const opts = typeof val === 'object' && 'options' in (val || {}) ? (val as IntersectValue).options : undefined
     const once = typeof val === 'object' && 'once' in (val || {}) ? (val as IntersectValue).once : false
     const delay = typeof val === 'object' && 'delay' in (val || {}) ? (val as IntersectValue).delay : 0
-    if (!cb) return
+    if (!cb)
+      return
 
     const root = opts?.root ?? null
     const rootMargin = opts?.rootMargin ?? '0px'
@@ -32,7 +33,8 @@ export const vIntersect: Directive<HTMLElement, ((entry: IntersectionObserverEnt
       const run = () => cb(entry)
       if (delay && delay > 0) {
         setTimeout(run, delay)
-      } else {
+      }
+      else {
         run()
       }
     }
@@ -57,4 +59,3 @@ export const vIntersect: Directive<HTMLElement, ((entry: IntersectionObserverEnt
     delete (el as any).__io__
   },
 }
-

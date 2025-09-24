@@ -3,7 +3,7 @@
 
 declare module 'react' {
   export type ReactNode = any
-  export type RefObject<T> = { current: T | null }
+  export interface RefObject<T> { current: T | null }
 
   export function createContext<T>(defaultValue: T | null): any
   export function useContext<T>(ctx: any): T
@@ -19,4 +19,3 @@ declare module 'react/jsx-runtime' {
   export const jsxs: any
   export const Fragment: any
 }
-
