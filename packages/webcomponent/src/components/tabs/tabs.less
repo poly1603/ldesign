@@ -11,12 +11,12 @@
       border: 1px solid var(--ld-border, #e5e7eb);
       margin-right: 8px;
       border-radius: 6px;
-      border-bottom-width: 1px; // 兼容 card 风格
     }
     .@{prefix}__tab--active {
       color: var(--ld-primary, #722ED1);
       border-color: var(--ld-primary, #722ED1);
     }
+    .@{prefix}__ink { display: none; }
   }
 
   &--small { font-size: 12px; }
@@ -60,10 +60,9 @@
     color: var(--ld-text, #1f2937);
     padding: 8px 12px;
     cursor: pointer;
-    border-bottom: 2px solid transparent;
     outline: none;
     border-radius: 4px 4px 0 0;
-    transition: color .2s ease, border-color .2s ease;
+    transition: color .2s ease;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -71,7 +70,6 @@
     &:hover { color: var(--ld-primary, #722ED1); }
     &--active {
       color: var(--ld-primary, #722ED1);
-      border-color: var(--ld-primary, #722ED1);
       font-weight: 600;
     }
     &--disabled {

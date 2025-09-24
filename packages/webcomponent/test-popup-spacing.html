@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Popup 间距测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .test-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-label {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        
+        /* 添加网格背景来帮助测量距离 */
+        .measurement-area {
+            background-image: 
+                linear-gradient(to right, #e0e0e0 1px, transparent 1px),
+                linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
+            background-size: 10px 10px;
+            padding: 50px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .measurement-area::before {
+            content: "每个网格 = 10px";
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 12px;
+            color: #666;
+            background: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .center-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+        
+        .direction-test {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            text-align: center;
+            padding: 60px;
+        }
+        
+        .direction-test > div:nth-child(4),
+        .direction-test > div:nth-child(6) {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .direction-test > div:nth-child(5) {
+            /* 中心空白 */
+        }
+        
+        .problem-highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .problem-highlight h4 {
+            margin: 0 0 10px 0;
+            color: #856404;
+        }
+        
+        .problem-highlight p {
+            margin: 0;
+            color: #856404;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Popup 组件间距问题测试</h1>
+    
+    <div class="problem-highlight">
+        <h4>🔍 发现的问题</h4>
+        <p>1. 箭头几何计算不准确：8px正方形旋转45°后，从中心到尖端应为 5.66px，但代码使用 4px</p>
+        <p>2. 这导致有箭头时的实际间距比设定值小约 1.66px</p>
+        <p>3. 不同方向的间距可能不一致</p>
+    </div>
+
+    <div class="test-container">
+        <div class="test-title">测试1：相同 offset-distance，有箭头 vs 无箭头</div>
+        <div class="measurement-area">
+            <div class="test-grid">
+                <div class="test-item">
+                    <ldesign-popup content="有箭头，offset-distance=8" placement="top" offset-distance="8" arrow="true">
+                        <ldesign-button slot="trigger">有箭头 8px</ldesign-button>
+                    </ldesign-popup>
+                    <div class="test-label">有箭头，offset-distance=8</div>
+                </div>
+                
+                <div class="test-item">
+                    <ldesign-popup content="无箭头，offset-distance=8" placement="top" offset-distance="8" arrow="false">
+                        <ldesign-button slot="trigger">无箭头 8px</ldesign-button>
+                    </ldesign-popup>
+                    <div class="test-label">无箭头，offset-distance=8</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <div class="test-title">测试2：不同 offset-distance 值的对比</div>
+        <div class="measurement-area">
+            <div class="test-grid">
+                <div class="test-item">
+                    <ldesign-popup content="4px间距" placement="top" offset-distance="4">
+                        <ldesign-button slot="trigger">4px</ldesign-button>
+                    </ldesign-popup>
+                    <div class="test-label">offset-distance=4</div>
+                </div>
+                
+                <div class="test-item">
+                    <ldesign-popup content="8px间距" placement="top" offset-distance="8">
+                        <ldesign-button slot="trigger">8px</ldesign-button>
+                    </ldesign-popup>
+                    <div class="test-label">offset-distance=8</div>
+                </div>
+                
+                <div class="test-item">
+                    <ldesign-popup content="12px间距" placement="top" offset-distance="12">
+                        <ldesign-button slot="trigger">12px</ldesign-button>
+                    </ldesign-popup>
+                    <div class="test-label">offset-distance=12</div>
+                </div>
+                
+                <div class="test-item">
+                    <ldesign-popup content="16px间距" placement="top" offset-distance="16">
+                        <ldesign-button slot="trigger">16px</ldesign-button>
+                    </ldesign-popup>
+                    <div class="test-label">offset-distance=16</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <div class="test-title">测试3：所有方向的间距一致性（offset-distance=10）</div>
+        <div class="measurement-area">
+            <div class="direction-test">
+                <div>
+                    <ldesign-popup content="Top Start" placement="top-start" offset-distance="10">
+                        <ldesign-button slot="trigger">TL</ldesign-button>
+                    </ldesign-popup>
+                </div>
+                <div>
+                    <ldesign-popup content="Top" placement="top" offset-distance="10">
+                        <ldesign-button slot="trigger">Top</ldesign-button>
+                    </ldesign-popup>
+                </div>
+                <div>
+                    <ldesign-popup content="Top End" placement="top-end" offset-distance="10">
+                        <ldesign-button slot="trigger">TR</ldesign-button>
+                    </ldesign-popup>
+                </div>
+                
+                <div>
+                    <ldesign-popup content="Left" placement="left" offset-distance="10">
+                        <ldesign-button slot="trigger">Left</ldesign-button>
+                    </ldesign-popup>
+                </div>
+                <div></div>
+                <div>
+                    <ldesign-popup content="Right" placement="right" offset-distance="10">
+                        <ldesign-button slot="trigger">Right</ldesign-button>
+                    </ldesign-popup>
+                </div>
+                
+                <div>
+                    <ldesign-popup content="Bottom Start" placement="bottom-start" offset-distance="10">
+                        <ldesign-button slot="trigger">BL</ldesign-button>
+                    </ldesign-popup>
+                </div>
+                <div>
+                    <ldesign-popup content="Bottom" placement="bottom" offset-distance="10">
+                        <ldesign-button slot="trigger">Bottom</ldesign-button>
+                    </ldesign-popup>
+                </div>
+                <div>
+                    <ldesign-popup content="Bottom End" placement="bottom-end" offset-distance="10">
+                        <ldesign-button slot="trigger">BR</ldesign-button>
+                    </ldesign-popup>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <div class="test-title">测试4：边界情况（靠近屏幕边缘）</div>
+        <div style="height: 300px; position: relative; border: 2px dashed #ccc;">
+            <div style="position: absolute; top: 10px; left: 10px;">
+                <ldesign-popup content="靠近左上角" placement="bottom-start" offset-distance="8">
+                    <ldesign-button slot="trigger">左上角</ldesign-button>
+                </ldesign-popup>
+            </div>
+            
+            <div style="position: absolute; top: 10px; right: 10px;">
+                <ldesign-popup content="靠近右上角" placement="bottom-end" offset-distance="8">
+                    <ldesign-button slot="trigger">右上角</ldesign-button>
+                </ldesign-popup>
+            </div>
+            
+            <div style="position: absolute; bottom: 10px; left: 10px;">
+                <ldesign-popup content="靠近左下角" placement="top-start" offset-distance="8">
+                    <ldesign-button slot="trigger">左下角</ldesign-button>
+                </ldesign-popup>
+            </div>
+            
+            <div style="position: absolute; bottom: 10px; right: 10px;">
+                <ldesign-popup content="靠近右下角" placement="top-end" offset-distance="8">
+                    <ldesign-button slot="trigger">右下角</ldesign-button>
+                </ldesign-popup>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入组件 -->
+    <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    <script>
+        // 确保组件加载完成后再显示页面内容
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成，组件应该已经可用');
+        });
+    </script>
+</body>
+</html>

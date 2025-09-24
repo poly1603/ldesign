@@ -101,6 +101,20 @@
     opacity: 0;
   }
 
+  /* 顶层缺省图标：用于“所有一级都有图标”的视觉要求（不透明，占位一致） */
+  &__icon--default {
+    position: relative;
+  }
+  &__icon--default::before {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: currentColor;
+    opacity: .35;
+  }
+
   /* 横向模式：顶层横向排列，子菜单下拉 */
   &--horizontal {
     // 主容器不需额外样式
@@ -110,11 +124,16 @@
     display: flex;
     align-items: center;
     gap: var(--menu-gap);
+    width: 100%; // 让“更多”能够推到最右侧
   }
 
   &--horizontal>.ldesign-menu__list>li {
     position: relative;
     margin: 0 !important;
+  }
+  // 让“更多”尽可能靠右
+  &--horizontal>.ldesign-menu__list>.ldesign-menu__node--more {
+    margin-left: auto;
   }
 
   &--horizontal>.ldesign-menu__list>li>.ldesign-menu__item {
@@ -178,6 +197,11 @@
 
   &__down-children .ldesign-menu__icon {
     margin-left: 0;
+  }
+
+  /* 隐藏测量层：保证与横向顶层一致的宽度规则（item 宽度应为 auto）*/
+  &__measure .ldesign-menu__item {
+    width: auto;
   }
 
   /* 纵向行内展开时，给图标左边增加一点空间，视觉更均衡 */

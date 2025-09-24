@@ -63,6 +63,7 @@ export class LdesignTabs {
   private slotEl?: HTMLSlotElement;
   private mutationObserver?: MutationObserver;
   private resizeObserver?: ResizeObserver;
+  private shouldCenterOnUpdate = false;
 
   @Watch('value')
   watchValue(newVal?: string) {
@@ -112,6 +113,15 @@ export class LdesignTabs {
     nav?.addEventListener('scroll', this.onNavScroll, { passive: true } as any);
     // 初次更新滚动按钮
     this.updateScrollButtons();
+  }
+
+  componentDidRender() {
+    // 在渲染完成后再计算 ink 位置，确保取到最新的激活按钮尺寸与位置
+    requestAnimationFrame(() => {
+      this.updateInkBar();
+      this.updateScrollButtons();
+      this.centerActiveIfNeeded();
+    });
   }
 
   disconnectedCallback() {
@@ -206,6 +216,8 @@ private getPanels(): (HTMLElement & { name?: string; label?: string; disabled?: 
 
   private setActive(name: string, fromKeyboardOrNav = false) {
     if (!name) return;
+    // 标记：本次变更后需要把激活项滚动到容器中间
+    this.shouldCenterOnUpdate = true;
     if (this.value !== undefined) {
       // 受控：更新内部 currentName 以获得即时视觉效果，但不写入 value；发事件
       this.currentName = name;
@@ -244,7 +256,6 @@ private getPanels(): (HTMLElement & { name?: string; label?: string; disabled?: 
         }
       } catch {}
     });
-    this.updateInkBar();
   }
 
   private onTabClick = (item: TabMeta, e: MouseEvent) => {
@@ -299,21 +310,50 @@ private getPanels(): (HTMLElement & { name?: string; label?: string; disabled?: 
       const nav = this.getNavScrollEl();
       const activeBtn = this.el.querySelector('.ldesign-tabs__tab.ldesign-tabs__tab--active') as HTMLElement | null;
       if (!nav || !activeBtn) { this.inkStyle = {}; return; }
-      const navRect = nav.getBoundingClientRect();
-      const tabRect = activeBtn.getBoundingClientRect();
       const horizontal = this.getTablistOrientation() === 'horizontal';
       if (horizontal) {
-        const width = tabRect.width;
-        const x = tabRect.left - navRect.left + nav.scrollLeft;
-        this.inkStyle = { width: `${width}px`, transform: `translateX(${Math.max(0, x - nav.scrollLeft)}px)` };
+        // 使用 offsetLeft/offsetWidth，ink 与 tab 同属于 nav-scroll 的内容坐标系，无需减去 scrollLeft
+        const width = activeBtn.offsetWidth;
+        const x = activeBtn.offsetLeft;
+        this.inkStyle = { width: `${width}px`, transform: `translateX(${Math.max(0, x)}px)` };
       } else {
-        const height = tabRect.height;
-        const y = tabRect.top - navRect.top + nav.scrollTop;
-        this.inkStyle = { height: `${height}px`, transform: `translateY(${Math.max(0, y - nav.scrollTop)}px)` };
+        const height = activeBtn.offsetHeight;
+        const y = activeBtn.offsetTop;
+        this.inkStyle = { height: `${height}px`, transform: `translateY(${Math.max(0, y)}px)` };
       }
     } catch {
       this.inkStyle = {};
     }
+  }
+
+  private centerActiveIfNeeded() {
+    if (!this.shouldCenterOnUpdate) return;
+    const nav = this.getNavScrollEl();
+    const activeBtn = this.el.querySelector('.ldesign-tabs__tab.ldesign-tabs__tab--active') as HTMLElement | null;
+    if (!nav || !activeBtn) { this.shouldCenterOnUpdate = false; return; }
+    const TOL = 8; // 中心判定容忍度
+    const horizontal = this.getTablistOrientation() === 'horizontal';
+    if (horizontal) {
+      const center = nav.scrollLeft + nav.clientWidth / 2;
+      const tabCenter = activeBtn.offsetLeft + activeBtn.offsetWidth / 2;
+      // 规则：当选中在可视中心线的左侧（含容忍范围）不滚动；仅当在右侧时滚动到中心
+      if (tabCenter > center + TOL) {
+        const target = tabCenter - nav.clientWidth / 2;
+        const max = nav.scrollWidth - nav.clientWidth;
+        const next = Math.max(0, Math.min(target, max));
+        nav.scrollTo({ left: next, behavior: 'smooth' });
+      }
+    } else {
+      const center = nav.scrollTop + nav.clientHeight / 2;
+      const tabCenter = activeBtn.offsetTop + activeBtn.offsetHeight / 2;
+      if (tabCenter > center + TOL) {
+        const target = tabCenter - nav.clientHeight / 2;
+        const max = nav.scrollHeight - nav.clientHeight;
+        const next = Math.max(0, Math.min(target, max));
+        nav.scrollTo({ top: next, behavior: 'smooth' });
+      }
+    }
+    this.shouldCenterOnUpdate = false;
   }
 
   private updateScrollButtons() {

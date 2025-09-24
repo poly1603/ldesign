@@ -260,7 +260,9 @@ export class LdesignPopup {
     const strategy = this.getStrategy();
     const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
     const base = this.toNumber(this.offsetDistance, 8);
-    const offsetValue = base + (this.arrow ? 4 : 0);
+    // 修复箭头几何计算：8px正方形旋转45°后，从中心到尖端的距离是 4*√2 ≈ 5.66px
+    const arrowTipDistance = Math.sqrt(32); // 4 * √2 ≈ 5.66px
+    const offsetValue = base + (this.arrow ? arrowTipDistance : 0);
 
     const middleware = [ offset(offsetValue), flip({ boundary } as any), shift({ padding: 8, boundary, mainAxis: false, crossAxis: true } as any) ];
     if (this.arrow && this.arrowElement) middleware.push(arrow({ element: this.arrowElement }));
@@ -274,7 +276,9 @@ export class LdesignPopup {
     if (this.arrow && this.arrowElement && middlewareData.arrow) {
       const { x: ax, y: ay } = middlewareData.arrow;
       const staticSide = { top: 'bottom', right: 'left', bottom: 'top', left: 'right' }[resolvedPlacement.split('-')[0]] as any;
-      Object.assign(this.arrowElement.style, { left: ax != null ? `${ax}px` : '', top: ay != null ? `${ay}px` : '', right: '', bottom: '', [staticSide]: '-4px' });
+      // 使用正确的箭头偏移距离
+      const arrowOffset = `-${arrowTipDistance}px`;
+      Object.assign(this.arrowElement.style, { left: ax != null ? `${ax}px` : '', top: ay != null ? `${ay}px` : '', right: '', bottom: '', [staticSide]: arrowOffset });
       this.arrowElement.setAttribute('data-placement', resolvedPlacement);
     }
 

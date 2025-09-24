@@ -44,19 +44,6 @@ outline: deep
     <ldesign-tab-panel name="settings" label="设置">设置内容</ldesign-tab-panel>
   </ldesign-tabs>
 </div>
-<script>
-  (function(){
-    const box = document.getElementById('tabs-ctrl-container');
-    if (!box || box.dataset.inited) return; box.dataset.inited = '1';
-    const tabs = document.getElementById('tabs-ctrl-live');
-    const cur = document.getElementById('tabs-ctrl-current');
-    const btn1 = document.getElementById('tabs-ctrl-to-profile');
-    const btn2 = document.getElementById('tabs-ctrl-to-settings');
-    if (btn1) btn1.addEventListener('click', () => { if (tabs) (tabs).value = 'profile'; if (cur) cur.textContent = 'profile'; });
-    if (btn2) btn2.addEventListener('click', () => { if (tabs) (tabs).value = 'settings'; if (cur) cur.textContent = 'settings'; });
-    if (tabs) tabs.addEventListener('ldesignChange', (e) => { if (cur) cur.textContent = e.detail; });
-  })();
-</script>
 
 ### 源码
 
@@ -135,29 +122,6 @@ outline: deep
 <div id="tabs-live-container2" style="width: 560px; border: 1px dashed var(--ld-border, #e5e7eb); padding: 8px;">
   <ldesign-tabs id="tabs-live-hz2" default-value="t1"></ldesign-tabs>
 </div>
-<script>
-  (function(){
-    const hostHz = document.getElementById('tabs-live-hz2');
-    if (hostHz && !hostHz.dataset.inited) {
-      hostHz.dataset.inited = '1';
-      const items = Array.from({ length: 12 }).map((_, i) => ({
-        name: `t${i+1}`,
-        label: `标签 ${i+1}`,
-        content: `内容 ${i+1}`
-      }));
-      hostHz.innerHTML = items.map(it => `<ldesign-tab-panel name="${it.name}" label="${it.label}">${it.content}</ldesign-tab-panel>`).join('');
-    }
-    const range = document.getElementById('tabs-live-range2');
-    const widthEl = document.getElementById('tabs-live-width2');
-    const container = document.getElementById('tabs-live-container2');
-    const applyW = (w) => { if (container) container.style.width = `${w}px`; if (widthEl) widthEl.textContent = String(w); };
-    if (range && !range.dataset.inited) {
-      range.dataset.inited = '1';
-      applyW(Number(range.value || 560));
-      range.addEventListener('input', () => applyW(Number(range.value || 560)));
-    }
-  })();
-</script>
 
 ### 纵向溢出 - 实时演示（Live）
 
@@ -175,17 +139,6 @@ outline: deep
     </div>
   </div>
 </div>
-<script>
-  (function(){
-    const left = document.getElementById('tabs-live-left2');
-    const right = document.getElementById('tabs-live-right2');
-    const fill = (el) => { if (!el || el.dataset.inited) return; el.dataset.inited = '1';
-      const vItems = Array.from({ length: 10 }).map((_, i) => ({ name: `v${i+1}`, label: `选项 ${i+1}`, content: `纵向内容 ${i+1}` }));
-      el.innerHTML = vItems.map(it => `<ldesign-tab-panel name="${it.name}" label="${it.label}">${it.content}</ldesign-tab-panel>`).join('');
-    };
-    fill(left); fill(right);
-  })();
-</script>
 
 ### 横向溢出 - 实时演示
 
@@ -277,29 +230,6 @@ outline: deep
 <div class="demo-container">
   <ldesign-tabs id="tabs-edit-live" addable default-value="a"></ldesign-tabs>
 </div>
-<script>
-  (function(){
-    const host = document.getElementById('tabs-edit-live');
-    if (!host || host.dataset.inited) return; host.dataset.inited = '1';
-    const panels = [
-      { name: 'a', label: 'A', content: 'A 内容' },
-      { name: 'b', label: 'B', content: 'B 内容', closable: true },
-    ];
-    const render = () => host.innerHTML = panels.map(p => `<ldesign-tab-panel name="${p.name}" label="${p.label}" ${p.closable ? 'closable' : ''}>${p.content}</ldesign-tab-panel>`).join('');
-    render();
-    host.addEventListener('ldesignAdd', () => {
-      const n = String.fromCharCode('A'.charCodeAt(0) + panels.length);
-      panels.push({ name: n.toLowerCase(), label: n, content: `${n} 内容`, closable: true });
-      render();
-    });
-    host.addEventListener('ldesignRemove', (e) => {
-      const { name } = e.detail || {};
-      const idx = panels.findIndex(p => p.name === name);
-      if (idx >= 0) panels.splice(idx, 1);
-      render();
-    });
-  })();
-</script>
 
 ### 实时演示（受控）
 
@@ -307,40 +237,6 @@ outline: deep
   <ldesign-tabs id="tabs-edit-controlled-live" value="x1" addable></ldesign-tabs>
   <div style="margin:6px 0 0; color: var(--vp-c-text-2);">当前激活：<strong id="tabs-edit-current-live">x1</strong></div>
 </div>
-<script>
-  (function(){
-    const host2 = document.getElementById('tabs-edit-controlled-live');
-    if (!host2 || host2.dataset.inited) return; host2.dataset.inited = '1';
-    const cur = document.getElementById('tabs-edit-current-live');
-    let seq = 4;
-    let p2 = [
-      { name: 'x1', label: '一', closable: true, content: '一 内容' },
-      { name: 'x2', label: '二', closable: true, content: '二 内容' },
-      { name: 'x3', label: '三', closable: true, content: '三 内容' },
-    ];
-    const render2 = () => host2.innerHTML = p2.map(p => `<ldesign-tab-panel name="${p.name}" label="${p.label}" closable>${p.content}</ldesign-tab-panel>`).join('');
-    render2();
-    host2.addEventListener('ldesignChange', (e) => { host2.value = e.detail; if (cur) cur.textContent = e.detail; });
-    host2.addEventListener('ldesignAdd', () => {
-      const name = `x${seq++}`;
-      p2.push({ name, label: `新 ${seq-1}`, closable: true, content: `新内容 ${name}` });
-      render2();
-      host2.value = name;
-      if (cur) cur.textContent = name;
-    });
-    host2.addEventListener('ldesignRemove', (e) => {
-      const name = e.detail?.name;
-      const idx = p2.findIndex(p => p.name === name);
-      if (idx >= 0) p2.splice(idx, 1);
-      if (host2.value === name) {
-        const fallback = p2[idx] || p2[idx-1] || p2[0];
-        host2.value = fallback ? fallback.name : '';
-        if (cur) cur.textContent = host2.value || '';
-      }
-      render2();
-    });
-  })();
-</script>
 
 你可以通过 tabs 的 addable 属性显示“新增”按钮；在面板上开启 closable 以显示关闭按钮。组件会通过事件通知行为，建议在事件里管理你的数据并更新 DOM。
 

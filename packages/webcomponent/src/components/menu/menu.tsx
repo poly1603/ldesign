@@ -84,6 +84,12 @@ export class LdesignMenu {
   private flyChildrenRefs: Map<string, HTMLUListElement> = new Map();
   private downChildrenRefs: Map<string, HTMLUListElement> = new Map();
 
+  // 测量用：为所有顶层项渲染隐藏的克隆，避免“被收纳导致无法测量宽度”的问题
+  private measureItemRefs: Map<string, HTMLLIElement> = new Map();
+  private registerMeasureTopRef = (key: string) => (el: HTMLLIElement | null) => {
+    if (el) this.measureItemRefs.set(key, el); else this.measureItemRefs.delete(key);
+  };
+
   // 解析 items
   @Watch('items')
   watchItems(val: string | MenuItem[]) {
@@ -363,6 +369,12 @@ export class LdesignMenu {
     return placeholder ? <span class="ldesign-menu__icon ldesign-menu__icon--placeholder"></span> : null;
   }
 
+  // 顶层专用：若没有提供图标，则显示一个中性“默认图标”（不是透明占位），满足“所有一级都有图标”的视觉要求
+  private renderTopIcon(icon?: string) {
+    if (icon) return <span class="ldesign-menu__icon"><ldesign-icon name={icon} size="small" /></span>;
+    return <span class="ldesign-menu__icon ldesign-menu__icon--default" aria-hidden="true"></span>;
+  }
+
   private useFlyout(level: number): boolean {
     if (this.collapse) return true; // 折叠模式下统一使用 flyout 弹出
     if (this.verticalExpand === 'flyout') return true;
@@ -458,13 +470,20 @@ export class LdesignMenu {
   }
 
   private getMoreWidth(): number {
-    const el = this.moreMeasureRef || this.moreRenderRef;
+    // 优先使用真实渲染的“更多”节点的宽度，最准确
+    const live = this.moreRenderRef;
+    if (live && live.offsetWidth) return live.offsetWidth;
+
+    // 退化到测量节点（绝对定位，不影响布局）
+    const el = this.moreMeasureRef;
     if (!el) return 72; // fallback
     const prev = { cssText: el.style.cssText } as any;
+    // 尽量确保是按内容宽度测量
     el.style.position = 'absolute';
     el.style.visibility = 'hidden';
     el.style.left = '-99999px';
     el.style.top = '-99999px';
+    (el.style as any).width = 'auto';
     const w = el.offsetWidth || 72;
     el.style.cssText = prev.cssText;
     return w;
@@ -478,19 +497,20 @@ export class LdesignMenu {
     const list = this.listRef;
     if (!list) return;
 
-    const containerW = list.clientWidth;
+    // 直接以列表自身宽度为准，避免宿主额外内边距/边框的影响
+    const containerW = list.clientWidth || (this.el as HTMLElement).clientWidth;
     if (containerW <= 0) return;
 
-    // 收集顶层项宽度
+    // 收集顶层项宽度（使用隐藏测量克隆，确保即使被收纳也能测到）
     const keys = (this.parsedItems || []).map(it => it.key);
     if (!keys.length) { this.overflowKeys = []; return; }
 
     const widths: number[] = keys.map(k => {
-      const li = this.topItemRefs.get(k);
+      const li = this.measureItemRefs.get(k) || this.topItemRefs.get(k);
       return li ? li.offsetWidth : 0;
     });
 
-    // 若某些宽度仍为 0，说明尚未完成布局，延后一次
+    // 若某些宽度仍为 0，说明隐藏测量层尚未准备好，延后一次
     if (widths.some(w => w === 0)) {
       requestAnimationFrame(() => this.calcOverflow());
       return;
@@ -499,32 +519,42 @@ export class LdesignMenu {
     const style = getComputedStyle(list);
     const gap = parseFloat(style.columnGap || (style.gap || '0')) || 0;
 
+    // 前缀和，快速得到前 n 项之和
     const prefix: number[] = new Array(widths.length + 1).fill(0);
-    for (let i = 0; i < widths.length; i++) prefix[i+1] = prefix[i] + widths[i];
+    for (let i = 0; i < widths.length; i++) prefix[i + 1] = prefix[i] + widths[i];
     const sumW = (n: number) => prefix[n];
 
     const moreW = this.getMoreWidth();
 
     const N = widths.length;
-    let best = N;
-    // 从最多可见开始回退，找到能放下的 n
-    for (let n = N; n >= 0; n--) {
-      const base = sumW(n); // 前 n 项宽度
+    // 使用二分查找找到最大可见前缀，避免 O(N) 回退在大量条目时产生抖动
+    let lo = 0, hi = N; // 可见数量区间 [lo, hi]
+    const fits = (n: number) => {
+      const base = sumW(n);
       const gaps = n > 0 ? (n - 1) * gap : 0;
       const needMore = n < N;
-      const moreGap = needMore && n > 0 ? gap : 0; // 可见项后面与“更多”之间的 gap
+      const moreGap = needMore && n > 0 ? gap : 0;
       const total = base + gaps + (needMore ? (moreGap + moreW) : 0);
-      if (total <= containerW) { best = n; break; }
+      // 留出 0.5px 的容错，避免亚像素/取整导致“还差 1px”未放下
+      return total <= containerW + 0.5;
+    };
+    while (lo < hi) {
+      const mid = Math.ceil((lo + hi + 1) / 2);
+      if (fits(mid)) lo = mid; else hi = mid - 1;
     }
+    const best = lo;
 
     const nextOverflow = keys.slice(best);
-    if (this.overflowKeys.join(',') !== nextOverflow.join(',')) {
+    const changed = this.overflowKeys.join(',') !== nextOverflow.join(',');
+    if (changed) {
       this.overflowKeys = nextOverflow;
       const cnt = nextOverflow.length;
       if (cnt !== this.lastOverflowCount) {
         this.lastOverflowCount = cnt;
         this.ldesignOverflowChange.emit({ overflowCount: cnt });
       }
+      // 当刚显示“更多”后，再用真实节点宽度复测一次，避免测量节点误差导致的“明明还能放下一个”
+      if (cnt > 0) requestAnimationFrame(() => this.calcOverflow());
     }
   }
 
@@ -694,7 +724,7 @@ export class LdesignMenu {
             'ldesign-menu__item--disabled': !!item.disabled,
             'ldesign-menu__item--active': isActive,
           }} role="menuitem" onClick={onClick}>
-          {this.renderIcon(item.icon, this.requireTopIcon && level === 1 && !item.icon)}
+          {level === 1 ? this.renderTopIcon(item.icon) : this.renderIcon(item.icon)}
           <span class="ldesign-menu__title">{item.label}</span>
           {this.renderArrow(open)}
         </div>
@@ -744,7 +774,7 @@ export class LdesignMenu {
             'ldesign-menu__item--disabled': !!item.disabled,
             'ldesign-menu__item--active': isActive,
           }} role="menuitem" onClick={onClick}>
-          {this.renderIcon(item.icon, this.requireTopIcon && level === 1 && !item.icon)}
+          {level === 1 ? this.renderTopIcon(item.icon) : this.renderIcon(item.icon)}
           <span class="ldesign-menu__title">{item.label}</span>
           {this.renderArrow(open, 'down')}
         </div>
@@ -807,7 +837,7 @@ export class LdesignMenu {
 
     const inner = (
       <div class={classes} style={style as any} role="menuitem" onClick={(e) => this.handleItemClick(item, level, e)}>
-        {this.renderIcon(item.icon, this.requireTopIcon && level === 1 && !item.icon)}
+        {level === 1 ? this.renderTopIcon(item.icon) : this.renderIcon(item.icon)}
         {!(this.collapse && level === 1) && <span class="ldesign-menu__title">{item.label}</span>}
       </div>
     );
@@ -869,6 +899,7 @@ export class LdesignMenu {
                   // “更多”测量节点（隐藏，用于拿到宽度）
                   <li class="ldesign-menu__node" role="none" ref={this.registerMoreMeasureRef} style={{ position: 'absolute', visibility: 'hidden', left: '-99999px', top: '-99999px' }}>
                     <div class={{ 'ldesign-menu__item': true, 'ldesign-menu__item--submenu': true }}>
+                      <span class="ldesign-menu__icon ldesign-menu__icon--default" aria-hidden="true"></span>
                       <span class="ldesign-menu__title">{this.moreLabel}</span>
                       {this.renderArrow(false, 'down')}
                     </div>
@@ -879,7 +910,7 @@ export class LdesignMenu {
                     const isOpen = !!this.flyoutOpenMap['__more__'];
                     const isMoreActive = inMoreBySelection || (this.submenuTrigger === 'click' && isOpen);
                     return (
-                      <li class={{ 'ldesign-menu__node': true, 'ldesign-menu__node--dropdown': true, 'ldesign-menu__node--dropdown-open': isOpen }} role="none" ref={this.registerMoreRenderRef}
+                      <li class={{ 'ldesign-menu__node': true, 'ldesign-menu__node--more': true, 'ldesign-menu__node--dropdown': true, 'ldesign-menu__node--dropdown-open': isOpen }} role="none" ref={this.registerMoreRenderRef}
                           onMouseEnter={() => { if (this.submenuTrigger === 'hover') { this.openTopExclusive('__more__'); this.openDown('__more__'); this.previewFromMore(); } }}
                           onMouseLeave={() => { if (this.submenuTrigger === 'hover') this.scheduleCloseDown('__more__'); }}>
                         <div class={{ 'ldesign-menu__item': true, 'ldesign-menu__item--submenu': true, 'ldesign-menu__item--active': isMoreActive }} role="menuitem"
@@ -897,6 +928,7 @@ export class LdesignMenu {
                               }
                             }
                           }}>
+                          <span class="ldesign-menu__icon ldesign-menu__icon--default" aria-hidden="true"></span>
                           <span class="ldesign-menu__title">{this.moreLabel}</span>
                           {this.renderArrow(!!this.flyoutOpenMap['__more__'], 'down')}
                         </div>
@@ -910,6 +942,20 @@ export class LdesignMenu {
               })()
             : this.parsedItems.map(it => this.renderMenuNode(it, 1))}
         </ul>
+        {/* 隐藏测量层：渲染所有顶层条目的克隆，用于稳定测量宽度 */}
+        {this.mode === 'horizontal' && (
+          <ul class="ldesign-menu__measure" style={{ position: 'absolute', left: '-99999px', top: '-99999px', visibility: 'hidden', padding: '0', margin: '0' }}>
+            {(this.parsedItems || []).map(it => (
+              <li class="ldesign-menu__node" role="none" ref={this.registerMeasureTopRef(it.key)}>
+                <div class={{ 'ldesign-menu__item': true, 'ldesign-menu__item--submenu': !!it.children?.length }}>
+                  {this.renderTopIcon(it.icon)}
+                  <span class="ldesign-menu__title">{it.label}</span>
+                  {!!it.children?.length && this.renderArrow(false, 'down')}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </Host>
     );
   }
