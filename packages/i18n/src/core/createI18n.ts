@@ -113,8 +113,13 @@ export function createI18n(options: CreateI18nOptions): I18nInstance {
   // 创建加载器
   let loader = options.customLoader
 
-  // 只有在没有自定义加载器且需要使用内置翻译时，才创建内置加载器
-  if (!loader && options.useBuiltIn !== false) {
+  // 如果只有messages且不需要内置翻译，使用StaticLoader
+  if (!loader && options.messages && options.useBuiltIn === false) {
+    // 使用StaticLoader处理纯用户消息
+    // 这种情况下不需要内置翻译，直接传递messages给I18n构造函数
+    loader = undefined // 让I18n构造函数处理messages
+  } else if (!loader && options.useBuiltIn !== false) {
+    // 需要内置翻译或默认情况，使用BuiltInLoader
     const builtInLoaderOptions: BuiltInLoaderOptions = {
       userMessages: options.messages,
       customLoader: loader,

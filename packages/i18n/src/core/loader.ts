@@ -713,6 +713,15 @@ export class StaticLoader implements Loader {
    * @returns 语言包
    */
   async load(locale: string): Promise<LanguagePackage> {
+    return this.loadSync(locale)
+  }
+
+  /**
+   * 同步加载语言包
+   * @param locale 语言代码
+   * @returns 语言包
+   */
+  loadSync(locale: string): LanguagePackage {
     const packageData = this.packages.get(locale)
     if (!packageData) {
       throw new Error(`Language package for '${locale}' is not registered`)

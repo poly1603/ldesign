@@ -32,6 +32,13 @@ import {
   hasPluralExpression,
   processPluralization,
 } from '../utils/pluralization'
+import { TranslationEngine, type TranslationEngineOptions } from './translation-engine'
+import { CacheManager } from './cache-manager'
+import { ErrorHandler } from './error-handler'
+import { EnhancedPerformanceManager } from './performance-manager'
+import { MemoryManager } from './memory-manager'
+import { PreloadManager } from './preload-manager'
+import { BatchManager } from './batch-manager'
 import { createDetector } from './detector'
 import {
   ErrorManager,
@@ -187,6 +194,24 @@ export class I18n implements I18nInstance {
   private _pluralizationEngine?: PluralizationEngine
   /** 格式化引擎（懒加载） */
   private _formatterEngine?: FormatterEngine
+  /** 翻译引擎 */
+  private translationEngine!: TranslationEngine
+  /** 缓存管理器 */
+  private cacheManager!: CacheManager
+  /** 错误处理器 */
+  private errorHandler!: ErrorHandler
+
+  /** 增强性能管理器 */
+  private enhancedPerformanceManager: EnhancedPerformanceManager
+
+  /** 内存管理器 */
+  private memoryManager: MemoryManager
+
+  /** 预加载管理器 */
+  private preloadManager: PreloadManager
+
+  /** 批量管理器 */
+  private batchManager: BatchManager
 
   // ==================== 事件系统 ====================
 
@@ -516,11 +541,80 @@ export class I18n implements I18nInstance {
           },
           translations
         }
-          ; (this._loader as StaticLoader).registerPackage(locale, packageData)
+        const staticLoader = this._loader as StaticLoader
+        staticLoader.registerPackage(locale, packageData)
+        // 同步加载包，确保getLoadedPackage能够返回数据
+        try {
+          staticLoader.loadSync(locale)
+        } catch (err) {
+          console.warn(`Failed to load package for locale ${locale}:`, err)
+        }
       }
     } else if (options.customLoader) {
       this._loader = options.customLoader
     }
+
+    // 初始化翻译引擎
+    this.translationEngine = new TranslationEngine({
+      currentLocale: this.currentLocale,
+      fallbackLocale: this.options.fallbackLocale,
+      loader: this.loader,
+      packageCache: this.packageCache,
+      debug: process?.env?.NODE_ENV === 'development'
+    })
+
+    // 初始化缓存管理器
+    this.cacheManager = new CacheManager({
+      maxSize: this.options.cache?.maxSize || 1000,
+      ttl: this.options.cache?.ttl || 300000, // 5分钟
+      enableStats: process?.env?.NODE_ENV === 'development'
+    })
+
+    // 初始化错误处理器
+    this.errorHandler = new ErrorHandler({
+      strategy: 'FALLBACK',
+      maxRetries: 3,
+      retryDelay: 1000,
+      enableLogging: process?.env?.NODE_ENV === 'development'
+    })
+
+    // 初始化增强性能管理器
+    this.enhancedPerformanceManager = new EnhancedPerformanceManager({
+      enabled: process?.env?.NODE_ENV === 'development',
+      sampleRate: 0.1,
+      slowTranslationThreshold: 10,
+      maxSlowTranslations: 50,
+      maxFrequentKeys: 20
+    })
+
+    // 初始化内存管理器
+    this.memoryManager = new MemoryManager({
+      maxMemory: this.options.cache?.maxMemory || 100 * 1024 * 1024, // 100MB
+      pressureThreshold: 0.8,
+      autoCleanup: true,
+      cleanupStrategy: 'hybrid'
+    })
+
+    // 初始化预加载管理器
+    this.preloadManager = new PreloadManager(this.loader, {
+      enabled: true,
+      strategy: 'smart',
+      maxConcurrent: 3,
+      enablePrediction: true
+    })
+
+    // 初始化批量管理器
+    this.batchManager = new BatchManager({
+      batchSize: 50,
+      batchDelay: 10,
+      enableSmartBatching: true,
+      enableParallel: true
+    })
+
+    // 设置批量管理器的翻译函数
+    this.batchManager.setTranslateFunction(async (key, params) => {
+      return this.t(key, params)
+    })
 
     // 绑定翻译函数的 this 上下文，确保在作为回调函数使用时 this 指向正确
     this.t = this.t.bind(this)
@@ -819,6 +913,11 @@ export class I18n implements I18nInstance {
       const previousLocale = this.currentLocale
       this.currentLocale = locale
 
+      // 更新翻译引擎配置
+      this.translationEngine.updateOptions({
+        currentLocale: locale
+      })
+
       // 清除缓存
       if (this.options.cache.enabled) {
         this.cache.clear()
@@ -870,6 +969,7 @@ export class I18n implements I18nInstance {
   ): T {
     const startTime = performance.now()
     let fromCache = false
+    let success = true
 
     try {
       // 检查增强缓存
@@ -881,12 +981,21 @@ export class I18n implements I18nInstance {
         )
         if (cached !== undefined) {
           fromCache = true
+          // 记录性能数据
+          this.enhancedPerformanceManager.recordTranslation(
+            key,
+            startTime,
+            performance.now(),
+            true,
+            true,
+            params
+          )
           return cached as T
         }
       }
 
-      // 执行翻译
-      const result = this.performTranslation(key, params, options)
+      // 执行翻译 - 使用翻译引擎
+      const result = this.translationEngine.translate(key, params, options)
 
       // 缓存结果
       if (this.options.cache.enabled) {
@@ -896,29 +1005,79 @@ export class I18n implements I18nInstance {
           params,
           result
         )
+
+        // 注册内存使用
+        const estimatedSize = this.estimateTranslationSize(key, result, params)
+        this.memoryManager.registerItem(
+          `translation:${this.currentLocale}:${key}`,
+          estimatedSize,
+          'translation',
+          5 // 翻译数据优先级较高
+        )
       }
+
+      // 记录性能数据
+      this.enhancedPerformanceManager.recordTranslation(
+        key,
+        startTime,
+        performance.now(),
+        false,
+        true,
+        params
+      )
 
       return result as T
     }
+    catch (error) {
+      success = false
+      this.handleError(error as Error, 'translation', { key, params })
+      return key as T
+    }
     finally {
-      // 记录性能指标
+      // 记录性能指标（在finally中确保总是执行）
       const endTime = performance.now()
-      this.performanceManager.recordTranslation(
+      this.enhancedPerformanceManager.recordTranslation(
         key,
         startTime,
         endTime,
         fromCache,
+        success,
+        params
       )
-
-      // 更新缓存统计
-      const cacheStats = this.translationCache.getStats()
-      this.performanceManager.updateCacheHitRate(cacheStats.hitRate)
-      this.performanceManager.updateMemoryUsage(cacheStats.size * 100) // 估算
     }
   }
 
   /**
-   * 批量翻译
+   * 优化的异步批量翻译
+   * @param keys 翻译键数组
+   * @param params 插值参数
+   * @returns Promise<翻译结果对象>
+   */
+  async tBatchAsync(
+    keys: string[],
+    params: TranslationParams = this.emptyParams,
+  ): Promise<Record<string, string>> {
+    const promises = keys.map(key =>
+      this.batchManager.addRequest(key, params)
+    )
+
+    const results = await Promise.allSettled(promises)
+    const translations: Record<string, string> = {}
+
+    results.forEach((result, index) => {
+      const key = keys[index]
+      if (result.status === 'fulfilled') {
+        translations[key] = result.value
+      } else {
+        translations[key] = key // 回退到键名
+      }
+    })
+
+    return translations
+  }
+
+  /**
+   * 批量翻译（同步版本）
    * @param keys 翻译键数组
    * @param params 插值参数
    * @returns 翻译结果对象
@@ -1129,6 +1288,10 @@ export class I18n implements I18nInstance {
 
     // 清理事件监听器
     this.eventListeners.clear()
+
+    // 清理性能和内存管理器
+    this.enhancedPerformanceManager.reset()
+    this.memoryManager.destroy()
 
     // 清理所有组件
     this._loader = undefined
@@ -1532,9 +1695,7 @@ export class I18n implements I18nInstance {
    * @returns 是否存在
    */
   exists(key: string, locale?: string): boolean {
-    const targetLocale = locale || this.currentLocale
-    const text = this.getTranslationText(key, targetLocale)
-    return text !== undefined
+    return this.translationEngine.exists(key, locale)
   }
 
   /**
@@ -1894,5 +2055,123 @@ export class I18n implements I18nInstance {
     if (this._cache) {
       this._cache.clear()
     }
+  }
+
+  // ==================== 性能和内存管理 ====================
+
+  /**
+   * 估算翻译数据的内存大小
+   */
+  private estimateTranslationSize(
+    key: string,
+    value: string,
+    params?: TranslationParams
+  ): number {
+    let size = 0
+
+    // 键的大小
+    size += key.length * 2 // UTF-16 字符
+
+    // 值的大小
+    size += value.length * 2
+
+    // 参数的大小
+    if (params) {
+      size += JSON.stringify(params).length * 2
+    }
+
+    // 额外的对象开销
+    size += 100
+
+    return size
+  }
+
+
+
+  /**
+   * 获取内存统计
+   */
+  getMemoryStats() {
+    return this.memoryManager.getStats()
+  }
+
+
+
+  /**
+   * 获取详细的性能报告
+   */
+  getPerformanceReport() {
+    return {
+      performance: this.enhancedPerformanceManager.getDetailedReport(),
+      memory: this.memoryManager.getMemoryReport(),
+      cache: this.getCacheStats()
+    }
+  }
+
+  /**
+   * 执行内存清理
+   */
+  performMemoryCleanup(force: boolean = false) {
+    return this.memoryManager.cleanup(force)
+  }
+
+  /**
+   * 重置性能统计
+   */
+  resetPerformanceStats(): void {
+    this.enhancedPerformanceManager.reset()
+  }
+
+  // ==================== 预加载和批量处理 ====================
+
+  /**
+   * 预加载语言包
+   */
+  preloadLanguages(locales: string[], namespaces?: string[]): Promise<void[]> {
+    return this.preloadManager.preloadCritical(locales, namespaces)
+  }
+
+  /**
+   * 智能预加载
+   */
+  smartPreload(): void {
+    this.preloadManager.smartPreload()
+  }
+
+  /**
+   * 记录语言使用情况（用于智能预加载）
+   */
+  recordLanguageUsage(locale: string, namespace?: string): void {
+    this.preloadManager.recordUsage(locale, namespace)
+  }
+
+  /**
+   * 获取预加载状态
+   */
+  getPreloadStatus() {
+    return this.preloadManager.getPreloadStatus()
+  }
+
+  /**
+   * 获取批量处理统计
+   */
+  getBatchStats() {
+    return this.batchManager.getStats()
+  }
+
+  /**
+   * 刷新批量队列
+   */
+  flushBatch() {
+    return this.batchManager.flushBatch()
+  }
+
+  /**
+   * 清理资源
+   */
+  cleanupResources(): void {
+    this.preloadManager.cleanup()
+    this.batchManager.cleanup()
+    this.memoryManager.cleanup()
   }
 }

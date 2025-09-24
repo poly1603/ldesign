@@ -148,6 +148,7 @@
     "@vue/test-utils": "^2.4.4",
     "eslint": "^9.0.0",
     "jsdom": "^24.0.0",
+    "less": "^4.4.1",
     "rollup": "^4.9.6",
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-vue": "^6.0.0",

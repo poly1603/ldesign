@@ -198,6 +198,88 @@ export {
   formatRelativeTime,
 } from './utils/formatters'
 
+// 通用工具
+export {
+  TypeGuards,
+  ArrayUtils,
+  ObjectUtils,
+  StringUtils,
+  TimeUtils,
+  ErrorUtils,
+  CacheKeyUtils
+} from './utils/common'
+
+// 缓存操作工具
+export {
+  CacheOperations,
+  createTranslationCache,
+  createPackageCache
+} from './utils/cache-operations'
+export type {
+  CacheItem,
+  CacheOperationConfig,
+  CacheStats
+} from './utils/cache-operations'
+
+// 错误处理工具
+export {
+  UnifiedErrorHandler,
+  ErrorHandlingStrategy,
+  withErrorHandling,
+  withAsyncErrorHandling,
+  createDefaultErrorHandler
+} from './utils/error-handling'
+export type {
+  ErrorContext,
+  ErrorHandlingResult,
+  RetryConfig
+} from './utils/error-handling'
+
+// 验证工具增强
+export {
+  ValidationUtils
+} from './utils/validation'
+
+// 性能和内存管理
+export {
+  EnhancedPerformanceManager,
+  createEnhancedPerformanceManager
+} from './core/performance-manager'
+export type {
+  PerformanceMetrics,
+  PerformanceConfig
+} from './core/performance-manager'
+
+export {
+  MemoryManager,
+  createMemoryManager
+} from './core/memory-manager'
+export type {
+  MemoryStats,
+  MemoryConfig
+} from './core/memory-manager'
+
+export {
+  PreloadManager,
+  createPreloadManager
+} from './core/preload-manager'
+export type {
+  PreloadConfig
+} from './core/preload-manager'
+
+export {
+  BatchManager,
+  createBatchManager
+} from './core/batch-manager'
+export type {
+  BatchConfig
+} from './core/batch-manager'
+
+// 核心组件导出
+export { TranslationEngine } from './core/translation-engine'
+export { CacheManager } from './core/cache-manager'
+export { ErrorHandler } from './core/error-handler'
+
 // ==================== 新增功能导出 ====================
 
 // 命名空间支持

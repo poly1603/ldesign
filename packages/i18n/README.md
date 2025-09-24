@@ -29,7 +29,14 @@
 - 🔢 **复数化支持** - 完整的复数形式处理，支持多种语言规则和管道分隔语法
 - ⏰ **格式化组件** - 相对时间、列表格式化等实用组件，支持自定义格式和本地化
 - 🛠️ **开发工具** - Vue DevTools 集成，翻译追踪和性能监控，缺失翻译自动收集
-- ⚡ **性能优化** - 缓存、批量翻译、预加载等性能优化功能，响应式优化
+
+### 🚀 性能优化系统 (v2.0 新增)
+
+- ⚡ **智能批量处理** - 自动批量翻译请求，支持优先级和并行处理，减少API调用
+- 🧠 **智能预加载** - 基于使用模式的预测性加载，关键资源预加载，提升用户体验
+- 💾 **高级内存管理** - 多策略内存清理（LRU、TTL、频率），内存压力检测和自动优化
+- 📊 **性能监控** - 详细的性能指标追踪，翻译耗时分析，缓存命中率统计
+- 🔧 **自动优化建议** - 基于使用数据的性能优化建议，智能缓存策略调整
 
 ## 📦 安装
 
@@ -394,6 +401,116 @@ const i18n = new I18n({
 | 性能监控 | ✅ 内置 | ❌ 无 | ❌ 无 | ❌ 无 |
 | 包体积 | 🎯 优化 | 📦 中等 | 📦 较大 | 📦 较大 |
 
+## 🚀 性能优化指南
+
+### 批量翻译优化
+
+```typescript
+import { createI18n } from '@ldesign/i18n'
+
+const i18n = createI18n({
+  locale: 'zh-CN',
+  messages: {
+    'zh-CN': { hello: '你好', world: '世界' },
+    'en': { hello: 'Hello', world: 'World' }
+  }
+})
+
+// 异步批量翻译 - 自动优化批处理
+const translations = await i18n.tBatchAsync([
+  'hello',
+  'world',
+  'welcome'
+])
+console.log(translations) // { hello: '你好', world: '世界', welcome: 'welcome' }
+
+// 获取批量处理统计
+const batchStats = i18n.getBatchStats()
+console.log('平均批量大小:', batchStats.averageBatchSize)
+console.log('缓存命中率:', batchStats.cacheHitRate)
+```
+
+### 智能预加载
+
+```typescript
+// 预加载关键语言包
+await i18n.preloadLanguages(['en', 'ja'], ['common', 'ui'])
+
+// 启用智能预加载 - 基于使用模式自动预加载
+i18n.smartPreload()
+
+// 记录语言使用情况（用于智能预加载）
+i18n.recordLanguageUsage('en', 'dashboard')
+
+// 获取预加载状态
+const preloadStatus = i18n.getPreloadStatus()
+console.log('预加载进度:', preloadStatus.progress)
+```
+
+### 性能监控
+
+```typescript
+// 获取详细性能报告
+const performanceReport = i18n.getPerformanceReport()
+console.log('翻译性能:', performanceReport.performance)
+console.log('内存使用:', performanceReport.memory)
+console.log('缓存统计:', performanceReport.cache)
+
+// 获取优化建议
+const suggestions = i18n.getOptimizationSuggestions()
+suggestions.forEach(suggestion => {
+  console.log(`${suggestion.type}: ${suggestion.message}`)
+})
+```
+
+### 内存管理
+
+```typescript
+// 手动执行内存清理
+const cleanupResult = i18n.performMemoryCleanup()
+console.log('清理的条目数:', cleanupResult.itemsRemoved)
+console.log('释放的内存:', cleanupResult.memoryFreed)
+
+// 清理所有资源
+i18n.cleanupResources()
+
+// 重置性能统计
+i18n.resetPerformanceStats()
+```
+
+### Vue 3 性能优化
+
+```vue
+<template>
+  <div>
+    <!-- 使用批量翻译组合式API -->
+    <div v-for="(text, key) in batchTranslations" :key="key">
+      {{ text }}
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { useI18nEnhanced } from '@ldesign/i18n/vue'
+
+const { tBatch, preload, getPerformanceMetrics } = useI18nEnhanced()
+
+// 批量翻译
+const batchTranslations = await tBatch([
+  'common.hello',
+  'common.welcome',
+  'ui.button.submit'
+])
+
+// 预加载下一页面的翻译
+await preload(['dashboard', 'settings'])
+
+// 获取性能指标
+const metrics = getPerformanceMetrics()
+console.log('组件翻译性能:', metrics)
+</script>
+```
+
 ## 🧪 测试
 
 ```bash
@@ -440,6 +557,24 @@ pnpm test
 - [GitHub Issues](https://github.com/ldesign/i18n/issues)
 - [讨论区](https://github.com/ldesign/i18n/discussions)
 - [文档站点](https://ldesign.github.io/i18n/)
+
+## 📚 完整文档
+
+### 📖 核心文档
+- [📚 API 参考](./API_REFERENCE.md) - 完整的 API 文档
+- [🚀 性能优化指南](./PERFORMANCE_GUIDE.md) - 详细的性能优化指南
+- [🔄 迁移指南](./MIGRATION_GUIDE.md) - v1.x 到 v2.0 迁移指南
+
+### 🎯 专题指南
+- [⚡ Vue 3 集成](./VUE_INTEGRATION.md) - Vue 3 深度集成指南
+- [🔧 配置指南](./CONFIGURATION.md) - 详细配置选项
+- [🧪 测试指南](./TESTING.md) - 单元测试和集成测试
+- [🛠️ 故障排除](./TROUBLESHOOTING.md) - 常见问题解决方案
+
+### 📊 性能文档
+- [📈 性能基准](./BENCHMARKS.md) - 性能测试结果
+- [💡 最佳实践](./BEST_PRACTICES.md) - 使用最佳实践
+- [🔍 调试指南](./DEBUGGING.md) - 调试和分析工具
 
 ## 🙏 致谢
 

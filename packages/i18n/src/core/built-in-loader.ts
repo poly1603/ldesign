@@ -81,6 +81,23 @@ export class BuiltInLoader implements Loader {
       clone: true,
       ...options.mergeOptions
     }
+
+    // 预加载用户消息到缓存中，确保getLoadedPackage能立即返回数据
+    this.preloadUserMessages()
+  }
+
+  /**
+   * 预加载用户消息到缓存中
+   */
+  private preloadUserMessages(): void {
+    for (const [locale, messages] of Object.entries(this.userMessages)) {
+      try {
+        const packageData = this.createPackageFromMessages(locale, messages)
+        this.loadedPackages.set(locale, packageData)
+      } catch (error) {
+        console.warn(`Failed to preload user messages for locale ${locale}:`, error)
+      }
+    }
   }
 
   /**

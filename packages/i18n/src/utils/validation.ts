@@ -1,11 +1,13 @@
 /**
  * 验证工具函数
- * 
+ *
  * 提供语言代码、翻译键、翻译参数等验证功能
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
+
+import { TypeGuards, StringUtils } from './common'
 
 /**
  * 语言代码正则表达式
@@ -20,11 +22,98 @@ const LANGUAGE_CODE_REGEX = /^[a-z]{2}(-[A-Z]{2})?$/
 const TRANSLATION_KEY_REGEX = /^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*$/
 
 /**
+ * 统一验证工具类
+ */
+export class ValidationUtils {
+  /**
+   * 验证必需参数
+   */
+  static validateRequired<T>(value: T, name: string): T {
+    if (value === null || value === undefined) {
+      throw new Error(`${name} is required`)
+    }
+    return value
+  }
+
+  /**
+   * 验证字符串参数
+   */
+  static validateString(value: unknown, name: string, allowEmpty = false): string {
+    if (!TypeGuards.isString(value)) {
+      throw new Error(`${name} must be a string`)
+    }
+    if (!allowEmpty && StringUtils.isBlank(value)) {
+      throw new Error(`${name} cannot be empty`)
+    }
+    return value
+  }
+
+  /**
+   * 验证对象参数
+   */
+  static validateObject(value: unknown, name: string): Record<string, unknown> {
+    if (!TypeGuards.isObject(value)) {
+      throw new Error(`${name} must be an object`)
+    }
+    return value
+  }
+
+  /**
+   * 验证数组参数
+   */
+  static validateArray(value: unknown, name: string): unknown[] {
+    if (!TypeGuards.isArray(value)) {
+      throw new Error(`${name} must be an array`)
+    }
+    return value
+  }
+
+  /**
+   * 验证函数参数
+   */
+  static validateFunction(value: unknown, name: string): Function {
+    if (!TypeGuards.isFunction(value)) {
+      throw new Error(`${name} must be a function`)
+    }
+    return value
+  }
+
+  /**
+   * 验证枚举值
+   */
+  static validateEnum<T extends string | number>(
+    value: unknown,
+    enumValues: T[],
+    name: string
+  ): T {
+    if (!enumValues.includes(value as T)) {
+      throw new Error(`${name} must be one of: ${enumValues.join(', ')}`)
+    }
+    return value as T
+  }
+
+  /**
+   * 验证范围
+   */
+  static validateRange(
+    value: number,
+    min: number,
+    max: number,
+    name: string
+  ): number {
+    if (value < min || value > max) {
+      throw new Error(`${name} must be between ${min} and ${max}`)
+    }
+    return value
+  }
+}
+
+/**
  * 验证语言代码
- * 
+ *
  * @param languageCode 语言代码
  * @returns 是否有效
- * 
+ *
  * @example
  * ```typescript
  * validateLanguageCode('zh-CN') // true
@@ -33,11 +122,7 @@ const TRANSLATION_KEY_REGEX = /^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*$/
  * ```
  */
 export function validateLanguageCode(languageCode: string): boolean {
-  if (typeof languageCode !== 'string') {
-    return false
-  }
-
-  if (languageCode.length === 0) {
+  if (!TypeGuards.isNonEmptyString(languageCode)) {
     return false
   }
 
