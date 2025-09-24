@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizontal Menu Test - Three Levels</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, 'Microsoft YaHei', sans-serif;
+        }
+        h2 {
+            margin: 40px 0 20px;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+        }
+        .menu-wrapper {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+    <script type="module" src="/build/ldesign.esm.js"></script>
+    <link rel="stylesheet" href="/build/ldesign.css">
+</head>
+<body>
+    <h1>横向菜单三级嵌套测试</h1>
+    
+    <div class="container">
+        <h2>Hover 触发方式</h2>
+        <div class="menu-wrapper">
+            <ldesign-menu 
+                id="menu-hover"
+                mode="horizontal"
+                submenu-trigger="hover"
+            ></ldesign-menu>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Click 触发方式</h2>
+        <div class="menu-wrapper">
+            <ldesign-menu 
+                id="menu-click"
+                mode="horizontal"
+                submenu-trigger="click"
+            ></ldesign-menu>
+        </div>
+    </div>
+
+    <script>
+        // 三级嵌套菜单数据
+        const menuData = [
+            {
+                key: 'home',
+                label: '首页',
+                icon: 'home'
+            },
+            {
+                key: 'products',
+                label: '产品',
+                icon: 'package',
+                children: [
+                    {
+                        key: 'software',
+                        label: '软件产品',
+                        children: [
+                            {
+                                key: 'desktop',
+                                label: '桌面软件',
+                                children: [
+                                    { key: 'windows', label: 'Windows 应用' },
+                                    { key: 'mac', label: 'Mac 应用' },
+                                    { key: 'linux', label: 'Linux 应用' }
+                                ]
+                            },
+                            {
+                                key: 'mobile',
+                                label: '移动应用',
+                                children: [
+                                    { key: 'ios', label: 'iOS 应用' },
+                                    { key: 'android', label: 'Android 应用' }
+                                ]
+                            },
+                            { key: 'web', label: 'Web 应用' }
+                        ]
+                    },
+                    {
+                        key: 'hardware',
+                        label: '硬件产品',
+                        children: [
+                            { key: 'laptop', label: '笔记本电脑' },
+                            { key: 'tablet', label: '平板电脑' },
+                            { key: 'phone', label: '智能手机' }
+                        ]
+                    },
+                    { key: 'cloud', label: '云服务' }
+                ]
+            },
+            {
+                key: 'services',
+                label: '服务',
+                icon: 'server',
+                children: [
+                    {
+                        key: 'consulting',
+                        label: '咨询服务',
+                        children: [
+                            { key: 'tech-consulting', label: '技术咨询' },
+                            { key: 'business-consulting', label: '业务咨询' }
+                        ]
+                    },
+                    {
+                        key: 'support',
+                        label: '技术支持',
+                        children: [
+                            { key: 'standard', label: '标准支持' },
+                            { key: 'premium', label: '高级支持' },
+                            { key: 'enterprise', label: '企业支持' }
+                        ]
+                    },
+                    { key: 'training', label: '培训服务' }
+                ]
+            },
+            {
+                key: 'resources',
+                label: '资源',
+                icon: 'book-open',
+                children: [
+                    { key: 'docs', label: '文档中心' },
+                    { key: 'blog', label: '技术博客' },
+                    { key: 'community', label: '社区论坛' },
+                    { key: 'downloads', label: '下载中心' }
+                ]
+            },
+            {
+                key: 'about',
+                label: '关于',
+                icon: 'info-circle'
+            }
+        ];
+
+        // 设置菜单数据
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuHover = document.getElementById('menu-hover');
+            const menuClick = document.getElementById('menu-click');
+            
+            if (menuHover) {
+                menuHover.items = menuData;
+                menuHover.addEventListener('ldesignSelect', (e) => {
+                    console.log('Hover menu selected:', e.detail);
+                });
+            }
+            
+            if (menuClick) {
+                menuClick.items = menuData;
+                menuClick.addEventListener('ldesignSelect', (e) => {
+                    console.log('Click menu selected:', e.detail);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

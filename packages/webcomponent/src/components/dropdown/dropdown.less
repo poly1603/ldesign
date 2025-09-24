@@ -1,0 +1,88 @@
+// Dropdown 组件样式
+.ldesign-dropdown {
+  display: inline-block;
+
+  &--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  &__trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 10px;
+    min-width: 120px;
+    border: 1px solid var(--ldesign-border-color, #e5e7eb);
+    border-radius: 6px;
+    cursor: pointer;
+    background: var(--ldesign-bg-color, #ffffff);
+    color: var(--ldesign-text-color, #111827);
+    font-size: 14px;
+    line-height: 20px;
+
+    &--placeholder {
+      color: var(--ldesign-text-color-secondary, #6b7280);
+    }
+
+    &--disabled {
+      cursor: not-allowed;
+    }
+
+    &:hover {
+      border-color: var(--ldesign-border-color-hover, #d1d5db);
+    }
+  }
+
+  &__trigger-text { white-space: nowrap; }
+  &__trigger-arrow { display: inline-flex; }
+
+  &__content {
+    min-width: 160px;
+  }
+
+  &__list {
+    margin: 0;
+    padding: 4px 0;
+    list-style: none;
+    max-height: 240px;
+    overflow-y: auto;
+
+    // 强制移除所有 li 的列表符号，避免外部样式干扰
+    > li { list-style: none; }
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--ldesign-text-color, #111827);
+    cursor: pointer;
+    list-style: none;
+
+    &:hover { background: var(--ldesign-bg-soft, #f3f4f6); }
+
+    &--active { background: var(--ldesign-bg-soft, #f3f4f6); }
+    &--selected { font-weight: 600; }
+    &--disabled { color: var(--ldesign-text-color-secondary, #9ca3af); cursor: not-allowed; }
+  }
+
+  &__divider {
+    list-style: none;
+    height: 1px;
+    margin: 6px 8px;
+    background: var(--ldesign-border-color, #e5e7eb);
+  }
+
+  &__icon { display: inline-flex; }
+}
+
+/* 收敛外部 popup 的默认内边距，使下拉列表更紧凑 */
+ldesign-dropdown .ldesign-popup__inner {
+  padding: 4px 0;
+}

@@ -25,25 +25,35 @@ Icon 图标组件
 
 ### Used by
 
+ - [ldesign-backtop](../backtop)
  - [ldesign-button](../button)
  - [ldesign-checkbox](../checkbox)
  - [ldesign-drawer](../drawer)
+ - [ldesign-dropdown](../dropdown)
  - [ldesign-input](../input)
+ - [ldesign-menu](../menu)
  - [ldesign-message](../message)
  - [ldesign-modal](../modal)
  - [ldesign-notification](../notification)
+ - [ldesign-pagination](../pagination)
+ - [ldesign-popconfirm](../popconfirm)
  - [ldesign-switch](../switch)
 
 ### Graph
 ```mermaid
 graph TD;
+  ldesign-backtop --> ldesign-icon
   ldesign-button --> ldesign-icon
   ldesign-checkbox --> ldesign-icon
   ldesign-drawer --> ldesign-icon
+  ldesign-dropdown --> ldesign-icon
   ldesign-input --> ldesign-icon
+  ldesign-menu --> ldesign-icon
   ldesign-message --> ldesign-icon
   ldesign-modal --> ldesign-icon
   ldesign-notification --> ldesign-icon
+  ldesign-pagination --> ldesign-icon
+  ldesign-popconfirm --> ldesign-icon
   ldesign-switch --> ldesign-icon
   style ldesign-icon fill:#f9f,stroke:#333,stroke-width:4px
 ```

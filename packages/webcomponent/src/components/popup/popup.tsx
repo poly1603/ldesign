@@ -35,6 +35,14 @@ export class LdesignPopup {
   @Prop() strategy: 'auto' | 'fixed' | 'absolute' = 'auto';
 
   /**
+   * 弹层渲染容器
+   * - self: 渲染在组件内部（默认）
+   * - body: 渲染在 document.body 下，常用于复杂布局/滚动容器
+   * - closest-popup: 渲染到最近的上层 .ldesign-popup__content 内（用于嵌套弹层）
+   */
+  @Prop() appendTo: 'self' | 'body' | 'closest-popup' = 'self';
+
+  /**
    * 触发方式
    */
   @Prop() trigger: PopupTrigger = 'hover';
@@ -71,7 +79,8 @@ export class LdesignPopup {
   @Prop() popupTitle?: string;
 
   /**
-   * 偏移量
+   * 与触发元素的距离（单位 px）。
+   * 当开启箭头时，该距离表示“触发元素到箭头尖端”的间隙。
    */
   @Prop() offsetDistance: number = 8;
 
@@ -115,6 +124,8 @@ export class LdesignPopup {
    * 弹出层状态
    */
   @State() isVisible: boolean = false;
+  /** 首次显示到完成定位之间用于隐藏，避免出现在左上角 */
+  @State() positioned: boolean = false;
 
   /**
    * 弹出层元素引用
@@ -134,6 +145,9 @@ export class LdesignPopup {
    * 箭头元素引用
    */
   private arrowElement?: HTMLElement;
+  private uid: string = `ldp_${Math.random().toString(36).slice(2)}`;
+  private teleported = false;
+  private teleportContainer?: HTMLElement;
 
   /**
    * 清理函数
@@ -197,6 +211,7 @@ export class LdesignPopup {
     this.clearTimers();
     this.unbindEvents();
     this.unbindDocumentEvents();
+    this.removeFromContainerIfNeeded();
   }
 
   /**
@@ -205,6 +220,7 @@ export class LdesignPopup {
   componentDidRender() {
     if (this.isVisible) {
       // 渲染完成后再更新一次位置，并确保浮层绑定了交互事件
+      this.moveToContainerIfNeeded();
       this.updatePositionOnly();
       this.bindContentHoverIfNeeded();
     }
@@ -275,6 +291,46 @@ export class LdesignPopup {
     this.removeDocumentClick = undefined;
     this.removeDocumentKeydown?.();
     this.removeDocumentKeydown = undefined;
+  }
+
+  private getPopupEl(): HTMLElement | null {
+    return document.getElementById(this.uid) as HTMLElement | null;
+  }
+
+  private findClosestPopupContent(): HTMLElement | null {
+    return this.el.closest('.ldesign-popup__content');
+  }
+
+  private moveToContainerIfNeeded() {
+    this.popupElement = this.getPopupEl() as HTMLElement;
+    if (!this.popupElement) return;
+
+    let target: HTMLElement | null = null;
+    if (this.appendTo === 'body') {
+      target = document.body;
+    } else if (this.appendTo === 'closest-popup') {
+      // 找到最近的上层弹层内容作为容器；若无则退回 body
+      target = this.findClosestPopupContent() || document.body;
+    } else {
+      // self：无需移动
+      return;
+    }
+
+    if (this.popupElement.parentElement !== target) {
+      target.appendChild(this.popupElement);
+      this.teleported = true;
+      this.teleportContainer = target;
+    }
+  }
+
+  private removeFromContainerIfNeeded() {
+    if (!this.teleported) return;
+    const el = this.getPopupEl();
+    if (el && this.teleportContainer && el.parentElement === this.teleportContainer) {
+      el.parentElement.removeChild(el);
+    }
+    this.teleported = false;
+    this.teleportContainer = undefined;
   }
 
 
@@ -382,11 +438,14 @@ export class LdesignPopup {
     this.isVisible = visible;
 
     if (visible) {
+      this.positioned = false;
       await this.updatePosition();
       this.bindContentHoverIfNeeded();
     } else {
       this.cleanup?.();
       this.unbindContentHover();
+      // 若已移动到外部容器，隐藏时主动移除，避免遗留节点
+      this.removeFromContainerIfNeeded();
     }
 
     this.ldesignVisibleChange.emit(visible);
@@ -402,6 +461,7 @@ export class LdesignPopup {
     this.visible = visible;
 
     if (visible) {
+      this.positioned = false;
       await this.updatePosition();
       this.bindContentHoverIfNeeded();
     } else {
@@ -435,6 +495,16 @@ export class LdesignPopup {
    * - 嵌套在其他弹层内部时使用 absolute，使坐标与包含块一致，防止错位
    */
   private getStrategy(): 'fixed' | 'absolute' {
+    // 当 appendTo 为 body 时，允许根据 strategy 或嵌套关系决定定位方式
+    if (this.appendTo === 'body') {
+      if (this.strategy === 'fixed') return 'fixed';
+      if (this.strategy === 'absolute') return 'absolute';
+      // auto: 顶层 fixed，嵌套 absolute（避免复杂容器下的相对视口错位）
+      return this.isNestedInPopup() ? 'absolute' : 'fixed';
+    }
+    // 当渲染到最近的上层弹层内容内时，始终使用 absolute
+    if (this.appendTo === 'closest-popup') return 'absolute';
+
     if (this.strategy === 'fixed') return 'fixed';
     if (this.strategy === 'absolute') return 'absolute';
     // auto
@@ -442,20 +512,39 @@ export class LdesignPopup {
   }
 
   /**
+   * 计算有效的间距：
+   * - 使用者设置的 offsetDistance 表示“触发元素到箭头尖端”的距离；
+   * - 当存在箭头时，箭头会向外突出 4px（-4px 静态边偏移），需要额外加上这 4px，
+   *   以保证最终‘箭头尖端’到触发元素的间隙等于 offsetDistance。
+   */
+  private getEffectiveOffsetDistance(): number {
+    const arrowProtrude = this.arrow ? 4 : 0; // 箭头向弹层外突出的像素
+    return Math.max(0, this.offsetDistance + arrowProtrude);
+  }
+
+  /**
    * 更新位置
    */
+  private async nextFrame(): Promise<void> {
+    return new Promise(resolve => requestAnimationFrame(() => resolve()));
+  }
+
   private async updatePosition() {
     // popupElement 可能在首次显示时才渲染
     if (!this.triggerElement) return;
-    this.popupElement = this.el.querySelector('.ldesign-popup__content') as HTMLElement;
-    this.arrowElement = this.el.querySelector('.ldesign-popup__arrow') as HTMLElement;
+    this.popupElement = (this.getPopupEl() || this.el.querySelector('.ldesign-popup__content')) as HTMLElement;
+    this.arrowElement = this.popupElement ? (this.popupElement.querySelector('.ldesign-popup__arrow') as HTMLElement) : undefined;
     if (!this.popupElement) return;
 
-    const isNested = this.isNestedInPopup();
+    // 若需要 portal 到 body，则移动过去
+    this.moveToContainerIfNeeded();
+    // 等待一帧，确保插入/移动后的布局稳定，再计算位置
+    await this.nextFrame();
+
     const strategy = this.getStrategy();
     const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
     const middleware = [
-      offset(this.offsetDistance),
+      offset(this.getEffectiveOffsetDistance()),
       flip({ boundary } as any),
       shift({ padding: 8, boundary } as any),
     ];
@@ -514,6 +603,7 @@ export class LdesignPopup {
     }
 
     // 设置自动更新 - 避免递归重复注册
+    this.positioned = true;
     this.cleanup?.();
     this.cleanup = autoUpdate(
       this.triggerElement,
@@ -531,15 +621,17 @@ export class LdesignPopup {
    */
   private async updatePositionOnly() {
     if (!this.triggerElement) return;
-    this.popupElement = this.el.querySelector('.ldesign-popup__content') as HTMLElement;
-    this.arrowElement = this.el.querySelector('.ldesign-popup__arrow') as HTMLElement;
+    this.popupElement = (this.getPopupEl() || this.el.querySelector('.ldesign-popup__content')) as HTMLElement;
+    this.arrowElement = this.popupElement ? (this.popupElement.querySelector('.ldesign-popup__arrow') as HTMLElement) : undefined;
     if (!this.popupElement) return;
 
-    const isNested = this.isNestedInPopup();
+    this.moveToContainerIfNeeded();
+    await this.nextFrame();
+
     const strategy = this.getStrategy();
     const boundary: any = strategy === 'fixed' ? 'viewport' : undefined;
     const middleware = [
-      offset(this.offsetDistance),
+      offset(this.getEffectiveOffsetDistance()),
       flip({ boundary } as any),
       shift({ padding: 8, boundary } as any),
     ];
@@ -588,6 +680,7 @@ export class LdesignPopup {
     }
 
     // 再次确保在渲染后绑定浮层交互事件（首次渲染时 updatePosition 可能拿不到元素）
+    this.positioned = true;
     this.bindContentHoverIfNeeded();
   }
 
@@ -636,8 +729,9 @@ export class LdesignPopup {
         
         {this.isVisible && (
           <div 
+            id={this.uid}
             class="ldesign-popup__content"
-            style={this.getPopupStyle()}
+            style={{ ...this.getPopupStyle(), visibility: this.positioned ? 'visible' : 'hidden' }}
             role={this.popupRole}
             aria-hidden={!this.isVisible}
           >
@@ -668,7 +762,7 @@ export class LdesignPopup {
   private bindContentHoverIfNeeded() {
     if (this.trigger !== 'hover' || !this.interactive) return;
     // 交互内容：允许在浮层内悬停交互
-    this.popupElement = this.el.querySelector('.ldesign-popup__content') as HTMLElement;
+    this.popupElement = (this.getPopupEl() || this.el.querySelector('.ldesign-popup__content')) as HTMLElement;
     if (!this.popupElement || this.contentHoverBound) return;
     this.popupElement.addEventListener('mouseenter', this.handleMouseEnter);
     this.popupElement.addEventListener('mouseleave', this.handleMouseLeave);

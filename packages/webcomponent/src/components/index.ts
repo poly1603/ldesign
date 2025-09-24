@@ -22,3 +22,5 @@ export { LdesignPopconfirm } from './popconfirm/popconfirm';
 export { LdesignAffix } from './affix/affix';
 export { LdesignBacktop } from './backtop/backtop';
 export { LdesignMenu } from './menu/menu';
+export { LdesignDropdown } from './dropdown/dropdown';
+export { LdesignPagination } from './pagination/pagination';

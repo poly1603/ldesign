@@ -7,7 +7,8 @@
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
 import { DrawerPlacement } from "./components/drawer/drawer";
-import { MenuItem, MenuMode, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
+import { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/dropdown/dropdown";
+import { MenuItem } from "./components/menu/menu";
 import { MessageType } from "./components/message/message";
 import { ModalAnimation, ModalSize } from "./components/modal/modal";
 import { NotificationPlacement, NotificationType } from "./components/notification/notification";
@@ -16,7 +17,8 @@ import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 export { ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
 export { DrawerPlacement } from "./components/drawer/drawer";
-export { MenuItem, MenuMode, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
+export { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/dropdown/dropdown";
+export { MenuItem } from "./components/menu/menu";
 export { MessageType } from "./components/message/message";
 export { ModalAnimation, ModalSize } from "./components/modal/modal";
 export { NotificationPlacement, NotificationType } from "./components/notification/notification";
@@ -337,6 +339,74 @@ export namespace Components {
         "zIndex": number;
     }
     /**
+     * Dropdown 下拉菜单
+     * 基于 <ldesign-popup> 实现
+     */
+    interface LdesignDropdown {
+        /**
+          * 是否显示箭头（默认不显示）
+          * @default false
+         */
+        "arrow": boolean;
+        /**
+          * 点击选项后是否自动关闭
+          * @default true
+         */
+        "closeOnSelect": boolean;
+        /**
+          * 默认值（非受控）
+         */
+        "defaultValue"?: string;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 下拉项列表（可传数组或 JSON 字符串）
+          * @default []
+         */
+        "items": string | DropdownItem[];
+        /**
+          * 列表最大高度（px）
+          * @default 240
+         */
+        "maxHeight": number;
+        /**
+          * 占位文案（当未选中任何项且使用默认 trigger 时显示）
+          * @default '请选择'
+         */
+        "placeholder": string;
+        /**
+          * 出现位置（默认 bottom-start）
+          * @default 'bottom-start'
+         */
+        "placement": DropdownPlacement;
+        /**
+          * 主题（浅色/深色），透传给 Popup
+          * @default 'light'
+         */
+        "theme": 'light' | 'dark';
+        /**
+          * 触发方式（默认 click）
+          * @default 'click'
+         */
+        "trigger": DropdownTrigger;
+        /**
+          * 选中值（受控）
+         */
+        "value"?: string;
+        /**
+          * 外部受控可见性（仅 trigger = 'manual' 生效）
+          * @default false
+         */
+        "visible": boolean;
+        /**
+          * 列表宽度（可选）
+         */
+        "width"?: number | string;
+    }
+    /**
      * Icon 图标组件
      * 基于 Lucide 图标库
      */
@@ -456,12 +526,12 @@ export namespace Components {
     }
     interface LdesignMenu {
         /**
-          * 手风琴模式（仅 inline/mixed 生效）：同层级只允许展开一个
+          * 手风琴模式：同层级只允许展开一个
           * @default false
          */
         "accordion": boolean;
         /**
-          * 默认打开的子菜单 key 列表（非受控，仅 inline/mixed 生效）
+          * 默认打开的子菜单 key 列表（非受控）
           * @default []
          */
         "defaultOpenKeys": string[];
@@ -480,38 +550,18 @@ export namespace Components {
          */
         "items": string | MenuItem[];
         /**
-          * 菜单模式：水平/垂直
-          * @default 'vertical'
-         */
-        "mode": MenuMode;
-        /**
-          * 水平模式“更多”按钮图标（保证一级项都有图标）
-          * @default 'more-horizontal'
-         */
-        "moreIcon": string;
-        /**
-          * 水平模式溢出项的展示文案
-          * @default '更多'
-         */
-        "moreLabel": string;
-        /**
-          * 当前打开的子菜单 key 列表（受控，仅 inline/mixed 生效）
+          * 当前打开的子菜单 key 列表（受控）
          */
         "openKeys"?: string[];
         /**
-          * 子菜单触发方式（仅 flyout 或水平模式下生效）
-          * @default 'hover'
+          * 顶层（一级）是否强制显示图标占位（保证对齐）。若条目没有 icon，将渲染一个占位。
+          * @default true
          */
-        "submenuTrigger": SubmenuTrigger;
+        "requireTopIcon": boolean;
         /**
           * 当前选中项（受控）
          */
         "value"?: string;
-        /**
-          * 垂直模式下的展开方式：inline（内嵌展开）、flyout（右侧弹出）、mixed（一层内嵌，更多层右侧弹出）
-          * @default 'inline'
-         */
-        "verticalExpand": VerticalExpand;
     }
     /**
      * Message 全局提示
@@ -729,6 +779,110 @@ export namespace Components {
         "type": NotificationType;
     }
     /**
+     * Pagination 分页组件
+     * 用于数据分页，提供页码切换、页大小切换与快速跳转
+     */
+    interface LdesignPagination {
+        /**
+          * 页码省略边界数（两端保留）
+          * @default 1
+         */
+        "boundaryCount": number;
+        /**
+          * 当前页（受控）
+         */
+        "current"?: number;
+        /**
+          * 默认当前页（非受控）
+          * @default 1
+         */
+        "defaultCurrent": number;
+        /**
+          * 默认每页条数（非受控）
+          * @default 10
+         */
+        "defaultPageSize": number;
+        /**
+          * 组件禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 仅一页时是否隐藏
+          * @default false
+         */
+        "hideOnSinglePage": boolean;
+        /**
+          * 每页条数（受控）
+         */
+        "pageSize"?: number;
+        /**
+          * 页大小选项（可传数组或逗号分隔字符串）
+          * @default [10, 20, 50, 100]
+         */
+        "pageSizeOptions": number[] | string;
+        /**
+          * 下拉展示文案模板，仅在 dropdown 模式下生效，支持 {size}
+          * @default '{size} 条/页'
+         */
+        "pageSizeText": string;
+        /**
+          * 页信息文案模板，支持 {current}、{pageCount}
+          * @default '{current}/{pageCount} 页'
+         */
+        "pageText": string;
+        /**
+          * 是否显示首页/末页
+          * @default false
+         */
+        "showFirstLast": boolean;
+        /**
+          * 是否显示快速跳转输入框
+          * @default false
+         */
+        "showQuickJumper": boolean;
+        /**
+          * 是否显示每页条数切换器
+          * @default false
+         */
+        "showSizeChanger": boolean;
+        /**
+          * 是否显示总数文案
+          * @default false
+         */
+        "showTotal": boolean;
+        /**
+          * 当前页两侧展示的邻接页数
+          * @default 1
+         */
+        "siblingCount": number;
+        /**
+          * 简洁模式（仅上一页/下一页 + 页码输入）
+          * @default false
+         */
+        "simple": boolean;
+        /**
+          * 组件尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 切换器类型：native 原生下拉；dropdown 使用组件弹层
+          * @default 'dropdown'
+         */
+        "sizeChangerType": 'native' | 'dropdown';
+        /**
+          * 总条目数
+          * @default 0
+         */
+        "total": number;
+        /**
+          * 总数文案模板，支持 {total}、{rangeStart}、{rangeEnd}
+          * @default '共 {total} 条'
+         */
+        "totalText": string;
+    }
+    /**
      * Popconfirm 气泡确认框
      * 基于 Popup 进行封装，提供确认/取消操作
      */
@@ -813,6 +967,11 @@ export namespace Components {
      */
     interface LdesignPopup {
         /**
+          * 弹层渲染容器 - self: 渲染在组件内部（默认） - body: 渲染在 document.body 下，常用于复杂布局/滚动容器 - closest-popup: 渲染到最近的上层 .ldesign-popup__content 内（用于嵌套弹层）
+          * @default 'self'
+         */
+        "appendTo": 'self' | 'body' | 'closest-popup';
+        /**
           * 是否显示箭头
           * @default true
          */
@@ -851,7 +1010,7 @@ export namespace Components {
          */
         "maxWidth"?: number | string;
         /**
-          * 偏移量
+          * 与触发元素的距离（单位 px）。 当开启箭头时，该距离表示“触发元素到箭头尖端”的间隙。
           * @default 8
          */
         "offsetDistance": number;
@@ -1100,6 +1259,10 @@ export interface LdesignDrawerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignDrawerElement;
 }
+export interface LdesignDropdownCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignDropdownElement;
+}
 export interface LdesignInputCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignInputElement;
@@ -1119,6 +1282,10 @@ export interface LdesignModalCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignNotificationCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignNotificationElement;
+}
+export interface LdesignPaginationCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignPaginationElement;
 }
 export interface LdesignPopconfirmCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -1270,6 +1437,28 @@ declare global {
         prototype: HTMLLdesignDrawerElement;
         new (): HTMLLdesignDrawerElement;
     };
+    interface HTMLLdesignDropdownElementEventMap {
+        "ldesignChange": { key: string; item: DropdownItem };
+        "ldesignVisibleChange": boolean;
+    }
+    /**
+     * Dropdown 下拉菜单
+     * 基于 <ldesign-popup> 实现
+     */
+    interface HTMLLdesignDropdownElement extends Components.LdesignDropdown, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignDropdownElementEventMap>(type: K, listener: (this: HTMLLdesignDropdownElement, ev: LdesignDropdownCustomEvent<HTMLLdesignDropdownElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignDropdownElementEventMap>(type: K, listener: (this: HTMLLdesignDropdownElement, ev: LdesignDropdownCustomEvent<HTMLLdesignDropdownElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignDropdownElement: {
+        prototype: HTMLLdesignDropdownElement;
+        new (): HTMLLdesignDropdownElement;
+    };
     /**
      * Icon 图标组件
      * 基于 Lucide 图标库
@@ -1308,7 +1497,6 @@ declare global {
     interface HTMLLdesignMenuElementEventMap {
         "ldesignSelect": { key: string; item: MenuItem; pathKeys: string[] };
         "ldesignOpenChange": { key: string; open: boolean; openKeys: string[] };
-        "ldesignOverflowChange": { overflowCount: number };
     }
     interface HTMLLdesignMenuElement extends Components.LdesignMenu, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignMenuElementEventMap>(type: K, listener: (this: HTMLLdesignMenuElement, ev: LdesignMenuCustomEvent<HTMLLdesignMenuElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -1387,6 +1575,28 @@ declare global {
     var HTMLLdesignNotificationElement: {
         prototype: HTMLLdesignNotificationElement;
         new (): HTMLLdesignNotificationElement;
+    };
+    interface HTMLLdesignPaginationElementEventMap {
+        "ldesignChange": { page: number; pageSize: number };
+        "ldesignPageSizeChange": { pageSize: number; page: number };
+    }
+    /**
+     * Pagination 分页组件
+     * 用于数据分页，提供页码切换、页大小切换与快速跳转
+     */
+    interface HTMLLdesignPaginationElement extends Components.LdesignPagination, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignPaginationElementEventMap>(type: K, listener: (this: HTMLLdesignPaginationElement, ev: LdesignPaginationCustomEvent<HTMLLdesignPaginationElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignPaginationElementEventMap>(type: K, listener: (this: HTMLLdesignPaginationElement, ev: LdesignPaginationCustomEvent<HTMLLdesignPaginationElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignPaginationElement: {
+        prototype: HTMLLdesignPaginationElement;
+        new (): HTMLLdesignPaginationElement;
     };
     interface HTMLLdesignPopconfirmElementEventMap {
         "ldesignConfirm": void;
@@ -1514,12 +1724,14 @@ declare global {
         "ldesign-checkbox": HTMLLdesignCheckboxElement;
         "ldesign-checkbox-group": HTMLLdesignCheckboxGroupElement;
         "ldesign-drawer": HTMLLdesignDrawerElement;
+        "ldesign-dropdown": HTMLLdesignDropdownElement;
         "ldesign-icon": HTMLLdesignIconElement;
         "ldesign-input": HTMLLdesignInputElement;
         "ldesign-menu": HTMLLdesignMenuElement;
         "ldesign-message": HTMLLdesignMessageElement;
         "ldesign-modal": HTMLLdesignModalElement;
         "ldesign-notification": HTMLLdesignNotificationElement;
+        "ldesign-pagination": HTMLLdesignPaginationElement;
         "ldesign-popconfirm": HTMLLdesignPopconfirmElement;
         "ldesign-popup": HTMLLdesignPopupElement;
         "ldesign-radio": HTMLLdesignRadioElement;
@@ -1854,6 +2066,82 @@ declare namespace LocalJSX {
         "zIndex"?: number;
     }
     /**
+     * Dropdown 下拉菜单
+     * 基于 <ldesign-popup> 实现
+     */
+    interface LdesignDropdown {
+        /**
+          * 是否显示箭头（默认不显示）
+          * @default false
+         */
+        "arrow"?: boolean;
+        /**
+          * 点击选项后是否自动关闭
+          * @default true
+         */
+        "closeOnSelect"?: boolean;
+        /**
+          * 默认值（非受控）
+         */
+        "defaultValue"?: string;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 下拉项列表（可传数组或 JSON 字符串）
+          * @default []
+         */
+        "items"?: string | DropdownItem[];
+        /**
+          * 列表最大高度（px）
+          * @default 240
+         */
+        "maxHeight"?: number;
+        /**
+          * 选中变化事件
+         */
+        "onLdesignChange"?: (event: LdesignDropdownCustomEvent<{ key: string; item: DropdownItem }>) => void;
+        /**
+          * 对外转发可见性变化
+         */
+        "onLdesignVisibleChange"?: (event: LdesignDropdownCustomEvent<boolean>) => void;
+        /**
+          * 占位文案（当未选中任何项且使用默认 trigger 时显示）
+          * @default '请选择'
+         */
+        "placeholder"?: string;
+        /**
+          * 出现位置（默认 bottom-start）
+          * @default 'bottom-start'
+         */
+        "placement"?: DropdownPlacement;
+        /**
+          * 主题（浅色/深色），透传给 Popup
+          * @default 'light'
+         */
+        "theme"?: 'light' | 'dark';
+        /**
+          * 触发方式（默认 click）
+          * @default 'click'
+         */
+        "trigger"?: DropdownTrigger;
+        /**
+          * 选中值（受控）
+         */
+        "value"?: string;
+        /**
+          * 外部受控可见性（仅 trigger = 'manual' 生效）
+          * @default false
+         */
+        "visible"?: boolean;
+        /**
+          * 列表宽度（可选）
+         */
+        "width"?: number | string;
+    }
+    /**
      * Icon 图标组件
      * 基于 Lucide 图标库
      */
@@ -1993,12 +2281,12 @@ declare namespace LocalJSX {
     }
     interface LdesignMenu {
         /**
-          * 手风琴模式（仅 inline/mixed 生效）：同层级只允许展开一个
+          * 手风琴模式：同层级只允许展开一个
           * @default false
          */
         "accordion"?: boolean;
         /**
-          * 默认打开的子菜单 key 列表（非受控，仅 inline/mixed 生效）
+          * 默认打开的子菜单 key 列表（非受控）
           * @default []
          */
         "defaultOpenKeys"?: string[];
@@ -2017,50 +2305,26 @@ declare namespace LocalJSX {
          */
         "items"?: string | MenuItem[];
         /**
-          * 菜单模式：水平/垂直
-          * @default 'vertical'
-         */
-        "mode"?: MenuMode;
-        /**
-          * 水平模式“更多”按钮图标（保证一级项都有图标）
-          * @default 'more-horizontal'
-         */
-        "moreIcon"?: string;
-        /**
-          * 水平模式溢出项的展示文案
-          * @default '更多'
-         */
-        "moreLabel"?: string;
-        /**
-          * 展开/收起事件（inline/mixed）
+          * 展开/收起事件
          */
         "onLdesignOpenChange"?: (event: LdesignMenuCustomEvent<{ key: string; open: boolean; openKeys: string[] }>) => void;
-        /**
-          * 水平模式下，溢出项数量变化事件
-         */
-        "onLdesignOverflowChange"?: (event: LdesignMenuCustomEvent<{ overflowCount: number }>) => void;
         /**
           * 选中事件
          */
         "onLdesignSelect"?: (event: LdesignMenuCustomEvent<{ key: string; item: MenuItem; pathKeys: string[] }>) => void;
         /**
-          * 当前打开的子菜单 key 列表（受控，仅 inline/mixed 生效）
+          * 当前打开的子菜单 key 列表（受控）
          */
         "openKeys"?: string[];
         /**
-          * 子菜单触发方式（仅 flyout 或水平模式下生效）
-          * @default 'hover'
+          * 顶层（一级）是否强制显示图标占位（保证对齐）。若条目没有 icon，将渲染一个占位。
+          * @default true
          */
-        "submenuTrigger"?: SubmenuTrigger;
+        "requireTopIcon"?: boolean;
         /**
           * 当前选中项（受控）
          */
         "value"?: string;
-        /**
-          * 垂直模式下的展开方式：inline（内嵌展开）、flyout（右侧弹出）、mixed（一层内嵌，更多层右侧弹出）
-          * @default 'inline'
-         */
-        "verticalExpand"?: VerticalExpand;
     }
     /**
      * Message 全局提示
@@ -2266,6 +2530,118 @@ declare namespace LocalJSX {
         "type"?: NotificationType;
     }
     /**
+     * Pagination 分页组件
+     * 用于数据分页，提供页码切换、页大小切换与快速跳转
+     */
+    interface LdesignPagination {
+        /**
+          * 页码省略边界数（两端保留）
+          * @default 1
+         */
+        "boundaryCount"?: number;
+        /**
+          * 当前页（受控）
+         */
+        "current"?: number;
+        /**
+          * 默认当前页（非受控）
+          * @default 1
+         */
+        "defaultCurrent"?: number;
+        /**
+          * 默认每页条数（非受控）
+          * @default 10
+         */
+        "defaultPageSize"?: number;
+        /**
+          * 组件禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 仅一页时是否隐藏
+          * @default false
+         */
+        "hideOnSinglePage"?: boolean;
+        /**
+          * 页码变化事件
+         */
+        "onLdesignChange"?: (event: LdesignPaginationCustomEvent<{ page: number; pageSize: number }>) => void;
+        /**
+          * 每页条数变化事件
+         */
+        "onLdesignPageSizeChange"?: (event: LdesignPaginationCustomEvent<{ pageSize: number; page: number }>) => void;
+        /**
+          * 每页条数（受控）
+         */
+        "pageSize"?: number;
+        /**
+          * 页大小选项（可传数组或逗号分隔字符串）
+          * @default [10, 20, 50, 100]
+         */
+        "pageSizeOptions"?: number[] | string;
+        /**
+          * 下拉展示文案模板，仅在 dropdown 模式下生效，支持 {size}
+          * @default '{size} 条/页'
+         */
+        "pageSizeText"?: string;
+        /**
+          * 页信息文案模板，支持 {current}、{pageCount}
+          * @default '{current}/{pageCount} 页'
+         */
+        "pageText"?: string;
+        /**
+          * 是否显示首页/末页
+          * @default false
+         */
+        "showFirstLast"?: boolean;
+        /**
+          * 是否显示快速跳转输入框
+          * @default false
+         */
+        "showQuickJumper"?: boolean;
+        /**
+          * 是否显示每页条数切换器
+          * @default false
+         */
+        "showSizeChanger"?: boolean;
+        /**
+          * 是否显示总数文案
+          * @default false
+         */
+        "showTotal"?: boolean;
+        /**
+          * 当前页两侧展示的邻接页数
+          * @default 1
+         */
+        "siblingCount"?: number;
+        /**
+          * 简洁模式（仅上一页/下一页 + 页码输入）
+          * @default false
+         */
+        "simple"?: boolean;
+        /**
+          * 组件尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 切换器类型：native 原生下拉；dropdown 使用组件弹层
+          * @default 'dropdown'
+         */
+        "sizeChangerType"?: 'native' | 'dropdown';
+        /**
+          * 总条目数
+          * @default 0
+         */
+        "total"?: number;
+        /**
+          * 总数文案模板，支持 {total}、{rangeStart}、{rangeEnd}
+          * @default '共 {total} 条'
+         */
+        "totalText"?: string;
+    }
+    /**
      * Popconfirm 气泡确认框
      * 基于 Popup 进行封装，提供确认/取消操作
      */
@@ -2362,6 +2738,11 @@ declare namespace LocalJSX {
      */
     interface LdesignPopup {
         /**
+          * 弹层渲染容器 - self: 渲染在组件内部（默认） - body: 渲染在 document.body 下，常用于复杂布局/滚动容器 - closest-popup: 渲染到最近的上层 .ldesign-popup__content 内（用于嵌套弹层）
+          * @default 'self'
+         */
+        "appendTo"?: 'self' | 'body' | 'closest-popup';
+        /**
           * 是否显示箭头
           * @default true
          */
@@ -2400,7 +2781,7 @@ declare namespace LocalJSX {
          */
         "maxWidth"?: number | string;
         /**
-          * 偏移量
+          * 与触发元素的距离（单位 px）。 当开启箭头时，该距离表示“触发元素到箭头尖端”的间隙。
           * @default 8
          */
         "offsetDistance"?: number;
@@ -2652,12 +3033,14 @@ declare namespace LocalJSX {
         "ldesign-checkbox": LdesignCheckbox;
         "ldesign-checkbox-group": LdesignCheckboxGroup;
         "ldesign-drawer": LdesignDrawer;
+        "ldesign-dropdown": LdesignDropdown;
         "ldesign-icon": LdesignIcon;
         "ldesign-input": LdesignInput;
         "ldesign-menu": LdesignMenu;
         "ldesign-message": LdesignMessage;
         "ldesign-modal": LdesignModal;
         "ldesign-notification": LdesignNotification;
+        "ldesign-pagination": LdesignPagination;
         "ldesign-popconfirm": LdesignPopconfirm;
         "ldesign-popup": LdesignPopup;
         "ldesign-radio": LdesignRadio;
@@ -2709,6 +3092,11 @@ declare module "@stencil/core" {
              */
             "ldesign-drawer": LocalJSX.LdesignDrawer & JSXBase.HTMLAttributes<HTMLLdesignDrawerElement>;
             /**
+             * Dropdown 下拉菜单
+             * 基于 <ldesign-popup> 实现
+             */
+            "ldesign-dropdown": LocalJSX.LdesignDropdown & JSXBase.HTMLAttributes<HTMLLdesignDropdownElement>;
+            /**
              * Icon 图标组件
              * 基于 Lucide 图标库
              */
@@ -2733,6 +3121,11 @@ declare module "@stencil/core" {
              * 位于页面角落的全局通知，支持标题、描述、操作区与自动关闭。
              */
             "ldesign-notification": LocalJSX.LdesignNotification & JSXBase.HTMLAttributes<HTMLLdesignNotificationElement>;
+            /**
+             * Pagination 分页组件
+             * 用于数据分页，提供页码切换、页大小切换与快速跳转
+             */
+            "ldesign-pagination": LocalJSX.LdesignPagination & JSXBase.HTMLAttributes<HTMLLdesignPaginationElement>;
             /**
              * Popconfirm 气泡确认框
              * 基于 Popup 进行封装，提供确认/取消操作

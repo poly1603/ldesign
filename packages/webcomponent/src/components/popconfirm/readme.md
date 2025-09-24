@@ -37,3 +37,60 @@
 
 <!-- Auto Generated Below -->
 
+
+## Overview
+
+Popconfirm 气泡确认框
+基于 Popup 进行封装，提供确认/取消操作
+
+## Properties
+
+| Property          | Attribute          | Description                      | Type                                                                                                                                                                 | Default         |
+| ----------------- | ------------------ | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `arrow`           | `arrow`            | 箭头（默认显示），透传给 Popup               | `boolean`                                                                                                                                                            | `true`          |
+| `cancelText`      | `cancel-text`      |                                  | `string`                                                                                                                                                             | `'取消'`          |
+| `cancelType`      | `cancel-type`      | 取消按钮类型（默认使用次要/描边样式）              | `"danger" \| "outline" \| "primary" \| "secondary" \| "text"`                                                                                                        | `'outline'`     |
+| `closeOnOutside`  | `close-on-outside` | 点击外部是否关闭（仅点击触发较常用）               | `boolean`                                                                                                                                                            | `true`          |
+| `description`     | `description`      | 辅助说明（可选，支持默认 slot 覆盖）            | `string`                                                                                                                                                             | `undefined`     |
+| `hideDelay`       | `hide-delay`       |                                  | `number`                                                                                                                                                             | `0`             |
+| `icon`            | `icon`             | 图标名称（可用 slot=icon 覆盖）            | `string`                                                                                                                                                             | `'help-circle'` |
+| `okText`          | `ok-text`          | 确认/取消按钮文本                        | `string`                                                                                                                                                             | `'确定'`          |
+| `okType`          | `ok-type`          | 确认按钮类型（影响颜色）                     | `"danger" \| "outline" \| "primary" \| "secondary" \| "text"`                                                                                                        | `'primary'`     |
+| `placement`       | `placement`        | 出现位置（透传给 Popup）                  | `"bottom" \| "bottom-end" \| "bottom-start" \| "left" \| "left-end" \| "left-start" \| "right" \| "right-end" \| "right-start" \| "top" \| "top-end" \| "top-start"` | `'top'`         |
+| `popconfirmTitle` | `popconfirm-title` | 确认标题（支持 slot=title 覆盖）           | `string`                                                                                                                                                             | `'确定要执行该操作吗？'`  |
+| `showDelay`       | `show-delay`       | 延迟显示/隐藏（毫秒），透传给 Popup            | `number`                                                                                                                                                             | `0`             |
+| `theme`           | `theme`            | 主题（浅色/深色），透传给 Popup              | `"dark" \| "light"`                                                                                                                                                  | `'light'`       |
+| `trigger`         | `trigger`          | 触发方式（默认点击）                       | `"click" \| "contextmenu" \| "focus" \| "hover" \| "manual"`                                                                                                         | `'click'`       |
+| `visible`         | `visible`          | 外部受控可见性（仅在 trigger='manual' 时生效） | `boolean`                                                                                                                                                            | `false`         |
+
+
+## Events
+
+| Event                  | Description  | Type                   |
+| ---------------------- | ------------ | ---------------------- |
+| `ldesignCancel`        | 事件：取消        | `CustomEvent<void>`    |
+| `ldesignConfirm`       | 事件：确认        | `CustomEvent<void>`    |
+| `ldesignVisibleChange` | 事件：对外转发可见性变化 | `CustomEvent<boolean>` |
+
+
+## Dependencies
+
+### Depends on
+
+- [ldesign-popup](../popup)
+- [ldesign-icon](../icon)
+- [ldesign-button](../button)
+
+### Graph
+```mermaid
+graph TD;
+  ldesign-popconfirm --> ldesign-popup
+  ldesign-popconfirm --> ldesign-icon
+  ldesign-popconfirm --> ldesign-button
+  ldesign-button --> ldesign-icon
+  style ldesign-popconfirm fill:#f9f,stroke:#333,stroke-width:4px
+```
+
+----------------------------------------------
+
+*Built with [StencilJS](https://stenciljs.com/)*

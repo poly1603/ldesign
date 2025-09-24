@@ -37,15 +37,17 @@ Button 按钮组件
 
 ## Properties
 
-| Property   | Attribute  | Description | Type                                                          | Default       |
-| ---------- | ---------- | ----------- | ------------------------------------------------------------- | ------------- |
-| `block`    | `block`    | 是否为块级按钮     | `boolean`                                                     | `false`       |
-| `disabled` | `disabled` | 是否禁用        | `boolean`                                                     | `false`       |
-| `icon`     | `icon`     | 图标名称        | `string`                                                      | `undefined`   |
-| `loading`  | `loading`  | 是否加载中       | `boolean`                                                     | `false`       |
-| `shape`    | `shape`    | 按钮形状        | `"circle" \| "rectangle" \| "round"`                          | `'rectangle'` |
-| `size`     | `size`     | 按钮尺寸        | `"large" \| "medium" \| "small"`                              | `'medium'`    |
-| `type`     | `type`     | 按钮类型        | `"danger" \| "outline" \| "primary" \| "secondary" \| "text"` | `'primary'`   |
+| Property       | Attribute       | Description                      | Type                                                                                                          | Default       |
+| -------------- | --------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------- |
+| `block`        | `block`         | 是否为块级按钮                          | `boolean`                                                                                                     | `false`       |
+| `disabled`     | `disabled`      | 是否禁用                             | `boolean`                                                                                                     | `false`       |
+| `icon`         | `icon`          | 图标名称                             | `string`                                                                                                      | `undefined`   |
+| `iconPosition` | `icon-position` | 图标位置：left \| right               | `"left" \| "right"`                                                                                           | `'left'`      |
+| `loading`      | `loading`       | 是否加载中                            | `boolean`                                                                                                     | `false`       |
+| `nativeType`   | `native-type`   | 原生按钮类型：button \| submit \| reset | `"button" \| "reset" \| "submit"`                                                                             | `'button'`    |
+| `shape`        | `shape`         | 按钮形状                             | `"circle" \| "rectangle" \| "round" \| "square"`                                                              | `'rectangle'` |
+| `size`         | `size`          | 按钮尺寸                             | `"large" \| "medium" \| "small"`                                                                              | `'medium'`    |
+| `type`         | `type`          | 按钮类型                             | `"danger" \| "dashed" \| "link" \| "outline" \| "primary" \| "secondary" \| "success" \| "text" \| "warning"` | `'primary'`   |
 
 
 ## Events
@@ -60,6 +62,7 @@ Button 按钮组件
 ### Used by
 
  - [ldesign-modal](../modal)
+ - [ldesign-popconfirm](../popconfirm)
 
 ### Depends on
 
@@ -70,6 +73,7 @@ Button 按钮组件
 graph TD;
   ldesign-button --> ldesign-icon
   ldesign-modal --> ldesign-button
+  ldesign-popconfirm --> ldesign-button
   style ldesign-button fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

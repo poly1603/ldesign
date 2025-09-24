@@ -148,3 +148,43 @@
 > 下方为自动生成的属性/事件文档（构建后自动更新）。
 
 <!-- Auto Generated Below -->
+
+
+## Properties
+
+| Property          | Attribute           | Description                                | Type                   | Default     |
+| ----------------- | ------------------- | ------------------------------------------ | ---------------------- | ----------- |
+| `accordion`       | `accordion`         | 手风琴模式：同层级只允许展开一个                           | `boolean`              | `false`     |
+| `defaultOpenKeys` | `default-open-keys` | 默认打开的子菜单 key 列表（非受控）                       | `string[]`             | `[]`        |
+| `defaultValue`    | `default-value`     | 默认选中项（非受控）                                 | `string`               | `undefined` |
+| `indent`          | `indent`            | 子级缩进（px）                                   | `number`               | `16`        |
+| `items`           | `items`             | 菜单数据（可传入 JSON 字符串或对象数组）                    | `MenuItem[] \| string` | `[]`        |
+| `openKeys`        | `open-keys`         | 当前打开的子菜单 key 列表（受控）                        | `string[]`             | `undefined` |
+| `requireTopIcon`  | `require-top-icon`  | 顶层（一级）是否强制显示图标占位（保证对齐）。若条目没有 icon，将渲染一个占位。 | `boolean`              | `true`      |
+| `value`           | `value`             | 当前选中项（受控）                                  | `string`               | `undefined` |
+
+
+## Events
+
+| Event               | Description | Type                                                                |
+| ------------------- | ----------- | ------------------------------------------------------------------- |
+| `ldesignOpenChange` | 展开/收起事件     | `CustomEvent<{ key: string; open: boolean; openKeys: string[]; }>`  |
+| `ldesignSelect`     | 选中事件        | `CustomEvent<{ key: string; item: MenuItem; pathKeys: string[]; }>` |
+
+
+## Dependencies
+
+### Depends on
+
+- [ldesign-icon](../icon)
+
+### Graph
+```mermaid
+graph TD;
+  ldesign-menu --> ldesign-icon
+  style ldesign-menu fill:#f9f,stroke:#333,stroke-width:4px
+```
+
+----------------------------------------------
+
+*Built with [StencilJS](https://stenciljs.com/)*

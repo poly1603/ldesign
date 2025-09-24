@@ -1,14 +1,15 @@
-// Menu 组件样式
+// Menu 组件样式（纵向版）
 .ldesign-menu {
   --menu-height: 40px;
   --menu-padding-x: 12px;
-  --menu-gap: 8px;
+  --menu-gap: 4px;
   --menu-radius: 6px;
   --menu-color: var(--ldesign-text-color-primary, #1f2937);
-  --menu-color-secondary: var(--ldesign-text-color-secondary, #6b7280);
   --menu-bg-hover: var(--ldesign-bg-color-component-hover, #f8f8f8);
   --menu-bg-active: var(--ldesign-brand-color-focus, #d8c8ee);
   --menu-color-active: var(--ldesign-brand-color, #5e2aa7);
+  --menu-collapse-duration: 200ms;
+  --menu-collapse-easing: ease;
 
   width: 100%;
   display: block;
@@ -17,28 +18,14 @@
     margin: 0;
     padding: 0;
     list-style: none;
+    display: block;
+  }
+  &__list > li { list-style: none; }
+
+  &__node { position: relative; list-style: none; }
+
+  &__item {
     display: flex;
-    gap: var(--menu-gap);
-    align-items: center;
-    flex-wrap: nowrap;
-  }
-
-  &--vertical {
-    .ldesign-menu__list { display: block; }
-    .ldesign-menu__node { display: block; }
-  }
-
-  &--horizontal {
-    .ldesign-menu__node { display: inline-flex; align-items: center; }
-  }
-
-  &__node {
-    position: relative;
-  }
-
-  &__item,
-  &__link {
-    display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 0 var(--menu-padding-x);
@@ -47,7 +34,6 @@
     color: var(--menu-color);
     white-space: nowrap;
     cursor: pointer;
-    text-decoration: none;
     user-select: none;
     transition: background-color .15s ease, color .15s ease;
 
@@ -55,66 +41,30 @@
   }
 
   &__item--disabled { cursor: not-allowed; opacity: .5; pointer-events: none; }
-
   &__item--active { color: var(--menu-color-active); background: var(--menu-bg-active); }
 
   &__title { line-height: 1; display: inline-flex; align-items: center; }
-
-  &__icon { display: inline-flex; }
+  &__icon { display: inline-flex; width: 20px; justify-content: center; }
+  &__icon--placeholder { opacity: 0; }
 
   &__arrow { margin-left: auto; display: inline-flex; transition: transform .15s ease; }
+  &__node--open > .ldesign-menu__item .ldesign-menu__arrow { transform: rotate(90deg); }
 
-  /* 箭头翻转：下拉 -> 向上；右侧 -> 向下/向左（按 90 度旋转） */
-  &__arrow--open[data-dir="down"] { transform: rotate(180deg); }
-  &__arrow--open[data-dir="right"] { transform: rotate(90deg); }
-
-  // 垂直内嵌子菜单
   &__inline-children {
     margin: 4px 0 0 0;
     padding: 0;
     list-style: none;
+    overflow: hidden;
+    height: 0;
+    will-change: height;
+    transition: height var(--menu-collapse-duration) var(--menu-collapse-easing);
   }
+  &__inline-children > li { list-style: none; }
+  &__inline-children > li::marker { content: none; }
 
-  // 分隔线
   &__divider {
     height: 1px;
     margin: 6px 0;
     background: var(--ldesign-border-level-1-color, #e5e5e5);
   }
-
-  // 弹出层中的列表
-  &__popup-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    min-width: 160px;
-
-    .ldesign-menu__node { display: block; }
-    .ldesign-menu__item, .ldesign-menu__link {
-      width: 100%;
-      border-radius: 4px;
-      height: 36px;
-    }
-    .ldesign-menu__arrow { margin-left: auto; }
-  }
-
-  // 顶部“更多”
-  &__node--more {
-    .ldesign-menu__item { font-weight: 500; }
-  }
-
-  // 当“更多”处于隐藏（无溢出）状态时，不参与布局以免影响计算
-  &__node--more[aria-hidden="true"] {
-    position: fixed; /* 脱离当前布局且避免影响容器计算 */
-    left: -9999px;
-    top: -9999px;
-  }
-}
-
-/* 嵌套在 Menu 场景下，收紧 Popup 的内边距 */
-.lesign-menu {}
-.ldesign-menu {
-  /* 统一弹层内边距：四边一致，交由 popup__inner 控制；列表本身 padding=0 */
-  .ldesign-popup__inner { padding: 8px !important; }
-  .ldesign-popup__body { padding: 0 !important; }
 }

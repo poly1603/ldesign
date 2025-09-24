@@ -73,3 +73,32 @@ Affix 固钉组件，将元素固定在页面（或指定滚动容器）顶部�
 ---
 
 <!-- Auto Generated Below -->
+
+
+## Overview
+
+Affix 固钉组件
+- 将元素固定在页面（或指定滚动容器）顶部
+- 默认基于窗口滚动容器，支持设置 offsetTop、target(container) 与 zIndex
+
+## Properties
+
+| Property       | Attribute       | Description                                                               | Type      | Default     |
+| -------------- | --------------- | ------------------------------------------------------------------------- | --------- | ----------- |
+| `disabled`     | `disabled`      | 是否禁用                                                                      | `boolean` | `false`     |
+| `offset`       | `offset`        | 距离顶部的偏移量（触发吸顶的阈值）                                                         | `number`  | `0`         |
+| `target`       | `target`        | 指定滚动容器（CSS 选择器）。默认为 window 例如：'#scrollable' 或 '.scroll-area'              | `string`  | `undefined` |
+| `withinTarget` | `within-target` | 是否在指定滚动容器内部吸附（使用 position: sticky 策略） 仅当设置了 target 且 target 不是 window 时生效 | `boolean` | `false`     |
+| `zIndex`       | `z-index`       | 自定义层级                                                                     | `number`  | `1000`      |
+
+
+## Events
+
+| Event                | Description | Type                   |
+| -------------------- | ----------- | ---------------------- |
+| `ldesignAffixChange` | 吸附状态变化事件    | `CustomEvent<boolean>` |
+
+
+----------------------------------------------
+
+*Built with [StencilJS](https://stenciljs.com/)*
