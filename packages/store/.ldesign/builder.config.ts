@@ -58,7 +58,7 @@ export default defineConfig({
     rollupOptions: {
       onwarn: (warning, warn) => {
         // 完全静默，不输出任何警告
-        return
+
       }
     }
   }

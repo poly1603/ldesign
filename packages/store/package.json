@@ -95,12 +95,12 @@
   "unpkg": "./dist/index.min.js",
   "jsdelivr": "./dist/index.min.js",
   "files": [
-    "README.md",
     "LICENSE",
-    "package.json",
+    "README.md",
+    "dist",
     "es",
     "lib",
-    "dist"
+    "package.json"
   ],
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs,umd",

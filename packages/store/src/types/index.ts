@@ -23,6 +23,30 @@ export interface GetterDefinition {
 }
 
 /**
+ * 更安全的状态类型，避免使用 any
+ */
+export type SafeStateDefinition<T extends Record<string, unknown> = Record<string, unknown>> = {
+  readonly [K in keyof T]: T[K]
+}
+
+/**
+ * 更安全的 Action 类型，提供更好的类型推断
+ */
+export type SafeActionDefinition<T extends Record<string, (...args: any[]) => any> = Record<string, (...args: any[]) => any>> = {
+  readonly [K in keyof T]: T[K]
+}
+
+/**
+ * 更安全的 Getter 类型，提供状态类型约束
+ */
+export type SafeGetterDefinition<
+  T extends Record<string, any> = Record<string, any>,
+  S extends Record<string, unknown> = Record<string, unknown>
+> = {
+  readonly [K in keyof T]: (state: S) => T[K]
+}
+
+/**
  * 更严格的状态类型定义
  */
 export type StrictStateDefinition<T = Record<string, any>> = {
@@ -44,11 +68,33 @@ export type StrictGetterDefinition<T = Record<string, any>, S = any> = {
 }
 
 /**
+ * 缓存策略枚举
+ */
+export enum CacheStrategy {
+  LRU = 'lru',
+  FIFO = 'fifo',
+  LFU = 'lfu'
+}
+
+/**
  * 缓存配置选项
  */
 export interface CacheOptions {
+  /** 最大缓存大小 */
   maxSize?: number
+  /** 默认过期时间（毫秒） */
   defaultTTL?: number
+  /** 缓存策略 */
+  strategy?: CacheStrategy
+  /** 是否启用缓存统计 */
+  enableStats?: boolean
+  /** 缓存键前缀 */
+  keyPrefix?: string
+  /** 自定义序列化器 */
+  serializer?: {
+    serialize: (value: any) => string
+    deserialize: (value: string) => any
+  }
 }
 
 /**

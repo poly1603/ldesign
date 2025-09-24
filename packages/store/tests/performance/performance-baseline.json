@@ -1,0 +1,40 @@
+{
+  "timestamp": 1758633998928,
+  "version": "1.0.0",
+  "environment": {
+    "nodeVersion": "v22.18.0",
+    "platform": "win32",
+    "arch": "x64",
+    "memory": 76660736
+  },
+  "benchmarks": {
+    "ProductStore-添加产品": {
+      "opsPerSecond": 110107.90574773338,
+      "meanTime": 0.009081999999991694,
+      "samples": 100,
+      "variance": 0.000004090876000053885,
+      "standardDeviation": 0.0020225914070948403
+    },
+    "PersistenceStore-保存数据": {
+      "opsPerSecond": 44614.97278485984,
+      "meanTime": 0.022414000000003396,
+      "samples": 100,
+      "variance": 0.000030084403999894602,
+      "standardDeviation": 0.005484925159005782
+    },
+    "RealtimeStore-添加消息": {
+      "opsPerSecond": 26951.99849068837,
+      "meanTime": 0.03710299999999961,
+      "samples": 100,
+      "variance": 0.0073542150909980345,
+      "standardDeviation": 0.0857567203838745
+    },
+    "大数据集处理": {
+      "opsPerSecond": 387.84824894272924,
+      "meanTime": 2.5783279999999764,
+      "samples": 100,
+      "variance": 1.3192371836159478,
+      "standardDeviation": 1.148580508112491
+    }
+  }
+}
