@@ -19,3 +19,4 @@ export { LdesignModal } from './modal/modal';
 export { LdesignMessage } from './message/message';
 export { LdesignNotification } from './notification/notification';
 export { LdesignPopconfirm } from './popconfirm/popconfirm';
+export { LdesignAffix } from './affix/affix';

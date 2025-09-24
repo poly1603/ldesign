@@ -52,6 +52,37 @@ export namespace Components {
         "theme": Theme;
     }
     /**
+     * Affix 固钉组件
+     * - 将元素固定在页面（或指定滚动容器）顶部
+     * - 默认基于窗口滚动容器，支持设置 offsetTop、target(container) 与 zIndex
+     */
+    interface LdesignAffix {
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 距离顶部的偏移量（触发吸顶的阈值）
+          * @default 0
+         */
+        "offset": number;
+        /**
+          * 指定滚动容器（CSS 选择器）。默认为 window 例如：'#scrollable' 或 '.scroll-area'
+         */
+        "target"?: string;
+        /**
+          * 是否在指定滚动容器内部吸附（使用 position: sticky 策略） 仅当设置了 target 且 target 不是 window 时生效
+          * @default false
+         */
+        "withinTarget": boolean;
+        /**
+          * 自定义层级
+          * @default 1000
+         */
+        "zIndex": number;
+    }
+    /**
      * Button 按钮组件
      * 用于触发操作或导航
      */
@@ -961,6 +992,10 @@ export namespace Components {
         "theme": 'dark' | 'light';
     }
 }
+export interface LdesignAffixCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignAffixElement;
+}
 export interface LdesignButtonCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignButtonElement;
@@ -1023,6 +1058,28 @@ declare global {
     var HTMLBaseComponentElement: {
         prototype: HTMLBaseComponentElement;
         new (): HTMLBaseComponentElement;
+    };
+    interface HTMLLdesignAffixElementEventMap {
+        "ldesignAffixChange": boolean;
+    }
+    /**
+     * Affix 固钉组件
+     * - 将元素固定在页面（或指定滚动容器）顶部
+     * - 默认基于窗口滚动容器，支持设置 offsetTop、target(container) 与 zIndex
+     */
+    interface HTMLLdesignAffixElement extends Components.LdesignAffix, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignAffixElementEventMap>(type: K, listener: (this: HTMLLdesignAffixElement, ev: LdesignAffixCustomEvent<HTMLLdesignAffixElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignAffixElementEventMap>(type: K, listener: (this: HTMLLdesignAffixElement, ev: LdesignAffixCustomEvent<HTMLLdesignAffixElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignAffixElement: {
+        prototype: HTMLLdesignAffixElement;
+        new (): HTMLLdesignAffixElement;
     };
     interface HTMLLdesignButtonElementEventMap {
         "ldesignClick": MouseEvent;
@@ -1328,6 +1385,7 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "base-component": HTMLBaseComponentElement;
+        "ldesign-affix": HTMLLdesignAffixElement;
         "ldesign-button": HTMLLdesignButtonElement;
         "ldesign-checkbox": HTMLLdesignCheckboxElement;
         "ldesign-checkbox-group": HTMLLdesignCheckboxGroupElement;
@@ -1374,6 +1432,41 @@ declare namespace LocalJSX {
           * @default 'light'
          */
         "theme"?: Theme;
+    }
+    /**
+     * Affix 固钉组件
+     * - 将元素固定在页面（或指定滚动容器）顶部
+     * - 默认基于窗口滚动容器，支持设置 offsetTop、target(container) 与 zIndex
+     */
+    interface LdesignAffix {
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 距离顶部的偏移量（触发吸顶的阈值）
+          * @default 0
+         */
+        "offset"?: number;
+        /**
+          * 吸附状态变化事件
+         */
+        "onLdesignAffixChange"?: (event: LdesignAffixCustomEvent<boolean>) => void;
+        /**
+          * 指定滚动容器（CSS 选择器）。默认为 window 例如：'#scrollable' 或 '.scroll-area'
+         */
+        "target"?: string;
+        /**
+          * 是否在指定滚动容器内部吸附（使用 position: sticky 策略） 仅当设置了 target 且 target 不是 window 时生效
+          * @default false
+         */
+        "withinTarget"?: boolean;
+        /**
+          * 自定义层级
+          * @default 1000
+         */
+        "zIndex"?: number;
     }
     /**
      * Button 按钮组件
@@ -2330,6 +2423,7 @@ declare namespace LocalJSX {
     }
     interface IntrinsicElements {
         "base-component": BaseComponent;
+        "ldesign-affix": LdesignAffix;
         "ldesign-button": LdesignButton;
         "ldesign-checkbox": LdesignCheckbox;
         "ldesign-checkbox-group": LdesignCheckboxGroup;
@@ -2356,6 +2450,12 @@ declare module "@stencil/core" {
              * 提供通用的属性和方法
              */
             "base-component": LocalJSX.BaseComponent & JSXBase.HTMLAttributes<HTMLBaseComponentElement>;
+            /**
+             * Affix 固钉组件
+             * - 将元素固定在页面（或指定滚动容器）顶部
+             * - 默认基于窗口滚动容器，支持设置 offsetTop、target(container) 与 zIndex
+             */
+            "ldesign-affix": LocalJSX.LdesignAffix & JSXBase.HTMLAttributes<HTMLLdesignAffixElement>;
             /**
              * Button 按钮组件
              * 用于触发操作或导航

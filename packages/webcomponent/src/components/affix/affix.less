@@ -1,0 +1,22 @@
+/* 基础样式 */
+:host {
+  display: block;
+}
+
+.ldesign-affix__placeholder {
+  width: 100%;
+  height: 0;
+  pointer-events: none;
+}
+
+.ldesign-affix__content {
+  box-sizing: border-box;
+}
+
+/* 可按需为吸附态添加视觉效果 */
+:host(.ldesign-affix--affixed),
+.ldesign-affix--affixed .ldesign-affix__content {
+  /* 例如：加一个轻微的阴影，按需启用
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  */
+}

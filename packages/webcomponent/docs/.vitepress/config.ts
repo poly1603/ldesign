@@ -61,7 +61,13 @@ export default defineConfig({
           text: '基础组件',
           items: [
             { text: 'Button 按钮', link: '/components/button' },
-{ text: 'Icon 图标', link: '/components/icon' },
+            { text: 'Icon 图标', link: '/components/icon' },
+          ]
+        },
+        {
+          text: '布局组件',
+          items: [
+            { text: 'Affix 固钉', link: '/components/affix' },
           ]
         },
         {
