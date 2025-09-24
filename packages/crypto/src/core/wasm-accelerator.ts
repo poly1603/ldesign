@@ -64,8 +64,7 @@ export class WasmAccelerator {
         // SIMD 测试字节码
         const simdTest = new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11])
         this.supportsSimd = WebAssembly.validate(simdTest)
-      }
-      catch {
+      } catch {
         this.supportsSimd = false
       }
     }
@@ -134,8 +133,7 @@ export class WasmAccelerator {
       })
 
       // console.log(`WASM module ${name} loaded successfully`)
-    }
-    catch (error) {
+    } catch (error) {
       console.error(`Failed to load WASM module ${name}:`, error)
       if (!this.config.fallbackToJS) {
         throw error
@@ -257,8 +255,7 @@ export class WasmAccelerator {
     const wasmStart = performance.now()
     if (algorithm === 'sha256') {
       await this.sha256Wasm(data)
-    }
-    else if (algorithm === 'aes') {
+    } else if (algorithm === 'aes') {
       const key = new Uint8Array(32)
       const iv = new Uint8Array(16)
       await this.aesEncryptWasm(data, key, iv)
@@ -372,8 +369,7 @@ export class WasmUtils {
   static async validateModule(wasmBytes: Uint8Array): Promise<boolean> {
     try {
       return WebAssembly.validate(wasmBytes)
-    }
-    catch {
+    } catch {
       return false
     }
   }
@@ -416,8 +412,7 @@ export class WasmCrypto {
     try {
       const result = await this.accelerator.sha256Wasm(bytes)
       return this.bytesToHex(result)
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('WASM SHA256 failed, falling back to JS:', error)
       // 这里应该回退到 JS 实现
       throw error
@@ -445,8 +440,7 @@ export class WasmCrypto {
     try {
       const result = await this.accelerator.aesEncryptWasm(dataBytes, keyBytes, ivBytes)
       return this.bytesToHex(result)
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('WASM AES encrypt failed, falling back to JS:', error)
       // 这里应该回退到 JS 实现
       throw error

@@ -1,5 +1,5 @@
-import type { HashAlgorithm, HashOptions } from '../../../types'
 import { computed, type Ref, ref } from 'vue'
+import type { HashAlgorithm, HashOptions } from '../../../types'
 import { hash, hmacInstance as hmac } from '../../../core'
 
 /**
@@ -141,12 +141,10 @@ export function useHash(): UseHashReturn {
         lastHash.value = result
       }
       return result
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error)
       throw error // 这行永远不会执行，但满足类型要求
-    }
-    finally {
+    } finally {
       isHashing.value = false
     }
   }

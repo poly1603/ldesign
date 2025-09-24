@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { des3, tripledes, TripleDESEncryptor } from '../tripledes'
 
 describe('3DES 加密算法', () => {

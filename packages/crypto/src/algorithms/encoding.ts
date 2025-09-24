@@ -1,5 +1,5 @@
-import type { EncodingType, IEncoder } from '../types'
 import CryptoJS from 'crypto-js'
+import type { EncodingType, IEncoder } from '../types'
 import { ErrorUtils, ValidationUtils } from '../utils'
 
 /**
@@ -25,8 +25,7 @@ export class Encoder implements IEncoder {
             'Encoding',
           )
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -56,8 +55,7 @@ export class Encoder implements IEncoder {
             'Decoding',
           )
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -76,13 +74,11 @@ export class Encoder implements IEncoder {
       // 优先使用浏览器原生 API
       if (typeof btoa !== 'undefined') {
         return btoa(unescape(encodeURIComponent(data)))
-      }
-      else {
+      } else {
         // 使用 CryptoJS 作为后备
         return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(data))
       }
-    }
-    catch {
+    } catch {
       throw ErrorUtils.createEncryptionError(
         'Failed to encode Base64',
         'Base64',
@@ -106,15 +102,13 @@ export class Encoder implements IEncoder {
       // 优先使用浏览器原生 API
       if (typeof atob !== 'undefined') {
         return decodeURIComponent(escape(atob(encodedData)))
-      }
-      else {
+      } else {
         // 使用 CryptoJS 作为后备
         return CryptoJS.enc.Utf8.stringify(
           CryptoJS.enc.Base64.parse(encodedData),
         )
       }
-    }
-    catch {
+    } catch {
       throw ErrorUtils.createDecryptionError(
         'Failed to decode Base64',
         'Base64',
@@ -129,8 +123,7 @@ export class Encoder implements IEncoder {
     try {
       // 使用 CryptoJS
       return CryptoJS.enc.Hex.stringify(CryptoJS.enc.Utf8.parse(data))
-    }
-    catch {
+    } catch {
       throw ErrorUtils.createEncryptionError('Failed to encode Hex', 'Hex')
     }
   }
@@ -147,8 +140,7 @@ export class Encoder implements IEncoder {
 
       // 使用 CryptoJS
       return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Hex.parse(encodedData))
-    }
-    catch {
+    } catch {
       throw ErrorUtils.createDecryptionError('Failed to decode Hex', 'Hex')
     }
   }

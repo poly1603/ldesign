@@ -6,6 +6,7 @@ import type {
   HashOptions,
   RSAKeyPair,
 } from '../types'
+
 import { Decrypt, Encrypt, Hash, HMAC, KeyGenerator } from './crypto'
 import {
   type BatchOperation,
@@ -100,14 +101,14 @@ export class CryptoManager {
 
       const result = this.encrypt.encrypt(data, key, targetAlgorithm, options)
 
-      this.log('debug', `Encryption completed`, {
+      this.log('debug', 'Encryption completed', {
         algorithm: targetAlgorithm,
         success: result.success,
       })
 
       return result
     }
-    catch (error) {
+ catch (error) {
       this.log('error', 'Encryption failed', error)
       return {
         success: false,
@@ -128,7 +129,7 @@ export class CryptoManager {
     options?: any,
   ): Promise<DecryptResult> {
     try {
-      this.log('debug', `Decrypting data`)
+      this.log('debug', 'Decrypting data')
 
       const result = this.decrypt.decrypt(
         encryptedData,
@@ -137,11 +138,11 @@ export class CryptoManager {
         options,
       )
 
-      this.log('debug', `Decryption completed`, { success: result.success })
+      this.log('debug', 'Decryption completed', { success: result.success })
 
       return result
     }
-    catch (error) {
+ catch (error) {
       this.log('error', 'Decryption failed', error)
       return {
         success: false,
@@ -294,8 +295,7 @@ export class CryptoManager {
     message: string,
     data?: any,
   ): void {
-    if (!this.config.debug)
-      return
+    if (!this.config.debug) { return }
 
     const levels = ['error', 'warn', 'info', 'debug']
     const currentLevelIndex = levels.indexOf(this.config.logLevel)
@@ -309,7 +309,7 @@ export class CryptoManager {
         // eslint-disable-next-line no-console
         console[level](logMessage, data)
       }
-      else {
+ else {
         // eslint-disable-next-line no-console
         console[level](logMessage)
       }

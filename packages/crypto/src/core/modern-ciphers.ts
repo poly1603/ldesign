@@ -411,8 +411,7 @@ export class Poly1305 {
   }
 
   static verify(tag1: Uint8Array, tag2: Uint8Array): boolean {
-    if (tag1.length !== tag2.length)
-      return false
+    if (tag1.length !== tag2.length) { return false }
     let diff = 0
     for (let i = 0; i < tag1.length; i++) {
       diff |= tag1[i] ^ tag2[i]
@@ -782,13 +781,13 @@ export class BLAKE2b {
       x[xi] = x[xi + 1]
       x[xi + 1] = tmp
     }
-    else if (n < 32) {
+ else if (n < 32) {
       const h = x[xi + 1]
       const l = x[xi]
       x[xi + 1] = (h >>> n) | (l << (32 - n))
       x[xi] = (l >>> n) | (h << (32 - n))
     }
-    else {
+ else {
       const h = x[xi + 1]
       const l = x[xi]
       x[xi + 1] = (l >>> (n - 32)) | (h << (64 - n))
@@ -996,7 +995,7 @@ export class ModernCipherUtils {
     if (algorithm === 'chacha20') {
       return csprng.randomBytes(12) // 96-bit nonce
     }
-    else {
+ else {
       return csprng.randomBytes(24) // 192-bit nonce for XSalsa20
     }
   }

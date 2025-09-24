@@ -4,6 +4,7 @@
  */
 
 import CryptoJS from 'crypto-js'
+
 import { RandomUtils } from '../utils'
 
 /**
@@ -453,7 +454,7 @@ export class KDFManager {
       if (algorithm === 'pbkdf2') {
         params = {
           ...params,
-          iterations: level === 'low' ? 1000 : level === 'medium' ? 5000 : 10000
+          iterations: level === 'low' ? 1000 : level === 'medium' ? 5000 : 10000,
         }
       }
 

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+
 import { useCrypto } from '../composables/useCrypto'
 
 describe('useCrypto Composable', () => {
@@ -54,8 +55,7 @@ describe('useCrypto Composable', () => {
     it('should handle AES encryption errors', async () => {
       try {
         await crypto.encryptAES('', testKey)
-      }
-      catch (error) {
+      } catch (error) {
         expect(error).toBeInstanceOf(Error)
         expect(crypto.lastError.value).toBeDefined()
       }
@@ -165,8 +165,7 @@ describe('useCrypto Composable', () => {
     it('should handle and store errors properly', async () => {
       try {
         await crypto.encryptAES('', testKey)
-      }
-      catch {
+      } catch {
         expect(crypto.lastError.value).toBeDefined()
         expect(crypto.lastError.value).toContain('Data cannot be empty')
       }

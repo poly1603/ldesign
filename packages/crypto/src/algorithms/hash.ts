@@ -1,5 +1,5 @@
-import type { HashAlgorithm, HashOptions, HashResult, IHasher } from '../types'
 import CryptoJS from 'crypto-js'
+import type { HashAlgorithm, HashOptions, HashResult, IHasher } from '../types'
 import { CONSTANTS, ErrorUtils } from '../utils'
 
 /**
@@ -74,8 +74,7 @@ export class Hasher implements IHasher {
         algorithm,
         encoding: opts.encoding,
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -95,8 +94,7 @@ export class Hasher implements IHasher {
     try {
       const result = this.hash(data, algorithm, options)
       return result.hash === expectedHash
-    }
-    catch {
+    } catch {
       return false
     }
   }
@@ -188,8 +186,7 @@ export class HMACHasher {
         algorithm: `HMAC-${algorithm}`,
         encoding: opts.encoding,
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -213,8 +210,7 @@ export class HMACHasher {
     try {
       const result = this.hmac(data, key, algorithm, options)
       return result.hash === expectedHmac
-    }
-    catch {
+    } catch {
       return false
     }
   }

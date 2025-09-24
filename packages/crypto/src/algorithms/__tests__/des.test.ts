@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { des, DESEncryptor } from '../des'
 
 describe('dES 加密算法', () => {

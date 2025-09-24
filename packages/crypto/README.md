@@ -1,17 +1,21 @@
 # @ldesign/crypto
 
-一个全面的加解密库，支持所有主流 JavaScript 框架，并专门为 Vue 3 生态系统提供了深度集成。
+一个功能强大、类型安全的现代加密库，支持多种加密算法、哈希函数和编码方式，专为现代 Web 应用和 Node.js 环境设计。
 
-## 特性
+## ✨ 特性
 
-- 🔐 **全面的加密算法支持**: AES、RSA、MD5、SHA 系列、Base64、HMAC 等
-- 🚀 **高性能**: 优化的算法实现，适合生产环境使用
-- 🎯 **框架无关**: 可在任何 JavaScript 环境中使用
-- 🔧 **Vue 3 深度集成**: 提供 Composition API hooks 和插件
-- 📦 **多种构建格式**: ESM、UMD、CommonJS 等
-- 🛡️ **TypeScript 支持**: 完整的类型定义
-- ✅ **完整测试覆盖**: 单元测试和端到端测试
-- 📚 **详细文档**: API 文档和使用示例
+- 🔐 **多种加密算法**：AES、RSA、DES、3DES、Blowfish、ChaCha20、XSalsa20
+- 🛡️ **量子安全加密**：支持 LWE、SPHINCS+、Dilithium 等后量子密码算法
+- 🔑 **丰富的哈希函数**：MD5、SHA1、SHA224、SHA256、SHA384、SHA512、HMAC、BLAKE2b
+- 📝 **编码方式**：Base64、Hex、URL-safe Base64
+- 🎯 **TypeScript 支持**：完整的类型定义和智能提示
+- 🚀 **现代 API**：支持 Promise 和异步操作
+- 🔧 **Vue 3 集成**：提供 Composition API 钩子和插件系统
+- 📦 **模块化设计**：按需导入，Tree-shaking 友好
+- 🛡️ **安全性**：遵循最佳安全实践，支持密钥管理和轮换
+- ⚡ **高性能**：WASM 加速、缓存优化、批量处理
+- 🧪 **完整测试**：431+ 测试用例，覆盖率 80%+
+- 🌐 **跨平台**：支持浏览器和 Node.js 环境
 
 ## 安装
 

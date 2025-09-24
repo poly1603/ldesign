@@ -1,3 +1,4 @@
+import forge from 'node-forge'
 import type {
   DecryptResult,
   EncryptResult,
@@ -5,7 +6,6 @@ import type {
   RSAKeyPair,
   RSAOptions,
 } from '../types'
-import forge from 'node-forge'
 import { CONSTANTS, ErrorUtils, ValidationUtils } from '../utils'
 
 /**
@@ -44,8 +44,7 @@ export class RSAEncryptor implements IEncryptor {
         publicKey: forge.pki.publicKeyToPem(keypair.publicKey),
         privateKey: forge.pki.privateKeyToPem(keypair.privateKey),
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -93,8 +92,7 @@ export class RSAEncryptor implements IEncryptor {
         data: encryptedBase64,
         algorithm: `RSA-${opts.keySize}`,
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -124,8 +122,7 @@ export class RSAEncryptor implements IEncryptor {
       // 处理输入数据
       if (typeof encryptedData === 'string') {
         ciphertext = encryptedData
-      }
-      else {
+      } else {
         ciphertext = encryptedData.data || ''
       }
 
@@ -146,8 +143,7 @@ export class RSAEncryptor implements IEncryptor {
         data: decrypted,
         algorithm: `RSA-${opts.keySize}`,
       }
-    }
-    catch (error) {
+    } catch (error) {
       const algorithmName = `RSA-${opts.keySize}`
       if (error instanceof Error) {
         return {
@@ -193,8 +189,7 @@ export class RSAEncryptor implements IEncryptor {
       const signature = privateKeyObj.sign(md)
 
       return forge.util.encode64(signature)
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -232,8 +227,7 @@ export class RSAEncryptor implements IEncryptor {
 
       // 验证签名
       return publicKeyObj.verify(md.digest().bytes(), signatureBytes)
-    }
-    catch {
+    } catch {
       return false
     }
   }
@@ -251,8 +245,7 @@ export class RSAEncryptor implements IEncryptor {
       // 尝试解析 Base64 格式
       const pemKey = `-----BEGIN PUBLIC KEY-----\n${publicKey}\n-----END PUBLIC KEY-----`
       return forge.pki.publicKeyFromPem(pemKey)
-    }
-    catch {
+    } catch {
       throw ErrorUtils.createEncryptionError('Invalid public key format', 'RSA')
     }
   }
@@ -270,8 +263,7 @@ export class RSAEncryptor implements IEncryptor {
       // 尝试解析 Base64 格式
       const pemKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----`
       return forge.pki.privateKeyFromPem(pemKey)
-    }
-    catch {
+    } catch {
       throw ErrorUtils.createDecryptionError(
         'Invalid private key format',
         'RSA',

@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest'
+
 import {
   WasmAccelerator,
   wasmAccelerator,
@@ -225,8 +226,7 @@ describe('webAssembly Accelerator', () => {
         expect(result).toHaveProperty('wasm')
         expect(result).toHaveProperty('speedup')
         expect(result.js).toBeGreaterThan(0)
-      }
-      catch (error) {
+      } catch (error) {
         // 如果 WASM 模块未加载，跳过测试
         expect(error).toBeDefined()
       }

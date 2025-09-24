@@ -299,10 +299,10 @@ export class LWECrypto {
     if (mPrime < threshold) {
       return 0
     }
-    else if (mPrime > midpoint - threshold && mPrime < midpoint + threshold) {
+ else if (mPrime > midpoint - threshold && mPrime < midpoint + threshold) {
       return 1
     }
-    else {
+ else {
       // If not close to expected values, determine which is closer
       const distanceToZero = Math.min(mPrime, q - mPrime)
       const distanceToMidpoint = Math.abs(mPrime - midpoint)
@@ -422,7 +422,8 @@ export class LWECrypto {
       const bitCiphertext = ciphertext.slice(offset, offset + bitCiphertextSize)
       try {
         bits.push(this.decryptBit(bitCiphertext, privateKey))
-      } catch (error) {
+      }
+ catch {
         decryptionErrors++
         // If too many errors, this is likely a wrong key
         if (decryptionErrors > maxErrors) {
@@ -447,7 +448,8 @@ export class LWECrypto {
           consecutiveZeros++
           consecutiveOnes = 0
           maxConsecutiveZeros = Math.max(maxConsecutiveZeros, consecutiveZeros)
-        } else {
+        }
+ else {
           consecutiveOnes++
           consecutiveZeros = 0
           maxConsecutiveOnes = Math.max(maxConsecutiveOnes, consecutiveOnes)
@@ -744,8 +746,7 @@ export class SPHINCSPlus {
     let offset = n
 
     for (let i = 0; i < sigLength && i < msgW.length; i++) {
-      if (offset + n > signature.signature.length)
-        break
+      if (offset + n > signature.signature.length) { break }
 
       const sigPart = signature.signature.slice(offset, offset + n)
       const pkPart = this.chain(sigPart, msgW[i], this.params.w - 1 - msgW[i], publicSeed)
@@ -766,12 +767,10 @@ export class SPHINCSPlus {
     const computedRoot = this.hash(computedPk)
 
     // Compare with stored root
-    if (computedRoot.length !== root.length)
-      return false
+    if (computedRoot.length !== root.length) { return false }
 
     for (let i = 0; i < root.length; i++) {
-      if (computedRoot[i] !== root[i])
-        return false
+      if (computedRoot[i] !== root[i]) { return false }
     }
 
     return true
@@ -796,7 +795,8 @@ export class Dilithium {
         q: 8380417,
         sigma: 2,
       }
-    } else {
+    }
+ else {
       // Parameters object mode
       this.securityLevel = 2 // Default security level
       const params = paramsOrSecurityLevel
@@ -822,8 +822,7 @@ export class Dilithium {
         const index = (i + j) % n
         const sign = Math.floor((i + j) / n) % 2 === 0 ? 1 : -1
         result[index] = (result[index] + sign * a[i] * b[j]) % q
-        if (result[index] < 0)
-          result[index] += q
+        if (result[index] < 0) { result[index] += q }
       }
     }
 
@@ -854,8 +853,7 @@ export class Dilithium {
     const t: number[] = []
     for (let i = 0; i < n; i++) {
       t[i] = (As1[i] + s2[i]) % this.params.q
-      if (t[i] < 0)
-        t[i] += this.params.q
+      if (t[i] < 0) { t[i] += this.params.q }
     }
 
     // Serialize keys with different sizes based on security level
@@ -899,8 +897,7 @@ export class Dilithium {
     const z: number[] = []
     for (let i = 0; i < this.params.n; i++) {
       z[i] = (y[i] + cs1[i]) % this.params.q
-      if (z[i] < 0)
-        z[i] += this.params.q
+      if (z[i] < 0) { z[i] += this.params.q }
     }
 
     // Create signature
@@ -931,8 +928,7 @@ export class Dilithium {
     const wPrime: number[] = []
     for (let i = 0; i < this.params.n; i++) {
       wPrime[i] = (Az[i] - ct[i]) % this.params.q
-      if (wPrime[i] < 0)
-        wPrime[i] += this.params.q
+      if (wPrime[i] < 0) { wPrime[i] += this.params.q }
     }
 
     // Recompute challenge
@@ -950,8 +946,7 @@ export class Dilithium {
 
     // Check if challenges match
     for (let i = 0; i < this.params.n; i++) {
-      if (c[i] !== cPrime[i])
-        return false
+      if (c[i] !== cPrime[i]) { return false }
     }
 
     return true
@@ -999,11 +994,9 @@ export class Dilithium {
 
     for (let i = 0; i < Math.min(this.params.n, outlen); i++) {
       // Create sparse ternary challenge
-      if (hash[i] < 85)
-        result[i] = -1
-      else if (hash[i] < 170)
-        result[i] = 0
-      else result[i] = 1
+      if (hash[i] < 85) { result[i] = -1 } else if (hash[i] < 170) { result[i] = 0 } else {
+        result[i] = 1
+      }
     }
 
     return result
@@ -1298,12 +1291,13 @@ export class HybridCrypto {
         classicalPublicKey: classicalKeys.publicKey,
         classicalPrivateKey: classicalKeys.privateKey,
       }
-    } catch (error) {
+    }
+ catch (error) {
       throw new Error(`Failed to generate hybrid key pair: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
-  encrypt(data: Uint8Array, quantumPublicKey: Uint8Array, classicalPublicKey?: Uint8Array): Uint8Array {
+  encrypt(data: Uint8Array, quantumPublicKey: Uint8Array, _classicalPublicKey?: Uint8Array): Uint8Array {
     try {
       // Primary: Use quantum encryption (LWE)
       const quantumCiphertext = this.lwe.encrypt(data, quantumPublicKey)
@@ -1311,16 +1305,18 @@ export class HybridCrypto {
       // For true hybrid encryption, we could also encrypt with classical algorithm
       // and combine the results, but for simplicity we use quantum as primary
       return quantumCiphertext
-    } catch (error) {
+    }
+ catch (error) {
       throw new Error(`Hybrid encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
-  decrypt(ciphertext: Uint8Array, quantumPrivateKey: Uint8Array, classicalPrivateKey?: Uint8Array): Uint8Array {
+  decrypt(ciphertext: Uint8Array, quantumPrivateKey: Uint8Array, _classicalPrivateKey?: Uint8Array): Uint8Array {
     try {
       // Primary: Use quantum decryption (LWE)
       return this.lwe.decrypt(ciphertext, quantumPrivateKey)
-    } catch (error) {
+    }
+ catch (error) {
       throw new Error(`Hybrid decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -1336,7 +1332,8 @@ export class HybridCrypto {
         quantumSignature: quantumSig.signature,
         classicalSignature: classicalSig.signature,
       }
-    } catch (error) {
+    }
+ catch (error) {
       throw new Error(`Hybrid signing failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -1347,7 +1344,8 @@ export class HybridCrypto {
       const quantumValid = this.dilithium.verify(message, { signature: signature.quantumSignature }, quantumPublicKey)
       const classicalValid = this.dilithium.verify(message, { signature: signature.classicalSignature }, classicalPublicKey)
       return quantumValid && classicalValid
-    } catch (error) {
+    }
+ catch {
       // If verification fails due to error, consider it invalid
       return false
     }

@@ -267,8 +267,7 @@ export class WasmModuleBuilder {
             this.writeVarUint(funcBody, 1) // 1 local group
             this.writeVarUint(funcBody, func.locals.length)
             funcBody.push(func.locals[0]) // assuming all same type
-          }
-          else {
+          } else {
             this.writeVarUint(funcBody, 0) // no locals
           }
 

@@ -1,5 +1,5 @@
-import type { DecryptResult, EncryptResult, HashResult } from '../../types'
 import { ref } from 'vue'
+import type { DecryptResult, EncryptResult } from '../../types'
 import { decrypt, encrypt, hash } from '../../core'
 
 /**
@@ -37,12 +37,10 @@ export function useCrypto() {
       const result = await encrypt.aes(data, key)
       lastResult.value = result
       return result
-    }
-    catch (error) {
+    } catch (error) {
       lastError.value = error as Error
       return null
-    }
-    finally {
+    } finally {
       isEncrypting.value = false
     }
   }
@@ -58,12 +56,10 @@ export function useCrypto() {
       const result = await decrypt.aes(encryptedData, key)
       lastResult.value = result
       return result
-    }
-    catch (error) {
+    } catch (error) {
       lastError.value = error as Error
       return null
-    }
-    finally {
+    } finally {
       isDecrypting.value = false
     }
   }
@@ -76,12 +72,10 @@ export function useCrypto() {
       const result = hash.sha256(data)
       lastResult.value = result
       return result
-    }
-    catch (error) {
+    } catch (error) {
       lastError.value = error as Error
       return null
-    }
-    finally {
+    } finally {
       isHashing.value = false
     }
   }
@@ -94,12 +88,10 @@ export function useCrypto() {
       const result = hash.md5(data)
       lastResult.value = result
       return result
-    }
-    catch (error) {
+    } catch (error) {
       lastError.value = error as Error
       return null
-    }
-    finally {
+    } finally {
       isHashing.value = false
     }
   }

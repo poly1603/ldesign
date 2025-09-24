@@ -1,6 +1,6 @@
-import { ref, computed, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
+
 import { aes, base64, hex } from '../../../core'
-import type { AESOptions, EncryptResult, DecryptResult } from '../../../types'
 
 /**
  * 简化的加密状态接口
@@ -18,11 +18,11 @@ export interface EncryptionActions {
   // 简单的文本加密/解密
   encryptText: (text: string, password: string) => Promise<string | null>
   decryptText: (encryptedText: string, password: string) => Promise<string | null>
-  
+
   // 文件加密/解密（Base64）
   encryptFile: (fileContent: string, password: string) => Promise<string | null>
   decryptFile: (encryptedContent: string, password: string) => Promise<string | null>
-  
+
   // 清除状态
   clearError: () => void
   reset: () => void
@@ -39,16 +39,16 @@ export interface UseEncryptionReturn extends EncryptionState, EncryptionActions 
 
 /**
  * 简化的加密 Hook
- * 
+ *
  * 提供最常用的加密功能，使用简单的密码进行加密/解密
- * 
+ *
  * @example
  * ```vue
  * <script setup>
  * import { useEncryption } from '@ldesign/crypto/vue'
- * 
+ *
  * const { encryptText, decryptText, isLoading, error, result } = useEncryption()
- * 
+ *
  * const handleEncrypt = async () => {
  *   const encrypted = await encryptText('Hello World', 'mypassword')
  *   console.log('Encrypted:', encrypted)
@@ -74,12 +74,10 @@ export function useEncryption(): UseEncryptionReturn {
       const res = await fn()
       result.value = typeof res === 'string' ? res : JSON.stringify(res)
       return res
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
       return null
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -98,7 +96,7 @@ export function useEncryption(): UseEncryptionReturn {
       const encryptedData = JSON.parse(base64.decode(encryptedText))
       const decrypted = aes.decrypt(encryptedData, password, {
         keySize: 256,
-        iv: encryptedData.iv
+        iv: encryptedData.iv,
       })
       return decrypted.data || ''
     })
@@ -120,7 +118,7 @@ export function useEncryption(): UseEncryptionReturn {
       const encryptedData = JSON.parse(hex.decode(encryptedContent))
       const decrypted = aes.decrypt(encryptedData, password, {
         keySize: 256,
-        iv: encryptedData.iv
+        iv: encryptedData.iv,
       })
       return base64.decode(decrypted.data || '')
     })

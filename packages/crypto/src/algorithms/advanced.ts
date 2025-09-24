@@ -64,8 +64,7 @@ export class ChaCha20Encryptor implements IEncryptor {
         nonce,
         aad: options.aad,
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         return {
           success: false,
@@ -100,8 +99,7 @@ export class ChaCha20Encryptor implements IEncryptor {
         ciphertext = encryptedData
         nonce = options.nonce || ''
         aad = options.aad
-      }
-      else {
+      } else {
         ciphertext = encryptedData.data || ''
         nonce = (encryptedData as any).nonce || options.nonce || ''
         aad = (encryptedData as any).aad || options.aad
@@ -130,8 +128,7 @@ export class ChaCha20Encryptor implements IEncryptor {
         data: decrypted,
         algorithm: 'ChaCha20-Poly1305',
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         return {
           success: false,
@@ -162,8 +159,7 @@ export class ChaCha20Encryptor implements IEncryptor {
     if (/^[0-9a-f]+$/i.test(data) && data.length % 2 === 0) {
       // 输入是hex字符串，需要解码
       dataBytes = this.hexToBytes(data)
-    }
-    else {
+    } else {
       // 输入是普通字符串，需要编码
       dataBytes = new TextEncoder().encode(data)
     }
@@ -178,8 +174,7 @@ export class ChaCha20Encryptor implements IEncryptor {
     if (/^[0-9a-f]+$/i.test(data) && data.length % 2 === 0) {
       // 输入是hex（解密），返回字符串
       return new TextDecoder().decode(result)
-    }
-    else {
+    } else {
       // 输入是字符串（加密），返回hex
       return this.bytesToHex(result)
     }
@@ -245,8 +240,7 @@ export class AESGCMEncryptor implements IEncryptor {
 
       // Node.js 环境的实现
       return this.encryptNode(data, key, options)
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         return {
           success: false,
@@ -277,8 +271,7 @@ export class AESGCMEncryptor implements IEncryptor {
 
       // Node.js 环境的实现
       return this.decryptNode(encryptedData, key, options)
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         return {
           success: false,
@@ -352,8 +345,7 @@ export class AESGCMEncryptor implements IEncryptor {
       ciphertext = encryptedData
       iv = options.nonce || ''
       aad = options.aad
-    }
-    else {
+    } else {
       ciphertext = encryptedData.data || ''
       iv = encryptedData.iv || options.nonce || ''
       aad = (encryptedData as any).aad || options.aad
@@ -429,8 +421,7 @@ export class AESGCMEncryptor implements IEncryptor {
       ciphertext = encryptedData
       iv = options.nonce || ''
       aad = options.aad
-    }
-    else {
+    } else {
       ciphertext = encryptedData.data || ''
       iv = encryptedData.iv || options.nonce || ''
       aad = (encryptedData as any).aad || options.aad

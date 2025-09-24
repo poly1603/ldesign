@@ -177,17 +177,13 @@ export class ValidationUtils {
    * @param str Base64 字符串
    */
   static isValidBase64(str: string): boolean {
-    if (typeof str !== 'string')
-      return false
+    if (typeof str !== 'string') { return false }
     // 允许空字符串作为有效 Base64（某些场景下编码空字符串）
-    if (str.length === 0)
-      return true
+    if (str.length === 0) { return true }
 
     // 基础格式校验：长度为 4 的倍数，允许 0~2 个 '=' 结尾填充
-    if (str.length % 4 !== 0)
-      return false
-    if (!/^[A-Z0-9+/]+={0,2}$/i.test(str))
-      return false
+    if (str.length % 4 !== 0) { return false }
+    if (!/^[A-Z0-9+/]+={0,2}$/i.test(str)) { return false }
 
     // 优先尝试浏览器原生 API（若存在）
     try {
@@ -196,7 +192,7 @@ export class ValidationUtils {
         return btoa(atob(str)) === str
       }
     }
-    catch {
+ catch {
       // 若原生 API 失败，继续使用 CryptoJS 进行校验
     }
 
@@ -207,7 +203,7 @@ export class ValidationUtils {
       // 去除末尾填充后比较，避免等价的不同填充形式导致误判
       return roundtrip.replace(/=+$/, '') === str.replace(/=+$/, '')
     }
-    catch {
+ catch {
       return false
     }
   }
@@ -218,8 +214,7 @@ export class ValidationUtils {
    */
   static isValidHex(str: string): boolean {
     // 空字符串是有效的Hex字符串
-    if (str === '')
-      return true
+    if (str === '') { return true }
     return /^[0-9a-f]+$/i.test(str) && str.length % 2 === 0
   }
 

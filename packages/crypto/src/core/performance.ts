@@ -250,8 +250,7 @@ export class PerformanceOptimizer {
       this.recordOperationTime(endTime - startTime)
 
       return result
-    }
-    catch (error) {
+    } catch (error) {
       const endTime = performance.now()
       this.recordOperationTime(endTime - startTime)
 
@@ -284,8 +283,7 @@ export class PerformanceOptimizer {
       this.recordOperationTime(endTime - startTime)
 
       return result
-    }
-    catch (error) {
+    } catch (error) {
       const endTime = performance.now()
       this.recordOperationTime(endTime - startTime)
 
@@ -331,8 +329,7 @@ export class PerformanceOptimizer {
     if (result) {
       this.cacheHits++
       return result
-    }
-    else {
+    } else {
       this.cacheMisses++
       return undefined
     }

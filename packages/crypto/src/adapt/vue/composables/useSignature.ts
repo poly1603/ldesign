@@ -1,4 +1,5 @@
 import { computed, type Ref, ref } from 'vue'
+
 import { digitalSignature } from '../../../core'
 
 /**
@@ -116,18 +117,15 @@ export function useSignature(): UseSignatureReturn {
       // 更新相关状态
       if (typeof result === 'string' && loadingRef === isSigning) {
         lastSignature.value = result
-      }
-      else if (typeof result === 'boolean' && loadingRef === isVerifying) {
+      } else if (typeof result === 'boolean' && loadingRef === isVerifying) {
         lastVerificationResult.value = result
       }
 
       return result
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error)
       throw error // 这行永远不会执行，但满足类型要求
-    }
-    finally {
+    } finally {
       loadingRef.value = false
     }
   }

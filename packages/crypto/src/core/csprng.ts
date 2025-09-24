@@ -4,6 +4,7 @@
  */
 
 import { Buffer } from 'node:buffer'
+
 import CryptoJS from 'crypto-js'
 
 /**
@@ -36,8 +37,7 @@ export class EntropyCollector {
    * 开始收集熵
    */
   startCollecting(): void {
-    if (this.collecting)
-      return
+    if (this.collecting) { return }
     this.collecting = true
 
     // 收集鼠标移动熵
@@ -147,7 +147,7 @@ export class EntropyCollector {
         entropy = entropy & entropy
       }
     }
-    else {
+ else {
       entropy = 0
       for (let i = 0; i < data.length; i++) {
         entropy = (entropy << 5) - entropy + data[i]
@@ -246,11 +246,11 @@ export class CSPRNG {
             const crypto = require('node:crypto')
             crypto.randomFillSync(this.seed)
           }
-          catch {
+ catch {
             this.fallbackSeed()
           }
         }
-        else {
+ else {
           this.fallbackSeed()
         }
         break
@@ -260,7 +260,7 @@ export class CSPRNG {
         if (typeof window !== 'undefined' && window.crypto) {
           window.crypto.getRandomValues(this.seed)
         }
-        else {
+ else {
           this.fallbackSeed()
         }
         break
@@ -302,8 +302,8 @@ export class CSPRNG {
       const random2 = Math.random()
       const random3 = Math.random()
 
-      const value = (now + i * 1000) * (perf + i * 100) * (random1 + i) +
-                   (random2 * 0x100000000) + (random3 * 0x10000) + i
+      const value = (now + i * 1000) * (perf + i * 100) * (random1 + i)
+        + (random2 * 0x100000000) + (random3 * 0x10000) + i
       this.seed[i] = Math.floor(value) & 0xFF
     }
   }
@@ -328,11 +328,11 @@ export class CSPRNG {
             const crypto = require('node:crypto')
             crypto.randomFillSync(bytes)
           }
-          catch {
+ catch {
             this.fallbackRandomBytes(bytes)
           }
         }
-        else {
+ else {
           this.fallbackRandomBytes(bytes)
         }
         break
@@ -342,7 +342,7 @@ export class CSPRNG {
         if (typeof window !== 'undefined' && window.crypto) {
           window.crypto.getRandomValues(bytes)
         }
-        else {
+ else {
           this.fallbackRandomBytes(bytes)
         }
         break
@@ -493,7 +493,7 @@ export class CSPRNG {
     if (typeof Buffer !== 'undefined') {
       return Buffer.from(bytes).toString('base64').substring(0, length)
     }
-    else {
+ else {
       // 浏览器环境
       return btoa(String.fromCharCode.apply(null, Array.from(bytes)))
         .substring(0, length)

@@ -9,6 +9,7 @@ import { Buffer } from 'node:buffer'
 import * as crypto from 'node:crypto'
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
+
 import { Encrypt } from './crypto'
 import { CSPRNG } from './csprng'
 import { KeyManager } from './key-manager'
@@ -136,7 +137,7 @@ export class FileStorageBackend extends StorageBackend {
       await fs.access(filePath)
       return true
     }
-    catch {
+ catch {
       return false
     }
   }
@@ -155,7 +156,7 @@ export class FileStorageBackend extends StorageBackend {
 
       return metadata
     }
-    catch {
+ catch {
       return []
     }
   }
@@ -373,8 +374,7 @@ export class EncryptedStorage {
   async searchByTags(tags: Record<string, string>): Promise<StorageMetadata[]> {
     const allItems = await this.backend.list()
     return allItems.filter((item) => {
-      if (!item.tags)
-        return false
+      if (!item.tags) { return false }
       return Object.entries(tags).every(([key, value]) => item.tags![key] === value)
     })
   }
@@ -396,7 +396,7 @@ export class EncryptedStorage {
       name: 'storage-key',
       algorithm: 'AES',
       purpose: 'encryption',
-      keySize: 256
+      keySize: 256,
     })
 
     const keyMaterial = await this.keyManager.getKey(actualKeyId)
@@ -482,8 +482,7 @@ export class EncryptedStorage {
 
     switch (metadata.encryptionMode) {
       case EncryptionMode.AES_256_GCM: {
-        if (!iv)
-          throw new Error('IV required for AES-GCM decryption')
+        if (!iv) { throw new Error('IV required for AES-GCM decryption') }
 
         const authTag = encrypted.slice(-16)
         const ciphertext = encrypted.slice(0, -16)
@@ -500,8 +499,7 @@ export class EncryptedStorage {
       }
 
       case EncryptionMode.CHACHA20_POLY1305: {
-        if (!iv)
-          throw new Error('Nonce required for ChaCha20-Poly1305 decryption')
+        if (!iv) { throw new Error('Nonce required for ChaCha20-Poly1305 decryption') }
 
         const chacha = new ChaCha20Poly1305()
         const keyBytes = new Uint8Array(32)
@@ -521,8 +519,7 @@ export class EncryptedStorage {
       }
 
       case EncryptionMode.AES_256_CBC: {
-        if (!iv)
-          throw new Error('IV required for AES-CBC decryption')
+        if (!iv) { throw new Error('IV required for AES-CBC decryption') }
 
         const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(keyMaterial, 'hex'), iv)
 
@@ -569,7 +566,7 @@ export class EncryptedStorage {
         compressed.push(0xFF, count, byte)
         i += count
       }
-      else {
+ else {
         compressed.push(byte)
         i++
       }
@@ -595,7 +592,7 @@ export class EncryptedStorage {
         }
         i += 3
       }
-      else {
+ else {
         decompressed.push(data[i])
         i++
       }
@@ -714,8 +711,7 @@ export class EncryptedDatabase {
    */
   async find(collection: string, predicate?: (doc: any) => boolean): Promise<any[]> {
     const ids = this.collections.get(collection)
-    if (!ids)
-      return []
+    if (!ids) { return [] }
 
     const documents: any[] = []
     for (const id of ids) {
@@ -725,7 +721,7 @@ export class EncryptedDatabase {
           documents.push(doc)
         }
       }
-      catch {
+ catch {
         // Document might be deleted
       }
     }
@@ -765,8 +761,7 @@ export class EncryptedDatabase {
    */
   async dropCollection(collection: string): Promise<void> {
     const ids = this.collections.get(collection)
-    if (!ids)
-      return
+    if (!ids) { return }
 
     for (const id of ids) {
       await this.storage.delete(id)
@@ -775,5 +770,3 @@ export class EncryptedDatabase {
     this.collections.delete(collection)
   }
 }
-
-

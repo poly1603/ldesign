@@ -181,16 +181,11 @@ export class PasswordStrengthChecker {
    */
   private getCharsetSize(password: string): number {
     let size = 0
-    if (/[a-z]/.test(password))
-      size += 26
-    if (/[A-Z]/.test(password))
-      size += 26
-    if (/\d/.test(password))
-      size += 10
-    if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password))
-      size += 32
-    if (/[^\u0020-\u007E]/.test(password))
-      size += 128 // Unicode
+    if (/[a-z]/.test(password)) { size += 26 }
+    if (/[A-Z]/.test(password)) { size += 26 }
+    if (/\d/.test(password)) { size += 10 }
+    if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) { size += 32 }
+    if (/[^\u0020-\u007E]/.test(password)) { size += 128 } // Unicode
     return size || 1
   }
 
@@ -208,36 +203,25 @@ export class PasswordStrengthChecker {
     score = Math.min(entropy * 1.5, 50)
 
     // 长度奖励
-    if (password.length >= 8)
-      score += 10
-    if (password.length >= 12)
-      score += 10
-    if (password.length >= 16)
-      score += 10
-    if (password.length >= 20)
-      score += 10
+    if (password.length >= 8) { score += 10 }
+    if (password.length >= 12) { score += 10 }
+    if (password.length >= 16) { score += 10 }
+    if (password.length >= 20) { score += 10 }
 
     // 字符类型奖励
     const typeCount = Object.values(characterTypes).filter(Boolean).length
     score += typeCount * 5
 
     // 惩罚
-    if (this.isCommonPassword(password))
-      score -= 50
-    if (this.hasRepeatingCharacters(password))
-      score -= 10
-    if (this.hasSequence(password))
-      score -= 15
-    if (this.hasKeyboardPattern(password))
-      score -= 15
-    if (password.length < 8)
-      score -= 20
+    if (this.isCommonPassword(password)) { score -= 50 }
+    if (this.hasRepeatingCharacters(password)) { score -= 10 }
+    if (this.hasSequence(password)) { score -= 15 }
+    if (this.hasKeyboardPattern(password)) { score -= 15 }
+    if (password.length < 8) { score -= 20 }
 
     // 特殊字符奖励
-    if (characterTypes.symbols)
-      score += 10
-    if (characterTypes.unicode)
-      score += 5
+    if (characterTypes.symbols) { score += 10 }
+    if (characterTypes.unicode) { score += 5 }
 
     return Math.max(0, Math.min(100, score))
   }
@@ -246,16 +230,11 @@ export class PasswordStrengthChecker {
    * 获取强度级别
    */
   private getStrengthLevel(score: number): PasswordStrength {
-    if (score < 20)
-      return PasswordStrength.VeryWeak
-    if (score < 40)
-      return PasswordStrength.Weak
-    if (score < 60)
-      return PasswordStrength.Fair
-    if (score < 75)
-      return PasswordStrength.Good
-    if (score < 90)
-      return PasswordStrength.Strong
+    if (score < 20) { return PasswordStrength.VeryWeak }
+    if (score < 40) { return PasswordStrength.Weak }
+    if (score < 60) { return PasswordStrength.Fair }
+    if (score < 75) { return PasswordStrength.Good }
+    if (score < 90) { return PasswordStrength.Strong }
     return PasswordStrength.VeryStrong
   }
 
@@ -371,28 +350,18 @@ export class PasswordStrengthChecker {
    * 格式化时间
    */
   private formatTime(seconds: number): string {
-    if (seconds < 1)
-      return '立即'
-    if (seconds < 60)
-      return `${Math.round(seconds)}秒`
-    if (seconds < 3600)
-      return `${Math.round(seconds / 60)}分钟`
-    if (seconds < 86400)
-      return `${Math.round(seconds / 3600)}小时`
-    if (seconds < 2592000)
-      return `${Math.round(seconds / 86400)}天`
-    if (seconds < 31536000)
-      return `${Math.round(seconds / 2592000)}个月`
-    if (seconds < 3153600000)
-      return `${Math.round(seconds / 31536000)}年`
+    if (seconds < 1) { return '立即' }
+    if (seconds < 60) { return `${Math.round(seconds)}秒` }
+    if (seconds < 3600) { return `${Math.round(seconds / 60)}分钟` }
+    if (seconds < 86400) { return `${Math.round(seconds / 3600)}小时` }
+    if (seconds < 2592000) { return `${Math.round(seconds / 86400)}天` }
+    if (seconds < 31536000) { return `${Math.round(seconds / 2592000)}个月` }
+    if (seconds < 3153600000) { return `${Math.round(seconds / 31536000)}年` }
 
     const years = seconds / 31536000
-    if (years < 1000)
-      return `${Math.round(years)}年`
-    if (years < 1000000)
-      return `${Math.round(years / 1000)}千年`
-    if (years < 1000000000)
-      return `${Math.round(years / 1000000)}百万年`
+    if (years < 1000) { return `${Math.round(years)}年` }
+    if (years < 1000000) { return `${Math.round(years / 1000)}千年` }
+    if (years < 1000000000) { return `${Math.round(years / 1000000)}百万年` }
     return '数十亿年以上'
   }
 
@@ -480,14 +449,10 @@ export class PasswordStrengthChecker {
 
     // 确保至少包含每种类型的字符
     const requiredChars: string[] = []
-    if (opts.includeLowercase)
-      requiredChars.push(this.getRandomChar('abcdefghijklmnopqrstuvwxyz'))
-    if (opts.includeUppercase)
-      requiredChars.push(this.getRandomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
-    if (opts.includeNumbers)
-      requiredChars.push(this.getRandomChar('0123456789'))
-    if (opts.includeSymbols)
-      requiredChars.push(this.getRandomChar('!@#$%^&*()_+-='))
+    if (opts.includeLowercase) { requiredChars.push(this.getRandomChar('abcdefghijklmnopqrstuvwxyz')) }
+    if (opts.includeUppercase) { requiredChars.push(this.getRandomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ')) }
+    if (opts.includeNumbers) { requiredChars.push(this.getRandomChar('0123456789')) }
+    if (opts.includeSymbols) { requiredChars.push(this.getRandomChar('!@#$%^&*()_+-=')) }
 
     // 生成剩余字符
     for (let i = requiredChars.length; i < opts.length; i++) {

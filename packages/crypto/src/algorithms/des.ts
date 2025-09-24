@@ -1,10 +1,10 @@
+import CryptoJS from 'crypto-js'
 import type {
   DecryptResult,
   DESOptions,
   EncryptResult,
   IEncryptor,
 } from '../types'
-import CryptoJS from 'crypto-js'
 import { ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
 
 /**
@@ -60,8 +60,7 @@ export class DESEncryptor implements IEncryptor {
         iv,
         keySize: 64, // DES 密钥大小为 64 位
       }
-    }
-    catch (error) {
+    } catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, 'DES encryption'),
@@ -86,8 +85,7 @@ export class DESEncryptor implements IEncryptor {
       if (typeof encryptedData === 'string') {
         ciphertext = encryptedData
         iv = options.iv
-      }
-      else {
+      } else {
         ciphertext = encryptedData.data || ''
         iv = encryptedData.iv || options.iv
       }
@@ -144,8 +142,7 @@ export class DESEncryptor implements IEncryptor {
         algorithm: 'DES',
         mode: opts.mode,
       }
-    }
-    catch (error) {
+    } catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, 'DES decryption'),
@@ -162,8 +159,7 @@ export class DESEncryptor implements IEncryptor {
     if (key.length < 8) {
       // 如果密钥太短，用零填充
       key = key.padEnd(8, '0')
-    }
-    else if (key.length > 8) {
+    } else if (key.length > 8) {
       // 如果密钥太长，截取前 8 字节
       key = key.substring(0, 8)
     }

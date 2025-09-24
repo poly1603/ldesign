@@ -5,6 +5,7 @@
  */
 
 import type { Plugin } from '@ldesign/engine/types'
+
 import { CryptoPlugin, type CryptoPluginOptions } from '../adapt/vue/plugin'
 import {
   aes,
@@ -158,7 +159,7 @@ export function createCryptoEnginePlugin(
 
         // 定义实际的安装逻辑
         const performInstall = async () => {
-          engine.logger?.info(`[Crypto Plugin] performInstall called`)
+          engine.logger?.info('[Crypto Plugin] performInstall called')
 
           // 获取 Vue 应用实例
           const vueApp = engine.getApp()
@@ -168,7 +169,7 @@ export function createCryptoEnginePlugin(
             )
           }
 
-          engine.logger?.info(`[Crypto Plugin] Vue app found, proceeding with installation`)
+          engine.logger?.info('[Crypto Plugin] Vue app found, proceeding with installation')
 
           // 记录插件安装开始
           engine.logger?.info(`Installing ${name} plugin...`, {
@@ -198,8 +199,7 @@ export function createCryptoEnginePlugin(
               /* eslint-disable-next-line no-console */
               console.info('[Crypto Plugin] Vue plugin installed successfully')
             }
-          }
-          else {
+          } else {
             // 如果不自动安装 Vue 插件，则手动注册全局提供者
             vueApp.provide('crypto', globalCrypto)
             vueApp.provide('cryptoConfig', config.config)
@@ -228,21 +228,19 @@ export function createCryptoEnginePlugin(
         // 检查 Vue 应用是否已经创建
         const vueApp = engine.getApp()
         if (vueApp) {
-          engine.logger?.info(`[Crypto Plugin] Vue app found, installing immediately`)
+          engine.logger?.info('[Crypto Plugin] Vue app found, installing immediately')
           await performInstall()
-        }
-        else {
-          engine.logger?.info(`[Crypto Plugin] Vue app not found, registering event listener`)
+        } else {
+          engine.logger?.info('[Crypto Plugin] Vue app not found, registering event listener')
           // 如果 Vue 应用还没有创建，等待 app:created 事件
           await new Promise<void>((resolve, reject) => {
             engine.events?.once('app:created', async () => {
               try {
-                engine.logger?.info(`[Crypto Plugin] app:created event received, installing now`)
+                engine.logger?.info('[Crypto Plugin] app:created event received, installing now')
                 await performInstall()
                 resolve()
-              }
-              catch (error) {
-                engine.logger?.error(`[Crypto Plugin] Failed to install after app creation:`, error)
+              } catch (error) {
+                engine.logger?.error('[Crypto Plugin] Failed to install after app creation:', error)
                 reject(error)
               }
             })
@@ -250,14 +248,12 @@ export function createCryptoEnginePlugin(
             engine.logger?.info(`${name} plugin registered, waiting for Vue app creation...`)
           })
         }
-      }
-      catch (error) {
+      } catch (error) {
         // 使用engine.logger记录错误，如果不可用则使用console.error
         if (context.engine?.logger) {
-          context.engine.logger.error(`[Crypto Plugin] Installation failed:`, error)
-        }
-        else {
-          console.error(`[Crypto Plugin] Installation failed:`, error)
+          context.engine.logger.error('[Crypto Plugin] Installation failed:', error)
+        } else {
+          console.error('[Crypto Plugin] Installation failed:', error)
         }
         throw error
       }
@@ -286,8 +282,7 @@ export function createCryptoEnginePlugin(
         }
 
         engine.logger?.info(`${name} plugin uninstalled successfully`)
-      }
-      catch (error) {
+      } catch (error) {
         const engine = context.engine || context
         if (
           engine
@@ -295,8 +290,7 @@ export function createCryptoEnginePlugin(
           && typeof engine.logger.error === 'function'
         ) {
           engine.logger.error(`Failed to uninstall ${name} plugin:`, error)
-        }
-        else {
+        } else {
           console.error(`Failed to uninstall ${name} plugin:`, error)
         }
         throw error

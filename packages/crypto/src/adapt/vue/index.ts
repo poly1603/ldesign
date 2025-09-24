@@ -67,30 +67,30 @@ export type {
 export {
   type CryptoActions,
   type CryptoState,
+  // 便捷的组合式函数
+  type EncryptionActions,
+  type EncryptionState,
   type HashActions,
   type HashState,
+  type KeyManagerActions,
+  type KeyManagerState,
+
   type SignatureActions,
   type SignatureState,
   // 加密相关 Hook
   useCrypto,
   type UseCryptoReturn,
 
+  useEncryption,
+  type UseEncryptionReturn,
   // 哈希相关 Hook
   useHash,
   type UseHashReturn,
+  useKeyManager,
+  type UseKeyManagerReturn,
   // 数字签名相关 Hook
   useSignature,
   type UseSignatureReturn,
-
-  // 便捷的组合式函数
-  type EncryptionActions,
-  type EncryptionState,
-  useEncryption,
-  type UseEncryptionReturn,
-  type KeyManagerActions,
-  type KeyManagerState,
-  useKeyManager,
-  type UseKeyManagerReturn,
 } from './composables'
 
 // === Vue 插件 ===

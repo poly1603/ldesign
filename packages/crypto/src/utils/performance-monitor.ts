@@ -3,7 +3,6 @@
  */
 
 import type { EncryptionAlgorithm } from '../types'
-
 import process from 'node:process'
 
 /**
@@ -209,7 +208,7 @@ export class PerformanceMonitor {
     if (typeof process !== 'undefined' && process.memoryUsage) {
       return process.memoryUsage().heapUsed
     }
-    else if (typeof performance !== 'undefined' && (performance as any).memory) {
+ else if (typeof performance !== 'undefined' && (performance as any).memory) {
       return (performance as any).memory.usedJSHeapSize
     }
     return undefined
@@ -332,8 +331,7 @@ export class PerformanceMonitor {
    * 生成时间序列数据
    */
   private generateTimeSeriesData(metrics: PerformanceMetric[]): TimeSeriesData[] {
-    if (metrics.length === 0)
-      return []
+    if (metrics.length === 0) { return [] }
 
     const timeSeriesData: TimeSeriesData[] = []
     const interval = 60000 // 1 minute intervals
@@ -367,8 +365,7 @@ export class PerformanceMonitor {
    * 计算平均值
    */
   private average(values: number[]): number {
-    if (values.length === 0)
-      return 0
+    if (values.length === 0) { return 0 }
     return values.reduce((sum, val) => sum + val, 0) / values.length
   }
 
@@ -377,8 +374,7 @@ export class PerformanceMonitor {
    */
   private calculateAverageThroughput(metrics: PerformanceMetric[]): number {
     const validMetrics = metrics.filter(m => m.throughput !== undefined)
-    if (validMetrics.length === 0)
-      return 0
+    if (validMetrics.length === 0) { return 0 }
 
     const throughputs = validMetrics.map(m => m.throughput!)
     return this.average(throughputs)
@@ -429,7 +425,7 @@ export class PerformanceMonitor {
       try {
         callback(metric)
       }
-      catch (error) {
+ catch (error) {
         console.error('Error in real-time metric callback:', error)
       }
     })
@@ -465,7 +461,7 @@ export class PerformanceMonitor {
       const imported = JSON.parse(data) as PerformanceMetric[]
       this.metrics = [...this.metrics, ...imported]
     }
-    catch (error) {
+ catch (error) {
       console.error('Failed to import metrics:', error)
     }
   }
@@ -507,7 +503,7 @@ export function measurePerformance(
       )
       return result
     }
-    catch (error) {
+ catch (error) {
       performanceMonitor.endOperation(
         operationId,
         propertyName,

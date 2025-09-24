@@ -1,10 +1,10 @@
+import CryptoJS from 'crypto-js'
 import type {
   DecryptResult,
   EncryptResult,
   IEncryptor,
   TripleDESOptions,
 } from '../types'
-import CryptoJS from 'crypto-js'
 import { ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
 
 /**
@@ -64,8 +64,7 @@ export class TripleDESEncryptor implements IEncryptor {
         iv,
         keySize: 192, // 3DES 密钥大小为 192 位
       }
-    }
-    catch (error) {
+    } catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, '3DES encryption'),
@@ -90,8 +89,7 @@ export class TripleDESEncryptor implements IEncryptor {
       if (typeof encryptedData === 'string') {
         ciphertext = encryptedData
         iv = options.iv
-      }
-      else {
+      } else {
         ciphertext = encryptedData.data || ''
         iv = encryptedData.iv || options.iv
       }
@@ -149,8 +147,7 @@ export class TripleDESEncryptor implements IEncryptor {
       try {
         decrypted = CryptoJS.TripleDES.decrypt(ciphertext, keyWordArray, config)
         decryptedText = decrypted.toString(CryptoJS.enc.Utf8)
-      }
-      catch {
+      } catch {
         throw ErrorUtils.createDecryptionError(
           'Failed to decrypt data - invalid format or corrupted data',
           '3DES',
@@ -170,8 +167,7 @@ export class TripleDESEncryptor implements IEncryptor {
         algorithm: '3DES',
         mode: opts.mode,
       }
-    }
-    catch (error) {
+    } catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, '3DES decryption'),
@@ -191,8 +187,7 @@ export class TripleDESEncryptor implements IEncryptor {
         key += key
       }
       key = key.substring(0, 24)
-    }
-    else if (key.length > 24) {
+    } else if (key.length > 24) {
       // 如果密钥太长，截取前 24 字节
       key = key.substring(0, 24)
     }

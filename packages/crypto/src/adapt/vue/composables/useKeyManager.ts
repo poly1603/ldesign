@@ -1,6 +1,6 @@
-import { ref, computed, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
+import type { RSAKeyPair } from '../../../types'
 import { keyGenerator } from '../../../core'
-import type { RSAKeyPair, KeyGenerationOptions } from '../../../types'
 
 /**
  * 密钥管理状态接口
@@ -19,16 +19,16 @@ export interface KeyManagerActions {
   generateAESKey: (keySize?: 128 | 192 | 256) => Promise<string | null>
   generateRSAKeyPair: (keySize?: 1024 | 2048 | 3072 | 4096) => Promise<RSAKeyPair | null>
   generateRandomKey: (length?: number) => Promise<string | null>
-  
+
   // 密钥存储
   storeKey: (name: string, key: string | RSAKeyPair) => void
   getKey: (name: string) => string | RSAKeyPair | null
   removeKey: (name: string) => boolean
-  
+
   // 密钥导出
   exportKeys: () => string
   importKeys: (keysData: string) => boolean
-  
+
   // 清理
   clearError: () => void
   clearKeys: () => void
@@ -47,23 +47,23 @@ export interface UseKeyManagerReturn extends KeyManagerState, KeyManagerActions 
 
 /**
  * 密钥管理 Hook
- * 
+ *
  * 提供密钥生成、存储和管理功能
- * 
+ *
  * @example
  * ```vue
  * <script setup>
  * import { useKeyManager } from '@ldesign/crypto/vue'
- * 
- * const { 
- *   generateAESKey, 
- *   generateRSAKeyPair, 
- *   storeKey, 
+ *
+ * const {
+ *   generateAESKey,
+ *   generateRSAKeyPair,
+ *   storeKey,
  *   getKey,
  *   keys,
- *   isGenerating 
+ *   isGenerating
  * } = useKeyManager()
- * 
+ *
  * const handleGenerateKey = async () => {
  *   const aesKey = await generateAESKey(256)
  *   if (aesKey) {
@@ -91,12 +91,10 @@ export function useKeyManager(): UseKeyManagerReturn {
       isGenerating.value = true
       error.value = null
       return await fn()
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
       return null
-    }
-    finally {
+    } finally {
       isGenerating.value = false
     }
   }
@@ -147,8 +145,7 @@ export function useKeyManager(): UseKeyManagerReturn {
   const exportKeys = (): string => {
     try {
       return JSON.stringify(keys.value, null, 2)
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
       return ''
     }
@@ -163,8 +160,7 @@ export function useKeyManager(): UseKeyManagerReturn {
         return true
       }
       return false
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
       return false
     }

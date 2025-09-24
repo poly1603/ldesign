@@ -1,10 +1,10 @@
+import CryptoJS from 'crypto-js'
 import type {
   BlowfishOptions,
   DecryptResult,
   EncryptResult,
   IEncryptor,
 } from '../types'
-import CryptoJS from 'crypto-js'
 import { ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
 
 /**
@@ -71,8 +71,7 @@ export class BlowfishEncryptor implements IEncryptor {
         iv,
         keySize: 256, // 使用 256 位密钥
       }
-    }
-    catch (error) {
+    } catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, 'Blowfish encryption'),
@@ -97,8 +96,7 @@ export class BlowfishEncryptor implements IEncryptor {
       if (typeof encryptedData === 'string') {
         ciphertext = encryptedData
         iv = options.iv
-      }
-      else {
+      } else {
         ciphertext = encryptedData.data || ''
         iv = encryptedData.iv || options.iv
       }
@@ -153,8 +151,7 @@ export class BlowfishEncryptor implements IEncryptor {
         algorithm: 'Blowfish',
         mode: opts.mode,
       }
-    }
-    catch (error) {
+    } catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, 'Blowfish decryption'),

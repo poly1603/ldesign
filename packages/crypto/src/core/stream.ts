@@ -89,7 +89,7 @@ export class StreamCipher {
           const encrypted = await encryptChunk(chunk, key, iv, opts.algorithm)
           controller.enqueue(encrypted)
         }
-        catch (error) {
+ catch (error) {
           controller.error(error)
         }
       },
@@ -126,7 +126,7 @@ export class StreamCipher {
           const decrypted = await decryptChunk(chunk, key, iv, opts.algorithm)
           controller.enqueue(decrypted)
         }
-        catch (error) {
+ catch (error) {
           controller.error(error)
         }
       },
@@ -227,7 +227,7 @@ export class StreamCipher {
     let processedChunks = 0
 
     for (const encryptedChunk of encryptedChunks) {
-      if (encryptedChunk.trim() === '') continue
+      if (encryptedChunk.trim() === '') { continue }
 
       // 解密块
       const decryptedChunk = await this.processChunkDecrypt(
@@ -269,7 +269,7 @@ export class StreamCipher {
     chunk: Uint8Array,
     key: string,
     iv: string,
-    algorithm: string,
+    _algorithm: string,
   ): Promise<string> {
     // 将二进制数据转换为Base64字符串进行加密
     const chunkStr = btoa(String.fromCharCode(...chunk))
@@ -284,7 +284,7 @@ export class StreamCipher {
     encryptedChunk: string,
     key: string,
     iv: string,
-    algorithm: string,
+    _algorithm: string,
   ): Promise<Uint8Array> {
     const result = aes.decrypt(encryptedChunk, key, { iv })
     if (result.success && result.data) {
@@ -292,7 +292,8 @@ export class StreamCipher {
       try {
         const binaryString = atob(result.data)
         return new Uint8Array(binaryString.split('').map(char => char.charCodeAt(0)))
-      } catch (error) {
+      }
+ catch {
         throw new Error('Failed to decode decrypted data')
       }
     }
@@ -315,7 +316,7 @@ export class StreamCipher {
           const encrypted = await encryptChunk(chunk, key, iv, opts.algorithm)
           controller.enqueue(encrypted)
         }
-        catch (error) {
+ catch (error) {
           controller.error(error)
         }
       },
@@ -338,7 +339,7 @@ export class StreamCipher {
           const decrypted = await decryptChunk(chunk, key, iv, opts.algorithm)
           controller.enqueue(decrypted)
         }
-        catch (error) {
+ catch (error) {
           controller.error(error)
         }
       },

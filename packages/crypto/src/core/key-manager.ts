@@ -4,7 +4,9 @@
  */
 
 import { Buffer } from 'node:buffer'
+
 import CryptoJS from 'crypto-js'
+
 import { aes } from '../algorithms/aes'
 import { KDFManager } from '../algorithms/kdf'
 
@@ -192,8 +194,7 @@ export class KeyManager {
         salt: encrypted.salt,
         iv: encrypted.iv,
       })
-    }
-    else {
+    } else {
       this.keys.set(keyId, {
         key: keyMaterial,
         metadata,
@@ -273,8 +274,7 @@ export class KeyManager {
         salt: encrypted.salt,
         iv: encrypted.iv,
       })
-    }
-    else {
+    } else {
       this.keys.set(newKeyId, {
         key: newKeyMaterial,
         metadata: newMetadata,
@@ -436,8 +436,7 @@ export class KeyManager {
         salt: encrypted.salt,
         iv: encrypted.iv,
       })
-    }
-    else {
+    } else {
       this.keys.set(keyId, {
         key: keyMaterial,
         metadata: fullMetadata,
@@ -514,8 +513,7 @@ export class KeyManager {
         }
         json = decrypted.data!
       }
-    }
-    else {
+    } else {
       json = backupData
     }
 
@@ -533,8 +531,7 @@ export class KeyManager {
           salt: encrypted.salt,
           iv: encrypted.iv,
         })
-      }
-      else {
+      } else {
         this.keys.set(item.id, {
           key: item.key,
           metadata: item.metadata,

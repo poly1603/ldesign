@@ -5,9 +5,7 @@
 import type {
   QuantumSafeKeyPair,
 } from './quantum-safe'
-
 import { Buffer } from 'node:buffer'
-
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   Dilithium,
@@ -121,7 +119,8 @@ describe('lWE Cryptography', () => {
           if (decrypted.every((val, idx) => val === data[idx])) {
             successfulMatches++
           }
-        } catch (error) {
+        }
+ catch {
           // If decryption throws an error, that's expected for wrong key
           // Don't count this as a successful match
         }

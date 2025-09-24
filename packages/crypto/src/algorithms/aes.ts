@@ -1,10 +1,10 @@
+import CryptoJS from 'crypto-js'
 import type {
   AESOptions,
   DecryptResult,
   EncryptResult,
   IEncryptor,
 } from '../types'
-import CryptoJS from 'crypto-js'
 import { CONSTANTS, ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
 
 /**
@@ -89,8 +89,7 @@ export class AESEncryptor implements IEncryptor {
         keySize: opts.keySize,
         iv,
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -136,14 +135,42 @@ export class AESEncryptor implements IEncryptor {
         // 对于字符串输入，如果没有提供IV，尝试使用CryptoJS的默认解密方式
         if (!iv) {
           try {
+            // 首先验证输入是否为有效的Base64格式
+            try {
+              CryptoJS.enc.Base64.parse(encryptedData)
+            } catch {
+              throw ErrorUtils.createDecryptionError(
+                'Invalid encrypted data format - not valid Base64',
+                'AES',
+              )
+            }
+
             const decrypted = CryptoJS.AES.decrypt(encryptedData, key)
             const decryptedString = decrypted.toString(CryptoJS.enc.Utf8)
 
+            // 检查解密是否成功：sigBytes应该大于等于0
             if (decrypted.sigBytes < 0) {
               throw ErrorUtils.createDecryptionError(
                 'Failed to decrypt data - invalid key or corrupted data',
                 'AES',
               )
+            }
+
+            // 对于非空解密结果，进行额外验证
+            if (decryptedString.length > 0) {
+              try {
+                // 尝试重新编码以验证UTF-8有效性
+                const testEncode = CryptoJS.enc.Utf8.parse(decryptedString)
+                const reEncoded = testEncode.toString(CryptoJS.enc.Utf8)
+                if (reEncoded !== decryptedString) {
+                  throw new Error('Invalid UTF-8 sequence')
+                }
+              } catch {
+                throw ErrorUtils.createDecryptionError(
+                  'Decrypted data contains invalid characters - wrong key',
+                  'AES',
+                )
+              }
             }
 
             return {
@@ -152,8 +179,7 @@ export class AESEncryptor implements IEncryptor {
               algorithm: 'AES',
               mode: opts.mode,
             }
-          }
-          catch (error) {
+          } catch (error) {
             if (error instanceof Error) {
               return {
                 success: false,
@@ -172,8 +198,7 @@ export class AESEncryptor implements IEncryptor {
             }
           }
         }
-      }
-      else {
+      } else {
         ciphertext = encryptedData.data || ''
         iv = encryptedData.iv || opts.iv
         // 从加密结果中获取实际使用的参数
@@ -214,14 +239,30 @@ export class AESEncryptor implements IEncryptor {
         )
       }
 
+      // 对于非空解密结果，进行额外验证
+      if (decryptedString.length > 0) {
+        try {
+          // 尝试重新编码以验证UTF-8有效性
+          const testEncode = CryptoJS.enc.Utf8.parse(decryptedString)
+          const reEncoded = testEncode.toString(CryptoJS.enc.Utf8)
+          if (reEncoded !== decryptedString) {
+            throw new Error('Invalid UTF-8 sequence')
+          }
+        } catch {
+          throw ErrorUtils.createDecryptionError(
+            'Decrypted data contains invalid characters - wrong key',
+            'AES',
+          )
+        }
+      }
+
       return {
         success: true,
         data: decryptedString,
         algorithm: 'AES',
         mode: actualMode,
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         return {
           success: false,
@@ -332,9 +373,8 @@ export const aes = {
     try {
       const encryptor = new AESEncryptor()
       return encryptor.encrypt(data, key, options)
-    }
-    catch (error) {
-      const opts = { ...new AESEncryptor()['defaultOptions'], ...options }
+    } catch (error) {
+      const opts = { ...new AESEncryptor().defaultOptions, ...options }
       if (error instanceof Error) {
         return {
           success: false,
@@ -369,9 +409,8 @@ export const aes = {
     try {
       const encryptor = new AESEncryptor()
       return encryptor.decrypt(encryptedData, key, options)
-    }
-    catch (error) {
-      const opts = { ...new AESEncryptor()['defaultOptions'], ...options }
+    } catch (error) {
+      const opts = { ...new AESEncryptor().defaultOptions, ...options }
       if (error instanceof Error) {
         return {
           success: false,

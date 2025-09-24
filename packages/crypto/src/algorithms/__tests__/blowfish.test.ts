@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { blowfish, BlowfishEncryptor } from '../blowfish'
 
 describe('blowfish 加密算法', () => {
