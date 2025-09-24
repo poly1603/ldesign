@@ -1,0 +1,282 @@
+/* ==================== CSS 变量定义 ==================== */
+:root {
+  /* 基础颜色 */
+  --cropper-primary-color: #1890ff;
+  --cropper-primary-hover: #40a9ff;
+  --cropper-primary-active: #096dd9;
+  
+  /* 背景颜色 */
+  --cropper-bg-color: #000;
+  --cropper-mask-color: rgba(0, 0, 0, 0.5);
+  --cropper-toolbar-bg: rgba(255, 255, 255, 0.95);
+  --cropper-info-bg: rgba(0, 0, 0, 0.8);
+  
+  /* 文字颜色 */
+  --cropper-text-color: #333;
+  --cropper-text-light: #666;
+  --cropper-text-white: #fff;
+  
+  /* 边框颜色 */
+  --cropper-border-color: #d9d9d9;
+  --cropper-border-hover: #40a9ff;
+  
+  /* 阴影 */
+  --cropper-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --cropper-shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --cropper-shadow-heavy: 0 6px 16px rgba(0, 0, 0, 0.2);
+  
+  /* 圆角 */
+  --cropper-border-radius: 4px;
+  --cropper-border-radius-lg: 8px;
+  
+  /* 间距 */
+  --cropper-spacing-xs: 4px;
+  --cropper-spacing-sm: 8px;
+  --cropper-spacing-md: 12px;
+  --cropper-spacing-lg: 16px;
+  --cropper-spacing-xl: 20px;
+  
+  /* 动画 */
+  --cropper-transition-fast: 0.2s ease;
+  --cropper-transition-normal: 0.3s ease;
+  --cropper-transition-slow: 0.5s ease;
+}
+
+/* ==================== 默认主题 ==================== */
+.cropper-container.theme-default {
+  --cropper-primary-color: #1890ff;
+  --cropper-primary-hover: #40a9ff;
+  --cropper-primary-active: #096dd9;
+  --cropper-bg-color: #000;
+  --cropper-mask-color: rgba(0, 0, 0, 0.5);
+  --cropper-toolbar-bg: rgba(255, 255, 255, 0.95);
+  --cropper-text-color: #333;
+  --cropper-text-light: #666;
+}
+
+/* ==================== 暗色主题 ==================== */
+.cropper-container.theme-dark {
+  --cropper-primary-color: #177ddc;
+  --cropper-primary-hover: #3c9ae8;
+  --cropper-primary-active: #0958d9;
+  --cropper-bg-color: #1f1f1f;
+  --cropper-mask-color: rgba(0, 0, 0, 0.7);
+  --cropper-toolbar-bg: rgba(0, 0, 0, 0.8);
+  --cropper-info-bg: rgba(255, 255, 255, 0.1);
+  --cropper-text-color: #fff;
+  --cropper-text-light: #ccc;
+  --cropper-border-color: #434343;
+  --cropper-border-hover: #177ddc;
+}
+
+.cropper-container.theme-dark .cropper-canvas {
+  background-color: var(--cropper-bg-color);
+}
+
+.cropper-container.theme-dark .cropper-crop-box {
+  border-color: var(--cropper-primary-color);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.cropper-container.theme-dark .cropper-control-point {
+  background-color: var(--cropper-primary-color);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.cropper-container.theme-dark .cropper-btn {
+  color: var(--cropper-text-light);
+}
+
+.cropper-container.theme-dark .cropper-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--cropper-primary-hover);
+}
+
+.cropper-container.theme-dark .cropper-btn.active {
+  background-color: var(--cropper-primary-color);
+  color: var(--cropper-text-white);
+}
+
+/* ==================== 亮色主题 ==================== */
+.cropper-container.theme-light {
+  --cropper-primary-color: #1890ff;
+  --cropper-primary-hover: #40a9ff;
+  --cropper-primary-active: #096dd9;
+  --cropper-bg-color: #f5f5f5;
+  --cropper-mask-color: rgba(0, 0, 0, 0.3);
+  --cropper-toolbar-bg: rgba(255, 255, 255, 0.98);
+  --cropper-info-bg: rgba(0, 0, 0, 0.75);
+  --cropper-text-color: #333;
+  --cropper-text-light: #666;
+  --cropper-border-color: #d9d9d9;
+  --cropper-border-hover: #40a9ff;
+}
+
+.cropper-container.theme-light .cropper-canvas {
+  background-color: var(--cropper-bg-color);
+}
+
+/* ==================== 蓝色主题 ==================== */
+.cropper-container.theme-blue {
+  --cropper-primary-color: #2f54eb;
+  --cropper-primary-hover: #597ef7;
+  --cropper-primary-active: #1d39c4;
+  --cropper-bg-color: #001529;
+  --cropper-mask-color: rgba(0, 21, 41, 0.6);
+  --cropper-toolbar-bg: rgba(47, 84, 235, 0.1);
+  --cropper-info-bg: rgba(47, 84, 235, 0.8);
+  --cropper-text-color: #fff;
+  --cropper-text-light: #bfbfbf;
+  --cropper-border-color: #434343;
+  --cropper-border-hover: #597ef7;
+}
+
+/* ==================== 绿色主题 ==================== */
+.cropper-container.theme-green {
+  --cropper-primary-color: #52c41a;
+  --cropper-primary-hover: #73d13d;
+  --cropper-primary-active: #389e0d;
+  --cropper-bg-color: #162312;
+  --cropper-mask-color: rgba(22, 35, 18, 0.6);
+  --cropper-toolbar-bg: rgba(82, 196, 26, 0.1);
+  --cropper-info-bg: rgba(82, 196, 26, 0.8);
+  --cropper-text-color: #fff;
+  --cropper-text-light: #bfbfbf;
+  --cropper-border-color: #434343;
+  --cropper-border-hover: #73d13d;
+}
+
+/* ==================== 紫色主题 ==================== */
+.cropper-container.theme-purple {
+  --cropper-primary-color: #722ed1;
+  --cropper-primary-hover: #9254de;
+  --cropper-primary-active: #531dab;
+  --cropper-bg-color: #1a0d2e;
+  --cropper-mask-color: rgba(26, 13, 46, 0.6);
+  --cropper-toolbar-bg: rgba(114, 46, 209, 0.1);
+  --cropper-info-bg: rgba(114, 46, 209, 0.8);
+  --cropper-text-color: #fff;
+  --cropper-text-light: #bfbfbf;
+  --cropper-border-color: #434343;
+  --cropper-border-hover: #9254de;
+}
+
+/* ==================== 红色主题 ==================== */
+.cropper-container.theme-red {
+  --cropper-primary-color: #f5222d;
+  --cropper-primary-hover: #ff4d4f;
+  --cropper-primary-active: #cf1322;
+  --cropper-bg-color: #2a1215;
+  --cropper-mask-color: rgba(42, 18, 21, 0.6);
+  --cropper-toolbar-bg: rgba(245, 34, 45, 0.1);
+  --cropper-info-bg: rgba(245, 34, 45, 0.8);
+  --cropper-text-color: #fff;
+  --cropper-text-light: #bfbfbf;
+  --cropper-border-color: #434343;
+  --cropper-border-hover: #ff4d4f;
+}
+
+/* ==================== 橙色主题 ==================== */
+.cropper-container.theme-orange {
+  --cropper-primary-color: #fa8c16;
+  --cropper-primary-hover: #ffa940;
+  --cropper-primary-active: #d46b08;
+  --cropper-bg-color: #2b1d11;
+  --cropper-mask-color: rgba(43, 29, 17, 0.6);
+  --cropper-toolbar-bg: rgba(250, 140, 22, 0.1);
+  --cropper-info-bg: rgba(250, 140, 22, 0.8);
+  --cropper-text-color: #fff;
+  --cropper-text-light: #bfbfbf;
+  --cropper-border-color: #434343;
+  --cropper-border-hover: #ffa940;
+}
+
+/* ==================== 高对比度主题 ==================== */
+.cropper-container.theme-high-contrast {
+  --cropper-primary-color: #ffff00;
+  --cropper-primary-hover: #ffff66;
+  --cropper-primary-active: #cccc00;
+  --cropper-bg-color: #000;
+  --cropper-mask-color: rgba(0, 0, 0, 0.8);
+  --cropper-toolbar-bg: rgba(255, 255, 255, 1);
+  --cropper-info-bg: rgba(0, 0, 0, 1);
+  --cropper-text-color: #000;
+  --cropper-text-light: #333;
+  --cropper-text-white: #fff;
+  --cropper-border-color: #fff;
+  --cropper-border-hover: #ffff00;
+}
+
+.cropper-container.theme-high-contrast .cropper-crop-box {
+  border-width: 3px;
+  border-color: var(--cropper-primary-color);
+}
+
+.cropper-container.theme-high-contrast .cropper-control-point {
+  width: 12px;
+  height: 12px;
+  background-color: var(--cropper-primary-color);
+  border: 3px solid #000;
+}
+
+/* ==================== 主题切换动画 ==================== */
+.cropper-container {
+  transition: 
+    background-color var(--cropper-transition-normal),
+    border-color var(--cropper-transition-normal);
+}
+
+.cropper-container * {
+  transition: 
+    color var(--cropper-transition-fast),
+    background-color var(--cropper-transition-fast),
+    border-color var(--cropper-transition-fast),
+    box-shadow var(--cropper-transition-fast);
+}
+
+/* ==================== 媒体查询适配 ==================== */
+@media (prefers-color-scheme: dark) {
+  .cropper-container:not([class*="theme-"]) {
+    --cropper-primary-color: #177ddc;
+    --cropper-primary-hover: #3c9ae8;
+    --cropper-primary-active: #0958d9;
+    --cropper-bg-color: #1f1f1f;
+    --cropper-mask-color: rgba(0, 0, 0, 0.7);
+    --cropper-toolbar-bg: rgba(0, 0, 0, 0.8);
+    --cropper-text-color: #fff;
+    --cropper-text-light: #ccc;
+    --cropper-border-color: #434343;
+    --cropper-border-hover: #177ddc;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cropper-container,
+  .cropper-container * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ==================== 打印样式 ==================== */
+@media print {
+  .cropper-container {
+    background-color: #fff !important;
+    box-shadow: none !important;
+  }
+  
+  .cropper-toolbar,
+  .cropper-control-point,
+  .cropper-info {
+    display: none !important;
+  }
+  
+  .cropper-mask {
+    background-color: transparent !important;
+  }
+  
+  .cropper-crop-box {
+    border-color: #000 !important;
+    border-style: solid !important;
+  }
+}

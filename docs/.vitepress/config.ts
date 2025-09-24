@@ -61,6 +61,7 @@ export default defineConfig({
             { text: 'Button 按钮', link: '/components/button' },
             { text: 'Input 输入框', link: '/components/input' },
             { text: 'Card 卡片', link: '/components/card' },
+            { text: 'Popup 弹出层', link: '/components/popup' },
             { text: 'Popconfirm 气泡确认框', link: '/components/popconfirm' }
           ]
         }
@@ -131,6 +132,9 @@ export default defineConfig({
         '@ldesign/component': fileURLToPath(
           new URL('../packages/component/src', import.meta.url),
         ),
+        '@ldesign/webcomponent': fileURLToPath(
+          new URL('../packages/webcomponent', import.meta.url),
+        ),
       },
     },
     server: {
@@ -139,6 +143,14 @@ export default defineConfig({
     },
     build: {
       chunkSizeWarningLimit: 1000
+    },
+    // 优化 Web Components 支持
+    define: {
+      'process.env': {}
+    },
+    // 确保 Stencil 组件正确打包
+    optimizeDeps: {
+      include: ['@ldesign/webcomponent/loader']
     }
   },
 })

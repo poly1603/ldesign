@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片裁剪器 - 高级功能示例</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .editor-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px dashed #dee2e6;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .toolbar-group label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-control {
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-select {
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            background: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .cropper-container {
+            flex: 1;
+            min-height: 500px;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cropper-placeholder {
+            text-align: center;
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .cropper-placeholder .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preview-container {
+            width: 100%;
+            height: 200px;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 4px;
+        }
+
+        .preview-placeholder {
+            color: #6c757d;
+            text-align: center;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: #e9ecef;
+            transform: translateX(4px);
+        }
+
+        .history-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .history-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .filter-control {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .range-input {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #dee2e6;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .range-input::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-bar {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-info {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .export-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .theme-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .theme-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-btn.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .toast.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .sidebar {
+                order: -1;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .toolbar-group {
+                justify-content: space-between;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 12px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="theme-selector">
+            <button class="theme-btn active" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" data-theme="default"></button>
+            <button class="theme-btn" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);" data-theme="dark"></button>
+            <button class="theme-btn" style="background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);" data-theme="blue"></button>
+            <button class="theme-btn" style="background: linear-gradient(135deg, #00b894 0%, #00a085 100%);" data-theme="green"></button>
+        </div>
+
+        <div class="header">
+            <h1>🎨 图片裁剪器</h1>
+            <p>高级功能演示 - 专业级图片编辑工具</p>
+        </div>
+
+        <div class="main-content">
+            <div class="editor-section">
+                <div class="toolbar">
+                    <div class="toolbar-group">
+                        <label>📁 图片上传</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="imageInput" class="file-input" accept="image/*" multiple>
+                            <label for="imageInput" class="file-input-label">
+                                <span>📤</span>
+                                选择图片
+                            </label>
+                        </div>
+                        <button class="btn btn-secondary" id="pasteBtn">📋 粘贴</button>
+                        <button class="btn btn-secondary" id="urlBtn">🔗 URL</button>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <label>🔧 裁剪形状</label>
+                        <select class="form-select" id="shapeSelect">
+                            <option value="rectangle">矩形</option>
+                            <option value="circle">圆形</option>
+                            <option value="ellipse">椭圆</option>
+                        </select>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <label>📐 宽高比</label>
+                        <select class="form-select" id="aspectRatioSelect">
+                            <option value="free">自由</option>
+                            <option value="1">1:1</option>
+                            <option value="1.333">4:3</option>
+                            <option value="1.777">16:9</option>
+                            <option value="0.75">3:4</option>
+                            <option value="0.5625">9:16</option>
+                        </select>
+                        <input type="text" class="form-control" id="customRatio" placeholder="自定义" style="width: 80px;">
+                    </div>
+
+                    <div class="toolbar-group">
+                        <label>🔄 变换</label>
+                        <button class="btn btn-primary" id="rotateLeftBtn">↺ 左转</button>
+                        <button class="btn btn-primary" id="rotateRightBtn">↻ 右转</button>
+                        <button class="btn btn-primary" id="flipHBtn">⟷ 水平翻转</button>
+                        <button class="btn btn-primary" id="flipVBtn">⟷ 垂直翻转</button>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <label>🔍 缩放</label>
+                        <div class="input-group">
+                            <button class="btn btn-secondary" id="zoomOutBtn">-</button>
+                            <input type="range" class="form-control" id="scaleRange" min="0.1" max="5" step="0.1" value="1" style="width: 100px;">
+                            <button class="btn btn-secondary" id="zoomInBtn">+</button>
+                            <span id="scaleValue">100%</span>
+                        </div>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <label>⚙️ 操作</label>
+                        <button class="btn btn-warning" id="resetBtn">🔄 重置</button>
+                        <button class="btn btn-secondary" id="undoBtn">↶ 撤销</button>
+                        <button class="btn btn-secondary" id="redoBtn">↷ 重做</button>
+                    </div>
+                </div>
+
+                <div class="cropper-container" id="cropperContainer">
+                    <div class="cropper-placeholder">
+                        <div class="icon">🖼️</div>
+                        <p>拖拽图片到此处或点击上传按钮选择图片</p>
+                        <p style="font-size: 0.9rem; margin-top: 10px; opacity: 0.7;">支持 JPG、PNG、GIF、WebP 格式</p>
+                    </div>
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-title">
+                        <span>👁️</span>
+                        实时预览
+                    </div>
+                    <div class="preview-container" id="previewContainer">
+                        <div class="preview-placeholder">
+                            <p>裁剪预览将在此显示</p>
+                        </div>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">宽度</div>
+                            <div class="info-value" id="cropWidth">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">高度</div>
+                            <div class="info-value" id="cropHeight">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">X坐标</div>
+                            <div class="info-value" id="cropX">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Y坐标</div>
+                            <div class="info-value" id="cropY">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">
+                        <span>🎨</span>
+                        图像滤镜
+                    </div>
+                    <div class="filters-grid">
+                        <div class="filter-control">
+                            <div class="filter-label">亮度</div>
+                            <input type="range" class="range-input" id="brightnessRange" min="-100" max="100" value="0">
+                            <span id="brightnessValue">0</span>
+                        </div>
+                        <div class="filter-control">
+                            <div class="filter-label">对比度</div>
+                            <input type="range" class="range-input" id="contrastRange" min="-100" max="100" value="0">
+                            <span id="contrastValue">0</span>
+                        </div>
+                        <div class="filter-control">
+                            <div class="filter-label">饱和度</div>
+                            <input type="range" class="range-input" id="saturationRange" min="-100" max="100" value="0">
+                            <span id="saturationValue">0</span>
+                        </div>
+                        <div class="filter-control">
+                            <div class="filter-label">色调</div>
+                            <input type="range" class="range-input" id="hueRange" min="-180" max="180" value="0">
+                            <span id="hueValue">0</span>
+                        </div>
+                        <div class="filter-control">
+                            <div class="filter-label">模糊</div>
+                            <input type="range" class="range-input" id="blurRange" min="0" max="10" value="0" step="0.1">
+                            <span id="blurValue">0</span>
+                        </div>
+                        <div class="filter-control">
+                            <div class="filter-label">锐化</div>
+                            <input type="range" class="range-input" id="sharpenRange" min="0" max="10" value="0" step="0.1">
+                            <span id="sharpenValue">0</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn btn-secondary" id="resetFiltersBtn">重置滤镜</button>
+                        <button class="btn btn-primary" id="applyFiltersBtn">应用滤镜</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">
+                        <span>📚</span>
+                        操作历史
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <div class="history-item active">
+                            <span>初始状态</span>
+                            <span class="history-time">刚刚</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-secondary" id="clearHistoryBtn">清空历史</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-info">
+                <span id="imageInfo">未选择图片</span>
+                <span id="cropInfo">裁剪区域: -</span>
+                <span id="zoomInfo">缩放: 100%</span>
+            </div>
+            <div class="export-actions">
+                <button class="btn btn-success" id="exportPngBtn">📥 导出PNG</button>
+                <button class="btn btn-success" id="exportJpgBtn">📥 导出JPG</button>
+                <button class="btn btn-success" id="exportWebpBtn">📥 导出WebP</button>
+                <button class="btn btn-primary" id="copyBtn">📋 复制</button>
+                <button class="btn btn-primary" id="shareBtn">🔗 分享</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Mock Cropper 类 - 模拟完整功能
+        class MockCropper {
+            constructor(container, options = {}) {
+                this.container = container;
+                this.options = {
+                    aspectRatio: 'free',
+                    cropShape: 'rectangle',
+                    showGrid: true,
+                    showInfo: true,
+                    quality: 0.9,
+                    ...options
+                };
+                
+                this.image = null;
+                this.cropData = { x: 0, y: 0, width: 0, height: 0, shape: 'rectangle' };
+                this.scale = 1;
+                this.rotation = 0;
+                this.flipX = false;
+                this.flipY = false;
+                this.filters = {
+                    brightness: 0,
+                    contrast: 0,
+                    saturation: 0,
+                    hue: 0,
+                    blur: 0,
+                    sharpen: 0
+                };
+                this.history = [];
+                this.historyIndex = -1;
+                this.eventListeners = {};
+                
+                this.init();
+            }
+            
+            init() {
+                this.canvas = document.createElement('canvas');
+                this.canvas.style.maxWidth = '100%';
+                this.canvas.style.maxHeight = '100%';
+                this.canvas.style.display = 'none';
+                this.container.appendChild(this.canvas);
+                
+                this.setupDragAndDrop();
+            }
+            
+            setupDragAndDrop() {
+                this.container.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    this.container.style.background = '#e3f2fd';
+                });
+                
+                this.container.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    this.container.style.background = '#f8f9fa';
+                });
+                
+                this.container.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.container.style.background = '#f8f9fa';
+                    
+                    const files = Array.from(e.dataTransfer.files);
+                    const imageFile = files.find(file => file.type.startsWith('image/'));
+                    
+                    if (imageFile) {
+                        this.setImage(imageFile);
+                    }
+                });
+            }
+            
+            async setImage(source) {
+                showLoading(true);
+                
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 500)); // 模拟加载时间
+                    
+                    if (source instanceof File) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.loadImageFromDataUrl(e.target.result);
+                        };
+                        reader.readAsDataURL(source);
+                    } else if (typeof source === 'string') {
+                        this.loadImageFromDataUrl(source);
+                    }
+                    
+                    this.saveState('加载图片');
+                    this.emit('IMAGE_LOADED', { image: this.image });
+                } catch (error) {
+                    showToast('图片加载失败', 'error');
+                    this.emit('IMAGE_ERROR', { error });
+                } finally {
+                    showLoading(false);
+                }
+            }
+            
+            loadImageFromDataUrl(dataUrl) {
+                const img = new Image();
+                img.onload = () => {
+                    this.image = img;
+                    this.canvas.width = Math.min(img.width, 800);
+                    this.canvas.height = Math.min(img.height, 600);
+                    
+                    // 计算初始裁剪区域
+                    const containerRect = this.container.getBoundingClientRect();
+                    const aspectRatio = img.width / img.height;
+                    
+                    let cropWidth = Math.min(containerRect.width * 0.8, img.width);
+                    let cropHeight = cropWidth / aspectRatio;
+                    
+                    if (cropHeight > containerRect.height * 0.8) {
+                        cropHeight = containerRect.height * 0.8;
+                        cropWidth = cropHeight * aspectRatio;
+                    }
+                    
+                    this.cropData = {
+                        x: (containerRect.width - cropWidth) / 2,
+                        y: (containerRect.height - cropHeight) / 2,
+                        width: cropWidth,
+                        height: cropHeight,
+                        shape: this.options.cropShape
+                    };
+                    
+                    this.render();
+                    this.updatePreview();
+                    this.updateInfo();
+                    
+                    // 隐藏占位符
+                    const placeholder = this.container.querySelector('.cropper-placeholder');
+                    if (placeholder) {
+                        placeholder.style.display = 'none';
+                    }
+                    
+                    this.canvas.style.display = 'block';
+                    
+                    showToast('图片加载成功');
+                };
+                img.src = dataUrl;
+            }
+            
+            render() {
+                if (!this.image) return;
+                
+                const ctx = this.canvas.getContext('2d');
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // 应用变换
+                ctx.save();
+                ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+                ctx.scale(this.scale * (this.flipX ? -1 : 1), this.scale * (this.flipY ? -1 : 1));
+                ctx.rotate(this.rotation * Math.PI / 180);
+                
+                // 应用滤镜
+                ctx.filter = this.getFilterString();
+                
+                // 绘制图片
+                ctx.drawImage(
+                    this.image,
+                    -this.image.width / 2,
+                    -this.image.height / 2,
+                    this.image.width,
+                    this.image.height
+                );
+                
+                ctx.restore();
+                
+                this.emit('RENDER');
+            }
+            
+            getFilterString() {
+                const { brightness, contrast, saturation, hue, blur, sharpen } = this.filters;
+                return [
+                    `brightness(${100 + brightness}%)`,
+                    `contrast(${100 + contrast}%)`,
+                    `saturate(${100 + saturation}%)`,
+                    `hue-rotate(${hue}deg)`,
+                    blur > 0 ? `blur(${blur}px)` : '',
+                    // 注意：CSS filter 不支持锐化，这里只是示例
+                ].filter(Boolean).join(' ');
+            }
+            
+            setCropData(data) {
+                this.cropData = { ...this.cropData, ...data };
+                this.updatePreview();
+                this.updateInfo();
+                this.emit('CROP_CHANGE', { cropData: this.cropData });
+            }
+            
+            setScale(scale) {
+                this.scale = Math.max(0.1, Math.min(5, scale));
+                this.render();
+                this.updateInfo();
+                this.emit('SCALE_CHANGE', { scale: this.scale });
+            }
+            
+            setRotation(rotation) {
+                this.rotation = rotation % 360;
+                if (this.rotation < 0) this.rotation += 360;
+                this.render();
+                this.emit('ROTATION_CHANGE', { rotation: this.rotation });
+            }
+            
+            setFlip(flipX, flipY) {
+                this.flipX = flipX;
+                this.flipY = flipY;
+                this.render();
+                this.emit('FLIP_CHANGE', { flipX: this.flipX, flipY: this.flipY });
+            }
+            
+            setFilters(filters) {
+                this.filters = { ...this.filters, ...filters };
+                this.render();
+                this.emit('FILTER_CHANGE', { filters: this.filters });
+            }
+            
+            updatePreview() {
+                if (!this.image) return;
+                
+                const previewContainer = document.getElementById('previewContainer');
+                const existingPreview = previewContainer.querySelector('.preview-image');
+                
+                if (existingPreview) {
+                    existingPreview.remove();
+                }
+                
+                // 创建预览图片
+                const previewCanvas = document.createElement('canvas');
+                const previewSize = 180;
+                previewCanvas.width = previewSize;
+                previewCanvas.height = previewSize;
+                
+                const ctx = previewCanvas.getContext('2d');
+                
+                // 绘制裁剪预览
+                const { width, height } = this.cropData;
+                const scale = Math.min(previewSize / width, previewSize / height);
+                
+                const drawWidth = width * scale;
+                const drawHeight = height * scale;
+                const drawX = (previewSize - drawWidth) / 2;
+                const drawY = (previewSize - drawHeight) / 2;
+                
+                ctx.drawImage(
+                    this.canvas,
+                    this.cropData.x, this.cropData.y, width, height,
+                    drawX, drawY, drawWidth, drawHeight
+                );
+                
+                previewCanvas.className = 'preview-image';
+                previewContainer.appendChild(previewCanvas);
+                
+                // 隐藏占位符
+                const placeholder = previewContainer.querySelector('.preview-placeholder');
+                if (placeholder) {
+                    placeholder.style.display = 'none';
+                }
+            }
+            
+            updateInfo() {
+                document.getElementById('cropWidth').textContent = Math.round(this.cropData.width) + 'px';
+                document.getElementById('cropHeight').textContent = Math.round(this.cropData.height) + 'px';
+                document.getElementById('cropX').textContent = Math.round(this.cropData.x) + 'px';
+                document.getElementById('cropY').textContent = Math.round(this.cropData.y) + 'px';
+                
+                if (this.image) {
+                    document.getElementById('imageInfo').textContent = 
+                        `图片: ${this.image.width}×${this.image.height}px`;
+                }
+                
+                document.getElementById('cropInfo').textContent = 
+                    `裁剪区域: ${Math.round(this.cropData.width)}×${Math.round(this.cropData.height)}px`;
+                
+                document.getElementById('zoomInfo').textContent = 
+                    `缩放: ${Math.round(this.scale * 100)}%`;
+            }
+            
+            getCroppedCanvas(options = {}) {
+                if (!this.image) return null;
+                
+                const canvas = document.createElement('canvas');
+                const { width = this.cropData.width, height = this.cropData.height } = options;
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                const ctx = canvas.getContext('2d');
+                
+                // 绘制裁剪后的图片
+                ctx.drawImage(
+                    this.canvas,
+                    this.cropData.x, this.cropData.y, this.cropData.width, this.cropData.height,
+                    0, 0, width, height
+                );
+                
+                return canvas;
+            }
+            
+            async getCroppedBlob(options = {}) {
+                const canvas = this.getCroppedCanvas(options);
+                if (!canvas) return null;
+                
+                return new Promise(resolve => {
+                    canvas.toBlob(resolve, options.type || 'image/png', options.quality || 0.9);
+                });
+            }
+            
+            reset() {
+                this.scale = 1;
+                this.rotation = 0;
+                this.flipX = false;
+                this.flipY = false;
+                this.filters = {
+                    brightness: 0,
+                    contrast: 0,
+                    saturation: 0,
+                    hue: 0,
+                    blur: 0,
+                    sharpen: 0
+                };
+                
+                if (this.image) {
+                    // 重置裁剪区域
+                    const containerRect = this.container.getBoundingClientRect();
+                    const aspectRatio = this.image.width / this.image.height;
+                    
+                    let cropWidth = Math.min(containerRect.width * 0.8, this.image.width);
+                    let cropHeight = cropWidth / aspectRatio;
+                    
+                    if (cropHeight > containerRect.height * 0.8) {
+                        cropHeight = containerRect.height * 0.8;
+                        cropWidth = cropHeight * aspectRatio;
+                    }
+                    
+                    this.cropData = {
+                        x: (containerRect.width - cropWidth) / 2,
+                        y: (containerRect.height - cropHeight) / 2,
+                        width: cropWidth,
+                        height: cropHeight,
+                        shape: this.options.cropShape
+                    };
+                }
+                
+                this.render();
+                this.updatePreview();
+                this.updateInfo();
+                this.saveState('重置');
+                this.emit('RESET');
+            }
+            
+            saveState(action) {
+                const state = {
+                    cropData: { ...this.cropData },
+                    scale: this.scale,
+                    rotation: this.rotation,
+                    flipX: this.flipX,
+                    flipY: this.flipY,
+                    filters: { ...this.filters },
+                    action,
+                    timestamp: new Date()
+                };
+                
+                // 移除当前位置之后的历史记录
+                this.history = this.history.slice(0, this.historyIndex + 1);
+                this.history.push(state);
+                this.historyIndex = this.history.length - 1;
+                
+                // 限制历史记录数量
+                if (this.history.length > 50) {
+                    this.history.shift();
+                    this.historyIndex--;
+                }
+                
+                this.updateHistoryUI();
+            }
+            
+            undo() {
+                if (this.historyIndex > 0) {
+                    this.historyIndex--;
+                    this.restoreState(this.history[this.historyIndex]);
+                    this.updateHistoryUI();
+                    showToast('撤销成功');
+                }
+            }
+            
+            redo() {
+                if (this.historyIndex < this.history.length - 1) {
+                    this.historyIndex++;
+                    this.restoreState(this.history[this.historyIndex]);
+                    this.updateHistoryUI();
+                    showToast('重做成功');
+                }
+            }
+            
+            restoreState(state) {
+                this.cropData = { ...state.cropData };
+                this.scale = state.scale;
+                this.rotation = state.rotation;
+                this.flipX = state.flipX;
+                this.flipY = state.flipY;
+                this.filters = { ...state.filters };
+                
+                this.render();
+                this.updatePreview();
+                this.updateInfo();
+                this.updateFilterUI();
+            }
+            
+            updateHistoryUI() {
+                const historyList = document.getElementById('historyList');
+                historyList.innerHTML = '';
+                
+                this.history.forEach((state, index) => {
+                    const item = document.createElement('div');
+                    item.className = `history-item ${index === this.historyIndex ? 'active' : ''}`;
+                    item.innerHTML = `
+                        <span>${state.action}</span>
+                        <span class="history-time">${this.formatTime(state.timestamp)}</span>
+                    `;
+                    
+                    item.addEventListener('click', () => {
+                        this.historyIndex = index;
+                        this.restoreState(state);
+                        this.updateHistoryUI();
+                    });
+                    
+                    historyList.appendChild(item);
+                });
+            }
+            
+            updateFilterUI() {
+                Object.keys(this.filters).forEach(key => {
+                    const range = document.getElementById(`${key}Range`);
+                    const value = document.getElementById(`${key}Value`);
+                    if (range && value) {
+                        range.value = this.filters[key];
+                        value.textContent = this.filters[key];
+                    }
+                });
+            }
+            
+            formatTime(date) {
+                const now = new Date();
+                const diff = now - date;
+                
+                if (diff < 60000) return '刚刚';
+                if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
+                if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
+                return `${Math.floor(diff / 86400000)}天前`;
+            }
+            
+            on(event, callback) {
+                if (!this.eventListeners[event]) {
+                    this.eventListeners[event] = [];
+                }
+                this.eventListeners[event].push(callback);
+            }
+            
+            off(event, callback) {
+                if (this.eventListeners[event]) {
+                    const index = this.eventListeners[event].indexOf(callback);
+                    if (index > -1) {
+                        this.eventListeners[event].splice(index, 1);
+                    }
+                }
+            }
+            
+            emit(event, data) {
+                if (this.eventListeners[event]) {
+                    this.eventListeners[event].forEach(callback => callback(data));
+                }
+            }
+            
+            destroy() {
+                this.canvas.remove();
+                this.eventListeners = {};
+            }
+        }
+        
+        // 全局变量
+        let cropper = null;
+        
+        // 工具函数
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.style.display = show ? 'block' : 'none';
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        function downloadCanvas(canvas, filename, format = 'png', quality = 0.9) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL(`image/${format}`, quality);
+            link.click();
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('cropperContainer');
+            cropper = new MockCropper(container);
+            
+            // 图片上传
+            const imageInput = document.getElementById('imageInput');
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    cropper.setImage(file);
+                }
+            });
+            
+            // 粘贴功能
+            document.getElementById('pasteBtn').addEventListener('click', async function() {
+                try {
+                    const clipboardItems = await navigator.clipboard.read();
+                    for (const clipboardItem of clipboardItems) {
+                        for (const type of clipboardItem.types) {
+                            if (type.startsWith('image/')) {
+                                const blob = await clipboardItem.getType(type);
+                                cropper.setImage(blob);
+                                return;
+                            }
+                        }
+                    }
+                    showToast('剪贴板中没有图片', 'warning');
+                } catch (error) {
+                    showToast('粘贴失败，请检查浏览器权限', 'error');
+                }
+            });
+            
+            // URL输入
+            document.getElementById('urlBtn').addEventListener('click', function() {
+                const url = prompt('请输入图片URL:');
+                if (url) {
+                    cropper.setImage(url);
+                }
+            });
+            
+            // 形状选择
+            document.getElementById('shapeSelect').addEventListener('change', function(e) {
+                cropper.setCropData({ shape: e.target.value });
+                cropper.saveState(`切换形状: ${e.target.value}`);
+            });
+            
+            // 宽高比选择
+            document.getElementById('aspectRatioSelect').addEventListener('change', function(e) {
+                const ratio = e.target.value;
+                if (ratio !== 'free') {
+                    const aspectRatio = parseFloat(ratio);
+                    const { width, height } = cropper.cropData;
+                    const newHeight = width / aspectRatio;
+                    cropper.setCropData({ height: newHeight });
+                    cropper.saveState(`设置宽高比: ${ratio}`);
+                }
+            });
+            
+            // 自定义宽高比
+            document.getElementById('customRatio').addEventListener('change', function(e) {
+                const ratio = e.target.value;
+                if (ratio && !isNaN(ratio)) {
+                    const aspectRatio = parseFloat(ratio);
+                    const { width } = cropper.cropData;
+                    const newHeight = width / aspectRatio;
+                    cropper.setCropData({ height: newHeight });
+                    cropper.saveState(`自定义宽高比: ${ratio}`);
+                }
+            });
+            
+            // 旋转按钮
+            document.getElementById('rotateLeftBtn').addEventListener('click', function() {
+                cropper.setRotation(cropper.rotation - 90);
+                cropper.saveState('左旋转90度');
+            });
+            
+            document.getElementById('rotateRightBtn').addEventListener('click', function() {
+                cropper.setRotation(cropper.rotation + 90);
+                cropper.saveState('右旋转90度');
+            });
+            
+            // 翻转按钮
+            document.getElementById('flipHBtn').addEventListener('click', function() {
+                cropper.setFlip(!cropper.flipX, cropper.flipY);
+                cropper.saveState('水平翻转');
+            });
+            
+            document.getElementById('flipVBtn').addEventListener('click', function() {
+                cropper.setFlip(cropper.flipX, !cropper.flipY);
+                cropper.saveState('垂直翻转');
+            });
+            
+            // 缩放控制
+            const scaleRange = document.getElementById('scaleRange');
+            const scaleValue = document.getElementById('scaleValue');
+            
+            scaleRange.addEventListener('input', function(e) {
+                const scale = parseFloat(e.target.value);
+                cropper.setScale(scale);
+                scaleValue.textContent = Math.round(scale * 100) + '%';
+            });
+            
+            document.getElementById('zoomOutBtn').addEventListener('click', function() {
+                const newScale = Math.max(0.1, cropper.scale - 0.1);
+                cropper.setScale(newScale);
+                scaleRange.value = newScale;
+                scaleValue.textContent = Math.round(newScale * 100) + '%';
+                cropper.saveState('缩小');
+            });
+            
+            document.getElementById('zoomInBtn').addEventListener('click', function() {
+                const newScale = Math.min(5, cropper.scale + 0.1);
+                cropper.setScale(newScale);
+                scaleRange.value = newScale;
+                scaleValue.textContent = Math.round(newScale * 100) + '%';
+                cropper.saveState('放大');
+            });
+            
+            // 操作按钮
+            document.getElementById('resetBtn').addEventListener('click', function() {
+                cropper.reset();
+                scaleRange.value = 1;
+                scaleValue.textContent = '100%';
+                
+                // 重置滤镜UI
+                ['brightness', 'contrast', 'saturation', 'hue', 'blur', 'sharpen'].forEach(filter => {
+                    const range = document.getElementById(`${filter}Range`);
+                    const value = document.getElementById(`${filter}Value`);
+                    if (range && value) {
+                        range.value = 0;
+                        value.textContent = '0';
+                    }
+                });
+            });
+            
+            document.getElementById('undoBtn').addEventListener('click', function() {
+                cropper.undo();
+            });
+            
+            document.getElementById('redoBtn').addEventListener('click', function() {
+                cropper.redo();
+            });
+            
+            // 滤镜控制
+            ['brightness', 'contrast', 'saturation', 'hue', 'blur', 'sharpen'].forEach(filter => {
+                const range = document.getElementById(`${filter}Range`);
+                const value = document.getElementById(`${filter}Value`);
+                
+                if (range && value) {
+                    range.addEventListener('input', function(e) {
+                        const val = parseFloat(e.target.value);
+                        value.textContent = val;
+                        cropper.setFilters({ [filter]: val });
+                    });
+                }
+            });
+            
+            document.getElementById('resetFiltersBtn').addEventListener('click', function() {
+                const filters = {
+                    brightness: 0,
+                    contrast: 0,
+                    saturation: 0,
+                    hue: 0,
+                    blur: 0,
+                    sharpen: 0
+                };
+                
+                cropper.setFilters(filters);
+                cropper.updateFilterUI();
+                cropper.saveState('重置滤镜');
+            });
+            
+            document.getElementById('applyFiltersBtn').addEventListener('click', function() {
+                cropper.saveState('应用滤镜');
+                showToast('滤镜已应用');
+            });
+            
+            // 历史记录
+            document.getElementById('clearHistoryBtn').addEventListener('click', function() {
+                if (confirm('确定要清空操作历史吗？')) {
+                    cropper.history = [];
+                    cropper.historyIndex = -1;
+                    cropper.updateHistoryUI();
+                    showToast('历史记录已清空');
+                }
+            });
+            
+            // 导出功能
+            document.getElementById('exportPngBtn').addEventListener('click', function() {
+                const canvas = cropper.getCroppedCanvas();
+                if (canvas) {
+                    downloadCanvas(canvas, 'cropped-image.png', 'png');
+                    showToast('PNG导出成功');
+                }
+            });
+            
+            document.getElementById('exportJpgBtn').addEventListener('click', function() {
+                const canvas = cropper.getCroppedCanvas();
+                if (canvas) {
+                    downloadCanvas(canvas, 'cropped-image.jpg', 'jpeg', 0.9);
+                    showToast('JPG导出成功');
+                }
+            });
+            
+            document.getElementById('exportWebpBtn').addEventListener('click', function() {
+                const canvas = cropper.getCroppedCanvas();
+                if (canvas) {
+                    downloadCanvas(canvas, 'cropped-image.webp', 'webp', 0.9);
+                    showToast('WebP导出成功');
+                }
+            });
+            
+            document.getElementById('copyBtn').addEventListener('click', async function() {
+                try {
+                    const canvas = cropper.getCroppedCanvas();
+                    if (canvas) {
+                        canvas.toBlob(async (blob) => {
+                            await navigator.clipboard.write([
+                                new ClipboardItem({ 'image/png': blob })
+                            ]);
+                            showToast('图片已复制到剪贴板');
+                        });
+                    }
+                } catch (error) {
+                    showToast('复制失败', 'error');
+                }
+            });
+            
+            document.getElementById('shareBtn').addEventListener('click', async function() {
+                try {
+                    const canvas = cropper.getCroppedCanvas();
+                    if (canvas && navigator.share) {
+                        canvas.toBlob(async (blob) => {
+                            const file = new File([blob], 'cropped-image.png', { type: 'image/png' });
+                            await navigator.share({
+                                title: '裁剪后的图片',
+                                files: [file]
+                            });
+                        });
+                    } else {
+                        showToast('浏览器不支持分享功能', 'warning');
+                    }
+                } catch (error) {
+                    showToast('分享失败', 'error');
+                }
+            });
+            
+            // 主题切换
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const theme = this.dataset.theme;
+                    document.body.className = theme;
+                    showToast(`已切换到${theme}主题`);
+                });
+            });
+            
+            // 键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch (e.key) {
+                        case 'z':
+                            e.preventDefault();
+                            if (e.shiftKey) {
+                                cropper.redo();
+                            } else {
+                                cropper.undo();
+                            }
+                            break;
+                        case 'r':
+                            e.preventDefault();
+                            cropper.reset();
+                            break;
+                        case 's':
+                            e.preventDefault();
+                            document.getElementById('exportPngBtn').click();
+                            break;
+                    }
+                }
+            });
+            
+            // 初始化完成
+            showToast('图片裁剪器已就绪');
+        });
+    </script>
+</body>
+</html>

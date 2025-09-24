@@ -1,6 +1,10 @@
 # @ldesign/cropper
 
-一个功能完整的图片裁剪插件，支持在任意前端框架中使用，默认提供 Vue 3 集成支持。
+一个功能强大、易于使用的现代图片裁剪库，支持多种裁剪形状、图片变换和导出格式。
+
+[![npm version](https://badge.fury.io/js/@ldesign%2Fcropper.svg)](https://badge.fury.io/js/@ldesign%2Fcropper)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
 ## ✨ 特性
 

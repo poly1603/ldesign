@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片裁剪器 - 基础示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 40px;
+    }
+
+    .demo-section {
+      margin-bottom: 40px;
+    }
+
+    .demo-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #333;
+      border-bottom: 2px solid #1890ff;
+      padding-bottom: 10px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .control-group label {
+      font-weight: 500;
+      color: #555;
+      font-size: 0.9rem;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background: #1890ff;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background: #40a9ff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn.secondary {
+      background: #6c757d;
+    }
+
+    .btn.secondary:hover {
+      background: #5a6268;
+    }
+
+    .btn.success {
+      background: #52c41a;
+    }
+
+    .btn.success:hover {
+      background: #73d13d;
+    }
+
+    .btn.danger {
+      background: #ff4d4f;
+    }
+
+    .btn.danger:hover {
+      background: #ff7875;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    select, input[type="range"] {
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .cropper-wrapper {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    .cropper-container {
+      flex: 1;
+      max-width: 600px;
+      border: 2px dashed #d9d9d9;
+      border-radius: 8px;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fafafa;
+      transition: all 0.3s ease;
+    }
+
+    .cropper-container.has-image {
+      border-style: solid;
+      border-color: #1890ff;
+      background: #000;
+    }
+
+    .upload-placeholder {
+      text-align: center;
+      color: #999;
+      padding: 40px;
+    }
+
+    .upload-placeholder .icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    .upload-placeholder h3 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-placeholder p {
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .preview-panel {
+      width: 300px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .preview-panel h3 {
+      margin-bottom: 15px;
+      color: #333;
+      font-size: 1.1rem;
+    }
+
+    .preview-image {
+      width: 100%;
+      max-height: 200px;
+      object-fit: contain;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      background: white;
+      margin-bottom: 15px;
+    }
+
+    .preview-info {
+      font-size: 0.85rem;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .preview-info div {
+      margin-bottom: 5px;
+    }
+
+    .status-bar {
+      background: #f0f0f0;
+      padding: 15px 20px;
+      border-top: 1px solid #e0e0e0;
+      font-size: 0.9rem;
+      color: #666;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status-info {
+      display: flex;
+      gap: 20px;
+    }
+
+    .theme-selector {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .theme-btn {
+      width: 30px;
+      height: 30px;
+      border: 2px solid #ddd;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .theme-btn:hover {
+      transform: scale(1.1);
+      border-color: #1890ff;
+    }
+
+    .theme-btn.active {
+      border-color: #1890ff;
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    }
+
+    .theme-default { background: linear-gradient(45deg, #1890ff, #40a9ff); }
+    .theme-dark { background: linear-gradient(45deg, #1f1f1f, #434343); }
+    .theme-light { background: linear-gradient(45deg, #f5f5f5, #fff); }
+    .theme-blue { background: linear-gradient(45deg, #2f54eb, #597ef7); }
+    .theme-green { background: linear-gradient(45deg, #52c41a, #73d13d); }
+    .theme-purple { background: linear-gradient(45deg, #722ed1, #9254de); }
+
+    @media (max-width: 768px) {
+      .cropper-wrapper {
+        flex-direction: column;
+      }
+      
+      .preview-panel {
+        width: 100%;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+      
+      .status-info {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🖼️ 图片裁剪器</h1>
+      <p>功能强大的在线图片裁剪工具，支持多种裁剪形状和实时预览</p>
+    </div>
+
+    <div class="content">
+      <div class="demo-section">
+        <h2>基础功能演示</h2>
+        
+        <div class="controls">
+          <div class="control-group">
+            <label>上传图片</label>
+            <input type="file" id="imageInput" accept="image/*">
+            <button class="btn" onclick="document.getElementById('imageInput').click()">
+              📁 选择图片
+            </button>
+          </div>
+
+          <div class="control-group">
+            <label>裁剪形状</label>
+            <select id="shapeSelect">
+              <option value="rectangle">矩形</option>
+              <option value="circle">圆形</option>
+              <option value="ellipse">椭圆</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>宽高比</label>
+            <select id="aspectRatioSelect">
+              <option value="free">自由</option>
+              <option value="1:1">1:1 (正方形)</option>
+              <option value="4:3">4:3</option>
+              <option value="16:9">16:9</option>
+              <option value="3:2">3:2</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>缩放 (<span id="scaleValue">100</span>%)</label>
+            <input type="range" id="scaleRange" min="50" max="300" value="100">
+          </div>
+
+          <div class="control-group">
+            <label>旋转 (<span id="rotationValue">0</span>°)</label>
+            <input type="range" id="rotationRange" min="0" max="360" value="0">
+          </div>
+
+          <div class="control-group">
+            <label>操作</label>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn secondary" id="flipXBtn">↔️ 水平翻转</button>
+              <button class="btn secondary" id="flipYBtn">↕️ 垂直翻转</button>
+              <button class="btn secondary" id="resetBtn">🔄 重置</button>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label>导出</label>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn success" id="exportBtn">💾 导出图片</button>
+              <button class="btn" id="previewBtn">👁️ 预览</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cropper-wrapper">
+          <div class="cropper-container" id="cropperContainer">
+            <div class="upload-placeholder">
+              <div class="icon">📷</div>
+              <h3>上传图片开始裁剪</h3>
+              <p>支持 JPG、PNG、GIF 等格式<br>拖拽文件到此处或点击选择按钮</p>
+            </div>
+          </div>
+
+          <div class="preview-panel">
+            <h3>实时预览</h3>
+            <canvas id="previewCanvas" class="preview-image" width="260" height="200"></canvas>
+            <div class="preview-info">
+              <div>尺寸: <span id="previewSize">-</span></div>
+              <div>位置: <span id="previewPosition">-</span></div>
+              <div>缩放: <span id="previewScale">-</span></div>
+              <div>旋转: <span id="previewRotation">-</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-section">
+        <h2>主题切换</h2>
+        <div class="theme-selector">
+          <span>选择主题:</span>
+          <div class="theme-btn theme-default active" data-theme="default" title="默认主题"></div>
+          <div class="theme-btn theme-dark" data-theme="dark" title="暗色主题"></div>
+          <div class="theme-btn theme-light" data-theme="light" title="亮色主题"></div>
+          <div class="theme-btn theme-blue" data-theme="blue" title="蓝色主题"></div>
+          <div class="theme-btn theme-green" data-theme="green" title="绿色主题"></div>
+          <div class="theme-btn theme-purple" data-theme="purple" title="紫色主题"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-info">
+        <div>状态: <span id="statusText">等待上传图片</span></div>
+        <div>图片: <span id="imageInfo">-</span></div>
+      </div>
+      <div>© 2024 图片裁剪器 v1.0.0</div>
+    </div>
+  </div>
+
+  <!-- 引入裁剪器脚本 -->
+  <script type="module">
+    // 这里应该引入实际的裁剪器模块
+    // import { Cropper } from '../src/index.js'
+    
+    // 临时模拟裁剪器类
+    class MockCropper {
+      constructor(container, options = {}) {
+        this.container = container
+        this.options = options
+        this.canvas = null
+        this.ctx = null
+        this.image = null
+        this.cropData = { x: 50, y: 50, width: 200, height: 150, shape: 'rectangle' }
+        this.scale = 1
+        this.rotation = 0
+        this.flipX = false
+        this.flipY = false
+        
+        this.init()
+      }
+      
+      init() {
+        this.canvas = document.createElement('canvas')
+        this.canvas.width = 600
+        this.canvas.height = 400
+        this.canvas.style.maxWidth = '100%'
+        this.canvas.style.height = 'auto'
+        this.ctx = this.canvas.getContext('2d')
+        
+        this.container.innerHTML = ''
+        this.container.appendChild(this.canvas)
+        this.container.classList.add('has-image')
+        
+        this.render()
+      }
+      
+      setImage(src) {
+        return new Promise((resolve, reject) => {
+          const img = new Image()
+          img.onload = () => {
+            this.image = img
+            this.render()
+            resolve()
+          }
+          img.onerror = reject
+          img.src = src
+        })
+      }
+      
+      setCropData(data) {
+        Object.assign(this.cropData, data)
+        this.render()
+      }
+      
+      setScale(scale) {
+        this.scale = scale
+        this.render()
+      }
+      
+      setRotation(rotation) {
+        this.rotation = rotation
+        this.render()
+      }
+      
+      setFlip(flipX, flipY) {
+        this.flipX = flipX
+        this.flipY = flipY
+        this.render()
+      }
+      
+      reset() {
+        this.scale = 1
+        this.rotation = 0
+        this.flipX = false
+        this.flipY = false
+        this.cropData = { x: 50, y: 50, width: 200, height: 150, shape: 'rectangle' }
+        this.render()
+      }
+      
+      getCroppedCanvas() {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        canvas.width = this.cropData.width
+        canvas.height = this.cropData.height
+        
+        if (this.image) {
+          ctx.drawImage(
+            this.image,
+            this.cropData.x, this.cropData.y, this.cropData.width, this.cropData.height,
+            0, 0, this.cropData.width, this.cropData.height
+          )
+        }
+        
+        return canvas
+      }
+      
+      render() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        
+        // 绘制背景
+        this.ctx.fillStyle = '#f0f0f0'
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        
+        // 绘制图片
+        if (this.image) {
+          this.ctx.save()
+          this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2)
+          this.ctx.scale(this.flipX ? -1 : 1, this.flipY ? -1 : 1)
+          this.ctx.rotate(this.rotation * Math.PI / 180)
+          this.ctx.scale(this.scale, this.scale)
+          this.ctx.drawImage(
+            this.image,
+            -this.image.width / 2, -this.image.height / 2,
+            this.image.width, this.image.height
+          )
+          this.ctx.restore()
+        }
+        
+        // 绘制裁剪区域
+        this.ctx.strokeStyle = '#1890ff'
+        this.ctx.lineWidth = 2
+        this.ctx.setLineDash([5, 5])
+        
+        const { x, y, width, height, shape } = this.cropData
+        
+        this.ctx.beginPath()
+        if (shape === 'rectangle') {
+          this.ctx.rect(x, y, width, height)
+        } else if (shape === 'circle') {
+          const radius = Math.min(width, height) / 2
+          this.ctx.arc(x + width / 2, y + height / 2, radius, 0, 2 * Math.PI)
+        } else if (shape === 'ellipse') {
+          this.ctx.ellipse(x + width / 2, y + height / 2, width / 2, height / 2, 0, 0, 2 * Math.PI)
+        }
+        this.ctx.stroke()
+        this.ctx.setLineDash([])
+        
+        // 更新预览
+        this.updatePreview()
+      }
+      
+      updatePreview() {
+        const previewCanvas = document.getElementById('previewCanvas')
+        const previewCtx = previewCanvas.getContext('2d')
+        
+        previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height)
+        
+        if (this.image) {
+          const croppedCanvas = this.getCroppedCanvas()
+          const scale = Math.min(
+            previewCanvas.width / croppedCanvas.width,
+            previewCanvas.height / croppedCanvas.height
+          )
+          
+          const width = croppedCanvas.width * scale
+          const height = croppedCanvas.height * scale
+          const x = (previewCanvas.width - width) / 2
+          const y = (previewCanvas.height - height) / 2
+          
+          previewCtx.drawImage(croppedCanvas, x, y, width, height)
+        }
+        
+        // 更新信息
+        document.getElementById('previewSize').textContent = 
+          `${this.cropData.width} × ${this.cropData.height}`
+        document.getElementById('previewPosition').textContent = 
+          `(${this.cropData.x}, ${this.cropData.y})`
+        document.getElementById('previewScale').textContent = 
+          `${Math.round(this.scale * 100)}%`
+        document.getElementById('previewRotation').textContent = 
+          `${this.rotation}°`
+      }
+    }
+
+    // 初始化应用
+    let cropper = null
+    
+    // 文件上传处理
+    document.getElementById('imageInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0]
+      if (!file) return
+      
+      document.getElementById('statusText').textContent = '加载图片中...'
+      document.getElementById('imageInfo').textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`
+      
+      try {
+        const url = URL.createObjectURL(file)
+        
+        if (!cropper) {
+          cropper = new MockCropper(document.getElementById('cropperContainer'))
+        }
+        
+        await cropper.setImage(url)
+        document.getElementById('statusText').textContent = '图片加载完成'
+        
+        // 清理URL
+        URL.revokeObjectURL(url)
+      } catch (error) {
+        document.getElementById('statusText').textContent = '图片加载失败'
+        console.error('加载图片失败:', error)
+      }
+    })
+    
+    // 控件事件处理
+    document.getElementById('shapeSelect').addEventListener('change', (e) => {
+      if (cropper) {
+        cropper.setCropData({ shape: e.target.value })
+      }
+    })
+    
+    document.getElementById('aspectRatioSelect').addEventListener('change', (e) => {
+      if (cropper) {
+        const ratio = e.target.value
+        if (ratio !== 'free') {
+          const [w, h] = ratio.split(':').map(Number)
+          const currentWidth = cropper.cropData.width
+          const newHeight = currentWidth * h / w
+          cropper.setCropData({ height: newHeight })
+        }
+      }
+    })
+    
+    document.getElementById('scaleRange').addEventListener('input', (e) => {
+      const value = parseInt(e.target.value)
+      document.getElementById('scaleValue').textContent = value
+      if (cropper) {
+        cropper.setScale(value / 100)
+      }
+    })
+    
+    document.getElementById('rotationRange').addEventListener('input', (e) => {
+      const value = parseInt(e.target.value)
+      document.getElementById('rotationValue').textContent = value
+      if (cropper) {
+        cropper.setRotation(value)
+      }
+    })
+    
+    document.getElementById('flipXBtn').addEventListener('click', () => {
+      if (cropper) {
+        cropper.setFlip(!cropper.flipX, cropper.flipY)
+      }
+    })
+    
+    document.getElementById('flipYBtn').addEventListener('click', () => {
+      if (cropper) {
+        cropper.setFlip(cropper.flipX, !cropper.flipY)
+      }
+    })
+    
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      if (cropper) {
+        cropper.reset()
+        document.getElementById('scaleRange').value = 100
+        document.getElementById('scaleValue').textContent = 100
+        document.getElementById('rotationRange').value = 0
+        document.getElementById('rotationValue').textContent = 0
+      }
+    })
+    
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      if (cropper) {
+        const canvas = cropper.getCroppedCanvas()
+        const link = document.createElement('a')
+        link.download = 'cropped-image.png'
+        link.href = canvas.toDataURL()
+        link.click()
+      }
+    })
+    
+    document.getElementById('previewBtn').addEventListener('click', () => {
+      if (cropper) {
+        const canvas = cropper.getCroppedCanvas()
+        const newWindow = window.open()
+        newWindow.document.write(`
+          <html>
+            <head><title>裁剪预览</title></head>
+            <body style="margin:0;padding:20px;background:#f0f0f0;display:flex;justify-content:center;align-items:center;min-height:100vh;">
+              <img src="${canvas.toDataURL()}" style="max-width:100%;max-height:100%;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+            </body>
+          </html>
+        `)
+      }
+    })
+    
+    // 主题切换
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'))
+        btn.classList.add('active')
+        
+        const theme = btn.dataset.theme
+        const container = document.getElementById('cropperContainer')
+        
+        // 移除所有主题类
+        container.className = container.className.replace(/theme-\w+/g, '')
+        
+        // 添加新主题类
+        if (theme !== 'default') {
+          container.classList.add(`theme-${theme}`)
+        }
+      })
+    })
+    
+    // 拖拽上传
+    const container = document.getElementById('cropperContainer')
+    
+    container.addEventListener('dragover', (e) => {
+      e.preventDefault()
+      container.style.borderColor = '#40a9ff'
+      container.style.backgroundColor = '#f0f8ff'
+    })
+    
+    container.addEventListener('dragleave', (e) => {
+      e.preventDefault()
+      container.style.borderColor = '#d9d9d9'
+      container.style.backgroundColor = '#fafafa'
+    })
+    
+    container.addEventListener('drop', async (e) => {
+      e.preventDefault()
+      container.style.borderColor = '#d9d9d9'
+      container.style.backgroundColor = '#fafafa'
+      
+      const files = e.dataTransfer.files
+      if (files.length > 0 && files[0].type.startsWith('image/')) {
+        const file = files[0]
+        document.getElementById('statusText').textContent = '加载图片中...'
+        document.getElementById('imageInfo').textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`
+        
+        try {
+          const url = URL.createObjectURL(file)
+          
+          if (!cropper) {
+            cropper = new MockCropper(container)
+          }
+          
+          await cropper.setImage(url)
+          document.getElementById('statusText').textContent = '图片加载完成'
+          
+          URL.revokeObjectURL(url)
+        } catch (error) {
+          document.getElementById('statusText').textContent = '图片加载失败'
+          console.error('加载图片失败:', error)
+        }
+      }
+    })
+  </script>
+</body>
+</html>

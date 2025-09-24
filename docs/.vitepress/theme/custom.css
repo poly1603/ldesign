@@ -1,0 +1,104 @@
+/**
+ * VitePress 与 Stencil 组件样式隔离
+ * 防止 VitePress 默认样式影响 Web Components
+ */
+
+/* 重置 VitePress 对自定义元素的影响 */
+[class*="ld-"] {
+  all: initial;
+  display: inline-block;
+}
+
+/* 确保 Stencil 组件不受 VitePress 样式影响 */
+ld-button,
+ld-input,
+ld-card,
+ld-popup,
+ld-popconfirm {
+  /* 重置所有继承的样式 */
+  all: initial;
+  
+  /* 保持正常的显示方式 */
+  display: inline-block;
+  
+  /* 确保组件内部样式正常工作 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  
+  /* 防止被 VitePress 的 CSS 变量影响 */
+  color: initial;
+  background: initial;
+  border: initial;
+  margin: initial;
+  padding: initial;
+}
+
+/* 针对块级 Stencil 组件的特殊处理 */
+ld-card {
+  display: block;
+  width: 100%;
+}
+
+/* 防止 VitePress 的内容样式影响 Stencil 组件内部 */
+.vp-doc [class*="ld-"] *,
+.vp-doc ld-button *,
+.vp-doc ld-input *,
+.vp-doc ld-card *,
+.vp-doc ld-popup *,
+.vp-doc ld-popconfirm * {
+  all: unset;
+}
+
+/* 确保组件在演示块中正常显示 */
+.demo-block {
+  padding: 20px;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 8px;
+  margin: 16px 0;
+  background-color: var(--vp-c-bg);
+}
+
+.demo-block > * {
+  margin-bottom: 12px;
+}
+
+.demo-block > *:last-child {
+  margin-bottom: 0;
+}
+
+/* 为 Stencil 组件设置合适的间距 */
+.demo-block ld-button + ld-button,
+.demo-block ld-card + ld-card {
+  margin-left: 8px;
+}
+
+/* 特别处理一些可能被 VitePress 影响的元素 */
+ld-card::part(card) {
+  box-sizing: border-box;
+}
+
+ld-button::part(button) {
+  box-sizing: border-box;
+}
+
+/* 确保自定义元素的事件正常工作 */
+ld-button,
+ld-input,
+ld-card,
+ld-popup,
+ld-popconfirm {
+  pointer-events: auto;
+}
+
+/* 修复可能的 z-index 问题 */
+ld-popup,
+ld-popconfirm {
+  z-index: 9999;
+}
+
+/* 防止 VitePress 的代码高亮样式影响组件 */
+.vp-code-group ld-button,
+.vp-code-group ld-input,
+.vp-code-group ld-card {
+  all: initial;
+  display: inline-block;
+}

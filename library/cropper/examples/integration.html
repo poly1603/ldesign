@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片裁剪器 - 集成示例</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #3498db;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-title h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .page-title p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .example-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .example-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .example-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .example-description {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .example-content {
+            padding: 1.5rem;
+        }
+
+        .example-demo {
+            margin-bottom: 1.5rem;
+        }
+
+        .demo-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            background: #f9f9f9;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .demo-placeholder {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .demo-image {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .example-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #3498db;
+            color: #3498db;
+        }
+
+        .btn-outline:hover {
+            background: #3498db;
+            color: white;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .code-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .code-header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-title {
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            background: #34495e;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .copy-btn:hover {
+            background: #4a6741;
+        }
+
+        .code-content {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .code-content pre {
+            margin: 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #2c3e50;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .integration-steps {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .steps-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .step:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .step-number {
+            background: #3498db;
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-description {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .step-code {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: #e74c3c;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .nav {
+                padding: 0 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .examples-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title h1 {
+                font-size: 2rem;
+            }
+
+            .step {
+                flex-direction: column;
+            }
+
+            .step-number {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">🎨 ImageCropper</div>
+            <ul class="nav-links">
+                <li><a href="#examples">示例</a></li>
+                <li><a href="#integration">集成</a></li>
+                <li><a href="#api">API</a></li>
+                <li><a href="#features">特性</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>集成示例</h1>
+            <p>了解如何在不同场景下集成和使用图片裁剪器</p>
+        </div>
+
+        <section id="examples">
+            <div class="examples-grid">
+                <!-- 头像上传示例 -->
+                <div class="example-card">
+                    <div class="example-header">
+                        <div class="example-title">👤 头像上传</div>
+                        <div class="example-description">用户头像裁剪和上传功能</div>
+                    </div>
+                    <div class="example-content">
+                        <div class="example-demo">
+                            <div class="demo-area" id="avatarDemo">
+                                <div class="demo-placeholder">
+                                    <div style="font-size: 3rem; margin-bottom: 1rem;">👤</div>
+                                    <p>点击上传头像</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="example-controls">
+                            <input type="file" id="avatarInput" class="file-input" accept="image/*">
+                            <label for="avatarInput" class="btn btn-primary">📤 选择头像</label>
+                            <button class="btn btn-success" id="saveAvatar">💾 保存头像</button>
+                            <button class="btn btn-secondary" id="resetAvatar">🔄 重置</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 商品图片示例 -->
+                <div class="example-card">
+                    <div class="example-header">
+                        <div class="example-title">🛍️ 商品图片</div>
+                        <div class="example-description">电商商品图片裁剪功能</div>
+                    </div>
+                    <div class="example-content">
+                        <div class="example-demo">
+                            <div class="demo-area" id="productDemo">
+                                <div class="demo-placeholder">
+                                    <div style="font-size: 3rem; margin-bottom: 1rem;">🛍️</div>
+                                    <p>上传商品图片</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="example-controls">
+                            <input type="file" id="productInput" class="file-input" accept="image/*">
+                            <label for="productInput" class="btn btn-primary">📤 选择图片</label>
+                            <button class="btn btn-outline" id="productSquare">⬜ 1:1</button>
+                            <button class="btn btn-outline" id="productRect">📐 4:3</button>
+                            <button class="btn btn-success" id="saveProduct">💾 保存</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 批量处理示例 -->
+                <div class="example-card">
+                    <div class="example-header">
+                        <div class="example-title">📚 批量处理</div>
+                        <div class="example-description">多图片批量裁剪处理</div>
+                    </div>
+                    <div class="example-content">
+                        <div class="example-demo">
+                            <div class="demo-area" id="batchDemo">
+                                <div class="demo-placeholder">
+                                    <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
+                                    <p>选择多张图片进行批量处理</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="example-controls">
+                            <input type="file" id="batchInput" class="file-input" accept="image/*" multiple>
+                            <label for="batchInput" class="btn btn-primary">📤 选择多张图片</label>
+                            <button class="btn btn-success" id="processBatch">⚡ 批量处理</button>
+                            <button class="btn btn-secondary" id="downloadBatch">📥 下载全部</button>
+                        </div>
+                        <div id="batchProgress" style="margin-top: 1rem; display: none;">
+                            <div style="background: #f0f0f0; border-radius: 10px; overflow: hidden;">
+                                <div id="progressBar" style="background: #3498db; height: 20px; width: 0%; transition: width 0.3s ease;"></div>
+                            </div>
+                            <p id="progressText" style="text-align: center; margin-top: 0.5rem;">处理中...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 实时预览示例 -->
+                <div class="example-card">
+                    <div class="example-header">
+                        <div class="example-title">👁️ 实时预览</div>
+                        <div class="example-description">实时预览和多格式导出</div>
+                    </div>
+                    <div class="example-content">
+                        <div class="example-demo">
+                            <div class="demo-area" id="previewDemo">
+                                <div class="demo-placeholder">
+                                    <div style="font-size: 3rem; margin-bottom: 1rem;">👁️</div>
+                                    <p>上传图片查看实时预览</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="example-controls">
+                            <input type="file" id="previewInput" class="file-input" accept="image/*">
+                            <label for="previewInput" class="btn btn-primary">📤 选择图片</label>
+                            <button class="btn btn-success" id="exportPNG">PNG</button>
+                            <button class="btn btn-success" id="exportJPG">JPG</button>
+                            <button class="btn btn-success" id="exportWebP">WebP</button>
+                        </div>
+                        <div id="previewContainer" style="margin-top: 1rem; display: none;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem;">
+                                <div style="text-align: center;">
+                                    <div style="font-weight: 600; margin-bottom: 0.5rem;">原图</div>
+                                    <canvas id="originalCanvas" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;"></canvas>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-weight: 600; margin-bottom: 0.5rem;">裁剪后</div>
+                                    <canvas id="croppedCanvas" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="integration" class="integration-steps">
+            <h2 class="steps-title">🚀 快速集成指南</h2>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-title">安装依赖</div>
+                    <div class="step-description">通过 npm 或直接引入 CDN 来安装图片裁剪器</div>
+                    <div class="step-code">
+# NPM 安装
+npm install @ldesign/cropper
+
+# 或者使用 CDN
+&lt;script src="https://cdn.jsdelivr.net/npm/@ldesign/cropper/dist/cropper.min.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ldesign/cropper/dist/cropper.min.css"&gt;
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-title">HTML 结构</div>
+                    <div class="step-description">创建容器元素来承载裁剪器</div>
+                    <div class="step-code">
+&lt;div id="cropper-container" style="width: 800px; height: 600px;"&gt;&lt;/div&gt;
+&lt;input type="file" id="image-input" accept="image/*"&gt;
+&lt;button id="export-btn"&gt;导出图片&lt;/button&gt;
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-title">JavaScript 初始化</div>
+                    <div class="step-description">创建裁剪器实例并配置选项</div>
+                    <div class="step-code">
+import { Cropper } from '@ldesign/cropper';
+
+// 创建裁剪器实例
+const container = document.getElementById('cropper-container');
+const cropper = new Cropper(container, {
+    aspectRatio: 'free',        // 宽高比: 'free', 1, 16/9 等
+    cropShape: 'rectangle',     // 裁剪形状: 'rectangle', 'circle', 'ellipse'
+    showGrid: true,             // 显示网格
+    showInfo: true,             // 显示信息
+    quality: 0.9,               // 导出质量
+    maxFileSize: 10 * 1024 * 1024, // 最大文件大小 (10MB)
+    supportedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp']
+});
+
+// 监听事件
+cropper.on('IMAGE_LOADED', (data) => {
+    console.log('图片加载完成:', data);
+});
+
+cropper.on('CROP_CHANGE', (data) => {
+    console.log('裁剪区域改变:', data);
+});
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <div class="step-title">图片加载和导出</div>
+                    <div class="step-description">加载图片并导出裁剪结果</div>
+                    <div class="step-code">
+// 加载图片
+document.getElementById('image-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        cropper.setImage(file);
+    }
+});
+
+// 导出图片
+document.getElementById('export-btn').addEventListener('click', async () => {
+    try {
+        // 获取裁剪后的 Canvas
+        const canvas = cropper.getCroppedCanvas({
+            width: 400,
+            height: 400
+        });
+        
+        // 获取 Blob 对象
+        const blob = await cropper.getCroppedBlob({
+            type: 'image/png',
+            quality: 0.9
+        });
+        
+        // 下载图片
+        const link = document.createElement('a');
+        link.download = 'cropped-image.png';
+        link.href = URL.createObjectURL(blob);
+        link.click();
+    } catch (error) {
+        console.error('导出失败:', error);
+    }
+});
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="api" class="code-section">
+            <div class="code-header">
+                <div class="code-title">📖 API 参考</div>
+                <button class="copy-btn" onclick="copyCode('api-code')">复制代码</button>
+            </div>
+            <div class="code-content">
+                <pre id="api-code">// 构造函数
+new Cropper(container, options)
+
+// 配置选项
+{
+    aspectRatio: 'free' | number,           // 宽高比
+    cropShape: 'rectangle' | 'circle' | 'ellipse', // 裁剪形状
+    showGrid: boolean,                      // 显示网格
+    showInfo: boolean,                      // 显示信息
+    quality: number,                        // 导出质量 (0-1)
+    maxFileSize: number,                    // 最大文件大小 (字节)
+    supportedFormats: string[],             // 支持的格式
+    theme: 'default' | 'dark' | 'light',   // 主题
+    language: 'zh-CN' | 'en-US'            // 语言
+}
+
+// 主要方法
+cropper.setImage(source)                   // 设置图片
+cropper.setCropData(data)                  // 设置裁剪数据
+cropper.getCropData()                      // 获取裁剪数据
+cropper.getCroppedCanvas(options)          // 获取裁剪后的 Canvas
+cropper.getCroppedBlob(options)            // 获取裁剪后的 Blob
+cropper.setScale(scale)                    // 设置缩放
+cropper.setRotation(rotation)              // 设置旋转
+cropper.setFlip(flipX, flipY)             // 设置翻转
+cropper.reset()                           // 重置
+cropper.destroy()                         // 销毁
+
+// 事件监听
+cropper.on('IMAGE_LOADED', callback)       // 图片加载完成
+cropper.on('CROP_CHANGE', callback)        // 裁剪区域改变
+cropper.on('SCALE_CHANGE', callback)       // 缩放改变
+cropper.on('ROTATION_CHANGE', callback)    // 旋转改变
+cropper.on('FLIP_CHANGE', callback)        // 翻转改变
+cropper.on('RENDER', callback)             // 渲染完成
+cropper.on('ERROR', callback)              // 错误发生</pre>
+            </div>
+        </section>
+
+        <section id="features">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">精确裁剪</div>
+                    <div class="feature-description">支持像素级精确裁剪，多种裁剪形状</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">响应式设计</div>
+                    <div class="feature-description">完美适配桌面端和移动端设备</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-title">主题定制</div>
+                    <div class="feature-description">多种内置主题，支持自定义样式</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">高性能</div>
+                    <div class="feature-description">优化的渲染引擎，流畅的操作体验</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <div class="feature-title">易于集成</div>
+                    <div class="feature-description">简单的 API，快速集成到现有项目</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <div class="feature-title">国际化</div>
+                    <div class="feature-description">支持多语言，满足全球化需求</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 简化的 Mock Cropper 类
+        class SimpleCropper {
+            constructor(container, options = {}) {
+                this.container = container;
+                this.options = options;
+                this.image = null;
+                this.cropData = { x: 0, y: 0, width: 0, height: 0 };
+                this.eventListeners = {};
+            }
+            
+            async setImage(source) {
+                return new Promise((resolve) => {
+                    if (source instanceof File) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const img = new Image();
+                            img.onload = () => {
+                                this.image = img;
+                                this.displayImage(img);
+                                this.emit('IMAGE_LOADED', { image: img });
+                                resolve();
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(source);
+                    }
+                });
+            }
+            
+            displayImage(img) {
+                this.container.innerHTML = '';
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 计算显示尺寸
+                const containerRect = this.container.getBoundingClientRect();
+                const scale = Math.min(
+                    containerRect.width / img.width,
+                    containerRect.height / img.height,
+                    1
+                );
+                
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+                canvas.style.maxWidth = '100%';
+                canvas.style.maxHeight = '100%';
+                canvas.style.borderRadius = '8px';
+                
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                this.container.appendChild(canvas);
+                
+                // 设置默认裁剪区域
+                this.cropData = {
+                    x: canvas.width * 0.1,
+                    y: canvas.height * 0.1,
+                    width: canvas.width * 0.8,
+                    height: canvas.height * 0.8
+                };
+            }
+            
+            getCroppedCanvas(options = {}) {
+                if (!this.image) return null;
+                
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const { width = this.cropData.width, height = this.cropData.height } = options;
+                canvas.width = width;
+                canvas.height = height;
+                
+                // 简化的裁剪逻辑
+                ctx.drawImage(
+                    this.image,
+                    this.cropData.x, this.cropData.y, this.cropData.width, this.cropData.height,
+                    0, 0, width, height
+                );
+                
+                return canvas;
+            }
+            
+            async getCroppedBlob(options = {}) {
+                const canvas = this.getCroppedCanvas(options);
+                if (!canvas) return null;
+                
+                return new Promise(resolve => {
+                    canvas.toBlob(resolve, options.type || 'image/png', options.quality || 0.9);
+                });
+            }
+            
+            on(event, callback) {
+                if (!this.eventListeners[event]) {
+                    this.eventListeners[event] = [];
+                }
+                this.eventListeners[event].push(callback);
+            }
+            
+            emit(event, data) {
+                if (this.eventListeners[event]) {
+                    this.eventListeners[event].forEach(callback => callback(data));
+                }
+            }
+        }
+        
+        // 工具函数
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        function downloadBlob(blob, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+        
+        function copyCode(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('代码已复制到剪贴板');
+            }).catch(() => {
+                showToast('复制失败', 'error');
+            });
+        }
+        
+        // 初始化示例
+        document.addEventListener('DOMContentLoaded', function() {
+            // 头像上传示例
+            const avatarCropper = new SimpleCropper(document.getElementById('avatarDemo'), {
+                aspectRatio: 1,
+                cropShape: 'circle'
+            });
+            
+            document.getElementById('avatarInput').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await avatarCropper.setImage(file);
+                    showToast('头像加载成功');
+                }
+            });
+            
+            document.getElementById('saveAvatar').addEventListener('click', async () => {
+                const blob = await avatarCropper.getCroppedBlob({
+                    type: 'image/png',
+                    width: 200,
+                    height: 200
+                });
+                if (blob) {
+                    downloadBlob(blob, 'avatar.png');
+                    showToast('头像保存成功');
+                }
+            });
+            
+            document.getElementById('resetAvatar').addEventListener('click', () => {
+                document.getElementById('avatarDemo').innerHTML = `
+                    <div class="demo-placeholder">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">👤</div>
+                        <p>点击上传头像</p>
+                    </div>
+                `;
+                showToast('头像已重置');
+            });
+            
+            // 商品图片示例
+            const productCropper = new SimpleCropper(document.getElementById('productDemo'));
+            
+            document.getElementById('productInput').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await productCropper.setImage(file);
+                    showToast('商品图片加载成功');
+                }
+            });
+            
+            document.getElementById('productSquare').addEventListener('click', () => {
+                // 设置 1:1 宽高比
+                showToast('已设置为 1:1 宽高比');
+            });
+            
+            document.getElementById('productRect').addEventListener('click', () => {
+                // 设置 4:3 宽高比
+                showToast('已设置为 4:3 宽高比');
+            });
+            
+            document.getElementById('saveProduct').addEventListener('click', async () => {
+                const blob = await productCropper.getCroppedBlob({
+                    type: 'image/jpeg',
+                    quality: 0.9
+                });
+                if (blob) {
+                    downloadBlob(blob, 'product.jpg');
+                    showToast('商品图片保存成功');
+                }
+            });
+            
+            // 批量处理示例
+            let batchFiles = [];
+            
+            document.getElementById('batchInput').addEventListener('change', (e) => {
+                batchFiles = Array.from(e.target.files);
+                const demo = document.getElementById('batchDemo');
+                demo.innerHTML = `
+                    <div class="demo-placeholder">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
+                        <p>已选择 ${batchFiles.length} 张图片</p>
+                    </div>
+                `;
+                showToast(`已选择 ${batchFiles.length} 张图片`);
+            });
+            
+            document.getElementById('processBatch').addEventListener('click', async () => {
+                if (batchFiles.length === 0) {
+                    showToast('请先选择图片', 'error');
+                    return;
+                }
+                
+                const progress = document.getElementById('batchProgress');
+                const progressBar = document.getElementById('progressBar');
+                const progressText = document.getElementById('progressText');
+                
+                progress.style.display = 'block';
+                
+                for (let i = 0; i < batchFiles.length; i++) {
+                    const file = batchFiles[i];
+                    const cropper = new SimpleCropper(document.createElement('div'));
+                    
+                    await cropper.setImage(file);
+                    await new Promise(resolve => setTimeout(resolve, 500)); // 模拟处理时间
+                    
+                    const percent = ((i + 1) / batchFiles.length) * 100;
+                    progressBar.style.width = percent + '%';
+                    progressText.textContent = `处理中... ${i + 1}/${batchFiles.length}`;
+                }
+                
+                progressText.textContent = '处理完成！';
+                showToast('批量处理完成');
+                
+                setTimeout(() => {
+                    progress.style.display = 'none';
+                }, 2000);
+            });
+            
+            document.getElementById('downloadBatch').addEventListener('click', () => {
+                showToast('批量下载功能演示');
+            });
+            
+            // 实时预览示例
+            const previewCropper = new SimpleCropper(document.getElementById('previewDemo'));
+            
+            document.getElementById('previewInput').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await previewCropper.setImage(file);
+                    
+                    // 显示预览容器
+                    const container = document.getElementById('previewContainer');
+                    container.style.display = 'block';
+                    
+                    // 显示原图
+                    const originalCanvas = document.getElementById('originalCanvas');
+                    const originalCtx = originalCanvas.getContext('2d');
+                    originalCanvas.width = 150;
+                    originalCanvas.height = 150;
+                    originalCtx.drawImage(previewCropper.image, 0, 0, 150, 150);
+                    
+                    // 显示裁剪后的图
+                    updateCroppedPreview();
+                    
+                    showToast('图片加载成功，可以查看实时预览');
+                }
+            });
+            
+            function updateCroppedPreview() {
+                const croppedCanvas = document.getElementById('croppedCanvas');
+                const canvas = previewCropper.getCroppedCanvas({ width: 150, height: 150 });
+                if (canvas) {
+                    croppedCanvas.width = 150;
+                    croppedCanvas.height = 150;
+                    const ctx = croppedCanvas.getContext('2d');
+                    ctx.drawImage(canvas, 0, 0);
+                }
+            }
+            
+            document.getElementById('exportPNG').addEventListener('click', async () => {
+                const blob = await previewCropper.getCroppedBlob({ type: 'image/png' });
+                if (blob) {
+                    downloadBlob(blob, 'export.png');
+                    showToast('PNG 导出成功');
+                }
+            });
+            
+            document.getElementById('exportJPG').addEventListener('click', async () => {
+                const blob = await previewCropper.getCroppedBlob({ type: 'image/jpeg', quality: 0.9 });
+                if (blob) {
+                    downloadBlob(blob, 'export.jpg');
+                    showToast('JPG 导出成功');
+                }
+            });
+            
+            document.getElementById('exportWebP').addEventListener('click', async () => {
+                const blob = await previewCropper.getCroppedBlob({ type: 'image/webp', quality: 0.9 });
+                if (blob) {
+                    downloadBlob(blob, 'export.webp');
+                    showToast('WebP 导出成功');
+                }
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+            
+            showToast('集成示例页面加载完成');
+        });
+    </script>
+</body>
+</html>
