@@ -13,6 +13,10 @@
     <ldesign-button type="outline">边框按钮</ldesign-button>
     <ldesign-button type="text">文字按钮</ldesign-button>
     <ldesign-button type="danger">危险按钮</ldesign-button>
+    <ldesign-button type="success">成功</ldesign-button>
+    <ldesign-button type="warning">警告</ldesign-button>
+    <ldesign-button type="link">链接</ldesign-button>
+    <ldesign-button type="dashed">虚线</ldesign-button>
   </div>
 </div>
 
@@ -22,6 +26,10 @@
 <ldesign-button type="outline">边框按钮</ldesign-button>
 <ldesign-button type="text">文字按钮</ldesign-button>
 <ldesign-button type="danger">危险按钮</ldesign-button>
+<ldesign-button type="success">成功</ldesign-button>
+<ldesign-button type="warning">警告</ldesign-button>
+<ldesign-button type="link">链接</ldesign-button>
+<ldesign-button type="dashed">虚线</ldesign-button>
 ```
 
 ## 按钮尺寸
@@ -50,19 +58,21 @@
   <div class="demo-row">
     <ldesign-button type="primary" shape="rectangle">矩形按钮</ldesign-button>
     <ldesign-button type="primary" shape="round">圆角按钮</ldesign-button>
-    <ldesign-button type="primary" shape="circle" icon="heart">圆形</ldesign-button>
+    <ldesign-button type="primary" shape="circle" icon="heart" aria-label="喜欢"></ldesign-button>
+    <ldesign-button type="primary" shape="square" icon="heart" aria-label="喜欢"></ldesign-button>
   </div>
 </div>
 
 ```html
 <ldesign-button type="primary" shape="rectangle">矩形按钮</ldesign-button>
 <ldesign-button type="primary" shape="round">圆角按钮</ldesign-button>
-<ldesign-button type="primary" shape="circle" icon="heart">圆形</ldesign-button>
+<ldesign-button type="primary" shape="circle" icon="heart" aria-label="喜欢"></ldesign-button>
+<ldesign-button type="primary" shape="square" icon="heart" aria-label="喜欢"></ldesign-button>
 ```
 
 ## 带图标的按钮
 
-使用 `icon` 属性来为按钮添加图标。
+使用 `icon` 属性来为按钮添加图标；通过 `icon-position` 控制图标位置。
 
 <div class="demo-container">
   <div class="demo-row">
@@ -70,6 +80,7 @@
     <ldesign-button type="secondary" icon="search">搜索</ldesign-button>
     <ldesign-button type="outline" icon="plus">添加</ldesign-button>
     <ldesign-button type="text" icon="heart">收藏</ldesign-button>
+    <ldesign-button type="primary" icon="arrow-right" icon-position="right">下一步</ldesign-button>
   </div>
 </div>
 
@@ -78,6 +89,7 @@
 <ldesign-button type="secondary" icon="search">搜索</ldesign-button>
 <ldesign-button type="outline" icon="plus">添加</ldesign-button>
 <ldesign-button type="text" icon="heart">收藏</ldesign-button>
+<ldesign-button type="primary" icon="arrow-right" icon-position="right">下一步</ldesign-button>
 ```
 
 ## 按钮状态
@@ -109,6 +121,24 @@
 <ldesign-button type="primary" loading>加载中</ldesign-button>
 <ldesign-button type="secondary" loading>加载中</ldesign-button>
 <ldesign-button type="outline" loading>加载中</ldesign-button>
+```
+
+## 原生类型
+
+通过 `native-type` 指定原生按钮类型（表单中常用）。
+
+<div class="demo-container">
+  <div class="demo-row">
+    <ldesign-button type="primary" native-type="submit">提交</ldesign-button>
+    <ldesign-button type="secondary" native-type="reset">重置</ldesign-button>
+  </div>
+</div>
+
+```html
+<form>
+  <ldesign-button type="primary" native-type="submit">提交</ldesign-button>
+  <ldesign-button type="secondary" native-type="reset">重置</ldesign-button>
+</form>
 ```
 
 ## 块级按钮
@@ -165,15 +195,17 @@ onMounted(() => {
 
 ### 属性
 
-| 属性名 | 类型 | 默认值 | 说明 |
-|--------|------|--------|------|
-| `type` | `'primary' \| 'secondary' \| 'outline' \| 'text' \| 'danger'` | `'primary'` | 按钮类型 |
-| `size` | `'small' \| 'medium' \| 'large'` | `'medium'` | 按钮尺寸 |
-| `shape` | `'rectangle' \| 'round' \| 'circle'` | `'rectangle'` | 按钮形状 |
-| `disabled` | `boolean` | `false` | 是否禁用 |
-| `loading` | `boolean` | `false` | 是否加载中 |
-| `icon` | `string` | - | 图标名称 |
-| `block` | `boolean` | `false` | 是否为块级按钮 |
+|| 属性名 | 类型 | 默认值 | 说明 |
+||--------|------|--------|------|
+|| `type` | `'primary' \| 'secondary' \| 'outline' \| 'text' \| 'danger' \| 'success' \| 'warning' \| 'link' \| 'dashed'` | `'primary'` | 按钮类型 |
+|| `size` | `'small' \| 'medium' \| 'large'` | `'medium'` | 按钮尺寸 |
+|| `shape` | `'rectangle' \| 'round' \| 'circle' \| 'square'` | `'rectangle'` | 按钮形状 |
+|| `disabled` | `boolean` | `false` | 是否禁用 |
+|| `loading` | `boolean` | `false` | 是否加载中 |
+|| `icon` | `string` | - | 图标名称 |
+|| `icon-position` | `'left' \| 'right'` | `'left'` | 图标位置 |
+|| `native-type` | `'button' \| 'submit' \| 'reset'` | `'button'` | 原生按钮类型 |
+|| `block` | `boolean` | `false` | 是否为块级按钮 |
 
 ### 事件
 

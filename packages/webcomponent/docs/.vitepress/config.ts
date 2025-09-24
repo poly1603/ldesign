@@ -77,6 +77,7 @@ export default defineConfig({
           text: '反馈组件',
           items: [
             { text: 'Popup 弹出层', link: '/components/popup' },
+            { text: 'Popconfirm 气泡确认框', link: '/components/popconfirm' },
             { text: 'Tooltip 工具提示', link: '/components/tooltip' },
             { text: 'Modal 模态框', link: '/components/modal' },
             { text: 'Drawer 抽屉', link: '/components/drawer' },

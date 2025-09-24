@@ -1,6 +1,31 @@
 # ldesign-button
 
+## 使用示例
 
+- 新增形状：square 正方形（适合纯图标按钮）
+```html path=null start=null
+<ldesign-button shape="square" size="small" icon="heart" aria-label="喜欢"></ldesign-button>
+```
+
+- 新增类型：success、warning
+```html path=null start=null
+<ldesign-button type="success">成功</ldesign-button>
+<ldesign-button type="warning">警告</ldesign-button>
+```
+
+- 新样式：link、dashed
+```html path=null start=null
+<ldesign-button type="link">查看详情</ldesign-button>
+<ldesign-button type="dashed">更多</ldesign-button>
+```
+
+- 新配置：icon-position、native-type
+```html path=null start=null
+<ldesign-button icon="arrow-right" icon-position="right">下一步</ldesign-button>
+<ldesign-button native-type="submit" type="primary">提交</ldesign-button>
+```
+
+> 下方为自动生成的属性与事件文档，构建后会自动更新。
 
 <!-- Auto Generated Below -->
 

@@ -1,4 +1,5 @@
 import { Component, Prop, State, Element, Event, EventEmitter, Watch, Method, h, Host } from '@stencil/core';
+import { lockPageScroll, unlockPageScroll } from '../../utils/scroll-lock';
 
 export type DrawerPlacement = 'left' | 'right' | 'top' | 'bottom';
 
@@ -149,12 +150,14 @@ export class LdesignDrawer {
   }
 
   private disableBodyScroll() {
-    // 改为滚动锁，不隐藏滚动条，避免页面抖动
+    // 锁定页面滚动并隐藏系统滚动条（带补偿），同时拦截非内容区滚动事件
+    lockPageScroll();
     this.bindScrollLock();
   }
 
   private enableBodyScroll() {
     this.unbindScrollLock();
+    unlockPageScroll();
   }
 
   /** 显示抽屉 */

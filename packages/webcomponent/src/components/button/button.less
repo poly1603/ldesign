@@ -87,6 +87,21 @@
     }
   }
 
+  // 新增：正方形（宽高相等）
+  &--square {
+    border-radius: var(--ls-border-radius-base);
+    width: var(--ls-button-height-medium);
+    padding: 0;
+
+    &.ldesign-button--small {
+      width: var(--ls-button-height-small);
+    }
+
+    &.ldesign-button--large {
+      width: var(--ls-button-height-large);
+    }
+  }
+
   // 类型变体
   &--primary {
     color: var(--ldesign-font-white-1);
@@ -172,6 +187,82 @@
     }
   }
 
+  // 新增：成功类型
+  &--success {
+    color: var(--ldesign-font-white-1);
+    background-color: var(--ldesign-success-color);
+    border-color: var(--ldesign-success-color);
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ldesign-success-color-hover);
+      border-color: var(--ldesign-success-color-hover);
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ldesign-success-color-active);
+      border-color: var(--ldesign-success-color-active);
+    }
+  }
+
+  // 新增：警告类型
+  &--warning {
+    color: var(--ldesign-font-white-1);
+    background-color: var(--ldesign-warning-color);
+    border-color: var(--ldesign-warning-color);
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ldesign-warning-color-hover);
+      border-color: var(--ldesign-warning-color-hover);
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ldesign-warning-color-active);
+      border-color: var(--ldesign-warning-color-active);
+    }
+  }
+
+  // 新增：链接样式
+  &--link {
+    color: var(--ldesign-brand-color);
+    background-color: transparent;
+    border-color: transparent;
+    text-decoration: underline;
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-brand-color-hover);
+      text-decoration-color: var(--ldesign-brand-color-hover);
+      background-color: transparent;
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-brand-color-active);
+      text-decoration-color: var(--ldesign-brand-color-active);
+      background-color: transparent;
+    }
+  }
+
+  // 新增：虚线边框样式
+  &--dashed {
+    color: var(--ldesign-brand-color);
+    background-color: transparent;
+    border-color: var(--ldesign-brand-color);
+    border-style: dashed;
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-font-white-1);
+      background-color: var(--ldesign-brand-color-hover);
+      border-color: var(--ldesign-brand-color-hover);
+      border-style: dashed;
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-font-white-1);
+      background-color: var(--ldesign-brand-color-active);
+      border-color: var(--ldesign-brand-color-active);
+      border-style: dashed;
+    }
+  }
+
   // 状态变体
   &--disabled {
     cursor: not-allowed;
@@ -198,9 +289,29 @@
       color: var(--ldesign-text-color-disabled);
     }
 
+    &.ldesign-button--link {
+      color: var(--ldesign-text-color-disabled);
+      text-decoration-color: var(--ldesign-text-color-disabled);
+    }
+
+    &.ldesign-button--dashed {
+      border-color: var(--ldesign-brand-color-disabled);
+      color: var(--ldesign-brand-color-disabled);
+    }
+
     &.ldesign-button--danger {
       background-color: var(--ldesign-error-color-disabled);
       border-color: var(--ldesign-error-color-disabled);
+    }
+
+    &.ldesign-button--success {
+      background-color: var(--ldesign-success-color-disabled);
+      border-color: var(--ldesign-success-color-disabled);
+    }
+
+    &.ldesign-button--warning {
+      background-color: var(--ldesign-warning-color-disabled);
+      border-color: var(--ldesign-warning-color-disabled);
     }
   }
 

@@ -10,12 +10,22 @@ export type Size = 'small' | 'medium' | 'large';
 /**
  * 按钮类型
  */
-export type ButtonType = 'primary' | 'secondary' | 'outline' | 'text' | 'danger';
+export type ButtonType = 'primary' | 'secondary' | 'outline' | 'text' | 'danger' | 'success' | 'warning' | 'link' | 'dashed';
 
 /**
  * 按钮形状
  */
-export type ButtonShape = 'rectangle' | 'round' | 'circle';
+export type ButtonShape = 'rectangle' | 'round' | 'circle' | 'square';
+
+/**
+ * 图标位置
+ */
+export type ButtonIconPosition = 'left' | 'right';
+
+/**
+ * 原生按钮类型
+ */
+export type NativeButtonType = 'button' | 'submit' | 'reset';
 
 /**
  * 输入框类型
@@ -73,6 +83,9 @@ export interface ButtonProps extends BaseComponentProps {
   shape?: ButtonShape;
   loading?: boolean;
   icon?: string;
+  block?: boolean;
+  iconPosition?: ButtonIconPosition;
+  nativeType?: NativeButtonType;
   onClick?: EventHandler;
 }
 

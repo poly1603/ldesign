@@ -1,5 +1,5 @@
 import { Component, Prop, Event, EventEmitter, h, Host } from '@stencil/core';
-import { ButtonType, ButtonShape, Size } from '../../types';
+import { ButtonType, ButtonShape, Size, ButtonIconPosition, NativeButtonType } from '../../types';
 
 /**
  * Button 按钮组件
@@ -42,9 +42,19 @@ export class LdesignButton {
   @Prop() icon?: string;
 
   /**
+   * 图标位置：left | right
+   */
+  @Prop() iconPosition: ButtonIconPosition = 'left';
+
+  /**
    * 是否为块级按钮
    */
   @Prop() block: boolean = false;
+
+  /**
+   * 原生按钮类型：button | submit | reset
+   */
+  @Prop() nativeType: NativeButtonType = 'button';
 
   /**
    * 点击事件
@@ -141,12 +151,13 @@ export class LdesignButton {
 
     return (
       <span class="ldesign-button__content">
-        {hasIcon && this.renderIcon()}
+        {hasIcon && this.iconPosition === 'left' && this.renderIcon()}
         {hasSlot && (
           <span class={hasIcon ? 'ldesign-button__text' : ''}>
             <slot />
           </span>
         )}
+        {hasIcon && this.iconPosition === 'right' && this.renderIcon()}
       </span>
     );
   }
@@ -159,7 +170,7 @@ export class LdesignButton {
           disabled={this.disabled || this.loading}
           onClick={this.handleClick}
           onKeyDown={this.handleKeyDown}
-          type="button"
+          type={this.nativeType}
           aria-disabled={this.disabled || this.loading ? 'true' : 'false'}
           aria-busy={this.loading ? 'true' : 'false'}
         >

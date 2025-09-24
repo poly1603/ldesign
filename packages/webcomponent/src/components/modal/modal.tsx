@@ -1,4 +1,5 @@
 import { Component, Prop, State, Element, Event, EventEmitter, Watch, Method, h, Host } from '@stencil/core';
+import { lockPageScroll, unlockPageScroll } from '../../utils/scroll-lock';
 
 export type ModalSize = 'small' | 'medium' | 'large' | 'full';
 
@@ -14,6 +15,7 @@ export type ModalAnimation = 'fade' | 'zoom' | 'slide-down' | 'slide-up' | 'slid
 })
 export class LdesignModal {
   @Element() el!: HTMLElement;
+
 
   /**
    * 是否显示模态框
@@ -306,9 +308,9 @@ export class LdesignModal {
     // 解除滚动锁
     this.unbindScrollLock();
     
-    // 恢复 body 滚动状态
+    // 恢复 body 滚动状态（考虑到多个 Modal 叠加的情况）
     if (this.isVisible) {
-      document.body.style.overflow = '';
+      this.unlockBodyScroll();
     }
     
     // 清理引用
@@ -748,8 +750,9 @@ export class LdesignModal {
       this.isClosing = false;
       this.isVisible = true;
 
-      // 锁定背景滚动，但不修改 body 样式，避免页面抖动
+      // 锁定背景滚动并隐藏页面滚动条
       this.bindScrollLock();
+      this.lockBodyScroll();
 
       // 定位逻辑：优先恢复上次位置，否则按需居中
       if ((this.isDraggable || this.resizable || this.centered || this.maximizable) && this.modalElement) {
@@ -783,6 +786,7 @@ export class LdesignModal {
 
           // 解除背景滚动锁
           this.unbindScrollLock();
+          this.unlockBodyScroll();
         }
       }, 300);
     }
@@ -803,8 +807,9 @@ export class LdesignModal {
       this.isVisible = true;
       this.visible = true;
 
-      // 锁定背景滚动，但不修改 body 样式
+      // 锁定背景滚动，并隐藏页面滚动条
       this.bindScrollLock();
+      this.lockBodyScroll();
 
       // 如果是拖拽模态框，尽早将居中定位转换为绝对定位，避免动画期间位置跳动
       if (this.isDraggable && this.modalElement) {
@@ -837,6 +842,7 @@ export class LdesignModal {
 
           // 解除背景滚动锁
           this.unbindScrollLock();
+          this.unlockBodyScroll();
         }
       }, 300);
     }
@@ -1041,6 +1047,10 @@ export class LdesignModal {
     this.showHeaderShadow = st > 0;
     this.showFooterShadow = st + ch < sh - 1;
   }
+
+  /** 锁定/解锁页面滚动（委托给全局工具，支持多弹层叠加） */
+  private lockBodyScroll() { lockPageScroll(); }
+  private unlockBodyScroll() { unlockPageScroll(); }
 
   /**
    * 打开时优先恢复上次位置，否则按需居中

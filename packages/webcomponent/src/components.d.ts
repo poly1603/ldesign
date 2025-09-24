@@ -5,18 +5,20 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { ButtonShape, ButtonType, Size, Theme } from "./types";
+import { ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
 import { DrawerPlacement } from "./components/drawer/drawer";
 import { MessageType } from "./components/message/message";
 import { ModalAnimation, ModalSize } from "./components/modal/modal";
 import { NotificationPlacement, NotificationType } from "./components/notification/notification";
+import { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
 import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
-export { ButtonShape, ButtonType, Size, Theme } from "./types";
+export { ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
 export { DrawerPlacement } from "./components/drawer/drawer";
 export { MessageType } from "./components/message/message";
 export { ModalAnimation, ModalSize } from "./components/modal/modal";
 export { NotificationPlacement, NotificationType } from "./components/notification/notification";
+export { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
 export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
 export namespace Components {
@@ -69,10 +71,20 @@ export namespace Components {
          */
         "icon"?: string;
         /**
+          * 图标位置：left | right
+          * @default 'left'
+         */
+        "iconPosition": ButtonIconPosition;
+        /**
           * 是否加载中
           * @default false
          */
         "loading": boolean;
+        /**
+          * 原生按钮类型：button | submit | reset
+          * @default 'button'
+         */
+        "nativeType": NativeButtonType;
         /**
           * 按钮形状
           * @default 'rectangle'
@@ -603,6 +615,84 @@ export namespace Components {
         "type": NotificationType;
     }
     /**
+     * Popconfirm 气泡确认框
+     * 基于 Popup 进行封装，提供确认/取消操作
+     */
+    interface LdesignPopconfirm {
+        /**
+          * 箭头（默认显示），透传给 Popup
+          * @default true
+         */
+        "arrow": boolean;
+        /**
+          * @default '取消'
+         */
+        "cancelText": string;
+        /**
+          * 取消按钮类型（默认使用次要/描边样式）
+          * @default 'outline'
+         */
+        "cancelType": 'primary' | 'secondary' | 'outline' | 'text' | 'danger';
+        /**
+          * 点击外部是否关闭（仅点击触发较常用）
+          * @default true
+         */
+        "closeOnOutside": boolean;
+        /**
+          * 辅助说明（可选，支持默认 slot 覆盖）
+         */
+        "description"?: string;
+        /**
+          * @default 0
+         */
+        "hideDelay": number;
+        /**
+          * 图标名称（可用 slot=icon 覆盖）
+          * @default 'help-circle'
+         */
+        "icon": string;
+        /**
+          * 确认/取消按钮文本
+          * @default '确定'
+         */
+        "okText": string;
+        /**
+          * 确认按钮类型（影响颜色）
+          * @default 'primary'
+         */
+        "okType": 'primary' | 'secondary' | 'outline' | 'text' | 'danger';
+        /**
+          * 出现位置（透传给 Popup）
+          * @default 'top'
+         */
+        "placement": PopconfirmPlacement;
+        /**
+          * 确认标题（支持 slot=title 覆盖）
+          * @default '确定要执行该操作吗？'
+         */
+        "popconfirmTitle": string;
+        /**
+          * 延迟显示/隐藏（毫秒），透传给 Popup
+          * @default 0
+         */
+        "showDelay": number;
+        /**
+          * 主题（浅色/深色），透传给 Popup
+          * @default 'light'
+         */
+        "theme": 'light' | 'dark';
+        /**
+          * 触发方式（默认点击）
+          * @default 'click'
+         */
+        "trigger": PopconfirmTrigger;
+        /**
+          * 外部受控可见性（仅在 trigger='manual' 时生效）
+          * @default false
+         */
+        "visible": boolean;
+    }
+    /**
      * Popup 弹出层组件
      * 基于
      * @floating-ui /dom 实现
@@ -903,6 +993,10 @@ export interface LdesignNotificationCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignNotificationElement;
 }
+export interface LdesignPopconfirmCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignPopconfirmElement;
+}
 export interface LdesignPopupCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignPopupElement;
@@ -1114,6 +1208,29 @@ declare global {
         prototype: HTMLLdesignNotificationElement;
         new (): HTMLLdesignNotificationElement;
     };
+    interface HTMLLdesignPopconfirmElementEventMap {
+        "ldesignConfirm": void;
+        "ldesignCancel": void;
+        "ldesignVisibleChange": boolean;
+    }
+    /**
+     * Popconfirm 气泡确认框
+     * 基于 Popup 进行封装，提供确认/取消操作
+     */
+    interface HTMLLdesignPopconfirmElement extends Components.LdesignPopconfirm, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignPopconfirmElementEventMap>(type: K, listener: (this: HTMLLdesignPopconfirmElement, ev: LdesignPopconfirmCustomEvent<HTMLLdesignPopconfirmElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignPopconfirmElementEventMap>(type: K, listener: (this: HTMLLdesignPopconfirmElement, ev: LdesignPopconfirmCustomEvent<HTMLLdesignPopconfirmElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignPopconfirmElement: {
+        prototype: HTMLLdesignPopconfirmElement;
+        new (): HTMLLdesignPopconfirmElement;
+    };
     interface HTMLLdesignPopupElementEventMap {
         "ldesignVisibleChange": boolean;
     }
@@ -1220,6 +1337,7 @@ declare global {
         "ldesign-message": HTMLLdesignMessageElement;
         "ldesign-modal": HTMLLdesignModalElement;
         "ldesign-notification": HTMLLdesignNotificationElement;
+        "ldesign-popconfirm": HTMLLdesignPopconfirmElement;
         "ldesign-popup": HTMLLdesignPopupElement;
         "ldesign-radio": HTMLLdesignRadioElement;
         "ldesign-radio-group": HTMLLdesignRadioGroupElement;
@@ -1277,10 +1395,20 @@ declare namespace LocalJSX {
          */
         "icon"?: string;
         /**
+          * 图标位置：left | right
+          * @default 'left'
+         */
+        "iconPosition"?: ButtonIconPosition;
+        /**
           * 是否加载中
           * @default false
          */
         "loading"?: boolean;
+        /**
+          * 原生按钮类型：button | submit | reset
+          * @default 'button'
+         */
+        "nativeType"?: NativeButtonType;
         /**
           * 点击事件
          */
@@ -1827,6 +1955,96 @@ declare namespace LocalJSX {
         "type"?: NotificationType;
     }
     /**
+     * Popconfirm 气泡确认框
+     * 基于 Popup 进行封装，提供确认/取消操作
+     */
+    interface LdesignPopconfirm {
+        /**
+          * 箭头（默认显示），透传给 Popup
+          * @default true
+         */
+        "arrow"?: boolean;
+        /**
+          * @default '取消'
+         */
+        "cancelText"?: string;
+        /**
+          * 取消按钮类型（默认使用次要/描边样式）
+          * @default 'outline'
+         */
+        "cancelType"?: 'primary' | 'secondary' | 'outline' | 'text' | 'danger';
+        /**
+          * 点击外部是否关闭（仅点击触发较常用）
+          * @default true
+         */
+        "closeOnOutside"?: boolean;
+        /**
+          * 辅助说明（可选，支持默认 slot 覆盖）
+         */
+        "description"?: string;
+        /**
+          * @default 0
+         */
+        "hideDelay"?: number;
+        /**
+          * 图标名称（可用 slot=icon 覆盖）
+          * @default 'help-circle'
+         */
+        "icon"?: string;
+        /**
+          * 确认/取消按钮文本
+          * @default '确定'
+         */
+        "okText"?: string;
+        /**
+          * 确认按钮类型（影响颜色）
+          * @default 'primary'
+         */
+        "okType"?: 'primary' | 'secondary' | 'outline' | 'text' | 'danger';
+        /**
+          * 事件：取消
+         */
+        "onLdesignCancel"?: (event: LdesignPopconfirmCustomEvent<void>) => void;
+        /**
+          * 事件：确认
+         */
+        "onLdesignConfirm"?: (event: LdesignPopconfirmCustomEvent<void>) => void;
+        /**
+          * 事件：对外转发可见性变化
+         */
+        "onLdesignVisibleChange"?: (event: LdesignPopconfirmCustomEvent<boolean>) => void;
+        /**
+          * 出现位置（透传给 Popup）
+          * @default 'top'
+         */
+        "placement"?: PopconfirmPlacement;
+        /**
+          * 确认标题（支持 slot=title 覆盖）
+          * @default '确定要执行该操作吗？'
+         */
+        "popconfirmTitle"?: string;
+        /**
+          * 延迟显示/隐藏（毫秒），透传给 Popup
+          * @default 0
+         */
+        "showDelay"?: number;
+        /**
+          * 主题（浅色/深色），透传给 Popup
+          * @default 'light'
+         */
+        "theme"?: 'light' | 'dark';
+        /**
+          * 触发方式（默认点击）
+          * @default 'click'
+         */
+        "trigger"?: PopconfirmTrigger;
+        /**
+          * 外部受控可见性（仅在 trigger='manual' 时生效）
+          * @default false
+         */
+        "visible"?: boolean;
+    }
+    /**
      * Popup 弹出层组件
      * 基于
      * @floating-ui /dom 实现
@@ -2121,6 +2339,7 @@ declare namespace LocalJSX {
         "ldesign-message": LdesignMessage;
         "ldesign-modal": LdesignModal;
         "ldesign-notification": LdesignNotification;
+        "ldesign-popconfirm": LdesignPopconfirm;
         "ldesign-popup": LdesignPopup;
         "ldesign-radio": LdesignRadio;
         "ldesign-radio-group": LdesignRadioGroup;
@@ -2181,6 +2400,11 @@ declare module "@stencil/core" {
              * 位于页面角落的全局通知，支持标题、描述、操作区与自动关闭。
              */
             "ldesign-notification": LocalJSX.LdesignNotification & JSXBase.HTMLAttributes<HTMLLdesignNotificationElement>;
+            /**
+             * Popconfirm 气泡确认框
+             * 基于 Popup 进行封装，提供确认/取消操作
+             */
+            "ldesign-popconfirm": LocalJSX.LdesignPopconfirm & JSXBase.HTMLAttributes<HTMLLdesignPopconfirmElement>;
             /**
              * Popup 弹出层组件
              * 基于
