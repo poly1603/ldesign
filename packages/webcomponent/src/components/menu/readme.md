@@ -241,28 +241,31 @@
 
 ## Properties
 
-| Property          | Attribute           | Description                                       | Type                              | Default      |
-| ----------------- | ------------------- | ------------------------------------------------- | --------------------------------- | ------------ |
-| `accordion`       | `accordion`         | 手风琴模式：同层级只允许展开一个                                  | `boolean`                         | `false`      |
-| `collapse`        | `collapse`          | 折叠模式：仅显示一级图标，悬停右侧弹出；无子级时显示 tooltip（仅纵向）           | `boolean`                         | `false`      |
-| `defaultOpenKeys` | `default-open-keys` | 默认打开的子菜单 key 列表（非受控）                              | `string[]`                        | `[]`         |
-| `defaultValue`    | `default-value`     | 默认选中项（非受控）                                        | `string`                          | `undefined`  |
-| `indent`          | `indent`            | 子级缩进（px）                                          | `number`                          | `16`         |
-| `items`           | `items`             | 菜单数据（可传入 JSON 字符串或对象数组）                           | `MenuItem[] \| string`            | `[]`         |
-| `mode`            | `mode`              | 展示模式：vertical（纵向）\| horizontal（横向）                | `"horizontal" \| "vertical"`      | `'vertical'` |
-| `openKeys`        | `open-keys`         | 当前打开的子菜单 key 列表（受控）                               | `string[]`                        | `undefined`  |
-| `requireTopIcon`  | `require-top-icon`  | 顶层（一级）是否强制显示图标占位（保证对齐）。若条目没有 icon，将渲染一个占位。        | `boolean`                         | `true`       |
-| `submenuTrigger`  | `submenu-trigger`   | 弹出子菜单的触发方式（仅在 flyout/mixed 生效；横向模式同样适用）           | `"click" \| "hover"`              | `'hover'`    |
-| `value`           | `value`             | 当前选中项（受控）                                         | `string`                          | `undefined`  |
-| `verticalExpand`  | `vertical-expand`   | 垂直模式展开方式：inline（内嵌）、flyout（右侧弹出）、mixed（一级内嵌，其余弹出） | `"flyout" \| "inline" \| "mixed"` | `'inline'`   |
+| Property            | Attribute             | Description                                       | Type                              | Default      |
+| ------------------- | --------------------- | ------------------------------------------------- | --------------------------------- | ------------ |
+| `accordion`         | `accordion`           | 手风琴模式：同层级只允许展开一个                                  | `boolean`                         | `false`      |
+| `collapse`          | `collapse`            | 折叠模式：仅显示一级图标，悬停右侧弹出；无子级时显示 tooltip（仅纵向）           | `boolean`                         | `false`      |
+| `defaultOpenKeys`   | `default-open-keys`   | 默认打开的子菜单 key 列表（非受控）                              | `string[]`                        | `[]`         |
+| `defaultValue`      | `default-value`       | 默认选中项（非受控）                                        | `string`                          | `undefined`  |
+| `indent`            | `indent`              | 子级缩进（px）                                          | `number`                          | `16`         |
+| `items`             | `items`               | 菜单数据（可传入 JSON 字符串或对象数组）                           | `MenuItem[] \| string`            | `[]`         |
+| `mode`              | `mode`                | 展示模式：vertical（纵向）\| horizontal（横向）                | `"horizontal" \| "vertical"`      | `'vertical'` |
+| `moreLabel`         | `more-label`          | 横向模式下 “更多” 文案                                     | `string`                          | `'更多'`       |
+| `openKeys`          | `open-keys`           | 当前打开的子菜单 key 列表（受控）                               | `string[]`                        | `undefined`  |
+| `requireTopIcon`    | `require-top-icon`    | 顶层（一级）是否强制显示图标占位（保证对齐）。若条目没有 icon，将渲染一个占位。        | `boolean`                         | `true`       |
+| `submenuTrigger`    | `submenu-trigger`     | 弹出子菜单的触发方式（仅在 flyout/mixed 生效；横向模式同样适用）           | `"click" \| "hover"`              | `'hover'`    |
+| `topLevelExclusive` | `top-level-exclusive` | 纵向模式：顶层互斥展开（无论 inline 或 flyout），默认开启              | `boolean`                         | `true`       |
+| `value`             | `value`               | 当前选中项（受控）                                         | `string`                          | `undefined`  |
+| `verticalExpand`    | `vertical-expand`     | 垂直模式展开方式：inline（内嵌）、flyout（右侧弹出）、mixed（一级内嵌，其余弹出） | `"flyout" \| "inline" \| "mixed"` | `'inline'`   |
 
 
 ## Events
 
-| Event               | Description | Type                                                                |
-| ------------------- | ----------- | ------------------------------------------------------------------- |
-| `ldesignOpenChange` | 展开/收起事件     | `CustomEvent<{ key: string; open: boolean; openKeys: string[]; }>`  |
-| `ldesignSelect`     | 选中事件        | `CustomEvent<{ key: string; item: MenuItem; pathKeys: string[]; }>` |
+| Event                   | Description | Type                                                                |
+| ----------------------- | ----------- | ------------------------------------------------------------------- |
+| `ldesignOpenChange`     | 展开/收起事件     | `CustomEvent<{ key: string; open: boolean; openKeys: string[]; }>`  |
+| `ldesignOverflowChange` | 横向溢出变化事件    | `CustomEvent<{ overflowCount: number; }>`                           |
+| `ldesignSelect`         | 选中事件        | `CustomEvent<{ key: string; item: MenuItem; pathKeys: string[]; }>` |
 
 
 ## Dependencies

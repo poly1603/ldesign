@@ -44,41 +44,47 @@ Popup 弹出层组件（不覆盖触发元素）
 
 ## Overview
 
-Popup 弹出层组件
-完全重写版本，确保 offset-distance 在所有方向保持一致
+ldesign-popup（重写版）
+目标：
+- 结构清晰：属性/状态/引用/工具/事件/定位/渲染分层
+- 在所有方向上保持一致的 offset 语义：
+   arrow=true 时，offsetDistance = 触发元素到箭头尖端的可见距离
+   arrow=false 时，offsetDistance = 触发元素到面板边缘的可见距离
+- 支持 hover/click/focus/manual/contextmenu，支持 appendTo(self/body/closest-popup)
+- 稳健的外部点击与 ESC 关闭，右键通过虚拟参考在鼠标处弹出
 
 ## Properties
 
-| Property         | Attribute          | Description                                                                  | Type                                                                                                                                                                 | Default     |
-| ---------------- | ------------------ | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `appendTo`       | `append-to`        | 弹层渲染容器                                                                       | `"body" \| "closest-popup" \| "self"`                                                                                                                                | `'self'`    |
-| `arrow`          | `arrow`            | 是否显示箭头                                                                       | `boolean`                                                                                                                                                            | `true`      |
-| `closeOnEsc`     | `close-on-esc`     | 是否允许 Esc 键关闭                                                                 | `boolean`                                                                                                                                                            | `true`      |
-| `closeOnOutside` | `close-on-outside` | 点击浮层外是否关闭（仅在 trigger = 'click' 时常用）                                          | `boolean`                                                                                                                                                            | `true`      |
-| `content`        | `content`          | 弹出层内容                                                                        | `string`                                                                                                                                                             | `undefined` |
-| `debug`          | `debug`            | 调试开关：开启后输出定位与间距的详细日志                                                         | `boolean`                                                                                                                                                            | `false`     |
-| `disabled`       | `disabled`         | 是否禁用                                                                         | `boolean`                                                                                                                                                            | `false`     |
-| `hideDelay`      | `hide-delay`       | 延迟隐藏时间（毫秒）                                                                   | `number`                                                                                                                                                             | `0`         |
-| `interactive`    | `interactive`      | 是否允许在弹出层上进行交互（仅 hover 触发时有意义）                                                | `boolean`                                                                                                                                                            | `true`      |
-| `lockOnScroll`   | `lock-on-scroll`   | 滚动时是否锁定位置（不随滚动而重新定位）                                                         | `boolean`                                                                                                                                                            | `false`     |
-| `maxWidth`       | `max-width`        | 最大宽度                                                                         | `number \| string`                                                                                                                                                   | `undefined` |
-| `offsetDistance` | `offset-distance`  | 与触发元素的距离（单位 px） 当 arrow=true 时，表示触发元素到箭头尖端的距离 当 arrow=false 时，表示触发元素到弹层边缘的距离 | `number \| string`                                                                                                                                                   | `8`         |
-| `placement`      | `placement`        | 弹出层位置                                                                        | `"bottom" \| "bottom-end" \| "bottom-start" \| "left" \| "left-end" \| "left-start" \| "right" \| "right-end" \| "right-start" \| "top" \| "top-end" \| "top-start"` | `'bottom'`  |
-| `popupRole`      | `popup-role`       | 内容区域的语义角色                                                                    | `string`                                                                                                                                                             | `'dialog'`  |
-| `popupTitle`     | `popup-title`      | 弹出层标题                                                                        | `string`                                                                                                                                                             | `undefined` |
-| `showDelay`      | `show-delay`       | 延迟显示时间（毫秒）                                                                   | `number`                                                                                                                                                             | `0`         |
-| `strategy`       | `strategy`         | 定位策略                                                                         | `"absolute" \| "auto" \| "fixed"`                                                                                                                                    | `'auto'`    |
-| `theme`          | `theme`            | 主题风格                                                                         | `"dark" \| "light"`                                                                                                                                                  | `'light'`   |
-| `trigger`        | `trigger`          | 触发方式                                                                         | `"click" \| "contextmenu" \| "focus" \| "hover" \| "manual"`                                                                                                         | `'hover'`   |
-| `visible`        | `visible`          | 是否显示弹出层                                                                      | `boolean`                                                                                                                                                            | `false`     |
-| `width`          | `width`            | 弹出层宽度                                                                        | `number \| string`                                                                                                                                                   | `undefined` |
+| Property         | Attribute          | Description           | Type                                                                                                                                                                 | Default     |
+| ---------------- | ------------------ | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `appendTo`       | `append-to`        |                       | `"body" \| "closest-popup" \| "self"`                                                                                                                                | `'self'`    |
+| `arrow`          | `arrow`            |                       | `boolean`                                                                                                                                                            | `true`      |
+| `closeOnEsc`     | `close-on-esc`     |                       | `boolean`                                                                                                                                                            | `true`      |
+| `closeOnOutside` | `close-on-outside` |                       | `boolean`                                                                                                                                                            | `true`      |
+| `content`        | `content`          |                       | `string`                                                                                                                                                             | `undefined` |
+| `debug`          | `debug`            |                       | `boolean`                                                                                                                                                            | `false`     |
+| `disabled`       | `disabled`         |                       | `boolean`                                                                                                                                                            | `false`     |
+| `hideDelay`      | `hide-delay`       |                       | `number`                                                                                                                                                             | `0`         |
+| `interactive`    | `interactive`      |                       | `boolean`                                                                                                                                                            | `true`      |
+| `lockOnScroll`   | `lock-on-scroll`   |                       | `boolean`                                                                                                                                                            | `false`     |
+| `maxWidth`       | `max-width`        |                       | `number \| string`                                                                                                                                                   | `undefined` |
+| `offsetDistance` | `offset-distance`  | 与触发元素的距离：参见组件注释中的语义说明 | `number \| string`                                                                                                                                                   | `8`         |
+| `placement`      | `placement`        |                       | `"bottom" \| "bottom-end" \| "bottom-start" \| "left" \| "left-end" \| "left-start" \| "right" \| "right-end" \| "right-start" \| "top" \| "top-end" \| "top-start"` | `'bottom'`  |
+| `popupRole`      | `popup-role`       |                       | `string`                                                                                                                                                             | `'dialog'`  |
+| `popupTitle`     | `popup-title`      |                       | `string`                                                                                                                                                             | `undefined` |
+| `showDelay`      | `show-delay`       |                       | `number`                                                                                                                                                             | `0`         |
+| `strategy`       | `strategy`         |                       | `"absolute" \| "auto" \| "fixed"`                                                                                                                                    | `'auto'`    |
+| `theme`          | `theme`            |                       | `"dark" \| "light"`                                                                                                                                                  | `'light'`   |
+| `trigger`        | `trigger`          |                       | `"click" \| "contextmenu" \| "focus" \| "hover" \| "manual"`                                                                                                         | `'hover'`   |
+| `visible`        | `visible`          |                       | `boolean`                                                                                                                                                            | `false`     |
+| `width`          | `width`            |                       | `number \| string`                                                                                                                                                   | `undefined` |
 
 
 ## Events
 
 | Event                  | Description | Type                   |
 | ---------------------- | ----------- | ---------------------- |
-| `ldesignVisibleChange` | 显示状态变化事件    | `CustomEvent<boolean>` |
+| `ldesignVisibleChange` |             | `CustomEvent<boolean>` |
 
 
 ## Dependencies

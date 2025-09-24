@@ -68,6 +68,7 @@ export default defineConfig({
           text: '导航组件',
           items: [
             { text: 'Menu 菜单', link: '/components/menu' },
+            { text: 'Tabs 选项卡', link: '/components/tabs' },
             { text: 'Dropdown 下拉菜单', link: '/components/dropdown' },
             { text: 'Pagination 分页', link: '/components/pagination' },
           ]

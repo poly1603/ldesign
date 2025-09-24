@@ -25,3 +25,5 @@ export { LdesignMenu } from './menu/menu';
 export { LdesignDropdown } from './dropdown/dropdown';
 export { LdesignSelect } from './select/select';
 export { LdesignPagination } from './pagination/pagination';
+export { LdesignTabs } from './tabs/tabs';
+export { LdesignTabPanel } from './tabs/tab-panel';

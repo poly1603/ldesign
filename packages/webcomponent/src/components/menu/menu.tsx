@@ -27,6 +27,8 @@ export class LdesignMenu {
 
   /** 展示模式：vertical（纵向）| horizontal（横向） */
   @Prop() mode: 'vertical' | 'horizontal' = 'vertical';
+  /** 横向模式下 “更多” 文案 */
+  @Prop() moreLabel: string = '更多';
 
   /** 当前选中项（受控） */
   @Prop({ mutable: true }) value?: string;
@@ -49,6 +51,8 @@ export class LdesignMenu {
   @Event() ldesignSelect!: EventEmitter<{ key: string; item: MenuItem; pathKeys: string[] }>;
   /** 展开/收起事件 */
   @Event() ldesignOpenChange!: EventEmitter<{ key: string; open: boolean; openKeys: string[] }>;
+  /** 横向溢出变化事件 */
+  @Event() ldesignOverflowChange!: EventEmitter<{ overflowCount: number }>;
 
   /** 垂直模式展开方式：inline（内嵌）、flyout（右侧弹出）、mixed（一级内嵌，其余弹出） */
   @Prop() verticalExpand: VerticalExpand = 'inline';
@@ -57,10 +61,21 @@ export class LdesignMenu {
 
   /** 折叠模式：仅显示一级图标，悬停右侧弹出；无子级时显示 tooltip（仅纵向） */
   @Prop() collapse: boolean = false;
+  /** 纵向模式：顶层互斥展开（无论 inline 或 flyout），默认开启 */
+  @Prop() topLevelExclusive: boolean = true;
 
   @State() parsedItems: MenuItem[] = [];
   @State() currentKey?: string;
   @State() internalOpenKeys: string[] = [];
+
+  // 横向溢出
+  @State() overflowKeys: string[] = [];
+  private listRef?: HTMLUListElement;
+  private topItemRefs: Map<string, HTMLLIElement> = new Map();
+  private moreMeasureRef?: HTMLLIElement; // 用于测量“更多”宽度
+  private moreRenderRef?: HTMLLIElement; // 实际渲染的“更多”节点（可选）
+  private resizeObserver?: ResizeObserver;
+  private lastOverflowCount: number = 0;
 
   private submenuRefs: Map<string, HTMLUListElement> = new Map();
   private didInitHeights = false;
@@ -75,6 +90,8 @@ export class LdesignMenu {
     this.parsedItems = this.parseItems(val);
     // 数据变化后，依据当前选中项恢复展开路径
     if (this.currentKey) this.ensureOpenForKey(this.currentKey);
+    // 重新计算横向溢出
+    this.scheduleCalcOverflow();
   }
 
   @Watch('openKeys')
@@ -118,11 +135,24 @@ export class LdesignMenu {
     // 在 click 触发模式下，支持点击空白处或按 ESC 关闭所有面板
     document.addEventListener('click', this.onDocumentClick, true);
     document.addEventListener('keydown', this.onKeydown, true);
+
+    // 监听尺寸变化以进行横向溢出计算
+    this.resizeObserver = new ResizeObserver(() => this.scheduleCalcOverflow());
+    if (this.el) this.resizeObserver.observe(this.el);
+    window.addEventListener('resize', this.handleWindowResize, { passive: true });
+
+    // 初次渲染后计算一次
+    this.scheduleCalcOverflow();
   }
 
   disconnectedCallback() {
     document.removeEventListener('click', this.onDocumentClick, true);
     document.removeEventListener('keydown', this.onKeydown, true);
+    window.removeEventListener('resize', this.handleWindowResize as any);
+    if (this.resizeObserver) {
+      try { this.resizeObserver.disconnect(); } catch {}
+      this.resizeObserver = undefined;
+    }
   }
 
   private parseItems(val: string | MenuItem[]): MenuItem[] {
@@ -215,7 +245,8 @@ export class LdesignMenu {
       if (open) {
         next = next.filter(k => k !== item.key);
       } else {
-        if (this.accordion) {
+        const shouldAccordion = this.accordion || (this.mode === 'vertical' && _level === 1 && this.topLevelExclusive);
+        if (shouldAccordion) {
           const sibs = this.getSiblingOpenKeys(item.key);
           next = next.filter(k => !sibs.includes(k));
         }
@@ -397,6 +428,106 @@ export class LdesignMenu {
     }
   };
 
+  // 仅保留某个顶层面板处于展开状态（互斥）。顶层包括：一级菜单与“更多”
+  private openTopExclusive(key: string) {
+    const next: { [k: string]: boolean } = {};
+    next[key] = true;
+    this.flyoutOpenMap = next;
+  }
+
+  private handleWindowResize = () => {
+    this.scheduleCalcOverflow();
+  };
+
+  private registerListRef = (el: HTMLUListElement | null) => {
+    this.listRef = el || undefined;
+  };
+  private registerTopRef = (key: string) => (el: HTMLLIElement | null) => {
+    if (el) this.topItemRefs.set(key, el); else this.topItemRefs.delete(key);
+  };
+  private registerMoreMeasureRef = (el: HTMLLIElement | null) => {
+    this.moreMeasureRef = el || undefined;
+  };
+  private registerMoreRenderRef = (el: HTMLLIElement | null) => {
+    this.moreRenderRef = el || undefined;
+  };
+
+  private scheduleCalcOverflow() {
+    if (this.mode !== 'horizontal') return;
+    requestAnimationFrame(() => this.calcOverflow());
+  }
+
+  private getMoreWidth(): number {
+    const el = this.moreMeasureRef || this.moreRenderRef;
+    if (!el) return 72; // fallback
+    const prev = { cssText: el.style.cssText } as any;
+    el.style.position = 'absolute';
+    el.style.visibility = 'hidden';
+    el.style.left = '-99999px';
+    el.style.top = '-99999px';
+    const w = el.offsetWidth || 72;
+    el.style.cssText = prev.cssText;
+    return w;
+  }
+
+  private calcOverflow() {
+    if (this.mode !== 'horizontal') {
+      if (this.overflowKeys.length) this.overflowKeys = [];
+      return;
+    }
+    const list = this.listRef;
+    if (!list) return;
+
+    const containerW = list.clientWidth;
+    if (containerW <= 0) return;
+
+    // 收集顶层项宽度
+    const keys = (this.parsedItems || []).map(it => it.key);
+    if (!keys.length) { this.overflowKeys = []; return; }
+
+    const widths: number[] = keys.map(k => {
+      const li = this.topItemRefs.get(k);
+      return li ? li.offsetWidth : 0;
+    });
+
+    // 若某些宽度仍为 0，说明尚未完成布局，延后一次
+    if (widths.some(w => w === 0)) {
+      requestAnimationFrame(() => this.calcOverflow());
+      return;
+    }
+
+    const style = getComputedStyle(list);
+    const gap = parseFloat(style.columnGap || (style.gap || '0')) || 0;
+
+    const prefix: number[] = new Array(widths.length + 1).fill(0);
+    for (let i = 0; i < widths.length; i++) prefix[i+1] = prefix[i] + widths[i];
+    const sumW = (n: number) => prefix[n];
+
+    const moreW = this.getMoreWidth();
+
+    const N = widths.length;
+    let best = N;
+    // 从最多可见开始回退，找到能放下的 n
+    for (let n = N; n >= 0; n--) {
+      const base = sumW(n); // 前 n 项宽度
+      const gaps = n > 0 ? (n - 1) * gap : 0;
+      const needMore = n < N;
+      const moreGap = needMore && n > 0 ? gap : 0; // 可见项后面与“更多”之间的 gap
+      const total = base + gaps + (needMore ? (moreGap + moreW) : 0);
+      if (total <= containerW) { best = n; break; }
+    }
+
+    const nextOverflow = keys.slice(best);
+    if (this.overflowKeys.join(',') !== nextOverflow.join(',')) {
+      this.overflowKeys = nextOverflow;
+      const cnt = nextOverflow.length;
+      if (cnt !== this.lastOverflowCount) {
+        this.lastOverflowCount = cnt;
+        this.ldesignOverflowChange.emit({ overflowCount: cnt });
+      }
+    }
+  }
+
   private registerFlyChildrenRef = (key: string) => (el: HTMLUListElement | null) => {
     if (el) this.flyChildrenRefs.set(key, el); else this.flyChildrenRefs.delete(key);
   };
@@ -491,6 +622,16 @@ export class LdesignMenu {
     step(0);
   }
 
+  // 当“更多”打开时，若当前选中项属于溢出顶层，则沿其路径展开（从顶层开始，位于 level=2）
+  private previewFromMore() {
+    if (!this.currentKey) return;
+    const path = this.getPathKeys(this.currentKey);
+    if (path.length < 2) return; // 顶级叶子无需展开
+    const root = path[0];
+    if (!this.overflowKeys.includes(root)) return; // 当前顶层未被收纳到更多
+    this.openAlongPath(path.slice(0, -1), 2);
+  }
+
   /**
    * 预览选中路径：当光标或点击进入某个“祖先”菜单项时，若当前存在选中项且该祖先位于选中路径上，
    * 自动沿选中路径展开到其父级为止。
@@ -515,8 +656,11 @@ export class LdesignMenu {
     const trigger = this.submenuTrigger;
     const isActive = this.getPathKeys(this.currentKey || '').includes(item.key);
 
+    const isVerticalTop = this.mode === 'vertical' && level === 1 && this.topLevelExclusive;
+
     const onEnter = () => {
       if (trigger === 'hover') {
+        if (isVerticalTop) this.openTopExclusive(item.key);
         this.openFly(item.key);
         // 若当前存在选中项，且该条目位于选中路径上，则自动展开其后续祖先链路
         this.previewSelectedFromAncestor(item.key, level);
@@ -526,6 +670,16 @@ export class LdesignMenu {
     const onClick = (e: MouseEvent) => {
       if (trigger === 'click') {
         e.preventDefault();
+        if (isVerticalTop) {
+          if (!open) {
+            this.openTopExclusive(item.key);
+            this.openFly(item.key);
+            this.previewSelectedFromAncestor(item.key, level);
+          } else {
+            this.closeAllPanels();
+          }
+          return;
+        }
         this.setFlyoutOpen(item.key, !open);
         // 点击展开时同样尝试联动展开后续祖先链路（更贴合“显示当前选中路径”的预期）
         if (!open) this.previewSelectedFromAncestor(item.key, level);
@@ -533,7 +687,7 @@ export class LdesignMenu {
     };
 
     return (
-      <li class={{ 'ldesign-menu__node': true, 'ldesign-menu__node--fly': true, 'ldesign-menu__node--fly-open': open }} role="none" onMouseEnter={onEnter} onMouseLeave={onLeave}>
+      <li class={{ 'ldesign-menu__node': true, 'ldesign-menu__node--fly': true, 'ldesign-menu__node--fly-open': open }} role="none" data-key={item.key} ref={level === 1 ? this.registerTopRef(item.key) : (undefined as any)} onMouseEnter={onEnter} onMouseLeave={onLeave}>
         <div class={{
             'ldesign-menu__item': true,
             'ldesign-menu__item--submenu': true,
@@ -558,6 +712,8 @@ export class LdesignMenu {
 
     const onEnter = () => {
       if (trigger === 'hover') {
+        // 顶层互斥：仅展开当前顶层
+        this.openTopExclusive(item.key);
         this.openDown(item.key);
         // 若当前存在选中项，沿选中路径展开其后续祖先链路（右侧级联）
         this.previewSelectedFromAncestor(item.key, level);
@@ -567,17 +723,21 @@ export class LdesignMenu {
     const onClick = (e: MouseEvent) => {
       if (trigger === 'click') {
         e.preventDefault();
-        this.setFlyoutOpen(item.key, !open);
         if (!open) {
-          requestAnimationFrame(() => this.adjustDownPosition(item.key));
+          // 打开：先互斥，再展开
+          this.openTopExclusive(item.key);
+          this.openDown(item.key);
           // 点击展开时，同步沿路径展开后续级联
           this.previewSelectedFromAncestor(item.key, level);
+        } else {
+          // 关闭：统一关闭所有面板
+          this.closeAllPanels();
         }
       }
     };
 
     return (
-      <li class={{ 'ldesign-menu__node': true, 'ldesign-menu__node--dropdown': true, 'ldesign-menu__node--dropdown-open': open }} role="none" onMouseEnter={onEnter} onMouseLeave={onLeave}>
+      <li class={{ 'ldesign-menu__node': true, 'ldesign-menu__node--dropdown': true, 'ldesign-menu__node--dropdown-open': open }} role="none" data-key={item.key} ref={level === 1 ? this.registerTopRef(item.key) : (undefined as any)} onMouseEnter={onEnter} onMouseLeave={onLeave}>
         <div class={{
             'ldesign-menu__item': true,
             'ldesign-menu__item--submenu': true,
@@ -602,7 +762,7 @@ export class LdesignMenu {
     if (indentPx > 0) style.paddingLeft = `${indentPx}px`;
 
     return (
-      <li class={{ 'ldesign-menu__node': true, 'ldesign-menu__node--open': open }} role="none">
+      <li class={{ 'ldesign-menu__node': true, 'ldesign-menu__node--open': open }} role="none" data-key={item.key} ref={level === 1 ? this.registerTopRef(item.key) : (undefined as any)}>
         <div
           class={{
             'ldesign-menu__item': true,
@@ -658,7 +818,7 @@ export class LdesignMenu {
       : inner;
 
     return (
-      <li class="ldesign-menu__node" role="none">
+      <li class="ldesign-menu__node" role="none" data-key={item.key} ref={level === 1 ? this.registerTopRef(item.key) : (undefined as any)}>
         {content}
       </li>
     );
@@ -698,8 +858,57 @@ export class LdesignMenu {
 
     return (
       <Host class={classes}>
-        <ul class="ldesign-menu__list" role="menu">
-          {this.parsedItems.map(it => this.renderMenuNode(it, 1))}
+        <ul class="ldesign-menu__list" role="menu" ref={this.registerListRef}>
+          {this.mode === 'horizontal'
+            ? (() => {
+                const overflow = new Set(this.overflowKeys || []);
+                const visible = (this.parsedItems || []).filter(it => !overflow.has(it.key));
+                const hidden = (this.parsedItems || []).filter(it => overflow.has(it.key));
+                return [
+                  ...visible.map(it => this.renderMenuNode(it, 1)),
+                  // “更多”测量节点（隐藏，用于拿到宽度）
+                  <li class="ldesign-menu__node" role="none" ref={this.registerMoreMeasureRef} style={{ position: 'absolute', visibility: 'hidden', left: '-99999px', top: '-99999px' }}>
+                    <div class={{ 'ldesign-menu__item': true, 'ldesign-menu__item--submenu': true }}>
+                      <span class="ldesign-menu__title">{this.moreLabel}</span>
+                      {this.renderArrow(false, 'down')}
+                    </div>
+                  </li>,
+                  hidden.length > 0 && (() => {
+                    const path = this.getPathKeys(this.currentKey || '');
+                    const inMoreBySelection = path.length > 0 && this.overflowKeys.includes(path[0]);
+                    const isOpen = !!this.flyoutOpenMap['__more__'];
+                    const isMoreActive = inMoreBySelection || (this.submenuTrigger === 'click' && isOpen);
+                    return (
+                      <li class={{ 'ldesign-menu__node': true, 'ldesign-menu__node--dropdown': true, 'ldesign-menu__node--dropdown-open': isOpen }} role="none" ref={this.registerMoreRenderRef}
+                          onMouseEnter={() => { if (this.submenuTrigger === 'hover') { this.openTopExclusive('__more__'); this.openDown('__more__'); this.previewFromMore(); } }}
+                          onMouseLeave={() => { if (this.submenuTrigger === 'hover') this.scheduleCloseDown('__more__'); }}>
+                        <div class={{ 'ldesign-menu__item': true, 'ldesign-menu__item--submenu': true, 'ldesign-menu__item--active': isMoreActive }} role="menuitem"
+                          onClick={(e: MouseEvent) => {
+                            if (this.submenuTrigger === 'click') {
+                              e.preventDefault();
+                              const open = !!this.flyoutOpenMap['__more__'];
+                              if (!open) {
+                                this.openTopExclusive('__more__');
+                                this.openDown('__more__');
+                                // 点击展开时，同步沿当前选中路径展开“更多”中的顶层链路
+                                this.previewFromMore();
+                              } else {
+                                this.closeAllPanels();
+                              }
+                            }
+                          }}>
+                          <span class="ldesign-menu__title">{this.moreLabel}</span>
+                          {this.renderArrow(!!this.flyoutOpenMap['__more__'], 'down')}
+                        </div>
+                        <ul class="ldesign-menu__down-children" role="menu" ref={this.registerDownChildrenRef('__more__')}>
+                          {hidden.map(it => this.renderMenuNode(it, 2))}
+                        </ul>
+                      </li>
+                    );
+                  })()
+                ];
+              })()
+            : this.parsedItems.map(it => this.renderMenuNode(it, 1))}
         </ul>
       </Host>
     );

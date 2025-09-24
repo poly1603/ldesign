@@ -1,0 +1,155 @@
+@prefix: ldesign-tabs;
+
+.@{prefix} {
+  display: flex;
+  width: 100%;
+
+  &--line {}
+  &--card {
+    .@{prefix}__tab {
+      background: var(--ld-card-bg, #fff);
+      border: 1px solid var(--ld-border, #e5e7eb);
+      margin-right: 8px;
+      border-radius: 6px;
+      border-bottom-width: 1px; // 兼容 card 风格
+    }
+    .@{prefix}__tab--active {
+      color: var(--ld-primary, #722ED1);
+      border-color: var(--ld-primary, #722ED1);
+    }
+  }
+
+  &--small { font-size: 12px; }
+  &--medium { font-size: 14px; }
+  &--large { font-size: 16px; }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    position: relative;
+    gap: 4px;
+    flex: 0 0 auto;
+  }
+
+  &__nav-scroll {
+    position: relative;
+    overflow: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+    flex: 1 1 auto;
+  }
+  &__nav-scroll::-webkit-scrollbar { display: none; }
+
+  // 横向时，保持不换行
+  &--top &__nav-scroll,
+  &--bottom &__nav-scroll {
+    white-space: nowrap;
+  }
+
+  // 纵向时，改为列布局
+  &--left &__nav-scroll,
+  &--right &__nav-scroll {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__tab {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: var(--ld-text, #1f2937);
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    outline: none;
+    border-radius: 4px 4px 0 0;
+    transition: color .2s ease, border-color .2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    &:hover { color: var(--ld-primary, #722ED1); }
+    &--active {
+      color: var(--ld-primary, #722ED1);
+      border-color: var(--ld-primary, #722ED1);
+      font-weight: 600;
+    }
+    &--disabled {
+      color: var(--ld-text-3, #9ca3af);
+      cursor: not-allowed;
+    }
+  }
+
+  &__close {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    border-radius: 4px;
+  }
+
+  &__add {
+    appearance: none;
+    background: transparent;
+    border: 1px dashed var(--ld-border, #e5e7eb);
+    color: var(--ld-text, #1f2937);
+    padding: 6px 8px;
+    margin-left: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  &__scroll {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: var(--ld-text-3, #9ca3af);
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    flex: 0 0 auto;
+    &:disabled { opacity: .4; cursor: default; }
+  }
+
+  &__content {
+    padding: 12px 0;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &__ink {
+    position: absolute;
+    background: var(--ld-primary, #722ED1);
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 0;
+    transition: transform .2s ease, width .2s ease, height .2s ease;
+  }
+
+  // placements（使用 flex 实现，更稳健）
+  &--top {
+    flex-direction: column;
+    .@{prefix}__nav { flex-direction: row; border-bottom: 1px solid var(--ld-border, #e5e7eb); margin-bottom: 8px; }
+  }
+  &--bottom {
+    flex-direction: column-reverse;
+    .@{prefix}__nav { flex-direction: row; border-top: 1px solid var(--ld-border, #e5e7eb); margin-top: 8px; }
+  }
+  &--left {
+    flex-direction: row;
+    .@{prefix}__nav { flex-direction: column; align-items: stretch; border-right: 1px solid var(--ld-border, #e5e7eb); margin-right: 16px; position: relative; }
+    .@{prefix}__tab { border-radius: 4px 0 0 4px; border-bottom-width: 0; }
+    .@{prefix}__ink { width: 2px; height: 0; top: 0; bottom: auto; left: 0; }
+  }
+  &--right {
+    flex-direction: row-reverse;
+    .@{prefix}__nav { flex-direction: column; align-items: stretch; border-left: 1px solid var(--ld-border, #e5e7eb); margin-left: 16px; position: relative; }
+    .@{prefix}__tab { border-radius: 0 4px 4px 0; border-bottom-width: 0; }
+    .@{prefix}__ink { width: 2px; height: 0; top: 0; bottom: auto; left: 0; }
+  }
+}

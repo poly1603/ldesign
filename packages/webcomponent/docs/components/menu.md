@@ -13,6 +13,7 @@
 - `accordion`: 手风琴（仅 inline 下生效），默认关闭
 - `indent`: 子级缩进，默认 `16`
 - `require-top-icon`: 一级是否强制占位图标（默认开启，保证左侧对齐）
+- `top-level-exclusive`: 纵向模式下“顶层互斥展开”（一级只保留一个展开），默认 `true`。不影响子级是否手风琴（由 `accordion` 控制）。
 
 ---
 
@@ -236,6 +237,193 @@ onMounted(() => {
     if (hzHover) hzHover.setAttribute('items', JSON.stringify(menuData))
     if (hzClick) hzClick.setAttribute('items', JSON.stringify(menuData))
   }
+
+  // 纵向：顶层互斥（演示默认开启与关闭）
+  const inlineExclusive = document.getElementById('menu-doc-inline-exclusive')
+  const inlineMulti = document.getElementById('menu-doc-inline-multi')
+  if (inlineExclusive || inlineMulti) {
+    const topData = [
+      { key: 't1', label: '设置', children: [
+        { key: 't11', label: '通用' },
+        { key: 't12', label: '隐私' }
+      ]},
+      { key: 't2', label: '管理', children: [
+        { key: 't21', label: '用户' },
+        { key: 't22', label: '角色' }
+      ]}
+    ]
+    if (inlineExclusive) inlineExclusive.setAttribute('items', JSON.stringify(topData))
+    if (inlineMulti) inlineMulti.setAttribute('items', JSON.stringify(topData))
+  }
+
+  // 纵向 flyout：顶层互斥（hover/click 对照）
+  const flyExHover = document.getElementById('menu-doc-fly-ex-hover')
+  const flyExClick = document.getElementById('menu-doc-fly-ex-click')
+  const flyMultiHover = document.getElementById('menu-doc-fly-multi-hover')
+  const flyMultiClick = document.getElementById('menu-doc-fly-multi-click')
+  if (flyExHover || flyExClick || flyMultiHover || flyMultiClick) {
+    const fxData = [
+      { key: 'f1', label: '目录', children: [
+        { key: 'f11', label: '一级-1', children: [
+          { key: 'f111', label: '二级-1-1' },
+          { key: 'f112', label: '二级-1-2' }
+        ]}
+      ]},
+      { key: 'f2', label: '管理', children: [
+        { key: 'f21', label: '成员' },
+        { key: 'f22', label: '权限' },
+        { key: 'f23', label: '设置', children: [ { key: 'f231', label: '通知' } ] }
+      ]},
+      { key: 'f3', label: '报表', children: [
+        { key: 'f31', label: '销售' },
+        { key: 'f32', label: '库存' }
+      ]}
+    ]
+    if (flyExHover) flyExHover.setAttribute('items', JSON.stringify(fxData))
+    if (flyExClick) flyExClick.setAttribute('items', JSON.stringify(fxData))
+    if (flyMultiHover) flyMultiHover.setAttribute('items', JSON.stringify(fxData))
+    if (flyMultiClick) flyMultiClick.setAttribute('items', JSON.stringify(fxData))
+  }
+
+  // 横向 - 溢出（更多）
+  const hzOverflowHover = document.getElementById('menu-doc-hz-overflow-hover')
+  const hzOverflowClick = document.getElementById('menu-doc-hz-overflow-click')
+  if (hzOverflowHover || hzOverflowClick) {
+    const longItems = [
+      { key: 'home', label: '首页', icon: 'home' },
+      { key: 'products', label: '产品', children: [
+        { key: 'software', label: '软件产品', children: [
+          { key: 'desktop', label: '桌面软件' },
+          { key: 'mobile', label: '移动应用' },
+          { key: 'web', label: 'Web 应用' }
+        ] },
+        { key: 'hardware', label: '硬件产品' },
+        { key: 'cloud', label: '云服务' }
+      ] },
+      { key: 'solutions', label: '解决方案', children: [
+        { key: 'retail', label: '零售' },
+        { key: 'finance', label: '金融' },
+        { key: 'manufacturing', label: '制造' }
+      ] },
+      { key: 'resources', label: '资源', children: [
+        { key: 'docs', label: '文档中心' },
+        { key: 'blog', label: '技术博客' },
+        { key: 'community', label: '社区论坛' },
+        { key: 'downloads', label: '下载中心' }
+      ] },
+      { key: 'pricing', label: '定价' },
+      { key: 'partners', label: '合作伙伴' },
+      { key: 'about', label: '关于' }
+    ]
+    if (hzOverflowHover) {
+      hzOverflowHover.setAttribute('items', JSON.stringify(longItems))
+      const c = document.getElementById('menu-doc-hz-overflow-hover-count')
+      hzOverflowHover.addEventListener('ldesignOverflowChange', (e) => {
+        if (c) c.textContent = String(e.detail?.overflowCount || 0)
+      })
+    }
+    if (hzOverflowClick) {
+      hzOverflowClick.setAttribute('items', JSON.stringify(longItems))
+      const c2 = document.getElementById('menu-doc-hz-overflow-click-count')
+      hzOverflowClick.addEventListener('ldesignOverflowChange', (e) => {
+        if (c2) c2.textContent = String(e.detail?.overflowCount || 0)
+      })
+    }
+  }
+
+  // 横向 - 溢出实时演示（滑块控制容器宽度）
+  const liveRange = document.getElementById('menu-doc-hz-overflow-live-range');
+  const liveWidth = document.getElementById('menu-doc-hz-overflow-live-width');
+  const liveContainer = document.getElementById('menu-doc-hz-overflow-live-container');
+  const liveMenu = document.getElementById('menu-doc-hz-overflow-live');
+  const liveCount = document.getElementById('menu-doc-hz-overflow-live-count');
+  if (liveMenu) {
+    const longItems2 = [
+      { key: 'home', label: '首页', icon: 'home' },
+      { key: 'products', label: '产品', children: [
+        { key: 'software', label: '软件产品', children: [
+          { key: 'desktop', label: '桌面软件' },
+          { key: 'mobile', label: '移动应用' },
+          { key: 'web', label: 'Web 应用' }
+        ] },
+        { key: 'hardware', label: '硬件产品' },
+        { key: 'cloud', label: '云服务' }
+      ] },
+      { key: 'solutions', label: '解决方案', children: [
+        { key: 'retail', label: '零售' },
+        { key: 'finance', label: '金融' },
+        { key: 'manufacturing', label: '制造' }
+      ] },
+      { key: 'resources', label: '资源', children: [
+        { key: 'docs', label: '文档中心' },
+        { key: 'blog', label: '技术博客' },
+        { key: 'community', label: '社区论坛' },
+        { key: 'downloads', label: '下载中心' }
+      ] },
+      { key: 'pricing', label: '定价' },
+      { key: 'partners', label: '合作伙伴' },
+      { key: 'about', label: '关于' }
+    ]
+    liveMenu.setAttribute('items', JSON.stringify(longItems2))
+      liveMenu.addEventListener('ldesignOverflowChange', (e) => {
+      if (liveCount) liveCount.textContent = String(e.detail?.overflowCount || 0)
+    })
+  }
+  const applyWidth = (w) => {
+    if (liveContainer) liveContainer.style.width = `${w}px`
+    if (liveWidth) liveWidth.textContent = String(w)
+  }
+  if (liveRange) {
+    applyWidth(Number(liveRange.value || 560))
+    liveRange.addEventListener('input', () => applyWidth(Number(liveRange.value || 560)))
+  }
+
+  // Click 模式实时演示
+  const liveRangeC = document.getElementById('menu-doc-hz-overflow-live-range-click');
+  const liveWidthC = document.getElementById('menu-doc-hz-overflow-live-width-click');
+  const liveContainerC = document.getElementById('menu-doc-hz-overflow-live-container-click');
+  const liveMenuC = document.getElementById('menu-doc-hz-overflow-live-click');
+  const liveCountC = document.getElementById('menu-doc-hz-overflow-live-count-click');
+  if (liveMenuC) {
+    const longItems3 = [
+      { key: 'home', label: '首页', icon: 'home' },
+      { key: 'products', label: '产品', children: [
+        { key: 'software', label: '软件产品', children: [
+          { key: 'desktop', label: '桌面软件' },
+          { key: 'mobile', label: '移动应用' },
+          { key: 'web', label: 'Web 应用' }
+        ] },
+        { key: 'hardware', label: '硬件产品' },
+        { key: 'cloud', label: '云服务' }
+      ] },
+      { key: 'solutions', label: '解决方案', children: [
+        { key: 'retail', label: '零售' },
+        { key: 'finance', label: '金融' },
+        { key: 'manufacturing', label: '制造' }
+      ] },
+      { key: 'resources', label: '资源', children: [
+        { key: 'docs', label: '文档中心' },
+        { key: 'blog', label: '技术博客' },
+        { key: 'community', label: '社区论坛' },
+        { key: 'downloads', label: '下载中心' }
+      ] },
+      { key: 'pricing', label: '定价' },
+      { key: 'partners', label: '合作伙伴' },
+      { key: 'about', label: '关于' }
+    ]
+    liveMenuC.setAttribute('items', JSON.stringify(longItems3))
+    liveMenuC.addEventListener('ldesignOverflowChange', (e) => {
+      if (liveCountC) liveCountC.textContent = String(e.detail?.overflowCount || 0)
+    })
+  }
+  const applyWidthC = (w) => {
+    if (liveContainerC) liveContainerC.style.width = `${w}px`
+    if (liveWidthC) liveWidthC.textContent = String(w)
+  }
+  if (liveRangeC) {
+    applyWidthC(Number(liveRangeC.value || 560))
+    liveRangeC.addEventListener('input', () => applyWidthC(Number(liveRangeC.value || 560)))
+  }
 })
 </script>
 
@@ -278,6 +466,74 @@ onMounted(() => {
   menu.items = items;
 </script>
 ```
+
+## 横向 - 溢出（更多）
+
+当顶级菜单数量过多或容器宽度不足时，超出的顶级项会自动收纳到“更多”中，并触发 `ldesignOverflowChange` 事件。
+
+<div style="background:#f5f5f5; padding:12px; border-radius:8px; margin-bottom: 24px;">
+  <div style="background:white; padding:10px; border-radius:6px; margin-bottom:12px; max-width: 560px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+      <div style="font-size:14px; color:#666;">Hover 触发</div>
+      <span style="font-size:12px; color:#999;">溢出数：<b id="menu-doc-hz-overflow-hover-count">0</b></span>
+    </div>
+    <ldesign-menu id="menu-doc-hz-overflow-hover" mode="horizontal" submenu-trigger="hover"></ldesign-menu>
+  </div>
+  <div style="background:white; padding:10px; border-radius:6px; max-width: 560px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+      <div style="font-size:14px; color:#666;">Click 触发</div>
+      <span style="font-size:12px; color:#999;">溢出数：<b id="menu-doc-hz-overflow-click-count">0</b></span>
+    </div>
+    <ldesign-menu id="menu-doc-hz-overflow-click" mode="horizontal" submenu-trigger="click"></ldesign-menu>
+  </div>
+</div>
+
+```html
+<div style="max-width:560px; border:1px dashed #ddd; padding:10px; border-radius:6px;">
+  <ldesign-menu id="menu-hz-overflow" mode="horizontal" submenu-trigger="hover"></ldesign-menu>
+</div>
+<script>
+  const items = [ /* 顶级较多的菜单数据 */ ];
+  const menu = document.getElementById('menu-hz-overflow');
+  const counter = document.getElementById('hz-overflow-count');
+  menu.items = items;
+  menu.addEventListener('ldesignOverflowChange', e => { counter.textContent = String(e.detail.overflowCount||0); });
+</script>
+```
+
+## 横向 - 溢出实时演示（可调容器宽度）
+
+通过拖动滑块动态改变容器宽度，观察“更多”收纳数量的实时变化。
+
+<div style="background:#f5f5f5; padding:12px; border-radius:8px; margin-bottom:14px;">
+  <div style="font-size:14px; color:#555; margin-bottom:6px;">Hover 模式</div>
+  <div style="display:flex; align-items:center; gap:12px; margin:0 0 10px 0;">
+    <label for="menu-doc-hz-overflow-live-range" style="font-size:14px; color:#666;">容器宽度</label>
+    <input id="menu-doc-hz-overflow-live-range" type="range" min="320" max="920" step="10" value="560" style="width:280px;"/>
+    <span style="font-size:12px; color:#999;">当前宽度：<b id="menu-doc-hz-overflow-live-width">560</b>px</span>
+    <span style="font-size:12px; color:#999;">溢出数：<b id="menu-doc-hz-overflow-live-count">0</b></span>
+  </div>
+  <div id="menu-doc-hz-overflow-live-container" style="width:560px;">
+    <div style="background:#fff; border:1px dashed #ddd; padding:10px; border-radius:6px;">
+      <ldesign-menu id="menu-doc-hz-overflow-live" mode="horizontal" submenu-trigger="hover"></ldesign-menu>
+    </div>
+  </div>
+</div>
+
+<div style="background:#f5f5f5; padding:12px; border-radius:8px;">
+  <div style="font-size:14px; color:#555; margin-bottom:6px;">Click 模式</div>
+  <div style="display:flex; align-items:center; gap:12px; margin:0 0 10px 0;">
+    <label for="menu-doc-hz-overflow-live-range-click" style="font-size:14px; color:#666;">容器宽度</label>
+    <input id="menu-doc-hz-overflow-live-range-click" type="range" min="320" max="920" step="10" value="560" style="width:280px;"/>
+    <span style="font-size:12px; color:#999;">当前宽度：<b id="menu-doc-hz-overflow-live-width-click">560</b>px</span>
+    <span style="font-size:12px; color:#999;">溢出数：<b id="menu-doc-hz-overflow-live-count-click">0</b></span>
+  </div>
+  <div id="menu-doc-hz-overflow-live-container-click" style="width:560px;">
+    <div style="background:#fff; border:1px dashed #ddd; padding:10px; border-radius:6px;">
+      <ldesign-menu id="menu-doc-hz-overflow-live-click" mode="horizontal" submenu-trigger="click"></ldesign-menu>
+    </div>
+  </div>
+</div>
 
 ## 纵向 inline（内嵌展开）
 <div style="display:flex; gap:16px; align-items:flex-start;">
@@ -407,6 +663,75 @@ onMounted(() => {
     sel.value = e.detail.key || '';
   });
 </script>
+```
+
+## 纵向 - 顶层互斥（一级互斥）
+
+在纵向模式下，`top-level-exclusive` 控制“一级菜单是否互斥”。默认 `true`，即只保留一个一级处于展开状态；设置为 `false` 时，允许多个一级同时展开。该能力对 inline 与 flyout 均生效。
+
+<div style="display:flex; gap:16px; align-items:flex-start;">
+  <div style="width: 280px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <div style="font-size:14px; color:#555; margin-bottom:6px;">默认（互斥开启）</div>
+    <ldesign-menu id="menu-doc-inline-exclusive" mode="vertical" vertical-expand="inline"></ldesign-menu>
+  </div>
+  <div style="width: 280px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <div style="font-size:14px; color:#555; margin-bottom:6px;">允许多个一级同时展开</div>
+    <ldesign-menu id="menu-doc-inline-multi" mode="vertical" vertical-expand="inline" top-level-exclusive="false"></ldesign-menu>
+  </div>
+</div>
+
+```html
+<div style="display:flex; gap:16px; align-items:flex-start;">
+  <div style="width: 280px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <ldesign-menu mode="vertical" vertical-expand="inline"></ldesign-menu>
+  </div>
+  <div style="width: 280px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <ldesign-menu mode="vertical" vertical-expand="inline" top-level-exclusive="false"></ldesign-menu>
+  </div>
+</div>
+```
+
+## 纵向 flyout - 顶层互斥（hover/click）
+
+<div style="display:flex; gap:16px; align-items:flex-start; margin-bottom: 14px;">
+  <div style="width: 280px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <div style="font-size:14px; color:#555; margin-bottom:6px;">Hover（互斥开启）</div>
+    <ldesign-menu id="menu-doc-fly-ex-hover" mode="vertical" vertical-expand="flyout" submenu-trigger="hover"></ldesign-menu>
+  </div>
+  <div style="width: 280px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <div style="font-size:14px; color:#555; margin-bottom:6px;">Hover（允许多个一级同时展开）</div>
+    <ldesign-menu id="menu-doc-fly-multi-hover" mode="vertical" vertical-expand="flyout" submenu-trigger="hover" top-level-exclusive="false"></ldesign-menu>
+  </div>
+</div>
+
+<div style="display:flex; gap:16px; align-items:flex-start;">
+  <div style="width: 280px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <div style="font-size:14px; color:#555; margin-bottom:6px;">Click（互斥开启）</div>
+    <ldesign-menu id="menu-doc-fly-ex-click" mode="vertical" vertical-expand="flyout" submenu-trigger="click"></ldesign-menu>
+  </div>
+  <div style="width: 280px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <div style="font-size:14px; color:#555; margin-bottom:6px;">Click（允许多个一级同时展开）</div>
+    <ldesign-menu id="menu-doc-fly-multi-click" mode="vertical" vertical-expand="flyout" submenu-trigger="click" top-level-exclusive="false"></ldesign-menu>
+  </div>
+</div>
+
+```html
+<div style="display:flex; gap:16px; align-items:flex-start; margin-bottom: 14px;">
+  <div style="width: 280px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <ldesign-menu mode="vertical" vertical-expand="flyout" submenu-trigger="hover"></ldesign-menu>
+  </div>
+  <div style="width: 280px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <ldesign-menu mode="vertical" vertical-expand="flyout" submenu-trigger="hover" top-level-exclusive="false"></ldesign-menu>
+  </div>
+</div>
+<div style="display:flex; gap:16px; align-items:flex-start;">
+  <div style="width: 280px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <ldesign-menu mode="vertical" vertical-expand="flyout" submenu-trigger="click"></ldesign-menu>
+  </div>
+  <div style="width: 280px; border:1px dashed #ddd; padding:8px; border-radius:6px;">
+    <ldesign-menu mode="vertical" vertical-expand="flyout" submenu-trigger="click" top-level-exclusive="false"></ldesign-menu>
+  </div>
+</div>
 ```
 
 ## 纵向 collapse（折叠，仅图标，右侧弹出）

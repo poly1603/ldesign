@@ -15,6 +15,7 @@ import { NotificationPlacement, NotificationType } from "./components/notificati
 import { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
 import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
+import { TabsPlacement, TabsType } from "./components/tabs/tabs";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 export { ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
 export { DrawerPlacement } from "./components/drawer/drawer";
@@ -26,6 +27,7 @@ export { NotificationPlacement, NotificationType } from "./components/notificati
 export { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
 export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 export { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
+export { TabsPlacement, TabsType } from "./components/tabs/tabs";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
 export namespace Components {
     /**
@@ -562,6 +564,11 @@ export namespace Components {
          */
         "mode": 'vertical' | 'horizontal';
         /**
+          * 横向模式下 “更多” 文案
+          * @default '更多'
+         */
+        "moreLabel": string;
+        /**
           * 当前打开的子菜单 key 列表（受控）
          */
         "openKeys"?: string[];
@@ -575,6 +582,11 @@ export namespace Components {
           * @default 'hover'
          */
         "submenuTrigger": SubmenuTrigger;
+        /**
+          * 纵向模式：顶层互斥展开（无论 inline 或 flyout），默认开启
+          * @default true
+         */
+        "topLevelExclusive": boolean;
         /**
           * 当前选中项（受控）
          */
@@ -983,110 +995,88 @@ export namespace Components {
         "visible": boolean;
     }
     /**
-     * Popup 弹出层组件
-     * 完全重写版本，确保 offset-distance 在所有方向保持一致
+     * ldesign-popup（重写版）
+     * 目标：
+     * - 结构清晰：属性/状态/引用/工具/事件/定位/渲染分层
+     * - 在所有方向上保持一致的 offset 语义：
+     *    arrow=true 时，offsetDistance = 触发元素到箭头尖端的可见距离
+     *    arrow=false 时，offsetDistance = 触发元素到面板边缘的可见距离
+     * - 支持 hover/click/focus/manual/contextmenu，支持 appendTo(self/body/closest-popup)
+     * - 稳健的外部点击与 ESC 关闭，右键通过虚拟参考在鼠标处弹出
      */
     interface LdesignPopup {
         /**
-          * 弹层渲染容器
           * @default 'self'
          */
         "appendTo": 'self' | 'body' | 'closest-popup';
         /**
-          * 是否显示箭头
           * @default true
          */
         "arrow": boolean;
         /**
-          * 是否允许 Esc 键关闭
           * @default true
          */
         "closeOnEsc": boolean;
         /**
-          * 点击浮层外是否关闭（仅在 trigger = 'click' 时常用）
           * @default true
          */
         "closeOnOutside": boolean;
-        /**
-          * 弹出层内容
-         */
         "content"?: string;
         /**
-          * 调试开关：开启后输出定位与间距的详细日志
           * @default false
          */
         "debug": boolean;
         /**
-          * 是否禁用
           * @default false
          */
         "disabled": boolean;
         /**
-          * 延迟隐藏时间（毫秒）
           * @default 0
          */
         "hideDelay": number;
         /**
-          * 是否允许在弹出层上进行交互（仅 hover 触发时有意义）
           * @default true
          */
         "interactive": boolean;
         /**
-          * 滚动时是否锁定位置（不随滚动而重新定位）
           * @default false
          */
         "lockOnScroll": boolean;
-        /**
-          * 最大宽度
-         */
         "maxWidth"?: number | string;
         /**
-          * 与触发元素的距离（单位 px） 当 arrow=true 时，表示触发元素到箭头尖端的距离 当 arrow=false 时，表示触发元素到弹层边缘的距离
+          * 与触发元素的距离：参见组件注释中的语义说明
           * @default 8
          */
         "offsetDistance": number | string;
         /**
-          * 弹出层位置
           * @default 'bottom'
          */
         "placement": PopupPlacement;
         /**
-          * 内容区域的语义角色
           * @default 'dialog'
          */
         "popupRole": string;
-        /**
-          * 弹出层标题
-         */
         "popupTitle"?: string;
         /**
-          * 延迟显示时间（毫秒）
           * @default 0
          */
         "showDelay": number;
         /**
-          * 定位策略
           * @default 'auto'
          */
         "strategy": 'auto' | 'fixed' | 'absolute';
         /**
-          * 主题风格
           * @default 'light'
          */
         "theme": 'light' | 'dark';
         /**
-          * 触发方式
           * @default 'hover'
          */
         "trigger": PopupTrigger;
         /**
-          * 是否显示弹出层
           * @default false
          */
         "visible": boolean;
-        /**
-          * 弹出层宽度
-         */
         "width"?: number | string;
     }
     /**
@@ -1306,6 +1296,74 @@ export namespace Components {
         "variant": 'solid' | 'soft' | 'outline' | 'ghost';
     }
     /**
+     * TabPanel 选项卡面板
+     * - 由 <ldesign-tabs> 管理激活状态
+     */
+    interface LdesignTabPanel {
+        /**
+          * 由父组件控制的激活状态（反射到属性便于样式控制）
+          * @default false
+         */
+        "active": boolean;
+        /**
+          * 是否可关闭（在标签上显示关闭按钮）
+          * @default false
+         */
+        "closable": boolean;
+        /**
+          * 禁用状态（不可被激活）
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 标签显示文本
+         */
+        "label": string;
+        /**
+          * 懒渲染：首次激活时才渲染插槽内容，之后保持渲染
+          * @default false
+         */
+        "lazy": boolean;
+        /**
+          * 面板唯一标识（用于匹配激活项）
+         */
+        "name": string;
+    }
+    /**
+     * Tabs 选项卡组件
+     * - 通过水平或垂直的标签页切换展示内容
+     */
+    interface LdesignTabs {
+        /**
+          * 是否显示新增按钮
+          * @default false
+         */
+        "addable": boolean;
+        /**
+          * 默认激活的标签（非受控）
+         */
+        "defaultValue"?: string;
+        /**
+          * 选项卡位置
+          * @default 'top'
+         */
+        "placement": TabsPlacement;
+        /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 选项卡外观类型
+          * @default 'line'
+         */
+        "type": TabsType;
+        /**
+          * 当前激活的标签（受控）
+         */
+        "value"?: string;
+    }
+    /**
      * Tooltip 工具提示组件
      * 基于 Popup 的轻量封装
      */
@@ -1422,6 +1480,10 @@ export interface LdesignSelectCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignSwitchCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignSwitchElement;
+}
+export interface LdesignTabsCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignTabsElement;
 }
 declare global {
     /**
@@ -1613,6 +1675,7 @@ declare global {
     interface HTMLLdesignMenuElementEventMap {
         "ldesignSelect": { key: string; item: MenuItem; pathKeys: string[] };
         "ldesignOpenChange": { key: string; open: boolean; openKeys: string[] };
+        "ldesignOverflowChange": { overflowCount: number };
     }
     interface HTMLLdesignMenuElement extends Components.LdesignMenu, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignMenuElementEventMap>(type: K, listener: (this: HTMLLdesignMenuElement, ev: LdesignMenuCustomEvent<HTMLLdesignMenuElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -1741,8 +1804,14 @@ declare global {
         "ldesignVisibleChange": boolean;
     }
     /**
-     * Popup 弹出层组件
-     * 完全重写版本，确保 offset-distance 在所有方向保持一致
+     * ldesign-popup（重写版）
+     * 目标：
+     * - 结构清晰：属性/状态/引用/工具/事件/定位/渲染分层
+     * - 在所有方向上保持一致的 offset 语义：
+     *    arrow=true 时，offsetDistance = 触发元素到箭头尖端的可见距离
+     *    arrow=false 时，offsetDistance = 触发元素到面板边缘的可见距离
+     * - 支持 hover/click/focus/manual/contextmenu，支持 appendTo(self/body/closest-popup)
+     * - 稳健的外部点击与 ESC 关闭，右键通过虚拟参考在鼠标处弹出
      */
     interface HTMLLdesignPopupElement extends Components.LdesignPopup, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignPopupElementEventMap>(type: K, listener: (this: HTMLLdesignPopupElement, ev: LdesignPopupCustomEvent<HTMLLdesignPopupElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -1844,6 +1913,39 @@ declare global {
         new (): HTMLLdesignSwitchElement;
     };
     /**
+     * TabPanel 选项卡面板
+     * - 由 <ldesign-tabs> 管理激活状态
+     */
+    interface HTMLLdesignTabPanelElement extends Components.LdesignTabPanel, HTMLStencilElement {
+    }
+    var HTMLLdesignTabPanelElement: {
+        prototype: HTMLLdesignTabPanelElement;
+        new (): HTMLLdesignTabPanelElement;
+    };
+    interface HTMLLdesignTabsElementEventMap {
+        "ldesignChange": string;
+        "ldesignAdd": void;
+        "ldesignRemove": { name: string };
+    }
+    /**
+     * Tabs 选项卡组件
+     * - 通过水平或垂直的标签页切换展示内容
+     */
+    interface HTMLLdesignTabsElement extends Components.LdesignTabs, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignTabsElementEventMap>(type: K, listener: (this: HTMLLdesignTabsElement, ev: LdesignTabsCustomEvent<HTMLLdesignTabsElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignTabsElementEventMap>(type: K, listener: (this: HTMLLdesignTabsElement, ev: LdesignTabsCustomEvent<HTMLLdesignTabsElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignTabsElement: {
+        prototype: HTMLLdesignTabsElement;
+        new (): HTMLLdesignTabsElement;
+    };
+    /**
      * Tooltip 工具提示组件
      * 基于 Popup 的轻量封装
      */
@@ -1875,6 +1977,8 @@ declare global {
         "ldesign-radio-group": HTMLLdesignRadioGroupElement;
         "ldesign-select": HTMLLdesignSelectElement;
         "ldesign-switch": HTMLLdesignSwitchElement;
+        "ldesign-tab-panel": HTMLLdesignTabPanelElement;
+        "ldesign-tabs": HTMLLdesignTabsElement;
         "ldesign-tooltip": HTMLLdesignTooltipElement;
     }
 }
@@ -2453,9 +2557,18 @@ declare namespace LocalJSX {
          */
         "mode"?: 'vertical' | 'horizontal';
         /**
+          * 横向模式下 “更多” 文案
+          * @default '更多'
+         */
+        "moreLabel"?: string;
+        /**
           * 展开/收起事件
          */
         "onLdesignOpenChange"?: (event: LdesignMenuCustomEvent<{ key: string; open: boolean; openKeys: string[] }>) => void;
+        /**
+          * 横向溢出变化事件
+         */
+        "onLdesignOverflowChange"?: (event: LdesignMenuCustomEvent<{ overflowCount: number }>) => void;
         /**
           * 选中事件
          */
@@ -2474,6 +2587,11 @@ declare namespace LocalJSX {
           * @default 'hover'
          */
         "submenuTrigger"?: SubmenuTrigger;
+        /**
+          * 纵向模式：顶层互斥展开（无论 inline 或 flyout），默认开启
+          * @default true
+         */
+        "topLevelExclusive"?: boolean;
         /**
           * 当前选中项（受控）
          */
@@ -2890,114 +3008,89 @@ declare namespace LocalJSX {
         "visible"?: boolean;
     }
     /**
-     * Popup 弹出层组件
-     * 完全重写版本，确保 offset-distance 在所有方向保持一致
+     * ldesign-popup（重写版）
+     * 目标：
+     * - 结构清晰：属性/状态/引用/工具/事件/定位/渲染分层
+     * - 在所有方向上保持一致的 offset 语义：
+     *    arrow=true 时，offsetDistance = 触发元素到箭头尖端的可见距离
+     *    arrow=false 时，offsetDistance = 触发元素到面板边缘的可见距离
+     * - 支持 hover/click/focus/manual/contextmenu，支持 appendTo(self/body/closest-popup)
+     * - 稳健的外部点击与 ESC 关闭，右键通过虚拟参考在鼠标处弹出
      */
     interface LdesignPopup {
         /**
-          * 弹层渲染容器
           * @default 'self'
          */
         "appendTo"?: 'self' | 'body' | 'closest-popup';
         /**
-          * 是否显示箭头
           * @default true
          */
         "arrow"?: boolean;
         /**
-          * 是否允许 Esc 键关闭
           * @default true
          */
         "closeOnEsc"?: boolean;
         /**
-          * 点击浮层外是否关闭（仅在 trigger = 'click' 时常用）
           * @default true
          */
         "closeOnOutside"?: boolean;
-        /**
-          * 弹出层内容
-         */
         "content"?: string;
         /**
-          * 调试开关：开启后输出定位与间距的详细日志
           * @default false
          */
         "debug"?: boolean;
         /**
-          * 是否禁用
           * @default false
          */
         "disabled"?: boolean;
         /**
-          * 延迟隐藏时间（毫秒）
           * @default 0
          */
         "hideDelay"?: number;
         /**
-          * 是否允许在弹出层上进行交互（仅 hover 触发时有意义）
           * @default true
          */
         "interactive"?: boolean;
         /**
-          * 滚动时是否锁定位置（不随滚动而重新定位）
           * @default false
          */
         "lockOnScroll"?: boolean;
-        /**
-          * 最大宽度
-         */
         "maxWidth"?: number | string;
         /**
-          * 与触发元素的距离（单位 px） 当 arrow=true 时，表示触发元素到箭头尖端的距离 当 arrow=false 时，表示触发元素到弹层边缘的距离
+          * 与触发元素的距离：参见组件注释中的语义说明
           * @default 8
          */
         "offsetDistance"?: number | string;
-        /**
-          * 显示状态变化事件
-         */
         "onLdesignVisibleChange"?: (event: LdesignPopupCustomEvent<boolean>) => void;
         /**
-          * 弹出层位置
           * @default 'bottom'
          */
         "placement"?: PopupPlacement;
         /**
-          * 内容区域的语义角色
           * @default 'dialog'
          */
         "popupRole"?: string;
-        /**
-          * 弹出层标题
-         */
         "popupTitle"?: string;
         /**
-          * 延迟显示时间（毫秒）
           * @default 0
          */
         "showDelay"?: number;
         /**
-          * 定位策略
           * @default 'auto'
          */
         "strategy"?: 'auto' | 'fixed' | 'absolute';
         /**
-          * 主题风格
           * @default 'light'
          */
         "theme"?: 'light' | 'dark';
         /**
-          * 触发方式
           * @default 'hover'
          */
         "trigger"?: PopupTrigger;
         /**
-          * 是否显示弹出层
           * @default false
          */
         "visible"?: boolean;
-        /**
-          * 弹出层宽度
-         */
         "width"?: number | string;
     }
     /**
@@ -3237,6 +3330,86 @@ declare namespace LocalJSX {
         "variant"?: 'solid' | 'soft' | 'outline' | 'ghost';
     }
     /**
+     * TabPanel 选项卡面板
+     * - 由 <ldesign-tabs> 管理激活状态
+     */
+    interface LdesignTabPanel {
+        /**
+          * 由父组件控制的激活状态（反射到属性便于样式控制）
+          * @default false
+         */
+        "active"?: boolean;
+        /**
+          * 是否可关闭（在标签上显示关闭按钮）
+          * @default false
+         */
+        "closable"?: boolean;
+        /**
+          * 禁用状态（不可被激活）
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 标签显示文本
+         */
+        "label": string;
+        /**
+          * 懒渲染：首次激活时才渲染插槽内容，之后保持渲染
+          * @default false
+         */
+        "lazy"?: boolean;
+        /**
+          * 面板唯一标识（用于匹配激活项）
+         */
+        "name": string;
+    }
+    /**
+     * Tabs 选项卡组件
+     * - 通过水平或垂直的标签页切换展示内容
+     */
+    interface LdesignTabs {
+        /**
+          * 是否显示新增按钮
+          * @default false
+         */
+        "addable"?: boolean;
+        /**
+          * 默认激活的标签（非受控）
+         */
+        "defaultValue"?: string;
+        /**
+          * 点击新增按钮
+         */
+        "onLdesignAdd"?: (event: LdesignTabsCustomEvent<void>) => void;
+        /**
+          * 切换事件（返回激活的 name）
+         */
+        "onLdesignChange"?: (event: LdesignTabsCustomEvent<string>) => void;
+        /**
+          * 点击关闭某个面板
+         */
+        "onLdesignRemove"?: (event: LdesignTabsCustomEvent<{ name: string }>) => void;
+        /**
+          * 选项卡位置
+          * @default 'top'
+         */
+        "placement"?: TabsPlacement;
+        /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 选项卡外观类型
+          * @default 'line'
+         */
+        "type"?: TabsType;
+        /**
+          * 当前激活的标签（受控）
+         */
+        "value"?: string;
+    }
+    /**
      * Tooltip 工具提示组件
      * 基于 Popup 的轻量封装
      */
@@ -3303,6 +3476,8 @@ declare namespace LocalJSX {
         "ldesign-radio-group": LdesignRadioGroup;
         "ldesign-select": LdesignSelect;
         "ldesign-switch": LdesignSwitch;
+        "ldesign-tab-panel": LdesignTabPanel;
+        "ldesign-tabs": LdesignTabs;
         "ldesign-tooltip": LdesignTooltip;
     }
 }
@@ -3389,8 +3564,14 @@ declare module "@stencil/core" {
              */
             "ldesign-popconfirm": LocalJSX.LdesignPopconfirm & JSXBase.HTMLAttributes<HTMLLdesignPopconfirmElement>;
             /**
-             * Popup 弹出层组件
-             * 完全重写版本，确保 offset-distance 在所有方向保持一致
+             * ldesign-popup（重写版）
+             * 目标：
+             * - 结构清晰：属性/状态/引用/工具/事件/定位/渲染分层
+             * - 在所有方向上保持一致的 offset 语义：
+             *    arrow=true 时，offsetDistance = 触发元素到箭头尖端的可见距离
+             *    arrow=false 时，offsetDistance = 触发元素到面板边缘的可见距离
+             * - 支持 hover/click/focus/manual/contextmenu，支持 appendTo(self/body/closest-popup)
+             * - 稳健的外部点击与 ESC 关闭，右键通过虚拟参考在鼠标处弹出
              */
             "ldesign-popup": LocalJSX.LdesignPopup & JSXBase.HTMLAttributes<HTMLLdesignPopupElement>;
             /**
@@ -3413,6 +3594,16 @@ declare module "@stencil/core" {
              * 表示两种相互对立的状态间的切换，多用于触发「开/关」
              */
             "ldesign-switch": LocalJSX.LdesignSwitch & JSXBase.HTMLAttributes<HTMLLdesignSwitchElement>;
+            /**
+             * TabPanel 选项卡面板
+             * - 由 <ldesign-tabs> 管理激活状态
+             */
+            "ldesign-tab-panel": LocalJSX.LdesignTabPanel & JSXBase.HTMLAttributes<HTMLLdesignTabPanelElement>;
+            /**
+             * Tabs 选项卡组件
+             * - 通过水平或垂直的标签页切换展示内容
+             */
+            "ldesign-tabs": LocalJSX.LdesignTabs & JSXBase.HTMLAttributes<HTMLLdesignTabsElement>;
             /**
              * Tooltip 工具提示组件
              * 基于 Popup 的轻量封装
