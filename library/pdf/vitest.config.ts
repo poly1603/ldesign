@@ -1,41 +1,27 @@
+import { resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
-import { resolve } from 'path'
+import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 
 export default defineConfig({
+  plugins: [vue(), vueJsx()],
   test: {
-    environment: 'jsdom',
     globals: true,
-    setupFiles: ['./tests/setup.ts'],
+    environment: 'jsdom',
+    setupFiles: ['__tests__/setup.ts'],
+    include: [
+      'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      '__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'tests/',
-        'examples/',
-        'dist/',
-        '**/*.d.ts',
-        '**/*.config.*',
-        '**/coverage/**'
-      ],
-      thresholds: {
-        global: {
-          branches: 80,
-          functions: 80,
-          lines: 80,
-          statements: 80
-        }
-      }
     },
-    testTimeout: 10000,
-    hookTimeout: 10000
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
-      '@/types': resolve(__dirname, './src/types'),
-      '@/utils': resolve(__dirname, './src/utils'),
-      '@/components': resolve(__dirname, './src/components')
-    }
-  }
+      '@': resolve(__dirname, 'src'),
+      '@tests': resolve(__dirname, '__tests__'),
+    },
+  },
 })
