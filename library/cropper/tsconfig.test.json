@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist-test",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "types": ["vitest/globals", "jsdom", "@testing-library/jest-dom"]
+  },
+  "include": [
+    "src/**/*",
+    "__tests__/**/*",
+    "tests/**/*",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "esm",
+    "cjs",
+    "types",
+    "examples",
+    "docs"
+  ]
+}

@@ -1,0 +1,347 @@
+/**
+ * @ldesign/cropper 样式文件
+ * 使用 LDESIGN 设计系统的 CSS 变量
+ */
+
+/* 全局样式重置 */
+cropper-canvas,
+cropper-image,
+cropper-selection,
+cropper-handle,
+cropper-grid,
+cropper-crosshair,
+cropper-shade,
+cropper-viewer {
+  box-sizing: border-box;
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: inherit;
+  }
+}
+
+/* 画布样式 */
+cropper-canvas {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--ldesign-bg-color-container, #ffffff);
+  border: 1px solid var(--ldesign-border-color, #e5e5e5);
+  border-radius: var(--ls-border-radius-base, 6px);
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+
+  &[background] {
+    background-image: 
+      linear-gradient(45deg, var(--ldesign-gray-color-2, #dbdbdb) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--ldesign-gray-color-2, #dbdbdb) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--ldesign-gray-color-2, #dbdbdb) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--ldesign-gray-color-2, #dbdbdb) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  &:focus {
+    outline: 2px solid var(--ldesign-brand-color-focus, var(--ldesign-brand-color-2, #d8c8ee));
+    outline-offset: 2px;
+  }
+}
+
+/* 图片样式 */
+cropper-image {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  max-width: none;
+  max-height: none;
+  user-select: none;
+  pointer-events: none;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: var(--ls-border-radius-sm, 3px);
+    box-shadow: var(--ldesign-shadow-1, 0 1px 10px rgba(0, 0, 0, 5%));
+  }
+
+  &[rotatable] {
+    cursor: grab;
+    pointer-events: auto;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &[scalable] {
+    cursor: zoom-in;
+    pointer-events: auto;
+  }
+
+  &[translatable] {
+    cursor: move;
+    pointer-events: auto;
+  }
+
+  &[skewable] {
+    cursor: crosshair;
+    pointer-events: auto;
+  }
+}
+
+/* 选择区域样式 */
+cropper-selection {
+  position: absolute;
+  display: block;
+  border: 2px solid var(--ldesign-brand-color, #722ED1);
+  background-color: transparent;
+  cursor: move;
+  user-select: none;
+
+  &[active] {
+    border-color: var(--ldesign-brand-color-active, #491f84);
+    box-shadow: 
+      0 0 0 1px rgba(255, 255, 255, 0.8),
+      var(--ldesign-shadow-2, 0 4px 20px rgba(0, 0, 0, 8%));
+  }
+
+  &[outlined] {
+    border-style: dashed;
+    border-color: var(--ldesign-brand-color-hover, var(--ldesign-brand-color-6, #7334cb));
+  }
+
+  &[multiple] {
+    border-width: 1px;
+
+    &[active] {
+      border-width: 2px;
+      z-index: 10;
+    }
+  }
+
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+/* 手柄样式 */
+cropper-handle {
+  position: absolute;
+  display: block;
+  width: 8px;
+  height: 8px;
+  background-color: var(--ldesign-brand-color, #722ED1);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: var(--ldesign-shadow-1, 0 1px 10px rgba(0, 0, 0, 5%));
+
+  &[action="n-resize"] { cursor: n-resize; }
+  &[action="e-resize"] { cursor: e-resize; }
+  &[action="s-resize"] { cursor: s-resize; }
+  &[action="w-resize"] { cursor: w-resize; }
+  &[action="ne-resize"] { cursor: ne-resize; }
+  &[action="nw-resize"] { cursor: nw-resize; }
+  &[action="se-resize"] { cursor: se-resize; }
+  &[action="sw-resize"] { cursor: sw-resize; }
+  &[action="move"] { cursor: move; }
+
+  &[plain] {
+    background-color: transparent;
+    border: none;
+    cursor: crosshair;
+  }
+}
+
+/* 网格样式 */
+cropper-grid {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.8;
+
+  &[bordered] {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  &[covered] {
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.3) 1px, transparent 1px);
+    background-size: 33.333% 33.333%;
+  }
+
+  &[role="grid"] {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 0;
+  }
+}
+
+/* 十字线样式 */
+cropper-crosshair {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+
+  &[centered]::before,
+  &[centered]::after {
+    content: '';
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+
+  &[centered]::before {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    transform: translateY(-50%);
+  }
+
+  &[centered]::after {
+    top: 0;
+    left: 50%;
+    width: 1px;
+    height: 100%;
+    transform: translateX(-50%);
+  }
+}
+
+/* 遮罩样式 */
+cropper-shade {
+  position: absolute;
+  display: block;
+  background-color: rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+/* 查看器样式 */
+cropper-viewer {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background-color: var(--ldesign-bg-color-container, #ffffff);
+  border: 1px solid var(--ldesign-border-color, #e5e5e5);
+  border-radius: var(--ls-border-radius-base, 6px);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  cropper-canvas {
+    cursor: default;
+  }
+
+  cropper-image {
+    &[rotatable],
+    &[scalable],
+    &[translatable],
+    &[skewable] {
+      cursor: default;
+    }
+  }
+
+  cropper-selection {
+    cursor: default;
+  }
+
+  cropper-handle {
+    width: 12px;
+    height: 12px;
+    cursor: default;
+  }
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+  cropper-canvas {
+    background-color: var(--ldesign-gray-color-9, #3b3b3b);
+    border-color: var(--ldesign-gray-color-7, #696969);
+
+    &[background] {
+      background-image: 
+        linear-gradient(45deg, var(--ldesign-gray-color-7, #696969) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--ldesign-gray-color-7, #696969) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--ldesign-gray-color-7, #696969) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--ldesign-gray-color-7, #696969) 75%);
+    }
+  }
+
+  cropper-image img {
+    box-shadow: var(--ldesign-shadow-2, 0 4px 20px rgba(0, 0, 0, 8%));
+  }
+
+  cropper-selection[active] {
+    box-shadow: 
+      0 0 0 1px rgba(0, 0, 0, 0.8),
+      var(--ldesign-shadow-3, 0 8px 30px rgba(0, 0, 0, 12%));
+  }
+
+  cropper-viewer {
+    background-color: var(--ldesign-gray-color-9, #3b3b3b);
+    border-color: var(--ldesign-gray-color-7, #696969);
+  }
+}
+
+/* 动画效果 */
+cropper-canvas,
+cropper-image,
+cropper-selection {
+  transition: 
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    opacity 0.3s ease;
+}
+
+cropper-image {
+  transition: 
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+
+  img {
+    transition: 
+      opacity 0.3s ease,
+      filter 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+}
+
+/* 减少动画效果（用户偏好） */
+@media (prefers-reduced-motion: reduce) {
+  cropper-canvas,
+  cropper-image,
+  cropper-selection,
+  cropper-image img {
+    transition: none;
+  }
+}

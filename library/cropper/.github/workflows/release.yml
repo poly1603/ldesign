@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/cropper/package.json'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        registry-url: 'https://registry.npmjs.org'
+        cache: 'npm'
+        
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+        
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+      
+    - name: Run tests
+      run: pnpm test
+      
+    - name: Build package
+      run: pnpm build
+      
+    - name: Build documentation
+      run: pnpm docs:build
+      
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.package-version.outputs.version }}
+        release_name: Release v${{ steps.package-version.outputs.version }}
+        draft: false
+        prerelease: false
+        
+    - name: Publish to NPM
+      run: pnpm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
+    - name: Deploy Documentation
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/.vitepress/dist
+        cname: cropper.ldesign.com
