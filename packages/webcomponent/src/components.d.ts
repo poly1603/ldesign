@@ -7,6 +7,7 @@
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
 import { DrawerPlacement } from "./components/drawer/drawer";
+import { MenuItem, MenuMode, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
 import { MessageType } from "./components/message/message";
 import { ModalAnimation, ModalSize } from "./components/modal/modal";
 import { NotificationPlacement, NotificationType } from "./components/notification/notification";
@@ -15,6 +16,7 @@ import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 export { ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
 export { DrawerPlacement } from "./components/drawer/drawer";
+export { MenuItem, MenuMode, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
 export { MessageType } from "./components/message/message";
 export { ModalAnimation, ModalSize } from "./components/modal/modal";
 export { NotificationPlacement, NotificationType } from "./components/notification/notification";
@@ -451,6 +453,65 @@ export namespace Components {
           * @default ''
          */
         "value": string;
+    }
+    interface LdesignMenu {
+        /**
+          * 手风琴模式（仅 inline/mixed 生效）：同层级只允许展开一个
+          * @default false
+         */
+        "accordion": boolean;
+        /**
+          * 默认打开的子菜单 key 列表（非受控，仅 inline/mixed 生效）
+          * @default []
+         */
+        "defaultOpenKeys": string[];
+        /**
+          * 默认选中项（非受控）
+         */
+        "defaultValue"?: string;
+        /**
+          * 子级缩进（px）
+          * @default 16
+         */
+        "indent": number;
+        /**
+          * 菜单数据（可传入 JSON 字符串或对象数组）
+          * @default []
+         */
+        "items": string | MenuItem[];
+        /**
+          * 菜单模式：水平/垂直
+          * @default 'vertical'
+         */
+        "mode": MenuMode;
+        /**
+          * 水平模式“更多”按钮图标（保证一级项都有图标）
+          * @default 'more-horizontal'
+         */
+        "moreIcon": string;
+        /**
+          * 水平模式溢出项的展示文案
+          * @default '更多'
+         */
+        "moreLabel": string;
+        /**
+          * 当前打开的子菜单 key 列表（受控，仅 inline/mixed 生效）
+         */
+        "openKeys"?: string[];
+        /**
+          * 子菜单触发方式（仅 flyout 或水平模式下生效）
+          * @default 'hover'
+         */
+        "submenuTrigger": SubmenuTrigger;
+        /**
+          * 当前选中项（受控）
+         */
+        "value"?: string;
+        /**
+          * 垂直模式下的展开方式：inline（内嵌展开）、flyout（右侧弹出）、mixed（一层内嵌，更多层右侧弹出）
+          * @default 'inline'
+         */
+        "verticalExpand": VerticalExpand;
     }
     /**
      * Message 全局提示
@@ -1038,6 +1099,10 @@ export interface LdesignInputCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignInputElement;
 }
+export interface LdesignMenuCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignMenuElement;
+}
 export interface LdesignMessageCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignMessageElement;
@@ -1235,6 +1300,25 @@ declare global {
         prototype: HTMLLdesignInputElement;
         new (): HTMLLdesignInputElement;
     };
+    interface HTMLLdesignMenuElementEventMap {
+        "ldesignSelect": { key: string; item: MenuItem; pathKeys: string[] };
+        "ldesignOpenChange": { key: string; open: boolean; openKeys: string[] };
+        "ldesignOverflowChange": { overflowCount: number };
+    }
+    interface HTMLLdesignMenuElement extends Components.LdesignMenu, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignMenuElementEventMap>(type: K, listener: (this: HTMLLdesignMenuElement, ev: LdesignMenuCustomEvent<HTMLLdesignMenuElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignMenuElementEventMap>(type: K, listener: (this: HTMLLdesignMenuElement, ev: LdesignMenuCustomEvent<HTMLLdesignMenuElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignMenuElement: {
+        prototype: HTMLLdesignMenuElement;
+        new (): HTMLLdesignMenuElement;
+    };
     interface HTMLLdesignMessageElementEventMap {
         "ldesignClose": void;
     }
@@ -1427,6 +1511,7 @@ declare global {
         "ldesign-drawer": HTMLLdesignDrawerElement;
         "ldesign-icon": HTMLLdesignIconElement;
         "ldesign-input": HTMLLdesignInputElement;
+        "ldesign-menu": HTMLLdesignMenuElement;
         "ldesign-message": HTMLLdesignMessageElement;
         "ldesign-modal": HTMLLdesignModalElement;
         "ldesign-notification": HTMLLdesignNotificationElement;
@@ -1900,6 +1985,77 @@ declare namespace LocalJSX {
           * @default ''
          */
         "value"?: string;
+    }
+    interface LdesignMenu {
+        /**
+          * 手风琴模式（仅 inline/mixed 生效）：同层级只允许展开一个
+          * @default false
+         */
+        "accordion"?: boolean;
+        /**
+          * 默认打开的子菜单 key 列表（非受控，仅 inline/mixed 生效）
+          * @default []
+         */
+        "defaultOpenKeys"?: string[];
+        /**
+          * 默认选中项（非受控）
+         */
+        "defaultValue"?: string;
+        /**
+          * 子级缩进（px）
+          * @default 16
+         */
+        "indent"?: number;
+        /**
+          * 菜单数据（可传入 JSON 字符串或对象数组）
+          * @default []
+         */
+        "items"?: string | MenuItem[];
+        /**
+          * 菜单模式：水平/垂直
+          * @default 'vertical'
+         */
+        "mode"?: MenuMode;
+        /**
+          * 水平模式“更多”按钮图标（保证一级项都有图标）
+          * @default 'more-horizontal'
+         */
+        "moreIcon"?: string;
+        /**
+          * 水平模式溢出项的展示文案
+          * @default '更多'
+         */
+        "moreLabel"?: string;
+        /**
+          * 展开/收起事件（inline/mixed）
+         */
+        "onLdesignOpenChange"?: (event: LdesignMenuCustomEvent<{ key: string; open: boolean; openKeys: string[] }>) => void;
+        /**
+          * 水平模式下，溢出项数量变化事件
+         */
+        "onLdesignOverflowChange"?: (event: LdesignMenuCustomEvent<{ overflowCount: number }>) => void;
+        /**
+          * 选中事件
+         */
+        "onLdesignSelect"?: (event: LdesignMenuCustomEvent<{ key: string; item: MenuItem; pathKeys: string[] }>) => void;
+        /**
+          * 当前打开的子菜单 key 列表（受控，仅 inline/mixed 生效）
+         */
+        "openKeys"?: string[];
+        /**
+          * 子菜单触发方式（仅 flyout 或水平模式下生效）
+          * @default 'hover'
+         */
+        "submenuTrigger"?: SubmenuTrigger;
+        /**
+          * 当前选中项（受控）
+         */
+        "value"?: string;
+        /**
+          * 垂直模式下的展开方式：inline（内嵌展开）、flyout（右侧弹出）、mixed（一层内嵌，更多层右侧弹出）
+          * @default 'inline'
+         */
+        "verticalExpand"?: VerticalExpand;
     }
     /**
      * Message 全局提示
@@ -2488,6 +2644,7 @@ declare namespace LocalJSX {
         "ldesign-drawer": LdesignDrawer;
         "ldesign-icon": LdesignIcon;
         "ldesign-input": LdesignInput;
+        "ldesign-menu": LdesignMenu;
         "ldesign-message": LdesignMessage;
         "ldesign-modal": LdesignModal;
         "ldesign-notification": LdesignNotification;
@@ -2551,6 +2708,7 @@ declare module "@stencil/core" {
              * 通过鼠标或键盘输入内容，是最基础的表单域的包装
              */
             "ldesign-input": LocalJSX.LdesignInput & JSXBase.HTMLAttributes<HTMLLdesignInputElement>;
+            "ldesign-menu": LocalJSX.LdesignMenu & JSXBase.HTMLAttributes<HTMLLdesignMenuElement>;
             /**
              * Message 全局提示
              * 轻量级的全局反馈，常用于操作后的轻量提示

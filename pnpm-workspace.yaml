@@ -1,5 +1,6 @@
 packages:
   - packages/**
+  - library/**
   - "!packages/icons/tdesign-icons-develop"
   - "!packages/icons/tdesign-icons-develop/**"
 

@@ -1,0 +1,121 @@
+{
+  "name": "@ldesign/excel-editor",
+  "version": "1.0.0",
+  "description": "基于Web的现代化Excel表格编辑器插件，支持TypeScript，提供完整的表格渲染、编辑、公式计算等功能",
+  "keywords": [
+    "excel",
+    "spreadsheet",
+    "editor",
+    "typescript",
+    "table",
+    "ldesign",
+    "plugin",
+    "web",
+    "grid"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign/library/excel#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/library.git",
+    "directory": "library/excel"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/library/issues"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./utils": {
+      "types": "./es/utils/index.d.ts",
+      "import": "./es/utils/index.js",
+      "require": "./lib/utils/index.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
+    },
+    "./es/index.css": "./es/index.css",
+    "./lib/index.css": "./lib/index.css",
+    "./dist/index.umd.css": "./dist/index.umd.css",
+    "./dist/index.umd.min.css": "./dist/index.umd.min.css"
+  },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
+  "files": [
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "es",
+    "lib",
+    "dist"
+  ],
+  "scripts": {
+    "build": "ldesign-builder",
+    "dev": "ldesign-builder --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run clean && npm run build && npm run type-check",
+    "example:dev": "launcher dev --config examples/launcher.config.ts",
+    "example:build": "launcher build --config examples/launcher.config.ts",
+    "example:preview": "launcher preview --config examples/launcher.config.ts"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@ldesign/launcher": "workspace:*",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitest/coverage-v8": "^1.6.1",
+    "@vitest/ui": "^1.6.1",
+    "eslint": "^8.55.0",
+    "jsdom": "^23.0.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.0",
+    "vitest": "^1.6.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  }
+}

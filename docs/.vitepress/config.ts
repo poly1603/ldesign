@@ -60,7 +60,8 @@ export default defineConfig({
           items: [
             { text: 'Button 按钮', link: '/components/button' },
             { text: 'Input 输入框', link: '/components/input' },
-            { text: 'Card 卡片', link: '/components/card' }
+            { text: 'Card 卡片', link: '/components/card' },
+            { text: 'Popconfirm 气泡确认框', link: '/components/popconfirm' }
           ]
         }
       ],

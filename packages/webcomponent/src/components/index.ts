@@ -21,3 +21,4 @@ export { LdesignNotification } from './notification/notification';
 export { LdesignPopconfirm } from './popconfirm/popconfirm';
 export { LdesignAffix } from './affix/affix';
 export { LdesignBacktop } from './backtop/backtop';
+export { LdesignMenu } from './menu/menu';

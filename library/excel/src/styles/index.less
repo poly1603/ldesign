@@ -1,0 +1,331 @@
+/**
+ * Excel编辑器样式文件
+ * 使用LDesign设计系统的CSS变量
+ */
+
+// Excel编辑器容器
+.ldesign-excel-editor {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--ls-font-size-sm);
+  color: var(--ldesign-text-color-primary);
+  background-color: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  overflow: hidden;
+
+  // 表格容器
+  .excel-table-container {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    position: relative;
+  }
+
+  // 表格样式
+  .excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    
+    // 表头样式
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: var(--ldesign-bg-color-component);
+      
+      th {
+        background-color: var(--ldesign-bg-color-component);
+        border: 1px solid var(--ldesign-border-color);
+        padding: var(--ls-padding-xs);
+        text-align: center;
+        font-weight: 500;
+        color: var(--ldesign-text-color-secondary);
+        user-select: none;
+        
+        &.excel-row-header {
+          width: 50px;
+          min-width: 50px;
+          background-color: var(--ldesign-bg-color-component-hover);
+        }
+        
+        &.excel-column-header {
+          width: 100px;
+          min-width: 80px;
+          cursor: pointer;
+          
+          &:hover {
+            background-color: var(--ldesign-bg-color-component-hover);
+          }
+        }
+      }
+    }
+    
+    // 表体样式
+    tbody {
+      tr {
+        &:hover {
+          background-color: var(--ldesign-bg-color-container-hover);
+        }
+        
+        // 行号样式
+        th.excel-row-number {
+          position: sticky;
+          left: 0;
+          z-index: 5;
+          width: 50px;
+          min-width: 50px;
+          background-color: var(--ldesign-bg-color-component);
+          border: 1px solid var(--ldesign-border-color);
+          padding: var(--ls-padding-xs);
+          text-align: center;
+          font-weight: 500;
+          color: var(--ldesign-text-color-secondary);
+          user-select: none;
+          cursor: pointer;
+          
+          &:hover {
+            background-color: var(--ldesign-bg-color-component-hover);
+          }
+        }
+        
+        // 单元格样式
+        td.excel-cell {
+          border: 1px solid var(--ldesign-border-color);
+          padding: var(--ls-padding-xs);
+          min-height: 25px;
+          height: 25px;
+          vertical-align: middle;
+          cursor: cell;
+          position: relative;
+          background-color: var(--ldesign-bg-color-container);
+          
+          &:hover {
+            background-color: var(--ldesign-bg-color-container-hover);
+          }
+          
+          &.selected {
+            background-color: var(--ldesign-brand-color-focus);
+            border: 2px solid var(--ldesign-brand-color);
+            z-index: 1;
+          }
+          
+          &.editing {
+            padding: 0;
+          }
+          
+          &.readonly {
+            background-color: var(--ldesign-bg-color-component-disabled);
+            cursor: default;
+          }
+          
+          // 单元格内容
+          .cell-content {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+  }
+  
+  // 单元格编辑器
+  .excel-cell-editor {
+    border: 2px solid var(--ldesign-brand-color);
+    padding: var(--ls-padding-xs);
+    font-size: inherit;
+    font-family: inherit;
+    background-color: var(--ldesign-bg-color-container);
+    color: var(--ldesign-text-color-primary);
+    outline: none;
+    box-sizing: border-box;
+    
+    &:focus {
+      border-color: var(--ldesign-brand-color-focus);
+      box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+    }
+  }
+  
+  // 网格线
+  &.show-gridlines {
+    .excel-cell {
+      border-color: var(--ldesign-border-level-1-color);
+    }
+  }
+  
+  &.hide-gridlines {
+    .excel-cell {
+      border-color: transparent;
+    }
+  }
+  
+  // 主题样式
+  &.light {
+    // 浅色主题已在默认样式中定义
+  }
+  
+  &.dark {
+    background-color: var(--ldesign-gray-color-9);
+    color: var(--ldesign-font-white-1);
+    border-color: var(--ldesign-gray-color-7);
+    
+    .excel-table {
+      thead th {
+        background-color: var(--ldesign-gray-color-8);
+        color: var(--ldesign-font-white-2);
+        border-color: var(--ldesign-gray-color-7);
+      }
+      
+      tbody {
+        tr:hover {
+          background-color: var(--ldesign-gray-color-8);
+        }
+        
+        th.excel-row-number {
+          background-color: var(--ldesign-gray-color-8);
+          color: var(--ldesign-font-white-2);
+          border-color: var(--ldesign-gray-color-7);
+          
+          &:hover {
+            background-color: var(--ldesign-gray-color-7);
+          }
+        }
+        
+        td.excel-cell {
+          background-color: var(--ldesign-gray-color-9);
+          border-color: var(--ldesign-gray-color-7);
+          color: var(--ldesign-font-white-1);
+          
+          &:hover {
+            background-color: var(--ldesign-gray-color-8);
+          }
+          
+          &.selected {
+            background-color: var(--ldesign-brand-color-8);
+            border-color: var(--ldesign-brand-color);
+          }
+        }
+      }
+    }
+    
+    .excel-cell-editor {
+      background-color: var(--ldesign-gray-color-9);
+      color: var(--ldesign-font-white-1);
+      border-color: var(--ldesign-brand-color);
+    }
+  }
+  
+  // 只读模式
+  &.readonly {
+    .excel-cell {
+      cursor: default;
+      
+      &:hover {
+        background-color: var(--ldesign-bg-color-container);
+      }
+    }
+  }
+  
+  // 响应式设计
+  @media (max-width: 768px) {
+    .excel-table {
+      thead th.excel-column-header {
+        width: 80px;
+        min-width: 60px;
+      }
+      
+      tbody td.excel-cell {
+        padding: var(--ls-padding-xs) 4px;
+      }
+    }
+  }
+  
+  // 滚动条样式
+  .excel-table-container {
+    &::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background-color: var(--ldesign-bg-color-component);
+      border-radius: var(--ls-border-radius-sm);
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--ldesign-gray-color-5);
+      border-radius: var(--ls-border-radius-sm);
+      
+      &:hover {
+        background-color: var(--ldesign-gray-color-6);
+      }
+    }
+    
+    &::-webkit-scrollbar-corner {
+      background-color: var(--ldesign-bg-color-component);
+    }
+  }
+  
+  // 选择范围样式
+  .selection-range {
+    position: absolute;
+    border: 2px solid var(--ldesign-brand-color);
+    background-color: var(--ldesign-brand-color-focus);
+    pointer-events: none;
+    z-index: 2;
+  }
+  
+  // 加载状态
+  &.loading {
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+  }
+  
+  // 错误状态
+  .error-cell {
+    background-color: var(--ldesign-error-color-1);
+    color: var(--ldesign-error-color);
+    border-color: var(--ldesign-error-color);
+  }
+  
+  // 公式栏（如果需要）
+  .formula-bar {
+    height: 40px;
+    border-bottom: 1px solid var(--ldesign-border-color);
+    background-color: var(--ldesign-bg-color-component);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--ls-padding-sm);
+    
+    .formula-input {
+      flex: 1;
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-sm);
+      padding: var(--ls-padding-xs);
+      font-family: 'Courier New', monospace;
+      
+      &:focus {
+        border-color: var(--ldesign-brand-color);
+        outline: none;
+        box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+      }
+    }
+  }
+}

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF阅读器测试文档</title>
+  <style>
+    body {
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      color: #333;
+    }
+    
+    h1 {
+      color: #722ED1;
+      text-align: center;
+      border-bottom: 3px solid #722ED1;
+      padding-bottom: 10px;
+    }
+    
+    h2 {
+      color: #722ED1;
+      margin-top: 30px;
+    }
+    
+    .highlight {
+      background: #f0f0f0;
+      padding: 15px;
+      border-left: 4px solid #722ED1;
+      margin: 20px 0;
+    }
+    
+    code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Consolas', monospace;
+    }
+    
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .feature-item {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+    
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+  <h1>@ldesign/pdf-reader 测试文档</h1>
+  
+  <div class="highlight">
+    <strong>这是一个用于测试PDF阅读器功能的示例文档。</strong><br>
+    包含多页内容、不同的文本格式和布局，用于验证PDF阅读器的各项功能。
+  </div>
+
+  <h2>📚 功能特性</h2>
+  
+  <div class="feature-list">
+    <div class="feature-item">
+      <h3>🔧 核心功能</h3>
+      <ul>
+        <li>PDF文档加载和显示</li>
+        <li>页面导航控制</li>
+        <li>缩放功能</li>
+        <li>文本搜索</li>
+      </ul>
+    </div>
+    
+    <div class="feature-item">
+      <h3>🎨 用户界面</h3>
+      <ul>
+        <li>响应式设计</li>
+        <li>主题支持</li>
+        <li>现代化UI</li>
+        <li>无障碍访问</li>
+      </ul>
+    </div>
+    
+    <div class="feature-item">
+      <h3>🛠️ 开发体验</h3>
+      <ul>
+        <li>TypeScript支持</li>
+        <li>事件驱动架构</li>
+        <li>模块化设计</li>
+        <li>完整API文档</li>
+      </ul>
+    </div>
+    
+    <div class="feature-item">
+      <h3>⚡ 性能优化</h3>
+      <ul>
+        <li>按需加载</li>
+        <li>虚拟滚动</li>
+        <li>缓存机制</li>
+        <li>内存管理</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>🚀 快速开始</h2>
+  
+  <p>安装PDF阅读器插件：</p>
+  
+  <div class="highlight">
+    <code>npm install @ldesign/pdf-reader pdfjs-dist</code>
+  </div>
+  
+  <p>基本使用方法：</p>
+  
+  <div class="highlight">
+    <pre><code>import { createPDFReader } from '@ldesign/pdf-reader'
+
+const pdfReader = createPDFReader({
+  container: document.getElementById('pdf-container'),
+  showToolbar: true,
+  showThumbnails: true,
+  theme: 'light'
+})
+
+await pdfReader.loadDocument('/path/to/document.pdf')</code></pre>
+  </div>
+
+  <div class="page-break"></div>
+  
+  <h1>第二页内容</h1>
+  
+  <h2>📖 API文档</h2>
+  
+  <h3>createPDFReader(options)</h3>
+  
+  <p>创建PDF阅读器实例的工厂函数。</p>
+  
+  <h4>参数</h4>
+  
+  <ul>
+    <li><code>container</code> - 容器元素或选择器</li>
+    <li><code>showToolbar</code> - 是否显示工具栏（默认：true）</li>
+    <li><code>showThumbnails</code> - 是否显示缩略图（默认：true）</li>
+    <li><code>theme</code> - 主题设置（'light' | 'dark' | 'auto'）</li>
+    <li><code>initialScale</code> - 初始缩放比例（默认：1.0）</li>
+    <li><code>enableSearch</code> - 是否启用搜索（默认：true）</li>
+  </ul>
+  
+  <h4>返回值</h4>
+  
+  <p>返回一个PDFReader实例，包含以下方法：</p>
+  
+  <ul>
+    <li><code>loadDocument(src)</code> - 加载PDF文档</li>
+    <li><code>goToPage(pageNumber)</code> - 跳转到指定页面</li>
+    <li><code>previousPage()</code> - 上一页</li>
+    <li><code>nextPage()</code> - 下一页</li>
+    <li><code>setScale(scale)</code> - 设置缩放比例</li>
+    <li><code>zoomIn()</code> - 放大</li>
+    <li><code>zoomOut()</code> - 缩小</li>
+    <li><code>fitWidth()</code> - 适合宽度</li>
+    <li><code>fitPage()</code> - 适合页面</li>
+    <li><code>search(query)</code> - 搜索文本</li>
+    <li><code>clearSearch()</code> - 清除搜索</li>
+    <li><code>getState()</code> - 获取当前状态</li>
+    <li><code>destroy()</code> - 销毁实例</li>
+  </ul>
+
+  <div class="page-break"></div>
+  
+  <h1>第三页内容</h1>
+  
+  <h2>🎯 事件系统</h2>
+  
+  <p>PDF阅读器支持丰富的事件系统，可以监听各种状态变化：</p>
+  
+  <div class="highlight">
+    <pre><code>// 监听文档加载完成
+pdfReader.on('document-loaded', (info) => {
+  console.log('文档已加载:', info)
+})
+
+// 监听页面变化
+pdfReader.on('page-changed', (pageNumber) => {
+  console.log('当前页面:', pageNumber)
+})
+
+// 监听缩放变化
+pdfReader.on('scale-changed', (scale) => {
+  console.log('缩放比例:', scale)
+})
+
+// 监听搜索结果
+pdfReader.on('search-result', (results) => {
+  console.log('搜索结果:', results)
+})
+
+// 监听错误
+pdfReader.on('error', (error) => {
+  console.error('发生错误:', error)
+})</code></pre>
+  </div>
+  
+  <h2>🔧 配置选项</h2>
+  
+  <p>PDF阅读器提供了丰富的配置选项来满足不同的使用场景：</p>
+  
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <thead>
+      <tr style="background: #f8f9fa;">
+        <th style="border: 1px solid #dee2e6; padding: 12px; text-align: left;">选项</th>
+        <th style="border: 1px solid #dee2e6; padding: 12px; text-align: left;">类型</th>
+        <th style="border: 1px solid #dee2e6; padding: 12px; text-align: left;">默认值</th>
+        <th style="border: 1px solid #dee2e6; padding: 12px; text-align: left;">说明</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="border: 1px solid #dee2e6; padding: 12px;"><code>container</code></td>
+        <td style="border: 1px solid #dee2e6; padding: 12px;">HTMLElement | string</td>
+        <td style="border: 1px solid #dee2e6; padding: 12px;">-</td>
+        <td style="border: 1px solid #dee2e6; padding: 12px;">容器元素或选择器</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #dee2e6; padding: 12px;"><code>showToolbar</code></td>
+        <td style="border: 1px solid #dee2e6; padding: 12px;">boolean</td>
+        <td style="border: 1px solid #dee2e6; padding: 12px;">true</td>
+        <td style="border: 1px solid #dee2e6; padding: 12px;">是否显示工具栏</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #dee2e6; padding: 12px;"><code>showThumbnails</code></td>
+        <td style="border: 1px solid #dee2e6; padding: 12px;">boolean</td>
+        <td style="border: 1px solid #dee2e6; padding: 12px;">true</td>
+        <td style="border: 1px solid #dee2e6; padding: 12px;">是否显示缩略图</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #dee2e6; padding: 12px;"><code>theme</code></td>
+        <td style="border: 1px solid #dee2e6; padding: 12px;">'light' | 'dark' | 'auto'</td>
+        <td style="border: 1px solid #dee2e6; padding: 12px;">'auto'</td>
+        <td style="border: 1px solid #dee2e6; padding: 12px;">主题设置</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+  
+  <h1>第四页内容</h1>
+  
+  <h2>🌟 最佳实践</h2>
+  
+  <h3>1. 性能优化</h3>
+  
+  <ul>
+    <li>使用适当的缩放比例，避免过度放大导致内存占用过高</li>
+    <li>及时销毁不需要的PDF阅读器实例</li>
+    <li>对于大文档，考虑使用分页加载</li>
+    <li>合理设置缓存策略</li>
+  </ul>
+  
+  <h3>2. 用户体验</h3>
+  
+  <ul>
+    <li>提供加载进度指示器</li>
+    <li>支持键盘快捷键操作</li>
+    <li>响应式设计适配移动设备</li>
+    <li>提供错误处理和用户反馈</li>
+  </ul>
+  
+  <h3>3. 无障碍访问</h3>
+  
+  <ul>
+    <li>确保所有交互元素都可以通过键盘访问</li>
+    <li>提供适当的ARIA标签</li>
+    <li>支持屏幕阅读器</li>
+    <li>提供高对比度主题选项</li>
+  </ul>
+  
+  <div class="highlight">
+    <h3>💡 提示</h3>
+    <p>这个测试文档包含了多页内容，可以用来测试PDF阅读器的页面导航、缩放、搜索等功能。</p>
+    <p>你可以尝试：</p>
+    <ul>
+      <li>使用页面导航按钮切换页面</li>
+      <li>调整缩放比例查看不同的显示效果</li>
+      <li>搜索文档中的关键词</li>
+      <li>测试键盘快捷键功能</li>
+    </ul>
+  </div>
+  
+  <h2>📞 联系我们</h2>
+  
+  <p>如果您在使用过程中遇到任何问题，或者有功能建议，欢迎通过以下方式联系我们：</p>
+  
+  <ul>
+    <li>GitHub Issues: <a href="https://github.com/ldesign/library/issues">https://github.com/ldesign/library/issues</a></li>
+    <li>邮箱: support@ldesign.com</li>
+    <li>文档: <a href="https://ldesign.github.io/library/pdf">https://ldesign.github.io/library/pdf</a></li>
+  </ul>
+  
+  <div style="text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee;">
+    <p><strong>@ldesign/pdf-reader</strong></p>
+    <p>基于PDF.js的现代化PDF阅读器插件</p>
+    <p style="color: #666; font-size: 14px;">版本 1.0.0 | MIT License</p>
+  </div>
+</body>
+</html>

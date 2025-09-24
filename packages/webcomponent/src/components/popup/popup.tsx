@@ -118,6 +118,9 @@ export class LdesignPopup {
    * 触发器元素引用
    */
   private triggerElement?: HTMLElement;
+  private triggerWrapper?: HTMLElement;
+  private triggerSlotEl?: HTMLElement;
+  private eventTargets: HTMLElement[] = []; // 绑定事件的目标集合
 
   /**
    * 箭头元素引用
@@ -156,12 +159,21 @@ export class LdesignPopup {
    * 组件加载完成
    */
   componentDidLoad() {
-    this.triggerElement = this.el.querySelector('.ldesign-popup__trigger') as HTMLElement;
+    // 优先使用具名槽位的真实节点作为触发器（shadow=false 场景 slot 不会投影到 wrapper 内）
+    this.triggerSlotEl = this.el.querySelector('[slot="trigger"]') as HTMLElement | null;
+    this.triggerWrapper = this.el.querySelector('.ldesign-popup__trigger') as HTMLElement | null;
+    this.triggerElement = this.triggerSlotEl || this.triggerWrapper || (this.el as unknown as HTMLElement);
+
     this.popupElement = this.el.querySelector('.ldesign-popup__content') as HTMLElement;
     this.arrowElement = this.el.querySelector('.ldesign-popup__arrow') as HTMLElement;
 
-    if (this.triggerElement && !this.disabled) {
-      this.bindEvents();
+    if (!this.disabled) {
+      this.eventTargets = [];
+      if (this.triggerSlotEl) this.eventTargets.push(this.triggerSlotEl);
+      if (this.triggerWrapper && this.triggerWrapper !== this.triggerSlotEl) this.eventTargets.push(this.triggerWrapper);
+      // 双通道绑定，确保任一层级都能触发
+      this.eventTargets.forEach(t => this.bindEventsOn(t));
+      if (this.closeOnEsc) this.bindDocumentKeydown();
     }
 
     if (this.visible) {
@@ -184,49 +196,54 @@ export class LdesignPopup {
    */
   componentDidRender() {
     if (this.isVisible) {
-      // 渲染完成后再更新一次位置（仅计算，不重复注册 autoUpdate）
+      // 渲染完成后再更新一次位置，并确保浮层绑定了交互事件
       this.updatePositionOnly();
+      this.bindContentHoverIfNeeded();
     }
   }
 
   /**
-   * 绑定事件
+   * 绑定事件（对指定元素绑定）
    */
-  private bindEvents() {
-    if (!this.triggerElement) return;
-
+  private bindEventsOn(target: HTMLElement) {
     switch (this.trigger) {
       case 'hover':
-        this.triggerElement.addEventListener('mouseenter', this.handleMouseEnter);
-        this.triggerElement.addEventListener('mouseleave', this.handleMouseLeave);
+        // 同时绑定 mouse 与 pointer 两套事件，确保各种环境都能触发
+        target.addEventListener('mouseenter', this.handleMouseEnter);
+        target.addEventListener('mouseleave', this.handleMouseLeave);
+        target.addEventListener('pointerenter', this.handleMouseEnter);
+        target.addEventListener('pointerleave', this.handleMouseLeave);
         break;
       case 'click':
-        this.triggerElement.addEventListener('click', this.handleClick);
+        target.addEventListener('click', this.handleClick);
         if (this.closeOnOutside) this.bindDocumentClick();
         break;
       case 'contextmenu':
-        this.triggerElement.addEventListener('contextmenu', this.handleContextMenu);
+        target.addEventListener('contextmenu', this.handleContextMenu);
         if (this.closeOnOutside) this.bindDocumentClick();
         break;
       case 'focus':
-        // 使用 focusin/out 捕获冒泡，兼容嵌套元素
-        this.triggerElement.addEventListener('focusin', this.handleFocus);
-        this.triggerElement.addEventListener('focusout', this.handleBlur);
+        target.addEventListener('focusin', this.handleFocus);
+        target.addEventListener('focusout', this.handleBlur);
         break;
     }
-    if (this.closeOnEsc) this.bindDocumentKeydown();
   }
 
   private unbindEvents() {
-    if (!this.triggerElement) return;
-    this.triggerElement.removeEventListener('mouseenter', this.handleMouseEnter);
-    this.triggerElement.removeEventListener('mouseleave', this.handleMouseLeave);
-    this.triggerElement.removeEventListener('click', this.handleClick);
-    this.triggerElement.removeEventListener('contextmenu', this.handleContextMenu);
-    this.triggerElement.removeEventListener('focus', this.handleFocus as any);
-    this.triggerElement.removeEventListener('blur', this.handleBlur as any);
-    this.triggerElement.removeEventListener('focusin', this.handleFocus as any);
-    this.triggerElement.removeEventListener('focusout', this.handleBlur as any);
+    const targets = this.eventTargets && this.eventTargets.length > 0 ? this.eventTargets : (this.triggerElement ? [this.triggerElement] : []);
+    targets.forEach(target => {
+      target.removeEventListener('mouseenter', this.handleMouseEnter);
+      target.removeEventListener('mouseleave', this.handleMouseLeave);
+      target.removeEventListener('pointerenter', this.handleMouseEnter);
+      target.removeEventListener('pointerleave', this.handleMouseLeave);
+      target.removeEventListener('click', this.handleClick);
+      target.removeEventListener('contextmenu', this.handleContextMenu);
+      target.removeEventListener('focus', this.handleFocus as any);
+      target.removeEventListener('blur', this.handleBlur as any);
+      target.removeEventListener('focusin', this.handleFocus as any);
+      target.removeEventListener('focusout', this.handleBlur as any);
+    });
+    this.eventTargets = [];
   }
 
   private bindDocumentClick() {
@@ -620,6 +637,8 @@ export class LdesignPopup {
     if (!this.popupElement || this.contentHoverBound) return;
     this.popupElement.addEventListener('mouseenter', this.handleMouseEnter);
     this.popupElement.addEventListener('mouseleave', this.handleMouseLeave);
+    this.popupElement.addEventListener('pointerenter', this.handleMouseEnter);
+    this.popupElement.addEventListener('pointerleave', this.handleMouseLeave);
     this.contentHoverBound = true;
   }
 
@@ -627,6 +646,8 @@ export class LdesignPopup {
     if (!this.contentHoverBound || !this.popupElement) return;
     this.popupElement.removeEventListener('mouseenter', this.handleMouseEnter);
     this.popupElement.removeEventListener('mouseleave', this.handleMouseLeave);
+    this.popupElement.removeEventListener('pointerenter', this.handleMouseEnter);
+    this.popupElement.removeEventListener('pointerleave', this.handleMouseLeave);
     this.contentHoverBound = false;
   }
 }

@@ -1,0 +1,20 @@
+{
+  "name": "@ldesign/pdf-reader-example",
+  "version": "1.0.0",
+  "description": "PDF阅读器示例项目",
+  "type": "module",
+  "scripts": {
+    "dev": "node ../../../packages/launcher/bin/launcher.js dev",
+    "build": "node ../../../packages/launcher/bin/launcher.js build",
+    "preview": "node ../../../packages/launcher/bin/launcher.js preview"
+  },
+  "dependencies": {
+    "@ldesign/pdf-reader": "file:..",
+    "pdfjs-dist": "^4.0.0"
+  },
+  "devDependencies": {
+    "@ldesign/launcher": "workspace:*",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0"
+  }
+}

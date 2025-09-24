@@ -65,6 +65,12 @@ export default defineConfig({
           ]
         },
         {
+          text: '导航组件',
+          items: [
+            { text: 'Menu 菜单', link: '/components/menu' },
+          ]
+        },
+        {
           text: '布局组件',
           items: [
             { text: 'Affix 固钉', link: '/components/affix' },
