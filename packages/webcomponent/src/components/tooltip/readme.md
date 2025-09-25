@@ -30,6 +30,7 @@ Tooltip 工具提示组件
 ### Used by
 
  - [ldesign-menu](../menu)
+ - [ldesign-rate](../rate)
 
 ### Depends on
 
@@ -40,6 +41,7 @@ Tooltip 工具提示组件
 graph TD;
   ldesign-tooltip --> ldesign-popup
   ldesign-menu --> ldesign-tooltip
+  ldesign-rate --> ldesign-tooltip
   style ldesign-tooltip fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

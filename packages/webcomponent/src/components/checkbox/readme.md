@@ -37,6 +37,10 @@ Checkbox 复选框组件
 
 ## Dependencies
 
+### Used by
+
+ - [ldesign-tree](../tree)
+
 ### Depends on
 
 - [ldesign-icon](../icon)
@@ -45,6 +49,7 @@ Checkbox 复选框组件
 ```mermaid
 graph TD;
   ldesign-checkbox --> ldesign-icon
+  ldesign-tree --> ldesign-checkbox
   style ldesign-checkbox fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

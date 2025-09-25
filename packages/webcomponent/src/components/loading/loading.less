@@ -1,0 +1,130 @@
+/* Loading 组件样式 */
+.ldesign-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ldesign-text-color-secondary);
+
+  &--vertical {
+    flex-direction: column;
+  }
+
+  &--hidden {
+    display: none !important;
+  }
+
+  &--fullscreen {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex; /* 覆盖 inline-flex */
+    justify-content: center;
+    align-items: center;
+    z-index: var(--ls-loading-z-index, 1000);
+  }
+
+  &--with-mask {
+    background-color: var(--ldesign-loading-mask-bg, rgba(255, 255, 255, 0.6));
+    backdrop-filter: var(--ldesign-loading-mask-backdrop, none);
+  }
+
+  /* 尺寸 */
+  &--small {
+    .ldesign-loading__spinner {
+      width: 16px;
+      height: 16px;
+      border-width: 2px;
+    }
+    .ldesign-loading__dots {
+      gap: 4px;
+    }
+    .ldesign-loading__dot {
+      width: 6px;
+      height: 6px;
+    }
+    .ldesign-loading__tip {
+      font-size: 12px;
+    }
+  }
+
+  &--medium {
+    .ldesign-loading__spinner {
+      width: 20px;
+      height: 20px;
+      border-width: 2px;
+    }
+    .ldesign-loading__dots {
+      gap: 6px;
+    }
+    .ldesign-loading__dot {
+      width: 8px;
+      height: 8px;
+    }
+    .ldesign-loading__tip {
+      font-size: 13px;
+    }
+  }
+
+  &--large {
+    .ldesign-loading__spinner {
+      width: 24px;
+      height: 24px;
+      border-width: 3px;
+    }
+    .ldesign-loading__dots {
+      gap: 8px;
+    }
+    .ldesign-loading__dot {
+      width: 10px;
+      height: 10px;
+    }
+    .ldesign-loading__tip {
+      font-size: 14px;
+    }
+  }
+
+  /* spinner 形态 */
+  &__spinner {
+    display: inline-block;
+    border: 2px solid var(--ldesign-border-color-hover);
+    border-top-color: var(--ldesign-brand-color);
+    border-radius: 50%;
+    animation: ldesign-spin 0.9s linear infinite;
+  }
+
+  /* dots 形态 */
+  &__dots {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  &__dot {
+    display: inline-block;
+    border-radius: 50%;
+    background: var(--ldesign-brand-color);
+    opacity: 0.6;
+    animation: ldesign-loading-dots 1.2s ease-in-out infinite;
+  }
+
+  &__dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  &__dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  &__tip {
+    color: var(--ldesign-text-color-secondary);
+  }
+
+  &__content {
+    color: var(--ldesign-text-color-secondary);
+  }
+}
+
+@keyframes ldesign-loading-dots {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.6; }
+  40% { transform: scale(1); opacity: 1; }
+}

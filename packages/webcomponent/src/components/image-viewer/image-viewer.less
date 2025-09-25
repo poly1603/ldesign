@@ -1,0 +1,219 @@
+@bg-dark: rgba(0, 0, 0, 0.88);
+@bg-light: rgba(255, 255, 255, 0.92);
+@panel-dark: rgba(0, 0, 0, 0.55);
+@panel-light: rgba(255, 255, 255, 0.7);
+@text-dark: #fff;
+@text-light: #111;
+
+.ldesign-image-viewer {
+  position: fixed;
+  inset: 0;
+  display: block;
+  color: @text-dark;
+  background: @bg-dark;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none; // 避免移动端双指缩放干扰
+}
+
+.ldesign-image-viewer--light {
+  background: @bg-light;
+  color: @text-light;
+}
+
+/* 顶部区域 */
+.ldesign-image-viewer__top {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  padding: 8px 12px 0 12px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none; // 让计数器居中不挡缩略图滚动
+  z-index: 3;
+}
+
+.ldesign-image-viewer__counter {
+  position: absolute;
+  top: 10px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; opacity: .85;
+  background: fade(@panel-dark, 90%);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.ldesign-image-viewer--light .ldesign-image-viewer__counter {
+  background: fade(@panel-light, 90%);
+  color: @text-light;
+}
+
+.ldesign-image-viewer__thumbs {
+  pointer-events: auto;
+  display: flex;
+  gap: 8px;
+  max-width: 80vw;
+  overflow-x: auto;
+  padding: 8px 10px;
+  background: @panel-dark;
+  border-radius: 8px;
+}
+
+.ldesign-image-viewer--light .ldesign-image-viewer__thumbs { background: @panel-light; }
+
+.ldesign-image-viewer__thumb {
+  width: 72px; height: 54px;
+  border: 0; padding: 0; margin: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  background: transparent;
+  position: relative;
+  outline: none;
+}
+
+.ldesign-image-viewer__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.ldesign-image-viewer__thumb.is-active::after {
+  content: '';
+  position: absolute; inset: 0;
+  border: 2px solid #5b8cff;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+/* 中部舞台 */
+.ldesign-image-viewer__stage {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 0; // 舞台在最底层
+}
+
+.ldesign-image-viewer__canvas {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: grab;
+  z-index: 0;
+  // 作为绝对定位的参照
+  position: absolute;
+}
+
+.ldesign-image-viewer__canvas:active { cursor: grabbing; }
+
+.ldesign-image-viewer__img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  max-width: 88vw; max-height: 86vh;
+  transform-origin: center center;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transition: transform 0.2s ease-out; // 旋转/缩放过渡
+}
+
+.ldesign-image-viewer__img.is-dragging {
+  transition: none; // 拖拽时禁用过渡更顺滑
+}
+
+/* 加载中隐藏新图（等 onload 后再显示动画） */
+.ldesign-image-viewer__img.loading-hidden { opacity: 0; }
+
+/* 渐隐进入效果（切换图片时更柔和） */
+.ldesign-image-viewer__img.fade-in {
+  animation: iv-fade-in 0.18s ease-out;
+}
+.ldesign-image-viewer__img.fade-enter {
+  animation: iv-fade-in 0.2s ease-out;
+}
+.ldesign-image-viewer__img.fade-leave {
+  animation: iv-fade-out 0.2s ease-in;
+  pointer-events: none;
+}
+
+@keyframes iv-fade-in {
+  from { opacity: 0.01; }
+  to { opacity: 1; }
+}
+@keyframes iv-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* 全局 loading 覆盖在图片正中 */
+.ldesign-image-viewer__loading {
+  position: absolute;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.ldesign-image-viewer__spinner {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: iv-rot 0.9s linear infinite;
+}
+@keyframes iv-rot { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* 左右箭头 */
+.ldesign-image-viewer__nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 40px; height: 40px; border-radius: 50%;
+  border: none; display: inline-flex; align-items: center; justify-content: center;
+  background: @panel-dark; color: #fff; cursor: pointer;
+  z-index: 2; // 箭头在图片之上
+}
+
+.ldesign-image-viewer--light .ldesign-image-viewer__nav { background: @panel-light; color: @text-light; }
+
+.ldesign-image-viewer__nav--prev { left: 18px; }
+.ldesign-image-viewer__nav--next { right: 18px; }
+
+.ldesign-image-viewer__nav:hover { filter: brightness(1.05); }
+
+/* 底部工具栏 */
+.ldesign-image-viewer__bottom {
+  position: absolute; left: 0; right: 0; bottom: 18px;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 3; // 工具栏在最顶层
+}
+
+/* 标题与描述 */
+.ldesign-image-viewer__caption {
+  position: absolute; left: 24px; right: 24px; bottom: 72px; // 位于工具栏之上
+  z-index: 3;
+  display: flex; flex-direction: column; gap: 6px;
+  max-width: 70vw;
+  color: #fff;
+}
+.ldesign-image-viewer--light .ldesign-image-viewer__caption { color: @text-light; }
+
+.ldesign-image-viewer__caption-title {
+  font-size: 16px; font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+.ldesign-image-viewer__caption-desc {
+  font-size: 13px; line-height: 1.5;
+  opacity: 0.85;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+.ldesign-image-viewer__toolbar {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 10px; border-radius: 10px;
+  background: @panel-dark; color: #fff;
+}
+
+.ldesign-image-viewer--light .ldesign-image-viewer__toolbar { background: @panel-light; color: @text-light; }
+
+.ldesign-image-viewer__tool {
+  border: none; background: transparent; color: inherit;
+  width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 6px;
+}
+
+.ldesign-image-viewer__tool:hover { background: rgba(255,255,255,0.08); }
+.ldesign-image-viewer--light .ldesign-image-viewer__tool:hover { background: rgba(0,0,0,0.06); }
+
+.ldesign-image-viewer__scale { width: 56px; text-align: center; font-size: 12px; opacity: .9; }
+.ldesign-image-viewer__divider { width: 1px; height: 18px; background: rgba(255,255,255,0.3); margin: 0 6px; }
+.ldesign-image-viewer--light .ldesign-image-viewer__divider { background: rgba(0,0,0,0.25); }

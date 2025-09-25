@@ -5,9 +5,10 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
+import { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
 import { DrawerPlacement } from "./components/drawer/drawer";
 import { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/dropdown/dropdown";
+import { ImageViewerItem } from "./components/image-viewer/image-viewer";
 import { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
 import { MessageType } from "./components/message/message";
 import { ModalAnimation, ModalSize } from "./components/modal/modal";
@@ -17,9 +18,11 @@ import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 import { TabsPlacement, TabsType } from "./components/tabs/tabs";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
-export { ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
+import { TreeNode } from "./components/tree/tree";
+export { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
 export { DrawerPlacement } from "./components/drawer/drawer";
 export { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/dropdown/dropdown";
+export { ImageViewerItem } from "./components/image-viewer/image-viewer";
 export { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
 export { MessageType } from "./components/message/message";
 export { ModalAnimation, ModalSize } from "./components/modal/modal";
@@ -29,6 +32,7 @@ export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 export { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 export { TabsPlacement, TabsType } from "./components/tabs/tabs";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
+export { TreeNode } from "./components/tree/tree";
 export namespace Components {
     /**
      * 组件基类
@@ -123,10 +127,20 @@ export namespace Components {
          */
         "block": boolean;
         /**
+          * 语义颜色（用于 outline/dashed/text/link/ghost）
+          * @default 'primary'
+         */
+        "color": ButtonColor;
+        /**
           * 是否禁用
           * @default false
          */
         "disabled": boolean;
+        /**
+          * 幽灵按钮（一般用于深色背景）
+          * @default false
+         */
+        "ghost": boolean;
         /**
           * 图标名称
          */
@@ -281,6 +295,93 @@ export namespace Components {
         "variant": 'default' | 'outline' | 'filled' | 'button';
     }
     /**
+     * Collapse 折叠面板
+     * - 支持受控/非受控、手风琴模式、动画、禁用
+     */
+    interface LdesignCollapse {
+        /**
+          * 手风琴模式：同层级仅允许展开一个
+          * @default false
+         */
+        "accordion": boolean;
+        /**
+          * 边框样式
+          * @default true
+         */
+        "bordered": boolean;
+        /**
+          * 默认展开的面板标识列表（非受控）
+          * @default []
+         */
+        "defaultValue": string[];
+        /**
+          * 整体禁用（子面板不可交互）
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 展开图标位置
+          * @default 'left'
+         */
+        "expandIconPlacement": 'left' | 'right';
+        /**
+          * 幽灵（无背景，仅分隔线）
+          * @default false
+         */
+        "ghost": boolean;
+        /**
+          * 展开的面板标识列表（受控）
+         */
+        "value"?: string[];
+    }
+    /**
+     * CollapsePanel 折叠面板项
+     */
+    interface LdesignCollapsePanel {
+        /**
+          * 激活状态（由父级控制）
+          * @default false
+         */
+        "active": boolean;
+        /**
+          * 收起后是否销毁内容（优先级高于 lazy）
+          * @default false
+         */
+        "destroyOnClose": boolean;
+        /**
+          * 禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 展开图标名称（默认 chevron-right）
+          * @default 'chevron-right'
+         */
+        "expandIcon": string;
+        /**
+          * 图标位置（由父级传入，也可单独覆盖）
+          * @default 'left'
+         */
+        "expandIconPlacement": 'left' | 'right';
+        /**
+          * 右侧附加区（可用 slot="extra" 覆盖）
+         */
+        "extra"?: string;
+        /**
+          * 头部文本（可用 slot="header" 覆盖）
+         */
+        "header"?: string;
+        /**
+          * 首次激活才渲染内容（懒渲染）
+          * @default false
+         */
+        "lazy": boolean;
+        /**
+          * 面板唯一标识（由父级匹配）
+         */
+        "name"?: string;
+    }
+    /**
      * Drawer 抽屉组件
      * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
      */
@@ -348,6 +449,11 @@ export namespace Components {
      */
     interface LdesignDropdown {
         /**
+          * 浮层挂载位置：默认 body，避免在文档容器中被裁剪
+          * @default 'body'
+         */
+        "appendTo": 'self' | 'body' | 'closest-popup';
+        /**
           * 是否显示箭头（默认不显示）
           * @default false
          */
@@ -367,6 +473,11 @@ export namespace Components {
          */
         "disabled": boolean;
         /**
+          * 菜单宽度是否跟随触发器宽度（默认否）
+          * @default false
+         */
+        "fitTriggerWidth": boolean;
+        /**
           * 下拉项列表（可传数组或 JSON 字符串）
           * @default []
          */
@@ -377,7 +488,7 @@ export namespace Components {
          */
         "maxHeight": number;
         /**
-          * 占位文案（当未选中任何项且使用默认 trigger 时显示）
+          * 触发器文本（默认触发器显示的固定文案，不随选择变化）
           * @default '请选择'
          */
         "placeholder": string;
@@ -386,6 +497,21 @@ export namespace Components {
           * @default 'bottom-start'
          */
         "placement": DropdownPlacement;
+        /**
+          * 是否将选中项同步到默认触发器文本（默认不同步）
+          * @default false
+         */
+        "reflectSelectionOnTrigger": boolean;
+        /**
+          * 是否在菜单项上展示选中样式（默认不展示）
+          * @default false
+         */
+        "showSelected": boolean;
+        /**
+          * 子菜单的触发方式（hover/click），默认 hover
+          * @default 'hover'
+         */
+        "submenuTrigger": 'hover' | 'click';
         /**
           * 主题（浅色/深色），透传给 Popup
           * @default 'light'
@@ -438,6 +564,249 @@ export namespace Components {
           * @default 2
          */
         "strokeWidth": number;
+    }
+    /**
+     * Image 图片组件
+     * - 支持懒加载（IntersectionObserver + 原生 loading）
+     * - 支持占位/骨架、错误占位、回退图
+     * - 支持响应式图片（srcset/sizes）
+     * - 支持 object-fit / object-position
+     * - 支持预览（遮罩、缩放、拖拽）
+     */
+    interface LdesignImage {
+        /**
+          * 替代文本
+         */
+        "alt"?: string;
+        /**
+          * crossorigin
+         */
+        "crossorigin"?: 'anonymous' | 'use-credentials';
+        /**
+          * HTMLImageElement.decoding
+          * @default 'auto'
+         */
+        "decoding": 'async' | 'sync' | 'auto';
+        /**
+          * 是否禁用（影响交互，如预览）
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 是否允许拖拽原图（仅影响 img 的原生 draggable 属性，预览层可拖拽不受此限制）
+          * @default false
+         */
+        "draggable": boolean;
+        /**
+          * 失败时的回退图片 URL
+         */
+        "fallback"?: string;
+        /**
+          * object-fit
+          * @default 'cover'
+         */
+        "fit": 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
+        /**
+          * GIF 默认静止，点击播放。建议同时提供 gifPreviewSrc（第一帧快照）与 ratio 避免CLS
+          * @default false
+         */
+        "gifPlayOnClick": boolean;
+        /**
+          * GIF 静止时展示的静态预览图（例如第一帧 webp/jpg）
+         */
+        "gifPreviewSrc"?: string;
+        /**
+          * 高度（number 自动补 px，string 原样输出，如 '50%'、'200px'）
+         */
+        "height"?: number | string;
+        /**
+          * 提示文本（用于 img 的 title 属性，为避免与 HTMLElement.title 冲突，这里命名为 imgTitle）
+         */
+        "imgTitle"?: string;
+        /**
+          * IntersectionObserver rootMargin（预加载阈值）
+          * @default '200px'
+         */
+        "intersectionRootMargin": string;
+        /**
+          * 是否懒加载（首屏建议关闭）
+          * @default true
+         */
+        "lazy": boolean;
+        /**
+          * 自定义占位图 URL（优先级高于骨架）
+         */
+        "placeholder"?: string;
+        /**
+          * 占位背景颜色（无自定义占位图时显示）
+          * @default '#f5f5f5'
+         */
+        "placeholderColor": string;
+        /**
+          * object-position
+          * @default 'center center'
+         */
+        "position": string;
+        /**
+          * 点击开启预览
+          * @default false
+         */
+        "preview": boolean;
+        /**
+          * 预览遮罩主题
+          * @default 'dark'
+         */
+        "previewBackdrop": 'dark' | 'light';
+        /**
+          * 预览使用的高清图（不填则使用 src）
+         */
+        "previewSrc"?: string;
+        /**
+          * 圆角（number 自动补 px，string 原样输出）
+         */
+        "radius"?: number | string;
+        /**
+          * 期望的宽高比（用于在未设置高度、尚未加载时提供正确的占位比例，避免布局抖动） - 可传 16/9、4/3 等字符串，或数值（如 1.777） - 若不传，则在图片加载完成后自动以 naturalWidth/naturalHeight 填充比例
+         */
+        "ratio"?: string | number;
+        /**
+          * referrerPolicy
+         */
+        "referrerPolicy"?: string;
+        /**
+          * 形状：square（默认）| rounded | circle
+          * @default 'square'
+         */
+        "shape": 'square' | 'rounded' | 'circle';
+        /**
+          * 是否展示错误占位层
+          * @default true
+         */
+        "showError": boolean;
+        /**
+          * 是否展示加载中骨架（当无自定义占位图时）
+          * @default true
+         */
+        "showLoading": boolean;
+        /**
+          * 响应式图片 sizes
+         */
+        "sizes"?: string;
+        /**
+          * 多源图片，支持 AVIF/WebP 等，JSON 字符串或对象数组：[{ type, srcset, media? }]
+         */
+        "sources"?: string | Array<{ type: string; srcset: string; media?: string }>;
+        /**
+          * 图片地址
+         */
+        "src": string;
+        /**
+          * 响应式图片 srcset
+         */
+        "srcset"?: string;
+        /**
+          * 宽度（number 自动补 px，string 原样输出，如 '50%'、'320px'）
+         */
+        "width"?: number | string;
+        /**
+          * 预览是否可缩放
+          * @default true
+         */
+        "zoomable": boolean;
+    }
+    /**
+     * ImageGroup 图集容器
+     * - 使用 CSS Grid 布局
+     * - 支持列数与间距
+     * - 可给子项（ldesign-image）注入默认形状（若子项未手动指定）
+     */
+    interface LdesignImageGroup {
+        /**
+          * 列数
+          * @default 3
+         */
+        "columns": number;
+        /**
+          * 间距（px）
+          * @default 8
+         */
+        "gap": number;
+        /**
+          * 统一子项形状（子项已设置 shape 时不覆盖）
+         */
+        "shape"?: 'square' | 'rounded' | 'circle';
+    }
+    /**
+     * ImageViewer 图片预览器
+     * - 支持多图预览、左右切换、循环
+     * - 支持缩放（滚轮/按钮/双击）、拖拽平移、旋转、重置
+     * - 支持顶部缩略图快速切换
+     * - 支持键盘操作（Esc 关闭、←/→ 切换、+/- 缩放、0 重置）
+     */
+    interface LdesignImageViewer {
+        /**
+          * 主题：暗色/亮色遮罩
+          * @default 'dark'
+         */
+        "backdrop": 'dark' | 'light';
+        /**
+          * 图片列表（数组或 JSON 字符串）
+         */
+        "images": string | Array<ImageViewerItem | string>;
+        /**
+          * 是否启用键盘快捷键
+          * @default true
+         */
+        "keyboard": boolean;
+        /**
+          * 是否循环播放
+          * @default true
+         */
+        "loop": boolean;
+        /**
+          * 点击遮罩是否可关闭
+          * @default true
+         */
+        "maskClosable": boolean;
+        /**
+          * @default 4
+         */
+        "maxScale": number;
+        /**
+          * 最小/最大缩放
+          * @default 0.25
+         */
+        "minScale": number;
+        /**
+          * 是否展示顶部缩略图
+          * @default true
+         */
+        "showThumbnails": boolean;
+        /**
+          * 初始索引
+          * @default 0
+         */
+        "startIndex": number;
+        /**
+          * 是否显示
+          * @default false
+         */
+        "visible": boolean;
+        /**
+          * 是否启用滚轮缩放
+          * @default true
+         */
+        "wheelZoom": boolean;
+        /**
+          * z-index
+          * @default 1000
+         */
+        "zIndex": number;
+        /**
+          * 缩放步进
+          * @default 0.1
+         */
+        "zoomStep": number;
     }
     /**
      * Input 输入框组件
@@ -527,6 +896,55 @@ export namespace Components {
           * @default ''
          */
         "value": string;
+    }
+    /**
+     * Loading 加载组件
+     * 轻量的加载指示器，支持两种形态：spinner | dots
+     */
+    interface LdesignLoading {
+        /**
+          * 全屏模式（覆盖整个视口）
+          * @default false
+         */
+        "fullscreen": boolean;
+        /**
+          * 全屏时是否锁定页面滚动
+          * @default true
+         */
+        "lockScroll": boolean;
+        /**
+          * 全屏时是否显示遮罩背景
+          * @default true
+         */
+        "mask": boolean;
+        /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 是否处于加载中
+          * @default true
+         */
+        "spinning": boolean;
+        /**
+          * 说明文字
+         */
+        "tip"?: string;
+        /**
+          * 加载指示类型
+          * @default 'spinner'
+         */
+        "type": 'spinner' | 'dots';
+        /**
+          * 垂直布局（图标在上、文字在下）
+          * @default false
+         */
+        "vertical": boolean;
+        /**
+          * 全屏时的层级（可选）
+         */
+        "zIndex"?: number;
     }
     interface LdesignMenu {
         /**
@@ -1163,6 +1581,70 @@ export namespace Components {
         "value"?: string | number;
     }
     /**
+     * Rate 评分组件
+     * - 支持半星、清空、只读、禁用、键盘可访问
+     * - 支持自定义图标（基于 ldesign-icon），或通过 slot=character 自定义字符
+     */
+    interface LdesignRate {
+        /**
+          * 再次点击清空（值相同则清零）
+          * @default true
+         */
+        "allowClear": boolean;
+        /**
+          * 允许半星
+          * @default false
+         */
+        "allowHalf": boolean;
+        /**
+          * 选中颜色（支持 CSS 变量覆盖）
+         */
+        "color"?: string;
+        /**
+          * 受控模式：为 true 时组件不主动修改 value，仅触发事件
+          * @default false
+         */
+        "controlled": boolean;
+        /**
+          * 总星数
+          * @default 5
+         */
+        "count": number;
+        /**
+          * 禁用交互
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 图标名称（默认 star）
+          * @default 'star'
+         */
+        "icon": string;
+        /**
+          * 只读（展示，不可交互）
+          * @default false
+         */
+        "readonly": boolean;
+        /**
+          * 尺寸（影响图标大小与间距）
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 提示文案（数组），hover 时显示。可传属性为 JSON 字符串或以属性方式传递数组
+         */
+        "tooltips"?: string[] | string;
+        /**
+          * 当前分值（支持受控）
+          * @default 0
+         */
+        "value": number;
+        /**
+          * 未选中颜色（支持 CSS 变量覆盖）
+         */
+        "voidColor"?: string;
+    }
+    /**
      * Select 选择器
      * 基于 <ldesign-popup> 实现，支持单选/多选。
      */
@@ -1242,6 +1724,88 @@ export namespace Components {
           * 列表宽度（可选）
          */
         "width"?: number | string;
+    }
+    /**
+     * Slider 滑块组件
+     * 通过拖动滑块在一定数值区间内进行选择
+     */
+    interface LdesignSlider {
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 最大值
+          * @default 100
+         */
+        "max": number;
+        /**
+          * 最小值
+          * @default 0
+         */
+        "min": number;
+        /**
+          * 是否显示当前值提示
+          * @default false
+         */
+        "showTooltip": boolean;
+        /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 步长（> 0）
+          * @default 1
+         */
+        "step": number;
+        /**
+          * 当前值
+          * @default 0
+         */
+        "value": number;
+        /**
+          * 是否垂直方向
+          * @default false
+         */
+        "vertical": boolean;
+    }
+    /**
+     * Space 间距组件
+     * 用于在一组元素之间提供一致的间距与对齐控制
+     */
+    interface LdesignSpace {
+        /**
+          * 交叉轴对齐方式
+          * @default 'center'
+         */
+        "align": 'start' | 'center' | 'end' | 'baseline';
+        /**
+          * 是否占满容器宽度
+          * @default false
+         */
+        "block": boolean;
+        /**
+          * 是否自动换行（仅在横向时有效）
+          * @default false
+         */
+        "breakLine": boolean;
+        /**
+          * 间距方向
+          * @default 'horizontal'
+         */
+        "direction": 'horizontal' | 'vertical';
+        /**
+          * 间距尺寸。可选预设：small | medium | large；也可传数字，单位为 px
+          * @default 'medium'
+         */
+        "size": Size | number | string;
+        /**
+          * 分隔符样式：none 不显示分隔符；line 使用 1px 分隔线
+          * @default 'none'
+         */
+        "split": 'none' | 'line';
     }
     /**
      * Switch 开关组件
@@ -1428,6 +1992,142 @@ export namespace Components {
          */
         "theme": 'dark' | 'light';
     }
+    interface LdesignTree {
+        /**
+          * @default true
+         */
+        "allowAfter": boolean;
+        /**
+          * 全局允许放置位置
+          * @default true
+         */
+        "allowBefore": boolean;
+        /**
+          * 自定义：是否允许拖拽该节点（JS 赋值）
+         */
+        "allowDrag"?: (node: TreeNode) => boolean;
+        /**
+          * 自定义：是否允许在目标位置放置（JS 赋值）
+         */
+        "allowDrop"?: (dragNode: TreeNode, dropNode: TreeNode, position: 'before' | 'after' | 'inside') => boolean;
+        /**
+          * @default true
+         */
+        "allowInside": boolean;
+        /**
+          * 是否显示复选框
+          * @default false
+         */
+        "checkable": boolean;
+        /**
+          * 当前勾选项（受控）
+         */
+        "checkedKeys"?: string[] | string;
+        "collapse": (key: string) => Promise<void>;
+        "collapseAll": () => Promise<void>;
+        /**
+          * 远程数据 URL（根或子节点懒加载）
+         */
+        "dataUrl"?: string;
+        /**
+          * 默认勾选项（非受控）
+          * @default []
+         */
+        "defaultCheckedKeys": string[] | string;
+        /**
+          * 默认展开项（非受控）
+          * @default []
+         */
+        "defaultExpandedKeys": string[] | string;
+        /**
+          * 默认选中项（非受控）
+         */
+        "defaultValue"?: string | string[];
+        /**
+          * 拖拽悬停自动展开的延迟（毫秒）
+          * @default 400
+         */
+        "dragExpandDelay": number;
+        /**
+          * 是否开启节点拖拽重排
+          * @default false
+         */
+        "draggable": boolean;
+        "expand": (key: string) => Promise<void>;
+        "expandAll": () => Promise<void>;
+        /**
+          * 当前展开项（受控）
+         */
+        "expandedKeys"?: string[] | string;
+        /**
+          * 字段映射：当后端字段名非 key/label/children/isLeaf 等时可用；支持 JSON 字符串或对象（JS 赋值）
+         */
+        "fieldMap"?: string | { key: string; label: string; children?: string; isLeaf?: string; disabled?: string; icon?: string };
+        "focusKey": (key: string) => Promise<void>;
+        "getItems": () => Promise<TreeNode[]>;
+        /**
+          * 层级缩进（px）
+          * @default 16
+         */
+        "indent": number;
+        /**
+          * 树数据（可传入 JSON 字符串或对象数组）
+          * @default []
+         */
+        "items": string | TreeNode[];
+        /**
+          * 选择器：读取 <script type="application/json"> 的数据
+         */
+        "itemsSelector"?: string;
+        /**
+          * 启用懒加载：展开时若无 children 则触发加载
+          * @default false
+         */
+        "lazy": boolean;
+        /**
+          * 可通过 JS 赋值：自定义加载函数
+         */
+        "loadData"?: (node?: TreeNode | undefined) => Promise<TreeNode[]>;
+        /**
+          * 限制最大层级深度（根为 depth=1）；未设置则不限制
+         */
+        "maxDepth"?: number;
+        "move": (dragKey: string, dropKey: string, position: "before" | "after" | "inside") => Promise<boolean>;
+        /**
+          * 是否多选
+          * @default false
+         */
+        "multiple": boolean;
+        /**
+          * 懒加载参数名（dataUrl 模式下）：父键参数
+          * @default 'parent'
+         */
+        "parentParam": string;
+        /**
+          * 是否启用键盘重排（Alt+方向键）
+          * @default true
+         */
+        "reorderable": boolean;
+        /**
+          * 是否可选择（高亮）
+          * @default true
+         */
+        "selectable": boolean;
+        "setItems": (items: string | TreeNode[]) => Promise<void>;
+        /**
+          * 是否显示连接线（简易）
+          * @default false
+         */
+        "showLine": boolean;
+        /**
+          * 可通过 JS 赋值：转换函数，将接口原始数据转换为 TreeNode[]
+         */
+        "transform"?: (raw: any) => TreeNode[];
+        /**
+          * 当前选中项（受控，单选为 string，多选为 string[]）
+         */
+        "value"?: string | string[];
+    }
 }
 export interface LdesignAffixCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -1445,6 +2145,14 @@ export interface LdesignCheckboxGroupCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignCheckboxGroupElement;
 }
+export interface LdesignCollapseCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignCollapseElement;
+}
+export interface LdesignCollapsePanelCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignCollapsePanelElement;
+}
 export interface LdesignDrawerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignDrawerElement;
@@ -1452,6 +2160,14 @@ export interface LdesignDrawerCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignDropdownCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignDropdownElement;
+}
+export interface LdesignImageCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignImageElement;
+}
+export interface LdesignImageViewerCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignImageViewerElement;
 }
 export interface LdesignInputCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -1493,9 +2209,17 @@ export interface LdesignRadioGroupCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignRadioGroupElement;
 }
+export interface LdesignRateCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignRateElement;
+}
 export interface LdesignSelectCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignSelectElement;
+}
+export interface LdesignSliderCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignSliderElement;
 }
 export interface LdesignSwitchCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -1504,6 +2228,10 @@ export interface LdesignSwitchCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignTabsCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignTabsElement;
+}
+export interface LdesignTreeCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignTreeElement;
 }
 declare global {
     /**
@@ -1613,6 +2341,48 @@ declare global {
         prototype: HTMLLdesignCheckboxGroupElement;
         new (): HTMLLdesignCheckboxGroupElement;
     };
+    interface HTMLLdesignCollapseElementEventMap {
+        "ldesignChange": string[];
+        "ldesignToggle": { name: string; open: boolean; openKeys: string[] };
+    }
+    /**
+     * Collapse 折叠面板
+     * - 支持受控/非受控、手风琴模式、动画、禁用
+     */
+    interface HTMLLdesignCollapseElement extends Components.LdesignCollapse, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignCollapseElementEventMap>(type: K, listener: (this: HTMLLdesignCollapseElement, ev: LdesignCollapseCustomEvent<HTMLLdesignCollapseElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignCollapseElementEventMap>(type: K, listener: (this: HTMLLdesignCollapseElement, ev: LdesignCollapseCustomEvent<HTMLLdesignCollapseElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignCollapseElement: {
+        prototype: HTMLLdesignCollapseElement;
+        new (): HTMLLdesignCollapseElement;
+    };
+    interface HTMLLdesignCollapsePanelElementEventMap {
+        "ldesignCollapseItemToggle": { name: string };
+    }
+    /**
+     * CollapsePanel 折叠面板项
+     */
+    interface HTMLLdesignCollapsePanelElement extends Components.LdesignCollapsePanel, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignCollapsePanelElementEventMap>(type: K, listener: (this: HTMLLdesignCollapsePanelElement, ev: LdesignCollapsePanelCustomEvent<HTMLLdesignCollapsePanelElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignCollapsePanelElementEventMap>(type: K, listener: (this: HTMLLdesignCollapsePanelElement, ev: LdesignCollapsePanelCustomEvent<HTMLLdesignCollapsePanelElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignCollapsePanelElement: {
+        prototype: HTMLLdesignCollapsePanelElement;
+        new (): HTMLLdesignCollapsePanelElement;
+    };
     interface HTMLLdesignDrawerElementEventMap {
         "ldesignVisibleChange": boolean;
         "ldesignClose": void;
@@ -1667,6 +2437,73 @@ declare global {
         prototype: HTMLLdesignIconElement;
         new (): HTMLLdesignIconElement;
     };
+    interface HTMLLdesignImageElementEventMap {
+        "ldesignLoad": { width: number; height: number; src: string };
+        "ldesignError": { src: string; error: string };
+        "ldesignPreviewOpen": void;
+        "ldesignPreviewClose": void;
+    }
+    /**
+     * Image 图片组件
+     * - 支持懒加载（IntersectionObserver + 原生 loading）
+     * - 支持占位/骨架、错误占位、回退图
+     * - 支持响应式图片（srcset/sizes）
+     * - 支持 object-fit / object-position
+     * - 支持预览（遮罩、缩放、拖拽）
+     */
+    interface HTMLLdesignImageElement extends Components.LdesignImage, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignImageElementEventMap>(type: K, listener: (this: HTMLLdesignImageElement, ev: LdesignImageCustomEvent<HTMLLdesignImageElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignImageElementEventMap>(type: K, listener: (this: HTMLLdesignImageElement, ev: LdesignImageCustomEvent<HTMLLdesignImageElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignImageElement: {
+        prototype: HTMLLdesignImageElement;
+        new (): HTMLLdesignImageElement;
+    };
+    /**
+     * ImageGroup 图集容器
+     * - 使用 CSS Grid 布局
+     * - 支持列数与间距
+     * - 可给子项（ldesign-image）注入默认形状（若子项未手动指定）
+     */
+    interface HTMLLdesignImageGroupElement extends Components.LdesignImageGroup, HTMLStencilElement {
+    }
+    var HTMLLdesignImageGroupElement: {
+        prototype: HTMLLdesignImageGroupElement;
+        new (): HTMLLdesignImageGroupElement;
+    };
+    interface HTMLLdesignImageViewerElementEventMap {
+        "ldesignVisibleChange": boolean;
+        "ldesignOpen": void;
+        "ldesignClose": void;
+        "ldesignChange": { index: number };
+    }
+    /**
+     * ImageViewer 图片预览器
+     * - 支持多图预览、左右切换、循环
+     * - 支持缩放（滚轮/按钮/双击）、拖拽平移、旋转、重置
+     * - 支持顶部缩略图快速切换
+     * - 支持键盘操作（Esc 关闭、←/→ 切换、+/- 缩放、0 重置）
+     */
+    interface HTMLLdesignImageViewerElement extends Components.LdesignImageViewer, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignImageViewerElementEventMap>(type: K, listener: (this: HTMLLdesignImageViewerElement, ev: LdesignImageViewerCustomEvent<HTMLLdesignImageViewerElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignImageViewerElementEventMap>(type: K, listener: (this: HTMLLdesignImageViewerElement, ev: LdesignImageViewerCustomEvent<HTMLLdesignImageViewerElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignImageViewerElement: {
+        prototype: HTMLLdesignImageViewerElement;
+        new (): HTMLLdesignImageViewerElement;
+    };
     interface HTMLLdesignInputElementEventMap {
         "ldesignInput": string;
         "ldesignChange": string;
@@ -1691,6 +2528,16 @@ declare global {
     var HTMLLdesignInputElement: {
         prototype: HTMLLdesignInputElement;
         new (): HTMLLdesignInputElement;
+    };
+    /**
+     * Loading 加载组件
+     * 轻量的加载指示器，支持两种形态：spinner | dots
+     */
+    interface HTMLLdesignLoadingElement extends Components.LdesignLoading, HTMLStencilElement {
+    }
+    var HTMLLdesignLoadingElement: {
+        prototype: HTMLLdesignLoadingElement;
+        new (): HTMLLdesignLoadingElement;
     };
     interface HTMLLdesignMenuElementEventMap {
         "ldesignSelect": { key: string; item: MenuItem; pathKeys: string[] };
@@ -1889,6 +2736,29 @@ declare global {
         prototype: HTMLLdesignRadioGroupElement;
         new (): HTMLLdesignRadioGroupElement;
     };
+    interface HTMLLdesignRateElementEventMap {
+        "ldesignHoverChange": number;
+        "ldesignChange": number;
+    }
+    /**
+     * Rate 评分组件
+     * - 支持半星、清空、只读、禁用、键盘可访问
+     * - 支持自定义图标（基于 ldesign-icon），或通过 slot=character 自定义字符
+     */
+    interface HTMLLdesignRateElement extends Components.LdesignRate, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignRateElementEventMap>(type: K, listener: (this: HTMLLdesignRateElement, ev: LdesignRateCustomEvent<HTMLLdesignRateElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignRateElementEventMap>(type: K, listener: (this: HTMLLdesignRateElement, ev: LdesignRateCustomEvent<HTMLLdesignRateElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignRateElement: {
+        prototype: HTMLLdesignRateElement;
+        new (): HTMLLdesignRateElement;
+    };
     interface HTMLLdesignSelectElementEventMap {
         "ldesignChange": { value: string | string[] | undefined; options: SelectOption[] };
         "ldesignVisibleChange": boolean;
@@ -1910,6 +2780,38 @@ declare global {
     var HTMLLdesignSelectElement: {
         prototype: HTMLLdesignSelectElement;
         new (): HTMLLdesignSelectElement;
+    };
+    interface HTMLLdesignSliderElementEventMap {
+        "ldesignInput": number;
+        "ldesignChange": number;
+    }
+    /**
+     * Slider 滑块组件
+     * 通过拖动滑块在一定数值区间内进行选择
+     */
+    interface HTMLLdesignSliderElement extends Components.LdesignSlider, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignSliderElementEventMap>(type: K, listener: (this: HTMLLdesignSliderElement, ev: LdesignSliderCustomEvent<HTMLLdesignSliderElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignSliderElementEventMap>(type: K, listener: (this: HTMLLdesignSliderElement, ev: LdesignSliderCustomEvent<HTMLLdesignSliderElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignSliderElement: {
+        prototype: HTMLLdesignSliderElement;
+        new (): HTMLLdesignSliderElement;
+    };
+    /**
+     * Space 间距组件
+     * 用于在一组元素之间提供一致的间距与对齐控制
+     */
+    interface HTMLLdesignSpaceElement extends Components.LdesignSpace, HTMLStencilElement {
+    }
+    var HTMLLdesignSpaceElement: {
+        prototype: HTMLLdesignSpaceElement;
+        new (): HTMLLdesignSpaceElement;
     };
     interface HTMLLdesignSwitchElementEventMap {
         "ldesignChange": string | number | boolean;
@@ -1975,6 +2877,27 @@ declare global {
         prototype: HTMLLdesignTooltipElement;
         new (): HTMLLdesignTooltipElement;
     };
+    interface HTMLLdesignTreeElementEventMap {
+        "ldesignSelect": { key: string; keys: string[]; node?: TreeNode };
+        "ldesignExpand": { key: string; expanded: boolean; expandedKeys: string[] };
+        "ldesignCheck": { key: string; checked: boolean; checkedKeys: string[]; halfCheckedKeys: string[] };
+        "ldesignDrop": { dragKey: string; dropKey: string; position: 'before' | 'after' | 'inside'; items: TreeNode[] };
+        "ldesignMove": { dragKey: string; dropKey: string; position: 'before' | 'after' | 'inside'; items: TreeNode[] };
+    }
+    interface HTMLLdesignTreeElement extends Components.LdesignTree, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignTreeElementEventMap>(type: K, listener: (this: HTMLLdesignTreeElement, ev: LdesignTreeCustomEvent<HTMLLdesignTreeElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignTreeElementEventMap>(type: K, listener: (this: HTMLLdesignTreeElement, ev: LdesignTreeCustomEvent<HTMLLdesignTreeElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignTreeElement: {
+        prototype: HTMLLdesignTreeElement;
+        new (): HTMLLdesignTreeElement;
+    };
     interface HTMLElementTagNameMap {
         "base-component": HTMLBaseComponentElement;
         "ldesign-affix": HTMLLdesignAffixElement;
@@ -1982,10 +2905,16 @@ declare global {
         "ldesign-button": HTMLLdesignButtonElement;
         "ldesign-checkbox": HTMLLdesignCheckboxElement;
         "ldesign-checkbox-group": HTMLLdesignCheckboxGroupElement;
+        "ldesign-collapse": HTMLLdesignCollapseElement;
+        "ldesign-collapse-panel": HTMLLdesignCollapsePanelElement;
         "ldesign-drawer": HTMLLdesignDrawerElement;
         "ldesign-dropdown": HTMLLdesignDropdownElement;
         "ldesign-icon": HTMLLdesignIconElement;
+        "ldesign-image": HTMLLdesignImageElement;
+        "ldesign-image-group": HTMLLdesignImageGroupElement;
+        "ldesign-image-viewer": HTMLLdesignImageViewerElement;
         "ldesign-input": HTMLLdesignInputElement;
+        "ldesign-loading": HTMLLdesignLoadingElement;
         "ldesign-menu": HTMLLdesignMenuElement;
         "ldesign-message": HTMLLdesignMessageElement;
         "ldesign-modal": HTMLLdesignModalElement;
@@ -1995,11 +2924,15 @@ declare global {
         "ldesign-popup": HTMLLdesignPopupElement;
         "ldesign-radio": HTMLLdesignRadioElement;
         "ldesign-radio-group": HTMLLdesignRadioGroupElement;
+        "ldesign-rate": HTMLLdesignRateElement;
         "ldesign-select": HTMLLdesignSelectElement;
+        "ldesign-slider": HTMLLdesignSliderElement;
+        "ldesign-space": HTMLLdesignSpaceElement;
         "ldesign-switch": HTMLLdesignSwitchElement;
         "ldesign-tab-panel": HTMLLdesignTabPanelElement;
         "ldesign-tabs": HTMLLdesignTabsElement;
         "ldesign-tooltip": HTMLLdesignTooltipElement;
+        "ldesign-tree": HTMLLdesignTreeElement;
     }
 }
 declare namespace LocalJSX {
@@ -2100,10 +3033,20 @@ declare namespace LocalJSX {
          */
         "block"?: boolean;
         /**
+          * 语义颜色（用于 outline/dashed/text/link/ghost）
+          * @default 'primary'
+         */
+        "color"?: ButtonColor;
+        /**
           * 是否禁用
           * @default false
          */
         "disabled"?: boolean;
+        /**
+          * 幽灵按钮（一般用于深色背景）
+          * @default false
+         */
+        "ghost"?: boolean;
         /**
           * 图标名称
          */
@@ -2270,6 +3213,105 @@ declare namespace LocalJSX {
         "variant"?: 'default' | 'outline' | 'filled' | 'button';
     }
     /**
+     * Collapse 折叠面板
+     * - 支持受控/非受控、手风琴模式、动画、禁用
+     */
+    interface LdesignCollapse {
+        /**
+          * 手风琴模式：同层级仅允许展开一个
+          * @default false
+         */
+        "accordion"?: boolean;
+        /**
+          * 边框样式
+          * @default true
+         */
+        "bordered"?: boolean;
+        /**
+          * 默认展开的面板标识列表（非受控）
+          * @default []
+         */
+        "defaultValue"?: string[];
+        /**
+          * 整体禁用（子面板不可交互）
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 展开图标位置
+          * @default 'left'
+         */
+        "expandIconPlacement"?: 'left' | 'right';
+        /**
+          * 幽灵（无背景，仅分隔线）
+          * @default false
+         */
+        "ghost"?: boolean;
+        /**
+          * 展开项变化
+         */
+        "onLdesignChange"?: (event: LdesignCollapseCustomEvent<string[]>) => void;
+        /**
+          * 单项切换事件
+         */
+        "onLdesignToggle"?: (event: LdesignCollapseCustomEvent<{ name: string; open: boolean; openKeys: string[] }>) => void;
+        /**
+          * 展开的面板标识列表（受控）
+         */
+        "value"?: string[];
+    }
+    /**
+     * CollapsePanel 折叠面板项
+     */
+    interface LdesignCollapsePanel {
+        /**
+          * 激活状态（由父级控制）
+          * @default false
+         */
+        "active"?: boolean;
+        /**
+          * 收起后是否销毁内容（优先级高于 lazy）
+          * @default false
+         */
+        "destroyOnClose"?: boolean;
+        /**
+          * 禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 展开图标名称（默认 chevron-right）
+          * @default 'chevron-right'
+         */
+        "expandIcon"?: string;
+        /**
+          * 图标位置（由父级传入，也可单独覆盖）
+          * @default 'left'
+         */
+        "expandIconPlacement"?: 'left' | 'right';
+        /**
+          * 右侧附加区（可用 slot="extra" 覆盖）
+         */
+        "extra"?: string;
+        /**
+          * 头部文本（可用 slot="header" 覆盖）
+         */
+        "header"?: string;
+        /**
+          * 首次激活才渲染内容（懒渲染）
+          * @default false
+         */
+        "lazy"?: boolean;
+        /**
+          * 面板唯一标识（由父级匹配）
+         */
+        "name"?: string;
+        /**
+          * 冒泡给父级，用于切换
+         */
+        "onLdesignCollapseItemToggle"?: (event: LdesignCollapsePanelCustomEvent<{ name: string }>) => void;
+    }
+    /**
      * Drawer 抽屉组件
      * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
      */
@@ -2333,6 +3375,11 @@ declare namespace LocalJSX {
      */
     interface LdesignDropdown {
         /**
+          * 浮层挂载位置：默认 body，避免在文档容器中被裁剪
+          * @default 'body'
+         */
+        "appendTo"?: 'self' | 'body' | 'closest-popup';
+        /**
           * 是否显示箭头（默认不显示）
           * @default false
          */
@@ -2352,6 +3399,11 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
+          * 菜单宽度是否跟随触发器宽度（默认否）
+          * @default false
+         */
+        "fitTriggerWidth"?: boolean;
+        /**
           * 下拉项列表（可传数组或 JSON 字符串）
           * @default []
          */
@@ -2370,7 +3422,7 @@ declare namespace LocalJSX {
          */
         "onLdesignVisibleChange"?: (event: LdesignDropdownCustomEvent<boolean>) => void;
         /**
-          * 占位文案（当未选中任何项且使用默认 trigger 时显示）
+          * 触发器文本（默认触发器显示的固定文案，不随选择变化）
           * @default '请选择'
          */
         "placeholder"?: string;
@@ -2379,6 +3431,21 @@ declare namespace LocalJSX {
           * @default 'bottom-start'
          */
         "placement"?: DropdownPlacement;
+        /**
+          * 是否将选中项同步到默认触发器文本（默认不同步）
+          * @default false
+         */
+        "reflectSelectionOnTrigger"?: boolean;
+        /**
+          * 是否在菜单项上展示选中样式（默认不展示）
+          * @default false
+         */
+        "showSelected"?: boolean;
+        /**
+          * 子菜单的触发方式（hover/click），默认 hover
+          * @default 'hover'
+         */
+        "submenuTrigger"?: 'hover' | 'click';
         /**
           * 主题（浅色/深色），透传给 Popup
           * @default 'light'
@@ -2431,6 +3498,269 @@ declare namespace LocalJSX {
           * @default 2
          */
         "strokeWidth"?: number;
+    }
+    /**
+     * Image 图片组件
+     * - 支持懒加载（IntersectionObserver + 原生 loading）
+     * - 支持占位/骨架、错误占位、回退图
+     * - 支持响应式图片（srcset/sizes）
+     * - 支持 object-fit / object-position
+     * - 支持预览（遮罩、缩放、拖拽）
+     */
+    interface LdesignImage {
+        /**
+          * 替代文本
+         */
+        "alt"?: string;
+        /**
+          * crossorigin
+         */
+        "crossorigin"?: 'anonymous' | 'use-credentials';
+        /**
+          * HTMLImageElement.decoding
+          * @default 'auto'
+         */
+        "decoding"?: 'async' | 'sync' | 'auto';
+        /**
+          * 是否禁用（影响交互，如预览）
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 是否允许拖拽原图（仅影响 img 的原生 draggable 属性，预览层可拖拽不受此限制）
+          * @default false
+         */
+        "draggable"?: boolean;
+        /**
+          * 失败时的回退图片 URL
+         */
+        "fallback"?: string;
+        /**
+          * object-fit
+          * @default 'cover'
+         */
+        "fit"?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
+        /**
+          * GIF 默认静止，点击播放。建议同时提供 gifPreviewSrc（第一帧快照）与 ratio 避免CLS
+          * @default false
+         */
+        "gifPlayOnClick"?: boolean;
+        /**
+          * GIF 静止时展示的静态预览图（例如第一帧 webp/jpg）
+         */
+        "gifPreviewSrc"?: string;
+        /**
+          * 高度（number 自动补 px，string 原样输出，如 '50%'、'200px'）
+         */
+        "height"?: number | string;
+        /**
+          * 提示文本（用于 img 的 title 属性，为避免与 HTMLElement.title 冲突，这里命名为 imgTitle）
+         */
+        "imgTitle"?: string;
+        /**
+          * IntersectionObserver rootMargin（预加载阈值）
+          * @default '200px'
+         */
+        "intersectionRootMargin"?: string;
+        /**
+          * 是否懒加载（首屏建议关闭）
+          * @default true
+         */
+        "lazy"?: boolean;
+        /**
+          * 加载失败
+         */
+        "onLdesignError"?: (event: LdesignImageCustomEvent<{ src: string; error: string }>) => void;
+        /**
+          * 加载成功
+         */
+        "onLdesignLoad"?: (event: LdesignImageCustomEvent<{ width: number; height: number; src: string }>) => void;
+        /**
+          * 预览关闭
+         */
+        "onLdesignPreviewClose"?: (event: LdesignImageCustomEvent<void>) => void;
+        /**
+          * 预览打开
+         */
+        "onLdesignPreviewOpen"?: (event: LdesignImageCustomEvent<void>) => void;
+        /**
+          * 自定义占位图 URL（优先级高于骨架）
+         */
+        "placeholder"?: string;
+        /**
+          * 占位背景颜色（无自定义占位图时显示）
+          * @default '#f5f5f5'
+         */
+        "placeholderColor"?: string;
+        /**
+          * object-position
+          * @default 'center center'
+         */
+        "position"?: string;
+        /**
+          * 点击开启预览
+          * @default false
+         */
+        "preview"?: boolean;
+        /**
+          * 预览遮罩主题
+          * @default 'dark'
+         */
+        "previewBackdrop"?: 'dark' | 'light';
+        /**
+          * 预览使用的高清图（不填则使用 src）
+         */
+        "previewSrc"?: string;
+        /**
+          * 圆角（number 自动补 px，string 原样输出）
+         */
+        "radius"?: number | string;
+        /**
+          * 期望的宽高比（用于在未设置高度、尚未加载时提供正确的占位比例，避免布局抖动） - 可传 16/9、4/3 等字符串，或数值（如 1.777） - 若不传，则在图片加载完成后自动以 naturalWidth/naturalHeight 填充比例
+         */
+        "ratio"?: string | number;
+        /**
+          * referrerPolicy
+         */
+        "referrerPolicy"?: string;
+        /**
+          * 形状：square（默认）| rounded | circle
+          * @default 'square'
+         */
+        "shape"?: 'square' | 'rounded' | 'circle';
+        /**
+          * 是否展示错误占位层
+          * @default true
+         */
+        "showError"?: boolean;
+        /**
+          * 是否展示加载中骨架（当无自定义占位图时）
+          * @default true
+         */
+        "showLoading"?: boolean;
+        /**
+          * 响应式图片 sizes
+         */
+        "sizes"?: string;
+        /**
+          * 多源图片，支持 AVIF/WebP 等，JSON 字符串或对象数组：[{ type, srcset, media? }]
+         */
+        "sources"?: string | Array<{ type: string; srcset: string; media?: string }>;
+        /**
+          * 图片地址
+         */
+        "src": string;
+        /**
+          * 响应式图片 srcset
+         */
+        "srcset"?: string;
+        /**
+          * 宽度（number 自动补 px，string 原样输出，如 '50%'、'320px'）
+         */
+        "width"?: number | string;
+        /**
+          * 预览是否可缩放
+          * @default true
+         */
+        "zoomable"?: boolean;
+    }
+    /**
+     * ImageGroup 图集容器
+     * - 使用 CSS Grid 布局
+     * - 支持列数与间距
+     * - 可给子项（ldesign-image）注入默认形状（若子项未手动指定）
+     */
+    interface LdesignImageGroup {
+        /**
+          * 列数
+          * @default 3
+         */
+        "columns"?: number;
+        /**
+          * 间距（px）
+          * @default 8
+         */
+        "gap"?: number;
+        /**
+          * 统一子项形状（子项已设置 shape 时不覆盖）
+         */
+        "shape"?: 'square' | 'rounded' | 'circle';
+    }
+    /**
+     * ImageViewer 图片预览器
+     * - 支持多图预览、左右切换、循环
+     * - 支持缩放（滚轮/按钮/双击）、拖拽平移、旋转、重置
+     * - 支持顶部缩略图快速切换
+     * - 支持键盘操作（Esc 关闭、←/→ 切换、+/- 缩放、0 重置）
+     */
+    interface LdesignImageViewer {
+        /**
+          * 主题：暗色/亮色遮罩
+          * @default 'dark'
+         */
+        "backdrop"?: 'dark' | 'light';
+        /**
+          * 图片列表（数组或 JSON 字符串）
+         */
+        "images": string | Array<ImageViewerItem | string>;
+        /**
+          * 是否启用键盘快捷键
+          * @default true
+         */
+        "keyboard"?: boolean;
+        /**
+          * 是否循环播放
+          * @default true
+         */
+        "loop"?: boolean;
+        /**
+          * 点击遮罩是否可关闭
+          * @default true
+         */
+        "maskClosable"?: boolean;
+        /**
+          * @default 4
+         */
+        "maxScale"?: number;
+        /**
+          * 最小/最大缩放
+          * @default 0.25
+         */
+        "minScale"?: number;
+        "onLdesignChange"?: (event: LdesignImageViewerCustomEvent<{ index: number }>) => void;
+        "onLdesignClose"?: (event: LdesignImageViewerCustomEvent<void>) => void;
+        "onLdesignOpen"?: (event: LdesignImageViewerCustomEvent<void>) => void;
+        "onLdesignVisibleChange"?: (event: LdesignImageViewerCustomEvent<boolean>) => void;
+        /**
+          * 是否展示顶部缩略图
+          * @default true
+         */
+        "showThumbnails"?: boolean;
+        /**
+          * 初始索引
+          * @default 0
+         */
+        "startIndex"?: number;
+        /**
+          * 是否显示
+          * @default false
+         */
+        "visible"?: boolean;
+        /**
+          * 是否启用滚轮缩放
+          * @default true
+         */
+        "wheelZoom"?: boolean;
+        /**
+          * z-index
+          * @default 1000
+         */
+        "zIndex"?: number;
+        /**
+          * 缩放步进
+          * @default 0.1
+         */
+        "zoomStep"?: number;
     }
     /**
      * Input 输入框组件
@@ -2540,6 +3870,55 @@ declare namespace LocalJSX {
           * @default ''
          */
         "value"?: string;
+    }
+    /**
+     * Loading 加载组件
+     * 轻量的加载指示器，支持两种形态：spinner | dots
+     */
+    interface LdesignLoading {
+        /**
+          * 全屏模式（覆盖整个视口）
+          * @default false
+         */
+        "fullscreen"?: boolean;
+        /**
+          * 全屏时是否锁定页面滚动
+          * @default true
+         */
+        "lockScroll"?: boolean;
+        /**
+          * 全屏时是否显示遮罩背景
+          * @default true
+         */
+        "mask"?: boolean;
+        /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 是否处于加载中
+          * @default true
+         */
+        "spinning"?: boolean;
+        /**
+          * 说明文字
+         */
+        "tip"?: string;
+        /**
+          * 加载指示类型
+          * @default 'spinner'
+         */
+        "type"?: 'spinner' | 'dots';
+        /**
+          * 垂直布局（图标在上、文字在下）
+          * @default false
+         */
+        "vertical"?: boolean;
+        /**
+          * 全屏时的层级（可选）
+         */
+        "zIndex"?: number;
     }
     interface LdesignMenu {
         /**
@@ -3205,6 +4584,78 @@ declare namespace LocalJSX {
         "value"?: string | number;
     }
     /**
+     * Rate 评分组件
+     * - 支持半星、清空、只读、禁用、键盘可访问
+     * - 支持自定义图标（基于 ldesign-icon），或通过 slot=character 自定义字符
+     */
+    interface LdesignRate {
+        /**
+          * 再次点击清空（值相同则清零）
+          * @default true
+         */
+        "allowClear"?: boolean;
+        /**
+          * 允许半星
+          * @default false
+         */
+        "allowHalf"?: boolean;
+        /**
+          * 选中颜色（支持 CSS 变量覆盖）
+         */
+        "color"?: string;
+        /**
+          * 受控模式：为 true 时组件不主动修改 value，仅触发事件
+          * @default false
+         */
+        "controlled"?: boolean;
+        /**
+          * 总星数
+          * @default 5
+         */
+        "count"?: number;
+        /**
+          * 禁用交互
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 图标名称（默认 star）
+          * @default 'star'
+         */
+        "icon"?: string;
+        /**
+          * 值变化事件（返回新值）
+         */
+        "onLdesignChange"?: (event: LdesignRateCustomEvent<number>) => void;
+        /**
+          * hover 变化事件（返回悬浮值）
+         */
+        "onLdesignHoverChange"?: (event: LdesignRateCustomEvent<number>) => void;
+        /**
+          * 只读（展示，不可交互）
+          * @default false
+         */
+        "readonly"?: boolean;
+        /**
+          * 尺寸（影响图标大小与间距）
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 提示文案（数组），hover 时显示。可传属性为 JSON 字符串或以属性方式传递数组
+         */
+        "tooltips"?: string[] | string;
+        /**
+          * 当前分值（支持受控）
+          * @default 0
+         */
+        "value"?: number;
+        /**
+          * 未选中颜色（支持 CSS 变量覆盖）
+         */
+        "voidColor"?: string;
+    }
+    /**
      * Select 选择器
      * 基于 <ldesign-popup> 实现，支持单选/多选。
      */
@@ -3292,6 +4743,96 @@ declare namespace LocalJSX {
           * 列表宽度（可选）
          */
         "width"?: number | string;
+    }
+    /**
+     * Slider 滑块组件
+     * 通过拖动滑块在一定数值区间内进行选择
+     */
+    interface LdesignSlider {
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 最大值
+          * @default 100
+         */
+        "max"?: number;
+        /**
+          * 最小值
+          * @default 0
+         */
+        "min"?: number;
+        /**
+          * 值改变后触发（释放拖动或点击轨道）
+         */
+        "onLdesignChange"?: (event: LdesignSliderCustomEvent<number>) => void;
+        /**
+          * 拖动时实时触发
+         */
+        "onLdesignInput"?: (event: LdesignSliderCustomEvent<number>) => void;
+        /**
+          * 是否显示当前值提示
+          * @default false
+         */
+        "showTooltip"?: boolean;
+        /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 步长（> 0）
+          * @default 1
+         */
+        "step"?: number;
+        /**
+          * 当前值
+          * @default 0
+         */
+        "value"?: number;
+        /**
+          * 是否垂直方向
+          * @default false
+         */
+        "vertical"?: boolean;
+    }
+    /**
+     * Space 间距组件
+     * 用于在一组元素之间提供一致的间距与对齐控制
+     */
+    interface LdesignSpace {
+        /**
+          * 交叉轴对齐方式
+          * @default 'center'
+         */
+        "align"?: 'start' | 'center' | 'end' | 'baseline';
+        /**
+          * 是否占满容器宽度
+          * @default false
+         */
+        "block"?: boolean;
+        /**
+          * 是否自动换行（仅在横向时有效）
+          * @default false
+         */
+        "breakLine"?: boolean;
+        /**
+          * 间距方向
+          * @default 'horizontal'
+         */
+        "direction"?: 'horizontal' | 'vertical';
+        /**
+          * 间距尺寸。可选预设：small | medium | large；也可传数字，单位为 px
+          * @default 'medium'
+         */
+        "size"?: Size | number | string;
+        /**
+          * 分隔符样式：none 不显示分隔符；line 使用 1px 分隔线
+          * @default 'none'
+         */
+        "split"?: 'none' | 'line';
     }
     /**
      * Switch 开关组件
@@ -3494,6 +5035,154 @@ declare namespace LocalJSX {
          */
         "theme"?: 'dark' | 'light';
     }
+    interface LdesignTree {
+        /**
+          * @default true
+         */
+        "allowAfter"?: boolean;
+        /**
+          * 全局允许放置位置
+          * @default true
+         */
+        "allowBefore"?: boolean;
+        /**
+          * 自定义：是否允许拖拽该节点（JS 赋值）
+         */
+        "allowDrag"?: (node: TreeNode) => boolean;
+        /**
+          * 自定义：是否允许在目标位置放置（JS 赋值）
+         */
+        "allowDrop"?: (dragNode: TreeNode, dropNode: TreeNode, position: 'before' | 'after' | 'inside') => boolean;
+        /**
+          * @default true
+         */
+        "allowInside"?: boolean;
+        /**
+          * 是否显示复选框
+          * @default false
+         */
+        "checkable"?: boolean;
+        /**
+          * 当前勾选项（受控）
+         */
+        "checkedKeys"?: string[] | string;
+        /**
+          * 远程数据 URL（根或子节点懒加载）
+         */
+        "dataUrl"?: string;
+        /**
+          * 默认勾选项（非受控）
+          * @default []
+         */
+        "defaultCheckedKeys"?: string[] | string;
+        /**
+          * 默认展开项（非受控）
+          * @default []
+         */
+        "defaultExpandedKeys"?: string[] | string;
+        /**
+          * 默认选中项（非受控）
+         */
+        "defaultValue"?: string | string[];
+        /**
+          * 拖拽悬停自动展开的延迟（毫秒）
+          * @default 400
+         */
+        "dragExpandDelay"?: number;
+        /**
+          * 是否开启节点拖拽重排
+          * @default false
+         */
+        "draggable"?: boolean;
+        /**
+          * 当前展开项（受控）
+         */
+        "expandedKeys"?: string[] | string;
+        /**
+          * 字段映射：当后端字段名非 key/label/children/isLeaf 等时可用；支持 JSON 字符串或对象（JS 赋值）
+         */
+        "fieldMap"?: string | { key: string; label: string; children?: string; isLeaf?: string; disabled?: string; icon?: string };
+        /**
+          * 层级缩进（px）
+          * @default 16
+         */
+        "indent"?: number;
+        /**
+          * 树数据（可传入 JSON 字符串或对象数组）
+          * @default []
+         */
+        "items"?: string | TreeNode[];
+        /**
+          * 选择器：读取 <script type="application/json"> 的数据
+         */
+        "itemsSelector"?: string;
+        /**
+          * 启用懒加载：展开时若无 children 则触发加载
+          * @default false
+         */
+        "lazy"?: boolean;
+        /**
+          * 可通过 JS 赋值：自定义加载函数
+         */
+        "loadData"?: (node?: TreeNode | undefined) => Promise<TreeNode[]>;
+        /**
+          * 限制最大层级深度（根为 depth=1）；未设置则不限制
+         */
+        "maxDepth"?: number;
+        /**
+          * 是否多选
+          * @default false
+         */
+        "multiple"?: boolean;
+        /**
+          * 勾选事件（包含半选）
+         */
+        "onLdesignCheck"?: (event: LdesignTreeCustomEvent<{ key: string; checked: boolean; checkedKeys: string[]; halfCheckedKeys: string[] }>) => void;
+        /**
+          * 拖拽放置事件（也用于键盘重排时回调）
+         */
+        "onLdesignDrop"?: (event: LdesignTreeCustomEvent<{ dragKey: string; dropKey: string; position: 'before' | 'after' | 'inside'; items: TreeNode[] }>) => void;
+        /**
+          * 展开/收起事件
+         */
+        "onLdesignExpand"?: (event: LdesignTreeCustomEvent<{ key: string; expanded: boolean; expandedKeys: string[] }>) => void;
+        /**
+          * 键盘重排事件（与 drop 事件区分来源）
+         */
+        "onLdesignMove"?: (event: LdesignTreeCustomEvent<{ dragKey: string; dropKey: string; position: 'before' | 'after' | 'inside'; items: TreeNode[] }>) => void;
+        /**
+          * 选中事件
+         */
+        "onLdesignSelect"?: (event: LdesignTreeCustomEvent<{ key: string; keys: string[]; node?: TreeNode }>) => void;
+        /**
+          * 懒加载参数名（dataUrl 模式下）：父键参数
+          * @default 'parent'
+         */
+        "parentParam"?: string;
+        /**
+          * 是否启用键盘重排（Alt+方向键）
+          * @default true
+         */
+        "reorderable"?: boolean;
+        /**
+          * 是否可选择（高亮）
+          * @default true
+         */
+        "selectable"?: boolean;
+        /**
+          * 是否显示连接线（简易）
+          * @default false
+         */
+        "showLine"?: boolean;
+        /**
+          * 可通过 JS 赋值：转换函数，将接口原始数据转换为 TreeNode[]
+         */
+        "transform"?: (raw: any) => TreeNode[];
+        /**
+          * 当前选中项（受控，单选为 string，多选为 string[]）
+         */
+        "value"?: string | string[];
+    }
     interface IntrinsicElements {
         "base-component": BaseComponent;
         "ldesign-affix": LdesignAffix;
@@ -3501,10 +5190,16 @@ declare namespace LocalJSX {
         "ldesign-button": LdesignButton;
         "ldesign-checkbox": LdesignCheckbox;
         "ldesign-checkbox-group": LdesignCheckboxGroup;
+        "ldesign-collapse": LdesignCollapse;
+        "ldesign-collapse-panel": LdesignCollapsePanel;
         "ldesign-drawer": LdesignDrawer;
         "ldesign-dropdown": LdesignDropdown;
         "ldesign-icon": LdesignIcon;
+        "ldesign-image": LdesignImage;
+        "ldesign-image-group": LdesignImageGroup;
+        "ldesign-image-viewer": LdesignImageViewer;
         "ldesign-input": LdesignInput;
+        "ldesign-loading": LdesignLoading;
         "ldesign-menu": LdesignMenu;
         "ldesign-message": LdesignMessage;
         "ldesign-modal": LdesignModal;
@@ -3514,11 +5209,15 @@ declare namespace LocalJSX {
         "ldesign-popup": LdesignPopup;
         "ldesign-radio": LdesignRadio;
         "ldesign-radio-group": LdesignRadioGroup;
+        "ldesign-rate": LdesignRate;
         "ldesign-select": LdesignSelect;
+        "ldesign-slider": LdesignSlider;
+        "ldesign-space": LdesignSpace;
         "ldesign-switch": LdesignSwitch;
         "ldesign-tab-panel": LdesignTabPanel;
         "ldesign-tabs": LdesignTabs;
         "ldesign-tooltip": LdesignTooltip;
+        "ldesign-tree": LdesignTree;
     }
 }
 export { LocalJSX as JSX };
@@ -3559,6 +5258,15 @@ declare module "@stencil/core" {
              */
             "ldesign-checkbox-group": LocalJSX.LdesignCheckboxGroup & JSXBase.HTMLAttributes<HTMLLdesignCheckboxGroupElement>;
             /**
+             * Collapse 折叠面板
+             * - 支持受控/非受控、手风琴模式、动画、禁用
+             */
+            "ldesign-collapse": LocalJSX.LdesignCollapse & JSXBase.HTMLAttributes<HTMLLdesignCollapseElement>;
+            /**
+             * CollapsePanel 折叠面板项
+             */
+            "ldesign-collapse-panel": LocalJSX.LdesignCollapsePanel & JSXBase.HTMLAttributes<HTMLLdesignCollapsePanelElement>;
+            /**
              * Drawer 抽屉组件
              * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
              */
@@ -3574,10 +5282,39 @@ declare module "@stencil/core" {
              */
             "ldesign-icon": LocalJSX.LdesignIcon & JSXBase.HTMLAttributes<HTMLLdesignIconElement>;
             /**
+             * Image 图片组件
+             * - 支持懒加载（IntersectionObserver + 原生 loading）
+             * - 支持占位/骨架、错误占位、回退图
+             * - 支持响应式图片（srcset/sizes）
+             * - 支持 object-fit / object-position
+             * - 支持预览（遮罩、缩放、拖拽）
+             */
+            "ldesign-image": LocalJSX.LdesignImage & JSXBase.HTMLAttributes<HTMLLdesignImageElement>;
+            /**
+             * ImageGroup 图集容器
+             * - 使用 CSS Grid 布局
+             * - 支持列数与间距
+             * - 可给子项（ldesign-image）注入默认形状（若子项未手动指定）
+             */
+            "ldesign-image-group": LocalJSX.LdesignImageGroup & JSXBase.HTMLAttributes<HTMLLdesignImageGroupElement>;
+            /**
+             * ImageViewer 图片预览器
+             * - 支持多图预览、左右切换、循环
+             * - 支持缩放（滚轮/按钮/双击）、拖拽平移、旋转、重置
+             * - 支持顶部缩略图快速切换
+             * - 支持键盘操作（Esc 关闭、←/→ 切换、+/- 缩放、0 重置）
+             */
+            "ldesign-image-viewer": LocalJSX.LdesignImageViewer & JSXBase.HTMLAttributes<HTMLLdesignImageViewerElement>;
+            /**
              * Input 输入框组件
              * 通过鼠标或键盘输入内容，是最基础的表单域的包装
              */
             "ldesign-input": LocalJSX.LdesignInput & JSXBase.HTMLAttributes<HTMLLdesignInputElement>;
+            /**
+             * Loading 加载组件
+             * 轻量的加载指示器，支持两种形态：spinner | dots
+             */
+            "ldesign-loading": LocalJSX.LdesignLoading & JSXBase.HTMLAttributes<HTMLLdesignLoadingElement>;
             "ldesign-menu": LocalJSX.LdesignMenu & JSXBase.HTMLAttributes<HTMLLdesignMenuElement>;
             /**
              * Message 全局提示
@@ -3625,10 +5362,26 @@ declare module "@stencil/core" {
              */
             "ldesign-radio-group": LocalJSX.LdesignRadioGroup & JSXBase.HTMLAttributes<HTMLLdesignRadioGroupElement>;
             /**
+             * Rate 评分组件
+             * - 支持半星、清空、只读、禁用、键盘可访问
+             * - 支持自定义图标（基于 ldesign-icon），或通过 slot=character 自定义字符
+             */
+            "ldesign-rate": LocalJSX.LdesignRate & JSXBase.HTMLAttributes<HTMLLdesignRateElement>;
+            /**
              * Select 选择器
              * 基于 <ldesign-popup> 实现，支持单选/多选。
              */
             "ldesign-select": LocalJSX.LdesignSelect & JSXBase.HTMLAttributes<HTMLLdesignSelectElement>;
+            /**
+             * Slider 滑块组件
+             * 通过拖动滑块在一定数值区间内进行选择
+             */
+            "ldesign-slider": LocalJSX.LdesignSlider & JSXBase.HTMLAttributes<HTMLLdesignSliderElement>;
+            /**
+             * Space 间距组件
+             * 用于在一组元素之间提供一致的间距与对齐控制
+             */
+            "ldesign-space": LocalJSX.LdesignSpace & JSXBase.HTMLAttributes<HTMLLdesignSpaceElement>;
             /**
              * Switch 开关组件
              * 表示两种相互对立的状态间的切换，多用于触发「开/关」
@@ -3649,6 +5402,7 @@ declare module "@stencil/core" {
              * 基于 Popup 的轻量封装
              */
             "ldesign-tooltip": LocalJSX.LdesignTooltip & JSXBase.HTMLAttributes<HTMLLdesignTooltipElement>;
+            "ldesign-tree": LocalJSX.LdesignTree & JSXBase.HTMLAttributes<HTMLLdesignTreeElement>;
         }
     }
 }

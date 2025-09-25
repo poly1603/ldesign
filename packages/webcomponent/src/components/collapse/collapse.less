@@ -1,0 +1,26 @@
+@prefix: ldesign-collapse;
+
+.@{prefix} {
+  display: block;
+  background-color: #fff;
+  border: 1px solid #e5e6eb;
+  border-radius: 6px;
+}
+
+.@{prefix}--ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.@{prefix}--bordered {
+  // 默认就有边框，保留修饰符便于覆盖
+}
+
+.@{prefix}--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* 图标位置修饰（影响子项 header 内布局留白） */
+.@{prefix}--icon-left .ldesign-collapse-panel__header { padding-left: 12px; }
+.@{prefix}--icon-right .ldesign-collapse-panel__header { padding-right: 12px; }

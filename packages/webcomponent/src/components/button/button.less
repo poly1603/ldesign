@@ -22,6 +22,12 @@
   transition: all 0.2s cubic-bezier(0.38, 0, 0.24, 1);
   outline: none;
 
+  /* 基础色彩变量（用于 outline / dashed / text / link / ghost） */
+  --ld-btn-color: var(--ldesign-brand-color);
+  --ld-btn-hover: var(--ldesign-brand-color-hover);
+  --ld-btn-active: var(--ldesign-brand-color-active);
+  --ld-btn-focus: var(--ldesign-brand-color-focus);
+
   &:focus-visible {
     outline: 2px solid var(--ldesign-brand-color-focus);
     outline-offset: 2px;
@@ -137,37 +143,69 @@
     }
   }
 
+  // 形态：描边（支持 color 修饰）
   &--outline {
-    color: var(--ldesign-brand-color);
+    color: var(--ld-btn-color);
     background-color: transparent;
-    border-color: var(--ldesign-brand-color);
+    border-color: var(--ld-btn-color);
 
     &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: var(--ldesign-font-white-1);
-      background-color: var(--ldesign-brand-color-hover);
-      border-color: var(--ldesign-brand-color-hover);
+      color: var(--ld-btn-hover);
+      background-color: var(--ld-btn-focus);
+      border-color: var(--ld-btn-hover);
     }
 
     &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: var(--ldesign-font-white-1);
-      background-color: var(--ldesign-brand-color-active);
-      border-color: var(--ldesign-brand-color-active);
+      color: var(--ld-btn-active);
+      background-color: var(--ld-btn-focus);
+      border-color: var(--ld-btn-active);
+    }
+
+    // 中性色（默认灰）
+    &.ldesign-button--color-default {
+      color: var(--ldesign-text-color-primary);
+      border-color: var(--ldesign-border-color);
+
+      &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ldesign-text-color-primary);
+        background-color: var(--ldesign-bg-color-component-hover);
+        border-color: var(--ldesign-border-color-hover);
+      }
+
+      &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ldesign-text-color-primary);
+        background-color: var(--ldesign-bg-color-component-active);
+        border-color: var(--ldesign-border-color-hover);
+      }
     }
   }
 
+  // 形态：文字（支持 color 修饰）
   &--text {
-    color: var(--ldesign-brand-color);
+    color: var(--ld-btn-color);
     background-color: transparent;
     border-color: transparent;
 
     &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: var(--ldesign-brand-color-hover);
-      background-color: var(--ldesign-brand-color-focus);
+      color: var(--ld-btn-hover);
+      background-color: var(--ld-btn-focus);
     }
 
     &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: var(--ldesign-brand-color-active);
-      background-color: var(--ldesign-brand-color-2);
+      color: var(--ld-btn-active);
+      background-color: var(--ld-btn-focus);
+    }
+
+    &.ldesign-button--color-default {
+      color: var(--ldesign-text-color-primary);
+      &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: var(--ldesign-bg-color-component-hover);
+        color: var(--ldesign-text-color-primary);
+      }
+      &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: var(--ldesign-bg-color-component-active);
+        color: var(--ldesign-text-color-primary);
+      }
     }
   }
 
@@ -221,45 +259,69 @@
     }
   }
 
-  // 新增：链接样式
+  // 新增：链接样式（支持 color 修饰）
   &--link {
-    color: var(--ldesign-brand-color);
+    color: var(--ld-btn-color);
     background-color: transparent;
     border-color: transparent;
     text-decoration: underline;
 
     &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: var(--ldesign-brand-color-hover);
-      text-decoration-color: var(--ldesign-brand-color-hover);
+      color: var(--ld-btn-hover);
+      text-decoration-color: var(--ld-btn-hover);
       background-color: transparent;
     }
 
     &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: var(--ldesign-brand-color-active);
-      text-decoration-color: var(--ldesign-brand-color-active);
+      color: var(--ld-btn-active);
+      text-decoration-color: var(--ld-btn-active);
       background-color: transparent;
+    }
+
+    &.ldesign-button--color-default {
+      color: var(--ldesign-text-color-primary);
+      text-decoration-color: var(--ldesign-text-color-primary);
+      &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ldesign-text-color-primary);
+        text-decoration-color: var(--ldesign-text-color-primary);
+      }
     }
   }
 
-  // 新增：虚线边框样式
+  // 新增：虚线边框样式（支持 color 修饰）
   &--dashed {
-    color: var(--ldesign-brand-color);
+    color: var(--ld-btn-color);
     background-color: transparent;
-    border-color: var(--ldesign-brand-color);
+    border-color: var(--ld-btn-color);
     border-style: dashed;
 
     &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: var(--ldesign-font-white-1);
-      background-color: var(--ldesign-brand-color-hover);
-      border-color: var(--ldesign-brand-color-hover);
+      color: var(--ld-btn-hover);
+      background-color: var(--ld-btn-focus);
+      border-color: var(--ld-btn-hover);
       border-style: dashed;
     }
 
     &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: var(--ldesign-font-white-1);
-      background-color: var(--ldesign-brand-color-active);
-      border-color: var(--ldesign-brand-color-active);
+      color: var(--ld-btn-active);
+      background-color: var(--ld-btn-focus);
+      border-color: var(--ld-btn-active);
       border-style: dashed;
+    }
+
+    &.ldesign-button--color-default {
+      color: var(--ldesign-text-color-primary);
+      border-color: var(--ldesign-border-color);
+      &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: var(--ldesign-bg-color-component-hover);
+        border-color: var(--ldesign-border-color-hover);
+        color: var(--ldesign-text-color-primary);
+      }
+      &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: var(--ldesign-bg-color-component-active);
+        border-color: var(--ldesign-border-color-hover);
+        color: var(--ldesign-text-color-primary);
+      }
     }
   }
 
@@ -283,20 +345,38 @@
     &.ldesign-button--outline {
       border-color: var(--ldesign-brand-color-disabled);
       color: var(--ldesign-brand-color-disabled);
+
+      &.ldesign-button--color-success { border-color: var(--ldesign-success-color-disabled); color: var(--ldesign-success-color-disabled); }
+      &.ldesign-button--color-warning { border-color: var(--ldesign-warning-color-disabled); color: var(--ldesign-warning-color-disabled); }
+      &.ldesign-button--color-danger { border-color: var(--ldesign-error-color-disabled); color: var(--ldesign-error-color-disabled); }
+      &.ldesign-button--color-default { border-color: var(--ldesign-border-color); color: var(--ldesign-text-color-disabled); }
     }
 
     &.ldesign-button--text {
       color: var(--ldesign-text-color-disabled);
+
+      &.ldesign-button--color-success { color: var(--ldesign-success-color-disabled); }
+      &.ldesign-button--color-warning { color: var(--ldesign-warning-color-disabled); }
+      &.ldesign-button--color-danger { color: var(--ldesign-error-color-disabled); }
     }
 
     &.ldesign-button--link {
       color: var(--ldesign-text-color-disabled);
       text-decoration-color: var(--ldesign-text-color-disabled);
+
+      &.ldesign-button--color-success { color: var(--ldesign-success-color-disabled); text-decoration-color: var(--ldesign-success-color-disabled); }
+      &.ldesign-button--color-warning { color: var(--ldesign-warning-color-disabled); text-decoration-color: var(--ldesign-warning-color-disabled); }
+      &.ldesign-button--color-danger { color: var(--ldesign-error-color-disabled); text-decoration-color: var(--ldesign-error-color-disabled); }
     }
 
     &.ldesign-button--dashed {
       border-color: var(--ldesign-brand-color-disabled);
       color: var(--ldesign-brand-color-disabled);
+
+      &.ldesign-button--color-success { border-color: var(--ldesign-success-color-disabled); color: var(--ldesign-success-color-disabled); }
+      &.ldesign-button--color-warning { border-color: var(--ldesign-warning-color-disabled); color: var(--ldesign-warning-color-disabled); }
+      &.ldesign-button--color-danger { border-color: var(--ldesign-error-color-disabled); color: var(--ldesign-error-color-disabled); }
+      &.ldesign-button--color-default { border-color: var(--ldesign-border-color); color: var(--ldesign-text-color-disabled); }
     }
 
     &.ldesign-button--danger {
@@ -312,6 +392,11 @@
     &.ldesign-button--warning {
       background-color: var(--ldesign-warning-color-disabled);
       border-color: var(--ldesign-warning-color-disabled);
+    }
+
+    &.ldesign-button--ghost {
+      border-color: var(--ldesign-border-color);
+      color: var(--ldesign-text-color-disabled);
     }
   }
 
@@ -343,6 +428,73 @@
 
   &__text {
     flex: 1;
+  }
+
+  /* 颜色修饰（为 outline/dashed/text/link/ghost 提供变量） */
+  &.ldesign-button--color-primary {
+    --ld-btn-color: var(--ldesign-brand-color);
+    --ld-btn-hover: var(--ldesign-brand-color-hover);
+    --ld-btn-active: var(--ldesign-brand-color-active);
+    --ld-btn-focus: var(--ldesign-brand-color-focus);
+  }
+  &.ldesign-button--color-success {
+    --ld-btn-color: var(--ldesign-success-color);
+    --ld-btn-hover: var(--ldesign-success-color-hover);
+    --ld-btn-active: var(--ldesign-success-color-active);
+    --ld-btn-focus: var(--ldesign-success-color-focus);
+  }
+  &.ldesign-button--color-warning {
+    --ld-btn-color: var(--ldesign-warning-color);
+    --ld-btn-hover: var(--ldesign-warning-color-hover);
+    --ld-btn-active: var(--ldesign-warning-color-active);
+    --ld-btn-focus: var(--ldesign-warning-color-focus);
+  }
+  &.ldesign-button--color-danger {
+    --ld-btn-color: var(--ldesign-error-color);
+    --ld-btn-hover: var(--ldesign-error-color-hover);
+    --ld-btn-active: var(--ldesign-error-color-active);
+    --ld-btn-focus: var(--ldesign-error-color-focus);
+  }
+  &.ldesign-button--color-default {
+    --ld-btn-color: var(--ldesign-text-color-primary);
+    --ld-btn-hover: var(--ldesign-text-color-primary);
+    --ld-btn-active: var(--ldesign-text-color-primary);
+    --ld-btn-focus: var(--ldesign-bg-color-component-hover);
+  }
+
+  /* 幽灵按钮（一般用于深色背景） */
+  &--ghost {
+    background-color: transparent;
+    color: var(--ld-btn-color);
+    border-color: var(--ld-btn-color);
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ld-btn-focus);
+      color: var(--ld-btn-hover);
+      border-color: var(--ld-btn-hover);
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ld-btn-focus);
+      color: var(--ld-btn-active);
+      border-color: var(--ld-btn-active);
+    }
+
+    // 深色背景下的纯白幽灵
+    &.ldesign-button--color-default {
+      color: var(--ldesign-font-white-1);
+      border-color: var(--ldesign-font-white-1);
+
+      &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: rgba(255, 255, 255, 0.08);
+        color: var(--ldesign-font-white-1);
+      }
+
+      &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: rgba(255, 255, 255, 0.12);
+        color: var(--ldesign-font-white-1);
+      }
+    }
   }
 }
 

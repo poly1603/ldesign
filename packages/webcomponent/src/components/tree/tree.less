@@ -1,0 +1,148 @@
+/* Tree 组件样式 */
+
+.ldesign-tree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  color: var(--ld-color-text, #1f2328);
+}
+
+.ldesign-tree__node {
+  list-style: none;
+}
+
+.ldesign-tree__children {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.2s ease;
+}
+
+.ldesign-tree__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  line-height: 1.2;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ldesign-tree__item:hover {
+  background: rgba(60, 60, 67, 0.08);
+}
+
+.ldesign-tree__item--selected {
+  background: rgba(25, 118, 210, 0.12);
+  color: #1976d2;
+}
+
+.ldesign-tree__item--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ldesign-tree__arrow {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  transition: transform 0.2s ease;
+}
+
+.ldesign-tree__arrow--expanded {
+  transform: rotate(90deg);
+}
+
+/* 加载动画 */
+@keyframes ldesign-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.ldesign-tree__arrow--loading .ldesign-icon {
+  animation: ldesign-rotate 1s linear infinite;
+}
+
+.ldesign-tree__arrow-placeholder {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+}
+
+.ldesign-tree__checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ldesign-tree__icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
+.ldesign-tree__label {
+  white-space: nowrap;
+}
+
+/* 连线风格（含纵向与横向） */
+.ldesign-tree.ldesign-tree--line .ldesign-tree__children {
+  margin-left: 12px;
+  position: relative;
+}
+
+/* 纵向主干线由每个节点自己绘制，便于处理最后一个子节点 */
+.ldesign-tree.ldesign-tree--line .ldesign-tree__children::before { content: none; }
+
+/* 更紧凑的连线布局（使用 CSS 变量以适配自定义缩进） */
+:host { --ld-tree-indent: 16px; --ld-tree-line-offset: 10px; }
+.ldesign-tree.ldesign-tree--line .ldesign-tree__children { margin-left: var(--ld-tree-line-offset); }
+
+/* 每个子节点的垂直线段（连接上下兄弟） */
+.ldesign-tree.ldesign-tree--line .ldesign-tree__children > .ldesign-tree__node {
+  position: relative;
+}
+.ldesign-tree.ldesign-tree--line .ldesign-tree__children > .ldesign-tree__node::before {
+  content: '';
+  position: absolute;
+  left: var(--ld-tree-line-offset);
+  top: -12px;
+  bottom: -12px;
+  border-left: 1px solid #e5e7eb;
+}
+/* 最后一个子节点：下半截不画，避免“拖尾” */
+.ldesign-tree.ldesign-tree--line .ldesign-tree__children > .ldesign-tree__node:last-child::before {
+  bottom: 50%;
+}
+
+/* 横向短线：从主干线连接到具体条目 */
+.ldesign-tree.ldesign-tree--line .ldesign-tree__children > .ldesign-tree__node > .ldesign-tree__item {
+  position: relative;
+}
+.ldesign-tree.ldesign-tree--line .ldesign-tree__children > .ldesign-tree__node > .ldesign-tree__item::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * (var(--ld-tree-indent) - var(--ld-tree-line-offset)));
+  top: 50%;
+  width: calc(var(--ld-tree-indent) - var(--ld-tree-line-offset));
+  border-top: 1px solid #e5e7eb;
+  transform: translateY(-50%);
+}
+
+/* 拖拽放置视觉反馈 */
+.ldesign-tree__item--drag-before { box-shadow: inset 0 2px 0 #1976d2; }
+.ldesign-tree__item--drag-after  { box-shadow: inset 0 -2px 0 #1976d2; }
+.ldesign-tree__item--drag-inside { background: rgba(25, 118, 210, 0.10); }
+
+/* 禁止放置提示（红色） */
+.ldesign-tree__item--drag-deny.ldesign-tree__item--drag-before { box-shadow: inset 0 2px 0 #e53935; }
+.ldesign-tree__item--drag-deny.ldesign-tree__item--drag-after  { box-shadow: inset 0 -2px 0 #e53935; }
+.ldesign-tree__item--drag-deny.ldesign-tree__item--drag-inside { background: rgba(229, 57, 53, 0.12); }

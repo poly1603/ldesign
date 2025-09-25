@@ -146,6 +146,117 @@ function initTabsDemos() {
   setTimeout(run, 150);
 }
 
+function initTreeDemos() {
+  const markInited = (el: HTMLElement | null | undefined) => {
+    if (!el) return false;
+    const inited = (el as any).dataset?.inited === '1' || (el as any).__inited;
+    if (inited) return false;
+    if ((el as any).dataset) (el as any).dataset.inited = '1';
+    (el as any).__inited = true;
+    return true;
+  };
+
+  const basic = document.getElementById('tree-basic') as any;
+  if (basic && markInited(basic)) {
+    basic.items = [
+      { key: 'docs', label: '文档', children: [
+        { key: 'guide', label: '指南' },
+        { key: 'api', label: 'API' },
+      ]},
+      { key: 'changelog', label: '更新日志' },
+    ];
+  }
+
+  const def = document.getElementById('tree-default-expand') as any;
+  if (def && markInited(def)) {
+    def.items = [
+      { key: 'docs', label: '文档', children: [ { key: 'guide', label: '指南' } ] },
+      { key: 'changelog', label: '更新日志' },
+    ];
+  }
+
+  const select = document.getElementById('tree-select') as any;
+  if (select && markInited(select)) {
+    select.items = [
+      { key: '1', label: '一级 1', children: [ { key: '1-1', label: '子 1-1' }, { key: '1-2', label: '子 1-2' } ] },
+      { key: '2', label: '一级 2' },
+    ];
+    select.addEventListener('ldesignSelect', (e: any) => console.log('select', e.detail));
+  }
+
+  const multiple = document.getElementById('tree-multiple') as any;
+  if (multiple && markInited(multiple)) {
+    multiple.items = [
+      { key: 'a', label: 'A', children: [ { key: 'a-1', label: 'A-1' }, { key: 'a-2', label: 'A-2' } ] },
+      { key: 'b', label: 'B' },
+    ];
+  }
+
+  const check = document.getElementById('tree-check') as any;
+  if (check && markInited(check)) {
+    check.items = [
+      { key: 'root', label: '根', children: [
+        { key: 'x', label: 'X' },
+        { key: 'y', label: 'Y', children: [ { key: 'y-1', label: 'Y-1' }, { key: 'y-2', label: 'Y-2' } ] },
+      ]},
+    ];
+    check.addEventListener('ldesignCheck', (e: any) => console.log('check', e.detail));
+  }
+
+  const ctrl = document.getElementById('tree-ctrl') as any;
+  if (ctrl && markInited(ctrl)) {
+    ctrl.items = [
+      { key: 'docs', label: '文档', children: [ { key: 'guide', label: '指南' }, { key: 'api', label: 'API' } ] },
+      { key: 'changelog', label: '更新日志' },
+    ];
+    const btnExpand = document.getElementById('btn-expand');
+    const btnSelect = document.getElementById('btn-select');
+    const btnCheck = document.getElementById('btn-check');
+    btnExpand?.addEventListener('click', () => {
+      const cur = ctrl.expandedKeys || [];
+      ctrl.expandedKeys = cur.includes('docs') ? cur.filter((k: string) => k !== 'docs') : [...cur, 'docs'];
+    });
+    btnSelect?.addEventListener('click', () => { ctrl.value = 'api'; });
+    btnCheck?.addEventListener('click', () => {
+      const cur = new Set(ctrl.checkedKeys || []);
+      if (cur.has('guide')) cur.delete('guide'); else cur.add('guide');
+      ctrl.checkedKeys = Array.from(cur);
+    });
+  }
+
+  const icons = document.getElementById('tree-icons') as any;
+  if (icons && markInited(icons)) {
+    icons.items = [
+      { key: 'root', label: '项目', icon: 'folder', children: [
+        { key: 'src', label: 'src', icon: 'folder', children: [ { key: 'index', label: 'index.ts', icon: 'file' } ] },
+        { key: 'README', label: 'README.md', icon: 'file' },
+      ]},
+    ];
+  }
+
+  const drag = document.getElementById('tree-drag') as any;
+  if (drag && markInited(drag)) {
+    drag.items = [
+      { key: 'root', label: '根', children: [
+        { key: 'a', label: 'A' },
+        { key: 'b', label: 'B', children: [ { key: 'b1', label: 'B-1' } ] }
+      ] }
+    ];
+    drag.addEventListener('ldesignDrop', (e: any) => console.log('drop', e.detail));
+  }
+
+  const lazy = document.getElementById('tree-lazy') as any;
+  if (lazy && markInited(lazy)) {
+    lazy.items = [ { key: 'root', label: '根' } ];
+    lazy.lazy = true;
+    lazy.loadData = async (node: any) => {
+      await new Promise(r => setTimeout(r, 200));
+      if (!node || node.key === 'root') return [ { key: 'a', label: 'A' }, { key: 'b', label: 'B' } ];
+      return [];
+    }
+  }
+}
+
 export default {
   extends: DefaultTheme,
   enhanceApp({ app, router, siteData }) {
@@ -184,12 +295,14 @@ export default {
         // 初次加载后尝试初始化 demo
         initInputDemos()
         initTabsDemos()
+        initTreeDemos()
       })
 
       // 监听路由变化，确保切换页面后 demo 仍生效
       router.onAfterRouteChanged = () => {
         initInputDemos()
         initTabsDemos()
+        initTreeDemos()
       }
     }
   }

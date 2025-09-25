@@ -1,5 +1,5 @@
 import { Component, Prop, Event, EventEmitter, h, Host } from '@stencil/core';
-import { ButtonType, ButtonShape, Size, ButtonIconPosition, NativeButtonType } from '../../types';
+import { ButtonType, ButtonShape, Size, ButtonIconPosition, NativeButtonType, ButtonColor } from '../../types';
 
 /**
  * Button 按钮组件
@@ -20,6 +20,11 @@ export class LdesignButton {
    * 按钮尺寸
    */
   @Prop() size: Size = 'medium';
+
+  /**
+   * 语义颜色（用于 outline/dashed/text/link/ghost）
+   */
+  @Prop() color: ButtonColor = 'primary';
 
   /**
    * 按钮形状
@@ -50,6 +55,11 @@ export class LdesignButton {
    * 是否为块级按钮
    */
   @Prop() block: boolean = false;
+
+  /**
+   * 幽灵按钮（一般用于深色背景）
+   */
+  @Prop() ghost: boolean = false;
 
   /**
    * 原生按钮类型：button | submit | reset
@@ -101,6 +111,16 @@ export class LdesignButton {
       `ldesign-button--${this.size}`,
       `ldesign-button--${this.shape}`,
     ];
+
+    // 为 outline/dashed/text/link 或 ghost 增加颜色修饰类
+    const needColor = ['outline', 'text', 'dashed', 'link'].includes(this.type) || this.ghost;
+    if (needColor) {
+      classes.push(`ldesign-button--color-${this.color}`);
+    }
+
+    if (this.ghost) {
+      classes.push('ldesign-button--ghost');
+    }
 
     if (this.disabled) {
       classes.push('ldesign-button--disabled');

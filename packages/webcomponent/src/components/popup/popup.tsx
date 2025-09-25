@@ -163,6 +163,14 @@ export class LdesignPopup {
   // ── DOM utils ──────────────────────────────────────────────────
   private getPopupEl(): HTMLElement | null { return document.getElementById(this.uid); }
   private findClosestPopupContent(): HTMLElement | null { return this.el.closest('.ldesign-popup__content'); }
+  private markPopupAncestry() {
+    if (!this.popupElement) return;
+    // owner: 自己的 uid；root: 顶层祖先 popup 的 uid（若无祖先，则为自己）
+    const parentContent = this.findClosestPopupContent();
+    const parentRoot = parentContent?.getAttribute('data-root');
+    this.popupElement.setAttribute('data-owner', this.uid);
+    this.popupElement.setAttribute('data-root', parentRoot || this.uid);
+  }
   private moveToContainerIfNeeded() {
     this.popupElement = this.getPopupEl() || this.el.querySelector('.ldesign-popup__content');
     if (!this.popupElement) return;
@@ -187,8 +195,16 @@ export class LdesignPopup {
 
   // ── Handlers ───────────────────────────────────────────────────
   private onMouseEnter = () => { this.clearTimers(); this.show(); };
-  private onMouseLeave = () => {
+  private onMouseLeave = (e?: MouseEvent) => {
     if (this.trigger === 'hover' && this.interactive) {
+      // 如果鼠标进入到了另一个 popup 的内容区域（例如子菜单），不要关闭当前弹层
+      const rt = (e && (e.relatedTarget as HTMLElement | null)) || null;
+      if (rt) {
+        const targetContent = rt.closest('.ldesign-popup__content');
+        if (targetContent) {
+          return; // 认为仍在同一交互体系内，保持开启
+        }
+      }
       this.clearTimers();
       const delay = this.hideDelay > 0 ? this.hideDelay : 200;
       this.hideTimer = window.setTimeout(() => this.setVisible(false), delay);
@@ -198,7 +214,20 @@ export class LdesignPopup {
   };
   private onClick = (e: Event) => { e.stopPropagation(); this.toggle(); };
   private onContextMenu = (e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); this.contextVirtualRef = { getBoundingClientRect: () => new DOMRect(e.clientX, e.clientY, 0, 0) } as any; this.toggle(); };
-  private onDocumentClick = (event: Event) => { const t = event.target as Node; if (this.el.contains(t)) return; const p = this.getPopupEl(); if (p && p.contains(t)) return; this.hide(); };
+  private onDocumentClick = (event: Event) => {
+    const t = event.target as HTMLElement;
+    if (this.el.contains(t)) return; // 点击在触发器内
+    const p = this.getPopupEl();
+    if (p && p.contains(t)) return; // 点击在自身内容内
+    // 点击是否发生在本 popup 的“后代”popup 内容内（支持 appendTo=body 的层级关系）
+    const targetContent = t.closest('.ldesign-popup__content') as HTMLElement | null;
+    if (targetContent) {
+      const targetRoot = targetContent.getAttribute('data-root');
+      // 如果点击的内容与当前 popup 拥有相同的 root，视为内部点击，忽略
+      if (targetRoot && (targetRoot === this.uid)) return;
+    }
+    this.hide();
+  };
   private onFocus = () => this.show();
   private onBlur = () => this.hide();
 
@@ -234,6 +263,7 @@ export class LdesignPopup {
     if (this.arrow) this.arrowElement = this.popupElement.querySelector('.ldesign-popup__arrow');
 
     this.moveToContainerIfNeeded();
+    this.markPopupAncestry();
     await this.nextFrame();
 
     const strategy = this.getStrategy();
@@ -274,6 +304,7 @@ export class LdesignPopup {
     if (this.arrow) this.arrowElement = this.popupElement.querySelector('.ldesign-popup__arrow');
 
     this.moveToContainerIfNeeded();
+    this.markPopupAncestry();
     await this.nextFrame();
 
     const strategy = this.getStrategy();

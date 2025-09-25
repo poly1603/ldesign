@@ -74,12 +74,21 @@ export default defineConfig({
           ]
         },
         {
-          text: '布局组件',
+          text: '数据展示',
           items: [
-            { text: 'Affix 固钉', link: '/components/affix' },
-            { text: 'BackTop 返回顶部', link: '/components/backtop' },
+            { text: 'Image 图片', link: '/components/image' },
+            { text: 'ImageViewer 图片预览器', link: '/components/image-viewer' },
+            { text: 'Tree 树', link: '/components/tree' },
           ]
         },
+{
+      text: '布局组件',
+      items: [
+        { text: 'Affix 固钉', link: '/components/affix' },
+        { text: 'BackTop 返回顶部', link: '/components/backtop' },
+        { text: 'Space 间距', link: '/components/space' },
+      ]
+    },
         {
           text: '表单组件',
           items: [
@@ -87,19 +96,23 @@ export default defineConfig({
             { text: 'Select 选择器', link: '/components/select' },
             { text: 'Checkbox 复选框', link: '/components/checkbox' },
             { text: 'Radio 单选框', link: '/components/radio' },
-            { text: 'Switch 开关', link: '/components/switch' },
+{ text: 'Switch 开关', link: '/components/switch' },
+            { text: 'Slider 滑块', link: '/components/slider' },
+            { text: 'Rate 评分', link: '/components/rate' },
           ]
         },
         {
           text: '反馈组件',
           items: [
+            { text: 'Collapse 折叠面板', link: '/components/collapse' },
             { text: 'Popup 弹出层', link: '/components/popup' },
             { text: 'Popconfirm 气泡确认框', link: '/components/popconfirm' },
             { text: 'Tooltip 工具提示', link: '/components/tooltip' },
             { text: 'Modal 模态框', link: '/components/modal' },
             { text: 'Drawer 抽屉', link: '/components/drawer' },
             { text: 'Message 全局提示', link: '/components/message' },
-            { text: 'Notification 通知提醒', link: '/components/notification' },
+{ text: 'Notification 通知提醒', link: '/components/notification' },
+            { text: 'Loading 加载', link: '/components/loading' },
           ]
         }
       ],

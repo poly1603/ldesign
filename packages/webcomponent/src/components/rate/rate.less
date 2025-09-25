@@ -1,0 +1,226 @@
+// Rate 评分组件样式
+
+.ldesign-rate {
+  --ld-rate-color: var(--ldesign-warning-color, #fadb14);
+  --ld-rate-void-color: var(--ldesign-border-color, #e8e8e8);
+  --ld-rate-gap: 4px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ld-rate-gap);
+  cursor: pointer;
+  vertical-align: middle;
+  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--ldesign-primary-color);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  &--disabled,
+  &--readonly {
+    cursor: default;
+    
+    .ldesign-rate__star {
+      cursor: default;
+    }
+  }
+
+  &--disabled {
+    opacity: 0.5;
+  }
+
+  &--small {
+    --ld-rate-size: 16px;
+    --ld-rate-gap: 3px;
+  }
+  &--medium {
+    --ld-rate-size: 20px;
+    --ld-rate-gap: 4px;
+  }
+  &--large {
+    --ld-rate-size: 24px;
+    --ld-rate-gap: 5px;
+  }
+
+  .ldesign-rate__item {
+    display: inline-flex;
+    position: relative;
+  }
+
+  .ldesign-rate__star {
+    position: relative;
+    width: var(--ld-rate-size);
+    height: var(--ld-rate-size);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  // 背景层（空心星星）
+  .ldesign-rate__star-bg {
+    position: absolute;
+    inset: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: transform 0.2s ease-out;
+    
+    ldesign-icon {
+      transition: color 0.2s ease-out;
+      
+      // 空心效果：使用 stroke 且不填充
+      svg {
+        fill: none;
+        stroke: var(--ld-rate-void-color);
+        stroke-width: 2;
+        transition: stroke 0.2s ease-out;
+      }
+    }
+  }
+
+  // 前景层（实心星星）
+  .ldesign-rate__star-fg {
+    position: absolute;
+    inset: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    width: 0%;
+    transition: width 0.2s ease-out;
+    
+    ldesign-icon {
+      // 实心效果：填充且无 stroke
+      svg {
+        fill: var(--ld-rate-color);
+        stroke: none;
+        transition: fill 0.2s ease-out;
+      }
+    }
+  }
+
+  // 优化的动画效果
+  .ldesign-rate__item {
+    transition: transform 0.15s ease-out;
+    
+    &:hover {
+      transform: scale(1.08);
+      
+      .ldesign-rate__star-bg {
+        transform: scale(0.92);
+        opacity: 0.6;
+        transition: all 0.2s ease-out;
+      }
+    }
+    
+    &:active {
+      transform: scale(0.96);
+      transition: transform 0.1s ease-out;
+    }
+  }
+  
+  // 前景层的基础状态
+  .ldesign-rate__star-fg {
+    ldesign-icon {
+      transform-origin: center;
+      will-change: transform, opacity;
+    }
+    
+    // 未选中状态 (width: 0%)
+    &[style*="width: 0%"] ldesign-icon {
+      transform: scale(0) rotate(-180deg);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  opacity 0.2s ease-out;
+    }
+    
+    // 选中状态 (非 0% 宽度)
+    &:not([style*="width: 0%"]) ldesign-icon {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+      animation: ldesign-rate-star-appear 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+  }
+  
+  // 半星的特殊处理
+  .ldesign-rate__star-fg[style*="clipPath"] {
+    ldesign-icon {
+      animation: ldesign-rate-star-half 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+  }
+
+  // 半星时的裁剪效果
+  .ldesign-rate__star-fg[style*="clipPath"] {
+    width: 100% !important;
+  }
+
+  // hover 提示 wrapper，避免 tooltip 包裹后布局错位
+  .ldesign-rate__tooltip-wrap {
+    display: inline-flex;
+  }
+}
+
+// 星星出现动画 - 旋转缩放弹性效果
+@keyframes ldesign-rate-star-appear {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  40% {
+    transform: scale(1.2) rotate(10deg);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(0.9) rotate(-5deg);
+  }
+  80% {
+    transform: scale(1.05) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+// 半星出现动画 - 水平翻转效果
+@keyframes ldesign-rate-star-half {
+  0% {
+    transform: scale(0) rotateY(-90deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) rotateY(10deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+// 悬停呼吸效果
+@keyframes ldesign-rate-breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+// 点击波纹效果
+@keyframes ldesign-rate-ripple {
+  0% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

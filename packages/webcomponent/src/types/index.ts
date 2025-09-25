@@ -8,9 +8,16 @@
 export type Size = 'small' | 'medium' | 'large';
 
 /**
- * 按钮类型
+ * 按钮类型（表现形态）
+ * - primary/secondary/success/warning/danger 等通常表示实底（solid）按钮
+ * - outline/text/link/dashed 表示样式形态
  */
 export type ButtonType = 'primary' | 'secondary' | 'outline' | 'text' | 'danger' | 'success' | 'warning' | 'link' | 'dashed';
+
+/**
+ * 按钮颜色（语义色），用于 outline/dashed/text/link/ghost
+ */
+export type ButtonColor = 'default' | 'primary' | 'success' | 'warning' | 'danger';
 
 /**
  * 按钮形状
@@ -79,6 +86,10 @@ export interface BaseComponentProps {
  */
 export interface ButtonProps extends BaseComponentProps {
   type?: ButtonType;
+  /**
+   * 颜色（语义色）：用于 outline / dashed / text / link / ghost
+   */
+  color?: ButtonColor;
   size?: Size;
   shape?: ButtonShape;
   loading?: boolean;
@@ -86,6 +97,10 @@ export interface ButtonProps extends BaseComponentProps {
   block?: boolean;
   iconPosition?: ButtonIconPosition;
   nativeType?: NativeButtonType;
+  /**
+   * 幽灵按钮（一般用于深色背景）
+   */
+  ghost?: boolean;
   onClick?: EventHandler;
 }
 

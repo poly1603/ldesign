@@ -1,0 +1,79 @@
+/**
+ * Space 间距组件样式
+ */
+
+.ldesign-space {
+  // 默认使用 inline-flex，方便与文本并排
+  display: inline-flex;
+  // 默认间距变量，可被 size 预设或行内样式覆盖
+  --gap: var(--ls-spacing-sm);
+  // 分隔线颜色
+  --split-color: var(--ldesign-border-color);
+
+  gap: var(--gap);
+  align-items: center;
+
+  &--block {
+    display: flex;
+    width: 100%;
+  }
+
+  // 方向
+  &--horizontal {
+    flex-direction: row;
+
+    &.ldesign-space--wrap {
+      flex-wrap: wrap;
+    }
+  }
+
+  &--vertical {
+    flex-direction: column;
+  }
+
+  // 预设尺寸 -> 设置 --gap
+  &--small { --gap: var(--ls-spacing-xs); }
+  &--medium { --gap: var(--ls-spacing-sm); }
+  &--large { --gap: var(--ls-spacing-base); }
+
+  // 对齐方式（交叉轴）
+  &--align-start { align-items: flex-start; }
+  &--align-center { align-items: center; }
+  &--align-end { align-items: flex-end; }
+  &--align-baseline { align-items: baseline; }
+
+  // 分隔符：线。将分隔线绘制在 gap 的正中央，确保两侧间距一致
+  &--split-line {
+    // 保持原 gap，不用 margin/padding 人为分配
+  }
+
+  // 横向分隔线：从第二个起在左侧 gap 中心绘制竖线
+  &--split-line&--horizontal > * {
+    position: relative;
+  }
+  &--split-line&--horizontal > * + *::before {
+    content: '';
+    position: absolute;
+    left: calc(-1 * (var(--gap) / 2));
+    top: 50%;
+    transform: translate(-0.5px, -50%);
+    width: 1px;
+    height: 1.2em;
+    background-color: var(--split-color);
+  }
+
+  // 纵向分隔线：从第二个起在上方 gap 中心绘制横线
+  &--split-line&--vertical > * {
+    position: relative;
+  }
+  &--split-line&--vertical > * + *::before {
+    content: '';
+    position: absolute;
+    top: calc(-1 * (var(--gap) / 2));
+    left: 0;
+    right: 0;
+    height: 1px;
+    transform: translateY(-0.5px);
+    background-color: var(--split-color);
+  }
+}
