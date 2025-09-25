@@ -32,6 +32,7 @@ ColorPicker 颜色选择器
 | `showHistory`   | `show-history`   |                                               | `boolean`                                                                                                                                                            | `true`           |
 | `showPreset`    | `show-preset`    |                                               | `boolean`                                                                                                                                                            | `true`           |
 | `size`          | `size`           |                                               | `"large" \| "medium" \| "small"`                                                                                                                                     | `'medium'`       |
+| `ui`            | `ui`             | 透传面板 UI 模式                                    | `"pro" \| "simple"`                                                                                                                                                  | `'pro'`          |
 | `value`         | `value`          |                                               | `string`                                                                                                                                                             | `'#1677ff'`      |
 
 
@@ -55,6 +56,7 @@ ColorPicker 颜色选择器
 graph TD;
   ldesign-color-picker --> ldesign-popup
   ldesign-color-picker --> ldesign-color-picker-panel
+  ldesign-color-picker-panel --> ldesign-slider
   style ldesign-color-picker fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

@@ -57,6 +57,7 @@ ColorInput 颜色输入（内置 Popup + ColorPicker）
 graph TD;
   ldesign-color-input --> ldesign-popup
   ldesign-color-input --> ldesign-color-picker-panel
+  ldesign-color-picker-panel --> ldesign-slider
   style ldesign-color-input fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

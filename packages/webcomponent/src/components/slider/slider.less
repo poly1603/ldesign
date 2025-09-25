@@ -126,22 +126,6 @@
   margin: 0;
 }
 
-/* 使用伪元素绘制 thumb（避免某些环境下 DOM 被裁剪的问题） */
-.ldesign-slider__track--vertical::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: calc(100% - var(--ld-per, 0%));
-  width: 16px;
-  height: 16px;
-  border-radius: 9999px;
-  background-color: #fff;
-  border: 2px solid var(--ldesign-color-primary, #1677ff);
-  transform: translate(-50%, -50%);
-  z-index: 1;
-  pointer-events: none;
-}
-
 .ldesign-slider__rail--vertical {
   position: absolute;
   width: 100%;
@@ -163,7 +147,7 @@
   width: 16px;
   height: 16px;
   left: 50%;
-  top: 100%; /* 初始位置在底部，会被内联style覆盖 */
+  top: auto; /* 关键：覆盖水平模式的 top:50%，避免与 bottom 冲突 */
   border-radius: 9999px;
   background-color: #fff;
   border: 2px solid var(--ldesign-color-primary, #1677ff);

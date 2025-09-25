@@ -189,23 +189,30 @@ export class LdesignSlider {
             <div 
               class="ldesign-slider__track ldesign-slider__track--vertical"
               ref={(el) => (this.trackEl = el)}
-              style={{ ['--ld-per' as any]: `${percent}%` }}
-              role="slider"
-              tabindex={this.disabled ? -1 : 0}
-              aria-disabled={this.disabled ? 'true' : 'false'}
-              aria-orientation="vertical"
-              aria-valuemin={String(Math.min(this.min, this.max))}
-              aria-valuemax={String(Math.max(this.min, this.max))}
-              aria-valuenow={String(this.value)}
-              onKeyDown={this.handleKeyDown}
-              onFocus={this.handleFocus}
-              onBlur={this.handleBlur}
             >
               <div class="ldesign-slider__rail ldesign-slider__rail--vertical" />
               <div 
                 class="ldesign-slider__fill ldesign-slider__fill--vertical"
                 style={{ height: `${percent}%` }}
               />
+              <div
+                class="ldesign-slider__thumb ldesign-slider__thumb--vertical"
+                style={{ bottom: `${percent}%`, transform: 'translate(-50%, 50%)' }}
+                role="slider"
+                tabindex={this.disabled ? -1 : 0}
+                aria-disabled={this.disabled ? 'true' : 'false'}
+                aria-orientation="vertical"
+                aria-valuemin={String(Math.min(this.min, this.max))}
+                aria-valuemax={String(Math.max(this.min, this.max))}
+                aria-valuenow={String(this.value)}
+                onKeyDown={this.handleKeyDown}
+                onFocus={this.handleFocus}
+                onBlur={this.handleBlur}
+              >
+                {this.showTooltip ? (
+                  <div class="ldesign-slider__tooltip ldesign-slider__tooltip--vertical">{this.value}</div>
+                ) : null}
+              </div>
             </div>
           </div>
         </Host>

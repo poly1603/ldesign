@@ -39,6 +39,8 @@ export class LdesignColorPicker {
   /** 自定义按钮文案 */
   @Prop() confirmText: string = '确定';
   @Prop() cancelText: string = '取消';
+  /** 透传面板 UI 模式 */
+  @Prop() ui: 'simple' | 'pro' = 'pro';
 
   @Event() ldesignInput!: EventEmitter<string>;
   @Event() ldesignChange!: EventEmitter<string>;
@@ -88,6 +90,7 @@ export class LdesignColorPicker {
               recent-max={this.recentMax as any}
               size={this.size as any}
               disabled={this.disabled as any}
+              ui={this.ui as any}
               onLdesignInput={this.onPanelInput as any}
               onLdesignChange={this.onPanelChange as any}
             />

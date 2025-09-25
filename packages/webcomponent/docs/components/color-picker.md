@@ -41,6 +41,15 @@
 <ldesign-color-picker value="#1677ff" modes="both"></ldesign-color-picker>
 ```
 
+## 确认/取消（可选）
+
+```html
+<ldesign-color-picker value="#1677ff" show-actions popup-width="420"></ldesign-color-picker>
+```
+
+- show-actions=true 时，面板内变更只触发 ldesignInput；点击“确定”才会触发 ldesignChange
+- “取消”会还原打开面板时的颜色
+
 ## 透明度
 
 设置 `show-alpha` 显示并可控制透明度。

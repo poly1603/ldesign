@@ -81,6 +81,8 @@ export class LdesignImageViewer {
   @State() rotate: number = 0;
   @State() offsetX: number = 0;
   @State() offsetY: number = 0;
+  @State() flipX: boolean = false;
+  @State() flipY: boolean = false;
   @State() dragging: boolean = false;
   @State() crossfading: boolean = false;
   @State() loading: boolean = false;
@@ -242,8 +244,10 @@ export class LdesignImageViewer {
     const x = tx != null ? tx : (this.dragging ? this.visualOffsetX : this.offsetX);
     const y = ty != null ? ty : (this.dragging ? this.visualOffsetY : this.offsetY);
     const extra = this.enterScale != null ? this.enterScale : 1;
-    const scale = this.scale * extra;
-    return `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) scale(${scale}) rotate(${this.rotate}deg)`;
+    const s = this.scale * extra;
+    const sx = (this.flipX ? -1 : 1) * s;
+    const sy = (this.flipY ? -1 : 1) * s;
+    return `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) scale(${sx}, ${sy}) rotate(${this.rotate}deg)`;
   }
 
   private applyTransform() {
@@ -253,6 +257,7 @@ export class LdesignImageViewer {
 
   private resetTransform() {
     this.scale = 1; this.rotate = 0; this.offsetX = 0; this.offsetY = 0;
+    this.flipX = false; this.flipY = false;
     this.visualOffsetX = 0; this.visualOffsetY = 0;
     // 推迟到渲染新 img 后再应用，避免误写旧图导致抖动
     this.pendingApply = true;
@@ -329,20 +334,43 @@ export class LdesignImageViewer {
   // ── Panel drag (modal) ──────────────────────────────────────────
   private onPanelPointerDown = (e: PointerEvent) => {
     if (this.viewerMode !== 'modal') return;
+    // 只允许在标题栏内启动拖动（当 panelDraggable='title' 时）
+    if (this.panelDraggable === 'title') {
+      const target = e.target as HTMLElement | null;
+      const inTitle = target && target.closest && target.closest('.ldesign-image-viewer__titlebar');
+      if (!inTitle) return; // 非标题区域忽略，避免与图片拖拽冲突
+    }
     this.panelDragging = true;
     this.panelStartX = e.clientX; this.panelStartY = e.clientY;
     this.panelStartOffsetX = this.panelOffsetX; this.panelStartOffsetY = this.panelOffsetY;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    // 拖动期间禁用过渡，提升跟手性
+    this.panelEl?.classList.add('is-dragging');
+    e.stopPropagation();
+    e.preventDefault();
   };
   private onPanelPointerMove = (e: PointerEvent) => {
     if (!this.panelDragging || this.viewerMode !== 'modal') return;
     const dx = e.clientX - this.panelStartX; const dy = e.clientY - this.panelStartY;
-    this.panelOffsetX = this.panelStartOffsetX + dx; this.panelOffsetY = this.panelStartOffsetY + dy;
+    // 目标偏移（相对居中）
+    let nextX = this.panelStartOffsetX + dx; let nextY = this.panelStartOffsetY + dy;
+    // 计算可拖动边界，保证不拖出可视区域
+    const rect = this.panelEl?.getBoundingClientRect();
+    const vw = window.innerWidth || document.documentElement.clientWidth;
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect) {
+      const maxX = Math.max(0, (vw - rect.width) / 2);
+      const maxY = Math.max(0, (vh - rect.height) / 2);
+      nextX = Math.min(maxX, Math.max(-maxX, nextX));
+      nextY = Math.min(maxY, Math.max(-maxY, nextY));
+    }
+    this.panelOffsetX = nextX; this.panelOffsetY = nextY;
     try { this.panelEl?.style.setProperty('--panel-x', this.panelOffsetX + 'px'); this.panelEl?.style.setProperty('--panel-y', this.panelOffsetY + 'px'); } catch {}
   };
   private onPanelPointerUp = (e: PointerEvent) => {
     if (!this.panelDragging) return;
     this.panelDragging = false;
+    this.panelEl?.classList.remove('is-dragging');
     try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
   };
 
@@ -361,6 +389,8 @@ export class LdesignImageViewer {
 
   private rotateLeft = () => { this.rotate = (this.rotate - 90) % 360; this.applyTransform(); };
   private rotateRight = () => { this.rotate = (this.rotate + 90) % 360; this.applyTransform(); };
+  private flipHorizontal = () => { this.flipX = !this.flipX; this.applyTransform(); };
+  private flipVertical = () => { this.flipY = !this.flipY; this.applyTransform(); };
 
   private onDblClick = (e: MouseEvent) => {
     e.preventDefault();
@@ -370,6 +400,8 @@ export class LdesignImageViewer {
   };
 
   private onPointerDown = (e: PointerEvent) => {
+    // 避免冒泡到面板拖拽（确保拖动图片不会带动小窗位置）
+    e.stopPropagation();
     this.dragging = true;
     this.dragStartX = e.clientX; this.dragStartY = e.clientY;
     this.startOffsetX = this.offsetX; this.startOffsetY = this.offsetY;
@@ -462,6 +494,8 @@ export class LdesignImageViewer {
         <span class="ldesign-image-viewer__divider" />
         <button class="ldesign-image-viewer__tool" onClick={this.rotateLeft} title="左旋"><ldesign-icon name="rotate-ccw" /></button>
         <button class="ldesign-image-viewer__tool" onClick={this.rotateRight} title="右旋"><ldesign-icon name="rotate-cw" /></button>
+        <button class="ldesign-image-viewer__tool" onClick={this.flipHorizontal} title="水平翻转"><ldesign-icon name="flip-horizontal" /></button>
+        <button class="ldesign-image-viewer__tool" onClick={this.flipVertical} title="垂直翻转"><ldesign-icon name="flip-vertical" /></button>
         <button class="ldesign-image-viewer__tool" onClick={() => this.resetTransform()} title="重置"><ldesign-icon name="refresh-ccw" /></button>
         <span class="ldesign-image-viewer__divider" />
         <button class="ldesign-image-viewer__tool" onClick={this.download} title="下载"><ldesign-icon name="download" /></button>
@@ -516,7 +550,9 @@ export class LdesignImageViewer {
               </button>
             )}
             <div class="ldesign-image-viewer__canvas" onWheel={this.onWheel} onDblClick={this.onDblClick}
-              onPointerDown={this.onPointerDown} onPointerMove={this.onPointerMove} onPointerUp={this.onPointerUp}>
+              onPointerDown={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerDown}
+              onPointerMove={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerMove}
+              onPointerUp={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerUp}>
               {(this.loading || this.crossfading) && this.prevSrc ? (
                 <img class={{ 'ldesign-image-viewer__img': true, 'fade-leave': this.crossfading }} src={this.prevSrc} alt="prev" draggable={false} style={{ transform: this.prevTransform || this.getTransformString() }} />
               ) : null}

@@ -349,7 +349,7 @@ modal.addEventListener('ldesignClose', () => {
 </script>
 ```
 
-## 快捷 API：Alert / Confirm / Prompt（支持状态与校验）
+## 快捷 API：Alert / Confirm / Prompt（支持状态与校验） / PromptForm（表单）
 
 使用内置的便捷函数，无需手动写 DOM，就能快速调用模态框。
 
@@ -364,7 +364,7 @@ modal.addEventListener('ldesignClose', () => {
 </div>
 
 ```ts
-import { alertModal, confirmModal, promptModal } from 'ldesign-webcomponent'
+import { alertModal, confirmModal, promptModal, promptPassword, promptForm } from 'ldesign-webcomponent'
 
 await alertModal({ title: '提示', content: '这是一个 Alert 消息。', status: 'info' })
 
@@ -382,7 +382,23 @@ const value = await promptModal({
   input: { placeholder: '例如: org/repo' },
   validate: (v) => {
     if (!v) return '名称不能为空'
-    if (!/^[-\w]+\/[-\w]+$/.test(v)) return '格式需为 org/repo'
+    if (!/^[-\\w]+\\/[-\\w]+$/.test(v)) return '格式需为 org/repo'
+    return true
+  }
+})
+
+const pwd = await promptPassword({ title: '请输入密码', content: '密码将用于确认操作' })
+
+const form = await promptForm({
+  title: '创建仓库',
+  fields: [
+    { name: 'org', label: '组织', required: true },
+    { name: 'repo', label: '仓库名', required: true, pattern: '^[a-z0-9_-]+$' },
+    { name: 'private', label: '私有仓库', type: 'checkbox', value: true },
+    { name: 'desc', label: '描述', type: 'textarea', rows: 3 }
+  ],
+  validate: (values) => {
+    if (!values.org || !values.repo) return '请填写组织与仓库名'
     return true
   }
 })
@@ -479,6 +495,50 @@ w.visible = true
 ```
 
 ## 变体：抽屉与底部弹层（支持拖拽与吸附）
+
+### 移动端/平板自动切换
+
+- 新增：`open-on-edge-swipe` 与 `edge-swipe-width`，在 destroy-on-close=false 时，允许在屏幕边缘滑动直接打开抽屉。
+
+通过 `variant-at` 与 `breakpoints` 指定不同屏宽下的变体。例如：小屏 bottom-sheet，中屏 drawer，桌面 modal。
+
+```html
+<ldesign-modal
+  id="responsive"
+  modal-title="响应式变体"
+  variant="modal"
+  variant-at='{ "xs": "bottom-sheet", "sm": "drawer-right", "md": "drawer-right", "lg": "modal" }'
+  breakpoints='{ "xs": 480, "sm": 768, "md": 1024, "lg": 1280 }'
+  animation="slide-up"
+  sheet-draggable
+  sheet-snap-points="50%,80%,100%"
+  sheet-initial="80%"
+>
+  <p style="padding:12px 16px">不同屏宽自动切换展示形态。</p>
+</ldesign-modal>
+```
+
+### 软键盘避让
+
+#### 移动端 Token（可覆盖的 CSS 变量）
+
+- 尺寸与间距
+  - `--ld-modal-radius`：圆角（默认桌面 8px，移动 12px）
+  - `--ld-modal-header-padding` / `--ld-modal-body-padding` / `--ld-modal-footer-padding`
+  - `--ld-modal-footer-bottom`：底部安全区 padding，最终 `padding-bottom: max(env(safe-area-inset-bottom), var(--ld-modal-footer-bottom))`
+  - `--ld-modal-action-gap`：头部/底部按钮间距
+- 字号与行高
+  - `--ld-modal-title-font-size`
+  - `--ld-modal-body-font-size` / `--ld-modal-body-line-height`
+  - 预设：`--ld-modal-text-sm|md|lg`（14px/15px/17px）
+- 动画
+  - `--ld-modal-duration`、`--ld-modal-ease`、`--ld-modal-anim-ease`
+
+默认在 `@media (max-width: 768px)` 下启用移动端预设，可按需在页面中覆盖。
+
+快捷 API 在小屏幕（≤768px）下默认以 bottom‑sheet 形式展示，并启用拖拽与吸附（50%/80%/100%，初始 80%）。
+
+默认开启 `avoid-keyboard`，在移动端键盘弹出时 bottom-sheet 会自动抬高，避免被遮挡。
 
 - 通过 `variant` 切换不同展示形态：`'modal' | 'drawer-left' | 'drawer-right' | 'bottom-sheet'`
 - 建议配合 `animation` 使用：

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slider 组件测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 40px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .horizontal-tests {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .horizontal-test {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .test-label {
+            min-width: 120px;
+            font-weight: 500;
+            color: #666;
+        }
+        .vertical-tests {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        .vertical-test {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .vertical-slider-container {
+            height: 200px;
+            display: flex;
+            align-items: center;
+        }
+        .value-display {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            min-width: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Slider 组件测试页面</h1>
+        <p>测试水平和垂直模式的功能是否正常</p>
+    </div>
+
+    <div class="test-container">
+        <div class="test-section">
+            <div class="test-title">🔄 水平模式测试</div>
+            <div class="horizontal-tests">
+                <div class="horizontal-test">
+                    <div class="test-label">基础滑块:</div>
+                    <ldesign-slider id="h1" value="30" min="0" max="100"></ldesign-slider>
+                    <div class="value-display" id="h1-value">30</div>
+                </div>
+                <div class="horizontal-test">
+                    <div class="test-label">带提示:</div>
+                    <ldesign-slider id="h2" value="50" min="0" max="100" show-tooltip="true"></ldesign-slider>
+                    <div class="value-display" id="h2-value">50</div>
+                </div>
+                <div class="horizontal-test">
+                    <div class="test-label">小尺寸:</div>
+                    <ldesign-slider id="h3" value="70" min="0" max="100" size="small"></ldesign-slider>
+                    <div class="value-display" id="h3-value">70</div>
+                </div>
+                <div class="horizontal-test">
+                    <div class="test-label">大尺寸:</div>
+                    <ldesign-slider id="h4" value="20" min="0" max="100" size="large"></ldesign-slider>
+                    <div class="value-display" id="h4-value">20</div>
+                </div>
+                <div class="horizontal-test">
+                    <div class="test-label">禁用状态:</div>
+                    <ldesign-slider id="h5" value="60" min="0" max="100" disabled="true"></ldesign-slider>
+                    <div class="value-display" id="h5-value">60</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <div class="test-section">
+            <div class="test-title">📏 垂直模式测试</div>
+            <div class="vertical-tests">
+                <div class="vertical-test">
+                    <div class="test-label">基础滑块</div>
+                    <div class="vertical-slider-container">
+                        <ldesign-slider id="v1" value="30" min="0" max="100" vertical="true"></ldesign-slider>
+                    </div>
+                    <div class="value-display" id="v1-value">30</div>
+                </div>
+                <div class="vertical-test">
+                    <div class="test-label">带提示</div>
+                    <div class="vertical-slider-container">
+                        <ldesign-slider id="v2" value="50" min="0" max="100" vertical="true" show-tooltip="true"></ldesign-slider>
+                    </div>
+                    <div class="value-display" id="v2-value">50</div>
+                </div>
+                <div class="vertical-test">
+                    <div class="test-label">小尺寸</div>
+                    <div class="vertical-slider-container">
+                        <ldesign-slider id="v3" value="70" min="0" max="100" vertical="true" size="small"></ldesign-slider>
+                    </div>
+                    <div class="value-display" id="v3-value">70</div>
+                </div>
+                <div class="vertical-test">
+                    <div class="test-label">大尺寸</div>
+                    <div class="vertical-slider-container">
+                        <ldesign-slider id="v4" value="20" min="0" max="100" vertical="true" size="large"></ldesign-slider>
+                    </div>
+                    <div class="value-display" id="v4-value">20</div>
+                </div>
+                <div class="vertical-test">
+                    <div class="test-label">禁用状态</div>
+                    <div class="vertical-slider-container">
+                        <ldesign-slider id="v5" value="60" min="0" max="100" vertical="true" disabled="true"></ldesign-slider>
+                    </div>
+                    <div class="value-display" id="v5-value">60</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 监听所有滑块的变化
+        const sliders = document.querySelectorAll('ldesign-slider');
+        sliders.forEach(slider => {
+            const valueDisplay = document.getElementById(slider.id + '-value');
+            
+            slider.addEventListener('ldesignInput', (e) => {
+                if (valueDisplay) {
+                    valueDisplay.textContent = e.detail;
+                }
+            });
+            
+            slider.addEventListener('ldesignChange', (e) => {
+                console.log(`${slider.id} changed to:`, e.detail);
+            });
+        });
+
+        // 添加键盘测试说明
+        console.log('键盘测试说明:');
+        console.log('- Tab: 切换焦点到滑块');
+        console.log('- 方向键: 调整值');
+        console.log('- Page Up/Down: 大幅调整值');
+        console.log('- Home/End: 跳到最小/最大值');
+    </script>
+</body>
+</html>

@@ -101,6 +101,7 @@ ldesign-popup（重写版）
  - [ldesign-popconfirm](../popconfirm)
  - [ldesign-select](../select)
  - [ldesign-time-picker](../time-picker)
+ - [ldesign-time-range-picker](../time-range-picker)
  - [ldesign-tooltip](../tooltip)
 
 ### Graph
@@ -113,6 +114,7 @@ graph TD;
   ldesign-popconfirm --> ldesign-popup
   ldesign-select --> ldesign-popup
   ldesign-time-picker --> ldesign-popup
+  ldesign-time-range-picker --> ldesign-popup
   ldesign-tooltip --> ldesign-popup
   style ldesign-popup fill:#f9f,stroke:#333,stroke-width:4px
 ```

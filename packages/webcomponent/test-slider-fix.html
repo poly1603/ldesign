@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slider 组件修复测试</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 30px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .test-row {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    .vertical-container {
+      height: 200px;
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    .value-display {
+      font-family: monospace;
+      background: #f0f0f0;
+      padding: 8px 12px;
+      border-radius: 4px;
+      min-width: 80px;
+    }
+    h2 {
+      color: #333;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 10px;
+    }
+    .test-label {
+      font-weight: 500;
+      color: #666;
+      min-width: 120px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔧 Slider 组件修复验证测试</h1>
+  
+  <div class="test-section">
+    <h2>水平模式测试 (确保功能不受影响)</h2>
+    
+    <div class="test-row">
+      <span class="test-label">基础滑块:</span>
+      <ldesign-slider id="h1" value="30" min="0" max="100"></ldesign-slider>
+      <div class="value-display" id="h1-value">30</div>
+    </div>
+    
+    <div class="test-row">
+      <span class="test-label">带提示滑块:</span>
+      <ldesign-slider id="h2" value="60" min="0" max="100" tooltip="true"></ldesign-slider>
+      <div class="value-display" id="h2-value">60</div>
+    </div>
+    
+    <div class="test-row">
+      <span class="test-label">禁用状态:</span>
+      <ldesign-slider id="h3" value="45" min="0" max="100" disabled="true"></ldesign-slider>
+      <div class="value-display" id="h3-value">45</div>
+    </div>
+    
+    <div class="test-row">
+      <span class="test-label">小尺寸:</span>
+      <ldesign-slider id="h4" value="25" min="0" max="100" size="small"></ldesign-slider>
+      <div class="value-display" id="h4-value">25</div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>垂直模式测试 (修复后的功能)</h2>
+    
+    <div class="vertical-container">
+      <div>
+        <div class="test-label">基础垂直滑块:</div>
+        <ldesign-slider id="v1" value="40" min="0" max="100" vertical="true"></ldesign-slider>
+        <div class="value-display" id="v1-value">40</div>
+      </div>
+      
+      <div>
+        <div class="test-label">带提示垂直滑块:</div>
+        <ldesign-slider id="v2" value="70" min="0" max="100" vertical="true" tooltip="true"></ldesign-slider>
+        <div class="value-display" id="v2-value">70</div>
+      </div>
+      
+      <div>
+        <div class="test-label">禁用垂直滑块:</div>
+        <ldesign-slider id="v3" value="55" min="0" max="100" vertical="true" disabled="true"></ldesign-slider>
+        <div class="value-display" id="v3-value">55</div>
+      </div>
+      
+      <div>
+        <div class="test-label">小尺寸垂直滑块:</div>
+        <ldesign-slider id="v4" value="80" min="0" max="100" vertical="true" size="small"></ldesign-slider>
+        <div class="value-display" id="v4-value">80</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>交互测试说明</h2>
+    <ul>
+      <li><strong>鼠标拖拽:</strong> 点击并拖拽滑块手柄来改变值</li>
+      <li><strong>点击轨道:</strong> 点击轨道任意位置，滑块应跳转到该位置</li>
+      <li><strong>键盘操作:</strong> 聚焦滑块后使用方向键调整值</li>
+      <li><strong>提示显示:</strong> 启用 tooltip 的滑块在交互时应显示当前值</li>
+      <li><strong>垂直模式:</strong> 垂直滑块应该有可见的拖拽手柄，并支持所有交互方式</li>
+    </ul>
+  </div>
+
+  <script>
+    // 监听所有滑块的值变化
+    const sliders = ['h1', 'h2', 'h3', 'h4', 'v1', 'v2', 'v3', 'v4'];
+    
+    sliders.forEach(id => {
+      const slider = document.getElementById(id);
+      const valueDisplay = document.getElementById(id + '-value');
+      
+      if (slider && valueDisplay) {
+        // 监听值变化事件
+        slider.addEventListener('ldesignChange', (e) => {
+          valueDisplay.textContent = e.detail;
+          console.log(`${id} 值变化:`, e.detail);
+        });
+        
+        // 监听输入事件
+        slider.addEventListener('ldesignInput', (e) => {
+          valueDisplay.textContent = e.detail;
+        });
+      }
+    });
+    
+    // 页面加载完成后的测试
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('🧪 Slider 修复测试页面已加载');
+      console.log('📋 测试项目:');
+      console.log('  ✅ 水平模式基本功能');
+      console.log('  ✅ 水平模式提示功能');
+      console.log('  ✅ 水平模式禁用状态');
+      console.log('  🔧 垂直模式基本功能 (修复项)');
+      console.log('  🔧 垂直模式提示功能 (修复项)');
+      console.log('  🔧 垂直模式禁用状态 (修复项)');
+      console.log('');
+      console.log('🎯 请测试以下功能:');
+      console.log('  1. 拖拽滑块手柄');
+      console.log('  2. 点击轨道跳转');
+      console.log('  3. 键盘方向键操作');
+      console.log('  4. 提示框显示');
+    });
+  </script>
+</body>
+</html>

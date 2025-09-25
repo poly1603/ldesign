@@ -3,6 +3,21 @@ import { Placement } from '@floating-ui/dom';
 
 export type TimePickerPlacement = Placement;
 export type TimePickerTrigger = 'click' | 'focus' | 'manual';
+export type TimePickerSize = 'small' | 'medium' | 'large';
+export type TimePickerStatus = 'default' | 'success' | 'warning' | 'error';
+export type TimeFormat = 'HH:mm' | 'HH:mm:ss' | 'HH:mm:ss:SSS' | 'hh:mm A' | 'hh:mm:ss A';
+
+export interface TimePickerPresets {
+  [key: string]: string | [string, string];
+}
+
+export interface DisableTimeOptions {
+  hour?: number[];
+  minute?: number[];
+  second?: number[];
+}
+
+export type DisableTimeFn = (hour?: number, minute?: number, second?: number) => DisableTimeOptions;
 
 /**
  * TimePicker 时间选择器
@@ -26,15 +41,39 @@ export class LdesignTimePicker {
   @Prop() placeholder: string = '选择时间';
   /** 是否禁用 */
   @Prop() disabled: boolean = false;
+  /** 是否只读 */
+  @Prop() readonly: boolean = false;
   /** 是否可清空 */
   @Prop() clearable: boolean = false;
+  /** 是否允许键盘输入 */
+  @Prop() allowInput: boolean = true;
+  /** 组件尺寸 */
+  @Prop() size: TimePickerSize = 'medium';
+  /** 状态 */
+  @Prop() status: TimePickerStatus = 'default';
+  /** 无边框模式 */
+  @Prop() borderless: boolean = false;
+  /** 是否在值为空时显示清除图标 */
+  @Prop() showClearIconOnEmpty: boolean = false;
+  /** 时间格式 */
+  @Prop() format: TimeFormat = 'HH:mm:ss';
+  /** 是否隐藏禁用的时间 */
+  @Prop() hideDisabledTime: boolean = true;
+  /** 预设快捷选项（JSON字符串或对象） */
+  @Prop() presets?: string | TimePickerPresets;
+  /** 禁用时间函数（不支持属性传递，需要通过DOM属性设置） */
+  disableTimeFn?: DisableTimeFn;
 
   /** 是否显示秒 */
   @Prop() showSeconds: boolean = true;
+  /** 步进 [小时, 分钟, 秒] */
+  @Prop() steps: number[] = [1, 1, 1];
   /** 步进 */
   @Prop() hourStep: number = 1;
   @Prop() minuteStep: number = 1;
   @Prop() secondStep: number = 1;
+  /** 毫秒步进 */
+  @Prop() millisecondStep: number = 1;
 
   /** 最小时间（含），如 08:30 或 08:30:00 */
   @Prop() minTime?: string;
@@ -71,17 +110,39 @@ export class LdesignTimePicker {
   @Event() ldesignChange!: EventEmitter<string | undefined>;
   /** 弹层可见性改变 */
   @Event() ldesignVisibleChange!: EventEmitter<boolean>;
+  /** 面板打开 */
+  @Event() ldesignOpen!: EventEmitter<void>;
+  /** 面板关闭 */
+  @Event() ldesignClose!: EventEmitter<void>;
+  /** 选择时间（点击、滚动、键盘操作时） */
+  @Event() ldesignPick!: EventEmitter<{ value: string; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' } }>;
+  /** 输入框获得焦点 */
+  @Event() ldesignFocus!: EventEmitter<FocusEvent>;
+  /** 输入框失去焦点 */
+  @Event() ldesignBlur!: EventEmitter<FocusEvent>;
 
   // 内部面板临时值
   @State() h: number = 0;
   @State() m: number = 0;
   @State() s: number = 0;
+  @State() ms: number = 0;
   @State() hasValue: boolean = false;
   @State() ampm: 'AM' | 'PM' = 'AM';
+  @State() inputValue: string = '';
+  @State() focused: boolean = false;
+
+  // 派生格式配置
+  @State() effectiveShowSeconds: boolean = true;
+  @State() effectiveShowMilliseconds: boolean = false;
+  @State() effectiveUse12Hours: boolean = false;
+  @State() effectiveOutputFormat: '24' | '12' = '24';
+  
+  private inputElement?: HTMLInputElement;
 
   private listHour?: HTMLElement;
   private listMinute?: HTMLElement;
   private listSecond?: HTMLElement;
+  private listMillisecond?: HTMLElement;
   private listAmPm?: HTMLElement;
 
   private itemHeight = 36; // px，用于滚动吸附
@@ -89,24 +150,66 @@ export class LdesignTimePicker {
 
   @Watch('value')
   watchValue(newVal?: string) {
-    const t = this.parseTime(newVal) || this.parseTime(this.defaultValue) || { h: 0, m: 0, s: 0 };
-    this.h = t.h; this.m = t.m; this.s = t.s; this.hasValue = !!newVal; this.ampm = this.h < 12 ? 'AM' : 'PM';
+    const t = this.parseTime(newVal) || this.parseTime(this.defaultValue) || { h: 0, m: 0, s: 0, ms: 0 } as any;
+    this.h = t.h; this.m = t.m; this.s = t.s; this.ms = (t as any).ms ?? 0; this.hasValue = !!newVal; this.ampm = this.h < 12 ? 'AM' : 'PM';
+    this.inputValue = newVal ?? '';
   }
 
+  private recomputeFormatFlags() {
+    const f = (this.format || '').toLowerCase();
+    const includesA = f.includes('a');
+    const includesSSS = f.includes('sss');
+    const includesSS = f.includes('ss');
+
+    // 12/24 小时
+    this.effectiveUse12Hours = includesA ? true : !!this.use12Hours;
+    this.effectiveOutputFormat = this.effectiveUse12Hours ? '12' : (this.outputFormat || '24');
+    // 秒/毫秒
+    this.effectiveShowMilliseconds = includesSSS;
+    this.effectiveShowSeconds = includesSS || includesSSS ? true : !!this.showSeconds;
+  }
+
+  private syncStepsFromArray() {
+    if (Array.isArray(this.steps) && this.steps.length >= 3) {
+      this.hourStep = Number(this.steps[0]) || 1;
+      this.minuteStep = Number(this.steps[1]) || 1;
+      this.secondStep = Number(this.steps[2]) || 1;
+      if (this.steps.length >= 4) this.millisecondStep = Number(this.steps[3]) || 1;
+    }
+  }
+
+  @Watch('format') onFormatChange() { this.recomputeFormatFlags(); }
+  @Watch('use12Hours') onUse12Change() { this.recomputeFormatFlags(); }
+  @Watch('outputFormat') onOutputFmtChange() { this.recomputeFormatFlags(); }
+  @Watch('showSeconds') onShowSecondsChange() { this.recomputeFormatFlags(); }
+
   componentWillLoad() {
+    this.recomputeFormatFlags();
+    this.syncStepsFromArray();
     const init = this.value !== undefined ? this.value : this.defaultValue;
-    const t = this.parseTime(init) || { h: 0, m: 0, s: 0 };
-    this.h = t.h; this.m = t.m; this.s = t.s; this.hasValue = init != null && init !== ''; this.ampm = this.h < 12 ? 'AM' : 'PM';
+    const t = this.parseTime(init) || { h: 0, m: 0, s: 0, ms: 0 } as any;
+    this.h = t.h; this.m = t.m; this.s = t.s; this.ms = (t as any).ms ?? 0; this.hasValue = init != null && init !== ''; this.ampm = this.h < 12 ? 'AM' : 'PM';
+    this.inputValue = init ?? '';
   }
 
   private clamp(n: number, min: number, max: number) { return Math.max(min, Math.min(max, n)); }
   private pad(n: number) { return String(n).padStart(2, '0'); }
+  private pad3(n: number) { return String(n).padStart(3, '0'); }
 
-  private parseTime(v?: string | null): { h: number; m: number; s: number } | null {
+  private parseTime(v?: string | null): { h: number; m: number; s: number; ms?: number } | null {
     if (!v || typeof v !== 'string') return null;
     const str = v.trim();
+    // 支持 24h: HH:mm:ss:SSS
+    let m = str.match(/^(\d{1,2}):(\d{1,2}):(\d{1,2}):(\d{1,3})$/);
+    if (m) {
+      const h = this.clamp(parseInt(m[1], 10) || 0, 0, 23);
+      const mi = this.clamp(parseInt(m[2], 10) || 0, 0, 59);
+      const s = this.clamp(parseInt(m[3], 10) || 0, 0, 59);
+      const ms = this.clamp(parseInt(m[4], 10) || 0, 0, 999);
+      return { h, m: mi, s, ms };
+    }
     // 支持 24h: HH:mm[:ss]
-    let m = str.match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/);
+    m = str.match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/);
     if (m) {
       const h = this.clamp(parseInt(m[1], 10) || 0, 0, 23);
       const mi = this.clamp(parseInt(m[2], 10) || 0, 0, 59);
@@ -131,16 +234,19 @@ export class LdesignTimePicker {
   private compare(a: { h: number; m: number; s: number }, b: { h: number; m: number; s: number }) { return this.toSeconds(a) - this.toSeconds(b); }
   private parseArray(val?: string | number[]): number[] { if (!val) return []; if (Array.isArray(val)) return val; try { const arr = JSON.parse(val); return Array.isArray(arr) ? arr : []; } catch { return []; } }
 
-  private formatTime(h: number, m: number, s: number): string {
-    if (this.outputFormat === '12') {
+  private formatTime(h: number, m: number, s: number, ms?: number): string {
+    if (this.effectiveOutputFormat === '12') {
       const isPM = h >= 12;
       const hh12 = ((h % 12) || 12);
       const base = `${this.pad(hh12)}:${this.pad(m)}`;
-      const body = this.showSeconds ? `${base}:${this.pad(s)}` : base;
+      let body = this.effectiveShowSeconds ? `${base}:${this.pad(s)}` : base;
+      if (this.effectiveShowMilliseconds) body = `${body}:${this.pad3(ms ?? this.ms)}`;
       return `${body} ${isPM ? 'PM' : 'AM'}`;
     }
     const base = `${this.pad(h)}:${this.pad(m)}`;
-    return this.showSeconds ? `${base}:${this.pad(s)}` : base;
+    let body = this.effectiveShowSeconds ? `${base}:${this.pad(s)}` : base;
+    if (this.effectiveShowMilliseconds) body = `${body}:${this.pad3(ms ?? this.ms)}`;
+    return body;
   }
 
   private getInnerPopup(): HTMLLdesignPopupElement | null { return this.el?.querySelector('ldesign-popup') as any; }
@@ -150,14 +256,17 @@ export class LdesignTimePicker {
     this.ldesignVisibleChange.emit(e.detail);
     if (this.trigger === 'manual') this.visible = e.detail;
     if (e.detail) {
+      this.ldesignOpen.emit();
       // 打开时根据当前值滚动到可视处
       requestAnimationFrame(() => this.scrollActiveIntoView());
+    } else {
+      this.ldesignClose.emit();
     }
   };
 
   private scrollActiveIntoView() {
     const setPad = (el?: HTMLElement) => { if (!el) return; const h = el.clientHeight || this.panelHeight; const pad = Math.max(0, Math.round(h / 2 - this.itemHeight / 2)); el.style.paddingTop = `${pad}px`; el.style.paddingBottom = `${pad}px`; };
-    [this.listAmPm, this.listHour, this.listMinute, this.listSecond].forEach((el) => setPad(el));
+    [this.listAmPm, this.listHour, this.listMinute, this.listSecond, this.listMillisecond].forEach((el) => setPad(el));
 
     const centerByQuery = (el?: HTMLElement, selector?: string) => {
       if (!el || !selector) return;
@@ -169,9 +278,10 @@ export class LdesignTimePicker {
     };
 
     centerByQuery(this.listHour, `li[data-value="${this.h}"]`);
-    centerByQuery(this.listMinute, `li[data-value="${this.m}"]`);
-    if (this.showSeconds) centerByQuery(this.listSecond, `li[data-value="${this.s}"]`);
-    if (this.use12Hours) centerByQuery(this.listAmPm, `.ldesign-time-picker__item--active`);
+    centerByQuery(this.listMinute, `li[data-value=\"${this.m}\"]`);
+    if (this.effectiveShowSeconds) centerByQuery(this.listSecond, `li[data-value=\"${this.s}\"]`);
+    if (this.effectiveShowMilliseconds) centerByQuery(this.listMillisecond, `li[data-value=\"${this.ms}\"]`);
+    if (this.effectiveUse12Hours) centerByQuery(this.listAmPm, `.ldesign-time-picker__item--active`);
   }
 
   private getNearestItem(container: HTMLElement): HTMLElement | null {
@@ -202,7 +312,7 @@ export class LdesignTimePicker {
     }
   }
 
-  private onColumnScroll(kind: 'hour' | 'minute' | 'second' | 'ampm', container: HTMLElement) {
+  private onColumnScroll(kind: 'hour' | 'minute' | 'second' | 'millisecond' | 'ampm', container: HTMLElement) {
     const nearest = this.getNearestItem(container);
     if (nearest && !nearest.classList.contains('ldesign-time-picker__item--disabled')) {
       const vAttr = nearest.getAttribute('data-value');
@@ -211,6 +321,7 @@ export class LdesignTimePicker {
         if (kind === 'hour') { this.h = v; this.ampm = this.h < 12 ? 'AM' : 'PM'; }
         else if (kind === 'minute') this.m = v;
         else if (kind === 'second') this.s = v;
+        else if (kind === 'millisecond') this.ms = v;
         else if (kind === 'ampm') this.setAmPm(nearest.textContent?.trim() === 'PM' ? 'PM' : 'AM');
       }
     }
@@ -225,6 +336,7 @@ export class LdesignTimePicker {
   private setHour = (h: number) => { this.h = this.clamp(h, 0, 23); this.ampm = this.h < 12 ? 'AM' : 'PM'; if (!this.confirm) this.commitValue(); };
   private setMinute = (m: number) => { this.m = this.clamp(m, 0, 59); if (!this.confirm) this.commitValue(); };
   private setSecond = (s: number) => { this.s = this.clamp(s, 0, 59); if (!this.confirm) this.commitValue(); };
+  private setMillisecond = (ms: number) => { this.ms = this.clamp(ms, 0, 999); if (!this.confirm) this.commitValue(); };
 
   private setAmPm = (ap: 'AM' | 'PM') => {
     if (this.ampm === ap) return;
@@ -234,10 +346,11 @@ export class LdesignTimePicker {
     if (!this.confirm) this.commitValue();
   };
 
-  private onWheelHour = (e: WheelEvent) => { e.preventDefault(); const d = e.deltaY > 0 ? this.hourStep : -this.hourStep; this.setHour((this.h + d + 24) % 24); };
-  private onWheelMinute = (e: WheelEvent) => { e.preventDefault(); const d = e.deltaY > 0 ? this.minuteStep : -this.minuteStep; this.setMinute((this.m + d + 60) % 60); };
-  private onWheelSecond = (e: WheelEvent) => { e.preventDefault(); const d = e.deltaY > 0 ? this.secondStep : -this.secondStep; this.setSecond((this.s + d + 60) % 60); };
-  private onWheelAmPm = (e: WheelEvent) => { e.preventDefault(); const next = this.ampm === 'AM' ? 'PM' : 'AM'; this.setAmPm(next); };
+  private onWheelHour = (e: WheelEvent) => { e.preventDefault(); const d = e.deltaY > 0 ? this.hourStep : -this.hourStep; this.setHour((this.h + d + 24) % 24); this.emitPick('scroll'); };
+  private onWheelMinute = (e: WheelEvent) => { e.preventDefault(); const d = e.deltaY > 0 ? this.minuteStep : -this.minuteStep; this.setMinute((this.m + d + 60) % 60); this.emitPick('scroll'); };
+  private onWheelSecond = (e: WheelEvent) => { e.preventDefault(); const d = e.deltaY > 0 ? this.secondStep : -this.secondStep; this.setSecond((this.s + d + 60) % 60); this.emitPick('scroll'); };
+  private onWheelMillisecond = (e: WheelEvent) => { e.preventDefault(); const d = e.deltaY > 0 ? this.millisecondStep : -this.millisecondStep; this.setMillisecond((this.ms + d + 1000) % 1000); this.emitPick('scroll'); };
+  private onWheelAmPm = (e: WheelEvent) => { e.preventDefault(); const next = this.ampm === 'AM' ? 'PM' : 'AM'; this.setAmPm(next); this.emitPick('scroll'); };
 
   private clearAll = (e: MouseEvent) => { e.stopPropagation(); if (this.disabled) return; this.updateValue(undefined); };
 
@@ -247,13 +360,19 @@ export class LdesignTimePicker {
     const clamped = this.clampTimeToRange(t);
     this.h = clamped.h; this.m = clamped.m; this.s = clamped.s; this.ampm = this.h < 12 ? 'AM' : 'PM';
     if (!this.confirm) this.commitValue();
+    this.emitPick('now');
   };
 
   private confirmPick = () => { this.commitValue(); this.hideInnerPopup(); };
 
   private commitValue() {
-    const out = this.formatTime(this.h, this.m, this.s);
+    const out = this.formatTime(this.h, this.m, this.s, this.ms);
     this.updateValue(out);
+  }
+
+  private emitPick(trigger: 'click' | 'scroll' | 'keyboard' | 'now') {
+    const out = this.formatTime(this.h, this.m, this.s, this.ms);
+    this.ldesignPick.emit({ value: out, context: { trigger } });
   }
 
   private clampTimeToRange(t: { h: number; m: number; s: number }) {
@@ -266,7 +385,8 @@ export class LdesignTimePicker {
   }
 
   private isHourDisabled(hh: number) {
-    const dis = new Set(this.parseArray(this.disabledHours));
+    const fromFn = this.disableTimeFn?.(this.h, this.m, this.s)?.hour || [];
+    const dis = new Set([...(this.parseArray(this.disabledHours)), ...fromFn]);
     if (dis.has(hh)) return true;
     const min = this.parseTime(this.minTime || undefined);
     const max = this.parseTime(this.maxTime || undefined);
@@ -276,7 +396,8 @@ export class LdesignTimePicker {
   }
 
   private isMinuteDisabled(mm: number) {
-    const dis = new Set(this.parseArray(this.disabledMinutes));
+    const fromFn = this.disableTimeFn?.(this.h, this.m, this.s)?.minute || [];
+    const dis = new Set([...(this.parseArray(this.disabledMinutes)), ...fromFn]);
     if (dis.has(mm)) return true;
     const min = this.parseTime(this.minTime || undefined);
     const max = this.parseTime(this.maxTime || undefined);
@@ -286,7 +407,8 @@ export class LdesignTimePicker {
   }
 
   private isSecondDisabled(ss: number) {
-    const dis = new Set(this.parseArray(this.disabledSeconds));
+    const fromFn = this.disableTimeFn?.(this.h, this.m, this.s)?.second || [];
+    const dis = new Set([...(this.parseArray(this.disabledSeconds)), ...fromFn]);
     if (dis.has(ss)) return true;
     const min = this.parseTime(this.minTime || undefined);
     const max = this.parseTime(this.maxTime || undefined);
@@ -317,16 +439,59 @@ export class LdesignTimePicker {
     }
   };
 
+  private onInputFocus = (e: FocusEvent) => {
+    this.focused = true;
+    this.ldesignFocus.emit(e);
+    if (!this.disabled) {
+      const popup = this.getInnerPopup();
+      if (popup && this.trigger !== 'manual') (popup as any).visible = true;
+    }
+  };
+
+  private onInputBlur = (e: FocusEvent) => {
+    this.focused = false;
+    this.ldesignBlur.emit(e);
+    // 尝试解析输入内容
+    const txt = this.inputElement?.value?.trim();
+    if (this.allowInput && !this.readonly && typeof txt === 'string') {
+      const t = this.parseTime(txt);
+      if (t) {
+        this.h = t.h; this.m = t.m; this.s = t.s; this.ampm = this.h < 12 ? 'AM' : 'PM';
+        if (!this.confirm) this.commitValue();
+        else this.inputValue = this.formatTime(this.h, this.m, this.s);
+        this.emitPick('keyboard');
+      } else {
+        // 恢复显示
+        this.inputValue = this.value ?? '';
+      }
+    }
+  };
+
+  private onInputKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      (e.currentTarget as HTMLInputElement).blur();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      this.inputValue = this.value ?? '';
+      (e.currentTarget as HTMLInputElement).blur();
+    }
+  };
+
   private renderTrigger() {
-    const has = this.hasValue && this.value && this.value !== '';
-    const text = has ? this.value : this.placeholder;
+    const has = !!(this.value && this.value !== '');
+    const showClear = this.clearable && !this.disabled && (has || this.showClearIconOnEmpty);
     const classes = {
       'ldesign-time-picker__trigger': true,
-      'ldesign-time-picker__trigger--placeholder': !has,
+      'ldesign-time-picker__trigger--placeholder': !has && !this.inputValue,
       'ldesign-time-picker__trigger--disabled': this.disabled,
+      'ldesign-time-picker__trigger--borderless': this.borderless,
+      [`ldesign-time-picker__trigger--${this.size}`]: true,
+      [`ldesign-time-picker__trigger--status-${this.status}`]: this.status && this.status !== 'default',
+      'ldesign-time-picker__trigger--readonly': this.readonly || !this.allowInput,
     } as any;
 
-    const clearBtn = this.clearable && has && !this.disabled ? (
+    const clearBtn = showClear ? (
       <span class="ldesign-time-picker__clear" onClick={this.clearAll} title="清空">
         <ldesign-icon name="x" size="small" />
       </span>
@@ -338,25 +503,42 @@ export class LdesignTimePicker {
       </span>
     );
 
+    const textValue = has ? (this.value as string) : '';
+
     return (
       <div class={classes} tabindex={this.disabled ? -1 : 0} onKeyDown={this.onTriggerKeyDown as any}>
-        <span class="ldesign-time-picker__text">{text}</span>
+        {this.allowInput ? (
+          <input
+            ref={(el) => (this.inputElement = el as HTMLInputElement)}
+            class="ldesign-time-picker__input"
+            value={this.inputValue || textValue}
+            placeholder={this.placeholder}
+            disabled={this.disabled}
+            readOnly={this.readonly}
+            onFocus={this.onInputFocus as any}
+            onBlur={this.onInputBlur as any}
+            onKeyDown={this.onInputKeyDown as any}
+            onInput={(e: any) => (this.inputValue = (e.target as HTMLInputElement).value)}
+          />
+        ) : (
+          <span class="ldesign-time-picker__text">{textValue || this.placeholder}</span>
+        )}
         {clearBtn}
         {icon}
       </div>
     );
   }
 
-  private renderColumn(type: 'hour' | 'minute' | 'second') {
+  private renderColumn(type: 'hour' | 'minute' | 'second' | 'millisecond') {
     const range = (n: number) => Array.from({ length: n }, (_, i) => i);
     let list: number[] = [];
     let cur = 0;
     let onClick: (v: number, e?: MouseEvent) => void = () => {};
     let isDisabled: (v: number) => boolean = () => false;
-    const step = type === 'hour' ? this.hourStep : (type === 'minute' ? this.minuteStep : this.secondStep);
+    const step = type === 'hour' ? this.hourStep : (type === 'minute' ? this.minuteStep : (type === 'second' ? this.secondStep : this.millisecondStep));
 
     if (type === 'hour') {
-      if (this.use12Hours) {
+      if (this.effectiveUse12Hours) {
         list = range(12).map(i => i + 1).filter(v => (v % step === 0) || step === 1);
         const disp = ((this.h % 12) || 12);
         cur = disp;
@@ -366,37 +548,48 @@ export class LdesignTimePicker {
           if (this.isHourDisabled(h24)) return;
           this.setHour(h24);
           const li = (e?.currentTarget as HTMLElement) || null; const ul = li?.parentElement as HTMLElement | null; if (li && ul) this.scrollItemIntoCenter(ul, li);
+          this.emitPick('click');
         };
         isDisabled = (v) => { let base = v % 12; if (base === 12 % 12) base = 0; const h24 = this.ampm === 'PM' ? (base + 12) : base; return this.isHourDisabled(h24); };
       } else {
         list = range(24).filter(v => v % step === 0);
         cur = this.h;
-        onClick = (v, e) => { if (this.isHourDisabled(v)) return; this.setHour(v); const li = (e?.currentTarget as HTMLElement) || null; const ul = li?.parentElement as HTMLElement | null; if (li && ul) this.scrollItemIntoCenter(ul, li); };
+        onClick = (v, e) => { if (this.isHourDisabled(v)) return; this.setHour(v); const li = (e?.currentTarget as HTMLElement) || null; const ul = li?.parentElement as HTMLElement | null; if (li && ul) this.scrollItemIntoCenter(ul, li); this.emitPick('click'); };
         isDisabled = (v) => this.isHourDisabled(v);
       }
     } else if (type === 'minute') {
       list = range(60).filter(v => v % step === 0);
       cur = this.m;
-      onClick = (v, e) => { if (this.isMinuteDisabled(v)) return; this.setMinute(v); const li = (e?.currentTarget as HTMLElement) || null; const ul = li?.parentElement as HTMLElement | null; if (li && ul) this.scrollItemIntoCenter(ul, li); };
+      onClick = (v, e) => { if (this.isMinuteDisabled(v)) return; this.setMinute(v); const li = (e?.currentTarget as HTMLElement) || null; const ul = li?.parentElement as HTMLElement | null; if (li && ul) this.scrollItemIntoCenter(ul, li); this.emitPick('click'); };
       isDisabled = (v) => this.isMinuteDisabled(v);
-    } else {
+    } else if (type === 'second') {
       list = range(60).filter(v => v % step === 0);
       cur = this.s;
-      onClick = (v, e) => { if (this.isSecondDisabled(v)) return; this.setSecond(v); const li = (e?.currentTarget as HTMLElement) || null; const ul = li?.parentElement as HTMLElement | null; if (li && ul) this.scrollItemIntoCenter(ul, li); };
+      onClick = (v, e) => { if (this.isSecondDisabled(v)) return; this.setSecond(v); const li = (e?.currentTarget as HTMLElement) || null; const ul = li?.parentElement as HTMLElement | null; if (li && ul) this.scrollItemIntoCenter(ul, li); this.emitPick('click'); };
       isDisabled = (v) => this.isSecondDisabled(v);
+    } else {
+      list = range(1000).filter(v => v % step === 0);
+      cur = this.ms;
+      onClick = (v, e) => { this.setMillisecond(v); const li = (e?.currentTarget as HTMLElement) || null; const ul = li?.parentElement as HTMLElement | null; if (li && ul) this.scrollItemIntoCenter(ul, li); this.emitPick('click'); };
+      isDisabled = (_v) => false;
     }
 
     // 为了让 0、1、58、59（或小时的首尾）也能顺滑地位于中心，
     // 在列表首尾各克隆若干项，形成“环形”滚动的视觉效果。
     // 这里克隆 2 项即可满足需求；对 step>1 的场景同样适用。
     // 使用与原始列表同等数量的前后缓冲，确保在任意面向滚动时都能将边界项滚动到中线
-    const bufferCount = list.length; // 小列表（24/60）开销可接受
-    const head = list.slice(-bufferCount);
-    const tail = list.slice(0, bufferCount);
-    const displayList = [...head, ...list, ...tail];
+    // 过滤禁用项（可选）
+    const baseList = list;
+    const filtered = this.hideDisabledTime ? baseList.filter(v => !isDisabled(v)) : baseList.slice();
+    const eff = filtered.length > 0 ? filtered : baseList;
+
+    const bufferCount = eff.length; // 小列表（24/60）开销可接受
+    const head = eff.slice(-bufferCount);
+    const tail = eff.slice(0, bufferCount);
+    const displayList = [...head, ...eff, ...tail];
 
     const refSetter = (el: HTMLElement) => {
-      if (type === 'hour') this.listHour = el; else if (type === 'minute') this.listMinute = el; else this.listSecond = el;
+      if (type === 'hour') this.listHour = el; else if (type === 'minute') this.listMinute = el; else if (type === 'second') this.listSecond = el; else this.listMillisecond = el;
     };
 
     const onScroll = (e: UIEvent) => {
@@ -409,21 +602,29 @@ export class LdesignTimePicker {
       const dir = e.deltaY > 0 ? 1 : -1;
       el.scrollBy({ top: this.itemHeight * dir, behavior: 'smooth' });
       this.onColumnScroll(type, el);
+      this.emitPick('scroll');
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      const el = e.currentTarget as HTMLElement;
+      if (e.key === 'ArrowDown') { e.preventDefault(); el.scrollBy({ top: this.itemHeight, behavior: 'smooth' }); this.onColumnScroll(type, el); this.emitPick('keyboard'); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); el.scrollBy({ top: -this.itemHeight, behavior: 'smooth' }); this.onColumnScroll(type, el); this.emitPick('keyboard'); }
+      else if (e.key === 'Enter' && this.confirm) { e.preventDefault(); this.confirmPick(); }
+      else if (e.key === 'Escape') { this.hideInnerPopup(); }
     };
 
     return (
       <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight}px` }}>
-        <ul class="ldesign-time-picker__column" tabindex={0} onScroll={onScroll as any} onWheel={onWheel as any} ref={refSetter} style={{ height: '100%', overflowY: 'auto' }}>
+        <ul class="ldesign-time-picker__column" tabindex={0} onScroll={onScroll as any} onWheel={onWheel as any} onKeyDown={onKeyDown as any} ref={refSetter} style={{ height: '100%', overflowY: 'auto' }}>
           {displayList.map(v => {
-            const active = type === 'hour' ? (this.use12Hours ? (((this.h % 12) || 12) === v) : (v === this.h)) : (type === 'minute' ? v === this.m : v === this.s);
+            const active = type === 'hour' ? (this.effectiveUse12Hours ? (((this.h % 12) || 12) === v) : (v === this.h)) : (type === 'minute' ? v === this.m : v === this.s);
             const disabled = isDisabled(v);
             // 数据值使用 24h 的真实值，便于滚动选择
             const dataValue = (type === 'hour')
-              ? (this.use12Hours ? (this.ampm === 'PM' ? ((v % 12) + 12) : (v % 12)) : v)
+              ? (this.effectiveUse12Hours ? (this.ampm === 'PM' ? ((v % 12) + 12) : (v % 12)) : v)
               : v;
-            return (
+      return (
               <li data-value={String(dataValue)} class={{ 'ldesign-time-picker__item': true, 'ldesign-time-picker__item--active': active, 'ldesign-time-picker__item--disabled': disabled }} onClick={(ev) => !disabled && onClick(v, ev)}>
-                {this.pad(v)}
+                {type === 'millisecond' ? this.pad3(v) : this.pad(v)}
               </li>
             );
           })}
@@ -438,10 +639,16 @@ export class LdesignTimePicker {
   private renderAmPmColumn() {
     const options: ('AM' | 'PM')[] = ['AM', 'PM'];
     const onScroll = (e: UIEvent) => { const el = e.currentTarget as HTMLElement; this.onColumnScroll('ampm', el); };
-    const onWheel = (e: WheelEvent) => { e.preventDefault(); const el = e.currentTarget as HTMLElement; const dir = e.deltaY > 0 ? 1 : -1; el.scrollBy({ top: this.itemHeight * dir, behavior: 'smooth' }); this.onColumnScroll('ampm', el); };
+    const onWheel = (e: WheelEvent) => { e.preventDefault(); const el = e.currentTarget as HTMLElement; const dir = e.deltaY > 0 ? 1 : -1; el.scrollBy({ top: this.itemHeight * dir, behavior: 'smooth' }); this.onColumnScroll('ampm', el); this.emitPick('scroll'); };
+    const onKeyDown = (e: KeyboardEvent) => {
+      const el = e.currentTarget as HTMLElement;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); const next = this.ampm === 'AM' ? 'PM' : 'AM'; this.setAmPm(next); this.emitPick('keyboard'); }
+      else if (e.key === 'Enter' && this.confirm) { e.preventDefault(); this.confirmPick(); }
+      else if (e.key === 'Escape') { this.hideInnerPopup(); }
+    };
     return (
       <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight}px` }}>
-        <ul class="ldesign-time-picker__column" tabindex={0} onScroll={onScroll as any} onWheel={onWheel as any} ref={(el) => (this.listAmPm = el)} style={{ height: '100%', overflowY: 'auto' }}>
+        <ul class="ldesign-time-picker__column" tabindex={0} onScroll={onScroll as any} onWheel={onWheel as any} onKeyDown={onKeyDown as any} ref={(el) => (this.listAmPm = el)} style={{ height: '100%', overflowY: 'auto' }}>
           {options.map(op => (
             <li class={{ 'ldesign-time-picker__item': true, 'ldesign-time-picker__item--active': op === this.ampm }} data-value={op === 'PM' ? '13' : '0'} onClick={(e) => { this.setAmPm(op); const li = (e.currentTarget as HTMLElement); const ul = li.parentElement as HTMLElement; this.scrollItemIntoCenter(ul, li); }}>
               {op}
@@ -455,14 +662,53 @@ export class LdesignTimePicker {
     );
   }
 
+  private parsePresets(): TimePickerPresets {
+    const p = this.presets;
+    if (!p) return {};
+    if (typeof p === 'string') {
+      try { const o = JSON.parse(p); return o && typeof o === 'object' ? o : {}; } catch { return {}; }
+    }
+    return p as TimePickerPresets;
+  }
+
+  private clickPreset = (val: string) => {
+    const t = this.parseTime(val);
+    if (!t) return;
+    this.h = t.h; this.m = t.m; this.s = t.s; this.ampm = this.h < 12 ? 'AM' : 'PM';
+    this.commitValue();
+    this.emitPick('click');
+    this.hideInnerPopup();
+  };
+
+  private get itemHeightBySize() {
+    switch (this.size) {
+      case 'small': return 32;
+      case 'large': return 40;
+      default: return 36;
+    }
+  }
+
   private renderPanel() {
+    // 同步 item 高度
+    this.itemHeight = this.itemHeightBySize;
+    const presets = this.parsePresets();
+    const hasPresets = presets && Object.keys(presets).length > 0;
+
     return (
-      <div class="ldesign-time-picker__content">
+      <div class="ldesign-time-picker__content" style={{ ['--ld-tp-item-height' as any]: `${this.itemHeight}px` }}>
+        {hasPresets && (
+          <div class="ldesign-time-picker__presets">
+            {Object.entries(presets).map(([label, val]) => (
+              <button class="ldesign-time-picker__preset-btn" type="button" onClick={() => this.clickPreset(Array.isArray(val) ? (val[0] as string) : (val as string))}>{label}</button>
+            ))}
+          </div>
+        )}
         <div class="ldesign-time-picker__columns">
-          {this.use12Hours && this.renderAmPmColumn()}
+          {this.effectiveUse12Hours && this.renderAmPmColumn()}
           {this.renderColumn('hour')}
           {this.renderColumn('minute')}
-          {this.showSeconds && this.renderColumn('second')}
+          {this.effectiveShowSeconds && this.renderColumn('second')}
+          {this.effectiveShowMilliseconds && this.renderColumn('millisecond')}
         </div>
         <div class="ldesign-time-picker__footer">
           <button class="ldesign-time-picker__now" type="button" onClick={this.useNow}>此刻</button>

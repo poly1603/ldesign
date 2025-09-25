@@ -17,7 +17,10 @@ import { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/
 import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 import { TabsPlacement, TabsType } from "./components/tabs/tabs";
-import { TimePickerPlacement, TimePickerTrigger } from "./components/time-picker/time-picker";
+import { TimeFormat, TimePickerPlacement, TimePickerPresets, TimePickerSize, TimePickerStatus, TimePickerTrigger } from "./components/time-picker/time-picker";
+import { TimeFormat as TimeFormat1 } from "./components/time-picker-panel/time-picker-panel";
+import { TimeFormat as TimeFormat2, TimePickerSize as TimePickerSize1, TimePickerStatus as TimePickerStatus1, TimeRange } from "./components/time-range-picker/time-range-picker";
+import { Placement } from "@floating-ui/dom";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 import { TreeNode } from "./components/tree/tree";
 export { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
@@ -32,7 +35,10 @@ export { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/
 export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 export { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 export { TabsPlacement, TabsType } from "./components/tabs/tabs";
-export { TimePickerPlacement, TimePickerTrigger } from "./components/time-picker/time-picker";
+export { TimeFormat, TimePickerPlacement, TimePickerPresets, TimePickerSize, TimePickerStatus, TimePickerTrigger } from "./components/time-picker/time-picker";
+export { TimeFormat as TimeFormat1 } from "./components/time-picker-panel/time-picker-panel";
+export { TimeFormat as TimeFormat2, TimePickerSize as TimePickerSize1, TimePickerStatus as TimePickerStatus1, TimeRange } from "./components/time-range-picker/time-range-picker";
+export { Placement } from "@floating-ui/dom";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
 export { TreeNode } from "./components/tree/tree";
 export namespace Components {
@@ -537,6 +543,11 @@ export namespace Components {
          */
         "size": Size;
         /**
+          * 透传面板 UI 模式
+          * @default 'pro'
+         */
+        "ui": 'simple' | 'pro';
+        /**
           * @default '#1677ff'
          */
         "value": string;
@@ -562,6 +573,11 @@ export namespace Components {
           * @default 'both'
          */
         "gradientTypes": 'linear' | 'radial' | 'both';
+        /**
+          * 渐变色标之间的最小间距（百分比，避免重叠），默认 2
+          * @default 2
+         */
+        "minStopGap": number;
         /**
           * 面板模式：单色 | 渐变 | 两者
           * @default 'both'
@@ -597,6 +613,11 @@ export namespace Components {
           * @default 'medium'
          */
         "size": Size;
+        /**
+          * UI 模式：simple 为精简界面，仅保留必要控件；pro 为完整界面
+          * @default 'pro'
+         */
+        "ui": 'simple' | 'pro';
         /**
           * 当前颜色（默认 hex），支持 #RRGGBB/#RRGGBBAA、rgb/rgba、hsl/hsla、hsv
           * @default '#3498db'
@@ -1331,9 +1352,19 @@ export namespace Components {
          */
         "animation": ModalAnimation;
         /**
+          * 软键盘（移动端）避让
+          * @default true
+         */
+        "avoidKeyboard": boolean;
+        /**
           * 关闭/确认前拦截钩子（函数属性，需 JS 赋值）
          */
         "beforeClose"?: (reason: 'ok' | 'close' | 'mask' | 'esc' | 'api') => boolean | Promise<boolean>;
+        /**
+          * 向导步进前置钩子：返回 false 阻止切换
+         */
+        "beforeStepChange"?: (from: number, to: number) => boolean | Promise<boolean>;
+        "breakpoints"?: { xs: number; sm: number; md: number; lg: number };
         /**
           * @default '取消'
          */
@@ -1362,15 +1393,34 @@ export namespace Components {
          */
         "closeIcon": string;
         /**
+          * 当前步骤（0-based，可受控）
+          * @default 0
+         */
+        "currentStep": number;
+        /**
           * 是否销毁子元素
           * @default false
          */
         "destroyOnClose": boolean;
         /**
+          * Drawer 滑动关闭阈值（距离）：默认 '30%'（以抽屉宽度为基准）
+         */
+        "drawerCloseThreshold"?: number | string;
+        /**
+          * Drawer 边缘滑动关闭
+          * @default true
+         */
+        "drawerSwipeToClose": boolean;
+        /**
           * 动画参数（也可通过 CSS 变量覆盖）：duration(ms)、ease、animEase
          */
         "duration"?: number;
         "ease"?: string;
+        /**
+          * 边缘感应宽度（px）
+          * @default 24
+         */
+        "edgeSwipeWidth": number;
         /**
           * 容器（选择器或元素）：若提供，则在加载时把组件节点移动到该容器下
          */
@@ -1446,6 +1496,11 @@ export namespace Components {
           * @default 'primary'
          */
         "okType": ButtonType;
+        /**
+          * 屏幕边缘滑动打开抽屉（需 destroyOnClose=false 以便组件常驻）
+          * @default false
+         */
+        "openOnEdgeSwipe": boolean;
         "preOk"?: () => boolean | Promise<boolean>;
         /**
           * 是否可调整大小
@@ -1461,10 +1516,22 @@ export namespace Components {
          */
         "restoreIcon": string;
         /**
+          * 关闭阈值：低于该高度则关闭，默认 '30%'
+         */
+        "sheetCloseThreshold"?: number | string;
+        /**
           * Bottom Sheet 拖拽开关（仅在 variant='bottom-sheet' 时生效）
           * @default true
          */
         "sheetDraggable": boolean;
+        /**
+          * 初始高度：同上；若不传且有 snapPoints，则使用最大 snap 值（通常是 100%）
+         */
+        "sheetInitial"?: number | string;
+        /**
+          * Snap 点：数组，值支持像素（数字或'120px'），百分比（'50%'），或小数（0.5 表示 50%）
+         */
+        "sheetSnapPoints"?: (number | string)[];
         /**
           * 显示模态框
          */
@@ -1474,6 +1541,10 @@ export namespace Components {
           * @default 'medium'
          */
         "size": ModalSize;
+        /**
+          * 步骤标题（JS 赋值）
+         */
+        "steps"?: string[];
         /**
           * 切换最大化状态
          */
@@ -1493,6 +1564,10 @@ export namespace Components {
          */
         "variant": ModalVariant;
         /**
+          * 响应式变体：根据断点自动切换
+         */
+        "variantAt"?: Partial<Record<'xs'|'sm'|'md'|'lg', ModalVariant>>;
+        /**
           * 是否显示模态框
           * @default false
          */
@@ -1501,6 +1576,11 @@ export namespace Components {
           * 自定义宽度
          */
         "width"?: number | string;
+        /**
+          * 向导模式
+          * @default false
+         */
+        "wizard": boolean;
         /**
           * z-index
           * @default 1000
@@ -2274,10 +2354,20 @@ export namespace Components {
      */
     interface LdesignTimePicker {
         /**
+          * 是否允许键盘输入
+          * @default true
+         */
+        "allowInput": boolean;
+        /**
           * 是否显示箭头（透传给 Popup）
           * @default false
          */
         "arrow": boolean;
+        /**
+          * 无边框模式
+          * @default false
+         */
+        "borderless": boolean;
         /**
           * 是否可清空
           * @default false
@@ -2310,6 +2400,16 @@ export namespace Components {
          */
         "disabledSeconds"?: string | number[];
         /**
+          * 时间格式
+          * @default 'HH:mm:ss'
+         */
+        "format": TimeFormat;
+        /**
+          * 是否隐藏禁用的时间
+          * @default true
+         */
+        "hideDisabledTime": boolean;
+        /**
           * 步进
           * @default 1
          */
@@ -2318,6 +2418,11 @@ export namespace Components {
           * 最大时间（含），如 18:00 或 18:00:00
          */
         "maxTime"?: string;
+        /**
+          * 毫秒步进
+          * @default 1
+         */
+        "millisecondStep": number;
         /**
           * 最小时间（含），如 08:30 或 08:30:00
          */
@@ -2347,14 +2452,43 @@ export namespace Components {
          */
         "placement": TimePickerPlacement;
         /**
+          * 预设快捷选项（JSON字符串或对象）
+         */
+        "presets"?: string | TimePickerPresets;
+        /**
+          * 是否只读
+          * @default false
+         */
+        "readonly": boolean;
+        /**
           * @default 1
          */
         "secondStep": number;
+        /**
+          * 是否在值为空时显示清除图标
+          * @default false
+         */
+        "showClearIconOnEmpty": boolean;
         /**
           * 是否显示秒
           * @default true
          */
         "showSeconds": boolean;
+        /**
+          * 组件尺寸
+          * @default 'medium'
+         */
+        "size": TimePickerSize;
+        /**
+          * 状态
+          * @default 'default'
+         */
+        "status": TimePickerStatus;
+        /**
+          * 步进 [小时, 分钟, 秒]
+          * @default [1, 1, 1]
+         */
+        "steps": number[];
         /**
           * 主题（透传给 Popup）
           * @default 'light'
@@ -2376,6 +2510,130 @@ export namespace Components {
         "value"?: string;
         /**
           * 外部受控可见性（仅 trigger = 'manual' 生效）
+          * @default false
+         */
+        "visible": boolean;
+    }
+    /**
+     * ldesign-time-picker-panel
+     * 仅渲染选择面板，不包含触发器/弹层
+     */
+    interface LdesignTimePickerPanel {
+        /**
+          * 默认值
+         */
+        "defaultValue"?: string;
+        /**
+          * 时间格式
+          * @default 'HH:mm:ss'
+         */
+        "format": TimeFormat1;
+        /**
+          * 面板列最大高度
+          * @default 180
+         */
+        "panelHeight": number;
+        /**
+          * 是否显示秒
+          * @default true
+         */
+        "showSeconds": boolean;
+        /**
+          * 步进数组 [h, m, s, ms]
+          * @default [1, 1, 1, 1]
+         */
+        "steps": number[];
+        /**
+          * 是否启用 12 小时制显示（输出仍用 format 决定）
+          * @default false
+         */
+        "use12Hours": boolean;
+        /**
+          * 当前值（受控）
+         */
+        "value"?: string;
+    }
+    interface LdesignTimeRangePicker {
+        /**
+          * @default true
+         */
+        "allowInput": boolean;
+        /**
+          * @default false
+         */
+        "arrow": boolean;
+        /**
+          * @default false
+         */
+        "borderless": boolean;
+        /**
+          * @default true
+         */
+        "clearable": boolean;
+        /**
+          * @default true
+         */
+        "confirm": boolean;
+        "defaultValue"?: TimeRange;
+        /**
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * @default 'HH:mm:ss'
+         */
+        "format": TimeFormat2;
+        /**
+          * @default true
+         */
+        "hideDisabledTime": boolean;
+        /**
+          * @default 180
+         */
+        "panelHeight": number;
+        /**
+          * @default '结束时间'
+         */
+        "placeholderEnd": string;
+        /**
+          * @default '开始时间'
+         */
+        "placeholderStart": string;
+        /**
+          * @default 'bottom-start'
+         */
+        "placement": Placement;
+        "presets"?: string | Record<string, TimeRange>;
+        /**
+          * @default false
+         */
+        "readonly": boolean;
+        /**
+          * @default false
+         */
+        "showClearIconOnEmpty": boolean;
+        /**
+          * @default 'medium'
+         */
+        "size": TimePickerSize1;
+        /**
+          * @default 'default'
+         */
+        "status": TimePickerStatus1;
+        /**
+          * @default [1, 1, 1, 1]
+         */
+        "steps": number[];
+        /**
+          * @default 'light'
+         */
+        "theme": 'light' | 'dark';
+        /**
+          * @default 'click'
+         */
+        "trigger": 'click' | 'focus' | 'manual';
+        "value"?: TimeRange;
+        /**
           * @default false
          */
         "visible": boolean;
@@ -2682,6 +2940,14 @@ export interface LdesignTabsCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignTimePickerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignTimePickerElement;
+}
+export interface LdesignTimePickerPanelCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignTimePickerPanelElement;
+}
+export interface LdesignTimeRangePickerCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignTimeRangePickerElement;
 }
 export interface LdesignTreeCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -3103,6 +3369,7 @@ declare global {
         new (): HTMLLdesignMessageElement;
     };
     interface HTMLLdesignModalElementEventMap {
+        "ldesignStepChange": number;
         "ldesignVisibleChange": boolean;
         "ldesignClose": void;
         "ldesignOk": void;
@@ -3393,6 +3660,11 @@ declare global {
     interface HTMLLdesignTimePickerElementEventMap {
         "ldesignChange": string | undefined;
         "ldesignVisibleChange": boolean;
+        "ldesignOpen": void;
+        "ldesignClose": void;
+        "ldesignPick": { value: string; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' } };
+        "ldesignFocus": FocusEvent;
+        "ldesignBlur": FocusEvent;
     }
     /**
      * TimePicker 时间选择器
@@ -3412,6 +3684,51 @@ declare global {
     var HTMLLdesignTimePickerElement: {
         prototype: HTMLLdesignTimePickerElement;
         new (): HTMLLdesignTimePickerElement;
+    };
+    interface HTMLLdesignTimePickerPanelElementEventMap {
+        "ldesignChange": string;
+        "ldesignPick": { value: string; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' } };
+    }
+    /**
+     * ldesign-time-picker-panel
+     * 仅渲染选择面板，不包含触发器/弹层
+     */
+    interface HTMLLdesignTimePickerPanelElement extends Components.LdesignTimePickerPanel, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignTimePickerPanelElementEventMap>(type: K, listener: (this: HTMLLdesignTimePickerPanelElement, ev: LdesignTimePickerPanelCustomEvent<HTMLLdesignTimePickerPanelElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignTimePickerPanelElementEventMap>(type: K, listener: (this: HTMLLdesignTimePickerPanelElement, ev: LdesignTimePickerPanelCustomEvent<HTMLLdesignTimePickerPanelElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignTimePickerPanelElement: {
+        prototype: HTMLLdesignTimePickerPanelElement;
+        new (): HTMLLdesignTimePickerPanelElement;
+    };
+    interface HTMLLdesignTimeRangePickerElementEventMap {
+        "ldesignChange": TimeRange | undefined;
+        "ldesignVisibleChange": boolean;
+        "ldesignOpen": void;
+        "ldesignClose": void;
+        "ldesignPick": { value: TimeRange; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' } };
+        "ldesignFocus": FocusEvent;
+        "ldesignBlur": FocusEvent;
+    }
+    interface HTMLLdesignTimeRangePickerElement extends Components.LdesignTimeRangePicker, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignTimeRangePickerElementEventMap>(type: K, listener: (this: HTMLLdesignTimeRangePickerElement, ev: LdesignTimeRangePickerCustomEvent<HTMLLdesignTimeRangePickerElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignTimeRangePickerElementEventMap>(type: K, listener: (this: HTMLLdesignTimeRangePickerElement, ev: LdesignTimeRangePickerCustomEvent<HTMLLdesignTimeRangePickerElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignTimeRangePickerElement: {
+        prototype: HTMLLdesignTimeRangePickerElement;
+        new (): HTMLLdesignTimeRangePickerElement;
     };
     /**
      * Tooltip 工具提示组件
@@ -3481,6 +3798,8 @@ declare global {
         "ldesign-tab-panel": HTMLLdesignTabPanelElement;
         "ldesign-tabs": HTMLLdesignTabsElement;
         "ldesign-time-picker": HTMLLdesignTimePickerElement;
+        "ldesign-time-picker-panel": HTMLLdesignTimePickerPanelElement;
+        "ldesign-time-range-picker": HTMLLdesignTimeRangePickerElement;
         "ldesign-tooltip": HTMLLdesignTooltipElement;
         "ldesign-tree": HTMLLdesignTreeElement;
     }
@@ -4025,6 +4344,11 @@ declare namespace LocalJSX {
          */
         "size"?: Size;
         /**
+          * 透传面板 UI 模式
+          * @default 'pro'
+         */
+        "ui"?: 'simple' | 'pro';
+        /**
           * @default '#1677ff'
          */
         "value"?: string;
@@ -4050,6 +4374,11 @@ declare namespace LocalJSX {
           * @default 'both'
          */
         "gradientTypes"?: 'linear' | 'radial' | 'both';
+        /**
+          * 渐变色标之间的最小间距（百分比，避免重叠），默认 2
+          * @default 2
+         */
+        "minStopGap"?: number;
         /**
           * 面板模式：单色 | 渐变 | 两者
           * @default 'both'
@@ -4087,6 +4416,11 @@ declare namespace LocalJSX {
           * @default 'medium'
          */
         "size"?: Size;
+        /**
+          * UI 模式：simple 为精简界面，仅保留必要控件；pro 为完整界面
+          * @default 'pro'
+         */
+        "ui"?: 'simple' | 'pro';
         /**
           * 当前颜色（默认 hex），支持 #RRGGBB/#RRGGBBAA、rgb/rgba、hsl/hsla、hsv
           * @default '#3498db'
@@ -4877,9 +5211,19 @@ declare namespace LocalJSX {
          */
         "animation"?: ModalAnimation;
         /**
+          * 软键盘（移动端）避让
+          * @default true
+         */
+        "avoidKeyboard"?: boolean;
+        /**
           * 关闭/确认前拦截钩子（函数属性，需 JS 赋值）
          */
         "beforeClose"?: (reason: 'ok' | 'close' | 'mask' | 'esc' | 'api') => boolean | Promise<boolean>;
+        /**
+          * 向导步进前置钩子：返回 false 阻止切换
+         */
+        "beforeStepChange"?: (from: number, to: number) => boolean | Promise<boolean>;
+        "breakpoints"?: { xs: number; sm: number; md: number; lg: number };
         /**
           * @default '取消'
          */
@@ -4904,15 +5248,34 @@ declare namespace LocalJSX {
          */
         "closeIcon"?: string;
         /**
+          * 当前步骤（0-based，可受控）
+          * @default 0
+         */
+        "currentStep"?: number;
+        /**
           * 是否销毁子元素
           * @default false
          */
         "destroyOnClose"?: boolean;
         /**
+          * Drawer 滑动关闭阈值（距离）：默认 '30%'（以抽屉宽度为基准）
+         */
+        "drawerCloseThreshold"?: number | string;
+        /**
+          * Drawer 边缘滑动关闭
+          * @default true
+         */
+        "drawerSwipeToClose"?: boolean;
+        /**
           * 动画参数（也可通过 CSS 变量覆盖）：duration(ms)、ease、animEase
          */
         "duration"?: number;
         "ease"?: string;
+        /**
+          * 边缘感应宽度（px）
+          * @default 24
+         */
+        "edgeSwipeWidth"?: number;
         /**
           * 容器（选择器或元素）：若提供，则在加载时把组件节点移动到该容器下
          */
@@ -4988,10 +5351,16 @@ declare namespace LocalJSX {
           * 确认事件
          */
         "onLdesignOk"?: (event: LdesignModalCustomEvent<void>) => void;
+        "onLdesignStepChange"?: (event: LdesignModalCustomEvent<number>) => void;
         /**
           * 显示状态变化事件
          */
         "onLdesignVisibleChange"?: (event: LdesignModalCustomEvent<boolean>) => void;
+        /**
+          * 屏幕边缘滑动打开抽屉（需 destroyOnClose=false 以便组件常驻）
+          * @default false
+         */
+        "openOnEdgeSwipe"?: boolean;
         "preOk"?: () => boolean | Promise<boolean>;
         /**
           * 是否可调整大小
@@ -5003,15 +5372,31 @@ declare namespace LocalJSX {
          */
         "restoreIcon"?: string;
         /**
+          * 关闭阈值：低于该高度则关闭，默认 '30%'
+         */
+        "sheetCloseThreshold"?: number | string;
+        /**
           * Bottom Sheet 拖拽开关（仅在 variant='bottom-sheet' 时生效）
           * @default true
          */
         "sheetDraggable"?: boolean;
         /**
+          * 初始高度：同上；若不传且有 snapPoints，则使用最大 snap 值（通常是 100%）
+         */
+        "sheetInitial"?: number | string;
+        /**
+          * Snap 点：数组，值支持像素（数字或'120px'），百分比（'50%'），或小数（0.5 表示 50%）
+         */
+        "sheetSnapPoints"?: (number | string)[];
+        /**
           * 模态框尺寸
           * @default 'medium'
          */
         "size"?: ModalSize;
+        /**
+          * 步骤标题（JS 赋值）
+         */
+        "steps"?: string[];
         /**
           * 距离顶部的距离
          */
@@ -5027,6 +5412,10 @@ declare namespace LocalJSX {
          */
         "variant"?: ModalVariant;
         /**
+          * 响应式变体：根据断点自动切换
+         */
+        "variantAt"?: Partial<Record<'xs'|'sm'|'md'|'lg', ModalVariant>>;
+        /**
           * 是否显示模态框
           * @default false
          */
@@ -5035,6 +5424,11 @@ declare namespace LocalJSX {
           * 自定义宽度
          */
         "width"?: number | string;
+        /**
+          * 向导模式
+          * @default false
+         */
+        "wizard"?: boolean;
         /**
           * z-index
           * @default 1000
@@ -5877,10 +6271,20 @@ declare namespace LocalJSX {
      */
     interface LdesignTimePicker {
         /**
+          * 是否允许键盘输入
+          * @default true
+         */
+        "allowInput"?: boolean;
+        /**
           * 是否显示箭头（透传给 Popup）
           * @default false
          */
         "arrow"?: boolean;
+        /**
+          * 无边框模式
+          * @default false
+         */
+        "borderless"?: boolean;
         /**
           * 是否可清空
           * @default false
@@ -5913,6 +6317,16 @@ declare namespace LocalJSX {
          */
         "disabledSeconds"?: string | number[];
         /**
+          * 时间格式
+          * @default 'HH:mm:ss'
+         */
+        "format"?: TimeFormat;
+        /**
+          * 是否隐藏禁用的时间
+          * @default true
+         */
+        "hideDisabledTime"?: boolean;
+        /**
           * 步进
           * @default 1
          */
@@ -5922,6 +6336,11 @@ declare namespace LocalJSX {
          */
         "maxTime"?: string;
         /**
+          * 毫秒步进
+          * @default 1
+         */
+        "millisecondStep"?: number;
+        /**
           * 最小时间（含），如 08:30 或 08:30:00
          */
         "minTime"?: string;
@@ -5930,9 +6349,29 @@ declare namespace LocalJSX {
          */
         "minuteStep"?: number;
         /**
+          * 输入框失去焦点
+         */
+        "onLdesignBlur"?: (event: LdesignTimePickerCustomEvent<FocusEvent>) => void;
+        /**
           * 值改变
          */
         "onLdesignChange"?: (event: LdesignTimePickerCustomEvent<string | undefined>) => void;
+        /**
+          * 面板关闭
+         */
+        "onLdesignClose"?: (event: LdesignTimePickerCustomEvent<void>) => void;
+        /**
+          * 输入框获得焦点
+         */
+        "onLdesignFocus"?: (event: LdesignTimePickerCustomEvent<FocusEvent>) => void;
+        /**
+          * 面板打开
+         */
+        "onLdesignOpen"?: (event: LdesignTimePickerCustomEvent<void>) => void;
+        /**
+          * 选择时间（点击、滚动、键盘操作时）
+         */
+        "onLdesignPick"?: (event: LdesignTimePickerCustomEvent<{ value: string; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' } }>) => void;
         /**
           * 弹层可见性改变
          */
@@ -5958,14 +6397,43 @@ declare namespace LocalJSX {
          */
         "placement"?: TimePickerPlacement;
         /**
+          * 预设快捷选项（JSON字符串或对象）
+         */
+        "presets"?: string | TimePickerPresets;
+        /**
+          * 是否只读
+          * @default false
+         */
+        "readonly"?: boolean;
+        /**
           * @default 1
          */
         "secondStep"?: number;
+        /**
+          * 是否在值为空时显示清除图标
+          * @default false
+         */
+        "showClearIconOnEmpty"?: boolean;
         /**
           * 是否显示秒
           * @default true
          */
         "showSeconds"?: boolean;
+        /**
+          * 组件尺寸
+          * @default 'medium'
+         */
+        "size"?: TimePickerSize;
+        /**
+          * 状态
+          * @default 'default'
+         */
+        "status"?: TimePickerStatus;
+        /**
+          * 步进 [小时, 分钟, 秒]
+          * @default [1, 1, 1]
+         */
+        "steps"?: number[];
         /**
           * 主题（透传给 Popup）
           * @default 'light'
@@ -5987,6 +6455,145 @@ declare namespace LocalJSX {
         "value"?: string;
         /**
           * 外部受控可见性（仅 trigger = 'manual' 生效）
+          * @default false
+         */
+        "visible"?: boolean;
+    }
+    /**
+     * ldesign-time-picker-panel
+     * 仅渲染选择面板，不包含触发器/弹层
+     */
+    interface LdesignTimePickerPanel {
+        /**
+          * 默认值
+         */
+        "defaultValue"?: string;
+        /**
+          * 时间格式
+          * @default 'HH:mm:ss'
+         */
+        "format"?: TimeFormat1;
+        /**
+          * 变更事件
+         */
+        "onLdesignChange"?: (event: LdesignTimePickerPanelCustomEvent<string>) => void;
+        /**
+          * 选择事件
+         */
+        "onLdesignPick"?: (event: LdesignTimePickerPanelCustomEvent<{ value: string; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' } }>) => void;
+        /**
+          * 面板列最大高度
+          * @default 180
+         */
+        "panelHeight"?: number;
+        /**
+          * 是否显示秒
+          * @default true
+         */
+        "showSeconds"?: boolean;
+        /**
+          * 步进数组 [h, m, s, ms]
+          * @default [1, 1, 1, 1]
+         */
+        "steps"?: number[];
+        /**
+          * 是否启用 12 小时制显示（输出仍用 format 决定）
+          * @default false
+         */
+        "use12Hours"?: boolean;
+        /**
+          * 当前值（受控）
+         */
+        "value"?: string;
+    }
+    interface LdesignTimeRangePicker {
+        /**
+          * @default true
+         */
+        "allowInput"?: boolean;
+        /**
+          * @default false
+         */
+        "arrow"?: boolean;
+        /**
+          * @default false
+         */
+        "borderless"?: boolean;
+        /**
+          * @default true
+         */
+        "clearable"?: boolean;
+        /**
+          * @default true
+         */
+        "confirm"?: boolean;
+        "defaultValue"?: TimeRange;
+        /**
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * @default 'HH:mm:ss'
+         */
+        "format"?: TimeFormat2;
+        /**
+          * @default true
+         */
+        "hideDisabledTime"?: boolean;
+        "onLdesignBlur"?: (event: LdesignTimeRangePickerCustomEvent<FocusEvent>) => void;
+        "onLdesignChange"?: (event: LdesignTimeRangePickerCustomEvent<TimeRange | undefined>) => void;
+        "onLdesignClose"?: (event: LdesignTimeRangePickerCustomEvent<void>) => void;
+        "onLdesignFocus"?: (event: LdesignTimeRangePickerCustomEvent<FocusEvent>) => void;
+        "onLdesignOpen"?: (event: LdesignTimeRangePickerCustomEvent<void>) => void;
+        "onLdesignPick"?: (event: LdesignTimeRangePickerCustomEvent<{ value: TimeRange; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' } }>) => void;
+        "onLdesignVisibleChange"?: (event: LdesignTimeRangePickerCustomEvent<boolean>) => void;
+        /**
+          * @default 180
+         */
+        "panelHeight"?: number;
+        /**
+          * @default '结束时间'
+         */
+        "placeholderEnd"?: string;
+        /**
+          * @default '开始时间'
+         */
+        "placeholderStart"?: string;
+        /**
+          * @default 'bottom-start'
+         */
+        "placement"?: Placement;
+        "presets"?: string | Record<string, TimeRange>;
+        /**
+          * @default false
+         */
+        "readonly"?: boolean;
+        /**
+          * @default false
+         */
+        "showClearIconOnEmpty"?: boolean;
+        /**
+          * @default 'medium'
+         */
+        "size"?: TimePickerSize1;
+        /**
+          * @default 'default'
+         */
+        "status"?: TimePickerStatus1;
+        /**
+          * @default [1, 1, 1, 1]
+         */
+        "steps"?: number[];
+        /**
+          * @default 'light'
+         */
+        "theme"?: 'light' | 'dark';
+        /**
+          * @default 'click'
+         */
+        "trigger"?: 'click' | 'focus' | 'manual';
+        "value"?: TimeRange;
+        /**
           * @default false
          */
         "visible"?: boolean;
@@ -6226,6 +6833,8 @@ declare namespace LocalJSX {
         "ldesign-tab-panel": LdesignTabPanel;
         "ldesign-tabs": LdesignTabs;
         "ldesign-time-picker": LdesignTimePicker;
+        "ldesign-time-picker-panel": LdesignTimePickerPanel;
+        "ldesign-time-range-picker": LdesignTimeRangePicker;
         "ldesign-tooltip": LdesignTooltip;
         "ldesign-tree": LdesignTree;
     }
@@ -6431,6 +7040,12 @@ declare module "@stencil/core" {
              * - 默认格式 HH:mm:ss，可通过 showSeconds 控制秒列
              */
             "ldesign-time-picker": LocalJSX.LdesignTimePicker & JSXBase.HTMLAttributes<HTMLLdesignTimePickerElement>;
+            /**
+             * ldesign-time-picker-panel
+             * 仅渲染选择面板，不包含触发器/弹层
+             */
+            "ldesign-time-picker-panel": LocalJSX.LdesignTimePickerPanel & JSXBase.HTMLAttributes<HTMLLdesignTimePickerPanelElement>;
+            "ldesign-time-range-picker": LocalJSX.LdesignTimeRangePicker & JSXBase.HTMLAttributes<HTMLLdesignTimeRangePickerElement>;
             /**
              * Tooltip 工具提示组件
              * 基于 Popup 的轻量封装

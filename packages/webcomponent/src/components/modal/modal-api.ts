@@ -1,4 +1,5 @@
 import type { ModalAnimation, ModalSize } from './modal';
+import type { ModalVariant } from './modal';
 
 export interface ModalBaseOptions {
   title?: string;
@@ -17,6 +18,163 @@ export interface ModalBaseOptions {
   zIndex?: number;
   className?: string;
   destroyOnClose?: boolean;
+  /** 变体（未指定时，移动端默认使用 bottom-sheet） */
+  variant?: ModalVariant;
+  /** 移动端 sheet 预设（仅在 variant=bottom-sheet 时有效） */
+  sheetSnapPoints?: (number | string)[];
+  sheetInitial?: number | string;
+}
+
+/**
+ * Prompt 表单：多字段输入，返回值对象
+ */
+export function promptForm(options: PromptFormOptions): Promise<Record<string, any> | null> {
+  const opts = options || ({} as PromptFormOptions);
+  return new Promise((resolve) => {
+    const modal = document.createElement('ldesign-modal') as any;
+    (modal as HTMLElement).setAttribute('data-quick', '');
+    (modal as HTMLElement).setAttribute('data-quick-type', 'prompt');
+
+    applyMobileDefaults(modal, opts);
+    applyCommonOptions(modal, {
+      centered: true,
+      closable: true,
+      maskClosable: false,
+      keyboard: true,
+      destroyOnClose: true,
+      ...opts,
+    });
+
+    const wrap = document.createElement('div');
+    wrap.className = 'ldesign-modal__simple';
+    const row = document.createElement('div');
+    row.className = 'ldesign-modal__simple-row';
+    const content = document.createElement('div');
+    content.className = 'ldesign-modal__simple-content';
+
+    const errors: Record<string, string> = {};
+    const nodes: Record<string, HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> = {};
+
+    const values: Record<string, any> = { ...(opts.values || {}) };
+
+    (opts.fields || []).forEach((f) => {
+      const field = { type: 'text', ...f } as PromptField;
+      const container = document.createElement('div');
+      container.style.margin = '10px 0';
+      if (field.label) {
+        const label = document.createElement('div');
+        label.style.cssText = 'margin-bottom:6px;color:#374151;font-size:14px;';
+        label.textContent = field.label + (field.required ? ' *' : '');
+        container.appendChild(label);
+      }
+      let input: any;
+      if (field.type === 'textarea') {
+        input = document.createElement('textarea');
+        if (field.rows) input.rows = field.rows;
+      } else if (field.type === 'select') {
+        input = document.createElement('select');
+        (field.options || []).forEach(opt => {
+          const o = document.createElement('option');
+          o.value = opt.value; o.textContent = opt.label; input.appendChild(o);
+        });
+      } else if (field.type === 'checkbox') {
+        input = document.createElement('input'); input.type = 'checkbox';
+      } else {
+        input = document.createElement('input'); input.type = field.type || 'text';
+      }
+      if (field.placeholder) (input as any).placeholder = field.placeholder;
+      const init = values[field.name] ?? field.value ?? '';
+      if (field.type === 'checkbox') input.checked = !!init; else input.value = String(init);
+      input.className = 'ldesign-modal__prompt-input';
+      input.style.marginTop = field.type === 'checkbox' ? '0' : '6px';
+      container.appendChild(input);
+
+      const err = document.createElement('div'); err.className = 'ldesign-modal__error'; err.style.display = 'none'; container.appendChild(err);
+      nodes[field.name] = input; (errors as any)[field.name] = '';
+      content.appendChild(container);
+    });
+
+    row.appendChild(content); wrap.appendChild(row);
+
+    const footer = document.createElement('div'); footer.slot = 'footer';
+    const cancelBtn = document.createElement('ldesign-button'); cancelBtn.setAttribute('type', 'text'); cancelBtn.textContent = opts.cancelText || '取消';
+    cancelBtn.addEventListener('click', () => { modal.visible = false; scheduleRemoval(modal); resolve(null); });
+    const okBtn = document.createElement('ldesign-button'); okBtn.setAttribute('type', (opts.okType || 'primary') as string); okBtn.textContent = opts.okText || '确定';
+
+    const computeValid = () => {
+      // 基础校验（不展示错误，只用于禁用按钮）
+      let ok = true;
+      (opts.fields || []).forEach((f) => {
+        const node = nodes[f.name]; if (!node) return; const v = f.type==='checkbox' ? (node as HTMLInputElement).checked : (node as any).value;
+        if (f.required && (v == null || v === '' || (f.type==='checkbox' && !v))) ok=false;
+        if (ok && f.pattern) { const re = typeof f.pattern==='string'? new RegExp(f.pattern) : f.pattern; if (!re.test(String(v||''))) ok=false; }
+        if (ok && typeof f.min==='number' && Number(v) < f.min) ok=false;
+        if (ok && typeof f.max==='number' && Number(v) > f.max) ok=false;
+      });
+      okBtn.setAttribute('disabled', ok ? 'false' : 'true');
+      (okBtn as any).disabled = !ok;
+      return ok;
+    };
+
+    // 初次计算
+    computeValid();
+    // 监听变化实时计算
+    Object.keys(nodes).forEach(name => {
+      const n = nodes[name];
+      const handler = () => computeValid();
+      n.addEventListener('input', handler as any);
+      n.addEventListener('change', handler as any);
+    });
+
+    okBtn.addEventListener('click', async () => {
+      // 收集
+      const out: Record<string, any> = {};
+      (opts.fields || []).forEach((f) => {
+        const node = nodes[f.name];
+        if (!node) return;
+        if (f.type === 'checkbox') out[f.name] = (node as HTMLInputElement).checked;
+        else out[f.name] = (node as any).value;
+      });
+      // 基础校验
+      let ok = true; const errMap: Record<string, string> = {};
+      (opts.fields || []).forEach((f) => {
+        const node = nodes[f.name]; const v = out[f.name];
+        if (f.required && (v == null || v === '' || (f.type==='checkbox' && !v))) { ok=false; errMap[f.name] = '必填项'; return; }
+        if (f.pattern) {
+          const re = typeof f.pattern === 'string' ? new RegExp(f.pattern) : f.pattern; if (!re.test(String(v||''))) { ok=false; errMap[f.name]='格式不正确'; }
+        }
+        if (typeof f.min === 'number' && Number(v) < f.min) { ok=false; errMap[f.name] = `最小值 ${f.min}`; }
+        if (typeof f.max === 'number' && Number(v) > f.max) { ok=false; errMap[f.name] = `最大值 ${f.max}`; }
+      });
+      // 自定义校验
+      if (ok && opts.validate) {
+        try {
+          const r = await Promise.resolve(opts.validate(out));
+          if (r === false) ok = false; else if (typeof r === 'string') { ok=false; errMap['__global'] = r; }
+          else if (r && typeof r === 'object') { ok=false; Object.assign(errMap, r as any); }
+        } catch (e) { ok=false; errMap['__global'] = '提交失败'; }
+      }
+      // 展示错误或关闭
+      // 清空
+      Object.keys(nodes).forEach(name => { const n = nodes[name]; const errEl = n.nextSibling as HTMLElement; if (errEl && errEl.className.includes('ldesign-modal__error')) errEl.style.display='none'; });
+      if (!ok) {
+        Object.keys(errMap).forEach(name => {
+          if (name === '__global') return;
+          const n = nodes[name]; if (!n) return; const errEl = n.nextSibling as HTMLElement; if (!errEl) return;
+          errEl.textContent = errMap[name]; errEl.style.display = '';
+        });
+        return;
+      }
+      modal.visible = false; scheduleRemoval(modal); resolve(out);
+    });
+
+    footer.appendChild(cancelBtn); footer.appendChild(okBtn);
+    (modal as HTMLElement).appendChild(wrap);
+    (modal as HTMLElement).appendChild(footer);
+    (modal as HTMLElement).addEventListener('ldesignClose', () => { scheduleRemoval(modal); resolve(null); }, { once: true } as any);
+
+    document.body.appendChild(modal); modal.visible = true;
+  });
 }
 
 export interface ModalAlertOptions extends ModalBaseOptions {
@@ -42,6 +200,27 @@ export interface ModalPromptOptions extends ModalConfirmOptions {
   /** 校验输入，返回 true/空 表示通过；返回字符串为错误信息；返回 false 使用 errorText */
   validate?: (value: string) => boolean | string | Promise<boolean | string>;
   errorText?: string;
+}
+
+export type PromptFieldType = 'text' | 'password' | 'number' | 'textarea' | 'select' | 'checkbox';
+export interface PromptField {
+  name: string;
+  label?: string;
+  type?: PromptFieldType;
+  placeholder?: string;
+  required?: boolean;
+  pattern?: string | RegExp;
+  min?: number;
+  max?: number;
+  rows?: number; // textarea rows
+  options?: { label: string; value: string }[]; // select
+  value?: any;
+}
+export interface PromptFormOptions extends ModalConfirmOptions {
+  fields: PromptField[];
+  values?: Record<string, any>;
+  /** 返回 false/错误对象可阻止关闭；若返回对象可替换 values */
+  validate?: (values: Record<string, any>) => boolean | string | Record<string, string> | Promise<boolean | string | Record<string, string>>;
 }
 
 /**
@@ -103,6 +282,21 @@ function scheduleRemoval(modal: HTMLElement, delay = 320) {
 /**
  * Alert：仅一个确认按钮
  */
+function isSmallScreen() {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth <= 768;
+}
+
+function applyMobileDefaults(modal: any, opts: ModalBaseOptions) {
+  if (opts.variant) { modal.variant = opts.variant; return; }
+  if (isSmallScreen()) {
+    modal.variant = 'bottom-sheet';
+    modal.sheetDraggable = true;
+    if (!opts.sheetSnapPoints) modal.sheetSnapPoints = ['50%', '80%', '100%'];
+    if (!opts.sheetInitial) modal.sheetInitial = '80%';
+  }
+}
+
 export function alertModal(options: ModalAlertOptions | string): Promise<void> {
   const opts: ModalAlertOptions = typeof options === 'string' ? { content: options } : options || {};
 
@@ -112,6 +306,7 @@ export function alertModal(options: ModalAlertOptions | string): Promise<void> {
     (modal as HTMLElement).setAttribute('data-quick', '');
     (modal as HTMLElement).setAttribute('data-quick-type', 'alert');
 
+    applyMobileDefaults(modal, opts);
     applyCommonOptions(modal, {
       centered: true,
       closable: false,
@@ -173,6 +368,7 @@ export function confirmModal(options: ModalConfirmOptions | string): Promise<boo
     (modal as HTMLElement).setAttribute('data-quick', '');
     (modal as HTMLElement).setAttribute('data-quick-type', 'confirm');
 
+    applyMobileDefaults(modal, opts);
     applyCommonOptions(modal, {
       centered: true,
       closable: true,
@@ -255,6 +451,7 @@ export function promptModal(options: ModalPromptOptions | string): Promise<strin
     (modal as HTMLElement).setAttribute('data-quick', '');
     (modal as HTMLElement).setAttribute('data-quick-type', 'prompt');
 
+    applyMobileDefaults(modal, opts);
     applyCommonOptions(modal, {
       centered: true,
       closable: true,
@@ -363,6 +560,95 @@ export function promptModal(options: ModalPromptOptions | string): Promise<strin
     modal.visible = true;
 
     // 初始聚焦输入框
+    requestAnimationFrame(() => input.focus());
+  });
+}
+
+/**
+ * Prompt（密码）: type='password'，带显示/隐藏切换与必填校验
+ */
+export function promptPassword(options: Omit<ModalPromptOptions, 'input'> & { revealToggle?: boolean }): Promise<string | null> {
+  const opts: any = typeof options === 'string' ? { content: options } : options || {};
+  opts.input = { ...(opts.input || {}), type: 'password' };
+  return new Promise<string | null>((resolve) => {
+    const modal = document.createElement('ldesign-modal') as any;
+    (modal as HTMLElement).setAttribute('data-quick', '');
+    (modal as HTMLElement).setAttribute('data-quick-type', 'prompt');
+
+    applyMobileDefaults(modal, opts);
+    applyCommonOptions(modal, {
+      centered: true,
+      closable: true,
+      maskClosable: false,
+      keyboard: true,
+      destroyOnClose: true,
+      ...opts,
+    });
+
+    const wrap = document.createElement('div');
+    wrap.className = 'ldesign-modal__simple';
+    const row = document.createElement('div');
+    row.className = 'ldesign-modal__simple-row';
+    const contentCol = document.createElement('div');
+    contentCol.className = 'ldesign-modal__simple-content';
+    const contentNode = ensureContentNode(opts.content || '');
+    if (contentNode) contentCol.appendChild(contentNode);
+
+    const box = document.createElement('div');
+    box.style.position = 'relative';
+    const input = document.createElement('input');
+    input.type = 'password';
+    input.placeholder = opts.input?.placeholder || '';
+    input.className = 'ldesign-modal__prompt-input';
+    box.appendChild(input);
+    if (opts.revealToggle !== false) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;cursor:pointer;color:#6b7280;';
+      btn.textContent = '显示';
+      btn.addEventListener('click', () => {
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.textContent = show ? '隐藏' : '显示';
+      });
+      box.appendChild(btn);
+    }
+    contentCol.appendChild(box);
+
+    const err = document.createElement('div');
+    err.className = 'ldesign-modal__error';
+    err.style.display = 'none';
+    contentCol.appendChild(err);
+
+    row.appendChild(contentCol);
+    wrap.appendChild(row);
+
+    const footer = document.createElement('div');
+    footer.slot = 'footer';
+    const cancelBtn = document.createElement('ldesign-button');
+    cancelBtn.setAttribute('type', 'text');
+    cancelBtn.textContent = opts.cancelText || '取消';
+    cancelBtn.addEventListener('click', () => {
+      modal.visible = false; scheduleRemoval(modal); resolve(null);
+    });
+
+    const okBtn = document.createElement('ldesign-button');
+    okBtn.setAttribute('type', (opts.okType || 'primary') as string);
+    okBtn.textContent = opts.okText || '确定';
+    okBtn.addEventListener('click', () => {
+      const v = input.value || '';
+      if (!v) { err.textContent = '请输入密码'; err.style.display = ''; input.focus(); return; }
+      modal.visible = false; scheduleRemoval(modal); resolve(v);
+    });
+
+    footer.appendChild(cancelBtn); footer.appendChild(okBtn);
+    (modal as HTMLElement).appendChild(wrap);
+    (modal as HTMLElement).appendChild(footer);
+
+    (modal as HTMLElement).addEventListener('ldesignClose', () => { scheduleRemoval(modal); resolve(null); }, { once: true } as any);
+
+    document.body.appendChild(modal);
+    modal.visible = true;
     requestAnimationFrame(() => input.focus());
   });
 }

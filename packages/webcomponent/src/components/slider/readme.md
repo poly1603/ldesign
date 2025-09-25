@@ -32,6 +32,19 @@ Slider 滑块组件
 | `ldesignInput`  | 拖动时实时触发           | `CustomEvent<number>` |
 
 
+## Dependencies
+
+### Used by
+
+ - [ldesign-color-picker-panel](../color-picker-panel)
+
+### Graph
+```mermaid
+graph TD;
+  ldesign-color-picker-panel --> ldesign-slider
+  style ldesign-slider fill:#f9f,stroke:#333,stroke-width:4px
+```
+
 ----------------------------------------------
 
 *Built with [StencilJS](https://stenciljs.com/)*

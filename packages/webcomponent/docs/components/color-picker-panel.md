@@ -40,6 +40,19 @@
 ></ldesign-color-picker-panel>
 ```
 
+## 操作说明
+
+- 线性渐变
+  - 角度：slider（0–360）与数字输入、预设 0/45/90/180
+- 径向渐变
+  - 中心：X/Y slider 与数字输入（0–100%）
+  - 形状：circle/ellipse
+- stops（色标）
+  - 添加/删除：+/- 按钮；聚焦预览条时 Enter 添加、Delete 删除
+  - 移动：拖拽；预览条聚焦后 ←/→（Shift×10）微调；遵循 minStopGap（默认 1%）
+  - 位置行：slider + 数字输入；支持“反转/均分”
+- 格式编辑区：在 SV 下方使用 tabs（HEX/RGB/HSL/HSV）编辑当前颜色（单色）或当前 stop（渐变）
+
 ## 径向渐变
 
 支持 `radial-gradient(shape at cx% cy%, …)`：

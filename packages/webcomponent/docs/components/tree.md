@@ -242,17 +242,20 @@
 
 ```html
 <ldesign-tree id="tree-lazy" lazy default-expanded-keys='[]'></ldesign-tree>
-```
 
-```html
 <script>
   const lazy = document.getElementById('tree-lazy');
   lazy.items = [{ key: 'root', label: '根' }];
   lazy.loadData = async (node) => {
-    if (!node) return [{ key: 'root', label: '根' }];
+    if (!node) {
+      return [{ key: 'root', label: '根' }];
+    }
     // 模拟异步
     await new Promise(r => setTimeout(r, 300));
-    if (node.key === 'root') return [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }];
+    
+    if (node.key === 'root') {
+      return [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }];
+    }
     return [];
   };
 </script>

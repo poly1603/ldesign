@@ -94,8 +94,21 @@ onMounted(() => {
   ]
   if (vLight) vLight.images = themeImgs
   if (vNoThumbs) vNoThumbs.images = themeImgs
-  if (vModal) vModal.images = themeImgs
-  if (vModalAny) vModalAny.images = themeImgs
+  if (vModal) {
+    vModal.images = themeImgs
+    // 保险起见，直接通过属性赋值，避免静态属性未正确生效导致仍为 overlay
+    vModal.viewerMode = 'modal'
+    vModal.panelWidth = '900px'
+    vModal.panelHeight = '640px'
+  }
+  if (vModalAny) {
+    vModalAny.images = themeImgs
+    vModalAny.viewerMode = 'modal'
+    vModalAny.panelDraggable = 'anywhere'
+    vModalAny.viewerTitle = '图片预览（可任意拖动）'
+    vModalAny.panelWidth = '900px'
+    vModalAny.panelHeight = '640px'
+  }
   const b1 = document.getElementById('iv-open-light')
   const b2 = document.getElementById('iv-open-no-thumbs')
   const b3 = document.getElementById('iv-open-modal')

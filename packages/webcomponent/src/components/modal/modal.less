@@ -48,7 +48,7 @@
     position: relative;
     margin: 0 auto;
     background: var(--ldesign-bg-color, #ffffff);
-    border-radius: 8px;
+    border-radius: var(--ld-modal-radius, 8px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     opacity: 0;
     display: flex;
@@ -145,7 +145,7 @@
 
   &__header {
     position: relative;
-    padding: 20px 24px 16px;
+    padding: var(--ld-modal-header-padding, 20px 24px 16px);
     border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
     display: flex;
     align-items: center;
@@ -175,7 +175,7 @@
   }
 
   &__title {
-    font-size: 16px;
+    font-size: var(--ld-modal-title-font-size, 16px);
     font-weight: 600;
     color: var(--ldesign-text-color, #1f2937);
     line-height: 1.5;
@@ -186,7 +186,7 @@
   &__actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--ld-modal-action-gap, 8px);
     margin-left: 16px;
     flex-shrink: 0;
   }
@@ -217,21 +217,23 @@
   }
 
   &__body {
-    padding: 20px 24px;
+    padding: var(--ld-modal-body-padding, 20px 24px);
     flex: 1;
     min-height: 0; // 和 flex 布局配合，保障可滚动区域正确计算
     overflow: auto;
     color: var(--ldesign-text-color, #1f2937);
-    line-height: 1.6;
+    font-size: var(--ld-modal-body-font-size, 16px);
+    line-height: var(--ld-modal-body-line-height, 1.6);
   }
 
   &__footer {
-    padding: 16px 24px 20px;
+    padding: var(--ld-modal-footer-padding, 16px 24px 20px);
+    padding-bottom: max(env(safe-area-inset-bottom), var(--ld-modal-footer-bottom, 20px));
     border-top: 1px solid var(--ldesign-border-color, #e5e7eb);
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 12px;
+    gap: var(--ld-modal-action-gap, 12px);
     flex-shrink: 0;
 
     // 兜底：某些环境 gap 无效时，保证按钮间距
@@ -543,6 +545,10 @@
   text-align: center; user-select: none;
 }
 .ldesign-modal__wizard-step.is-active { background: var(--ldesign-brand-color, #7c3aed); color: #fff; }
+
+/* Wizard 线性进度条 */
+.ldesign-modal__wizard-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: #f0f0f0; }
+.ldesign-modal__wizard-progress-inner { height: 100%; background: var(--ldesign-brand-color, #7c3aed); transition: width var(--ld-modal-duration, .3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)); }
   /* 快捷 API（alert/confirm/prompt）柔和样式 */
   .ldesign-modal[data-quick] {
     .ldesign-modal__header {
@@ -747,18 +753,42 @@
 // 响应式设计
 @media (max-width: 768px) {
   .ldesign-modal {
+    .ldesign-modal__maximize, .ldesign-modal__close { width: 44px; height: 44px; }
+    /* 移动端 footer 按钮高度与图标尺寸覆盖 */
+    .ldesign-modal__footer ldesign-button {
+      --ls-button-height-medium: 44px;
+      --ls-icon-size-medium: 18px;
+    }
+    /* 移动端 header 操作按钮点击尺寸与图标尺寸 */
+    .ldesign-modal__actions ldesign-button {
+      --ls-button-height-small: 44px;
+      --ls-icon-size-small: 20px;
+    }
+    /* 动画参数（移动端更短更柔） */
+    --ld-modal-duration: 220ms;
+    --ld-modal-ease: cubic-bezier(.2,.8,.2,1);
+    --ld-modal-anim-ease: ease-out;
+    /* 字号体系（提供占位 token，便于内容消费） */
+    --ld-modal-text-sm: 14px;
+    --ld-modal-text-md: 15px;
+    --ld-modal-text-lg: 17px;
+    --ld-modal-body-font-size: var(--ld-modal-text-md);
+  }
+  .ldesign-modal {
     &__wrap {
       padding: 10px;
     }
 
     &__dialog {
-
       &--small,
       &--medium,
       &--large {
         width: calc(100vw - 20px);
         max-width: none;
       }
+      // 抽屉在移动端使用 92vw 宽度
+      &--drawer-left,
+      &--drawer-right { width: 92vw; }
     }
 
     &__header {
