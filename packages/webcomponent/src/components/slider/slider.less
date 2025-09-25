@@ -86,14 +86,16 @@
 /* 垂直模式 */
 .ldesign-slider--vertical {
   width: 24px;
-  height: 160px;
+  /* 使用最小高度保证无宿主高度时也能展示；当 Host 设置了 height 时，内部会以 height:100% 继承 */
+  min-height: 160px;
   padding: 0 10px;
 }
 
 .ldesign-slider__track--vertical {
   position: relative;
   width: 4px;
-  height: 100%;
+  /* 默认高度兜底；当检测到宿主设置了 height 时，组件会把轨道高度置为100% */
+  height: 160px;
   margin: 0 auto;
 }
 

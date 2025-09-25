@@ -58,7 +58,7 @@
 
 设置 `vertical` 以启用垂直模式。可通过样式控制高度。
 
-<div class="demo-container" style="gap: 40px; align-items: flex-end;">
+<div class="demo-container" style="display: flex; gap: 40px; align-items: flex-end;">
   <ldesign-slider vertical style="height: 200px;"></ldesign-slider>
   <ldesign-slider vertical style="height: 200px;" value="70" show-tooltip></ldesign-slider>
 </div>

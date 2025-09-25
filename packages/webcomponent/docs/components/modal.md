@@ -16,6 +16,8 @@
 
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
+// 仅引入轻量级 API 模块，避免将整个 src（含 TSX）打进文档构建
+import { alertModal, confirmModal, promptModal } from '../../src/components/modal/modal-api'
 
 let eventListeners = []
 
@@ -38,6 +40,41 @@ function cleanupEventListeners() {
 onMounted(() => {
   // 清理之前的事件监听器（防止重复绑定）
   cleanupEventListeners()
+
+  // 快捷 API 示例
+  const alertBtn = document.getElementById('quick-alert-btn')
+  const confirmBtn = document.getElementById('quick-confirm-btn')
+  const promptBtn = document.getElementById('quick-prompt-btn')
+
+  if (alertBtn) {
+    addEventListenerSafe(alertBtn, 'click', async () => {
+      await alertModal({ title: '提示', content: '这是一个 Alert 消息。' })
+    })
+  }
+
+  if (confirmBtn) {
+    addEventListenerSafe(confirmBtn, 'click', async () => {
+      const ok = await confirmModal({
+        title: '确认操作',
+        content: '确定要执行该操作吗？',
+        okType: 'danger',
+        okText: '确定',
+        cancelText: '取消'
+      })
+      console.log('confirm result:', ok)
+    })
+  }
+
+  if (promptBtn) {
+    addEventListenerSafe(promptBtn, 'click', async () => {
+      const val = await promptModal({
+        title: '输入名称',
+        content: '请输入名称：',
+        input: { placeholder: '请输入...', defaultValue: '' }
+      })
+      console.log('prompt result:', val)
+    })
+  }
 
   // 基础用法
   const basicBtn = document.getElementById('basic-modal-btn')
@@ -268,6 +305,38 @@ modal.addEventListener('ldesignClose', () => {
   modal.visible = false
 })
 </script>
+```
+
+## 快捷 API：Alert / Confirm / Prompt
+
+使用内置的便捷函数，无需手动写 DOM，就能快速调用模态框。
+
+<div class="demo-container">
+  <div class="demo-row">
+    <ldesign-button id="quick-alert-btn">Alert</ldesign-button>
+    <ldesign-button id="quick-confirm-btn" type="outline">Confirm</ldesign-button>
+    <ldesign-button id="quick-prompt-btn" type="primary">Prompt</ldesign-button>
+  </div>
+</div>
+
+```ts
+import { alertModal, confirmModal, promptModal } from 'ldesign-webcomponent'
+
+await alertModal({ title: '提示', content: '这是一个 Alert 消息。' })
+
+const ok = await confirmModal({
+  title: '确认操作',
+  content: '确定要执行该操作吗？',
+  okType: 'danger',
+  okText: '确定',
+  cancelText: '取消'
+})
+
+const value = await promptModal({
+  title: '输入名称',
+  content: '请输入名称：',
+  input: { placeholder: '请输入...', defaultValue: '' }
+})
 ```
 
 ## 不同尺寸

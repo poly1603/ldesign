@@ -1,0 +1,95 @@
+// TimePicker 样式
+.ldesign-time-picker {
+  display: inline-block;
+
+  &--disabled { opacity: 0.6; pointer-events: none; }
+
+  &__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    padding: 4px 10px;
+    min-width: 160px;
+    border: 1px solid var(--ldesign-border-color, #e5e7eb);
+    border-radius: 6px;
+    cursor: pointer;
+    background: var(--ldesign-bg-color, #ffffff);
+    color: var(--ldesign-text-color, #111827);
+    font-size: 14px;
+    line-height: 22px;
+
+    &--placeholder { color: var(--ldesign-text-color-secondary, #6b7280); }
+    &--disabled { cursor: not-allowed; }
+
+    &:hover { border-color: var(--ldesign-border-color-hover, #d1d5db); }
+  }
+
+  &__text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  &__suffix { display: inline-flex; color: var(--ldesign-text-color-secondary, #6b7280); }
+  &__clear { display: inline-flex; color: var(--ldesign-text-color-secondary, #9ca3af); cursor: pointer; }
+  &__clear:hover { color: var(--ldesign-text-color, #111827); }
+
+  &__content { padding: 8px; }
+
+  &__columns {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: var(--ldesign-bg-soft, #f9fafb);
+    border-radius: 8px;
+  }
+
+  &__column {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none;
+    width: 72px;
+    max-height: 180px;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid var(--ldesign-border-color, #e5e7eb);
+  }
+
+  &__item {
+    text-align: center;
+    padding: 8px 0;
+    font-size: 14px;
+    color: var(--ldesign-text-color, #111827);
+    cursor: pointer;
+
+    &:hover { background: var(--ldesign-bg-soft, #f3f4f6); }
+
+    &--active {
+      color: #1d4ed8; // 蓝色高亮
+      font-weight: 600;
+      background: rgba(29, 78, 216, 0.06);
+    }
+
+    &--disabled {
+      color: var(--ldesign-text-color-secondary, #9ca3af);
+      cursor: not-allowed;
+      &:hover { background: transparent; }
+    }
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 4px 0 4px;
+  }
+
+  &__now {
+    background: none;
+    border: none;
+    color: #1d4ed8;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px 6px;
+  }
+}
+
+/* 收敛内边距以贴近设计 */
+ldesign-time-picker .ldesign-popup__inner { padding: 8px; }

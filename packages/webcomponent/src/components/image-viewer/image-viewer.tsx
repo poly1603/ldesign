@@ -49,6 +49,21 @@ export class LdesignImageViewer {
   /** 主题：暗色/亮色遮罩 */
   @Prop() backdrop: 'dark' | 'light' = 'dark';
 
+  /** 查看窗口模式：overlay 全屏；modal 小窗 */
+  @Prop() viewerMode: 'overlay' | 'modal' = 'overlay';
+  /** 小窗宽高（viewerMode=modal 时生效） */
+  @Prop() panelWidth?: number | string;
+  @Prop() panelHeight?: number | string;
+
+  /** 过渡类型 */
+  @Prop() transition: 'fade' | 'fade-zoom' = 'fade-zoom';
+  /** 过渡时长（ms） */
+  @Prop() transitionDuration: number = 240;
+  /** 过渡缓动函数 */
+  @Prop() transitionEasing: string = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+  /** 是否显示标题与描述 */
+  @Prop() showCaption: boolean = true;
+
   // ── Events ──────────────────────────────────────────────────────
   @Event() ldesignVisibleChange: EventEmitter<boolean>;
   @Event() ldesignOpen: EventEmitter<void>;
@@ -65,6 +80,10 @@ export class LdesignImageViewer {
   @State() dragging: boolean = false;
   @State() crossfading: boolean = false;
   @State() loading: boolean = false;
+  /** 关闭动画期间保持渲染 */
+  @State() isClosing: boolean = false;
+  /** 打开/关闭动效状态 */
+  @State() motion: 'opening' | 'open' | 'closing' = 'open';
 
   private dragStartX = 0;
   private dragStartY = 0;
@@ -79,9 +98,10 @@ export class LdesignImageViewer {
   private prevSrc?: string;
   private prevTransform?: string; // 冻结旧图的 transform，避免切换抖动
   private fadeTimer?: number;
-  private fadeDuration: number = 200;
   private switchSeq: number = 0;
   private preloadCache = new Map<string, Promise<HTMLImageElement>>();
+  private enterScale?: number; // 新图入场缩放（fade-zoom 用）
+  private pendingApply = false; // 避免在切换中对旧图应用重置变换
 
   // ── Watchers ────────────────────────────────────────────────────
   @Watch('images')
@@ -105,8 +125,15 @@ export class LdesignImageViewer {
 
   componentDidRender() {
     // 渲染后确保变换同步
-    this.applyTransform();
+    if (this.pendingApply) {
+      this.applyTransform();
+      this.pendingApply = false;
+    } else {
+      this.applyTransform();
+    }
   }
+
+  private toPx(v?: number | string): string | undefined { if (v == null) return undefined; return typeof v === 'number' ? `${v}px` : String(v); }
 
   private preloadImage(src: string): Promise<HTMLImageElement> {
     if (!src) return Promise.reject(new Error('invalid src'));
@@ -180,13 +207,19 @@ export class LdesignImageViewer {
       this.crossfading = false;
       this.loading = true;
       this.resetTransform();
+      this.motion = 'opening';
+      requestAnimationFrame(() => (this.motion = 'open'));
       this.ldesignOpen.emit();
       // 预热相邻图片
       this.prewarmNeighbors(this.index);
     } else {
+      // 关闭动画期间保持渲染
+      this.motion = 'closing';
+      this.isClosing = true;
       this.unbindKeydown();
       unlockPageScroll();
       this.ldesignClose.emit();
+      window.setTimeout(() => { this.isClosing = false; }, this.transitionDuration);
     }
     this.ldesignVisibleChange.emit(!!v);
   }
@@ -196,7 +229,9 @@ export class LdesignImageViewer {
   private getTransformString(tx?: number, ty?: number): string {
     const x = tx != null ? tx : (this.dragging ? this.visualOffsetX : this.offsetX);
     const y = ty != null ? ty : (this.dragging ? this.visualOffsetY : this.offsetY);
-    return `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) scale(${this.scale}) rotate(${this.rotate}deg)`;
+    const extra = this.enterScale != null ? this.enterScale : 1;
+    const scale = this.scale * extra;
+    return `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) scale(${scale}) rotate(${this.rotate}deg)`;
   }
 
   private applyTransform() {
@@ -207,7 +242,8 @@ export class LdesignImageViewer {
   private resetTransform() {
     this.scale = 1; this.rotate = 0; this.offsetX = 0; this.offsetY = 0;
     this.visualOffsetX = 0; this.visualOffsetY = 0;
-    this.applyTransform();
+    // 推迟到渲染新 img 后再应用，避免误写旧图导致抖动
+    this.pendingApply = true;
   }
 
   private onMaskClick = (e: Event) => { if (e.target === this.el.querySelector('.ldesign-image-viewer')) { if (this.maskClosable) this.close(); } };
@@ -249,8 +285,14 @@ export class LdesignImageViewer {
       // 开始交叉淡入/淡出
       if (this.prevSrc) {
         this.crossfading = true;
+        // 入场缩放启动（下帧恢复为 1，触发 transform 过渡）
+        if (this.transition === 'fade-zoom') {
+          this.enterScale = 0.98;
+          this.applyTransform();
+          requestAnimationFrame(() => { this.enterScale = 1; this.applyTransform(); });
+        }
         if (this.fadeTimer) window.clearTimeout(this.fadeTimer);
-        this.fadeTimer = window.setTimeout(() => { this.crossfading = false; this.prevSrc = undefined; this.prevTransform = undefined; }, this.fadeDuration);
+        this.fadeTimer = window.setTimeout(() => { this.crossfading = false; this.prevSrc = undefined; this.prevTransform = undefined; }, this.transitionDuration);
       }
       // 预热相邻图片
       this.prewarmNeighbors(this.index);
@@ -331,8 +373,13 @@ export class LdesignImageViewer {
     this.loading = false;
     if (this.prevSrc) {
       this.crossfading = true;
+      if (this.transition === 'fade-zoom') {
+        this.enterScale = 0.98;
+        this.applyTransform();
+        requestAnimationFrame(() => { this.enterScale = 1; this.applyTransform(); });
+      }
       if (this.fadeTimer) window.clearTimeout(this.fadeTimer);
-      this.fadeTimer = window.setTimeout(() => { this.crossfading = false; this.prevSrc = undefined; this.prevTransform = undefined; }, this.fadeDuration);
+      this.fadeTimer = window.setTimeout(() => { this.crossfading = false; this.prevSrc = undefined; this.prevTransform = undefined; }, this.transitionDuration);
     }
     this.prewarmNeighbors(this.index);
   };
@@ -392,21 +439,29 @@ export class LdesignImageViewer {
   }
 
   render() {
-    if (!this.visible) return null as any;
+    if (!this.visible && !this.isClosing) return null as any;
     const item = this.current();
-    const classes = ['ldesign-image-viewer', this.backdrop === 'dark' ? 'ldesign-image-viewer--dark' : 'ldesign-image-viewer--light'].join(' ');
+    const classes = ['ldesign-image-viewer', this.backdrop === 'dark' ? 'ldesign-image-viewer--dark' : 'ldesign-image-viewer--light', this.viewerMode === 'modal' ? 'ldesign-image-viewer--modal' : ''].join(' ');
+
+    const panelStyle: any = this.viewerMode === 'modal' ? { width: this.toPx(this.panelWidth) || '80vw', height: this.toPx(this.panelHeight) || '70vh' } : { width: '100%', height: '100%' };
 
     return (
       <Host>
-        <div class={classes} style={{ zIndex: String(this.zIndex) }} onClick={this.onMaskClick}>
-          {/* 顶部：缩略图与计数 */}
-          <div class="ldesign-image-viewer__top">
-            {this.renderHeader()}
-            <div class="ldesign-image-viewer__counter">{this.index + 1}/{this.list.length}</div>
-          </div>
+        <div class={classes} data-motion={this.motion} style={{ zIndex: String(this.zIndex), ['--iv-duration' as any]: `${this.transitionDuration}ms`, ['--iv-ease' as any]: this.transitionEasing }} onClick={this.onMaskClick}>
+          <div class="ldesign-image-viewer__panel" style={panelStyle} onClick={(e) => e.stopPropagation()}>
+            {/* 顶部关闭 */}
+            <button class="ldesign-image-viewer__close" aria-label="关闭" onClick={() => this.close()}>
+              <ldesign-icon name="x" />
+            </button>
 
-          {/* 中部：舞台与导航 */}
-          <div class="ldesign-image-viewer__stage">
+            {/* 顶部：缩略图与计数 */}
+            <div class="ldesign-image-viewer__top">
+              {this.renderHeader()}
+              <div class="ldesign-image-viewer__counter">{this.index + 1}/{this.list.length}</div>
+            </div>
+
+            {/* 中部：舞台与导航 */}
+            <div class="ldesign-image-viewer__stage">
             {this.list.length > 1 && (
               <button class="ldesign-image-viewer__nav ldesign-image-viewer__nav--prev" onClick={() => this.prev()} aria-label="上一张">
                 <ldesign-icon name="chevron-left" />
@@ -449,19 +504,20 @@ export class LdesignImageViewer {
             )}
           </div>
 
-          {/* 底部：标题/描述 + 工具栏 */}
-          {(() => {
-            const prev = this.prevSrc ? this.list.find(it => it.src === this.prevSrc) : undefined;
-            const captionItem = (this.loading && prev) ? prev : item;
-            return captionItem && (captionItem.title || captionItem.description) ? (
-              <div class="ldesign-image-viewer__caption">
-                {captionItem.title ? <div class="ldesign-image-viewer__caption-title">{captionItem.title}</div> : null}
-                {captionItem.description ? <div class="ldesign-image-viewer__caption-desc">{captionItem.description}</div> : null}
-              </div>
-            ) : null;
-          })()}
-          <div class="ldesign-image-viewer__bottom">
-            {this.renderToolbar()}
+            {/* 底部：标题/描述 + 工具栏 */}
+            {this.showCaption && (() => {
+              const prev = this.prevSrc ? this.list.find(it => it.src === this.prevSrc) : undefined;
+              const captionItem = (this.loading && prev) ? prev : item;
+              return captionItem && (captionItem.title || captionItem.description) ? (
+                <div class="ldesign-image-viewer__caption">
+                  {captionItem.title ? <div class="ldesign-image-viewer__caption-title">{captionItem.title}</div> : null}
+                  {captionItem.description ? <div class="ldesign-image-viewer__caption-desc">{captionItem.description}</div> : null}
+                </div>
+              ) : null;
+            })()}
+            <div class="ldesign-image-viewer__bottom">
+              {this.renderToolbar()}
+            </div>
           </div>
         </div>
       </Host>

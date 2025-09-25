@@ -1,0 +1,43 @@
+@prefix: ldesign;
+@comp: ~"@{prefix}-color-input";
+
+.@{comp} {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 240px;
+  height: 32px;
+  padding: 4px 8px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color .12s ease, box-shadow .12s ease;
+
+  &:hover { border-color: #c6dafb; }
+  &:focus-within { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,.15); }
+
+  &--small { height: 28px; }
+  &--large { height: 36px; }
+  &--disabled { opacity: .6; cursor: not-allowed; }
+
+  .ld-color-input__swatch {
+    width: 16px; height: 16px; border-radius: 4px; border: 1px solid rgba(0,0,0,.1);
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="5" height="5" fill="%23ccc"/><rect x="5" y="5" width="5" height="5" fill="%23ccc"/></svg>');
+    background-origin: border-box; background-clip: content-box, border-box;
+  }
+  .ld-color-input__field {
+    border: none; outline: none; flex: 1; background: transparent; font-size: 12px; color: #333; cursor: inherit;
+  }
+  .ld-color-input__clear { border: none; background: transparent; cursor: pointer; color: #999; font-size: 16px; line-height: 1; padding: 0; }
+  .ld-color-input__clear:hover { color: #666; }
+  .ld-color-input__caret { color: #999; font-size: 12px; }
+}
+
+:where(.dark) .@{comp}, [data-theme="dark"] .@{comp} {
+  background: #16181a; border-color: #2a2d2f; color: #e6e6e6;
+  &:hover { border-color: #3a7fff55; }
+  &:focus-within { border-color: #3a7fff; box-shadow: 0 0 0 2px rgba(58,127,255,.2); }
+  .ld-color-input__field { color: #e6e6e6; }
+}

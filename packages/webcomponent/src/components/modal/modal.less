@@ -200,6 +200,13 @@
     gap: 12px;
     flex-shrink: 0;
 
+    // 兜底：某些环境 gap 无效时，保证按钮间距
+    > ldesign-button + ldesign-button,
+    > * + ldesign-button,
+    > ldesign-button + * {
+      margin-left: 12px;
+    }
+
     &--shadow {
       border-top-color: transparent;
       box-shadow: 0 -6px 12px -8px rgba(0, 0, 0, 0.25);
@@ -459,6 +466,43 @@
   &--slide-right-out {
     .ldesign-modal__dialog {
       animation: ldesign-modal-slide-right-out 0.3s ease;
+    }
+  }
+
+  // 快捷 API（alert/confirm/prompt）柔和样式
+  &[data-quick] {
+    .ldesign-modal__header {
+      border-bottom-color: transparent;
+      padding-bottom: 12px;
+    }
+    .ldesign-modal__footer {
+      border-top-color: transparent;
+      padding-top: 12px;
+      gap: 12px;
+    }
+    .ldesign-modal__body {
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+    .ldesign-modal__simple {
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--ldesign-text-color, #1f2937);
+    }
+    // Prompt 输入框样式
+    .ldesign-modal__prompt-input {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px 12px;
+      box-sizing: border-box;
+      border: 1px solid var(--ldesign-border-color, #e5e7eb);
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .ldesign-modal__prompt-input:focus {
+      border-color: var(--ldesign-brand-color, #7c3aed);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--ldesign-brand-color, #7c3aed) 20%, transparent);
     }
   }
 }

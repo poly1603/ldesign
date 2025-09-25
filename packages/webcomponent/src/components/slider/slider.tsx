@@ -188,16 +188,26 @@ export class LdesignSlider {
 
     const ariaOrientation = this.vertical ? 'vertical' : 'horizontal';
 
+    // 如果宿主元素设置了高度（例如 style="height: 200px"），我们将内部容器与轨道都设置为 100% 高度
+    const styleAttr = this.host?.getAttribute('style') || '';
+    const hasHostHeight = /height\s*:\s*\d/i.test(styleAttr) || !!this.host?.style?.height;
+
+    const rootStyle = this.vertical && hasHostHeight ? { height: '100%' } : undefined;
+    const trackStyle = this.vertical && hasHostHeight ? { height: '100%' } : undefined;
+
+    // Host 需要是 inline-block，这样在 vertical 情况下由外部 style 设置的高度才会生效
+    const hostStyle: Record<string, any> = this.vertical ? { display: 'inline-block' } : { display: 'inline-block', width: '100%' };
+
     return (
-      <Host
-        style={{ display: 'inline-block', width: '100%' }}
-      >
+      <Host style={hostStyle}>
         <div 
           class={this.getRootClass()}
+          style={rootStyle}
           onPointerDown={this.handleTrackPointerDown as any}
         >
           <div 
             class={this.vertical ? 'ldesign-slider__track ldesign-slider__track--vertical' : 'ldesign-slider__track'}
+            style={trackStyle}
             ref={(el) => (this.trackEl = el)}
           >
             <div class={this.vertical ? 'ldesign-slider__rail ldesign-slider__rail--vertical' : 'ldesign-slider__rail'} />

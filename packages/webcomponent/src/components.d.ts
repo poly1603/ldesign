@@ -17,6 +17,7 @@ import { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/
 import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 import { TabsPlacement, TabsType } from "./components/tabs/tabs";
+import { TimePickerPlacement, TimePickerTrigger } from "./components/time-picker/time-picker";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 import { TreeNode } from "./components/tree/tree";
 export { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
@@ -31,6 +32,7 @@ export { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/
 export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 export { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 export { TabsPlacement, TabsType } from "./components/tabs/tabs";
+export { TimePickerPlacement, TimePickerTrigger } from "./components/time-picker/time-picker";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
 export { TreeNode } from "./components/tree/tree";
 export namespace Components {
@@ -380,6 +382,130 @@ export namespace Components {
           * 面板唯一标识（由父级匹配）
          */
         "name"?: string;
+    }
+    /**
+     * ColorInput 颜色输入（内置 Popup + ColorPicker）
+     * - 点击触发显示颜色选择面板
+     * - 支持透明度/预设/最近使用
+     */
+    interface LdesignColorInput {
+        /**
+          * 是否可清空
+          * @default true
+         */
+        "clearable": boolean;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 显示/输出格式
+          * @default 'hex'
+         */
+        "format": 'hex' | 'rgb' | 'hsl' | 'hsv';
+        /**
+          * 选择后是否自动关闭弹层
+          * @default true
+         */
+        "hideOnSelect": boolean;
+        /**
+          * 输入占位符
+          * @default ''
+         */
+        "placeholder": string;
+        /**
+          * 弹出位置
+          * @default 'bottom-start'
+         */
+        "placement": 'top'|'top-start'|'top-end'|'bottom'|'bottom-start'|'bottom-end'|'left'|'left-start'|'left-end'|'right'|'right-start'|'right-end';
+        /**
+          * 预设颜色
+          * @default []
+         */
+        "presets": string[];
+        /**
+          * 最近颜色最大条数
+          * @default 12
+         */
+        "recentMax": number;
+        /**
+          * 是否显示透明度
+          * @default true
+         */
+        "showAlpha": boolean;
+        /**
+          * 是否显示最近使用
+          * @default true
+         */
+        "showHistory": boolean;
+        /**
+          * 是否显示系统预设
+          * @default true
+         */
+        "showPreset": boolean;
+        /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 当前颜色字符串（与 ColorPicker 格式一致）
+          * @default '#1677ff'
+         */
+        "value": string;
+    }
+    /**
+     * ColorPicker 颜色选择器
+     * - 支持 SV 色板 + Hue 滑条 + 可选 Alpha
+     * - 支持 HEX/RGB/HSL/HSV 输入与预设/历史颜色
+     */
+    interface LdesignColorPicker {
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 默认显示格式
+          * @default 'hex'
+         */
+        "format": 'hex' | 'rgb' | 'hsl' | 'hsv';
+        /**
+          * 预设颜色
+          * @default [     '#ff4d4f', '#ff7a45', '#ffa940', '#ffc53d', '#ffec3d', '#bae637', '#73d13d', '#36cfc9', '#40a9ff', '#597ef7', '#9254de', '#f759ab',     '#d4380d', '#d46b08', '#d48806', '#ad8b00', '#5b8c00', '#08979c', '#096dd9', '#1d39c4', '#531dab', '#c41d7f', '#8c8c8c', '#595959',   ]
+         */
+        "presets": string[];
+        /**
+          * 最近使用最多条数
+          * @default 12
+         */
+        "recentMax": number;
+        /**
+          * 是否显示透明度
+          * @default true
+         */
+        "showAlpha": boolean;
+        /**
+          * 是否显示最近使用
+          * @default true
+         */
+        "showHistory": boolean;
+        /**
+          * 是否显示预设颜色
+          * @default true
+         */
+        "showPreset": boolean;
+        /**
+          * 尺寸（影响输入高度等）
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 当前颜色值（默认 hex），支持 #RRGGBB/#RRGGBBAA、rgb/rgba、hsl/hsla
+          * @default '#3498db'
+         */
+        "value": string;
     }
     /**
      * Drawer 抽屉组件
@@ -777,6 +903,16 @@ export namespace Components {
           * @default 0.25
          */
         "minScale": number;
+        "panelHeight"?: number | string;
+        /**
+          * 小窗宽高（viewerMode=modal 时生效）
+         */
+        "panelWidth"?: number | string;
+        /**
+          * 是否显示标题与描述
+          * @default true
+         */
+        "showCaption": boolean;
         /**
           * 是否展示顶部缩略图
           * @default true
@@ -787,6 +923,26 @@ export namespace Components {
           * @default 0
          */
         "startIndex": number;
+        /**
+          * 过渡类型
+          * @default 'fade-zoom'
+         */
+        "transition": 'fade' | 'fade-zoom';
+        /**
+          * 过渡时长（ms）
+          * @default 240
+         */
+        "transitionDuration": number;
+        /**
+          * 过渡缓动函数
+          * @default 'cubic-bezier(0.22, 0.61, 0.36, 1)'
+         */
+        "transitionEasing": string;
+        /**
+          * 查看窗口模式：overlay 全屏；modal 小窗
+          * @default 'overlay'
+         */
+        "viewerMode": 'overlay' | 'modal';
         /**
           * 是否显示
           * @default false
@@ -1943,6 +2099,89 @@ export namespace Components {
         "value"?: string;
     }
     /**
+     * TimePicker 时间选择器
+     * - 使用 <ldesign-popup> 作为弹层
+     * - 默认格式 HH:mm:ss，可通过 showSeconds 控制秒列
+     */
+    interface LdesignTimePicker {
+        /**
+          * 是否显示箭头（透传给 Popup）
+          * @default false
+         */
+        "arrow": boolean;
+        /**
+          * 是否可清空
+          * @default false
+         */
+        "clearable": boolean;
+        /**
+          * 是否需要点击“确定”确认（默认需要）。关闭后再触发 change
+          * @default true
+         */
+        "confirm": boolean;
+        /**
+          * 默认值（非受控）
+         */
+        "defaultValue"?: string;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 步进
+          * @default 1
+         */
+        "hourStep": number;
+        /**
+          * @default 1
+         */
+        "minuteStep": number;
+        /**
+          * 列表最大高度
+          * @default 180
+         */
+        "panelHeight": number;
+        /**
+          * 占位文案
+          * @default '选择时间'
+         */
+        "placeholder": string;
+        /**
+          * 弹出层位置
+          * @default 'bottom-start'
+         */
+        "placement": TimePickerPlacement;
+        /**
+          * @default 1
+         */
+        "secondStep": number;
+        /**
+          * 是否显示秒
+          * @default true
+         */
+        "showSeconds": boolean;
+        /**
+          * 主题（透传给 Popup）
+          * @default 'light'
+         */
+        "theme": 'light' | 'dark';
+        /**
+          * 弹出层触发方式
+          * @default 'click'
+         */
+        "trigger": TimePickerTrigger;
+        /**
+          * 当前值（受控），格式如 23:59:59 或 23:59（当 showSeconds=false 时）
+         */
+        "value"?: string;
+        /**
+          * 外部受控可见性（仅 trigger = 'manual' 生效）
+          * @default false
+         */
+        "visible": boolean;
+    }
+    /**
      * Tooltip 工具提示组件
      * 基于 Popup 的轻量封装
      */
@@ -2153,6 +2392,14 @@ export interface LdesignCollapsePanelCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignCollapsePanelElement;
 }
+export interface LdesignColorInputCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignColorInputElement;
+}
+export interface LdesignColorPickerCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignColorPickerElement;
+}
 export interface LdesignDrawerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignDrawerElement;
@@ -2228,6 +2475,10 @@ export interface LdesignSwitchCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignTabsCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignTabsElement;
+}
+export interface LdesignTimePickerCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignTimePickerElement;
 }
 export interface LdesignTreeCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -2382,6 +2633,52 @@ declare global {
     var HTMLLdesignCollapsePanelElement: {
         prototype: HTMLLdesignCollapsePanelElement;
         new (): HTMLLdesignCollapsePanelElement;
+    };
+    interface HTMLLdesignColorInputElementEventMap {
+        "ldesignInput": string;
+        "ldesignChange": string;
+    }
+    /**
+     * ColorInput 颜色输入（内置 Popup + ColorPicker）
+     * - 点击触发显示颜色选择面板
+     * - 支持透明度/预设/最近使用
+     */
+    interface HTMLLdesignColorInputElement extends Components.LdesignColorInput, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignColorInputElementEventMap>(type: K, listener: (this: HTMLLdesignColorInputElement, ev: LdesignColorInputCustomEvent<HTMLLdesignColorInputElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignColorInputElementEventMap>(type: K, listener: (this: HTMLLdesignColorInputElement, ev: LdesignColorInputCustomEvent<HTMLLdesignColorInputElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignColorInputElement: {
+        prototype: HTMLLdesignColorInputElement;
+        new (): HTMLLdesignColorInputElement;
+    };
+    interface HTMLLdesignColorPickerElementEventMap {
+        "ldesignInput": string;
+        "ldesignChange": string;
+    }
+    /**
+     * ColorPicker 颜色选择器
+     * - 支持 SV 色板 + Hue 滑条 + 可选 Alpha
+     * - 支持 HEX/RGB/HSL/HSV 输入与预设/历史颜色
+     */
+    interface HTMLLdesignColorPickerElement extends Components.LdesignColorPicker, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignColorPickerElementEventMap>(type: K, listener: (this: HTMLLdesignColorPickerElement, ev: LdesignColorPickerCustomEvent<HTMLLdesignColorPickerElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignColorPickerElementEventMap>(type: K, listener: (this: HTMLLdesignColorPickerElement, ev: LdesignColorPickerCustomEvent<HTMLLdesignColorPickerElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignColorPickerElement: {
+        prototype: HTMLLdesignColorPickerElement;
+        new (): HTMLLdesignColorPickerElement;
     };
     interface HTMLLdesignDrawerElementEventMap {
         "ldesignVisibleChange": boolean;
@@ -2867,6 +3164,29 @@ declare global {
         prototype: HTMLLdesignTabsElement;
         new (): HTMLLdesignTabsElement;
     };
+    interface HTMLLdesignTimePickerElementEventMap {
+        "ldesignChange": string | undefined;
+        "ldesignVisibleChange": boolean;
+    }
+    /**
+     * TimePicker 时间选择器
+     * - 使用 <ldesign-popup> 作为弹层
+     * - 默认格式 HH:mm:ss，可通过 showSeconds 控制秒列
+     */
+    interface HTMLLdesignTimePickerElement extends Components.LdesignTimePicker, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignTimePickerElementEventMap>(type: K, listener: (this: HTMLLdesignTimePickerElement, ev: LdesignTimePickerCustomEvent<HTMLLdesignTimePickerElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignTimePickerElementEventMap>(type: K, listener: (this: HTMLLdesignTimePickerElement, ev: LdesignTimePickerCustomEvent<HTMLLdesignTimePickerElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignTimePickerElement: {
+        prototype: HTMLLdesignTimePickerElement;
+        new (): HTMLLdesignTimePickerElement;
+    };
     /**
      * Tooltip 工具提示组件
      * 基于 Popup 的轻量封装
@@ -2907,6 +3227,8 @@ declare global {
         "ldesign-checkbox-group": HTMLLdesignCheckboxGroupElement;
         "ldesign-collapse": HTMLLdesignCollapseElement;
         "ldesign-collapse-panel": HTMLLdesignCollapsePanelElement;
+        "ldesign-color-input": HTMLLdesignColorInputElement;
+        "ldesign-color-picker": HTMLLdesignColorPickerElement;
         "ldesign-drawer": HTMLLdesignDrawerElement;
         "ldesign-dropdown": HTMLLdesignDropdownElement;
         "ldesign-icon": HTMLLdesignIconElement;
@@ -2931,6 +3253,7 @@ declare global {
         "ldesign-switch": HTMLLdesignSwitchElement;
         "ldesign-tab-panel": HTMLLdesignTabPanelElement;
         "ldesign-tabs": HTMLLdesignTabsElement;
+        "ldesign-time-picker": HTMLLdesignTimePickerElement;
         "ldesign-tooltip": HTMLLdesignTooltipElement;
         "ldesign-tree": HTMLLdesignTreeElement;
     }
@@ -3310,6 +3633,146 @@ declare namespace LocalJSX {
           * 冒泡给父级，用于切换
          */
         "onLdesignCollapseItemToggle"?: (event: LdesignCollapsePanelCustomEvent<{ name: string }>) => void;
+    }
+    /**
+     * ColorInput 颜色输入（内置 Popup + ColorPicker）
+     * - 点击触发显示颜色选择面板
+     * - 支持透明度/预设/最近使用
+     */
+    interface LdesignColorInput {
+        /**
+          * 是否可清空
+          * @default true
+         */
+        "clearable"?: boolean;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 显示/输出格式
+          * @default 'hex'
+         */
+        "format"?: 'hex' | 'rgb' | 'hsl' | 'hsv';
+        /**
+          * 选择后是否自动关闭弹层
+          * @default true
+         */
+        "hideOnSelect"?: boolean;
+        /**
+          * 确认变更
+         */
+        "onLdesignChange"?: (event: LdesignColorInputCustomEvent<string>) => void;
+        /**
+          * 实时更新
+         */
+        "onLdesignInput"?: (event: LdesignColorInputCustomEvent<string>) => void;
+        /**
+          * 输入占位符
+          * @default ''
+         */
+        "placeholder"?: string;
+        /**
+          * 弹出位置
+          * @default 'bottom-start'
+         */
+        "placement"?: 'top'|'top-start'|'top-end'|'bottom'|'bottom-start'|'bottom-end'|'left'|'left-start'|'left-end'|'right'|'right-start'|'right-end';
+        /**
+          * 预设颜色
+          * @default []
+         */
+        "presets"?: string[];
+        /**
+          * 最近颜色最大条数
+          * @default 12
+         */
+        "recentMax"?: number;
+        /**
+          * 是否显示透明度
+          * @default true
+         */
+        "showAlpha"?: boolean;
+        /**
+          * 是否显示最近使用
+          * @default true
+         */
+        "showHistory"?: boolean;
+        /**
+          * 是否显示系统预设
+          * @default true
+         */
+        "showPreset"?: boolean;
+        /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 当前颜色字符串（与 ColorPicker 格式一致）
+          * @default '#1677ff'
+         */
+        "value"?: string;
+    }
+    /**
+     * ColorPicker 颜色选择器
+     * - 支持 SV 色板 + Hue 滑条 + 可选 Alpha
+     * - 支持 HEX/RGB/HSL/HSV 输入与预设/历史颜色
+     */
+    interface LdesignColorPicker {
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 默认显示格式
+          * @default 'hex'
+         */
+        "format"?: 'hex' | 'rgb' | 'hsl' | 'hsv';
+        /**
+          * 颜色确定触发（拖动结束、输入回车或失焦）
+         */
+        "onLdesignChange"?: (event: LdesignColorPickerCustomEvent<string>) => void;
+        /**
+          * 拖动或输入实时触发
+         */
+        "onLdesignInput"?: (event: LdesignColorPickerCustomEvent<string>) => void;
+        /**
+          * 预设颜色
+          * @default [     '#ff4d4f', '#ff7a45', '#ffa940', '#ffc53d', '#ffec3d', '#bae637', '#73d13d', '#36cfc9', '#40a9ff', '#597ef7', '#9254de', '#f759ab',     '#d4380d', '#d46b08', '#d48806', '#ad8b00', '#5b8c00', '#08979c', '#096dd9', '#1d39c4', '#531dab', '#c41d7f', '#8c8c8c', '#595959',   ]
+         */
+        "presets"?: string[];
+        /**
+          * 最近使用最多条数
+          * @default 12
+         */
+        "recentMax"?: number;
+        /**
+          * 是否显示透明度
+          * @default true
+         */
+        "showAlpha"?: boolean;
+        /**
+          * 是否显示最近使用
+          * @default true
+         */
+        "showHistory"?: boolean;
+        /**
+          * 是否显示预设颜色
+          * @default true
+         */
+        "showPreset"?: boolean;
+        /**
+          * 尺寸（影响输入高度等）
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 当前颜色值（默认 hex），支持 #RRGGBB/#RRGGBBAA、rgb/rgba、hsl/hsla
+          * @default '#3498db'
+         */
+        "value"?: string;
     }
     /**
      * Drawer 抽屉组件
@@ -3731,6 +4194,16 @@ declare namespace LocalJSX {
         "onLdesignClose"?: (event: LdesignImageViewerCustomEvent<void>) => void;
         "onLdesignOpen"?: (event: LdesignImageViewerCustomEvent<void>) => void;
         "onLdesignVisibleChange"?: (event: LdesignImageViewerCustomEvent<boolean>) => void;
+        "panelHeight"?: number | string;
+        /**
+          * 小窗宽高（viewerMode=modal 时生效）
+         */
+        "panelWidth"?: number | string;
+        /**
+          * 是否显示标题与描述
+          * @default true
+         */
+        "showCaption"?: boolean;
         /**
           * 是否展示顶部缩略图
           * @default true
@@ -3741,6 +4214,26 @@ declare namespace LocalJSX {
           * @default 0
          */
         "startIndex"?: number;
+        /**
+          * 过渡类型
+          * @default 'fade-zoom'
+         */
+        "transition"?: 'fade' | 'fade-zoom';
+        /**
+          * 过渡时长（ms）
+          * @default 240
+         */
+        "transitionDuration"?: number;
+        /**
+          * 过渡缓动函数
+          * @default 'cubic-bezier(0.22, 0.61, 0.36, 1)'
+         */
+        "transitionEasing"?: string;
+        /**
+          * 查看窗口模式：overlay 全屏；modal 小窗
+          * @default 'overlay'
+         */
+        "viewerMode"?: 'overlay' | 'modal';
         /**
           * 是否显示
           * @default false
@@ -4986,6 +5479,97 @@ declare namespace LocalJSX {
         "value"?: string;
     }
     /**
+     * TimePicker 时间选择器
+     * - 使用 <ldesign-popup> 作为弹层
+     * - 默认格式 HH:mm:ss，可通过 showSeconds 控制秒列
+     */
+    interface LdesignTimePicker {
+        /**
+          * 是否显示箭头（透传给 Popup）
+          * @default false
+         */
+        "arrow"?: boolean;
+        /**
+          * 是否可清空
+          * @default false
+         */
+        "clearable"?: boolean;
+        /**
+          * 是否需要点击“确定”确认（默认需要）。关闭后再触发 change
+          * @default true
+         */
+        "confirm"?: boolean;
+        /**
+          * 默认值（非受控）
+         */
+        "defaultValue"?: string;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 步进
+          * @default 1
+         */
+        "hourStep"?: number;
+        /**
+          * @default 1
+         */
+        "minuteStep"?: number;
+        /**
+          * 值改变
+         */
+        "onLdesignChange"?: (event: LdesignTimePickerCustomEvent<string | undefined>) => void;
+        /**
+          * 弹层可见性改变
+         */
+        "onLdesignVisibleChange"?: (event: LdesignTimePickerCustomEvent<boolean>) => void;
+        /**
+          * 列表最大高度
+          * @default 180
+         */
+        "panelHeight"?: number;
+        /**
+          * 占位文案
+          * @default '选择时间'
+         */
+        "placeholder"?: string;
+        /**
+          * 弹出层位置
+          * @default 'bottom-start'
+         */
+        "placement"?: TimePickerPlacement;
+        /**
+          * @default 1
+         */
+        "secondStep"?: number;
+        /**
+          * 是否显示秒
+          * @default true
+         */
+        "showSeconds"?: boolean;
+        /**
+          * 主题（透传给 Popup）
+          * @default 'light'
+         */
+        "theme"?: 'light' | 'dark';
+        /**
+          * 弹出层触发方式
+          * @default 'click'
+         */
+        "trigger"?: TimePickerTrigger;
+        /**
+          * 当前值（受控），格式如 23:59:59 或 23:59（当 showSeconds=false 时）
+         */
+        "value"?: string;
+        /**
+          * 外部受控可见性（仅 trigger = 'manual' 生效）
+          * @default false
+         */
+        "visible"?: boolean;
+    }
+    /**
      * Tooltip 工具提示组件
      * 基于 Popup 的轻量封装
      */
@@ -5192,6 +5776,8 @@ declare namespace LocalJSX {
         "ldesign-checkbox-group": LdesignCheckboxGroup;
         "ldesign-collapse": LdesignCollapse;
         "ldesign-collapse-panel": LdesignCollapsePanel;
+        "ldesign-color-input": LdesignColorInput;
+        "ldesign-color-picker": LdesignColorPicker;
         "ldesign-drawer": LdesignDrawer;
         "ldesign-dropdown": LdesignDropdown;
         "ldesign-icon": LdesignIcon;
@@ -5216,6 +5802,7 @@ declare namespace LocalJSX {
         "ldesign-switch": LdesignSwitch;
         "ldesign-tab-panel": LdesignTabPanel;
         "ldesign-tabs": LdesignTabs;
+        "ldesign-time-picker": LdesignTimePicker;
         "ldesign-tooltip": LdesignTooltip;
         "ldesign-tree": LdesignTree;
     }
@@ -5266,6 +5853,18 @@ declare module "@stencil/core" {
              * CollapsePanel 折叠面板项
              */
             "ldesign-collapse-panel": LocalJSX.LdesignCollapsePanel & JSXBase.HTMLAttributes<HTMLLdesignCollapsePanelElement>;
+            /**
+             * ColorInput 颜色输入（内置 Popup + ColorPicker）
+             * - 点击触发显示颜色选择面板
+             * - 支持透明度/预设/最近使用
+             */
+            "ldesign-color-input": LocalJSX.LdesignColorInput & JSXBase.HTMLAttributes<HTMLLdesignColorInputElement>;
+            /**
+             * ColorPicker 颜色选择器
+             * - 支持 SV 色板 + Hue 滑条 + 可选 Alpha
+             * - 支持 HEX/RGB/HSL/HSV 输入与预设/历史颜色
+             */
+            "ldesign-color-picker": LocalJSX.LdesignColorPicker & JSXBase.HTMLAttributes<HTMLLdesignColorPickerElement>;
             /**
              * Drawer 抽屉组件
              * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
@@ -5397,6 +5996,12 @@ declare module "@stencil/core" {
              * - 通过水平或垂直的标签页切换展示内容
              */
             "ldesign-tabs": LocalJSX.LdesignTabs & JSXBase.HTMLAttributes<HTMLLdesignTabsElement>;
+            /**
+             * TimePicker 时间选择器
+             * - 使用 <ldesign-popup> 作为弹层
+             * - 默认格式 HH:mm:ss，可通过 showSeconds 控制秒列
+             */
+            "ldesign-time-picker": LocalJSX.LdesignTimePicker & JSXBase.HTMLAttributes<HTMLLdesignTimePickerElement>;
             /**
              * Tooltip 工具提示组件
              * 基于 Popup 的轻量封装

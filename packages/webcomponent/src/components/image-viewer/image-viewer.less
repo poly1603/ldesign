@@ -8,19 +8,45 @@
 .ldesign-image-viewer {
   position: fixed;
   inset: 0;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: @text-dark;
-  background: @bg-dark;
+  background: fade(@bg-dark, 95%);
   user-select: none;
   -webkit-user-select: none;
   touch-action: none; // 避免移动端双指缩放干扰
+  opacity: 0;
+  transition: opacity var(--iv-duration, .24s) var(--iv-ease, ease);
 }
 
+/* 打开 / 关闭动画（遮罩淡入淡出） */
+.ldesign-image-viewer[data-motion="opening"],
+.ldesign-image-viewer[data-motion="open"] { opacity: 1; }
+.ldesign-image-viewer[data-motion="closing"] { opacity: 0; }
+
 .ldesign-image-viewer--light {
-  background: @bg-light;
+  background: fade(@bg-light, 95%);
   color: @text-light;
 }
 
+/* 面板容器（小窗模式使用） */
+.ldesign-image-viewer__panel {
+  position: relative;
+  width: 100%; height: 100%;
+  background: transparent;
+  display: flex; flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  transform: scale(0.98);
+  transition: transform var(--iv-duration, .24s) var(--iv-ease, ease), opacity var(--iv-duration, .24s) var(--iv-ease, ease);
+  opacity: 0;
+}
+
+/* 面板进入/退出动画 */
+.ldesign-image-viewer[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer[data-motion="open"] .ldesign-image-viewer__panel { transform: scale(1); opacity: 1; }
+.ldesign-image-viewer[data-motion="closing"] .ldesign-image-viewer__panel { transform: scale(0.98); opacity: 0; }
 /* 顶部区域 */
 .ldesign-image-viewer__top {
   position: absolute;
@@ -108,7 +134,7 @@
   transform-origin: center center;
   will-change: transform, opacity;
   backface-visibility: hidden;
-  transition: transform 0.2s ease-out; // 旋转/缩放过渡
+  transition: transform var(--iv-duration, 0.24s) var(--iv-ease, cubic-bezier(0.22, 0.61, 0.36, 1)); // 旋转/缩放过渡
 }
 
 .ldesign-image-viewer__img.is-dragging {
@@ -120,13 +146,13 @@
 
 /* 渐隐进入效果（切换图片时更柔和） */
 .ldesign-image-viewer__img.fade-in {
-  animation: iv-fade-in 0.18s ease-out;
+  animation: iv-fade-in var(--iv-duration, 0.24s) var(--iv-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 }
 .ldesign-image-viewer__img.fade-enter {
-  animation: iv-fade-in 0.2s ease-out;
+  animation: iv-fade-in var(--iv-duration, 0.24s) var(--iv-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 }
 .ldesign-image-viewer__img.fade-leave {
-  animation: iv-fade-out 0.2s ease-in;
+  animation: iv-fade-out var(--iv-duration, 0.24s) var(--iv-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
   pointer-events: none;
 }
 
@@ -168,6 +194,17 @@
 .ldesign-image-viewer__nav--prev { left: 18px; }
 .ldesign-image-viewer__nav--next { right: 18px; }
 
+/* 右上角关闭按钮 */
+.ldesign-image-viewer__close {
+  position: absolute; top: 10px; right: 10px;
+  z-index: 4;
+  width: 36px; height: 36px;
+  border: none; border-radius: 18px;
+  background: @panel-dark; color: #fff; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.ldesign-image-viewer--light .ldesign-image-viewer__close { background: @panel-light; color: @text-light; }
+
 .ldesign-image-viewer__nav:hover { filter: brightness(1.05); }
 
 /* 底部工具栏 */
@@ -186,6 +223,12 @@
   color: #fff;
 }
 .ldesign-image-viewer--light .ldesign-image-viewer__caption { color: @text-light; }
+
+/* 小窗模式容器阴影与背景 */
+.ldesign-image-viewer--modal .ldesign-image-viewer__panel {
+  background: #fff;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.24);
+}
 
 .ldesign-image-viewer__caption-title {
   font-size: 16px; font-weight: 600;

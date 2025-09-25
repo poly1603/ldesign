@@ -37,3 +37,8 @@ export { LdesignImageGroup } from './image/image-group';
 export { LdesignImageViewer } from './image-viewer/image-viewer';
 export { LdesignLoading } from './loading/loading';
 export { LdesignSlider } from './slider/slider';
+export { LdesignColorPicker } from './color-picker/color-picker';
+export { LdesignColorInput } from './color-input/color-input';
+
+// Modal quick APIs
+export { alertModal, confirmModal, promptModal } from './modal/modal-api';
