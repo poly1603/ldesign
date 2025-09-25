@@ -107,6 +107,7 @@ export function alertModal(options: ModalAlertOptions | string): Promise<void> {
     // 自定义 footer，只放一个 OK 按钮
     const footer = document.createElement('div');
     footer.slot = 'footer';
+    footer.className = 'ldesign-modal__quick-footer';
     const okBtn = document.createElement('ldesign-button');
     okBtn.setAttribute('type', (opts.okType || 'primary') as string);
     okBtn.textContent = opts.okText || '确定';
@@ -155,6 +156,7 @@ export function confirmModal(options: ModalConfirmOptions | string): Promise<boo
     // 自定义 footer：取消 + 确定
     const footer = document.createElement('div');
     footer.slot = 'footer';
+    footer.className = 'ldesign-modal__quick-footer';
 
     const cancelBtn = document.createElement('ldesign-button');
     // 使用更轻的文本按钮，减少视觉噪音
@@ -231,6 +233,7 @@ export function promptModal(options: ModalPromptOptions | string): Promise<strin
     // 自定义 footer：取消 + 确定
     const footer = document.createElement('div');
     footer.slot = 'footer';
+    footer.className = 'ldesign-modal__quick-footer';
 
     const cancelBtn = document.createElement('ldesign-button');
     // 更轻的文本样式

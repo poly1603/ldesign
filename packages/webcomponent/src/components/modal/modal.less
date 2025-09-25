@@ -480,6 +480,14 @@
       padding-top: 12px;
       gap: 12px;
     }
+    .ldesign-modal__quick-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    // 兜底：gap 无效时，使用 margin
+    .ldesign-modal__quick-footer > * + * { margin-left: 12px; }
     .ldesign-modal__body {
       padding-top: 12px;
       padding-bottom: 12px;

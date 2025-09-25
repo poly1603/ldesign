@@ -944,6 +944,10 @@ export namespace Components {
          */
         "viewerMode": 'overlay' | 'modal';
         /**
+          * 小窗标题
+         */
+        "viewerTitle"?: string;
+        /**
           * 是否显示
           * @default false
          */
@@ -2129,14 +2133,39 @@ export namespace Components {
          */
         "disabled": boolean;
         /**
+          * 禁用小时集合（可传 JSON 字符串或数组），如 [0,1,2]
+         */
+        "disabledHours"?: string | number[];
+        /**
+          * 禁用分钟集合（同上）
+         */
+        "disabledMinutes"?: string | number[];
+        /**
+          * 禁用秒集合（同上）
+         */
+        "disabledSeconds"?: string | number[];
+        /**
           * 步进
           * @default 1
          */
         "hourStep": number;
         /**
+          * 最大时间（含），如 18:00 或 18:00:00
+         */
+        "maxTime"?: string;
+        /**
+          * 最小时间（含），如 08:30 或 08:30:00
+         */
+        "minTime"?: string;
+        /**
           * @default 1
          */
         "minuteStep": number;
+        /**
+          * 输出格式：'24' -> 24 小时制；'12' -> 12 小时制（hh:mm[:ss] AM/PM）
+          * @default '24'
+         */
+        "outputFormat": '24' | '12';
         /**
           * 列表最大高度
           * @default 180
@@ -2171,6 +2200,11 @@ export namespace Components {
           * @default 'click'
          */
         "trigger": TimePickerTrigger;
+        /**
+          * 是否显示 12 小时制 AM/PM 列（显示方式），内部仍以 24h 保存
+          * @default false
+         */
+        "use12Hours": boolean;
         /**
           * 当前值（受控），格式如 23:59:59 或 23:59（当 showSeconds=false 时）
          */
@@ -4235,6 +4269,10 @@ declare namespace LocalJSX {
          */
         "viewerMode"?: 'overlay' | 'modal';
         /**
+          * 小窗标题
+         */
+        "viewerTitle"?: string;
+        /**
           * 是否显示
           * @default false
          */
@@ -5509,10 +5547,30 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
+          * 禁用小时集合（可传 JSON 字符串或数组），如 [0,1,2]
+         */
+        "disabledHours"?: string | number[];
+        /**
+          * 禁用分钟集合（同上）
+         */
+        "disabledMinutes"?: string | number[];
+        /**
+          * 禁用秒集合（同上）
+         */
+        "disabledSeconds"?: string | number[];
+        /**
           * 步进
           * @default 1
          */
         "hourStep"?: number;
+        /**
+          * 最大时间（含），如 18:00 或 18:00:00
+         */
+        "maxTime"?: string;
+        /**
+          * 最小时间（含），如 08:30 或 08:30:00
+         */
+        "minTime"?: string;
         /**
           * @default 1
          */
@@ -5525,6 +5583,11 @@ declare namespace LocalJSX {
           * 弹层可见性改变
          */
         "onLdesignVisibleChange"?: (event: LdesignTimePickerCustomEvent<boolean>) => void;
+        /**
+          * 输出格式：'24' -> 24 小时制；'12' -> 12 小时制（hh:mm[:ss] AM/PM）
+          * @default '24'
+         */
+        "outputFormat"?: '24' | '12';
         /**
           * 列表最大高度
           * @default 180
@@ -5559,6 +5622,11 @@ declare namespace LocalJSX {
           * @default 'click'
          */
         "trigger"?: TimePickerTrigger;
+        /**
+          * 是否显示 12 小时制 AM/PM 列（显示方式），内部仍以 24h 保存
+          * @default false
+         */
+        "use12Hours"?: boolean;
         /**
           * 当前值（受控），格式如 23:59:59 或 23:59（当 showSeconds=false 时）
          */

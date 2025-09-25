@@ -225,10 +225,25 @@
 .ldesign-image-viewer--light .ldesign-image-viewer__caption { color: @text-light; }
 
 /* 小窗模式容器阴影与背景 */
+.ldesign-image-viewer--modal { background: transparent; }
 .ldesign-image-viewer--modal .ldesign-image-viewer__panel {
+  position: absolute; left: 50%; top: 50%;
   background: #fff;
   box-shadow: 0 24px 64px rgba(0,0,0,0.24);
 }
+
+/* 标题栏（可拖拽） */
+.ldesign-image-viewer__titlebar {
+  position: relative;
+  height: 44px;
+  display: flex; align-items: center;
+  padding: 0 48px 0 16px; /* 留出右上角关闭按钮空间 */
+  cursor: move;
+  user-select: none;
+  background: rgba(255,255,255,0.85);
+}
+.ldesign-image-viewer--dark .ldesign-image-viewer__titlebar { background: rgba(0,0,0,0.35); color: #fff; }
+.ldesign-image-viewer__title { font-size: 14px; font-weight: 600; }
 
 .ldesign-image-viewer__caption-title {
   font-size: 16px; font-weight: 600;

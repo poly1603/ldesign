@@ -69,8 +69,7 @@ onMounted(() => {
     addEventListenerSafe(promptBtn, 'click', async () => {
       const val = await promptModal({
         title: '输入名称',
-        content: '请输入名称：',
-        input: { placeholder: '请输入...', defaultValue: '' }
+        input: { placeholder: '请输入名称…', defaultValue: '' }
       })
       console.log('prompt result:', val)
     })
@@ -334,8 +333,7 @@ const ok = await confirmModal({
 
 const value = await promptModal({
   title: '输入名称',
-  content: '请输入名称：',
-  input: { placeholder: '请输入...', defaultValue: '' }
+  input: { placeholder: '请输入名称…', defaultValue: '' }
 })
 ```
 

@@ -63,6 +63,8 @@ export class LdesignImageViewer {
   @Prop() transitionEasing: string = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
   /** 是否显示标题与描述 */
   @Prop() showCaption: boolean = true;
+  /** 小窗标题 */
+  @Prop() viewerTitle?: string;
 
   // ── Events ──────────────────────────────────────────────────────
   @Event() ldesignVisibleChange: EventEmitter<boolean>;
@@ -94,6 +96,7 @@ export class LdesignImageViewer {
   private visualOffsetY: number = 0;
   private moveRaf?: number;
   private imageEl?: HTMLImageElement;
+  private panelEl?: HTMLElement;
   private imgKey: number = 0;
   private prevSrc?: string;
   private prevTransform?: string; // 冻结旧图的 transform，避免切换抖动
@@ -102,6 +105,12 @@ export class LdesignImageViewer {
   private preloadCache = new Map<string, Promise<HTMLImageElement>>();
   private enterScale?: number; // 新图入场缩放（fade-zoom 用）
   private pendingApply = false; // 避免在切换中对旧图应用重置变换
+
+  // 小窗拖拽
+  private panelDragging = false;
+  private panelStartX = 0; private panelStartY = 0;
+  private panelOffsetX = 0; private panelOffsetY = 0;
+  private panelStartOffsetX = 0; private panelStartOffsetY = 0;
 
   // ── Watchers ────────────────────────────────────────────────────
   @Watch('images')
@@ -199,7 +208,8 @@ export class LdesignImageViewer {
 
   private setVisibleInternal(v: boolean) {
     if (v) {
-      lockPageScroll();
+      // overlay 模式才锁定滚动
+      if (this.viewerMode === 'overlay') lockPageScroll();
       this.bindKeydown();
       // 首次打开或重新打开：等待当前图加载后再显示
       this.prevSrc = undefined;
@@ -217,7 +227,7 @@ export class LdesignImageViewer {
       this.motion = 'closing';
       this.isClosing = true;
       this.unbindKeydown();
-      unlockPageScroll();
+      if (this.viewerMode === 'overlay') unlockPageScroll();
       this.ldesignClose.emit();
       window.setTimeout(() => { this.isClosing = false; }, this.transitionDuration);
     }
@@ -313,6 +323,26 @@ export class LdesignImageViewer {
     const prev = this.index - 1;
     if (prev < 0) { if (this.loop) this.startSwitch(n - 1); else return; } else { this.startSwitch(prev); }
   }
+
+  // ── Panel drag (modal) ──────────────────────────────────────────
+  private onPanelPointerDown = (e: PointerEvent) => {
+    if (this.viewerMode !== 'modal') return;
+    this.panelDragging = true;
+    this.panelStartX = e.clientX; this.panelStartY = e.clientY;
+    this.panelStartOffsetX = this.panelOffsetX; this.panelStartOffsetY = this.panelOffsetY;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  private onPanelPointerMove = (e: PointerEvent) => {
+    if (!this.panelDragging || this.viewerMode !== 'modal') return;
+    const dx = e.clientX - this.panelStartX; const dy = e.clientY - this.panelStartY;
+    this.panelOffsetX = this.panelStartOffsetX + dx; this.panelOffsetY = this.panelStartOffsetY + dy;
+    try { this.panelEl?.style.setProperty('--panel-x', this.panelOffsetX + 'px'); this.panelEl?.style.setProperty('--panel-y', this.panelOffsetY + 'px'); } catch {}
+  };
+  private onPanelPointerUp = (e: PointerEvent) => {
+    if (!this.panelDragging) return;
+    this.panelDragging = false;
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+  };
 
   private onWheel = (e: WheelEvent) => {
     if (!this.wheelZoom) return;
@@ -448,11 +478,17 @@ export class LdesignImageViewer {
     return (
       <Host>
         <div class={classes} data-motion={this.motion} style={{ zIndex: String(this.zIndex), ['--iv-duration' as any]: `${this.transitionDuration}ms`, ['--iv-ease' as any]: this.transitionEasing }} onClick={this.onMaskClick}>
-          <div class="ldesign-image-viewer__panel" style={panelStyle} onClick={(e) => e.stopPropagation()}>
+          <div ref={el => (this.panelEl = el as HTMLElement)} class="ldesign-image-viewer__panel" style={panelStyle} onClick={(e) => e.stopPropagation()} style={{ ...panelStyle }}>
             {/* 顶部关闭 */}
             <button class="ldesign-image-viewer__close" aria-label="关闭" onClick={() => this.close()}>
               <ldesign-icon name="x" />
             </button>
+            {/* 标题栏（modal 可拖拽） */}
+            {this.viewerMode === 'modal' && (
+              <div class="ldesign-image-viewer__titlebar" onPointerDown={this.onPanelPointerDown} onPointerMove={this.onPanelPointerMove} onPointerUp={this.onPanelPointerUp}>
+                <div class="ldesign-image-viewer__title">{this.viewerTitle || (item && item.title) || '图片预览'}</div>
+              </div>
+            )}
 
             {/* 顶部：缩略图与计数 */}
             <div class="ldesign-image-viewer__top">

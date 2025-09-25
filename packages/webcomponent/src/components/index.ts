@@ -38,6 +38,7 @@ export { LdesignImageViewer } from './image-viewer/image-viewer';
 export { LdesignLoading } from './loading/loading';
 export { LdesignSlider } from './slider/slider';
 export { LdesignColorPicker } from './color-picker/color-picker';
+export { LdesignColorPickerPanel } from './color-picker-panel/color-picker-panel';
 export { LdesignColorInput } from './color-input/color-input';
 
 // Modal quick APIs
