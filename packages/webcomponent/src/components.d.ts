@@ -11,7 +11,7 @@ import { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/d
 import { ImageViewerItem } from "./components/image-viewer/image-viewer";
 import { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
 import { MessageType } from "./components/message/message";
-import { ModalAnimation, ModalSize } from "./components/modal/modal";
+import { ModalAnimation, ModalSize, ModalVariant } from "./components/modal/modal";
 import { NotificationPlacement, NotificationType } from "./components/notification/notification";
 import { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
 import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
@@ -26,7 +26,7 @@ export { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/d
 export { ImageViewerItem } from "./components/image-viewer/image-viewer";
 export { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
 export { MessageType } from "./components/message/message";
-export { ModalAnimation, ModalSize } from "./components/modal/modal";
+export { ModalAnimation, ModalSize, ModalVariant } from "./components/modal/modal";
 export { NotificationPlacement, NotificationType } from "./components/notification/notification";
 export { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
 export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
@@ -462,6 +462,15 @@ export namespace Components {
      */
     interface LdesignColorPicker {
         /**
+          * @default '取消'
+         */
+        "cancelText": string;
+        /**
+          * 自定义按钮文案
+          * @default '确定'
+         */
+        "confirmText": string;
+        /**
           * 使用具名插槽自定义触发器（slot="trigger"）；为 true 时不渲染默认触发器
           * @default false
          */
@@ -475,10 +484,20 @@ export namespace Components {
          */
         "format": 'hex' | 'rgb' | 'hsl' | 'hsv';
         /**
+          * 渐变类型：'linear' | 'radial' | 'both'（传递给面板）
+          * @default 'both'
+         */
+        "gradientTypes": 'linear' | 'radial' | 'both';
+        /**
           * 选择后是否自动关闭弹层
           * @default true
          */
         "hideOnSelect": boolean;
+        /**
+          * 面板模式：'solid' | 'gradient' | 'both'
+          * @default 'both'
+         */
+        "modes": 'solid' | 'gradient' | 'both';
         /**
           * 弹出位置
           * @default 'bottom-start'
@@ -496,6 +515,11 @@ export namespace Components {
           * @default 12
          */
         "recentMax": number;
+        /**
+          * 是否显示“确定/取消”操作区（默认 false）
+          * @default false
+         */
+        "showActions": boolean;
         /**
           * @default true
          */
@@ -533,6 +557,11 @@ export namespace Components {
           * @default 'hex'
          */
         "format": 'hex' | 'rgb' | 'hsl' | 'hsv';
+        /**
+          * 渐变类型：线性/径向/两者（仅在 activeMode=gradient 时生效）
+          * @default 'both'
+         */
+        "gradientTypes": 'linear' | 'radial' | 'both';
         /**
           * 面板模式：单色 | 渐变 | 两者
           * @default 'both'
@@ -1014,7 +1043,7 @@ export namespace Components {
           * 查看窗口模式：overlay 全屏；modal 小窗
           * @default 'overlay'
          */
-        "viewerMode": 'overlay' | 'modal';
+        "viewerMode": 'overlay' | 'modal' | 'embedded';
         /**
           * 小窗标题
          */
@@ -1295,6 +1324,7 @@ export namespace Components {
      * Modal 模态框组件
      */
     interface LdesignModal {
+        "animEase"?: string;
         /**
           * 动画效果类型
           * @default 'zoom'
@@ -1337,9 +1367,14 @@ export namespace Components {
          */
         "destroyOnClose": boolean;
         /**
-          * 容器选择器（可选）：若提供，则在加载时把组件节点移动到该容器下
+          * 动画参数（也可通过 CSS 变量覆盖）：duration(ms)、ease、animEase
          */
-        "getContainer"?: string;
+        "duration"?: number;
+        "ease"?: string;
+        /**
+          * 容器（选择器或元素）：若提供，则在加载时把组件节点移动到该容器下
+         */
+        "getContainer"?: string | HTMLElement;
         /**
           * 自定义高度
          */
@@ -1426,6 +1461,11 @@ export namespace Components {
          */
         "restoreIcon": string;
         /**
+          * Bottom Sheet 拖拽开关（仅在 variant='bottom-sheet' 时生效）
+          * @default true
+         */
+        "sheetDraggable": boolean;
+        /**
           * 显示模态框
          */
         "show": () => Promise<void>;
@@ -1447,6 +1487,11 @@ export namespace Components {
           * @default true
          */
         "trapFocus": boolean;
+        /**
+          * 变体：抽屉/底部弹层等
+          * @default 'modal'
+         */
+        "variant": ModalVariant;
         /**
           * 是否显示模态框
           * @default false
@@ -3903,6 +3948,15 @@ declare namespace LocalJSX {
      */
     interface LdesignColorPicker {
         /**
+          * @default '取消'
+         */
+        "cancelText"?: string;
+        /**
+          * 自定义按钮文案
+          * @default '确定'
+         */
+        "confirmText"?: string;
+        /**
           * 使用具名插槽自定义触发器（slot="trigger"）；为 true 时不渲染默认触发器
           * @default false
          */
@@ -3916,10 +3970,20 @@ declare namespace LocalJSX {
          */
         "format"?: 'hex' | 'rgb' | 'hsl' | 'hsv';
         /**
+          * 渐变类型：'linear' | 'radial' | 'both'（传递给面板）
+          * @default 'both'
+         */
+        "gradientTypes"?: 'linear' | 'radial' | 'both';
+        /**
           * 选择后是否自动关闭弹层
           * @default true
          */
         "hideOnSelect"?: boolean;
+        /**
+          * 面板模式：'solid' | 'gradient' | 'both'
+          * @default 'both'
+         */
+        "modes"?: 'solid' | 'gradient' | 'both';
         "onLdesignChange"?: (event: LdesignColorPickerCustomEvent<string>) => void;
         "onLdesignInput"?: (event: LdesignColorPickerCustomEvent<string>) => void;
         /**
@@ -3939,6 +4003,11 @@ declare namespace LocalJSX {
           * @default 12
          */
         "recentMax"?: number;
+        /**
+          * 是否显示“确定/取消”操作区（默认 false）
+          * @default false
+         */
+        "showActions"?: boolean;
         /**
           * @default true
          */
@@ -3976,6 +4045,11 @@ declare namespace LocalJSX {
           * @default 'hex'
          */
         "format"?: 'hex' | 'rgb' | 'hsl' | 'hsv';
+        /**
+          * 渐变类型：线性/径向/两者（仅在 activeMode=gradient 时生效）
+          * @default 'both'
+         */
+        "gradientTypes"?: 'linear' | 'radial' | 'both';
         /**
           * 面板模式：单色 | 渐变 | 两者
           * @default 'both'
@@ -4483,7 +4557,7 @@ declare namespace LocalJSX {
           * 查看窗口模式：overlay 全屏；modal 小窗
           * @default 'overlay'
          */
-        "viewerMode"?: 'overlay' | 'modal';
+        "viewerMode"?: 'overlay' | 'modal' | 'embedded';
         /**
           * 小窗标题
          */
@@ -4796,6 +4870,7 @@ declare namespace LocalJSX {
      * Modal 模态框组件
      */
     interface LdesignModal {
+        "animEase"?: string;
         /**
           * 动画效果类型
           * @default 'zoom'
@@ -4834,9 +4909,14 @@ declare namespace LocalJSX {
          */
         "destroyOnClose"?: boolean;
         /**
-          * 容器选择器（可选）：若提供，则在加载时把组件节点移动到该容器下
+          * 动画参数（也可通过 CSS 变量覆盖）：duration(ms)、ease、animEase
          */
-        "getContainer"?: string;
+        "duration"?: number;
+        "ease"?: string;
+        /**
+          * 容器（选择器或元素）：若提供，则在加载时把组件节点移动到该容器下
+         */
+        "getContainer"?: string | HTMLElement;
         /**
           * 自定义高度
          */
@@ -4923,6 +5003,11 @@ declare namespace LocalJSX {
          */
         "restoreIcon"?: string;
         /**
+          * Bottom Sheet 拖拽开关（仅在 variant='bottom-sheet' 时生效）
+          * @default true
+         */
+        "sheetDraggable"?: boolean;
+        /**
           * 模态框尺寸
           * @default 'medium'
          */
@@ -4936,6 +5021,11 @@ declare namespace LocalJSX {
           * @default true
          */
         "trapFocus"?: boolean;
+        /**
+          * 变体：抽屉/底部弹层等
+          * @default 'modal'
+         */
+        "variant"?: ModalVariant;
         /**
           * 是否显示模态框
           * @default false

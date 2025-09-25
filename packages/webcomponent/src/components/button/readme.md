@@ -94,6 +94,7 @@ Button 按钮组件
 
  - [ldesign-modal](../modal)
  - [ldesign-popconfirm](../popconfirm)
+ - [ldesign-time-picker](../time-picker)
 
 ### Depends on
 
@@ -105,6 +106,7 @@ graph TD;
   ldesign-button --> ldesign-icon
   ldesign-modal --> ldesign-button
   ldesign-popconfirm --> ldesign-button
+  ldesign-time-picker --> ldesign-button
   style ldesign-button fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

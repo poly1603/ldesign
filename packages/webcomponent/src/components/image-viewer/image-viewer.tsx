@@ -50,7 +50,7 @@ export class LdesignImageViewer {
   @Prop() backdrop: 'dark' | 'light' = 'dark';
 
   /** 查看窗口模式：overlay 全屏；modal 小窗 */
-  @Prop() viewerMode: 'overlay' | 'modal' = 'overlay';
+  @Prop() viewerMode: 'overlay' | 'modal' | 'embedded' = 'overlay';
   /** 小窗宽高（viewerMode=modal 时生效） */
   @Prop() panelWidth?: number | string;
   @Prop() panelHeight?: number | string;
@@ -258,7 +258,7 @@ export class LdesignImageViewer {
     this.pendingApply = true;
   }
 
-  private onMaskClick = (e: Event) => { if (e.target === this.el.querySelector('.ldesign-image-viewer')) { if (this.maskClosable) this.close(); } };
+  private onMaskClick = (e: Event) => { if (this.viewerMode !== 'overlay') return; if (e.target === this.el.querySelector('.ldesign-image-viewer')) { if (this.maskClosable) this.close(); } };
 
   private onKeydown = (e: KeyboardEvent) => {
     if (!this.visible || !this.keyboard) return;
@@ -473,13 +473,13 @@ export class LdesignImageViewer {
   render() {
     if (!this.visible && !this.isClosing) return null as any;
     const item = this.current();
-    const classes = ['ldesign-image-viewer', this.backdrop === 'dark' ? 'ldesign-image-viewer--dark' : 'ldesign-image-viewer--light', this.viewerMode === 'modal' ? 'ldesign-image-viewer--modal' : ''].join(' ');
+    const classes = ['ldesign-image-viewer', this.backdrop === 'dark' ? 'ldesign-image-viewer--dark' : 'ldesign-image-viewer--light', this.viewerMode === 'modal' ? 'ldesign-image-viewer--modal' : '', this.viewerMode === 'embedded' ? 'ldesign-image-viewer--embedded' : ''].join(' ');
 
-    const panelStyle: any = this.viewerMode === 'modal' ? { width: this.toPx(this.panelWidth) || '80vw', height: this.toPx(this.panelHeight) || '70vh' } : { width: '100%', height: '100%' };
+    const panelStyle: any = this.viewerMode === 'modal' ? { width: this.toPx(this.panelWidth) || '80vw', height: this.toPx(this.panelHeight) || '70vh' } : this.viewerMode === 'embedded' ? { width: '100%', height: '100%' } : { width: '100%', height: '100%' };
 
     return (
       <Host>
-        <div class={classes} data-motion={this.motion} style={{ zIndex: String(this.zIndex), ['--iv-duration' as any]: `${this.transitionDuration}ms`, ['--iv-ease' as any]: this.transitionEasing }} onClick={this.onMaskClick}>
+        <div class={classes} data-motion={this.motion} style={{ zIndex: String(this.zIndex), ['--iv-duration' as any]: `${this.transitionDuration}ms`, ['--iv-ease' as any]: this.transitionEasing }} onClick={this.viewerMode==='overlay' ? this.onMaskClick : undefined}>
           <div
             ref={el => (this.panelEl = el as HTMLElement)}
             class="ldesign-image-viewer__panel"
@@ -500,11 +500,13 @@ export class LdesignImageViewer {
               </div>
             )}
 
-            {/* 顶部：缩略图与计数 */}
+            {/* 顶部：缩略图与计数（embedded 隐藏） */}
+            {this.viewerMode !== 'embedded' && (
             <div class="ldesign-image-viewer__top">
               {this.renderHeader()}
               <div class="ldesign-image-viewer__counter">{this.index + 1}/{this.list.length}</div>
             </div>
+            )}
 
             {/* 中部：舞台与导航 */}
             <div class="ldesign-image-viewer__stage">

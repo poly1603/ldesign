@@ -30,15 +30,30 @@ export class LdesignColorPicker {
   @Prop() popupWidth?: number | string;
   /** 使用具名插槽自定义触发器（slot="trigger"）；为 true 时不渲染默认触发器 */
   @Prop() customTrigger: boolean = false;
+  /** 面板模式：'solid' | 'gradient' | 'both' */
+  @Prop() modes: 'solid' | 'gradient' | 'both' = 'both';
+  /** 渐变类型：'linear' | 'radial' | 'both'（传递给面板） */
+  @Prop() gradientTypes: 'linear' | 'radial' | 'both' = 'both';
+  /** 是否显示“确定/取消”操作区（默认 false） */
+  @Prop() showActions: boolean = false;
+  /** 自定义按钮文案 */
+  @Prop() confirmText: string = '确定';
+  @Prop() cancelText: string = '取消';
 
   @Event() ldesignInput!: EventEmitter<string>;
   @Event() ldesignChange!: EventEmitter<string>;
+
+  private cachedBeforeOpen?: string;
 
   private onPanelInput = (e: CustomEvent<string>) => {
     this.value = e.detail; this.ldesignInput.emit(e.detail);
   };
   private onPanelChange = (e: CustomEvent<string>) => {
-    this.value = e.detail; this.ldesignChange.emit(e.detail); if (this.hideOnSelect) this.popupEl?.hide?.();
+    this.value = e.detail;
+    if (!this.showActions) {
+      this.ldesignChange.emit(e.detail);
+      if (this.hideOnSelect) this.popupEl?.hide?.();
+    }
   };
 
   private getRootClass() {
@@ -51,7 +66,7 @@ export class LdesignColorPicker {
     const styleWidth = typeof this.popupWidth === 'number' ? `${this.popupWidth}px` : this.popupWidth;
     return (
       <Host>
-        <ldesign-popup ref={(el)=> (this.popupEl = el as any)} trigger="click" placement={this.placement} width={styleWidth as any} interactive>
+        <ldesign-popup ref={(el)=> (this.popupEl = el as any)} trigger="click" placement={this.placement} width={styleWidth as any} interactive onLdesignVisibleChange={(e:any)=>{ const vis=!!e.detail; if (vis) this.cachedBeforeOpen = this.value; }}>
           {this.customTrigger ? (
             <slot name="trigger" slot="trigger"></slot>
           ) : (
@@ -64,6 +79,8 @@ export class LdesignColorPicker {
             <ldesign-color-picker-panel
               value={this.value}
               format={this.format}
+              modes={this.modes as any}
+              gradient-types={this.gradientTypes as any}
               show-alpha={this.showAlpha as any}
               show-preset={this.showPreset as any}
               show-history={this.showHistory as any}
@@ -74,6 +91,12 @@ export class LdesignColorPicker {
               onLdesignInput={this.onPanelInput as any}
               onLdesignChange={this.onPanelChange as any}
             />
+            {this.showActions ? (
+              <div class="ld-cp-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+                <button class="ld-btn-cancel" onClick={() => { if (this.cachedBeforeOpen!=null) this.value = this.cachedBeforeOpen; this.popupEl?.hide?.(); }}>{this.cancelText}</button>
+                <button class="ld-btn-ok" onClick={() => { this.ldesignChange.emit(this.value); this.popupEl?.hide?.(); }}>{this.confirmText}</button>
+              </div>
+            ) : null}
           </div>
         </ldesign-popup>
       </Host>

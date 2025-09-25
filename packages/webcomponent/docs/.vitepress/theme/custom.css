@@ -157,6 +157,10 @@ ldesign-radio {
   font-family: inherit;
 }
 
+/* 临时修复：确保竖向 Slider 的 thumb 在轨道中居中显示 */
+.ldesign-slider__track--vertical { overflow: visible; }
+.ldesign-slider__thumb--vertical { left: 50% !important; }
+
 /* 暗色主题适配 */
 .dark {
   --ldesign-bg-color-page: #1a1a1a;

@@ -58,7 +58,10 @@
     height: 100%;
     overflow-y: auto;
     scroll-behavior: smooth;
+    /* 隐藏滚动条 */
+    scrollbar-width: none; /* Firefox */
   }
+  &__column::-webkit-scrollbar { width: 0; height: 0; }
 
   &__item {
     text-align: center;
@@ -68,7 +71,7 @@
     color: var(--ldesign-text-color, #111827);
     cursor: pointer;
 
-    &:hover { background: var(--ldesign-bg-soft, #f3f4f6); }
+    &:hover { background: transparent; }
 
     &--active {
       color: #1d4ed8; // 蓝色高亮

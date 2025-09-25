@@ -1,9 +1,12 @@
 import { Component, Prop, State, Element, Event, EventEmitter, Watch, Method, h, Host } from '@stencil/core';
 import { lockPageScroll, unlockPageScroll } from '../../utils/scroll-lock';
 import type { ButtonType } from '../../types';
+import { generateId } from '../../utils';
 
 // 简单的全局栈管理，确保 ESC 仅关闭栈顶弹窗
 const __modalStack: any[] = [];
+
+export type ModalVariant = 'modal' | 'drawer-left' | 'drawer-right' | 'bottom-sheet';
 
 export type ModalSize = 'small' | 'medium' | 'large' | 'full';
 
@@ -139,8 +142,31 @@ export class LdesignModal {
   @Prop() maxWidth?: number;
   @Prop() maxHeight?: number;
 
-  /** 容器选择器（可选）：若提供，则在加载时把组件节点移动到该容器下 */
-  @Prop() getContainer?: string;
+  /** 变体：抽屉/底部弹层等 */
+  @Prop() variant: ModalVariant = 'modal';
+
+  /** Bottom Sheet 拖拽开关（仅在 variant='bottom-sheet' 时生效） */
+  @Prop() sheetDraggable: boolean = true;
+  /** Snap 点：数组，值支持像素（数字或'120px'），百分比（'50%'），或小数（0.5 表示 50%） */
+  @Prop() sheetSnapPoints?: (number | string)[];
+  /** 初始高度：同上；若不传且有 snapPoints，则使用最大 snap 值（通常是 100%） */
+  @Prop() sheetInitial?: number | string;
+
+  /** 动画参数（也可通过 CSS 变量覆盖）：duration(ms)、ease、animEase */
+  @Prop() duration?: number;
+  @Prop() ease?: string;
+  @Prop() animEase?: string;
+
+  /** 容器（选择器或元素）：若提供，则在加载时把组件节点移动到该容器下 */
+  @Prop() getContainer?: string | HTMLElement;
+
+  /** 向导模式 */
+  @Prop() wizard: boolean = false;
+  /** 步骤标题（JS 赋值） */
+  @Prop() steps?: string[];
+  /** 当前步骤（0-based，可受控） */
+  @Prop({ mutable: true }) currentStep: number = 0;
+  @Event() ldesignStepChange: EventEmitter<number>;
 
   /**
    * 模态框状态
@@ -172,6 +198,8 @@ export class LdesignModal {
    * 模态框元素引用
    */
   private modalElement?: HTMLElement;
+  private titleId?: string;
+  private bodyId?: string;
 
   /**
    * 可滚动主体区域引用
@@ -241,6 +269,13 @@ export class LdesignModal {
    * 调整大小相关状态
    */
   private isResizing: boolean = false;
+
+  /** Bottom Sheet 拖拽状态 */
+  private isSheetDragging: boolean = false;
+  private sheetStartY: number = 0;
+  private sheetStartH: number = 0;
+  private sheetLastY?: number;
+  private sheetLastT?: number;
 
   /** 打开前的焦点（用于关闭后恢复） */
   private openerEl?: HTMLElement | null;
@@ -384,9 +419,13 @@ export class LdesignModal {
 
     // Enter 触发 OK（当 footer 未自定义时才有意义）
     if (event.key === 'Enter') {
-      // 避免在输入框里回车触发两次（仍允许）
-      this.handleOkClick();
-      return;
+      const target = event.target as HTMLElement | null;
+      const tag = (target && target.tagName) ? target.tagName.toLowerCase() : '';
+      // 在 textarea 中按回车不触发 OK
+      if (tag !== 'textarea') {
+        this.handleOkClick();
+        return;
+      }
     }
 
     // 焦点圈定（Trap Focus）
@@ -736,6 +775,56 @@ export class LdesignModal {
     document.removeEventListener('mouseup', this.handleResizeEnd);
   }
 
+  /** Bottom Sheet 顶部拖拽开始 */
+  private handleSheetDragStart = (event: MouseEvent) => {
+    if (this.variant !== 'bottom-sheet' || !this.sheetDraggable || !this.modalElement) return;
+    this.isSheetDragging = true;
+    this.sheetStartY = event.clientY;
+    this.sheetStartH = this.modalElement.offsetHeight;
+    this.sheetLastY = event.clientY;
+    this.sheetLastT = performance.now();
+    document.addEventListener('mousemove', this.handleSheetDragMove);
+    document.addEventListener('mouseup', this.handleSheetDragEnd, { once: true } as any);
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  private handleSheetDragMove = (event: MouseEvent) => {
+    if (!this.isSheetDragging || !this.modalElement) return;
+    const wrap = this.el.querySelector('.ldesign-modal__wrap') as HTMLElement;
+    const maxHWrap = wrap.clientHeight;
+    const minH = this.minHeight ?? 160;
+    const maxH = Math.min(this.maxHeight ?? maxHWrap, maxHWrap);
+    const delta = event.clientY - this.sheetStartY;
+    let newH = this.sheetStartH - delta; // 向上拖增高，向下拖减小
+    newH = Math.max(minH, Math.min(maxH, newH));
+    this.modalElement.style.height = `${Math.round(newH)}px`;
+    this.lastHeight = newH;
+    // 记录速度
+    this.sheetLastY = event.clientY;
+    this.sheetLastT = performance.now();
+  };
+
+  private handleSheetDragEnd = () => {
+    if (!this.modalElement) return;
+    const wrap = this.el.querySelector('.ldesign-modal__wrap') as HTMLElement;
+    const maxHWrap = wrap.clientHeight;
+    const minH = this.minHeight ?? 160;
+    const maxH = Math.min(this.maxHeight ?? maxHWrap, maxHWrap);
+    // 速度（px/ms）
+    let vy = 0;
+    if (this.sheetLastY != null && this.sheetLastT != null) {
+      const dy = this.sheetLastY - this.sheetStartY;
+      const dt = Math.max(1, performance.now() - (this.sheetLastT as number));
+      vy = dy / dt;
+    }
+    const target = this.getSheetSnapTarget(this.lastHeight || this.sheetStartH, vy, minH, maxH, maxHWrap);
+    this.modalElement.style.height = `${Math.round(target)}px`;
+    this.lastHeight = target;
+    this.isSheetDragging = false;
+    document.removeEventListener('mousemove', this.handleSheetDragMove);
+  };
+
   /**
    * 显示模态框
    */
@@ -926,6 +1015,22 @@ export class LdesignModal {
       this.isVisible = true;
       this.visible = true;
 
+      // Bottom Sheet 初始高度
+      if (this.variant === 'bottom-sheet' && this.modalElement) {
+        const wrap = this.el.querySelector('.ldesign-modal__wrap') as HTMLElement;
+        const wrapH = wrap?.clientHeight || window.innerHeight;
+        let initH: number | undefined;
+        if (this.sheetInitial != null) initH = this.parseSnap(this.sheetInitial as any, wrapH);
+        else if (this.sheetSnapPoints && this.sheetSnapPoints.length) {
+          const pts = this.sheetSnapPoints.map(v => this.parseSnap(v, wrapH));
+          initH = Math.max(...pts); // 默认用最大（通常是 100%）
+        }
+        if (initH != null) {
+          this.modalElement.style.height = `${Math.round(initH)}px`;
+          this.lastHeight = initH;
+        }
+      }
+
       // 锁定背景滚动，并隐藏页面滚动条
       this.bindScrollLock();
       this.lockBodyScroll();
@@ -1010,6 +1115,14 @@ export class LdesignModal {
       classes.push('ldesign-modal--fullsize');
     }
 
+    // 变体：为容器增加标记，便于样式去掉 wrap padding 等
+    if (this.variant === 'drawer-left' || this.variant === 'drawer-right') {
+      classes.push('ldesign-modal--drawer');
+    }
+    if (this.variant === 'bottom-sheet') {
+      classes.push('ldesign-modal--bottom-sheet');
+    }
+
     // 添加动画类
     if (this.animation) {
       if (this.isClosing) {
@@ -1034,7 +1147,57 @@ export class LdesignModal {
 
     classes.push(`ldesign-modal__dialog--${this.size}`);
 
+    // 变体样式
+    if (this.variant && this.variant !== 'modal') {
+      classes.push(`ldesign-modal__dialog--${this.variant}`);
+    }
+
     return classes.join(' ');
+  }
+
+  private ensureAriaIds() {
+    if (!this.titleId) this.titleId = `ld-modal-title-${generateId('id')}`;
+    if (!this.bodyId) this.bodyId = `ld-modal-body-${generateId('id')}`;
+  }
+
+  private parseSnap(v: number | string, wrapH: number): number {
+    if (typeof v === 'number') {
+      if (v > 0 && v <= 1) return v * wrapH; // 小数作为比例
+      return v; // 像素
+    }
+    const s = String(v).trim();
+    if (s.endsWith('%')) {
+      const p = parseFloat(s) / 100;
+      return Math.max(0, Math.min(1, p)) * wrapH;
+    }
+    if (s.endsWith('px')) {
+      return parseFloat(s);
+    }
+    const n = parseFloat(s);
+    if (!Number.isNaN(n)) return n;
+    return wrapH; // 兜底：全高
+  }
+
+  private getSheetSnapTarget(curH: number, vy: number, minH: number, maxH: number, wrapH: number): number {
+    const pts = (this.sheetSnapPoints && this.sheetSnapPoints.length)
+      ? this.sheetSnapPoints.map(v => this.parseSnap(v, wrapH))
+      : [] as number[];
+    if (pts.length === 0) return Math.max(minH, Math.min(maxH, curH));
+    // 依据速度方向选择相邻点，否则选择最近点
+    pts.sort((a,b)=>a-b); // 升序
+    const nearest = pts.reduce((p,c)=> Math.abs(c-curH) < Math.abs(p-curH) ? c : p, pts[0]);
+    const threshold = 0.5; // px/ms
+    if (Math.abs(vy) > threshold) {
+      if (vy > 0) { // 向下拖（减小高度）
+        // 选择 <= curH 的最大点
+        const lower = pts.filter(p=>p<=curH).pop();
+        if (lower != null) return Math.max(minH, Math.min(maxH, lower));
+      } else { // 向上拖（增大高度）
+        const higher = pts.find(p=>p>=curH);
+        if (higher != null) return Math.max(minH, Math.min(maxH, higher));
+      }
+    }
+    return Math.max(minH, Math.min(maxH, nearest));
   }
 
   /** 获取可聚焦元素 */
@@ -1141,7 +1304,12 @@ export class LdesignModal {
   private moveToContainer() {
     if (!this.getContainer) return;
     try {
-      const target = document.querySelector(this.getContainer) as HTMLElement | null;
+      let target: HTMLElement | null = null;
+      if (typeof this.getContainer === 'string') {
+        target = document.querySelector(this.getContainer) as HTMLElement | null;
+      } else if (this.getContainer && (this.getContainer as any).nodeType === 1) {
+        target = this.getContainer as HTMLElement;
+      }
       if (target && this.el.parentElement !== target) {
         target.appendChild(this.el);
       }
@@ -1266,17 +1434,67 @@ export class LdesignModal {
   }
 
   /** 栈操作与判定 */
+  private inertTargets?: HTMLElement[];
+  private getContainerElement(): HTMLElement {
+    const p = this.el.parentElement;
+    return p ?? document.body;
+  }
+  private applyInert() {
+    const container = this.getContainerElement();
+    const siblings = Array.from(container.children) as HTMLElement[];
+    const me = this.el as HTMLElement;
+    const targets = siblings.filter((el) => el !== me);
+    targets.forEach((el) => {
+      el.setAttribute('aria-hidden', 'true');
+      try { (el as any).setAttribute('inert', ''); } catch (_) {}
+    });
+    this.inertTargets = targets;
+  }
+  private clearInert() {
+    if (!this.inertTargets) return;
+    this.inertTargets.forEach((el) => {
+      el.removeAttribute('aria-hidden');
+      try { (el as any).removeAttribute('inert'); } catch (_) {}
+    });
+    this.inertTargets = undefined;
+  }
   private pushToStack() {
+    const prevTop = __modalStack[__modalStack.length - 1];
+    if (prevTop && prevTop !== (this as any)) {
+      try { prevTop.clearInert(); } catch (_) {}
+    }
     const idx = __modalStack.indexOf(this as any);
     if (idx >= 0) __modalStack.splice(idx, 1);
     __modalStack.push(this as any);
+    this.applyInert();
   }
   private removeFromStack() {
     const idx = __modalStack.indexOf(this as any);
     if (idx >= 0) __modalStack.splice(idx, 1);
+    this.clearInert();
+    const newTop = __modalStack[__modalStack.length - 1];
+    if (newTop) {
+      try { newTop.applyInert(); } catch (_) {}
+    }
   }
   private isTopMost() {
     return __modalStack.length > 0 && __modalStack[__modalStack.length - 1] === (this as any);
+  }
+
+  private isLastStep() { return !!(this.steps && this.currentStep >= (this.steps.length - 1)); }
+  private nextOrFinish() {
+    if (this.wizard && this.steps && !this.isLastStep()) {
+      this.currentStep = Math.min(this.currentStep + 1, this.steps.length - 1);
+      this.ldesignStepChange.emit(this.currentStep);
+      return;
+    }
+    this.handleOkClick();
+  }
+  private prevStep() {
+    if (this.wizard && this.steps) {
+      this.currentStep = Math.max(0, this.currentStep - 1);
+      this.ldesignStepChange.emit(this.currentStep);
+    }
   }
 
   render() {
@@ -1288,13 +1506,21 @@ export class LdesignModal {
     // 如果不可见且不在动画中，返回隐藏的元素而不是null
     const shouldShow = this.isVisible || this.isAnimating;
 
+    this.ensureAriaIds();
     return (
       <Host
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={this.modalTitle ? this.titleId : undefined}
+        aria-describedby={this.bodyId}
         class={this.getModalClass()}
         style={{
           zIndex: this.zIndex.toString(),
-          display: shouldShow ? 'block' : 'none'
-        }}
+          display: shouldShow ? 'block' : 'none',
+          '--ld-modal-duration': this.duration ? `${this.duration}ms` : undefined,
+          '--ld-modal-ease': this.ease || undefined,
+          '--ld-modal-anim-ease': this.animEase || undefined,
+        } as any}
       >
         {this.mask && (
           <div
@@ -1308,6 +1534,11 @@ export class LdesignModal {
             class={this.getDialogClass()}
             style={this.getDialogStyle()}
           >
+            {this.variant === 'bottom-sheet' && this.sheetDraggable && (
+              <div class="ldesign-modal__sheet-drag" onMouseDown={this.handleSheetDragStart as any}>
+                <span class="ldesign-modal__sheet-drag-bar" />
+              </div>
+            )}
             <div class={this.getContentClass()}>
               {(this.modalTitle || this.closable) && (
                 <div
@@ -1317,7 +1548,15 @@ export class LdesignModal {
                   style={this.isDraggable ? { cursor: 'move' } : {}}
                 >
                   {this.modalTitle && (
-                    <div class="ldesign-modal__title">{this.modalTitle}</div>
+                    <div class="ldesign-modal__title" id={this.titleId}>{this.modalTitle}</div>
+                  )}
+
+                  {this.wizard && Array.isArray(this.steps) && this.steps.length > 0 && (
+                    <div class="ldesign-modal__wizard-steps" aria-hidden="true">
+                      {this.steps.map((t, i) => (
+                        <span class={`ldesign-modal__wizard-step ${i <= this.currentStep ? 'is-active' : ''}`}>{i+1}</span>
+                      ))}
+                    </div>
                   )}
 
                   <div class="ldesign-modal__actions">
@@ -1353,18 +1592,38 @@ export class LdesignModal {
                 </div>
               )}
 
-              <div class="ldesign-modal__body">
-                <slot />
+              <div class="ldesign-modal__body" id={this.bodyId}>
+                {this.wizard && Array.isArray(this.steps) && this.steps.length > 0 ? (
+                  <slot name={`step-${this.currentStep}`} />
+                ) : (
+                  <slot />
+                )}
               </div>
 
               <div class={`ldesign-modal__footer ${this.showFooterShadow ? 'ldesign-modal__footer--shadow' : ''}`}>
                 <slot name="footer">
-                  <ldesign-button type={this.cancelType} onClick={this.handleCloseClick}>
-                    {this.cancelText}
-                  </ldesign-button>
-                  <ldesign-button type={this.okType} onClick={this.handleOkClick} loading={this.okLoading} disabled={this.okDisabled}>
-                    {this.okText}
-                  </ldesign-button>
+                  {this.wizard ? (
+                    <>
+                      <ldesign-button type={this.cancelType} onClick={this.handleCloseClick}>
+                        取消
+                      </ldesign-button>
+                      <ldesign-button type="secondary" onClick={() => this.prevStep()} disabled={this.currentStep <= 0}>
+                        上一步
+                      </ldesign-button>
+                      <ldesign-button type={this.okType} onClick={() => this.nextOrFinish()} loading={this.okLoading}>
+                        {this.isLastStep() ? '完成' : '下一步'}
+                      </ldesign-button>
+                    </>
+                  ) : (
+                    <>
+                      <ldesign-button type={this.cancelType} onClick={this.handleCloseClick}>
+                        {this.cancelText}
+                      </ldesign-button>
+                      <ldesign-button type={this.okType} onClick={this.handleOkClick} loading={this.okLoading} disabled={this.okDisabled}>
+                        {this.okText}
+                      </ldesign-button>
+                    </>
+                  )}
                 </slot>
               </div>
             </div>

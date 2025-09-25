@@ -27,9 +27,19 @@
   .mode-tabs button.active { background: #fff; color: #1677ff; border-color: #1677ff; box-shadow: inset 0 0 0 1px #1677ff; }
 
   .gradient-tools { display: grid; gap: 8px; grid-template-columns: 1fr auto; align-items: center; margin-bottom: 8px; }
-  .gradient-tools .gradient-preview { height: 12px; border-radius: 6px; border: 1px solid var(--cp-border); grid-column: 1 / -1; }
-  .gradient-tools .angle { display: inline-flex; align-items: center; gap: 6px; }
+.gradient-tools .gradient-preview { height: 12px; border-radius: 6px; border: 1px solid var(--cp-border); grid-column: 1 / -1; }
+  .gradient-tools .type-tabs { display: inline-flex; gap: 6px; }
+  .gradient-tools .type-tabs button { padding: 2px 6px; border: 1px solid var(--cp-border); border-radius: 4px; background: #fff; cursor: pointer; }
+  .gradient-tools .type-tabs button.active { color: #1677ff; border-color: #1677ff; box-shadow: inset 0 0 0 1px #1677ff; }
+  .gradient-tools .center { display: inline-flex; align-items: center; gap: 6px; }
+.gradient-tools .angle { display: inline-flex; align-items: center; gap: 6px; }
   .gradient-tools .angle input[type='range'] { width: 160px; }
+  .gradient-tools .angle .angle-knob { width: 64px; height: 64px; border-radius: 50%; border: 1px solid var(--cp-border); position: relative; background: conic-gradient(#e6e6e6 0deg, #e6e6e6 360deg); }
+  .gradient-tools .angle .angle-indicator { position: absolute; left: 50%; top: 50%; width: 2px; height: 28px; background: #1677ff; transform-origin: bottom center; border-radius: 2px; }
+
+  .gradient-tools .center { display: inline-flex; align-items: center; gap: 6px; }
+  .gradient-tools .center .center-plane { width: 100px; height: 100px; border: 1px solid var(--cp-border); border-radius: 6px; position: relative; background: #f7f7f7; }
+  .gradient-tools .center .center-plane .center-handle { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: #1677ff; transform: translate(-50%, -50%); box-shadow: 0 0 0 2px #fff; }
 .gradient-tools .stops { display: inline-flex; gap: 8px; }
   .gradient-tools .stops .stop { width: 20px; height: 20px; border-radius: 4px; border: 2px solid transparent; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
   .gradient-tools .stops .stop.active { border-color: #1677ff; }
@@ -39,11 +49,24 @@
   .stops-bar .stop-handle { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; transform: translate(-7px,-50%); border: 2px solid #fff; box-shadow: 0 0 0 2px rgba(0,0,0,.25); cursor: pointer; }
   .stops-bar .stop-handle.active { box-shadow: 0 0 0 2px rgba(22,119,255,.6); }
   .stops-bar .stops-actions { position: absolute; right: -2px; top: -30px; display: inline-flex; gap: 6px; }
-  .stops-bar .stops-actions button { width: 20px; height: 20px; border-radius: 4px; border: 1px solid var(--cp-border); background: #fff; cursor: pointer; }
+.stops-bar .stops-actions button { width: 20px; height: 20px; border-radius: 4px; border: 1px solid var(--cp-border); background: #fff; cursor: pointer; }
+
+  .stop-quick { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; }
+  .stop-quick select { height: 24px; border: 1px solid var(--cp-border); border-radius: 4px; }
+  .stop-quick input { height: 24px; padding: 0 6px; border: 1px solid var(--cp-border); border-radius: 4px; }
+  .stop-quick .q input { width: 52px; }
+  .stop-quick .copy { height: 24px; padding: 0 8px; border: 1px solid var(--cp-border); background: #fff; border-radius: 4px; cursor: pointer; }
 
   .angle-presets { display: inline-flex; gap: 6px; }
   .angle-presets button { padding: 2px 6px; border: 1px solid var(--cp-border); border-radius: 4px; background: #fff; cursor: pointer; }
-  .angle-presets button.active { color: #1677ff; border-color: #1677ff; box-shadow: inset 0 0 0 1px #1677ff; }
+.angle-presets button.active { color: #1677ff; border-color: #1677ff; box-shadow: inset 0 0 0 1px #1677ff; }
+  .stop-pos { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; }
+  .stop-pos input { width: 64px; height: 24px; padding: 0 6px; border: 1px solid var(--cp-border); border-radius: 4px; }
+
+  .quick-editor { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+  .quick-editor select { height: 28px; border: 1px solid var(--cp-border); border-radius: 4px; }
+  .quick-editor .q-hex { width: 160px; height: 28px; padding: 0 6px; border: 1px solid var(--cp-border); border-radius: 4px; }
+  .quick-editor .q-rgba input { width: 64px; height: 28px; padding: 0 6px; border: 1px solid var(--cp-border); border-radius: 4px; }
 
   .cp-body { width: 100%; }
 

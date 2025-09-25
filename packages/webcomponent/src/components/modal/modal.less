@@ -55,12 +55,14 @@
     flex-direction: column;
     max-height: calc(100vh - 40px);
     // 对定位属性添加过渡，确保 maximize/restore 时顺畅
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      top 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      border-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      left var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      top var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      right var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      bottom var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      width var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      height var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      border-radius var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1));
 
     .ldesign-modal--visible & {
       opacity: 1;
@@ -98,6 +100,38 @@
       left: 0;
       margin: 0;
       border-radius: 0;
+    }
+
+    // Drawer 变体
+    &--drawer-left {
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      height: 100% !important;
+      width: 420px;
+      max-height: none !important;
+      max-width: none !important;
+      margin: 0 !important;
+      border-radius: 0 8px 8px 0;
+    }
+    &--drawer-right {
+      position: absolute;
+      top: 0; bottom: 0; right: 0;
+      height: 100% !important;
+      width: 420px;
+      max-height: none !important;
+      max-width: none !important;
+      margin: 0 !important;
+      border-radius: 8px 0 0 8px;
+    }
+
+    // Bottom Sheet 变体
+    &--bottom-sheet {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+      border-radius: 12px 12px 0 0;
     }
   }
 
@@ -295,6 +329,37 @@
     }
   }
 
+  // Drawer/Bottom-Sheet 变体：去掉 wrap 内边距并隐藏多余滚动
+  &--drawer,
+  &--bottom-sheet {
+    .ldesign-modal__wrap {
+      padding: 0 !important;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  // Bottom Sheet 顶部拖拽手柄
+  .ldesign-modal__sheet-drag {
+    position: absolute;
+    left: 50%;
+    top: 6px;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 20px;
+    z-index: 2;
+    cursor: grab;
+    .ldesign-modal__sheet-drag-bar {
+      display: block;
+      width: 36px;
+      height: 4px;
+      border-radius: 2px;
+      margin: 8px auto 0;
+      background: #d1d5db;
+    }
+  }
+
   // 无标题栏时的样式 - 使用类名代替 :has()
   &__content--no-header {
     .ldesign-modal__body {
@@ -399,78 +464,87 @@
   // 动画效果
   &--fade {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-fade-in 0.3s ease;
+      animation: ldesign-modal-fade-in var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
     }
   }
 
   &--fade-out {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-fade-out 0.3s ease;
+      animation: ldesign-modal-fade-out var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
     }
   }
 
   &--zoom {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-zoom-in 0.3s ease;
+      animation: ldesign-modal-zoom-in var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
     }
   }
 
   &--zoom-out {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-zoom-out 0.3s ease;
+      animation: ldesign-modal-zoom-out var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
     }
   }
 
   &--slide-down {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-slide-down 0.3s ease;
+      animation: ldesign-modal-slide-down var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
     }
   }
 
   &--slide-down-out {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-slide-down-out 0.3s ease;
+      animation: ldesign-modal-slide-down-out var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
     }
   }
 
   &--slide-up {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-slide-up 0.3s ease;
+      animation: ldesign-modal-slide-up var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
     }
   }
 
   &--slide-up-out {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-slide-up-out 0.3s ease;
+      animation: ldesign-modal-slide-up-out var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
     }
   }
 
   &--slide-left {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-slide-left 0.3s ease;
+      animation: ldesign-modal-slide-left var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
     }
   }
 
   &--slide-left-out {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-slide-left-out 0.3s ease;
+      animation: ldesign-modal-slide-left-out var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
     }
   }
 
   &--slide-right {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-slide-right 0.3s ease;
+      animation: ldesign-modal-slide-right var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
     }
   }
 
   &--slide-right-out {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-slide-right-out 0.3s ease;
+      animation: ldesign-modal-slide-right-out var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
     }
   }
+}
 
-  // 快捷 API（alert/confirm/prompt）柔和样式
-  &[data-quick] {
+/* Wizard 简易步骤指示（数字圆点）*/
+.ldesign-modal__wizard-steps { display: inline-flex; gap: 6px; margin-left: 12px; }
+.ldesign-modal__wizard-step {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #e5e7eb; color: #374151; font-size: 12px; line-height: 18px;
+  text-align: center; user-select: none;
+}
+.ldesign-modal__wizard-step.is-active { background: var(--ldesign-brand-color, #7c3aed); color: #fff; }
+  /* 快捷 API（alert/confirm/prompt）柔和样式 */
+  .ldesign-modal[data-quick] {
     .ldesign-modal__header {
       border-bottom-color: transparent;
       padding-bottom: 12px;
@@ -525,9 +599,10 @@
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
-    .ldesign-modal__prompt-input:focus {
+.ldesign-modal__prompt-input:focus {
       border-color: var(--ldesign-brand-color, #7c3aed);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--ldesign-brand-color, #7c3aed) 20%, transparent);
+      /* 兼容 less 对 color-mix 的解析问题，退化为固定透明度 */
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
     }
 
     // 错误文本
@@ -536,10 +611,9 @@
       color: var(--ldesign-error-color, #ef4444);
       font-size: 12px;
     }
-  }
 }
 
-// 动画关键帧
+/* 动画关键帧 */
 @keyframes ldesign-modal-fade-in {
   from {
     opacity: 0;

@@ -160,7 +160,12 @@ export class LdesignTimePicker {
     [this.listAmPm, this.listHour, this.listMinute, this.listSecond].forEach((el) => setPad(el));
 
     const centerByQuery = (el?: HTMLElement, selector?: string) => {
-      if (!el) return; const target = selector ? (el.querySelector(selector) as HTMLElement | null) : null; if (target) this.scrollItemIntoCenter(el, target, false);
+      if (!el || !selector) return;
+      const candidates = Array.from(el.querySelectorAll(selector)) as HTMLElement[];
+      if (candidates.length === 0) return;
+      // 存在重复项（因为前后都做了缓冲克隆），优先选择中间的那一个，避免靠近边界
+      const target = candidates[Math.floor(candidates.length / 2)] as HTMLElement;
+      this.scrollItemIntoCenter(el, target, false);
     };
 
     centerByQuery(this.listHour, `li[data-value="${this.h}"]`);
@@ -185,10 +190,16 @@ export class LdesignTimePicker {
   }
 
   private scrollItemIntoCenter(container: HTMLElement, item: HTMLElement, smooth = true) {
-    const containerRect = container.getBoundingClientRect();
-    const itemRect = item.getBoundingClientRect();
-    const delta = (itemRect.top + itemRect.height / 2) - (containerRect.top + containerRect.height / 2);
-    container.scrollBy({ top: delta, behavior: smooth ? 'smooth' as ScrollBehavior : 'auto' as ScrollBehavior });
+    try {
+      const targetTop = item.offsetTop + item.offsetHeight / 2 - container.clientHeight / 2;
+      container.scrollTo({ top: Math.max(0, targetTop), behavior: smooth ? 'smooth' as ScrollBehavior : 'auto' as ScrollBehavior });
+    } catch {
+      // 兼容性降级
+      const containerRect = container.getBoundingClientRect();
+      const itemRect = item.getBoundingClientRect();
+      const delta = (itemRect.top + itemRect.height / 2) - (containerRect.top + containerRect.height / 2);
+      container.scrollBy({ top: delta, behavior: smooth ? 'smooth' as ScrollBehavior : 'auto' as ScrollBehavior });
+    }
   }
 
   private onColumnScroll(kind: 'hour' | 'minute' | 'second' | 'ampm', container: HTMLElement) {
@@ -375,6 +386,15 @@ export class LdesignTimePicker {
       isDisabled = (v) => this.isSecondDisabled(v);
     }
 
+    // 为了让 0、1、58、59（或小时的首尾）也能顺滑地位于中心，
+    // 在列表首尾各克隆若干项，形成“环形”滚动的视觉效果。
+    // 这里克隆 2 项即可满足需求；对 step>1 的场景同样适用。
+    // 使用与原始列表同等数量的前后缓冲，确保在任意面向滚动时都能将边界项滚动到中线
+    const bufferCount = list.length; // 小列表（24/60）开销可接受
+    const head = list.slice(-bufferCount);
+    const tail = list.slice(0, bufferCount);
+    const displayList = [...head, ...list, ...tail];
+
     const refSetter = (el: HTMLElement) => {
       if (type === 'hour') this.listHour = el; else if (type === 'minute') this.listMinute = el; else this.listSecond = el;
     };
@@ -383,11 +403,18 @@ export class LdesignTimePicker {
       const el = e.currentTarget as HTMLElement;
       this.onColumnScroll(type, el);
     };
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const el = e.currentTarget as HTMLElement;
+      const dir = e.deltaY > 0 ? 1 : -1;
+      el.scrollBy({ top: this.itemHeight * dir, behavior: 'smooth' });
+      this.onColumnScroll(type, el);
+    };
 
     return (
       <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight}px` }}>
-        <ul class="ldesign-time-picker__column" tabindex={0} onScroll={onScroll as any} ref={refSetter} style={{ height: '100%', overflowY: 'auto' }}>
-          {list.map(v => {
+        <ul class="ldesign-time-picker__column" tabindex={0} onScroll={onScroll as any} onWheel={onWheel as any} ref={refSetter} style={{ height: '100%', overflowY: 'auto' }}>
+          {displayList.map(v => {
             const active = type === 'hour' ? (this.use12Hours ? (((this.h % 12) || 12) === v) : (v === this.h)) : (type === 'minute' ? v === this.m : v === this.s);
             const disabled = isDisabled(v);
             // 数据值使用 24h 的真实值，便于滚动选择
@@ -411,9 +438,10 @@ export class LdesignTimePicker {
   private renderAmPmColumn() {
     const options: ('AM' | 'PM')[] = ['AM', 'PM'];
     const onScroll = (e: UIEvent) => { const el = e.currentTarget as HTMLElement; this.onColumnScroll('ampm', el); };
+    const onWheel = (e: WheelEvent) => { e.preventDefault(); const el = e.currentTarget as HTMLElement; const dir = e.deltaY > 0 ? 1 : -1; el.scrollBy({ top: this.itemHeight * dir, behavior: 'smooth' }); this.onColumnScroll('ampm', el); };
     return (
       <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight}px` }}>
-        <ul class="ldesign-time-picker__column" tabindex={0} onScroll={onScroll as any} ref={(el) => (this.listAmPm = el)} style={{ height: '100%', overflowY: 'auto' }}>
+        <ul class="ldesign-time-picker__column" tabindex={0} onScroll={onScroll as any} onWheel={onWheel as any} ref={(el) => (this.listAmPm = el)} style={{ height: '100%', overflowY: 'auto' }}>
           {options.map(op => (
             <li class={{ 'ldesign-time-picker__item': true, 'ldesign-time-picker__item--active': op === this.ampm }} data-value={op === 'PM' ? '13' : '0'} onClick={(e) => { this.setAmPm(op); const li = (e.currentTarget as HTMLElement); const ul = li.parentElement as HTMLElement; this.scrollItemIntoCenter(ul, li); }}>
               {op}

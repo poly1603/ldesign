@@ -15,21 +15,30 @@ ImageViewer 图片预览器
 
 ## Properties
 
-| Property              | Attribute         | Description        | Type                                      | Default     |
-| --------------------- | ----------------- | ------------------ | ----------------------------------------- | ----------- |
-| `backdrop`            | `backdrop`        | 主题：暗色/亮色遮罩         | `"dark" \| "light"`                       | `'dark'`    |
-| `images` _(required)_ | `images`          | 图片列表（数组或 JSON 字符串） | `(string \| ImageViewerItem)[] \| string` | `undefined` |
-| `keyboard`            | `keyboard`        | 是否启用键盘快捷键          | `boolean`                                 | `true`      |
-| `loop`                | `loop`            | 是否循环播放             | `boolean`                                 | `true`      |
-| `maskClosable`        | `mask-closable`   | 点击遮罩是否可关闭          | `boolean`                                 | `true`      |
-| `maxScale`            | `max-scale`       |                    | `number`                                  | `4`         |
-| `minScale`            | `min-scale`       | 最小/最大缩放            | `number`                                  | `0.25`      |
-| `showThumbnails`      | `show-thumbnails` | 是否展示顶部缩略图          | `boolean`                                 | `true`      |
-| `startIndex`          | `start-index`     | 初始索引               | `number`                                  | `0`         |
-| `visible`             | `visible`         | 是否显示               | `boolean`                                 | `false`     |
-| `wheelZoom`           | `wheel-zoom`      | 是否启用滚轮缩放           | `boolean`                                 | `true`      |
-| `zIndex`              | `z-index`         | z-index            | `number`                                  | `1000`      |
-| `zoomStep`            | `zoom-step`       | 缩放步进               | `number`                                  | `0.1`       |
+| Property              | Attribute             | Description                        | Type                                      | Default                               |
+| --------------------- | --------------------- | ---------------------------------- | ----------------------------------------- | ------------------------------------- |
+| `backdrop`            | `backdrop`            | 主题：暗色/亮色遮罩                         | `"dark" \| "light"`                       | `'dark'`                              |
+| `images` _(required)_ | `images`              | 图片列表（数组或 JSON 字符串）                 | `(string \| ImageViewerItem)[] \| string` | `undefined`                           |
+| `keyboard`            | `keyboard`            | 是否启用键盘快捷键                          | `boolean`                                 | `true`                                |
+| `loop`                | `loop`                | 是否循环播放                             | `boolean`                                 | `true`                                |
+| `maskClosable`        | `mask-closable`       | 点击遮罩是否可关闭                          | `boolean`                                 | `true`                                |
+| `maxScale`            | `max-scale`           |                                    | `number`                                  | `4`                                   |
+| `minScale`            | `min-scale`           | 最小/最大缩放                            | `number`                                  | `0.25`                                |
+| `panelDraggable`      | `panel-draggable`     | 小窗拖拽方式：title 标题栏拖拽；anywhere 全面板可拖拽 | `"anywhere" \| "title"`                   | `'title'`                             |
+| `panelHeight`         | `panel-height`        |                                    | `number \| string`                        | `undefined`                           |
+| `panelWidth`          | `panel-width`         | 小窗宽高（viewerMode=modal 时生效）         | `number \| string`                        | `undefined`                           |
+| `showCaption`         | `show-caption`        | 是否显示标题与描述                          | `boolean`                                 | `true`                                |
+| `showThumbnails`      | `show-thumbnails`     | 是否展示顶部缩略图                          | `boolean`                                 | `true`                                |
+| `startIndex`          | `start-index`         | 初始索引                               | `number`                                  | `0`                                   |
+| `transition`          | `transition`          | 过渡类型                               | `"fade" \| "fade-zoom"`                   | `'fade-zoom'`                         |
+| `transitionDuration`  | `transition-duration` | 过渡时长（ms）                           | `number`                                  | `240`                                 |
+| `transitionEasing`    | `transition-easing`   | 过渡缓动函数                             | `string`                                  | `'cubic-bezier(0.22, 0.61, 0.36, 1)'` |
+| `viewerMode`          | `viewer-mode`         | 查看窗口模式：overlay 全屏；modal 小窗         | `"embedded" \| "modal" \| "overlay"`      | `'overlay'`                           |
+| `viewerTitle`         | `viewer-title`        | 小窗标题                               | `string`                                  | `undefined`                           |
+| `visible`             | `visible`             | 是否显示                               | `boolean`                                 | `false`                               |
+| `wheelZoom`           | `wheel-zoom`          | 是否启用滚轮缩放                           | `boolean`                                 | `true`                                |
+| `zIndex`              | `z-index`             | z-index                            | `number`                                  | `1000`                                |
+| `zoomStep`            | `zoom-step`           | 缩放步进                               | `number`                                  | `0.1`                                 |
 
 
 ## Events

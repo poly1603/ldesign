@@ -94,14 +94,14 @@ export default defineConfig({
           items: [
 { text: 'Input 输入框', link: '/components/input' },
 { text: 'Select 选择器', link: '/components/select' },
-            { text: 'TimePicker 时间选择器', link: '/components/time-picker' },
-            { text: 'Checkbox 复选框', link: '/components/checkbox' },
+{ text: 'Checkbox 复选框', link: '/components/checkbox' },
             { text: 'Radio 单选框', link: '/components/radio' },
 { text: 'Switch 开关', link: '/components/switch' },
 { text: 'Slider 滑块', link: '/components/slider' },
 { text: 'ColorPicker 颜色选择器', link: '/components/color-picker' },
             { text: 'ColorPickerPanel 颜色选择面板', link: '/components/color-picker-panel' },
             { text: 'Rate 评分', link: '/components/rate' },
+            { text: 'TimePicker 时间选择器', link: '/components/time-picker' },
           ]
         },
         {

@@ -31,15 +31,15 @@
 }
 
 /* 面板容器（小窗模式使用） */
-.ldesign-image-viewer__panel {
+ .ldesign-image-viewer__panel {
   position: relative;
   width: 100%; height: 100%;
   background: transparent;
   display: flex; flex-direction: column;
   border-radius: 12px;
   overflow: hidden;
-  /* 以中心为基准，通过 CSS 变量 --panel-x/--panel-y 偏移位置 */
-  transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(0.98);
+  /* overlay（全屏）下不做位移，仅用于开合 scale 动画 */
+  transform: scale(0.98);
   transition: transform var(--iv-duration, .24s) var(--iv-ease, ease), opacity var(--iv-duration, .24s) var(--iv-ease, ease);
   opacity: 0;
 }
@@ -229,14 +229,28 @@
  .ldesign-image-viewer--modal { background: transparent !important; }
 .ldesign-image-viewer--modal.ldesign-image-viewer--light { background: transparent !important; }
 .ldesign-image-viewer--modal.ldesign-image-viewer--dark { background: transparent !important; }
-.ldesign-image-viewer--modal .ldesign-image-viewer__panel {
-  position: absolute; left: 50%; top: 50%;
+/* 嵌入模式（放在其他容器内，比如 ldesign-modal 的内容区） */
+.ldesign-image-viewer--embedded { background: transparent !important; }
+.ldesign-image-viewer--embedded .ldesign-image-viewer__panel { position: relative; left: 0; top: 0; transform: none; background: transparent; box-shadow: none; border-radius: 0; }
+ .ldesign-image-viewer--modal .ldesign-image-viewer__panel {
+  /* 使用 fixed 直接相对视口定位，避免受外层布局影响 */
+  position: fixed; left: 50%; top: 50%;
+  /* 以屏幕中心为基准，根据 CSS 变量偏移 */
+  transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(0.98);
   background: #fff;
   box-shadow: 0 24px 64px rgba(0,0,0,0.24);
 }
+/* 修正：为 modal 形态单独定义开合动画，保留 translate 居中而不是被通用规则覆盖 */
+.ldesign-image-viewer--modal[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer--modal[data-motion="open"] .ldesign-image-viewer__panel {
+  transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(1);
+}
+.ldesign-image-viewer--modal[data-motion="closing"] .ldesign-image-viewer__panel {
+  transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(0.98);
+}
 
 /* 标题栏（可拖拽） */
-.ldesign-image-viewer__titlebar {
+ .ldesign-image-viewer__titlebar {
   position: relative;
   height: 44px;
   display: flex; align-items: center;
@@ -244,6 +258,7 @@
   cursor: move;
   user-select: none;
   background: rgba(255,255,255,0.85);
+  z-index: 4;
 }
 .ldesign-image-viewer--dark .ldesign-image-viewer__titlebar { background: rgba(0,0,0,0.35); color: #fff; }
 .ldesign-image-viewer__title { font-size: 14px; font-weight: 600; }

@@ -94,19 +94,25 @@ ldesign-popup（重写版）
 
 ### Used by
 
+ - [ldesign-color-input](../color-input)
+ - [ldesign-color-picker](../color-picker)
  - [ldesign-dropdown](../dropdown)
  - [ldesign-pagination](../pagination)
  - [ldesign-popconfirm](../popconfirm)
  - [ldesign-select](../select)
+ - [ldesign-time-picker](../time-picker)
  - [ldesign-tooltip](../tooltip)
 
 ### Graph
 ```mermaid
 graph TD;
+  ldesign-color-input --> ldesign-popup
+  ldesign-color-picker --> ldesign-popup
   ldesign-dropdown --> ldesign-popup
   ldesign-pagination --> ldesign-popup
   ldesign-popconfirm --> ldesign-popup
   ldesign-select --> ldesign-popup
+  ldesign-time-picker --> ldesign-popup
   ldesign-tooltip --> ldesign-popup
   style ldesign-popup fill:#f9f,stroke:#333,stroke-width:4px
 ```

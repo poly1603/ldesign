@@ -43,6 +43,7 @@ Icon 图标组件
  - [ldesign-rate](../rate)
  - [ldesign-select](../select)
  - [ldesign-switch](../switch)
+ - [ldesign-time-picker](../time-picker)
  - [ldesign-tree](../tree)
 
 ### Graph
@@ -66,6 +67,7 @@ graph TD;
   ldesign-rate --> ldesign-icon
   ldesign-select --> ldesign-icon
   ldesign-switch --> ldesign-icon
+  ldesign-time-picker --> ldesign-icon
   ldesign-tree --> ldesign-icon
   style ldesign-icon fill:#f9f,stroke:#333,stroke-width:4px
 ```

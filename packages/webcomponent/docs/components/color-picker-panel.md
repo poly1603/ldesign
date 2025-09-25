@@ -20,6 +20,37 @@
 </div>
 ```
 
+## 渐变模式
+
+- 编辑角度（滑条 + 数值 + 预设 0/45/90/180）
+- 支持多个色标（最多 8），可拖拽/数值修改位置
+- 输出示例：`linear-gradient(45deg, rgba(22,119,255,1) 0%, rgba(0,0,0,.35) 100%)`
+
+<div class="demo-container">
+  <div style="width: 420px;">
+    <ldesign-color-picker-panel modes="gradient" value="linear-gradient(45deg, #1677ff 0%, rgba(0,0,0,.35) 100%)" show-alpha></ldesign-color-picker-panel>
+  </div>
+</div>
+
+```html
+<ldesign-color-picker-panel
+  modes="gradient"
+  value="linear-gradient(45deg, #1677ff 0%, rgba(0,0,0,.35) 100%)"
+  show-alpha
+></ldesign-color-picker-panel>
+```
+
+## 径向渐变
+
+支持 `radial-gradient(shape at cx% cy%, …)`：
+
+```html
+<ldesign-color-picker-panel modes="gradient" show-alpha value="radial-gradient(circle at 30% 40%, #1677ff 0%, rgba(0,0,0,.25) 100%)"></ldesign-color-picker-panel>
+```
+
+- 形状：circle / ellipse
+- 中心：X/Y（0–100%）
+
 ## 与 Popup 组合
 
 <div class="demo-container">

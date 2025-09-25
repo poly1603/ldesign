@@ -44,11 +44,13 @@ onMounted(() => {
   // 快捷 API 示例
   const alertBtn = document.getElementById('quick-alert-btn')
   const confirmBtn = document.getElementById('quick-confirm-btn')
+  const confirmWarnBtn = document.getElementById('quick-confirm-warn-btn')
   const promptBtn = document.getElementById('quick-prompt-btn')
+  const promptValidateBtn = document.getElementById('quick-prompt-validate-btn')
 
   if (alertBtn) {
     addEventListenerSafe(alertBtn, 'click', async () => {
-      await alertModal({ title: '提示', content: '这是一个 Alert 消息。' })
+      await alertModal({ title: '提示', content: '这是一个 Alert 消息。', status: 'info' })
     })
   }
 
@@ -57,7 +59,7 @@ onMounted(() => {
       const ok = await confirmModal({
         title: '确认操作',
         content: '确定要执行该操作吗？',
-        okType: 'danger',
+        status: 'info',
         okText: '确定',
         cancelText: '取消'
       })
@@ -65,13 +67,44 @@ onMounted(() => {
     })
   }
 
+  if (confirmWarnBtn) {
+    addEventListenerSafe(confirmWarnBtn, 'click', async () => {
+      const ok = await confirmModal({
+        title: '危险操作',
+        content: '此操作不可恢复，是否继续？',
+        status: 'warning',
+        okText: '继续',
+        cancelText: '取消'
+      })
+      console.log('confirm warning result:', ok)
+    })
+  }
+
   if (promptBtn) {
     addEventListenerSafe(promptBtn, 'click', async () => {
       const val = await promptModal({
         title: '输入名称',
+        status: 'info',
         input: { placeholder: '请输入名称…', defaultValue: '' }
       })
       console.log('prompt result:', val)
+    })
+  }
+
+  if (promptValidateBtn) {
+    addEventListenerSafe(promptValidateBtn, 'click', async () => {
+      const val = await promptModal({
+        title: '输入仓库名称',
+        status: 'warning',
+        input: { placeholder: '例如: org/repo' },
+        validate: async (v) => {
+          await new Promise(r => setTimeout(r, 300))
+          if (!v) return '名称不能为空'
+          if (!/^[-\w]+\/[-\w]+$/.test(v)) return '格式需为 org/repo'
+          return true
+        }
+      })
+      console.log('prompt validate result:', val)
     })
   }
 
@@ -278,6 +311,16 @@ onMounted(() => {
       advancedModal.visible = false
     })
   }
+
+  // 变体：抽屉与底部弹层
+  const bindOpen = (btnId, modalId) => {
+    const b = document.getElementById(btnId)
+    const m = document.getElementById(modalId)
+    if (b && m) addEventListenerSafe(b, 'click', () => (m.visible = true))
+  }
+  bindOpen('drawer-left-btn', 'drawer-left')
+  bindOpen('drawer-right-btn', 'drawer-right')
+  bindOpen('bottom-sheet-btn', 'bottom-sheet')
 })
 
 onUnmounted(() => {
@@ -306,7 +349,7 @@ modal.addEventListener('ldesignClose', () => {
 </script>
 ```
 
-## 快捷 API：Alert / Confirm / Prompt
+## 快捷 API：Alert / Confirm / Prompt（支持状态与校验）
 
 使用内置的便捷函数，无需手动写 DOM，就能快速调用模态框。
 
@@ -314,26 +357,34 @@ modal.addEventListener('ldesignClose', () => {
   <div class="demo-row">
     <ldesign-button id="quick-alert-btn">Alert</ldesign-button>
     <ldesign-button id="quick-confirm-btn" type="outline">Confirm</ldesign-button>
+    <ldesign-button id="quick-confirm-warn-btn" type="danger">Confirm 警告</ldesign-button>
     <ldesign-button id="quick-prompt-btn" type="primary">Prompt</ldesign-button>
+    <ldesign-button id="quick-prompt-validate-btn" type="primary">Prompt 校验</ldesign-button>
   </div>
 </div>
 
 ```ts
 import { alertModal, confirmModal, promptModal } from 'ldesign-webcomponent'
 
-await alertModal({ title: '提示', content: '这是一个 Alert 消息。' })
+await alertModal({ title: '提示', content: '这是一个 Alert 消息。', status: 'info' })
 
 const ok = await confirmModal({
-  title: '确认操作',
-  content: '确定要执行该操作吗？',
-  okType: 'danger',
-  okText: '确定',
+  title: '危险操作',
+  content: '此操作不可恢复，是否继续？',
+  status: 'warning',
+  okText: '继续',
   cancelText: '取消'
 })
 
 const value = await promptModal({
-  title: '输入名称',
-  input: { placeholder: '请输入名称…', defaultValue: '' }
+  title: '输入仓库名称',
+  status: 'warning',
+  input: { placeholder: '例如: org/repo' },
+  validate: (v) => {
+    if (!v) return '名称不能为空'
+    if (!/^[-\w]+\/[-\w]+$/.test(v)) return '格式需为 org/repo'
+    return true
+  }
 })
 ```
 
@@ -368,29 +419,47 @@ modal.beforeClose = (reason) => {
 </script>
 ```
 
-### 键盘与焦点
+### 键盘与焦点 / 向导（Wizard）
 
 - Enter 触发确定，Esc 关闭（受 `keyboard` 控制）。
 - `trapFocus` 将 Tab 焦点圈定在弹窗内；`initialFocus` 指定打开后聚焦的元素选择器。
 
 ```html
+<!-- 焦点示例 -->
 <ldesign-modal modal-title="焦点示例" trap-focus initial-focus="input">
   <input placeholder="打开后自动聚焦" />
 </ldesign-modal>
+
+<!-- 向导示例：通过命名插槽 step-0/step-1/... 提供分步内容 -->
+<ldesign-modal id="wizard" modal-title="创建向导" wizard>
+  <div slot="step-0">第一步内容</div>
+  <div slot="step-1">第二步内容</div>
+  <div slot="step-2">第三步内容</div>
+</ldesign-modal>
+
+<script>
+const w = document.getElementById('wizard')
+// 提供步骤标题（JS 赋值）
+w.steps = ['基本信息', '详细设置', '完成']
+// 打开
+w.visible = true
+</script>
 ```
 
-### 尺寸边界与双击标题最大化
+### 尺寸与动画参数、双击标题最大化
 
 - 通过 `min-width`、`min-height`、`max-width`、`max-height` 约束可调大小范围。
+- 通过 CSS 变量自定义动画：`--ld-modal-duration`（默认 0.3s）、`--ld-modal-ease`（默认 cubic-bezier(0.4,0,0.2,1)）、`--ld-modal-anim-ease`（默认 ease）。
 - 启用 `maximizable` 后，双击标题栏可在“最大化/恢复”之间切换。
 
 ```html
-<ldesign-modal modal-title="边界示例" resizable min-width="360" min-height="200" max-width="1000" max-height="700" maximizable>
+<ldesign-modal modal-title="边界示例" resizable min-width="360" min-height="200" max-width="1000" max-height="700" maximizable
+  style="--ld-modal-duration: 220ms; --ld-modal-ease: cubic-bezier(.2,.8,.2,1);">
   <p>拖拽边缘/角落调整大小，双击标题最大化/恢复。</p>
 </ldesign-modal>
 ```
 
-### 自定义挂载容器与多弹层栈
+### 自定义挂载容器与多弹层栈（可传元素或选择器）
 
 - `get-container` 指定 CSS 选择器，把弹窗节点挂到对应容器下（默认 body）。
 - 多弹层时仅栈顶响应 ESC，后开的在上。
@@ -408,6 +477,32 @@ modal.beforeClose = (reason) => {
   btn.addEventListener('click', () => m.visible = true)
 </script>
 ```
+
+## 变体：抽屉与底部弹层（支持拖拽与吸附）
+
+- 通过 `variant` 切换不同展示形态：`'modal' | 'drawer-left' | 'drawer-right' | 'bottom-sheet'`
+- 建议配合 `animation` 使用：
+  - drawer-left -> `slide-right`，drawer-right -> `slide-left`
+  - bottom-sheet -> `slide-up`
+
+<div class="demo-container">
+  <div class="demo-row">
+    <ldesign-button id="drawer-left-btn">左侧抽屉</ldesign-button>
+    <ldesign-button id="drawer-right-btn">右侧抽屉</ldesign-button>
+    <ldesign-button id="bottom-sheet-btn">底部弹层</ldesign-button>
+  </div>
+  <ldesign-modal id="drawer-left" modal-title="左侧抽屉" variant="drawer-left" animation="slide-right">
+    <p style="padding: 12px 16px">抽屉内容。</p>
+  </ldesign-modal>
+  <ldesign-modal id="drawer-right" modal-title="右侧抽屉" variant="drawer-right" animation="slide-left">
+    <p style="padding: 12px 16px">抽屉内容。</p>
+  </ldesign-modal>
+  <ldesign-modal id="bottom-sheet" modal-title="底部弹层" variant="bottom-sheet" animation="slide-up"
+                 sheet-draggable sheet-snap-points="50%,80%,100%" sheet-initial="80%">
+    <p style="padding: 12px 16px">底部弹层内容（可拖拽，松手后吸附到 50%/80%/100%）。</p>
+  </ldesign-modal>
+</div>
+
 
 ## 不同尺寸
 

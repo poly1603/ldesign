@@ -26,6 +26,21 @@
 
 > 选择后会自动关闭弹层（`hide-on-select=true`），可通过属性关闭该行为。
 
+## 模式（单色/渐变）
+
+通过 `modes` 限制或开放面板模式：
+
+```html
+<!-- 只允许单色 -->
+<ldesign-color-picker value="#1677ff" modes="solid"></ldesign-color-picker>
+
+<!-- 只允许渐变 -->
+<ldesign-color-picker value="linear-gradient(45deg, #1677ff 0%, rgba(0,0,0,.3) 100%)" modes="gradient"></ldesign-color-picker>
+
+<!-- 单色 + 渐变（默认） -->
+<ldesign-color-picker value="#1677ff" modes="both"></ldesign-color-picker>
+```
+
 ## 透明度
 
 设置 `show-alpha` 显示并可控制透明度。
@@ -88,6 +103,7 @@
 | `hide-on-select` | `boolean` | `true` | 选择颜色后自动关闭弹层 |
 | `placement` | `PopupPlacement` | `'bottom-start'` | 弹出位置 |
 | `popup-width` | `number \| string` | - | 弹层宽度，面板将铺满该宽度 |
+| `modes` | `'solid' \| 'gradient' \| 'both'` | `'both'` | 面板可用模式 |
 
 ### 事件
 

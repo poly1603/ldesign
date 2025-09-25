@@ -1,34 +1,63 @@
-# ColorPicker 颜色选择器
+# ldesign-color-picker
 
-一个轻量的颜色选择器 Web Component，包含色相/明度/饱和度选择、透明度、预设与最近颜色、以及多种输入格式。
 
-- 标签名：`<ldesign-color-picker>`
-- 事件：
-  - `ldesignInput` 实时颜色变化（拖动/输入）
-  - `ldesignChange` 确认颜色（拖动结束或输入变更）
 
-## 基本用法
+<!-- Auto Generated Below -->
 
-```html
-<ldesign-color-picker value="#1677ff"></ldesign-color-picker>
+
+## Overview
+
+ColorPicker 颜色选择器
+- 支持 SV 色板 + Hue 滑条 + 可选 Alpha
+- 支持 HEX/RGB/HSL/HSV 输入与预设/历史颜色
+
+## Properties
+
+| Property        | Attribute        | Description                                   | Type                                                                                                                                                                 | Default          |
+| --------------- | ---------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| `cancelText`    | `cancel-text`    |                                               | `string`                                                                                                                                                             | `'取消'`           |
+| `confirmText`   | `confirm-text`   | 自定义按钮文案                                       | `string`                                                                                                                                                             | `'确定'`           |
+| `customTrigger` | `custom-trigger` | 使用具名插槽自定义触发器（slot="trigger"）；为 true 时不渲染默认触发器 | `boolean`                                                                                                                                                            | `false`          |
+| `disabled`      | `disabled`       |                                               | `boolean`                                                                                                                                                            | `false`          |
+| `format`        | `format`         |                                               | `"hex" \| "hsl" \| "hsv" \| "rgb"`                                                                                                                                   | `'hex'`          |
+| `gradientTypes` | `gradient-types` | 渐变类型：'linear' \| 'radial' \| 'both'（传递给面板）    | `"both" \| "linear" \| "radial"`                                                                                                                                     | `'both'`         |
+| `hideOnSelect`  | `hide-on-select` | 选择后是否自动关闭弹层                                   | `boolean`                                                                                                                                                            | `true`           |
+| `modes`         | `modes`          | 面板模式：'solid' \| 'gradient' \| 'both'          | `"both" \| "gradient" \| "solid"`                                                                                                                                    | `'both'`         |
+| `placement`     | `placement`      | 弹出位置                                          | `"bottom" \| "bottom-end" \| "bottom-start" \| "left" \| "left-end" \| "left-start" \| "right" \| "right-end" \| "right-start" \| "top" \| "top-end" \| "top-start"` | `'bottom-start'` |
+| `popupWidth`    | `popup-width`    | 设置弹层宽度（数字或 CSS 长度），panel 将铺满此宽度               | `number \| string`                                                                                                                                                   | `undefined`      |
+| `presets`       | `presets`        |                                               | `string[]`                                                                                                                                                           | `[]`             |
+| `recentMax`     | `recent-max`     |                                               | `number`                                                                                                                                                             | `12`             |
+| `showActions`   | `show-actions`   | 是否显示“确定/取消”操作区（默认 false）                      | `boolean`                                                                                                                                                            | `false`          |
+| `showAlpha`     | `show-alpha`     |                                               | `boolean`                                                                                                                                                            | `true`           |
+| `showHistory`   | `show-history`   |                                               | `boolean`                                                                                                                                                            | `true`           |
+| `showPreset`    | `show-preset`    |                                               | `boolean`                                                                                                                                                            | `true`           |
+| `size`          | `size`           |                                               | `"large" \| "medium" \| "small"`                                                                                                                                     | `'medium'`       |
+| `value`         | `value`          |                                               | `string`                                                                                                                                                             | `'#1677ff'`      |
+
+
+## Events
+
+| Event           | Description | Type                  |
+| --------------- | ----------- | --------------------- |
+| `ldesignChange` |             | `CustomEvent<string>` |
+| `ldesignInput`  |             | `CustomEvent<string>` |
+
+
+## Dependencies
+
+### Depends on
+
+- [ldesign-popup](../popup)
+- [ldesign-color-picker-panel](../color-picker-panel)
+
+### Graph
+```mermaid
+graph TD;
+  ldesign-color-picker --> ldesign-popup
+  ldesign-color-picker --> ldesign-color-picker-panel
+  style ldesign-color-picker fill:#f9f,stroke:#333,stroke-width:4px
 ```
 
-## 属性
+----------------------------------------------
 
-- `value` 当前值（默认 hex），支持 `#RRGGBB/#RRGGBBAA`、`rgb()/rgba()`、`hsl()/hsla()`、`hsv()`
-- `format` 默认显示格式：`hex | rgb | hsl | hsv`
-- `show-alpha` 是否显示透明度（默认 true）
-- `show-preset` 是否显示系统预设颜色（默认 true）
-- `show-history` 是否显示最近使用颜色（默认 true）
-- `presets` 预设颜色数组
-- `recent-max` 最近颜色个数（默认 12）
-- `size` `small | medium | large`
-- `disabled` 禁用
-
-## 监听事件
-
-```js
-const el = document.querySelector('ldesign-color-picker')
-el.addEventListener('ldesignInput', (e) => console.log('input:', e.detail))
-el.addEventListener('ldesignChange', (e) => console.log('change:', e.detail))
-```
+*Built with [StencilJS](https://stenciljs.com/)*

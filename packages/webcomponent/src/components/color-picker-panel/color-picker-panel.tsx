@@ -44,6 +44,8 @@ export class LdesignColorPickerPanel {
   @Prop() disabled: boolean = false;
   /** 面板模式：单色 | 渐变 | 两者 */
   @Prop() modes: 'solid' | 'gradient' | 'both' = 'both';
+  /** 渐变类型：线性/径向/两者（仅在 activeMode=gradient 时生效） */
+  @Prop() gradientTypes: 'linear' | 'radial' | 'both' = 'both';
 
   // Events
   @Event() ldesignInput!: EventEmitter<string>;
@@ -56,7 +58,11 @@ export class LdesignColorPickerPanel {
   @State() private hsv: { h: number; s: number; v: number } = { h: 204, s: 72, v: 86 };
   @State() private alpha: number = 1;
   // gradient
-  @State() private gradientAngle: number = 45;
+  @State() private gradientType: 'linear' | 'radial' = 'linear';
+  @State() private gradientAngle: number = 45; // linear
+  @State() private radialShape: 'circle' | 'ellipse' = 'circle'; // radial
+  @State() private radialCenterX: number = 50; // 0~100
+  @State() private radialCenterY: number = 50; // 0~100
   @State() private gradientStops: { h: number; s: number; v: number; a: number; pos: number }[] = [
     { h: 204, s: 72, v: 86, a: 1, pos: 0 },
     { h: 204, s: 72, v: 86, a: 1, pos: 100 },
@@ -65,7 +71,11 @@ export class LdesignColorPickerPanel {
   private stopDragIndex: number | null = null;
   private stopTrackEl?: HTMLElement;
 
-  @State() private dragging: 'sv' | 'hue' | 'alpha' | null = null;
+  // Quick editor state
+  @State() private quickFormat: 'hex' | 'rgba' = 'hex';
+  @State() private stopQuickFormat: 'hex' | 'rgba' = 'hex';
+
+  @State() private dragging: 'sv' | 'hue' | 'alpha' | 'angle' | 'center' | null = null;
   @State() private history: string[] = [];
 
   componentWillLoad() { this.applyIncomingValue(this.value); }
@@ -87,10 +97,44 @@ export class LdesignColorPickerPanel {
   @Watch('value')
   onValueChange(next: string) { this.applyIncomingValue(next, true); }
 
+  private splitStopsList(s: string): string[] {
+    const out: string[] = []; let depth=0, cur='';
+    for (let i=0;i<s.length;i++) { const ch=s[i]; if (ch==='(') depth++; if (ch===')') depth=Math.max(0,depth-1); if (ch===',' && depth===0){ out.push(cur.trim()); cur=''; } else cur+=ch; }
+    if (cur.trim()) out.push(cur.trim());
+    return out;
+  }
+
   private applyIncomingValue(input: string, silent = false) {
     const val = (input || '').trim();
-    // 简单解析 linear-gradient(angle, color1, color2)
-    const lg = val.match(/^linear-gradient\(\s*([0-9.]+)deg\s*,\s*(.+?)\s*,\s*(.+?)\s*\)$/i);
+    // 解析 radial-gradient(shape at x% y%, stops...)
+    const rg = val.match(/^radial-gradient\(\s*(circle|ellipse)?(?:\s+at\s+([0-9.]+)%\s+([0-9.]+)%)?\s*,\s*(.+)\)$/i);
+    if (rg && (this.modes === 'gradient' || this.modes === 'both')) {
+      const shape = (rg[1] as any) || 'circle';
+      const cx = rg[2] != null ? parseFloat(rg[2]) : 50;
+      const cy = rg[3] != null ? parseFloat(rg[3]) : 50;
+      const rest = rg[4];
+      const parts = this.splitStopsList(rest).slice(0, 8);
+      const parsedStops: { h:number;s:number;v:number;a:number;pos:number }[] = [];
+      for (const token of parts) {
+        const m = token.match(/^(.*?)(?:\s+([0-9.]+)%\s*)?$/);
+        const col = m?.[1]?.trim() || token.trim();
+        const pos = m?.[2] != null ? Math.max(0, Math.min(100, parseFloat(m![2]))) : undefined;
+        const c = this.parseColor(col);
+        if (c) parsedStops.push({ h:c.hsv.h, s:c.hsv.s, v:c.hsv.v, a:c.rgb.a ?? 1, pos: pos ?? (parsedStops.length===0 ? 0 : 100) });
+      }
+      if (parsedStops.length >= 2) {
+        this.activeMode='gradient';
+        this.gradientType='radial';
+        this.radialShape = (shape === 'ellipse' ? 'ellipse' : 'circle');
+        this.radialCenterX = isFinite(cx) ? cx : 50; this.radialCenterY = isFinite(cy) ? cy : 50;
+        this.gradientStops = parsedStops;
+        if (!silent) this.value = this.getFormattedOutput();
+        return;
+      }
+    }
+
+    // 简单解析 linear-gradient(angle, color1, color2) / 支持两个及以上 stops
+    const lg = val.match(/^linear-gradient\(\s*([0-9.]+)deg\s*,\s*(.+)\)$/i);
     if (lg && (this.modes === 'gradient' || this.modes === 'both')) {
       const angle = parseFloat(lg[1]);
       // 尝试解析百分比位置：linear-gradient(45deg, color1 0%, color2 100%)
@@ -98,17 +142,21 @@ export class LdesignColorPickerPanel {
         const m = s.match(/^(.*?)(?:\s+([0-9.]+)%\s*)?$/);
         return { raw: m?.[1]?.trim() || s.trim(), pos: m?.[2] != null ? parseFloat(m[2]) : undefined };
       };
-      const p1 = colorAndPos(lg[2]);
-      const p2 = colorAndPos(lg[3]);
-      const c1 = this.parseColor(p1.raw);
-      const c2 = this.parseColor(p2.raw);
-      if (c1 && c2) {
+      const rest = lg[2];
+      const parts = this.splitStopsList(rest).slice(0, 8);
+      const stops: { h:number;s:number;v:number;a:number;pos:number }[] = [];
+      for (const token of parts) {
+        const m = token.match(/^(.*?)(?:\s+([0-9.]+)%\s*)?$/);
+        const col = m?.[1]?.trim() || token.trim();
+        const pos = m?.[2] != null ? Math.max(0, Math.min(100, parseFloat(m![2]))) : undefined;
+        const c = this.parseColor(col);
+        if (c) stops.push({ h:c.hsv.h, s:c.hsv.s, v:c.hsv.v, a:c.rgb.a ?? 1, pos: pos ?? (stops.length===0 ? 0 : 100) });
+      }
+      if (stops.length >= 2) {
         this.activeMode = 'gradient';
+        this.gradientType='linear';
         this.gradientAngle = isFinite(angle) ? angle : 45;
-        this.gradientStops = [
-          { h: c1.hsv.h, s: c1.hsv.s, v: c1.hsv.v, a: c1.rgb.a ?? 1, pos: p1.pos ?? 0 },
-          { h: c2.hsv.h, s: c2.hsv.s, v: c2.hsv.v, a: c2.rgb.a ?? 1, pos: p2.pos ?? 100 },
-        ];
+        this.gradientStops = stops;
         if (!silent) this.value = this.getFormattedOutput();
         return;
       }
@@ -204,7 +252,6 @@ export class LdesignColorPickerPanel {
     }
   }
   private getFormattedGradient(): string {
-    const angle = Math.round((this.gradientAngle % 360 + 360) % 360);
     const parts = this.gradientStops
       .slice()
       .sort((a,b)=> a.pos-b.pos)
@@ -213,6 +260,13 @@ export class LdesignColorPickerPanel {
         const color = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${st.a})`;
         return `${color} ${Math.round(st.pos)}%`;
       });
+    if (this.gradientType === 'radial') {
+      const cx = Math.max(0, Math.min(100, Math.round(this.radialCenterX)));
+      const cy = Math.max(0, Math.min(100, Math.round(this.radialCenterY)));
+      const shape = this.radialShape;
+      return `radial-gradient(${shape} at ${cx}% ${cy}%, ${parts.join(', ')})`;
+    }
+    const angle = Math.round((this.gradientAngle % 360 + 360) % 360);
     return `linear-gradient(${angle}deg, ${parts.join(', ')})`;
   }
   private getFormattedOutput(): string { return this.activeMode === 'gradient' ? this.getFormattedGradient() : this.getFormattedSolid(); }
@@ -240,16 +294,33 @@ export class LdesignColorPickerPanel {
     }
   }
 
-  // ---------- pointer handlers ----------
+  // ---------- pointer handlers (SV only; sliders use components) ----------
   private onSVPointerDown = (e: PointerEvent) => { if (this.disabled) return; this.dragging='sv'; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); this.updateFromSVPointer(e); window.addEventListener('pointermove', this.onWindowPointerMove); window.addEventListener('pointerup', this.onWindowPointerUp); };
-  private onHuePointerDown = (e: PointerEvent) => { if (this.disabled) return; this.dragging='hue'; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); this.updateFromHuePointer(e); window.addEventListener('pointermove', this.onWindowPointerMove); window.addEventListener('pointerup', this.onWindowPointerUp); };
-  private onAlphaPointerDown = (e: PointerEvent) => { if (!this.showAlpha || this.disabled) return; this.dragging='alpha'; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); this.updateFromAlphaPointer(e); window.addEventListener('pointermove', this.onWindowPointerMove); window.addEventListener('pointerup', this.onWindowPointerUp); };
-  private onWindowPointerMove = (e: PointerEvent) => { if (!this.dragging) return; switch(this.dragging){ case 'sv': this.updateFromSVPointer(e); break; case 'hue': this.updateFromHuePointer(e); break; case 'alpha': this.updateFromAlphaPointer(e); break; } };
+  private onWindowPointerMove = (e: PointerEvent) => { if (!this.dragging) return; switch(this.dragging){ case 'sv': this.updateFromSVPointer(e,true); break; case 'angle': this.updateFromAnglePointer(e,true); break; case 'center': this.updateFromCenterPointer(e,true); break; } };
+    if (!this.dragging) return;
+    switch (this.dragging) {
+      case 'sv': this.updateFromSVPointer(e); break;
+      case 'hue': this.updateFromHuePointer(e); break;
+      case 'alpha': this.updateFromAlphaPointer(e); break;
+      case 'angle': this.updateFromAnglePointer(e, true); break;
+      case 'center': this.updateFromCenterPointer(e, true); break;
+    }
+  };
   private onWindowPointerUp = () => { if (!this.dragging) return; this.dragging=null; window.removeEventListener('pointermove', this.onWindowPointerMove); window.removeEventListener('pointerup', this.onWindowPointerUp); const out=this.getFormattedOutput(); this.value=out; this.ldesignChange.emit(out); if (this.showHistory && this.activeMode==='solid') { const rgb=this.hsvToRgb(this.hsv.h,this.hsv.s,this.hsv.v); this.pushHistory(this.rgbToHex(rgb.r,rgb.g,rgb.b,this.alpha)); } };
 
   private updateFromSVPointer(e: PointerEvent){ if (!this.svCanvas) return; const rect=this.svCanvas.getBoundingClientRect(); const x=this.clamp(e.clientX-rect.left,0,rect.width); const y=this.clamp(e.clientY-rect.top,0,rect.height); const s=(x/rect.width)*100; const v=(1-y/rect.height)*100; const cur=this.getActiveHSVA(); this.setActiveHSVA(cur.h,s,v,cur.a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }
-  private updateFromHuePointer(e: PointerEvent){ if (!this.hueTrack) return; const rect=this.hueTrack.getBoundingClientRect(); const x=this.clamp(e.clientX-rect.left,0,rect.width); const h=(x/rect.width)*360; const cur=this.getActiveHSVA(); this.setActiveHSVA(h,cur.s,cur.v,cur.a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }
-  private updateFromAlphaPointer(e: PointerEvent){ if (!this.alphaTrack) return; const rect=this.alphaTrack.getBoundingClientRect(); const x=this.clamp(e.clientX-rect.left,0,rect.width); const cur=this.getActiveHSVA(); const a=x/rect.width; this.setActiveHSVA(cur.h,cur.s,cur.v,a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }
+  // slider event handlers
+  private onHueSliderInput = (e: CustomEvent<number>) => { const cur=this.getActiveHSVA(); this.setActiveHSVA(e.detail, cur.s, cur.v, cur.a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); };
+  private onAlphaSliderInput = (e: CustomEvent<number>) => { const cur=this.getActiveHSVA(); this.setActiveHSVA(cur.h, cur.s, cur.v, e.detail); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); };
+
+  // Angle knob / Center drag
+  private angleKnobEl?: HTMLElement;
+  private centerPlaneEl?: HTMLElement;
+  private onAnglePointerDown = (e: PointerEvent) => { this.dragging='angle'; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); this.updateFromAnglePointer(e); window.addEventListener('pointermove', this.onWindowPointerMove); window.addEventListener('pointerup', this.onWindowPointerUp); };
+  private onCenterPointerDown = (e: PointerEvent) => { this.dragging='center'; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); this.updateFromCenterPointer(e); window.addEventListener('pointermove', this.onWindowPointerMove); window.addEventListener('pointerup', this.onWindowPointerUp); };
+  private updateFromAnglePointer(e: PointerEvent, moving=false){ if (!this.angleKnobEl) return; const rect=this.angleKnobEl.getBoundingClientRect(); const cx=rect.left+rect.width/2; const cy=rect.top+rect.height/2; let deg = (Math.atan2(cy - e.clientY, e.clientX - cx) * 180 / Math.PI);
+    deg = (deg + 90 + 360) % 360; const step = e.shiftKey ? 1 : 5; deg = Math.round(deg / step) * step; this.gradientAngle = deg; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }
+  private updateFromCenterPointer(e: PointerEvent, moving=false){ if (!this.centerPlaneEl) return; const rect=this.centerPlaneEl.getBoundingClientRect(); const x = Math.min(100, Math.max(0, ((e.clientX-rect.left)/rect.width)*100)); const y = Math.min(100, Math.max(0, ((e.clientY-rect.top)/rect.height)*100)); this.radialCenterX = x; this.radialCenterY = y; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }
 
   // ---------- Inputs & palette ----------
   private getFormattedColor(): string { return this.getFormattedOutput(); }
@@ -319,12 +390,44 @@ export class LdesignColorPickerPanel {
 
           {this.activeMode==='gradient' ? (
             <div class="gradient-tools">
+              <div class="type-tabs" style={{ display: this.gradientTypes==='both' ? 'inline-flex' : 'none' }}>
+                <button class={{ active: this.gradientType==='linear' }} onClick={()=>{ this.gradientType='linear'; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>线性</button>
+                <button class={{ active: this.gradientType==='radial' }} onClick={()=>{ this.gradientType='radial'; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>径向</button>
+              </div>
               <div class="gradient-preview" style={gPreview}></div>
+              {this.gradientType==='linear' ? (
               <div class="angle">
-                <input type="range" min="0" max="360" value={this.gradientAngle} onInput={(e:any)=>{ this.gradientAngle = parseFloat(e.target.value); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
+                <div class="angle-knob" ref={(el)=> (this.angleKnobEl = el as HTMLElement)} onPointerDown={this.onAnglePointerDown as any}>
+                  <div class="angle-indicator" style={{ transform: `rotate(${Math.round(this.gradientAngle)}deg)` }}></div>
+                  <div class="angle-ticks">
+                    {[...Array(12)].map((_,i)=> (<span class={{ 'tick': true, 'major': i%3===0 }} style={{ transform: `rotate(${i*30}deg)` }}></span>))}
+                  </div>
+                </div>
+                <ldesign-slider min={0 as any} max={360 as any} step={1 as any} value={Math.round(this.gradientAngle) as any} onLdesignInput={(e:any)=>{ this.gradientAngle=e.detail; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}></ldesign-slider>
                 <input type="number" min="0" max="360" value={Math.round(this.gradientAngle)} onChange={(e:any)=>{ this.gradientAngle = parseFloat(e.target.value)||0; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
                 <span>°</span>
               </div>
+              ) : (
+              <div class="center">
+                <div class="center-plane" ref={(el)=> (this.centerPlaneEl = el as HTMLElement)} onPointerDown={this.onCenterPointerDown as any} tabIndex={0} onKeyDown={(e:any)=>{
+                  const step = e.shiftKey ? 10 : 1; let x=this.radialCenterX, y=this.radialCenterY;
+                  if (e.key==='ArrowLeft') x = Math.max(0, x - step); if (e.key==='ArrowRight') x = Math.min(100, x + step);
+                  if (e.key==='ArrowUp') y = Math.max(0, y - step); if (e.key==='ArrowDown') y = Math.min(100, y + step);
+                  if (x!==this.radialCenterX || y!==this.radialCenterY) { this.radialCenterX=x; this.radialCenterY=y; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); e.preventDefault(); }
+                }} onDblClick={() => { this.radialCenterX=50; this.radialCenterY=50; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>
+                  <div class="center-handle" style={{ left: `${this.radialCenterX}%`, top: `${this.radialCenterY}%` }}></div>
+                </div>
+                <label>中心</label>
+                <input type="number" min="0" max="100" value={Math.round(this.radialCenterX)} onChange={(e:any)=>{ this.radialCenterX = Math.max(0, Math.min(100, parseFloat(e.target.value)||0)); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
+                <span>%</span>
+                <input type="number" min="0" max="100" value={Math.round(this.radialCenterY)} onChange={(e:any)=>{ this.radialCenterY = Math.max(0, Math.min(100, parseFloat(e.target.value)||0)); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
+                <span>%</span>
+                <select onChange={(e:any)=>{ this.radialShape = (e.target.value==='ellipse'?'ellipse':'circle'); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>
+                  <option value="circle" selected={this.radialShape==='circle'}>circle</option>
+                  <option value="ellipse" selected={this.radialShape==='ellipse'}>ellipse</option>
+                </select>
+              </div>
+              )}
               <div class="stops-bar" ref={(el) => (this.stopTrackEl = el as HTMLElement)} onPointerUp={() => { this.stopDragIndex=null; }}>
                 <div class="stops-gradient" style={gPreview}></div>
                 {this.gradientStops.map((st, i) => (
@@ -348,13 +451,65 @@ export class LdesignColorPickerPanel {
                   <button title="删除当前色标" onClick={()=>{ if(this.gradientStops.length>2){ const arr=[...this.gradientStops]; arr.splice(this.activeStopIndex,1); this.gradientStops=arr; this.activeStopIndex=Math.max(0,this.activeStopIndex-1); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} }}>-</button>
                 </div>
               </div>
+              <div class="stop-quick">
+                <select onChange={(e:any)=>{ this.stopQuickFormat = (e.target.value==='rgba'?'rgba':'hex'); }}>
+                  <option value="hex" selected={this.stopQuickFormat==='hex'}>HEX</option>
+                  <option value="rgba" selected={this.stopQuickFormat==='rgba'}>RGBA</option>
+                </select>
+                {this.stopQuickFormat==='hex' ? (
+                  <input type="text" value={(()=>{ const st=this.gradientStops[this.activeStopIndex]; return this.rgbToHex(this.hsvToRgb(st.h,st.s,st.v,st.a).r, this.hsvToRgb(st.h,st.s,st.v,st.a).g, this.hsvToRgb(st.h,st.s,st.v,st.a).b, st.a); })()} onChange={(e:any)=>{ const v=(e.target.value||'').trim(); const c=this.parseColor(v); if (c){ const arr=[...this.gradientStops]; arr[this.activeStopIndex]={ h:c.hsv.h,s:c.hsv.s,v:c.hsv.v,a:c.rgb.a ?? arr[this.activeStopIndex].a,pos:arr[this.activeStopIndex].pos }; this.gradientStops=arr; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} }} />
+                ) : (
+                  <div class="q">
+                    {(() => { const st=this.gradientStops[this.activeStopIndex]; const r=this.hsvToRgb(st.h,st.s,st.v,st.a); return (
+                      <div class="q-rgb-values">
+                        <input type="number" min="0" max="255" value={r.r} onChange={(e:any)=>{ const rv=Math.min(255,Math.max(0,parseFloat(e.target.value)||0)); const g=r.g; const b=r.b; const hsv=this.rgbToHsv({r:rv,g,b,a:st.a}); const arr=[...this.gradientStops]; arr[this.activeStopIndex]={ ...arr[this.activeStopIndex], h:hsv.h,s:hsv.s,v:hsv.v }; this.gradientStops=arr; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} } />
+                        <input type="number" min="0" max="255" value={r.g} onChange={(e:any)=>{ const gv=Math.min(255,Math.max(0,parseFloat(e.target.value)||0)); const hsv=this.rgbToHsv({r:r.r,g:gv,b:r.b,a:st.a}); const arr=[...this.gradientStops]; arr[this.activeStopIndex]={ ...arr[this.activeStopIndex], h:hsv.h,s:hsv.s,v:hsv.v }; this.gradientStops=arr; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} } />
+                        <input type="number" min="0" max="255" value={r.b} onChange={(e:any)=>{ const bv=Math.min(255,Math.max(0,parseFloat(e.target.value)||0)); const hsv=this.rgbToHsv({r:r.r,g:r.g,b:bv,a:st.a}); const arr=[...this.gradientStops]; arr[this.activeStopIndex]={ ...arr[this.activeStopIndex], h:hsv.h,s:hsv.s,v:hsv.v }; this.gradientStops=arr; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} } />
+                        {this.showAlpha ? (<input type="number" min="0" max="1" step="0.01" value={st.a} onChange={(e:any)=>{ const av=Math.min(1,Math.max(0,parseFloat(e.target.value)||0)); const arr=[...this.gradientStops]; arr[this.activeStopIndex]={ ...arr[this.activeStopIndex], a: av }; this.gradientStops=arr; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} } />) : null}
+                      </div>
+                    )})()}
+                  </div>
+                )}
+                <button class="copy" title="复制" onClick={() => { const st=this.gradientStops[this.activeStopIndex]; const s=this.rgbStringOf(st.h,st.s,st.v,st.a); navigator.clipboard?.writeText(s); }}>
+                  复制
+                </button>
+              </div>
               <div class="angle-presets">
                 {[0,45,90,180].map(v => (
                   <button class={{ active: Math.round((this.gradientAngle%360+360)%360)===v }} onClick={()=>{ this.gradientAngle=v; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>{v}°</button>
                 ))}
               </div>
+              <div class="stop-pos">
+                <span>位置</span>
+                <input type="number" min="0" max="100" value={Math.round(this.gradientStops[this.activeStopIndex]?.pos ?? 0)} onChange={(e:any)=>{ const v=this.clamp(parseFloat(e.target.value)||0,0,100); const arr=[...this.gradientStops]; arr[this.activeStopIndex] = { ...arr[this.activeStopIndex], pos: v }; this.gradientStops=arr; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
+                <span>%</span>
+              </div>
             </div>
           ) : null}
+
+          {/* Quick editor for current color / current stop */}
+          <div class="quick-editor">
+            <select onChange={(e:any)=>{ this.quickFormat = (e.target.value==='rgba'?'rgba':'hex'); }}>
+              <option value="hex" selected={this.quickFormat==='hex'}>HEX</option>
+              <option value="rgba" selected={this.quickFormat==='rgba'}>RGBA</option>
+            </select>
+            {this.quickFormat==='hex' ? (
+              <input type="text" class="q-hex" value={(()=>{ const ac=this.getActiveHSVA(); const rgb=this.hsvToRgb(ac.h,ac.s,ac.v,ac.a); return this.rgbToHex(rgb.r,rgb.g,rgb.b,ac.a); })()} onChange={(e:any)=>{ const v=(e.target.value||'').trim(); const parsed=this.parseColor(v); if(parsed){ this.setActiveHSVA(parsed.hsv.h, parsed.hsv.s, parsed.hsv.v, parsed.rgb.a ?? this.getActiveHSVA().a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); } }} />
+            ) : (
+              <div class="q-rgba">
+                {(() => { const ac=this.getActiveHSVA(); const r=this.hsvToRgb(ac.h,ac.s,ac.v,ac.a); return (
+                  <div class="q-rgb-values">
+                    <input type="number" min="0" max="255" value={r.r} onChange={(e:any)=>{ const rv=Math.min(255,Math.max(0,parseFloat(e.target.value)||0)); const g=this.hsvToRgb(ac.h,ac.s,ac.v,ac.a).g; const b=this.hsvToRgb(ac.h,ac.s,ac.v,ac.a).b; const hsv=this.rgbToHsv({r:rv,g,b,a:ac.a}); this.setActiveHSVA(hsv.h,hsv.s,hsv.v,ac.a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
+                    <input type="number" min="0" max="255" value={r.g} onChange={(e:any)=>{ const gv=Math.min(255,Math.max(0,parseFloat(e.target.value)||0)); const R=this.hsvToRgb(ac.h,ac.s,ac.v,ac.a).r; const B=this.hsvToRgb(ac.h,ac.s,ac.v,ac.a).b; const hsv=this.rgbToHsv({r:R,g:gv,b:B,a:ac.a}); this.setActiveHSVA(hsv.h,hsv.s,hsv.v,ac.a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
+                    <input type="number" min="0" max="255" value={r.b} onChange={(e:any)=>{ const bv=Math.min(255,Math.max(0,parseFloat(e.target.value)||0)); const R=this.hsvToRgb(ac.h,ac.s,ac.v,ac.a).r; const G=this.hsvToRgb(ac.h,ac.s,ac.v,ac.a).g; const hsv=this.rgbToHsv({r:R,g:G,b:bv,a:ac.a}); this.setActiveHSVA(hsv.h,hsv.s,hsv.v,ac.a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
+                    {this.showAlpha ? (
+                      <input type="number" min="0" max="1" step="0.01" value={ac.a ?? 1} onChange={(e:any)=>{ const av=Math.min(1,Math.max(0,parseFloat(e.target.value)||0)); this.setActiveHSVA(ac.h,ac.s,ac.v,av); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
+                    ) : null}
+                  </div>
+                )})()}
+              </div>
+            )}
+          </div>
 
           <div class="cp-body">
             <div class="sv-wrap">
@@ -363,12 +518,14 @@ export class LdesignColorPickerPanel {
             </div>
 
             <div class="sliders">
-              <div class="slider hue" ref={el=> (this.hueTrack = el as HTMLElement)} style={hueStyle} onPointerDown={this.onHuePointerDown as any}>
-                <div class="slider-handle" style={this.pointerPosForHue()} />
+              <div class="slider-row">
+                <label style={{ width:'40px' }}>H</label>
+                <ldesign-slider min={0 as any} max={360 as any} step={1 as any} value={this.getActiveHSVA().h as any} onLdesignInput={this.onHueSliderInput as any}></ldesign-slider>
               </div>
               {this.showAlpha ? (
-                <div class="slider alpha" ref={el=> (this.alphaTrack = el as HTMLElement)} style={alphaStyle} onPointerDown={this.onAlphaPointerDown as any}>
-                  <div class="slider-handle" style={this.pointerPosForAlpha()} />
+                <div class="slider-row">
+                  <label style={{ width:'40px' }}>Alpha</label>
+                  <ldesign-slider min={0 as any} max={1 as any} step={0.01 as any} value={(this.getActiveHSVA().a ?? 1) as any} onLdesignInput={this.onAlphaSliderInput as any}></ldesign-slider>
                 </div>
               ) : null}
             </div>
