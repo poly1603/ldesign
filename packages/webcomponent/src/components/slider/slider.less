@@ -1,5 +1,18 @@
 /* ldesign Slider styles */
 
+/* Host 容器样式 */
+.ldesign-slider-host {
+  display: inline-block;
+  &--horizontal {
+    width: 100%;
+  }
+  &--vertical {
+    display: inline-flex;
+    height: 200px; /* 默认高度，可通过 style 覆盖 */
+  }
+}
+
+/* 水平模式（基础） */
 .ldesign-slider {
   position: relative;
   display: inline-block;
@@ -52,7 +65,7 @@
 .ldesign-slider__rail {
   position: absolute;
   inset: 0;
-  background-color: #e5e7eb; /* rail 背景 */
+  background-color: #e5e7eb;
   border-radius: 9999px;
 }
 
@@ -70,11 +83,11 @@
   position: absolute;
   width: 16px;
   height: 16px;
+  top: 50%;
   border-radius: 9999px;
   background-color: #fff;
   border: 2px solid var(--ldesign-color-primary, #1677ff);
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  transform: translate(-50%, -50%);
   transition: box-shadow 0.12s ease;
   cursor: pointer;
   outline: none;
@@ -83,67 +96,71 @@
   &:hover { box-shadow: 0 0 0 6px rgba(22, 119, 255, 0.12); }
 }
 
-/* 垂直模式 */
+/* 垂直模式（完全独立） */
 .ldesign-slider--vertical {
-  width: 24px !important;
-  /* 使用最小高度保证无宿主高度时也能展示；当 Host 设置了 height 时，内部会以 height:100% 继承 */
-  min-height: 160px;
+  width: auto;
+  height: 100%;
   padding: 0 10px;
-
-  /* 使用父选择器提高优先级，确保覆盖横向的基础样式（无论打包顺序如何） */
-  .ldesign-slider__track {
-    position: relative;
-    width: 4px !important;
-    height: 160px !important; /* 宿主设置高度时，组件会把它改成100% */
-    margin: 0 auto;
+  display: flex;
+  align-items: center;
+  
+  /* 尺寸调整 */
+  &.ldesign-slider--small {
+    .ldesign-slider__track--vertical { width: 2px; }
+    .ldesign-slider__thumb--vertical { width: 12px; height: 12px; }
   }
-  .ldesign-slider__rail {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+  &.ldesign-slider--medium {
+    .ldesign-slider__track--vertical { width: 4px; }
+    .ldesign-slider__thumb--vertical { width: 16px; height: 16px; }
   }
-  .ldesign-slider__fill {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: auto;
-    width: 100%;
-    height: 0%;
-  }
-  .ldesign-slider__thumb {
-    left: 50%;
-    transform: translate(-50%, -50%);
+  &.ldesign-slider--large {
+    .ldesign-slider__track--vertical { width: 6px; }
+    .ldesign-slider__thumb--vertical { width: 20px; height: 20px; }
   }
 }
 
-/* 仍然保留独立的修饰类，便于外部自定义或选择器使用 */
 .ldesign-slider__track--vertical {
   position: relative;
   width: 4px;
-  /* 默认高度兜底；当检测到宿主设置了 height 时，组件会把轨道高度置为100% */
-  height: 160px;
-  margin: 0 auto;
+  height: 100%;
+  margin: 0;
 }
 
 .ldesign-slider__rail--vertical {
+  position: absolute;
   width: 100%;
   height: 100%;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
 }
 
 .ldesign-slider__fill--vertical {
   position: absolute;
   width: 100%;
-  height: 0%;
   bottom: 0;
+  background-color: var(--ldesign-color-primary, #1677ff);
+  border-radius: 9999px;
 }
 
 .ldesign-slider__thumb--vertical {
-  transform: translate(-50%, -50%);
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 50%;
+  top: 100%; /* 初始位置在底部，会被内联style覆盖 */
+  border-radius: 9999px;
+  background-color: #fff;
+  border: 2px solid var(--ldesign-color-primary, #1677ff);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  transition: box-shadow 0.12s ease;
+  cursor: pointer;
+  outline: none;
+  z-index: 1;
+  
+  &:hover { box-shadow: 0 0 0 6px rgba(22, 119, 255, 0.12); }
 }
 
-/* 简单的tooltip样式（显示在thumb上方） */
+/* Tooltip */
 .ldesign-slider__tooltip {
   position: absolute;
   bottom: 100%;
@@ -157,4 +174,11 @@
   padding: 0 6px;
   border-radius: 4px;
   pointer-events: none;
+}
+
+.ldesign-slider__tooltip--vertical {
+  bottom: auto;
+  left: 100%;
+  top: 50%;
+  transform: translate(6px, -50%);
 }

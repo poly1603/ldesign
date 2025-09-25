@@ -462,7 +462,69 @@ export namespace Components {
      */
     interface LdesignColorPicker {
         /**
-          * 是否禁用
+          * 使用具名插槽自定义触发器（slot="trigger"）；为 true 时不渲染默认触发器
+          * @default false
+         */
+        "customTrigger": boolean;
+        /**
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * @default 'hex'
+         */
+        "format": 'hex' | 'rgb' | 'hsl' | 'hsv';
+        /**
+          * 选择后是否自动关闭弹层
+          * @default true
+         */
+        "hideOnSelect": boolean;
+        /**
+          * 弹出位置
+          * @default 'bottom-start'
+         */
+        "placement": 'top'|'top-start'|'top-end'|'bottom'|'bottom-start'|'bottom-end'|'left'|'left-start'|'left-end'|'right'|'right-start'|'right-end';
+        /**
+          * 设置弹层宽度（数字或 CSS 长度），panel 将铺满此宽度
+         */
+        "popupWidth"?: number | string;
+        /**
+          * @default []
+         */
+        "presets": string[];
+        /**
+          * @default 12
+         */
+        "recentMax": number;
+        /**
+          * @default true
+         */
+        "showAlpha": boolean;
+        /**
+          * @default true
+         */
+        "showHistory": boolean;
+        /**
+          * @default true
+         */
+        "showPreset": boolean;
+        /**
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * @default '#1677ff'
+         */
+        "value": string;
+    }
+    /**
+     * ColorPicker Panel 纯面板
+     * - 不包含 Popup/触发器，仅渲染颜色选择面板
+     * - 适合内嵌在任意容器，宽度默认铺满容器
+     */
+    interface LdesignColorPickerPanel {
+        /**
+          * 是否禁用（禁用交互）
           * @default false
          */
         "disabled": boolean;
@@ -471,6 +533,11 @@ export namespace Components {
           * @default 'hex'
          */
         "format": 'hex' | 'rgb' | 'hsl' | 'hsv';
+        /**
+          * 面板模式：单色 | 渐变 | 两者
+          * @default 'both'
+         */
+        "modes": 'solid' | 'gradient' | 'both';
         /**
           * 预设颜色
           * @default [     '#ff4d4f', '#ff7a45', '#ffa940', '#ffc53d', '#ffec3d', '#bae637', '#73d13d', '#36cfc9', '#40a9ff', '#597ef7', '#9254de', '#f759ab',     '#d4380d', '#d46b08', '#d48806', '#ad8b00', '#5b8c00', '#08979c', '#096dd9', '#1d39c4', '#531dab', '#c41d7f', '#8c8c8c', '#595959',   ]
@@ -487,22 +554,22 @@ export namespace Components {
          */
         "showAlpha": boolean;
         /**
-          * 是否显示最近使用
+          * 是否显示最近使用（无数据时自动隐藏）
           * @default true
          */
         "showHistory": boolean;
         /**
-          * 是否显示预设颜色
+          * 是否显示系统预设
           * @default true
          */
         "showPreset": boolean;
         /**
-          * 尺寸（影响输入高度等）
+          * 尺寸（影响整体间距）
           * @default 'medium'
          */
         "size": Size;
         /**
-          * 当前颜色值（默认 hex），支持 #RRGGBB/#RRGGBBAA、rgb/rgba、hsl/hsla
+          * 当前颜色（默认 hex），支持 #RRGGBB/#RRGGBBAA、rgb/rgba、hsl/hsla、hsv
           * @default '#3498db'
          */
         "value": string;
@@ -903,6 +970,11 @@ export namespace Components {
           * @default 0.25
          */
         "minScale": number;
+        /**
+          * 小窗拖拽方式：title 标题栏拖拽；anywhere 全面板可拖拽
+          * @default 'title'
+         */
+        "panelDraggable": 'title' | 'anywhere';
         "panelHeight"?: number | string;
         /**
           * 小窗宽高（viewerMode=modal 时生效）
@@ -1229,6 +1301,18 @@ export namespace Components {
          */
         "animation": ModalAnimation;
         /**
+          * 关闭/确认前拦截钩子（函数属性，需 JS 赋值）
+         */
+        "beforeClose"?: (reason: 'ok' | 'close' | 'mask' | 'esc' | 'api') => boolean | Promise<boolean>;
+        /**
+          * @default '取消'
+         */
+        "cancelText": string;
+        /**
+          * @default 'secondary'
+         */
+        "cancelType": ButtonType;
+        /**
           * 是否居中显示
           * @default false
          */
@@ -1253,6 +1337,10 @@ export namespace Components {
          */
         "destroyOnClose": boolean;
         /**
+          * 容器选择器（可选）：若提供，则在加载时把组件节点移动到该容器下
+         */
+        "getContainer"?: string;
+        /**
           * 自定义高度
          */
         "height"?: number | string;
@@ -1260,6 +1348,7 @@ export namespace Components {
           * 隐藏模态框
          */
         "hide": () => Promise<void>;
+        "initialFocus"?: string;
         /**
           * 是否可拖拽
           * @default false
@@ -1280,6 +1369,8 @@ export namespace Components {
           * @default true
          */
         "maskClosable": boolean;
+        "maxHeight"?: number;
+        "maxWidth"?: number;
         /**
           * 是否可最大化
           * @default false
@@ -1293,10 +1384,34 @@ export namespace Components {
           * @default 'maximize-2'
          */
         "maximizeIcon": string;
+        "minHeight"?: number;
+        /**
+          * 调整大小边界
+         */
+        "minWidth"?: number;
         /**
           * 模态框标题
          */
         "modalTitle"?: string;
+        /**
+          * @default false
+         */
+        "okDisabled": boolean;
+        /**
+          * OK 按钮状态
+          * @default false
+         */
+        "okLoading": boolean;
+        /**
+          * 底部按钮文案和类型控制（仅在未自定义 footer 时生效）
+          * @default '确定'
+         */
+        "okText": string;
+        /**
+          * @default 'primary'
+         */
+        "okType": ButtonType;
+        "preOk"?: () => boolean | Promise<boolean>;
         /**
           * 是否可调整大小
           * @default false
@@ -1327,6 +1442,11 @@ export namespace Components {
           * 距离顶部的距离
          */
         "top"?: number | string;
+        /**
+          * 焦点与可访问性
+          * @default true
+         */
+        "trapFocus": boolean;
         /**
           * 是否显示模态框
           * @default false
@@ -2434,6 +2554,10 @@ export interface LdesignColorPickerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignColorPickerElement;
 }
+export interface LdesignColorPickerPanelCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignColorPickerPanelElement;
+}
 export interface LdesignDrawerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignDrawerElement;
@@ -2713,6 +2837,29 @@ declare global {
     var HTMLLdesignColorPickerElement: {
         prototype: HTMLLdesignColorPickerElement;
         new (): HTMLLdesignColorPickerElement;
+    };
+    interface HTMLLdesignColorPickerPanelElementEventMap {
+        "ldesignInput": string;
+        "ldesignChange": string;
+    }
+    /**
+     * ColorPicker Panel 纯面板
+     * - 不包含 Popup/触发器，仅渲染颜色选择面板
+     * - 适合内嵌在任意容器，宽度默认铺满容器
+     */
+    interface HTMLLdesignColorPickerPanelElement extends Components.LdesignColorPickerPanel, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignColorPickerPanelElementEventMap>(type: K, listener: (this: HTMLLdesignColorPickerPanelElement, ev: LdesignColorPickerPanelCustomEvent<HTMLLdesignColorPickerPanelElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignColorPickerPanelElementEventMap>(type: K, listener: (this: HTMLLdesignColorPickerPanelElement, ev: LdesignColorPickerPanelCustomEvent<HTMLLdesignColorPickerPanelElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignColorPickerPanelElement: {
+        prototype: HTMLLdesignColorPickerPanelElement;
+        new (): HTMLLdesignColorPickerPanelElement;
     };
     interface HTMLLdesignDrawerElementEventMap {
         "ldesignVisibleChange": boolean;
@@ -3263,6 +3410,7 @@ declare global {
         "ldesign-collapse-panel": HTMLLdesignCollapsePanelElement;
         "ldesign-color-input": HTMLLdesignColorInputElement;
         "ldesign-color-picker": HTMLLdesignColorPickerElement;
+        "ldesign-color-picker-panel": HTMLLdesignColorPickerPanelElement;
         "ldesign-drawer": HTMLLdesignDrawerElement;
         "ldesign-dropdown": HTMLLdesignDropdownElement;
         "ldesign-icon": HTMLLdesignIconElement;
@@ -3755,7 +3903,71 @@ declare namespace LocalJSX {
      */
     interface LdesignColorPicker {
         /**
-          * 是否禁用
+          * 使用具名插槽自定义触发器（slot="trigger"）；为 true 时不渲染默认触发器
+          * @default false
+         */
+        "customTrigger"?: boolean;
+        /**
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * @default 'hex'
+         */
+        "format"?: 'hex' | 'rgb' | 'hsl' | 'hsv';
+        /**
+          * 选择后是否自动关闭弹层
+          * @default true
+         */
+        "hideOnSelect"?: boolean;
+        "onLdesignChange"?: (event: LdesignColorPickerCustomEvent<string>) => void;
+        "onLdesignInput"?: (event: LdesignColorPickerCustomEvent<string>) => void;
+        /**
+          * 弹出位置
+          * @default 'bottom-start'
+         */
+        "placement"?: 'top'|'top-start'|'top-end'|'bottom'|'bottom-start'|'bottom-end'|'left'|'left-start'|'left-end'|'right'|'right-start'|'right-end';
+        /**
+          * 设置弹层宽度（数字或 CSS 长度），panel 将铺满此宽度
+         */
+        "popupWidth"?: number | string;
+        /**
+          * @default []
+         */
+        "presets"?: string[];
+        /**
+          * @default 12
+         */
+        "recentMax"?: number;
+        /**
+          * @default true
+         */
+        "showAlpha"?: boolean;
+        /**
+          * @default true
+         */
+        "showHistory"?: boolean;
+        /**
+          * @default true
+         */
+        "showPreset"?: boolean;
+        /**
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * @default '#1677ff'
+         */
+        "value"?: string;
+    }
+    /**
+     * ColorPicker Panel 纯面板
+     * - 不包含 Popup/触发器，仅渲染颜色选择面板
+     * - 适合内嵌在任意容器，宽度默认铺满容器
+     */
+    interface LdesignColorPickerPanel {
+        /**
+          * 是否禁用（禁用交互）
           * @default false
          */
         "disabled"?: boolean;
@@ -3765,13 +3977,12 @@ declare namespace LocalJSX {
          */
         "format"?: 'hex' | 'rgb' | 'hsl' | 'hsv';
         /**
-          * 颜色确定触发（拖动结束、输入回车或失焦）
+          * 面板模式：单色 | 渐变 | 两者
+          * @default 'both'
          */
-        "onLdesignChange"?: (event: LdesignColorPickerCustomEvent<string>) => void;
-        /**
-          * 拖动或输入实时触发
-         */
-        "onLdesignInput"?: (event: LdesignColorPickerCustomEvent<string>) => void;
+        "modes"?: 'solid' | 'gradient' | 'both';
+        "onLdesignChange"?: (event: LdesignColorPickerPanelCustomEvent<string>) => void;
+        "onLdesignInput"?: (event: LdesignColorPickerPanelCustomEvent<string>) => void;
         /**
           * 预设颜色
           * @default [     '#ff4d4f', '#ff7a45', '#ffa940', '#ffc53d', '#ffec3d', '#bae637', '#73d13d', '#36cfc9', '#40a9ff', '#597ef7', '#9254de', '#f759ab',     '#d4380d', '#d46b08', '#d48806', '#ad8b00', '#5b8c00', '#08979c', '#096dd9', '#1d39c4', '#531dab', '#c41d7f', '#8c8c8c', '#595959',   ]
@@ -3788,22 +3999,22 @@ declare namespace LocalJSX {
          */
         "showAlpha"?: boolean;
         /**
-          * 是否显示最近使用
+          * 是否显示最近使用（无数据时自动隐藏）
           * @default true
          */
         "showHistory"?: boolean;
         /**
-          * 是否显示预设颜色
+          * 是否显示系统预设
           * @default true
          */
         "showPreset"?: boolean;
         /**
-          * 尺寸（影响输入高度等）
+          * 尺寸（影响整体间距）
           * @default 'medium'
          */
         "size"?: Size;
         /**
-          * 当前颜色值（默认 hex），支持 #RRGGBB/#RRGGBBAA、rgb/rgba、hsl/hsla
+          * 当前颜色（默认 hex），支持 #RRGGBB/#RRGGBBAA、rgb/rgba、hsl/hsla、hsv
           * @default '#3498db'
          */
         "value"?: string;
@@ -4228,6 +4439,11 @@ declare namespace LocalJSX {
         "onLdesignClose"?: (event: LdesignImageViewerCustomEvent<void>) => void;
         "onLdesignOpen"?: (event: LdesignImageViewerCustomEvent<void>) => void;
         "onLdesignVisibleChange"?: (event: LdesignImageViewerCustomEvent<boolean>) => void;
+        /**
+          * 小窗拖拽方式：title 标题栏拖拽；anywhere 全面板可拖拽
+          * @default 'title'
+         */
+        "panelDraggable"?: 'title' | 'anywhere';
         "panelHeight"?: number | string;
         /**
           * 小窗宽高（viewerMode=modal 时生效）
@@ -4586,6 +4802,18 @@ declare namespace LocalJSX {
          */
         "animation"?: ModalAnimation;
         /**
+          * 关闭/确认前拦截钩子（函数属性，需 JS 赋值）
+         */
+        "beforeClose"?: (reason: 'ok' | 'close' | 'mask' | 'esc' | 'api') => boolean | Promise<boolean>;
+        /**
+          * @default '取消'
+         */
+        "cancelText"?: string;
+        /**
+          * @default 'secondary'
+         */
+        "cancelType"?: ButtonType;
+        /**
           * 是否居中显示
           * @default false
          */
@@ -4606,9 +4834,14 @@ declare namespace LocalJSX {
          */
         "destroyOnClose"?: boolean;
         /**
+          * 容器选择器（可选）：若提供，则在加载时把组件节点移动到该容器下
+         */
+        "getContainer"?: string;
+        /**
           * 自定义高度
          */
         "height"?: number | string;
+        "initialFocus"?: string;
         /**
           * 是否可拖拽
           * @default false
@@ -4629,6 +4862,8 @@ declare namespace LocalJSX {
           * @default true
          */
         "maskClosable"?: boolean;
+        "maxHeight"?: number;
+        "maxWidth"?: number;
         /**
           * 是否可最大化
           * @default false
@@ -4638,10 +4873,33 @@ declare namespace LocalJSX {
           * @default 'maximize-2'
          */
         "maximizeIcon"?: string;
+        "minHeight"?: number;
+        /**
+          * 调整大小边界
+         */
+        "minWidth"?: number;
         /**
           * 模态框标题
          */
         "modalTitle"?: string;
+        /**
+          * @default false
+         */
+        "okDisabled"?: boolean;
+        /**
+          * OK 按钮状态
+          * @default false
+         */
+        "okLoading"?: boolean;
+        /**
+          * 底部按钮文案和类型控制（仅在未自定义 footer 时生效）
+          * @default '确定'
+         */
+        "okText"?: string;
+        /**
+          * @default 'primary'
+         */
+        "okType"?: ButtonType;
         /**
           * 关闭事件
          */
@@ -4654,6 +4912,7 @@ declare namespace LocalJSX {
           * 显示状态变化事件
          */
         "onLdesignVisibleChange"?: (event: LdesignModalCustomEvent<boolean>) => void;
+        "preOk"?: () => boolean | Promise<boolean>;
         /**
           * 是否可调整大小
           * @default false
@@ -4672,6 +4931,11 @@ declare namespace LocalJSX {
           * 距离顶部的距离
          */
         "top"?: number | string;
+        /**
+          * 焦点与可访问性
+          * @default true
+         */
+        "trapFocus"?: boolean;
         /**
           * 是否显示模态框
           * @default false
@@ -5846,6 +6110,7 @@ declare namespace LocalJSX {
         "ldesign-collapse-panel": LdesignCollapsePanel;
         "ldesign-color-input": LdesignColorInput;
         "ldesign-color-picker": LdesignColorPicker;
+        "ldesign-color-picker-panel": LdesignColorPickerPanel;
         "ldesign-drawer": LdesignDrawer;
         "ldesign-dropdown": LdesignDropdown;
         "ldesign-icon": LdesignIcon;
@@ -5933,6 +6198,12 @@ declare module "@stencil/core" {
              * - 支持 HEX/RGB/HSL/HSV 输入与预设/历史颜色
              */
             "ldesign-color-picker": LocalJSX.LdesignColorPicker & JSXBase.HTMLAttributes<HTMLLdesignColorPickerElement>;
+            /**
+             * ColorPicker Panel 纯面板
+             * - 不包含 Popup/触发器，仅渲染颜色选择面板
+             * - 适合内嵌在任意容器，宽度默认铺满容器
+             */
+            "ldesign-color-picker-panel": LocalJSX.LdesignColorPickerPanel & JSXBase.HTMLAttributes<HTMLLdesignColorPickerPanelElement>;
             /**
              * Drawer 抽屉组件
              * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情

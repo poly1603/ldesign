@@ -337,6 +337,78 @@ const value = await promptModal({
 })
 ```
 
+## 进阶功能
+
+### 异步确认与关闭拦截
+
+- 使用 `preOk` 在点击“确定”时执行异步校验，返回 `false` 阻止关闭。
+- 使用 `beforeClose(reason)` 可以拦截任意关闭来源：`'ok'|'close'|'mask'|'esc'|'api'`。
+
+```html
+<ldesign-button id="preok-btn" type="primary">异步确认</ldesign-button>
+<ldesign-modal id="preok-modal" modal-title="异步确认示例">
+  <p>点击“确定”后 1 秒校验通过再关闭。</p>
+</ldesign-modal>
+
+<script>
+const btn = document.getElementById('preok-btn')
+const modal = document.getElementById('preok-modal')
+btn.addEventListener('click', () => { modal.visible = true })
+modal.preOk = async () => {
+  modal.okLoading = true
+  await new Promise(r => setTimeout(r, 1000))
+  modal.okLoading = false
+  return true
+}
+modal.beforeClose = (reason) => {
+  // 例：禁止遮罩关闭
+  if (reason === 'mask') return false
+  return true
+}
+</script>
+```
+
+### 键盘与焦点
+
+- Enter 触发确定，Esc 关闭（受 `keyboard` 控制）。
+- `trapFocus` 将 Tab 焦点圈定在弹窗内；`initialFocus` 指定打开后聚焦的元素选择器。
+
+```html
+<ldesign-modal modal-title="焦点示例" trap-focus initial-focus="input">
+  <input placeholder="打开后自动聚焦" />
+</ldesign-modal>
+```
+
+### 尺寸边界与双击标题最大化
+
+- 通过 `min-width`、`min-height`、`max-width`、`max-height` 约束可调大小范围。
+- 启用 `maximizable` 后，双击标题栏可在“最大化/恢复”之间切换。
+
+```html
+<ldesign-modal modal-title="边界示例" resizable min-width="360" min-height="200" max-width="1000" max-height="700" maximizable>
+  <p>拖拽边缘/角落调整大小，双击标题最大化/恢复。</p>
+</ldesign-modal>
+```
+
+### 自定义挂载容器与多弹层栈
+
+- `get-container` 指定 CSS 选择器，把弹窗节点挂到对应容器下（默认 body）。
+- 多弹层时仅栈顶响应 ESC，后开的在上。
+
+```html
+<div id="portal"></div>
+<ldesign-button id="open-in-portal">在容器中打开</ldesign-button>
+<ldesign-modal id="portal-modal" modal-title="容器示例" get-container="#portal">
+  <p>我被挂载到 #portal 容器下。</p>
+</ldesign-modal>
+
+<script>
+  const btn = document.getElementById('open-in-portal')
+  const m = document.getElementById('portal-modal')
+  btn.addEventListener('click', () => m.visible = true)
+</script>
+```
+
 ## 不同尺寸
 
 提供了四种尺寸：`small`、`medium`、`large`、`full`。

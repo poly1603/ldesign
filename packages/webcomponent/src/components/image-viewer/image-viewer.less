@@ -38,7 +38,8 @@
   display: flex; flex-direction: column;
   border-radius: 12px;
   overflow: hidden;
-  transform: scale(0.98);
+  /* 以中心为基准，通过 CSS 变量 --panel-x/--panel-y 偏移位置 */
+  transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(0.98);
   transition: transform var(--iv-duration, .24s) var(--iv-ease, ease), opacity var(--iv-duration, .24s) var(--iv-ease, ease);
   opacity: 0;
 }
@@ -225,7 +226,9 @@
 .ldesign-image-viewer--light .ldesign-image-viewer__caption { color: @text-light; }
 
 /* 小窗模式容器阴影与背景 */
-.ldesign-image-viewer--modal { background: transparent; }
+ .ldesign-image-viewer--modal { background: transparent !important; }
+.ldesign-image-viewer--modal.ldesign-image-viewer--light { background: transparent !important; }
+.ldesign-image-viewer--modal.ldesign-image-viewer--dark { background: transparent !important; }
 .ldesign-image-viewer--modal .ldesign-image-viewer__panel {
   position: absolute; left: 50%; top: 50%;
   background: #fff;

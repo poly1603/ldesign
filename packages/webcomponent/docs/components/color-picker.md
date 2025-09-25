@@ -38,6 +38,24 @@
 <ldesign-color-picker value="#1677ff" show-alpha></ldesign-color-picker>
 ```
 
+## 自定义触发器
+
+你可以通过具名插槽自定义触发按钮或输入框：
+
+```html
+<ldesign-color-picker value="#1677ff" custom-trigger>
+  <ldesign-button slot="trigger" type="outline">选择颜色</ldesign-button>
+</ldesign-color-picker>
+```
+
+也可以传入任意元素作为触发器，例如输入框：
+
+```html
+<ldesign-color-picker value="#1677ff" custom-trigger>
+  <input slot="trigger" value="#1677ff" style="padding:4px 8px;border:1px solid #ddd;border-radius:6px;width:140px;" readonly />
+</ldesign-color-picker>
+```
+
 ## 事件
 
 - `ldesignInput`：拖动或输入实时触发，回调参数为格式化后的颜色字符串

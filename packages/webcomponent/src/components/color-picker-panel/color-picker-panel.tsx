@@ -42,15 +42,29 @@ export class LdesignColorPickerPanel {
   @Prop() size: Size = 'medium';
   /** 是否禁用（禁用交互） */
   @Prop() disabled: boolean = false;
+  /** 面板模式：单色 | 渐变 | 两者 */
+  @Prop() modes: 'solid' | 'gradient' | 'both' = 'both';
 
   // Events
   @Event() ldesignInput!: EventEmitter<string>;
   @Event() ldesignChange!: EventEmitter<string>;
 
   // Internal state
+  @State() private activeMode: 'solid' | 'gradient' = this.modes === 'gradient' ? 'gradient' : 'solid';
   @State() private activeFormat: 'hex' | 'rgb' | 'hsl' | 'hsv' = this.format;
+  // solid color
   @State() private hsv: { h: number; s: number; v: number } = { h: 204, s: 72, v: 86 };
   @State() private alpha: number = 1;
+  // gradient
+  @State() private gradientAngle: number = 45;
+  @State() private gradientStops: { h: number; s: number; v: number; a: number; pos: number }[] = [
+    { h: 204, s: 72, v: 86, a: 1, pos: 0 },
+    { h: 204, s: 72, v: 86, a: 1, pos: 100 },
+  ];
+  @State() private activeStopIndex: number = 0;
+  private stopDragIndex: number | null = null;
+  private stopTrackEl?: HTMLElement;
+
   @State() private dragging: 'sv' | 'hue' | 'alpha' | null = null;
   @State() private history: string[] = [];
 
@@ -74,11 +88,38 @@ export class LdesignColorPickerPanel {
   onValueChange(next: string) { this.applyIncomingValue(next, true); }
 
   private applyIncomingValue(input: string, silent = false) {
-    const parsed = this.parseColor(input || '#000000');
+    const val = (input || '').trim();
+    // 简单解析 linear-gradient(angle, color1, color2)
+    const lg = val.match(/^linear-gradient\(\s*([0-9.]+)deg\s*,\s*(.+?)\s*,\s*(.+?)\s*\)$/i);
+    if (lg && (this.modes === 'gradient' || this.modes === 'both')) {
+      const angle = parseFloat(lg[1]);
+      // 尝试解析百分比位置：linear-gradient(45deg, color1 0%, color2 100%)
+      const colorAndPos = (s: string) => {
+        const m = s.match(/^(.*?)(?:\s+([0-9.]+)%\s*)?$/);
+        return { raw: m?.[1]?.trim() || s.trim(), pos: m?.[2] != null ? parseFloat(m[2]) : undefined };
+      };
+      const p1 = colorAndPos(lg[2]);
+      const p2 = colorAndPos(lg[3]);
+      const c1 = this.parseColor(p1.raw);
+      const c2 = this.parseColor(p2.raw);
+      if (c1 && c2) {
+        this.activeMode = 'gradient';
+        this.gradientAngle = isFinite(angle) ? angle : 45;
+        this.gradientStops = [
+          { h: c1.hsv.h, s: c1.hsv.s, v: c1.hsv.v, a: c1.rgb.a ?? 1, pos: p1.pos ?? 0 },
+          { h: c2.hsv.h, s: c2.hsv.s, v: c2.hsv.v, a: c2.rgb.a ?? 1, pos: p2.pos ?? 100 },
+        ];
+        if (!silent) this.value = this.getFormattedOutput();
+        return;
+      }
+    }
+
+    const parsed = this.parseColor(val || '#000000');
     if (!parsed) return;
+    this.activeMode = this.modes === 'gradient' ? 'gradient' : 'solid';
     this.hsv = { h: parsed.hsv.h, s: parsed.hsv.s, v: parsed.hsv.v };
     this.alpha = parsed.rgb.a ?? 1;
-    if (!silent) this.value = this.getFormattedColor();
+    if (!silent) this.value = this.getFormattedOutput();
   }
 
   // ---------- Helpers: color conversions ----------
@@ -113,7 +154,29 @@ export class LdesignColorPickerPanel {
   }
   private hsvToRgb(h:number,s:number,v:number,a?:number){ h/=360; s/=100; v/=100; const i=Math.floor(h*6); const f=h*6-i; const p=v*(1-s); const q=v*(1-f*s); const t=v*(1-(1-f)*s); let R=0,G=0,B=0; switch(i%6){ case 0: R=v; G=t; B=p; break; case 1: R=q; G=v; B=p; break; case 2: R=p; G=v; B=t; break; case 3: R=p; G=q; B=v; break; case 4: R=t; G=p; B=v; break; case 5: R=v; G=p; B=q; break;} return { r: Math.round(R*255), g: Math.round(G*255), b: Math.round(B*255), a } }
   private rgbToHsl({r,g,b,a}: {r:number;g:number;b:number;a?:number}){ r/=255; g/=255; b/=255; const max=Math.max(r,g,b),min=Math.min(r,g,b); let h=0,s=0; const l=(max+min)/2; if(max!==min){ const d=max-min; s=l>0.5?d/(2-max-min):d/(max+min); switch(max){ case r: h=(g-b)/d+(g<b?6:0); break; case g: h=(b-r)/d+2; break; case b: h=(r-g)/d+4; break } h/=6 } return { h:h*360,s:s*100,l:l*100,a } }
-  private hslToRgb(h:number,s:number,l:number,a?:number){ h/=360; s/=100; l/=100; const hue2rgb=(p:number,q:number,t:number)=>{ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p }; let r:number,g:number,b:number; if(s===0){ r=g=b=l } else { const q=l<0.5?l*(1+s):l+s-l*s; const p=2*l-q; r=hue2rgb(p,q,h+1/3); g=hue2rgb(p,q,h); b=hue2rgb(p,q,h-1/3) } return { r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255), a }
+  private hslToRgb(h:number,s:number,l:number,a?:number){ h/=360; s/=100; l/=100; const hue2rgb=(p:number,q:number,t:number)=>{ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p }; let r:number,g:number,b:number; if(s===0){ r=g=b=l } else { const q=l<0.5?l*(1+s):l+s-l*s; const p=2*l-q; r=hue2rgb(p,q,h+1/3); g=hue2rgb(p,q,h); b=hue2rgb(p,q,h-1/3) } return { r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255), a }}
+
+  private parseColor(input: string): { rgb: { r: number; g: number; b: number; a?: number }; hsv: { h: number; s: number; v: number }; hex: string } | null {
+    const val = (input || '').trim();
+    if (val.startsWith('#')) {
+      const rgb = this.hexToRgb(val);
+      if (!rgb) return null;
+      const hsv = this.rgbToHsv(rgb);
+      return { rgb, hsv, hex: val };
+    }
+    const rgbMatch = val.match(/^rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)$/i);
+    if (rgbMatch) {
+      const r = parseInt(rgbMatch[1]);
+      const g = parseInt(rgbMatch[2]);
+      const b = parseInt(rgbMatch[3]);
+      const a = rgbMatch[4] ? parseFloat(rgbMatch[4]) : undefined;
+      const rgb = { r, g, b, a };
+      const hsv = this.rgbToHsv(rgb);
+      const hex = this.rgbToHex(r, g, b, a);
+      return { rgb, hsv, hex };
+    }
+    return null;
+  }
 
   // ---------- Canvas size ----------
   private syncCanvasSize() {
@@ -131,7 +194,7 @@ export class LdesignColorPickerPanel {
   }
 
   // ---------- UI helpers ----------
-  private getFormattedColor(): string {
+  private getFormattedSolid(): string {
     const { h, s, v } = this.hsv; const rgb = this.hsvToRgb(h,s,v,this.alpha);
     switch(this.activeFormat){
       case 'rgb': return this.alpha<1 ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${this.alpha})` : `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
@@ -140,6 +203,19 @@ export class LdesignColorPickerPanel {
       default: return this.rgbToHex(rgb.r,rgb.g,rgb.b,this.alpha);
     }
   }
+  private getFormattedGradient(): string {
+    const angle = Math.round((this.gradientAngle % 360 + 360) % 360);
+    const parts = this.gradientStops
+      .slice()
+      .sort((a,b)=> a.pos-b.pos)
+      .map(st => {
+        const rgb = this.hsvToRgb(st.h, st.s, st.v, st.a);
+        const color = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${st.a})`;
+        return `${color} ${Math.round(st.pos)}%`;
+      });
+    return `linear-gradient(${angle}deg, ${parts.join(', ')})`;
+  }
+  private getFormattedOutput(): string { return this.activeMode === 'gradient' ? this.getFormattedGradient() : this.getFormattedSolid(); }
 
   private renderSV() {
     const c = this.svCanvas; if(!c) return; const ctx = c.getContext('2d'); if(!ctx) return; const w=c.width,h=c.height; const hueRGB = this.hsvToRgb(this.hsv.h,100,100);
@@ -149,18 +225,34 @@ export class LdesignColorPickerPanel {
 
   componentDidRender() { this.renderSV(); }
 
+  // ---------- active color helpers ----------
+  private getActiveHSVA() { return this.activeMode === 'gradient' ? this.gradientStops[this.activeStopIndex] : { h: this.hsv.h, s: this.hsv.s, v: this.hsv.v, a: this.alpha }; }
+  private setActiveHSVA(h: number, s: number, v: number, a?: number) {
+    // clamp percent for stability
+    const clamp01 = (x:number) => Math.min(100, Math.max(0, x));
+    if (this.activeMode === 'gradient') {
+      const stops = [...this.gradientStops];
+      stops[this.activeStopIndex] = { h, s, v, a: a ?? stops[this.activeStopIndex].a, pos: clamp01(stops[this.activeStopIndex].pos) };
+      this.gradientStops = stops;
+    } else {
+      this.hsv = { h, s, v };
+      if (a != null) this.alpha = a;
+    }
+  }
+
   // ---------- pointer handlers ----------
   private onSVPointerDown = (e: PointerEvent) => { if (this.disabled) return; this.dragging='sv'; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); this.updateFromSVPointer(e); window.addEventListener('pointermove', this.onWindowPointerMove); window.addEventListener('pointerup', this.onWindowPointerUp); };
   private onHuePointerDown = (e: PointerEvent) => { if (this.disabled) return; this.dragging='hue'; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); this.updateFromHuePointer(e); window.addEventListener('pointermove', this.onWindowPointerMove); window.addEventListener('pointerup', this.onWindowPointerUp); };
   private onAlphaPointerDown = (e: PointerEvent) => { if (!this.showAlpha || this.disabled) return; this.dragging='alpha'; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); this.updateFromAlphaPointer(e); window.addEventListener('pointermove', this.onWindowPointerMove); window.addEventListener('pointerup', this.onWindowPointerUp); };
-  private onWindowPointerMove = (e: PointerEvent) => { if (!this.dragging) return; switch(this.dragging){ case 'sv': this.updateFromSVPointer(e,true); break; case 'hue': this.updateFromHuePointer(e,true); break; case 'alpha': this.updateFromAlphaPointer(e,true); break; } };
-  private onWindowPointerUp = () => { if (!this.dragging) return; this.dragging=null; window.removeEventListener('pointermove', this.onWindowPointerMove); window.removeEventListener('pointerup', this.onWindowPointerUp); const out=this.getFormattedColor(); this.value=out; this.ldesignChange.emit(out); if (this.showHistory) this.pushHistory(this.rgbToHex(...Object.values(this.hsvToRgb(this.hsv.h,this.hsv.s,this.hsv.v)).slice(0,3) as [number,number,number], this.alpha)); };
+  private onWindowPointerMove = (e: PointerEvent) => { if (!this.dragging) return; switch(this.dragging){ case 'sv': this.updateFromSVPointer(e); break; case 'hue': this.updateFromHuePointer(e); break; case 'alpha': this.updateFromAlphaPointer(e); break; } };
+  private onWindowPointerUp = () => { if (!this.dragging) return; this.dragging=null; window.removeEventListener('pointermove', this.onWindowPointerMove); window.removeEventListener('pointerup', this.onWindowPointerUp); const out=this.getFormattedOutput(); this.value=out; this.ldesignChange.emit(out); if (this.showHistory && this.activeMode==='solid') { const rgb=this.hsvToRgb(this.hsv.h,this.hsv.s,this.hsv.v); this.pushHistory(this.rgbToHex(rgb.r,rgb.g,rgb.b,this.alpha)); } };
 
-  private updateFromSVPointer(e: PointerEvent){ if (!this.svCanvas) return; const rect=this.svCanvas.getBoundingClientRect(); const x=this.clamp(e.clientX-rect.left,0,rect.width); const y=this.clamp(e.clientY-rect.top,0,rect.height); const s=(x/rect.width)*100; const v=(1-y/rect.height)*100; this.hsv={...this.hsv,s,v}; const out=this.getFormattedColor(); this.value=out; this.ldesignInput.emit(out); }
-  private updateFromHuePointer(e: PointerEvent){ if (!this.hueTrack) return; const rect=this.hueTrack.getBoundingClientRect(); const x=this.clamp(e.clientX-rect.left,0,rect.width); const h=(x/rect.width)*360; this.hsv={...this.hsv,h}; const out=this.getFormattedColor(); this.value=out; this.ldesignInput.emit(out); }
-  private updateFromAlphaPointer(e: PointerEvent){ if (!this.alphaTrack) return; const rect=this.alphaTrack.getBoundingClientRect(); const x=this.clamp(e.clientX-rect.left,0,rect.width); this.alpha=x/rect.width; const out=this.getFormattedColor(); this.value=out; this.ldesignInput.emit(out); }
+  private updateFromSVPointer(e: PointerEvent){ if (!this.svCanvas) return; const rect=this.svCanvas.getBoundingClientRect(); const x=this.clamp(e.clientX-rect.left,0,rect.width); const y=this.clamp(e.clientY-rect.top,0,rect.height); const s=(x/rect.width)*100; const v=(1-y/rect.height)*100; const cur=this.getActiveHSVA(); this.setActiveHSVA(cur.h,s,v,cur.a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }
+  private updateFromHuePointer(e: PointerEvent){ if (!this.hueTrack) return; const rect=this.hueTrack.getBoundingClientRect(); const x=this.clamp(e.clientX-rect.left,0,rect.width); const h=(x/rect.width)*360; const cur=this.getActiveHSVA(); this.setActiveHSVA(h,cur.s,cur.v,cur.a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }
+  private updateFromAlphaPointer(e: PointerEvent){ if (!this.alphaTrack) return; const rect=this.alphaTrack.getBoundingClientRect(); const x=this.clamp(e.clientX-rect.left,0,rect.width); const cur=this.getActiveHSVA(); const a=x/rect.width; this.setActiveHSVA(cur.h,cur.s,cur.v,a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }
 
   // ---------- Inputs & palette ----------
+  private getFormattedColor(): string { return this.getFormattedOutput(); }
   private switchFormat(fmt: 'hex'|'rgb'|'hsl'|'hsv'){ this.activeFormat=fmt; this.value=this.getFormattedColor(); }
   private onHexInput(e: Event){ const v=(e.target as HTMLInputElement).value; const parsed=this.parseColor(v); if(parsed){ this.hsv={ h:parsed.hsv.h, s:parsed.hsv.s, v:parsed.hsv.v }; this.alpha=parsed.rgb.a ?? 1; this.value=this.getFormattedColor(); this.ldesignInput.emit(this.value); this.ldesignChange.emit(this.value); } }
   private onRGBInput(_ids: ['r','g','b','a?'], values: number[]){ const [r,g,b,aVal]=values; const rgb={r,g,b,a:this.showAlpha?(aVal ?? this.alpha):undefined}; const hsv=this.rgbToHsv(rgb); this.hsv={h:hsv.h, s:hsv.s, v:hsv.v}; this.alpha=rgb.a ?? this.alpha; this.value=this.getFormattedColor(); this.ldesignInput.emit(this.value); this.ldesignChange.emit(this.value); }
@@ -170,12 +262,12 @@ export class LdesignColorPickerPanel {
   private pushHistory(hex: string){ const list=this.history.slice(); const idx=list.indexOf(hex); if(idx>=0) list.splice(idx,1); list.unshift(hex); if(list.length>this.recentMax) list.length=this.recentMax; this.history=list; }
 
   private hueGradientStyle(){ const stops:string[]=[]; for(let i=0;i<=360;i+=30){ const {r,g,b}=this.hsvToRgb(i,100,100); stops.push(`rgb(${r}, ${g}, ${b})`);} return { background: `linear-gradient(to right, ${stops.join(', ')})` } as any; }
-  private alphaGradientStyle(){ const { r,g,b } = this.hsvToRgb(this.hsv.h,this.hsv.s,this.hsv.v); return { background: `linear-gradient(to right, rgba(${r}, ${g}, ${b}, 0), rgba(${r}, ${g}, ${b}, 1)), var(--ldesign-alpha-checker, url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\"><rect width=\"5\" height=\"5\" fill=\"%23ccc\"/><rect x=\"5\" y=\"5\" width=\"5\" height=\"5\" fill=\"%23ccc\"/></svg>'))` } as any; }
-  private pointerPosForSV(){ if(!this.svCanvas) return { left:'0%', top:'0%' } as any; return { left: `${this.hsv.s}%`, top: `${100-this.hsv.v}%` } as any; }
-  private pointerPosForHue(){ if(!this.hueTrack) return { left:'0%' } as any; return { left: `${(this.hsv.h/360)*100}%` } as any; }
-  private pointerPosForAlpha(){ if(!this.showAlpha || !this.alphaTrack) return { left:'100%' } as any; return { left: `${this.alpha*100}%` } as any; }
+  private alphaGradientStyle(){ const cur=this.getActiveHSVA(); const { r,g,b } = this.hsvToRgb(cur.h,cur.s,cur.v); return { background: `linear-gradient(to right, rgba(${r}, ${g}, ${b}, 0), rgba(${r}, ${g}, ${b}, 1)), var(--ldesign-alpha-checker, url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\"><rect width=\"5\" height=\"5\" fill=\"%23ccc\"/><rect x=\"5\" y=\"5\" width=\"5\" height=\"5\" fill=\"%23ccc\"/></svg>'))` } as any; }
+  private pointerPosForSV(){ const cur=this.getActiveHSVA(); if(!this.svCanvas) return { left:'0%', top:'0%' } as any; return { left: `${cur.s}%`, top: `${100-cur.v}%` } as any; }
+  private pointerPosForHue(){ const cur=this.getActiveHSVA(); if(!this.hueTrack) return { left:'0%' } as any; return { left: `${(cur.h/360)*100}%` } as any; }
+  private pointerPosForAlpha(){ const cur=this.getActiveHSVA(); if(!this.showAlpha || !this.alphaTrack) return { left:'100%' } as any; return { left: `${(cur.a ?? 1)*100}%` } as any; }
 
-  private renderInputs(){ const rgb=this.hsvToRgb(this.hsv.h,this.hsv.s,this.hsv.v,this.alpha); const hsl=this.rgbToHsl(rgb); const hex=this.rgbToHex(rgb.r,rgb.g,rgb.b,this.alpha); return (
+  private renderInputs(){ const ac=this.getActiveHSVA(); const rgb=this.hsvToRgb(ac.h,ac.s,ac.v,ac.a); const hsl=this.rgbToHsl(rgb); const hex=this.rgbToHex(rgb.r,rgb.g,rgb.b,ac.a); return (
     <div class="cp-inputs">
       <div class="cp-tabs">
         <button class={{'active': this.activeFormat==='hex'}} onClick={()=>this.switchFormat('hex')}>HEX</button>
@@ -187,26 +279,26 @@ export class LdesignColorPickerPanel {
         {this.activeFormat==='hex' && (<div class="field-row"><input type="text" class="hex" value={hex} onChange={(e)=>this.onHexInput(e)} disabled={this.disabled} /></div>)}
         {this.activeFormat==='rgb' && (
           <div class="field-row">
-            <input type="number" min="0" max="255" value={rgb.r} disabled={this.disabled} onChange={(e)=>this.onRGBInput(['r','g','b','a?'], [parseFloat((e.target as any).value), rgb.g, rgb.b, this.alpha])} />
-            <input type="number" min="0" max="255" value={rgb.g} disabled={this.disabled} onChange={(e)=>this.onRGBInput(['r','g','b','a?'], [rgb.r, parseFloat((e.target as any).value), rgb.b, this.alpha])} />
-            <input type="number" min="0" max="255" value={rgb.b} disabled={this.disabled} onChange={(e)=>this.onRGBInput(['r','g','b','a?'], [rgb.r, rgb.g, parseFloat((e.target as any).value), this.alpha])} />
-            {this.showAlpha ? (<input type="number" min="0" max="1" step="0.01" value={this.alpha} disabled={this.disabled} onChange={(e)=>this.onRGBInput(['r','g','b','a?'], [rgb.r, rgb.g, rgb.b, parseFloat((e.target as any).value)])} />) : null}
+            <input type="number" min="0" max="255" value={rgb.r} disabled={this.disabled} onChange={(e)=>this.onRGBInput(['r','g','b','a?'], [parseFloat((e.target as any).value), rgb.g, rgb.b, ac.a])} />
+            <input type="number" min="0" max="255" value={rgb.g} disabled={this.disabled} onChange={(e)=>this.onRGBInput(['r','g','b','a?'], [rgb.r, parseFloat((e.target as any).value), rgb.b, ac.a])} />
+            <input type="number" min="0" max="255" value={rgb.b} disabled={this.disabled} onChange={(e)=>this.onRGBInput(['r','g','b','a?'], [rgb.r, rgb.g, parseFloat((e.target as any).value), ac.a])} />
+            {this.showAlpha ? (<input type="number" min="0" max="1" step="0.01" value={ac.a ?? 1} disabled={this.disabled} onChange={(e)=>this.onRGBInput(['r','g','b','a?'], [rgb.r, rgb.g, rgb.b, parseFloat((e.target as any).value)])} />) : null}
           </div>
         )}
         {this.activeFormat==='hsl' && (
           <div class="field-row">
-            <input type="number" min="0" max="360" value={Math.round(hsl.h)} disabled={this.disabled} onChange={(e)=>this.onHSLInput([parseFloat((e.target as any).value), hsl.s, hsl.l, this.alpha])} />
-            <input type="number" min="0" max="100" value={Math.round(hsl.s)} disabled={this.disabled} onChange={(e)=>this.onHSLInput([hsl.h, parseFloat((e.target as any).value), hsl.l, this.alpha])} />
-            <input type="number" min="0" max="100" value={Math.round(hsl.l)} disabled={this.disabled} onChange={(e)=>this.onHSLInput([hsl.h, hsl.s, parseFloat((e.target as any).value), this.alpha])} />
-            {this.showAlpha ? (<input type="number" min="0" max="1" step="0.01" value={this.alpha} disabled={this.disabled} onChange={(e)=>this.onHSLInput([hsl.h, hsl.s, hsl.l, parseFloat((e.target as any).value)])} />) : null}
+            <input type="number" min="0" max="360" value={Math.round(hsl.h)} disabled={this.disabled} onChange={(e)=>this.onHSLInput([parseFloat((e.target as any).value), hsl.s, hsl.l, ac.a])} />
+            <input type="number" min="0" max="100" value={Math.round(hsl.s)} disabled={this.disabled} onChange={(e)=>this.onHSLInput([hsl.h, parseFloat((e.target as any).value), hsl.l, ac.a])} />
+            <input type="number" min="0" max="100" value={Math.round(hsl.l)} disabled={this.disabled} onChange={(e)=>this.onHSLInput([hsl.h, hsl.s, parseFloat((e.target as any).value), ac.a])} />
+            {this.showAlpha ? (<input type="number" min="0" max="1" step="0.01" value={ac.a ?? 1} disabled={this.disabled} onChange={(e)=>this.onHSLInput([hsl.h, hsl.s, hsl.l, parseFloat((e.target as any).value)])} />) : null}
           </div>
         )}
         {this.activeFormat==='hsv' && (
           <div class="field-row">
-            <input type="number" min="0" max="360" value={Math.round(this.hsv.h)} disabled={this.disabled} onChange={(e)=>this.onHSVInput([parseFloat((e.target as any).value), this.hsv.s, this.hsv.v, this.alpha])} />
-            <input type="number" min="0" max="100" value={Math.round(this.hsv.s)} disabled={this.disabled} onChange={(e)=>this.onHSVInput([this.hsv.h, parseFloat((e.target as any).value), this.hsv.v, this.alpha])} />
-            <input type="number" min="0" max="100" value={Math.round(this.hsv.v)} disabled={this.disabled} onChange={(e)=>this.onHSVInput([this.hsv.h, this.hsv.s, parseFloat((e.target as any).value), this.alpha])} />
-            {this.showAlpha ? (<input type="number" min="0" max="1" step="0.01" value={this.alpha} disabled={this.disabled} onChange={(e)=>this.onHSVInput([this.hsv.h, this.hsv.s, this.hsv.v, parseFloat((e.target as any).value)])} />) : null}
+            <input type="number" min="0" max="360" value={Math.round(ac.h)} disabled={this.disabled} onChange={(e)=>this.onHSVInput([parseFloat((e.target as any).value), ac.s, ac.v, ac.a])} />
+            <input type="number" min="0" max="100" value={Math.round(ac.s)} disabled={this.disabled} onChange={(e)=>this.onHSVInput([ac.h, parseFloat((e.target as any).value), ac.v, ac.a])} />
+            <input type="number" min="0" max="100" value={Math.round(ac.v)} disabled={this.disabled} onChange={(e)=>this.onHSVInput([ac.h, ac.s, parseFloat((e.target as any).value), ac.a])} />
+            {this.showAlpha ? (<input type="number" min="0" max="1" step="0.01" value={ac.a ?? 1} disabled={this.disabled} onChange={(e)=>this.onHSVInput([ac.h, ac.s, ac.v, parseFloat((e.target as any).value)])} />) : null}
           </div>
         )}
       </div>
@@ -216,9 +308,54 @@ export class LdesignColorPickerPanel {
   render() {
     const hueStyle = this.hueGradientStyle(); const alphaStyle = this.alphaGradientStyle();
     const showHistory = this.showHistory && this.history.length > 0;
+    const gPreview = { background: this.getFormattedGradient() } as any;
     return (
       <Host>
         <div class={{ 'ldesign-color-picker-panel': true, [`ldesign-color-picker-panel--${this.size}`]: true, 'ldesign-color-picker-panel--disabled': this.disabled }}>
+          <div class="mode-tabs" style={{ display: this.modes === 'both' ? 'flex' : 'none' }}>
+            <button class={{ active: this.activeMode==='solid' }} onClick={()=> this.activeMode='solid'}>单色</button>
+            <button class={{ active: this.activeMode==='gradient' }} onClick={()=> this.activeMode='gradient'}>渐变</button>
+          </div>
+
+          {this.activeMode==='gradient' ? (
+            <div class="gradient-tools">
+              <div class="gradient-preview" style={gPreview}></div>
+              <div class="angle">
+                <input type="range" min="0" max="360" value={this.gradientAngle} onInput={(e:any)=>{ this.gradientAngle = parseFloat(e.target.value); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
+                <input type="number" min="0" max="360" value={Math.round(this.gradientAngle)} onChange={(e:any)=>{ this.gradientAngle = parseFloat(e.target.value)||0; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
+                <span>°</span>
+              </div>
+              <div class="stops-bar" ref={(el) => (this.stopTrackEl = el as HTMLElement)} onPointerUp={() => { this.stopDragIndex=null; }}>
+                <div class="stops-gradient" style={gPreview}></div>
+                {this.gradientStops.map((st, i) => (
+                  <div
+                    class={{ 'stop-handle': true, active: this.activeStopIndex===i }}
+                    style={{ left: `${st.pos}%`, background: this.rgbStringOf(st.h, st.s, st.v, st.a) }}
+                    onPointerDown={(e:any)=>{ this.stopDragIndex=i; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); }}
+                    onPointerMove={(e:any)=>{
+                      if (this.stopDragIndex===i && this.stopTrackEl){
+                        const rect=this.stopTrackEl.getBoundingClientRect();
+                        const pos = Math.min(100, Math.max(0, ((e.clientX-rect.left)/rect.width)*100));
+                        const arr=[...this.gradientStops]; arr[i] = { ...arr[i], pos } as any; this.gradientStops = arr;
+                        const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);
+                      }
+                    }}
+                    onClick={()=> this.activeStopIndex=i}
+                  ></div>
+                ))}
+                <div class="stops-actions">
+                  <button title="添加色标" onClick={()=>{ if(this.gradientStops.length<8){ const cur=this.getActiveHSVA(); const arr=[...this.gradientStops, { h:cur.h, s:cur.s, v:cur.v, a:cur.a ?? 1, pos:50 }]; this.gradientStops=arr; this.activeStopIndex=arr.length-1; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); } }}>+</button>
+                  <button title="删除当前色标" onClick={()=>{ if(this.gradientStops.length>2){ const arr=[...this.gradientStops]; arr.splice(this.activeStopIndex,1); this.gradientStops=arr; this.activeStopIndex=Math.max(0,this.activeStopIndex-1); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} }}>-</button>
+                </div>
+              </div>
+              <div class="angle-presets">
+                {[0,45,90,180].map(v => (
+                  <button class={{ active: Math.round((this.gradientAngle%360+360)%360)===v }} onClick={()=>{ this.gradientAngle=v; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>{v}°</button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <div class="cp-body">
             <div class="sv-wrap">
               <canvas ref={el => (this.svCanvas = el as HTMLCanvasElement)} class="sv-canvas" onPointerDown={this.onSVPointerDown as any}></canvas>
@@ -260,4 +397,6 @@ export class LdesignColorPickerPanel {
       </Host>
     );
   }
+
+  private rgbStringOf(h:number,s:number,v:number,a:number){ const r=this.hsvToRgb(h,s,v,a); return `rgba(${r.r}, ${r.g}, ${r.b}, ${a})`; }
 }

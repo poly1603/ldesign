@@ -3,6 +3,8 @@ import type { ModalAnimation, ModalSize } from './modal';
 export interface ModalBaseOptions {
   title?: string;
   content?: string | HTMLElement;
+  /** 状态图标类型 */
+  status?: 'info' | 'success' | 'warning' | 'error';
   size?: ModalSize;
   centered?: boolean;
   animation?: ModalAnimation;
@@ -37,6 +39,9 @@ export interface ModalPromptOptions extends ModalConfirmOptions {
     defaultValue?: string;
     maxlength?: number;
   };
+  /** 校验输入，返回 true/空 表示通过；返回字符串为错误信息；返回 false 使用 errorText */
+  validate?: (value: string) => boolean | string | Promise<boolean | string>;
+  errorText?: string;
 }
 
 /**
@@ -64,9 +69,27 @@ function ensureContentNode(content?: string | HTMLElement): Node | null {
     const div = document.createElement('div');
     div.textContent = content; // 默认按纯文本处理，避免 XSS
     return div;
-    // 如需支持富文本，可改为 div.innerHTML = content;
   }
   return content;
+}
+
+function createStatusIcon(status?: string): HTMLElement | null {
+  if (!status) return null;
+  const map: Record<string, string> = {
+    info: 'info',
+    success: 'check-circle',
+    warning: 'alert-triangle',
+    error: 'x-circle'
+  };
+  const name = map[status];
+  if (!name) return null;
+  const wrap = document.createElement('span');
+  wrap.className = `ldesign-modal__status ldesign-modal__status--${status}`;
+  const icon = document.createElement('ldesign-icon');
+  icon.setAttribute('name', name);
+  icon.className = 'ldesign-modal__status-icon';
+  wrap.appendChild(icon);
+  return wrap;
 }
 
 function scheduleRemoval(modal: HTMLElement, delay = 320) {
@@ -101,13 +124,25 @@ export function alertModal(options: ModalAlertOptions | string): Promise<void> {
     // 内容
     const body = document.createElement('div');
     body.className = 'ldesign-modal__simple';
+    const row = document.createElement('div');
+    row.className = 'ldesign-modal__simple-row';
+    const statusIcon = createStatusIcon(opts.status);
+    if (statusIcon) row.appendChild(statusIcon);
+    const contentWrap = document.createElement('div');
+    contentWrap.className = 'ldesign-modal__simple-content';
     const node = ensureContentNode(opts.content || '');
-    if (node) body.appendChild(node);
+    if (node) contentWrap.appendChild(node);
+    row.appendChild(contentWrap);
+    body.appendChild(row);
 
     // 自定义 footer，只放一个 OK 按钮
     const footer = document.createElement('div');
     footer.slot = 'footer';
     footer.className = 'ldesign-modal__quick-footer';
+    // 确保右对齐且有间距（内联保障，不依赖外部样式）
+    (footer as HTMLElement).style.display = 'flex';
+    (footer as HTMLElement).style.justifyContent = 'flex-end';
+    (footer as HTMLElement).style.gap = '12px';
     const okBtn = document.createElement('ldesign-button');
     okBtn.setAttribute('type', (opts.okType || 'primary') as string);
     okBtn.textContent = opts.okText || '确定';
@@ -150,13 +185,24 @@ export function confirmModal(options: ModalConfirmOptions | string): Promise<boo
     // 内容
     const body = document.createElement('div');
     body.className = 'ldesign-modal__simple';
+    const row = document.createElement('div');
+    row.className = 'ldesign-modal__simple-row';
+    const statusIcon = createStatusIcon(opts.status);
+    if (statusIcon) row.appendChild(statusIcon);
+    const contentWrap = document.createElement('div');
+    contentWrap.className = 'ldesign-modal__simple-content';
     const node = ensureContentNode(opts.content || '');
-    if (node) body.appendChild(node);
+    if (node) contentWrap.appendChild(node);
+    row.appendChild(contentWrap);
+    body.appendChild(row);
 
     // 自定义 footer：取消 + 确定
     const footer = document.createElement('div');
     footer.slot = 'footer';
     footer.className = 'ldesign-modal__quick-footer';
+    (footer as HTMLElement).style.display = 'flex';
+    (footer as HTMLElement).style.justifyContent = 'flex-end';
+    (footer as HTMLElement).style.gap = '12px';
 
     const cancelBtn = document.createElement('ldesign-button');
     // 使用更轻的文本按钮，减少视觉噪音
@@ -169,8 +215,11 @@ export function confirmModal(options: ModalConfirmOptions | string): Promise<boo
     });
 
     const okBtn = document.createElement('ldesign-button');
-    okBtn.setAttribute('type', (opts.okType || 'primary') as string);
+    const okStyle = (opts.okType || ((opts.status === 'warning' || opts.status === 'error') ? 'danger' : 'primary')) as string;
+    okBtn.setAttribute('type', okStyle);
     okBtn.textContent = opts.okText || '确定';
+    // 兜底：若 gap 样式未生效，给确定按钮一个左外边距
+    (okBtn as HTMLElement).style.marginLeft = '12px';
     okBtn.addEventListener('click', () => {
       modal.visible = false;
       scheduleRemoval(modal);
@@ -219,8 +268,15 @@ export function promptModal(options: ModalPromptOptions | string): Promise<strin
     const wrap = document.createElement('div');
     wrap.className = 'ldesign-modal__simple';
 
+    const row = document.createElement('div');
+    row.className = 'ldesign-modal__simple-row';
+    const statusIcon = createStatusIcon(opts.status);
+    if (statusIcon) row.appendChild(statusIcon);
+    const contentCol = document.createElement('div');
+    contentCol.className = 'ldesign-modal__simple-content';
+
     const contentNode = ensureContentNode(opts.content || '');
-    if (contentNode) wrap.appendChild(contentNode);
+    if (contentNode) contentCol.appendChild(contentNode);
 
     const input = document.createElement('input');
     input.type = opts.input?.type || 'text';
@@ -228,12 +284,24 @@ export function promptModal(options: ModalPromptOptions | string): Promise<strin
     if (opts.input?.defaultValue != null) input.value = opts.input.defaultValue;
     if (opts.input?.maxlength != null) input.maxLength = opts.input.maxlength!;
     input.className = 'ldesign-modal__prompt-input';
-    wrap.appendChild(input);
+    contentCol.appendChild(input);
+
+    // 错误文本
+    const err = document.createElement('div');
+    err.className = 'ldesign-modal__error';
+    err.style.display = 'none';
+    contentCol.appendChild(err);
+
+    row.appendChild(contentCol);
+    wrap.appendChild(row);
 
     // 自定义 footer：取消 + 确定
     const footer = document.createElement('div');
     footer.slot = 'footer';
     footer.className = 'ldesign-modal__quick-footer';
+    (footer as HTMLElement).style.display = 'flex';
+    (footer as HTMLElement).style.justifyContent = 'flex-end';
+    (footer as HTMLElement).style.gap = '12px';
 
     const cancelBtn = document.createElement('ldesign-button');
     // 更轻的文本样式
@@ -248,8 +316,32 @@ export function promptModal(options: ModalPromptOptions | string): Promise<strin
     const okBtn = document.createElement('ldesign-button');
     okBtn.setAttribute('type', (opts.okType || 'primary') as string);
     okBtn.textContent = opts.okText || '确定';
-    okBtn.addEventListener('click', () => {
+    (okBtn as HTMLElement).style.marginLeft = '12px';
+    okBtn.addEventListener('click', async () => {
       const val = input.value;
+      if (opts.validate) {
+        try {
+          const r = await Promise.resolve(opts.validate(val));
+          let pass = false;
+          let msg = '';
+          if (r === true || r === undefined) pass = true;
+          else if (typeof r === 'string') { pass = false; msg = r; }
+          else pass = false;
+          if (!pass) {
+            err.textContent = msg || opts.errorText || '请输入有效的内容';
+            err.style.display = '';
+            input.setAttribute('aria-invalid', 'true');
+            input.focus();
+            return;
+          }
+        } catch (_) {
+          err.textContent = opts.errorText || '请输入有效的内容';
+          err.style.display = '';
+          input.setAttribute('aria-invalid', 'true');
+          input.focus();
+          return;
+        }
+      }
       modal.visible = false;
       scheduleRemoval(modal);
       resolve(val);

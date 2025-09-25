@@ -65,6 +65,8 @@ export class LdesignImageViewer {
   @Prop() showCaption: boolean = true;
   /** 小窗标题 */
   @Prop() viewerTitle?: string;
+  /** 小窗拖拽方式：title 标题栏拖拽；anywhere 全面板可拖拽 */
+  @Prop() panelDraggable: 'title' | 'anywhere' = 'title';
 
   // ── Events ──────────────────────────────────────────────────────
   @Event() ldesignVisibleChange: EventEmitter<boolean>;
@@ -478,7 +480,15 @@ export class LdesignImageViewer {
     return (
       <Host>
         <div class={classes} data-motion={this.motion} style={{ zIndex: String(this.zIndex), ['--iv-duration' as any]: `${this.transitionDuration}ms`, ['--iv-ease' as any]: this.transitionEasing }} onClick={this.onMaskClick}>
-          <div ref={el => (this.panelEl = el as HTMLElement)} class="ldesign-image-viewer__panel" style={panelStyle} onClick={(e) => e.stopPropagation()} style={{ ...panelStyle }}>
+          <div
+            ref={el => (this.panelEl = el as HTMLElement)}
+            class="ldesign-image-viewer__panel"
+            style={panelStyle}
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={this.panelDraggable === 'anywhere' ? this.onPanelPointerDown : undefined}
+            onPointerMove={this.panelDraggable === 'anywhere' ? this.onPanelPointerMove : undefined}
+            onPointerUp={this.panelDraggable === 'anywhere' ? this.onPanelPointerUp : undefined}
+          >
             {/* 顶部关闭 */}
             <button class="ldesign-image-viewer__close" aria-label="关闭" onClick={() => this.close()}>
               <ldesign-icon name="x" />

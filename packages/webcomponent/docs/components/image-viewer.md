@@ -86,6 +86,7 @@ onMounted(() => {
   const vLight = document.getElementById('iv-light')
   const vNoThumbs = document.getElementById('iv-nothumbs')
   const vModal = document.getElementById('iv-modal')
+  const vModalAny = document.getElementById('iv-modal-any')
   const themeImgs = [
     { src: 'https://picsum.photos/seed/31/1400/1000', title: '图 31', description: '小窗模式也支持标题与描述' },
     { src: 'https://picsum.photos/seed/32/1400/1000', title: '图 32' },
@@ -94,15 +95,19 @@ onMounted(() => {
   if (vLight) vLight.images = themeImgs
   if (vNoThumbs) vNoThumbs.images = themeImgs
   if (vModal) vModal.images = themeImgs
+  if (vModalAny) vModalAny.images = themeImgs
   const b1 = document.getElementById('iv-open-light')
   const b2 = document.getElementById('iv-open-no-thumbs')
   const b3 = document.getElementById('iv-open-modal')
+  const b4 = document.getElementById('iv-open-modal-any')
   const o1 = () => (vLight && (vLight.visible = true))
   const o2 = () => (vNoThumbs && (vNoThumbs.visible = true))
   const o3 = () => (vModal && (vModal.visible = true))
+  const o4 = () => (vModalAny && (vModalAny.visible = true))
   b1 && b1.addEventListener('click', o1)
   b2 && b2.addEventListener('click', o2)
   b3 && b3.addEventListener('click', o3)
+  b4 && b4.addEventListener('click', o4)
 
   onBeforeUnmount(() => {
     btnBasic && btnBasic.removeEventListener('click', onBasic)
@@ -112,6 +117,7 @@ onMounted(() => {
     b1 && b1.removeEventListener('click', o1)
     b2 && b2.removeEventListener('click', o2)
     b3 && b3.removeEventListener('click', o3)
+    b4 && b4.removeEventListener('click', o4)
   })
 })
 </script>
@@ -200,10 +206,12 @@ onMounted(() => {
     <ldesign-button id="iv-open-light" type="outline">亮色背景</ldesign-button>
     <ldesign-button id="iv-open-no-thumbs" type="outline">无缩略图</ldesign-button>
     <ldesign-button id="iv-open-modal" type="primary">小窗（Modal）</ldesign-button>
+    <ldesign-button id="iv-open-modal-any" type="primary">小窗（任意拖动）</ldesign-button>
   </div>
   <ldesign-image-viewer id="iv-light" backdrop="light"></ldesign-image-viewer>
   <ldesign-image-viewer id="iv-nothumbs" :show-thumbnails="false"></ldesign-image-viewer>
   <ldesign-image-viewer id="iv-modal" viewer-mode="modal" panel-width="900px" panel-height="640px" transition="fade-zoom"></ldesign-image-viewer>
+  <ldesign-image-viewer id="iv-modal-any" viewer-mode="modal" panel-width="900px" panel-height="640px" panel-draggable="anywhere" viewer-title="图片预览（可任意拖动）" transition="fade-zoom"></ldesign-image-viewer>
 </div>
 
 

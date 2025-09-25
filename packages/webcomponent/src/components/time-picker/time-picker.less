@@ -40,22 +40,31 @@
     border-radius: 8px;
   }
 
-  &__column {
-    margin: 0 !important;
-    padding: 0 !important;
-    list-style: none;
+  /* 外层滚动容器（隐藏蒙层与指示器用） */
+  &__picker {
+    position: relative;
     width: 72px;
-    max-height: 180px;
-    overflow-y: auto;
+    overflow: hidden;
     background: #fff;
     border-radius: 6px;
     border: 1px solid var(--ldesign-border-color, #e5e7eb);
   }
 
+  &__column {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+
   &__item {
     text-align: center;
-    padding: 8px 0;
-    font-size: 14px;
+    height: var(--ld-tp-item-height, 36px);
+    line-height: var(--ld-tp-item-height, 36px);
+    font-size: 16px;
     color: var(--ldesign-text-color, #111827);
     cursor: pointer;
 
@@ -72,6 +81,33 @@
       cursor: not-allowed;
       &:hover { background: transparent; }
     }
+  }
+
+  /* 中心选中指示条 */
+  &__indicator {
+    position: absolute;
+    left: 0; right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    background: rgba(29, 78, 216, 0.08);
+    border-radius: 6px;
+  }
+
+  /* 上下渐隐蒙层 */
+  &__mask {
+    position: absolute;
+    left: 0; right: 0;
+    height: 24px;
+    pointer-events: none;
+  }
+  &__mask--top {
+    top: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,1), rgba(255,255,255,0));
+  }
+  &__mask--bottom {
+    bottom: 0;
+    background: linear-gradient(0deg, rgba(255,255,255,1), rgba(255,255,255,0));
   }
 
   &__footer {

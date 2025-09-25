@@ -84,6 +84,9 @@ export class LdesignTimePicker {
   private listSecond?: HTMLElement;
   private listAmPm?: HTMLElement;
 
+  private itemHeight = 36; // px，用于滚动吸附
+  private snapTimers: { [k: string]: number | undefined } = {};
+
   @Watch('value')
   watchValue(newVal?: string) {
     const t = this.parseTime(newVal) || this.parseTime(this.defaultValue) || { h: 0, m: 0, s: 0 };
@@ -153,11 +156,59 @@ export class LdesignTimePicker {
   };
 
   private scrollActiveIntoView() {
-    const sel = '.ldesign-time-picker__item--active';
-    [this.listAmPm, this.listHour, this.listMinute, this.listSecond].forEach((c) => {
-      const target = c?.querySelector(sel) as HTMLElement | null;
-      if (target) target.scrollIntoView({ block: 'center' });
-    });
+    const setPad = (el?: HTMLElement) => { if (!el) return; const h = el.clientHeight || this.panelHeight; const pad = Math.max(0, Math.round(h / 2 - this.itemHeight / 2)); el.style.paddingTop = `${pad}px`; el.style.paddingBottom = `${pad}px`; };
+    [this.listAmPm, this.listHour, this.listMinute, this.listSecond].forEach((el) => setPad(el));
+
+    const centerByQuery = (el?: HTMLElement, selector?: string) => {
+      if (!el) return; const target = selector ? (el.querySelector(selector) as HTMLElement | null) : null; if (target) this.scrollItemIntoCenter(el, target, false);
+    };
+
+    centerByQuery(this.listHour, `li[data-value="${this.h}"]`);
+    centerByQuery(this.listMinute, `li[data-value="${this.m}"]`);
+    if (this.showSeconds) centerByQuery(this.listSecond, `li[data-value="${this.s}"]`);
+    if (this.use12Hours) centerByQuery(this.listAmPm, `.ldesign-time-picker__item--active`);
+  }
+
+  private getNearestItem(container: HTMLElement): HTMLElement | null {
+    const rect = container.getBoundingClientRect();
+    const centerY = rect.top + rect.height / 2;
+    const items = Array.from(container.querySelectorAll('li')) as HTMLElement[];
+    let nearest: HTMLElement | null = null;
+    let minDist = Infinity;
+    for (const it of items) {
+      const r = it.getBoundingClientRect();
+      const cy = r.top + r.height / 2;
+      const d = Math.abs(cy - centerY);
+      if (d < minDist) { minDist = d; nearest = it; }
+    }
+    return nearest || null;
+  }
+
+  private scrollItemIntoCenter(container: HTMLElement, item: HTMLElement, smooth = true) {
+    const containerRect = container.getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
+    const delta = (itemRect.top + itemRect.height / 2) - (containerRect.top + containerRect.height / 2);
+    container.scrollBy({ top: delta, behavior: smooth ? 'smooth' as ScrollBehavior : 'auto' as ScrollBehavior });
+  }
+
+  private onColumnScroll(kind: 'hour' | 'minute' | 'second' | 'ampm', container: HTMLElement) {
+    const nearest = this.getNearestItem(container);
+    if (nearest && !nearest.classList.contains('ldesign-time-picker__item--disabled')) {
+      const vAttr = nearest.getAttribute('data-value');
+      if (vAttr != null) {
+        const v = parseInt(vAttr, 10);
+        if (kind === 'hour') { this.h = v; this.ampm = this.h < 12 ? 'AM' : 'PM'; }
+        else if (kind === 'minute') this.m = v;
+        else if (kind === 'second') this.s = v;
+        else if (kind === 'ampm') this.setAmPm(nearest.textContent?.trim() === 'PM' ? 'PM' : 'AM');
+      }
+    }
+    // 吸附到最近项（滚动停止后）
+    if (this.snapTimers[kind]) clearTimeout(this.snapTimers[kind]);
+    this.snapTimers[kind] = window.setTimeout(() => {
+      const near = this.getNearestItem(container);
+      if (near) this.scrollItemIntoCenter(container, near, true);
+    }, 120);
   }
 
   private setHour = (h: number) => { this.h = this.clamp(h, 0, 23); this.ampm = this.h < 12 ? 'AM' : 'PM'; if (!this.confirm) this.commitValue(); };
@@ -289,47 +340,38 @@ export class LdesignTimePicker {
     const range = (n: number) => Array.from({ length: n }, (_, i) => i);
     let list: number[] = [];
     let cur = 0;
-    let onClick: (v: number) => void = () => {};
-    let onWheel: (e: WheelEvent) => void = () => {};
+    let onClick: (v: number, e?: MouseEvent) => void = () => {};
     let isDisabled: (v: number) => boolean = () => false;
     const step = type === 'hour' ? this.hourStep : (type === 'minute' ? this.minuteStep : this.secondStep);
 
     if (type === 'hour') {
       if (this.use12Hours) {
-        // 1..12
         list = range(12).map(i => i + 1).filter(v => (v % step === 0) || step === 1);
         const disp = ((this.h % 12) || 12);
         cur = disp;
-        onClick = (v) => {
-          let base = v % 12; if (base === 12 % 12) base = 0; // 12 -> 0
-          const h24 = this.ampm === 'PM' ? (base + 12) : base;
-          if (this.isHourDisabled(h24)) return; // 不允许选择禁用项
-          this.setHour(h24);
-        };
-        onWheel = this.onWheelHour;
-        isDisabled = (v) => {
+        onClick = (v, e) => {
           let base = v % 12; if (base === 12 % 12) base = 0;
           const h24 = this.ampm === 'PM' ? (base + 12) : base;
-          return this.isHourDisabled(h24);
+          if (this.isHourDisabled(h24)) return;
+          this.setHour(h24);
+          const li = (e?.currentTarget as HTMLElement) || null; const ul = li?.parentElement as HTMLElement | null; if (li && ul) this.scrollItemIntoCenter(ul, li);
         };
+        isDisabled = (v) => { let base = v % 12; if (base === 12 % 12) base = 0; const h24 = this.ampm === 'PM' ? (base + 12) : base; return this.isHourDisabled(h24); };
       } else {
         list = range(24).filter(v => v % step === 0);
         cur = this.h;
-        onClick = (v) => { if (!this.isHourDisabled(v)) this.setHour(v); };
-        onWheel = this.onWheelHour;
+        onClick = (v, e) => { if (this.isHourDisabled(v)) return; this.setHour(v); const li = (e?.currentTarget as HTMLElement) || null; const ul = li?.parentElement as HTMLElement | null; if (li && ul) this.scrollItemIntoCenter(ul, li); };
         isDisabled = (v) => this.isHourDisabled(v);
       }
     } else if (type === 'minute') {
       list = range(60).filter(v => v % step === 0);
       cur = this.m;
-      onClick = (v) => { if (!this.isMinuteDisabled(v)) this.setMinute(v); };
-      onWheel = this.onWheelMinute;
+      onClick = (v, e) => { if (this.isMinuteDisabled(v)) return; this.setMinute(v); const li = (e?.currentTarget as HTMLElement) || null; const ul = li?.parentElement as HTMLElement | null; if (li && ul) this.scrollItemIntoCenter(ul, li); };
       isDisabled = (v) => this.isMinuteDisabled(v);
     } else {
       list = range(60).filter(v => v % step === 0);
       cur = this.s;
-      onClick = (v) => { if (!this.isSecondDisabled(v)) this.setSecond(v); };
-      onWheel = this.onWheelSecond;
+      onClick = (v, e) => { if (this.isSecondDisabled(v)) return; this.setSecond(v); const li = (e?.currentTarget as HTMLElement) || null; const ul = li?.parentElement as HTMLElement | null; if (li && ul) this.scrollItemIntoCenter(ul, li); };
       isDisabled = (v) => this.isSecondDisabled(v);
     }
 
@@ -337,31 +379,51 @@ export class LdesignTimePicker {
       if (type === 'hour') this.listHour = el; else if (type === 'minute') this.listMinute = el; else this.listSecond = el;
     };
 
+    const onScroll = (e: UIEvent) => {
+      const el = e.currentTarget as HTMLElement;
+      this.onColumnScroll(type, el);
+    };
+
     return (
-      <ul class="ldesign-time-picker__column" tabindex={0} onWheel={onWheel as any} ref={refSetter} style={{ maxHeight: `${this.panelHeight}px`, overflowY: 'auto' }}>
-        {list.map(v => {
-          const active = v === cur;
-          const disabled = isDisabled(v);
-          return (
-            <li class={{ 'ldesign-time-picker__item': true, 'ldesign-time-picker__item--active': active, 'ldesign-time-picker__item--disabled': disabled }} onClick={() => !disabled && onClick(v)}>
-              {this.pad(v)}
-            </li>
-          );
-        })}
-      </ul>
+      <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight}px` }}>
+        <ul class="ldesign-time-picker__column" tabindex={0} onScroll={onScroll as any} ref={refSetter} style={{ height: '100%', overflowY: 'auto' }}>
+          {list.map(v => {
+            const active = type === 'hour' ? (this.use12Hours ? (((this.h % 12) || 12) === v) : (v === this.h)) : (type === 'minute' ? v === this.m : v === this.s);
+            const disabled = isDisabled(v);
+            // 数据值使用 24h 的真实值，便于滚动选择
+            const dataValue = (type === 'hour')
+              ? (this.use12Hours ? (this.ampm === 'PM' ? ((v % 12) + 12) : (v % 12)) : v)
+              : v;
+            return (
+              <li data-value={String(dataValue)} class={{ 'ldesign-time-picker__item': true, 'ldesign-time-picker__item--active': active, 'ldesign-time-picker__item--disabled': disabled }} onClick={(ev) => !disabled && onClick(v, ev)}>
+                {this.pad(v)}
+              </li>
+            );
+          })}
+        </ul>
+        <div class="ldesign-time-picker__indicator" style={{ height: `${this.itemHeight}px` }}></div>
+        <div class="ldesign-time-picker__mask ldesign-time-picker__mask--top"></div>
+        <div class="ldesign-time-picker__mask ldesign-time-picker__mask--bottom"></div>
+      </div>
     );
   }
 
   private renderAmPmColumn() {
     const options: ('AM' | 'PM')[] = ['AM', 'PM'];
+    const onScroll = (e: UIEvent) => { const el = e.currentTarget as HTMLElement; this.onColumnScroll('ampm', el); };
     return (
-      <ul class="ldesign-time-picker__column" tabindex={0} onWheel={this.onWheelAmPm as any} ref={(el) => (this.listAmPm = el)} style={{ maxHeight: `${this.panelHeight}px`, overflowY: 'auto' }}>
-        {options.map(op => (
-          <li class={{ 'ldesign-time-picker__item': true, 'ldesign-time-picker__item--active': op === this.ampm }} onClick={() => this.setAmPm(op)}>
-            {op}
-          </li>
-        ))}
-      </ul>
+      <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight}px` }}>
+        <ul class="ldesign-time-picker__column" tabindex={0} onScroll={onScroll as any} ref={(el) => (this.listAmPm = el)} style={{ height: '100%', overflowY: 'auto' }}>
+          {options.map(op => (
+            <li class={{ 'ldesign-time-picker__item': true, 'ldesign-time-picker__item--active': op === this.ampm }} data-value={op === 'PM' ? '13' : '0'} onClick={(e) => { this.setAmPm(op); const li = (e.currentTarget as HTMLElement); const ul = li.parentElement as HTMLElement; this.scrollItemIntoCenter(ul, li); }}>
+              {op}
+            </li>
+          ))}
+        </ul>
+        <div class="ldesign-time-picker__indicator" style={{ height: `${this.itemHeight}px` }}></div>
+        <div class="ldesign-time-picker__mask ldesign-time-picker__mask--top"></div>
+        <div class="ldesign-time-picker__mask ldesign-time-picker__mask--bottom"></div>
+      </div>
     );
   }
 

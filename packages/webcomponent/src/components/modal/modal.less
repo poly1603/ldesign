@@ -497,6 +497,23 @@
       line-height: 1.7;
       color: var(--ldesign-text-color, #1f2937);
     }
+
+    // 行布局：状态图标 + 内容
+    .ldesign-modal__simple-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .ldesign-modal__simple-content { flex: 1; min-width: 0; }
+
+    // 状态图标
+    .ldesign-modal__status { line-height: 1; display: inline-flex; padding-top: 2px; }
+    .ldesign-modal__status-icon { font-size: 20px; }
+    .ldesign-modal__status--info   { color: var(--ldesign-brand-color, #7c3aed); }
+    .ldesign-modal__status--success{ color: var(--ldesign-success-color, #10b981); }
+    .ldesign-modal__status--warning{ color: var(--ldesign-warning-color, #f59e0b); }
+    .ldesign-modal__status--error  { color: var(--ldesign-error-color, #ef4444); }
+
     // Prompt 输入框样式
     .ldesign-modal__prompt-input {
       width: 100%;
@@ -511,6 +528,13 @@
     .ldesign-modal__prompt-input:focus {
       border-color: var(--ldesign-brand-color, #7c3aed);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--ldesign-brand-color, #7c3aed) 20%, transparent);
+    }
+
+    // 错误文本
+    .ldesign-modal__error {
+      margin-top: 8px;
+      color: var(--ldesign-error-color, #ef4444);
+      font-size: 12px;
     }
   }
 }

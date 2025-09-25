@@ -1,5 +1,9 @@
 import { Component, Prop, State, Element, Event, EventEmitter, Watch, Method, h, Host } from '@stencil/core';
 import { lockPageScroll, unlockPageScroll } from '../../utils/scroll-lock';
+import type { ButtonType } from '../../types';
+
+// 简单的全局栈管理，确保 ESC 仅关闭栈顶弹窗
+const __modalStack: any[] = [];
 
 export type ModalSize = 'small' | 'medium' | 'large' | 'full';
 
@@ -108,6 +112,37 @@ export class LdesignModal {
   @Prop() maximizable: boolean = false;
 
   /**
+   * 底部按钮文案和类型控制（仅在未自定义 footer 时生效）
+   */
+  @Prop() okText: string = '确定';
+  @Prop() cancelText: string = '取消';
+  @Prop() okType: ButtonType = 'primary';
+  @Prop() cancelType: ButtonType = 'secondary';
+
+  /** OK 按钮状态 */
+  @Prop({ mutable: true }) okLoading: boolean = false;
+  @Prop() okDisabled: boolean = false;
+
+  /**
+   * 关闭/确认前拦截钩子（函数属性，需 JS 赋值）
+   */
+  @Prop() beforeClose?: (reason: 'ok' | 'close' | 'mask' | 'esc' | 'api') => boolean | Promise<boolean>;
+  @Prop() preOk?: () => boolean | Promise<boolean>;
+
+  /** 焦点与可访问性 */
+  @Prop() trapFocus: boolean = true;
+  @Prop() initialFocus?: string;
+
+  /** 调整大小边界 */
+  @Prop() minWidth?: number;
+  @Prop() minHeight?: number;
+  @Prop() maxWidth?: number;
+  @Prop() maxHeight?: number;
+
+  /** 容器选择器（可选）：若提供，则在加载时把组件节点移动到该容器下 */
+  @Prop() getContainer?: string;
+
+  /**
    * 模态框状态
    */
   @State() isVisible: boolean = false;
@@ -206,6 +241,9 @@ export class LdesignModal {
    * 调整大小相关状态
    */
   private isResizing: boolean = false;
+
+  /** 打开前的焦点（用于关闭后恢复） */
+  private openerEl?: HTMLElement | null;
   private resizeDirection: string = '';
   private resizeStartX: number = 0;
   private resizeStartY: number = 0;
@@ -271,6 +309,9 @@ export class LdesignModal {
     this.maskElement = this.el.querySelector('.ldesign-modal__mask') as HTMLElement;
     this.bodyElement = this.el.querySelector('.ldesign-modal__body') as HTMLElement;
 
+    // 若指定容器，则把 Host 节点移动过去（只做一次）
+    this.moveToContainer();
+
     if (this.visible) {
       this.setVisible(true);
     }
@@ -326,12 +367,52 @@ export class LdesignModal {
     this.isResizing = false;
   }
 
+  @Watch('getContainer')
+  onGetContainerChange() { this.moveToContainer(); }
+
   /**
-   * 键盘事件处理
+   * 键盘事件处理（ESC 关闭、Enter 确认、Tab 焦点圈定）
    */
   private handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Escape' && this.isVisible && this.keyboard) {
-      this.close();
+    if (!this.isVisible) return;
+
+    // ESC 关闭
+    if (event.key === 'Escape' && this.keyboard) {
+      if (this.isTopMost()) this.attemptClose('esc');
+      return;
+    }
+
+    // Enter 触发 OK（当 footer 未自定义时才有意义）
+    if (event.key === 'Enter') {
+      // 避免在输入框里回车触发两次（仍允许）
+      this.handleOkClick();
+      return;
+    }
+
+    // 焦点圈定（Trap Focus）
+    if (this.trapFocus && event.key === 'Tab') {
+      const dialog = this.el.querySelector('.ldesign-modal__dialog') as HTMLElement | null;
+      if (!dialog) return;
+      const focusables = this.getFocusable(dialog);
+      if (focusables.length === 0) {
+        dialog.focus();
+        event.preventDefault();
+        return;
+      }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (event.shiftKey) {
+        if (!active || active === first || !dialog.contains(active)) {
+          last.focus();
+          event.preventDefault();
+        }
+      } else {
+        if (!active || active === last || !dialog.contains(active)) {
+          first.focus();
+          event.preventDefault();
+        }
+      }
     }
   };
 
@@ -340,7 +421,7 @@ export class LdesignModal {
    */
   private handleMaskClick = (event: Event) => {
     if (event.target === this.maskElement && this.maskClosable) {
-      this.close();
+      this.attemptClose('mask');
     }
   };
 
@@ -348,14 +429,35 @@ export class LdesignModal {
    * 关闭按钮点击事件
    */
   private handleCloseClick = () => {
-    this.close();
+    this.attemptClose('close');
   };
 
   /**
    * 确认按钮点击事件
    */
-  private handleOkClick = () => {
+  private handleOkClick = async () => {
+    if (this.okDisabled || this.okLoading) return;
+
+    // preOk 支持异步校验
+    if (this.preOk) {
+      try {
+        this.okLoading = true;
+        const pass = await this.preOk();
+        if (!pass) { this.okLoading = false; return; }
+      } catch (_) {
+        this.okLoading = false; return;
+      }
+      this.okLoading = false;
+    }
+
+    // beforeClose 拦截（场景：ok）
+    if (this.beforeClose) {
+      const can = await Promise.resolve(this.beforeClose('ok'));
+      if (!can) return;
+    }
+
     this.ldesignOk.emit();
+    this.setVisible(false);
   };
 
   /**
@@ -520,6 +622,9 @@ export class LdesignModal {
     const deltaX = event.clientX - this.resizeStartX;
     const deltaY = event.clientY - this.resizeStartY;
 
+    const minW = this.minWidth ?? 200;
+    const minH = this.minHeight ?? 150;
+
     let newWidth = this.modalStartWidth;
     let newHeight = this.modalStartHeight;
     let newLeft = this.modalStartLeft;
@@ -528,26 +633,28 @@ export class LdesignModal {
     const wrap = this.el.querySelector('.ldesign-modal__wrap') as HTMLElement;
     const maxWidth = wrap.clientWidth;
     const maxHeight = wrap.clientHeight;
+    const limitMaxW = Math.min(maxWidth, this.maxWidth ?? maxWidth);
+    const limitMaxH = Math.min(maxHeight, this.maxHeight ?? maxHeight);
 
     if (this.isDraggable) {
       // 单边调整，位置跟随边缘，中心不固定
       if (this.resizeDirection.includes('right')) {
-        newWidth = Math.max(200, this.modalStartWidth + deltaX);
+        newWidth = Math.max(minW, this.modalStartWidth + deltaX);
       } else if (this.resizeDirection.includes('left')) {
-        newWidth = Math.max(200, this.modalStartWidth - deltaX);
+        newWidth = Math.max(minW, this.modalStartWidth - deltaX);
         newLeft = this.modalStartLeft + (this.modalStartWidth - newWidth);
       }
 
       if (this.resizeDirection.includes('bottom')) {
-        newHeight = Math.max(150, this.modalStartHeight + deltaY);
+        newHeight = Math.max(minH, this.modalStartHeight + deltaY);
       } else if (this.resizeDirection.includes('top')) {
-        newHeight = Math.max(150, this.modalStartHeight - deltaY);
+        newHeight = Math.max(minH, this.modalStartHeight - deltaY);
         newTop = this.modalStartTop + (this.modalStartHeight - newHeight);
       }
 
-      // 最大尺寸不超过容器
-      newWidth = Math.min(newWidth, maxWidth);
-      newHeight = Math.min(newHeight, maxHeight);
+      // 最大尺寸不超过容器及自定义上限
+      newWidth = Math.min(newWidth, limitMaxW);
+      newHeight = Math.min(newHeight, limitMaxH);
 
       // 边界约束
       const maxLeft = Math.max(0, maxWidth - newWidth);
@@ -564,12 +671,12 @@ export class LdesignModal {
       if (this.resizeDirection.includes('bottom')) deltaH = 2 * deltaY;
       else if (this.resizeDirection.includes('top')) deltaH = -2 * deltaY;
 
-      newWidth = Math.max(200, this.modalStartWidth + deltaW);
-      newHeight = Math.max(150, this.modalStartHeight + deltaH);
+      newWidth = Math.max(minW, this.modalStartWidth + deltaW);
+      newHeight = Math.max(minH, this.modalStartHeight + deltaH);
 
-      // 限制不超过容器
-      newWidth = Math.min(newWidth, maxWidth);
-      newHeight = Math.min(newHeight, maxHeight);
+      // 限制不超过容器与自定义上限
+      newWidth = Math.min(newWidth, limitMaxW);
+      newHeight = Math.min(newHeight, limitMaxH);
 
       // 以固定中心点计算位置
       newLeft = this.modalCenterX - newWidth / 2;
@@ -650,8 +757,7 @@ export class LdesignModal {
    */
   @Method()
   async close() {
-    this.ldesignClose.emit();
-    this.setVisible(false);
+    await this.attemptClose('api');
   }
 
   /**
@@ -772,6 +878,9 @@ export class LdesignModal {
       setTimeout(() => {
         this.isAnimating = false;
       }, 300);
+
+      // 入栈（作为栈顶）
+      this.pushToStack();
     } else {
       // 关闭动画
       this.isAnimating = true;
@@ -787,6 +896,13 @@ export class LdesignModal {
           // 解除背景滚动锁
           this.unbindScrollLock();
           this.unlockBodyScroll();
+
+          // 出栈并恢复焦点
+          this.removeFromStack();
+          if (this.openerEl && document.contains(this.openerEl)) {
+            try { this.openerEl.focus(); } catch (_) {}
+          }
+          this.openerEl = null;
         }
       }, 300);
     }
@@ -801,6 +917,9 @@ export class LdesignModal {
     if (this.isVisible === visible) return;
 
     if (visible) {
+      // 记录 opener
+      this.openerEl = (document.activeElement as HTMLElement) || null;
+
       // 显示动画
       this.isAnimating = true;
       this.isClosing = false;
@@ -827,6 +946,9 @@ export class LdesignModal {
       setTimeout(() => {
         this.isAnimating = false;
       }, 300);
+
+      // 聚焦
+      this.focusAfterOpen();
     } else {
       // 关闭动画
       this.isAnimating = true;
@@ -843,6 +965,13 @@ export class LdesignModal {
           // 解除背景滚动锁
           this.unbindScrollLock();
           this.unlockBodyScroll();
+
+          // 出栈并恢复焦点
+          this.removeFromStack();
+          if (this.openerEl && document.contains(this.openerEl)) {
+            try { this.openerEl.focus(); } catch (_) {}
+          }
+          this.openerEl = null;
         }
       }, 300);
     }
@@ -906,6 +1035,36 @@ export class LdesignModal {
     classes.push(`ldesign-modal__dialog--${this.size}`);
 
     return classes.join(' ');
+  }
+
+  /** 获取可聚焦元素 */
+  private getFocusable(root: HTMLElement): HTMLElement[] {
+    const selector = [
+      'a[href]','area[href]','input:not([disabled])','select:not([disabled])','textarea:not([disabled])',
+      'button:not([disabled])','iframe','object','embed','[tabindex]:not([tabindex="-1"])','[contenteditable=true]'
+    ].join(',');
+    const nodes = Array.from(root.querySelectorAll(selector)) as HTMLElement[];
+    return nodes.filter(el => el.offsetParent !== null || el === document.activeElement);
+  }
+
+  /**
+   * 打开后聚焦管理
+   */
+  private focusAfterOpen() {
+    const dialog = this.el.querySelector('.ldesign-modal__dialog') as HTMLElement | null;
+    if (!dialog) return;
+    const tryInitial = () => {
+      if (this.initialFocus) {
+        const target = dialog.querySelector(this.initialFocus) as HTMLElement | null;
+        if (target) { target.focus(); return true; }
+      }
+      const focusables = this.getFocusable(dialog);
+      if (focusables.length) { focusables[0].focus(); return true; }
+      dialog.setAttribute('tabindex','-1');
+      dialog.focus();
+      return true;
+    };
+    setTimeout(() => { tryInitial(); }, 0);
   }
 
   /**
@@ -974,6 +1133,19 @@ export class LdesignModal {
     if (dialog.style.visibility === 'hidden') {
       dialog.style.visibility = 'visible';
     }
+  }
+
+  /**
+   * Host 移动到容器
+   */
+  private moveToContainer() {
+    if (!this.getContainer) return;
+    try {
+      const target = document.querySelector(this.getContainer) as HTMLElement | null;
+      if (target && this.el.parentElement !== target) {
+        target.appendChild(this.el);
+      }
+    } catch (_) {}
   }
 
   /**
@@ -1083,6 +1255,30 @@ export class LdesignModal {
     }
   }
 
+  /** 统一尝试关闭 */
+  private async attemptClose(reason: 'ok'|'close'|'mask'|'esc'|'api') {
+    if (this.beforeClose) {
+      const can = await Promise.resolve(this.beforeClose(reason));
+      if (!can) return;
+    }
+    this.ldesignClose.emit();
+    this.setVisible(false);
+  }
+
+  /** 栈操作与判定 */
+  private pushToStack() {
+    const idx = __modalStack.indexOf(this as any);
+    if (idx >= 0) __modalStack.splice(idx, 1);
+    __modalStack.push(this as any);
+  }
+  private removeFromStack() {
+    const idx = __modalStack.indexOf(this as any);
+    if (idx >= 0) __modalStack.splice(idx, 1);
+  }
+  private isTopMost() {
+    return __modalStack.length > 0 && __modalStack[__modalStack.length - 1] === (this as any);
+  }
+
   render() {
     // 只有在完全不可见且不在动画中且需要销毁时才返回null
     if (!this.isVisible && !this.isAnimating && this.destroyOnClose) {
@@ -1117,6 +1313,7 @@ export class LdesignModal {
                 <div
                   class={`ldesign-modal__header ${this.isDraggable ? 'ldesign-modal__header--draggable' : ''} ${this.showHeaderShadow ? 'ldesign-modal__header--shadow' : ''}`}
                   onMouseDown={this.isDraggable ? this.handleDragStart : null}
+                  onDblClick={this.maximizable ? this.handleMaximizeClick : null}
                   style={this.isDraggable ? { cursor: 'move' } : {}}
                 >
                   {this.modalTitle && (
@@ -1162,11 +1359,11 @@ export class LdesignModal {
 
               <div class={`ldesign-modal__footer ${this.showFooterShadow ? 'ldesign-modal__footer--shadow' : ''}`}>
                 <slot name="footer">
-                  <ldesign-button type="secondary" onClick={this.handleCloseClick}>
-                    取消
+                  <ldesign-button type={this.cancelType} onClick={this.handleCloseClick}>
+                    {this.cancelText}
                   </ldesign-button>
-                  <ldesign-button type="primary" onClick={this.handleOkClick}>
-                    确定
+                  <ldesign-button type={this.okType} onClick={this.handleOkClick} loading={this.okLoading} disabled={this.okDisabled}>
+                    {this.okText}
                   </ldesign-button>
                 </slot>
               </div>

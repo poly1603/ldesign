@@ -28,6 +28,8 @@ export class LdesignColorPicker {
   @Prop() placement: 'top'|'top-start'|'top-end'|'bottom'|'bottom-start'|'bottom-end'|'left'|'left-start'|'left-end'|'right'|'right-start'|'right-end' = 'bottom-start';
   /** 设置弹层宽度（数字或 CSS 长度），panel 将铺满此宽度 */
   @Prop() popupWidth?: number | string;
+  /** 使用具名插槽自定义触发器（slot="trigger"）；为 true 时不渲染默认触发器 */
+  @Prop() customTrigger: boolean = false;
 
   @Event() ldesignInput!: EventEmitter<string>;
   @Event() ldesignChange!: EventEmitter<string>;
@@ -50,10 +52,14 @@ export class LdesignColorPicker {
     return (
       <Host>
         <ldesign-popup ref={(el)=> (this.popupEl = el as any)} trigger="click" placement={this.placement} width={styleWidth as any} interactive>
-          <div slot="trigger" class={this.getRootClass()}>
-            <span class="ld-cp__swatch" style={{ background: this.value || 'transparent' }}></span>
-            <span class="ld-cp__text">{this.value}</span>
-          </div>
+          {this.customTrigger ? (
+            <slot name="trigger" slot="trigger"></slot>
+          ) : (
+            <div slot="trigger" class={this.getRootClass()}>
+              <span class="ld-cp__swatch" style={{ background: this.value || 'transparent' }}></span>
+              <span class="ld-cp__text">{this.value}</span>
+            </div>
+          )}
           <div style={{ padding: '8px', width: '100%' }}>
             <ldesign-color-picker-panel
               value={this.value}

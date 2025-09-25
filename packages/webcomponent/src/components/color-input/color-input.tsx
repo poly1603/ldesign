@@ -107,8 +107,8 @@ export class LdesignColorInput {
             )}
           </div>
 
-          <div style={{ padding: '8px' }}>
-            <ldesign-color-picker
+          <div style={{ padding: '8px', width: '100%' }}>
+            <ldesign-color-picker-panel
               ref={(el) => (this.pickerEl = el as any)}
               value={this.value}
               format={this.format}

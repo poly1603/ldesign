@@ -56,6 +56,7 @@ export class LdesignSlider {
     this.ldesignChange.emit(this.value);
   };
 
+
   @Watch('value')
   watchValue(next: number) {
     const normalized = this.normalize(next);
@@ -176,52 +177,72 @@ export class LdesignSlider {
 
   render() {
     const percent = this.getPercent();
+    const isVertical = this.vertical;
 
-    // 水平：thumb left=percent%; 垂直：thumb top=(100-percent)%
-    const thumbStyle = this.vertical
-      ? { top: `${100 - percent}%`, left: '50%' }
-      : { left: `${percent}%`, top: '50%' };
+    if (isVertical) {
+      // 垂直模式：完全独立的渲染逻辑
+      return (
+        <Host class="ldesign-slider-host ldesign-slider-host--vertical">
+          <div 
+            class={this.getRootClass()}
+            onPointerDown={this.handleTrackPointerDown as any}
+          >
+            <div 
+              class="ldesign-slider__track ldesign-slider__track--vertical"
+              ref={(el) => (this.trackEl = el)}
+            >
+              <div class="ldesign-slider__rail ldesign-slider__rail--vertical" />
+              <div 
+                class="ldesign-slider__fill ldesign-slider__fill--vertical"
+                style={{ height: `${percent}%` }}
+              />
+              <div
+                class="ldesign-slider__thumb ldesign-slider__thumb--vertical"
+                style={{ top: `${100 - percent}%`, transform: 'translate(-50%, -50%)' }}
+                role="slider"
+                tabindex={this.disabled ? -1 : 0}
+                aria-disabled={this.disabled ? 'true' : 'false'}
+                aria-orientation="vertical"
+                aria-valuemin={String(Math.min(this.min, this.max))}
+                aria-valuemax={String(Math.max(this.min, this.max))}
+                aria-valuenow={String(this.value)}
+                onKeyDown={this.handleKeyDown}
+                onFocus={this.handleFocus}
+                onBlur={this.handleBlur}
+              >
+                {this.showTooltip ? (
+                  <div class="ldesign-slider__tooltip ldesign-slider__tooltip--vertical">{this.value}</div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </Host>
+      );
+    }
 
-    const fillStyle = this.vertical
-      ? { height: `${percent}%` }
-      : { width: `${percent}%` };
-
-    const ariaOrientation = this.vertical ? 'vertical' : 'horizontal';
-
-    // 如果宿主元素设置了高度（例如 style="height: 200px"），我们将内部容器与轨道都设置为 100% 高度
-    const styleAttr = this.host?.getAttribute('style') || '';
-    const hasHostHeight = /height\s*:\s*\d/i.test(styleAttr) || !!this.host?.style?.height;
-
-    const rootStyle = this.vertical && hasHostHeight ? { height: '100%' } : undefined;
-    const trackStyle = this.vertical && hasHostHeight ? { height: '100%' } : undefined;
-
-    // Host 需要是 inline-block，这样在 vertical 情况下由外部 style 设置的高度才会生效
-    const hostStyle: Record<string, any> = this.vertical ? { display: 'inline-block' } : { display: 'inline-block', width: '100%' };
-
+    // 水平模式：保持原有逻辑
     return (
-      <Host style={hostStyle}>
+      <Host class="ldesign-slider-host ldesign-slider-host--horizontal">
         <div 
           class={this.getRootClass()}
-          style={rootStyle}
           onPointerDown={this.handleTrackPointerDown as any}
         >
           <div 
-            class={this.vertical ? 'ldesign-slider__track ldesign-slider__track--vertical' : 'ldesign-slider__track'}
-            style={trackStyle}
+            class="ldesign-slider__track"
             ref={(el) => (this.trackEl = el)}
           >
-            <div class={this.vertical ? 'ldesign-slider__rail ldesign-slider__rail--vertical' : 'ldesign-slider__rail'} />
+            <div class="ldesign-slider__rail" />
             <div 
-              class={this.vertical ? 'ldesign-slider__fill ldesign-slider__fill--vertical' : 'ldesign-slider__fill'}
-              style={fillStyle}
+              class="ldesign-slider__fill"
+              style={{ width: `${percent}%` }}
             />
             <div
-              class={this.vertical ? 'ldesign-slider__thumb ldesign-slider__thumb--vertical' : 'ldesign-slider__thumb'}
-              style={thumbStyle}
+              class="ldesign-slider__thumb"
+              style={{ left: `${percent}%`, transform: 'translate(-50%, -50%)' }}
               role="slider"
               tabindex={this.disabled ? -1 : 0}
               aria-disabled={this.disabled ? 'true' : 'false'}
-              aria-orientation={ariaOrientation}
+              aria-orientation="horizontal"
               aria-valuemin={String(Math.min(this.min, this.max))}
               aria-valuemax={String(Math.max(this.min, this.max))}
               aria-valuenow={String(this.value)}
