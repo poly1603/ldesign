@@ -13,6 +13,7 @@ interface Environment {
   icon: string
   port: number
   features: string
+  buildExists?: boolean
 }
 
 interface ProcessStatus {
@@ -23,6 +24,13 @@ interface OutputLine {
   timestamp: string
   content: string
   type: 'info' | 'error' | 'success'
+}
+
+interface ServerInfo {
+  localUrl?: string
+  networkUrl?: string
+  qrCode?: string
+  port?: string
 }
 
 // 初始化ANSI转换器
@@ -56,6 +64,7 @@ const PreviewPage: React.FC = () => {
   const [processStatus, setProcessStatus] = useState<ProcessStatus>({})
   const [outputLines, setOutputLines] = useState<OutputLine[]>([])
   const [autoScroll, setAutoScroll] = useState(true)
+  const [serverInfo, setServerInfo] = useState<ServerInfo>({})
 
   // 环境配置
   const environments: Environment[] = [
@@ -140,7 +149,61 @@ const PreviewPage: React.FC = () => {
         const environment = taskIdParts[1]
         const key = `${command}-${environment}`
         if (key === processKey) {
-          addOutputLine(data.output, data.type === 'stderr' ? 'error' : 'info')
+          const output = data.output
+          addOutputLine(output, data.type === 'stderr' ? 'error' : 'info')
+
+          // 检测预览服务器启动成功标志
+          if (output.includes('[INFO] 预览服务器启动成功!') || output.includes('✔ 预览服务器已启动')) {
+            toast.success('🎉 预览服务器启动成功！')
+          }
+
+          // 提取服务器信息 - 使用最宽松的匹配模式
+          const localMatch = output.match(/本地[:\s]*(http:\/\/[^<\s\n\r]+)/i)
+          const networkMatch = output.match(/网络[:\s]*(http:\/\/[^<\s\n\r]+)/i)
+          const portMatch = output.match(/localhost:(\d+)/)
+
+          if (localMatch || networkMatch) {
+            console.log('🔍 预览服务器信息匹配成功:', { localMatch, networkMatch, portMatch })
+            setServerInfo(prev => ({
+              ...prev,
+              localUrl: localMatch ? localMatch[1].trim() : prev.localUrl,
+              networkUrl: networkMatch ? networkMatch[1].trim() : prev.networkUrl,
+              port: portMatch ? portMatch[1] : prev.port
+            }))
+
+            if (localMatch) {
+              toast.success(`🌐 本地预览地址: ${localMatch[1].trim()}`)
+            }
+            if (networkMatch) {
+              toast.success(`📱 网络预览地址: ${networkMatch[1].trim()}`)
+            }
+          } else {
+            console.log('❌ 预览服务器信息匹配失败')
+            console.log('输出内容长度:', output.length)
+            console.log('输出内容前200字符:', output.substring(0, 200))
+            console.log('是否包含"本地":', output.includes('本地'))
+            console.log('是否包含"网络":', output.includes('网络'))
+            console.log('是否包含"localhost":', output.includes('localhost'))
+          }
+
+          // 检测二维码
+          if (output.includes('▄') || output.includes('█') || output.includes('▀')) {
+            setServerInfo(prev => ({
+              ...prev,
+              qrCode: output
+            }))
+          }
+
+          // 检测构建产物统计信息
+          if (output.includes('[INFO] 总文件数:')) {
+            const fileCountMatch = output.match(/总文件数:\s*(\d+)/)
+            const totalSizeMatch = output.match(/总大小:\s*([^\s]+)/)
+            if (fileCountMatch && totalSizeMatch) {
+              const fileCount = fileCountMatch[1]
+              const totalSize = totalSizeMatch[1]
+              toast.success(`📊 预览就绪: ${fileCount}个文件，${totalSize}`)
+            }
+          }
         }
       }
     }
@@ -349,6 +412,93 @@ const PreviewPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* 服务器信息显示区域 */}
+      {(serverInfo.localUrl || serverInfo.networkUrl) && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <Monitor className="w-5 h-5 mr-2 text-green-600" />
+            预览服务器地址
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 本地地址 */}
+            {serverInfo.localUrl && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-green-800">本地访问地址</h4>
+                    <p className="text-sm text-green-600 mt-1">推荐使用此地址访问</p>
+                  </div>
+                  <div className="text-right">
+                    <a
+                      href={serverInfo.localUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-700 hover:text-green-800 font-mono text-sm underline"
+                    >
+                      {serverInfo.localUrl}
+                    </a>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(serverInfo.localUrl!)
+                        toast.success('地址已复制到剪贴板')
+                      }}
+                      className="ml-2 px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                    >
+                      复制
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 网络地址 */}
+            {serverInfo.networkUrl && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-blue-800">网络访问地址</h4>
+                    <p className="text-sm text-blue-600 mt-1">局域网内其他设备可访问</p>
+                    <p className="text-xs text-orange-600 mt-1">⚠️ 如无法访问，请检查防火墙设置</p>
+                  </div>
+                  <div className="text-right">
+                    <a
+                      href={serverInfo.networkUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-700 hover:text-blue-800 font-mono text-sm underline"
+                    >
+                      {serverInfo.networkUrl}
+                    </a>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(serverInfo.networkUrl!)
+                        toast.success('地址已复制到剪贴板')
+                      }}
+                      className="ml-2 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                    >
+                      复制
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 二维码显示 */}
+          {serverInfo.qrCode && (
+            <div className="mt-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h4 className="font-medium text-gray-800 mb-2">手机扫码访问</h4>
+              <div className="bg-white p-2 rounded border inline-block">
+                <pre className="text-xs font-mono leading-none text-black whitespace-pre">
+                  {serverInfo.qrCode.replace(/\x1b\[[0-9;]*m/g, '')}
+                </pre>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 输出区域 - 始终显示 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">

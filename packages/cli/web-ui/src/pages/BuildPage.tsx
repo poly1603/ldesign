@@ -139,7 +139,31 @@ const BuildPage: React.FC = () => {
         const environment = taskIdParts[1]
         const key = `${command}-${environment}`
         if (key === processKey) {
-          addOutputLine(data.output, data.type === 'stderr' ? 'error' : 'info')
+          const output = data.output
+          addOutputLine(output, data.type === 'stderr' ? 'error' : 'info')
+
+          // 检测构建成功标志
+          if (output.includes('✓ built in') || output.includes('[INFO] 构建成功完成!')) {
+            toast.success('🎉 构建成功完成！')
+          }
+
+          // 检测输出目录信息
+          if (output.includes('[INFO] 输出目录:')) {
+            const match = output.match(/输出目录:\s*(.+)/)
+            if (match) {
+              const outputDir = match[1].trim()
+              toast.success(`📁 构建文件已保存到: ${outputDir}`)
+            }
+          }
+
+          // 检测文件统计信息
+          if (output.includes('[INFO] 总大小:')) {
+            const match = output.match(/总大小:\s*(.+)/)
+            if (match) {
+              const totalSize = match[1].trim()
+              toast.success(`📊 构建完成，总大小: ${totalSize}`)
+            }
+          }
         }
       }
     }
