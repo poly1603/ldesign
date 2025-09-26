@@ -1,0 +1,395 @@
+/**
+ * @ldesign/cropper 主题样式
+ * 
+ * 定义不同主题的样式变体
+ */
+
+// ============================================================================
+// 浅色主题（默认）
+// ============================================================================
+
+.lcropper-theme-light,
+.lcropper:not([class*="lcropper-theme-"]) {
+  // 容器颜色
+  --lcropper-container-bg: var(--ldesign-bg-color-container);
+  --lcropper-container-border: var(--ldesign-border-color);
+  --lcropper-container-shadow: var(--ldesign-shadow-1);
+  
+  // 画布颜色
+  --lcropper-canvas-bg: #f8f9fa;
+  --lcropper-canvas-border: var(--ldesign-border-level-2-color);
+  
+  // 裁剪区域颜色
+  --lcropper-crop-area-border: var(--ldesign-brand-color);
+  --lcropper-crop-area-bg: rgba(114, 46, 209, 0.1);
+  
+  // 遮罩颜色
+  --lcropper-mask-bg: rgba(0, 0, 0, 0.5);
+  
+  // 控制点颜色
+  --lcropper-control-point-bg: var(--ldesign-brand-color);
+  --lcropper-control-point-border: #ffffff;
+  --lcropper-control-point-shadow: var(--ldesign-shadow-2);
+  
+  // 工具栏颜色
+  --lcropper-toolbar-bg: var(--ldesign-bg-color-component);
+  --lcropper-toolbar-border: var(--ldesign-border-color);
+  --lcropper-toolbar-shadow: var(--ldesign-shadow-1);
+  
+  // 网格和参考线颜色
+  --lcropper-grid-color: rgba(255, 255, 255, 0.5);
+  --lcropper-guide-color: var(--ldesign-brand-color);
+  
+  // 文本颜色
+  color: var(--ldesign-text-color-primary);
+}
+
+// ============================================================================
+// 深色主题
+// ============================================================================
+
+.lcropper-theme-dark {
+  // 容器颜色
+  --lcropper-container-bg: #1a1a1a;
+  --lcropper-container-border: #404040;
+  --lcropper-container-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  
+  // 画布颜色
+  --lcropper-canvas-bg: #2a2a2a;
+  --lcropper-canvas-border: #505050;
+  
+  // 裁剪区域颜色
+  --lcropper-crop-area-border: var(--ldesign-brand-color);
+  --lcropper-crop-area-bg: rgba(114, 46, 209, 0.2);
+  
+  // 遮罩颜色
+  --lcropper-mask-bg: rgba(0, 0, 0, 0.7);
+  
+  // 控制点颜色
+  --lcropper-control-point-bg: var(--ldesign-brand-color);
+  --lcropper-control-point-border: #ffffff;
+  --lcropper-control-point-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  
+  // 工具栏颜色
+  --lcropper-toolbar-bg: #2a2a2a;
+  --lcropper-toolbar-border: #404040;
+  --lcropper-toolbar-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  
+  // 网格和参考线颜色
+  --lcropper-grid-color: rgba(255, 255, 255, 0.3);
+  --lcropper-guide-color: var(--ldesign-brand-color);
+  
+  // 文本颜色
+  color: var(--ldesign-font-white-1);
+  
+  // 深色主题特殊样式
+  .lcropper-viewport {
+    background-color: var(--lcropper-canvas-bg);
+    background-image: 
+      linear-gradient(45deg, #333 25%, transparent 25%),
+      linear-gradient(-45deg, #333 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #333 75%),
+      linear-gradient(-45deg, transparent 75%, #333 75%);
+  }
+  
+  .lcropper-button {
+    &.lcropper-button-ghost {
+      color: var(--ldesign-font-white-1);
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+  }
+  
+  .lcropper-input {
+    background-color: #2a2a2a;
+    border-color: #404040;
+    color: var(--ldesign-font-white-1);
+    
+    &::placeholder {
+      color: var(--ldesign-font-white-3);
+    }
+  }
+  
+  .lcropper-panel {
+    background-color: #2a2a2a;
+    border-color: #404040;
+  }
+  
+  .lcropper-tooltip {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #000000;
+    
+    &::before {
+      border-top-color: rgba(255, 255, 255, 0.9);
+    }
+  }
+}
+
+// ============================================================================
+// 高对比度主题
+// ============================================================================
+
+.lcropper-theme-high-contrast {
+  // 容器颜色
+  --lcropper-container-bg: #000000;
+  --lcropper-container-border: #ffffff;
+  --lcropper-container-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  
+  // 画布颜色
+  --lcropper-canvas-bg: #000000;
+  --lcropper-canvas-border: #ffffff;
+  
+  // 裁剪区域颜色
+  --lcropper-crop-area-border: #ffffff;
+  --lcropper-crop-area-bg: rgba(255, 255, 255, 0.1);
+  
+  // 遮罩颜色
+  --lcropper-mask-bg: rgba(0, 0, 0, 0.8);
+  
+  // 控制点颜色
+  --lcropper-control-point-bg: #ffffff;
+  --lcropper-control-point-border: #000000;
+  --lcropper-control-point-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  
+  // 工具栏颜色
+  --lcropper-toolbar-bg: #000000;
+  --lcropper-toolbar-border: #ffffff;
+  --lcropper-toolbar-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  
+  // 网格和参考线颜色
+  --lcropper-grid-color: #ffffff;
+  --lcropper-guide-color: #ffffff;
+  
+  // 文本颜色
+  color: #ffffff;
+  
+  // 高对比度主题特殊样式
+  .lcropper-viewport {
+    background-color: #000000;
+    background-image: 
+      linear-gradient(45deg, #333 25%, transparent 25%),
+      linear-gradient(-45deg, #333 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #333 75%),
+      linear-gradient(-45deg, transparent 75%, #333 75%);
+  }
+  
+  .lcropper-button {
+    border-width: 2px;
+    
+    &.lcropper-button-primary {
+      background-color: #ffffff;
+      color: #000000;
+      border-color: #ffffff;
+      
+      &:hover {
+        background-color: #cccccc;
+        border-color: #cccccc;
+      }
+    }
+    
+    &.lcropper-button-ghost {
+      color: #ffffff;
+      border-color: #ffffff;
+      
+      &:hover {
+        background-color: #ffffff;
+        color: #000000;
+      }
+    }
+  }
+  
+  .lcropper-input {
+    background-color: #000000;
+    border-color: #ffffff;
+    border-width: 2px;
+    color: #ffffff;
+    
+    &::placeholder {
+      color: #cccccc;
+    }
+    
+    &:focus {
+      box-shadow: 0 0 0 3px #ffffff;
+    }
+  }
+  
+  .lcropper-panel {
+    background-color: #000000;
+    border-color: #ffffff;
+    border-width: 2px;
+  }
+  
+  .lcropper-control-point {
+    border-width: 3px;
+    
+    &::before {
+      color: #000000;
+    }
+  }
+  
+  .lcropper-crop-area {
+    border-width: 3px;
+  }
+  
+  .lcropper-tooltip {
+    background-color: #ffffff;
+    color: #000000;
+    border: 2px solid #000000;
+    
+    &::before {
+      border-top-color: #ffffff;
+    }
+  }
+}
+
+// ============================================================================
+// 自定义主题支持
+// ============================================================================
+
+.lcropper[data-theme] {
+  // 通过CSS自定义属性支持动态主题
+  --lcropper-container-bg: var(--custom-container-bg, var(--ldesign-bg-color-container));
+  --lcropper-container-border: var(--custom-container-border, var(--ldesign-border-color));
+  --lcropper-crop-area-border: var(--custom-crop-border, var(--ldesign-brand-color));
+  --lcropper-control-point-bg: var(--custom-control-bg, var(--ldesign-brand-color));
+  --lcropper-toolbar-bg: var(--custom-toolbar-bg, var(--ldesign-bg-color-component));
+}
+
+// ============================================================================
+// 主题切换动画
+// ============================================================================
+
+.lcropper {
+  // 主题切换时的平滑过渡
+  transition: 
+    background-color var(--lcropper-transition-normal),
+    border-color var(--lcropper-transition-normal),
+    color var(--lcropper-transition-normal);
+  
+  .lcropper-canvas,
+  .lcropper-crop-area,
+  .lcropper-control-point,
+  .lcropper-toolbar,
+  .lcropper-button,
+  .lcropper-input,
+  .lcropper-panel {
+    transition: 
+      background-color var(--lcropper-transition-normal),
+      border-color var(--lcropper-transition-normal),
+      color var(--lcropper-transition-normal),
+      box-shadow var(--lcropper-transition-normal);
+  }
+}
+
+// ============================================================================
+// 系统主题检测
+// ============================================================================
+
+// 自动跟随系统主题
+.lcropper-theme-auto {
+  // 默认使用浅色主题
+  .lcropper-theme-light();
+  
+  // 系统深色模式时使用深色主题
+  @media (prefers-color-scheme: dark) {
+    .lcropper-theme-dark();
+  }
+}
+
+// ============================================================================
+// 主题工具类
+// ============================================================================
+
+// 主题切换器
+.lcropper-theme-switcher {
+  display: flex;
+  align-items: center;
+  gap: var(--ls-spacing-xs);
+  padding: var(--ls-padding-xs);
+  background-color: var(--ldesign-bg-color-component);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  
+  .lcropper-theme-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    border-radius: var(--ls-border-radius-sm);
+    cursor: pointer;
+    transition: all var(--lcropper-transition-fast);
+    
+    &:hover {
+      border-color: var(--ldesign-border-color-hover);
+    }
+    
+    &.lcropper-theme-active {
+      border-color: var(--ldesign-brand-color);
+      background-color: var(--ldesign-brand-color-focus);
+    }
+    
+    // 主题预览图标
+    &.lcropper-theme-light::before {
+      content: '☀️';
+    }
+    
+    &.lcropper-theme-dark::before {
+      content: '🌙';
+    }
+    
+    &.lcropper-theme-high-contrast::before {
+      content: '⚫';
+    }
+    
+    &.lcropper-theme-auto::before {
+      content: '🔄';
+    }
+  }
+}
+
+// ============================================================================
+// 主题变量覆盖
+// ============================================================================
+
+// 允许通过CSS变量覆盖主题颜色
+.lcropper {
+  // 主色调覆盖
+  &[style*="--theme-primary"] {
+    --ldesign-brand-color: var(--theme-primary);
+    --lcropper-crop-area-border: var(--theme-primary);
+    --lcropper-control-point-bg: var(--theme-primary);
+    --lcropper-guide-color: var(--theme-primary);
+  }
+  
+  // 背景色覆盖
+  &[style*="--theme-background"] {
+    --lcropper-container-bg: var(--theme-background);
+    --lcropper-canvas-bg: var(--theme-background);
+    --lcropper-toolbar-bg: var(--theme-background);
+  }
+  
+  // 边框色覆盖
+  &[style*="--theme-border"] {
+    --lcropper-container-border: var(--theme-border);
+    --lcropper-canvas-border: var(--theme-border);
+    --lcropper-toolbar-border: var(--theme-border);
+  }
+}
+
+// ============================================================================
+// 减少动画偏好
+// ============================================================================
+
+@media (prefers-reduced-motion: reduce) {
+  .lcropper {
+    transition: none !important;
+    
+    * {
+      transition: none !important;
+    }
+  }
+}

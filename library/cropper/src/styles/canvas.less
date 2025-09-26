@@ -1,0 +1,458 @@
+/**
+ * @ldesign/cropper Canvas样式
+ * 
+ * 定义Canvas画布相关样式
+ */
+
+// ============================================================================
+// Canvas 容器
+// ============================================================================
+
+.lcropper-canvas-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  
+  // Canvas 居中显示
+  .flex-center();
+  
+  // 背景样式
+  background-color: var(--lcropper-canvas-bg);
+  
+  // 透明背景网格（用于显示透明图片）
+  &.lcropper-canvas-transparent {
+    background-image: 
+      linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+      linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+      linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    
+    // 深色主题下的透明背景
+    .lcropper-theme-dark & {
+      background-image: 
+        linear-gradient(45deg, #333 25%, transparent 25%),
+        linear-gradient(-45deg, #333 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #333 75%),
+        linear-gradient(-45deg, transparent 75%, #333 75%);
+    }
+  }
+}
+
+// ============================================================================
+// Canvas 元素
+// ============================================================================
+
+.lcropper-canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  
+  // Canvas 边框
+  border: 1px solid var(--lcropper-canvas-border);
+  border-radius: var(--ls-border-radius-sm);
+  
+  // 阴影效果
+  box-shadow: var(--ldesign-shadow-1);
+  
+  // 变换设置
+  transform-origin: center center;
+  transition: transform var(--lcropper-transition-normal);
+  
+  // 防止选择和拖拽
+  .no-select();
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  
+  // 图像渲染优化
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  
+  // 硬件加速
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+// ============================================================================
+// Canvas 状态
+// ============================================================================
+
+.lcropper-canvas {
+  // 加载状态
+  &.lcropper-canvas-loading {
+    opacity: 0.5;
+    filter: blur(2px);
+  }
+  
+  // 错误状态
+  &.lcropper-canvas-error {
+    border-color: var(--ldesign-error-color);
+    opacity: 0.7;
+  }
+  
+  // 拖拽状态
+  &.lcropper-canvas-dragging {
+    cursor: grabbing;
+    transition: none;
+  }
+  
+  // 可拖拽状态
+  &.lcropper-canvas-draggable {
+    cursor: grab;
+  }
+  
+  // 缩放状态
+  &.lcropper-canvas-zooming {
+    cursor: zoom-in;
+  }
+  
+  // 旋转状态
+  &.lcropper-canvas-rotating {
+    cursor: crosshair;
+  }
+}
+
+// ============================================================================
+// Canvas 图层
+// ============================================================================
+
+.lcropper-canvas-layers {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  
+  // 图层容器
+  .lcropper-canvas-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    
+    // 图层类型
+    &.lcropper-layer-image {
+      z-index: 1;
+    }
+    
+    &.lcropper-layer-overlay {
+      z-index: 2;
+    }
+    
+    &.lcropper-layer-crop {
+      z-index: 3;
+    }
+    
+    &.lcropper-layer-controls {
+      z-index: 4;
+      pointer-events: auto;
+    }
+    
+    &.lcropper-layer-ui {
+      z-index: 5;
+      pointer-events: auto;
+    }
+  }
+}
+
+// ============================================================================
+// Canvas 变换
+// ============================================================================
+
+.lcropper-canvas-transform {
+  // 缩放变换
+  &.lcropper-transform-scale {
+    transform-origin: center center;
+    
+    // 缩放级别
+    &[data-scale="0.5"] { transform: scale(0.5); }
+    &[data-scale="0.75"] { transform: scale(0.75); }
+    &[data-scale="1"] { transform: scale(1); }
+    &[data-scale="1.25"] { transform: scale(1.25); }
+    &[data-scale="1.5"] { transform: scale(1.5); }
+    &[data-scale="2"] { transform: scale(2); }
+    &[data-scale="3"] { transform: scale(3); }
+    &[data-scale="4"] { transform: scale(4); }
+  }
+  
+  // 旋转变换
+  &.lcropper-transform-rotate {
+    transform-origin: center center;
+    
+    // 旋转角度
+    &[data-rotate="0"] { transform: rotate(0deg); }
+    &[data-rotate="90"] { transform: rotate(90deg); }
+    &[data-rotate="180"] { transform: rotate(180deg); }
+    &[data-rotate="270"] { transform: rotate(270deg); }
+  }
+  
+  // 翻转变换
+  &.lcropper-transform-flip-h {
+    transform: scaleX(-1);
+  }
+  
+  &.lcropper-transform-flip-v {
+    transform: scaleY(-1);
+  }
+  
+  &.lcropper-transform-flip-both {
+    transform: scale(-1, -1);
+  }
+}
+
+// ============================================================================
+// Canvas 滤镜
+// ============================================================================
+
+.lcropper-canvas-filters {
+  // 亮度调整
+  &.lcropper-filter-brightness {
+    &[data-brightness="0.5"] { filter: brightness(0.5); }
+    &[data-brightness="0.75"] { filter: brightness(0.75); }
+    &[data-brightness="1"] { filter: brightness(1); }
+    &[data-brightness="1.25"] { filter: brightness(1.25); }
+    &[data-brightness="1.5"] { filter: brightness(1.5); }
+  }
+  
+  // 对比度调整
+  &.lcropper-filter-contrast {
+    &[data-contrast="0.5"] { filter: contrast(0.5); }
+    &[data-contrast="0.75"] { filter: contrast(0.75); }
+    &[data-contrast="1"] { filter: contrast(1); }
+    &[data-contrast="1.25"] { filter: contrast(1.25); }
+    &[data-contrast="1.5"] { filter: contrast(1.5); }
+  }
+  
+  // 饱和度调整
+  &.lcropper-filter-saturate {
+    &[data-saturate="0"] { filter: saturate(0); }
+    &[data-saturate="0.5"] { filter: saturate(0.5); }
+    &[data-saturate="1"] { filter: saturate(1); }
+    &[data-saturate="1.5"] { filter: saturate(1.5); }
+    &[data-saturate="2"] { filter: saturate(2); }
+  }
+  
+  // 色相调整
+  &.lcropper-filter-hue {
+    &[data-hue="0"] { filter: hue-rotate(0deg); }
+    &[data-hue="90"] { filter: hue-rotate(90deg); }
+    &[data-hue="180"] { filter: hue-rotate(180deg); }
+    &[data-hue="270"] { filter: hue-rotate(270deg); }
+  }
+  
+  // 模糊效果
+  &.lcropper-filter-blur {
+    &[data-blur="0"] { filter: blur(0px); }
+    &[data-blur="1"] { filter: blur(1px); }
+    &[data-blur="2"] { filter: blur(2px); }
+    &[data-blur="5"] { filter: blur(5px); }
+    &[data-blur="10"] { filter: blur(10px); }
+  }
+  
+  // 灰度效果
+  &.lcropper-filter-grayscale {
+    filter: grayscale(100%);
+  }
+  
+  // 棕褐色效果
+  &.lcropper-filter-sepia {
+    filter: sepia(100%);
+  }
+  
+  // 反色效果
+  &.lcropper-filter-invert {
+    filter: invert(100%);
+  }
+}
+
+// ============================================================================
+// Canvas 预览
+// ============================================================================
+
+.lcropper-canvas-preview {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  background-color: var(--lcropper-canvas-bg);
+  
+  // 预览画布
+  .lcropper-preview-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  
+  // 预览尺寸
+  &.lcropper-preview-small {
+    width: 100px;
+    height: 100px;
+  }
+  
+  &.lcropper-preview-medium {
+    width: 200px;
+    height: 200px;
+  }
+  
+  &.lcropper-preview-large {
+    width: 300px;
+    height: 300px;
+  }
+  
+  // 预览形状
+  &.lcropper-preview-circle {
+    border-radius: 50%;
+    
+    .lcropper-preview-canvas {
+      border-radius: 50%;
+    }
+  }
+  
+  &.lcropper-preview-rounded {
+    border-radius: var(--ls-border-radius-lg);
+    
+    .lcropper-preview-canvas {
+      border-radius: var(--ls-border-radius-lg);
+    }
+  }
+}
+
+// ============================================================================
+// Canvas 工具提示
+// ============================================================================
+
+.lcropper-canvas-tooltip {
+  position: absolute;
+  padding: var(--ls-padding-xs) var(--ls-padding-sm);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: var(--ls-font-size-xs);
+  border-radius: var(--ls-border-radius-sm);
+  pointer-events: none;
+  z-index: var(--lcropper-z-tooltip);
+  white-space: nowrap;
+  
+  // 工具提示箭头
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid rgba(0, 0, 0, 0.8);
+  }
+  
+  // 工具提示位置
+  &.lcropper-tooltip-top {
+    &::before {
+      bottom: -5px;
+      border-top: 5px solid rgba(0, 0, 0, 0.8);
+      border-bottom: none;
+    }
+  }
+  
+  &.lcropper-tooltip-bottom {
+    &::before {
+      top: -5px;
+      bottom: auto;
+      border-bottom: 5px solid rgba(0, 0, 0, 0.8);
+      border-top: none;
+    }
+  }
+  
+  &.lcropper-tooltip-left {
+    &::before {
+      right: -5px;
+      left: auto;
+      top: 50%;
+      bottom: auto;
+      transform: translateY(-50%);
+      border-left: 5px solid rgba(0, 0, 0, 0.8);
+      border-right: none;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+    }
+  }
+  
+  &.lcropper-tooltip-right {
+    &::before {
+      left: -5px;
+      right: auto;
+      top: 50%;
+      bottom: auto;
+      transform: translateY(-50%);
+      border-right: 5px solid rgba(0, 0, 0, 0.8);
+      border-left: none;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+    }
+  }
+}
+
+// ============================================================================
+// 响应式 Canvas
+// ============================================================================
+
+.lcropper-canvas-container {
+  // 移动端优化
+  .mobile-only({
+    // 调整透明背景网格大小
+    &.lcropper-canvas-transparent {
+      background-size: 15px 15px;
+      background-position: 0 0, 0 7.5px, 7.5px -7.5px, -7.5px 0px;
+    }
+    
+    // 调整Canvas边框
+    .lcropper-canvas {
+      border-width: 2px;
+    }
+  });
+  
+  // 平板端优化
+  .tablet-only({
+    &.lcropper-canvas-transparent {
+      background-size: 18px 18px;
+      background-position: 0 0, 0 9px, 9px -9px, -9px 0px;
+    }
+  });
+}
+
+// ============================================================================
+// 性能优化
+// ============================================================================
+
+.lcropper-canvas-container {
+  // 启用硬件加速
+  transform: translateZ(0);
+  will-change: transform;
+  
+  // 优化重绘性能
+  contain: layout style paint;
+  
+  .lcropper-canvas {
+    // 启用硬件加速
+    transform: translateZ(0);
+    will-change: transform;
+    
+    // 优化图像渲染
+    image-rendering: optimizeQuality;
+    
+    // 在高DPI屏幕上优化
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+  }
+}

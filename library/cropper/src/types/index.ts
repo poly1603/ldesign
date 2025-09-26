@@ -1,397 +1,456 @@
 /**
- * @file 核心类型定义
- * @description 定义图片裁剪器的所有核心类型、接口和枚举
+ * @ldesign/cropper 核心类型定义
+ * 
+ * 提供完整的TypeScript类型定义，确保类型安全和良好的开发体验
  */
 
-// ==================== 枚举定义 ====================
+// ============================================================================
+// 基础类型定义
+// ============================================================================
 
 /**
- * 裁剪形状枚举
+ * 坐标点接口
+ * 表示二维平面上的一个点
  */
-export enum CropShape {
-  /** 矩形 */
-  RECTANGLE = 'rectangle',
-  /** 圆形 */
-  CIRCLE = 'circle',
-  /** 椭圆 */
-  ELLIPSE = 'ellipse',
-  /** 多边形 */
-  POLYGON = 'polygon',
-  /** 自定义路径 */
-  CUSTOM = 'custom'
+export interface Point {
+  /** X坐标 */
+  x: number;
+  /** Y坐标 */
+  y: number;
 }
-
-/**
- * 图片格式枚举
- */
-export enum ImageFormat {
-  /** PNG格式 */
-  PNG = 'image/png',
-  /** JPEG格式 */
-  JPEG = 'image/jpeg',
-  /** WebP格式 */
-  WEBP = 'image/webp',
-  /** GIF格式 */
-  GIF = 'image/gif',
-  /** BMP格式 */
-  BMP = 'image/bmp'
-}
-
-/**
- * 事件类型枚举
- */
-export enum CropperEventType {
-  /** 裁剪器就绪 */
-  READY = 'ready',
-  /** 图片加载完成 */
-  IMAGE_LOADED = 'imageLoaded',
-  /** 图片加载失败 */
-  IMAGE_ERROR = 'imageError',
-  /** 开始裁剪 */
-  CROP_START = 'cropStart',
-  /** 裁剪中 */
-  CROP_MOVE = 'cropMove',
-  /** 裁剪结束 */
-  CROP_END = 'cropEnd',
-  /** 裁剪区域变化 */
-  CROP_CHANGE = 'cropChange',
-  /** 缩放变化 */
-  ZOOM_CHANGE = 'zoomChange',
-  /** 旋转变化 */
-  ROTATION_CHANGE = 'rotationChange',
-  /** 翻转变化 */
-  FLIP_CHANGE = 'flipChange',
-  /** 重置 */
-  RESET = 'reset',
-  /** 销毁 */
-  DESTROY = 'destroy'
-}
-
-/**
- * 主题类型枚举
- */
-export enum ThemeType {
-  /** 浅色主题 */
-  LIGHT = 'light',
-  /** 深色主题 */
-  DARK = 'dark',
-  /** 自动主题 */
-  AUTO = 'auto'
-}
-
-/**
- * 工具栏位置枚举
- */
-export enum ToolbarPosition {
-  /** 顶部 */
-  TOP = 'top',
-  /** 底部 */
-  BOTTOM = 'bottom',
-  /** 左侧 */
-  LEFT = 'left',
-  /** 右侧 */
-  RIGHT = 'right'
-}
-
-// ==================== 基础类型定义 ====================
 
 /**
  * 尺寸接口
+ * 表示宽度和高度
  */
 export interface Size {
   /** 宽度 */
-  width: number
+  width: number;
   /** 高度 */
-  height: number
+  height: number;
 }
-
-/**
- * 基础点坐标接口
- */
-export interface Position {
-  /** X坐标 */
-  x: number
-  /** Y坐标 */
-  y: number
-}
-
-/**
- * 点坐标接口（别名）
- */
-export interface Point extends Position {}
 
 /**
  * 矩形区域接口
+ * 表示一个矩形区域的位置和尺寸
  */
-export interface Rectangle extends Position, Size {}
-
-/**
- * 矩形区域接口（别名）
- */
-export interface Rect extends Rectangle {}
-
-/**
- * 变换矩阵接口
- */
-export interface Transform {
-  /** 缩放X */
-  scaleX: number
-  /** 缩放Y */
-  scaleY: number
-  /** 旋转角度 */
-  rotation: number
-  /** 平移X */
-  translateX: number
-  /** 平移Y */
-  translateY: number
-  /** 倾斜X */
-  skewX?: number
-  /** 倾斜Y */
-  skewY?: number
-}
+export interface Rect extends Point, Size { }
 
 /**
  * 边界框接口
+ * 表示一个边界框的四个边界值
  */
 export interface BoundingBox {
   /** 左边界 */
-  left: number
+  left: number;
   /** 上边界 */
-  top: number
+  top: number;
   /** 右边界 */
-  right: number
+  right: number;
   /** 下边界 */
-  bottom: number
-  /** 宽度 */
-  width: number
-  /** 高度 */
-  height: number
+  bottom: number;
 }
 
 /**
- * 宽高比类型
+ * 变换矩阵接口
+ * 表示2D变换矩阵的六个参数
  */
-export type AspectRatio = number | 'free' | '1:1' | '4:3' | '16:9' | '3:2' | '2:3' | '9:16'
+export interface Matrix {
+  /** 水平缩放 */
+  a: number;
+  /** 水平倾斜 */
+  b: number;
+  /** 垂直倾斜 */
+  c: number;
+  /** 垂直缩放 */
+  d: number;
+  /** 水平平移 */
+  e: number;
+  /** 垂直平移 */
+  f: number;
+}
+
+// ============================================================================
+// 裁剪相关类型
+// ============================================================================
 
 /**
- * 颜色类型
+ * 裁剪形状类型
+ * 支持的裁剪区域形状
  */
-export type Color = string
+export type CropShape = 'rectangle' | 'circle' | 'ellipse' | 'polygon';
+
+/**
+ * 裁剪模式类型
+ * 不同的裁剪交互模式
+ */
+export type CropMode = 'crop' | 'move' | 'resize' | 'rotate';
+
+/**
+ * 控制点类型
+ */
+export type ControlPointType = 'resize' | 'rotation' | 'center';
+
+/**
+ * 控制点方向
+ */
+export type ControlPointDirection = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'rotation' | 'center';
+
+/**
+ * 控制点位置类型（保持向后兼容）
+ * 8个方向的控制点位置
+ */
+export type ControlPointPosition =
+  | 'top-left' | 'top-center' | 'top-right'
+  | 'middle-left' | 'middle-right'
+  | 'bottom-left' | 'bottom-center' | 'bottom-right'
+  | 'rotate';
+
+/**
+ * 裁剪区域接口
+ * 定义裁剪区域的基本属性
+ */
+export interface CropArea {
+  /** 裁剪形状 */
+  shape: CropShape;
+  /** 区域位置和尺寸 */
+  rect: Rect;
+  /** 旋转角度（弧度） */
+  rotation: number;
+  /** 是否可见 */
+  visible: boolean;
+  /** 是否可编辑 */
+  editable: boolean;
+  /** 最小尺寸 */
+  minSize?: Size;
+  /** 最大尺寸 */
+  maxSize?: Size;
+  /** 宽高比约束 */
+  aspectRatio?: number;
+}
+
+/**
+ * 控制点接口
+ * 定义控制点的属性和行为
+ */
+export interface ControlPoint {
+  /** 控制点ID */
+  id: string;
+  /** 控制点类型 */
+  type: ControlPointType;
+  /** 控制点坐标 */
+  position: Point;
+  /** 控制点方向 */
+  direction: ControlPointDirection;
+  /** 控制点索引 */
+  index: number;
+  /** 是否可见 */
+  visible: boolean;
+  /** 是否可交互 */
+  interactive: boolean;
+}
+
+/**
+ * 控制点样式接口
+ */
+export interface ControlPointStyle {
+  /** 控制点大小 */
+  size: number;
+  /** 控制点颜色 */
+  color: string;
+  /** 边框颜色 */
+  borderColor: string;
+  /** 边框宽度 */
+  borderWidth: number;
+  /** 鼠标样式 */
+  cursor: string;
+  /** 层级 */
+  zIndex: number;
+}
+
+// ============================================================================
+// 图片相关类型
+// ============================================================================
 
 /**
  * 图片源类型
+ * 支持的图片输入源
  */
-export type ImageSource = string | File | HTMLImageElement | HTMLCanvasElement | ImageData
-
-// ==================== 裁剪相关接口 ====================
+export type ImageSource = string | File | HTMLImageElement | HTMLCanvasElement | ImageData;
 
 /**
- * 裁剪数据接口
+ * 图片格式类型
+ * 支持的图片输出格式
  */
-export interface CropData {
-  /** X坐标 */
-  x: number
-  /** Y坐标 */
-  y: number
-  /** 宽度 */
-  width: number
-  /** 高度 */
-  height: number
-  /** 裁剪形状 */
-  shape: CropShape
-  /** 旋转角度 */
-  rotation?: number
+export type ImageFormat = 'image/jpeg' | 'image/png' | 'image/webp';
+
+/**
+ * 图片信息接口
+ * 包含图片的基本信息
+ */
+export interface ImageInfo {
+  /** 图片源 */
+  source: ImageSource;
+  /** 原始宽度 */
+  naturalWidth: number;
+  /** 原始高度 */
+  naturalHeight: number;
+  /** 显示宽度 */
+  displayWidth: number;
+  /** 显示高度 */
+  displayHeight: number;
+  /** 图片格式 */
+  format?: string;
+  /** 文件大小（字节） */
+  size?: number;
+}
+
+/**
+ * 图片变换接口
+ * 定义图片的变换状态
+ */
+export interface ImageTransform {
   /** 缩放比例 */
-  scale?: number
+  scale: number;
+  /** 旋转角度（弧度） */
+  rotation: number;
+  /** 水平平移 */
+  translateX: number;
+  /** 垂直平移 */
+  translateY: number;
   /** 水平翻转 */
-  flipX?: boolean
+  flipX: boolean;
   /** 垂直翻转 */
-  flipY?: boolean
+  flipY: boolean;
+}
+
+// ============================================================================
+// 配置相关类型
+// ============================================================================
+
+/**
+ * 主题类型
+ * 支持的主题模式
+ */
+export type Theme = 'light' | 'dark' | 'auto';
+
+/**
+ * 语言类型
+ * 支持的语言
+ */
+export type Language = 'zh-CN' | 'en-US';
+
+/**
+ * 设备类型
+ * 不同的设备类型
+ */
+export type DeviceType = 'desktop' | 'tablet' | 'mobile';
+
+/**
+ * 裁剪器配置接口
+ * 主要的配置选项
+ */
+export interface CropperConfig {
+  /** 容器元素或选择器 */
+  container: string | HTMLElement;
+  /** 图片源 */
+  src?: ImageSource;
+  /** 初始裁剪区域 */
+  initialCrop?: Partial<CropArea>;
+  /** 裁剪形状 */
+  shape?: CropShape;
+  /** 宽高比约束 */
+  aspectRatio?: number;
+  /** 最小裁剪尺寸 */
+  minCropSize?: Size;
+  /** 最大裁剪尺寸 */
+  maxCropSize?: Size;
+  /** 是否显示网格线 */
+  showGrid?: boolean;
+  /** 是否显示控制点 */
+  showControls?: boolean;
+  /** 是否可缩放 */
+  zoomable?: boolean;
+  /** 是否可旋转 */
+  rotatable?: boolean;
+  /** 是否可移动 */
+  movable?: boolean;
+  /** 最小缩放比例 */
+  minZoom?: number;
+  /** 最大缩放比例 */
+  maxZoom?: number;
+  /** 主题 */
+  theme?: Theme;
+  /** 语言 */
+  language?: Language;
+  /** 是否响应式 */
+  responsive?: boolean;
+  /** 是否启用触摸支持 */
+  touchEnabled?: boolean;
+  /** 输出质量 (0-1) */
+  quality?: number;
+  /** 输出格式 */
+  format?: ImageFormat;
+  /** 背景颜色 */
+  backgroundColor?: string;
+}
+
+/**
+ * 渲染配置接口
+ * Canvas渲染相关配置
+ */
+export interface RenderConfig {
+  /** 设备像素比 */
+  pixelRatio?: number;
+  /** 是否启用硬件加速 */
+  hardwareAcceleration?: boolean;
+  /** 渲染质量 */
+  quality?: 'low' | 'medium' | 'high';
+  /** 是否启用抗锯齿 */
+  antialiasing?: boolean;
+  /** 最大纹理尺寸 */
+  maxTextureSize?: number;
+}
+
+// ============================================================================
+// 事件相关类型
+// ============================================================================
+
+/**
+ * 事件类型枚举
+ * 所有支持的事件类型
+ */
+export type EventType =
+  | 'ready'           // 裁剪器准备就绪
+  | 'imageLoad'       // 图片加载完成
+  | 'imageError'      // 图片加载错误
+  | 'cropStart'       // 开始裁剪
+  | 'cropMove'        // 裁剪区域移动
+  | 'cropEnd'         // 裁剪结束
+  | 'zoom'            // 缩放
+  | 'rotate'          // 旋转
+  | 'flip'            // 翻转
+  | 'reset'           // 重置
+  | 'destroy'         // 销毁
+  | 'error';          // 错误
+
+/**
+ * 事件数据接口
+ * 事件回调函数的参数
+ */
+export interface EventData {
+  /** 事件类型 */
+  type: EventType;
+  /** 事件目标 */
+  target: any;
+  /** 事件时间戳 */
+  timestamp: number;
+  /** 事件数据 */
+  data?: any;
+  /** 原始事件 */
+  originalEvent?: Event;
+}
+
+/**
+ * 事件监听器类型
+ * 事件回调函数的类型定义
+ */
+export type EventListener = (event: EventData) => void;
+
+/**
+ * 事件监听器映射
+ * 事件类型到监听器的映射
+ */
+export type EventListenerMap = {
+  [K in EventType]?: EventListener[];
+};
+
+// ============================================================================
+// 插件相关类型
+// ============================================================================
+
+/**
+ * 插件接口
+ * 定义插件的基本结构
+ */
+export interface Plugin {
+  /** 插件名称 */
+  name: string;
+  /** 插件版本 */
+  version: string;
+  /** 插件描述 */
+  description?: string;
+  /** 插件初始化方法 */
+  install: (cropper: any, options?: any) => void;
+  /** 插件卸载方法 */
+  uninstall?: (cropper: any) => void;
+  /** 插件依赖 */
+  dependencies?: string[];
+}
+
+/**
+ * 插件选项接口
+ * 插件的配置选项
+ */
+export interface PluginOptions {
+  /** 插件配置 */
+  [key: string]: any;
+}
+
+/**
+ * 插件管理器接口
+ * 管理插件的注册、安装和卸载
+ */
+export interface PluginManager {
+  /** 注册插件 */
+  register(plugin: Plugin): void;
+  /** 安装插件 */
+  install(name: string, options?: PluginOptions): void;
+  /** 卸载插件 */
+  uninstall(name: string): void;
+  /** 获取已安装的插件列表 */
+  getInstalled(): string[];
+  /** 检查插件是否已安装 */
+  isInstalled(name: string): boolean;
 }
 
 /**
  * 导出选项接口
  */
 export interface ExportOptions {
-  /** 图片格式 */
-  format?: ImageFormat
-  /** 图片质量 (0-1) */
-  quality?: number
-  /** 输出宽度 */
-  width?: number
-  /** 输出高度 */
-  height?: number
+  /** 导出格式 */
+  format: 'png' | 'jpeg' | 'webp';
+  /** 导出质量 (0-1) */
+  quality: number;
+  /** 导出宽度 */
+  width?: number;
+  /** 导出高度 */
+  height?: number;
   /** 背景颜色 */
-  backgroundColor?: Color
-  /** 是否保持透明度 */
-  preserveTransparency?: boolean
+  background?: string;
 }
 
 /**
- * 多边形配置接口
+ * 导出结果接口
  */
-export interface PolygonConfig {
-  /** 边数 */
-  sides: number
-  /** 起始角度 */
-  startAngle?: number
+export interface ExportResult {
+  /** 导出的数据URL */
+  dataURL: string;
+  /** 导出的Blob */
+  blob: Blob;
+  /** 导出的尺寸 */
+  size: Size;
+  /** 导出格式 */
+  format: string;
+  /** 文件大小（字节） */
+  fileSize: number;
 }
 
-/**
- * 自定义路径配置接口
- */
-export interface CustomPathConfig {
-  /** SVG路径字符串 */
-  path: string
-  /** 路径宽度 */
-  width?: number
-  /** 路径高度 */
-  height?: number
-}
+// ============================================================================
+// 导出所有类型
+// ============================================================================
 
-// ==================== 配置接口 ====================
-
-/**
- * 键盘快捷键配置接口
- */
-export interface KeyboardConfig {
-  /** 是否启用键盘快捷键 */
-  enabled: boolean
-  /** 快捷键映射 */
-  shortcuts: Record<string, string>
-}
-
-/**
- * 触摸配置接口
- */
-export interface TouchConfig {
-  /** 是否启用触摸支持 */
-  enabled: boolean
-  /** 双指缩放 */
-  pinchToZoom: boolean
-  /** 双击适应 */
-  doubleTapToFit: boolean
-}
-
-/**
- * 动画配置接口
- */
-export interface AnimationConfig {
-  /** 是否启用动画 */
-  enabled: boolean
-  /** 动画持续时间 */
-  duration: number
-  /** 缓动函数 */
-  easing: string
-}
-
-/**
- * 工具栏配置接口
- */
-export interface ToolbarConfig {
-  /** 是否显示工具栏 */
-  show: boolean
-  /** 工具栏位置 */
-  position: ToolbarPosition
-  /** 工具列表 */
-  tools: string[]
-}
-
-/**
- * 主配置接口
- */
-export interface CropperConfig {
-  /** 主题 */
-  theme?: ThemeType
-  /** 是否响应式 */
-  responsive?: boolean
-  /** 宽高比 */
-  aspectRatio?: AspectRatio
-  /** 最小裁剪尺寸 */
-  minCropSize?: Size
-  /** 最大裁剪尺寸 */
-  maxCropSize?: Size
-  /** 裁剪形状 */
-  shape?: CropShape
-  /** 是否显示网格 */
-  showGrid?: boolean
-  /** 网格线数量 */
-  gridLines?: number
-  /** 工具栏配置 */
-  toolbar?: ToolbarConfig
-  /** 键盘配置 */
-  keyboard?: KeyboardConfig
-  /** 触摸配置 */
-  touch?: TouchConfig
-  /** 动画配置 */
-  animation?: AnimationConfig
-  /** 多边形配置 */
-  polygon?: PolygonConfig
-  /** 自定义路径配置 */
-  customPath?: CustomPathConfig
-}
-
-// ==================== 事件相关接口 ====================
-
-/**
- * 事件监听器类型
- */
-export type EventListener<T = any> = (event: CropperEvent<T>) => void
-
-/**
- * 事件接口
- */
-export interface CropperEvent<T = any> {
-  /** 事件类型 */
-  type: CropperEventType
-  /** 事件数据 */
-  data?: T
-  /** 时间戳 */
-  timestamp: number
-  /** 是否可取消 */
-  cancelable?: boolean
-  /** 是否已取消 */
-  cancelled?: boolean
-}
-
-// ==================== 构造函数选项 ====================
-
-/**
- * Cropper构造函数选项
- */
-export interface CropperOptions extends CropperConfig {
-  /** 容器元素或选择器 */
-  container: HTMLElement | string
-}
-
-// ==================== 兼容性检查结果 ====================
-
-/**
- * 功能支持检查结果
- */
-export interface FeatureSupport {
-  /** Canvas支持 */
-  canvas: boolean
-  /** FileReader支持 */
-  fileReader: boolean
-  /** Blob支持 */
-  blob: boolean
-  /** 触摸支持 */
-  touch: boolean
-  /** ResizeObserver支持 */
-  resizeObserver: boolean
-  /** IntersectionObserver支持 */
-  intersectionObserver: boolean
-}
-
-/**
- * 兼容性检查结果
- */
-export interface CompatibilityResult {
-  /** 是否支持 */
-  supported: boolean
-  /** 功能支持详情 */
-  features: FeatureSupport
-  /** 不支持的原因 */
-  reasons?: string[]
-}
+export * from './events';
+export * from './config';
+export * from './plugins';
+export * from './theme';

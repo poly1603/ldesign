@@ -1,0 +1,406 @@
+/**
+ * @ldesign/cropper 基础样式
+ * 
+ * 定义裁剪器的基础样式和重置样式
+ */
+
+// ============================================================================
+// 基础容器样式
+// ============================================================================
+
+.lcropper {
+  // 基础布局
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 200px;
+  min-height: 200px;
+  overflow: hidden;
+  
+  // 外观样式
+  background-color: var(--lcropper-container-bg);
+  border: 1px solid var(--lcropper-container-border);
+  border-radius: var(--lcropper-container-radius);
+  box-shadow: var(--lcropper-container-shadow);
+  
+  // 字体设置
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  font-size: var(--ls-font-size-base);
+  line-height: 1.5;
+  color: var(--ldesign-text-color-primary);
+  
+  // 交互设置
+  .no-select();
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  
+  // 子元素基础设置
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  
+  // 图片基础样式
+  img {
+    max-width: none;
+    height: auto;
+    border: none;
+    vertical-align: top;
+  }
+  
+  // 按钮基础样式
+  button {
+    .reset-button();
+  }
+  
+  // 列表基础样式
+  ul,
+  ol {
+    .reset-list();
+  }
+}
+
+// ============================================================================
+// 状态样式
+// ============================================================================
+
+.lcropper {
+  // 加载状态
+  &.lcropper-loading {
+    pointer-events: none;
+    opacity: 0.7;
+    
+    &::after {
+      content: '';
+      .absolute-center();
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--ldesign-border-color);
+      border-top-color: var(--ldesign-brand-color);
+      border-radius: 50%;
+      .spin();
+      z-index: var(--lcropper-z-overlay);
+    }
+  }
+  
+  // 禁用状态
+  &.lcropper-disabled {
+    pointer-events: none;
+    opacity: 0.6;
+    filter: grayscale(50%);
+    
+    .lcropper-control-point,
+    .lcropper-toolbar,
+    .lcropper-resize-handle {
+      display: none;
+    }
+  }
+  
+  // 只读状态
+  &.lcropper-readonly {
+    .lcropper-control-point,
+    .lcropper-toolbar,
+    .lcropper-resize-handle {
+      display: none;
+    }
+    
+    .lcropper-crop-area {
+      cursor: default;
+    }
+  }
+  
+  // 全屏状态
+  &.lcropper-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: var(--lcropper-z-modal);
+    background-color: rgba(0, 0, 0, 0.9);
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  
+  // 错误状态
+  &.lcropper-error {
+    border-color: var(--ldesign-error-color);
+    
+    .lcropper-error-message {
+      .absolute-center();
+      padding: var(--ls-padding-base);
+      background-color: var(--ldesign-error-color-1);
+      border: 1px solid var(--ldesign-error-color);
+      border-radius: var(--ls-border-radius-base);
+      color: var(--ldesign-error-color-8);
+      font-size: var(--ls-font-size-sm);
+      text-align: center;
+      z-index: var(--lcropper-z-overlay);
+    }
+  }
+  
+  // 空状态
+  &.lcropper-empty {
+    .lcropper-empty-state {
+      .absolute-center();
+      text-align: center;
+      color: var(--ldesign-text-color-secondary);
+      z-index: var(--lcropper-z-overlay);
+      
+      .lcropper-empty-icon {
+        font-size: 48px;
+        margin-bottom: var(--ls-spacing-base);
+        opacity: 0.5;
+      }
+      
+      .lcropper-empty-text {
+        font-size: var(--ls-font-size-lg);
+        margin-bottom: var(--ls-spacing-sm);
+      }
+      
+      .lcropper-empty-hint {
+        font-size: var(--ls-font-size-sm);
+        color: var(--ldesign-text-color-placeholder);
+      }
+    }
+  }
+}
+
+// ============================================================================
+// 尺寸变体
+// ============================================================================
+
+.lcropper {
+  // 小尺寸
+  &.lcropper-size-small {
+    min-width: 150px;
+    min-height: 150px;
+    
+    .lcropper-control-point {
+      width: 12px;
+      height: 12px;
+    }
+    
+    .lcropper-toolbar {
+      padding: var(--ls-padding-xs);
+      gap: var(--ls-spacing-xs);
+      
+      .lcropper-button {
+        height: var(--ls-button-height-small);
+        padding: 0 var(--ls-padding-sm);
+        font-size: var(--ls-font-size-sm);
+      }
+    }
+  }
+  
+  // 中等尺寸（默认）
+  &.lcropper-size-medium {
+    min-width: 200px;
+    min-height: 200px;
+  }
+  
+  // 大尺寸
+  &.lcropper-size-large {
+    min-width: 300px;
+    min-height: 300px;
+    
+    .lcropper-control-point {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .lcropper-toolbar {
+      padding: var(--ls-padding-lg);
+      gap: var(--ls-spacing-lg);
+      
+      .lcropper-button {
+        height: var(--ls-button-height-large);
+        padding: 0 var(--ls-padding-xl);
+        font-size: var(--ls-font-size-lg);
+      }
+    }
+  }
+}
+
+// ============================================================================
+// 形状变体
+// ============================================================================
+
+.lcropper {
+  // 圆形裁剪器
+  &.lcropper-shape-circle {
+    .lcropper-crop-area {
+      border-radius: 50%;
+    }
+    
+    .lcropper-preview {
+      border-radius: 50%;
+      overflow: hidden;
+    }
+  }
+  
+  // 椭圆形裁剪器
+  &.lcropper-shape-ellipse {
+    .lcropper-crop-area {
+      border-radius: 50%;
+    }
+    
+    .lcropper-preview {
+      border-radius: 50%;
+      overflow: hidden;
+    }
+  }
+  
+  // 圆角矩形裁剪器
+  &.lcropper-shape-rounded {
+    .lcropper-crop-area {
+      border-radius: var(--ls-border-radius-lg);
+    }
+    
+    .lcropper-preview {
+      border-radius: var(--ls-border-radius-lg);
+      overflow: hidden;
+    }
+  }
+}
+
+// ============================================================================
+// 响应式样式
+// ============================================================================
+
+.lcropper {
+  // 移动端优化
+  .mobile-only({
+    // 增大触摸目标
+    .lcropper-control-point {
+      width: 24px;
+      height: 24px;
+    }
+    
+    // 调整工具栏
+    .lcropper-toolbar {
+      flex-direction: column;
+      padding: var(--ls-padding-sm);
+      gap: var(--ls-spacing-sm);
+      
+      &.lcropper-toolbar-horizontal {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+    }
+    
+    // 调整按钮
+    .lcropper-button {
+      min-height: 44px; // iOS 推荐的最小触摸目标
+      font-size: var(--ls-font-size-lg);
+    }
+  });
+  
+  // 平板端优化
+  .tablet-only({
+    .lcropper-control-point {
+      width: 20px;
+      height: 20px;
+    }
+  });
+  
+  // 桌面端优化
+  .desktop-up({
+    .lcropper-control-point {
+      width: 16px;
+      height: 16px;
+      
+      &:hover {
+        width: 18px;
+        height: 18px;
+      }
+    }
+  });
+}
+
+// ============================================================================
+// 可访问性样式
+// ============================================================================
+
+.lcropper {
+  // 高对比度模式
+  @media (prefers-contrast: high) {
+    border-width: 2px;
+    
+    .lcropper-control-point {
+      border-width: 3px;
+    }
+    
+    .lcropper-crop-area {
+      border-width: 3px;
+    }
+    
+    .lcropper-toolbar {
+      border-width: 2px;
+    }
+  }
+  
+  // 减少动画
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  // 焦点可见性
+  .lcropper-button,
+  .lcropper-control-point {
+    .focus-ring();
+  }
+  
+  // 屏幕阅读器支持
+  .lcropper-sr-only {
+    .sr-only();
+  }
+}
+
+// ============================================================================
+// 打印样式
+// ============================================================================
+
+@media print {
+  .lcropper {
+    .lcropper-toolbar,
+    .lcropper-control-point,
+    .lcropper-overlay,
+    .lcropper-mask {
+      display: none !important;
+    }
+    
+    background: white !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    
+    .lcropper-canvas {
+      background: white !important;
+    }
+    
+    .lcropper-crop-area {
+      border: 2px dashed #000 !important;
+      background: transparent !important;
+    }
+  }
+}
+
+// ============================================================================
+// 自定义滚动条
+// ============================================================================
+
+.lcropper {
+  .lcropper-scrollable {
+    .custom-scrollbar();
+  }
+}

@@ -1,0 +1,441 @@
+/**
+ * @ldesign/cropper 裁剪区域样式
+ * 
+ * 定义裁剪区域和相关交互样式
+ */
+
+// ============================================================================
+// 裁剪区域基础样式
+// ============================================================================
+
+.lcropper-crop-area {
+  position: absolute;
+  border: var(--lcropper-crop-area-border-width) var(--lcropper-crop-area-border-style) var(--lcropper-crop-area-border);
+  background-color: var(--lcropper-crop-area-bg);
+  cursor: move;
+  z-index: var(--lcropper-z-crop-area);
+  
+  // 变换设置
+  transform-origin: center center;
+  transition: all var(--lcropper-transition-fast);
+  
+  // 硬件加速
+  transform: translateZ(0);
+  will-change: transform, width, height, top, left;
+  
+  // 最小尺寸
+  min-width: 20px;
+  min-height: 20px;
+  
+  // 防止选择
+  .no-select();
+  
+  // 裁剪区域内容
+  overflow: hidden;
+  
+  // 裁剪区域状态
+  &.lcropper-crop-active {
+    border-color: var(--ldesign-brand-color-hover);
+    box-shadow: 0 0 0 1px var(--ldesign-brand-color-focus);
+  }
+  
+  &.lcropper-crop-dragging {
+    cursor: grabbing;
+    transition: none;
+    
+    // 拖拽时显示参考线
+    & ~ .lcropper-guides {
+      opacity: 1;
+    }
+  }
+  
+  &.lcropper-crop-resizing {
+    transition: none;
+  }
+  
+  &.lcropper-crop-disabled {
+    pointer-events: none;
+    opacity: 0.5;
+    border-style: dashed;
+  }
+}
+
+// ============================================================================
+// 裁剪区域形状
+// ============================================================================
+
+.lcropper-crop-area {
+  // 矩形裁剪区域（默认）
+  &.lcropper-crop-rectangle {
+    border-radius: 0;
+  }
+  
+  // 圆形裁剪区域
+  &.lcropper-crop-circle {
+    border-radius: 50%;
+    
+    // 保持圆形比例
+    &::before {
+      content: '';
+      display: block;
+      width: 100%;
+      padding-bottom: 100%;
+    }
+  }
+  
+  // 椭圆形裁剪区域
+  &.lcropper-crop-ellipse {
+    border-radius: 50%;
+  }
+  
+  // 圆角矩形裁剪区域
+  &.lcropper-crop-rounded {
+    border-radius: var(--ls-border-radius-lg);
+  }
+  
+  // 自由形状裁剪区域
+  &.lcropper-crop-polygon {
+    border: none;
+    background: transparent;
+    
+    // 多边形路径
+    .lcropper-polygon-path {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      fill: var(--lcropper-crop-area-bg);
+      stroke: var(--lcropper-crop-area-border);
+      stroke-width: var(--lcropper-crop-area-border-width);
+      pointer-events: none;
+    }
+  }
+}
+
+// ============================================================================
+// 裁剪区域网格
+// ============================================================================
+
+.lcropper-crop-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--lcropper-transition-fast);
+  
+  // 显示网格
+  .lcropper-crop-area:hover &,
+  .lcropper-crop-area.lcropper-crop-active &,
+  .lcropper-crop-area.lcropper-crop-dragging & {
+    opacity: 1;
+  }
+  
+  // 网格线
+  .lcropper-grid-line {
+    position: absolute;
+    background-color: var(--lcropper-grid-color);
+    
+    // 垂直网格线
+    &.lcropper-grid-vertical {
+      width: 1px;
+      height: 100%;
+      top: 0;
+      
+      &:nth-child(1) { left: 33.33%; }
+      &:nth-child(2) { left: 66.67%; }
+    }
+    
+    // 水平网格线
+    &.lcropper-grid-horizontal {
+      width: 100%;
+      height: 1px;
+      left: 0;
+      
+      &:nth-child(3) { top: 33.33%; }
+      &:nth-child(4) { top: 66.67%; }
+    }
+  }
+}
+
+// ============================================================================
+// 裁剪区域信息显示
+// ============================================================================
+
+.lcropper-crop-info {
+  position: absolute;
+  top: -30px;
+  left: 0;
+  padding: var(--ls-padding-xs) var(--ls-padding-sm);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: var(--ls-font-size-xs);
+  border-radius: var(--ls-border-radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all var(--lcropper-transition-fast);
+  z-index: var(--lcropper-z-tooltip);
+  
+  // 显示信息
+  .lcropper-crop-area:hover &,
+  .lcropper-crop-area.lcropper-crop-active &,
+  .lcropper-crop-area.lcropper-crop-dragging &,
+  .lcropper-crop-area.lcropper-crop-resizing & {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  // 信息内容
+  .lcropper-crop-size {
+    display: inline-block;
+    margin-right: var(--ls-spacing-xs);
+    
+    &::after {
+      content: ' × ';
+    }
+  }
+  
+  .lcropper-crop-position {
+    display: inline-block;
+    opacity: 0.8;
+    
+    &::before {
+      content: '(';
+    }
+    
+    &::after {
+      content: ')';
+    }
+  }
+}
+
+// ============================================================================
+// 裁剪区域遮罩
+// ============================================================================
+
+.lcropper-crop-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--lcropper-mask-bg);
+  pointer-events: none;
+  z-index: calc(var(--lcropper-z-crop-area) - 1);
+  
+  // 使用clip-path创建裁剪孔洞
+  &.lcropper-mask-clip {
+    clip-path: polygon(
+      0% 0%, 
+      0% 100%, 
+      var(--crop-left) 100%, 
+      var(--crop-left) var(--crop-top), 
+      var(--crop-right) var(--crop-top), 
+      var(--crop-right) var(--crop-bottom), 
+      var(--crop-left) var(--crop-bottom), 
+      var(--crop-left) 100%, 
+      100% 100%, 
+      100% 0%
+    );
+  }
+  
+  // 使用box-shadow创建遮罩效果
+  &.lcropper-mask-shadow {
+    box-shadow: 
+      0 0 0 var(--crop-top) var(--lcropper-mask-bg),
+      0 0 0 9999px var(--lcropper-mask-bg);
+  }
+}
+
+// ============================================================================
+// 裁剪区域约束
+// ============================================================================
+
+.lcropper-crop-area {
+  // 固定宽高比
+  &.lcropper-crop-aspect-fixed {
+    // 通过JavaScript维护宽高比
+  }
+  
+  // 最小尺寸约束
+  &.lcropper-crop-min-size {
+    min-width: var(--crop-min-width, 50px);
+    min-height: var(--crop-min-height, 50px);
+  }
+  
+  // 最大尺寸约束
+  &.lcropper-crop-max-size {
+    max-width: var(--crop-max-width, none);
+    max-height: var(--crop-max-height, none);
+  }
+  
+  // 边界约束
+  &.lcropper-crop-bounded {
+    // 通过JavaScript限制在图片边界内
+  }
+}
+
+// ============================================================================
+// 裁剪区域动画
+// ============================================================================
+
+.lcropper-crop-area {
+  // 创建动画
+  &.lcropper-crop-creating {
+    animation: lcropper-crop-create 0.3s ease-out;
+  }
+  
+  // 删除动画
+  &.lcropper-crop-removing {
+    animation: lcropper-crop-remove 0.3s ease-in;
+  }
+  
+  // 重置动画
+  &.lcropper-crop-resetting {
+    animation: lcropper-crop-reset 0.5s ease-out;
+  }
+}
+
+// 裁剪区域动画关键帧
+@keyframes lcropper-crop-create {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes lcropper-crop-remove {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes lcropper-crop-reset {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// ============================================================================
+// 裁剪区域预设
+// ============================================================================
+
+.lcropper-crop-area {
+  // 预设尺寸
+  &.lcropper-crop-preset-1-1 {
+    aspect-ratio: 1 / 1;
+  }
+  
+  &.lcropper-crop-preset-4-3 {
+    aspect-ratio: 4 / 3;
+  }
+  
+  &.lcropper-crop-preset-16-9 {
+    aspect-ratio: 16 / 9;
+  }
+  
+  &.lcropper-crop-preset-3-2 {
+    aspect-ratio: 3 / 2;
+  }
+  
+  &.lcropper-crop-preset-2-3 {
+    aspect-ratio: 2 / 3;
+  }
+  
+  &.lcropper-crop-preset-9-16 {
+    aspect-ratio: 9 / 16;
+  }
+}
+
+// ============================================================================
+// 响应式裁剪区域
+// ============================================================================
+
+.lcropper-crop-area {
+  // 移动端优化
+  .mobile-only({
+    // 增加边框宽度以便触摸
+    border-width: 3px;
+    
+    // 调整最小尺寸
+    min-width: 40px;
+    min-height: 40px;
+    
+    // 调整信息显示位置
+    .lcropper-crop-info {
+      top: -35px;
+      font-size: var(--ls-font-size-sm);
+    }
+  });
+  
+  // 平板端优化
+  .tablet-only({
+    border-width: 2px;
+    min-width: 30px;
+    min-height: 30px;
+  });
+  
+  // 桌面端优化
+  .desktop-up({
+    // 悬停效果
+    &:hover {
+      border-color: var(--ldesign-brand-color-hover);
+      box-shadow: 0 0 0 1px var(--ldesign-brand-color-focus);
+    }
+  });
+}
+
+// ============================================================================
+// 高对比度模式
+// ============================================================================
+
+@media (prefers-contrast: high) {
+  .lcropper-crop-area {
+    border-width: 3px;
+    border-color: var(--ldesign-brand-color);
+    background-color: rgba(114, 46, 209, 0.2);
+    
+    .lcropper-crop-grid .lcropper-grid-line {
+      background-color: var(--ldesign-brand-color);
+    }
+  }
+}
+
+// ============================================================================
+// 减少动画偏好
+// ============================================================================
+
+@media (prefers-reduced-motion: reduce) {
+  .lcropper-crop-area {
+    transition: none !important;
+    animation: none !important;
+    
+    .lcropper-crop-info {
+      transition: none !important;
+    }
+    
+    .lcropper-crop-grid {
+      transition: none !important;
+    }
+  }
+}
