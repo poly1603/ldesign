@@ -2670,6 +2670,7 @@ export namespace Components {
           * @default 0
          */
         "hideDelay": number;
+        "innerStyle"?: string | { [key: string]: string };
         /**
           * @default true
          */
@@ -8192,6 +8193,7 @@ declare namespace LocalJSX {
           * @default 0
          */
         "hideDelay"?: number;
+        "innerStyle"?: string | { [key: string]: string };
         /**
           * @default true
          */
