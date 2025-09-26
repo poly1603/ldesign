@@ -138,9 +138,11 @@ export class LdesignMention {
         this.setEditableText(this.value || '');
       }
       // 默认：若初始 value 中包含触发符，则自动解析；显式指定 parseOnInit=false 时不解析
+      // 注意：如果已经通过 model/valueModel 进行了结构化渲染，则不应再次触发 parse
+      const usedStructured = !!seg || !!mod;
       const autoDetect = !!(this.value && this.containsTrigger(this.value));
       const opt = (this as any).parseOnInit;
-      const shouldParse = (opt === true) || (opt === undefined && autoDetect);
+      const shouldParse = (opt === true) || (opt === undefined && autoDetect && !usedStructured);
       if (shouldParse) {
         this.parseTextToTokens();
         this.syncValueFromEditable();
@@ -299,19 +301,40 @@ export class LdesignMention {
 
   private renderFromSegments(segments: MentionSegment[]) {
     if (!this.editableEl) return;
-    const frag = document.createDocumentFragment();
-    for (const seg of segments) {
-      if ((seg as any).type === 'mention') {
-        const m = seg as any as { trigger: string; label: string; value: string | number; extra?: any };
-        frag.appendChild(this.buildTokenNode({ value: m.value, label: m.label, data: m.extra } as any, m.trigger));
-        // 在 token 后追加零宽空格，保证光标可落在其后进行继续编辑
-        frag.appendChild(document.createTextNode('\u200b'));
-      } else {
-        frag.appendChild(document.createTextNode((seg as any).text || ''));
+    
+    // 清空当前内容
+    while (this.editableEl.firstChild) {
+      this.editableEl.removeChild(this.editableEl.firstChild);
+    }
+    
+    // 逐个添加段落
+    for (let i = 0; i < segments.length; i++) {
+      const seg: any = segments[i] as any;
+      
+      if (seg.type === 'mention') {
+        const m = seg as { trigger: string; label: string; value: string | number; extra?: any };
+        const token = this.buildTokenNode({ value: m.value, label: m.label, data: m.extra } as any, m.trigger);
+        
+        // 直接插入 token 节点
+        this.editableEl.appendChild(token);
+        
+        // 检查是否需要在 token 后添加分隔
+        // 1. 如果下一段是文本且不以空格开头，添加空格
+        // 2. 如果没有下一段（token 是最后一个），也添加空格便于继续输入
+        const next = segments[i + 1] as any;
+        const needSpace = !next || (next.type === 'text' && !next.text?.startsWith(' '));
+        
+        if (needSpace) {
+          // 插入一个普通空格作为分隔
+          const spaceNode = document.createTextNode(' ');
+          this.editableEl.appendChild(spaceNode);
+        }
+      } else if (seg.type === 'text' && seg.text) {
+        // 添加文本节点
+        const textNode = document.createTextNode(seg.text);
+        this.editableEl.appendChild(textNode);
       }
     }
-    this.editableEl.innerHTML = '';
-    this.editableEl.appendChild(frag);
   }
 
   private renderFromModel(model: MentionModel) {
@@ -342,26 +365,38 @@ export class LdesignMention {
     const type = it.tagType || this.getTokenTypeFor(ch) || 'default';
     const ro = this.disabled || this.readonly;
     const isClosable = ro ? false : (typeof it.closable === 'boolean' ? it.closable : this.getClosableFor(ch)) === true;
+    
+    // 设置类名和样式
     token.className = `ldesign-mention__token ldesign-mention__token--${type}`;
     if ((it as any).className) token.classList.add((it as any).className);
     if ((it as any).style) token.setAttribute('style', (it as any).style);
+    
+    // 设置数据属性
     token.setAttribute('data-value', String(it.value));
     token.setAttribute('data-label', it.label);
     token.setAttribute('data-trigger', ch);
     token.setAttribute('data-closable', String(isClosable));
-    token.contentEditable = 'false';
+    
+    // 关键：确保 token 不可编辑，防止内部内容被修改
+    token.setAttribute('contenteditable', 'false');
+    // 设置为 inline-block 确保不会与文本节点合并
+    token.style.display = 'inline-block';
+    token.style.verticalAlign = 'baseline';
 
+    // 创建内部文本节点
     const textSpan = document.createElement('span');
     textSpan.className = 'ldesign-mention__token-text';
     textSpan.textContent = `${ch}${it.label}`;
     token.appendChild(textSpan);
 
+    // 添加关闭按钮（如果可关闭）
     if (isClosable) {
       const close = document.createElement('span');
       close.className = 'ldesign-mention__token-close';
       close.textContent = '×';
       token.appendChild(close);
     }
+    
     return token;
   }
 
