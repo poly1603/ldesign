@@ -171,6 +171,8 @@ m.addEventListener('ldesignChange', (e) => {
 >
 > MentionTriggerConfig: `{ char: string; options?: MentionItem[]; tokenType?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'; closable?: boolean }`
 
+> 注意：`parse-on-init` 默认为“自动解析”——当初始 `value` 中包含触发符（如 @ / #）时会转为标签；如需禁止，请显式设置 `parse-on-init="false"`。通过 `model`/`value-model` 进行结构化初始化时不会再触发解析。
+
 ### 事件
 
 | 事件名 | 说明 | 回调参数 |
@@ -387,9 +389,12 @@ m.addEventListener('ldesignChange', (e) => {
       { "char": "@", "tokenType": "primary", "options": [ { "value": "1", "label": "Alice" } ] },
       { "char": "#", "tokenType": "info",    "options": [ { "value": "t2", "label": "性能优化" } ] }
     ]'
-    parse-on-init="true"
-    parse-strategy="options"
-    value="只读示例：@Alice 参与 #性能优化"
+    model='[
+      { "type": "text", "text": "只读示例：" },
+      { "type": "mention", "trigger": "@", "label": "Alice", "value": "1" },
+      { "type": "text", "text": " 参与 " },
+      { "type": "mention", "trigger": "#", "label": "性能优化", "value": "t2" }
+    ]'
   ></ldesign-mention>
 
   <div class="demo-row" style="margin-top:12px;"><span class="demo-label">禁用：</span></div>
@@ -401,9 +406,12 @@ m.addEventListener('ldesignChange', (e) => {
       { "char": "@", "tokenType": "primary", "options": [ { "value": "1", "label": "Alice" } ] },
       { "char": "#", "tokenType": "warning", "options": [ { "value": "t1", "label": "话题一" } ] }
     ]'
-    parse-on-init="true"
-    parse-strategy="label"
-    value="禁用示例：@Alice 的 #话题一"
+    model='[
+      { "type": "text", "text": "禁用示例：" },
+      { "type": "mention", "trigger": "@", "label": "Alice", "value": "1" },
+      { "type": "text", "text": " 的 " },
+      { "type": "mention", "trigger": "#", "label": "话题一", "value": "t1" }
+    ]'
   ></ldesign-mention>
 </div>
 

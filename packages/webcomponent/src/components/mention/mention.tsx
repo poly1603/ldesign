@@ -55,6 +55,10 @@ export class LdesignMention {
   @Prop() tokenType: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' = 'primary';
   /** token 是否默认可关闭 */
   @Prop() closable: boolean = true;
+  /** 是否在加载时将文本中的 @xxx/#xxx 解析为标签（仅在未提供 model/valueModel 时生效） */
+  @Prop() parseOnInit?: boolean;
+  /** 解析策略：label（直接转换）/options（仅命中候选时转换） */
+  @Prop() parseStrategy: 'label' | 'options' = 'label';
   /** 浮层挂载到：self|body|closest-popup（透传给 popup） */
   @Prop() appendTo: 'self' | 'body' | 'closest-popup' = 'body';
 
@@ -141,7 +145,7 @@ export class LdesignMention {
       // 注意：如果已经通过 model/valueModel 进行了结构化渲染，则不应再次触发 parse
       const usedStructured = !!seg || !!mod;
       const autoDetect = !!(this.value && this.containsTrigger(this.value));
-      const opt = (this as any).parseOnInit;
+      const opt = this.parseOnInit;
       const shouldParse = (opt === true) || (opt === undefined && autoDetect && !usedStructured);
       if (shouldParse) {
         this.parseTextToTokens();
@@ -234,12 +238,11 @@ export class LdesignMention {
   }
   private getTokenTypeFor(ch: string): any {
     const cfg = this.getTriggerConfig(ch);
-    return cfg?.tokenType || (this as any).tokenType || 'default';
+    return cfg?.tokenType || this.tokenType || 'default';
   }
   private getClosableFor(ch: string): boolean {
     const cfg = this.getTriggerConfig(ch);
-    const def = (this as any).closable === true;
-    return typeof cfg?.closable === 'boolean' ? cfg!.closable! : def;
+    return typeof cfg?.closable === 'boolean' ? cfg!.closable! : this.closable === true;
   }
 
   // 将 editable 的可见文本同步到 value 并抛出事件
@@ -356,7 +359,7 @@ export class LdesignMention {
   private createTokenNodeFromParts(ch: string, label: string): HTMLElement | null {
     const opts = this.getOptionsFor(ch);
     let item = opts.find(o => o.label === label);
-    if (!item && (this as any).parseStrategy === 'options') return null;
+    if (!item && this.parseStrategy === 'options') return null;
     if (!item) item = { value: label, label, tagType: this.getTokenTypeFor(ch), closable: this.getClosableFor(ch) } as any;
     return this.buildTokenNode(item as MentionItem, ch);
   }
@@ -437,7 +440,7 @@ export class LdesignMention {
       }
 
       // 解析策略：options 时，仅当在数据源中命中同名 label 才转换
-      if ((this as any).parseStrategy === 'options') {
+      if (this.parseStrategy === 'options') {
         const opts = this.getOptionsFor(ch);
         const hit = opts.find(o => o.label === label);
         if (!hit) {

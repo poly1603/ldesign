@@ -26,6 +26,8 @@ ldesign-mention 提及组件（contenteditable 版本）
 | `maxHeight`      | `max-height`      | 列表最大高度                                     | `number`                                                                 | `240`       |
 | `model`          | `model`           | 结构化初始化（分段）                                 | `MentionSegment[] \| string`                                             | `undefined` |
 | `options`        | `options`         | 候选项（数组或 JSON 字符串）                          | `MentionItem[] \| string`                                                | `[]`        |
+| `parseOnInit`    | `parse-on-init`   | 是否在加载时将文本中的                                | `boolean`                                                                | `undefined` |
+| `parseStrategy`  | `parse-strategy`  | 解析策略：label（直接转换）/options（仅命中候选时转换）         | `"label" \| "options"`                                                   | `'label'`   |
 | `placeholder`    | `placeholder`     | 占位文本                                       | `string`                                                                 | `undefined` |
 | `readonly`       | `readonly`        | 是否只读                                       | `boolean`                                                                | `false`     |
 | `size`           | `size`            | 尺寸（影响样式）                                   | `"large" \| "medium" \| "small"`                                         | `'medium'`  |
