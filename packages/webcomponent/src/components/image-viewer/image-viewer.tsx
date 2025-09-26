@@ -126,6 +126,33 @@ export class LdesignImageViewer {
   private enterScale?: number; // 新图入场缩放（fade-zoom 用）
   private pendingApply = false; // 避免在切换中对旧图应用重置变换
 
+  // 画布与图像基础尺寸（用于边界约束）
+  private stageWidth = 0; private stageHeight = 0;
+  private baseWidth = 0; private baseHeight = 0; // 图像在 scale=1 时（按 contain 适配舞台）的基准尺寸
+
+  // 拖拽后的回弹动画
+  private bouncing = false;
+  private bounceRaf?: number;
+  private bounceStartTime = 0;
+  private bounceFromX = 0; private bounceFromY = 0;
+  private bounceToX = 0; private bounceToY = 0;
+  private bounceDuration = 220; // ms
+
+  // 简单速度估计（可用于后续动量滚动）
+  private lastMoveTime = 0;
+  private lastMoveX = 0; private lastMoveY = 0;
+  private velocityX = 0; private velocityY = 0;
+
+  // 旋转阈值，避免双指缩放时角度微抖造成画面抖动
+  private rotateThresholdDeg = 5;
+
+  // 动量滚动（甩动）
+  private momentumRunning = false;
+  private momentumRaf?: number;
+  private momentumLastTime = 0;
+  private momentumVX = 0; // px/ms
+  private momentumVY = 0; // px/ms
+
   // 小窗拖拽
   private panelDragging = false;
   private panelStartX = 0; private panelStartY = 0;
@@ -150,6 +177,9 @@ export class LdesignImageViewer {
 
   componentDidLoad() {
     if (this.visible) this.setVisibleInternal(true);
+    // 初始化舞台尺寸监听（影响拖拽边界）
+    this.updateStageMetrics();
+    window.addEventListener('resize', this.onWindowResize, { passive: true } as any);
   }
 
   componentDidRender() {
@@ -160,6 +190,9 @@ export class LdesignImageViewer {
     } else {
       this.applyTransform();
     }
+    // 渲染后更新舞台与基准尺寸（用于边界约束），不会触发重渲染
+    this.updateStageMetrics();
+    this.measureBaseSize();
   }
 
   private toPx(v?: number | string): string | undefined { if (v == null) return undefined; return typeof v === 'number' ? `${v}px` : String(v); }
@@ -200,6 +233,7 @@ export class LdesignImageViewer {
     this.unbindKeydown();
     if (this.visible) unlockPageScroll();
     if (this.fadeTimer) { clearTimeout(this.fadeTimer); this.fadeTimer = undefined as any; }
+    window.removeEventListener('resize', this.onWindowResize as any);
   }
 
   // ── Helpers ─────────────────────────────────────────────────────
@@ -258,8 +292,9 @@ export class LdesignImageViewer {
   private emitChange() { this.ldesignChange.emit({ index: this.index }); }
 
   private getTransformString(tx?: number, ty?: number): string {
-    const x = tx != null ? tx : (this.dragging ? this.visualOffsetX : this.offsetX);
-    const y = ty != null ? ty : (this.dragging ? this.visualOffsetY : this.offsetY);
+    const useVisual = this.gesturing || this.dragging || this.bouncing || this.momentumRunning;
+    const x = tx != null ? tx : (useVisual ? this.visualOffsetX : this.offsetX);
+    const y = ty != null ? ty : (useVisual ? this.visualOffsetY : this.offsetY);
     const extra = this.enterScale != null ? this.enterScale : 1;
     const s = this.scale * extra;
     const sx = (this.flipX ? -1 : 1) * s;
@@ -276,6 +311,8 @@ export class LdesignImageViewer {
     this.scale = 1; this.rotate = 0; this.offsetX = 0; this.offsetY = 0;
     this.flipX = false; this.flipY = false;
     this.visualOffsetX = 0; this.visualOffsetY = 0;
+    this.bouncing = false;
+    this.stopMomentum();
     // 推迟到渲染新 img 后再应用，避免误写旧图导致抖动
     this.pendingApply = true;
   }
@@ -407,21 +444,67 @@ export class LdesignImageViewer {
 
   private zoomTo(nextScale: number, clientX?: number, clientY?: number) {
     const prev = this.scale;
-    const next = Number(Math.min(this.maxScale, Math.max(this.minScale, nextScale)).toFixed(3));
+    // 轻微吸附到 1 倍，避免 0.99 之类的残留值
+    let next = Math.min(this.maxScale, Math.max(this.minScale, nextScale));
+    if (Math.abs(next - 1) < 0.02) next = 1;
+    next = Number(next.toFixed(4));
     if (!this.canvasEl || next === prev) { this.scale = next; this.applyTransform(); return; }
     const rect = this.canvasEl.getBoundingClientRect();
     const cx = clientX != null ? clientX : rect.left + rect.width / 2;
     const cy = clientY != null ? clientY : rect.top + rect.height / 2;
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    const vX = (cx - centerX) - (this.dragging ? this.visualOffsetX : this.offsetX);
-    const vY = (cy - centerY) - (this.dragging ? this.visualOffsetY : this.offsetY);
+    const useVisual = this.dragging || this.bouncing || this.momentumRunning;
+    const curX = useVisual ? this.visualOffsetX : this.offsetX;
+    const curY = useVisual ? this.visualOffsetY : this.offsetY;
+    const vX = (cx - centerX) - curX;
+    const vY = (cy - centerY) - curY;
     const r = next / (prev || 1);
     const dX = -(r - 1) * vX;
     const dY = -(r - 1) * vY;
     this.scale = next;
-    this.offsetX = this.offsetX + dX; this.offsetY = this.offsetY + dY;
+    this.offsetX = curX + dX; this.offsetY = curY + dY;
+    // 缩放后约束在边界内（避免放大瞬间跑出屏幕）
+    const b = this.getPanBounds();
+    this.offsetX = Math.min(b.maxX, Math.max(b.minX, this.offsetX));
+    this.offsetY = Math.min(b.maxY, Math.max(b.minY, this.offsetY));
     this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
+    this.applyTransform();
+  }
+
+  // 同时围绕枢轴点应用缩放与旋转，保证枢轴点锚定不漂移
+  private pinchTo(nextScale: number, nextRotateDeg: number, clientX: number, clientY: number) {
+    if (!this.canvasEl) return;
+    const prevScale = this.scale;
+    let s1 = Math.min(this.maxScale, Math.max(this.minScale, nextScale));
+    if (Math.abs(s1 - 1) < 0.02) s1 = 1;
+    s1 = Number(s1.toFixed(4));
+    const r = s1 / (prevScale || 1);
+
+    const rect = this.canvasEl.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2; const centerY = rect.top + rect.height / 2;
+    // 以视觉偏移为当前位移（手势中实时更新）
+    const T0x = this.visualOffsetX; const T0y = this.visualOffsetY;
+    const px = clientX - centerX; const py = clientY - centerY; // 枢轴点（相对舞台中心）
+    const vX = px - T0x; const vY = py - T0y; // 枢轴相对当前位移的向量
+
+    const dtheta = (nextRotateDeg - this.rotate) * Math.PI / 180;
+    const cos = Math.cos(dtheta), sin = Math.sin(dtheta);
+    const rx = cos * vX - sin * vY;
+    const ry = sin * vX + cos * vY;
+
+    // T1 = T0 + (I - R(dθ) * r) * (p - T0)
+    let newX = T0x + (vX - r * rx);
+    let newY = T0y + (vY - r * ry);
+
+    // 更新状态：先设定新 scale/rotate，再根据新边界对位移做橡皮筋约束
+    const prevRotate = this.rotate;
+    this.scale = s1; this.rotate = nextRotateDeg;
+    const b = this.getPanBounds();
+    newX = this.rubberband(newX, b.minX, b.maxX);
+    newY = this.rubberband(newY, b.minY, b.maxY);
+
+    this.visualOffsetX = newX; this.visualOffsetY = newY;
     this.applyTransform();
   }
 
@@ -450,39 +533,29 @@ export class LdesignImageViewer {
   private onPointerDown = (e: PointerEvent) => {
     // 避免冒泡到面板拖拽（确保拖动图片不会带动小窗位置）
     e.stopPropagation();
+    if (e.pointerType === 'touch') e.preventDefault();
+
+    // 若正在动量滚动，打断它
+    if (this.momentumRunning) {
+      this.stopMomentum();
+      // 将当前视觉位置固化为状态，作为新拖拽起点
+      this.offsetX = this.visualOffsetX; this.offsetY = this.visualOffsetY;
+    }
 
     // 记录指针（用于多指缩放）
     this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    // 触屏单击/双击判定（先判双击，避免与单击冲突）
-    if (e.pointerType === 'touch') {
-      const now = Date.now();
-      if (now - this.lastTapTime < 300 && !this.isPinching) {
-        // 双击：取消单击定时器，直接缩放
-        if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined; }
-        this.onDblClick(e as any);
-        this.lastTapTime = 0;
-        // 不进入后续拖拽逻辑
-        (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-        return;
-      }
-      this.lastTapTime = now;
-      this.tapStartX = e.clientX; this.tapStartY = e.clientY; this.tapMoved = false;
-      if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); }
-      this.singleTapTimer = window.setTimeout(() => {
-        if (!this.tapMoved && !this.isPinching) {
-          this.uiHidden = !this.uiHidden;
-        }
-        this.singleTapTimer = undefined as any;
-      }, 260);
-    }
 
+    // 多指优先：两指立即进入捏合
     if (this.activePointers.size === 2) {
+      if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined; }
       const pts = Array.from(this.activePointers.values());
       const dx = pts[0].x - pts[1].x; const dy = pts[0].y - pts[1].y;
       this.pinchStartDist = Math.hypot(dx, dy) || 1;
       this.pinchStartScale = this.scale;
       this.pinchStartAngle = Math.atan2(dy, dx);
       this.rotateStart = this.rotate;
+      // 使用视觉偏移作为手势的实时基准
+      this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
       this.isPinching = true;
       this.gesturing = true;
       this.dragging = false;
@@ -492,45 +565,60 @@ export class LdesignImageViewer {
       this.dragStartX = e.clientX; this.dragStartY = e.clientY;
       this.startOffsetX = this.offsetX; this.startOffsetY = this.offsetY;
       this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
-    }
+      this.lastMoveTime = performance.now();
+      this.lastMoveX = e.clientX; this.lastMoveY = e.clientY;
+      this.velocityX = 0; this.velocityY = 0;
 
-    // 触屏双击识别（移动端 dblclick 兼容性不一）
-    if (e.pointerType === 'touch') {
-      const now = Date.now();
-      if (now - this.lastTapTime < 300 && !this.isPinching) {
-        // 模拟双击：1x/2x 切换
-        this.onDblClick(e as any);
+      // 仅对主触点做单击/双击识别，避免第二指误判为双击
+      if (e.pointerType === 'touch' && (e as any).isPrimary !== false) {
+        const now = Date.now();
+        if (now - this.lastTapTime < 300 && !this.isPinching) {
+          if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined; }
+          this.onDblClick(e as any);
+          this.lastTapTime = 0;
+        } else {
+          this.lastTapTime = now;
+          this.tapStartX = e.clientX; this.tapStartY = e.clientY; this.tapMoved = false;
+          if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); }
+          this.singleTapTimer = window.setTimeout(() => {
+            if (!this.tapMoved && !this.isPinching) {
+              this.uiHidden = !this.uiHidden;
+            }
+            this.singleTapTimer = undefined as any;
+          }, 260);
+        }
       }
-      this.lastTapTime = now;
     }
 
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
   private onPointerMove = (e: PointerEvent) => {
     this.showUiTemporarily();
+    if (e.pointerType === 'touch') e.preventDefault();
     // 更新活动指针位置
     if (this.activePointers.has(e.pointerId)) {
       this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     }
 
-    // 两指缩放
+    // 两指缩放/旋转（围绕两指中点作为枢轴，同时锚定该点）
     if (this.isPinching && this.activePointers.size >= 2) {
       if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined; }
       const pts = Array.from(this.activePointers.values());
       const dx = pts[0].x - pts[1].x; const dy = pts[0].y - pts[1].y;
       const dist = Math.hypot(dx, dy) || 1;
       const ratio = dist / (this.pinchStartDist || 1);
-      const raw = this.pinchStartScale * ratio;
-      const next = Math.min(this.maxScale, Math.max(this.minScale, raw));
+      const rawScale = this.pinchStartScale * ratio;
+      const nextScale = Number(Math.min(this.maxScale, Math.max(this.minScale, rawScale)).toFixed(3));
       const midX = (pts[0].x + pts[1].x) / 2;
       const midY = (pts[0].y + pts[1].y) / 2;
-      // 计算旋转角度（两指连线角度差）
+      // 计算旋转角度（两指连线角度差），并加入角度阈值
       const angle = Math.atan2(dy, dx);
       let delta = angle - this.pinchStartAngle;
       if (delta > Math.PI) delta -= Math.PI * 2; else if (delta < -Math.PI) delta += Math.PI * 2;
-      this.rotate = this.rotateStart + (delta * 180 / Math.PI);
-      // 先更新旋转，再按中点缩放，zoomTo 内部会应用 transform
-      this.zoomTo(Number(next.toFixed(3)), midX, midY);
+      const deltaDeg = (delta * 180) / Math.PI;
+      const nextRotate = (Math.abs(deltaDeg) >= this.rotateThresholdDeg) ? (this.rotateStart + deltaDeg) : this.rotateStart;
+      this.pinchTo(nextScale, nextRotate, midX, midY);
+      this.gesturing = true;
       return;
     }
 
@@ -540,8 +628,23 @@ export class LdesignImageViewer {
     const moveDy = Math.abs(e.clientY - this.tapStartY);
     if (moveDx > 8 || moveDy > 8) { this.tapMoved = true; if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined; } }
     const dx = e.clientX - this.dragStartX; const dy = e.clientY - this.dragStartY;
-    const nextX = this.startOffsetX + dx;
-    const nextY = this.startOffsetY + dy;
+    let nextX = this.startOffsetX + dx;
+    let nextY = this.startOffsetY + dy;
+
+    // 速度估计（简单差分）
+    const now = performance.now();
+    const dt = Math.max(1, now - this.lastMoveTime);
+    this.velocityX = (e.clientX - this.lastMoveX) / dt;
+    this.velocityY = (e.clientY - this.lastMoveY) / dt;
+    this.lastMoveTime = now; this.lastMoveX = e.clientX; this.lastMoveY = e.clientY;
+
+    // 橡皮筋超界处理（拖到边界外逐步加阻尼）
+    const b = this.getPanBounds();
+    if (nextX < b.minX) nextX = this.rubberband(nextX, b.minX, b.maxX);
+    if (nextX > b.maxX) nextX = this.rubberband(nextX, b.minX, b.maxX);
+    if (nextY < b.minY) nextY = this.rubberband(nextY, b.minY, b.maxY);
+    if (nextY > b.maxY) nextY = this.rubberband(nextY, b.minY, b.maxY);
+
     // 仅在 rAF 中直接更新 transform
     this.visualOffsetX = nextX; this.visualOffsetY = nextY;
     if (this.moveRaf == null) {
@@ -559,7 +662,20 @@ export class LdesignImageViewer {
       // 但如果已经识别为滑动/缩放，上面已清除计时器
     }
     if (this.isPinching) {
-      if (this.activePointers.size < 2) { this.isPinching = false; this.gesturing = false; }
+      if (this.activePointers.size < 2) {
+        this.isPinching = false; this.gesturing = false;
+        // 提交视觉位移到状态并进行边界回弹
+        const b = this.getPanBounds();
+        const tx = Math.min(b.maxX, Math.max(b.minX, this.visualOffsetX));
+        const ty = Math.min(b.maxY, Math.max(b.minY, this.visualOffsetY));
+        const needsBounce = Math.abs(tx - this.visualOffsetX) > 0.5 || Math.abs(ty - this.visualOffsetY) > 0.5;
+        if (needsBounce) {
+          this.bounceTo(tx, ty);
+        } else {
+          this.offsetX = this.visualOffsetX; this.offsetY = this.visualOffsetY;
+          this.applyTransform();
+        }
+      }
       try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
       return;
     }
@@ -585,16 +701,39 @@ export class LdesignImageViewer {
       try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
       return;
     }
-    // 将最终结果同步到状态（只触发一次重渲染）
-    this.offsetX = this.visualOffsetX; this.offsetY = this.visualOffsetY;
+
+    // 动量滚动判断（在非切图/关闭场景，且缩放>1时才进行）
+    const speed = Math.hypot(this.velocityX, this.velocityY);
+    const canMomentum = this.scale > 1.01;
+    if (canMomentum && speed > 0.25) { // 约 >250px/s
+      this.startMomentum(this.velocityX, this.velocityY);
+      try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+      return;
+    }
+
+    // 将最终结果回弹到边界内并提交
+    const b = this.getPanBounds();
+    const targetX = Math.min(b.maxX, Math.max(b.minX, this.visualOffsetX));
+    const targetY = Math.min(b.maxY, Math.max(b.minY, this.visualOffsetY));
+    const needsBounce = Math.abs(targetX - this.visualOffsetX) > 0.5 || Math.abs(targetY - this.visualOffsetY) > 0.5;
+
+    if (needsBounce) {
+      this.bounceTo(targetX, targetY);
+    } else {
+      this.offsetX = this.visualOffsetX; this.offsetY = this.visualOffsetY;
+      this.applyTransform();
+    }
+
     try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
-    this.applyTransform();
   };
 
   private onImageLoad = () => {
     // 后备路径：未采用预加载提交时，img onload 后触发
     if (!this.loading) return; // 已通过预加载流程提交
     this.loading = false;
+    // 更新舞台与基准尺寸，用于边界约束
+    this.updateStageMetrics();
+    this.measureBaseSize();
     if (this.prevSrc) {
       this.crossfading = true;
       if (this.transition === 'fade-zoom') {
@@ -712,7 +851,8 @@ export class LdesignImageViewer {
             <div class="ldesign-image-viewer__canvas" ref={el => (this.canvasEl = el as HTMLElement)} onWheel={this.onWheel} onDblClick={this.onDblClick}
               onPointerDown={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerDown}
               onPointerMove={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerMove}
-              onPointerUp={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerUp}>
+              onPointerUp={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerUp}
+              onPointerCancel={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerUp}>
               {(this.loading || this.crossfading) && this.prevSrc ? (
                 <img class={{ 'ldesign-image-viewer__img': true, 'fade-leave': this.crossfading }} src={this.prevSrc} alt="prev" draggable={false} style={{ transform: this.prevTransform || this.getTransformString() }} />
               ) : null}
@@ -767,5 +907,160 @@ export class LdesignImageViewer {
         </div>
       </Host>
     );
+  }
+  // ── Metrics & bounds ─────────────────────────────────────────────
+  private onWindowResize = () => {
+    this.updateStageMetrics();
+    this.measureBaseSize();
+    const b = this.getPanBounds();
+    const tx = Math.min(b.maxX, Math.max(b.minX, this.offsetX));
+    const ty = Math.min(b.maxY, Math.max(b.minY, this.offsetY));
+    if (Math.abs(tx - this.offsetX) > 0.5 || Math.abs(ty - this.offsetY) > 0.5) {
+      // 视口变化导致越界，平滑回弹
+      this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
+      this.bounceTo(tx, ty);
+    } else {
+      this.applyTransform();
+    }
+  };
+
+  private updateStageMetrics() {
+    const rect = this.canvasEl?.getBoundingClientRect();
+    if (rect) { this.stageWidth = rect.width; this.stageHeight = rect.height; }
+  }
+
+  private measureBaseSize() {
+    const img = this.imageEl;
+    const sw = this.stageWidth || (this.canvasEl?.getBoundingClientRect().width || 0);
+    const sh = this.stageHeight || (this.canvasEl?.getBoundingClientRect().height || 0);
+    if (!img || !sw || !sh) return;
+    const nw = img.naturalWidth || 0; const nh = img.naturalHeight || 0;
+    if (!nw || !nh) return;
+    // contain 到舞台尺寸，不放大超过原图
+    const scale = Math.min(sw / nw, sh / nh, 1);
+    this.baseWidth = Math.max(1, nw * scale);
+    this.baseHeight = Math.max(1, nh * scale);
+  }
+
+  private rotatedSize(w: number, h: number, deg: number) {
+    const rad = (deg % 360) * Math.PI / 180;
+    const c = Math.abs(Math.cos(rad)); const s = Math.abs(Math.sin(rad));
+    return { width: w * c + h * s, height: w * s + h * c };
+  }
+
+  private getPanBounds() {
+    const sw = this.stageWidth || (this.canvasEl?.getBoundingClientRect().width || 0);
+    const sh = this.stageHeight || (this.canvasEl?.getBoundingClientRect().height || 0);
+    // 如果舞台尺寸未知，放宽为无限制
+    if (!sw || !sh || !this.baseWidth || !this.baseHeight) {
+      return { minX: -Infinity, maxX: Infinity, minY: -Infinity, maxY: Infinity };
+    }
+    const s = this.scale * (this.enterScale != null ? this.enterScale : 1);
+    const sized = this.rotatedSize(this.baseWidth * s, this.baseHeight * s, this.rotate);
+    const excessW = Math.max(0, sized.width - sw);
+    const excessH = Math.max(0, sized.height - sh);
+    const maxX = excessW > 0 ? excessW / 2 : 0;
+    const maxY = excessH > 0 ? excessH / 2 : 0;
+    return { minX: -maxX, maxX, minY: -maxY, maxY };
+  }
+
+  private rubberband(v: number, min: number, max: number, constant = 0.35) {
+    if (v < min) return min - (min - v) * constant;
+    if (v > max) return max + (v - max) * constant;
+    return v;
+  }
+
+  private bounceTo(x: number, y: number) {
+    if (this.bounceRaf) { cancelAnimationFrame(this.bounceRaf); this.bounceRaf = undefined; }
+    this.bouncing = true;
+    // 禁用 CSS 过渡，使用 JS 动画
+    try { this.imageEl?.classList.add('is-bouncing'); } catch {}
+    this.bounceFromX = this.visualOffsetX; this.bounceFromY = this.visualOffsetY;
+    this.bounceToX = x; this.bounceToY = y;
+    this.bounceStartTime = performance.now();
+    const animate = () => {
+      const t = Math.min(1, (performance.now() - this.bounceStartTime) / this.bounceDuration);
+      // easeOutCubic
+      const k = 1 - Math.pow(1 - t, 3);
+      const curX = this.bounceFromX + (this.bounceToX - this.bounceFromX) * k;
+      const curY = this.bounceFromY + (this.bounceToY - this.bounceFromY) * k;
+      this.visualOffsetX = curX; this.visualOffsetY = curY;
+      this.applyTransform();
+      if (t < 1) {
+        this.bounceRaf = requestAnimationFrame(animate);
+      } else {
+        this.bouncing = false; this.bounceRaf = undefined;
+        this.offsetX = this.bounceToX; this.offsetY = this.bounceToY;
+        // 恢复 CSS 过渡
+        try { this.imageEl?.classList.remove('is-bouncing'); } catch {}
+        this.applyTransform();
+      }
+    };
+    this.bounceRaf = requestAnimationFrame(animate);
+  }
+
+  private startMomentum(vx: number, vy: number) {
+    // 终止其他动画
+    if (this.bounceRaf) { cancelAnimationFrame(this.bounceRaf); this.bounceRaf = undefined; this.bouncing = false; try { this.imageEl?.classList.remove('is-bouncing'); } catch {} }
+    if (this.momentumRaf) { cancelAnimationFrame(this.momentumRaf); this.momentumRaf = undefined; }
+    this.momentumRunning = true;
+    this.momentumVX = vx; this.momentumVY = vy;
+    this.momentumLastTime = performance.now();
+    try { this.imageEl?.classList.add('is-kinetic'); } catch {}
+    // 从当前视觉位置开始
+    this.visualOffsetX = this.visualOffsetX || this.offsetX;
+    this.visualOffsetY = this.visualOffsetY || this.offsetY;
+
+    const FRICTION = 0.004; // 越大越快停止（单位 1/ms）
+    const MIN_SPEED = 0.02; // px/ms
+
+    const step = () => {
+      if (!this.momentumRunning) return;
+      const now = performance.now();
+      const dt = Math.max(1, now - this.momentumLastTime);
+      this.momentumLastTime = now;
+
+      // 指数衰减
+      const decay = Math.exp(-FRICTION * dt);
+      this.momentumVX *= decay;
+      this.momentumVY *= decay;
+
+      // 移动
+      let nx = this.visualOffsetX + this.momentumVX * dt;
+      let ny = this.visualOffsetY + this.momentumVY * dt;
+
+      const b = this.getPanBounds();
+      // 命中边界时，夹紧并清除该方向速度
+      if (nx < b.minX) { nx = b.minX; this.momentumVX = 0; }
+      if (nx > b.maxX) { nx = b.maxX; this.momentumVX = 0; }
+      if (ny < b.minY) { ny = b.minY; this.momentumVY = 0; }
+      if (ny > b.maxY) { ny = b.maxY; this.momentumVY = 0; }
+
+      this.visualOffsetX = nx; this.visualOffsetY = ny;
+      this.applyTransform();
+
+      const speed = Math.hypot(this.momentumVX, this.momentumVY);
+      if (speed <= MIN_SPEED) {
+        // 结束动量，回弹确保完全在边界内
+        const tx = Math.min(b.maxX, Math.max(b.minX, this.visualOffsetX));
+        const ty = Math.min(b.maxY, Math.max(b.minY, this.visualOffsetY));
+        this.stopMomentum();
+        if (Math.abs(tx - this.visualOffsetX) > 0.5 || Math.abs(ty - this.visualOffsetY) > 0.5) {
+          this.bounceTo(tx, ty);
+        } else {
+          this.offsetX = this.visualOffsetX; this.offsetY = this.visualOffsetY;
+          this.applyTransform();
+        }
+        return;
+      }
+      this.momentumRaf = requestAnimationFrame(step);
+    };
+    this.momentumRaf = requestAnimationFrame(step);
+  }
+
+  private stopMomentum() {
+    this.momentumRunning = false;
+    if (this.momentumRaf) { cancelAnimationFrame(this.momentumRaf); this.momentumRaf = undefined; }
+    try { this.imageEl?.classList.remove('is-kinetic'); } catch {}
   }
 }

@@ -127,6 +127,8 @@
   z-index: 0;
   // 作为绝对定位的参照
   position: absolute;
+  touch-action: none; // 仅在画布内禁用浏览器默认触控行为，更安全
+  overscroll-behavior: contain; // 阻止滚动链，避免外层页面滚动
 }
 
 .ldesign-image-viewer__canvas:active { cursor: grabbing; }
@@ -135,7 +137,8 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  max-width: 88vw; max-height: 86vh;
+  /* 使 scale=1 时以舞台尺寸为基准进行 contain，避免与边界计算不一致 */
+  max-width: 100%; max-height: 100%;
   transform-origin: center center;
   will-change: transform, opacity;
   backface-visibility: hidden;
@@ -148,6 +151,15 @@
 
 /* 手势缩放/旋转时也禁用过渡 */
 .ldesign-image-viewer__img.is-gesturing {
+  transition: none;
+}
+
+/* 回弹时禁用过渡（由 JS 驱动） */
+.ldesign-image-viewer__img.is-bouncing {
+  transition: none;
+}
+/* 动量滚动时禁用过渡（由 JS 驱动） */
+.ldesign-image-viewer__img.is-kinetic {
   transition: none;
 }
 
