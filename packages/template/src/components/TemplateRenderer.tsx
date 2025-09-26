@@ -1,4 +1,3 @@
-/** @jsxImportSource vue */
 /**
  * 模板渲染器组件
  *

@@ -63,6 +63,7 @@ export default defineConfig({
             { text: 'Input 输入框', link: '/components/input' },
             { text: 'Card 卡片', link: '/components/card' },
             { text: 'Popup 弹出层', link: '/components/popup' },
+            { text: 'Modal 模态框', link: '/components/modal' },
             { text: 'TimePicker 时间选择器', link: '/components/time-picker' },
             { text: 'Image 图片', link: '/components/image' },
             { text: 'Draggable 拖拽缩放', link: '/components/draggable' },

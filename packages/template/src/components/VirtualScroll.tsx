@@ -1,4 +1,3 @@
-/** @jsxImportSource vue */
 /**
  * 虚拟滚动组件
  *

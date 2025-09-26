@@ -9,13 +9,15 @@ export default defineConfig({
     preset: 'ldesign',
   },
 
-  // 显式添加插件
+  // 显式添加插件 - 确保 Vue JSX 插件被正确加载
   plugins: [
     vue() as any,
     vueJsx({
       transformOn: true,
       mergeProps: true,
       jsxImportSource: 'vue',
+      // 确保 TSX 文件被正确处理
+      include: /\.(vue|jsx|tsx)$/,
     }) as any
   ],
 

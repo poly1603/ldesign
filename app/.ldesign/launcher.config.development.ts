@@ -9,12 +9,22 @@
 
 import { defineConfig } from '@ldesign/launcher'
 import { resolve } from 'path'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 
 export default defineConfig({
   // 继承基础配置中的 launcher 预设和 alias 配置
   launcher: {
     preset: 'ldesign'
   },
+
+  // 显式添加 Vue JSX 插件以确保 TSX 文件被正确处理
+  plugins: [
+    vueJsx({
+      transformOn: true,
+      mergeProps: true,
+      jsxImportSource: 'vue',
+    }) as any
+  ],
 
   // 开发环境别名配置 - 指向源码目录
   resolve: {
