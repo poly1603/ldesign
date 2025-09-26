@@ -1,3 +1,4 @@
+/** @jsxImportSource vue */
 /**
  * 模板选择器组件
  *

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mention 最终修复测试</title>
+  <style>
+    body {
+      padding: 40px;
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .test-item {
+      margin: 30px 0;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .test-item h3 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 8px;
+    }
+    .tips {
+      background: #e3f2fd;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+      font-size: 14px;
+    }
+    button {
+      margin: 5px;
+      padding: 8px 16px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1565c0;
+    }
+    .status {
+      margin-top: 10px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
+  <script type="module" src="/dist/webcomponent/webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="/dist/webcomponent/webcomponent.css">
+</head>
+<body>
+  <h1>🎉 Mention 组件 - 初始值问题修复</h1>
+
+  <div class="test-item">
+    <h3>✅ 修复方案1：使用 setOptions 方法</h3>
+    <div class="tips">💡 在初始内容后输入 @ 或 # 应该正常弹出选择框</div>
+    <ldesign-mention 
+      id="test1"
+      value="这是初始内容，请输入触发符："
+      triggers="@,#">
+    </ldesign-mention>
+    <div class="status" id="status1">等待初始化...</div>
+  </div>
+
+  <div class="test-item">
+    <h3>✅ 修复方案2：通过HTML属性传递选项</h3>
+    <div class="tips">💡 选项通过HTML属性设置，应该能正常工作</div>
+    <ldesign-mention 
+      id="test2"
+      value="HTML属性方式，输入触发符："
+      triggers="@,#"
+      options='[{"value":"alice","label":"Alice"},{"value":"bob","label":"Bob"},{"value":"charlie","label":"Charlie"}]'>
+    </ldesign-mention>
+    <div class="status" id="status2">通过HTML属性设置选项</div>
+  </div>
+
+  <div class="test-item">
+    <h3>🔧 对比测试：无初始值</h3>
+    <div class="tips">💡 无初始值的情况应该一直正常工作</div>
+    <ldesign-mention 
+      id="test3"
+      placeholder="无初始值，输入 @ 或 # 测试"
+      triggers="@,#">
+    </ldesign-mention>
+    <div class="status" id="status3">等待初始化...</div>
+  </div>
+
+  <script>
+    // 定义选项数据
+    const globalOptions = [
+      { value: 'alice', label: 'Alice' },
+      { value: 'bob', label: 'Bob' },
+      { value: 'charlie', label: 'Charlie' },
+      { value: 'diana', label: 'Diana' },
+      { value: 'eve', label: 'Eve' }
+    ];
+
+    const hashOptions = [
+      { value: 'bug', label: 'Bug报告' },
+      { value: 'feature', label: '新功能' },
+      { value: 'question', label: '问题' },
+      { value: 'discussion', label: '讨论' }
+    ];
+
+    // 初始化函数
+    async function initMentions() {
+      console.log('=== 开始初始化 Mention 组件 ===');
+      
+      // 测试1：使用 setOptions 方法
+      const test1 = document.getElementById('test1');
+      if (test1) {
+        try {
+          // 使用新的 setOptions 方法
+          await test1.setOptions(globalOptions);
+          document.getElementById('status1').textContent = '✅ 使用 setOptions 方法设置了 ' + globalOptions.length + ' 个选项';
+          console.log('[test1] setOptions 调用成功');
+          
+          // 设置 triggerConfigs 来支持不同触发符的不同选项
+          test1.triggerConfigs = [
+            { char: '@', options: globalOptions },
+            { char: '#', options: hashOptions }
+          ];
+        } catch (e) {
+          console.error('[test1] setOptions 失败:', e);
+          // 备用方案：通过属性设置
+          test1.options = globalOptions;
+          document.getElementById('status1').textContent = '⚠️ 使用备用方案设置选项';
+        }
+      }
+
+      // 测试3：无初始值的情况
+      const test3 = document.getElementById('test3');
+      if (test3) {
+        await test3.setOptions(globalOptions);
+        test3.triggerConfigs = [
+          { char: '@', options: globalOptions },
+          { char: '#', options: hashOptions }
+        ];
+        document.getElementById('status3').textContent = '✅ 使用 setOptions 方法设置了选项';
+      }
+
+      // 为所有组件添加事件监听
+      document.querySelectorAll('ldesign-mention').forEach(el => {
+        // 监听搜索事件
+        el.addEventListener('ldesignSearch', (e) => {
+          console.log(`[${el.id}] 搜索事件:`, e.detail);
+        });
+        
+        // 监听选择事件
+        el.addEventListener('ldesignSelect', (e) => {
+          console.log(`[${el.id}] 选择事件:`, e.detail);
+          const statusEl = document.getElementById('status' + el.id.slice(-1));
+          if (statusEl) {
+            statusEl.textContent = `✅ 选中了: ${e.detail.value.label}`;
+          }
+        });
+      });
+      
+      console.log('=== Mention 组件初始化完成 ===');
+    }
+
+    // 等待组件加载完成后初始化
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initMentions, 100); // 稍微延迟确保组件完全加载
+      });
+    } else {
+      setTimeout(initMentions, 100);
+    }
+  </script>
+</body>
+</html>

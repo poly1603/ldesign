@@ -50,7 +50,8 @@ export default defineConfig({
           items: [
             { text: '主题定制', link: '/guide/theming' },
             { text: '框架集成', link: '/guide/framework-integration' },
-            { text: '最佳实践', link: '/guide/best-practices' }
+            { text: '最佳实践', link: '/guide/best-practices' },
+            { text: 'VitePress 文档使用', link: '/guide/vitepress' }
           ]
         }
       ],
@@ -62,7 +63,14 @@ export default defineConfig({
             { text: 'Input 输入框', link: '/components/input' },
             { text: 'Card 卡片', link: '/components/card' },
             { text: 'Popup 弹出层', link: '/components/popup' },
-            { text: 'Popconfirm 气泡确认框', link: '/components/popconfirm' }
+            { text: 'TimePicker 时间选择器', link: '/components/time-picker' },
+            { text: 'Image 图片', link: '/components/image' },
+            { text: 'Draggable 拖拽缩放', link: '/components/draggable' },
+            { text: 'Popconfirm 气泡确认框', link: '/components/popconfirm' },
+{ text: 'Tree 树', link: '/components/tree' },
+            { text: 'Split 面板分割', link: '/components/split' },
+{ text: 'Scrollbar 滚动条', link: '/components/scrollbar' },
+            { text: 'InputNumber 数字输入框', link: '/components/input-number' }
           ]
         }
       ],
@@ -72,7 +80,8 @@ export default defineConfig({
           items: [
             { text: '示例总览', link: '/examples/' },
             { text: '基础应用', link: '/examples/basic-app' },
-            { text: '完整示例', link: '/examples/complete-example' }
+            { text: '完整示例', link: '/examples/complete-example' },
+            { text: 'TimePicker 示例', link: '/examples/time-picker' }
           ]
         }
       ]

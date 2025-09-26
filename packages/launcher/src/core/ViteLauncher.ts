@@ -673,6 +673,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
       this.logger.success('预览服务器启动成功')
 
+      // 输出服务器信息和二维码（类似dev方法）
+      this.printPreviewServerInfo()
+
       return this.previewServer as PreviewServer
 
     } catch (error) {
@@ -1353,12 +1356,30 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     if (config.resolve.alias) {
       if (Array.isArray(config.resolve.alias)) {
         userAliases = [...config.resolve.alias]
+        if (this.logger.getLevel() === 'debug') {
+          const ldesignAliases = userAliases.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
+          console.log('🔧 用户别名（数组格式）调试:')
+          console.log('  总数:', userAliases.length)
+          console.log('  @ldesign别名数量:', ldesignAliases.length)
+          console.log('  @ldesign别名详情:', JSON.stringify(ldesignAliases, null, 2))
+          this.logger.debug('用户别名（数组格式）', {
+            count: userAliases.length,
+            first10: userAliases.slice(0, 10).map(a => ({ find: a.find, replacement: a.replacement, stages: a.stages })),
+            ldesignAliases: ldesignAliases.map(a => ({ find: a.find, replacement: a.replacement, stages: a.stages }))
+          })
+        }
       } else {
         // 如果是对象格式，转换为数组格式以便统一处理
         userAliases = Object.entries(config.resolve.alias).map(([find, replacement]) => ({
           find,
           replacement
         }))
+        if (this.logger.getLevel() === 'debug') {
+          this.logger.debug('用户别名（对象格式转换）', {
+            count: userAliases.length,
+            first5: userAliases.slice(0, 5)
+          })
+        }
       }
     }
 
@@ -1373,6 +1394,23 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
     // 根据当前阶段过滤别名
     const filteredAliases = aliasManager.filterAliasesByStage(allAliases, stage)
+
+    if (this.logger.getLevel() === 'debug') {
+      const ldesignFiltered = filteredAliases.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
+      console.log('🔧 别名过滤结果调试:')
+      console.log('  阶段:', stage)
+      console.log('  过滤前:', allAliases.length)
+      console.log('  过滤后:', filteredAliases.length)
+      console.log('  @ldesign过滤后数量:', ldesignFiltered.length)
+      console.log('  @ldesign过滤后详情:', JSON.stringify(ldesignFiltered, null, 2))
+      this.logger.debug('别名过滤结果', {
+        stage,
+        beforeFilter: allAliases.length,
+        afterFilter: filteredAliases.length,
+        first10: filteredAliases.slice(0, 10).map(a => ({ find: a.find, replacement: a.replacement })),
+        ldesignFiltered: ldesignFiltered.map(a => ({ find: a.find, replacement: a.replacement }))
+      })
+    }
 
     // 应用过滤后的别名配置
     config.resolve.alias = filteredAliases
@@ -1648,6 +1686,57 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     console.log(emptyLine)
     console.log(bottomBorder)
     console.log()
+  }
+
+  /**
+   * 输出预览服务器信息（地址和二维码）
+   */
+  private printPreviewServerInfo(): void {
+    if (!this.previewServer) return
+
+    try {
+      // 获取预览服务器URL
+      const localUrl = this.getPreviewServerUrl(this.previewServer)
+
+      // 获取本地IP地址
+      const localIP = getPreferredLocalIP()
+
+      // 构建网络 URL
+      let networkUrl: string | null = null
+      try {
+        const url = new URL(localUrl)
+        // 如果本地URL使用localhost，替换为实际IP
+        if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+          networkUrl = `${url.protocol}//${localIP}:${url.port}${url.pathname}`
+        } else if (url.hostname === '0.0.0.0') {
+          networkUrl = localUrl.replace('0.0.0.0', localIP)
+        } else {
+          networkUrl = localUrl
+        }
+      } catch (error) {
+        // 如果URL解析失败，手动构建网络地址
+        const protocol = this.config.preview?.https ? 'https' : 'http'
+        const port = this.config.preview?.port || 4173
+        networkUrl = `${protocol}://${localIP}:${port}/`
+      }
+
+      // 输出服务器信息框
+      console.log('\n' + '┌────────────────────────────────────┐')
+      console.log('│ ✔ 预览服务器已启动                │')
+      console.log(`│ • 本地: ${localUrl.padEnd(22)} │`)
+      if (networkUrl) {
+        console.log(`│ • 网络: ${networkUrl.padEnd(22)} │`)
+      }
+      console.log('│ • 提示: 按 Ctrl+C 停止服务器      │')
+      console.log('└────────────────────────────────────┘')
+
+      // 生成二维码 - 优先使用网络地址
+      const qrTarget = networkUrl || localUrl
+      this.generateQRCode(qrTarget)
+
+    } catch (error) {
+      this.logger.warn('输出预览服务器信息失败', { error: (error as Error).message })
+    }
   }
 
 

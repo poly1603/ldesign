@@ -16,7 +16,7 @@ export const apiPlugin = createApiEnginePlugin({
     appName: 'LDesign Demo App',
     version: '1.0.0',
     http: {
-      baseURL: import.meta.env.VITE_API_BASE_URL || 'https://jsonplaceholder.typicode.com',
+      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3341',
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -40,6 +40,29 @@ export const apiPlugin = createApiEnginePlugin({
   globalInjection: true,
   globalPropertyName: '$api',
 })
+
+/**
+ * Launcher API 接口
+ */
+export interface LauncherCommand {
+  command: 'dev' | 'build' | 'preview'
+  cwd?: string
+  environment?: string
+}
+
+export interface LauncherResponse {
+  success: boolean
+  message: string
+  processId?: string
+  error?: string
+}
+
+export interface LauncherOutput {
+  type: 'stdout' | 'stderr' | 'error' | 'close'
+  data: string
+  timestamp: number
+  processId: string
+}
 
 /**
  * 系统 API 插件

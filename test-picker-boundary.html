@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picker 边界测试 - 修复版</title>
+    <script type="module" src="./packages/webcomponent/dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    <link rel="stylesheet" href="./packages/webcomponent/dist/ldesign-webcomponent/ldesign-webcomponent.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            margin-top: 0;
+            color: #333;
+            font-size: 28px;
+            text-align: center;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .test-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .test-title {
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #495057;
+            text-align: center;
+        }
+        
+        .picker-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e7f5ff;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .status code {
+            background: #1c7ed6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+        
+        .instructions h2 {
+            margin-top: 0;
+            color: #856404;
+            font-size: 18px;
+        }
+        
+        .instructions ul {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        
+        .instructions li {
+            margin: 8px 0;
+        }
+        
+        .test-controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .test-btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 6px;
+            background: #339af0;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .test-btn:hover {
+            background: #228be6;
+        }
+        
+        .test-btn.danger {
+            background: #f03e3e;
+        }
+        
+        .test-btn.danger:hover {
+            background: #e03131;
+        }
+        
+        .log-output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f1f3f5;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            min-height: 80px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Picker 组件边界测试</h1>
+        
+        <div class="instructions">
+            <h2>⚠️ 测试说明</h2>
+            <ul>
+                <li><strong>测试目标：</strong>验证选择器在边界位置的行为</li>
+                <li><strong>预期行为：</strong>
+                    <ul>
+                        <li>第一项居中后，向上滚动应该完全停止</li>
+                        <li>最后一项居中后，向下滚动应该完全停止</li>
+                        <li>边界项应该精确对齐到中心指示器</li>
+                    </ul>
+                </li>
+                <li><strong>操作方式：</strong>使用鼠标滚轮或点击测试按钮</li>
+            </ul>
+        </div>
+        
+        <div class="test-grid">
+            <!-- 测试1：少量选项 -->
+            <div class="test-card">
+                <div class="test-title">测试 1：5个选项</div>
+                <div class="picker-wrapper">
+                    <ldesign-picker id="picker1" visible-items="5"></ldesign-picker>
+                </div>
+                <div class="status">
+                    当前值: <code id="value1">-</code>
+                </div>
+                <div class="test-controls">
+                    <button class="test-btn" onclick="scrollToFirst('picker1')">滚到第一项</button>
+                    <button class="test-btn danger" onclick="scrollToLast('picker1')">滚到最后项</button>
+                </div>
+                <div class="log-output" id="log1">日志输出...</div>
+            </div>
+            
+            <!-- 测试2：适中选项 -->
+            <div class="test-card">
+                <div class="test-title">测试 2：10个选项</div>
+                <div class="picker-wrapper">
+                    <ldesign-picker id="picker2" visible-items="5"></ldesign-picker>
+                </div>
+                <div class="status">
+                    当前值: <code id="value2">-</code>
+                </div>
+                <div class="test-controls">
+                    <button class="test-btn" onclick="scrollToFirst('picker2')">滚到第一项</button>
+                    <button class="test-btn danger" onclick="scrollToLast('picker2')">滚到最后项</button>
+                </div>
+                <div class="log-output" id="log2">日志输出...</div>
+            </div>
+            
+            <!-- 测试3：大量选项 -->
+            <div class="test-card">
+                <div class="test-title">测试 3：30个选项</div>
+                <div class="picker-wrapper">
+                    <ldesign-picker id="picker3" visible-items="7"></ldesign-picker>
+                </div>
+                <div class="status">
+                    当前值: <code id="value3">-</code>
+                </div>
+                <div class="test-controls">
+                    <button class="test-btn" onclick="scrollToFirst('picker3')">滚到第一项</button>
+                    <button class="test-btn danger" onclick="scrollToLast('picker3')">滚到最后项</button>
+                </div>
+                <div class="log-output" id="log3">日志输出...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 等待组件加载
+        customElements.whenDefined('ldesign-picker').then(() => {
+            initializePickers();
+        });
+        
+        function initializePickers() {
+            // 初始化第1个选择器
+            const picker1 = document.getElementById('picker1');
+            const options1 = Array.from({length: 5}, (_, i) => ({
+                value: `v${i+1}`,
+                label: `选项 ${i+1}`
+            }));
+            picker1.options = options1;
+            picker1.value = 'v3';
+            
+            // 初始化第2个选择器
+            const picker2 = document.getElementById('picker2');
+            const options2 = Array.from({length: 10}, (_, i) => ({
+                value: `v${i+1}`,
+                label: `选项 ${String(i+1).padStart(2, '0')}`
+            }));
+            picker2.options = options2;
+            picker2.value = 'v5';
+            
+            // 初始化第3个选择器
+            const picker3 = document.getElementById('picker3');
+            const options3 = Array.from({length: 30}, (_, i) => ({
+                value: `v${i+1}`,
+                label: `Item ${String(i+1).padStart(2, '0')}`
+            }));
+            picker3.options = options3;
+            picker3.value = 'v15';
+            
+            // 添加事件监听器
+            setupEventListeners('picker1', 'value1', 'log1', options1);
+            setupEventListeners('picker2', 'value2', 'log2', options2);
+            setupEventListeners('picker3', 'value3', 'log3', options3);
+            
+            console.log('✅ 所有Picker组件已初始化');
+        }
+        
+        function setupEventListeners(pickerId, valueId, logId, options) {
+            const picker = document.getElementById(pickerId);
+            const valueDisplay = document.getElementById(valueId);
+            const logDisplay = document.getElementById(logId);
+            
+            let eventCount = 0;
+            
+            // 监听 change 事件
+            picker.addEventListener('ldesignChange', (e) => {
+                const opt = options.find(o => o.value === e.detail.value);
+                valueDisplay.textContent = opt ? opt.label : '未选择';
+                logDisplay.textContent = `[${++eventCount}] 值变更: ${opt?.label || '未知'}`;
+            });
+            
+            // 监听 pick 事件（滚动过程）
+            picker.addEventListener('ldesignPick', (e) => {
+                const opt = options.find(o => o.value === e.detail.value);
+                const trigger = e.detail?.context?.trigger;
+                logDisplay.textContent = `[${++eventCount}] ${trigger}: ${opt?.label || '未知'}`;
+            });
+            
+            // 初始化显示
+            const currentOpt = options.find(o => o.value === picker.value);
+            valueDisplay.textContent = currentOpt ? currentOpt.label : '未选择';
+        }
+        
+        // 测试函数：滚动到第一项
+        function scrollToFirst(pickerId) {
+            const picker = document.getElementById(pickerId);
+            const container = picker.querySelector('.ldesign-picker__picker');
+            const logDisplay = document.getElementById(pickerId.replace('picker', 'log'));
+            
+            if (!container) {
+                logDisplay.textContent = '❌ 找不到容器';
+                return;
+            }
+            
+            logDisplay.textContent = '⬆️ 连续向上滚动测试...';
+            
+            // 连续发送向上滚动事件
+            let count = 0;
+            const interval = setInterval(() => {
+                const wheelEvent = new WheelEvent('wheel', {
+                    deltaY: -120, // 负值 = 向上滚动
+                    bubbles: true,
+                    cancelable: true
+                });
+                container.dispatchEvent(wheelEvent);
+                
+                count++;
+                if (count >= 20) {
+                    clearInterval(interval);
+                    logDisplay.textContent += ' 完成！如果正常，应该停在第一项。';
+                }
+            }, 100);
+        }
+        
+        // 测试函数：滚动到最后一项
+        function scrollToLast(pickerId) {
+            const picker = document.getElementById(pickerId);
+            const container = picker.querySelector('.ldesign-picker__picker');
+            const logDisplay = document.getElementById(pickerId.replace('picker', 'log'));
+            
+            if (!container) {
+                logDisplay.textContent = '❌ 找不到容器';
+                return;
+            }
+            
+            logDisplay.textContent = '⬇️ 连续向下滚动测试...';
+            
+            // 连续发送向下滚动事件
+            let count = 0;
+            const interval = setInterval(() => {
+                const wheelEvent = new WheelEvent('wheel', {
+                    deltaY: 120, // 正值 = 向下滚动
+                    bubbles: true,
+                    cancelable: true
+                });
+                container.dispatchEvent(wheelEvent);
+                
+                count++;
+                if (count >= 30) {
+                    clearInterval(interval);
+                    logDisplay.textContent += ' 完成！如果正常，应该停在最后一项。';
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>

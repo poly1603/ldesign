@@ -16,6 +16,7 @@ import { DEFAULT_VITE_LAUNCHER_CONFIG } from '../constants'
 import { configPresets } from './ConfigPresets'
 import { pathToFileURL } from 'url'
 import { createNotificationManager, type NotificationManager } from '../utils/notification'
+import fs from 'fs'
 
 export interface ConfigManagerOptions {
   configFile?: string
@@ -101,9 +102,13 @@ export class ConfigManager extends EventEmitter {
           process.emitWarning = (warning: any, ...args: any[]) => {
             const warningStr = typeof warning === 'string' ? warning : warning?.message || ''
             if (warningStr.includes('deprecated') ||
-                warningStr.includes('vite-cjs-node-api-deprecated') ||
-                warningStr.includes('CJS build of Vite') ||
-                warningStr.includes('Node API is deprecated')) {
+              warningStr.includes('vite-cjs-node-api-deprecated') ||
+              warningStr.includes('CJS build of Vite') ||
+              warningStr.includes('Node API is deprecated') ||
+              warningStr.includes('externalized for browser compatibility') ||
+              warningStr.includes('Module "node:process" has been externalized') ||
+              warningStr.includes('Sourcemap for') ||
+              warningStr.includes('points to missing source files')) {
               return
             }
             return originalEmitWarning.call(process, warning, ...args)
@@ -112,9 +117,13 @@ export class ConfigManager extends EventEmitter {
           console.warn = (...args: any[]) => {
             const message = args.join(' ')
             if (message.includes('deprecated') ||
-                message.includes('vite-cjs-node-api-deprecated') ||
-                message.includes('CJS build of Vite') ||
-                message.includes('Node API is deprecated')) {
+              message.includes('vite-cjs-node-api-deprecated') ||
+              message.includes('CJS build of Vite') ||
+              message.includes('Node API is deprecated') ||
+              message.includes('externalized for browser compatibility') ||
+              message.includes('Module "node:process" has been externalized') ||
+              message.includes('Sourcemap for') ||
+              message.includes('points to missing source files')) {
               return
             }
             return originalConsoleWarn.apply(console, args)
@@ -124,15 +133,21 @@ export class ConfigManager extends EventEmitter {
           try {
             // 使用 jiti 处理 TypeScript 文件（兼容 ESM）
             const jitiMod: any = await import('jiti')
-            const jiti = (jitiMod && jitiMod.default) ? jitiMod.default : jitiMod
+            const createJiti = (jitiMod && jitiMod.default) ? jitiMod.default : jitiMod
 
             // 优化jiti配置，启用缓存以提升性能
-            const jitiLoader = jiti(process.cwd(), {
+            const jitiLoader = createJiti(process.cwd(), {
               cache: true,           // ✅ 启用缓存，避免重复编译
               requireCache: true,    // ✅ 启用require缓存
               interopDefault: true,
               esmResolve: true,
-              debug: false           // 禁用debug输出
+              debug: false,          // 禁用debug输出
+              // 添加对新版本 jiti 的兼容性配置
+              transformOptions: {
+                babel: {
+                  plugins: []
+                }
+              }
             })
 
             this.logger.info(`📋 使用 jiti 加载配置文件`)
@@ -160,20 +175,38 @@ export class ConfigManager extends EventEmitter {
           }
 
         } catch (jitiError) {
-          this.logger.warn('TypeScript 配置文件通过 jiti 加载失败，尝试使用 TS 转译后动态导入', {
+          this.logger.warn('TypeScript 配置文件通过 jiti 加载失败，尝试加载 JavaScript 版本', {
             error: (jitiError as Error).message
           })
 
-          // 进一步降级：使用 TypeScript 转译为 ESM 后再导入
+          // 尝试加载对应的 JavaScript 版本配置文件
+          const jsConfigPath = absolutePath.replace(/\.ts$/, '.js')
           try {
-            const configModule = await this.transpileTsAndImport(absolutePath)
-            loadedConfig = (configModule && (configModule as any).default) || configModule
-          } catch (tsFallbackErr) {
-            this.logger.warn('TS 转译导入失败，使用默认配置', {
-              error: (tsFallbackErr as Error).message
+            if (fs.existsSync(jsConfigPath)) {
+              this.logger.info(`📋 找到 JavaScript 配置文件: ${jsConfigPath}`)
+              const url = pathToFileURL(jsConfigPath).href
+              const configModule = await import(url)
+              loadedConfig = (configModule && (configModule as any).default) || configModule
+              this.logger.info(`✅ JavaScript 配置文件加载成功`)
+            } else {
+              throw new Error('JavaScript 配置文件不存在')
+            }
+          } catch (jsError) {
+            this.logger.warn('JavaScript 配置文件加载失败，尝试使用 TS 转译后动态导入', {
+              error: (jsError as Error).message
             })
-            // 最终降级处理：使用默认配置
-            loadedConfig = DEFAULT_VITE_LAUNCHER_CONFIG
+
+            // 进一步降级：使用 TypeScript 转译为 ESM 后再导入
+            try {
+              const configModule = await this.transpileTsAndImport(absolutePath)
+              loadedConfig = (configModule && (configModule as any).default) || configModule
+            } catch (tsFallbackErr) {
+              this.logger.warn('TS 转译导入失败，使用默认配置', {
+                error: (tsFallbackErr as Error).message
+              })
+              // 最终降级处理：使用默认配置
+              loadedConfig = DEFAULT_VITE_LAUNCHER_CONFIG
+            }
           }
         }
       } else {

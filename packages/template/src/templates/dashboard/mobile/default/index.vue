@@ -371,7 +371,7 @@ const handleSizeChange = (size: string) => {
   flex: 1;
   padding: var(--ls-padding-base);
   overflow: auto;
-  margin-bottom: 60px; // 为底部导航留出空间
+  margin-bottom: 60px; /* 为底部导航留出空间 */
 }
 
 /* 底部导航

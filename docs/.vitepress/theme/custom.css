@@ -14,7 +14,8 @@ ld-button,
 ld-input,
 ld-card,
 ld-popup,
-ld-popconfirm {
+ld-popconfirm,
+ldesign-input-number {
   /* 重置所有继承的样式 */
   all: initial;
   
@@ -44,7 +45,8 @@ ld-card {
 .vp-doc ld-input *,
 .vp-doc ld-card *,
 .vp-doc ld-popup *,
-.vp-doc ld-popconfirm * {
+.vp-doc ld-popconfirm *,
+.vp-doc ldesign-input-number * {
   all: unset;
 }
 
@@ -85,7 +87,8 @@ ld-button,
 ld-input,
 ld-card,
 ld-popup,
-ld-popconfirm {
+ld-popconfirm,
+ldesign-input-number {
   pointer-events: auto;
 }
 

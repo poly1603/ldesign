@@ -1,3 +1,4 @@
+/** @jsxImportSource vue */
 /**
  * 模板动画包装组件
  * 专门负责模板切换时的过渡动画效果，支持多种过渡效果和可配置参数
@@ -31,7 +32,7 @@ const NamedTransition = defineComponent({
     leaveFromClass: { type: String, default: undefined },
     leaveToClass: { type: String, default: undefined },
   },
-  emits: ['before-enter','enter','after-enter','enter-cancelled','before-leave','leave','after-leave','leave-cancelled'],
+  emits: ['before-enter', 'enter', 'after-enter', 'enter-cancelled', 'before-leave', 'leave', 'after-leave', 'leave-cancelled'],
   setup(p, { slots, attrs }) {
     // 仅透传 props 与 attrs，避免强制注入的 hook 干扰 Transition 内部时序
     return () => (
@@ -52,7 +53,7 @@ export const TemplateTransition = defineComponent({
     },
     /** 动画方向（仅对 slide 有效） */
     direction: {
-      type: String as PropType<'left'|'right'|'up'|'down'|undefined>,
+      type: String as PropType<'left' | 'right' | 'up' | 'down' | undefined>,
       default: undefined,
     },
     /** 动画名称（兼容旧版） */
@@ -167,7 +168,7 @@ export const TemplateTransition = defineComponent({
       </div>
     )
   },
-  emits: ['before-enter','enter','after-enter','enter-cancelled','before-leave','leave','after-leave','leave-cancelled'],
+  emits: ['before-enter', 'enter', 'after-enter', 'enter-cancelled', 'before-leave', 'leave', 'after-leave', 'leave-cancelled'],
 })
 
 /**

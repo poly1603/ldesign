@@ -1,6 +1,9 @@
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
+  // 启用Vue支持，因为包含Vue组件
+  libraryType: 'vue3',
+
   // 生成类型声明文件
   dts: true,
 
@@ -37,13 +40,13 @@ export default defineConfig({
     'node:buffer',
     'node:child_process',
     'node:worker_threads'
-],
+  ],
 
   // 全局变量配置
   globals: {
     'vue': 'Vue',
     'lodash-es': '_'
-},
+  },
 
   // 日志级别设置为 silent，只显示错误信息
   logLevel: 'silent',

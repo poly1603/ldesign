@@ -1,3 +1,4 @@
+/** @jsxImportSource vue */
 /**
  * 模板渲染器组件
  *
@@ -20,6 +21,7 @@ import {
   shallowRef,
   h,
   provide,
+  Fragment,
 } from 'vue'
 import { useDeviceDetection } from '../composables/useDeviceDetection'
 import { useTemplate } from '../composables/useTemplate'
@@ -389,52 +391,47 @@ export const TemplateRenderer = defineComponent({
 
 
 
-      return (
-        <div class={wrapperClass} style={config.customStyle}>
-          <button
-            class={triggerClass}
-            onClick={handleSelectorOpen}
-            style={transitionStyles}
-          >
-            <span class="template-selector-trigger__icon">
-              <PanelsTopLeft />
-            </span>
-            {
-              props.showSelectorLabel
-              && (
-                <>
-                  <span class="template-selector-trigger__text">
-                    {currentTemplate.value?.displayName || '选择模板'}
-                  </span>
-                  <span
-                    class={[
-                      'template-selector-trigger__arrow',
-                      { 'template-selector-trigger__arrow--open': showSelectorModal.value },
-                    ]}
-                  >
-                    <ChevronDown />
-                  </span>
-                </>
-              )
-            }
-          </button>
-
-          <TemplateSelector
-            category={props.category}
-            device={currentDevice.value}
-            currentTemplate={currentTemplate.value?.name}
-            visible={showSelectorModal.value}
-            showPreview={false}
-            showSearch={!!config.showSearch}
-            showTags={!!config.showTags}
-            showSort={!!config.showSort}
-            itemsPerRow={config.itemsPerRow ?? 3}
-            searchable={true}
-            onSelect={handleTemplateSelect}
-            onClose={handleSelectorClose}
-          />
-        </div>
-      )
+      return h('div', {
+        class: wrapperClass,
+        style: config.customStyle
+      }, [
+        h('button', {
+          class: triggerClass,
+          onClick: handleSelectorOpen,
+          style: transitionStyles
+        }, [
+          h('span', { class: "template-selector-trigger__icon" }, [
+            h(PanelsTopLeft)
+          ]),
+          ...(props.showSelectorLabel ? [
+            h('span', { class: "template-selector-trigger__text" },
+              currentTemplate.value?.displayName || '选择模板'
+            ),
+            h('span', {
+              class: [
+                'template-selector-trigger__arrow',
+                { 'template-selector-trigger__arrow--open': showSelectorModal.value }
+              ]
+            }, [
+              h(ChevronDown)
+            ])
+          ] : [])
+        ]),
+        h(TemplateSelector, {
+          category: props.category,
+          device: currentDevice.value,
+          currentTemplate: currentTemplate.value?.name,
+          visible: showSelectorModal.value,
+          showPreview: false,
+          showSearch: !!config.showSearch,
+          showTags: !!config.showTags,
+          showSort: !!config.showSort,
+          itemsPerRow: config.itemsPerRow ?? 3,
+          searchable: true,
+          onSelect: handleTemplateSelect,
+          onClose: handleSelectorClose
+        })
+      ])
     }
 
     /**
@@ -445,106 +442,86 @@ export const TemplateRenderer = defineComponent({
       // 初始化加载状态 - 优先显示加载动画
       if (loading.value || isInitializing.value) {
         const LoadingComp = LoadingComponent.value as any
-        const loadingContent = slots.loading ? slots.loading() : <LoadingComp />
-        return (
-          <TemplateTransition
-            type="content"
-            mode="out-in"
-            appear={true}
-          >
-            <div
-              key="loading"
-              class="template-loading"
-            >
-              {loadingContent}
-            </div>
-          </TemplateTransition>
-        )
+        const loadingContent = slots.loading ? slots.loading() : h(LoadingComp)
+        return h(TemplateTransition, {
+          type: "content",
+          mode: "out-in",
+          appear: true
+        }, {
+          default: () => h('div', {
+            key: "loading",
+            class: "template-loading"
+          }, [loadingContent])
+        })
       }
 
       // 错误状态 - 只在非初始化状态下显示
       if (error.value && !isInitializing.value) {
         const errorContent = slots.error
           ? slots.error({ error: error.value, retry: retryLoad })
-          : (
-            <div class="template-error">
-              <div class="template-error__message">{String(error.value)}</div>
-              <button class="retry-button" onClick={() => retryLoad()}>重试</button>
-            </div>
-          )
+          : h('div', { class: "template-error" }, [
+            h('div', { class: "template-error__message" }, String(error.value)),
+            h('button', {
+              class: "retry-button",
+              onClick: () => retryLoad()
+            }, '重试')
+          ])
 
-        return (
-          <TemplateTransition
-            type="content"
-            mode="out-in"
-            appear={true}
-          >
-            <div
-              key="error"
-              class="template-error"
-            >
-              {errorContent}
-            </div>
-          </TemplateTransition>
-        )
+        return h(TemplateTransition, {
+          type: "content",
+          mode: "out-in",
+          appear: true
+        }, {
+          default: () => h('div', {
+            key: "error",
+            class: "template-error"
+          }, [errorContent])
+        })
       }
 
       // 渲染模板组件
       if (currentComponent.value) {
         const TemplateComponent = currentComponent.value as any
-        return (
-          <TemplateTransition
-            type="content"
-            mode="out-in"
-            appear={true}
-          >
-            <div
-              key={currentTemplate.value?.name || 'template'}
-              class="template-content"
-            >
-              <TemplateComponent
-                {...props.props}
-                v-slots={{
-                  ...slots,
-                  selector: () => (shouldShowSelector.value ? renderSelector() : null),
-                }}
-              />
-            </div>
-          </TemplateTransition>
-        )
+        return h(TemplateTransition, {
+          type: "content",
+          mode: "out-in",
+          appear: true
+        }, {
+          default: () => h('div', {
+            key: currentTemplate.value?.name || 'template',
+            class: "template-content"
+          }, [
+            h(TemplateComponent, {
+              ...props.props
+            }, {
+              ...slots,
+              selector: () => (shouldShowSelector.value ? renderSelector() : null)
+            })
+          ])
+        })
       }
 
       // 无模板状态
       const emptyContent = slots.empty
         ? slots.empty()
-        : (
-          <div class="template-empty">
-            <div class="template-empty__message">
-              没有找到可用的模板
-            </div>
-            <button
-              class="template-empty__retry"
-              onClick={retryLoad}
-            >
-              重新加载
-            </button>
-          </div>
-        )
+        : h('div', { class: "template-empty" }, [
+          h('div', { class: "template-empty__message" }, '没有找到可用的模板'),
+          h('button', {
+            class: "template-empty__retry",
+            onClick: retryLoad
+          }, '重新加载')
+        ])
 
-      return (
-        <TemplateTransition
-          type="content"
-          mode="out-in"
-          appear={true}
-        >
-          <div
-            key="empty"
-            class="template-content-empty"
-          >
-            {emptyContent}
-          </div>
-        </TemplateTransition>
-      )
+      return h(TemplateTransition, {
+        type: "content",
+        mode: "out-in",
+        appear: true
+      }, {
+        default: () => h('div', {
+          key: "empty",
+          class: "template-content-empty"
+        }, [emptyContent])
+      })
     }
 
     // 添加防抖标志，避免重复切换
@@ -623,13 +600,11 @@ export const TemplateRenderer = defineComponent({
       }
     })
 
-    return () => (
-      <div class="template-renderer">
-        <div class="template-renderer__content template-content-transition">
-          {renderTemplate()}
-        </div>
-      </div>
-    )
+    return () => h('div', { class: 'template-renderer' }, [
+      h('div', { class: 'template-renderer__content template-content-transition' }, [
+        renderTemplate()
+      ])
+    ])
   },
 })
 

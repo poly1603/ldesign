@@ -1,0 +1,1 @@
+在概览页面添加项目启动，项目打包，项目预览三个功能模块，启动页面点击启动按钮调用 @d:\WorkBench\ldesign/packages\launcher/ 来dev项目，并且将命令行信息打印在下面，实时监听命令行信息，build和preview也是一样的。

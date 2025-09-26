@@ -15,3 +15,4 @@ coverage
 .augment_cache
 dist-staging
 dist-test
+dist-dev

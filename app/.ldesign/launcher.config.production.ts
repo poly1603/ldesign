@@ -22,6 +22,13 @@ export default defineConfig({
     host: true
   },
 
+  // 预览服务器配置
+  preview: {
+    port: 4173,
+    host: '0.0.0.0', // 允许外部访问
+    open: false
+  },
+
   // 生产环境代理配置已移除
   // 在preview模式下，应该直接服务本地构建的静态文件
   // 真正的生产环境代理应该通过nginx等反向代理来处理

@@ -73,6 +73,11 @@
       "import": "./es/types/*.js",
       "require": "./lib/types/*.cjs"
     },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
+    },
     "./vue": {
       "types": "./es/vue/index.d.ts",
       "import": "./es/vue/index.js",
@@ -95,12 +100,12 @@
   "unpkg": "./dist/index.min.js",
   "jsdelivr": "./dist/index.min.js",
   "files": [
-    "LICENSE",
     "README.md",
-    "dist",
+    "LICENSE",
+    "package.json",
     "es",
     "lib",
-    "package.json"
+    "dist"
   ],
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs,umd",

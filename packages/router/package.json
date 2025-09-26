@@ -30,6 +30,11 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
+    "./analytics/*": {
+      "types": "./es/analytics/*.d.ts",
+      "import": "./es/analytics/*.js",
+      "require": "./lib/analytics/*.cjs"
+    },
     "./components": {
       "types": "./es/components/index.d.ts",
       "import": "./es/components/index.js",
@@ -95,6 +100,16 @@
       "import": "./es/guards/*.js",
       "require": "./lib/guards/*.cjs"
     },
+    "./middleware": {
+      "types": "./es/middleware/index.d.ts",
+      "import": "./es/middleware/index.js",
+      "require": "./lib/middleware/index.cjs"
+    },
+    "./middleware/*": {
+      "types": "./es/middleware/*.d.ts",
+      "import": "./es/middleware/*.js",
+      "require": "./lib/middleware/*.cjs"
+    },
     "./optimization/*": {
       "types": "./es/optimization/*.d.ts",
       "import": "./es/optimization/*.js",
@@ -119,6 +134,16 @@
       "types": "./es/smart/*.d.ts",
       "import": "./es/smart/*.js",
       "require": "./lib/smart/*.cjs"
+    },
+    "./state/*": {
+      "types": "./es/state/*.d.ts",
+      "import": "./es/state/*.js",
+      "require": "./lib/state/*.cjs"
+    },
+    "./testing/*": {
+      "types": "./es/testing/*.d.ts",
+      "import": "./es/testing/*.js",
+      "require": "./lib/testing/*.cjs"
     },
     "./types": {
       "types": "./es/types/index.d.ts",

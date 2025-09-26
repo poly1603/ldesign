@@ -391,11 +391,14 @@ export class SmartPluginManager {
 
       return pluginFactory(config.options)
     } catch (error) {
-      this.logger.warn('插件加载失败，可能未安装', {
-        name: config.name,
-        package: config.packageName,
-        error: (error as Error).message
-      })
+      // 只在调试模式下显示插件加载失败的详细信息
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG) {
+        this.logger.debug('插件加载失败，可能未安装', {
+          name: config.name,
+          package: config.packageName,
+          error: (error as Error).message
+        })
+      }
       return null
     }
   }

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picker 边界测试</title>
+    <script type="module" src="./packages/webcomponent/dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            margin-top: 0;
+            color: #333;
+            font-size: 24px;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #666;
+        }
+        
+        .picker-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #2e7d32;
+        }
+        
+        .instructions {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #e65100;
+        }
+        
+        code {
+            background: rgba(0,0,0,0.05);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Picker 组件边界测试</h1>
+        
+        <div class="instructions">
+            <strong>测试说明：</strong><br>
+            1. 使用鼠标滚轮滚动选择器<br>
+            2. 尝试向上滚动到第一项（选项01）<br>
+            3. 尝试向下滚动到最后一项（选项10）<br>
+            4. 验证边界项是否正确停止在中心指示器位置<br>
+            5. 确认无法继续滚动超出边界
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">测试1：10个选项的选择器</div>
+            <div class="picker-wrapper">
+                <ldesign-picker id="picker1"></ldesign-picker>
+            </div>
+            <div class="status">
+                当前选中: <code id="value1">选项05</code>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">测试2：少量选项的选择器（3个）</div>
+            <div class="picker-wrapper">
+                <ldesign-picker id="picker2" visible-items="3"></ldesign-picker>
+            </div>
+            <div class="status">
+                当前选中: <code id="value2">选项B</code>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">测试3：大量选项的选择器（20个）</div>
+            <div class="picker-wrapper">
+                <ldesign-picker id="picker3" visible-items="7"></ldesign-picker>
+            </div>
+            <div class="status">
+                当前选中: <code id="value3">项目10</code>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 等待组件加载
+        customElements.whenDefined('ldesign-picker').then(() => {
+            // 配置第一个选择器（10个选项）
+            const picker1 = document.getElementById('picker1');
+            const options1 = Array.from({length: 10}, (_, i) => ({
+                value: `opt${i+1}`,
+                label: `选项${String(i+1).padStart(2, '0')}`
+            }));
+            picker1.options = options1;
+            picker1.value = 'opt5';
+            
+            picker1.addEventListener('ldesignChange', (e) => {
+                const opt = options1.find(o => o.value === e.detail.value);
+                document.getElementById('value1').textContent = opt ? opt.label : '未选择';
+            });
+            
+            // 配置第二个选择器（3个选项）
+            const picker2 = document.getElementById('picker2');
+            const options2 = [
+                { value: 'a', label: '选项A' },
+                { value: 'b', label: '选项B' },
+                { value: 'c', label: '选项C' }
+            ];
+            picker2.options = options2;
+            picker2.value = 'b';
+            
+            picker2.addEventListener('ldesignChange', (e) => {
+                const opt = options2.find(o => o.value === e.detail.value);
+                document.getElementById('value2').textContent = opt ? opt.label : '未选择';
+            });
+            
+            // 配置第三个选择器（20个选项）
+            const picker3 = document.getElementById('picker3');
+            const options3 = Array.from({length: 20}, (_, i) => ({
+                value: `item${i+1}`,
+                label: `项目${String(i+1).padStart(2, '0')}`
+            }));
+            picker3.options = options3;
+            picker3.value = 'item10';
+            
+            picker3.addEventListener('ldesignChange', (e) => {
+                const opt = options3.find(o => o.value === e.detail.value);
+                document.getElementById('value3').textContent = opt ? opt.label : '未选择';
+            });
+            
+            // 添加调试信息
+            console.log('✅ Picker 组件已初始化');
+            console.log('组件1选项数:', options1.length);
+            console.log('组件2选项数:', options2.length);
+            console.log('组件3选项数:', options3.length);
+        });
+    </script>
+</body>
+</html>

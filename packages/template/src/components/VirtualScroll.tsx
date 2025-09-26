@@ -1,6 +1,7 @@
+/** @jsxImportSource vue */
 /**
  * 虚拟滚动组件
- * 
+ *
  * 用于优化长列表的渲染性能，只渲染可视区域内的元素
  */
 
@@ -114,13 +115,13 @@ export const VirtualScroll = defineComponent({
         }
       }
     })()
-    
+
     // 计算总高度
     const totalHeight = computed(() => {
       if (!props.dynamicHeight && props.itemHeight) {
         return props.items.length * props.itemHeight
       }
-      
+
       let height = 0
       props.items.forEach(item => {
         const itemHeight = itemHeights.value.get(item.id) || props.itemHeight || 50
@@ -128,20 +129,20 @@ export const VirtualScroll = defineComponent({
       })
       return height
     })
-    
+
     // 计算可见项目
     const visibleItems = computed(() => {
       const { start, end } = visibleRange.value
       const bufferStart = Math.max(0, start - props.buffer)
       const bufferEnd = Math.min(props.items.length, end + props.buffer)
-      
+
       return props.items.slice(bufferStart, bufferEnd).map((item, index) => ({
         ...item,
         index: bufferStart + index,
         offset: getItemOffset(bufferStart + index)
       }))
     })
-    
+
     // 获取项目偏移量
     const getItemOffset = (index: number): number => {
       if (!props.dynamicHeight && props.itemHeight) {
@@ -151,14 +152,14 @@ export const VirtualScroll = defineComponent({
       if (!item) return 0
       return offsets.value.get(item.id) ?? 0
     }
-    
+
     // 更新可见范围
     const updateVisibleRange = () => {
       if (!containerRef.value) return
-      
+
       const scroll = scrollTop.value
       const height = containerHeight.value
-      
+
       if (!props.dynamicHeight && props.itemHeight) {
         // 固定高度模式
         const start = Math.floor(scroll / props.itemHeight)
@@ -169,37 +170,37 @@ export const VirtualScroll = defineComponent({
         let accumulatedHeight = 0
         let start = 0
         let end = props.items.length
-        
+
         for (let i = 0; i < props.items.length; i++) {
           const item = props.items[i]
           const itemHeight = item ? (itemHeights.value.get(item.id) || props.itemHeight || 50) : (props.itemHeight || 50)
-          
+
           if (accumulatedHeight < scroll && !start) {
             start = i
           }
-          
+
           accumulatedHeight += itemHeight
-          
+
           if (accumulatedHeight > scroll + height) {
             end = i + 1
             break
           }
         }
-        
+
         visibleRange.value = { start, end }
       }
-      
+
       // 检查是否需要加载更多
       if (scroll + height >= totalHeight.value - props.threshold) {
         emit('loadMore')
       }
     }
-    
+
     // 处理滚动事件
     const handleScroll = (event: Event) => {
       const target = event.target as HTMLElement
       scrollTop.value = target.scrollTop
-      
+
       // 设置滚动状态
       isScrolling.value = true
       if (scrollTimeout) {
@@ -217,7 +218,7 @@ export const VirtualScroll = defineComponent({
           clientHeight: el ? el.clientHeight : 0
         })
       }
-      
+
       if (typeof requestAnimationFrame === 'function') {
         if (scrollRAF != null) return
         scrollRAF = requestAnimationFrame(() => {
@@ -230,30 +231,30 @@ export const VirtualScroll = defineComponent({
         emitScroll()
       }
     }
-    
+
     // 处理容器大小变化
     const handleResize = () => {
       if (!containerRef.value) return
       containerHeight.value = containerRef.value.clientHeight
       updateVisibleRange()
     }
-    
+
     // 滚动到指定位置
     const scrollTo = (offset: number, smooth = props.smoothScroll) => {
       if (!containerRef.value) return
-      
+
       containerRef.value.scrollTo({
         top: offset,
         behavior: smooth ? 'smooth' : 'auto'
       })
     }
-    
+
     // 滚动到指定索引
     const scrollToIndex = (index: number, smooth = props.smoothScroll) => {
       const offset = getItemOffset(index)
       scrollTo(offset, smooth)
     }
-    
+
     // 滚动到指定元素
     const scrollToItem = (id: string | number, smooth = props.smoothScroll) => {
       const index = props.items.findIndex(item => item.id === id)
@@ -261,7 +262,7 @@ export const VirtualScroll = defineComponent({
         scrollToIndex(index, smooth)
       }
     }
-    
+
     // 更新项目高度
     const updateItemHeight = (id: string | number, height: number) => {
       if (itemHeights.value.get(id) !== height) {
@@ -275,7 +276,7 @@ export const VirtualScroll = defineComponent({
         }
       }
     }
-    
+
     // 监听数据变化
     // 当列表长度或引用变化时重算偏移，避免深度监听带来的性能消耗
     watch(() => props.items.length, () => {
@@ -286,18 +287,18 @@ export const VirtualScroll = defineComponent({
       recomputeOffsets()
       updateVisibleRange()
     })
-    
+
     // 监听容器高度变化
     watch(() => props.height, () => {
       handleResize()
     })
-    
+
     // 生命周期
     onMounted(() => {
       handleResize()
       recomputeOffsets()
       window.addEventListener('resize', handleResize)
-      
+
       // 使用 ResizeObserver 监听容器大小变化
       if (containerRef.value && 'ResizeObserver' in window) {
         const resizeObserver = new ResizeObserver(() => {
@@ -306,13 +307,13 @@ export const VirtualScroll = defineComponent({
           scheduleRecompute()
         })
         resizeObserver.observe(containerRef.value)
-        
+
         onUnmounted(() => {
           resizeObserver.disconnect()
         })
       }
     })
-    
+
     onUnmounted(() => {
       window.removeEventListener('resize', handleResize)
       if (scrollTimeout) {
@@ -323,7 +324,7 @@ export const VirtualScroll = defineComponent({
         scrollRAF = null
       }
     })
-    
+
     // 暴露方法给父组件
     const exposed = {
       scrollTo,
@@ -332,7 +333,7 @@ export const VirtualScroll = defineComponent({
       updateItemHeight,
       refresh: updateVisibleRange
     }
-    
+
     return {
       containerRef,
       visibleItems,
@@ -353,13 +354,13 @@ export const VirtualScroll = defineComponent({
         msOverflowStyle: 'none'
       })
     }
-    
+
     const contentStyle: CSSProperties = {
       height: `${this.totalHeight}px`,
       position: 'relative',
       willChange: this.isScrolling ? 'transform' : 'auto'
     }
-    
+
     const renderItem = (item: any) => {
       const itemStyle: CSSProperties = {
         position: 'absolute',
@@ -370,13 +371,13 @@ export const VirtualScroll = defineComponent({
           minHeight: this.itemHeight ? `${this.itemHeight}px` : 'auto'
         })
       }
-      
+
       const itemContent = this.$slots.default?.({
         item: item,
         index: item.index,
         style: itemStyle
       })
-      
+
       return (
         <div
           key={item.id}
@@ -395,7 +396,7 @@ export const VirtualScroll = defineComponent({
         </div>
       )
     }
-    
+
     return (
       <div
         ref={this.containerRef as any}
@@ -406,14 +407,14 @@ export const VirtualScroll = defineComponent({
         <div class="virtual-scroll-content" style={contentStyle}>
           {this.visibleItems.map(renderItem)}
         </div>
-        
+
         {/* 加载指示器插槽 */}
         {this.$slots.loading && this.isScrolling && (
           <div class="virtual-scroll-loading">
             {this.$slots.loading()}
           </div>
         )}
-        
+
         {/* 空状态插槽 */}
         {this.$slots.empty && this.items.length === 0 && (
           <div class="virtual-scroll-empty">

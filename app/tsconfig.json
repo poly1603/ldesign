@@ -23,6 +23,7 @@
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/.tsbuildinfo",
     "jsx": "preserve",
+    "jsxImportSource": "vue",
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,

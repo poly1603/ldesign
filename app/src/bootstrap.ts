@@ -1,4 +1,4 @@
-import { createAndMountApp } from '@ldesign/engine'
+import { createAndMountApp } from '../../packages/engine/src'
 import { routerPlugin } from './router'
 import App from './App.vue'
 import { templatePlugin } from './templates'

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mention Component - Simple Test</title>
+  <style>
+    body {
+      padding: 40px;
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .test-item {
+      margin: 30px 0;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+    }
+    .test-item h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    .test-item p {
+      color: #666;
+      font-size: 14px;
+    }
+    button {
+      margin: 5px;
+      padding: 5px 10px;
+    }
+  </style>
+  <script type="module" src="/dist/webcomponent/webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="/dist/webcomponent/webcomponent.css">
+</head>
+<body>
+  <h1>Mention 组件测试 - 初始值问题</h1>
+
+  <div class="test-item">
+    <h3>测试1：有初始值</h3>
+    <p>在文本末尾输入 @ 或 # 看是否弹出选择框</p>
+    <ldesign-mention 
+      id="test1"
+      value="这是初始内容，请在这里输入触发符："
+      triggers="@,#">
+    </ldesign-mention>
+    <br>
+    <button onclick="logState('test1')">查看状态</button>
+    <button onclick="focusEnd('test1')">光标到末尾</button>
+  </div>
+
+  <div class="test-item">
+    <h3>测试2：无初始值（对照组）</h3>
+    <p>直接输入 @ 或 # 应该正常弹出</p>
+    <ldesign-mention 
+      id="test2"
+      placeholder="直接输入 @ 或 # 测试"
+      triggers="@,#">
+    </ldesign-mention>
+    <br>
+    <button onclick="logState('test2')">查看状态</button>
+  </div>
+
+  <div class="test-item">
+    <h3>测试3：设置初始值后手动输入</h3>
+    <p>先点击"设置初始值"，然后输入 @</p>
+    <ldesign-mention 
+      id="test3"
+      placeholder="先设置值，再测试"
+      triggers="@,#">
+    </ldesign-mention>
+    <br>
+    <button onclick="setValue('test3')">设置初始值</button>
+    <button onclick="logState('test3')">查看状态</button>
+  </div>
+
+  <script>
+    // 定义选项数据
+    const options = [
+      { value: 'alice', label: 'Alice' },
+      { value: 'bob', label: 'Bob' },
+      { value: 'charlie', label: 'Charlie' },
+      { value: 'diana', label: 'Diana' },
+      { value: 'eve', label: 'Eve' }
+    ];
+    
+    // 设置选项 - 使用定时器确保组件已加载
+    function initMentions() {
+      const mentions = document.querySelectorAll('ldesign-mention');
+      if (mentions.length === 0) {
+        setTimeout(initMentions, 100);
+        return;
+      }
+      
+      mentions.forEach(el => {
+        // 设置选项
+        el.options = options;
+        console.log(`[${el.id}] Setting options:`, options.length, 'items');
+        
+        // 监听事件
+        el.addEventListener('ldesignSearch', (e) => {
+          console.log(`[${el.id}] Search:`, e.detail);
+        });
+        
+        el.addEventListener('ldesignSelect', (e) => {
+          console.log(`[${el.id}] Select:`, e.detail);
+        });
+        
+        // 再次确认选项已设置
+        setTimeout(() => {
+          console.log(`[${el.id}] Options check:`, el.options);
+        }, 500);
+      });
+    }
+    
+    // 页面加载后初始化
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initMentions);
+    } else {
+      initMentions();
+    }
+
+    function logState(id) {
+      const el = document.getElementById(id);
+      const shadowRoot = el.shadowRoot;
+      const editable = shadowRoot?.querySelector('.ldesign-mention__editable');
+      
+      console.log(`\n=== ${id} 状态 ===`);
+      console.log('Value:', el.value);
+      console.log('Open:', el.open);
+      console.log('Editable innerHTML:', editable?.innerHTML);
+      console.log('Editable innerText:', editable?.innerText);
+      console.log('Editable childNodes:', editable?.childNodes);
+      
+      // 检查光标位置
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        console.log('Selection info:');
+        console.log('  - startContainer:', range.startContainer);
+        console.log('  - startOffset:', range.startOffset);
+        console.log('  - collapsed:', sel.isCollapsed);
+      }
+      console.log('=================\n');
+    }
+    
+    function setValue(id) {
+      const el = document.getElementById(id);
+      el.value = '动态设置的内容，请输入：';
+      console.log(`[${id}] 已设置初始值`);
+    }
+    
+    function focusEnd(id) {
+      const el = document.getElementById(id);
+      const shadowRoot = el.shadowRoot;
+      const editable = shadowRoot?.querySelector('.ldesign-mention__editable');
+      if (editable) {
+        editable.focus();
+        // 将光标移到末尾
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(editable);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        console.log(`[${id}] 光标已移到末尾`);
+      }
+    }
+  </script>
+</body>
+</html>

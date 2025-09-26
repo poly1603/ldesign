@@ -1,9 +1,9 @@
 /**
  * shared Vue 增强构建脚本
- * 使用 @ldesign/builder VueBuilder 处理 Vue + TypeScript 项目
+ * 使用 @ldesign/builder LibraryBuilder 处理 Vue + TypeScript 项目
  */
 
-import { VueBuilder } from '@ldesign/builder'
+import { LibraryBuilder } from '@ldesign/builder'
 import { sep } from 'path'
 
 async function build() {
@@ -12,14 +12,14 @@ async function build() {
   
   console.log(`🚀 构建 shared 包...`)
   
-  const builder = new VueBuilder({
+  const builder = new LibraryBuilder({
     root: process.cwd(),
     src: 'src',
     formats: ["esm","cjs","umd","dts"],
     sourcemap: true,
     minify: !isDev,
     clean: true,
-    enableVue: includeVue, // 默认只构建 TS，除非指定 --vue
+    enableVue: true, // 启用Vue支持，因为包含Vue组件
     external: [
       'vue',
       'react', 

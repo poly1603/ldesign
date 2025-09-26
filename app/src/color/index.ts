@@ -8,13 +8,13 @@
  * - CSS变量自动注入
  */
 
-import { createColorEnginePlugin } from '@ldesign/color/vue'
+import { createColorEnginePlugin } from '@ldesign/color/exports/vue'
 import { globalThemeApplier } from '@ldesign/color'
 import type { ColorMode } from '@ldesign/color'
 
 // 导入color包的样式文件
-// 通过别名配置，在开发和生产环境中都指向源码目录
-import '@ldesign/color/es/index.css'
+// 开发环境使用源码样式，生产环境使用编译后的样式
+import '@ldesign/color/es/exports/vue.css'
 
 // 暴露全局主题应用器到window对象，供组件使用
 if (typeof window !== 'undefined') {

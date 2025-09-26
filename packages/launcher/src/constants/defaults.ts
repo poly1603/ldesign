@@ -37,7 +37,7 @@ export const DEFAULT_OUT_DIR = 'dist'
 /**
  * 默认构建目标
  */
-export const DEFAULT_BUILD_TARGET = 'modules'
+export const DEFAULT_BUILD_TARGET = 'es2015'
 
 /**
  * 默认配置文件名列表
