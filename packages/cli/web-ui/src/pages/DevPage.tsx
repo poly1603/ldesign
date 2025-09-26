@@ -397,6 +397,14 @@ const DevPage: React.FC = () => {
         environment: selectedEnv
       })
 
+      // 清理服务器信息
+      updateServerInfo(processKey, {
+        localUrl: undefined,
+        networkUrl: undefined,
+        qrCode: undefined,
+        port: undefined
+      })
+
       toast.success('正在停止开发服务器...')
       console.log('Dev command stopped:', result)
     } catch (error) {
@@ -556,8 +564,8 @@ const DevPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 服务器信息显示区域 */}
-      {(serverInfo.localUrl || serverInfo.networkUrl) && (
+      {/* 服务器信息显示区域 - 只在服务运行时显示 */}
+      {isProcessRunning && (serverInfo.localUrl || serverInfo.networkUrl) && (
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <Monitor className="w-5 h-5 mr-2 text-green-600" />

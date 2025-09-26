@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle Navigation 旋转拖动演示</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 50px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .example {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .example h2 {
+            margin-top: 0;
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .example-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+        
+        /* 圆形导航项样式 */
+        .nav-item {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .nav-item:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        /* 中心元素样式 */
+        .center-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            box-shadow: 0 8px 30px rgba(245, 87, 108, 0.4);
+        }
+        
+        /* 图标导航项 */
+        .icon-item {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .icon-item:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .controls {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            min-width: 120px;
+            color: #666;
+        }
+        
+        .control-group input[type="range"] {
+            flex: 1;
+        }
+        
+        .control-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .value-display {
+            min-width: 60px;
+            text-align: right;
+            color: #764ba2;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🎯 Circle Navigation 圆形导航 - 支持拖动旋转</h1>
+        
+        <div class="examples">
+            <!-- 示例1: 基础拖动旋转 -->
+            <div class="example">
+                <h2>基础拖动旋转（鼠标/触摸）</h2>
+                <div class="example-content">
+                    <ldesign-circle-navigation 
+                        id="nav1"
+                        width="280" 
+                        height="280"
+                        draggable="true"
+                        touch-rotate="true"
+                        momentum="true"
+                        show-track="true">
+                        <div class="nav-item">1</div>
+                        <div class="nav-item">2</div>
+                        <div class="nav-item">3</div>
+                        <div class="nav-item">4</div>
+                        <div class="nav-item">5</div>
+                        <div class="nav-item">6</div>
+                        <div class="center-logo" slot="center">⚡</div>
+                    </ldesign-circle-navigation>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>惯性效果:</label>
+                        <input type="checkbox" id="momentum1" checked onchange="updateNav1()">
+                    </div>
+                    <div class="control-group">
+                        <label>摩擦系数:</label>
+                        <input type="range" id="friction1" min="0.8" max="0.99" step="0.01" value="0.95" onchange="updateNav1()">
+                        <span class="value-display" id="friction1-value">0.95</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 示例2: 带吸附点的旋转 -->
+            <div class="example">
+                <h2>带吸附点的旋转</h2>
+                <div class="example-content">
+                    <ldesign-circle-navigation 
+                        id="nav2"
+                        width="280" 
+                        height="280"
+                        draggable="true"
+                        snap-points="true"
+                        snap-angle="60"
+                        snap-threshold="20"
+                        show-track="true">
+                        <div class="icon-item">🏠</div>
+                        <div class="icon-item">🔍</div>
+                        <div class="icon-item">💼</div>
+                        <div class="icon-item">⚙️</div>
+                        <div class="icon-item">📊</div>
+                        <div class="icon-item">👤</div>
+                        <div class="center-logo" slot="center">🌟</div>
+                    </ldesign-circle-navigation>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>吸附角度:</label>
+                        <input type="range" id="snap-angle" min="30" max="90" step="15" value="60" onchange="updateNav2()">
+                        <span class="value-display" id="snap-angle-value">60°</span>
+                    </div>
+                    <div class="control-group">
+                        <label>吸附阈值:</label>
+                        <input type="range" id="snap-threshold" min="5" max="30" step="5" value="20" onchange="updateNav2()">
+                        <span class="value-display" id="snap-threshold-value">20°</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 示例3: 椭圆形布局 -->
+            <div class="example">
+                <h2>椭圆形布局 + 3D透视</h2>
+                <div class="example-content">
+                    <ldesign-circle-navigation 
+                        id="nav3"
+                        width="350" 
+                        height="250"
+                        draggable="true"
+                        momentum="true"
+                        perspective="true"
+                        front-angle="90"
+                        min-scale="0.7"
+                        max-scale="1.3"
+                        z-depth="50"
+                        perspective-distance="800"
+                        show-track="true">
+                        <div class="nav-item">A</div>
+                        <div class="nav-item">B</div>
+                        <div class="nav-item">C</div>
+                        <div class="nav-item">D</div>
+                        <div class="nav-item">E</div>
+                        <div class="nav-item">F</div>
+                        <div class="nav-item">G</div>
+                        <div class="nav-item">H</div>
+                        <div class="center-logo" slot="center">🎨</div>
+                    </ldesign-circle-navigation>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>旋转灵敏度:</label>
+                        <input type="range" id="sensitivity3" min="0.1" max="2" step="0.1" value="0.5" onchange="updateNav3()">
+                        <span class="value-display" id="sensitivity3-value">0.5</span>
+                    </div>
+                    <div class="control-group">
+                        <label>3D深度:</label>
+                        <input type="range" id="z-depth3" min="0" max="100" step="10" value="50" onchange="updateNav3()">
+                        <span class="value-display" id="z-depth3-value">50</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 示例4: 高级控制 -->
+            <div class="example">
+                <h2>高级控制示例</h2>
+                <div class="example-content">
+                    <ldesign-circle-navigation 
+                        id="nav4"
+                        width="280" 
+                        height="280"
+                        draggable="true"
+                        touch-rotate="true"
+                        momentum="true"
+                        snap-points="false"
+                        rotate-sensitivity="0.3"
+                        friction="0.92"
+                        min-velocity="0.5"
+                        show-track="true"
+                        clockwise="false">
+                        <div class="nav-item">🎵</div>
+                        <div class="nav-item">🎬</div>
+                        <div class="nav-item">🎮</div>
+                        <div class="nav-item">📷</div>
+                        <div class="nav-item">🎨</div>
+                        <div class="center-logo" slot="center">🎪</div>
+                    </ldesign-circle-navigation>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>最小速度:</label>
+                        <input type="range" id="min-velocity4" min="0.1" max="2" step="0.1" value="0.5" onchange="updateNav4()">
+                        <span class="value-display" id="min-velocity4-value">0.5</span>
+                    </div>
+                    <div class="control-group">
+                        <label>顺时针:</label>
+                        <input type="checkbox" id="clockwise4" onchange="updateNav4()">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 动态更新导航组件属性
+        function updateNav1() {
+            const nav = document.getElementById('nav1');
+            const momentum = document.getElementById('momentum1').checked;
+            const friction = document.getElementById('friction1').value;
+            
+            nav.momentum = momentum;
+            nav.friction = parseFloat(friction);
+            
+            document.getElementById('friction1-value').textContent = friction;
+        }
+        
+        function updateNav2() {
+            const nav = document.getElementById('nav2');
+            const snapAngle = document.getElementById('snap-angle').value;
+            const snapThreshold = document.getElementById('snap-threshold').value;
+            
+            nav.snapAngle = parseInt(snapAngle);
+            nav.snapThreshold = parseInt(snapThreshold);
+            
+            document.getElementById('snap-angle-value').textContent = snapAngle + '°';
+            document.getElementById('snap-threshold-value').textContent = snapThreshold + '°';
+        }
+        
+        function updateNav3() {
+            const nav = document.getElementById('nav3');
+            const sensitivity = document.getElementById('sensitivity3').value;
+            const zDepth = document.getElementById('z-depth3').value;
+            
+            nav.rotateSensitivity = parseFloat(sensitivity);
+            nav.zDepth = parseInt(zDepth);
+            
+            document.getElementById('sensitivity3-value').textContent = sensitivity;
+            document.getElementById('z-depth3-value').textContent = zDepth;
+        }
+        
+        function updateNav4() {
+            const nav = document.getElementById('nav4');
+            const minVelocity = document.getElementById('min-velocity4').value;
+            const clockwise = document.getElementById('clockwise4').checked;
+            
+            nav.minVelocity = parseFloat(minVelocity);
+            nav.clockwise = clockwise;
+            
+            document.getElementById('min-velocity4-value').textContent = minVelocity;
+        }
+        
+        // 添加点击事件反馈
+        document.addEventListener('DOMContentLoaded', () => {
+            const items = document.querySelectorAll('.nav-item, .icon-item');
+            items.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const content = e.target.textContent;
+                    console.log('Clicked:', content);
+                    // 简单的点击反馈动画
+                    e.target.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        e.target.style.transform = '';
+                    }, 200);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

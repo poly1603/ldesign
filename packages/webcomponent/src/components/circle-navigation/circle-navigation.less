@@ -6,6 +6,15 @@
   min-width: 120px;
   min-height: 120px;
   transform-style: preserve-3d; /* 允许内部 3D */
+  user-select: none;
+  
+  &.draggable {
+    cursor: grab;
+  }
+  
+  &.dragging {
+    cursor: grabbing;
+  }
 
   .ldesign-circle-navigation__track {
     position: absolute;

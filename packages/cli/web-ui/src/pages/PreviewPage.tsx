@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Eye, Square, Monitor, Trash2, ExternalLink, Globe, Wifi, Copy, QrCode } from 'lucide-react'
+import { Eye, Square, Monitor, Trash2, ExternalLink, Globe, Wifi, Copy, QrCode, RefreshCw } from 'lucide-react'
 import { useSocket } from '../contexts/SocketContext'
 import { useTaskState } from '../contexts/TaskStateContext'
 import { api } from '../services/api'
@@ -171,21 +171,16 @@ const PreviewPage: React.FC = () => {
     for (const env of environments) {
       status[env.key] = await checkBuildExists(env.key)
 
-      // 获取构建时间
-      try {
-        const buildTask = await api.getTaskByTypeAndEnv('build', env.key)
-        if (buildTask && buildTask.endTime) {
-          const endTime = new Date(buildTask.endTime)
-          times[env.key] = endTime.toLocaleString('zh-CN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-          })
+      // 获取构建时间（从构建产物目录获取）
+      if (status[env.key]) {
+        try {
+          const response = await api.getBuildTime(env.key)
+          if (response.buildTime) {
+            times[env.key] = response.buildTime
+          }
+        } catch (error) {
+          console.error(`获取${env.key}构建时间失败:`, error)
         }
-      } catch (error) {
-        console.error(`获取${env.key}构建时间失败:`, error)
       }
     }
 
@@ -194,9 +189,16 @@ const PreviewPage: React.FC = () => {
     setCheckingBuilds(false)
   }
 
-  // 组件挂载时检查构建状态
+  // 组件挂载时检查构建状态，并定期刷新
   useEffect(() => {
     checkAllBuilds()
+    
+    // 每 10 秒刷新一次构建状态
+    const interval = setInterval(() => {
+      checkAllBuilds()
+    }, 10000)
+    
+    return () => clearInterval(interval)
   }, [])
 
   // 状态恢复逻辑
@@ -462,6 +464,14 @@ const PreviewPage: React.FC = () => {
         environment: selectedEnv
       })
 
+      // 清理服务器信息
+      updateServerInfo(processKey, {
+        localUrl: undefined,
+        networkUrl: undefined,
+        qrCode: undefined,
+        port: undefined
+      })
+
       toast.success('正在停止预览服务器...')
       console.log('Preview command stopped:', result)
     } catch (error) {
@@ -533,7 +543,21 @@ const PreviewPage: React.FC = () => {
 
       {/* 环境选择 */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">选择预览环境</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">选择预览环境</h3>
+          <button
+            onClick={() => checkAllBuilds()}
+            disabled={checkingBuilds}
+            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              checkingBuilds 
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+            }`}
+          >
+            <RefreshCw className={`w-4 h-4 ${checkingBuilds ? 'animate-spin' : ''}`} />
+            <span>{checkingBuilds ? '检查中...' : '刷新状态'}</span>
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {environments.map((env) => {
             const buildExists = buildStatus[env.key];
@@ -652,8 +676,8 @@ const PreviewPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 服务器信息显示区域 */}
-      {(serverInfo.localUrl || serverInfo.networkUrl) && (
+      {/* 服务器信息显示区域 - 只在服务运行时显示 */}
+      {isProcessRunning && (serverInfo.localUrl || serverInfo.networkUrl) && (
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <Monitor className="w-5 h-5 mr-2 text-green-600" />
@@ -799,8 +823,8 @@ const PreviewPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 服务器信息显示区域 */}
-      {(serverInfo.localUrl || serverInfo.networkUrl) && (
+      {/* 服务器信息显示区域 - 只在服务运行时显示 */}
+      {isProcessRunning && (serverInfo.localUrl || serverInfo.networkUrl) && (
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <Monitor className="w-5 h-5 mr-2 text-green-600" />

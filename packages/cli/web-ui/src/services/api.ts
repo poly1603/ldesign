@@ -34,6 +34,13 @@ export const api = {
   getConfig: () => apiClient.get('/config').then(res => res.data),
   updateConfig: (config: any) => apiClient.post('/config', config).then(res => res.data),
 
+  // Launcher 配置管理
+  getLauncherConfigs: () => apiClient.get('/launcher-configs').then(res => res.data),
+  getLauncherConfig: (environment: string) => 
+    apiClient.get(`/launcher-config/${environment}`).then(res => res.data),
+  saveLauncherConfig: (environment: string, content: string) => 
+    apiClient.post(`/launcher-config/${environment}`, { content }).then(res => res.data),
+
   // 任务相关
   runTask: (taskName: string, options: any = {}) =>
     apiClient.post(`/tasks/${taskName}`, options).then(res => res.data),

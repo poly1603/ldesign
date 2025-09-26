@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日期选择器美化测试</title>
+    <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+            padding: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: white;
+            font-size: 32px;
+            margin-bottom: 40px;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        .demo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .demo-title {
+            font-size: 16px;
+            color: #303133;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+        .demo-desc {
+            font-size: 12px;
+            color: #909399;
+            margin-bottom: 12px;
+        }
+        /* 自定义日期选择器触发器样式 */
+        ldesign-date-picker {
+            width: 100%;
+        }
+        .preview-area {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .preview-title {
+            font-size: 18px;
+            color: #303133;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗓️ LDesign DatePicker 美化版</h1>
+        
+        <div class="preview-area">
+            <div class="preview-title">点击预览效果</div>
+            <ldesign-date-picker placeholder="请选择日期" value="2025-09-26"></ldesign-date-picker>
+        </div>
+
+        <div class="demo-grid">
+            <div class="demo-card">
+                <div class="demo-title">📅 日期选择</div>
+                <div class="demo-desc">标准日期选择，圆形选中效果</div>
+                <ldesign-date-picker mode="date" placeholder="选择日期"></ldesign-date-picker>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">📆 周选择</div>
+                <div class="demo-desc">整行高亮，显示周数</div>
+                <ldesign-date-picker mode="week" placeholder="选择周"></ldesign-date-picker>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">📊 月份选择</div>
+                <div class="demo-desc">12个月份网格布局</div>
+                <ldesign-date-picker mode="month" placeholder="选择月份"></ldesign-date-picker>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">🗂️ 季度选择</div>
+                <div class="demo-desc">四个季度卡片式布局</div>
+                <ldesign-date-picker mode="quarter" placeholder="选择季度"></ldesign-date-picker>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">🎯 年份选择</div>
+                <div class="demo-desc">年份列表，快速选择</div>
+                <ldesign-date-picker mode="year" placeholder="选择年份"></ldesign-date-picker>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">🔢 显示周数</div>
+                <div class="demo-desc">左侧显示ISO周数</div>
+                <ldesign-date-picker show-week-numbers placeholder="带周数"></ldesign-date-picker>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">🚫 禁用状态</div>
+                <div class="demo-desc">不可交互的禁用样式</div>
+                <ldesign-date-picker disabled value="2025-09-26" placeholder="已禁用"></ldesign-date-picker>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">📍 日期范围限制</div>
+                <div class="demo-desc">仅可选择本月日期</div>
+                <ldesign-date-picker 
+                    min-date="2025-09-01" 
+                    max-date="2025-09-30" 
+                    placeholder="限制范围">
+                </ldesign-date-picker>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">🌍 周日起始</div>
+                <div class="demo-desc">自定义一周起始日</div>
+                <ldesign-date-picker 
+                    first-day-of-week="0" 
+                    show-week-numbers 
+                    placeholder="周日起始">
+                </ldesign-date-picker>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 监听所有日期选择器的变化
+        document.querySelectorAll('ldesign-date-picker').forEach(picker => {
+            picker.addEventListener('ldesignChange', (e) => {
+                console.log('选择的值:', e.detail);
+            });
+        });
+    </script>
+</body>
+</html>

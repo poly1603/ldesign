@@ -520,6 +520,11 @@ export namespace Components {
          */
         "clockwise": boolean;
         /**
+          * 是否启用拖动旋转
+          * @default true
+         */
+        "draggable": boolean;
+        /**
           * 椭圆端点轴：auto 根据宽高选择；x 左右为端点；y 上下为端点
           * @default 'auto'
          */
@@ -529,6 +534,11 @@ export namespace Components {
           * @default 'angle'
          */
         "ellipseSpacing": 'arc' | 'angle';
+        /**
+          * 惯性摩擦系数（0-1，越小惯性越大）
+          * @default 0.95
+         */
+        "friction": number;
         /**
           * 视角正前方的角度（度），默认 90° 即底部为“最近”
           * @default 90
@@ -547,6 +557,16 @@ export namespace Components {
           * @default 0.8
          */
         "minScale": number;
+        /**
+          * 最小旋转速度（度/帧，低于此速度停止旋转）
+          * @default 0.1
+         */
+        "minVelocity": number;
+        /**
+          * 是否启用惯性/动量效果
+          * @default true
+         */
+        "momentum": boolean;
         /**
           * 与圆边缘的内边距（px），用于避免项目贴边
           * @default 8
@@ -567,15 +587,40 @@ export namespace Components {
          */
         "perspectiveOrigin"?: string;
         /**
+          * 旋转灵敏度（度/像素）
+          * @default 0.5
+         */
+        "rotateSensitivity": number;
+        /**
           * 是否显示圆形轨道
           * @default true
          */
         "showTrack": boolean;
         /**
+          * 吸附角度间隔（度）
+          * @default 45
+         */
+        "snapAngle": number;
+        /**
+          * 是否启用吸附点
+          * @default false
+         */
+        "snapPoints": boolean;
+        /**
+          * 吸附阈值（度，在此范围内会自动吸附）
+          * @default 15
+         */
+        "snapThreshold": number;
+        /**
           * 起始角度（度），默认 -90 表示第一个项在正上方；0 表示第一个项在最右侧
           * @default -90
          */
         "startAngle": number;
+        /**
+          * 是否启用触摸手势旋转
+          * @default true
+         */
+        "touchRotate": boolean;
         /**
           * 圆形容器宽度（数字按 px 处理，亦可传入如 '20rem' / '240px' / '50%'）
           * @default 240
@@ -5871,6 +5916,11 @@ declare namespace LocalJSX {
          */
         "clockwise"?: boolean;
         /**
+          * 是否启用拖动旋转
+          * @default true
+         */
+        "draggable"?: boolean;
+        /**
           * 椭圆端点轴：auto 根据宽高选择；x 左右为端点；y 上下为端点
           * @default 'auto'
          */
@@ -5880,6 +5930,11 @@ declare namespace LocalJSX {
           * @default 'angle'
          */
         "ellipseSpacing"?: 'arc' | 'angle';
+        /**
+          * 惯性摩擦系数（0-1，越小惯性越大）
+          * @default 0.95
+         */
+        "friction"?: number;
         /**
           * 视角正前方的角度（度），默认 90° 即底部为“最近”
           * @default 90
@@ -5898,6 +5953,16 @@ declare namespace LocalJSX {
           * @default 0.8
          */
         "minScale"?: number;
+        /**
+          * 最小旋转速度（度/帧，低于此速度停止旋转）
+          * @default 0.1
+         */
+        "minVelocity"?: number;
+        /**
+          * 是否启用惯性/动量效果
+          * @default true
+         */
+        "momentum"?: boolean;
         /**
           * 与圆边缘的内边距（px），用于避免项目贴边
           * @default 8
@@ -5918,15 +5983,40 @@ declare namespace LocalJSX {
          */
         "perspectiveOrigin"?: string;
         /**
+          * 旋转灵敏度（度/像素）
+          * @default 0.5
+         */
+        "rotateSensitivity"?: number;
+        /**
           * 是否显示圆形轨道
           * @default true
          */
         "showTrack"?: boolean;
         /**
+          * 吸附角度间隔（度）
+          * @default 45
+         */
+        "snapAngle"?: number;
+        /**
+          * 是否启用吸附点
+          * @default false
+         */
+        "snapPoints"?: boolean;
+        /**
+          * 吸附阈值（度，在此范围内会自动吸附）
+          * @default 15
+         */
+        "snapThreshold"?: number;
+        /**
           * 起始角度（度），默认 -90 表示第一个项在正上方；0 表示第一个项在最右侧
           * @default -90
          */
         "startAngle"?: number;
+        /**
+          * 是否启用触摸手势旋转
+          * @default true
+         */
+        "touchRotate"?: boolean;
         /**
           * 圆形容器宽度（数字按 px 处理，亦可传入如 '20rem' / '240px' / '50%'）
           * @default 240

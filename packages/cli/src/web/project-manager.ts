@@ -113,6 +113,212 @@ export class ProjectManager {
   }
 
   /**
+   * 获取 launcher 配置列表
+   */
+  async getLauncherConfigs(): Promise<{ environment: string; path: string; exists: boolean }[]> {
+    const projectPath = this.context.cwd;
+    const ldesignDir = resolve(projectPath, '.ldesign');
+    
+    const configs = [
+      { environment: 'base', fileName: 'launcher.config.ts' },
+      { environment: 'development', fileName: 'launcher.config.development.ts' },
+      { environment: 'test', fileName: 'launcher.config.test.ts' },
+      { environment: 'staging', fileName: 'launcher.config.staging.ts' },
+      { environment: 'production', fileName: 'launcher.config.production.ts' }
+    ];
+
+    const result = [];
+    for (const config of configs) {
+      const configPath = resolve(ldesignDir, config.fileName);
+      result.push({
+        environment: config.environment,
+        path: config.fileName,
+        exists: existsSync(configPath)
+      });
+    }
+
+    return result;
+  }
+
+  /**
+   * 读取 launcher 配置文件内容
+   */
+  async readLauncherConfig(environment: string = 'base'): Promise<{ content: string; path: string; exists: boolean }> {
+    const projectPath = this.context.cwd;
+    const ldesignDir = resolve(projectPath, '.ldesign');
+    
+    const fileName = environment === 'base' 
+      ? 'launcher.config.ts' 
+      : `launcher.config.${environment}.ts`;
+    
+    const configPath = resolve(ldesignDir, fileName);
+    
+    if (!existsSync(configPath)) {
+      return {
+        content: this.getDefaultLauncherConfig(environment),
+        path: fileName,
+        exists: false
+      };
+    }
+
+    try {
+      const content = await readFile(configPath, 'utf-8');
+      return {
+        content,
+        path: fileName,
+        exists: true
+      };
+    } catch (error) {
+      this.context.logger.error(`读取 launcher 配置失败: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * 保存 launcher 配置文件
+   */
+  async saveLauncherConfig(environment: string, content: string): Promise<void> {
+    const projectPath = this.context.cwd;
+    const ldesignDir = resolve(projectPath, '.ldesign');
+    
+    const fileName = environment === 'base' 
+      ? 'launcher.config.ts' 
+      : `launcher.config.${environment}.ts`;
+    
+    const configPath = resolve(ldesignDir, fileName);
+
+    try {
+      // 确保 .ldesign 目录存在
+      if (!existsSync(ldesignDir)) {
+        const { mkdir } = await import('fs/promises');
+        await mkdir(ldesignDir, { recursive: true });
+      }
+
+      await writeFile(configPath, content, 'utf-8');
+      this.context.logger.info(`Launcher 配置已保存: ${fileName}`);
+    } catch (error) {
+      this.context.logger.error(`保存 launcher 配置失败: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * 获取默认的 launcher 配置模板
+   */
+  private getDefaultLauncherConfig(environment: string): string {
+    const baseConfig = `import { defineConfig } from '@ldesign/launcher'
+
+export default defineConfig({
+  // 基础配置
+  launcher: {
+    preset: 'ldesign',
+  },
+
+  // 服务器配置
+  server: {
+    port: 3340,
+    open: false,
+    host: 'localhost',
+  },
+
+  // 构建配置
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+    minify: true,
+  },
+
+  // 预览配置
+  preview: {
+    port: 8888,
+    host: 'localhost',
+  },
+})
+`;
+
+    const envConfigs: { [key: string]: string } = {
+      development: `import { defineConfig } from '@ldesign/launcher'
+
+export default defineConfig({
+  // 开发环境配置
+  mode: 'development',
+  
+  server: {
+    port: 3340,
+    open: true,
+    host: 'localhost',
+  },
+
+  build: {
+    outDir: 'dist-dev',
+    sourcemap: true,
+    minify: false,
+  },
+})
+`,
+      test: `import { defineConfig } from '@ldesign/launcher'
+
+export default defineConfig({
+  // 测试环境配置
+  mode: 'test',
+  
+  server: {
+    port: 3341,
+    open: false,
+    host: 'localhost',
+  },
+
+  build: {
+    outDir: 'dist-test',
+    sourcemap: true,
+    minify: false,
+  },
+})
+`,
+      staging: `import { defineConfig } from '@ldesign/launcher'
+
+export default defineConfig({
+  // 预发布环境配置
+  mode: 'staging',
+  
+  server: {
+    port: 3342,
+    open: false,
+    host: '0.0.0.0',
+  },
+
+  build: {
+    outDir: 'dist-staging',
+    sourcemap: false,
+    minify: true,
+  },
+})
+`,
+      production: `import { defineConfig } from '@ldesign/launcher'
+
+export default defineConfig({
+  // 生产环境配置
+  mode: 'production',
+  
+  server: {
+    port: 3343,
+    open: false,
+    host: '0.0.0.0',
+  },
+
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    minify: true,
+  },
+})
+`
+    };
+
+    return environment === 'base' ? baseConfig : (envConfigs[environment] || baseConfig);
+  }
+
+  /**
    * 列出文件
    */
   async listFiles(relativePath: string = '.'): Promise<FileInfo[]> {
@@ -525,18 +731,33 @@ export class ProjectManager {
   private async getBuildDirFromConfig(environment: string): Promise<string> {
     try {
       const projectPath = this.context.cwd;
-      const configDir = resolve(projectPath, '.ldesign');
 
-      // 尝试读取环境特定的配置文件
-      const envConfigPath = resolve(configDir, `launcher.config.${environment}.ts`);
-      const baseConfigPath = resolve(configDir, 'launcher.config.ts');
+      // 按照优先级查找 launcher 配置文件
+      const possibleConfigs = [
+        // 首先查找项目根目录的 launcher 配置
+        resolve(projectPath, 'launcher.config.ts'),
+        resolve(projectPath, 'launcher.config.mjs'),
+        resolve(projectPath, 'launcher.config.js'),
+        resolve(projectPath, 'launcher.config.cjs'),
+        // 然后查找 .ldesign 目录下的配置
+        resolve(projectPath, '.ldesign', `launcher.config.${environment}.ts`),
+        resolve(projectPath, '.ldesign', 'launcher.config.ts'),
+        // 兼容 vite 配置
+        resolve(projectPath, 'vite.config.ts'),
+        resolve(projectPath, 'vite.config.mjs'),
+        resolve(projectPath, 'vite.config.js')
+      ];
 
-      let configPath = baseConfigPath;
-      if (existsSync(envConfigPath)) {
-        configPath = envConfigPath;
+      let configPath: string | null = null;
+      for (const path of possibleConfigs) {
+        if (existsSync(path)) {
+          configPath = path;
+          this.context.logger.debug(`找到配置文件: ${path}`);
+          break;
+        }
       }
 
-      if (!existsSync(configPath)) {
+      if (!configPath) {
         // 如果配置文件不存在，使用默认目录
         return this.getDefaultBuildDir(environment);
       }
@@ -544,10 +765,34 @@ export class ProjectManager {
       // 读取配置文件内容
       const configContent = await readFile(configPath, 'utf-8');
 
-      // 简单的正则匹配来提取 outDir
-      const outDirMatch = configContent.match(/outDir:\s*['"`]([^'"`]+)['"`]/);
+      // 尝试多种方式匹配 outDir
+      // 1. 标准格式: outDir: 'dist' 或 outDir: "dist" 或 outDir: `dist`
+      let outDirMatch = configContent.match(/outDir\s*:\s*(?:[\'"\`])([^\'"\`]+)(?:[\'"\`])/);
+      
+      // 2. 环境特定的配置，如 build: { [environment]: { outDir: 'dist-env' } }
+      if (!outDirMatch) {
+        try {
+          const envPattern = new RegExp(
+            environment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[^}]*outDir\\s*:\\s*(?:[\'"\\`])([^\'"\\`]+)(?:[\'"\\`])',
+            'i'
+          );
+          outDirMatch = configContent.match(envPattern);
+        } catch (e) {
+          // 如果正则表达式失败，忽略此匹配
+        }
+      }
+      
+      // 3. 动态配置，如 mode === 'production' ? 'dist' : 'dist-dev'
+      if (!outDirMatch && environment === 'production') {
+        outDirMatch = configContent.match(/mode\s*===?\s*(?:[\'"\`])production(?:[\'"\`])\s*\?\s*(?:[\'"\`])([^\'"\`]+)(?:[\'"\`])/);
+      } else if (!outDirMatch && environment !== 'production') {
+        outDirMatch = configContent.match(/mode\s*!==?\s*(?:[\'"\`])production(?:[\'"\`])\s*\?\s*(?:[\'"\`])([^\'"\`]+)(?:[\'"\`])/);
+      }
+      
       if (outDirMatch) {
-        return outDirMatch[1];
+        const outDir = outDirMatch[1];
+        this.context.logger.debug(`从配置文件中解析到 ${environment} 的 outDir: ${outDir}`);
+        return outDir;
       }
 
       // 如果没有找到 outDir，使用默认目录

@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
-    "@monaco-editor/react": "^4.6.0",
+    "@monaco-editor/react": "^4.7.0",
     "ansi-to-html": "^0.7.2",
     "axios": "^1.6.2",
     "clsx": "^2.0.0",

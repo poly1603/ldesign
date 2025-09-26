@@ -122,6 +122,37 @@ export class WebServer {
       }
     });
 
+    // Launcher 配置管理
+    router.get('/launcher-configs', async (req, res) => {
+      try {
+        const configs = await this.projectManager.getLauncherConfigs();
+        res.json(configs);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    router.get('/launcher-config/:environment', async (req, res) => {
+      try {
+        const { environment } = req.params;
+        const config = await this.projectManager.readLauncherConfig(environment);
+        res.json(config);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    router.post('/launcher-config/:environment', async (req, res) => {
+      try {
+        const { environment } = req.params;
+        const { content } = req.body;
+        await this.projectManager.saveLauncherConfig(environment, content);
+        res.json({ success: true });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
     // 任务执行
     router.post('/tasks/:taskName', async (req, res) => {
       try {

@@ -46,6 +46,25 @@ export class LdesignCircleNavigation {
   /** 3D 透视原点（CSS perspective-origin），如 '50% 50%' 'center 80%' */
   @Prop() perspectiveOrigin?: string;
 
+  /** 是否启用拖动旋转 */
+  @Prop() draggable: boolean = true;
+  /** 是否启用触摸手势旋转 */
+  @Prop() touchRotate: boolean = true;
+  /** 旋转灵敏度（度/像素） */
+  @Prop() rotateSensitivity: number = 0.5;
+  /** 是否启用惯性/动量效果 */
+  @Prop() momentum: boolean = true;
+  /** 惯性摩擦系数（0-1，越小惯性越大） */
+  @Prop() friction: number = 0.95;
+  /** 是否启用吸附点 */
+  @Prop() snapPoints: boolean = false;
+  /** 吸附角度间隔（度） */
+  @Prop() snapAngle: number = 45;
+  /** 吸附阈值（度，在此范围内会自动吸附） */
+  @Prop() snapThreshold: number = 15;
+  /** 最小旋转速度（度/帧，低于此速度停止旋转） */
+  @Prop() minVelocity: number = 0.1;
+
   private containerEl?: HTMLElement;
   private itemsWrapEl?: HTMLElement;
   private centerWrapEl?: HTMLElement;
@@ -56,6 +75,19 @@ export class LdesignCircleNavigation {
   private trackEl?: HTMLElement;
 
   @State() _version: number = 0; // 触发重渲染的内部计数器（通常无需）
+  @State() rotationAngle: number = 0; // 当前旋转角度
+  @State() isDragging: boolean = false; // 是否正在拖动
+
+  private dragStartX: number = 0;
+  private dragStartY: number = 0;
+  private dragStartAngle: number = 0;
+  private centerX: number = 0;
+  private centerY: number = 0;
+  private velocity: number = 0;
+  private lastAngle: number = 0;
+  private lastTime: number = 0;
+  private animationFrame?: number;
+  private velocityHistory: { angle: number; time: number }[] = []
 
   disconnectedCallback() {
     if (this.ro) {
@@ -67,6 +99,8 @@ export class LdesignCircleNavigation {
       this.mo = undefined;
     }
     if (this.raf != null) cancelAnimationFrame(this.raf);
+    if (this.animationFrame != null) cancelAnimationFrame(this.animationFrame);
+    this.removeGlobalListeners();
   }
 
   componentDidLoad() {
@@ -87,6 +121,14 @@ export class LdesignCircleNavigation {
 
     // 初始定位
     this.schedulePosition();
+
+    // 添加拖动事件监听
+    if (this.draggable && this.containerEl) {
+      this.containerEl.addEventListener('mousedown', this.handleMouseDown);
+    }
+    if (this.touchRotate && this.containerEl) {
+      this.containerEl.addEventListener('touchstart', this.handleTouchStart, { passive: false });
+    }
   }
 
   @Listen('resize', { target: 'window' })
@@ -142,6 +184,228 @@ export class LdesignCircleNavigation {
   private schedulePosition() {
     if (this.raf != null) cancelAnimationFrame(this.raf);
     this.raf = requestAnimationFrame(() => this.positionItems());
+  }
+
+  // Mouse event handlers
+  private handleMouseDown = (e: MouseEvent) => {
+    if (!this.draggable || !this.containerEl) return;
+    e.preventDefault();
+    
+    const rect = this.containerEl.getBoundingClientRect();
+    this.centerX = rect.left + rect.width / 2;
+    this.centerY = rect.top + rect.height / 2;
+    
+    this.dragStartX = e.clientX;
+    this.dragStartY = e.clientY;
+    this.dragStartAngle = this.rotationAngle;
+    this.isDragging = true;
+    this.velocity = 0;
+    this.velocityHistory = [];
+    
+    // Stop any ongoing momentum animation
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = undefined;
+    }
+    
+    // Add global listeners for drag and release
+    document.addEventListener('mousemove', this.handleMouseMove);
+    document.addEventListener('mouseup', this.handleMouseUp);
+  };
+
+  private handleMouseMove = (e: MouseEvent) => {
+    if (!this.isDragging) return;
+    e.preventDefault();
+    
+    const currentAngle = this.calculateAngle(e.clientX, e.clientY);
+    const startAngle = this.calculateAngle(this.dragStartX, this.dragStartY);
+    const deltaAngle = (currentAngle - startAngle) * this.rotateSensitivity;
+    
+    this.rotationAngle = this.dragStartAngle + deltaAngle;
+    
+    // Track velocity for momentum
+    const now = Date.now();
+    this.velocityHistory.push({ angle: this.rotationAngle, time: now });
+    
+    // Keep only recent history (last 100ms)
+    this.velocityHistory = this.velocityHistory.filter(h => now - h.time < 100);
+    
+    this.schedulePosition();
+  };
+
+  private handleMouseUp = (e: MouseEvent) => {
+    if (!this.isDragging) return;
+    e.preventDefault();
+    
+    this.isDragging = false;
+    this.removeGlobalListeners();
+    
+    // Calculate final velocity from recent movement history
+    if (this.momentum && this.velocityHistory.length > 1) {
+      const recent = this.velocityHistory.slice(-5);
+      if (recent.length >= 2) {
+        const first = recent[0];
+        const last = recent[recent.length - 1];
+        const timeDelta = last.time - first.time;
+        if (timeDelta > 0) {
+          this.velocity = (last.angle - first.angle) / timeDelta * 16.67; // Convert to degrees per frame (60fps)
+          this.startMomentumAnimation();
+        }
+      }
+    } else if (this.snapPoints) {
+      this.snapToNearestPoint();
+    }
+  };
+
+  // Touch event handlers
+  private handleTouchStart = (e: TouchEvent) => {
+    if (!this.touchRotate || !this.containerEl || e.touches.length !== 1) return;
+    e.preventDefault();
+    
+    const touch = e.touches[0];
+    const rect = this.containerEl.getBoundingClientRect();
+    this.centerX = rect.left + rect.width / 2;
+    this.centerY = rect.top + rect.height / 2;
+    
+    this.dragStartX = touch.clientX;
+    this.dragStartY = touch.clientY;
+    this.dragStartAngle = this.rotationAngle;
+    this.isDragging = true;
+    this.velocity = 0;
+    this.velocityHistory = [];
+    
+    // Stop any ongoing momentum animation
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = undefined;
+    }
+    
+    document.addEventListener('touchmove', this.handleTouchMove, { passive: false });
+    document.addEventListener('touchend', this.handleTouchEnd);
+  };
+
+  private handleTouchMove = (e: TouchEvent) => {
+    if (!this.isDragging || e.touches.length !== 1) return;
+    e.preventDefault();
+    
+    const touch = e.touches[0];
+    const currentAngle = this.calculateAngle(touch.clientX, touch.clientY);
+    const startAngle = this.calculateAngle(this.dragStartX, this.dragStartY);
+    const deltaAngle = (currentAngle - startAngle) * this.rotateSensitivity;
+    
+    this.rotationAngle = this.dragStartAngle + deltaAngle;
+    
+    // Track velocity for momentum
+    const now = Date.now();
+    this.velocityHistory.push({ angle: this.rotationAngle, time: now });
+    
+    // Keep only recent history (last 100ms)
+    this.velocityHistory = this.velocityHistory.filter(h => now - h.time < 100);
+    
+    this.schedulePosition();
+  };
+
+  private handleTouchEnd = (e: TouchEvent) => {
+    if (!this.isDragging) return;
+    e.preventDefault();
+    
+    this.isDragging = false;
+    this.removeGlobalListeners();
+    
+    // Calculate final velocity from recent movement history
+    if (this.momentum && this.velocityHistory.length > 1) {
+      const recent = this.velocityHistory.slice(-5);
+      if (recent.length >= 2) {
+        const first = recent[0];
+        const last = recent[recent.length - 1];
+        const timeDelta = last.time - first.time;
+        if (timeDelta > 0) {
+          this.velocity = (last.angle - first.angle) / timeDelta * 16.67; // Convert to degrees per frame (60fps)
+          this.startMomentumAnimation();
+        }
+      }
+    } else if (this.snapPoints) {
+      this.snapToNearestPoint();
+    }
+  };
+
+  // Helper methods
+  private calculateAngle(x: number, y: number): number {
+    const dx = x - this.centerX;
+    const dy = y - this.centerY;
+    return Math.atan2(dy, dx) * 180 / Math.PI;
+  }
+
+  private removeGlobalListeners() {
+    document.removeEventListener('mousemove', this.handleMouseMove);
+    document.removeEventListener('mouseup', this.handleMouseUp);
+    document.removeEventListener('touchmove', this.handleTouchMove);
+    document.removeEventListener('touchend', this.handleTouchEnd);
+  }
+
+  // Momentum/Inertia animation
+  private startMomentumAnimation() {
+    const animate = () => {
+      if (Math.abs(this.velocity) < this.minVelocity) {
+        // Velocity is too small, stop animation
+        this.velocity = 0;
+        if (this.snapPoints) {
+          this.snapToNearestPoint();
+        }
+        return;
+      }
+      
+      // Apply friction to velocity
+      this.velocity *= this.friction;
+      
+      // Update rotation angle
+      this.rotationAngle += this.velocity;
+      this.schedulePosition();
+      
+      // Continue animation
+      this.animationFrame = requestAnimationFrame(animate);
+    };
+    
+    this.animationFrame = requestAnimationFrame(animate);
+  }
+
+  // Snap to nearest point
+  private snapToNearestPoint() {
+    if (!this.snapPoints) return;
+    
+    const normalizedAngle = this.rotationAngle % 360;
+    const snapInterval = this.snapAngle;
+    const nearestSnap = Math.round(normalizedAngle / snapInterval) * snapInterval;
+    const delta = nearestSnap - normalizedAngle;
+    
+    // Only snap if within threshold
+    if (Math.abs(delta) <= this.snapThreshold) {
+      this.animateToAngle(this.rotationAngle + delta);
+    }
+  }
+
+  private animateToAngle(targetAngle: number) {
+    const startAngle = this.rotationAngle;
+    const delta = targetAngle - startAngle;
+    const duration = 200; // ms
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease-out cubic)
+      const eased = 1 - Math.pow(1 - progress, 3);
+      
+      this.rotationAngle = startAngle + delta * eased;
+      this.schedulePosition();
+      
+      if (progress < 1) {
+        this.animationFrame = requestAnimationFrame(animate);
+      }
+    };
+    
+    this.animationFrame = requestAnimationFrame(animate);
   }
 
   private positionItems() {
@@ -278,7 +542,9 @@ export class LdesignCircleNavigation {
       const ih = item.offsetHeight || (item.getBoundingClientRect().height || 0);
       const ir = Math.max(iw, ih) / 2;
 
-      const angle = angles[i] ?? (startRad + i * step);
+      // Apply rotation to the angle
+      const baseAngle = angles[i] ?? (startRad + i * step);
+      const angle = baseAngle + (this.rotationAngle * Math.PI / 180);
       // 在椭圆上为避免越界，分别在两个半轴上减去 padding + ir
       const rxi = Math.max(0, rx - this.padding - ir);
       const ryi = Math.max(0, ry - this.padding - ir);
@@ -345,10 +611,16 @@ export class LdesignCircleNavigation {
   }
 
   render() {
+    const classes = {
+      'ldesign-circle-navigation': true,
+      'draggable': this.draggable || this.touchRotate,
+      'dragging': this.isDragging
+    };
+    
     return (
       <Host>
         <nav
-          class="ldesign-circle-navigation"
+          class={classes}
           style={this.getContainerStyle()}
           role="navigation"
           aria-label={this.el?.getAttribute('aria-label') || undefined}

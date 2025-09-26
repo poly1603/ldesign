@@ -1,5 +1,5 @@
 import { Component, Prop, State, Event, EventEmitter, h, Host, Element, Watch } from '@stencil/core';
-import { formatDate, parseDate, generateCalendarDates, generateYearList, generateQuarterList, generateMonthList, WEEKDAY_NAMES, getWeekNumber } from './datepicker.utils';
+import { formatDate, parseDate, generateCalendarDates, generateYearList, generateMonthList, WEEKDAY_NAMES, getWeekNumber } from './datepicker.utils';
 
 @Component({ tag: 'ldesign-date-picker', styleUrl: 'datepicker.less', shadow: false })
 export class LdesignDatePicker {
@@ -32,6 +32,7 @@ export class LdesignDatePicker {
   @State() viewMonth: number = new Date().getMonth();
   @State() currentView: 'year' | 'month' | 'date' = 'date';
   @State() selected?: Date;
+  @State() yearSelectorOpen: boolean = false;
 
   private get parsedMin() { const d = parseDate(this.minDate as any); return d || undefined; }
   private get parsedMax() { const d = parseDate(this.maxDate as any); return d || undefined; }
@@ -90,6 +91,13 @@ export class LdesignDatePicker {
     }
   };
 
+  private handleQuarterClick = (q: number) => {
+    const d = new Date(this.viewYear, q * 3, 1);
+    this.selected = d;
+    this.commitValue(d);
+    this.close();
+  };
+
   private handleMonthClick = (m: number) => {
     if (this.mode === 'month') {
       const d = new Date(this.viewYear, m, 1);
@@ -125,6 +133,15 @@ export class LdesignDatePicker {
 
   private switchToYear = () => { this.currentView = 'year'; };
   private switchToMonth = () => { this.currentView = 'month'; };
+  
+  private toggleYearSelector = () => {
+    this.yearSelectorOpen = !this.yearSelectorOpen;
+  };
+  
+  private selectQuickYear = (year: number) => {
+    this.viewYear = year;
+    this.yearSelectorOpen = false;
+  };
 
   private renderYearPanel() {
     const years = generateYearList(this.viewYear, this.selected?.getFullYear() || null, this.parsedMin, this.parsedMax);
@@ -149,10 +166,18 @@ export class LdesignDatePicker {
     const months = generateMonthList(this.viewYear, this.selected || null, this.parsedMin, this.parsedMax);
     return (
       <div class="ldp-month">
-        <div class="ldp-header">
+        <div class={{ 'ldp-header': true, 'ldp-header--with-year': true }}>
           <button class="ldp-nav" onClick={this.navigatePrev} type="button"><ldesign-icon name="chevron-left" size="small" /></button>
-          <button class="ldp-head-text" onClick={this.switchToYear} type="button">{this.viewYear}年</button>
+          <button 
+            class={{ 'ldp-year-selector': true, 'ldp-year-selector--open': this.yearSelectorOpen }}
+            onClick={this.toggleYearSelector} 
+            type="button"
+          >
+            {this.viewYear}年
+            <span class="ldp-year-selector-icon">▼</span>
+          </button>
           <button class="ldp-nav" onClick={this.navigateNext} type="button"><ldesign-icon name="chevron-right" size="small" /></button>
+          {this.renderYearQuickSelector()}
         </div>
         <div class="ldp-month-grid">
           {months.map(m => (
@@ -163,28 +188,163 @@ export class LdesignDatePicker {
     );
   }
 
+  private renderQuarterPanel() {
+    const quarters = [
+      { quarter: 0, label: 'Q1', months: '1月-3月' },
+      { quarter: 1, label: 'Q2', months: '4月-6月' },
+      { quarter: 2, label: 'Q3', months: '7月-9月' },
+      { quarter: 3, label: 'Q4', months: '10月-12月' }
+    ];
+    const selectedQ = this.selected ? Math.floor(this.selected.getMonth() / 3) : -1;
+    const currentQ = Math.floor(new Date().getMonth() / 3);
+    const currentYear = new Date().getFullYear();
+    
+    return (
+      <div class="ldp-quarter">
+        <div class="ldp-header">
+          <button class="ldp-nav" onClick={this.navigatePrev} type="button"><ldesign-icon name="chevron-left" size="small" /></button>
+          <button class="ldp-head-text" onClick={this.switchToYear} type="button">{this.viewYear}年</button>
+          <button class="ldp-nav" onClick={this.navigateNext} type="button"><ldesign-icon name="chevron-right" size="small" /></button>
+        </div>
+        <div class="ldp-quarter-grid">
+          {quarters.map(q => {
+            const isSelected = this.selected && this.selected.getFullYear() === this.viewYear && selectedQ === q.quarter;
+            const isCurrent = this.viewYear === currentYear && currentQ === q.quarter;
+            return (
+              <button 
+                class={{ 
+                  'ldp-quarter-item': true, 
+                  'selected': isSelected, 
+                  'current': isCurrent 
+                }} 
+                onClick={() => this.handleQuarterClick(q.quarter)} 
+                type="button"
+              >
+                <div class="ldp-quarter-label">{q.label}</div>
+                <div class="ldp-quarter-months">{q.months}</div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  private renderYearQuickSelector() {
+    if (!this.yearSelectorOpen) return null;
+    
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 50;
+    const endYear = currentYear + 50;
+    const years: number[] = [];
+    
+    for (let y = startYear; y <= endYear; y++) {
+      years.push(y);
+    }
+    
+    return (
+      <div class="ldp-year-quick">
+        {years.map(year => (
+          <button 
+            class={{
+              'ldp-year-quick-item': true,
+              'selected': year === this.viewYear
+            }}
+            onClick={() => this.selectQuickYear(year)}
+            type="button"
+          >
+            {year}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
   private renderDatePanel() {
     const dates = generateCalendarDates(this.viewYear, this.viewMonth, this.selected || null, this.parsedMin, this.parsedMax, this.disabledDate, this.showWeekNumbers || this.mode === 'week', this.firstDayOfWeek);
     const names = [...WEEKDAY_NAMES];
     const heads = Array.from({ length: 7 }, (_, i) => names[(i + this.firstDayOfWeek) % 7]);
+    
+    // Group dates by week for week mode
+    const weeks: any[][] = [];
+    for (let i = 0; i < dates.length; i += 7) {
+      weeks.push(dates.slice(i, i + 7));
+    }
+    
+    const selectedWeek = this.selected ? getWeekNumber(this.selected) : -1;
+    const selectedYear = this.selected ? this.selected.getFullYear() : -1;
+    const hasWeekNumbers = this.showWeekNumbers || this.mode === 'week';
+    
     return (
-      <div class="ldp-date">
-        <div class="ldp-header">
+      <div class={{ 'ldp-date': true, 'ldp-date--with-weeks': hasWeekNumbers }}>
+        <div class={{ 'ldp-header': true, 'ldp-header--with-year': true }}>
           <button class="ldp-nav" onClick={this.navigatePrev} type="button"><ldesign-icon name="chevron-left" size="small" /></button>
-          <button class="ldp-head-text" onClick={this.switchToMonth} type="button">{this.viewYear}年 {this.viewMonth + 1}月</button>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+            <button 
+              class={{ 'ldp-year-selector': true, 'ldp-year-selector--open': this.yearSelectorOpen }}
+              onClick={this.toggleYearSelector} 
+              type="button"
+            >
+              {this.viewYear}年
+              <span class="ldp-year-selector-icon">▼</span>
+            </button>
+            <button class="ldp-head-text" onClick={this.switchToMonth} type="button">{this.viewMonth + 1}月</button>
+          </div>
           <button class="ldp-nav" onClick={this.navigateNext} type="button"><ldesign-icon name="chevron-right" size="small" /></button>
+          {this.renderYearQuickSelector()}
         </div>
         <div class="ldp-weekdays">
-          {this.showWeekNumbers || this.mode === 'week' ? <div class="ldp-weeknum">周</div> : null}
+          {hasWeekNumbers ? <div class="ldp-weeknum-header">周</div> : null}
           {heads.map((d) => (<div class="ldp-weekday">{d}</div>))}
         </div>
         <div class="ldp-days">
-          {dates.map((d, idx) => (
-            <Host>
-              {(this.showWeekNumbers || this.mode === 'week') && idx % 7 === 0 ? <div class="ldp-weeknum">{d.weekNumber}</div> : null}
-              <button class={{ 'ldp-day': true, 'other': !d.isCurrentMonth, 'today': d.isToday, 'selected': d.isSelected, 'disabled': d.isDisabled }} disabled={d.isDisabled} onClick={() => this.handleDateClick(d.date, d.isDisabled)} type="button">{d.day}</button>
-            </Host>
-          ))}
+          {this.mode === 'week' ? (
+            // Week mode: render week rows
+            weeks.map((weekDates) => {
+              const weekNum = weekDates[0].weekNumber;
+              const isSelectedWeek = selectedYear === this.viewYear && selectedWeek === weekNum;
+              return (
+                <div class={{ 'ldp-week-row': true, 'selected-week': isSelectedWeek }}>
+                  <div class="ldp-weeknum">{weekNum}</div>
+                  {weekDates.map(d => (
+                    <button 
+                      class={{ 
+                        'ldp-day': true, 
+                        'other': !d.isCurrentMonth, 
+                        'today': d.isToday, 
+                        'selected': isSelectedWeek,
+                        'disabled': d.isDisabled 
+                      }} 
+                      disabled={d.isDisabled} 
+                      onClick={() => this.handleDateClick(d.date, d.isDisabled)} 
+                      type="button"
+                    >
+                      {d.day}
+                    </button>
+                  ))}
+                </div>
+              );
+            })
+          ) : (
+            // Date mode: render individual days with grid layout
+            dates.map((d, idx) => ([
+              hasWeekNumbers && idx % 7 === 0 ? <div class="ldp-weeknum">{d.weekNumber}</div> : null,
+              <button 
+                class={{ 
+                  'ldp-day': true, 
+                  'other': !d.isCurrentMonth, 
+                  'today': d.isToday, 
+                  'selected': d.isSelected, 
+                  'disabled': d.isDisabled 
+                }} 
+                disabled={d.isDisabled} 
+                onClick={() => this.handleDateClick(d.date, d.isDisabled)} 
+                type="button"
+              >
+                {d.day}
+              </button>
+            ]))
+          )}
         </div>
       </div>
     );
@@ -192,6 +352,7 @@ export class LdesignDatePicker {
 
   private renderPanel() {
     if (this.mode === 'year' || this.currentView === 'year') return this.renderYearPanel();
+    if (this.mode === 'quarter') return this.renderQuarterPanel();
     if (this.mode === 'month' || this.currentView === 'month') return this.renderMonthPanel();
     return this.renderDatePanel();
   }
