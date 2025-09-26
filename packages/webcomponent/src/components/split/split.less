@@ -5,7 +5,15 @@
   display: flex;
   width: 100%;
   height: 100%;
-  --ld-splitter-size: 8px; // 更接近参考样式
+  --ld-splitter-size: 6px; // 更细的默认厚度（可在标签上用 splitter-size 覆盖）
+  --ld-splitter-line: #eaf2ff; // 中心细线颜色（更淡）
+  --ld-splitter-line-hover: #dcecff; // hover 更明显
+  --ld-splitter-line-active: #cfe6ff; // 拖拽时更明显
+  --ld-splitter-line-size: 1px; // 细线厚度（发丝）
+  --ld-splitter-line-scale: .5; // 默认发丝（0.5px 视觉），视网膜屏也很细
+  --ld-splitter-handle: #c0c7d2; // 中心把手颜色
+  --ld-splitter-handle-thickness: 1px; // 把手厚度（发丝）
+  --ld-splitter-handle-length: 20px; // 把手长度（主轴方向）
   --ld-split-value: .5; // 0~1，起始面板比例
   user-select: none;
 
@@ -30,46 +38,61 @@
   &__splitter {
     position: relative;
     flex: 0 0 var(--ld-splitter-size);
-    background: var(--ld-splitter-bg, #eef1f5);
+    background: transparent;
     z-index: 1;
   }
 
-  /* 边框阴影：两侧细线，符合截图的凹槽效果 */
+  /* 细腻的凹槽线条，贴合截图 */
   &--vertical &__splitter {
-    box-shadow: inset 1px 0 0 var(--ld-splitter-border, #dfe3ea), inset -1px 0 0 var(--ld-splitter-border, #dfe3ea);
+    box-shadow: none;
     cursor: col-resize;
   }
   &--horizontal &__splitter {
-    box-shadow: inset 0 1px 0 var(--ld-splitter-border, #dfe3ea), inset 0 -1px 0 var(--ld-splitter-border, #dfe3ea);
+    box-shadow: none;
     cursor: row-resize;
   }
 
-  /* 把手：3x3 方点阵，置于中间 */
+  /* 中心细线：极简视觉 */
+  &__splitter::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%) scaleX(var(--ld-splitter-line-scale, 1));
+    width: var(--ld-splitter-line-size);
+    height: 100%;
+    background: var(--ld-splitter-line, #e6f0ff);
+    border-radius: 1px;
+    pointer-events: none;
+  }
+  &--horizontal &__splitter::before {
+    width: 100%;
+    height: var(--ld-splitter-line-size);
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) scaleY(var(--ld-splitter-line-scale, 1));
+  }
+
+  /* 把手：更细更短的提示条 */
   &__splitter::after {
     content: '';
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 3px;
-    height: 3px;
-    background: var(--ld-splitter-handle, #1f2937);
-    border-radius: 2px;
-    /* 8 个阴影生成 3x3 网格 */
-    box-shadow:
-      -6px 0 0 0 var(--ld-splitter-handle, #1f2937),
-       6px 0 0 0 var(--ld-splitter-handle, #1f2937),
-       0 -6px 0 0 var(--ld-splitter-handle, #1f2937),
-      -6px -6px 0 0 var(--ld-splitter-handle, #1f2937),
-       6px -6px 0 0 var(--ld-splitter-handle, #1f2937),
-       0  6px 0 0 var(--ld-splitter-handle, #1f2937),
-      -6px  6px 0 0 var(--ld-splitter-handle, #1f2937),
-       6px  6px 0 0 var(--ld-splitter-handle, #1f2937);
+    width: var(--ld-splitter-handle-thickness);
+    height: var(--ld-splitter-handle-length);
+    background: var(--ld-splitter-handle);
+    border-radius: 1px;
     opacity: .9;
     pointer-events: none;
   }
-
-  &--dragging &__splitter {
-    background: var(--ld-splitter-bg-active, #e4e8ee);
+  &--horizontal &__splitter::after {
+    width: var(--ld-splitter-handle-length);
+    height: var(--ld-splitter-handle-thickness);
   }
+
+  /* 状态反馈：仅增强中心细线，不改变背景 */
+  &__splitter:hover::before { background: var(--ld-splitter-line-hover); }
+  &--dragging &__splitter::before { background: var(--ld-splitter-line-active); }
 }
