@@ -50,6 +50,7 @@ export { LdesignTransfer } from './transfer/transfer';
 export { LdesignMention } from './mention/mention';
 export { LdesignProgress } from './progress/progress';
 export { LdesignInputNumber } from './input-number/input-number';
+export { LdesignAlert } from './alert/alert';
 
 // Modal quick APIs
 export { alertModal, confirmModal, promptModal, promptPassword, promptForm } from './modal/modal-api';

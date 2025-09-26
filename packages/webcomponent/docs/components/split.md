@@ -65,6 +65,26 @@
 </ldesign-split>
 ```
 
+## 可折叠
+
+配置 collapsible 提供快捷收缩能力。可用 collapsedSize 设置收起后的保留尺寸（像素）。
+
+<div class="demo-container" style="height: 240px;">
+  <ldesign-split value="0.5" collapsible collapsedSize="0">
+    <div slot="start" style="padding:12px;">First</div>
+    <div slot="end" style="padding:12px;">Second</div>
+  </ldesign-split>
+</div>
+
+```html
+<ldesign-split style="width:100%;height:240px;" value="0.5" collapsible collapsedSize="0">
+  <div slot="start">First</div>
+  <div slot="end">Second</div>
+</ldesign-split>
+```
+
+> 如果希望折叠后只能通过按钮恢复，不允许拖拽展开，可设置 `allowDragExpandWhenCollapsed="false"`。
+
 ## 最小尺寸与分割条大小
 
 <div class="demo-container" style="height: 240px;">

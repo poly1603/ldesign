@@ -6,6 +6,7 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, NativeButtonType, Size, Theme } from "./types";
+import { AlertType } from "./components/alert/alert";
 import { DrawerPlacement } from "./components/drawer/drawer";
 import { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/dropdown/dropdown";
 import { ImageViewerItem } from "./components/image-viewer/image-viewer";
@@ -19,7 +20,7 @@ import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { Element } from "@stencil/core";
 import { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 import { TabsPlacement, TabsType } from "./components/tabs/tabs";
-import { TimeFormat, TimePickerPlacement, TimePickerPresets, TimePickerSize, TimePickerStatus, TimePickerTrigger } from "./components/time-picker/time-picker";
+import { Breakpoints, TimeFormat, TimePickerOverlay, TimePickerPlacement, TimePickerPresets, TimePickerSize, TimePickerStatus, TimePickerTrigger } from "./components/time-picker/time-picker";
 import { TimeFormat as TimeFormat1 } from "./components/time-picker-panel/time-picker-panel";
 import { TimeFormat as TimeFormat2, TimePickerSize as TimePickerSize1, TimePickerStatus as TimePickerStatus1, TimeRange } from "./components/time-range-picker/time-range-picker";
 import { Placement } from "@floating-ui/dom";
@@ -27,6 +28,7 @@ import { TooltipPlacement } from "./components/tooltip/tooltip";
 import { TransferItem } from "./components/transfer/transfer";
 import { TreeNode } from "./components/tree/tree";
 export { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, NativeButtonType, Size, Theme } from "./types";
+export { AlertType } from "./components/alert/alert";
 export { DrawerPlacement } from "./components/drawer/drawer";
 export { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/dropdown/dropdown";
 export { ImageViewerItem } from "./components/image-viewer/image-viewer";
@@ -40,7 +42,7 @@ export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 export { Element } from "@stencil/core";
 export { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 export { TabsPlacement, TabsType } from "./components/tabs/tabs";
-export { TimeFormat, TimePickerPlacement, TimePickerPresets, TimePickerSize, TimePickerStatus, TimePickerTrigger } from "./components/time-picker/time-picker";
+export { Breakpoints, TimeFormat, TimePickerOverlay, TimePickerPlacement, TimePickerPresets, TimePickerSize, TimePickerStatus, TimePickerTrigger } from "./components/time-picker/time-picker";
 export { TimeFormat as TimeFormat1 } from "./components/time-picker-panel/time-picker-panel";
 export { TimeFormat as TimeFormat2, TimePickerSize as TimePickerSize1, TimePickerStatus as TimePickerStatus1, TimeRange } from "./components/time-range-picker/time-range-picker";
 export { Placement } from "@floating-ui/dom";
@@ -109,6 +111,69 @@ export namespace Components {
         "zIndex": number;
     }
     /**
+     * Alert 警告信息
+     * 用于在页面中展示重要的提示信息，支持四种状态、标题/描述、操作区与可关闭。
+     */
+    interface LdesignAlert {
+        /**
+          * 标题（避开标准 HTMLElement.title 冲突）
+         */
+        "alertTitle"?: string;
+        /**
+          * 横幅样式（常用于页面顶部）
+          * @default false
+         */
+        "banner": boolean;
+        /**
+          * 是否显示关闭按钮
+          * @default false
+         */
+        "closable": boolean;
+        /**
+          * 手动关闭（带高度收起动画）
+         */
+        "close": () => Promise<void>;
+        /**
+          * 描述（也可通过默认 slot 自定义内容）
+         */
+        "description"?: string;
+        /**
+          * 启用滚动公告（Marquee）
+          * @default false
+         */
+        "marquee": boolean;
+        /**
+          * 方向
+          * @default 'left'
+         */
+        "marqueeDirection": 'left' | 'right';
+        /**
+          * 两段内容之间的间距（px）
+          * @default 24
+         */
+        "marqueeGap": number;
+        /**
+          * 悬停时是否暂停
+          * @default true
+         */
+        "marqueePauseOnHover": boolean;
+        /**
+          * 滚动速度（px/s）
+          * @default 60
+         */
+        "marqueeSpeed": number;
+        /**
+          * 是否显示图标
+          * @default true
+         */
+        "showIcon": boolean;
+        /**
+          * 警告类型
+          * @default 'info'
+         */
+        "type": AlertType;
+    }
+    /**
      * BackTop 返回顶部组件
      * - 支持窗口根滚动回到顶部
      * - 支持指定容器内部滚动回到顶部（通过 target 选择器）
@@ -146,6 +211,11 @@ export namespace Components {
          */
         "color": ButtonColor;
         /**
+          * 危险态（AntD 风格）
+          * @default false
+         */
+        "danger": boolean;
+        /**
           * 是否禁用
           * @default false
          */
@@ -155,6 +225,10 @@ export namespace Components {
           * @default false
          */
         "ghost": boolean;
+        /**
+          * 对齐 AntD：htmlType 优先；nativeType 兼容
+         */
+        "htmlType"?: NativeButtonType;
         /**
           * 图标名称
          */
@@ -170,7 +244,6 @@ export namespace Components {
          */
         "loading": boolean;
         /**
-          * 原生按钮类型：button | submit | reset
           * @default 'button'
          */
         "nativeType": NativeButtonType;
@@ -181,12 +254,12 @@ export namespace Components {
         "shape": ButtonShape;
         /**
           * 按钮尺寸
-          * @default 'medium'
+          * @default 'middle'
          */
         "size": Size;
         /**
           * 按钮类型
-          * @default 'primary'
+          * @default 'default'
          */
         "type": ButtonType;
     }
@@ -644,6 +717,78 @@ export namespace Components {
           * @default '#3498db'
          */
         "value": string;
+    }
+    /**
+     * ldesign-draggable
+     * 通用可拖拽/缩放/旋转容器（图片优先），支持：
+     * - PC：滚轮缩放、拖拽平移、双击 1x/2x 切换
+     * - 移动端：双指缩放+旋转、单指平移、松手回弹、动量滚动
+     * 用法：
+     * 1) 直接传入 src 渲染图片
+     *    <ldesign-draggable src="/big.jpg" style="width:100%;height:100%" />
+     * 2) 插槽自定义内容（若无 src）：
+     *    <ldesign-draggable style="width:100%;height:100%">
+     *      <img src="/big.jpg" />
+     *    </ldesign-draggable>
+     */
+    interface LdesignDraggable {
+        "alt"?: string;
+        /**
+          * 双击切换到的缩放倍数
+          * @default 2
+         */
+        "doubleTapZoom": number;
+        /**
+          * 是否允许旋转（移动端双指）
+          * @default true
+         */
+        "enableRotate": boolean;
+        "getState": () => Promise<{ scale: number; rotate: number; offsetX: number; offsetY: number; }>;
+        "getTransformString": () => Promise<string>;
+        /**
+          * @default 0
+         */
+        "initialOffsetX": number;
+        /**
+          * @default 0
+         */
+        "initialOffsetY": number;
+        /**
+          * @default 0
+         */
+        "initialRotate": number;
+        /**
+          * 初始状态
+          * @default 1
+         */
+        "initialScale": number;
+        /**
+          * @default 4
+         */
+        "maxScale": number;
+        /**
+          * 最小/最大缩放
+          * @default 0.25
+         */
+        "minScale": number;
+        "reset": () => Promise<void>;
+        "setOffsets": (x: number, y: number) => Promise<void>;
+        "setRotate": (deg: number) => Promise<void>;
+        /**
+          * 若提供则内部渲染 img；否则使用默认插槽
+         */
+        "src"?: string;
+        /**
+          * PC 滚轮缩放
+          * @default true
+         */
+        "wheelZoom": boolean;
+        /**
+          * 缩放步进（滚轮/按钮）
+          * @default 0.1
+         */
+        "zoomStep": number;
+        "zoomTo": (scale: number, clientX?: number, clientY?: number) => Promise<void>;
     }
     /**
      * Drawer 抽屉组件
@@ -1369,14 +1514,33 @@ export namespace Components {
          */
         "maxHeight": number;
         /**
+          * 最大可见行数（超过后出现滚动条）；不设置则不限制
+         */
+        "maxRows"?: number;
+        /**
           * 结构化初始化（分段）
          */
         "model"?: string | MentionSegment[];
+        /**
+          * 是否多行模式。多行模式下允许回车换行，并可按 rows/maxRows 控制显示高度
+          * @default false
+         */
+        "multiline": boolean;
         /**
           * 候选项（数组或 JSON 字符串）
           * @default []
          */
         "options": string | MentionItem[];
+        /**
+          * 是否在加载时将文本中的
+          * @xxx /#xxx 解析为标签（仅在未提供 model/valueModel 时生效）
+         */
+        "parseOnInit"?: boolean;
+        /**
+          * 解析策略：label（直接转换）/options（仅命中候选时转换）
+          * @default 'label'
+         */
+        "parseStrategy": 'label' | 'options';
         /**
           * 占位文本
          */
@@ -1386,6 +1550,16 @@ export namespace Components {
           * @default false
          */
         "readonly": boolean;
+        /**
+          * 是否允许用户手动拖拽调整高度（vertical）
+          * @default true
+         */
+        "resizable": boolean;
+        /**
+          * 初始可见行数（用于计算最小高度）
+          * @default 3
+         */
+        "rows": number;
         "setOptions": (options: MentionItem[]) => Promise<void>;
         /**
           * 尺寸（影响样式）
@@ -1939,6 +2113,15 @@ export namespace Components {
          */
         "disabled": boolean;
         /**
+          * 手势拖拽跟随比例（0-1），1 表示 1:1 跟手，越小阻力越大，默认 1
+          * @default 1
+         */
+        "dragFollow": number;
+        /**
+          * 手势拖拽平滑时间常数（毫秒），>0 时使用一阶平滑使位移逐步接近手指，营造“越来越慢”的阻力感，默认 0（关闭）
+         */
+        "dragSmoothing"?: number;
+        /**
           * 惯性摩擦 0-1（越小减速越快）
           * @default 0.92
          */
@@ -1947,6 +2130,14 @@ export namespace Components {
           * 行高（自动根据 size 推导，亦可显式覆盖）
          */
         "itemHeight"?: number;
+        /**
+          * 最大橡皮筋越界（像素）。优先级高于比例
+         */
+        "maxOverscroll"?: number;
+        /**
+          * 最大橡皮筋越界比例（相对于容器高度 0-1）。当未提供像素值时生效；未设置则默认 0.5（即容器高度的一半）
+         */
+        "maxOverscrollRatio"?: number;
         /**
           * 是否启用惯性
           * @default true
@@ -1971,6 +2162,14 @@ export namespace Components {
           * @default 'medium'
          */
         "size": 'small' | 'medium' | 'large';
+        /**
+          * 吸附/回弹动画时长（毫秒，适用于触摸/键盘/滚动吸附），未设置默认 260ms
+         */
+        "snapDuration"?: number;
+        /**
+          * 滚轮专用吸附动画时长（毫秒），未设置默认 150ms
+         */
+        "snapDurationWheel"?: number;
         /**
           * 当前值（受控）
          */
@@ -2825,6 +3024,26 @@ export namespace Components {
      */
     interface LdesignSplit {
         /**
+          * 折叠状态下是否允许通过拖拽恢复
+          * @default true
+         */
+        "allowDragExpandWhenCollapsed": boolean;
+        /**
+          * 折叠状态：none | start | end
+          * @default 'none'
+         */
+        "collapsed": 'none' | 'start' | 'end';
+        /**
+          * 折叠后保留的尺寸（px）
+          * @default 0
+         */
+        "collapsedSize": number;
+        /**
+          * 是否显示快捷折叠按钮
+          * @default false
+         */
+        "collapsible": boolean;
+        /**
           * 分割方向：vertical=左右，horizontal=上下
           * @default 'vertical'
          */
@@ -3011,6 +3230,10 @@ export namespace Components {
          */
         "borderless": boolean;
         /**
+          * 响应式断点，默认 { xs:480, sm:768, md:1024, lg:1280 }
+         */
+        "breakpoints"?: Breakpoints;
+        /**
           * 是否可清空
           * @default false
          */
@@ -3041,6 +3264,19 @@ export namespace Components {
           * 禁用秒集合（同上）
          */
         "disabledSeconds"?: string | number[];
+        /**
+          * Drawer 放置位置（移动端/平板建议 bottom）
+          * @default 'bottom'
+         */
+        "drawerPlacement": 'left' | 'right' | 'top' | 'bottom';
+        /**
+          * Drawer 面板尺寸（right/left 为宽度，top/bottom 为高度），可数值(px)或 CSS 长度
+         */
+        "drawerSize"?: number | string;
+        /**
+          * Drawer 头部标题（可选）
+         */
+        "drawerTitle"?: string;
         /**
           * 时间格式
           * @default 'HH:mm:ss'
@@ -3078,6 +3314,11 @@ export namespace Components {
           * @default '24'
          */
         "outputFormat": '24' | '12';
+        /**
+          * 承载容器：auto(>=md 用 popup，<md 用 drawer) | popup | drawer
+          * @default 'auto'
+         */
+        "overlay": TimePickerOverlay;
         /**
           * 列表最大高度
           * @default 180
@@ -3537,6 +3778,10 @@ export interface LdesignAffixCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignAffixElement;
 }
+export interface LdesignAlertCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignAlertElement;
+}
 export interface LdesignButtonCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignButtonElement;
@@ -3568,6 +3813,10 @@ export interface LdesignColorPickerCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignColorPickerPanelCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignColorPickerPanelElement;
+}
+export interface LdesignDraggableCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignDraggableElement;
 }
 export interface LdesignDrawerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -3721,6 +3970,27 @@ declare global {
     var HTMLLdesignAffixElement: {
         prototype: HTMLLdesignAffixElement;
         new (): HTMLLdesignAffixElement;
+    };
+    interface HTMLLdesignAlertElementEventMap {
+        "ldesignClose": void;
+    }
+    /**
+     * Alert 警告信息
+     * 用于在页面中展示重要的提示信息，支持四种状态、标题/描述、操作区与可关闭。
+     */
+    interface HTMLLdesignAlertElement extends Components.LdesignAlert, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignAlertElementEventMap>(type: K, listener: (this: HTMLLdesignAlertElement, ev: LdesignAlertCustomEvent<HTMLLdesignAlertElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignAlertElementEventMap>(type: K, listener: (this: HTMLLdesignAlertElement, ev: LdesignAlertCustomEvent<HTMLLdesignAlertElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignAlertElement: {
+        prototype: HTMLLdesignAlertElement;
+        new (): HTMLLdesignAlertElement;
     };
     /**
      * BackTop 返回顶部组件
@@ -3907,6 +4177,38 @@ declare global {
     var HTMLLdesignColorPickerPanelElement: {
         prototype: HTMLLdesignColorPickerPanelElement;
         new (): HTMLLdesignColorPickerPanelElement;
+    };
+    interface HTMLLdesignDraggableElementEventMap {
+        "ldesignTransformChange": { scale: number; rotate: number; offsetX: number; offsetY: number };
+        "ldesignGestureStart": void;
+        "ldesignGestureEnd": void;
+    }
+    /**
+     * ldesign-draggable
+     * 通用可拖拽/缩放/旋转容器（图片优先），支持：
+     * - PC：滚轮缩放、拖拽平移、双击 1x/2x 切换
+     * - 移动端：双指缩放+旋转、单指平移、松手回弹、动量滚动
+     * 用法：
+     * 1) 直接传入 src 渲染图片
+     *    <ldesign-draggable src="/big.jpg" style="width:100%;height:100%" />
+     * 2) 插槽自定义内容（若无 src）：
+     *    <ldesign-draggable style="width:100%;height:100%">
+     *      <img src="/big.jpg" />
+     *    </ldesign-draggable>
+     */
+    interface HTMLLdesignDraggableElement extends Components.LdesignDraggable, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignDraggableElementEventMap>(type: K, listener: (this: HTMLLdesignDraggableElement, ev: LdesignDraggableCustomEvent<HTMLLdesignDraggableElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignDraggableElementEventMap>(type: K, listener: (this: HTMLLdesignDraggableElement, ev: LdesignDraggableCustomEvent<HTMLLdesignDraggableElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignDraggableElement: {
+        prototype: HTMLLdesignDraggableElement;
+        new (): HTMLLdesignDraggableElement;
     };
     interface HTMLLdesignDrawerElementEventMap {
         "ldesignVisibleChange": boolean;
@@ -4481,6 +4783,7 @@ declare global {
         "ldesignSplitStart": { value: number; direction: 'vertical' | 'horizontal' };
         "ldesignSplit": { value: number; direction: 'vertical' | 'horizontal' };
         "ldesignSplitEnd": { value: number; direction: 'vertical' | 'horizontal' };
+        "ldesignSplitCollapse": { side: 'none' | 'start' | 'end' };
     }
     /**
      * Split 面板分割
@@ -4687,6 +4990,7 @@ declare global {
     interface HTMLElementTagNameMap {
         "base-component": HTMLBaseComponentElement;
         "ldesign-affix": HTMLLdesignAffixElement;
+        "ldesign-alert": HTMLLdesignAlertElement;
         "ldesign-backtop": HTMLLdesignBacktopElement;
         "ldesign-button": HTMLLdesignButtonElement;
         "ldesign-checkbox": HTMLLdesignCheckboxElement;
@@ -4696,6 +5000,7 @@ declare global {
         "ldesign-color-input": HTMLLdesignColorInputElement;
         "ldesign-color-picker": HTMLLdesignColorPickerElement;
         "ldesign-color-picker-panel": HTMLLdesignColorPickerPanelElement;
+        "ldesign-draggable": HTMLLdesignDraggableElement;
         "ldesign-drawer": HTMLLdesignDrawerElement;
         "ldesign-dropdown": HTMLLdesignDropdownElement;
         "ldesign-icon": HTMLLdesignIconElement;
@@ -4801,6 +5106,69 @@ declare namespace LocalJSX {
         "zIndex"?: number;
     }
     /**
+     * Alert 警告信息
+     * 用于在页面中展示重要的提示信息，支持四种状态、标题/描述、操作区与可关闭。
+     */
+    interface LdesignAlert {
+        /**
+          * 标题（避开标准 HTMLElement.title 冲突）
+         */
+        "alertTitle"?: string;
+        /**
+          * 横幅样式（常用于页面顶部）
+          * @default false
+         */
+        "banner"?: boolean;
+        /**
+          * 是否显示关闭按钮
+          * @default false
+         */
+        "closable"?: boolean;
+        /**
+          * 描述（也可通过默认 slot 自定义内容）
+         */
+        "description"?: string;
+        /**
+          * 启用滚动公告（Marquee）
+          * @default false
+         */
+        "marquee"?: boolean;
+        /**
+          * 方向
+          * @default 'left'
+         */
+        "marqueeDirection"?: 'left' | 'right';
+        /**
+          * 两段内容之间的间距（px）
+          * @default 24
+         */
+        "marqueeGap"?: number;
+        /**
+          * 悬停时是否暂停
+          * @default true
+         */
+        "marqueePauseOnHover"?: boolean;
+        /**
+          * 滚动速度（px/s）
+          * @default 60
+         */
+        "marqueeSpeed"?: number;
+        /**
+          * 关闭事件
+         */
+        "onLdesignClose"?: (event: LdesignAlertCustomEvent<void>) => void;
+        /**
+          * 是否显示图标
+          * @default true
+         */
+        "showIcon"?: boolean;
+        /**
+          * 警告类型
+          * @default 'info'
+         */
+        "type"?: AlertType;
+    }
+    /**
      * BackTop 返回顶部组件
      * - 支持窗口根滚动回到顶部
      * - 支持指定容器内部滚动回到顶部（通过 target 选择器）
@@ -4838,6 +5206,11 @@ declare namespace LocalJSX {
          */
         "color"?: ButtonColor;
         /**
+          * 危险态（AntD 风格）
+          * @default false
+         */
+        "danger"?: boolean;
+        /**
           * 是否禁用
           * @default false
          */
@@ -4847,6 +5220,10 @@ declare namespace LocalJSX {
           * @default false
          */
         "ghost"?: boolean;
+        /**
+          * 对齐 AntD：htmlType 优先；nativeType 兼容
+         */
+        "htmlType"?: NativeButtonType;
         /**
           * 图标名称
          */
@@ -4862,7 +5239,6 @@ declare namespace LocalJSX {
          */
         "loading"?: boolean;
         /**
-          * 原生按钮类型：button | submit | reset
           * @default 'button'
          */
         "nativeType"?: NativeButtonType;
@@ -4877,12 +5253,12 @@ declare namespace LocalJSX {
         "shape"?: ButtonShape;
         /**
           * 按钮尺寸
-          * @default 'medium'
+          * @default 'middle'
          */
         "size"?: Size;
         /**
           * 按钮类型
-          * @default 'primary'
+          * @default 'default'
          */
         "type"?: ButtonType;
     }
@@ -5372,6 +5748,75 @@ declare namespace LocalJSX {
           * @default '#3498db'
          */
         "value"?: string;
+    }
+    /**
+     * ldesign-draggable
+     * 通用可拖拽/缩放/旋转容器（图片优先），支持：
+     * - PC：滚轮缩放、拖拽平移、双击 1x/2x 切换
+     * - 移动端：双指缩放+旋转、单指平移、松手回弹、动量滚动
+     * 用法：
+     * 1) 直接传入 src 渲染图片
+     *    <ldesign-draggable src="/big.jpg" style="width:100%;height:100%" />
+     * 2) 插槽自定义内容（若无 src）：
+     *    <ldesign-draggable style="width:100%;height:100%">
+     *      <img src="/big.jpg" />
+     *    </ldesign-draggable>
+     */
+    interface LdesignDraggable {
+        "alt"?: string;
+        /**
+          * 双击切换到的缩放倍数
+          * @default 2
+         */
+        "doubleTapZoom"?: number;
+        /**
+          * 是否允许旋转（移动端双指）
+          * @default true
+         */
+        "enableRotate"?: boolean;
+        /**
+          * @default 0
+         */
+        "initialOffsetX"?: number;
+        /**
+          * @default 0
+         */
+        "initialOffsetY"?: number;
+        /**
+          * @default 0
+         */
+        "initialRotate"?: number;
+        /**
+          * 初始状态
+          * @default 1
+         */
+        "initialScale"?: number;
+        /**
+          * @default 4
+         */
+        "maxScale"?: number;
+        /**
+          * 最小/最大缩放
+          * @default 0.25
+         */
+        "minScale"?: number;
+        "onLdesignGestureEnd"?: (event: LdesignDraggableCustomEvent<void>) => void;
+        "onLdesignGestureStart"?: (event: LdesignDraggableCustomEvent<void>) => void;
+        "onLdesignTransformChange"?: (event: LdesignDraggableCustomEvent<{ scale: number; rotate: number; offsetX: number; offsetY: number }>) => void;
+        /**
+          * 若提供则内部渲染 img；否则使用默认插槽
+         */
+        "src"?: string;
+        /**
+          * PC 滚轮缩放
+          * @default true
+         */
+        "wheelZoom"?: boolean;
+        /**
+          * 缩放步进（滚轮/按钮）
+          * @default 0.1
+         */
+        "zoomStep"?: number;
     }
     /**
      * Drawer 抽屉组件
@@ -6154,9 +6599,18 @@ declare namespace LocalJSX {
          */
         "maxHeight"?: number;
         /**
+          * 最大可见行数（超过后出现滚动条）；不设置则不限制
+         */
+        "maxRows"?: number;
+        /**
           * 结构化初始化（分段）
          */
         "model"?: string | MentionSegment[];
+        /**
+          * 是否多行模式。多行模式下允许回车换行，并可按 rows/maxRows 控制显示高度
+          * @default false
+         */
+        "multiline"?: boolean;
         "onLdesignBlur"?: (event: LdesignMentionCustomEvent<FocusEvent>) => void;
         /**
           * 内容变化事件（返回纯文本值：等同于 editable.innerText）
@@ -6188,6 +6642,16 @@ declare namespace LocalJSX {
          */
         "options"?: string | MentionItem[];
         /**
+          * 是否在加载时将文本中的
+          * @xxx /#xxx 解析为标签（仅在未提供 model/valueModel 时生效）
+         */
+        "parseOnInit"?: boolean;
+        /**
+          * 解析策略：label（直接转换）/options（仅命中候选时转换）
+          * @default 'label'
+         */
+        "parseStrategy"?: 'label' | 'options';
+        /**
           * 占位文本
          */
         "placeholder"?: string;
@@ -6196,6 +6660,16 @@ declare namespace LocalJSX {
           * @default false
          */
         "readonly"?: boolean;
+        /**
+          * 是否允许用户手动拖拽调整高度（vertical）
+          * @default true
+         */
+        "resizable"?: boolean;
+        /**
+          * 初始可见行数（用于计算最小高度）
+          * @default 3
+         */
+        "rows"?: number;
         /**
           * 尺寸（影响样式）
           * @default 'medium'
@@ -6757,6 +7231,15 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
+          * 手势拖拽跟随比例（0-1），1 表示 1:1 跟手，越小阻力越大，默认 1
+          * @default 1
+         */
+        "dragFollow"?: number;
+        /**
+          * 手势拖拽平滑时间常数（毫秒），>0 时使用一阶平滑使位移逐步接近手指，营造“越来越慢”的阻力感，默认 0（关闭）
+         */
+        "dragSmoothing"?: number;
+        /**
           * 惯性摩擦 0-1（越小减速越快）
           * @default 0.92
          */
@@ -6765,6 +7248,14 @@ declare namespace LocalJSX {
           * 行高（自动根据 size 推导，亦可显式覆盖）
          */
         "itemHeight"?: number;
+        /**
+          * 最大橡皮筋越界（像素）。优先级高于比例
+         */
+        "maxOverscroll"?: number;
+        /**
+          * 最大橡皮筋越界比例（相对于容器高度 0-1）。当未提供像素值时生效；未设置则默认 0.5（即容器高度的一半）
+         */
+        "maxOverscrollRatio"?: number;
         /**
           * 是否启用惯性
           * @default true
@@ -6797,6 +7288,14 @@ declare namespace LocalJSX {
           * @default 'medium'
          */
         "size"?: 'small' | 'medium' | 'large';
+        /**
+          * 吸附/回弹动画时长（毫秒，适用于触摸/键盘/滚动吸附），未设置默认 260ms
+         */
+        "snapDuration"?: number;
+        /**
+          * 滚轮专用吸附动画时长（毫秒），未设置默认 150ms
+         */
+        "snapDurationWheel"?: number;
         /**
           * 当前值（受控）
          */
@@ -7690,6 +8189,26 @@ declare namespace LocalJSX {
      */
     interface LdesignSplit {
         /**
+          * 折叠状态下是否允许通过拖拽恢复
+          * @default true
+         */
+        "allowDragExpandWhenCollapsed"?: boolean;
+        /**
+          * 折叠状态：none | start | end
+          * @default 'none'
+         */
+        "collapsed"?: 'none' | 'start' | 'end';
+        /**
+          * 折叠后保留的尺寸（px）
+          * @default 0
+         */
+        "collapsedSize"?: number;
+        /**
+          * 是否显示快捷折叠按钮
+          * @default false
+         */
+        "collapsible"?: boolean;
+        /**
           * 分割方向：vertical=左右，horizontal=上下
           * @default 'vertical'
          */
@@ -7705,6 +8224,10 @@ declare namespace LocalJSX {
          */
         "firstMin"?: number;
         "onLdesignSplit"?: (event: LdesignSplitCustomEvent<{ value: number; direction: 'vertical' | 'horizontal' }>) => void;
+        /**
+          * 折叠切换事件
+         */
+        "onLdesignSplitCollapse"?: (event: LdesignSplitCustomEvent<{ side: 'none' | 'start' | 'end' }>) => void;
         "onLdesignSplitEnd"?: (event: LdesignSplitCustomEvent<{ value: number; direction: 'vertical' | 'horizontal' }>) => void;
         /**
           * 拖拽事件
@@ -7898,6 +8421,10 @@ declare namespace LocalJSX {
          */
         "borderless"?: boolean;
         /**
+          * 响应式断点，默认 { xs:480, sm:768, md:1024, lg:1280 }
+         */
+        "breakpoints"?: Breakpoints;
+        /**
           * 是否可清空
           * @default false
          */
@@ -7928,6 +8455,19 @@ declare namespace LocalJSX {
           * 禁用秒集合（同上）
          */
         "disabledSeconds"?: string | number[];
+        /**
+          * Drawer 放置位置（移动端/平板建议 bottom）
+          * @default 'bottom'
+         */
+        "drawerPlacement"?: 'left' | 'right' | 'top' | 'bottom';
+        /**
+          * Drawer 面板尺寸（right/left 为宽度，top/bottom 为高度），可数值(px)或 CSS 长度
+         */
+        "drawerSize"?: number | string;
+        /**
+          * Drawer 头部标题（可选）
+         */
+        "drawerTitle"?: string;
         /**
           * 时间格式
           * @default 'HH:mm:ss'
@@ -7993,6 +8533,11 @@ declare namespace LocalJSX {
           * @default '24'
          */
         "outputFormat"?: '24' | '12';
+        /**
+          * 承载容器：auto(>=md 用 popup，<md 用 drawer) | popup | drawer
+          * @default 'auto'
+         */
+        "overlay"?: TimePickerOverlay;
         /**
           * 列表最大高度
           * @default 180
@@ -8481,6 +9026,7 @@ declare namespace LocalJSX {
     interface IntrinsicElements {
         "base-component": BaseComponent;
         "ldesign-affix": LdesignAffix;
+        "ldesign-alert": LdesignAlert;
         "ldesign-backtop": LdesignBacktop;
         "ldesign-button": LdesignButton;
         "ldesign-checkbox": LdesignCheckbox;
@@ -8490,6 +9036,7 @@ declare namespace LocalJSX {
         "ldesign-color-input": LdesignColorInput;
         "ldesign-color-picker": LdesignColorPicker;
         "ldesign-color-picker-panel": LdesignColorPickerPanel;
+        "ldesign-draggable": LdesignDraggable;
         "ldesign-drawer": LdesignDrawer;
         "ldesign-dropdown": LdesignDropdown;
         "ldesign-icon": LdesignIcon;
@@ -8545,6 +9092,11 @@ declare module "@stencil/core" {
              */
             "ldesign-affix": LocalJSX.LdesignAffix & JSXBase.HTMLAttributes<HTMLLdesignAffixElement>;
             /**
+             * Alert 警告信息
+             * 用于在页面中展示重要的提示信息，支持四种状态、标题/描述、操作区与可关闭。
+             */
+            "ldesign-alert": LocalJSX.LdesignAlert & JSXBase.HTMLAttributes<HTMLLdesignAlertElement>;
+            /**
              * BackTop 返回顶部组件
              * - 支持窗口根滚动回到顶部
              * - 支持指定容器内部滚动回到顶部（通过 target 选择器）
@@ -8593,6 +9145,20 @@ declare module "@stencil/core" {
              * - 适合内嵌在任意容器，宽度默认铺满容器
              */
             "ldesign-color-picker-panel": LocalJSX.LdesignColorPickerPanel & JSXBase.HTMLAttributes<HTMLLdesignColorPickerPanelElement>;
+            /**
+             * ldesign-draggable
+             * 通用可拖拽/缩放/旋转容器（图片优先），支持：
+             * - PC：滚轮缩放、拖拽平移、双击 1x/2x 切换
+             * - 移动端：双指缩放+旋转、单指平移、松手回弹、动量滚动
+             * 用法：
+             * 1) 直接传入 src 渲染图片
+             *    <ldesign-draggable src="/big.jpg" style="width:100%;height:100%" />
+             * 2) 插槽自定义内容（若无 src）：
+             *    <ldesign-draggable style="width:100%;height:100%">
+             *      <img src="/big.jpg" />
+             *    </ldesign-draggable>
+             */
+            "ldesign-draggable": LocalJSX.LdesignDraggable & JSXBase.HTMLAttributes<HTMLLdesignDraggableElement>;
             /**
              * Drawer 抽屉组件
              * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情

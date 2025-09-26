@@ -62,6 +62,7 @@ export default defineConfig({
           items: [
             { text: 'Button 按钮', link: '/components/button' },
             { text: 'Icon 图标', link: '/components/icon' },
+            { text: 'Draggable 拖拽缩放', link: '/components/draggable' },
           ]
         },
         {
@@ -78,6 +79,7 @@ export default defineConfig({
           items: [
             { text: 'Image 图片', link: '/components/image' },
             { text: 'ImageViewer 图片预览器', link: '/components/image-viewer' },
+            { text: 'Draggable 拖拽缩放', link: '/components/draggable' },
             { text: 'Tree 树', link: '/components/tree' },
           ]
         },
@@ -120,8 +122,9 @@ export default defineConfig({
             { text: 'Tooltip 工具提示', link: '/components/tooltip' },
             { text: 'Modal 模态框', link: '/components/modal' },
             { text: 'Drawer 抽屉', link: '/components/drawer' },
+            { text: 'Alert 警告', link: '/components/alert' },
             { text: 'Message 全局提示', link: '/components/message' },
-{ text: 'Notification 通知提醒', link: '/components/notification' },
+            { text: 'Notification 通知提醒', link: '/components/notification' },
             { text: 'Loading 加载', link: '/components/loading' },
             { text: 'Progress 进度条', link: '/components/progress' },
           ]

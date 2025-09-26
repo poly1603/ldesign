@@ -183,6 +183,7 @@ export class LdesignDraggable {
   };
 
   // ── Pointer handlers ─────────────────────────────────
+  private onDragStart = (e: DragEvent) => { e.preventDefault(); };
   private onPointerDown = (e: PointerEvent) => {
     e.stopPropagation(); if (e.pointerType === 'touch') e.preventDefault();
 
@@ -459,7 +460,7 @@ export class LdesignDraggable {
       <Host>
         <div class="ldesign-draggable" ref={el => (this.canvasEl = el as HTMLElement)} onWheel={this.onWheel}
           onPointerDown={this.onPointerDown} onPointerMove={this.onPointerMove} onPointerUp={this.onPointerUp} onPointerCancel={this.onPointerCancel}
-          onDblClick={this.onDblClick}
+          onDblClick={this.onDblClick} onDragStart={this.onDragStart}
         >
           {this.src ? (
             <img ref={el => (this.imgEl = el as HTMLImageElement)} class={{ 'ldesign-draggable__content': true, 'is-dragging': this.dragging, 'is-gesturing': this.gesturing } as any}

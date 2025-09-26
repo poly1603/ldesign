@@ -240,7 +240,7 @@
 
 ### 4. 自定义回调（懒加载）
 
-```html
+```text
 <ldesign-tree id="tree-lazy" lazy default-expanded-keys='[]'></ldesign-tree>
 
 <script>
@@ -312,13 +312,13 @@
 ## 编程式 API
 
 - getItems(): Promise<TreeNode[]>
-- setItems(items: string | TreeNode[]): Promise<void>
-- expand(key: string): Promise<void>
-- collapse(key: string): Promise<void>
-- expandAll(): Promise<void>
-- collapseAll(): Promise<void>
-- move(dragKey: string, dropKey: string, position: 'before'|'after'|'inside'): Promise<boolean>
-- focus(key: string): Promise<void>
+- setItems(items: string | TreeNode[]): Promise&lt;void&gt;
+- expand(key: string): Promise&lt;void&gt;
+- collapse(key: string): Promise&lt;void&gt;
+- expandAll(): Promise&lt;void&gt;
+- collapseAll(): Promise&lt;void&gt;
+- move(dragKey: string, dropKey: string, position: 'before'|'after'|'inside'): Promise&lt;boolean&gt;
+- focus(key: string): Promise&lt;void&gt;
 
 ```html
 <ldesign-tree id="tree-api" show-line></ldesign-tree>

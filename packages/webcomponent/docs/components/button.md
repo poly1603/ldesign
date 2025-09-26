@@ -1,78 +1,163 @@
 # Button 按钮
 
-按钮用于触发一个操作，如提交表单、打开对话框、取消操作等。
+对齐 Ant Design v5 的按钮体系：提供 default/primary/dashed/link/text 五种主要形态，支持 danger、ghost、size、shape、icon 等能力；并保留 Gradient 作为扩展样式。
 
-## 基础用法
-
-使用 `type` 属性来定义按钮的样式类型。
+## 基础类型（Types）
 
 <div class="demo-container">
   <div class="demo-row">
-    <ldesign-button type="primary">主要按钮</ldesign-button>
-    <ldesign-button type="secondary">次要按钮</ldesign-button>
-    <ldesign-button type="outline">边框按钮</ldesign-button>
-    <ldesign-button type="text">文字按钮</ldesign-button>
-    <ldesign-button type="danger">危险按钮</ldesign-button>
-    <ldesign-button type="success">成功</ldesign-button>
-    <ldesign-button type="warning">警告</ldesign-button>
-    <ldesign-button type="link">链接</ldesign-button>
-    <ldesign-button type="dashed">虚线</ldesign-button>
+    <ldesign-button type="default">Default</ldesign-button>
+    <ldesign-button type="primary">Primary</ldesign-button>
+    <ldesign-button type="dashed">Dashed</ldesign-button>
+    <ldesign-button type="text">Text</ldesign-button>
+    <ldesign-button type="link">Link</ldesign-button>
   </div>
 </div>
 
 ```html
-<ldesign-button type="primary">主要按钮</ldesign-button>
-<ldesign-button type="secondary">次要按钮</ldesign-button>
-<ldesign-button type="outline">边框按钮</ldesign-button>
-<ldesign-button type="text">文字按钮</ldesign-button>
-<ldesign-button type="danger">危险按钮</ldesign-button>
-<ldesign-button type="success">成功</ldesign-button>
-<ldesign-button type="warning">警告</ldesign-button>
-<ldesign-button type="link">链接</ldesign-button>
-<ldesign-button type="dashed">虚线</ldesign-button>
+<ldesign-button type="default">Default</ldesign-button>
+<ldesign-button type="primary">Primary</ldesign-button>
+<ldesign-button type="dashed">Dashed</ldesign-button>
+<ldesign-button type="text">Text</ldesign-button>
+<ldesign-button type="link">Link</ldesign-button>
 ```
 
-## 按钮尺寸
-
-使用 `size` 属性来定义按钮的大小。
+## 危险态（Danger）
 
 <div class="demo-container">
   <div class="demo-row">
-    <ldesign-button type="primary" size="small">小按钮</ldesign-button>
-    <ldesign-button type="primary" size="medium">中按钮</ldesign-button>
-    <ldesign-button type="primary" size="large">大按钮</ldesign-button>
+    <ldesign-button type="default" danger>Default</ldesign-button>
+    <ldesign-button type="primary" danger>Primary</ldesign-button>
+    <ldesign-button type="dashed" danger>Dashed</ldesign-button>
+    <ldesign-button type="text" danger>Text</ldesign-button>
+    <ldesign-button type="link" danger>Link</ldesign-button>
   </div>
 </div>
 
 ```html
-<ldesign-button type="primary" size="small">小按钮</ldesign-button>
-<ldesign-button type="primary" size="medium">中按钮</ldesign-button>
-<ldesign-button type="primary" size="large">大按钮</ldesign-button>
+<ldesign-button type="default" danger>Default</ldesign-button>
+<ldesign-button type="primary" danger>Primary</ldesign-button>
+<ldesign-button type="dashed" danger>Dashed</ldesign-button>
+<ldesign-button type="text" danger>Text</ldesign-button>
+<ldesign-button type="link" danger>Link</ldesign-button>
 ```
 
-## 按钮形状
+## 幽灵（Ghost）
 
-使用 `shape` 属性来定义按钮的形状。
+适合深色背景：
+
+<div class="demo-container" style="background:#121212;padding:16px;border-radius:8px;">
+  <div class="demo-row">
+    <ldesign-button type="default" ghost>Ghost</ldesign-button>
+    <ldesign-button type="primary" ghost>Ghost</ldesign-button>
+    <ldesign-button type="dashed" ghost>Ghost</ldesign-button>
+    <ldesign-button type="default" ghost danger>Danger Ghost</ldesign-button>
+  </div>
+</div>
+
+```html
+<div style="background:#121212;padding:16px;border-radius:8px;">
+  <ldesign-button type="default" ghost>Ghost</ldesign-button>
+  <ldesign-button type="primary" ghost>Ghost</ldesign-button>
+  <ldesign-button type="dashed" ghost>Ghost</ldesign-button>
+  <ldesign-button type="default" ghost danger>Danger Ghost</ldesign-button>
+</div>
+```
+
+## 尺寸与形状（Size & Shape）
 
 <div class="demo-container">
   <div class="demo-row">
-    <ldesign-button type="primary" shape="rectangle">矩形按钮</ldesign-button>
-    <ldesign-button type="primary" shape="round">圆角按钮</ldesign-button>
+    <ldesign-button type="primary" size="small">Small</ldesign-button>
+    <ldesign-button type="primary" size="middle">Middle</ldesign-button>
+    <ldesign-button type="primary" size="large">Large</ldesign-button>
+  </div>
+  <div class="demo-row">
+    <ldesign-button type="primary" shape="default">Default</ldesign-button>
+    <ldesign-button type="primary" shape="round">Round</ldesign-button>
     <ldesign-button type="primary" shape="circle" icon="heart" aria-label="喜欢"></ldesign-button>
-    <ldesign-button type="primary" shape="square" icon="heart" aria-label="喜欢"></ldesign-button>
   </div>
 </div>
 
 ```html
-<ldesign-button type="primary" shape="rectangle">矩形按钮</ldesign-button>
-<ldesign-button type="primary" shape="round">圆角按钮</ldesign-button>
+<ldesign-button type="primary" size="small">Small</ldesign-button>
+<ldesign-button type="primary" size="middle">Middle</ldesign-button>
+<ldesign-button type="primary" size="large">Large</ldesign-button>
+
+<ldesign-button type="primary" shape="default">Default</ldesign-button>
+<ldesign-button type="primary" shape="round">Round</ldesign-button>
 <ldesign-button type="primary" shape="circle" icon="heart" aria-label="喜欢"></ldesign-button>
-<ldesign-button type="primary" shape="square" icon="heart" aria-label="喜欢"></ldesign-button>
 ```
 
-## 带图标的按钮
+## 图标与位置（Icon）
 
-使用 `icon` 属性来为按钮添加图标；通过 `icon-position` 控制图标位置。
+<div class="demo-container">
+  <div class="demo-row">
+    <ldesign-button type="primary" icon="download">下载</ldesign-button>
+    <ldesign-button type="default" icon="search">搜索</ldesign-button>
+    <ldesign-button type="text" icon="heart">收藏</ldesign-button>
+    <ldesign-button type="primary" icon="arrow-right" icon-position="right">下一步</ldesign-button>
+  </div>
+</div>
+
+```html
+<ldesign-button type="primary" icon="download">下载</ldesign-button>
+<ldesign-button type="default" icon="search">搜索</ldesign-button>
+<ldesign-button type="text" icon="heart">收藏</ldesign-button>
+<ldesign-button type="primary" icon="arrow-right" icon-position="right">下一步</ldesign-button>
+```
+
+## 状态（Loading & Disabled）
+
+<div class="demo-container">
+  <div class="demo-row">
+    <ldesign-button type="primary" loading>加载中</ldesign-button>
+    <ldesign-button type="default" disabled>禁用</ldesign-button>
+    <ldesign-button type="dashed" disabled>禁用</ldesign-button>
+  </div>
+</div>
+
+```html
+<ldesign-button type="primary" loading>加载中</ldesign-button>
+<ldesign-button type="default" disabled>禁用</ldesign-button>
+<ldesign-button type="dashed" disabled>禁用</ldesign-button>
+```
+
+## 原生类型与块级（HtmlType & Block）
+
+<div class="demo-container">
+  <div class="demo-row">
+    <ldesign-button type="primary" html-type="submit">提交</ldesign-button>
+    <ldesign-button type="default" html-type="reset">重置</ldesign-button>
+  </div>
+  <ldesign-button type="primary" block style="margin-top: 12px;">块级按钮</ldesign-button>
+</div>
+
+```html
+<form>
+  <ldesign-button type="primary" html-type="submit">提交</ldesign-button>
+  <ldesign-button type="default" html-type="reset">重置</ldesign-button>
+</form>
+<ldesign-button type="primary" block>块级按钮</ldesign-button>
+```
+
+## 扩展：渐变（Gradient）
+
+<div class="demo-container">
+  <div class="demo-row">
+    <ldesign-button type="gradient">Gradient</ldesign-button>
+    <ldesign-button type="gradient" shape="round">Round</ldesign-button>
+    <ldesign-button type="gradient" shape="circle" icon="star" aria-label="收藏"></ldesign-button>
+  </div>
+</div>
+
+```html
+<ldesign-button type="gradient">Gradient</ldesign-button>
+<ldesign-button type="gradient" shape="round">Round</ldesign-button>
+<ldesign-button type="gradient" shape="circle" icon="star" aria-label="收藏"></ldesign-button>
+```
+
+## 图标与位置（Icon & Position）
 
 <div class="demo-container">
   <div class="demo-row">
@@ -92,46 +177,45 @@
 <ldesign-button type="primary" icon="arrow-right" icon-position="right">下一步</ldesign-button>
 ```
 
-## 按钮状态
-
-按钮有禁用和加载两种状态。
+## 状态（State）
 
 <div class="demo-container">
   <div class="demo-row">
-    <span class="demo-label">禁用状态:</span>
-    <ldesign-button type="primary" disabled>主要按钮</ldesign-button>
-    <ldesign-button type="secondary" disabled>次要按钮</ldesign-button>
-    <ldesign-button type="outline" disabled>边框按钮</ldesign-button>
+    <span class="demo-label">禁用:</span>
+    <ldesign-button type="primary" disabled>Primary</ldesign-button>
+    <ldesign-button type="secondary" disabled>Secondary</ldesign-button>
+    <ldesign-button type="outline" disabled>Outline</ldesign-button>
+    <ldesign-button type="dashed" disabled color="primary">Dashed</ldesign-button>
+    <ldesign-button type="text" disabled color="default">Text</ldesign-button>
   </div>
   <div class="demo-row">
-    <span class="demo-label">加载状态:</span>
+    <span class="demo-label">加载:</span>
     <ldesign-button type="primary" loading>加载中</ldesign-button>
     <ldesign-button type="secondary" loading>加载中</ldesign-button>
-    <ldesign-button type="outline" loading>加载中</ldesign-button>
+    <ldesign-button type="outline" loading color="primary">加载中</ldesign-button>
   </div>
 </div>
 
 ```html
-<!-- 禁用状态 -->
-<ldesign-button type="primary" disabled>主要按钮</ldesign-button>
-<ldesign-button type="secondary" disabled>次要按钮</ldesign-button>
-<ldesign-button type="outline" disabled>边框按钮</ldesign-button>
+<ldesign-button type="primary" disabled>Primary</ldesign-button>
+<ldesign-button type="secondary" disabled>Secondary</ldesign-button>
+<ldesign-button type="outline" disabled>Outline</ldesign-button>
+<ldesign-button type="dashed" disabled color="primary">Dashed</ldesign-button>
+<ldesign-button type="text" disabled color="default">Text</ldesign-button>
 
-<!-- 加载状态 -->
 <ldesign-button type="primary" loading>加载中</ldesign-button>
 <ldesign-button type="secondary" loading>加载中</ldesign-button>
-<ldesign-button type="outline" loading>加载中</ldesign-button>
+<ldesign-button type="outline" loading color="primary">加载中</ldesign-button>
 ```
 
-## 原生类型
-
-通过 `native-type` 指定原生按钮类型（表单中常用）。
+## 原生类型与块级（Native & Block）
 
 <div class="demo-container">
   <div class="demo-row">
     <ldesign-button type="primary" native-type="submit">提交</ldesign-button>
     <ldesign-button type="secondary" native-type="reset">重置</ldesign-button>
   </div>
+  <ldesign-button type="primary" block style="margin-top: 12px;">块级按钮</ldesign-button>
 </div>
 
 ```html
@@ -139,23 +223,12 @@
   <ldesign-button type="primary" native-type="submit">提交</ldesign-button>
   <ldesign-button type="secondary" native-type="reset">重置</ldesign-button>
 </form>
-```
-
-## 块级按钮
-
-使用 `block` 属性可以让按钮适合其父容器的宽度。
-
-<div class="demo-container">
-  <ldesign-button type="primary" block>块级按钮</ldesign-button>
-</div>
-
-```html
 <ldesign-button type="primary" block>块级按钮</ldesign-button>
 ```
 
 ## 事件处理
 
-按钮组件会触发 `ldesignClick` 自定义事件。
+组件会触发 `ldesignClick` 事件。
 
 <div class="demo-container">
   <ldesign-button type="primary" id="event-demo">点击我</ldesign-button>
@@ -164,10 +237,10 @@
 
 ```html
 <ldesign-button type="primary" id="event-demo">点击我</ldesign-button>
-
 <script>
 let count = 0
-document.getElementById('event-demo').addEventListener('ldesignClick', () => {
+const btn = document.getElementById('event-demo')
+btn.addEventListener('ldesignClick', () => {
   count++
   console.log(`按钮被点击了 ${count} 次`)
 })
@@ -181,7 +254,6 @@ onMounted(() => {
   let count = 0
   const button = document.getElementById('event-demo')
   const result = document.getElementById('event-result')
-  
   if (button && result) {
     button.addEventListener('ldesignClick', () => {
       count++
@@ -193,27 +265,37 @@ onMounted(() => {
 
 ## API
 
-### 属性
+### 属性（Props）
 
-|| 属性名 | 类型 | 默认值 | 说明 |
-||--------|------|--------|------|
-|| `type` | `'primary' \| 'secondary' \| 'outline' \| 'text' \| 'danger' \| 'success' \| 'warning' \| 'link' \| 'dashed'` | `'primary'` | 按钮类型 |
-|| `size` | `'small' \| 'medium' \| 'large'` | `'medium'` | 按钮尺寸 |
-|| `shape` | `'rectangle' \| 'round' \| 'circle' \| 'square'` | `'rectangle'` | 按钮形状 |
-|| `disabled` | `boolean` | `false` | 是否禁用 |
-|| `loading` | `boolean` | `false` | 是否加载中 |
-|| `icon` | `string` | - | 图标名称 |
-|| `icon-position` | `'left' \| 'right'` | `'left'` | 图标位置 |
-|| `native-type` | `'button' \| 'submit' \| 'reset'` | `'button'` | 原生按钮类型 |
-|| `block` | `boolean` | `false` | 是否为块级按钮 |
+| 属性名 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `type` | `'default' \| 'primary' \| 'dashed' \| 'link' \| 'text' \| 'gradient'` | `'default'` | 按钮类型（外观）。`gradient` 为扩展样式 |
+| `danger` | `boolean` | `false` | 危险态（红色语义），可与 `type` 组合 |
+| `size` | `'small' \| 'middle' \| 'large'` | `'middle'` | 按钮尺寸（兼容 `medium`，不再文档展示） |
+| `shape` | `'rectangle' \| 'round' \| 'circle' \| 'square'` | `'rectangle'` | 按钮形状（变形） |
+| `disabled` | `boolean` | `false` | 是否禁用 |
+| `loading` | `boolean` | `false` | 是否加载中（展示内置 loading 图标） |
+| `icon` | `string` | - | 图标名称 |
+| `icon-position` | `'left' \| 'right'` | `'left'` | 图标位置 |
+| `block` | `boolean` | `false` | 是否为块级按钮 |
+| `ghost` | `boolean` | `false` | 幽灵按钮（深色背景） |
+| `html-type` | `'button' \| 'submit' \| 'reset'` | `'button'` | 原生按钮类型（推荐）。兼容 `native-type` |
 
-### 事件
+### 兼容与迁移
+
+- `type=secondary` 等同于 `type=default`（保留兼容，后续移除）
+- `type=outline` 不再推荐（保留兼容），建议使用 `type=text` 或 `type=default` 场景替代
+- `type=danger` 已废弃，请改用 `danger` 布尔属性
+- `size=medium` 更名为 `middle`
+- `native-type` 更名为 `html-type`
+
+### 事件（Events）
 
 | 事件名 | 说明 | 回调参数 |
 |--------|------|----------|
-| `ldesignClick` | 点击按钮时触发 | `(event: MouseEvent) => void` |
+| `ldesignClick` | 点击时触发 | `(event: MouseEvent)` |
 
-### CSS 变量
+### CSS 变量（部分）
 
 | 变量名 | 默认值 | 说明 |
 |--------|--------|------|
@@ -222,34 +304,15 @@ onMounted(() => {
 | `--ls-button-height-large` | `48px` | 大按钮高度 |
 | `--ls-border-radius-base` | `6px` | 基础圆角 |
 | `--ls-border-radius-xl` | `16px` | 大圆角 |
-| `--ldesign-brand-color` | `#722ED1` | 主品牌色 |
-| `--ldesign-brand-color-hover` | `#7334cb` | 主品牌色悬停态 |
-| `--ldesign-brand-color-active` | `#491f84` | 主品牌色激活态 |
 
-## 无障碍
+## 无障碍（A11y）
 
-Button 组件遵循 WAI-ARIA 规范：
+- 支持键盘操作（Enter / Space）
+- `aria-disabled` 表示禁用，`aria-busy` 表示加载
+- 焦点可见样式与语义色联动
 
-- 支持键盘导航（Enter 和 Space 键）
-- 提供 `aria-disabled` 属性表示禁用状态
-- 提供 `aria-busy` 属性表示加载状态
-- 支持焦点管理和视觉反馈
+## 设计建议（Guidelines）
 
-## 设计指南
-
-### 何时使用
-
-- 标记了一个（或封装一组）操作命令，响应用户点击行为，触发相应的业务逻辑
-- 对于需要用户处理事务，又不希望跳转页面以致打断工作流程的场景，可以使用 Modal 对话框承载相应的操作
-
-### 何时不使用
-
-- 当需要跳转到另一个页面时，使用链接而不是按钮
-- 当操作是破坏性的且不可逆时，考虑使用确认对话框
-
-### 最佳实践
-
-- 按钮文字应该清晰地表达按钮的作用
-- 在一个界面中，主要按钮只能有一个
-- 按钮的排列应该符合用户的操作习惯
-- 重要的操作应该使用主要按钮，次要操作使用次要按钮
+- 页面中应仅有一个主要按钮（Primary）
+- 破坏性操作使用 Danger，且必要时配合确认
+- 使用图标需确保含义明确，避免仅图标无文本的可用性问题（圆形/方形图标按钮建议添加 `aria-label`）

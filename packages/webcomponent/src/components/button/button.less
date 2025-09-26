@@ -46,7 +46,8 @@
     }
   }
 
-  &--medium {
+  &--medium,
+  &--middle {
     height: var(--ls-button-height-medium);
     padding: 0 var(--ls-spacing-base);
     font-size: var(--ls-font-size-sm);
@@ -125,21 +126,22 @@
     }
   }
 
+  &--default,
   &--secondary {
     color: var(--ldesign-text-color-primary);
     background-color: var(--ldesign-bg-color-component);
     border-color: var(--ldesign-border-color);
 
     &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: var(--ldesign-brand-color-hover);
+      color: var(--ldesign-text-color-primary);
       background-color: var(--ldesign-bg-color-component-hover);
-      border-color: var(--ldesign-brand-color-hover);
+      border-color: var(--ldesign-border-color-hover);
     }
 
     &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: var(--ldesign-brand-color-active);
+      color: var(--ldesign-text-color-primary);
       background-color: var(--ldesign-bg-color-component-active);
-      border-color: var(--ldesign-brand-color-active);
+      border-color: var(--ldesign-border-color-hover);
     }
   }
 
@@ -264,27 +266,110 @@
     color: var(--ld-btn-color);
     background-color: transparent;
     border-color: transparent;
-    text-decoration: underline;
+    text-decoration: none;
 
     &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
       color: var(--ld-btn-hover);
-      text-decoration-color: var(--ld-btn-hover);
+      text-decoration: none;
       background-color: transparent;
     }
 
     &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
       color: var(--ld-btn-active);
-      text-decoration-color: var(--ld-btn-active);
+      text-decoration: none;
       background-color: transparent;
     }
 
     &.ldesign-button--color-default {
       color: var(--ldesign-text-color-primary);
-      text-decoration-color: var(--ldesign-text-color-primary);
       &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
         color: var(--ldesign-text-color-primary);
-        text-decoration-color: var(--ldesign-text-color-primary);
       }
+    }
+  }
+
+  /* 对齐 AntD：危险态组合样式 */
+  &--dangerous.ldesign-button--primary {
+    color: var(--ldesign-font-white-1);
+    background-color: var(--ldesign-error-color);
+    border-color: var(--ldesign-error-color);
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ldesign-error-color-hover);
+      border-color: var(--ldesign-error-color-hover);
+    }
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ldesign-error-color-active);
+      border-color: var(--ldesign-error-color-active);
+    }
+  }
+  &--dangerous.ldesign-button--default,
+  &--dangerous.ldesign-button--secondary {
+    color: var(--ldesign-error-color);
+    background-color: var(--ldesign-bg-color-component);
+    border-color: var(--ldesign-error-color);
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-hover);
+      border-color: var(--ldesign-error-color-hover);
+      background-color: var(--ldesign-error-color-focus);
+    }
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-active);
+      border-color: var(--ldesign-error-color-active);
+      background-color: var(--ldesign-error-color-1);
+    }
+  }
+  &--dangerous.ldesign-button--dashed {
+    color: var(--ldesign-error-color);
+    border-color: var(--ldesign-error-color);
+    border-style: dashed;
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-hover);
+      border-color: var(--ldesign-error-color-hover);
+      background-color: var(--ldesign-error-color-focus);
+    }
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-active);
+      border-color: var(--ldesign-error-color-active);
+      background-color: var(--ldesign-error-color-1);
+    }
+  }
+  &--dangerous.ldesign-button--text {
+    color: var(--ldesign-error-color);
+    background-color: transparent;
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-hover);
+      background-color: var(--ldesign-error-color-focus);
+    }
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-active);
+      background-color: var(--ldesign-error-color-1);
+    }
+  }
+  &--dangerous.ldesign-button--link {
+    color: var(--ldesign-error-color);
+    text-decoration-color: var(--ldesign-error-color);
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-hover);
+      text-decoration-color: var(--ldesign-error-color-hover);
+    }
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-active);
+      text-decoration-color: var(--ldesign-error-color-active);
+    }
+  }
+  &--dangerous.ldesign-button--ghost {
+    color: var(--ldesign-error-color);
+    border-color: var(--ldesign-error-color);
+    background-color: transparent;
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-hover);
+      border-color: var(--ldesign-error-color-hover);
+      background-color: var(--ldesign-error-color-focus);
+    }
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-active);
+      border-color: var(--ldesign-error-color-active);
+      background-color: var(--ldesign-error-color-1);
     }
   }
 
@@ -321,6 +406,72 @@
         background-color: var(--ldesign-bg-color-component-active);
         border-color: var(--ldesign-border-color-hover);
         color: var(--ldesign-text-color-primary);
+      }
+    }
+  }
+
+  // 新增：渐变填充按钮（支持 color 修饰）
+  &--gradient {
+    --ld-btn-grad-from: var(--ldesign-brand-color-6);
+    --ld-btn-grad-to: var(--ldesign-brand-color-8);
+    --ld-btn-grad-from-hover: var(--ldesign-brand-color-5);
+    --ld-btn-grad-to-hover: var(--ldesign-brand-color-7);
+    --ld-btn-grad-from-active: var(--ldesign-brand-color-7);
+    --ld-btn-grad-to-active: var(--ldesign-brand-color-9);
+
+    color: var(--ldesign-font-white-1);
+    background-image: linear-gradient(135deg, var(--ld-btn-grad-from), var(--ld-btn-grad-to));
+    border-color: transparent;
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-image: linear-gradient(135deg, var(--ld-btn-grad-from-hover), var(--ld-btn-grad-to-hover));
+      border-color: transparent;
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-image: linear-gradient(135deg, var(--ld-btn-grad-from-active), var(--ld-btn-grad-to-active));
+      border-color: transparent;
+    }
+
+    // 语义色梯度
+    &.ldesign-button--color-success {
+      --ld-btn-grad-from: var(--ldesign-success-color-4);
+      --ld-btn-grad-to: var(--ldesign-success-color-6);
+      --ld-btn-grad-from-hover: var(--ldesign-success-color-3);
+      --ld-btn-grad-to-hover: var(--ldesign-success-color-5);
+      --ld-btn-grad-from-active: var(--ldesign-success-color-5);
+      --ld-btn-grad-to-active: var(--ldesign-success-color-7);
+    }
+
+    &.ldesign-button--color-warning {
+      --ld-btn-grad-from: var(--ldesign-warning-color-4);
+      --ld-btn-grad-to: var(--ldesign-warning-color-6);
+      --ld-btn-grad-from-hover: var(--ldesign-warning-color-3);
+      --ld-btn-grad-to-hover: var(--ldesign-warning-color-5);
+      --ld-btn-grad-from-active: var(--ldesign-warning-color-5);
+      --ld-btn-grad-to-active: var(--ldesign-warning-color-7);
+    }
+
+    &.ldesign-button--color-danger {
+      --ld-btn-grad-from: var(--ldesign-error-color-4);
+      --ld-btn-grad-to: var(--ldesign-error-color-6);
+      --ld-btn-grad-from-hover: var(--ldesign-error-color-3);
+      --ld-btn-grad-to-hover: var(--ldesign-error-color-5);
+      --ld-btn-grad-from-active: var(--ldesign-error-color-5);
+      --ld-btn-grad-to-active: var(--ldesign-error-color-7);
+    }
+
+    &.ldesign-button--color-default {
+      color: var(--ldesign-text-color-primary);
+      background-image: linear-gradient(135deg, var(--ldesign-gray-color-1), var(--ldesign-gray-color-3));
+      border-color: var(--ldesign-border-color);
+      &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-image: linear-gradient(135deg, var(--ldesign-gray-color-1), var(--ldesign-gray-color-2));
+        border-color: var(--ldesign-border-color-hover);
+      }
+      &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-image: linear-gradient(135deg, var(--ldesign-gray-color-2), var(--ldesign-gray-color-4));
+        border-color: var(--ldesign-border-color-hover);
       }
     }
   }
@@ -462,39 +613,29 @@
     --ld-btn-focus: var(--ldesign-bg-color-component-hover);
   }
 
-  /* 幽灵按钮（一般用于深色背景） */
+  /* 幽灵按钮（一般用于深色背景）。默认白色，不跟随 color；显式指定 color 或危险态时覆盖 */
   &--ghost {
     background-color: transparent;
-    color: var(--ld-btn-color);
-    border-color: var(--ld-btn-color);
+    color: var(--ldesign-font-white-1);
+    border-color: var(--ldesign-font-white-1);
 
     &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      background-color: var(--ld-btn-focus);
-      color: var(--ld-btn-hover);
-      border-color: var(--ld-btn-hover);
+      background-color: rgba(255, 255, 255, 0.08);
+      color: var(--ldesign-font-white-1);
+      border-color: var(--ldesign-font-white-1);
     }
 
     &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      background-color: var(--ld-btn-focus);
-      color: var(--ld-btn-active);
-      border-color: var(--ld-btn-active);
-    }
-
-    // 深色背景下的纯白幽灵
-    &.ldesign-button--color-default {
+      background-color: rgba(255, 255, 255, 0.12);
       color: var(--ldesign-font-white-1);
       border-color: var(--ldesign-font-white-1);
-
-      &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-        background-color: rgba(255, 255, 255, 0.08);
-        color: var(--ldesign-font-white-1);
-      }
-
-      &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-        background-color: rgba(255, 255, 255, 0.12);
-        color: var(--ldesign-font-white-1);
-      }
     }
+
+    // 显式 color 时使用语义色
+    &.ldesign-button--color-primary { color: var(--ldesign-brand-color); border-color: var(--ldesign-brand-color); }
+    &.ldesign-button--color-success { color: var(--ldesign-success-color); border-color: var(--ldesign-success-color); }
+    &.ldesign-button--color-warning { color: var(--ldesign-warning-color); border-color: var(--ldesign-warning-color); }
+    &.ldesign-button--color-danger { color: var(--ldesign-error-color); border-color: var(--ldesign-error-color); }
   }
 }
 

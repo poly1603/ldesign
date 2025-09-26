@@ -7,6 +7,10 @@ export type TimePickerSize = 'small' | 'medium' | 'large';
 export type TimePickerStatus = 'default' | 'success' | 'warning' | 'error';
 export type TimeFormat = 'HH:mm' | 'HH:mm:ss' | 'HH:mm:ss:SSS' | 'hh:mm A' | 'hh:mm:ss A';
 
+// 新增：承载容器与断点类型
+export type TimePickerOverlay = 'auto' | 'popup' | 'drawer';
+export type Breakpoints = { xs: number; sm: number; md: number; lg: number };
+
 export interface TimePickerPresets {
   [key: string]: string | [string, string];
 }
@@ -108,6 +112,18 @@ export class LdesignTimePicker {
   /** 是否需要点击“确定”确认（默认需要）。关闭后再触发 change */
   @Prop() confirm: boolean = true;
 
+  // 响应式承载容器控制：PC 用 popup，平板/手机用 drawer
+  /** 承载容器：auto(>=md 用 popup，<md 用 drawer) | popup | drawer */
+  @Prop() overlay: TimePickerOverlay = 'auto';
+  /** 响应式断点，默认 { xs:480, sm:768, md:1024, lg:1280 } */
+  @Prop() breakpoints?: Breakpoints;
+  /** Drawer 放置位置（移动端/平板建议 bottom） */
+  @Prop() drawerPlacement: 'left' | 'right' | 'top' | 'bottom' = 'bottom';
+  /** Drawer 面板尺寸（right/left 为宽度，top/bottom 为高度），可数值(px)或 CSS 长度 */
+  @Prop() drawerSize?: number | string;
+  /** Drawer 头部标题（可选） */
+  @Prop() drawerTitle?: string;
+
   /** 值改变 */
   @Event() ldesignChange!: EventEmitter<string | undefined>;
   /** 弹层可见性改变 */
@@ -138,6 +154,11 @@ export class LdesignTimePicker {
   @State() effectiveShowMilliseconds: boolean = false;
   @State() effectiveUse12Hours: boolean = false;
   @State() effectiveOutputFormat: '24' | '12' = '24';
+
+  // Drawer 可见性（当 trigger !== 'manual' 时内部自管；manual 下使用 visible 属性）
+  @State() drawerVisible: boolean = false;
+  // 当前有效承载容器类型（由 overlay + breakpoints 决定）
+  @State() overlayKind: 'popup' | 'drawer' = 'popup';
   
   private inputElement?: HTMLInputElement;
 
@@ -194,7 +215,88 @@ export class LdesignTimePicker {
     const t = this.parseTime(init) || { h: 0, m: 0, s: 0, ms: 0 } as any;
     this.h = t.h; this.m = t.m; this.s = t.s; this.ms = (t as any).ms ?? 0; this.hasValue = init != null && init !== ''; this.ampm = this.h < 12 ? 'AM' : 'PM';
     this.inputValue = init ?? '';
+    // 初始化承载容器类型
+    this.updateOverlayKind();
   }
+
+  componentDidLoad() {
+    // 窗口尺寸变化时，更新承载容器类型
+    window.addEventListener('resize', this.updateOverlayKind as any, { passive: true } as any);
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('resize', this.updateOverlayKind as any);
+  }
+
+  private getBreakpoints(): Breakpoints {
+    return this.breakpoints || { xs: 480, sm: 768, md: 1024, lg: 1280 };
+  }
+  private computeOverlayKind(): 'popup' | 'drawer' {
+    if (this.overlay === 'popup') return 'popup';
+    if (this.overlay === 'drawer') return 'drawer';
+    try {
+      const w = window.innerWidth || document.documentElement.clientWidth || 1024;
+      const md = this.getBreakpoints().md || 1024;
+      return w >= md ? 'popup' : 'drawer';
+    } catch {
+      return 'popup';
+    }
+  }
+  private updateOverlayKind = () => {
+    const next = this.computeOverlayKind();
+    if (next !== this.overlayKind) {
+      this.overlayKind = next;
+    }
+  };
+
+  private getOverlayVisible(): boolean {
+    if (this.trigger === 'manual') return this.visible;
+    return this.drawerVisible;
+  }
+
+  private openOverlay() {
+    if (this.overlayKind === 'popup') {
+      const popup = this.getInnerPopup();
+      if (popup) (popup as any).visible = true;
+      return;
+    }
+    // drawer 模式
+    if (this.trigger === 'manual') {
+      this.visible = true;
+    } else {
+      this.drawerVisible = true;
+    }
+    this.ldesignVisibleChange.emit(true);
+    this.ldesignOpen.emit();
+    // 打开后滚动到当前项
+    requestAnimationFrame(() => this.scrollActiveIntoView());
+  }
+
+  private hideOverlay() {
+    if (this.overlayKind === 'popup') {
+      this.hideInnerPopup();
+      return;
+    }
+    // drawer 模式
+    if (this.trigger === 'manual') {
+      this.visible = false;
+    } else {
+      this.drawerVisible = false;
+    }
+    this.ldesignVisibleChange.emit(false);
+    this.ldesignClose.emit();
+  }
+
+  private handleDrawerVisibleChange = (e: CustomEvent<boolean>) => {
+    this.ldesignVisibleChange.emit(e.detail);
+    if (this.trigger === 'manual') this.visible = e.detail;
+    if (e.detail) {
+      this.ldesignOpen.emit();
+      requestAnimationFrame(() => this.scrollActiveIntoView());
+    } else {
+      this.ldesignClose.emit();
+    }
+  };
 
   private clamp(n: number, min: number, max: number) { return Math.max(min, Math.min(max, n)); }
   private pad(n: number) { return String(n).padStart(2, '0'); }
@@ -367,7 +469,7 @@ export class LdesignTimePicker {
     this.emitPick('now');
   };
 
-  private confirmPick = () => { this.commitValue(); this.hideInnerPopup(); };
+  private confirmPick = () => { this.commitValue(); this.hideOverlay(); };
 
   private commitValue() {
     const out = this.formatTime(this.h, this.m, this.s, this.ms);
@@ -436,10 +538,9 @@ export class LdesignTimePicker {
   private onTriggerKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      const popup = this.getInnerPopup();
-      if (popup) (popup as any).visible = true;
+      this.openOverlay();
     } else if (e.key === 'Escape') {
-      this.hideInnerPopup();
+      this.hideOverlay();
     }
   };
 
@@ -447,9 +548,8 @@ export class LdesignTimePicker {
     this.focused = true;
     this.ldesignFocus.emit(e);
     if (!this.disabled) {
-      const popup = this.getInnerPopup();
       // 避免与 trigger="click" 的切换冲突：仅在 trigger=focus 时由输入聚焦打开
-      if (popup && this.trigger === 'focus') (popup as any).visible = true;
+      if (this.trigger === 'focus') this.openOverlay();
     }
   };
 
@@ -480,6 +580,14 @@ export class LdesignTimePicker {
       e.preventDefault();
       this.inputValue = this.value ?? '';
       (e.currentTarget as HTMLInputElement).blur();
+      this.hideOverlay();
+    }
+  };
+
+  private onTriggerClick = (_e: MouseEvent) => {
+    if (this.disabled) return;
+    if (this.overlayKind === 'drawer' && this.trigger === 'click') {
+      this.openOverlay();
     }
   };
 
@@ -511,7 +619,7 @@ export class LdesignTimePicker {
     const textValue = has ? (this.value as string) : '';
 
     return (
-      <div class={classes} tabindex={this.disabled ? -1 : 0} onKeyDown={this.onTriggerKeyDown as any}>
+      <div class={classes} tabindex={this.disabled ? -1 : 0} onKeyDown={this.onTriggerKeyDown as any} onClick={this.onTriggerClick as any}>
         {this.allowInput ? (
           <input
             ref={(el) => (this.inputElement = el as HTMLInputElement)}
@@ -750,23 +858,46 @@ export class LdesignTimePicker {
 
   render() {
     const visibleProp = this.trigger === 'manual' ? { visible: this.visible } : {};
+    const overlay = this.overlayKind;
+
+    if (overlay === 'popup') {
+      return (
+        <Host class={{ 'ldesign-time-picker': true, 'ldesign-time-picker--disabled': this.disabled }}>
+          <ldesign-popup
+            placement={this.placement}
+            trigger={this.trigger as any}
+            interactive={true}
+            arrow={this.arrow}
+            theme={this.theme}
+            closeOnOutside={true}
+            onLdesignVisibleChange={this.handlePopupVisibleChange}
+            {...visibleProp}
+          >
+            <span slot="trigger">
+              <slot name="trigger">{this.renderTrigger()}</slot>
+            </span>
+            {this.renderPanel()}
+          </ldesign-popup>
+        </Host>
+      );
+    }
+
+    // drawer 模式
+    const sizeProp = this.drawerSize != null ? this.drawerSize : (this.size === 'large' ? 420 : this.size === 'small' ? 280 : 340);
+    const drawerVisible = this.getOverlayVisible();
     return (
       <Host class={{ 'ldesign-time-picker': true, 'ldesign-time-picker--disabled': this.disabled }}>
-        <ldesign-popup
-          placement={this.placement}
-          trigger={this.trigger as any}
-          interactive={true}
-          arrow={this.arrow}
-          theme={this.theme}
-          closeOnOutside={true}
-          onLdesignVisibleChange={this.handlePopupVisibleChange}
-          {...visibleProp}
+        {/* 触发器 */}
+        <slot name="trigger">{this.renderTrigger()}</slot>
+        <ldesign-drawer
+          visible={drawerVisible}
+          placement={this.drawerPlacement}
+          size={sizeProp as any}
+          drawerTitle={this.drawerTitle}
+          onLdesignVisibleChange={this.handleDrawerVisibleChange}
         >
-          <span slot="trigger">
-            <slot name="trigger">{this.renderTrigger()}</slot>
-          </span>
           {this.renderPanel()}
-        </ldesign-popup>
+        </ldesign-drawer>
       </Host>
     );
   }

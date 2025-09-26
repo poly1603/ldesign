@@ -39,8 +39,20 @@ export class LdesignPicker {
   @Prop() friction: number = 0.92;
   /** 边界阻力系数 0-1（越小阻力越大） */
   @Prop() resistance: number = 0.35;
+  /** 最大橡皮筋越界（像素）。优先级高于比例 */
+  @Prop() maxOverscroll?: number;
+  /** 最大橡皮筋越界比例（相对于容器高度 0-1）。当未提供像素值时生效；未设置则默认 0.5（即容器高度的一半） */
+  @Prop() maxOverscrollRatio?: number;
   /** 是否启用惯性 */
   @Prop() momentum: boolean = true;
+  /** 吸附/回弹动画时长（毫秒，适用于触摸/键盘/滚动吸附），未设置默认 260ms */
+  @Prop() snapDuration?: number;
+  /** 滚轮专用吸附动画时长（毫秒），未设置默认 150ms */
+  @Prop() snapDurationWheel?: number;
+  /** 手势拖拽跟随比例（0-1），1 表示 1:1 跟手，越小阻力越大，默认 1 */
+  @Prop() dragFollow: number = 1;
+  /** 手势拖拽平滑时间常数（毫秒），>0 时使用一阶平滑使位移逐步接近手指，营造“越来越慢”的阻力感，默认 0（关闭） */
+  @Prop() dragSmoothing?: number;
 
   /** 选中项变化（最终吸附后触发） */
   @Event() ldesignChange!: EventEmitter<{ value: string | undefined; option?: PickerOption }>;
@@ -55,6 +67,7 @@ export class LdesignPicker {
   private containerEl?: HTMLElement; // 外层容器（用于精确测量高度）
   private itemH = 36;
   private actualItemHeight?: number; // 实际渲染后的项目高度
+  private lastDragTime = 0; // 上一次 pointermove 的时间，用于平滑计算
 
   // 轨道 transform Y（px），正向为下
   private trackY = 0;
@@ -65,9 +78,13 @@ export class LdesignPicker {
 
   // 指针拖动
   private isPointerDown = false;
+  private isDragging = false;
+  private tapCandidate = false;
   private startY = 0;
   private startTrackY = 0;
+  private startTime = 0;
   private velocitySamples: { t: number; y: number }[] = [];
+  private readonly dragThreshold = 4; // px 用于区分点击与拖动
 
   // 鼠标滚轮累积
   private lastWheelTime = 0; // ms
@@ -201,6 +218,24 @@ export class LdesignPicker {
     return this.panelHeight || (this.itemHeightBySize * this.visibleItems);
   }
 
+  private get maxOverscrollPx() {
+    // 1) 明确像素优先
+    const px = this.maxOverscroll;
+    if (typeof px === 'number' && isFinite(px) && px >= 0) return px;
+    // 2) 比例（相对于容器高度）
+    const ratio = this.maxOverscrollRatio;
+    const panel = this.panelHeightPx;
+    if (typeof ratio === 'number' && isFinite(ratio) && ratio >= 0) return panel * ratio;
+    // 3) 默认：容器高度的一半（满足你的期望）
+    return panel / 2;
+  }
+
+  private get dragFollowGain() {
+    const v = this.dragFollow;
+    if (typeof v === 'number' && isFinite(v)) return Math.max(0, Math.min(1, v));
+    return 1;
+  }
+
   private get centerOffset() {
     // 使用实际容器高度
     const h = this.containerEl?.clientHeight ?? this.panelHeightPx;
@@ -271,54 +306,70 @@ export class LdesignPicker {
   }
 
   /* ---------------- core movement ---------------- */
-  private setTrackTransform(y: number, animate = false) {
-    if (!this.listEl || this.parsed.length === 0) return;
-    
-    // 严格限制Y值在合法范围内
+  private getBounds() {
     const itemH = this.itemHeightBySize;
     const maxY = this.centerOffset; // 第0项居中时的Y值（最上限）
     const minY = this.centerOffset - (this.parsed.length - 1) * itemH; // 最后一项居中时的Y值（最下限）
-    
-    console.log('📐 setTrackTransform called:', {
-      inputY: y,
-      maxY,
-      minY,
-      currentTrackY: this.trackY,
-      centerOffset: this.centerOffset,
-      itemHeight: itemH,
-      parsedLength: this.parsed.length
-    });
-    
-    // 强制边界钳制 - 绝对不允许超出
-    let clampedY = y;
-    if (y > maxY) {
-      console.log('⚠️ Clamping to MAX (first item):', y, '->', maxY);
-      clampedY = maxY; // 第一项不能再往下
-    } else if (y < minY) {
-      console.log('⚠️ Clamping to MIN (last item):', y, '->', minY);
-      clampedY = minY; // 最后一项不能再往上
+    return { itemH, minY, maxY };
+  }
+
+  private rubberBand(over: number, dim: number, c: number) {
+    const sign = over < 0 ? -1 : 1;
+    const x = Math.abs(over);
+    // 经典 rubber-band 公式：趋于 dim 上限，c 越小阻力越大（更硬）
+    const result = (dim * c * x) / (dim + c * x);
+    return sign * result;
+  }
+
+  private setTrackTransform(y: number, animate = false, mode: 'normal' | 'drag' | 'inertia' = 'normal') {
+    if (!this.listEl || this.parsed.length === 0) return;
+
+    const { itemH, minY, maxY } = this.getBounds();
+
+    // 允许在拖拽/惯性阶段出现受限的弹性越界；编程/步进阶段严格钳制
+    const allowElastic = mode === 'drag' || mode === 'inertia';
+    const maxOverscroll = this.maxOverscrollPx; // 可配置的最大越界距离（像素）
+
+    let nextY = y;
+    if (!allowElastic) {
+      // 严格限制在可用范围内（不会出现越界视觉）
+      nextY = Math.max(minY, Math.min(maxY, y));
+    } else {
+      if (y > maxY) {
+        // 顶部越界：橡皮筋压缩
+        const over = y - maxY;
+        const dim = this.panelHeightPx; // 使用容器高度作为弹性参考长度
+        const c = Math.min(0.95, Math.max(0.05, this.resistance));
+        const rb = this.rubberBand(over, dim, c);
+        nextY = maxY + Math.min(maxOverscroll, rb);
+      } else if (y < minY) {
+        // 底部越界：橡皮筋压缩
+        const over = y - minY; // 负值
+        const dim = this.panelHeightPx;
+        const c = Math.min(0.95, Math.max(0.05, this.resistance));
+        const rb = this.rubberBand(over, dim, c);
+        nextY = minY + Math.max(-maxOverscroll, rb);
+      }
     }
-    clampedY = Math.round(clampedY); // 确保整数像素值（最终才取整）
-    
-    // 只有当值真正改变时才更新
-    if (Math.abs(this.trackY - clampedY) < 0.01) {
-      console.log('🔄 No change, skipping update');
-      return; // 避免无意义的更新
+
+    // 取整，保持像素对齐；拖拽中也取整即可，跟手感主要来自 1:1 位移而非亚像素
+    const appliedY = Math.round(nextY);
+
+    if (Math.abs(this.trackY - appliedY) < 0.01) {
+      return;
     }
-    
-    console.log('✅ Applying transform:', clampedY, 'animate:', animate);
-    this.trackY = clampedY;
+
+    this.trackY = appliedY;
     const el = this.listEl as HTMLElement;
     el.style.willChange = 'transform';
     el.style.transition = animate ? 'transform 200ms cubic-bezier(0.22,0.61,0.36,1)' : 'none';
-    el.style.transform = `translate3d(0, ${clampedY}px, 0)`;
-    
-    // 更新视觉状态
-    const currentFloat = (this.centerOffset - clampedY) / itemH;
+    el.style.transform = `translate3d(0, ${appliedY}px, 0)`;
+
+    // 更新视觉状态（四舍五入到最近项）
+    const currentFloat = (this.centerOffset - appliedY) / itemH;
     const currentIdx = Math.max(0, Math.min(this.parsed.length - 1, Math.round(currentFloat)));
     const newVisual = this.parsed[currentIdx]?.value;
     if (newVisual !== this.visual) {
-      console.log('👁️ Visual update:', this.visual, '->', newVisual);
       this.visual = newVisual;
     }
   }
@@ -358,8 +409,10 @@ export class LdesignPicker {
       return;
     }
     
-    // 根据触发源调整动画时长，滚轮用较短时间以提高响应
-    const duration = opts?.trigger === 'wheel' ? 150 : 200;
+    // 根据触发源调整动画时长；提供可配置项，默认触摸/键盘/滚动 260ms，滚轮 150ms（更灵敏）
+    const dWheel = (typeof this.snapDurationWheel === 'number' && isFinite(this.snapDurationWheel) && this.snapDurationWheel! > 0) ? this.snapDurationWheel! : 150;
+    const dDefault = (typeof this.snapDuration === 'number' && isFinite(this.snapDuration) && this.snapDuration! > 0) ? this.snapDuration! : 260;
+    const duration = opts?.trigger === 'wheel' ? dWheel : dDefault;
     const start = performance.now();
     const state = { raf: 0, start, from, to, duration, idx: safeIdx, trigger: opts?.trigger, silent: !!opts?.silent };
     this.snapAnim = state as any;
@@ -377,7 +430,7 @@ export class LdesignPicker {
 
       if (t >= 1) {
         // 结束时精确吸附到目标位置（state.to 已经是整数）
-        this.setTrackTransform(state.to, false);
+        this.setTrackTransform(state.to, false, 'normal');
         
         const nextVal = this.parsed[state.idx]?.value;
         this.visual = nextVal;
@@ -438,7 +491,7 @@ export class LdesignPicker {
     } else {
       const y = this.yForIndex(enabledIdx);
       console.log('🚀 Direct set to Y:', y);
-      this.setTrackTransform(y, false);
+      this.setTrackTransform(y, false, 'normal');
       const nextVal = this.parsed[enabledIdx]?.value;
       this.visual = nextVal;
       if (nextVal !== this.current) {
@@ -471,7 +524,7 @@ export class LdesignPicker {
     if ((towardTop && atTop) || (towardBottom && atBottom)) {
       const boundaryY = towardTop ? maxY : minY;
       console.log('🧱 Wheel blocked by positional boundary', { towardTop, towardBottom, atTop, atBottom, boundaryY });
-      this.setTrackTransform(boundaryY, false); // 硬对齐边界
+      this.setTrackTransform(boundaryY, false, 'normal'); // 硬对齐边界
       return;
     }
 
@@ -545,20 +598,20 @@ export class LdesignPicker {
   /* ---------------- pointer/gesture ---------------- */
   private onPointerDown = (e: PointerEvent) => {
     if (this.disabled || !this.listEl) return;
-    
-    // 如果点击的是列表项，不处理拖动
-    const target = e.target as HTMLElement;
-    if (target.classList?.contains('ldesign-picker__item')) {
-      return;
-    }
-    
-    e.preventDefault(); // 防止触发默认的滚动行为
+    e.preventDefault(); // 防止触发默认的滚动行为、阻止 click 默认
     (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+
     this.isPointerDown = true;
+    this.isDragging = false;
+    this.tapCandidate = true;
+    this.startTime = performance.now();
+
     this.cancelInertia();
     this.cancelSnapAnim(); // 取消进行中的动画
+
     this.startY = e.clientY;
     this.startTrackY = this.trackY;
+    this.lastDragTime = performance.now();
     this.velocitySamples = [{ t: performance.now(), y: e.clientY }];
   };
 
@@ -566,23 +619,31 @@ export class LdesignPicker {
     if (!this.isPointerDown || !this.listEl) return;
     e.preventDefault();
     const dy = e.clientY - this.startY;
-    
-    // 严格的边界限制
-    const maxY = this.centerOffset;  // 第0项居中时的Y值
-    const minY = this.centerOffset - (this.parsed.length - 1) * this.itemHeightBySize;  // 最后一项居中时的Y值
-    let next = this.startTrackY + dy;
-    
-    // 超出边界时增加阻力，但限制最大超出量
-    const maxOverscroll = this.itemHeightBySize * 0.3;
-    if (next > maxY) {
-      const over = next - maxY;
-      next = maxY + Math.min(maxOverscroll, over * this.resistance);
-    } else if (next < minY) {
-      const over = next - minY;
-      next = minY + Math.max(-maxOverscroll, over * this.resistance);
+
+    // 拖动阈值：小于阈值判定为点击候选，不移动轨道
+    if (!this.isDragging && Math.abs(dy) < this.dragThreshold) {
+      // 更新速度样本以便松手时仍有 tap 逻辑
+      const now0 = performance.now();
+      this.velocitySamples.push({ t: now0, y: e.clientY });
+      while (this.velocitySamples.length > 2 && (now0 - this.velocitySamples[0].t) > 120) this.velocitySamples.shift();
+      return;
     }
-    
-    this.setTrackTransform(next, false);
+    this.isDragging = true;
+    this.tapCandidate = false;
+
+    // 跟随手指位移基础目标（可配置跟随比例）
+    const target = this.startTrackY + dy * this.dragFollowGain;
+
+    // 时间平滑：一阶滤波逐步接近手指位置，营造“越来越慢”的阻力感
+    const nowTs = performance.now();
+    const dt = Math.max(0, nowTs - this.lastDragTime);
+    this.lastDragTime = nowTs;
+    const tau = (typeof this.dragSmoothing === 'number' && isFinite(this.dragSmoothing) && this.dragSmoothing! > 0) ? this.dragSmoothing! : 0;
+    const alpha = tau > 0 ? (1 - Math.exp(-dt / tau)) : 1; // 0-1
+    const next = this.trackY + (target - this.trackY) * alpha;
+
+    // 使用 setTrackTransform 的弹性模式统一处理越界（rubber-band）
+    this.setTrackTransform(next, false, 'drag');
 
     // 实时视觉选中
     const rawIdx = (this.centerOffset - this.trackY) / this.itemHeightBySize;
@@ -593,16 +654,24 @@ export class LdesignPicker {
     // 速度样本
     const now = performance.now();
     this.velocitySamples.push({ t: now, y: e.clientY });
-    while (this.velocitySamples.length > 2 && (now - this.velocitySamples[0].t) > 120) this.velocitySamples.shift();
+    while (this.velocitySamples.length > 2 && (now - this.velocitySamples[0].t) > 150) this.velocitySamples.shift();
   };
 
   private estimateVelocity(): number {
     if (this.velocitySamples.length < 2) return 0;
-    const a = this.velocitySamples[0];
-    const b = this.velocitySamples[this.velocitySamples.length - 1];
-    const dy = b.y - a.y;
-    const dt = Math.max(1, b.t - a.t);
-    return dy / dt; // px/ms
+    // 使用最小二乘拟合求斜率，更稳健（px/ms）
+    const n = this.velocitySamples.length;
+    const meanT = this.velocitySamples.reduce((s, p) => s + p.t, 0) / n;
+    const meanY = this.velocitySamples.reduce((s, p) => s + p.y, 0) / n;
+    let num = 0, den = 0;
+    for (const p of this.velocitySamples) {
+      const dt = p.t - meanT;
+      num += dt * (p.y - meanY);
+      den += dt * dt;
+    }
+    if (den === 0) return 0;
+    const slope = num / den; // px/ms
+    return slope;
   }
 
   private startInertiaTransform(v0: number) {
@@ -613,30 +682,46 @@ export class LdesignPicker {
       return; 
     }
     this.cancelInertia();
-    const state = { v: Math.max(-3.5, Math.min(3.5, v0 * 16.67)), last: performance.now(), raf: 0 } as { v: number; last: number; raf: number };
+    // 速度单位统一为 px/ms，去掉过小的速度上限以保留更自然的甩动感，但设定合理的上限避免异常值
+    const maxV = 5; // px/ms（约 300px/s）
+    const state = { v: Math.max(-maxV, Math.min(maxV, v0)), last: performance.now(), raf: 0 } as { v: number; last: number; raf: number };
     this.inertia = state as any;
 
     const step = (now: number) => {
       if (!this.inertia) return;
-      const dt = Math.max(1, now - state.last);
+      const dt = Math.max(1, now - state.last); // ms
       state.last = now;
-      const dy = state.v * (dt / 16.67);
-      let next = this.trackY + dy;
 
-      // 严格的边界限制
-      const maxY = this.centerOffset;
-      const minY = this.centerOffset - (this.parsed.length - 1) * this.itemHeightBySize;
+      // 使用 px/ms 的速度积分位移：x += v * dt
+      let next = this.trackY + state.v * dt;
+
+      const { minY, maxY } = this.getBounds();
+      const maxOverscroll = this.maxOverscrollPx;
+
+      // 边界的“弹簧”回拉效果 + 橡皮筋跟随，避免瞬间硬夹
       if (next > maxY) {
-        this.setIndex(0, { animate: true, trigger: 'scroll' });
-        this.inertia = null;
-        return;
+        const over = next - maxY;
+        const dim = this.panelHeightPx;
+        const c = Math.min(0.95, Math.max(0.05, this.resistance));
+        const rb = this.rubberBand(over, dim, c);
+        next = maxY + Math.min(maxOverscroll, rb);
+        // 弹簧回拉加速度（越深越强），单位近似 px/ms^2
+        const springK = 0.002 + (1 - c) * 0.003; // resistance 越小，回拉越强
+        state.v += (-springK * over) * dt;
+        // 越界强阻尼，避免无限漂移
+        state.v *= 0.75;
       } else if (next < minY) {
-        this.setIndex(this.parsed.length - 1, { animate: true, trigger: 'scroll' });
-        this.inertia = null;
-        return;
+        const over = next - minY; // 负值（向上越界）
+        const dim = this.panelHeightPx;
+        const c = Math.min(0.95, Math.max(0.05, this.resistance));
+        const rb = this.rubberBand(over, dim, c);
+        next = minY + Math.max(-maxOverscroll, rb);
+        const springK = 0.002 + (1 - c) * 0.003;
+        state.v += (-springK * over) * dt;
+        state.v *= 0.75;
       }
 
-      this.setTrackTransform(next, false);
+      this.setTrackTransform(next, false, 'inertia');
 
       // 实时高亮
       const floatIdx = (this.centerOffset - this.trackY) / this.itemHeightBySize;
@@ -644,13 +729,19 @@ export class LdesignPicker {
       const vLive = this.parsed[idxLive]?.value;
       if (vLive !== this.visual) this.visual = vLive;
 
-      // 摩擦
+      // 摩擦衰减（指数），值越接近1惯性越长；建议 friction 取 0.97~0.995 更接近原生手感
       state.v *= Math.pow(this.friction, dt / 16.67);
-      if (Math.abs(state.v) < 0.2) {
-        const finalFloat = (this.centerOffset - this.trackY) / this.itemHeightBySize;
-        const idxFinal = this.clampIndex(Math.round(finalFloat));
+
+      // 终止条件：速度足够小，或者已经非常接近某一项中心
+      const nearlyStopped = Math.abs(state.v) < 0.02;
+      const finalFloat = (this.centerOffset - this.trackY) / this.itemHeightBySize;
+      const idxFinal = this.clampIndex(Math.round(finalFloat));
+      const targetY = this.yForIndex(idxFinal);
+      const nearSnap = Math.abs(this.trackY - targetY) <= 0.5;
+
+      if (nearlyStopped || nearSnap) {
         this.setIndex(idxFinal, { animate: true, trigger: 'scroll' });
-        this.inertia = null; 
+        this.inertia = null;
         return;
       }
       state.raf = requestAnimationFrame(step);
@@ -658,17 +749,34 @@ export class LdesignPicker {
     state.raf = requestAnimationFrame(step);
   }
 
-  private onPointerUp = (_e: PointerEvent) => {
+  private onPointerUp = (e: PointerEvent) => {
     if (!this.isPointerDown) return;
     this.isPointerDown = false;
+    const wasDragging = this.isDragging;
+    this.isDragging = false;
+
     if (!this.listEl) return;
 
-    // 如果超出边界，直接吸附回最近的有效位置
+    // 点击（轻触）选择：当未发生明显拖动时，选中触点所在的项
+    if (this.tapCandidate) {
+      this.tapCandidate = false;
+      const el = (e.target as HTMLElement)?.closest('li');
+      if (el && this.listEl.contains(el)) {
+        const idxAttr = (el as HTMLElement).getAttribute('data-index');
+        const idxNum = idxAttr ? parseInt(idxAttr, 10) : NaN;
+        if (!Number.isNaN(idxNum)) {
+          this.setIndex(idxNum, { animate: true, trigger: 'touch' });
+          return;
+        }
+      }
+    }
+
+    // 拖动释放：根据速度决定是否惯性，否则就近吸附
     const currentFloat = (this.centerOffset - this.trackY) / this.itemHeightBySize;
     const idx = this.clampIndex(Math.round(currentFloat));
     
     const v0 = this.estimateVelocity();
-    if (this.momentum && Math.abs(v0) > 0.1) {
+    if (wasDragging && this.momentum && Math.abs(v0) > 0.1) {
       this.startInertiaTransform(v0);
       this.emitPick('touch');
       return;
@@ -705,11 +813,12 @@ export class LdesignPicker {
       this.startSnapAnim(enabledIdx, { silent: true });
     } else {
       const y = this.yForIndex(enabledIdx);
-      this.setTrackTransform(y, false);
+      this.setTrackTransform(y, false, 'normal');
       this.visual = this.parsed[enabledIdx]?.value;
     }
   }
 
+  // 点击选择逻辑已在 PointerUp 内处理（tapCandidate），保留此函数供潜在外部复用
   private clickItem = (opt: PickerOption, ev: MouseEvent) => {
     if (this.disabled || opt.disabled) { ev.preventDefault(); return; }
     const idx = this.getIndexByValue(opt.value);
@@ -750,7 +859,6 @@ export class LdesignPicker {
                 data-value={opt.value}
                 data-index={String(i)}
                 class={{ 'ldesign-picker__item': true, 'ldesign-picker__item--active': opt.value === (this.visual ?? this.current), 'ldesign-picker__item--disabled': !!opt.disabled }}
-                onClick={(ev) => this.clickItem(opt, ev)}
               >
                 {opt.label}
               </li>

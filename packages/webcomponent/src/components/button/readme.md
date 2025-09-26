@@ -16,6 +16,19 @@
 <ldesign-button type="secondary">填充按钮</ldesign-button>
 ```
 
+- 新增：渐变按钮（支持 color 语义和变形 shape）
+```html path=null start=null
+<ldesign-button type="gradient">Gradient Primary</ldesign-button>
+<ldesign-button type="gradient" color="success">Gradient Success</ldesign-button>
+<ldesign-button type="gradient" color="warning">Gradient Warning</ldesign-button>
+<ldesign-button type="gradient" color="danger">Gradient Danger</ldesign-button>
+
+<!-- 形状变体示例 -->
+<ldesign-button type="gradient" shape="round">圆角渐变</ldesign-button>
+<ldesign-button type="gradient" shape="circle" icon="heart" aria-label="喜欢"></ldesign-button>
+<ldesign-button type="gradient" shape="square" icon="star" aria-label="收藏"></ldesign-button>
+```
+
 - 形态与颜色解耦：给 outline / dashed / text / link 指定 color
 ```html path=null start=null
 <ldesign-button type="outline" color="primary">描边按钮</ldesign-button>
@@ -66,19 +79,19 @@ Button 按钮组件
 
 ## Properties
 
-| Property       | Attribute       | Description                             | Type                                                                                                          | Default       |
-| -------------- | --------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------- |
-| `block`        | `block`         | 是否为块级按钮                                 | `boolean`                                                                                                     | `false`       |
-| `color`        | `color`         | 语义颜色（用于 outline/dashed/text/link/ghost） | `"danger" \| "default" \| "primary" \| "success" \| "warning"`                                                | `'primary'`   |
-| `disabled`     | `disabled`      | 是否禁用                                    | `boolean`                                                                                                     | `false`       |
-| `ghost`        | `ghost`         | 幽灵按钮（一般用于深色背景）                          | `boolean`                                                                                                     | `false`       |
-| `icon`         | `icon`          | 图标名称                                    | `string`                                                                                                      | `undefined`   |
-| `iconPosition` | `icon-position` | 图标位置：left \| right                      | `"left" \| "right"`                                                                                           | `'left'`      |
-| `loading`      | `loading`       | 是否加载中                                   | `boolean`                                                                                                     | `false`       |
-| `nativeType`   | `native-type`   | 原生按钮类型：button \| submit \| reset        | `"button" \| "reset" \| "submit"`                                                                             | `'button'`    |
-| `shape`        | `shape`         | 按钮形状                                    | `"circle" \| "rectangle" \| "round" \| "square"`                                                              | `'rectangle'` |
-| `size`         | `size`          | 按钮尺寸                                    | `"large" \| "medium" \| "small"`                                                                              | `'medium'`    |
-| `type`         | `type`          | 按钮类型                                    | `"danger" \| "dashed" \| "link" \| "outline" \| "primary" \| "secondary" \| "success" \| "text" \| "warning"` | `'primary'`   |
+| Property       | Attribute       | Description                             | Type                                                                                                                        | Default       |
+| -------------- | --------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `block`        | `block`         | 是否为块级按钮                                 | `boolean`                                                                                                                   | `false`       |
+| `color`        | `color`         | 语义颜色（用于 outline/dashed/text/link/ghost） | `"danger" \| "default" \| "primary" \| "success" \| "warning"`                                                              | `'primary'`   |
+| `disabled`     | `disabled`      | 是否禁用                                    | `boolean`                                                                                                                   | `false`       |
+| `ghost`        | `ghost`         | 幽灵按钮（一般用于深色背景）                          | `boolean`                                                                                                                   | `false`       |
+| `icon`         | `icon`          | 图标名称                                    | `string`                                                                                                                    | `undefined`   |
+| `iconPosition` | `icon-position` | 图标位置：left \| right                      | `"left" \| "right"`                                                                                                         | `'left'`      |
+| `loading`      | `loading`       | 是否加载中                                   | `boolean`                                                                                                                   | `false`       |
+| `nativeType`   | `native-type`   | 原生按钮类型：button \| submit \| reset        | `"button" \| "reset" \| "submit"`                                                                                           | `'button'`    |
+| `shape`        | `shape`         | 按钮形状                                    | `"circle" \| "rectangle" \| "round" \| "square"`                                                                            | `'rectangle'` |
+| `size`         | `size`          | 按钮尺寸                                    | `"large" \| "medium" \| "small"`                                                                                            | `'medium'`    |
+| `type`         | `type`          | 按钮类型                                    | `"danger" \| "dashed" \| "gradient" \| "link" \| "outline" \| "primary" \| "secondary" \| "success" \| "text" \| "warning"` | `'primary'`   |
 
 
 ## Events

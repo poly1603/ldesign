@@ -95,4 +95,97 @@
   /* 状态反馈：仅增强中心细线，不改变背景 */
   &__splitter:hover::before { background: var(--ld-splitter-line-hover); }
   &--dragging &__splitter::before { background: var(--ld-splitter-line-active); }
+
+  /* 快捷折叠控制器（出现在分割条中心） */
+  &__collapse {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    gap: 2px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    border-radius: 4px;
+    pointer-events: auto;
+    z-index: 2;
+  }
+  &__collapse-btn {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  &__collapse-btn:hover { background: rgba(0,0,0,0.04); }
+  &--disabled &__collapse { pointer-events: none; opacity: .6; }
+
+  /* 折叠状态：锁定一侧为固定尺寸（px） */
+  &--vertical&--collapsed-start &__pane--start { flex: 0 0 var(--ld-collapsed-size, 0px); }
+  &--vertical&--collapsed-start &__pane--end { flex: 1 1 0; }
+  &--vertical&--collapsed-end &__pane--end { flex: 0 0 var(--ld-collapsed-size, 0px); }
+  &--vertical&--collapsed-end &__pane--start { flex: 1 1 0; }
+
+  &--horizontal&--collapsed-start &__pane--start { flex: 0 0 var(--ld-collapsed-size, 0px); }
+  &--horizontal&--collapsed-start &__pane--end { flex: 1 1 0; }
+  &--horizontal&--collapsed-end &__pane--end { flex: 0 0 var(--ld-collapsed-size, 0px); }
+  &--horizontal&--collapsed-end &__pane--start { flex: 1 1 0; }
+
+  /* 边缘恢复按钮：折叠时鼠标移到边缘显示 */
+  &__edge {
+    position: absolute;
+    pointer-events: auto;
+    opacity: 0;
+    transition: opacity .15s ease;
+    z-index: 2;
+  }
+  &__edge-btn {
+    appearance: none;
+    border: 1px solid rgba(0,0,0,0.06);
+    background: #fff;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    color: #6b7280;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    cursor: pointer;
+  }
+
+  /* 垂直：左右边缘 */
+  &--vertical &__edge--start {
+    left: 0;
+    top: 0; bottom: 0;
+    width: 12px;
+  }
+  &--vertical &__edge--end {
+    right: 0;
+    top: 0; bottom: 0;
+    width: 12px;
+  }
+  &--vertical &__edge-btn { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+
+  /* 水平：上下边缘 */
+  &--horizontal &__edge--start {
+    top: 0; left: 0; right: 0; height: 12px;
+  }
+  &--horizontal &__edge--end {
+    bottom: 0; left: 0; right: 0; height: 12px;
+  }
+  &--horizontal &__edge-btn { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+
+  /* 折叠时启用并在 hover 时显现 */
+  &--collapsed-start &__edge--start,
+  &--collapsed-end &__edge--end { opacity: .12; }
+  &--collapsed-start &__edge--start:hover,
+  &--collapsed-end &__edge--end:hover { opacity: 1; }
 }

@@ -21,6 +21,15 @@
   transition: transform 0.24s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
+/* 修复：当通过插槽传入 <img> 时，浏览器原生的拖拽会与我们的手势冲突，导致拖动不顺畅。
+   通过 CSS 禁用原生拖拽与选择，并让事件命中画布容器而非图片本身。*/
+.ldesign-draggable__content img {
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-drag: none; // 非标准，部分浏览器支持
+  user-select: none;
+}
+
 .ldesign-draggable__content.is-dragging,
 .ldesign-draggable__content.is-gesturing,
 .ldesign-draggable__content.is-bouncing,

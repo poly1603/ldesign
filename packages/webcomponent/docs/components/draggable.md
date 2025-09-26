@@ -37,6 +37,45 @@
 </ldesign-draggable>
 ```
 
+### 图文混排（插槽）
+
+插槽里也可以放任意图文排版，组件会把它们作为一个整体进行缩放/拖拽。
+
+<div class="demo-block" style="height: 360px; border: 1px dashed var(--vp-c-divider);">
+  <ldesign-draggable style="width:100%;height:100%">
+    <div style="display:flex;gap:12px;align-items:flex-start;background:var(--vp-c-bg-soft);padding:12px;border-radius:8px;box-shadow:0 1px 8px rgba(0,0,0,.06);">
+      <img src="https://picsum.photos/id/1018/960/640" alt="waterfall" style="width:360px;height:220px;object-fit:cover;border-radius:6px;flex:0 0 auto;" />
+      <div style="max-width:520px">
+        <h3 style="margin:0 0 8px;">山谷瀑布</h3>
+        <p style="margin:0 0 6px;opacity:.85;">郁郁葱葱的针叶林间，一条瀑布从峭壁倾泻而下，水雾氤氲。此区域适合用作「图+文」的说明页或讲解页。</p>
+        <ul style="margin:6px 0 0 18px;opacity:.85;">
+          <li>支持整体缩放、拖拽、旋转</li>
+          <li>图片已默认禁用原生拖拽，拖动更顺滑</li>
+          <li>文本、链接等依旧可以正常显示</li>
+        </ul>
+      </div>
+    </div>
+  </ldesign-draggable>
+</div>
+
+```html
+<ldesign-draggable style="width:100%;height:360px">
+  <div style="display:flex;gap:12px;align-items:flex-start;background:#f7f7f9;padding:12px;border-radius:8px;">
+    <img src="/imgs/pic.jpg" style="width:360px;height:220px;object-fit:cover;border-radius:6px;flex:0 0 auto;" />
+    <div style="max-width:520px">
+      <h3 style="margin:0 0 8px;">标题</h3>
+      <p style="margin:0 0 6px;opacity:.85;">这里是一些说明文字，这个整块内容会被作为一个整体缩放与拖拽。</p>
+      <ul style="margin:6px 0 0 18px;opacity:.85;">
+        <li>支持整体缩放、拖拽、旋转</li>
+        <li>图片已默认禁用原生拖拽</li>
+      </ul>
+    </div>
+  </div>
+</ldesign-draggable>
+```
+
+> 备注：为避免浏览器原生图片拖拽干扰手势，组件会自动对插槽内的 `<img>` 关闭原生拖拽（-webkit-user-drag: none）与选择；如需让图片本身可点/可交互，可在你的样式中覆盖 pointer-events。
+
 ## 交互说明
 - PC：
   - 滚轮缩放（以光标为中心）
@@ -55,7 +94,7 @@
     <ldesign-draggable id="demo-drag-1" src="https://picsum.photos/id/1003/1600/1000" style="width:100%;height:100%"></ldesign-draggable>
   </div>
   <div style="margin-top: 10px; display:flex; gap:8px;">
-    <button class="vp-button" onclick="document.getElementById('demo-drag-1').zoomTo(2)">放大到 2x</button>
+<button class="vp-button" onclick="document.getElementById('demo-drag-1').zoomTo(2, undefined, undefined, true)">放大到 2x（带动画）</button>
     <button class="vp-button" onclick="document.getElementById('demo-drag-1').reset()">重置</button>
   </div>
 </div>

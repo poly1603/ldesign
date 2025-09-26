@@ -5,14 +5,16 @@
 /**
  * 组件尺寸类型
  */
-export type Size = 'small' | 'medium' | 'large';
+// 对齐 Ant Design：使用 middle；保留 medium 兼容
+export type Size = 'small' | 'middle' | 'large' | 'medium';
 
 /**
  * 按钮类型（表现形态）
  * - primary/secondary/success/warning/danger 等通常表示实底（solid）按钮
  * - outline/text/link/dashed 表示样式形态
  */
-export type ButtonType = 'primary' | 'secondary' | 'outline' | 'text' | 'danger' | 'success' | 'warning' | 'link' | 'dashed';
+// 对齐 Ant Design：新增 default；保留旧类型以兼容
+export type ButtonType = 'default' | 'primary' | 'secondary' | 'outline' | 'text' | 'danger' | 'success' | 'warning' | 'link' | 'dashed' | 'gradient';
 
 /**
  * 按钮颜色（语义色），用于 outline/dashed/text/link/ghost
@@ -87,7 +89,12 @@ export interface BaseComponentProps {
 export interface ButtonProps extends BaseComponentProps {
   type?: ButtonType;
   /**
+   * 对齐 AntD：危险态（红色语义）
+   */
+  danger?: boolean;
+  /**
    * 颜色（语义色）：用于 outline / dashed / text / link / ghost
+   * 注意：对齐 AntD 后不再推荐直接使用 color 控制主类型颜色，仅用于上述形态或兼容用途
    */
   color?: ButtonColor;
   size?: Size;
@@ -96,6 +103,10 @@ export interface ButtonProps extends BaseComponentProps {
   icon?: string;
   block?: boolean;
   iconPosition?: ButtonIconPosition;
+  /**
+   * 原生按钮类型（对齐 AntD：htmlType）。两者任选其一，优先 htmlType。
+   */
+  htmlType?: NativeButtonType;
   nativeType?: NativeButtonType;
   /**
    * 幽灵按钮（一般用于深色背景）

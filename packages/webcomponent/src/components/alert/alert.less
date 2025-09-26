@@ -1,0 +1,138 @@
+/* Alert 警告信息样式 */
+
+.ldesign-alert {
+  display: block;
+  --ldesign-alert-stack-gap: 12px;
+  background: var(--ldesign-bg-color-component, #fff);
+  color: var(--ldesign-text-color-primary, #1f2f3d);
+  border: 1px solid var(--ldesign-border-color, rgba(0, 0, 0, 0.06));
+  border-radius: var(--ls-border-radius-lg, 12px);
+  padding: 12px 16px;
+  line-height: 1.6;
+  background-clip: padding-box;
+  margin: 0; /* 组件默认不设置外边距，交由容器控制（避免与容器 gap 叠加） */
+  transition: height 0.25s ease, margin 0.25s ease, padding 0.25s ease, border-width 0.25s ease, opacity 0.2s ease;
+}
+
+/* 相邻 Alert 之间的默认间距，且不影响首尾 */
+.ldesign-alert + .ldesign-alert { margin-top: var(--ldesign-alert-stack-gap, 12px); }
+
+/* 离场：高度、内外边距与边框收起 */
+.ldesign-alert--leaving {
+  opacity: 0.8;
+  height: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-top-width: 0 !important;
+  border-bottom-width: 0 !important;
+}
+
+/* 内部布局 */
+.ldesign-alert__inner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 12px;
+}
+
+.ldesign-alert__icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ldesign-gray-color-2, #f2f3f5);
+}
+
+.ldesign-alert__title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+ .ldesign-alert__desc { color: var(--ldesign-text-color-secondary, #596780); }
+
+ /* Marquee */
+ .ldesign-alert__marquee {
+   position: relative;
+   overflow: hidden;
+   white-space: nowrap;
+ }
+ .ldesign-alert__marquee-inner {
+   display: inline-flex;
+   gap: var(--marquee-gap, 24px);
+   will-change: transform;
+   animation-name: ldesign-marquee-left;
+   animation-duration: var(--marquee-duration, 15s);
+   animation-timing-function: linear;
+   animation-iteration-count: infinite;
+   animation-play-state: var(--marquee-play, running);
+ }
+ .ldesign-alert__marquee.is-paused .ldesign-alert__marquee-inner {
+   --marquee-play: paused;
+ }
+ .ldesign-alert__marquee--right .ldesign-alert__marquee-inner {
+   animation-name: ldesign-marquee-right;
+ }
+ .ldesign-alert__marquee-track { display:inline-block; }
+
+ @keyframes ldesign-marquee-left {
+   from { transform: translateX(0); }
+   to   { transform: translateX(calc(-1 * (var(--track-width, 300px) + var(--marquee-gap, 24px)))); }
+ }
+ @keyframes ldesign-marquee-right {
+   from { transform: translateX(calc(-1 * (var(--track-width, 300px) + var(--marquee-gap, 24px)))); }
+   to   { transform: translateX(0); }
+ }
+
+ .ldesign-alert__actions { margin-top: 10px; display: inline-flex; gap: 8px; }
+
+.ldesign-alert__close {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--ldesign-text-color-secondary);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--ls-border-radius-sm, 8px);
+}
+
+.ldesign-alert__close:hover { background: var(--ldesign-bg-color-component-hover, #f5f7fa); }
+
+/* 类型样式：浅色背景 + 彩色边框与图标 */
+.ldesign-alert--info {
+  border-color: rgba(21, 101, 192, 0.25);
+  background: color-mix(in srgb, var(--ldesign-brand-color, #1e80ff) 6%, #fff);
+}
+.ldesign-alert--info .ldesign-alert__icon { color: var(--ldesign-brand-color, #1e80ff); }
+.ldesign-alert--info .ldesign-alert__icon-wrap { background: color-mix(in srgb, var(--ldesign-brand-color, #1e80ff) 14%, #fff); }
+
+.ldesign-alert--success {
+  border-color: rgba(16, 185, 129, 0.25);
+  background: color-mix(in srgb, var(--ldesign-success-color, #10b981) 6%, #fff);
+}
+.ldesign-alert--success .ldesign-alert__icon { color: var(--ldesign-success-color, #10b981); }
+.ldesign-alert--success .ldesign-alert__icon-wrap { background: color-mix(in srgb, var(--ldesign-success-color, #10b981) 14%, #fff); }
+
+.ldesign-alert--warning {
+  border-color: rgba(245, 158, 11, 0.25);
+  background: color-mix(in srgb, var(--ldesign-warning-color, #f59e0b) 8%, #fff);
+}
+.ldesign-alert--warning .ldesign-alert__icon { color: var(--ldesign-warning-color, #f59e0b); }
+.ldesign-alert--warning .ldesign-alert__icon-wrap { background: color-mix(in srgb, var(--ldesign-warning-color, #f59e0b) 16%, #fff); }
+
+.ldesign-alert--error {
+  border-color: rgba(239, 68, 68, 0.25);
+  background: color-mix(in srgb, var(--ldesign-error-color, #ef4444) 6%, #fff);
+}
+.ldesign-alert--error .ldesign-alert__icon { color: var(--ldesign-error-color, #ef4444); }
+.ldesign-alert--error .ldesign-alert__icon-wrap { background: color-mix(in srgb, var(--ldesign-error-color, #ef4444) 14%, #fff); }
+
+/* Banner 形态：占据整行、无圆角、内边距更小 */
+.ldesign-alert--banner {
+  border-radius: 0;
+  margin: 0;
+  padding: 10px 16px;
+}
