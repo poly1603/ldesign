@@ -146,6 +146,11 @@
   transition: none; // 拖拽时禁用过渡更顺滑
 }
 
+/* 手势缩放/旋转时也禁用过渡 */
+.ldesign-image-viewer__img.is-gesturing {
+  transition: none;
+}
+
 /* 加载中隐藏新图（等 onload 后再显示动画） */
 .ldesign-image-viewer__img.loading-hidden { opacity: 0; }
 
@@ -183,7 +188,7 @@
   border-radius: 50%;
   animation: iv-rot 0.9s linear infinite;
 }
-@keyframes iv-rot { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes iv-rot { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
 
 /* 左右箭头 */
 .ldesign-image-viewer__nav {
@@ -192,6 +197,15 @@
   border: none; display: inline-flex; align-items: center; justify-content: center;
   background: @panel-dark; color: #fff; cursor: pointer;
   z-index: 2; // 箭头在图片之上
+}
+
+/* 移动端优化：更大的触控区域、工具栏可横向滚动 */
+@media (max-width: 768px) {
+  .ldesign-image-viewer__nav { width: 44px; height: 44px; }
+  .ldesign-image-viewer__close { width: 44px; height: 44px; }
+  .ldesign-image-viewer__toolbar { gap: 8px; padding: 8px 12px; overflow-x: auto; }
+  .ldesign-image-viewer__tool { width: 40px; height: 40px; }
+  .ldesign-image-viewer__thumb { width: 64px; height: 48px; }
 }
 
 .ldesign-image-viewer--light .ldesign-image-viewer__nav { background: @panel-light; color: @text-light; }
@@ -217,6 +231,18 @@
   position: absolute; left: 0; right: 0; bottom: 18px;
   display: flex; align-items: center; justify-content: center;
   z-index: 3; // 工具栏在最顶层
+}
+
+/* UI 自动隐藏（移动端沉浸模式） */
+.ldesign-image-viewer--ui-hidden {
+  .ldesign-image-viewer__top,
+  .ldesign-image-viewer__bottom,
+  .ldesign-image-viewer__close,
+  .ldesign-image-viewer__titlebar {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
 }
 
 /* 标题与描述 */

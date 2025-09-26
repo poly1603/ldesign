@@ -46,10 +46,14 @@ export class LdesignColorPickerPanel {
   @Prop() modes: 'solid' | 'gradient' | 'both' = 'both';
   /** 渐变类型：线性/径向/两者（仅在 activeMode=gradient 时生效） */
   @Prop() gradientTypes: 'linear' | 'radial' | 'both' = 'both';
-  /** 渐变色标之间的最小间距（百分比，避免重叠），默认 2 */
-  @Prop() minStopGap: number = 2;
+  /** 渐变色标之间的最小间距（百分比，避免重叠），默认 1 */
+  @Prop() minStopGap: number = 1;
   /** UI 模式：simple 为精简界面，仅保留必要控件；pro 为完整界面 */
   @Prop() ui: 'simple' | 'pro' = 'pro';
+  /** 是否在渐变面板中显示“线性/径向”切换按钮（默认不显示） */
+  @Prop() showGradientTypeTabs: boolean = false;
+  /** 在渐变-径向模式下，于右侧显示径向面板（中心拖拽与参数） */
+  @Prop() showRadialSidebar: boolean = false;
 
   // Events
   @Event() ldesignInput!: EventEmitter<string>;
@@ -67,6 +71,8 @@ export class LdesignColorPickerPanel {
   @State() private radialShape: 'circle' | 'ellipse' = 'circle'; // radial
   @State() private radialCenterX: number = 50; // 0~100
   @State() private radialCenterY: number = 50; // 0~100
+  /** 镜像：将色标围绕 50% 位置镜像（视觉对称） */
+  @State() private radialMirror: boolean = false;
   @State() private gradientStops: { h: number; s: number; v: number; a: number; pos: number }[] = [
     { h: 204, s: 72, v: 86, a: 1, pos: 0 },
     { h: 204, s: 72, v: 86, a: 1, pos: 100 },
@@ -82,7 +88,14 @@ export class LdesignColorPickerPanel {
   @State() private dragging: 'sv' | 'hue' | 'alpha' | 'angle' | 'center' | null = null;
   @State() private history: string[] = [];
 
-  componentWillLoad() { this.applyIncomingValue(this.value); }
+  componentWillLoad() {
+    // 初始决定渐变类型（若外部仅允许 radial，则默认进入 radial）
+    if (this.modes !== 'solid') {
+      if (this.gradientTypes === 'radial') this.gradientType = 'radial';
+      else if (this.gradientTypes === 'linear') this.gradientType = 'linear';
+    }
+    this.applyIncomingValue(this.value);
+  }
 
   componentDidLoad() {
     // 自适应 canvas 尺寸
@@ -100,6 +113,12 @@ export class LdesignColorPickerPanel {
 
   @Watch('value')
   onValueChange(next: string) { this.applyIncomingValue(next, true); }
+
+  @Watch('gradientTypes')
+  onGradientTypesChange(next: 'linear'|'radial'|'both') {
+    if (next === 'radial' && this.gradientType !== 'radial') this.gradientType = 'radial';
+    else if (next === 'linear' && this.gradientType !== 'linear') this.gradientType = 'linear';
+  }
 
   private splitStopsList(s: string): string[] {
     const out: string[] = []; let depth=0, cur='';
@@ -255,15 +274,48 @@ export class LdesignColorPickerPanel {
       default: return this.rgbToHex(rgb.r,rgb.g,rgb.b,this.alpha);
     }
   }
+  private getStopsLinearPreview(): string {
+    const sorted = this.gradientStops.slice().sort((a,b)=> a.pos-b.pos);
+    let list = sorted;
+    if (this.gradientType === 'radial' && this.radialMirror) {
+      const mirrored = sorted.slice().reverse().map(s => ({ ...s, pos: 100 - s.pos }));
+      const combined = [...sorted, ...mirrored];
+      const seen = new Set<string>();
+      const dedup: typeof combined = [];
+      for (const s of combined.sort((a,b)=> a.pos-b.pos)) {
+        const key = `${Math.round(s.pos*100)/100}`;
+        if (!seen.has(key)) { seen.add(key); dedup.push(s); }
+      }
+      list = dedup;
+    }
+    const parts = list.map(st => {
+      const rgb = this.hsvToRgb(st.h, st.s, st.v, st.a);
+      const color = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${st.a})`;
+      return `${color} ${Math.round(st.pos)}%`;
+    });
+    return `linear-gradient(to right, ${parts.join(', ')})`;
+  }
+
   private getFormattedGradient(): string {
-    const parts = this.gradientStops
-      .slice()
-      .sort((a,b)=> a.pos-b.pos)
-      .map(st => {
-        const rgb = this.hsvToRgb(st.h, st.s, st.v, st.a);
-        const color = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${st.a})`;
-        return `${color} ${Math.round(st.pos)}%`;
-      });
+    const sorted = this.gradientStops.slice().sort((a,b)=> a.pos-b.pos);
+    let list = sorted;
+    if (this.gradientType === 'radial' && this.radialMirror) {
+      const mirrored = sorted.slice().reverse().map(s => ({ ...s, pos: 100 - s.pos }));
+      const combined = [...sorted, ...mirrored];
+      // 去重同位置（避免 0/100 或 50% 重复）
+      const seen = new Set<string>();
+      const dedup: typeof combined = [];
+      for (const s of combined.sort((a,b)=> a.pos-b.pos)) {
+        const key = `${Math.round(s.pos*100)/100}`;
+        if (!seen.has(key)) { seen.add(key); dedup.push(s); }
+      }
+      list = dedup;
+    }
+    const parts = list.map(st => {
+      const rgb = this.hsvToRgb(st.h, st.s, st.v, st.a);
+      const color = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${st.a})`;
+      return `${color} ${Math.round(st.pos)}%`;
+    });
     if (this.gradientType === 'radial') {
       const cx = Math.max(0, Math.min(100, Math.round(this.radialCenterX)));
       const cy = Math.max(0, Math.min(100, Math.round(this.radialCenterY)));
@@ -276,7 +328,10 @@ export class LdesignColorPickerPanel {
   private getFormattedOutput(): string { return this.activeMode === 'gradient' ? this.getFormattedGradient() : this.getFormattedSolid(); }
 
   private renderSV() {
-    const c = this.svCanvas; if(!c) return; const ctx = c.getContext('2d'); if(!ctx) return; const w=c.width,h=c.height; const hueRGB = this.hsvToRgb(this.hsv.h,100,100);
+    const c = this.svCanvas; if(!c) return; const ctx = c.getContext('2d'); if(!ctx) return; const w=c.width,h=c.height;
+    // 使用当前激活颜色的 Hue 来渲染 SV 面板（在渐变模式下取当前 stop 的 H）
+    const ac = this.getActiveHSVA();
+    const hueRGB = this.hsvToRgb(ac.h,100,100);
     const g1 = ctx.createLinearGradient(0,0,w,0); g1.addColorStop(0,'#fff'); g1.addColorStop(1,`rgb(${hueRGB.r}, ${hueRGB.g}, ${hueRGB.b})`); ctx.fillStyle=g1; ctx.fillRect(0,0,w,h);
     const g2 = ctx.createLinearGradient(0,0,0,h); g2.addColorStop(0,'rgba(0,0,0,0)'); g2.addColorStop(1,'#000'); ctx.fillStyle=g2; ctx.fillRect(0,0,w,h);
   }
@@ -292,9 +347,13 @@ export class LdesignColorPickerPanel {
       const stops = [...this.gradientStops];
       stops[this.activeStopIndex] = { h, s, v, a: a ?? stops[this.activeStopIndex].a, pos: clamp01(stops[this.activeStopIndex].pos) };
       this.gradientStops = stops;
+      // 在渐变模式下更新当前 stop 的颜色时，重新渲染 SV 面板
+      requestAnimationFrame(() => this.renderSV());
     } else {
       this.hsv = { h, s, v };
       if (a != null) this.alpha = a;
+      // 单色模式下也需要重新渲染
+      requestAnimationFrame(() => this.renderSV());
     }
   }
 
@@ -305,17 +364,95 @@ private onWindowPointerMove = (e: PointerEvent) => { if (!this.dragging) return;
 
   private updateFromSVPointer(e: PointerEvent){ if (!this.svCanvas) return; const rect=this.svCanvas.getBoundingClientRect(); const x=this.clamp(e.clientX-rect.left,0,rect.width); const y=this.clamp(e.clientY-rect.top,0,rect.height); const s=(x/rect.width)*100; const v=(1-y/rect.height)*100; const cur=this.getActiveHSVA(); this.setActiveHSVA(cur.h,s,v,cur.a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }
   // slider event handlers
-  private onHueSliderInput = (e: CustomEvent<number>) => { const cur=this.getActiveHSVA(); this.setActiveHSVA(e.detail, cur.s, cur.v, cur.a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); };
+  private onHueSliderInput = (e: CustomEvent<number>) => { const cur=this.getActiveHSVA(); this.setActiveHSVA(e.detail, cur.s, cur.v, cur.a); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); this.renderSV(); };
   private onAlphaSliderInput = (e: CustomEvent<number>) => { const cur=this.getActiveHSVA(); this.setActiveHSVA(cur.h, cur.s, cur.v, e.detail); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); };
 
   // Angle knob / Center drag
   private angleKnobEl?: HTMLElement;
   private centerPlaneEl?: HTMLElement;
-  private onAnglePointerDown = (e: PointerEvent) => { this.dragging='angle'; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); this.updateFromAnglePointer(e); window.addEventListener('pointermove', this.onWindowPointerMove); window.addEventListener('pointerup', this.onWindowPointerUp); };
+  private onAnglePointerDown = (e: PointerEvent) => {
+    if (this.disabled) return;
+    if (!this.angleKnobEl) return;
+    // 点击即指向点击位置：根据点击点相对圆心的极角直接设定角度（0° 在正上方，顺时针递增）
+    const rect=this.angleKnobEl.getBoundingClientRect();
+    const cx=rect.left+rect.width/2;
+    const cy=rect.top+rect.height/2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    const deg = (Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360) % 360;
+    this.gradientAngle = Math.round(deg);
+    const out=this.getFormattedOutput();
+    this.value=out;
+    this.ldesignInput.emit(out);
+    // 不开启拖动旋转（不设置 dragging / 不监听 pointermove）
+    e.preventDefault();
+  };
   private onCenterPointerDown = (e: PointerEvent) => { this.dragging='center'; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); this.updateFromCenterPointer(e); window.addEventListener('pointermove', this.onWindowPointerMove); window.addEventListener('pointerup', this.onWindowPointerUp); };
-  private updateFromAnglePointer(e: PointerEvent, moving=false){ if (!this.angleKnobEl) return; const rect=this.angleKnobEl.getBoundingClientRect(); const cx=rect.left+rect.width/2; const cy=rect.top+rect.height/2; let deg = (Math.atan2(cy - e.clientY, e.clientX - cx) * 180 / Math.PI);
-    deg = (deg + 90 + 360) % 360; const step = e.shiftKey ? 1 : 5; deg = Math.round(deg / step) * step; this.gradientAngle = deg; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }
+  private updateFromAnglePointer(e: PointerEvent, moving=false){
+    if (!this.angleKnobEl) return;
+    const rect=this.angleKnobEl.getBoundingClientRect();
+    const cx=rect.left+rect.width/2;
+    const cy=rect.top+rect.height/2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    let deg = (Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360) % 360; // 0° at top, clockwise
+    if (e.shiftKey) {
+      // snap to 15° when holding Shift
+      deg = Math.round(deg / 15) * 15;
+    } else {
+      deg = Math.round(deg);
+    }
+    this.gradientAngle = deg;
+    const out=this.getFormattedOutput();
+    this.value=out;
+    this.ldesignInput.emit(out);
+  }
   private updateFromCenterPointer(e: PointerEvent, moving=false){ if (!this.centerPlaneEl) return; const rect=this.centerPlaneEl.getBoundingClientRect(); const x = Math.min(100, Math.max(0, ((e.clientX-rect.left)/rect.width)*100)); const y = Math.min(100, Math.max(0, ((e.clientY-rect.top)/rect.height)*100)); this.radialCenterX = x; this.radialCenterY = y; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }
+
+  // ---------- Stop position helpers ----------
+  private updateActiveStopPosRaw(pos: number) {
+    const idx = this.activeStopIndex;
+    if (idx < 0) return;
+    let p = this.clamp(pos, 0, 100);
+    const arr = [...this.gradientStops];
+    const others = arr
+      .filter((_, i) => i !== idx)
+      .map((s) => s.pos)
+      .sort((a, b) => a - b);
+    const prev = others.filter((x) => x < p).slice(-1)[0];
+    const next = others.find((x) => x > p);
+    if (prev != null) p = Math.max(p, prev + this.minStopGap);
+    if (next != null) p = Math.min(p, next - this.minStopGap);
+    arr[idx] = { ...arr[idx], pos: p } as any;
+    this.gradientStops = arr;
+    const out = this.getFormattedOutput();
+    this.value = out;
+    this.ldesignInput.emit(out);
+  }
+  private onStopPosSliderInput = (e: CustomEvent<number>) => {
+    this.updateActiveStopPosRaw(e.detail);
+  };
+  private onStopPosNumberChange = (e: any) => {
+    const v = parseFloat(e?.target?.value) || 0;
+    this.updateActiveStopPosRaw(v);
+  };
+
+  private onAngleKeyDown = (e: KeyboardEvent) => {
+    if (this.disabled) return;
+    let ang = this.gradientAngle;
+    const step = e.shiftKey ? 15 : 1;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { ang -= step; }
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { ang += step; }
+    else if (e.key === 'Home') { ang = 0; }
+    else if (e.key === 'End') { ang = 180; }
+    else { return; }
+    e.preventDefault();
+    ang = (ang % 360 + 360) % 360;
+    this.gradientAngle = ang;
+    const out=this.getFormattedOutput();
+    this.value=out;
+    this.ldesignInput.emit(out);
+  };
 
   // ---------- Inputs & palette ----------
   private getFormattedColor(): string { return this.getFormattedOutput(); }
@@ -327,8 +464,8 @@ private onWindowPointerMove = (e: PointerEvent) => { if (!this.dragging) return;
   private setFromPreset(color: string){ const parsed=this.parseColor(color); if(!parsed) return; this.hsv={ h:parsed.hsv.h, s:parsed.hsv.s, v:parsed.hsv.v }; this.alpha=parsed.rgb.a ?? 1; const out=this.getFormattedColor(); this.value=out; this.ldesignInput.emit(out); this.ldesignChange.emit(out); if (this.showHistory) this.pushHistory(parsed.hex); }
   private pushHistory(hex: string){ const list=this.history.slice(); const idx=list.indexOf(hex); if(idx>=0) list.splice(idx,1); list.unshift(hex); if(list.length>this.recentMax) list.length=this.recentMax; this.history=list; }
 
-  private hueGradientStyle(){ const stops:string[]=[]; for(let i=0;i<=360;i+=30){ const {r,g,b}=this.hsvToRgb(i,100,100); stops.push(`rgb(${r}, ${g}, ${b})`);} return { background: `linear-gradient(to right, ${stops.join(', ')})` } as any; }
-  private alphaGradientStyle(){ const cur=this.getActiveHSVA(); const { r,g,b } = this.hsvToRgb(cur.h,cur.s,cur.v); return { background: `linear-gradient(to right, rgba(${r}, ${g}, ${b}, 0), rgba(${r}, ${g}, ${b}, 1)), var(--ldesign-alpha-checker, url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\"><rect width=\"5\" height=\"5\" fill=\"%23ccc\"/><rect x=\"5\" y=\"5\" width=\"5\" height=\"5\" fill=\"%23ccc\"/></svg>'))` } as any; }
+  private hueGradientStyle(){ const stops:string[]=[]; for(let i=0;i<=360;i+=30){ const {r,g,b}=this.hsvToRgb(i,100,100); stops.push(`rgb(${r}, ${g}, ${b})`);} return { '--ld-slider-rail-bg': `linear-gradient(to right, ${stops.join(', ')})`, '--ld-slider-fill-bg': 'transparent' } as any; }
+  private alphaGradientStyle(){ const cur=this.getActiveHSVA(); const { r,g,b } = this.hsvToRgb(cur.h,cur.s,cur.v); return { '--ld-slider-rail-bg': `linear-gradient(to right, rgba(${r}, ${g}, ${b}, 0), rgba(${r}, ${g}, ${b}, 1)), var(--ldesign-alpha-checker, url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\"><rect width=\"5\" height=\"5\" fill=\"%23ccc\"/><rect x=\"5\" y=\"5\" width=\"5\" height=\"5\" fill=\"%23ccc\"/></svg>'))`, '--ld-slider-fill-bg': 'transparent' } as any; }
   private pointerPosForSV(){ const cur=this.getActiveHSVA(); if(!this.svCanvas) return { left:'0%', top:'0%' } as any; return { left: `${cur.s}%`, top: `${100-cur.v}%` } as any; }
   private pointerPosForHue(){ const cur=this.getActiveHSVA(); if(!this.hueTrack) return { left:'0%' } as any; return { left: `${(cur.h/360)*100}%` } as any; }
   private pointerPosForAlpha(){ const cur=this.getActiveHSVA(); if(!this.showAlpha || !this.alphaTrack) return { left:'100%' } as any; return { left: `${(cur.a ?? 1)*100}%` } as any; }
@@ -374,88 +511,167 @@ private onWindowPointerMove = (e: PointerEvent) => { if (!this.dragging) return;
   render() {
     const hueStyle = this.hueGradientStyle(); const alphaStyle = this.alphaGradientStyle();
     const showHistory = this.showHistory && this.history.length > 0;
-    const gPreview = { background: this.getFormattedGradient() } as any;
+    // 顶部色标条统一使用线性预览，避免径向在细条上造成颜色错觉
+    const gPreview = { background: this.getStopsLinearPreview() } as any;
     return (
       <Host>
-        <div class={{ 'ldesign-color-picker-panel': true, [`ldesign-color-picker-panel--${this.size}`]: true, 'ldesign-color-picker-panel--disabled': this.disabled }}>
+        <div class={{ 'ldesign-color-picker-panel': true, [`ldesign-color-picker-panel--${this.size}`]: true, 'ldesign-color-picker-panel--disabled': this.disabled, 'ldesign-color-picker-panel--simple': this.ui==='simple' }}>
           <div class="mode-tabs" style={{ display: this.modes === 'both' ? 'flex' : 'none' }}>
-            <button class={{ active: this.activeMode==='solid' }} onClick={()=> this.activeMode='solid'}>单色</button>
-            <button class={{ active: this.activeMode==='gradient' }} onClick={()=> this.activeMode='gradient'}>渐变</button>
+            <button class={{ active: this.activeMode==='solid' }} onClick={()=> { this.activeMode='solid'; }}>
+              单色
+            </button>
+            <button
+              class={{ active: this.activeMode==='gradient' && this.gradientType==='linear' }}
+              onClick={()=> { this.activeMode='gradient'; this.gradientType='linear'; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}
+            >
+              渐变
+            </button>
+            {this.gradientTypes !== 'linear' ? (
+              <button
+                class={{ active: this.activeMode==='gradient' && this.gradientType==='radial' }}
+                onClick={()=> { this.activeMode='gradient'; this.gradientType='radial'; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}
+              >
+                径向渐变
+              </button>
+            ) : null}
           </div>
 
           {this.activeMode==='gradient' ? (
             <div class="gradient-tools">
-              <div class="type-tabs" style={{ display: this.gradientTypes==='both' ? 'inline-flex' : 'none' }}>
-                <button class={{ active: this.gradientType==='linear' }} onClick={()=>{ this.gradientType='linear'; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>线性</button>
-                <button class={{ active: this.gradientType==='radial' }} onClick={()=>{ this.gradientType='radial'; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>径向</button>
-              </div>
-              <div class="gradient-preview" style={gPreview}></div>
-              {this.gradientType==='linear' ? (
-              <div class="angle">
-<ldesign-slider min={0 as any} max={360 as any} step={1 as any} value={Math.round(this.gradientAngle) as any} onLdesignInput={(e:any)=>{ this.gradientAngle=e.detail; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}></ldesign-slider>
-                <input type="number" min="0" max="360" value={Math.round(this.gradientAngle)} onChange={(e:any)=>{ this.gradientAngle = parseFloat(e.target.value)||0; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
-                <span>°</span>
-              </div>
-              ) : (
-<div class="center-row">
-                <label>X</label>
-                <ldesign-slider min={0 as any} max={100 as any} step={1 as any} value={Math.round(this.radialCenterX) as any} onLdesignInput={(e:any)=>{ this.radialCenterX=e.detail; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}></ldesign-slider>
-                <label>Y</label>
-                <ldesign-slider min={0 as any} max={100 as any} step={1 as any} value={Math.round(this.radialCenterY) as any} onLdesignInput={(e:any)=>{ this.radialCenterY=e.detail; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}></ldesign-slider>
-                <select onChange={(e:any)=>{ this.radialShape = (e.target.value==='ellipse'?'ellipse':'circle'); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>
-                  <option value="circle" selected={this.radialShape==='circle'}>circle</option>
-                  <option value="ellipse" selected={this.radialShape==='ellipse'}>ellipse</option>
-                </select>
-              </div>
-              )}
-              <div class="stops-bar" ref={(el) => (this.stopTrackEl = el as HTMLElement)} onPointerUp={() => { this.stopDragIndex=null; }} tabIndex={0} aria-label="Gradient stops" onKeyDown={(e:any)=>{
-                const idx=this.activeStopIndex; if (idx<0) return; const arr=[...this.gradientStops];
-                if (e.key==='Tab') { e.preventDefault(); const dir = e.shiftKey ? -1 : 1; const n=arr.length; this.activeStopIndex = (idx + dir + n) % n; return; }
-                if (e.key==='Delete' || e.key==='Backspace') { if (arr.length>2) { arr.splice(idx,1); this.gradientStops=arr; this.activeStopIndex=Math.max(0, idx-1); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} e.preventDefault(); return; }
-                if (e.key==='Enter') { if (arr.length<8){ const cur=this.getActiveHSVA(); const insertPos = arr[idx].pos; const newStop = { h:cur.h, s:cur.s, v:cur.v, a:cur.a ?? 1, pos:insertPos }; arr.splice(idx+1,0,newStop as any); this.gradientStops=arr; this.activeStopIndex=idx+1; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} e.preventDefault(); return; }
-                if (e.key==='ArrowLeft' || e.key==='ArrowRight') { e.preventDefault();
-                  const step = e.shiftKey ? 10 : 1;
-                  let pos = arr[idx].pos + (e.key==='ArrowRight' ? step : -step);
-                  pos = Math.min(100, Math.max(0, pos));
-                  const others = arr.filter((_,x)=>x!==idx).map(s=>s.pos).sort((a,b)=>a-b);
-                  const prev = others.filter(p=>p < pos).slice(-1)[0];
-                  const next = others.find(p=>p > pos);
-                  if (prev!=null) pos = Math.max(pos, prev + this.minStopGap);
-                  if (next!=null) pos = Math.min(pos, next - this.minStopGap);
-                  arr[idx] = { ...arr[idx], pos } as any; this.gradientStops = arr;
-                  const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);
-                  return;
-                }
-              }}>
-                <div class="stops-gradient" style={gPreview}></div>
-                {this.gradientStops.map((st, i) => (
-                  <div
-                    class={{ 'stop-handle': true, active: this.activeStopIndex===i }}
-                    style={{ left: `${st.pos}%`, background: this.rgbStringOf(st.h, st.s, st.v, st.a) }}
-                    onPointerDown={(e:any)=>{ this.stopDragIndex=i; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); }}
-                    onPointerMove={(e:any)=>{
-                      if (this.stopDragIndex===i && this.stopTrackEl){
-                        const rect=this.stopTrackEl.getBoundingClientRect();
-                        let pos = Math.min(100, Math.max(0, ((e.clientX-rect.left)/rect.width)*100));
-                        const arr=[...this.gradientStops];
-                        // 按新位置计算相邻色标并应用最小间距
-                        const others = arr.filter((_,x)=>x!==i).map(s=>s.pos).sort((a,b)=>a-b);
-                        const prev = others.filter(p=>p < pos).slice(-1)[0];
-                        const next = others.find(p=>p > pos);
-                        if (prev!=null) pos = Math.max(pos, prev + this.minStopGap);
-                        if (next!=null) pos = Math.min(pos, next - this.minStopGap);
-                        arr[i] = { ...arr[i], pos } as any; this.gradientStops = arr;
-                        const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);
-                      }
-                    }}
-                    onClick={()=> this.activeStopIndex=i}
-                  ></div>
-                ))}
-                <div class="stops-actions">
-                  <button title="添加色标" aria-label="Add stop" onClick={()=>{ if(this.gradientStops.length<8){ const cur=this.getActiveHSVA(); const arr=[...this.gradientStops, { h:cur.h, s:cur.s, v:cur.v, a:cur.a ?? 1, pos:50 }]; this.gradientStops=arr; this.activeStopIndex=arr.length-1; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); } }}>+</button>
-                  <button title="删除当前色标" aria-label="Remove stop" onClick={()=>{ if(this.gradientStops.length>2){ const arr=[...this.gradientStops]; arr.splice(this.activeStopIndex,1); this.gradientStops=arr; this.activeStopIndex=Math.max(0,this.activeStopIndex-1); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} }}>-</button>
+              <div class="gt-header">
+                <div class="type-tabs" style={{ display: (this.showGradientTypeTabs && this.gradientTypes==='both') ? 'inline-flex' : 'none' }}>
+                  <button class={{ active: this.gradientType==='linear' }} onClick={()=>{ this.gradientType='linear'; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>线性</button>
+                  <button class={{ active: this.gradientType==='radial' }} onClick={()=>{ this.gradientType='radial'; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>径向</button>
                 </div>
+                <div class="stops-bar stops-bar--top" ref={(el) => (this.stopTrackEl = el as HTMLElement)} onPointerUp={() => { this.stopDragIndex=null; }} tabIndex={0} aria-label="Gradient stops (top)" onKeyDown={(e:any)=>{
+                  const idx=this.activeStopIndex; if (idx<0) return; const arr=[...this.gradientStops];
+                  if (e.key==='Tab') { e.preventDefault(); const dir = e.shiftKey ? -1 : 1; const n=arr.length; this.activeStopIndex = (idx + dir + n) % n; return; }
+                  if (e.key==='Delete' || e.key==='Backspace') { if (arr.length>2) { arr.splice(idx,1); this.gradientStops=arr; this.activeStopIndex=Math.max(0, idx-1); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} e.preventDefault(); return; }
+                  if (e.key==='Enter') { if (arr.length<8){ const cur=this.getActiveHSVA(); const insertPos = arr[idx].pos; const newStop = { h:cur.h, s:cur.s, v:cur.v, a:cur.a ?? 1, pos:insertPos }; arr.splice(idx+1,0,newStop as any); this.gradientStops=arr; this.activeStopIndex=idx+1; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} e.preventDefault(); return; }
+                  if (e.key==='ArrowLeft' || e.key==='ArrowRight') { e.preventDefault();
+                    const step = e.shiftKey ? 10 : 1;
+                    let pos = arr[idx].pos + (e.key==='ArrowRight' ? step : -step);
+                    pos = Math.min(100, Math.max(0, pos));
+                    const others = arr.filter((_,x)=>x!==idx).map(s=>s.pos).sort((a,b)=>a-b);
+                    const prev = others.filter(p=>p < pos).slice(-1)[0];
+                    const next = others.find(p=>p > pos);
+                    if (prev!=null) pos = Math.max(pos, prev + this.minStopGap);
+                    if (next!=null) pos = Math.min(pos, next - this.minStopGap);
+                    arr[idx] = { ...arr[idx], pos } as any; this.gradientStops = arr;
+                    const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);
+                    return;
+                  }
+                }}>
+                  <div class="stops-gradient" style={gPreview} onClick={(e:any)=>{ if (!this.stopTrackEl) return; if (this.gradientStops.length>=8) return; const rect=this.stopTrackEl.getBoundingClientRect(); let pos = Math.min(100, Math.max(0, ((e.clientX-rect.left)/rect.width)*100)); const arr=[...this.gradientStops]; const others = arr.map(s=>s.pos).sort((a,b)=>a-b); const prev = others.filter(p=>p < pos).slice(-1)[0]; const next = others.find(p=>p > pos); if (prev!=null) pos = Math.max(pos, prev + this.minStopGap); if (next!=null) pos = Math.min(pos, next - this.minStopGap); const cur=this.getActiveHSVA(); arr.push({ h:cur.h, s:cur.s, v:cur.v, a:cur.a ?? 1, pos }); arr.sort((a,b)=>a.pos-b.pos); this.gradientStops=arr; this.activeStopIndex=arr.findIndex(s=>s.pos===pos); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}></div>
+                  <div class="stops-ruler"></div>
+                  {this.gradientStops.map((st, i) => (
+                    <div
+                      class={{ 'stop-handle': true, active: this.activeStopIndex===i }}
+                      style={{ left: `${st.pos}%`, background: this.rgbStringOf(st.h, st.s, st.v, st.a) }}
+                      onPointerDown={(e:any)=>{ this.stopDragIndex=i; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); }}
+                      onPointerMove={(e:any)=>{
+                        if (this.stopDragIndex===i && this.stopTrackEl){
+                          const rect=this.stopTrackEl.getBoundingClientRect();
+                          let pos = Math.min(100, Math.max(0, ((e.clientX-rect.left)/rect.width)*100));
+                          const arr=[...this.gradientStops];
+                          const others = arr.filter((_,x)=>x!==i).map(s=>s.pos).sort((a,b)=>a-b);
+                          const prev = others.filter(p=>p < pos).slice(-1)[0];
+                          const next = others.find(p=>p > pos);
+                          if (prev!=null) pos = Math.max(pos, prev + this.minStopGap);
+                          if (next!=null) pos = Math.min(pos, next - this.minStopGap);
+                          arr[i] = { ...arr[i], pos } as any; this.gradientStops = arr;
+                          const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);
+                        }
+                      }}
+                      onClick={()=> this.activeStopIndex=i}
+                    ></div>
+                  ))}
+                </div>
+                {this.gradientType==='linear' ? (
+                  <div class="angle-badge" title="角度">{Math.round(this.gradientAngle)}°</div>
+                ) : null}
               </div>
+
+              {/* Position row for active stop (radial layout parity with gradient) */}
+              {this.ui==='pro' && this.gradientType==='radial' ? (
+                <div class="pos-row">
+                  <ldesign-slider
+                    min={0 as any}
+                    max={100 as any}
+                    step={1 as any}
+                    value={Math.round(this.gradientStops[this.activeStopIndex]?.pos ?? 0) as any}
+                    onLdesignInput={this.onStopPosSliderInput as any}
+                  ></ldesign-slider>
+                  <div class="pos-ctrl">
+                    <button title="添加色标" aria-label="Add stop" onClick={()=>{ if(this.gradientStops.length<8){ const cur=this.getActiveHSVA(); const arr=[...this.gradientStops, { h:cur.h, s:cur.s, v:cur.v, a:cur.a ?? 1, pos:50 }]; this.gradientStops=arr; this.activeStopIndex=arr.length-1; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); } }}>+</button>
+                    <button title="删除当前色标" aria-label="Remove stop" onClick={()=>{ if(this.gradientStops.length>2){ const arr=[...this.gradientStops]; arr.splice(this.activeStopIndex,1); this.gradientStops=arr; this.activeStopIndex=Math.max(0,this.activeStopIndex-1); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out);} }}>-</button>
+                    <span class="lbl">位置</span>
+                    <input type="number" min="0" max="100" value={Math.round(this.gradientStops[this.activeStopIndex]?.pos ?? 0)} onChange={this.onStopPosNumberChange as any} />
+                    <span class="unit">%</span>
+                  </div>
+                </div>
+              ) : null}
+
+              {this.ui === 'pro' ? (
+                <div class="gt-visual">
+                  {this.gradientType==='linear' ? (
+                    <div
+                      class={{ 'angle-knob': true, dragging: this.dragging==='angle' }}
+                      ref={(el)=> (this.angleKnobEl = el as HTMLElement)}
+                      onPointerDown={this.onAnglePointerDown as any}
+                      onKeyDown={this.onAngleKeyDown as any}
+                      tabIndex={0}
+                      role="slider"
+                      aria-label="角度"
+                      aria-valuemin={0}
+                      aria-valuemax={360}
+                      aria-valuenow={Math.round(this.gradientAngle) as any}
+                    >
+                      <div class="angle-indicator" style={{ transform: `translate(-50%, -100%) rotate(${Math.round(this.gradientAngle)}deg)` }}></div>
+                    </div>
+                  ) : (!this.showRadialSidebar ? (
+                    <div class="center-plane" ref={(el)=> (this.centerPlaneEl = el as HTMLElement)} onPointerDown={this.onCenterPointerDown as any} style={{ background: this.getFormattedGradient() }}>
+                      <div class="center-handle" style={{ left: `${Math.round(this.radialCenterX)}%`, top: `${Math.round(this.radialCenterY)}%` }}></div>
+                    </div>
+                  ) : null)}
+                </div>
+              ) : null}
+
+              <div class="gt-params">
+                {this.gradientType==='radial' ? (
+                  <div class="param-group">
+                    <div class="param">
+                      <label class="param__label">镜像</label>
+                      <div class="seg">
+                        <button class={{ segbtn: true, active: !this.radialMirror }} onClick={()=>{ this.radialMirror=false; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>关闭</button>
+                        <button class={{ segbtn: true, active: this.radialMirror }} onClick={()=>{ this.radialMirror=true; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>开启</button>
+                      </div>
+                    </div>
+                    <div class="param">
+                      <label class="param__label">中心X</label>
+                      <ldesign-slider min={0 as any} max={100 as any} step={1 as any} value={Math.round(this.radialCenterX) as any} onLdesignInput={(e:any)=>{ this.radialCenterX=e.detail; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}></ldesign-slider>
+                      {this.ui==='pro' ? (<input type="number" min="0" max="100" value={Math.round(this.radialCenterX)} onChange={(e:any)=>{ this.radialCenterX = Math.min(100, Math.max(0, parseFloat(e.target.value)||0)); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />) : null}
+                    </div>
+                    <div class="param">
+                      <label class="param__label">中心Y</label>
+                      <ldesign-slider min={0 as any} max={100 as any} step={1 as any} value={Math.round(this.radialCenterY) as any} onLdesignInput={(e:any)=>{ this.radialCenterY=e.detail; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}></ldesign-slider>
+                      {this.ui==='pro' ? (<input type="number" min="0" max="100" value={Math.round(this.radialCenterY)} onChange={(e:any)=>{ this.radialCenterY = Math.min(100, Math.max(0, parseFloat(e.target.value)||0)); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />) : null}
+                    </div>
+                    <div class="param">
+                      <label class="param__label">形状</label>
+                      <div class="seg">
+                        <button class={{ segbtn: true, active: this.radialShape==='circle' }} onClick={()=>{ this.radialShape='circle'; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} title="circle"><span class="shape circle"></span></button>
+                        <button class={{ segbtn: true, active: this.radialShape==='ellipse' }} onClick={()=>{ this.radialShape='ellipse'; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} title="ellipse"><span class="shape ellipse"></span></button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Radial old stops section removed in favor of unified top bar */}
+              
+
+              {this.ui==='pro' ? (
               <div class="stop-quick">
                 <select onChange={(e:any)=>{ this.stopQuickFormat = (e.target.value==='rgba'?'rgba':'hex'); }}>
                   <option value="hex" selected={this.stopQuickFormat==='hex'}>HEX</option>
@@ -479,60 +695,89 @@ private onWindowPointerMove = (e: PointerEvent) => { if (!this.dragging) return;
                   复制
                 </button>
               </div>
-              {this.ui === 'pro' ? (
-                <div class="angle-presets">
-                  {[0,45,90,180].map(v => (
-                    <button class={{ active: Math.round((this.gradientAngle%360+360)%360)===v }} onClick={()=>{ this.gradientAngle=v; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}>{v}°</button>
-                  ))}
-                </div>
               ) : null}
-              {this.ui === 'pro' ? (
-                <div class="stop-pos">
-                  <span>位置</span>
-                  <input type="number" min="0" max="100" value={Math.round(this.gradientStops[this.activeStopIndex]?.pos ?? 0)} onChange={(e:any)=>{ const v=this.clamp(parseFloat(e.target.value)||0,0,100); const arr=[...this.gradientStops]; arr[this.activeStopIndex] = { ...arr[this.activeStopIndex], pos: v }; this.gradientStops=arr; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
-                  <span>%</span>
-                </div>
-              ) : null}
+
             </div>
           ) : null}
+            {(() => {
+              const main = (
+                <div class="cp-main">
+                  <div class="sv-wrap">
+                    <canvas ref={el => (this.svCanvas = el as HTMLCanvasElement)} class="sv-canvas" onPointerDown={this.onSVPointerDown as any}></canvas>
+                    <div class="sv-cursor" style={this.pointerPosForSV()}></div>
+                  </div>
 
-            <div class="sv-wrap">
-              <canvas ref={el => (this.svCanvas = el as HTMLCanvasElement)} class="sv-canvas" onPointerDown={this.onSVPointerDown as any}></canvas>
-              <div class="sv-cursor" style={this.pointerPosForSV()}></div>
-            </div>
+                  <div class="sliders">
+                    <div class="slider-row">
+                      <label style={{ width:'40px' }}>H</label>
+                      <ldesign-slider class="cp-hue-slider" min={0 as any} max={360 as any} step={1 as any} value={this.getActiveHSVA().h as any} onLdesignInput={this.onHueSliderInput as any} style={hueStyle as any}></ldesign-slider>
+                    </div>
+                    {this.showAlpha ? (
+                      <div class="slider-row">
+                        <label style={{ width:'40px' }}>Alpha</label>
+                        <ldesign-slider class="cp-alpha-slider" min={0 as any} max={1 as any} step={0.01 as any} value={(this.getActiveHSVA().a ?? 1) as any} onLdesignInput={this.onAlphaSliderInput as any} style={alphaStyle as any}></ldesign-slider>
+                      </div>
+                    ) : null}
+                  </div>
 
-            <div class="sliders">
-              <div class="slider-row">
-                <label style={{ width:'40px' }}>H</label>
-                <ldesign-slider min={0 as any} max={360 as any} step={1 as any} value={this.getActiveHSVA().h as any} onLdesignInput={this.onHueSliderInput as any}></ldesign-slider>
-              </div>
-              {this.showAlpha ? (
-                <div class="slider-row">
-                  <label style={{ width:'40px' }}>Alpha</label>
-                  <ldesign-slider min={0 as any} max={1 as any} step={0.01 as any} value={(this.getActiveHSVA().a ?? 1) as any} onLdesignInput={this.onAlphaSliderInput as any}></ldesign-slider>
+                  {this.renderInputs()}
+
+                  {this.activeMode==='gradient' ? (
+                    <div class="result-preview" style={{ background: this.getFormattedGradient() }} title="预览"></div>
+                  ) : null}
+
+                  {this.showPreset ? (
+                    <div class="cp-section">
+                      <div class="section-title">系统预设颜色</div>
+                      <div class="swatches">
+                        {this.presets.map(c => (<div class="swatch" style={{ background: c }} onClick={()=>this.setFromPreset(c)} title={c}></div>))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {showHistory ? (
+                    <div class="cp-section" id="history-section">
+                      <div class="section-title">最近使用颜色</div>
+                      <div class="swatches">
+                        {this.history.map(c => (<div class="swatch" style={{ background: c }} onClick={()=>this.setFromPreset(c)} title={c}></div>))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-            </div>
+              );
 
-            {this.renderInputs()}
-
-            {this.showPreset ? (
-              <div class="cp-section">
-                <div class="section-title">系统预设颜色</div>
-                <div class="swatches">
-                  {this.presets.map(c => (<div class="swatch" style={{ background: c }} onClick={()=>this.setFromPreset(c)} title={c}></div>))}
+              const useSidebar = this.activeMode==='gradient' && this.gradientType==='radial' && this.showRadialSidebar;
+              if (!useSidebar) return main;
+              return (
+                <div class="cp-layout">
+                  {main}
+                  <aside class="cp-aside cp-aside--radial">
+                    <div class="center-plane" ref={(el)=> (this.centerPlaneEl = el as HTMLElement)} onPointerDown={this.onCenterPointerDown as any} style={{ background: this.getFormattedGradient() }}>
+                      <div class="center-handle" style={{ left: `${Math.round(this.radialCenterX)}%`, top: `${Math.round(this.radialCenterY)}%` }}></div>
+                    </div>
+                    <div class="param-group" style={{ marginTop: '8px' }}>
+                      <div class="param">
+                        <label class="param__label">中心X</label>
+                        <ldesign-slider min={0 as any} max={100 as any} step={1 as any} value={Math.round(this.radialCenterX) as any} onLdesignInput={(e:any)=>{ this.radialCenterX=e.detail; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}></ldesign-slider>
+                        <input type="number" min="0" max="100" value={Math.round(this.radialCenterX)} onChange={(e:any)=>{ this.radialCenterX = Math.min(100, Math.max(0, parseFloat(e.target.value)||0)); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
+                      </div>
+                      <div class="param">
+                        <label class="param__label">中心Y</label>
+                        <ldesign-slider min={0 as any} max={100 as any} step={1 as any} value={Math.round(this.radialCenterY) as any} onLdesignInput={(e:any)=>{ this.radialCenterY=e.detail; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }}></ldesign-slider>
+                        <input type="number" min="0" max="100" value={Math.round(this.radialCenterY)} onChange={(e:any)=>{ this.radialCenterY = Math.min(100, Math.max(0, parseFloat(e.target.value)||0)); const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} />
+                      </div>
+                      <div class="param">
+                        <label class="param__label">形状</label>
+                        <div class="seg">
+                          <button class={{ segbtn: true, active: this.radialShape==='circle' }} onClick={()=>{ this.radialShape='circle'; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} title="circle"><span class="shape circle"></span></button>
+                          <button class={{ segbtn: true, active: this.radialShape==='ellipse' }} onClick={()=>{ this.radialShape='ellipse'; const out=this.getFormattedOutput(); this.value=out; this.ldesignInput.emit(out); }} title="ellipse"><span class="shape ellipse"></span></button>
+                        </div>
+                      </div>
+                    </div>
+                  </aside>
                 </div>
-              </div>
-            ) : null}
-
-            {showHistory ? (
-              <div class="cp-section" id="history-section">
-                <div class="section-title">最近使用颜色</div>
-                <div class="swatches">
-                  {this.history.map(c => (<div class="swatch" style={{ background: c }} onClick={()=>this.setFromPreset(c)} title={c}></div>))}
-                </div>
-              </div>
-            ) : null}
+              );
+            })()}
           </div>
       </Host>
     );

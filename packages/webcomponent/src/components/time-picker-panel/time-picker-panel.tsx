@@ -21,8 +21,18 @@ export class LdesignTimePickerPanel {
   @Prop() format: TimeFormat = 'HH:mm:ss';
   /** 面板列最大高度 */
   @Prop() panelHeight: number = 180;
+  /** 可视条目数（当未显式指定 panelHeight 时生效） */
+  @Prop() visibleItems: number = 5;
   /** 步进数组 [h, m, s, ms] */
   @Prop() steps: number[] = [1, 1, 1, 1];
+
+  /** 限制与禁用（可选） */
+  @Prop() minTime?: string;
+  @Prop() maxTime?: string;
+  @Prop() disabledHours?: string | number[];
+  @Prop() disabledMinutes?: string | number[];
+  @Prop() disabledSeconds?: string | number[];
+  @Prop() hideDisabledTime: boolean = true;
 
   /** 变更事件 */
   @Event() ldesignChange!: EventEmitter<string>;
@@ -36,12 +46,14 @@ export class LdesignTimePickerPanel {
   @State() ms: number = 0;
   @State() effectiveShowSeconds: boolean = true;
   @State() effectiveShowMilliseconds: boolean = false;
+  @State() effectiveUse12Hours: boolean = false;
   @State() ampm: 'AM' | 'PM' = 'AM';
 
   private listHour?: HTMLElement;
   private listMinute?: HTMLElement;
   private listSecond?: HTMLElement;
   private listMillisecond?: HTMLElement;
+  private listAmPm?: HTMLElement;
   private itemHeight = 36;
 
   @Watch('value') watchValue(newVal?: string) {
@@ -60,8 +72,10 @@ export class LdesignTimePickerPanel {
     const f = (this.format || '').toLowerCase();
     const hasSSS = f.includes('sss');
     const hasSS = f.includes('ss');
+    const hasA = f.includes('a');
     this.effectiveShowMilliseconds = hasSSS;
     this.effectiveShowSeconds = hasSS || hasSSS ? true : !!this.showSeconds;
+    this.effectiveUse12Hours = hasA ? true : !!this.use12Hours;
   }
 
   private clamp(n: number, min: number, max: number) { return Math.max(min, Math.min(max, n)); }
@@ -107,6 +121,38 @@ export class LdesignTimePickerPanel {
   }
 
   private toSeconds(h: number, m: number, s: number) { return h * 3600 + m * 60 + s; }
+  private parseArray(val?: string | number[]): number[] { if (!val) return []; if (Array.isArray(val)) return val; try { const arr = JSON.parse(val); return Array.isArray(arr) ? arr : []; } catch { return []; } }
+
+  private compare(a: { h: number; m: number; s: number }, b: { h: number; m: number; s: number }) { return this.toSeconds(a.h, a.m, a.s) - this.toSeconds(b.h, b.m, b.s); }
+
+  private isHourDisabled(hh: number) {
+    const dis = new Set(this.parseArray(this.disabledHours));
+    if (dis.has(hh)) return true;
+    const min = this.parseTime(this.minTime || undefined);
+    const max = this.parseTime(this.maxTime || undefined);
+    if (min && this.compare({ h: hh, m: 59, s: 59 }, min) < 0) return true;
+    if (max && this.compare({ h: hh, m: 0, s: 0 }, max) > 0) return true;
+    return false;
+  }
+  private isMinuteDisabled(mm: number) {
+    const dis = new Set(this.parseArray(this.disabledMinutes));
+    if (dis.has(mm)) return true;
+    const min = this.parseTime(this.minTime || undefined);
+    const max = this.parseTime(this.maxTime || undefined);
+    if (min && this.compare({ h: this.h, m: mm, s: 59 }, min) < 0) return true;
+    if (max && this.compare({ h: this.h, m: mm, s: 0 }, max) > 0) return true;
+    return false;
+  }
+  private isSecondDisabled(ss: number) {
+    const dis = new Set(this.parseArray(this.disabledSeconds));
+    if (dis.has(ss)) return true;
+    const min = this.parseTime(this.minTime || undefined);
+    const max = this.parseTime(this.maxTime || undefined);
+    const t = { h: this.h, m: this.m, s: ss };
+    if (min && this.compare(t, min) < 0) return true;
+    if (max && this.compare(t, max) > 0) return true;
+    return false;
+  }
 
   private commit(trigger: 'click' | 'scroll' | 'keyboard' | 'now') {
     const val = this.formatTime();
@@ -136,7 +182,7 @@ export class LdesignTimePickerPanel {
     }
   }
 
-  private onColumnScroll(kind: 'hour' | 'minute' | 'second' | 'millisecond', container: HTMLElement) {
+  private onColumnScroll(kind: 'hour' | 'minute' | 'second' | 'millisecond' | 'ampm', container: HTMLElement) {
     const rect = container.getBoundingClientRect();
     const cy = rect.top + rect.height / 2;
     const items = Array.from(container.querySelectorAll('li')) as HTMLElement[];
@@ -154,10 +200,12 @@ export class LdesignTimePickerPanel {
         if (kind === 'hour') this.setHour(v);
         else if (kind === 'minute') this.setMinute(v);
         else if (kind === 'second') this.setSecond(v);
-        else this.setMillisecond(v);
+        else if (kind === 'millisecond') this.setMillisecond(v);
+        else this.ampm = (nearest.textContent?.trim() === 'PM' ? 'PM' : 'AM');
       }
     }
     this.commit('scroll');
+    // 由惯性滚动逻辑时机统一吸附（此 panel 简化为固定吸附延时也可，若要完整惯性需与父组件协作）
     setTimeout(() => {
       const items2 = Array.from(container.querySelectorAll('li')) as HTMLElement[];
       let nearest2: HTMLElement | null = null, minD2 = Infinity;
@@ -175,24 +223,42 @@ export class LdesignTimePickerPanel {
     const step = type === 'hour' ? (this.steps[0] || 1) : (type === 'minute' ? (this.steps[1] || 1) : (type === 'second' ? (this.steps[2] || 1) : (this.steps[3] || 1)));
     let list: number[] = [];
     let cur = 0;
+    let isDisabled: (v: number) => boolean = () => false;
     if (type === 'hour') {
-      list = range(24).filter(v => v % step === 0); cur = this.h;
+      if (this.effectiveUse12Hours) {
+        list = Array.from({ length: 12 }, (_, i) => i + 1).filter(v => (v % step === 0) || step === 1);
+        cur = ((this.h % 12) || 12);
+        isDisabled = (v) => {
+          let base = v % 12; if (base === 12 % 12) base = 0; const h24 = this.ampm === 'PM' ? (base + 12) : base; return this.isHourDisabled(h24);
+        };
+      } else {
+        list = range(24).filter(v => v % step === 0); cur = this.h; isDisabled = (v) => this.isHourDisabled(v);
+      }
     } else if (type === 'minute') {
-      list = range(60).filter(v => v % step === 0); cur = this.m;
+      list = range(60).filter(v => v % step === 0); cur = this.m; isDisabled = (v) => this.isMinuteDisabled(v);
     } else if (type === 'second') {
-      list = range(60).filter(v => v % step === 0); cur = this.s;
-    } else { list = range(1000).filter(v => v % step === 0); cur = this.ms; }
+      list = range(60).filter(v => v % step === 0); cur = this.s; isDisabled = (v) => this.isSecondDisabled(v);
+    } else { list = range(1000).filter(v => v % step === 0); cur = this.ms; isDisabled = (_v) => false; }
 
-    const bufferCount = list.length;
-    const head = list.slice(-bufferCount);
-    const tail = list.slice(0, bufferCount);
-    const displayList = [...head, ...list, ...tail];
+    // 过滤禁用项（可选）
+    const baseList = list;
+    const filtered = this.hideDisabledTime ? baseList.filter(v => !isDisabled(v)) : baseList.slice();
+    const eff = filtered.length > 0 ? filtered : baseList;
+
+    const bufferCount = eff.length;
+    const head = eff.slice(-bufferCount);
+    const tail = eff.slice(0, bufferCount);
+    const displayList = [...head, ...eff, ...tail];
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const el = e.currentTarget as HTMLElement;
-      const dir = e.deltaY > 0 ? 1 : -1;
-      el.scrollBy({ top: this.itemHeight * dir, behavior: 'smooth' });
+      // 简化版“惯性”：按速度多步滚动，CSS smooth 让动画更接近滚轮惯性
+      const sign = e.deltaY > 0 ? 1 : -1;
+      const abs = Math.abs(e.deltaY);
+      const stepCount = Math.max(1, Math.min(12, Math.round(abs / (this.itemHeight * 0.6))))
+      el.scrollBy({ top: this.itemHeight * stepCount * sign, behavior: 'smooth' });
+      // 实时更新当前值
       this.onColumnScroll(type, el);
     };
 
@@ -204,7 +270,7 @@ export class LdesignTimePickerPanel {
     };
 
     return (
-      <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight}px` }}>
+      <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight || (this.itemHeight * this.visibleItems)}px` }}>
         <ul class="ldesign-time-picker__column" tabindex={0} onWheel={onWheel as any} onKeyDown={onKeyDown as any} ref={(el) => {
           if (type === 'hour') this.listHour = el as HTMLElement;
           else if (type === 'minute') this.listMinute = el as HTMLElement;
@@ -212,10 +278,13 @@ export class LdesignTimePickerPanel {
           else this.listMillisecond = el as HTMLElement;
         }} style={{ height: '100%', overflowY: 'auto' }}>
           {displayList.map(v => {
-            const active = (type === 'hour' ? v === this.h : (type === 'minute' ? v === this.m : (type === 'second' ? v === this.s : v === this.ms)));
+            const active = (type === 'hour' ? (this.effectiveUse12Hours ? (((this.h % 12) || 12) === v) : (v === this.h)) : (type === 'minute' ? v === this.m : (type === 'second' ? v === this.s : v === this.ms)));
+            const disabled = isDisabled(v);
+            const dataValue = (type === 'hour') ? (this.effectiveUse12Hours ? (this.ampm === 'PM' ? ((v % 12) + 12) : (v % 12)) : v) : v;
             return (
-              <li data-value={String(v)} class={{ 'ldesign-time-picker__item': true, 'ldesign-time-picker__item--active': active }} onClick={(e) => {
-                if (type === 'hour') this.setHour(v); else if (type === 'minute') this.setMinute(v); else if (type === 'second') this.setSecond(v); else this.setMillisecond(v);
+              <li data-value={String(dataValue)} class={{ 'ldesign-time-picker__item': true, 'ldesign-time-picker__item--active': active, 'ldesign-time-picker__item--disabled': disabled }} onClick={(e) => {
+                if (disabled) return;
+                if (type === 'hour') this.setHour(dataValue); else if (type === 'minute') this.setMinute(v); else if (type === 'second') this.setSecond(v); else this.setMillisecond(v);
                 const li = (e.currentTarget as HTMLElement); const ul = li.parentElement as HTMLElement; this.scrollItemIntoCenter(ul, li);
                 this.commit('click');
               }}>
@@ -234,14 +303,39 @@ export class LdesignTimePickerPanel {
   private useNow = () => {
     const now = new Date();
     this.h = now.getHours(); this.m = now.getMinutes(); this.s = now.getSeconds(); this.ms = now.getMilliseconds();
+    this.ampm = this.h < 12 ? 'AM' : 'PM';
     this.commit('now');
   };
+
+  private renderAmPmColumn() {
+    const options: ('AM' | 'PM')[] = ['AM', 'PM'];
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      this.ampm = this.ampm === 'AM' ? 'PM' : 'AM';
+      this.commit('scroll');
+    };
+    return (
+      <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight || (this.itemHeight * this.visibleItems)}px` }}>
+        <ul class="ldesign-time-picker__column" tabindex={0} onWheel={onWheel as any} ref={(el) => (this.listAmPm = el as HTMLElement)} style={{ height: '100%', overflowY: 'auto' }}>
+          {options.map(op => (
+            <li class={{ 'ldesign-time-picker__item': true, 'ldesign-time-picker__item--active': op === this.ampm }} data-value={op === 'PM' ? '13' : '0'} onClick={(e) => { this.ampm = op; const li = (e.currentTarget as HTMLElement); const ul = li.parentElement as HTMLElement; this.scrollItemIntoCenter(ul, li); this.commit('click'); }}>
+              {op}
+            </li>
+          ))}
+        </ul>
+        <div class="ldesign-time-picker__indicator" style={{ height: `${this.itemHeight}px` }}></div>
+        <div class="ldesign-time-picker__mask ldesign-time-picker__mask--top"></div>
+        <div class="ldesign-time-picker__mask ldesign-time-picker__mask--bottom"></div>
+      </div>
+    );
+  }
 
   render() {
     return (
       <Host class={{ 'ldesign-time-picker': true }}>
         <div class="ldesign-time-picker__content" style={{ ['--ld-tp-item-height' as any]: `${this.itemHeight}px` }}>
           <div class="ldesign-time-picker__columns">
+            {this.effectiveUse12Hours && this.renderAmPmColumn()}
             {this.renderColumn('hour')}
             {this.renderColumn('minute')}
             {this.effectiveShowSeconds && this.renderColumn('second')}

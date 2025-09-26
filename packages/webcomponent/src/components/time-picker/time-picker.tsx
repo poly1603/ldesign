@@ -103,6 +103,8 @@ export class LdesignTimePicker {
   @Prop({ mutable: true }) visible: boolean = false;
   /** 列表最大高度 */
   @Prop() panelHeight: number = 180;
+  /** 可视条目数（当未显式指定 panelHeight 时生效） */
+  @Prop() visibleItems: number = 5;
   /** 是否需要点击“确定”确认（默认需要）。关闭后再触发 change */
   @Prop() confirm: boolean = true;
 
@@ -147,6 +149,8 @@ export class LdesignTimePicker {
 
   private itemHeight = 36; // px，用于滚动吸附
   private snapTimers: { [k: string]: number | undefined } = {};
+  private inertiaActive: { [k in 'hour' | 'minute' | 'second' | 'millisecond' | 'ampm']?: boolean } = {};
+  private inertiaState: { [k in 'hour' | 'minute' | 'second' | 'millisecond' | 'ampm']?: { raf?: number; v: number; last: number } } = {};
 
   @Watch('value')
   watchValue(newVal?: string) {
@@ -265,8 +269,8 @@ export class LdesignTimePicker {
   };
 
   private scrollActiveIntoView() {
-    const setPad = (el?: HTMLElement) => { if (!el) return; const h = el.clientHeight || this.panelHeight; const pad = Math.max(0, Math.round(h / 2 - this.itemHeight / 2)); el.style.paddingTop = `${pad}px`; el.style.paddingBottom = `${pad}px`; };
-    [this.listAmPm, this.listHour, this.listMinute, this.listSecond, this.listMillisecond].forEach((el) => setPad(el));
+    const setPad = (el?: HTMLElement) => { if (!el) return; const h = el.clientHeight || (this.panelHeight || (this.itemHeight * this.visibleItems)); const pad = Math.max(0, Math.round(h / 2 - this.itemHeight / 2)); el.style.paddingTop = `${pad}px`; el.style.paddingBottom = `${pad}px`; };
+    [this.listAmPm, this.listHour, this.listMinute, this.listSecond].forEach((el) => setPad(el));
 
     const centerByQuery = (el?: HTMLElement, selector?: string) => {
       if (!el || !selector) return;
@@ -326,6 +330,7 @@ export class LdesignTimePicker {
       }
     }
     // 吸附到最近项（滚动停止后）
+    if (this.inertiaActive[kind]) return; // 惯性滚动中，先不吸附，等待动画结束统一吸附
     if (this.snapTimers[kind]) clearTimeout(this.snapTimers[kind]);
     this.snapTimers[kind] = window.setTimeout(() => {
       const near = this.getNearestItem(container);
@@ -346,11 +351,10 @@ export class LdesignTimePicker {
     if (!this.confirm) this.commitValue();
   };
 
-  private onWheelHour = (e: WheelEvent) => { e.preventDefault(); const d = e.deltaY > 0 ? this.hourStep : -this.hourStep; this.setHour((this.h + d + 24) % 24); this.emitPick('scroll'); };
-  private onWheelMinute = (e: WheelEvent) => { e.preventDefault(); const d = e.deltaY > 0 ? this.minuteStep : -this.minuteStep; this.setMinute((this.m + d + 60) % 60); this.emitPick('scroll'); };
-  private onWheelSecond = (e: WheelEvent) => { e.preventDefault(); const d = e.deltaY > 0 ? this.secondStep : -this.secondStep; this.setSecond((this.s + d + 60) % 60); this.emitPick('scroll'); };
-  private onWheelMillisecond = (e: WheelEvent) => { e.preventDefault(); const d = e.deltaY > 0 ? this.millisecondStep : -this.millisecondStep; this.setMillisecond((this.ms + d + 1000) % 1000); this.emitPick('scroll'); };
-  private onWheelAmPm = (e: WheelEvent) => { e.preventDefault(); const next = this.ampm === 'AM' ? 'PM' : 'AM'; this.setAmPm(next); this.emitPick('scroll'); };
+  private onWheelHour = (e: WheelEvent) => { e.preventDefault(); this.startInertia('hour', this.listHour!, e.deltaY); };
+  private onWheelMinute = (e: WheelEvent) => { e.preventDefault(); this.startInertia('minute', this.listMinute!, e.deltaY); };
+  private onWheelSecond = (e: WheelEvent) => { e.preventDefault(); this.startInertia('second', this.listSecond!, e.deltaY); };
+  private onWheelAmPm = (e: WheelEvent) => { e.preventDefault(); this.startInertia('ampm', this.listAmPm!, e.deltaY); };
 
   private clearAll = (e: MouseEvent) => { e.stopPropagation(); if (this.disabled) return; this.updateValue(undefined); };
 
@@ -444,7 +448,8 @@ export class LdesignTimePicker {
     this.ldesignFocus.emit(e);
     if (!this.disabled) {
       const popup = this.getInnerPopup();
-      if (popup && this.trigger !== 'manual') (popup as any).visible = true;
+      // 避免与 trigger="click" 的切换冲突：仅在 trigger=focus 时由输入聚焦打开
+      if (popup && this.trigger === 'focus') (popup as any).visible = true;
     }
   };
 
@@ -574,19 +579,10 @@ export class LdesignTimePicker {
       isDisabled = (_v) => false;
     }
 
-    // 为了让 0、1、58、59（或小时的首尾）也能顺滑地位于中心，
-    // 在列表首尾各克隆若干项，形成“环形”滚动的视觉效果。
-    // 这里克隆 2 项即可满足需求；对 step>1 的场景同样适用。
-    // 使用与原始列表同等数量的前后缓冲，确保在任意面向滚动时都能将边界项滚动到中线
-    // 过滤禁用项（可选）
+    // 非无限滚动：不再克隆首尾，列表到达边界即停止
     const baseList = list;
     const filtered = this.hideDisabledTime ? baseList.filter(v => !isDisabled(v)) : baseList.slice();
-    const eff = filtered.length > 0 ? filtered : baseList;
-
-    const bufferCount = eff.length; // 小列表（24/60）开销可接受
-    const head = eff.slice(-bufferCount);
-    const tail = eff.slice(0, bufferCount);
-    const displayList = [...head, ...eff, ...tail];
+    const displayList = filtered.length > 0 ? filtered : baseList;
 
     const refSetter = (el: HTMLElement) => {
       if (type === 'hour') this.listHour = el; else if (type === 'minute') this.listMinute = el; else if (type === 'second') this.listSecond = el; else this.listMillisecond = el;
@@ -599,10 +595,7 @@ export class LdesignTimePicker {
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const el = e.currentTarget as HTMLElement;
-      const dir = e.deltaY > 0 ? 1 : -1;
-      el.scrollBy({ top: this.itemHeight * dir, behavior: 'smooth' });
-      this.onColumnScroll(type, el);
-      this.emitPick('scroll');
+      this.startInertia(type, el, e.deltaY);
     };
     const onKeyDown = (e: KeyboardEvent) => {
       const el = e.currentTarget as HTMLElement;
@@ -613,7 +606,7 @@ export class LdesignTimePicker {
     };
 
     return (
-      <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight}px` }}>
+      <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight || (this.itemHeight * this.visibleItems)}px` }}>
         <ul class="ldesign-time-picker__column" tabindex={0} onScroll={onScroll as any} onWheel={onWheel as any} onKeyDown={onKeyDown as any} ref={refSetter} style={{ height: '100%', overflowY: 'auto' }}>
           {displayList.map(v => {
             const active = type === 'hour' ? (this.effectiveUse12Hours ? (((this.h % 12) || 12) === v) : (v === this.h)) : (type === 'minute' ? v === this.m : v === this.s);
@@ -639,7 +632,7 @@ export class LdesignTimePicker {
   private renderAmPmColumn() {
     const options: ('AM' | 'PM')[] = ['AM', 'PM'];
     const onScroll = (e: UIEvent) => { const el = e.currentTarget as HTMLElement; this.onColumnScroll('ampm', el); };
-    const onWheel = (e: WheelEvent) => { e.preventDefault(); const el = e.currentTarget as HTMLElement; const dir = e.deltaY > 0 ? 1 : -1; el.scrollBy({ top: this.itemHeight * dir, behavior: 'smooth' }); this.onColumnScroll('ampm', el); this.emitPick('scroll'); };
+    const onWheel = (e: WheelEvent) => { e.preventDefault(); const el = e.currentTarget as HTMLElement; this.startInertia('ampm', el, e.deltaY); };
     const onKeyDown = (e: KeyboardEvent) => {
       const el = e.currentTarget as HTMLElement;
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); const next = this.ampm === 'AM' ? 'PM' : 'AM'; this.setAmPm(next); this.emitPick('keyboard'); }
@@ -647,7 +640,7 @@ export class LdesignTimePicker {
       else if (e.key === 'Escape') { this.hideInnerPopup(); }
     };
     return (
-      <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight}px` }}>
+      <div class="ldesign-time-picker__picker" style={{ height: `${this.panelHeight || (this.itemHeight * this.visibleItems)}px` }}>
         <ul class="ldesign-time-picker__column" tabindex={0} onScroll={onScroll as any} onWheel={onWheel as any} onKeyDown={onKeyDown as any} ref={(el) => (this.listAmPm = el)} style={{ height: '100%', overflowY: 'auto' }}>
           {options.map(op => (
             <li class={{ 'ldesign-time-picker__item': true, 'ldesign-time-picker__item--active': op === this.ampm }} data-value={op === 'PM' ? '13' : '0'} onClick={(e) => { this.setAmPm(op); const li = (e.currentTarget as HTMLElement); const ul = li.parentElement as HTMLElement; this.scrollItemIntoCenter(ul, li); }}>
@@ -686,6 +679,43 @@ export class LdesignTimePicker {
       case 'large': return 40;
       default: return 36;
     }
+  }
+
+  private startInertia(kind: 'hour' | 'minute' | 'second' | 'millisecond' | 'ampm', container: HTMLElement, deltaY: number) {
+    if (!container) return;
+    // 取消上一次动画
+    const prev = this.inertiaState[kind];
+    if (prev?.raf) cancelAnimationFrame(prev.raf);
+    this.inertiaActive[kind] = true;
+
+    // 初速度（px/帧），根据滚轮幅度换算并限制范围
+    let v = Math.max(-60, Math.min(60, deltaY * 0.25));
+    const state = { v, last: performance.now(), raf: 0 };
+    this.inertiaState[kind] = state as any;
+
+    const step = (now: number) => {
+      const dt = Math.max(1, now - state.last); // ms
+      state.last = now;
+      // 基于速度更新滚动
+      const px = state.v * (dt / 16.67);
+      const maxTop = container.scrollHeight - container.clientHeight;
+      const nextTop = Math.max(0, Math.min(container.scrollTop + px, maxTop));
+      container.scrollTop = nextTop;
+      // 实时更新当前值
+      this.onColumnScroll(kind, container);
+      // 摩擦减速
+      state.v *= Math.pow(0.92, dt / 16.67);
+      if (Math.abs(state.v) < 0.2) {
+        // 停止，吸附到最近项
+        this.inertiaActive[kind] = false;
+        const near = this.getNearestItem(container);
+        if (near) this.scrollItemIntoCenter(container, near, true);
+        this.emitPick('scroll');
+        return;
+      }
+      state.raf = requestAnimationFrame(step);
+    };
+    state.raf = requestAnimationFrame(step);
   }
 
   private renderPanel() {

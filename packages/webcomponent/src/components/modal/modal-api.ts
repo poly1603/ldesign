@@ -20,9 +20,6 @@ export interface ModalBaseOptions {
   destroyOnClose?: boolean;
   /** 变体（未指定时，移动端默认使用 bottom-sheet） */
   variant?: ModalVariant;
-  /** 移动端 sheet 预设（仅在 variant=bottom-sheet 时有效） */
-  sheetSnapPoints?: (number | string)[];
-  sheetInitial?: number | string;
 }
 
 /**
@@ -291,9 +288,6 @@ function applyMobileDefaults(modal: any, opts: ModalBaseOptions) {
   if (opts.variant) { modal.variant = opts.variant; return; }
   if (isSmallScreen()) {
     modal.variant = 'bottom-sheet';
-    modal.sheetDraggable = true;
-    if (!opts.sheetSnapPoints) modal.sheetSnapPoints = ['50%', '80%', '100%'];
-    if (!opts.sheetInitial) modal.sheetInitial = '80%';
   }
 }
 

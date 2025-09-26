@@ -5,7 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
+import { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, NativeButtonType, Size, Theme } from "./types";
 import { DrawerPlacement } from "./components/drawer/drawer";
 import { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/dropdown/dropdown";
 import { ImageViewerItem } from "./components/image-viewer/image-viewer";
@@ -13,8 +13,10 @@ import { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu
 import { MessageType } from "./components/message/message";
 import { ModalAnimation, ModalSize, ModalVariant } from "./components/modal/modal";
 import { NotificationPlacement, NotificationType } from "./components/notification/notification";
+import { PickerOption } from "./components/picker/picker";
 import { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
 import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
+import { Element } from "@stencil/core";
 import { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 import { TabsPlacement, TabsType } from "./components/tabs/tabs";
 import { TimeFormat, TimePickerPlacement, TimePickerPresets, TimePickerSize, TimePickerStatus, TimePickerTrigger } from "./components/time-picker/time-picker";
@@ -22,8 +24,9 @@ import { TimeFormat as TimeFormat1 } from "./components/time-picker-panel/time-p
 import { TimeFormat as TimeFormat2, TimePickerSize as TimePickerSize1, TimePickerStatus as TimePickerStatus1, TimeRange } from "./components/time-range-picker/time-range-picker";
 import { Placement } from "@floating-ui/dom";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
+import { TransferItem } from "./components/transfer/transfer";
 import { TreeNode } from "./components/tree/tree";
-export { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, NativeButtonType, Size, Theme } from "./types";
+export { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, NativeButtonType, Size, Theme } from "./types";
 export { DrawerPlacement } from "./components/drawer/drawer";
 export { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/dropdown/dropdown";
 export { ImageViewerItem } from "./components/image-viewer/image-viewer";
@@ -31,8 +34,10 @@ export { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu
 export { MessageType } from "./components/message/message";
 export { ModalAnimation, ModalSize, ModalVariant } from "./components/modal/modal";
 export { NotificationPlacement, NotificationType } from "./components/notification/notification";
+export { PickerOption } from "./components/picker/picker";
 export { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
 export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
+export { Element } from "@stencil/core";
 export { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 export { TabsPlacement, TabsType } from "./components/tabs/tabs";
 export { TimeFormat, TimePickerPlacement, TimePickerPresets, TimePickerSize, TimePickerStatus, TimePickerTrigger } from "./components/time-picker/time-picker";
@@ -40,6 +45,7 @@ export { TimeFormat as TimeFormat1 } from "./components/time-picker-panel/time-p
 export { TimeFormat as TimeFormat2, TimePickerSize as TimePickerSize1, TimePickerStatus as TimePickerStatus1, TimeRange } from "./components/time-range-picker/time-range-picker";
 export { Placement } from "@floating-ui/dom";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
+export { TransferItem } from "./components/transfer/transfer";
 export { TreeNode } from "./components/tree/tree";
 export namespace Components {
     /**
@@ -500,6 +506,11 @@ export namespace Components {
          */
         "hideOnSelect": boolean;
         /**
+          * 渐变色标之间的最小间距（百分比，避免重叠），默认 1（透传给面板）
+          * @default 1
+         */
+        "minStopGap": number;
+        /**
           * 面板模式：'solid' | 'gradient' | 'both'
           * @default 'both'
          */
@@ -574,8 +585,8 @@ export namespace Components {
          */
         "gradientTypes": 'linear' | 'radial' | 'both';
         /**
-          * 渐变色标之间的最小间距（百分比，避免重叠），默认 2
-          * @default 2
+          * 渐变色标之间的最小间距（百分比，避免重叠），默认 1
+          * @default 1
          */
         "minStopGap": number;
         /**
@@ -599,6 +610,11 @@ export namespace Components {
          */
         "showAlpha": boolean;
         /**
+          * 是否在渐变面板中显示“线性/径向”切换按钮（默认不显示）
+          * @default false
+         */
+        "showGradientTypeTabs": boolean;
+        /**
           * 是否显示最近使用（无数据时自动隐藏）
           * @default true
          */
@@ -608,6 +624,11 @@ export namespace Components {
           * @default true
          */
         "showPreset": boolean;
+        /**
+          * 在渐变-径向模式下，于右侧显示径向面板（中心拖拽与参数）
+          * @default false
+         */
+        "showRadialSidebar": boolean;
         /**
           * 尺寸（影响整体间距）
           * @default 'medium'
@@ -1180,6 +1201,76 @@ export namespace Components {
         "value": string;
     }
     /**
+     * InputNumber 数字输入框
+     * - 支持步进按钮、键盘操作（可关闭）、最小/最大值限制、精度控制
+     * - 提供 formatter / parser 以实现显示格式化与解析
+     */
+    interface LdesignInputNumber {
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 自定义显示格式化
+         */
+        "formatter"?: (value: number | null) => string;
+        /**
+          * 是否启用键盘增减（方向键/页键）
+          * @default true
+         */
+        "keyboard": boolean;
+        /**
+          * 最大值（可不设）
+         */
+        "max"?: number;
+        /**
+          * 最小值（可不设）
+         */
+        "min"?: number;
+        /**
+          * 是否允许鼠标滚轮调整
+          * @default false
+         */
+        "mouseWheel": boolean;
+        /**
+          * 自定义解析（将输入字符串转成数值）
+         */
+        "parser"?: (input: string) => number | null;
+        /**
+          * 占位符
+         */
+        "placeholder"?: string;
+        /**
+          * 精度（小数位数）。不设则按 step 与输入自动推断
+         */
+        "precision"?: number;
+        /**
+          * 是否只读（可选，禁用输入但可复制）
+          * @default false
+         */
+        "readonly": boolean;
+        /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 状态样式
+         */
+        "status"?: 'error' | 'warning' | 'success';
+        /**
+          * 步长（增减用，不强制对齐输入）
+          * @default 1
+         */
+        "step": number;
+        /**
+          * 当前值（受控，支持双向）
+          * @default 0
+         */
+        "value": number | null;
+    }
+    /**
      * Loading 加载组件
      * 轻量的加载指示器，支持两种形态：spinner | dots
      */
@@ -1227,6 +1318,112 @@ export namespace Components {
           * 全屏时的层级（可选）
          */
         "zIndex"?: number;
+    }
+    /**
+     * ldesign-mention 提及组件（contenteditable 版本）
+     * - 使用可编辑 div 实现富文本输入，支持在文本中高亮渲染提及 token
+     * - 候选浮层定位于光标位置（通过隐藏锚点 + ldesign-popup 定位）
+     */
+    interface LdesignMention {
+        /**
+          * 浮层挂载到：self|body|closest-popup（透传给 popup）
+          * @default 'body'
+         */
+        "appendTo": 'self' | 'body' | 'closest-popup';
+        /**
+          * 自动聚焦
+          * @default false
+         */
+        "autofocus": boolean;
+        /**
+          * token 是否默认可关闭
+          * @default true
+         */
+        "closable": boolean;
+        /**
+          * 受控模式（为 true 时不在内部修改 value）
+          * @default false
+         */
+        "controlled": boolean;
+        /**
+          * 默认值（非受控）
+         */
+        "defaultValue"?: string;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 自定义过滤函数（返回 true 表示保留）
+         */
+        "filterOption"?: (input: string, option: MentionItem) => boolean;
+        /**
+          * 加载中（用于异步搜索）
+          * @default false
+         */
+        "loading": boolean;
+        /**
+          * 列表最大高度
+          * @default 240
+         */
+        "maxHeight": number;
+        /**
+          * 结构化初始化（分段）
+         */
+        "model"?: string | MentionSegment[];
+        /**
+          * 候选项（数组或 JSON 字符串）
+          * @default []
+         */
+        "options": string | MentionItem[];
+        /**
+          * 占位文本
+         */
+        "placeholder"?: string;
+        /**
+          * 是否只读
+          * @default false
+         */
+        "readonly": boolean;
+        /**
+          * 尺寸（影响样式）
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 默认 token 外观
+          * @default 'primary'
+         */
+        "tokenType": 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+        /**
+          * 触发字符（如 @ 或 #），兼容旧属性
+          * @default '@'
+         */
+        "trigger": string;
+        /**
+          * 触发符个性化配置（JS 对象或 JSON 字符串）
+         */
+        "triggerConfigs"?: string | MentionTriggerConfig[];
+        /**
+          * 多个触发字符
+         */
+        "triggers"?: string | string[];
+        /**
+          * 当前值（受控，文本值，包含渲染后的
+          * @name 文本）
+          * @default ''
+         */
+        "value": string;
+        /**
+          * 事件/受控值格式（默认 model）
+          * @default 'model'
+         */
+        "valueFormat": 'model' | 'segments' | 'text';
+        /**
+          * 结构化初始化（模型）
+         */
+        "valueModel"?: string | MentionModel;
     }
     interface LdesignMenu {
         /**
@@ -1516,23 +1713,6 @@ export namespace Components {
          */
         "restoreIcon": string;
         /**
-          * 关闭阈值：低于该高度则关闭，默认 '30%'
-         */
-        "sheetCloseThreshold"?: number | string;
-        /**
-          * Bottom Sheet 拖拽开关（仅在 variant='bottom-sheet' 时生效）
-          * @default true
-         */
-        "sheetDraggable": boolean;
-        /**
-          * 初始高度：同上；若不传且有 snapPoints，则使用最大 snap 值（通常是 100%）
-         */
-        "sheetInitial"?: number | string;
-        /**
-          * Snap 点：数组，值支持像素（数字或'120px'），百分比（'50%'），或小数（0.5 表示 50%）
-         */
-        "sheetSnapPoints"?: (number | string)[];
-        /**
           * 显示模态框
          */
         "show": () => Promise<void>;
@@ -1740,6 +1920,67 @@ export namespace Components {
         "totalText": string;
     }
     /**
+     * ldesign-picker
+     * 通用滚轮选择器（单列）
+     * - PC：鼠标滚轮按“行”步进，按速度取整步数
+     * - 移动端：手势滑动（Pointer Events）+ 惯性 + 吸附到最近项
+     * - 支持配置容器高度与每项高度；容器通常为 itemHeight 的奇数倍（3/5/7...）
+     * - 正中间指示器高度与子项一致
+     */
+    interface LdesignPicker {
+        /**
+          * 默认值（非受控）
+         */
+        "defaultValue"?: string;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 惯性摩擦 0-1（越小减速越快）
+          * @default 0.92
+         */
+        "friction": number;
+        /**
+          * 行高（自动根据 size 推导，亦可显式覆盖）
+         */
+        "itemHeight"?: number;
+        /**
+          * 是否启用惯性
+          * @default true
+         */
+        "momentum": boolean;
+        /**
+          * 选项列表（数组或 JSON 字符串）
+          * @default []
+         */
+        "options": string | PickerOption[];
+        /**
+          * 可视高度（优先），未设置时使用 visibleItems * itemHeight
+         */
+        "panelHeight"?: number;
+        /**
+          * 边界阻力系数 0-1（越小阻力越大）
+          * @default 0.35
+         */
+        "resistance": number;
+        /**
+          * 尺寸，影响每行高度
+          * @default 'medium'
+         */
+        "size": 'small' | 'medium' | 'large';
+        /**
+          * 当前值（受控）
+         */
+        "value"?: string;
+        /**
+          * 可视条目数（未显式 panelHeight 时生效，建议奇数：3/5/7）
+          * @default 5
+         */
+        "visibleItems": number;
+    }
+    /**
      * Popconfirm 气泡确认框
      * 基于 Popup 进行封装，提供确认/取消操作
      */
@@ -1918,6 +2159,130 @@ export namespace Components {
         "width"?: number | string;
     }
     /**
+     * Progress 进度条
+     * 支持：线形、环形、仪表盘、步骤条，多尺寸/状态/文本/自定义颜色等
+     */
+    interface LdesignProgress {
+        /**
+          * 圆形分段之间的间隔角度（度数）
+          * @default 2
+         */
+        "circleStepGapDegree": number;
+        /**
+          * 圆形分段步数（用于环形步进样式）
+         */
+        "circleSteps"?: number;
+        /**
+          * 文本格式化，使用 {percent} 占位符，例如："{percent} / 100"
+          * @default '{percent}%'
+         */
+        "format": string;
+        /**
+          * 仪表盘缺口角度（0-360，仅 circle/dashboard）
+         */
+        "gapDegree"?: number;
+        /**
+          * 缺口位置（top/right/bottom/left，仅 circle/dashboard）
+          * @default 'top'
+         */
+        "gapPosition": 'top' | 'right' | 'bottom' | 'left';
+        /**
+          * 渐变方向：horizontal | vertical | diagonal
+          * @default 'horizontal'
+         */
+        "gradientDirection": 'horizontal' | 'vertical' | 'diagonal';
+        /**
+          * 环形渐变（可选，仅 circle/dashboard）：起止色
+         */
+        "gradientFrom"?: string;
+        "gradientTo"?: string;
+        /**
+          * 线形文本位置
+          * @default 'right'
+         */
+        "infoPosition": 'right' | 'left' | 'inside' | 'bottom';
+        /**
+          * 百分比 0-100
+          * @default 0
+         */
+        "percent": number;
+        /**
+          * 半圆位置（type=semicircle），top 表示显示上半圆，bottom 表示下半圆
+          * @default 'top'
+         */
+        "semiPosition": 'top' | 'bottom';
+        /**
+          * 是否显示信息文本（line：默认右侧；circle/dashboard：内部）
+          * @default true
+         */
+        "showInfo": boolean;
+        /**
+          * 组件尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 状态：normal | active | success | exception
+          * @default 'normal'
+         */
+        "status": 'normal' | 'active' | 'success' | 'exception';
+        /**
+          * 步骤数（type=steps 或设置 steps>0 都渲染步骤条）
+         */
+        "steps"?: number;
+        /**
+          * 步骤间隙 px（仅 steps）
+          * @default 2
+         */
+        "stepsGap": number;
+        /**
+          * 步骤条的块圆角
+          * @default 100
+         */
+        "stepsRadius": number;
+        /**
+          * 条纹动画（active 状态下默认开启）
+          * @default true
+         */
+        "striped": boolean;
+        /**
+          * 进度颜色（可为任意 css 颜色）
+         */
+        "strokeColor"?: string;
+        /**
+          * 端点样式：round | square | butt（仅 circle 有效，line 以圆角呈现 round）
+          * @default 'round'
+         */
+        "strokeLinecap": 'round' | 'square' | 'butt';
+        /**
+          * 线宽（line 为高度，circle 为描边宽度）
+         */
+        "strokeWidth"?: number;
+        /**
+          * 成功颜色
+          * @default 'var(--ldesign-success-color, #42bd42)'
+         */
+        "successColor"?: string;
+        /**
+          * 成功进度（用于分段显示成功部分）0-100
+         */
+        "successPercent"?: number;
+        /**
+          * 未完成轨道颜色
+         */
+        "trailColor"?: string;
+        /**
+          * 类型：line（默认）| circle | dashboard | steps | semicircle
+          * @default 'line'
+         */
+        "type": 'line' | 'circle' | 'dashboard' | 'steps' | 'semicircle';
+        /**
+          * 外径宽度（仅 circle/dashboard），单位 px
+          * @default 120
+         */
+        "width"?: number;
+    }
+    /**
      * Radio 单选框组件
      * 在一组备选项中进行单选
      */
@@ -2048,6 +2413,242 @@ export namespace Components {
           * 未选中颜色（支持 CSS 变量覆盖）
          */
         "voidColor"?: string;
+    }
+    /**
+     * ResizeBox 伸缩框
+     * 可通过拖拽指定边来改变容器宽高
+     */
+    interface LdesignResizeBox {
+        /**
+          * 受控模式：为 true 时，不会修改 width/height，外部应在事件中设置新值传回
+          * @default false
+         */
+        "controlled": boolean;
+        /**
+          * 角落把手：top-left/top-right/bottom-right/bottom-left。字符串或数组。默认仅启用 bottom-right。
+          * @default 'bottom-right'
+         */
+        "corners": string | Array<'top-left' | 'top-right' | 'bottom-right' | 'bottom-left'>;
+        /**
+          * 允许伸缩的边：top/right/bottom/left。默认允许 right 与 bottom，满足常见的“右/下/右下角”拖拽需求
+          * @default 'right,bottom'
+         */
+        "directions": string | Array<'top' | 'right' | 'bottom' | 'left'>;
+        /**
+          * 是否禁用伸缩
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 初始高度。可传数字（px）或任何合法 CSS 高度值（如 'auto'）。拖拽后以 px 写回。
+          * @default 200
+         */
+        "height": number | string;
+        "maxHeight"?: number;
+        "maxWidth"?: number;
+        /**
+          * @default 60
+         */
+        "minHeight": number;
+        /**
+          * 最小/最大尺寸（px）
+          * @default 80
+         */
+        "minWidth": number;
+        /**
+          * 尺寸标识，仅影响样式（边框、把手大小等）
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 吸附步进（px）。>0 时，拖拽尺寸会对齐到该步进的整数倍。
+          * @default 0
+         */
+        "snap": number;
+        /**
+          * 初始宽度。可传数字（px）或任何合法 CSS 宽度值（如 '100%'）。拖拽后以 px 写回。
+          * @default 360
+         */
+        "width": number | string;
+    }
+    /**
+     * ldesign-scrollbar 自定义滚动条
+     * - 包裹任意内容，提供可完全自定义样式的滚动条（纵向/横向）
+     * - 支持拖拽拇指、点击轨道跳转、自动/常显、轨道类型切换
+     * - 通过 CSS 变量覆盖或直接覆盖内部类名实现“完全自主”的样式定制
+     */
+    interface LdesignScrollbar {
+        /**
+          * 是否一直显示（默认悬浮显示）
+          * @default false
+         */
+        "always": boolean;
+        /**
+          * 自动隐藏延迟（ms）。<=0 表示不自动隐藏（与 always 类似，但 hover 仍会显示）
+          * @default 800
+         */
+        "autoHideDelay": number;
+        /**
+          * 方向：vertical | horizontal | both
+          * @default 'both'
+         */
+        "direction": 'vertical' | 'horizontal' | 'both';
+        /**
+          * 是否禁用滚动交互
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 拖拽滚动（鼠标中键，或按住 Alt+左键）
+          * @default false
+         */
+        "dragScroll": boolean;
+        /**
+          * 拖拽触发方式：middle（中键）| left-alt（Alt+左键）| left（左键）
+          * @default 'middle'
+         */
+        "dragScrollTrigger": 'middle' | 'left-alt' | 'left';
+        "getMetrics": () => Promise<any>;
+        /**
+          * 水平条位置：bottom | top
+          * @default 'bottom'
+         */
+        "hPosition": 'bottom' | 'top';
+        "hideBars": () => Promise<void>;
+        "initialScrollLeft"?: number;
+        /**
+          * 初始滚动位置（可选）
+         */
+        "initialScrollTop"?: number;
+        /**
+          * 键盘步进（像素）
+          * @default 40
+         */
+        "keyStep": number;
+        /**
+          * 是否启用键盘控制（wrap 聚焦时）
+          * @default true
+         */
+        "keyboard": boolean;
+        /**
+          * 布局：overlay 叠加在内容之上；space 预留滚动条空间
+          * @default 'overlay'
+         */
+        "layout": 'overlay' | 'space';
+        /**
+          * 使用原生滚动条，不渲染自定义轨道/拇指并且不隐藏系统滚动条
+          * @default false
+         */
+        "native": boolean;
+        /**
+          * PageUp/PageDown 的步进（像素），<=0 时按可视高度
+          * @default 0
+         */
+        "pageStep": number;
+        /**
+          * RTL 文字方向（用于水平滚动与 scrollLeft 归一化）
+          * @default false
+         */
+        "rtl": boolean;
+        "scrollByDelta": (options: ScrollToOptions) => Promise<void>;
+        /**
+          * 滚动容器内的元素到可视区
+         */
+        "scrollIntoViewWithin": (target: Element | string, options?: { behavior?: ScrollBehavior; block?: "start" | "center" | "end"; inline?: "start" | "center" | "end"; }) => Promise<void>;
+        "scrollToBottom": () => Promise<void>;
+        "scrollToLeft": () => Promise<void>;
+        /**
+          * 根据百分比滚动（0~1）
+         */
+        "scrollToPercent": (opts: { x?: number; y?: number; behavior?: ScrollBehavior; }) => Promise<void>;
+        "scrollToPos": (options: ScrollToOptions) => Promise<void>;
+        "scrollToRight": () => Promise<void>;
+        "scrollToTop": () => Promise<void>;
+        /**
+          * 动态设置 CSS 变量（同时作用在 host 与内部根元素上）。变量名可带或不带 -- 前缀。数值会自动追加 px。
+         */
+        "setCssVars": (vars: Record<string, string | number>) => Promise<void>;
+        /**
+          * 显示滚动阴影，提示可滚动方向
+          * @default false
+         */
+        "shadows": boolean;
+        /**
+          * 手动显示/隐藏滚动条
+         */
+        "showBarsNow": () => Promise<void>;
+        /**
+          * 是否显示微调按钮（上下/左右）
+          * @default false
+         */
+        "showButtons": boolean;
+        /**
+          * 平滑滚动
+          * @default false
+         */
+        "smooth": boolean;
+        /**
+          * @default 120
+         */
+        "snapDelay": number;
+        /**
+          * @default true
+         */
+        "snapEnabled": boolean;
+        /**
+          * @default 'start'
+         */
+        "snapMode": 'start' | 'center' | 'end';
+        /**
+          * 吸附：滚动结束后吸附到最近匹配元素
+         */
+        "snapSelector"?: string;
+        /**
+          * @default 0
+         */
+        "stickyBottom": number;
+        /**
+          * sticky 偏移（用于阴影起始位置）
+          * @default 0
+         */
+        "stickyTop": number;
+        /**
+          * @default 'both'
+         */
+        "syncAxis": 'vertical' | 'horizontal' | 'both';
+        /**
+          * @default true
+         */
+        "syncEnabled": boolean;
+        /**
+          * 同步滚动组与轴
+         */
+        "syncGroup"?: string;
+        /**
+          * @default 32
+         */
+        "syncThrottle": number;
+        /**
+          * 最小拇指尺寸（px）
+          * @default 24
+         */
+        "thumbMinSize": number;
+        /**
+          * 滚动条类型：bar（仅拇指）| track（显示轨道）
+          * @default 'bar'
+         */
+        "type": 'bar' | 'track';
+        "update": () => Promise<void>;
+        /**
+          * 垂直条位置：right | left
+          * @default 'right'
+         */
+        "vPosition": 'right' | 'left';
+        /**
+          * 滚轮事件是否允许向父容器传播（到达边缘时总是允许）
+          * @default false
+         */
+        "wheelPropagation": boolean;
     }
     /**
      * Select 选择器
@@ -2211,6 +2812,46 @@ export namespace Components {
           * @default 'none'
          */
         "split": 'none' | 'line';
+    }
+    /**
+     * Split 面板分割
+     * 将容器分为左右（vertical）或上下（horizontal）两部分，通过拖拽中间分割条调整比例。
+     * - 组件名：<ldesign-split>
+     * - 方向：vertical（左右）| horizontal（上下）
+     * - 比例：value（0~1），表示起始面板所占比例。拖拽过程中会回写。
+     * - 约束：firstMin / secondMin 用于限制两侧最小尺寸（px）。
+     * - 事件：ldesignSplitStart / ldesignSplit / ldesignSplitEnd
+     */
+    interface LdesignSplit {
+        /**
+          * 分割方向：vertical=左右，horizontal=上下
+          * @default 'vertical'
+         */
+        "direction": 'vertical' | 'horizontal';
+        /**
+          * 是否禁用拖拽
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 起始/末尾面板的最小尺寸（px）
+          * @default 80
+         */
+        "firstMin": number;
+        /**
+          * @default 80
+         */
+        "secondMin": number;
+        /**
+          * 分割条厚度（px）
+          * @default 6
+         */
+        "splitterSize": number;
+        /**
+          * 起始面板比例（0~1）。拖拽过程中会以小数写回
+          * @default 0.5
+         */
+        "value": number;
     }
     /**
      * Switch 开关组件
@@ -2513,6 +3154,11 @@ export namespace Components {
           * @default false
          */
         "visible": boolean;
+        /**
+          * 可视条目数（当未显式指定 panelHeight 时生效）
+          * @default 5
+         */
+        "visibleItems": number;
     }
     /**
      * ldesign-time-picker-panel
@@ -2523,11 +3169,23 @@ export namespace Components {
           * 默认值
          */
         "defaultValue"?: string;
+        "disabledHours"?: string | number[];
+        "disabledMinutes"?: string | number[];
+        "disabledSeconds"?: string | number[];
         /**
           * 时间格式
           * @default 'HH:mm:ss'
          */
         "format": TimeFormat1;
+        /**
+          * @default true
+         */
+        "hideDisabledTime": boolean;
+        "maxTime"?: string;
+        /**
+          * 限制与禁用（可选）
+         */
+        "minTime"?: string;
         /**
           * 面板列最大高度
           * @default 180
@@ -2552,6 +3210,11 @@ export namespace Components {
           * 当前值（受控）
          */
         "value"?: string;
+        /**
+          * 可视条目数（当未显式指定 panelHeight 时生效）
+          * @default 5
+         */
+        "visibleItems": number;
     }
     interface LdesignTimeRangePicker {
         /**
@@ -2687,6 +3350,50 @@ export namespace Components {
           * @default 'dark'
          */
         "theme": 'dark' | 'light';
+    }
+    /**
+     * Transfer 穿梭框
+     * 支持左右两栏列表，通过按钮将条目在两侧移动。
+     */
+    interface LdesignTransfer {
+        /**
+          * 默认值（非受控）
+         */
+        "defaultValue"?: string[];
+        /**
+          * 禁用整个组件
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 是否可搜索
+          * @default false
+         */
+        "filterable": boolean;
+        /**
+          * 数据源（可传数组或 JSON 字符串）
+          * @default []
+         */
+        "items": string | TransferItem[];
+        /**
+          * 左侧面板标题
+          * @default '源列表'
+         */
+        "leftTitle": string;
+        /**
+          * 列表高度（px）
+          * @default 240
+         */
+        "listHeight": number;
+        /**
+          * 右侧面板标题
+          * @default '目标列表'
+         */
+        "rightTitle": string;
+        /**
+          * 目标列表值（受控）
+         */
+        "value"?: string[];
     }
     interface LdesignTree {
         /**
@@ -2881,6 +3588,14 @@ export interface LdesignInputCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignInputElement;
 }
+export interface LdesignInputNumberCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignInputNumberElement;
+}
+export interface LdesignMentionCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignMentionElement;
+}
 export interface LdesignMenuCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignMenuElement;
@@ -2900,6 +3615,10 @@ export interface LdesignNotificationCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignPaginationCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignPaginationElement;
+}
+export interface LdesignPickerCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignPickerElement;
 }
 export interface LdesignPopconfirmCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -2921,6 +3640,14 @@ export interface LdesignRateCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignRateElement;
 }
+export interface LdesignResizeBoxCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignResizeBoxElement;
+}
+export interface LdesignScrollbarCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignScrollbarElement;
+}
 export interface LdesignSelectCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignSelectElement;
@@ -2928,6 +3655,10 @@ export interface LdesignSelectCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignSliderCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignSliderElement;
+}
+export interface LdesignSplitCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignSplitElement;
 }
 export interface LdesignSwitchCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -2948,6 +3679,10 @@ export interface LdesignTimePickerPanelCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignTimeRangePickerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignTimeRangePickerElement;
+}
+export interface LdesignTransferCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignTransferElement;
 }
 export interface LdesignTreeCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -3318,6 +4053,31 @@ declare global {
         prototype: HTMLLdesignInputElement;
         new (): HTMLLdesignInputElement;
     };
+    interface HTMLLdesignInputNumberElementEventMap {
+        "ldesignInput": number | null;
+        "ldesignChange": number | null;
+        "ldesignFocus": FocusEvent;
+        "ldesignBlur": FocusEvent;
+    }
+    /**
+     * InputNumber 数字输入框
+     * - 支持步进按钮、键盘操作（可关闭）、最小/最大值限制、精度控制
+     * - 提供 formatter / parser 以实现显示格式化与解析
+     */
+    interface HTMLLdesignInputNumberElement extends Components.LdesignInputNumber, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignInputNumberElementEventMap>(type: K, listener: (this: HTMLLdesignInputNumberElement, ev: LdesignInputNumberCustomEvent<HTMLLdesignInputNumberElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignInputNumberElementEventMap>(type: K, listener: (this: HTMLLdesignInputNumberElement, ev: LdesignInputNumberCustomEvent<HTMLLdesignInputNumberElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignInputNumberElement: {
+        prototype: HTMLLdesignInputNumberElement;
+        new (): HTMLLdesignInputNumberElement;
+    };
     /**
      * Loading 加载组件
      * 轻量的加载指示器，支持两种形态：spinner | dots
@@ -3327,6 +4087,34 @@ declare global {
     var HTMLLdesignLoadingElement: {
         prototype: HTMLLdesignLoadingElement;
         new (): HTMLLdesignLoadingElement;
+    };
+    interface HTMLLdesignMentionElementEventMap {
+        "ldesignSearch": { value: string; trigger: string };
+        "ldesignSelect": { value: MentionItem; trigger: string };
+        "ldesignRemove": { value: string | number; label: string; trigger: string };
+        "ldesignChange": string;
+        "ldesignValueChange": { text: string; mentions: MentionEntity[]; model: MentionSegment[] };
+        "ldesignFocus": FocusEvent;
+        "ldesignBlur": FocusEvent;
+    }
+    /**
+     * ldesign-mention 提及组件（contenteditable 版本）
+     * - 使用可编辑 div 实现富文本输入，支持在文本中高亮渲染提及 token
+     * - 候选浮层定位于光标位置（通过隐藏锚点 + ldesign-popup 定位）
+     */
+    interface HTMLLdesignMentionElement extends Components.LdesignMention, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignMentionElementEventMap>(type: K, listener: (this: HTMLLdesignMentionElement, ev: LdesignMentionCustomEvent<HTMLLdesignMentionElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignMentionElementEventMap>(type: K, listener: (this: HTMLLdesignMentionElement, ev: LdesignMentionCustomEvent<HTMLLdesignMentionElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignMentionElement: {
+        prototype: HTMLLdesignMentionElement;
+        new (): HTMLLdesignMentionElement;
     };
     interface HTMLLdesignMenuElementEventMap {
         "ldesignSelect": { key: string; item: MenuItem; pathKeys: string[] };
@@ -3434,6 +4222,32 @@ declare global {
         prototype: HTMLLdesignPaginationElement;
         new (): HTMLLdesignPaginationElement;
     };
+    interface HTMLLdesignPickerElementEventMap {
+        "ldesignChange": { value: string | undefined; option?: PickerOption };
+        "ldesignPick": { value: string | undefined; option?: PickerOption; context: { trigger: 'click' | 'scroll' | 'touch' | 'wheel' | 'keyboard' } };
+    }
+    /**
+     * ldesign-picker
+     * 通用滚轮选择器（单列）
+     * - PC：鼠标滚轮按“行”步进，按速度取整步数
+     * - 移动端：手势滑动（Pointer Events）+ 惯性 + 吸附到最近项
+     * - 支持配置容器高度与每项高度；容器通常为 itemHeight 的奇数倍（3/5/7...）
+     * - 正中间指示器高度与子项一致
+     */
+    interface HTMLLdesignPickerElement extends Components.LdesignPicker, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignPickerElementEventMap>(type: K, listener: (this: HTMLLdesignPickerElement, ev: LdesignPickerCustomEvent<HTMLLdesignPickerElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignPickerElementEventMap>(type: K, listener: (this: HTMLLdesignPickerElement, ev: LdesignPickerCustomEvent<HTMLLdesignPickerElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignPickerElement: {
+        prototype: HTMLLdesignPickerElement;
+        new (): HTMLLdesignPickerElement;
+    };
     interface HTMLLdesignPopconfirmElementEventMap {
         "ldesignConfirm": void;
         "ldesignCancel": void;
@@ -3483,6 +4297,16 @@ declare global {
     var HTMLLdesignPopupElement: {
         prototype: HTMLLdesignPopupElement;
         new (): HTMLLdesignPopupElement;
+    };
+    /**
+     * Progress 进度条
+     * 支持：线形、环形、仪表盘、步骤条，多尺寸/状态/文本/自定义颜色等
+     */
+    interface HTMLLdesignProgressElement extends Components.LdesignProgress, HTMLStencilElement {
+    }
+    var HTMLLdesignProgressElement: {
+        prototype: HTMLLdesignProgressElement;
+        new (): HTMLLdesignProgressElement;
     };
     interface HTMLLdesignRadioElementEventMap {
         "ldesignChange": string | number;
@@ -3549,6 +4373,55 @@ declare global {
         prototype: HTMLLdesignRateElement;
         new (): HTMLLdesignRateElement;
     };
+    interface HTMLLdesignResizeBoxElementEventMap {
+        "ldesignResizeStart": { width: number; height: number; edge: string };
+        "ldesignResize": { width: number; height: number; edge: string };
+        "ldesignResizeEnd": { width: number; height: number; edge: string };
+    }
+    /**
+     * ResizeBox 伸缩框
+     * 可通过拖拽指定边来改变容器宽高
+     */
+    interface HTMLLdesignResizeBoxElement extends Components.LdesignResizeBox, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignResizeBoxElementEventMap>(type: K, listener: (this: HTMLLdesignResizeBoxElement, ev: LdesignResizeBoxCustomEvent<HTMLLdesignResizeBoxElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignResizeBoxElementEventMap>(type: K, listener: (this: HTMLLdesignResizeBoxElement, ev: LdesignResizeBoxCustomEvent<HTMLLdesignResizeBoxElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignResizeBoxElement: {
+        prototype: HTMLLdesignResizeBoxElement;
+        new (): HTMLLdesignResizeBoxElement;
+    };
+    interface HTMLLdesignScrollbarElementEventMap {
+        "ldesignScroll": { scrollTop: number; scrollLeft: number; clientWidth: number; clientHeight: number; scrollWidth: number; scrollHeight: number };
+        "ldesignReach": { edge: 'top' | 'bottom' | 'left' | 'right' };
+        "ldesignScrollStart": void;
+        "ldesignScrollEnd": void;
+    }
+    /**
+     * ldesign-scrollbar 自定义滚动条
+     * - 包裹任意内容，提供可完全自定义样式的滚动条（纵向/横向）
+     * - 支持拖拽拇指、点击轨道跳转、自动/常显、轨道类型切换
+     * - 通过 CSS 变量覆盖或直接覆盖内部类名实现“完全自主”的样式定制
+     */
+    interface HTMLLdesignScrollbarElement extends Components.LdesignScrollbar, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignScrollbarElementEventMap>(type: K, listener: (this: HTMLLdesignScrollbarElement, ev: LdesignScrollbarCustomEvent<HTMLLdesignScrollbarElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignScrollbarElementEventMap>(type: K, listener: (this: HTMLLdesignScrollbarElement, ev: LdesignScrollbarCustomEvent<HTMLLdesignScrollbarElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignScrollbarElement: {
+        prototype: HTMLLdesignScrollbarElement;
+        new (): HTMLLdesignScrollbarElement;
+    };
     interface HTMLLdesignSelectElementEventMap {
         "ldesignChange": { value: string | string[] | undefined; options: SelectOption[] };
         "ldesignVisibleChange": boolean;
@@ -3602,6 +4475,34 @@ declare global {
     var HTMLLdesignSpaceElement: {
         prototype: HTMLLdesignSpaceElement;
         new (): HTMLLdesignSpaceElement;
+    };
+    interface HTMLLdesignSplitElementEventMap {
+        "ldesignSplitStart": { value: number; direction: 'vertical' | 'horizontal' };
+        "ldesignSplit": { value: number; direction: 'vertical' | 'horizontal' };
+        "ldesignSplitEnd": { value: number; direction: 'vertical' | 'horizontal' };
+    }
+    /**
+     * Split 面板分割
+     * 将容器分为左右（vertical）或上下（horizontal）两部分，通过拖拽中间分割条调整比例。
+     * - 组件名：<ldesign-split>
+     * - 方向：vertical（左右）| horizontal（上下）
+     * - 比例：value（0~1），表示起始面板所占比例。拖拽过程中会回写。
+     * - 约束：firstMin / secondMin 用于限制两侧最小尺寸（px）。
+     * - 事件：ldesignSplitStart / ldesignSplit / ldesignSplitEnd
+     */
+    interface HTMLLdesignSplitElement extends Components.LdesignSplit, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignSplitElementEventMap>(type: K, listener: (this: HTMLLdesignSplitElement, ev: LdesignSplitCustomEvent<HTMLLdesignSplitElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignSplitElementEventMap>(type: K, listener: (this: HTMLLdesignSplitElement, ev: LdesignSplitCustomEvent<HTMLLdesignSplitElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignSplitElement: {
+        prototype: HTMLLdesignSplitElement;
+        new (): HTMLLdesignSplitElement;
     };
     interface HTMLLdesignSwitchElementEventMap {
         "ldesignChange": string | number | boolean;
@@ -3740,6 +4641,27 @@ declare global {
         prototype: HTMLLdesignTooltipElement;
         new (): HTMLLdesignTooltipElement;
     };
+    interface HTMLLdesignTransferElementEventMap {
+        "ldesignChange": { value: string[]; movedKeys: string[]; direction: 'left' | 'right' };
+    }
+    /**
+     * Transfer 穿梭框
+     * 支持左右两栏列表，通过按钮将条目在两侧移动。
+     */
+    interface HTMLLdesignTransferElement extends Components.LdesignTransfer, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignTransferElementEventMap>(type: K, listener: (this: HTMLLdesignTransferElement, ev: LdesignTransferCustomEvent<HTMLLdesignTransferElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignTransferElementEventMap>(type: K, listener: (this: HTMLLdesignTransferElement, ev: LdesignTransferCustomEvent<HTMLLdesignTransferElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignTransferElement: {
+        prototype: HTMLLdesignTransferElement;
+        new (): HTMLLdesignTransferElement;
+    };
     interface HTMLLdesignTreeElementEventMap {
         "ldesignSelect": { key: string; keys: string[]; node?: TreeNode };
         "ldesignExpand": { key: string; expanded: boolean; expandedKeys: string[] };
@@ -3780,20 +4702,27 @@ declare global {
         "ldesign-image-group": HTMLLdesignImageGroupElement;
         "ldesign-image-viewer": HTMLLdesignImageViewerElement;
         "ldesign-input": HTMLLdesignInputElement;
+        "ldesign-input-number": HTMLLdesignInputNumberElement;
         "ldesign-loading": HTMLLdesignLoadingElement;
+        "ldesign-mention": HTMLLdesignMentionElement;
         "ldesign-menu": HTMLLdesignMenuElement;
         "ldesign-message": HTMLLdesignMessageElement;
         "ldesign-modal": HTMLLdesignModalElement;
         "ldesign-notification": HTMLLdesignNotificationElement;
         "ldesign-pagination": HTMLLdesignPaginationElement;
+        "ldesign-picker": HTMLLdesignPickerElement;
         "ldesign-popconfirm": HTMLLdesignPopconfirmElement;
         "ldesign-popup": HTMLLdesignPopupElement;
+        "ldesign-progress": HTMLLdesignProgressElement;
         "ldesign-radio": HTMLLdesignRadioElement;
         "ldesign-radio-group": HTMLLdesignRadioGroupElement;
         "ldesign-rate": HTMLLdesignRateElement;
+        "ldesign-resize-box": HTMLLdesignResizeBoxElement;
+        "ldesign-scrollbar": HTMLLdesignScrollbarElement;
         "ldesign-select": HTMLLdesignSelectElement;
         "ldesign-slider": HTMLLdesignSliderElement;
         "ldesign-space": HTMLLdesignSpaceElement;
+        "ldesign-split": HTMLLdesignSplitElement;
         "ldesign-switch": HTMLLdesignSwitchElement;
         "ldesign-tab-panel": HTMLLdesignTabPanelElement;
         "ldesign-tabs": HTMLLdesignTabsElement;
@@ -3801,6 +4730,7 @@ declare global {
         "ldesign-time-picker-panel": HTMLLdesignTimePickerPanelElement;
         "ldesign-time-range-picker": HTMLLdesignTimeRangePickerElement;
         "ldesign-tooltip": HTMLLdesignTooltipElement;
+        "ldesign-transfer": HTMLLdesignTransferElement;
         "ldesign-tree": HTMLLdesignTreeElement;
     }
 }
@@ -4299,6 +5229,11 @@ declare namespace LocalJSX {
          */
         "hideOnSelect"?: boolean;
         /**
+          * 渐变色标之间的最小间距（百分比，避免重叠），默认 1（透传给面板）
+          * @default 1
+         */
+        "minStopGap"?: number;
+        /**
           * 面板模式：'solid' | 'gradient' | 'both'
           * @default 'both'
          */
@@ -4375,8 +5310,8 @@ declare namespace LocalJSX {
          */
         "gradientTypes"?: 'linear' | 'radial' | 'both';
         /**
-          * 渐变色标之间的最小间距（百分比，避免重叠），默认 2
-          * @default 2
+          * 渐变色标之间的最小间距（百分比，避免重叠），默认 1
+          * @default 1
          */
         "minStopGap"?: number;
         /**
@@ -4402,6 +5337,11 @@ declare namespace LocalJSX {
          */
         "showAlpha"?: boolean;
         /**
+          * 是否在渐变面板中显示“线性/径向”切换按钮（默认不显示）
+          * @default false
+         */
+        "showGradientTypeTabs"?: boolean;
+        /**
           * 是否显示最近使用（无数据时自动隐藏）
           * @default true
          */
@@ -4411,6 +5351,11 @@ declare namespace LocalJSX {
           * @default true
          */
         "showPreset"?: boolean;
+        /**
+          * 在渐变-径向模式下，于右侧显示径向面板（中心拖拽与参数）
+          * @default false
+         */
+        "showRadialSidebar"?: boolean;
         /**
           * 尺寸（影响整体间距）
           * @default 'medium'
@@ -5027,6 +5972,89 @@ declare namespace LocalJSX {
         "value"?: string;
     }
     /**
+     * InputNumber 数字输入框
+     * - 支持步进按钮、键盘操作（可关闭）、最小/最大值限制、精度控制
+     * - 提供 formatter / parser 以实现显示格式化与解析
+     */
+    interface LdesignInputNumber {
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 自定义显示格式化
+         */
+        "formatter"?: (value: number | null) => string;
+        /**
+          * 是否启用键盘增减（方向键/页键）
+          * @default true
+         */
+        "keyboard"?: boolean;
+        /**
+          * 最大值（可不设）
+         */
+        "max"?: number;
+        /**
+          * 最小值（可不设）
+         */
+        "min"?: number;
+        /**
+          * 是否允许鼠标滚轮调整
+          * @default false
+         */
+        "mouseWheel"?: boolean;
+        "onLdesignBlur"?: (event: LdesignInputNumberCustomEvent<FocusEvent>) => void;
+        /**
+          * 提交时触发（失焦、回车、点击步进）
+         */
+        "onLdesignChange"?: (event: LdesignInputNumberCustomEvent<number | null>) => void;
+        /**
+          * 聚焦/失焦事件
+         */
+        "onLdesignFocus"?: (event: LdesignInputNumberCustomEvent<FocusEvent>) => void;
+        /**
+          * 输入时触发（值变化实时）
+         */
+        "onLdesignInput"?: (event: LdesignInputNumberCustomEvent<number | null>) => void;
+        /**
+          * 自定义解析（将输入字符串转成数值）
+         */
+        "parser"?: (input: string) => number | null;
+        /**
+          * 占位符
+         */
+        "placeholder"?: string;
+        /**
+          * 精度（小数位数）。不设则按 step 与输入自动推断
+         */
+        "precision"?: number;
+        /**
+          * 是否只读（可选，禁用输入但可复制）
+          * @default false
+         */
+        "readonly"?: boolean;
+        /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 状态样式
+         */
+        "status"?: 'error' | 'warning' | 'success';
+        /**
+          * 步长（增减用，不强制对齐输入）
+          * @default 1
+         */
+        "step"?: number;
+        /**
+          * 当前值（受控，支持双向）
+          * @default 0
+         */
+        "value"?: number | null;
+    }
+    /**
      * Loading 加载组件
      * 轻量的加载指示器，支持两种形态：spinner | dots
      */
@@ -5074,6 +6102,137 @@ declare namespace LocalJSX {
           * 全屏时的层级（可选）
          */
         "zIndex"?: number;
+    }
+    /**
+     * ldesign-mention 提及组件（contenteditable 版本）
+     * - 使用可编辑 div 实现富文本输入，支持在文本中高亮渲染提及 token
+     * - 候选浮层定位于光标位置（通过隐藏锚点 + ldesign-popup 定位）
+     */
+    interface LdesignMention {
+        /**
+          * 浮层挂载到：self|body|closest-popup（透传给 popup）
+          * @default 'body'
+         */
+        "appendTo"?: 'self' | 'body' | 'closest-popup';
+        /**
+          * 自动聚焦
+          * @default false
+         */
+        "autofocus"?: boolean;
+        /**
+          * token 是否默认可关闭
+          * @default true
+         */
+        "closable"?: boolean;
+        /**
+          * 受控模式（为 true 时不在内部修改 value）
+          * @default false
+         */
+        "controlled"?: boolean;
+        /**
+          * 默认值（非受控）
+         */
+        "defaultValue"?: string;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 自定义过滤函数（返回 true 表示保留）
+         */
+        "filterOption"?: (input: string, option: MentionItem) => boolean;
+        /**
+          * 加载中（用于异步搜索）
+          * @default false
+         */
+        "loading"?: boolean;
+        /**
+          * 列表最大高度
+          * @default 240
+         */
+        "maxHeight"?: number;
+        /**
+          * 结构化初始化（分段）
+         */
+        "model"?: string | MentionSegment[];
+        "onLdesignBlur"?: (event: LdesignMentionCustomEvent<FocusEvent>) => void;
+        /**
+          * 内容变化事件（返回纯文本值：等同于 editable.innerText）
+         */
+        "onLdesignChange"?: (event: LdesignMentionCustomEvent<string>) => void;
+        /**
+          * 获得/失去焦点
+         */
+        "onLdesignFocus"?: (event: LdesignMentionCustomEvent<FocusEvent>) => void;
+        /**
+          * 标签移除事件
+         */
+        "onLdesignRemove"?: (event: LdesignMentionCustomEvent<{ value: string | number; label: string; trigger: string }>) => void;
+        /**
+          * 搜索事件（每次触发字符后的输入变化都会触发）
+         */
+        "onLdesignSearch"?: (event: LdesignMentionCustomEvent<{ value: string; trigger: string }>) => void;
+        /**
+          * 选择事件（选中候选项时触发）
+         */
+        "onLdesignSelect"?: (event: LdesignMentionCustomEvent<{ value: MentionItem; trigger: string }>) => void;
+        /**
+          * 结构化值变化事件
+         */
+        "onLdesignValueChange"?: (event: LdesignMentionCustomEvent<{ text: string; mentions: MentionEntity[]; model: MentionSegment[] }>) => void;
+        /**
+          * 候选项（数组或 JSON 字符串）
+          * @default []
+         */
+        "options"?: string | MentionItem[];
+        /**
+          * 占位文本
+         */
+        "placeholder"?: string;
+        /**
+          * 是否只读
+          * @default false
+         */
+        "readonly"?: boolean;
+        /**
+          * 尺寸（影响样式）
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 默认 token 外观
+          * @default 'primary'
+         */
+        "tokenType"?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+        /**
+          * 触发字符（如 @ 或 #），兼容旧属性
+          * @default '@'
+         */
+        "trigger"?: string;
+        /**
+          * 触发符个性化配置（JS 对象或 JSON 字符串）
+         */
+        "triggerConfigs"?: string | MentionTriggerConfig[];
+        /**
+          * 多个触发字符
+         */
+        "triggers"?: string | string[];
+        /**
+          * 当前值（受控，文本值，包含渲染后的
+          * @name 文本）
+          * @default ''
+         */
+        "value"?: string;
+        /**
+          * 事件/受控值格式（默认 model）
+          * @default 'model'
+         */
+        "valueFormat"?: 'model' | 'segments' | 'text';
+        /**
+          * 结构化初始化（模型）
+         */
+        "valueModel"?: string | MentionModel;
     }
     interface LdesignMenu {
         /**
@@ -5372,23 +6531,6 @@ declare namespace LocalJSX {
          */
         "restoreIcon"?: string;
         /**
-          * 关闭阈值：低于该高度则关闭，默认 '30%'
-         */
-        "sheetCloseThreshold"?: number | string;
-        /**
-          * Bottom Sheet 拖拽开关（仅在 variant='bottom-sheet' 时生效）
-          * @default true
-         */
-        "sheetDraggable"?: boolean;
-        /**
-          * 初始高度：同上；若不传且有 snapPoints，则使用最大 snap 值（通常是 100%）
-         */
-        "sheetInitial"?: number | string;
-        /**
-          * Snap 点：数组，值支持像素（数字或'120px'），百分比（'50%'），或小数（0.5 表示 50%）
-         */
-        "sheetSnapPoints"?: (number | string)[];
-        /**
           * 模态框尺寸
           * @default 'medium'
          */
@@ -5596,6 +6738,75 @@ declare namespace LocalJSX {
         "totalText"?: string;
     }
     /**
+     * ldesign-picker
+     * 通用滚轮选择器（单列）
+     * - PC：鼠标滚轮按“行”步进，按速度取整步数
+     * - 移动端：手势滑动（Pointer Events）+ 惯性 + 吸附到最近项
+     * - 支持配置容器高度与每项高度；容器通常为 itemHeight 的奇数倍（3/5/7...）
+     * - 正中间指示器高度与子项一致
+     */
+    interface LdesignPicker {
+        /**
+          * 默认值（非受控）
+         */
+        "defaultValue"?: string;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 惯性摩擦 0-1（越小减速越快）
+          * @default 0.92
+         */
+        "friction"?: number;
+        /**
+          * 行高（自动根据 size 推导，亦可显式覆盖）
+         */
+        "itemHeight"?: number;
+        /**
+          * 是否启用惯性
+          * @default true
+         */
+        "momentum"?: boolean;
+        /**
+          * 选中项变化（最终吸附后触发）
+         */
+        "onLdesignChange"?: (event: LdesignPickerCustomEvent<{ value: string | undefined; option?: PickerOption }>) => void;
+        /**
+          * 选择过程事件（滚动/拖拽中也会触发）
+         */
+        "onLdesignPick"?: (event: LdesignPickerCustomEvent<{ value: string | undefined; option?: PickerOption; context: { trigger: 'click' | 'scroll' | 'touch' | 'wheel' | 'keyboard' } }>) => void;
+        /**
+          * 选项列表（数组或 JSON 字符串）
+          * @default []
+         */
+        "options"?: string | PickerOption[];
+        /**
+          * 可视高度（优先），未设置时使用 visibleItems * itemHeight
+         */
+        "panelHeight"?: number;
+        /**
+          * 边界阻力系数 0-1（越小阻力越大）
+          * @default 0.35
+         */
+        "resistance"?: number;
+        /**
+          * 尺寸，影响每行高度
+          * @default 'medium'
+         */
+        "size"?: 'small' | 'medium' | 'large';
+        /**
+          * 当前值（受控）
+         */
+        "value"?: string;
+        /**
+          * 可视条目数（未显式 panelHeight 时生效，建议奇数：3/5/7）
+          * @default 5
+         */
+        "visibleItems"?: number;
+    }
+    /**
      * Popconfirm 气泡确认框
      * 基于 Popup 进行封装，提供确认/取消操作
      */
@@ -5787,6 +6998,130 @@ declare namespace LocalJSX {
         "width"?: number | string;
     }
     /**
+     * Progress 进度条
+     * 支持：线形、环形、仪表盘、步骤条，多尺寸/状态/文本/自定义颜色等
+     */
+    interface LdesignProgress {
+        /**
+          * 圆形分段之间的间隔角度（度数）
+          * @default 2
+         */
+        "circleStepGapDegree"?: number;
+        /**
+          * 圆形分段步数（用于环形步进样式）
+         */
+        "circleSteps"?: number;
+        /**
+          * 文本格式化，使用 {percent} 占位符，例如："{percent} / 100"
+          * @default '{percent}%'
+         */
+        "format"?: string;
+        /**
+          * 仪表盘缺口角度（0-360，仅 circle/dashboard）
+         */
+        "gapDegree"?: number;
+        /**
+          * 缺口位置（top/right/bottom/left，仅 circle/dashboard）
+          * @default 'top'
+         */
+        "gapPosition"?: 'top' | 'right' | 'bottom' | 'left';
+        /**
+          * 渐变方向：horizontal | vertical | diagonal
+          * @default 'horizontal'
+         */
+        "gradientDirection"?: 'horizontal' | 'vertical' | 'diagonal';
+        /**
+          * 环形渐变（可选，仅 circle/dashboard）：起止色
+         */
+        "gradientFrom"?: string;
+        "gradientTo"?: string;
+        /**
+          * 线形文本位置
+          * @default 'right'
+         */
+        "infoPosition"?: 'right' | 'left' | 'inside' | 'bottom';
+        /**
+          * 百分比 0-100
+          * @default 0
+         */
+        "percent"?: number;
+        /**
+          * 半圆位置（type=semicircle），top 表示显示上半圆，bottom 表示下半圆
+          * @default 'top'
+         */
+        "semiPosition"?: 'top' | 'bottom';
+        /**
+          * 是否显示信息文本（line：默认右侧；circle/dashboard：内部）
+          * @default true
+         */
+        "showInfo"?: boolean;
+        /**
+          * 组件尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 状态：normal | active | success | exception
+          * @default 'normal'
+         */
+        "status"?: 'normal' | 'active' | 'success' | 'exception';
+        /**
+          * 步骤数（type=steps 或设置 steps>0 都渲染步骤条）
+         */
+        "steps"?: number;
+        /**
+          * 步骤间隙 px（仅 steps）
+          * @default 2
+         */
+        "stepsGap"?: number;
+        /**
+          * 步骤条的块圆角
+          * @default 100
+         */
+        "stepsRadius"?: number;
+        /**
+          * 条纹动画（active 状态下默认开启）
+          * @default true
+         */
+        "striped"?: boolean;
+        /**
+          * 进度颜色（可为任意 css 颜色）
+         */
+        "strokeColor"?: string;
+        /**
+          * 端点样式：round | square | butt（仅 circle 有效，line 以圆角呈现 round）
+          * @default 'round'
+         */
+        "strokeLinecap"?: 'round' | 'square' | 'butt';
+        /**
+          * 线宽（line 为高度，circle 为描边宽度）
+         */
+        "strokeWidth"?: number;
+        /**
+          * 成功颜色
+          * @default 'var(--ldesign-success-color, #42bd42)'
+         */
+        "successColor"?: string;
+        /**
+          * 成功进度（用于分段显示成功部分）0-100
+         */
+        "successPercent"?: number;
+        /**
+          * 未完成轨道颜色
+         */
+        "trailColor"?: string;
+        /**
+          * 类型：line（默认）| circle | dashboard | steps | semicircle
+          * @default 'line'
+         */
+        "type"?: 'line' | 'circle' | 'dashboard' | 'steps' | 'semicircle';
+        /**
+          * 外径宽度（仅 circle/dashboard），单位 px
+          * @default 120
+         */
+        "width"?: number;
+    }
+    /**
      * Radio 单选框组件
      * 在一组备选项中进行单选
      */
@@ -5933,6 +7268,236 @@ declare namespace LocalJSX {
           * 未选中颜色（支持 CSS 变量覆盖）
          */
         "voidColor"?: string;
+    }
+    /**
+     * ResizeBox 伸缩框
+     * 可通过拖拽指定边来改变容器宽高
+     */
+    interface LdesignResizeBox {
+        /**
+          * 受控模式：为 true 时，不会修改 width/height，外部应在事件中设置新值传回
+          * @default false
+         */
+        "controlled"?: boolean;
+        /**
+          * 角落把手：top-left/top-right/bottom-right/bottom-left。字符串或数组。默认仅启用 bottom-right。
+          * @default 'bottom-right'
+         */
+        "corners"?: string | Array<'top-left' | 'top-right' | 'bottom-right' | 'bottom-left'>;
+        /**
+          * 允许伸缩的边：top/right/bottom/left。默认允许 right 与 bottom，满足常见的“右/下/右下角”拖拽需求
+          * @default 'right,bottom'
+         */
+        "directions"?: string | Array<'top' | 'right' | 'bottom' | 'left'>;
+        /**
+          * 是否禁用伸缩
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 初始高度。可传数字（px）或任何合法 CSS 高度值（如 'auto'）。拖拽后以 px 写回。
+          * @default 200
+         */
+        "height"?: number | string;
+        "maxHeight"?: number;
+        "maxWidth"?: number;
+        /**
+          * @default 60
+         */
+        "minHeight"?: number;
+        /**
+          * 最小/最大尺寸（px）
+          * @default 80
+         */
+        "minWidth"?: number;
+        "onLdesignResize"?: (event: LdesignResizeBoxCustomEvent<{ width: number; height: number; edge: string }>) => void;
+        "onLdesignResizeEnd"?: (event: LdesignResizeBoxCustomEvent<{ width: number; height: number; edge: string }>) => void;
+        /**
+          * 拖拽开始/进行中/结束事件
+         */
+        "onLdesignResizeStart"?: (event: LdesignResizeBoxCustomEvent<{ width: number; height: number; edge: string }>) => void;
+        /**
+          * 尺寸标识，仅影响样式（边框、把手大小等）
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 吸附步进（px）。>0 时，拖拽尺寸会对齐到该步进的整数倍。
+          * @default 0
+         */
+        "snap"?: number;
+        /**
+          * 初始宽度。可传数字（px）或任何合法 CSS 宽度值（如 '100%'）。拖拽后以 px 写回。
+          * @default 360
+         */
+        "width"?: number | string;
+    }
+    /**
+     * ldesign-scrollbar 自定义滚动条
+     * - 包裹任意内容，提供可完全自定义样式的滚动条（纵向/横向）
+     * - 支持拖拽拇指、点击轨道跳转、自动/常显、轨道类型切换
+     * - 通过 CSS 变量覆盖或直接覆盖内部类名实现“完全自主”的样式定制
+     */
+    interface LdesignScrollbar {
+        /**
+          * 是否一直显示（默认悬浮显示）
+          * @default false
+         */
+        "always"?: boolean;
+        /**
+          * 自动隐藏延迟（ms）。<=0 表示不自动隐藏（与 always 类似，但 hover 仍会显示）
+          * @default 800
+         */
+        "autoHideDelay"?: number;
+        /**
+          * 方向：vertical | horizontal | both
+          * @default 'both'
+         */
+        "direction"?: 'vertical' | 'horizontal' | 'both';
+        /**
+          * 是否禁用滚动交互
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 拖拽滚动（鼠标中键，或按住 Alt+左键）
+          * @default false
+         */
+        "dragScroll"?: boolean;
+        /**
+          * 拖拽触发方式：middle（中键）| left-alt（Alt+左键）| left（左键）
+          * @default 'middle'
+         */
+        "dragScrollTrigger"?: 'middle' | 'left-alt' | 'left';
+        /**
+          * 水平条位置：bottom | top
+          * @default 'bottom'
+         */
+        "hPosition"?: 'bottom' | 'top';
+        "initialScrollLeft"?: number;
+        /**
+          * 初始滚动位置（可选）
+         */
+        "initialScrollTop"?: number;
+        /**
+          * 键盘步进（像素）
+          * @default 40
+         */
+        "keyStep"?: number;
+        /**
+          * 是否启用键盘控制（wrap 聚焦时）
+          * @default true
+         */
+        "keyboard"?: boolean;
+        /**
+          * 布局：overlay 叠加在内容之上；space 预留滚动条空间
+          * @default 'overlay'
+         */
+        "layout"?: 'overlay' | 'space';
+        /**
+          * 使用原生滚动条，不渲染自定义轨道/拇指并且不隐藏系统滚动条
+          * @default false
+         */
+        "native"?: boolean;
+        /**
+          * 触达边缘事件
+         */
+        "onLdesignReach"?: (event: LdesignScrollbarCustomEvent<{ edge: 'top' | 'bottom' | 'left' | 'right' }>) => void;
+        /**
+          * 滚动事件（代理自内容容器）
+         */
+        "onLdesignScroll"?: (event: LdesignScrollbarCustomEvent<{ scrollTop: number; scrollLeft: number; clientWidth: number; clientHeight: number; scrollWidth: number; scrollHeight: number }>) => void;
+        "onLdesignScrollEnd"?: (event: LdesignScrollbarCustomEvent<void>) => void;
+        /**
+          * 滚动开始/结束
+         */
+        "onLdesignScrollStart"?: (event: LdesignScrollbarCustomEvent<void>) => void;
+        /**
+          * PageUp/PageDown 的步进（像素），<=0 时按可视高度
+          * @default 0
+         */
+        "pageStep"?: number;
+        /**
+          * RTL 文字方向（用于水平滚动与 scrollLeft 归一化）
+          * @default false
+         */
+        "rtl"?: boolean;
+        /**
+          * 显示滚动阴影，提示可滚动方向
+          * @default false
+         */
+        "shadows"?: boolean;
+        /**
+          * 是否显示微调按钮（上下/左右）
+          * @default false
+         */
+        "showButtons"?: boolean;
+        /**
+          * 平滑滚动
+          * @default false
+         */
+        "smooth"?: boolean;
+        /**
+          * @default 120
+         */
+        "snapDelay"?: number;
+        /**
+          * @default true
+         */
+        "snapEnabled"?: boolean;
+        /**
+          * @default 'start'
+         */
+        "snapMode"?: 'start' | 'center' | 'end';
+        /**
+          * 吸附：滚动结束后吸附到最近匹配元素
+         */
+        "snapSelector"?: string;
+        /**
+          * @default 0
+         */
+        "stickyBottom"?: number;
+        /**
+          * sticky 偏移（用于阴影起始位置）
+          * @default 0
+         */
+        "stickyTop"?: number;
+        /**
+          * @default 'both'
+         */
+        "syncAxis"?: 'vertical' | 'horizontal' | 'both';
+        /**
+          * @default true
+         */
+        "syncEnabled"?: boolean;
+        /**
+          * 同步滚动组与轴
+         */
+        "syncGroup"?: string;
+        /**
+          * @default 32
+         */
+        "syncThrottle"?: number;
+        /**
+          * 最小拇指尺寸（px）
+          * @default 24
+         */
+        "thumbMinSize"?: number;
+        /**
+          * 滚动条类型：bar（仅拇指）| track（显示轨道）
+          * @default 'bar'
+         */
+        "type"?: 'bar' | 'track';
+        /**
+          * 垂直条位置：right | left
+          * @default 'right'
+         */
+        "vPosition"?: 'right' | 'left';
+        /**
+          * 滚轮事件是否允许向父容器传播（到达边缘时总是允许）
+          * @default false
+         */
+        "wheelPropagation"?: boolean;
     }
     /**
      * Select 选择器
@@ -6112,6 +7677,52 @@ declare namespace LocalJSX {
           * @default 'none'
          */
         "split"?: 'none' | 'line';
+    }
+    /**
+     * Split 面板分割
+     * 将容器分为左右（vertical）或上下（horizontal）两部分，通过拖拽中间分割条调整比例。
+     * - 组件名：<ldesign-split>
+     * - 方向：vertical（左右）| horizontal（上下）
+     * - 比例：value（0~1），表示起始面板所占比例。拖拽过程中会回写。
+     * - 约束：firstMin / secondMin 用于限制两侧最小尺寸（px）。
+     * - 事件：ldesignSplitStart / ldesignSplit / ldesignSplitEnd
+     */
+    interface LdesignSplit {
+        /**
+          * 分割方向：vertical=左右，horizontal=上下
+          * @default 'vertical'
+         */
+        "direction"?: 'vertical' | 'horizontal';
+        /**
+          * 是否禁用拖拽
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 起始/末尾面板的最小尺寸（px）
+          * @default 80
+         */
+        "firstMin"?: number;
+        "onLdesignSplit"?: (event: LdesignSplitCustomEvent<{ value: number; direction: 'vertical' | 'horizontal' }>) => void;
+        "onLdesignSplitEnd"?: (event: LdesignSplitCustomEvent<{ value: number; direction: 'vertical' | 'horizontal' }>) => void;
+        /**
+          * 拖拽事件
+         */
+        "onLdesignSplitStart"?: (event: LdesignSplitCustomEvent<{ value: number; direction: 'vertical' | 'horizontal' }>) => void;
+        /**
+          * @default 80
+         */
+        "secondMin"?: number;
+        /**
+          * 分割条厚度（px）
+          * @default 6
+         */
+        "splitterSize"?: number;
+        /**
+          * 起始面板比例（0~1）。拖拽过程中会以小数写回
+          * @default 0.5
+         */
+        "value"?: number;
     }
     /**
      * Switch 开关组件
@@ -6458,6 +8069,11 @@ declare namespace LocalJSX {
           * @default false
          */
         "visible"?: boolean;
+        /**
+          * 可视条目数（当未显式指定 panelHeight 时生效）
+          * @default 5
+         */
+        "visibleItems"?: number;
     }
     /**
      * ldesign-time-picker-panel
@@ -6468,11 +8084,23 @@ declare namespace LocalJSX {
           * 默认值
          */
         "defaultValue"?: string;
+        "disabledHours"?: string | number[];
+        "disabledMinutes"?: string | number[];
+        "disabledSeconds"?: string | number[];
         /**
           * 时间格式
           * @default 'HH:mm:ss'
          */
         "format"?: TimeFormat1;
+        /**
+          * @default true
+         */
+        "hideDisabledTime"?: boolean;
+        "maxTime"?: string;
+        /**
+          * 限制与禁用（可选）
+         */
+        "minTime"?: string;
         /**
           * 变更事件
          */
@@ -6505,6 +8133,11 @@ declare namespace LocalJSX {
           * 当前值（受控）
          */
         "value"?: string;
+        /**
+          * 可视条目数（当未显式指定 panelHeight 时生效）
+          * @default 5
+         */
+        "visibleItems"?: number;
     }
     interface LdesignTimeRangePicker {
         /**
@@ -6647,6 +8280,54 @@ declare namespace LocalJSX {
           * @default 'dark'
          */
         "theme"?: 'dark' | 'light';
+    }
+    /**
+     * Transfer 穿梭框
+     * 支持左右两栏列表，通过按钮将条目在两侧移动。
+     */
+    interface LdesignTransfer {
+        /**
+          * 默认值（非受控）
+         */
+        "defaultValue"?: string[];
+        /**
+          * 禁用整个组件
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 是否可搜索
+          * @default false
+         */
+        "filterable"?: boolean;
+        /**
+          * 数据源（可传数组或 JSON 字符串）
+          * @default []
+         */
+        "items"?: string | TransferItem[];
+        /**
+          * 左侧面板标题
+          * @default '源列表'
+         */
+        "leftTitle"?: string;
+        /**
+          * 列表高度（px）
+          * @default 240
+         */
+        "listHeight"?: number;
+        /**
+          * 值改变事件
+         */
+        "onLdesignChange"?: (event: LdesignTransferCustomEvent<{ value: string[]; movedKeys: string[]; direction: 'left' | 'right' }>) => void;
+        /**
+          * 右侧面板标题
+          * @default '目标列表'
+         */
+        "rightTitle"?: string;
+        /**
+          * 目标列表值（受控）
+         */
+        "value"?: string[];
     }
     interface LdesignTree {
         /**
@@ -6815,20 +8496,27 @@ declare namespace LocalJSX {
         "ldesign-image-group": LdesignImageGroup;
         "ldesign-image-viewer": LdesignImageViewer;
         "ldesign-input": LdesignInput;
+        "ldesign-input-number": LdesignInputNumber;
         "ldesign-loading": LdesignLoading;
+        "ldesign-mention": LdesignMention;
         "ldesign-menu": LdesignMenu;
         "ldesign-message": LdesignMessage;
         "ldesign-modal": LdesignModal;
         "ldesign-notification": LdesignNotification;
         "ldesign-pagination": LdesignPagination;
+        "ldesign-picker": LdesignPicker;
         "ldesign-popconfirm": LdesignPopconfirm;
         "ldesign-popup": LdesignPopup;
+        "ldesign-progress": LdesignProgress;
         "ldesign-radio": LdesignRadio;
         "ldesign-radio-group": LdesignRadioGroup;
         "ldesign-rate": LdesignRate;
+        "ldesign-resize-box": LdesignResizeBox;
+        "ldesign-scrollbar": LdesignScrollbar;
         "ldesign-select": LdesignSelect;
         "ldesign-slider": LdesignSlider;
         "ldesign-space": LdesignSpace;
+        "ldesign-split": LdesignSplit;
         "ldesign-switch": LdesignSwitch;
         "ldesign-tab-panel": LdesignTabPanel;
         "ldesign-tabs": LdesignTabs;
@@ -6836,6 +8524,7 @@ declare namespace LocalJSX {
         "ldesign-time-picker-panel": LdesignTimePickerPanel;
         "ldesign-time-range-picker": LdesignTimeRangePicker;
         "ldesign-tooltip": LdesignTooltip;
+        "ldesign-transfer": LdesignTransfer;
         "ldesign-tree": LdesignTree;
     }
 }
@@ -6948,10 +8637,22 @@ declare module "@stencil/core" {
              */
             "ldesign-input": LocalJSX.LdesignInput & JSXBase.HTMLAttributes<HTMLLdesignInputElement>;
             /**
+             * InputNumber 数字输入框
+             * - 支持步进按钮、键盘操作（可关闭）、最小/最大值限制、精度控制
+             * - 提供 formatter / parser 以实现显示格式化与解析
+             */
+            "ldesign-input-number": LocalJSX.LdesignInputNumber & JSXBase.HTMLAttributes<HTMLLdesignInputNumberElement>;
+            /**
              * Loading 加载组件
              * 轻量的加载指示器，支持两种形态：spinner | dots
              */
             "ldesign-loading": LocalJSX.LdesignLoading & JSXBase.HTMLAttributes<HTMLLdesignLoadingElement>;
+            /**
+             * ldesign-mention 提及组件（contenteditable 版本）
+             * - 使用可编辑 div 实现富文本输入，支持在文本中高亮渲染提及 token
+             * - 候选浮层定位于光标位置（通过隐藏锚点 + ldesign-popup 定位）
+             */
+            "ldesign-mention": LocalJSX.LdesignMention & JSXBase.HTMLAttributes<HTMLLdesignMentionElement>;
             "ldesign-menu": LocalJSX.LdesignMenu & JSXBase.HTMLAttributes<HTMLLdesignMenuElement>;
             /**
              * Message 全局提示
@@ -6973,6 +8674,15 @@ declare module "@stencil/core" {
              */
             "ldesign-pagination": LocalJSX.LdesignPagination & JSXBase.HTMLAttributes<HTMLLdesignPaginationElement>;
             /**
+             * ldesign-picker
+             * 通用滚轮选择器（单列）
+             * - PC：鼠标滚轮按“行”步进，按速度取整步数
+             * - 移动端：手势滑动（Pointer Events）+ 惯性 + 吸附到最近项
+             * - 支持配置容器高度与每项高度；容器通常为 itemHeight 的奇数倍（3/5/7...）
+             * - 正中间指示器高度与子项一致
+             */
+            "ldesign-picker": LocalJSX.LdesignPicker & JSXBase.HTMLAttributes<HTMLLdesignPickerElement>;
+            /**
              * Popconfirm 气泡确认框
              * 基于 Popup 进行封装，提供确认/取消操作
              */
@@ -6988,6 +8698,11 @@ declare module "@stencil/core" {
              * - 稳健的外部点击与 ESC 关闭，右键通过虚拟参考在鼠标处弹出
              */
             "ldesign-popup": LocalJSX.LdesignPopup & JSXBase.HTMLAttributes<HTMLLdesignPopupElement>;
+            /**
+             * Progress 进度条
+             * 支持：线形、环形、仪表盘、步骤条，多尺寸/状态/文本/自定义颜色等
+             */
+            "ldesign-progress": LocalJSX.LdesignProgress & JSXBase.HTMLAttributes<HTMLLdesignProgressElement>;
             /**
              * Radio 单选框组件
              * 在一组备选项中进行单选
@@ -7005,6 +8720,18 @@ declare module "@stencil/core" {
              */
             "ldesign-rate": LocalJSX.LdesignRate & JSXBase.HTMLAttributes<HTMLLdesignRateElement>;
             /**
+             * ResizeBox 伸缩框
+             * 可通过拖拽指定边来改变容器宽高
+             */
+            "ldesign-resize-box": LocalJSX.LdesignResizeBox & JSXBase.HTMLAttributes<HTMLLdesignResizeBoxElement>;
+            /**
+             * ldesign-scrollbar 自定义滚动条
+             * - 包裹任意内容，提供可完全自定义样式的滚动条（纵向/横向）
+             * - 支持拖拽拇指、点击轨道跳转、自动/常显、轨道类型切换
+             * - 通过 CSS 变量覆盖或直接覆盖内部类名实现“完全自主”的样式定制
+             */
+            "ldesign-scrollbar": LocalJSX.LdesignScrollbar & JSXBase.HTMLAttributes<HTMLLdesignScrollbarElement>;
+            /**
              * Select 选择器
              * 基于 <ldesign-popup> 实现，支持单选/多选。
              */
@@ -7019,6 +8746,16 @@ declare module "@stencil/core" {
              * 用于在一组元素之间提供一致的间距与对齐控制
              */
             "ldesign-space": LocalJSX.LdesignSpace & JSXBase.HTMLAttributes<HTMLLdesignSpaceElement>;
+            /**
+             * Split 面板分割
+             * 将容器分为左右（vertical）或上下（horizontal）两部分，通过拖拽中间分割条调整比例。
+             * - 组件名：<ldesign-split>
+             * - 方向：vertical（左右）| horizontal（上下）
+             * - 比例：value（0~1），表示起始面板所占比例。拖拽过程中会回写。
+             * - 约束：firstMin / secondMin 用于限制两侧最小尺寸（px）。
+             * - 事件：ldesignSplitStart / ldesignSplit / ldesignSplitEnd
+             */
+            "ldesign-split": LocalJSX.LdesignSplit & JSXBase.HTMLAttributes<HTMLLdesignSplitElement>;
             /**
              * Switch 开关组件
              * 表示两种相互对立的状态间的切换，多用于触发「开/关」
@@ -7051,6 +8788,11 @@ declare module "@stencil/core" {
              * 基于 Popup 的轻量封装
              */
             "ldesign-tooltip": LocalJSX.LdesignTooltip & JSXBase.HTMLAttributes<HTMLLdesignTooltipElement>;
+            /**
+             * Transfer 穿梭框
+             * 支持左右两栏列表，通过按钮将条目在两侧移动。
+             */
+            "ldesign-transfer": LocalJSX.LdesignTransfer & JSXBase.HTMLAttributes<HTMLLdesignTransferElement>;
             "ldesign-tree": LocalJSX.LdesignTree & JSXBase.HTMLAttributes<HTMLLdesignTreeElement>;
         }
     }

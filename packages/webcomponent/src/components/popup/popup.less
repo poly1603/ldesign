@@ -12,7 +12,7 @@
 
   &__content {
     position: absolute; // 运行时会根据策略改为 fixed
-    z-index: 1000;
+    z-index: var(--ld-overlay-z-index, 1000);
     background: var(--ldesign-bg-color, #ffffff);
     border: 1px solid var(--ldesign-border-color, #e5e7eb);
     border-radius: 6px;

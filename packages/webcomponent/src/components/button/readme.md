@@ -96,6 +96,7 @@ Button 按钮组件
  - [ldesign-popconfirm](../popconfirm)
  - [ldesign-time-picker](../time-picker)
  - [ldesign-time-range-picker](../time-range-picker)
+ - [ldesign-transfer](../transfer)
 
 ### Depends on
 
@@ -109,6 +110,7 @@ graph TD;
   ldesign-popconfirm --> ldesign-button
   ldesign-time-picker --> ldesign-button
   ldesign-time-range-picker --> ldesign-button
+  ldesign-transfer --> ldesign-button
   style ldesign-button fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

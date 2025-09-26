@@ -494,7 +494,38 @@ w.visible = true
 </script>
 ```
 
-## 变体：抽屉与底部弹层（支持拖拽与吸附）
+## 样式变量（全局 Token）
+
+Modal / Drawer / Popup 共享一组 Overlay 令牌；Modal 还提供专属令牌以便统一定制：
+
+- Overlay：`--ld-overlay-z-index`、`--ld-overlay-backdrop`、`--ld-overlay-duration`、`--ld-overlay-ease`
+- Modal：`--ld-modal-radius`、`--ld-modal-shadow`、`--ld-modal-title-font-size`、`--ld-modal-title-line-height`、`--ld-modal-header-padding`、`--ld-modal-body-padding`、`--ld-modal-footer-padding`、`--ld-modal-footer-bottom`、`--ld-modal-action-gap`、`--ld-modal-btn-gap`、`--ld-modal-body-font-size`、`--ld-modal-body-line-height`、`--ld-modal-duration`、`--ld-modal-ease`、`--ld-modal-anim-ease`、`--ld-modal-width-small|medium|large`、`--ld-modal-screen-padding`
+
+示例：
+
+```css
+:root {
+  /* 覆盖全局遮罩与动效 */
+  --ld-overlay-backdrop: rgba(0,0,0,0.5);
+  --ld-overlay-duration: 250ms;
+  --ld-overlay-ease: cubic-bezier(.2,.8,.2,1);
+
+  /* 调整 Modal 观感 */
+  --ld-modal-radius: 10px;
+  --ld-modal-title-font-size: 18px;
+  --ld-modal-action-gap: 10px;
+}
+@media (max-width: 600px) {
+  :root {
+    --ld-modal-radius: 12px;
+    --ld-modal-duration: 220ms;
+  }
+}
+```
+
+辅助特性：若系统启用了“减少动态效果”，组件会自动禁用过渡与动画（`@media (prefers-reduced-motion: reduce)`）。
+
+## 变体：抽屉与底部弹层
 
 ### 移动端/平板自动切换
 
@@ -510,13 +541,12 @@ w.visible = true
   variant-at='{ "xs": "bottom-sheet", "sm": "drawer-right", "md": "drawer-right", "lg": "modal" }'
   breakpoints='{ "xs": 480, "sm": 768, "md": 1024, "lg": 1280 }'
   animation="slide-up"
-  sheet-draggable
-  sheet-snap-points="50%,80%,100%"
-  sheet-initial="80%"
 >
   <p style="padding:12px 16px">不同屏宽自动切换展示形态。</p>
 </ldesign-modal>
 ```
+
+> 注：底部弹层已不支持通过拖拽改变高度。若需不同高度，请通过 `height` 属性或自定义样式设置。
 
 ### 软键盘避让
 
@@ -536,14 +566,14 @@ w.visible = true
 
 默认在 `@media (max-width: 768px)` 下启用移动端预设，可按需在页面中覆盖。
 
-快捷 API 在小屏幕（≤768px）下默认以 bottom‑sheet 形式展示，并启用拖拽与吸附（50%/80%/100%，初始 80%）。
+快捷 API 在小屏幕（≤768px）下默认以 bottom‑sheet 形式展示，不支持拖拽改变高度。
 
 默认开启 `avoid-keyboard`，在移动端键盘弹出时 bottom-sheet 会自动抬高，避免被遮挡。
 
 - 通过 `variant` 切换不同展示形态：`'modal' | 'drawer-left' | 'drawer-right' | 'bottom-sheet'`
 - 建议配合 `animation` 使用：
   - drawer-left -> `slide-right`，drawer-right -> `slide-left`
-  - bottom-sheet -> `slide-up`
+  - bottom-sheet -> `slide-up`（不支持拖拽改变高度）
 
 <div class="demo-container">
   <div class="demo-row">
@@ -557,9 +587,8 @@ w.visible = true
   <ldesign-modal id="drawer-right" modal-title="右侧抽屉" variant="drawer-right" animation="slide-left">
     <p style="padding: 12px 16px">抽屉内容。</p>
   </ldesign-modal>
-  <ldesign-modal id="bottom-sheet" modal-title="底部弹层" variant="bottom-sheet" animation="slide-up"
-                 sheet-draggable sheet-snap-points="50%,80%,100%" sheet-initial="80%">
-    <p style="padding: 12px 16px">底部弹层内容（可拖拽，松手后吸附到 50%/80%/100%）。</p>
+  <ldesign-modal id="bottom-sheet" modal-title="底部弹层" variant="bottom-sheet" animation="slide-up">
+    <p style="padding: 12px 16px">底部弹层内容。</p>
   </ldesign-modal>
 </div>
 

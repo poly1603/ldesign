@@ -87,13 +87,19 @@ export default defineConfig({
         { text: 'Affix 固钉', link: '/components/affix' },
         { text: 'BackTop 返回顶部', link: '/components/backtop' },
         { text: 'Space 间距', link: '/components/space' },
+        { text: 'ResizeBox 伸缩框', link: '/components/resize-box' },
+        { text: 'Split 面板分割', link: '/components/split' },
+        { text: 'Scrollbar 滚动条', link: '/components/scrollbar' },
       ]
     },
         {
           text: '表单组件',
           items: [
 { text: 'Input 输入框', link: '/components/input' },
+{ text: 'InputNumber 数字输入框', link: '/components/input-number' },
+{ text: 'Mention 提及', link: '/components/mention' },
 { text: 'Select 选择器', link: '/components/select' },
+{ text: 'Transfer 穿梭框', link: '/components/transfer' },
 { text: 'Checkbox 复选框', link: '/components/checkbox' },
             { text: 'Radio 单选框', link: '/components/radio' },
 { text: 'Switch 开关', link: '/components/switch' },
@@ -101,7 +107,8 @@ export default defineConfig({
 { text: 'ColorPicker 颜色选择器', link: '/components/color-picker' },
             { text: 'ColorPickerPanel 颜色选择面板', link: '/components/color-picker-panel' },
             { text: 'Rate 评分', link: '/components/rate' },
-            { text: 'TimePicker 时间选择器', link: '/components/time-picker' },
+{ text: 'TimePicker 时间选择器', link: '/components/time-picker' },
+            { text: 'Picker 滚轮选择器', link: '/components/picker' },
           ]
         },
         {
@@ -116,6 +123,7 @@ export default defineConfig({
             { text: 'Message 全局提示', link: '/components/message' },
 { text: 'Notification 通知提醒', link: '/components/notification' },
             { text: 'Loading 加载', link: '/components/loading' },
+            { text: 'Progress 进度条', link: '/components/progress' },
           ]
         }
       ],

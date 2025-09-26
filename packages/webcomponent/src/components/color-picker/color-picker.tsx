@@ -34,6 +34,8 @@ export class LdesignColorPicker {
   @Prop() modes: 'solid' | 'gradient' | 'both' = 'both';
   /** 渐变类型：'linear' | 'radial' | 'both'（传递给面板） */
   @Prop() gradientTypes: 'linear' | 'radial' | 'both' = 'both';
+  /** 渐变色标之间的最小间距（百分比，避免重叠），默认 1（透传给面板） */
+  @Prop() minStopGap: number = 1;
   /** 是否显示“确定/取消”操作区（默认 false） */
   @Prop() showActions: boolean = false;
   /** 自定义按钮文案 */
@@ -91,6 +93,7 @@ export class LdesignColorPicker {
               size={this.size as any}
               disabled={this.disabled as any}
               ui={this.ui as any}
+              min-stop-gap={this.minStopGap as any}
               onLdesignInput={this.onPanelInput as any}
               onLdesignChange={this.onPanelChange as any}
             />

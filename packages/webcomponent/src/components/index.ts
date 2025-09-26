@@ -42,6 +42,14 @@ export { LdesignColorPickerPanel } from './color-picker-panel/color-picker-panel
 export { LdesignTimePicker } from './time-picker/time-picker';
 export { LdesignTimePickerPanel } from './time-picker-panel/time-picker-panel';
 export { LdesignTimeRangePicker } from './time-range-picker/time-range-picker';
+export { LdesignPicker } from './picker/picker';
+export { LdesignResizeBox } from './resize-box/resize-box';
+export { LdesignSplit } from './split/split';
+export { LdesignScrollbar } from './scrollbar/scrollbar';
+export { LdesignTransfer } from './transfer/transfer';
+export { LdesignMention } from './mention/mention';
+export { LdesignProgress } from './progress/progress';
+export { LdesignInputNumber } from './input-number/input-number';
 
 // Modal quick APIs
 export { alertModal, confirmModal, promptModal, promptPassword, promptForm } from './modal/modal-api';

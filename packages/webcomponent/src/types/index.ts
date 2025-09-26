@@ -180,6 +180,199 @@ export interface IconProps extends BaseComponentProps {
 }
 
 /**
+ * 提及项接口
+ */
+export interface MentionItem {
+  /**
+   * 唯一标识
+   */
+  value: string | number;
+  
+  /**
+   * 显示文本
+   */
+  label: string;
+  
+  /**
+   * 头像URL
+   */
+  avatar?: string;
+  
+  /**
+   * 描述信息
+   */
+  description?: string;
+  
+  /**
+   * 是否禁用
+   */
+  disabled?: boolean;
+  
+  /**
+   * 标签外观类型（影响 token 样式）
+   */
+  tagType?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  
+  /**
+   * 标签是否可关闭（优先级高于组件级 closable）
+   */
+  closable?: boolean;
+  
+  /** 自定义类名 */
+  className?: string;
+  /** 自定义内联样式（字符串） */
+  style?: string;
+  
+  /**
+   * 额外数据
+   */
+  data?: any;
+}
+
+/**
+ * 提及组件属性
+ */
+export interface MentionTriggerConfig {
+  char: string; // 触发字符
+  options?: MentionItem[]; // 专属候选
+  tokenType?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  closable?: boolean;
+}
+
+export interface MentionEntity {
+  value: string | number;
+  label: string;
+  trigger: string; // '@' | '#'
+  start: number;  // 在可见文本中的起始位置（包含触发符）
+  length: number; // 触发符+label 的长度
+  extra?: any;
+}
+export type MentionSegment =
+  | { type: 'text'; text: string }
+  | { type: 'mention'; trigger: string; label: string; value: string | number; extra?: any };
+export interface MentionModel {
+  text: string;
+  mentions: MentionEntity[];
+}
+
+export interface MentionProps extends BaseComponentProps {
+  /** 当前值（受控，纯文本） */
+  value?: string;
+  /** 默认值（非受控，纯文本） */
+  defaultValue?: string;
+
+  /** 结构化初始化（分段） */
+  model?: MentionSegment[] | string; // 支持 JSON 字符串
+  /** 结构化初始化（模型） */
+  valueModel?: MentionModel | string; // 支持 JSON 字符串
+  /** 事件/受控值格式（默认 model） */
+  valueFormat?: 'model' | 'segments' | 'text';
+  
+  /** 触发字符（兼容旧属性） */
+  trigger?: string;
+  /** 多个触发字符 */
+  triggers?: string | string[];
+  /** 触发符个性化配置 */
+  triggerConfigs?: MentionTriggerConfig[] | string; // 可传 JSON 字符串
+  
+  /** 默认 token 类型 */
+  tokenType?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  /** 是否默认可关闭 */
+  closable?: boolean;
+  
+  /**
+   * 初始解析：将文本中的 @Alice/#Topic 等转为 token
+   */
+  parseOnInit?: boolean;
+  /**
+   * 解析策略：
+   * - 'label' 直接使用紧随触发符的文本作为标签
+   * - 'options' 仅当在对应触发符的 options 中能找到同名 label 才解析为 token
+   */
+  parseStrategy?: 'label' | 'options';
+  
+  /**
+   * 提及项数据
+   */
+  options?: MentionItem[];
+  
+  /**
+   * 输入框占位符
+   */
+  placeholder?: string;
+  
+  /**
+   * 是否只读
+   */
+  readonly?: boolean;
+  
+  /**
+   * 是否自动获取焦点
+   */
+  autofocus?: boolean;
+  
+  /**
+   * 最大行数
+   */
+  rows?: number;
+  
+  /**
+   * 是否可调整大小
+   */
+  resizable?: boolean;
+  
+  /**
+   * 过滤函数
+   */
+  filterOption?: (input: string, option: MentionItem) => boolean;
+  
+  /**
+   * 是否支持多行
+   */
+  multiline?: boolean;
+  
+  /**
+   * 弹出层的挂载容器
+   */
+  getPopupContainer?: () => HTMLElement;
+  
+  /**
+   * 加载状态
+   */
+  loading?: boolean;
+  
+  /**
+   * 下拉面板最大高度
+   */
+  maxHeight?: number;
+  
+  /**
+   * 搜索事件
+   */
+  onSearch?: EventHandler<{ value: string; trigger: string }>;
+  
+  /**
+   * 选择事件
+   */
+  onSelect?: EventHandler<{ value: MentionItem; trigger: string }>;
+  
+  /**
+   * 内容变化事件
+   */
+  onChange?: EventHandler<string>;
+  
+  /**
+   * 获得焦点事件
+   */
+  onFocus?: EventHandler<FocusEvent>;
+  
+  /**
+   * 失去焦点事件
+   */
+  onBlur?: EventHandler<FocusEvent>;
+}
+
+/**
  * 组件配置接口
  */
 export interface ComponentConfig {

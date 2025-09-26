@@ -46,10 +46,6 @@ export const config: Config = {
     ],
     coverageDirectory: 'coverage',
     coverageReporters: ['json', 'lcov', 'text', 'clover'],
-    testMatch: [
-      '**/__tests__/**/*.(js|jsx|ts|tsx)',
-      '**/*.(test|spec).(js|jsx|ts|tsx)'
-    ],
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
     transform: {
       '^.+\\.(ts|tsx)$': '@stencil/core/testing/jest-preprocessor.js'

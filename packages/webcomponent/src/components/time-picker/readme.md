@@ -49,6 +49,7 @@ TimePicker 时间选择器
 | `use12Hours`           | `use-1-2-hours`            | 是否显示 12 小时制 AM/PM 列（显示方式），内部仍以 24h 保存                | `boolean`                                                                                                                                                            | `false`          |
 | `value`                | `value`                    | 当前值（受控），格式如 23:59:59 或 23:59（当 showSeconds=false 时）  | `string`                                                                                                                                                             | `undefined`      |
 | `visible`              | `visible`                  | 外部受控可见性（仅 trigger = 'manual' 生效）                     | `boolean`                                                                                                                                                            | `false`          |
+| `visibleItems`         | `visible-items`            | 可视条目数（当未显式指定 panelHeight 时生效）                        | `number`                                                                                                                                                             | `5`              |
 
 
 ## Events

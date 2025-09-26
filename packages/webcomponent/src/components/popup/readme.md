@@ -97,6 +97,7 @@ ldesign-popup（重写版）
  - [ldesign-color-input](../color-input)
  - [ldesign-color-picker](../color-picker)
  - [ldesign-dropdown](../dropdown)
+ - [ldesign-mention](../mention)
  - [ldesign-pagination](../pagination)
  - [ldesign-popconfirm](../popconfirm)
  - [ldesign-select](../select)
@@ -110,6 +111,7 @@ graph TD;
   ldesign-color-input --> ldesign-popup
   ldesign-color-picker --> ldesign-popup
   ldesign-dropdown --> ldesign-popup
+  ldesign-mention --> ldesign-popup
   ldesign-pagination --> ldesign-popup
   ldesign-popconfirm --> ldesign-popup
   ldesign-select --> ldesign-popup

@@ -1,0 +1,116 @@
+@prefix: ldesign-mention;
+
+.@{prefix} {
+  display: inline-block;
+  width: 100%;
+  position: relative;
+
+  &--disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* 可编辑容器 */
+  &__editable {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px solid var(--ld-border-color, #d9d9d9);
+    border-radius: 6px;
+    outline: none;
+    background: var(--ld-bg, #fff);
+    color: var(--ld-text, #1f1f1f);
+    font-size: 14px;
+    line-height: 1.5715;
+    white-space: pre-wrap;
+    word-break: break-word;
+
+    &:focus { border-color: var(--ld-primary, #1677ff); box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2); }
+
+    &--small { font-size: 12px; padding: 6px 8px; min-height: 32px; }
+    &--large { font-size: 16px; padding: 10px 12px; min-height: 48px; }
+
+    &--disabled { background: #f5f5f5; cursor: not-allowed; }
+
+    &:empty:before {
+      content: attr(data-placeholder);
+      color: #9aa0a6;
+      pointer-events: none;
+    }
+  }
+
+  /* token 渲染 */
+  &__token {
+    display: inline-block; /* 避免某些环境下 inline-flex 触发换行 */
+    vertical-align: baseline;
+    padding: 0 6px;
+    margin: 0 2px;
+    border-radius: 4px;
+    background: rgba(22, 119, 255, 0.12);
+    color: #165dff;
+    line-height: 1.6;
+    white-space: nowrap;
+    user-select: none;
+    cursor: default;
+  }
+  &__token-text { pointer-events: none; }
+  &__token-close {
+    display: inline-block;
+    margin-left: 4px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* 变体 */
+  &__token--default { background: rgba(0,0,0,0.06); color: #1f1f1f; }
+  &__token--primary { background: rgba(22, 119, 255, 0.12); color: #165dff; }
+  &__token--success { background: rgba(82, 196, 26, 0.12); color: #52c41a; }
+  &__token--warning { background: rgba(250, 173, 20, 0.16); color: #faad14; }
+  &__token--danger { background: rgba(255, 77, 79, 0.14); color: #ff4d4f; }
+  &__token--info { background: rgba(13,110,253,0.12); color: #0d6efd; }
+
+  /* 隐藏锚点（用于 popup 定位） */
+  &__anchor {
+    position: fixed;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  &__panel {
+    width: 100%;
+    min-width: 180px;
+    max-width: 360px;
+    overflow: auto;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 4px;
+    max-height: inherit;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover { background: rgba(22, 119, 255, 0.06); }
+
+    &--active { background: rgba(22, 119, 255, 0.12); }
+    &--disabled { color: #bfbfbf; cursor: not-allowed; }
+  }
+
+  &__avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 8px;
+    object-fit: cover;
+  }
+
+  &__label { margin-right: 6px; }
+  &__desc { color: #8c8c8c; font-size: 12px; }
+  &__empty, &__loading { color: #8c8c8c; padding: 8px; text-align: center; }
+}

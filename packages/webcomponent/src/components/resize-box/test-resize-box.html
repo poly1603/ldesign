@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ldesign-resize-box 测试</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Microsoft Yahei", sans-serif; padding: 24px; color: #111827; background: #f8fafc; }
+      .panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .box { background: #f9fafb; border: 1px dashed #e5e7eb; border-radius: 8px; height: 120px; display: flex; align-items: center; justify-content: center; color: #6b7280; }
+      .tip { font-size: 13px; color: #6b7280; margin: 8px 0 0; }
+    </style>
+    <script type="module">
+      import { defineCustomElements } from '../../../loader/index.js';
+      defineCustomElements();
+      
+      window.addEventListener('DOMContentLoaded', () => {
+        const box = document.getElementById('box1');
+        box.addEventListener('ldesignResize', (e) => {
+          const { width, height, edge } = e.detail;
+          document.getElementById('size1').textContent = `${width} x ${height} (via ${edge})`;
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div class="panel">
+      <h2>基础</h2>
+      <ldesign-resize-box id="box1" width="360" height="160">
+        <div class="box">拖拽任意边改变大小</div>
+      </ldesign-resize-box>
+      <div class="tip">当前尺寸：<span id="size1">360 x 160</span></div>
+    </div>
+
+    <div class="panel">
+      <h2>仅允许右/下方向</h2>
+      <div class="grid">
+        <ldesign-resize-box directions="right,bottom" width="320" height="140">
+          <div class="box">right, bottom</div>
+        </ldesign-resize-box>
+        <ldesign-resize-box directions="bottom" width="100%" height="140">
+          <div class="box">仅 bottom（可作为内容区高度调节条）</div>
+        </ldesign-resize-box>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>限制尺寸 + 尺寸样式</h2>
+      <div class="grid">
+        <ldesign-resize-box minWidth="200" minHeight="100" maxWidth="600" maxHeight="300" size="small" width="260" height="120">
+          <div class="box">small，限 200~600 / 100~300</div>
+        </ldesign-resize-box>
+        <ldesign-resize-box size="large" width="420" height="180">
+          <div class="box">large</div>
+        </ldesign-resize-box>
+      </div>
+    </div>
+  </body>
+</html>

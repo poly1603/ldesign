@@ -34,17 +34,21 @@ Icon 图标组件
  - [ldesign-image](../image)
  - [ldesign-image-viewer](../image-viewer)
  - [ldesign-input](../input)
+ - [ldesign-input-number](../input-number)
+ - [ldesign-mention](../mention)
  - [ldesign-menu](../menu)
  - [ldesign-message](../message)
  - [ldesign-modal](../modal)
  - [ldesign-notification](../notification)
  - [ldesign-pagination](../pagination)
  - [ldesign-popconfirm](../popconfirm)
+ - [ldesign-progress](../progress)
  - [ldesign-rate](../rate)
  - [ldesign-select](../select)
  - [ldesign-switch](../switch)
  - [ldesign-time-picker](../time-picker)
  - [ldesign-time-range-picker](../time-range-picker)
+ - [ldesign-transfer](../transfer)
  - [ldesign-tree](../tree)
 
 ### Graph
@@ -59,17 +63,21 @@ graph TD;
   ldesign-image --> ldesign-icon
   ldesign-image-viewer --> ldesign-icon
   ldesign-input --> ldesign-icon
+  ldesign-input-number --> ldesign-icon
+  ldesign-mention --> ldesign-icon
   ldesign-menu --> ldesign-icon
   ldesign-message --> ldesign-icon
   ldesign-modal --> ldesign-icon
   ldesign-notification --> ldesign-icon
   ldesign-pagination --> ldesign-icon
   ldesign-popconfirm --> ldesign-icon
+  ldesign-progress --> ldesign-icon
   ldesign-rate --> ldesign-icon
   ldesign-select --> ldesign-icon
   ldesign-switch --> ldesign-icon
   ldesign-time-picker --> ldesign-icon
   ldesign-time-range-picker --> ldesign-icon
+  ldesign-transfer --> ldesign-icon
   ldesign-tree --> ldesign-icon
   style ldesign-icon fill:#f9f,stroke:#333,stroke-width:4px
 ```

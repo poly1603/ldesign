@@ -357,3 +357,23 @@
   font-family: monospace;
 }
 </style>
+
+## Overlay / Modal 组件 Token
+
+为了实现跨组件一致的浮层体验，提供了共享的 Overlay 令牌，以及 Modal 专属令牌。
+
+- Overlay：`--ld-overlay-z-index`、`--ld-overlay-backdrop`、`--ld-overlay-duration`、`--ld-overlay-ease`
+- Modal：`--ld-modal-radius`、`--ld-modal-shadow`、`--ld-modal-title-font-size`、`--ld-modal-title-line-height`、`--ld-modal-header-padding`、`--ld-modal-body-padding`、`--ld-modal-footer-padding`、`--ld-modal-footer-bottom`、`--ld-modal-action-gap`、`--ld-modal-btn-gap`、`--ld-modal-body-font-size`、`--ld-modal-body-line-height`、`--ld-modal-duration`、`--ld-modal-ease`、`--ld-modal-anim-ease`、`--ld-modal-width-small|medium|large`、`--ld-modal-screen-padding`（bottom‑sheet 不支持拖拽改变高度）
+
+示例：
+
+```css
+:root {
+  --ld-overlay-backdrop: rgba(0,0,0,0.5);
+  --ld-overlay-duration: 250ms;
+  --ld-modal-radius: 10px;
+}
+@media (max-width: 600px) {
+  :root { --ld-modal-duration: 220ms; }
+}
+```

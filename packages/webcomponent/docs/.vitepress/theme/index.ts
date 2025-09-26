@@ -3,6 +3,8 @@ import type { Theme } from 'vitepress'
 import './custom.css'
 // 直接导入组件库CSS
 import '../../../dist/ldesign-webcomponent/ldesign-webcomponent.css'
+// 确保自定义元素被注册
+import { defineCustomElements } from '../../../loader'
 
 function initInputDemos() {
   // 在每次路由切换后尝试初始化当前页的 demo
@@ -37,6 +39,23 @@ function initInputDemos() {
   setTimeout(tryInit, 0);
   setTimeout(tryInit, 100);
   setTimeout(tryInit, 300);
+}
+
+function initInputNumberDemos() {
+  const apply = () => {
+    const el = document.getElementById('wc-in-currency') as any;
+    if (el && !el.__inited_currency) {
+      el.formatter = (v: number | null) => (v == null ? '' : v.toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }));
+      el.parser = (s: string) => {
+        const n = Number(String(s).replace(/[^\d.-]/g, ''));
+        return Number.isNaN(n) ? null : n;
+      };
+      el.__inited_currency = true;
+    }
+  };
+  setTimeout(apply, 0);
+  setTimeout(apply, 80);
+  setTimeout(apply, 200);
 }
 
 function initTabsDemos() {
@@ -262,6 +281,8 @@ export default {
   enhanceApp({ app, router, siteData }) {
     // 注册 Web Components
     if (typeof window !== 'undefined') {
+      // 关键：显式注册自定义元素，避免仅加载 ESM 时未执行注册
+      try { defineCustomElements(window as any); } catch {}
       const loadFromDist = () => import('../../../dist/ldesign-webcomponent/ldesign-webcomponent.esm.js')
       const loadFromDev = async () => {
         // 动态追加 dev server 样式
@@ -276,31 +297,52 @@ export default {
         return import(/* @vite-ignore */ 'http://localhost:3333/build/ldesign-webcomponent.esm.js')
       }
 
+      const tryLoader = async () => {
+        try {
+          const mod = await import('../../../loader/index.js')
+          if (mod && typeof mod.defineCustomElements === 'function') {
+            await mod.defineCustomElements()
+            console.log('LDesign WebComponent 已通过 loader 定义自定义元素')
+            return true
+          }
+        } catch (e) {
+          // 忽略
+        }
+        return false
+      }
+
       const loadLibrary = async () => {
+        // 开发优先：优先尝试 dev server，失败时回退 dist，再回退 loader
+        try {
+          await loadFromDev()
+          console.log('LDesign WebComponent 组件库已从 dev server 加载')
+          return
+        } catch {}
         try {
           await loadFromDist()
           console.log('LDesign WebComponent 组件库已从 dist 加载')
+          return
         } catch (err) {
-          console.warn('从 dist 加载失败，尝试从 Stencil dev server 加载...', err)
-          try {
-            await loadFromDev()
-            console.log('LDesign WebComponent 组件库已从 dev server 加载')
-          } catch (err2) {
-            console.error('加载 LDesign WebComponent 失败', err2)
+          console.warn('从 dist 加载失败，尝试使用 loader.defineCustomElements()', err)
+          const ok = await tryLoader()
+          if (!ok) {
+            console.error('加载 LDesign WebComponent 失败：dev/dist/loader 均不可用')
           }
         }
       }
 
       loadLibrary().then(() => {
         // 初次加载后尝试初始化 demo
-        initInputDemos()
+initInputDemos()
+        initInputNumberDemos()
         initTabsDemos()
         initTreeDemos()
       })
 
       // 监听路由变化，确保切换页面后 demo 仍生效
-      router.onAfterRouteChanged = () => {
+router.onAfterRouteChanged = () => {
         initInputDemos()
+        initInputNumberDemos()
         initTabsDemos()
         initTreeDemos()
       }

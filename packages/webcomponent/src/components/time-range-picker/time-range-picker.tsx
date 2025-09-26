@@ -108,7 +108,7 @@ export class LdesignTimeRangePicker {
     return p as PresetsMap;
   }
 
-  private onInputFocus = (e: FocusEvent) => { this.ldesignFocus.emit(e); if (this.disabled) return; const p = this.getInnerPopup(); if (p && this.trigger !== 'manual') (p as any).visible = true; };
+  private onInputFocus = (e: FocusEvent) => { this.ldesignFocus.emit(e); if (this.disabled) return; const p = this.getInnerPopup(); if (p && this.trigger === 'focus') (p as any).visible = true; };
 
   private onInputBlur = (_e: FocusEvent) => {
     if (!this.allowInput || this.readonly) return;
@@ -169,12 +169,17 @@ export class LdesignTimeRangePicker {
 
   private renderPanel(role: 'start' | 'end') {
     const val = role === 'start' ? this.startText : this.endText;
+    const minTime = role === 'end' ? (this.startText || undefined) : undefined;
+    const maxTime = role === 'start' ? (this.endText || undefined) : undefined;
     return (
       <ldesign-time-picker-panel
         value={val}
         format={this.format as any}
         steps={this.steps as any}
         panelHeight={this.panelHeight}
+        minTime={minTime as any}
+        maxTime={maxTime as any}
+        hideDisabledTime={this.hideDisabledTime}
         onLdesignChange={(e: CustomEvent<string>) => {
           if (role === 'start') this.startText = e.detail; else this.endText = e.detail;
         }}

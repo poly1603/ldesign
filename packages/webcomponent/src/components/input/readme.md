@@ -47,6 +47,10 @@ Input 输入框组件
 
 ## Dependencies
 
+### Used by
+
+ - [ldesign-transfer](../transfer)
+
 ### Depends on
 
 - [ldesign-icon](../icon)
@@ -55,6 +59,7 @@ Input 输入框组件
 ```mermaid
 graph TD;
   ldesign-input --> ldesign-icon
+  ldesign-transfer --> ldesign-input
   style ldesign-input fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

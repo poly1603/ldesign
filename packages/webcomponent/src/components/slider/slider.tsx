@@ -177,11 +177,19 @@ export class LdesignSlider {
   render() {
     const percent = this.getPercent();
     const isVertical = this.vertical;
+    
+    // 根据尺寸设置具体的thumb大小
+    const thumbSizes = {
+      'small': { width: '12px', height: '12px' },
+      'medium': { width: '16px', height: '16px' },
+      'large': { width: '20px', height: '20px' }
+    };
+    const currentThumbSize = thumbSizes[this.size] || thumbSizes['medium'];
 
     if (isVertical) {
       // 垂直模式：完全独立的渲染逻辑
       return (
-        <Host class="ldesign-slider-host ldesign-slider-host--vertical">
+        <Host class="ldesign-slider-host ldesign-slider-host--vertical" style={{ display: 'inline-flex' }}>
           <div 
             class={this.getRootClass()}
             onPointerDown={this.handleTrackPointerDown as any}
@@ -189,15 +197,33 @@ export class LdesignSlider {
             <div 
               class="ldesign-slider__track ldesign-slider__track--vertical"
               ref={(el) => (this.trackEl = el)}
+              style={{ position: 'relative', width: '4px', height: '100%', margin: '0' }}
             >
-              <div class="ldesign-slider__rail ldesign-slider__rail--vertical" />
+              <div 
+              class="ldesign-slider__rail ldesign-slider__rail--vertical"
+              style={{ position: 'absolute', width: '100%', height: '100%', left: '0', top: '0', background: 'var(--ld-slider-rail-bg, #e5e7eb)', backgroundRepeat: 'no-repeat', backgroundSize: 'cover', borderRadius: '9999px' }}
+              />
               <div 
                 class="ldesign-slider__fill ldesign-slider__fill--vertical"
-                style={{ height: `${percent}%` }}
+                style={{ position: 'absolute', width: '100%', bottom: '0', background: 'var(--ld-slider-fill-bg, var(--ldesign-color-primary, #1677ff))', borderRadius: '9999px', height: `${percent}%` }}
               />
               <div
                 class="ldesign-slider__thumb ldesign-slider__thumb--vertical"
-                style={{ bottom: `${percent}%`, transform: 'translate(-50%, 50%)' }}
+                style={{ 
+                  bottom: `${percent}%`, 
+                  transform: 'translate(-50%, 50%)',
+                  width: currentThumbSize.width,
+                  height: currentThumbSize.height,
+                  left: '50%',
+                  position: 'absolute',
+                  borderRadius: '50%',
+                  backgroundColor: '#fff',
+                  border: '2px solid var(--ldesign-color-primary, #1677ff)',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                  cursor: 'pointer',
+                  zIndex: '10',
+                  boxSizing: 'border-box'
+                }}
                 role="slider"
                 tabindex={this.disabled ? -1 : 0}
                 aria-disabled={this.disabled ? 'true' : 'false'}
@@ -230,10 +256,10 @@ export class LdesignSlider {
             class="ldesign-slider__track"
             ref={(el) => (this.trackEl = el)}
           >
-            <div class="ldesign-slider__rail" />
+            <div class="ldesign-slider__rail" style={{ background: 'var(--ld-slider-rail-bg, #e5e7eb)' }} />
             <div 
               class="ldesign-slider__fill"
-              style={{ width: `${percent}%` }}
+              style={{ width: `${percent}%`, background: 'var(--ld-slider-fill-bg, var(--ldesign-color-primary, #1677ff))' }}
             />
             <div
               class="ldesign-slider__thumb"

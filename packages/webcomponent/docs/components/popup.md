@@ -339,6 +339,25 @@ onUnmounted(() => cleanup())
 
 > 说明：开启后仅禁用“滚动导致的自动重定位”，仍会在窗口尺寸变化/元素尺寸变化时保持正确位置。
 
+## 样式变量（全局 Token）
+
+Popup 与 Modal / Drawer 共享 Overlay 令牌中的层级控制，默认使用：
+
+- `--ld-overlay-z-index`：浮层层级（内容容器 z-index）
+
+组件同时支持“减少动态效果”系统偏好（`@media (prefers-reduced-motion: reduce)`），在该模式下会禁用过渡与动画，避免眩晕。
+
+示例（全局覆写）：
+
+```css
+:root {
+  /* 调整所有浮层的层级，确保在特定布局中位于更上层 */
+  --ld-overlay-z-index: 1200;
+}
+```
+
+更多可覆盖项与说明，参见“设计 / Tokens”文档。
+
 ## API
 
 ### 属性

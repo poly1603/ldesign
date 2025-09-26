@@ -148,14 +148,6 @@ export class LdesignModal {
   @Prop() variantAt?: Partial<Record<'xs'|'sm'|'md'|'lg', ModalVariant>>;
   @Prop() breakpoints?: { xs: number; sm: number; md: number; lg: number };
 
-  /** Bottom Sheet 拖拽开关（仅在 variant='bottom-sheet' 时生效） */
-  @Prop() sheetDraggable: boolean = true;
-  /** Snap 点：数组，值支持像素（数字或'120px'），百分比（'50%'），或小数（0.5 表示 50%） */
-  @Prop() sheetSnapPoints?: (number | string)[];
-  /** 关闭阈值：低于该高度则关闭，默认 '30%' */
-  @Prop() sheetCloseThreshold?: number | string;
-  /** 初始高度：同上；若不传且有 snapPoints，则使用最大 snap 值（通常是 100%） */
-  @Prop() sheetInitial?: number | string;
 
   /** 动画参数（也可通过 CSS 变量覆盖）：duration(ms)、ease、animEase */
   @Prop() duration?: number;
@@ -298,12 +290,6 @@ export class LdesignModal {
   private drawerLastX: number = 0;
   private drawerLastT: number = 0;
 
-  /** Bottom Sheet 拖拽状态 */
-  private isSheetDragging: boolean = false;
-  private sheetStartY: number = 0;
-  private sheetStartH: number = 0;
-  private sheetLastY?: number;
-  private sheetLastT?: number;
 
   /** 打开前的焦点（用于关闭后恢复） */
   private openerEl?: HTMLElement | null;
@@ -625,6 +611,8 @@ export class LdesignModal {
    */
   private handleDragMove = (event: MouseEvent) => {
     if (!this.isDragging || !this.modalElement) return;
+    // 安全兜底：若鼠标已松开（例如在窗口外松开未收到 mouseup），立即结束拖拽
+    if ((event as MouseEvent).buttons === 0) { this.handleDragEnd(); return; }
 
     const deltaX = event.clientX - this.dragStartX;
     const deltaY = event.clientY - this.dragStartY;
@@ -727,6 +715,8 @@ export class LdesignModal {
    */
   private handleResizeMove = (event: MouseEvent) => {
     if (!this.isResizing || !this.modalElement) return;
+    // 安全兜底：若鼠标已松开（例如在窗口外松开未收到 mouseup），立即结束调整
+    if ((event as MouseEvent).buttons === 0) { this.handleResizeEnd(); return; }
 
     const deltaX = event.clientX - this.resizeStartX;
     const deltaY = event.clientY - this.resizeStartY;
@@ -845,62 +835,8 @@ export class LdesignModal {
     document.removeEventListener('mouseup', this.handleResizeEnd);
   }
 
-  /** Bottom Sheet 顶部拖拽开始 */
-  private handleSheetDragStart = (event: MouseEvent) => {
-    if (this.getCurrentVariant() !== 'bottom-sheet' || !this.sheetDraggable || !this.modalElement) return;
-    this.isSheetDragging = true;
-    this.sheetStartY = event.clientY;
-    this.sheetStartH = this.modalElement.offsetHeight;
-    this.sheetLastY = event.clientY;
-    this.sheetLastT = performance.now();
-    document.addEventListener('mousemove', this.handleSheetDragMove);
-    document.addEventListener('mouseup', this.handleSheetDragEnd, { once: true } as any);
-    event.preventDefault();
-    event.stopPropagation();
-  };
 
-  private handleSheetDragMove = (event: MouseEvent) => {
-    if (!this.isSheetDragging || !this.modalElement) return;
-    const wrap = this.el.querySelector('.ldesign-modal__wrap') as HTMLElement;
-    const maxHWrap = wrap.clientHeight;
-    const minH = this.minHeight ?? 160;
-    const maxH = Math.min(this.maxHeight ?? maxHWrap, maxHWrap);
-    const delta = event.clientY - this.sheetStartY;
-    let newH = this.sheetStartH - delta; // 向上拖增高，向下拖减小
-    newH = Math.max(minH, Math.min(maxH, newH));
-    this.modalElement.style.height = `${Math.round(newH)}px`;
-    this.lastHeight = newH;
-    // 记录速度
-    this.sheetLastY = event.clientY;
-    this.sheetLastT = performance.now();
-  };
 
-  private handleSheetDragEnd = () => {
-    if (!this.modalElement) return;
-    const wrap = this.el.querySelector('.ldesign-modal__wrap') as HTMLElement;
-    const maxHWrap = wrap.clientHeight;
-    const minH = this.minHeight ?? 160;
-    const maxH = Math.min(this.maxHeight ?? maxHWrap, maxHWrap);
-    // 速度（px/ms）
-    let vy = 0;
-    if (this.sheetLastY != null && this.sheetLastT != null) {
-      const dy = this.sheetLastY - this.sheetStartY;
-      const dt = Math.max(1, performance.now() - (this.sheetLastT as number));
-      vy = dy / dt;
-    }
-    let target = this.getSheetSnapTarget(this.lastHeight || this.sheetStartH, vy, minH, maxH, maxHWrap);
-    const closeTh = this.parseSnap(this.sheetCloseThreshold ?? '30%', maxHWrap);
-    if (target <= Math.max(minH, closeTh)) {
-      this.isSheetDragging = false;
-      document.removeEventListener('mousemove', this.handleSheetDragMove);
-      this.attemptClose('close');
-      return;
-    }
-    this.modalElement.style.height = `${Math.round(target)}px`;
-    this.lastHeight = target;
-    this.isSheetDragging = false;
-    document.removeEventListener('mousemove', this.handleSheetDragMove);
-  };
 
   /**
    * 显示模态框
@@ -1095,21 +1031,6 @@ export class LdesignModal {
       this.isVisible = true;
       this.visible = true;
 
-      // Bottom Sheet 初始高度
-    if (this.getCurrentVariant() === 'bottom-sheet' && this.modalElement) {
-        const wrap = this.el.querySelector('.ldesign-modal__wrap') as HTMLElement;
-        const wrapH = wrap?.clientHeight || window.innerHeight;
-        let initH: number | undefined;
-        if (this.sheetInitial != null) initH = this.parseSnap(this.sheetInitial as any, wrapH);
-        else if (this.sheetSnapPoints && this.sheetSnapPoints.length) {
-          const pts = this.sheetSnapPoints.map(v => this.parseSnap(v, wrapH));
-          initH = Math.max(...pts); // 默认用最大（通常是 100%）
-        }
-        if (initH != null) {
-          this.modalElement.style.height = `${Math.round(initH)}px`;
-          this.lastHeight = initH;
-        }
-      }
 
       // 锁定背景滚动，并隐藏页面滚动条
       this.bindScrollLock();
@@ -1269,27 +1190,6 @@ export class LdesignModal {
     return wrapH; // 兜底：全高
   }
 
-  private getSheetSnapTarget(curH: number, vy: number, minH: number, maxH: number, wrapH: number): number {
-    const pts = (this.sheetSnapPoints && this.sheetSnapPoints.length)
-      ? this.sheetSnapPoints.map(v => this.parseSnap(v, wrapH))
-      : [] as number[];
-    if (pts.length === 0) return Math.max(minH, Math.min(maxH, curH));
-    // 依据速度方向选择相邻点，否则选择最近点
-    pts.sort((a,b)=>a-b); // 升序
-    const nearest = pts.reduce((p,c)=> Math.abs(c-curH) < Math.abs(p-curH) ? c : p, pts[0]);
-    const threshold = 0.5; // px/ms
-    if (Math.abs(vy) > threshold) {
-      if (vy > 0) { // 向下拖（减小高度）
-        // 选择 <= curH 的最大点
-        const lower = pts.filter(p=>p<=curH).pop();
-        if (lower != null) return Math.max(minH, Math.min(maxH, lower));
-      } else { // 向上拖（增大高度）
-        const higher = pts.find(p=>p>=curH);
-        if (higher != null) return Math.max(minH, Math.min(maxH, higher));
-      }
-    }
-    return Math.max(minH, Math.min(maxH, nearest));
-  }
 
   /** 获取可聚焦元素 */
   private getFocusable(root: HTMLElement): HTMLElement[] {
@@ -1639,6 +1539,8 @@ export class LdesignModal {
   }
   private handleDrawerSwipeMove = (event: MouseEvent) => {
     if (!this.isDrawerSwiping || !this.modalElement) return;
+    // 安全兜底：若鼠标已松开，则结束滑动
+    if ((event as MouseEvent).buttons === 0) { this.handleDrawerSwipeEnd(); return; }
     const vv = this.getCurrentVariant();
     const delta = event.clientX - this.drawerStartX;
     let t = delta;
@@ -1665,6 +1567,7 @@ export class LdesignModal {
     this.isDrawerSwiping = false;
     this.modalElement.style.transform = 'translateX(0px)';
     document.removeEventListener('mousemove', this.handleDrawerSwipeMove);
+    document.removeEventListener('mouseup', this.handleDrawerSwipeEnd as any);
   };
 
   render() {
@@ -1705,11 +1608,6 @@ export class LdesignModal {
             style={this.getDialogStyle()}
             onMouseDown={(e) => this.handleDrawerSwipeStart(e as any)}
           >
-            {this.variant === 'bottom-sheet' && this.sheetDraggable && (
-              <div class="ldesign-modal__sheet-drag" onMouseDown={this.handleSheetDragStart as any}>
-                <span class="ldesign-modal__sheet-drag-bar" />
-              </div>
-            )}
             <div class={this.getContentClass()}>
               {(this.modalTitle || this.closable) && (
                 <div

@@ -84,12 +84,14 @@ export class LdesignImageViewer {
   @State() flipX: boolean = false;
   @State() flipY: boolean = false;
   @State() dragging: boolean = false;
+  @State() gesturing: boolean = false;
   @State() crossfading: boolean = false;
   @State() loading: boolean = false;
   /** 关闭动画期间保持渲染 */
   @State() isClosing: boolean = false;
   /** 打开/关闭动效状态 */
   @State() motion: 'opening' | 'open' | 'closing' = 'open';
+  @State() uiHidden: boolean = false; // 移动端自动隐藏 UI
 
   private dragStartX = 0;
   private dragStartY = 0;
@@ -101,11 +103,25 @@ export class LdesignImageViewer {
   private moveRaf?: number;
   private imageEl?: HTMLImageElement;
   private panelEl?: HTMLElement;
+  private canvasEl?: HTMLElement;
   private imgKey: number = 0;
+  // 多指触控/手势
+  private activePointers = new Map<number, { x: number; y: number }>();
+  private isPinching = false;
+  private pinchStartDist = 0;
+  private pinchStartScale = 1;
+  private pinchStartAngle = 0;
+  private rotateStart = 0;
+  private lastTapTime = 0;
+  private singleTapTimer?: number;
+  private tapStartX = 0;
+  private tapStartY = 0;
+  private tapMoved = false;
   private prevSrc?: string;
   private prevTransform?: string; // 冻结旧图的 transform，避免切换抖动
   private fadeTimer?: number;
   private switchSeq: number = 0;
+  private uiTimer?: number;
   private preloadCache = new Map<string, Promise<HTMLImageElement>>();
   private enterScale?: number; // 新图入场缩放（fade-zoom 用）
   private pendingApply = false; // 避免在切换中对旧图应用重置变换
@@ -212,6 +228,7 @@ export class LdesignImageViewer {
 
   private setVisibleInternal(v: boolean) {
     if (v) {
+      this.showUiTemporarily();
       // overlay 模式才锁定滚动
       if (this.viewerMode === 'overlay') lockPageScroll();
       this.bindKeydown();
@@ -378,12 +395,33 @@ export class LdesignImageViewer {
     if (!this.wheelZoom) return;
     e.preventDefault();
     const delta = e.deltaY > 0 ? -this.zoomStep : this.zoomStep;
-    this.zoom(delta);
+    const target = Math.min(this.maxScale, Math.max(this.minScale, this.scale + delta));
+    this.zoomTo(target, e.clientX, e.clientY);
+    this.showUiTemporarily();
   };
 
   private zoom(delta: number) {
     const next = Math.min(this.maxScale, Math.max(this.minScale, this.scale + delta));
-    this.scale = Number(next.toFixed(2));
+    this.zoomTo(next);
+  }
+
+  private zoomTo(nextScale: number, clientX?: number, clientY?: number) {
+    const prev = this.scale;
+    const next = Number(Math.min(this.maxScale, Math.max(this.minScale, nextScale)).toFixed(3));
+    if (!this.canvasEl || next === prev) { this.scale = next; this.applyTransform(); return; }
+    const rect = this.canvasEl.getBoundingClientRect();
+    const cx = clientX != null ? clientX : rect.left + rect.width / 2;
+    const cy = clientY != null ? clientY : rect.top + rect.height / 2;
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const vX = (cx - centerX) - (this.dragging ? this.visualOffsetX : this.offsetX);
+    const vY = (cy - centerY) - (this.dragging ? this.visualOffsetY : this.offsetY);
+    const r = next / (prev || 1);
+    const dX = -(r - 1) * vX;
+    const dY = -(r - 1) * vY;
+    this.scale = next;
+    this.offsetX = this.offsetX + dX; this.offsetY = this.offsetY + dY;
+    this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
     this.applyTransform();
   }
 
@@ -394,22 +432,113 @@ export class LdesignImageViewer {
 
   private onDblClick = (e: MouseEvent) => {
     e.preventDefault();
-    this.scale = this.scale === 1 ? 2 : 1;
-    this.offsetX = 0; this.offsetY = 0; this.visualOffsetX = 0; this.visualOffsetY = 0;
-    this.applyTransform();
+    const target = this.scale === 1 ? 2 : 1;
+    this.zoomTo(target, e.clientX, e.clientY);
+    this.showUiTemporarily();
   };
+
+  private showUiTemporarily() {
+    this.uiHidden = false;
+    if (this.uiTimer) { window.clearTimeout(this.uiTimer); this.uiTimer = undefined as any; }
+    // 仅在小屏设备或触摸操作时自动隐藏
+    const isSmallScreen = window.innerWidth <= 900;
+    if (isSmallScreen) {
+      this.uiTimer = window.setTimeout(() => { this.uiHidden = true; }, 2200);
+    }
+  }
 
   private onPointerDown = (e: PointerEvent) => {
     // 避免冒泡到面板拖拽（确保拖动图片不会带动小窗位置）
     e.stopPropagation();
-    this.dragging = true;
-    this.dragStartX = e.clientX; this.dragStartY = e.clientY;
-    this.startOffsetX = this.offsetX; this.startOffsetY = this.offsetY;
-    this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
+
+    // 记录指针（用于多指缩放）
+    this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    // 触屏单击/双击判定（先判双击，避免与单击冲突）
+    if (e.pointerType === 'touch') {
+      const now = Date.now();
+      if (now - this.lastTapTime < 300 && !this.isPinching) {
+        // 双击：取消单击定时器，直接缩放
+        if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined; }
+        this.onDblClick(e as any);
+        this.lastTapTime = 0;
+        // 不进入后续拖拽逻辑
+        (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+        return;
+      }
+      this.lastTapTime = now;
+      this.tapStartX = e.clientX; this.tapStartY = e.clientY; this.tapMoved = false;
+      if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); }
+      this.singleTapTimer = window.setTimeout(() => {
+        if (!this.tapMoved && !this.isPinching) {
+          this.uiHidden = !this.uiHidden;
+        }
+        this.singleTapTimer = undefined as any;
+      }, 260);
+    }
+
+    if (this.activePointers.size === 2) {
+      const pts = Array.from(this.activePointers.values());
+      const dx = pts[0].x - pts[1].x; const dy = pts[0].y - pts[1].y;
+      this.pinchStartDist = Math.hypot(dx, dy) || 1;
+      this.pinchStartScale = this.scale;
+      this.pinchStartAngle = Math.atan2(dy, dx);
+      this.rotateStart = this.rotate;
+      this.isPinching = true;
+      this.gesturing = true;
+      this.dragging = false;
+    } else {
+      // 单指：准备拖拽或轻扫
+      this.dragging = true;
+      this.dragStartX = e.clientX; this.dragStartY = e.clientY;
+      this.startOffsetX = this.offsetX; this.startOffsetY = this.offsetY;
+      this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
+    }
+
+    // 触屏双击识别（移动端 dblclick 兼容性不一）
+    if (e.pointerType === 'touch') {
+      const now = Date.now();
+      if (now - this.lastTapTime < 300 && !this.isPinching) {
+        // 模拟双击：1x/2x 切换
+        this.onDblClick(e as any);
+      }
+      this.lastTapTime = now;
+    }
+
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
   private onPointerMove = (e: PointerEvent) => {
+    this.showUiTemporarily();
+    // 更新活动指针位置
+    if (this.activePointers.has(e.pointerId)) {
+      this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+
+    // 两指缩放
+    if (this.isPinching && this.activePointers.size >= 2) {
+      if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined; }
+      const pts = Array.from(this.activePointers.values());
+      const dx = pts[0].x - pts[1].x; const dy = pts[0].y - pts[1].y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const ratio = dist / (this.pinchStartDist || 1);
+      const raw = this.pinchStartScale * ratio;
+      const next = Math.min(this.maxScale, Math.max(this.minScale, raw));
+      const midX = (pts[0].x + pts[1].x) / 2;
+      const midY = (pts[0].y + pts[1].y) / 2;
+      // 计算旋转角度（两指连线角度差）
+      const angle = Math.atan2(dy, dx);
+      let delta = angle - this.pinchStartAngle;
+      if (delta > Math.PI) delta -= Math.PI * 2; else if (delta < -Math.PI) delta += Math.PI * 2;
+      this.rotate = this.rotateStart + (delta * 180 / Math.PI);
+      // 先更新旋转，再按中点缩放，zoomTo 内部会应用 transform
+      this.zoomTo(Number(next.toFixed(3)), midX, midY);
+      return;
+    }
+
     if (!this.dragging) return;
+    // 若移动超过阈值，取消单击判定
+    const moveDx = Math.abs(e.clientX - this.tapStartX);
+    const moveDy = Math.abs(e.clientY - this.tapStartY);
+    if (moveDx > 8 || moveDy > 8) { this.tapMoved = true; if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined; } }
     const dx = e.clientX - this.dragStartX; const dy = e.clientY - this.dragStartY;
     const nextX = this.startOffsetX + dx;
     const nextY = this.startOffsetY + dy;
@@ -423,8 +552,39 @@ export class LdesignImageViewer {
     }
   };
   private onPointerUp = (e: PointerEvent) => {
+    // 移除当前指针
+    this.activePointers.delete(e.pointerId);
+    if (this.singleTapTimer) {
+      // 若在计时窗口内抬起，不做额外处理，让计时器决定是否切换UI
+      // 但如果已经识别为滑动/缩放，上面已清除计时器
+    }
+    if (this.isPinching) {
+      if (this.activePointers.size < 2) { this.isPinching = false; this.gesturing = false; }
+      try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+      return;
+    }
+
+    const dx = e.clientX - this.dragStartX; const dy = e.clientY - this.dragStartY;
+    const isSwipeCandidate = Math.abs(this.scale - 1) < 0.001 && Math.abs(this.startOffsetX) < 10 && Math.abs(this.startOffsetY) < 10;
+
     this.dragging = false;
     if (this.moveRaf) { cancelAnimationFrame(this.moveRaf); this.moveRaf = undefined; }
+
+    if (isSwipeCandidate && Math.abs(dy) < 60 && Math.abs(dx) > 80 && this.list.length > 1) {
+      // 快速轻扫切图：右滑上一张，左滑下一张
+      if (dx > 0) this.prev(); else this.next();
+      // 恢复位置，不提交偏移
+      this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
+      try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+      return;
+    }
+
+    // overlay 模式：下滑关闭（缩放≈1 且未拖图）
+    if (this.viewerMode === 'overlay' && isSwipeCandidate && dy > 120 && Math.abs(dx) < 80) {
+      this.close();
+      try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+      return;
+    }
     // 将最终结果同步到状态（只触发一次重渲染）
     this.offsetX = this.visualOffsetX; this.offsetY = this.visualOffsetY;
     try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
@@ -507,7 +667,7 @@ export class LdesignImageViewer {
   render() {
     if (!this.visible && !this.isClosing) return null as any;
     const item = this.current();
-    const classes = ['ldesign-image-viewer', this.backdrop === 'dark' ? 'ldesign-image-viewer--dark' : 'ldesign-image-viewer--light', this.viewerMode === 'modal' ? 'ldesign-image-viewer--modal' : '', this.viewerMode === 'embedded' ? 'ldesign-image-viewer--embedded' : ''].join(' ');
+    const classes = ['ldesign-image-viewer', this.backdrop === 'dark' ? 'ldesign-image-viewer--dark' : 'ldesign-image-viewer--light', this.viewerMode === 'modal' ? 'ldesign-image-viewer--modal' : '', this.viewerMode === 'embedded' ? 'ldesign-image-viewer--embedded' : '', this.uiHidden ? 'ldesign-image-viewer--ui-hidden' : ''].join(' ');
 
     const panelStyle: any = this.viewerMode === 'modal' ? { width: this.toPx(this.panelWidth) || '80vw', height: this.toPx(this.panelHeight) || '70vh' } : this.viewerMode === 'embedded' ? { width: '100%', height: '100%' } : { width: '100%', height: '100%' };
 
@@ -549,7 +709,7 @@ export class LdesignImageViewer {
                 <ldesign-icon name="chevron-left" />
               </button>
             )}
-            <div class="ldesign-image-viewer__canvas" onWheel={this.onWheel} onDblClick={this.onDblClick}
+            <div class="ldesign-image-viewer__canvas" ref={el => (this.canvasEl = el as HTMLElement)} onWheel={this.onWheel} onDblClick={this.onDblClick}
               onPointerDown={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerDown}
               onPointerMove={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerMove}
               onPointerUp={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerUp}>
@@ -563,6 +723,7 @@ export class LdesignImageViewer {
                   class={{
                     'ldesign-image-viewer__img': true,
                     'is-dragging': this.dragging,
+                    'is-gesturing': this.gesturing,
                     'loading-hidden': this.loading,
                     'fade-enter': !this.loading && this.crossfading,
                     'fade-in': !this.loading && !this.crossfading,

@@ -1,0 +1,135 @@
+.ld-scrollbar-host {
+  display: block;
+}
+
+/* 阴影指示 */
+.ld-scrollbar__shadow {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--ld-scrollbar-transition);
+}
+.ld-scrollbar__shadow.is-visible { opacity: 1; }
+.ld-scrollbar__shadow--top { left: 0; right: 0; top: var(--ld-sticky-top, 0); height: var(--ld-scrollbar-shadow-size, 12px); background: linear-gradient(to bottom, var(--ld-scrollbar-shadow-color, rgba(0,0,0,.08)), rgba(0,0,0,0)); }
+.ld-scrollbar__shadow--bottom { left: 0; right: 0; bottom: var(--ld-sticky-bottom, 0); height: var(--ld-scrollbar-shadow-size, 12px); background: linear-gradient(to top, var(--ld-scrollbar-shadow-color, rgba(0,0,0,.08)), rgba(0,0,0,0)); }
+.ld-scrollbar__shadow--left { top: 0; bottom: 0; left: 0; width: var(--ld-scrollbar-shadow-size, 12px); background: linear-gradient(to right, var(--ld-scrollbar-shadow-color, rgba(0,0,0,.08)), rgba(0,0,0,0)); }
+.ld-scrollbar__shadow--right { top: 0; bottom: 0; right: 0; width: var(--ld-scrollbar-shadow-size, 12px); background: linear-gradient(to left, var(--ld-scrollbar-shadow-color, rgba(0,0,0,.08)), rgba(0,0,0,0)); }
+
+/* Tooltip */
+.ld-scrollbar {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  --ld-scrollbar-size: 8px;
+  --ld-scrollbar-radius: 6px;
+  --ld-scrollbar-offset: 2px;
+  --ld-scrollbar-thumb-bg: rgba(0, 0, 0, 0.35);
+  --ld-scrollbar-thumb-hover-bg: rgba(0, 0, 0, 0.5);
+  --ld-scrollbar-track-bg: rgba(0, 0, 0, 0.08);
+  --ld-scrollbar-transition: 160ms ease;
+}
+
+/* 可滚区域（隐藏原生滚动条） */
+.ld-scrollbar__wrap {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+/* 非 native 模式下隐藏原生滚动条 */
+.ld-scrollbar:not(.ld-scrollbar--native) .ld-scrollbar__wrap {
+  -ms-overflow-style: none; /* IE 10+ */
+  scrollbar-width: none;    /* Firefox */
+}
+.ld-scrollbar:not(.ld-scrollbar--native) .ld-scrollbar__wrap::-webkit-scrollbar { width: 0; height: 0; }
+
+/* 通用条容器 */
+.ld-scrollbar__bar {
+  position: absolute;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none; /* 悬浮前不接管事件 */
+  transition: opacity var(--ld-scrollbar-transition);
+}
+.ld-scrollbar--always .ld-scrollbar__bar,
+.ld-scrollbar:hover .ld-scrollbar__bar,
+.ld-scrollbar.is-active .ld-scrollbar__bar {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ld-scrollbar__bar.is-hidden { display: none; }
+
+/* 纵向 */
+.ld-scrollbar__bar.is-vertical {
+  top: var(--ld-scrollbar-offset);
+  bottom: var(--ld-scrollbar-offset);
+  right: var(--ld-scrollbar-offset);
+  width: var(--ld-scrollbar-size);
+}
+/* 横向 */
+.ld-scrollbar__bar.is-horizontal {
+  left: var(--ld-scrollbar-offset);
+  right: var(--ld-scrollbar-offset);
+  bottom: var(--ld-scrollbar-offset);
+  height: var(--ld-scrollbar-size);
+}
+.ld-scrollbar__bar.is-horizontal.is-top {
+  top: var(--ld-scrollbar-offset);
+  bottom: auto;
+}
+
+/* space 布局：为滚动条预留空间，避免遮挡内容 */
+.ld-scrollbar--space.ld-scrollbar--v .ld-scrollbar__wrap { padding-right: var(--ld-scrollbar-size); }
+.ld-scrollbar--space.ld-scrollbar--h .ld-scrollbar__wrap { padding-bottom: var(--ld-scrollbar-size); }
+/* 轨道 */
+.ld-scrollbar__track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--ld-scrollbar-radius);
+  background: transparent; /* 默认不显示轨道 */
+}
+/* type=track 时显示轨道背景 */
+.ld-scrollbar--track .ld-scrollbar__track {
+  background: var(--ld-scrollbar-track-bg);
+}
+
+/* 拇指 */
+.ld-scrollbar__thumb {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--ld-scrollbar-radius);
+  background: var(--ld-scrollbar-thumb-bg);
+  transition: background-color var(--ld-scrollbar-transition);
+  cursor: pointer;
+}
+.ld-scrollbar__thumb:hover { background: var(--ld-scrollbar-thumb-hover-bg); }
+
+/* 横向拇指（宽度由脚本设置） */
+.ld-scrollbar__bar.is-horizontal .ld-scrollbar__thumb {
+  height: 100%;
+  width: auto;
+}
+/* 纵向拇指（高度由脚本设置） */
+.ld-scrollbar__bar.is-vertical .ld-scrollbar__thumb {
+  width: 100%;
+  height: auto;
+}
+
+/* 微调按钮 */
+.ld-scrollbar__btn {
+  position: absolute;
+  z-index: 11;
+  width: var(--ld-scrollbar-size);
+  height: var(--ld-scrollbar-size);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; background: rgba(0,0,0,.4); border-radius: 4px;
+  cursor: pointer; user-select: none; opacity: 0; transition: opacity var(--ld-scrollbar-transition);
+}
+.ld-scrollbar:hover .ld-scrollbar__btn, .ld-scrollbar.is-active .ld-scrollbar__btn, .ld-scrollbar--always .ld-scrollbar__btn { opacity: 1; }
+.ld-scrollbar__btn--up { right: var(--ld-scrollbar-offset); top: var(--ld-scrollbar-offset); }
+.ld-scrollbar__btn--down { right: var(--ld-scrollbar-offset); bottom: var(--ld-scrollbar-offset); }
+.ld-scrollbar__btn--left { left: var(--ld-scrollbar-offset); bottom: var(--ld-scrollbar-offset); }
+.ld-scrollbar__btn--right { right: var(--ld-scrollbar-offset); bottom: var(--ld-scrollbar-offset); }

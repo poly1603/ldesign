@@ -167,3 +167,56 @@
   --ls-shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.15);
   --ls-shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.2);
 }
+
+/* Overlay & Modal global tokens */
+:root {
+  /* Overlay (shared by Modal/Drawer/Popup) */
+  --ld-overlay-z-index: 1000;
+  --ld-overlay-backdrop: rgba(0, 0, 0, 0.45);
+  --ld-overlay-duration: 0.3s;
+  --ld-overlay-ease: ease;
+
+  /* Modal specific */
+  --ld-modal-radius: 8px;
+  --ld-modal-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  --ld-modal-title-font-size: 16px;
+  --ld-modal-title-line-height: 1.5;
+  --ld-modal-header-padding: 20px 24px 16px;
+  --ld-modal-body-padding: 20px 24px;
+  --ld-modal-footer-padding: 16px 24px 20px;
+  --ld-modal-footer-bottom: 20px;
+  --ld-modal-action-gap: 12px;
+  --ld-modal-btn-gap: 12px;
+  --ld-modal-body-font-size: 16px;
+  --ld-modal-body-line-height: 1.6;
+  --ld-modal-duration: 0.3s;
+  --ld-modal-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ld-modal-anim-ease: ease;
+  --ld-modal-width-small: 400px;
+  --ld-modal-width-medium: 600px;
+  --ld-modal-width-large: 800px;
+  --ld-modal-screen-padding: 20px; /* outer padding of viewport wrapper */
+}
+
+@media (max-width: 600px) {
+  :root {
+    /* Overlay motion (mobile) */
+    --ld-overlay-duration: 220ms;
+    --ld-overlay-ease: cubic-bezier(.2,.8,.2,1);
+
+    /* Modal (mobile) */
+    --ld-modal-radius: 12px;
+    --ld-modal-duration: 220ms;
+    --ld-modal-ease: cubic-bezier(.2,.8,.2,1);
+    --ld-modal-anim-ease: ease-out;
+    --ld-modal-header-padding: 16px 20px 12px;
+    --ld-modal-body-padding: 16px 20px;
+    --ld-modal-footer-padding: 12px 20px 16px;
+    --ld-modal-action-gap: 8px;
+
+    --ld-modal-text-sm: 14px;
+    --ld-modal-text-md: 15px;
+    --ld-modal-text-lg: 17px;
+    --ld-modal-body-font-size: var(--ld-modal-text-md);
+  }
+}

@@ -2,6 +2,27 @@
 
 
 
+## 使用示例：径向渐变（Radial Gradient）
+
+- 在弹层里使用径向渐变面板：
+
+```html path=null start=null
+<ldesign-color-picker modes="gradient" gradient-types="radial"></ldesign-color-picker>
+```
+
+- 需要显示“线性/径向”切换按钮时（默认隐藏）：
+
+```html path=null start=null
+<ldesign-color-picker
+  modes="gradient"
+  gradient-types="both"
+  show-gradient-type-tabs
+></ldesign-color-picker>
+```
+
+> 备注：`show-gradient-type-tabs` 为面板属性，已在包装组件中透传。
+
+
 <!-- Auto Generated Below -->
 
 
@@ -22,6 +43,7 @@ ColorPicker 颜色选择器
 | `format`        | `format`         |                                               | `"hex" \| "hsl" \| "hsv" \| "rgb"`                                                                                                                                   | `'hex'`          |
 | `gradientTypes` | `gradient-types` | 渐变类型：'linear' \| 'radial' \| 'both'（传递给面板）    | `"both" \| "linear" \| "radial"`                                                                                                                                     | `'both'`         |
 | `hideOnSelect`  | `hide-on-select` | 选择后是否自动关闭弹层                                   | `boolean`                                                                                                                                                            | `true`           |
+| `minStopGap`    | `min-stop-gap`   | 渐变色标之间的最小间距（百分比，避免重叠），默认 1（透传给面板）             | `number`                                                                                                                                                             | `1`              |
 | `modes`         | `modes`          | 面板模式：'solid' \| 'gradient' \| 'both'          | `"both" \| "gradient" \| "solid"`                                                                                                                                    | `'both'`         |
 | `placement`     | `placement`      | 弹出位置                                          | `"bottom" \| "bottom-end" \| "bottom-start" \| "left" \| "left-end" \| "left-start" \| "right" \| "right-end" \| "right-start" \| "top" \| "top-end" \| "top-start"` | `'bottom-start'` |
 | `popupWidth`    | `popup-width`    | 设置弹层宽度（数字或 CSS 长度），panel 将铺满此宽度               | `number \| string`                                                                                                                                                   | `undefined`      |

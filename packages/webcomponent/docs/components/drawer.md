@@ -188,6 +188,28 @@ onMounted(() => {
 </script>
 ```
 
+## 样式变量（全局 Token）
+
+Drawer 与 Modal / Popup 共享 Overlay 令牌，用于统一浮层体验：
+
+- `--ld-overlay-z-index`：浮层层级（所有遮罩/浮层统一）
+- `--ld-overlay-backdrop`：遮罩背景色（含透明度）
+- `--ld-overlay-duration`、`--ld-overlay-ease`：遮罩与面板动效时长/缓动
+
+系统开启“减少动态效果”时，会自动禁用相关过渡与动画（`@media (prefers-reduced-motion: reduce)`）。
+
+示例（全局覆写）：
+
+```css
+:root {
+  --ld-overlay-backdrop: rgba(0, 0, 0, 0.5);
+  --ld-overlay-duration: 250ms;
+  --ld-overlay-ease: cubic-bezier(.2,.8,.2,1);
+}
+```
+
+更多可覆盖项与说明，参见“设计 / Tokens”文档。
+
 ## API
 
 ### 属性

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ldesign-scrollbar test page</title>
+  <script type="module" src="../../../dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="../../../dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body { font-family: system-ui, -apple-system; padding: 16px; }
+    .block { margin: 16px 0; }
+  </style>
+</head>
+<body>
+  <h2>Scrollbar manual test</h2>
+
+  <div class="block">
+    <ldesign-scrollbar id="demo1" type="track" layout="space" show-buttons shadows style="height: 220px; --ld-sticky-top: 40px;">
+      <div style="height: 800px; padding-top: 40px; background: linear-gradient(#fafafa, #f0f0f0);">
+        <div style="position: sticky; top: 0; height: 40px; background:#fff; border-bottom:1px solid #eee; display:flex;align-items:center;padding:0 8px;">Sticky</div>
+        <div style="padding:8px">Content area</div>
+      </div>
+    </ldesign-scrollbar>
+  </div>
+
+  <div class="block">
+    <ldesign-button id="btn-to-half" size="small">滚到 50%</ldesign-button>
+    <ldesign-button id="btn-skin" size="small">切换皮肤</ldesign-button>
+  </div>
+
+  <script>
+    const sb = document.getElementById('demo1');
+    document.getElementById('btn-to-half')?.addEventListener('click', () => sb.scrollToPercent({ y: 0.5, behavior: 'smooth' }));
+    let flag = false;
+    document.getElementById('btn-skin')?.addEventListener('click', async () => {
+      flag = !flag;
+      await sb.setCssVars({ '--ld-scrollbar-thumb-bg': flag ? '#1677ff' : 'rgba(0,0,0,.35)' });
+    });
+  </script>
+</body>
+</html>

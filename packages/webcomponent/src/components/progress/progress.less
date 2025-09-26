@@ -1,0 +1,173 @@
+/* Progress 组件样式 */
+.ldesign-progress {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ldesign-text-color-secondary);
+
+  /* line */
+  &--line {
+    width: 100%;
+    min-width: 120px;
+  }
+
+  &__outer {
+    position: relative;
+    flex: 1 1 auto;
+    background: var(--ldesign-gray-color-2, #dbdbdb);
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+
+  &__success,
+  &__inner {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.3s ease;
+  }
+
+  &__success {
+    background: var(--ldesign-success-color, #42bd42);
+  }
+
+  &__inner {
+    background: var(--ldesign-brand-color, #5e2aa7);
+  }
+
+  /* striped animation */
+  &--striped &__inner {
+    background-image: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.25) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.25) 50%,
+      rgba(255, 255, 255, 0.25) 75%,
+      transparent 75%,
+      transparent
+    );
+    background-size: 24px 24px;
+    animation: ldesign-progress-stripes 1s linear infinite;
+  }
+
+  @keyframes ldesign-progress-stripes {
+    0% { background-position: 24px 0; }
+    100% { background-position: 0 0; }
+  }
+
+  /* info text */
+  &__text {
+    white-space: nowrap;
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  &--info-bottom {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &--info-left {
+    .ldesign-progress__text { order: -1; margin-right: 8px; }
+  }
+
+  &__text--inside {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    font-weight: 600;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* circle / dashboard */
+  &--circle,
+  &--dashboard {
+    display: inline-flex;
+    width: auto;
+    height: auto;
+    vertical-align: middle;
+  }
+
+  &__circle {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  &--semicircle {
+    overflow: hidden;
+  }
+
+  &__text-inset {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    color: var(--ldesign-text-color-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__circle-trail {
+    opacity: 0.35;
+  }
+
+  &__circle-success {
+    opacity: 0.9;
+  }
+
+  &__circle-path {
+    transition: stroke-dasharray 0.3s ease;
+  }
+
+  /* steps */
+  &--steps {
+    min-width: 160px;
+  }
+
+  &__steps {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: stretch;
+    width: 100%;
+    background: transparent;
+  }
+
+  &__step {
+    display: block;
+    height: 100%;
+    border-radius: 9999px;
+    background: var(--ldesign-gray-color-2, #dbdbdb);
+  }
+
+  /* sizes - adjust info text */
+  &--small {
+    .ldesign-progress__text { font-size: 12px; }
+  }
+  &--medium {
+    .ldesign-progress__text { font-size: 13px; }
+  }
+  &--large {
+    .ldesign-progress__text { font-size: 14px; }
+  }
+
+  /* statuses (text color only, bar color通过内联 style 覆盖) */
+  &--success {
+    .ldesign-progress__text,
+    .ldesign-progress__text-inset { color: var(--ldesign-success-color, #42bd42); }
+  }
+  &--exception {
+    .ldesign-progress__text,
+    .ldesign-progress__text-inset { color: var(--ldesign-error-color, #e54848); }
+  }
+}

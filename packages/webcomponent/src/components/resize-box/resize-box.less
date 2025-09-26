@@ -1,0 +1,140 @@
+/* ResizeBox styles */
+
+.ldesign-resize-box {
+  position: relative;
+  box-sizing: border-box;
+  display: block;
+  border: 1px solid var(--ldesign-border-color, #e5e7eb);
+  border-radius: 6px;
+  background: var(--ldesign-resizebox-bg, #fff);
+  overflow: hidden; /* 内容裁剪，避免把手与内容重叠闪烁 */
+  touch-action: none; /* 阻止浏览器手势干扰拖拽 */
+  
+  /* 统一把手视觉 */
+  --ld-rz-handle-color: var(--ldesign-handle-color, #cbd5e1);
+
+  &--small { --ld-rz-handle-size: 6px; }
+  &--medium { --ld-rz-handle-size: 8px; }
+  &--large { --ld-rz-handle-size: 10px; }
+
+  &--disabled { opacity: 0.6; cursor: not-allowed; }
+  &--resizing { user-select: none; cursor: default; }
+}
+
+.ldesign-resize-box__content {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 12px;
+}
+
+/* 伸缩把手：四边区域可拖拽，使用光标指示 */
+.ldesign-resize-box__handle {
+  position: absolute;
+  z-index: 10;
+  background: transparent; /* 点击区域透明 */
+  touch-action: none;
+}
+
+/* 角落把手（小方块） */
+.ldesign-resize-box__handle--corner {
+  width: calc(var(--ld-rz-handle-size, 8px) + 4px);
+  height: calc(var(--ld-rz-handle-size, 8px) + 4px);
+}
+
+.ldesign-resize-box__handle--top-left { left: 0; top: 0; cursor: nwse-resize; }
+.ldesign-resize-box__handle--top-right { right: 0; top: 0; cursor: nesw-resize; }
+.ldesign-resize-box__handle--bottom-right { right: 0; bottom: 0; cursor: nwse-resize; }
+.ldesign-resize-box__handle--bottom-left { left: 0; bottom: 0; cursor: nesw-resize; }
+
+.ldesign-resize-box__handle--right {
+  top: 0; bottom: 0; right: 0;
+  width: var(--ld-rz-handle-size, 8px);
+  cursor: ew-resize;
+  /* 装饰：在内侧显示三点竖排 */
+  &::after {
+    content: '⋮⋮⋮';
+    position: absolute;
+    top: 50%; right: 2px;
+    transform: translateY(-50%);
+    color: var(--ld-rz-handle-color);
+    font-size: 10px;
+    line-height: 6px;
+    letter-spacing: 1px;
+    pointer-events: none;
+  }
+}
+
+/* 角落把手的可视装饰（圆点） */
+.ldesign-resize-box__handle--corner::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--ld-rz-handle-color);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 右下角使用小三角装饰 */
+.ldesign-resize-box__handle--bottom-right::after {
+  content: '';
+  position: absolute;
+  width: 0; height: 0;
+  right: 2px; bottom: 2px;
+  border-style: solid;
+  border-width: 0 0 8px 8px; /* 调整大小可随 size 变化拓展 */
+  border-color: transparent transparent var(--ld-rz-handle-color) transparent;
+  transform: none;
+  border-radius: 0;
+}
+
+.ldesign-resize-box__handle--left {
+  top: 0; bottom: 0; left: 0;
+  width: var(--ld-rz-handle-size, 8px);
+  cursor: ew-resize;
+  &::after {
+    content: '⋮⋮⋮';
+    position: absolute;
+    top: 50%; left: 2px;
+    transform: translateY(-50%);
+    color: var(--ld-rz-handle-color);
+    font-size: 10px;
+    line-height: 6px;
+    letter-spacing: 1px;
+    pointer-events: none;
+  }
+}
+
+.ldesign-resize-box__handle--bottom {
+  left: 0; right: 0; bottom: 0;
+  height: var(--ld-rz-handle-size, 8px);
+  cursor: ns-resize;
+  &::after {
+    content: '⋯⋯⋯';
+    position: absolute;
+    left: 50%; bottom: 2px;
+    transform: translateX(-50%);
+    color: var(--ld-rz-handle-color);
+    font-size: 12px;
+    letter-spacing: 1px;
+    pointer-events: none;
+  }
+}
+
+.ldesign-resize-box__handle--top {
+  left: 0; right: 0; top: 0;
+  height: var(--ld-rz-handle-size, 8px);
+  cursor: ns-resize;
+  &::after {
+    content: '⋯⋯⋯';
+    position: absolute;
+    left: 50%; top: 2px;
+    transform: translateX(-50%);
+    color: #cbd5e1;
+    font-size: 12px;
+    pointer-events: none;
+  }
+}
