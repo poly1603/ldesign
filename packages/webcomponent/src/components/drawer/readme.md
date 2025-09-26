@@ -17,6 +17,7 @@ Drawer 抽屉组件
 | `closable`     | `closable`      | 是否显示右上角关闭按钮                                            | `boolean`                                | `true`      |
 | `closeOnEsc`   | `close-on-esc`  | 是否允许按下 ESC 关闭                                          | `boolean`                                | `true`      |
 | `drawerTitle`  | `drawer-title`  | 标题文本（可通过 slot=header 自定义头部）                            | `string`                                 | `undefined` |
+| `getContainer` | `get-container` | 容器（选择器或元素）：若提供，则把组件节点移动到该容器下                           | `HTMLElement \| string`                  | `undefined` |
 | `mask`         | `mask`          | 是否显示遮罩层                                                | `boolean`                                | `true`      |
 | `maskClosable` | `mask-closable` | 点击遮罩是否关闭                                               | `boolean`                                | `true`      |
 | `placement`    | `placement`     | 抽屉出现的位置                                                | `"bottom" \| "left" \| "right" \| "top"` | `'right'`   |
@@ -74,6 +75,10 @@ Type: `Promise<void>`
 
 ## Dependencies
 
+### Used by
+
+ - [ldesign-time-picker](../time-picker)
+
 ### Depends on
 
 - [ldesign-icon](../icon)
@@ -82,6 +87,7 @@ Type: `Promise<void>`
 ```mermaid
 graph TD;
   ldesign-drawer --> ldesign-icon
+  ldesign-time-picker --> ldesign-drawer
   style ldesign-drawer fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

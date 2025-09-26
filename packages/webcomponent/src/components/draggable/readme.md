@@ -131,6 +131,19 @@ Type: `Promise<void>`
 
 
 
+## Dependencies
+
+### Used by
+
+ - [ldesign-image-viewer](../image-viewer)
+
+### Graph
+```mermaid
+graph TD;
+  ldesign-image-viewer --> ldesign-draggable
+  style ldesign-draggable fill:#f9f,stroke:#333,stroke-width:4px
+```
+
 ----------------------------------------------
 
 *Built with [StencilJS](https://stenciljs.com/)*

@@ -26,7 +26,7 @@ ColorInput 颜色输入（内置 Popup + ColorPicker）
 | `showAlpha`    | `show-alpha`     | 是否显示透明度                     | `boolean`                                                                                                                                                            | `true`           |
 | `showHistory`  | `show-history`   | 是否显示最近使用                    | `boolean`                                                                                                                                                            | `true`           |
 | `showPreset`   | `show-preset`    | 是否显示系统预设                    | `boolean`                                                                                                                                                            | `true`           |
-| `size`         | `size`           | 尺寸                          | `"large" \| "medium" \| "small"`                                                                                                                                     | `'medium'`       |
+| `size`         | `size`           | 尺寸                          | `"large" \| "medium" \| "middle" \| "small"`                                                                                                                         | `'medium'`       |
 | `value`        | `value`          | 当前颜色字符串（与 ColorPicker 格式一致） | `string`                                                                                                                                                             | `'#1677ff'`      |
 
 

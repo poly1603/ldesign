@@ -13,20 +13,20 @@ Rate 评分组件
 
 ## Properties
 
-| Property     | Attribute     | Description                                 | Type                             | Default     |
-| ------------ | ------------- | ------------------------------------------- | -------------------------------- | ----------- |
-| `allowClear` | `allow-clear` | 再次点击清空（值相同则清零）                              | `boolean`                        | `true`      |
-| `allowHalf`  | `allow-half`  | 允许半星                                        | `boolean`                        | `false`     |
-| `color`      | `color`       | 选中颜色（支持 CSS 变量覆盖）                           | `string`                         | `undefined` |
-| `controlled` | `controlled`  | 受控模式：为 true 时组件不主动修改 value，仅触发事件            | `boolean`                        | `false`     |
-| `count`      | `count`       | 总星数                                         | `number`                         | `5`         |
-| `disabled`   | `disabled`    | 禁用交互                                        | `boolean`                        | `false`     |
-| `icon`       | `icon`        | 图标名称（默认 star）                               | `string`                         | `'star'`    |
-| `readonly`   | `readonly`    | 只读（展示，不可交互）                                 | `boolean`                        | `false`     |
-| `size`       | `size`        | 尺寸（影响图标大小与间距）                               | `"large" \| "medium" \| "small"` | `'medium'`  |
-| `tooltips`   | `tooltips`    | 提示文案（数组），hover 时显示。可传属性为 JSON 字符串或以属性方式传递数组 | `string \| string[]`             | `undefined` |
-| `value`      | `value`       | 当前分值（支持受控）                                  | `number`                         | `0`         |
-| `voidColor`  | `void-color`  | 未选中颜色（支持 CSS 变量覆盖）                          | `string`                         | `undefined` |
+| Property     | Attribute     | Description                                 | Type                                         | Default     |
+| ------------ | ------------- | ------------------------------------------- | -------------------------------------------- | ----------- |
+| `allowClear` | `allow-clear` | 再次点击清空（值相同则清零）                              | `boolean`                                    | `true`      |
+| `allowHalf`  | `allow-half`  | 允许半星                                        | `boolean`                                    | `false`     |
+| `color`      | `color`       | 选中颜色（支持 CSS 变量覆盖）                           | `string`                                     | `undefined` |
+| `controlled` | `controlled`  | 受控模式：为 true 时组件不主动修改 value，仅触发事件            | `boolean`                                    | `false`     |
+| `count`      | `count`       | 总星数                                         | `number`                                     | `5`         |
+| `disabled`   | `disabled`    | 禁用交互                                        | `boolean`                                    | `false`     |
+| `icon`       | `icon`        | 图标名称（默认 star）                               | `string`                                     | `'star'`    |
+| `readonly`   | `readonly`    | 只读（展示，不可交互）                                 | `boolean`                                    | `false`     |
+| `size`       | `size`        | 尺寸（影响图标大小与间距）                               | `"large" \| "medium" \| "middle" \| "small"` | `'medium'`  |
+| `tooltips`   | `tooltips`    | 提示文案（数组），hover 时显示。可传属性为 JSON 字符串或以属性方式传递数组 | `string \| string[]`                         | `undefined` |
+| `value`      | `value`       | 当前分值（支持受控）                                  | `number`                                     | `0`         |
+| `voidColor`  | `void-color`  | 未选中颜色（支持 CSS 变量覆盖）                          | `string`                                     | `undefined` |
 
 
 ## Events

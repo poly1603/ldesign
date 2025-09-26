@@ -6,18 +6,61 @@
 
 ## 基础用法
 
-<div class="demo-container">
+<div class="demo-container" style="display:flex; gap: 16px; align-items:flex-start;">
+  <!-- 左：picker -->
   <ldesign-picker
+    id="picker-basic"
     visible-items="5"
     options='[{"value":"01","label":"选项 01"},{"value":"02","label":"选项 02"},{"value":"03","label":"选项 03"},{"value":"04","label":"选项 04"},{"value":"05","label":"选项 05"},{"value":"06","label":"选项 06"},{"value":"07","label":"选项 07"},{"value":"08","label":"选项 08"},{"value":"09","label":"选项 09"},{"value":"10","label":"选项 10"},{"value":"11","label":"选项 11"},{"value":"12","label":"选项 12"},{"value":"13","label":"选项 13"},{"value":"14","label":"选项 14"},{"value":"15","label":"选项 15"},{"value":"16","label":"选项 16"},{"value":"17","label":"选项 17"},{"value":"18","label":"选项 18"},{"value":"19","label":"选项 19"},{"value":"20","label":"选项 20"}]'
   ></ldesign-picker>
+
+  <!-- 右：select，选择右侧即同步左侧的选中项 -->
+  <select id="picker-basic-select" style="width: 120px;">
+    <option value="01">选项 01</option>
+    <option value="02">选项 02</option>
+    <option value="03">选项 03</option>
+    <option value="04">选项 04</option>
+    <option value="05">选项 05</option>
+    <option value="06">选项 06</option>
+    <option value="07">选项 07</option>
+    <option value="08">选项 08</option>
+    <option value="09">选项 09</option>
+    <option value="10">选项 10</option>
+    <option value="11">选项 11</option>
+    <option value="12">选项 12</option>
+    <option value="13">选项 13</option>
+    <option value="14">选项 14</option>
+    <option value="15">选项 15</option>
+    <option value="16">选项 16</option>
+    <option value="17">选项 17</option>
+    <option value="18">选项 18</option>
+    <option value="19">选项 19</option>
+    <option value="20">选项 20</option>
+  </select>
 </div>
+<script>
+  const pkBasic = document.getElementById('picker-basic');
+  const selBasic = document.getElementById('picker-basic-select');
+  selBasic?.addEventListener('change', () => {
+    pkBasic && (pkBasic.value = selBasic.value);
+  });
+</script>
 
 ```html
-<ldesign-picker
-  visible-items="5"
-  options='[{"value":"01","label":"选项 01"},{"value":"02","label":"选项 02"},{"value":"03","label":"选项 03"},{"value":"04","label":"选项 04"},{"value":"05","label":"选项 05"},{"value":"06","label":"选项 06"},{"value":"07","label":"选项 07"},{"value":"08","label":"选项 08"},{"value":"09","label":"选项 09"},{"value":"10","label":"选项 10"},{"value":"11","label":"选项 11"},{"value":"12","label":"选项 12"},{"value":"13","label":"选项 13"},{"value":"14","label":"选项 14"},{"value":"15","label":"选项 15"},{"value":"16","label":"选项 16"},{"value":"17","label":"选项 17"},{"value":"18","label":"选项 18"},{"value":"19","label":"选项 19"},{"value":"20","label":"选项 20"}]'
-></ldesign-picker>
+<div style="display:flex; gap: 16px; align-items:flex-start;">
+  <ldesign-picker id="picker-basic" visible-items="5" options='[{"value":"01","label":"选项 01"}, {"value":"02","label":"选项 02"}, ...]'></ldesign-picker>
+  <select id="picker-basic-select" style="width:120px;">
+    <option value="01">选项 01</option>
+    <option value="02">选项 02</option>
+    <!-- ... -->
+    <option value="20">选项 20</option>
+  </select>
+</div>
+<script>
+  const pkBasic = document.getElementById('picker-basic');
+  const selBasic = document.getElementById('picker-basic-select');
+  selBasic.addEventListener('change', () => { pkBasic.value = selBasic.value; });
+</script>
 ```
 
 ## 大数据（默认可视5项，首项居中）

@@ -22,7 +22,7 @@ Switch 开关组件
 | `disabled`       | `disabled`        | 是否禁用                                                    | `boolean`                                                   | `false`     |
 | `loading`        | `loading`         | 是否加载中                                                   | `boolean`                                                   | `false`     |
 | `shape`          | `shape`           | 形状 可选：pill（胶囊）\| rounded（圆角）\| square（直角）               | `"pill" \| "rounded" \| "square"`                           | `'pill'`    |
-| `size`           | `size`            | 开关尺寸                                                    | `"large" \| "medium" \| "small"`                            | `'medium'`  |
+| `size`           | `size`            | 开关尺寸                                                    | `"large" \| "medium" \| "middle" \| "small"`                | `'medium'`  |
 | `uncheckedIcon`  | `unchecked-icon`  | 未选中时的图标                                                 | `string`                                                    | `undefined` |
 | `uncheckedText`  | `unchecked-text`  | 未选中时的文本                                                 | `string`                                                    | `undefined` |
 | `uncheckedValue` | `unchecked-value` | 未选中时的值                                                  | `boolean \| number \| string`                               | `false`     |

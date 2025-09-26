@@ -79,19 +79,21 @@ Button 按钮组件
 
 ## Properties
 
-| Property       | Attribute       | Description                             | Type                                                                                                                        | Default       |
-| -------------- | --------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| `block`        | `block`         | 是否为块级按钮                                 | `boolean`                                                                                                                   | `false`       |
-| `color`        | `color`         | 语义颜色（用于 outline/dashed/text/link/ghost） | `"danger" \| "default" \| "primary" \| "success" \| "warning"`                                                              | `'primary'`   |
-| `disabled`     | `disabled`      | 是否禁用                                    | `boolean`                                                                                                                   | `false`       |
-| `ghost`        | `ghost`         | 幽灵按钮（一般用于深色背景）                          | `boolean`                                                                                                                   | `false`       |
-| `icon`         | `icon`          | 图标名称                                    | `string`                                                                                                                    | `undefined`   |
-| `iconPosition` | `icon-position` | 图标位置：left \| right                      | `"left" \| "right"`                                                                                                         | `'left'`      |
-| `loading`      | `loading`       | 是否加载中                                   | `boolean`                                                                                                                   | `false`       |
-| `nativeType`   | `native-type`   | 原生按钮类型：button \| submit \| reset        | `"button" \| "reset" \| "submit"`                                                                                           | `'button'`    |
-| `shape`        | `shape`         | 按钮形状                                    | `"circle" \| "rectangle" \| "round" \| "square"`                                                                            | `'rectangle'` |
-| `size`         | `size`          | 按钮尺寸                                    | `"large" \| "medium" \| "small"`                                                                                            | `'medium'`    |
-| `type`         | `type`          | 按钮类型                                    | `"danger" \| "dashed" \| "gradient" \| "link" \| "outline" \| "primary" \| "secondary" \| "success" \| "text" \| "warning"` | `'primary'`   |
+| Property       | Attribute       | Description                             | Type                                                                                                                                     | Default       |
+| -------------- | --------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `block`        | `block`         | 是否为块级按钮                                 | `boolean`                                                                                                                                | `false`       |
+| `color`        | `color`         | 语义颜色（用于 outline/dashed/text/link/ghost） | `"danger" \| "default" \| "primary" \| "success" \| "warning"`                                                                           | `'primary'`   |
+| `danger`       | `danger`        | 危险态（AntD 风格）                            | `boolean`                                                                                                                                | `false`       |
+| `disabled`     | `disabled`      | 是否禁用                                    | `boolean`                                                                                                                                | `false`       |
+| `ghost`        | `ghost`         | 幽灵按钮（一般用于深色背景）                          | `boolean`                                                                                                                                | `false`       |
+| `htmlType`     | `html-type`     | 对齐 AntD：htmlType 优先；nativeType 兼容       | `"button" \| "reset" \| "submit"`                                                                                                        | `undefined`   |
+| `icon`         | `icon`          | 图标名称                                    | `string`                                                                                                                                 | `undefined`   |
+| `iconPosition` | `icon-position` | 图标位置：left \| right                      | `"left" \| "right"`                                                                                                                      | `'left'`      |
+| `loading`      | `loading`       | 是否加载中                                   | `boolean`                                                                                                                                | `false`       |
+| `nativeType`   | `native-type`   |                                         | `"button" \| "reset" \| "submit"`                                                                                                        | `'button'`    |
+| `shape`        | `shape`         | 按钮形状                                    | `"circle" \| "rectangle" \| "round" \| "square"`                                                                                         | `'rectangle'` |
+| `size`         | `size`          | 按钮尺寸                                    | `"large" \| "medium" \| "middle" \| "small"`                                                                                             | `'middle'`    |
+| `type`         | `type`          | 按钮类型                                    | `"danger" \| "dashed" \| "default" \| "gradient" \| "link" \| "outline" \| "primary" \| "secondary" \| "success" \| "text" \| "warning"` | `'default'`   |
 
 
 ## Events
@@ -108,7 +110,6 @@ Button 按钮组件
  - [ldesign-modal](../modal)
  - [ldesign-popconfirm](../popconfirm)
  - [ldesign-time-picker](../time-picker)
- - [ldesign-time-range-picker](../time-range-picker)
  - [ldesign-transfer](../transfer)
 
 ### Depends on
@@ -122,7 +123,6 @@ graph TD;
   ldesign-modal --> ldesign-button
   ldesign-popconfirm --> ldesign-button
   ldesign-time-picker --> ldesign-button
-  ldesign-time-range-picker --> ldesign-button
   ldesign-transfer --> ldesign-button
   style ldesign-button fill:#f9f,stroke:#333,stroke-width:4px
 ```

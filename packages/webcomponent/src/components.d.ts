@@ -383,23 +383,43 @@ export namespace Components {
      */
     interface LdesignCircleNavigation {
         /**
-          * ARIA label
-         */
-        "ariaLabel"?: string;
-        /**
           * 是否顺时针排布
           * @default true
          */
         "clockwise": boolean;
         /**
+          * 视角正前方的角度（度），默认 90° 即底部为“最近”
+          * @default 90
+         */
+        "frontAngle": number;
+        /**
           * 圆形容器高度（不传则等于 width）
          */
         "height"?: number | string;
+        /**
+          * @default 1.2
+         */
+        "maxScale": number;
+        /**
+          * 透视缩放范围：最小与最大缩放因子
+          * @default 0.8
+         */
+        "minScale": number;
         /**
           * 与圆边缘的内边距（px），用于避免项目贴边
           * @default 8
          */
         "padding": number;
+        /**
+          * 是否启用透视（近大远小）效果
+          * @default false
+         */
+        "perspective": boolean;
+        /**
+          * 是否显示圆形轨道
+          * @default true
+         */
+        "showTrack": boolean;
         /**
           * 起始角度（度），默认 -90 表示第一个项在正上方；0 表示第一个项在最右侧
           * @default -90
@@ -843,6 +863,10 @@ export namespace Components {
           * 标题文本（可通过 slot=header 自定义头部）
          */
         "drawerTitle"?: string;
+        /**
+          * 容器（选择器或元素）：若提供，则把组件节点移动到该容器下
+         */
+        "getContainer"?: string | HTMLElement;
         /**
           * 隐藏抽屉（带动画）
          */
@@ -5100,23 +5124,43 @@ declare namespace LocalJSX {
      */
     interface LdesignCircleNavigation {
         /**
-          * ARIA label
-         */
-        "ariaLabel"?: string;
-        /**
           * 是否顺时针排布
           * @default true
          */
         "clockwise"?: boolean;
         /**
+          * 视角正前方的角度（度），默认 90° 即底部为“最近”
+          * @default 90
+         */
+        "frontAngle"?: number;
+        /**
           * 圆形容器高度（不传则等于 width）
          */
         "height"?: number | string;
+        /**
+          * @default 1.2
+         */
+        "maxScale"?: number;
+        /**
+          * 透视缩放范围：最小与最大缩放因子
+          * @default 0.8
+         */
+        "minScale"?: number;
         /**
           * 与圆边缘的内边距（px），用于避免项目贴边
           * @default 8
          */
         "padding"?: number;
+        /**
+          * 是否启用透视（近大远小）效果
+          * @default false
+         */
+        "perspective"?: boolean;
+        /**
+          * 是否显示圆形轨道
+          * @default true
+         */
+        "showTrack"?: boolean;
         /**
           * 起始角度（度），默认 -90 表示第一个项在正上方；0 表示第一个项在最右侧
           * @default -90
@@ -5577,6 +5621,10 @@ declare namespace LocalJSX {
           * 标题文本（可通过 slot=header 自定义头部）
          */
         "drawerTitle"?: string;
+        /**
+          * 容器（选择器或元素）：若提供，则把组件节点移动到该容器下
+         */
+        "getContainer"?: string | HTMLElement;
         /**
           * 是否显示遮罩层
           * @default true

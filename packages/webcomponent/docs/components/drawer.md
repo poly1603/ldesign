@@ -124,6 +124,8 @@ onMounted(() => {
     ['open-drawer-wide', 'drawer-wide'],
     ['open-drawer-half', 'drawer-half'],
     ['open-drawer-in-container', 'drawer-in-container'],
+    ['open-drawer-level1', 'drawer-level1'],
+    ['open-drawer-level2', 'drawer-level2'],
   ]
 
   pairs.forEach(([btnId, elId]) => {
@@ -135,10 +137,17 @@ onMounted(() => {
   })
 
   // 确保容器模式在运行时生效：直接设置元素属性为 HTMLElement
-  const container = document.getElementById('drawer-demo-container')
-  const drawerInContainer = document.getElementById('drawer-in-container') as any
+  const container = document.getElementById('drawer-demo-container');
+  const drawerInContainer = document.getElementById('drawer-in-container');
   if (container && drawerInContainer) {
-    drawerInContainer.getContainer = container
+    if (window.customElements && window.customElements.whenDefined) {
+      window.customElements.whenDefined('ldesign-drawer').then(() => {
+        // 组件升级完成后再设置，保证被内部 Watch 到
+        drawerInContainer.getContainer = container;
+      });
+    } else {
+      drawerInContainer.getContainer = container;
+    }
   }
 })
 </script>
@@ -197,6 +206,50 @@ onMounted(() => {
 <script>
   document.getElementById('open-drawer-in-container').addEventListener('click', () => {
     document.getElementById('drawer-in-container').setAttribute('visible', '')
+  })
+</script>
+```
+
+## 多层抽屉
+
+多层抽屉默认按打开顺序自动叠加层级，仅栈顶抽屉响应 ESC 与遮罩点击关闭。
+
+<div class="demo-container">
+  <div class="demo-row">
+    <button id="open-drawer-level1">打开一级抽屉</button>
+  </div>
+
+  <ldesign-drawer id="drawer-level1" drawer-title="一级抽屉" placement="right">
+    <p>这是一级抽屉内容。</p>
+
+    <div class="demo-row">
+      <button id="open-drawer-level2">打开二级抽屉</button>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawer-level2" drawer-title="二级抽屉" placement="right">
+    <p>这是二级抽屉内容。</p>
+  </ldesign-drawer>
+</div>
+
+```html
+<button id="open-drawer-level1">打开一级抽屉</button>
+
+<ldesign-drawer id="drawer-level1" drawer-title="一级抽屉">
+  <p>这是一级抽屉内容。</p>
+  <button id="open-drawer-level2">打开二级抽屉</button>
+</ldesign-drawer>
+
+<ldesign-drawer id="drawer-level2" drawer-title="二级抽屉">
+  <p>这是二级抽屉内容。</p>
+</ldesign-drawer>
+
+<script>
+  document.getElementById('open-drawer-level1').addEventListener('click', () => {
+    document.getElementById('drawer-level1').setAttribute('visible', '')
+  })
+  document.getElementById('open-drawer-level2').addEventListener('click', () => {
+    document.getElementById('drawer-level2').setAttribute('visible', '')
   })
 </script>
 ```

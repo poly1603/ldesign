@@ -105,27 +105,32 @@ export class LdesignTimePicker {
     if (this.trigger === 'manual') this.visible = false; else this.drawerVisible = false;
     this.ldesignVisibleChange.emit(false); this.ldesignClose.emit();
   }
-  private async animatePickersToCurrent() {
-    // 使用 ldesign-picker 暴露的 scrollToValue 方法进行编程式滚动动画
+  private async getPickersReady(): Promise<any[]> {
+    const nodeList = Array.from(this.el.querySelectorAll('ldesign-picker')) as any[];
+    const pickers = await Promise.all(nodeList.map(async (pk: any) => { try { if (pk?.componentOnReady) await pk.componentOnReady(); } catch {}; return pk; }));
+    return pickers;
+  }
+
+  private async animatePickersToValues(values: string[], opts?: { stagger?: number }) {
     try {
-      const nodeList = Array.from(this.el.querySelectorAll('ldesign-picker')) as any[];
-      // 确保子组件已经就绪（Stencil 的 componentOnReady）
-      const pickers = await Promise.all(nodeList.map(async (pk: any) => {
-        try { if (pk?.componentOnReady) await pk.componentOnReady(); } catch {}
-        return pk;
-      }));
-      const vals = [String(this.h), String(this.m), String(this.s)];
-      for (let i = 0; i < pickers.length; i++) {
-        const pk: any = pickers[i];
-        const v = vals[i];
-        if (pk && typeof pk.scrollToValue === 'function') {
+      const pickers = await this.getPickersReady();
+      const stagger = Math.max(0, opts?.stagger ?? 60); // 每列错峰 60ms，肉眼更容易察觉
+      await Promise.all(pickers.map(async (pk: any, i: number) => {
+        const v = values[i];
+        if (!pk) return;
+        await new Promise(r => setTimeout(r, i * stagger));
+        if (typeof pk.scrollToValue === 'function') {
           try { await pk.scrollToValue(v, { trigger: 'program', animate: true, silent: true }); } catch {}
         } else {
-          // 兜底：变更 value 再对齐
           try { const old = pk.value; pk.value = undefined; pk.value = v ?? old; } catch {}
         }
-      }
+      }));
     } catch {}
+  }
+
+  private async animatePickersToCurrent() {
+    const vals = [String(this.h), String(this.m), String(this.s)];
+    await this.animatePickersToValues(vals);
   }
 
   private async recenterPickers() {
@@ -184,8 +189,8 @@ export class LdesignTimePicker {
   private useNow = () => {
     const d = new Date();
     this.h = d.getHours(); this.m = d.getMinutes(); this.s = d.getSeconds();
-    // 触发列的滚动动画到“此刻”
-    requestAnimationFrame(() => this.animatePickersToCurrent());
+    // 触发列的滚动动画到“此刻”，并做轻微错峰以确保肉眼可见
+    requestAnimationFrame(() => this.animatePickersToValues([String(this.h), String(this.m), String(this.s)], { stagger: 80 }));
     if (!this.confirm) this.commitValue();
     this.emitPick('now');
   };

@@ -41,13 +41,70 @@
   /* overlay（全屏）下不做位移，仅用于开合 scale 动画 */
   transform: scale(0.98);
   transition: transform var(--iv-duration, .24s) var(--iv-ease, ease), opacity var(--iv-duration, .24s) var(--iv-ease, ease);
+  will-change: transform, opacity;
   opacity: 0;
 }
 
-/* 面板进入/退出动画 */
+/* 面板进入/退出动画（基础） */
 .ldesign-image-viewer[data-motion="opening"] .ldesign-image-viewer__panel,
 .ldesign-image-viewer[data-motion="open"] .ldesign-image-viewer__panel { transform: scale(1); opacity: 1; }
 .ldesign-image-viewer[data-motion="closing"] .ldesign-image-viewer__panel { transform: scale(0.98); opacity: 0; }
+
+/* 增强动效：使用关键帧获得更顺滑的开合动画 */
+@keyframes iv-panel-in-overlay {
+  0% { transform: scale(0.98) translateY(8px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+@keyframes iv-panel-out-overlay {
+  0% { transform: scale(1) translateY(0); opacity: 1; }
+  100% { transform: scale(0.965) translateY(6px); opacity: 0; }
+}
+@keyframes iv-panel-in-modal {
+  0% {
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(0.92);
+    opacity: 0;
+  }
+  60% {
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(1);
+    opacity: 1;
+  }
+}
+@keyframes iv-panel-out-modal {
+  0% {
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(0.96);
+    opacity: 0;
+  }
+}
+
+/* 应用关键帧动画（overlay 与 modal 分别处理）*/
+/* overlay */
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal)[data-motion="opening"] .ldesign-image-viewer__panel {
+  animation: iv-panel-in-overlay var(--iv-duration, .24s) var(--iv-ease, ease) both;
+}
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal)[data-motion="closing"] .ldesign-image-viewer__panel {
+  animation: iv-panel-out-overlay var(--iv-duration, .22s) var(--iv-ease, ease) both;
+}
+/* modal */
+.ldesign-image-viewer--modal[data-motion="opening"] .ldesign-image-viewer__panel {
+  animation: iv-panel-in-modal var(--iv-duration, .28s) var(--iv-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) both;
+}
+.ldesign-image-viewer--modal[data-motion="closing"] .ldesign-image-viewer__panel {
+  animation: iv-panel-out-modal var(--iv-duration, .22s) var(--iv-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ldesign-image-viewer__panel { transition-duration: 120ms; }
+  .ldesign-image-viewer[data-motion] .ldesign-image-viewer__panel { animation: none !important; }
+}
+
 /* 顶部区域 */
 .ldesign-image-viewer__top {
   position: absolute;

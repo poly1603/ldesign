@@ -56,11 +56,13 @@ ImageViewer 图片预览器
 ### Depends on
 
 - [ldesign-icon](../icon)
+- [ldesign-draggable](../draggable)
 
 ### Graph
 ```mermaid
 graph TD;
   ldesign-image-viewer --> ldesign-icon
+  ldesign-image-viewer --> ldesign-draggable
   style ldesign-image-viewer fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

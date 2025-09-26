@@ -34,7 +34,7 @@ ldesign-mention 提及组件（contenteditable 版本）
 | `readonly`       | `readonly`        | 是否只读                                       | `boolean`                                                                | `false`     |
 | `resizable`      | `resizable`       | 是否允许用户手动拖拽调整高度（vertical）                   | `boolean`                                                                | `true`      |
 | `rows`           | `rows`            | 初始可见行数（用于计算最小高度）                           | `number`                                                                 | `3`         |
-| `size`           | `size`            | 尺寸（影响样式）                                   | `"large" \| "medium" \| "small"`                                         | `'medium'`  |
+| `size`           | `size`            | 尺寸（影响样式）                                   | `"large" \| "medium" \| "middle" \| "small"`                             | `'medium'`  |
 | `tokenType`      | `token-type`      | 默认 token 外观                                | `"danger" \| "default" \| "info" \| "primary" \| "success" \| "warning"` | `'primary'` |
 | `trigger`        | `trigger`         | 触发字符（如 @ 或 #），兼容旧属性                        | `string`                                                                 | `'@'`       |
 | `triggerConfigs` | `trigger-configs` | 触发符个性化配置（JS 对象或 JSON 字符串）                  | `MentionTriggerConfig[] \| string`                                       | `undefined` |

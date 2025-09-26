@@ -23,7 +23,7 @@ ResizeBox 伸缩框
 | `maxWidth`   | `max-width`  |                                                                             | `number`                                                                     | `undefined`      |
 | `minHeight`  | `min-height` |                                                                             | `number`                                                                     | `60`             |
 | `minWidth`   | `min-width`  | 最小/最大尺寸（px）                                                                 | `number`                                                                     | `80`             |
-| `size`       | `size`       | 尺寸标识，仅影响样式（边框、把手大小等）                                                        | `"large" \| "medium" \| "small"`                                             | `'medium'`       |
+| `size`       | `size`       | 尺寸标识，仅影响样式（边框、把手大小等）                                                        | `"large" \| "medium" \| "middle" \| "small"`                                 | `'medium'`       |
 | `snap`       | `snap`       | 吸附步进（px）。>0 时，拖拽尺寸会对齐到该步进的整数倍。                                              | `number`                                                                     | `0`              |
 | `width`      | `width`      | 初始宽度。可传数字（px）或任何合法 CSS 宽度值（如 '100%'）。拖拽后以 px 写回。                            | `number \| string`                                                           | `360`            |
 

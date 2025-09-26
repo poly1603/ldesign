@@ -72,6 +72,7 @@ export default defineConfig({
             { text: 'Tabs 选项卡', link: '/components/tabs' },
             { text: 'Dropdown 下拉菜单', link: '/components/dropdown' },
             { text: 'Pagination 分页', link: '/components/pagination' },
+            { text: 'CircleNavigation 圆形导航', link: '/components/circle-navigation' },
           ]
         },
         {

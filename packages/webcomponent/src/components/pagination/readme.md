@@ -28,28 +28,28 @@ Pagination 分页组件
 
 ## Properties
 
-| Property           | Attribute             | Description                               | Type                             | Default                     |
-| ------------------ | --------------------- | ----------------------------------------- | -------------------------------- | --------------------------- |
-| `boundaryCount`    | `boundary-count`      | 页码省略边界数（两端保留）                             | `number`                         | `1`                         |
-| `current`          | `current`             | 当前页（受控）                                   | `number`                         | `undefined`                 |
-| `defaultCurrent`   | `default-current`     | 默认当前页（非受控）                                | `number`                         | `1`                         |
-| `defaultPageSize`  | `default-page-size`   | 默认每页条数（非受控）                               | `number`                         | `10`                        |
-| `disabled`         | `disabled`            | 组件禁用                                      | `boolean`                        | `false`                     |
-| `hideOnSinglePage` | `hide-on-single-page` | 仅一页时是否隐藏                                  | `boolean`                        | `false`                     |
-| `pageSize`         | `page-size`           | 每页条数（受控）                                  | `number`                         | `undefined`                 |
-| `pageSizeOptions`  | `page-size-options`   | 页大小选项（可传数组或逗号分隔字符串）                       | `number[] \| string`             | `[10, 20, 50, 100]`         |
-| `pageSizeText`     | `page-size-text`      | 下拉展示文案模板，仅在 dropdown 模式下生效，支持 {size}      | `string`                         | `'{size} 条/页'`              |
-| `pageText`         | `page-text`           | 页信息文案模板，支持 {current}、{pageCount}          | `string`                         | `'{current}/{pageCount} 页'` |
-| `showFirstLast`    | `show-first-last`     | 是否显示首页/末页                                 | `boolean`                        | `false`                     |
-| `showQuickJumper`  | `show-quick-jumper`   | 是否显示快速跳转输入框                               | `boolean`                        | `false`                     |
-| `showSizeChanger`  | `show-size-changer`   | 是否显示每页条数切换器                               | `boolean`                        | `false`                     |
-| `showTotal`        | `show-total`          | 是否显示总数文案                                  | `boolean`                        | `false`                     |
-| `siblingCount`     | `sibling-count`       | 当前页两侧展示的邻接页数                              | `number`                         | `1`                         |
-| `simple`           | `simple`              | 简洁模式（仅上一页/下一页 + 页码输入）                     | `boolean`                        | `false`                     |
-| `size`             | `size`                | 组件尺寸                                      | `"large" \| "medium" \| "small"` | `'medium'`                  |
-| `sizeChangerType`  | `size-changer-type`   | 切换器类型：native 原生下拉；dropdown 使用组件弹层         | `"dropdown" \| "native"`         | `'dropdown'`                |
-| `total`            | `total`               | 总条目数                                      | `number`                         | `0`                         |
-| `totalText`        | `total-text`          | 总数文案模板，支持 {total}、{rangeStart}、{rangeEnd} | `string`                         | `'共 {total} 条'`             |
+| Property           | Attribute             | Description                               | Type                                         | Default                     |
+| ------------------ | --------------------- | ----------------------------------------- | -------------------------------------------- | --------------------------- |
+| `boundaryCount`    | `boundary-count`      | 页码省略边界数（两端保留）                             | `number`                                     | `1`                         |
+| `current`          | `current`             | 当前页（受控）                                   | `number`                                     | `undefined`                 |
+| `defaultCurrent`   | `default-current`     | 默认当前页（非受控）                                | `number`                                     | `1`                         |
+| `defaultPageSize`  | `default-page-size`   | 默认每页条数（非受控）                               | `number`                                     | `10`                        |
+| `disabled`         | `disabled`            | 组件禁用                                      | `boolean`                                    | `false`                     |
+| `hideOnSinglePage` | `hide-on-single-page` | 仅一页时是否隐藏                                  | `boolean`                                    | `false`                     |
+| `pageSize`         | `page-size`           | 每页条数（受控）                                  | `number`                                     | `undefined`                 |
+| `pageSizeOptions`  | `page-size-options`   | 页大小选项（可传数组或逗号分隔字符串）                       | `number[] \| string`                         | `[10, 20, 50, 100]`         |
+| `pageSizeText`     | `page-size-text`      | 下拉展示文案模板，仅在 dropdown 模式下生效，支持 {size}      | `string`                                     | `'{size} 条/页'`              |
+| `pageText`         | `page-text`           | 页信息文案模板，支持 {current}、{pageCount}          | `string`                                     | `'{current}/{pageCount} 页'` |
+| `showFirstLast`    | `show-first-last`     | 是否显示首页/末页                                 | `boolean`                                    | `false`                     |
+| `showQuickJumper`  | `show-quick-jumper`   | 是否显示快速跳转输入框                               | `boolean`                                    | `false`                     |
+| `showSizeChanger`  | `show-size-changer`   | 是否显示每页条数切换器                               | `boolean`                                    | `false`                     |
+| `showTotal`        | `show-total`          | 是否显示总数文案                                  | `boolean`                                    | `false`                     |
+| `siblingCount`     | `sibling-count`       | 当前页两侧展示的邻接页数                              | `number`                                     | `1`                         |
+| `simple`           | `simple`              | 简洁模式（仅上一页/下一页 + 页码输入）                     | `boolean`                                    | `false`                     |
+| `size`             | `size`                | 组件尺寸                                      | `"large" \| "medium" \| "middle" \| "small"` | `'medium'`                  |
+| `sizeChangerType`  | `size-changer-type`   | 切换器类型：native 原生下拉；dropdown 使用组件弹层         | `"dropdown" \| "native"`                     | `'dropdown'`                |
+| `total`            | `total`               | 总条目数                                      | `number`                                     | `0`                         |
+| `totalText`        | `total-text`          | 总数文案模板，支持 {total}、{rangeStart}、{rangeEnd} | `string`                                     | `'共 {total} 条'`             |
 
 
 ## Events

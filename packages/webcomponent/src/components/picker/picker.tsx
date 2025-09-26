@@ -102,12 +102,13 @@ export class LdesignPicker {
   @Watch('value')
   onValueChange(v: string | undefined) {
     if (v === this.current) return;
+    // 仅更新 current，不要立即更新 visual，避免高亮瞬间跳变；让动画过程中由 setTrackTransform 逐步更新 visual
     this.current = v;
-    this.visual = v;
     requestAnimationFrame(() => {
       const idx = this.getIndexByValue(v);
       if (idx >= 0) {
-        this.setIndex(idx, { animate: true, silent: true });
+        // 以“滚动”的触发源开启动画，并静默（不触发对外事件）
+        this.setIndex(idx, { animate: true, silent: true, trigger: 'scroll' });
       }
     });
   }

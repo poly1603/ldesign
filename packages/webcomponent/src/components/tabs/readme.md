@@ -47,14 +47,14 @@ Tabs 选项卡组件
 
 ## Properties
 
-| Property       | Attribute       | Description  | Type                                     | Default     |
-| -------------- | --------------- | ------------ | ---------------------------------------- | ----------- |
-| `addable`      | `addable`       | 是否显示新增按钮     | `boolean`                                | `false`     |
-| `defaultValue` | `default-value` | 默认激活的标签（非受控） | `string`                                 | `undefined` |
-| `placement`    | `placement`     | 选项卡位置        | `"bottom" \| "left" \| "right" \| "top"` | `'top'`     |
-| `size`         | `size`          | 尺寸           | `"large" \| "medium" \| "small"`         | `'medium'`  |
-| `type`         | `type`          | 选项卡外观类型      | `"card" \| "line"`                       | `'line'`    |
-| `value`        | `value`         | 当前激活的标签（受控）  | `string`                                 | `undefined` |
+| Property       | Attribute       | Description  | Type                                         | Default     |
+| -------------- | --------------- | ------------ | -------------------------------------------- | ----------- |
+| `addable`      | `addable`       | 是否显示新增按钮     | `boolean`                                    | `false`     |
+| `defaultValue` | `default-value` | 默认激活的标签（非受控） | `string`                                     | `undefined` |
+| `placement`    | `placement`     | 选项卡位置        | `"bottom" \| "left" \| "right" \| "top"`     | `'top'`     |
+| `size`         | `size`          | 尺寸           | `"large" \| "medium" \| "middle" \| "small"` | `'medium'`  |
+| `type`         | `type`          | 选项卡外观类型      | `"card" \| "line"`                           | `'line'`    |
+| `value`        | `value`         | 当前激活的标签（受控）  | `string`                                     | `undefined` |
 
 
 ## Events

@@ -329,6 +329,17 @@ export class LdesignModal {
     }
   };
 
+  private attachPointerRecorders() {
+    document.addEventListener('pointerdown', this.pointerRecordListener as any, { passive: true } as any);
+    document.addEventListener('mousedown', this.pointerRecordListener as any, { passive: true } as any);
+    document.addEventListener('touchstart', this.pointerRecordListener as any, { passive: true } as any);
+  }
+  private detachPointerRecorders() {
+    document.removeEventListener('pointerdown', this.pointerRecordListener as any);
+    document.removeEventListener('mousedown', this.pointerRecordListener as any);
+    document.removeEventListener('touchstart', this.pointerRecordListener as any);
+  }
+
   private getRecentPointer(threshold = 2000): { x: number; y: number } | null {
     if (this.lastPointerX == null || this.lastPointerY == null || this.lastPointerTime == null) return null;
     const now = performance.now();
@@ -336,21 +347,39 @@ export class LdesignModal {
     return null;
   }
 
-  private setOriginFromPoint(point: { x: number; y: number } | null) {
+  private lastOpenViewportX?: number;
+  private lastOpenViewportY?: number;
+
+  private setOriginFromPoint(point: { x: number; y: number } | null, rememberOpen: boolean = false) {
     const dialog = this.el.querySelector('.ldesign-modal__dialog') as HTMLElement | null;
     if (!dialog) return;
     const rect = dialog.getBoundingClientRect();
-    // 防御：避免除零
-    const w = Math.max(1, rect.width);
-    const h = Math.max(1, rect.height);
-    let ox = 0.5;
-    let oy = 0.5;
     if (point) {
-      ox = Math.max(0, Math.min(1, (point.x - rect.left) / w));
-      oy = Math.max(0, Math.min(1, (point.y - rect.top) / h));
+      // 使用像素值，允许起点在元素外部，才能产生“从点击点外部”放大的真实观感
+      const pxX = Math.round(point.x - rect.left);
+      const pxY = Math.round(point.y - rect.top);
+      this.el.style.setProperty('--ld-modal-origin-x', `${pxX}px`);
+      this.el.style.setProperty('--ld-modal-origin-y', `${pxY}px`);
+      if (rememberOpen) {
+        this.lastOpenViewportX = point.x;
+        this.lastOpenViewportY = point.y;
+      }
+    } else {
+      // 无点击点时回退到中心（百分比）
+      this.el.style.setProperty('--ld-modal-origin-x', '50%');
+      this.el.style.setProperty('--ld-modal-origin-y', '50%');
     }
-    this.el.style.setProperty('--ld-modal-origin-x', `${Math.round(ox * 1000) / 10}%`);
-    this.el.style.setProperty('--ld-modal-origin-y', `${Math.round(oy * 1000) / 10}%`);
+  }
+
+  private getCloseOriginPoint(): { x: number; y: number } | null {
+    // 始终优先回到“打开时的起始点”
+    if (this.lastOpenViewportX != null && this.lastOpenViewportY != null) {
+      return { x: this.lastOpenViewportX, y: this.lastOpenViewportY };
+    }
+    // 兜底：使用最近点击点
+    const p = this.getRecentPointer(3000);
+    if (p) return p;
+    return null;
   }
   private resizeStartX: number = 0;
   private resizeStartY: number = 0;
@@ -439,7 +468,7 @@ export class LdesignModal {
     document.addEventListener('pointerdown', this.handleEdgePointerDown as any, { passive: true } as any);
 
     // 记录最近一次指针位置（zoom-origin 需要）
-    document.addEventListener('pointerdown', this.pointerRecordListener as any, { passive: true } as any);
+    this.attachPointerRecorders();
   }
 
   /**
@@ -457,7 +486,7 @@ export class LdesignModal {
     window.removeEventListener('resize', this.handleWindowResize);
     window.removeEventListener('resize', this.updateEffectiveVariant as any);
     document.removeEventListener('pointerdown', this.handleEdgePointerDown as any);
-    document.removeEventListener('pointerdown', this.pointerRecordListener as any);
+    this.detachPointerRecorders();
     if (this.resizeRaf) {
       cancelAnimationFrame(this.resizeRaf);
       this.resizeRaf = undefined;
@@ -1019,23 +1048,30 @@ export class LdesignModal {
 
       // 定位逻辑：优先恢复上次位置，否则按需居中
       if ((this.isDraggable || this.resizable || this.centered || this.maximizable) && this.modalElement) {
+        this.modalElement.style.animation = this.animation === 'zoom-origin' ? 'none' : this.modalElement.style.animation;
         this.modalElement.style.visibility = 'hidden';
         requestAnimationFrame(() => {
           if (this.isVisible) {
             this.applyLastPositionOrCenter();
             // 设置 zoom-origin 的起始点
             if (this.animation === 'zoom-origin') {
-              try { this.setOriginFromPoint(this.getRecentPointer()); } catch (_) {}
+              try { this.setOriginFromPoint(this.getRecentPointer(), true); } catch (_) {}
             }
             this.modalElement!.style.visibility = 'visible';
+            if (this.animation === 'zoom-origin') {
+              void (this.modalElement as HTMLElement).offsetWidth;
+              this.modalElement!.style.animation = '';
+            }
           }
         });
       } else if (this.animation === 'zoom-origin' && this.modalElement) {
         // 非居中/拖拽等情况下也需要在首帧设置 origin
         requestAnimationFrame(() => {
           if (!this.isVisible) return;
-          try { this.setOriginFromPoint(this.getRecentPointer()); } catch (_) {}
+          try { this.setOriginFromPoint(this.getRecentPointer(), true); } catch (_) {}
           this.modalElement!.style.visibility = 'visible';
+          void (this.modalElement as HTMLElement).offsetWidth;
+          this.modalElement!.style.animation = '';
         });
       }
 
@@ -1052,7 +1088,7 @@ export class LdesignModal {
     } else {
       // 关闭动画前：若是 zoom-origin，更新 origin
       if (this.animation === 'zoom-origin') {
-        try { this.setOriginFromPoint(this.getRecentPointer()); } catch (_) {}
+        try { this.setOriginFromPoint(this.getCloseOriginPoint()); } catch (_) {}
       }
 
       // 关闭动画
@@ -1065,6 +1101,9 @@ export class LdesignModal {
           this.isVisible = false;
           this.isAnimating = false;
           this.isClosing = false;
+          // 清理打开时记忆的起始点
+          this.lastOpenViewportX = undefined;
+          this.lastOpenViewportY = undefined;
 
           // 解除背景滚动锁
           this.unbindScrollLock();
@@ -1108,14 +1147,14 @@ export class LdesignModal {
 
       // zoom-origin 动画：确保首帧前设定 transform-origin
       if (this.animation === 'zoom-origin' && this.modalElement) {
+        this.modalElement.style.animation = 'none';
         this.modalElement.style.visibility = 'hidden';
         requestAnimationFrame(() => {
           if (!this.isVisible) return;
-          try {
-            const p = this.getRecentPointer();
-            this.setOriginFromPoint(p);
-          } catch (_) {}
+          try { this.setOriginFromPoint(this.getRecentPointer(), true); } catch (_) {}
           this.modalElement!.style.visibility = 'visible';
+          void (this.modalElement as HTMLElement).offsetWidth;
+          this.modalElement!.style.animation = '';
         });
       }
 
@@ -1148,7 +1187,7 @@ export class LdesignModal {
     } else {
       // 关闭动画开始前：若是 zoom-origin，更新一次 origin（根据最近点击点或回退）
       if (this.animation === 'zoom-origin') {
-        try { this.setOriginFromPoint(this.getRecentPointer()); } catch (_) {}
+        try { this.setOriginFromPoint(this.getCloseOriginPoint()); } catch (_) {}
       }
 
       // 关闭动画
@@ -1162,6 +1201,9 @@ export class LdesignModal {
           this.visible = false;
           this.isAnimating = false;
           this.isClosing = false;
+          // 清理打开时记忆的起始点
+          this.lastOpenViewportX = undefined;
+          this.lastOpenViewportY = undefined;
 
           // 解除背景滚动锁
           this.unbindScrollLock();

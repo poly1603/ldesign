@@ -9,6 +9,11 @@
   display: none;
   overscroll-behavior: contain;
 
+  // 容器模式：使用绝对定位铺满容器（也通过内联 style 覆盖 position）
+  &--in-container {
+    position: absolute;
+  }
+
   // 可见或关闭动画阶段都需要展示以完成过渡
   &--visible,
   &--closing {

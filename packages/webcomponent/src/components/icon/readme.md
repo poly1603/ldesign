@@ -12,19 +12,20 @@ Icon 图标组件
 
 ## Properties
 
-| Property            | Attribute      | Description | Type                                       | Default     |
-| ------------------- | -------------- | ----------- | ------------------------------------------ | ----------- |
-| `color`             | `color`        | 图标颜色        | `string`                                   | `undefined` |
-| `name` _(required)_ | `name`         | 图标名称        | `string`                                   | `undefined` |
-| `size`              | `size`         | 图标尺寸        | `"large" \| "medium" \| "small" \| number` | `'medium'`  |
-| `spin`              | `spin`         | 是否旋转        | `boolean`                                  | `false`     |
-| `strokeWidth`       | `stroke-width` | 描边宽度        | `number`                                   | `2`         |
+| Property            | Attribute      | Description | Type                                                   | Default     |
+| ------------------- | -------------- | ----------- | ------------------------------------------------------ | ----------- |
+| `color`             | `color`        | 图标颜色        | `string`                                               | `undefined` |
+| `name` _(required)_ | `name`         | 图标名称        | `string`                                               | `undefined` |
+| `size`              | `size`         | 图标尺寸        | `"large" \| "medium" \| "middle" \| "small" \| number` | `'medium'`  |
+| `spin`              | `spin`         | 是否旋转        | `boolean`                                              | `false`     |
+| `strokeWidth`       | `stroke-width` | 描边宽度        | `number`                                               | `2`         |
 
 
 ## Dependencies
 
 ### Used by
 
+ - [ldesign-alert](../alert)
  - [ldesign-backtop](../backtop)
  - [ldesign-button](../button)
  - [ldesign-checkbox](../checkbox)
@@ -47,13 +48,13 @@ Icon 图标组件
  - [ldesign-select](../select)
  - [ldesign-switch](../switch)
  - [ldesign-time-picker](../time-picker)
- - [ldesign-time-range-picker](../time-range-picker)
  - [ldesign-transfer](../transfer)
  - [ldesign-tree](../tree)
 
 ### Graph
 ```mermaid
 graph TD;
+  ldesign-alert --> ldesign-icon
   ldesign-backtop --> ldesign-icon
   ldesign-button --> ldesign-icon
   ldesign-checkbox --> ldesign-icon
@@ -76,7 +77,6 @@ graph TD;
   ldesign-select --> ldesign-icon
   ldesign-switch --> ldesign-icon
   ldesign-time-picker --> ldesign-icon
-  ldesign-time-range-picker --> ldesign-icon
   ldesign-transfer --> ldesign-icon
   ldesign-tree --> ldesign-icon
   style ldesign-icon fill:#f9f,stroke:#333,stroke-width:4px

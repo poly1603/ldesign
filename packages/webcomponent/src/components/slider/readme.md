@@ -12,16 +12,16 @@ Slider 滑块组件
 
 ## Properties
 
-| Property      | Attribute      | Description | Type                             | Default    |
-| ------------- | -------------- | ----------- | -------------------------------- | ---------- |
-| `disabled`    | `disabled`     | 是否禁用        | `boolean`                        | `false`    |
-| `max`         | `max`          | 最大值         | `number`                         | `100`      |
-| `min`         | `min`          | 最小值         | `number`                         | `0`        |
-| `showTooltip` | `show-tooltip` | 是否显示当前值提示   | `boolean`                        | `false`    |
-| `size`        | `size`         | 尺寸          | `"large" \| "medium" \| "small"` | `'medium'` |
-| `step`        | `step`         | 步长（> 0）     | `number`                         | `1`        |
-| `value`       | `value`        | 当前值         | `number`                         | `0`        |
-| `vertical`    | `vertical`     | 是否垂直方向      | `boolean`                        | `false`    |
+| Property      | Attribute      | Description | Type                                         | Default    |
+| ------------- | -------------- | ----------- | -------------------------------------------- | ---------- |
+| `disabled`    | `disabled`     | 是否禁用        | `boolean`                                    | `false`    |
+| `max`         | `max`          | 最大值         | `number`                                     | `100`      |
+| `min`         | `min`          | 最小值         | `number`                                     | `0`        |
+| `showTooltip` | `show-tooltip` | 是否显示当前值提示   | `boolean`                                    | `false`    |
+| `size`        | `size`         | 尺寸          | `"large" \| "medium" \| "middle" \| "small"` | `'medium'` |
+| `step`        | `step`         | 步长（> 0）     | `number`                                     | `1`        |
+| `value`       | `value`        | 当前值         | `number`                                     | `0`        |
+| `vertical`    | `vertical`     | 是否垂直方向      | `boolean`                                    | `false`    |
 
 
 ## Events
