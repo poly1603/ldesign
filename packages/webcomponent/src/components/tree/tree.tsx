@@ -56,7 +56,7 @@ export class LdesignTree {
   /** 是否显示连接线（简易）*/
   @Prop() showLine: boolean = false;
   /** 是否开启节点拖拽重排 */
-  @Prop() draggable: boolean = false;
+  @Prop() nodeDraggable: boolean = false;
   /** 是否启用键盘重排（Alt+方向键） */
   @Prop() reorderable: boolean = true;
   /** 拖拽悬停自动展开的延迟（毫秒） */
@@ -701,7 +701,7 @@ export class LdesignTree {
   };
 
   private onDragStart = (key: string) => (e: DragEvent) => {
-    if (!this.draggable) return;
+    if (!this.nodeDraggable) return;
     const node = this.keyNodeMap.get(key);
     if (node?.disabled) return;
     if (node && node.draggable === false) { e.preventDefault(); return; }
@@ -712,7 +712,7 @@ export class LdesignTree {
   };
 
   private onDragOver = (key: string) => (e: DragEvent) => {
-    if (!this.draggable || !this.draggingKey) return;
+    if (!this.nodeDraggable || !this.draggingKey) return;
     if (key === this.draggingKey) return;
     if (this.isDescendant(this.draggingKey, key)) return; // 禁止拖到自己的子孙
     const dragNode = this.keyNodeMap.get(this.draggingKey)!;
@@ -775,7 +775,7 @@ export class LdesignTree {
   };
 
   private onDrop = (key: string) => (e: DragEvent) => {
-    if (!this.draggable || !this.draggingKey) return;
+    if (!this.nodeDraggable || !this.draggingKey) return;
     e.preventDefault();
     const pos = this.overKey === key ? (this.overPos || 'inside') : 'inside';
     const dragNode = this.keyNodeMap.get(this.draggingKey);
@@ -832,11 +832,11 @@ export class LdesignTree {
       'ldesign-tree__item--selected': selected,
       'ldesign-tree__item--disabled': !!node.disabled,
       'ldesign-tree__item--leaf': leaf,
-      'ldesign-tree__item--drag-over': this.draggable && this.overKey === k,
-      'ldesign-tree__item--drag-before': this.draggable && this.overKey === k && this.overPos === 'before',
-      'ldesign-tree__item--drag-after': this.draggable && this.overKey === k && this.overPos === 'after',
-      'ldesign-tree__item--drag-inside': this.draggable && this.overKey === k && this.overPos === 'inside',
-      'ldesign-tree__item--drag-deny': this.draggable && this.overKey === k && this.overAllowed === false,
+      'ldesign-tree__item--drag-over': this.nodeDraggable && this.overKey === k,
+      'ldesign-tree__item--drag-before': this.nodeDraggable && this.overKey === k && this.overPos === 'before',
+      'ldesign-tree__item--drag-after': this.nodeDraggable && this.overKey === k && this.overPos === 'after',
+      'ldesign-tree__item--drag-inside': this.nodeDraggable && this.overKey === k && this.overPos === 'inside',
+      'ldesign-tree__item--drag-deny': this.nodeDraggable && this.overKey === k && this.overAllowed === false,
     } as any;
 
     const onArrowClick = (ev?: MouseEvent) => { ev?.stopPropagation?.(); if (!leaf) this.toggleExpand(k); };
@@ -855,7 +855,7 @@ export class LdesignTree {
           tabindex={node.disabled ? -1 : 0}
           onKeyDown={this.onItemKeyDown(k)}
           onClick={onItemClick}
-          draggable={this.draggable && !node.disabled}
+          draggable={this.nodeDraggable && !node.disabled}
           onDragStart={this.onDragStart(k)}
           onDragOver={this.onDragOver(k)}
           onDragLeave={this.onDragLeave(k)}

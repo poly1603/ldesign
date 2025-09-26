@@ -42,7 +42,7 @@
     display: inline-block; /* 避免某些环境下 inline-flex 触发换行 */
     vertical-align: baseline;
     padding: 0 6px;
-    margin: 0 2px;
+    margin: 0 3px; /* 增加左右间距 */
     border-radius: 4px;
     background: rgba(22, 119, 255, 0.12);
     color: #165dff;
@@ -50,6 +50,11 @@
     white-space: nowrap;
     user-select: none;
     cursor: default;
+    
+    /* 确保标签之间有视觉分隔 */
+    & + & {
+      margin-left: 4px;
+    }
   }
   &__token-text { pointer-events: none; }
   &__token-close {

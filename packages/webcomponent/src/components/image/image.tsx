@@ -85,7 +85,7 @@ export class LdesignImage {
   /** 预览是否可缩放 */
   @Prop() zoomable: boolean = true;
   /** 是否允许拖拽原图（仅影响 img 的原生 draggable 属性，预览层可拖拽不受此限制）*/
-  @Prop() draggable: boolean = false;
+  @Prop() imgDraggable: boolean = false;
 
   // 形状与展示
   /** 形状：square（默认）| rounded | circle */
@@ -411,7 +411,7 @@ export class LdesignImage {
         srcSet={this.srcset}
         sizes={this.sizes}
         loading={this.lazy ? 'lazy' : 'eager'}
-        draggable={this.disabled ? false : (this.draggable as any)}
+        draggable={this.disabled ? false : (this.imgDraggable as any)}
         style={this.getImgStyle()}
         onLoad={this.onImgLoad}
         onError={this.onImgError}

@@ -857,11 +857,6 @@ export namespace Components {
          */
         "disabled": boolean;
         /**
-          * 是否允许拖拽原图（仅影响 img 的原生 draggable 属性，预览层可拖拽不受此限制）
-          * @default false
-         */
-        "draggable": boolean;
-        /**
           * 失败时的回退图片 URL
          */
         "fallback"?: string;
@@ -883,6 +878,11 @@ export namespace Components {
           * 高度（number 自动补 px，string 原样输出，如 '50%'、'200px'）
          */
         "height"?: number | string;
+        /**
+          * 是否允许拖拽原图（仅影响 img 的原生 draggable 属性，预览层可拖拽不受此限制）
+          * @default false
+         */
+        "imgDraggable": boolean;
         /**
           * 提示文本（用于 img 的 title 属性，为避免与 HTMLElement.title 冲突，这里命名为 imgTitle）
          */
@@ -3452,11 +3452,6 @@ export namespace Components {
           * @default 400
          */
         "dragExpandDelay": number;
-        /**
-          * 是否开启节点拖拽重排
-          * @default false
-         */
-        "draggable": boolean;
         "expand": (key: string) => Promise<void>;
         "expandAll": () => Promise<void>;
         /**
@@ -3502,6 +3497,11 @@ export namespace Components {
           * @default false
          */
         "multiple": boolean;
+        /**
+          * 是否开启节点拖拽重排
+          * @default false
+         */
+        "nodeDraggable": boolean;
         /**
           * 懒加载参数名（dataUrl 模式下）：父键参数
           * @default 'parent'
@@ -5589,11 +5589,6 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
-          * 是否允许拖拽原图（仅影响 img 的原生 draggable 属性，预览层可拖拽不受此限制）
-          * @default false
-         */
-        "draggable"?: boolean;
-        /**
           * 失败时的回退图片 URL
          */
         "fallback"?: string;
@@ -5615,6 +5610,11 @@ declare namespace LocalJSX {
           * 高度（number 自动补 px，string 原样输出，如 '50%'、'200px'）
          */
         "height"?: number | string;
+        /**
+          * 是否允许拖拽原图（仅影响 img 的原生 draggable 属性，预览层可拖拽不受此限制）
+          * @default false
+         */
+        "imgDraggable"?: boolean;
         /**
           * 提示文本（用于 img 的 title 属性，为避免与 HTMLElement.title 冲突，这里命名为 imgTitle）
          */
@@ -8385,11 +8385,6 @@ declare namespace LocalJSX {
          */
         "dragExpandDelay"?: number;
         /**
-          * 是否开启节点拖拽重排
-          * @default false
-         */
-        "draggable"?: boolean;
-        /**
           * 当前展开项（受控）
          */
         "expandedKeys"?: string[] | string;
@@ -8429,6 +8424,11 @@ declare namespace LocalJSX {
           * @default false
          */
         "multiple"?: boolean;
+        /**
+          * 是否开启节点拖拽重排
+          * @default false
+         */
+        "nodeDraggable"?: boolean;
         /**
           * 勾选事件（包含半选）
          */

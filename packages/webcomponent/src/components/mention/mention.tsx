@@ -367,44 +367,63 @@ export class LdesignMention {
 
   private parseTextToTokens() {
     if (!this.editableEl) return;
-    const triggers = this.getTriggers(); if (!triggers.length) return;
+    const triggers = this.getTriggers();
+    if (!triggers.length) return;
+
+    // 基于“纯文本 -> 分段”的方式重新渲染，避免在 DOM 中就地替换导致的包裹/拼接问题
     const charClass = triggers.map(ch => this.escapeRegex(ch)).join('');
     const re = new RegExp(`([${charClass}])([^\s]+)`, 'g');
 
-    const walker = document.createTreeWalker(this.editableEl, NodeFilter.SHOW_TEXT, null);
-    const textNodes: Text[] = [];
-    let n: Node | null;
-    while ((n = walker.nextNode())) {
-      // 跳过 token 内部
-      const el = n.parentElement;
-      if (el && el.closest('.ldesign-mention__token')) continue;
-      textNodes.push(n as Text);
+    const raw = (this.editableEl.textContent || '').replace(/\u200b/g, '');
+    const segs: MentionSegment[] = [];
+
+    let last = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(raw))) {
+      const start = m.index;
+      const end = start + m[0].length;
+      // 追加前置纯文本
+      const before = raw.slice(last, start);
+      if (before) segs.push({ type: 'text', text: before } as any);
+
+      const ch = m[1];
+      const label = m[2];
+
+      // 邮箱保护：若命中形如 foo@bar.com 的 @，忽略为普通文本
+      if (ch === '@') {
+        const prev = start > 0 ? raw[start - 1] : '';
+        const next = end < raw.length ? raw[end] : '';
+        const likelyEmail = /[A-Za-z0-9._-]/.test(prev) && /[A-Za-z0-9]/.test(next);
+        if (likelyEmail) {
+          segs.push({ type: 'text', text: m[0] } as any);
+          last = end;
+          continue;
+        }
+      }
+
+      // 解析策略：options 时，仅当在数据源中命中同名 label 才转换
+      if ((this as any).parseStrategy === 'options') {
+        const opts = this.getOptionsFor(ch);
+        const hit = opts.find(o => o.label === label);
+        if (!hit) {
+          segs.push({ type: 'text', text: m[0] } as any);
+          last = end;
+          continue;
+        }
+        segs.push({ type: 'mention', trigger: ch, label: hit.label, value: hit.value } as any);
+      } else {
+        // label 策略：直接转换
+        segs.push({ type: 'mention', trigger: ch, label, value: label } as any);
+      }
+
+      last = end;
     }
 
-    for (const node of textNodes) {
-      const text = node.nodeValue || '';
-      re.lastIndex = 0;
-      let m: RegExpExecArray | null;
-      let last = 0;
-      const frag = document.createDocumentFragment();
-      while ((m = re.exec(text))) {
-        const before = text.slice(last, m.index);
-        if (before) frag.appendChild(document.createTextNode(before));
-        const ch = m[1]; const label = m[2];
-        const token = this.createTokenNodeFromParts(ch, label);
-        if (token) {
-          frag.appendChild(token);
-          // 使用零宽空格，既保证可编辑，又不污染可见文本
-          frag.appendChild(document.createTextNode('\u200b'));
-        } else {
-          frag.appendChild(document.createTextNode(m[0]));
-        }
-        last = m.index + m[0].length;
-      }
-      const tail = text.slice(last);
-      if (tail) frag.appendChild(document.createTextNode(tail));
-      if (node.parentNode) node.parentNode.replaceChild(frag, node);
-    }
+    // 追加尾部文本
+    const tail = raw.slice(last);
+    if (tail) segs.push({ type: 'text', text: tail } as any);
+
+    this.renderFromSegments(segs);
   }
 
   // ——— Editable 交互 ———

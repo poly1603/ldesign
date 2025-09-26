@@ -4,7 +4,6 @@ import './custom.css'
 // 直接导入组件库CSS
 import '../../../dist/ldesign-webcomponent/ldesign-webcomponent.css'
 // 确保自定义元素被注册
-import { defineCustomElements } from '../../../loader'
 
 function initInputDemos() {
   // 在每次路由切换后尝试初始化当前页的 demo
@@ -281,9 +280,12 @@ export default {
   enhanceApp({ app, router, siteData }) {
     // 注册 Web Components
     if (typeof window !== 'undefined') {
-      // 关键：显式注册自定义元素，避免仅加载 ESM 时未执行注册
-      try { defineCustomElements(window as any); } catch {}
-      const loadFromDist = () => import('../../../dist/ldesign-webcomponent/ldesign-webcomponent.esm.js')
+      // 动态按环境加载并注册组件库
+      const loadFromDist = async () => {
+        const mod: any = await import('../../../dist/ldesign-webcomponent/ldesign-webcomponent.esm.js')
+        if (mod?.defineCustomElements) await mod.defineCustomElements(window as any)
+        return mod
+      }
       const loadFromDev = async () => {
         // 动态追加 dev server 样式
         const cssHref = 'http://localhost:3333/build/ldesign-webcomponent.css'
@@ -293,15 +295,17 @@ export default {
           link.href = cssHref
           document.head.appendChild(link)
         }
-        // 通过裸 import 加载 ESM
-        return import(/* @vite-ignore */ 'http://localhost:3333/build/ldesign-webcomponent.esm.js')
+        // 通过裸 import 加载 ESM 并注册自定义元素
+        const mod: any = await import(/* @vite-ignore */ 'http://localhost:3333/build/ldesign-webcomponent.esm.js')
+        if (mod?.defineCustomElements) await mod.defineCustomElements(window as any)
+        return mod
       }
 
       const tryLoader = async () => {
         try {
-          const mod = await import('../../../loader/index.js')
+          const mod: any = await import('../../../loader/index.js')
           if (mod && typeof mod.defineCustomElements === 'function') {
-            await mod.defineCustomElements()
+            await mod.defineCustomElements(window as any)
             console.log('LDesign WebComponent 已通过 loader 定义自定义元素')
             return true
           }

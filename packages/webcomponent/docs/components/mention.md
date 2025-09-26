@@ -278,6 +278,20 @@ m.addEventListener('ldesignChange', (e) => {
   <ldesign-mention
     id="mention-compare-seg"
     triggers='["@","#"]'
+    trigger-configs='[
+      { "char": "@", "tokenType": "primary", "options": [
+        { "value": "1", "label": "Alice" },
+        { "value": "2", "label": "Bob" },
+        { "value": "3", "label": "Charlie" },
+        { "value": "4", "label": "Diana" }
+      ] },
+      { "char": "#", "tokenType": "info", "options": [
+        { "value": "t1", "label": "话题一" },
+        { "value": "t2", "label": "性能优化" },
+        { "value": "t3", "label": "Bug修复" },
+        { "value": "t4", "label": "新功能" }
+      ] }
+    ]'
     model='[
       { "type": "text", "text": "欢迎 " },
       { "type": "mention", "trigger": "@", "label": "Alice", "value": "1" },
@@ -291,8 +305,18 @@ m.addEventListener('ldesignChange', (e) => {
     id="mention-compare-str"
     triggers='["@","#"]'
     trigger-configs='[
-      { "char": "@", "options": [ { "value": "1", "label": "Alice" } ] },
-      { "char": "#", "options": [ { "value": "t2", "label": "性能优化" } ] }
+      { "char": "@", "tokenType": "primary", "options": [
+        { "value": "1", "label": "Alice" },
+        { "value": "2", "label": "Bob" },
+        { "value": "3", "label": "Charlie" },
+        { "value": "4", "label": "Diana" }
+      ] },
+      { "char": "#", "tokenType": "info", "options": [
+        { "value": "t1", "label": "话题一" },
+        { "value": "t2", "label": "性能优化" },
+        { "value": "t3", "label": "Bug修复" },
+        { "value": "t4", "label": "新功能" }
+      ] }
     ]'
     parse-on-init="true"
     parse-strategy="options"
@@ -304,6 +328,8 @@ m.addEventListener('ldesignChange', (e) => {
 
 点击标签右侧的 × 或在标签右侧按 Backspace 会触发 `ldesignRemove` 事件。
 
+为确保示例稳定，下面示例使用 model 分段初始化，避免依赖 parse-on-init 的字符串解析。
+
 <div class="demo-container">
   <div id="mention-remove-log" class="demo-row" style="margin-bottom:12px;color:#666;">最近移除：无</div>
   <ldesign-mention
@@ -313,14 +339,32 @@ m.addEventListener('ldesignChange', (e) => {
       { "char": "@", "tokenType": "primary", "options": [ { "value": "1", "label": "Alice" }, { "value": "2", "label": "Bob" } ] },
       { "char": "#", "tokenType": "warning", "options": [ { "value": "t1", "label": "话题一" } ] }
     ]'
-    value="欢迎 @Alice 参与 #话题一 讨论"
-    parse-on-init="true"
-    parse-strategy="label"
+    model='[
+      { "type": "text", "text": "欢迎 " },
+      { "type": "mention", "trigger": "@", "label": "Alice", "value": "1" },
+      { "type": "text", "text": " 参与 " },
+      { "type": "mention", "trigger": "#", "label": "话题一", "value": "t1" },
+      { "type": "text", "text": " 讨论" }
+    ]'
   ></ldesign-mention>
 </div>
 
 ```html
-<ldesign-mention id="mention-remove" ... ></ldesign-mention>
+<ldesign-mention
+  id="mention-remove"
+  triggers='["@", "#"]'
+  trigger-configs='[
+    { "char": "@", "tokenType": "primary", "options": [ { "value": "1", "label": "Alice" }, { "value": "2", "label": "Bob" } ] },
+    { "char": "#", "tokenType": "warning", "options": [ { "value": "t1", "label": "话题一" } ] }
+  ]'
+  model='[
+    { "type": "text", "text": "欢迎 " },
+    { "type": "mention", "trigger": "@", "label": "Alice", "value": "1" },
+    { "type": "text", "text": " 参与 " },
+    { "type": "mention", "trigger": "#", "label": "话题一", "value": "t1" },
+    { "type": "text", "text": " 讨论" }
+  ]'
+></ldesign-mention>
 <script>
   const rm = document.getElementById('mention-remove')
   rm.addEventListener('ldesignRemove', (e) => {
@@ -378,6 +422,18 @@ m.addEventListener('ldesignChange', (e) => {
   <ldesign-mention
     id="mention-no-autoparse"
     triggers='["@", "#"]'
+    trigger-configs='[
+      { "char": "@", "tokenType": "primary", "options": [
+        { "value": "1", "label": "Alice" },
+        { "value": "2", "label": "Bob" },
+        { "value": "3", "label": "Charlie" }
+      ] },
+      { "char": "#", "tokenType": "info", "options": [
+        { "value": "t1", "label": "话题一" },
+        { "value": "t2", "label": "性能优化" },
+        { "value": "t3", "label": "Bug修复" }
+      ] }
+    ]'
     parse-on-init="false"
     value="不解析示例：@Alice 与 #话题一 将以纯文本显示"
   ></ldesign-mention>

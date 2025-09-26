@@ -179,18 +179,18 @@ export class LdesignPicker {
       const firstRect = first.getBoundingClientRect();
       const secondRect = second.getBoundingClientRect();
       
-      // 项目间的实际间距
-      const actualSpacing = Math.round(secondRect.top - firstRect.top);
+      // 使用精确浮点值，不做取整，避免累计误差
+      const actualSpacing = (secondRect.top - firstRect.top);
       
       if (actualSpacing > 0) {
         this.actualItemHeight = actualSpacing;
       } else {
-        this.actualItemHeight = Math.round(firstRect.height);
+        this.actualItemHeight = firstRect.height;
       }
     } else if (items.length === 1) {
       const first = items[0] as HTMLElement;
       const rect = first.getBoundingClientRect();
-      this.actualItemHeight = Math.round(rect.height);
+      this.actualItemHeight = rect.height;
     }
     
     // 恢复transform
@@ -208,7 +208,7 @@ export class LdesignPicker {
     const itemH = this.itemHeightBySize;
     // 计算容器中心的Y坐标，这是list需要偏移的基准点
     // 当第0项在中心时，列表顶部应该在 (h/2 - itemHeight/2) 的位置
-    return Math.round((h - itemH) / 2);
+    return (h - itemH) / 2; // 不取整，保持精度
   }
   
   private preventPageScroll = (e: TouchEvent) => {
@@ -242,12 +242,9 @@ export class LdesignPicker {
   }
 
   private yForIndex(i: number) {
-    // 计算让第 i 项居中时的 Y 坐标
-    // 使用实际测量的项目间距
+    // 计算让第 i 项居中时的 Y 坐标（使用浮点数，最后在设置 transform 时再取整）
     const itemH = this.itemHeightBySize;
-    // 第 i 项的顶部在 i * itemH 的位置
-    // 要让它居中，需要向上偏移 i * itemH，再加上 centerOffset
-    return Math.round(this.centerOffset - i * itemH);
+    return this.centerOffset - i * itemH;
   }
 
   /* ---------------- emit helpers ---------------- */
@@ -282,20 +279,34 @@ export class LdesignPicker {
     const maxY = this.centerOffset; // 第0项居中时的Y值（最上限）
     const minY = this.centerOffset - (this.parsed.length - 1) * itemH; // 最后一项居中时的Y值（最下限）
     
+    console.log('📐 setTrackTransform called:', {
+      inputY: y,
+      maxY,
+      minY,
+      currentTrackY: this.trackY,
+      centerOffset: this.centerOffset,
+      itemHeight: itemH,
+      parsedLength: this.parsed.length
+    });
+    
     // 强制边界钳制 - 绝对不允许超出
     let clampedY = y;
-    if (y >= maxY) {
+    if (y > maxY) {
+      console.log('⚠️ Clamping to MAX (first item):', y, '->', maxY);
       clampedY = maxY; // 第一项不能再往下
-    } else if (y <= minY) {
+    } else if (y < minY) {
+      console.log('⚠️ Clamping to MIN (last item):', y, '->', minY);
       clampedY = minY; // 最后一项不能再往上
     }
-    clampedY = Math.round(clampedY); // 确保整数像素值
+    clampedY = Math.round(clampedY); // 确保整数像素值（最终才取整）
     
     // 只有当值真正改变时才更新
     if (Math.abs(this.trackY - clampedY) < 0.01) {
+      console.log('🔄 No change, skipping update');
       return; // 避免无意义的更新
     }
     
+    console.log('✅ Applying transform:', clampedY, 'animate:', animate);
     this.trackY = clampedY;
     const el = this.listEl as HTMLElement;
     el.style.willChange = 'transform';
@@ -307,6 +318,7 @@ export class LdesignPicker {
     const currentIdx = Math.max(0, Math.min(this.parsed.length - 1, Math.round(currentFloat)));
     const newVisual = this.parsed[currentIdx]?.value;
     if (newVisual !== this.visual) {
+      console.log('👁️ Visual update:', this.visual, '->', newVisual);
       this.visual = newVisual;
     }
   }
@@ -325,6 +337,27 @@ export class LdesignPicker {
     
     const from = this.trackY;
     const to = this.yForIndex(safeIdx);
+    
+    // 检查目标位置是否在合法范围内
+    const maxY = this.centerOffset;
+    const minY = this.centerOffset - (this.parsed.length - 1) * this.itemHeightBySize;
+    
+    console.log('🎬 startSnapAnim:', {
+      idx,
+      safeIdx,
+      from,
+      to,
+      trigger: opts?.trigger,
+      bounds: { maxY, minY },
+      isToInBounds: to <= maxY && to >= minY
+    });
+    
+    // 如果目标位置超出边界，直接返回
+    if (to > maxY || to < minY) {
+      console.error('❌ snapAnim target out of bounds!', { to, maxY, minY });
+      return;
+    }
+    
     // 根据触发源调整动画时长，滚轮用较短时间以提高响应
     const duration = opts?.trigger === 'wheel' ? 150 : 200;
     const start = performance.now();
@@ -370,9 +403,21 @@ export class LdesignPicker {
   private setIndex(i: number, opts?: { animate?: boolean; silent?: boolean; trigger?: 'click' | 'wheel' | 'keyboard' | 'touch' | 'scroll' }) {
     if (!this.listEl || this.parsed.length === 0) return;
     
+    console.log('🎰 setIndex called:', {
+      inputIndex: i,
+      opts,
+      currentTrackY: this.trackY
+    });
+    
     // 严格限制索引范围 [0, length-1]
     const idx = this.clampIndex(i);
     const enabledIdx = this.firstEnabledFrom(idx);
+    
+    console.log('🎰 Index processing:', {
+      clampedIdx: idx,
+      enabledIdx,
+      parsedLength: this.parsed.length
+    });
     
     // 精确检查是否已经在目标位置（基于实际Y坐标）
     const targetY = this.yForIndex(enabledIdx);
@@ -380,6 +425,7 @@ export class LdesignPicker {
     
     // 只有在不是动画模式且已经在目标位置时才跳过
     if (opts?.animate === false && Math.abs(this.trackY - targetY) < tolerance) {
+      console.log('🔒 Already at target, skipping');
       // 更新视觉状态确保一致
       this.visual = this.parsed[enabledIdx]?.value;
       return;
@@ -387,9 +433,11 @@ export class LdesignPicker {
     
     // 如果需要动画，用 snapAnim；否则直接设置
     if (opts?.animate !== false) {
+      console.log('🎬 Starting snap animation to index:', enabledIdx);
       this.startSnapAnim(enabledIdx, { trigger: opts?.trigger, silent: !!opts?.silent });
     } else {
-      const y = Math.round(this.yForIndex(enabledIdx));
+      const y = this.yForIndex(enabledIdx);
+      console.log('🚀 Direct set to Y:', y);
       this.setTrackTransform(y, false);
       const nextVal = this.parsed[enabledIdx]?.value;
       this.visual = nextVal;
@@ -407,12 +455,27 @@ export class LdesignPicker {
     e.stopPropagation(); // 阻止事件冒泡，防止页面滚动
 
     // 如果正在动画中，先取消当前动画
-    if (this.snapAnim) {
-      this.cancelSnapAnim();
+    this.cancelSnapAnim();
+    this.cancelInertia();
+
+    // 边界与当前位置
+    const itemH = this.itemHeightBySize;
+    const maxY = this.centerOffset; // 顶部边界（第0项）
+    const minY = this.centerOffset - (this.parsed.length - 1) * itemH; // 底部边界（最后一项）
+
+    // 先做基于位置的“方向越界短路”，更鲁棒，不依赖索引取整
+    const towardTop = e.deltaY < 0;   // 想向上滚
+    const towardBottom = e.deltaY > 0; // 想向下滚
+    const atTop = this.trackY >= maxY - 0.5;
+    const atBottom = this.trackY <= minY + 0.5;
+    if ((towardTop && atTop) || (towardBottom && atBottom)) {
+      const boundaryY = towardTop ? maxY : minY;
+      console.log('🧱 Wheel blocked by positional boundary', { towardTop, towardBottom, atTop, atBottom, boundaryY });
+      this.setTrackTransform(boundaryY, false); // 硬对齐边界
+      return;
     }
 
     // 根据当前的 trackY 精确判断索引
-    const itemH = this.itemHeightBySize;
     const currentFloat = (this.centerOffset - this.trackY) / itemH;
     const currentIdx = Math.round(currentFloat);
     
@@ -429,85 +492,54 @@ export class LdesignPicker {
       lastY: this.yForIndex(this.parsed.length - 1)
     });
     
-    // 更严格的边界检查 - 完全阻止超出边界的滚动
-    // deltaY < 0 表示向上滚动（往索引减小方向，往第一项）
-    // deltaY > 0 表示向下滚动（往索引增大方向，往最后一项）
-    
-    // 检查是否已经在第一项位置
-    const firstY = this.yForIndex(0);
-    const isAtFirst = Math.abs(this.trackY - firstY) < 1;
-    
-    // 检查是否已经在最后一项位置
-    const lastIdx = this.parsed.length - 1;
-    const lastY = this.yForIndex(lastIdx);
-    const isAtLast = Math.abs(this.trackY - lastY) < 1;
-    
-    console.log('📍 Position Check:', {
-      isAtFirst,
-      isAtLast,
-      tryingToScrollUp: e.deltaY < 0,
-      tryingToScrollDown: e.deltaY > 0
-    });
-    
-    // 在第一项且试图向上滚动
-    if (isAtFirst && e.deltaY < 0) {
-      console.log('🛑 BLOCKED: Already at first item, preventing upward scroll');
-      // 强制对齐到第一项
-      this.setTrackTransform(firstY, false);
-      this.visual = this.parsed[0]?.value;
-      this.current = this.parsed[0]?.value;
-      return; // 完全阻止事件
-    }
-    
-    // 在最后一项且试图向下滚动
-    if (isAtLast && e.deltaY > 0) {
-      console.log('🛑 BLOCKED: Already at last item, preventing downward scroll');
-      // 强制对齐到最后一项
-      this.setTrackTransform(lastY, false);
-      this.visual = this.parsed[lastIdx]?.value;
-      this.current = this.parsed[lastIdx]?.value;
-      return; // 完全阻止事件
-    }
-
-    // Windows 鼠标滚轮通常 deltaY = 100/120 像素
+    // 计算步数
     let steps = 0;
     if (e.deltaMode === 1) {
-      // 行模式（罕见）：直接使用 deltaY 作为步数
       steps = Math.round(e.deltaY);
     } else {
-      // 像素模式：根据 delta 大小判断
       const delta = Math.abs(e.deltaY);
       const sign = e.deltaY > 0 ? 1 : -1;
-      
       if (delta < 20) {
-        // 触控板等微小滑动：累计
-        this.wheelAccumLines += e.deltaY / this.itemHeightBySize;
+        this.wheelAccumLines += e.deltaY / itemH;
         if (Math.abs(this.wheelAccumLines) >= 1) {
           steps = Math.floor(Math.abs(this.wheelAccumLines)) * (this.wheelAccumLines > 0 ? 1 : -1);
           this.wheelAccumLines = this.wheelAccumLines % 1;
         }
       } else {
-        // 传统鼠标滚轮：每次只走 1 步
         steps = sign;
         this.wheelAccumLines = 0;
       }
     }
-
-    if (steps !== 0) {
-      const targetIdx = this.clampIndex(currentIdx + steps);
-      
-      // 如果目标索引和当前索引相同，说明已到边界
-      if (targetIdx === currentIdx) {
-        // 强制对齐到边界位置
-        const boundaryY = this.yForIndex(targetIdx);
-        this.setTrackTransform(boundaryY, true);
-        this.visual = this.parsed[targetIdx]?.value;
-        this.current = this.parsed[targetIdx]?.value;
-      } else {
-        // 正常滚动到目标索引
-        this.setIndex(targetIdx, { animate: true, trigger: 'wheel' });
-      }
+    
+    if (steps === 0) {
+      console.log('⏸️ No steps to take');
+      return;
     }
+    
+    // 计算目标索引
+    const targetIdx = currentIdx + steps;
+    const clampedTargetIdx = this.clampIndex(targetIdx);
+    
+    console.log('📍 Position Check:', {
+      currentIdx,
+      steps,
+      targetIdx,
+      clampedTargetIdx,
+      isAtBoundary: clampedTargetIdx === currentIdx
+    });
+    
+    if (clampedTargetIdx === currentIdx) {
+      console.log('🛑 BLOCKED: Already at boundary, no movement');
+      const exactY = this.yForIndex(currentIdx);
+      if (Math.abs(this.trackY - Math.round(exactY)) > 0.5) {
+        this.setTrackTransform(exactY, false);
+      }
+      return;
+    }
+    
+    // 正常滚动到目标索引
+    console.log('➡️ Normal scroll from', currentIdx, 'to', clampedTargetIdx);
+    this.setIndex(clampedTargetIdx, { animate: true, trigger: 'wheel' });
   };
 
   /* ---------------- pointer/gesture ---------------- */

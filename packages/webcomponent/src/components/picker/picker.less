@@ -22,8 +22,8 @@
     padding: 0 !important;
     list-style: none;
     width: 100%;
-    height: 100%;
-    overflow: hidden; // 轨道采用 transform，不使用原生滚动
+    height: auto; // 让轨道高度由内容撑开，避免被内层裁剪
+    overflow: visible; // 由外层容器裁剪
     user-select: none;
     touch-action: none; // 阻止默认触摸事件
     will-change: transform;
