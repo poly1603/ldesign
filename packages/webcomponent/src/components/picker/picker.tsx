@@ -54,6 +54,7 @@ export class LdesignPicker {
   private listEl?: HTMLElement;     // 作为 transform 轨道的元素（ul）
   private containerEl?: HTMLElement; // 外层容器（用于精确测量高度）
   private itemH = 36;
+  private actualItemHeight?: number; // 实际渲染后的项目高度
 
   // 轨道 transform Y（px），正向为下
   private trackY = 0;
@@ -75,13 +76,23 @@ export class LdesignPicker {
   /* ---------------- lifecycle & props ---------------- */
   @Watch('options') watchOptions(val: string | PickerOption[]) {
     this.parsed = this.parseOptions(val);
-    requestAnimationFrame(() => this.centerCurrent(false));
+    requestAnimationFrame(() => {
+      this.measureActualItemHeight();
+      this.centerCurrent(false);
+    });
   }
 
-  @Watch('value') watchValue(v?: string) {
+  @Watch('value')
+  onValueChange(v: string | undefined) {
+    if (v === this.current) return;
     this.current = v;
     this.visual = v;
-    requestAnimationFrame(() => this.centerCurrent(true));
+    requestAnimationFrame(() => {
+      const idx = this.getIndexByValue(v);
+      if (idx >= 0) {
+        this.setIndex(idx, { animate: true, silent: true });
+      }
+    });
   }
 
   componentWillLoad() {
@@ -93,13 +104,28 @@ export class LdesignPicker {
     this.visual = this.current;
     // 计算初始位置，确保选中项居中
     const idx0 = this.getIndexByValue(this.current);
-    const validIdx = idx0 >= 0 ? idx0 : 0;
-    this.trackY = this.yForIndex(validIdx);
+    const validIdx = this.clampIndex(idx0 >= 0 ? idx0 : 0);
+    const enabledIdx = this.firstEnabledFrom(validIdx);
+    this.trackY = this.yForIndex(enabledIdx);
   }
 
   componentDidLoad() {
-    // 初始对齐一次
-    requestAnimationFrame(() => this.centerCurrent(false));
+    // 确保DOM完全渲染后进行初始化
+    requestAnimationFrame(() => {
+      // 测量实际的项目高度
+      this.measureActualItemHeight();
+      // 重新计算位置，确保使用实际测量的高度
+      const idx = this.getIndexByValue(this.current);
+      const validIdx = this.clampIndex(idx >= 0 ? idx : 0);
+      const enabledIdx = this.firstEnabledFrom(validIdx);
+      const y = this.yForIndex(enabledIdx);
+      this.setTrackTransform(y, false);
+      this.visual = this.parsed[enabledIdx]?.value;
+      // 确保 current 也更新为有效值
+      if (this.current !== this.visual) {
+        this.current = this.visual;
+      }
+    });
     window.addEventListener('resize', this.onResize);
     
     // 阻止页面滚动
@@ -124,21 +150,65 @@ export class LdesignPicker {
   }
 
   private get itemHeightBySize(): number {
+    // 优先使用实际测量的高度
+    if (this.actualItemHeight && this.actualItemHeight > 0) {
+      return this.actualItemHeight;
+    }
+    // 其次使用配置的高度
     if (this.itemHeight && this.itemHeight > 0) return this.itemHeight;
+    // 最后使用默认值
     switch (this.size) {
       case 'small': return 32;
       case 'large': return 40;
       default: return 36;
     }
   }
+  
+  private measureActualItemHeight() {
+    if (!this.listEl) return;
+    
+    // 临时重置transform以获取准确测量
+    const savedTransform = this.listEl.style.transform;
+    this.listEl.style.transform = 'none';
+    
+    const items = this.listEl.querySelectorAll('li');
+    if (items.length >= 2) {
+      // 测量两个相邻项目顶部之间的距离（即实际的行高）
+      const first = items[0] as HTMLElement;
+      const second = items[1] as HTMLElement;
+      const firstRect = first.getBoundingClientRect();
+      const secondRect = second.getBoundingClientRect();
+      
+      // 项目间的实际间距
+      const actualSpacing = Math.round(secondRect.top - firstRect.top);
+      
+      if (actualSpacing > 0) {
+        this.actualItemHeight = actualSpacing;
+      } else {
+        this.actualItemHeight = Math.round(firstRect.height);
+      }
+    } else if (items.length === 1) {
+      const first = items[0] as HTMLElement;
+      const rect = first.getBoundingClientRect();
+      this.actualItemHeight = Math.round(rect.height);
+    }
+    
+    // 恢复transform
+    this.listEl.style.transform = savedTransform;
+  }
 
   private get panelHeightPx() {
     return this.panelHeight || (this.itemHeightBySize * this.visibleItems);
   }
 
-  private get centerOffset() { // 使用实际容器高度，保证与指示器绝对居中一致
+  private get centerOffset() {
+    // 使用实际容器高度
     const h = this.containerEl?.clientHeight ?? this.panelHeightPx;
-    return (h - this.itemHeightBySize) / 2;
+    // 使用实际的项目高度
+    const itemH = this.itemHeightBySize;
+    // 计算容器中心的Y坐标，这是list需要偏移的基准点
+    // 当第0项在中心时，列表顶部应该在 (h/2 - itemHeight/2) 的位置
+    return Math.round((h - itemH) / 2);
   }
   
   private preventPageScroll = (e: TouchEvent) => {
@@ -173,11 +243,11 @@ export class LdesignPicker {
 
   private yForIndex(i: number) {
     // 计算让第 i 项居中时的 Y 坐标
-    // 第 0 项居中时，Y = centerOffset (向下偏移)
-    // 第 1 项居中时，Y = centerOffset - itemHeight
-    // 最后一项居中时，Y = centerOffset - (length-1) * itemHeight (向上偏移)
-    const clampedIdx = this.clampIndex(i);
-    return this.centerOffset - clampedIdx * this.itemHeightBySize;
+    // 使用实际测量的项目间距
+    const itemH = this.itemHeightBySize;
+    // 第 i 项的顶部在 i * itemH 的位置
+    // 要让它居中，需要向上偏移 i * itemH，再加上 centerOffset
+    return Math.round(this.centerOffset - i * itemH);
   }
 
   /* ---------------- emit helpers ---------------- */
@@ -205,12 +275,35 @@ export class LdesignPicker {
 
   /* ---------------- core movement ---------------- */
   private setTrackTransform(y: number, animate = false) {
-    if (!this.listEl) return;
-    this.trackY = y;
+    if (!this.listEl || this.parsed.length === 0) return;
+    
+    // 严格限制Y值在合法范围内
+    const itemH = this.itemHeightBySize;
+    const maxY = this.centerOffset; // 第0项居中时的Y值
+    const minY = this.centerOffset - (this.parsed.length - 1) * itemH; // 最后一项居中时的Y值
+    
+    // 加强边界钳制
+    let clampedY = y;
+    if (y > maxY) {
+      clampedY = maxY;
+    } else if (y < minY) {
+      clampedY = minY;
+    }
+    clampedY = Math.round(clampedY); // 确保整数像素值
+    
+    this.trackY = clampedY;
     const el = this.listEl as HTMLElement;
     el.style.willChange = 'transform';
     el.style.transition = animate ? 'transform 200ms cubic-bezier(0.22,0.61,0.36,1)' : 'none';
-    el.style.transform = `translate3d(0, ${y}px, 0)`;
+    el.style.transform = `translate3d(0, ${clampedY}px, 0)`;
+    
+    // 确保边界时的视觉状态正确
+    const currentIdx = Math.round((this.centerOffset - clampedY) / itemH);
+    const clampedIdx = Math.max(0, Math.min(this.parsed.length - 1, currentIdx));
+    if (currentIdx !== clampedIdx) {
+      // 如果计算的索引超出边界，立即修正
+      this.visual = this.parsed[clampedIdx]?.value;
+    }
   }
 
   private cancelSnapAnim() { if (this.snapAnim?.raf) cancelAnimationFrame(this.snapAnim.raf); this.snapAnim = null; }
@@ -245,7 +338,7 @@ export class LdesignPicker {
       if (vLive !== this.visual) this.visual = vLive;
 
       if (t >= 1) {
-        // 结束时精确吸附到目标位置
+        // 结束时精确吸附到目标位置（state.to 已经是整数）
         this.setTrackTransform(state.to, false);
         
         const nextVal = this.parsed[state.idx]?.value;
@@ -272,15 +365,24 @@ export class LdesignPicker {
   private setIndex(i: number, opts?: { animate?: boolean; silent?: boolean; trigger?: 'click' | 'wheel' | 'keyboard' | 'touch' | 'scroll' }) {
     if (!this.listEl || this.parsed.length === 0) return;
     
-    // 严格限制索引范围
-    const idx = this.clampIndex(i);
+    // 严格限制索引范围 [0, length-1]
+    const idx = Math.max(0, Math.min(this.parsed.length - 1, i));
+    
+    // 精确检查是否已经在目标位置（基于实际Y坐标）
+    const targetY = this.yForIndex(idx);
+    const tolerance = 0.5; // 允许0.5像素的误差
+    if (Math.abs(this.trackY - targetY) < tolerance && opts?.trigger === 'wheel') {
+      // 如果已经精确在目标位置且是滚轮触发的，不做任何动作
+      return;
+    }
+    
     const enabledIdx = this.firstEnabledFrom(idx);
     
     // 如果需要动画，用 snapAnim；否则直接设置
     if (opts?.animate !== false) {
       this.startSnapAnim(enabledIdx, { trigger: opts?.trigger, silent: !!opts?.silent });
     } else {
-      const y = this.yForIndex(enabledIdx);
+      const y = Math.round(this.yForIndex(enabledIdx));
       this.setTrackTransform(y, false);
       const nextVal = this.parsed[enabledIdx]?.value;
       this.visual = nextVal;
@@ -293,9 +395,28 @@ export class LdesignPicker {
 
   /* ---------------- wheel ---------------- */
   private onWheel = (e: WheelEvent) => {
-    if (this.disabled || !this.listEl) return;
+    if (this.disabled || !this.listEl || this.parsed.length === 0) return;
     e.preventDefault();
     e.stopPropagation(); // 阻止事件冒泡，防止页面滚动
+
+    // 根据当前的 trackY 精确判断索引
+    const itemH = this.itemHeightBySize;
+    const currentFloat = (this.centerOffset - this.trackY) / itemH;
+    const currentIdx = Math.round(currentFloat);
+    
+    // 基于索引的边界判断（更直接）
+    if ((currentIdx <= 0 && e.deltaY < 0) || // 在第一项且向上滚
+        (currentIdx >= this.parsed.length - 1 && e.deltaY > 0)) { // 在最后一项且向下滚
+      // 确保位置精确对齐
+      const boundaryIdx = e.deltaY < 0 ? 0 : this.parsed.length - 1;
+      const targetY = this.yForIndex(boundaryIdx);
+      if (Math.abs(this.trackY - targetY) > 1) {
+        // 如果有偏差，立即修正到边界位置
+        this.setTrackTransform(targetY, false);
+        this.visual = this.parsed[boundaryIdx]?.value;
+      }
+      return;
+    }
 
     // 如果正在动画中，取消当前动画立即响应新输入
     if (this.snapAnim) {
@@ -327,17 +448,31 @@ export class LdesignPicker {
     }
 
     if (steps !== 0) {
-      // 计算当前索引（基于当前transform位置）
-      const currentFloat = (this.centerOffset - this.trackY) / this.itemHeightBySize;
-      const currentIdx = this.clampIndex(Math.round(currentFloat));
-      const targetIdx = this.clampIndex(currentIdx + steps);
-      this.setIndex(targetIdx, { animate: true, trigger: 'wheel' });
+      const targetIdx = Math.max(0, Math.min(this.parsed.length - 1, currentIdx + steps));
+      // 如果目标索引和当前索引相同，说明已经到边界了
+      if (targetIdx !== currentIdx) {
+        this.setIndex(targetIdx, { animate: true, trigger: 'wheel' });
+      } else {
+        // 已经在边界，确保位置精确
+        const boundaryY = this.yForIndex(targetIdx);
+        if (Math.abs(this.trackY - boundaryY) > 0.5) {
+          this.setTrackTransform(boundaryY, true);
+          this.visual = this.parsed[targetIdx]?.value;
+        }
+      }
     }
   };
 
   /* ---------------- pointer/gesture ---------------- */
   private onPointerDown = (e: PointerEvent) => {
     if (this.disabled || !this.listEl) return;
+    
+    // 如果点击的是列表项，不处理拖动
+    const target = e.target as HTMLElement;
+    if (target.classList?.contains('ldesign-picker__item')) {
+      return;
+    }
+    
     e.preventDefault(); // 防止触发默认的滚动行为
     (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     this.isPointerDown = true;
@@ -354,10 +489,8 @@ export class LdesignPicker {
     const dy = e.clientY - this.startY;
     
     // 严格的边界限制
-    // 第一项最多能居中（不能继续向下）
-    // 最后一项最多能居中（不能继续向上）
-    const maxY = this.yForIndex(0);  // 第一项居中时的Y（最大值）
-    const minY = this.yForIndex(Math.max(0, this.parsed.length - 1));  // 最后一项居中时的Y（最小值）
+    const maxY = this.centerOffset;  // 第0项居中时的Y值
+    const minY = this.centerOffset - (this.parsed.length - 1) * this.itemHeightBySize;  // 最后一项居中时的Y值
     let next = this.startTrackY + dy;
     
     // 超出边界时增加阻力，但限制最大超出量
@@ -372,9 +505,9 @@ export class LdesignPicker {
     
     this.setTrackTransform(next, false);
 
-    // 实时视觉选中（基于当前位置计算最近的项）
-    const floatIdx = (this.centerOffset - this.trackY) / this.itemHeightBySize;
-    const idx = this.clampIndex(Math.round(floatIdx));
+    // 实时视觉选中
+    const rawIdx = (this.centerOffset - this.trackY) / this.itemHeightBySize;
+    const idx = Math.max(0, Math.min(this.parsed.length - 1, Math.round(rawIdx)));
     const v = this.parsed[idx]?.value;
     if (v !== this.visual) { this.visual = v; this.emitPick('touch'); }
 
@@ -412,12 +545,14 @@ export class LdesignPicker {
       let next = this.trackY + dy;
 
       // 严格的边界限制
-      const maxY = this.yForIndex(0);
-      const minY = this.yForIndex(Math.max(0, this.parsed.length - 1));
-      if (next > maxY || next < minY) {
-        // 触碰边界，立即停止并吸附到边界项
-        const idxFinal = next > maxY ? 0 : (this.parsed.length - 1);
-        this.setIndex(idxFinal, { animate: true, trigger: 'scroll' });
+      const maxY = this.centerOffset;
+      const minY = this.centerOffset - (this.parsed.length - 1) * this.itemHeightBySize;
+      if (next > maxY) {
+        this.setIndex(0, { animate: true, trigger: 'scroll' });
+        this.inertia = null;
+        return;
+      } else if (next < minY) {
+        this.setIndex(this.parsed.length - 1, { animate: true, trigger: 'scroll' });
         this.inertia = null;
         return;
       }
@@ -474,20 +609,25 @@ export class LdesignPicker {
 
   /* ---------------- util ---------------- */
   private onResize = () => {
-    // 尺寸变化后重算位置
-    requestAnimationFrame(() => this.centerCurrent(false));
+    // 尺寸变化后重新测量并重算位置
+    requestAnimationFrame(() => {
+      this.measureActualItemHeight();
+      this.centerCurrent(false);
+    });
   };
 
   private centerCurrent(smooth = true) {
     if (!this.listEl) return;
     const idx = this.getIndexByValue(this.current);
     const finalIdx = this.clampIndex(idx >= 0 ? idx : 0);
+    const enabledIdx = this.firstEnabledFrom(finalIdx);
+    
     if (smooth) {
-      this.startSnapAnim(finalIdx, { silent: true });
+      this.startSnapAnim(enabledIdx, { silent: true });
     } else {
-      const y = this.yForIndex(finalIdx);
+      const y = this.yForIndex(enabledIdx);
       this.setTrackTransform(y, false);
-      this.visual = this.parsed[finalIdx]?.value;
+      this.visual = this.parsed[enabledIdx]?.value;
     }
   }
 
@@ -501,16 +641,21 @@ export class LdesignPicker {
   render() {
     this.itemH = this.itemHeightBySize;
     const heightPx = this.panelHeightPx;
-    
-    // 确保初始 trackY 正确
-    if (this.trackY === 0 && this.parsed.length > 0) {
-      const idx = this.getIndexByValue(this.current);
-      this.trackY = this.yForIndex(idx >= 0 ? idx : 0);
-    }
 
     return (
       <Host class={{ 'ldesign-picker': true, 'ldesign-picker--disabled': this.disabled }}>
-        <div class="ldesign-picker__picker" ref={(el) => { this.containerEl = el as HTMLElement; }} style={{ height: `${heightPx}px`, ['--ld-pk-item-height' as any]: `${this.itemH}px` }}>
+        <div 
+          class="ldesign-picker__picker" 
+          ref={(el) => { this.containerEl = el as HTMLElement; }} 
+          style={{ height: `${heightPx}px`, ['--ld-pk-item-height' as any]: `${this.itemH}px` }}
+          onWheel={this.onWheel as any}
+          onPointerDown={this.onPointerDown as any}
+          onPointerMove={this.onPointerMove as any}
+          onPointerUp={this.onPointerUp as any}
+          onPointerCancel={this.onPointerUp as any}
+          onKeyDown={this.onKeyDown as any}
+          tabindex={this.disabled ? -1 : 0}
+        >
           <ul
             class="ldesign-picker__column"
             ref={(el) => { this.listEl = el as HTMLElement; }}
@@ -520,13 +665,6 @@ export class LdesignPicker {
               paddingTop: '0',
               paddingBottom: '0'
             }}
-            onWheel={this.onWheel as any}
-            onPointerDown={this.onPointerDown as any}
-            onPointerMove={this.onPointerMove as any}
-            onPointerUp={this.onPointerUp as any}
-            onPointerCancel={this.onPointerUp as any}
-            onKeyDown={this.onKeyDown as any}
-            tabindex={this.disabled ? -1 : 0}
           >
             {this.parsed.map((opt, i) => (
               <li

@@ -11,6 +11,7 @@
     background: #fff;
     border-radius: 6px;
     border: 1px solid var(--ldesign-border-color, #e5e7eb);
+    box-sizing: border-box; // 确保边框不影响内部计算
     // 防止触发页面滚动
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
@@ -40,8 +41,9 @@
     font-size: 14px;
     color: var(--ldesign-text-color, #111827);
     cursor: pointer;
-    margin: 0;
+    margin: 0 !important; // 确保没有margin影响计算
     padding: 0;
+    box-sizing: border-box; // 确保高度计算一致
     background: transparent !important;
 
     &:hover { background: transparent !important; }
@@ -61,12 +63,14 @@
 
   &__indicator {
     position: absolute;
-    left: 0; right: 0;
+    left: 0; 
+    right: 0;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
     background: rgba(29, 78, 216, 0.06);
     border-radius: 6px;
+    box-sizing: border-box;
   }
 
   // 可选的顶部/底部渐隐遮罩（默认隐藏，如需可启用）

@@ -85,7 +85,11 @@ export class LdesignMention {
   /** 事件/受控值格式（默认 model） */
   @Prop() valueFormat: 'model' | 'segments' | 'text' = 'model';
 
-  @Watch('options') watchOptions(val: string | MentionItem[]) { this.parsedOptions = this.parseOptions(val); }
+  @Watch('options') 
+  watchOptions(val: string | MentionItem[]) { 
+    this.parsedOptions = this.parseOptions(val);
+    console.log('[Mention] Options updated:', this.parsedOptions.length, 'items');
+  }
   @Watch('triggerConfigs') watchTriggerConfigs(val?: string | MentionTriggerConfig[]) {
     this.parsedTriggerConfigs = this.parseTriggerConfigs(val);
   }
@@ -146,12 +150,17 @@ export class LdesignMention {
 
     if (this.autofocus) this.editableEl?.focus();
 
+    // 监听原生 beforeinput（Stencil JSX 未内置类型，需要手动监听）
+    this.editableEl?.addEventListener('beforeinput', this.onBeforeInput as any);
+
     // 监听全局 selection 变化，动态更新锚点位置
     document.addEventListener('selectionchange', this.onSelectionChange);
   }
 
   disconnectedCallback() {
     document.removeEventListener('selectionchange', this.onSelectionChange);
+    // 清理 beforeinput 监听
+    this.editableEl?.removeEventListener('beforeinput', this.onBeforeInput as any);
   }
 
   private parseOptions(val: string | MentionItem[]): MentionItem[] {
@@ -265,7 +274,9 @@ export class LdesignMention {
 
   private setEditableText(text: string) {
     if (!this.editableEl) return;
-    this.editableEl.innerText = text;
+    // 使用 textContent 而不是 innerText，确保创建单个文本节点
+    // 这样光标位置更容易被正确识别
+    this.editableEl.textContent = text;
   }
 
   private renderFromSegments(segments: MentionSegment[]) {
@@ -398,73 +409,163 @@ export class LdesignMention {
     let offset: number = caret.startOffset;
     let query = '';
 
+    console.log('[Mention] findTriggerFromCaret - starting search from node:', node, 'offset:', offset, 'nodeType:', node.nodeType);
+
+    // 创建 walker 以遍历文本节点
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
-    // 将 walker 移动到当前 text 节点
+    
+    // 如果当前不是文本节点，找到光标位置之前的最后一个文本节点
     if (node.nodeType !== 3) {
-      // 若为元素，则尝试取其前一个 text 节点
-      walker.currentNode = root;
-      let lastText: Node | null = null;
-      let cur: Node | null = walker.nextNode();
-      while (cur) { if (cur.contains && (cur as any).contains(node)) break; lastText = cur; cur = walker.nextNode(); }
-      if (lastText) node = lastText;
-      else return null;
-      offset = (node.textContent || '').length;
-    } else {
-      // 将 walker 对齐到当前 text node
-      walker.currentNode = node;
+      console.log('[Mention] Caret is in element node, finding text node...');
+      
+      // 处理特殊情况：光标在元素末尾（常见于初始值设置后）
+      if (node === root) {
+        // 收集所有文本节点
+        const textNodes: Text[] = [];
+        walker.currentNode = root;
+        let textNode: Node | null;
+        while ((textNode = walker.nextNode())) {
+          const parent = textNode.parentElement;
+          // 跳过 token 内部的文本节点
+          if (!parent || !parent.closest('.ldesign-mention__token')) {
+            textNodes.push(textNode as Text);
+          }
+        }
+        
+        console.log('[Mention] Found', textNodes.length, 'text nodes');
+        
+        if (textNodes.length > 0) {
+          // 根据 offset 找到对应的文本节点
+          if (offset === node.childNodes.length || offset === 0) {
+            // 光标在最后或最前
+            const lastTextNode = textNodes[textNodes.length - 1];
+            if (lastTextNode) {
+              node = lastTextNode;
+              offset = lastTextNode.textContent?.length || 0;
+              console.log('[Mention] Using last text node:', node.textContent);
+            }
+          } else if (offset > 0 && offset <= node.childNodes.length) {
+            // 光标在某个子节点位置
+            const childBefore = node.childNodes[offset - 1];
+            // 如果前面的节点就是文本节点，直接使用
+            if (childBefore && childBefore.nodeType === 3) {
+              node = childBefore;
+              offset = childBefore.textContent?.length || 0;
+              console.log('[Mention] Using previous text node:', node.textContent);
+            } else {
+              // 查找该位置之前的最后一个文本节点
+              for (let i = textNodes.length - 1; i >= 0; i--) {
+                const tn = textNodes[i];
+                if (childBefore && (childBefore === tn || childBefore.contains(tn))) {
+                  node = tn;
+                  offset = tn.textContent?.length || 0;
+                  console.log('[Mention] Found text node in child:', node.textContent);
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // 如果还不是文本节点，无法处理
+      if (node.nodeType !== 3) {
+        console.log('[Mention] findTriggerFromCaret - no text node found, cannot search for trigger');
+        return null;
+      }
     }
+    
+    // 现在 node 应该是一个文本节点
+    walker.currentNode = node;
+
+    console.log('[Mention] findTriggerFromCaret - searching from text node:', node.textContent, 'offset:', offset);
 
     let examineNode = node as Text;
     let withinToken = (n: Node | null) => !!(n && (n as HTMLElement).closest && (n as HTMLElement).closest('.ldesign-mention__token'));
 
+    // 累积从多个文本节点的查询字符串
+    let accumulatedQuery = '';
+
     while (examineNode) {
-      if (withinToken(examineNode)) return null; // 光标前为 token，则不激活
+      if (withinToken(examineNode)) {
+        console.log('[Mention] findTriggerFromCaret - hit token, stopping');
+        return null; // 光标前为 token，则不激活
+      }
+      
       const text = examineNode.nodeValue || '';
       const end = examineNode === node ? offset : text.length;
+      
+      console.log('[Mention] findTriggerFromCaret - examining text:', text, 'from 0 to', end);
+      
       for (let i = end - 1; i >= 0; i--) {
         const ch = text[i];
+        
         if (this.isTriggerChar(ch)) {
           const prev = i > 0 ? text[i - 1] : '';
           const next = i + 1 < text.length ? text[i + 1] : '';
           let skip = false;
+          
           if (ch === '@') {
             // 简单的邮箱保护：字母/数字/._- 紧挨 @ 且后面也为字母数字时，视为邮箱并跳过
             const likelyEmail = /[A-Za-z0-9._-]/.test(prev) && /[A-Za-z0-9]/.test(next);
-            if (likelyEmail) skip = true;
+            if (likelyEmail) {
+              console.log('[Mention] findTriggerFromCaret - skipping @ as likely email');
+              skip = true;
+            }
           }
+          
           if (!skip) {
             // 命中触发点，收集从触发符后面的查询字符串
-            const queryStartIndex = i + 1;
-            query = '';
+            let query = '';
             if (examineNode === node) {
-              query = text.slice(queryStartIndex, offset);
+              // 当前节点内，从触发符后到光标位置
+              query = text.slice(i + 1, offset);
             } else {
-              // 跨节点的情况：需要收集从触发符到光标的所有文本
-              query = text.slice(queryStartIndex) + query;
+              // 从触发符后到节点结束
+              query = text.slice(i + 1);
             }
+            // 加上之前累积的跨节点查询字符串
+            query = query + accumulatedQuery;
+            
             const r = document.createRange();
             r.setStart(examineNode, i);
             r.setEnd(caret.endContainer, caret.endOffset);
+            
+            console.log('[Mention] findTriggerFromCaret - found trigger:', ch, 'at position', i, 'query:', query);
             return { range: r, query, char: ch };
           }
           // 否则继续向左查找更早的触发字符
           continue;
         }
+        
         if (/\s/.test(ch)) {
           // 在找到 @ 前遇到空白，失败
+          console.log('[Mention] findTriggerFromCaret - hit whitespace, stopping');
           return null;
         }
-        // 累积查询字符串（从右向左）
-        if (examineNode === node && i < offset - 1) {
-          // 还在当前节点内
-        } else {
-          query = ch + query;
+        
+        // 累积查询字符串（从右向左）- 只在不是当前节点的最后位置时累积
+        if (examineNode !== node || i < offset - 1) {
+          accumulatedQuery = ch + accumulatedQuery;
         }
       }
+      
+      // 如果这不是起始节点，累积整个节点的文本到查询字符串
+      if (examineNode !== node) {
+        // 已经在循环中累积了
+      }
+      
       const prevText = walker.previousNode() as Text | null;
-      if (!prevText) break;
+      if (!prevText) {
+        console.log('[Mention] findTriggerFromCaret - no more text nodes');
+        break;
+      }
+      
+      // 切换到前一个文本节点，累积其所有内容
       examineNode = prevText;
     }
+    
+    console.log('[Mention] findTriggerFromCaret - no trigger found');
     return null;
   }
 
@@ -472,11 +573,13 @@ export class LdesignMention {
     const list = this.getFilteredOptions(q);
     this.highlightIndex = list.length ? 0 : -1;
     this.open = !!(this.loading || list.length);
+    console.log('[Mention] openIfNeeded - query:', q, 'filtered options:', list.length, 'open:', this.open);
   }
 
   private getFilteredOptions(q: string): MentionItem[] {
     const ch = this.currentTriggerChar || this.getTriggers()[0] || '@';
     const src = this.getOptionsFor(ch);
+    console.log('[Mention] getFilteredOptions - trigger:', ch, 'source options:', src.length, 'query:', q);
     if (!q) return src.filter(o => !o.disabled);
     const lower = q.toLowerCase();
     return src.filter(o => !o.disabled && (this.filterOption ? this.filterOption(q, o) : (o.label?.toLowerCase().includes(lower) || String(o.value).toLowerCase().includes(lower))));
@@ -544,14 +647,34 @@ export class LdesignMention {
       if (e.key === 'ArrowDown') { e.preventDefault(); if (items.length) { this.highlightIndex = (this.highlightIndex + 1) % items.length; this.scrollHighlightedIntoView(); } return; }
       if (e.key === 'ArrowUp') { e.preventDefault(); if (items.length) { this.highlightIndex = (this.highlightIndex - 1 + items.length) % items.length; this.scrollHighlightedIntoView(); } return; }
       if (e.key === 'Enter') { e.preventDefault(); if (this.highlightIndex >= 0) this.selectByIndex(this.highlightIndex); return; }
-      if (e.key === 'Escape') { e.preventDefault(); this.open = false; return; }
+      if (e.key === 'Escape') { e.preventDefault(); this.open = false; this.triggerCtx = null; return; }
     }
 
-    // 删除时，若光标在 token 之后，整体删除 token
+    // 删除时的处理
     if (e.key === 'Backspace' && this.editableEl) {
-      const sel = window.getSelection(); if (!sel || !sel.isCollapsed || sel.rangeCount === 0) return;
+      const sel = window.getSelection(); 
+      if (!sel || !sel.isCollapsed || sel.rangeCount === 0) return;
       const r = sel.getRangeAt(0);
       const node = r.startContainer;
+      
+      // 检查是否正在删除触发符
+      if (this.triggerCtx && node.nodeType === 3) {
+        const text = node.textContent || '';
+        const offset = r.startOffset;
+        // 如果光标在触发符后且没有其他字符，删除触发符会关闭弹窗
+        if (offset > 0 && this.isTriggerChar(text[offset - 1])) {
+          // 延迟检查，让删除操作先执行
+          setTimeout(() => {
+            const found = this.findTriggerFromCaret();
+            if (!found) {
+              this.triggerCtx = null;
+              this.open = false;
+              this.searchText = '';
+            }
+          }, 0);
+        }
+      }
+      
       // 若前一个兄弟是 token，整体删除
       let prev: Node | null = null;
       if (node.nodeType === 3) {
@@ -579,52 +702,56 @@ export class LdesignMention {
   private onBeforeInput = (e: Event) => {
     if (this.disabled || this.readonly) return;
     const inputEvent = e as InputEvent;
-    if (inputEvent.inputType === 'insertText' && inputEvent.data) {
-      const triggers = this.getTriggers();
-      if (triggers.includes(inputEvent.data)) {
-        // 记录触发点：在插入触发符之前的光标位置
-        const sel = window.getSelection(); 
-        if (sel && sel.rangeCount) {
-          const r = sel.getRangeAt(0).cloneRange();
-          this.triggerCtx = { range: r, char: inputEvent.data };
-          this.currentTriggerChar = inputEvent.data;
-          // 等待插入后更新锚点
-          setTimeout(() => {
-            // 重新查找触发符位置，以防浏览器插入行为不一致
-            const found = this.findTriggerFromCaret();
-            if (found && found.char === inputEvent.data) {
-              this.triggerCtx = { range: found.range, char: found.char };
-              this.searchText = found.query;
-            }
-            this.updateAnchorPosition(); 
-            this.ldesignSearch.emit({ value: this.searchText || '', trigger: inputEvent.data }); 
-            this.openIfNeeded(this.searchText || ''); 
-          }, 0);
-        }
-      }
-    }
+    console.log('[Mention] beforeInput event:', inputEvent.inputType, 'data:', inputEvent.data);
+    
+    // Note: We don't handle trigger detection here anymore - let onInput handle it
+    // This avoids timing issues and ensures consistent behavior
   };
 
   private onInput = () => {
     if (this.disabled || this.readonly) return;
+    
     // 同步 value
     this.syncValueFromEditable();
 
-    // 若没有显式触发点，尝试通过回溯查找（支持粘贴等场景）
-    if (!this.triggerCtx) {
-      const found = this.findTriggerFromCaret();
-      if (found) {
+    // 总是检查是否有触发符（从光标向后回溯）
+    const found = this.findTriggerFromCaret();
+    
+    console.log('[Mention] onInput - found trigger:', found ? `${found.char} with query "${found.query}"` : 'none');
+    
+    if (found) {
+      // 找到触发符
+      const isNewTrigger = !this.triggerCtx || 
+                            this.triggerCtx.char !== found.char || 
+                            found.range.startContainer !== this.triggerCtx.range.startContainer ||
+                            found.range.startOffset !== this.triggerCtx.range.startOffset;
+      
+      if (isNewTrigger) {
+        // 新的触发符或位置变化
+        console.log('[Mention] New trigger detected:', found.char, 'query:', found.query);
         this.triggerCtx = { range: found.range, char: found.char };
         this.currentTriggerChar = found.char;
         this.searchText = found.query;
+        this.updateAnchorPosition();
         this.ldesignSearch.emit({ value: this.searchText, trigger: found.char });
         this.openIfNeeded(this.searchText);
-        this.updateAnchorPosition();
       } else {
-        this.open = false;
+        // 更新查询字符串
+        console.log('[Mention] Updating query for existing trigger:', found.query);
+        this.searchText = found.query;
+        this.updateAnchorPosition();
+        this.ldesignSearch.emit({ value: this.searchText, trigger: found.char });
+        this.openIfNeeded(this.searchText);
       }
     } else {
-      // 已有触发点的情况下，在 selectionchange 中处理 query 更新
+      // 没有找到触发符
+      if (this.triggerCtx) {
+        console.log('[Mention] Trigger lost, closing popup');
+        this.triggerCtx = null;
+        this.currentTriggerChar = '';
+        this.open = false;
+        this.searchText = '';
+      }
     }
   };
 
@@ -721,11 +848,7 @@ export class LdesignMention {
         onBlur={this.onBlur as any}
         onKeyDown={this.onKeyDown as any}
         onInput={(e: Event) => {
-          // 延迟处理，确保DOM更新
-          setTimeout(() => {
-            this.onBeforeInput(e);
-            this.onInput();
-          }, 0);
+          this.onInput();
         }}
         onClick={this.onEditableClick as any}
       ></div>
@@ -768,6 +891,7 @@ export class LdesignMention {
                     'ldesign-mention__item--disabled': !!it.disabled,
                   }}
                   onMouseEnter={() => (this.highlightIndex = i)}
+                  onMouseDown={(e) => { e.preventDefault(); /* 防止失去焦点 */ }}
                   onClick={(e) => !it.disabled && this.onItemClick(it, e)}
                 >
                   {it.avatar ? (<img class="ldesign-mention__avatar" src={it.avatar} alt={it.label} />) : null}
