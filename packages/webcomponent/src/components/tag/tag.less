@@ -1,0 +1,179 @@
+/* Tag 组件样式 */
+.ldesign-tag {
+  --tag-gap: var(--ls-spacing-xs);
+  --tag-padding-y-small: 2px;
+  --tag-padding-y-middle: 4px;
+  --tag-padding-y-large: 6px;
+  --tag-padding-x-small: 8px;
+  --tag-padding-x-middle: 10px;
+  --tag-padding-x-large: 12px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tag-gap);
+  border: 1px solid var(--ldesign-border-color);
+  background-color: var(--ldesign-bg-color-component);
+  color: var(--ldesign-text-color-primary);
+  border-radius: var(--ls-border-radius-base);
+  line-height: 1.2;
+  vertical-align: middle;
+  user-select: none;
+
+  /* 尺寸变体 */
+  &--small {
+    font-size: var(--ls-font-size-xs);
+    padding: var(--tag-padding-y-small) var(--tag-padding-x-small);
+  }
+
+  &--middle {
+    font-size: var(--ls-font-size-sm);
+    padding: var(--tag-padding-y-middle) var(--tag-padding-x-middle);
+  }
+
+  /* 兼容别名：medium 等价于 middle */
+  &--medium {
+    font-size: var(--ls-font-size-sm);
+    padding: var(--tag-padding-y-middle) var(--tag-padding-x-middle);
+  }
+
+  &--large {
+    font-size: var(--ls-font-size-base);
+    padding: var(--tag-padding-y-large) var(--tag-padding-x-large);
+  }
+
+  /* 形状 */
+  &--rectangle {
+    border-radius: var(--ls-border-radius-base);
+  }
+  &--round {
+    border-radius: 9999px;
+  }
+
+  /* 内容与图标 */
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: currentColor;
+  }
+
+  &__content {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  &__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: currentColor;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 4px;
+
+    &:hover {
+      opacity: 0.85;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ldesign-border-color-focus);
+      outline-offset: 2px;
+      border-radius: 50%;
+    }
+  }
+
+  /* 状态 */
+  &--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* 语义颜色：default（默认） */
+  &--color-default.ldesign-tag--solid {
+    background-color: var(--ldesign-bg-color-component-active);
+    border-color: var(--ldesign-border-color);
+    color: var(--ldesign-text-color-primary);
+  }
+  &--color-default.ldesign-tag--light {
+    background-color: var(--ldesign-bg-color-component-hover);
+    border-color: var(--ldesign-border-color);
+    color: var(--ldesign-text-color-primary);
+  }
+  &--color-default.ldesign-tag--outline {
+    background-color: transparent;
+    border-color: var(--ldesign-border-color);
+    color: var(--ldesign-text-color-primary);
+  }
+
+  /* primary */
+  &--color-primary.ldesign-tag--solid {
+    background-color: var(--ldesign-brand-color);
+    border-color: var(--ldesign-brand-color);
+    color: var(--ldesign-font-white-1);
+  }
+  &--color-primary.ldesign-tag--light {
+    background-color: var(--ldesign-brand-color-1);
+    border-color: var(--ldesign-brand-color-2);
+    color: var(--ldesign-brand-color-7);
+  }
+  &--color-primary.ldesign-tag--outline {
+    background-color: transparent;
+    border-color: var(--ldesign-brand-color);
+    color: var(--ldesign-brand-color);
+  }
+
+  /* success */
+  &--color-success.ldesign-tag--solid {
+    background-color: var(--ldesign-success-color);
+    border-color: var(--ldesign-success-color);
+    color: var(--ldesign-font-white-1);
+  }
+  &--color-success.ldesign-tag--light {
+    background-color: var(--ldesign-success-color-1);
+    border-color: var(--ldesign-success-color-2);
+    color: var(--ldesign-success-color-7);
+  }
+  &--color-success.ldesign-tag--outline {
+    background-color: transparent;
+    border-color: var(--ldesign-success-color);
+    color: var(--ldesign-success-color);
+  }
+
+  /* warning */
+  &--color-warning.ldesign-tag--solid {
+    background-color: var(--ldesign-warning-color);
+    border-color: var(--ldesign-warning-color);
+    color: var(--ldesign-font-white-1);
+  }
+  &--color-warning.ldesign-tag--light {
+    background-color: var(--ldesign-warning-color-1);
+    border-color: var(--ldesign-warning-color-2);
+    color: var(--ldesign-warning-color-7);
+  }
+  &--color-warning.ldesign-tag--outline {
+    background-color: transparent;
+    border-color: var(--ldesign-warning-color);
+    color: var(--ldesign-warning-color);
+  }
+
+  /* danger */
+  &--color-danger.ldesign-tag--solid {
+    background-color: var(--ldesign-error-color);
+    border-color: var(--ldesign-error-color);
+    color: var(--ldesign-font-white-1);
+  }
+  &--color-danger.ldesign-tag--light {
+    background-color: var(--ldesign-error-color-1);
+    border-color: var(--ldesign-error-color-2);
+    color: var(--ldesign-error-color-7);
+  }
+  &--color-danger.ldesign-tag--outline {
+    background-color: transparent;
+    border-color: var(--ldesign-error-color);
+    color: var(--ldesign-error-color);
+  }
+}

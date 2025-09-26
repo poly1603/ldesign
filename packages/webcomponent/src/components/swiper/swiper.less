@@ -1,0 +1,79 @@
+@prefix: ld-swiper;
+
+.@{prefix} {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: pan-y pinch-zoom; // 默认允许纵向滚动页面
+
+  &--vertical {
+    touch-action: pan-x pinch-zoom; // 垂直模式允许横向滚动页面
+  }
+
+  &--grab {
+    .@{prefix}__viewport { cursor: grab; }
+    .@{prefix}__viewport:active { cursor: grabbing; }
+  }
+
+  &__viewport {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  &__track {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    will-change: transform;
+    transition-property: transform;
+    transition-timing-function: ease;
+  }
+
+  &--horizontal &__track { flex-direction: row; }
+  &--vertical &__track { flex-direction: column; }
+
+  &__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 16px;
+    background: rgba(0,0,0,0.4);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity .2s ease;
+
+    &:disabled { opacity: .38; cursor: default; }
+  }
+
+  &__nav--prev { left: 8px; }
+  &__nav--next { right: 8px; }
+
+  &__pagination {
+    position: absolute;
+    left: 0; right: 0; bottom: 8px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    z-index: 9;
+  }
+  &__bullet {
+    appearance: none;
+    width: 8px; height: 8px; border-radius: 50%; border: none; padding: 0;
+    background: rgba(0,0,0,0.25);
+    cursor: pointer;
+
+    &.is-active { background: var(--ld-primary, #722ED1); }
+  }
+}

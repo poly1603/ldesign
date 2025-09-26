@@ -1,0 +1,71 @@
+@avatar-prefix: ldesign-avatar;
+
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.@{avatar-prefix} {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ld-avatar-color, #fff);
+  background: var(--ld-avatar-bg, #bfbfbf);
+  user-select: none;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  &--small { width: var(--ls-avatar-size-small, 36px); height: var(--ls-avatar-size-small, 36px); line-height: var(--ls-avatar-size-small, 36px); font-size: calc(var(--ls-avatar-size-small, 36px) * 0.5); }
+  &--medium { width: var(--ls-avatar-size-medium, 40px); height: var(--ls-avatar-size-medium, 40px); line-height: var(--ls-avatar-size-medium, 40px); font-size: calc(var(--ls-avatar-size-medium, 40px) * 0.5); }
+  &--large { width: var(--ls-avatar-size-large, 44px); height: var(--ls-avatar-size-large, 44px); line-height: var(--ls-avatar-size-large, 44px); font-size: calc(var(--ls-avatar-size-large, 44px) * 0.5); }
+
+  &--shape-circle { border-radius: 50%; }
+  &--shape-square { border-radius: var(--ls-border-radius-base); }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: var(--ld-avatar-fit, cover);
+  }
+
+  &__icon {
+    width: 60%;
+    height: 60%;
+    color: currentColor;
+  }
+
+  &__string {
+    display: inline-block;
+    transform-origin: center center;
+    white-space: nowrap;
+    line-height: 1;
+  }
+
+  &__badge {
+    position: absolute;
+    right: -2px;
+    top: -2px;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: #ff4d4f;
+    color: #fff;
+    font-size: 10px;
+    line-height: 16px;
+    padding: 0 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 2px #fff; /* 与组内边框一致 */
+
+    &--dot {
+      width: 8px;
+      height: 8px;
+      padding: 0;
+      min-width: 8px;
+      line-height: 8px;
+    }
+  }
+}

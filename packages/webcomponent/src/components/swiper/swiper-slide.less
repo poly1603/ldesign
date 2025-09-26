@@ -1,0 +1,20 @@
+@prefix: ld-swiper-slide;
+
+.@{prefix} {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ld-swiper-slide-bg, transparent);
+
+  &--active {
+    /* 可根据需要高亮当前项 */
+  }
+
+  > * {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}

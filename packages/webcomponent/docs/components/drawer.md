@@ -132,7 +132,10 @@ onMounted(() => {
     const btn = document.getElementById(btnId)
     const el = document.getElementById(elId)
     if (btn && el) {
-      btn.addEventListener('click', () => el.setAttribute('visible', ''))
+      const handler = () => el.setAttribute('visible', '')
+      btn.addEventListener('click', handler)
+      // 兼容 ldesign-button 触发的自定义点击事件
+      btn.addEventListener('ldesignClick', handler)
     }
   })
 
@@ -223,7 +226,7 @@ onMounted(() => {
     <p>这是一级抽屉内容。</p>
 
     <div class="demo-row">
-      <button id="open-drawer-level2">打开二级抽屉</button>
+      <ldesign-button id="open-drawer-level2" type="primary">打开二级抽屉</ldesign-button>
     </div>
   </ldesign-drawer>
 
@@ -237,7 +240,7 @@ onMounted(() => {
 
 <ldesign-drawer id="drawer-level1" drawer-title="一级抽屉">
   <p>这是一级抽屉内容。</p>
-  <button id="open-drawer-level2">打开二级抽屉</button>
+  <ldesign-button id="open-drawer-level2" type="primary">打开二级抽屉</ldesign-button>
 </ldesign-drawer>
 
 <ldesign-drawer id="drawer-level2" drawer-title="二级抽屉">

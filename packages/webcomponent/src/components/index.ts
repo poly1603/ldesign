@@ -50,6 +50,12 @@ export { LdesignProgress } from './progress/progress';
 export { LdesignInputNumber } from './input-number/input-number';
 export { LdesignAlert } from './alert/alert';
 export { LdesignCircleNavigation } from './circle-navigation/circle-navigation';
+export { LdesignTag } from './tag/tag';
+export { LdesignCountdown } from './countdown/countdown';
+export { LdesignSwiper } from './swiper/swiper';
+export { LdesignSwiperSlide } from './swiper/swiper-slide';
+export { LdesignAvatar } from './avatar/avatar';
+export { LdesignAvatarGroup } from './avatar/avatar-group';
 
 // Modal quick APIs
 export { alertModal, confirmModal, promptModal, promptPassword, promptForm } from './modal/modal-api';

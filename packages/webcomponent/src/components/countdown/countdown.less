@@ -1,0 +1,149 @@
+/**
+ * Countdown 倒计时样式
+ */
+
+.ldesign-countdown {
+  display: inline-flex;
+  align-items: baseline;
+  color: var(--ldesign-text-color-primary);
+  font-variant-numeric: tabular-nums; /* 等宽数字，避免跳动 */
+  line-height: 1.2;
+
+  &__title {
+    margin-right: var(--ls-spacing-sm);
+    color: var(--ldesign-text-color-secondary);
+    font-weight: 500;
+  }
+
+  &__value {
+    letter-spacing: 0.5px;
+    /* 可根据主题覆盖颜色 */
+  }
+
+  /* 分段/翻牌样式 */
+  &__segments {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: var(--ls-spacing-xs);
+  }
+  &__segment {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  &__segment-value {
+    display: inline-flex;
+    gap: 2px;
+    background: var(--ldesign-bg-color-component);
+    color: var(--ldesign-text-color-primary);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: 6px;
+    padding: 2px 4px;
+    line-height: 1;
+  }
+  &__digit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0.6em;
+    padding: 0 1px;
+    font-variant-numeric: tabular-nums;
+  }
+  &__segment-unit {
+    color: var(--ldesign-text-color-secondary);
+    font-size: 0.9em;
+    line-height: 1;
+    transform: translateY(-1px);
+  }
+  &__separator {
+    color: var(--ldesign-text-color-tertiary, var(--ldesign-text-color-secondary));
+    opacity: 0.8;
+  }
+
+  /* 翻牌动效（简化版） */
+  &--variant-flip {
+    .ldesign-countdown__digit {
+      animation: ldesign-countdown-flip 400ms ease;
+      backface-visibility: hidden;
+    }
+  }
+  @keyframes ldesign-countdown-flip {
+    0% { transform: rotateX(0deg); }
+    50% { transform: rotateX(-80deg); }
+    100% { transform: rotateX(0deg); }
+  }
+
+  /* 进度条样式 */
+  &__progress {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  &__progress--line {
+    width: 200px;
+    height: 10px;
+  }
+  &__progress-track {
+    position: absolute;
+    inset: 0;
+    background: var(--ldesign-bg-color-component);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: 999px;
+  }
+  &__progress-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: var(--ldesign-brand-color);
+    border-radius: 999px;
+    transition: width 0.2s ease;
+  }
+  &__progress-text {
+    position: absolute;
+    pointer-events: none;
+    color: var(--ldesign-text-color-primary);
+    font-size: 0.9em;
+  }
+
+  /* 环形进度样式 */
+  &__progress--circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  &__progress-circle {
+    position: absolute;
+  }
+  &__progress-circle-bg {
+    stroke: var(--ldesign-border-color);
+    opacity: 0.5;
+  }
+  &__progress-circle-fg {
+    stroke: var(--ldesign-brand-color);
+    transition: stroke-dashoffset 0.2s ease;
+  }
+
+  &--small {
+    font-size: var(--ls-font-size-xs);
+  }
+
+  &--medium,
+  &--middle {
+    font-size: var(--ls-font-size-sm);
+  }
+
+  &--large {
+    font-size: var(--ls-font-size-base);
+  }
+
+  /* 尺寸对进度条高度的影响 */
+  &--small &__progress--line { height: 8px; width: 160px; }
+  &--middle &__progress--line { height: 10px; width: 200px; }
+  &--large &__progress--line { height: 12px; width: 240px; }
+
+  &--finished {
+    color: var(--ldesign-text-color-disabled);
+  }
+}

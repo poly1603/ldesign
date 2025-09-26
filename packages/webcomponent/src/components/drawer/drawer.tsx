@@ -317,7 +317,7 @@ export class LdesignDrawer {
     setTimeout(() => this.maskElement = this.el.querySelector('.ldesign-drawer__mask') as HTMLElement, 0);
 
     return (
-      <Host style={{ zIndex: String(this.baseZ()) }}>
+      <Host>
         <div class={this.getRootClasses()} style={this.getRootStyle()} role="dialog" aria-modal="true" aria-hidden={this.isVisible ? 'false' : 'true'}>
           {this.mask && (
             <div class="ldesign-drawer__mask" onClick={this.handleMaskClick}></div>
@@ -365,11 +365,13 @@ export class LdesignDrawer {
   }
 
   private getRootStyle(): { [k: string]: string } {
+    // 根节点需要携带实例化的 z-index，确保多层时按栈顶顺序覆盖
+    const style: { [k: string]: string } = { zIndex: String(this.baseZ()) };
     // 在容器内使用绝对定位以铺满容器
     if (this.isInContainer()) {
-      return { position: 'absolute' } as any;
+      style.position = 'absolute';
     }
-    return {} as any;
+    return style;
   }
 
   private applyContainerOverflow(container: HTMLElement) {

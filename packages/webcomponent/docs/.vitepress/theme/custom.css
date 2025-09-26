@@ -7,6 +7,11 @@
 
 /* 导入设计系统变量 */
 :root {
+  /* Avatar 尺寸变量（确保演示站点可用） */
+  --ls-avatar-size-small: 36px;
+  --ls-avatar-size-medium: 40px;
+  --ls-avatar-size-large: 44px;
+
   /* 品牌色彩 */
   --vp-c-brand-1: #722ED1;
   --vp-c-brand-2: #5e2aa7;

@@ -170,6 +170,138 @@ export namespace Components {
         "type": AlertType;
     }
     /**
+     * Avatar 头像
+     * - 三种展示形态：图片、图标、文字
+     * - 三种尺寸：small / medium / large，或自定义像素
+     * - 两种形状：circle / square
+     * - 文本头像自动缩放，支持 gap 调节左右留白
+     * - 支持徽标（红点或计数）
+     * - 支持响应式尺寸（clamp）
+     */
+    interface LdesignAvatar {
+        /**
+          * 替代文本
+         */
+        "alt"?: string;
+        /**
+          * 是否根据宽度自动缩放文字
+          * @default true
+         */
+        "autosize": boolean;
+        /**
+          * 背景色（图标与文字时有效；图片时作为容器背景）
+         */
+        "background"?: string;
+        /**
+          * 是否显示徽标红点
+          * @default false
+         */
+        "badge": boolean;
+        /**
+          * 徽标颜色（红点/气泡背景色）
+          * @default '#ff4d4f'
+         */
+        "badgeColor": string;
+        /**
+          * 徽标数字，设置后显示计数气泡，优先级高于 badge
+         */
+        "badgeValue"?: number | string;
+        /**
+          * 文本/图标颜色
+         */
+        "color"?: string;
+        /**
+          * 图片填充模式
+          * @default 'cover'
+         */
+        "fit": 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
+        /**
+          * 文字与容器左右间距（px），仅文字头像生效
+          * @default 4
+         */
+        "gap": number;
+        /**
+          * 图标名称（Lucide），无 src 时生效
+         */
+        "icon"?: string;
+        /**
+          * 响应式尺寸（使用 CSS clamp 设置宽高）
+          * @default false
+         */
+        "responsive": boolean;
+        /**
+          * clamp 最大像素（responsive 为 true 时生效）
+          * @default 64
+         */
+        "responsiveMax": number;
+        /**
+          * clamp 中间项，接受任何 CSS 长度表达式，默认 10vw
+          * @default '10vw'
+         */
+        "responsiveMid": string;
+        /**
+          * clamp 最小像素（responsive 为 true 时生效）
+          * @default 28
+         */
+        "responsiveMin": number;
+        /**
+          * 形状：圆形或方形
+          * @default 'circle'
+         */
+        "shape": 'circle' | 'square';
+        /**
+          * 尺寸：预设 small/middle/medium/large 或自定义像素
+          * @default 'medium'
+         */
+        "size": 'small' | 'middle' | 'medium' | 'large' | number;
+        /**
+          * 响应式图片 sizes
+         */
+        "sizes"?: string;
+        /**
+          * 图片地址
+         */
+        "src"?: string;
+        /**
+          * 响应式图片 srcset
+         */
+        "srcset"?: string;
+        /**
+          * 文字内容（不传则使用默认插槽的文本节点）
+         */
+        "text"?: string;
+    }
+    /**
+     * Avatar.Group 头像组合
+     * - 支持溢出显示 +N
+     * - 支持统一 size/shape
+     * - 支持重叠间距（gap）
+     */
+    interface LdesignAvatarGroup {
+        /**
+          * 边框颜色（用于实现“描边”效果以区分重叠）
+          * @default '#fff'
+         */
+        "borderColor": string;
+        /**
+          * 重叠间距（正值，单位px），默认 8
+          * @default 8
+         */
+        "gap": number;
+        /**
+          * 展示的最大头像数；超出后折叠为 +N
+         */
+        "max"?: number;
+        /**
+          * 统一形状（未在子项显式指定时生效）
+         */
+        "shape"?: 'circle' | 'square';
+        /**
+          * 统一尺寸（未在子项显式指定时生效）
+         */
+        "size"?: 'small' | 'middle' | 'medium' | 'large' | number;
+    }
+    /**
      * BackTop 返回顶部组件
      * - 支持窗口根滚动回到顶部
      * - 支持指定容器内部滚动回到顶部（通过 target 选择器）
@@ -388,6 +520,16 @@ export namespace Components {
          */
         "clockwise": boolean;
         /**
+          * 椭圆端点轴：auto 根据宽高选择；x 左右为端点；y 上下为端点
+          * @default 'auto'
+         */
+        "ellipseAxis": 'auto' | 'x' | 'y';
+        /**
+          * 椭圆半弧内的间距策略：'arc' 按弧长均分，'angle' 按角度均分（更“均匀”的视觉效果）
+          * @default 'angle'
+         */
+        "ellipseSpacing": 'arc' | 'angle';
+        /**
           * 视角正前方的角度（度），默认 90° 即底部为“最近”
           * @default 90
          */
@@ -416,6 +558,15 @@ export namespace Components {
          */
         "perspective": boolean;
         /**
+          * 3D 透视距离（px，对应 CSS perspective），zDepth>0 时生效
+          * @default 600
+         */
+        "perspectiveDistance": number;
+        /**
+          * 3D 透视原点（CSS perspective-origin），如 '50% 50%' 'center 80%'
+         */
+        "perspectiveOrigin"?: string;
+        /**
           * 是否显示圆形轨道
           * @default true
          */
@@ -430,6 +581,11 @@ export namespace Components {
           * @default 240
          */
         "width": number | string;
+        /**
+          * 3D 透视：Z 轴偏移幅度（px）。>0 则开启 translateZ；与 perspectiveDistance 联动
+          * @default 0
+         */
+        "zDepth": number;
     }
     /**
      * Collapse 折叠面板
@@ -767,6 +923,120 @@ export namespace Components {
           * @default '#3498db'
          */
         "value": string;
+    }
+    /**
+     * Countdown 倒计时组件
+     * 支持按结束时间或时长倒计时，提供格式化显示、事件与方法控制
+     */
+    interface LdesignCountdown {
+        /**
+          * 是否在初始化时自动开始
+          * @default true
+         */
+        "autoStart": boolean;
+        /**
+          * 环形进度的像素尺寸（正方形）
+         */
+        "circleSize"?: number;
+        /**
+          * 环形进度的描边宽度
+          * @default 4
+         */
+        "circleStroke": number;
+        /**
+          * 绝对结束时间（优先级高于 value），支持时间戳、日期字符串或 Date 对象
+         */
+        "endTime"?: number | string | Date;
+        /**
+          * 显示格式，支持 DD、HH、mm、ss、SSS 令牌组合
+          * @default 'HH:mm:ss'
+         */
+        "format": string;
+        /**
+          * 可选标题文本（展示在数值前）。属性名仍使用 title，避免与 HTMLElement.prototype.title 冲突
+         */
+        "label"?: string;
+        /**
+          * 是否以更高频率更新毫秒（约 50ms 一次）。为 false 时每秒更新一次
+          * @default false
+         */
+        "millisecond": boolean;
+        /**
+          * 暂停倒计时（不会重置剩余时间）
+         */
+        "pause": () => Promise<void>;
+        /**
+          * 是否暂停（受控）
+          * @default false
+         */
+        "paused": boolean;
+        /**
+          * 进度展示采用已消耗还是剩余（用于 progress-* 样式）
+          * @default 'elapsed'
+         */
+        "progressAs": 'elapsed' | 'remaining';
+        /**
+          * 重置并（在 autoStart=true 且未暂停时）重新开始
+         */
+        "reset": () => Promise<void>;
+        /**
+          * 是否在分段/翻牌样式中显示单位（天/时/分/秒/毫秒）
+          * @default false
+         */
+        "showUnit": boolean;
+        /**
+          * 尺寸（对齐其他组件的 size 体系）
+          * @default 'middle'
+         */
+        "size": Size;
+        /**
+          * 开始/继续倒计时
+         */
+        "start": () => Promise<void>;
+        /**
+          * 倒计时时长（毫秒）。当未提供 endTime 时，以当前时间为起点倒计时 value 毫秒
+         */
+        "value"?: number;
+        /**
+          * 展现形式：文本、分段、翻牌、进度条、环形进度
+          * @default 'text'
+         */
+        "variant": 'text' | 'segment' | 'flip' | 'progress-line' | 'progress-circle';
+    }
+    interface LdesignDatePicker {
+        /**
+          * @default true
+         */
+        "clearable": boolean;
+        "defaultValue"?: string;
+        /**
+          * @default false
+         */
+        "disabled": boolean;
+        "disabledDate"?: (d: Date) => boolean;
+        /**
+          * @default 1
+         */
+        "firstDayOfWeek": 0 | 1 | 2 | 3 | 4 | 5 | 6;
+        /**
+          * @default 'YYYY-MM-DD'
+         */
+        "format": string;
+        "maxDate"?: string;
+        "minDate"?: string;
+        /**
+          * @default 'date'
+         */
+        "mode": 'date' | 'week' | 'month' | 'quarter' | 'year';
+        /**
+          * @default '请选择日期'
+         */
+        "placeholder": string;
+        /**
+          * @default false
+         */
+        "showWeekNumbers": boolean;
+        "value"?: string;
     }
     /**
      * ldesign-draggable
@@ -3131,6 +3401,125 @@ export namespace Components {
         "value": number;
     }
     /**
+     * ldesign-swiper 轮播图组件
+     * 功能：
+     * - 受控/非受控当前索引（value/defaultValue）
+     * - 自动播放（autoplay + autoplayDelay + pauseOnHover + disableOnInteraction）
+     * - 循环（loop）
+     * - 导航按钮（navigation）
+     * - 分页圆点（pagination）
+     * - 触摸/鼠标拖拽切换（allowTouchMove + mouseDrag + threshold）
+     * - 键盘控制（keyboard）
+     * - 水平/垂直方向（direction）
+     * - 每屏多项显示（slidesPerView + spaceBetween）
+     * - 公共方法（next/prev/slideTo/update）
+     */
+    interface LdesignSwiper {
+        /**
+          * 允许触摸/鼠标拖拽
+          * @default true
+         */
+        "allowTouchMove": boolean;
+        /**
+          * 自动播放
+          * @default false
+         */
+        "autoplay": boolean;
+        /**
+          * 自动播放间隔（毫秒）
+          * @default 3000
+         */
+        "autoplayDelay": number;
+        /**
+          * 默认激活索引（非受控）
+         */
+        "defaultValue"?: number;
+        /**
+          * 方向
+          * @default 'horizontal'
+         */
+        "direction": 'horizontal' | 'vertical';
+        /**
+          * 交互后是否禁用自动播放
+          * @default true
+         */
+        "disableOnInteraction": boolean;
+        /**
+          * 拖拽时显示抓手光标
+          * @default true
+         */
+        "grabCursor": boolean;
+        /**
+          * 键盘控制
+          * @default false
+         */
+        "keyboard": boolean;
+        /**
+          * 循环播放
+          * @default false
+         */
+        "loop": boolean;
+        /**
+          * 鼠标拖拽（PC）
+          * @default true
+         */
+        "mouseDrag": boolean;
+        /**
+          * 是否显示导航按钮
+          * @default true
+         */
+        "navigation": boolean;
+        "next": () => Promise<void>;
+        /**
+          * 是否显示分页圆点
+          * @default true
+         */
+        "pagination": boolean;
+        /**
+          * 悬浮暂停自动播放
+          * @default true
+         */
+        "pauseOnHover": boolean;
+        "prev": () => Promise<void>;
+        "slideTo": (index: number, opts?: { immediate?: boolean; }) => Promise<void>;
+        /**
+          * 每屏显示的滑块数量（>=1）
+          * @default 1
+         */
+        "slidesPerView": number;
+        /**
+          * 滑块间距（像素）
+          * @default 0
+         */
+        "spaceBetween": number;
+        /**
+          * 动画过渡时长（毫秒）
+          * @default 300
+         */
+        "speed": number;
+        /**
+          * 触发切换的拖拽阈值（像素）
+          * @default 50
+         */
+        "threshold": number;
+        "update": () => Promise<void>;
+        /**
+          * 当前激活的索引（受控）
+         */
+        "value"?: number;
+    }
+    /**
+     * ldesign-swiper-slide
+     * - Swiper 的子项容器，支持 active 状态用于样式控制
+     */
+    interface LdesignSwiperSlide {
+        /**
+          * 激活态（由父级 ldesign-swiper 控制）
+          * @default false
+         */
+        "active": boolean;
+    }
+    /**
      * Switch 开关组件
      * 表示两种相互对立的状态间的切换，多用于触发「开/关」
      */
@@ -3264,6 +3653,46 @@ export namespace Components {
           * 当前激活的标签（受控）
          */
         "value"?: string;
+    }
+    /**
+     * Tag 标签组件
+     * 用于标记和分类
+     */
+    interface LdesignTag {
+        /**
+          * 是否可关闭
+          * @default false
+         */
+        "closable": boolean;
+        /**
+          * 语义颜色
+          * @default 'default'
+         */
+        "color": 'default' | 'primary' | 'success' | 'warning' | 'danger';
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 左侧图标
+         */
+        "icon"?: string;
+        /**
+          * 形状
+          * @default 'rectangle'
+         */
+        "shape": 'rectangle' | 'round';
+        /**
+          * 尺寸
+          * @default 'middle'
+         */
+        "size": Size;
+        /**
+          * 外观风格 - light: 浅色背景（默认） - solid: 实底 - outline: 描边
+          * @default 'light'
+         */
+        "variant": 'light' | 'solid' | 'outline';
     }
     interface LdesignTimePicker {
         "breakpoints"?: Breakpoints;
@@ -3563,6 +3992,10 @@ export interface LdesignAlertCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignAlertElement;
 }
+export interface LdesignAvatarCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignAvatarElement;
+}
 export interface LdesignButtonCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignButtonElement;
@@ -3594,6 +4027,14 @@ export interface LdesignColorPickerCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignColorPickerPanelCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignColorPickerPanelElement;
+}
+export interface LdesignCountdownCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignCountdownElement;
+}
+export interface LdesignDatePickerCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignDatePickerElement;
 }
 export interface LdesignDraggableCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -3691,6 +4132,10 @@ export interface LdesignSplitCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignSplitElement;
 }
+export interface LdesignSwiperCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignSwiperElement;
+}
 export interface LdesignSwitchCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignSwitchElement;
@@ -3698,6 +4143,10 @@ export interface LdesignSwitchCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignTabsCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignTabsElement;
+}
+export interface LdesignTagCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignTagElement;
 }
 export interface LdesignTimePickerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -3764,6 +4213,46 @@ declare global {
     var HTMLLdesignAlertElement: {
         prototype: HTMLLdesignAlertElement;
         new (): HTMLLdesignAlertElement;
+    };
+    interface HTMLLdesignAvatarElementEventMap {
+        "ldesignLoad": { width: number; height: number; src: string };
+        "ldesignError": { src?: string; error: string };
+        "ldesignClick": MouseEvent;
+    }
+    /**
+     * Avatar 头像
+     * - 三种展示形态：图片、图标、文字
+     * - 三种尺寸：small / medium / large，或自定义像素
+     * - 两种形状：circle / square
+     * - 文本头像自动缩放，支持 gap 调节左右留白
+     * - 支持徽标（红点或计数）
+     * - 支持响应式尺寸（clamp）
+     */
+    interface HTMLLdesignAvatarElement extends Components.LdesignAvatar, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignAvatarElementEventMap>(type: K, listener: (this: HTMLLdesignAvatarElement, ev: LdesignAvatarCustomEvent<HTMLLdesignAvatarElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignAvatarElementEventMap>(type: K, listener: (this: HTMLLdesignAvatarElement, ev: LdesignAvatarCustomEvent<HTMLLdesignAvatarElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignAvatarElement: {
+        prototype: HTMLLdesignAvatarElement;
+        new (): HTMLLdesignAvatarElement;
+    };
+    /**
+     * Avatar.Group 头像组合
+     * - 支持溢出显示 +N
+     * - 支持统一 size/shape
+     * - 支持重叠间距（gap）
+     */
+    interface HTMLLdesignAvatarGroupElement extends Components.LdesignAvatarGroup, HTMLStencilElement {
+    }
+    var HTMLLdesignAvatarGroupElement: {
+        prototype: HTMLLdesignAvatarGroupElement;
+        new (): HTMLLdesignAvatarGroupElement;
     };
     /**
      * BackTop 返回顶部组件
@@ -3960,6 +4449,46 @@ declare global {
     var HTMLLdesignColorPickerPanelElement: {
         prototype: HTMLLdesignColorPickerPanelElement;
         new (): HTMLLdesignColorPickerPanelElement;
+    };
+    interface HTMLLdesignCountdownElementEventMap {
+        "ldesignChange": { remaining: number; formatted: string };
+        "ldesignFinish": void;
+    }
+    /**
+     * Countdown 倒计时组件
+     * 支持按结束时间或时长倒计时，提供格式化显示、事件与方法控制
+     */
+    interface HTMLLdesignCountdownElement extends Components.LdesignCountdown, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignCountdownElementEventMap>(type: K, listener: (this: HTMLLdesignCountdownElement, ev: LdesignCountdownCustomEvent<HTMLLdesignCountdownElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignCountdownElementEventMap>(type: K, listener: (this: HTMLLdesignCountdownElement, ev: LdesignCountdownCustomEvent<HTMLLdesignCountdownElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignCountdownElement: {
+        prototype: HTMLLdesignCountdownElement;
+        new (): HTMLLdesignCountdownElement;
+    };
+    interface HTMLLdesignDatePickerElementEventMap {
+        "ldesignChange": any;
+        "ldesignVisibleChange": boolean;
+    }
+    interface HTMLLdesignDatePickerElement extends Components.LdesignDatePicker, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignDatePickerElementEventMap>(type: K, listener: (this: HTMLLdesignDatePickerElement, ev: LdesignDatePickerCustomEvent<HTMLLdesignDatePickerElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignDatePickerElementEventMap>(type: K, listener: (this: HTMLLdesignDatePickerElement, ev: LdesignDatePickerCustomEvent<HTMLLdesignDatePickerElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignDatePickerElement: {
+        prototype: HTMLLdesignDatePickerElement;
+        new (): HTMLLdesignDatePickerElement;
     };
     interface HTMLLdesignDraggableElementEventMap {
         "ldesignTransformChange": { scale: number; rotate: number; offsetX: number; offsetY: number };
@@ -4591,6 +5120,47 @@ declare global {
         prototype: HTMLLdesignSplitElement;
         new (): HTMLLdesignSplitElement;
     };
+    interface HTMLLdesignSwiperElementEventMap {
+        "ldesignChange": number;
+    }
+    /**
+     * ldesign-swiper 轮播图组件
+     * 功能：
+     * - 受控/非受控当前索引（value/defaultValue）
+     * - 自动播放（autoplay + autoplayDelay + pauseOnHover + disableOnInteraction）
+     * - 循环（loop）
+     * - 导航按钮（navigation）
+     * - 分页圆点（pagination）
+     * - 触摸/鼠标拖拽切换（allowTouchMove + mouseDrag + threshold）
+     * - 键盘控制（keyboard）
+     * - 水平/垂直方向（direction）
+     * - 每屏多项显示（slidesPerView + spaceBetween）
+     * - 公共方法（next/prev/slideTo/update）
+     */
+    interface HTMLLdesignSwiperElement extends Components.LdesignSwiper, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignSwiperElementEventMap>(type: K, listener: (this: HTMLLdesignSwiperElement, ev: LdesignSwiperCustomEvent<HTMLLdesignSwiperElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignSwiperElementEventMap>(type: K, listener: (this: HTMLLdesignSwiperElement, ev: LdesignSwiperCustomEvent<HTMLLdesignSwiperElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignSwiperElement: {
+        prototype: HTMLLdesignSwiperElement;
+        new (): HTMLLdesignSwiperElement;
+    };
+    /**
+     * ldesign-swiper-slide
+     * - Swiper 的子项容器，支持 active 状态用于样式控制
+     */
+    interface HTMLLdesignSwiperSlideElement extends Components.LdesignSwiperSlide, HTMLStencilElement {
+    }
+    var HTMLLdesignSwiperSlideElement: {
+        prototype: HTMLLdesignSwiperSlideElement;
+        new (): HTMLLdesignSwiperSlideElement;
+    };
     interface HTMLLdesignSwitchElementEventMap {
         "ldesignChange": string | number | boolean;
     }
@@ -4644,6 +5214,27 @@ declare global {
     var HTMLLdesignTabsElement: {
         prototype: HTMLLdesignTabsElement;
         new (): HTMLLdesignTabsElement;
+    };
+    interface HTMLLdesignTagElementEventMap {
+        "ldesignClose": MouseEvent;
+    }
+    /**
+     * Tag 标签组件
+     * 用于标记和分类
+     */
+    interface HTMLLdesignTagElement extends Components.LdesignTag, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignTagElementEventMap>(type: K, listener: (this: HTMLLdesignTagElement, ev: LdesignTagCustomEvent<HTMLLdesignTagElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignTagElementEventMap>(type: K, listener: (this: HTMLLdesignTagElement, ev: LdesignTagCustomEvent<HTMLLdesignTagElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignTagElement: {
+        prototype: HTMLLdesignTagElement;
+        new (): HTMLLdesignTagElement;
     };
     interface HTMLLdesignTimePickerElementEventMap {
         "ldesignChange": string | undefined;
@@ -4722,6 +5313,8 @@ declare global {
         "base-component": HTMLBaseComponentElement;
         "ldesign-affix": HTMLLdesignAffixElement;
         "ldesign-alert": HTMLLdesignAlertElement;
+        "ldesign-avatar": HTMLLdesignAvatarElement;
+        "ldesign-avatar-group": HTMLLdesignAvatarGroupElement;
         "ldesign-backtop": HTMLLdesignBacktopElement;
         "ldesign-button": HTMLLdesignButtonElement;
         "ldesign-checkbox": HTMLLdesignCheckboxElement;
@@ -4732,6 +5325,8 @@ declare global {
         "ldesign-color-input": HTMLLdesignColorInputElement;
         "ldesign-color-picker": HTMLLdesignColorPickerElement;
         "ldesign-color-picker-panel": HTMLLdesignColorPickerPanelElement;
+        "ldesign-countdown": HTMLLdesignCountdownElement;
+        "ldesign-date-picker": HTMLLdesignDatePickerElement;
         "ldesign-draggable": HTMLLdesignDraggableElement;
         "ldesign-drawer": HTMLLdesignDrawerElement;
         "ldesign-dropdown": HTMLLdesignDropdownElement;
@@ -4761,9 +5356,12 @@ declare global {
         "ldesign-slider": HTMLLdesignSliderElement;
         "ldesign-space": HTMLLdesignSpaceElement;
         "ldesign-split": HTMLLdesignSplitElement;
+        "ldesign-swiper": HTMLLdesignSwiperElement;
+        "ldesign-swiper-slide": HTMLLdesignSwiperSlideElement;
         "ldesign-switch": HTMLLdesignSwitchElement;
         "ldesign-tab-panel": HTMLLdesignTabPanelElement;
         "ldesign-tabs": HTMLLdesignTabsElement;
+        "ldesign-tag": HTMLLdesignTagElement;
         "ldesign-time-picker": HTMLLdesignTimePickerElement;
         "ldesign-tooltip": HTMLLdesignTooltipElement;
         "ldesign-transfer": HTMLLdesignTransferElement;
@@ -4897,6 +5495,150 @@ declare namespace LocalJSX {
           * @default 'info'
          */
         "type"?: AlertType;
+    }
+    /**
+     * Avatar 头像
+     * - 三种展示形态：图片、图标、文字
+     * - 三种尺寸：small / medium / large，或自定义像素
+     * - 两种形状：circle / square
+     * - 文本头像自动缩放，支持 gap 调节左右留白
+     * - 支持徽标（红点或计数）
+     * - 支持响应式尺寸（clamp）
+     */
+    interface LdesignAvatar {
+        /**
+          * 替代文本
+         */
+        "alt"?: string;
+        /**
+          * 是否根据宽度自动缩放文字
+          * @default true
+         */
+        "autosize"?: boolean;
+        /**
+          * 背景色（图标与文字时有效；图片时作为容器背景）
+         */
+        "background"?: string;
+        /**
+          * 是否显示徽标红点
+          * @default false
+         */
+        "badge"?: boolean;
+        /**
+          * 徽标颜色（红点/气泡背景色）
+          * @default '#ff4d4f'
+         */
+        "badgeColor"?: string;
+        /**
+          * 徽标数字，设置后显示计数气泡，优先级高于 badge
+         */
+        "badgeValue"?: number | string;
+        /**
+          * 文本/图标颜色
+         */
+        "color"?: string;
+        /**
+          * 图片填充模式
+          * @default 'cover'
+         */
+        "fit"?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
+        /**
+          * 文字与容器左右间距（px），仅文字头像生效
+          * @default 4
+         */
+        "gap"?: number;
+        /**
+          * 图标名称（Lucide），无 src 时生效
+         */
+        "icon"?: string;
+        /**
+          * 点击
+         */
+        "onLdesignClick"?: (event: LdesignAvatarCustomEvent<MouseEvent>) => void;
+        /**
+          * 加载失败
+         */
+        "onLdesignError"?: (event: LdesignAvatarCustomEvent<{ src?: string; error: string }>) => void;
+        /**
+          * 加载成功
+         */
+        "onLdesignLoad"?: (event: LdesignAvatarCustomEvent<{ width: number; height: number; src: string }>) => void;
+        /**
+          * 响应式尺寸（使用 CSS clamp 设置宽高）
+          * @default false
+         */
+        "responsive"?: boolean;
+        /**
+          * clamp 最大像素（responsive 为 true 时生效）
+          * @default 64
+         */
+        "responsiveMax"?: number;
+        /**
+          * clamp 中间项，接受任何 CSS 长度表达式，默认 10vw
+          * @default '10vw'
+         */
+        "responsiveMid"?: string;
+        /**
+          * clamp 最小像素（responsive 为 true 时生效）
+          * @default 28
+         */
+        "responsiveMin"?: number;
+        /**
+          * 形状：圆形或方形
+          * @default 'circle'
+         */
+        "shape"?: 'circle' | 'square';
+        /**
+          * 尺寸：预设 small/middle/medium/large 或自定义像素
+          * @default 'medium'
+         */
+        "size"?: 'small' | 'middle' | 'medium' | 'large' | number;
+        /**
+          * 响应式图片 sizes
+         */
+        "sizes"?: string;
+        /**
+          * 图片地址
+         */
+        "src"?: string;
+        /**
+          * 响应式图片 srcset
+         */
+        "srcset"?: string;
+        /**
+          * 文字内容（不传则使用默认插槽的文本节点）
+         */
+        "text"?: string;
+    }
+    /**
+     * Avatar.Group 头像组合
+     * - 支持溢出显示 +N
+     * - 支持统一 size/shape
+     * - 支持重叠间距（gap）
+     */
+    interface LdesignAvatarGroup {
+        /**
+          * 边框颜色（用于实现“描边”效果以区分重叠）
+          * @default '#fff'
+         */
+        "borderColor"?: string;
+        /**
+          * 重叠间距（正值，单位px），默认 8
+          * @default 8
+         */
+        "gap"?: number;
+        /**
+          * 展示的最大头像数；超出后折叠为 +N
+         */
+        "max"?: number;
+        /**
+          * 统一形状（未在子项显式指定时生效）
+         */
+        "shape"?: 'circle' | 'square';
+        /**
+          * 统一尺寸（未在子项显式指定时生效）
+         */
+        "size"?: 'small' | 'middle' | 'medium' | 'large' | number;
     }
     /**
      * BackTop 返回顶部组件
@@ -5129,6 +5871,16 @@ declare namespace LocalJSX {
          */
         "clockwise"?: boolean;
         /**
+          * 椭圆端点轴：auto 根据宽高选择；x 左右为端点；y 上下为端点
+          * @default 'auto'
+         */
+        "ellipseAxis"?: 'auto' | 'x' | 'y';
+        /**
+          * 椭圆半弧内的间距策略：'arc' 按弧长均分，'angle' 按角度均分（更“均匀”的视觉效果）
+          * @default 'angle'
+         */
+        "ellipseSpacing"?: 'arc' | 'angle';
+        /**
           * 视角正前方的角度（度），默认 90° 即底部为“最近”
           * @default 90
          */
@@ -5157,6 +5909,15 @@ declare namespace LocalJSX {
          */
         "perspective"?: boolean;
         /**
+          * 3D 透视距离（px，对应 CSS perspective），zDepth>0 时生效
+          * @default 600
+         */
+        "perspectiveDistance"?: number;
+        /**
+          * 3D 透视原点（CSS perspective-origin），如 '50% 50%' 'center 80%'
+         */
+        "perspectiveOrigin"?: string;
+        /**
           * 是否显示圆形轨道
           * @default true
          */
@@ -5171,6 +5932,11 @@ declare namespace LocalJSX {
           * @default 240
          */
         "width"?: number | string;
+        /**
+          * 3D 透视：Z 轴偏移幅度（px）。>0 则开启 translateZ；与 perspectiveDistance 联动
+          * @default 0
+         */
+        "zDepth"?: number;
     }
     /**
      * Collapse 折叠面板
@@ -5531,6 +6297,118 @@ declare namespace LocalJSX {
           * 当前颜色（默认 hex），支持 #RRGGBB/#RRGGBBAA、rgb/rgba、hsl/hsla、hsv
           * @default '#3498db'
          */
+        "value"?: string;
+    }
+    /**
+     * Countdown 倒计时组件
+     * 支持按结束时间或时长倒计时，提供格式化显示、事件与方法控制
+     */
+    interface LdesignCountdown {
+        /**
+          * 是否在初始化时自动开始
+          * @default true
+         */
+        "autoStart"?: boolean;
+        /**
+          * 环形进度的像素尺寸（正方形）
+         */
+        "circleSize"?: number;
+        /**
+          * 环形进度的描边宽度
+          * @default 4
+         */
+        "circleStroke"?: number;
+        /**
+          * 绝对结束时间（优先级高于 value），支持时间戳、日期字符串或 Date 对象
+         */
+        "endTime"?: number | string | Date;
+        /**
+          * 显示格式，支持 DD、HH、mm、ss、SSS 令牌组合
+          * @default 'HH:mm:ss'
+         */
+        "format"?: string;
+        /**
+          * 可选标题文本（展示在数值前）。属性名仍使用 title，避免与 HTMLElement.prototype.title 冲突
+         */
+        "label"?: string;
+        /**
+          * 是否以更高频率更新毫秒（约 50ms 一次）。为 false 时每秒更新一次
+          * @default false
+         */
+        "millisecond"?: boolean;
+        /**
+          * 变化事件：倒计时数值变化时触发
+         */
+        "onLdesignChange"?: (event: LdesignCountdownCustomEvent<{ remaining: number; formatted: string }>) => void;
+        /**
+          * 完成事件：倒计时结束时触发
+         */
+        "onLdesignFinish"?: (event: LdesignCountdownCustomEvent<void>) => void;
+        /**
+          * 是否暂停（受控）
+          * @default false
+         */
+        "paused"?: boolean;
+        /**
+          * 进度展示采用已消耗还是剩余（用于 progress-* 样式）
+          * @default 'elapsed'
+         */
+        "progressAs"?: 'elapsed' | 'remaining';
+        /**
+          * 是否在分段/翻牌样式中显示单位（天/时/分/秒/毫秒）
+          * @default false
+         */
+        "showUnit"?: boolean;
+        /**
+          * 尺寸（对齐其他组件的 size 体系）
+          * @default 'middle'
+         */
+        "size"?: Size;
+        /**
+          * 倒计时时长（毫秒）。当未提供 endTime 时，以当前时间为起点倒计时 value 毫秒
+         */
+        "value"?: number;
+        /**
+          * 展现形式：文本、分段、翻牌、进度条、环形进度
+          * @default 'text'
+         */
+        "variant"?: 'text' | 'segment' | 'flip' | 'progress-line' | 'progress-circle';
+    }
+    interface LdesignDatePicker {
+        /**
+          * @default true
+         */
+        "clearable"?: boolean;
+        "defaultValue"?: string;
+        /**
+          * @default false
+         */
+        "disabled"?: boolean;
+        "disabledDate"?: (d: Date) => boolean;
+        /**
+          * @default 1
+         */
+        "firstDayOfWeek"?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+        /**
+          * @default 'YYYY-MM-DD'
+         */
+        "format"?: string;
+        "maxDate"?: string;
+        "minDate"?: string;
+        /**
+          * @default 'date'
+         */
+        "mode"?: 'date' | 'week' | 'month' | 'quarter' | 'year';
+        "onLdesignChange"?: (event: LdesignDatePickerCustomEvent<any>) => void;
+        "onLdesignVisibleChange"?: (event: LdesignDatePickerCustomEvent<boolean>) => void;
+        /**
+          * @default '请选择日期'
+         */
+        "placeholder"?: string;
+        /**
+          * @default false
+         */
+        "showWeekNumbers"?: boolean;
         "value"?: string;
     }
     /**
@@ -8037,6 +8915,125 @@ declare namespace LocalJSX {
         "value"?: number;
     }
     /**
+     * ldesign-swiper 轮播图组件
+     * 功能：
+     * - 受控/非受控当前索引（value/defaultValue）
+     * - 自动播放（autoplay + autoplayDelay + pauseOnHover + disableOnInteraction）
+     * - 循环（loop）
+     * - 导航按钮（navigation）
+     * - 分页圆点（pagination）
+     * - 触摸/鼠标拖拽切换（allowTouchMove + mouseDrag + threshold）
+     * - 键盘控制（keyboard）
+     * - 水平/垂直方向（direction）
+     * - 每屏多项显示（slidesPerView + spaceBetween）
+     * - 公共方法（next/prev/slideTo/update）
+     */
+    interface LdesignSwiper {
+        /**
+          * 允许触摸/鼠标拖拽
+          * @default true
+         */
+        "allowTouchMove"?: boolean;
+        /**
+          * 自动播放
+          * @default false
+         */
+        "autoplay"?: boolean;
+        /**
+          * 自动播放间隔（毫秒）
+          * @default 3000
+         */
+        "autoplayDelay"?: number;
+        /**
+          * 默认激活索引（非受控）
+         */
+        "defaultValue"?: number;
+        /**
+          * 方向
+          * @default 'horizontal'
+         */
+        "direction"?: 'horizontal' | 'vertical';
+        /**
+          * 交互后是否禁用自动播放
+          * @default true
+         */
+        "disableOnInteraction"?: boolean;
+        /**
+          * 拖拽时显示抓手光标
+          * @default true
+         */
+        "grabCursor"?: boolean;
+        /**
+          * 键盘控制
+          * @default false
+         */
+        "keyboard"?: boolean;
+        /**
+          * 循环播放
+          * @default false
+         */
+        "loop"?: boolean;
+        /**
+          * 鼠标拖拽（PC）
+          * @default true
+         */
+        "mouseDrag"?: boolean;
+        /**
+          * 是否显示导航按钮
+          * @default true
+         */
+        "navigation"?: boolean;
+        /**
+          * 切换事件：返回当前索引
+         */
+        "onLdesignChange"?: (event: LdesignSwiperCustomEvent<number>) => void;
+        /**
+          * 是否显示分页圆点
+          * @default true
+         */
+        "pagination"?: boolean;
+        /**
+          * 悬浮暂停自动播放
+          * @default true
+         */
+        "pauseOnHover"?: boolean;
+        /**
+          * 每屏显示的滑块数量（>=1）
+          * @default 1
+         */
+        "slidesPerView"?: number;
+        /**
+          * 滑块间距（像素）
+          * @default 0
+         */
+        "spaceBetween"?: number;
+        /**
+          * 动画过渡时长（毫秒）
+          * @default 300
+         */
+        "speed"?: number;
+        /**
+          * 触发切换的拖拽阈值（像素）
+          * @default 50
+         */
+        "threshold"?: number;
+        /**
+          * 当前激活的索引（受控）
+         */
+        "value"?: number;
+    }
+    /**
+     * ldesign-swiper-slide
+     * - Swiper 的子项容器，支持 active 状态用于样式控制
+     */
+    interface LdesignSwiperSlide {
+        /**
+          * 激活态（由父级 ldesign-swiper 控制）
+          * @default false
+         */
+        "active"?: boolean;
+    }
+    /**
      * Switch 开关组件
      * 表示两种相互对立的状态间的切换，多用于触发「开/关」
      */
@@ -8186,6 +9183,50 @@ declare namespace LocalJSX {
           * 当前激活的标签（受控）
          */
         "value"?: string;
+    }
+    /**
+     * Tag 标签组件
+     * 用于标记和分类
+     */
+    interface LdesignTag {
+        /**
+          * 是否可关闭
+          * @default false
+         */
+        "closable"?: boolean;
+        /**
+          * 语义颜色
+          * @default 'default'
+         */
+        "color"?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 左侧图标
+         */
+        "icon"?: string;
+        /**
+          * 关闭事件
+         */
+        "onLdesignClose"?: (event: LdesignTagCustomEvent<MouseEvent>) => void;
+        /**
+          * 形状
+          * @default 'rectangle'
+         */
+        "shape"?: 'rectangle' | 'round';
+        /**
+          * 尺寸
+          * @default 'middle'
+         */
+        "size"?: Size;
+        /**
+          * 外观风格 - light: 浅色背景（默认） - solid: 实底 - outline: 描边
+          * @default 'light'
+         */
+        "variant"?: 'light' | 'solid' | 'outline';
     }
     interface LdesignTimePicker {
         "breakpoints"?: Breakpoints;
@@ -8501,6 +9542,8 @@ declare namespace LocalJSX {
         "base-component": BaseComponent;
         "ldesign-affix": LdesignAffix;
         "ldesign-alert": LdesignAlert;
+        "ldesign-avatar": LdesignAvatar;
+        "ldesign-avatar-group": LdesignAvatarGroup;
         "ldesign-backtop": LdesignBacktop;
         "ldesign-button": LdesignButton;
         "ldesign-checkbox": LdesignCheckbox;
@@ -8511,6 +9554,8 @@ declare namespace LocalJSX {
         "ldesign-color-input": LdesignColorInput;
         "ldesign-color-picker": LdesignColorPicker;
         "ldesign-color-picker-panel": LdesignColorPickerPanel;
+        "ldesign-countdown": LdesignCountdown;
+        "ldesign-date-picker": LdesignDatePicker;
         "ldesign-draggable": LdesignDraggable;
         "ldesign-drawer": LdesignDrawer;
         "ldesign-dropdown": LdesignDropdown;
@@ -8540,9 +9585,12 @@ declare namespace LocalJSX {
         "ldesign-slider": LdesignSlider;
         "ldesign-space": LdesignSpace;
         "ldesign-split": LdesignSplit;
+        "ldesign-swiper": LdesignSwiper;
+        "ldesign-swiper-slide": LdesignSwiperSlide;
         "ldesign-switch": LdesignSwitch;
         "ldesign-tab-panel": LdesignTabPanel;
         "ldesign-tabs": LdesignTabs;
+        "ldesign-tag": LdesignTag;
         "ldesign-time-picker": LdesignTimePicker;
         "ldesign-tooltip": LdesignTooltip;
         "ldesign-transfer": LdesignTransfer;
@@ -8569,6 +9617,23 @@ declare module "@stencil/core" {
              * 用于在页面中展示重要的提示信息，支持四种状态、标题/描述、操作区与可关闭。
              */
             "ldesign-alert": LocalJSX.LdesignAlert & JSXBase.HTMLAttributes<HTMLLdesignAlertElement>;
+            /**
+             * Avatar 头像
+             * - 三种展示形态：图片、图标、文字
+             * - 三种尺寸：small / medium / large，或自定义像素
+             * - 两种形状：circle / square
+             * - 文本头像自动缩放，支持 gap 调节左右留白
+             * - 支持徽标（红点或计数）
+             * - 支持响应式尺寸（clamp）
+             */
+            "ldesign-avatar": LocalJSX.LdesignAvatar & JSXBase.HTMLAttributes<HTMLLdesignAvatarElement>;
+            /**
+             * Avatar.Group 头像组合
+             * - 支持溢出显示 +N
+             * - 支持统一 size/shape
+             * - 支持重叠间距（gap）
+             */
+            "ldesign-avatar-group": LocalJSX.LdesignAvatarGroup & JSXBase.HTMLAttributes<HTMLLdesignAvatarGroupElement>;
             /**
              * BackTop 返回顶部组件
              * - 支持窗口根滚动回到顶部
@@ -8623,6 +9688,12 @@ declare module "@stencil/core" {
              * - 适合内嵌在任意容器，宽度默认铺满容器
              */
             "ldesign-color-picker-panel": LocalJSX.LdesignColorPickerPanel & JSXBase.HTMLAttributes<HTMLLdesignColorPickerPanelElement>;
+            /**
+             * Countdown 倒计时组件
+             * 支持按结束时间或时长倒计时，提供格式化显示、事件与方法控制
+             */
+            "ldesign-countdown": LocalJSX.LdesignCountdown & JSXBase.HTMLAttributes<HTMLLdesignCountdownElement>;
+            "ldesign-date-picker": LocalJSX.LdesignDatePicker & JSXBase.HTMLAttributes<HTMLLdesignDatePickerElement>;
             /**
              * ldesign-draggable
              * 通用可拖拽/缩放/旋转容器（图片优先），支持：
@@ -8802,6 +9873,26 @@ declare module "@stencil/core" {
              */
             "ldesign-split": LocalJSX.LdesignSplit & JSXBase.HTMLAttributes<HTMLLdesignSplitElement>;
             /**
+             * ldesign-swiper 轮播图组件
+             * 功能：
+             * - 受控/非受控当前索引（value/defaultValue）
+             * - 自动播放（autoplay + autoplayDelay + pauseOnHover + disableOnInteraction）
+             * - 循环（loop）
+             * - 导航按钮（navigation）
+             * - 分页圆点（pagination）
+             * - 触摸/鼠标拖拽切换（allowTouchMove + mouseDrag + threshold）
+             * - 键盘控制（keyboard）
+             * - 水平/垂直方向（direction）
+             * - 每屏多项显示（slidesPerView + spaceBetween）
+             * - 公共方法（next/prev/slideTo/update）
+             */
+            "ldesign-swiper": LocalJSX.LdesignSwiper & JSXBase.HTMLAttributes<HTMLLdesignSwiperElement>;
+            /**
+             * ldesign-swiper-slide
+             * - Swiper 的子项容器，支持 active 状态用于样式控制
+             */
+            "ldesign-swiper-slide": LocalJSX.LdesignSwiperSlide & JSXBase.HTMLAttributes<HTMLLdesignSwiperSlideElement>;
+            /**
              * Switch 开关组件
              * 表示两种相互对立的状态间的切换，多用于触发「开/关」
              */
@@ -8816,6 +9907,11 @@ declare module "@stencil/core" {
              * - 通过水平或垂直的标签页切换展示内容
              */
             "ldesign-tabs": LocalJSX.LdesignTabs & JSXBase.HTMLAttributes<HTMLLdesignTabsElement>;
+            /**
+             * Tag 标签组件
+             * 用于标记和分类
+             */
+            "ldesign-tag": LocalJSX.LdesignTag & JSXBase.HTMLAttributes<HTMLLdesignTagElement>;
             "ldesign-time-picker": LocalJSX.LdesignTimePicker & JSXBase.HTMLAttributes<HTMLLdesignTimePickerElement>;
             /**
              * Tooltip 工具提示组件

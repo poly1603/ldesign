@@ -164,6 +164,21 @@ function initTabsDemos() {
   setTimeout(run, 150);
 }
 
+function initSwiperDemos() {
+  const run = () => {
+    const box = document.getElementById('swiper-ctrl-box') as HTMLElement | null;
+    if (box && !box.dataset.inited) {
+      box.dataset.inited = '1';
+      const inst = document.getElementById('swiper-ctrl') as any;
+      const cur = document.getElementById('swiper-cur');
+      document.getElementById('swiper-prev')?.addEventListener('click', () => inst?.prev?.());
+      document.getElementById('swiper-next')?.addEventListener('click', () => inst?.next?.());
+      inst?.addEventListener?.('ldesignChange', (e: any) => { if (cur) (cur as any).textContent = String(e.detail); if (inst) inst.value = e.detail; });
+    }
+  };
+  setTimeout(run, 0); setTimeout(run, 60); setTimeout(run, 160);
+}
+
 function initTreeDemos() {
   const markInited = (el: HTMLElement | null | undefined) => {
     if (!el) return false;
@@ -340,6 +355,7 @@ export default {
 initInputDemos()
         initInputNumberDemos()
         initTabsDemos()
+        initSwiperDemos()
         initTreeDemos()
       })
 
@@ -348,6 +364,7 @@ router.onAfterRouteChanged = () => {
         initInputDemos()
         initInputNumberDemos()
         initTabsDemos()
+        initSwiperDemos()
         initTreeDemos()
       }
     }

@@ -50,6 +50,16 @@ export class LdesignTimePicker {
   @State() drawerVisible: boolean = false; // internal visible for drawer when trigger!=='manual'
   @State() panelOpen: boolean = false; // 当前面板是否打开（popup/drawer 任一）
 
+  // cached picker options（保持引用稳定，避免因 options 变化而触发子 picker 的无动画对齐覆盖动画）
+  private hourOpts: Array<{ value: string; label: string }> = [];
+  private minuteOpts: Array<{ value: string; label: string }> = [];
+  private secondOpts: Array<{ value: string; label: string }> = [];
+
+  // direct refs to child pickers（避免 querySelectorAll 可能的选择范围问题）
+  private hourPicker?: any;
+  private minutePicker?: any;
+  private secondPicker?: any;
+
   // lifecycle
   @Watch('value') onValue(v?: string) {
     const t = this.parseTime(v) || this.parseTime(this.defaultValue) || { h: 0, m: 0, s: 0 };
@@ -64,6 +74,7 @@ export class LdesignTimePicker {
     const init = this.value !== undefined ? this.value : this.defaultValue;
     const t = this.parseTime(init) || { h: 0, m: 0, s: 0 };
     this.h = t.h; this.m = t.m; this.s = t.s;
+    this.recomputeOptions();
   }
 
   componentDidLoad() { window.addEventListener('resize', this.updateOverlayKind as any, { passive: true } as any); }
@@ -91,6 +102,24 @@ export class LdesignTimePicker {
     return w >= md ? 'popup' : 'drawer';
   }
   private updateOverlayKind = () => { /* computed on demand */ };
+
+  @Watch('steps')
+  onStepsChanged() { this.recomputeOptions(); }
+
+  @Watch('showSeconds')
+  onShowSecondsChanged() { this.recomputeOptions(); }
+
+  // 将原始值按步进量化到合法选项（确保结果是 step 的倍数且在 [0, max] 内）
+  private quantizeToStep(v: number, step: number, max: number): number {
+    const s = (!step || step <= 1) ? 1 : Math.floor(step);
+    if (s <= 1) return Math.max(0, Math.min(max, Math.round(v)));
+    // 以最近的倍数为目标
+    const n = Math.round(v / s);
+    let m = n * s;
+    if (m > max) m = Math.floor(max / s) * s; // 保证仍是合法倍数
+    if (m < 0) m = 0;
+    return m;
+  }
 
   private getOverlayVisible(): boolean { return this.trigger === 'manual' ? this.visible : this.drawerVisible; }
   private openOverlay() {
@@ -133,7 +162,11 @@ export class LdesignTimePicker {
     await this.animatePickersToValues(vals);
   }
 
+  private skipRecenterOnce = false;
+
   private async recenterPickers() {
+    // 如果在“此刻”等操作后立即触发了首帧对齐，则跳过这一轮，避免把动画覆盖掉
+    if (this.skipRecenterOnce) { this.skipRecenterOnce = false; return; }
     // 在弹层打开后，强制让列吸附到当前值的正中（无动画）
     try {
       const nodeList = Array.from(this.el.querySelectorAll('ldesign-picker')) as any[];
@@ -183,14 +216,41 @@ export class LdesignTimePicker {
   private range(n: number) { return Array.from({ length: n }, (_, i) => i); }
   private toPickerOptions(list: number[], step: number) { return list.filter(v => v % step === 0).map(v => ({ value: String(v), label: this.pad2(v) })); }
 
+  private recomputeOptions() {
+    const sh = this.steps?.[0] || 1;
+    const sm = this.steps?.[1] || 1;
+    const ss = this.steps?.[2] || 1;
+    this.hourOpts = this.toPickerOptions(this.range(24), sh);
+    this.minuteOpts = this.toPickerOptions(this.range(60), sm);
+    this.secondOpts = this.toPickerOptions(this.range(60), ss);
+  }
+
   private commitValue() { const out = this.formatTime(this.h, this.m, this.s); if (this.value !== undefined) this.ldesignChange.emit(out); else { this.value = out as any; this.ldesignChange.emit(out); } }
   private emitPick(trigger: 'click' | 'scroll' | 'keyboard' | 'now') { const out = this.formatTime(this.h, this.m, this.s); this.ldesignPick.emit({ value: out, context: { trigger } }); }
 
   private useNow = () => {
     const d = new Date();
-    this.h = d.getHours(); this.m = d.getMinutes(); this.s = d.getSeconds();
-    // 触发列的滚动动画到“此刻”，并做轻微错峰以确保肉眼可见
-    requestAnimationFrame(() => this.animatePickersToValues([String(this.h), String(this.m), String(this.s)], { stagger: 80 }));
+    // 按步进量化，确保能命中列的选项从而产生动画
+    const sh = this.steps?.[0] ?? 1;
+    const sm = this.steps?.[1] ?? 1;
+    const ss = this.steps?.[2] ?? 1;
+
+    const qh = this.quantizeToStep(d.getHours(),   sh, 23);
+    const qm = this.quantizeToStep(d.getMinutes(), sm, 59);
+    const qs = this.showSeconds ? this.quantizeToStep(d.getSeconds(), ss, 59) : this.s;
+
+    this.h = qh; this.m = qm; this.s = qs;
+
+    // 直接调子列的方法，确保动画生效；若秒列隐藏，仅滚动小时/分钟
+    this.skipRecenterOnce = true; // 避免下一帧的对齐覆盖动画
+    const scrollHour   = () => { try { this.hourPicker?.scrollToValue(String(qh), { animate: true, silent: true, trigger: 'program' }); } catch {} };
+    const scrollMinute = () => { try { this.minutePicker?.scrollToValue(String(qm), { animate: true, silent: true, trigger: 'program' }); } catch {} };
+    const scrollSecond = () => { if (this.showSeconds) { try { this.secondPicker?.scrollToValue(String(qs), { animate: true, silent: true, trigger: 'program' }); } catch {} } };
+    // 轻微错峰
+    scrollHour();
+    window.setTimeout(scrollMinute, 60);
+    window.setTimeout(scrollSecond, 120);
+
     if (!this.confirm) this.commitValue();
     this.emitPick('now');
   };
@@ -220,9 +280,9 @@ export class LdesignTimePicker {
   }
 
   private renderPanel() {
-    const hourOpts = this.toPickerOptions(this.range(24), this.steps?.[0] || 1);
-    const minuteOpts = this.toPickerOptions(this.range(60), this.steps?.[1] || 1);
-    const secondOpts = this.toPickerOptions(this.range(60), this.steps?.[2] || 1);
+    const hourOpts = this.hourOpts;
+    const minuteOpts = this.minuteOpts;
+    const secondOpts = this.secondOpts;
 
     const onPick = (kind: 'hour'|'minute'|'second') => (e: CustomEvent<{ value: string | undefined; option?: any; context: { trigger: 'click'|'scroll'|'touch'|'wheel'|'keyboard' } }>) => {
       const v = Math.max(0, parseInt(String(e.detail?.value ?? '0'), 10) || 0);
@@ -237,10 +297,10 @@ export class LdesignTimePicker {
     return (
       <div class="ldesign-time-picker__content" style={{ ['--ld-tp-item-height' as any]: this.size === 'small' ? '32px' : this.size === 'large' ? '40px' : '36px' }}>
         <div class="ldesign-time-picker__columns">
-          <ldesign-picker options={hourOpts as any} value={String(this.h)} size={this.size as any} panelHeight={this.panelHeight} visibleItems={this.visibleItems} onLdesignPick={onPick('hour') as any} />
-          <ldesign-picker options={minuteOpts as any} value={String(this.m)} size={this.size as any} panelHeight={this.panelHeight} visibleItems={this.visibleItems} onLdesignPick={onPick('minute') as any} />
+          <ldesign-picker ref={(el) => { this.hourPicker = el as any; }} options={hourOpts as any} value={String(this.h)} size={this.size as any} panelHeight={this.panelHeight} visibleItems={this.visibleItems} onLdesignPick={onPick('hour') as any} />
+          <ldesign-picker ref={(el) => { this.minutePicker = el as any; }} options={minuteOpts as any} value={String(this.m)} size={this.size as any} panelHeight={this.panelHeight} visibleItems={this.visibleItems} onLdesignPick={onPick('minute') as any} />
           {this.showSeconds && (
-            <ldesign-picker options={secondOpts as any} value={String(this.s)} size={this.size as any} panelHeight={this.panelHeight} visibleItems={this.visibleItems} onLdesignPick={onPick('second') as any} />
+            <ldesign-picker ref={(el) => { this.secondPicker = el as any; }} options={secondOpts as any} value={String(this.s)} size={this.size as any} panelHeight={this.panelHeight} visibleItems={this.visibleItems} onLdesignPick={onPick('second') as any} />
           )}
         </div>
         <div class="ldesign-time-picker__footer">

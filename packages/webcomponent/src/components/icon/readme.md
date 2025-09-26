@@ -26,6 +26,7 @@ Icon 图标组件
 ### Used by
 
  - [ldesign-alert](../alert)
+ - [ldesign-avatar](../avatar)
  - [ldesign-backtop](../backtop)
  - [ldesign-button](../button)
  - [ldesign-checkbox](../checkbox)
@@ -47,6 +48,7 @@ Icon 图标组件
  - [ldesign-rate](../rate)
  - [ldesign-select](../select)
  - [ldesign-switch](../switch)
+ - [ldesign-tag](../tag)
  - [ldesign-time-picker](../time-picker)
  - [ldesign-transfer](../transfer)
  - [ldesign-tree](../tree)
@@ -55,6 +57,7 @@ Icon 图标组件
 ```mermaid
 graph TD;
   ldesign-alert --> ldesign-icon
+  ldesign-avatar --> ldesign-icon
   ldesign-backtop --> ldesign-icon
   ldesign-button --> ldesign-icon
   ldesign-checkbox --> ldesign-icon
@@ -76,6 +79,7 @@ graph TD;
   ldesign-rate --> ldesign-icon
   ldesign-select --> ldesign-icon
   ldesign-switch --> ldesign-icon
+  ldesign-tag --> ldesign-icon
   ldesign-time-picker --> ldesign-icon
   ldesign-transfer --> ldesign-icon
   ldesign-tree --> ldesign-icon
