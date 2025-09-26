@@ -80,6 +80,32 @@ el.filterOption = (q, opt) => {
 ></ldesign-mention>
 ```
 
+### 最大行数（max-rows）
+
+通过 `max-rows` 限制编辑区的最大可见行数，超过后出现纵向滚动条：
+
+<div class="demo-container">
+  <ldesign-mention
+    placeholder="最多显示 5 行，超过后滚动"
+    multiline rows="3" max-rows="5" resizable
+    options='[
+      {"value":"1","label":"Alice"},
+      {"value":"2","label":"Bob"},
+      {"value":"3","label":"Charlie"}
+    ]'
+  ></ldesign-mention>
+</div>
+
+```html
+<ldesign-mention
+  multiline
+  rows="3"
+  max-rows="5"
+  resizable
+  placeholder="最多显示 5 行，超过后滚动">
+</ldesign-mention>
+```
+
 ## 异步搜索
 
 监听 `ldesignSearch` 事件进行异步搜索；通过 `loading` 控制加载态，成功后设置 `options`。

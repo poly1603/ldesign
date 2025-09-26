@@ -24,12 +24,16 @@ ldesign-mention 提及组件（contenteditable 版本）
 | `filterOption`   | `filter-option`   | 自定义过滤函数（返回 true 表示保留）                      | `(input: string, option: MentionItem) => boolean`                        | `undefined` |
 | `loading`        | `loading`         | 加载中（用于异步搜索）                                | `boolean`                                                                | `false`     |
 | `maxHeight`      | `max-height`      | 列表最大高度                                     | `number`                                                                 | `240`       |
+| `maxRows`        | `max-rows`        | 最大可见行数（超过后出现滚动条）；不设置则不限制                   | `number`                                                                 | `undefined` |
 | `model`          | `model`           | 结构化初始化（分段）                                 | `MentionSegment[] \| string`                                             | `undefined` |
+| `multiline`      | `multiline`       | 是否多行模式。多行模式下允许回车换行，并可按 rows/maxRows 控制显示高度 | `boolean`                                                                | `false`     |
 | `options`        | `options`         | 候选项（数组或 JSON 字符串）                          | `MentionItem[] \| string`                                                | `[]`        |
 | `parseOnInit`    | `parse-on-init`   | 是否在加载时将文本中的                                | `boolean`                                                                | `undefined` |
 | `parseStrategy`  | `parse-strategy`  | 解析策略：label（直接转换）/options（仅命中候选时转换）         | `"label" \| "options"`                                                   | `'label'`   |
 | `placeholder`    | `placeholder`     | 占位文本                                       | `string`                                                                 | `undefined` |
 | `readonly`       | `readonly`        | 是否只读                                       | `boolean`                                                                | `false`     |
+| `resizable`      | `resizable`       | 是否允许用户手动拖拽调整高度（vertical）                   | `boolean`                                                                | `true`      |
+| `rows`           | `rows`            | 初始可见行数（用于计算最小高度）                           | `number`                                                                 | `3`         |
 | `size`           | `size`            | 尺寸（影响样式）                                   | `"large" \| "medium" \| "small"`                                         | `'medium'`  |
 | `tokenType`      | `token-type`      | 默认 token 外观                                | `"danger" \| "default" \| "info" \| "primary" \| "success" \| "warning"` | `'primary'` |
 | `trigger`        | `trigger`         | 触发字符（如 @ 或 #），兼容旧属性                        | `string`                                                                 | `'@'`       |

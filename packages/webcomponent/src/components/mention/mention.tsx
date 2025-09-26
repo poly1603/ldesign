@@ -59,6 +59,16 @@ export class LdesignMention {
   @Prop() parseOnInit?: boolean;
   /** 解析策略：label（直接转换）/options（仅命中候选时转换） */
   @Prop() parseStrategy: 'label' | 'options' = 'label';
+
+  /** 是否多行模式。多行模式下允许回车换行，并可按 rows/maxRows 控制显示高度 */
+  @Prop() multiline: boolean = false;
+  /** 初始可见行数（用于计算最小高度） */
+  @Prop() rows: number = 3;
+  /** 最大可见行数（超过后出现滚动条）；不设置则不限制 */
+  @Prop() maxRows?: number;
+  /** 是否允许用户手动拖拽调整高度（vertical） */
+  @Prop() resizable: boolean = true;
+
   /** 浮层挂载到：self|body|closest-popup（透传给 popup） */
   @Prop() appendTo: 'self' | 'body' | 'closest-popup' = 'body';
 
@@ -81,6 +91,9 @@ export class LdesignMention {
   @State() open: boolean = false;
   @State() highlightIndex: number = -1;
   @State() searchText: string = '';
+
+  private editableMinH = 0; // px
+  private editableMaxH: number | null = null; // px
 
   /** 结构化初始化（分段） */
   @Prop() model?: string | MentionSegment[];
@@ -160,6 +173,9 @@ export class LdesignMention {
       }
     }
 
+    // 计算高度
+    this.computeEditableHeights();
+
     if (this.autofocus) this.editableEl?.focus();
 
     // 监听原生 beforeinput（Stencil JSX 未内置类型，需要手动监听）
@@ -173,6 +189,50 @@ export class LdesignMention {
     document.removeEventListener('selectionchange', this.onSelectionChange);
     // 清理 beforeinput 监听
     this.editableEl?.removeEventListener('beforeinput', this.onBeforeInput as any);
+  }
+
+  @Watch('rows')
+  @Watch('maxRows')
+  @Watch('resizable')
+  @Watch('multiline')
+  protected onLayoutPropsChanged() { this.computeEditableHeights(); }
+
+  private parsePx(v: string | null | undefined) {
+    const n = parseFloat(v || '0');
+    return isNaN(n) ? 0 : n;
+  }
+
+  private computeEditableHeights() {
+    const el = this.editableEl; if (!el) return;
+    try {
+      const cs = window.getComputedStyle(el);
+      let lh = parseFloat(cs.lineHeight);
+      if (!lh || isNaN(lh)) {
+        const fs = parseFloat(cs.fontSize) || 14;
+        lh = Math.round(fs * 1.4);
+      }
+      const padTop = this.parsePx(cs.paddingTop);
+      const padBot = this.parsePx(cs.paddingBottom);
+      const rows = Math.max(1, Number((this.multiline ? this.rows : 1) || 1));
+      const minH = Math.round(lh * rows + padTop + padBot);
+      this.editableMinH = minH;
+      if (this.multiline && this.maxRows && this.maxRows > 0) {
+        const maxH = Math.round(lh * Math.max(rows, this.maxRows) + padTop + padBot);
+        this.editableMaxH = maxH;
+      } else {
+        this.editableMaxH = null;
+      }
+      // 应用到元素行内样式
+      el.style.minHeight = `${this.editableMinH}px`;
+      if (this.editableMaxH != null) {
+        el.style.maxHeight = `${this.editableMaxH}px`;
+        el.style.overflowY = 'auto';
+      } else {
+        el.style.maxHeight = '';
+        el.style.overflowY = '';
+      }
+      el.style.resize = this.resizable ? 'vertical' : 'none';
+    } catch {}
   }
 
   // 公共方法：手动设置选项（解决属性监听问题）
@@ -725,6 +785,9 @@ export class LdesignMention {
       if (e.key === 'Escape') { e.preventDefault(); this.open = false; this.triggerCtx = null; return; }
     }
 
+    // 单行模式阻止回车换行（Shift+Enter 也阻止）
+    if (!this.multiline && e.key === 'Enter') { e.preventDefault(); return; }
+
     // 删除时的处理
     if (e.key === 'Backspace' && this.editableEl) {
       const sel = window.getSelection(); 
@@ -919,6 +982,12 @@ export class LdesignMention {
         class={cls.join(' ')}
         contentEditable={!this.disabled && !this.readonly}
         data-placeholder={this.placeholder || ''}
+        style={{
+          minHeight: this.editableMinH ? `${this.editableMinH}px` : undefined,
+          maxHeight: this.editableMaxH != null ? `${this.editableMaxH}px` : undefined,
+          overflowY: this.editableMaxH != null ? 'auto' : undefined,
+          resize: this.resizable ? 'vertical' : 'none',
+        }}
         onFocus={this.onFocus as any}
         onBlur={this.onBlur as any}
         onKeyDown={this.onKeyDown as any}
