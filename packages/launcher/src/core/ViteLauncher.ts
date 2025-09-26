@@ -1356,12 +1356,13 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     if (config.resolve.alias) {
       if (Array.isArray(config.resolve.alias)) {
         userAliases = [...config.resolve.alias]
+        console.log('🔧 用户别名（数组格式）调试:')
+        console.log('  总数:', userAliases.length)
+        const ldesignAliases = userAliases.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
+        console.log('  @ldesign别名数量:', ldesignAliases.length)
+        console.log('  当前阶段:', stage)
+        console.log('  @ldesign别名详情:', JSON.stringify(ldesignAliases.slice(0, 5), null, 2))
         if (this.logger.getLevel() === 'debug') {
-          const ldesignAliases = userAliases.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
-          console.log('🔧 用户别名（数组格式）调试:')
-          console.log('  总数:', userAliases.length)
-          console.log('  @ldesign别名数量:', ldesignAliases.length)
-          console.log('  @ldesign别名详情:', JSON.stringify(ldesignAliases, null, 2))
           this.logger.debug('用户别名（数组格式）', {
             count: userAliases.length,
             first10: userAliases.slice(0, 10).map(a => ({ find: a.find, replacement: a.replacement, stages: a.stages })),

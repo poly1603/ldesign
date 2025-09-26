@@ -175,8 +175,15 @@ export class ConfigManager extends EventEmitter {
           }
 
         } catch (jitiError) {
+          this.logger.error('🔧 jiti 加载失败详细错误:', {
+            message: (jitiError as Error).message,
+            stack: (jitiError as Error).stack,
+            configPath: absolutePath,
+            errorName: (jitiError as Error).name
+          })
           this.logger.warn('TypeScript 配置文件通过 jiti 加载失败，尝试加载 JavaScript 版本', {
-            error: (jitiError as Error).message
+            error: (jitiError as Error).message,
+            stack: (jitiError as Error).stack
           })
 
           // 尝试加载对应的 JavaScript 版本配置文件
@@ -192,8 +199,10 @@ export class ConfigManager extends EventEmitter {
               throw new Error('JavaScript 配置文件不存在')
             }
           } catch (jsError) {
+            console.log('🔧 JavaScript 配置文件加载失败详细错误:', jsError)
             this.logger.warn('JavaScript 配置文件加载失败，尝试使用 TS 转译后动态导入', {
-              error: (jsError as Error).message
+              error: (jsError as Error).message,
+              stack: (jsError as Error).stack
             })
 
             // 进一步降级：使用 TypeScript 转译为 ESM 后再导入

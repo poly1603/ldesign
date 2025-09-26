@@ -6,8 +6,8 @@
  * @author LDesign Team
  * @since 1.0.0
  */
-
 import { defineConfig } from '@ldesign/launcher'
+
 
 export default defineConfig({
   // 继承基础配置中的 launcher 预设和 alias 配置
