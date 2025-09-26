@@ -10,7 +10,7 @@ export type ModalVariant = 'modal' | 'drawer-left' | 'drawer-right' | 'bottom-sh
 
 export type ModalSize = 'small' | 'medium' | 'large' | 'full';
 
-export type ModalAnimation = 'fade' | 'zoom' | 'slide-down' | 'slide-up' | 'slide-left' | 'slide-right';
+export type ModalAnimation = 'fade' | 'zoom' | 'slide-down' | 'slide-up' | 'slide-left' | 'slide-right' | 'zoom-origin';
 
 /**
  * Modal 模态框组件
@@ -314,6 +314,44 @@ export class LdesignModal {
       this.setVisible(true);
     }
   };
+
+  /** 最近一次指针位置（用于 zoom-origin 动画） */
+  private lastPointerX?: number;
+  private lastPointerY?: number;
+  private lastPointerTime?: number;
+  private pointerRecordListener = (e: PointerEvent | MouseEvent | TouchEvent) => {
+    const x = (e as PointerEvent).clientX ?? (e as MouseEvent).clientX ?? (e as TouchEvent).touches?.[0]?.clientX;
+    const y = (e as PointerEvent).clientY ?? (e as MouseEvent).clientY ?? (e as TouchEvent).touches?.[0]?.clientY;
+    if (typeof x === 'number' && typeof y === 'number') {
+      this.lastPointerX = x;
+      this.lastPointerY = y;
+      this.lastPointerTime = performance.now();
+    }
+  };
+
+  private getRecentPointer(threshold = 2000): { x: number; y: number } | null {
+    if (this.lastPointerX == null || this.lastPointerY == null || this.lastPointerTime == null) return null;
+    const now = performance.now();
+    if (now - this.lastPointerTime <= threshold) return { x: this.lastPointerX, y: this.lastPointerY };
+    return null;
+  }
+
+  private setOriginFromPoint(point: { x: number; y: number } | null) {
+    const dialog = this.el.querySelector('.ldesign-modal__dialog') as HTMLElement | null;
+    if (!dialog) return;
+    const rect = dialog.getBoundingClientRect();
+    // 防御：避免除零
+    const w = Math.max(1, rect.width);
+    const h = Math.max(1, rect.height);
+    let ox = 0.5;
+    let oy = 0.5;
+    if (point) {
+      ox = Math.max(0, Math.min(1, (point.x - rect.left) / w));
+      oy = Math.max(0, Math.min(1, (point.y - rect.top) / h));
+    }
+    this.el.style.setProperty('--ld-modal-origin-x', `${Math.round(ox * 1000) / 10}%`);
+    this.el.style.setProperty('--ld-modal-origin-y', `${Math.round(oy * 1000) / 10}%`);
+  }
   private resizeStartX: number = 0;
   private resizeStartY: number = 0;
   private modalStartWidth: number = 0;
@@ -399,6 +437,9 @@ export class LdesignModal {
 
     // 边缘滑动打开抽屉
     document.addEventListener('pointerdown', this.handleEdgePointerDown as any, { passive: true } as any);
+
+    // 记录最近一次指针位置（zoom-origin 需要）
+    document.addEventListener('pointerdown', this.pointerRecordListener as any, { passive: true } as any);
   }
 
   /**
@@ -416,6 +457,7 @@ export class LdesignModal {
     window.removeEventListener('resize', this.handleWindowResize);
     window.removeEventListener('resize', this.updateEffectiveVariant as any);
     document.removeEventListener('pointerdown', this.handleEdgePointerDown as any);
+    document.removeEventListener('pointerdown', this.pointerRecordListener as any);
     if (this.resizeRaf) {
       cancelAnimationFrame(this.resizeRaf);
       this.resizeRaf = undefined;
@@ -515,6 +557,11 @@ export class LdesignModal {
    * 遮罩层点击事件
    */
   private handleMaskClick = (event: Event) => {
+    // 记录点击点用于 zoom-origin 收拢
+    const e = event as MouseEvent;
+    if (typeof e.clientX === 'number' && typeof e.clientY === 'number') {
+      this.lastPointerX = e.clientX; this.lastPointerY = e.clientY; this.lastPointerTime = performance.now();
+    }
     if (event.target === this.maskElement && this.maskClosable) {
       this.attemptClose('mask');
     }
@@ -523,7 +570,10 @@ export class LdesignModal {
   /**
    * 关闭按钮点击事件
    */
-  private handleCloseClick = () => {
+  private handleCloseClick = (ev?: MouseEvent) => {
+    if (ev && typeof ev.clientX === 'number' && typeof ev.clientY === 'number') {
+      this.lastPointerX = ev.clientX; this.lastPointerY = ev.clientY; this.lastPointerTime = performance.now();
+    }
     this.attemptClose('close');
   };
 
@@ -962,14 +1012,30 @@ export class LdesignModal {
       this.bindScrollLock();
       this.lockBodyScroll();
 
+      // zoom-origin 动画确保在首帧前设定 transform-origin
+      if (this.animation === 'zoom-origin' && this.modalElement) {
+        this.modalElement.style.visibility = 'hidden';
+      }
+
       // 定位逻辑：优先恢复上次位置，否则按需居中
       if ((this.isDraggable || this.resizable || this.centered || this.maximizable) && this.modalElement) {
         this.modalElement.style.visibility = 'hidden';
         requestAnimationFrame(() => {
           if (this.isVisible) {
             this.applyLastPositionOrCenter();
+            // 设置 zoom-origin 的起始点
+            if (this.animation === 'zoom-origin') {
+              try { this.setOriginFromPoint(this.getRecentPointer()); } catch (_) {}
+            }
             this.modalElement!.style.visibility = 'visible';
           }
+        });
+      } else if (this.animation === 'zoom-origin' && this.modalElement) {
+        // 非居中/拖拽等情况下也需要在首帧设置 origin
+        requestAnimationFrame(() => {
+          if (!this.isVisible) return;
+          try { this.setOriginFromPoint(this.getRecentPointer()); } catch (_) {}
+          this.modalElement!.style.visibility = 'visible';
         });
       }
 
@@ -984,6 +1050,11 @@ export class LdesignModal {
       // 入栈（作为栈顶）
       this.pushToStack();
     } else {
+      // 关闭动画前：若是 zoom-origin，更新 origin
+      if (this.animation === 'zoom-origin') {
+        try { this.setOriginFromPoint(this.getRecentPointer()); } catch (_) {}
+      }
+
       // 关闭动画
       this.isAnimating = true;
       this.isClosing = true;
@@ -1031,10 +1102,22 @@ export class LdesignModal {
       this.isVisible = true;
       this.visible = true;
 
-
       // 锁定背景滚动，并隐藏页面滚动条
       this.bindScrollLock();
       this.lockBodyScroll();
+
+      // zoom-origin 动画：确保首帧前设定 transform-origin
+      if (this.animation === 'zoom-origin' && this.modalElement) {
+        this.modalElement.style.visibility = 'hidden';
+        requestAnimationFrame(() => {
+          if (!this.isVisible) return;
+          try {
+            const p = this.getRecentPointer();
+            this.setOriginFromPoint(p);
+          } catch (_) {}
+          this.modalElement!.style.visibility = 'visible';
+        });
+      }
 
       // 如果是拖拽模态框，尽早将居中定位转换为绝对定位，避免动画期间位置跳动
       if (this.isDraggable && this.modalElement) {
@@ -1043,6 +1126,10 @@ export class LdesignModal {
         requestAnimationFrame(() => {
           if (this.isVisible) {
             this.alignDialogToCenter();
+            // 再次根据最终位置更新 origin（如果是 zoom-origin）
+            if (this.animation === 'zoom-origin') {
+              try { this.setOriginFromPoint(this.getRecentPointer()); } catch (_) {}
+            }
             this.modalElement!.style.visibility = 'visible';
           }
         });
@@ -1059,6 +1146,11 @@ export class LdesignModal {
       // 移动端软键盘避让
       this.attachKeyboardAvoid();
     } else {
+      // 关闭动画开始前：若是 zoom-origin，更新一次 origin（根据最近点击点或回退）
+      if (this.animation === 'zoom-origin') {
+        try { this.setOriginFromPoint(this.getRecentPointer()); } catch (_) {}
+      }
+
       // 关闭动画
       this.isAnimating = true;
       this.isClosing = true;
@@ -1128,12 +1220,16 @@ export class LdesignModal {
       classes.push('ldesign-modal--bottom-sheet');
     }
 
-    // 添加动画类
+    // 添加动画类（zoom-origin 仅在 modal 变体下启用，否则回退为 zoom）
     if (this.animation) {
+      let anim = this.animation as string;
+      if (anim === 'zoom-origin' && vv !== 'modal') {
+        anim = 'zoom';
+      }
       if (this.isClosing) {
-        classes.push(`ldesign-modal--${this.animation}-out`);
+        classes.push(`ldesign-modal--${anim}-out`);
       } else {
-        classes.push(`ldesign-modal--${this.animation}`);
+        classes.push(`ldesign-modal--${anim}`);
       }
     }
 

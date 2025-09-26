@@ -235,6 +235,7 @@ onMounted(() => {
   const animationButtons = [
     { id: 'fade-btn', modalId: 'fade-modal' },
     { id: 'zoom-btn', modalId: 'zoom-modal' },
+    { id: 'zoom-origin-btn', modalId: 'zoom-origin-modal' },
     { id: 'slide-down-btn', modalId: 'slide-down-modal' },
     { id: 'slide-up-btn', modalId: 'slide-up-modal' },
     { id: 'slide-left-btn', modalId: 'slide-left-modal' },
@@ -739,6 +740,7 @@ Modal 支持多种动画效果，通过 `animation` 属性设置。
 <div class="demo-container">
   <ldesign-button id="fade-btn">淡入淡出</ldesign-button>
   <ldesign-button id="zoom-btn">缩放动画</ldesign-button>
+  <ldesign-button id="zoom-origin-btn">从点击点展开</ldesign-button>
   <ldesign-button id="slide-down-btn">向下滑动</ldesign-button>
   <ldesign-button id="slide-up-btn">向上滑动</ldesign-button>
   <ldesign-button id="slide-left-btn">向左滑动</ldesign-button>
@@ -750,6 +752,10 @@ Modal 支持多种动画效果，通过 `animation` 属性设置。
 
   <ldesign-modal id="zoom-modal" modal-title="缩放动画效果" animation="zoom">
     <p>这是缩放动画效果（默认）。</p>
+  </ldesign-modal>
+
+  <ldesign-modal id="zoom-origin-modal" modal-title="从点击点展开/缩回" animation="zoom-origin" centered>
+    <p>点击不同位置打开/关闭，观察动画从最近的点击点放大/缩回。</p>
   </ldesign-modal>
 
   <ldesign-modal id="slide-down-modal" modal-title="向下滑动效果" animation="slide-down">
@@ -916,7 +922,7 @@ Modal 支持多种动画效果，通过 `animation` 属性设置。
 | `top` | `number \| string` | - | 距离顶部的距离 |
 | `z-index` | `number` | `1000` | z-index |
 | `destroy-on-close` | `boolean` | `false` | 是否销毁子元素 |
-| `animation` | `'fade' \| 'zoom' \| 'slide-down' \| 'slide-up' \| 'slide-left' \| 'slide-right'` | `'zoom'` | 动画效果类型 |
+| `animation` | `'fade' \| 'zoom' \| 'zoom-origin' \| 'slide-down' \| 'slide-up' \| 'slide-left' \| 'slide-right'` | `'zoom'` | 动画效果类型（`zoom-origin` 将从最近一次点击点作为起始点，非 modal 变体会回退为 `zoom`） |
 | `maximizable` | `boolean` | `false` | 是否可最大化 |
 
 ### 事件

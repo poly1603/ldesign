@@ -54,102 +54,31 @@
 
   &__content { padding: 8px; }
 
-  &__presets {
-    display: flex;
-    gap: 8px;
-    padding: 4px 8px 0 8px;
-    flex-wrap: wrap;
-  }
-  &__preset-btn {
-    border: 1px solid var(--ldesign-border-color, #e5e7eb);
-    background: #fff;
-    color: var(--ldesign-text-color, #111827);
-    font-size: 12px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
   &__columns {
     display: flex;
-    gap: 8px;
-    padding: 8px;
-    background: var(--ldesign-bg-soft, #f9fafb);
-    border-radius: 8px;
+    gap: 4px;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
-  /* 外层滚动容器（隐藏蒙层与指示器用） */
-  &__picker {
-    position: relative;
-    width: 72px;
-    overflow: hidden;
-    background: #fff;
-    border-radius: 6px;
-    border: 1px solid var(--ldesign-border-color, #e5e7eb);
+  /* 极简列样式：移除边框与背景，使用细线指示选中行 */
+  ldesign-picker .ldesign-picker__picker {
+    width: 84px;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+  ldesign-picker .ldesign-picker__indicator {
+    background: transparent;
+    border-top: 1px solid var(--ldesign-border-color, #e5e7eb);
+    border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
+    border-radius: 0;
   }
 
-  &__column {
-    margin: 0 !important;
-    padding: 0 !important;
-    list-style: none;
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-    /* 隐藏滚动条 */
-    scrollbar-width: none; /* Firefox */
-  }
-  &__column::-webkit-scrollbar { width: 0; height: 0; }
-
-  &__item {
-    text-align: center;
-    height: var(--ld-tp-item-height, 36px);
-    line-height: var(--ld-tp-item-height, 36px);
-    font-size: 16px;
-    color: var(--ldesign-text-color, #111827);
-    cursor: pointer;
-
-    &:hover { background: transparent; }
-
-    &--active {
-      color: #1d4ed8; // 蓝色高亮
-      font-weight: 600;
-      background: rgba(29, 78, 216, 0.06);
-    }
-
-    &--disabled {
-      color: var(--ldesign-text-color-secondary, #9ca3af);
-      cursor: not-allowed;
-      &:hover { background: transparent; }
-    }
-  }
-
-  /* 中心选中指示条 */
-  &__indicator {
-    position: absolute;
-    left: 0; right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-    background: rgba(29, 78, 216, 0.08);
-    border-radius: 6px;
-  }
-
-  /* 上下渐隐蒙层 */
-  &__mask {
-    position: absolute;
-    left: 0; right: 0;
-    height: 24px;
-    pointer-events: none;
-  }
-  &__mask--top {
-    top: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,1), rgba(255,255,255,0));
-  }
-  &__mask--bottom {
-    bottom: 0;
-    background: linear-gradient(0deg, rgba(255,255,255,1), rgba(255,255,255,0));
-  }
+  /* 指示与蒙层由 ldesign-picker 自己渲染，这里无需重复定义 */
 
   &__footer {
     display: flex;
@@ -168,5 +97,5 @@
   }
 }
 
-/* 收敛内边距以贴近设计 */
-ldesign-time-picker .ldesign-popup__inner { padding: 8px; }
+/* 让弹层内边距更紧凑 */
+ldesign-time-picker .ldesign-popup__inner { padding: 6px; }

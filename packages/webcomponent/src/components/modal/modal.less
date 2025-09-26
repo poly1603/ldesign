@@ -469,6 +469,20 @@
     }
   }
 
+  // 新增：从点击点缩放
+  &--zoom-origin {
+    .ldesign-modal__dialog {
+      transform-origin: var(--ld-modal-origin-x, 50%) var(--ld-modal-origin-y, 50%);
+      animation: ldesign-modal-zoom-origin-in var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
+    }
+  }
+  &--zoom-origin-out {
+    .ldesign-modal__dialog {
+      transform-origin: var(--ld-modal-origin-x, 50%) var(--ld-modal-origin-y, 50%);
+      animation: ldesign-modal-zoom-origin-out var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
+    }
+  }
+
   &--slide-down {
     .ldesign-modal__dialog {
       animation: ldesign-modal-slide-down var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
@@ -737,6 +751,29 @@
   to {
     opacity: 0;
     transform: scale(0.95);
+  }
+}
+
+// 从点击点缩放的变体（使用 CSS 变量指定 transform-origin）
+@keyframes ldesign-modal-zoom-origin-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ldesign-modal-zoom-origin-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.6);
   }
 }
 

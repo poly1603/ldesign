@@ -1,4 +1,4 @@
-import { Component, Prop, State, Event, EventEmitter, h, Host, Element, Watch } from '@stencil/core';
+import { Component, Prop, State, Event, EventEmitter, h, Host, Element, Watch, Method } from '@stencil/core';
 
 export interface PickerOption {
   value: string;
@@ -824,6 +824,25 @@ export class LdesignPicker {
     const idx = this.getIndexByValue(opt.value);
     this.setIndex(idx, { animate: true, trigger: 'click' });
   };
+
+  /* ---------------- public methods ---------------- */
+  @Method()
+  async scrollToValue(value: string, opts?: { trigger?: 'program' | 'click' | 'scroll' | 'wheel' | 'keyboard' | 'touch'; animate?: boolean; silent?: boolean }) {
+    const idx = this.getIndexByValue(value);
+    if (idx >= 0) {
+      this.setIndex(idx, { animate: opts?.animate !== false, silent: !!opts?.silent, trigger: (opts?.trigger as any) || 'scroll' });
+    }
+  }
+
+  @Method()
+  async scrollToIndex(index: number, opts?: { trigger?: 'program' | 'click' | 'scroll' | 'wheel' | 'keyboard' | 'touch'; animate?: boolean; silent?: boolean }) {
+    this.setIndex(index, { animate: opts?.animate !== false, silent: !!opts?.silent, trigger: (opts?.trigger as any) || 'scroll' });
+  }
+
+  @Method()
+  async centerToCurrent(smooth: boolean = true) {
+    this.centerCurrent(!!smooth);
+  }
 
   /* ---------------- render ---------------- */
   render() {

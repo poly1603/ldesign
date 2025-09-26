@@ -55,8 +55,8 @@
   padding: 8px 12px 0 12px;
   display: flex;
   justify-content: center;
-  pointer-events: none; // 让计数器居中不挡缩略图滚动
-  z-index: 3;
+  pointer-events: auto; // 允许交互，避免被画布拦截
+  z-index: 35; // 高于画布与导航，保证可点击
 }
 /* 在小窗模式下，为了不被标题栏遮挡，把顶部缩略图整体下移到标题栏下方 */
 .ldesign-image-viewer--modal .ldesign-image-viewer__top {
@@ -208,7 +208,8 @@
   width: 40px; height: 40px; border-radius: 50%;
   border: none; display: inline-flex; align-items: center; justify-content: center;
   background: @panel-dark; color: #fff; cursor: pointer;
-  z-index: 2; // 箭头在图片之上
+  z-index: 20; // 提高到画布及其他内容之上，确保可点击
+  pointer-events: auto;
 }
 
 /* 移动端优化：更大的触控区域、工具栏可横向滚动 */
@@ -228,11 +229,12 @@
 /* 右上角关闭按钮 */
 .ldesign-image-viewer__close {
   position: absolute; top: 10px; right: 10px;
-  z-index: 10; /* 高于标题栏，保证可点击 */
+  z-index: 40; /* 高于标题栏/导航等，保证可点击 */
   width: 36px; height: 36px;
   border: none; border-radius: 18px;
   background: @panel-dark; color: #fff; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
+  pointer-events: auto;
 }
 .ldesign-image-viewer--light .ldesign-image-viewer__close { background: @panel-light; color: @text-light; }
 
@@ -242,7 +244,8 @@
 .ldesign-image-viewer__bottom {
   position: absolute; left: 0; right: 0; bottom: 18px;
   display: flex; align-items: center; justify-content: center;
-  z-index: 3; // 工具栏在最顶层
+  z-index: 30; // 工具栏在最顶层（高于导航）
+  pointer-events: auto;
 }
 
 /* UI 自动隐藏（移动端沉浸模式） */
@@ -296,7 +299,7 @@
 }
 
 /* 标题栏（可拖拽） */
- .ldesign-image-viewer__titlebar {
+.ldesign-image-viewer__titlebar {
   position: relative;
   height: 44px;
   display: flex; align-items: center;
@@ -304,7 +307,8 @@
   cursor: move;
   user-select: none;
   background: rgba(255,255,255,0.85);
-  z-index: 4; /* 高于缩略图，但我们会把缩略图整体下移，避免被挡住 */
+  z-index: 25; /* 高于缩略图与画布 */
+  pointer-events: auto;
 }
 .ldesign-image-viewer--dark .ldesign-image-viewer__titlebar { background: rgba(0,0,0,0.35); color: #fff; }
 .ldesign-image-viewer__title { font-size: 14px; font-weight: 600; }

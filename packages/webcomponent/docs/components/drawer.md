@@ -123,6 +123,7 @@ onMounted(() => {
     ['open-drawer-bottom', 'drawer-bottom'],
     ['open-drawer-wide', 'drawer-wide'],
     ['open-drawer-half', 'drawer-half'],
+    ['open-drawer-in-container', 'drawer-in-container'],
   ]
 
   pairs.forEach(([btnId, elId]) => {
@@ -132,8 +133,73 @@ onMounted(() => {
       btn.addEventListener('click', () => el.setAttribute('visible', ''))
     }
   })
+
+  // 确保容器模式在运行时生效：直接设置元素属性为 HTMLElement
+  const container = document.getElementById('drawer-demo-container')
+  const drawerInContainer = document.getElementById('drawer-in-container') as any
+  if (container && drawerInContainer) {
+    drawerInContainer.getContainer = container
+  }
 })
 </script>
+
+## 在指定容器中打开
+
+<style scoped>
+.drawer-container-box {
+  position: relative;
+  width: 520px;
+  height: 280px;
+  border: 1px dashed #d1d5db;
+  border-radius: 6px;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+</style>
+
+通过 `getContainer` 属性可以将抽屉挂载到指定的容器元素内。建议为容器设置 `position: relative`，以便抽屉使用绝对定位正确铺满容器。
+
+<div class="demo-container">
+  <div class="drawer-container-box" id="drawer-demo-container">
+    <span>容器区域（在这里打开抽屉）</span>
+  </div>
+
+  <div class="demo-row">
+    <button id="open-drawer-in-container">在容器中打开抽屉</button>
+  </div>
+
+  <ldesign-drawer
+    id="drawer-in-container"
+    drawer-title="容器内抽屉"
+    placement="right"
+    get-container="#drawer-demo-container"
+  >
+    <p>此抽屉挂载在指定容器内，遮罩与面板均限定在容器区域内。</p>
+  </ldesign-drawer>
+</div>
+
+```html
+<div id="drawer-demo-container" style="position: relative; width: 520px; height: 280px; border: 1px dashed #d1d5db;"></div>
+
+<button id="open-drawer-in-container">在容器中打开抽屉</button>
+
+<ldesign-drawer
+  id="drawer-in-container"
+  drawer-title="容器内抽屉"
+  get-container="#drawer-demo-container"
+>
+  <p>此抽屉挂载在指定容器内，遮罩与面板均限定在容器区域内。</p>
+</ldesign-drawer>
+
+<script>
+  document.getElementById('open-drawer-in-container').addEventListener('click', () => {
+    document.getElementById('drawer-in-container').setAttribute('visible', '')
+  })
+</script>
+```
 
 ## 遮罩与关闭
 

@@ -93,19 +93,22 @@ export class LdesignImageViewer {
   @State() motion: 'opening' | 'open' | 'closing' = 'open';
   @State() uiHidden: boolean = false; // 移动端自动隐藏 UI
 
+  // —— 与 Draggable 对接相关 ——
+  private draggableEl?: any; // <ldesign-draggable> 实例引用
+
+  // 旧的拖拽/缩放内部变量保留占位，但实际由 Draggable 接管（避免大范围删改影响）
   private dragStartX = 0;
   private dragStartY = 0;
   private startOffsetX = 0;
   private startOffsetY = 0;
-  // 拖拽期间只在内存里更新，不触发重渲染
   private visualOffsetX: number = 0;
   private visualOffsetY: number = 0;
   private moveRaf?: number;
-  private imageEl?: HTMLImageElement;
+  private imageEl?: HTMLImageElement; // 仅用于旧图交叉淡出覆盖层
   private panelEl?: HTMLElement;
   private canvasEl?: HTMLElement;
   private imgKey: number = 0;
-  // 多指触控/手势
+  // 多指触控/手势（主要用于保留旧逻辑状态，实际手势由 Draggable 处理）
   private activePointers = new Map<number, { x: number; y: number }>();
   private isPinching = false;
   private pinchStartDist = 0;
@@ -130,7 +133,7 @@ export class LdesignImageViewer {
   private stageWidth = 0; private stageHeight = 0;
   private baseWidth = 0; private baseHeight = 0; // 图像在 scale=1 时（按 contain 适配舞台）的基准尺寸
 
-  // 拖拽后的回弹动画
+  // 拖拽后的回弹动画（由 Draggable 接管，保留占位以最小改动）
   private bouncing = false;
   private bounceRaf?: number;
   private bounceStartTime = 0;
@@ -138,15 +141,15 @@ export class LdesignImageViewer {
   private bounceToX = 0; private bounceToY = 0;
   private bounceDuration = 220; // ms
 
-  // 简单速度估计（可用于后续动量滚动）
+  // 简单速度估计（保留变量用于轻扫切图阈值判断）
   private lastMoveTime = 0;
   private lastMoveX = 0; private lastMoveY = 0;
   private velocityX = 0; private velocityY = 0;
 
-  // 旋转阈值，避免双指缩放时角度微抖造成画面抖动
+  // 旋转阈值（用于 Draggable 手势，对齐原值）
   private rotateThresholdDeg = 5;
 
-  // 动量滚动（甩动）
+  // 动量滚动（由 Draggable 接管）
   private momentumRunning = false;
   private momentumRaf?: number;
   private momentumLastTime = 0;
@@ -158,6 +161,12 @@ export class LdesignImageViewer {
   private panelStartX = 0; private panelStartY = 0;
   private panelOffsetX = 0; private panelOffsetY = 0;
   private panelStartOffsetX = 0; private panelStartOffsetY = 0;
+
+  // 轻扫手势（在缩放≈1时用于切图/关闭），通过捕获阶段监听，不与 Draggable 冲突
+  private swipeActive = false;
+  private swipePointerId?: number;
+  private swipeStartX = 0; private swipeStartY = 0;
+  private swipeDx = 0; private swipeDy = 0;
 
   // ── Watchers ────────────────────────────────────────────────────
   @Watch('images')
@@ -180,6 +189,13 @@ export class LdesignImageViewer {
     // 初始化舞台尺寸监听（影响拖拽边界）
     this.updateStageMetrics();
     window.addEventListener('resize', this.onWindowResize, { passive: true } as any);
+    // 捕获阶段监听，用于缩放≈1 时的轻扫切图/下滑关闭，不干扰内部 draggable 的事件处理
+    try {
+      this.canvasEl?.addEventListener('pointerdown', this.onStagePointerDownCapture as any, { capture: true } as any);
+      this.canvasEl?.addEventListener('pointermove', this.onStagePointerMoveCapture as any, { capture: true } as any);
+      this.canvasEl?.addEventListener('pointerup', this.onStagePointerUpCapture as any, { capture: true } as any);
+      this.canvasEl?.addEventListener('pointercancel', this.onStagePointerUpCapture as any, { capture: true } as any);
+    } catch {}
   }
 
   componentDidRender() {
@@ -234,6 +250,12 @@ export class LdesignImageViewer {
     if (this.visible) unlockPageScroll();
     if (this.fadeTimer) { clearTimeout(this.fadeTimer); this.fadeTimer = undefined as any; }
     window.removeEventListener('resize', this.onWindowResize as any);
+    try {
+      this.canvasEl?.removeEventListener('pointerdown', this.onStagePointerDownCapture as any, { capture: true } as any);
+      this.canvasEl?.removeEventListener('pointermove', this.onStagePointerMoveCapture as any, { capture: true } as any);
+      this.canvasEl?.removeEventListener('pointerup', this.onStagePointerUpCapture as any, { capture: true } as any);
+      this.canvasEl?.removeEventListener('pointercancel', this.onStagePointerUpCapture as any, { capture: true } as any);
+    } catch {}
   }
 
   // ── Helpers ─────────────────────────────────────────────────────
@@ -275,6 +297,13 @@ export class LdesignImageViewer {
       this.motion = 'opening';
       requestAnimationFrame(() => (this.motion = 'open'));
       this.ldesignOpen.emit();
+      // 当前图预加载，完成后结束 loading（draggable 不暴露 onload，这里用预热替代）
+      const cur = this.current();
+      if (cur?.src) {
+        this.preloadImage(cur.src).then(() => { this.loading = false; }).catch(() => { this.loading = false; });
+      } else {
+        this.loading = false;
+      }
       // 预热相邻图片
       this.prewarmNeighbors(this.index);
     } else {
@@ -303,8 +332,10 @@ export class LdesignImageViewer {
   }
 
   private applyTransform() {
-    if (!this.imageEl) return;
-    this.imageEl.style.transform = this.getTransformString();
+    // 由 Draggable 接管实际变换，这里仅用于旧图覆盖层与状态计算
+    if (this.imageEl) {
+      try { this.imageEl.style.transform = this.getTransformString(); } catch {}
+    }
   }
 
   private resetTransform() {
@@ -313,8 +344,10 @@ export class LdesignImageViewer {
     this.visualOffsetX = 0; this.visualOffsetY = 0;
     this.bouncing = false;
     this.stopMomentum();
-    // 推迟到渲染新 img 后再应用，避免误写旧图导致抖动
-    this.pendingApply = true;
+    // 交给 Draggable 重置实际变换
+    try { (this.draggableEl as any)?.reset(); } catch {}
+    // 不再依赖 pendingApply 触发 img transform
+    this.pendingApply = false;
   }
 
   private onMaskClick = (e: Event) => { if (this.viewerMode !== 'overlay') return; if (e.target === this.el.querySelector('.ldesign-image-viewer')) { if (this.maskClosable) this.close(); } };
@@ -429,11 +462,12 @@ export class LdesignImageViewer {
   };
 
   private onWheel = (e: WheelEvent) => {
+    // 已由 Draggable 处理滚轮缩放，这里保留兼容（例如捕获阶段触发时转发）
     if (!this.wheelZoom) return;
     e.preventDefault();
     const delta = e.deltaY > 0 ? -this.zoomStep : this.zoomStep;
     const target = Math.min(this.maxScale, Math.max(this.minScale, this.scale + delta));
-    this.zoomTo(target, e.clientX, e.clientY);
+    try { (this.draggableEl as any)?.zoomTo(target, e.clientX, e.clientY); } catch {}
     this.showUiTemporarily();
   };
 
@@ -443,33 +477,12 @@ export class LdesignImageViewer {
   }
 
   private zoomTo(nextScale: number, clientX?: number, clientY?: number) {
-    const prev = this.scale;
-    // 轻微吸附到 1 倍，避免 0.99 之类的残留值
+    // 改为调用 Draggable 的缩放方法，内部已处理围绕枢轴点缩放与边界夹紧
     let next = Math.min(this.maxScale, Math.max(this.minScale, nextScale));
     if (Math.abs(next - 1) < 0.02) next = 1;
     next = Number(next.toFixed(4));
-    if (!this.canvasEl || next === prev) { this.scale = next; this.applyTransform(); return; }
-    const rect = this.canvasEl.getBoundingClientRect();
-    const cx = clientX != null ? clientX : rect.left + rect.width / 2;
-    const cy = clientY != null ? clientY : rect.top + rect.height / 2;
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const useVisual = this.dragging || this.bouncing || this.momentumRunning;
-    const curX = useVisual ? this.visualOffsetX : this.offsetX;
-    const curY = useVisual ? this.visualOffsetY : this.offsetY;
-    const vX = (cx - centerX) - curX;
-    const vY = (cy - centerY) - curY;
-    const r = next / (prev || 1);
-    const dX = -(r - 1) * vX;
-    const dY = -(r - 1) * vY;
-    this.scale = next;
-    this.offsetX = curX + dX; this.offsetY = curY + dY;
-    // 缩放后约束在边界内（避免放大瞬间跑出屏幕）
-    const b = this.getPanBounds();
-    this.offsetX = Math.min(b.maxX, Math.max(b.minX, this.offsetX));
-    this.offsetY = Math.min(b.maxY, Math.max(b.minY, this.offsetY));
-    this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
-    this.applyTransform();
+    try { (this.draggableEl as any)?.zoomTo(next, clientX, clientY); } catch {}
+    // 状态更新由 onDraggableTransformChange 同步
   }
 
   // 同时围绕枢轴点应用缩放与旋转，保证枢轴点锚定不漂移
@@ -508,15 +521,16 @@ export class LdesignImageViewer {
     this.applyTransform();
   }
 
-  private rotateLeft = () => { this.rotate = (this.rotate - 90) % 360; this.applyTransform(); };
-  private rotateRight = () => { this.rotate = (this.rotate + 90) % 360; this.applyTransform(); };
-  private flipHorizontal = () => { this.flipX = !this.flipX; this.applyTransform(); };
-  private flipVertical = () => { this.flipY = !this.flipY; this.applyTransform(); };
+  private rotateLeft = () => { const next = (this.rotate - 90) % 360; try { (this.draggableEl as any)?.setRotate(next); } catch {} this.rotate = next; };
+  private rotateRight = () => { const next = (this.rotate + 90) % 360; try { (this.draggableEl as any)?.setRotate(next); } catch {} this.rotate = next; };
+  private flipHorizontal = () => { this.flipX = !this.flipX; /* 翻转通过外层包裹容器实现 */ };
+  private flipVertical = () => { this.flipY = !this.flipY; /* 翻转通过外层包裹容器实现 */ };
 
   private onDblClick = (e: MouseEvent) => {
+    // 由 Draggable 自行处理双击缩放；这里保留兜底调用以保持一致体验
     e.preventDefault();
     const target = this.scale === 1 ? 2 : 1;
-    this.zoomTo(target, e.clientX, e.clientY);
+    try { (this.draggableEl as any)?.zoomTo(target, (e as any).clientX, (e as any).clientY); } catch {}
     this.showUiTemporarily();
   };
 
@@ -531,209 +545,23 @@ export class LdesignImageViewer {
   }
 
   private onPointerDown = (e: PointerEvent) => {
-    // 避免冒泡到面板拖拽（确保拖动图片不会带动小窗位置）
+    // 图片平移/缩放由 <ldesign-draggable> 接管；此处仅保留 UI 显示/双击兜底能力
     e.stopPropagation();
     if (e.pointerType === 'touch') e.preventDefault();
-
-    // 若正在动量滚动，打断它
-    if (this.momentumRunning) {
-      this.stopMomentum();
-      // 将当前视觉位置固化为状态，作为新拖拽起点
-      this.offsetX = this.visualOffsetX; this.offsetY = this.visualOffsetY;
-    }
-
-    // 记录指针（用于多指缩放）
-    this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
-    // 多指优先：两指立即进入捏合
-    if (this.activePointers.size === 2) {
-      if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined; }
-      const pts = Array.from(this.activePointers.values());
-      const dx = pts[0].x - pts[1].x; const dy = pts[0].y - pts[1].y;
-      this.pinchStartDist = Math.hypot(dx, dy) || 1;
-      this.pinchStartScale = this.scale;
-      this.pinchStartAngle = Math.atan2(dy, dx);
-      this.rotateStart = this.rotate;
-      // 使用视觉偏移作为手势的实时基准
-      this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
-      this.isPinching = true;
-      this.gesturing = true;
-      this.dragging = false;
-    } else {
-      // 单指：准备拖拽或轻扫
-      this.dragging = true;
-      this.dragStartX = e.clientX; this.dragStartY = e.clientY;
-      this.startOffsetX = this.offsetX; this.startOffsetY = this.offsetY;
-      this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
-      this.lastMoveTime = performance.now();
-      this.lastMoveX = e.clientX; this.lastMoveY = e.clientY;
-      this.velocityX = 0; this.velocityY = 0;
-
-      // 仅对主触点做单击/双击识别，避免第二指误判为双击
-      if (e.pointerType === 'touch' && (e as any).isPrimary !== false) {
-        const now = Date.now();
-        if (now - this.lastTapTime < 300 && !this.isPinching) {
-          if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined; }
-          this.onDblClick(e as any);
-          this.lastTapTime = 0;
-        } else {
-          this.lastTapTime = now;
-          this.tapStartX = e.clientX; this.tapStartY = e.clientY; this.tapMoved = false;
-          if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); }
-          this.singleTapTimer = window.setTimeout(() => {
-            if (!this.tapMoved && !this.isPinching) {
-              this.uiHidden = !this.uiHidden;
-            }
-            this.singleTapTimer = undefined as any;
-          }, 260);
-        }
-      }
-    }
-
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    this.showUiTemporarily();
   };
   private onPointerMove = (e: PointerEvent) => {
+    // 图片平移/缩放由 <ldesign-draggable> 接管；此处仅保留 UI 显示能力
     this.showUiTemporarily();
-    if (e.pointerType === 'touch') e.preventDefault();
-    // 更新活动指针位置
-    if (this.activePointers.has(e.pointerId)) {
-      this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    }
-
-    // 两指缩放/旋转（围绕两指中点作为枢轴，同时锚定该点）
-    if (this.isPinching && this.activePointers.size >= 2) {
-      if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined; }
-      const pts = Array.from(this.activePointers.values());
-      const dx = pts[0].x - pts[1].x; const dy = pts[0].y - pts[1].y;
-      const dist = Math.hypot(dx, dy) || 1;
-      const ratio = dist / (this.pinchStartDist || 1);
-      const rawScale = this.pinchStartScale * ratio;
-      const nextScale = Number(Math.min(this.maxScale, Math.max(this.minScale, rawScale)).toFixed(3));
-      const midX = (pts[0].x + pts[1].x) / 2;
-      const midY = (pts[0].y + pts[1].y) / 2;
-      // 计算旋转角度（两指连线角度差），并加入角度阈值
-      const angle = Math.atan2(dy, dx);
-      let delta = angle - this.pinchStartAngle;
-      if (delta > Math.PI) delta -= Math.PI * 2; else if (delta < -Math.PI) delta += Math.PI * 2;
-      const deltaDeg = (delta * 180) / Math.PI;
-      const nextRotate = (Math.abs(deltaDeg) >= this.rotateThresholdDeg) ? (this.rotateStart + deltaDeg) : this.rotateStart;
-      this.pinchTo(nextScale, nextRotate, midX, midY);
-      this.gesturing = true;
-      return;
-    }
-
-    if (!this.dragging) return;
-    // 若移动超过阈值，取消单击判定
-    const moveDx = Math.abs(e.clientX - this.tapStartX);
-    const moveDy = Math.abs(e.clientY - this.tapStartY);
-    if (moveDx > 8 || moveDy > 8) { this.tapMoved = true; if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined; } }
-    const dx = e.clientX - this.dragStartX; const dy = e.clientY - this.dragStartY;
-    let nextX = this.startOffsetX + dx;
-    let nextY = this.startOffsetY + dy;
-
-    // 速度估计（简单差分）
-    const now = performance.now();
-    const dt = Math.max(1, now - this.lastMoveTime);
-    this.velocityX = (e.clientX - this.lastMoveX) / dt;
-    this.velocityY = (e.clientY - this.lastMoveY) / dt;
-    this.lastMoveTime = now; this.lastMoveX = e.clientX; this.lastMoveY = e.clientY;
-
-    // 橡皮筋超界处理（拖到边界外逐步加阻尼）
-    const b = this.getPanBounds();
-    if (nextX < b.minX) nextX = this.rubberband(nextX, b.minX, b.maxX);
-    if (nextX > b.maxX) nextX = this.rubberband(nextX, b.minX, b.maxX);
-    if (nextY < b.minY) nextY = this.rubberband(nextY, b.minY, b.maxY);
-    if (nextY > b.maxY) nextY = this.rubberband(nextY, b.minY, b.maxY);
-
-    // 仅在 rAF 中直接更新 transform
-    this.visualOffsetX = nextX; this.visualOffsetY = nextY;
-    if (this.moveRaf == null) {
-      this.moveRaf = requestAnimationFrame(() => {
-        this.applyTransform();
-        this.moveRaf = undefined;
-      });
-    }
   };
-  private onPointerUp = (e: PointerEvent) => {
-    // 移除当前指针
-    this.activePointers.delete(e.pointerId);
-    if (this.singleTapTimer) {
-      // 若在计时窗口内抬起，不做额外处理，让计时器决定是否切换UI
-      // 但如果已经识别为滑动/缩放，上面已清除计时器
-    }
-    if (this.isPinching) {
-      if (this.activePointers.size < 2) {
-        this.isPinching = false; this.gesturing = false;
-        // 提交视觉位移到状态并进行边界回弹
-        const b = this.getPanBounds();
-        const tx = Math.min(b.maxX, Math.max(b.minX, this.visualOffsetX));
-        const ty = Math.min(b.maxY, Math.max(b.minY, this.visualOffsetY));
-        const needsBounce = Math.abs(tx - this.visualOffsetX) > 0.5 || Math.abs(ty - this.visualOffsetY) > 0.5;
-        if (needsBounce) {
-          this.bounceTo(tx, ty);
-        } else {
-          this.offsetX = this.visualOffsetX; this.offsetY = this.visualOffsetY;
-          this.applyTransform();
-        }
-      }
-      try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
-      return;
-    }
-
-    const dx = e.clientX - this.dragStartX; const dy = e.clientY - this.dragStartY;
-    const isSwipeCandidate = Math.abs(this.scale - 1) < 0.001 && Math.abs(this.startOffsetX) < 10 && Math.abs(this.startOffsetY) < 10;
-
-    this.dragging = false;
-    if (this.moveRaf) { cancelAnimationFrame(this.moveRaf); this.moveRaf = undefined; }
-
-    if (isSwipeCandidate && Math.abs(dy) < 60 && Math.abs(dx) > 80 && this.list.length > 1) {
-      // 快速轻扫切图：右滑上一张，左滑下一张
-      if (dx > 0) this.prev(); else this.next();
-      // 恢复位置，不提交偏移
-      this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
-      try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
-      return;
-    }
-
-    // overlay 模式：下滑关闭（缩放≈1 且未拖图）
-    if (this.viewerMode === 'overlay' && isSwipeCandidate && dy > 120 && Math.abs(dx) < 80) {
-      this.close();
-      try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
-      return;
-    }
-
-    // 动量滚动判断（在非切图/关闭场景，且缩放>1时才进行）
-    const speed = Math.hypot(this.velocityX, this.velocityY);
-    const canMomentum = this.scale > 1.01;
-    if (canMomentum && speed > 0.25) { // 约 >250px/s
-      this.startMomentum(this.velocityX, this.velocityY);
-      try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
-      return;
-    }
-
-    // 将最终结果回弹到边界内并提交
-    const b = this.getPanBounds();
-    const targetX = Math.min(b.maxX, Math.max(b.minX, this.visualOffsetX));
-    const targetY = Math.min(b.maxY, Math.max(b.minY, this.visualOffsetY));
-    const needsBounce = Math.abs(targetX - this.visualOffsetX) > 0.5 || Math.abs(targetY - this.visualOffsetY) > 0.5;
-
-    if (needsBounce) {
-      this.bounceTo(targetX, targetY);
-    } else {
-      this.offsetX = this.visualOffsetX; this.offsetY = this.visualOffsetY;
-      this.applyTransform();
-    }
-
-    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+  private onPointerUp = (_e: PointerEvent) => {
+    // 图片平移/缩放由 <ldesign-draggable> 接管；此处不处理。
   };
 
   private onImageLoad = () => {
-    // 后备路径：未采用预加载提交时，img onload 后触发
-    if (!this.loading) return; // 已通过预加载流程提交
+    // 该回调仅用于旧图覆盖层的 <img>，新主图由 Draggable 管理；
+    if (!this.loading) return;
     this.loading = false;
-    // 更新舞台与基准尺寸，用于边界约束
-    this.updateStageMetrics();
-    this.measureBaseSize();
     if (this.prevSrc) {
       this.crossfading = true;
       if (this.transition === 'fade-zoom') {
@@ -810,6 +638,10 @@ export class LdesignImageViewer {
 
     const panelStyle: any = this.viewerMode === 'modal' ? { width: this.toPx(this.panelWidth) || '80vw', height: this.toPx(this.panelHeight) || '70vh' } : this.viewerMode === 'embedded' ? { width: '100%', height: '100%' } : { width: '100%', height: '100%' };
 
+    // Draggable 外层包裹，用于翻转，不干扰内部缩放/旋转/平移
+    const flipStyle: any = { transform: `scale(${this.flipX ? -1 : 1}, ${this.flipY ? -1 : 1})` };
+    const draggableFadeStyle: any = (!this.loading ? { animation: `iv-fade-in var(--iv-duration, ${this.transitionDuration}ms) var(--iv-ease, ${this.transitionEasing})` } : {});
+
     return (
       <Host>
         <div class={classes} data-motion={this.motion} style={{ zIndex: String(this.zIndex), ['--iv-duration' as any]: `${this.transitionDuration}ms`, ['--iv-ease' as any]: this.transitionEasing }} onClick={this.viewerMode==='overlay' ? this.onMaskClick : undefined}>
@@ -848,33 +680,28 @@ export class LdesignImageViewer {
                 <ldesign-icon name="chevron-left" />
               </button>
             )}
-            <div class="ldesign-image-viewer__canvas" ref={el => (this.canvasEl = el as HTMLElement)} onWheel={this.onWheel} onDblClick={this.onDblClick}
-              onPointerDown={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerDown}
-              onPointerMove={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerMove}
-              onPointerUp={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerUp}
-              onPointerCancel={this.viewerMode === 'modal' && this.panelDraggable === 'anywhere' ? undefined : this.onPointerUp}>
+            <div class="ldesign-image-viewer__canvas" ref={el => (this.canvasEl = el as HTMLElement)} onWheel={this.onWheel} onDblClick={this.onDblClick}>
               {(this.loading || this.crossfading) && this.prevSrc ? (
                 <img class={{ 'ldesign-image-viewer__img': true, 'fade-leave': this.crossfading }} src={this.prevSrc} alt="prev" draggable={false} style={{ transform: this.prevTransform || this.getTransformString() }} />
               ) : null}
               {item ? (
-                <img
-                  key={this.imgKey as any}
-                  ref={el => (this.imageEl = el as HTMLImageElement)}
-                  class={{
-                    'ldesign-image-viewer__img': true,
-                    'is-dragging': this.dragging,
-                    'is-gesturing': this.gesturing,
-                    'loading-hidden': this.loading,
-                    'fade-enter': !this.loading && this.crossfading,
-                    'fade-in': !this.loading && !this.crossfading,
-                  } as any}
-                  src={item.src}
-                  alt={item.alt || ''}
-                  draggable={false}
-                  onLoad={this.onImageLoad}
-                  onError={this.onImageError}
-                  style={{ transform: this.getTransformString() }}
-                />
+                <div style={{ ...flipStyle, width: '100%', height: '100%' }}>
+                  <ldesign-draggable
+                    ref={el => (this.draggableEl = el as any)}
+                    src={item.src}
+                    alt={item.alt || ''}
+                    wheelZoom={this.wheelZoom}
+                    zoomStep={this.zoomStep}
+                    minScale={this.minScale}
+                    maxScale={this.maxScale}
+                    enableRotate={true}
+                    doubleTapZoom={2}
+                    onLdesignTransformChange={(e: any) => this.onDraggableTransformChange(e)}
+                    onLdesignGestureStart={() => { this.gesturing = true; this.showUiTemporarily(); }}
+                    onLdesignGestureEnd={() => { this.gesturing = false; this.showUiTemporarily(); }}
+                    style={{ width: '100%', height: '100%', ...draggableFadeStyle }}
+                  />
+                </div>
               ) : null}
               {this.loading ? (
                 <div class="ldesign-image-viewer__loading" aria-live="polite" aria-busy="true">
@@ -912,16 +739,8 @@ export class LdesignImageViewer {
   private onWindowResize = () => {
     this.updateStageMetrics();
     this.measureBaseSize();
-    const b = this.getPanBounds();
-    const tx = Math.min(b.maxX, Math.max(b.minX, this.offsetX));
-    const ty = Math.min(b.maxY, Math.max(b.minY, this.offsetY));
-    if (Math.abs(tx - this.offsetX) > 0.5 || Math.abs(ty - this.offsetY) > 0.5) {
-      // 视口变化导致越界，平滑回弹
-      this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
-      this.bounceTo(tx, ty);
-    } else {
-      this.applyTransform();
-    }
+    // 实际边界回弹由 Draggable 内部处理，这里仅刷新 UI
+    this.applyTransform();
   };
 
   private updateStageMetrics() {
@@ -970,92 +789,12 @@ export class LdesignImageViewer {
     return v;
   }
 
-  private bounceTo(x: number, y: number) {
-    if (this.bounceRaf) { cancelAnimationFrame(this.bounceRaf); this.bounceRaf = undefined; }
-    this.bouncing = true;
-    // 禁用 CSS 过渡，使用 JS 动画
-    try { this.imageEl?.classList.add('is-bouncing'); } catch {}
-    this.bounceFromX = this.visualOffsetX; this.bounceFromY = this.visualOffsetY;
-    this.bounceToX = x; this.bounceToY = y;
-    this.bounceStartTime = performance.now();
-    const animate = () => {
-      const t = Math.min(1, (performance.now() - this.bounceStartTime) / this.bounceDuration);
-      // easeOutCubic
-      const k = 1 - Math.pow(1 - t, 3);
-      const curX = this.bounceFromX + (this.bounceToX - this.bounceFromX) * k;
-      const curY = this.bounceFromY + (this.bounceToY - this.bounceFromY) * k;
-      this.visualOffsetX = curX; this.visualOffsetY = curY;
-      this.applyTransform();
-      if (t < 1) {
-        this.bounceRaf = requestAnimationFrame(animate);
-      } else {
-        this.bouncing = false; this.bounceRaf = undefined;
-        this.offsetX = this.bounceToX; this.offsetY = this.bounceToY;
-        // 恢复 CSS 过渡
-        try { this.imageEl?.classList.remove('is-bouncing'); } catch {}
-        this.applyTransform();
-      }
-    };
-    this.bounceRaf = requestAnimationFrame(animate);
+  private bounceTo(_x: number, _y: number) {
+    // 回弹动画交由 Draggable 处理（保留方法以避免调用处报错）
   }
 
-  private startMomentum(vx: number, vy: number) {
-    // 终止其他动画
-    if (this.bounceRaf) { cancelAnimationFrame(this.bounceRaf); this.bounceRaf = undefined; this.bouncing = false; try { this.imageEl?.classList.remove('is-bouncing'); } catch {} }
-    if (this.momentumRaf) { cancelAnimationFrame(this.momentumRaf); this.momentumRaf = undefined; }
-    this.momentumRunning = true;
-    this.momentumVX = vx; this.momentumVY = vy;
-    this.momentumLastTime = performance.now();
-    try { this.imageEl?.classList.add('is-kinetic'); } catch {}
-    // 从当前视觉位置开始
-    this.visualOffsetX = this.visualOffsetX || this.offsetX;
-    this.visualOffsetY = this.visualOffsetY || this.offsetY;
-
-    const FRICTION = 0.004; // 越大越快停止（单位 1/ms）
-    const MIN_SPEED = 0.02; // px/ms
-
-    const step = () => {
-      if (!this.momentumRunning) return;
-      const now = performance.now();
-      const dt = Math.max(1, now - this.momentumLastTime);
-      this.momentumLastTime = now;
-
-      // 指数衰减
-      const decay = Math.exp(-FRICTION * dt);
-      this.momentumVX *= decay;
-      this.momentumVY *= decay;
-
-      // 移动
-      let nx = this.visualOffsetX + this.momentumVX * dt;
-      let ny = this.visualOffsetY + this.momentumVY * dt;
-
-      const b = this.getPanBounds();
-      // 命中边界时，夹紧并清除该方向速度
-      if (nx < b.minX) { nx = b.minX; this.momentumVX = 0; }
-      if (nx > b.maxX) { nx = b.maxX; this.momentumVX = 0; }
-      if (ny < b.minY) { ny = b.minY; this.momentumVY = 0; }
-      if (ny > b.maxY) { ny = b.maxY; this.momentumVY = 0; }
-
-      this.visualOffsetX = nx; this.visualOffsetY = ny;
-      this.applyTransform();
-
-      const speed = Math.hypot(this.momentumVX, this.momentumVY);
-      if (speed <= MIN_SPEED) {
-        // 结束动量，回弹确保完全在边界内
-        const tx = Math.min(b.maxX, Math.max(b.minX, this.visualOffsetX));
-        const ty = Math.min(b.maxY, Math.max(b.minY, this.visualOffsetY));
-        this.stopMomentum();
-        if (Math.abs(tx - this.visualOffsetX) > 0.5 || Math.abs(ty - this.visualOffsetY) > 0.5) {
-          this.bounceTo(tx, ty);
-        } else {
-          this.offsetX = this.visualOffsetX; this.offsetY = this.visualOffsetY;
-          this.applyTransform();
-        }
-        return;
-      }
-      this.momentumRaf = requestAnimationFrame(step);
-    };
-    this.momentumRaf = requestAnimationFrame(step);
+  private startMomentum(_vx: number, _vy: number) {
+    // 动量滚动交由 Draggable 处理（保留方法以避免调用处报错）
   }
 
   private stopMomentum() {
@@ -1063,4 +802,45 @@ export class LdesignImageViewer {
     if (this.momentumRaf) { cancelAnimationFrame(this.momentumRaf); this.momentumRaf = undefined; }
     try { this.imageEl?.classList.remove('is-kinetic'); } catch {}
   }
+
+  // ── 与 Draggable 交互：同步状态 ───────────────────────────────
+  private onDraggableTransformChange(e: CustomEvent<{ scale: number; rotate: number; offsetX: number; offsetY: number }>) {
+    const d = e.detail || ({} as any);
+    this.scale = d.scale ?? this.scale;
+    this.rotate = d.rotate ?? this.rotate;
+    this.offsetX = d.offsetX ?? this.offsetX;
+    this.offsetY = d.offsetY ?? this.offsetY;
+    this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
+    this.showUiTemporarily();
+  }
+
+  // ── 舞台捕获阶段监听：用于缩放≈1 时的轻扫切图/下滑关闭 ─────────────
+  private onStagePointerDownCapture = (e: PointerEvent) => {
+    if (!this.visible) return;
+    // 仅在缩放≈1 且位移接近 0 时启用轻扫判定
+    const near1 = Math.abs(this.scale - 1) < 0.01;
+    const nearCenter = Math.abs(this.offsetX) < 10 && Math.abs(this.offsetY) < 10;
+    if (!(near1 && nearCenter)) return;
+    this.swipeActive = true; this.swipePointerId = e.pointerId;
+    this.swipeStartX = e.clientX; this.swipeStartY = e.clientY; this.swipeDx = 0; this.swipeDy = 0;
+  };
+  private onStagePointerMoveCapture = (e: PointerEvent) => {
+    if (!this.swipeActive || this.swipePointerId !== e.pointerId) return;
+    this.swipeDx = e.clientX - this.swipeStartX; this.swipeDy = e.clientY - this.swipeStartY;
+    this.showUiTemporarily();
+  };
+  private onStagePointerUpCapture = (e: PointerEvent) => {
+    if (!this.swipeActive || this.swipePointerId !== e.pointerId) { return; }
+    const dx = this.swipeDx; const dy = this.swipeDy;
+    const isSwipeCandidate = Math.abs(this.scale - 1) < 0.02 && Math.abs(this.offsetX) < 10 && Math.abs(this.offsetY) < 10;
+    this.swipeActive = false; this.swipePointerId = undefined; this.swipeDx = 0; this.swipeDy = 0;
+    if (isSwipeCandidate && Math.abs(dy) < 60 && Math.abs(dx) > 80 && this.list.length > 1) {
+      if (dx > 0) this.prev(); else this.next();
+      return;
+    }
+    if (this.viewerMode === 'overlay' && isSwipeCandidate && dy > 120 && Math.abs(dx) < 80) {
+      this.close();
+      return;
+    }
+  };
 }
