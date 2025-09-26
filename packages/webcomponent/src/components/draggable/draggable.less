@@ -1,0 +1,27 @@
+@bg-dark: rgba(0, 0, 0, 0.88);
+@panel-dark: rgba(0, 0, 0, 0.55);
+
+.ldesign-draggable {
+  position: relative;
+  width: 100%; height: 100%;
+  overflow: hidden; // 舞台
+  touch-action: none; // 禁止浏览器默认手势
+  overscroll-behavior: contain; // 阻断滚动链
+  user-select: none; -webkit-user-select: none;
+}
+
+.ldesign-draggable__content {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform-origin: center center;
+  will-change: transform;
+  backface-visibility: hidden;
+  // 默认 contain 到舞台大小（让 scale=1 以舞台为基准）
+  max-width: 100%; max-height: 100%;
+  transition: transform 0.24s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.ldesign-draggable__content.is-dragging,
+.ldesign-draggable__content.is-gesturing,
+.ldesign-draggable__content.is-bouncing,
+.ldesign-draggable__content.is-kinetic { transition: none; }
