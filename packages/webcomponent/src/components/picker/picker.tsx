@@ -279,17 +279,22 @@ export class LdesignPicker {
     
     // 严格限制Y值在合法范围内
     const itemH = this.itemHeightBySize;
-    const maxY = this.centerOffset; // 第0项居中时的Y值
-    const minY = this.centerOffset - (this.parsed.length - 1) * itemH; // 最后一项居中时的Y值
+    const maxY = this.centerOffset; // 第0项居中时的Y值（最上限）
+    const minY = this.centerOffset - (this.parsed.length - 1) * itemH; // 最后一项居中时的Y值（最下限）
     
-    // 加强边界钳制
+    // 强制边界钳制 - 绝对不允许超出
     let clampedY = y;
-    if (y > maxY) {
-      clampedY = maxY;
-    } else if (y < minY) {
-      clampedY = minY;
+    if (y >= maxY) {
+      clampedY = maxY; // 第一项不能再往下
+    } else if (y <= minY) {
+      clampedY = minY; // 最后一项不能再往上
     }
     clampedY = Math.round(clampedY); // 确保整数像素值
+    
+    // 只有当值真正改变时才更新
+    if (Math.abs(this.trackY - clampedY) < 0.01) {
+      return; // 避免无意义的更新
+    }
     
     this.trackY = clampedY;
     const el = this.listEl as HTMLElement;
@@ -297,12 +302,12 @@ export class LdesignPicker {
     el.style.transition = animate ? 'transform 200ms cubic-bezier(0.22,0.61,0.36,1)' : 'none';
     el.style.transform = `translate3d(0, ${clampedY}px, 0)`;
     
-    // 确保边界时的视觉状态正确
-    const currentIdx = Math.round((this.centerOffset - clampedY) / itemH);
-    const clampedIdx = Math.max(0, Math.min(this.parsed.length - 1, currentIdx));
-    if (currentIdx !== clampedIdx) {
-      // 如果计算的索引超出边界，立即修正
-      this.visual = this.parsed[clampedIdx]?.value;
+    // 更新视觉状态
+    const currentFloat = (this.centerOffset - clampedY) / itemH;
+    const currentIdx = Math.max(0, Math.min(this.parsed.length - 1, Math.round(currentFloat)));
+    const newVisual = this.parsed[currentIdx]?.value;
+    if (newVisual !== this.visual) {
+      this.visual = newVisual;
     }
   }
 
@@ -366,17 +371,19 @@ export class LdesignPicker {
     if (!this.listEl || this.parsed.length === 0) return;
     
     // 严格限制索引范围 [0, length-1]
-    const idx = Math.max(0, Math.min(this.parsed.length - 1, i));
+    const idx = this.clampIndex(i);
+    const enabledIdx = this.firstEnabledFrom(idx);
     
     // 精确检查是否已经在目标位置（基于实际Y坐标）
-    const targetY = this.yForIndex(idx);
+    const targetY = this.yForIndex(enabledIdx);
     const tolerance = 0.5; // 允许0.5像素的误差
-    if (Math.abs(this.trackY - targetY) < tolerance && opts?.trigger === 'wheel') {
-      // 如果已经精确在目标位置且是滚轮触发的，不做任何动作
+    
+    // 只有在不是动画模式且已经在目标位置时才跳过
+    if (opts?.animate === false && Math.abs(this.trackY - targetY) < tolerance) {
+      // 更新视觉状态确保一致
+      this.visual = this.parsed[enabledIdx]?.value;
       return;
     }
-    
-    const enabledIdx = this.firstEnabledFrom(idx);
     
     // 如果需要动画，用 snapAnim；否则直接设置
     if (opts?.animate !== false) {
@@ -399,28 +406,67 @@ export class LdesignPicker {
     e.preventDefault();
     e.stopPropagation(); // 阻止事件冒泡，防止页面滚动
 
+    // 如果正在动画中，先取消当前动画
+    if (this.snapAnim) {
+      this.cancelSnapAnim();
+    }
+
     // 根据当前的 trackY 精确判断索引
     const itemH = this.itemHeightBySize;
     const currentFloat = (this.centerOffset - this.trackY) / itemH;
     const currentIdx = Math.round(currentFloat);
     
-    // 基于索引的边界判断（更直接）
-    if ((currentIdx <= 0 && e.deltaY < 0) || // 在第一项且向上滚
-        (currentIdx >= this.parsed.length - 1 && e.deltaY > 0)) { // 在最后一项且向下滚
-      // 确保位置精确对齐
-      const boundaryIdx = e.deltaY < 0 ? 0 : this.parsed.length - 1;
-      const targetY = this.yForIndex(boundaryIdx);
-      if (Math.abs(this.trackY - targetY) > 1) {
-        // 如果有偏差，立即修正到边界位置
-        this.setTrackTransform(targetY, false);
-        this.visual = this.parsed[boundaryIdx]?.value;
-      }
-      return;
+    // 调试：打印关键信息
+    console.log('🎯 onWheel Debug:', {
+      deltaY: e.deltaY,
+      currentFloat,
+      currentIdx,
+      trackY: this.trackY,
+      centerOffset: this.centerOffset,
+      itemHeight: itemH,
+      parsedLength: this.parsed.length,
+      firstY: this.yForIndex(0),
+      lastY: this.yForIndex(this.parsed.length - 1)
+    });
+    
+    // 更严格的边界检查 - 完全阻止超出边界的滚动
+    // deltaY < 0 表示向上滚动（往索引减小方向，往第一项）
+    // deltaY > 0 表示向下滚动（往索引增大方向，往最后一项）
+    
+    // 检查是否已经在第一项位置
+    const firstY = this.yForIndex(0);
+    const isAtFirst = Math.abs(this.trackY - firstY) < 1;
+    
+    // 检查是否已经在最后一项位置
+    const lastIdx = this.parsed.length - 1;
+    const lastY = this.yForIndex(lastIdx);
+    const isAtLast = Math.abs(this.trackY - lastY) < 1;
+    
+    console.log('📍 Position Check:', {
+      isAtFirst,
+      isAtLast,
+      tryingToScrollUp: e.deltaY < 0,
+      tryingToScrollDown: e.deltaY > 0
+    });
+    
+    // 在第一项且试图向上滚动
+    if (isAtFirst && e.deltaY < 0) {
+      console.log('🛑 BLOCKED: Already at first item, preventing upward scroll');
+      // 强制对齐到第一项
+      this.setTrackTransform(firstY, false);
+      this.visual = this.parsed[0]?.value;
+      this.current = this.parsed[0]?.value;
+      return; // 完全阻止事件
     }
-
-    // 如果正在动画中，取消当前动画立即响应新输入
-    if (this.snapAnim) {
-      this.cancelSnapAnim();
+    
+    // 在最后一项且试图向下滚动
+    if (isAtLast && e.deltaY > 0) {
+      console.log('🛑 BLOCKED: Already at last item, preventing downward scroll');
+      // 强制对齐到最后一项
+      this.setTrackTransform(lastY, false);
+      this.visual = this.parsed[lastIdx]?.value;
+      this.current = this.parsed[lastIdx]?.value;
+      return; // 完全阻止事件
     }
 
     // Windows 鼠标滚轮通常 deltaY = 100/120 像素
@@ -448,17 +494,18 @@ export class LdesignPicker {
     }
 
     if (steps !== 0) {
-      const targetIdx = Math.max(0, Math.min(this.parsed.length - 1, currentIdx + steps));
-      // 如果目标索引和当前索引相同，说明已经到边界了
-      if (targetIdx !== currentIdx) {
-        this.setIndex(targetIdx, { animate: true, trigger: 'wheel' });
-      } else {
-        // 已经在边界，确保位置精确
+      const targetIdx = this.clampIndex(currentIdx + steps);
+      
+      // 如果目标索引和当前索引相同，说明已到边界
+      if (targetIdx === currentIdx) {
+        // 强制对齐到边界位置
         const boundaryY = this.yForIndex(targetIdx);
-        if (Math.abs(this.trackY - boundaryY) > 0.5) {
-          this.setTrackTransform(boundaryY, true);
-          this.visual = this.parsed[targetIdx]?.value;
-        }
+        this.setTrackTransform(boundaryY, true);
+        this.visual = this.parsed[targetIdx]?.value;
+        this.current = this.parsed[targetIdx]?.value;
+      } else {
+        // 正常滚动到目标索引
+        this.setIndex(targetIdx, { animate: true, trigger: 'wheel' });
       }
     }
   };

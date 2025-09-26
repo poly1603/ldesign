@@ -1386,6 +1386,7 @@ export namespace Components {
           * @default false
          */
         "readonly": boolean;
+        "setOptions": (options: MentionItem[]) => Promise<void>;
         /**
           * 尺寸（影响样式）
           * @default 'medium'

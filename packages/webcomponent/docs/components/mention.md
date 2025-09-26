@@ -232,6 +232,20 @@ m.addEventListener('ldesignChange', (e) => {
 <ldesign-mention
     id="mention-parse-init"
     triggers='["@", "#"]'
+    trigger-configs='[
+      { "char": "@", "tokenType": "primary", "closable": true, "options": [
+        { "value": "1", "label": "Alice" },
+        { "value": "2", "label": "Bob" },
+        { "value": "3", "label": "Charlie" },
+        { "value": "4", "label": "Diana" }
+      ] },
+      { "char": "#", "tokenType": "info", "closable": true, "options": [
+        { "value": "t1", "label": "话题一" },
+        { "value": "t2", "label": "性能优化" },
+        { "value": "t3", "label": "Bug修复" },
+        { "value": "t4", "label": "新功能" }
+      ] }
+    ]'
     model='[
       { "type": "text", "text": "欢迎 " },
       { "type": "mention", "trigger": "@", "label": "Alice", "value": "1" },
@@ -387,6 +401,18 @@ m.addEventListener('ldesignChange', (e) => {
   <ldesign-mention
     id="mention-model-demo"
     triggers='["@","#"]'
+    trigger-configs='[
+      { "char": "@", "tokenType": "primary", "options": [
+        { "value": "1", "label": "Alice" },
+        { "value": "2", "label": "Bob" },
+        { "value": "3", "label": "Charlie" }
+      ] },
+      { "char": "#", "tokenType": "info", "options": [
+        { "value": "t1", "label": "话题一" },
+        { "value": "t2", "label": "性能优化" },
+        { "value": "t3", "label": "Bug修复" }
+      ] }
+    ]'
     model='[
       { "type": "text", "text": "欢迎 " },
       { "type": "mention", "trigger": "@", "label": "Alice", "value": "1" },
@@ -398,6 +424,19 @@ m.addEventListener('ldesignChange', (e) => {
   <div class="demo-row" style="margin-top:12px;"><span class="demo-label">语义（value-model）</span></div>
   <ldesign-mention
     id="mention-value-model-demo"
+    triggers='["@","#"]'
+    trigger-configs='[
+      { "char": "@", "tokenType": "primary", "options": [
+        { "value": "1", "label": "Alice" },
+        { "value": "2", "label": "Bob" },
+        { "value": "3", "label": "Charlie" }
+      ] },
+      { "char": "#", "tokenType": "info", "options": [
+        { "value": "t1", "label": "话题一" },
+        { "value": "t2", "label": "性能优化" },
+        { "value": "t3", "label": "Bug修复" }
+      ] }
+    ]'
     value-format="model"
     value-model='{
       "text": "欢迎 @Alice 参与 #性能优化",

@@ -51,6 +51,25 @@ ldesign-mention 提及组件（contenteditable 版本）
 | `ldesignValueChange` | 结构化值变化事件                              | `CustomEvent<{ text: string; mentions: MentionEntity[]; model: MentionSegment[]; }>` |
 
 
+## Methods
+
+### `setOptions(options: MentionItem[]) => Promise<void>`
+
+
+
+#### Parameters
+
+| Name      | Type            | Description |
+| --------- | --------------- | ----------- |
+| `options` | `MentionItem[]` |             |
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+
 ## Dependencies
 
 ### Depends on

@@ -1,4 +1,4 @@
-import { Component, Prop, State, Event, EventEmitter, Watch, h, Host, Element } from '@stencil/core';
+import { Component, Prop, State, Event, EventEmitter, Watch, Method, h, Host, Element } from '@stencil/core';
 import { Size } from '../../types';
 import type { MentionItem, MentionTriggerConfig, MentionEntity, MentionModel, MentionSegment } from '../../types';
 
@@ -86,9 +86,14 @@ export class LdesignMention {
   @Prop() valueFormat: 'model' | 'segments' | 'text' = 'model';
 
   @Watch('options') 
-  watchOptions(val: string | MentionItem[]) { 
+  watchOptions(val: string | MentionItem[], oldVal?: string | MentionItem[]) { 
+    console.log('[Mention] Watch options triggered, new:', val, 'old:', oldVal);
     this.parsedOptions = this.parseOptions(val);
-    console.log('[Mention] Options updated:', this.parsedOptions.length, 'items');
+    console.log('[Mention] Options parsed:', this.parsedOptions.length, 'items');
+    // 如果当前有打开的弹窗，刷新选项列表
+    if (this.open && this.triggerCtx) {
+      this.openIfNeeded(this.searchText);
+    }
   }
   @Watch('triggerConfigs') watchTriggerConfigs(val?: string | MentionTriggerConfig[]) {
     this.parsedTriggerConfigs = this.parseTriggerConfigs(val);
@@ -112,6 +117,7 @@ export class LdesignMention {
   componentWillLoad() {
     this.parsedOptions = this.parseOptions(this.options);
     this.parsedTriggerConfigs = this.parseTriggerConfigs(this.triggerConfigs as any);
+    console.log('[Mention] componentWillLoad - initial options:', this.parsedOptions.length, 'items');
     // valueFormat 已作为 @Prop，保持默认或外部传值
     if ((this.value == null || this.value === '') && this.defaultValue) this.value = this.defaultValue;
   }
@@ -161,6 +167,18 @@ export class LdesignMention {
     document.removeEventListener('selectionchange', this.onSelectionChange);
     // 清理 beforeinput 监听
     this.editableEl?.removeEventListener('beforeinput', this.onBeforeInput as any);
+  }
+
+  // 公共方法：手动设置选项（解决属性监听问题）
+  @Method()
+  async setOptions(options: MentionItem[]) {
+    console.log('[Mention] setOptions called with', options.length, 'items');
+    this.options = options;
+    this.parsedOptions = this.parseOptions(options);
+    // 如果当前有打开的弹窗，刷新选项列表
+    if (this.open && this.triggerCtx) {
+      this.openIfNeeded(this.searchText);
+    }
   }
 
   private parseOptions(val: string | MentionItem[]): MentionItem[] {
