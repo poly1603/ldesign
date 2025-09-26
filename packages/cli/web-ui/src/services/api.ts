@@ -89,6 +89,14 @@ export const api = {
   // 构建产物检查
   checkBuildExists: (environment: string) =>
     apiClient.get(`/build/check/${environment}`).then(res => res.data),
+
+  // 获取构建时间
+  getBuildTime: (environment: string) =>
+    apiClient.get(`/build/time/${environment}`).then(res => res.data),
+
+  // 清理构建产物
+  cleanBuildDir: (environment: string) =>
+    apiClient.delete(`/build/clean/${environment}`).then(res => res.data),
 }
 
 export default api

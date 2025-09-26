@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Hammer, Square, Monitor, Trash2 } from 'lucide-react'
 import { useSocket } from '../contexts/SocketContext'
+import { useTaskState } from '../contexts/TaskStateContext'
 import { api } from '../services/api'
 import toast from 'react-hot-toast'
 // @ts-ignore
@@ -15,15 +16,7 @@ interface Environment {
   features: string
 }
 
-interface ProcessStatus {
-  [key: string]: 'idle' | 'running' | 'error'
-}
 
-interface OutputLine {
-  timestamp: string
-  content: string
-  type: 'info' | 'error' | 'success'
-}
 
 // 初始化ANSI转换器
 const convert = new Convert({
@@ -41,7 +34,19 @@ const processOutputContent = (content: string): { html: string; isQRCode: boolea
 
   if (isQRCode) {
     // 对于二维码，保持原始字符，只移除颜色代码
-    const cleanContent = content.replace(/\x1b\[[0-9;]*m/g, '')
+    const cleanContent = content
+      .replace(/\x1b\[[0-9;]*m/g, '')  // 清理 \x1b[XXm 格式
+      .replace(/\[\d+m/g, '')          // 清理 [XXm 格式
+      .replace(/\[[\d;]*m/g, '')       // 清理 [XX;XXm 格式
+      .replace(/\[\d+;\d+m/g, '')      // 清理 [XX;XXm 格式
+      .replace(/\[2m/g, '')            // 清理 [2m (粗体开始)
+      .replace(/\[22m/g, '')           // 清理 [22m (粗体结束)
+      .replace(/\[36m/g, '')           // 清理 [36m (青色)
+      .replace(/\[39m/g, '')           // 清理 [39m (默认前景色)
+      .replace(/\[90m/g, '')           // 清理 [90m (暗灰色)
+      .replace(/\[1m/g, '')            // 清理 [1m (粗体)
+      .replace(/\[0m/g, '')            // 清理 [0m (重置)
+      .replace(/\[32m/g, '')           // 清理 [32m (绿色)
     return { html: cleanContent, isQRCode: true }
   }
 
@@ -52,10 +57,19 @@ const processOutputContent = (content: string): { html: string; isQRCode: boolea
 
 const BuildPage: React.FC = () => {
   const { socket, isConnected } = useSocket()
+  const {
+    getTask,
+    createTask,
+    updateTaskStatus,
+    addOutputLine,
+    clearTaskOutput,
+    updateServerInfo
+  } = useTaskState()
+
   const [selectedEnv, setSelectedEnv] = useState('production')
-  const [processStatus, setProcessStatus] = useState<ProcessStatus>({})
-  const [outputLines, setOutputLines] = useState<OutputLine[]>([])
   const [autoScroll, setAutoScroll] = useState(true)
+  const [buildTimes, setBuildTimes] = useState<{ [key: string]: string }>({})
+  const logContainerRef = useRef<HTMLDivElement>(null)
 
   // 环境配置
   const environments: Environment[] = [
@@ -94,8 +108,10 @@ const BuildPage: React.FC = () => {
   ]
 
   const processKey = `build-${selectedEnv}`
-  const isProcessRunning = processStatus[processKey] === 'running'
-  const hasOutput = outputLines.length > 0
+  const currentTask = getTask(processKey)
+  const isProcessRunning = currentTask?.status === 'running'
+  const hasOutput = (currentTask?.outputLines?.length || 0) > 0
+  const outputLines = currentTask?.outputLines || []
 
   // 获取环境对应的构建类型
   const getBuildType = () => {
@@ -113,6 +129,79 @@ const BuildPage: React.FC = () => {
     }
   }
 
+  // 获取构建时间
+  const getBuildTime = async (envKey: string) => {
+    try {
+      const response = await api.getBuildTime(envKey)
+      return response.buildTime
+    } catch (error) {
+      console.error('获取构建时间失败:', error)
+      return null
+    }
+  }
+
+  // 状态恢复逻辑
+  useEffect(() => {
+    const restoreState = async () => {
+      try {
+        console.log('Attempting to restore state for:', processKey)
+        const taskState = await api.getTaskByTypeAndEnv('build', selectedEnv)
+        if (taskState) {
+          console.log('Restoring state from backend:', taskState)
+
+          // 确保任务存在
+          if (!getTask(processKey)) {
+            createTask(processKey, 'build', selectedEnv)
+          }
+
+          // 恢复任务状态
+          updateTaskStatus(processKey, taskState.status)
+
+          // 恢复输出日志
+          if (taskState.outputLines && taskState.outputLines.length > 0) {
+            // 清空现有输出
+            clearTaskOutput(processKey)
+            // 添加所有输出行
+            taskState.outputLines.forEach((line: any) => {
+              addOutputLine(processKey, {
+                timestamp: line.timestamp,
+                content: line.content,
+                type: line.type
+              })
+            })
+          }
+
+          // 恢复服务器信息
+          if (taskState.serverInfo) {
+            updateServerInfo(processKey, taskState.serverInfo)
+          }
+
+          console.log('State restored successfully for', processKey)
+        }
+
+        // 获取当前环境的构建时间
+        const buildTime = await getBuildTime(selectedEnv)
+        if (buildTime) {
+          setBuildTimes(prev => ({
+            ...prev,
+            [selectedEnv]: buildTime
+          }))
+        }
+      } catch (error) {
+        console.error('Failed to restore state:', error)
+      }
+    }
+
+    restoreState()
+  }, [processKey, selectedEnv])
+
+  // 自动滚动到底部
+  useEffect(() => {
+    if (autoScroll && logContainerRef.current) {
+      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight
+    }
+  }, [outputLines, autoScroll])
+
   // Socket事件监听
   useEffect(() => {
     if (!socket) return
@@ -124,10 +213,9 @@ const BuildPage: React.FC = () => {
         const command = taskIdParts[0]
         const environment = taskIdParts[1]
         const key = `${command}-${environment}`
-        setProcessStatus(prev => ({
-          ...prev,
-          [key]: data.status
-        }))
+
+        console.log(`Updating task ${key} status to ${data.status}`)
+        updateTaskStatus(key, data.status)
       }
     }
 
@@ -140,7 +228,18 @@ const BuildPage: React.FC = () => {
         const key = `${command}-${environment}`
         if (key === processKey) {
           const output = data.output
-          addOutputLine(output, data.type === 'stderr' ? 'error' : 'info')
+
+          // 确保任务存在
+          if (!getTask(key)) {
+            createTask(key, command as any, environment)
+          }
+
+          // 添加输出行到全局状态
+          addOutputLine(key, {
+            timestamp: new Date().toLocaleTimeString(),
+            content: output,
+            type: data.type === 'stderr' ? 'error' : 'info'
+          })
 
           // 检测构建成功标志
           if (output.includes('✓ built in') || output.includes('[INFO] 构建成功完成!')) {
@@ -177,21 +276,18 @@ const BuildPage: React.FC = () => {
     }
   }, [socket, processKey])
 
-  // 环境切换时清空输出
-  useEffect(() => {
-    setOutputLines([])
-  }, [selectedEnv])
 
-  const addOutputLine = (content: string, type: 'info' | 'error' | 'success' = 'info') => {
-    const timestamp = new Date().toLocaleTimeString()
-    setOutputLines(prev => [...prev, { timestamp, content, type }])
-  }
+
+
 
   const executeCommand = async () => {
     if (!isConnected) {
       toast.error('服务器未连接')
       return
     }
+
+    // 清空之前的日志
+    clearTaskOutput(processKey)
 
     try {
       const result = await api.runTask('build', {
@@ -203,7 +299,17 @@ const BuildPage: React.FC = () => {
       console.log('Build command started:', result)
     } catch (error) {
       toast.error(`构建失败: ${error instanceof Error ? error.message : '未知错误'}`)
-      addOutputLine(`构建失败: ${error}`, 'error')
+
+      // 确保任务存在
+      if (!getTask(processKey)) {
+        createTask(processKey, 'build', selectedEnv)
+      }
+
+      addOutputLine(processKey, {
+        timestamp: new Date().toLocaleTimeString(),
+        content: `构建失败: ${error}`,
+        type: 'error'
+      })
     }
   }
 
@@ -222,28 +328,40 @@ const BuildPage: React.FC = () => {
       console.log('Build command stopped:', result)
     } catch (error) {
       toast.error(`停止失败: ${error instanceof Error ? error.message : '未知错误'}`)
-      addOutputLine(`停止失败: ${error}`, 'error')
+
+      // 确保任务存在
+      if (!getTask(processKey)) {
+        createTask(processKey, 'build', selectedEnv)
+      }
+
+      addOutputLine(processKey, {
+        timestamp: new Date().toLocaleTimeString(),
+        content: `停止失败: ${error}`,
+        type: 'error'
+      })
     }
   }
 
   const clearOutput = () => {
-    setOutputLines([])
+    clearTaskOutput(processKey)
   }
 
   const getStatusText = () => {
-    const status = processStatus[processKey] || 'idle'
+    const status = currentTask?.status || 'idle'
     switch (status) {
       case 'running': return '构建中'
       case 'error': return '构建失败'
+      case 'completed': return '构建完成'
       default: return '已停止'
     }
   }
 
   const getStatusColor = () => {
-    const status = processStatus[processKey] || 'idle'
+    const status = currentTask?.status || 'idle'
     switch (status) {
       case 'running': return 'text-blue-600 bg-blue-50'
       case 'error': return 'text-red-600 bg-red-50'
+      case 'completed': return 'text-green-600 bg-green-50'
       default: return 'text-gray-600 bg-gray-50'
     }
   }
@@ -300,6 +418,12 @@ const BuildPage: React.FC = () => {
                 <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
                   {env.features}
                 </span>
+                {/* 构建时间 */}
+                {buildTimes[env.key] && (
+                  <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded">
+                    {buildTimes[env.key]}
+                  </span>
+                )}
               </div>
             </button>
           ))}
@@ -373,7 +497,7 @@ const BuildPage: React.FC = () => {
             <span>自动滚动</span>
           </label>
         </div>
-        <div className="h-96 overflow-y-auto bg-gray-900 text-gray-100 font-mono text-sm">
+        <div ref={logContainerRef} className="h-[600px] overflow-y-auto bg-gray-900 text-gray-100 font-mono text-sm">
           {!hasOutput && !isProcessRunning && (
             <div className="p-4 text-gray-400 italic">点击构建按钮开始执行命令...</div>
           )}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Eye, Square, Monitor, Trash2, ExternalLink, Globe, Wifi, Copy, QrCode } from 'lucide-react'
 import { useSocket } from '../contexts/SocketContext'
 import { useTaskState } from '../contexts/TaskStateContext'
@@ -37,7 +37,19 @@ const processOutputContent = (content: string): { html: string; isQRCode: boolea
 
   if (isQRCode) {
     // 对于二维码，保持原始字符，只移除颜色代码
-    const cleanContent = content.replace(/\x1b\[[0-9;]*m/g, '')
+    const cleanContent = content
+      .replace(/\x1b\[[0-9;]*m/g, '')  // 清理 \x1b[XXm 格式
+      .replace(/\[\d+m/g, '')          // 清理 [XXm 格式
+      .replace(/\[[\d;]*m/g, '')       // 清理 [XX;XXm 格式
+      .replace(/\[\d+;\d+m/g, '')      // 清理 [XX;XXm 格式
+      .replace(/\[2m/g, '')            // 清理 [2m (粗体开始)
+      .replace(/\[22m/g, '')           // 清理 [22m (粗体结束)
+      .replace(/\[36m/g, '')           // 清理 [36m (青色)
+      .replace(/\[39m/g, '')           // 清理 [39m (默认前景色)
+      .replace(/\[90m/g, '')           // 清理 [90m (暗灰色)
+      .replace(/\[1m/g, '')            // 清理 [1m (粗体)
+      .replace(/\[0m/g, '')            // 清理 [0m (重置)
+      .replace(/\[32m/g, '')           // 清理 [32m (绿色)
     return { html: cleanContent, isQRCode: true }
   }
 
@@ -62,7 +74,9 @@ const PreviewPage: React.FC = () => {
   const [processStatus, setProcessStatus] = useState<ProcessStatus>({})
   const [autoScroll, setAutoScroll] = useState(true)
   const [buildStatus, setBuildStatus] = useState<{ [key: string]: boolean }>({})
+  const [buildTimes, setBuildTimes] = useState<{ [key: string]: string }>({})
   const [checkingBuilds, setCheckingBuilds] = useState(true)
+  const logContainerRef = useRef<HTMLDivElement>(null)
 
   // 环境配置
   const environments: Environment[] = [
@@ -152,12 +166,31 @@ const PreviewPage: React.FC = () => {
   const checkAllBuilds = async () => {
     setCheckingBuilds(true)
     const status: { [key: string]: boolean } = {}
+    const times: { [key: string]: string } = {}
 
     for (const env of environments) {
       status[env.key] = await checkBuildExists(env.key)
+
+      // 获取构建时间
+      try {
+        const buildTask = await api.getTaskByTypeAndEnv('build', env.key)
+        if (buildTask && buildTask.endTime) {
+          const endTime = new Date(buildTask.endTime)
+          times[env.key] = endTime.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        }
+      } catch (error) {
+        console.error(`获取${env.key}构建时间失败:`, error)
+      }
     }
 
     setBuildStatus(status)
+    setBuildTimes(times)
     setCheckingBuilds(false)
   }
 
@@ -165,6 +198,92 @@ const PreviewPage: React.FC = () => {
   useEffect(() => {
     checkAllBuilds()
   }, [])
+
+  // 状态恢复逻辑
+  useEffect(() => {
+    const restoreState = async () => {
+      try {
+        console.log('Attempting to restore state for:', processKey)
+        const taskState = await api.getTaskByTypeAndEnv('preview', selectedEnv)
+        if (taskState) {
+          console.log('Restoring state from backend:', taskState)
+
+          // 确保任务存在
+          if (!getTask(processKey)) {
+            createTask(processKey, 'preview', selectedEnv)
+          }
+
+          // 恢复任务状态
+          updateTaskStatus(processKey, taskState.status)
+
+          // 恢复输出日志
+          if (taskState.outputLines && taskState.outputLines.length > 0) {
+            // 清空现有输出
+            clearTaskOutput(processKey)
+            // 添加所有输出行
+            taskState.outputLines.forEach((line: any) => {
+              addOutputLine(processKey, {
+                timestamp: line.timestamp,
+                content: line.content,
+                type: line.type
+              })
+            })
+          }
+
+          // 恢复服务器信息 - 先尝试从后端数据，如果没有则从输出日志中解析
+          let serverInfoRestored = false
+          if (taskState.serverInfo && (taskState.serverInfo.localUrl || taskState.serverInfo.networkUrl)) {
+            updateServerInfo(processKey, taskState.serverInfo)
+            serverInfoRestored = true
+          }
+
+          // 如果后端没有服务器信息，从输出日志中重新解析
+          if (!serverInfoRestored && taskState.outputLines) {
+            const allOutput = taskState.outputLines.map((line: any) => line.content).join('\n')
+            const cleanOutput = allOutput
+              .replace(/\x1b\[[0-9;]*m/g, '')  // 清理 \x1b[XXm 格式
+              .replace(/\[\d+m/g, '')          // 清理 [XXm 格式
+              .replace(/\[[\d;]*m/g, '')       // 清理 [XX;XXm 格式
+              .replace(/\[\d+;\d+m/g, '')      // 清理 [XX;XXm 格式
+              .replace(/\[2m/g, '')            // 清理 [2m (粗体开始)
+              .replace(/\[22m/g, '')           // 清理 [22m (粗体结束)
+              .replace(/\[36m/g, '')           // 清理 [36m (青色)
+              .replace(/\[39m/g, '')           // 清理 [39m (默认前景色)
+              .replace(/\[90m/g, '')           // 清理 [90m (暗灰色)
+              .replace(/\[1m/g, '')            // 清理 [1m (粗体)
+              .replace(/\[0m/g, '')            // 清理 [0m (重置)
+              .replace(/\[32m/g, '')           // 清理 [32m (绿色)
+              .trim()
+            // 支持中文和英文格式的服务器地址匹配
+            const localMatch = cleanOutput.match(/(?:本地|Local)[:\s]*(http:\/\/[^\s\n\r]+)/i) ||
+              cleanOutput.match(/(http:\/\/localhost:\d+[^\s\n\r]*)/i)
+            const networkMatch = cleanOutput.match(/(?:网络|Network)[:\s]*(http:\/\/[^\s\n\r]+)/i)
+            const portMatch = cleanOutput.match(/localhost:(\d+)/)
+
+            if (localMatch || networkMatch) {
+              console.log('🔍 从预览输出日志中解析服务器信息成功:', { localMatch, networkMatch, portMatch })
+              updateServerInfo(processKey, {
+                localUrl: localMatch ? localMatch[1].trim() : undefined,
+                networkUrl: networkMatch ? networkMatch[1].trim() : undefined,
+                port: portMatch ? portMatch[1] : undefined
+              })
+            }
+
+            // 检测二维码
+            if (allOutput.includes('▄') || allOutput.includes('█') || allOutput.includes('▀')) {
+              updateServerInfo(processKey, { qrCode: allOutput })
+            }
+          }
+
+          console.log('State restored successfully for', processKey)
+        }
+      } catch (error) {
+        console.error('Failed to restore state:', error)
+      }
+    }
+
+    restoreState()
+  }, [processKey, selectedEnv])
 
   // Socket事件监听
   useEffect(() => {
@@ -219,10 +338,26 @@ const PreviewPage: React.FC = () => {
             toast.success('🎉 预览服务器启动成功！')
           }
 
-          // 提取服务器信息 - 使用最宽松的匹配模式
-          const localMatch = output.match(/本地[:\s]*(http:\/\/[^<\s\n\r]+)/i)
-          const networkMatch = output.match(/网络[:\s]*(http:\/\/[^<\s\n\r]+)/i)
-          const portMatch = output.match(/localhost:(\d+)/)
+          // 提取服务器信息 - 先清理ANSI代码，然后使用最宽松的匹配模式
+          const cleanOutput = output
+            .replace(/\x1b\[[0-9;]*m/g, '')  // 清理 \x1b[XXm 格式
+            .replace(/\[\d+m/g, '')          // 清理 [XXm 格式
+            .replace(/\[[\d;]*m/g, '')       // 清理 [XX;XXm 格式
+            .replace(/\[\d+;\d+m/g, '')      // 清理 [XX;XXm 格式
+            .replace(/\[2m/g, '')            // 清理 [2m (粗体开始)
+            .replace(/\[22m/g, '')           // 清理 [22m (粗体结束)
+            .replace(/\[36m/g, '')           // 清理 [36m (青色)
+            .replace(/\[39m/g, '')           // 清理 [39m (默认前景色)
+            .replace(/\[90m/g, '')           // 清理 [90m (暗灰色)
+            .replace(/\[1m/g, '')            // 清理 [1m (粗体)
+            .replace(/\[0m/g, '')            // 清理 [0m (重置)
+            .replace(/\[32m/g, '')           // 清理 [32m (绿色)
+            .trim()
+          // 支持中文和英文格式的服务器地址匹配
+          const localMatch = cleanOutput.match(/(?:本地|Local)[:\s]*(http:\/\/[^\s\n\r]+)/i) ||
+            cleanOutput.match(/(http:\/\/localhost:\d+[^\s\n\r]*)/i)
+          const networkMatch = cleanOutput.match(/(?:网络|Network)[:\s]*(http:\/\/[^\s\n\r]+)/i)
+          const portMatch = cleanOutput.match(/localhost:(\d+)/)
 
           if (localMatch || networkMatch) {
             console.log('🔍 预览服务器信息匹配成功:', { localMatch, networkMatch, portMatch })
@@ -282,11 +417,21 @@ const PreviewPage: React.FC = () => {
     setActiveTask(processKey)
   }, [selectedEnv, processKey, setActiveTask])
 
+  // 自动滚动到底部
+  useEffect(() => {
+    if (autoScroll && logContainerRef.current) {
+      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight
+    }
+  }, [outputLines, autoScroll])
+
   const executeCommand = async () => {
     if (!isConnected) {
       toast.error('服务器未连接')
       return
     }
+
+    // 清空之前的日志
+    clearTaskOutput(processKey)
 
     try {
       const result = await api.runTask('preview', {
@@ -334,9 +479,12 @@ const PreviewPage: React.FC = () => {
   }
 
   const openPreview = () => {
-    if (currentEnv && isProcessRunning) {
-      const url = `http://localhost:${currentEnv.port}`
+    // 优先使用服务器信息中的URL，如果没有则使用环境端口
+    const url = serverInfo.localUrl || serverInfo.networkUrl || (currentEnv ? `http://localhost:${currentEnv.port}` : null)
+    if (url) {
       window.open(url, '_blank')
+    } else {
+      toast.error('无法获取预览服务器地址')
     }
   }
 
@@ -429,6 +577,12 @@ const PreviewPage: React.FC = () => {
                   ) : (
                     <span className="px-2 py-1 bg-red-100 text-red-600 text-xs rounded">
                       ✗ 未构建
+                    </span>
+                  )}
+                  {/* 构建时间 */}
+                  {buildTimes[env.key] && (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded">
+                      {buildTimes[env.key]}
                     </span>
                   )}
                 </div>
@@ -577,7 +731,20 @@ const PreviewPage: React.FC = () => {
               <h4 className="font-medium text-gray-800 mb-2">手机扫码访问</h4>
               <div className="bg-white p-2 rounded border inline-block">
                 <pre className="text-xs font-mono leading-none text-black whitespace-pre">
-                  {serverInfo.qrCode.replace(/\x1b\[[0-9;]*m/g, '')}
+                  {serverInfo.qrCode
+                    ?.replace(/\x1b\[[0-9;]*m/g, '')  // 清理 \x1b[XXm 格式
+                    .replace(/\[\d+m/g, '')          // 清理 [XXm 格式
+                    .replace(/\[[\d;]*m/g, '')       // 清理 [XX;XXm 格式
+                    .replace(/\[\d+;\d+m/g, '')      // 清理 [XX;XXm 格式
+                    .replace(/\[2m/g, '')            // 清理 [2m (粗体开始)
+                    .replace(/\[22m/g, '')           // 清理 [22m (粗体结束)
+                    .replace(/\[36m/g, '')           // 清理 [36m (青色)
+                    .replace(/\[39m/g, '')           // 清理 [39m (默认前景色)
+                    .replace(/\[90m/g, '')           // 清理 [90m (暗灰色)
+                    .replace(/\[1m/g, '')            // 清理 [1m (粗体)
+                    .replace(/\[0m/g, '')            // 清理 [0m (重置)
+                    .replace(/\[32m/g, '')           // 清理 [32m (绿色)
+                  }
                 </pre>
               </div>
             </div>
@@ -602,7 +769,7 @@ const PreviewPage: React.FC = () => {
             <span>自动滚动</span>
           </label>
         </div>
-        <div className="h-96 overflow-y-auto bg-gray-900 text-gray-100 font-mono text-sm">
+        <div ref={logContainerRef} className="h-[600px] overflow-y-auto bg-gray-900 text-gray-100 font-mono text-sm">
           {!hasOutput && !isProcessRunning && (
             <div className="p-4 text-gray-400 italic">点击预览按钮开始执行命令...</div>
           )}

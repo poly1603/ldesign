@@ -154,6 +154,18 @@ export class TaskRunner {
    * 运行 build 任务
    */
   private async runBuildTask(taskId: string, options: TaskOptions): Promise<void> {
+    // 在构建前清理产物目录
+    if (options.environment) {
+      try {
+        const { ProjectManager } = await import('./project-manager');
+        const projectManager = new ProjectManager(this.context);
+        await projectManager.cleanBuildDir(options.environment);
+        this.context.logger.info(`🧹 已清理${options.environment}环境的构建产物目录`);
+      } catch (error) {
+        this.context.logger.warn('清理构建目录失败:', error);
+      }
+    }
+
     const args = ['build'];
 
     // 添加环境参数

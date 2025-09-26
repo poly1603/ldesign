@@ -2,7 +2,7 @@
  * 项目管理器
  */
 
-import { readdir, stat, readFile, writeFile } from 'fs/promises';
+import { readdir, stat, readFile, writeFile, rm } from 'fs/promises';
 import { resolve, join, relative, extname } from 'path';
 import { existsSync } from 'fs';
 import { CLIContext } from '../types/index';
@@ -520,42 +520,138 @@ export class ProjectManager {
   }
 
   /**
+   * 从配置文件读取构建输出目录
+   */
+  private async getBuildDirFromConfig(environment: string): Promise<string> {
+    try {
+      const projectPath = this.context.cwd;
+      const configDir = resolve(projectPath, '.ldesign');
+
+      // 尝试读取环境特定的配置文件
+      const envConfigPath = resolve(configDir, `launcher.config.${environment}.ts`);
+      const baseConfigPath = resolve(configDir, 'launcher.config.ts');
+
+      let configPath = baseConfigPath;
+      if (existsSync(envConfigPath)) {
+        configPath = envConfigPath;
+      }
+
+      if (!existsSync(configPath)) {
+        // 如果配置文件不存在，使用默认目录
+        return this.getDefaultBuildDir(environment);
+      }
+
+      // 读取配置文件内容
+      const configContent = await readFile(configPath, 'utf-8');
+
+      // 简单的正则匹配来提取 outDir
+      const outDirMatch = configContent.match(/outDir:\s*['"`]([^'"`]+)['"`]/);
+      if (outDirMatch) {
+        return outDirMatch[1];
+      }
+
+      // 如果没有找到 outDir，使用默认目录
+      return this.getDefaultBuildDir(environment);
+    } catch (error) {
+      this.context.logger.debug(`读取${environment}配置文件失败:`, error);
+      return this.getDefaultBuildDir(environment);
+    }
+  }
+
+  /**
+   * 获取默认构建输出目录
+   */
+  private getDefaultBuildDir(environment: string): string {
+    switch (environment) {
+      case 'development':
+        return 'dist-dev';
+      case 'test':
+        return 'dist-test';
+      case 'staging':
+        return 'dist-staging';
+      case 'production':
+        return 'dist';
+      default:
+        return 'dist';
+    }
+  }
+
+  /**
    * 检查构建产物是否存在
    */
   async checkBuildExists(environment: string): Promise<boolean> {
     try {
       const projectPath = this.context.cwd;
 
-      // 根据环境确定构建输出目录
-      const getBuildDir = (env: string): string => {
-        switch (env) {
-          case 'development':
-            return 'dist-dev';
-          case 'test':
-            return 'dist-test';
-          case 'staging':
-            return 'dist-staging';
-          case 'production':
-            return 'dist'; // 或者 'site'，根据实际配置
-          default:
-            return 'dist';
-        }
-      };
-
-      const buildDir = getBuildDir(environment);
+      // 从配置文件读取构建输出目录
+      const buildDir = await this.getBuildDirFromConfig(environment);
       const buildPath = resolve(projectPath, buildDir);
+
+      this.context.logger.debug(`检查${environment}构建产物，目录: ${buildPath}`);
 
       // 检查目录是否存在
       if (!existsSync(buildPath)) {
+        this.context.logger.debug(`构建目录不存在: ${buildPath}`);
         return false;
       }
 
       // 检查目录是否为空
       const files = await readdir(buildPath);
-      return files.length > 0;
+      const hasFiles = files.length > 0;
+
+      this.context.logger.debug(`构建目录${buildPath}包含${files.length}个文件`);
+      return hasFiles;
     } catch (error) {
       this.context.logger.debug(`检查${environment}构建产物失败:`, error);
       return false;
+    }
+  }
+
+  /**
+   * 获取构建时间（从产物目录的创建时间）
+   */
+  async getBuildTime(environment: string): Promise<string | null> {
+    try {
+      const projectPath = this.context.cwd;
+      const buildDir = await this.getBuildDirFromConfig(environment);
+      const buildPath = resolve(projectPath, buildDir);
+
+      if (!existsSync(buildPath)) {
+        return null;
+      }
+
+      const stats = await stat(buildPath);
+      const buildTime = stats.mtime; // 使用修改时间作为构建时间
+
+      // 格式化时间为 YYYY/MM/DD HH:mm
+      const year = buildTime.getFullYear();
+      const month = String(buildTime.getMonth() + 1).padStart(2, '0');
+      const day = String(buildTime.getDate()).padStart(2, '0');
+      const hours = String(buildTime.getHours()).padStart(2, '0');
+      const minutes = String(buildTime.getMinutes()).padStart(2, '0');
+
+      return `${year}/${month}/${day} ${hours}:${minutes}`;
+    } catch (error) {
+      this.context.logger.debug(`获取${environment}构建时间失败:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * 清理构建产物目录
+   */
+  async cleanBuildDir(environment: string): Promise<void> {
+    try {
+      const projectPath = this.context.cwd;
+      const buildDir = await this.getBuildDirFromConfig(environment);
+      const buildPath = resolve(projectPath, buildDir);
+
+      if (existsSync(buildPath)) {
+        await rm(buildPath, { recursive: true, force: true });
+        this.context.logger.debug(`已清理${environment}构建目录: ${buildPath}`);
+      }
+    } catch (error) {
+      this.context.logger.debug(`清理${environment}构建目录失败:`, error);
     }
   }
 }

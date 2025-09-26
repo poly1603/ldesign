@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Play, Square, Monitor, Trash2 } from 'lucide-react'
 import { useSocket } from '../contexts/SocketContext'
 import { useTaskState } from '../contexts/TaskStateContext'
@@ -60,6 +60,7 @@ const DevPage: React.FC = () => {
   const [selectedEnv, setSelectedEnv] = useState('development')
   const [processStatus, setProcessStatus] = useState<ProcessStatus>({})
   const [autoScroll, setAutoScroll] = useState(true)
+  const logContainerRef = useRef<HTMLDivElement>(null)
 
   // 环境配置
   const environments: Environment[] = [
@@ -116,6 +117,13 @@ const DevPage: React.FC = () => {
       }))
     }
   }, [currentTask, processKey])
+
+  // 自动滚动到底部
+  useEffect(() => {
+    if (autoScroll && logContainerRef.current) {
+      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight
+    }
+  }, [outputLines, autoScroll])
 
   // 获取环境对应的服务器类型
   const getServerType = () => {
@@ -201,10 +209,24 @@ const DevPage: React.FC = () => {
             toast.success('🎉 开发服务器启动成功！')
           }
 
-          // 提取服务器信息 - 使用最宽松的匹配模式
-          const localMatch = output.match(/本地[:\s]*(http:\/\/[^<\s\n\r]+)/i)
-          const networkMatch = output.match(/网络[:\s]*(http:\/\/[^<\s\n\r]+)/i)
-          const portMatch = output.match(/localhost:(\d+)/)
+          // 提取服务器信息 - 先清理ANSI代码，然后使用最宽松的匹配模式
+          const cleanOutput = output
+            .replace(/\x1b\[[0-9;]*m/g, '')  // 清理 \x1b[XXm 格式
+            .replace(/\[\d+m/g, '')          // 清理 [XXm 格式
+            .replace(/\[[\d;]*m/g, '')       // 清理 [XX;XXm 格式
+            .replace(/\[\d+;\d+m/g, '')      // 清理 [XX;XXm 格式
+            .replace(/\[2m/g, '')            // 清理 [2m (粗体开始)
+            .replace(/\[22m/g, '')           // 清理 [22m (粗体结束)
+            .replace(/\[36m/g, '')           // 清理 [36m (青色)
+            .replace(/\[39m/g, '')           // 清理 [39m (默认前景色)
+            .replace(/\[90m/g, '')           // 清理 [90m (暗灰色)
+            .replace(/\[1m/g, '')            // 清理 [1m (粗体)
+            .replace(/\[0m/g, '')            // 清理 [0m (重置)
+            .replace(/\[32m/g, '')           // 清理 [32m (绿色)
+            .trim()
+          const localMatch = cleanOutput.match(/本地[:\s]*(http:\/\/[^\s\n\r]+)/i)
+          const networkMatch = cleanOutput.match(/网络[:\s]*(http:\/\/[^\s\n\r]+)/i)
+          const portMatch = cleanOutput.match(/localhost:(\d+)/)
 
           if (localMatch || networkMatch) {
             console.log('🔍 服务器信息匹配成功:', { localMatch, networkMatch, portMatch })
@@ -278,13 +300,51 @@ const DevPage: React.FC = () => {
             })
           })
 
-          // 恢复服务器信息 - 使用全局状态管理
+          // 恢复服务器信息 - 先尝试从后端数据，如果没有则从输出日志中解析
+          let serverInfoRestored = false
           if (task.serverInfo.localUrl || task.serverInfo.networkUrl) {
             updateServerInfo(processKey, {
               localUrl: task.serverInfo.localUrl,
               networkUrl: task.serverInfo.networkUrl,
               port: task.serverInfo.port
             })
+            serverInfoRestored = true
+          }
+
+          // 如果后端没有服务器信息，从输出日志中重新解析
+          if (!serverInfoRestored) {
+            const allOutput = task.outputLines.map((line: any) => line.content).join('\n')
+            const cleanOutput = allOutput
+              .replace(/\x1b\[[0-9;]*m/g, '')  // 清理 \x1b[XXm 格式
+              .replace(/\[\d+m/g, '')          // 清理 [XXm 格式
+              .replace(/\[[\d;]*m/g, '')       // 清理 [XX;XXm 格式
+              .replace(/\[\d+;\d+m/g, '')      // 清理 [XX;XXm 格式
+              .replace(/\[2m/g, '')            // 清理 [2m (粗体开始)
+              .replace(/\[22m/g, '')           // 清理 [22m (粗体结束)
+              .replace(/\[36m/g, '')           // 清理 [36m (青色)
+              .replace(/\[39m/g, '')           // 清理 [39m (默认前景色)
+              .replace(/\[90m/g, '')           // 清理 [90m (暗灰色)
+              .replace(/\[1m/g, '')            // 清理 [1m (粗体)
+              .replace(/\[0m/g, '')            // 清理 [0m (重置)
+              .replace(/\[32m/g, '')           // 清理 [32m (绿色)
+              .trim()
+            const localMatch = cleanOutput.match(/本地[:\s]*(http:\/\/[^\s\n\r]+)/i)
+            const networkMatch = cleanOutput.match(/网络[:\s]*(http:\/\/[^\s\n\r]+)/i)
+            const portMatch = cleanOutput.match(/localhost:(\d+)/)
+
+            if (localMatch || networkMatch) {
+              console.log('🔍 从输出日志中解析服务器信息成功:', { localMatch, networkMatch, portMatch })
+              updateServerInfo(processKey, {
+                localUrl: localMatch ? localMatch[1].trim() : undefined,
+                networkUrl: networkMatch ? networkMatch[1].trim() : undefined,
+                port: portMatch ? portMatch[1] : undefined
+              })
+            }
+
+            // 检测二维码
+            if (allOutput.includes('▄') || allOutput.includes('█') || allOutput.includes('▀')) {
+              updateServerInfo(processKey, { qrCode: allOutput })
+            }
           }
 
           console.log(`State restored successfully for ${processKey}`)
@@ -304,6 +364,9 @@ const DevPage: React.FC = () => {
       toast.error('服务器未连接')
       return
     }
+
+    // 清空之前的日志
+    clearTaskOutput(processKey)
 
     try {
       const result = await api.runTask('dev', {
@@ -462,6 +525,22 @@ const DevPage: React.FC = () => {
             </button>
           )}
 
+          {/* 打开页面按钮 */}
+          {(serverInfo.localUrl || serverInfo.networkUrl) && (
+            <button
+              onClick={() => {
+                const url = serverInfo.localUrl || serverInfo.networkUrl
+                if (url) {
+                  window.open(url, '_blank')
+                }
+              }}
+              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+            >
+              <Monitor className="w-4 h-4" />
+              <span>打开页面</span>
+            </button>
+          )}
+
           <button
             onClick={clearOutput}
             disabled={!hasOutput}
@@ -473,6 +552,7 @@ const DevPage: React.FC = () => {
             <Trash2 className="w-4 h-4" />
             <span>清空</span>
           </button>
+
         </div>
       </div>
 
@@ -579,7 +659,7 @@ const DevPage: React.FC = () => {
             <span>自动滚动</span>
           </label>
         </div>
-        <div className="h-96 overflow-y-auto bg-gray-900 text-gray-100 font-mono text-sm">
+        <div ref={logContainerRef} className="h-[600px] overflow-y-auto bg-gray-900 text-gray-100 font-mono text-sm">
           {!hasOutput && !isProcessRunning && (
             <div className="p-4 text-gray-400 italic">点击启动按钮开始执行命令...</div>
           )}

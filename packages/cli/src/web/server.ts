@@ -40,6 +40,10 @@ export class WebServer {
       }
     });
 
+    // 清空之前的任务状态
+    taskStateManager.clearAllTasks();
+    context.logger.info('🧹 已清空之前的任务状态');
+
     this.projectManager = new ProjectManager(context);
     this.taskRunner = new TaskRunner(context, this.io);
 
@@ -438,6 +442,28 @@ export class WebServer {
         res.json({ exists, environment });
       } catch (error) {
         res.status(500).json({ error: error instanceof Error ? error.message : '检查构建产物失败' });
+      }
+    });
+
+    // 获取构建时间
+    router.get('/build/time/:environment', async (req: any, res: any) => {
+      try {
+        const { environment } = req.params;
+        const buildTime = await this.projectManager.getBuildTime(environment);
+        res.json({ buildTime, environment });
+      } catch (error) {
+        res.status(500).json({ error: error instanceof Error ? error.message : '获取构建时间失败' });
+      }
+    });
+
+    // 清理构建产物
+    router.delete('/build/clean/:environment', async (req: any, res: any) => {
+      try {
+        const { environment } = req.params;
+        await this.projectManager.cleanBuildDir(environment);
+        res.json({ success: true, environment });
+      } catch (error) {
+        res.status(500).json({ error: error instanceof Error ? error.message : '清理构建产物失败' });
       }
     });
   }
