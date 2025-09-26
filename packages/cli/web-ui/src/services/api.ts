@@ -41,6 +41,12 @@ export const api = {
   stopTask: (taskName: string, options: any = {}) =>
     apiClient.post(`/tasks/${taskName}/stop`, options).then(res => res.data),
 
+  // 任务状态管理（从后端TaskStateManager获取）
+  getAllTasks: () => apiClient.get('/tasks').then(res => res.data),
+  getTaskByTypeAndEnv: (taskType: string, environment: string) =>
+    apiClient.get(`/tasks/${taskType}/${environment}`).then(res => res.data),
+  getTaskState: (taskId: string) => apiClient.get(`/task-state/${taskId}`).then(res => res.data),
+
   // 文件系统
   listFiles: (path: string = '.') =>
     apiClient.get('/files', { params: { path } }).then(res => res.data),
@@ -79,6 +85,10 @@ export const api = {
 
   // 项目统计
   getProjectStats: () => apiClient.get('/stats').then(res => res.data),
+
+  // 构建产物检查
+  checkBuildExists: (environment: string) =>
+    apiClient.get(`/build/check/${environment}`).then(res => res.data),
 }
 
 export default api

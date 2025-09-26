@@ -12,6 +12,7 @@ import open from 'open';
 import { CLIContext } from '../types/index';
 import { ProjectManager } from './project-manager';
 import { TaskRunner } from './task-runner';
+import { taskStateManager } from './task-state-manager';
 
 export interface WebServerOptions {
   port?: number;
@@ -129,7 +130,51 @@ export class WebServer {
       }
     });
 
-    // 任务状态
+    // 根据任务名和环境停止任务（最具体的路由放在前面）
+    router.post('/tasks/:taskName/stop', async (req, res) => {
+      try {
+        const { taskName } = req.params;
+        const { environment } = req.body;
+        await this.taskRunner.stopTaskByNameAndEnv(taskName, environment);
+        res.json({ success: true });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // 根据类型和环境获取任务状态
+    router.get('/tasks/:taskType/:environment', async (req, res) => {
+      try {
+        const { taskType, environment } = req.params;
+        const task = taskStateManager.getTaskByTypeAndEnv(taskType, environment);
+        res.json(task || null);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // 获取任务详细信息（从TaskStateManager）
+    router.get('/task-state/:taskId', async (req, res) => {
+      try {
+        const { taskId } = req.params;
+        const task = taskStateManager.getTask(taskId);
+        res.json(task || null);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // 获取所有任务状态（从TaskStateManager）
+    router.get('/tasks', async (req, res) => {
+      try {
+        const tasks = taskStateManager.getAllTasks();
+        res.json(tasks);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // 任务状态（原有的TaskRunner路由）
     router.get('/tasks/:taskId', async (req, res) => {
       try {
         const { taskId } = req.params;
@@ -145,18 +190,6 @@ export class WebServer {
       try {
         const { taskId } = req.params;
         await this.taskRunner.stopTask(taskId);
-        res.json({ success: true });
-      } catch (error) {
-        res.status(500).json({ error: error.message });
-      }
-    });
-
-    // 根据任务名和环境停止任务
-    router.post('/tasks/:taskName/stop', async (req, res) => {
-      try {
-        const { taskName } = req.params;
-        const { environment } = req.body;
-        await this.taskRunner.stopTaskByNameAndEnv(taskName, environment);
         res.json({ success: true });
       } catch (error) {
         res.status(500).json({ error: error.message });
@@ -226,6 +259,9 @@ export class WebServer {
 
     // 项目统计 API
     this.setupStatsRoutes(router);
+
+    // 构建产物检查 API
+    this.setupBuildRoutes(router);
 
     return router;
   }
@@ -386,6 +422,22 @@ export class WebServer {
         res.json(stats);
       } catch (error) {
         res.status(500).json({ error: error instanceof Error ? error.message : '获取项目统计失败' });
+      }
+    });
+  }
+
+  /**
+   * 设置构建产物检查路由
+   */
+  private setupBuildRoutes(router: any): void {
+    // 检查构建产物是否存在
+    router.get('/build/check/:environment', async (req: any, res: any) => {
+      try {
+        const { environment } = req.params;
+        const exists = await this.projectManager.checkBuildExists(environment);
+        res.json({ exists, environment });
+      } catch (error) {
+        res.status(500).json({ error: error instanceof Error ? error.message : '检查构建产物失败' });
       }
     });
   }

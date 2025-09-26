@@ -8,6 +8,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { CLIContext } from '../types/index';
 import { randomUUID } from 'crypto';
+import { taskStateManager, TaskOutputLine } from './task-state-manager';
 
 export interface TaskOptions {
   [key: string]: any;
@@ -51,6 +52,11 @@ export class TaskRunner {
     };
 
     this.tasks.set(taskId, task);
+
+    // 在TaskStateManager中创建任务
+    taskStateManager.createTask(taskId, taskName as any, environment);
+    taskStateManager.updateTaskStatus(taskId, 'idle');
+
     this.emitTaskUpdate(taskId, task);
 
     // 异步执行任务
@@ -70,6 +76,10 @@ export class TaskRunner {
 
     task.status = 'running';
     task.startTime = new Date();
+
+    // 更新TaskStateManager中的任务状态
+    taskStateManager.updateTaskStatus(taskId, 'running');
+
     this.emitTaskUpdate(taskId, task);
 
     try {
@@ -96,11 +106,17 @@ export class TaskRunner {
       task.status = 'completed';
       task.endTime = new Date();
       task.exitCode = 0;
+
+      // 更新TaskStateManager中的任务状态
+      taskStateManager.updateTaskStatus(taskId, 'completed');
     } catch (error) {
       task.status = 'failed';
       task.endTime = new Date();
       task.error = error instanceof Error ? error.message : String(error);
       task.exitCode = 1;
+
+      // 更新TaskStateManager中的任务状态
+      taskStateManager.updateTaskStatus(taskId, 'error');
     }
 
     this.emitTaskUpdate(taskId, task);
@@ -309,12 +325,33 @@ export class TaskRunner {
       child.stdout?.on('data', (data) => {
         const output = data.toString();
         task.output.push(output);
+
+        // 保存到TaskStateManager
+        const outputLine: TaskOutputLine = {
+          timestamp: new Date().toLocaleTimeString(),
+          content: output,
+          type: 'info'
+        };
+        taskStateManager.addOutputLine(taskId, outputLine);
+
+        // 检测服务器信息
+        this.extractServerInfo(taskId, output);
+
         this.emitTaskOutput(taskId, output, 'stdout');
       });
 
       child.stderr?.on('data', (data) => {
         const output = data.toString();
         task.output.push(output);
+
+        // 保存到TaskStateManager
+        const outputLine: TaskOutputLine = {
+          timestamp: new Date().toLocaleTimeString(),
+          content: output,
+          type: 'error'
+        };
+        taskStateManager.addOutputLine(taskId, outputLine);
+
         this.emitTaskOutput(taskId, output, 'stderr');
       });
 
@@ -476,6 +513,29 @@ export class TaskRunner {
       type,
       timestamp: new Date()
     });
+  }
+
+  /**
+   * 从输出中提取服务器信息
+   */
+  private extractServerInfo(taskId: string, output: string): void {
+    // 提取本地地址
+    const localMatch = output.match(/(?:本地|Local):\s*(https?:\/\/[^\s]+)/i);
+    if (localMatch) {
+      taskStateManager.updateServerInfo(taskId, { localUrl: localMatch[1].trim() });
+    }
+
+    // 提取网络地址
+    const networkMatch = output.match(/(?:网络|Network):\s*(https?:\/\/[^\s]+)/i);
+    if (networkMatch) {
+      taskStateManager.updateServerInfo(taskId, { networkUrl: networkMatch[1].trim() });
+    }
+
+    // 提取端口号
+    const portMatch = output.match(/(?:端口|Port):\s*(\d+)/i);
+    if (portMatch) {
+      taskStateManager.updateServerInfo(taskId, { port: portMatch[1] });
+    }
   }
 
   /**

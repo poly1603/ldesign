@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Eye, Square, Monitor, Trash2, ExternalLink } from 'lucide-react'
+import { Eye, Square, Monitor, Trash2, ExternalLink, Globe, Wifi, Copy, QrCode } from 'lucide-react'
 import { useSocket } from '../contexts/SocketContext'
+import { useTaskState } from '../contexts/TaskStateContext'
 import { api } from '../services/api'
 import toast from 'react-hot-toast'
 // @ts-ignore
@@ -18,19 +19,6 @@ interface Environment {
 
 interface ProcessStatus {
   [key: string]: 'idle' | 'running' | 'error'
-}
-
-interface OutputLine {
-  timestamp: string
-  content: string
-  type: 'info' | 'error' | 'success'
-}
-
-interface ServerInfo {
-  localUrl?: string
-  networkUrl?: string
-  qrCode?: string
-  port?: string
 }
 
 // 初始化ANSI转换器
@@ -60,11 +48,21 @@ const processOutputContent = (content: string): { html: string; isQRCode: boolea
 
 const PreviewPage: React.FC = () => {
   const { socket, isConnected } = useSocket()
+  const {
+    getTask,
+    createTask,
+    updateTaskStatus,
+    addOutputLine,
+    updateServerInfo,
+    clearTaskOutput,
+    setActiveTask
+  } = useTaskState()
+
   const [selectedEnv, setSelectedEnv] = useState('production')
   const [processStatus, setProcessStatus] = useState<ProcessStatus>({})
-  const [outputLines, setOutputLines] = useState<OutputLine[]>([])
   const [autoScroll, setAutoScroll] = useState(true)
-  const [serverInfo, setServerInfo] = useState<ServerInfo>({})
+  const [buildStatus, setBuildStatus] = useState<{ [key: string]: boolean }>({})
+  const [checkingBuilds, setCheckingBuilds] = useState(true)
 
   // 环境配置
   const environments: Environment[] = [
@@ -103,8 +101,24 @@ const PreviewPage: React.FC = () => {
   ]
 
   const processKey = `preview-${selectedEnv}`
-  const isProcessRunning = processStatus[processKey] === 'running'
+
+  // 获取或创建当前任务
+  const currentTask = getTask(processKey)
+  const outputLines = currentTask?.outputLines || []
+  const serverInfo = currentTask?.serverInfo || {}
+
+  const isProcessRunning = processStatus[processKey] === 'running' || currentTask?.status === 'running'
   const hasOutput = outputLines.length > 0
+
+  // 从全局状态恢复任务状态
+  useEffect(() => {
+    if (currentTask && currentTask.status === 'running') {
+      setProcessStatus(prev => ({
+        ...prev,
+        [processKey]: 'running'
+      }))
+    }
+  }, [currentTask, processKey])
 
   // 获取环境对应的预览类型
   const getPreviewType = () => {
@@ -123,6 +137,35 @@ const PreviewPage: React.FC = () => {
   }
   const currentEnv = environments.find(env => env.key === selectedEnv)
 
+  // 检查构建产物是否存在
+  const checkBuildExists = async (environment: string): Promise<boolean> => {
+    try {
+      const response = await api.checkBuildExists(environment)
+      return response.exists
+    } catch (error) {
+      console.error(`检查${environment}构建产物失败:`, error)
+      return false
+    }
+  }
+
+  // 检查所有环境的构建状态
+  const checkAllBuilds = async () => {
+    setCheckingBuilds(true)
+    const status: { [key: string]: boolean } = {}
+
+    for (const env of environments) {
+      status[env.key] = await checkBuildExists(env.key)
+    }
+
+    setBuildStatus(status)
+    setCheckingBuilds(false)
+  }
+
+  // 组件挂载时检查构建状态
+  useEffect(() => {
+    checkAllBuilds()
+  }, [])
+
   // Socket事件监听
   useEffect(() => {
     if (!socket) return
@@ -134,10 +177,18 @@ const PreviewPage: React.FC = () => {
         const command = taskIdParts[0]
         const environment = taskIdParts[1]
         const key = `${command}-${environment}`
+
+        // 更新本地状态（用于UI响应）
         setProcessStatus(prev => ({
           ...prev,
           [key]: data.status
         }))
+
+        // 更新全局任务状态
+        if (!getTask(key)) {
+          createTask(key, command as any, environment)
+        }
+        updateTaskStatus(key, data.status === 'running' ? 'running' : data.status === 'error' ? 'error' : 'completed')
       }
     }
 
@@ -150,7 +201,18 @@ const PreviewPage: React.FC = () => {
         const key = `${command}-${environment}`
         if (key === processKey) {
           const output = data.output
-          addOutputLine(output, data.type === 'stderr' ? 'error' : 'info')
+
+          // 确保任务存在
+          if (!getTask(key)) {
+            createTask(key, command as any, environment)
+          }
+
+          // 添加输出行到全局状态
+          addOutputLine(key, {
+            timestamp: new Date().toLocaleTimeString(),
+            content: output,
+            type: data.type === 'stderr' ? 'error' : 'info'
+          })
 
           // 检测预览服务器启动成功标志
           if (output.includes('[INFO] 预览服务器启动成功!') || output.includes('✔ 预览服务器已启动')) {
@@ -164,12 +226,13 @@ const PreviewPage: React.FC = () => {
 
           if (localMatch || networkMatch) {
             console.log('🔍 预览服务器信息匹配成功:', { localMatch, networkMatch, portMatch })
-            setServerInfo(prev => ({
-              ...prev,
-              localUrl: localMatch ? localMatch[1].trim() : prev.localUrl,
-              networkUrl: networkMatch ? networkMatch[1].trim() : prev.networkUrl,
-              port: portMatch ? portMatch[1] : prev.port
-            }))
+
+            // 更新全局服务器信息
+            updateServerInfo(key, {
+              localUrl: localMatch ? localMatch[1].trim() : undefined,
+              networkUrl: networkMatch ? networkMatch[1].trim() : undefined,
+              port: portMatch ? portMatch[1] : undefined
+            })
 
             if (localMatch) {
               toast.success(`🌐 本地预览地址: ${localMatch[1].trim()}`)
@@ -188,10 +251,7 @@ const PreviewPage: React.FC = () => {
 
           // 检测二维码
           if (output.includes('▄') || output.includes('█') || output.includes('▀')) {
-            setServerInfo(prev => ({
-              ...prev,
-              qrCode: output
-            }))
+            updateServerInfo(key, { qrCode: output })
           }
 
           // 检测构建产物统计信息
@@ -217,15 +277,10 @@ const PreviewPage: React.FC = () => {
     }
   }, [socket, processKey])
 
-  // 环境切换时清空输出
+  // 环境切换时设置活动任务
   useEffect(() => {
-    setOutputLines([])
-  }, [selectedEnv])
-
-  const addOutputLine = (content: string, type: 'info' | 'error' | 'success' = 'info') => {
-    const timestamp = new Date().toLocaleTimeString()
-    setOutputLines(prev => [...prev, { timestamp, content, type }])
-  }
+    setActiveTask(processKey)
+  }, [selectedEnv, processKey, setActiveTask])
 
   const executeCommand = async () => {
     if (!isConnected) {
@@ -243,7 +298,11 @@ const PreviewPage: React.FC = () => {
       console.log('Preview command started:', result)
     } catch (error) {
       toast.error(`预览失败: ${error instanceof Error ? error.message : '未知错误'}`)
-      addOutputLine(`预览失败: ${error}`, 'error')
+      addOutputLine(processKey, {
+        timestamp: new Date().toLocaleTimeString(),
+        content: `预览失败: ${error}`,
+        type: 'error'
+      })
     }
   }
 
@@ -262,12 +321,16 @@ const PreviewPage: React.FC = () => {
       console.log('Preview command stopped:', result)
     } catch (error) {
       toast.error(`停止失败: ${error instanceof Error ? error.message : '未知错误'}`)
-      addOutputLine(`停止失败: ${error}`, 'error')
+      addOutputLine(processKey, {
+        timestamp: new Date().toLocaleTimeString(),
+        content: `停止失败: ${error}`,
+        type: 'error'
+      })
     }
   }
 
   const clearOutput = () => {
-    setOutputLines([])
+    clearTaskOutput(processKey)
   }
 
   const openPreview = () => {
@@ -324,32 +387,54 @@ const PreviewPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">选择预览环境</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {environments.map((env) => (
-            <button
-              key={env.key}
-              onClick={() => setSelectedEnv(env.key)}
-              className={`p-4 rounded-lg border-2 transition-all duration-200 text-left ${selectedEnv === env.key
-                ? 'border-purple-500 bg-purple-50'
-                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-            >
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="text-2xl">{env.icon}</div>
-                <div>
-                  <h4 className="font-medium text-gray-900">{env.name}</h4>
+          {environments.map((env) => {
+            const buildExists = buildStatus[env.key];
+            const isDisabled = checkingBuilds || !buildExists;
+
+            return (
+              <button
+                key={env.key}
+                onClick={() => !isDisabled && setSelectedEnv(env.key)}
+                disabled={isDisabled}
+                className={`p-4 rounded-lg border-2 transition-all duration-200 text-left relative ${isDisabled
+                  ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                  : selectedEnv === env.key
+                    ? 'border-purple-500 bg-purple-50'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+              >
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="text-2xl">{env.icon}</div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">{env.name}</h4>
+                  </div>
                 </div>
-              </div>
-              <p className="text-sm text-gray-600 mb-2">{env.description}</p>
-              <div className="flex flex-wrap gap-2">
-                <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                  端口: {env.port}
-                </span>
-                <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                  {env.features}
-                </span>
-              </div>
-            </button>
-          ))}
+                <p className="text-sm text-gray-600 mb-2">{env.description}</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                    端口: {env.port}
+                  </span>
+                  <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                    {env.features}
+                  </span>
+                  {/* 构建状态指示器 */}
+                  {checkingBuilds ? (
+                    <span className="px-2 py-1 bg-yellow-100 text-yellow-600 text-xs rounded">
+                      检查中...
+                    </span>
+                  ) : buildExists ? (
+                    <span className="px-2 py-1 bg-green-100 text-green-600 text-xs rounded">
+                      ✓ 已构建
+                    </span>
+                  ) : (
+                    <span className="px-2 py-1 bg-red-100 text-red-600 text-xs rounded">
+                      ✗ 未构建
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -546,6 +631,91 @@ const PreviewPage: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* 服务器信息显示区域 */}
+      {(serverInfo.localUrl || serverInfo.networkUrl) && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <Monitor className="w-5 h-5 mr-2 text-green-600" />
+            预览服务器地址
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 本地地址 */}
+            {serverInfo.localUrl && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-gray-900 flex items-center">
+                    <Globe className="w-4 h-4 mr-2 text-blue-600" />
+                    本地访问地址
+                  </h4>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(serverInfo.localUrl!)
+                      toast.success('本地地址已复制到剪贴板')
+                    }}
+                    className="text-gray-500 hover:text-gray-700 transition-colors"
+                    title="复制地址"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="bg-white rounded border p-3 font-mono text-sm text-gray-800 break-all">
+                  {serverInfo.localUrl}
+                </div>
+                <button
+                  onClick={() => window.open(serverInfo.localUrl, '_blank')}
+                  className="mt-2 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  在浏览器中打开
+                </button>
+              </div>
+            )}
+
+            {/* 网络地址 */}
+            {serverInfo.networkUrl && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-gray-900 flex items-center">
+                    <Wifi className="w-4 h-4 mr-2 text-green-600" />
+                    网络访问地址
+                  </h4>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(serverInfo.networkUrl!)
+                      toast.success('网络地址已复制到剪贴板')
+                    }}
+                    className="text-gray-500 hover:text-gray-700 transition-colors"
+                    title="复制地址"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="bg-white rounded border p-3 font-mono text-sm text-gray-800 break-all">
+                  {serverInfo.networkUrl}
+                </div>
+                <div className="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                  ⚠️ 如果无法访问网络地址，请检查防火墙设置或使用本地地址
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 二维码显示 */}
+          {serverInfo.qrCode && (
+            <div className="mt-6 bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                <QrCode className="w-4 h-4 mr-2 text-purple-600" />
+                扫码访问
+              </h4>
+              <div className="bg-white rounded border p-4 font-mono text-xs leading-none whitespace-pre overflow-x-auto">
+                {serverInfo.qrCode}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

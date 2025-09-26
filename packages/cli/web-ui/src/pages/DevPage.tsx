@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Play, Square, Monitor, Trash2 } from 'lucide-react'
 import { useSocket } from '../contexts/SocketContext'
+import { useTaskState } from '../contexts/TaskStateContext'
 import { api } from '../services/api'
 import toast from 'react-hot-toast'
 // @ts-ignore
@@ -17,19 +18,6 @@ interface Environment {
 
 interface ProcessStatus {
   [key: string]: 'idle' | 'running' | 'error'
-}
-
-interface OutputLine {
-  timestamp: string
-  content: string
-  type: 'info' | 'error' | 'success'
-}
-
-interface ServerInfo {
-  localUrl?: string
-  networkUrl?: string
-  qrCode?: string
-  port?: string
 }
 
 // 初始化ANSI转换器
@@ -59,11 +47,19 @@ const processOutputContent = (content: string): { html: string; isQRCode: boolea
 
 const DevPage: React.FC = () => {
   const { socket, isConnected } = useSocket()
+  const {
+    getTask,
+    createTask,
+    updateTaskStatus,
+    addOutputLine,
+    updateServerInfo,
+    clearTaskOutput,
+    setActiveTask
+  } = useTaskState()
+
   const [selectedEnv, setSelectedEnv] = useState('development')
   const [processStatus, setProcessStatus] = useState<ProcessStatus>({})
-  const [outputLines, setOutputLines] = useState<OutputLine[]>([])
   const [autoScroll, setAutoScroll] = useState(true)
-  const [serverInfo, setServerInfo] = useState<ServerInfo>({})
 
   // 环境配置
   const environments: Environment[] = [
@@ -102,8 +98,24 @@ const DevPage: React.FC = () => {
   ]
 
   const processKey = `dev-${selectedEnv}`
-  const isProcessRunning = processStatus[processKey] === 'running'
+
+  // 获取或创建当前任务
+  const currentTask = getTask(processKey)
+  const outputLines = currentTask?.outputLines || []
+  const serverInfo = currentTask?.serverInfo || {}
+
+  const isProcessRunning = processStatus[processKey] === 'running' || currentTask?.status === 'running'
   const hasOutput = outputLines.length > 0
+
+  // 从全局状态恢复任务状态
+  useEffect(() => {
+    if (currentTask && currentTask.status === 'running') {
+      setProcessStatus(prev => ({
+        ...prev,
+        [processKey]: 'running'
+      }))
+    }
+  }, [currentTask, processKey])
 
   // 获取环境对应的服务器类型
   const getServerType = () => {
@@ -126,20 +138,38 @@ const DevPage: React.FC = () => {
     if (!socket) return
 
     const handleTaskUpdate = (data: any) => {
-      // 从taskId中提取命令和环境信息
-      const taskIdParts = data.id.split('-')
+      console.log('handleTaskUpdate received:', data)
+      // 后端发送的是TaskStatus对象，包含id字段
+      const taskId = data.id
+      if (!taskId) {
+        console.warn('No taskId found in task update data:', data)
+        return
+      }
+
+      const taskIdParts = taskId.split('-')
       if (taskIdParts.length >= 2) {
         const command = taskIdParts[0]
         const environment = taskIdParts[1]
         const key = `${command}-${environment}`
+
+        console.log(`Processing task update for ${key}, status: ${data.status}`)
+
+        // 更新本地状态（用于UI响应）
         setProcessStatus(prev => ({
           ...prev,
           [key]: data.status
         }))
+
+        // 更新全局任务状态
+        if (!getTask(key)) {
+          createTask(key, command as any, environment)
+        }
+        updateTaskStatus(key, data.status === 'running' ? 'running' : data.status === 'failed' ? 'error' : 'completed')
       }
     }
 
     const handleTaskOutput = (data: any) => {
+      console.log('handleTaskOutput received:', data)
       // 从taskId中提取命令和环境信息
       const taskIdParts = data.taskId.split('-')
       if (taskIdParts.length >= 2) {
@@ -148,10 +178,26 @@ const DevPage: React.FC = () => {
         const key = `${command}-${environment}`
         if (key === processKey) {
           const output = data.output
-          addOutputLine(output, data.type === 'stderr' ? 'error' : 'info')
+
+          // 确保任务存在
+          if (!getTask(key)) {
+            console.log(`Creating task ${key} from handleTaskOutput`)
+            createTask(key, command as any, environment)
+            // 设置任务为运行状态
+            updateTaskStatus(key, 'running')
+          }
+
+          // 添加输出行到全局状态
+          addOutputLine(key, {
+            timestamp: new Date().toLocaleTimeString(),
+            content: output,
+            type: data.type === 'stderr' ? 'error' : 'info'
+          })
 
           // 检测开发服务器启动成功标志
           if (output.includes('✔ 开发服务器已启动') || output.includes('开发服务器启动成功')) {
+            console.log('Dev server started successfully, updating task status to completed')
+            updateTaskStatus(key, 'completed')
             toast.success('🎉 开发服务器启动成功！')
           }
 
@@ -162,12 +208,13 @@ const DevPage: React.FC = () => {
 
           if (localMatch || networkMatch) {
             console.log('🔍 服务器信息匹配成功:', { localMatch, networkMatch, portMatch })
-            setServerInfo(prev => ({
-              ...prev,
-              localUrl: localMatch ? localMatch[1].trim() : prev.localUrl,
-              networkUrl: networkMatch ? networkMatch[1].trim() : prev.networkUrl,
-              port: portMatch ? portMatch[1] : prev.port
-            }))
+
+            // 更新全局服务器信息
+            updateServerInfo(key, {
+              localUrl: localMatch ? localMatch[1].trim() : undefined,
+              networkUrl: networkMatch ? networkMatch[1].trim() : undefined,
+              port: portMatch ? portMatch[1] : undefined
+            })
 
             if (localMatch) {
               toast.success(`🌐 本地开发地址: ${localMatch[1].trim()}`)
@@ -186,10 +233,7 @@ const DevPage: React.FC = () => {
 
           // 检测二维码
           if (output.includes('▄') || output.includes('█') || output.includes('▀')) {
-            setServerInfo(prev => ({
-              ...prev,
-              qrCode: output
-            }))
+            updateServerInfo(key, { qrCode: output })
           }
         }
       }
@@ -204,15 +248,56 @@ const DevPage: React.FC = () => {
     }
   }, [socket, processKey])
 
-  // 环境切换时清空输出
+  // 环境切换时设置活动任务
   useEffect(() => {
-    setOutputLines([])
-  }, [selectedEnv])
+    setActiveTask(processKey)
+  }, [selectedEnv, processKey, setActiveTask])
 
-  const addOutputLine = (content: string, type: 'info' | 'error' | 'success' = 'info') => {
-    const timestamp = new Date().toLocaleTimeString()
-    setOutputLines(prev => [...prev, { timestamp, content, type }])
-  }
+  // 从后端API恢复状态
+  useEffect(() => {
+    const restoreStateFromBackend = async () => {
+      try {
+        console.log(`Attempting to restore state for: dev-${selectedEnv}`)
+        const task = await api.getTaskByTypeAndEnv('dev', selectedEnv)
+        if (task) {
+          console.log(`Restoring state from backend:`, task)
+
+          // 恢复进程状态
+          const status = task.status === 'running' ? 'running' : 'idle'
+          setProcessStatus(prev => ({
+            ...prev,
+            [processKey]: status
+          }))
+
+          // 恢复输出行 - 使用全局状态管理
+          task.outputLines.forEach((line: any) => {
+            addOutputLine(processKey, {
+              timestamp: line.timestamp,
+              content: line.content,
+              type: line.type
+            })
+          })
+
+          // 恢复服务器信息 - 使用全局状态管理
+          if (task.serverInfo.localUrl || task.serverInfo.networkUrl) {
+            updateServerInfo(processKey, {
+              localUrl: task.serverInfo.localUrl,
+              networkUrl: task.serverInfo.networkUrl,
+              port: task.serverInfo.port
+            })
+          }
+
+          console.log(`State restored successfully for ${processKey}`)
+        } else {
+          console.log(`No existing task found for: dev-${selectedEnv}`)
+        }
+      } catch (error) {
+        console.error('Failed to restore state from backend:', error)
+      }
+    }
+
+    restoreStateFromBackend()
+  }, [processKey, selectedEnv])
 
   const executeCommand = async () => {
     if (!isConnected) {
@@ -230,7 +315,11 @@ const DevPage: React.FC = () => {
       console.log('Dev command started:', result)
     } catch (error) {
       toast.error(`启动失败: ${error instanceof Error ? error.message : '未知错误'}`)
-      addOutputLine(`启动失败: ${error}`, 'error')
+      addOutputLine(processKey, {
+        timestamp: new Date().toLocaleTimeString(),
+        content: `启动失败: ${error}`,
+        type: 'error'
+      })
     }
   }
 
@@ -249,12 +338,16 @@ const DevPage: React.FC = () => {
       console.log('Dev command stopped:', result)
     } catch (error) {
       toast.error(`停止失败: ${error instanceof Error ? error.message : '未知错误'}`)
-      addOutputLine(`停止失败: ${error}`, 'error')
+      addOutputLine(processKey, {
+        timestamp: new Date().toLocaleTimeString(),
+        content: `停止失败: ${error}`,
+        type: 'error'
+      })
     }
   }
 
   const clearOutput = () => {
-    setOutputLines([])
+    clearTaskOutput(processKey)
   }
 
   const getStatusText = () => {

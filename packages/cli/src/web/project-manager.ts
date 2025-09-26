@@ -518,4 +518,44 @@ export class ProjectManager {
       }
     };
   }
+
+  /**
+   * 检查构建产物是否存在
+   */
+  async checkBuildExists(environment: string): Promise<boolean> {
+    try {
+      const projectPath = this.context.cwd;
+
+      // 根据环境确定构建输出目录
+      const getBuildDir = (env: string): string => {
+        switch (env) {
+          case 'development':
+            return 'dist-dev';
+          case 'test':
+            return 'dist-test';
+          case 'staging':
+            return 'dist-staging';
+          case 'production':
+            return 'dist'; // 或者 'site'，根据实际配置
+          default:
+            return 'dist';
+        }
+      };
+
+      const buildDir = getBuildDir(environment);
+      const buildPath = resolve(projectPath, buildDir);
+
+      // 检查目录是否存在
+      if (!existsSync(buildPath)) {
+        return false;
+      }
+
+      // 检查目录是否为空
+      const files = await readdir(buildPath);
+      return files.length > 0;
+    } catch (error) {
+      this.context.logger.debug(`检查${environment}构建产物失败:`, error);
+      return false;
+    }
+  }
 }
