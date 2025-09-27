@@ -77,6 +77,7 @@ Type: `Promise<void>`
 
 ### Used by
 
+ - [ldesign-cascader](../cascader)
  - [ldesign-time-picker](../time-picker)
 
 ### Depends on
@@ -87,6 +88,7 @@ Type: `Promise<void>`
 ```mermaid
 graph TD;
   ldesign-drawer --> ldesign-icon
+  ldesign-cascader --> ldesign-drawer
   ldesign-time-picker --> ldesign-drawer
   style ldesign-drawer fill:#f9f,stroke:#333,stroke-width:4px
 ```

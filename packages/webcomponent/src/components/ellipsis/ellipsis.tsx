@@ -67,6 +67,8 @@ export class LdesignEllipsis {
   @State() private effectiveLines: number = 3;    // 当前生效的行数（考虑响应式）
   @State() private targetMaxHeight: number = 0;   // 用于动画的 max-height 目标
   private prevOverflowed?: boolean;
+  private initialLightText?: string;             // 记录最初的直写文本
+  @State() private isCollapsing: boolean = false; // 正在执行收起动画
 
   private ro?: ResizeObserver;
   private containerEl?: HTMLDivElement;      // 可视区域容器
@@ -97,6 +99,8 @@ export class LdesignEllipsis {
   componentWillLoad() {
     this.isExpanded = typeof this.expanded === 'boolean' ? !!this.expanded : !!this.defaultExpanded;
     this.textToRender = this.computeText();
+    // 清理直写文本，避免与渲染内容重复显示
+    this.stripInitialLightDom();
     this.effectiveLines = this.getEffectiveLines();
   }
 
@@ -121,8 +125,14 @@ export class LdesignEllipsis {
   private computeText(): string {
     const fromProp = (this.content ?? '').toString();
     if (fromProp && fromProp.trim().length > 0) return fromProp;
+    // 首次加载前读取直写文本并缓存
     const fromLight = (this.host?.textContent ?? '').toString();
-    return fromLight.trim();
+    if (fromLight && fromLight.trim().length > 0) {
+      this.initialLightText = fromLight.trim();
+      return this.initialLightText;
+    }
+    // 后续若已清空 Light DOM，则使用缓存
+    return (this.initialLightText || '').toString();
   }
 
   @Method() async update() { this.refreshAll(); }
@@ -138,6 +148,16 @@ export class LdesignEllipsis {
       this.onCollapse();
     }
   };
+
+  private stripInitialLightDom() {
+    try {
+      // 移除初始写在标签内的纯文本，避免页面上显示两份内容
+      // 在 Stencil 渲染前清空子节点不影响后续 VDOM 挂载
+      while (this.host?.firstChild) {
+        this.host.removeChild(this.host.firstChild);
+      }
+    } catch {}
+  }
 
   private ensureMeasureNodes() {
     if (!this.measureWrap) {
@@ -222,7 +242,7 @@ export class LdesignEllipsis {
     }
 
     // 3) 计算动画目标高度
-    const target = this.isExpanded ? fullH : clampH;
+    const target = (this.isExpanded && !this.isCollapsing) ? fullH : clampH;
     this.targetMaxHeight = Math.max(0, Math.ceil(target));
   };
 
@@ -277,9 +297,14 @@ export class LdesignEllipsis {
   private onCollapse = () => {
     const next = false;
     if (typeof this.expanded === 'boolean') {
+      // 受控：仅派发事件，交给外部控制 expanded
       this.dispatchToggle(next);
     } else {
-      this.isExpanded = next; this.dispatchToggle(next); this.refreshAll();
+      // 非受控：先触发“收起动画”，完毕后再真正切换 isExpanded=false
+      this.isCollapsing = true;
+      this.dispatchToggle(next);
+      this.refreshAll();
+      // 在 transitionend 回调内收尾（见 onWrapTransitionEnd）
     }
   };
 
@@ -300,7 +325,7 @@ export class LdesignEllipsis {
     const fadeStyle: any = { width: typeof this.fadeWidth === 'number' ? `${this.fadeWidth}px` : this.fadeWidth };
 
     const inner = (
-      <div class="ldesign-ellipsis__wrap" style={wrapStyle} ref={el => (this.containerEl = el as HTMLDivElement)}>
+      <div class="ldesign-ellipsis__wrap" style={wrapStyle} onTransitionEnd={this.onWrapTransitionEnd as any} ref={el => (this.containerEl = el as HTMLDivElement)}>
         <div
           class="ldesign-ellipsis__content ldesign-ellipsis__content--clamp"
           style={{ ['--ld-ellipsis-lines' as any]: String(this.effectiveLines) }}
@@ -348,7 +373,7 @@ export class LdesignEllipsis {
     };
 
     return (
-      <div class="ldesign-ellipsis__wrap ldesign-ellipsis__wrap--expanded" style={wrapStyle} ref={el => (this.containerEl = el as HTMLDivElement)}>
+      <div class="ldesign-ellipsis__wrap ldesign-ellipsis__wrap--expanded" style={wrapStyle} onTransitionEnd={this.onWrapTransitionEnd as any} ref={el => (this.containerEl = el as HTMLDivElement)}>
         <div class="ldesign-ellipsis__content" ref={el => (this.contentEl = el as HTMLDivElement)}>
           {this.textToRender}
           {/* 占位：为绝对定位的“收起”预留末尾空间，避免覆盖文本 */}
@@ -382,6 +407,18 @@ export class LdesignEllipsis {
       </div>
     );
   }
+
+  private onWrapTransitionEnd = (e: TransitionEvent) => {
+    if (e.propertyName !== 'max-height') return;
+    if (this.isCollapsing) {
+      if (typeof this.expanded !== 'boolean') {
+        // 非受控：动画结束后再切换到折叠态（渲染 clamp 版本）
+        this.isExpanded = false;
+      }
+      this.isCollapsing = false;
+      this.refreshAll();
+    }
+  };
 
   private getEffectiveLines(): number {
     const base = this.lines || 3;

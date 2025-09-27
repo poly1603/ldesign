@@ -107,6 +107,7 @@ Button 按钮组件
 
 ### Used by
 
+ - [ldesign-calendar](../calendar)
  - [ldesign-modal](../modal)
  - [ldesign-popconfirm](../popconfirm)
  - [ldesign-time-picker](../time-picker)
@@ -120,6 +121,7 @@ Button 按钮组件
 ```mermaid
 graph TD;
   ldesign-button --> ldesign-icon
+  ldesign-calendar --> ldesign-button
   ldesign-modal --> ldesign-button
   ldesign-popconfirm --> ldesign-button
   ldesign-time-picker --> ldesign-button

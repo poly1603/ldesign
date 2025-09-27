@@ -15,7 +15,7 @@ CircleNavigation 圆形导航组件
 | Property              | Attribute              | Description                                                  | Type                   | Default     |
 | --------------------- | ---------------------- | ------------------------------------------------------------ | ---------------------- | ----------- |
 | `clockwise`           | `clockwise`            | 是否顺时针排布                                                      | `boolean`              | `true`      |
-| `draggable`           | `draggable`            | 是否启用拖动旋转                                                     | `boolean`              | `true`      |
+| `draggableEnabled`    | `draggable-enabled`    | 是否启用拖动旋转                                                     | `boolean`              | `true`      |
 | `ellipseAxis`         | `ellipse-axis`         | 椭圆端点轴：auto 根据宽高选择；x 左右为端点；y 上下为端点                            | `"auto" \| "x" \| "y"` | `'auto'`    |
 | `ellipseSpacing`      | `ellipse-spacing`      | 椭圆半弧内的间距策略：'arc' 按弧长均分，'angle' 按角度均分（更“均匀”的视觉效果）             | `"angle" \| "arc"`     | `'angle'`   |
 | `friction`            | `friction`             | 惯性摩擦系数（0-1，越小惯性越大）                                           | `number`               | `0.95`      |
