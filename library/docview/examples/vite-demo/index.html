@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign DocView - 演示项目</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+  <div id="app">
+    <!-- 头部 -->
+    <header class="header">
+      <div class="container">
+        <div class="header-content">
+          <h1 class="logo">
+            <span class="logo-icon">📄</span>
+            LDesign DocView
+          </h1>
+          <p class="subtitle">支持 Word、Excel、PowerPoint 文档预览和编辑</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="main">
+      <div class="container">
+        <!-- 控制面板 -->
+        <div class="control-panel">
+          <div class="file-section">
+            <div class="file-input-wrapper">
+              <input 
+                type="file" 
+                id="fileInput" 
+                class="file-input"
+                accept=".docx,.xlsx,.pptx"
+                hidden
+              >
+              <button id="selectFileBtn" class="btn btn-primary">
+                <span class="btn-icon">📁</span>
+                选择文档
+              </button>
+              <span id="fileName" class="file-name"></span>
+            </div>
+            
+            <div class="demo-files">
+              <span class="demo-label">或试试示例文件：</span>
+              <button id="loadWordDemo" class="btn btn-outline" data-type="word">
+                Word 示例
+              </button>
+              <button id="loadExcelDemo" class="btn btn-outline" data-type="excel">
+                Excel 示例
+              </button>
+              <button id="loadPptDemo" class="btn btn-outline" data-type="ppt">
+                PPT 示例
+              </button>
+            </div>
+          </div>
+
+          <div class="options-section">
+            <div class="option-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="editableCheckbox">
+                <span class="checkmark"></span>
+                启用编辑
+              </label>
+              
+              <label class="checkbox-label">
+                <input type="checkbox" id="toolbarCheckbox" checked>
+                <span class="checkmark"></span>
+                显示工具栏
+              </label>
+            </div>
+
+            <div class="action-group">
+              <button id="saveBtn" class="btn btn-success" disabled>
+                <span class="btn-icon">💾</span>
+                保存
+              </button>
+              <button id="downloadBtn" class="btn btn-info" disabled>
+                <span class="btn-icon">⬇️</span>
+                下载
+              </button>
+              <button id="printBtn" class="btn btn-secondary" disabled>
+                <span class="btn-icon">🖨️</span>
+                打印
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 文档查看器容器 -->
+        <div class="viewer-container">
+          <div id="documentViewer" class="document-viewer">
+            <div class="empty-state">
+              <div class="empty-icon">📄</div>
+              <h3>选择一个文档开始预览</h3>
+              <p>支持 Word (.docx)、Excel (.xlsx)、PowerPoint (.pptx) 格式</p>
+              <button class="btn btn-primary" onclick="document.getElementById('selectFileBtn').click()">
+                选择文档
+              </button>
+            </div>
+          </div>
+          
+          <!-- 加载状态 -->
+          <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="loading-spinner"></div>
+            <p>正在加载文档...</p>
+          </div>
+          
+          <!-- 错误状态 -->
+          <div id="errorOverlay" class="error-overlay hidden">
+            <div class="error-icon">⚠️</div>
+            <h3>加载失败</h3>
+            <p id="errorMessage"></p>
+            <button id="retryBtn" class="btn btn-primary">重试</button>
+          </div>
+        </div>
+
+        <!-- 信息面板 -->
+        <div id="infoPanel" class="info-panel hidden">
+          <h4>文档信息</h4>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">类型:</span>
+              <span id="docType" class="value">-</span>
+            </div>
+            <div class="info-item">
+              <span class="label">文件名:</span>
+              <span id="docName" class="value">-</span>
+            </div>
+            <div class="info-item">
+              <span class="label">大小:</span>
+              <span id="docSize" class="value">-</span>
+            </div>
+            <div class="info-item">
+              <span class="label">页数:</span>
+              <span id="docPages" class="value">-</span>
+            </div>
+            <div class="info-item">
+              <span class="label">修改时间:</span>
+              <span id="docModified" class="value">-</span>
+            </div>
+            <div class="info-item">
+              <span class="label">状态:</span>
+              <span id="docStatus" class="value status-ready">就绪</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; 2024 LDesign. 基于 Vite + JavaScript 构建的文档查看器演示</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Toast 通知 -->
+  <div id="toast" class="toast hidden">
+    <span id="toastMessage"></span>
+    <button id="toastClose" class="toast-close">&times;</button>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

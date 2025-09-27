@@ -1,0 +1,297 @@
+/* LDesign DocView Vue 组件样式 */
+
+:root {
+  --ldesign-docview-primary-color: #007bff;
+  --ldesign-docview-bg-color: #ffffff;
+  --ldesign-docview-text-color: #333333;
+  --ldesign-docview-border-color: #dee2e6;
+  --ldesign-docview-toolbar-bg: #f8f9fa;
+  --ldesign-docview-hover-bg: #e9ecef;
+}
+
+/* 容器样式 */
+.ldesign-docview-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--ldesign-docview-bg-color);
+  border: 1px solid var(--ldesign-docview-border-color);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* 工具栏样式 */
+.ldesign-docview-toolbar {
+  background: var(--ldesign-docview-toolbar-bg);
+  border-bottom: 1px solid var(--ldesign-docview-border-color);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ldesign-docview-toolbar-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ldesign-docview-btn {
+  padding: 6px 12px;
+  background: var(--ldesign-docview-bg-color);
+  border: 1px solid var(--ldesign-docview-border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--ldesign-docview-text-color);
+  transition: background-color 0.2s;
+}
+
+.ldesign-docview-btn:hover {
+  background: var(--ldesign-docview-hover-bg);
+}
+
+.ldesign-docview-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 内容区域样式 */
+.ldesign-docview-content {
+  flex: 1;
+  overflow: auto;
+  background: var(--ldesign-docview-bg-color);
+}
+
+/* Word 查看器样式 */
+.ldesign-word-viewer {
+  height: 100%;
+}
+
+.ldesign-word-viewer .word-viewer-content {
+  padding: 20px;
+  background: white;
+  min-height: 100%;
+  font-family: 'Times New Roman', serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ldesign-docview-text-color);
+}
+
+.ldesign-word-viewer .word-viewer-content[contenteditable="true"] {
+  outline: none;
+  border: 2px dashed transparent;
+  transition: border-color 0.2s;
+}
+
+.ldesign-word-viewer .word-viewer-content[contenteditable="true"]:focus {
+  border-color: var(--ldesign-docview-primary-color);
+}
+
+/* Excel 查看器样式 */
+.ldesign-excel-viewer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ldesign-excel-viewer .excel-viewer-toolbar {
+  background: var(--ldesign-docview-toolbar-bg);
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--ldesign-docview-border-color);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ldesign-excel-viewer .sheet-selector {
+  padding: 4px 8px;
+  border: 1px solid var(--ldesign-docview-border-color);
+  border-radius: 4px;
+  background: var(--ldesign-docview-bg-color);
+  font-size: 12px;
+}
+
+.ldesign-excel-viewer .add-sheet-btn {
+  padding: 4px 8px;
+  background: var(--ldesign-docview-primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.ldesign-excel-viewer .excel-viewer-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* PowerPoint 查看器样式 */
+.ldesign-powerpoint-viewer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ldesign-powerpoint-viewer .ppt-viewer-toolbar {
+  background: var(--ldesign-docview-toolbar-bg);
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--ldesign-docview-border-color);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ldesign-powerpoint-viewer .prev-slide-btn,
+.ldesign-powerpoint-viewer .next-slide-btn {
+  padding: 6px 12px;
+  background: var(--ldesign-docview-bg-color);
+  border: 1px solid var(--ldesign-docview-border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.ldesign-powerpoint-viewer .prev-slide-btn:disabled,
+.ldesign-powerpoint-viewer .next-slide-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ldesign-powerpoint-viewer .slide-counter {
+  font-size: 12px;
+  color: var(--ldesign-docview-text-color);
+  margin: 0 8px;
+}
+
+.ldesign-powerpoint-viewer .slide-selector {
+  padding: 4px 8px;
+  border: 1px solid var(--ldesign-docview-border-color);
+  border-radius: 4px;
+  background: var(--ldesign-docview-bg-color);
+  font-size: 12px;
+}
+
+.ldesign-powerpoint-viewer .ppt-viewer-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.ldesign-powerpoint-viewer .slide-container {
+  flex: 1;
+  padding: 20px;
+  overflow: auto;
+  background: white;
+}
+
+.ldesign-powerpoint-viewer .slide-content {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border: 1px solid var(--ldesign-docview-border-color);
+  border-radius: 4px;
+  padding: 20px;
+  min-height: 400px;
+}
+
+.ldesign-powerpoint-viewer .slide-content[contenteditable="true"] {
+  outline: none;
+  border: 2px dashed transparent;
+  transition: border-color 0.2s;
+}
+
+.ldesign-powerpoint-viewer .slide-content[contenteditable="true"]:focus {
+  border-color: var(--ldesign-docview-primary-color);
+}
+
+.ldesign-powerpoint-viewer .ppt-viewer-thumbnails {
+  width: 200px;
+  background: var(--ldesign-docview-toolbar-bg);
+  border-left: 1px solid var(--ldesign-docview-border-color);
+  overflow-y: auto;
+}
+
+.ldesign-powerpoint-viewer .thumbnails-container {
+  padding: 8px;
+}
+
+.ldesign-powerpoint-viewer .slide-thumbnail {
+  margin-bottom: 8px;
+  padding: 8px;
+  border: 1px solid var(--ldesign-docview-border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  background: var(--ldesign-docview-bg-color);
+  transition: all 0.2s;
+}
+
+.ldesign-powerpoint-viewer .slide-thumbnail:hover {
+  background: var(--ldesign-docview-hover-bg);
+}
+
+.ldesign-powerpoint-viewer .slide-thumbnail.active {
+  background: var(--ldesign-docview-primary-color);
+  color: white;
+  border-color: var(--ldesign-docview-primary-color);
+}
+
+.ldesign-powerpoint-viewer .thumbnail-content {
+  font-size: 10px;
+  line-height: 1.2;
+  max-height: 60px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.ldesign-powerpoint-viewer .thumbnail-title {
+  font-size: 11px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .ldesign-powerpoint-viewer .ppt-viewer-content {
+    flex-direction: column;
+  }
+  
+  .ldesign-powerpoint-viewer .ppt-viewer-thumbnails {
+    width: 100%;
+    height: 120px;
+    border-left: none;
+    border-top: 1px solid var(--ldesign-docview-border-color);
+  }
+  
+  .ldesign-powerpoint-viewer .thumbnails-container {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 8px;
+  }
+  
+  .ldesign-powerpoint-viewer .slide-thumbnail {
+    flex-shrink: 0;
+    width: 100px;
+    margin-bottom: 0;
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .ldesign-docview-toolbar,
+  .ldesign-powerpoint-viewer .ppt-viewer-thumbnails {
+    display: none !important;
+  }
+  
+  .ldesign-docview-container {
+    border: none !important;
+    height: auto !important;
+  }
+  
+  .ldesign-docview-content {
+    overflow: visible !important;
+  }
+}
