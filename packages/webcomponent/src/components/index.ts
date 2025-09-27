@@ -42,6 +42,7 @@ export { LdesignColorPickerPanel } from './color-picker-panel/color-picker-panel
 export { LdesignTimePicker } from './time-picker/time-picker';
 export { LdesignCalendar } from './calendar/calendar';
 export { LdesignPicker } from './picker/picker';
+export { LdesignCascader } from './cascader/cascader';
 export { LdesignResizeBox } from './resize-box/resize-box';
 export { LdesignSplit } from './split/split';
 export { LdesignScrollbar } from './scrollbar/scrollbar';

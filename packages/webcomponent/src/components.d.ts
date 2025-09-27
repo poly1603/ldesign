@@ -7,8 +7,11 @@
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, NativeButtonType, Size, Theme } from "./types";
 import { AlertType } from "./components/alert/alert";
+import { CalEvent } from "./components/calendar/calendar";
+import { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
+import { Placement } from "@floating-ui/dom";
 import { DrawerPlacement } from "./components/drawer/drawer";
-import { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/dropdown/dropdown";
+import { DropdownItem, DropdownNode, DropdownPlacement, DropdownTrigger, DropdownVariant } from "./components/dropdown/dropdown";
 import { ImageViewerItem } from "./components/image-viewer/image-viewer";
 import { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
 import { MessageType } from "./components/message/message";
@@ -20,15 +23,17 @@ import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { Element } from "@stencil/core";
 import { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 import { TabsPlacement, TabsType } from "./components/tabs/tabs";
-import { Breakpoints, TimePickerOverlay, TimePickerSize, TimePickerTrigger } from "./components/time-picker/time-picker";
-import { Placement } from "@floating-ui/dom";
+import { Breakpoints as Breakpoints1, TimePickerLocale, TimePickerOverlay, TimePickerSize, TimePickerTrigger, TimePreset } from "./components/time-picker/time-picker";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 import { TransferItem } from "./components/transfer/transfer";
 import { TreeNode } from "./components/tree/tree";
 export { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, NativeButtonType, Size, Theme } from "./types";
 export { AlertType } from "./components/alert/alert";
+export { CalEvent } from "./components/calendar/calendar";
+export { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
+export { Placement } from "@floating-ui/dom";
 export { DrawerPlacement } from "./components/drawer/drawer";
-export { DropdownItem, DropdownPlacement, DropdownTrigger } from "./components/dropdown/dropdown";
+export { DropdownItem, DropdownNode, DropdownPlacement, DropdownTrigger, DropdownVariant } from "./components/dropdown/dropdown";
 export { ImageViewerItem } from "./components/image-viewer/image-viewer";
 export { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
 export { MessageType } from "./components/message/message";
@@ -40,8 +45,7 @@ export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 export { Element } from "@stencil/core";
 export { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 export { TabsPlacement, TabsType } from "./components/tabs/tabs";
-export { Breakpoints, TimePickerOverlay, TimePickerSize, TimePickerTrigger } from "./components/time-picker/time-picker";
-export { Placement } from "@floating-ui/dom";
+export { Breakpoints as Breakpoints1, TimePickerLocale, TimePickerOverlay, TimePickerSize, TimePickerTrigger, TimePreset } from "./components/time-picker/time-picker";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
 export { TransferItem } from "./components/transfer/transfer";
 export { TreeNode } from "./components/tree/tree";
@@ -392,6 +396,14 @@ export namespace Components {
         "type": ButtonType;
     }
     interface LdesignCalendar {
+        /**
+          * @default true
+         */
+        "allowCrossWeek": boolean;
+        /**
+          * @default true
+         */
+        "allowMonthCrossWeek": boolean;
         "defaultValue"?: string;
         "disabledDate"?: (d: Date) => boolean;
         /**
@@ -399,13 +411,30 @@ export namespace Components {
          */
         "draggableEvents": boolean;
         /**
+          * 是否启用内置的CRUD功能
+          * @default true
+         */
+        "enableCrud": boolean;
+        /**
+          * 自定义新增处理器
+         */
+        "eventCreateHandler"?: (detail: any) => boolean | Promise<boolean>;
+        /**
+          * 自定义删除处理器
+         */
+        "eventDeleteHandler"?: (event: CalEvent) => boolean | Promise<boolean>;
+        /**
+          * 自定义编辑处理器
+         */
+        "eventEditHandler"?: (event: CalEvent) => boolean | Promise<boolean>;
+        /**
           * 事件数据（JSON 字符串），例如：[{"date":"2025-09-27","title":"发布","color":"#1677ff"}]
          */
         "events"?: string;
         /**
           * 事件数据（JS 设置），与 events 二选一，前者用于 attribute，后者用于 property
          */
-        "eventsData"?: Array<{ date: string; title: string; color?: string; type?: 'dot' | 'bg' }>;
+        "eventsData"?: Array<CalEvent>;
         /**
           * @default 1
          */
@@ -432,12 +461,17 @@ export namespace Components {
          */
         "maxAllDayRows": number;
         "maxDate"?: string;
+        "maxDuration"?: number;
         /**
           * 单元格最多展示的事件条数
           * @default 3
          */
         "maxEventsPerCell": number;
         "minDate"?: string;
+        /**
+          * @default 15
+         */
+        "minDuration": number;
         /**
           * @default false
          */
@@ -456,6 +490,10 @@ export namespace Components {
          */
         "showWeekNumbers": boolean;
         /**
+          * @default true
+         */
+        "snapToGrid": boolean;
+        /**
           * @default 30
          */
         "stepMinutes": number;
@@ -465,6 +503,80 @@ export namespace Components {
           * @default 'month'
          */
         "view": 'month' | 'week' | 'day' | 'year';
+    }
+    /**
+     * ldesign-cascader
+     * - PC: 多层级 popup (每层独立弹出)
+     * - Mobile: drawer (auto by viewport width; can be forced by overlay prop)
+     */
+    interface LdesignCascader {
+        "breakpoints"?: Breakpoints;
+        /**
+          * 点击非叶子是否直接触发变更（默认仅叶子触发）
+          * @default false
+         */
+        "changeOnSelect": boolean;
+        /**
+          * @default false
+         */
+        "clearable": boolean;
+        /**
+          * 选择后是否自动关闭（手动触发模式除外）
+          * @default true
+         */
+        "closeOnSelect": boolean;
+        "defaultValue"?: string[];
+        /**
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * @default 'bottom'
+         */
+        "drawerPlacement": 'left' | 'right' | 'top' | 'bottom';
+        "drawerSize"?: number | string;
+        /**
+          * @default '请选择'
+         */
+        "drawerTitle"?: string;
+        /**
+          * 列表最大高度（列会滚动）
+          * @default 280
+         */
+        "listMaxHeight": number;
+        /**
+          * @default []
+         */
+        "options": string | CascaderOption[];
+        /**
+          * @default 'auto'
+         */
+        "overlay": CascaderOverlay;
+        /**
+          * 面板宽度（popup 模式下可用）
+         */
+        "panelWidth"?: number | string;
+        /**
+          * @default '请选择'
+         */
+        "placeholder": string;
+        /**
+          * @default 'bottom-start' as Placement
+         */
+        "placement": Placement;
+        /**
+          * @default ' / '
+         */
+        "separator": string;
+        /**
+          * @default 'click'
+         */
+        "trigger": CascaderTrigger;
+        "value"?: string[];
+        /**
+          * @default false
+         */
+        "visible": boolean;
     }
     /**
      * Checkbox 复选框组件
@@ -598,7 +710,7 @@ export namespace Components {
           * 是否启用拖动旋转
           * @default true
          */
-        "draggable": boolean;
+        "draggableEnabled": boolean;
         /**
           * 椭圆端点轴：auto 根据宽高选择；x 左右为端点；y 上下为端点
           * @default 'auto'
@@ -1140,6 +1252,10 @@ export namespace Components {
           * @default true
          */
         "clearable": boolean;
+        /**
+          * @default true
+         */
+        "datetimeRangeSinglePanel": boolean;
         "defaultValue"?: string | string[];
         /**
           * @default false
@@ -1325,10 +1441,15 @@ export namespace Components {
         "zIndex": number;
     }
     /**
-     * Dropdown 下拉菜单
-     * 基于 <ldesign-popup> 实现
+     * Dropdown 下拉菜单（PC 级联 + 移动端单列）
+     * 兼容鼠标和触屏，默认根据指针类型自适应（variant=auto）。
      */
     interface LdesignDropdown {
+        /**
+          * 移动端选中态颜色（文本与对勾）
+          * @default '#F53F3F'
+         */
+        "activeColor": string;
         /**
           * 浮层挂载位置：默认 body，避免在文档容器中被裁剪
           * @default 'body'
@@ -1359,10 +1480,10 @@ export namespace Components {
          */
         "fitTriggerWidth": boolean;
         /**
-          * 下拉项列表（可传数组或 JSON 字符串）
+          * 下拉节点（数组或 JSON 字符串）
           * @default []
          */
-        "items": string | DropdownItem[];
+        "items": string | DropdownNode[];
         /**
           * 列表最大高度（px）
           * @default 240
@@ -1374,7 +1495,7 @@ export namespace Components {
          */
         "placeholder": string;
         /**
-          * 出现位置（默认 bottom-start）
+          * 出现位置
           * @default 'bottom-start'
          */
         "placement": DropdownPlacement;
@@ -1384,12 +1505,12 @@ export namespace Components {
          */
         "reflectSelectionOnTrigger": boolean;
         /**
-          * 是否在菜单项上展示选中样式（默认不展示）
+          * 是否在菜单项上展示选中样式（PC，默认不展示）
           * @default false
          */
         "showSelected": boolean;
         /**
-          * 子菜单的触发方式（hover/click），默认 hover
+          * 子菜单的触发方式（hover/click），默认 hover，仅 PC 生效
           * @default 'hover'
          */
         "submenuTrigger": 'hover' | 'click';
@@ -1399,7 +1520,7 @@ export namespace Components {
          */
         "theme": 'light' | 'dark';
         /**
-          * 触发方式（默认 click）
+          * 触发方式（PC）
           * @default 'click'
          */
         "trigger": DropdownTrigger;
@@ -1407,6 +1528,11 @@ export namespace Components {
           * 选中值（受控）
          */
         "value"?: string;
+        /**
+          * 自适应：'auto' | 'pc' | 'mobile'
+          * @default 'auto'
+         */
+        "variant": DropdownVariant;
         /**
           * 外部受控可见性（仅 trigger = 'manual' 生效）
           * @default false
@@ -4021,7 +4147,11 @@ export namespace Components {
         "variant": 'light' | 'solid' | 'outline';
     }
     interface LdesignTimePicker {
-        "breakpoints"?: Breakpoints;
+        "breakpoints"?: Breakpoints1;
+        /**
+          * @default false
+         */
+        "clearable": boolean;
         /**
           * @default true
          */
@@ -4031,6 +4161,9 @@ export namespace Components {
           * @default false
          */
         "disabled": boolean;
+        "disabledHours"?: number[];
+        "disabledMinutes"?: number[];
+        "disabledSeconds"?: number[];
         /**
           * @default 'bottom'
          */
@@ -4041,6 +4174,17 @@ export namespace Components {
           * @default false
          */
         "inline": boolean;
+        /**
+          * @default false
+         */
+        "loading": boolean;
+        "locale"?: TimePickerLocale;
+        "maxTime"?: string;
+        "minTime"?: string;
+        /**
+          * @default '24h'
+         */
+        "outputFormat": '12h' | '24h';
         /**
           * @default 'auto'
          */
@@ -4054,8 +4198,13 @@ export namespace Components {
           * @default 'bottom-start' as Placement
          */
         "placement": Placement;
+        "presets"?: TimePreset[];
         /**
-          * 是否展示“此刻”快捷按钮
+          * @default false
+         */
+        "readonly": boolean;
+        /**
+          * 是否展示"此刻"快捷按钮
           * @default true
          */
         "showNow": boolean;
@@ -4335,6 +4484,10 @@ export interface LdesignButtonCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignCalendarCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignCalendarElement;
+}
+export interface LdesignCascaderCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignCascaderElement;
 }
 export interface LdesignCheckboxCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -4632,6 +4785,9 @@ declare global {
         "ldesignEventClick": { event: any };
         "ldesignEventDrop": { id?: string; title: string; oldStart?: string; oldEnd?: string; newStart: string; newEnd: string; allDay?: boolean };
         "ldesignEventResize": { id?: string; title: string; oldStart?: string; oldEnd?: string; newStart: string; newEnd: string };
+        "ldesignEventCreate": { date?: string; start?: string; end?: string; allDay?: boolean; x?: number; y?: number };
+        "ldesignEventEdit": { event: any };
+        "ldesignEventDelete": { event: any };
     }
     interface HTMLLdesignCalendarElement extends Components.LdesignCalendar, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignCalendarElementEventMap>(type: K, listener: (this: HTMLLdesignCalendarElement, ev: LdesignCalendarCustomEvent<HTMLLdesignCalendarElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -4646,6 +4802,29 @@ declare global {
     var HTMLLdesignCalendarElement: {
         prototype: HTMLLdesignCalendarElement;
         new (): HTMLLdesignCalendarElement;
+    };
+    interface HTMLLdesignCascaderElementEventMap {
+        "ldesignChange": { value: string[] | undefined; options: CascaderOption[] };
+        "ldesignVisibleChange": boolean;
+    }
+    /**
+     * ldesign-cascader
+     * - PC: 多层级 popup (每层独立弹出)
+     * - Mobile: drawer (auto by viewport width; can be forced by overlay prop)
+     */
+    interface HTMLLdesignCascaderElement extends Components.LdesignCascader, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignCascaderElementEventMap>(type: K, listener: (this: HTMLLdesignCascaderElement, ev: LdesignCascaderCustomEvent<HTMLLdesignCascaderElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignCascaderElementEventMap>(type: K, listener: (this: HTMLLdesignCascaderElement, ev: LdesignCascaderCustomEvent<HTMLLdesignCascaderElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignCascaderElement: {
+        prototype: HTMLLdesignCascaderElement;
+        new (): HTMLLdesignCascaderElement;
     };
     interface HTMLLdesignCheckboxElementEventMap {
         "ldesignChange": boolean;
@@ -4920,8 +5099,8 @@ declare global {
         "ldesignVisibleChange": boolean;
     }
     /**
-     * Dropdown 下拉菜单
-     * 基于 <ldesign-popup> 实现
+     * Dropdown 下拉菜单（PC 级联 + 移动端单列）
+     * 兼容鼠标和触屏，默认根据指针类型自适应（variant=auto）。
      */
     interface HTMLLdesignDropdownElement extends Components.LdesignDropdown, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignDropdownElementEventMap>(type: K, listener: (this: HTMLLdesignDropdownElement, ev: LdesignDropdownCustomEvent<HTMLLdesignDropdownElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -5745,6 +5924,7 @@ declare global {
         "ldesign-backtop": HTMLLdesignBacktopElement;
         "ldesign-button": HTMLLdesignButtonElement;
         "ldesign-calendar": HTMLLdesignCalendarElement;
+        "ldesign-cascader": HTMLLdesignCascaderElement;
         "ldesign-checkbox": HTMLLdesignCheckboxElement;
         "ldesign-checkbox-group": HTMLLdesignCheckboxGroupElement;
         "ldesign-circle-navigation": HTMLLdesignCircleNavigationElement;
@@ -6168,6 +6348,14 @@ declare namespace LocalJSX {
         "type"?: ButtonType;
     }
     interface LdesignCalendar {
+        /**
+          * @default true
+         */
+        "allowCrossWeek"?: boolean;
+        /**
+          * @default true
+         */
+        "allowMonthCrossWeek"?: boolean;
         "defaultValue"?: string;
         "disabledDate"?: (d: Date) => boolean;
         /**
@@ -6175,13 +6363,30 @@ declare namespace LocalJSX {
          */
         "draggableEvents"?: boolean;
         /**
+          * 是否启用内置的CRUD功能
+          * @default true
+         */
+        "enableCrud"?: boolean;
+        /**
+          * 自定义新增处理器
+         */
+        "eventCreateHandler"?: (detail: any) => boolean | Promise<boolean>;
+        /**
+          * 自定义删除处理器
+         */
+        "eventDeleteHandler"?: (event: CalEvent) => boolean | Promise<boolean>;
+        /**
+          * 自定义编辑处理器
+         */
+        "eventEditHandler"?: (event: CalEvent) => boolean | Promise<boolean>;
+        /**
           * 事件数据（JSON 字符串），例如：[{"date":"2025-09-27","title":"发布","color":"#1677ff"}]
          */
         "events"?: string;
         /**
           * 事件数据（JS 设置），与 events 二选一，前者用于 attribute，后者用于 property
          */
-        "eventsData"?: Array<{ date: string; title: string; color?: string; type?: 'dot' | 'bg' }>;
+        "eventsData"?: Array<CalEvent>;
         /**
           * @default 1
          */
@@ -6208,15 +6413,23 @@ declare namespace LocalJSX {
          */
         "maxAllDayRows"?: number;
         "maxDate"?: string;
+        "maxDuration"?: number;
         /**
           * 单元格最多展示的事件条数
           * @default 3
          */
         "maxEventsPerCell"?: number;
         "minDate"?: string;
+        /**
+          * @default 15
+         */
+        "minDuration"?: number;
         "onLdesignChange"?: (event: LdesignCalendarCustomEvent<string>) => void;
         "onLdesignEventClick"?: (event: LdesignCalendarCustomEvent<{ event: any }>) => void;
+        "onLdesignEventCreate"?: (event: LdesignCalendarCustomEvent<{ date?: string; start?: string; end?: string; allDay?: boolean; x?: number; y?: number }>) => void;
+        "onLdesignEventDelete"?: (event: LdesignCalendarCustomEvent<{ event: any }>) => void;
         "onLdesignEventDrop"?: (event: LdesignCalendarCustomEvent<{ id?: string; title: string; oldStart?: string; oldEnd?: string; newStart: string; newEnd: string; allDay?: boolean }>) => void;
+        "onLdesignEventEdit"?: (event: LdesignCalendarCustomEvent<{ event: any }>) => void;
         "onLdesignEventResize"?: (event: LdesignCalendarCustomEvent<{ id?: string; title: string; oldStart?: string; oldEnd?: string; newStart: string; newEnd: string }>) => void;
         /**
           * @default false
@@ -6236,6 +6449,10 @@ declare namespace LocalJSX {
          */
         "showWeekNumbers"?: boolean;
         /**
+          * @default true
+         */
+        "snapToGrid"?: boolean;
+        /**
           * @default 30
          */
         "stepMinutes"?: number;
@@ -6245,6 +6462,82 @@ declare namespace LocalJSX {
           * @default 'month'
          */
         "view"?: 'month' | 'week' | 'day' | 'year';
+    }
+    /**
+     * ldesign-cascader
+     * - PC: 多层级 popup (每层独立弹出)
+     * - Mobile: drawer (auto by viewport width; can be forced by overlay prop)
+     */
+    interface LdesignCascader {
+        "breakpoints"?: Breakpoints;
+        /**
+          * 点击非叶子是否直接触发变更（默认仅叶子触发）
+          * @default false
+         */
+        "changeOnSelect"?: boolean;
+        /**
+          * @default false
+         */
+        "clearable"?: boolean;
+        /**
+          * 选择后是否自动关闭（手动触发模式除外）
+          * @default true
+         */
+        "closeOnSelect"?: boolean;
+        "defaultValue"?: string[];
+        /**
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * @default 'bottom'
+         */
+        "drawerPlacement"?: 'left' | 'right' | 'top' | 'bottom';
+        "drawerSize"?: number | string;
+        /**
+          * @default '请选择'
+         */
+        "drawerTitle"?: string;
+        /**
+          * 列表最大高度（列会滚动）
+          * @default 280
+         */
+        "listMaxHeight"?: number;
+        "onLdesignChange"?: (event: LdesignCascaderCustomEvent<{ value: string[] | undefined; options: CascaderOption[] }>) => void;
+        "onLdesignVisibleChange"?: (event: LdesignCascaderCustomEvent<boolean>) => void;
+        /**
+          * @default []
+         */
+        "options"?: string | CascaderOption[];
+        /**
+          * @default 'auto'
+         */
+        "overlay"?: CascaderOverlay;
+        /**
+          * 面板宽度（popup 模式下可用）
+         */
+        "panelWidth"?: number | string;
+        /**
+          * @default '请选择'
+         */
+        "placeholder"?: string;
+        /**
+          * @default 'bottom-start' as Placement
+         */
+        "placement"?: Placement;
+        /**
+          * @default ' / '
+         */
+        "separator"?: string;
+        /**
+          * @default 'click'
+         */
+        "trigger"?: CascaderTrigger;
+        "value"?: string[];
+        /**
+          * @default false
+         */
+        "visible"?: boolean;
     }
     /**
      * Checkbox 复选框组件
@@ -6386,7 +6679,7 @@ declare namespace LocalJSX {
           * 是否启用拖动旋转
           * @default true
          */
-        "draggable"?: boolean;
+        "draggableEnabled"?: boolean;
         /**
           * 椭圆端点轴：auto 根据宽高选择；x 左右为端点；y 上下为端点
           * @default 'auto'
@@ -6948,6 +7241,10 @@ declare namespace LocalJSX {
           * @default true
          */
         "clearable"?: boolean;
+        /**
+          * @default true
+         */
+        "datetimeRangeSinglePanel"?: boolean;
         "defaultValue"?: string | string[];
         /**
           * @default false
@@ -7128,10 +7425,15 @@ declare namespace LocalJSX {
         "zIndex"?: number;
     }
     /**
-     * Dropdown 下拉菜单
-     * 基于 <ldesign-popup> 实现
+     * Dropdown 下拉菜单（PC 级联 + 移动端单列）
+     * 兼容鼠标和触屏，默认根据指针类型自适应（variant=auto）。
      */
     interface LdesignDropdown {
+        /**
+          * 移动端选中态颜色（文本与对勾）
+          * @default '#F53F3F'
+         */
+        "activeColor"?: string;
         /**
           * 浮层挂载位置：默认 body，避免在文档容器中被裁剪
           * @default 'body'
@@ -7162,10 +7464,10 @@ declare namespace LocalJSX {
          */
         "fitTriggerWidth"?: boolean;
         /**
-          * 下拉项列表（可传数组或 JSON 字符串）
+          * 下拉节点（数组或 JSON 字符串）
           * @default []
          */
-        "items"?: string | DropdownItem[];
+        "items"?: string | DropdownNode[];
         /**
           * 列表最大高度（px）
           * @default 240
@@ -7185,7 +7487,7 @@ declare namespace LocalJSX {
          */
         "placeholder"?: string;
         /**
-          * 出现位置（默认 bottom-start）
+          * 出现位置
           * @default 'bottom-start'
          */
         "placement"?: DropdownPlacement;
@@ -7195,12 +7497,12 @@ declare namespace LocalJSX {
          */
         "reflectSelectionOnTrigger"?: boolean;
         /**
-          * 是否在菜单项上展示选中样式（默认不展示）
+          * 是否在菜单项上展示选中样式（PC，默认不展示）
           * @default false
          */
         "showSelected"?: boolean;
         /**
-          * 子菜单的触发方式（hover/click），默认 hover
+          * 子菜单的触发方式（hover/click），默认 hover，仅 PC 生效
           * @default 'hover'
          */
         "submenuTrigger"?: 'hover' | 'click';
@@ -7210,7 +7512,7 @@ declare namespace LocalJSX {
          */
         "theme"?: 'light' | 'dark';
         /**
-          * 触发方式（默认 click）
+          * 触发方式（PC）
           * @default 'click'
          */
         "trigger"?: DropdownTrigger;
@@ -7218,6 +7520,11 @@ declare namespace LocalJSX {
           * 选中值（受控）
          */
         "value"?: string;
+        /**
+          * 自适应：'auto' | 'pc' | 'mobile'
+          * @default 'auto'
+         */
+        "variant"?: DropdownVariant;
         /**
           * 外部受控可见性（仅 trigger = 'manual' 生效）
           * @default false
@@ -9995,7 +10302,11 @@ declare namespace LocalJSX {
         "variant"?: 'light' | 'solid' | 'outline';
     }
     interface LdesignTimePicker {
-        "breakpoints"?: Breakpoints;
+        "breakpoints"?: Breakpoints1;
+        /**
+          * @default false
+         */
+        "clearable"?: boolean;
         /**
           * @default true
          */
@@ -10005,6 +10316,9 @@ declare namespace LocalJSX {
           * @default false
          */
         "disabled"?: boolean;
+        "disabledHours"?: number[];
+        "disabledMinutes"?: number[];
+        "disabledSeconds"?: number[];
         /**
           * @default 'bottom'
          */
@@ -10015,11 +10329,22 @@ declare namespace LocalJSX {
           * @default false
          */
         "inline"?: boolean;
+        /**
+          * @default false
+         */
+        "loading"?: boolean;
+        "locale"?: TimePickerLocale;
+        "maxTime"?: string;
+        "minTime"?: string;
         "onLdesignChange"?: (event: LdesignTimePickerCustomEvent<string | undefined>) => void;
         "onLdesignClose"?: (event: LdesignTimePickerCustomEvent<void>) => void;
         "onLdesignOpen"?: (event: LdesignTimePickerCustomEvent<void>) => void;
         "onLdesignPick"?: (event: LdesignTimePickerCustomEvent<{ value: string; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' } }>) => void;
         "onLdesignVisibleChange"?: (event: LdesignTimePickerCustomEvent<boolean>) => void;
+        /**
+          * @default '24h'
+         */
+        "outputFormat"?: '12h' | '24h';
         /**
           * @default 'auto'
          */
@@ -10033,8 +10358,13 @@ declare namespace LocalJSX {
           * @default 'bottom-start' as Placement
          */
         "placement"?: Placement;
+        "presets"?: TimePreset[];
         /**
-          * 是否展示“此刻”快捷按钮
+          * @default false
+         */
+        "readonly"?: boolean;
+        /**
+          * 是否展示"此刻"快捷按钮
           * @default true
          */
         "showNow"?: boolean;
@@ -10319,6 +10649,7 @@ declare namespace LocalJSX {
         "ldesign-backtop": LdesignBacktop;
         "ldesign-button": LdesignButton;
         "ldesign-calendar": LdesignCalendar;
+        "ldesign-cascader": LdesignCascader;
         "ldesign-checkbox": LdesignCheckbox;
         "ldesign-checkbox-group": LdesignCheckboxGroup;
         "ldesign-circle-navigation": LdesignCircleNavigation;
@@ -10426,6 +10757,12 @@ declare module "@stencil/core" {
             "ldesign-button": LocalJSX.LdesignButton & JSXBase.HTMLAttributes<HTMLLdesignButtonElement>;
             "ldesign-calendar": LocalJSX.LdesignCalendar & JSXBase.HTMLAttributes<HTMLLdesignCalendarElement>;
             /**
+             * ldesign-cascader
+             * - PC: 多层级 popup (每层独立弹出)
+             * - Mobile: drawer (auto by viewport width; can be forced by overlay prop)
+             */
+            "ldesign-cascader": LocalJSX.LdesignCascader & JSXBase.HTMLAttributes<HTMLLdesignCascaderElement>;
+            /**
              * Checkbox 复选框组件
              * 在一组备选项中进行多选
              */
@@ -10499,8 +10836,8 @@ declare module "@stencil/core" {
              */
             "ldesign-drawer": LocalJSX.LdesignDrawer & JSXBase.HTMLAttributes<HTMLLdesignDrawerElement>;
             /**
-             * Dropdown 下拉菜单
-             * 基于 <ldesign-popup> 实现
+             * Dropdown 下拉菜单（PC 级联 + 移动端单列）
+             * 兼容鼠标和触屏，默认根据指针类型自适应（variant=auto）。
              */
             "ldesign-dropdown": LocalJSX.LdesignDropdown & JSXBase.HTMLAttributes<HTMLLdesignDropdownElement>;
             /**

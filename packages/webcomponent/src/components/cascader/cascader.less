@@ -1,0 +1,239 @@
+// Cascader 级联选择器样式
+.ldesign-cascader {
+  display: inline-block;
+  position: relative;
+
+  &--disabled { 
+    opacity: .6; 
+    pointer-events: none; 
+  }
+
+  &__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    padding: 5px 12px;
+    min-width: 200px;
+    border: 1px solid var(--ldesign-border-color, #d1d5db);
+    border-radius: 6px;
+    background: var(--ldesign-bg-color, #ffffff);
+    color: var(--ldesign-text-color, #1f2937);
+    font-size: 14px;
+    line-height: 22px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+
+    &--placeholder { 
+      color: var(--ldesign-text-color-secondary, #9ca3af); 
+    }
+    
+    &--disabled { 
+      cursor: not-allowed;
+      background: var(--ldesign-bg-disabled, #f9fafb);
+    }
+
+    &:hover:not(&--disabled) { 
+      border-color: var(--ldesign-primary-color, #2563eb); 
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: var(--ldesign-primary-color, #2563eb);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    }
+  }
+
+  &__text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  &__arrow { margin-left: auto; display: inline-flex; color: var(--ldesign-text-color-secondary, #6b7280); }
+  &__clear { display: inline-flex; color: var(--ldesign-text-color-secondary, #9ca3af); cursor: pointer; }
+  &__clear:hover { color: var(--ldesign-text-color, #111827); }
+
+  &__dropdown { 
+    /* PC 模式: 下拉容器 */
+    display: flex;
+    align-items: stretch; // 保证每列高度与容器一致，配合固定容器高度避免抖动
+    position: relative;
+    background: var(--ldesign-bg-color, #ffffff);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--ldesign-border-soft, #f0f0f0);
+  }
+  
+  &__menu-container {
+    /* 每一层菜单的容器 */
+    background: var(--ldesign-bg-color, #ffffff);
+    border-left: 1px solid var(--ldesign-border-soft, #f0f0f0);
+    
+    &:first-child {
+      border-left: none;
+    }
+  }
+  
+  &__list {
+    /* PC 模式: 单列列表 */
+    margin: 0 !important;
+    padding: 4px !important;
+    list-style: none;
+    min-width: 160px;
+    max-width: 280px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: var(--ldesign-border-color, #e5e7eb);
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    >li { 
+      list-style: none; 
+    }
+  }
+  
+
+  &__panel {
+    /* 移动端模式: 多列面板 */
+    min-width: 320px;
+    background: var(--ldesign-bg-color, #ffffff);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  &__columns {
+    display: flex;
+    align-items: stretch;
+    min-width: 320px;
+    max-width: 720px;
+    background: var(--ldesign-bg-color, #ffffff);
+  }
+
+  &__column {
+    margin: 0 !important;
+    padding: 4px !important;
+    list-style: none;
+    min-width: 180px;
+    flex: 1;
+    max-height: 280px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: 1px solid var(--ldesign-border-soft, #f3f4f6);
+    background: var(--ldesign-bg-color, #ffffff);
+
+    &:last-child { 
+      border-right: none; 
+    }
+    
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: var(--ldesign-border-color, #e5e7eb);
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    >li { 
+      list-style: none; 
+    }
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    margin: 2px 0;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--ldesign-text-color, #1f2937);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+
+    &:hover:not(&--disabled) { 
+      background: var(--ldesign-bg-hover, #f9fafb); 
+    }
+    
+    &--selected { 
+      background: var(--ldesign-primary-light, #eff6ff);
+      color: var(--ldesign-primary-color, #2563eb);
+      font-weight: 500;
+      
+      &:hover:not(&--disabled) {
+        background: var(--ldesign-primary-lighter, #dbeafe);
+      }
+    }
+    
+    &--hovered:not(&--disabled) {
+      /* hover 状态下展开子菜单的项 */
+      background: var(--ldesign-bg-hover, #f9fafb);
+    }
+    
+    &--has-children {
+      /* 有子级的项显示箭头 */
+      padding-right: 8px;
+    }
+    
+    &--disabled { 
+      color: var(--ldesign-text-disabled, #d1d5db); 
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  &__label { 
+    flex: 1; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis;
+    margin-right: 4px;
+  }
+  
+  &__suffix { 
+    color: var(--ldesign-text-color-tertiary, #9ca3af); 
+    display: inline-flex;
+    align-items: center;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  
+  &__check { 
+    color: var(--ldesign-primary-color, #2563eb); 
+    display: inline-flex;
+    align-items: center; 
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  // drawer body
+  &__mobile {
+    padding: 12px 12px 16px 12px;
+  }
+}
+
+// PC 模式: popup 样式调整
+ldesign-cascader .ldesign-popup__inner { 
+  padding: 4px;
+}
+
+ldesign-cascader .ldesign-popup__content {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--ldesign-border-soft, #f0f0f0);
+}
+
+
