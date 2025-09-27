@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Rich Text Editor - 基础示例</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .demo-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        
+        .editor-container {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            min-height: 200px;
+            padding: 16px;
+            margin: 10px 0;
+        }
+        
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .toolbar {
+            padding: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .toolbar button {
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .toolbar button:hover {
+            background: #f3f4f6;
+        }
+        
+        .toolbar button.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enhanced Rich Text Editor</h1>
+    <p>这是一个现代化的富文本编辑器，基于 Quill 架构设计，提供更强大的功能和更好的用户体验。</p>
+    
+    <div class="demo-container">
+        <h2>基础编辑器</h2>
+        <p>当前实现了核心的事件系统、Delta 操作格式和选区管理。</p>
+        
+        <div class="toolbar">
+            <button onclick="insertText()">插入文本</button>
+            <button onclick="getContent()">获取内容</button>
+            <button onclick="getSelection()">获取选区</button>
+            <button onclick="clearContent()">清空内容</button>
+            <span style="border-left: 1px solid #d1d5db; margin: 0 8px; height: 20px;"></span>
+            <button onclick="formatBold()"><strong>B</strong></button>
+            <button onclick="formatItalic()"><em>I</em></button>
+            <button onclick="formatUnderline()"><u>U</u></button>
+        </div>
+        
+        <div id="editor" class="editor-container" contenteditable="true" 
+             placeholder="开始编写...">
+            <p>欢迎使用增强版富文本编辑器！</p>
+            <p>这是一个<strong>演示</strong>段落，展示了基础的<em>文本格式</em>。</p>
+            <ul>
+                <li>支持列表</li>
+                <li>支持<u>下划线</u></li>
+                <li>支持<s>删除线</s></li>
+            </ul>
+        </div>
+        
+        <div id="status" class="status">
+            状态：编辑器已初始化
+        </div>
+    </div>
+    
+    <div class="demo-container">
+        <h2>Delta 操作示例</h2>
+        <p>Delta 是描述富文本文档和变更的格式。</p>
+        
+        <div id="delta-demo">
+            <button onclick="deltaDemo()">运行 Delta 示例</button>
+            <pre id="delta-output" style="background: #f3f4f6; padding: 10px; border-radius: 4px; margin-top: 10px;"></pre>
+        </div>
+    </div>
+    
+    <div class="demo-container">
+        <h2>开发进度</h2>
+        <ul>
+            <li>✅ 项目架构设计</li>
+            <li>✅ 基础配置和工具链</li>
+            <li>🔄 核心编辑器引擎（进行中）</li>
+            <li>⏳ 基础格式化功能</li>
+            <li>⏳ 插件系统</li>
+            <li>⏳ UI 组件库</li>
+            <li>⏳ 高级功能插件</li>
+            <li>⏳ 框架集成</li>
+            <li>⏳ 文档和示例</li>
+        </ul>
+    </div>
+
+    <script type="module">
+        // 模拟编辑器功能（实际实现将在 TypeScript 中）
+
+        // 模拟 Delta 类
+        class MockDelta {
+            constructor(ops = []) {
+                this.ops = Array.isArray(ops) ? ops : (ops.ops || []);
+            }
+
+            insert(text, attributes) {
+                const op = { insert: text };
+                if (attributes) op.attributes = attributes;
+                this.ops.push(op);
+                return this;
+            }
+
+            retain(length, attributes) {
+                const op = { retain: length };
+                if (attributes) op.attributes = attributes;
+                this.ops.push(op);
+                return this;
+            }
+
+            delete(length) {
+                this.ops.push({ delete: length });
+                return this;
+            }
+
+            compose(other) {
+                // 简化的组合实现
+                const result = new MockDelta([...this.ops]);
+                other.ops.forEach(op => result.ops.push(op));
+                return result;
+            }
+
+            transform(other) {
+                // 简化的变换实现
+                return new MockDelta([...other.ops]);
+            }
+
+            length() {
+                return this.ops.reduce((len, op) => {
+                    if (typeof op.insert === 'string') return len + op.insert.length;
+                    if (op.retain) return len + op.retain;
+                    if (op.delete) return len + op.delete;
+                    return len + 1;
+                }, 0);
+            }
+        }
+
+        // 模拟编辑器状态
+        let editorContent = new MockDelta();
+        let currentSelection = null;
+
+        const editor = document.getElementById('editor');
+        const status = document.getElementById('status');
+
+        // 监听编辑器变化
+        editor.addEventListener('input', function() {
+            const text = this.textContent || '';
+            editorContent = new MockDelta().insert(text);
+            updateStatus('内容已更新');
+        });
+
+        // 监听选区变化
+        document.addEventListener('selectionchange', function() {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                if (editor.contains(range.commonAncestorContainer)) {
+                    currentSelection = {
+                        start: range.startOffset,
+                        end: range.endOffset,
+                        text: selection.toString()
+                    };
+                    updateStatus(`选区: ${currentSelection.text || '(空)'}`);
+                }
+            }
+        });
+
+        function updateStatus(message) {
+            status.textContent = `状态：${message}`;
+        }
+
+        // 全局函数供按钮调用
+        window.insertText = function() {
+            const text = prompt('输入要插入的文本:');
+            if (text) {
+                document.execCommand('insertText', false, text);
+                updateStatus(`插入文本: ${text}`);
+            }
+        };
+
+        window.getContent = function() {
+            const delta = editorContent;
+            const info = `编辑器内容:
+文本: ${editor.textContent}
+Delta 操作数: ${delta.ops.length}
+内容长度: ${delta.length()}`;
+            alert(info);
+        };
+
+        window.getSelection = function() {
+            const selection = window.getSelection();
+            const text = selection.toString();
+            const info = currentSelection ?
+                `当前选区:
+文本: ${text || '(无选区)'}
+起始: ${currentSelection.start}
+结束: ${currentSelection.end}` :
+                '当前选区: (无选区)';
+            alert(info);
+        };
+
+        window.clearContent = function() {
+            if (confirm('确定要清空内容吗？')) {
+                editor.innerHTML = '<p><br></p>';
+                editorContent = new MockDelta();
+                updateStatus('内容已清空');
+            }
+        };
+
+        window.deltaDemo = function() {
+            const output = document.getElementById('delta-output');
+
+            // 实际运行 Delta 操作
+            const delta = new MockDelta()
+                .insert('Hello ')
+                .insert('World', { bold: true })
+                .insert('!\n');
+
+            const change = new MockDelta()
+                .retain(6)
+                .delete(5)
+                .insert('JavaScript', { bold: true, color: 'blue' });
+
+            const result = delta.compose(change);
+
+            const otherChange = new MockDelta()
+                .retain(6)
+                .insert('Beautiful ');
+
+            const transformed = change.transform(otherChange);
+
+            const demo = `// 创建 Delta 实例
+const delta = new Delta()
+  .insert('Hello ')
+  .insert('World', { bold: true })
+  .insert('!\\n');
+
+console.log('Delta 操作:', ${JSON.stringify(delta.ops, null, 2)});
+
+// 组合操作
+const change = new Delta()
+  .retain(6)  // 保留前6个字符
+  .delete(5)  // 删除5个字符
+  .insert('JavaScript', { bold: true, color: 'blue' });
+
+const result = delta.compose(change);
+console.log('组合结果:', ${JSON.stringify(result.ops, null, 2)});
+
+// 变换操作
+const otherChange = new Delta()
+  .retain(6)
+  .insert('Beautiful ');
+
+const transformed = change.transform(otherChange);
+console.log('变换结果:', ${JSON.stringify(transformed.ops, null, 2)});
+
+// 统计信息
+原始长度: ${delta.length()}
+变更后长度: ${result.length()}`;
+
+            output.textContent = demo;
+            updateStatus('Delta 示例已运行');
+        };
+
+        // 添加格式化按钮功能
+        window.formatBold = function() {
+            document.execCommand('bold');
+            updateStatus('应用粗体格式');
+        };
+
+        window.formatItalic = function() {
+            document.execCommand('italic');
+            updateStatus('应用斜体格式');
+        };
+
+        window.formatUnderline = function() {
+            document.execCommand('underline');
+            updateStatus('应用下划线格式');
+        };
+
+        updateStatus('编辑器已初始化');
+    </script>
+</body>
+</html>

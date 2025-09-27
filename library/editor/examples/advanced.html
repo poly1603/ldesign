@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Rich Text Editor - 高级示例</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: #f8fafc;
+        }
+        
+        .demo-container {
+            margin: 20px 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .demo-header h2 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .demo-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .editor-wrapper {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            margin: 20px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+        
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding-right: 12px;
+            border-right: 1px solid #e2e8f0;
+        }
+        
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+        
+        .toolbar button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            color: #374151;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .toolbar button:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+        
+        .toolbar button.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .toolbar button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .toolbar select {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            color: #374151;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .editor-content {
+            min-height: 300px;
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            outline: none;
+            background: white;
+        }
+        
+        .editor-content:empty::before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+        }
+        
+        .status-bar {
+            padding: 12px 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #6b7280;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-card h3 {
+            margin: 0 0 12px 0;
+            color: #1f2937;
+            font-size: 18px;
+        }
+        
+        .feature-card p {
+            margin: 0 0 16px 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .feature-list li {
+            padding: 4px 0;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .feature-list li::before {
+            content: '✓';
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .toolbar {
+                gap: 4px;
+                padding: 8px 12px;
+            }
+            
+            .toolbar button {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+            
+            .editor-content {
+                padding: 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h2>Enhanced Rich Text Editor</h2>
+            <p>现代化富文本编辑器 - 高级功能演示</p>
+        </div>
+        
+        <div class="editor-wrapper">
+            <div class="toolbar">
+                <div class="toolbar-group">
+                    <button id="btn-bold" title="粗体 (Ctrl+B)"><strong>B</strong></button>
+                    <button id="btn-italic" title="斜体 (Ctrl+I)"><em>I</em></button>
+                    <button id="btn-underline" title="下划线 (Ctrl+U)"><u>U</u></button>
+                    <button id="btn-strike" title="删除线">S</button>
+                </div>
+                
+                <div class="toolbar-group">
+                    <select id="font-size" title="字号">
+                        <option value="12px">12px</option>
+                        <option value="14px">14px</option>
+                        <option value="16px" selected>16px</option>
+                        <option value="18px">18px</option>
+                        <option value="20px">20px</option>
+                        <option value="24px">24px</option>
+                    </select>
+                    
+                    <input type="color" id="text-color" value="#000000" title="文字颜色" style="width: 36px; height: 36px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer;">
+                    <input type="color" id="bg-color" value="#ffffff" title="背景颜色" style="width: 36px; height: 36px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer;">
+                </div>
+                
+                <div class="toolbar-group">
+                    <button id="btn-undo" title="撤销 (Ctrl+Z)">↶</button>
+                    <button id="btn-redo" title="重做 (Ctrl+Y)">↷</button>
+                </div>
+                
+                <div class="toolbar-group">
+                    <button id="btn-clear" title="清空内容">🗑</button>
+                    <button id="btn-export" title="导出 HTML">📄</button>
+                </div>
+            </div>
+            
+            <div id="editor" class="editor-content" contenteditable="true" 
+                 data-placeholder="开始编写您的内容...">
+                <p>欢迎使用 <strong>Enhanced Rich Text Editor</strong>！</p>
+                <p>这是一个功能强大的现代化富文本编辑器，具有以下特性：</p>
+                <ul>
+                    <li>基于 <em>Delta 操作系统</em> 的文档模型</li>
+                    <li>完整的 <u>撤销/重做</u> 功能</li>
+                    <li>实时的 <strong style="color: #3b82f6;">格式化</strong> 支持</li>
+                    <li>可扩展的插件架构</li>
+                </ul>
+                <p>试试选择文本并使用工具栏进行格式化！</p>
+            </div>
+            
+            <div class="status-bar">
+                <span id="status-text">就绪</span>
+                <span id="word-count">字数: 0</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h3>🎯 核心功能</h3>
+            <p>已实现的核心编辑器功能</p>
+            <ul class="feature-list">
+                <li>Delta 操作系统</li>
+                <li>选区管理</li>
+                <li>命令系统</li>
+                <li>插件架构</li>
+                <li>事件系统</li>
+            </ul>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 90%;"></div>
+            </div>
+            <small>90% 完成</small>
+        </div>
+        
+        <div class="feature-card">
+            <h3>✨ 格式化功能</h3>
+            <p>文本格式化和样式支持</p>
+            <ul class="feature-list">
+                <li>粗体、斜体、下划线</li>
+                <li>文字颜色和背景</li>
+                <li>字体和字号</li>
+                <li>键盘快捷键</li>
+            </ul>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 75%;"></div>
+            </div>
+            <small>75% 完成</small>
+        </div>
+        
+        <div class="feature-card">
+            <h3>🔧 工具栏</h3>
+            <p>可配置的用户界面组件</p>
+            <ul class="feature-list">
+                <li>响应式工具栏</li>
+                <li>按钮和下拉菜单</li>
+                <li>状态同步</li>
+                <li>主题支持</li>
+            </ul>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 80%;"></div>
+            </div>
+            <small>80% 完成</small>
+        </div>
+        
+        <div class="feature-card">
+            <h3>📚 历史记录</h3>
+            <p>撤销/重做功能实现</p>
+            <ul class="feature-list">
+                <li>操作历史栈</li>
+                <li>智能合并</li>
+                <li>延迟记录</li>
+                <li>内存优化</li>
+            </ul>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 85%;"></div>
+            </div>
+            <small>85% 完成</small>
+        </div>
+        
+        <div class="feature-card">
+            <h3>🚀 高级功能</h3>
+            <p>即将实现的高级特性</p>
+            <ul class="feature-list">
+                <li>表格编辑器</li>
+                <li>代码语法高亮</li>
+                <li>数学公式支持</li>
+                <li>协作编辑</li>
+            </ul>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 15%;"></div>
+            </div>
+            <small>15% 完成</small>
+        </div>
+        
+        <div class="feature-card">
+            <h3>🔌 框架集成</h3>
+            <p>前端框架适配器</p>
+            <ul class="feature-list">
+                <li>React 组件</li>
+                <li>Vue 组件</li>
+                <li>Angular 组件</li>
+                <li>原生 JavaScript</li>
+            </ul>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 10%;"></div>
+            </div>
+            <small>10% 完成</small>
+        </div>
+    </div>
+
+    <script type="module">
+        // 模拟编辑器功能的增强版本
+        
+        class MockEnhancedEditor {
+            constructor(container) {
+                this.container = container;
+                this.content = container.innerHTML;
+                this.history = [];
+                this.historyIndex = -1;
+                this.setupEventListeners();
+                this.updateWordCount();
+            }
+            
+            setupEventListeners() {
+                // 内容变化监听
+                this.container.addEventListener('input', () => {
+                    this.saveState();
+                    this.updateWordCount();
+                    this.updateStatus('内容已更新');
+                });
+                
+                // 选区变化监听
+                document.addEventListener('selectionchange', () => {
+                    this.updateToolbarState();
+                });
+                
+                // 键盘快捷键
+                this.container.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey || e.metaKey) {
+                        switch (e.key.toLowerCase()) {
+                            case 'b':
+                                e.preventDefault();
+                                this.toggleFormat('bold');
+                                break;
+                            case 'i':
+                                e.preventDefault();
+                                this.toggleFormat('italic');
+                                break;
+                            case 'u':
+                                e.preventDefault();
+                                this.toggleFormat('underline');
+                                break;
+                            case 'z':
+                                if (e.shiftKey) {
+                                    e.preventDefault();
+                                    this.redo();
+                                } else {
+                                    e.preventDefault();
+                                    this.undo();
+                                }
+                                break;
+                            case 'y':
+                                e.preventDefault();
+                                this.redo();
+                                break;
+                        }
+                    }
+                });
+            }
+            
+            toggleFormat(format) {
+                document.execCommand(format);
+                this.updateToolbarState();
+                this.updateStatus(`应用${format}格式`);
+            }
+            
+            setFontSize(size) {
+                document.execCommand('fontSize', false, '7');
+                const fontElements = document.querySelectorAll('font[size="7"]');
+                fontElements.forEach(el => {
+                    el.removeAttribute('size');
+                    el.style.fontSize = size;
+                });
+                this.updateStatus(`字号设置为 ${size}`);
+            }
+            
+            setColor(color, isBackground = false) {
+                if (isBackground) {
+                    document.execCommand('backColor', false, color);
+                    this.updateStatus(`背景色设置为 ${color}`);
+                } else {
+                    document.execCommand('foreColor', false, color);
+                    this.updateStatus(`文字颜色设置为 ${color}`);
+                }
+            }
+            
+            saveState() {
+                const state = this.container.innerHTML;
+                if (state !== this.history[this.historyIndex]) {
+                    this.history = this.history.slice(0, this.historyIndex + 1);
+                    this.history.push(state);
+                    this.historyIndex++;
+                    
+                    // 限制历史记录数量
+                    if (this.history.length > 50) {
+                        this.history.shift();
+                        this.historyIndex--;
+                    }
+                }
+                this.updateHistoryButtons();
+            }
+            
+            undo() {
+                if (this.historyIndex > 0) {
+                    this.historyIndex--;
+                    this.container.innerHTML = this.history[this.historyIndex];
+                    this.updateStatus('撤销操作');
+                    this.updateHistoryButtons();
+                    this.updateWordCount();
+                }
+            }
+            
+            redo() {
+                if (this.historyIndex < this.history.length - 1) {
+                    this.historyIndex++;
+                    this.container.innerHTML = this.history[this.historyIndex];
+                    this.updateStatus('重做操作');
+                    this.updateHistoryButtons();
+                    this.updateWordCount();
+                }
+            }
+            
+            clear() {
+                if (confirm('确定要清空所有内容吗？')) {
+                    this.container.innerHTML = '<p><br></p>';
+                    this.saveState();
+                    this.updateStatus('内容已清空');
+                    this.updateWordCount();
+                }
+            }
+            
+            exportHTML() {
+                const html = this.container.innerHTML;
+                const blob = new Blob([html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'editor-content.html';
+                a.click();
+                URL.revokeObjectURL(url);
+                this.updateStatus('HTML 已导出');
+            }
+            
+            updateToolbarState() {
+                const selection = window.getSelection();
+                if (selection.rangeCount === 0) return;
+                
+                // 更新格式按钮状态
+                document.getElementById('btn-bold').classList.toggle('active', 
+                    document.queryCommandState('bold'));
+                document.getElementById('btn-italic').classList.toggle('active', 
+                    document.queryCommandState('italic'));
+                document.getElementById('btn-underline').classList.toggle('active', 
+                    document.queryCommandState('underline'));
+                document.getElementById('btn-strike').classList.toggle('active', 
+                    document.queryCommandState('strikeThrough'));
+            }
+            
+            updateHistoryButtons() {
+                document.getElementById('btn-undo').disabled = this.historyIndex <= 0;
+                document.getElementById('btn-redo').disabled = this.historyIndex >= this.history.length - 1;
+            }
+            
+            updateWordCount() {
+                const text = this.container.textContent || '';
+                const wordCount = text.trim().length;
+                document.getElementById('word-count').textContent = `字数: ${wordCount}`;
+            }
+            
+            updateStatus(message) {
+                document.getElementById('status-text').textContent = message;
+                setTimeout(() => {
+                    document.getElementById('status-text').textContent = '就绪';
+                }, 2000);
+            }
+        }
+        
+        // 初始化编辑器
+        const editor = new MockEnhancedEditor(document.getElementById('editor'));
+        
+        // 绑定工具栏事件
+        document.getElementById('btn-bold').addEventListener('click', () => editor.toggleFormat('bold'));
+        document.getElementById('btn-italic').addEventListener('click', () => editor.toggleFormat('italic'));
+        document.getElementById('btn-underline').addEventListener('click', () => editor.toggleFormat('underline'));
+        document.getElementById('btn-strike').addEventListener('click', () => editor.toggleFormat('strikeThrough'));
+        
+        document.getElementById('font-size').addEventListener('change', (e) => {
+            editor.setFontSize(e.target.value);
+        });
+        
+        document.getElementById('text-color').addEventListener('change', (e) => {
+            editor.setColor(e.target.value, false);
+        });
+        
+        document.getElementById('bg-color').addEventListener('change', (e) => {
+            editor.setColor(e.target.value, true);
+        });
+        
+        document.getElementById('btn-undo').addEventListener('click', () => editor.undo());
+        document.getElementById('btn-redo').addEventListener('click', () => editor.redo());
+        document.getElementById('btn-clear').addEventListener('click', () => editor.clear());
+        document.getElementById('btn-export').addEventListener('click', () => editor.exportHTML());
+        
+        // 初始化状态
+        editor.saveState();
+        editor.updateToolbarState();
+        editor.updateHistoryButtons();
+    </script>
+</body>
+</html>

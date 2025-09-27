@@ -1,0 +1,253 @@
+/**
+ * Toolbar Styles
+ */
+
+.enhanced-rich-editor__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ere-spacing-xs);
+  padding: var(--ere-spacing-sm);
+  background: var(--ere-color-bg-secondary);
+  border-bottom: 1px solid var(--ere-color-border);
+  border-radius: var(--ere-border-radius) var(--ere-border-radius) 0 0;
+  font-family: var(--ere-font-family);
+  font-size: var(--ere-font-size-sm);
+  user-select: none;
+
+  // Toolbar groups
+  .toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: var(--ere-spacing-xs);
+    
+    &:not(:last-child)::after {
+      content: '';
+      width: 1px;
+      height: 20px;
+      background: var(--ere-color-border);
+      margin-left: var(--ere-spacing-sm);
+    }
+  }
+
+  // Toolbar buttons
+  .toolbar-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: var(--ere-spacing-xs);
+    border: 1px solid transparent;
+    border-radius: var(--ere-border-radius-sm);
+    background: transparent;
+    color: var(--ere-color-text);
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--ere-transition-fast);
+
+    &:hover {
+      background: var(--ere-color-bg-hover);
+      border-color: var(--ere-color-border);
+    }
+
+    &:active {
+      background: var(--ere-color-bg-active);
+      transform: translateY(1px);
+    }
+
+    &.active {
+      background: var(--ere-color-primary);
+      color: var(--ere-color-primary-contrast);
+      border-color: var(--ere-color-primary);
+
+      &:hover {
+        background: var(--ere-color-primary-hover);
+        border-color: var(--ere-color-primary-hover);
+      }
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    // Icon support
+    i {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    // Text-only buttons
+    &:not(:has(i)) {
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  // Toolbar dropdowns
+  .toolbar-dropdown {
+    height: 32px;
+    padding: var(--ere-spacing-xs) var(--ere-spacing-sm);
+    border: 1px solid var(--ere-color-border);
+    border-radius: var(--ere-border-radius-sm);
+    background: var(--ere-color-bg);
+    color: var(--ere-color-text);
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    transition: all var(--ere-transition-fast);
+
+    &:hover {
+      border-color: var(--ere-color-primary);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--ere-color-primary);
+      box-shadow: 0 0 0 2px var(--ere-color-primary-alpha);
+    }
+
+    option {
+      padding: var(--ere-spacing-xs);
+      background: var(--ere-color-bg);
+      color: var(--ere-color-text);
+    }
+  }
+
+  // Toolbar separators
+  .toolbar-separator {
+    width: 1px;
+    height: 20px;
+    background: var(--ere-color-border);
+    margin: 0 var(--ere-spacing-xs);
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    gap: var(--ere-spacing-xs);
+    
+    .toolbar-group {
+      &:not(:last-child)::after {
+        display: none;
+      }
+    }
+    
+    .toolbar-button {
+      min-width: 28px;
+      height: 28px;
+      font-size: 12px;
+    }
+    
+    .toolbar-dropdown {
+      height: 28px;
+      font-size: 12px;
+    }
+  }
+
+  // Dark theme support
+  .enhanced-rich-editor--dark & {
+    background: var(--ere-color-bg-secondary-dark);
+    border-color: var(--ere-color-border-dark);
+
+    .toolbar-button {
+      color: var(--ere-color-text-dark);
+
+      &:hover {
+        background: var(--ere-color-bg-hover-dark);
+        border-color: var(--ere-color-border-dark);
+      }
+
+      &:active {
+        background: var(--ere-color-bg-active-dark);
+      }
+
+      &.active {
+        background: var(--ere-color-primary-dark);
+        color: var(--ere-color-primary-contrast-dark);
+        border-color: var(--ere-color-primary-dark);
+
+        &:hover {
+          background: var(--ere-color-primary-hover-dark);
+          border-color: var(--ere-color-primary-hover-dark);
+        }
+      }
+    }
+
+    .toolbar-dropdown {
+      background: var(--ere-color-bg-dark);
+      color: var(--ere-color-text-dark);
+      border-color: var(--ere-color-border-dark);
+
+      &:hover {
+        border-color: var(--ere-color-primary-dark);
+      }
+
+      &:focus {
+        border-color: var(--ere-color-primary-dark);
+        box-shadow: 0 0 0 2px var(--ere-color-primary-alpha-dark);
+      }
+
+      option {
+        background: var(--ere-color-bg-dark);
+        color: var(--ere-color-text-dark);
+      }
+    }
+
+    .toolbar-separator {
+      background: var(--ere-color-border-dark);
+    }
+  }
+
+  // High contrast mode
+  @media (prefers-contrast: high) {
+    .toolbar-button {
+      border-color: var(--ere-color-text);
+
+      &:hover {
+        background: var(--ere-color-text);
+        color: var(--ere-color-bg);
+      }
+
+      &.active {
+        background: var(--ere-color-text);
+        color: var(--ere-color-bg);
+      }
+    }
+
+    .toolbar-dropdown {
+      border-color: var(--ere-color-text);
+    }
+
+    .toolbar-separator {
+      background: var(--ere-color-text);
+    }
+  }
+
+  // Reduced motion
+  @media (prefers-reduced-motion: reduce) {
+    .toolbar-button,
+    .toolbar-dropdown {
+      transition: none;
+    }
+
+    .toolbar-button:active {
+      transform: none;
+    }
+  }
+
+  // Focus management
+  .toolbar-button:focus,
+  .toolbar-dropdown:focus {
+    outline: 2px solid var(--ere-color-primary);
+    outline-offset: 2px;
+  }
+
+  // Print styles
+  @media print {
+    display: none;
+  }
+}

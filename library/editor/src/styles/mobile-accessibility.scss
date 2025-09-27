@@ -1,0 +1,383 @@
+/**
+ * Mobile and Accessibility Styles
+ * 
+ * Enhanced styles for mobile devices and accessibility features.
+ */
+
+// ============================================================================
+// Mobile Optimizations
+// ============================================================================
+
+.enhanced-rich-editor--mobile {
+  // Larger touch targets
+  .toolbar-button {
+    min-width: 44px;
+    min-height: 44px;
+    font-size: var(--ere-font-size-base);
+    padding: var(--ere-spacing-3);
+  }
+  
+  .toolbar-dropdown {
+    min-height: 44px;
+    padding: var(--ere-spacing-3);
+    font-size: var(--ere-font-size-base);
+  }
+  
+  // Improved spacing for mobile
+  .enhanced-rich-editor__toolbar {
+    padding: var(--ere-spacing-3);
+    gap: var(--ere-spacing-2);
+  }
+  
+  .enhanced-rich-editor__content {
+    padding: var(--ere-spacing-4);
+    font-size: var(--ere-font-size-lg);
+    line-height: var(--ere-line-height-relaxed);
+  }
+}
+
+.enhanced-rich-editor--touch {
+  // Prevent text selection on toolbar
+  .enhanced-rich-editor__toolbar {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  // Improve touch scrolling
+  .enhanced-rich-editor__content {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  // Touch-friendly selection handles
+  .enhanced-rich-editor__content::selection {
+    background: rgba(59, 130, 246, 0.3);
+  }
+}
+
+// ============================================================================
+// Accessibility Enhancements
+// ============================================================================
+
+// High contrast mode
+.high-contrast {
+  .enhanced-rich-editor {
+    &__container {
+      border: 2px solid #000;
+      background: #fff;
+    }
+    
+    &__toolbar {
+      background: #fff;
+      border-bottom: 2px solid #000;
+    }
+    
+    &__content {
+      background: #fff;
+      color: #000;
+    }
+  }
+  
+  .toolbar-button {
+    background: #fff;
+    color: #000;
+    border: 2px solid #000;
+    
+    &:hover {
+      background: #000;
+      color: #fff;
+    }
+    
+    &:focus {
+      outline: 3px solid #000;
+      outline-offset: 2px;
+    }
+    
+    &.active {
+      background: #000;
+      color: #fff;
+    }
+  }
+  
+  .toolbar-dropdown {
+    background: #fff;
+    color: #000;
+    border: 2px solid #000;
+    
+    &:focus {
+      outline: 3px solid #000;
+      outline-offset: 2px;
+    }
+  }
+}
+
+// Large text mode
+.large-text {
+  .enhanced-rich-editor {
+    &__content {
+      font-size: 1.25rem;
+      line-height: 1.8;
+    }
+    
+    &__toolbar {
+      font-size: 1.125rem;
+    }
+  }
+  
+  .toolbar-button {
+    font-size: 1.125rem;
+    padding: var(--ere-spacing-4);
+    min-width: 48px;
+    min-height: 48px;
+  }
+  
+  .toolbar-dropdown {
+    font-size: 1.125rem;
+    padding: var(--ere-spacing-4);
+    min-height: 48px;
+  }
+}
+
+// ============================================================================
+// Focus Management
+// ============================================================================
+
+// Enhanced focus indicators
+.enhanced-rich-editor {
+  &__content:focus {
+    outline: 2px solid var(--ere-primary);
+    outline-offset: 2px;
+  }
+  
+  // Skip link for keyboard navigation
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: var(--ere-primary);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: var(--ere-border-radius);
+    z-index: 1000;
+    
+    &:focus {
+      top: 6px;
+    }
+  }
+}
+
+// Focus trap for modal dialogs
+.focus-trap {
+  &:focus {
+    outline: none;
+  }
+}
+
+// ============================================================================
+// Screen Reader Support
+// ============================================================================
+
+// Screen reader only content
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Live regions for announcements
+.live-region {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+// ============================================================================
+// Touch Gestures
+// ============================================================================
+
+.enhanced-rich-editor--touch {
+  // Selection handles
+  .selection-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: var(--ere-primary);
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 100;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 8px;
+      background: var(--ere-primary);
+    }
+    
+    &.start {
+      &::before {
+        top: 100%;
+      }
+    }
+  }
+  
+  // Touch feedback
+  .touch-feedback {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: rgba(59, 130, 246, 0.3);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: touch-ripple 0.3s ease-out;
+  }
+}
+
+@keyframes touch-ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+// ============================================================================
+// Responsive Breakpoints
+// ============================================================================
+
+// Small mobile devices
+@media (max-width: 480px) {
+  .enhanced-rich-editor {
+    &__toolbar {
+      flex-wrap: wrap;
+      padding: var(--ere-spacing-2);
+    }
+    
+    &__content {
+      padding: var(--ere-spacing-3);
+      font-size: 16px; // Prevent zoom on iOS
+    }
+  }
+  
+  .toolbar-button {
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 14px;
+  }
+  
+  .toolbar-dropdown {
+    min-height: 40px;
+    font-size: 14px;
+  }
+}
+
+// Tablet devices
+@media (min-width: 768px) and (max-width: 1024px) {
+  .enhanced-rich-editor--mobile {
+    .toolbar-button {
+      min-width: 48px;
+      min-height: 48px;
+    }
+    
+    .enhanced-rich-editor__content {
+      padding: var(--ere-spacing-6);
+    }
+  }
+}
+
+// ============================================================================
+// Reduced Motion
+// ============================================================================
+
+@media (prefers-reduced-motion: reduce) {
+  .enhanced-rich-editor {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  .touch-feedback {
+    animation: none;
+  }
+}
+
+// ============================================================================
+// Dark Mode Accessibility
+// ============================================================================
+
+@media (prefers-color-scheme: dark) {
+  .enhanced-rich-editor {
+    &__container {
+      border-color: var(--ere-gray-600);
+    }
+    
+    &__content {
+      color: var(--ere-gray-100);
+    }
+  }
+  
+  // Ensure sufficient contrast in dark mode
+  .high-contrast {
+    .enhanced-rich-editor {
+      &__container {
+        border-color: #fff;
+        background: #000;
+      }
+      
+      &__content {
+        background: #000;
+        color: #fff;
+      }
+    }
+    
+    .toolbar-button {
+      background: #000;
+      color: #fff;
+      border-color: #fff;
+      
+      &:hover {
+        background: #fff;
+        color: #000;
+      }
+    }
+  }
+}
+
+// ============================================================================
+// Print Accessibility
+// ============================================================================
+
+@media print {
+  .enhanced-rich-editor {
+    .selection-handle,
+    .touch-feedback,
+    .live-region {
+      display: none !important;
+    }
+    
+    &__content {
+      color: #000 !important;
+      background: #fff !important;
+    }
+  }
+}
