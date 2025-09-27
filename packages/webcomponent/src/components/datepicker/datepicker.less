@@ -399,6 +399,95 @@
   background: #ecf5ff;
   color: #409eff;
 }
+
+/* Datetime 布局 */
+.ldp-datetime {
+  display: flex;
+}
+/* 范围模式需要更宽的布局 */
+.ldp-datetime--range {
+  min-width: 720px;
+}
+.ldp-datetime__date {
+  border-right: 1px solid var(--ldesign-border-color, #e5e7eb);
+}
+/* 当日期面板有周数列时，需要更宽的宽度 */
+.ldp-datetime__date .ldp-date--with-weeks {
+  width: 288px; /* 260px + 28px(周数列宽度) */
+}
+.ldp-datetime__time {
+  padding: 12px 16px;
+}
+/* 范围模式的时间面板需要更多空间容纳tabs和按钮 */
+.ldp-datetime--range .ldp-datetime__time {
+  min-width: 320px;
+}
+.ldp-datetime__tabs {
+  display: inline-flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ldp-tab {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--ldesign-border-color, #e5e7eb);
+  background: #fff;
+  color: #606266;
+  cursor: pointer;
+  font-size: 12px;
+}
+.ldp-tab.active {
+  background: #409eff;
+  border-color: #409eff;
+  color: #fff;
+}
+
+/* Datetime footer */
+.ldp-datetime__footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.ldp-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+.ldp-btn--primary {
+  background: #409eff;
+  color: #fff;
+}
+.ldp-btn--primary:hover {
+  background: #66b1ff;
+}
+
+/* Datetime dual-panel (non-single panel range) */
+.ldp-datetime-dual {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ldp-datetime-dual__dates {
+  /* Dates section */
+}
+.ldp-datetime-dual__times {
+  display: flex;
+  gap: 24px;
+  padding: 12px;
+  border-top: 1px solid var(--ldesign-border-color, #e5e7eb);
+}
+.ldp-datetime-dual__time-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ldp-datetime-dual__time-label {
+  font-size: 12px;
+  color: #909399;
+  padding: 0 4px;
+}
 .ldp-year-selector-icon {
   font-size: 10px;
   opacity: 0.6;
@@ -467,6 +556,27 @@
 .ldp-datetime__time {
   padding: 8px;
 }
+.ldp-datetime__footer {
+  border-top: 1px solid var(--ldesign-border-color, #e5e7eb);
+  margin-top: 8px;
+  padding-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+/* 简单按钮样式 */
+.ldp-btn {
+  appearance: none;
+  border: 1px solid #dcdfe6;
+  background: #fff;
+  color: #606266;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.ldp-btn:hover { background: #f5f7fa; }
+.ldp-btn--primary { border-color: #409eff; background: #409eff; color: #fff; }
+.ldp-btn--primary:hover { background: #66b1ff; border-color: #66b1ff; }
 
 /* 范围选择可视化 */
 /* 日期端点与中间态（不作用于其他月单元格） */

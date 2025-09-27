@@ -25,6 +25,8 @@ export class LdesignDatePicker {
   @Prop() timeSteps: number[] = [1, 1, 1];
   // 右侧时间面板可视条目数（奇数更合适：3/5/7...）
   @Prop() timeVisibleItems: number = 7;
+  // 日期时间范围：是否使用“单面板 + 两步确认”流程（默认开启）
+  @Prop() datetimeRangeSinglePanel: boolean = true;
   // 以属性方式传入的函数，仅能通过 JS 设置（非 attribute）
   @Prop() disabledDate?: (d: Date) => boolean;
 
@@ -237,8 +239,35 @@ componentWillLoad() {
     }
   }
 
-private handleDateClick = (d: Date, disabled: boolean) => {
+  private handleDateClick = (d: Date, disabled: boolean) => {
     if (disabled) return;
+    // Datetime + Range + 单面板：支持类似普通范围的两次点击选择
+    if (this.range && this.mode === 'datetime' && this.datetimeRangeSinglePanel) {
+      // 根据当前活动端来决定更新哪一端
+      if (this.activePart === 'start') {
+        // 在开始面板：更新开始日期
+        const { h, m, s } = this.parseTime(this.timeStart);
+        const nd = new Date(d);
+        nd.setHours(h, m, s, 0);
+        this.start = nd;
+        this.selected = nd;
+        this.timeValue = this.timeStart;
+        // 清除可能存在的hover状态
+        this.hoverDate = undefined;
+      } else {
+        // 在结束面板：更新结束日期
+        const { h, m, s } = this.parseTime(this.timeEnd);
+        const nd = new Date(d);
+        nd.setHours(h, m, s, 0);
+        this.end = nd;
+        this.selected = nd;
+        this.timeValue = this.timeEnd;
+        // 清除hover状态
+        this.hoverDate = undefined;
+      }
+      // 保持当前面板，不做任何提交或视图锚定
+      return;
+    }
     if (this.range) {
       // 范围选择
       if (!this.start || (this.start && this.end)) {
@@ -395,6 +424,23 @@ private toggleYearSelector = () => {
     this.yearSelectorOpen = !this.yearSelectorOpen;
   };
 
+  // 在 datetime 范围单面板模式下，允许通过“开始/结束”标签手动切换当前调整端
+  private switchActivePart = (part: 'start' | 'end') => {
+    if (!(this.range && this.mode === 'datetime')) return;
+    this.activePart = part;
+    if (part === 'start') {
+      this.selected = this.start ? new Date(this.start) : undefined;
+      this.timeValue = this.start ? this.timeStart : undefined as any;
+      if (this.start) { this.viewYear = this.start.getFullYear(); this.viewMonth = this.start.getMonth(); }
+    } else {
+      this.selected = this.end ? new Date(this.end) : undefined;
+      this.timeValue = this.end ? this.timeEnd : undefined as any;
+      if (this.end) { this.viewYear = this.end.getFullYear(); this.viewMonth = this.end.getMonth(); }
+    }
+    // 手动切换不算正在框选
+    this.isSelectingRange = false;
+  };
+
   private parseTime(str?: string | null): { h: number; m: number; s: number } {
     if (!str || typeof str !== 'string') return { h: 0, m: 0, s: 0 };
     const m = str.trim().match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/);
@@ -441,7 +487,10 @@ private toggleYearSelector = () => {
       } else if (this.activePart === 'end' && this.end) {
         const { h, m, s } = this.parseTime(t); const d = new Date(this.end); d.setHours(h, m, s, 0); this.end = d; this.selected = d;
       }
-      this.commitRangeIfReady(false);
+      // datetime 单面板模式：等待“确定”再提交；否则实时提交
+      if (!(this.datetimeRangeSinglePanel)) {
+        this.commitRangeIfReady(false);
+      }
       return;
     }
     this.timeValue = t;
@@ -465,8 +514,12 @@ private toggleYearSelector = () => {
       this.close();
     }
     if (this.range && (trig === 'click' || trig === 'keyboard' || trig === 'now')) {
-      // 范围模式下：只有当起止都已选中时才关闭
-      if (this.start && this.end) this.close();
+      // 单面板两步确认：不自动关闭，等待点击“确定”
+      if (this.mode === 'datetime' && this.datetimeRangeSinglePanel) {
+        // do nothing
+      } else {
+        if (this.start && this.end) this.close();
+      }
     }
   };
 
@@ -880,7 +933,7 @@ private toggleYearSelector = () => {
     const selectedYear = this.selected ? this.selected.getFullYear() : -1;
     const hasWeekNumbers = this.showWeekNumbers || this.mode === 'week';
 
-    if (this.range && (this.mode === 'date' || this.mode === 'datetime' || this.mode === 'week')) {
+    if (this.range && ((this.mode === 'date') || (this.mode === 'week') || (this.mode === 'datetime' && !this.datetimeRangeSinglePanel))) {
       // 双月面板（左=当前月，右=下一月）
       const right = this.addMonths(this.viewYear, this.viewMonth, 1);
       const datesL = generateCalendarDates(this.viewYear, this.viewMonth, null, this.parsedMin, this.parsedMax, this.disabledDate, hasWeekNumbers, this.firstDayOfWeek);
@@ -1050,6 +1103,69 @@ private toggleYearSelector = () => {
           </div>
         );
       };
+      // For datetime range dual-panel mode, wrap in datetime container with time pickers
+      if (this.mode === 'datetime' && !this.datetimeRangeSinglePanel) {
+        const startTimeVal = this.start ? this.timeStart : '00:00:00';
+        const endTimeVal = this.end ? this.timeEnd : '00:00:00';
+        return (
+          <div class="ldp-datetime-dual">
+            <div class="ldp-datetime-dual__dates">
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {renderGrid(datesL, this.viewYear, this.viewMonth, 'left')}
+                {renderGrid(datesR, right.year, right.month, 'right')}
+              </div>
+            </div>
+            <div class="ldp-datetime-dual__times">
+              <div class="ldp-datetime-dual__time-item">
+                <div class="ldp-datetime-dual__time-label">开始时间</div>
+                <ldesign-time-picker 
+                  inline={true as any} 
+                  confirm={false as any} 
+                  showNow={false as any} 
+                  showSeconds={this.timeShowSeconds as any} 
+                  steps={this.timeSteps as any} 
+                  visibleItems={this.timeVisibleItems as any} 
+                  value={startTimeVal} 
+                  onLdesignChange={(e: CustomEvent<string>) => {
+                    if (typeof e.detail === 'string') {
+                      this.timeStart = e.detail;
+                      if (this.start) {
+                        const { h, m, s } = this.parseTime(e.detail);
+                        const d = new Date(this.start);
+                        d.setHours(h, m, s, 0);
+                        this.start = d;
+                      }
+                    }
+                  }}
+                />
+              </div>
+              <div class="ldp-datetime-dual__time-item">
+                <div class="ldp-datetime-dual__time-label">结束时间</div>
+                <ldesign-time-picker 
+                  inline={true as any} 
+                  confirm={false as any} 
+                  showNow={false as any} 
+                  showSeconds={this.timeShowSeconds as any} 
+                  steps={this.timeSteps as any} 
+                  visibleItems={this.timeVisibleItems as any} 
+                  value={endTimeVal}
+                  onLdesignChange={(e: CustomEvent<string>) => {
+                    if (typeof e.detail === 'string') {
+                      this.timeEnd = e.detail;
+                      if (this.end) {
+                        const { h, m, s } = this.parseTime(e.detail);
+                        const d = new Date(this.end);
+                        d.setHours(h, m, s, 0);
+                        this.end = d;
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        );
+      }
       return (
         <div style={{ display: 'flex', gap: '8px' }}>
           {renderGrid(datesL, this.viewYear, this.viewMonth, 'left')}
@@ -1147,23 +1263,68 @@ private toggleYearSelector = () => {
             })
           ) : (
             // Date mode: render individual days with grid layout
-            dates.map((d, idx) => ([
-              hasWeekNumbers && idx % 7 === 0 ? <div class="ldp-weeknum">{d.weekNumber}</div> : null,
-              <button
-                class={{
-                  'ldp-day': true,
-                  'other': !d.isCurrentMonth,
-                  'today': d.isToday,
-                  'selected': d.isSelected,
-                  'disabled': d.isDisabled
-                }}
-                disabled={d.isDisabled}
-                onClick={() => this.handleDateClick(d.date, d.isDisabled)}
-                type="button"
-              >
-                {d.day}
-              </button>
-            ]))
+            dates.map((d, idx) => {
+              // In datetime range single-panel mode, show range highlights
+              let isStart = false, isEnd = false, inRange = false;
+              if (this.range && this.mode === 'datetime' && this.datetimeRangeSinglePanel) {
+                // Check if this date is the start date (ignoring time)
+                if (this.start) {
+                  const startDate = new Date(this.start.getFullYear(), this.start.getMonth(), this.start.getDate());
+                  const currentDate = new Date(d.date.getFullYear(), d.date.getMonth(), d.date.getDate());
+                  isStart = startDate.getTime() === currentDate.getTime();
+                }
+                // Check if this date is the end date (ignoring time)
+                if (this.end) {
+                  const endDate = new Date(this.end.getFullYear(), this.end.getMonth(), this.end.getDate());
+                  const currentDate = new Date(d.date.getFullYear(), d.date.getMonth(), d.date.getDate());
+                  isEnd = endDate.getTime() === currentDate.getTime();
+                }
+                // Check if in range (ignoring time)
+                if (this.start && this.end) {
+                  const startDate = new Date(this.start.getFullYear(), this.start.getMonth(), this.start.getDate());
+                  const endDate = new Date(this.end.getFullYear(), this.end.getMonth(), this.end.getDate());
+                  const currentDate = new Date(d.date.getFullYear(), d.date.getMonth(), d.date.getDate());
+                  inRange = currentDate > startDate && currentDate < endDate;
+                }
+                // Add hover preview for range selection - only when on 'end' panel
+                if (this.activePart === 'end' && this.start && this.hoverDate && !this.end) {
+                  const startDate = new Date(this.start.getFullYear(), this.start.getMonth(), this.start.getDate());
+                  const hoverDate = new Date(this.hoverDate.getFullYear(), this.hoverDate.getMonth(), this.hoverDate.getDate());
+                  const currentDate = new Date(d.date.getFullYear(), d.date.getMonth(), d.date.getDate());
+                  const minDate = startDate < hoverDate ? startDate : hoverDate;
+                  const maxDate = startDate > hoverDate ? startDate : hoverDate;
+                  if (currentDate >= minDate && currentDate <= maxDate && !isStart && !isEnd) {
+                    inRange = true;
+                  }
+                }
+              }
+              return ([
+                hasWeekNumbers && idx % 7 === 0 ? <div class="ldp-weeknum">{d.weekNumber}</div> : null,
+                <button
+                  class={{
+                    'ldp-day': true,
+                    'other': !d.isCurrentMonth,
+                    'today': d.isToday,
+                    'selected': d.isSelected && !(this.range && this.mode === 'datetime'),
+                    'in-range': inRange,
+                    'range-start': isStart,
+                    'range-end': isEnd,
+                    'disabled': d.isDisabled
+                  }}
+                  disabled={d.isDisabled}
+                  onClick={() => this.handleDateClick(d.date, d.isDisabled)}
+                  onMouseEnter={() => { 
+                    // Only track hover when on 'end' panel for datetime range
+                    if (this.range && this.mode === 'datetime' && this.activePart === 'end' && this.start && !this.end && !d.isDisabled) {
+                      this.hoverDate = d.date;
+                    }
+                  }}
+                  type="button"
+                >
+                  {d.day}
+                </button>
+              ]);
+            })
           )}
         </div>
         {this.mode === 'date' ? (
@@ -1175,19 +1336,95 @@ private toggleYearSelector = () => {
     );
   }
 
+  // 规范化起止时间：保证两端都存在，并把 timeStart/timeEnd 应用到日期对象上；必要时按大小排序
+  private normalizeDatetimeRange = () => {
+    if (!this.range || this.mode !== 'datetime') return;
+    // 确保开始端存在并应用时间
+    if (this.start) {
+      const { h: sh, m: sm, s: ss } = this.parseTime(this.timeStart);
+      const ns = new Date(this.start);
+      ns.setHours(sh, sm, ss, 0);
+      this.start = ns;
+    }
+    // 如果结束端不存在，则临时以开始端日期为基准
+    const endBase = this.end || (this.start ? new Date(this.start) : undefined);
+    if (endBase) {
+      const { h: eh, m: em, s: es } = this.parseTime(this.timeEnd);
+      const ne = new Date(endBase);
+      ne.setHours(eh, em, es, 0);
+      this.end = ne;
+    }
+    // 按时间先后排序（不改变用户选择，只保证输出有序）
+    if (this.start && this.end && this.end < this.start) {
+      const tmp = this.start; this.start = this.end; this.end = tmp;
+    }
+  };
+
+  private onConfirmRangeStep = () => {
+    if (!(this.range && this.mode === 'datetime')) return;
+    if (this.activePart === 'start') {
+      // 进入结束时间选择
+      // 如果尚未设置开始端，但已选中某天，则以所选日期+开始时间作为开始端，避免后续仅调时间时丢失
+      if (!this.start && this.selected) {
+        const { h, m, s } = this.parseTime(this.timeStart);
+        const d = new Date(this.selected); d.setHours(h, m, s, 0); this.start = d;
+      }
+      this.activePart = 'end';
+      // 不自动跳转月份；若结束端已有值，则同步所见；否则清空选中与时间，让用户自行选择
+      if (this.end) {
+        this.selected = new Date(this.end);
+        this.viewYear = this.end.getFullYear();
+        this.viewMonth = this.end.getMonth();
+        this.timeValue = this.timeEnd;
+      } else {
+        this.selected = undefined;
+        this.timeValue = undefined as any;
+      }
+    } else {
+      // 完成，规范化并提交，然后关闭
+      this.normalizeDatetimeRange();
+      this.commitRangeIfReady(false);
+      this.close();
+    }
+  };
+
   private renderDatetimePanel() {
-    const tVal = this.range ? (this.activePart === 'start' ? this.timeStart : this.timeEnd) : this.timeValue;
-    return (
-      <div class="ldp-datetime">
-        <div class="ldp-datetime__date">{this.renderDatePanel()}</div>
-        <div class="ldp-datetime__time">
-          <ldesign-time-picker inline={true as any} confirm={false as any} showNow={false as any} showSeconds={this.timeShowSeconds as any} steps={this.timeSteps as any} visibleItems={this.timeVisibleItems as any} value={tVal} onLdesignPick={this.onTimePick as any} onLdesignChange={this.onTimeChange as any} />
-          {this.range ? (
-            <div style={{ marginTop: '8px', color: '#909399', fontSize: '12px' }}>当前调整：{this.activePart === 'start' ? '开始时间' : '结束时间'}</div>
-          ) : null}
+    // For non-range datetime mode or range with single-panel, use the side-by-side layout
+    if (!this.range || (this.range && this.datetimeRangeSinglePanel)) {
+      const tVal = this.range
+        ? (this.activePart === 'start'
+            ? (this.start ? this.timeStart : undefined)
+            : (this.end ? this.timeEnd : undefined))
+        : this.timeValue;
+      const hasBoth = this.range ? !!(this.start && this.end) : false;
+      const confirmText = this.range ? ((this.activePart === 'start' && !hasBoth) ? '确定' : '完成') : '';
+      return (
+        <div class={{ 'ldp-datetime': true, 'ldp-datetime--range': this.range }} tabindex={-1 as any}>
+          <div class="ldp-datetime__date">{this.renderDatePanel()}</div>
+          <div class="ldp-datetime__time">
+            {this.range ? (
+              <div class="ldp-datetime__tabs">
+                <button class={{ 'ldp-tab': true, 'active': this.activePart === 'start' }} onClick={() => this.switchActivePart('start')} type="button">开始</button>
+                <button class={{ 'ldp-tab': true, 'active': this.activePart === 'end' }} onClick={() => this.switchActivePart('end')} type="button">结束</button>
+              </div>
+            ) : null}
+            <ldesign-time-picker inline={true as any} confirm={false as any} showNow={false as any} showSeconds={this.timeShowSeconds as any} steps={this.timeSteps as any} visibleItems={this.timeVisibleItems as any} value={tVal} onLdesignPick={this.onTimePick as any} onLdesignChange={this.onTimeChange as any} />
+            {this.range ? (
+              <div style={{ marginTop: '8px', color: '#909399', fontSize: '12px' }}>当前调整：{this.activePart === 'start' ? '开始时间' : '结束时间'}</div>
+            ) : null}
+            {this.range && confirmText ? (
+              <div class="ldp-datetime__footer">
+                <button class="ldp-btn ldp-btn--primary" type="button" onClick={this.onConfirmRangeStep}>{confirmText}</button>
+              </div>
+            ) : null}
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    
+    // For range datetime with dual-panel (datetimeRangeSinglePanel = false), render dual-panel layout inline
+    // This is now handled in renderDatePanel when detecting datetime && range && !datetimeRangeSinglePanel
+    return this.renderDatePanel();
   }
 
 private renderPanel() {

@@ -80,24 +80,25 @@
 
 ## Properties
 
-| Property           | Attribute            | Description | Type                                                               | Default        |
-| ------------------ | -------------------- | ----------- | ------------------------------------------------------------------ | -------------- |
-| `clearable`        | `clearable`          |             | `boolean`                                                          | `true`         |
-| `defaultValue`     | `default-value`      |             | `string \| string[]`                                               | `undefined`    |
-| `disabled`         | `disabled`           |             | `boolean`                                                          | `false`        |
-| `disabledDate`     | `disabled-date`      |             | `(d: Date) => boolean`                                             | `undefined`    |
-| `firstDayOfWeek`   | `first-day-of-week`  |             | `0 \| 1 \| 2 \| 3 \| 4 \| 5 \| 6`                                  | `1`            |
-| `format`           | `format`             |             | `string`                                                           | `'YYYY-MM-DD'` |
-| `maxDate`          | `max-date`           |             | `string`                                                           | `undefined`    |
-| `minDate`          | `min-date`           |             | `string`                                                           | `undefined`    |
-| `mode`             | `mode`               |             | `"date" \| "datetime" \| "month" \| "quarter" \| "week" \| "year"` | `'date'`       |
-| `placeholder`      | `placeholder`        |             | `string`                                                           | `'请选择日期'`      |
-| `range`            | `range`              |             | `boolean`                                                          | `false`        |
-| `showWeekNumbers`  | `show-week-numbers`  |             | `boolean`                                                          | `false`        |
-| `timeShowSeconds`  | `time-show-seconds`  |             | `boolean`                                                          | `true`         |
-| `timeSteps`        | `time-steps`         |             | `number[]`                                                         | `[1, 1, 1]`    |
-| `timeVisibleItems` | `time-visible-items` |             | `number`                                                           | `7`            |
-| `value`            | `value`              |             | `string \| string[]`                                               | `undefined`    |
+| Property                   | Attribute                     | Description | Type                                                               | Default        |
+| -------------------------- | ----------------------------- | ----------- | ------------------------------------------------------------------ | -------------- |
+| `clearable`                | `clearable`                   |             | `boolean`                                                          | `true`         |
+| `datetimeRangeSinglePanel` | `datetime-range-single-panel` |             | `boolean`                                                          | `true`         |
+| `defaultValue`             | `default-value`               |             | `string \| string[]`                                               | `undefined`    |
+| `disabled`                 | `disabled`                    |             | `boolean`                                                          | `false`        |
+| `disabledDate`             | `disabled-date`               |             | `(d: Date) => boolean`                                             | `undefined`    |
+| `firstDayOfWeek`           | `first-day-of-week`           |             | `0 \| 1 \| 2 \| 3 \| 4 \| 5 \| 6`                                  | `1`            |
+| `format`                   | `format`                      |             | `string`                                                           | `'YYYY-MM-DD'` |
+| `maxDate`                  | `max-date`                    |             | `string`                                                           | `undefined`    |
+| `minDate`                  | `min-date`                    |             | `string`                                                           | `undefined`    |
+| `mode`                     | `mode`                        |             | `"date" \| "datetime" \| "month" \| "quarter" \| "week" \| "year"` | `'date'`       |
+| `placeholder`              | `placeholder`                 |             | `string`                                                           | `'请选择日期'`      |
+| `range`                    | `range`                       |             | `boolean`                                                          | `false`        |
+| `showWeekNumbers`          | `show-week-numbers`           |             | `boolean`                                                          | `false`        |
+| `timeShowSeconds`          | `time-show-seconds`           |             | `boolean`                                                          | `true`         |
+| `timeSteps`                | `time-steps`                  |             | `number[]`                                                         | `[1, 1, 1]`    |
+| `timeVisibleItems`         | `time-visible-items`          |             | `number`                                                           | `7`            |
+| `value`                    | `value`                       |             | `string \| string[]`                                               | `undefined`    |
 
 
 ## Events
