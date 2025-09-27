@@ -1,557 +1,498 @@
 /**
- * @ldesign/cropper Vue 3 适配器
- * 
- * 提供Vue 3框架的完整集成支持
+ * @file Vue 3 适配器
+ * @description 为 Vue 3 提供的裁剪器组件
  */
 
-import { ref, onMounted, onUnmounted, watch, nextTick, defineComponent, h } from 'vue';
-import { Cropper } from '../../core/Cropper';
-import type { 
-  VueAdapter, 
-  VueCropperProps, 
-  VueCropperEvents, 
-  VueCropperComposable,
-  AdapterConfig 
-} from '../../types/adapters';
-import type { CropperConfig } from '../../types/config';
-import type { CropperEvent } from '../../types/events';
-import { generateId } from '../../utils/common';
+import {
+  defineComponent,
+  ref,
+  onMounted,
+  onUnmounted,
+  watch,
+  nextTick,
+  type PropType,
+  type Ref,
+} from 'vue'
 
-// ============================================================================
-// Vue 3 适配器实现
-// ============================================================================
+import { Cropper } from '../../core/Cropper'
+import type {
+  CropperOptions,
+  CropData,
+  ImageInfo,
+  ImageSource,
+  CropperEventType,
+  CropOutputOptions,
+} from '../../types'
 
 /**
- * Vue 3 适配器类
+ * Vue 裁剪器组件的 Props 类型
  */
-export class Vue3Adapter implements VueAdapter {
-  public readonly framework = 'vue' as const;
-  public readonly version = '1.0.0';
-  public initialized = false;
-  
-  private config: AdapterConfig;
-  private globalConfig: Partial<CropperConfig> = {};
+export interface VueCropperProps extends Omit<CropperOptions, 'container'> {
+  /** 图片源 */
+  src?: ImageSource
+  /** 是否立即初始化 */
+  immediate?: boolean
+  /** 容器类名 */
+  containerClass?: string
+  /** 容器样式 */
+  containerStyle?: Record<string, any>
+}
 
-  constructor(config: AdapterConfig = { framework: 'vue' }) {
-    this.config = {
-      componentName: 'LCropper',
-      directiveName: 'cropper',
-      development: false,
-      debug: false,
-      ...config
-    };
-  }
+/**
+ * Vue 裁剪器组件的 Emits 类型
+ */
+export interface VueCropperEmits {
+  ready: []
+  imageLoaded: [imageInfo: ImageInfo]
+  imageError: [error: Error]
+  cropChange: [cropData: CropData]
+  cropStart: []
+  cropMove: [cropData: CropData]
+  cropEnd: [cropData: CropData]
+  zoomChange: [scale: number]
+  rotationChange: [rotation: number]
+  flipChange: [flipX: boolean, flipY: boolean]
+  dragStart: []
+  dragMove: [cropData: CropData]
+  dragEnd: [cropData: CropData]
+  reset: []
+  destroy: []
+}
 
-  // ============================================================================
-  // 适配器生命周期
-  // ============================================================================
-
-  /**
-   * 初始化适配器
-   */
-  initialize(): void {
-    if (this.initialized) return;
+/**
+ * Vue 裁剪器组件
+ */
+export const VueCropper = defineComponent({
+  name: 'VueCropper',
+  props: {
+    // 图片源
+    src: {
+      type: [String, File, HTMLImageElement] as PropType<ImageSource>,
+      default: undefined,
+    },
     
-    this.globalConfig = this.config.globalConfig || {};
-    this.initialized = true;
+    // 裁剪器配置
+    shape: {
+      type: String as PropType<CropperOptions['shape']>,
+      default: 'rectangle',
+    },
+    aspectRatio: {
+      type: Number,
+      default: 0,
+    },
+    initialCrop: {
+      type: Object as PropType<CropperOptions['initialCrop']>,
+      default: undefined,
+    },
+    minCropSize: {
+      type: Object as PropType<CropperOptions['minCropSize']>,
+      default: undefined,
+    },
+    maxCropSize: {
+      type: Object as PropType<CropperOptions['maxCropSize']>,
+      default: undefined,
+    },
+    movable: {
+      type: Boolean,
+      default: true,
+    },
+    resizable: {
+      type: Boolean,
+      default: true,
+    },
+    zoomable: {
+      type: Boolean,
+      default: true,
+    },
+    rotatable: {
+      type: Boolean,
+      default: true,
+    },
+    zoomRange: {
+      type: Array as PropType<[number, number]>,
+      default: () => [0.1, 10],
+    },
+    backgroundColor: {
+      type: String,
+      default: '#000000',
+    },
+    maskOpacity: {
+      type: Number,
+      default: 0.6,
+    },
+    guides: {
+      type: Boolean,
+      default: true,
+    },
+    centerLines: {
+      type: Boolean,
+      default: false,
+    },
+    responsive: {
+      type: Boolean,
+      default: true,
+    },
+    touchEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    autoCrop: {
+      type: Boolean,
+      default: true,
+    },
+    preview: {
+      type: Object as PropType<CropperOptions['preview']>,
+      default: undefined,
+    },
     
-    if (this.config.debug) {
-      console.log('[LCropper Vue3] Adapter initialized');
-    }
-  }
+    // Vue 特有配置
+    immediate: {
+      type: Boolean,
+      default: true,
+    },
+    containerClass: {
+      type: String,
+      default: '',
+    },
+    containerStyle: {
+      type: Object as PropType<Record<string, any>>,
+      default: () => ({}),
+    },
+  },
 
-  /**
-   * 销毁适配器
-   */
-  destroy(): void {
-    this.initialized = false;
-    this.globalConfig = {};
-    
-    if (this.config.debug) {
-      console.log('[LCropper Vue3] Adapter destroyed');
-    }
-  }
+  emits: {
+    ready: () => true,
+    imageLoaded: (imageInfo: ImageInfo) => true,
+    imageError: (error: Error) => true,
+    cropChange: (cropData: CropData) => true,
+    cropStart: () => true,
+    cropMove: (cropData: CropData) => true,
+    cropEnd: (cropData: CropData) => true,
+    zoomChange: (scale: number) => true,
+    rotationChange: (rotation: number) => true,
+    flipChange: (flipX: boolean, flipY: boolean) => true,
+    dragStart: () => true,
+    dragMove: (cropData: CropData) => true,
+    dragEnd: (cropData: CropData) => true,
+    reset: () => true,
+    destroy: () => true,
+  },
 
-  // ============================================================================
-  // 组件适配器接口实现
-  // ============================================================================
+  setup(props, { emit, expose }) {
+    const containerRef: Ref<HTMLElement | null> = ref(null)
+    const cropperInstance: Ref<Cropper | null> = ref(null)
+    const isReady = ref(false)
 
-  /**
-   * 创建组件实例
-   */
-  createComponent(config: VueCropperProps): any {
-    return this.createVueComponent();
-  }
+    /**
+     * 初始化裁剪器
+     */
+    const initCropper = async () => {
+      if (!containerRef.value) return
 
-  /**
-   * 更新组件属性
-   */
-  updateProps(instance: any, props: Partial<VueCropperProps>): void {
-    // Vue 3 响应式系统会自动处理属性更新
-    if (this.config.debug) {
-      console.log('[LCropper Vue3] Props updated:', props);
-    }
-  }
-
-  /**
-   * 绑定事件
-   */
-  bindEvents(instance: any, events: Record<string, Function>): void {
-    // Vue 3 事件绑定通过组件属性处理
-    if (this.config.debug) {
-      console.log('[LCropper Vue3] Events bound:', Object.keys(events));
-    }
-  }
-
-  /**
-   * 解绑事件
-   */
-  unbindEvents(instance: any): void {
-    // Vue 3 会自动清理事件监听器
-    if (this.config.debug) {
-      console.log('[LCropper Vue3] Events unbound');
-    }
-  }
-
-  // ============================================================================
-  // Vue 特定方法
-  // ============================================================================
-
-  /**
-   * 安装Vue插件
-   */
-  install(app: any, options: AdapterConfig = {}): void {
-    // 合并配置
-    this.config = { ...this.config, ...options };
-    
-    // 初始化适配器
-    this.initialize();
-    
-    // 注册全局组件
-    app.component(this.config.componentName!, this.createVueComponent());
-    
-    // 注册全局指令
-    app.directive(this.config.directiveName!, this.createDirective());
-    
-    // 提供全局配置
-    app.provide('lcropper-config', this.globalConfig);
-    
-    if (this.config.debug) {
-      console.log('[LCropper Vue3] Plugin installed');
-    }
-  }
-
-  /**
-   * 创建组合式API
-   */
-  createComposable(): (props?: VueCropperProps) => VueCropperComposable {
-    return (props: VueCropperProps = {}) => {
-      return useCropper(props, this.globalConfig);
-    };
-  }
-
-  /**
-   * 创建Vue组件
-   */
-  createVueComponent(): any {
-    const adapter = this;
-    
-    return defineComponent({
-      name: this.config.componentName,
-      props: {
-        config: {
-          type: Object as () => Partial<CropperConfig>,
-          default: () => ({})
-        },
-        src: {
-          type: [String, Object] as () => string | File | HTMLImageElement,
-          default: undefined
-        },
-        disabled: {
-          type: Boolean,
-          default: false
-        },
-        readonly: {
-          type: Boolean,
-          default: false
-        },
-        class: {
-          type: String,
-          default: ''
-        },
-        style: {
-          type: Object,
-          default: () => ({})
+      try {
+        const options: CropperOptions = {
+          container: containerRef.value,
+          shape: props.shape,
+          aspectRatio: props.aspectRatio,
+          initialCrop: props.initialCrop,
+          minCropSize: props.minCropSize,
+          maxCropSize: props.maxCropSize,
+          movable: props.movable,
+          resizable: props.resizable,
+          zoomable: props.zoomable,
+          rotatable: props.rotatable,
+          zoomRange: props.zoomRange,
+          backgroundColor: props.backgroundColor,
+          maskOpacity: props.maskOpacity,
+          guides: props.guides,
+          centerLines: props.centerLines,
+          responsive: props.responsive,
+          touchEnabled: props.touchEnabled,
+          autoCrop: props.autoCrop,
+          preview: props.preview,
+          
+          // 事件回调
+          onReady: () => {
+            isReady.value = true
+            emit('ready')
+          },
         }
-      },
-      emits: [
-        'ready',
-        'imageLoad',
-        'cropChange',
-        'transform',
-        'export',
-        'error'
-      ],
-      setup(props, { emit, expose }) {
-        const containerId = `lcropper-${generateId()}`;
-        const containerRef = ref<HTMLElement | null>(null);
-        const cropper = ref<Cropper | null>(null);
-        const ready = ref(false);
-        const loading = ref(false);
-        const error = ref<Error | null>(null);
 
-        // 初始化裁剪器
-        const initialize = async (config?: Partial<CropperConfig>) => {
-          if (!containerRef.value) return;
-          
-          try {
-            loading.value = true;
-            error.value = null;
-            
-            const finalConfig = {
-              ...adapter.globalConfig,
-              ...props.config,
-              ...config,
-              container: containerRef.value
-            };
-            
-            cropper.value = new Cropper(containerRef.value, finalConfig);
-            
-            // 绑定事件
-            cropper.value.on('ready', (event: CropperEvent) => {
-              ready.value = true;
-              emit('ready', cropper.value);
-            });
-            
-            cropper.value.on('imageLoad', (event: CropperEvent) => {
-              emit('imageLoad', event);
-            });
-            
-            cropper.value.on('cropChange', (event: CropperEvent) => {
-              emit('cropChange', event);
-            });
-            
-            cropper.value.on('transform', (event: CropperEvent) => {
-              emit('transform', event);
-            });
-            
-            cropper.value.on('export', (event: CropperEvent) => {
-              emit('export', event);
-            });
-            
-            cropper.value.on('error', (err: Error) => {
-              error.value = err;
-              emit('error', err);
-            });
-            
-            // 设置图片源
-            if (props.src) {
-              await cropper.value.setImage(props.src);
-            }
-            
-          } catch (err) {
-            error.value = err as Error;
-            emit('error', err);
-          } finally {
-            loading.value = false;
-          }
-        };
+        cropperInstance.value = new Cropper(options)
+        bindEvents()
 
-        // 设置图片源
-        const setImage = async (src: string | File | HTMLImageElement) => {
-          if (!cropper.value) return;
-          
-          try {
-            loading.value = true;
-            await cropper.value.setImage(src);
-          } catch (err) {
-            error.value = err as Error;
-            emit('error', err);
-          } finally {
-            loading.value = false;
-          }
-        };
-
-        // 获取裁剪数据
-        const getCropData = () => {
-          return cropper.value?.getCropData();
-        };
-
-        // 导出图片
-        const exportImage = async (options?: any) => {
-          if (!cropper.value) throw new Error('Cropper not initialized');
-          return await cropper.value.export(options);
-        };
-
-        // 重置裁剪器
-        const reset = () => {
-          cropper.value?.reset();
-        };
-
-        // 销毁裁剪器
-        const destroy = () => {
-          if (cropper.value) {
-            cropper.value.destroy();
-            cropper.value = null;
-            ready.value = false;
-          }
-        };
-
-        // 监听属性变化
-        watch(() => props.src, (newSrc) => {
-          if (newSrc && cropper.value) {
-            setImage(newSrc);
-          }
-        });
-
-        watch(() => props.disabled, (disabled) => {
-          if (cropper.value) {
-            cropper.value.setEnabled(!disabled);
-          }
-        });
-
-        // 生命周期
-        onMounted(async () => {
-          await nextTick();
-          await initialize();
-        });
-
-        onUnmounted(() => {
-          destroy();
-        });
-
-        // 暴露方法给模板引用
-        expose({
-          cropper,
-          initialize,
-          setImage,
-          getCropData,
-          exportImage,
-          reset,
-          destroy
-        });
-
-        return {
-          containerId,
-          containerRef,
-          cropper,
-          ready,
-          loading,
-          error,
-          initialize,
-          setImage,
-          getCropData,
-          exportImage,
-          reset,
-          destroy
-        };
-      },
-      render() {
-        return h('div', {
-          ref: 'containerRef',
-          id: this.containerId,
-          class: [
-            'lcropper-container',
-            this.class,
-            {
-              'lcropper-disabled': this.disabled,
-              'lcropper-readonly': this.readonly,
-              'lcropper-loading': this.loading
-            }
-          ],
-          style: this.style
-        }, this.$slots.default?.());
+        // 如果有初始图片源，加载它
+        if (props.src) {
+          await setImage(props.src)
+        }
+      } catch (error) {
+        console.error('初始化裁剪器失败:', error)
+        emit('imageError', error as Error)
       }
-    });
-  }
+    }
 
-  /**
-   * 创建指令
-   */
-  createDirective(): any {
-    const adapter = this;
-    
+    /**
+     * 绑定事件
+     */
+    const bindEvents = () => {
+      if (!cropperInstance.value) return
+
+      const cropper = cropperInstance.value
+
+      cropper.on('imageLoaded' as CropperEventType, (event) => {
+        emit('imageLoaded', event.imageInfo!)
+      })
+
+      cropper.on('imageError' as CropperEventType, (event) => {
+        emit('imageError', event.error)
+      })
+
+      cropper.on('cropChange' as CropperEventType, (event) => {
+        emit('cropChange', event.cropData!)
+      })
+
+      cropper.on('cropStart' as CropperEventType, () => {
+        emit('cropStart')
+      })
+
+      cropper.on('cropMove' as CropperEventType, (event) => {
+        emit('cropMove', event.cropData!)
+      })
+
+      cropper.on('cropEnd' as CropperEventType, (event) => {
+        emit('cropEnd', event.cropData!)
+      })
+
+      cropper.on('zoomChange' as CropperEventType, (event) => {
+        emit('zoomChange', event.scale || 1)
+      })
+
+      cropper.on('rotationChange' as CropperEventType, (event) => {
+        emit('rotationChange', event.rotation || 0)
+      })
+
+      cropper.on('flipChange' as CropperEventType, (event) => {
+        emit('flipChange', event.flipX || false, event.flipY || false)
+      })
+
+      cropper.on('dragStart' as CropperEventType, () => {
+        emit('dragStart')
+      })
+
+      cropper.on('dragMove' as CropperEventType, (event) => {
+        emit('dragMove', event.cropData!)
+      })
+
+      cropper.on('dragEnd' as CropperEventType, (event) => {
+        emit('dragEnd', event.cropData!)
+      })
+
+      cropper.on('reset' as CropperEventType, () => {
+        emit('reset')
+      })
+
+      cropper.on('destroy' as CropperEventType, () => {
+        emit('destroy')
+      })
+    }
+
+    /**
+     * 设置图片
+     */
+    const setImage = async (src: ImageSource) => {
+      if (!cropperInstance.value) return
+      await cropperInstance.value.setImage(src)
+    }
+
+    /**
+     * 获取裁剪数据
+     */
+    const getCropData = (): CropData | null => {
+      return cropperInstance.value?.getCropData() || null
+    }
+
+    /**
+     * 设置裁剪数据
+     */
+    const setCropData = (data: Partial<CropData>) => {
+      cropperInstance.value?.setCropData(data)
+    }
+
+    /**
+     * 获取裁剪后的 Canvas
+     */
+    const getCroppedCanvas = (options?: CropOutputOptions): HTMLCanvasElement | null => {
+      return cropperInstance.value?.getCroppedCanvas(options) || null
+    }
+
+    /**
+     * 获取裁剪后的 DataURL
+     */
+    const getCroppedDataURL = (options?: CropOutputOptions): string | null => {
+      return cropperInstance.value?.getCroppedDataURL(options) || null
+    }
+
+    /**
+     * 获取裁剪后的 Blob
+     */
+    const getCroppedBlob = async (options?: CropOutputOptions): Promise<Blob | null> => {
+      if (!cropperInstance.value) return null
+      return await cropperInstance.value.getCroppedBlob(options)
+    }
+
+    /**
+     * 缩放
+     */
+    const zoom = (scale: number) => {
+      cropperInstance.value?.zoom(scale)
+    }
+
+    /**
+     * 放大
+     */
+    const zoomIn = (delta?: number) => {
+      cropperInstance.value?.zoomIn(delta)
+    }
+
+    /**
+     * 缩小
+     */
+    const zoomOut = (delta?: number) => {
+      cropperInstance.value?.zoomOut(delta)
+    }
+
+    /**
+     * 旋转
+     */
+    const rotate = (angle: number) => {
+      cropperInstance.value?.rotate(angle)
+    }
+
+    /**
+     * 向左旋转
+     */
+    const rotateLeft = () => {
+      cropperInstance.value?.rotateLeft()
+    }
+
+    /**
+     * 向右旋转
+     */
+    const rotateRight = () => {
+      cropperInstance.value?.rotateRight()
+    }
+
+    /**
+     * 翻转
+     */
+    const flip = (horizontal: boolean, vertical: boolean) => {
+      cropperInstance.value?.flip(horizontal, vertical)
+    }
+
+    /**
+     * 水平翻转
+     */
+    const flipHorizontal = () => {
+      cropperInstance.value?.flipHorizontal()
+    }
+
+    /**
+     * 垂直翻转
+     */
+    const flipVertical = () => {
+      cropperInstance.value?.flipVertical()
+    }
+
+    /**
+     * 重置
+     */
+    const reset = () => {
+      cropperInstance.value?.reset()
+    }
+
+    /**
+     * 销毁
+     */
+    const destroy = () => {
+      cropperInstance.value?.destroy()
+      cropperInstance.value = null
+      isReady.value = false
+    }
+
+    // 监听 src 变化
+    watch(
+      () => props.src,
+      async (newSrc) => {
+        if (newSrc && cropperInstance.value) {
+          await setImage(newSrc)
+        }
+      }
+    )
+
+    // 组件挂载
+    onMounted(async () => {
+      if (props.immediate) {
+        await nextTick()
+        await initCropper()
+      }
+    })
+
+    // 组件卸载
+    onUnmounted(() => {
+      destroy()
+    })
+
+    // 暴露方法给父组件
+    expose({
+      cropper: cropperInstance,
+      isReady,
+      initCropper,
+      setImage,
+      getCropData,
+      setCropData,
+      getCroppedCanvas,
+      getCroppedDataURL,
+      getCroppedBlob,
+      zoom,
+      zoomIn,
+      zoomOut,
+      rotate,
+      rotateLeft,
+      rotateRight,
+      flip,
+      flipHorizontal,
+      flipVertical,
+      reset,
+      destroy,
+    })
+
     return {
-      mounted(el: HTMLElement, binding: any) {
-        const config = {
-          ...adapter.globalConfig,
-          ...binding.value,
-          container: el
-        };
-        
-        const cropper = new Cropper(el, config);
-        
-        // 将实例存储在元素上
-        (el as any).__lcropper__ = cropper;
-        
-        if (adapter.config.debug) {
-          console.log('[LCropper Vue3] Directive mounted');
-        }
-      },
-      
-      updated(el: HTMLElement, binding: any) {
-        const cropper = (el as any).__lcropper__;
-        if (cropper && binding.value !== binding.oldValue) {
-          cropper.updateConfig(binding.value);
-        }
-      },
-      
-      unmounted(el: HTMLElement) {
-        const cropper = (el as any).__lcropper__;
-        if (cropper) {
-          cropper.destroy();
-          delete (el as any).__lcropper__;
-        }
-        
-        if (adapter.config.debug) {
-          console.log('[LCropper Vue3] Directive unmounted');
-        }
-      }
-    };
-  }
-}
-
-// ============================================================================
-// 组合式API
-// ============================================================================
-
-/**
- * 使用裁剪器的组合式API
- */
-export function useCropper(
-  props: VueCropperProps = {},
-  globalConfig: Partial<CropperConfig> = {}
-): VueCropperComposable {
-  const containerRef = ref<HTMLElement | null>(null);
-  const cropper = ref<Cropper | null>(null);
-  const ready = ref(false);
-  const loading = ref(false);
-  const error = ref<Error | null>(null);
-
-  // 初始化裁剪器
-  const initialize = async (config?: Partial<CropperConfig>) => {
-    if (!containerRef.value) {
-      throw new Error('Container element not found');
+      containerRef,
+      isReady,
     }
-    
-    try {
-      loading.value = true;
-      error.value = null;
-      
-      const finalConfig = {
-        ...globalConfig,
-        ...props.config,
-        ...config,
-        container: containerRef.value
-      };
-      
-      cropper.value = new Cropper(containerRef.value, finalConfig);
-      
-      cropper.value.on('ready', () => {
-        ready.value = true;
-      });
-      
-      cropper.value.on('error', (err: Error) => {
-        error.value = err;
-      });
-      
-      if (props.src) {
-        await cropper.value.setImage(props.src);
-      }
-      
-    } catch (err) {
-      error.value = err as Error;
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
+  },
 
-  // 设置图片源
-  const setImage = async (src: string | File | HTMLImageElement) => {
-    if (!cropper.value) {
-      throw new Error('Cropper not initialized');
-    }
-    
-    try {
-      loading.value = true;
-      await cropper.value.setImage(src);
-    } catch (err) {
-      error.value = err as Error;
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
+  render() {
+    const containerClass = [
+      'vue-cropper-container',
+      this.containerClass,
+    ].filter(Boolean).join(' ')
 
-  // 获取裁剪数据
-  const getCropData = () => {
-    return cropper.value?.getCropData();
-  };
+    return (
+      <div
+        ref="containerRef"
+        class={containerClass}
+        style={{
+          width: '100%',
+          height: '400px',
+          ...this.containerStyle,
+        }}
+      />
+    )
+  },
+})
 
-  // 导出图片
-  const exportImage = async (options?: any) => {
-    if (!cropper.value) {
-      throw new Error('Cropper not initialized');
-    }
-    return await cropper.value.export(options);
-  };
+export default VueCropper
 
-  // 重置裁剪器
-  const reset = () => {
-    cropper.value?.reset();
-  };
-
-  // 销毁裁剪器
-  const destroy = () => {
-    if (cropper.value) {
-      cropper.value.destroy();
-      cropper.value = null;
-      ready.value = false;
-    }
-  };
-
-  // 清理
-  onUnmounted(() => {
-    destroy();
-  });
-
-  return {
-    cropper,
-    containerRef,
-    ready,
-    loading,
-    error,
-    initialize,
-    setImage,
-    getCropData,
-    exportImage,
-    reset,
-    destroy
-  };
-}
-
-// ============================================================================
-// 默认导出
-// ============================================================================
-
-/**
- * 创建Vue 3适配器实例
- */
-export function createVue3Adapter(config?: AdapterConfig): Vue3Adapter {
-  return new Vue3Adapter(config);
-}
-
-/**
- * 默认适配器实例
- */
-export const vueAdapter = createVue3Adapter();
-
-/**
- * Vue 3插件安装函数
- */
-export default {
-  install(app: any, options?: AdapterConfig) {
-    vueAdapter.install(app, options);
-  }
-};
+// 类型导出
+export type VueCropperInstance = InstanceType<typeof VueCropper>

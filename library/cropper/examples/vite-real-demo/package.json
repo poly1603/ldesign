@@ -1,0 +1,25 @@
+{
+  "name": "cropper-vite-real-demo",
+  "version": "1.0.0",
+  "description": "真实库演示 - 使用 src 中的 Cropper 类",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "cropper",
+    "image",
+    "canvas",
+    "vite",
+    "demo",
+    "real"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT"
+}

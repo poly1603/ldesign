@@ -1,541 +1,379 @@
 /**
- * @ldesign/cropper 图片处理工具函数
- * 
- * 提供图片加载、格式检测、尺寸计算等图片处理工具函数
+ * @file 图片处理工具函数
+ * @description 提供图片加载、处理和转换相关的工具函数
  */
 
-import type { ImageSource, ImageFormat, Size, Point } from '../types';
-
-// ============================================================================
-// 图片加载和验证
-// ============================================================================
+import type { ImageSource, ImageInfo, ImageFormat, Size } from '../types'
+import { loadImage, readFileAsDataURL, createCanvas, getCanvasContext } from './dom'
 
 /**
- * 加载图片
- * @param src 图片源
- * @param crossOrigin 跨域设置
- * @returns Promise<HTMLImageElement>
+ * 加载图片源
  */
-export function loadImage(
-  src: ImageSource,
-  crossOrigin?: 'anonymous' | 'use-credentials'
-): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    if (src instanceof HTMLImageElement) {
-      if (src.complete && src.naturalWidth > 0) {
-        resolve(src);
-      } else {
+export async function loadImageSource(source: ImageSource): Promise<HTMLImageElement> {
+  if (source instanceof HTMLImageElement) {
+    // 如果图片还没有加载完成，等待加载
+    if (!source.complete) {
+      await new Promise<void>((resolve, reject) => {
         const onLoad = () => {
-          src.removeEventListener('load', onLoad);
-          src.removeEventListener('error', onError);
-          resolve(src);
-        };
+          source.removeEventListener('load', onLoad)
+          source.removeEventListener('error', onError)
+          resolve()
+        }
         const onError = () => {
-          src.removeEventListener('load', onLoad);
-          src.removeEventListener('error', onError);
-          reject(new Error('Failed to load image'));
-        };
-        src.addEventListener('load', onLoad);
-        src.addEventListener('error', onError);
-      }
-      return;
+          source.removeEventListener('load', onLoad)
+          source.removeEventListener('error', onError)
+          reject(new Error('Failed to load image'))
+        }
+        source.addEventListener('load', onLoad)
+        source.addEventListener('error', onError)
+      })
     }
-
-    const img = new Image();
-    
-    if (crossOrigin) {
-      img.crossOrigin = crossOrigin;
-    }
-
-    const onLoad = () => {
-      img.removeEventListener('load', onLoad);
-      img.removeEventListener('error', onError);
-      resolve(img);
-    };
-
-    const onError = () => {
-      img.removeEventListener('load', onLoad);
-      img.removeEventListener('error', onError);
-      reject(new Error(`Failed to load image: ${typeof src === 'string' ? src : 'File'}`));
-    };
-
-    img.addEventListener('load', onLoad);
-    img.addEventListener('error', onError);
-
-    if (typeof src === 'string') {
-      img.src = src;
-    } else if (src instanceof File) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = () => {
-        reject(new Error('Failed to read file'));
-      };
-      reader.readAsDataURL(src);
-    } else if (src instanceof HTMLCanvasElement) {
-      img.src = src.toDataURL();
-    } else if (src instanceof ImageData) {
-      const canvas = document.createElement('canvas');
-      canvas.width = src.width;
-      canvas.height = src.height;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.putImageData(src, 0, 0);
-        img.src = canvas.toDataURL();
-      } else {
-        reject(new Error('Failed to create canvas context'));
-      }
-    }
-  });
+    return source
+  }
+  
+  if (source instanceof HTMLCanvasElement) {
+    const img = new Image()
+    img.src = source.toDataURL()
+    return loadImage(img.src)
+  }
+  
+  if (source instanceof File) {
+    const dataURL = await readFileAsDataURL(source)
+    return loadImage(dataURL)
+  }
+  
+  if (typeof source === 'string') {
+    return loadImage(source)
+  }
+  
+  throw new Error('Unsupported image source type')
 }
 
 /**
- * 检查是否为有效的图片文件
- * @param file 文件对象
- * @returns 是否为有效图片
+ * 获取图片信息
  */
-export function isValidImageFile(file: File): boolean {
-  const validTypes = [
-    'image/jpeg',
-    'image/jpg',
-    'image/png',
-    'image/gif',
-    'image/webp',
-    'image/bmp',
-    'image/svg+xml'
-  ];
-  return validTypes.includes(file.type);
-}
-
-/**
- * 检查图片URL是否有效
- * @param url 图片URL
- * @returns Promise<boolean>
- */
-export function isValidImageUrl(url: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src = url;
-  });
-}
-
-/**
- * 获取图片的MIME类型
- * @param file 文件对象
- * @returns MIME类型
- */
-export function getImageMimeType(file: File): string {
-  return file.type;
-}
-
-/**
- * 从文件扩展名推断MIME类型
- * @param filename 文件名
- * @returns MIME类型
- */
-export function getMimeTypeFromExtension(filename: string): string {
-  const ext = filename.toLowerCase().split('.').pop();
-  const mimeTypes: Record<string, string> = {
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'png': 'image/png',
-    'gif': 'image/gif',
-    'webp': 'image/webp',
-    'bmp': 'image/bmp',
-    'svg': 'image/svg+xml'
-  };
-  return mimeTypes[ext || ''] || 'image/jpeg';
-}
-
-// ============================================================================
-// 图片尺寸和比例计算
-// ============================================================================
-
-/**
- * 获取图片的自然尺寸
- * @param img 图片元素
- * @returns 自然尺寸
- */
-export function getNaturalSize(img: HTMLImageElement): Size {
+export function getImageInfo(image: HTMLImageElement, file?: File): ImageInfo {
   return {
-    width: img.naturalWidth,
-    height: img.naturalHeight
-  };
-}
-
-/**
- * 获取图片的显示尺寸
- * @param img 图片元素
- * @returns 显示尺寸
- */
-export function getDisplaySize(img: HTMLImageElement): Size {
-  return {
-    width: img.width,
-    height: img.height
-  };
-}
-
-/**
- * 计算图片的宽高比
- * @param size 图片尺寸
- * @returns 宽高比
- */
-export function getAspectRatio(size: Size): number {
-  return size.height === 0 ? 0 : size.width / size.height;
-}
-
-/**
- * 根据宽高比计算适合的尺寸
- * @param originalSize 原始尺寸
- * @param containerSize 容器尺寸
- * @param mode 适应模式
- * @returns 计算后的尺寸
- */
-export function calculateFitSize(
-  originalSize: Size,
-  containerSize: Size,
-  mode: 'contain' | 'cover' | 'fill' = 'contain'
-): Size {
-  const originalRatio = getAspectRatio(originalSize);
-  const containerRatio = getAspectRatio(containerSize);
-
-  switch (mode) {
-    case 'contain': {
-      if (originalRatio > containerRatio) {
-        // 图片更宽，以宽度为准
-        return {
-          width: containerSize.width,
-          height: containerSize.width / originalRatio
-        };
-      } else {
-        // 图片更高，以高度为准
-        return {
-          width: containerSize.height * originalRatio,
-          height: containerSize.height
-        };
-      }
-    }
-    case 'cover': {
-      if (originalRatio > containerRatio) {
-        // 图片更宽，以高度为准
-        return {
-          width: containerSize.height * originalRatio,
-          height: containerSize.height
-        };
-      } else {
-        // 图片更高，以宽度为准
-        return {
-          width: containerSize.width,
-          height: containerSize.width / originalRatio
-        };
-      }
-    }
-    case 'fill':
-      return containerSize;
-    default:
-      return originalSize;
+    naturalWidth: image.naturalWidth,
+    naturalHeight: image.naturalHeight,
+    width: image.width || image.naturalWidth,
+    height: image.height || image.naturalHeight,
+    aspectRatio: image.naturalWidth / image.naturalHeight,
+    src: image.src,
+    size: file?.size,
+    type: file?.type,
   }
 }
 
 /**
- * 计算图片在容器中的居中位置
- * @param imageSize 图片尺寸
- * @param containerSize 容器尺寸
- * @returns 居中位置
+ * 创建图片的Canvas副本
  */
-export function calculateCenterPosition(imageSize: Size, containerSize: Size): Point {
-  return {
-    x: (containerSize.width - imageSize.width) / 2,
-    y: (containerSize.height - imageSize.height) / 2
-  };
-}
-
-/**
- * 根据最大尺寸限制计算缩放后的尺寸
- * @param originalSize 原始尺寸
- * @param maxSize 最大尺寸
- * @returns 缩放后的尺寸
- */
-export function calculateScaledSize(originalSize: Size, maxSize: Size): Size {
-  const scaleX = maxSize.width / originalSize.width;
-  const scaleY = maxSize.height / originalSize.height;
-  const scale = Math.min(scaleX, scaleY, 1); // 不放大，只缩小
-
-  return {
-    width: originalSize.width * scale,
-    height: originalSize.height * scale
-  };
-}
-
-// ============================================================================
-// 图片格式转换
-// ============================================================================
-
-/**
- * 将图片转换为Canvas
- * @param img 图片元素
- * @param size 目标尺寸（可选）
- * @returns Canvas元素
- */
-export function imageToCanvas(img: HTMLImageElement, size?: Size): HTMLCanvasElement {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+export function imageToCanvas(
+  image: HTMLImageElement,
+  size?: Size
+): HTMLCanvasElement {
+  const canvas = createCanvas()
+  const ctx = getCanvasContext(canvas)
   
   if (!ctx) {
-    throw new Error('Failed to get canvas context');
+    throw new Error('Failed to get canvas context')
   }
-
-  const targetSize = size || getNaturalSize(img);
-  canvas.width = targetSize.width;
-  canvas.height = targetSize.height;
-
-  ctx.drawImage(img, 0, 0, targetSize.width, targetSize.height);
-  return canvas;
+  
+  const width = size?.width || image.naturalWidth
+  const height = size?.height || image.naturalHeight
+  
+  canvas.width = width
+  canvas.height = height
+  
+  ctx.drawImage(image, 0, 0, width, height)
+  
+  return canvas
 }
 
 /**
- * 将Canvas转换为Blob
- * @param canvas Canvas元素
- * @param format 输出格式
- * @param quality 质量（0-1）
- * @returns Promise<Blob>
+ * 调整图片大小
+ */
+export function resizeImage(
+  image: HTMLImageElement,
+  targetSize: Size,
+  quality: number = 0.9
+): HTMLCanvasElement {
+  const canvas = createCanvas(targetSize.width, targetSize.height)
+  const ctx = getCanvasContext(canvas)
+  
+  if (!ctx) {
+    throw new Error('Failed to get canvas context')
+  }
+  
+  // 使用高质量的图片缩放
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
+  
+  ctx.drawImage(image, 0, 0, targetSize.width, targetSize.height)
+  
+  return canvas
+}
+
+/**
+ * 旋转图片
+ */
+export function rotateImage(
+  image: HTMLImageElement,
+  angle: number
+): HTMLCanvasElement {
+  const canvas = createCanvas()
+  const ctx = getCanvasContext(canvas)
+  
+  if (!ctx) {
+    throw new Error('Failed to get canvas context')
+  }
+  
+  const rad = (angle * Math.PI) / 180
+  const cos = Math.abs(Math.cos(rad))
+  const sin = Math.abs(Math.sin(rad))
+  
+  // 计算旋转后的尺寸
+  const newWidth = image.naturalWidth * cos + image.naturalHeight * sin
+  const newHeight = image.naturalWidth * sin + image.naturalHeight * cos
+  
+  canvas.width = newWidth
+  canvas.height = newHeight
+  
+  // 移动到中心点
+  ctx.translate(newWidth / 2, newHeight / 2)
+  
+  // 旋转
+  ctx.rotate(rad)
+  
+  // 绘制图片
+  ctx.drawImage(
+    image,
+    -image.naturalWidth / 2,
+    -image.naturalHeight / 2,
+    image.naturalWidth,
+    image.naturalHeight
+  )
+  
+  return canvas
+}
+
+/**
+ * 翻转图片
+ */
+export function flipImage(
+  image: HTMLImageElement,
+  horizontal: boolean = false,
+  vertical: boolean = false
+): HTMLCanvasElement {
+  const canvas = createCanvas(image.naturalWidth, image.naturalHeight)
+  const ctx = getCanvasContext(canvas)
+  
+  if (!ctx) {
+    throw new Error('Failed to get canvas context')
+  }
+  
+  ctx.save()
+  
+  // 设置翻转
+  const scaleX = horizontal ? -1 : 1
+  const scaleY = vertical ? -1 : 1
+  
+  ctx.scale(scaleX, scaleY)
+  
+  // 调整绘制位置
+  const x = horizontal ? -image.naturalWidth : 0
+  const y = vertical ? -image.naturalHeight : 0
+  
+  ctx.drawImage(image, x, y, image.naturalWidth, image.naturalHeight)
+  
+  ctx.restore()
+  
+  return canvas
+}
+
+/**
+ * 裁剪图片
+ */
+export function cropImage(
+  image: HTMLImageElement,
+  cropArea: { x: number; y: number; width: number; height: number },
+  outputSize?: Size
+): HTMLCanvasElement {
+  const canvas = createCanvas()
+  const ctx = getCanvasContext(canvas)
+  
+  if (!ctx) {
+    throw new Error('Failed to get canvas context')
+  }
+  
+  const outputWidth = outputSize?.width || cropArea.width
+  const outputHeight = outputSize?.height || cropArea.height
+  
+  canvas.width = outputWidth
+  canvas.height = outputHeight
+  
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
+  
+  ctx.drawImage(
+    image,
+    cropArea.x,
+    cropArea.y,
+    cropArea.width,
+    cropArea.height,
+    0,
+    0,
+    outputWidth,
+    outputHeight
+  )
+  
+  return canvas
+}
+
+/**
+ * Canvas转换为Blob
  */
 export function canvasToBlob(
   canvas: HTMLCanvasElement,
-  format: ImageFormat = 'image/png',
-  quality: number = 0.92
+  format: ImageFormat = ImageFormat.PNG,
+  quality: number = 0.9
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
         if (blob) {
-          resolve(blob);
+          resolve(blob)
         } else {
-          reject(new Error('Failed to convert canvas to blob'));
+          reject(new Error('Failed to convert canvas to blob'))
         }
       },
       format,
       quality
-    );
-  });
+    )
+  })
 }
 
 /**
- * 将Canvas转换为DataURL
- * @param canvas Canvas元素
- * @param format 输出格式
- * @param quality 质量（0-1）
- * @returns DataURL字符串
+ * Canvas转换为DataURL
  */
 export function canvasToDataURL(
   canvas: HTMLCanvasElement,
-  format: ImageFormat = 'image/png',
-  quality: number = 0.92
+  format: ImageFormat = ImageFormat.PNG,
+  quality: number = 0.9
 ): string {
-  return canvas.toDataURL(format, quality);
+  return canvas.toDataURL(format, quality)
 }
 
 /**
- * 将图片转换为指定格式的Blob
- * @param img 图片元素
- * @param format 输出格式
- * @param quality 质量（0-1）
- * @param size 目标尺寸（可选）
- * @returns Promise<Blob>
+ * 检查图片格式
  */
-export function convertImageFormat(
-  img: HTMLImageElement,
-  format: ImageFormat,
-  quality: number = 0.92,
-  size?: Size
-): Promise<Blob> {
-  const canvas = imageToCanvas(img, size);
-  return canvasToBlob(canvas, format, quality);
-}
-
-// ============================================================================
-// 图片压缩和优化
-// ============================================================================
-
-/**
- * 压缩图片
- * @param img 图片元素
- * @param maxSize 最大尺寸
- * @param quality 质量（0-1）
- * @param format 输出格式
- * @returns Promise<Blob>
- */
-export function compressImage(
-  img: HTMLImageElement,
-  maxSize: Size,
-  quality: number = 0.8,
-  format: ImageFormat = 'image/jpeg'
-): Promise<Blob> {
-  const originalSize = getNaturalSize(img);
-  const targetSize = calculateScaledSize(originalSize, maxSize);
-  return convertImageFormat(img, format, quality, targetSize);
-}
-
-/**
- * 计算压缩后的文件大小（估算）
- * @param originalSize 原始尺寸
- * @param targetSize 目标尺寸
- * @param quality 质量
- * @param format 格式
- * @returns 估算的文件大小（字节）
- */
-export function estimateCompressedSize(
-  originalSize: Size,
-  targetSize: Size,
-  quality: number,
-  format: ImageFormat
-): number {
-  const pixelCount = targetSize.width * targetSize.height;
-  let bytesPerPixel: number;
-
-  switch (format) {
-    case 'image/jpeg':
-      bytesPerPixel = 0.5 + (quality * 2); // JPEG压缩率估算
-      break;
-    case 'image/png':
-      bytesPerPixel = 3; // PNG通常较大
-      break;
-    case 'image/webp':
-      bytesPerPixel = 0.3 + (quality * 1.5); // WebP压缩率更好
-      break;
-    default:
-      bytesPerPixel = 2;
-  }
-
-  return Math.round(pixelCount * bytesPerPixel);
-}
-
-// ============================================================================
-// 图片信息提取
-// ============================================================================
-
-/**
- * 获取图片的基本信息
- * @param img 图片元素
- * @returns 图片信息对象
- */
-export function getImageInfo(img: HTMLImageElement): {
-  naturalSize: Size;
-  displaySize: Size;
-  aspectRatio: number;
-  src: string;
-} {
-  const naturalSize = getNaturalSize(img);
-  const displaySize = getDisplaySize(img);
+export function getImageFormat(file: File): ImageFormat | null {
+  const type = file.type.toLowerCase()
   
-  return {
-    naturalSize,
-    displaySize,
-    aspectRatio: getAspectRatio(naturalSize),
-    src: img.src
-  };
+  if (type === 'image/png') return ImageFormat.PNG
+  if (type === 'image/jpeg' || type === 'image/jpg') return ImageFormat.JPEG
+  if (type === 'image/webp') return ImageFormat.WEBP
+  
+  return null
 }
 
 /**
- * 从文件获取图片信息
- * @param file 文件对象
- * @returns Promise<图片信息>
+ * 检查是否为支持的图片格式
  */
-export function getImageInfoFromFile(file: File): Promise<{
-  naturalSize: Size;
-  aspectRatio: number;
-  fileSize: number;
-  mimeType: string;
-  name: string;
-}> {
-  return new Promise((resolve, reject) => {
-    if (!isValidImageFile(file)) {
-      reject(new Error('Invalid image file'));
-      return;
-    }
-
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-
-    img.onload = () => {
-      const naturalSize = getNaturalSize(img);
-      URL.revokeObjectURL(url);
-      
-      resolve({
-        naturalSize,
-        aspectRatio: getAspectRatio(naturalSize),
-        fileSize: file.size,
-        mimeType: file.type,
-        name: file.name
-      });
-    };
-
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Failed to load image from file'));
-    };
-
-    img.src = url;
-  });
+export function isSupportedImageFormat(file: File): boolean {
+  return getImageFormat(file) !== null
 }
 
-// ============================================================================
-// 图片预览和缩略图
-// ============================================================================
+/**
+ * 获取图片的主要颜色
+ */
+export function getImageDominantColor(image: HTMLImageElement): string {
+  const canvas = createCanvas(1, 1)
+  const ctx = getCanvasContext(canvas)
+  
+  if (!ctx) {
+    return '#000000'
+  }
+  
+  ctx.drawImage(image, 0, 0, 1, 1)
+  const imageData = ctx.getImageData(0, 0, 1, 1)
+  const [r, g, b] = imageData.data
+  
+  return `rgb(${r}, ${g}, ${b})`
+}
+
+/**
+ * 计算图片的平均亮度
+ */
+export function getImageBrightness(image: HTMLImageElement): number {
+  const canvas = createCanvas(100, 100)
+  const ctx = getCanvasContext(canvas)
+  
+  if (!ctx) {
+    return 0.5
+  }
+  
+  ctx.drawImage(image, 0, 0, 100, 100)
+  const imageData = ctx.getImageData(0, 0, 100, 100)
+  const data = imageData.data
+  
+  let totalBrightness = 0
+  const pixelCount = data.length / 4
+  
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i]
+    const g = data[i + 1]
+    const b = data[i + 2]
+    
+    // 使用相对亮度公式
+    const brightness = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    totalBrightness += brightness
+  }
+  
+  return totalBrightness / pixelCount
+}
+
+/**
+ * 应用图片滤镜
+ */
+export function applyImageFilter(
+  image: HTMLImageElement,
+  filter: string
+): HTMLCanvasElement {
+  const canvas = imageToCanvas(image)
+  const ctx = getCanvasContext(canvas)
+  
+  if (!ctx) {
+    throw new Error('Failed to get canvas context')
+  }
+  
+  ctx.filter = filter
+  ctx.drawImage(canvas, 0, 0)
+  
+  return canvas
+}
 
 /**
  * 创建图片缩略图
- * @param img 图片元素
- * @param size 缩略图尺寸
- * @param quality 质量
- * @returns Promise<Blob>
  */
 export function createThumbnail(
-  img: HTMLImageElement,
-  size: Size,
+  image: HTMLImageElement,
+  maxSize: number = 200,
   quality: number = 0.8
-): Promise<Blob> {
-  const originalSize = getNaturalSize(img);
-  const thumbnailSize = calculateFitSize(originalSize, size, 'cover');
+): HTMLCanvasElement {
+  const { naturalWidth, naturalHeight } = image
+  const aspectRatio = naturalWidth / naturalHeight
   
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  let width: number
+  let height: number
   
-  if (!ctx) {
-    throw new Error('Failed to get canvas context');
+  if (naturalWidth > naturalHeight) {
+    width = Math.min(maxSize, naturalWidth)
+    height = width / aspectRatio
+  } else {
+    height = Math.min(maxSize, naturalHeight)
+    width = height * aspectRatio
   }
-
-  canvas.width = size.width;
-  canvas.height = size.height;
-
-  // 计算裁剪位置以实现居中裁剪
-  const scale = Math.max(size.width / originalSize.width, size.height / originalSize.height);
-  const scaledWidth = originalSize.width * scale;
-  const scaledHeight = originalSize.height * scale;
-  const offsetX = (size.width - scaledWidth) / 2;
-  const offsetY = (size.height - scaledHeight) / 2;
-
-  ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
   
-  return canvasToBlob(canvas, 'image/jpeg', quality);
-}
-
-/**
- * 创建图片预览URL
- * @param file 文件对象
- * @returns 预览URL
- */
-export function createPreviewUrl(file: File): string {
-  return URL.createObjectURL(file);
-}
-
-/**
- * 释放预览URL
- * @param url 预览URL
- */
-export function revokePreviewUrl(url: string): void {
-  URL.revokeObjectURL(url);
+  return resizeImage(image, { width, height }, quality)
 }

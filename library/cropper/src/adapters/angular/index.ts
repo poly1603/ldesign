@@ -1,577 +1,418 @@
 /**
- * @ldesign/cropper Angular 适配器
- * 
- * 提供Angular框架的完整集成支持
+ * @file Angular 适配器
+ * @description 为 Angular 提供的裁剪器组件
  */
 
-import { 
-  Component, 
-  Directive, 
-  Injectable, 
-  Input, 
-  Output, 
-  EventEmitter, 
-  ElementRef, 
-  OnInit, 
-  OnDestroy, 
-  OnChanges, 
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ElementRef,
+  ViewChild,
+  OnInit,
+  OnDestroy,
+  OnChanges,
   SimpleChanges,
+  forwardRef,
+  ChangeDetectionStrategy,
   NgModule,
-  Pipe,
-  PipeTransform
-} from '@angular/core';
-import { Cropper } from '../../core/Cropper';
-import type { 
-  AngularAdapter, 
-  AngularCropperInputs, 
-  AngularCropperOutputs,
-  AngularCropperService,
-  AdapterConfig 
-} from '../../types/adapters';
-import type { CropperConfig } from '../../types/config';
-import type { CropperEvent } from '../../types/events';
-import { generateId } from '../../utils/common';
+} from '@angular/core'
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
+import { CommonModule } from '@angular/common'
 
-// ============================================================================
-// Angular 服务
-// ============================================================================
-
-/**
- * Angular 裁剪器服务
- */
-@Injectable({
-  providedIn: 'root'
-})
-export class LCropperService implements AngularCropperService {
-  private activeCroppers: Map<string, Cropper> = new Map();
-  private globalConfig: Partial<CropperConfig> = {};
-
-  /**
-   * 创建裁剪器实例
-   */
-  async createCropper(container: ElementRef, config?: Partial<CropperConfig>): Promise<Cropper> {
-    const finalConfig = {
-      ...this.globalConfig,
-      ...config,
-      container: container.nativeElement
-    };
-    
-    const cropper = new Cropper(container.nativeElement, finalConfig);
-    const id = generateId('cropper');
-    this.activeCroppers.set(id, cropper);
-    
-    // 监听销毁事件
-    cropper.on('destroy', () => {
-      this.activeCroppers.delete(id);
-    });
-    
-    return cropper;
-  }
-
-  /**
-   * 销毁裁剪器实例
-   */
-  destroyCropper(cropper: Cropper): void {
-    cropper.destroy();
-    
-    // 从活动列表中移除
-    for (const [id, instance] of this.activeCroppers.entries()) {
-      if (instance === cropper) {
-        this.activeCroppers.delete(id);
-        break;
-      }
-    }
-  }
-
-  /**
-   * 获取所有活动的裁剪器实例
-   */
-  getActiveCroppers(): Cropper[] {
-    return Array.from(this.activeCroppers.values());
-  }
-
-  /**
-   * 设置全局配置
-   */
-  setGlobalConfig(config: Partial<CropperConfig>): void {
-    this.globalConfig = { ...this.globalConfig, ...config };
-  }
-
-  /**
-   * 获取全局配置
-   */
-  getGlobalConfig(): Partial<CropperConfig> {
-    return { ...this.globalConfig };
-  }
-}
-
-// ============================================================================
-// Angular 组件
-// ============================================================================
+import { Cropper } from '../../core/Cropper'
+import type {
+  CropperOptions,
+  CropData,
+  ImageInfo,
+  ImageSource,
+  CropperEventType,
+  CropOutputOptions,
+} from '../../types'
 
 /**
  * Angular 裁剪器组件
  */
 @Component({
-  selector: 'l-cropper',
+  selector: 'ng-cropper',
   template: `
-    <div 
+    <div
       #container
-      [id]="containerId"
-      class="lcropper-container"
-      [class.lcropper-disabled]="disabled"
-      [class.lcropper-readonly]="readonly"
-      [class.lcropper-loading]="loading">
-      <ng-content></ng-content>
-    </div>
+      class="angular-cropper-container"
+      [class]="containerClass"
+      [style]="containerStyle"
+    ></div>
   `,
-  styles: [`
-    .lcropper-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-    }
-    
-    .lcropper-disabled {
-      pointer-events: none;
-      opacity: 0.6;
-    }
-    
-    .lcropper-readonly {
-      pointer-events: none;
-    }
-    
-    .lcropper-loading::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 20px;
-      height: 20px;
-      margin: -10px 0 0 -10px;
-      border: 2px solid #ccc;
-      border-top-color: #007bff;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  `]
-})
-export class LCropperComponent implements OnInit, OnDestroy, OnChanges, AngularCropperInputs, AngularCropperOutputs {
-  @Input() config?: Partial<CropperConfig>;
-  @Input() src?: string | File | HTMLImageElement;
-  @Input() disabled?: boolean = false;
-  @Input() readonly?: boolean = false;
-
-  @Output() ready = new EventEmitter<Cropper>();
-  @Output() imageLoad = new EventEmitter<CropperEvent>();
-  @Output() cropChange = new EventEmitter<CropperEvent>();
-  @Output() transform = new EventEmitter<CropperEvent>();
-  @Output() export = new EventEmitter<CropperEvent>();
-  @Output() error = new EventEmitter<Error>();
-
-  public containerId = `lcropper-${generateId()}`;
-  public loading = false;
-  public cropper: Cropper | null = null;
-
-  constructor(
-    private elementRef: ElementRef,
-    private cropperService: LCropperService
-  ) {}
-
-  async ngOnInit(): Promise<void> {
-    await this.initializeCropper();
-  }
-
-  ngOnDestroy(): void {
-    this.destroyCropper();
-  }
-
-  async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    if (changes['src'] && this.cropper && changes['src'].currentValue) {
-      await this.setImage(changes['src'].currentValue);
-    }
-
-    if (changes['disabled'] && this.cropper) {
-      this.cropper.setEnabled(!changes['disabled'].currentValue);
-    }
-
-    if (changes['config'] && this.cropper && !changes['config'].firstChange) {
-      this.cropper.updateConfig(changes['config'].currentValue);
-    }
-  }
-
-  /**
-   * 初始化裁剪器
-   */
-  private async initializeCropper(): Promise<void> {
-    try {
-      this.loading = true;
-      
-      this.cropper = await this.cropperService.createCropper(this.elementRef, this.config);
-      
-      // 绑定事件
-      this.cropper.on('ready', (event: CropperEvent) => {
-        this.ready.emit(this.cropper!);
-      });
-      
-      this.cropper.on('imageLoad', (event: CropperEvent) => {
-        this.imageLoad.emit(event);
-      });
-      
-      this.cropper.on('cropChange', (event: CropperEvent) => {
-        this.cropChange.emit(event);
-      });
-      
-      this.cropper.on('transform', (event: CropperEvent) => {
-        this.transform.emit(event);
-      });
-      
-      this.cropper.on('export', (event: CropperEvent) => {
-        this.export.emit(event);
-      });
-      
-      this.cropper.on('error', (err: Error) => {
-        this.error.emit(err);
-      });
-      
-      // 设置图片源
-      if (this.src) {
-        await this.cropper.setImage(this.src);
-      }
-      
-    } catch (err) {
-      this.error.emit(err as Error);
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  /**
-   * 设置图片源
-   */
-  async setImage(src: string | File | HTMLImageElement): Promise<void> {
-    if (!this.cropper) return;
-    
-    try {
-      this.loading = true;
-      await this.cropper.setImage(src);
-    } catch (err) {
-      this.error.emit(err as Error);
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  /**
-   * 获取裁剪数据
-   */
-  getCropData(): any {
-    return this.cropper?.getCropData();
-  }
-
-  /**
-   * 导出图片
-   */
-  async exportImage(options?: any): Promise<Blob> {
-    if (!this.cropper) {
-      throw new Error('Cropper not initialized');
-    }
-    return await this.cropper.export(options);
-  }
-
-  /**
-   * 重置裁剪器
-   */
-  reset(): void {
-    this.cropper?.reset();
-  }
-
-  /**
-   * 销毁裁剪器
-   */
-  private destroyCropper(): void {
-    if (this.cropper) {
-      this.cropperService.destroyCropper(this.cropper);
-      this.cropper = null;
-    }
-  }
-}
-
-// ============================================================================
-// Angular 指令
-// ============================================================================
-
-/**
- * Angular 裁剪器指令
- */
-@Directive({
-  selector: '[lCropper]'
-})
-export class LCropperDirective implements OnInit, OnDestroy, OnChanges {
-  @Input('lCropper') config?: Partial<CropperConfig>;
-  @Input() src?: string | File | HTMLImageElement;
-
-  private cropper: Cropper | null = null;
-
-  constructor(
-    private elementRef: ElementRef,
-    private cropperService: LCropperService
-  ) {}
-
-  async ngOnInit(): Promise<void> {
-    await this.initializeCropper();
-  }
-
-  ngOnDestroy(): void {
-    this.destroyCropper();
-  }
-
-  async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    if (changes['src'] && this.cropper && changes['src'].currentValue) {
-      await this.cropper.setImage(changes['src'].currentValue);
-    }
-
-    if (changes['config'] && this.cropper && !changes['config'].firstChange) {
-      this.cropper.updateConfig(changes['config'].currentValue);
-    }
-  }
-
-  /**
-   * 初始化裁剪器
-   */
-  private async initializeCropper(): Promise<void> {
-    try {
-      this.cropper = await this.cropperService.createCropper(this.elementRef, this.config);
-      
-      if (this.src) {
-        await this.cropper.setImage(this.src);
-      }
-    } catch (err) {
-      console.error('Failed to initialize cropper:', err);
-    }
-  }
-
-  /**
-   * 销毁裁剪器
-   */
-  private destroyCropper(): void {
-    if (this.cropper) {
-      this.cropperService.destroyCropper(this.cropper);
-      this.cropper = null;
-    }
-  }
-}
-
-// ============================================================================
-// Angular 管道
-// ============================================================================
-
-/**
- * 裁剪数据格式化管道
- */
-@Pipe({
-  name: 'cropData'
-})
-export class CropDataPipe implements PipeTransform {
-  transform(cropper: Cropper | null, format: 'json' | 'string' = 'json'): any {
-    if (!cropper) return null;
-    
-    const data = cropper.getCropData();
-    
-    if (format === 'string') {
-      return JSON.stringify(data, null, 2);
-    }
-    
-    return data;
-  }
-}
-
-// ============================================================================
-// Angular 模块
-// ============================================================================
-
-/**
- * Angular 裁剪器模块
- */
-@NgModule({
-  declarations: [
-    LCropperComponent,
-    LCropperDirective,
-    CropDataPipe
-  ],
-  exports: [
-    LCropperComponent,
-    LCropperDirective,
-    CropDataPipe
-  ],
+  styleUrls: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    LCropperService
-  ]
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => AngularCropperComponent),
+      multi: true,
+    },
+  ],
 })
-export class LCropperModule {}
+export class AngularCropperComponent
+  implements OnInit, OnDestroy, OnChanges, ControlValueAccessor
+{
+  @ViewChild('container', { static: true })
+  containerRef!: ElementRef<HTMLDivElement>
 
-// ============================================================================
-// Angular 适配器类
-// ============================================================================
+  // 输入属性
+  @Input() src?: ImageSource
+  @Input() immediate = true
+  @Input() containerClass = ''
+  @Input() containerStyle: Record<string, any> = {}
 
-/**
- * Angular 适配器类
- */
-export class AngularCropperAdapter implements AngularAdapter {
-  public readonly framework = 'angular' as const;
-  public readonly version = '1.0.0';
-  public initialized = false;
-  
-  private config: AdapterConfig;
+  // 裁剪器配置
+  @Input() shape: CropperOptions['shape'] = 'rectangle'
+  @Input() aspectRatio = 0
+  @Input() initialCrop?: CropperOptions['initialCrop']
+  @Input() minCropSize?: CropperOptions['minCropSize']
+  @Input() maxCropSize?: CropperOptions['maxCropSize']
+  @Input() movable = true
+  @Input() resizable = true
+  @Input() zoomable = true
+  @Input() rotatable = true
+  @Input() zoomRange: [number, number] = [0.1, 10]
+  @Input() backgroundColor = '#000000'
+  @Input() maskOpacity = 0.6
+  @Input() guides = true
+  @Input() centerLines = false
+  @Input() responsive = true
+  @Input() touchEnabled = true
+  @Input() autoCrop = true
+  @Input() preview?: CropperOptions['preview']
 
-  constructor(config: AdapterConfig = { framework: 'angular' }) {
-    this.config = {
-      componentName: 'LCropper',
-      directiveName: 'lCropper',
-      development: false,
-      debug: false,
-      ...config
-    };
+  // 输出事件
+  @Output() ready = new EventEmitter<void>()
+  @Output() imageLoaded = new EventEmitter<ImageInfo>()
+  @Output() imageError = new EventEmitter<Error>()
+  @Output() cropChange = new EventEmitter<CropData>()
+  @Output() cropStart = new EventEmitter<void>()
+  @Output() cropMove = new EventEmitter<CropData>()
+  @Output() cropEnd = new EventEmitter<CropData>()
+  @Output() zoomChange = new EventEmitter<number>()
+  @Output() rotationChange = new EventEmitter<number>()
+  @Output() flipChange = new EventEmitter<{ flipX: boolean; flipY: boolean }>()
+  @Output() dragStart = new EventEmitter<void>()
+  @Output() dragMove = new EventEmitter<CropData>()
+  @Output() dragEnd = new EventEmitter<CropData>()
+  @Output() reset = new EventEmitter<void>()
+  @Output() destroy = new EventEmitter<void>()
+
+  // 内部状态
+  private cropper: Cropper | null = null
+  private isReady = false
+
+  // ControlValueAccessor 实现
+  private onChange = (value: CropData | null) => {}
+  private onTouched = () => {}
+
+  ngOnInit(): void {
+    if (this.immediate) {
+      this.initCropper()
+    }
   }
 
-  // ============================================================================
-  // 适配器生命周期
-  // ============================================================================
+  ngOnDestroy(): void {
+    this.destroyCropper()
+  }
 
-  /**
-   * 初始化适配器
-   */
-  initialize(): void {
-    if (this.initialized) return;
-    
-    this.initialized = true;
-    
-    if (this.config.debug) {
-      console.log('[LCropper Angular] Adapter initialized');
+  ngOnChanges(changes: SimpleChanges): void {
+    // 监听 src 变化
+    if (changes['src'] && !changes['src'].firstChange && this.cropper) {
+      if (this.src) {
+        this.setImage(this.src)
+      }
     }
   }
 
   /**
-   * 销毁适配器
+   * 初始化裁剪器
    */
-  destroy(): void {
-    this.initialized = false;
-    
-    if (this.config.debug) {
-      console.log('[LCropper Angular] Adapter destroyed');
-    }
-  }
+  async initCropper(): Promise<void> {
+    if (!this.containerRef?.nativeElement) return
 
-  // ============================================================================
-  // 组件适配器接口实现
-  // ============================================================================
+    try {
+      const options: CropperOptions = {
+        container: this.containerRef.nativeElement,
+        shape: this.shape,
+        aspectRatio: this.aspectRatio,
+        initialCrop: this.initialCrop,
+        minCropSize: this.minCropSize,
+        maxCropSize: this.maxCropSize,
+        movable: this.movable,
+        resizable: this.resizable,
+        zoomable: this.zoomable,
+        rotatable: this.rotatable,
+        zoomRange: this.zoomRange,
+        backgroundColor: this.backgroundColor,
+        maskOpacity: this.maskOpacity,
+        guides: this.guides,
+        centerLines: this.centerLines,
+        responsive: this.responsive,
+        touchEnabled: this.touchEnabled,
+        autoCrop: this.autoCrop,
+        preview: this.preview,
+      }
 
-  /**
-   * 创建组件实例
-   */
-  createComponent(config: AngularCropperInputs): any {
-    return LCropperComponent;
-  }
+      this.cropper = new Cropper(options)
+      this.bindEvents()
 
-  /**
-   * 更新组件属性
-   */
-  updateProps(instance: any, props: Partial<AngularCropperInputs>): void {
-    // Angular会自动处理属性更新
-    if (this.config.debug) {
-      console.log('[LCropper Angular] Props updated:', props);
+      // 如果有初始图片源，加载它
+      if (this.src) {
+        await this.setImage(this.src)
+      }
+    } catch (error) {
+      console.error('初始化裁剪器失败:', error)
+      this.imageError.emit(error as Error)
     }
   }
 
   /**
    * 绑定事件
    */
-  bindEvents(instance: any, events: Record<string, Function>): void {
-    // Angular事件绑定通过组件输出处理
-    if (this.config.debug) {
-      console.log('[LCropper Angular] Events bound:', Object.keys(events));
+  private bindEvents(): void {
+    if (!this.cropper) return
+
+    this.cropper.on('ready' as CropperEventType, () => {
+      this.isReady = true
+      this.ready.emit()
+    })
+
+    this.cropper.on('imageLoaded' as CropperEventType, (event) => {
+      this.imageLoaded.emit(event.imageInfo!)
+    })
+
+    this.cropper.on('imageError' as CropperEventType, (event) => {
+      this.imageError.emit(event.error)
+    })
+
+    this.cropper.on('cropChange' as CropperEventType, (event) => {
+      const cropData = event.cropData!
+      this.cropChange.emit(cropData)
+      this.onChange(cropData)
+      this.onTouched()
+    })
+
+    this.cropper.on('cropStart' as CropperEventType, () => {
+      this.cropStart.emit()
+    })
+
+    this.cropper.on('cropMove' as CropperEventType, (event) => {
+      this.cropMove.emit(event.cropData!)
+    })
+
+    this.cropper.on('cropEnd' as CropperEventType, (event) => {
+      this.cropEnd.emit(event.cropData!)
+    })
+
+    this.cropper.on('zoomChange' as CropperEventType, (event) => {
+      this.zoomChange.emit(event.scale || 1)
+    })
+
+    this.cropper.on('rotationChange' as CropperEventType, (event) => {
+      this.rotationChange.emit(event.rotation || 0)
+    })
+
+    this.cropper.on('flipChange' as CropperEventType, (event) => {
+      this.flipChange.emit({
+        flipX: event.flipX || false,
+        flipY: event.flipY || false,
+      })
+    })
+
+    this.cropper.on('dragStart' as CropperEventType, () => {
+      this.dragStart.emit()
+    })
+
+    this.cropper.on('dragMove' as CropperEventType, (event) => {
+      this.dragMove.emit(event.cropData!)
+    })
+
+    this.cropper.on('dragEnd' as CropperEventType, (event) => {
+      this.dragEnd.emit(event.cropData!)
+    })
+
+    this.cropper.on('reset' as CropperEventType, () => {
+      this.reset.emit()
+    })
+
+    this.cropper.on('destroy' as CropperEventType, () => {
+      this.destroy.emit()
+    })
+  }
+
+  /**
+   * 设置图片
+   */
+  async setImage(src: ImageSource): Promise<void> {
+    if (!this.cropper) return
+    await this.cropper.setImage(src)
+  }
+
+  /**
+   * 获取裁剪数据
+   */
+  getCropData(): CropData | null {
+    return this.cropper?.getCropData() || null
+  }
+
+  /**
+   * 设置裁剪数据
+   */
+  setCropData(data: Partial<CropData>): void {
+    this.cropper?.setCropData(data)
+  }
+
+  /**
+   * 获取裁剪后的 Canvas
+   */
+  getCroppedCanvas(options?: CropOutputOptions): HTMLCanvasElement | null {
+    return this.cropper?.getCroppedCanvas(options) || null
+  }
+
+  /**
+   * 获取裁剪后的 DataURL
+   */
+  getCroppedDataURL(options?: CropOutputOptions): string | null {
+    return this.cropper?.getCroppedDataURL(options) || null
+  }
+
+  /**
+   * 获取裁剪后的 Blob
+   */
+  async getCroppedBlob(options?: CropOutputOptions): Promise<Blob | null> {
+    if (!this.cropper) return null
+    return await this.cropper.getCroppedBlob(options)
+  }
+
+  /**
+   * 缩放
+   */
+  zoom(scale: number): void {
+    this.cropper?.zoom(scale)
+  }
+
+  /**
+   * 放大
+   */
+  zoomIn(delta?: number): void {
+    this.cropper?.zoomIn(delta)
+  }
+
+  /**
+   * 缩小
+   */
+  zoomOut(delta?: number): void {
+    this.cropper?.zoomOut(delta)
+  }
+
+  /**
+   * 旋转
+   */
+  rotate(angle: number): void {
+    this.cropper?.rotate(angle)
+  }
+
+  /**
+   * 向左旋转
+   */
+  rotateLeft(): void {
+    this.cropper?.rotateLeft()
+  }
+
+  /**
+   * 向右旋转
+   */
+  rotateRight(): void {
+    this.cropper?.rotateRight()
+  }
+
+  /**
+   * 翻转
+   */
+  flip(horizontal: boolean, vertical: boolean): void {
+    this.cropper?.flip(horizontal, vertical)
+  }
+
+  /**
+   * 水平翻转
+   */
+  flipHorizontal(): void {
+    this.cropper?.flipHorizontal()
+  }
+
+  /**
+   * 垂直翻转
+   */
+  flipVertical(): void {
+    this.cropper?.flipVertical()
+  }
+
+  /**
+   * 重置
+   */
+  resetCropper(): void {
+    this.cropper?.reset()
+  }
+
+  /**
+   * 销毁裁剪器
+   */
+  destroyCropper(): void {
+    this.cropper?.destroy()
+    this.cropper = null
+    this.isReady = false
+  }
+
+  /**
+   * 检查是否准备就绪
+   */
+  getIsReady(): boolean {
+    return this.isReady
+  }
+
+  /**
+   * 获取裁剪器实例
+   */
+  getCropperInstance(): Cropper | null {
+    return this.cropper
+  }
+
+  // ControlValueAccessor 实现
+  writeValue(value: CropData | null): void {
+    if (value && this.cropper) {
+      this.setCropData(value)
     }
   }
 
-  /**
-   * 解绑事件
-   */
-  unbindEvents(instance: any): void {
-    // Angular会自动清理事件监听器
-    if (this.config.debug) {
-      console.log('[LCropper Angular] Events unbound');
-    }
+  registerOnChange(fn: (value: CropData | null) => void): void {
+    this.onChange = fn
   }
 
-  // ============================================================================
-  // Angular 特定方法
-  // ============================================================================
-
-  /**
-   * 创建Angular模块
-   */
-  createModule(): any {
-    return LCropperModule;
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn
   }
 
-  /**
-   * 创建Angular组件
-   */
-  createComponent(): any {
-    return LCropperComponent;
-  }
-
-  /**
-   * 创建Angular指令
-   */
-  createDirective(): any {
-    return LCropperDirective;
-  }
-
-  /**
-   * 创建Angular服务
-   */
-  createService(): any {
-    return LCropperService;
-  }
-
-  /**
-   * 创建Angular管道
-   */
-  createPipe(): any {
-    return CropDataPipe;
+  setDisabledState(isDisabled: boolean): void {
+    // 可以在这里实现禁用状态的逻辑
   }
 }
 
-// ============================================================================
-// 默认导出
-// ============================================================================
-
 /**
- * 创建Angular适配器实例
+ * Angular 裁剪器模块
  */
-export function createAngularAdapter(config?: AdapterConfig): AngularCropperAdapter {
-  return new AngularCropperAdapter(config);
-}
+@NgModule({
+  declarations: [AngularCropperComponent],
+  imports: [CommonModule],
+  exports: [AngularCropperComponent],
+})
+export class AngularCropperModule {}
 
-/**
- * 默认适配器实例
- */
-export const angularAdapter = createAngularAdapter();
-
-/**
- * 默认导出
- */
-export default {
-  LCropperModule,
-  LCropperComponent,
-  LCropperDirective,
-  LCropperService,
-  CropDataPipe,
-  createAngularAdapter,
-  angularAdapter
-};
+// 导出
+export { AngularCropperComponent, AngularCropperModule }
+export default AngularCropperModule

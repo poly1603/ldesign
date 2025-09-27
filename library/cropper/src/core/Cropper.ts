@@ -1,846 +1,969 @@
 /**
- * @ldesign/cropper 主裁剪器类
- * 
- * 整合所有模块，提供统一的API接口
+ * @file 裁剪器核心类
+ * @description 图片裁剪器的主要实现类
  */
 
 import type {
-  Point,
-  Size,
-  Rect,
-  CropArea,
-  CropShape,
+  CropperOptions,
+  CropData,
   ImageInfo,
-  CropperConfig,
-  CropperEvent,
-  ExportOptions,
-  ExportResult
-} from '../types';
+  ImageSource,
+  TransformState,
+  CropperEventType,
+  ImageFormat,
+  CropOutputOptions,
+  CompatibilityResult,
+  Size,
+  Point,
+  Rect,
+  CropShape,
+  AspectRatio,
+} from '../types'
 
-import { ImageLoader } from './ImageLoader';
-import { CanvasRenderer } from './CanvasRenderer';
-import { CropAreaManager } from './CropAreaManager';
-import { TransformManager } from './TransformManager';
-import { EventManager } from './EventManager';
-import { ControlPointManager } from './ControlPointManager';
-import { ConfigManager } from './ConfigManager';
-import { ThemeManager } from './ThemeManager';
-
-import { isValidRect, isValidPoint, isString, isHTMLElement } from '../utils/validation';
-import { globalPerformanceMonitor } from '../utils/performance';
-
-// ============================================================================
-// 默认配置
-// ============================================================================
+import { EventEmitter } from '../utils/events'
+import { getElement, createElement, addClass, removeClass, setStyle } from '../utils/dom'
+import { loadImageSource, getImageInfo, canvasToBlob, canvasToDataURL } from '../utils/image'
+import { checkCompatibility } from '../utils/compatibility'
+import { fitSize, clamp, getRectCenter, adjustRectByAspectRatio } from '../utils/math'
 
 /**
- * 默认裁剪器配置
+ * 默认配置选项
  */
-export const DEFAULT_CROPPER_CONFIG: CropperConfig = {
-  // 基础配置
-  theme: 'light',
-  language: 'zh-CN',
+const DEFAULT_OPTIONS: Partial<CropperOptions> = {
+  shape: CropShape.RECTANGLE,
+  aspectRatio: AspectRatio.FREE,
+  movable: true,
+  resizable: true,
+  zoomable: true,
+  rotatable: true,
+  zoomRange: [0.1, 10],
+  backgroundColor: '#000000',
+  maskOpacity: 0.6,
+  guides: true,
+  centerLines: false,
   responsive: true,
-
-  // 裁剪配置
-  shape: 'rectangle',
-  aspectRatio: undefined,
-  minCropSize: { width: 10, height: 10 },
-  maxCropSize: undefined,
-
-  // 变换配置
-  minZoom: 0.1,
-  maxZoom: 10,
-  zoomStep: 0.1,
-  enableRotation: true,
-  rotationStep: 1,
-
-  // 交互配置
-  enableMouse: true,
-  enableTouch: true,
-  enableKeyboard: true,
-  enableGestures: true,
-
-  // UI配置
-  showGrid: true,
-  showCenterLines: true,
-  showRuleOfThirds: false,
-  showToolbar: true,
-  showControlPoints: true,
-
-  // 导出配置
-  exportFormat: 'png',
-  exportQuality: 0.9,
-  exportBackground: 'transparent'
-};
-
-// ============================================================================
-// 裁剪器状态
-// ============================================================================
-
-/**
- * 裁剪器状态接口
- */
-export interface CropperState {
-  /** 是否已初始化 */
-  initialized: boolean;
-  /** 是否有图片 */
-  hasImage: boolean;
-  /** 是否有裁剪区域 */
-  hasCropArea: boolean;
-  /** 是否正在加载 */
-  loading: boolean;
-  /** 是否正在交互 */
-  interacting: boolean;
-  /** 错误信息 */
-  error: string | null;
+  touchEnabled: true,
+  autoCrop: true,
 }
 
-// ============================================================================
-// 主裁剪器类
-// ============================================================================
-
 /**
- * 主裁剪器类
- * 整合所有功能模块，提供统一的API接口
+ * 裁剪器核心类
  */
-export class Cropper {
-  private container: HTMLElement;
-  private canvas: HTMLCanvasElement;
-  private config: CropperConfig;
-  private state: CropperState;
+export class Cropper extends EventEmitter {
+  private container: HTMLElement
+  private options: CropperOptions
+  private canvas: HTMLCanvasElement
+  private ctx: CanvasRenderingContext2D
+  private image: HTMLImageElement | null = null
+  private imageInfo: ImageInfo | null = null
+  private transformState: TransformState
+  private cropData: CropData
+  private isDestroyed = false
+  private isReady = false
 
-  // 核心模块
-  private imageLoader: ImageLoader;
-  private canvasRenderer: CanvasRenderer;
-  private cropAreaManager: CropAreaManager;
-  private transformManager: TransformManager;
-  private eventManager: EventManager;
-  private controlPointManager: ControlPointManager;
-  private configManager: ConfigManager;
-  private themeManager: ThemeManager;
+  // UI 元素
+  private cropBox: HTMLElement
+  private dragHandles: HTMLElement[] = []
+  private overlay: HTMLElement
 
-  // 事件监听器
-  private eventListeners: Map<string, Set<(event: CropperEvent) => void>> = new Map();
+  // 交互状态
+  private isDragging = false
+  private isResizing = false
+  private dragStartPoint: Point | null = null
+  private dragStartCrop: Rect | null = null
 
-  // 当前数据
-  private currentImage: ImageInfo | null = null;
-  private currentCropArea: CropArea | null = null;
+  /**
+   * 构造函数
+   */
+  constructor(options: CropperOptions) {
+    super()
 
-  constructor(container: string | HTMLElement, config: Partial<CropperConfig> = {}) {
-    // 验证和设置容器
-    this.container = this.resolveContainer(container);
-    this.config = { ...DEFAULT_CROPPER_CONFIG, ...config };
-    this.state = this.createInitialState();
+    // 验证容器
+    const container = getElement(options.container)
+    if (!container) {
+      throw new Error('Container element not found')
+    }
+
+    this.container = container
+    this.options = { ...DEFAULT_OPTIONS, ...options }
+
+    // 初始化状态
+    this.transformState = {
+      scale: 1,
+      rotation: 0,
+      flipX: false,
+      flipY: false,
+      translate: { x: 0, y: 0 },
+    }
+
+    this.cropData = {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+      shape: this.options.shape!,
+    }
+
+    // 初始化UI
+    this.initializeUI()
+    this.bindEvents()
+
+    // 触发ready事件
+    setTimeout(() => {
+      this.isReady = true
+      this.emit(CropperEventType.READY)
+      this.options.onReady?.(this.createEvent(CropperEventType.READY))
+    }, 0)
+  }
+
+  /**
+   * 初始化UI
+   */
+  private initializeUI(): void {
+    // 设置容器样式
+    addClass(this.container, 'cropper-container')
+    setStyle(this.container, {
+      position: 'relative',
+      overflow: 'hidden',
+      userSelect: 'none',
+    })
 
     // 创建Canvas
-    this.canvas = this.createCanvas();
+    this.canvas = createElement('canvas', 'cropper-canvas') as HTMLCanvasElement
+    const ctx = this.canvas.getContext('2d')
+    if (!ctx) {
+      throw new Error('Failed to get canvas context')
+    }
+    this.ctx = ctx
 
-    // 初始化模块
-    this.initializeModules();
+    // 创建遮罩层
+    this.overlay = createElement('div', 'cropper-overlay')
+    setStyle(this.overlay, {
+      position: 'absolute',
+      top: '0',
+      left: '0',
+      width: '100%',
+      height: '100%',
+      backgroundColor: this.options.backgroundColor,
+      opacity: this.options.maskOpacity?.toString(),
+      pointerEvents: 'none',
+    })
 
-    // 设置事件监听
-    this.setupEventListeners();
+    // 创建裁剪框
+    this.cropBox = createElement('div', 'cropper-crop-box')
+    setStyle(this.cropBox, {
+      position: 'absolute',
+      border: '2px solid #39f',
+      cursor: 'move',
+      boxSizing: 'border-box',
+    })
 
-    // 标记为已初始化
-    this.state.initialized = true;
-    this.emitEvent('ready', { type: 'ready', timestamp: Date.now() });
+    // 创建拖拽手柄
+    this.createDragHandles()
+
+    // 添加到容器
+    this.container.appendChild(this.canvas)
+    this.container.appendChild(this.overlay)
+    this.container.appendChild(this.cropBox)
   }
 
-  // ============================================================================
-  // 公共API - 图片操作
-  // ============================================================================
+  /**
+   * 创建拖拽手柄
+   */
+  private createDragHandles(): void {
+    const handlePositions = [
+      'nw', 'n', 'ne',
+      'w',       'e',
+      'sw', 's', 'se',
+    ]
+
+    handlePositions.forEach(position => {
+      const handle = createElement('div', `cropper-handle cropper-handle-${position}`)
+      setStyle(handle, {
+        position: 'absolute',
+        width: '8px',
+        height: '8px',
+        backgroundColor: '#39f',
+        border: '1px solid #fff',
+        cursor: this.getHandleCursor(position),
+      })
+
+      this.positionHandle(handle, position)
+      this.dragHandles.push(handle)
+      this.cropBox.appendChild(handle)
+    })
+  }
 
   /**
-   * 设置图片源
-   * @param source 图片源
-   * @returns Promise
+   * 获取手柄光标样式
    */
-  async setImageSource(source: string | File | HTMLImageElement): Promise<void> {
-    const startTime = performance.now();
+  private getHandleCursor(position: string): string {
+    const cursors: Record<string, string> = {
+      nw: 'nw-resize',
+      n: 'n-resize',
+      ne: 'ne-resize',
+      w: 'w-resize',
+      e: 'e-resize',
+      sw: 'sw-resize',
+      s: 's-resize',
+      se: 'se-resize',
+    }
+    return cursors[position] || 'default'
+  }
+
+  /**
+   * 定位手柄
+   */
+  private positionHandle(handle: HTMLElement, position: string): void {
+    const size = 8
+    const offset = -size / 2
+
+    switch (position) {
+      case 'nw':
+        setStyle(handle, { top: `${offset}px`, left: `${offset}px` })
+        break
+      case 'n':
+        setStyle(handle, { top: `${offset}px`, left: '50%', marginLeft: `${offset}px` })
+        break
+      case 'ne':
+        setStyle(handle, { top: `${offset}px`, right: `${offset}px` })
+        break
+      case 'w':
+        setStyle(handle, { top: '50%', left: `${offset}px`, marginTop: `${offset}px` })
+        break
+      case 'e':
+        setStyle(handle, { top: '50%', right: `${offset}px`, marginTop: `${offset}px` })
+        break
+      case 'sw':
+        setStyle(handle, { bottom: `${offset}px`, left: `${offset}px` })
+        break
+      case 's':
+        setStyle(handle, { bottom: `${offset}px`, left: '50%', marginLeft: `${offset}px` })
+        break
+      case 'se':
+        setStyle(handle, { bottom: `${offset}px`, right: `${offset}px` })
+        break
+    }
+  }
+
+  /**
+   * 绑定事件
+   */
+  private bindEvents(): void {
+    // 容器大小变化
+    if (this.options.responsive) {
+      window.addEventListener('resize', this.handleResize.bind(this))
+    }
+
+    // 裁剪框拖拽
+    this.cropBox.addEventListener('mousedown', this.handleCropBoxMouseDown.bind(this))
+    this.cropBox.addEventListener('touchstart', this.handleCropBoxTouchStart.bind(this))
+
+    // 手柄拖拽
+    this.dragHandles.forEach(handle => {
+      handle.addEventListener('mousedown', this.handleHandleMouseDown.bind(this))
+      handle.addEventListener('touchstart', this.handleHandleTouchStart.bind(this))
+    })
+
+    // 全局事件
+    document.addEventListener('mousemove', this.handleMouseMove.bind(this))
+    document.addEventListener('mouseup', this.handleMouseUp.bind(this))
+    document.addEventListener('touchmove', this.handleTouchMove.bind(this))
+    document.addEventListener('touchend', this.handleTouchEnd.bind(this))
+
+    // 滚轮缩放
+    if (this.options.zoomable) {
+      this.container.addEventListener('wheel', this.handleWheel.bind(this))
+    }
+  }
+
+  /**
+   * 设置图片
+   */
+  async setImage(source: ImageSource): Promise<void> {
+    this.checkDestroyed()
 
     try {
-      this.state.loading = true;
-      this.state.error = null;
-      this.emitEvent('image-load-start', { type: 'image-load-start', timestamp: Date.now() });
+      this.image = await loadImageSource(source)
+      this.imageInfo = getImageInfo(this.image)
 
-      // 加载图片
-      const imageInfo = await this.imageLoader.loadImage(source);
-      this.currentImage = imageInfo;
-      this.state.hasImage = true;
+      this.updateCanvas()
+      this.initializeCrop()
 
-      // 更新模块
-      this.transformManager.setImageInfo(imageInfo);
-      this.cropAreaManager.setImageInfo(imageInfo);
+      this.emit(CropperEventType.IMAGE_LOADED, {
+        imageInfo: this.imageInfo,
+      })
 
-      // 适应容器
-      this.transformManager.fitToContainer();
-
-      // 创建默认裁剪区域
-      this.createDefaultCropArea();
-
-      // 渲染
-      this.render();
-
-      this.state.loading = false;
-      this.emitEvent('image-loaded', {
-        type: 'image-loaded',
-        imageInfo,
-        timestamp: Date.now()
-      });
-
-      globalPerformanceMonitor.record('cropper-set-image', performance.now() - startTime);
     } catch (error) {
-      this.state.loading = false;
-      this.state.error = error instanceof Error ? error.message : 'Unknown error';
-      this.emitEvent('image-load-error', {
-        type: 'image-load-error',
-        error: this.state.error,
-        timestamp: Date.now()
-      });
-      globalPerformanceMonitor.record('cropper-set-image-error', performance.now() - startTime);
-      throw error;
+      this.emit(CropperEventType.IMAGE_ERROR, { error })
+      throw error
     }
   }
 
   /**
-   * 获取当前图片信息
-   * @returns 图片信息
+   * 更新Canvas
    */
-  getImageInfo(): ImageInfo | null {
-    return this.currentImage;
-  }
+  private updateCanvas(): void {
+    if (!this.image || !this.imageInfo) return
 
-  // ============================================================================
-  // 公共API - 裁剪区域操作
-  // ============================================================================
-
-  /**
-   * 设置裁剪区域
-   * @param rect 矩形区域
-   * @param shape 裁剪形状
-   */
-  setCropArea(rect: Rect, shape: CropShape = this.config.shape): void {
-    if (!isValidRect(rect)) {
-      throw new Error('Invalid crop area rectangle');
+    const containerSize = {
+      width: this.container.clientWidth,
+      height: this.container.clientHeight,
     }
 
-    const cropArea = this.cropAreaManager.createCropArea(rect, shape);
-    this.currentCropArea = cropArea;
-    this.state.hasCropArea = true;
+    const imageSize = fitSize(
+      { width: this.imageInfo.naturalWidth, height: this.imageInfo.naturalHeight },
+      containerSize,
+      'contain'
+    )
 
-    // 更新控制点
-    this.controlPointManager.setCropArea(cropArea);
+    this.canvas.width = imageSize.width
+    this.canvas.height = imageSize.height
 
-    // 渲染
-    this.render();
+    setStyle(this.canvas, {
+      width: `${imageSize.width}px`,
+      height: `${imageSize.height}px`,
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+    })
 
-    this.emitEvent('crop-change', {
-      type: 'crop-change',
-      cropArea,
-      timestamp: Date.now()
-    });
+    this.drawImage()
   }
 
   /**
-   * 获取当前裁剪区域
-   * @returns 裁剪区域
+   * 绘制图片
    */
-  getCropArea(): CropArea | null {
-    return this.currentCropArea;
+  private drawImage(): void {
+    if (!this.image || !this.ctx) return
+
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+    this.ctx.save()
+
+    // 应用变换
+    const centerX = this.canvas.width / 2
+    const centerY = this.canvas.height / 2
+
+    this.ctx.translate(centerX, centerY)
+    this.ctx.scale(
+      this.transformState.scale * (this.transformState.flipX ? -1 : 1),
+      this.transformState.scale * (this.transformState.flipY ? -1 : 1)
+    )
+    this.ctx.rotate((this.transformState.rotation * Math.PI) / 180)
+    this.ctx.translate(-centerX, -centerY)
+
+    this.ctx.drawImage(this.image, 0, 0, this.canvas.width, this.canvas.height)
+
+    this.ctx.restore()
   }
 
   /**
-   * 清除裁剪区域
+   * 初始化裁剪区域
    */
-  clearCropArea(): void {
-    this.currentCropArea = null;
-    this.state.hasCropArea = false;
-    this.cropAreaManager.clearCropArea();
-    this.controlPointManager.setCropArea(null);
-    this.render();
+  private initializeCrop(): void {
+    if (!this.options.autoCrop) return
 
-    this.emitEvent('crop-clear', {
-      type: 'crop-clear',
-      timestamp: Date.now()
-    });
+    const canvasRect = this.canvas.getBoundingClientRect()
+    const containerRect = this.container.getBoundingClientRect()
+
+    // 计算默认裁剪区域（Canvas的80%）
+    const cropWidth = canvasRect.width * 0.8
+    const cropHeight = canvasRect.height * 0.8
+
+    let finalWidth = cropWidth
+    let finalHeight = cropHeight
+
+    // 应用宽高比
+    if (this.options.aspectRatio && this.options.aspectRatio > 0) {
+      const rect = adjustRectByAspectRatio(
+        { x: 0, y: 0, width: cropWidth, height: cropHeight },
+        this.options.aspectRatio,
+        'center'
+      )
+      finalWidth = rect.width
+      finalHeight = rect.height
+    }
+
+    this.cropData = {
+      x: (canvasRect.width - finalWidth) / 2,
+      y: (canvasRect.height - finalHeight) / 2,
+      width: finalWidth,
+      height: finalHeight,
+      shape: this.options.shape!,
+    }
+
+    this.updateCropBox()
   }
 
-  // ============================================================================
-  // 公共API - 变换操作
-  // ============================================================================
+  /**
+   * 更新裁剪框
+   */
+  private updateCropBox(): void {
+    const canvasRect = this.canvas.getBoundingClientRect()
+    const containerRect = this.container.getBoundingClientRect()
+
+    const left = canvasRect.left - containerRect.left + this.cropData.x
+    const top = canvasRect.top - containerRect.top + this.cropData.y
+
+    setStyle(this.cropBox, {
+      left: `${left}px`,
+      top: `${top}px`,
+      width: `${this.cropData.width}px`,
+      height: `${this.cropData.height}px`,
+      display: 'block',
+    })
+
+    // 更新遮罩
+    this.updateOverlay()
+  }
 
   /**
-   * 设置缩放
-   * @param scale 缩放比例
-   * @param center 缩放中心点
+   * 更新遮罩
    */
-  setZoom(scale: number, center?: Point): void {
-    this.transformManager.setZoom(scale, center);
-    this.render();
+  private updateOverlay(): void {
+    // 这里可以实现更复杂的遮罩效果
+    // 暂时保持简单的实现
+  }
+
+  /**
+   * 创建事件对象
+   */
+  private createEvent(type: CropperEventType, data?: any): any {
+    return {
+      type,
+      target: this,
+      cropData: { ...this.cropData },
+      imageInfo: this.imageInfo ? { ...this.imageInfo } : undefined,
+      transformState: { ...this.transformState },
+      ...data,
+    }
+  }
+
+  /**
+   * 检查是否已销毁
+   */
+  private checkDestroyed(): void {
+    if (this.isDestroyed) {
+      throw new Error('Cropper instance has been destroyed')
+    }
+  }
+
+  /**
+   * 获取裁剪数据
+   */
+  getCropData(): CropData {
+    this.checkDestroyed()
+    return { ...this.cropData }
+  }
+
+  /**
+   * 设置裁剪数据
+   */
+  setCropData(data: Partial<CropData>): void {
+    this.checkDestroyed()
+
+    this.cropData = { ...this.cropData, ...data }
+    this.updateCropBox()
+
+    this.emit(CropperEventType.CROP_CHANGE, { cropData: this.cropData })
+  }
+
+  /**
+   * 获取裁剪后的Canvas
+   */
+  getCroppedCanvas(options?: CropOutputOptions): HTMLCanvasElement {
+    this.checkDestroyed()
+
+    if (!this.image) {
+      throw new Error('No image loaded')
+    }
+
+    const canvas = createElement('canvas') as HTMLCanvasElement
+    const ctx = canvas.getContext('2d')
+
+    if (!ctx) {
+      throw new Error('Failed to get canvas context')
+    }
+
+    const outputSize = options?.size || {
+      width: this.cropData.width,
+      height: this.cropData.height
+    }
+
+    canvas.width = outputSize.width
+    canvas.height = outputSize.height
+
+    // 填充背景
+    if (options?.fillBackground) {
+      ctx.fillStyle = options.backgroundColor || '#ffffff'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+    }
+
+    // 计算源区域
+    const scaleX = this.image.naturalWidth / this.canvas.width
+    const scaleY = this.image.naturalHeight / this.canvas.height
+
+    const sourceX = this.cropData.x * scaleX
+    const sourceY = this.cropData.y * scaleY
+    const sourceWidth = this.cropData.width * scaleX
+    const sourceHeight = this.cropData.height * scaleY
+
+    ctx.drawImage(
+      this.image,
+      sourceX, sourceY, sourceWidth, sourceHeight,
+      0, 0, canvas.width, canvas.height
+    )
+
+    return canvas
+  }
+
+  /**
+   * 获取裁剪后的DataURL
+   */
+  getCroppedDataURL(options?: CropOutputOptions): string {
+    const canvas = this.getCroppedCanvas(options)
+    return canvasToDataURL(
+      canvas,
+      options?.format,
+      options?.quality
+    )
+  }
+
+  /**
+   * 获取裁剪后的Blob
+   */
+  async getCroppedBlob(options?: CropOutputOptions): Promise<Blob> {
+    const canvas = this.getCroppedCanvas(options)
+    return canvasToBlob(
+      canvas,
+      options?.format,
+      options?.quality
+    )
   }
 
   /**
    * 缩放
-   * @param delta 缩放增量
-   * @param center 缩放中心点
    */
-  zoom(delta: number, center?: Point): void {
-    this.transformManager.zoom(delta, center);
-    this.render();
+  zoom(scale: number): void {
+    this.checkDestroyed()
+
+    const [minScale, maxScale] = this.options.zoomRange!
+    this.transformState.scale = clamp(scale, minScale, maxScale)
+
+    this.drawImage()
+    this.emit(CropperEventType.ZOOM_CHANGE, {
+      scale: this.transformState.scale
+    })
   }
 
   /**
-   * 设置旋转
-   * @param rotation 旋转角度（度）
-   * @param center 旋转中心点
+   * 放大
    */
-  setRotation(rotation: number, center?: Point): void {
-    if (!this.config.enableRotation) {
-      return;
-    }
-    this.transformManager.setRotation(rotation, center);
-    this.render();
+  zoomIn(delta: number = 0.1): void {
+    this.zoom(this.transformState.scale + delta)
+  }
+
+  /**
+   * 缩小
+   */
+  zoomOut(delta: number = 0.1): void {
+    this.zoom(this.transformState.scale - delta)
   }
 
   /**
    * 旋转
-   * @param delta 旋转增量（度）
-   * @param center 旋转中心点
    */
-  rotate(delta: number, center?: Point): void {
-    if (!this.config.enableRotation) {
-      return;
+  rotate(angle: number): void {
+    this.checkDestroyed()
+
+    this.transformState.rotation = angle % 360
+    this.drawImage()
+
+    this.emit(CropperEventType.ROTATION_CHANGE, {
+      rotation: this.transformState.rotation
+    })
+  }
+
+  /**
+   * 向左旋转90度
+   */
+  rotateLeft(): void {
+    this.rotate(this.transformState.rotation - 90)
+  }
+
+  /**
+   * 向右旋转90度
+   */
+  rotateRight(): void {
+    this.rotate(this.transformState.rotation + 90)
+  }
+
+  /**
+   * 翻转
+   */
+  flip(horizontal: boolean, vertical: boolean): void {
+    this.checkDestroyed()
+
+    this.transformState.flipX = horizontal
+    this.transformState.flipY = vertical
+
+    this.drawImage()
+    this.emit(CropperEventType.FLIP_CHANGE, {
+      flipX: this.transformState.flipX,
+      flipY: this.transformState.flipY
+    })
+  }
+
+  /**
+   * 水平翻转
+   */
+  flipHorizontal(): void {
+    this.flip(!this.transformState.flipX, this.transformState.flipY)
+  }
+
+  /**
+   * 垂直翻转
+   */
+  flipVertical(): void {
+    this.flip(this.transformState.flipX, !this.transformState.flipY)
+  }
+
+  /**
+   * 重置
+   */
+  reset(): void {
+    this.checkDestroyed()
+
+    this.transformState = {
+      scale: 1,
+      rotation: 0,
+      flipX: false,
+      flipY: false,
+      translate: { x: 0, y: 0 },
     }
-    this.transformManager.rotate(delta, center);
-    this.render();
+
+    this.drawImage()
+    this.initializeCrop()
+
+    this.emit(CropperEventType.RESET)
   }
 
   /**
-   * 适应容器
-   */
-  fitToContainer(): void {
-    this.transformManager.fitToContainer();
-    this.render();
-  }
-
-  /**
-   * 填充容器
-   */
-  fillContainer(): void {
-    this.transformManager.fillContainer();
-    this.render();
-  }
-
-  /**
-   * 重置变换
-   */
-  resetTransform(): void {
-    this.transformManager.resetTransform();
-    this.render();
-  }
-
-  // ============================================================================
-  // 公共API - 导出功能
-  // ============================================================================
-
-  /**
-   * 导出裁剪结果
-   * @param options 导出选项
-   * @returns 导出结果
-   */
-  async export(options: Partial<ExportOptions> = {}): Promise<ExportResult> {
-    if (!this.currentImage || !this.currentCropArea) {
-      throw new Error('No image or crop area to export');
-    }
-
-    const exportOptions: ExportOptions = {
-      format: options.format || this.config.exportFormat,
-      quality: options.quality || this.config.exportQuality,
-      width: options.width,
-      height: options.height,
-      background: options.background || this.config.exportBackground
-    };
-
-    const startTime = performance.now();
-
-    try {
-      // 获取实际裁剪矩形
-      const actualCropRect = this.cropAreaManager.getActualCropRect(this.currentCropArea);
-      if (!actualCropRect) {
-        throw new Error('Failed to calculate crop rectangle');
-      }
-
-      // 导出
-      const result = await this.canvasRenderer.exportCroppedImage(
-        this.currentImage,
-        actualCropRect,
-        exportOptions
-      );
-
-      globalPerformanceMonitor.record('cropper-export', performance.now() - startTime);
-
-      this.emitEvent('export', {
-        type: 'export',
-        result,
-        options: exportOptions,
-        timestamp: Date.now()
-      });
-
-      return result;
-    } catch (error) {
-      globalPerformanceMonitor.record('cropper-export-error', performance.now() - startTime);
-      throw error;
-    }
-  }
-
-  // ============================================================================
-  // 公共API - 状态和配置
-  // ============================================================================
-
-  /**
-   * 获取当前状态
-   * @returns 裁剪器状态
-   */
-  getState(): CropperState {
-    return { ...this.state };
-  }
-
-  /**
-   * 更新配置
-   * @param config 新配置
-   */
-  updateConfig(config: Partial<CropperConfig>): void {
-    this.config = { ...this.config, ...config };
-
-    // 更新模块配置
-    this.updateModuleConfigs();
-
-    // 重新渲染
-    this.render();
-
-    this.emitEvent('config-change', {
-      type: 'config-change',
-      config: this.config,
-      timestamp: Date.now()
-    });
-  }
-
-  /**
-   * 获取当前配置
-   * @returns 当前配置
-   */
-  getConfig(): CropperConfig {
-    return { ...this.config };
-  }
-
-  // ============================================================================
-  // 公共API - 事件系统
-  // ============================================================================
-
-  /**
-   * 添加事件监听器
-   * @param type 事件类型
-   * @param listener 监听器函数
-   */
-  on(type: string, listener: (event: CropperEvent) => void): void {
-    if (!this.eventListeners.has(type)) {
-      this.eventListeners.set(type, new Set());
-    }
-    this.eventListeners.get(type)!.add(listener);
-  }
-
-  /**
-   * 移除事件监听器
-   * @param type 事件类型
-   * @param listener 监听器函数
-   */
-  off(type: string, listener: (event: CropperEvent) => void): void {
-    const listeners = this.eventListeners.get(type);
-    if (listeners) {
-      listeners.delete(listener);
-    }
-  }
-
-  // ============================================================================
-  // 配置和主题API
-  // ============================================================================
-
-  /**
-   * 获取配置管理器
-   * @returns 配置管理器实例
-   */
-  getConfigManager(): ConfigManager {
-    return this.configManager;
-  }
-
-  /**
-   * 获取主题管理器
-   * @returns 主题管理器实例
-   */
-  getThemeManager(): ThemeManager {
-    return this.themeManager;
-  }
-
-  /**
-   * 设置主题
-   * @param theme 主题名称
-   */
-  setTheme(theme: string): void {
-    this.themeManager.setTheme(theme);
-    this.render(); // 重新渲染以应用新主题
-  }
-
-  /**
-   * 获取当前主题
-   * @returns 当前主题名称
-   */
-  getCurrentTheme(): string {
-    return this.themeManager.getCurrentTheme();
-  }
-
-  /**
-   * 导出配置
-   * @returns 配置JSON字符串
-   */
-  exportConfig(): string {
-    return this.configManager.export();
-  }
-
-  /**
-   * 导入配置
-   * @param configJson 配置JSON字符串
-   */
-  importConfig(configJson: string): void {
-    this.configManager.import(configJson);
-    this.config = this.configManager.getConfig();
-    this.render(); // 重新渲染以应用新配置
-  }
-
-  /**
-   * 销毁裁剪器
+   * 销毁
    */
   destroy(): void {
-    // 清理事件监听器
-    this.eventListeners.clear();
+    if (this.isDestroyed) return
 
-    // 销毁模块
-    this.eventManager.destroy();
-    this.transformManager.destroy();
-    this.configManager.destroy();
-    this.themeManager.destroy();
+    this.isDestroyed = true
+
+    // 移除事件监听器
+    this.removeAllListeners()
 
     // 清理DOM
-    if (this.canvas.parentNode) {
-      this.canvas.parentNode.removeChild(this.canvas);
+    if (this.container.contains(this.canvas)) {
+      this.container.removeChild(this.canvas)
+    }
+    if (this.container.contains(this.overlay)) {
+      this.container.removeChild(this.overlay)
+    }
+    if (this.container.contains(this.cropBox)) {
+      this.container.removeChild(this.cropBox)
     }
 
-    this.emitEvent('destroy', {
-      type: 'destroy',
-      timestamp: Date.now()
-    });
+    removeClass(this.container, 'cropper-container')
+
+    this.emit(CropperEventType.DESTROY)
   }
 
   // ============================================================================
-  // 私有方法
+  // 事件处理方法
   // ============================================================================
 
   /**
-   * 解析容器
-   * @param container 容器
-   * @returns HTML元素
-   */
-  private resolveContainer(container: string | HTMLElement): HTMLElement {
-    if (isString(container)) {
-      const element = document.querySelector(container);
-      if (!element || !isHTMLElement(element)) {
-        throw new Error(`Container not found: ${container}`);
-      }
-      return element;
-    }
-
-    if (!isHTMLElement(container)) {
-      throw new Error('Invalid container element');
-    }
-
-    return container;
-  }
-
-  /**
-   * 创建Canvas
-   * @returns Canvas元素
-   */
-  private createCanvas(): HTMLCanvasElement {
-    const canvas = document.createElement('canvas');
-    canvas.style.display = 'block';
-    canvas.style.maxWidth = '100%';
-    canvas.style.maxHeight = '100%';
-    this.container.appendChild(canvas);
-    return canvas;
-  }
-
-  /**
-   * 初始化模块
-   */
-  private initializeModules(): void {
-    // 获取容器尺寸
-    const containerRect = this.container.getBoundingClientRect();
-    const containerSize = { width: containerRect.width, height: containerRect.height };
-
-    // 初始化配置和主题管理器
-    this.configManager = new ConfigManager(this.config);
-    this.themeManager = new ThemeManager();
-
-    // 初始化模块
-    this.imageLoader = new ImageLoader();
-    this.canvasRenderer = new CanvasRenderer(this.canvas);
-    this.cropAreaManager = new CropAreaManager();
-    this.transformManager = new TransformManager();
-    this.eventManager = new EventManager(this.container);
-    this.controlPointManager = new ControlPointManager();
-
-    // 设置容器尺寸
-    this.transformManager.setContainerSize(containerSize);
-    this.cropAreaManager.setContainerSize(containerSize);
-    this.controlPointManager.setContainerSize(containerSize);
-  }
-
-  /**
-   * 设置事件监听
-   */
-  private setupEventListeners(): void {
-    // 变换事件
-    this.transformManager.addEventListener('transform-update', () => {
-      this.render();
-    });
-
-    // 交互事件
-    this.eventManager.addEventListener('mouse-down', (event: any) => {
-      this.handleInteractionStart(event.point);
-    });
-
-    this.eventManager.addEventListener('mouse-move', (event: any) => {
-      this.handleInteractionUpdate(event.point);
-    });
-
-    this.eventManager.addEventListener('mouse-up', () => {
-      this.handleInteractionEnd();
-    });
-
-    // 触摸事件
-    this.eventManager.addEventListener('touch-start', (event: any) => {
-      this.handleInteractionStart(event.point);
-    });
-
-    this.eventManager.addEventListener('touch-move', (event: any) => {
-      this.handleInteractionUpdate(event.point);
-    });
-
-    this.eventManager.addEventListener('touch-end', () => {
-      this.handleInteractionEnd();
-    });
-
-    // 手势事件
-    this.eventManager.addEventListener('gesture', (event: any) => {
-      this.handleGesture(event);
-    });
-
-    // 窗口大小改变
-    this.eventManager.addEventListener('resize', () => {
-      this.handleResize();
-    });
-  }
-
-  /**
-   * 处理交互开始
-   * @param point 交互位置
-   */
-  private handleInteractionStart(point: Point): void {
-    // 检测控制点
-    const controlPoint = this.controlPointManager.hitTest(point);
-    if (controlPoint) {
-      this.controlPointManager.startInteraction(point, controlPoint);
-      this.state.interacting = true;
-      return;
-    }
-
-    // TODO: 处理其他交互（如拖拽图片）
-  }
-
-  /**
-   * 处理交互更新
-   * @param point 当前位置
-   */
-  private handleInteractionUpdate(point: Point): void {
-    if (this.state.interacting) {
-      const updatedCropArea = this.controlPointManager.updateInteraction(point);
-      if (updatedCropArea) {
-        this.currentCropArea = updatedCropArea;
-        this.render();
-      }
-    } else {
-      // 更新悬停状态
-      this.controlPointManager.setHoverPoint(point);
-      this.render();
-    }
-  }
-
-  /**
-   * 处理交互结束
-   */
-  private handleInteractionEnd(): void {
-    if (this.state.interacting) {
-      this.controlPointManager.endInteraction();
-      this.state.interacting = false;
-    }
-  }
-
-  /**
-   * 处理手势
-   * @param event 手势事件
-   */
-  private handleGesture(event: any): void {
-    if (event.type === 'pinch') {
-      this.setZoom(event.scale, event.center);
-    }
-  }
-
-  /**
-   * 处理窗口大小改变
+   * 处理窗口大小变化
    */
   private handleResize(): void {
-    const containerRect = this.container.getBoundingClientRect();
-    const containerSize = { width: containerRect.width, height: containerRect.height };
-
-    this.transformManager.setContainerSize(containerSize);
-    this.cropAreaManager.setContainerSize(containerSize);
-    this.controlPointManager.setContainerSize(containerSize);
-
-    this.render();
-  }
-
-  /**
-   * 创建默认裁剪区域
-   */
-  private createDefaultCropArea(): void {
-    if (!this.currentImage) {
-      return;
-    }
-
-    // 创建居中的默认裁剪区域
-    const imageWidth = this.currentImage.naturalWidth;
-    const imageHeight = this.currentImage.naturalHeight;
-
-    let cropWidth = imageWidth * 0.8;
-    let cropHeight = imageHeight * 0.8;
-
-    // 应用宽高比
-    if (this.config.aspectRatio) {
-      const targetRatio = this.config.aspectRatio;
-      const currentRatio = cropWidth / cropHeight;
-
-      if (currentRatio > targetRatio) {
-        cropWidth = cropHeight * targetRatio;
-      } else {
-        cropHeight = cropWidth / targetRatio;
-      }
-    }
-
-    const cropRect = {
-      x: (imageWidth - cropWidth) / 2,
-      y: (imageHeight - cropHeight) / 2,
-      width: cropWidth,
-      height: cropHeight
-    };
-
-    this.setCropArea(cropRect, this.config.shape);
-  }
-
-  /**
-   * 渲染
-   */
-  private render(): void {
-    if (!this.currentImage) {
-      this.canvasRenderer.clear();
-      return;
-    }
-
-    // 渲染图片
-    const transform = this.transformManager.getMatrix();
-    this.canvasRenderer.renderImage(this.currentImage, transform);
-
-    // 渲染裁剪区域
-    if (this.currentCropArea && this.config.showGrid) {
-      this.canvasRenderer.renderCropArea(this.currentCropArea);
-    }
-
-    // 渲染控制点
-    if (this.currentCropArea && this.config.showControlPoints) {
-      const controlPoints = this.controlPointManager.getControlPoints();
-      controlPoints.forEach(point => {
-        const style = this.controlPointManager.getControlPointStyle(point);
-        this.canvasRenderer.renderControlPoint(point, style);
-      });
+    if (this.options.responsive) {
+      this.updateCanvas()
+      this.updateCropBox()
     }
   }
 
   /**
-   * 更新模块配置
+   * 处理裁剪框鼠标按下
    */
-  private updateModuleConfigs(): void {
-    // 更新变换管理器配置
-    this.transformManager.updateConfig({
-      minZoom: this.config.minZoom,
-      maxZoom: this.config.maxZoom,
-      smoothTransform: true
-    });
+  private handleCropBoxMouseDown(event: MouseEvent): void {
+    if (!this.options.movable) return
 
-    // 更新裁剪区域管理器配置
-    this.cropAreaManager.updateConfig({
-      defaultShape: this.config.shape,
-      minCropSize: this.config.minCropSize,
-      maxCropSize: this.config.maxCropSize
-    });
-
-    // 更新事件管理器配置
-    this.eventManager.updateConfig({
-      enableMouse: this.config.enableMouse,
-      enableTouch: this.config.enableTouch,
-      enableKeyboard: this.config.enableKeyboard,
-      enableGestures: this.config.enableGestures
-    });
+    event.preventDefault()
+    this.startDrag(event)
   }
 
   /**
-   * 创建初始状态
-   * @returns 初始状态
+   * 处理裁剪框触摸开始
    */
-  private createInitialState(): CropperState {
-    return {
-      initialized: false,
-      hasImage: false,
-      hasCropArea: false,
-      loading: false,
-      interacting: false,
-      error: null
-    };
+  private handleCropBoxTouchStart(event: TouchEvent): void {
+    if (!this.options.movable || !this.options.touchEnabled) return
+
+    event.preventDefault()
+    this.startDrag(event)
   }
 
   /**
-   * 发射事件
-   * @param type 事件类型
-   * @param event 事件数据
+   * 处理手柄鼠标按下
    */
-  private emitEvent(type: string, event: CropperEvent): void {
-    const listeners = this.eventListeners.get(type);
-    if (listeners) {
-      listeners.forEach(listener => {
-        try {
-          listener(event);
-        } catch (error) {
-          console.error(`Error in event listener for ${type}:`, error);
-        }
-      });
+  private handleHandleMouseDown(event: MouseEvent): void {
+    if (!this.options.resizable) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    this.startResize(event)
+  }
+
+  /**
+   * 处理手柄触摸开始
+   */
+  private handleHandleTouchStart(event: TouchEvent): void {
+    if (!this.options.resizable || !this.options.touchEnabled) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    this.startResize(event)
+  }
+
+  /**
+   * 处理鼠标移动
+   */
+  private handleMouseMove(event: MouseEvent): void {
+    if (this.isDragging) {
+      this.updateDrag(event)
+    } else if (this.isResizing) {
+      this.updateResize(event)
     }
+  }
+
+  /**
+   * 处理鼠标释放
+   */
+  private handleMouseUp(event: MouseEvent): void {
+    if (this.isDragging) {
+      this.endDrag(event)
+    } else if (this.isResizing) {
+      this.endResize(event)
+    }
+  }
+
+  /**
+   * 处理触摸移动
+   */
+  private handleTouchMove(event: TouchEvent): void {
+    if (this.isDragging) {
+      this.updateDrag(event)
+    } else if (this.isResizing) {
+      this.updateResize(event)
+    }
+  }
+
+  /**
+   * 处理触摸结束
+   */
+  private handleTouchEnd(event: TouchEvent): void {
+    if (this.isDragging) {
+      this.endDrag(event)
+    } else if (this.isResizing) {
+      this.endResize(event)
+    }
+  }
+
+  /**
+   * 处理滚轮事件
+   */
+  private handleWheel(event: WheelEvent): void {
+    if (!this.options.zoomable) return
+
+    event.preventDefault()
+
+    const delta = event.deltaY > 0 ? -0.1 : 0.1
+    this.zoomIn(delta)
+  }
+
+  /**
+   * 开始拖拽
+   */
+  private startDrag(event: MouseEvent | TouchEvent): void {
+    this.isDragging = true
+    this.dragStartPoint = this.getEventPoint(event)
+    this.dragStartCrop = { ...this.cropData }
+
+    this.emit(CropperEventType.DRAG_START)
+  }
+
+  /**
+   * 更新拖拽
+   */
+  private updateDrag(event: MouseEvent | TouchEvent): void {
+    if (!this.isDragging || !this.dragStartPoint || !this.dragStartCrop) return
+
+    const currentPoint = this.getEventPoint(event)
+    const deltaX = currentPoint.x - this.dragStartPoint.x
+    const deltaY = currentPoint.y - this.dragStartPoint.y
+
+    this.cropData.x = this.dragStartCrop.x + deltaX
+    this.cropData.y = this.dragStartCrop.y + deltaY
+
+    this.constrainCropData()
+    this.updateCropBox()
+
+    this.emit(CropperEventType.DRAG_MOVE, { cropData: this.cropData })
+  }
+
+  /**
+   * 结束拖拽
+   */
+  private endDrag(event: MouseEvent | TouchEvent): void {
+    this.isDragging = false
+    this.dragStartPoint = null
+    this.dragStartCrop = null
+
+    this.emit(CropperEventType.DRAG_END, { cropData: this.cropData })
+    this.emit(CropperEventType.CROP_CHANGE, { cropData: this.cropData })
+  }
+
+  /**
+   * 开始调整大小
+   */
+  private startResize(event: MouseEvent | TouchEvent): void {
+    this.isResizing = true
+    this.dragStartPoint = this.getEventPoint(event)
+    this.dragStartCrop = { ...this.cropData }
+
+    this.emit(CropperEventType.CROP_START)
+  }
+
+  /**
+   * 更新调整大小
+   */
+  private updateResize(event: MouseEvent | TouchEvent): void {
+    if (!this.isResizing || !this.dragStartPoint || !this.dragStartCrop) return
+
+    // 这里需要根据具体的手柄来调整大小
+    // 简化实现，只处理右下角调整
+    const currentPoint = this.getEventPoint(event)
+    const deltaX = currentPoint.x - this.dragStartPoint.x
+    const deltaY = currentPoint.y - this.dragStartPoint.y
+
+    this.cropData.width = Math.max(50, this.dragStartCrop.width + deltaX)
+    this.cropData.height = Math.max(50, this.dragStartCrop.height + deltaY)
+
+    // 应用宽高比约束
+    if (this.options.aspectRatio && this.options.aspectRatio > 0) {
+      const rect = adjustRectByAspectRatio(this.cropData, this.options.aspectRatio)
+      this.cropData.width = rect.width
+      this.cropData.height = rect.height
+    }
+
+    this.constrainCropData()
+    this.updateCropBox()
+
+    this.emit(CropperEventType.CROP_MOVE, { cropData: this.cropData })
+  }
+
+  /**
+   * 结束调整大小
+   */
+  private endResize(event: MouseEvent | TouchEvent): void {
+    this.isResizing = false
+    this.dragStartPoint = null
+    this.dragStartCrop = null
+
+    this.emit(CropperEventType.CROP_END, { cropData: this.cropData })
+    this.emit(CropperEventType.CROP_CHANGE, { cropData: this.cropData })
+  }
+
+  /**
+   * 获取事件坐标
+   */
+  private getEventPoint(event: MouseEvent | TouchEvent): Point {
+    if ('touches' in event && event.touches.length > 0) {
+      return { x: event.touches[0].clientX, y: event.touches[0].clientY }
+    } else if ('clientX' in event) {
+      return { x: event.clientX, y: event.clientY }
+    }
+    return { x: 0, y: 0 }
+  }
+
+  /**
+   * 约束裁剪数据
+   */
+  private constrainCropData(): void {
+    const canvasRect = this.canvas.getBoundingClientRect()
+
+    // 约束位置
+    this.cropData.x = clamp(this.cropData.x, 0, canvasRect.width - this.cropData.width)
+    this.cropData.y = clamp(this.cropData.y, 0, canvasRect.height - this.cropData.height)
+
+    // 约束尺寸
+    const minSize = this.options.minCropSize || { width: 50, height: 50 }
+    const maxSize = this.options.maxCropSize || { width: canvasRect.width, height: canvasRect.height }
+
+    this.cropData.width = clamp(this.cropData.width, minSize.width, maxSize.width)
+    this.cropData.height = clamp(this.cropData.height, minSize.height, maxSize.height)
+  }
+
+  // ============================================================================
+  // 静态方法
+  // ============================================================================
+
+  /**
+   * 创建裁剪器实例
+   */
+  static create(options: CropperOptions): Cropper {
+    return new Cropper(options)
+  }
+
+  /**
+   * 检查兼容性
+   */
+  static checkCompatibility(): CompatibilityResult {
+    return checkCompatibility()
+  }
+
+  /**
+   * 获取版本信息
+   */
+  static getVersion(): string {
+    return '1.0.0' // 这里应该从package.json读取
+  }
+
+  /**
+   * 检查是否支持指定功能
+   */
+  static isSupported(feature?: string): boolean {
+    const compatibility = checkCompatibility()
+
+    if (!feature) {
+      return compatibility.supported
+    }
+
+    return (compatibility.features as any)[feature] || false
+  }
+
+  /**
+   * 获取默认配置
+   */
+  static getDefaultOptions(): Partial<CropperOptions> {
+    return { ...DEFAULT_OPTIONS }
+  }
+
+  /**
+   * 合并配置选项
+   */
+  static mergeOptions(
+    defaultOptions: Partial<CropperOptions>,
+    userOptions: Partial<CropperOptions>
+  ): CropperOptions {
+    return { ...defaultOptions, ...userOptions } as CropperOptions
   }
 }
