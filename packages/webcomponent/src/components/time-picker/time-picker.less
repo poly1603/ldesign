@@ -33,6 +33,18 @@
     &--status-success { border-color: #16a34a; }
     &--status-warning { border-color: #ca8a04; }
     &--status-error { border-color: #dc2626; }
+    
+    &--readonly { 
+      cursor: default; 
+      background-color: var(--ldesign-bg-color-readonly, #f9fafb);
+      &:hover { border-color: var(--ldesign-border-color, #e5e7eb); }
+    }
+    &--loading { 
+      pointer-events: none;
+      .ldesign-time-picker__suffix {
+        animation: spin 1s linear infinite;
+      }
+    }
   }
 
   &__input {
@@ -47,10 +59,22 @@
     &::placeholder { color: var(--ldesign-text-color-secondary, #6b7280); }
   }
 
-  &__text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  &__text { 
+    flex: 1; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis;
+    &--placeholder { color: var(--ldesign-text-color-secondary, #6b7280); }
+  }
   &__suffix { display: inline-flex; color: var(--ldesign-text-color-secondary, #6b7280); }
-  &__clear { display: inline-flex; color: var(--ldesign-text-color-secondary, #9ca3af); cursor: pointer; }
-  &__clear:hover { color: var(--ldesign-text-color, #111827); }
+  &__clear { 
+    display: inline-flex; 
+    color: var(--ldesign-text-color-secondary, #9ca3af); 
+    cursor: pointer; 
+    margin-right: 4px;
+    transition: color 0.2s;
+    &:hover { color: var(--ldesign-text-color, #111827); }
+  }
 
   &__content { padding: 8px; }
 
@@ -71,6 +95,11 @@
     background: transparent;
     box-shadow: none;
   }
+  
+  /* AM/PM选择器宽度调整 */
+  ldesign-picker:last-child .ldesign-picker__picker {
+    width: 60px;
+  }
   ldesign-picker .ldesign-picker__indicator {
     background: transparent;
     border-top: 1px solid var(--ldesign-border-color, #e5e7eb);
@@ -80,21 +109,84 @@
 
   /* 指示与蒙层由 ldesign-picker 自己渲染，这里无需重复定义 */
 
+  // 预设区域
+  &__presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
+  }
+  
+  &__preset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border: 1px solid var(--ldesign-border-color, #e5e7eb);
+    border-radius: 4px;
+    background: var(--ldesign-bg-color, #fff);
+    color: var(--ldesign-text-color, #111827);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover {
+      border-color: #1d4ed8;
+      color: #1d4ed8;
+      background: #eff6ff;
+    }
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+  
   &__footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 4px 0 4px;
   }
+  
+  &__footer-left {
+    display: flex;
+    gap: 8px;
+  }
 
-  &__now {
+  &__now,
+  &__clear-btn {
     background: none;
     border: none;
     color: #1d4ed8;
     font-size: 14px;
     cursor: pointer;
     padding: 4px 6px;
+    transition: opacity 0.2s;
+    
+    &:hover {
+      opacity: 0.8;
+    }
   }
+  
+  &__clear-btn {
+    color: #6b7280;
+    &:hover {
+      color: #dc2626;
+    }
+  }
+}
+
+/* 加载动画 */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 禁用选项样式 */
+ldesign-time-picker .ldesign-picker__item--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* 让弹层内边距更紧凑 */
