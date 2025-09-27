@@ -25,19 +25,19 @@
 
 /* 日期网格（逐周一行） */
 .ldc-days { padding: 0 12px 12px; width: 100%; box-sizing: border-box; }
-.ldc-week-row { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid #f0f0f0; }
+.ldc-week-row { display: grid; grid-template-columns: repeat(7, 1fr); }
 .ldc-date--with-weeks .ldc-week-row { grid-template-columns: 48px repeat(7, 1fr); }
 .ldc-weeknum { display: flex; align-items: center; justify-content: center; color: #c0c4cc; font-size: 12px; }
 
 /* 单元格样式（更贴近截图，大面积方块，左上对齐，右上角日期） */
-.ldc-day { position: relative; min-height: 96px; padding: 8px; text-align: left; background: #fff; border: 1px solid transparent; border-right: 1px solid #f0f0f0; border-left: 1px solid #f0f0f0; cursor: pointer; color: #303133; font-size: 12px; display: block; width: 100%; box-sizing: border-box; }
-.ldc-week-row .ldc-day:first-of-type { border-left-color: transparent; }
-.ldc-week-row .ldc-day:last-of-type { border-right-color: transparent; }
+.ldc-day { position: relative; min-height: 96px; padding: 8px; text-align: left; background: #fff; border: none; border-right: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; cursor: pointer; color: #303133; font-size: 12px; display: block; width: 100%; box-sizing: border-box; }
+.ldc-week-row .ldc-day:last-of-type { border-right: none; }
+.ldc-week-row:last-child .ldc-day { border-bottom: none; }
 .ldc-day.other { color: #bfbfbf; }
 .ldc-day.disabled { color: #c0c4cc; cursor: not-allowed; }
 .ldc-day:hover:not(.disabled) { background: #f6f9ff; }
-.ldc-day.today { outline: 1px solid #1677ff; outline-offset: -1px; }
-.ldc-day.selected { background: #e6f4ff; border-color: #91caff; }
+.ldc-day.today { box-shadow: inset 0 0 0 2px #1677ff; }
+.ldc-day.selected { background: #e6f4ff; }
 
 .ldc-day-top { position: absolute; top: 6px; right: 8px; }
 .ldc-day-num { font-weight: 500; font-size: 14px; color: inherit; }
@@ -96,7 +96,28 @@
 .ldc-drag-ghost { position: absolute; background: rgba(22,119,255,0.15); border: 1px dashed #1677ff; border-left-width: 3px; box-sizing: border-box; pointer-events: none; border-radius: 4px; }
 .ldc-event-block { position: absolute; background: #e6f4ff; color: #1f1f1f; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); padding: 2px 6px 2px 6px; box-sizing: border-box; overflow: hidden; }
 .ldc-event-block.draggable { cursor: move; }
+.ldc-event-block:hover { background: #d0e5ff; }
 .ldc-event-block.resizable .ldc-resize-handle { position: absolute; left: 0; right: 0; height: 6px; cursor: ns-resize; }
 .ldc-resize-handle--start { top: -2px; }
 .ldc-resize-handle--end { bottom: -2px; }
 .ldc-event-block-title { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 右键菜单样式 */
+.ldc-context-menu { position: fixed; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); padding: 4px 0; z-index: 9999; min-width: 150px; }
+.ldc-context-menu-item { padding: 8px 16px; font-size: 13px; color: #303133; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+.ldc-context-menu-item:hover { background: #f6f9ff; color: #1677ff; }
+.ldc-context-menu-item.disabled { color: #c0c4cc; cursor: not-allowed; }
+.ldc-context-menu-item.disabled:hover { background: transparent; color: #c0c4cc; }
+.ldc-context-menu-divider { height: 1px; background: #f0f0f0; margin: 4px 0; }
+
+/* 弹窗表单样式 */
+.ldc-modal-form { padding: 8px 0; }
+.ldc-form-item { margin-bottom: 20px; }
+.ldc-form-label { display: block; margin-bottom: 8px; color: #303133; font-size: 14px; font-weight: 500; }
+.ldc-form-input { width: 100%; height: 36px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; color: #303133; transition: border-color 0.2s; box-sizing: border-box; }
+.ldc-form-input:focus { outline: none; border-color: #1677ff; }
+.ldc-form-input::placeholder { color: #c0c4cc; }
+.ldc-color-picker { display: flex; gap: 8px; }
+.ldc-color-btn { width: 32px; height: 32px; border: 2px solid transparent; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+.ldc-color-btn:hover { transform: scale(1.1); }
+.ldc-color-btn.active { border-color: #303133; box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2); }
