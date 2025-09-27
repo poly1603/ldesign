@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Eye, Square, Monitor, Trash2, ExternalLink, Globe, Wifi, Copy, QrCode, RefreshCw } from 'lucide-react'
+import { Eye, Square, Monitor, Trash2, ExternalLink, Globe, Wifi, Copy, RefreshCw } from 'lucide-react'
 import { useSocket } from '../contexts/SocketContext'
 import { useTaskState } from '../contexts/TaskStateContext'
 import { api } from '../services/api'
 import toast from 'react-hot-toast'
+import QRCodeDisplay from '../components/QRCodeDisplay'
 // @ts-ignore
 import Convert from 'ansi-to-html'
 
@@ -61,6 +62,7 @@ const processOutputContent = (content: string): { html: string; isQRCode: boolea
 const PreviewPage: React.FC = () => {
   const { socket, isConnected } = useSocket()
   const {
+    tasks,
     getTask,
     createTask,
     updateTaskStatus,
@@ -192,19 +194,29 @@ const PreviewPage: React.FC = () => {
   // 组件挂载时检查构建状态，并定期刷新
   useEffect(() => {
     checkAllBuilds()
-    
+
     // 每 10 秒刷新一次构建状态
     const interval = setInterval(() => {
       checkAllBuilds()
     }, 10000)
-    
+
     return () => clearInterval(interval)
   }, [])
 
-  // 状态恢复逻辑
+  // 状态恢复逻辑 - 在UI启动时跳过状态恢复，确保干净启动
   useEffect(() => {
     const restoreState = async () => {
       try {
+        // 等待一小段时间确保TaskStateContext完全初始化
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        // 检查是否是UI刚启动（通过检查是否有任何任务存在）
+        const hasAnyTasks = Object.keys(tasks).length > 0
+        if (!hasAnyTasks) {
+          console.log(`UI刚启动，跳过状态恢复以确保干净启动`)
+          return
+        }
+
         console.log('Attempting to restore state for:', processKey)
         const taskState = await api.getTaskByTypeAndEnv('preview', selectedEnv)
         if (taskState) {
@@ -220,6 +232,7 @@ const PreviewPage: React.FC = () => {
 
           // 恢复输出日志
           if (taskState.outputLines && taskState.outputLines.length > 0) {
+            console.log(`Restoring ${taskState.outputLines.length} output lines for ${processKey}`)
             // 清空现有输出
             clearTaskOutput(processKey)
             // 添加所有输出行
@@ -432,8 +445,14 @@ const PreviewPage: React.FC = () => {
       return
     }
 
-    // 清空之前的日志
+    // 清空之前的日志和服务器信息
     clearTaskOutput(processKey)
+    updateServerInfo(processKey, {
+      localUrl: undefined,
+      networkUrl: undefined,
+      qrCode: undefined,
+      port: undefined
+    })
 
     try {
       const result = await api.runTask('preview', {
@@ -548,11 +567,10 @@ const PreviewPage: React.FC = () => {
           <button
             onClick={() => checkAllBuilds()}
             disabled={checkingBuilds}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              checkingBuilds 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-            }`}
+            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${checkingBuilds
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+              }`}
           >
             <RefreshCw className={`w-4 h-4 ${checkingBuilds ? 'animate-spin' : ''}`} />
             <span>{checkingBuilds ? '检查中...' : '刷新状态'}</span>
@@ -750,27 +768,15 @@ const PreviewPage: React.FC = () => {
           </div>
 
           {/* 二维码显示 */}
-          {serverInfo.qrCode && (
-            <div className="mt-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h4 className="font-medium text-gray-800 mb-2">手机扫码访问</h4>
-              <div className="bg-white p-2 rounded border inline-block">
-                <pre className="text-xs font-mono leading-none text-black whitespace-pre">
-                  {serverInfo.qrCode
-                    ?.replace(/\x1b\[[0-9;]*m/g, '')  // 清理 \x1b[XXm 格式
-                    .replace(/\[\d+m/g, '')          // 清理 [XXm 格式
-                    .replace(/\[[\d;]*m/g, '')       // 清理 [XX;XXm 格式
-                    .replace(/\[\d+;\d+m/g, '')      // 清理 [XX;XXm 格式
-                    .replace(/\[2m/g, '')            // 清理 [2m (粗体开始)
-                    .replace(/\[22m/g, '')           // 清理 [22m (粗体结束)
-                    .replace(/\[36m/g, '')           // 清理 [36m (青色)
-                    .replace(/\[39m/g, '')           // 清理 [39m (默认前景色)
-                    .replace(/\[90m/g, '')           // 清理 [90m (暗灰色)
-                    .replace(/\[1m/g, '')            // 清理 [1m (粗体)
-                    .replace(/\[0m/g, '')            // 清理 [0m (重置)
-                    .replace(/\[32m/g, '')           // 清理 [32m (绿色)
-                  }
-                </pre>
-              </div>
+          {serverInfo.networkUrl && (
+            <div className="mt-6">
+              <QRCodeDisplay
+                url={serverInfo.networkUrl}
+                title="手机扫码访问"
+                description="使用手机扫描二维码快速访问预览服务器"
+                size={180}
+                showCopy={true}
+              />
             </div>
           )}
         </div>
@@ -894,15 +900,15 @@ const PreviewPage: React.FC = () => {
           </div>
 
           {/* 二维码显示 */}
-          {serverInfo.qrCode && (
-            <div className="mt-6 bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-3 flex items-center">
-                <QrCode className="w-4 h-4 mr-2 text-purple-600" />
-                扫码访问
-              </h4>
-              <div className="bg-white rounded border p-4 font-mono text-xs leading-none whitespace-pre overflow-x-auto">
-                {serverInfo.qrCode}
-              </div>
+          {serverInfo.networkUrl && (
+            <div className="mt-6">
+              <QRCodeDisplay
+                url={serverInfo.networkUrl}
+                title="手机扫码访问"
+                description="使用手机扫描二维码快速访问预览服务器"
+                size={180}
+                showCopy={true}
+              />
             </div>
           )}
         </div>

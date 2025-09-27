@@ -4,7 +4,7 @@
 
 import { readdir, stat, readFile, writeFile, rm } from 'fs/promises';
 import { resolve, join, relative, extname } from 'path';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { CLIContext } from '../types/index';
 import { DependencyManager, DependencyInfo, UpgradeResult } from './dependency-manager';
 
@@ -118,7 +118,7 @@ export class ProjectManager {
   async getLauncherConfigs(): Promise<{ environment: string; path: string; exists: boolean }[]> {
     const projectPath = this.context.cwd;
     const ldesignDir = resolve(projectPath, '.ldesign');
-    
+
     const configs = [
       { environment: 'base', fileName: 'launcher.config.ts' },
       { environment: 'development', fileName: 'launcher.config.development.ts' },
@@ -146,13 +146,13 @@ export class ProjectManager {
   async readLauncherConfig(environment: string = 'base'): Promise<{ content: string; path: string; exists: boolean }> {
     const projectPath = this.context.cwd;
     const ldesignDir = resolve(projectPath, '.ldesign');
-    
-    const fileName = environment === 'base' 
-      ? 'launcher.config.ts' 
+
+    const fileName = environment === 'base'
+      ? 'launcher.config.ts'
       : `launcher.config.${environment}.ts`;
-    
+
     const configPath = resolve(ldesignDir, fileName);
-    
+
     if (!existsSync(configPath)) {
       return {
         content: this.getDefaultLauncherConfig(environment),
@@ -180,11 +180,11 @@ export class ProjectManager {
   async saveLauncherConfig(environment: string, content: string): Promise<void> {
     const projectPath = this.context.cwd;
     const ldesignDir = resolve(projectPath, '.ldesign');
-    
-    const fileName = environment === 'base' 
-      ? 'launcher.config.ts' 
+
+    const fileName = environment === 'base'
+      ? 'launcher.config.ts'
       : `launcher.config.${environment}.ts`;
-    
+
     const configPath = resolve(ldesignDir, fileName);
 
     try {
@@ -768,7 +768,7 @@ export default defineConfig({
       // 尝试多种方式匹配 outDir
       // 1. 标准格式: outDir: 'dist' 或 outDir: "dist" 或 outDir: `dist`
       let outDirMatch = configContent.match(/outDir\s*:\s*(?:[\'"\`])([^\'"\`]+)(?:[\'"\`])/);
-      
+
       // 2. 环境特定的配置，如 build: { [environment]: { outDir: 'dist-env' } }
       if (!outDirMatch) {
         try {
@@ -781,14 +781,14 @@ export default defineConfig({
           // 如果正则表达式失败，忽略此匹配
         }
       }
-      
+
       // 3. 动态配置，如 mode === 'production' ? 'dist' : 'dist-dev'
       if (!outDirMatch && environment === 'production') {
         outDirMatch = configContent.match(/mode\s*===?\s*(?:[\'"\`])production(?:[\'"\`])\s*\?\s*(?:[\'"\`])([^\'"\`]+)(?:[\'"\`])/);
       } else if (!outDirMatch && environment !== 'production') {
         outDirMatch = configContent.match(/mode\s*!==?\s*(?:[\'"\`])production(?:[\'"\`])\s*\?\s*(?:[\'"\`])([^\'"\`]+)(?:[\'"\`])/);
       }
-      
+
       if (outDirMatch) {
         const outDir = outDirMatch[1];
         this.context.logger.debug(`从配置文件中解析到 ${environment} 的 outDir: ${outDir}`);
@@ -807,6 +807,24 @@ export default defineConfig({
    * 获取默认构建输出目录
    */
   private getDefaultBuildDir(environment: string): string {
+    // 检查是否有基础配置文件中的 outDir 设置
+    const projectPath = this.context.cwd;
+    const baseConfigPath = resolve(projectPath, '.ldesign', 'launcher.config.ts');
+
+    try {
+      if (existsSync(baseConfigPath)) {
+        const configContent = readFileSync(baseConfigPath, 'utf-8');
+        const outDirMatch = configContent.match(/outDir\s*:\s*(?:[\'"\`])([^\'"\`]+)(?:[\'"\`])/);
+        if (outDirMatch) {
+          this.context.logger.debug(`从基础配置文件中找到 outDir: ${outDirMatch[1]}`);
+          return outDirMatch[1];
+        }
+      }
+    } catch (error) {
+      // 忽略错误，使用默认值
+    }
+
+    // 如果没有找到配置，使用环境特定的默认值
     switch (environment) {
       case 'development':
         return 'dist-dev';
@@ -815,9 +833,9 @@ export default defineConfig({
       case 'staging':
         return 'dist-staging';
       case 'production':
-        return 'dist';
+        return 'site'; // 根据实际配置，生产环境默认使用 site
       default:
-        return 'dist';
+        return 'site';
     }
   }
 
@@ -840,11 +858,32 @@ export default defineConfig({
         return false;
       }
 
-      // 检查目录是否为空
-      const files = await readdir(buildPath);
-      const hasFiles = files.length > 0;
+      // 递归检查是否有文件
+      const hasFilesRecursive = async (dir: string): Promise<boolean> => {
+        try {
+          const items = await readdir(dir, { withFileTypes: true });
 
-      this.context.logger.debug(`构建目录${buildPath}包含${files.length}个文件`);
+          for (const item of items) {
+            if (item.isFile()) {
+              // 忽略隐藏文件和系统文件
+              if (!item.name.startsWith('.') && !item.name.startsWith('~')) {
+                return true;
+              }
+            } else if (item.isDirectory()) {
+              const fullPath = resolve(dir, item.name);
+              if (await hasFilesRecursive(fullPath)) {
+                return true;
+              }
+            }
+          }
+          return false;
+        } catch (error) {
+          return false;
+        }
+      };
+
+      const hasFiles = await hasFilesRecursive(buildPath);
+      this.context.logger.debug(`构建目录${buildPath}${hasFiles ? '包含' : '不包含'}有效文件`);
       return hasFiles;
     } catch (error) {
       this.context.logger.debug(`检查${environment}构建产物失败:`, error);
@@ -853,7 +892,7 @@ export default defineConfig({
   }
 
   /**
-   * 获取构建时间（从产物目录的创建时间）
+   * 获取构建时间（从产物目录中最新文件的修改时间）
    */
   async getBuildTime(environment: string): Promise<string | null> {
     try {
@@ -861,21 +900,63 @@ export default defineConfig({
       const buildDir = await this.getBuildDirFromConfig(environment);
       const buildPath = resolve(projectPath, buildDir);
 
+      this.context.logger.debug(`获取${environment}构建时间，目录: ${buildPath}`);
+
       if (!existsSync(buildPath)) {
+        this.context.logger.debug(`构建目录不存在: ${buildPath}`);
         return null;
       }
 
-      const stats = await stat(buildPath);
-      const buildTime = stats.mtime; // 使用修改时间作为构建时间
+      // 递归获取所有文件
+      const getAllFiles = async (dir: string): Promise<string[]> => {
+        const files: string[] = [];
+        const items = await readdir(dir, { withFileTypes: true });
+
+        for (const item of items) {
+          const fullPath = resolve(dir, item.name);
+          if (item.isDirectory()) {
+            files.push(...await getAllFiles(fullPath));
+          } else {
+            files.push(fullPath);
+          }
+        }
+        return files;
+      };
+
+      const allFiles = await getAllFiles(buildPath);
+      if (allFiles.length === 0) {
+        this.context.logger.debug(`构建目录为空: ${buildPath}`);
+        return null;
+      }
+
+      // 找到最新的文件
+      let latestTime = new Date(0);
+      for (const file of allFiles) {
+        try {
+          const stats = await stat(file);
+          if (stats.mtime > latestTime) {
+            latestTime = stats.mtime;
+          }
+        } catch (error) {
+          // 忽略无法访问的文件
+          continue;
+        }
+      }
+
+      if (latestTime.getTime() === 0) {
+        return null;
+      }
 
       // 格式化时间为 YYYY/MM/DD HH:mm
-      const year = buildTime.getFullYear();
-      const month = String(buildTime.getMonth() + 1).padStart(2, '0');
-      const day = String(buildTime.getDate()).padStart(2, '0');
-      const hours = String(buildTime.getHours()).padStart(2, '0');
-      const minutes = String(buildTime.getMinutes()).padStart(2, '0');
+      const year = latestTime.getFullYear();
+      const month = String(latestTime.getMonth() + 1).padStart(2, '0');
+      const day = String(latestTime.getDate()).padStart(2, '0');
+      const hours = String(latestTime.getHours()).padStart(2, '0');
+      const minutes = String(latestTime.getMinutes()).padStart(2, '0');
 
-      return `${year}/${month}/${day} ${hours}:${minutes}`;
+      const formattedTime = `${year}/${month}/${day} ${hours}:${minutes}`;
+      this.context.logger.debug(`${environment}构建时间: ${formattedTime}`);
+      return formattedTime;
     } catch (error) {
       this.context.logger.debug(`获取${environment}构建时间失败:`, error);
       return null;

@@ -7,8 +7,11 @@ import {
   Settings,
   FileText as FileTemplate,
   Package,
+  Package2,
   Puzzle,
   BarChart3,
+  Monitor,
+  Activity,
   Wifi,
   WifiOff
 } from 'lucide-react'
@@ -26,11 +29,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const navigation = [
     { name: '概览', href: '/', icon: Home },
-    { name: '任务', href: '/tasks', icon: Play },
+    { name: '启动', href: '/dev', icon: Play },
+    { name: '打包', href: '/build', icon: Package },
+    { name: '预览', href: '/preview', icon: Monitor },
+    { name: '任务', href: '/tasks', icon: Activity },
     { name: '文件', href: '/files', icon: FileText },
     { name: '配置', href: '/config', icon: Settings },
     { name: '模板', href: '/templates', icon: FileTemplate },
-    { name: '依赖', href: '/dependencies', icon: Package },
+    { name: '依赖', href: '/dependencies', icon: Package2 },
     { name: '插件', href: '/plugins', icon: Puzzle },
     { name: '分析', href: '/analytics', icon: BarChart3 },
   ]

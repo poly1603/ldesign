@@ -64,6 +64,14 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       console.log('File changed:', data.path)
     })
 
+    // 监听清理所有数据事件
+    socketInstance.on('clear-all-data', () => {
+      console.log('收到清理所有数据事件')
+      toast('正在清理历史数据...', { icon: 'ℹ️' })
+      // 发送自定义事件给应用程序处理
+      window.dispatchEvent(new CustomEvent('clear-all-data'))
+    })
+
     setSocket(socketInstance)
 
     return () => {

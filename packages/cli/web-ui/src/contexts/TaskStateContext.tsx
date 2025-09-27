@@ -48,6 +48,7 @@ interface TaskStateContextType {
   clearTaskOutput: (taskId: string) => void
   setActiveTask: (taskId: string) => void
   removeTask: (taskId: string) => void
+  clearAllTasks: () => void
 }
 
 const TaskStateContext = createContext<TaskStateContextType | undefined>(undefined)
@@ -64,24 +65,7 @@ export const useTaskState = () => {
 const STORAGE_KEY = 'ldesign-task-state'
 const MAX_OUTPUT_LINES = 1000 // 限制日志条数
 
-// 从本地存储加载状态
-const loadStateFromStorage = (): GlobalTaskState => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      // 转换日期字符串回 Date 对象
-      Object.values(parsed.tasks || {}).forEach((task: any) => {
-        if (task.startTime) task.startTime = new Date(task.startTime)
-        if (task.endTime) task.endTime = new Date(task.endTime)
-      })
-      return parsed
-    }
-  } catch (error) {
-    console.error('Failed to load task state from storage:', error)
-  }
-  return { tasks: {} }
-}
+// 从本地存储加载状态 - 已移除，现在在初始化时直接清理
 
 // 保存状态到本地存储
 const saveStateToStorage = (state: GlobalTaskState) => {
@@ -97,12 +81,31 @@ interface TaskStateProviderProps {
 }
 
 export const TaskStateProvider: React.FC<TaskStateProviderProps> = ({ children }) => {
-  const [state, setState] = useState<GlobalTaskState>(() => loadStateFromStorage())
+  // 在初始化时立即清理localStorage，确保每次UI启动都是干净的状态
+  const [state, setState] = useState<GlobalTaskState>(() => {
+    console.log('TaskStateProvider初始化：清理所有历史状态')
+    localStorage.removeItem(STORAGE_KEY)
+    return { tasks: {} }
+  })
 
   // 保存状态到本地存储
   useEffect(() => {
     saveStateToStorage(state)
   }, [state])
+
+  // 监听清理所有数据事件
+  useEffect(() => {
+    const handleClearAllData = () => {
+      console.log('处理清理所有数据事件')
+      setState({ tasks: {}, activeTask: undefined })
+      localStorage.removeItem(STORAGE_KEY)
+    }
+
+    window.addEventListener('clear-all-data', handleClearAllData)
+    return () => {
+      window.removeEventListener('clear-all-data', handleClearAllData)
+    }
+  }, [])
 
   // 获取任务
   const getTask = useCallback((taskId: string): TaskState | undefined => {
@@ -231,6 +234,14 @@ export const TaskStateProvider: React.FC<TaskStateProviderProps> = ({ children }
     })
   }, [])
 
+  // 清理所有任务
+  const clearAllTasks = useCallback(() => {
+    console.log('清理所有任务状态')
+    setState({ tasks: {}, activeTask: undefined })
+    // 同时清理本地存储
+    localStorage.removeItem(STORAGE_KEY)
+  }, [])
+
   const value: TaskStateContextType = {
     tasks: state.tasks,
     activeTask: state.activeTask,
@@ -241,7 +252,8 @@ export const TaskStateProvider: React.FC<TaskStateProviderProps> = ({ children }
     updateServerInfo,
     clearTaskOutput,
     setActiveTask,
-    removeTask
+    removeTask,
+    clearAllTasks
   }
 
   return (

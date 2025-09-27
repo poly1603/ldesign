@@ -40,9 +40,12 @@ export class WebServer {
       }
     });
 
-    // 清空之前的任务状态
+    // 清空之前的任务状态和所有历史数据
     taskStateManager.clearAllTasks();
     context.logger.info('🧹 已清空之前的任务状态');
+
+    // 清理所有历史日志和服务器信息
+    this.clearAllHistoryData();
 
     this.projectManager = new ProjectManager(context);
     this.taskRunner = new TaskRunner(context, this.io);
@@ -50,6 +53,23 @@ export class WebServer {
     this.setupMiddleware();
     this.setupRoutes();
     this.setupSocketIO();
+  }
+
+  /**
+   * 清理所有历史数据
+   */
+  private clearAllHistoryData(): void {
+    try {
+      // 清理任务状态管理器中的所有数据
+      taskStateManager.clearAllTasks();
+
+      // 通知所有连接的客户端清理数据
+      this.io.emit('clear-all-data');
+
+      this.context.logger.debug('已清理所有历史数据');
+    } catch (error) {
+      this.context.logger.error('清理历史数据失败:', error);
+    }
   }
 
   /**

@@ -63,7 +63,7 @@ export class TaskStateManager {
       serverInfo: {},
       startTime: new Date()
     }
-    
+
     this.tasks.set(taskId, task)
     console.log(`[TaskStateManager] Created task: ${taskId}`)
     return task
@@ -162,6 +162,44 @@ export class TaskStateManager {
   clearAllTasks(): void {
     this.tasks.clear()
     console.log('[TaskStateManager] Cleared all tasks')
+  }
+
+  /**
+   * 清空指定类型的任务
+   * @param taskType 任务类型
+   */
+  clearTasksByType(taskType: 'dev' | 'build' | 'preview'): void {
+    const tasksToDelete: string[] = []
+    for (const [taskId, task] of this.tasks.entries()) {
+      if (task.taskType === taskType) {
+        tasksToDelete.push(taskId)
+      }
+    }
+
+    tasksToDelete.forEach(taskId => {
+      this.tasks.delete(taskId)
+    })
+
+    console.log(`[TaskStateManager] Cleared ${tasksToDelete.length} tasks of type: ${taskType}`)
+  }
+
+  /**
+   * 清空指定环境的任务
+   * @param environment 环境
+   */
+  clearTasksByEnvironment(environment: string): void {
+    const tasksToDelete: string[] = []
+    for (const [taskId, task] of this.tasks.entries()) {
+      if (task.environment === environment) {
+        tasksToDelete.push(taskId)
+      }
+    }
+
+    tasksToDelete.forEach(taskId => {
+      this.tasks.delete(taskId)
+    })
+
+    console.log(`[TaskStateManager] Cleared ${tasksToDelete.length} tasks for environment: ${environment}`)
   }
 
   /**

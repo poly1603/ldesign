@@ -4,6 +4,7 @@ import { useSocket } from '../contexts/SocketContext'
 import { useTaskState } from '../contexts/TaskStateContext'
 import { api } from '../services/api'
 import toast from 'react-hot-toast'
+import QRCodeDisplay from '../components/QRCodeDisplay'
 // @ts-ignore
 import Convert from 'ansi-to-html'
 
@@ -48,13 +49,15 @@ const processOutputContent = (content: string): { html: string; isQRCode: boolea
 const DevPage: React.FC = () => {
   const { socket, isConnected } = useSocket()
   const {
+    tasks,
     getTask,
     createTask,
     updateTaskStatus,
     addOutputLine,
     updateServerInfo,
     clearTaskOutput,
-    setActiveTask
+    setActiveTask,
+    clearAllTasks
   } = useTaskState()
 
   const [selectedEnv, setSelectedEnv] = useState('development')
@@ -145,6 +148,14 @@ const DevPage: React.FC = () => {
   useEffect(() => {
     if (!socket) return
 
+    // 监听清理所有数据事件
+    const handleClearAllData = () => {
+      console.log('收到清理所有数据事件，清理本地状态');
+      // 清理本地状态
+      clearAllTasks();
+      setProcessStatus({});
+    };
+
     const handleTaskUpdate = (data: any) => {
       console.log('handleTaskUpdate received:', data)
       // 后端发送的是TaskStatus对象，包含id字段
@@ -195,12 +206,18 @@ const DevPage: React.FC = () => {
             updateTaskStatus(key, 'running')
           }
 
-          // 添加输出行到全局状态
-          addOutputLine(key, {
-            timestamp: new Date().toLocaleTimeString(),
-            content: output,
-            type: data.type === 'stderr' ? 'error' : 'info'
-          })
+          // 检查是否是二维码输出
+          const isQRCodeOutput = output.includes('▄') || output.includes('█') || output.includes('▀')
+
+          // 如果不是二维码输出，才添加到控制台输出
+          if (!isQRCodeOutput) {
+            // 添加输出行到全局状态
+            addOutputLine(key, {
+              timestamp: new Date().toLocaleTimeString(),
+              content: output,
+              type: data.type === 'stderr' ? 'error' : 'info'
+            })
+          }
 
           // 检测开发服务器启动成功标志
           if (output.includes('✔ 开发服务器已启动') || output.includes('开发服务器启动成功')) {
@@ -263,10 +280,12 @@ const DevPage: React.FC = () => {
 
     socket.on('task:update', handleTaskUpdate)
     socket.on('task:output', handleTaskOutput)
+    socket.on('clear-all-data', handleClearAllData)
 
     return () => {
       socket.off('task:update', handleTaskUpdate)
       socket.off('task:output', handleTaskOutput)
+      socket.off('clear-all-data', handleClearAllData)
     }
   }, [socket, processKey])
 
@@ -275,10 +294,17 @@ const DevPage: React.FC = () => {
     setActiveTask(processKey)
   }, [selectedEnv, processKey, setActiveTask])
 
-  // 从后端API恢复状态
+  // 从后端API恢复状态 - 在UI启动时跳过状态恢复，确保干净启动
   useEffect(() => {
     const restoreStateFromBackend = async () => {
       try {
+        // 检查是否是UI刚启动（通过检查是否有任何任务存在）
+        const hasAnyTasks = Object.keys(tasks).length > 0
+        if (!hasAnyTasks) {
+          console.log(`UI刚启动，跳过状态恢复以确保干净启动`)
+          return
+        }
+
         console.log(`Attempting to restore state for: dev-${selectedEnv}`)
         const task = await api.getTaskByTypeAndEnv('dev', selectedEnv)
         if (task) {
@@ -291,13 +317,16 @@ const DevPage: React.FC = () => {
             [processKey]: status
           }))
 
-          // 恢复输出行 - 使用全局状态管理
+          // 恢复输出行 - 使用全局状态管理，过滤掉二维码输出
           task.outputLines.forEach((line: any) => {
-            addOutputLine(processKey, {
-              timestamp: line.timestamp,
-              content: line.content,
-              type: line.type
-            })
+            const isQRCodeOutput = line.content.includes('▄') || line.content.includes('█') || line.content.includes('▀')
+            if (!isQRCodeOutput) {
+              addOutputLine(processKey, {
+                timestamp: line.timestamp,
+                content: line.content,
+                type: line.type
+              })
+            }
           })
 
           // 恢复服务器信息 - 先尝试从后端数据，如果没有则从输出日志中解析
@@ -365,8 +394,14 @@ const DevPage: React.FC = () => {
       return
     }
 
-    // 清空之前的日志
+    // 清空之前的日志和服务器信息
     clearTaskOutput(processKey)
+    updateServerInfo(processKey, {
+      localUrl: undefined,
+      networkUrl: undefined,
+      qrCode: undefined,
+      port: undefined
+    })
 
     try {
       const result = await api.runTask('dev', {
@@ -637,14 +672,15 @@ const DevPage: React.FC = () => {
           </div>
 
           {/* 二维码显示 */}
-          {serverInfo.qrCode && (
-            <div className="mt-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h4 className="font-medium text-gray-800 mb-2">手机扫码访问</h4>
-              <div className="bg-white p-2 rounded border inline-block">
-                <pre className="text-xs font-mono leading-none text-black whitespace-pre">
-                  {serverInfo.qrCode.replace(/\x1b\[[0-9;]*m/g, '')}
-                </pre>
-              </div>
+          {serverInfo.networkUrl && (
+            <div className="mt-6">
+              <QRCodeDisplay
+                url={serverInfo.networkUrl}
+                title="手机扫码访问"
+                description="使用手机扫描二维码快速访问开发服务器"
+                size={180}
+                showCopy={true}
+              />
             </div>
           )}
         </div>

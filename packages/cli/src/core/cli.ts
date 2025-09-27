@@ -114,6 +114,7 @@ export class CLI {
       () => import('../commands/init'),
       () => import('../commands/build'),
       () => import('../commands/dev'),
+      () => import('../commands/preview'),
       () => import('../commands/test'),
       () => import('../commands/ui'),
     ];

@@ -58,6 +58,7 @@ const processOutputContent = (content: string): { html: string; isQRCode: boolea
 const BuildPage: React.FC = () => {
   const { socket, isConnected } = useSocket()
   const {
+    tasks,
     getTask,
     createTask,
     updateTaskStatus,
@@ -140,10 +141,51 @@ const BuildPage: React.FC = () => {
     }
   }
 
-  // 状态恢复逻辑
+  // 初始化所有环境的构建状态
+  const initializeBuildStatus = async () => {
+    const newBuildTimes: { [key: string]: string } = {}
+
+    for (const env of environments) {
+      try {
+        const buildTime = await getBuildTime(env.key)
+        if (buildTime) {
+          newBuildTimes[env.key] = buildTime
+        }
+      } catch (error) {
+        console.error(`获取${env.key}环境构建时间失败:`, error)
+      }
+    }
+
+    setBuildTimes(newBuildTimes)
+  }
+
+  // 页面初始化时检查所有环境的构建状态
+  useEffect(() => {
+    initializeBuildStatus()
+  }, [])
+
+  // 状态恢复逻辑 - 在UI启动时跳过状态恢复，确保干净启动
   useEffect(() => {
     const restoreState = async () => {
       try {
+        // 等待一小段时间确保TaskStateContext完全初始化
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        // 检查是否是UI刚启动（通过检查是否有任何任务存在）
+        const hasAnyTasks = Object.keys(tasks).length > 0
+        if (!hasAnyTasks) {
+          console.log(`UI刚启动，跳过状态恢复以确保干净启动`)
+          // 只获取构建时间，不恢复任务状态
+          const buildTime = await getBuildTime(selectedEnv)
+          if (buildTime) {
+            setBuildTimes(prev => ({
+              ...prev,
+              [selectedEnv]: buildTime
+            }))
+          }
+          return
+        }
+
         console.log('Attempting to restore state for:', processKey)
         const taskState = await api.getTaskByTypeAndEnv('build', selectedEnv)
         if (taskState) {
@@ -159,6 +201,7 @@ const BuildPage: React.FC = () => {
 
           // 恢复输出日志
           if (taskState.outputLines && taskState.outputLines.length > 0) {
+            console.log(`Restoring ${taskState.outputLines.length} output lines for ${processKey}`)
             // 清空现有输出
             clearTaskOutput(processKey)
             // 添加所有输出行
@@ -201,6 +244,29 @@ const BuildPage: React.FC = () => {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight
     }
   }, [outputLines, autoScroll])
+
+  // 监听构建完成事件，更新构建时间
+  useEffect(() => {
+    if (currentTask?.status === 'completed') {
+      // 构建完成后，延迟一秒获取最新的构建时间
+      const timer = setTimeout(async () => {
+        try {
+          const buildTime = await getBuildTime(selectedEnv)
+          if (buildTime) {
+            setBuildTimes(prev => ({
+              ...prev,
+              [selectedEnv]: buildTime
+            }))
+            toast.success(`${getBuildType()}完成，构建时间已更新`)
+          }
+        } catch (error) {
+          console.error('更新构建时间失败:', error)
+        }
+      }, 1000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [currentTask?.status, selectedEnv])
 
   // Socket事件监听
   useEffect(() => {
@@ -286,8 +352,14 @@ const BuildPage: React.FC = () => {
       return
     }
 
-    // 清空之前的日志
+    // 清空之前的日志和服务器信息
     clearTaskOutput(processKey)
+    updateServerInfo(processKey, {
+      localUrl: undefined,
+      networkUrl: undefined,
+      qrCode: undefined,
+      port: undefined
+    })
 
     try {
       const result = await api.runTask('build', {
