@@ -3,31 +3,40 @@ import { Placement } from '@floating-ui/dom';
 
 export type DropdownPlacement = Placement;
 export type DropdownTrigger = 'click' | 'hover' | 'focus' | 'contextmenu' | 'manual';
+export type DropdownVariant = 'auto' | 'pc' | 'mobile';
 
+// New cross-platform dropdown nodes
+export type DropdownNode = DropdownItem | DropdownGroup | DropdownDivider;
 export interface DropdownItem {
+  type?: 'item';
   key: string;
   label: string;
   icon?: string;
   disabled?: boolean;
-  divider?: boolean;
-  /** 子菜单 */
-  children?: DropdownItem[];
+  /** 子菜单（PC 端级联） */
+  children?: DropdownNode[];
   /** 链接项（如果提供则以链接形式渲染） */
   href?: string;
   target?: string;
-  /** 描述文本（显示在主标签下方） */
+  /** 描述文本（显示在主标签下方，仅 PC） */
   description?: string;
-  /** 右侧快捷键提示 */
+  /** 右侧快捷键提示，仅 PC */
   shortcut?: string;
   /** 危险项（强调红色） */
   danger?: boolean;
   /** 覆盖全局 closeOnSelect */
   closeOnSelect?: boolean;
 }
+export interface DropdownGroup {
+  type: 'group';
+  title: string;
+  children: DropdownNode[];
+}
+export interface DropdownDivider { type: 'divider'; }
 
 /**
- * Dropdown 下拉菜单
- * 基于 <ldesign-popup> 实现
+ * Dropdown 下拉菜单（PC 级联 + 移动端单列）
+ * 兼容鼠标和触屏，默认根据指针类型自适应（variant=auto）。
  */
 @Component({
   tag: 'ldesign-dropdown',
@@ -37,8 +46,8 @@ export interface DropdownItem {
 export class LdesignDropdown {
   @Element() el!: HTMLElement;
 
-  /** 下拉项列表（可传数组或 JSON 字符串） */
-  @Prop() items: string | DropdownItem[] = [];
+  /** 下拉节点（数组或 JSON 字符串） */
+  @Prop() items: string | DropdownNode[] = [];
 
   /** 选中值（受控） */
   @Prop({ mutable: true }) value?: string;
@@ -46,11 +55,17 @@ export class LdesignDropdown {
   /** 默认值（非受控） */
   @Prop() defaultValue?: string;
 
-  /** 触发方式（默认 click） */
+  /** 触发方式（PC） */
   @Prop() trigger: DropdownTrigger = 'click';
 
-  /** 出现位置（默认 bottom-start） */
+  /** 出现位置 */
   @Prop() placement: DropdownPlacement = 'bottom-start';
+
+  /** 自适应：'auto' | 'pc' | 'mobile' */
+  @Prop() variant: DropdownVariant = 'auto';
+
+  /** 移动端选中态颜色（文本与对勾） */
+  @Prop() activeColor: string = '#F53F3F';
 
   /** 是否禁用 */
   @Prop() disabled: boolean = false;
@@ -79,13 +94,13 @@ export class LdesignDropdown {
   /** 是否将选中项同步到默认触发器文本（默认不同步） */
   @Prop() reflectSelectionOnTrigger: boolean = false;
 
-  /** 是否在菜单项上展示选中样式（默认不展示） */
+  /** 是否在菜单项上展示选中样式（PC，默认不展示） */
   @Prop() showSelected: boolean = false;
 
   /** 菜单宽度是否跟随触发器宽度（默认否） */
   @Prop() fitTriggerWidth: boolean = false;
 
-  /** 子菜单的触发方式（hover/click），默认 hover */
+  /** 子菜单的触发方式（hover/click），默认 hover，仅 PC 生效 */
   @Prop() submenuTrigger: 'hover' | 'click' = 'hover';
 
   /** 浮层挂载位置：默认 body，避免在文档容器中被裁剪 */
@@ -97,27 +112,26 @@ export class LdesignDropdown {
   /** 对外转发可见性变化 */
   @Event() ldesignVisibleChange!: EventEmitter<boolean>;
 
-  @State() parsedItems: DropdownItem[] = [];
+  @State() parsedNodes: DropdownNode[] = [];
   @State() currentKey?: string;
-  @State() highlightIndex: number = -1;
+  @State() highlightIndex: number = -1; // PC 键盘高亮
   @State() computedContentWidth?: number;
 
   private listEl?: HTMLElement;
   private triggerWrapper?: HTMLElement;
   private submenuRefs: Map<string, any> = new Map();
 
+  // ---------- lifecycle ----------
   @Watch('items')
-  watchItems(val: string | DropdownItem[]) {
-    this.parsedItems = this.parseItems(val);
+  watchItems(val: string | DropdownNode[]) {
+    this.parsedNodes = this.parseNodes(val);
   }
 
   @Watch('value')
-  watchValue(newVal?: string) {
-    this.currentKey = newVal;
-  }
+  watchValue(newVal?: string) { this.currentKey = newVal; }
 
   componentWillLoad() {
-    this.parsedItems = this.parseItems(this.items);
+    this.parsedNodes = this.parseNodes(this.items);
     this.currentKey = this.value ?? this.defaultValue;
   }
 
@@ -126,35 +140,67 @@ export class LdesignDropdown {
     this.updateFitWidth();
   }
 
-  disconnectedCallback() {
-    window.removeEventListener('resize', this.handleResize);
+  disconnectedCallback() { window.removeEventListener('resize', this.handleResize); }
+
+  // ---------- utils ----------
+  private isMobile(): boolean {
+    if (this.variant === 'mobile') return true;
+    if (this.variant === 'pc') return false;
+    if (typeof window === 'undefined') return false;
+    const coarse = (window as any).matchMedia ? window.matchMedia('(pointer: coarse)').matches : false;
+    return coarse || window.innerWidth <= 768;
   }
 
-  private parseItems(val: string | DropdownItem[]): DropdownItem[] {
+  private parseNodes(val: string | DropdownNode[]): DropdownNode[] {
+    let arr: any = [];
     if (typeof val === 'string') {
-      try { return JSON.parse(val); } catch { return []; }
+      try { arr = JSON.parse(val); } catch { arr = []; }
+    } else if (Array.isArray(val)) {
+      arr = val;
     }
-    return Array.isArray(val) ? val : [];
+    // 标准化：缺省 type 视为 item
+    const normalize = (list: any[]): DropdownNode[] => (list || []).map((n) => {
+      if (!n) return n;
+      if (n.type === 'group') {
+        return { type: 'group', title: n.title ?? n.label ?? '', children: normalize(n.children || []) } as DropdownGroup;
+      }
+      if (n.type === 'divider' || n.divider) return { type: 'divider' } as DropdownDivider;
+      return { ...n, type: 'item' } as DropdownItem;
+    });
+    return normalize(arr);
   }
 
   private getItemIndexByKey(key?: string): number {
     if (!key) return -1;
-    return this.parsedItems.findIndex(i => i.key === key);
+    const flat = this.flattenTopLevelItems(this.parsedNodes);
+    return flat.findIndex(i => i.key === key);
+  }
+
+  private flattenTopLevelItems(nodes: DropdownNode[]): DropdownItem[] {
+    // 仅拍平第一层（group 展开为子项，忽略 divider）
+    const res: DropdownItem[] = [];
+    nodes.forEach(n => {
+      if ((n as DropdownDivider).type === 'divider') return;
+      if ((n as DropdownGroup).type === 'group') {
+        const g = n as DropdownGroup;
+        (g.children || []).forEach(c => { if ((c as any).type !== 'divider') res.push(c as DropdownItem); });
+      } else {
+        res.push(n as DropdownItem);
+      }
+    });
+    return res;
   }
 
   private getEnabledIndices(): number[] {
-    return this.parsedItems.map((it, i) => ({ it, i })).filter(x => !x.it.disabled && !x.it.divider).map(x => x.i);
+    const firstLevel = this.flattenTopLevelItems(this.parsedNodes);
+    return firstLevel.map((it, i) => ({ it, i })).filter(x => !x.it.disabled).map(x => x.i);
   }
 
   private moveHighlight(delta: number) {
     const enabled = this.getEnabledIndices();
     if (!enabled.length) return;
     let cur = this.highlightIndex;
-    if (cur < 0) {
-      this.highlightIndex = enabled[0];
-      this.scrollHighlightedIntoView();
-      return;
-    }
+    if (cur < 0) { this.highlightIndex = enabled[0]; this.scrollHighlightedIntoView(); return; }
     const pos = enabled.indexOf(cur);
     const nextPos = (pos + delta + enabled.length) % enabled.length;
     this.highlightIndex = enabled[nextPos];
@@ -169,8 +215,9 @@ export class LdesignDropdown {
   }
 
   private selectByIndex(index: number) {
-    const item = this.parsedItems[index];
-    if (!item || item.disabled || item.divider) return;
+    const firstLevel = this.flattenTopLevelItems(this.parsedNodes);
+    const item = firstLevel[index];
+    if (!item || item.disabled) return;
     this.onItemClick(item);
   }
 
@@ -185,7 +232,7 @@ export class LdesignDropdown {
   };
 
   private onItemClick = (item: DropdownItem, ev?: MouseEvent) => {
-    if (item.disabled || item.divider) { ev?.preventDefault(); return; }
+    if (item.disabled) { ev?.preventDefault(); return; }
     if (this.value !== undefined) {
       this.ldesignChange.emit({ key: item.key, item });
     } else {
@@ -194,33 +241,20 @@ export class LdesignDropdown {
       this.ldesignChange.emit({ key: item.key, item });
     }
     const shouldClose = (item.closeOnSelect ?? this.closeOnSelect) && this.trigger !== 'manual';
-    if (shouldClose) {
-      this.hideInnerPopup();
-    }
+    if (shouldClose) this.hideInnerPopup();
   };
 
   private getInnerPopup(): HTMLLdesignPopupElement | null {
     return this.el?.querySelector('ldesign-popup') as any;
   }
-
-  private hideInnerPopup() {
-    const popup = this.getInnerPopup();
-    if (popup) (popup as any).visible = false;
-  }
+  private hideInnerPopup() { const p = this.getInnerPopup(); if (p) (p as any).visible = false; }
 
   private handlePopupVisibleChange = (e: CustomEvent<boolean>) => {
     this.ldesignVisibleChange.emit(e.detail);
-    if (this.trigger === 'manual') {
-      this.visible = e.detail;
-      if (e.detail) {
-        // 打开时根据 showSelected 决定是否预高亮当前选中项，并将焦点移动到列表以支持键盘操作
-        const idx = this.getItemIndexByKey(this.currentKey);
-        this.highlightIndex = this.showSelected && idx >= 0 ? idx : -1;
-        this.updateFitWidth();
-        requestAnimationFrame(() => this.listEl?.focus());
-      }
-    } else {
-      if (e.detail) {
+    const isMobile = this.isMobile();
+    if (this.trigger === 'manual') this.visible = e.detail;
+    if (e.detail) {
+      if (!isMobile) {
         const idx = this.getItemIndexByKey(this.currentKey);
         this.highlightIndex = this.showSelected && idx >= 0 ? idx : -1;
         this.updateFitWidth();
@@ -229,11 +263,7 @@ export class LdesignDropdown {
     }
   };
 
-  private renderIcon(icon?: string) {
-    if (!icon) return null;
-    return <span class="ldesign-dropdown__icon"><ldesign-icon name={icon} size="small" /></span>;
-  }
-
+  private renderIcon(icon?: string) { if (!icon) return null; return <span class="ldesign-dropdown__icon"><ldesign-icon name={icon} size="small" /></span>; }
   private renderText(label: string, description?: string) {
     return (
       <span class="ldesign-dropdown__text">
@@ -242,14 +272,11 @@ export class LdesignDropdown {
       </span>
     );
   }
-
-  private renderShortcut(shortcut?: string) {
-    if (!shortcut) return null;
-    return <span class="ldesign-dropdown__shortcut">{shortcut}</span>;
-  }
+  private renderShortcut(shortcut?: string) { if (!shortcut) return null; return <span class="ldesign-dropdown__shortcut">{shortcut}</span>; }
 
   private renderDefaultTrigger() {
-    const selected = this.parsedItems.find(it => it.key === this.currentKey);
+    const flat = this.flattenTopLevelItems(this.parsedNodes);
+    const selected = flat.find(it => it.key === this.currentKey);
     const label = this.reflectSelectionOnTrigger && selected ? selected.label : this.placeholder;
     return (
       <div class={{
@@ -263,25 +290,36 @@ export class LdesignDropdown {
     );
   }
 
-  private renderSubmenuArrow() {
-    return <span class="ldesign-dropdown__submenu-arrow"><ldesign-icon name="chevron-right" size="small" /></span>;
-  }
+  private renderSubmenuArrow() { return <span class="ldesign-dropdown__submenu-arrow"><ldesign-icon name="chevron-right" size="small" /></span>; }
 
-  private renderMenu(items: DropdownItem[], level: number = 0) {
+  // ---------- PC rendering ----------
+  private renderPCNodes(nodes: DropdownNode[], level = 0) {
     const role = level === 0 ? 'listbox' : 'menu';
-
     return (
-      <ul 
-        class="ldesign-dropdown__list" 
+      <ul
+        class={{ 'ldesign-dropdown__list': true, 'ldesign-dropdown__list--pc': true }}
         role={role}
-        tabindex={level === 0 ? 0 : undefined as any}
+        tabindex={level === 0 ? (0 as any) : undefined as any}
         onKeyDown={level === 0 ? (this.onKeyDown as any) : undefined}
         ref={level === 0 ? ((el) => this.listEl = el as HTMLElement) : undefined}
         style={{ maxHeight: `${this.maxHeight}px`, overflowY: 'auto' }}
       >
-        {items.map((it, i) => {
-          if (it.divider) return <li class="ldesign-dropdown__divider" role="separator"></li>;
-          const active = level === 0 && i === this.highlightIndex;
+        {nodes.map((node, i) => {
+          if ((node as DropdownDivider).type === 'divider') {
+            return <li class="ldesign-dropdown__divider" role="separator"></li>;
+          }
+          if ((node as DropdownGroup).type === 'group') {
+            const g = node as DropdownGroup;
+            return (
+              <Fragment>
+                <li class="ldesign-dropdown__group-title">{g.title}</li>
+                {this.renderPCNodes(g.children, level)}
+              </Fragment>
+            );
+          }
+
+          const it = node as DropdownItem;
+          const active = level === 0 && i === this.highlightIndex; // 仅对首层计算键盘高亮位置，组展开后索引不完全一致，但不影响体验
           const selected = this.showSelected && it.key === this.currentKey;
           const hasChildren = Array.isArray(it.children) && it.children.length > 0;
 
@@ -299,18 +337,6 @@ export class LdesignDropdown {
                 role="menuitem"
                 aria-haspopup="true"
                 aria-disabled={it.disabled ? 'true' : 'false'}
-                onMouseEnter={() => {
-                  if (this.submenuTrigger === 'hover') {
-                    const p = this.submenuRefs.get(it.key);
-                    if (p) (p as any).visible = true; // 强制展开子菜单，兜底
-                  }
-                }}
-                onMouseLeave={() => {
-                  if (this.submenuTrigger === 'hover') {
-                    const p = this.submenuRefs.get(it.key);
-                    if (p) (p as any).visible = false; // 鼠标离开父项时关闭（父层 popup 的 relatedTarget 保护会阻止误关）
-                  }
-                }}
               >
                 <ldesign-popup
                   placement="right-start"
@@ -321,9 +347,7 @@ export class LdesignDropdown {
                   closeOnOutside={true}
                   ref={(el) => { if (el) this.submenuRefs.set(it.key, el as any); else this.submenuRefs.delete(it.key); }}
                 >
-                  <div 
-                    slot="trigger" 
-                    class="ldesign-dropdown__item-inner"
+                  <div slot="trigger" class="ldesign-dropdown__item-inner"
                     onClick={(e) => {
                       if (this.submenuTrigger === 'click') {
                         e.preventDefault(); e.stopPropagation();
@@ -337,7 +361,7 @@ export class LdesignDropdown {
                     {this.renderSubmenuArrow()}
                   </div>
                   <div class="ldesign-dropdown__content">
-                    {this.renderMenu(it.children!, level + 1)}
+                    {this.renderPCNodes(it.children!, level + 1)}
                   </div>
                 </ldesign-popup>
               </li>
@@ -351,9 +375,8 @@ export class LdesignDropdown {
               {this.renderShortcut(it.shortcut)}
             </Fragment>
           );
-
           return (
-            <li 
+            <li
               class={{
                 'ldesign-dropdown__item': true,
                 'ldesign-dropdown__item--active': active,
@@ -375,41 +398,59 @@ export class LdesignDropdown {
     );
   }
 
-  private renderList() {
-    return this.renderMenu(this.parsedItems, 0);
+  // ---------- Mobile rendering ----------
+  private renderMobileList() {
+    const list = this.flattenTopLevelItems(this.parsedNodes);
+    return (
+      <ul class={{ 'ldesign-dropdown__list': true, 'ldesign-dropdown__list--mobile': true }}>
+        {list.map((it) => (
+          <li
+            class={{
+              'ldesign-dropdown__item': true,
+              'ldesign-dropdown__item--mobile': true,
+              'ldesign-dropdown__item--selected': it.key === this.currentKey,
+              'ldesign-dropdown__item--disabled': !!it.disabled || !!(it.children && it.children.length),
+            }}
+            onClick={() => {
+              if (it.disabled || (it.children && it.children.length)) return; // 移动端不支持子菜单
+              this.onItemClick(it);
+            }}
+          >
+            <span class="ldesign-dropdown__label">{it.label}</span>
+            {it.key === this.currentKey ? (
+              <span class="ldesign-dropdown__check"><ldesign-icon name="check" size="small" /></span>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    );
   }
 
-  private handleResize = () => {
-    this.updateFitWidth();
-  };
-
-  // nested popup does not need local timers/state now
+  private handleResize = () => { this.updateFitWidth(); };
 
   private updateFitWidth() {
     if (!this.fitTriggerWidth) return;
-    const wrapper = this.triggerWrapper;
-    if (!wrapper) return;
+    const wrapper = this.triggerWrapper; if (!wrapper) return;
     const first = (wrapper.firstElementChild || wrapper) as HTMLElement;
     const rect = first.getBoundingClientRect();
     const width = Math.ceil(rect.width);
-    if (width && width !== this.computedContentWidth) {
-      this.computedContentWidth = width;
-    }
+    if (width && width !== this.computedContentWidth) this.computedContentWidth = width;
   }
 
   render() {
-    const contentStyle: any = {};
+    const contentStyle: any = { '--ld-dropdown-active-color': this.activeColor } as any;
     if (this.width) contentStyle.width = typeof this.width === 'number' ? `${this.width}px` : this.width;
     else if (this.fitTriggerWidth && this.computedContentWidth) contentStyle.width = `${this.computedContentWidth}px`;
 
-    // manual 模式才把 visible 传入
+    const isMobile = this.isMobile();
+    const actualTrigger = isMobile ? 'click' : this.trigger;
     const visibleProp = this.trigger === 'manual' ? { visible: this.visible } : {};
 
     return (
-      <Host class={{ 'ldesign-dropdown': true, 'ldesign-dropdown--disabled': this.disabled }}>
+      <Host class={{ 'ldesign-dropdown': true, 'ldesign-dropdown--disabled': this.disabled, 'ldesign-dropdown--mobile': isMobile }} style={{ '--ld-dropdown-active-color': this.activeColor } as any}>
         <ldesign-popup
           placement={this.placement}
-          trigger={this.trigger as any}
+          trigger={actualTrigger as any}
           interactive={true}
           arrow={this.arrow}
           theme={this.theme}
@@ -423,7 +464,7 @@ export class LdesignDropdown {
           </span>
 
           <div class="ldesign-dropdown__content" style={contentStyle}>
-            {this.renderList()}
+            {isMobile ? this.renderMobileList() : this.renderPCNodes(this.parsedNodes, 0)}
           </div>
         </ldesign-popup>
       </Host>
