@@ -340,24 +340,44 @@
 .ldp-week-row.selected-week {
   background: #409eff;
 }
-.ldp-week-row.selected-week .ldp-day { color: #fff; background: transparent; }
-.ldp-week-row.selected-week .ldp-weeknum { color: #e7f1ff; }
-/* 非选中周的悬停效果 */
-.ldp-week-row:not(.selected-week):hover .ldp-day:not(.disabled) {
+/* 范围端点周：与 selected-week 同样的视觉权重 */
+.ldp-week-row.range-start-week,
+.ldp-week-row.range-end-week {
+  background: #409eff;
+}
+.ldp-week-row.selected-week .ldp-day,
+.ldp-week-row.range-start-week .ldp-day,
+.ldp-week-row.range-end-week .ldp-day { color: #fff; background: transparent; }
+.ldp-week-row.selected-week .ldp-weeknum,
+.ldp-week-row.range-start-week .ldp-weeknum,
+.ldp-week-row.range-end-week .ldp-weeknum { color: #e7f1ff; }
+/* 非端点的悬停效果 */
+.ldp-week-row:not(.selected-week):not(.range-start-week):not(.range-end-week):hover .ldp-day:not(.disabled) {
   background: transparent;
   color: #409eff;
 }
-/* 选中周在悬停时仍保持白字蓝底 */
-.ldp-week-row.selected-week:hover {
+/* 端点在悬停时仍保持白字蓝底 */
+.ldp-week-row.selected-week:hover,
+.ldp-week-row.range-start-week:hover,
+.ldp-week-row.range-end-week:hover {
   background: #409eff;
 }
-.ldp-week-row.selected-week:hover .ldp-day:not(.disabled) {
+.ldp-week-row.selected-week:hover .ldp-day:not(.disabled),
+.ldp-week-row.range-start-week:hover .ldp-day:not(.disabled),
+.ldp-week-row.range-end-week:hover .ldp-day:not(.disabled) {
   color: #fff;
   background: transparent;
 }
 .ldp-week-row .ldp-weeknum {
   margin: 0;
 }
+/* 范围内（中间）周的浅色填充，避免覆盖端点周 */
+.ldp-week-row.in-range:not(.selected-week):not(.range-start-week):not(.range-end-week) {
+  background: #ecf5ff;
+}
+/* 禁用的周行（例如整周不属于当前面板月份） */
+.ldp-week-row.disabled { cursor: not-allowed; opacity: 0.6; }
+.ldp-week-row.disabled .ldp-day { color: #dcdfe6; }
 
 /* 年份快速切换 */
 .ldp-year-selector {
@@ -446,4 +466,62 @@
 }
 .ldp-datetime__time {
   padding: 8px;
+}
+
+/* 范围选择可视化 */
+/* 日期端点与中间态（不作用于其他月单元格） */
+.ldp-day.range-start:not(.disabled):not(.other),
+.ldp-day.range-end:not(.disabled):not(.other) {
+  background: #409eff;
+  color: #fff;
+  font-weight: 500;
+}
+/* 兜底：如遇到意外类名组合，其他月端点或错误 selected 强制回退为“灰色未选中”外观 */
+.ldp-day.other.range-start,
+.ldp-day.other.range-end,
+.ldp-day.other.selected {
+  background: transparent !important;
+  color: #dcdfe6 !important;
+  font-weight: 400 !important;
+}
+/* 日期单元格处于范围内（不作用于其他月单元格） */
+.ldp-day.in-range:not(.disabled):not(.selected):not(.other) {
+  background: #ecf5ff;
+  color: #409eff;
+}
+/* 周行处于范围内（保持端点周为深蓝） */
+.ldp-week-row.in-range:not(.selected-week):not(.range-start-week):not(.range-end-week) {
+  background: #ecf5ff;
+}
+/* 月份范围样式 */
+.ldp-month-item.in-range:not(.disabled):not(.selected) {
+  background: #ecf5ff;
+  color: #409eff;
+}
+.ldp-month-item.range-start:not(.disabled),
+.ldp-month-item.range-end:not(.disabled) {
+  background: #409eff;
+  color: #fff;
+  font-weight: 500;
+}
+/* 年份范围样式 */
+.ldp-year-item.in-range:not(.disabled):not(.selected) {
+  background: #ecf5ff;
+  color: #409eff;
+}
+.ldp-year-item.range-start:not(.disabled),
+.ldp-year-item.range-end:not(.disabled) {
+  background: #409eff;
+  color: #fff;
+  font-weight: 500;
+}
+/* 季度范围样式 */
+.ldp-quarter-item.in-range:not(.disabled):not(.selected) {
+  background: #ecf5ff;
+  color: #409eff;
+}
+.ldp-quarter-item.range-start:not(.disabled),
+.ldp-quarter-item.range-end:not(.disabled) {
+  background: #409eff;
+  color: #fff;
 }

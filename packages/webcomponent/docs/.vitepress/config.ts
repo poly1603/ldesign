@@ -83,6 +83,7 @@ export default defineConfig({
             { text: 'Tag 标签', link: '/components/tag' },
             { text: 'Image 图片', link: '/components/image' },
             { text: 'ImageViewer 图片预览器', link: '/components/image-viewer' },
+            { text: 'Ellipsis 文本省略', link: '/components/ellipsis' },
             { text: 'Swiper 轮播图', link: '/components/swiper' },
             { text: 'Draggable 拖拽缩放', link: '/components/draggable' },
             { text: 'Tree 树', link: '/components/tree' },

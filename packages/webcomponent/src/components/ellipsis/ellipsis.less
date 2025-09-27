@@ -1,0 +1,111 @@
+/**
+ * ldesign-ellipsis 样式
+ * - 折叠：多行截断 + 右下角“更多”
+ * - 展开：尽可能将“收起”放在最后一行最右边，否则换行右对齐
+ */
+
+.ldesign-ellipsis {
+  display: block;
+  color: inherit;
+  font: inherit;
+}
+
+.ldesign-ellipsis__wrap {
+  position: relative;
+}
+
+.ldesign-ellipsis__wrap--expanded {
+  position: relative;
+}
+
+.ldesign-ellipsis__content {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+// 折叠态：多行截断
+.ldesign-ellipsis__content--clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: var(--ld-ellipsis-lines, 3);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// 渐变遮罩（折叠态右下角）
+.ldesign-ellipsis__fade {
+  position: absolute;
+  right: 0;
+  bottom: 0.1em;
+  width: 40%;
+  height: 1.2em;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff)) 60%);
+}
+
+// 通用按钮样式（无边框，文字按钮）
+.ldesign-ellipsis__action {
+  border: 0;
+  background: none;
+  color: var(--ldesign-brand-color, #1677ff);
+  padding: 2px 6px;
+  margin: 0;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.2;
+  border-radius: 4px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  .ldesign-ellipsis__action-icon {
+    width: 1em;
+    height: 1em;
+    margin-right: 4px;
+    vertical-align: -0.15em;
+  }
+
+  &:hover {
+    color: var(--ldesign-brand-color-hover, #4096ff);
+  }
+  &:active {
+    color: var(--ldesign-brand-color-active, #0958d9);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--ldesign-brand-color-focus, rgba(22, 119, 255, 0.35));
+    outline-offset: 2px;
+  }
+}
+
+// 折叠态“更多”：右下角绝对定位，底色遮住渐变
+.ldesign-ellipsis__action--more {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background: var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff));
+  padding-left: 4px;
+}
+
+// 展开态：若能同行放置“收起”，则绝对定位到右下角
+.ldesign-ellipsis__action--abs {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background: var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff));
+  padding-left: 8px;
+}
+
+// 展开态：无法同行，另起一行右对齐
+.ldesign-ellipsis__action-row {
+  text-align: right;
+  margin-top: 4px;
+}
+
+// 同行放置“收起”时，为文本末尾预留水平空间，避免覆盖
+.ldesign-ellipsis__spacer {
+  display: inline-block;
+  width: 0;
+  height: 0; // 不改变行高
+  line-height: 0;
+  font-size: 0;
+  vertical-align: baseline;
+}

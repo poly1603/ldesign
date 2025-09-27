@@ -95,6 +95,7 @@ ldesign-popup（重写版）
 
 ### Used by
 
+ - [ldesign-calendar](../calendar)
  - [ldesign-color-input](../color-input)
  - [ldesign-color-picker](../color-picker)
  - [ldesign-date-picker](../datepicker)
@@ -109,6 +110,7 @@ ldesign-popup（重写版）
 ### Graph
 ```mermaid
 graph TD;
+  ldesign-calendar --> ldesign-popup
   ldesign-color-input --> ldesign-popup
   ldesign-color-picker --> ldesign-popup
   ldesign-date-picker --> ldesign-popup

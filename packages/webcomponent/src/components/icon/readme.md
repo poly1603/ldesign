@@ -35,6 +35,7 @@ Icon 图标组件
  - [ldesign-date-picker](../datepicker)
  - [ldesign-drawer](../drawer)
  - [ldesign-dropdown](../dropdown)
+ - [ldesign-ellipsis](../ellipsis)
  - [ldesign-image](../image)
  - [ldesign-image-viewer](../image-viewer)
  - [ldesign-input](../input)
@@ -68,6 +69,7 @@ graph TD;
   ldesign-date-picker --> ldesign-icon
   ldesign-drawer --> ldesign-icon
   ldesign-dropdown --> ldesign-icon
+  ldesign-ellipsis --> ldesign-icon
   ldesign-image --> ldesign-icon
   ldesign-image-viewer --> ldesign-icon
   ldesign-input --> ldesign-icon

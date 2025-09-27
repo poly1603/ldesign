@@ -395,6 +395,18 @@ export namespace Components {
         "defaultValue"?: string;
         "disabledDate"?: (d: Date) => boolean;
         /**
+          * @default false
+         */
+        "draggableEvents": boolean;
+        /**
+          * 事件数据（JSON 字符串），例如：[{"date":"2025-09-27","title":"发布","color":"#1677ff"}]
+         */
+        "events"?: string;
+        /**
+          * 事件数据（JS 设置），与 events 二选一，前者用于 attribute，后者用于 property
+         */
+        "eventsData"?: Array<{ date: string; title: string; color?: string; type?: 'dot' | 'bg' }>;
+        /**
           * @default 1
          */
         "firstDayOfWeek": 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -402,13 +414,57 @@ export namespace Components {
           * @default 'YYYY-MM-DD'
          */
         "format": string;
+        /**
+          * @default 20
+         */
+        "hourEnd": number;
+        /**
+          * 时间轴起止与步长（周/日视图）
+          * @default 8
+         */
+        "hourStart": number;
+        /**
+          * 自定义农历格式化（优先级高于内置），返回文本，例如 “初九” 或 “正月初一”
+         */
+        "lunarFormatter"?: (d: Date) => string;
+        /**
+          * @default 3
+         */
+        "maxAllDayRows": number;
         "maxDate"?: string;
+        /**
+          * 单元格最多展示的事件条数
+          * @default 3
+         */
+        "maxEventsPerCell": number;
         "minDate"?: string;
         /**
           * @default false
          */
+        "resizableEvents": boolean;
+        /**
+          * @default true
+         */
+        "showAllDay": boolean;
+        /**
+          * 是否显示农历（默认关闭）。若浏览器支持 Intl Chinese Calendar，将自动使用内置格式化
+          * @default false
+         */
+        "showLunar": boolean;
+        /**
+          * @default false
+         */
         "showWeekNumbers": boolean;
+        /**
+          * @default 30
+         */
+        "stepMinutes": number;
         "value"?: string;
+        /**
+          * 视图：月/周/日/年
+          * @default 'month'
+         */
+        "view": 'month' | 'week' | 'day' | 'year';
     }
     /**
      * Checkbox 复选框组件
@@ -1084,7 +1140,7 @@ export namespace Components {
           * @default true
          */
         "clearable": boolean;
-        "defaultValue"?: string;
+        "defaultValue"?: string | string[];
         /**
           * @default false
          */
@@ -1111,6 +1167,10 @@ export namespace Components {
         /**
           * @default false
          */
+        "range": boolean;
+        /**
+          * @default false
+         */
         "showWeekNumbers": boolean;
         /**
           * @default true
@@ -1124,7 +1184,7 @@ export namespace Components {
           * @default 7
          */
         "timeVisibleItems": number;
-        "value"?: string;
+        "value"?: string | string[];
     }
     /**
      * ldesign-draggable
@@ -1356,6 +1416,102 @@ export namespace Components {
           * 列表宽度（可选）
          */
         "width"?: number | string;
+    }
+    /**
+     * ldesign-ellipsis 文本省略/展开组件
+     * - 折叠时按指定行数展示，右下角显示“更多”按钮
+     * - 展开后：若最后一行还有空间，则“收起”出现在最后一行最右侧；否则换到下一行右侧
+     * - 兼容 PC 与移动端，按钮有较大点击热区
+     */
+    interface LdesignEllipsis {
+        /**
+          * 自定义按钮 class 和 style
+         */
+        "actionClass"?: string;
+        /**
+          * 行为控制：auto（默认）| inline（强制同行右置）| newline（强制换行右对齐）
+          * @default 'auto'
+         */
+        "actionPlacement": 'auto' | 'inline' | 'newline';
+        "actionStyle"?: any;
+        "collapseIcon"?: string;
+        /**
+          * 展开态允许 ESC 收起
+          * @default false
+         */
+        "collapseOnEscape": boolean;
+        /**
+          * 收起按钮文案（展开态）
+          * @default '收起'
+         */
+        "collapseText": string;
+        /**
+          * 要展示的文本内容（纯文本）
+         */
+        "content"?: string;
+        /**
+          * 是否默认展开
+          * @default false
+         */
+        "defaultExpanded": boolean;
+        /**
+          * 按钮图标（可选）
+         */
+        "expandIcon"?: string;
+        /**
+          * 展开按钮文案（折叠态）
+          * @default '更多'
+         */
+        "expandText": string;
+        /**
+          * 当前是否展开（受控模式，可选）
+         */
+        "expanded"?: boolean;
+        /**
+          * 渐变遮罩宽度（如 40% 或 120）
+          * @default '40%'
+         */
+        "fadeWidth": number | string;
+        /**
+          * 同行放置时，文本与“收起”的间距（像素）
+          * @default 8
+         */
+        "inlineGap": number;
+        /**
+          * 折叠时显示的行数
+          * @default 3
+         */
+        "lines": number;
+        /**
+          * 响应式行数，根据屏宽选择不同行数
+         */
+        "linesMap"?: { sm?: number; md?: number; lg?: number; xl?: number };
+        /**
+          * 折叠态是否显示渐变遮罩
+          * @default true
+         */
+        "showFade": boolean;
+        /**
+          * Tooltip 最大宽度
+          * @default 320
+         */
+        "tooltipMaxWidth": number;
+        /**
+          * 折叠且溢出时，悬浮显示全文
+          * @default false
+         */
+        "tooltipOnCollapsed": boolean;
+        /**
+          * Tooltip 位置
+          * @default 'top'
+         */
+        "tooltipPlacement": string;
+        /**
+          * 展开/收起高度变化动画时长（ms）
+          * @default 200
+         */
+        "transitionDuration": number;
+        "update": () => Promise<void>;
     }
     /**
      * Grid 容器（grid -> grid-item 用法）
@@ -4228,6 +4384,10 @@ export interface LdesignDropdownCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignDropdownElement;
 }
+export interface LdesignEllipsisCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignEllipsisElement;
+}
 export interface LdesignImageCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignImageElement;
@@ -4469,6 +4629,9 @@ declare global {
     };
     interface HTMLLdesignCalendarElementEventMap {
         "ldesignChange": string;
+        "ldesignEventClick": { event: any };
+        "ldesignEventDrop": { id?: string; title: string; oldStart?: string; oldEnd?: string; newStart: string; newEnd: string; allDay?: boolean };
+        "ldesignEventResize": { id?: string; title: string; oldStart?: string; oldEnd?: string; newStart: string; newEnd: string };
     }
     interface HTMLLdesignCalendarElement extends Components.LdesignCalendar, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignCalendarElementEventMap>(type: K, listener: (this: HTMLLdesignCalendarElement, ev: LdesignCalendarCustomEvent<HTMLLdesignCalendarElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -4773,6 +4936,29 @@ declare global {
     var HTMLLdesignDropdownElement: {
         prototype: HTMLLdesignDropdownElement;
         new (): HTMLLdesignDropdownElement;
+    };
+    interface HTMLLdesignEllipsisElementEventMap {
+        "ldesignTruncateChange": { overflowed: boolean };
+    }
+    /**
+     * ldesign-ellipsis 文本省略/展开组件
+     * - 折叠时按指定行数展示，右下角显示“更多”按钮
+     * - 展开后：若最后一行还有空间，则“收起”出现在最后一行最右侧；否则换到下一行右侧
+     * - 兼容 PC 与移动端，按钮有较大点击热区
+     */
+    interface HTMLLdesignEllipsisElement extends Components.LdesignEllipsis, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignEllipsisElementEventMap>(type: K, listener: (this: HTMLLdesignEllipsisElement, ev: LdesignEllipsisCustomEvent<HTMLLdesignEllipsisElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignEllipsisElementEventMap>(type: K, listener: (this: HTMLLdesignEllipsisElement, ev: LdesignEllipsisCustomEvent<HTMLLdesignEllipsisElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignEllipsisElement: {
+        prototype: HTMLLdesignEllipsisElement;
+        new (): HTMLLdesignEllipsisElement;
     };
     /**
      * Grid 容器（grid -> grid-item 用法）
@@ -5573,6 +5759,7 @@ declare global {
         "ldesign-draggable": HTMLLdesignDraggableElement;
         "ldesign-drawer": HTMLLdesignDrawerElement;
         "ldesign-dropdown": HTMLLdesignDropdownElement;
+        "ldesign-ellipsis": HTMLLdesignEllipsisElement;
         "ldesign-grid": HTMLLdesignGridElement;
         "ldesign-grid-item": HTMLLdesignGridItemElement;
         "ldesign-icon": HTMLLdesignIconElement;
@@ -5984,6 +6171,18 @@ declare namespace LocalJSX {
         "defaultValue"?: string;
         "disabledDate"?: (d: Date) => boolean;
         /**
+          * @default false
+         */
+        "draggableEvents"?: boolean;
+        /**
+          * 事件数据（JSON 字符串），例如：[{"date":"2025-09-27","title":"发布","color":"#1677ff"}]
+         */
+        "events"?: string;
+        /**
+          * 事件数据（JS 设置），与 events 二选一，前者用于 attribute，后者用于 property
+         */
+        "eventsData"?: Array<{ date: string; title: string; color?: string; type?: 'dot' | 'bg' }>;
+        /**
           * @default 1
          */
         "firstDayOfWeek"?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -5991,14 +6190,61 @@ declare namespace LocalJSX {
           * @default 'YYYY-MM-DD'
          */
         "format"?: string;
+        /**
+          * @default 20
+         */
+        "hourEnd"?: number;
+        /**
+          * 时间轴起止与步长（周/日视图）
+          * @default 8
+         */
+        "hourStart"?: number;
+        /**
+          * 自定义农历格式化（优先级高于内置），返回文本，例如 “初九” 或 “正月初一”
+         */
+        "lunarFormatter"?: (d: Date) => string;
+        /**
+          * @default 3
+         */
+        "maxAllDayRows"?: number;
         "maxDate"?: string;
+        /**
+          * 单元格最多展示的事件条数
+          * @default 3
+         */
+        "maxEventsPerCell"?: number;
         "minDate"?: string;
         "onLdesignChange"?: (event: LdesignCalendarCustomEvent<string>) => void;
+        "onLdesignEventClick"?: (event: LdesignCalendarCustomEvent<{ event: any }>) => void;
+        "onLdesignEventDrop"?: (event: LdesignCalendarCustomEvent<{ id?: string; title: string; oldStart?: string; oldEnd?: string; newStart: string; newEnd: string; allDay?: boolean }>) => void;
+        "onLdesignEventResize"?: (event: LdesignCalendarCustomEvent<{ id?: string; title: string; oldStart?: string; oldEnd?: string; newStart: string; newEnd: string }>) => void;
+        /**
+          * @default false
+         */
+        "resizableEvents"?: boolean;
+        /**
+          * @default true
+         */
+        "showAllDay"?: boolean;
+        /**
+          * 是否显示农历（默认关闭）。若浏览器支持 Intl Chinese Calendar，将自动使用内置格式化
+          * @default false
+         */
+        "showLunar"?: boolean;
         /**
           * @default false
          */
         "showWeekNumbers"?: boolean;
+        /**
+          * @default 30
+         */
+        "stepMinutes"?: number;
         "value"?: string;
+        /**
+          * 视图：月/周/日/年
+          * @default 'month'
+         */
+        "view"?: 'month' | 'week' | 'day' | 'year';
     }
     /**
      * Checkbox 复选框组件
@@ -6702,7 +6948,7 @@ declare namespace LocalJSX {
           * @default true
          */
         "clearable"?: boolean;
-        "defaultValue"?: string;
+        "defaultValue"?: string | string[];
         /**
           * @default false
          */
@@ -6731,6 +6977,10 @@ declare namespace LocalJSX {
         /**
           * @default false
          */
+        "range"?: boolean;
+        /**
+          * @default false
+         */
         "showWeekNumbers"?: boolean;
         /**
           * @default true
@@ -6744,7 +6994,7 @@ declare namespace LocalJSX {
           * @default 7
          */
         "timeVisibleItems"?: number;
-        "value"?: string;
+        "value"?: string | string[];
     }
     /**
      * ldesign-draggable
@@ -6977,6 +7227,105 @@ declare namespace LocalJSX {
           * 列表宽度（可选）
          */
         "width"?: number | string;
+    }
+    /**
+     * ldesign-ellipsis 文本省略/展开组件
+     * - 折叠时按指定行数展示，右下角显示“更多”按钮
+     * - 展开后：若最后一行还有空间，则“收起”出现在最后一行最右侧；否则换到下一行右侧
+     * - 兼容 PC 与移动端，按钮有较大点击热区
+     */
+    interface LdesignEllipsis {
+        /**
+          * 自定义按钮 class 和 style
+         */
+        "actionClass"?: string;
+        /**
+          * 行为控制：auto（默认）| inline（强制同行右置）| newline（强制换行右对齐）
+          * @default 'auto'
+         */
+        "actionPlacement"?: 'auto' | 'inline' | 'newline';
+        "actionStyle"?: any;
+        "collapseIcon"?: string;
+        /**
+          * 展开态允许 ESC 收起
+          * @default false
+         */
+        "collapseOnEscape"?: boolean;
+        /**
+          * 收起按钮文案（展开态）
+          * @default '收起'
+         */
+        "collapseText"?: string;
+        /**
+          * 要展示的文本内容（纯文本）
+         */
+        "content"?: string;
+        /**
+          * 是否默认展开
+          * @default false
+         */
+        "defaultExpanded"?: boolean;
+        /**
+          * 按钮图标（可选）
+         */
+        "expandIcon"?: string;
+        /**
+          * 展开按钮文案（折叠态）
+          * @default '更多'
+         */
+        "expandText"?: string;
+        /**
+          * 当前是否展开（受控模式，可选）
+         */
+        "expanded"?: boolean;
+        /**
+          * 渐变遮罩宽度（如 40% 或 120）
+          * @default '40%'
+         */
+        "fadeWidth"?: number | string;
+        /**
+          * 同行放置时，文本与“收起”的间距（像素）
+          * @default 8
+         */
+        "inlineGap"?: number;
+        /**
+          * 折叠时显示的行数
+          * @default 3
+         */
+        "lines"?: number;
+        /**
+          * 响应式行数，根据屏宽选择不同行数
+         */
+        "linesMap"?: { sm?: number; md?: number; lg?: number; xl?: number };
+        /**
+          * 展开/折叠状态变化回调（自定义事件：ldesignToggle）
+         */
+        "onLdesignTruncateChange"?: (event: LdesignEllipsisCustomEvent<{ overflowed: boolean }>) => void;
+        /**
+          * 折叠态是否显示渐变遮罩
+          * @default true
+         */
+        "showFade"?: boolean;
+        /**
+          * Tooltip 最大宽度
+          * @default 320
+         */
+        "tooltipMaxWidth"?: number;
+        /**
+          * 折叠且溢出时，悬浮显示全文
+          * @default false
+         */
+        "tooltipOnCollapsed"?: boolean;
+        /**
+          * Tooltip 位置
+          * @default 'top'
+         */
+        "tooltipPlacement"?: string;
+        /**
+          * 展开/收起高度变化动画时长（ms）
+          * @default 200
+         */
+        "transitionDuration"?: number;
     }
     /**
      * Grid 容器（grid -> grid-item 用法）
@@ -9984,6 +10333,7 @@ declare namespace LocalJSX {
         "ldesign-draggable": LdesignDraggable;
         "ldesign-drawer": LdesignDrawer;
         "ldesign-dropdown": LdesignDropdown;
+        "ldesign-ellipsis": LdesignEllipsis;
         "ldesign-grid": LdesignGrid;
         "ldesign-grid-item": LdesignGridItem;
         "ldesign-icon": LdesignIcon;
@@ -10153,6 +10503,13 @@ declare module "@stencil/core" {
              * 基于 <ldesign-popup> 实现
              */
             "ldesign-dropdown": LocalJSX.LdesignDropdown & JSXBase.HTMLAttributes<HTMLLdesignDropdownElement>;
+            /**
+             * ldesign-ellipsis 文本省略/展开组件
+             * - 折叠时按指定行数展示，右下角显示“更多”按钮
+             * - 展开后：若最后一行还有空间，则“收起”出现在最后一行最右侧；否则换到下一行右侧
+             * - 兼容 PC 与移动端，按钮有较大点击热区
+             */
+            "ldesign-ellipsis": LocalJSX.LdesignEllipsis & JSXBase.HTMLAttributes<HTMLLdesignEllipsisElement>;
             /**
              * Grid 容器（grid -> grid-item 用法）
              * - 在内部通过计算为每个 grid-item 设置明确的行/列位置与跨度

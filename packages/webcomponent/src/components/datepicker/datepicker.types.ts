@@ -9,6 +9,7 @@ export interface DatePickerProps {
   value?: Date | Date[] | string | string[] | null;
   mode?: DatePickerMode;
   type?: DatePickerType;
+  range?: boolean; // 是否启用范围选择（与 mode 组合使用）
   placeholder?: string;
   disabled?: boolean;
   clearable?: boolean;
