@@ -391,6 +391,25 @@ export namespace Components {
          */
         "type": ButtonType;
     }
+    interface LdesignCalendar {
+        "defaultValue"?: string;
+        "disabledDate"?: (d: Date) => boolean;
+        /**
+          * @default 1
+         */
+        "firstDayOfWeek": 0 | 1 | 2 | 3 | 4 | 5 | 6;
+        /**
+          * @default 'YYYY-MM-DD'
+         */
+        "format": string;
+        "maxDate"?: string;
+        "minDate"?: string;
+        /**
+          * @default false
+         */
+        "showWeekNumbers": boolean;
+        "value"?: string;
+    }
     /**
      * Checkbox 复选框组件
      * 在一组备选项中进行多选
@@ -631,6 +650,18 @@ export namespace Components {
           * @default 0
          */
         "zDepth": number;
+    }
+    /**
+     * Col 列
+     * - 作为 ldesign-row 的子项，通过 span 指定跨列数
+     * - 会观察父 Row 或祖先 Grid 的 cols 变化以自适应
+     */
+    interface LdesignCol {
+        /**
+          * 占用的列数
+          * @default 1
+         */
+        "span": number;
     }
     /**
      * Collapse 折叠面板
@@ -1072,7 +1103,7 @@ export namespace Components {
         /**
           * @default 'date'
          */
-        "mode": 'date' | 'week' | 'month' | 'quarter' | 'year';
+        "mode": 'date' | 'week' | 'month' | 'quarter' | 'year' | 'datetime';
         /**
           * @default '请选择日期'
          */
@@ -1081,6 +1112,18 @@ export namespace Components {
           * @default false
          */
         "showWeekNumbers": boolean;
+        /**
+          * @default true
+         */
+        "timeShowSeconds": boolean;
+        /**
+          * @default [1, 1, 1]
+         */
+        "timeSteps": number[];
+        /**
+          * @default 7
+         */
+        "timeVisibleItems": number;
         "value"?: string;
     }
     /**
@@ -1313,6 +1356,60 @@ export namespace Components {
           * 列表宽度（可选）
          */
         "width"?: number | string;
+    }
+    /**
+     * Grid 容器（grid -> grid-item 用法）
+     * - 在内部通过计算为每个 grid-item 设置明确的行/列位置与跨度
+     * - 支持设置每行列数与横纵间距
+     */
+    interface LdesignGrid {
+        /**
+          * 固定列数（可选）。若不设置，则根据 minColWidth 自动计算最佳列数
+         */
+        "cols"?: number;
+        /**
+          * 折叠时默认显示的行数；0 或未设置表示显示全部
+         */
+        "defaultRows"?: number;
+        /**
+          * 是否使用密集填充（尽量填补空位）；显式定位下仅作类名标识
+          * @default false
+         */
+        "dense": boolean;
+        /**
+          * 同时设置横纵间距（数字按 px）
+         */
+        "gap"?: number | string;
+        /**
+          * 每列的最小宽度，用于自适应计算列数；数字为 px；默认 240
+          * @default 240
+         */
+        "minColWidth": number | string;
+        /**
+          * 展开按钮所在列宽（span）
+          * @default 8
+         */
+        "toggleSpan": number;
+        /**
+          * 横向列间距
+         */
+        "xGap"?: number | string;
+        /**
+          * 纵向行间距
+         */
+        "yGap"?: number | string;
+    }
+    /**
+     * Grid 子项
+     * - 通过 span 指定跨越列数
+     * - 根据父容器的 cols 自动限制最大跨度
+     */
+    interface LdesignGridItem {
+        /**
+          * 占用的列数
+          * @default 1
+         */
+        "span": number;
     }
     /**
      * Icon 图标组件
@@ -3045,6 +3142,33 @@ export namespace Components {
         "width": number | string;
     }
     /**
+     * Row 行容器
+     * - 作为一行的网格容器
+     * - 可独立配置列数与间距，或继承上级 ldesign-grid 的默认值
+     */
+    interface LdesignRow {
+        /**
+          * 每行的列数；未设置时将继承上级 ldesign-grid 的 cols（默认 24）
+         */
+        "cols"?: number;
+        /**
+          * 是否密集填充（尽量填补空位）；未设置时继承上级 grid，默认 true
+         */
+        "dense"?: boolean;
+        /**
+          * 统一间距（横纵同时生效），number 视为 px；未设置则继承上级 ldesign-grid 的 gap
+         */
+        "gap"?: number | string;
+        /**
+          * 横向列间距；未设置时取 gap，再继承上级 grid 的 x-gap/gap
+         */
+        "xGap"?: number | string;
+        /**
+          * 纵向行间距；未设置时取 gap，再继承上级 grid 的 y-gap/gap
+         */
+        "yGap"?: number | string;
+    }
+    /**
      * ldesign-scrollbar 自定义滚动条
      * - 包裹任意内容，提供可完全自定义样式的滚动条（纵向/横向）
      * - 支持拖拽拇指、点击轨道跳转、自动/常显、轨道类型切换
@@ -3758,13 +3882,14 @@ export namespace Components {
         "drawerSize"?: number | string;
         "drawerTitle"?: string;
         /**
+          * @default false
+         */
+        "inline": boolean;
+        /**
           * @default 'auto'
          */
         "overlay": TimePickerOverlay;
-        /**
-          * @default 180
-         */
-        "panelHeight": number;
+        "panelHeight"?: number;
         /**
           * @default '选择时间'
          */
@@ -3773,6 +3898,11 @@ export namespace Components {
           * @default 'bottom-start' as Placement
          */
         "placement": Placement;
+        /**
+          * 是否展示“此刻”快捷按钮
+          * @default true
+         */
+        "showNow": boolean;
         /**
           * @default true
          */
@@ -4045,6 +4175,10 @@ export interface LdesignAvatarCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignButtonCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignButtonElement;
+}
+export interface LdesignCalendarCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignCalendarElement;
 }
 export interface LdesignCheckboxCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -4333,6 +4467,23 @@ declare global {
         prototype: HTMLLdesignButtonElement;
         new (): HTMLLdesignButtonElement;
     };
+    interface HTMLLdesignCalendarElementEventMap {
+        "ldesignChange": string;
+    }
+    interface HTMLLdesignCalendarElement extends Components.LdesignCalendar, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignCalendarElementEventMap>(type: K, listener: (this: HTMLLdesignCalendarElement, ev: LdesignCalendarCustomEvent<HTMLLdesignCalendarElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignCalendarElementEventMap>(type: K, listener: (this: HTMLLdesignCalendarElement, ev: LdesignCalendarCustomEvent<HTMLLdesignCalendarElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignCalendarElement: {
+        prototype: HTMLLdesignCalendarElement;
+        new (): HTMLLdesignCalendarElement;
+    };
     interface HTMLLdesignCheckboxElementEventMap {
         "ldesignChange": boolean;
     }
@@ -4384,6 +4535,17 @@ declare global {
     var HTMLLdesignCircleNavigationElement: {
         prototype: HTMLLdesignCircleNavigationElement;
         new (): HTMLLdesignCircleNavigationElement;
+    };
+    /**
+     * Col 列
+     * - 作为 ldesign-row 的子项，通过 span 指定跨列数
+     * - 会观察父 Row 或祖先 Grid 的 cols 变化以自适应
+     */
+    interface HTMLLdesignColElement extends Components.LdesignCol, HTMLStencilElement {
+    }
+    var HTMLLdesignColElement: {
+        prototype: HTMLLdesignColElement;
+        new (): HTMLLdesignColElement;
     };
     interface HTMLLdesignCollapseElementEventMap {
         "ldesignChange": string[];
@@ -4611,6 +4773,28 @@ declare global {
     var HTMLLdesignDropdownElement: {
         prototype: HTMLLdesignDropdownElement;
         new (): HTMLLdesignDropdownElement;
+    };
+    /**
+     * Grid 容器（grid -> grid-item 用法）
+     * - 在内部通过计算为每个 grid-item 设置明确的行/列位置与跨度
+     * - 支持设置每行列数与横纵间距
+     */
+    interface HTMLLdesignGridElement extends Components.LdesignGrid, HTMLStencilElement {
+    }
+    var HTMLLdesignGridElement: {
+        prototype: HTMLLdesignGridElement;
+        new (): HTMLLdesignGridElement;
+    };
+    /**
+     * Grid 子项
+     * - 通过 span 指定跨越列数
+     * - 根据父容器的 cols 自动限制最大跨度
+     */
+    interface HTMLLdesignGridItemElement extends Components.LdesignGridItem, HTMLStencilElement {
+    }
+    var HTMLLdesignGridItemElement: {
+        prototype: HTMLLdesignGridItemElement;
+        new (): HTMLLdesignGridItemElement;
     };
     /**
      * Icon 图标组件
@@ -5057,6 +5241,17 @@ declare global {
         prototype: HTMLLdesignResizeBoxElement;
         new (): HTMLLdesignResizeBoxElement;
     };
+    /**
+     * Row 行容器
+     * - 作为一行的网格容器
+     * - 可独立配置列数与间距，或继承上级 ldesign-grid 的默认值
+     */
+    interface HTMLLdesignRowElement extends Components.LdesignRow, HTMLStencilElement {
+    }
+    var HTMLLdesignRowElement: {
+        prototype: HTMLLdesignRowElement;
+        new (): HTMLLdesignRowElement;
+    };
     interface HTMLLdesignScrollbarElementEventMap {
         "ldesignScroll": { scrollTop: number; scrollLeft: number; clientWidth: number; clientHeight: number; scrollWidth: number; scrollHeight: number };
         "ldesignReach": { edge: 'top' | 'bottom' | 'left' | 'right' };
@@ -5363,9 +5558,11 @@ declare global {
         "ldesign-avatar-group": HTMLLdesignAvatarGroupElement;
         "ldesign-backtop": HTMLLdesignBacktopElement;
         "ldesign-button": HTMLLdesignButtonElement;
+        "ldesign-calendar": HTMLLdesignCalendarElement;
         "ldesign-checkbox": HTMLLdesignCheckboxElement;
         "ldesign-checkbox-group": HTMLLdesignCheckboxGroupElement;
         "ldesign-circle-navigation": HTMLLdesignCircleNavigationElement;
+        "ldesign-col": HTMLLdesignColElement;
         "ldesign-collapse": HTMLLdesignCollapseElement;
         "ldesign-collapse-panel": HTMLLdesignCollapsePanelElement;
         "ldesign-color-input": HTMLLdesignColorInputElement;
@@ -5376,6 +5573,8 @@ declare global {
         "ldesign-draggable": HTMLLdesignDraggableElement;
         "ldesign-drawer": HTMLLdesignDrawerElement;
         "ldesign-dropdown": HTMLLdesignDropdownElement;
+        "ldesign-grid": HTMLLdesignGridElement;
+        "ldesign-grid-item": HTMLLdesignGridItemElement;
         "ldesign-icon": HTMLLdesignIconElement;
         "ldesign-image": HTMLLdesignImageElement;
         "ldesign-image-group": HTMLLdesignImageGroupElement;
@@ -5397,6 +5596,7 @@ declare global {
         "ldesign-radio-group": HTMLLdesignRadioGroupElement;
         "ldesign-rate": HTMLLdesignRateElement;
         "ldesign-resize-box": HTMLLdesignResizeBoxElement;
+        "ldesign-row": HTMLLdesignRowElement;
         "ldesign-scrollbar": HTMLLdesignScrollbarElement;
         "ldesign-select": HTMLLdesignSelectElement;
         "ldesign-slider": HTMLLdesignSliderElement;
@@ -5780,6 +5980,26 @@ declare namespace LocalJSX {
          */
         "type"?: ButtonType;
     }
+    interface LdesignCalendar {
+        "defaultValue"?: string;
+        "disabledDate"?: (d: Date) => boolean;
+        /**
+          * @default 1
+         */
+        "firstDayOfWeek"?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+        /**
+          * @default 'YYYY-MM-DD'
+         */
+        "format"?: string;
+        "maxDate"?: string;
+        "minDate"?: string;
+        "onLdesignChange"?: (event: LdesignCalendarCustomEvent<string>) => void;
+        /**
+          * @default false
+         */
+        "showWeekNumbers"?: boolean;
+        "value"?: string;
+    }
     /**
      * Checkbox 复选框组件
      * 在一组备选项中进行多选
@@ -6028,6 +6248,18 @@ declare namespace LocalJSX {
           * @default 0
          */
         "zDepth"?: number;
+    }
+    /**
+     * Col 列
+     * - 作为 ldesign-row 的子项，通过 span 指定跨列数
+     * - 会观察父 Row 或祖先 Grid 的 cols 变化以自适应
+     */
+    interface LdesignCol {
+        /**
+          * 占用的列数
+          * @default 1
+         */
+        "span"?: number;
     }
     /**
      * Collapse 折叠面板
@@ -6489,7 +6721,7 @@ declare namespace LocalJSX {
         /**
           * @default 'date'
          */
-        "mode"?: 'date' | 'week' | 'month' | 'quarter' | 'year';
+        "mode"?: 'date' | 'week' | 'month' | 'quarter' | 'year' | 'datetime';
         "onLdesignChange"?: (event: LdesignDatePickerCustomEvent<any>) => void;
         "onLdesignVisibleChange"?: (event: LdesignDatePickerCustomEvent<boolean>) => void;
         /**
@@ -6500,6 +6732,18 @@ declare namespace LocalJSX {
           * @default false
          */
         "showWeekNumbers"?: boolean;
+        /**
+          * @default true
+         */
+        "timeShowSeconds"?: boolean;
+        /**
+          * @default [1, 1, 1]
+         */
+        "timeSteps"?: number[];
+        /**
+          * @default 7
+         */
+        "timeVisibleItems"?: number;
         "value"?: string;
     }
     /**
@@ -6733,6 +6977,60 @@ declare namespace LocalJSX {
           * 列表宽度（可选）
          */
         "width"?: number | string;
+    }
+    /**
+     * Grid 容器（grid -> grid-item 用法）
+     * - 在内部通过计算为每个 grid-item 设置明确的行/列位置与跨度
+     * - 支持设置每行列数与横纵间距
+     */
+    interface LdesignGrid {
+        /**
+          * 固定列数（可选）。若不设置，则根据 minColWidth 自动计算最佳列数
+         */
+        "cols"?: number;
+        /**
+          * 折叠时默认显示的行数；0 或未设置表示显示全部
+         */
+        "defaultRows"?: number;
+        /**
+          * 是否使用密集填充（尽量填补空位）；显式定位下仅作类名标识
+          * @default false
+         */
+        "dense"?: boolean;
+        /**
+          * 同时设置横纵间距（数字按 px）
+         */
+        "gap"?: number | string;
+        /**
+          * 每列的最小宽度，用于自适应计算列数；数字为 px；默认 240
+          * @default 240
+         */
+        "minColWidth"?: number | string;
+        /**
+          * 展开按钮所在列宽（span）
+          * @default 8
+         */
+        "toggleSpan"?: number;
+        /**
+          * 横向列间距
+         */
+        "xGap"?: number | string;
+        /**
+          * 纵向行间距
+         */
+        "yGap"?: number | string;
+    }
+    /**
+     * Grid 子项
+     * - 通过 span 指定跨越列数
+     * - 根据父容器的 cols 自动限制最大跨度
+     */
+    interface LdesignGridItem {
+        /**
+          * 占用的列数
+          * @default 1
+         */
+        "span"?: number;
     }
     /**
      * Icon 图标组件
@@ -8591,6 +8889,33 @@ declare namespace LocalJSX {
         "width"?: number | string;
     }
     /**
+     * Row 行容器
+     * - 作为一行的网格容器
+     * - 可独立配置列数与间距，或继承上级 ldesign-grid 的默认值
+     */
+    interface LdesignRow {
+        /**
+          * 每行的列数；未设置时将继承上级 ldesign-grid 的 cols（默认 24）
+         */
+        "cols"?: number;
+        /**
+          * 是否密集填充（尽量填补空位）；未设置时继承上级 grid，默认 true
+         */
+        "dense"?: boolean;
+        /**
+          * 统一间距（横纵同时生效），number 视为 px；未设置则继承上级 ldesign-grid 的 gap
+         */
+        "gap"?: number | string;
+        /**
+          * 横向列间距；未设置时取 gap，再继承上级 grid 的 x-gap/gap
+         */
+        "xGap"?: number | string;
+        /**
+          * 纵向行间距；未设置时取 gap，再继承上级 grid 的 y-gap/gap
+         */
+        "yGap"?: number | string;
+    }
+    /**
      * ldesign-scrollbar 自定义滚动条
      * - 包裹任意内容，提供可完全自定义样式的滚动条（纵向/横向）
      * - 支持拖拽拇指、点击轨道跳转、自动/常显、轨道类型切换
@@ -9337,6 +9662,10 @@ declare namespace LocalJSX {
         "drawerPlacement"?: 'left' | 'right' | 'top' | 'bottom';
         "drawerSize"?: number | string;
         "drawerTitle"?: string;
+        /**
+          * @default false
+         */
+        "inline"?: boolean;
         "onLdesignChange"?: (event: LdesignTimePickerCustomEvent<string | undefined>) => void;
         "onLdesignClose"?: (event: LdesignTimePickerCustomEvent<void>) => void;
         "onLdesignOpen"?: (event: LdesignTimePickerCustomEvent<void>) => void;
@@ -9346,9 +9675,6 @@ declare namespace LocalJSX {
           * @default 'auto'
          */
         "overlay"?: TimePickerOverlay;
-        /**
-          * @default 180
-         */
         "panelHeight"?: number;
         /**
           * @default '选择时间'
@@ -9358,6 +9684,11 @@ declare namespace LocalJSX {
           * @default 'bottom-start' as Placement
          */
         "placement"?: Placement;
+        /**
+          * 是否展示“此刻”快捷按钮
+          * @default true
+         */
+        "showNow"?: boolean;
         /**
           * @default true
          */
@@ -9638,9 +9969,11 @@ declare namespace LocalJSX {
         "ldesign-avatar-group": LdesignAvatarGroup;
         "ldesign-backtop": LdesignBacktop;
         "ldesign-button": LdesignButton;
+        "ldesign-calendar": LdesignCalendar;
         "ldesign-checkbox": LdesignCheckbox;
         "ldesign-checkbox-group": LdesignCheckboxGroup;
         "ldesign-circle-navigation": LdesignCircleNavigation;
+        "ldesign-col": LdesignCol;
         "ldesign-collapse": LdesignCollapse;
         "ldesign-collapse-panel": LdesignCollapsePanel;
         "ldesign-color-input": LdesignColorInput;
@@ -9651,6 +9984,8 @@ declare namespace LocalJSX {
         "ldesign-draggable": LdesignDraggable;
         "ldesign-drawer": LdesignDrawer;
         "ldesign-dropdown": LdesignDropdown;
+        "ldesign-grid": LdesignGrid;
+        "ldesign-grid-item": LdesignGridItem;
         "ldesign-icon": LdesignIcon;
         "ldesign-image": LdesignImage;
         "ldesign-image-group": LdesignImageGroup;
@@ -9672,6 +10007,7 @@ declare namespace LocalJSX {
         "ldesign-radio-group": LdesignRadioGroup;
         "ldesign-rate": LdesignRate;
         "ldesign-resize-box": LdesignResizeBox;
+        "ldesign-row": LdesignRow;
         "ldesign-scrollbar": LdesignScrollbar;
         "ldesign-select": LdesignSelect;
         "ldesign-slider": LdesignSlider;
@@ -9738,6 +10074,7 @@ declare module "@stencil/core" {
              * 用于触发操作或导航
              */
             "ldesign-button": LocalJSX.LdesignButton & JSXBase.HTMLAttributes<HTMLLdesignButtonElement>;
+            "ldesign-calendar": LocalJSX.LdesignCalendar & JSXBase.HTMLAttributes<HTMLLdesignCalendarElement>;
             /**
              * Checkbox 复选框组件
              * 在一组备选项中进行多选
@@ -9753,6 +10090,12 @@ declare module "@stencil/core" {
              * 支持通过 width/height 控制圆的尺寸，默认正上方为第一个元素
              */
             "ldesign-circle-navigation": LocalJSX.LdesignCircleNavigation & JSXBase.HTMLAttributes<HTMLLdesignCircleNavigationElement>;
+            /**
+             * Col 列
+             * - 作为 ldesign-row 的子项，通过 span 指定跨列数
+             * - 会观察父 Row 或祖先 Grid 的 cols 变化以自适应
+             */
+            "ldesign-col": LocalJSX.LdesignCol & JSXBase.HTMLAttributes<HTMLLdesignColElement>;
             /**
              * Collapse 折叠面板
              * - 支持受控/非受控、手风琴模式、动画、禁用
@@ -9810,6 +10153,18 @@ declare module "@stencil/core" {
              * 基于 <ldesign-popup> 实现
              */
             "ldesign-dropdown": LocalJSX.LdesignDropdown & JSXBase.HTMLAttributes<HTMLLdesignDropdownElement>;
+            /**
+             * Grid 容器（grid -> grid-item 用法）
+             * - 在内部通过计算为每个 grid-item 设置明确的行/列位置与跨度
+             * - 支持设置每行列数与横纵间距
+             */
+            "ldesign-grid": LocalJSX.LdesignGrid & JSXBase.HTMLAttributes<HTMLLdesignGridElement>;
+            /**
+             * Grid 子项
+             * - 通过 span 指定跨越列数
+             * - 根据父容器的 cols 自动限制最大跨度
+             */
+            "ldesign-grid-item": LocalJSX.LdesignGridItem & JSXBase.HTMLAttributes<HTMLLdesignGridItemElement>;
             /**
              * Icon 图标组件
              * 基于 Lucide 图标库
@@ -9932,6 +10287,12 @@ declare module "@stencil/core" {
              * 可通过拖拽指定边来改变容器宽高
              */
             "ldesign-resize-box": LocalJSX.LdesignResizeBox & JSXBase.HTMLAttributes<HTMLLdesignResizeBoxElement>;
+            /**
+             * Row 行容器
+             * - 作为一行的网格容器
+             * - 可独立配置列数与间距，或继承上级 ldesign-grid 的默认值
+             */
+            "ldesign-row": LocalJSX.LdesignRow & JSXBase.HTMLAttributes<HTMLLdesignRowElement>;
             /**
              * ldesign-scrollbar 自定义滚动条
              * - 包裹任意内容，提供可完全自定义样式的滚动条（纵向/横向）

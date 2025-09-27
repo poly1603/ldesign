@@ -2,8 +2,8 @@
  * 日期选择器类型定义
  */
 
-export type DatePickerMode = 'year' | 'quarter' | 'month' | 'week' | 'date';
-export type DatePickerType = 'date' | 'daterange' | 'week' | 'month' | 'quarter' | 'year';
+export type DatePickerMode = 'year' | 'quarter' | 'month' | 'week' | 'date' | 'datetime';
+export type DatePickerType = 'date' | 'daterange' | 'week' | 'month' | 'quarter' | 'year' | 'datetime';
 
 export interface DatePickerProps {
   value?: Date | Date[] | string | string[] | null;

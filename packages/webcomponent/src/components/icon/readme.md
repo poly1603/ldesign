@@ -29,6 +29,7 @@ Icon 图标组件
  - [ldesign-avatar](../avatar)
  - [ldesign-backtop](../backtop)
  - [ldesign-button](../button)
+ - [ldesign-calendar](../calendar)
  - [ldesign-checkbox](../checkbox)
  - [ldesign-collapse-panel](../collapse)
  - [ldesign-date-picker](../datepicker)
@@ -61,6 +62,7 @@ graph TD;
   ldesign-avatar --> ldesign-icon
   ldesign-backtop --> ldesign-icon
   ldesign-button --> ldesign-icon
+  ldesign-calendar --> ldesign-icon
   ldesign-checkbox --> ldesign-icon
   ldesign-collapse-panel --> ldesign-icon
   ldesign-date-picker --> ldesign-icon

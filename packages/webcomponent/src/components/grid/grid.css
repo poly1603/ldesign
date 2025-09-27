@@ -1,0 +1,26 @@
+/* Grid 容器样式 */
+
+.ldesign-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--ld-grid-cols, 24), minmax(0, 1fr));
+  column-gap: var(--ld-grid-x-gap, 0px);
+  row-gap: var(--ld-grid-y-gap, 0px);
+  grid-auto-flow: row;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 密集填充模式：尽可能填补空位（在显式定位下仅作标识） */
+.ldesign-grid--dense {
+  grid-auto-flow: row dense;
+}
+
+/* 展开按钮的基础样式（可按需美化或替换为 <ldesign-button>） */
+.ldesign-grid__toggle-btn {
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--ldesign-border-color, #d9d9d9);
+  background: var(--ldesign-bg, #fff);
+  border-radius: 6px;
+  cursor: pointer;
+}

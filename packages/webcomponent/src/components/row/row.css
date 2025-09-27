@@ -1,0 +1,15 @@
+/* Row 行容器样式 */
+
+.ldesign-row {
+  display: grid;
+  grid-template-columns: repeat(var(--ld-row-cols, 24), minmax(0, 1fr));
+  column-gap: var(--ld-row-x-gap, 0px);
+  row-gap: var(--ld-row-y-gap, 0px);
+  grid-auto-flow: row;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ldesign-row--dense {
+  grid-auto-flow: row dense;
+}

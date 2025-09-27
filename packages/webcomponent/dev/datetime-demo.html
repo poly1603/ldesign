@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LDesign DatePicker datetime 模式快速预览</title>
+    <link rel="stylesheet" href="../dist/ldesign-webcomponent/ldesign-webcomponent.css" />
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif; margin: 24px; }
+      .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+      .card { padding: 16px; border: 1px solid #eee; border-radius: 8px; }
+      .label { margin-bottom: 8px; color: #666; font-size: 13px; }
+    </style>
+    <script type="module">
+      import { defineCustomElements } from '../loader/index.js';
+      defineCustomElements();
+    </script>
+  </head>
+  <body>
+    <h1>DatePicker 日期时间模式预览</h1>
+
+    <div class="row">
+      <div class="card">
+        <div class="label">默认（含秒，默认步长）</div>
+        <ldesign-date-picker id="dp1" mode="datetime" placeholder="请选择日期时间"></ldesign-date-picker>
+      </div>
+
+      <div class="card">
+        <div class="label">每 15 分钟，不显示秒</div>
+        <ldesign-date-picker id="dp2" mode="datetime" placeholder="每 15 分钟" time-show-seconds="false" time-steps="[1,15,1]"></ldesign-date-picker>
+      </div>
+
+      <div class="card">
+        <div class="label">限制范围 + 默认值</div>
+        <ldesign-date-picker id="dp3" mode="datetime" min-date="2024-01-01" max-date="2026-12-31" default-value="2025-09-27 12:34:56"></ldesign-date-picker>
+      </div>
+    </div>
+
+    <div style="margin-top: 16px; color: #666; font-size: 13px;">变更事件：</div>
+    <pre id="log" style="background:#f7f7f7; padding:12px; border-radius:6px; overflow:auto;"></pre>
+
+    <script>
+      const log = document.getElementById('log');
+      const pickers = [document.getElementById('dp1'), document.getElementById('dp2'), document.getElementById('dp3')];
+      pickers.forEach((el, idx) => {
+        el.addEventListener('ldesignChange', (e) => {
+          log.textContent += `picker${idx + 1} -> ${JSON.stringify(e.detail)}\n`;
+        });
+      });
+    </script>
+  </body>
+</html>

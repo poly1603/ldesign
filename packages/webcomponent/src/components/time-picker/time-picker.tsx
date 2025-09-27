@@ -19,12 +19,16 @@ export class LdesignTimePicker {
   @Prop() disabled: boolean = false;
   @Prop() size: TimePickerSize = 'medium';
 
-  // columns
+// columns
   @Prop() showSeconds: boolean = true;
   @Prop() steps: number[] = [1, 1, 1]; // [h, m, s]
-  @Prop() panelHeight: number = 180;
+  @Prop() panelHeight?: number; // 若未提供，将依据 visibleItems 与尺寸计算
   @Prop() visibleItems: number = 5;
   @Prop() confirm: boolean = true; // need Confirm button
+  /** 是否展示“此刻”快捷按钮 */
+  @Prop() showNow: boolean = true;
+  // inline mode: render panel only, no overlay/trigger
+  @Prop() inline: boolean = false;
 
   // overlay
   @Prop() trigger: TimePickerTrigger = 'click';
@@ -77,7 +81,17 @@ export class LdesignTimePicker {
     this.recomputeOptions();
   }
 
-  componentDidLoad() { window.addEventListener('resize', this.updateOverlayKind as any, { passive: true } as any); }
+componentDidLoad() { 
+    window.addEventListener('resize', this.updateOverlayKind as any, { passive: true } as any);
+    // 当以内联面板使用时，打开时机即为挂载完成
+    if (this.inline) {
+      this.panelOpen = true;
+      requestAnimationFrame(() => {
+        this.animatePickersToCurrent();
+        requestAnimationFrame(() => this.recenterPickers());
+      });
+    }
+  }
   disconnectedCallback() { window.removeEventListener('resize', this.updateOverlayKind as any); }
 
   // utils
@@ -304,14 +318,27 @@ export class LdesignTimePicker {
           )}
         </div>
         <div class="ldesign-time-picker__footer">
-          <button class="ldesign-time-picker__now" type="button" onClick={this.useNow}>此刻</button>
-          {this.confirm && <ldesign-button type="primary" size="small" onClick={() => { this.commitValue(); this.hideOverlay(); }}>确定</ldesign-button>}
+          {this.showNow && (
+            <button class="ldesign-time-picker__now" type="button" onClick={this.useNow}>此刻</button>
+          )}
+          {this.confirm ? (
+            <ldesign-button type="primary" size="small" onClick={() => { this.commitValue(); this.hideOverlay(); }}>确定</ldesign-button>
+          ) : null}
         </div>
       </div>
     );
   }
 
-  render() {
+render() {
+    // 内联模式：仅渲染面板内容
+    if (this.inline) {
+      return (
+        <Host class={{ 'ldesign-time-picker': true, 'ldesign-time-picker--disabled': this.disabled }}>
+          {this.renderPanel()}
+        </Host>
+      );
+    }
+
     const visibleProp = this.trigger === 'manual' ? { visible: this.visible } : {};
     const kind = this.computeOverlayKind();
 

@@ -86,6 +86,7 @@ export default defineConfig({
             { text: 'Swiper 轮播图', link: '/components/swiper' },
             { text: 'Draggable 拖拽缩放', link: '/components/draggable' },
             { text: 'Tree 树', link: '/components/tree' },
+            { text: 'Calendar 日历', link: '/components/calendar' },
             { text: 'Countdown 倒计时', link: '/components/countdown' },
           ]
         },
@@ -94,6 +95,7 @@ export default defineConfig({
           items: [
             { text: 'Affix 固钉', link: '/components/affix' },
             { text: 'BackTop 返回顶部', link: '/components/backtop' },
+            { text: 'Grid 栅格布局', link: '/components/grid' },
             { text: 'Space 间距', link: '/components/space' },
             { text: 'ResizeBox 伸缩框', link: '/components/resize-box' },
             { text: 'Split 面板分割', link: '/components/split' },

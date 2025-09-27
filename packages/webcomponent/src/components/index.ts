@@ -40,6 +40,7 @@ export { LdesignSlider } from './slider/slider';
 export { LdesignColorPicker } from './color-picker/color-picker';
 export { LdesignColorPickerPanel } from './color-picker-panel/color-picker-panel';
 export { LdesignTimePicker } from './time-picker/time-picker';
+export { LdesignCalendar } from './calendar/calendar';
 export { LdesignPicker } from './picker/picker';
 export { LdesignResizeBox } from './resize-box/resize-box';
 export { LdesignSplit } from './split/split';
@@ -56,6 +57,10 @@ export { LdesignSwiper } from './swiper/swiper';
 export { LdesignSwiperSlide } from './swiper/swiper-slide';
 export { LdesignAvatar } from './avatar/avatar';
 export { LdesignAvatarGroup } from './avatar/avatar-group';
+export { LdesignGrid } from './grid/grid';
+export { LdesignGridItem } from './grid-item/grid-item';
+export { LdesignRow } from './row/row';
+export { LdesignCol } from './col/col';
 
 // Modal quick APIs
 export { alertModal, confirmModal, promptModal, promptPassword, promptForm } from './modal/modal-api';

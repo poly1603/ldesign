@@ -1,0 +1,7 @@
+/* Col 列基础样式 */
+
+ldesign-col {
+  display: block;
+  min-width: 0;
+  box-sizing: border-box;
+}

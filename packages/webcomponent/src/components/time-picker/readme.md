@@ -7,26 +7,28 @@
 
 ## Properties
 
-| Property          | Attribute          | Description | Type                                                                                                                                                                 | Default                       |
-| ----------------- | ------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| `breakpoints`     | `breakpoints`      |             | `{ xs: number; sm: number; md: number; lg: number; }`                                                                                                                | `undefined`                   |
-| `confirm`         | `confirm`          |             | `boolean`                                                                                                                                                            | `true`                        |
-| `defaultValue`    | `default-value`    |             | `string`                                                                                                                                                             | `undefined`                   |
-| `disabled`        | `disabled`         |             | `boolean`                                                                                                                                                            | `false`                       |
-| `drawerPlacement` | `drawer-placement` |             | `"bottom" \| "left" \| "right" \| "top"`                                                                                                                             | `'bottom'`                    |
-| `drawerSize`      | `drawer-size`      |             | `number \| string`                                                                                                                                                   | `undefined`                   |
-| `drawerTitle`     | `drawer-title`     |             | `string`                                                                                                                                                             | `undefined`                   |
-| `overlay`         | `overlay`          |             | `"auto" \| "drawer" \| "popup"`                                                                                                                                      | `'auto'`                      |
-| `panelHeight`     | `panel-height`     |             | `number`                                                                                                                                                             | `180`                         |
-| `placeholder`     | `placeholder`      |             | `string`                                                                                                                                                             | `'选择时间'`                      |
-| `placement`       | `placement`        |             | `"bottom" \| "bottom-end" \| "bottom-start" \| "left" \| "left-end" \| "left-start" \| "right" \| "right-end" \| "right-start" \| "top" \| "top-end" \| "top-start"` | `'bottom-start' as Placement` |
-| `showSeconds`     | `show-seconds`     |             | `boolean`                                                                                                                                                            | `true`                        |
-| `size`            | `size`             |             | `"large" \| "medium" \| "small"`                                                                                                                                     | `'medium'`                    |
-| `steps`           | `steps`            |             | `number[]`                                                                                                                                                           | `[1, 1, 1]`                   |
-| `trigger`         | `trigger`          |             | `"click" \| "focus" \| "manual"`                                                                                                                                     | `'click'`                     |
-| `value`           | `value`            |             | `string`                                                                                                                                                             | `undefined`                   |
-| `visible`         | `visible`          |             | `boolean`                                                                                                                                                            | `false`                       |
-| `visibleItems`    | `visible-items`    |             | `number`                                                                                                                                                             | `5`                           |
+| Property          | Attribute          | Description  | Type                                                                                                                                                                 | Default                       |
+| ----------------- | ------------------ | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `breakpoints`     | `breakpoints`      |              | `{ xs: number; sm: number; md: number; lg: number; }`                                                                                                                | `undefined`                   |
+| `confirm`         | `confirm`          |              | `boolean`                                                                                                                                                            | `true`                        |
+| `defaultValue`    | `default-value`    |              | `string`                                                                                                                                                             | `undefined`                   |
+| `disabled`        | `disabled`         |              | `boolean`                                                                                                                                                            | `false`                       |
+| `drawerPlacement` | `drawer-placement` |              | `"bottom" \| "left" \| "right" \| "top"`                                                                                                                             | `'bottom'`                    |
+| `drawerSize`      | `drawer-size`      |              | `number \| string`                                                                                                                                                   | `undefined`                   |
+| `drawerTitle`     | `drawer-title`     |              | `string`                                                                                                                                                             | `undefined`                   |
+| `inline`          | `inline`           |              | `boolean`                                                                                                                                                            | `false`                       |
+| `overlay`         | `overlay`          |              | `"auto" \| "drawer" \| "popup"`                                                                                                                                      | `'auto'`                      |
+| `panelHeight`     | `panel-height`     |              | `number`                                                                                                                                                             | `undefined`                   |
+| `placeholder`     | `placeholder`      |              | `string`                                                                                                                                                             | `'选择时间'`                      |
+| `placement`       | `placement`        |              | `"bottom" \| "bottom-end" \| "bottom-start" \| "left" \| "left-end" \| "left-start" \| "right" \| "right-end" \| "right-start" \| "top" \| "top-end" \| "top-start"` | `'bottom-start' as Placement` |
+| `showNow`         | `show-now`         | 是否展示“此刻”快捷按钮 | `boolean`                                                                                                                                                            | `true`                        |
+| `showSeconds`     | `show-seconds`     |              | `boolean`                                                                                                                                                            | `true`                        |
+| `size`            | `size`             |              | `"large" \| "medium" \| "small"`                                                                                                                                     | `'medium'`                    |
+| `steps`           | `steps`            |              | `number[]`                                                                                                                                                           | `[1, 1, 1]`                   |
+| `trigger`         | `trigger`          |              | `"click" \| "focus" \| "manual"`                                                                                                                                     | `'click'`                     |
+| `value`           | `value`            |              | `string`                                                                                                                                                             | `undefined`                   |
+| `visible`         | `visible`          |              | `boolean`                                                                                                                                                            | `false`                       |
+| `visibleItems`    | `visible-items`    |              | `number`                                                                                                                                                             | `5`                           |
 
 
 ## Events
@@ -41,6 +43,10 @@
 
 
 ## Dependencies
+
+### Used by
+
+ - [ldesign-date-picker](../datepicker)
 
 ### Depends on
 
@@ -60,6 +66,7 @@ graph TD;
   ldesign-time-picker --> ldesign-drawer
   ldesign-button --> ldesign-icon
   ldesign-drawer --> ldesign-icon
+  ldesign-date-picker --> ldesign-time-picker
   style ldesign-time-picker fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

@@ -296,8 +296,22 @@ export default {
     // 注册 Web Components
     if (typeof window !== 'undefined') {
       // 动态按环境加载并注册组件库
+      // 优先使用 dist-custom-elements（避免动态 import 兼容问题）
+      const loadCustomElements = async () => {
+        try {
+          // 避免静态字符串触发 Vite import-analysis，使用变量拼接
+          const p = '../../../dist/components/' + 'index.js'
+          await import(/* @vite-ignore */ (p as any))
+          console.log('LDesign WebComponent 已通过 dist-custom-elements 自动注册')
+          return true
+        } catch (e) {
+          return false
+        }
+      }
+
       const loadFromDist = async () => {
-        const mod: any = await import('../../../dist/ldesign-webcomponent/ldesign-webcomponent.esm.js')
+        // Stencil 输出的 ESM 入口文件名为 ldesign-webcomponent.esm.js（以 package.json 的 unpkg 字段为准）
+        const mod: any = await import(/* @vite-ignore */ '../../../dist/ldesign-webcomponent/ldesign-webcomponent.esm.js')
         if (mod?.defineCustomElements) await mod.defineCustomElements(window as any)
         return mod
       }
@@ -318,7 +332,7 @@ export default {
 
       const tryLoader = async () => {
         try {
-          const mod: any = await import('../../../loader/index.js')
+          const mod: any = await import(/* @vite-ignore */ '../../../loader/index.js')
           if (mod && typeof mod.defineCustomElements === 'function') {
             await mod.defineCustomElements(window as any)
             console.log('LDesign WebComponent 已通过 loader 定义自定义元素')
@@ -331,18 +345,18 @@ export default {
       }
 
       const loadLibrary = async () => {
-        // 开发优先：优先尝试 dev server，失败时回退 dist，再回退 loader
-        try {
-          await loadFromDev()
-          console.log('LDesign WebComponent 组件库已从 dev server 加载')
-          return
-        } catch {}
+        // 优先使用 dist（dev 脱机时减少红字）；失败再尝试 dev；最后使用 loader
         try {
           await loadFromDist()
           console.log('LDesign WebComponent 组件库已从 dist 加载')
           return
+        } catch {}
+        try {
+          await loadFromDev()
+          console.log('LDesign WebComponent 组件库已从 dev server 加载')
+          return
         } catch (err) {
-          console.warn('从 dist 加载失败，尝试使用 loader.defineCustomElements()', err)
+          console.warn('dev/dist 均不可用，尝试使用 loader.defineCustomElements()', err)
           const ok = await tryLoader()
           if (!ok) {
             console.error('加载 LDesign WebComponent 失败：dev/dist/loader 均不可用')

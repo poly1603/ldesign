@@ -1,0 +1,10 @@
+/* Grid 子项样式 */
+
+ldesign-grid-item {
+  /* 作为 grid item 的块级元素，撑满可用宽度 */
+  display: block;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* 若在 ldesign-grid 内部，可选择性提供默认内容容器样式（留空以保持灵活） */

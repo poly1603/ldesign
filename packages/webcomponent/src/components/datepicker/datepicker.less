@@ -41,7 +41,10 @@
   justify-content: space-between; 
   padding: 12px; 
   border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
+  flex-wrap: nowrap; /* 头部不换行 */
 }
+.ldp-header-group { display: inline-flex; align-items: center; gap: 4px; }
+.ldp-header-center { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .ldp-nav { 
   display: inline-flex; 
   align-items: center; 
@@ -55,12 +58,14 @@
   color: #606266;
   transition: all 0.2s;
 }
+.ldp-nav--double { width: 32px; gap: 0; }
+.ldp-nav--double ldesign-icon:first-child { margin-right: -2px; }
 .ldp-nav:hover { 
   background: #f5f7fa; 
   color: #409eff;
 }
 .ldp-head-text { 
-  flex: 1; 
+  flex: 0; 
   text-align: center; 
   font-weight: 500;
   font-size: 15px;
@@ -71,6 +76,7 @@
   padding: 4px 8px;
   border-radius: 4px;
   transition: all 0.2s;
+  white-space: nowrap; /* 如 9月 不换行 */
 }
 .ldp-head-text:hover { 
   color: #409eff; 
@@ -161,12 +167,12 @@
 .ldp-quarter { width: 260px; }
 .ldp-quarter-grid { 
   display: grid; 
-  grid-template-columns: repeat(2, 1fr); 
+  grid-template-columns: repeat(4, 1fr); 
   gap: 12px; 
   padding: 12px;
 }
 .ldp-quarter-item { 
-  padding: 16px;
+  padding: 12px 0;
   border: none; 
   background: #fafafa; 
   color: #606266; 
@@ -192,14 +198,11 @@
   background: #66b1ff;
 }
 .ldp-quarter-label { 
-  font-size: 18px;
-  font-weight: 500;
-  margin-bottom: 4px;
+  font-size: 16px;
+  font-weight: 600;
 }
-.ldp-quarter-months { 
-  font-size: 12px;
-  opacity: 0.85;
-}
+/* 取消月份范围展示，保持与截图一致 */
+.ldp-quarter-months { display: none; }
 
 /* 日期面板 */
 .ldp-date { 
@@ -220,6 +223,7 @@
   color: #909399; 
   font-size: 11px; 
   font-weight: 400;
+  white-space: nowrap;
 }
 .ldp-weeknum-header {
   width: 28px;
@@ -230,6 +234,7 @@
   color: #909399;
   font-size: 11px;
   font-weight: 400;
+  white-space: nowrap; /* 确保“周”不换行 */
 }
 .ldp-weeknum { 
   width: 28px; 
@@ -255,6 +260,11 @@
 }
 .ldp-date--with-weeks .ldp-days {
   grid-template-columns: 28px repeat(7, 1fr);
+}
+
+/* Week mode: 每周一行，父容器不使用 grid，避免内容折行 */
+.ldp-date--week .ldp-days {
+  display: block;
 }
 
 .ldp-day { 
@@ -322,21 +332,28 @@
   margin: 0 -6px;
   border-radius: 6px;
   transition: background-color 0.2s;
+  cursor: pointer;
 }
 .ldp-week-row:hover {
   background: #f5f7fa;
 }
 .ldp-week-row.selected-week {
-  background: #ecf5ff;
+  background: #409eff;
 }
-.ldp-week-row:hover .ldp-day:not(.disabled) {
+.ldp-week-row.selected-week .ldp-day { color: #fff; background: transparent; }
+.ldp-week-row.selected-week .ldp-weeknum { color: #e7f1ff; }
+/* 非选中周的悬停效果 */
+.ldp-week-row:not(.selected-week):hover .ldp-day:not(.disabled) {
   background: transparent;
   color: #409eff;
 }
-.ldp-week-row.selected-week .ldp-day:not(.disabled) {
+/* 选中周在悬停时仍保持白字蓝底 */
+.ldp-week-row.selected-week:hover {
   background: #409eff;
+}
+.ldp-week-row.selected-week:hover .ldp-day:not(.disabled) {
   color: #fff;
-  border-radius: 4px;
+  background: transparent;
 }
 .ldp-week-row .ldp-weeknum {
   margin: 0;
@@ -356,6 +373,7 @@
   font-weight: 500;
   color: #303133;
   transition: all 0.2s;
+  white-space: nowrap; /* 如 2025年 ▼ 不换行 */
 }
 .ldp-year-selector:hover {
   background: #ecf5ff;
@@ -387,6 +405,11 @@
   max-height: 240px;
   overflow-y: auto;
 }
+
+/* 底部（今天） */
+.ldp-footer { border-top: 1px solid var(--ldesign-border-color, #e5e7eb); padding: 8px 12px; text-align: center; }
+.ldp-today { border: none; background: none; cursor: pointer; color: #409eff; font-size: 14px; padding: 4px 8px; border-radius: 4px; }
+.ldp-today:hover { background: #ecf5ff; }
 .ldp-year-quick-item {
   display: block;
   width: 100%;
@@ -411,4 +434,16 @@
 }
 .ldp-header--with-year {
   position: relative;
+}
+
+/* 日期时间复合面板 */
+.ldp-datetime {
+  display: flex;
+  align-items: stretch;
+}
+.ldp-datetime__date {
+  border-right: 1px solid var(--ldesign-border-color, #e5e7eb);
+}
+.ldp-datetime__time {
+  padding: 8px;
 }

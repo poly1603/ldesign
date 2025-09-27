@@ -1,0 +1,121 @@
+// Calendar 样式
+.ldesign-calendar {
+  display: inline-block;
+}
+
+/* 头部 */
+.ldc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
+}
+.ldc-header-group { display: inline-flex; align-items: center; gap: 4px; }
+.ldc-header-center { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.ldc-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  color: #606266;
+  transition: all 0.2s;
+}
+.ldc-nav--double { width: 32px; gap: 0; }
+.ldc-nav--double ldesign-icon:first-child { margin-right: -2px; }
+.ldc-nav:hover { background: #f5f7fa; color: #409eff; }
+.ldc-head-text {
+  text-align: center;
+  font-weight: 500;
+  font-size: 15px;
+  color: #303133;
+  border: none;
+  background: none;
+  cursor: default;
+  padding: 4px 8px;
+}
+
+/* 面板 */
+.ldc-date { width: 260px; }
+
+/* 星期行 */
+.ldc-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
+  gap: 0;
+}
+.ldc-weekdays--with-weeks { grid-template-columns: 28px repeat(7, 1fr); }
+.ldc-weekday {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #909399;
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+.ldc-weeknum-header {
+  width: 28px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #909399;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+/* 日期网格（逐周一行） */
+.ldc-days { padding: 6px; }
+.ldc-week-row { display: flex; align-items: center; gap: 1px; }
+.ldc-weeknum {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c0c4cc;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.ldc-day {
+  height: 28px;
+  width: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: #303133;
+  font-size: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.ldc-day:hover:not(.disabled):not(.other) { color: #409eff; background: #ecf5ff; }
+.ldc-day.other { color: #dcdfe6; }
+.ldc-day.today { color: #409eff; font-weight: 700; }
+.ldc-day.today::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #409eff;
+}
+.ldc-day.selected { background: #409eff; color: #fff; font-weight: 600; }
+.ldc-day.selected:hover { background: #66b1ff; }
+.ldc-day.disabled { color: #c0c4cc; cursor: not-allowed; background: #f5f7fa; }

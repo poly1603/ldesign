@@ -15,9 +15,9 @@
 <ldesign-date-picker placeholder="请选择日期"></ldesign-date-picker>
 ```
 
-## 选择模式（年/季/月/周/日）
+## 选择模式（年/季/月/周/日/日期时间）
 
-通过 `mode` 指定选择维度：`date | week | month | quarter | year`。
+通过 `mode` 指定选择维度：`date | week | month | quarter | year | datetime`。
 
 <div class="demo-container" style="display:flex;gap:16px;flex-wrap:wrap;">
   <ldesign-date-picker mode="date" placeholder="日"></ldesign-date-picker>
@@ -25,6 +25,7 @@
   <ldesign-date-picker mode="month" placeholder="月"></ldesign-date-picker>
   <ldesign-date-picker mode="quarter" placeholder="季"></ldesign-date-picker>
   <ldesign-date-picker mode="year" placeholder="年"></ldesign-date-picker>
+  <ldesign-date-picker mode="datetime" placeholder="日期时间"></ldesign-date-picker>
 </div>
 
 ```html
@@ -33,6 +34,25 @@
 <ldesign-date-picker mode="month" placeholder="月" />
 <ldesign-date-picker mode="quarter" placeholder="季" />
 <ldesign-date-picker mode="year" placeholder="年" />
+<ldesign-date-picker mode="datetime" placeholder="日期时间" />
+```
+
+## 日期时间模式
+
+在 `mode="datetime"` 下，日期选择器会在弹层中联动显示时间选择器：
+- 默认输出格式为 `YYYY-MM-DD HH:mm:ss`，可通过 `format` 覆盖；
+- 通过 `time-show-seconds` 控制是否显示秒；
+- 通过 `time-steps="[h, m, s]"` 设置小时/分钟/秒的步长，例如 `time-steps="[1, 15, 1]"` 表示分钟每 15 递增；
+- 选中后会触发 `ldesignChange`，`detail` 为格式化后的完整日期时间字符串。
+
+<div class="demo-container" style="display:flex;gap:16px;flex-wrap:wrap;">
+  <ldesign-date-picker mode="datetime" placeholder="默认（含秒）"></ldesign-date-picker>
+  <ldesign-date-picker mode="datetime" placeholder="每 15 分钟" time-show-seconds="false" time-steps="[1,15,1]"></ldesign-date-picker>
+</div>
+
+```html
+<ldesign-date-picker mode="datetime" placeholder="默认（含秒）" />
+<ldesign-date-picker mode="datetime" placeholder="每 15 分钟" time-show-seconds="false" time-steps="[1,15,1]" />
 ```
 
 ## 显示周序号与自定义一周起始日
@@ -132,6 +152,7 @@
 | min-date | 最小日期（含） | `string` | - |
 | max-date | 最大日期（含） | `string` | - |
 
+> 注：在 `datetime` 模式下，若未设置 `format`，默认使用 `YYYY-MM-DD HH:mm:ss`。
 > 注：需要按逻辑禁用日期时，请通过设置元素实例的 `disabledDate: (date: Date)=>boolean` 属性实现。
 
 ### 事件（Events）
