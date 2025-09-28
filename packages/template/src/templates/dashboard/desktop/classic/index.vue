@@ -58,347 +58,48 @@ const handleSizeChange = (size: string) => {
 </script>
 
 <template>
-  <div class="ldesign-template-dashboard ldesign-template-classic-style" :style="cssVars">
-    <!-- 头部区域 -->
-    <header class="ldesign-template-dashboard-header">
-      <!-- Logo区域 -->
-      <div class="ldesign-template-header-logo">
-        <slot name="header-logo">
-          <div class="ldesign-template-logo-container">
-            <button v-if="showSidebar && collapsibleSidebar" class="ldesign-template-sidebar-toggle"
-              @click="toggleSidebar">
-              ☰
-            </button>
-            <h1 class="ldesign-template-logo-title">{{ title }}</h1>
-          </div>
-        </slot>
-      </div>
-
-      <!-- 导航区域 -->
-      <nav class="ldesign-template-header-nav">
-        <slot name="header-nav">
-
-        </slot>
-      </nav>
-
-      <!-- 用户信息区域 -->
-      <div class="ldesign-template-header-user">
-        <slot name="header-user">
-        </slot>
-      </div>
-
-      <!-- 配置选择器区域-->
-      <div class="ldesign-template-header-selectors">
-        <!-- 语言选择器-->
-        <div class="ldesign-template-selector-item">
-          <slot name="language-selector" :on-language-change="handleLanguageChange">
-            <!-- 默认语言选择器占位符 -->
-          </slot>
-        </div>
-
-        <!-- 主题色选择器-->
-        <div class="ldesign-template-selector-item">
-          <slot name="color-selector" :on-theme-change="handleThemeChange">
-            <!-- 默认主题选择器占位符 -->
-          </slot>
-        </div>
-
-        <!-- 暗黑模式切换☰-->
-        <div class="ldesign-template-selector-item">
-          <slot name="dark-mode-toggle" :on-dark-mode-change="handleDarkModeChange">
-            <!-- 默认暗黑模式切换器占位符 -->
-          </slot>
-        </div>
-
-        <!-- 尺寸选择器-->
-        <div class="ldesign-template-selector-item">
-          <slot name="size-selector" :on-size-change="handleSizeChange">
-            <!-- 默认尺寸选择器占位符 -->
-          </slot>
-        </div>
-
-        <!-- 模板选择器区域-->
-        <div class="ldesign-template-selector-item">
-          <slot name="selector">
-            <!-- 模板选择器将在这里显示-->
-          </slot>
-        </div>
-      </div>
-    </header>
-
-    <!-- 主体区域 -->
-    <div class="ldesign-template-dashboard-body">
-      <!-- 侧边栏-->
-      <aside v-if="showSidebar" class="ldesign-template-dashboard-sidebar"
-        :class="{ 'ldesign-template-collapsed': isCollapsed }">
-        <slot name="sidebar-menu">
-
-        </slot>
-      </aside>
-
-      <!-- 主要内容区域 -->
-      <main class="ldesign-template-dashboard-main">
-        <div class="ldesign-template-main-content">
-          <slot name="content">
-            <div class="ldesign-template-content-placeholder">
-              <h2>经典风格Dashboard</h2>
-              <p>这是经典风格的Dashboard模板，采用传统企业级设计风格。</p>
-            </div>
-          </slot>
-        </div>
-      </main>
-    </div>
-
-    <!-- 底部区域 -->
-    <footer class="ldesign-template-dashboard-footer">
-      <slot name="footer">
-        <div class="ldesign-template-footer-content">
-          <p>&copy; 2024 企业管理系统 - 经典稳重设计</p>
-        </div>
-      </slot>
-    </footer>
-
-    <!-- 额外内容区域 -->
-    <div class="ldesign-template-dashboard-extra">
-      <slot name="extra"></slot>
-    </div>
-
-
+  <div class="ldesign-dashboard ldesign-dashboard--classic">
+    <header class="ldesign-dashboard__header"></header>
+    <asider class="ldesign-dashboard__asider"></asider>
+    <section class="ldesign-dashboard__content">
+      <router-view />
+    </section>
+    <footer class="ldesign-dashboard__footer"></footer>
   </div>
 </template>
 
-<style lang="less" scoped>
-.ldesign-template-dashboard.ldesign-template-classic-style {
-  display: flex;
-  flex-direction: column;
+<style lang="less">
+.ldesign-dashboard--classic {
+  display: grid;
+  grid-template-columns: var(--ldesign-dashboard-sidebar-width) 1fr;
+  grid-template-rows: var(--ldesign-dashboard-header-height) 1fr var(--ldesign-dashboard-footer-height);
   height: 100vh;
-  background: #f5f5f5;
-  font-family: 'Microsoft YaHei', Arial, sans-serif;
+  background: var(--ldesign-bg-color-page);
+  --ldesign-dashboard-header-height: 64px;
+  --ldesign-dashboard-footer-height: 0;
+  --ldesign-dashboard-sidebar-width: 240px;
 
-  .ldesign-template-dashboard-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-    padding: 0 24px;
-    background: #fff;
-    border-bottom: 1px solid #e8e8e8;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
-    .ldesign-template-header-logo {
-      .ldesign-template-logo-container {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-
-        .ldesign-template-sidebar-toggle {
-          background: none;
-          border: 1px solid #d9d9d9;
-          font-size: 16px;
-          cursor: pointer;
-          padding: 6px 10px;
-          border-radius: 4px;
-
-          &:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-          }
-        }
-
-        .ldesign-template-logo-title {
-          margin: 0;
-          font-size: 18px;
-          font-weight: 600;
-          color: #333;
-        }
-      }
+  .ldesign-dashboard {
+    &__header {
+      grid-area: 1/1/2/3;
+      background-color: var(--ldesign-dashboard-header-background, var(--ldesign-bg-color-container));
     }
 
-    .ldesign-template-header-nav {
-      .ldesign-template-nav-links {
-        display: flex;
-        gap: 0;
-
-        .ldesign-template-nav-link {
-          text-decoration: none;
-          color: #333;
-          font-weight: 500;
-          padding: 12px 20px;
-          border-right: 1px solid #e8e8e8;
-
-          &:hover {
-            background: #f0f0f0;
-            color: var(--primary-color);
-          }
-
-          &:last-child {
-            border-right: none;
-          }
-        }
-      }
+    &__asider {
+      grid-area: 2/1/3/2;
+      background-color: var(--ldesign-dashboard-asider-background, var(--ldesign-bg-color-container));
     }
 
-    .ldesign-template-header-user {
-      .ldesign-template-user-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 8px 16px;
-        border: 1px solid #d9d9d9;
-        border-radius: 4px;
-
-        .ldesign-template-user-name {
-          font-weight: 500;
-          color: #333;
-        }
-
-        .ldesign-template-user-avatar {
-          width: 32px;
-          height: 32px;
-          border-radius: 4px;
-          background: var(--primary-color);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-        }
-      }
-    }
-
-    .ldesign-template-header-selectors {
-      display: flex;
-      align-items: center;
-      gap: var(--ls-spacing-sm);
-      margin-left: var(--ls-margin-base);
-
-      .ldesign-template-selector-item {
-        display: flex;
-        align-items: center;
-
-        .ldesign-template-selector-placeholder {
-          width: 32px;
-          height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--ldesign-bg-color-component);
-          border: 1px solid var(--ldesign-border-level-1-color);
-          border-radius: var(--ls-border-radius-base);
-          cursor: pointer;
-          transition: all 0.3s ease;
-          font-size: 16px;
-
-          &:hover {
-            background: var(--ldesign-bg-color-component-hover);
-            border-color: var(--ldesign-border-level-2-color);
-          }
-        }
-      }
-    }
-  }
-
-  .ldesign-template-dashboard-body {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-
-    .ldesign-template-dashboard-sidebar {
-      width: var(--sidebar-width);
-      background: #fff;
-      border-right: 1px solid #e8e8e8;
-      transition: width 0.2s ease;
-
-      .ldesign-template-sidebar-nav {
-        padding: 0;
-
-        .ldesign-template-nav-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 16px 20px;
-          cursor: pointer;
-          border-bottom: 1px solid #f0f0f0;
-
-          &:hover {
-            background: #f0f0f0;
-          }
-
-          &.ldesign-template-active {
-            background: var(--primary-color);
-            color: white;
-          }
-
-          .ldesign-template-nav-icon {
-            font-size: 16px;
-            min-width: 16px;
-          }
-
-          .ldesign-template-nav-text {
-            font-weight: 500;
-          }
-        }
-      }
-
-      &.ldesign-template-collapsed {
-        .ldesign-template-nav-item {
-          justify-content: center;
-          padding: 16px 12px;
-        }
-      }
-    }
-
-    .ldesign-template-dashboard-main {
-      flex: 1;
-      padding: 16px;
+    &__content {
+      grid-area: 2/2/3/3;
+      box-sizing: border-box;
+      padding: var(--ldesign-dashboard-content-padding, 16px);
       overflow: auto;
-      background: #f5f5f5;
-
-      .ldesign-template-main-content {
-        background: #fff;
-        border: 1px solid #e8e8e8;
-        border-radius: 4px;
-        padding: 24px;
-        min-height: calc(100vh - 160px);
-
-        .ldesign-template-content-placeholder {
-          text-align: center;
-          padding: 40px;
-
-          h2 {
-            color: #333;
-            margin-bottom: 16px;
-            font-weight: 600;
-          }
-
-          p {
-            color: #666;
-            font-size: 16px;
-          }
-        }
-      }
     }
-  }
 
-  .ldesign-template-dashboard-footer {
-    background: #fff;
-    border-top: 1px solid #e8e8e8;
-    padding: 16px 24px;
-    text-align: center;
-
-    .ldesign-template-footer-content {
-      p {
-        margin: 0;
-        color: #666;
-        font-size: 14px;
-      }
+    &__footer {
+      grid-area: 3/1/4/3;
     }
-  }
-
-  .ldesign-template-header-selector {
-    margin-left: 16px;
-    display: flex;
-    align-items: center;
   }
 }
 </style>
-

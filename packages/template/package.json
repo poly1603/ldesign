@@ -209,7 +209,8 @@
     "@ldesign/engine": "workspace:*",
     "@ldesign/shared": "workspace:*",
     "@vueuse/core": "^13.7.0",
-    "lucide-vue-next": "^0.544.0"
+    "lucide-vue-next": "^0.544.0",
+    "@ldesign/webcomponent": "workspace:*"
   },
   "peerDependencies": {
     "vue": "^3.3.0"
