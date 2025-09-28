@@ -1,23 +1,23 @@
 {
-	"name": "@ldesign/monorepo",
-	"version": "1.0.0",
-	"description": "LDesign 设计系统 - 基于 pnpm 工作空间的 monorepo",
-	"private": true,
-	"type": "module",
-	"scripts": {
-		"build": "tsx scripts/build-packages.ts"
-	},
-	"devDependencies": {
-		"@types/node": "^20.0.0",
-		"tsx": "^4.7.0",
-		"typescript": "^5.0.0"
-	},
-	"dependencies": {
-		"process": "^0.11.10"
-	},
-	"engines": {
-		"node": ">=18.0.0",
-		"pnpm": ">=8.0.0"
-	},
-	"packageManager": "pnpm@9.15.0"
+  "name": "@ldesign/monorepo",
+  "version": "1.0.1",
+  "description": "LDesign 设计系统 - 基于 pnpm 工作空间的 monorepo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsx scripts/build-packages.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "process": "^0.11.10"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@9.15.9"
 }

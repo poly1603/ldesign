@@ -32,14 +32,42 @@
 <ldesign-time-picker confirm="false"></ldesign-time-picker>
 ```
 
-## 步进
+## 步进控制
+
+### 统一步进
+使用 `steps` 属性可以分别设置时、分、秒的步长。格式为 `[小时步长, 分钟步长, 秒步长]`。
 
 <div class="demo-block">
-  <ldesign-time-picker minute-step="5" second-step="10"></ldesign-time-picker>
+  <ldesign-time-picker steps="[1, 15, 30]" placeholder="时:15分钟间隔:30秒间隔"></ldesign-time-picker>
 </div>
 
 ```html
-<ldesign-time-picker minute-step="5" second-step="10"></ldesign-time-picker>
+<!-- 小时步长为1，分钟步长为15，秒步长为30 -->
+<ldesign-time-picker steps="[1, 15, 30]" placeholder="时:15分钟间隔:30秒间隔"></ldesign-time-picker>
+```
+
+### 常用步进示例
+
+<div class="demo-block">
+  <p>每5分钟：</p>
+  <ldesign-time-picker steps="[1, 5, 1]" show-seconds="false"></ldesign-time-picker>
+  
+  <p style="margin-top: 10px;">每30分钟：</p>
+  <ldesign-time-picker steps="[1, 30, 1]" show-seconds="false"></ldesign-time-picker>
+  
+  <p style="margin-top: 10px;">每2小时：</p>
+  <ldesign-time-picker steps="[2, 1, 1]" show-seconds="false"></ldesign-time-picker>
+</div>
+
+```html
+<!-- 每5分钟 -->
+<ldesign-time-picker steps="[1, 5, 1]" show-seconds="false"></ldesign-time-picker>
+
+<!-- 每30分钟 -->
+<ldesign-time-picker steps="[1, 30, 1]" show-seconds="false"></ldesign-time-picker>
+
+<!-- 每2小时 -->
+<ldesign-time-picker steps="[2, 1, 1]" show-seconds="false"></ldesign-time-picker>
 ```
 
 ## 最小/最大时间与禁用时间
@@ -56,15 +84,16 @@
 ></ldesign-time-picker>
 ```
 
-## 12 小时制与 AM/PM
+## 12 小时制
 
 <div class="demo-block">
-  <!-- UI 使用 AM/PM 列；输出为 12 小时制字符串（含 AM/PM） -->
-  <ldesign-time-picker use-12-hours output-format="12"></ldesign-time-picker>
+  <!-- 输出为 12 小时制字符串（含 AM/PM） -->
+  <ldesign-time-picker output-format="12h" value="14:30:00"></ldesign-time-picker>
 </div>
 
 ```html
-<ldesign-time-picker use-12-hours output-format="12"></ldesign-time-picker>
+<ldesign-time-picker output-format="12h" value="14:30:00"></ldesign-time-picker>
+<!-- 输出: 02:30:00 PM -->
 ```
 
 ## 受控用法
@@ -89,16 +118,13 @@
 | disabled | 是否禁用 | `boolean` | `false` |
 | clearable | 是否显示清空按钮 | `boolean` | `false` |
 | show-seconds | 是否显示秒 | `boolean` | `true` |
-| hour-step | 小时步进 | `number` | `1` |
-| minute-step | 分钟步进 | `number` | `1` |
-| second-step | 秒步进 | `number` | `1` |
+| steps | 时分秒的步长设置 | `number[]` | `[1, 1, 1]` |
 | min-time | 最小时间（含） | `string` | - |
 | max-time | 最大时间（含） | `string` | - |
 | disabled-hours | 禁用小时集合（数组或 JSON 字符串） | `number[] | string` | - |
 | disabled-minutes | 禁用分钟集合 | `number[] | string` | - |
-| disabled-seconds | 禁用秒集合 | `number[] | string` | - |
-| use-12-hours | 是否显示 12 小时制 AM/PM 列 | `boolean` | `false` |
-| output-format | 输出格式：`'24'` 或 `'12'` | `'24' | '12'` | `'24'` |
+| disabled-seconds | 禁用秒集合 | `number[] \| string` | - |
+| output-format | 输出格式：12小时制或24小时制 | `'12h' \| '24h'` | `'24h'` |
 | confirm | 是否需要点击“确定”确认 | `boolean` | `true` |
 
 ### 事件

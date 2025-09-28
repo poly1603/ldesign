@@ -49,6 +49,8 @@ async function startServer() {
 
     // API 路由
     const configServer = new ConfigEditorServer()
+    // 确保在挂载路由前完成初始化（注册路由与准备配置文件）
+    await configServer.initialize()
     app.use('/api', configServer.getRouter())
 
     // 静态文件服务 - 提供前端构建文件

@@ -23,7 +23,7 @@ import { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/
 import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { Element } from "@stencil/core";
 import { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
-import { TabsPlacement, TabsType } from "./components/tabs/tabs";
+import { TabMeta, TabsPlacement, TabsType } from "./components/tabs/tabs";
 import { Breakpoints as Breakpoints1, TimePickerLocale, TimePickerOverlay, TimePickerSize, TimePickerTrigger, TimePreset } from "./components/time-picker/time-picker";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 import { TransferItem } from "./components/transfer/transfer";
@@ -46,7 +46,7 @@ export { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/
 export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 export { Element } from "@stencil/core";
 export { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
-export { TabsPlacement, TabsType } from "./components/tabs/tabs";
+export { TabMeta, TabsPlacement, TabsType } from "./components/tabs/tabs";
 export { Breakpoints as Breakpoints1, TimePickerLocale, TimePickerOverlay, TimePickerSize, TimePickerTrigger, TimePreset } from "./components/time-picker/time-picker";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
 export { TransferItem } from "./components/transfer/transfer";
@@ -2425,11 +2425,6 @@ export namespace Components {
          */
         "defaultValue"?: string;
         /**
-          * 空数据文本
-          * @default '暂无数据'
-         */
-        "emptyText": string;
-        /**
           * 子级缩进（px）
           * @default 16
          */
@@ -2439,21 +2434,6 @@ export namespace Components {
           * @default []
          */
         "items": string | MenuItem[];
-        /**
-          * 是否启用键盘导航
-          * @default true
-         */
-        "keyboardNavigation": boolean;
-        /**
-          * 是否显示加载状态
-          * @default false
-         */
-        "loading": boolean;
-        /**
-          * 加载文本
-          * @default '加载中...'
-         */
-        "loadingText": string;
         /**
           * 展示模式：vertical（纵向）| horizontal（横向）
           * @default 'vertical'
@@ -2474,35 +2454,10 @@ export namespace Components {
          */
         "requireTopIcon": boolean;
         /**
-          * 搜索延迟时间（毫秒）
-          * @default 300
-         */
-        "searchDelay": number;
-        /**
-          * 搜索框占位符
-          * @default '搜索菜单...'
-         */
-        "searchPlaceholder": string;
-        /**
-          * 是否启用搜索功能
-          * @default false
-         */
-        "searchable": boolean;
-        /**
-          * 尺寸
-          * @default 'medium'
-         */
-        "size": 'small' | 'medium' | 'large';
-        /**
           * 弹出子菜单的触发方式（仅在 flyout/mixed 生效；横向模式同样适用）
           * @default 'hover'
          */
         "submenuTrigger": SubmenuTrigger;
-        /**
-          * 主题颜色
-          * @default 'light'
-         */
-        "theme": 'light' | 'dark' | 'auto';
         /**
           * 纵向模式：顶层互斥展开（无论 inline 或 flyout），默认开启
           * @default true
@@ -2517,16 +2472,6 @@ export namespace Components {
           * @default 'inline'
          */
         "verticalExpand": VerticalExpand;
-        /**
-          * 虚拟滚动项高度
-          * @default 40
-         */
-        "virtualItemHeight": number;
-        /**
-          * 是否启用虚拟滚动
-          * @default false
-         */
-        "virtualScroll": boolean;
     }
     /**
      * Message 全局提示
@@ -3604,6 +3549,12 @@ export namespace Components {
         "width": number | string;
     }
     /**
+     * Minimal Ripple wrapper component
+     * Created to resolve startup error complaining missing ripple.less import.
+     */
+    interface LdesignRipple {
+    }
+    /**
      * Row 行容器
      * - 作为一行的网格容器
      * - 可独立配置列数与间距，或继承上级 ldesign-grid 的默认值
@@ -4301,11 +4252,6 @@ export namespace Components {
          */
         "defaultValue"?: string;
         /**
-          * 是否可拖拽排序
-          * @default false
-         */
-        "draggable": boolean;
-        /**
           * 选项卡位置
           * @default 'top'
          */
@@ -4322,6 +4268,11 @@ export namespace Components {
           * @default 'medium'
          */
         "size": Size;
+        /**
+          * 是否可拖拽排序
+          * @default false
+         */
+        "sortable": boolean;
         /**
           * 是否启用触摸滑动切换
           * @default false
@@ -5848,6 +5799,16 @@ declare global {
         new (): HTMLLdesignResizeBoxElement;
     };
     /**
+     * Minimal Ripple wrapper component
+     * Created to resolve startup error complaining missing ripple.less import.
+     */
+    interface HTMLLdesignRippleElement extends Components.LdesignRipple, HTMLStencilElement {
+    }
+    var HTMLLdesignRippleElement: {
+        prototype: HTMLLdesignRippleElement;
+        new (): HTMLLdesignRippleElement;
+    };
+    /**
      * Row 行容器
      * - 作为一行的网格容器
      * - 可独立配置列数与间距，或继承上级 ldesign-grid 的默认值
@@ -6217,6 +6178,7 @@ declare global {
         "ldesign-radio-group": HTMLLdesignRadioGroupElement;
         "ldesign-rate": HTMLLdesignRateElement;
         "ldesign-resize-box": HTMLLdesignResizeBoxElement;
+        "ldesign-ripple": HTMLLdesignRippleElement;
         "ldesign-row": HTMLLdesignRowElement;
         "ldesign-scrollbar": HTMLLdesignScrollbarElement;
         "ldesign-select": HTMLLdesignSelectElement;
@@ -8741,11 +8703,6 @@ declare namespace LocalJSX {
          */
         "defaultValue"?: string;
         /**
-          * 空数据文本
-          * @default '暂无数据'
-         */
-        "emptyText"?: string;
-        /**
           * 子级缩进（px）
           * @default 16
          */
@@ -8755,21 +8712,6 @@ declare namespace LocalJSX {
           * @default []
          */
         "items"?: string | MenuItem[];
-        /**
-          * 是否启用键盘导航
-          * @default true
-         */
-        "keyboardNavigation"?: boolean;
-        /**
-          * 是否显示加载状态
-          * @default false
-         */
-        "loading"?: boolean;
-        /**
-          * 加载文本
-          * @default '加载中...'
-         */
-        "loadingText"?: string;
         /**
           * 展示模式：vertical（纵向）| horizontal（横向）
           * @default 'vertical'
@@ -8802,35 +8744,10 @@ declare namespace LocalJSX {
          */
         "requireTopIcon"?: boolean;
         /**
-          * 搜索延迟时间（毫秒）
-          * @default 300
-         */
-        "searchDelay"?: number;
-        /**
-          * 搜索框占位符
-          * @default '搜索菜单...'
-         */
-        "searchPlaceholder"?: string;
-        /**
-          * 是否启用搜索功能
-          * @default false
-         */
-        "searchable"?: boolean;
-        /**
-          * 尺寸
-          * @default 'medium'
-         */
-        "size"?: 'small' | 'medium' | 'large';
-        /**
           * 弹出子菜单的触发方式（仅在 flyout/mixed 生效；横向模式同样适用）
           * @default 'hover'
          */
         "submenuTrigger"?: SubmenuTrigger;
-        /**
-          * 主题颜色
-          * @default 'light'
-         */
-        "theme"?: 'light' | 'dark' | 'auto';
         /**
           * 纵向模式：顶层互斥展开（无论 inline 或 flyout），默认开启
           * @default true
@@ -8845,16 +8762,6 @@ declare namespace LocalJSX {
           * @default 'inline'
          */
         "verticalExpand"?: VerticalExpand;
-        /**
-          * 虚拟滚动项高度
-          * @default 40
-         */
-        "virtualItemHeight"?: number;
-        /**
-          * 是否启用虚拟滚动
-          * @default false
-         */
-        "virtualScroll"?: boolean;
     }
     /**
      * Message 全局提示
@@ -9969,6 +9876,12 @@ declare namespace LocalJSX {
         "width"?: number | string;
     }
     /**
+     * Minimal Ripple wrapper component
+     * Created to resolve startup error complaining missing ripple.less import.
+     */
+    interface LdesignRipple {
+    }
+    /**
      * Row 行容器
      * - 作为一行的网格容器
      * - 可独立配置列数与间距，或继承上级 ldesign-grid 的默认值
@@ -10691,11 +10604,6 @@ declare namespace LocalJSX {
          */
         "defaultValue"?: string;
         /**
-          * 是否可拖拽排序
-          * @default false
-         */
-        "draggable"?: boolean;
-        /**
           * 点击新增按钮
          */
         "onLdesignAdd"?: (event: LdesignTabsCustomEvent<void>) => void;
@@ -10726,6 +10634,11 @@ declare namespace LocalJSX {
           * @default 'medium'
          */
         "size"?: Size;
+        /**
+          * 是否可拖拽排序
+          * @default false
+         */
+        "sortable"?: boolean;
         /**
           * 是否启用触摸滑动切换
           * @default false
@@ -11177,6 +11090,7 @@ declare namespace LocalJSX {
         "ldesign-radio-group": LdesignRadioGroup;
         "ldesign-rate": LdesignRate;
         "ldesign-resize-box": LdesignResizeBox;
+        "ldesign-ripple": LdesignRipple;
         "ldesign-row": LdesignRow;
         "ldesign-scrollbar": LdesignScrollbar;
         "ldesign-select": LdesignSelect;
@@ -11471,6 +11385,11 @@ declare module "@stencil/core" {
              * 可通过拖拽指定边来改变容器宽高
              */
             "ldesign-resize-box": LocalJSX.LdesignResizeBox & JSXBase.HTMLAttributes<HTMLLdesignResizeBoxElement>;
+            /**
+             * Minimal Ripple wrapper component
+             * Created to resolve startup error complaining missing ripple.less import.
+             */
+            "ldesign-ripple": LocalJSX.LdesignRipple & JSXBase.HTMLAttributes<HTMLLdesignRippleElement>;
             /**
              * Row 行容器
              * - 作为一行的网格容器

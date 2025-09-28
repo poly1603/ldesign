@@ -222,8 +222,8 @@ export function throttle<T extends (...args: any[]) => any>(
   limit: number
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
-  
-  return function executedFunction(...args: Parameters<T>) {
+
+  return function executedFunction(this: any, ...args: Parameters<T>) {
     if (!inThrottle) {
       func.apply(this, args);
       inThrottle = true;
@@ -240,12 +240,12 @@ export function requestIdleCallback(
   options: { timeout?: number } = {}
 ): number {
   if ('requestIdleCallback' in window) {
-    return window.requestIdleCallback(callback, options);
+    return (window as any).requestIdleCallback(callback, options);
   }
-  
+
   // Polyfill
   const start = Date.now();
-  return window.setTimeout(() => {
+  return (window as any).setTimeout(() => {
     callback({
       timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
       didTimeout: false
@@ -258,7 +258,7 @@ export function requestIdleCallback(
  */
 export function cancelIdleCallback(id: number): void {
   if ('cancelIdleCallback' in window) {
-    window.cancelIdleCallback(id);
+    (window as any).cancelIdleCallback(id);
   } else {
     clearTimeout(id);
   }

@@ -5,7 +5,7 @@ import { setupSwipeHandlers, setupDragSort, watchBreakpoint, Breakpoint, animate
 export type TabsPlacement = 'top' | 'bottom' | 'left' | 'right';
 export type TabsType = 'line' | 'card' | 'pills' | 'minimal' | 'gradient' | 'segmented';
 
-interface TabMeta {
+export interface TabMeta {
   name: string;
   label: string;
   disabled: boolean;
@@ -58,7 +58,7 @@ export class LdesignTabs {
   @Prop() addable: boolean = false;
 
   /** 是否可拖拽排序 */
-  @Prop() draggable: boolean = false;
+  @Prop() sortable: boolean = false;
 
   /** 是否启用触摸滑动切换 */
   @Prop() swipeable: boolean = false;
@@ -159,7 +159,7 @@ export class LdesignTabs {
     }
 
     // 设置拖拽排序
-    if (this.draggable) {
+    if (this.sortable) {
       this.setupDrag();
     }
 
@@ -657,7 +657,7 @@ private getPanels(): (HTMLElement & { name?: string; label?: string; disabled?: 
                   tabIndex={selected ? 0 : -1}
                   onClick={(e) => this.onTabClick(it, e)}
                   type="button"
-                  draggable={this.draggable}
+                  draggable={this.sortable}
                 >
                   {it.icon && <i class={`ldesign-tabs__icon ${it.icon}`}></i>}
                   <span class="ldesign-tabs__tab-text">{it.label}</span>

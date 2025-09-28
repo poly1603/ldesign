@@ -3,6 +3,8 @@ import type { Theme } from 'vitepress'
 import './custom.css'
 // 直接导入组件库CSS
 import '../../../dist/ldesign-webcomponent/ldesign-webcomponent.css'
+// 主题内注册自定义 Vue 组件（供 Markdown 使用）
+import IconGallery from './components/IconGallery.vue'
 // 确保自定义元素被注册
 
 function initInputDemos() {
@@ -293,6 +295,9 @@ function initTreeDemos() {
 export default {
   extends: DefaultTheme,
   enhanceApp({ app, router, siteData }) {
+    // 注册 Markdown 可用的 Vue 组件
+    app.component('IconGallery', IconGallery)
+
     // 注册 Web Components
     if (typeof window !== 'undefined') {
       // 动态按环境加载并注册组件库

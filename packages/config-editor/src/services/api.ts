@@ -28,7 +28,8 @@ class ConfigApi {
 
   constructor() {
     this.client = axios.create({
-      baseURL: 'http://localhost:3002/api',
+      // 使用相对路径以便在任意主机/端口下正常工作
+      baseURL: '/api',
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json'
@@ -177,7 +178,7 @@ class ConfigApi {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await axios.get('http://localhost:3002/health', { timeout: 3000 })
+      const response = await axios.get('/health', { timeout: 3000 })
       return response.status === 200
     } catch {
       return false

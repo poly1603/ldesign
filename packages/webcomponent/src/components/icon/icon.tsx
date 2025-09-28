@@ -415,12 +415,31 @@ export class LdesignIcon {
   /**
    * 获取图标类名
    */
+  private resolveSize(): Size | number {
+    const s: any = this.size as any;
+    if (typeof s === 'number') return s;
+    if (typeof s === 'string') {
+      const trimmed = s.trim();
+      // 纯数字或数字字符串，解析为 number
+      if (/^\d+(\.\d+)?(px)?$/.test(trimmed)) {
+        return Number(trimmed.replace(/px$/, ''));
+      }
+      // 预设关键词 small/medium/large
+      if (trimmed === 'small' || trimmed === 'medium' || trimmed === 'large') {
+        return trimmed as Size;
+      }
+    }
+    // 回退到默认 medium
+    return 'medium';
+  }
+
   private getIconClass(): string {
     const classes = ['ldesign-icon'];
 
     // 尺寸
-    if (typeof this.size === 'string') {
-      classes.push(`ldesign-icon--${this.size}`);
+    const resolved = this.resolveSize();
+    if (typeof resolved === 'string') {
+      classes.push(`ldesign-icon--${resolved}`);
     } else {
       classes.push('ldesign-icon--custom-size');
     }
@@ -446,9 +465,10 @@ export class LdesignIcon {
     const style: { [key: string]: string } = {};
 
     // 尺寸
-    if (typeof this.size === 'number') {
-      style.width = `${this.size}px`;
-      style.height = `${this.size}px`;
+    const resolved = this.resolveSize();
+    if (typeof resolved === 'number') {
+      style.width = `${resolved}px`;
+      style.height = `${resolved}px`;
     }
 
     // 颜色（渐变时忽略）

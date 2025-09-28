@@ -12,7 +12,11 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "bundler",
@@ -30,89 +34,12 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "~/*": ["./*"],
-
-      /* 工作空间包的路径映射 */
-      "@ldesign/api": ["../packages/api/src"],
-      "@ldesign/api/*": ["../packages/api/src/*"],
-      "@ldesign/api/vue": ["../packages/api/src/vue"],
-
-      "@ldesign/cache": ["../packages/cache/src"],
-      "@ldesign/cache/*": ["../packages/cache/src/*"],
-      "@ldesign/cache/vue": ["../packages/cache/src/vue"],
-
-      "@ldesign/color": ["../packages/color/src"],
-      "@ldesign/color/*": ["../packages/color/src/*"],
-      "@ldesign/color/vue": ["../packages/color/src/vue"],
-
-      "@ldesign/component": ["../packages/component/src"],
-      "@ldesign/component/*": ["../packages/component/src/*"],
-
-      "@ldesign/crypto": ["../packages/crypto/src"],
-      "@ldesign/crypto/*": ["../packages/crypto/src/*"],
-      "@ldesign/crypto/vue": ["../packages/crypto/src/vue"],
-
-      "@ldesign/device": ["../packages/device/src"],
-      "@ldesign/device/*": ["../packages/device/src/*"],
-      "@ldesign/device/vue": ["../packages/device/src/vue"],
-
-      "@ldesign/engine": ["../packages/engine/src"],
-      "@ldesign/engine/*": ["../packages/engine/src/*"],
-      "@ldesign/engine/vue": ["../packages/engine/src/vue"],
-
-      "@ldesign/form": ["../packages/form/src"],
-      "@ldesign/form/*": ["../packages/form/src/*"],
-      "@ldesign/form/vue": ["../packages/form/src/vue"],
-
-      "@ldesign/git": ["../packages/git/src"],
-      "@ldesign/git/*": ["../packages/git/src/*"],
-
-      "@ldesign/http": ["../packages/http/src"],
-      "@ldesign/http/*": ["../packages/http/src/*"],
-      "@ldesign/http/vue": ["../packages/http/src/vue"],
-
-      "@ldesign/i18n": ["../packages/i18n/src"],
-      "@ldesign/i18n/*": ["../packages/i18n/src/*"],
-      "@ldesign/i18n/vue": ["../packages/i18n/src/vue"],
-
-      "@ldesign/kit": ["../packages/kit/src"],
-      "@ldesign/kit/*": ["../packages/kit/src/*"],
-
-      "@ldesign/pdf": ["../packages/pdf/src"],
-      "@ldesign/pdf/*": ["../packages/pdf/src/*"],
-      "@ldesign/pdf/vue": ["../packages/pdf/src/vue"],
-
-      "@ldesign/qrcode": ["../packages/qrcode/src"],
-      "@ldesign/qrcode/*": ["../packages/qrcode/src/*"],
-      "@ldesign/qrcode/vue": ["../packages/qrcode/src/vue"],
-
-      "@ldesign/router": ["../packages/router/src"],
-      "@ldesign/router/*": ["../packages/router/src/*"],
-      "@ldesign/router/vue": ["../packages/router/src/vue"],
-
-      "@ldesign/shared": ["../packages/shared/src"],
-      "@ldesign/shared/*": ["../packages/shared/src/*"],
-
-      "@ldesign/size": ["../packages/size/src"],
-      "@ldesign/size/*": ["../packages/size/src/*"],
-      "@ldesign/size/vue": ["../packages/size/src/vue"],
-
-      "@ldesign/store": ["../packages/store/src"],
-      "@ldesign/store/*": ["../packages/store/src/*"],
-      "@ldesign/store/vue": ["../packages/store/src/vue"],
-
-      "@ldesign/template": ["../packages/template/src"],
-      "@ldesign/template/*": ["../packages/template/src/*"],
-      "@ldesign/template/vue": ["../packages/template/src/vue"],
-
-      "@ldesign/theme": ["../packages/theme/src"],
-      "@ldesign/theme/*": ["../packages/theme/src/*"],
-      "@ldesign/theme/vue": ["../packages/theme/src/vue"],
-
-      "@ldesign/watermark": ["../packages/watermark/src"],
-      "@ldesign/watermark/*": ["../packages/watermark/src/*"],
-      "@ldesign/watermark/vue": ["../packages/watermark/src/vue"]
+      "@/*": [
+        "./src/*"
+      ],
+      "~/*": [
+        "./*"
+      ]
     }
   }
 }

@@ -64,6 +64,7 @@ export default defineConfig({
             { text: 'Card 卡片', link: '/components/card' },
             { text: 'Popup 弹出层', link: '/components/popup' },
             { text: 'Modal 模态框', link: '/components/modal' },
+            { text: 'Picker 滚轮选择器', link: '/components/picker' },
             { text: 'TimePicker 时间选择器', link: '/components/time-picker' },
             { text: 'Image 图片', link: '/components/image' },
             { text: 'Draggable 拖拽缩放', link: '/components/draggable' },
@@ -71,7 +72,8 @@ export default defineConfig({
 { text: 'Tree 树', link: '/components/tree' },
             { text: 'Split 面板分割', link: '/components/split' },
 { text: 'Scrollbar 滚动条', link: '/components/scrollbar' },
-            { text: 'InputNumber 数字输入框', link: '/components/input-number' }
+            { text: 'InputNumber 数字输入框', link: '/components/input-number' },
+            { text: 'Ellipsis 文本省略', link: '/components/ellipsis' }
           ]
         }
       ],

@@ -41,6 +41,14 @@ export { Toolbar } from './ui/toolbar';
 // Utilities
 export { EventEmitter } from './utils/event-emitter';
 export { Logger } from './utils/logger';
+export {
+  PerformanceMonitor,
+  VirtualScroller,
+  LazyLoader,
+  debounce,
+  throttle,
+  performanceMonitor
+} from './utils/performance';
 
 // Types
 export type {

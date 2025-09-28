@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { allLucideIcons } from '../../../../src/components/icon/all-lucide-icons.ts'
 
 const searchQuery = ref('')
@@ -74,10 +74,6 @@ const copyIconName = (iconName) => {
   })
 }
 
-onMounted(() => {
-  // 确保Web Components已加载
-  import('../../../../../dist/ldesign-webcomponent/ldesign-webcomponent.esm.js')
-})
 </script>
 
 <style scoped>
