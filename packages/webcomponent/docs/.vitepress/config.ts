@@ -195,6 +195,16 @@ export default defineConfig({
     server: {
       port: 5173,
       host: true
+    },
+    // 确保正确处理 webcomponent 的模块解析
+    resolve: {
+      alias: {
+        '@ldesign/webcomponent': '/packages/webcomponent/dist/ldesign-webcomponent/ldesign-webcomponent.esm.js'
+      }
+    },
+    optimizeDeps: {
+      include: ['@ldesign/webcomponent/loader'],
+      exclude: ['@ldesign/webcomponent']
     }
   }
 })

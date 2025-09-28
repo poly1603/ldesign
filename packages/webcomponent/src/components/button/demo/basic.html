@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Button 基础示例</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      padding: 40px;
+      background: #f5f5f5;
+    }
+    .demo-section {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .demo-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: #000000d9;
+    }
+    .demo-description {
+      color: #00000073;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .demo-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- 按钮类型 -->
+  <div class="demo-section">
+    <h3 class="demo-title">按钮类型</h3>
+    <p class="demo-description">按钮有五种类型：主按钮、默认按钮、虚线按钮、文本按钮和链接按钮。</p>
+    <div class="demo-buttons">
+      <ldesign-button type="primary">Primary Button</ldesign-button>
+      <ldesign-button type="default">Default Button</ldesign-button>
+      <ldesign-button type="dashed">Dashed Button</ldesign-button>
+      <ldesign-button type="text">Text Button</ldesign-button>
+      <ldesign-button type="link">Link Button</ldesign-button>
+    </div>
+  </div>
+
+  <!-- 按钮尺寸 -->
+  <div class="demo-section">
+    <h3 class="demo-title">按钮尺寸</h3>
+    <p class="demo-description">按钮有大、中、小三种尺寸。</p>
+    <div class="demo-buttons">
+      <ldesign-button type="primary" size="large">Large Button</ldesign-button>
+      <ldesign-button type="primary" size="middle">Middle Button</ldesign-button>
+      <ldesign-button type="primary" size="small">Small Button</ldesign-button>
+    </div>
+  </div>
+
+  <!-- 图标按钮 -->
+  <div class="demo-section">
+    <h3 class="demo-title">图标按钮</h3>
+    <p class="demo-description">当需要在 Button 内嵌入 Icon 时，可以设置 icon 属性。</p>
+    <div class="demo-buttons">
+      <ldesign-button type="primary" icon="search">搜索</ldesign-button>
+      <ldesign-button icon="search">搜索</ldesign-button>
+      <ldesign-button type="primary" icon="download">下载</ldesign-button>
+      <ldesign-button type="primary" shape="circle" icon="search"></ldesign-button>
+      <ldesign-button shape="circle" icon="search"></ldesign-button>
+    </div>
+  </div>
+
+  <!-- 加载中状态 -->
+  <div class="demo-section">
+    <h3 class="demo-title">加载中状态</h3>
+    <p class="demo-description">添加 loading 属性即可让按钮处于加载状态。</p>
+    <div class="demo-buttons">
+      <ldesign-button type="primary" loading="true">Loading</ldesign-button>
+      <ldesign-button type="primary" loading="true" icon="poweroff">Loading</ldesign-button>
+      <ldesign-button loading="true">Loading</ldesign-button>
+    </div>
+  </div>
+
+  <!-- 按钮形状 -->
+  <div class="demo-section">
+    <h3 class="demo-title">按钮形状</h3>
+    <p class="demo-description">按钮可以设置为圆形或圆角矩形。</p>
+    <div class="demo-buttons">
+      <ldesign-button type="primary" shape="circle" icon="search"></ldesign-button>
+      <ldesign-button type="primary" shape="round" icon="search">搜索</ldesign-button>
+      <ldesign-button type="primary" shape="round">圆角按钮</ldesign-button>
+    </div>
+  </div>
+
+  <!-- 不可用状态 -->
+  <div class="demo-section">
+    <h3 class="demo-title">不可用状态</h3>
+    <p class="demo-description">添加 disabled 属性即可让按钮处于不可用状态。</p>
+    <div class="demo-buttons">
+      <ldesign-button type="primary" disabled="true">Primary(disabled)</ldesign-button>
+      <ldesign-button disabled="true">Default(disabled)</ldesign-button>
+      <ldesign-button type="dashed" disabled="true">Dashed(disabled)</ldesign-button>
+      <ldesign-button type="text" disabled="true">Text(disabled)</ldesign-button>
+      <ldesign-button type="link" disabled="true">Link(disabled)</ldesign-button>
+    </div>
+  </div>
+
+  <!-- 危险按钮 -->
+  <div class="demo-section">
+    <h3 class="demo-title">危险按钮</h3>
+    <p class="demo-description">危险操作按钮，点击后会直接触发危险操作。</p>
+    <div class="demo-buttons">
+      <ldesign-button type="primary" danger="true">Primary Danger</ldesign-button>
+      <ldesign-button danger="true">Default Danger</ldesign-button>
+      <ldesign-button type="dashed" danger="true">Dashed Danger</ldesign-button>
+      <ldesign-button type="text" danger="true">Text Danger</ldesign-button>
+      <ldesign-button type="link" danger="true">Link Danger</ldesign-button>
+    </div>
+  </div>
+
+  <!-- 幽灵按钮 -->
+  <div class="demo-section" style="background: rgb(190, 200, 200);">
+    <h3 class="demo-title">幽灵按钮</h3>
+    <p class="demo-description">幽灵按钮将按钮的内容反色，背景变透明，常用在有色背景上。</p>
+    <div class="demo-buttons">
+      <ldesign-button type="primary" ghost="true">Primary Ghost</ldesign-button>
+      <ldesign-button ghost="true">Default Ghost</ldesign-button>
+      <ldesign-button type="dashed" ghost="true">Dashed Ghost</ldesign-button>
+      <ldesign-button type="primary" danger="true" ghost="true">Danger Ghost</ldesign-button>
+    </div>
+  </div>
+
+  <!-- 块状按钮 -->
+  <div class="demo-section">
+    <h3 class="demo-title">块状按钮</h3>
+    <p class="demo-description">block 属性将使按钮适合其父宽度。</p>
+    <div style="max-width: 400px;">
+      <ldesign-button type="primary" block="true">Primary Block</ldesign-button>
+      <br><br>
+      <ldesign-button block="true">Default Block</ldesign-button>
+    </div>
+  </div>
+
+  <script type="module" src="/build/ldesign.esm.js"></script>
+</body>
+</html>

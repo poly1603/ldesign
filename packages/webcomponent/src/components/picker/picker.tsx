@@ -54,6 +54,38 @@ export class LdesignPicker {
   /** 手势拖拽平滑时间常数（毫秒），>0 时使用一阶平滑使位移逐步接近手指，营造“越来越慢”的阻力感，默认 0（关闭） */
   @Prop() dragSmoothing?: number;
 
+  /* ---------------- 搜索和筛选相关 ---------------- */
+  /** 是否显示搜索框 */
+  @Prop() searchable: boolean = false;
+  /** 搜索框占位符 */
+  @Prop() searchPlaceholder: string = '搜索选项...';
+  /** 是否在搜索时大小写不敏感 */
+  @Prop() searchIgnoreCase: boolean = true;
+  /** 搜索防抖延迟（毫秒） */
+  @Prop() searchDebounce: number = 300;
+  /** 键盘快捷定位是否启用（输入字母快速定位） */
+  @Prop() keyboardQuickJump: boolean = true;
+  /** 搜索时是否高亮匹配文本 */
+  @Prop() highlightMatch: boolean = true;
+
+  /* ---------------- 体验优化相关 ---------------- */
+  /** 是否启用触觉反馈（需要浏览器支持 Vibration API） */
+  @Prop() hapticFeedback: boolean = true;
+  /** 触觉反馈强度（毫秒） */
+  @Prop() hapticIntensity: number = 10;
+  /** 是否启用音效 */
+  @Prop() soundEffects: boolean = false;
+  /** 音效音量 (0-1) */
+  @Prop() soundVolume: number = 0.3;
+  /** 自定义音效 URL */
+  @Prop() soundUrl?: string;
+  /** 是否启用 3D 效果 */
+  @Prop() enable3d: boolean = false;
+  /** 是否显示渐变遮罩 */
+  @Prop() showMask: boolean = false;
+  /** 主题模式 */
+  @Prop() theme: 'light' | 'dark' | 'auto' = 'light';
+
   /** 选中项变化（最终吸附后触发） */
   @Event() ldesignChange!: EventEmitter<{ value: string | undefined; option?: PickerOption }>;
   /** 选择过程事件（滚动/拖拽中也会触发） */
@@ -62,6 +94,11 @@ export class LdesignPicker {
   @State() parsed: PickerOption[] = [];
   @State() current: string | undefined; // 最终值
   @State() visual: string | undefined;  // 交互过程显示值
+  @State() searchValue: string = '';
+  @State() filteredOptions: PickerOption[] = [];
+  @State() isSearching: boolean = false;
+  @State() quickJumpBuffer: string = '';
+  @State() quickJumpTimer?: number;
 
   private listEl?: HTMLElement;     // 作为 transform 轨道的元素（ul）
   private containerEl?: HTMLElement; // 外层容器（用于精确测量高度）
@@ -75,6 +112,12 @@ export class LdesignPicker {
   // 动画/惯性
   private snapAnim: { raf: number; start: number; from: number; to: number; duration: number; idx: number; trigger?: 'click' | 'wheel' | 'keyboard' | 'touch' | 'scroll'; silent: boolean } | null = null;
   private inertia: { raf?: number; v: number; last: number } | null = null;
+  
+  // 性能优化
+  private rafId?: number;
+  private lastUpdateTime = 0;
+  private updateThrottle = 16; // 限制更新频率到约60fps
+  private visualUpdateDebounce?: number;
 
   // 指针拖动
   private isPointerDown = false;
@@ -128,6 +171,9 @@ export class LdesignPicker {
   }
 
   componentDidLoad() {
+    // 初始化音频上下文
+    this.initAudioContext();
+    
     // 确保DOM完全渲染后进行初始化
     requestAnimationFrame(() => {
       // 测量实际的项目高度
@@ -324,6 +370,22 @@ export class LdesignPicker {
 
   private setTrackTransform(y: number, animate = false, mode: 'normal' | 'drag' | 'inertia' = 'normal') {
     if (!this.listEl || this.parsed.length === 0) return;
+    
+    // 性能优化：在拖拽模式下进行节流
+    if (mode === 'drag') {
+      const now = performance.now();
+      if (now - this.lastUpdateTime < this.updateThrottle) {
+        // 缓存值，下一帧再处理
+        if (!this.rafId) {
+          this.rafId = requestAnimationFrame(() => {
+            this.rafId = undefined;
+            this.setTrackTransform(y, animate, mode);
+          });
+        }
+        return;
+      }
+      this.lastUpdateTime = now;
+    }
 
     const { itemH, minY, maxY } = this.getBounds();
 
@@ -372,6 +434,10 @@ export class LdesignPicker {
     const newVisual = this.parsed[currentIdx]?.value;
     if (newVisual !== this.visual) {
       this.visual = newVisual;
+      // 触发反馈（仅在拖拽模式下）
+      if (mode === 'drag' || mode === 'inertia') {
+        this.onItemChange();
+      }
     }
   }
 
@@ -394,19 +460,8 @@ export class LdesignPicker {
     const maxY = this.centerOffset;
     const minY = this.centerOffset - (this.parsed.length - 1) * this.itemHeightBySize;
     
-    console.log('🎬 startSnapAnim:', {
-      idx,
-      safeIdx,
-      from,
-      to,
-      trigger: opts?.trigger,
-      bounds: { maxY, minY },
-      isToInBounds: to <= maxY && to >= minY
-    });
-    
     // 如果目标位置超出边界，直接返回
     if (to > maxY || to < minY) {
-      console.error('❌ snapAnim target out of bounds!', { to, maxY, minY });
       return;
     }
     
@@ -457,21 +512,9 @@ export class LdesignPicker {
   private setIndex(i: number, opts?: { animate?: boolean; silent?: boolean; trigger?: 'click' | 'wheel' | 'keyboard' | 'touch' | 'scroll' }) {
     if (!this.listEl || this.parsed.length === 0) return;
     
-    console.log('🎰 setIndex called:', {
-      inputIndex: i,
-      opts,
-      currentTrackY: this.trackY
-    });
-    
     // 严格限制索引范围 [0, length-1]
     const idx = this.clampIndex(i);
     const enabledIdx = this.firstEnabledFrom(idx);
-    
-    console.log('🎰 Index processing:', {
-      clampedIdx: idx,
-      enabledIdx,
-      parsedLength: this.parsed.length
-    });
     
     // 精确检查是否已经在目标位置（基于实际Y坐标）
     const targetY = this.yForIndex(enabledIdx);
@@ -479,7 +522,6 @@ export class LdesignPicker {
     
     // 只有在不是动画模式且已经在目标位置时才跳过
     if (opts?.animate === false && Math.abs(this.trackY - targetY) < tolerance) {
-      console.log('🔒 Already at target, skipping');
       // 更新视觉状态确保一致
       this.visual = this.parsed[enabledIdx]?.value;
       return;
@@ -487,11 +529,9 @@ export class LdesignPicker {
     
     // 如果需要动画，用 snapAnim；否则直接设置
     if (opts?.animate !== false) {
-      console.log('🎬 Starting snap animation to index:', enabledIdx);
       this.startSnapAnim(enabledIdx, { trigger: opts?.trigger, silent: !!opts?.silent });
     } else {
       const y = this.yForIndex(enabledIdx);
-      console.log('🚀 Direct set to Y:', y);
       this.setTrackTransform(y, false, 'normal');
       const nextVal = this.parsed[enabledIdx]?.value;
       this.visual = nextVal;
@@ -524,7 +564,6 @@ export class LdesignPicker {
     const atBottom = this.trackY <= minY + 0.5;
     if ((towardTop && atTop) || (towardBottom && atBottom)) {
       const boundaryY = towardTop ? maxY : minY;
-      console.log('🧱 Wheel blocked by positional boundary', { towardTop, towardBottom, atTop, atBottom, boundaryY });
       this.setTrackTransform(boundaryY, false, 'normal'); // 硬对齐边界
       return;
     }
@@ -533,18 +572,6 @@ export class LdesignPicker {
     const currentFloat = (this.centerOffset - this.trackY) / itemH;
     const currentIdx = Math.round(currentFloat);
     
-    // 调试：打印关键信息
-    console.log('🎯 onWheel Debug:', {
-      deltaY: e.deltaY,
-      currentFloat,
-      currentIdx,
-      trackY: this.trackY,
-      centerOffset: this.centerOffset,
-      itemHeight: itemH,
-      parsedLength: this.parsed.length,
-      firstY: this.yForIndex(0),
-      lastY: this.yForIndex(this.parsed.length - 1)
-    });
     
     // 计算步数
     let steps = 0;
@@ -566,7 +593,6 @@ export class LdesignPicker {
     }
     
     if (steps === 0) {
-      console.log('⏸️ No steps to take');
       return;
     }
     
@@ -574,16 +600,7 @@ export class LdesignPicker {
     const targetIdx = currentIdx + steps;
     const clampedTargetIdx = this.clampIndex(targetIdx);
     
-    console.log('📍 Position Check:', {
-      currentIdx,
-      steps,
-      targetIdx,
-      clampedTargetIdx,
-      isAtBoundary: clampedTargetIdx === currentIdx
-    });
-    
     if (clampedTargetIdx === currentIdx) {
-      console.log('🛑 BLOCKED: Already at boundary, no movement');
       const exactY = this.yForIndex(currentIdx);
       if (Math.abs(this.trackY - Math.round(exactY)) > 0.5) {
         this.setTrackTransform(exactY, false);
@@ -592,7 +609,6 @@ export class LdesignPicker {
     }
     
     // 正常滚动到目标索引
-    console.log('➡️ Normal scroll from', currentIdx, 'to', clampedTargetIdx);
     this.setIndex(clampedTargetIdx, { animate: true, trigger: 'wheel' });
   };
 
@@ -790,9 +806,212 @@ export class LdesignPicker {
   private onKeyDown = (e: KeyboardEvent) => {
     if (!this.listEl || this.disabled) return;
     const idxFloat = (this.centerOffset - this.trackY) / this.itemHeightBySize;
-    if (e.key === 'ArrowDown') { e.preventDefault(); this.setIndex(this.clampIndex(idxFloat) + 1, { animate: true, trigger: 'keyboard' }); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); this.setIndex(this.clampIndex(idxFloat) - 1, { animate: true, trigger: 'keyboard' }); }
-    else if (e.key === 'Enter') { e.preventDefault(); this.commitValue(this.visual ?? this.current); }
+    const currentIdx = this.clampIndex(idxFloat);
+    
+    switch(e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        this.setIndex(currentIdx + 1, { animate: true, trigger: 'keyboard' });
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        this.setIndex(currentIdx - 1, { animate: true, trigger: 'keyboard' });
+        break;
+      case 'Home':
+        e.preventDefault();
+        this.setIndex(0, { animate: true, trigger: 'keyboard' });
+        break;
+      case 'End':
+        e.preventDefault();
+        this.setIndex(this.parsed.length - 1, { animate: true, trigger: 'keyboard' });
+        break;
+      case 'PageUp':
+        e.preventDefault();
+        // 跳过一个可视区域的项数
+        this.setIndex(Math.max(0, currentIdx - this.visibleItems), { animate: true, trigger: 'keyboard' });
+        break;
+      case 'PageDown':
+        e.preventDefault();
+        // 跳过一个可视区域的项数
+        this.setIndex(Math.min(this.parsed.length - 1, currentIdx + this.visibleItems), { animate: true, trigger: 'keyboard' });
+        break;
+      case 'Enter':
+      case ' ': // 空格键也可以确认选择
+        e.preventDefault();
+        this.commitValue(this.visual ?? this.current);
+        break;
+      case 'Escape':
+        // 如果正在搜索，退出搜索
+        if (this.isSearching) {
+          e.preventDefault();
+          this.searchValue = '';
+          this.isSearching = false;
+          this.filteredOptions = this.parsed;
+        }
+        break;
+      default:
+        // 处理字母键快速跳转
+        if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
+          e.preventDefault();
+          this.onQuickJumpKey(e.key);
+        }
+        break;
+    }
+  };
+
+  /* ---------------- 体验优化方法 ---------------- */
+  private audioContext?: AudioContext;
+  private clickSound?: AudioBuffer;
+  
+  private initAudioContext() {
+    if (!this.soundEffects || this.audioContext) return;
+    
+    try {
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      if (this.soundUrl) {
+        // 加载自定义音效
+        fetch(this.soundUrl)
+          .then(response => response.arrayBuffer())
+          .then(data => this.audioContext!.decodeAudioData(data))
+          .then(buffer => {
+            this.clickSound = buffer;
+          })
+          .catch(err => console.warn('加载音效失败:', err));
+      } else {
+        // 使用合成音效
+        this.createSyntheticSound();
+      }
+    } catch (err) {
+      console.warn('初始化音频上下文失败:', err);
+    }
+  }
+  
+  private createSyntheticSound() {
+    if (!this.audioContext) return;
+    
+    // 创建一个简单的点击音
+    const duration = 0.05;
+    const sampleRate = this.audioContext.sampleRate;
+    const buffer = this.audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+    const channel = buffer.getChannelData(0);
+    
+    for (let i = 0; i < channel.length; i++) {
+      // 生成一个快速衰减的正弦波
+      channel[i] = Math.sin(2 * Math.PI * 800 * i / sampleRate) * Math.exp(-i / (channel.length * 0.1));
+    }
+    
+    this.clickSound = buffer;
+  }
+  
+  private playSound() {
+    if (!this.soundEffects || !this.audioContext || !this.clickSound) return;
+    
+    try {
+      const source = this.audioContext.createBufferSource();
+      const gainNode = this.audioContext.createGain();
+      
+      source.buffer = this.clickSound;
+      gainNode.gain.value = this.soundVolume;
+      
+      source.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      
+      source.start(0);
+    } catch (err) {
+      console.warn('播放音效失败:', err);
+    }
+  }
+  
+  private triggerHaptic(intensity?: number) {
+    if (!this.hapticFeedback) return;
+    
+    // 检查是否支持 Vibration API
+    if ('vibrate' in navigator) {
+      try {
+        navigator.vibrate(intensity || this.hapticIntensity);
+      } catch (err) {
+        console.warn('触觉反馈失败:', err);
+      }
+    }
+  }
+  
+  private onItemChange() {
+    // 触发触觉反馈
+    this.triggerHaptic();
+    // 播放音效
+    this.playSound();
+  }
+
+  /* ---------------- 搜索和筛选方法 ---------------- */
+  private searchDebounceTimer?: number;
+  
+  private onSearchInput = (e: Event) => {
+    const input = e.target as HTMLInputElement;
+    const value = input.value;
+    this.searchValue = value;
+    
+    // 清除之前的防抖计时器
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+    
+    // 防抖处理
+    this.searchDebounceTimer = setTimeout(() => {
+      this.performSearch(value);
+    }, this.searchDebounce) as any;
+  };
+  
+  private performSearch(query: string) {
+    if (!query) {
+      this.filteredOptions = this.parsed;
+      this.isSearching = false;
+      return;
+    }
+    
+    this.isSearching = true;
+    const searchStr = this.searchIgnoreCase ? query.toLowerCase() : query;
+    
+    this.filteredOptions = this.parsed.filter(opt => {
+      const label = this.searchIgnoreCase ? opt.label.toLowerCase() : opt.label;
+      return label.includes(searchStr);
+    });
+    
+    // 如果搜索结果不为空，自动选中第一个匹配项
+    if (this.filteredOptions.length > 0) {
+      const firstMatch = this.filteredOptions[0];
+      const idx = this.getIndexByValue(firstMatch.value);
+      if (idx >= 0) {
+        this.setIndex(idx, { animate: true, trigger: 'scroll' });
+      }
+    }
+  }
+  
+  private onQuickJumpKey = (key: string) => {
+    if (!this.keyboardQuickJump) return;
+    
+    // 清除之前的计时器
+    if (this.quickJumpTimer) {
+      clearTimeout(this.quickJumpTimer);
+    }
+    
+    // 累积输入的字母
+    this.quickJumpBuffer += key.toLowerCase();
+    
+    // 找到第一个匹配的选项
+    const matchIdx = this.parsed.findIndex(opt => 
+      opt.label.toLowerCase().startsWith(this.quickJumpBuffer)
+    );
+    
+    if (matchIdx >= 0) {
+      this.setIndex(matchIdx, { animate: true, trigger: 'keyboard' });
+    }
+    
+    // 1秒后清空缓冲区
+    this.quickJumpTimer = setTimeout(() => {
+      this.quickJumpBuffer = '';
+      this.quickJumpTimer = undefined;
+    }, 1000) as any;
   };
 
   /* ---------------- util ---------------- */
@@ -849,9 +1068,45 @@ export class LdesignPicker {
   render() {
     this.itemH = this.itemHeightBySize;
     const heightPx = this.panelHeightPx;
+    const displayOptions = this.isSearching ? this.filteredOptions : this.parsed;
 
     return (
-      <Host class={{ 'ldesign-picker': true, 'ldesign-picker--disabled': this.disabled }}>
+      <Host 
+        class={{ 
+          'ldesign-picker': true, 
+          'ldesign-picker--disabled': this.disabled,
+          'ldesign-picker--3d': this.enable3d
+        }}
+        theme={this.theme}
+      >
+        {/* 搜索框 */}
+        {this.searchable && (
+          <div class="ldesign-picker__search">
+            <input
+              type="text"
+              class="ldesign-picker__search-input"
+              placeholder={this.searchPlaceholder}
+              value={this.searchValue}
+              onInput={this.onSearchInput as any}
+              disabled={this.disabled}
+              aria-label="搜索选项"
+            />
+            {this.searchValue && (
+              <button
+                class="ldesign-picker__search-clear"
+                onClick={() => {
+                  this.searchValue = '';
+                  this.isSearching = false;
+                  this.filteredOptions = this.parsed;
+                }}
+                aria-label="清除搜索"
+              >
+                ×
+              </button>
+            )}
+          </div>
+        )}
+        
         <div 
           class="ldesign-picker__picker" 
           ref={(el) => { this.containerEl = el as HTMLElement; }} 
@@ -863,7 +1118,12 @@ export class LdesignPicker {
           onPointerCancel={this.onPointerUp as any}
           onKeyDown={this.onKeyDown as any}
           tabindex={this.disabled ? -1 : 0}
+          role="listbox"
+          aria-label="选项列表"
+          aria-activedescendant={this.visual ? `picker-item-${this.visual}` : undefined}
+          aria-disabled={this.disabled}
         >
+          <div class="ldesign-picker__indicator" style={{ height: `${this.itemH}px` }}></div>
           <ul
             class="ldesign-picker__column"
             ref={(el) => { this.listEl = el as HTMLElement; }}
@@ -874,19 +1134,55 @@ export class LdesignPicker {
               paddingBottom: '0'
             }}
           >
-            {this.parsed.map((opt, i) => (
-              <li
-                data-value={opt.value}
-                data-index={String(i)}
-                class={{ 'ldesign-picker__item': true, 'ldesign-picker__item--active': opt.value === (this.visual ?? this.current), 'ldesign-picker__item--disabled': !!opt.disabled }}
-              >
-                {opt.label}
-              </li>
-            ))}
+            {displayOptions.map((opt, i) => {
+              const isActive = opt.value === (this.visual ?? this.current);
+              const shouldHighlight = this.highlightMatch && this.searchValue && this.isSearching;
+              
+              // 高亮匹配文本
+              let labelContent = opt.label;
+              if (shouldHighlight) {
+                const searchStr = this.searchIgnoreCase ? this.searchValue.toLowerCase() : this.searchValue;
+                const label = this.searchIgnoreCase ? opt.label.toLowerCase() : opt.label;
+                const index = label.indexOf(searchStr);
+                
+                if (index >= 0) {
+                  const before = opt.label.substring(0, index);
+                  const match = opt.label.substring(index, index + this.searchValue.length);
+                  const after = opt.label.substring(index + this.searchValue.length);
+                  
+                  labelContent = (
+                    <span>
+                      {before}
+                      <mark class="ldesign-picker__highlight">{match}</mark>
+                      {after}
+                    </span>
+                  ) as any;
+                }
+              }
+              
+              return (
+                <li
+                  id={`picker-item-${opt.value}`}
+                  data-value={opt.value}
+                  data-index={String(i)}
+                  class={{ 
+                    'ldesign-picker__item': true, 
+                    'ldesign-picker__item--active': isActive, 
+                    'ldesign-picker__item--disabled': !!opt.disabled 
+                  }}
+                  role="option"
+                  aria-selected={isActive}
+                  aria-disabled={opt.disabled}
+                >
+                  {labelContent}
+                </li>
+              );
+            })}
           </ul>
-          <div class="ldesign-picker__indicator" style={{ height: `${this.itemH}px` }}></div>
-          <div class="ldesign-picker__mask ldesign-picker__mask--top"></div>
-          <div class="ldesign-picker__mask ldesign-picker__mask--bottom"></div>
+          {this.showMask && [
+            <div class="ldesign-picker__mask ldesign-picker__mask--top"></div>,
+            <div class="ldesign-picker__mask ldesign-picker__mask--bottom"></div>
+          ]}
         </div>
       </Host>
     );

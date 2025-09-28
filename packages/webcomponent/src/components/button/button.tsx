@@ -1,9 +1,12 @@
-import { Component, Prop, Event, EventEmitter, h, Host, Element } from '@stencil/core';
-import { ButtonType, ButtonShape, Size, ButtonIconPosition, NativeButtonType, ButtonColor } from '../../types';
+import { Component, Prop, Event, EventEmitter, h, Host, Element, State, Watch } from '@stencil/core';
+import { ButtonType, ButtonShape, ButtonIconPosition } from '../../types';
+import { ButtonSize, ButtonHTMLType, LoadingConfig } from './interface';
+import { getLoadingConfig, isTwoCNChar, spaceChildren, isUnBorderedButtonType, getSizeSuffix, combineClasses } from './utils';
 
 /**
  * Button 按钮组件
- * 用于触发操作或导航
+ * 基于 Ant Design 按钮组件架构重构
+ * 提供多种类型、尺寸、状态的按钮
  */
 @Component({
   tag: 'ldesign-button',
@@ -11,45 +14,26 @@ import { ButtonType, ButtonShape, Size, ButtonIconPosition, NativeButtonType, Bu
   shadow: false,
 })
 export class LdesignButton {
-  private static warned: Record<string, boolean> = {};
-
   @Element() el!: HTMLElement;
+
+  // ==================== Props ====================
   /**
    * 按钮类型
+   * @default 'default'
    */
-  // 对齐 AntD：默认 default
   @Prop() type: ButtonType = 'default';
 
   /**
-   * 按钮尺寸
-   */
-  // 对齐 AntD：使用 middle；兼容传入 medium
-  @Prop() size: Size = 'middle';
-
-  /**
-   * 语义颜色（用于 outline/dashed/text/link/ghost）
-   */
-  @Prop() color: ButtonColor = 'primary';
-
-  /**
-   * 危险态（AntD 风格）
-   */
-  @Prop() danger: boolean = false;
-
-  /**
    * 按钮形状
+   * @default 'default'
    */
-  @Prop() shape: ButtonShape = 'rectangle';
+  @Prop() shape: ButtonShape = 'default';
 
   /**
-   * 是否禁用
+   * 按钮尺寸
+   * @default 'middle'
    */
-  @Prop() disabled: boolean = false;
-
-  /**
-   * 是否加载中
-   */
-  @Prop() loading: boolean = false;
+  @Prop() size: ButtonSize = 'middle';
 
   /**
    * 图标名称
@@ -57,39 +41,150 @@ export class LdesignButton {
   @Prop() icon?: string;
 
   /**
-   * 图标位置：left | right
+   * 图标位置
+   * @default 'start'
    */
-  @Prop() iconPosition: ButtonIconPosition = 'left';
+  @Prop() iconPosition: ButtonIconPosition = 'start';
 
   /**
-   * 是否为块级按钮
+   * 是否加载中
+   * @default false
    */
-  @Prop() block: boolean = false;
+  @Prop() loading: boolean | { delay?: number } = false;
 
   /**
-   * 幽灵按钮（一般用于深色背景）
+   * 是否禁用
+   * @default false
+   */
+  @Prop() disabled: boolean = false;
+
+  /**
+   * 是否为危险按钮
+   * @default false
+   */
+  @Prop() danger: boolean = false;
+
+  /**
+   * 是否为幽灵按钮
+   * @default false
    */
   @Prop() ghost: boolean = false;
 
   /**
-   * 原生按钮类型：button | submit | reset
+   * 是否为块级按钮
+   * @default false
    */
-  /**
-   * 对齐 AntD：htmlType 优先；nativeType 兼容
-   */
-  @Prop() htmlType?: NativeButtonType;
-  @Prop() nativeType: NativeButtonType = 'button';
+  @Prop() block: boolean = false;
 
+  /**
+   * 原生按钮类型
+   * @default 'button'
+   */
+  @Prop() htmlType: ButtonHTMLType = 'button';
+
+  /**
+   * 点击跳转的地址（将按钮作为 a 标签）
+   */
+  @Prop() href?: string;
+
+  /**
+   * 相当于 a 链接的 target 属性
+   */
+  @Prop() target?: string;
+
+  /**
+   * 是否自动插入空格（仅在子节点为两个中文字符时生效）
+   * @default true
+   */
+  @Prop() autoInsertSpace: boolean = true;
+
+  // ==================== State ====================
+  /**
+   * 内部加载状态
+   */
+  @State() innerLoading: boolean = false;
+
+  /**
+   * 是否包含两个中文字符
+   */
+  @State() hasTwoCNChar: boolean = false;
+
+  // ==================== Events ====================
   /**
    * 点击事件
    */
   @Event() ldesignClick: EventEmitter<MouseEvent>;
 
+  // ==================== Private Properties ====================
+  private loadingDelayTimer?: ReturnType<typeof setTimeout>;
+  private buttonRef?: HTMLButtonElement | HTMLAnchorElement;
+
+  // ==================== Lifecycle ====================
+  componentWillLoad() {
+    // 初始化加载状态
+    const loadingConfig = getLoadingConfig(this.loading);
+    this.innerLoading = loadingConfig.loading;
+  }
+
+  componentDidLoad() {
+    // 检查是否包含两个中文字符
+    this.checkTwoCNChar();
+  }
+
+  componentDidUpdate() {
+    // 更新时重新检查
+    this.checkTwoCNChar();
+  }
+
+  disconnectedCallback() {
+    // 清理定时器
+    if (this.loadingDelayTimer) {
+      clearTimeout(this.loadingDelayTimer);
+    }
+  }
+
+  // ==================== Watchers ====================
+  @Watch('loading')
+  handleLoadingChange() {
+    const loadingConfig = getLoadingConfig(this.loading);
+    
+    // 清理旧的定时器
+    if (this.loadingDelayTimer) {
+      clearTimeout(this.loadingDelayTimer);
+      this.loadingDelayTimer = undefined;
+    }
+    
+    if (loadingConfig.delay && loadingConfig.delay > 0) {
+      this.loadingDelayTimer = setTimeout(() => {
+        this.innerLoading = true;
+      }, loadingConfig.delay);
+    } else {
+      this.innerLoading = loadingConfig.loading;
+    }
+  }
+
+  // ==================== Methods ====================
+  /**
+   * 检查按钮文本是否为两个中文字符
+   */
+  private checkTwoCNChar() {
+    const buttonText = this.el?.textContent?.trim() || '';
+    const needInsertSpace = this.autoInsertSpace && !this.icon && buttonText;
+    
+    if (needInsertSpace && isTwoCNChar(buttonText)) {
+      if (!this.hasTwoCNChar) {
+        this.hasTwoCNChar = true;
+      }
+    } else if (this.hasTwoCNChar) {
+      this.hasTwoCNChar = false;
+    }
+  }
+
   /**
    * 处理点击事件
    */
   private handleClick = (event: MouseEvent) => {
-    if (this.disabled || this.loading) {
+    if (this.disabled || this.innerLoading) {
       event.preventDefault();
       event.stopPropagation();
       return;
@@ -101,7 +196,7 @@ export class LdesignButton {
    * 处理键盘事件
    */
   private handleKeyDown = (event: KeyboardEvent) => {
-    if (this.disabled || this.loading) {
+    if (this.disabled || this.innerLoading) {
       return;
     }
     
@@ -119,83 +214,37 @@ export class LdesignButton {
    * 获取按钮类名
    */
   private getButtonClass(): string {
-    // 兼容处理：将 legacy 类型映射到新体系
-    let resolvedType: ButtonType = this.type;
-    let resolvedSize: Size = this.size;
-
-    // legacy: danger 作为 type -> 视为 primary + dangerous
-    let legacyDanger = false;
-    if (resolvedType === 'danger') {
-      resolvedType = 'primary';
-      legacyDanger = true;
-    }
-    // legacy: secondary -> default
-    if (resolvedType === 'secondary') {
-      resolvedType = 'default';
-    }
-    // 兼容尺寸：medium -> middle
-    if (resolvedSize === 'medium') {
-      resolvedSize = 'middle';
-    }
-
-    const classes = [
-      'ldesign-button',
-      `ldesign-button--${resolvedType}`,
-      `ldesign-button--${resolvedSize}`,
-      `ldesign-button--${this.shape}`,
-    ];
-
-    // 危险态（包括 legacy danger 映射）
-    if (this.danger || legacyDanger) {
-      classes.push('ldesign-button--dangerous');
-    }
-
-    // 颜色修饰逻辑（按类型选择默认颜色），与 AntD 行为对齐
-    const hasColorAttr = this.el?.hasAttribute('color');
-    let effectiveColor: ButtonColor = this.color;
-    if (!hasColorAttr) {
-      if (['outline', 'dashed', 'text'].includes(resolvedType as any)) {
-        effectiveColor = 'default';
-      } else if (resolvedType === 'link' || resolvedType === 'gradient') {
-        effectiveColor = 'primary';
-      }
-    }
-
-    // 需要颜色修饰的类型：outline / dashed / text / link / gradient
-    const needColor = ['outline', 'text', 'dashed', 'link', 'gradient'].includes(resolvedType as any);
-    if (needColor) {
-      classes.push(`ldesign-button--color-${effectiveColor}`);
-    }
-
-    // ghost 默认不跟随 color，使用白色；但如果显式传入 color，则尊重用户
-    if (this.ghost && hasColorAttr) {
-      classes.push(`ldesign-button--color-${effectiveColor}`);
-    }
-
-    if (this.ghost) {
-      classes.push('ldesign-button--ghost');
-    }
-
-    if (this.disabled) {
-      classes.push('ldesign-button--disabled');
-    }
-
-    if (this.loading) {
-      classes.push('ldesign-button--loading');
-    }
-
-    if (this.block) {
-      classes.push('ldesign-button--block');
-    }
-
-    return classes.join(' ');
+    const prefixCls = 'ldesign-button';
+    const sizeSuffix = getSizeSuffix(this.size);
+    
+    return combineClasses(
+      prefixCls,
+      // 类型
+      this.type && `${prefixCls}--${this.type}`,
+      // 形状
+      this.shape !== 'default' && `${prefixCls}--${this.shape}`,
+      // 尺寸
+      sizeSuffix && `${prefixCls}--${sizeSuffix}`,
+      // 状态
+      this.danger && `${prefixCls}--danger`,
+      this.ghost && `${prefixCls}--ghost`,
+      this.disabled && `${prefixCls}--disabled`,
+      this.innerLoading && `${prefixCls}--loading`,
+      this.block && `${prefixCls}--block`,
+      // 特殊状态
+      this.hasTwoCNChar && this.autoInsertSpace && `${prefixCls}--two-chinese-chars`,
+      // 仅图标
+      !this.el?.textContent?.trim() && (this.icon || this.innerLoading) && `${prefixCls}--icon-only`,
+      // 图标位置
+      this.iconPosition === 'end' && `${prefixCls}--icon-end`
+    );
   }
 
   /**
    * 渲染图标
    */
   private renderIcon() {
-    if (this.loading) {
+    if (this.innerLoading) {
       return (
         <ldesign-icon 
           name="loader-2" 
@@ -214,62 +263,77 @@ export class LdesignButton {
     }
 
     return null;
-  };
-
-  componentWillLoad() {
-    const warnOnce = (key: string, msg: string) => {
-      if (!LdesignButton.warned[key]) {
-        // 控制台兼容提示
-        try { console.warn(`[ldesign-button] ${msg}`); } catch (_) {}
-        LdesignButton.warned[key] = true;
-      }
-    };
-
-    // 兼容告警
-    if (this.type === 'secondary') warnOnce('type-secondary', `type="secondary" 将在后续版本弃用，请使用 type="default"`);
-    if (this.type === 'outline') warnOnce('type-outline', `type="outline" 已不再推荐使用（保留兼容），请考虑使用 type="text" 或设计规范中的 default`);
-    if (this.type === 'danger') warnOnce('type-danger', `type="danger" 已废弃，请改用 danger 属性：<ldesign-button type="primary" danger>`);
-    if (this.type === 'success' || this.type === 'warning') warnOnce('type-success-warning', `type="success|warning" 实底将逐步移除，请用主题/色板或 text/link 替代`);
-    if (this.size === 'medium') warnOnce('size-medium', `size="medium" 将被替换为 "middle"`);
-    if (this.nativeType && !this.htmlType) warnOnce('nativeType', `建议使用 htmlType 属性替代 nativeType`);
   }
 
   /**
    * 渲染按钮内容
    */
   private renderContent() {
-    const hasIcon = this.icon || this.loading;
-    const hasSlot = true; // 假设总是有slot内容
+    const hasIcon = !!(this.icon || this.innerLoading);
+    const children = <slot />;
+    
+    // 如果需要插入空格且是两个中文字符
+    const processedChildren = this.hasTwoCNChar && this.autoInsertSpace
+      ? spaceChildren(children, true)
+      : children;
 
     return (
       <span class="ldesign-button__content">
-        {hasIcon && this.iconPosition === 'left' && this.renderIcon()}
-        {hasSlot && (
+        {hasIcon && this.iconPosition === 'start' && this.renderIcon()}
+        {processedChildren && (
           <span class={hasIcon ? 'ldesign-button__text' : ''}>
-            <slot />
+            {processedChildren}
           </span>
         )}
-        {hasIcon && this.iconPosition === 'right' && this.renderIcon()}
+        {hasIcon && this.iconPosition === 'end' && this.renderIcon()}
       </span>
     );
   }
 
+  /**
+   * 渲染为链接
+   */
+  private renderAsLink() {
+    return (
+      <a
+        ref={(el) => this.buttonRef = el as HTMLAnchorElement}
+        class={this.getButtonClass()}
+        href={this.disabled || this.innerLoading ? undefined : this.href}
+        target={this.target}
+        onClick={this.handleClick}
+        onKeyDown={this.handleKeyDown}
+        tabIndex={this.disabled || this.innerLoading ? -1 : 0}
+        aria-disabled={this.disabled || this.innerLoading ? 'true' : 'false'}
+      >
+        {this.renderContent()}
+      </a>
+    );
+  }
+
+  /**
+   * 渲染为按钮
+   */
+  private renderAsButton() {
+    return (
+      <button
+        ref={(el) => this.buttonRef = el as HTMLButtonElement}
+        class={this.getButtonClass()}
+        disabled={this.disabled || this.innerLoading}
+        onClick={this.handleClick}
+        onKeyDown={this.handleKeyDown}
+        type={this.htmlType}
+        aria-disabled={this.disabled || this.innerLoading ? 'true' : 'false'}
+        aria-busy={this.innerLoading ? 'true' : 'false'}
+      >
+        {this.renderContent()}
+      </button>
+    );
+  }
+
   render() {
-    // 选择 htmlType 优先
-    const computedNativeType: NativeButtonType = this.htmlType || this.nativeType || 'button';
     return (
       <Host>
-        <button
-          class={this.getButtonClass()}
-          disabled={this.disabled || this.loading}
-          onClick={this.handleClick}
-          onKeyDown={this.handleKeyDown}
-          type={computedNativeType}
-          aria-disabled={this.disabled || this.loading ? 'true' : 'false'}
-          aria-busy={this.loading ? 'true' : 'false'}
-        >
-          {this.renderContent()}
-        </button>
+        {this.href ? this.renderAsLink() : this.renderAsButton()}
       </Host>
     );
   }

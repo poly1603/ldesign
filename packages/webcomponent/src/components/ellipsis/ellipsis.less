@@ -8,10 +8,13 @@
   display: block;
   color: inherit;
   font: inherit;
+  contain: layout style; // 优化重排性能
 }
 
 .ldesign-ellipsis__wrap {
   position: relative;
+  transform: translateZ(0); // 开启硬件加速
+  backface-visibility: hidden; // 避免动画闪烁
 }
 
 .ldesign-ellipsis__wrap--expanded {
@@ -22,6 +25,7 @@
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
+  transform: translateZ(0); // 开启硬件加速
 }
 
 // 折叠态：多行截断
@@ -40,7 +44,13 @@
   width: 40%;
   height: 1.2em;
   pointer-events: none;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0), var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff)) 60%);
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.4) 30%,
+    rgba(255, 255, 255, 0.7) 50%,
+    var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff)) 70%);
+  will-change: opacity;
+  transform: translateZ(0); // 开启硬件加速
 }
 
 // 通用按钮样式（无边框，文字按钮）
@@ -76,22 +86,26 @@
   }
 }
 
-// 折叠态“更多”：右下角绝对定位，底色遮住渐变
+// 折叠态"更多"：右下角绝对定位，底色遮住渐变
 .ldesign-ellipsis__action--more {
   position: absolute;
   right: 0;
   bottom: 0;
   background: var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff));
   padding-left: 4px;
+  transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2; // 确保按钮在渐变层上方
 }
 
-// 展开态：若能同行放置“收起”，则绝对定位到右下角
+// 展开态：若能同行放置"收起"，则绝对定位到右下角
 .ldesign-ellipsis__action--abs {
   position: absolute;
   right: 0;
   bottom: 0;
   background: var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff));
   padding-left: 8px;
+  transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2;
 }
 
 // 展开态：无法同行，另起一行右对齐

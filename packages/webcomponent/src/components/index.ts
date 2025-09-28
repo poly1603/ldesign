@@ -6,7 +6,7 @@
 export { BaseComponent } from './base/base-component';
 
 // 导出具体组件
-export { LdesignButton } from './button/button';
+export * from './button';
 export { LdesignIcon } from './icon/icon';
 export { LdesignInput } from './input/input';
 export { LdesignCheckbox } from './checkbox/checkbox';

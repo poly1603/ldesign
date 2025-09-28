@@ -5,8 +5,9 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, NativeButtonType, Size, Theme } from "./types";
+import { ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, Size, Theme } from "./types";
 import { AlertType } from "./components/alert/alert";
+import { ButtonHTMLType, ButtonSize } from "./components/button/interface";
 import { CalEvent } from "./components/calendar/calendar";
 import { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
 import { Placement } from "@floating-ui/dom";
@@ -27,8 +28,9 @@ import { Breakpoints as Breakpoints1, TimePickerLocale, TimePickerOverlay, TimeP
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 import { TransferItem } from "./components/transfer/transfer";
 import { TreeNode } from "./components/tree/tree";
-export { ButtonColor, ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, NativeButtonType, Size, Theme } from "./types";
+export { ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, Size, Theme } from "./types";
 export { AlertType } from "./components/alert/alert";
+export { ButtonHTMLType, ButtonSize } from "./components/button/interface";
 export { CalEvent } from "./components/calendar/calendar";
 export { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
 export { Placement } from "@floating-ui/dom";
@@ -329,21 +331,22 @@ export namespace Components {
     }
     /**
      * Button 按钮组件
-     * 用于触发操作或导航
+     * 基于 Ant Design 按钮组件架构重构
+     * 提供多种类型、尺寸、状态的按钮
      */
     interface LdesignButton {
+        /**
+          * 是否自动插入空格（仅在子节点为两个中文字符时生效）
+          * @default true
+         */
+        "autoInsertSpace": boolean;
         /**
           * 是否为块级按钮
           * @default false
          */
         "block": boolean;
         /**
-          * 语义颜色（用于 outline/dashed/text/link/ghost）
-          * @default 'primary'
-         */
-        "color": ButtonColor;
-        /**
-          * 危险态（AntD 风格）
+          * 是否为危险按钮
           * @default false
          */
         "danger": boolean;
@@ -353,42 +356,47 @@ export namespace Components {
          */
         "disabled": boolean;
         /**
-          * 幽灵按钮（一般用于深色背景）
+          * 是否为幽灵按钮
           * @default false
          */
         "ghost": boolean;
         /**
-          * 对齐 AntD：htmlType 优先；nativeType 兼容
+          * 点击跳转的地址（将按钮作为 a 标签）
          */
-        "htmlType"?: NativeButtonType;
+        "href"?: string;
+        /**
+          * 原生按钮类型
+          * @default 'button'
+         */
+        "htmlType": ButtonHTMLType;
         /**
           * 图标名称
          */
         "icon"?: string;
         /**
-          * 图标位置：left | right
-          * @default 'left'
+          * 图标位置
+          * @default 'start'
          */
         "iconPosition": ButtonIconPosition;
         /**
           * 是否加载中
           * @default false
          */
-        "loading": boolean;
-        /**
-          * @default 'button'
-         */
-        "nativeType": NativeButtonType;
+        "loading": boolean | { delay?: number };
         /**
           * 按钮形状
-          * @default 'rectangle'
+          * @default 'default'
          */
         "shape": ButtonShape;
         /**
           * 按钮尺寸
           * @default 'middle'
          */
-        "size": Size;
+        "size": ButtonSize;
+        /**
+          * 相当于 a 链接的 target 属性
+         */
+        "target"?: string;
         /**
           * 按钮类型
           * @default 'default'
@@ -707,11 +715,6 @@ export namespace Components {
          */
         "clockwise": boolean;
         /**
-          * 是否启用拖动旋转
-          * @default true
-         */
-        "draggableEnabled": boolean;
-        /**
           * 椭圆端点轴：auto 根据宽高选择；x 左右为端点；y 上下为端点
           * @default 'auto'
          */
@@ -721,6 +724,11 @@ export namespace Components {
           * @default 'angle'
          */
         "ellipseSpacing": 'arc' | 'angle';
+        /**
+          * 是否启用拖动旋转
+          * @default true
+         */
+        "enableDrag": boolean;
         /**
           * 惯性摩擦系数（0-1，越小惯性越大）
           * @default 0.95
@@ -1699,20 +1707,68 @@ export namespace Components {
      */
     interface LdesignIcon {
         /**
+          * 动画类型
+          * @default 'none'
+         */
+        "animation"?: 'spin' | 'pulse' | 'bounce' | 'flash' | 'shake' | 'none';
+        /**
           * 图标颜色
          */
         "color"?: string;
         /**
+          * 自定义SVG内容
+         */
+        "customSvg"?: string;
+        /**
+          * 是否为装饰性图标（无语义）
+          * @default false
+         */
+        "decorative": boolean;
+        /**
+          * 翻转方向
+         */
+        "flip"?: 'horizontal' | 'vertical' | 'both';
+        /**
+          * 是否使用渐变色
+          * @default false
+         */
+        "gradient": boolean;
+        /**
+          * 渐变色数组
+         */
+        "gradientColors"?: string | string[];
+        /**
+          * 渐变方向
+          * @default 'horizontal'
+         */
+        "gradientDirection": 'horizontal' | 'vertical' | 'diagonal';
+        /**
+          * 无障碍标签
+         */
+        "label"?: string;
+        /**
           * 图标名称
          */
         "name": string;
+        /**
+          * 预加载图标（公开方法）
+         */
+        "preloadIcons": (iconNames: string[]) => Promise<void>;
+        /**
+          * 旋转角度
+         */
+        "rotate"?: number;
+        /**
+          * 搜索图标（公开方法）
+         */
+        "searchIcons": (keyword: string) => Promise<string[]>;
         /**
           * 图标尺寸
           * @default 'medium'
          */
         "size": Size | number;
         /**
-          * 是否旋转
+          * 是否旋转（兼容旧版）
           * @default false
          */
         "spin": boolean;
@@ -2369,6 +2425,11 @@ export namespace Components {
          */
         "defaultValue"?: string;
         /**
+          * 空数据文本
+          * @default '暂无数据'
+         */
+        "emptyText": string;
+        /**
           * 子级缩进（px）
           * @default 16
          */
@@ -2378,6 +2439,21 @@ export namespace Components {
           * @default []
          */
         "items": string | MenuItem[];
+        /**
+          * 是否启用键盘导航
+          * @default true
+         */
+        "keyboardNavigation": boolean;
+        /**
+          * 是否显示加载状态
+          * @default false
+         */
+        "loading": boolean;
+        /**
+          * 加载文本
+          * @default '加载中...'
+         */
+        "loadingText": string;
         /**
           * 展示模式：vertical（纵向）| horizontal（横向）
           * @default 'vertical'
@@ -2398,10 +2474,35 @@ export namespace Components {
          */
         "requireTopIcon": boolean;
         /**
+          * 搜索延迟时间（毫秒）
+          * @default 300
+         */
+        "searchDelay": number;
+        /**
+          * 搜索框占位符
+          * @default '搜索菜单...'
+         */
+        "searchPlaceholder": string;
+        /**
+          * 是否启用搜索功能
+          * @default false
+         */
+        "searchable": boolean;
+        /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size": 'small' | 'medium' | 'large';
+        /**
           * 弹出子菜单的触发方式（仅在 flyout/mixed 生效；横向模式同样适用）
           * @default 'hover'
          */
         "submenuTrigger": SubmenuTrigger;
+        /**
+          * 主题颜色
+          * @default 'light'
+         */
+        "theme": 'light' | 'dark' | 'auto';
         /**
           * 纵向模式：顶层互斥展开（无论 inline 或 flyout），默认开启
           * @default true
@@ -2416,6 +2517,16 @@ export namespace Components {
           * @default 'inline'
          */
         "verticalExpand": VerticalExpand;
+        /**
+          * 虚拟滚动项高度
+          * @default 40
+         */
+        "virtualItemHeight": number;
+        /**
+          * 是否启用虚拟滚动
+          * @default false
+         */
+        "virtualScroll": boolean;
     }
     /**
      * Message 全局提示
@@ -2871,14 +2982,39 @@ export namespace Components {
          */
         "dragSmoothing"?: number;
         /**
+          * 是否启用 3D 效果
+          * @default false
+         */
+        "enable3d": boolean;
+        /**
           * 惯性摩擦 0-1（越小减速越快）
           * @default 0.92
          */
         "friction": number;
         /**
+          * 是否启用触觉反馈（需要浏览器支持 Vibration API）
+          * @default true
+         */
+        "hapticFeedback": boolean;
+        /**
+          * 触觉反馈强度（毫秒）
+          * @default 10
+         */
+        "hapticIntensity": number;
+        /**
+          * 搜索时是否高亮匹配文本
+          * @default true
+         */
+        "highlightMatch": boolean;
+        /**
           * 行高（自动根据 size 推导，亦可显式覆盖）
          */
         "itemHeight"?: number;
+        /**
+          * 键盘快捷定位是否启用（输入字母快速定位）
+          * @default true
+         */
+        "keyboardQuickJump": boolean;
         /**
           * 最大橡皮筋越界（像素）。优先级高于比例
          */
@@ -2909,6 +3045,31 @@ export namespace Components {
         "scrollToIndex": (index: number, opts?: { trigger?: "program" | "click" | "scroll" | "wheel" | "keyboard" | "touch"; animate?: boolean; silent?: boolean; }) => Promise<void>;
         "scrollToValue": (value: string, opts?: { trigger?: "program" | "click" | "scroll" | "wheel" | "keyboard" | "touch"; animate?: boolean; silent?: boolean; }) => Promise<void>;
         /**
+          * 搜索防抖延迟（毫秒）
+          * @default 300
+         */
+        "searchDebounce": number;
+        /**
+          * 是否在搜索时大小写不敏感
+          * @default true
+         */
+        "searchIgnoreCase": boolean;
+        /**
+          * 搜索框占位符
+          * @default '搜索选项...'
+         */
+        "searchPlaceholder": string;
+        /**
+          * 是否显示搜索框
+          * @default false
+         */
+        "searchable": boolean;
+        /**
+          * 是否显示渐变遮罩
+          * @default false
+         */
+        "showMask": boolean;
+        /**
           * 尺寸，影响每行高度
           * @default 'medium'
          */
@@ -2921,6 +3082,25 @@ export namespace Components {
           * 滚轮专用吸附动画时长（毫秒），未设置默认 150ms
          */
         "snapDurationWheel"?: number;
+        /**
+          * 是否启用音效
+          * @default false
+         */
+        "soundEffects": boolean;
+        /**
+          * 自定义音效 URL
+         */
+        "soundUrl"?: string;
+        /**
+          * 音效音量 (0-1)
+          * @default 0.3
+         */
+        "soundVolume": number;
+        /**
+          * 主题模式
+          * @default 'light'
+         */
+        "theme": 'light' | 'dark' | 'auto';
         /**
           * 当前值（受控）
          */
@@ -4049,15 +4229,28 @@ export namespace Components {
          */
         "active": boolean;
         /**
+          * 徽标
+         */
+        "badge"?: string | number;
+        /**
           * 是否可关闭（在标签上显示关闭按钮）
           * @default false
          */
         "closable": boolean;
         /**
+          * 销毁隐藏：在面板隐藏时销毁内容，再次显示时重新渲染
+          * @default false
+         */
+        "destroyOnHide": boolean;
+        /**
           * 禁用状态（不可被激活）
           * @default false
          */
         "disabled": boolean;
+        /**
+          * 图标
+         */
+        "icon"?: string;
         /**
           * 标签显示文本
          */
@@ -4068,39 +4261,82 @@ export namespace Components {
          */
         "lazy": boolean;
         /**
+          * 加载中状态
+          * @default false
+         */
+        "loading": boolean;
+        /**
           * 面板唯一标识（用于匹配激活项）
          */
         "name": string;
+        /**
+          * 过渡动画类型
+          * @default 'fade'
+         */
+        "transition": 'fade' | 'slide' | 'zoom' | 'none';
+        /**
+          * 过渡动画时长（毫秒）
+          * @default 300
+         */
+        "transitionDuration": number;
     }
     /**
      * Tabs 选项卡组件
      * - 通过水平或垂直的标签页切换展示内容
      */
     interface LdesignTabs {
+        "addTab": (options: { name: string; label: string; icon?: string; closable?: boolean; }) => Promise<HTMLLdesignTabPanelElement>;
         /**
           * 是否显示新增按钮
           * @default false
          */
         "addable": boolean;
         /**
+          * 动画过渡时长（毫秒）
+          * @default 300
+         */
+        "animationDuration": number;
+        /**
           * 默认激活的标签（非受控）
          */
         "defaultValue"?: string;
+        /**
+          * 是否可拖拽排序
+          * @default false
+         */
+        "draggable": boolean;
         /**
           * 选项卡位置
           * @default 'top'
          */
         "placement": TabsPlacement;
+        "removeTab": (name: string) => Promise<void>;
+        /**
+          * 是否自动适应响应式布局
+          * @default true
+         */
+        "responsive": boolean;
+        "selectTab": (name: string) => Promise<void>;
         /**
           * 尺寸
           * @default 'medium'
          */
         "size": Size;
         /**
+          * 是否启用触摸滑动切换
+          * @default false
+         */
+        "swipeable": boolean;
+        /**
           * 选项卡外观类型
           * @default 'line'
          */
         "type": TabsType;
+        /**
+          * 是否隐藏超出部分的标签页（使用更多下拉菜单）
+          * @default false
+         */
+        "useDropdown": boolean;
         /**
           * 当前激活的标签（受控）
          */
@@ -4633,6 +4869,10 @@ export interface LdesignSwitchCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignSwitchElement;
 }
+export interface LdesignTabPanelCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignTabPanelElement;
+}
 export interface LdesignTabsCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignTabsElement;
@@ -4764,7 +5004,8 @@ declare global {
     }
     /**
      * Button 按钮组件
-     * 用于触发操作或导航
+     * 基于 Ant Design 按钮组件架构重构
+     * 提供多种类型、尺寸、状态的按钮
      */
     interface HTMLLdesignButtonElement extends Components.LdesignButton, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignButtonElementEventMap>(type: K, listener: (this: HTMLLdesignButtonElement, ev: LdesignButtonCustomEvent<HTMLLdesignButtonElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -5788,11 +6029,23 @@ declare global {
         prototype: HTMLLdesignSwitchElement;
         new (): HTMLLdesignSwitchElement;
     };
+    interface HTMLLdesignTabPanelElementEventMap {
+        "ldesignPanelLoad": void;
+        "ldesignPanelDestroy": void;
+    }
     /**
      * TabPanel 选项卡面板
      * - 由 <ldesign-tabs> 管理激活状态
      */
     interface HTMLLdesignTabPanelElement extends Components.LdesignTabPanel, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignTabPanelElementEventMap>(type: K, listener: (this: HTMLLdesignTabPanelElement, ev: LdesignTabPanelCustomEvent<HTMLLdesignTabPanelElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignTabPanelElementEventMap>(type: K, listener: (this: HTMLLdesignTabPanelElement, ev: LdesignTabPanelCustomEvent<HTMLLdesignTabPanelElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
     var HTMLLdesignTabPanelElement: {
         prototype: HTMLLdesignTabPanelElement;
@@ -5802,6 +6055,7 @@ declare global {
         "ldesignChange": string;
         "ldesignAdd": void;
         "ldesignRemove": { name: string };
+        "ldesignReorder": { items: TabMeta[] };
     }
     /**
      * Tabs 选项卡组件
@@ -5847,7 +6101,7 @@ declare global {
         "ldesignVisibleChange": boolean;
         "ldesignOpen": void;
         "ldesignClose": void;
-        "ldesignPick": { value: string; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' } };
+        "ldesignPick": { value: string; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' | 'clear' | 'preset' | 'touch' | 'wheel' } };
     }
     interface HTMLLdesignTimePickerElement extends Components.LdesignTimePicker, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignTimePickerElementEventMap>(type: K, listener: (this: HTMLLdesignTimePickerElement, ev: LdesignTimePickerCustomEvent<HTMLLdesignTimePickerElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -6277,21 +6531,22 @@ declare namespace LocalJSX {
     }
     /**
      * Button 按钮组件
-     * 用于触发操作或导航
+     * 基于 Ant Design 按钮组件架构重构
+     * 提供多种类型、尺寸、状态的按钮
      */
     interface LdesignButton {
+        /**
+          * 是否自动插入空格（仅在子节点为两个中文字符时生效）
+          * @default true
+         */
+        "autoInsertSpace"?: boolean;
         /**
           * 是否为块级按钮
           * @default false
          */
         "block"?: boolean;
         /**
-          * 语义颜色（用于 outline/dashed/text/link/ghost）
-          * @default 'primary'
-         */
-        "color"?: ButtonColor;
-        /**
-          * 危险态（AntD 风格）
+          * 是否为危险按钮
           * @default false
          */
         "danger"?: boolean;
@@ -6301,46 +6556,51 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
-          * 幽灵按钮（一般用于深色背景）
+          * 是否为幽灵按钮
           * @default false
          */
         "ghost"?: boolean;
         /**
-          * 对齐 AntD：htmlType 优先；nativeType 兼容
+          * 点击跳转的地址（将按钮作为 a 标签）
          */
-        "htmlType"?: NativeButtonType;
+        "href"?: string;
+        /**
+          * 原生按钮类型
+          * @default 'button'
+         */
+        "htmlType"?: ButtonHTMLType;
         /**
           * 图标名称
          */
         "icon"?: string;
         /**
-          * 图标位置：left | right
-          * @default 'left'
+          * 图标位置
+          * @default 'start'
          */
         "iconPosition"?: ButtonIconPosition;
         /**
           * 是否加载中
           * @default false
          */
-        "loading"?: boolean;
-        /**
-          * @default 'button'
-         */
-        "nativeType"?: NativeButtonType;
+        "loading"?: boolean | { delay?: number };
         /**
           * 点击事件
          */
         "onLdesignClick"?: (event: LdesignButtonCustomEvent<MouseEvent>) => void;
         /**
           * 按钮形状
-          * @default 'rectangle'
+          * @default 'default'
          */
         "shape"?: ButtonShape;
         /**
           * 按钮尺寸
           * @default 'middle'
          */
-        "size"?: Size;
+        "size"?: ButtonSize;
+        /**
+          * 相当于 a 链接的 target 属性
+         */
+        "target"?: string;
         /**
           * 按钮类型
           * @default 'default'
@@ -6676,11 +6936,6 @@ declare namespace LocalJSX {
          */
         "clockwise"?: boolean;
         /**
-          * 是否启用拖动旋转
-          * @default true
-         */
-        "draggableEnabled"?: boolean;
-        /**
           * 椭圆端点轴：auto 根据宽高选择；x 左右为端点；y 上下为端点
           * @default 'auto'
          */
@@ -6690,6 +6945,11 @@ declare namespace LocalJSX {
           * @default 'angle'
          */
         "ellipseSpacing"?: 'arc' | 'angle';
+        /**
+          * 是否启用拖动旋转
+          * @default true
+         */
+        "enableDrag"?: boolean;
         /**
           * 惯性摩擦系数（0-1，越小惯性越大）
           * @default 0.95
@@ -7694,20 +7954,60 @@ declare namespace LocalJSX {
      */
     interface LdesignIcon {
         /**
+          * 动画类型
+          * @default 'none'
+         */
+        "animation"?: 'spin' | 'pulse' | 'bounce' | 'flash' | 'shake' | 'none';
+        /**
           * 图标颜色
          */
         "color"?: string;
         /**
+          * 自定义SVG内容
+         */
+        "customSvg"?: string;
+        /**
+          * 是否为装饰性图标（无语义）
+          * @default false
+         */
+        "decorative"?: boolean;
+        /**
+          * 翻转方向
+         */
+        "flip"?: 'horizontal' | 'vertical' | 'both';
+        /**
+          * 是否使用渐变色
+          * @default false
+         */
+        "gradient"?: boolean;
+        /**
+          * 渐变色数组
+         */
+        "gradientColors"?: string | string[];
+        /**
+          * 渐变方向
+          * @default 'horizontal'
+         */
+        "gradientDirection"?: 'horizontal' | 'vertical' | 'diagonal';
+        /**
+          * 无障碍标签
+         */
+        "label"?: string;
+        /**
           * 图标名称
          */
         "name": string;
+        /**
+          * 旋转角度
+         */
+        "rotate"?: number;
         /**
           * 图标尺寸
           * @default 'medium'
          */
         "size"?: Size | number;
         /**
-          * 是否旋转
+          * 是否旋转（兼容旧版）
           * @default false
          */
         "spin"?: boolean;
@@ -8441,6 +8741,11 @@ declare namespace LocalJSX {
          */
         "defaultValue"?: string;
         /**
+          * 空数据文本
+          * @default '暂无数据'
+         */
+        "emptyText"?: string;
+        /**
           * 子级缩进（px）
           * @default 16
          */
@@ -8450,6 +8755,21 @@ declare namespace LocalJSX {
           * @default []
          */
         "items"?: string | MenuItem[];
+        /**
+          * 是否启用键盘导航
+          * @default true
+         */
+        "keyboardNavigation"?: boolean;
+        /**
+          * 是否显示加载状态
+          * @default false
+         */
+        "loading"?: boolean;
+        /**
+          * 加载文本
+          * @default '加载中...'
+         */
+        "loadingText"?: string;
         /**
           * 展示模式：vertical（纵向）| horizontal（横向）
           * @default 'vertical'
@@ -8482,10 +8802,35 @@ declare namespace LocalJSX {
          */
         "requireTopIcon"?: boolean;
         /**
+          * 搜索延迟时间（毫秒）
+          * @default 300
+         */
+        "searchDelay"?: number;
+        /**
+          * 搜索框占位符
+          * @default '搜索菜单...'
+         */
+        "searchPlaceholder"?: string;
+        /**
+          * 是否启用搜索功能
+          * @default false
+         */
+        "searchable"?: boolean;
+        /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size"?: 'small' | 'medium' | 'large';
+        /**
           * 弹出子菜单的触发方式（仅在 flyout/mixed 生效；横向模式同样适用）
           * @default 'hover'
          */
         "submenuTrigger"?: SubmenuTrigger;
+        /**
+          * 主题颜色
+          * @default 'light'
+         */
+        "theme"?: 'light' | 'dark' | 'auto';
         /**
           * 纵向模式：顶层互斥展开（无论 inline 或 flyout），默认开启
           * @default true
@@ -8500,6 +8845,16 @@ declare namespace LocalJSX {
           * @default 'inline'
          */
         "verticalExpand"?: VerticalExpand;
+        /**
+          * 虚拟滚动项高度
+          * @default 40
+         */
+        "virtualItemHeight"?: number;
+        /**
+          * 是否启用虚拟滚动
+          * @default false
+         */
+        "virtualScroll"?: boolean;
     }
     /**
      * Message 全局提示
@@ -8951,14 +9306,39 @@ declare namespace LocalJSX {
          */
         "dragSmoothing"?: number;
         /**
+          * 是否启用 3D 效果
+          * @default false
+         */
+        "enable3d"?: boolean;
+        /**
           * 惯性摩擦 0-1（越小减速越快）
           * @default 0.92
          */
         "friction"?: number;
         /**
+          * 是否启用触觉反馈（需要浏览器支持 Vibration API）
+          * @default true
+         */
+        "hapticFeedback"?: boolean;
+        /**
+          * 触觉反馈强度（毫秒）
+          * @default 10
+         */
+        "hapticIntensity"?: number;
+        /**
+          * 搜索时是否高亮匹配文本
+          * @default true
+         */
+        "highlightMatch"?: boolean;
+        /**
           * 行高（自动根据 size 推导，亦可显式覆盖）
          */
         "itemHeight"?: number;
+        /**
+          * 键盘快捷定位是否启用（输入字母快速定位）
+          * @default true
+         */
+        "keyboardQuickJump"?: boolean;
         /**
           * 最大橡皮筋越界（像素）。优先级高于比例
          */
@@ -8995,6 +9375,31 @@ declare namespace LocalJSX {
          */
         "resistance"?: number;
         /**
+          * 搜索防抖延迟（毫秒）
+          * @default 300
+         */
+        "searchDebounce"?: number;
+        /**
+          * 是否在搜索时大小写不敏感
+          * @default true
+         */
+        "searchIgnoreCase"?: boolean;
+        /**
+          * 搜索框占位符
+          * @default '搜索选项...'
+         */
+        "searchPlaceholder"?: string;
+        /**
+          * 是否显示搜索框
+          * @default false
+         */
+        "searchable"?: boolean;
+        /**
+          * 是否显示渐变遮罩
+          * @default false
+         */
+        "showMask"?: boolean;
+        /**
           * 尺寸，影响每行高度
           * @default 'medium'
          */
@@ -9007,6 +9412,25 @@ declare namespace LocalJSX {
           * 滚轮专用吸附动画时长（毫秒），未设置默认 150ms
          */
         "snapDurationWheel"?: number;
+        /**
+          * 是否启用音效
+          * @default false
+         */
+        "soundEffects"?: boolean;
+        /**
+          * 自定义音效 URL
+         */
+        "soundUrl"?: string;
+        /**
+          * 音效音量 (0-1)
+          * @default 0.3
+         */
+        "soundVolume"?: number;
+        /**
+          * 主题模式
+          * @default 'light'
+         */
+        "theme"?: 'light' | 'dark' | 'auto';
         /**
           * 当前值（受控）
          */
@@ -10188,15 +10612,28 @@ declare namespace LocalJSX {
          */
         "active"?: boolean;
         /**
+          * 徽标
+         */
+        "badge"?: string | number;
+        /**
           * 是否可关闭（在标签上显示关闭按钮）
           * @default false
          */
         "closable"?: boolean;
         /**
+          * 销毁隐藏：在面板隐藏时销毁内容，再次显示时重新渲染
+          * @default false
+         */
+        "destroyOnHide"?: boolean;
+        /**
           * 禁用状态（不可被激活）
           * @default false
          */
         "disabled"?: boolean;
+        /**
+          * 图标
+         */
+        "icon"?: string;
         /**
           * 标签显示文本
          */
@@ -10207,9 +10644,32 @@ declare namespace LocalJSX {
          */
         "lazy"?: boolean;
         /**
+          * 加载中状态
+          * @default false
+         */
+        "loading"?: boolean;
+        /**
           * 面板唯一标识（用于匹配激活项）
          */
         "name": string;
+        /**
+          * 面板销毁事件
+         */
+        "onLdesignPanelDestroy"?: (event: LdesignTabPanelCustomEvent<void>) => void;
+        /**
+          * 面板加载完成事件
+         */
+        "onLdesignPanelLoad"?: (event: LdesignTabPanelCustomEvent<void>) => void;
+        /**
+          * 过渡动画类型
+          * @default 'fade'
+         */
+        "transition"?: 'fade' | 'slide' | 'zoom' | 'none';
+        /**
+          * 过渡动画时长（毫秒）
+          * @default 300
+         */
+        "transitionDuration"?: number;
     }
     /**
      * Tabs 选项卡组件
@@ -10222,9 +10682,19 @@ declare namespace LocalJSX {
          */
         "addable"?: boolean;
         /**
+          * 动画过渡时长（毫秒）
+          * @default 300
+         */
+        "animationDuration"?: number;
+        /**
           * 默认激活的标签（非受控）
          */
         "defaultValue"?: string;
+        /**
+          * 是否可拖拽排序
+          * @default false
+         */
+        "draggable"?: boolean;
         /**
           * 点击新增按钮
          */
@@ -10238,20 +10708,39 @@ declare namespace LocalJSX {
          */
         "onLdesignRemove"?: (event: LdesignTabsCustomEvent<{ name: string }>) => void;
         /**
+          * 拖拽排序
+         */
+        "onLdesignReorder"?: (event: LdesignTabsCustomEvent<{ items: TabMeta[] }>) => void;
+        /**
           * 选项卡位置
           * @default 'top'
          */
         "placement"?: TabsPlacement;
+        /**
+          * 是否自动适应响应式布局
+          * @default true
+         */
+        "responsive"?: boolean;
         /**
           * 尺寸
           * @default 'medium'
          */
         "size"?: Size;
         /**
+          * 是否启用触摸滑动切换
+          * @default false
+         */
+        "swipeable"?: boolean;
+        /**
           * 选项卡外观类型
           * @default 'line'
          */
         "type"?: TabsType;
+        /**
+          * 是否隐藏超出部分的标签页（使用更多下拉菜单）
+          * @default false
+         */
+        "useDropdown"?: boolean;
         /**
           * 当前激活的标签（受控）
          */
@@ -10339,7 +10828,7 @@ declare namespace LocalJSX {
         "onLdesignChange"?: (event: LdesignTimePickerCustomEvent<string | undefined>) => void;
         "onLdesignClose"?: (event: LdesignTimePickerCustomEvent<void>) => void;
         "onLdesignOpen"?: (event: LdesignTimePickerCustomEvent<void>) => void;
-        "onLdesignPick"?: (event: LdesignTimePickerCustomEvent<{ value: string; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' } }>) => void;
+        "onLdesignPick"?: (event: LdesignTimePickerCustomEvent<{ value: string; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' | 'clear' | 'preset' | 'touch' | 'wheel' } }>) => void;
         "onLdesignVisibleChange"?: (event: LdesignTimePickerCustomEvent<boolean>) => void;
         /**
           * @default '24h'
@@ -10752,7 +11241,8 @@ declare module "@stencil/core" {
             "ldesign-backtop": LocalJSX.LdesignBacktop & JSXBase.HTMLAttributes<HTMLLdesignBacktopElement>;
             /**
              * Button 按钮组件
-             * 用于触发操作或导航
+             * 基于 Ant Design 按钮组件架构重构
+             * 提供多种类型、尺寸、状态的按钮
              */
             "ldesign-button": LocalJSX.LdesignButton & JSXBase.HTMLAttributes<HTMLLdesignButtonElement>;
             "ldesign-calendar": LocalJSX.LdesignCalendar & JSXBase.HTMLAttributes<HTMLLdesignCalendarElement>;

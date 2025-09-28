@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icon 图标列表测试</title>
+  <script type="module">
+    // 导入 Web Components
+    import '/dist/ldesign-webcomponent/ldesign-webcomponent.esm.js';
+    
+    // 导入图标列表
+    import { allLucideIcons } from '/src/components/icon/all-lucide-icons.ts';
+    
+    window.allLucideIcons = allLucideIcons;
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .search-container {
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .search-input {
+      flex: 1;
+      max-width: 400px;
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .count {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .icons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      max-height: 600px;
+      overflow-y: auto;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    
+    .icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 15px 8px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e8e8e8;
+      cursor: pointer;
+      transition: all 0.2s;
+      height: 100px;
+    }
+    
+    .icon-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-color: #667eea;
+      background: #f8f9ff;
+    }
+    
+    .icon-item:active {
+      transform: scale(0.95);
+    }
+    
+    .icon-wrapper {
+      margin-bottom: 8px;
+      color: #333;
+    }
+    
+    .icon-item:hover .icon-wrapper {
+      color: #667eea;
+    }
+    
+    .icon-name {
+      font-size: 11px;
+      color: #666;
+      text-align: center;
+      word-break: break-all;
+      line-height: 1.2;
+      max-width: 100%;
+      user-select: none;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 12px 20px;
+      background: #667eea;
+      color: white;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s;
+      pointer-events: none;
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* 滚动条样式 */
+    .icons-grid::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .icons-grid::-webkit-scrollbar-track {
+      background: #f0f0f0;
+      border-radius: 4px;
+    }
+    
+    .icons-grid::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 4px;
+    }
+    
+    .icons-grid::-webkit-scrollbar-thumb:hover {
+      background: #aaa;
+    }
+    
+    /* 加载状态 */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    
+    /* CSS变量 */
+    :root {
+      --ls-icon-size-small: 20px;
+      --ls-icon-size-medium: 24px;
+      --ls-icon-size-large: 32px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Lucide 图标列表</h1>
+    <p class="subtitle">点击图标可复制名称到剪贴板</p>
+    
+    <div class="search-container">
+      <input 
+        type="text" 
+        class="search-input" 
+        id="searchInput"
+        placeholder="搜索图标名称..."
+      />
+      <span class="count" id="count">加载中...</span>
+    </div>
+    
+    <div class="icons-grid" id="iconsGrid">
+      <div class="loading">正在加载图标...</div>
+    </div>
+  </div>
+  
+  <div class="toast" id="toast"></div>
+  
+  <script>
+    let allIcons = [];
+    let filteredIcons = [];
+    
+    // 等待组件和数据加载
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 等待一下确保模块加载完成
+      setTimeout(() => {
+        if (window.allLucideIcons) {
+          allIcons = window.allLucideIcons;
+          filteredIcons = allIcons;
+          renderIcons();
+          updateCount();
+          
+          // 设置搜索功能
+          const searchInput = document.getElementById('searchInput');
+          searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (query) {
+              filteredIcons = allIcons.filter(icon => 
+                icon.toLowerCase().includes(query)
+              );
+            } else {
+              filteredIcons = allIcons;
+            }
+            renderIcons();
+            updateCount();
+          });
+        } else {
+          console.error('图标列表未加载');
+          document.getElementById('iconsGrid').innerHTML = 
+            '<div class="loading">图标列表加载失败</div>';
+        }
+      }, 500);
+    });
+    
+    function renderIcons() {
+      const grid = document.getElementById('iconsGrid');
+      
+      if (filteredIcons.length === 0) {
+        grid.innerHTML = '<div class="loading">没有找到匹配的图标</div>';
+        return;
+      }
+      
+      grid.innerHTML = filteredIcons.map(icon => `
+        <div class="icon-item" onclick="copyIconName('${icon}')" title="点击复制: ${icon}">
+          <div class="icon-wrapper">
+            <ldesign-icon name="${icon}" size="24"></ldesign-icon>
+          </div>
+          <div class="icon-name">${icon}</div>
+        </div>
+      `).join('');
+    }
+    
+    function updateCount() {
+      const count = document.getElementById('count');
+      count.textContent = `共 ${allIcons.length} 个图标，当前显示 ${filteredIcons.length} 个`;
+    }
+    
+    function copyIconName(name) {
+      // 复制到剪贴板
+      navigator.clipboard.writeText(name).then(() => {
+        showToast(`已复制: ${name}`);
+      }).catch(() => {
+        // 降级方案
+        const textarea = document.createElement('textarea');
+        textarea.value = name;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast(`已复制: ${name}`);
+      });
+    }
+    
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

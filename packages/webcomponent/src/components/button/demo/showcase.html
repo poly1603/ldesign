@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Button - 现代化按钮组件展示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 50px;
+    }
+    
+    .header h1 {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .header p {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+    
+    .demo-section {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .demo-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #1a1a1a;
+    }
+    
+    .demo-description {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    
+    .demo-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .demo-row:last-child {
+      margin-bottom: 0;
+    }
+    
+    .demo-label {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    
+    .dark-section {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: white;
+    }
+    
+    .dark-section .demo-title {
+      color: white;
+    }
+    
+    .dark-section .demo-description {
+      color: rgba(255,255,255,0.7);
+    }
+    
+    .code-block {
+      background: #f6f8fa;
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 13px;
+      color: #24292e;
+      margin-top: 16px;
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+    
+    .feature-card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .feature-card h3 {
+      color: white;
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+    
+    .feature-card p {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎨 LDesign Button</h1>
+      <p>现代化、美观、功能丰富的 Web Component 按钮组件</p>
+    </div>
+
+    <!-- 基础按钮类型 -->
+    <div class="demo-section">
+      <h2 class="demo-title">按钮类型</h2>
+      <p class="demo-description">提供五种基础按钮类型，满足不同场景需求</p>
+      
+      <div class="demo-row">
+        <ldesign-button type="primary">主要按钮</ldesign-button>
+        <ldesign-button>默认按钮</ldesign-button>
+        <ldesign-button type="dashed">虚线按钮</ldesign-button>
+        <ldesign-button type="text">文本按钮</ldesign-button>
+        <ldesign-button type="link">链接按钮</ldesign-button>
+      </div>
+    </div>
+
+    <!-- 按钮尺寸 -->
+    <div class="demo-section">
+      <h2 class="demo-title">尺寸规格</h2>
+      <p class="demo-description">三种尺寸适配不同的使用场景</p>
+      
+      <div>
+        <div class="demo-label">大尺寸</div>
+        <div class="demo-row">
+          <ldesign-button type="primary" size="large">Large Primary</ldesign-button>
+          <ldesign-button size="large">Large Default</ldesign-button>
+          <ldesign-button type="dashed" size="large">Large Dashed</ldesign-button>
+        </div>
+      </div>
+      
+      <div>
+        <div class="demo-label">中尺寸（默认）</div>
+        <div class="demo-row">
+          <ldesign-button type="primary" size="middle">Middle Primary</ldesign-button>
+          <ldesign-button size="middle">Middle Default</ldesign-button>
+          <ldesign-button type="dashed" size="middle">Middle Dashed</ldesign-button>
+        </div>
+      </div>
+      
+      <div>
+        <div class="demo-label">小尺寸</div>
+        <div class="demo-row">
+          <ldesign-button type="primary" size="small">Small Primary</ldesign-button>
+          <ldesign-button size="small">Small Default</ldesign-button>
+          <ldesign-button type="dashed" size="small">Small Dashed</ldesign-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 图标按钮 -->
+    <div class="demo-section">
+      <h2 class="demo-title">图标按钮</h2>
+      <p class="demo-description">支持图标与文字的灵活组合</p>
+      
+      <div>
+        <div class="demo-label">带文字的图标按钮</div>
+        <div class="demo-row">
+          <ldesign-button type="primary" icon="search">搜索</ldesign-button>
+          <ldesign-button type="primary" icon="download">下载</ldesign-button>
+          <ldesign-button icon="refresh">刷新</ldesign-button>
+          <ldesign-button type="primary" icon="arrow-right" icon-position="end">下一步</ldesign-button>
+        </div>
+      </div>
+      
+      <div>
+        <div class="demo-label">纯图标按钮</div>
+        <div class="demo-row">
+          <ldesign-button type="primary" shape="circle" icon="search"></ldesign-button>
+          <ldesign-button type="primary" shape="circle" icon="plus"></ldesign-button>
+          <ldesign-button shape="circle" icon="settings"></ldesign-button>
+          <ldesign-button type="text" icon="more"></ldesign-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 按钮形状 -->
+    <div class="demo-section">
+      <h2 class="demo-title">按钮形状</h2>
+      <p class="demo-description">提供圆形和圆角等形状变体</p>
+      
+      <div class="demo-row">
+        <ldesign-button type="primary">默认形状</ldesign-button>
+        <ldesign-button type="primary" shape="round">圆角按钮</ldesign-button>
+        <ldesign-button type="primary" shape="circle" icon="heart"></ldesign-button>
+        <ldesign-button shape="round">圆角默认</ldesign-button>
+        <ldesign-button shape="circle" icon="star"></ldesign-button>
+      </div>
+    </div>
+
+    <!-- 状态演示 -->
+    <div class="demo-section">
+      <h2 class="demo-title">按钮状态</h2>
+      <p class="demo-description">不同状态下的按钮表现</p>
+      
+      <div>
+        <div class="demo-label">加载状态</div>
+        <div class="demo-row">
+          <ldesign-button type="primary" loading="true">加载中</ldesign-button>
+          <ldesign-button loading="true">Loading</ldesign-button>
+          <ldesign-button type="primary" loading="true" icon="cloud">保存中</ldesign-button>
+        </div>
+      </div>
+      
+      <div>
+        <div class="demo-label">禁用状态</div>
+        <div class="demo-row">
+          <ldesign-button type="primary" disabled="true">禁用主按钮</ldesign-button>
+          <ldesign-button disabled="true">禁用默认</ldesign-button>
+          <ldesign-button type="dashed" disabled="true">禁用虚线</ldesign-button>
+          <ldesign-button type="text" disabled="true">禁用文本</ldesign-button>
+          <ldesign-button type="link" disabled="true">禁用链接</ldesign-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 危险按钮 -->
+    <div class="demo-section">
+      <h2 class="demo-title">危险操作</h2>
+      <p class="demo-description">用于需要二次确认的危险操作</p>
+      
+      <div class="demo-row">
+        <ldesign-button type="primary" danger="true">删除</ldesign-button>
+        <ldesign-button danger="true">移除</ldesign-button>
+        <ldesign-button type="dashed" danger="true">清空</ldesign-button>
+        <ldesign-button type="text" danger="true">取消订阅</ldesign-button>
+        <ldesign-button type="link" danger="true">永久删除</ldesign-button>
+      </div>
+    </div>
+
+    <!-- 幽灵按钮（深色背景） -->
+    <div class="demo-section dark-section">
+      <h2 class="demo-title">幽灵按钮</h2>
+      <p class="demo-description">适用于深色背景的透明按钮</p>
+      
+      <div class="demo-row">
+        <ldesign-button type="primary" ghost="true">Primary Ghost</ldesign-button>
+        <ldesign-button ghost="true">Default Ghost</ldesign-button>
+        <ldesign-button type="dashed" ghost="true">Dashed Ghost</ldesign-button>
+        <ldesign-button type="primary" danger="true" ghost="true">Danger Ghost</ldesign-button>
+      </div>
+    </div>
+
+    <!-- 块级按钮 -->
+    <div class="demo-section">
+      <h2 class="demo-title">块级按钮</h2>
+      <p class="demo-description">适配父容器宽度的块级按钮</p>
+      
+      <div style="max-width: 500px;">
+        <div class="demo-row" style="flex-direction: column; align-items: stretch;">
+          <ldesign-button type="primary" block="true">确认提交</ldesign-button>
+          <ldesign-button block="true">返回上一步</ldesign-button>
+          <ldesign-button type="dashed" block="true">添加新项目</ldesign-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 组合示例 -->
+    <div class="demo-section">
+      <h2 class="demo-title">实际应用场景</h2>
+      <p class="demo-description">按钮在实际场景中的应用示例</p>
+      
+      <div style="padding: 20px; background: #f5f5f5; border-radius: 8px;">
+        <div style="margin-bottom: 20px;">
+          <h3 style="margin-bottom: 16px; color: #333;">表单操作</h3>
+          <div class="demo-row">
+            <ldesign-button type="primary" icon="check">提交</ldesign-button>
+            <ldesign-button>保存草稿</ldesign-button>
+            <ldesign-button type="text">取消</ldesign-button>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h3 style="margin-bottom: 16px; color: #333;">文件操作</h3>
+          <div class="demo-row">
+            <ldesign-button type="primary" icon="upload">上传文件</ldesign-button>
+            <ldesign-button icon="download">下载模板</ldesign-button>
+            <ldesign-button type="text" danger="true" icon="delete">删除文件</ldesign-button>
+          </div>
+        </div>
+        
+        <div>
+          <h3 style="margin-bottom: 16px; color: #333;">分页导航</h3>
+          <div class="demo-row">
+            <ldesign-button icon="arrow-left" icon-position="start">上一页</ldesign-button>
+            <ldesign-button type="primary">1</ldesign-button>
+            <ldesign-button>2</ldesign-button>
+            <ldesign-button>3</ldesign-button>
+            <ldesign-button>...</ldesign-button>
+            <ldesign-button>10</ldesign-button>
+            <ldesign-button icon="arrow-right" icon-position="end">下一页</ldesign-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入组件 -->
+  <script type="module" src="/build/ldesign.esm.js"></script>
+  
+  <!-- 交互示例 -->
+  <script>
+    // 等待组件加载完成
+    document.addEventListener('DOMContentLoaded', () => {
+      // 添加点击事件示例
+      document.querySelectorAll('ldesign-button').forEach(button => {
+        button.addEventListener('ldesignClick', (e) => {
+          console.log('Button clicked:', e.target);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

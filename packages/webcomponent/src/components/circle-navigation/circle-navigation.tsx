@@ -47,7 +47,7 @@ export class LdesignCircleNavigation {
   @Prop() perspectiveOrigin?: string;
 
   /** 是否启用拖动旋转 */
-  @Prop() draggable: boolean = true;
+  @Prop() enableDrag: boolean = true;
   /** 是否启用触摸手势旋转 */
   @Prop() touchRotate: boolean = true;
   /** 旋转灵敏度（度/像素） */
@@ -123,7 +123,7 @@ export class LdesignCircleNavigation {
     this.schedulePosition();
 
     // 添加拖动事件监听
-    if (this.draggable && this.containerEl) {
+    if (this.enableDrag && this.containerEl) {
       this.containerEl.addEventListener('mousedown', this.handleMouseDown);
     }
     if (this.touchRotate && this.containerEl) {
@@ -188,7 +188,7 @@ export class LdesignCircleNavigation {
 
   // Mouse event handlers
   private handleMouseDown = (e: MouseEvent) => {
-    if (!this.draggable || !this.containerEl) return;
+    if (!this.enableDrag || !this.containerEl) return;
     e.preventDefault();
     
     const rect = this.containerEl.getBoundingClientRect();
@@ -613,7 +613,7 @@ export class LdesignCircleNavigation {
   render() {
     const classes = {
       'ldesign-circle-navigation': true,
-      'draggable': this.draggable || this.touchRotate,
+      'draggable': this.enableDrag || this.touchRotate,
       'dragging': this.isDragging
     };
     

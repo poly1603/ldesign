@@ -45,27 +45,62 @@
 
 ## Overview
 
-Icon 图标组件 - 基于 Lucide 图标库，支持自定义 SVG、渐变色、多种动画效果
+Icon 图标组件
+基于 Lucide 图标库
 
 ## Properties
 
-| Property            | Attribute        | Description | Type                                                   | Default     |
-| ------------------- | ---------------- | ----------- | ------------------------------------------------------ | ----------- |
-| `name` _(required)_ | `name`           | 图标名称        | `string`                                               | `undefined` |
-| `size`              | `size`           | 图标尺寸        | `"large" \| "medium" \| "middle" \| "small" \| number` | `'medium'`  |
-| `color`             | `color`          | 图标颜色        | `string`                                               | `undefined` |
-| `animation`         | `animation`      | 动画效果        | `"none" \| "spin" \| "pulse" \| "bounce" \| "flash" \| "shake"` | `'none'` |
-| `spin`              | `spin`           | 是否旋转（兼容旧版） | `boolean`                                              | `false`     |
-| `rotate`            | `rotate`         | 旋转角度        | `0 \| 45 \| 90 \| 135 \| 180 \| 225 \| 270 \| 315`     | `0`         |
-| `flip`              | `flip`           | 翻转方向        | `"none" \| "horizontal" \| "vertical" \| "both"`      | `'none'`    |
-| `strokeWidth`       | `stroke-width`   | 描边宽度        | `number`                                               | `2`         |
-| `gradient`          | `gradient`       | 是否使用渐变色    | `boolean`                                              | `false`     |
-| `gradientColors`    | `gradient-colors`| 渐变色配置      | `[string, string]`                                     | `['#4f46e5', '#7c3aed']` |
-| `customSvg`         | `custom-svg`     | 自定义 SVG 内容 | `string \| CustomSvgConfig`                            | `undefined` |
-| `disabled`          | `disabled`       | 是否禁用交互     | `boolean`                                              | `false`     |
-| `ariaLabel`         | `aria-label`     | 无障碍标签      | `string`                                               | `undefined` |
-| `showLoading`       | `show-loading`   | 是否显示加载状态  | `boolean`                                              | `true`      |
-| `loadTimeout`       | `load-timeout`   | 加载超时时间(ms) | `number`                                               | `5000`      |
+| Property            | Attribute            | Description   | Type                                                            | Default        |
+| ------------------- | -------------------- | ------------- | --------------------------------------------------------------- | -------------- |
+| `animation`         | `animation`          | 动画类型          | `"bounce" \| "flash" \| "none" \| "pulse" \| "shake" \| "spin"` | `'none'`       |
+| `color`             | `color`              | 图标颜色          | `string`                                                        | `undefined`    |
+| `customSvg`         | `custom-svg`         | 自定义SVG内容      | `string`                                                        | `undefined`    |
+| `decorative`        | `decorative`         | 是否为装饰性图标（无语义） | `boolean`                                                       | `false`        |
+| `flip`              | `flip`               | 翻转方向          | `"both" \| "horizontal" \| "vertical"`                          | `undefined`    |
+| `gradient`          | `gradient`           | 是否使用渐变色       | `boolean`                                                       | `false`        |
+| `gradientColors`    | `gradient-colors`    | 渐变色数组         | `string \| string[]`                                            | `undefined`    |
+| `gradientDirection` | `gradient-direction` | 渐变方向          | `"diagonal" \| "horizontal" \| "vertical"`                      | `'horizontal'` |
+| `label`             | `label`              | 无障碍标签         | `string`                                                        | `undefined`    |
+| `name` _(required)_ | `name`               | 图标名称          | `string`                                                        | `undefined`    |
+| `rotate`            | `rotate`             | 旋转角度          | `number`                                                        | `undefined`    |
+| `size`              | `size`               | 图标尺寸          | `"large" \| "medium" \| "middle" \| "small" \| number`          | `'medium'`     |
+| `spin`              | `spin`               | 是否旋转（兼容旧版）    | `boolean`                                                       | `false`        |
+| `strokeWidth`       | `stroke-width`       | 描边宽度          | `number`                                                        | `2`            |
+
+
+## Methods
+
+### `preloadIcons(iconNames: string[]) => Promise<void>`
+
+预加载图标（公开方法）
+
+#### Parameters
+
+| Name        | Type       | Description |
+| ----------- | ---------- | ----------- |
+| `iconNames` | `string[]` |             |
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `searchIcons(keyword: string) => Promise<string[]>`
+
+搜索图标（公开方法）
+
+#### Parameters
+
+| Name      | Type     | Description |
+| --------- | -------- | ----------- |
+| `keyword` | `string` |             |
+
+#### Returns
+
+Type: `Promise<string[]>`
+
+
 
 
 ## Dependencies
@@ -140,46 +175,6 @@ graph TD;
   ldesign-tree --> ldesign-icon
   style ldesign-icon fill:#f9f,stroke:#333,stroke-width:4px
 ```
-
-----------------------------------------------
-
-## Events
-
-| Event       | Description      | Type                                              |
-| ----------- | ---------------- | ------------------------------------------------- |
-| `iconClick` | 点击图标时触发      | `CustomEvent<MouseEvent>`                        |
-| `iconLoad`  | 图标加载完成时触发   | `CustomEvent<{ name: string; success: boolean }>` |
-| `iconError` | 图标加载失败时触发   | `CustomEvent<{ name: string; error: string }>`   |
-
-## Methods
-
-### `reload() => Promise<void>`
-
-重新加载图标
-
-#### Returns
-
-Type: `Promise<void>`
-
-### `updateIcon(name: string) => Promise<void>`
-
-更新图标
-
-#### Returns
-
-Type: `Promise<void>`
-
-## CSS Custom Properties
-
-| Name                                  | Description    |
-| ------------------------------------- | -------------- |
-| `--ldesign-icon-size-small`         | 小尺寸图标大小    |
-| `--ldesign-icon-size-medium`        | 中等尺寸图标大小   |
-| `--ldesign-icon-size-large`         | 大尺寸图标大小    |
-| `--ldesign-icon-animation-duration` | 动画持续时间      |
-| `--ldesign-icon-animation-easing`   | 动画缓动函数      |
-| `--ldesign-icon-transition`         | 过渡效果        |
-| `--ldesign-color-error`             | 错误状态颜色      |
 
 ----------------------------------------------
 

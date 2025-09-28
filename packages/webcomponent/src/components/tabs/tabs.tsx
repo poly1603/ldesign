@@ -1,17 +1,28 @@
-import { Component, Prop, State, Event, EventEmitter, h, Host, Element, Watch } from '@stencil/core';
+import { Component, Prop, State, Event, EventEmitter, h, Host, Element, Watch, Method } from '@stencil/core';
 import { Size } from '../../types';
+import { setupSwipeHandlers, setupDragSort, watchBreakpoint, Breakpoint, animate, debounce } from './tabs-utils';
 
 export type TabsPlacement = 'top' | 'bottom' | 'left' | 'right';
-export type TabsType = 'line' | 'card';
+export type TabsType = 'line' | 'card' | 'pills' | 'minimal' | 'gradient' | 'segmented';
 
 interface TabMeta {
   name: string;
   label: string;
   disabled: boolean;
   closable: boolean;
-  panel: HTMLElement & { name?: string; label?: string; disabled?: boolean; active?: boolean; closable?: boolean };
-  tabId: string; // id for the tab button
-  panelId: string; // id for the tab panel
+  icon?: string;
+  badge?: string | number;
+  panel: HTMLElement & { 
+    name?: string; 
+    label?: string; 
+    disabled?: boolean; 
+    active?: boolean; 
+    closable?: boolean;
+    icon?: string;
+    badge?: string | number;
+  };
+  tabId: string;
+  panelId: string;
 }
 
 let tabsIdSeed = 0;
@@ -46,18 +57,39 @@ export class LdesignTabs {
   /** 是否显示新增按钮 */
   @Prop() addable: boolean = false;
 
+  /** 是否可拖拽排序 */
+  @Prop() draggable: boolean = false;
+
+  /** 是否启用触摸滑动切换 */
+  @Prop() swipeable: boolean = false;
+
+  /** 动画过渡时长（毫秒） */
+  @Prop() animationDuration: number = 300;
+
+  /** 是否隐藏超出部分的标签页（使用更多下拉菜单） */
+  @Prop() useDropdown: boolean = false;
+
+  /** 是否自动适应响应式布局 */
+  @Prop() responsive: boolean = true;
+
   /** 切换事件（返回激活的 name） */
   @Event() ldesignChange!: EventEmitter<string>;
   /** 点击新增按钮 */
   @Event() ldesignAdd!: EventEmitter<void>;
   /** 点击关闭某个面板 */
-  @Event() ldesignRemove!: EventEmitter<{ name: string }>; 
+  @Event() ldesignRemove!: EventEmitter<{ name: string }>;
+  /** 拖拽排序 */
+  @Event() ldesignReorder!: EventEmitter<{ items: TabMeta[] }>; 
 
   @State() currentName?: string;
   @State() items: TabMeta[] = [];
   @State() inkStyle: { [k: string]: string } = {};
   @State() canScrollPrev: boolean = false;
   @State() canScrollNext: boolean = false;
+  @State() showDropdown: boolean = false;
+  @State() overflowItems: TabMeta[] = [];
+  @State() currentBreakpoint: Breakpoint = 'desktop';
+  @State() isDragging: boolean = false;
 
   private uid = `ld-tabs-${++tabsIdSeed}`;
   private slotEl?: HTMLSlotElement;
@@ -65,6 +97,10 @@ export class LdesignTabs {
   private resizeObserver?: ResizeObserver;
   private shouldCenterOnUpdate = false;
   private centerTries = 0;
+  private swipeCleanup?: () => void;
+  private dragCleanup?: () => void;
+  private breakpointCleanup?: () => void;
+  private updateOverflowDebounced?: ReturnType<typeof debounce>;
 
   @Watch('value')
   watchValue(newVal?: string) {
@@ -94,18 +130,51 @@ export class LdesignTabs {
 
     // 监听 DOM 变化（添加/删除面板）
     this.mutationObserver = new MutationObserver(() => this.collectPanels());
-    this.mutationObserver.observe(this.el, { childList: true, subtree: true, attributes: true, attributeFilter: ['label', 'name', 'disabled', 'closable'] });
+    this.mutationObserver.observe(this.el, { 
+      childList: true, 
+      subtree: true, 
+      attributes: true, 
+      attributeFilter: ['label', 'name', 'disabled', 'closable', 'icon', 'badge'] 
+    });
 
     // 监听尺寸变化，更新墨水条
     try {
       const RO = (window as any).ResizeObserver;
       if (RO) {
-        this.resizeObserver = new RO(() => this.updateInkBar());
+        this.resizeObserver = new RO(() => {
+          this.updateInkBar();
+          if (this.useDropdown) {
+            this.updateOverflowDebounced?.();
+          }
+        });
         const nav = this.el.querySelector('.ldesign-tabs__nav') as HTMLElement | null;
         if (this.resizeObserver && nav) this.resizeObserver.observe(nav);
       }
       window.addEventListener('resize', this.updateInkBar as any);
     } catch {}
+
+    // 设置触摸滑动
+    if (this.swipeable) {
+      this.setupSwipe();
+    }
+
+    // 设置拖拽排序
+    if (this.draggable) {
+      this.setupDrag();
+    }
+
+    // 响应式断点监听
+    if (this.responsive) {
+      this.breakpointCleanup = watchBreakpoint((breakpoint) => {
+        this.currentBreakpoint = breakpoint;
+      });
+    }
+
+    // 创建防抖的溢出更新函数
+    if (this.useDropdown) {
+      this.updateOverflowDebounced = debounce(() => this.updateOverflowItems(), 150);
+      this.updateOverflowItems();
+    }
 
     // 初次刷新激活态
     this.updateActivePanels();
@@ -133,6 +202,10 @@ export class LdesignTabs {
   disconnectedCallback() {
     this.slotEl?.removeEventListener('slotchange', this.onSlotChange);
     this.mutationObserver?.disconnect();
+    this.swipeCleanup?.();
+    this.dragCleanup?.();
+    this.breakpointCleanup?.();
+    this.updateOverflowDebounced?.cancel();
     try {
       this.resizeObserver?.disconnect();
       const nav = this.getNavScrollEl();
@@ -150,11 +223,21 @@ private getPanels(): (HTMLElement & { name?: string; label?: string; disabled?: 
     return nodes;
   }
 
-  private ensureIdFor(panel: HTMLElement & { name?: string; label?: string; disabled?: boolean; active?: boolean; closable?: boolean }): TabMeta {
+  private ensureIdFor(panel: HTMLElement & { 
+    name?: string; 
+    label?: string; 
+    disabled?: boolean; 
+    active?: boolean; 
+    closable?: boolean;
+    icon?: string;
+    badge?: string | number;
+  }): TabMeta {
     let name = panel.name || '';
     let label = panel.label || '';
     const disabled = !!panel.disabled;
     const closable = !!panel.closable;
+    const icon = panel.icon;
+    const badge = panel.badge;
 
     // 自动补齐 name
     if (!name) {
@@ -174,7 +257,7 @@ private getPanels(): (HTMLElement & { name?: string; label?: string; disabled?: 
     if (!panel.id) panel.id = panelId;
     const tabId = `${this.uid}-tab-${name}`;
 
-    return { name, label, disabled, closable, panel, tabId, panelId };
+    return { name, label, disabled, closable, icon, badge, panel, tabId, panelId };
   }
 
   private collectPanels() {
@@ -411,6 +494,108 @@ private getPanels(): (HTMLElement & { name?: string; label?: string; disabled?: 
     }
   }
 
+  // 设置触摸滑动
+  private setupSwipe() {
+    const content = this.el.querySelector('.ldesign-tabs__content') as HTMLElement | null;
+    if (!content) return;
+
+    this.swipeCleanup = setupSwipeHandlers(content, {
+      onSwipeLeft: () => {
+        const enabled = this.getEnabledIndices();
+        const curIdx = this.items.findIndex(it => it.name === this.currentName);
+        const pos = enabled.indexOf(curIdx);
+        if (pos < enabled.length - 1) {
+          const nextIndex = enabled[pos + 1];
+          this.setActive(this.items[nextIndex].name, true);
+        }
+      },
+      onSwipeRight: () => {
+        const enabled = this.getEnabledIndices();
+        const curIdx = this.items.findIndex(it => it.name === this.currentName);
+        const pos = enabled.indexOf(curIdx);
+        if (pos > 0) {
+          const prevIndex = enabled[pos - 1];
+          this.setActive(this.items[prevIndex].name, true);
+        }
+      },
+    });
+  }
+
+  // 设置拖拽排序
+  private setupDrag() {
+    const nav = this.getNavScrollEl();
+    if (!nav) return;
+
+    this.dragCleanup = setupDragSort(nav, '.ldesign-tabs__tab', {
+      onDragStart: () => {
+        this.isDragging = true;
+      },
+      onDragEnd: () => {
+        this.isDragging = false;
+      },
+      onReorder: (fromIndex, toIndex) => {
+        const newItems = [...this.items];
+        const [movedItem] = newItems.splice(fromIndex, 1);
+        newItems.splice(toIndex, 0, movedItem);
+        this.items = newItems;
+        this.ldesignReorder.emit({ items: newItems });
+      },
+    });
+  }
+
+  // 更新溢出项
+  private updateOverflowItems() {
+    const nav = this.getNavScrollEl();
+    if (!nav) return;
+
+    const navWidth = nav.clientWidth;
+    const tabs = Array.from(nav.querySelectorAll('.ldesign-tabs__tab')) as HTMLElement[];
+    
+    let totalWidth = 0;
+    const overflow: TabMeta[] = [];
+    
+    tabs.forEach((tab, index) => {
+      totalWidth += tab.offsetWidth;
+      if (totalWidth > navWidth - 100) { // 留出更多按钮的空间
+        overflow.push(this.items[index]);
+      }
+    });
+    
+    this.overflowItems = overflow;
+  }
+
+  // 公开方法：编程式切换标签
+  @Method()
+  async selectTab(name: string) {
+    const item = this.items.find(it => it.name === name);
+    if (item && !item.disabled) {
+      this.setActive(name, false);
+    }
+  }
+
+  // 公开方法：添加标签页
+  @Method()
+  async addTab(options: { name: string; label: string; icon?: string; closable?: boolean }) {
+    const panel = document.createElement('ldesign-tab-panel');
+    panel.name = options.name;
+    panel.label = options.label;
+    if (options.icon) panel.setAttribute('icon', options.icon);
+    if (options.closable) panel.setAttribute('closable', 'true');
+    this.el.appendChild(panel);
+    this.collectPanels();
+    return panel;
+  }
+
+  // 公开方法：移除标签页
+  @Method()
+  async removeTab(name: string) {
+    const item = this.items.find(it => it.name === name);
+    if (item) {
+      item.panel.remove();
+      this.collectPanels();
+    }
+  }
+
   private onScrollPrev = (e: MouseEvent) => {
     e.preventDefault();
     const nav = this.getNavScrollEl();
@@ -472,8 +657,11 @@ private getPanels(): (HTMLElement & { name?: string; label?: string; disabled?: 
                   tabIndex={selected ? 0 : -1}
                   onClick={(e) => this.onTabClick(it, e)}
                   type="button"
+                  draggable={this.draggable}
                 >
+                  {it.icon && <i class={`ldesign-tabs__icon ${it.icon}`}></i>}
                   <span class="ldesign-tabs__tab-text">{it.label}</span>
+                  {it.badge && <span class="ldesign-tabs__badge">{it.badge}</span>}
                   {it.closable && (
                     <button
                       class="ldesign-tabs__close"

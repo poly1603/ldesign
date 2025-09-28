@@ -66,9 +66,17 @@ export class LdesignEllipsis {
   @State() private textToRender: string = '';
   @State() private effectiveLines: number = 3;    // 当前生效的行数（考虑响应式）
   @State() private targetMaxHeight: number = 0;   // 用于动画的 max-height 目标
+  @State() private fadeOpacity: number = 1;       // 渐变遮罩透明度（用于动画）
+  @State() private actualHeight: number = 0;      // 实际高度（用于优化动画）
+  @State() private transformScale: number = 1;    // 缩放比例（用于动画优化）
   private prevOverflowed?: boolean;
   private initialLightText?: string;             // 记录最初的直写文本
   @State() private isCollapsing: boolean = false; // 正在执行收起动画
+  @State() private isAnimating: boolean = false;  // 动画进行中标志
+  private animationFrame?: number;               // requestAnimationFrame ID
+  private animationTimeout?: number;             // 动画超时处理
+  private debounceTimer?: number;                // 防抖处理
+  private lastRefreshTime: number = 0;           // 上次刷新时间（节流用）
 
   private ro?: ResizeObserver;
   private containerEl?: HTMLDivElement;      // 可视区域容器
@@ -106,7 +114,7 @@ export class LdesignEllipsis {
 
   componentDidLoad() {
     try {
-      this.ro = new ResizeObserver(() => this.refreshAll());
+      this.ro = new ResizeObserver(() => this.debouncedRefresh());
       if (this.host) this.ro.observe(this.host);
     } catch {}
     window.addEventListener('resize', this.onWindowResize, { passive: true });
@@ -120,6 +128,15 @@ export class LdesignEllipsis {
     this.ro = undefined;
     window.removeEventListener('resize', this.onWindowResize as any);
     window.removeEventListener('keydown', this.onKeyDown as any);
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+    }
+    if (this.animationTimeout) {
+      clearTimeout(this.animationTimeout);
+    }
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
   }
 
   private computeText(): string {
@@ -135,12 +152,12 @@ export class LdesignEllipsis {
     return (this.initialLightText || '').toString();
   }
 
-  @Method() async update() { this.refreshAll(); }
+  @Method() async update() { this.debouncedRefresh(); }
 
   private onWindowResize = () => {
     const prev = this.effectiveLines;
     this.effectiveLines = this.getEffectiveLines();
-    if (prev !== this.effectiveLines) this.refreshAll(); else this.refreshAll();
+    if (prev !== this.effectiveLines) this.debouncedRefresh(); else this.debouncedRefresh();
   };
 
   private onKeyDown = (e: KeyboardEvent) => {
@@ -158,6 +175,25 @@ export class LdesignEllipsis {
       }
     } catch {}
   }
+
+  // 防抖刷新，避免频繁重计算
+  private debouncedRefresh = () => {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+    this.debounceTimer = setTimeout(() => {
+      this.refreshAll();
+    }, 16) as any; // 约一帧时间
+  };
+
+  // 节流刷新，避免在短时间内多次调用
+  private throttledRefresh = () => {
+    const now = Date.now();
+    if (now - this.lastRefreshTime > 16) { // 60fps
+      this.lastRefreshTime = now;
+      this.refreshAll();
+    }
+  };
 
   private ensureMeasureNodes() {
     if (!this.measureWrap) {
@@ -241,9 +277,16 @@ export class LdesignEllipsis {
       this.inlineFits = this.actionPlacement === 'inline';
     }
 
-    // 3) 计算动画目标高度
+    // 3) 计算动画目标高度和实际高度
     const target = (this.isExpanded && !this.isCollapsing) ? fullH : clampH;
     this.targetMaxHeight = Math.max(0, Math.ceil(target));
+    this.actualHeight = target;
+    
+    // 4) 设置渐变透明度（折叠时显示，展开时隐藏）
+    // 使用延迟来确保动画平滑
+    if (!this.isAnimating) {
+      this.fadeOpacity = (this.isExpanded && !this.isCollapsing) ? 0 : 1;
+    }
   };
 
   private syncMeasureContentAndWidth() {
@@ -290,7 +333,23 @@ export class LdesignEllipsis {
       // 受控时，仅派发事件
       this.dispatchToggle(next);
     } else {
-      this.isExpanded = next; this.dispatchToggle(next); this.refreshAll();
+      // 使用渐进式动画
+      this.isAnimating = true;
+      
+      // 先淑出渐变遮罩
+      this.fadeOpacity = 0;
+      
+      // 然后展开内容
+      this.animationFrame = requestAnimationFrame(() => {
+        this.isExpanded = next;
+        this.dispatchToggle(next);
+        this.refreshAll();
+        
+        // 动画结束后清理
+        this.animationTimeout = setTimeout(() => {
+          this.isAnimating = false;
+        }, this.transitionDuration) as any;
+      });
     }
   };
 
@@ -300,10 +359,19 @@ export class LdesignEllipsis {
       // 受控：仅派发事件，交给外部控制 expanded
       this.dispatchToggle(next);
     } else {
-      // 非受控：先触发“收起动画”，完毕后再真正切换 isExpanded=false
+      // 非受控：使用渐进式动画
+      this.isAnimating = true;
       this.isCollapsing = true;
-      this.dispatchToggle(next);
-      this.refreshAll();
+      
+      // 先淡入渐变遮罩
+      this.fadeOpacity = 1;
+      
+      // 然后收起内容
+      this.animationFrame = requestAnimationFrame(() => {
+        this.dispatchToggle(next);
+        this.refreshAll();
+      });
+      
       // 在 transitionend 回调内收尾（见 onWrapTransitionEnd）
     }
   };
@@ -319,10 +387,16 @@ export class LdesignEllipsis {
     const showMore = this.isOverflowed;
     const wrapStyle: any = {
       maxHeight: this.targetMaxHeight ? `${this.targetMaxHeight}px` : undefined,
-      transition: this.transitionDuration > 0 ? `max-height ${this.transitionDuration}ms` : undefined,
+      transition: this.transitionDuration > 0 ? `max-height ${this.transitionDuration}ms cubic-bezier(0.4, 0, 0.2, 1)` : undefined,
       overflow: 'hidden',
+      willChange: this.isAnimating ? 'max-height' : 'auto',
     };
-    const fadeStyle: any = { width: typeof this.fadeWidth === 'number' ? `${this.fadeWidth}px` : this.fadeWidth };
+    const fadeStyle: any = { 
+      width: typeof this.fadeWidth === 'number' ? `${this.fadeWidth}px` : this.fadeWidth,
+      opacity: this.fadeOpacity,
+      transition: this.transitionDuration > 0 ? `opacity ${this.transitionDuration * 0.8}ms cubic-bezier(0.4, 0, 0.6, 1)` : undefined,
+      willChange: this.isAnimating ? 'opacity' : 'auto',
+    };
 
     const inner = (
       <div class="ldesign-ellipsis__wrap" style={wrapStyle} onTransitionEnd={this.onWrapTransitionEnd as any} ref={el => (this.containerEl = el as HTMLDivElement)}>
@@ -368,8 +442,9 @@ export class LdesignEllipsis {
     const spacerStyle = fits && this.actionWidth > 0 ? { width: `${this.actionWidth + gap}px` } : undefined;
     const wrapStyle: any = {
       maxHeight: this.targetMaxHeight ? `${this.targetMaxHeight}px` : undefined,
-      transition: this.transitionDuration > 0 ? `max-height ${this.transitionDuration}ms` : undefined,
+      transition: this.transitionDuration > 0 ? `max-height ${this.transitionDuration}ms cubic-bezier(0.4, 0, 0.2, 1)` : undefined,
       overflow: 'hidden',
+      willChange: this.isAnimating ? 'max-height' : 'auto',
     };
 
     return (
@@ -416,6 +491,7 @@ export class LdesignEllipsis {
         this.isExpanded = false;
       }
       this.isCollapsing = false;
+      this.isAnimating = false;
       this.refreshAll();
     }
   };

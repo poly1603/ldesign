@@ -1,0 +1,291 @@
+/**
+ * Tabs 组件工具函数
+ */
+
+// 触摸滑动支持
+export interface SwipeHandlers {
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
+  onSwipeUp?: () => void;
+  onSwipeDown?: () => void;
+}
+
+export function setupSwipeHandlers(element: HTMLElement, handlers: SwipeHandlers) {
+  let startX = 0;
+  let startY = 0;
+  let startTime = 0;
+  const MIN_SWIPE_DISTANCE = 50;
+  const MAX_SWIPE_TIME = 300;
+
+  const handleTouchStart = (e: TouchEvent) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startTime = Date.now();
+  };
+
+  const handleTouchEnd = (e: TouchEvent) => {
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const endTime = Date.now();
+    
+    const deltaX = endX - startX;
+    const deltaY = endY - startY;
+    const deltaTime = endTime - startTime;
+    
+    if (deltaTime > MAX_SWIPE_TIME) return;
+    
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+    
+    if (absX > absY && absX > MIN_SWIPE_DISTANCE) {
+      if (deltaX > 0) {
+        handlers.onSwipeRight?.();
+      } else {
+        handlers.onSwipeLeft?.();
+      }
+    } else if (absY > absX && absY > MIN_SWIPE_DISTANCE) {
+      if (deltaY > 0) {
+        handlers.onSwipeDown?.();
+      } else {
+        handlers.onSwipeUp?.();
+      }
+    }
+  };
+
+  element.addEventListener('touchstart', handleTouchStart, { passive: true });
+  element.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+  return () => {
+    element.removeEventListener('touchstart', handleTouchStart);
+    element.removeEventListener('touchend', handleTouchEnd);
+  };
+}
+
+// 拖拽排序支持
+export interface DragSortHandlers {
+  onDragStart?: (index: number) => void;
+  onDragOver?: (index: number) => void;
+  onDragEnd?: () => void;
+  onReorder?: (fromIndex: number, toIndex: number) => void;
+}
+
+export function setupDragSort(
+  container: HTMLElement,
+  itemSelector: string,
+  handlers: DragSortHandlers
+) {
+  let draggedIndex: number = -1;
+  let draggedElement: HTMLElement | null = null;
+
+  const handleDragStart = (e: DragEvent) => {
+    const target = (e.target as HTMLElement).closest(itemSelector) as HTMLElement;
+    if (!target) return;
+    
+    const items = Array.from(container.querySelectorAll(itemSelector));
+    draggedIndex = items.indexOf(target);
+    draggedElement = target;
+    
+    target.classList.add('dragging');
+    e.dataTransfer!.effectAllowed = 'move';
+    e.dataTransfer!.setData('text/html', target.innerHTML);
+    
+    handlers.onDragStart?.(draggedIndex);
+  };
+
+  const handleDragOver = (e: DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer!.dropEffect = 'move';
+    
+    const target = (e.target as HTMLElement).closest(itemSelector) as HTMLElement;
+    if (!target || target === draggedElement) return;
+    
+    const items = Array.from(container.querySelectorAll(itemSelector));
+    const targetIndex = items.indexOf(target);
+    
+    if (targetIndex !== -1) {
+      handlers.onDragOver?.(targetIndex);
+    }
+  };
+
+  const handleDrop = (e: DragEvent) => {
+    e.preventDefault();
+    const target = (e.target as HTMLElement).closest(itemSelector) as HTMLElement;
+    if (!target || target === draggedElement) return;
+    
+    const items = Array.from(container.querySelectorAll(itemSelector));
+    const targetIndex = items.indexOf(target);
+    
+    if (draggedIndex !== -1 && targetIndex !== -1) {
+      handlers.onReorder?.(draggedIndex, targetIndex);
+    }
+  };
+
+  const handleDragEnd = () => {
+    if (draggedElement) {
+      draggedElement.classList.remove('dragging');
+    }
+    draggedElement = null;
+    draggedIndex = -1;
+    handlers.onDragEnd?.();
+  };
+
+  container.addEventListener('dragstart', handleDragStart);
+  container.addEventListener('dragover', handleDragOver);
+  container.addEventListener('drop', handleDrop);
+  container.addEventListener('dragend', handleDragEnd);
+
+  return () => {
+    container.removeEventListener('dragstart', handleDragStart);
+    container.removeEventListener('dragover', handleDragOver);
+    container.removeEventListener('drop', handleDrop);
+    container.removeEventListener('dragend', handleDragEnd);
+  };
+}
+
+// 虚拟滚动支持
+export interface VirtualScrollOptions {
+  itemHeight: number;
+  buffer: number;
+  container: HTMLElement;
+  onVisibleItemsChange: (startIndex: number, endIndex: number) => void;
+}
+
+export function setupVirtualScroll(options: VirtualScrollOptions) {
+  const { itemHeight, buffer, container, onVisibleItemsChange } = options;
+  
+  const updateVisibleItems = () => {
+    const scrollTop = container.scrollTop;
+    const containerHeight = container.clientHeight;
+    
+    const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - buffer);
+    const endIndex = Math.ceil((scrollTop + containerHeight) / itemHeight) + buffer;
+    
+    onVisibleItemsChange(startIndex, endIndex);
+  };
+
+  container.addEventListener('scroll', updateVisibleItems, { passive: true });
+  updateVisibleItems();
+
+  return () => {
+    container.removeEventListener('scroll', updateVisibleItems);
+  };
+}
+
+// 响应式断点检测
+export type Breakpoint = 'mobile' | 'tablet' | 'desktop';
+
+export function getBreakpoint(): Breakpoint {
+  const width = window.innerWidth;
+  if (width < 640) return 'mobile';
+  if (width < 1024) return 'tablet';
+  return 'desktop';
+}
+
+export function watchBreakpoint(callback: (breakpoint: Breakpoint) => void) {
+  let currentBreakpoint = getBreakpoint();
+  callback(currentBreakpoint);
+
+  const handleResize = () => {
+    const newBreakpoint = getBreakpoint();
+    if (newBreakpoint !== currentBreakpoint) {
+      currentBreakpoint = newBreakpoint;
+      callback(newBreakpoint);
+    }
+  };
+
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+}
+
+// 动画缓动函数
+export const easing = {
+  linear: (t: number) => t,
+  easeInOut: (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
+  easeOut: (t: number) => t * (2 - t),
+  easeIn: (t: number) => t * t,
+  easeInCubic: (t: number) => t * t * t,
+  easeOutCubic: (t: number) => (--t) * t * t + 1,
+  easeInOutCubic: (t: number) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
+};
+
+// 动画帧函数
+export function animate(
+  duration: number,
+  callback: (progress: number) => void,
+  easingFunc: (t: number) => number = easing.easeInOut
+): () => void {
+  const startTime = performance.now();
+  let animationId: number;
+
+  const frame = (currentTime: number) => {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    callback(easingFunc(progress));
+    
+    if (progress < 1) {
+      animationId = requestAnimationFrame(frame);
+    }
+  };
+
+  animationId = requestAnimationFrame(frame);
+  
+  return () => cancelAnimationFrame(animationId);
+}
+
+// 防抖函数
+export function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  wait: number
+): T & { cancel: () => void } {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  const debounced = (...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+
+  debounced.cancel = () => {
+    if (timeout) clearTimeout(timeout);
+    timeout = null;
+  };
+
+  return debounced as T & { cancel: () => void };
+}
+
+// 节流函数
+export function throttle<T extends (...args: any[]) => void>(
+  func: T,
+  wait: number
+): T & { cancel: () => void } {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  let lastTime = 0;
+
+  const throttled = (...args: Parameters<T>) => {
+    const now = Date.now();
+    const remaining = wait - (now - lastTime);
+
+    if (remaining <= 0 || remaining > wait) {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      lastTime = now;
+      func(...args);
+    } else if (!timeout) {
+      timeout = setTimeout(() => {
+        lastTime = Date.now();
+        timeout = null;
+        func(...args);
+      }, remaining);
+    }
+  };
+
+  throttled.cancel = () => {
+    if (timeout) clearTimeout(timeout);
+    timeout = null;
+    lastTime = 0;
+  };
+
+  return throttled as T & { cancel: () => void };
+}

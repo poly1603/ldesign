@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Picker 组件测试</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      padding: 40px;
+      background: #f5f5f5;
+    }
+    
+    .demo-section {
+      margin-bottom: 40px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .demo-section h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 18px;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    
+    .demo-row {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .demo-item {
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    .demo-item h3 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .value-display {
+      margin-top: 10px;
+      padding: 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      padding: 6px 12px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    button:hover {
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>LDesign Picker 组件测试页面</h1>
+  
+  <!-- 基础用法 -->
+  <div class="demo-section">
+    <h2>基础用法</h2>
+    <ldesign-picker id="basic-picker"></ldesign-picker>
+    <div class="value-display">当前值：<span id="basic-value">未选择</span></div>
+  </div>
+  
+  <!-- 搜索功能 -->
+  <div class="demo-section">
+    <h2>搜索功能</h2>
+    <ldesign-picker
+      id="search-picker"
+      searchable
+      search-placeholder="搜索水果..."
+      highlight-match
+      keyboard-quick-jump
+    ></ldesign-picker>
+    <div class="value-display">
+      <p>当前值：<span id="search-value">未选择</span></p>
+      <p style="color: #666; font-size: 12px;">提示：输入字母快速跳转，如输入 "a" 跳转到 Apple</p>
+    </div>
+  </div>
+  
+  <!-- 不同尺寸 -->
+  <div class="demo-section">
+    <h2>不同尺寸</h2>
+    <div class="demo-row">
+      <div class="demo-item">
+        <h3>小尺寸</h3>
+        <ldesign-picker size="small" id="small-picker"></ldesign-picker>
+      </div>
+      <div class="demo-item">
+        <h3>中尺寸（默认）</h3>
+        <ldesign-picker size="medium" id="medium-picker"></ldesign-picker>
+      </div>
+      <div class="demo-item">
+        <h3>大尺寸</h3>
+        <ldesign-picker size="large" id="large-picker"></ldesign-picker>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 主题定制 -->
+  <div class="demo-section">
+    <h2>主题定制</h2>
+    <div class="demo-row">
+      <div class="demo-item">
+        <h3>浅色主题（默认）</h3>
+        <ldesign-picker theme="light" id="light-picker"></ldesign-picker>
+      </div>
+      <div class="demo-item" style="background: #1f2937; padding: 20px; border-radius: 8px;">
+        <h3 style="color: white;">深色主题</h3>
+        <ldesign-picker theme="dark" id="dark-picker"></ldesign-picker>
+      </div>
+      <div class="demo-item">
+        <h3>自定义颜色</h3>
+        <ldesign-picker
+          id="custom-picker"
+          style="--ldesign-picker-active-color: #10b981; --ldesign-picker-active-bg: rgba(16, 185, 129, 0.1); --ldesign-picker-border: #10b981;"
+        ></ldesign-picker>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 视觉效果 -->
+  <div class="demo-section">
+    <h2>视觉效果</h2>
+    <div class="demo-row">
+      <div class="demo-item">
+        <h3>3D 效果</h3>
+        <ldesign-picker enable3d id="3d-picker"></ldesign-picker>
+      </div>
+      <div class="demo-item">
+        <h3>渐变遮罩</h3>
+        <ldesign-picker show-mask id="mask-picker"></ldesign-picker>
+      </div>
+      <div class="demo-item">
+        <h3>全部效果</h3>
+        <ldesign-picker enable3d show-mask id="all-effects-picker"></ldesign-picker>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 交互增强 -->
+  <div class="demo-section">
+    <h2>交互增强</h2>
+    <div class="demo-row">
+      <div class="demo-item">
+        <h3>触觉反馈（移动端）</h3>
+        <ldesign-picker haptic-feedback haptic-intensity="20" id="haptic-picker"></ldesign-picker>
+      </div>
+      <div class="demo-item">
+        <h3>音效反馈</h3>
+        <ldesign-picker sound-effects sound-volume="0.3" id="sound-picker"></ldesign-picker>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 物理效果 -->
+  <div class="demo-section">
+    <h2>物理效果</h2>
+    <div class="demo-row">
+      <div class="demo-item">
+        <h3>低摩擦（滑得更远）</h3>
+        <ldesign-picker friction="0.98" id="low-friction-picker"></ldesign-picker>
+      </div>
+      <div class="demo-item">
+        <h3>高摩擦（快速停止）</h3>
+        <ldesign-picker friction="0.85" id="high-friction-picker"></ldesign-picker>
+      </div>
+      <div class="demo-item">
+        <h3>无惯性</h3>
+        <ldesign-picker momentum="false" id="no-momentum-picker"></ldesign-picker>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 程序控制 -->
+  <div class="demo-section">
+    <h2>程序控制</h2>
+    <ldesign-picker id="control-picker"></ldesign-picker>
+    <div class="controls">
+      <button onclick="scrollToFirst()">滚动到第一项</button>
+      <button onclick="scrollToLast()">滚动到最后一项</button>
+      <button onclick="scrollToRandom()">随机选择</button>
+      <button onclick="scrollToIndex(3)">滚动到第4项</button>
+      <button onclick="centerCurrent()">居中当前项</button>
+    </div>
+    <div class="value-display">当前值：<span id="control-value">未选择</span></div>
+  </div>
+  
+  <!-- 多列级联示例 -->
+  <div class="demo-section">
+    <h2>多列级联（日期选择器）</h2>
+    <div class="demo-row">
+      <ldesign-picker id="year-picker" size="small"></ldesign-picker>
+      <ldesign-picker id="month-picker" size="small"></ldesign-picker>
+      <ldesign-picker id="day-picker" size="small"></ldesign-picker>
+    </div>
+    <div class="value-display">选中日期：<span id="date-value">未选择</span></div>
+  </div>
+  
+  <script>
+    // 基础选项数据
+    const basicOptions = [
+      { value: 'apple', label: '🍎 苹果' },
+      { value: 'banana', label: '🍌 香蕉' },
+      { value: 'orange', label: '🍊 橙子' },
+      { value: 'grape', label: '🍇 葡萄' },
+      { value: 'watermelon', label: '🍉 西瓜' },
+      { value: 'peach', label: '🍑 桃子' },
+      { value: 'pear', label: '🍐 梨' }
+    ];
+    
+    // 长列表选项（用于搜索演示）
+    const longOptions = [
+      { value: 'apple', label: '🍎 Apple' },
+      { value: 'apricot', label: '🍑 Apricot' },
+      { value: 'avocado', label: '🥑 Avocado' },
+      { value: 'banana', label: '🍌 Banana' },
+      { value: 'blueberry', label: '🫐 Blueberry' },
+      { value: 'cherry', label: '🍒 Cherry' },
+      { value: 'coconut', label: '🥥 Coconut' },
+      { value: 'dragon-fruit', label: '🐉 Dragon Fruit' },
+      { value: 'grape', label: '🍇 Grape' },
+      { value: 'kiwi', label: '🥝 Kiwi' },
+      { value: 'lemon', label: '🍋 Lemon' },
+      { value: 'mango', label: '🥭 Mango' },
+      { value: 'melon', label: '🍈 Melon' },
+      { value: 'orange', label: '🍊 Orange' },
+      { value: 'peach', label: '🍑 Peach' },
+      { value: 'pear', label: '🍐 Pear' },
+      { value: 'pineapple', label: '🍍 Pineapple' },
+      { value: 'strawberry', label: '🍓 Strawberry' },
+      { value: 'watermelon', label: '🍉 Watermelon' }
+    ];
+    
+    // 等待组件加载
+    window.addEventListener('DOMContentLoaded', () => {
+      // 初始化所有 picker
+      const allPickers = document.querySelectorAll('ldesign-picker');
+      
+      allPickers.forEach(picker => {
+        // 搜索 picker 使用长列表
+        if (picker.id === 'search-picker') {
+          picker.options = longOptions;
+        } else if (picker.id !== 'year-picker' && picker.id !== 'month-picker' && picker.id !== 'day-picker') {
+          // 其他 picker 使用基础选项
+          picker.options = basicOptions;
+        }
+        
+        // 设置默认值
+        if (picker.options && picker.options.length > 0) {
+          picker.value = picker.options[Math.floor(Math.random() * Math.min(3, picker.options.length))].value;
+        }
+      });
+      
+      // 基础用法事件监听
+      const basicPicker = document.getElementById('basic-picker');
+      basicPicker.addEventListener('ldesignChange', (e) => {
+        document.getElementById('basic-value').textContent = e.detail.value || '未选择';
+      });
+      
+      // 搜索功能事件监听
+      const searchPicker = document.getElementById('search-picker');
+      searchPicker.addEventListener('ldesignChange', (e) => {
+        document.getElementById('search-value').textContent = e.detail.value || '未选择';
+      });
+      
+      // 程序控制事件监听
+      const controlPicker = document.getElementById('control-picker');
+      controlPicker.addEventListener('ldesignChange', (e) => {
+        document.getElementById('control-value').textContent = e.detail.value || '未选择';
+      });
+      
+      // 初始化日期选择器
+      initDatePicker();
+    });
+    
+    // 程序控制函数
+    async function scrollToFirst() {
+      const picker = document.getElementById('control-picker');
+      await picker.scrollToValue('apple', { animate: true });
+    }
+    
+    async function scrollToLast() {
+      const picker = document.getElementById('control-picker');
+      await picker.scrollToValue('pear', { animate: true });
+    }
+    
+    async function scrollToRandom() {
+      const picker = document.getElementById('control-picker');
+      const randomIndex = Math.floor(Math.random() * basicOptions.length);
+      await picker.scrollToValue(basicOptions[randomIndex].value, { animate: true });
+    }
+    
+    async function scrollToIndex(index) {
+      const picker = document.getElementById('control-picker');
+      await picker.scrollToIndex(index, { animate: true });
+    }
+    
+    async function centerCurrent() {
+      const picker = document.getElementById('control-picker');
+      await picker.centerToCurrent(true);
+    }
+    
+    // 初始化日期选择器
+    function initDatePicker() {
+      const yearPicker = document.getElementById('year-picker');
+      const monthPicker = document.getElementById('month-picker');
+      const dayPicker = document.getElementById('day-picker');
+      
+      // 年份选项
+      const yearOptions = [];
+      for (let i = 2020; i <= 2030; i++) {
+        yearOptions.push({ value: String(i), label: `${i}年` });
+      }
+      yearPicker.options = yearOptions;
+      yearPicker.value = '2024';
+      
+      // 月份选项
+      const monthOptions = [];
+      for (let i = 1; i <= 12; i++) {
+        const value = i.toString().padStart(2, '0');
+        monthOptions.push({ value, label: `${i}月` });
+      }
+      monthPicker.options = monthOptions;
+      monthPicker.value = '01';
+      
+      // 更新日期选项
+      function updateDays() {
+        const year = parseInt(yearPicker.value);
+        const month = parseInt(monthPicker.value);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        
+        const dayOptions = [];
+        for (let i = 1; i <= daysInMonth; i++) {
+          const value = i.toString().padStart(2, '0');
+          dayOptions.push({ value, label: `${i}日` });
+        }
+        
+        dayPicker.options = dayOptions;
+        if (!dayPicker.value || parseInt(dayPicker.value) > daysInMonth) {
+          dayPicker.value = '01';
+        }
+        
+        updateDateDisplay();
+      }
+      
+      // 更新日期显示
+      function updateDateDisplay() {
+        const dateValue = `${yearPicker.value}-${monthPicker.value}-${dayPicker.value || '01'}`;
+        document.getElementById('date-value').textContent = dateValue;
+      }
+      
+      // 监听变化
+      yearPicker.addEventListener('ldesignChange', updateDays);
+      monthPicker.addEventListener('ldesignChange', updateDays);
+      dayPicker.addEventListener('ldesignChange', updateDateDisplay);
+      
+      // 初始化
+      updateDays();
+    }
+  </script>
+</body>
+</html>

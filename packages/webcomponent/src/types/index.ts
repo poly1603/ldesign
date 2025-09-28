@@ -24,12 +24,12 @@ export type ButtonColor = 'default' | 'primary' | 'success' | 'warning' | 'dange
 /**
  * 按钮形状
  */
-export type ButtonShape = 'rectangle' | 'round' | 'circle' | 'square';
+export type ButtonShape = 'default' | 'rectangle' | 'round' | 'circle' | 'square';
 
 /**
  * 图标位置
  */
-export type ButtonIconPosition = 'left' | 'right';
+export type ButtonIconPosition = 'start' | 'end';
 
 /**
  * 原生按钮类型
@@ -188,6 +188,17 @@ export interface IconProps extends BaseComponentProps {
   name: string;
   size?: Size | number;
   color?: string;
+  spin?: boolean;
+  animation?: 'spin' | 'pulse' | 'bounce' | 'flash' | 'shake' | 'none';
+  strokeWidth?: number;
+  rotate?: number;
+  flip?: 'horizontal' | 'vertical' | 'both';
+  gradient?: boolean;
+  gradientColors?: string | string[];
+  gradientDirection?: 'horizontal' | 'vertical' | 'diagonal';
+  label?: string;
+  decorative?: boolean;
+  customSvg?: string;
 }
 
 /**

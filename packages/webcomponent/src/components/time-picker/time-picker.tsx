@@ -53,7 +53,7 @@ export class LdesignTimePicker {
   @Prop() size: TimePickerSize = 'medium';
   @Prop() outputFormat: '12h' | '24h' = '24h';      // 输出格式
 
-// columns
+  // columns
   @Prop() showSeconds: boolean = true;
   @Prop() steps: number[] = [1, 1, 1]; // [h, m, s]
   @Prop() panelHeight?: number; // 若未提供，将依据 visibleItems 与尺寸计算
@@ -63,17 +63,17 @@ export class LdesignTimePicker {
   @Prop() showNow: boolean = true;
   // inline mode: render panel only, no overlay/trigger
   @Prop() inline: boolean = false;
-  
+
   // 时间范围限制
   @Prop() minTime?: string;                          // 最小时间 e.g. "09:00:00"
   @Prop() maxTime?: string;                          // 最大时间 e.g. "18:00:00"
   @Prop() disabledHours?: number[];                  // 禁用的小时 [0, 1, 2]
   @Prop() disabledMinutes?: number[];                // 禁用的分钟
   @Prop() disabledSeconds?: number[];                // 禁用的秒数
-  
+
   // 预设时间
   @Prop() presets?: TimePreset[];                    // 预设时间列表
-  
+
   // 国际化
   @Prop() locale?: TimePickerLocale;
 
@@ -136,14 +136,14 @@ export class LdesignTimePicker {
     // 设置AM/PM
     this.meridiem = this.h >= 12 ? 'PM' : 'AM';
     this.recomputeOptions();
-    
+
     // 如果是12小时制且有初始值，确保输出格式正确
     if (this.outputFormat === '12h' && init) {
       this.value = this.formatTime(this.h, this.m, this.s);
     }
   }
 
-componentDidLoad() { 
+  componentDidLoad() {
     window.addEventListener('resize', this.updateOverlayKind as any, { passive: true } as any);
     // 当以内联面板使用时，打开时机即为挂载完成
     if (this.inline) {
@@ -158,7 +158,7 @@ componentDidLoad() {
 
   // utils
   private pad2(n: number) { return String(n).padStart(2, '0'); }
-  
+
   // 获取国际化文本
   private getLocaleText(key: keyof TimePickerLocale): string {
     const defaultLocale: TimePickerLocale = {
@@ -171,10 +171,10 @@ componentDidLoad() {
     };
     return this.locale?.[key] || defaultLocale[key] || '';
   }
-  
+
   private parseTime(v?: string | null): { h: number; m: number; s: number; meridiem?: 'AM' | 'PM' } | null {
     if (!v || typeof v !== 'string') return null;
-    
+
     // 尝试12小时制格式: "3:30 PM" 或 "03:30:15 AM"
     const m12 = v.trim().match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?\s*(AM|PM)?$/i);
     if (m12) {
@@ -182,7 +182,7 @@ componentDidLoad() {
       const mi = Math.max(0, Math.min(59, parseInt(m12[2], 10) || 0));
       const s = Math.max(0, Math.min(59, parseInt(m12[3] ?? '0', 10) || 0));
       const meridiem = m12[4] ? m12[4].toUpperCase() as 'AM' | 'PM' : undefined;
-      
+
       // 如果有AM/PM标识，转换为24小时制
       if (meridiem) {
         if (meridiem === 'PM' && h !== 12) {
@@ -191,11 +191,11 @@ componentDidLoad() {
           h = 0;
         }
       }
-      
+
       h = Math.max(0, Math.min(23, h));
       return { h, m: mi, s, meridiem };
     }
-    
+
     // 24小时制格式
     const m = v.trim().match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/);
     if (!m) return null;
@@ -204,7 +204,7 @@ componentDidLoad() {
     const s = Math.max(0, Math.min(59, parseInt(m[3] ?? '0', 10) || 0));
     return { h, m: mi, s };
   }
-  
+
   private formatTime(h: number, m: number, s: number) {
     if (this.outputFormat === '12h') {
       const displayHour = h === 0 ? 12 : (h > 12 ? h - 12 : h);
@@ -216,13 +216,13 @@ componentDidLoad() {
     const base = `${this.pad2(h)}:${this.pad2(m)}`;
     return this.showSeconds ? `${base}:${this.pad2(s)}` : base;
   }
-  
+
   // 获取12小时制显示小时
   private get12HourDisplay(): number {
     if (this.h === 0) return 12;
     return this.h > 12 ? this.h - 12 : this.h;
   }
-  
+
   // 从12小时制转换为24小时制
   private convertTo24Hour(hour12: number, meridiem: 'AM' | 'PM'): number {
     if (meridiem === 'AM') {
@@ -231,13 +231,13 @@ componentDidLoad() {
       return hour12 === 12 ? 12 : hour12 + 12;
     }
   }
-  
+
   // 检查时间是否在范围内
   private isTimeInRange(h: number, m: number, s: number): boolean {
     if (!this.minTime && !this.maxTime) return true;
-    
+
     const currentMinutes = h * 60 + m + s / 60;
-    
+
     if (this.minTime) {
       const min = this.parseTime(this.minTime);
       if (min) {
@@ -245,7 +245,7 @@ componentDidLoad() {
         if (currentMinutes < minMinutes) return false;
       }
     }
-    
+
     if (this.maxTime) {
       const max = this.parseTime(this.maxTime);
       if (max) {
@@ -253,10 +253,10 @@ componentDidLoad() {
         if (currentMinutes > maxMinutes) return false;
       }
     }
-    
+
     return true;
   }
-  
+
   // 检查某个值是否被禁用
   private isDisabled(value: number, type: 'hour' | 'minute' | 'second'): boolean {
     if (type === 'hour' && this.disabledHours) {
@@ -324,7 +324,7 @@ componentDidLoad() {
   }
   private async getPickersReady(): Promise<any[]> {
     const nodeList = Array.from(this.el.querySelectorAll('ldesign-picker')) as any[];
-    const pickers = await Promise.all(nodeList.map(async (pk: any) => { try { if (pk?.componentOnReady) await pk.componentOnReady(); } catch {}; return pk; }));
+    const pickers = await Promise.all(nodeList.map(async (pk: any) => { try { if (pk?.componentOnReady) await pk.componentOnReady(); } catch { }; return pk; }));
     return pickers;
   }
 
@@ -337,12 +337,12 @@ componentDidLoad() {
         if (!pk) return;
         await new Promise(r => setTimeout(r, i * stagger));
         if (typeof pk.scrollToValue === 'function') {
-          try { await pk.scrollToValue(v, { trigger: 'program', animate: true, silent: true }); } catch {}
+          try { await pk.scrollToValue(v, { trigger: 'program', animate: true, silent: true }); } catch { }
         } else {
-          try { const old = pk.value; pk.value = undefined; pk.value = v ?? old; } catch {}
+          try { const old = pk.value; pk.value = undefined; pk.value = v ?? old; } catch { }
         }
       }));
-    } catch {}
+    } catch { }
   }
 
   private async animatePickersToCurrent() {
@@ -373,15 +373,15 @@ componentDidLoad() {
     // 在弹层打开后，强制让列吸附到当前值的正中（无动画）
     try {
       const nodeList = Array.from(this.el.querySelectorAll('ldesign-picker')) as any[];
-      const pickers = await Promise.all(nodeList.map(async (pk: any) => { try { if (pk?.componentOnReady) await pk.componentOnReady(); } catch {}; return pk; }));
+      const pickers = await Promise.all(nodeList.map(async (pk: any) => { try { if (pk?.componentOnReady) await pk.componentOnReady(); } catch { }; return pk; }));
       for (const pk of pickers) {
         if (pk && typeof pk.centerToCurrent === 'function') {
-          try { await pk.centerToCurrent(false); } catch {}
+          try { await pk.centerToCurrent(false); } catch { }
         } else if ('value' in pk) {
-          try { const v = pk.value; pk.value = undefined; pk.value = v; } catch {}
+          try { const v = pk.value; pk.value = undefined; pk.value = v; } catch { }
         }
       }
-    } catch {}
+    } catch { }
   }
 
   private handlePopupVisibleChange = (e: CustomEvent<boolean>) => {
@@ -438,7 +438,7 @@ componentDidLoad() {
     const sh = this.steps?.[0] || 1;
     const sm = this.steps?.[1] || 1;
     const ss = this.steps?.[2] || 1;
-    
+
     if (this.outputFormat === '12h') {
       this.hourOpts = this.to12HourPickerOptions(sh);
       // 确保AM/PM选项已经初始化（虽然已在类定义时初始化，但这里再次确保）
@@ -449,14 +449,14 @@ componentDidLoad() {
     } else {
       this.hourOpts = this.toPickerOptions(this.range(24), sh);
     }
-    
+
     this.minuteOpts = this.toPickerOptions(this.range(60), sm);
     this.secondOpts = this.toPickerOptions(this.range(60), ss);
   }
 
   private commitValue() { const out = this.formatTime(this.h, this.m, this.s); if (this.value !== undefined) this.ldesignChange.emit(out); else { this.value = out as any; this.ldesignChange.emit(out); } }
   private emitPick(trigger: 'click' | 'scroll' | 'keyboard' | 'now' | 'clear' | 'preset') { const out = this.formatTime(this.h, this.m, this.s); this.ldesignPick.emit({ value: out, context: { trigger } }); }
-  
+
   // 清除功能
   private clearValue = () => {
     this.value = undefined;
@@ -466,7 +466,7 @@ componentDidLoad() {
     this.emitPick('clear');
     this.hideOverlay();
   };
-  
+
   // 选择预设时间
   private selectPreset = (preset: TimePreset) => {
     const t = this.parseTime(preset.value);
@@ -480,16 +480,7 @@ componentDidLoad() {
       this.emitPick('preset');
     }
   };
-  
-  // 清除功能
-  private clearValue = () => {
-    this.value = undefined;
-    this.h = 0; this.m = 0; this.s = 0;
-    this.meridiem = 'AM';
-    this.ldesignChange.emit(undefined);
-    this.emitPick('clear');
-    this.hideOverlay();
-  };
+
 
   private useNow = () => {
     const d = new Date();
@@ -498,7 +489,7 @@ componentDidLoad() {
     const sm = this.steps?.[1] ?? 1;
     const ss = this.steps?.[2] ?? 1;
 
-    const qh = this.quantizeToStep(d.getHours(),   sh, 23);
+    const qh = this.quantizeToStep(d.getHours(), sh, 23);
     const qm = this.quantizeToStep(d.getMinutes(), sm, 59);
     const qs = this.showSeconds ? this.quantizeToStep(d.getSeconds(), ss, 59) : this.s;
 
@@ -507,15 +498,15 @@ componentDidLoad() {
 
     // 直接调子列的方法，确保动画生效；若秒列隐藏，仅滚动小时/分钟
     this.skipRecenterOnce = true; // 避免下一帧的对齐覆盖动画
-    const scrollHour   = () => {
+    const scrollHour = () => {
       try {
         const targetHour = this.outputFormat === '12h' ? (this.h === 0 ? 12 : (this.h > 12 ? this.h - 12 : this.h)) : this.h;
         this.hourPicker?.scrollToValue(String(targetHour), { animate: true, silent: true, trigger: 'program' });
-      } catch {}
+      } catch { }
     };
-    const scrollMinute = () => { try { this.minutePicker?.scrollToValue(String(qm), { animate: true, silent: true, trigger: 'program' }); } catch {} };
-    const scrollSecond = () => { if (this.showSeconds) { try { this.secondPicker?.scrollToValue(String(qs), { animate: true, silent: true, trigger: 'program' }); } catch {} } };
-    const scrollMeridiem = () => { if (this.outputFormat === '12h') { try { this.meridiemPicker?.scrollToValue(this.meridiem, { animate: true, silent: true, trigger: 'program' }); } catch {} } };
+    const scrollMinute = () => { try { this.minutePicker?.scrollToValue(String(qm), { animate: true, silent: true, trigger: 'program' }); } catch { } };
+    const scrollSecond = () => { if (this.showSeconds) { try { this.secondPicker?.scrollToValue(String(qs), { animate: true, silent: true, trigger: 'program' }); } catch { } } };
+    const scrollMeridiem = () => { if (this.outputFormat === '12h') { try { this.meridiemPicker?.scrollToValue(this.meridiem, { animate: true, silent: true, trigger: 'program' }); } catch { } } };
     // 轻微错峰
     scrollHour();
     window.setTimeout(scrollMinute, 60);
@@ -540,36 +531,36 @@ componentDidLoad() {
   private renderTrigger() {
     const text = this.value || this.defaultValue || '';
     const shouldShowClear = this.clearable && this.value && !this.disabled && !this.readonly;
-    
+
     return (
-      <div class={{ 
-        'ldesign-time-picker__trigger': true, 
-        [`ldesign-time-picker__trigger--${this.size}`]: true, 
+      <div class={{
+        'ldesign-time-picker__trigger': true,
+        [`ldesign-time-picker__trigger--${this.size}`]: true,
         'ldesign-time-picker__trigger--disabled': this.disabled,
         'ldesign-time-picker__trigger--readonly': this.readonly,
         'ldesign-time-picker__trigger--loading': this.loading
       }}
-           tabindex={this.disabled || this.readonly ? -1 : 0}
-           onKeyDown={this.readonly ? undefined : this.onTriggerKeyDown as any}
-           onClick={() => { 
-             if (!this.readonly && !this.disabled && this.trigger === 'click' && this.computeOverlayKind() === 'drawer') 
-               this.openOverlay(); 
-           }}>
-        <span class={{ 
+        tabindex={this.disabled || this.readonly ? -1 : 0}
+        onKeyDown={this.readonly ? undefined : this.onTriggerKeyDown as any}
+        onClick={() => {
+          if (!this.readonly && !this.disabled && this.trigger === 'click' && this.computeOverlayKind() === 'drawer')
+            this.openOverlay();
+        }}>
+        <span class={{
           'ldesign-time-picker__text': true,
-          'ldesign-time-picker__text--placeholder': !text 
+          'ldesign-time-picker__text--placeholder': !text
         }}>{text || this.getLocaleText('placeholder')}</span>
-        
+
         {shouldShowClear ? (
-          <span class="ldesign-time-picker__clear" 
-                onClick={(e: MouseEvent) => {
-                  e.stopPropagation();
-                  this.clearValue();
-                }}>
+          <span class="ldesign-time-picker__clear"
+            onClick={(e: MouseEvent) => {
+              e.stopPropagation();
+              this.clearValue();
+            }}>
             <ldesign-icon name="close" size="small" />
           </span>
         ) : null}
-        
+
         <span class="ldesign-time-picker__suffix">
           {this.loading ? (
             <ldesign-icon name="loading" size="small" />
@@ -587,7 +578,7 @@ componentDidLoad() {
     const secondOpts = this.secondOpts;
     const meridiemOpts = this.meridiemOpts;
 
-    const onPick = (kind: 'hour'|'minute'|'second'|'meridiem') => (e: CustomEvent<{ value: string | undefined; option?: any; context: { trigger: 'click'|'scroll'|'touch'|'wheel'|'keyboard' } }>) => {
+    const onPick = (kind: 'hour' | 'minute' | 'second' | 'meridiem') => (e: CustomEvent<{ value: string | undefined; option?: any; context: { trigger: 'click' | 'scroll' | 'touch' | 'wheel' | 'keyboard' } }>) => {
       if (kind === 'meridiem') {
         const newMeridiem = e.detail?.value as 'AM' | 'PM';
         if (newMeridiem !== this.meridiem) {
@@ -636,9 +627,9 @@ componentDidLoad() {
         {this.presets && this.presets.length > 0 && (
           <div class="ldesign-time-picker__presets">
             {this.presets.map(preset => (
-              <button 
-                class="ldesign-time-picker__preset-btn" 
-                type="button" 
+              <button
+                class="ldesign-time-picker__preset-btn"
+                type="button"
                 onClick={() => this.selectPreset(preset)}
               >
                 {preset.icon && <ldesign-icon name={preset.icon} size="small" />}
@@ -647,7 +638,7 @@ componentDidLoad() {
             ))}
           </div>
         )}
-        
+
         <div class="ldesign-time-picker__footer">
           <div class="ldesign-time-picker__footer-left">
             {this.showNow && (
@@ -671,7 +662,7 @@ componentDidLoad() {
     );
   }
 
-render() {
+  render() {
     // 内联模式：仅渲染面板内容
     if (this.inline) {
       return (

@@ -1,6 +1,5 @@
-﻿import React, { useState, useEffect } from 'react'
-import { Save, RotateCcw, Settings, Copy, RefreshCw, ChevronDown, ChevronRight, Plus, Minus, FileText } from 'lucide-react'
-import axios from 'axios'
+﻿import React, { useState } from 'react'
+import { Save, RotateCcw, Settings, Copy, RefreshCw, ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react'
 
 // 配置字段类型定义
 interface ConfigField {
@@ -28,19 +27,6 @@ interface FormData {
   [key: string]: any
 }
 
-// 环境配置信息
-interface LauncherConfigInfo {
-  environment: string
-  path: string
-  exists: boolean
-}
-
-// 配置文件内容
-interface ConfigFileContent {
-  content: string
-  path: string
-  exists: boolean
-}
 
 const LauncherConfig: React.FC = () => {
   const [saving] = useState(false)

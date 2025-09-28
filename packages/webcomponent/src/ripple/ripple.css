@@ -1,0 +1,141 @@
+/* Ripple容器样式 */
+.l-ripple {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+  z-index: 0;
+}
+
+/* 无边界模式 */
+.l-ripple--unbounded {
+  overflow: visible;
+}
+
+/* 波纹元素样式 */
+.l-ripple__element {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform, opacity;
+  background: currentColor;
+  /* 使用transform3d优化GPU加速 */
+  transform: translate3d(0, 0, 0) scale(0);
+}
+
+/* 波纹展开动画 */
+@keyframes ripple-expand {
+  from {
+    transform: translate3d(var(--ripple-x), var(--ripple-y), 0) scale(0);
+    opacity: var(--ripple-opacity, 0.24);
+  }
+  to {
+    transform: translate3d(var(--ripple-x), var(--ripple-y), 0) scale(1);
+    opacity: var(--ripple-opacity, 0.24);
+  }
+}
+
+/* 波纹消失动画 */
+@keyframes ripple-fade-out {
+  from {
+    opacity: var(--ripple-opacity, 0.24);
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* 波纹动画类 */
+.l-ripple__element--expanding {
+  animation: ripple-expand var(--ripple-duration, 600ms) var(--ripple-easing, cubic-bezier(0.4, 0, 0.2, 1)) forwards;
+}
+
+.l-ripple__element--fading-out {
+  animation: ripple-fade-out var(--ripple-fade-duration, 300ms) ease-out forwards;
+}
+
+/* 高性能模式 - 使用GPU加速 */
+.l-ripple--performance {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.l-ripple--performance .l-ripple__element {
+  transform-origin: center;
+  contain: layout style paint;
+}
+
+/* 主题预设 */
+.l-ripple--light .l-ripple__element {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.l-ripple--dark .l-ripple__element {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.l-ripple--primary .l-ripple__element {
+  background: rgba(33, 150, 243, 0.24);
+}
+
+.l-ripple--secondary .l-ripple__element {
+  background: rgba(156, 39, 176, 0.24);
+}
+
+.l-ripple--success .l-ripple__element {
+  background: rgba(76, 175, 80, 0.24);
+}
+
+.l-ripple--warning .l-ripple__element {
+  background: rgba(255, 152, 0, 0.24);
+}
+
+.l-ripple--error .l-ripple__element {
+  background: rgba(244, 67, 54, 0.24);
+}
+
+/* 响应式优化 */
+@media (hover: none) {
+  .l-ripple--touch-optimized .l-ripple__element {
+    transition-duration: 300ms;
+  }
+}
+
+/* 减少动画模式 */
+@media (prefers-reduced-motion: reduce) {
+  .l-ripple__element {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* 父元素样式 */
+.l-ripple-target {
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: pointer;
+}
+
+/* 禁用状态 */
+.l-ripple-target[disabled],
+.l-ripple-target.l-ripple--disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 确保z-index正确层叠 */
+.l-ripple-target > * {
+  position: relative;
+  z-index: 1;
+}

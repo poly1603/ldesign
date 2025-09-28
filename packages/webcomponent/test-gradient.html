@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icon 渐变和描边测试</title>
+  <script type="module" src="/dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+    .test-row {
+      display: flex;
+      gap: 30px;
+      margin: 20px 0;
+      align-items: center;
+    }
+    h2 {
+      color: #333;
+    }
+    .label {
+      min-width: 150px;
+      font-weight: bold;
+    }
+    :root {
+      --ls-icon-size-small: 20px;
+      --ls-icon-size-medium: 24px;
+      --ls-icon-size-large: 32px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Icon 渐变色和描边宽度测试</h1>
+
+  <div class="test-section">
+    <h2>1. 描边宽度测试（应该显示不同粗细）</h2>
+    <div class="test-row">
+      <span class="label">stroke-width 变化:</span>
+      <ldesign-icon name="circle" stroke-width="1" size="48"></ldesign-icon>
+      <ldesign-icon name="circle" stroke-width="2" size="48"></ldesign-icon>
+      <ldesign-icon name="circle" stroke-width="3" size="48"></ldesign-icon>
+      <ldesign-icon name="circle" stroke-width="4" size="48"></ldesign-icon>
+    </div>
+    <div class="test-row">
+      <span class="label">heart 图标:</span>
+      <ldesign-icon name="heart" stroke-width="1" size="48" color="red"></ldesign-icon>
+      <ldesign-icon name="heart" stroke-width="2" size="48" color="red"></ldesign-icon>
+      <ldesign-icon name="heart" stroke-width="3" size="48" color="red"></ldesign-icon>
+      <ldesign-icon name="heart" stroke-width="4" size="48" color="red"></ldesign-icon>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>2. 渐变色测试（应该显示渐变效果）</h2>
+    <div class="test-row">
+      <span class="label">默认渐变:</span>
+      <ldesign-icon name="star" gradient size="48"></ldesign-icon>
+      <ldesign-icon name="heart" gradient size="48"></ldesign-icon>
+      <ldesign-icon name="rocket" gradient size="48"></ldesign-icon>
+    </div>
+    <div class="test-row">
+      <span class="label">自定义渐变色:</span>
+      <ldesign-icon 
+        name="flame" 
+        gradient 
+        gradient-colors='["#ff0000", "#ff8800"]' 
+        size="48">
+      </ldesign-icon>
+      <ldesign-icon 
+        name="droplet" 
+        gradient 
+        gradient-colors='["#00ffff", "#0088ff"]' 
+        size="48">
+      </ldesign-icon>
+      <ldesign-icon 
+        name="leaf" 
+        gradient 
+        gradient-colors='["#00ff00", "#008800"]' 
+        size="48">
+      </ldesign-icon>
+    </div>
+    <div class="test-row">
+      <span class="label">渐变方向:</span>
+      <ldesign-icon 
+        name="arrow-right" 
+        gradient 
+        gradient-direction="horizontal" 
+        gradient-colors='["#ff0000", "#0000ff"]'
+        size="48">
+      </ldesign-icon>
+      <ldesign-icon 
+        name="arrow-down" 
+        gradient 
+        gradient-direction="vertical" 
+        gradient-colors='["#ff0000", "#0000ff"]'
+        size="48">
+      </ldesign-icon>
+      <ldesign-icon 
+        name="arrow-down-right" 
+        gradient 
+        gradient-direction="diagonal" 
+        gradient-colors='["#ff0000", "#0000ff"]'
+        size="48">
+      </ldesign-icon>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>3. 组合测试（渐变 + 描边宽度）</h2>
+    <div class="test-row">
+      <span class="label">渐变 + 不同描边:</span>
+      <ldesign-icon 
+        name="star" 
+        gradient 
+        stroke-width="1"
+        gradient-colors='["#ff6b6b", "#ffd93d"]'
+        size="48">
+      </ldesign-icon>
+      <ldesign-icon 
+        name="star" 
+        gradient 
+        stroke-width="2"
+        gradient-colors='["#ff6b6b", "#ffd93d"]'
+        size="48">
+      </ldesign-icon>
+      <ldesign-icon 
+        name="star" 
+        gradient 
+        stroke-width="3"
+        gradient-colors='["#ff6b6b", "#ffd93d"]'
+        size="48">
+      </ldesign-icon>
+      <ldesign-icon 
+        name="star" 
+        gradient 
+        stroke-width="4"
+        gradient-colors='["#ff6b6b", "#ffd93d"]'
+        size="48">
+      </ldesign-icon>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>4. 调试信息</h2>
+    <p>打开浏览器开发者工具，检查元素中的SVG内容：</p>
+    <ul>
+      <li>stroke-width 属性是否正确应用</li>
+      <li>是否有 &lt;defs&gt; 和 &lt;linearGradient&gt; 元素</li>
+      <li>stroke 属性是否指向渐变 ID</li>
+    </ul>
+  </div>
+
+  <script>
+    // 打印一个图标的SVG内容用于调试
+    setTimeout(() => {
+      const icon = document.querySelector('ldesign-icon[gradient]');
+      if (icon) {
+        const svg = icon.querySelector('svg');
+        if (svg) {
+          console.log('渐变图标的SVG内容:', svg.outerHTML);
+        }
+      }
+      
+      const iconWithStroke = document.querySelector('ldesign-icon[stroke-width="4"]');
+      if (iconWithStroke) {
+        const svg = iconWithStroke.querySelector('svg');
+        if (svg) {
+          console.log('描边宽度4的SVG内容:', svg.outerHTML);
+        }
+      }
+    }, 1000);
+  </script>
+</body>
+</html>

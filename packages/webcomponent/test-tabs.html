@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Tabs 组件测试</title>
+  <script type="module" src="/build/ldesign-webcomponent.esm.js"></script>
+  <script nomodule src="/build/ldesign-webcomponent.js"></script>
+  <link href="/build/ldesign-webcomponent.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      background: #f9fafb;
+      margin: 0;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    h2 {
+      margin-top: 0;
+      color: #1f2937;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 8px;
+    }
+    
+    h3 {
+      color: #4b5563;
+      margin-top: 24px;
+    }
+    
+    .demo-row {
+      margin-bottom: 32px;
+    }
+    
+    .demo-content {
+      padding: 20px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      min-height: 100px;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    button {
+      padding: 8px 16px;
+      background: #722ED1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    
+    button:hover {
+      background: #5b23a8;
+    }
+    
+    select {
+      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background: white;
+      font-size: 14px;
+    }
+    
+    label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: #4b5563;
+    }
+    
+    .icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+    }
+    
+    /* 模拟图标 */
+    .icon-home::before { content: "🏠"; }
+    .icon-user::before { content: "👤"; }
+    .icon-settings::before { content: "⚙️"; }
+    .icon-mail::before { content: "✉️"; }
+    .icon-chart::before { content: "📊"; }
+    .icon-folder::before { content: "📁"; }
+    
+    /* 响应式测试容器 */
+    .responsive-demo {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    
+    .device-frame {
+      max-width: 375px;
+      margin: 0 auto;
+      border: 2px solid #374151;
+      border-radius: 20px;
+      padding: 10px;
+      background: white;
+    }
+    
+    @media (max-width: 640px) {
+      body {
+        padding: 12px;
+      }
+      .section {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 style="text-align: center; color: #722ED1;">LDesign Tabs 组件完整测试</h1>
+    
+    <!-- 基础用法 -->
+    <div class="section">
+      <h2>基础用法</h2>
+      
+      <div class="demo-row">
+        <h3>默认线条样式</h3>
+        <ldesign-tabs>
+          <ldesign-tab-panel name="tab1" label="标签一">
+            <div class="demo-content">这是标签一的内容</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="标签二">
+            <div class="demo-content">这是标签二的内容</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="标签三">
+            <div class="demo-content">这是标签三的内容</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>禁用状态</h3>
+        <ldesign-tabs>
+          <ldesign-tab-panel name="tab1" label="正常标签">
+            <div class="demo-content">可以正常切换</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="禁用标签" disabled="true">
+            <div class="demo-content">此标签被禁用</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="另一个标签">
+            <div class="demo-content">也可以正常切换</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+    </div>
+    
+    <!-- 不同样式 -->
+    <div class="section">
+      <h2>不同样式类型</h2>
+      
+      <div class="demo-row">
+        <h3>卡片样式 (Card)</h3>
+        <ldesign-tabs type="card">
+          <ldesign-tab-panel name="tab1" label="卡片一">
+            <div class="demo-content">卡片样式的标签页</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="卡片二">
+            <div class="demo-content">更加立体的视觉效果</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="卡片三">
+            <div class="demo-content">适合内容区域分组</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>胶囊样式 (Pills)</h3>
+        <ldesign-tabs type="pills">
+          <ldesign-tab-panel name="tab1" label="选项 A">
+            <div class="demo-content">圆润的胶囊风格</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="选项 B">
+            <div class="demo-content">现代化的设计</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="选项 C">
+            <div class="demo-content">适合移动端使用</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>极简样式 (Minimal)</h3>
+        <ldesign-tabs type="minimal">
+          <ldesign-tab-panel name="tab1" label="简约">
+            <div class="demo-content">极简主义设计</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="清爽">
+            <div class="demo-content">去除多余装饰</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="优雅">
+            <div class="demo-content">注重内容本身</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>渐变样式 (Gradient)</h3>
+        <ldesign-tabs type="gradient">
+          <ldesign-tab-panel name="tab1" label="炫彩一">
+            <div class="demo-content">渐变色背景</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="炫彩二">
+            <div class="demo-content">活泼的视觉效果</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="炫彩三">
+            <div class="demo-content">适合创意类项目</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>分段控制器样式 (Segmented)</h3>
+        <ldesign-tabs type="segmented">
+          <ldesign-tab-panel name="tab1" label="日">
+            <div class="demo-content">今日数据</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="周">
+            <div class="demo-content">本周数据</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="月">
+            <div class="demo-content">本月数据</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+    </div>
+    
+    <!-- 不同位置 -->
+    <div class="section">
+      <h2>标签位置</h2>
+      
+      <div class="demo-row">
+        <h3>顶部（默认）</h3>
+        <ldesign-tabs placement="top">
+          <ldesign-tab-panel name="tab1" label="顶部一">
+            <div class="demo-content">标签在顶部</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="顶部二">
+            <div class="demo-content">最常见的布局方式</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>底部</h3>
+        <ldesign-tabs placement="bottom">
+          <ldesign-tab-panel name="tab1" label="底部一">
+            <div class="demo-content">标签在底部</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="底部二">
+            <div class="demo-content">适合移动端底部导航</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>左侧</h3>
+        <ldesign-tabs placement="left" style="min-height: 200px;">
+          <ldesign-tab-panel name="tab1" label="左侧一">
+            <div class="demo-content">标签在左侧，适合侧边栏导航</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="左侧二">
+            <div class="demo-content">垂直布局，节省横向空间</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="左侧三">
+            <div class="demo-content">适合桌面端应用</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>右侧</h3>
+        <ldesign-tabs placement="right" style="min-height: 200px;">
+          <ldesign-tab-panel name="tab1" label="右侧一">
+            <div class="demo-content">标签在右侧</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="右侧二">
+            <div class="demo-content">较少使用的布局方式</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+    </div>
+    
+    <!-- 高级功能 -->
+    <div class="section">
+      <h2>高级功能</h2>
+      
+      <div class="demo-row">
+        <h3>可关闭标签</h3>
+        <ldesign-tabs id="closableTabs">
+          <ldesign-tab-panel name="tab1" label="不可关闭">
+            <div class="demo-content">这个标签不能关闭</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="可关闭" closable="true">
+            <div class="demo-content">点击 × 可以关闭此标签</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="也可关闭" closable="true">
+            <div class="demo-content">动态标签页场景</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>可新增标签</h3>
+        <ldesign-tabs id="addableTabs" addable="true">
+          <ldesign-tab-panel name="tab1" label="标签 1">
+            <div class="demo-content">初始标签 1</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="标签 2">
+            <div class="demo-content">初始标签 2</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>带图标和徽标</h3>
+        <ldesign-tabs>
+          <ldesign-tab-panel name="home" label="首页" icon="icon-home">
+            <div class="demo-content">首页内容</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="user" label="用户" icon="icon-user" badge="5">
+            <div class="demo-content">有 5 条新消息</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="settings" label="设置" icon="icon-settings" badge="New">
+            <div class="demo-content">设置页面</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>懒加载内容</h3>
+        <ldesign-tabs>
+          <ldesign-tab-panel name="tab1" label="立即加载">
+            <div class="demo-content">此内容立即渲染</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="懒加载" lazy="true">
+            <div class="demo-content">
+              <p>此内容在首次激活时才渲染</p>
+              <p>适合包含大量内容或复杂组件的场景</p>
+            </div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="销毁隐藏" destroy-on-hide="true">
+            <div class="demo-content">
+              <p>切换到其他标签时会销毁此内容</p>
+              <p>再次切换回来时重新渲染</p>
+              <p>当前时间: <span id="currentTime"></span></p>
+            </div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>过渡动画</h3>
+        <div class="controls">
+          <label>
+            动画类型:
+            <select id="transitionType">
+              <option value="fade">淡入淡出</option>
+              <option value="slide">滑动</option>
+              <option value="zoom">缩放</option>
+              <option value="none">无动画</option>
+            </select>
+          </label>
+        </div>
+        <ldesign-tabs id="animatedTabs">
+          <ldesign-tab-panel name="tab1" label="页面一" transition="fade">
+            <div class="demo-content">淡入淡出效果</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="页面二" transition="fade">
+            <div class="demo-content">平滑过渡</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="页面三" transition="fade">
+            <div class="demo-content">优雅切换</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>拖拽排序（需开启）</h3>
+        <ldesign-tabs draggable="true" type="card">
+          <ldesign-tab-panel name="tab1" label="拖动我">
+            <div class="demo-content">可以拖拽标签改变顺序</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="换个位置">
+            <div class="demo-content">按住标签拖动到新位置</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="重新排序">
+            <div class="demo-content">适合需要自定义顺序的场景</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+    </div>
+    
+    <!-- 尺寸变化 -->
+    <div class="section">
+      <h2>不同尺寸</h2>
+      
+      <div class="demo-row">
+        <h3>小尺寸</h3>
+        <ldesign-tabs size="small" type="card">
+          <ldesign-tab-panel name="tab1" label="小标签一">
+            <div class="demo-content">紧凑的布局</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="小标签二">
+            <div class="demo-content">节省空间</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>中等尺寸（默认）</h3>
+        <ldesign-tabs size="medium" type="card">
+          <ldesign-tab-panel name="tab1" label="中标签一">
+            <div class="demo-content">标准尺寸</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="中标签二">
+            <div class="demo-content">平衡的视觉效果</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+      
+      <div class="demo-row">
+        <h3>大尺寸</h3>
+        <ldesign-tabs size="large" type="card">
+          <ldesign-tab-panel name="tab1" label="大标签一">
+            <div class="demo-content">更大的点击区域</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="大标签二">
+            <div class="demo-content">适合触摸操作</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+    </div>
+    
+    <!-- 滚动标签 -->
+    <div class="section">
+      <h2>滚动标签（多标签场景）</h2>
+      
+      <div class="demo-row">
+        <ldesign-tabs type="card">
+          <ldesign-tab-panel name="tab1" label="标签 1">
+            <div class="demo-content">内容 1</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab2" label="标签 2">
+            <div class="demo-content">内容 2</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab3" label="标签 3">
+            <div class="demo-content">内容 3</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab4" label="标签 4">
+            <div class="demo-content">内容 4</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab5" label="标签 5">
+            <div class="demo-content">内容 5</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab6" label="长标签名称 6">
+            <div class="demo-content">内容 6</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab7" label="长标签名称 7">
+            <div class="demo-content">内容 7</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab8" label="长标签名称 8">
+            <div class="demo-content">内容 8</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab9" label="长标签名称 9">
+            <div class="demo-content">内容 9</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="tab10" label="长标签名称 10">
+            <div class="demo-content">内容 10</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+    </div>
+    
+    <!-- 响应式演示 -->
+    <div class="section">
+      <h2>响应式设计演示</h2>
+      
+      <div class="demo-row">
+        <h3>模拟手机视图</h3>
+        <div class="responsive-demo">
+          <div class="device-frame">
+            <ldesign-tabs type="pills" swipeable="true">
+              <ldesign-tab-panel name="tab1" label="推荐">
+                <div class="demo-content">
+                  <p>支持触摸滑动切换</p>
+                  <p>左右滑动试试</p>
+                </div>
+              </ldesign-tab-panel>
+              <ldesign-tab-panel name="tab2" label="热门">
+                <div class="demo-content">
+                  <p>移动端优化</p>
+                  <p>自动适应小屏幕</p>
+                </div>
+              </ldesign-tab-panel>
+              <ldesign-tab-panel name="tab3" label="最新">
+                <div class="demo-content">
+                  <p>流畅的触摸体验</p>
+                </div>
+              </ldesign-tab-panel>
+            </ldesign-tabs>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 编程控制演示 -->
+    <div class="section">
+      <h2>编程控制</h2>
+      
+      <div class="demo-row">
+        <div class="controls">
+          <button onclick="selectTab('program1')">切换到第一个</button>
+          <button onclick="selectTab('program2')">切换到第二个</button>
+          <button onclick="selectTab('program3')">切换到第三个</button>
+          <button onclick="addNewTab()">添加新标签</button>
+          <button onclick="removeLastTab()">移除最后标签</button>
+        </div>
+        
+        <ldesign-tabs id="programTabs" type="card">
+          <ldesign-tab-panel name="program1" label="编程 1">
+            <div class="demo-content">通过 JavaScript 控制标签切换</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="program2" label="编程 2">
+            <div class="demo-content">动态添加和删除标签</div>
+          </ldesign-tab-panel>
+          <ldesign-tab-panel name="program3" label="编程 3">
+            <div class="demo-content">完全的编程控制</div>
+          </ldesign-tab-panel>
+        </ldesign-tabs>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 更新当前时间
+    function updateTime() {
+      const timeEl = document.getElementById('currentTime');
+      if (timeEl) {
+        timeEl.textContent = new Date().toLocaleTimeString('zh-CN');
+      }
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+    
+    // 监听标签切换事件
+    document.addEventListener('ldesignChange', (e) => {
+      console.log('标签切换到:', e.detail);
+    });
+    
+    // 监听添加标签事件
+    document.getElementById('addableTabs')?.addEventListener('ldesignAdd', (e) => {
+      const tabs = e.target;
+      const count = tabs.querySelectorAll('ldesign-tab-panel').length + 1;
+      tabs.addTab({
+        name: `tab${count}`,
+        label: `新标签 ${count}`,
+        closable: true
+      }).then(panel => {
+        panel.innerHTML = `<div class="demo-content">新添加的标签 ${count} 内容</div>`;
+      });
+    });
+    
+    // 监听关闭标签事件
+    document.addEventListener('ldesignRemove', (e) => {
+      console.log('关闭标签:', e.detail.name);
+      // 在实际应用中，这里可以处理标签关闭的逻辑
+      const panel = e.target.querySelector(`ldesign-tab-panel[name="${e.detail.name}"]`);
+      if (panel) {
+        panel.remove();
+      }
+    });
+    
+    // 监听拖拽排序事件
+    document.addEventListener('ldesignReorder', (e) => {
+      console.log('标签重新排序:', e.detail.items.map(item => item.label));
+    });
+    
+    // 动画类型切换
+    document.getElementById('transitionType')?.addEventListener('change', (e) => {
+      const tabs = document.getElementById('animatedTabs');
+      const panels = tabs.querySelectorAll('ldesign-tab-panel');
+      panels.forEach(panel => {
+        panel.transition = e.target.value;
+      });
+    });
+    
+    // 编程控制函数
+    let newTabCounter = 3;
+    
+    function selectTab(name) {
+      const tabs = document.getElementById('programTabs');
+      tabs.selectTab(name);
+    }
+    
+    function addNewTab() {
+      const tabs = document.getElementById('programTabs');
+      newTabCounter++;
+      tabs.addTab({
+        name: `program${newTabCounter}`,
+        label: `新标签 ${newTabCounter}`,
+        closable: true
+      }).then(panel => {
+        panel.innerHTML = `<div class="demo-content">动态添加的标签 ${newTabCounter}</div>`;
+      });
+    }
+    
+    function removeLastTab() {
+      const tabs = document.getElementById('programTabs');
+      const panels = tabs.querySelectorAll('ldesign-tab-panel');
+      if (panels.length > 1) {
+        const lastPanel = panels[panels.length - 1];
+        tabs.removeTab(lastPanel.name);
+      }
+    }
+    
+    // 监听面板加载和销毁事件
+    document.addEventListener('ldesignPanelLoad', (e) => {
+      console.log('面板加载完成');
+    });
+    
+    document.addEventListener('ldesignPanelDestroy', (e) => {
+      console.log('面板销毁');
+    });
+  </script>
+</body>
+</html>
