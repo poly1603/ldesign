@@ -155,6 +155,7 @@ graph TD;
   ldesign-modal --> ldesign-button
   ldesign-modal --> ldesign-icon
   ldesign-button --> ldesign-icon
+  ldesign-button --> ldesign-ripple
   ldesign-calendar --> ldesign-modal
   style ldesign-modal fill:#f9f,stroke:#333,stroke-width:4px
 ```

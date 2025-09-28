@@ -1,20 +1,51 @@
 @prefix: ldesign-ripple;
 
-.@{prefix} {
-  display: contents;
-}
-
-// Basic ripple styles placeholder to avoid build errors
-// You can customize later if needed
-.@{prefix}__container {
+// 目标容器样式标记
+.@{prefix}__target {
   position: relative;
   overflow: hidden;
 }
+.@{prefix}__target--unbounded {
+  overflow: visible;
+}
 
-.@{prefix}__element {
+// Host 作为覆盖层
+:host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+  display: block;
+}
+
+.@{prefix} {
+  // 仅用于 BEM 前缀
+}
+
+// 波纹元素
+.@{prefix}__wave {
   position: absolute;
   border-radius: 50%;
   transform: scale(0);
-  opacity: 0.2;
+  will-change: transform, opacity;
   pointer-events: none;
+  opacity: 0;
+  /* 使用变量控制色彩/不透明度/特效参数 */
+  --ld-ripple-opacity: 0.24;
+  --ld-ripple-color: currentColor;
+  --ld-ripple-ring-width: 2px;
+  --ld-ripple-glow-blur: 8px;
+  background-color: var(--ld-ripple-color);
+}
+
+/* 单一的实心扩散是默认与唯一效果，保证自然与优雅 */
+
+.@{prefix}__wave--active {
+  transform: scale(1);
+  opacity: var(--ld-ripple-opacity, 0.24);
+}
+
+.@{prefix}__wave--fadeout {
+  opacity: 0;
 }

@@ -53,6 +53,7 @@ export { LdesignInputNumber } from './input-number/input-number';
 export { LdesignAlert } from './alert/alert';
 export { LdesignCircleNavigation } from './circle-navigation/circle-navigation';
 export { LdesignTag } from './tag/tag';
+export { LdesignTagGroup } from './tag-group/tag-group';
 export { LdesignCountdown } from './countdown/countdown';
 export { LdesignSwiper } from './swiper/swiper';
 export { LdesignSwiperSlide } from './swiper/swiper-slide';

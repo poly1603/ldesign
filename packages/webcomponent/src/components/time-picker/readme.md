@@ -76,6 +76,7 @@ graph TD;
   ldesign-time-picker --> ldesign-popup
   ldesign-time-picker --> ldesign-drawer
   ldesign-button --> ldesign-icon
+  ldesign-button --> ldesign-ripple
   ldesign-drawer --> ldesign-icon
   ldesign-date-picker --> ldesign-time-picker
   style ldesign-time-picker fill:#f9f,stroke:#333,stroke-width:4px

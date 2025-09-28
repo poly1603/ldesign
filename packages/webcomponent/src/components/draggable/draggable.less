@@ -8,6 +8,12 @@
   touch-action: none; // 禁止浏览器默认手势
   overscroll-behavior: contain; // 阻断滚动链
   user-select: none; -webkit-user-select: none;
+  outline: none;
+}
+
+.ldesign-draggable:focus-visible {
+  outline: 2px solid var(--ldesign-focus, #4c9ffe);
+  outline-offset: 2px;
 }
 
 .ldesign-draggable__content {
@@ -34,3 +40,46 @@
 .ldesign-draggable__content.is-gesturing,
 .ldesign-draggable__content.is-bouncing,
 .ldesign-draggable__content.is-kinetic { transition: none; }
+
+/* 光标建议：根据需要用户可覆盖 */
+.ldesign-draggable__content {
+  cursor: grab;
+}
+.ldesign-draggable__content.is-dragging {
+  cursor: grabbing;
+}
+
+/* 悬浮工具栏 */
+.ldesign-draggable__controls {
+  position: absolute;
+  z-index: 5;
+  pointer-events: auto;
+}
+.ldesign-draggable__controls--top-right { top: 8px; right: 8px; }
+.ldesign-draggable__controls--top-left { top: 8px; left: 8px; }
+.ldesign-draggable__controls--bottom-right { bottom: 8px; right: 8px; }
+.ldesign-draggable__controls--bottom-left { bottom: 8px; left: 8px; }
+
+.ldesign-draggable__controls-inner {
+  display: flex;
+  gap: 6px;
+  background: @panel-dark;
+  backdrop-filter: blur(4px);
+  padding: 6px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.18);
+}
+
+.ldesign-draggable__btn {
+  appearance: none;
+  border: 0;
+  line-height: 1;
+  padding: 6px 8px;
+  color: #fff;
+  background: rgba(255,255,255,.08);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.ldesign-draggable__btn:hover { background: rgba(255,255,255,.18); }
+.ldesign-draggable__btn:active { background: rgba(255,255,255,.22); }
+.ldesign-draggable__btn:focus-visible { outline: 2px solid var(--ldesign-focus, #4c9ffe); outline-offset: 2px; }

@@ -50,6 +50,7 @@ graph TD;
   ldesign-input --> ldesign-icon
   ldesign-checkbox --> ldesign-icon
   ldesign-button --> ldesign-icon
+  ldesign-button --> ldesign-ripple
   style ldesign-transfer fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

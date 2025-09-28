@@ -25,6 +25,10 @@ export class LdesignDraggable {
 
   /** PC 滚轮缩放 */
   @Prop() wheelZoom: boolean = true;
+  /** 是否需要按住 Ctrl/⌘ 才进行滚轮缩放；否则滚轮优先缩放 */
+  @Prop() wheelZoomRequiresCtrl: boolean = false;
+  /** 允许使用滚轮进行平移（当未触发缩放时） */
+  @Prop() wheelPan: boolean = true;
   /** 缩放步进（滚轮/按钮）*/
   @Prop() zoomStep: number = 0.1;
   /** 最小/最大缩放 */
@@ -32,14 +36,30 @@ export class LdesignDraggable {
   @Prop() maxScale: number = 4;
   /** 是否允许旋转（移动端双指） */
   @Prop() enableRotate: boolean = true;
+  /** 旋转吸附角度（度）。大于 0 时在捏合旋转接近该步进的倍数会吸附 */
+  @Prop() rotateSnapDeg: number = 0;
+  /** 旋转吸附阈值（度），仅当与最近倍数的差值不超过该阈值时生效 */
+  @Prop() rotateSnapEpsilon: number = 3;
   /** 双击切换到的缩放倍数 */
   @Prop() doubleTapZoom: number = 2;
+  /** 是否允许双击/双指双击缩放 */
+  @Prop() allowDoubleTap: boolean = true;
 
   /** 初始状态 */
   @Prop() initialScale: number = 1;
   @Prop() initialRotate: number = 0;
   @Prop() initialOffsetX: number = 0;
   @Prop() initialOffsetY: number = 0;
+  /** 是否启用动量滚动 */
+  @Prop() enableMomentum: boolean = true;
+  /** 是否启用键盘交互（方向键平移、+/- 缩放、R 旋转、0 重置） */
+  @Prop() keyboard: boolean = true;
+  /** 方向键平移基础步长（像素） */
+  @Prop() keyPanStep: number = 40;
+  /** 按住 Shift 时的平移步长倍率 */
+  @Prop() keyPanFastMultiplier: number = 3;
+  /** 是否禁用右键菜单（避免干扰拖拽） */
+  @Prop() disableContextMenu: boolean = true;
 
   // ── Events ────────────────────────────────────────────
   @Event() ldesignTransformChange: EventEmitter<{ scale: number; rotate: number; offsetX: number; offsetY: number }>;
@@ -53,6 +73,10 @@ export class LdesignDraggable {
   @State() offsetY: number = 0;
   @State() dragging: boolean = false;
   @State() gesturing: boolean = false;
+
+  // 控件栏相关
+  @Prop() showControls: boolean = false;
+  @Prop() controlsPosition: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' = 'top-right';
 
   private canvasEl?: HTMLElement;
   private contentEl?: HTMLElement; // 被 transform 的节点（img 或 slot 容器）
@@ -76,6 +100,8 @@ export class LdesignDraggable {
   private pinchStartScale = 1;
   private pinchStartAngle = 0;
   private rotateStart = 0;
+  
+  private resizeObserver?: ResizeObserver;
 
   // 舞台与基准尺寸（scale=1）
   private stageWidth = 0; private stageHeight = 0;
@@ -106,8 +132,19 @@ export class LdesignDraggable {
   componentDidLoad() {
     this.updateStageMetrics();
     window.addEventListener('resize', this.onWindowResize, { passive: true } as any);
+    if (typeof ResizeObserver !== 'undefined' && this.canvasEl) {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.updateStageMetrics();
+        this.measureBaseSize();
+        this.applyTransform();
+      });
+      try { this.resizeObserver.observe(this.canvasEl); } catch {}
+    }
   }
-  disconnectedCallback() { window.removeEventListener('resize', this.onWindowResize as any); }
+  disconnectedCallback() {
+    window.removeEventListener('resize', this.onWindowResize as any);
+    try { this.resizeObserver?.disconnect(); } catch {}
+  }
 
   // ── Public Methods ────────────────────────────────────
   @Method() async reset() { this.resetInternal(1, 0, 0, 0); this.applyTransform(); this.emitChange(); }
@@ -116,10 +153,17 @@ export class LdesignDraggable {
   @Method() async setOffsets(x: number, y: number) { this.offsetX = x; this.offsetY = y; this.visualOffsetX = x; this.visualOffsetY = y; this.applyTransform(); this.emitChange(); }
   @Method() async getTransformString() { return this.getTransformStringInternal(); }
   @Method() async getState() { return { scale: this.scale, rotate: this.rotate, offsetX: this.offsetX, offsetY: this.offsetY }; }
+  @Method() async setOffsets(x: number, y: number) { this.offsetX = x; this.offsetY = y; this.visualOffsetX = x; this.visualOffsetY = y; this.applyTransform(); this.emitChange(); }
+  @Method() async panBy(dx: number, dy: number, clamp: boolean = true) { this.panInternal((this.offsetX || 0) + dx, (this.offsetY || 0) + dy, clamp); }
+  @Method() async panTo(x: number, y: number, clamp: boolean = true) { this.panInternal(x, y, clamp); }
+  @Method() async fitContain() { const s = this.computeContainScaleForCurrentRotate(); if (s) { this.scale = s; this.offsetX = 0; this.offsetY = 0; this.visualOffsetX = 0; this.visualOffsetY = 0; this.applyTransform(); this.emitChange(); } }
+  @Method() async fitCover() { const s = this.computeCoverScaleForCurrentRotate(); if (s) { this.scale = s; this.offsetX = 0; this.offsetY = 0; this.visualOffsetX = 0; this.visualOffsetY = 0; this.applyTransform(); this.emitChange(); } }
+  @Method() async getTransformString() { return this.getTransformStringInternal(); }
+  @Method() async getState() { return { scale: this.scale, rotate: this.rotate, offsetX: this.offsetX, offsetY: this.offsetY }; }
 
   // ── Core ──────────────────────────────────────────────
   private resetInternal(s: number, r: number, x: number, y: number) {
-    this.scale = s; this.rotate = r; this.offsetX = x; this.offsetY = y; this.visualOffsetX = x; this.visualOffsetY = y;
+    this.scale = this.clampScale(s); this.rotate = r; this.offsetX = x; this.offsetY = y; this.visualOffsetX = x; this.visualOffsetY = y;
     this.bouncing = false; this.stopMomentum(); this.stopZoom();
   }
 
@@ -131,6 +175,12 @@ export class LdesignDraggable {
     return `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) scale(${s}) rotate(${this.rotate}deg)`;
   }
 
+  private clampScale(s: number) {
+    let next = Math.min(this.maxScale, Math.max(this.minScale, s));
+    if (Math.abs(next - 1) < 0.02) next = 1;
+    return Number(next.toFixed(4));
+  }
+
   private applyTransform() {
     if (!this.contentEl) return;
     this.contentEl.style.transform = this.getTransformStringInternal();
@@ -139,11 +189,28 @@ export class LdesignDraggable {
   private emitChange() { this.ldesignTransformChange.emit({ scale: this.scale, rotate: this.rotate, offsetX: this.offsetX, offsetY: this.offsetY }); }
 
   private onWheel = (e: WheelEvent) => {
-    if (!this.wheelZoom) return;
     e.preventDefault();
-    const delta = e.deltaY > 0 ? -this.zoomStep : this.zoomStep;
-    const target = Math.min(this.maxScale, Math.max(this.minScale, this.scale + delta));
-    this.zoomToInternal(target, e.clientX, e.clientY);
+    const wantZoom = this.wheelZoom && (!this.wheelZoomRequiresCtrl || e.ctrlKey || (e as any).metaKey);
+    if (wantZoom) {
+      const delta = e.deltaY > 0 ? -this.zoomStep : this.zoomStep;
+      const target = Math.min(this.maxScale, Math.max(this.minScale, this.scale + delta));
+      this.zoomToInternal(target, e.clientX, e.clientY);
+      return;
+    }
+    if (this.wheelPan) {
+      // 触控板/鼠标滚轮平移（按住 Shift 水平加速）
+      const factor = e.shiftKey ? 1.6 : 1;
+      const dx = -e.deltaX * factor;
+      const dy = -e.deltaY * factor;
+      const useVisual = this.gesturing || this.dragging || this.bouncing || this.momentumRunning || this.zooming;
+      const curX = useVisual ? this.visualOffsetX : this.offsetX;
+      const curY = useVisual ? this.visualOffsetY : this.offsetY;
+      const b = this.getPanBounds();
+      const nx = Math.min(b.maxX, Math.max(b.minX, curX + dx));
+      const ny = Math.min(b.maxY, Math.max(b.minY, curY + dy));
+      this.offsetX = nx; this.offsetY = ny; this.visualOffsetX = nx; this.visualOffsetY = ny;
+      this.applyTransform(); this.emitChange();
+    }
   };
 
   private zoomToInternal(nextScale: number, clientX?: number, clientY?: number, animated = false) {
@@ -177,6 +244,7 @@ export class LdesignDraggable {
   }
 
   private onDblClick = (e: MouseEvent | PointerEvent) => {
+    if (!this.allowDoubleTap) return;
     e.preventDefault();
     const target = this.scale === 1 ? this.doubleTapZoom : 1;
     this.zoomToInternal(target, (e as any).clientX, (e as any).clientY, true); // 启用动画
@@ -211,7 +279,7 @@ export class LdesignDraggable {
       this.visualOffsetX = this.offsetX; this.visualOffsetY = this.offsetY;
       this.lastMoveTime = performance.now(); this.lastMoveX = e.clientX; this.lastMoveY = e.clientY; this.velocityX = 0; this.velocityY = 0;
 
-      if (e.pointerType === 'touch' && (e as any).isPrimary !== false) {
+      if (this.allowDoubleTap && e.pointerType === 'touch' && (e as any).isPrimary !== false) {
         const now = Date.now();
         if (now - this.lastTapTime < 300 && !this.isPinching) {
           if (this.singleTapTimer) { clearTimeout(this.singleTapTimer); this.singleTapTimer = undefined as any; }
@@ -288,7 +356,7 @@ export class LdesignDraggable {
     this.dragging = false;
     // 动量滚动（放大后才生效）
     const speed = Math.hypot(this.velocityX, this.velocityY);
-    const canMomentum = this.scale > 1.01;
+    const canMomentum = this.enableMomentum && this.scale > 1.01;
     if (canMomentum && speed > 0.25) { // 约 >250px/s
       this.startMomentum(this.velocityX, this.velocityY);
       try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
@@ -318,12 +386,19 @@ export class LdesignDraggable {
     const px = clientX - centerX; const py = clientY - centerY;
     const vX = px - T0x; const vY = py - T0y;
 
-    const dtheta = (nextRotateDeg - this.rotate) * Math.PI / 180;
+    // 旋转吸附（可选）
+    let rotateNext = nextRotateDeg;
+    if (this.rotateSnapDeg > 0) {
+      const snapped = this.snapAngle(rotateNext, this.rotateSnapDeg);
+      if (Math.abs(snapped - rotateNext) <= this.rotateSnapEpsilon) rotateNext = snapped;
+    }
+
+    const dtheta = (rotateNext - this.rotate) * Math.PI / 180;
     const cos = Math.cos(dtheta), sin = Math.sin(dtheta);
     const rx = cos * vX - sin * vY; const ry = sin * vX + cos * vY;
     let newX = T0x + (vX - r * rx); let newY = T0y + (vY - r * ry);
 
-    this.scale = s1; this.rotate = nextRotateDeg;
+    this.scale = s1; this.rotate = rotateNext;
     const b = this.getPanBounds();
     newX = this.rubberband(newX, b.minX, b.maxX); newY = this.rubberband(newY, b.minY, b.maxY);
     this.visualOffsetX = newX; this.visualOffsetY = newY;
@@ -332,6 +407,30 @@ export class LdesignDraggable {
 
   // ── Bounds & metrics ─────────────────────────────────
   private onWindowResize = () => { this.updateStageMetrics(); this.measureBaseSize(); this.applyTransform(); };
+  private onContextMenu = (e: MouseEvent) => { if (this.disableContextMenu) { e.preventDefault(); } };
+  private onKeyDown = (e: KeyboardEvent) => {
+    if (!this.keyboard) return;
+    // 仅在画布聚焦时响应
+    const target = e.target as HTMLElement;
+    if (!this.canvasEl || (target !== this.canvasEl)) return;
+    const key = e.key;
+    const isPlus = key === '+' || key === '=';
+    const isMinus = key === '-' || key === '_';
+    const isZero = key === '0';
+    const stepBase = Math.max(1, Math.floor(this.keyPanStep));
+    const fast = e.shiftKey ? this.keyPanFastMultiplier : 1;
+    const ctrlSlow = (e.ctrlKey || (e as any).metaKey) ? 0.5 : 1;
+    const panStep = Math.round(stepBase * fast * ctrlSlow);
+
+    if (isPlus) { e.preventDefault(); this.zoomIn(); return; }
+    if (isMinus) { e.preventDefault(); this.zoomOut(); return; }
+    if (isZero) { e.preventDefault(); this.reset(); return; }
+    if (key === 'r' || key === 'R') { e.preventDefault(); this.rotateBy(e.shiftKey ? -90 : 90); return; }
+    if (key === 'ArrowUp') { e.preventDefault(); this.panBy(0, -panStep); return; }
+    if (key === 'ArrowDown') { e.preventDefault(); this.panBy(0, panStep); return; }
+    if (key === 'ArrowLeft') { e.preventDefault(); this.panBy(-panStep, 0); return; }
+    if (key === 'ArrowRight') { e.preventDefault(); this.panBy(panStep, 0); return; }
+  };
 
   private updateStageMetrics() { const rect = this.canvasEl?.getBoundingClientRect(); if (rect) { this.stageWidth = rect.width; this.stageHeight = rect.height; } }
 
@@ -349,6 +448,7 @@ export class LdesignDraggable {
   }
 
   private rotatedSize(w: number, h: number, deg: number) { const rad = (deg % 360) * Math.PI / 180; const c = Math.abs(Math.cos(rad)); const s = Math.abs(Math.sin(rad)); return { width: w * c + h * s, height: w * s + h * c }; }
+  private snapAngle(angle: number, step: number) { return Math.round(angle / step) * step; }
 
   private getPanBounds() {
     const sw = this.stageWidth || (this.canvasEl?.getBoundingClientRect().width || 0);
@@ -358,6 +458,38 @@ export class LdesignDraggable {
     const excessW = Math.max(0, sized.width - sw); const excessH = Math.max(0, sized.height - sh);
     const maxX = excessW > 0 ? excessW / 2 : 0; const maxY = excessH > 0 ? excessH / 2 : 0;
     return { minX: -maxX, maxX, minY: -maxY, maxY };
+  }
+
+  private computeContainScaleForCurrentRotate() {
+    const sw = this.stageWidth || (this.canvasEl?.getBoundingClientRect().width || 0);
+    const sh = this.stageHeight || (this.canvasEl?.getBoundingClientRect().height || 0);
+    if (!sw || !sh || !this.baseWidth || !this.baseHeight) return 0;
+    const sized1 = this.rotatedSize(this.baseWidth, this.baseHeight, this.rotate);
+    const s = Math.min(sw / Math.max(1, sized1.width), sh / Math.max(1, sized1.height));
+    return Number(Math.max(this.minScale, Math.min(this.maxScale, s)).toFixed(4));
+  }
+  
+  private computeCoverScaleForCurrentRotate() {
+    const sw = this.stageWidth || (this.canvasEl?.getBoundingClientRect().width || 0);
+    const sh = this.stageHeight || (this.canvasEl?.getBoundingClientRect().height || 0);
+    if (!sw || !sh || !this.baseWidth || !this.baseHeight) return 0;
+    const sized1 = this.rotatedSize(this.baseWidth, this.baseHeight, this.rotate);
+    const s = Math.max(sw / Math.max(1, sized1.width), sh / Math.max(1, sized1.height));
+    return Number(Math.max(this.minScale, Math.min(this.maxScale, s)).toFixed(4));
+  }
+
+  private panInternal(x: number, y: number, clamp: boolean) {
+    let nx = x; let ny = y;
+    if (clamp) { const b = this.getPanBounds(); nx = Math.min(b.maxX, Math.max(b.minX, nx)); ny = Math.min(b.maxY, Math.max(b.minY, ny)); }
+    this.offsetX = nx; this.offsetY = ny; this.visualOffsetX = nx; this.visualOffsetY = ny; this.applyTransform(); this.emitChange();
+  }
+
+  private normalizeOffsetsAfterMeasure() {
+    const b = this.getPanBounds();
+    if (!isFinite(b.minX) || !isFinite(b.maxX) || !isFinite(b.minY) || !isFinite(b.maxY)) return;
+    const nx = Math.min(b.maxX, Math.max(b.minX, this.offsetX));
+    const ny = Math.min(b.maxY, Math.max(b.minY, this.offsetY));
+    this.offsetX = nx; this.offsetY = ny; this.visualOffsetX = nx; this.visualOffsetY = ny;
   }
 
   private rubberband(v: number, min: number, max: number, k = 0.35) { if (v < min) return min - (min - v) * k; if (v > max) return max + (v - max) * k; return v; }
@@ -453,7 +585,7 @@ export class LdesignDraggable {
   private stopMomentum() { this.momentumRunning = false; if (this.momentumRaf) { cancelAnimationFrame(this.momentumRaf); this.momentumRaf = undefined; } try { this.contentEl?.classList.remove('is-kinetic'); } catch {} }
 
   // ── Render ────────────────────────────────────────────
-  private onImageLoad = () => { this.updateStageMetrics(); this.measureBaseSize(); this.applyTransform(); };
+  private onImageLoad = () => { this.updateStageMetrics(); this.measureBaseSize(); this.normalizeOffsetsAfterMeasure(); this.applyTransform(); };
 
   render() {
     return (
@@ -461,6 +593,7 @@ export class LdesignDraggable {
         <div class="ldesign-draggable" ref={el => (this.canvasEl = el as HTMLElement)} onWheel={this.onWheel}
           onPointerDown={this.onPointerDown} onPointerMove={this.onPointerMove} onPointerUp={this.onPointerUp} onPointerCancel={this.onPointerCancel}
           onDblClick={this.onDblClick} onDragStart={this.onDragStart}
+          onContextMenu={this.onContextMenu} onKeyDown={this.onKeyDown} tabindex={0} role="application" aria-label={this.alt || 'draggable canvas'}
         >
           {this.src ? (
             <img ref={el => (this.imgEl = el as HTMLImageElement)} class={{ 'ldesign-draggable__content': true, 'is-dragging': this.dragging, 'is-gesturing': this.gesturing } as any}
@@ -472,10 +605,34 @@ export class LdesignDraggable {
               <slot />
             </div>
           )}
+
+          <div class={this.getControlsClass()} onPointerDown={this.stopEvent} onMouseDown={this.stopEvent} onTouchStart={this.stopEvent}>
+            <slot name="controls">
+              {this.showControls ? (
+                <div class="ldesign-draggable__controls-inner">
+                  <button class="ldesign-draggable__btn" aria-label="Zoom In" onClick={() => this.zoomIn()}>+</button>
+                  <button class="ldesign-draggable__btn" aria-label="Zoom Out" onClick={() => this.zoomOut()}>−</button>
+                  <button class="ldesign-draggable__btn" aria-label="Fit Contain" onClick={() => this.fitContain()}>□</button>
+                  <button class="ldesign-draggable__btn" aria-label="Fit Cover" onClick={() => this.fitCover()}>■</button>
+                  <button class="ldesign-draggable__btn" aria-label="Rotate Left" onClick={() => this.rotateBy(-90)}>⟲</button>
+                  <button class="ldesign-draggable__btn" aria-label="Rotate Right" onClick={() => this.rotateBy(90)}>⟳</button>
+                  <button class="ldesign-draggable__btn" aria-label="Reset" onClick={() => this.reset()}>↺</button>
+                </div>
+              ) : null}
+            </slot>
+          </div>
         </div>
       </Host>
     );
   }
+
+  private getControlsClass() {
+    const base = 'ldesign-draggable__controls';
+    const pos = this.controlsPosition || 'top-right';
+    return `${base} ${base}--${pos}`;
+  }
+
+  private stopEvent = (e: Event) => { e.stopPropagation(); };
 
   componentDidRender() {
     // 首次渲染时，若使用 src，contentEl 指向 img；否则使用 div 容器

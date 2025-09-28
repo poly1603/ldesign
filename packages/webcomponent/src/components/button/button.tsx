@@ -98,6 +98,28 @@ export class LdesignButton {
    */
   @Prop() autoInsertSpace: boolean = true;
 
+  // ==================== Ripple ====================
+  /** 是否启用水波纹 */
+  @Prop() ripple: boolean = true;
+  /** 波纹颜色（默认跟随 currentColor/主题） */
+  @Prop() rippleColor?: string;
+  /** 波纹不透明度 */
+  @Prop() rippleOpacity: number = 0.2;
+  /** 扩散动画时长 */
+  @Prop() rippleDuration: number = 550;
+  /** 淡出时长 */
+  @Prop() rippleFadeOutDuration: number = 260;
+  /** 是否居中触发 */
+  @Prop() rippleCentered: boolean = false;
+  /** 是否不裁剪边界 */
+  @Prop() rippleUnbounded: boolean = false;
+  /** 缓动 */
+  @Prop() rippleEasing: string = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+  /** 最大并发波纹数 */
+  @Prop() rippleMaxRipples: number = 6;
+  /** 触发方式 */
+  @Prop() rippleTrigger: 'pointerdown' | 'mousedown' | 'click' = 'pointerdown';
+
   // ==================== State ====================
   /**
    * 内部加载状态
@@ -294,6 +316,20 @@ export class LdesignButton {
    * 渲染为链接
    */
   private renderAsLink() {
+    const rippleEl = this.ripple ? (
+      <ldesign-ripple
+        color={this.rippleColor}
+        opacity={this.rippleOpacity}
+        duration={this.rippleDuration}
+        fadeOutDuration={this.rippleFadeOutDuration}
+        centered={this.rippleCentered}
+        unbounded={this.rippleUnbounded}
+        easing={this.rippleEasing}
+        maxRipples={this.rippleMaxRipples}
+        trigger={this.rippleTrigger}
+      />
+    ) : null;
+
     return (
       <a
         ref={(el) => this.buttonRef = el as HTMLAnchorElement}
@@ -306,6 +342,7 @@ export class LdesignButton {
         aria-disabled={this.disabled || this.innerLoading ? 'true' : 'false'}
       >
         {this.renderContent()}
+        {rippleEl}
       </a>
     );
   }
@@ -314,6 +351,20 @@ export class LdesignButton {
    * 渲染为按钮
    */
   private renderAsButton() {
+    const rippleEl = this.ripple ? (
+      <ldesign-ripple
+        color={this.rippleColor}
+        opacity={this.rippleOpacity}
+        duration={this.rippleDuration}
+        fadeOutDuration={this.rippleFadeOutDuration}
+        centered={this.rippleCentered}
+        unbounded={this.rippleUnbounded}
+        easing={this.rippleEasing}
+        maxRipples={this.rippleMaxRipples}
+        trigger={this.rippleTrigger}
+      />
+    ) : null;
+
     return (
       <button
         ref={(el) => this.buttonRef = el as HTMLButtonElement}
@@ -326,6 +377,7 @@ export class LdesignButton {
         aria-busy={this.innerLoading ? 'true' : 'false'}
       >
         {this.renderContent()}
+        {rippleEl}
       </button>
     );
   }

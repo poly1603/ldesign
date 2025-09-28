@@ -11,8 +11,9 @@
   justify-content: center;
   gap: 6px;
   padding: 6px 16px;
-  border: 1px solid transparent;
+  border: 1px solid transparent; // 保持恒定边框，避免 hover 时从 0px 变 1px 导致布局抖动
   border-radius: 6px;
+  box-sizing: border-box; // 确保边框不影响整体尺寸
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-weight: 400;
   font-size: 14px;
@@ -144,13 +145,13 @@
   &--primary {
     color: #ffffff !important;  // 确保文字始终是白色
     background: linear-gradient(135deg, #1677ff, #1890ff);
-    border: none;
+    border: 1px solid transparent; // 统一边框宽度，避免切换造成宽度变化
     box-shadow: 0 2px 4px rgba(22, 119, 255, 0.2);
 
     &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
       color: #ffffff !important;
       background: linear-gradient(135deg, #4096ff, #40a9ff);
-      border: none;
+      /* 不再覆盖 border，保持基类 1px，危险态可以自行改色 */
       box-shadow: 0 4px 8px rgba(22, 119, 255, 0.3);
       transform: translateY(-1px);
     }
@@ -158,7 +159,7 @@
     &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
       color: #ffffff !important;
       background: linear-gradient(135deg, #0958d9, #1677ff);
-      border: none;
+      /* 不再覆盖 border，保持基类 1px */
       transform: translateY(0);
     }
     
@@ -170,22 +171,6 @@
     }
   }
 
-  &--dashed {
-    color: rgba(0, 0, 0, 0.88);
-    background-color: #ffffff;
-    border-color: #d9d9d9;
-    border-style: dashed;
-
-    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: #1677ff;
-      border-color: #1677ff;
-    }
-
-    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: #0958d9;
-      border-color: #0958d9;
-    }
-  }
 
   &--text {
     color: rgba(0, 0, 0, 0.88);
@@ -288,8 +273,8 @@
     }
   }
 
-  /* 对齐 AntD：危险态组合样式 */
-  &--dangerous.ldesign-button--primary {
+  /* 对齐 AntD：危险态组合样式（统一使用 --danger 修饰符） */
+  &--danger.ldesign-button--primary {
     color: var(--ldesign-font-white-1);
     background-color: var(--ldesign-error-color);
     border-color: var(--ldesign-error-color);
@@ -302,8 +287,8 @@
       border-color: var(--ldesign-error-color-active);
     }
   }
-  &--dangerous.ldesign-button--default,
-  &--dangerous.ldesign-button--secondary {
+  &--danger.ldesign-button--default,
+  &--danger.ldesign-button--secondary {
     color: var(--ldesign-error-color);
     background-color: var(--ldesign-bg-color-component);
     border-color: var(--ldesign-error-color);
@@ -318,7 +303,7 @@
       background-color: var(--ldesign-error-color-1);
     }
   }
-  &--dangerous.ldesign-button--dashed {
+  &--danger.ldesign-button--dashed {
     color: var(--ldesign-error-color);
     border-color: var(--ldesign-error-color);
     border-style: dashed;
@@ -333,7 +318,7 @@
       background-color: var(--ldesign-error-color-1);
     }
   }
-  &--dangerous.ldesign-button--text {
+  &--danger.ldesign-button--text {
     color: var(--ldesign-error-color);
     background-color: transparent;
     &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
@@ -345,7 +330,7 @@
       background-color: var(--ldesign-error-color-1);
     }
   }
-  &--dangerous.ldesign-button--link {
+  &--danger.ldesign-button--link {
     color: var(--ldesign-error-color);
     text-decoration-color: var(--ldesign-error-color);
     &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
@@ -357,7 +342,7 @@
       text-decoration-color: var(--ldesign-error-color-active);
     }
   }
-  &--dangerous.ldesign-button--ghost {
+  &--danger.ldesign-button--ghost {
     color: var(--ldesign-error-color);
     border-color: var(--ldesign-error-color);
     background-color: transparent;
@@ -375,22 +360,22 @@
 
   // 新增：虚线边框样式（支持 color 修饰）
   &--dashed {
-    color: var(--ld-btn-color);
-    background-color: transparent;
-    border-color: var(--ld-btn-color);
+    color: rgba(0, 0, 0, 0.88);
+    background-color: #ffffff;
+    border-color: #d9d9d9;
     border-style: dashed;
 
-    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: var(--ld-btn-hover);
-      background-color: var(--ld-btn-focus);
-      border-color: var(--ld-btn-hover);
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #1677ff;
+      background-color: #ffffff;
+      border-color: #1677ff;
       border-style: dashed;
     }
 
-    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
-      color: var(--ld-btn-active);
-      background-color: var(--ld-btn-focus);
-      border-color: var(--ld-btn-active);
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #0958d9;
+      background-color: #ffffff;
+      border-color: #0958d9;
       border-style: dashed;
     }
 

@@ -384,6 +384,55 @@ export namespace Components {
          */
         "loading": boolean | { delay?: number };
         /**
+          * 是否启用水波纹
+          * @default true
+         */
+        "ripple": boolean;
+        /**
+          * 是否居中触发
+          * @default false
+         */
+        "rippleCentered": boolean;
+        /**
+          * 波纹颜色（默认跟随 currentColor/主题）
+         */
+        "rippleColor"?: string;
+        /**
+          * 扩散动画时长
+          * @default 550
+         */
+        "rippleDuration": number;
+        /**
+          * 缓动
+          * @default 'cubic-bezier(0.22, 0.61, 0.36, 1)'
+         */
+        "rippleEasing": string;
+        /**
+          * 淡出时长
+          * @default 260
+         */
+        "rippleFadeOutDuration": number;
+        /**
+          * 最大并发波纹数
+          * @default 6
+         */
+        "rippleMaxRipples": number;
+        /**
+          * 波纹不透明度
+          * @default 0.2
+         */
+        "rippleOpacity": number;
+        /**
+          * 触发方式
+          * @default 'pointerdown'
+         */
+        "rippleTrigger": 'pointerdown' | 'mousedown' | 'click';
+        /**
+          * 是否不裁剪边界
+          * @default false
+         */
+        "rippleUnbounded": boolean;
+        /**
           * 按钮形状
           * @default 'default'
          */
@@ -1324,17 +1373,38 @@ export namespace Components {
      *    </ldesign-draggable>
      */
     interface LdesignDraggable {
+        /**
+          * 是否允许双击/双指双击缩放
+          * @default true
+         */
+        "allowDoubleTap": boolean;
         "alt"?: string;
+        /**
+          * @default 'top-right'
+         */
+        "controlsPosition": 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+        /**
+          * 是否禁用右键菜单（避免干扰拖拽）
+          * @default true
+         */
+        "disableContextMenu": boolean;
         /**
           * 双击切换到的缩放倍数
           * @default 2
          */
         "doubleTapZoom": number;
         /**
+          * 是否启用动量滚动
+          * @default true
+         */
+        "enableMomentum": boolean;
+        /**
           * 是否允许旋转（移动端双指）
           * @default true
          */
         "enableRotate": boolean;
+        "fitContain": () => Promise<void>;
+        "fitCover": () => Promise<void>;
         "getState": () => Promise<{ scale: number; rotate: number; offsetX: number; offsetY: number; }>;
         "getTransformString": () => Promise<string>;
         /**
@@ -1355,6 +1425,21 @@ export namespace Components {
          */
         "initialScale": number;
         /**
+          * 按住 Shift 时的平移步长倍率
+          * @default 3
+         */
+        "keyPanFastMultiplier": number;
+        /**
+          * 方向键平移基础步长（像素）
+          * @default 40
+         */
+        "keyPanStep": number;
+        /**
+          * 是否启用键盘交互（方向键平移、+/- 缩放、R 旋转、0 重置）
+          * @default true
+         */
+        "keyboard": boolean;
+        /**
           * @default 4
          */
         "maxScale": number;
@@ -1363,18 +1448,44 @@ export namespace Components {
           * @default 0.25
          */
         "minScale": number;
+        "panBy": (dx: number, dy: number, clamp?: boolean) => Promise<void>;
+        "panTo": (x: number, y: number, clamp?: boolean) => Promise<void>;
         "reset": () => Promise<void>;
+        /**
+          * 旋转吸附角度（度）。大于 0 时在捏合旋转接近该步进的倍数会吸附
+          * @default 0
+         */
+        "rotateSnapDeg": number;
+        /**
+          * 旋转吸附阈值（度），仅当与最近倍数的差值不超过该阈值时生效
+          * @default 3
+         */
+        "rotateSnapEpsilon": number;
         "setOffsets": (x: number, y: number) => Promise<void>;
         "setRotate": (deg: number) => Promise<void>;
+        /**
+          * @default false
+         */
+        "showControls": boolean;
         /**
           * 若提供则内部渲染 img；否则使用默认插槽
          */
         "src"?: string;
         /**
+          * 允许使用滚轮进行平移（当未触发缩放时）
+          * @default true
+         */
+        "wheelPan": boolean;
+        /**
           * PC 滚轮缩放
           * @default true
          */
         "wheelZoom": boolean;
+        /**
+          * 是否需要按住 Ctrl/⌘ 才进行滚轮缩放；否则滚轮优先缩放
+          * @default false
+         */
+        "wheelZoomRequiresCtrl": boolean;
         /**
           * 缩放步进（滚轮/按钮）
           * @default 0.1
@@ -3549,10 +3660,71 @@ export namespace Components {
         "width": number | string;
     }
     /**
-     * Minimal Ripple wrapper component
-     * Created to resolve startup error complaining missing ripple.less import.
+     * Ripple 水波纹效果
+     * 用法：把 <ldesign-ripple /> 放入任意元素内部（建议放最后），即可在该元素上获得点击水波纹效果。
+     * 例如：
+     * <button class="btn">按钮<ldesign-ripple /></button>
      */
     interface LdesignRipple {
+        /**
+          * 是否居中触发
+          * @default false
+         */
+        "centered": boolean;
+        /**
+          * 波纹颜色，默认 currentColor
+         */
+        "color"?: string;
+        /**
+          * 禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 膨胀动画时长(ms)
+          * @default 600
+         */
+        "duration": number;
+        /**
+          * 缓动函数
+          * @default 'cubic-bezier(0.4, 0, 0.2, 1)'
+         */
+        "easing": string;
+        /**
+          * 淡出时长(ms)
+          * @default 300
+         */
+        "fadeOutDuration": number;
+        /**
+          * 同时存在的最大波纹数量
+          * @default 8
+         */
+        "maxRipples": number;
+        /**
+          * 波纹不透明度
+          * @default 0.24
+         */
+        "opacity": number;
+        /**
+          * 半径：auto 或固定像素
+          * @default 'auto'
+         */
+        "radius": 'auto' | number;
+        /**
+          * 是否允许触摸设备
+          * @default true
+         */
+        "touchEnabled": boolean;
+        /**
+          * 触发方式
+          * @default 'pointerdown'
+         */
+        "trigger": 'pointerdown' | 'mousedown' | 'click';
+        /**
+          * 是否不裁剪边界
+          * @default false
+         */
+        "unbounded": boolean;
     }
     /**
      * Row 行容器
@@ -4299,39 +4471,114 @@ export namespace Components {
      */
     interface LdesignTag {
         /**
+          * 右上角数字/文本角标
+         */
+        "badge"?: string | number;
+        /**
+          * 是否可选（切换选中态）
+          * @default false
+         */
+        "checkable": boolean;
+        /**
+          * 是否可点击（非选中态），用于标签作为动作的场景
+          * @default false
+         */
+        "clickable": boolean;
+        /**
           * 是否可关闭
           * @default false
          */
         "closable": boolean;
+        /**
+          * 关闭按钮的无障碍文案
+          * @default '关闭标签'
+         */
+        "closeAriaLabel": string;
         /**
           * 语义颜色
           * @default 'default'
          */
         "color": 'default' | 'primary' | 'success' | 'warning' | 'danger';
         /**
+          * 自定义主色（hex/rgb/hsl）。设置后将覆盖 color 的预设色
+         */
+        "customColor"?: string;
+        /**
           * 是否禁用
           * @default false
          */
         "disabled": boolean;
         /**
+          * 右上角小圆点
+          * @default false
+         */
+        "dot": boolean;
+        /**
+          * 效果风格：none（默认）、gradient（渐变）、glass（毛玻璃）、neon（霓虹）
+          * @default 'none'
+         */
+        "effect": 'none' | 'gradient' | 'glass' | 'neon';
+        /**
           * 左侧图标
          */
         "icon"?: string;
         /**
-          * 形状
+          * 加载状态
+          * @default false
+         */
+        "loading": boolean;
+        /**
+          * 选中状态（与 checkable 配合使用）
+          * @default false
+         */
+        "selected": boolean;
+        /**
+          * 形状（rectangle：直角；round：全圆角；pill：胶囊）
           * @default 'rectangle'
          */
-        "shape": 'rectangle' | 'round';
+        "shape": 'rectangle' | 'round' | 'pill';
         /**
-          * 尺寸
+          * 尺寸（small/middle/large，兼容 medium）
           * @default 'middle'
          */
         "size": Size;
         /**
-          * 外观风格 - light: 浅色背景（默认） - solid: 实底 - outline: 描边
+          * 外观风格 - light: 浅色背景（默认） - solid: 实底 - outline: 描边 - ghost: 透明背景，悬停有轻微填充 - dashed: 虚线描边 - elevated: 浅色+阴影
           * @default 'light'
          */
-        "variant": 'light' | 'solid' | 'outline';
+        "variant": 'light' | 'solid' | 'outline' | 'ghost' | 'dashed' | 'elevated';
+    }
+    /**
+     * TagGroup 标签组
+     * - overflow="scroll" 提供横向滚动和可选箭头
+     * - overflow="more" 根据 maxVisible 折叠为 +N，并使用 ldesign-popup 展示剩余项
+     */
+    interface LdesignTagGroup {
+        /**
+          * more 模式下最多展示的项数（超出将折叠）
+          * @default 5
+         */
+        "maxVisible": number;
+        /**
+          * more 展示文本前缀，例如 "+"
+          * @default '+'
+         */
+        "morePrefix": string;
+        /**
+          * 溢出策略：scroll（水平滚动） | more（+N 收纳）
+          * @default 'scroll'
+         */
+        "overflow": 'scroll' | 'more';
+        /**
+          * 滚动步长（像素）
+          * @default 120
+         */
+        "scrollStep": number;
+        /**
+          * 是否显示滚动箭头（仅 overflow=scroll 时生效）
+          * @default true
+         */
+        "showArrows": boolean;
     }
     interface LdesignTimePicker {
         "breakpoints"?: Breakpoints1;
@@ -5799,8 +6046,10 @@ declare global {
         new (): HTMLLdesignResizeBoxElement;
     };
     /**
-     * Minimal Ripple wrapper component
-     * Created to resolve startup error complaining missing ripple.less import.
+     * Ripple 水波纹效果
+     * 用法：把 <ldesign-ripple /> 放入任意元素内部（建议放最后），即可在该元素上获得点击水波纹效果。
+     * 例如：
+     * <button class="btn">按钮<ldesign-ripple /></button>
      */
     interface HTMLLdesignRippleElement extends Components.LdesignRipple, HTMLStencilElement {
     }
@@ -6038,6 +6287,7 @@ declare global {
     };
     interface HTMLLdesignTagElementEventMap {
         "ldesignClose": MouseEvent;
+        "ldesignChange": boolean;
     }
     /**
      * Tag 标签组件
@@ -6056,6 +6306,17 @@ declare global {
     var HTMLLdesignTagElement: {
         prototype: HTMLLdesignTagElement;
         new (): HTMLLdesignTagElement;
+    };
+    /**
+     * TagGroup 标签组
+     * - overflow="scroll" 提供横向滚动和可选箭头
+     * - overflow="more" 根据 maxVisible 折叠为 +N，并使用 ldesign-popup 展示剩余项
+     */
+    interface HTMLLdesignTagGroupElement extends Components.LdesignTagGroup, HTMLStencilElement {
+    }
+    var HTMLLdesignTagGroupElement: {
+        prototype: HTMLLdesignTagGroupElement;
+        new (): HTMLLdesignTagGroupElement;
     };
     interface HTMLLdesignTimePickerElementEventMap {
         "ldesignChange": string | undefined;
@@ -6191,6 +6452,7 @@ declare global {
         "ldesign-tab-panel": HTMLLdesignTabPanelElement;
         "ldesign-tabs": HTMLLdesignTabsElement;
         "ldesign-tag": HTMLLdesignTagElement;
+        "ldesign-tag-group": HTMLLdesignTagGroupElement;
         "ldesign-time-picker": HTMLLdesignTimePickerElement;
         "ldesign-tooltip": HTMLLdesignTooltipElement;
         "ldesign-transfer": HTMLLdesignTransferElement;
@@ -6549,6 +6811,55 @@ declare namespace LocalJSX {
           * 点击事件
          */
         "onLdesignClick"?: (event: LdesignButtonCustomEvent<MouseEvent>) => void;
+        /**
+          * 是否启用水波纹
+          * @default true
+         */
+        "ripple"?: boolean;
+        /**
+          * 是否居中触发
+          * @default false
+         */
+        "rippleCentered"?: boolean;
+        /**
+          * 波纹颜色（默认跟随 currentColor/主题）
+         */
+        "rippleColor"?: string;
+        /**
+          * 扩散动画时长
+          * @default 550
+         */
+        "rippleDuration"?: number;
+        /**
+          * 缓动
+          * @default 'cubic-bezier(0.22, 0.61, 0.36, 1)'
+         */
+        "rippleEasing"?: string;
+        /**
+          * 淡出时长
+          * @default 260
+         */
+        "rippleFadeOutDuration"?: number;
+        /**
+          * 最大并发波纹数
+          * @default 6
+         */
+        "rippleMaxRipples"?: number;
+        /**
+          * 波纹不透明度
+          * @default 0.2
+         */
+        "rippleOpacity"?: number;
+        /**
+          * 触发方式
+          * @default 'pointerdown'
+         */
+        "rippleTrigger"?: 'pointerdown' | 'mousedown' | 'click';
+        /**
+          * 是否不裁剪边界
+          * @default false
+         */
+        "rippleUnbounded"?: boolean;
         /**
           * 按钮形状
           * @default 'default'
@@ -7529,12 +7840,31 @@ declare namespace LocalJSX {
      *    </ldesign-draggable>
      */
     interface LdesignDraggable {
+        /**
+          * 是否允许双击/双指双击缩放
+          * @default true
+         */
+        "allowDoubleTap"?: boolean;
         "alt"?: string;
+        /**
+          * @default 'top-right'
+         */
+        "controlsPosition"?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+        /**
+          * 是否禁用右键菜单（避免干扰拖拽）
+          * @default true
+         */
+        "disableContextMenu"?: boolean;
         /**
           * 双击切换到的缩放倍数
           * @default 2
          */
         "doubleTapZoom"?: number;
+        /**
+          * 是否启用动量滚动
+          * @default true
+         */
+        "enableMomentum"?: boolean;
         /**
           * 是否允许旋转（移动端双指）
           * @default true
@@ -7558,6 +7888,21 @@ declare namespace LocalJSX {
          */
         "initialScale"?: number;
         /**
+          * 按住 Shift 时的平移步长倍率
+          * @default 3
+         */
+        "keyPanFastMultiplier"?: number;
+        /**
+          * 方向键平移基础步长（像素）
+          * @default 40
+         */
+        "keyPanStep"?: number;
+        /**
+          * 是否启用键盘交互（方向键平移、+/- 缩放、R 旋转、0 重置）
+          * @default true
+         */
+        "keyboard"?: boolean;
+        /**
           * @default 4
          */
         "maxScale"?: number;
@@ -7570,14 +7915,38 @@ declare namespace LocalJSX {
         "onLdesignGestureStart"?: (event: LdesignDraggableCustomEvent<void>) => void;
         "onLdesignTransformChange"?: (event: LdesignDraggableCustomEvent<{ scale: number; rotate: number; offsetX: number; offsetY: number }>) => void;
         /**
+          * 旋转吸附角度（度）。大于 0 时在捏合旋转接近该步进的倍数会吸附
+          * @default 0
+         */
+        "rotateSnapDeg"?: number;
+        /**
+          * 旋转吸附阈值（度），仅当与最近倍数的差值不超过该阈值时生效
+          * @default 3
+         */
+        "rotateSnapEpsilon"?: number;
+        /**
+          * @default false
+         */
+        "showControls"?: boolean;
+        /**
           * 若提供则内部渲染 img；否则使用默认插槽
          */
         "src"?: string;
+        /**
+          * 允许使用滚轮进行平移（当未触发缩放时）
+          * @default true
+         */
+        "wheelPan"?: boolean;
         /**
           * PC 滚轮缩放
           * @default true
          */
         "wheelZoom"?: boolean;
+        /**
+          * 是否需要按住 Ctrl/⌘ 才进行滚轮缩放；否则滚轮优先缩放
+          * @default false
+         */
+        "wheelZoomRequiresCtrl"?: boolean;
         /**
           * 缩放步进（滚轮/按钮）
           * @default 0.1
@@ -9876,10 +10245,71 @@ declare namespace LocalJSX {
         "width"?: number | string;
     }
     /**
-     * Minimal Ripple wrapper component
-     * Created to resolve startup error complaining missing ripple.less import.
+     * Ripple 水波纹效果
+     * 用法：把 <ldesign-ripple /> 放入任意元素内部（建议放最后），即可在该元素上获得点击水波纹效果。
+     * 例如：
+     * <button class="btn">按钮<ldesign-ripple /></button>
      */
     interface LdesignRipple {
+        /**
+          * 是否居中触发
+          * @default false
+         */
+        "centered"?: boolean;
+        /**
+          * 波纹颜色，默认 currentColor
+         */
+        "color"?: string;
+        /**
+          * 禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 膨胀动画时长(ms)
+          * @default 600
+         */
+        "duration"?: number;
+        /**
+          * 缓动函数
+          * @default 'cubic-bezier(0.4, 0, 0.2, 1)'
+         */
+        "easing"?: string;
+        /**
+          * 淡出时长(ms)
+          * @default 300
+         */
+        "fadeOutDuration"?: number;
+        /**
+          * 同时存在的最大波纹数量
+          * @default 8
+         */
+        "maxRipples"?: number;
+        /**
+          * 波纹不透明度
+          * @default 0.24
+         */
+        "opacity"?: number;
+        /**
+          * 半径：auto 或固定像素
+          * @default 'auto'
+         */
+        "radius"?: 'auto' | number;
+        /**
+          * 是否允许触摸设备
+          * @default true
+         */
+        "touchEnabled"?: boolean;
+        /**
+          * 触发方式
+          * @default 'pointerdown'
+         */
+        "trigger"?: 'pointerdown' | 'mousedown' | 'click';
+        /**
+          * 是否不裁剪边界
+          * @default false
+         */
+        "unbounded"?: boolean;
     }
     /**
      * Row 行容器
@@ -10665,43 +11095,122 @@ declare namespace LocalJSX {
      */
     interface LdesignTag {
         /**
+          * 右上角数字/文本角标
+         */
+        "badge"?: string | number;
+        /**
+          * 是否可选（切换选中态）
+          * @default false
+         */
+        "checkable"?: boolean;
+        /**
+          * 是否可点击（非选中态），用于标签作为动作的场景
+          * @default false
+         */
+        "clickable"?: boolean;
+        /**
           * 是否可关闭
           * @default false
          */
         "closable"?: boolean;
+        /**
+          * 关闭按钮的无障碍文案
+          * @default '关闭标签'
+         */
+        "closeAriaLabel"?: string;
         /**
           * 语义颜色
           * @default 'default'
          */
         "color"?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
         /**
+          * 自定义主色（hex/rgb/hsl）。设置后将覆盖 color 的预设色
+         */
+        "customColor"?: string;
+        /**
           * 是否禁用
           * @default false
          */
         "disabled"?: boolean;
         /**
+          * 右上角小圆点
+          * @default false
+         */
+        "dot"?: boolean;
+        /**
+          * 效果风格：none（默认）、gradient（渐变）、glass（毛玻璃）、neon（霓虹）
+          * @default 'none'
+         */
+        "effect"?: 'none' | 'gradient' | 'glass' | 'neon';
+        /**
           * 左侧图标
          */
         "icon"?: string;
+        /**
+          * 加载状态
+          * @default false
+         */
+        "loading"?: boolean;
+        /**
+          * 选中状态变化事件（仅当 checkable 为 true 时触发）
+         */
+        "onLdesignChange"?: (event: LdesignTagCustomEvent<boolean>) => void;
         /**
           * 关闭事件
          */
         "onLdesignClose"?: (event: LdesignTagCustomEvent<MouseEvent>) => void;
         /**
-          * 形状
+          * 选中状态（与 checkable 配合使用）
+          * @default false
+         */
+        "selected"?: boolean;
+        /**
+          * 形状（rectangle：直角；round：全圆角；pill：胶囊）
           * @default 'rectangle'
          */
-        "shape"?: 'rectangle' | 'round';
+        "shape"?: 'rectangle' | 'round' | 'pill';
         /**
-          * 尺寸
+          * 尺寸（small/middle/large，兼容 medium）
           * @default 'middle'
          */
         "size"?: Size;
         /**
-          * 外观风格 - light: 浅色背景（默认） - solid: 实底 - outline: 描边
+          * 外观风格 - light: 浅色背景（默认） - solid: 实底 - outline: 描边 - ghost: 透明背景，悬停有轻微填充 - dashed: 虚线描边 - elevated: 浅色+阴影
           * @default 'light'
          */
-        "variant"?: 'light' | 'solid' | 'outline';
+        "variant"?: 'light' | 'solid' | 'outline' | 'ghost' | 'dashed' | 'elevated';
+    }
+    /**
+     * TagGroup 标签组
+     * - overflow="scroll" 提供横向滚动和可选箭头
+     * - overflow="more" 根据 maxVisible 折叠为 +N，并使用 ldesign-popup 展示剩余项
+     */
+    interface LdesignTagGroup {
+        /**
+          * more 模式下最多展示的项数（超出将折叠）
+          * @default 5
+         */
+        "maxVisible"?: number;
+        /**
+          * more 展示文本前缀，例如 "+"
+          * @default '+'
+         */
+        "morePrefix"?: string;
+        /**
+          * 溢出策略：scroll（水平滚动） | more（+N 收纳）
+          * @default 'scroll'
+         */
+        "overflow"?: 'scroll' | 'more';
+        /**
+          * 滚动步长（像素）
+          * @default 120
+         */
+        "scrollStep"?: number;
+        /**
+          * 是否显示滚动箭头（仅 overflow=scroll 时生效）
+          * @default true
+         */
+        "showArrows"?: boolean;
     }
     interface LdesignTimePicker {
         "breakpoints"?: Breakpoints1;
@@ -11103,6 +11612,7 @@ declare namespace LocalJSX {
         "ldesign-tab-panel": LdesignTabPanel;
         "ldesign-tabs": LdesignTabs;
         "ldesign-tag": LdesignTag;
+        "ldesign-tag-group": LdesignTagGroup;
         "ldesign-time-picker": LdesignTimePicker;
         "ldesign-tooltip": LdesignTooltip;
         "ldesign-transfer": LdesignTransfer;
@@ -11386,8 +11896,10 @@ declare module "@stencil/core" {
              */
             "ldesign-resize-box": LocalJSX.LdesignResizeBox & JSXBase.HTMLAttributes<HTMLLdesignResizeBoxElement>;
             /**
-             * Minimal Ripple wrapper component
-             * Created to resolve startup error complaining missing ripple.less import.
+             * Ripple 水波纹效果
+             * 用法：把 <ldesign-ripple /> 放入任意元素内部（建议放最后），即可在该元素上获得点击水波纹效果。
+             * 例如：
+             * <button class="btn">按钮<ldesign-ripple /></button>
              */
             "ldesign-ripple": LocalJSX.LdesignRipple & JSXBase.HTMLAttributes<HTMLLdesignRippleElement>;
             /**
@@ -11468,6 +11980,12 @@ declare module "@stencil/core" {
              * 用于标记和分类
              */
             "ldesign-tag": LocalJSX.LdesignTag & JSXBase.HTMLAttributes<HTMLLdesignTagElement>;
+            /**
+             * TagGroup 标签组
+             * - overflow="scroll" 提供横向滚动和可选箭头
+             * - overflow="more" 根据 maxVisible 折叠为 +N，并使用 ldesign-popup 展示剩余项
+             */
+            "ldesign-tag-group": LocalJSX.LdesignTagGroup & JSXBase.HTMLAttributes<HTMLLdesignTagGroupElement>;
             "ldesign-time-picker": LocalJSX.LdesignTimePicker & JSXBase.HTMLAttributes<HTMLLdesignTimePickerElement>;
             /**
              * Tooltip 工具提示组件

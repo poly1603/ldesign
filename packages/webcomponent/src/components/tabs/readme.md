@@ -47,24 +47,94 @@ Tabs 选项卡组件
 
 ## Properties
 
-| Property       | Attribute       | Description  | Type                                         | Default     |
-| -------------- | --------------- | ------------ | -------------------------------------------- | ----------- |
-| `addable`      | `addable`       | 是否显示新增按钮     | `boolean`                                    | `false`     |
-| `defaultValue` | `default-value` | 默认激活的标签（非受控） | `string`                                     | `undefined` |
-| `placement`    | `placement`     | 选项卡位置        | `"bottom" \| "left" \| "right" \| "top"`     | `'top'`     |
-| `size`         | `size`          | 尺寸           | `"large" \| "medium" \| "middle" \| "small"` | `'medium'`  |
-| `type`         | `type`          | 选项卡外观类型      | `"card" \| "line"`                           | `'line'`    |
-| `value`        | `value`         | 当前激活的标签（受控）  | `string`                                     | `undefined` |
+| Property            | Attribute            | Description            | Type                                                                    | Default     |
+| ------------------- | -------------------- | ---------------------- | ----------------------------------------------------------------------- | ----------- |
+| `addable`           | `addable`            | 是否显示新增按钮               | `boolean`                                                               | `false`     |
+| `animationDuration` | `animation-duration` | 动画过渡时长（毫秒）             | `number`                                                                | `300`       |
+| `defaultValue`      | `default-value`      | 默认激活的标签（非受控）           | `string`                                                                | `undefined` |
+| `placement`         | `placement`          | 选项卡位置                  | `"bottom" \| "left" \| "right" \| "top"`                                | `'top'`     |
+| `responsive`        | `responsive`         | 是否自动适应响应式布局            | `boolean`                                                               | `true`      |
+| `size`              | `size`               | 尺寸                     | `"large" \| "medium" \| "middle" \| "small"`                            | `'medium'`  |
+| `sortable`          | `sortable`           | 是否可拖拽排序                | `boolean`                                                               | `false`     |
+| `swipeable`         | `swipeable`          | 是否启用触摸滑动切换             | `boolean`                                                               | `false`     |
+| `type`              | `type`               | 选项卡外观类型                | `"card" \| "gradient" \| "line" \| "minimal" \| "pills" \| "segmented"` | `'line'`    |
+| `useDropdown`       | `use-dropdown`       | 是否隐藏超出部分的标签页（使用更多下拉菜单） | `boolean`                                                               | `false`     |
+| `value`             | `value`              | 当前激活的标签（受控）            | `string`                                                                | `undefined` |
 
 
 ## Events
 
-| Event           | Description      | Type                             |
-| --------------- | ---------------- | -------------------------------- |
-| `ldesignAdd`    | 点击新增按钮           | `CustomEvent<void>`              |
-| `ldesignChange` | 切换事件（返回激活的 name） | `CustomEvent<string>`            |
-| `ldesignRemove` | 点击关闭某个面板         | `CustomEvent<{ name: string; }>` |
+| Event            | Description      | Type                                 |
+| ---------------- | ---------------- | ------------------------------------ |
+| `ldesignAdd`     | 点击新增按钮           | `CustomEvent<void>`                  |
+| `ldesignChange`  | 切换事件（返回激活的 name） | `CustomEvent<string>`                |
+| `ldesignRemove`  | 点击关闭某个面板         | `CustomEvent<{ name: string; }>`     |
+| `ldesignReorder` | 拖拽排序             | `CustomEvent<{ items: TabMeta[]; }>` |
 
+
+## Methods
+
+### `addTab(options: { name: string; label: string; icon?: string; closable?: boolean; }) => Promise<HTMLLdesignTabPanelElement>`
+
+
+
+#### Parameters
+
+| Name      | Type                                                                  | Description |
+| --------- | --------------------------------------------------------------------- | ----------- |
+| `options` | `{ name: string; label: string; icon?: string; closable?: boolean; }` |             |
+
+#### Returns
+
+Type: `Promise<HTMLLdesignTabPanelElement>`
+
+
+
+### `removeTab(name: string) => Promise<void>`
+
+
+
+#### Parameters
+
+| Name   | Type     | Description |
+| ------ | -------- | ----------- |
+| `name` | `string` |             |
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `selectTab(name: string) => Promise<void>`
+
+
+
+#### Parameters
+
+| Name   | Type     | Description |
+| ------ | -------- | ----------- |
+| `name` | `string` |             |
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+
+## Dependencies
+
+### Depends on
+
+- [ldesign-tab-panel](.)
+
+### Graph
+```mermaid
+graph TD;
+  ldesign-tabs --> ldesign-tab-panel
+  style ldesign-tabs fill:#f9f,stroke:#333,stroke-width:4px
+```
 
 ----------------------------------------------
 

@@ -88,6 +88,7 @@ graph TD;
   ldesign-popconfirm --> ldesign-icon
   ldesign-popconfirm --> ldesign-button
   ldesign-button --> ldesign-icon
+  ldesign-button --> ldesign-ripple
   style ldesign-popconfirm fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

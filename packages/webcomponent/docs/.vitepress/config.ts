@@ -137,6 +137,7 @@ export default defineConfig({
             { text: 'Notification 通知提醒', link: '/components/notification' },
             { text: 'Loading 加载', link: '/components/loading' },
             { text: 'Progress 进度条', link: '/components/progress' },
+            { text: 'Ripple 水波纹', link: '/components/ripple' },
           ]
         }
       ],

@@ -124,22 +124,32 @@ Button 按钮组件
 
 ## Properties
 
-| Property          | Attribute           | Description               | Type                                                                                                                                     | Default     |
-| ----------------- | ------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `autoInsertSpace` | `auto-insert-space` | 是否自动插入空格（仅在子节点为两个中文字符时生效） | `boolean`                                                                                                                                | `true`      |
-| `block`           | `block`             | 是否为块级按钮                   | `boolean`                                                                                                                                | `false`     |
-| `danger`          | `danger`            | 是否为危险按钮                   | `boolean`                                                                                                                                | `false`     |
-| `disabled`        | `disabled`          | 是否禁用                      | `boolean`                                                                                                                                | `false`     |
-| `ghost`           | `ghost`             | 是否为幽灵按钮                   | `boolean`                                                                                                                                | `false`     |
-| `href`            | `href`              | 点击跳转的地址（将按钮作为 a 标签）       | `string`                                                                                                                                 | `undefined` |
-| `htmlType`        | `html-type`         | 原生按钮类型                    | `"button" \| "reset" \| "submit"`                                                                                                        | `'button'`  |
-| `icon`            | `icon`              | 图标名称                      | `string`                                                                                                                                 | `undefined` |
-| `iconPosition`    | `icon-position`     | 图标位置                      | `"end" \| "start"`                                                                                                                       | `'start'`   |
-| `loading`         | `loading`           | 是否加载中                     | `boolean \| { delay?: number; }`                                                                                                         | `false`     |
-| `shape`           | `shape`             | 按钮形状                      | `"circle" \| "default" \| "rectangle" \| "round" \| "square"`                                                                            | `'default'` |
-| `size`            | `size`              | 按钮尺寸                      | `"large" \| "middle" \| "small"`                                                                                                         | `'middle'`  |
-| `target`          | `target`            | 相当于 a 链接的 target 属性       | `string`                                                                                                                                 | `undefined` |
-| `type`            | `type`              | 按钮类型                      | `"danger" \| "dashed" \| "default" \| "gradient" \| "link" \| "outline" \| "primary" \| "secondary" \| "success" \| "text" \| "warning"` | `'default'` |
+| Property                | Attribute                  | Description                | Type                                                                                                                                     | Default                               |
+| ----------------------- | -------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `autoInsertSpace`       | `auto-insert-space`        | 是否自动插入空格（仅在子节点为两个中文字符时生效）  | `boolean`                                                                                                                                | `true`                                |
+| `block`                 | `block`                    | 是否为块级按钮                    | `boolean`                                                                                                                                | `false`                               |
+| `danger`                | `danger`                   | 是否为危险按钮                    | `boolean`                                                                                                                                | `false`                               |
+| `disabled`              | `disabled`                 | 是否禁用                       | `boolean`                                                                                                                                | `false`                               |
+| `ghost`                 | `ghost`                    | 是否为幽灵按钮                    | `boolean`                                                                                                                                | `false`                               |
+| `href`                  | `href`                     | 点击跳转的地址（将按钮作为 a 标签）        | `string`                                                                                                                                 | `undefined`                           |
+| `htmlType`              | `html-type`                | 原生按钮类型                     | `"button" \| "reset" \| "submit"`                                                                                                        | `'button'`                            |
+| `icon`                  | `icon`                     | 图标名称                       | `string`                                                                                                                                 | `undefined`                           |
+| `iconPosition`          | `icon-position`            | 图标位置                       | `"end" \| "start"`                                                                                                                       | `'start'`                             |
+| `loading`               | `loading`                  | 是否加载中                      | `boolean \| { delay?: number; }`                                                                                                         | `false`                               |
+| `ripple`                | `ripple`                   | 是否启用水波纹                    | `boolean`                                                                                                                                | `true`                                |
+| `rippleCentered`        | `ripple-centered`          | 是否居中触发                     | `boolean`                                                                                                                                | `false`                               |
+| `rippleColor`           | `ripple-color`             | 波纹颜色（默认跟随 currentColor/主题） | `string`                                                                                                                                 | `undefined`                           |
+| `rippleDuration`        | `ripple-duration`          | 扩散动画时长                     | `number`                                                                                                                                 | `550`                                 |
+| `rippleEasing`          | `ripple-easing`            | 缓动                         | `string`                                                                                                                                 | `'cubic-bezier(0.22, 0.61, 0.36, 1)'` |
+| `rippleFadeOutDuration` | `ripple-fade-out-duration` | 淡出时长                       | `number`                                                                                                                                 | `260`                                 |
+| `rippleMaxRipples`      | `ripple-max-ripples`       | 最大并发波纹数                    | `number`                                                                                                                                 | `6`                                   |
+| `rippleOpacity`         | `ripple-opacity`           | 波纹不透明度                     | `number`                                                                                                                                 | `0.2`                                 |
+| `rippleTrigger`         | `ripple-trigger`           | 触发方式                       | `"click" \| "mousedown" \| "pointerdown"`                                                                                                | `'pointerdown'`                       |
+| `rippleUnbounded`       | `ripple-unbounded`         | 是否不裁剪边界                    | `boolean`                                                                                                                                | `false`                               |
+| `shape`                 | `shape`                    | 按钮形状                       | `"circle" \| "default" \| "rectangle" \| "round" \| "square"`                                                                            | `'default'`                           |
+| `size`                  | `size`                     | 按钮尺寸                       | `"large" \| "middle" \| "small"`                                                                                                         | `'middle'`                            |
+| `target`                | `target`                   | 相当于 a 链接的 target 属性        | `string`                                                                                                                                 | `undefined`                           |
+| `type`                  | `type`                     | 按钮类型                       | `"danger" \| "dashed" \| "default" \| "gradient" \| "link" \| "outline" \| "primary" \| "secondary" \| "success" \| "text" \| "warning"` | `'default'`                           |
 
 
 ## Events
@@ -162,11 +172,13 @@ Button 按钮组件
 ### Depends on
 
 - [ldesign-icon](../icon)
+- [ldesign-ripple](../ripple)
 
 ### Graph
 ```mermaid
 graph TD;
   ldesign-button --> ldesign-icon
+  ldesign-button --> ldesign-ripple
   ldesign-calendar --> ldesign-button
   ldesign-modal --> ldesign-button
   ldesign-popconfirm --> ldesign-button

@@ -1,5 +1,6 @@
-/* Tag 组件样式 */
+/* Tag 组件样式（增强版） */
 .ldesign-tag {
+  /* 尺寸与间距变量 */
   --tag-gap: var(--ls-spacing-xs);
   --tag-padding-y-small: 2px;
   --tag-padding-y-middle: 4px;
@@ -8,60 +9,89 @@
   --tag-padding-x-middle: 10px;
   --tag-padding-x-large: 12px;
 
+  /* 自定义色变量（JS 动态注入） */
+  --tag-custom: initial;
+  --tag-custom-weak: initial;
+  --tag-custom-strong: initial;
+
+  box-sizing: border-box;
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--tag-gap);
-  border: 1px solid var(--ldesign-border-color);
+  border: 1px solid var(--ldesign-border-color, #e5e5e5);
   background-color: var(--ldesign-bg-color-component);
   color: var(--ldesign-text-color-primary);
   border-radius: var(--ls-border-radius-base);
   line-height: 1.2;
   vertical-align: middle;
   user-select: none;
+  white-space: nowrap;
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .02s ease;
 
   /* 尺寸变体 */
   &--small {
     font-size: var(--ls-font-size-xs);
     padding: var(--tag-padding-y-small) var(--tag-padding-x-small);
   }
-
   &--middle {
     font-size: var(--ls-font-size-sm);
     padding: var(--tag-padding-y-middle) var(--tag-padding-x-middle);
   }
-
   /* 兼容别名：medium 等价于 middle */
   &--medium {
     font-size: var(--ls-font-size-sm);
     padding: var(--tag-padding-y-middle) var(--tag-padding-x-middle);
   }
-
   &--large {
     font-size: var(--ls-font-size-base);
     padding: var(--tag-padding-y-large) var(--tag-padding-x-large);
   }
 
   /* 形状 */
-  &--rectangle {
-    border-radius: var(--ls-border-radius-base);
-  }
-  &--round {
-    border-radius: 9999px;
-  }
+  &--rectangle { border-radius: var(--ls-border-radius-base); }
+  &--round { border-radius: 9999px; }
+  &--pill { border-radius: 9999px; }
 
-  /* 内容与图标 */
-  &__icon {
+  /* 内容与图标/插槽 */
+  &__icon,
+  &__spinner,
+  ::slotted([slot='prefix']),
+  ::slotted([slot='suffix']) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: currentColor;
   }
-
   &__content {
     display: inline-flex;
     align-items: center;
+    min-width: 0;
   }
 
+  /* 右上角角标/小圆点 */
+  &__badge {
+    position: absolute;
+    top: -0.35em;
+    right: -0.35em;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 3px;
+    box-sizing: border-box;
+    border-radius: 9999px;
+    background-color: currentColor;
+    color: #fff;
+    font-size: 10px;
+    line-height: 14px;
+    text-align: center;
+    pointer-events: none;
+  }
+  &--small &__badge { min-width: 12px; height: 12px; line-height: 12px; font-size: 9px; }
+  &--large &__badge { min-width: 16px; height: 16px; line-height: 16px; font-size: 11px; }
+  &--with-badge&--solid &__badge { background-color: #fff; color: currentColor; }
+  /* dot 模式时渲染为空字符串，保持尺寸显示为小点 */
+
+  /* 关闭按钮 */
   &__close {
     display: inline-flex;
     align-items: center;
@@ -74,10 +104,7 @@
     padding: 0;
     margin-left: 4px;
 
-    &:hover {
-      opacity: 0.85;
-    }
-
+    &:hover { opacity: 0.85; }
     &:focus-visible {
       outline: 2px solid var(--ldesign-border-color-focus);
       outline-offset: 2px;
@@ -85,10 +112,57 @@
     }
   }
 
+  /* 加载中：小圆环 */
+  &__spinner {
+    inline-size: 12px;
+    block-size: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-top-color: currentColor;
+    animation: ldesign-spin .8s linear infinite;
+  }
+  
+  /* 深/浅底色自适应加载环对比度 */
+  &--solid &__spinner {
+    border-color: rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+  }
+
+  @keyframes ldesign-spin { to { transform: rotate(360deg); } }
+
+  /* 交互态 */
+  &--clickable:not(&--disabled),
+  &--checkable:not(&--disabled) {
+    cursor: pointer;
+  }
+  &--effect-glass { backdrop-filter: saturate(1.2) blur(6px); }
+  &--effect-neon { box-shadow: 0 0 0 rgba(0,0,0,0); }
+  &--effect-neon.ldesign-tag--color-primary { box-shadow: 0 0 8px rgba(64, 130, 255, .6); }
+  &--effect-neon.ldesign-tag--color-success { box-shadow: 0 0 8px rgba(36, 186, 136, .6); }
+  &--effect-neon.ldesign-tag--color-warning { box-shadow: 0 0 8px rgba(250, 173, 20, .6); }
+  &--effect-neon.ldesign-tag--color-danger { box-shadow: 0 0 8px rgba(245, 63, 63, .6); }
+  &--effect-neon.ldesign-tag--custom { box-shadow: 0 0 8px var(--tag-custom); }
+  &--effect-neon:hover { box-shadow: 0 0 12px currentColor; }
+  &--clickable:not(&--disabled):hover,
+  &--checkable:not(&--disabled):hover {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+  &--clickable:not(&--disabled):active,
+  &--checkable:not(&--disabled):active {
+    transform: translateY(0.5px);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--ldesign-border-color-focus);
+    outline-offset: 2px;
+  }
+
   /* 状态 */
   &--disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    pointer-events: none;
+  }
+  &--loading {
     pointer-events: none;
   }
 
@@ -98,82 +172,85 @@
     border-color: var(--ldesign-border-color);
     color: var(--ldesign-text-color-primary);
   }
-  &--color-default.ldesign-tag--light {
+  &--color-default.ldesign-tag--gradient {
+    background-image: linear-gradient(135deg, var(--ldesign-bg-color-component-hover), var(--ldesign-bg-color-component-active));
+  }
+  &--color-default.ldesign-tag--light,
+  &--color-default.ldesign-tag--elevated {
     background-color: var(--ldesign-bg-color-component-hover);
     border-color: var(--ldesign-border-color);
     color: var(--ldesign-text-color-primary);
   }
-  &--color-default.ldesign-tag--outline {
-    background-color: transparent;
-    border-color: var(--ldesign-border-color);
-    color: var(--ldesign-text-color-primary);
+  &--color-default.ldesign-tag--elevated {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
   }
+  &--color-default.ldesign-tag--outline { background-color: transparent; border-color: var(--ldesign-border-color); color: var(--ldesign-text-color-primary); }
+  &--color-default.ldesign-tag--ghost { background-color: transparent; border-color: transparent; color: var(--ldesign-text-color-primary); }
+  &--color-default.ldesign-tag--ghost:hover { background-color: var(--ldesign-bg-color-component-hover); }
+  &--color-default.ldesign-tag--dashed { background-color: transparent; border-color: var(--ldesign-border-color); border-style: dashed; color: var(--ldesign-text-color-primary); }
 
   /* primary */
-  &--color-primary.ldesign-tag--solid {
-    background-color: var(--ldesign-brand-color);
-    border-color: var(--ldesign-brand-color);
-    color: var(--ldesign-font-white-1);
-  }
-  &--color-primary.ldesign-tag--light {
-    background-color: var(--ldesign-brand-color-1);
-    border-color: var(--ldesign-brand-color-2);
-    color: var(--ldesign-brand-color-7);
-  }
-  &--color-primary.ldesign-tag--outline {
-    background-color: transparent;
-    border-color: var(--ldesign-brand-color);
-    color: var(--ldesign-brand-color);
-  }
+  &--color-primary.ldesign-tag--solid { background-color: var(--ldesign-brand-color); border-color: var(--ldesign-brand-color); color: var(--ldesign-font-white-1); }
+  &--color-primary.ldesign-tag--gradient { background-image: linear-gradient(135deg, var(--ldesign-brand-color), var(--ldesign-brand-color-6, var(--ldesign-brand-color))); color: var(--ldesign-font-white-1); border-color: transparent; }
+  &--color-primary.ldesign-tag--light,
+  &--color-primary.ldesign-tag--elevated { background-color: var(--ldesign-brand-color-1); border-color: var(--ldesign-brand-color-2); color: var(--ldesign-brand-color-7); }
+  &--color-primary.ldesign-tag--elevated { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); }
+  &--color-primary.ldesign-tag--outline { background-color: transparent; border-color: var(--ldesign-brand-color); color: var(--ldesign-brand-color); }
+  &--color-primary.ldesign-tag--ghost { background-color: transparent; border-color: transparent; color: var(--ldesign-brand-color); }
+  &--color-primary.ldesign-tag--ghost:hover { background-color: var(--ldesign-brand-color-1); border-color: var(--ldesign-brand-color-2); }
+  &--color-primary.ldesign-tag--dashed { background-color: transparent; border-color: var(--ldesign-brand-color); border-style: dashed; color: var(--ldesign-brand-color); }
 
   /* success */
-  &--color-success.ldesign-tag--solid {
-    background-color: var(--ldesign-success-color);
-    border-color: var(--ldesign-success-color);
-    color: var(--ldesign-font-white-1);
-  }
-  &--color-success.ldesign-tag--light {
-    background-color: var(--ldesign-success-color-1);
-    border-color: var(--ldesign-success-color-2);
-    color: var(--ldesign-success-color-7);
-  }
-  &--color-success.ldesign-tag--outline {
-    background-color: transparent;
-    border-color: var(--ldesign-success-color);
-    color: var(--ldesign-success-color);
-  }
+  &--color-success.ldesign-tag--solid { background-color: var(--ldesign-success-color); border-color: var(--ldesign-success-color); color: var(--ldesign-font-white-1); }
+  &--color-success.ldesign-tag--gradient { background-image: linear-gradient(135deg, var(--ldesign-success-color), var(--ldesign-success-color-6, var(--ldesign-success-color))); color: var(--ldesign-font-white-1); border-color: transparent; }
+  &--color-success.ldesign-tag--light,
+  &--color-success.ldesign-tag--elevated { background-color: var(--ldesign-success-color-1); border-color: var(--ldesign-success-color-2); color: var(--ldesign-success-color-7); }
+  &--color-success.ldesign-tag--elevated { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); }
+  &--color-success.ldesign-tag--outline { background-color: transparent; border-color: var(--ldesign-success-color); color: var(--ldesign-success-color); }
+  &--color-success.ldesign-tag--ghost { background-color: transparent; border-color: transparent; color: var(--ldesign-success-color); }
+  &--color-success.ldesign-tag--ghost:hover { background-color: var(--ldesign-success-color-1); border-color: var(--ldesign-success-color-2); }
+  &--color-success.ldesign-tag--dashed { background-color: transparent; border-color: var(--ldesign-success-color); border-style: dashed; color: var(--ldesign-success-color); }
 
   /* warning */
-  &--color-warning.ldesign-tag--solid {
-    background-color: var(--ldesign-warning-color);
-    border-color: var(--ldesign-warning-color);
-    color: var(--ldesign-font-white-1);
-  }
-  &--color-warning.ldesign-tag--light {
-    background-color: var(--ldesign-warning-color-1);
-    border-color: var(--ldesign-warning-color-2);
-    color: var(--ldesign-warning-color-7);
-  }
-  &--color-warning.ldesign-tag--outline {
-    background-color: transparent;
-    border-color: var(--ldesign-warning-color);
-    color: var(--ldesign-warning-color);
-  }
+  &--color-warning.ldesign-tag--solid { background-color: var(--ldesign-warning-color); border-color: var(--ldesign-warning-color); color: var(--ldesign-font-white-1); }
+  &--color-warning.ldesign-tag--gradient { background-image: linear-gradient(135deg, var(--ldesign-warning-color), var(--ldesign-warning-color-6, var(--ldesign-warning-color))); color: var(--ldesign-font-white-1); border-color: transparent; }
+  &--color-warning.ldesign-tag--light,
+  &--color-warning.ldesign-tag--elevated { background-color: var(--ldesign-warning-color-1); border-color: var(--ldesign-warning-color-2); color: var(--ldesign-warning-color-7); }
+  &--color-warning.ldesign-tag--elevated { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); }
+  &--color-warning.ldesign-tag--outline { background-color: transparent; border-color: var(--ldesign-warning-color); color: var(--ldesign-warning-color); }
+  &--color-warning.ldesign-tag--ghost { background-color: transparent; border-color: transparent; color: var(--ldesign-warning-color); }
+  &--color-warning.ldesign-tag--ghost:hover { background-color: var(--ldesign-warning-color-1); border-color: var(--ldesign-warning-color-2); }
+  &--color-warning.ldesign-tag--dashed { background-color: transparent; border-color: var(--ldesign-warning-color); border-style: dashed; color: var(--ldesign-warning-color); }
 
   /* danger */
-  &--color-danger.ldesign-tag--solid {
-    background-color: var(--ldesign-error-color);
-    border-color: var(--ldesign-error-color);
-    color: var(--ldesign-font-white-1);
+  &--color-danger.ldesign-tag--solid { background-color: var(--ldesign-error-color); border-color: var(--ldesign-error-color); color: var(--ldesign-font-white-1); }
+  &--color-danger.ldesign-tag--gradient { background-image: linear-gradient(135deg, var(--ldesign-error-color), var(--ldesign-error-color-6, var(--ldesign-error-color))); color: var(--ldesign-font-white-1); border-color: transparent; }
+  &--color-danger.ldesign-tag--light,
+  &--color-danger.ldesign-tag--elevated { background-color: var(--ldesign-error-color-1); border-color: var(--ldesign-error-color-2); color: var(--ldesign-error-color-7); }
+  &--color-danger.ldesign-tag--elevated { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); }
+  &--color-danger.ldesign-tag--outline { background-color: transparent; border-color: var(--ldesign-error-color); color: var(--ldesign-error-color); }
+  &--color-danger.ldesign-tag--ghost { background-color: transparent; border-color: transparent; color: var(--ldesign-error-color); }
+  &--color-danger.ldesign-tag--ghost:hover { background-color: var(--ldesign-error-color-1); border-color: var(--ldesign-error-color-2); }
+  &--color-danger.ldesign-tag--dashed { background-color: transparent; border-color: var(--ldesign-error-color); border-style: dashed; color: var(--ldesign-error-color); }
+
+  /* 自定义色统一处理 */
+  &--custom&--solid { background-color: var(--tag-custom); border-color: var(--tag-custom); color: #fff; }
+  &--custom&--light,
+  &--custom&--elevated { background-color: var(--tag-custom-weak); border-color: var(--tag-custom); color: var(--tag-custom-strong); }
+  &--custom&--outline { background-color: transparent; border-color: var(--tag-custom); color: var(--tag-custom); }
+  &--custom&--ghost { background-color: transparent; border-color: transparent; color: var(--tag-custom); }
+  &--custom&--ghost:hover { background-color: var(--tag-custom-weak); }
+  &--custom&--dashed { background-color: transparent; border-style: dashed; border-color: var(--tag-custom); color: var(--tag-custom); }
+  &--custom&--gradient { background-image: linear-gradient(135deg, var(--tag-custom), var(--tag-custom-strong)); color: #fff; border-color: transparent; }
+
+  /* 深色主题适配（若有全局暗色变量则自动适配） */
+  @media (prefers-color-scheme: dark) {
+    /* 轻度微调，主要依赖全局 token */
   }
-  &--color-danger.ldesign-tag--light {
-    background-color: var(--ldesign-error-color-1);
-    border-color: var(--ldesign-error-color-2);
-    color: var(--ldesign-error-color-7);
-  }
-  &--color-danger.ldesign-tag--outline {
-    background-color: transparent;
-    border-color: var(--ldesign-error-color);
-    color: var(--ldesign-error-color);
+
+  /* 减少动效偏好 */
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &__spinner { animation: none; }
   }
 }

@@ -1,0 +1,70 @@
+/* TagGroup 样式 */
+.ldesign-tag-group {
+  display: block;
+}
+
+.ldesign-tag-group__viewport {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.ldesign-tag-group__list {
+  display: flex;
+  align-items: center;
+  gap: var(--ls-spacing-xs);
+  overflow: hidden;
+  flex: 1 1 auto;
+}
+
+/* scroll 模式：横向滚动容器 */
+.ldesign-tag-group--scroll .ldesign-tag-group__list {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding-bottom: 2px; /* 保留滚动条空间 */
+}
+.ldesign-tag-group--scroll .ldesign-tag-group__list::-webkit-scrollbar {
+  height: 6px;
+}
+.ldesign-tag-group--scroll .ldesign-tag-group__list::-webkit-scrollbar-thumb {
+  background-color: var(--ldesign-border-color);
+  border-radius: 99px;
+}
+
+/* 两侧箭头（可选） */
+.ldesign-tag-group__arrow {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin: 0 4px;
+  border: none;
+  border-radius: 9999px;
+  background-color: var(--ldesign-bg-color-component);
+  color: var(--ldesign-text-color-secondary, var(--ldesign-text-color-primary));
+  cursor: pointer;
+}
+.ldesign-tag-group__arrow:hover { filter: brightness(0.98); }
+.ldesign-tag-group__arrow:focus-visible { outline: 2px solid var(--ldesign-border-color-focus); outline-offset: 2px; }
+
+/* more 模式：隐藏多余的 slotted 标签 */
+.ldesign-tag-group--more ::slotted([data-hidden-by-group]) {
+  display: none !important;
+}
+
+/* more 弹层列表 */
+.ldesign-tag-group__more-list {
+  max-height: 240px;
+  overflow: auto;
+  padding: 6px;
+  min-width: 160px;
+}
+.ldesign-tag-group__more-item {
+  padding: 6px 8px;
+  border-radius: 6px;
+  line-height: 1.2;
+}
+.ldesign-tag-group__more-item:hover { background-color: var(--ldesign-bg-color-component-hover); }
