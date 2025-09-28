@@ -337,20 +337,8 @@ export default ${JSON.stringify(this.config, null, 2)}
         URL.revokeObjectURL(url)
       }
       else {
-        // Node.js 环境中的文件写入逻辑
-        // 使用条件导入避免在浏览器环境中触发模块解析
-        if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-          try {
-            // 使用动态字符串拼接避免构建工具静态分析
-            const moduleName = 'node:' + 'fs/promises'
-            const fs = await import(/* @vite-ignore */ moduleName)
-            await fs.writeFile(filePath, configContent, 'utf-8')
-          } catch (importError) {
-            throw new Error(`无法导入文件系统模块: ${importError}`)
-          }
-        } else {
-          throw new Error('文件保存功能仅在Node.js环境中可用')
-        }
+        // 为保持 Web 端纯净，这里不再包含 Node 端写文件逻辑
+        throw new Error('当前构建为 Web 端，保存到本地文件仅支持浏览器下载方式')
       }
 
       if (this.config.debug) {

@@ -111,7 +111,6 @@ const handleSizeChange = (size: string) => {
 
     &__asider {
       grid-area: 2/1/3/2;
-      background-color: var(--ldesign-dashboard-asider-background, var(--ldesign-bg-color-container));
     }
 
     &__content {

@@ -64,7 +64,7 @@ export class HotReloadManager {
   private options: HotReloadManagerOptions
   private listeners: Set<HotReloadListener> = new Set()
   private updateQueue: Map<string, HotReloadEvent> = new Map()
-  private updateTimer: NodeJS.Timeout | null = null
+  private updateTimer: any | null = null
   private isEnabled = false
 
   constructor(options: Partial<HotReloadManagerOptions> = {}) {

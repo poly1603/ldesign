@@ -72,7 +72,7 @@ export class FileWatcher {
   private options: Required<FileWatcherOptions>
   private callbacks: FileWatcherCallbacks
   private watchers: Map<string, { close?: () => Promise<void> | void }> = new Map()
-  private debounceTimers: Map<string, NodeJS.Timeout> = new Map()
+  private debounceTimers: Map<string, any> = new Map()
   private isWatching = false
 
   constructor(options: FileWatcherOptions, callbacks: FileWatcherCallbacks = {}) {
@@ -97,13 +97,8 @@ export class FileWatcher {
     }
 
     try {
-      // 在浏览器环境中使用不同的策略
-      if (typeof window !== 'undefined') {
-        await this.startBrowserWatching()
-      }
-      else {
-        await this.startNodeWatching()
-      }
+      // 仅浏览器策略（移除 Node 相关实现）
+      await this.startBrowserWatching()
 
       this.isWatching = true
       this.callbacks.onWatchStart?.()
@@ -146,7 +141,7 @@ export class FileWatcher {
   }
 
   /**
-   * Node.js 环境下的文件监听
+   * Node.js 环境实现已移除（Web 端不使用）
    */
   private async startNodeWatching(): Promise<void> {
     // 在浏览器环境中，文件监听不可用
@@ -155,45 +150,11 @@ export class FileWatcher {
       return
     }
 
-    try {
-      // 动态导入 chokidar（仅在 Node.js 环境中可用）
-      // 使用条件导入避免在浏览器环境中触发模块解析
-      if (typeof process === 'undefined' || !process.versions || !process.versions.node) {
-        throw new Error('chokidar is only available in Node.js environment')
-      }
-      // 使用动态字符串拼接避免构建工具静态分析
-      const chokidarModule = 'chok' + 'idar'
-      const chokidar = await import(/* @vite-ignore */ chokidarModule)
-
-      const watchPattern = this.buildWatchPattern()
-      const watcher = chokidar.watch(watchPattern, {
-        ignored: this.buildIgnorePattern(),
-        persistent: true,
-        ignoreInitial: true,
-        followSymlinks: false,
-        depth: this.options.maxDepth,
-        awaitWriteFinish: {
-          stabilityThreshold: 100,
-          pollInterval: 50,
-        },
-      })
-
-      watcher
-        .on('add', path => this.handleFileChange('added', path))
-        .on('change', path => this.handleFileChange('changed', path))
-        .on('unlink', path => this.handleFileChange('removed', path))
-        .on('error', error => this.callbacks.onError?.(error))
-
-      this.watchers.set('main', watcher)
-    }
-    catch (error) {
-      // 如果 chokidar 不可用，回退到原生 fs.watch
-      await this.startNativeWatching()
-    }
+    // 已移除 Node 端实现
   }
 
   /**
-   * 原生 fs.watch 监听（Node.js 回退方案）
+   * 原生 fs.watch 监听（已移除）
    */
   private async startNativeWatching(): Promise<void> {
     // 在浏览器环境中，文件监听不可用
@@ -202,43 +163,7 @@ export class FileWatcher {
       return
     }
 
-    try {
-      // 使用条件导入避免在浏览器环境中触发模块解析
-      if (typeof process === 'undefined' || !process.versions || !process.versions.node) {
-        throw new Error('Node.js fs and path modules are only available in Node.js environment')
-      }
-      // 使用动态字符串拼接避免构建工具静态分析
-      const fsModule = 'node:' + 'fs'
-      const pathModule = 'node:' + 'path'
-      const fs = await import(/* @vite-ignore */ fsModule)
-      const path = await import(/* @vite-ignore */ pathModule)
-
-      const watchDir = async (dir: string, depth = 0) => {
-        if (depth > this.options.maxDepth)
-          return
-
-        try {
-          const watcher = fs.watch(dir, { recursive: this.options.recursive }, (eventType, filename) => {
-            if (!filename)
-              return
-
-            const fullPath = path.join(dir, filename)
-            const changeType: FileChangeType = eventType === 'rename' ? 'added' : 'changed'
-            this.handleFileChange(changeType, fullPath)
-          })
-
-          this.watchers.set(dir, watcher)
-        }
-        catch (error) {
-          console.warn(`无法监听目录: ${dir}`, error)
-        }
-      }
-
-      await watchDir(this.options.rootDir)
-    }
-    catch (error) {
-      console.warn('[FileWatcher] 无法导入Node.js文件系统模块，文件监听功能不可用')
-    }
+    // 已移除 Node 端实现
   }
 
   /**

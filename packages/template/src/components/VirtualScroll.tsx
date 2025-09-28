@@ -80,7 +80,7 @@ export const VirtualScroll = defineComponent({
     const itemHeights = ref<Map<string | number, number>>(new Map())
     const visibleRange = ref({ start: 0, end: 0 })
     const isScrolling = ref(false)
-    let scrollTimeout: NodeJS.Timeout | null = null
+    let scrollTimeout: any | null = null
     let scrollRAF: number | null = null
 
     // 使用偏移缓存，避免为每个可见项 O(n) 计算偏移

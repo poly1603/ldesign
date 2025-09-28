@@ -110,7 +110,7 @@ export class AdvancedCache<T = any> {
   private cache: Map<string, CacheItem<T>>
   private config: Required<AdvancedCacheConfig>
   private stats: CacheStats
-  private cleanupTimer?: NodeJS.Timeout
+  private cleanupTimer?: any
   private accessQueue: string[] = []
   private frequencyMap: Map<string, number> = new Map()
 
