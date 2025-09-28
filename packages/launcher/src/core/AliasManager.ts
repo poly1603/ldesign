@@ -84,11 +84,20 @@ export class AliasManager {
       }
 
       return shouldInclude
-    }).map(alias => ({
-      // 返回标准的 Vite AliasEntry 格式（不包含 stages 字段）
-      find: alias.find,
-      replacement: alias.replacement
-    }))
+    }).map(alias => {
+      // 解析相对路径为绝对路径
+      const resolvedReplacement = this.resolveAlias(alias.replacement)
+      
+      if (alias.find && typeof alias.find === 'string' && alias.find.startsWith('@ldesign')) {
+        console.log(`  解析路径 ${alias.find}: ${alias.replacement} -> ${resolvedReplacement}`)
+      }
+      
+      return {
+        // 返回标准的 Vite AliasEntry 格式（不包含 stages 字段）
+        find: alias.find,
+        replacement: resolvedReplacement
+      }
+    })
 
     console.log('  过滤后别名数量:', filtered.length)
     const ldesignFiltered = filtered.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
@@ -109,6 +118,22 @@ export class AliasManager {
    */
   setCwd(cwd: string) {
     this.cwd = cwd
+  }
+
+  /**
+   * 解析别名路径（相对路径转绝对路径）
+   *
+   * @param aliasPath - 别名路径
+   * @returns 解析后的绝对路径
+   */
+  private resolveAlias(aliasPath: string): string {
+    // 如果已经是绝对路径，直接返回
+    if (path.isAbsolute(aliasPath)) {
+      return aliasPath
+    }
+
+    // 解析相对路径为绝对路径（基于当前工作目录）
+    return path.resolve(this.cwd, aliasPath)
   }
 }
 

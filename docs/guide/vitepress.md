@@ -117,3 +117,16 @@ sidebar: {
 - 组件未渲染/无样式：确认 `docs/.vitepress/theme/index.ts` 中已调用 `defineCustomElements` 且浏览器控制台无错误。
 - 图片或静态资源 404：确保引用路径以 `/` 开头或使用相对路径，并检查 `base` 配置。
 - 自定义元素在代码块中被执行：为展示代码片段请使用三引号代码块，避免被当作 HTML 渲染。
+
+## 交互 Demo 最佳实践
+
+- 聚焦与键盘无障碍：若 Demo 需要键盘操作，确保交互区域可聚焦（tabindex="0"）。本库的拖拽容器 `ldesign-draggable` 已默认可聚焦并支持方向键/快捷键。
+- 脚本隔离：将示例脚本放入 `<script>` 或 `<script setup>`，避免在 Markdown 渲染阶段直接执行。
+- 样式范围化：将示例样式写在 `demo-block` 内部或 `docs/.vitepress/theme/custom.css`，避免污染全站。
+- 资源体积：示例图片尽量使用合适尺寸与 Web 格式（如 WebP/AVIF），或使用占位图/CDN，减少页面负载。
+
+## 性能优化小贴士
+
+- 本地搜索：已启用 VitePress 本地搜索，可快速定位文档。
+- 依赖优化：在 `docs/.vitepress/config.ts` 的 `optimizeDeps.include` 中显式包含 Web Components Loader，确保开发体验与 HMR 稳定。
+- 构建体积：通过 `build.chunkSizeWarningLimit` 放宽警告阈值，同时关注示例用图与第三方依赖体积。

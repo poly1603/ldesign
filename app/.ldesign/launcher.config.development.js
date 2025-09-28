@@ -1,11 +1,3 @@
-/**
- * 开发环境配置文件
- *
- * 主要配置开发环境特有的代理设置，其他配置继承自 launcher.config.ts
- *
- * @author LDesign Team
- * @since 1.0.0
- */
 import { defineConfig } from '@ldesign/launcher'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 
@@ -23,7 +15,6 @@ export default defineConfig({
     })
   ],
 
-  // 开发环境别名配置 - 指向源码目录
   // 开发环境服务器配置 - 测试通知功能 v3
   server: {
     port: 3340, // 测试重启功能 - 终极测试！

@@ -9,11 +9,12 @@ import cors from 'cors';
 import { resolve, join } from 'path';
 import { readFileSync, existsSync } from 'fs';
 import open from 'open';
+import net from 'net';
 import { CLIContext } from '../types/index';
 import { ProjectManager } from './project-manager';
 import { TaskRunner } from './task-runner';
 import { taskStateManager } from './task-state-manager';
-
+import { GitManager } from './git-manager';
 export interface WebServerOptions {
   port?: number;
   host?: string;
@@ -542,15 +543,58 @@ export class WebServer {
   }
 
   /**
-   * 启动服务器
+   * 查找可用端口：从起始端口开始，依次 +1，最多尝试 20 次
+   */
+  private findAvailablePort(startPort: number, host: string): Promise<number> {
+    const maxAttempts = 20;
+    let port = startPort;
+    let attempts = 0;
+
+    return new Promise((resolve) => {
+      const tryPort = () => {
+        attempts++;
+        const tester = net.createServer()
+          .once('error', (err: any) => {
+            // 被占用则尝试下一个端口
+            if (err.code === 'EADDRINUSE') {
+              if (attempts >= maxAttempts) {
+                // 尝试到上限，仍不可用，回退到起始端口，交给上层错误处理
+                resolve(startPort);
+              } else {
+                port += 1;
+                tryPort();
+              }
+            } else {
+              // 其它错误时，直接返回起始端口
+              resolve(startPort);
+            }
+          })
+          .once('listening', () => {
+            tester.close(() => resolve(port));
+          })
+          .listen(port, host);
+      };
+      tryPort();
+    });
+  }
+
+  /**
+   * 启动服务器（自动端口回退）
    */
   async start(options: WebServerOptions = {}): Promise<void> {
-    const port = options.port || 3000;
+    const desiredPort = options.port || 3000;
     const host = options.host || 'localhost';
 
+    // 预检并找到可用端口
+    const chosenPort = await this.findAvailablePort(desiredPort, host);
+    const switched = chosenPort !== desiredPort;
+
     return new Promise((resolve, reject) => {
-      this.server.listen(port, host, () => {
-        const url = `http://${host}:${port}`;
+      this.server.listen(chosenPort, host, () => {
+        const url = `http://${host}:${chosenPort}`;
+        if (switched) {
+          this.context.logger.warn(`端口 ${desiredPort} 被占用，已自动切换到 ${chosenPort}`);
+        }
         this.context.logger.success(`🌐 Web UI 已启动: ${url}`);
 
         if (options.open !== false) {
@@ -564,7 +608,7 @@ export class WebServer {
 
       this.server.on('error', (error: any) => {
         if (error.code === 'EADDRINUSE') {
-          this.context.logger.error(`端口 ${port} 已被占用`);
+          this.context.logger.error(`端口 ${chosenPort} 已被占用`);
         } else {
           this.context.logger.error('服务器启动失败:', error);
         }
