@@ -53,44 +53,29 @@ export class TemplateScanner {
   private isWebEnv: boolean
 
   constructor(options: ScannerOptions, callbacks?: ScannerEventCallbacks, fileNamingConfig?: FileNamingConfig) {
-    this.isWebEnv = isWebEnvironment()
-    // 不再使用硬编码的默认值，所有配置都应该从外部传入
+    // 只支持Web环境
+    this.isWebEnv = true
+    
     this.options = {
       templatesDir: options.templatesDir || 'src/templates',
       enableCache: options.enableCache ?? true,
       enableHMR: options.enableHMR ?? false,
-      maxDepth: options.maxDepth ?? 5,
-      includeExtensions: options.includeExtensions || ['.vue', '.tsx', '.js', '.ts'],
-      excludePatterns: options.excludePatterns || ['node_modules', '.git', 'dist'],
-      watchMode: options.watchMode ?? false,
-      debounceDelay: options.debounceDelay ?? 300,
-      batchSize: options.batchSize ?? 10,
+      maxDepth: 5,
+      includeExtensions: ['.vue'],
+      excludePatterns: [],
+      watchMode: false, // Web环境不支持文件监听
+      debounceDelay: 300,
+      batchSize: 10,
     }
     this.callbacks = callbacks || {}
-
-    // 创建文件路径构建器
-    this.filePathBuilder = createFilePathBuilder(fileNamingConfig || {
-      componentFile: 'index.vue',
-      configFile: 'config.{js,ts}',
-      styleFile: 'style.{css,less,scss}',
-      previewFile: 'preview.{png,jpg,jpeg,webp}',
-      allowedConfigExtensions: ['.js', '.ts'],
-      allowedStyleExtensions: ['.css', '.less', '.scss'],
-    })
 
     // 初始化模板分类管理器
     this.categoryManager = getTemplateCategoryManager()
 
-    // 在Web环境中，初始化Web扫描器
-    if (this.isWebEnv) {
-      this.webScanner = new WebTemplateScanner({
-        enableCache: this.options.enableCache,
-      })
-    }
-    // 在Node.js环境中，如果启用了监听模式，创建文件监听器
-    else if (this.options.watchMode) {
-      this.initializeFileWatcher()
-    }
+    // 使用Web扫描器
+    this.webScanner = new WebTemplateScanner({
+      enableCache: this.options.enableCache,
+    })
   }
 
   /**

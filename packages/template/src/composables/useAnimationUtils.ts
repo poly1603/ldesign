@@ -42,221 +42,30 @@ export const EASING_FUNCTIONS = {
 } as const
 
 /**
- * 预定义动画配置
+ * 简化的动画预设
  */
 export const ANIMATION_PRESETS = {
-  // 快速动画
-  quickFade: {
-    type: AnimationType.FADE,
-    duration: 150,
-    easing: EASING_FUNCTIONS.easeOut,
-  },
-  quickSlide: {
-    type: AnimationType.SLIDE,
-    duration: 150,
-    direction: AnimationDirection.DOWN,
-    easing: EASING_FUNCTIONS.easeOut,
-  },
-  quickScale: {
-    type: AnimationType.SCALE,
-    duration: 150,
-    easing: EASING_FUNCTIONS.easeOut,
-  },
-
-  // 标准动画
-  standardFade: {
+  fade: {
     type: AnimationType.FADE,
     duration: 250,
     easing: EASING_FUNCTIONS.easeInOut,
   },
-  standardSlide: {
+  slide: {
     type: AnimationType.SLIDE,
     duration: 250,
     direction: AnimationDirection.DOWN,
     easing: EASING_FUNCTIONS.easeInOut,
   },
-  standardScale: {
+  scale: {
     type: AnimationType.SCALE,
     duration: 250,
-    easing: EASING_FUNCTIONS.easeInOut,
-  },
-
-  // 慢速动画
-  slowFade: {
-    type: AnimationType.FADE,
-    duration: 400,
-    easing: EASING_FUNCTIONS.easeInOut,
-  },
-  slowSlide: {
-    type: AnimationType.SLIDE,
-    duration: 400,
-    direction: AnimationDirection.DOWN,
-    easing: EASING_FUNCTIONS.easeInOut,
-  },
-  slowScale: {
-    type: AnimationType.SCALE,
-    duration: 400,
-    easing: EASING_FUNCTIONS.easeInOut,
-  },
-
-  // 弹性动画
-  bounceIn: {
-    type: AnimationType.SCALE_FADE,
-    duration: 300,
-    easing: EASING_FUNCTIONS.easeOutBack,
-  },
-  bounceOut: {
-    type: AnimationType.SCALE_FADE,
-    duration: 200,
-    easing: EASING_FUNCTIONS.easeInBack,
-  },
-
-  // 滑动方向动画
-  slideUp: {
-    type: AnimationType.SLIDE,
-    duration: 250,
-    direction: AnimationDirection.UP,
-    easing: EASING_FUNCTIONS.easeInOut,
-  },
-  slideDown: {
-    type: AnimationType.SLIDE,
-    duration: 250,
-    direction: AnimationDirection.DOWN,
-    easing: EASING_FUNCTIONS.easeInOut,
-  },
-  slideLeft: {
-    type: AnimationType.SLIDE,
-    duration: 250,
-    direction: AnimationDirection.LEFT,
-    easing: EASING_FUNCTIONS.easeInOut,
-  },
-  slideRight: {
-    type: AnimationType.SLIDE,
-    duration: 250,
-    direction: AnimationDirection.RIGHT,
     easing: EASING_FUNCTIONS.easeInOut,
   },
 } as const
 
-/**
- * 动画性能监控
- */
-export function useAnimationPerformance() {
-  const metrics = ref<{
-    animationCount: number
-    totalDuration: number
-    averageDuration: number
-    lastAnimationTime: number
-  }>({
-    animationCount: 0,
-    totalDuration: 0,
-    averageDuration: 0,
-    lastAnimationTime: 0,
-  })
+// 已移除动画性能监控，简化库体积
 
-  /**
-   * 记录动画开始
-   */
-  const startAnimation = () => {
-    metrics.value.lastAnimationTime = performance.now()
-  }
-
-  /**
-   * 记录动画结束
-   */
-  const endAnimation = () => {
-    const duration = performance.now() - metrics.value.lastAnimationTime
-    metrics.value.animationCount++
-    metrics.value.totalDuration += duration
-    metrics.value.averageDuration = metrics.value.totalDuration / metrics.value.animationCount
-  }
-
-  /**
-   * 重置统计
-   */
-  const reset = () => {
-    metrics.value = {
-      animationCount: 0,
-      totalDuration: 0,
-      averageDuration: 0,
-      lastAnimationTime: 0,
-    }
-  }
-
-  return {
-    metrics,
-    startAnimation,
-    endAnimation,
-    reset,
-  }
-}
-
-/**
- * 动画队列管理
- */
-export function useAnimationQueue() {
-  const queue = ref<Array<() => Promise<void>>>([])
-  const isProcessing = ref(false)
-  const currentIndex = ref(0)
-
-  /**
-   * 添加动画到队列
-   */
-  const add = (animation: () => Promise<void>) => {
-    queue.value.push(animation)
-  }
-
-  /**
-   * 处理队列
-   */
-  const process = async () => {
-    if (isProcessing.value || queue.value.length === 0)
-      return
-
-    isProcessing.value = true
-    currentIndex.value = 0
-
-    try {
-      for (let i = 0; i < queue.value.length; i++) {
-        currentIndex.value = i
-        const fn = queue.value[i]
-        if (typeof fn === 'function') {
-          await fn()
-        }
-      }
-    }
-    finally {
-      isProcessing.value = false
-      currentIndex.value = 0
-    }
-  }
-
-  /**
-   * 清空队列
-   */
-  const clear = () => {
-    queue.value = []
-    currentIndex.value = 0
-  }
-
-  /**
-   * 暂停处理
-   */
-  const pause = () => {
-    // 注意：这里只是标记暂停，实际的暂停逻辑需要在动画函数中实现
-    isProcessing.value = false
-  }
-
-  return {
-    queue,
-    isProcessing,
-    currentIndex,
-    add,
-    process,
-    clear,
-    pause,
-  }
-}
+// 已移除动画队列管理，简化库体积
 
 /**
  * 响应式动画配置

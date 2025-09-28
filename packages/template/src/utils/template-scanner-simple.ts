@@ -31,12 +31,6 @@ class SimpleTemplateScanner {
   // 只在打包后的环境中扫描 CSS 文件，开发环境中 CSS 内联在 Vue 文件中
   private cssModules = import.meta.glob('../templates/**/index.vue.css', { query: '?url', import: 'default', eager: false })
 
-  // 添加调试信息
-  private debugPaths() {
-    console.log('[SimpleTemplateScanner] Config paths:', Object.keys(this.configModules))
-    console.log('[SimpleTemplateScanner] Component paths:', Object.keys(this.componentModules))
-    console.log('[SimpleTemplateScanner] CSS paths:', Object.keys(this.cssModules))
-  }
 
   // 加载组件对应的 CSS 文件
   private async loadComponentCSS(category: string, device: string, name: string): Promise<void> {
@@ -45,13 +39,11 @@ class SimpleTemplateScanner {
 
     // 在开发环境下，CSS 内联在 Vue 文件中，不需要单独加载
     if (!cssLoader) {
-      console.log(`[SimpleTemplateScanner] CSS not found (likely dev environment): ${cssPath}`)
       return
     }
 
     try {
       const cssUrl = await cssLoader()
-      console.log(`[SimpleTemplateScanner] Loading CSS: ${cssUrl}`)
 
       // 检查是否已经加载过这个 CSS
       const existingLink = document.querySelector(`link[href="${cssUrl}"]`)
@@ -75,9 +67,7 @@ class SimpleTemplateScanner {
   private componentCache = new Map<string, Component>()
 
   private constructor() {
-    console.log(`[SimpleTemplateScanner] 🎯 实时热更新验证成功！发现 ${Object.keys(this.configModules).length} 个配置文件`)
-    console.log(`[SimpleTemplateScanner] ⚡ 源码修改立即生效！发现 ${Object.keys(this.componentModules).length} 个组件`)
-    this.debugPaths()
+    // web 环境下默认静默运行，避免噪音日志
 
     // 在开发环境下，注册 HMR 处理，确保模板变更能即时反映
     if (import.meta.hot && isWebEnvironment()) {
@@ -88,7 +78,6 @@ class SimpleTemplateScanner {
           const hit = updates.some((u: any) => typeof u?.path === 'string' && /\/templates\//.test(u.path))
           if (hit) {
             this.clearCache()
-            console.log('[SimpleTemplateScanner] 🔥 HMR: cleared caches for template update')
           }
         } catch (e) {
           // 忽略 HMR 事件解析错误
@@ -104,7 +93,6 @@ class SimpleTemplateScanner {
         try {
           import.meta.hot.accept(acceptPaths, () => {
             this.clearCache()
-            console.log('[SimpleTemplateScanner] 🔥 HMR: accepted module updates and cleared caches')
           })
         } catch {
           // 某些环境不支持一次性批量 accept，忽略
@@ -188,7 +176,6 @@ class SimpleTemplateScanner {
       loader: async () => {
         try {
           const module = await componentLoader()
-          console.log(`[SimpleTemplateScanner] Raw module for ${key}:`, module)
 
           // 处理不同的模块格式
           let component = null
@@ -218,7 +205,6 @@ class SimpleTemplateScanner {
             }
           }
 
-          console.log(`[SimpleTemplateScanner] Extracted component for ${key}:`, component)
 
           // 尝试加载对应的 CSS 文件
           await this.loadComponentCSS(category, device, name)
@@ -248,10 +234,8 @@ class SimpleTemplateScanner {
       suspensible: false,
       onError(error, retry, fail, attempts) {
         if (attempts <= 3) {
-          console.log(`[SimpleTemplateScanner] Retrying component load (${attempts}/3): ${key}`)
           retry()
         } else {
-          console.error(`[SimpleTemplateScanner] Component load failed after 3 attempts: ${key}`)
           fail()
         }
       }

@@ -9,11 +9,10 @@ import type { TemplateSystemConfig } from '../types/config'
  * 获取环境变量值，支持类型转换
  */
 function getEnvValue<T>(key: string, defaultValue: T, parser?: (value: string) => T): T {
-  // 安全地访问环境变量，避免在浏览器环境中出错
+  // Web 端仅依赖 Vite 的 import.meta.env
   let envValue: string | undefined
   try {
-    envValue = (typeof process !== 'undefined' && process.env ? process.env[key] : undefined)
-      || (typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env[key] : undefined)
+    envValue = (typeof import.meta !== 'undefined' && (import.meta as any).env ? (import.meta as any).env[key] : undefined)
   }
   catch {
     envValue = undefined

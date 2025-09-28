@@ -91,23 +91,6 @@ export function useTemplate(options: UseTemplateOptions = {}) {
     }
   }
 
-  /**
-   * 确保最小加载时间的辅助函数
-   */
-  async function ensureMinimumLoadingTime<T>(
-    promise: Promise<T>,
-    minTime: number = 0
-  ): Promise<T> {
-    const startTime = Date.now()
-    const result = await promise
-    const elapsed = Date.now() - startTime
-
-    if (elapsed < minTime) {
-      await new Promise(resolve => setTimeout(resolve, minTime - elapsed))
-    }
-
-    return result
-  }
 
   /**
    * 加载模板列表
@@ -177,18 +160,12 @@ export function useTemplate(options: UseTemplateOptions = {}) {
         throw new Error(`Template not found: ${templateName}`)
       }
 
-      // 暂时禁用缓存，因为异步组件的缓存应该由 Vue 自己处理
-      // 我们这里缓存异步组件定义会导致问题
-      console.log(`[useTemplate] Skipping cache for ${template.name} - let Vue handle async component caching`)
-
       // 使用简化版扫描器获取异步组件
-      console.log(`[useTemplate] Loading component: category=${template.category}, device=${template.device}, name=${template.name}`)
       const asyncComponent = simpleTemplateScanner.getAsyncComponent(
         template.category,
         template.device,
         template.name
       )
-      console.log(`[useTemplate] Got async component:`, asyncComponent)
 
       if (!asyncComponent) {
         console.error(`[useTemplate] Failed to create async component for: ${template.category}/${template.device}/${template.name}`)

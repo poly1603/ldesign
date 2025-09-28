@@ -23,6 +23,7 @@ import { useTemplateList } from '../composables/useTemplate'
 import { TemplateTransition } from './TemplateTransition'
 import './TemplateSelector.less'
 
+
 /**
  * 模板选择器组件
  */
@@ -595,6 +596,7 @@ export const TemplateSelector = defineComponent({
                     >
                       <div class="template-selector__header">
                         <h2 id="template-selector-title" class="template-selector__title">选择模板</h2>
+                        <ldesign-button>按钮</ldesign-button>
                         <button
                           class="template-selector__close"
                           onClick={handleClose}

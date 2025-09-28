@@ -235,34 +235,19 @@ export function mergePresetConfig(
  * 自动检测环境并应用预设
  */
 export function getAutoPresetConfig(customConfig?: Partial<TemplateSystemConfig>): TemplateSystemConfig {
-  // 检测环境
+  // 仅基于 Vite 环境变量与 UA 判断
   let preset: keyof typeof configPresets = 'development'
 
-  if (typeof process !== 'undefined') {
-    // Node.js 环境
-    if (process.env.NODE_ENV === 'production') {
-      preset = 'production'
-    }
-    else if (process.env.NODE_ENV === 'test') {
-      preset = 'testing'
-    }
-  }
-  else if (typeof import.meta !== 'undefined' && import.meta.env) {
-    // Vite 环境
-    if (import.meta.env.PROD) {
-      preset = 'production'
-    }
-    else if (import.meta.env.MODE === 'test') {
-      preset = 'testing'
-    }
+  if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
+    const env = (import.meta as any).env
+    if (env.PROD) preset = 'production'
+    else if (env.MODE === 'test') preset = 'testing'
   }
 
-  // 检测移动端
+  // 移动端设备可选切换为 mobile 预设
   if (typeof navigator !== 'undefined') {
     const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-    if (isMobile && preset === 'production') {
-      preset = 'mobile'
-    }
+    if (isMobile && preset === 'production') preset = 'mobile'
   }
 
   return mergePresetConfig(preset, customConfig)

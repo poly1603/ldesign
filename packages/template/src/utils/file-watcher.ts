@@ -187,9 +187,7 @@ export class FileWatcher {
    * 轮询监听器（浏览器环境回退方案）
    */
   private startPollingWatcher(): void {
-    // 这里可以实现基于 fetch 的轮询检查
-    // 或者与开发服务器的 WebSocket 连接
-    console.log('浏览器环境：使用轮询监听器')
+    // 浏览器端简化：不做额外轮询，依赖 Vite HMR 即可
   }
 
   /**
@@ -300,23 +298,6 @@ export class FileWatcher {
       templateName: templateName as string,
       fileType,
     }
-  }
-
-  /**
-   * 构建监听模式
-   */
-  private buildWatchPattern(): string {
-    return `${this.options.rootDir}/**/*`
-  }
-
-  /**
-   * 构建忽略模式
-   */
-  private buildIgnorePattern(): RegExp {
-    const patterns = this.options.excludePatterns.map(pattern =>
-      pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-    ).join('|')
-    return new RegExp(`(${patterns})`)
   }
 
   /**

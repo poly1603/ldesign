@@ -10,9 +10,9 @@ import type { StrictCacheStats } from '../types/strict-types'
 import type { TemplateMetadata } from '../types/template'
 
 /**
- * 缓存策略类型
+ * 缓存策略类型（简化）
  */
-export type AdvancedCacheStrategy = 'LRU' | 'LFU' | 'FIFO' | 'TTL' | 'HYBRID'
+export type CacheStrategy = 'LRU' | 'FIFO'
 
 /**
  * 缓存项元数据
@@ -46,33 +46,17 @@ export interface CacheItem<T = any> {
 }
 
 /**
- * 缓存配置
+ * 简化缓存配置
  */
-export interface AdvancedCacheConfig {
+export interface SimpleCacheConfig {
   /** 缓存策略 */
-  strategy?: AdvancedCacheStrategy
-  /** 最大缓存大小（字节） */
-  maxSize?: number
+  strategy?: CacheStrategy
   /** 最大缓存项数量 */
   maxItems?: number
   /** 默认TTL（毫秒） */
   defaultTTL?: number
-  /** 是否启用压缩 */
-  enableCompression?: boolean
-  /** 压缩阈值（字节） */
-  compressionThreshold?: number
-  /** 是否启用持久化 */
-  enablePersistence?: boolean
-  /** 持久化键名 */
-  persistenceKey?: string
   /** 是否启用统计 */
   enableStats?: boolean
-  /** 清理间隔（毫秒） */
-  cleanupInterval?: number
-  /** 是否启用内存警告 */
-  enableMemoryWarning?: boolean
-  /** 内存警告阈值（百分比） */
-  memoryWarningThreshold?: number
 }
 
 /**
@@ -757,7 +741,7 @@ export class AdvancedCache<T = any> {
   private startCleanupTimer(): void {
     this.cleanupTimer = setInterval(() => {
       this.cleanup()
-    }, this.config.cleanupInterval) as unknown as NodeJS.Timeout
+    }, this.config.cleanupInterval) as unknown as any
   }
 
   /**

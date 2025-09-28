@@ -14,96 +14,11 @@ import { getHotReloadManager, type HotReloadManager } from './utils/hot-reload-m
 import { createTemplateScanner } from './utils/factory'
 
 /**
- * 转换旧版插件选项为新配置格式
+ * 简化的配置转换
  */
-function convertLegacyOptions(options: TemplatePluginOptions): Partial<TemplateSystemConfig> {
-  const config: Partial<TemplateSystemConfig> = {}
-
-  // 基础配置转换
-  if (options.templatesDir !== undefined)
-    config.templatesDir = options.templatesDir
-  if (options.autoScan !== undefined)
-    config.autoScan = options.autoScan
-  if (options.enableHMR !== undefined)
-    config.enableHMR = options.enableHMR
-  if (options.defaultDevice !== undefined)
-    config.defaultDevice = options.defaultDevice
-  if (options.enablePerformanceMonitor !== undefined)
-    config.enablePerformanceMonitor = options.enablePerformanceMonitor
-
-  // 缓存配置转换（向后兼容）
-  if (options.cache !== undefined) {
-    if (typeof options.cache === 'boolean') {
-      config.cache = { ...(config.cache as any), enabled: options.cache } as any
-    }
-    else if (typeof options.cache === 'object') {
-      config.cache = { ...(config.cache as any), ...options.cache } as any
-    }
-  }
-  if (options.cacheLimit !== undefined) {
-    const enabled = (config.cache as any)?.enabled ?? true
-    config.cache = { ...(config.cache as any), enabled, maxSize: options.cacheLimit } as any
-  }
-
-  // 设备检测配置转换（向后兼容）
-  if (options.mobileBreakpoint !== undefined || options.tabletBreakpoint !== undefined || options.desktopBreakpoint !== undefined) {
-    config.deviceDetection = {
-      ...(config.deviceDetection as any),
-      breakpoints: {
-        mobile: options.mobileBreakpoint ?? (config.deviceDetection as any)?.breakpoints?.mobile ?? 768,
-        tablet: options.tabletBreakpoint ?? (config.deviceDetection as any)?.breakpoints?.tablet ?? 992,
-        desktop: options.desktopBreakpoint ?? (config.deviceDetection as any)?.breakpoints?.desktop ?? 1200,
-      },
-      debounceDelay: (config.deviceDetection as any)?.debounceDelay ?? 300,
-      enableResize: (config.deviceDetection as any)?.enableResize ?? true,
-      enableOrientation: (config.deviceDetection as any)?.enableOrientation ?? true,
-    } as any
-  }
-
-  // 预加载配置转换
-  if (options.preloadStrategy !== undefined) {
-    const legacy = options.preloadStrategy
-    config.preloadStrategy = {
-      enabled: legacy.enabled ?? true,
-      mode: (legacy.mode as any) ?? 'lazy',
-      limit: legacy.limit ?? 5,
-      priority: legacy.priority ?? [],
-      intersection: (config.preloadStrategy as any)?.intersection ?? { rootMargin: '50px', threshold: 0.1 },
-      delay: (config.preloadStrategy as any)?.delay ?? 1000,
-    } as any
-  }
-  if (options.preloadTemplates !== undefined) {
-    config.preloadStrategy = {
-      ...(config.preloadStrategy as any),
-      enabled: (config.preloadStrategy as any)?.enabled ?? true,
-      mode: (config.preloadStrategy as any)?.mode ?? 'lazy',
-      limit: (config.preloadStrategy as any)?.limit ?? 5,
-      intersection: (config.preloadStrategy as any)?.intersection ?? { rootMargin: '50px', threshold: 0.1 },
-      delay: (config.preloadStrategy as any)?.delay ?? 1000,
-      priority: options.preloadTemplates,
-    } as any
-  }
-
-  // 直接复制新格式的配置
-  const newConfigKeys: (keyof TemplateSystemConfig)[] = [
-    'scanner',
-    'cache',
-    'deviceDetection',
-    'preloadStrategy',
-    'loader',
-    'fileNaming',
-    'performance',
-    'errorHandling',
-    'devtools',
-  ]
-
-  newConfigKeys.forEach((key) => {
-    if (options[key] !== undefined) {
-      config[key] = options[key] as any
-    }
-  })
-
-  return config
+function convertOptions(options: TemplatePluginOptions): Partial<TemplateSystemConfig> {
+  // 直接返回options，不做复杂转换
+  return options as Partial<TemplateSystemConfig>
 }
 
 /**
@@ -133,8 +48,8 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
     return
   }
 
-  // 转换并合并配置
-  const convertedConfig = convertLegacyOptions(options)
+  // 转换配置
+  const convertedConfig = convertOptions(options)
 
   let config: any
   try {

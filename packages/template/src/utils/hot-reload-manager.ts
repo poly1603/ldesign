@@ -68,6 +68,13 @@ export class HotReloadManager {
   private isEnabled = false
 
   constructor(options: Partial<HotReloadManagerOptions> = {}) {
+    // 生产环境下完全禁用
+    if (import.meta.env?.PROD) {
+      this.options = { enabled: false, debug: false, updateDelay: 0, autoRefresh: false, preserveState: false }
+      this.isEnabled = false
+      return
+    }
+
     this.options = {
       enabled: options.enabled ?? true,
       debug: options.debug ?? false,

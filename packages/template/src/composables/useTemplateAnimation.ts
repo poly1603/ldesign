@@ -227,135 +227,16 @@ export function useTemplateAnimation(
     }
   }
 
-  // 添加测试中需要的额外属性和方法
-  const animationConfig = config // 别名，兼容测试
-  const currentAnimation = ref<AnimationConfig | undefined>(config.value)
+  // 简化的属性
   const isAnimating = computed(() => animationState.value.entering || animationState.value.leaving)
-  const error = ref<string | null>(null)
-  const isAnimationSupported = ref(true)
-
-  // 扩展方法
-  const playAnimation = async (type?: string): Promise<void> => {
-    try {
-      error.value = null
-      await enter()
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : '动画播放失败'
-      throw err
-    }
-  }
-
-  const pauseAnimation = (): void => {
-    // 暂停动画的实现
-  }
-
-  const stopAnimation = (): void => {
-    animationState.value.entering = false
-    animationState.value.leaving = false
-    animationState.value.completed = true
-  }
-
-  const resetAnimation = (): void => {
-    reset()
-  }
-
-  const setDuration = (duration: number): void => {
-    updateConfig({ duration })
-  }
-
-  const setEasing = (easing: string): void => {
-    updateConfig({ easing })
-  }
-
-  const setEnabled = (enabled: boolean): void => {
-    updateConfig({ enabled })
-  }
-
-  const fadeIn = async (): Promise<void> => {
-    updateConfig({ type: AnimationType.FADE })
-    await enter()
-  }
-
-  const fadeOut = async (): Promise<void> => {
-    updateConfig({ type: AnimationType.FADE })
-    await leave()
-  }
-
-  const slideIn = async (): Promise<void> => {
-    updateConfig({ type: AnimationType.SLIDE })
-    await enter()
-  }
-
-  const slideOut = async (): Promise<void> => {
-    updateConfig({ type: AnimationType.SLIDE })
-    await leave()
-  }
-
-  const scale = async (): Promise<void> => {
-    updateConfig({ type: AnimationType.SCALE })
-    await enter()
-  }
-
-  const clearQueue = (): void => {
-    // 清除动画队列的实现
-  }
-
-  const onAnimationStart = (callback: () => void): void => {
-    // 动画开始事件监听
-  }
-
-  const onAnimationEnd = (callback: () => void): void => {
-    // 动画结束事件监听
-  }
-
-  const offAnimationStart = (callback: () => void): void => {
-    // 取消动画开始事件监听
-  }
-
-  const getPerformanceMetrics = (): AnimationMetrics => {
-    return {
-      animationCount: 1,
-      totalDuration: config.value.duration || 300,
-      averageDuration: config.value.duration || 300,
-      lastAnimationTime: Date.now(),
-      fps: 60,
-      memoryUsage: 0
-    }
-  }
-
-  const clearError = (): void => {
-    error.value = null
-  }
 
   return {
     animationState,
     config,
-    animationConfig,
-    currentAnimation,
     isAnimating,
-    error,
-    isAnimationSupported,
     updateConfig,
     enter,
     leave,
-    playAnimation,
-    pauseAnimation,
-    stopAnimation,
-    resetAnimation,
-    setDuration,
-    setEasing,
-    setEnabled,
-    fadeIn,
-    fadeOut,
-    slideIn,
-    slideOut,
-    scale,
-    clearQueue,
-    onAnimationStart,
-    onAnimationEnd,
-    offAnimationStart,
-    getPerformanceMetrics,
-    clearError,
     getTransitionClasses,
     getTransitionStyles,
     reset,
