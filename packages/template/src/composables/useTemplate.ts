@@ -96,7 +96,7 @@ export function useTemplate(options: UseTemplateOptions = {}) {
    */
   async function ensureMinimumLoadingTime<T>(
     promise: Promise<T>,
-    minTime: number = 800
+    minTime: number = 0
   ): Promise<T> {
     const startTime = Date.now()
     const result = await promise
@@ -117,32 +117,30 @@ export function useTemplate(options: UseTemplateOptions = {}) {
       loading.value = true
       error.value = null
 
-      // 使用最小加载时间确保用户能看到加载动画
-      await ensureMinimumLoadingTime((async () => {
-        // 获取当前分类和设备的模板列表
-        const templates = await simpleTemplateScanner.getTemplates(category || 'default', deviceType.value)
-        availableTemplates.value = templates
+      // 直接加载（取消强制最小时长，让加载完成立即结束）
+      // 获取当前分类和设备的模板列表
+      const templates = await simpleTemplateScanner.getTemplates(category || 'default', deviceType.value)
+      availableTemplates.value = templates
 
-        // 如果没有当前模板或当前模板不在列表中，选择模板
-        if (!currentTemplate.value || !templates.find(t => t.id === currentTemplate.value!.id || t.name === currentTemplate.value!.name)) {
-          // 优先尝试恢复上次选择的模板
-          const cachedSelection = loadSelection(category || 'default', deviceType.value)
-          let targetTemplate = null
+      // 如果没有当前模板或当前模板不在列表中，选择模板
+      if (!currentTemplate.value || !templates.find(t => t.id === currentTemplate.value!.id || t.name === currentTemplate.value!.name)) {
+        // 优先尝试恢复上次选择的模板
+        const cachedSelection = loadSelection(category || 'default', deviceType.value)
+        let targetTemplate = null
 
-          if (cachedSelection) {
-            targetTemplate = templates.find(t => t.name === cachedSelection || t.id === cachedSelection)
-          }
-
-          // 如果没有缓存或缓存的模板不存在，则使用默认模板
-          if (!targetTemplate) {
-            targetTemplate = templates.find(t => t.isDefault) || templates[0]
-          }
-
-          if (targetTemplate) {
-            await switchTemplate(targetTemplate.id || targetTemplate.name)
-          }
+        if (cachedSelection) {
+          targetTemplate = templates.find(t => t.name === cachedSelection || t.id === cachedSelection)
         }
-      })())
+
+        // 如果没有缓存或缓存的模板不存在，则使用默认模板
+        if (!targetTemplate) {
+          targetTemplate = templates.find(t => t.isDefault) || templates[0]
+        }
+
+        if (targetTemplate) {
+          await switchTemplate(targetTemplate.id || targetTemplate.name)
+        }
+      }
     }
     catch (err) {
       // 区分初始化错误和后续错误
@@ -340,6 +338,31 @@ export function useTemplate(options: UseTemplateOptions = {}) {
       })
     }, 1000)
   })
+
+  // 开发环境下：监听 Vite HMR 更新，命中 templates 目录时刷新列表
+  if (typeof import.meta !== 'undefined' && (import.meta as any).hot) {
+    try {
+      ;(import.meta as any).hot.on('vite:beforeUpdate', async (payload: any) => {
+        try {
+          const updates = Array.isArray(payload?.updates) ? payload.updates : []
+          // 命中 templates 目录
+          const tplUpdates = updates.filter((u: any) => typeof u?.path === 'string' && /\/templates\//.test(u.path))
+          if (tplUpdates.length > 0) {
+            componentCache.clear()
+            // 仅当配置文件发生变化时才刷新模板列表，普通 SFC/样式交给 Vite HMR 即时更新
+            const needRescan = tplUpdates.some((u: any) => /\/config\.(ts|js)$/.test(u.path))
+            if (needRescan) {
+              await loadTemplates()
+            }
+          }
+        } catch {
+          // ignore
+        }
+      })
+    } catch {
+      // ignore
+    }
+  }
 
   // 清理
   /**

@@ -1,9 +1,9 @@
 /**
- * 简化版模板扫描�?
+ * 简化版模板扫描器（Web）
  *
  * 直接使用 import.meta.glob 扫描模板
  * 打包时会自动将匹配的文件打包进去
- * 专门为Web环境设计，不依赖Node.js API
+ * 专门为 Web 环境设计，不依赖 Node.js API
  */
 
 import { defineAsyncComponent, markRaw, type Component } from 'vue'
@@ -78,6 +78,39 @@ class SimpleTemplateScanner {
     console.log(`[SimpleTemplateScanner] 🎯 实时热更新验证成功！发现 ${Object.keys(this.configModules).length} 个配置文件`)
     console.log(`[SimpleTemplateScanner] ⚡ 源码修改立即生效！发现 ${Object.keys(this.componentModules).length} 个组件`)
     this.debugPaths()
+
+    // 在开发环境下，注册 HMR 处理，确保模板变更能即时反映
+    if (import.meta.hot && isWebEnvironment()) {
+      // 监听 Vite 的通用 HMR 更新事件，命中 templates 目录则清理缓存
+      import.meta.hot.on('vite:beforeUpdate', (payload: any) => {
+        try {
+          const updates = Array.isArray(payload?.updates) ? payload.updates : []
+          const hit = updates.some((u: any) => typeof u?.path === 'string' && /\/templates\//.test(u.path))
+          if (hit) {
+            this.clearCache()
+            console.log('[SimpleTemplateScanner] 🔥 HMR: cleared caches for template update')
+          }
+        } catch (e) {
+          // 忽略 HMR 事件解析错误
+        }
+      })
+
+      // 容错：当某个具体模块热更新时直接清缓存
+      const acceptPaths = [
+        ...Object.keys(this.configModules),
+        ...Object.keys(this.componentModules)
+      ]
+      if (acceptPaths.length > 0) {
+        try {
+          import.meta.hot.accept(acceptPaths, () => {
+            this.clearCache()
+            console.log('[SimpleTemplateScanner] 🔥 HMR: accepted module updates and cleared caches')
+          })
+        } catch {
+          // 某些环境不支持一次性批量 accept，忽略
+        }
+      }
+    }
   }
 
   /**
@@ -119,7 +152,7 @@ class SimpleTemplateScanner {
   }
 
   /**
-   * 生成模板�?
+   * 生成模板键
    */
   private generateKey(category: string, device: DeviceType, name: string): string {
     return `${category}:${device}:${name}`
@@ -131,7 +164,7 @@ class SimpleTemplateScanner {
   getAsyncComponent(category: string, device: DeviceType, name: string): Component | null {
     const key = this.generateKey(category, device, name)
 
-    // 检查缓�?
+    // 缓存命中
     const cached = this.componentCache.get(key)
     if (cached) {
       return cached
@@ -236,7 +269,7 @@ class SimpleTemplateScanner {
   async getConfig(category: string, device: DeviceType, name: string): Promise<TemplateConfig | null> {
     const key = this.generateKey(category, device, name)
 
-    // 检查缓�?
+    // 缓存命中
     const cached = this.configCache.get(key)
     if (cached) {
       return cached
@@ -270,7 +303,7 @@ class SimpleTemplateScanner {
   }
 
   /**
-   * 获取模板元数�?
+   * 获取模板元数据
    */
   async getMetadata(category: string, device: DeviceType, name: string): Promise<TemplateMetadata | null> {
     const config = await this.getConfig(category, device, name)
@@ -342,7 +375,7 @@ class SimpleTemplateScanner {
   }
 
   /**
-   * 检查模板是否存�?
+   * 检查模板是否存在
    */
   hasTemplate(category: string, device: DeviceType, name: string): boolean {
     const configPath = `../templates/${category}/${device}/${name}/config.ts`
@@ -361,3 +394,18 @@ class SimpleTemplateScanner {
 
 // 导出单例实例
 export const simpleTemplateScanner = SimpleTemplateScanner.getInstance()
+
+// 开发环境兜底：当 HMR 触发时清理单例缓存，避免需要手动刷新
+if (typeof import.meta !== 'undefined' && (import.meta as any).hot) {
+  try {
+    ;(import.meta as any).hot.on('vite:beforeUpdate', (payload: any) => {
+      const updates = Array.isArray(payload?.updates) ? payload.updates : []
+      const hit = updates.some((u: any) => typeof u?.path === 'string' && /\/templates\//.test(u.path))
+      if (hit) {
+        simpleTemplateScanner.clearCache()
+      }
+    })
+  } catch {
+    // ignore
+  }
+}

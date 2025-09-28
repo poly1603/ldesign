@@ -59,8 +59,18 @@ const handleSizeChange = (size: string) => {
 
 <template>
   <div class="ldesign-dashboard ldesign-dashboard--classic">
-    <header class="ldesign-dashboard__header"></header>
-    <asider class="ldesign-dashboard__asider"></asider>
+    <header class="ldesign-dashboard__header">
+      <div class="ldesign-dashboard__header-prefix">Logo</div>
+      <div class="ldesign-dashboard__header-content"></div>
+      <div class="ldesign-dashboard__header-suffix">
+        <slot name="language-selector"></slot>
+        <slot name="color-selector"></slot>
+        <slot name="dark-mode-toggle"></slot>
+        <slot name="size-selector"></slot>
+        <slot name="selector"></slot>
+      </div>
+    </header>
+    <asider class="ldesign-dashboard__asider">fwefff</asider>
     <section class="ldesign-dashboard__content">
       <router-view />
     </section>
@@ -83,6 +93,20 @@ const handleSizeChange = (size: string) => {
     &__header {
       grid-area: 1/1/2/3;
       background-color: var(--ldesign-dashboard-header-background, var(--ldesign-bg-color-container));
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+
+      &-content {
+        flex: 1;
+      }
+
+      &-prefix,
+      &-suffix {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
     }
 
     &__asider {

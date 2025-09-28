@@ -36,17 +36,10 @@ import { ChevronDown, PanelsTopLeft } from 'lucide-vue-next'
 const DefaultLoadingComponent = defineComponent({
   name: 'DefaultLoading',
   setup() {
-    return () => h('div', { class: 'template-loading' }, [
-      h('div', { class: 'template-loading__spinner' }),
-      h('div', { class: 'template-loading__text' }, '正在加载模板...'),
-      h('div', { class: 'template-loading__subtitle' }, '请稍候，正在为您准备最佳体验'),
-      h('div', { class: 'template-loading__progress' }, [
-        h('div', { class: 'template-loading__progress-bar' })
-      ]),
-      h('div', { class: 'template-loading__dots' }, [
-        h('div', { class: 'dot' }),
-        h('div', { class: 'dot' }),
-        h('div', { class: 'dot' })
+    return () => h('div', { class: 'template-loading-overlay' }, [
+      h('div', { class: 'template-loading-overlay__box' }, [
+        h('div', { class: 'template-loading-overlay__spinner' }),
+        h('div', { class: 'template-loading-overlay__text' }, '正在加载...')
       ])
     ])
   },
