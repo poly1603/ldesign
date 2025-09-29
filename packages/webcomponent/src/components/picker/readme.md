@@ -364,7 +364,7 @@ ldesign-picker
 | `momentum`           | `momentum`             | 是否启用惯性                                                   | `boolean`                        | `true`      |
 | `options`            | `options`              | 选项列表（数组或 JSON 字符串）                                       | `PickerOption[] \| string`       | `[]`        |
 | `panelHeight`        | `panel-height`         | 可视高度（优先），未设置时使用 visibleItems * itemHeight                | `number`                         | `undefined` |
-| `resistance`         | `resistance`           | 边界阻力系数 0-1（越小阻力越大）                                       | `number`                         | `0.4`       |
+| `resistance`         | `resistance`           | 边界阻力系数 0-1（越小阻力越大）                                       | `number`                         | `0.3`       |
 | `rotateStep`         | `rotate-step`          | 3D旋转步长（度）                                                | `number`                         | `undefined` |
 | `searchDebounce`     | `search-debounce`      | 搜索防抖延迟（毫秒）                                               | `number`                         | `300`       |
 | `searchIgnoreCase`   | `search-ignore-case`   | 是否在搜索时大小写不敏感                                             | `boolean`                        | `true`      |

@@ -384,11 +384,6 @@ export class LdesignDrawer {
     this.maskElement = this.el.querySelector('.ldesign-drawer__mask') as HTMLElement;
     this.panelElement = this.el.querySelector('.ldesign-drawer__panel') as HTMLElement;
     this.resizeHandleElement = this.el.querySelector('.ldesign-drawer__resize-handle') as HTMLElement;
-    
-    // 移动端优化：添加触摸事件监听以防止滚动穿透
-    if (this.isMobileDevice()) {
-      this.initMobileOptimizations();
-    }
 
     if (this.visible) {
       this.show(false);
@@ -1450,43 +1445,6 @@ export class LdesignDrawer {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
   }
   
-  // 确保移动端视口元标签设置正确
-  private ensureViewportMeta() {
-    let viewport = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
-    if (!viewport) {
-      viewport = document.createElement('meta');
-      viewport.name = 'viewport';
-      viewport.content = 'width=device-width, initial-scale=1.0';
-      document.head.appendChild(viewport);
-    }
-  }
-  
-  // 移动端优化
-  private initMobileOptimizations() {
-    // 添加触摸事件监听器来阻止背景滚动
-    if ('ontouchstart' in window) {
-      let touchStartY = 0;
-      
-      // 触摸开始
-      this.el.addEventListener('touchstart', (e: TouchEvent) => {
-        if (!this.isVisible) return;
-        touchStartY = e.touches[0].clientY;
-      }, { passive: true });
-      
-      // 触摸移动 - 阻止默认滚动
-      this.el.addEventListener('touchmove', (e: TouchEvent) => {
-        if (!this.isVisible) return;
-        
-        const target = e.target as HTMLElement;
-        const drawerBody = this.el.querySelector('.ldesign-drawer__body');
-        
-        // 只在非 body 区域阻止滚动
-        if (drawerBody && !drawerBody.contains(target)) {
-          e.preventDefault();
-        }
-      }, { passive: false });
-    }
-  }
 
   private handleResize = () => {
     // 窗口大小变化时重新计算

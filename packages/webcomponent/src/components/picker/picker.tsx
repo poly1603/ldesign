@@ -38,7 +38,7 @@ export class LdesignPicker {
   /** 惯性摩擦 0-1（越小减速越快） */
   @Prop() friction: number = 0.92;
   /** 边界阻力系数 0-1（越小阻力越大） */
-  @Prop() resistance: number = 0.4;
+  @Prop() resistance: number = 0.3;
   /** 最大橡皮筋越界（像素）。优先级高于比例 */
   @Prop() maxOverscroll?: number;
   /** 最大橡皮筋越界比例（相对于容器高度 0-1）。当未提供像素值时生效；未设置则默认 0.5（即容器高度的一半） */
@@ -392,7 +392,8 @@ export class LdesignPicker {
     // - 在 0 附近接近线性（容易拉动）
     // - 随着 x 增大逐渐饱和（越来越难拉）
     // - 完全连续可导，没有任何突变点
-    const tanhX = Math.tanh(normalizedX * 1.5); // 1.5 控制曲线的陡峭程度
+    const steepness = 2.0; // 增加陡峭程度，让阻力增长更快
+    const tanhX = Math.tanh(normalizedX * steepness);
     
     // 应用阻力系数
     // c 控制总体阻力大小
@@ -919,8 +920,8 @@ export class LdesignPicker {
     const { minY, maxY } = this.getBounds();
     
     // 在边界处应用橡皮筋效果
-    // 关键：使用一致的阻力系数，避免参数变化导致的跳动
-    const c = 0.6; // 固定的阻力系数，不随其他参数变化
+    // 使用配置的阻力系数，但确保范围合理
+    const c = Math.min(0.95, Math.max(0.1, this.resistance));
     const dim = this.panelHeightPx;
     
     if (baseTarget > maxY) {
@@ -1121,12 +1122,21 @@ export class LdesignPicker {
     // 点击（轻触）选择：当未发生明显拖动时，选中触点所在的项
     if (this.tapCandidate) {
       this.tapCandidate = false;
-      const el = (e.target as HTMLElement)?.closest('li');
-      if (el && this.listEl.contains(el)) {
-        const idxAttr = (el as HTMLElement).getAttribute('data-index');
-        const idxNum = idxAttr ? parseInt(idxAttr, 10) : NaN;
-        if (!Number.isNaN(idxNum)) {
-          this.setIndex(idxNum, { animate: true, trigger: 'touch' });
+      // 获取点击位置
+      const clickY = e.clientY;
+      const containerRect = this.containerEl?.getBoundingClientRect();
+      if (containerRect) {
+        // 计算点击位置相对于容器中心的偏移
+        const centerY = containerRect.top + containerRect.height / 2;
+        const offsetFromCenter = clickY - centerY;
+        // 计算点击的是哪个项目
+        const clickedIdx = Math.round(offsetFromCenter / this.itemHeightBySize);
+        const currentIdx = Math.round((this.centerOffset - this.trackY) / this.itemHeightBySize);
+        const targetIdx = this.clampIndex(currentIdx + clickedIdx);
+        
+        // 如果点击的不是当前项，则滚动到该项
+        if (targetIdx !== currentIdx && !this.parsed[targetIdx]?.disabled) {
+          this.setIndex(targetIdx, { animate: true, trigger: 'touch' });
           return;
         }
       }

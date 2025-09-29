@@ -3318,7 +3318,7 @@ export namespace Components {
         "panelHeight"?: number;
         /**
           * 边界阻力系数 0-1（越小阻力越大）
-          * @default 0.4
+          * @default 0.3
          */
         "resistance": number;
         /**
@@ -10212,7 +10212,7 @@ declare namespace LocalJSX {
         "panelHeight"?: number;
         /**
           * 边界阻力系数 0-1（越小阻力越大）
-          * @default 0.4
+          * @default 0.3
          */
         "resistance"?: number;
         /**

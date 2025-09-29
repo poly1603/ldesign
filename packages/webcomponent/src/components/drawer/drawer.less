@@ -9,11 +9,6 @@
   display: none;
   overscroll-behavior: contain;
   user-select: none;
-  // 移动端优化：使用 transform 确保固定定位正确
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 
   // 层级模式
   &--level-high {
@@ -46,7 +41,7 @@
       
       &--top,
       &--bottom {
-        max-height: 90vh !important;
+        max-height: 85vh !important;
         min-height: 200px;
       }
     }
