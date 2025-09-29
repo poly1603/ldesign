@@ -145,7 +145,7 @@ export default defineConfig({
     options.legalComments = 'none' // 不包含法律注释以减少输出
   },
   // 使用 tsup 的 noDefaultExport 选项来避免混合导出警告
-  noDefaultExport: true,
+  noDefaultExport: false,
   // 减少控制台输出
   silent: false,
   // 优化构建性能

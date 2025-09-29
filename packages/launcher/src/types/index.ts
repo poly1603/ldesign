@@ -16,5 +16,20 @@ export * from './server'
 export * from './build'
 export * from './cli'
 
+// 从 ui-config 中选择性导出，避免与 config.ts 中的 EnvironmentConfig 冲突
+export type {
+  UIConfigField,
+  UIConfigSection,
+  UIEnvironmentConfig,
+  SUPPORTED_ENVIRONMENTS,
+  getConfigFields,
+  getEnvironmentConfig,
+  getDefaultEnvironment,
+  getEnvironmentConfigPath,
+  getNestedValue,
+  setNestedValue,
+  validateConfigValue
+} from './ui-config'
+
 // 导出工具类型
 export type { Logger } from '../utils/logger'

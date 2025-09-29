@@ -74,7 +74,7 @@ export const DEFAULT_CONFIG_FILES = [
 /**
  * 支持的环境名称
  */
-export const SUPPORTED_ENVIRONMENTS = [
+export const SUPPORTED_ENVIRONMENT_NAMES = [
   'development',
   'production',
   'test',
@@ -89,7 +89,7 @@ export const SUPPORTED_ENVIRONMENTS = [
  * @returns 环境特定配置文件名列表
  */
 export function getEnvironmentConfigFiles(environment?: string): readonly string[] {
-  if (!environment || !SUPPORTED_ENVIRONMENTS.includes(environment as any)) {
+  if (!environment || !SUPPORTED_ENVIRONMENT_NAMES.includes(environment as any)) {
     return DEFAULT_CONFIG_FILES
   }
 

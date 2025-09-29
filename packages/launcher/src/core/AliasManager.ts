@@ -70,16 +70,20 @@ export class AliasManager {
    * @returns 过滤后的别名配置数组
    */
   filterAliasesByStage(aliases: AliasEntry[], stage: BuildStage): AliasEntry[] {
-    console.log('🔍 别名过滤调试:')
-    console.log('  输入别名数量:', aliases.length)
-    console.log('  当前阶段:', stage)
+    // 只在 debug 模式下输出详细调试信息
+    const isDebug = process.env.NODE_ENV === 'development' && process.argv.includes('--debug')
+    if (isDebug) {
+      console.log('🔍 别名过滤调试:')
+      console.log('  输入别名数量:', aliases.length)
+      console.log('  当前阶段:', stage)
+    }
 
     const filtered = aliases.filter(alias => {
       // 如果没有指定 stages，默认只在 dev 阶段生效
       const effectiveStages = alias.stages || ['dev']
       const shouldInclude = effectiveStages.includes(stage)
 
-      if (alias.find && typeof alias.find === 'string' && alias.find.startsWith('@ldesign')) {
+      if (isDebug && alias.find && typeof alias.find === 'string' && alias.find.startsWith('@ldesign')) {
         console.log(`  别名 ${alias.find}: stages=${JSON.stringify(effectiveStages)}, 包含${stage}=${shouldInclude}`)
       }
 
@@ -87,11 +91,11 @@ export class AliasManager {
     }).map(alias => {
       // 解析相对路径为绝对路径
       const resolvedReplacement = this.resolveAlias(alias.replacement)
-      
-      if (alias.find && typeof alias.find === 'string' && alias.find.startsWith('@ldesign')) {
+
+      if (isDebug && alias.find && typeof alias.find === 'string' && alias.find.startsWith('@ldesign')) {
         console.log(`  解析路径 ${alias.find}: ${alias.replacement} -> ${resolvedReplacement}`)
       }
-      
+
       return {
         // 返回标准的 Vite AliasEntry 格式（不包含 stages 字段）
         find: alias.find,
@@ -99,9 +103,11 @@ export class AliasManager {
       }
     })
 
-    console.log('  过滤后别名数量:', filtered.length)
-    const ldesignFiltered = filtered.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
-    console.log('  @ldesign别名数量:', ldesignFiltered.length)
+    if (isDebug) {
+      console.log('  过滤后别名数量:', filtered.length)
+      const ldesignFiltered = filtered.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
+      console.log('  @ldesign别名数量:', ldesignFiltered.length)
+    }
 
     return filtered
   }

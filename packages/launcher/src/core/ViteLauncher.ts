@@ -1356,13 +1356,14 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     if (config.resolve.alias) {
       if (Array.isArray(config.resolve.alias)) {
         userAliases = [...config.resolve.alias]
-        console.log('🔧 用户别名（数组格式）调试:')
-        console.log('  总数:', userAliases.length)
-        const ldesignAliases = userAliases.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
-        console.log('  @ldesign别名数量:', ldesignAliases.length)
-        console.log('  当前阶段:', stage)
-        console.log('  @ldesign别名详情:', JSON.stringify(ldesignAliases.slice(0, 5), null, 2))
         if (this.logger.getLevel() === 'debug') {
+          console.log('🔧 用户别名（数组格式）调试:')
+          console.log('  总数:', userAliases.length)
+          const ldesignAliases = userAliases.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
+          console.log('  @ldesign别名数量:', ldesignAliases.length)
+          console.log('  当前阶段:', stage)
+          console.log('  @ldesign别名详情:', JSON.stringify(ldesignAliases.slice(0, 5), null, 2))
+
           this.logger.debug('用户别名（数组格式）', {
             count: userAliases.length,
             first10: userAliases.slice(0, 10).map(a => ({ find: a.find, replacement: a.replacement, stages: a.stages })),
@@ -1398,12 +1399,12 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
     if (this.logger.getLevel() === 'debug') {
       const ldesignFiltered = filteredAliases.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
-      console.log('🔧 别名过滤结果调试:')
-      console.log('  阶段:', stage)
-      console.log('  过滤前:', allAliases.length)
-      console.log('  过滤后:', filteredAliases.length)
-      console.log('  @ldesign过滤后数量:', ldesignFiltered.length)
-      console.log('  @ldesign过滤后详情:', JSON.stringify(ldesignFiltered, null, 2))
+      this.logger.debug('别名过滤结果调试', {
+        stage,
+        beforeFilter: allAliases.length,
+        afterFilter: filteredAliases.length,
+        ldesignCount: ldesignFiltered.length
+      })
       this.logger.debug('别名过滤结果', {
         stage,
         beforeFilter: allAliases.length,
@@ -1430,6 +1431,8 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     return config
   }
 
+
+
   /**
    * 使用智能插件增强配置
    *
@@ -1438,8 +1441,10 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    */
   private async enhanceConfigWithSmartPlugins(config: ViteLauncherConfig): Promise<ViteLauncherConfig> {
     try {
+      this.logger.info('开始智能插件检测...')
       // 获取智能检测的插件
       const smartPlugins = await this.smartPluginManager.getRecommendedPlugins()
+      this.logger.info('智能插件检测完成', { count: smartPlugins.length })
 
       if (smartPlugins.length > 0) {
         // 合并用户配置的插件和智能检测的插件（按名称去重，避免重复注册）

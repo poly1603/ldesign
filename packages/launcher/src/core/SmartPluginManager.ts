@@ -237,11 +237,9 @@ export class SmartPluginManager {
    * 执行实际的文件检查
    */
   private async doFileCheck(patterns: string[]): Promise<boolean> {
-    // 检查多个目录：src、packages 等
+    // 只检查当前项目的src目录，避免误检测packages目录中的其他项目文件
     const dirsToCheck = [
-      PathUtils.resolve(this.cwd, 'src'),
-      PathUtils.resolve(this.cwd, 'packages'),
-      this.cwd // 也检查根目录
+      PathUtils.resolve(this.cwd, 'src')
     ]
 
     for (const dir of dirsToCheck) {
@@ -325,7 +323,7 @@ export class SmartPluginManager {
     const projectType = await this.detectProjectType()
     const plugins: Plugin[] = []
 
-    this.logger.debug('正在加载推荐插件...', { projectType })
+    this.logger.info('SmartPluginManager: 开始加载推荐插件...', { projectType })
 
     try {
       // 根据项目类型加载对应插件
@@ -334,16 +332,20 @@ export class SmartPluginManager {
           const vuePlugin = await this.loadPlugin('vue3')
           if (vuePlugin) plugins.push(vuePlugin)
 
-          // 尝试加载 Vue JSX 插件（如果有 JSX/TSX 文件或已安装依赖）
-          const hasJsxFiles = await this.hasFiles(['**/*.tsx', '**/*.jsx'])
+          // 尝试加载 Vue JSX 插件（如果已安装依赖，则自动加载）
           const hasJsxDep = await this.hasDependency('@vitejs/plugin-vue-jsx')
-          this.logger.debug('Vue JSX 插件检测', { hasJsxFiles, hasJsxDep })
-          if (hasJsxFiles || hasJsxDep) {
+          this.logger.debug('Vue JSX 插件检测', { hasJsxDep })
+          if (hasJsxDep) {
+            this.logger.info('检测到 Vue JSX 依赖，自动加载插件')
             const vueJsxPlugin = await this.loadPlugin('vue3-jsx')
             if (vueJsxPlugin) {
               plugins.push(vueJsxPlugin)
               this.logger.info('Vue JSX 插件加载成功')
+            } else {
+              this.logger.warn('Vue JSX 插件加载失败')
             }
+          } else {
+            this.logger.debug('未检测到 @vitejs/plugin-vue-jsx 依赖，跳过 Vue JSX 插件加载')
           }
           break
         case ProjectType.VUE2:
@@ -378,18 +380,35 @@ export class SmartPluginManager {
   private async loadPlugin(pluginKey: string): Promise<Plugin | null> {
     const config = this.availablePlugins.get(pluginKey)
     if (!config) {
-      this.logger.warn(`未知插件: ${pluginKey}`)
+      this.logger.warn(`SmartPluginManager: 未知插件: ${pluginKey}`)
       return null
     }
 
+    this.logger.debug(`加载插件: ${pluginKey}`, {
+      name: config.name,
+      package: config.packageName
+    })
+
     try {
-      // 动态导入插件
-      const pluginModule = await import(config.packageName)
+      // 动态导入插件 - 使用正确的模块解析上下文
+      // 从项目根目录解析模块，而不是从 launcher 包解析
+      const { createRequire } = await import('module')
+      const require = createRequire(PathUtils.resolve(this.cwd, 'package.json'))
+
+      // 先尝试 require 解析路径
+      const modulePath = require.resolve(config.packageName)
+
+      // 将 Windows 路径转换为 file:// URL
+      const { pathToFileURL } = await import('url')
+      const moduleUrl = pathToFileURL(modulePath).href
+
+      // 然后使用动态导入
+      const pluginModule = await import(moduleUrl)
       const pluginFactory = pluginModule.default || pluginModule
+      const plugin = pluginFactory(config.options)
 
-      this.logger.debug('加载插件', { name: config.name, package: config.packageName })
-
-      return pluginFactory(config.options)
+      this.logger.debug(`插件加载成功: ${config.name}`)
+      return plugin
     } catch (error) {
       // 只在调试模式下显示插件加载失败的详细信息
       if (process.env.NODE_ENV === 'development' || process.env.DEBUG) {
