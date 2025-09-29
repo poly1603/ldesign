@@ -67,7 +67,15 @@ const BuildPage: React.FC = () => {
     updateServerInfo
   } = useTaskState()
 
-  const [selectedEnv, setSelectedEnv] = useState('production')
+  // 环境选择状态 - 从localStorage恢复，确保刷新后保持选择
+  const [selectedEnv, setSelectedEnv] = useState(() => {
+    try {
+      const stored = localStorage.getItem('ldesign-cli-build-selected-env')
+      return stored || 'production'
+    } catch {
+      return 'production'
+    }
+  })
   const [autoScroll, setAutoScroll] = useState(true)
   const [buildTimes, setBuildTimes] = useState<{ [key: string]: string }>({})
   const logContainerRef = useRef<HTMLDivElement>(null)
@@ -129,6 +137,15 @@ const BuildPage: React.FC = () => {
         return '构建任务'
     }
   }
+
+  // 保存环境选择到localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('ldesign-cli-build-selected-env', selectedEnv)
+    } catch (error) {
+      console.warn('Failed to save selected environment to localStorage:', error)
+    }
+  }, [selectedEnv])
 
   // 获取构建时间
   const getBuildTime = async (envKey: string) => {

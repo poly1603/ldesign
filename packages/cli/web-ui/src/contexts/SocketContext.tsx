@@ -33,7 +33,12 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   useEffect(() => {
     // 连接到后端 Socket.IO 服务器（使用当前页面的主机和端口）
     const socketInstance = io(window.location.origin, {
-      transports: ['websocket', 'polling']
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000
     })
 
     socketInstance.on('connect', () => {
@@ -42,9 +47,13 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       toast.success('已连接到服务器')
     })
 
-    socketInstance.on('disconnect', () => {
-      console.log('Socket disconnected')
+    socketInstance.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason)
       setConnected(false)
+      if (reason === 'io server disconnect') {
+        // 服务器主动断开连接，需要手动重连
+        socketInstance.connect()
+      }
       toast.error('与服务器断开连接')
     })
 
@@ -52,6 +61,25 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       console.error('Socket connection error:', error)
       setConnected(false)
       toast.error('连接服务器失败')
+    })
+
+    socketInstance.on('reconnect', (attemptNumber) => {
+      console.log('Socket reconnected after', attemptNumber, 'attempts')
+      setConnected(true)
+      toast.success('已重新连接到服务器')
+    })
+
+    socketInstance.on('reconnect_attempt', (attemptNumber) => {
+      console.log('Socket reconnection attempt:', attemptNumber)
+    })
+
+    socketInstance.on('reconnect_error', (error) => {
+      console.error('Socket reconnection error:', error)
+    })
+
+    socketInstance.on('reconnect_failed', () => {
+      console.error('Socket reconnection failed')
+      toast.error('重连失败，请刷新页面')
     })
 
     // 监听配置变化

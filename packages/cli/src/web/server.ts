@@ -15,11 +15,14 @@ import { ProjectManager } from './project-manager';
 import { TaskRunner } from './task-runner';
 import { taskStateManager } from './task-state-manager';
 import { GitManager } from './git-manager';
+import { LocalDB } from './local-db';
 export interface WebServerOptions {
   port?: number;
   host?: string;
   open?: boolean;
   staticPath?: string;
+  /** 是否持久化会话（不在启动时清库，也不在停止时删库） */
+  persistent?: boolean;
 }
 
 export class WebServer {
@@ -29,9 +32,12 @@ export class WebServer {
   private projectManager: ProjectManager;
   private taskRunner: TaskRunner;
   private context: CLIContext;
+  private db: LocalDB;
+  private persistent: boolean = false;
 
   constructor(context: CLIContext, options: WebServerOptions = {}) {
     this.context = context;
+    this.persistent = !!options.persistent;
     this.app = express();
     this.server = createServer(this.app);
     this.io = new SocketIOServer(this.server, {
@@ -41,15 +47,17 @@ export class WebServer {
       }
     });
 
-    // 清空之前的任务状态和所有历史数据
+    // 初始化本地数据库（每次 UI 启动前清理）
+    const dbPath = join(context.cwd, '.ldesign', 'ui.db');
+    this.db = new LocalDB(dbPath, { resetOnStart: !this.persistent, deleteOnDispose: !this.persistent });
+    context.logger.info(`🗄️ 已初始化本地数据库: ${dbPath}（${this.persistent ? '持久模式' : '临时模式'}）`);
+
+    // 清空之前的任务状态（内存）
     taskStateManager.clearAllTasks();
     context.logger.info('🧹 已清空之前的任务状态');
 
-    // 清理所有历史日志和服务器信息
-    this.clearAllHistoryData();
-
     this.projectManager = new ProjectManager(context);
-    this.taskRunner = new TaskRunner(context, this.io);
+    this.taskRunner = new TaskRunner(context, this.io, this.db);
 
     this.setupMiddleware();
     this.setupRoutes();
@@ -61,6 +69,8 @@ export class WebServer {
    */
   private clearAllHistoryData(): void {
     try {
+      // 清理数据库中的历史数据
+      this.db.clearAll();
       // 清理任务状态管理器中的所有数据
       taskStateManager.clearAllTasks();
 
@@ -198,14 +208,17 @@ export class WebServer {
       }
     });
 
-    // 根据类型和环境获取任务状态
+    // 根据类型和环境获取任务状态（优先从数据库恢复）
     router.get('/tasks/:taskType/:environment', async (req, res) => {
       try {
-        const { taskType, environment } = req.params;
-        const task = taskStateManager.getTaskByTypeAndEnv(taskType, environment);
-        res.json(task || null);
+        const { taskType, environment } = req.params as any;
+        const task = this.db.getTaskWithLogsByTypeEnv(taskType, environment, 1000);
+        if (task) return res.json(task);
+        // 回退：从内存取
+        const memTask = taskStateManager.getTaskByTypeAndEnv(taskType, environment);
+        res.json(memTask || null);
       } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: (error as any).message || String(error) });
       }
     });
 
@@ -220,24 +233,27 @@ export class WebServer {
       }
     });
 
-    // 获取所有任务状态（从TaskStateManager）
+    // 获取所有任务状态（从数据库聚合，回退到内存）
     router.get('/tasks', async (req, res) => {
       try {
-        const tasks = taskStateManager.getAllTasks();
-        res.json(tasks);
+        const tasks = this.db.getAllTasks();
+        if (tasks.length > 0) return res.json(tasks);
+        res.json(taskStateManager.getAllTasks());
       } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: (error as any).message || String(error) });
       }
     });
 
-    // 任务状态（原有的TaskRunner路由）
+    // 任务状态（按ID）
     router.get('/tasks/:taskId', async (req, res) => {
       try {
-        const { taskId } = req.params;
+        const { taskId } = req.params as any;
+        const task = this.db.getTaskWithLogs(taskId, 1000);
+        if (task) return res.json(task);
         const status = await this.taskRunner.getTaskStatus(taskId);
         res.json(status);
       } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: (error as any).message || String(error) });
       }
     });
 
@@ -273,6 +289,19 @@ export class WebServer {
         res.json({ content });
       } catch (error) {
         res.status(500).json({ error: error.message });
+      }
+    });
+
+    // 日志流查询
+    router.get('/logs/:taskId', async (req, res) => {
+      try {
+        const { taskId } = req.params as any;
+        const after = req.query.after ? parseInt(String(req.query.after)) : undefined;
+        const limit = req.query.limit ? parseInt(String(req.query.limit)) : 500;
+        const logs = this.db.getLogs(taskId, { afterId: after, limit });
+        res.json({ logs });
+      } catch (error) {
+        res.status(500).json({ error: (error as any).message || String(error) });
       }
     });
 
@@ -623,6 +652,9 @@ export class WebServer {
   async stop(): Promise<void> {
     return new Promise((resolve) => {
       this.server.close(() => {
+        try {
+          this.db?.dispose();
+        } catch {}
         this.context.logger.info('Web UI 服务器已停止');
         resolve();
       });

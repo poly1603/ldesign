@@ -72,7 +72,15 @@ const PreviewPage: React.FC = () => {
     setActiveTask
   } = useTaskState()
 
-  const [selectedEnv, setSelectedEnv] = useState('production')
+  // 环境选择状态 - 从localStorage恢复，确保刷新后保持选择
+  const [selectedEnv, setSelectedEnv] = useState(() => {
+    try {
+      const stored = localStorage.getItem('ldesign-cli-preview-selected-env')
+      return stored || 'production'
+    } catch {
+      return 'production'
+    }
+  })
   const [processStatus, setProcessStatus] = useState<ProcessStatus>({})
   const [autoScroll, setAutoScroll] = useState(true)
   const [buildStatus, setBuildStatus] = useState<{ [key: string]: boolean }>({})
@@ -135,6 +143,15 @@ const PreviewPage: React.FC = () => {
       }))
     }
   }, [currentTask, processKey])
+
+  // 保存环境选择到localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('ldesign-cli-preview-selected-env', selectedEnv)
+    } catch (error) {
+      console.warn('Failed to save selected environment to localStorage:', error)
+    }
+  }, [selectedEnv])
 
   // 获取环境对应的预览类型
   const getPreviewType = () => {

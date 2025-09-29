@@ -65,7 +65,20 @@ export const useTaskState = () => {
 const STORAGE_KEY = 'ldesign-task-state'
 const MAX_OUTPUT_LINES = 1000 // 限制日志条数
 
-// 从本地存储加载状态 - 已移除，现在在初始化时直接清理
+// 从本地存储加载状态
+const loadStateFromStorage = (): GlobalTaskState => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      console.log('从本地存储恢复任务状态:', parsed)
+      return parsed
+    }
+  } catch (error) {
+    console.error('Failed to load task state from storage:', error)
+  }
+  return { tasks: {} }
+}
 
 // 保存状态到本地存储
 const saveStateToStorage = (state: GlobalTaskState) => {
@@ -81,11 +94,11 @@ interface TaskStateProviderProps {
 }
 
 export const TaskStateProvider: React.FC<TaskStateProviderProps> = ({ children }) => {
-  // 在初始化时立即清理localStorage，确保每次UI启动都是干净的状态
+  // 初始化时从本地存储恢复状态，确保页面刷新后能保持之前的任务状态和日志
   const [state, setState] = useState<GlobalTaskState>(() => {
-    console.log('TaskStateProvider初始化：清理所有历史状态')
-    localStorage.removeItem(STORAGE_KEY)
-    return { tasks: {} }
+    const restoredState = loadStateFromStorage()
+    console.log('TaskStateProvider初始化，恢复状态:', restoredState)
+    return restoredState
   })
 
   // 保存状态到本地存储

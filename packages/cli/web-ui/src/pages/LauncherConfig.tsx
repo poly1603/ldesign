@@ -1,5 +1,8 @@
-﻿import React, { useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { Save, RotateCcw, Settings, Copy, RefreshCw, ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react'
+import Editor from '@monaco-editor/react'
+import toast from 'react-hot-toast'
+import api from '../services/api'
 
 // 配置字段类型定义
 interface ConfigField {
@@ -29,10 +32,17 @@ interface FormData {
 
 
 const LauncherConfig: React.FC = () => {
-  const [saving] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [viewMode, setViewMode] = useState<'code' | 'form'>('code')
   const [formData, setFormData] = useState<FormData>({})
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
+
+  // 环境与文件内容
+  const [availableConfigs, setAvailableConfigs] = useState<Array<{ environment: string; path: string; exists: boolean }>>([])
+  const [currentEnvironment, setCurrentEnvironment] = useState<string>('base')
+  const [codeContent, setCodeContent] = useState<string>('')
+  const [fileExists, setFileExists] = useState<boolean>(false)
 
   // 配置节定义 - 支持 @ldesign/launcher 的所有字段
   const configSections: ConfigSection[] = [
@@ -368,6 +378,70 @@ const LauncherConfig: React.FC = () => {
     }
   ]
 
+  // 环境配置：加载列表与内容
+  const loadAvailableConfigs = async () => {
+    try {
+      setLoading(true)
+      const list = await api.getLauncherConfigs()
+      setAvailableConfigs(list || [])
+      // 如果当前环境不在列表里，默认选择第一个
+      if (list && list.length > 0) {
+        const hasCurrent = list.some((c: any) => c.environment === currentEnvironment)
+        if (!hasCurrent) setCurrentEnvironment(list[0].environment)
+      }
+    } catch (err: any) {
+      toast.error(`加载配置列表失败：${err.message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadConfigContent = async (env: string) => {
+    try {
+      setLoading(true)
+      const data = await api.getLauncherConfig(env)
+      setCodeContent(data.content || '')
+      setFileExists(!!data.exists)
+      // 解析表单数据（尽力而为）
+      parseConfigToForm(data.content || '')
+    } catch (err: any) {
+      toast.error(`加载配置失败：${err.message}`)
+      setCodeContent('')
+      setFileExists(false)
+      setFormData({})
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadAvailableConfigs()
+  }, [])
+
+  useEffect(() => {
+    if (currentEnvironment) loadConfigContent(currentEnvironment)
+  }, [currentEnvironment])
+
+  // 简易解析 TS defineConfig 对象 -> 表单数据（尽力而为）
+  const parseConfigToForm = (content: string) => {
+    try {
+      const match = content.match(/defineConfig\s*\(\s*({[\s\S]*})\s*\)/)
+      if (!match) {
+        setFormData({})
+        return
+      }
+      const obj = match[1]
+      const jsonLike = obj
+        .replace(/(\w+)\s*:/g, '"$1":')
+        .replace(/'/g, '"')
+        .replace(/,(\s*[}\]])/g, '$1')
+      const parsed = JSON.parse(jsonLike)
+      setFormData(parsed)
+    } catch {
+      setFormData({})
+    }
+  }
+
   // 表单数据处理函数
   const updateFormData = (section: string, field: string, value: any) => {
     setFormData(prev => ({
@@ -392,7 +466,7 @@ const LauncherConfig: React.FC = () => {
     })
   }
 
-  // 生成配置代码
+  // 生成配置代码（基于表单）
   const generateConfigCode = (): string => {
     const sections: string[] = []
 
@@ -565,96 +639,130 @@ ${sections.join(',\n\n')}
     )
   }
 
-  return (
-    <div className="h-full flex flex-col bg-gray-50">
-      <div className="flex-1 flex">
-        <div className="flex-1 flex flex-col">
-          <div className="bg-white border-b border-gray-200 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <h1 className="text-xl font-semibold text-gray-900 flex items-center">
-                  <Settings className="w-5 h-5 mr-2" />
-                  Launcher 配置
-                </h1>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setViewMode('code')}
-                    className={`px-3 py-1 text-sm rounded-md transition-colors ${viewMode === 'code'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                  >
-                    代码视图
-                  </button>
-                  <button
-                    onClick={() => setViewMode('form')}
-                    className={`px-3 py-1 text-sm rounded-md transition-colors ${viewMode === 'form'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                  >
-                    表单视图
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => { }}
-                  className="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  <Copy className="w-4 h-4 mr-1" />
-                  复制
-                </button>
-                <button
-                  onClick={() => { }}
-                  className="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  <RotateCcw className="w-4 h-4 mr-1" />
-                  重置
-                </button>
-                <button
-                  onClick={() => { }}
-                  disabled={saving}
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                >
-                  {saving ? (
-                    <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4 mr-1" />
-                  )}
-                  保存
-                </button>
-              </div>
-            </div>
-          </div>
+    return (
+      <div className="h-full flex flex-col bg-gray-50">
+        <div className="flex-1 flex">
+          <div className="flex-1 flex flex-col">
+            <div className="bg-white border-b border-gray-200 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <h1 className="text-xl font-semibold text-gray-900 flex items-center">
+                    <Settings className="w-5 h-5 mr-2" />
+                    Launcher 配置
+                  </h1>
+                  {/* 环境选择 */}
+                  <div className="flex items-center space-x-2">
+                    <label className="text-sm text-gray-700">环境:</label>
+                    <select
+                      value={currentEnvironment}
+                      onChange={(e) => setCurrentEnvironment(e.target.value)}
+                      disabled={loading}
+                      className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {availableConfigs.map((cfg) => (
+                        <option key={cfg.environment} value={cfg.environment}>
+                          {cfg.environment}{!cfg.exists ? ' (不存在)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                    <span className={`text-xs ${fileExists ? 'text-green-600' : 'text-red-600'}`}>
+                      {fileExists ? '已存在' : '未创建'}
+                    </span>
+                  </div>
 
-          <div className="flex-1 p-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-full">
-              <div className="p-4 border-b border-gray-200">
-                <div className="text-sm text-gray-600">
-                  配置 Launcher 的各种选项和功能
-                </div>
-              </div>
-              {viewMode === 'code' ? (
-                <div className="p-4">
-                  <div className="text-center text-gray-500 py-8">
-                    <div className="mb-4">
-                      <Settings className="w-12 h-12 mx-auto text-gray-400" />
-                    </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {/* 视图切换 */}
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setViewMode('code')}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${viewMode === 'code'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                    >
                       代码视图
-                    </h3>
-                    <p className="text-gray-500 mb-4">
-                      显示生成的配置代码
-                    </p>
-                    <div className="text-left bg-gray-50 rounded-lg p-4 max-h-96 overflow-auto">
-                      <pre className="text-sm text-gray-800 whitespace-pre-wrap">
-                        {generateConfigCode()}
-                      </pre>
-                    </div>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('form')}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${viewMode === 'form'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                    >
+                      表单视图
+                    </button>
                   </div>
                 </div>
-              ) : (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(viewMode === 'code' ? codeContent : generateConfigCode())
+                      toast.success('已复制到剪贴板')
+                    }}
+                    className="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  >
+                    <Copy className="w-4 h-4 mr-1" />
+                    复制
+                  </button>
+                  <button
+                    onClick={() => loadConfigContent(currentEnvironment)}
+                    disabled={loading}
+                    className="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-1" />
+                    重新加载
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        setSaving(true)
+                        const contentToSave = viewMode === 'code' ? codeContent : generateConfigCode()
+                        await api.saveLauncherConfig(currentEnvironment, contentToSave)
+                        toast.success('配置已保存')
+                        setFileExists(true)
+                      } catch (err: any) {
+                        toast.error(`保存失败：${err.message}`)
+                      } finally {
+                        setSaving(false)
+                      }
+                    }}
+                    disabled={saving}
+                    className="flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  >
+                    {saving ? (
+                      <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4 mr-1" />
+                    )}
+                    保存
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 p-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-full">
+                <div className="p-4 border-b border-gray-200">
+                  <div className="text-sm text-gray-600">
+                    直接编辑 .ldesign/launcher.config.*.ts 文件，或通过表单快速生成配置
+                  </div>
+                </div>
+                {viewMode === 'code' ? (
+                  <div className="p-4">
+                    <Editor
+                      height="70vh"
+                      defaultLanguage="typescript"
+                      theme="vs-dark"
+                      value={codeContent}
+                      onChange={(v) => setCodeContent(v || '')}
+                      options={{
+                        fontSize: 14,
+                        minimap: { enabled: false },
+                        scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
+                        wordWrap: 'on',
+                      }}
+                    />
+                  </div>
+                ) : (
                 <div className="p-4 max-h-[calc(100vh-200px)] overflow-auto">
                   <div className="space-y-6">
                     {configSections.map((section) => {

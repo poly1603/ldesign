@@ -34,6 +34,12 @@ export const uiCommand: Command = {
       type: 'boolean',
       description: '开发模式（启用热重载）',
       default: false
+    },
+    {
+      name: 'persistent',
+      type: 'boolean',
+      description: '持久会话（不清理数据库，保留历史任务与日志）',
+      default: false
     }
   ],
   examples: [
@@ -43,16 +49,17 @@ export const uiCommand: Command = {
     'ldesign ui --dev'
   ],
   async action(options, context: CLIContext) {
-    context.logger.info('🚀 启动 Web 可视化界面...');
+    context.logger.info('🚀 [开发模式] 启动 Web 可视化界面...');
 
     try {
       // 动态导入 WebServer
       const { WebServer } = await import('../web/server');
-      
+
       const server = new WebServer(context, {
         port: parseInt(options.port),
         host: options.host,
-        open: options.open
+        open: options.open,
+        persistent: !!options.persistent
       });
 
       // 启动服务器
@@ -81,7 +88,7 @@ export const uiCommand: Command = {
       context.logger.info('按 Ctrl+C 停止服务器');
 
       // 保持进程运行
-      await new Promise(() => {});
+      await new Promise(() => { });
 
     } catch (error) {
       if (error.code === 'EADDRINUSE') {
@@ -101,7 +108,7 @@ export const uiCommand: Command = {
 async function setupDevMode(context: CLIContext, server: any): Promise<void> {
   try {
     const chokidar = await import('chokidar');
-    
+
     // 监听配置文件变化
     const configWatcher = chokidar.watch([
       'ldesign.config.*',

@@ -30,26 +30,19 @@ const convert = new Convert({
   stream: false
 })
 
-// 处理ANSI转义序列和二维码的函数
+// 处理输出内容 - 后端已经清理了控制序列，但保留了颜色
 const processOutputContent = (content: string): { html: string; isQRCode: boolean } => {
-  // 检查是否是二维码行
-  const isQRCode = content.includes('▄') || content.includes('█') || content.includes('▀')
-
-  if (isQRCode) {
-    // 对于二维码，保持原始字符，只移除颜色代码
-    const cleanContent = content.replace(/\x1b\[[0-9;]*m/g, '')
-    return { html: cleanContent, isQRCode: true }
-  }
-
-  // 对于普通文本，转换ANSI颜色代码
+  // 检测是否是二维码内容
+  const isQRCode = /[▄█▀]/.test(content)
+  // 转换ANSI颜色代码为HTML
   const html = convert.toHtml(content)
-  return { html, isQRCode: false }
+  return { html, isQRCode }
 }
+
 
 const DevPage: React.FC = () => {
   const { socket, isConnected } = useSocket()
   const {
-    tasks,
     getTask,
     createTask,
     updateTaskStatus,
@@ -60,10 +53,20 @@ const DevPage: React.FC = () => {
     clearAllTasks
   } = useTaskState()
 
-  const [selectedEnv, setSelectedEnv] = useState('development')
+  // 环境选择状态 - 从localStorage恢复，确保刷新后保持选择
+  const [selectedEnv, setSelectedEnv] = useState(() => {
+    try {
+      const stored = localStorage.getItem('ldesign-cli-selected-env')
+      return stored || 'development'
+    } catch {
+      return 'development'
+    }
+  })
   const [processStatus, setProcessStatus] = useState<ProcessStatus>({})
   const [autoScroll, setAutoScroll] = useState(true)
   const logContainerRef = useRef<HTMLDivElement>(null)
+  const currentTaskIdRef = useRef<string | null>(null)
+  const lastLogIdRef = useRef<number | undefined>(undefined)
 
   // 环境配置
   const environments: Environment[] = [
@@ -173,6 +176,11 @@ const DevPage: React.FC = () => {
 
         console.log(`Processing task update for ${key}, status: ${data.status}`)
 
+        // 如果是当前环境，记录当前真实 taskId，便于增量拉取
+        if (key === processKey) {
+          currentTaskIdRef.current = taskId
+        }
+
         // 更新本地状态（用于UI响应）
         setProcessStatus(prev => ({
           ...prev,
@@ -188,8 +196,7 @@ const DevPage: React.FC = () => {
     }
 
     const handleTaskOutput = (data: any) => {
-      console.log('handleTaskOutput received:', data)
-      // 从taskId中提取命令和环境信息
+      // 从 taskId 中提取命令和环境信息
       const taskIdParts = data.taskId.split('-')
       if (taskIdParts.length >= 2) {
         const command = taskIdParts[0]
@@ -206,12 +213,9 @@ const DevPage: React.FC = () => {
             updateTaskStatus(key, 'running')
           }
 
-          // 检查是否是二维码输出
-          const isQRCodeOutput = output.includes('▄') || output.includes('█') || output.includes('▀')
-
-          // 如果不是二维码输出，才添加到控制台输出
-          if (!isQRCodeOutput) {
-            // 添加输出行到全局状态
+          // 后端已经处理了行缓冲和清理，直接添加到输出
+          // output 现在是一个完整的、已清理的行
+          if (output.trim()) {
             addOutputLine(key, {
               timestamp: new Date().toLocaleTimeString(),
               content: output,
@@ -219,11 +223,9 @@ const DevPage: React.FC = () => {
             })
           }
 
-          // 检测开发服务器启动成功标志
-          if (output.includes('✔ 开发服务器已启动') || output.includes('开发服务器启动成功')) {
-            console.log('Dev server started successfully, updating task status to completed')
-            updateTaskStatus(key, 'completed')
-            toast.success('🎉 开发服务器启动成功！')
+          // 检测是否包含二维码块，如果包含则更新 serverInfo.qrCode（不影响日志显示）
+          if (/[▄█▀]/.test(output)) {
+            updateServerInfo(key, { qrCode: output })
           }
 
           // 提取服务器信息 - 先清理ANSI代码，然后使用最宽松的匹配模式
@@ -289,104 +291,242 @@ const DevPage: React.FC = () => {
     }
   }, [socket, processKey])
 
+  // 保存环境选择到localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('ldesign-cli-selected-env', selectedEnv)
+    } catch (error) {
+      console.warn('Failed to save selected environment to localStorage:', error)
+    }
+  }, [selectedEnv])
+
   // 环境切换时设置活动任务
   useEffect(() => {
     setActiveTask(processKey)
   }, [selectedEnv, processKey, setActiveTask])
 
-  // 从后端API恢复状态 - 在UI启动时跳过状态恢复，确保干净启动
+  // 从后端API恢复状态（只在需要时恢复）
   useEffect(() => {
-    const restoreStateFromBackend = async () => {
+    const restoreStateFromBackend = async (retryCount = 0) => {
+      const maxRetries = 3
+      const retryDelay = 1000 * (retryCount + 1) // 递增延迟
+
       try {
-        // 检查是否是UI刚启动（通过检查是否有任何任务存在）
-        const hasAnyTasks = Object.keys(tasks).length > 0
-        if (!hasAnyTasks) {
-          console.log(`UI刚启动，跳过状态恢复以确保干净启动`)
+        // 检查是否已经有了合适的状态，如果有则跳过恢复
+        const existingTask = getTask(processKey)
+        if (existingTask && existingTask.outputLines.length > 0) {
+          console.log(`Task ${processKey} already has output, skipping restore to prevent clearing logs`)
+          // 但仍然需要恢复taskId和状态，以便增量日志拉取能正常工作
+          if (existingTask.taskId) {
+            currentTaskIdRef.current = existingTask.taskId
+            const status = existingTask.status === 'running' ? 'running' : existingTask.status === 'error' ? 'error' : 'idle'
+            setProcessStatus(prev => ({
+              ...prev,
+              [processKey]: status
+            }))
+          }
           return
         }
 
-        console.log(`Attempting to restore state for: dev-${selectedEnv}`)
-        const task = await api.getTaskByTypeAndEnv('dev', selectedEnv)
-        if (task) {
-          console.log(`Restoring state from backend:`, task)
+        console.log(`Attempting to restore state for: dev-${selectedEnv} (attempt ${retryCount + 1})`)
 
-          // 恢复进程状态
-          const status = task.status === 'running' ? 'running' : 'idle'
+        // 确保任务存在于TaskState中
+        if (!getTask(processKey)) {
+          console.log(`Creating task ${processKey} in TaskState`)
+          createTask(processKey, 'dev', selectedEnv)
+        }
+
+        const task = await api.getTaskByTypeAndEnv('dev', selectedEnv)
+        if (task && typeof task === 'object' && task.taskId) {
+          console.log(`Restoring state from backend:`, task)
+          currentTaskIdRef.current = task.taskId
+
+          // 恢复进程状态 - 安全地访问status属性
+          const taskStatus = task.status || 'idle'
+          const status = taskStatus === 'running' ? 'running' : taskStatus === 'error' ? 'error' : 'idle'
           setProcessStatus(prev => ({
             ...prev,
             [processKey]: status
           }))
 
-          // 恢复输出行 - 使用全局状态管理，过滤掉二维码输出
-          task.outputLines.forEach((line: any) => {
-            const isQRCodeOutput = line.content.includes('▄') || line.content.includes('█') || line.content.includes('▀')
-            if (!isQRCodeOutput) {
-              addOutputLine(processKey, {
-                timestamp: line.timestamp,
-                content: line.content,
-                type: line.type
-              })
-            }
-          })
+          // 更新TaskState中的任务状态
+          updateTaskStatus(processKey, status === 'running' ? 'running' : status === 'error' ? 'error' : 'idle')
 
-          // 恢复服务器信息 - 先尝试从后端数据，如果没有则从输出日志中解析
-          let serverInfoRestored = false
-          if (task.serverInfo.localUrl || task.serverInfo.networkUrl) {
+          // 判断是否已有输出，避免重复恢复；不再清空前端日志，防止“被覆盖”的感觉
+          const currentTask = getTask(processKey)
+          const hasExistingOutput = currentTask && currentTask.outputLines.length > 0
+
+          // 恢复输出行 - 仅在没有现有输出时追加历史
+          if (!hasExistingOutput) {
+            // 安全地处理outputLines，确保它是数组
+            const outputLines = Array.isArray(task.outputLines) ? task.outputLines : []
+            outputLines.forEach((line: any) => {
+              // 验证line对象的完整性
+              if (line && typeof line === 'object' && line.content && line.timestamp && line.type) {
+                const isQRCodeOutput = line.content.includes('▄') || line.content.includes('█') || line.content.includes('▀')
+                if (!isQRCodeOutput) {
+                  addOutputLine(processKey, {
+                    timestamp: line.timestamp,
+                    content: line.content,
+                    type: line.type
+                  })
+                }
+              } else {
+                console.warn('Invalid output line format:', line)
+              }
+            })
+          }
+
+          // 恢复服务器信息 - 安全地处理serverInfo
+          if (task.serverInfo && typeof task.serverInfo === 'object') {
             updateServerInfo(processKey, {
               localUrl: task.serverInfo.localUrl,
               networkUrl: task.serverInfo.networkUrl,
               port: task.serverInfo.port
             })
-            serverInfoRestored = true
           }
 
-          // 如果后端没有服务器信息，从输出日志中重新解析
-          if (!serverInfoRestored) {
-            const allOutput = task.outputLines.map((line: any) => line.content).join('\n')
-            const cleanOutput = allOutput
-              .replace(/\x1b\[[0-9;]*m/g, '')  // 清理 \x1b[XXm 格式
-              .replace(/\[\d+m/g, '')          // 清理 [XXm 格式
-              .replace(/\[[\d;]*m/g, '')       // 清理 [XX;XXm 格式
-              .replace(/\[\d+;\d+m/g, '')      // 清理 [XX;XXm 格式
-              .replace(/\[2m/g, '')            // 清理 [2m (粗体开始)
-              .replace(/\[22m/g, '')           // 清理 [22m (粗体结束)
-              .replace(/\[36m/g, '')           // 清理 [36m (青色)
-              .replace(/\[39m/g, '')           // 清理 [39m (默认前景色)
-              .replace(/\[90m/g, '')           // 清理 [90m (暗灰色)
-              .replace(/\[1m/g, '')            // 清理 [1m (粗体)
-              .replace(/\[0m/g, '')            // 清理 [0m (重置)
-              .replace(/\[32m/g, '')           // 清理 [32m (绿色)
-              .trim()
-            const localMatch = cleanOutput.match(/本地[:\s]*(http:\/\/[^\s\n\r]+)/i)
-            const networkMatch = cleanOutput.match(/网络[:\s]*(http:\/\/[^\s\n\r]+)/i)
-            const portMatch = cleanOutput.match(/localhost:(\d+)/)
-
-            if (localMatch || networkMatch) {
-              console.log('🔍 从输出日志中解析服务器信息成功:', { localMatch, networkMatch, portMatch })
-              updateServerInfo(processKey, {
-                localUrl: localMatch ? localMatch[1].trim() : undefined,
-                networkUrl: networkMatch ? networkMatch[1].trim() : undefined,
-                port: portMatch ? portMatch[1] : undefined
-              })
-            }
-
-            // 检测二维码
-            if (allOutput.includes('▄') || allOutput.includes('█') || allOutput.includes('▀')) {
-              updateServerInfo(processKey, { qrCode: allOutput })
-            }
+          // 读取最新一条日志的id，随后做一次性增量回补，避免刷新间隙丢日志
+          try {
+            const latest = await api.getLogs(task.taskId, { limit: 1 })
+            const last = latest?.logs?.[0]
+            if (last) lastLogIdRef.current = last.id
+            // 1s 后做一次 after 拉取，补齐刷新间隙
+            setTimeout(async () => {
+              try {
+                const after = lastLogIdRef.current
+                const inc = await api.getLogs(task.taskId, { after, limit: 500 })
+                const newLogs = Array.isArray(inc?.logs) ? inc.logs : []
+                if (newLogs.length) {
+                  newLogs.forEach((log: any) => {
+                    // 验证log对象的完整性
+                    if (log && typeof log === 'object' && log.content && log.ts && log.type && log.id) {
+                      const isQRCodeOutput = log.content.includes('▄') || log.content.includes('█') || log.content.includes('▀')
+                      if (!isQRCodeOutput) {
+                        addOutputLine(processKey, {
+                          timestamp: log.ts,
+                          content: log.content,
+                          type: log.type === 'stderr' ? 'error' : log.type
+                        })
+                      }
+                      lastLogIdRef.current = log.id
+                    } else {
+                      console.warn('Invalid log format:', log)
+                    }
+                  })
+                }
+              } catch (e) {
+                console.warn('增量日志拉取失败：', e)
+              }
+            }, 1000)
+          } catch (e) {
+            console.warn('获取最新日志ID失败：', e)
           }
 
           console.log(`State restored successfully for ${processKey}`)
         } else {
           console.log(`No existing task found for: dev-${selectedEnv}`)
+          // 即使没有找到任务，也要确保TaskState中有对应的任务
+          if (!getTask(processKey)) {
+            createTask(processKey, 'dev', selectedEnv)
+          }
         }
       } catch (error) {
-        console.error('Failed to restore state from backend:', error)
+        console.error(`Failed to restore state from backend (attempt ${retryCount + 1}):`, error)
+
+        // 如果还有重试次数，则进行重试
+        if (retryCount < maxRetries) {
+          console.log(`Retrying state restoration in ${retryDelay}ms...`)
+          setTimeout(() => {
+            restoreStateFromBackend(retryCount + 1)
+          }, retryDelay)
+        } else {
+          console.error('Max retries reached, giving up state restoration')
+          // 即使恢复失败，也要确保TaskState中有对应的任务
+          if (!getTask(processKey)) {
+            createTask(processKey, 'dev', selectedEnv)
+          }
+        }
       }
     }
 
-    restoreStateFromBackend()
+    // 延迟一点时间再恢复，确保组件完全初始化
+    const timer = setTimeout(() => {
+      restoreStateFromBackend()
+    }, 100)
+
+    return () => clearTimeout(timer)
   }, [processKey, selectedEnv])
+
+  // 当 Socket 断开时，启动增量日志轮询，避免错过输出
+  useEffect(() => {
+    if (isConnected) return
+    const taskId = currentTaskIdRef.current
+    if (!taskId) return
+
+    let timer: any = null
+    const tick = async () => {
+      try {
+        const after = lastLogIdRef.current
+        const data = await api.getLogs(taskId, after ? { after, limit: 500 } : { limit: 200 })
+        const logs = data?.logs || []
+        if (logs.length) {
+          logs.forEach((log: any) => {
+            const isQRCodeOutput = log.content.includes('▄') || log.content.includes('█') || log.content.includes('▀')
+            if (!isQRCodeOutput) {
+              addOutputLine(processKey, {
+                timestamp: log.ts,
+                content: log.content,
+                type: log.type === 'stderr' ? 'error' : log.type
+              })
+            }
+            lastLogIdRef.current = log.id
+          })
+        }
+      } catch (e) {
+        console.warn('轮询拉取日志失败：', e)
+      }
+    }
+
+    timer = setInterval(tick, 2000)
+    tick()
+    return () => clearInterval(timer)
+  }, [isConnected, processKey])
+
+  // Socket 正常时做低频校验（每30秒补一次，防极端丢包）
+  useEffect(() => {
+    if (!isConnected) return
+    const taskId = currentTaskIdRef.current
+    if (!taskId) return
+
+    let timer: any = null
+    const tick = async () => {
+      try {
+        const after = lastLogIdRef.current
+        // 低频校验数量可以较小
+        const data = await api.getLogs(taskId, after ? { after, limit: 200 } : { limit: 200 })
+        const logs = data?.logs || []
+        if (logs.length) {
+          logs.forEach((log: any) => {
+            const isQRCodeOutput = log.content.includes('▄') || log.content.includes('█') || log.content.includes('▀')
+            if (!isQRCodeOutput) {
+              addOutputLine(processKey, {
+                timestamp: log.ts,
+                content: log.content,
+                type: log.type === 'stderr' ? 'error' : log.type
+              })
+            }
+            lastLogIdRef.current = log.id
+          })
+        }
+      } catch (e) {
+        console.warn('低频日志校验失败：', e)
+      }
+    }
+
+    timer = setInterval(tick, 30000)
+    return () => clearInterval(timer)
+  }, [isConnected, processKey])
 
   const executeCommand = async () => {
     if (!isConnected) {
@@ -394,8 +534,11 @@ const DevPage: React.FC = () => {
       return
     }
 
-    // 清空之前的日志和服务器信息
-    clearTaskOutput(processKey)
+    // 重置增量拉取状态
+    currentTaskIdRef.current = null
+    lastLogIdRef.current = undefined
+
+    // 重置服务器信息（不清空日志，避免启动后日志被清空）
     updateServerInfo(processKey, {
       localUrl: undefined,
       networkUrl: undefined,
@@ -724,7 +867,7 @@ const DevPage: React.FC = () => {
                   {line.timestamp}
                 </span>
                 <span
-                  className={`flex-1 ${isQRCode ? 'whitespace-pre font-mono' : 'break-all'}`}
+                  className={`flex-1 ${isQRCode ? 'whitespace-pre font-mono' : 'whitespace-pre-wrap break-words'}`}
                   dangerouslySetInnerHTML={{ __html: html }}
                 />
               </div>

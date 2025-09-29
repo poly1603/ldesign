@@ -54,6 +54,10 @@ export const api = {
     apiClient.get(`/tasks/${taskType}/${environment}`).then(res => res.data),
   getTaskState: (taskId: string) => apiClient.get(`/task-state/${taskId}`).then(res => res.data),
 
+  // 日志增量拉取
+  getLogs: (taskId: string, params?: { after?: number; limit?: number }) =>
+    apiClient.get(`/logs/${taskId}`, { params }).then(res => res.data),
+
   // 文件系统
   listFiles: (path: string = '.') =>
     apiClient.get('/files', { params: { path } }).then(res => res.data),

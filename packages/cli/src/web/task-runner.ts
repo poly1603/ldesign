@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import { CLIContext } from '../types/index';
 import { randomUUID } from 'crypto';
 import { taskStateManager, TaskOutputLine } from './task-state-manager';
+import { LocalDB } from './local-db';
 
 export interface TaskOptions {
   [key: string]: any;
@@ -30,10 +31,12 @@ export class TaskRunner {
   private io: SocketIOServer;
   private tasks: Map<string, TaskStatus> = new Map();
   private processes: Map<string, ChildProcess> = new Map();
+  private db?: LocalDB;
 
-  constructor(context: CLIContext, io: SocketIOServer) {
+  constructor(context: CLIContext, io: SocketIOServer, db?: LocalDB) {
     this.context = context;
     this.io = io;
+    this.db = db;
   }
 
   /**
@@ -57,6 +60,15 @@ export class TaskRunner {
     taskStateManager.createTask(taskId, taskName as any, environment);
     taskStateManager.updateTaskStatus(taskId, 'idle');
 
+    // 在数据库记录任务
+    this.db?.upsertTask({
+      taskId,
+      taskType: taskName as any,
+      environment,
+      status: 'idle',
+      startTime: new Date().toISOString()
+    });
+
     this.emitTaskUpdate(taskId, task);
 
     // 异步执行任务
@@ -79,6 +91,7 @@ export class TaskRunner {
 
     // 更新TaskStateManager中的任务状态
     taskStateManager.updateTaskStatus(taskId, 'running');
+    this.db?.updateTaskStatus(taskId, 'running');
 
     this.emitTaskUpdate(taskId, task);
 
@@ -109,6 +122,7 @@ export class TaskRunner {
 
       // 更新TaskStateManager中的任务状态
       taskStateManager.updateTaskStatus(taskId, 'completed');
+      this.db?.updateTaskStatus(taskId, 'completed', new Date().toISOString());
     } catch (error) {
       task.status = 'failed';
       task.endTime = new Date();
@@ -117,6 +131,7 @@ export class TaskRunner {
 
       // 更新TaskStateManager中的任务状态
       taskStateManager.updateTaskStatus(taskId, 'error');
+      this.db?.updateTaskStatus(taskId, 'error', new Date().toISOString());
     }
 
     this.emitTaskUpdate(taskId, task);
@@ -327,44 +342,134 @@ export class TaskRunner {
         env: {
           ...process.env,
           FORCE_COLOR: '1',
-          NODE_ENV: options.environment || 'development'
-        }
+          NODE_ENV: options.environment || 'development',
+          // 强制刷新输出，避免缓冲
+          NODE_NO_READLINE: '1'
+        },
+        // Windows 特定选项，确保正确处理
+        shell: process.platform === 'win32'
       });
 
       this.processes.set(taskId, child);
 
-      // 处理输出
-      child.stdout?.on('data', (data) => {
-        const output = data.toString();
-        task.output.push(output);
+      // 创建行缓冲器来处理不完整的行
+      let stdoutBuffer = '';
+      let stderrBuffer = '';
 
-        // 保存到TaskStateManager
-        const outputLine: TaskOutputLine = {
-          timestamp: new Date().toLocaleTimeString(),
-          content: output,
-          type: 'info'
-        };
-        taskStateManager.addOutputLine(taskId, outputLine);
+      // 设置编码为 utf8
+      child.stdout?.setEncoding('utf8');
+      child.stderr?.setEncoding('utf8');
 
-        // 检测服务器信息
-        this.extractServerInfo(taskId, output);
+      // 处理输出 - 使用行缓冲确保完整行输出
+      child.stdout?.on('data', (data: string) => {
+        // 累积数据到缓冲区
+        stdoutBuffer += data;
+        
+        // 分割成行
+        const lines = stdoutBuffer.split(/\r?\n/);
+        
+        // 最后一个元素可能是不完整的行，保留在缓冲区
+        stdoutBuffer = lines.pop() || '';
+        
+        // 处理完整的行
+        lines.forEach(line => {
+          if (line.trim()) {  // 忽略空行
+            // 清理 ANSI 控制序列但保留颜色
+            const cleanedLine = line
+              .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '') // 清理光标控制
+              .replace(/\x1b\[\?25[hl]/g, '') // 清理光标显示/隐藏
+              .replace(/\x1b\].*?\x07/g, ''); // 清理 OSC 序列
+            
+            task.output.push(cleanedLine + '\n');
 
-        this.emitTaskOutput(taskId, output, 'stdout');
+            // 保存到TaskStateManager
+            const outputLine: TaskOutputLine = {
+              timestamp: new Date().toLocaleTimeString(),
+              content: cleanedLine,
+              type: 'info'
+            };
+            taskStateManager.addOutputLine(taskId, outputLine);
+            this.db?.appendLog(taskId, outputLine);
+
+            // 检测服务器信息
+            this.extractServerInfo(taskId, cleanedLine);
+
+            // 推送完整行到前端
+            this.emitTaskOutput(taskId, cleanedLine, 'stdout');
+          }
+        });
       });
 
-      child.stderr?.on('data', (data) => {
-        const output = data.toString();
-        task.output.push(output);
+      child.stderr?.on('data', (data: string) => {
+        // 累积数据到缓冲区
+        stderrBuffer += data;
+        
+        // 分割成行
+        const lines = stderrBuffer.split(/\r?\n/);
+        
+        // 最后一个元素可能是不完整的行，保留在缓冲区
+        stderrBuffer = lines.pop() || '';
+        
+        // 处理完整的行
+        lines.forEach(line => {
+          if (line.trim()) {  // 忽略空行
+            // 清理 ANSI 控制序列但保留颜色
+            const cleanedLine = line
+              .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '') // 清理光标控制
+              .replace(/\x1b\[\?25[hl]/g, '') // 清理光标显示/隐藏
+              .replace(/\x1b\].*?\x07/g, ''); // 清理 OSC 序列
+            
+            task.output.push(cleanedLine + '\n');
 
-        // 保存到TaskStateManager
-        const outputLine: TaskOutputLine = {
-          timestamp: new Date().toLocaleTimeString(),
-          content: output,
-          type: 'error'
-        };
-        taskStateManager.addOutputLine(taskId, outputLine);
+            // 保存到TaskStateManager
+            const outputLine: TaskOutputLine = {
+              timestamp: new Date().toLocaleTimeString(),
+              content: cleanedLine,
+              type: 'error'
+            };
+            taskStateManager.addOutputLine(taskId, outputLine);
+            this.db?.appendLog(taskId, outputLine);
 
-        this.emitTaskOutput(taskId, output, 'stderr');
+            this.emitTaskOutput(taskId, cleanedLine, 'stderr');
+          }
+        });
+      });
+
+      // 处理流结束时的剩余数据
+      child.stdout?.on('end', () => {
+        if (stdoutBuffer.trim()) {
+          const cleanedLine = stdoutBuffer
+            .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '')
+            .replace(/\x1b\[\?25[hl]/g, '')
+            .replace(/\x1b\].*?\x07/g, '');
+          
+          const outputLine: TaskOutputLine = {
+            timestamp: new Date().toLocaleTimeString(),
+            content: cleanedLine,
+            type: 'info'
+          };
+          taskStateManager.addOutputLine(taskId, outputLine);
+          this.db?.appendLog(taskId, outputLine);
+          this.emitTaskOutput(taskId, cleanedLine, 'stdout');
+        }
+      });
+
+      child.stderr?.on('end', () => {
+        if (stderrBuffer.trim()) {
+          const cleanedLine = stderrBuffer
+            .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '')
+            .replace(/\x1b\[\?25[hl]/g, '')
+            .replace(/\x1b\].*?\x07/g, '');
+          
+          const outputLine: TaskOutputLine = {
+            timestamp: new Date().toLocaleTimeString(),
+            content: cleanedLine,
+            type: 'error'
+          };
+          taskStateManager.addOutputLine(taskId, outputLine);
+          this.db?.appendLog(taskId, outputLine);
+          this.emitTaskOutput(taskId, cleanedLine, 'stderr');
+        }
       });
 
       child.on('close', (code) => {
@@ -402,22 +507,82 @@ export class TaskRunner {
       const child = spawn('node', [cliPath, ...args], {
         cwd: this.context.cwd,
         stdio: 'pipe',
-        env: { ...process.env, FORCE_COLOR: '1' }
+        env: { 
+          ...process.env, 
+          FORCE_COLOR: '1',
+          NODE_NO_READLINE: '1'
+        },
+        shell: process.platform === 'win32'
       });
 
       this.processes.set(taskId, child);
 
-      // 处理输出
-      child.stdout?.on('data', (data) => {
-        const output = data.toString();
-        task.output.push(output);
-        this.emitTaskOutput(taskId, output, 'stdout');
+      // 创建行缓冲器
+      let stdoutBuffer = '';
+      let stderrBuffer = '';
+
+      // 设置编码为 utf8
+      child.stdout?.setEncoding('utf8');
+      child.stderr?.setEncoding('utf8');
+
+      // 处理输出 - 使用行缓冲确保完整行输出
+      child.stdout?.on('data', (data: string) => {
+        stdoutBuffer += data;
+        const lines = stdoutBuffer.split(/\r?\n/);
+        stdoutBuffer = lines.pop() || '';
+        
+        lines.forEach(line => {
+          if (line.trim()) {
+            const cleanedLine = line
+              .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '')
+              .replace(/\x1b\[\?25[hl]/g, '')
+              .replace(/\x1b\].*?\x07/g, '');
+            
+            task.output.push(cleanedLine + '\n');
+            this.emitTaskOutput(taskId, cleanedLine, 'stdout');
+          }
+        });
       });
 
-      child.stderr?.on('data', (data) => {
-        const output = data.toString();
-        task.output.push(output);
-        this.emitTaskOutput(taskId, output, 'stderr');
+      child.stderr?.on('data', (data: string) => {
+        stderrBuffer += data;
+        const lines = stderrBuffer.split(/\r?\n/);
+        stderrBuffer = lines.pop() || '';
+        
+        lines.forEach(line => {
+          if (line.trim()) {
+            const cleanedLine = line
+              .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '')
+              .replace(/\x1b\[\?25[hl]/g, '')
+              .replace(/\x1b\].*?\x07/g, '');
+            
+            task.output.push(cleanedLine + '\n');
+            this.emitTaskOutput(taskId, cleanedLine, 'stderr');
+          }
+        });
+      });
+
+      // 处理流结束时的剩余数据
+      child.stdout?.on('end', () => {
+        if (stdoutBuffer.trim()) {
+          const cleanedLine = stdoutBuffer
+            .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '')
+            .replace(/\x1b\[\?25[hl]/g, '')
+            .replace(/\x1b\].*?\x07/g, '');
+          
+          this.emitTaskOutput(taskId, cleanedLine, 'stdout');
+        }
+      });
+
+      child.stderr?.on('end', () => {
+        if (stderrBuffer.trim()) {
+          const cleanedLine = stderrBuffer
+            .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '')
+            .replace(/\x1b\[\?25[hl]/g, '')
+            .replace(/\x1b\].*?\x07/g, '');
+          
+          this.emitTaskOutput(taskId, cleanedLine, 'stderr');
+        }
       });
 
       child.on('close', (code) => {
@@ -534,19 +699,25 @@ export class TaskRunner {
     // 提取本地地址
     const localMatch = output.match(/(?:本地|Local):\s*(https?:\/\/[^\s]+)/i);
     if (localMatch) {
-      taskStateManager.updateServerInfo(taskId, { localUrl: localMatch[1].trim() });
+      const localUrl = localMatch[1].trim();
+      taskStateManager.updateServerInfo(taskId, { localUrl });
+      this.db?.updateServerInfo(taskId, { localUrl });
     }
 
     // 提取网络地址
     const networkMatch = output.match(/(?:网络|Network):\s*(https?:\/\/[^\s]+)/i);
     if (networkMatch) {
-      taskStateManager.updateServerInfo(taskId, { networkUrl: networkMatch[1].trim() });
+      const networkUrl = networkMatch[1].trim();
+      taskStateManager.updateServerInfo(taskId, { networkUrl });
+      this.db?.updateServerInfo(taskId, { networkUrl });
     }
 
     // 提取端口号
     const portMatch = output.match(/(?:端口|Port):\s*(\d+)/i);
     if (portMatch) {
-      taskStateManager.updateServerInfo(taskId, { port: portMatch[1] });
+      const port = portMatch[1];
+      taskStateManager.updateServerInfo(taskId, { port });
+      this.db?.updateServerInfo(taskId, { port });
     }
   }
 

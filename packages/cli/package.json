@@ -12,7 +12,8 @@
   "files": [
     "dist",
     "bin",
-    "templates"
+    "templates",
+    "web-ui/dist"
   ],
   "scripts": {
     "build": "tsup",
@@ -57,6 +58,9 @@
     "socket.io": "^4.8.1",
     "update-notifier": "^7.0.0",
     "validate-npm-package-name": "^5.0.0"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^12.4.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

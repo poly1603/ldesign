@@ -1,0 +1,57 @@
+{"id":1,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"🚀 \u001b[36mLDesign Launcher\u001b[39m - 🟢 DEVELOPMENT"}
+{"id":2,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"error","content":"\u001b[90m[10:17:36.502]\u001b[39m ⚠️  ❌ 未找到任何配置文件"}
+{"id":3,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"📁 \u001b[90m工作目录:\u001b[39m D:\\WorkBench\\ldesign\\packages\\cli"}
+{"id":4,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"⚙️  \u001b[90m模式:\u001b[39m development"}
+{"id":5,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"[10:17:36.495] [INFO] 正在启动开发服务器..."}
+{"id":6,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.497]\u001b[39m ℹ️  📋 使用自动配置加载"}
+{"id":7,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.499]\u001b[39m ℹ️  🔍 查找配置文件，工作目录: D:\\WorkBench\\ldesign\\packages\\cli，环境: undefined"}
+{"id":8,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.499]\u001b[39m ℹ️  📋 查找优先级: 🔸ts → 🔸mjs → 🔸js → 🔸cjs → 🔹ts → 🔹mjs → 🔹js → 🔹cjs → 🔹ts → 🔹mjs → 🔹js → 🔹cjs"}
+{"id":9,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.502]\u001b[39m ℹ️  📋 步骤2: 查找环境特定配置文件 (development)"}
+{"id":10,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.504]\u001b[39m ℹ️  ❌ 未找到环境配置文件: development"}
+{"id":11,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.504]\u001b[39m ℹ️  🎯 环境配置加载完成，最终别名数量: 0"}
+{"id":12,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.504]\u001b[39m ℹ️  \u001b[32m配置文件加载成功\u001b[39m"}
+{"id":13,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.504]\u001b[39m ℹ️  ViteLauncher 初始化完成"}
+{"id":14,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"🔍 别名过滤调试:"}
+{"id":15,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"  输入别名数量: \u001b[33m2\u001b[39m"}
+{"id":16,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"  当前阶段: dev"}
+{"id":17,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"  过滤后别名数量: \u001b[33m2\u001b[39m"}
+{"id":18,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"  @ldesign别名数量: \u001b[33m0\u001b[39m"}
+{"id":19,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.505]\u001b[39m ℹ️  ✅ 别名配置已处理 (dev)，最终别名数量: 2"}
+{"id":20,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.533]\u001b[39m ℹ️  检测到 React 文件"}
+{"id":21,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.622]\u001b[39m ℹ️  \u001b[32m智能插件加载完成: unknown\u001b[39m"}
+{"id":22,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.623]\u001b[39m ℹ️  🔗 路径别名: 2个"}
+{"id":23,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.623]\u001b[39m ℹ️  正在启动开发服务器..."}
+{"id":24,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"error","content":"Failed to resolve dependency: \u001b[36mreact\u001b[39m, present in 'optimizeDeps.include'"}
+{"id":25,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"error","content":"Failed to resolve dependency: \u001b[36mreact-dom\u001b[39m, present in 'optimizeDeps.include'"}
+{"id":26,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"error","content":"Failed to resolve dependency: \u001b[36mreact/jsx-dev-runtime\u001b[39m, present in 'optimizeDeps.include'"}
+{"id":27,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"error","content":"Failed to resolve dependency: \u001b[36mreact/jsx-runtime\u001b[39m, present in 'optimizeDeps.include'"}
+{"id":28,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"Port 3000 is in use, trying another one..."}
+{"id":29,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[90m[10:17:36.676]\u001b[39m ℹ️  \u001b[32m开发服务器启动成功\u001b[39m"}
+{"id":30,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"[10:17:36.680] [INFO] \u001b[2m┌────────────────────────────────────┐\u001b[22m"}
+{"id":31,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"[10:17:36.680] [INFO] \u001b[2m│\u001b[22m  \u001b[32m✔\u001b[39m \u001b[1m开发服务器已启动\u001b[22m                        \u001b[2m│\u001b[22m"}
+{"id":32,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"[10:17:36.680] [INFO] \u001b[2m│\u001b[22m  \u001b[2m•\u001b[22m \u001b[1m本地: \u001b[22m \u001b[36mhttp://localhost:3001/\u001b[39m     \u001b[2m│\u001b[22m"}
+{"id":33,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"[10:17:36.680] [INFO] \u001b[2m│\u001b[22m  \u001b[2m•\u001b[22m \u001b[1m网络: \u001b[22m \u001b[36mhttp://192.168.3.227:3001/\u001b[39m \u001b[2m│\u001b[22m"}
+{"id":34,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"[10:17:36.680] [INFO] \u001b[2m│\u001b[22m  \u001b[2m•\u001b[22m 提示: 按 \u001b[33mCtrl+C\u001b[39m 停止服务器              \u001b[2m│\u001b[22m"}
+{"id":35,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"[10:17:36.680] [INFO] \u001b[2m└────────────────────────────────────┘\u001b[22m"}
+{"id":36,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"[10:17:36.706] [INFO] \u001b[2m二维码（扫码在手机上打开）：\u001b[22m"}
+{"id":37,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m ▄▄▄▄▄▄▄ ▄▄ ▄▄  ▄  ▄▄▄▄▄▄▄ \u001b[0m"}
+{"id":38,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m █ ▄▄▄ █  █▄█  ▄▀▀ █ ▄▄▄ █ \u001b[0m"}
+{"id":39,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m █ ███ █ █▄█ ▄▄▄ ▀ █ ███ █ \u001b[0m"}
+{"id":40,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m █▄▄▄▄▄█ █▀▄▀▄▀█ █ █▄▄▄▄▄█ \u001b[0m"}
+{"id":41,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m ▄   ▄ ▄▄█ ▄██▄▄ ▀▄▄▄▄▄  ▄ \u001b[0m"}
+{"id":42,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m   ▄██▄▄▄ ▀▄▄▄▀▀▄ ▀█ ██▄▀  \u001b[0m"}
+{"id":43,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m  █▄  ▀▄▀▄▀▄ █ ▀██ ▀█▄▄██▄ \u001b[0m"}
+{"id":44,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m ▀  ▀ █▄  ▀   ▀▀ ▀█ ▀█▄▄▀  \u001b[0m"}
+{"id":45,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m ▄▄▄▄▀▀▄██▀▀▄▀▄▄▄█▄▄▄▄▀█▀  \u001b[0m"}
+{"id":46,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m ▄▄▄▄▄▄▄ █▀▄▄█▄█▄█ ▄ █▄▄   \u001b[0m"}
+{"id":47,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m █ ▄▄▄ █ ▄▄█▀▄█ ▄█▄▄▄██▄█▄ \u001b[0m"}
+{"id":48,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m █ ███ █  ▄█  ▀▀ ▀  ▄▄▀ ▄▀ \u001b[0m"}
+{"id":49,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m █▄▄▄▄▄█ ▄▀▀▄▀▄██ █▄▀█ ▄█▄ \u001b[0m"}
+{"id":50,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m\u001b[37m▀\u001b[47m\u001b[30m\u001b[0m"}
+{"id":51,"taskId":"dev-development-1759112256025","ts":"10:17:36","type":"info","content":"\u001b[47m\u001b[30m\u001b[0m"}
+{"id":52,"taskId":"dev-development-1759112256025","ts":"10:18:23","type":"info","content":"[10:18:23.718] [INFO] 正在停止开发服务器..."}
+{"id":53,"taskId":"dev-development-1759112256025","ts":"10:18:23","type":"info","content":"\u001b[90m[10:18:23.719]\u001b[39m ℹ️  正在停止开发服务器..."}
+{"id":54,"taskId":"dev-development-1759112256025","ts":"10:18:23","type":"info","content":"\u001b[90m[10:18:23.722]\u001b[39m ℹ️  \u001b[32m开发服务器已停止\u001b[39m"}
+{"id":55,"taskId":"dev-development-1759112256025","ts":"10:18:23","type":"info","content":"\u001b[90m[10:18:23.722]\u001b[39m ℹ️  正在销毁 ViteLauncher 实例..."}
+{"id":56,"taskId":"dev-development-1759112256025","ts":"10:18:23","type":"info","content":"\u001b[90m[10:18:23.722]\u001b[39m ℹ️  \u001b[32mViteLauncher 实例已销毁\u001b[39m"}
+{"id":57,"taskId":"dev-development-1759112256025","ts":"10:18:23","type":"info","content":"[10:18:23.722] [INFO] 开发服务器已停止"}
