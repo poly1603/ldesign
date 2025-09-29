@@ -1,8 +1,8 @@
 /**
- * @ldesign/builder 配置文件 - Vue3 组件库示例
+ * @ldesign/builder 配置文件 - Vue2 组件库示例
  * 
- * 此配置展示如何为 Vue3 组件库配置构建选项
- * 支持 Vue 3 单文件组件、Composition API、样式提取和类型声明文件生成
+ * 此配置展示如何为 Vue2 组件库配置构建选项
+ * 支持 Vue 单文件组件、样式提取和类型声明文件生成
  */
 
 import { defineConfig } from '@ldesign/builder'
@@ -15,7 +15,7 @@ export default defineConfig({
     // 生成 source map
     sourcemap: true,
     // UMD 格式的全局变量名
-    name: 'Vue3Components',
+    name: 'Vue2Components',
     // 文件名模式
     fileName: '[name].[format].js',
     // ESM 格式配置
@@ -36,7 +36,7 @@ export default defineConfig({
   },
 
   // 库类型
-  libraryType: 'vue3',
+  libraryType: 'vue2',
 
   // 打包器选择
   bundler: 'rollup',
@@ -63,21 +63,18 @@ export default defineConfig({
 
   // Vue 配置
   vue: {
-    version: 3,
+    version: 2,
     template: {
       compilerOptions: {
         preserveWhitespace: false
       }
-    },
-    // 支持 JSX
-    jsx: true
+    }
   },
 
   // 样式配置
   css: {
-    extract: true, // 提取 CSS 到单独文件
-    modules: false, // 不使用 CSS 模块
-    preprocessor: 'less' // 使用 Less 预处理器
+    extract: false, // 不提取 CSS，内联到 JS 中
+    modules: false // 不使用 CSS 模块
   },
 
   // 性能配置

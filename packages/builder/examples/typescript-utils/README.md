@@ -1,223 +1,231 @@
 # TypeScript 工具库示例
 
-这是一个使用 @ldesign/builder 构建的 TypeScript 工具库示例，展示了如何构建纯 TypeScript 函数库。
+这是一个使用 `@ldesign/builder` 构建的 TypeScript 工具库示例，展示了如何创建、配置和打包一个完整的 TypeScript 工具库。
+
+## 📦 功能特性
+
+- 🧮 **数学工具** - 基础数学运算、统计计算、数学常量
+- 🔤 **字符串工具** - 格式化、验证、转换等字符串处理功能
+- 📅 **日期工具** - 日期格式化、相对时间、日期计算等功能
+- 📝 **完整类型定义** - 提供完整的 TypeScript 类型支持
+- 📦 **多格式输出** - 支持 ESM、CJS、UMD 三种格式
+- 🌳 **按需引入** - 支持模块级别的按需引入
+
+## 🚀 安装
+
+```bash
+# 使用 npm
+npm install @ldesign/typescript-utils-example
+
+# 使用 pnpm
+pnpm add @ldesign/typescript-utils-example
+
+# 使用 yarn
+yarn add @ldesign/typescript-utils-example
+```
+
+## 📖 使用方法
+
+### 完整引入
+
+```typescript
+import * as utils from '@ldesign/typescript-utils-example'
+
+// 使用数学工具
+const sum = utils.math.add(1, 2) // 3
+const avg = utils.math.average([1, 2, 3, 4, 5]) // 3
+
+// 使用字符串工具
+const camelCase = utils.string.toCamelCase('hello-world') // 'helloWorld'
+const isEmail = utils.string.isValidEmail('test@example.com') // true
+
+// 使用日期工具
+const formatted = utils.date.formatDate(new Date(), 'YYYY-MM-DD') // '2023-12-25'
+const relative = utils.date.getRelativeTime(new Date(Date.now() - 60000)) // '1分钟前'
+```
+
+### 按模块引入
+
+```typescript
+// 只引入数学工具
+import * as math from '@ldesign/typescript-utils-example/math'
+const result = math.add(1, 2)
+
+// 只引入字符串工具
+import * as string from '@ldesign/typescript-utils-example/string'
+const formatted = string.toCamelCase('hello-world')
+
+// 只引入日期工具
+import * as date from '@ldesign/typescript-utils-example/date'
+const formatted = date.formatDate(new Date(), 'YYYY-MM-DD')
+```
+
+### 按需引入
+
+```typescript
+// 只引入需要的函数
+import { add, multiply } from '@ldesign/typescript-utils-example/math'
+import { toCamelCase, isValidEmail } from '@ldesign/typescript-utils-example/string'
+import { formatDate, getRelativeTime } from '@ldesign/typescript-utils-example/date'
+
+const sum = add(1, 2)
+const camelCase = toCamelCase('hello-world')
+const formatted = formatDate(new Date(), 'YYYY-MM-DD')
+```
+
+## 📚 API 文档
+
+### 数学工具 (math)
+
+#### 基础运算
+- `add(a, b)` - 加法运算
+- `subtract(a, b)` - 减法运算
+- `multiply(a, b)` - 乘法运算
+- `divide(a, b)` - 除法运算
+- `modulo(a, b)` - 求余运算
+- `power(base, exponent)` - 幂运算
+- `sqrt(value)` - 平方根
+
+#### 高级运算
+- `average(numbers)` - 计算平均值
+- `median(numbers)` - 计算中位数
+- `max(numbers)` - 获取最大值
+- `min(numbers)` - 获取最小值
+- `standardDeviation(numbers)` - 计算标准差
+- `factorial(n)` - 计算阶乘
+- `fibonacci(n)` - 计算斐波那契数
+
+#### 数学常量
+- `MATH_CONSTANTS` - 包含 PI、E 等数学常量
+
+### 字符串工具 (string)
+
+#### 格式化
+- `toCamelCase(str)` - 转换为驼峰命名
+- `toPascalCase(str)` - 转换为帕斯卡命名
+- `toKebabCase(str)` - 转换为短横线命名
+- `toSnakeCase(str)` - 转换为下划线命名
+- `capitalize(str)` - 首字母大写
+- `capitalizeWords(str)` - 每个单词首字母大写
+- `truncate(str, maxLength, suffix)` - 截断字符串
+- `trim(str)` - 去除空白字符
+- `pad(str, targetLength, padString, padStart)` - 填充字符串
+
+#### 验证
+- `isValidEmail(email)` - 验证邮箱地址
+- `isValidUrl(url)` - 验证URL
+- `isValidPhone(phone)` - 验证手机号码
+- `isValidIdCard(idCard)` - 验证身份证号码
+- `validatePassword(password, options)` - 验证密码强度
+- `isNumeric(str)` - 检查是否为数字
+- `isAlpha(str)` - 检查是否为字母
+- `isAlphanumeric(str)` - 检查是否为字母数字
+
+### 日期工具 (date)
+
+#### 格式化
+- `formatDate(date, format)` - 格式化日期
+- `getRelativeTime(date, baseDate)` - 获取相对时间
+
+#### 判断
+- `isToday(date)` - 是否为今天
+- `isYesterday(date)` - 是否为昨天
+- `isThisWeek(date)` - 是否为本周
+- `isLeapYear(year)` - 是否为闰年
+
+#### 计算
+- `getDaysInMonth(year, month)` - 获取月份天数
+- `getDateRange(startDate, endDate)` - 获取日期范围
+- `addDays(date, days)` - 添加天数
+- `addMonths(date, months)` - 添加月数
+
+#### 常量
+- `DATE_FORMATS` - 常用日期格式
+- `WEEKDAYS` - 星期常量
+- `MONTHS` - 月份常量
+
+## 🔧 开发
+
+### 构建
+
+```bash
+# 构建所有格式
+npm run build
+
+# 监听模式构建
+npm run dev
+
+# 清理构建产物
+npm run clean
+```
+
+### 测试
+
+```bash
+# 运行测试
+npm test
+
+# 运行测试（单次）
+npm run test:run
+```
 
 ## 📁 项目结构
 
 ```
 typescript-utils/
-├── src/
-│   └── index.ts          # 主入口文件
-├── ldesign.config.ts     # 构建配置
-├── package.json          # 项目配置
-├── tsconfig.json         # TypeScript 配置
-└── README.md            # 项目说明
+├── src/                    # 源代码目录
+│   ├── math/              # 数学工具模块
+│   │   ├── basic.ts       # 基础数学运算
+│   │   ├── advanced.ts    # 高级数学运算
+│   │   └── index.ts       # 模块导出
+│   ├── string/            # 字符串工具模块
+│   │   ├── format.ts      # 格式化工具
+│   │   ├── validate.ts    # 验证工具
+│   │   └── index.ts       # 模块导出
+│   ├── date/              # 日期工具模块
+│   │   ├── format.ts      # 日期格式化
+│   │   └── index.ts       # 模块导出
+│   └── index.ts           # 主入口文件
+├── .ldesign/              # 构建配置
+│   └── builder.config.ts  # @ldesign/builder 配置
+├── dist/                  # 构建输出目录
+│   ├── esm/              # ES 模块格式
+│   ├── cjs/              # CommonJS 格式
+│   ├── umd/              # UMD 格式
+│   └── types/            # TypeScript 类型声明
+├── package.json           # 项目配置
+└── README.md             # 项目文档
 ```
 
-## 🚀 特性展示
+## 🛠️ 构建配置
 
-### 1. 类型定义
-- 接口定义 (`User`, `CreateUserOptions`, `ApiResponse`)
-- 类型联合 (`UserRole`)
-- 泛型支持 (`ApiResponse<T>`)
-
-### 2. 工具函数
-- 数据验证 (`validateEmail`)
-- 数据处理 (`deepClone`, `formatUserName`)
-- 性能优化 (`debounce`, `throttle`)
-- ID 生成 (`generateId`)
-
-### 3. 类导出
-- 用户管理器 (`UserManager`)
-- 事件发射器 (`EventEmitter`)
-
-### 4. 常量导出
-- 默认值 (`DEFAULT_AVATAR`)
-- 枚举对象 (`USER_ROLES`, `HTTP_STATUS`)
-
-### 5. 默认导出
-- 预配置的用户管理器实例
-
-## 🛠️ 构建命令
-
-```bash
-# 安装依赖
-pnpm install
-
-# 构建项目
-pnpm build
-
-# 开发模式（监听文件变化）
-pnpm dev
-
-# 清理输出目录
-pnpm clean
-
-# 分析构建结果
-pnpm analyze
-```
-
-## 📦 构建输出
-
-构建完成后，将在 `dist` 目录生成以下文件：
-
-```
-dist/
-├── index.js          # ESM 格式
-├── index.cjs         # CJS 格式
-├── index.d.ts        # TypeScript 声明文件
-├── index.js.map      # ESM Source Map
-└── index.cjs.map     # CJS Source Map
-```
-
-## 📖 使用示例
-
-### ESM 导入
-
-```typescript
-import userManager, { 
-  createUser, 
-  UserManager, 
-  EventEmitter,
-  validateEmail,
-  debounce,
-  type User,
-  type CreateUserOptions 
-} from '@example/typescript-utils'
-
-// 使用默认导出的用户管理器
-const user = userManager.addUser({
-  name: 'John Doe',
-  email: 'john@example.com'
-})
-
-// 使用工具函数
-const isValid = validateEmail('test@example.com')
-
-// 使用防抖函数
-const debouncedFn = debounce(() => {
-  console.log('Debounced!')
-}, 300)
-
-// 使用类
-const manager = new UserManager()
-const emitter = new EventEmitter<{
-  userAdded: [User]
-  userRemoved: [number]
-}>()
-
-emitter.on('userAdded', (user) => {
-  console.log('User added:', user.name)
-})
-```
-
-### CJS 导入
-
-```javascript
-const userManager = require('@example/typescript-utils')
-const { createUser, UserManager, validateEmail } = userManager
-
-// 使用默认导出
-const user = userManager.default.addUser({
-  name: 'Jane Doe',
-  email: 'jane@example.com'
-})
-
-// 使用命名导出
-const isValid = validateEmail('test@example.com')
-```
-
-## ⚙️ 配置说明
-
-### .ldesign/builder.config.ts
+本项目使用 `@ldesign/builder` 进行构建，配置文件位于 `.ldesign/builder.config.ts`：
 
 ```typescript
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
-  // 入口文件
-  input: 'src/index.ts',
-  
-  // 输出配置
   output: {
-    dir: 'dist',
-    format: ['esm', 'cjs'],  // 生成 ESM 和 CJS 两种格式
-    sourcemap: true          // 生成 Source Map
+    format: ['esm', 'cjs', 'umd'],
+    sourcemap: true,
+    name: 'TypeScriptUtils'
   },
-  
-  // 库类型（自动应用 TypeScript 策略）
   libraryType: 'typescript',
-  
-  // TypeScript 配置
-  typescript: {
-    declaration: true,       // 生成声明文件
-    declarationDir: 'dist',  // 声明文件输出目录
-    target: 'ES2020',       // 编译目标
-    module: 'ESNext',       // 模块格式
-    strict: true            // 严格模式
-  },
-  
-  // 性能配置
-  performance: {
-    treeshaking: true,      // Tree Shaking
-    minify: true,          // 代码压缩
-    bundleAnalyzer: false  // 构建分析
-  }
+  bundler: 'rollup',
+  dts: true,
+  clean: true
 })
 ```
 
-## 🎯 最佳实践
+## 📄 许可证
 
-### 1. 类型安全
-- 为所有公共 API 提供完整的类型定义
-- 使用 `interface` 定义对象结构
-- 使用 `type` 定义联合类型和别名
-- 启用 TypeScript 严格模式
+MIT License
 
-### 2. 导出策略
-- 使用命名导出提供具体功能
-- 使用默认导出提供主要实例
-- 导出类型定义供用户使用
-- 保持导出的一致性
+## 🤝 贡献
 
-### 3. 文档注释
-- 为所有公共 API 添加 JSDoc 注释
-- 提供使用示例和参数说明
-- 说明返回值和可能的异常
+欢迎提交 Issue 和 Pull Request！
 
-### 4. 错误处理
-- 对输入参数进行验证
-- 提供有意义的错误信息
-- 使用 TypeScript 类型系统减少运行时错误
+## 📞 联系我们
 
-### 5. 性能考虑
-- 提供防抖和节流等性能优化工具
-- 避免不必要的对象创建
-- 合理使用 Tree Shaking
-
-## 🔧 开发技巧
-
-### 1. 调试
-- 使用 Source Map 进行调试
-- 在开发模式下使用 `pnpm dev` 监听文件变化
-
-### 2. 测试
-- 可以集成 Vitest 或 Jest 进行单元测试
-- 测试所有公共 API 的功能
-
-### 3. 发布
-- 确保 `package.json` 中的 `exports` 字段正确
-- 检查生成的声明文件是否完整
-- 验证在不同环境下的兼容性
-
-## 📚 扩展功能
-
-基于这个示例，你可以：
-
-1. **添加更多工具函数**：日期处理、字符串操作、数组操作等
-2. **集成测试框架**：添加 Vitest 或 Jest 测试
-3. **添加 Lint 工具**：ESLint + Prettier 代码规范
-4. **生成 API 文档**：使用 TypeDoc 自动生成文档
-5. **添加 CI/CD**：自动化构建、测试和发布流程
-
-这个示例展示了使用 @ldesign/builder 构建 TypeScript 工具库的完整流程和最佳实践。
+- 官网：https://ldesign.dev
+- GitHub：https://github.com/ldesign/ldesign

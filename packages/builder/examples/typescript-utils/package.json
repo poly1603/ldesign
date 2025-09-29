@@ -1,49 +1,81 @@
 {
-  "name": "@example/typescript-utils",
+  "name": "@ldesign/typescript-utils-example",
   "version": "1.0.0",
-  "description": "TypeScript 工具库示例 - 展示如何构建纯 TypeScript 函数库",
+  "description": "TypeScript 工具库示例 - 展示如何使用 @ldesign/builder 打包 TypeScript 工具库",
   "keywords": [
     "typescript",
     "utils",
     "library",
-    "ldesign"
+    "ldesign",
+    "builder",
+    "example"
   ],
   "author": "LDesign Team",
   "license": "MIT",
-  "main": "cjs/index.cjs",
-  "module": "es/index.js",
-  "types": "es/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
+      "types": "./es/index.d.ts",
       "import": "./es/index.js",
-      "require": "./cjs/index.cjs",
-      "types": "./es/index.d.ts"
+      "require": "./lib/index.cjs"
+    },
+    "./date": {
+      "types": "./es/date/index.d.ts",
+      "import": "./es/date/index.js",
+      "require": "./lib/date/index.cjs"
+    },
+    "./date/*": {
+      "types": "./es/date/*.d.ts",
+      "import": "./es/date/*.js",
+      "require": "./lib/date/*.cjs"
+    },
+    "./math": {
+      "types": "./es/math/index.d.ts",
+      "import": "./es/math/index.js",
+      "require": "./lib/math/index.cjs"
+    },
+    "./math/*": {
+      "types": "./es/math/*.d.ts",
+      "import": "./es/math/*.js",
+      "require": "./lib/math/*.cjs"
+    },
+    "./string": {
+      "types": "./es/string/index.d.ts",
+      "import": "./es/string/index.js",
+      "require": "./lib/string/index.cjs"
+    },
+    "./string/*": {
+      "types": "./es/string/*.d.ts",
+      "import": "./es/string/*.js",
+      "require": "./lib/string/*.cjs"
     }
   },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
   "files": [
+    "README.md",
+    "LICENSE",
+    "package.json",
     "es",
-    "cjs",
-    "dist",
-    "README.md"
+    "lib",
+    "dist"
   ],
   "scripts": {
-    "build": "ldesign-builder build",
-    "dev": "ldesign-builder watch",
-    "clean": "ldesign-builder clean",
-    "analyze": "ldesign-builder analyze",
-    "test:build": "npm run build && node test-build-artifacts.js",
-    "test:artifacts": "node test-build-artifacts.js"
+    "build": "ldesign-builder",
+    "dev": "ldesign-builder --watch",
+    "clean": "rimraf dist",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
+  "peerDependencies": {},
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
-    "@rollup/plugin-commonjs": "^28.0.6",
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^12.1.4",
-    "rollup": "^4.50.0",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0",
-    "@vitest/coverage-v8": "^1.0.0"
+    "rimraf": "^5.0.0"
   },
   "engines": {
     "node": ">=16.0.0"

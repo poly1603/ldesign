@@ -1,0 +1,205 @@
+/**
+ * 颜色变量定义
+ * 
+ * 基于 LDesign 设计系统的颜色规范
+ * 提供完整的颜色体系，包括主色、功能色、中性色等
+ */
+
+// ===== 主色系 =====
+@brand-color-1: #f1ecf9;
+@brand-color-2: #d8c8ee;
+@brand-color-3: #bfa4e5;
+@brand-color-4: #a67fdb;
+@brand-color-5: #8c5ad3;
+@brand-color-6: #7334cb;
+@brand-color-7: #5e2aa7;
+@brand-color-8: #491f84;
+@brand-color-9: #35165f;
+@brand-color-10: #200d3b;
+
+// 主色别名
+@primary-color: @brand-color-6;
+@primary-color-light: @brand-color-4;
+@primary-color-lighter: @brand-color-2;
+@primary-color-dark: @brand-color-8;
+@primary-color-darker: @brand-color-10;
+
+// 主色状态变量
+@primary-color-hover: @brand-color-5;
+@primary-color-active: @brand-color-7;
+@primary-color-disabled: @brand-color-3;
+
+// ===== 功能色系 =====
+
+// 成功色
+@success-color-1: #ebfaeb;
+@success-color-2: #c7efc7;
+@success-color-3: #a5e4a5;
+@success-color-4: #83d883;
+@success-color-5: #62cb62;
+@success-color-6: #42bd42;
+@success-color-7: #389938;
+@success-color-8: #2e762e;
+@success-color-9: #225322;
+@success-color-10: #153215;
+
+@success-color: @success-color-5;
+@success-color-light: @success-color-3;
+@success-color-lighter: @success-color-1;
+@success-color-dark: @success-color-7;
+@success-color-darker: @success-color-9;
+
+// 警告色
+@warning-color-1: #fff8e6;
+@warning-color-2: #feecb9;
+@warning-color-3: #fbe08d;
+@warning-color-4: #f8d362;
+@warning-color-5: #f5c538;
+@warning-color-6: #f0b80f;
+@warning-color-7: #c2960f;
+@warning-color-8: #96740d;
+@warning-color-9: #6b530b;
+@warning-color-10: #403207;
+
+@warning-color: @warning-color-5;
+@warning-color-light: @warning-color-3;
+@warning-color-lighter: @warning-color-1;
+@warning-color-dark: @warning-color-7;
+@warning-color-darker: @warning-color-9;
+
+// 错误色
+@error-color-1: #fde8e8;
+@error-color-2: #f8bebe;
+@error-color-3: #f39696;
+@error-color-4: #ec6f6f;
+@error-color-5: #e54848;
+@error-color-6: #dd2222;
+@error-color-7: #b31e1e;
+@error-color-8: #8a1919;
+@error-color-9: #621313;
+@error-color-10: #3b0c0c;
+
+@error-color: @error-color-5;
+@error-color-light: @error-color-3;
+@error-color-lighter: @error-color-1;
+@error-color-dark: @error-color-7;
+@error-color-darker: @error-color-9;
+
+// 信息色
+@info-color-1: #e6f7ff;
+@info-color-2: #bae7ff;
+@info-color-3: #91d5ff;
+@info-color-4: #69c0ff;
+@info-color-5: #40a9ff;
+@info-color-6: #1890ff;
+@info-color-7: #096dd9;
+@info-color-8: #0050b3;
+@info-color-9: #003a8c;
+@info-color-10: #002766;
+
+@info-color: @info-color-6;
+@info-color-light: @info-color-4;
+@info-color-lighter: @info-color-2;
+@info-color-dark: @info-color-8;
+@info-color-darker: @info-color-10;
+
+// ===== 中性色系 =====
+@gray-color-1: #f2f2f2;
+@gray-color-2: #dbdbdb;
+@gray-color-3: #c4c4c4;
+@gray-color-4: #adadad;
+@gray-color-5: #969696;
+@gray-color-6: #808080;
+@gray-color-7: #696969;
+@gray-color-8: #525252;
+@gray-color-9: #3b3b3b;
+@gray-color-10: #242424;
+
+// 中性色别名
+@gray-1: @gray-color-1;
+@gray-2: @gray-color-2;
+@gray-3: @gray-color-3;
+@gray-4: @gray-color-4;
+@gray-5: @gray-color-5;
+@gray-6: @gray-color-6;
+@gray-7: @gray-color-7;
+@gray-8: @gray-color-8;
+@gray-9: @gray-color-9;
+@gray-10: @gray-color-10;
+
+// ===== 文本色 =====
+@text-color-primary: rgba(0, 0, 0, 0.9);
+@text-color-secondary: rgba(0, 0, 0, 0.7);
+@text-color-tertiary: rgba(0, 0, 0, 0.5);
+@text-color-quaternary: rgba(0, 0, 0, 0.3);
+@text-color-disabled: rgba(0, 0, 0, 0.25);
+
+@text-color-white-primary: rgba(255, 255, 255, 1);
+@text-color-white-secondary: rgba(255, 255, 255, 0.85);
+@text-color-white-tertiary: rgba(255, 255, 255, 0.7);
+@text-color-white-quaternary: rgba(255, 255, 255, 0.55);
+@text-color-white-disabled: rgba(255, 255, 255, 0.4);
+
+// ===== 背景色 =====
+@bg-color-page: #ffffff;
+@bg-color-container: #ffffff;
+@bg-color-container-hover: #fafafa;
+@bg-color-container-active: #f0f0f0;
+@bg-color-container-disabled: #f5f5f5;
+
+@bg-color-component: #ffffff;
+@bg-color-component-hover: #f8f8f8;
+@bg-color-component-active: #f0f0f0;
+@bg-color-component-disabled: #fafafa;
+
+@bg-color-mask: rgba(0, 0, 0, 0.5);
+@bg-color-overlay: rgba(255, 255, 255, 0.9);
+
+// ===== 边框色 =====
+@border-color-base: #e5e5e5;
+@border-color-light: #f0f0f0;
+@border-color-dark: #d9d9d9;
+@border-color-split: #f0f0f0;
+
+@border-color-hover: @border-color-dark;
+@border-color-focus: @primary-color;
+@border-color-active: @primary-color-dark;
+@border-color-disabled: @border-color-light;
+
+// ===== 阴影色 =====
+@shadow-color-base: rgba(0, 0, 0, 0.1);
+@shadow-color-light: rgba(0, 0, 0, 0.05);
+@shadow-color-dark: rgba(0, 0, 0, 0.15);
+
+// ===== 透明度 =====
+@opacity-disabled: 0.6;
+@opacity-loading: 0.8;
+@opacity-hover: 0.9;
+
+// ===== 颜色状态映射 =====
+@color-primary: @primary-color;
+@color-success: @success-color;
+@color-warning: @warning-color;
+@color-error: @error-color;
+@color-info: @info-color;
+
+// 悬停状态
+@color-primary-hover: @brand-color-5;
+@color-success-hover: @success-color-4;
+@color-warning-hover: @warning-color-4;
+@color-error-hover: @error-color-4;
+@color-info-hover: @info-color-5;
+
+// 激活状态
+@color-primary-active: @brand-color-7;
+@color-success-active: @success-color-6;
+@color-warning-active: @warning-color-6;
+@color-error-active: @error-color-6;
+@color-info-active: @info-color-7;
+
+// 禁用状态
+@color-primary-disabled: @brand-color-3;
+@color-success-disabled: @success-color-3;
+@color-warning-disabled: @warning-color-3;
+@color-error-disabled: @error-color-3;
+@color-info-disabled: @info-color-3;

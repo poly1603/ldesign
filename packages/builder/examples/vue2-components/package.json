@@ -1,13 +1,12 @@
 {
-  "name": "@ldesign/vue3-components-example",
+  "name": "@ldesign/vue2-components-example",
   "version": "1.0.0",
-  "description": "Vue3 组件库示例 - 展示如何使用 @ldesign/builder 打包 Vue3 组件库",
+  "description": "Vue2 组件库示例 - 展示如何使用 @ldesign/builder 打包 Vue2 组件库",
   "keywords": [
-    "vue3",
+    "vue2",
     "components",
     "ui",
     "library",
-    "composition-api",
     "ldesign",
     "builder",
     "example"
@@ -31,6 +30,16 @@
       "import": "./es/button/*.js",
       "require": "./lib/button/*.cjs"
     },
+    "./card": {
+      "types": "./es/card/index.d.ts",
+      "import": "./es/card/index.js",
+      "require": "./lib/card/index.cjs"
+    },
+    "./card/*": {
+      "types": "./es/card/*.d.ts",
+      "import": "./es/card/*.js",
+      "require": "./lib/card/*.cjs"
+    },
     "./input": {
       "types": "./es/input/index.d.ts",
       "import": "./es/input/index.js",
@@ -40,27 +49,7 @@
       "types": "./es/input/*.d.ts",
       "import": "./es/input/*.js",
       "require": "./lib/input/*.cjs"
-    },
-    "./modal": {
-      "types": "./es/modal/index.d.ts",
-      "import": "./es/modal/index.js",
-      "require": "./lib/modal/index.cjs"
-    },
-    "./modal/*": {
-      "types": "./es/modal/*.d.ts",
-      "import": "./es/modal/*.js",
-      "require": "./lib/modal/*.cjs"
-    },
-    "./es/button/Button.vue.css": "./es/button/Button.vue.css",
-    "./es/index.css": "./es/index.css",
-    "./es/input/Input.vue.css": "./es/input/Input.vue.css",
-    "./es/modal/index.css": "./es/modal/index.css",
-    "./lib/button/index.css": "./lib/button/index.css",
-    "./lib/index.css": "./lib/index.css",
-    "./lib/input/index.css": "./lib/input/index.css",
-    "./lib/modal/Modal.vue.css": "./lib/modal/Modal.vue.css",
-    "./dist/index.css": "./dist/index.css",
-    "./dist/index.min.css": "./dist/index.min.css"
+    }
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
@@ -83,7 +72,7 @@
     "test:run": "vitest run"
   },
   "peerDependencies": {
-    "vue": "^3.0.0"
+    "vue": "^2.6.0 || ^2.7.0"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",

@@ -1,0 +1,230 @@
+/**
+ * Vue2 组件库样式变量
+ * 
+ * 定义组件库使用的 CSS 变量和 Less 变量
+ * 基于 LDesign 设计系统的颜色规范
+ */
+
+// 导入 LDesign 设计系统变量
+// 这些变量在实际项目中应该从设计系统包中导入
+// 这里为了示例完整性，直接定义
+
+/*
+ * LDESIGN Design System
+ * Theme: purple
+ * Primary Color: #722ED1
+ * Generated: 2025-09-03T07:42:12.393Z
+ */
+
+/* Light Mode Variables */
+:root {
+  --ldesign-brand-color-1: #f1ecf9;
+  --ldesign-brand-color-2: #d8c8ee;
+  --ldesign-brand-color-3: #bfa4e5;
+  --ldesign-brand-color-4: #a67fdb;
+  --ldesign-brand-color-5: #8c5ad3;
+  --ldesign-brand-color-6: #7334cb;
+  --ldesign-brand-color-7: #5e2aa7;
+  --ldesign-brand-color-8: #491f84;
+  --ldesign-brand-color-9: #35165f;
+  --ldesign-brand-color-10: #200d3b;
+  --ldesign-warning-color-1: #fff8e6;
+  --ldesign-warning-color-2: #feecb9;
+  --ldesign-warning-color-3: #fbe08d;
+  --ldesign-warning-color-4: #f8d362;
+  --ldesign-warning-color-5: #f5c538;
+  --ldesign-warning-color-6: #f0b80f;
+  --ldesign-warning-color-7: #c2960f;
+  --ldesign-warning-color-8: #96740d;
+  --ldesign-warning-color-9: #6b530b;
+  --ldesign-warning-color-10: #403207;
+  --ldesign-success-color-1: #ebfaeb;
+  --ldesign-success-color-2: #c7efc7;
+  --ldesign-success-color-3: #a5e4a5;
+  --ldesign-success-color-4: #83d883;
+  --ldesign-success-color-5: #62cb62;
+  --ldesign-success-color-6: #42bd42;
+  --ldesign-success-color-7: #389938;
+  --ldesign-success-color-8: #2e762e;
+  --ldesign-success-color-9: #225322;
+  --ldesign-success-color-10: #153215;
+  --ldesign-error-color-1: #fde8e8;
+  --ldesign-error-color-2: #f8bebe;
+  --ldesign-error-color-3: #f39696;
+  --ldesign-error-color-4: #ec6f6f;
+  --ldesign-error-color-5: #e54848;
+  --ldesign-error-color-6: #dd2222;
+  --ldesign-error-color-7: #b31e1e;
+  --ldesign-error-color-8: #8a1919;
+  --ldesign-error-color-9: #621313;
+  --ldesign-error-color-10: #3b0c0c;
+  --ldesign-gray-color-1: #f2f2f2;
+  --ldesign-gray-color-2: #dbdbdb;
+  --ldesign-gray-color-3: #c4c4c4;
+  --ldesign-gray-color-4: #adadad;
+  --ldesign-gray-color-5: #969696;
+  --ldesign-gray-color-6: #808080;
+  --ldesign-gray-color-7: #696969;
+  --ldesign-gray-color-8: #525252;
+  --ldesign-gray-color-9: #3b3b3b;
+  --ldesign-gray-color-10: #242424;
+  --ldesign-font-gray-1: rgba(0, 0, 0, 90%);
+  --ldesign-font-gray-2: rgba(0, 0, 0, 70%);
+  --ldesign-font-gray-3: rgba(0, 0, 0, 50%);
+  --ldesign-font-gray-4: rgba(0, 0, 0, 30%);
+  --ldesign-font-white-1: rgba(255, 255, 255, 100%);
+  --ldesign-font-white-2: rgba(255, 255, 255, 85%);
+  --ldesign-font-white-3: rgba(255, 255, 255, 70%);
+  --ldesign-font-white-4: rgba(255, 255, 255, 55%);
+  --ldesign-bg-color-page: #ffffff;
+  --ldesign-bg-color-container: #ffffff;
+  --ldesign-bg-color-container-hover: #fafafa;
+  --ldesign-bg-color-container-active: #f0f0f0;
+  --ldesign-bg-color-container-disabled: #f5f5f5;
+  --ldesign-bg-color-component: #ffffff;
+  --ldesign-bg-color-component-hover: #f8f8f8;
+  --ldesign-bg-color-component-active: #f0f0f0;
+  --ldesign-bg-color-component-disabled: #fafafa;
+  --ldesign-border-level-1-color: #e5e5e5;
+  --ldesign-border-level-2-color: #d9d9d9;
+  --ldesign-border-level-3-color: #cccccc;
+  --ldesign-shadow-1: 0 1px 10px rgba(0, 0, 0, 5%);
+  --ldesign-shadow-2: 0 4px 20px rgba(0, 0, 0, 8%);
+  --ldesign-shadow-3: 0 8px 30px rgba(0, 0, 0, 12%);
+  --ldesign-shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 8%);
+  --ldesign-shadow-table: 0 2px 8px rgba(0, 0, 0, 6%);
+  --ldesign-brand-color: var(--ldesign-brand-color-7);
+  --ldesign-warning-color: var(--ldesign-warning-color-5);
+  --ldesign-success-color: var(--ldesign-success-color-5);
+  --ldesign-error-color: var(--ldesign-error-color-5);
+  --ldesign-brand-color-hover: var(--ldesign-brand-color-6);
+  --ldesign-brand-color-focus: var(--ldesign-brand-color-2);
+  --ldesign-brand-color-active: var(--ldesign-brand-color-8);
+  --ldesign-brand-color-disabled: var(--ldesign-brand-color-3);
+  --ldesign-warning-color-hover: var(--ldesign-warning-color-4);
+  --ldesign-warning-color-focus: var(--ldesign-warning-color-2);
+  --ldesign-warning-color-active: var(--ldesign-warning-color-6);
+  --ldesign-warning-color-disabled: var(--ldesign-warning-color-3);
+  --ldesign-success-color-hover: var(--ldesign-success-color-4);
+  --ldesign-success-color-focus: var(--ldesign-success-color-2);
+  --ldesign-success-color-active: var(--ldesign-success-color-6);
+  --ldesign-success-color-disabled: var(--ldesign-success-color-3);
+  --ldesign-error-color-hover: var(--ldesign-error-color-4);
+  --ldesign-error-color-focus: var(--ldesign-error-color-2);
+  --ldesign-error-color-active: var(--ldesign-error-color-6);
+  --ldesign-error-color-disabled: var(--ldesign-error-color-3);
+  --ldesign-text-color-primary: var(--ldesign-font-gray-1);
+  --ldesign-text-color-secondary: var(--ldesign-font-gray-2);
+  --ldesign-text-color-placeholder: var(--ldesign-font-gray-3);
+  --ldesign-text-color-disabled: var(--ldesign-font-gray-4);
+  --ldesign-border-color: var(--ldesign-border-level-1-color);
+  --ldesign-border-color-hover: var(--ldesign-border-level-2-color);
+  --ldesign-border-color-focus: var(--ldesign-brand-color);
+}
+
+:root {
+  transition: --ls-font-size-xs, --ls-font-size-sm, --ls-font-size-base, --ls-font-size-lg, --ls-font-size-xl, --ls-font-size-xxl, --ls-font-size-h1, --ls-font-size-h2, --ls-font-size-h3, --ls-font-size-h4, --ls-font-size-h5, --ls-font-size-h6, --ls-spacing-xs, --ls-spacing-sm, --ls-spacing-base, --ls-spacing-lg, --ls-spacing-xl, --ls-spacing-xxl, --ls-padding-xs, --ls-padding-sm, --ls-padding-base, --ls-padding-lg, --ls-padding-xl, --ls-padding-xxl, --ls-margin-xs, --ls-margin-sm, --ls-margin-base, --ls-margin-lg, --ls-margin-xl, --ls-margin-xxl, --ls-button-height-small, --ls-button-height-medium, --ls-button-height-large, --ls-input-height-small, --ls-input-height-medium, --ls-input-height-large, --ls-icon-size-small, --ls-icon-size-medium, --ls-icon-size-large, --ls-avatar-size-small, --ls-avatar-size-medium, --ls-avatar-size-large, --ls-border-radius-none, --ls-border-radius-sm, --ls-border-radius-base, --ls-border-radius-lg, --ls-border-radius-xl, --ls-border-radius-full, --ls-shadow-none, --ls-shadow-sm, --ls-shadow-base, --ls-shadow-lg, --ls-shadow-xl 0.3s ease-in-out;
+  --ls-font-size-xs: 14px;
+  --ls-font-size-sm: 16px;
+  --ls-font-size-base: 18px;
+  --ls-font-size-lg: 20px;
+  --ls-font-size-xl: 24px;
+  --ls-font-size-xxl: 28px;
+  --ls-font-size-h1: 40px;
+  --ls-font-size-h2: 36px;
+  --ls-font-size-h3: 32px;
+  --ls-font-size-h4: 28px;
+  --ls-font-size-h5: 24px;
+  --ls-font-size-h6: 20px;
+  --ls-spacing-xs: 6px;
+  --ls-spacing-sm: 12px;
+  --ls-spacing-base: 20px;
+  --ls-spacing-lg: 28px;
+  --ls-spacing-xl: 36px;
+  --ls-spacing-xxl: 56px;
+  --ls-padding-xs: 6px;
+  --ls-padding-sm: 12px;
+  --ls-padding-base: 20px;
+  --ls-padding-lg: 28px;
+  --ls-padding-xl: 36px;
+  --ls-padding-xxl: 56px;
+  --ls-margin-xs: 6px;
+  --ls-margin-sm: 12px;
+  --ls-margin-base: 20px;
+  --ls-margin-lg: 28px;
+  --ls-margin-xl: 36px;
+  --ls-margin-xxl: 56px;
+  --ls-button-height-small: 40px;
+  --ls-button-height-medium: 44px;
+  --ls-button-height-large: 48px;
+  --ls-input-height-small: 40px;
+  --ls-input-height-medium: 44px;
+  --ls-input-height-large: 48px;
+  --ls-icon-size-small: 20px;
+  --ls-icon-size-medium: 22px;
+  --ls-icon-size-large: 24px;
+  --ls-avatar-size-small: 36px;
+  --ls-avatar-size-medium: 40px;
+  --ls-avatar-size-large: 44px;
+  --ls-border-radius-none: 0;
+  --ls-border-radius-sm: 3px;
+  --ls-border-radius-base: 6px;
+  --ls-border-radius-lg: 12px;
+  --ls-border-radius-xl: 16px;
+  --ls-border-radius-full: 50%;
+  --ls-shadow-none: none;
+  --ls-shadow-sm: 0 3px 6px rgba(0, 0, 0, 0.05);
+  --ls-shadow-base: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --ls-shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.15);
+  --ls-shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+// Less 变量（用于组件内部计算）
+@brand-color: var(--ldesign-brand-color);
+@success-color: var(--ldesign-success-color);
+@warning-color: var(--ldesign-warning-color);
+@error-color: var(--ldesign-error-color);
+
+@text-color-primary: var(--ldesign-text-color-primary);
+@text-color-secondary: var(--ldesign-text-color-secondary);
+@text-color-placeholder: var(--ldesign-text-color-placeholder);
+@text-color-disabled: var(--ldesign-text-color-disabled);
+
+@border-color: var(--ldesign-border-color);
+@border-color-hover: var(--ldesign-border-color-hover);
+@border-color-focus: var(--ldesign-border-color-focus);
+
+@bg-color-container: var(--ldesign-bg-color-container);
+@bg-color-component: var(--ldesign-bg-color-component);
+
+@font-size-xs: var(--ls-font-size-xs);
+@font-size-sm: var(--ls-font-size-sm);
+@font-size-base: var(--ls-font-size-base);
+@font-size-lg: var(--ls-font-size-lg);
+
+@spacing-xs: var(--ls-spacing-xs);
+@spacing-sm: var(--ls-spacing-sm);
+@spacing-base: var(--ls-spacing-base);
+@spacing-lg: var(--ls-spacing-lg);
+
+@padding-xs: var(--ls-padding-xs);
+@padding-sm: var(--ls-padding-sm);
+@padding-base: var(--ls-padding-base);
+@padding-lg: var(--ls-padding-lg);
+
+@border-radius-sm: var(--ls-border-radius-sm);
+@border-radius-base: var(--ls-border-radius-base);
+@border-radius-lg: var(--ls-border-radius-lg);
+
+@shadow-1: var(--ldesign-shadow-1);
+@shadow-2: var(--ldesign-shadow-2);
+@shadow-3: var(--ldesign-shadow-3);
+
+// 组件特定变量
+@button-height-small: var(--ls-button-height-small);
+@button-height-medium: var(--ls-button-height-medium);
+@button-height-large: var(--ls-button-height-large);
+
+@input-height-small: var(--ls-input-height-small);
+@input-height-medium: var(--ls-input-height-medium);
+@input-height-large: var(--ls-input-height-large);

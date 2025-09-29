@@ -1,29 +1,28 @@
-# Vue3 组件库示例
+# Vue2 组件库示例
 
-这是一个使用 `@ldesign/builder` 构建的 Vue3 组件库示例，展示了如何创建、配置和打包一个完整的 Vue3 组件库，使用了 Composition API 和现代 Vue3 特性。
+这是一个使用 `@ldesign/builder` 构建的 Vue2 组件库示例，展示了如何创建、配置和打包一个完整的 Vue2 组件库。
 
 ## 📦 功能特性
 
-- 🎨 **现代组件** - 按钮、输入框、模态框等常用 UI 组件
-- ⚡ **Vue3 + Composition API** - 使用最新的 Vue3 特性和 `<script setup>` 语法
-- 📝 **完整 TypeScript 支持** - 提供完整的类型定义和类型推导
+- 🎨 **基础组件** - 按钮、输入框、卡片等常用 UI 组件
+- 🎯 **Vue2 支持** - 完全兼容 Vue 2.6+ 版本
+- 📝 **TypeScript 支持** - 提供完整的类型定义
 - 🎨 **Less 样式** - 使用 Less 预处理器，支持主题定制
 - 📦 **多格式输出** - 支持 ESM、CJS、UMD 三种格式
 - 🌳 **按需引入** - 支持组件级别的按需引入
 - 🎨 **设计系统** - 基于 LDesign 设计系统的颜色规范
-- 🚀 **现代特性** - Teleport、Transition、defineEmits 等
 
 ## 🚀 安装
 
 ```bash
 # 使用 npm
-npm install @ldesign/vue3-components-example vue@^3.0.0
+npm install @ldesign/vue2-components-example vue@^2.6.0
 
 # 使用 pnpm
-pnpm add @ldesign/vue3-components-example vue@^3.0.0
+pnpm add @ldesign/vue2-components-example vue@^2.6.0
 
 # 使用 yarn
-yarn add @ldesign/vue3-components-example vue@^3.0.0
+yarn add @ldesign/vue2-components-example vue@^2.6.0
 ```
 
 ## 📖 使用方法
@@ -31,54 +30,46 @@ yarn add @ldesign/vue3-components-example vue@^3.0.0
 ### 全局安装
 
 ```typescript
-import { createApp } from 'vue'
-import Vue3Components from '@ldesign/vue3-components-example'
-import App from './App.vue'
-
-const app = createApp(App)
+import Vue from 'vue'
+import Vue2Components from '@ldesign/vue2-components-example'
 
 // 安装所有组件
-app.use(Vue3Components)
-
-app.mount('#app')
+Vue.use(Vue2Components)
 
 // 现在可以在任何组件中使用
 // <l-button>按钮</l-button>
 // <l-input v-model="value" />
-// <l-modal v-model:visible="visible">内容</l-modal>
+// <l-card title="标题">内容</l-card>
 ```
 
 ### 按需引入
 
-```vue
-<script setup lang="ts">
-import { Button, Input, Modal } from '@ldesign/vue3-components-example'
-</script>
+```typescript
+import { Button, Input, Card } from '@ldesign/vue2-components-example'
 
-<template>
-  <div>
-    <Button @click="handleClick">按钮</Button>
-    <Input v-model="value" placeholder="输入框" />
-    <Modal v-model:visible="visible">模态框</Modal>
-  </div>
-</template>
+export default {
+  components: {
+    LButton: Button,
+    LInput: Input,
+    LCard: Card
+  }
+}
 ```
 
 ### 单个组件安装
 
 ```typescript
-import { createApp } from 'vue'
-import { Button } from '@ldesign/vue3-components-example'
+import Vue from 'vue'
+import { Button } from '@ldesign/vue2-components-example'
 
-const app = createApp(App)
-app.use(Button)
+Vue.use(Button)
 ```
 
 ### 样式引入
 
 ```typescript
 // 如果使用按需引入，需要手动引入样式
-import '@ldesign/vue3-components-example/dist/style.css'
+import '@ldesign/vue2-components-example/dist/style.css'
 ```
 
 ## 🧩 组件列表
@@ -114,12 +105,6 @@ import '@ldesign/vue3-components-example/dist/style.css'
     <l-button circle icon="❤️"></l-button>
   </div>
 </template>
-
-<script setup lang="ts">
-const handleClick = (event: Event) => {
-  console.log('按钮被点击了', event)
-}
-</script>
 ```
 
 #### Props
@@ -174,7 +159,7 @@ const handleClick = (event: Event) => {
       type="password"
       label="密码"
       show-word-count
-      :maxlength="20"
+      maxlength="20"
     />
     
     <!-- 带验证 -->
@@ -187,30 +172,13 @@ const handleClick = (event: Event) => {
     />
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, watch } from 'vue'
-
-const value = ref('')
-const username = ref('')
-const search = ref('')
-const password = ref('')
-const email = ref('')
-const emailError = ref('')
-
-// 邮箱验证
-watch(email, (newValue) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  emailError.value = newValue && !emailRegex.test(newValue) ? '请输入有效的邮箱地址' : ''
-})
-</script>
 ```
 
 #### Props
 
 | 属性 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| modelValue | `string \| number` | `''` | 输入框的值（v-model） |
+| value | `string \| number` | `''` | 输入框的值 |
 | type | `string` | `'text'` | 输入框类型 |
 | size | `'small' \| 'medium' \| 'large'` | `'medium'` | 输入框尺寸 |
 | label | `string` | `''` | 标签文本 |
@@ -230,107 +198,77 @@ watch(email, (newValue) => {
 
 | 事件名 | 说明 | 参数 |
 |--------|------|------|
-| update:modelValue | 更新模型值 | `(value: string \| number)` |
-| input | 输入事件 | `(value: string \| number)` |
-| change | 变化事件 | `(value: string \| number)` |
-| focus | 获得焦点事件 | `(event: FocusEvent)` |
-| blur | 失去焦点事件 | `(event: FocusEvent)` |
+| input | 输入事件 | `(value: string)` |
+| change | 变化事件 | `(value: string)` |
+| focus | 获得焦点事件 | `(event: Event)` |
+| blur | 失去焦点事件 | `(event: Event)` |
 | clear | 清除事件 | - |
 
-### Modal 模态框
+### Card 卡片
 
-模态框组件，支持标题、内容、底部操作区域，使用 Teleport 渲染。
+通用的卡片容器组件，支持标题、封面、内容和底部区域。
 
 ```vue
 <template>
   <div>
-    <!-- 触发按钮 -->
-    <l-button @click="showModal">打开模态框</l-button>
+    <!-- 基础卡片 -->
+    <l-card title="基础卡片">
+      <p>这是卡片的内容区域。</p>
+    </l-card>
     
-    <!-- 基础模态框 -->
-    <l-modal
-      v-model:visible="visible"
-      title="基础模态框"
-      @close="handleClose"
-    >
-      <p>这是模态框的内容。</p>
-      <template #footer>
-        <l-button @click="visible = false">取消</l-button>
-        <l-button type="primary" @click="handleConfirm">确定</l-button>
+    <!-- 带封面的卡片 -->
+    <l-card title="带封面的卡片">
+      <template #cover>
+        <img src="https://via.placeholder.com/300x200" alt="封面" />
       </template>
-    </l-modal>
+      <p>这是带封面的卡片内容。</p>
+    </l-card>
     
-    <!-- 不同尺寸的模态框 -->
-    <l-modal v-model:visible="smallVisible" title="小模态框" size="small">
-      <p>小尺寸的模态框内容。</p>
-    </l-modal>
+    <!-- 自定义头部 -->
+    <l-card>
+      <template #header>
+        <div style="display: flex; align-items: center;">
+          <span style="font-weight: bold;">自定义头部</span>
+          <span style="margin-left: auto;">2023-12-25</span>
+        </div>
+      </template>
+      <p>这是自定义头部的卡片内容。</p>
+    </l-card>
     
-    <!-- 居中显示的模态框 -->
-    <l-modal v-model:visible="centeredVisible" title="居中模态框" centered>
-      <p>居中显示的模态框内容。</p>
-    </l-modal>
-    
-    <!-- 全屏模态框 -->
-    <l-modal v-model:visible="fullscreenVisible" title="全屏模态框" fullscreen>
-      <p>全屏显示的模态框内容。</p>
-    </l-modal>
+    <!-- 带底部的卡片 -->
+    <l-card title="带底部的卡片">
+      <p>这是卡片的主要内容。</p>
+      <template #footer>
+        <div style="text-align: right;">
+          <l-button>取消</l-button>
+          <l-button type="primary">确定</l-button>
+        </div>
+      </template>
+    </l-card>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-
-const visible = ref(false)
-const smallVisible = ref(false)
-const centeredVisible = ref(false)
-const fullscreenVisible = ref(false)
-
-const showModal = () => {
-  visible.value = true
-}
-
-const handleClose = () => {
-  console.log('模态框关闭了')
-}
-
-const handleConfirm = () => {
-  console.log('确认操作')
-  visible.value = false
-}
-</script>
 ```
 
 #### Props
 
 | 属性 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| visible | `boolean` | `false` | 是否显示模态框（v-model） |
-| title | `string` | `''` | 模态框标题 |
-| width | `string \| number` | `'520px'` | 模态框宽度 |
-| size | `'small' \| 'medium' \| 'large'` | `'medium'` | 模态框尺寸 |
-| closable | `boolean` | `true` | 是否显示关闭按钮 |
-| maskClosable | `boolean` | `true` | 是否点击遮罩层关闭 |
-| centered | `boolean` | `false` | 是否居中显示 |
-| fullscreen | `boolean` | `false` | 是否全屏显示 |
+| title | `string` | `''` | 卡片标题 |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | 卡片尺寸 |
+| bordered | `boolean` | `true` | 是否有边框 |
+| shadow | `boolean \| 'always' \| 'hover' \| 'never'` | `'hover'` | 阴影效果 |
+| hoverable | `boolean` | `false` | 是否可悬停 |
 | bodyPadding | `boolean` | `true` | 内容区域是否有内边距 |
-| zIndex | `number` | `1000` | 层级 |
-
-#### Events
-
-| 事件名 | 说明 | 参数 |
-|--------|------|------|
-| update:visible | 更新显示状态 | `(visible: boolean)` |
-| close | 关闭事件 | - |
-| open | 打开事件 | - |
-| opened | 打开后事件 | - |
-| closed | 关闭后事件 | - |
+| loading | `boolean` | `false` | 是否加载中 |
 
 #### Slots
 
 | 插槽名 | 说明 |
 |--------|------|
-| default | 模态框内容 |
+| default | 卡片内容 |
 | header | 头部内容 |
+| extra | 额外内容（显示在头部右侧） |
+| cover | 封面内容 |
 | footer | 底部内容 |
 
 ## 🎨 主题定制
@@ -391,7 +329,7 @@ npm run test:run
 ## 📁 项目结构
 
 ```
-vue3-components/
+vue2-components/
 ├── src/                    # 源代码目录
 │   ├── button/            # 按钮组件
 │   │   ├── Button.vue     # 组件实现
@@ -399,8 +337,8 @@ vue3-components/
 │   ├── input/             # 输入框组件
 │   │   ├── Input.vue      # 组件实现
 │   │   └── index.ts       # 组件导出
-│   ├── modal/             # 模态框组件
-│   │   ├── Modal.vue      # 组件实现
+│   ├── card/              # 卡片组件
+│   │   ├── Card.vue       # 组件实现
 │   │   └── index.ts       # 组件导出
 │   ├── styles/            # 样式文件
 │   │   └── variables.less # 样式变量
@@ -428,17 +366,13 @@ export default defineConfig({
   output: {
     format: ['esm', 'cjs', 'umd'],
     sourcemap: true,
-    name: 'Vue3Components'
+    name: 'Vue2Components'
   },
-  libraryType: 'vue3',
+  libraryType: 'vue2',
   bundler: 'rollup',
   dts: true,
   external: ['vue'],
   globals: { vue: 'Vue' },
-  vue: {
-    version: 3,
-    jsx: true
-  },
   css: {
     extract: true,
     preprocessor: 'less'

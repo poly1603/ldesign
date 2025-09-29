@@ -1,0 +1,423 @@
+/**
+ * 输入框组件样式
+ * 
+ * 提供完整的输入框样式，包括不同尺寸、状态和类型
+ * 支持前缀图标、后缀图标、清除功能等
+ */
+
+@import '../mixins/index.less';
+
+// ===== 输入框基础样式 =====
+.l-input {
+  display: inline-block;
+  width: 100%;
+  position: relative;
+  
+  // 标签
+  &__label {
+    display: block;
+    margin-bottom: @spacing-xs;
+    font-size: @font-size-sm;
+    font-weight: @font-weight-medium;
+    color: @text-color-primary;
+    line-height: @line-height-base;
+    
+    &--required::after {
+      content: '*';
+      color: @error-color;
+      margin-left: @spacing-xs / 2;
+    }
+  }
+  
+  // 输入框包装器
+  &__wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border: @border-width-base solid @border-color-base;
+    border-radius: @border-radius-base;
+    background-color: @bg-color-component;
+    transition: all @duration-base @ease-in-out;
+    
+    &:hover:not(.l-input--disabled .l-input__wrapper) {
+      border-color: @border-color-hover;
+    }
+    
+    &--focused {
+      border-color: @border-color-focus;
+      box-shadow: @shadow-outline;
+    }
+    
+    &--error {
+      border-color: @error-color;
+      
+      &.l-input__wrapper--focused {
+        box-shadow: @shadow-outline-error;
+      }
+    }
+    
+    &--success {
+      border-color: @success-color;
+      
+      &.l-input__wrapper--focused {
+        box-shadow: @shadow-outline-success;
+      }
+    }
+    
+    &--warning {
+      border-color: @warning-color;
+      
+      &.l-input__wrapper--focused {
+        box-shadow: @shadow-outline-warning;
+      }
+    }
+  }
+  
+  // 输入框内核
+  &__inner {
+    .input-base();
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    
+    &::placeholder {
+      color: @placeholder-color;
+    }
+  }
+  
+  // 前缀和后缀
+  &__prefix,
+  &__suffix {
+    display: flex;
+    align-items: center;
+    color: @text-color-secondary;
+    font-size: @font-size-sm;
+    
+    .l-input__icon {
+      display: inline-flex;
+      align-items: center;
+    }
+  }
+  
+  &__prefix {
+    padding-left: @padding-sm;
+    padding-right: @padding-xs;
+  }
+  
+  &__suffix {
+    padding-left: @padding-xs;
+    padding-right: @padding-sm;
+  }
+  
+  // 清除按钮
+  &__clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: @spacing-xs;
+    border-radius: @border-radius-full;
+    background-color: @gray-color-4;
+    color: @text-color-white-primary;
+    font-size: 12px;
+    cursor: @cursor-pointer;
+    transition: all @duration-base @ease-in-out;
+    
+    &:hover {
+      background-color: @gray-color-6;
+    }
+  }
+  
+  // 字数统计
+  &__count {
+    margin-top: @spacing-xs;
+    font-size: @font-size-xs;
+    color: @text-color-secondary;
+    text-align: right;
+    
+    &--error {
+      color: @error-color;
+    }
+  }
+  
+  // 错误信息
+  &__error {
+    margin-top: @spacing-xs;
+    font-size: @font-size-xs;
+    color: @error-color;
+    line-height: @line-height-base;
+  }
+  
+  // 帮助文本
+  &__help {
+    margin-top: @spacing-xs;
+    font-size: @font-size-xs;
+    color: @text-color-secondary;
+    line-height: @line-height-base;
+  }
+  
+  // ===== 输入框尺寸 =====
+  
+  // 小尺寸
+  &--small {
+    .l-input__inner {
+      .input-size(@height-sm, @input-padding-horizontal-sm, @font-size-sm);
+    }
+    
+    .l-input__wrapper {
+      height: @height-sm;
+    }
+  }
+  
+  // 中等尺寸（默认）
+  &--medium {
+    .l-input__inner {
+      .input-size(@height-md, @input-padding-horizontal-md, @font-size-base);
+    }
+    
+    .l-input__wrapper {
+      height: @height-md;
+    }
+  }
+  
+  // 大尺寸
+  &--large {
+    .l-input__inner {
+      .input-size(@height-lg, @input-padding-horizontal-lg, @font-size-lg);
+    }
+    
+    .l-input__wrapper {
+      height: @height-lg;
+    }
+  }
+  
+  // ===== 输入框状态 =====
+  
+  // 禁用状态
+  &--disabled {
+    .l-input__wrapper {
+      background-color: @bg-color-component-disabled;
+      cursor: @disabled-cursor;
+    }
+    
+    .l-input__inner {
+      color: @text-color-disabled;
+      cursor: @disabled-cursor;
+    }
+    
+    .l-input__label {
+      color: @text-color-disabled;
+    }
+  }
+  
+  // 只读状态
+  &--readonly {
+    .l-input__wrapper {
+      background-color: @bg-color-component-disabled;
+    }
+    
+    .l-input__inner {
+      cursor: @cursor-default;
+    }
+  }
+  
+  // 错误状态
+  &--error {
+    .l-input__label {
+      color: @error-color;
+    }
+  }
+  
+  // 成功状态
+  &--success {
+    .l-input__label {
+      color: @success-color;
+    }
+  }
+  
+  // 警告状态
+  &--warning {
+    .l-input__label {
+      color: @warning-color;
+    }
+  }
+  
+  // ===== 输入框类型 =====
+  
+  // 搜索框
+  &--search {
+    .l-input__inner {
+      padding-left: @padding-lg;
+    }
+    
+    .l-input__prefix {
+      position: absolute;
+      left: @padding-sm;
+      z-index: 1;
+    }
+  }
+  
+  // 密码框
+  &--password {
+    .l-input__suffix {
+      cursor: @cursor-pointer;
+    }
+  }
+  
+  // 数字输入框
+  &--number {
+    .l-input__inner {
+      text-align: right;
+    }
+  }
+}
+
+// ===== 文本域样式 =====
+.l-textarea {
+  display: inline-block;
+  width: 100%;
+  position: relative;
+  
+  &__inner {
+    .input-base();
+    width: 100%;
+    min-height: 80px;
+    padding: @padding-sm @padding-md;
+    resize: vertical;
+    line-height: @line-height-base;
+    
+    &--no-resize {
+      resize: none;
+    }
+    
+    &--auto-resize {
+      resize: none;
+      overflow: hidden;
+    }
+  }
+  
+  // 继承输入框的状态样式
+  &--disabled .l-textarea__inner {
+    background-color: @bg-color-component-disabled;
+    color: @text-color-disabled;
+    cursor: @disabled-cursor;
+  }
+  
+  &--readonly .l-textarea__inner {
+    background-color: @bg-color-component-disabled;
+    cursor: @cursor-default;
+  }
+  
+  &--error .l-textarea__inner {
+    border-color: @error-color;
+    
+    &:focus {
+      box-shadow: @shadow-outline-error;
+    }
+  }
+}
+
+// ===== 输入框组 =====
+.l-input-group {
+  display: flex;
+  width: 100%;
+  
+  .l-input {
+    flex: 1;
+    
+    &:not(:first-child) .l-input__wrapper {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-left: none;
+    }
+    
+    &:not(:last-child) .l-input__wrapper {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+  
+  &__addon {
+    display: flex;
+    align-items: center;
+    padding: 0 @padding-md;
+    background-color: @bg-color-container-hover;
+    border: @border-width-base solid @border-color-base;
+    color: @text-color-secondary;
+    font-size: @font-size-sm;
+    white-space: nowrap;
+    
+    &--before {
+      border-right: none;
+      border-top-left-radius: @border-radius-base;
+      border-bottom-left-radius: @border-radius-base;
+    }
+    
+    &--after {
+      border-left: none;
+      border-top-right-radius: @border-radius-base;
+      border-bottom-right-radius: @border-radius-base;
+    }
+  }
+}
+
+// ===== 响应式适配 =====
+.mobile-only({
+  .l-input {
+    // 移动端输入框稍微大一些，便于触摸
+    &--small .l-input__wrapper {
+      height: 36px;
+    }
+    
+    &--medium .l-input__wrapper {
+      height: 44px;
+    }
+    
+    &--large .l-input__wrapper {
+      height: 52px;
+    }
+  }
+  
+  .l-textarea__inner {
+    min-height: 100px;
+  }
+});
+
+// ===== 深色主题适配 =====
+@media (prefers-color-scheme: dark) {
+  .l-input {
+    &__wrapper {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.15);
+      
+      &:hover:not(.l-input--disabled .l-input__wrapper) {
+        border-color: rgba(255, 255, 255, 0.25);
+      }
+    }
+    
+    &__inner {
+      color: rgba(255, 255, 255, 0.9);
+      
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+    }
+  }
+}
+
+// ===== 高对比度模式适配 =====
+@media (prefers-contrast: high) {
+  .l-input {
+    &__wrapper {
+      border-width: @border-width-thick;
+    }
+    
+    &__inner:focus {
+      outline: @border-width-thick solid @border-color-focus;
+      outline-offset: @border-width-base;
+    }
+  }
+}

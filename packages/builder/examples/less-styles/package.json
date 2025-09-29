@@ -1,0 +1,56 @@
+{
+  "name": "@ldesign/less-styles-example",
+  "version": "1.0.0",
+  "description": "Less 样式库示例 - 展示如何使用 @ldesign/builder 打包 Less 样式库",
+  "keywords": [
+    "less",
+    "css",
+    "styles",
+    "design-system",
+    "theme",
+    "ldesign",
+    "builder",
+    "example"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./es/index.less.css": "./es/index.less.css"
+  },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
+  "files": [
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "es"
+  ],
+  "scripts": {
+    "build": "ldesign-builder",
+    "dev": "ldesign-builder --watch",
+    "clean": "rimraf dist",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "peerDependencies": {},
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "less": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0",
+    "rimraf": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "style": "./dist/index.css"
+}

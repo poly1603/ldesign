@@ -1,295 +1,99 @@
 /**
- * TypeScript 工具库示例
+ * @ldesign/typescript-utils-example
  * 
- * 展示如何使用 @ldesign/builder 构建纯 TypeScript 工具库
- * 包含常用的工具函数、类型定义和类
+ * TypeScript 工具库示例
+ * 展示如何使用 @ldesign/builder 打包 TypeScript 工具库
+ * 
+ * @author LDesign Team
+ * @version 1.0.0
  */
 
-// ============= 类型定义 =============
+// 导出数学工具模块
+export * as math from './math'
+export * from './math'
 
-export interface User {
-  id: number
-  name: string
-  email: string
-  avatar?: string
-  createdAt: Date
-  updatedAt: Date
-}
+// 导出字符串工具模块
+export * as string from './string'
+export * from './string'
 
-export interface CreateUserOptions {
-  name: string
-  email: string
-  avatar?: string
-}
+// 导出日期工具模块
+export * as date from './date'
+export * from './date'
 
-export type UserRole = 'admin' | 'user' | 'guest'
+/**
+ * 工具库版本信息
+ */
+export const VERSION = '1.0.0'
 
-export interface ApiResponse<T = unknown> {
-  success: boolean
-  data?: T
-  message?: string
-  code?: number
-}
-
-// ============= 常量 =============
-
-export const DEFAULT_AVATAR = 'https://via.placeholder.com/150'
-
-export const USER_ROLES = {
-  ADMIN: 'admin',
-  USER: 'user',
-  GUEST: 'guest'
+/**
+ * 工具库信息
+ */
+export const LIBRARY_INFO = {
+  name: '@ldesign/typescript-utils-example',
+  version: VERSION,
+  description: 'TypeScript 工具库示例 - 展示如何使用 @ldesign/builder 打包 TypeScript 工具库',
+  author: 'LDesign Team',
+  license: 'MIT',
+  repository: 'https://github.com/ldesign/ldesign',
+  homepage: 'https://ldesign.dev'
 } as const
 
-export const HTTP_STATUS = {
-  OK: 200,
-  CREATED: 201,
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  INTERNAL_SERVER_ERROR: 500
-} as const
-
-// ============= 工具函数 =============
-
 /**
- * 生成随机 ID
+ * 获取库信息
+ * @returns 库信息对象
+ * @example
+ * ```typescript
+ * import { getLibraryInfo } from '@ldesign/typescript-utils-example'
+ * 
+ * const info = getLibraryInfo()
+ * console.log(info.name) // '@ldesign/typescript-utils-example'
+ * ```
  */
-export function generateId(): number {
-  return Math.floor(Math.random() * 1000000)
+export function getLibraryInfo() {
+  return LIBRARY_INFO
 }
 
 /**
- * 验证邮箱格式
+ * 打印库信息到控制台
+ * @example
+ * ```typescript
+ * import { printLibraryInfo } from '@ldesign/typescript-utils-example'
+ * 
+ * printLibraryInfo()
+ * // 输出库的详细信息
+ * ```
  */
-export function validateEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
+export function printLibraryInfo(): void {
+  console.log(`
+╭─────────────────────────────────────────────────────────────╮
+│                    TypeScript Utils Example                 │
+├─────────────────────────────────────────────────────────────┤
+│ Name:        ${LIBRARY_INFO.name.padEnd(43)} │
+│ Version:     ${LIBRARY_INFO.version.padEnd(43)} │
+│ Description: ${LIBRARY_INFO.description.slice(0, 43).padEnd(43)} │
+│ Author:      ${LIBRARY_INFO.author.padEnd(43)} │
+│ License:     ${LIBRARY_INFO.license.padEnd(43)} │
+╰─────────────────────────────────────────────────────────────╯
+  `)
 }
+
+// 导入所有模块用于默认导出
+import * as mathModule from './math'
+import * as stringModule from './string'
+import * as dateModule from './date'
 
 /**
- * 格式化用户名
+ * 默认导出：包含所有工具模块的对象
  */
-export function formatUserName(user: User): string {
-  return `${user.name} <${user.email}>`
+export default {
+  // 模块
+  math: mathModule,
+  string: stringModule,
+  date: dateModule,
+
+  // 信息
+  VERSION,
+  LIBRARY_INFO,
+  getLibraryInfo,
+  printLibraryInfo
 }
-
-/**
- * 创建用户
- */
-export function createUser(options: CreateUserOptions): User {
-  if (!validateEmail(options.email)) {
-    throw new Error('Invalid email address')
-  }
-
-  const now = new Date()
-  return {
-    id: generateId(),
-    ...options,
-    avatar: options.avatar || DEFAULT_AVATAR,
-    createdAt: now,
-    updatedAt: now
-  }
-}
-
-/**
- * 深拷贝对象
- */
-export function deepClone<T>(obj: T): T {
-  if (obj === null || typeof obj !== 'object') {
-    return obj
-  }
-
-  if (obj instanceof Date) {
-    return new Date(obj.getTime()) as T
-  }
-
-  if (obj instanceof Array) {
-    return obj.map(item => deepClone(item)) as T
-  }
-
-  if (typeof obj === 'object') {
-    const cloned = {} as T
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        cloned[key] = deepClone(obj[key])
-      }
-    }
-    return cloned
-  }
-
-  return obj
-}
-
-/**
- * 防抖函数
- */
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null
-
-  return function (this: any, ...args: Parameters<T>) {
-    if (timeout) {
-      clearTimeout(timeout)
-    }
-    timeout = setTimeout(() => func.apply(this, args), wait)
-  }
-}
-
-/**
- * 节流函数
- */
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let lastTime = 0
-
-  return function (this: any, ...args: Parameters<T>) {
-    const now = Date.now()
-    if (now - lastTime >= wait) {
-      lastTime = now
-      func.apply(this, args)
-    }
-  }
-}
-
-// ============= 类 =============
-
-/**
- * 用户管理器
- */
-export class UserManager {
-  private users: User[] = []
-
-  /**
-   * 添加用户
-   */
-  addUser(options: CreateUserOptions): User {
-    const user = createUser(options)
-    this.users.push(user)
-    return user
-  }
-
-  /**
-   * 获取用户
-   */
-  getUser(id: number): User | undefined {
-    return this.users.find(user => user.id === id)
-  }
-
-  /**
-   * 获取所有用户
-   */
-  getAllUsers(): User[] {
-    return [...this.users]
-  }
-
-  /**
-   * 更新用户
-   */
-  updateUser(id: number, updates: Partial<Omit<User, 'id' | 'createdAt'>>): User | null {
-    const userIndex = this.users.findIndex(user => user.id === id)
-    if (userIndex === -1) {
-      return null
-    }
-
-    this.users[userIndex] = {
-      ...this.users[userIndex],
-      ...updates,
-      updatedAt: new Date()
-    }
-
-    return this.users[userIndex]
-  }
-
-  /**
-   * 删除用户
-   */
-  removeUser(id: number): boolean {
-    const index = this.users.findIndex(user => user.id === id)
-    if (index !== -1) {
-      this.users.splice(index, 1)
-      return true
-    }
-    return false
-  }
-
-  /**
-   * 获取用户数量
-   */
-  getUserCount(): number {
-    return this.users.length
-  }
-
-  /**
-   * 清空所有用户
-   */
-  clear(): void {
-    this.users = []
-  }
-}
-
-/**
- * 事件发射器
- */
-export class EventEmitter<T extends Record<string, any[]> = Record<string, any[]>> {
-  private events: Map<keyof T, Array<(...args: any[]) => void>> = new Map()
-
-  /**
-   * 监听事件
-   */
-  on<K extends keyof T>(event: K, listener: (...args: T[K]) => void): this {
-    if (!this.events.has(event)) {
-      this.events.set(event, [])
-    }
-    this.events.get(event)!.push(listener)
-    return this
-  }
-
-  /**
-   * 移除事件监听
-   */
-  off<K extends keyof T>(event: K, listener: (...args: T[K]) => void): this {
-    const listeners = this.events.get(event)
-    if (listeners) {
-      const index = listeners.indexOf(listener)
-      if (index !== -1) {
-        listeners.splice(index, 1)
-      }
-    }
-    return this
-  }
-
-  /**
-   * 触发事件
-   */
-  emit<K extends keyof T>(event: K, ...args: T[K]): boolean {
-    const listeners = this.events.get(event)
-    if (listeners && listeners.length > 0) {
-      listeners.forEach(listener => listener(...args))
-      return true
-    }
-    return false
-  }
-
-  /**
-   * 移除所有监听器
-   */
-  removeAllListeners<K extends keyof T>(event?: K): this {
-    if (event) {
-      this.events.delete(event)
-    } else {
-      this.events.clear()
-    }
-    return this
-  }
-}
-
-// ============= 默认导出 =============
-
-// 创建默认的用户管理器实例
-export const defaultUserManager = new UserManager()

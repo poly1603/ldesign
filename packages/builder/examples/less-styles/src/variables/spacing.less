@@ -1,0 +1,272 @@
+/**
+ * 间距变量定义
+ * 
+ * 定义内边距、外边距、间隙等空间相关的变量
+ * 提供一致的空间体系，支持响应式设计
+ */
+
+// ===== 基础间距单位 =====
+@spacing-unit: 4px;
+
+// ===== 间距尺寸 =====
+@spacing-xs: @spacing-unit * 1; // 4px
+@spacing-sm: @spacing-unit * 2; // 8px
+@spacing-base: @spacing-unit * 3; // 12px
+@spacing-md: @spacing-unit * 4; // 16px
+@spacing-lg: @spacing-unit * 5; // 20px
+@spacing-xl: @spacing-unit * 6; // 24px
+@spacing-xxl: @spacing-unit * 8; // 32px
+@spacing-xxxl: @spacing-unit * 12; // 48px
+
+// ===== 内边距 =====
+@padding-xs: @spacing-xs;
+@padding-sm: @spacing-sm;
+@padding-base: @spacing-base;
+@padding-md: @spacing-md;
+@padding-lg: @spacing-lg;
+@padding-xl: @spacing-xl;
+@padding-xxl: @spacing-xxl;
+@padding-xxxl: @spacing-xxxl;
+
+// 特殊内边距
+@padding-none: 0;
+@padding-tiny: 2px;
+@padding-huge: 64px;
+
+// ===== 外边距 =====
+@margin-xs: @spacing-xs;
+@margin-sm: @spacing-sm;
+@margin-base: @spacing-base;
+@margin-md: @spacing-md;
+@margin-lg: @spacing-lg;
+@margin-xl: @spacing-xl;
+@margin-xxl: @spacing-xxl;
+@margin-xxxl: @spacing-xxxl;
+
+// 特殊外边距
+@margin-none: 0;
+@margin-tiny: 2px;
+@margin-huge: 64px;
+@margin-auto: auto;
+
+// ===== 间隙 =====
+@gap-xs: @spacing-xs;
+@gap-sm: @spacing-sm;
+@gap-base: @spacing-base;
+@gap-md: @spacing-md;
+@gap-lg: @spacing-lg;
+@gap-xl: @spacing-xl;
+@gap-xxl: @spacing-xxl;
+@gap-xxxl: @spacing-xxxl;
+
+// ===== 组件特定间距 =====
+
+// 按钮内边距
+@button-padding-horizontal-sm: @padding-sm;
+@button-padding-vertical-sm: @padding-xs;
+@button-padding-horizontal-md: @padding-md;
+@button-padding-vertical-md: @padding-sm;
+@button-padding-horizontal-lg: @padding-lg;
+@button-padding-vertical-lg: @padding-base;
+
+// 输入框内边距
+@input-padding-horizontal-sm: @padding-sm;
+@input-padding-vertical-sm: @padding-xs;
+@input-padding-horizontal-md: @padding-base;
+@input-padding-vertical-md: @padding-sm;
+@input-padding-horizontal-lg: @padding-md;
+@input-padding-vertical-lg: @padding-base;
+
+// 卡片内边距
+@card-padding-xs: @padding-sm;
+@card-padding-sm: @padding-md;
+@card-padding-md: @padding-lg;
+@card-padding-lg: @padding-xl;
+
+// 模态框内边距
+@modal-padding-sm: @padding-lg;
+@modal-padding-md: @padding-xl;
+@modal-padding-lg: @padding-xxl;
+
+// 表格内边距
+@table-padding-sm: @padding-xs @padding-sm;
+@table-padding-md: @padding-sm @padding-md;
+@table-padding-lg: @padding-base @padding-lg;
+
+// 列表内边距
+@list-padding-sm: @padding-sm @padding-md;
+@list-padding-md: @padding-base @padding-lg;
+@list-padding-lg: @padding-md @padding-xl;
+
+// ===== 布局间距 =====
+
+// 容器间距
+@container-padding-xs: @padding-md;
+@container-padding-sm: @padding-lg;
+@container-padding-md: @padding-xl;
+@container-padding-lg: @padding-xxl;
+@container-padding-xl: @padding-xxxl;
+
+// 栅格间距
+@grid-gutter-xs: @spacing-sm;
+@grid-gutter-sm: @spacing-md;
+@grid-gutter-md: @spacing-lg;
+@grid-gutter-lg: @spacing-xl;
+@grid-gutter-xl: @spacing-xxl;
+
+// 分割线间距
+@divider-margin-xs: @margin-sm @margin-none;
+@divider-margin-sm: @margin-md @margin-none;
+@divider-margin-md: @margin-lg @margin-none;
+@divider-margin-lg: @margin-xl @margin-none;
+
+// ===== 响应式间距 =====
+
+// 移动端间距
+@spacing-mobile-xs: 2px;
+@spacing-mobile-sm: 4px;
+@spacing-mobile-base: 8px;
+@spacing-mobile-md: 12px;
+@spacing-mobile-lg: 16px;
+@spacing-mobile-xl: 20px;
+@spacing-mobile-xxl: 24px;
+
+// 平板端间距
+@spacing-tablet-xs: 3px;
+@spacing-tablet-sm: 6px;
+@spacing-tablet-base: 10px;
+@spacing-tablet-md: 14px;
+@spacing-tablet-lg: 18px;
+@spacing-tablet-xl: 22px;
+@spacing-tablet-xxl: 28px;
+
+// ===== 间距混合器 =====
+
+// 内边距混合器
+.padding(@size) {
+  padding: @size;
+}
+
+.padding-horizontal(@size) {
+  padding-left: @size;
+  padding-right: @size;
+}
+
+.padding-vertical(@size) {
+  padding-top: @size;
+  padding-bottom: @size;
+}
+
+.padding-top(@size) {
+  padding-top: @size;
+}
+
+.padding-right(@size) {
+  padding-right: @size;
+}
+
+.padding-bottom(@size) {
+  padding-bottom: @size;
+}
+
+.padding-left(@size) {
+  padding-left: @size;
+}
+
+// 外边距混合器
+.margin(@size) {
+  margin: @size;
+}
+
+.margin-horizontal(@size) {
+  margin-left: @size;
+  margin-right: @size;
+}
+
+.margin-vertical(@size) {
+  margin-top: @size;
+  margin-bottom: @size;
+}
+
+.margin-top(@size) {
+  margin-top: @size;
+}
+
+.margin-right(@size) {
+  margin-right: @size;
+}
+
+.margin-bottom(@size) {
+  margin-bottom: @size;
+}
+
+.margin-left(@size) {
+  margin-left: @size;
+}
+
+// 间隙混合器
+.gap(@size) {
+  gap: @size;
+}
+
+.gap-horizontal(@size) {
+  column-gap: @size;
+}
+
+.gap-vertical(@size) {
+  row-gap: @size;
+}
+
+// 响应式间距混合器
+.responsive-padding(@mobile, @tablet, @desktop) {
+  padding: @mobile;
+
+  @media (min-width: 768px) {
+    padding: @tablet;
+  }
+
+  @media (min-width: 1024px) {
+    padding: @desktop;
+  }
+}
+
+.responsive-margin(@mobile, @tablet, @desktop) {
+  margin: @mobile;
+
+  @media (min-width: 768px) {
+    margin: @tablet;
+  }
+
+  @media (min-width: 1024px) {
+    margin: @desktop;
+  }
+}
+
+// 清除间距混合器
+.no-padding() {
+  padding: 0;
+}
+
+.no-margin() {
+  margin: 0;
+}
+
+.no-spacing() {
+  padding: 0;
+  margin: 0;
+}
+
+// 居中混合器
+.center-horizontal() {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.center-vertical() {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.center() {
+  margin: auto;
+}

@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2018",
     "module": "ESNext",
-    "lib": ["ES2020", "DOM"],
+    "lib": ["ES2018", "DOM"],
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "allowJs": false,
-    "strict": true,
+    "allowJs": true,
+    "strict": false,
     "noEmit": true,
     "declaration": true,
     "declarationMap": true,
@@ -18,16 +18,19 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "isolatedModules": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "exactOptionalPropertyTypes": false,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false,
     "noUncheckedIndexedAccess": false,
-    "noImplicitOverride": true,
-    "useUnknownInCatchVariables": true,
-    "noPropertyAccessFromIndexSignature": false
+    "noImplicitOverride": false,
+    "useUnknownInCatchVariables": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "jsx": "preserve",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": [
     "src/**/*"

@@ -1,73 +1,74 @@
-import { defineConfig, LibraryType } from '@ldesign/builder'
+/**
+ * @ldesign/builder 配置文件 - TypeScript 工具库示例
+ * 
+ * 此配置展示如何为 TypeScript 工具库配置构建选项
+ * 支持多入口、多格式输出和类型声明文件生成
+ */
+
+import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
-  // 单入口配�?  input: 'src/index.ts',
-
   // 输出配置
   output: {
+    // 支持的格式：ESM、CJS、UMD
     format: ['esm', 'cjs', 'umd'],
+    // 生成 source map
     sourcemap: true,
-    name: 'TypescriptUtils' // UMD格式需要全局变量�?
+    // UMD 格式的全局变量名
+    name: 'TypeScriptUtils',
+    // 文件名模式
+    fileName: '[name].[format].js',
+    // ESM 格式配置
+    esm: {
+      preserveStructure: true, // 保持目录结构，支持按需引入
+      dts: true
+    },
+    // CJS 格式配置
+    cjs: {
+      preserveStructure: true,
+      dts: true
+    },
+    // UMD 格式配置
+    umd: {
+      input: 'src/index.ts', // UMD 只打包主入口
+      dts: false // UMD 不需要单独的类型文件
+    }
   },
 
-  // 库类�?- TypeScript 工具�?
-  libraryType: LibraryType.TYPESCRIPT,
+  // 库类型
+  libraryType: 'typescript',
 
   // 打包器选择
   bundler: 'rollup',
 
+  // 生成类型声明文件
+  dts: true,
+
   // TypeScript 配置
   typescript: {
     declaration: true,
-    declarationDir: 'dist',
     target: 'ES2020',
     module: 'ESNext',
     strict: true,
     skipLibCheck: true
   },
 
-  // 外部依赖（不打包到输出中�?
+  // 外部依赖（工具库通常不需要外部依赖）
   external: [],
+
+  // 全局变量映射（UMD 格式使用）
+  globals: {},
 
   // 性能配置
   performance: {
-    treeshaking: true,    // 启用 Tree Shaking
-    minify: true,         // 压缩代码
-    bundleAnalyzer: false // 不显示分析器
+    treeshaking: true,
+    minify: false, // 开发阶段不压缩，便于调试
+    bundleAnalyzer: false
   },
 
   // 清理输出目录
   clean: true,
 
   // 日志级别
-  logLevel: 'info',
-
-  // 打包后验证配�?  postBuildValidation: {
-  enabled: false, // 暂时禁用，先测试基本打包
-  testFramework: 'vitest',
-  testPattern: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
-  timeout: 90000, // 增加超时时间，因为测试较�?    failOnError: true,
-
-  environment: {
-    tempDir: '.validation-temp',
-    keepTempFiles: false,
-    installDependencies: true,
-    packageManager: 'pnpm'
-  },
-
-  reporting: {
-    format: 'console',
-    verbose: true,
-    includePerformance: true,
-    includeCoverage: false
-  },
-
-  scope: {
-    formats: ['esm', 'cjs', 'umd'],
-    validateTypes: true,
-    validateStyles: false,
-    validateSourceMaps: true
-  }
+  logLevel: 'info'
 })
-
-
