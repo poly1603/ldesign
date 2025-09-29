@@ -21,6 +21,28 @@ export interface DrawerButton {
   onClick?: () => void | Promise<void>;
   disabled?: boolean;
   loading?: boolean;
+  icon?: string; // 按钮图标
+}
+
+// 加载状态配置
+export interface LoadingConfig {
+  show: boolean;
+  text?: string;
+  spinner?: boolean;
+}
+
+// 头部配置
+export interface HeaderConfig {
+  title?: string;
+  subtitle?: string;
+  icon?: string;
+  showBack?: boolean;
+  onBack?: () => void;
+  actions?: Array<{
+    icon: string;
+    tooltip?: string;
+    onClick: () => void;
+  }>;
 }
 
 /**
@@ -71,8 +93,11 @@ export class LdesignDrawer {
   /** 圆角大小 */
   @Prop() borderRadius: string = '12px';
 
-  /** 是否可调整大小 */
+  /** 是否可调整大小（桌面端和移动端统一配置） */
   @Prop() resizable: boolean = false;
+  
+  /** 调整大小的手柄位置（'edge' | 'handle'） */
+  @Prop() resizeMode: 'edge' | 'handle' = 'edge';
 
   /** 最小尺寸（像素或百分比） */
   @Prop() minSize: number | string = 200;
@@ -107,11 +132,17 @@ export class LdesignDrawer {
   /** 是否显示调整大小的提示 */
   @Prop() showResizeHint: boolean = true;
 
-  /** 是否在移动端启用手势关闭 */
+  /** 是否启用滑动关闭（支持所有方向） */
   @Prop() swipeToClose: boolean = true;
 
-  /** 手势关闭的阈值（百分比） */
+  /** 滑动关闭的阈值（百分比） */
   @Prop() swipeThreshold: number = 0.3;
+  
+  /** 滑动关闭的触发区域（'anywhere' | 'handle' | 'header'） */
+  @Prop() swipeTriggerArea: 'anywhere' | 'handle' | 'header' = 'handle';
+  
+  /** 拖动手柄的高度（像素，用于 handle 模式） */
+  @Prop() handleHeight: number = 40;
 
   /** 是否显示进入/退出动画 */
   @Prop() animation: boolean = true;
@@ -121,6 +152,63 @@ export class LdesignDrawer {
 
   /** 是否在关闭时保留状态 */
   @Prop() preserveState: boolean = false;
+
+  /** 是否显示头部分割线 */
+  @Prop() headerBorder: boolean = true;
+
+  /** 内容区域内边距 */
+  @Prop() bodyPadding: string | boolean = true;
+
+  /** 是否全屏显示 */
+  @Prop() fullscreen: boolean = false;
+
+  /** 是否可以全屏切换 */
+  @Prop() fullscreenable: boolean = false;
+
+  /** 加载状态配置 */
+  @Prop() loading: LoadingConfig | boolean = false;
+
+  /** 头部高级配置 */
+  @Prop() headerConfig: HeaderConfig = {};
+
+  /** 是否显示进度条 */
+  @Prop() showProgress: boolean = false;
+
+  /** 进度条百分比 */
+  @Prop() progressPercent: number = 0;
+
+  /** 自定义类名 */
+  @Prop() customClass: string = '';
+
+  /** 是否启用暗黑模式 */
+  @Prop() darkMode: boolean = false;
+
+  /** 打开时的回调 */
+  @Prop() onOpen: () => void | Promise<void>;
+
+  /** 关闭前的钩子（返回false阻止关闭） */
+  @Prop() beforeClose: () => boolean | Promise<boolean>;
+
+  /** 是否显示最小化按钮 */
+  @Prop() minimizable: boolean = false;
+
+  /** 是否处于最小化状态 */
+  @Prop() minimized: boolean = false;
+
+  /** 抽屉层级模式（normal | high | top） */
+  @Prop() level: 'normal' | 'high' | 'top' = 'normal';
+
+  /** 内容延迟加载（毫秒） */
+  @Prop() lazyLoad: number = 0;
+
+  /** 是否启用虚拟滚动（适用于大量内容） */
+  @Prop() virtualScroll: boolean = false;
+
+  /** 是否显示内容区域边框 */
+  @Prop() contentBorder: boolean = false;
+
+  /** 是否启用内容区域阴影 */
+  @Prop() contentShadow: boolean = false;
 
   /** 内部状态：当前是否可见（控制渲染/展示） */
   @State() isVisible: boolean = false;
@@ -149,6 +237,18 @@ export class LdesignDrawer {
   /** 内部状态：当前吸附点 */
   @State() currentSnapPoint: SnapPoint | null = null;
 
+  /** 内部状态：是否全屏 */
+  @State() isFullscreen: boolean = false;
+
+  /** 内部状态：是否最小化 */
+  @State() isMinimized: boolean = false;
+
+  /** 内部状态：内容是否加载 */
+  @State() contentLoaded: boolean = false;
+
+  /** 内部状态：当前加载状态 */
+  @State() isLoading: boolean = false;
+
   /** 事件：可见性变化 */
   @Event() ldesignVisibleChange: EventEmitter<boolean>;
 
@@ -166,6 +266,15 @@ export class LdesignDrawer {
 
   /** 事件：吸附到点 */
   @Event() ldesignSnapToPoint: EventEmitter<SnapPoint>;
+
+  /** 事件：全屏切换 */
+  @Event() ldesignFullscreenChange: EventEmitter<boolean>;
+
+  /** 事件：最小化切换 */
+  @Event() ldesignMinimizeChange: EventEmitter<boolean>;
+
+  /** 事件：加载状态变化 */
+  @Event() ldesignLoadingChange: EventEmitter<boolean>;
 
   private maskElement?: HTMLElement;
   private escHandler?: (e: KeyboardEvent) => void;
@@ -275,6 +384,11 @@ export class LdesignDrawer {
     this.maskElement = this.el.querySelector('.ldesign-drawer__mask') as HTMLElement;
     this.panelElement = this.el.querySelector('.ldesign-drawer__panel') as HTMLElement;
     this.resizeHandleElement = this.el.querySelector('.ldesign-drawer__resize-handle') as HTMLElement;
+    
+    // 移动端优化：添加触摸事件监听以防止滚动穿透
+    if (this.isMobileDevice()) {
+      this.initMobileOptimizations();
+    }
 
     if (this.visible) {
       this.show(false);
@@ -282,11 +396,12 @@ export class LdesignDrawer {
     if (this.closeOnEsc) {
       this.bindEsc();
     }
-    // 移动端不启用拖拽调整大小
-    if (this.resizable && !this.isMobileDevice()) {
+    // 统一处理调整大小功能
+    if (this.resizable) {
       this.initResize();
     }
-    if (this.swipeToClose && this.isMobileDevice()) {
+    // 统一处理滑动关闭功能
+    if (this.swipeToClose) {
       this.initSwipeGestures();
     }
     if (this.keyboardNavigation) {
@@ -335,24 +450,23 @@ export class LdesignDrawer {
   }
 
   private disableBodyScroll() {
-    // 容器模式：仅限制容器滚动并隐藏容器滚动条；全屏模式：锁定页面滚动
+    // 不再锁定页面滚动，让页面内容保持可滚动
+    // 只在容器模式下限制容器滚动
     if (this.isInContainer()) {
       const c = this.containerEl as HTMLElement;
       if (c) this.applyContainerOverflow(c);
-    } else {
-      lockPageScroll();
+      this.bindScrollLock();
     }
-    this.bindScrollLock();
+    // 移除页面滚动锁定，避免压缩页面内容
   }
 
   private enableBodyScroll() {
-    this.unbindScrollLock();
     if (this.isInContainer()) {
+      this.unbindScrollLock();
       const c = this.containerEl as HTMLElement;
       if (c) this.restoreContainerOverflow(c);
-    } else {
-      unlockPageScroll();
     }
+    // 移除页面滚动解锁，因为我们不再锁定它
   }
 
   /** 显示抽屉 */
@@ -369,9 +483,15 @@ export class LdesignDrawer {
     this.visible = true;
     this.disableBodyScroll();
     
-    // 重置拖动状态
+    // 重置状态
     this.dragOffset = 0;
     this.isDragging = false;
+    if (this.fullscreen) {
+      this.isFullscreen = true;
+    }
+    if (this.minimized) {
+      this.isMinimized = true;
+    }
     
     // 下一帧再添加"open"类，确保过渡触发
     requestAnimationFrame(() => {
@@ -417,9 +537,55 @@ export class LdesignDrawer {
   /** 关闭（等价于 hide），同时触发 close 事件 */
   @Method()
   async close() {
+    // 执行关闭前钩子
+    if (this.beforeClose) {
+      const canClose = await this.beforeClose();
+      if (!canClose) return;
+    }
     this.ldesignClose.emit();
     await this.hide();
   }
+
+  /** 切换全屏 */
+  @Method()
+  async toggleFullscreen() {
+    if (!this.fullscreenable) return;
+    this.isFullscreen = !this.isFullscreen;
+    this.ldesignFullscreenChange.emit(this.isFullscreen);
+    
+    if (this.isFullscreen) {
+      // 保存当前尺寸
+      this.beforeFullscreenSize = this.currentSize;
+      this.currentSize = '100%';
+    } else {
+      // 恢复之前的尺寸
+      this.currentSize = this.beforeFullscreenSize || this.size;
+    }
+  }
+
+  /** 切换最小化 */
+  @Method()
+  async toggleMinimize() {
+    if (!this.minimizable) return;
+    this.isMinimized = !this.isMinimized;
+    this.ldesignMinimizeChange.emit(this.isMinimized);
+  }
+
+  /** 设置加载状态 */
+  @Method()
+  async setLoading(loading: boolean | LoadingConfig) {
+    this.loading = loading;
+    this.isLoading = typeof loading === 'boolean' ? loading : loading.show;
+    this.ldesignLoadingChange.emit(this.isLoading);
+  }
+
+  /** 更新进度 */
+  @Method()
+  async updateProgress(percent: number) {
+    this.progressPercent = Math.max(0, Math.min(100, percent));
+  }
+
+  private beforeFullscreenSize: number | string;
 
   private handleMaskClick = (event: Event) => {
     if (!this.maskClosable) return;
@@ -440,6 +606,15 @@ export class LdesignDrawer {
     if (this.isDragging) classes.push('ldesign-drawer--dragging');
     if (this.showSnapIndicator) classes.push('ldesign-drawer--snapping');
     if (this.isMobileDevice()) classes.push('ldesign-drawer--mobile');
+    if (this.isFullscreen || this.fullscreen) classes.push('ldesign-drawer--fullscreen');
+    if (this.isMinimized) classes.push('ldesign-drawer--minimized');
+    if (this.darkMode) classes.push('ldesign-drawer--dark');
+    if (this.isLoading) classes.push('ldesign-drawer--loading');
+    if (this.customClass) classes.push(this.customClass);
+    
+    // 层级模式
+    classes.push(`ldesign-drawer--level-${this.level}`);
+    
     return classes.join(' ');
   }
 
@@ -527,17 +702,83 @@ export class LdesignDrawer {
 
   private renderHeader() {
     const hasHeaderSlot = !!this.el.querySelector('[slot="header"]');
-    if (!this.drawerTitle && !this.closable && !hasHeaderSlot) return null;
+    const config = this.headerConfig || {};
+    
+    if (!this.drawerTitle && !config.title && !this.closable && !hasHeaderSlot && !this.fullscreenable && !this.minimizable) {
+      return null;
+    }
+    
     return (
-      <div class="ldesign-drawer__header">
-        <div class="ldesign-drawer__title">
-          {hasHeaderSlot ? <slot name="header" /> : (this.drawerTitle || '')}
-        </div>
-        {this.closable && (
-          <button class="ldesign-drawer__close" aria-label="Close" onClick={() => this.close()}>
-            <ldesign-icon name="x"></ldesign-icon>
+      <div class={{
+        'ldesign-drawer__header': true,
+        'ldesign-drawer__header--border': this.headerBorder
+      }}>
+        {/* 返回按钮 */}
+        {config.showBack && (
+          <button class="ldesign-drawer__back" onClick={() => config.onBack && config.onBack()}>
+            <ldesign-icon name="arrow-left"></ldesign-icon>
           </button>
         )}
+        
+        {/* 图标 */}
+        {config.icon && (
+          <div class="ldesign-drawer__header-icon">
+            <ldesign-icon name={config.icon}></ldesign-icon>
+          </div>
+        )}
+        
+        {/* 标题区域 */}
+        <div class="ldesign-drawer__title-wrapper">
+          <div class="ldesign-drawer__title">
+            {hasHeaderSlot ? <slot name="header" /> : (config.title || this.drawerTitle || '')}
+          </div>
+          {config.subtitle && (
+            <div class="ldesign-drawer__subtitle">{config.subtitle}</div>
+          )}
+        </div>
+        
+        {/* 操作按钮区域 */}
+        <div class="ldesign-drawer__header-actions">
+          {/* 自定义操作按钮 */}
+          {config.actions?.map(action => (
+            <button 
+              class="ldesign-drawer__action" 
+              title={action.tooltip}
+              onClick={() => action.onClick()}
+            >
+              <ldesign-icon name={action.icon}></ldesign-icon>
+            </button>
+          ))}
+          
+          {/* 最小化按钮 */}
+          {this.minimizable && (
+            <button 
+              class="ldesign-drawer__minimize" 
+              aria-label="Minimize"
+              onClick={() => this.toggleMinimize()}
+            >
+              <ldesign-icon name={this.isMinimized ? 'maximize-2' : 'minimize-2'}></ldesign-icon>
+            </button>
+          )}
+          
+          {/* 全屏按钮 */}
+          {this.fullscreenable && (
+            <button 
+              class="ldesign-drawer__fullscreen" 
+              aria-label="Fullscreen"
+              onClick={() => this.toggleFullscreen()}
+            >
+              <ldesign-icon name={this.isFullscreen ? 'minimize' : 'maximize'}></ldesign-icon>
+            </button>
+          )}
+          
+          {/* 关闭按钮 */}
+          {this.closable && (
+            <button class="ldesign-drawer__close" aria-label="Close" onClick={() => this.close()}>
+              <ldesign-icon name="x"></ldesign-icon>
+            </button>
+          )}
+        </div>
       </div>
     );
   }
@@ -561,12 +802,16 @@ export class LdesignDrawer {
                   'ldesign-drawer__footer-button': true,
                   [`ldesign-drawer__footer-button--${button.type || 'default'}`]: true,
                   'ldesign-drawer__footer-button--loading': button.loading,
-                  'ldesign-drawer__footer-button--disabled': button.disabled
+                  'ldesign-drawer__footer-button--disabled': button.disabled,
+                  'ldesign-drawer__footer-button--with-icon': !!button.icon
                 }}
                 disabled={button.disabled || button.loading}
                 onClick={() => button.onClick && button.onClick()}
               >
                 {button.loading && <span class="ldesign-drawer__button-spinner" />}
+                {button.icon && !button.loading && (
+                  <ldesign-icon name={button.icon} class="ldesign-drawer__button-icon" />
+                )}
                 {button.text}
               </button>
             ))}
@@ -577,8 +822,8 @@ export class LdesignDrawer {
   }
 
   private renderResizeHandle() {
-    // 移动端不显示调整手柄
-    if (!this.resizable || this.isMobileDevice()) return null;
+    // 统一显示调整手柄（桌面端和移动端）
+    if (!this.resizable || this.resizeMode !== 'edge') return null;
 
     const placement = this.placement;
     return (
@@ -586,7 +831,8 @@ export class LdesignDrawer {
         class={{
           'ldesign-drawer__resize-handle': true,
           [`ldesign-drawer__resize-handle--${placement}`]: true,
-          'ldesign-drawer__resize-handle--active': this.isResizing
+          'ldesign-drawer__resize-handle--active': this.isResizing,
+          'ldesign-drawer__resize-handle--mobile': this.isMobileDevice()
         }}
         title={this.showResizeHint ? '拖动调整大小' : ''}
       >
@@ -596,6 +842,29 @@ export class LdesignDrawer {
             {Math.round(this.getCurrentSizeInPixels())}px
           </div>
         )}
+      </div>
+    );
+  }
+  
+  private renderSwipeHandle() {
+    // 渲染滑动手柄区域（用于 swipeTriggerArea === 'handle' 模式）
+    if (!this.swipeToClose || this.swipeTriggerArea !== 'handle') return null;
+    
+    const placement = this.placement;
+    
+    return (
+      <div 
+        class={{
+          'ldesign-drawer__swipe-handle': true,
+          [`ldesign-drawer__swipe-handle--${placement}`]: true,
+          'ldesign-drawer__swipe-handle--dragging': this.isDragging
+        }}
+        style={{ 
+          height: placement === 'top' || placement === 'bottom' ? `${this.handleHeight}px` : undefined,
+          width: placement === 'left' || placement === 'right' ? `${this.handleHeight}px` : undefined
+        }}
+      >
+        <div class="ldesign-drawer__swipe-handle-bar" />
       </div>
     );
   }
@@ -612,6 +881,65 @@ export class LdesignDrawer {
     );
   }
 
+  private renderProgress() {
+    if (!this.showProgress) return null;
+    
+    return (
+      <div class="ldesign-drawer__progress">
+        <div 
+          class="ldesign-drawer__progress-bar" 
+          style={{ width: `${this.progressPercent}%` }}
+        />
+      </div>
+    );
+  }
+
+  private renderLoading() {
+    if (!this.isLoading) return null;
+    
+    const config = typeof this.loading === 'object' ? this.loading : { show: true, spinner: true };
+    
+    return (
+      <div class="ldesign-drawer__loading">
+        {config.spinner !== false && (
+          <div class="ldesign-drawer__loading-spinner">
+            <div class="ldesign-drawer__loading-spin" />
+          </div>
+        )}
+        {config.text && (
+          <div class="ldesign-drawer__loading-text">{config.text}</div>
+        )}
+      </div>
+    );
+  }
+
+  private renderBody() {
+    const getPadding = () => {
+      if (this.bodyPadding === false) return '0';
+      if (typeof this.bodyPadding === 'string') return this.bodyPadding;
+      return '16px 20px';
+    };
+
+    return (
+      <div class={{
+        'ldesign-drawer__body': true,
+        'ldesign-drawer__body--border': this.contentBorder,
+        'ldesign-drawer__body--shadow': this.contentShadow,
+        'ldesign-drawer__body--virtual': this.virtualScroll
+      }} style={{ padding: getPadding() }}>
+        {this.isLoading ? (
+          this.renderLoading()
+        ) : this.lazyLoad && !this.contentLoaded ? (
+          <div class="ldesign-drawer__lazy-placeholder">
+            <div class="ldesign-drawer__lazy-loading">加载中...</div>
+          </div>
+        ) : (
+          <slot />
+        )}
+      </div>
+    );
+  }
+
   render() {
     // 注意：mask 元素每次渲染重新查询引用
     // 以便 handleMaskClick 判断点击来源
@@ -619,7 +947,19 @@ export class LdesignDrawer {
       this.maskElement = this.el.querySelector('.ldesign-drawer__mask') as HTMLElement;
       this.panelElement = this.el.querySelector('.ldesign-drawer__panel') as HTMLElement;
       this.resizeHandleElement = this.el.querySelector('.ldesign-drawer__resize-handle') as HTMLElement;
+      
+      // 延迟加载内容
+      if (this.lazyLoad && !this.contentLoaded && this.isVisible) {
+        setTimeout(() => {
+          this.contentLoaded = true;
+        }, this.lazyLoad);
+      }
     }, 0);
+
+    // 执行打开回调
+    if (this.isVisible && this.onOpen) {
+      setTimeout(() => this.onOpen(), 50);
+    }
 
     return (
       <Host>
@@ -638,13 +978,15 @@ export class LdesignDrawer {
             'ldesign-drawer__panel--rounded': this.rounded,
             'ldesign-drawer__panel--resizing': this.isResizing,
             'ldesign-drawer__panel--dragging': this.isDragging,
+            'ldesign-drawer__panel--fullscreen': this.isFullscreen || this.fullscreen,
+            'ldesign-drawer__panel--minimized': this.isMinimized,
           }} style={this.panelStyle()}>
             {this.renderResizeHandle()}
+            {this.renderSwipeHandle()}
+            {this.renderProgress()}
             <div class="ldesign-drawer__content">
               {this.renderHeader()}
-              <div class="ldesign-drawer__body">
-                <slot />
-              </div>
+              {this.renderBody()}
               {this.renderFooter()}
             </div>
             {this.renderSnapIndicator()}
@@ -785,9 +1127,13 @@ export class LdesignDrawer {
 
   private handleResizeMouseDown = (e: MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     this.startResize(e.clientX, e.clientY);
     document.addEventListener('mousemove', this.handleResizeMouseMove);
     document.addEventListener('mouseup', this.handleResizeMouseUp);
+    // 添加临时样式防止选中文本
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = this.placement === 'left' || this.placement === 'right' ? 'col-resize' : 'row-resize';
   };
 
   private handleResizeMouseMove = (e: MouseEvent) => {
@@ -798,14 +1144,22 @@ export class LdesignDrawer {
     this.endResize();
     document.removeEventListener('mousemove', this.handleResizeMouseMove);
     document.removeEventListener('mouseup', this.handleResizeMouseUp);
+    // 恢复样式
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
   };
 
   private handleResizeTouchStart = (e: TouchEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const touch = e.touches[0];
     this.startResize(touch.clientX, touch.clientY);
     document.addEventListener('touchmove', this.handleResizeTouchMove, { passive: false });
     document.addEventListener('touchend', this.handleResizeTouchEnd);
+    document.addEventListener('touchcancel', this.handleResizeTouchEnd);
+    // 移动端也禁用文本选择
+    document.body.style.userSelect = 'none';
+    document.body.style.webkitUserSelect = 'none';
   };
 
   private handleResizeTouchMove = (e: TouchEvent) => {
@@ -818,6 +1172,10 @@ export class LdesignDrawer {
     this.endResize();
     document.removeEventListener('touchmove', this.handleResizeTouchMove);
     document.removeEventListener('touchend', this.handleResizeTouchEnd);
+    document.removeEventListener('touchcancel', this.handleResizeTouchEnd);
+    // 恢复样式
+    document.body.style.userSelect = '';
+    document.body.style.webkitUserSelect = '';
   };
 
   private startResize(x: number, y: number) {
@@ -825,6 +1183,10 @@ export class LdesignDrawer {
     this.startPosition = { x, y };
     const currentSize = this.getCurrentSizeInPixels();
     this.startSize = currentSize;
+    // 获取当前面板元素并保存引用
+    if (!this.panelElement) {
+      this.panelElement = this.el.querySelector('.ldesign-drawer__panel') as HTMLElement;
+    }
     this.ldesignResizeStart.emit();
   }
 
@@ -842,17 +1204,27 @@ export class LdesignDrawer {
       delta = this.startPosition.y - y;
     }
 
-    // 应用阻尼效果
-    if (this.damping) {
-      delta = delta * this.dampingFactor;
-    }
-
     let newSize = this.startSize + delta;
     
-    // 限制尺寸范围
+    // 获取限制范围
     const min = this.parseSize(this.minSize);
     const max = this.parseSize(this.maxSize);
-    newSize = Math.max(min, Math.min(max, newSize));
+    
+    // 在边界处应用阻尼效果
+    if (this.damping) {
+      if (newSize < min) {
+        // 超出最小值时的阻尼
+        const overMin = min - newSize;
+        newSize = min - overMin * this.dampingFactor;
+      } else if (newSize > max) {
+        // 超出最大值时的阻尼
+        const overMax = newSize - max;
+        newSize = max + overMax * this.dampingFactor;
+      }
+    } else {
+      // 不启用阻尼时直接限制
+      newSize = Math.max(min, Math.min(max, newSize));
+    }
 
     // 检查吸附点
     if (this.snapPoints.length > 0) {
@@ -874,13 +1246,37 @@ export class LdesignDrawer {
     }
 
     this.currentSize = `${newSize}px`;
+    // 立即更新样式，不等待下一帧
+    if (this.panelElement) {
+      if (this.placement === 'left' || this.placement === 'right') {
+        this.panelElement.style.width = `${newSize}px`;
+      } else {
+        this.panelElement.style.height = `${newSize}px`;
+      }
+    }
     this.ldesignSizeChange.emit({ size: this.currentSize, placement: this.placement });
   }
 
   private endResize() {
+    if (!this.isResizing) return;
     this.isResizing = false;
     this.currentSnapPoint = null;
     this.showSnapIndicator = false;
+    // 确保最终尺寸在范围内
+    const min = this.parseSize(this.minSize);
+    const max = this.parseSize(this.maxSize);
+    const currentPixels = this.getCurrentSizeInPixels();
+    const finalSize = Math.max(min, Math.min(max, currentPixels));
+    if (finalSize !== currentPixels) {
+      this.currentSize = `${finalSize}px`;
+      if (this.panelElement) {
+        if (this.placement === 'left' || this.placement === 'right') {
+          this.panelElement.style.width = `${finalSize}px`;
+        } else {
+          this.panelElement.style.height = `${finalSize}px`;
+        }
+      }
+    }
     this.ldesignResizeEnd.emit({ size: this.currentSize });
   }
 
@@ -899,6 +1295,20 @@ export class LdesignDrawer {
   }
 
   private handleSwipeStart = (e: TouchEvent) => {
+    const target = e.target as HTMLElement;
+    
+    // 根据 swipeTriggerArea 配置决定是否允许拖动
+    if (this.swipeTriggerArea === 'handle') {
+      // 只在手柄区域允许拖动
+      const isSwipeHandle = target.closest('.ldesign-drawer__swipe-handle');
+      if (!isSwipeHandle) return;
+    } else if (this.swipeTriggerArea === 'header') {
+      // 只在头部区域允许拖动
+      const isHeader = target.closest('.ldesign-drawer__header');
+      if (!isHeader) return;
+    }
+    // swipeTriggerArea === 'anywhere' 时任何位置都可以拖动
+    
     const touch = e.touches[0];
     this.touchStartPosition = { x: touch.clientX, y: touch.clientY };
     this.touchStartTime = Date.now();
@@ -1039,12 +1449,50 @@ export class LdesignDrawer {
   private isMobileDevice(): boolean {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
   }
+  
+  // 确保移动端视口元标签设置正确
+  private ensureViewportMeta() {
+    let viewport = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
+    if (!viewport) {
+      viewport = document.createElement('meta');
+      viewport.name = 'viewport';
+      viewport.content = 'width=device-width, initial-scale=1.0';
+      document.head.appendChild(viewport);
+    }
+  }
+  
+  // 移动端优化
+  private initMobileOptimizations() {
+    // 添加触摸事件监听器来阻止背景滚动
+    if ('ontouchstart' in window) {
+      let touchStartY = 0;
+      
+      // 触摸开始
+      this.el.addEventListener('touchstart', (e: TouchEvent) => {
+        if (!this.isVisible) return;
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+      
+      // 触摸移动 - 阻止默认滚动
+      this.el.addEventListener('touchmove', (e: TouchEvent) => {
+        if (!this.isVisible) return;
+        
+        const target = e.target as HTMLElement;
+        const drawerBody = this.el.querySelector('.ldesign-drawer__body');
+        
+        // 只在非 body 区域阻止滚动
+        if (drawerBody && !drawerBody.contains(target)) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+    }
+  }
 
   private handleResize = () => {
     // 窗口大小变化时重新计算
     if (this.isVisible && this.isMobileDevice()) {
-      // 触发重新渲染
-      this.el.forceUpdate();
+      // 触发重新渲染 - 使用状态更新来触发重渲染
+      this.currentSize = this.currentSize || this.size;
     }
   };
 

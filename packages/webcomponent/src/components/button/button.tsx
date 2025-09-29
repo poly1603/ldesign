@@ -261,12 +261,15 @@ export class LdesignButton {
     const prefixCls = 'ldesign-button';
     const sizeSuffix = getSizeSuffix(this.size);
     
-    // 如果有 variant 和 color，优先使用
-    if (this.variant && this.color) {
+    // 如果有 variant，优先使用 variant 系统
+    if (this.variant) {
+      // 如果没有指定 color，默认使用 'default'
+      const effectiveColor = this.color || (this.danger ? 'danger' : 'default');
+      
       return combineClasses(
         prefixCls,
         `${prefixCls}--variant-${this.variant}`,
-        `${prefixCls}--color-${this.color}`,
+        `${prefixCls}--color-${effectiveColor}`,
         this.shape !== 'default' && `${prefixCls}--${this.shape}`,
         sizeSuffix && `${prefixCls}--${sizeSuffix}`,
         this.ghost && `${prefixCls}--ghost`,

@@ -1,10 +1,33 @@
 @prefix: ldesign-ripple;
 
+// CSS变量定义
+:root {
+  --ld-ripple-default-color: currentColor;
+  --ld-ripple-default-opacity: 0.24;
+  --ld-ripple-light-opacity: 0.12;
+  --ld-ripple-strong-opacity: 0.36;
+  --ld-ripple-duration: 600ms;
+  --ld-ripple-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --ld-ripple-glow-color: rgba(255, 255, 255, 0.3);
+  --ld-ripple-z-index: 999;
+}
+
 // 目标容器样式标记
 .@{prefix}__target {
   position: relative;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent; // 移除移动端默认的点击高亮
+  user-select: none; // 防止文字选择
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  
+  // 聚焦样式
+  &:focus-visible {
+    outline: 2px solid var(--ld-ripple-color, currentColor);
+    outline-offset: 2px;
+  }
 }
+
 .@{prefix}__target--unbounded {
   overflow: visible;
 }
@@ -15,37 +38,241 @@
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
-  z-index: 1;
+  z-index: var(--ld-ripple-z-index);
   display: block;
+  contain: strict; // 性能优化：限制重绘范围
+}
+
+// 禁用状态
+:host(.ldesign-ripple--disabled) {
+  display: none;
 }
 
 .@{prefix} {
-  // 仅用于 BEM 前缀
+  // 基础容器
+  &--unbounded {
+    overflow: visible !important;
+  }
 }
 
-// 波纹元素
+// 波纹元素基础样式
 .@{prefix}__wave {
   position: absolute;
   border-radius: 50%;
   transform: scale(0);
+  transform-origin: center center;
   will-change: transform, opacity;
   pointer-events: none;
   opacity: 0;
+  background-color: var(--ld-ripple-color);
+  backface-visibility: hidden; // 性能优化
+  -webkit-backface-visibility: hidden;
+  
+  // 硬件加速
+  transform: translateZ(0) scale(0);
+  
   /* 使用变量控制色彩/不透明度/特效参数 */
   --ld-ripple-opacity: 0.24;
   --ld-ripple-color: currentColor;
-  --ld-ripple-ring-width: 2px;
-  --ld-ripple-glow-blur: 8px;
-  background-color: var(--ld-ripple-color);
+  --ld-ripple-ring-width: 3px;
+  --ld-ripple-glow-blur: 12px;
+  --ld-ripple-glow-intensity: 0.5;
 }
 
-/* 单一的实心扩散是默认与唯一效果，保证自然与优雅 */
-
+// 活跃状态
 .@{prefix}__wave--active {
-  transform: scale(1);
+  transform: translateZ(0) scale(1);
   opacity: var(--ld-ripple-opacity, 0.24);
 }
 
+// 淡出状态
 .@{prefix}__wave--fadeout {
-  opacity: 0;
+  opacity: 0 !important;
+  transform: translateZ(0) scale(1.05); // 轻微放大效果
+}
+
+// 次级波纹（多层效果）
+.@{prefix}__wave--secondary {
+  opacity: calc(var(--ld-ripple-opacity) * 0.6);
+  transform: translateZ(0) scale(0);
+  
+  &.@{prefix}__wave--active {
+    transform: translateZ(0) scale(1.15);
+  }
+}
+
+// ========== 波纹变体样式 ==========
+
+// 轻盈变体
+.@{prefix}__wave--light {
+  --ld-ripple-opacity: 0.12;
+  background: radial-gradient(circle, var(--ld-ripple-color) 0%, transparent 70%);
+}
+
+// 强烈变体
+.@{prefix}__wave--strong {
+  --ld-ripple-opacity: 0.36;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+// 脉冲变体
+.@{prefix}__wave--pulse {
+  animation: ripple-pulse 1s ease-out;
+  background: radial-gradient(circle, var(--ld-ripple-color) 30%, transparent 70%);
+  
+  &.@{prefix}__wave--active {
+    animation: ripple-pulse 1s ease-out infinite;
+  }
+}
+
+// 渐变变体
+.@{prefix}__wave--gradient {
+  background: radial-gradient(
+    circle,
+    var(--ld-ripple-color) 0%,
+    color-mix(in srgb, var(--ld-ripple-color) 50%, transparent) 50%,
+    transparent 100%
+  );
+  --ld-ripple-opacity: 0.3;
+}
+
+// ========== 方向变体 ==========
+
+// 向内波纹
+.@{prefix}__wave--inward {
+  transform: translateZ(0) scale(2);
+  
+  &.@{prefix}__wave--active {
+    transform: translateZ(0) scale(0);
+    opacity: 0;
+  }
+  
+  &.@{prefix}__wave--fadeout {
+    transform: translateZ(0) scale(0);
+  }
+}
+
+// 双向波纹主波
+.@{prefix}__wave--both {
+  &.@{prefix}__wave--active {
+    transform: translateZ(0) scale(0.7);
+  }
+}
+
+// 双向波纹次波（向内）
+.@{prefix}__wave--inward-secondary {
+  transform: translateZ(0) scale(1.5);
+  --ld-ripple-opacity: 0.15;
+  
+  &.@{prefix}__wave--active {
+    transform: translateZ(0) scale(0);
+    opacity: 0;
+  }
+}
+
+// ========== 发光效果 ==========
+
+.@{prefix}__wave--glow {
+  box-shadow: 
+    0 0 calc(var(--ld-ripple-glow-blur) * var(--ld-ripple-glow-intensity)) var(--ld-ripple-color),
+    0 0 calc(var(--ld-ripple-glow-blur) * 2 * var(--ld-ripple-glow-intensity)) color-mix(in srgb, var(--ld-ripple-color) 50%, transparent),
+    inset 0 0 calc(var(--ld-ripple-glow-blur) * 0.5) color-mix(in srgb, var(--ld-ripple-color) 30%, white);
+  
+  &.@{prefix}__wave--active {
+    filter: brightness(1.2);
+  }
+}
+
+// ========== 大小变体 ==========
+
+:host(.ldesign-ripple--small) {
+  .@{prefix}__wave {
+    --ld-ripple-duration: 400ms;
+  }
+}
+
+:host(.ldesign-ripple--large) {
+  .@{prefix}__wave {
+    --ld-ripple-duration: 800ms;
+  }
+}
+
+:host(.ldesign-ripple--extra-large) {
+  .@{prefix}__wave {
+    --ld-ripple-duration: 1000ms;
+  }
+}
+
+// ========== 动画定义 ==========
+
+@keyframes ripple-pulse {
+  0% {
+    transform: translateZ(0) scale(0.95);
+    opacity: var(--ld-ripple-opacity);
+  }
+  50% {
+    transform: translateZ(0) scale(1.05);
+    opacity: calc(var(--ld-ripple-opacity) * 0.7);
+  }
+  100% {
+    transform: translateZ(0) scale(0.95);
+    opacity: var(--ld-ripple-opacity);
+  }
+}
+
+@keyframes ripple-expand {
+  from {
+    transform: translateZ(0) scale(0);
+    opacity: var(--ld-ripple-opacity);
+  }
+  to {
+    transform: translateZ(0) scale(1);
+    opacity: 0;
+  }
+}
+
+// ========== 暗色模式支持 ==========
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ld-ripple-glow-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .@{prefix}__wave {
+    --ld-ripple-opacity: 0.16;
+  }
+  
+  .@{prefix}__wave--light {
+    --ld-ripple-opacity: 0.08;
+  }
+  
+  .@{prefix}__wave--strong {
+    --ld-ripple-opacity: 0.24;
+  }
+}
+
+// ========== 无障碍增强 ==========
+
+@media (prefers-reduced-motion: reduce) {
+  .@{prefix}__wave {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+// ========== 高对比度模式 ==========
+
+@media (prefers-contrast: high) {
+  .@{prefix}__wave {
+    --ld-ripple-opacity: 0.48;
+    border: 1px solid var(--ld-ripple-color);
+  }
+}
+
+// ========== 打印样式 ==========
+
+@media print {
+  :host {
+    display: none !important;
+  }
 }

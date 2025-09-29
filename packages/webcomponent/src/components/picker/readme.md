@@ -351,7 +351,7 @@ ldesign-picker
 | `defaultValue`       | `default-value`        | 默认值（非受控）                                                 | `string`                         | `undefined` |
 | `disabled`           | `disabled`             | 是否禁用                                                     | `boolean`                        | `false`     |
 | `dragFollow`         | `drag-follow`          | 手势拖拽跟随比例（0-1），1 表示 1:1 跟手，越小阻力越大，默认 1                    | `number`                         | `1`         |
-| `dragSmoothing`      | `drag-smoothing`       | 手势拖拽平滑时间常数（毫秒），>0 时使用一阶平滑使位移逐步接近手指，营造“越来越慢”的阻力感，默认 0（关闭） | `number`                         | `undefined` |
+| `dragSmoothing`      | `drag-smoothing`       | 手势拖拽平滑时间常数（毫秒），>0 时使用一阶平滑使位移逐步接近手指，营造"越来越慢"的阻力感，默认 0（关闭） | `number`                         | `undefined` |
 | `enable3d`           | `enable-3d`            | 是否启用 3D 效果                                               | `boolean`                        | `false`     |
 | `friction`           | `friction`             | 惯性摩擦 0-1（越小减速越快）                                         | `number`                         | `0.92`      |
 | `hapticFeedback`     | `haptic-feedback`      | 是否启用触觉反馈（需要浏览器支持 Vibration API）                          | `boolean`                        | `true`      |
@@ -364,7 +364,7 @@ ldesign-picker
 | `momentum`           | `momentum`             | 是否启用惯性                                                   | `boolean`                        | `true`      |
 | `options`            | `options`              | 选项列表（数组或 JSON 字符串）                                       | `PickerOption[] \| string`       | `[]`        |
 | `panelHeight`        | `panel-height`         | 可视高度（优先），未设置时使用 visibleItems * itemHeight                | `number`                         | `undefined` |
-| `resistance`         | `resistance`           | 边界阻力系数 0-1（越小阻力越大）                                       | `number`                         | `0.35`      |
+| `resistance`         | `resistance`           | 边界阻力系数 0-1（越小阻力越大）                                       | `number`                         | `0.4`       |
 | `rotateStep`         | `rotate-step`          | 3D旋转步长（度）                                                | `number`                         | `undefined` |
 | `searchDebounce`     | `search-debounce`      | 搜索防抖延迟（毫秒）                                               | `number`                         | `300`       |
 | `searchIgnoreCase`   | `search-ignore-case`   | 是否在搜索时大小写不敏感                                             | `boolean`                        | `true`      |
@@ -372,11 +372,13 @@ ldesign-picker
 | `searchable`         | `searchable`           | 是否显示搜索框                                                  | `boolean`                        | `false`     |
 | `showMask`           | `show-mask`            | 是否显示渐变遮罩                                                 | `boolean`                        | `true`      |
 | `size`               | `size`                 | 尺寸，影响每行高度                                                | `"large" \| "medium" \| "small"` | `'medium'`  |
-| `snapDuration`       | `snap-duration`        | 吸附/回弹动画时长（毫秒，适用于触摸/键盘/滚动吸附），未设置默认 260ms                  | `number`                         | `undefined` |
+| `snapDuration`       | `snap-duration`        | 吸附/回弹动画时长（毫秒，适用于触摸/键盘/滚动吸附），未设置默认 300ms                  | `number`                         | `undefined` |
 | `snapDurationWheel`  | `snap-duration-wheel`  | 滚轮专用吸附动画时长（毫秒），未设置默认 150ms                               | `number`                         | `undefined` |
 | `soundEffects`       | `sound-effects`        | 是否启用音效                                                   | `boolean`                        | `false`     |
 | `soundUrl`           | `sound-url`            | 自定义音效 URL                                                | `string`                         | `undefined` |
 | `soundVolume`        | `sound-volume`         | 音效音量 (0-1)                                               | `number`                         | `0.3`       |
+| `springBackDuration` | `spring-back-duration` | 回弹动画基础时长（毫秒），未设置默认 bounce: 500ms, ease: 600ms            | `number`                         | `undefined` |
+| `springBackMode`     | `spring-back-mode`     | 边界回弹模式：'bounce' 弹簧回弹（默认） \| 'ease' 缓慢恢复                  | `"bounce" \| "ease"`             | `'bounce'`  |
 | `theme`              | `theme`                | 主题模式                                                     | `"auto" \| "dark" \| "light"`    | `'light'`   |
 | `value`              | `value`                | 当前值（受控）                                                  | `string`                         | `undefined` |
 | `visibleItems`       | `visible-items`        | 可视条目数（未显式 panelHeight 时生效，建议奇数：3/5/7）                    | `number`                         | `5`         |

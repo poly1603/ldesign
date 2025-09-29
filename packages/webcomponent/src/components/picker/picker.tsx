@@ -38,21 +38,25 @@ export class LdesignPicker {
   /** 惯性摩擦 0-1（越小减速越快） */
   @Prop() friction: number = 0.92;
   /** 边界阻力系数 0-1（越小阻力越大） */
-  @Prop() resistance: number = 0.35;
+  @Prop() resistance: number = 0.4;
   /** 最大橡皮筋越界（像素）。优先级高于比例 */
   @Prop() maxOverscroll?: number;
   /** 最大橡皮筋越界比例（相对于容器高度 0-1）。当未提供像素值时生效；未设置则默认 0.5（即容器高度的一半） */
   @Prop() maxOverscrollRatio?: number;
   /** 是否启用惯性 */
   @Prop() momentum: boolean = true;
-  /** 吸附/回弹动画时长（毫秒，适用于触摸/键盘/滚动吸附），未设置默认 260ms */
+  /** 吸附/回弹动画时长（毫秒，适用于触摸/键盘/滚动吸附），未设置默认 300ms */
   @Prop() snapDuration?: number;
   /** 滚轮专用吸附动画时长（毫秒），未设置默认 150ms */
   @Prop() snapDurationWheel?: number;
   /** 手势拖拽跟随比例（0-1），1 表示 1:1 跟手，越小阻力越大，默认 1 */
   @Prop() dragFollow: number = 1;
-  /** 手势拖拽平滑时间常数（毫秒），>0 时使用一阶平滑使位移逐步接近手指，营造“越来越慢”的阻力感，默认 0（关闭） */
+  /** 手势拖拽平滑时间常数（毫秒），>0 时使用一阶平滑使位移逐步接近手指，营造"越来越慢"的阻力感，默认 0（关闭） */
   @Prop() dragSmoothing?: number;
+  /** 边界回弹模式：'bounce' 弹簧回弹（默认） | 'ease' 缓慢恢复 */
+  @Prop() springBackMode: 'bounce' | 'ease' = 'bounce';
+  /** 回弹动画基础时长（毫秒），未设置默认 bounce: 500ms, ease: 600ms */
+  @Prop() springBackDuration?: number;
 
   /* ---------------- 搜索和筛选相关 ---------------- */
   /** 是否显示搜索框 */
@@ -377,34 +381,38 @@ export class LdesignPicker {
   private rubberBand(over: number, dim: number, c: number) {
     const sign = over < 0 ? -1 : 1;
     const x = Math.abs(over);
-    // 经典 rubber-band 公式：趋于 dim 上限，c 越小阻力越大（更硬）
-    const result = (dim * c * x) / (dim + c * x);
+    
+    // 真实弹簧物理模拟
+    // 使用双曲正切函数创建平滑的S型曲线
+    // 这模拟了真实弹簧的特性：开始容易拉，越拉越难
+    const normalizedX = x / dim;
+    
+    // 使用 tanh 函数创建非常平滑的曲线
+    // tanh 的特点：
+    // - 在 0 附近接近线性（容易拉动）
+    // - 随着 x 增大逐渐饱和（越来越难拉）
+    // - 完全连续可导，没有任何突变点
+    const tanhX = Math.tanh(normalizedX * 1.5); // 1.5 控制曲线的陡峭程度
+    
+    // 应用阻力系数
+    // c 控制总体阻力大小
+    const result = dim * c * tanhX;
     return sign * result;
   }
 
   private setTrackTransform(y: number, animate = false, mode: 'normal' | 'drag' | 'inertia' = 'normal') {
     if (!this.listEl || this.parsed.length === 0) return;
     
-    // 性能优化：在拖拽模式下进行节流
+    // 拖拽模式已经在 onPointerMove 中完全处理，这里不再特殊处理
     if (mode === 'drag') {
-      const now = performance.now();
-      if (now - this.lastUpdateTime < this.updateThrottle) {
-        // 缓存值，下一帧再处理
-        if (!this.rafId) {
-          this.rafId = requestAnimationFrame(() => {
-            this.rafId = undefined;
-            this.setTrackTransform(y, animate, mode);
-          });
-        }
-        return;
-      }
-      this.lastUpdateTime = now;
+      // 拖拽模式由 onPointerMove 直接控制，不经过这里
+      return;
     }
 
     const { itemH, minY, maxY } = this.getBounds();
 
-    // 允许在拖拽/惯性阶段出现受限的弹性越界；编程/步进阶段严格钳制
-    const allowElastic = mode === 'drag' || mode === 'inertia';
+    // 允许在惯性阶段出现受限的弹性越界；编程/步进阶段严格钳制
+    const allowElastic = mode === 'inertia';
     const maxOverscroll = this.maxOverscrollPx; // 可配置的最大越界距离（像素）
 
     let nextY = y;
@@ -412,10 +420,11 @@ export class LdesignPicker {
       // 严格限制在可用范围内（不会出现越界视觉）
       nextY = Math.max(minY, Math.min(maxY, y));
     } else {
+      // 惯性模式：需要处理越界
       if (y > maxY) {
         // 顶部越界：橡皮筋压缩
         const over = y - maxY;
-        const dim = this.panelHeightPx; // 使用容器高度作为弹性参考长度
+        const dim = this.panelHeightPx;
         const c = Math.min(0.95, Math.max(0.05, this.resistance));
         const rb = this.rubberBand(over, dim, c);
         nextY = maxY + Math.min(maxOverscroll, rb);
@@ -453,8 +462,8 @@ export class LdesignPicker {
     const newVisual = this.parsed[currentIdx]?.value;
     if (newVisual !== this.visual) {
       this.visual = newVisual;
-      // 触发反馈（仅在拖拽模式下）
-      if (mode === 'drag' || mode === 'inertia') {
+      // 触发反馈（在惯性模式下）
+      if (mode === 'inertia') {
         this.onItemChange();
       }
     }
@@ -463,6 +472,20 @@ export class LdesignPicker {
   private cancelSnapAnim() { if (this.snapAnim?.raf) cancelAnimationFrame(this.snapAnim.raf); this.snapAnim = null; }
   private cancelInertia() { if (this.inertia?.raf) cancelAnimationFrame(this.inertia.raf as number); this.inertia = null; }
   private easeOutCubic(t: number) { return 1 - Math.pow(1 - t, 3); }
+  // 新增：更平滑的缓动函数，专门用于边界附近的动画
+  private easeOutQuint(t: number) { return 1 - Math.pow(1 - t, 5); }
+  private easeOutExpo(t: number) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+  // 缓慢恢复缓动函数：从快到慢，平滑减速
+  private easeOutQuart(t: number) { return 1 - Math.pow(1 - t, 4); }
+  // spring缓动函数，用于弹簧回弹
+  private easeOutSpring(t: number) {
+    const c4 = (2 * Math.PI) / 3;
+    return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+  }
+  // 平滑插值函数，避免突变
+  private smoothInterpolate(current: number, last: number, alpha: number) {
+    return last + (current - last) * alpha;
+  }
 
   /* ---------------- 3D helpers ---------------- */
   private _maxRotateDeg: number | null = null;
@@ -609,6 +632,76 @@ export class LdesignPicker {
     }
   }
 
+  // 专门的边界回弹动画，支持两种模式
+  private startBoundarySpringBack(idx: number) {
+    if (!this.listEl) return;
+    this.cancelInertia();
+    this.cancelSnapAnim();
+    
+    const from = this.trackY;
+    const to = this.yForIndex(idx);
+    const distance = Math.abs(to - from);
+    
+    // 根据回弹模式和距离动态调整动画时间
+    let baseDuration: number;
+    let maxDuration: number;
+    
+    if (this.springBackMode === 'ease') {
+      // 缓慢恢复模式：时间稍长，更平滑
+      baseDuration = this.springBackDuration || 600;
+      maxDuration = baseDuration * 1.5;
+    } else {
+      // 弹簧回弹模式：时间稍短，有弹性
+      baseDuration = this.springBackDuration || 500;
+      maxDuration = baseDuration * 1.6;
+    }
+    
+    // 根据距离调整时间
+    const duration = Math.min(maxDuration, baseDuration + distance * 0.3);
+    
+    const start = performance.now();
+    const state = { raf: 0, start, from, to, duration, idx, trigger: 'touch' as const, silent: false };
+    this.snapAnim = state as any;
+    
+    const step = (now: number) => {
+      if (!this.snapAnim) return;
+      const t = Math.max(0, Math.min(1, (now - state.start) / state.duration));
+      
+      // 根据模式选择不同的缓动函数
+      let easedT: number;
+      if (this.springBackMode === 'ease') {
+        // 缓慢恢复：使用 easeOutQuart，从快到慢平滑回到原位
+        easedT = this.easeOutQuart(t);
+      } else {
+        // 弹簧回弹：使用 spring 缓动，有弹性效果
+        easedT = this.easeOutSpring(t);
+      }
+      
+      const y = state.from + (state.to - state.from) * easedT;
+      this.setTrackTransform(y, false, 'normal');
+      
+      // 实时更新视觉状态
+      const idxLive = this.clampIndex((this.centerOffset - y) / this.itemHeightBySize);
+      const vLive = this.parsed[idxLive]?.value;
+      if (vLive !== this.visual) this.visual = vLive;
+      
+      if (t >= 1) {
+        this.setTrackTransform(state.to, false, 'normal');
+        const nextVal = this.parsed[state.idx]?.value;
+        this.visual = nextVal;
+        if (nextVal !== this.current) {
+          this.current = nextVal;
+          this.emitPick('touch');
+          this.commitValue(nextVal);
+        }
+        this.snapAnim = null;
+        return;
+      }
+      this.snapAnim.raf = requestAnimationFrame(step);
+    };
+    state.raf = requestAnimationFrame(step);
+  }
+  
   private startSnapAnim(idx: number, opts?: { trigger?: 'click' | 'wheel' | 'keyboard' | 'touch' | 'scroll'; silent?: boolean }) {
     if (!this.listEl) return;
     this.cancelInertia();
@@ -629,10 +722,12 @@ export class LdesignPicker {
       return;
     }
     
-    // 根据触发源调整动画时长；提供可配置项，默认触摸/键盘/滚动 260ms，滚轮 150ms（更灵敏）
+    // 根据触发源调整动画时长；提供可配置项，默认触摸/键盘/滚动 300ms，滚轮 150ms（更灵敏）
     const dWheel = (typeof this.snapDurationWheel === 'number' && isFinite(this.snapDurationWheel) && this.snapDurationWheel! > 0) ? this.snapDurationWheel! : 150;
-    const dDefault = (typeof this.snapDuration === 'number' && isFinite(this.snapDuration) && this.snapDuration! > 0) ? this.snapDuration! : 260;
-    const duration = opts?.trigger === 'wheel' ? dWheel : dDefault;
+    const dDefault = (typeof this.snapDuration === 'number' && isFinite(this.snapDuration) && this.snapDuration! > 0) ? this.snapDuration! : 300;
+    // 边界项目使用稍长的动画时长以确保平滑
+    const isFirstOrLast = safeIdx === 0 || safeIdx === this.parsed.length - 1;
+    const duration = opts?.trigger === 'wheel' ? dWheel : (isFirstOrLast ? dDefault * 1.2 : dDefault);
     const start = performance.now();
     const state = { raf: 0, start, from, to, duration, idx: safeIdx, trigger: opts?.trigger, silent: !!opts?.silent };
     this.snapAnim = state as any;
@@ -640,7 +735,11 @@ export class LdesignPicker {
     const step = (now: number) => {
       if (!this.snapAnim) return;
       const t = Math.max(0, Math.min(1, (now - state.start) / state.duration));
-      const y = state.from + (state.to - state.from) * this.easeOutCubic(t);
+      // 根据是否在边界选择不同的缓动函数
+      const isFirstItem = state.idx === 0;
+      const isLastItem = state.idx === this.parsed.length - 1;
+      const easingFunc = (isFirstItem || isLastItem) ? this.easeOutQuint : this.easeOutCubic;
+      const y = state.from + (state.to - state.from) * easingFunc.call(this, t);
       this.setTrackTransform(y, false);
 
       // 实时视觉项
@@ -812,30 +911,62 @@ export class LdesignPicker {
     this.isDragging = true;
     this.tapCandidate = false;
 
-    // 跟随手指位移基础目标（可配置跟随比例）
-    const target = this.startTrackY + dy * this.dragFollowGain;
+    // 基础位移
+    const baseTarget = this.startTrackY + dy;
+    let target = baseTarget;
+    
+    // 获取边界
+    const { minY, maxY } = this.getBounds();
+    
+    // 在边界处应用橡皮筋效果
+    // 关键：使用一致的阻力系数，避免参数变化导致的跳动
+    const c = 0.6; // 固定的阻力系数，不随其他参数变化
+    const dim = this.panelHeightPx;
+    
+    if (baseTarget > maxY) {
+      // 顶部越界
+      const over = baseTarget - maxY;
+      const rb = this.rubberBand(over, dim, c);
+      // 确保不超过最大越界距离
+      target = maxY + Math.min(this.maxOverscrollPx, rb);
+    } else if (baseTarget < minY) {
+      // 底部越界
+      const over = baseTarget - minY;
+      const rb = this.rubberBand(over, dim, c);
+      // 确保不超过最大越界距离
+      target = minY + Math.max(-this.maxOverscrollPx, rb);
+    }
 
-    // 时间平滑：一阶滤波逐步接近手指位置，营造“越来越慢”的阻力感
-    const nowTs = performance.now();
-    const dt = Math.max(0, nowTs - this.lastDragTime);
-    this.lastDragTime = nowTs;
-    const tau = (typeof this.dragSmoothing === 'number' && isFinite(this.dragSmoothing) && this.dragSmoothing! > 0) ? this.dragSmoothing! : 0;
-    const alpha = tau > 0 ? (1 - Math.exp(-dt / tau)) : 1; // 0-1
-    const next = this.trackY + (target - this.trackY) * alpha;
-
-    // 使用 setTrackTransform 的弹性模式统一处理越界（rubber-band）
-    this.setTrackTransform(next, false, 'drag');
+    // 直接设置位置，不使用时间平滑（平滑会导致延迟和抖动）
+    // 拖动应该是1:1跟手的，橡皮筋效果已经提供了阻力感
+    this.trackY = target;
+    
+    // 更新transform
+    const el = this.listEl as HTMLElement;
+    el.style.transition = 'none';
+    el.style.transform = `translate3d(0, ${Math.round(target)}px, 0)`;
+    
+    // 更新3D效果
+    if (this.enable3d) {
+      this.update3DEffects();
+    }
 
     // 实时视觉选中
-    const rawIdx = (this.centerOffset - this.trackY) / this.itemHeightBySize;
-    const idx = Math.max(0, Math.min(this.parsed.length - 1, Math.round(rawIdx)));
-    const v = this.parsed[idx]?.value;
-    if (v !== this.visual) { this.visual = v; this.emitPick('touch'); }
+    const currentFloat = (this.centerOffset - target) / this.itemHeightBySize;
+    const currentIdx = Math.max(0, Math.min(this.parsed.length - 1, Math.round(currentFloat)));
+    const newVisual = this.parsed[currentIdx]?.value;
+    if (newVisual !== this.visual) {
+      this.visual = newVisual;
+      this.onItemChange();
+      this.emitPick('touch');
+    }
 
-    // 速度样本
+    // 更新速度样本
     const now = performance.now();
     this.velocitySamples.push({ t: now, y: e.clientY });
-    while (this.velocitySamples.length > 2 && (now - this.velocitySamples[0].t) > 150) this.velocitySamples.shift();
+    while (this.velocitySamples.length > 2 && (now - this.velocitySamples[0].t) > 150) {
+      this.velocitySamples.shift();
+    }
   };
 
   private estimateVelocity(): number {
@@ -864,7 +995,10 @@ export class LdesignPicker {
     }
     this.cancelInertia();
     // 速度单位统一为 px/ms，去掉过小的速度上限以保留更自然的甩动感，但设定合理的上限避免异常值
-    const maxV = 5; // px/ms（约 300px/s）
+    // 边界附近时限制初始速度，避免过度弹跳
+    const currentIdx = Math.round((this.centerOffset - this.trackY) / this.itemHeightBySize);
+    const isNearBoundary = currentIdx <= 1 || currentIdx >= this.parsed.length - 2;
+    const maxV = isNearBoundary ? 3 : 5; // px/ms（边界附近降低最大速度）
     const state = { v: Math.max(-maxV, Math.min(maxV, v0)), last: performance.now(), raf: 0 } as { v: number; last: number; raf: number };
     this.inertia = state as any;
 
@@ -879,27 +1013,50 @@ export class LdesignPicker {
       const { minY, maxY } = this.getBounds();
       const maxOverscroll = this.maxOverscrollPx;
 
-      // 边界的“弹簧”回拉效果 + 橡皮筋跟随，避免瞬间硬夹
+      // 改进的边界弹簧效果，使用更平滑的处理
       if (next > maxY) {
         const over = next - maxY;
         const dim = this.panelHeightPx;
         const c = Math.min(0.95, Math.max(0.05, this.resistance));
         const rb = this.rubberBand(over, dim, c);
         next = maxY + Math.min(maxOverscroll, rb);
-        // 弹簧回拉加速度（越深越强），单位近似 px/ms^2
-        const springK = 0.002 + (1 - c) * 0.003; // resistance 越小，回拉越强
-        state.v += (-springK * over) * dt;
-        // 越界强阻尼，避免无限漂移
-        state.v *= 0.75;
+        
+        // 如果速度很小且越界较深，直接启动回弹动画
+        if (Math.abs(state.v) < 0.5 && over > maxOverscroll * 0.3) {
+          this.inertia = null;
+          this.startBoundarySpringBack(0);
+          return;
+        }
+        
+        // 渐进式减速，速度越大减速越快
+        const velocityFactor = Math.min(1, Math.abs(state.v) / 2);
+        const baseSpringK = 0.0008 * (1 + velocityFactor);
+        const springForce = -baseSpringK * over * dt;
+        
+        // 平滑地减少速度
+        state.v += springForce;
+        state.v *= 0.92; // 更温和的阻尼
       } else if (next < minY) {
         const over = next - minY; // 负值（向上越界）
         const dim = this.panelHeightPx;
         const c = Math.min(0.95, Math.max(0.05, this.resistance));
         const rb = this.rubberBand(over, dim, c);
         next = minY + Math.max(-maxOverscroll, rb);
-        const springK = 0.002 + (1 - c) * 0.003;
-        state.v += (-springK * over) * dt;
-        state.v *= 0.75;
+        
+        // 如果速度很小且越界较深，直接启动回弹动画
+        if (Math.abs(state.v) < 0.5 && Math.abs(over) > maxOverscroll * 0.3) {
+          this.inertia = null;
+          this.startBoundarySpringBack(this.parsed.length - 1);
+          return;
+        }
+        
+        // 渐进式减速
+        const velocityFactor = Math.min(1, Math.abs(state.v) / 2);
+        const baseSpringK = 0.0008 * (1 + velocityFactor);
+        const springForce = -baseSpringK * over * dt;
+        
+        state.v += springForce;
+        state.v *= 0.92;
       }
 
       this.setTrackTransform(next, false, 'inertia');
@@ -913,14 +1070,37 @@ export class LdesignPicker {
       // 摩擦衰减（指数），值越接近1惯性越长；建议 friction 取 0.97~0.995 更接近原生手感
       state.v *= Math.pow(this.friction, dt / 16.67);
 
-      // 终止条件：速度足够小，或者已经非常接近某一项中心
+      // 改进的终止条件，增加边界附近的特殊处理
       const nearlyStopped = Math.abs(state.v) < 0.02;
       const finalFloat = (this.centerOffset - this.trackY) / this.itemHeightBySize;
       const idxFinal = this.clampIndex(Math.round(finalFloat));
       const targetY = this.yForIndex(idxFinal);
       const nearSnap = Math.abs(this.trackY - targetY) <= 0.5;
+      
+      // 检查是否越界
+      const isOverTop = this.trackY > this.centerOffset;
+      const isOverBottom = this.trackY < this.centerOffset - (this.parsed.length - 1) * this.itemHeightBySize;
+      
+      // 如果越界且速度很小，使用特殊的回弹动画
+      if ((isOverTop || isOverBottom) && Math.abs(state.v) < 0.1) {
+        const targetIdx = isOverTop ? 0 : this.parsed.length - 1;
+        this.startBoundarySpringBack(targetIdx);
+        this.inertia = null;
+        return;
+      }
+      
+      // 检查是否在边界附近（第一个或最后一个项目）
+      const nearTopBoundary = idxFinal === 0 && this.trackY > targetY - this.itemHeightBySize * 0.5;
+      const nearBottomBoundary = idxFinal === this.parsed.length - 1 && this.trackY < targetY + this.itemHeightBySize * 0.5;
+      
+      // 在边界附近时，使用更宽松的停止条件，避免过度振荡
+      const boundaryStopVelocity = 0.05; // 边界附近更早停止
+      const shouldStop = (nearTopBoundary || nearBottomBoundary) 
+        ? Math.abs(state.v) < boundaryStopVelocity
+        : (nearlyStopped || nearSnap);
 
-      if (nearlyStopped || nearSnap) {
+      if (shouldStop) {
+        // 使用更平滑的动画曲线完成最终吸附
         this.setIndex(idxFinal, { animate: true, trigger: 'scroll' });
         this.inertia = null;
         return;
@@ -950,6 +1130,19 @@ export class LdesignPicker {
           return;
         }
       }
+    }
+
+    // 检查是否在边界越界状态
+    const { minY, maxY } = this.getBounds();
+    const isOverBoundary = this.trackY > maxY || this.trackY < minY;
+    
+    // 如果在边界越界状态，使用特殊的回弹动画
+    if (isOverBoundary) {
+      // 计算最近的有效位置
+      const targetIdx = this.trackY > maxY ? 0 : this.parsed.length - 1;
+      // 使用更长的动画时间和更平滑的缓动
+      this.startBoundarySpringBack(targetIdx);
+      return;
     }
 
     // 拖动释放：根据速度决定是否惯性，否则就近吸附

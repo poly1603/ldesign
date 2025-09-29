@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawer 改进功能测试</title>
+  <script type="module" src="./dist/ldesign/ldesign.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign/ldesign.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      min-height: 200vh; /* 让页面可滚动，测试不压缩内容 */
+      background: linear-gradient(180deg, #f0f0f0 0%, #fff 100%);
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #333;
+      font-size: 28px;
+      margin-bottom: 30px;
+    }
+    .demo-section {
+      margin-bottom: 40px;
+      padding: 25px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .demo-section h2 {
+      font-size: 20px;
+      margin: 0 0 15px 0;
+      color: #555;
+    }
+    .demo-section p {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 12px 24px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    button:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+    }
+    .feature-list {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+    .feature-list li {
+      margin: 8px 0;
+      color: #555;
+    }
+    .scroll-content {
+      height: 200px;
+      background: #f5f5f5;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      overflow-y: auto;
+    }
+    .long-content {
+      line-height: 2;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 Drawer 组件改进测试</h1>
+    
+    <div class="demo-section">
+      <h2>1. 统一的调整大小功能</h2>
+      <p>现在桌面端和移动端都使用相同的配置来控制调整大小功能</p>
+      <button onclick="openDrawer('drawer-resize')">测试调整大小</button>
+      <div class="feature-list">
+        <ul>
+          <li>✅ 桌面端和移动端统一使用 resizable 配置</li>
+          <li>✅ resizeMode="edge" 时在边缘显示调整手柄</li>
+          <li>✅ 移动端增大触摸区域，更容易操作</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>2. 全方向滑动关闭</h2>
+      <p>不仅上下方向，左右方向的抽屉也支持滑动关闭</p>
+      <button onclick="openDrawer('drawer-left')">左侧滑动关闭</button>
+      <button onclick="openDrawer('drawer-right')">右侧滑动关闭</button>
+      <button onclick="openDrawer('drawer-top')">顶部滑动关闭</button>
+      <button onclick="openDrawer('drawer-bottom')">底部滑动关闭</button>
+    </div>
+
+    <div class="demo-section">
+      <h2>3. 灵活的滑动触发区域</h2>
+      <p>通过 swipeTriggerArea 配置滑动关闭的触发区域</p>
+      <button onclick="openDrawer('drawer-handle-area')">手柄区域触发</button>
+      <button onclick="openDrawer('drawer-header-area')">头部区域触发</button>
+      <button onclick="openDrawer('drawer-anywhere')">任意位置触发</button>
+    </div>
+
+    <div class="demo-section">
+      <h2>4. 页面内容不被压缩</h2>
+      <p>打开抽屉时，页面内容保持原样，不会被压缩或产生滚动条变化</p>
+      <button onclick="openDrawer('drawer-no-compress')">测试页面不压缩</button>
+      <div class="scroll-content">
+        <div class="long-content">
+          这是一个可滚动的区域。<br>
+          当抽屉打开时，这个区域应该保持可滚动。<br>
+          页面内容不应该被压缩或移动。<br>
+          滚动条也不应该消失。<br>
+          继续添加更多内容...<br>
+          更多内容行 1<br>
+          更多内容行 2<br>
+          更多内容行 3<br>
+          更多内容行 4<br>
+          更多内容行 5<br>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. 统一调整大小的抽屉 -->
+  <ldesign-drawer 
+    id="drawer-resize" 
+    drawer-title="可调整大小"
+    placement="right"
+    size="400"
+    resizable="true"
+    resize-mode="edge"
+    min-size="300"
+    max-size="80%"
+    show-resize-hint="true">
+    <div style="padding: 20px;">
+      <h3>统一的调整大小功能</h3>
+      <p>这个抽屉在桌面端和移动端都可以调整大小。</p>
+      <p>拖动边缘即可改变尺寸。</p>
+      <ul>
+        <li>最小尺寸：300px</li>
+        <li>最大尺寸：80%</li>
+        <li>拖动时显示尺寸提示</li>
+      </ul>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 2. 左侧滑动关闭 -->
+  <ldesign-drawer 
+    id="drawer-left" 
+    drawer-title="左侧抽屉"
+    placement="left"
+    size="350"
+    swipe-to-close="true"
+    swipe-trigger-area="handle"
+    handle-height="40">
+    <div style="padding: 20px;">
+      <h3>左侧抽屉支持滑动关闭</h3>
+      <p>向左滑动手柄区域可以关闭抽屉。</p>
+      <p>右侧的竖条是滑动手柄区域。</p>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 右侧滑动关闭 -->
+  <ldesign-drawer 
+    id="drawer-right" 
+    drawer-title="右侧抽屉"
+    placement="right"
+    size="350"
+    swipe-to-close="true"
+    swipe-trigger-area="handle"
+    handle-height="40">
+    <div style="padding: 20px;">
+      <h3>右侧抽屉支持滑动关闭</h3>
+      <p>向右滑动手柄区域可以关闭抽屉。</p>
+      <p>左侧的竖条是滑动手柄区域。</p>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 顶部滑动关闭 -->
+  <ldesign-drawer 
+    id="drawer-top" 
+    drawer-title="顶部抽屉"
+    placement="top"
+    size="40%"
+    swipe-to-close="true"
+    swipe-trigger-area="handle"
+    handle-height="35">
+    <div style="padding: 20px;">
+      <h3>顶部抽屉支持滑动关闭</h3>
+      <p>向上滑动手柄区域可以关闭抽屉。</p>
+      <p>底部的横条是滑动手柄区域。</p>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 底部滑动关闭 -->
+  <ldesign-drawer 
+    id="drawer-bottom" 
+    drawer-title="底部抽屉"
+    placement="bottom"
+    size="50%"
+    swipe-to-close="true"
+    swipe-trigger-area="handle"
+    handle-height="45">
+    <div style="padding: 20px;">
+      <h3>底部抽屉支持滑动关闭</h3>
+      <p>向下滑动手柄区域可以关闭抽屉。</p>
+      <p>顶部的横条是滑动手柄区域。</p>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 3. 手柄区域触发 -->
+  <ldesign-drawer 
+    id="drawer-handle-area" 
+    drawer-title="手柄区域触发"
+    placement="bottom"
+    size="60%"
+    swipe-to-close="true"
+    swipe-trigger-area="handle"
+    handle-height="50">
+    <div style="padding: 20px;">
+      <h3>只能在手柄区域滑动关闭</h3>
+      <p>swipeTriggerArea="handle" - 只有手柄区域可以触发滑动关闭。</p>
+      <p>这样可以避免与内容组件的手势冲突。</p>
+      <div style="margin-top: 20px;">
+        <label>选择时间（不会与滑动冲突）：</label>
+        <ldesign-time-picker></ldesign-time-picker>
+      </div>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 头部区域触发 -->
+  <ldesign-drawer 
+    id="drawer-header-area" 
+    drawer-title="头部区域触发"
+    placement="bottom"
+    size="60%"
+    swipe-to-close="true"
+    swipe-trigger-area="header">
+    <div style="padding: 20px;">
+      <h3>只能在头部区域滑动关闭</h3>
+      <p>swipeTriggerArea="header" - 只有头部区域可以触发滑动关闭。</p>
+      <p>拖动标题栏可以关闭抽屉。</p>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 任意位置触发 -->
+  <ldesign-drawer 
+    id="drawer-anywhere" 
+    drawer-title="任意位置触发"
+    placement="right"
+    size="400"
+    swipe-to-close="true"
+    swipe-trigger-area="anywhere">
+    <div style="padding: 20px;">
+      <h3>任意位置都可以滑动关闭</h3>
+      <p>swipeTriggerArea="anywhere" - 整个抽屉区域都可以触发滑动关闭。</p>
+      <p>⚠️ 注意：这种模式可能与内部组件的手势产生冲突。</p>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 4. 页面不压缩 -->
+  <ldesign-drawer 
+    id="drawer-no-compress" 
+    drawer-title="页面内容不被压缩"
+    placement="right"
+    size="450"
+    swipe-to-close="true"
+    swipe-trigger-area="header">
+    <div style="padding: 20px;">
+      <h3>页面保持原样</h3>
+      <p>打开这个抽屉时：</p>
+      <ul>
+        <li>页面内容不会被压缩</li>
+        <li>页面滚动条保持可用</li>
+        <li>不会产生内容偏移</li>
+        <li>背景内容可以正常滚动</li>
+      </ul>
+      <p>这提供了更好的用户体验，特别是在内容较多的页面中。</p>
+    </div>
+  </ldesign-drawer>
+
+  <script>
+    function openDrawer(id) {
+      const drawer = document.getElementById(id);
+      if (drawer) {
+        drawer.visible = true;
+      }
+    }
+    
+    // 监听所有抽屉的事件
+    document.querySelectorAll('ldesign-drawer').forEach(drawer => {
+      drawer.addEventListener('ldesignClose', () => {
+        console.log(`Drawer ${drawer.id} closed`);
+      });
+      
+      drawer.addEventListener('ldesignSizeChange', (e) => {
+        console.log(`Drawer ${drawer.id} size changed:`, e.detail);
+      });
+    });
+    
+    // 添加页面滚动测试内容
+    const longContent = document.createElement('div');
+    longContent.style.padding = '40px 0';
+    longContent.style.textAlign = 'center';
+    longContent.style.color = '#999';
+    longContent.innerHTML = '<p>↓ 继续滚动查看页面底部 ↓</p>' + 
+                           '<p style="margin-top: 100vh;">这是页面底部内容</p>';
+    document.body.appendChild(longContent);
+  </script>
+</body>
+</html>

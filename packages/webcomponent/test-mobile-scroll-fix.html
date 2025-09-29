@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Drawer 移动端滚动偏移修复测试</title>
+  <script type="module" src="./dist/ldesign/ldesign.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign/ldesign.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 300vh; /* 确保页面可滚动 */
+    }
+    
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 15px 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+    }
+    
+    .header h1 {
+      font-size: 18px;
+      color: #333;
+      margin: 0;
+    }
+    
+    .content {
+      padding: 80px 20px 40px;
+    }
+    
+    .test-section {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .test-section h2 {
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .test-section p {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+    
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    button {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    }
+    
+    button:active {
+      transform: scale(0.95);
+    }
+    
+    .scroll-indicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      z-index: 99;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .test-content {
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+    
+    .test-content h3 {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    
+    .test-content ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .test-content li {
+      color: #666;
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    
+    .success-tag {
+      background: #10b981;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 5px;
+    }
+    
+    .long-content {
+      margin-top: 40px;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+    }
+    
+    .long-content h3 {
+      color: #333;
+      margin-bottom: 15px;
+    }
+    
+    .long-content p {
+      color: #666;
+      line-height: 1.8;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📱 移动端滚动偏移修复测试</h1>
+  </div>
+  
+  <div class="scroll-indicator" id="scrollIndicator">
+    滚动位置: <span id="scrollPos">0</span>px
+  </div>
+  
+  <div class="content">
+    <div class="test-section">
+      <h2>🎯 测试说明</h2>
+      <p>此页面专门用于测试移动端在页面滚动后打开抽屉是否会出现偏移问题。</p>
+      <p>请在不同滚动位置点击按钮，验证抽屉是否正确显示。</p>
+      <div class="test-content">
+        <h3>✅ 已修复的问题：</h3>
+        <ul>
+          <li>使用 fixed 定位替代 absolute<span class="success-tag">已修复</span></li>
+          <li>使用 3D 变换优化性能<span class="success-tag">已修复</span></li>
+          <li>移动端视口单位优化<span class="success-tag">已修复</span></li>
+          <li>滚动位置记录与恢复<span class="success-tag">已修复</span></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h2>📍 顶部测试（滚动前）</h2>
+      <p>在页面顶部时打开抽屉，应该正常显示无偏移。</p>
+      <div class="btn-group">
+        <button onclick="openDrawer('drawer-left')">左侧抽屉</button>
+        <button onclick="openDrawer('drawer-right')">右侧抽屉</button>
+        <button onclick="openDrawer('drawer-top')">顶部抽屉</button>
+        <button onclick="openDrawer('drawer-bottom')">底部抽屉</button>
+      </div>
+    </div>
+    
+    <div class="long-content">
+      <h3>📜 滚动内容区域</h3>
+      <p>这是一段很长的内容，用于创建滚动场景。</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>继续向下滚动，在不同位置测试抽屉的显示效果...</p>
+      <p style="margin-top: 50px; padding: 20px; background: #fef3c7; border-radius: 8px;">
+        ⚠️ <strong>重点测试</strong>：在此位置（页面中部）打开抽屉，检查是否有偏移。
+      </p>
+    </div>
+    
+    <div class="test-section" style="margin-top: 40px;">
+      <h2>📍 中部测试（滚动后）</h2>
+      <p>滚动到页面中部后打开抽屉，应该依然正确显示。</p>
+      <div class="btn-group">
+        <button onclick="openDrawer('drawer-left')">左侧抽屉</button>
+        <button onclick="openDrawer('drawer-right')">右侧抽屉</button>
+        <button onclick="openDrawer('drawer-top')">顶部抽屉</button>
+        <button onclick="openDrawer('drawer-bottom')">底部抽屉</button>
+      </div>
+    </div>
+    
+    <div class="long-content">
+      <h3>继续滚动...</h3>
+      <p>更多内容，确保页面有足够的高度进行滚动测试。</p>
+      <p>在不同的滚动位置测试抽屉的表现。</p>
+    </div>
+    
+    <div class="test-section" style="margin-top: 40px;">
+      <h2>📍 底部测试（完全滚动后）</h2>
+      <p>滚动到页面底部后打开抽屉，验证是否正常。</p>
+      <div class="btn-group">
+        <button onclick="openDrawer('drawer-left')">左侧抽屉</button>
+        <button onclick="openDrawer('drawer-right')">右侧抽屉</button>
+        <button onclick="openDrawer('drawer-top')">顶部抽屉</button>
+        <button onclick="openDrawer('drawer-bottom')">底部抽屉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 各方向的抽屉 -->
+  <ldesign-drawer 
+    id="drawer-left" 
+    drawer-title="左侧抽屉"
+    placement="left"
+    size="80%"
+    swipe-to-close="true"
+    swipe-trigger-area="handle">
+    <div style="padding: 20px;">
+      <h3>左侧抽屉测试</h3>
+      <p>当前滚动位置：<span class="scroll-display"></span>px</p>
+      <p>如果抽屉正确显示，说明偏移问题已修复。</p>
+      <div style="margin-top: 20px; padding: 15px; background: #f0fdf4; border-radius: 8px;">
+        <strong>✅ 修复要点：</strong>
+        <ul style="margin-top: 10px;">
+          <li>使用 position: fixed</li>
+          <li>使用 transform: translate3d()</li>
+          <li>移动端专属优化</li>
+        </ul>
+      </div>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer 
+    id="drawer-right" 
+    drawer-title="右侧抽屉"
+    placement="right"
+    size="80%"
+    swipe-to-close="true"
+    swipe-trigger-area="handle">
+    <div style="padding: 20px;">
+      <h3>右侧抽屉测试</h3>
+      <p>当前滚动位置：<span class="scroll-display"></span>px</p>
+      <p>抽屉应该从右侧滑出，无偏移。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer 
+    id="drawer-top" 
+    drawer-title="顶部抽屉"
+    placement="top"
+    size="40%"
+    swipe-to-close="true"
+    swipe-trigger-area="handle">
+    <div style="padding: 20px;">
+      <h3>顶部抽屉测试</h3>
+      <p>当前滚动位置：<span class="scroll-display"></span>px</p>
+      <p>抽屉应该从顶部滑下，覆盖在页面顶部。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer 
+    id="drawer-bottom" 
+    drawer-title="底部抽屉"
+    placement="bottom"
+    size="50%"
+    swipe-to-close="true"
+    swipe-trigger-area="handle"
+    handle-height="48">
+    <div style="padding: 20px;">
+      <h3>底部抽屉测试</h3>
+      <p>当前滚动位置：<span class="scroll-display"></span>px</p>
+      <p>抽屉应该从底部滑出，固定在视口底部。</p>
+      <div style="margin-top: 20px;">
+        <label>测试组件交互：</label>
+        <ldesign-time-picker></ldesign-time-picker>
+      </div>
+    </div>
+  </ldesign-drawer>
+
+  <script>
+    // 更新滚动位置显示
+    function updateScrollPos() {
+      const pos = window.scrollY || window.pageYOffset;
+      document.getElementById('scrollPos').textContent = Math.round(pos);
+      
+      // 更新抽屉内的滚动位置显示
+      document.querySelectorAll('.scroll-display').forEach(el => {
+        el.textContent = Math.round(pos);
+      });
+    }
+    
+    // 监听滚动事件
+    window.addEventListener('scroll', updateScrollPos);
+    updateScrollPos();
+    
+    // 打开抽屉
+    function openDrawer(id) {
+      const drawer = document.getElementById(id);
+      if (drawer) {
+        // 记录打开时的滚动位置
+        const currentScroll = window.scrollY;
+        console.log(`Opening drawer at scroll position: ${currentScroll}px`);
+        
+        // 更新抽屉内的滚动位置
+        drawer.querySelectorAll('.scroll-display').forEach(el => {
+          el.textContent = Math.round(currentScroll);
+        });
+        
+        drawer.visible = true;
+      }
+    }
+    
+    // 监听抽屉事件
+    document.querySelectorAll('ldesign-drawer').forEach(drawer => {
+      drawer.addEventListener('ldesignVisibleChange', (e) => {
+        console.log(`Drawer ${drawer.id} visible:`, e.detail);
+      });
+      
+      drawer.addEventListener('ldesignClose', () => {
+        console.log(`Drawer ${drawer.id} closed`);
+      });
+    });
+    
+    // 模拟移动端环境提示
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      console.log('Mobile device detected');
+    } else {
+      console.log('Desktop browser - Use mobile emulation for testing');
+    }
+  </script>
+</body>
+</html>

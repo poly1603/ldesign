@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar Component Test - 月/周/日视图</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f7fa;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #303133;
+      margin-bottom: 20px;
+    }
+    .info {
+      background: #f4f4f5;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      color: #606266;
+      font-size: 14px;
+    }
+    .controls {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 8px 16px;
+      background: #1677ff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn:hover {
+      background: #1890ff;
+    }
+    .btn-secondary {
+      background: #fff;
+      color: #303133;
+      border: 1px solid #dcdfe6;
+    }
+    .btn-secondary:hover {
+      background: #f5f7fa;
+      border-color: #1677ff;
+      color: #1677ff;
+    }
+  </style>
+  <!-- 引入 Web Components -->
+  <script type="module" src="../../index.js"></script>
+  <link rel="stylesheet" href="../../index.css">
+</head>
+<body>
+  <div class="container">
+    <h1>📅 日历组件 - 月/周/日视图测试</h1>
+    
+    <div class="info">
+      <strong>功能特性：</strong>
+      <ul style="margin: 10px 0 0 20px;">
+        <li>支持月视图、周视图、日视图切换</li>
+        <li>支持日程事件显示和管理</li>
+        <li>支持拖拽调整日程时间</li>
+        <li>支持右键菜单操作</li>
+        <li>支持全天事件和时间段事件</li>
+      </ul>
+    </div>
+
+    <div class="controls">
+      <button class="btn" onclick="addSampleEvents()">添加示例日程</button>
+      <button class="btn btn-secondary" onclick="clearEvents()">清空日程</button>
+      <button class="btn btn-secondary" onclick="toggleDraggable()">切换拖拽</button>
+      <button class="btn btn-secondary" onclick="toggleResizable()">切换调整大小</button>
+    </div>
+
+    <!-- 日历组件 -->
+    <ldesign-calendar 
+      id="calendar"
+      view="month"
+      show-week-numbers="true"
+      show-lunar="false"
+      hour-start="8"
+      hour-end="20"
+      step-minutes="30"
+      draggable-events="true"
+      resizable-events="true"
+      enable-crud="true"
+      max-events-per-cell="3"
+    ></ldesign-calendar>
+  </div>
+
+  <script>
+    // 获取日历组件
+    const calendar = document.getElementById('calendar');
+    
+    // 添加示例事件
+    function addSampleEvents() {
+      const today = new Date();
+      const events = [
+        // 全天事件
+        {
+          id: 'evt1',
+          title: '产品发布会',
+          date: formatDate(today),
+          color: '#52c41a',
+          allDay: true
+        },
+        // 时间段事件
+        {
+          id: 'evt2',
+          title: '团队会议',
+          start: setTime(today, 10, 0),
+          end: setTime(today, 11, 30),
+          color: '#1677ff'
+        },
+        {
+          id: 'evt3',
+          title: '客户演示',
+          start: setTime(today, 14, 0),
+          end: setTime(today, 15, 30),
+          color: '#faad14'
+        },
+        // 明天的事件
+        {
+          id: 'evt4',
+          title: '项目评审',
+          start: setTime(addDays(today, 1), 9, 0),
+          end: setTime(addDays(today, 1), 10, 30),
+          color: '#f5222d'
+        },
+        // 跨天事件
+        {
+          id: 'evt5',
+          title: '技术峰会',
+          start: setTime(addDays(today, 2), 9, 0),
+          end: setTime(addDays(today, 3), 18, 0),
+          color: '#722ed1'
+        },
+        // 本周其他事件
+        {
+          id: 'evt6',
+          title: '代码评审',
+          start: setTime(addDays(today, -1), 15, 0),
+          end: setTime(addDays(today, -1), 16, 30),
+          color: '#13c2c2'
+        },
+        {
+          id: 'evt7',
+          title: '设计讨论',
+          date: formatDate(addDays(today, 3)),
+          color: '#eb2f96',
+          allDay: true
+        }
+      ];
+      
+      calendar.eventsData = events;
+      console.log('已添加示例日程', events);
+    }
+    
+    // 清空事件
+    function clearEvents() {
+      calendar.eventsData = [];
+      console.log('已清空所有日程');
+    }
+    
+    // 切换拖拽
+    function toggleDraggable() {
+      calendar.draggableEvents = !calendar.draggableEvents;
+      console.log('拖拽功能：', calendar.draggableEvents ? '启用' : '禁用');
+    }
+    
+    // 切换调整大小
+    function toggleResizable() {
+      calendar.resizableEvents = !calendar.resizableEvents;
+      console.log('调整大小功能：', calendar.resizableEvents ? '启用' : '禁用');
+    }
+    
+    // 辅助函数
+    function formatDate(date) {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    
+    function setTime(date, hour, minute) {
+      const d = new Date(date);
+      d.setHours(hour, minute, 0, 0);
+      return d.toISOString();
+    }
+    
+    function addDays(date, days) {
+      const d = new Date(date);
+      d.setDate(d.getDate() + days);
+      return d;
+    }
+    
+    // 监听事件
+    calendar.addEventListener('ldesignChange', (e) => {
+      console.log('日期改变:', e.detail);
+    });
+    
+    calendar.addEventListener('ldesignEventClick', (e) => {
+      console.log('点击事件:', e.detail.event);
+    });
+    
+    calendar.addEventListener('ldesignEventCreate', (e) => {
+      console.log('创建事件:', e.detail);
+    });
+    
+    calendar.addEventListener('ldesignEventEdit', (e) => {
+      console.log('编辑事件:', e.detail.event);
+    });
+    
+    calendar.addEventListener('ldesignEventDelete', (e) => {
+      console.log('删除事件:', e.detail.event);
+    });
+    
+    calendar.addEventListener('ldesignEventDrop', (e) => {
+      console.log('拖放事件:', e.detail);
+    });
+    
+    calendar.addEventListener('ldesignEventResize', (e) => {
+      console.log('调整事件大小:', e.detail);
+    });
+    
+    // 页面加载完成后添加示例事件
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(addSampleEvents, 500);
+    });
+  </script>
+</body>
+</html>

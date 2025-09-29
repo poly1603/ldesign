@@ -175,6 +175,12 @@ export class LdesignCalendar {
   };
   private prevYear = () => { this.viewYear -= 1; };
   private nextYear = () => { this.viewYear += 1; };
+  private goToday = () => {
+    const today = new Date();
+    this.viewYear = today.getFullYear();
+    this.viewMonth = today.getMonth();
+    this.selected = today;
+  };
 
   private get anchorDate(): Date { return this.selected || new Date(this.viewYear, this.viewMonth, 1); }
   private setAnchor(d: Date) { this.viewYear = d.getFullYear(); this.viewMonth = d.getMonth(); this.selected = new Date(d); }
@@ -483,6 +489,21 @@ export class LdesignCalendar {
   private renderHeader() {
     const years = this.yearsAround(this.viewYear, 10);
     const months = Array.from({ length: 12 }, (_, i) => i);
+    const anchor = this.anchorDate;
+    
+    // 获取周范围的日期
+    const weekStart = this.getWeekStart(anchor);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    
+    // 格式化日期标题
+    let titleText = '';
+    if (this.view === 'week') {
+      titleText = `${formatDate(weekStart, 'YYYY年MM月DD日')} - ${formatDate(weekEnd, 'MM月DD日')}`;
+    } else if (this.view === 'day') {
+      titleText = formatDate(anchor, 'YYYY年MM月DD日');
+    }
+    
     return (
       <div class="ldc-header">
         <div class="ldc-toolbar-left">
@@ -494,16 +515,25 @@ export class LdesignCalendar {
           </button>
         </div>
         <div class="ldc-toolbar-center">
-          <select class="ldc-select" onInput={(e: any) => { const v = parseInt((e.target as HTMLSelectElement).value, 10); this.viewYear = isNaN(v) ? this.viewYear : v; }}>
-            {years.map(y => <option value={String(y)} selected={y === this.viewYear}>{y}年</option>)}
-          </select>
-          {this.view === 'month' ? (
-            <select class="ldc-select" onInput={(e: any) => { const v = parseInt((e.target as HTMLSelectElement).value, 10); this.viewMonth = isNaN(v) ? this.viewMonth : v; }}>
-              {months.map(m => <option value={String(m)} selected={m === this.viewMonth}>{m + 1}月</option>)}
-            </select>
-          ) : null}
+          <button class="ldc-today-btn" type="button" onClick={this.goToday}>今天</button>
+          {(this.view === 'week' || this.view === 'day') ? (
+            <span class="ldc-title">{titleText}</span>
+          ) : (
+            [
+              <select class="ldc-select" onInput={(e: any) => { const v = parseInt((e.target as HTMLSelectElement).value, 10); this.viewYear = isNaN(v) ? this.viewYear : v; }}>
+                {years.map(y => <option value={String(y)} selected={y === this.viewYear}>{y}年</option>)}
+              </select>,
+              this.view === 'month' ? (
+                <select class="ldc-select" onInput={(e: any) => { const v = parseInt((e.target as HTMLSelectElement).value, 10); this.viewMonth = isNaN(v) ? this.viewMonth : v; }}>
+                  {months.map(m => <option value={String(m)} selected={m === this.viewMonth}>{m + 1}月</option>)}
+                </select>
+              ) : null
+            ]
+          )}
           <div class="ldc-seg">
             <button class={{ 'ldc-seg-item': true, 'active': this.view === 'month' }} type="button" onClick={() => this.view = 'month'}>月</button>
+            <button class={{ 'ldc-seg-item': true, 'active': this.view === 'week' }} type="button" onClick={() => this.view = 'week'}>周</button>
+            <button class={{ 'ldc-seg-item': true, 'active': this.view === 'day' }} type="button" onClick={() => this.view = 'day'}>日</button>
             <button class={{ 'ldc-seg-item': true, 'active': this.view === 'year' }} type="button" onClick={() => this.view = 'year'}>年</button>
           </div>
         </div>
@@ -858,14 +888,14 @@ export class LdesignCalendar {
       <div class="ldc-all-day" style={{ gridTemplateColumns: '80px repeat(7, 1fr)', gridAutoRows: '24px' }}>
         <div class="ldc-time-gutter">全天</div>
         {Array.from({ length: rows }).map((_, r) => (
-          <div class="ldc-all-day-row" style={{ gridColumn: '1 / -1' }}>
+          <div key={`row-${r}`} class="ldc-all-day-row" style={{ gridColumn: '1 / -1' }}>
             <div />
-            {days.map((_d, idx) => <div />)}
+            {days.map((_d, idx) => <div key={`cell-${idx}`} />)}
           </div>
         ))}
         {Array.from({ length: rows }).map((_, r) => (
-          lanes[r]?.map(seg => (
-            <div class="ldc-bar" style={{ gridColumn: `${seg.s + 2} / span ${seg.e - seg.s + 1}`, gridRow: `${r + 1}` }} title={seg.ev.title}>
+          lanes[r]?.map((seg, idx) => (
+            <div key={`bar-${r}-${idx}`} class="ldc-bar" style={{ gridColumn: `${seg.s + 2} / span ${seg.e - seg.s + 1}`, gridRow: `${r + 1}` }} title={seg.ev.title}>
               <span class="ldc-bar-dot" style={{ background: seg.ev.color || '#1677ff' }}></span>
               <span class="ldc-bar-title">{seg.ev.title}</span>
             </div>
@@ -873,11 +903,11 @@ export class LdesignCalendar {
         ))}
         {days.map((_d, idx) => (
           overflowByDay.has(idx) ? (
-            <ldesign-popup append-to="body" placement="bottom-start" trigger="click" arrow={true}>
+            <ldesign-popup key={`popup-${idx}`} append-to="body" placement="bottom-start" trigger="click" arrow={true}>
               <div slot="trigger" class="ldc-more" style={{ gridColumn: `${idx + 2} / span 1`, gridRow: `${rows + 1}` }}>+{overflowByDay.get(idx)!.length}</div>
               <div class="ldc-more-panel">
-                {(overflowByDay.get(idx) || []).map(ev => (
-                  <div class="ldc-more-item">
+                {(overflowByDay.get(idx) || []).map((ev, evIdx) => (
+                  <div key={`more-${evIdx}`} class="ldc-more-item">
                     <span class="ldc-bar-dot" style={{ background: ev.color || '#1677ff' }}></span>
                     <span class="ldc-more-text" title={ev.title}>{ev.title}</span>
                   </div>
@@ -939,8 +969,8 @@ export class LdesignCalendar {
         {this.renderAllDayArea(days)}
         <div class="ldc-schedule-body" style={{ height: `${bodyH}px` }}>
           <div class="ldc-time-gutter">
-            {hours.map(h => (
-              <div class="ldc-hour" style={{ height: `${(60/this.stepMinutes)*slotPx}px` }}>{String(h).padStart(2,'0')}:00</div>
+            {hours.map((h, idx) => (
+              <div key={`hour-${idx}`} class="ldc-hour" style={{ height: `${(60/this.stepMinutes)*slotPx}px` }}>{String(h).padStart(2,'0')}:00</div>
             ))}
           </div>
           {days.map((d, idx) => {
@@ -950,15 +980,15 @@ export class LdesignCalendar {
               <div class="ldc-day-col" key={`dc-${idx}`}>
                 <div class="ldc-day-canvas">
                   {hours.map((h, i) => (
-                    <div class="ldc-hour-line" style={{ top: `${((i*60)/totalMin)*100}%` }} />
+                    <div key={`line-${i}`} class="ldc-hour-line" style={{ top: `${((i*60)/totalMin)*100}%` }} />
                   ))}
-                  {placed.map((p) => {
+                  {placed.map((p, pIdx) => {
                     const top = (p.sMin/totalMin)*100;
                     const height = (p.dur/totalMin)*100;
                     const width = 100 / p.lanes;
                     const left = width * p.lane;
                     return (
-                      <div class={{ 'ldc-event-block': true, 'draggable': this.draggableEvents, 'resizable': this.resizableEvents }} 
+                      <div key={`evt-${pIdx}`} class={{ 'ldc-event-block': true, 'draggable': this.draggableEvents, 'resizable': this.resizableEvents }} 
                            onMouseDown={(evm) => this.onEventBlockMouseDown(evm as any, d, p.ev.raw)}
                            onContextMenu={(evm) => this.handleEventContextMenu(evm as any, p.ev.raw)}
                            onDblClick={(evm) => this.handleEventDoubleClick(evm as any, p.ev.raw)}
@@ -1008,8 +1038,8 @@ export class LdesignCalendar {
         )}
         <div class="ldc-schedule-body" style={{ height: `${bodyH}px`, gridTemplateColumns: '80px 1fr' }}>
           <div class="ldc-time-gutter">
-            {hours.map(h => (
-              <div class="ldc-hour" style={{ height: `${(60/this.stepMinutes)*slotPx}px` }}>{String(h).padStart(2,'0')}:00</div>
+            {hours.map((h, idx) => (
+              <div key={`hour-${idx}`} class="ldc-hour" style={{ height: `${(60/this.stepMinutes)*slotPx}px` }}>{String(h).padStart(2,'0')}:00</div>
             ))}
           </div>
           <div class="ldc-day-col">
@@ -1036,13 +1066,13 @@ export class LdesignCalendar {
                    }]);
                  }}>
               {hours.map((h, i) => (
-                <div class="ldc-hour-line" style={{ top: `${((i*60)/totalMin)*100}%` }} />
+                <div key={`line-${i}`} class="ldc-hour-line" style={{ top: `${((i*60)/totalMin)*100}%` }} />
               ))}
-              {this.layoutDay(byDay.get(dayKeys[0]) || [], anchor).map((p) => {
+              {this.layoutDay(byDay.get(dayKeys[0]) || [], anchor).map((p, pIdx) => {
                 const top = (p.sMin/totalMin)*100;
                 const height = (p.dur/totalMin)*100;
                 return (
-                  <div class={{ 'ldc-event-block': true, 'draggable': this.draggableEvents, 'resizable': this.resizableEvents }}
+                  <div key={`evt-${pIdx}`} class={{ 'ldc-event-block': true, 'draggable': this.draggableEvents, 'resizable': this.resizableEvents }}
                        onMouseDown={(evm) => this.onEventBlockMouseDown(evm as any, anchor, p.ev.raw)}
                        onContextMenu={(evm) => this.handleEventContextMenu(evm as any, p.ev.raw)}
                        onDblClick={(evm) => this.handleEventDoubleClick(evm as any, p.ev.raw)}

@@ -11,7 +11,7 @@ import { ButtonColor, ButtonHTMLType, ButtonSize, ButtonVariant } from "./compon
 import { CalEvent } from "./components/calendar/calendar";
 import { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
 import { Placement } from "@floating-ui/dom";
-import { DrawerButton, DrawerPlacement, SnapPoint } from "./components/drawer/drawer";
+import { DrawerButton, DrawerPlacement, HeaderConfig, LoadingConfig, SnapPoint } from "./components/drawer/drawer";
 import { DropdownItem, DropdownNode, DropdownPlacement, DropdownTrigger, DropdownVariant } from "./components/dropdown/dropdown";
 import { ImageViewerItem } from "./components/image-viewer/image-viewer";
 import { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
@@ -34,7 +34,7 @@ export { ButtonColor, ButtonHTMLType, ButtonSize, ButtonVariant } from "./compon
 export { CalEvent } from "./components/calendar/calendar";
 export { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
 export { Placement } from "@floating-ui/dom";
-export { DrawerButton, DrawerPlacement, SnapPoint } from "./components/drawer/drawer";
+export { DrawerButton, DrawerPlacement, HeaderConfig, LoadingConfig, SnapPoint } from "./components/drawer/drawer";
 export { DropdownItem, DropdownNode, DropdownPlacement, DropdownTrigger, DropdownVariant } from "./components/dropdown/dropdown";
 export { ImageViewerItem } from "./components/image-viewer/image-viewer";
 export { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
@@ -1514,6 +1514,15 @@ export namespace Components {
          */
         "autoFocus": boolean;
         /**
+          * 关闭前的钩子（返回false阻止关闭）
+         */
+        "beforeClose": () => boolean | Promise<boolean>;
+        /**
+          * 内容区域内边距
+          * @default true
+         */
+        "bodyPadding": string | boolean;
+        /**
           * 圆角大小
           * @default '12px'
          */
@@ -1533,6 +1542,21 @@ export namespace Components {
          */
         "closeOnEsc": boolean;
         /**
+          * 是否显示内容区域边框
+          * @default false
+         */
+        "contentBorder": boolean;
+        /**
+          * 是否启用内容区域阴影
+          * @default false
+         */
+        "contentShadow": boolean;
+        /**
+          * 自定义类名
+          * @default ''
+         */
+        "customClass": string;
+        /**
           * 是否启用阻尼效果
           * @default true
          */
@@ -1542,6 +1566,11 @@ export namespace Components {
           * @default 0.5
          */
         "dampingFactor": number;
+        /**
+          * 是否启用暗黑模式
+          * @default false
+         */
+        "darkMode": boolean;
         /**
           * 标题文本（可通过 slot=header 自定义头部）
          */
@@ -1557,9 +1586,34 @@ export namespace Components {
          */
         "footerButtons": DrawerButton[];
         /**
+          * 是否全屏显示
+          * @default false
+         */
+        "fullscreen": boolean;
+        /**
+          * 是否可以全屏切换
+          * @default false
+         */
+        "fullscreenable": boolean;
+        /**
           * 容器（选择器或元素）：若提供，则把组件节点移动到该容器下
          */
         "getContainer"?: string | HTMLElement;
+        /**
+          * 拖动手柄的高度（像素，用于 handle 模式）
+          * @default 40
+         */
+        "handleHeight": number;
+        /**
+          * 是否显示头部分割线
+          * @default true
+         */
+        "headerBorder": boolean;
+        /**
+          * 头部高级配置
+          * @default {}
+         */
+        "headerConfig": HeaderConfig;
         /**
           * 隐藏抽屉（带动画）
          */
@@ -1569,6 +1623,21 @@ export namespace Components {
           * @default true
          */
         "keyboardNavigation": boolean;
+        /**
+          * 内容延迟加载（毫秒）
+          * @default 0
+         */
+        "lazyLoad": number;
+        /**
+          * 抽屉层级模式（normal | high | top）
+          * @default 'normal'
+         */
+        "level": 'normal' | 'high' | 'top';
+        /**
+          * 加载状态配置
+          * @default false
+         */
+        "loading": LoadingConfig | boolean;
         /**
           * 是否显示遮罩层
           * @default true
@@ -1590,6 +1659,20 @@ export namespace Components {
          */
         "minSize": number | string;
         /**
+          * 是否显示最小化按钮
+          * @default false
+         */
+        "minimizable": boolean;
+        /**
+          * 是否处于最小化状态
+          * @default false
+         */
+        "minimized": boolean;
+        /**
+          * 打开时的回调
+         */
+        "onOpen": () => void | Promise<void>;
+        /**
           * 抽屉出现的位置
           * @default 'right'
          */
@@ -1600,19 +1683,38 @@ export namespace Components {
          */
         "preserveState": boolean;
         /**
-          * 是否可调整大小
+          * 进度条百分比
+          * @default 0
+         */
+        "progressPercent": number;
+        /**
+          * 是否可调整大小（桌面端和移动端统一配置）
           * @default false
          */
         "resizable": boolean;
+        /**
+          * 调整大小的手柄位置（'edge' | 'handle'）
+          * @default 'edge'
+         */
+        "resizeMode": 'edge' | 'handle';
         /**
           * 是否启用圆角
           * @default false
          */
         "rounded": boolean;
         /**
+          * 设置加载状态
+         */
+        "setLoading": (loading: boolean | LoadingConfig) => Promise<void>;
+        /**
           * 显示抽屉
          */
         "show": (emit?: boolean) => Promise<void>;
+        /**
+          * 是否显示进度条
+          * @default false
+         */
+        "showProgress": boolean;
         /**
           * 是否显示调整大小的提示
           * @default true
@@ -1634,15 +1736,37 @@ export namespace Components {
          */
         "snapThreshold": number;
         /**
-          * 手势关闭的阈值（百分比）
+          * 滑动关闭的阈值（百分比）
           * @default 0.3
          */
         "swipeThreshold": number;
         /**
-          * 是否在移动端启用手势关闭
+          * 是否启用滑动关闭（支持所有方向）
           * @default true
          */
         "swipeToClose": boolean;
+        /**
+          * 滑动关闭的触发区域（'anywhere' | 'handle' | 'header'）
+          * @default 'handle'
+         */
+        "swipeTriggerArea": 'anywhere' | 'handle' | 'header';
+        /**
+          * 切换全屏
+         */
+        "toggleFullscreen": () => Promise<void>;
+        /**
+          * 切换最小化
+         */
+        "toggleMinimize": () => Promise<void>;
+        /**
+          * 更新进度
+         */
+        "updateProgress": (percent: number) => Promise<void>;
+        /**
+          * 是否启用虚拟滚动（适用于大量内容）
+          * @default false
+         */
+        "virtualScroll": boolean;
         /**
           * 是否显示抽屉
           * @default false
@@ -3133,7 +3257,7 @@ export namespace Components {
          */
         "dragFollow": number;
         /**
-          * 手势拖拽平滑时间常数（毫秒），>0 时使用一阶平滑使位移逐步接近手指，营造“越来越慢”的阻力感，默认 0（关闭）
+          * 手势拖拽平滑时间常数（毫秒），>0 时使用一阶平滑使位移逐步接近手指，营造"越来越慢"的阻力感，默认 0（关闭）
          */
         "dragSmoothing"?: number;
         /**
@@ -3194,7 +3318,7 @@ export namespace Components {
         "panelHeight"?: number;
         /**
           * 边界阻力系数 0-1（越小阻力越大）
-          * @default 0.35
+          * @default 0.4
          */
         "resistance": number;
         /**
@@ -3234,7 +3358,7 @@ export namespace Components {
          */
         "size": 'small' | 'medium' | 'large';
         /**
-          * 吸附/回弹动画时长（毫秒，适用于触摸/键盘/滚动吸附），未设置默认 260ms
+          * 吸附/回弹动画时长（毫秒，适用于触摸/键盘/滚动吸附），未设置默认 300ms
          */
         "snapDuration"?: number;
         /**
@@ -3255,6 +3379,15 @@ export namespace Components {
           * @default 0.3
          */
         "soundVolume": number;
+        /**
+          * 回弹动画基础时长（毫秒），未设置默认 bounce: 500ms, ease: 600ms
+         */
+        "springBackDuration"?: number;
+        /**
+          * 边界回弹模式：'bounce' 弹簧回弹（默认） | 'ease' 缓慢恢复
+          * @default 'bounce'
+         */
+        "springBackMode": 'bounce' | 'ease';
         /**
           * 主题模式
           * @default 'light'
@@ -3782,6 +3915,15 @@ export namespace Components {
          */
         "color"?: string;
         /**
+          * 自定义类名
+         */
+        "customClass"?: string;
+        /**
+          * 波纹方向
+          * @default 'outward'
+         */
+        "direction": 'outward' | 'inward' | 'both';
+        /**
           * 禁用
           * @default false
          */
@@ -3802,10 +3944,45 @@ export namespace Components {
          */
         "fadeOutDuration": number;
         /**
+          * 是否启用发光效果
+          * @default false
+         */
+        "glow": boolean;
+        /**
+          * 发光强度
+          * @default 0.5
+         */
+        "glowIntensity": number;
+        /**
+          * 是否启用振动反馈 (需要浏览器支持)
+          * @default false
+         */
+        "haptic": boolean;
+        /**
+          * 振动强度 (1-10)
+          * @default 5
+         */
+        "hapticIntensity": number;
+        /**
+          * 是否启用键盘触发 (Enter/Space)
+          * @default true
+         */
+        "keyboardEnabled": boolean;
+        /**
+          * 多层波纹延迟 (ms)
+          * @default 120
+         */
+        "layerDelay": number;
+        /**
           * 同时存在的最大波纹数量
           * @default 8
          */
         "maxRipples": number;
+        /**
+          * 是否启用多层波纹
+          * @default false
+         */
+        "multiLayer": boolean;
         /**
           * 波纹不透明度
           * @default 0.24
@@ -3816,6 +3993,26 @@ export namespace Components {
           * @default 'auto'
          */
         "radius": 'auto' | number;
+        /**
+          * 波纹大小模式
+          * @default 'medium'
+         */
+        "size": 'small' | 'medium' | 'large' | 'extra-large';
+        /**
+          * 是否启用声音反馈
+          * @default false
+         */
+        "sound": boolean;
+        /**
+          * 声音音量 (0-1)
+          * @default 0.1
+         */
+        "soundVolume": number;
+        /**
+          * 最小触发间隔 (ms)
+          * @default 0
+         */
+        "throttle": number;
         /**
           * 是否允许触摸设备
           * @default true
@@ -3831,6 +4028,11 @@ export namespace Components {
           * @default false
          */
         "unbounded": boolean;
+        /**
+          * 波纹效果类型
+          * @default 'default'
+         */
+        "variant": 'default' | 'light' | 'strong' | 'pulse' | 'gradient';
     }
     /**
      * Row 行容器
@@ -5642,6 +5844,9 @@ declare global {
         "ldesignResizeStart": void;
         "ldesignResizeEnd": { size: number | string };
         "ldesignSnapToPoint": SnapPoint;
+        "ldesignFullscreenChange": boolean;
+        "ldesignMinimizeChange": boolean;
+        "ldesignLoadingChange": boolean;
     }
     /**
      * Drawer 抽屉组件
@@ -8099,6 +8304,15 @@ declare namespace LocalJSX {
          */
         "autoFocus"?: boolean;
         /**
+          * 关闭前的钩子（返回false阻止关闭）
+         */
+        "beforeClose"?: () => boolean | Promise<boolean>;
+        /**
+          * 内容区域内边距
+          * @default true
+         */
+        "bodyPadding"?: string | boolean;
+        /**
           * 圆角大小
           * @default '12px'
          */
@@ -8114,6 +8328,21 @@ declare namespace LocalJSX {
          */
         "closeOnEsc"?: boolean;
         /**
+          * 是否显示内容区域边框
+          * @default false
+         */
+        "contentBorder"?: boolean;
+        /**
+          * 是否启用内容区域阴影
+          * @default false
+         */
+        "contentShadow"?: boolean;
+        /**
+          * 自定义类名
+          * @default ''
+         */
+        "customClass"?: string;
+        /**
           * 是否启用阻尼效果
           * @default true
          */
@@ -8123,6 +8352,11 @@ declare namespace LocalJSX {
           * @default 0.5
          */
         "dampingFactor"?: number;
+        /**
+          * 是否启用暗黑模式
+          * @default false
+         */
+        "darkMode"?: boolean;
         /**
           * 标题文本（可通过 slot=header 自定义头部）
          */
@@ -8138,14 +8372,54 @@ declare namespace LocalJSX {
          */
         "footerButtons"?: DrawerButton[];
         /**
+          * 是否全屏显示
+          * @default false
+         */
+        "fullscreen"?: boolean;
+        /**
+          * 是否可以全屏切换
+          * @default false
+         */
+        "fullscreenable"?: boolean;
+        /**
           * 容器（选择器或元素）：若提供，则把组件节点移动到该容器下
          */
         "getContainer"?: string | HTMLElement;
+        /**
+          * 拖动手柄的高度（像素，用于 handle 模式）
+          * @default 40
+         */
+        "handleHeight"?: number;
+        /**
+          * 是否显示头部分割线
+          * @default true
+         */
+        "headerBorder"?: boolean;
+        /**
+          * 头部高级配置
+          * @default {}
+         */
+        "headerConfig"?: HeaderConfig;
         /**
           * 是否启用键盘导航
           * @default true
          */
         "keyboardNavigation"?: boolean;
+        /**
+          * 内容延迟加载（毫秒）
+          * @default 0
+         */
+        "lazyLoad"?: number;
+        /**
+          * 抽屉层级模式（normal | high | top）
+          * @default 'normal'
+         */
+        "level"?: 'normal' | 'high' | 'top';
+        /**
+          * 加载状态配置
+          * @default false
+         */
+        "loading"?: LoadingConfig | boolean;
         /**
           * 是否显示遮罩层
           * @default true
@@ -8167,9 +8441,31 @@ declare namespace LocalJSX {
          */
         "minSize"?: number | string;
         /**
+          * 是否显示最小化按钮
+          * @default false
+         */
+        "minimizable"?: boolean;
+        /**
+          * 是否处于最小化状态
+          * @default false
+         */
+        "minimized"?: boolean;
+        /**
           * 事件：关闭
          */
         "onLdesignClose"?: (event: LdesignDrawerCustomEvent<void>) => void;
+        /**
+          * 事件：全屏切换
+         */
+        "onLdesignFullscreenChange"?: (event: LdesignDrawerCustomEvent<boolean>) => void;
+        /**
+          * 事件：加载状态变化
+         */
+        "onLdesignLoadingChange"?: (event: LdesignDrawerCustomEvent<boolean>) => void;
+        /**
+          * 事件：最小化切换
+         */
+        "onLdesignMinimizeChange"?: (event: LdesignDrawerCustomEvent<boolean>) => void;
         /**
           * 事件：调整大小结束
          */
@@ -8191,6 +8487,10 @@ declare namespace LocalJSX {
          */
         "onLdesignVisibleChange"?: (event: LdesignDrawerCustomEvent<boolean>) => void;
         /**
+          * 打开时的回调
+         */
+        "onOpen"?: () => void | Promise<void>;
+        /**
           * 抽屉出现的位置
           * @default 'right'
          */
@@ -8201,15 +8501,30 @@ declare namespace LocalJSX {
          */
         "preserveState"?: boolean;
         /**
-          * 是否可调整大小
+          * 进度条百分比
+          * @default 0
+         */
+        "progressPercent"?: number;
+        /**
+          * 是否可调整大小（桌面端和移动端统一配置）
           * @default false
          */
         "resizable"?: boolean;
+        /**
+          * 调整大小的手柄位置（'edge' | 'handle'）
+          * @default 'edge'
+         */
+        "resizeMode"?: 'edge' | 'handle';
         /**
           * 是否启用圆角
           * @default false
          */
         "rounded"?: boolean;
+        /**
+          * 是否显示进度条
+          * @default false
+         */
+        "showProgress"?: boolean;
         /**
           * 是否显示调整大小的提示
           * @default true
@@ -8231,15 +8546,25 @@ declare namespace LocalJSX {
          */
         "snapThreshold"?: number;
         /**
-          * 手势关闭的阈值（百分比）
+          * 滑动关闭的阈值（百分比）
           * @default 0.3
          */
         "swipeThreshold"?: number;
         /**
-          * 是否在移动端启用手势关闭
+          * 是否启用滑动关闭（支持所有方向）
           * @default true
          */
         "swipeToClose"?: boolean;
+        /**
+          * 滑动关闭的触发区域（'anywhere' | 'handle' | 'header'）
+          * @default 'handle'
+         */
+        "swipeTriggerArea"?: 'anywhere' | 'handle' | 'header';
+        /**
+          * 是否启用虚拟滚动（适用于大量内容）
+          * @default false
+         */
+        "virtualScroll"?: boolean;
         /**
           * 是否显示抽屉
           * @default false
@@ -9818,7 +10143,7 @@ declare namespace LocalJSX {
          */
         "dragFollow"?: number;
         /**
-          * 手势拖拽平滑时间常数（毫秒），>0 时使用一阶平滑使位移逐步接近手指，营造“越来越慢”的阻力感，默认 0（关闭）
+          * 手势拖拽平滑时间常数（毫秒），>0 时使用一阶平滑使位移逐步接近手指，营造"越来越慢"的阻力感，默认 0（关闭）
          */
         "dragSmoothing"?: number;
         /**
@@ -9887,7 +10212,7 @@ declare namespace LocalJSX {
         "panelHeight"?: number;
         /**
           * 边界阻力系数 0-1（越小阻力越大）
-          * @default 0.35
+          * @default 0.4
          */
         "resistance"?: number;
         /**
@@ -9925,7 +10250,7 @@ declare namespace LocalJSX {
          */
         "size"?: 'small' | 'medium' | 'large';
         /**
-          * 吸附/回弹动画时长（毫秒，适用于触摸/键盘/滚动吸附），未设置默认 260ms
+          * 吸附/回弹动画时长（毫秒，适用于触摸/键盘/滚动吸附），未设置默认 300ms
          */
         "snapDuration"?: number;
         /**
@@ -9946,6 +10271,15 @@ declare namespace LocalJSX {
           * @default 0.3
          */
         "soundVolume"?: number;
+        /**
+          * 回弹动画基础时长（毫秒），未设置默认 bounce: 500ms, ease: 600ms
+         */
+        "springBackDuration"?: number;
+        /**
+          * 边界回弹模式：'bounce' 弹簧回弹（默认） | 'ease' 缓慢恢复
+          * @default 'bounce'
+         */
+        "springBackMode"?: 'bounce' | 'ease';
         /**
           * 主题模式
           * @default 'light'
@@ -10508,6 +10842,15 @@ declare namespace LocalJSX {
          */
         "color"?: string;
         /**
+          * 自定义类名
+         */
+        "customClass"?: string;
+        /**
+          * 波纹方向
+          * @default 'outward'
+         */
+        "direction"?: 'outward' | 'inward' | 'both';
+        /**
           * 禁用
           * @default false
          */
@@ -10528,10 +10871,45 @@ declare namespace LocalJSX {
          */
         "fadeOutDuration"?: number;
         /**
+          * 是否启用发光效果
+          * @default false
+         */
+        "glow"?: boolean;
+        /**
+          * 发光强度
+          * @default 0.5
+         */
+        "glowIntensity"?: number;
+        /**
+          * 是否启用振动反馈 (需要浏览器支持)
+          * @default false
+         */
+        "haptic"?: boolean;
+        /**
+          * 振动强度 (1-10)
+          * @default 5
+         */
+        "hapticIntensity"?: number;
+        /**
+          * 是否启用键盘触发 (Enter/Space)
+          * @default true
+         */
+        "keyboardEnabled"?: boolean;
+        /**
+          * 多层波纹延迟 (ms)
+          * @default 120
+         */
+        "layerDelay"?: number;
+        /**
           * 同时存在的最大波纹数量
           * @default 8
          */
         "maxRipples"?: number;
+        /**
+          * 是否启用多层波纹
+          * @default false
+         */
+        "multiLayer"?: boolean;
         /**
           * 波纹不透明度
           * @default 0.24
@@ -10542,6 +10920,26 @@ declare namespace LocalJSX {
           * @default 'auto'
          */
         "radius"?: 'auto' | number;
+        /**
+          * 波纹大小模式
+          * @default 'medium'
+         */
+        "size"?: 'small' | 'medium' | 'large' | 'extra-large';
+        /**
+          * 是否启用声音反馈
+          * @default false
+         */
+        "sound"?: boolean;
+        /**
+          * 声音音量 (0-1)
+          * @default 0.1
+         */
+        "soundVolume"?: number;
+        /**
+          * 最小触发间隔 (ms)
+          * @default 0
+         */
+        "throttle"?: number;
         /**
           * 是否允许触摸设备
           * @default true
@@ -10557,6 +10955,11 @@ declare namespace LocalJSX {
           * @default false
          */
         "unbounded"?: boolean;
+        /**
+          * 波纹效果类型
+          * @default 'default'
+         */
+        "variant"?: 'default' | 'light' | 'strong' | 'pulse' | 'gradient';
     }
     /**
      * Row 行容器

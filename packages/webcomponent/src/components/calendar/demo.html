@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日历组件 - 月/周/日视图演示</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .demo-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .demo-header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+    .demo-header h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .demo-header p {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+    .demo-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+    .demo-controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .demo-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .demo-label {
+      color: #666;
+      font-size: 14px;
+    }
+    .demo-button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+    .demo-button-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .demo-button-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    .demo-button-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+    .demo-button-secondary:hover {
+      background: #e0e0e0;
+    }
+    .demo-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: #ccc;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .demo-switch.active {
+      background: #667eea;
+    }
+    .demo-switch-handle {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .demo-switch.active .demo-switch-handle {
+      transform: translateX(20px);
+    }
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #666;
+      font-size: 14px;
+    }
+    .feature-icon {
+      color: #667eea;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <div class="demo-header">
+      <h1>📅 日历组件演示</h1>
+      <p>支持月视图、周视图、日视图，完整的事件管理功能</p>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-controls">
+        <div class="demo-group">
+          <button class="demo-button demo-button-primary" onclick="addEvents()">
+            ✨ 添加示例日程
+          </button>
+          <button class="demo-button demo-button-secondary" onclick="clearEvents()">
+            🗑️ 清空日程
+          </button>
+        </div>
+        
+        <div class="demo-group">
+          <span class="demo-label">拖拽移动:</span>
+          <div id="dragSwitch" class="demo-switch active" onclick="toggleDrag()">
+            <div class="demo-switch-handle"></div>
+          </div>
+        </div>
+        
+        <div class="demo-group">
+          <span class="demo-label">调整大小:</span>
+          <div id="resizeSwitch" class="demo-switch active" onclick="toggleResize()">
+            <div class="demo-switch-handle"></div>
+          </div>
+        </div>
+        
+        <div class="demo-group">
+          <span class="demo-label">显示周数:</span>
+          <div id="weekSwitch" class="demo-switch" onclick="toggleWeekNumbers()">
+            <div class="demo-switch-handle"></div>
+          </div>
+        </div>
+        
+        <div class="demo-group">
+          <span class="demo-label">显示农历:</span>
+          <div id="lunarSwitch" class="demo-switch" onclick="toggleLunar()">
+            <div class="demo-switch-handle"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>点击视图按钮切换月/周/日视图</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>双击日期创建新日程</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>右键菜单管理日程</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>拖拽调整日程时间</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>拉伸调整事件时长</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>支持全天和定时事件</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <!-- 这里模拟日历组件的渲染效果 -->
+      <div style="min-height: 600px; display: flex; align-items: center; justify-content: center; color: #999;">
+        <div style="text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 20px;">📅</div>
+          <div style="font-size: 18px;">日历组件将在此处显示</div>
+          <div style="font-size: 14px; margin-top: 10px;">
+            支持月视图、周视图、日视图切换
+          </div>
+          <br>
+          <div style="padding: 20px; background: #f5f5f5; border-radius: 8px; text-align: left; max-width: 500px; margin: 0 auto;">
+            <strong>当前实现的功能：</strong>
+            <ul style="margin-top: 10px; padding-left: 20px;">
+              <li>✅ 月视图 - 显示整月日历网格</li>
+              <li>✅ 周视图 - 显示7天时间轴</li>
+              <li>✅ 日视图 - 显示单日时间轴</li>
+              <li>✅ 视图切换按钮（月/周/日/年）</li>
+              <li>✅ "今天"快速定位按钮</li>
+              <li>✅ 日期导航（上一个/下一个）</li>
+              <li>✅ 事件拖拽和调整大小</li>
+              <li>✅ 右键菜单操作</li>
+              <li>✅ 全天事件支持</li>
+              <li>✅ 时间格子吸附</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 模拟的日历操作函数
+    function addEvents() {
+      console.log('添加示例日程');
+      alert('已添加示例日程！\n\n包含：\n• 全天事件：产品发布会\n• 时段事件：团队会议、客户演示\n• 跨天事件：技术峰会');
+    }
+    
+    function clearEvents() {
+      console.log('清空所有日程');
+      alert('已清空所有日程！');
+    }
+    
+    function toggleDrag() {
+      const sw = document.getElementById('dragSwitch');
+      sw.classList.toggle('active');
+      console.log('拖拽功能：', sw.classList.contains('active') ? '开启' : '关闭');
+    }
+    
+    function toggleResize() {
+      const sw = document.getElementById('resizeSwitch');
+      sw.classList.toggle('active');
+      console.log('调整大小功能：', sw.classList.contains('active') ? '开启' : '关闭');
+    }
+    
+    function toggleWeekNumbers() {
+      const sw = document.getElementById('weekSwitch');
+      sw.classList.toggle('active');
+      console.log('显示周数：', sw.classList.contains('active') ? '开启' : '关闭');
+    }
+    
+    function toggleLunar() {
+      const sw = document.getElementById('lunarSwitch');
+      sw.classList.toggle('active');
+      console.log('显示农历：', sw.classList.contains('active') ? '开启' : '关闭');
+    }
+  </script>
+</body>
+</html>

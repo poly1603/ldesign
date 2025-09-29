@@ -9,6 +9,20 @@
   display: none;
   overscroll-behavior: contain;
   user-select: none;
+  // 移动端优化：使用 transform 确保固定定位正确
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  // 层级模式
+  &--level-high {
+    z-index: calc(var(--ld-overlay-z-index, 1000) + 100);
+  }
+  
+  &--level-top {
+    z-index: calc(var(--ld-overlay-z-index, 1000) + 200);
+  }
 
   // 容器模式：使用绝对定位铺满容器（也通过内联 style 覆盖 position）
   &--in-container {
@@ -27,14 +41,12 @@
       &--left,
       &--right {
         max-width: 90vw !important;
-        width: auto !important;
         min-width: 280px;
       }
       
       &--top,
       &--bottom {
         max-height: 90vh !important;
-        height: auto !important;
         min-height: 200px;
       }
     }
@@ -61,12 +73,101 @@
     &.ldesign-drawer--bottom {
       cursor: row-resize;
     }
+    
+    // 调整大小时禁用文本选择
+    * {
+      user-select: none !important;
+      -webkit-user-select: none !important;
+    }
   }
 
   // 拖动状态
   &--dragging {
     .ldesign-drawer__panel {
       transition: none !important;
+    }
+  }
+
+  // 全屏状态
+  &--fullscreen {
+    .ldesign-drawer__panel {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+      border-radius: 0 !important;
+      
+      &--left,
+      &--right,
+      &--top,
+      &--bottom {
+        transform: translate(0, 0) !important;
+      }
+    }
+  }
+
+  // 最小化状态
+  &--minimized {
+    .ldesign-drawer__panel {
+      &--left,
+      &--right {
+        width: 60px !important;
+      }
+      
+      &--top,
+      &--bottom {
+        height: 60px !important;
+      }
+    }
+    
+    .ldesign-drawer__body,
+    .ldesign-drawer__footer {
+      display: none;
+    }
+    
+    .ldesign-drawer__title-wrapper {
+      display: none;
+    }
+  }
+
+  // 暗黑模式
+  &--dark {
+    .ldesign-drawer__panel {
+      background: var(--ldesign-dark-bg, #1f2937);
+      color: var(--ldesign-dark-text, #f9fafb);
+    }
+    
+    .ldesign-drawer__header {
+      border-bottom-color: var(--ldesign-dark-border, #374151);
+    }
+    
+    .ldesign-drawer__title {
+      color: var(--ldesign-dark-text, #f9fafb);
+    }
+    
+    .ldesign-drawer__subtitle {
+      color: var(--ldesign-dark-text-secondary, #9ca3af);
+    }
+    
+    .ldesign-drawer__body {
+      color: var(--ldesign-dark-text, #f9fafb);
+    }
+    
+    .ldesign-drawer__footer {
+      background: var(--ldesign-dark-bg, #1f2937);
+      border-top-color: var(--ldesign-dark-border, #374151);
+    }
+    
+    .ldesign-drawer__close,
+    .ldesign-drawer__action,
+    .ldesign-drawer__minimize,
+    .ldesign-drawer__fullscreen {
+      color: var(--ldesign-dark-text-secondary, #9ca3af);
+      
+      &:hover {
+        background: var(--ldesign-dark-hover, #374151);
+        color: var(--ldesign-dark-text, #f9fafb);
+      }
     }
   }
 
@@ -92,7 +193,7 @@
   }
 
   &__panel {
-    position: absolute;
+    position: absolute; // 保持 absolute 定位
     background: var(--ldesign-bg-color, #ffffff);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2), 0 2px 10px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -114,6 +215,8 @@
     &--resizing {
       transition: none !important;
       user-select: none;
+      // 立即响应尺寸变化
+      will-change: width, height;
     }
 
     // 拖动时的样式
@@ -143,24 +246,36 @@
     }
 
     // 初始位移（隐藏态）
-    &--left { left: 0; transform: translateX(-100%); }
-    &--right { right: 0; transform: translateX(100%); }
-    &--top { top: 0; transform: translateY(-100%); }
-    &--bottom { bottom: 0; transform: translateY(100%); }
+    &--left { 
+      left: 0; 
+      transform: translate3d(-100%, 0, 0); // 使用 3D 变换优化性能
+    }
+    &--right { 
+      right: 0; 
+      transform: translate3d(100%, 0, 0);
+    }
+    &--top { 
+      top: 0; 
+      transform: translate3d(0, -100%, 0);
+    }
+    &--bottom { 
+      bottom: 0; 
+      transform: translate3d(0, 100%, 0);
+    }
 
     // 打开态
     &--open&--left,
     &--open&--right,
     &--open&--top,
     &--open&--bottom {
-      transform: translate(0, 0);
+      transform: translate3d(0, 0, 0);
     }
 
     // 关闭动画阶段
-    &--closing&--left { transform: translateX(-100%); }
-    &--closing&--right { transform: translateX(100%); }
-    &--closing&--top { transform: translateY(-100%); }
-    &--closing&--bottom { transform: translateY(100%); }
+    &--closing&--left { transform: translate3d(-100%, 0, 0); }
+    &--closing&--right { transform: translate3d(100%, 0, 0); }
+    &--closing&--top { transform: translate3d(0, -100%, 0); }
+    &--closing&--bottom { transform: translate3d(0, 100%, 0); }
   }
 
   &__content {
@@ -177,10 +292,62 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
-    border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
     flex: 0 0 auto;
     position: relative;
     z-index: 1;
+    gap: 12px;
+    
+    &--border {
+      border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
+    }
+  }
+
+  &__back,
+  &__action,
+  &__minimize,
+  &__fullscreen {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    color: var(--ldesign-text-color-secondary, #6b7280);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: var(--ldesign-bg-color-hover, #f3f4f6);
+      color: var(--ldesign-text-color, #1f2937);
+    }
+  }
+
+  &__header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: var(--ldesign-color-primary, #3b82f6);
+  }
+
+  &__title-wrapper {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    color: var(--ldesign-text-color-secondary, #6b7280);
+    margin-top: 2px;
+  }
+
+  &__header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
 
   &__title {
@@ -341,6 +508,86 @@
     animation: ldesign-spin 0.6s linear infinite;
   }
 
+  &__button-icon {
+    margin-right: 6px;
+  }
+
+  // 进度条
+  &__progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--ldesign-bg-color-secondary, #f3f4f6);
+    z-index: 10;
+  }
+
+  &__progress-bar {
+    height: 100%;
+    background: var(--ldesign-color-primary, #3b82f6);
+    transition: width 0.3s ease;
+    border-radius: 0 3px 3px 0;
+  }
+
+  // 加载状态
+  &__loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 5;
+  }
+
+  &__loading-spinner {
+    margin-bottom: 16px;
+  }
+
+  &__loading-spin {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--ldesign-border-color, #e5e7eb);
+    border-top-color: var(--ldesign-color-primary, #3b82f6);
+    border-radius: 50%;
+    animation: ldesign-spin 0.8s linear infinite;
+    margin: 0 auto;
+  }
+
+  &__loading-text {
+    font-size: 14px;
+    color: var(--ldesign-text-color-secondary, #6b7280);
+  }
+
+  // 延迟加载占位符
+  &__lazy-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+  }
+
+  &__lazy-loading {
+    color: var(--ldesign-text-color-secondary, #6b7280);
+  }
+
+  // 内容区域边框和阴影
+  &__body--border {
+    border: 1px solid var(--ldesign-border-color, #e5e7eb);
+    border-radius: 4px;
+    margin: 16px;
+  }
+
+  &__body--shadow {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  // 虚拟滚动
+  &__body--virtual {
+    overflow-y: auto !important;
+    contain: strict;
+  }
+
   // 调整大小手柄
   &__resize-handle {
     position: absolute;
@@ -349,34 +596,34 @@
     transition: opacity 0.2s ease;
     
     &--left {
-      right: -4px;
+      right: -6px;
       top: 0;
       bottom: 0;
-      width: 8px;
+      width: 12px;
       cursor: col-resize;
     }
     
     &--right {
-      left: -4px;
+      left: -6px;
       top: 0;
       bottom: 0;
-      width: 8px;
+      width: 12px;
       cursor: col-resize;
     }
     
     &--top {
-      bottom: -4px;
+      bottom: -6px;
       left: 0;
       right: 0;
-      height: 8px;
+      height: 12px;
       cursor: row-resize;
     }
     
     &--bottom {
-      top: -4px;
+      top: -6px;
       left: 0;
       right: 0;
-      height: 8px;
+      height: 12px;
       cursor: row-resize;
     }
     
@@ -385,9 +632,23 @@
       opacity: 1;
     }
     
+    // 移动端优化：增加触摸区域
+    &--mobile {
+      &.ldesign-drawer__resize-handle--left,
+      &.ldesign-drawer__resize-handle--right {
+        width: 20px;
+      }
+      
+      &.ldesign-drawer__resize-handle--top,
+      &.ldesign-drawer__resize-handle--bottom {
+        height: 20px;
+      }
+    }
+    
     .ldesign-drawer--resizable .ldesign-drawer__panel:hover & {
       opacity: 1;
     }
+  }
   }
 
   &__resize-line {
@@ -488,7 +749,127 @@
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
     animation: ldesign-bounce-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
-}
+  
+  // 滑动手柄（支持所有方向）
+  &__swipe-handle {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    background: transparent;
+    z-index: 10;
+    transition: background-color 0.2s ease;
+    
+    &--top {
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
+      border-radius: 0 0 var(--ldesign-drawer-radius, 12px) var(--ldesign-drawer-radius, 12px);
+    }
+    
+    &--bottom {
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
+      border-radius: var(--ldesign-drawer-radius, 12px) var(--ldesign-drawer-radius, 12px) 0 0;
+    }
+    
+    &--left {
+      right: 0;
+      top: 0;
+      bottom: 0;
+      height: 100%;
+      border-right: 1px solid var(--ldesign-border-color, #e5e7eb);
+    }
+    
+    &--right {
+      left: 0;
+      top: 0;
+      bottom: 0;
+      height: 100%;
+      border-left: 1px solid var(--ldesign-border-color, #e5e7eb);
+    }
+    
+    &:active,
+    &--dragging {
+      cursor: grabbing;
+      background: rgba(0, 0, 0, 0.02);
+    }
+    
+    // 暗黑模式
+    .ldesign-drawer--dark & {
+      border-color: var(--ldesign-dark-border, #374151);
+      
+      &:active,
+      &--dragging {
+        background: rgba(255, 255, 255, 0.02);
+      }
+    }
+  }
+  
+  &__swipe-handle-bar {
+    background: var(--ldesign-border-color-light, #d1d5db);
+    border-radius: 2px;
+    transition: all 0.2s ease;
+    
+    // 上下方向的横条
+    .ldesign-drawer__swipe-handle--top &,
+    .ldesign-drawer__swipe-handle--bottom & {
+      width: 36px;
+      height: 4px;
+    }
+    
+    // 左右方向的竖条
+    .ldesign-drawer__swipe-handle--left &,
+    .ldesign-drawer__swipe-handle--right & {
+      width: 4px;
+      height: 36px;
+    }
+    
+    .ldesign-drawer__swipe-handle:hover & {
+      background: var(--ldesign-border-color, #9ca3af);
+      
+      // hover 时增加尺寸
+      .ldesign-drawer__swipe-handle--top &,
+      .ldesign-drawer__swipe-handle--bottom & {
+        width: 48px;
+      }
+      
+      .ldesign-drawer__swipe-handle--left &,
+      .ldesign-drawer__swipe-handle--right & {
+        height: 48px;
+      }
+    }
+    
+    .ldesign-drawer__swipe-handle--dragging & {
+      background: var(--ldesign-color-primary, #3b82f6);
+      
+      // 拖动时进一步增加尺寸
+      .ldesign-drawer__swipe-handle--top &,
+      .ldesign-drawer__swipe-handle--bottom & {
+        width: 60px;
+      }
+      
+      .ldesign-drawer__swipe-handle--left &,
+      .ldesign-drawer__swipe-handle--right & {
+        height: 60px;
+      }
+    }
+    
+    // 暗黑模式
+    .ldesign-drawer--dark & {
+      background: var(--ldesign-dark-border-light, #4b5563);
+      
+      .ldesign-drawer__swipe-handle:hover & {
+        background: var(--ldesign-dark-border, #6b7280);
+      }
+    }
+  }
 
 // 动画
 @keyframes ldesign-spin {

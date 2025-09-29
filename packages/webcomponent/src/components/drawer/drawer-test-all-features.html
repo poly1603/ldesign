@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Drawer 全功能测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+    
+    h1 {
+      color: #1f2937;
+      margin-bottom: 10px;
+    }
+    
+    .subtitle {
+      color: #6b7280;
+      margin-bottom: 30px;
+    }
+    
+    .test-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f9fafb;
+      border-radius: 8px;
+    }
+    
+    .test-section h2 {
+      color: #374151;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: white;
+      background: #3b82f6;
+    }
+    
+    button:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .btn-secondary {
+      background: #6b7280;
+    }
+    
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+    
+    .btn-success {
+      background: #10b981;
+    }
+    
+    .btn-success:hover {
+      background: #059669;
+    }
+    
+    .btn-danger {
+      background: #ef4444;
+    }
+    
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    
+    .drawer-content {
+      padding: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      color: #374151;
+      font-weight: 500;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    
+    .status {
+      padding: 10px;
+      background: #f3f4f6;
+      border-radius: 4px;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #374151;
+    }
+  </style>
+  <!-- 引入drawer组件样式 -->
+  <link rel="stylesheet" href="drawer.less">
+  <style>
+    /* Drawer组件样式定义 */
+    ldesign-drawer {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Drawer 组件全功能测试</h1>
+    <p class="subtitle">测试所有高级功能的完整实现</p>
+    
+    <!-- 基础功能 -->
+    <div class="test-section">
+      <h2>1️⃣ 基础功能</h2>
+      <div class="button-grid">
+        <button onclick="testBasic()">基础抽屉</button>
+        <button onclick="testDirections()">四个方向</button>
+        <button onclick="testSizes()">不同尺寸</button>
+        <button onclick="testRounded()">圆角样式</button>
+      </div>
+    </div>
+    
+    <!-- 调整大小 -->
+    <div class="test-section">
+      <h2>2️⃣ 调整大小功能</h2>
+      <div class="button-grid">
+        <button onclick="testResizable()">可调整大小</button>
+        <button onclick="testSnapPoints()">吸附点</button>
+        <button onclick="testDamping()">阻尼效果</button>
+      </div>
+    </div>
+    
+    <!-- 全屏与最小化 -->
+    <div class="test-section">
+      <h2>3️⃣ 全屏与最小化</h2>
+      <div class="button-grid">
+        <button onclick="testFullscreen()">全屏切换</button>
+        <button onclick="testMinimize()">最小化</button>
+        <button onclick="testBoth()">全屏+最小化</button>
+      </div>
+    </div>
+    
+    <!-- 加载与进度 -->
+    <div class="test-section">
+      <h2>4️⃣ 加载与进度</h2>
+      <div class="button-grid">
+        <button onclick="testLoading()">加载状态</button>
+        <button onclick="testProgress()">进度条</button>
+        <button onclick="testLazyLoad()">延迟加载</button>
+      </div>
+    </div>
+    
+    <!-- 高级头部 -->
+    <div class="test-section">
+      <h2>5️⃣ 高级头部配置</h2>
+      <div class="button-grid">
+        <button onclick="testHeaderConfig()">完整头部</button>
+        <button onclick="testHeaderBack()">返回按钮</button>
+        <button onclick="testHeaderActions()">操作按钮</button>
+      </div>
+    </div>
+    
+    <!-- 底部按钮 -->
+    <div class="test-section">
+      <h2>6️⃣ 底部按钮</h2>
+      <div class="button-grid">
+        <button onclick="testFooterButtons()">基础按钮</button>
+        <button onclick="testFooterWithIcon()">带图标按钮</button>
+        <button onclick="testFooterLoading()">加载状态按钮</button>
+      </div>
+    </div>
+    
+    <!-- 生命周期 -->
+    <div class="test-section">
+      <h2>7️⃣ 生命周期钩子</h2>
+      <div class="button-grid">
+        <button onclick="testBeforeClose()">关闭前确认</button>
+        <button onclick="testOnOpen()">打开回调</button>
+      </div>
+    </div>
+    
+    <!-- 其他功能 -->
+    <div class="test-section">
+      <h2>8️⃣ 其他功能</h2>
+      <div class="button-grid">
+        <button onclick="testDarkMode()">暗黑模式</button>
+        <button onclick="testCustomClass()">自定义类名</button>
+        <button onclick="testLevel()">层级控制</button>
+        <button onclick="testMobileGestures()">移动端手势</button>
+        <button onclick="testKeyboard()">键盘操作</button>
+        <button onclick="testEvents()">事件监听</button>
+      </div>
+    </div>
+    
+    <div class="status" id="status">
+      状态: 准备就绪
+    </div>
+  </div>
+  
+  <!-- 测试用的抽屉组件 -->
+  <ldesign-drawer id="test-drawer">
+    <div class="drawer-content">
+      <h3>测试内容</h3>
+      <p>这是一个测试抽屉</p>
+    </div>
+  </ldesign-drawer>
+  
+  <!-- 引入组件脚本 -->
+  <script type="module">
+    // 如果使用的是构建后的版本，引入构建文件
+    // import './drawer.js';
+    
+    // 如果是开发环境，可能需要先启动开发服务器
+    // 这里我们使用内联的组件定义
+  </script>
+  
+  <script>
+    // 等待自定义元素定义
+    let drawer = document.getElementById('test-drawer');
+    const status = document.getElementById('status');
+    
+    // 确保drawer元素被正确初始化
+    if (!drawer) {
+      console.error('Drawer element not found');
+    }
+    
+    function updateStatus(msg) {
+      status.textContent = `状态: ${msg}`;
+      console.log(msg);
+    }
+    
+    // 1. 基础功能测试
+    function testBasic() {
+      drawer.drawerTitle = '基础抽屉';
+      drawer.placement = 'right';
+      drawer.size = 400;
+      drawer.visible = true;
+      updateStatus('测试基础抽屉');
+    }
+    
+    function testDirections() {
+      const directions = ['left', 'right', 'top', 'bottom'];
+      let index = 0;
+      
+      const showNext = () => {
+        if (index < directions.length) {
+          drawer.drawerTitle = `${directions[index]}方向`;
+          drawer.placement = directions[index];
+          drawer.visible = true;
+          updateStatus(`测试${directions[index]}方向`);
+          
+          setTimeout(() => {
+            drawer.visible = false;
+            index++;
+            setTimeout(showNext, 500);
+          }, 1500);
+        }
+      };
+      
+      showNext();
+    }
+    
+    function testSizes() {
+      drawer.drawerTitle = '尺寸测试';
+      drawer.size = '50%';
+      drawer.visible = true;
+      updateStatus('测试50%宽度');
+    }
+    
+    function testRounded() {
+      drawer.drawerTitle = '圆角抽屉';
+      drawer.rounded = true;
+      drawer.borderRadius = '20px';
+      drawer.visible = true;
+      updateStatus('测试圆角样式');
+    }
+    
+    // 2. 调整大小功能
+    function testResizable() {
+      drawer.drawerTitle = '可调整大小';
+      drawer.resizable = true;
+      drawer.minSize = 200;
+      drawer.maxSize = '80%';
+      drawer.showResizeHint = true;
+      drawer.visible = true;
+      updateStatus('拖动边缘调整大小');
+    }
+    
+    function testSnapPoints() {
+      drawer.drawerTitle = '吸附点测试';
+      drawer.resizable = true;
+      drawer.snapPoints = [
+        { value: '30%', label: '小尺寸' },
+        { value: '50%', label: '中等尺寸' },
+        { value: '70%', label: '大尺寸' }
+      ];
+      drawer.snapThreshold = 50;
+      drawer.visible = true;
+      updateStatus('拖动到吸附点附近会自动吸附');
+    }
+    
+    function testDamping() {
+      drawer.drawerTitle = '阻尼效果';
+      drawer.resizable = true;
+      drawer.damping = true;
+      drawer.dampingFactor = 0.3;
+      drawer.visible = true;
+      updateStatus('拖动到边界时有阻尼效果');
+    }
+    
+    // 3. 全屏与最小化
+    function testFullscreen() {
+      drawer.drawerTitle = '全屏测试';
+      drawer.fullscreenable = true;
+      drawer.visible = true;
+      updateStatus('点击全屏按钮切换');
+    }
+    
+    function testMinimize() {
+      drawer.drawerTitle = '最小化测试';
+      drawer.minimizable = true;
+      drawer.visible = true;
+      updateStatus('点击最小化按钮');
+    }
+    
+    function testBoth() {
+      drawer.drawerTitle = '全屏+最小化';
+      drawer.fullscreenable = true;
+      drawer.minimizable = true;
+      drawer.visible = true;
+      updateStatus('同时支持全屏和最小化');
+    }
+    
+    // 4. 加载与进度
+    function testLoading() {
+      drawer.drawerTitle = '加载状态';
+      drawer.visible = true;
+      
+      setTimeout(() => {
+        drawer.setLoading({
+          show: true,
+          text: '正在加载数据...',
+          spinner: true
+        });
+        updateStatus('显示加载状态');
+        
+        setTimeout(() => {
+          drawer.setLoading(false);
+          updateStatus('加载完成');
+        }, 3000);
+      }, 500);
+    }
+    
+    function testProgress() {
+      drawer.drawerTitle = '进度条测试';
+      drawer.showProgress = true;
+      drawer.progressPercent = 0;
+      drawer.visible = true;
+      
+      let percent = 0;
+      const interval = setInterval(() => {
+        percent += 10;
+        drawer.updateProgress(percent);
+        updateStatus(`进度: ${percent}%`);
+        
+        if (percent >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            drawer.updateProgress(0);
+            drawer.showProgress = false;
+          }, 1000);
+        }
+      }, 300);
+    }
+    
+    function testLazyLoad() {
+      drawer.drawerTitle = '延迟加载';
+      drawer.lazyLoad = 1500;
+      drawer.visible = true;
+      drawer.innerHTML = `
+        <div class="drawer-content">
+          <h3>延迟加载内容</h3>
+          <p>这个内容在1.5秒后才会显示</p>
+        </div>
+      `;
+      updateStatus('内容将在1.5秒后加载');
+    }
+    
+    // 5. 高级头部配置
+    function testHeaderConfig() {
+      drawer.headerConfig = {
+        title: '用户设置',
+        subtitle: '管理您的个人信息和偏好',
+        icon: 'settings',
+        showBack: true,
+        onBack: () => {
+          updateStatus('点击了返回按钮');
+          drawer.visible = false;
+        },
+        actions: [
+          {
+            icon: 'refresh-cw',
+            tooltip: '刷新',
+            onClick: () => {
+              updateStatus('刷新数据');
+              alert('刷新成功！');
+            }
+          },
+          {
+            icon: 'download',
+            tooltip: '下载',
+            onClick: () => {
+              updateStatus('开始下载');
+              alert('下载开始！');
+            }
+          }
+        ]
+      };
+      drawer.visible = true;
+      updateStatus('测试高级头部配置');
+    }
+    
+    function testHeaderBack() {
+      drawer.headerConfig = {
+        title: '返回测试',
+        showBack: true,
+        onBack: () => {
+          if (confirm('确定要返回吗？')) {
+            drawer.visible = false;
+            updateStatus('已返回');
+          }
+        }
+      };
+      drawer.visible = true;
+      updateStatus('测试返回按钮');
+    }
+    
+    function testHeaderActions() {
+      drawer.headerConfig = {
+        title: '操作按钮测试',
+        actions: [
+          {
+            icon: 'save',
+            tooltip: '保存',
+            onClick: () => alert('已保存')
+          },
+          {
+            icon: 'trash-2',
+            tooltip: '删除',
+            onClick: () => alert('已删除')
+          },
+          {
+            icon: 'share-2',
+            tooltip: '分享',
+            onClick: () => alert('分享链接已复制')
+          }
+        ]
+      };
+      drawer.visible = true;
+      updateStatus('测试头部操作按钮');
+    }
+    
+    // 6. 底部按钮
+    function testFooterButtons() {
+      drawer.drawerTitle = '底部按钮测试';
+      drawer.footerButtons = [
+        {
+          text: '取消',
+          type: 'default',
+          onClick: () => {
+            drawer.visible = false;
+            updateStatus('取消操作');
+          }
+        },
+        {
+          text: '确定',
+          type: 'primary',
+          onClick: () => {
+            drawer.visible = false;
+            updateStatus('确定操作');
+          }
+        }
+      ];
+      drawer.visible = true;
+      updateStatus('测试底部按钮');
+    }
+    
+    function testFooterWithIcon() {
+      drawer.drawerTitle = '带图标按钮';
+      drawer.footerButtons = [
+        {
+          text: '删除',
+          type: 'danger',
+          icon: 'trash',
+          onClick: () => alert('删除操作')
+        },
+        {
+          text: '保存',
+          type: 'success',
+          icon: 'save',
+          onClick: () => alert('保存成功')
+        }
+      ];
+      drawer.visible = true;
+      updateStatus('测试带图标的按钮');
+    }
+    
+    function testFooterLoading() {
+      drawer.drawerTitle = '加载状态按钮';
+      const buttons = [
+        {
+          text: '取消',
+          type: 'default'
+        },
+        {
+          text: '提交',
+          type: 'primary',
+          loading: false,
+          onClick: async () => {
+            buttons[1].loading = true;
+            drawer.footerButtons = [...buttons];
+            updateStatus('提交中...');
+            
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            buttons[1].loading = false;
+            drawer.footerButtons = [...buttons];
+            updateStatus('提交成功');
+            drawer.visible = false;
+          }
+        }
+      ];
+      drawer.footerButtons = buttons;
+      drawer.visible = true;
+      updateStatus('点击提交测试加载状态');
+    }
+    
+    // 7. 生命周期钩子
+    function testBeforeClose() {
+      drawer.drawerTitle = '关闭确认';
+      drawer.beforeClose = async () => {
+        return confirm('确定要关闭吗？未保存的数据将丢失。');
+      };
+      drawer.visible = true;
+      updateStatus('关闭时会弹出确认框');
+    }
+    
+    function testOnOpen() {
+      drawer.drawerTitle = '打开回调';
+      drawer.onOpen = () => {
+        updateStatus('抽屉已打开，执行回调');
+        alert('onOpen 回调被触发！');
+      };
+      drawer.visible = true;
+    }
+    
+    // 8. 其他功能
+    function testDarkMode() {
+      drawer.drawerTitle = '暗黑模式';
+      drawer.darkMode = true;
+      drawer.visible = true;
+      updateStatus('测试暗黑模式');
+    }
+    
+    function testCustomClass() {
+      drawer.drawerTitle = '自定义类名';
+      drawer.customClass = 'my-custom-drawer';
+      drawer.visible = true;
+      updateStatus('添加了自定义类名: my-custom-drawer');
+    }
+    
+    function testLevel() {
+      drawer.drawerTitle = '层级控制';
+      drawer.level = 'top';
+      drawer.visible = true;
+      updateStatus('设置为最高层级');
+    }
+    
+    function testMobileGestures() {
+      drawer.drawerTitle = '移动端手势';
+      drawer.swipeToClose = true;
+      drawer.swipeThreshold = 0.3;
+      drawer.visible = true;
+      updateStatus('在移动端可以滑动关闭');
+    }
+    
+    function testKeyboard() {
+      drawer.drawerTitle = '键盘操作';
+      drawer.keyboardNavigation = true;
+      drawer.resizable = true;
+      drawer.innerHTML = `
+        <div class="drawer-content">
+          <h3>键盘操作说明</h3>
+          <ul>
+            <li>ESC - 关闭抽屉</li>
+            <li>Tab - 循环焦点</li>
+            <li>Ctrl + 方向键 - 调整大小</li>
+          </ul>
+          <div class="form-group">
+            <label>测试输入框1</label>
+            <input type="text" placeholder="按Tab切换焦点">
+          </div>
+          <div class="form-group">
+            <label>测试输入框2</label>
+            <input type="text" placeholder="按Tab切换焦点">
+          </div>
+        </div>
+      `;
+      drawer.visible = true;
+      updateStatus('测试键盘操作');
+    }
+    
+    function testEvents() {
+      // 清除旧的监听器
+      const newDrawer = drawer.cloneNode(true);
+      drawer.parentNode.replaceChild(newDrawer, drawer);
+      drawer = newDrawer;
+      
+      drawer.drawerTitle = '事件监听测试';
+      
+      // 添加所有事件监听
+      drawer.addEventListener('ldesignVisibleChange', (e) => {
+        updateStatus(`可见性变化: ${e.detail}`);
+      });
+      
+      drawer.addEventListener('ldesignClose', () => {
+        updateStatus('关闭事件触发');
+      });
+      
+      drawer.addEventListener('ldesignSizeChange', (e) => {
+        updateStatus(`尺寸变化: ${e.detail.size}`);
+      });
+      
+      drawer.addEventListener('ldesignResizeStart', () => {
+        updateStatus('开始调整大小');
+      });
+      
+      drawer.addEventListener('ldesignResizeEnd', (e) => {
+        updateStatus(`调整大小结束: ${e.detail.size}`);
+      });
+      
+      drawer.addEventListener('ldesignFullscreenChange', (e) => {
+        updateStatus(`全屏状态: ${e.detail}`);
+      });
+      
+      drawer.addEventListener('ldesignMinimizeChange', (e) => {
+        updateStatus(`最小化状态: ${e.detail}`);
+      });
+      
+      drawer.resizable = true;
+      drawer.fullscreenable = true;
+      drawer.minimizable = true;
+      drawer.visible = true;
+      updateStatus('所有事件已绑定，请操作测试');
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      updateStatus('所有功能准备就绪，请点击按钮测试');
+    });
+  </script>
+</body>
+</html>

@@ -85,7 +85,7 @@
       display: flex;
       flex-direction: column;
       height: 100%;
-      min-height: 100vh; // 确保填满视口高度
+      // 移除 min-height: 100vh，让内容自适应
     }
   }
 
@@ -101,24 +101,33 @@
     // 移动端样式
     @media (max-width: 768px) {
       flex: 1;
-      gap: 0;
-      padding: 0; // 移除垂直边距
+      gap: 0; // 移除间隙
+      padding: 0;
       margin: 0;
-      justify-content: stretch; // 使用 stretch 而不是 space-evenly
-      align-items: stretch; // 确保子元素拉伸填满高度
+      justify-content: stretch;
+      align-items: stretch;
       background: var(--ldesign-bg-color, #fff);
+      min-height: 280px; // 设置合理的最小高度
       
-      // 让 picker 铺满宽度和高度
+      // 让 picker 均分宽度，无间隙
       ldesign-picker {
-        flex: 1;
+        flex: 1 1 0; // 均分剩余空间
+        width: 0; // 配合 flex: 1 确保均分
+        min-width: 0; // 允许收缩
         max-width: none;
         height: 100%;
+        border-right: 1px solid var(--ldesign-border-color, #e5e7eb);
+        
+        &:last-child {
+          border-right: none;
+        }
         
         .ldesign-picker__picker {
           width: 100%;
           max-width: none;
           height: 100%;
           padding: 0;
+          border-radius: 0; // 移除圆角
         }
       }
     }
@@ -185,19 +194,14 @@
   }
   
   /* AM/PM选择器宽度调整 */
-  ldesign-picker:last-child .ldesign-picker__picker {
-    width: 60px;
+  .ldesign-time-picker__columns > ldesign-picker:first-child .ldesign-picker__picker {
+    width: 60px; /* AM/PM 选择器在12小时制时位于第一个 */
   }
   
-  /* 移动端AM/PM选择器 */
+  /* 移动端选择器宽度 */
   @media (max-width: 768px) {
-    ldesign-picker:first-child .ldesign-picker__picker {
-      width: auto;
-      flex: 1;
-    }
-    ldesign-picker:last-child .ldesign-picker__picker {
-      width: auto;
-      flex: 1;
+    ldesign-picker .ldesign-picker__picker {
+      width: 100% !important; // 强制全宽
     }
   }
   ldesign-picker .ldesign-picker__indicator {
@@ -327,17 +331,56 @@ ldesign-time-picker .ldesign-popup__inner { padding: 6px; }
       display: none; // 隐藏标题栏
     }
     
+    // 针对时间选择器的drawer特殊处理
+    &[placement="bottom"] {
+      .ldesign-drawer__panel {
+        height: auto !important; // 高度自适应内容
+        max-height: 70vh !important; // 最大高度限制
+      }
+    }
+    
+    .ldesign-drawer__wrapper {
+      // 添加顶部圆角
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      overflow: hidden; // 确保内容不超出圆角
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+      
+      // 添加拖动手柄指示器
+      &::before {
+        content: '';
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 36px;
+        height: 4px;
+        background-color: rgba(0, 0, 0, 0.12);
+        border-radius: 2px;
+        z-index: 1;
+        transition: all 0.2s ease;
+      }
+      
+      // 手柄悬停效果
+      &:hover::before {
+        background-color: rgba(0, 0, 0, 0.25);
+        width: 48px;
+      }
+    }
+    
     .ldesign-drawer__body {
       padding: 0;
-      height: 100%;
-      min-height: 100vh; // 确保填满视口
+      height: auto; // 让高度自适应内容
       display: flex;
       flex-direction: column;
       overflow: hidden; // 防止滚动
+      // 为手柄条留出空间
+      padding-top: 24px;
     }
     
     .ldesign-drawer__content {
-      height: 100%;
+      height: auto; // 让高度自适应内容
       display: flex;
       flex-direction: column;
     }
@@ -353,11 +396,6 @@ ldesign-time-picker .ldesign-popup__inner { padding: 6px; }
       display: inline-flex;
       align-items: center; // 垂直居中
       justify-content: center; // 水平居中
-    }
-    
-    // 移动端下 picker 列应该形成连续块
-    .ldesign-time-picker__columns {
-      min-height: 300px; // 设置最小高度
     }
   }
   
