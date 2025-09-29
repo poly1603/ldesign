@@ -556,6 +556,40 @@ export class WebServer {
     this.io.on('connection', (socket) => {
       this.context.logger.debug(`客户端连接: ${socket.id}`);
 
+      // 检查是否有活跃任务来判断是UI重启还是页面刷新
+      const activeTasks = taskStateManager.getAllTasks().filter(task =>
+        task.status === 'running' || task.status === 'pending'
+      );
+
+      if (activeTasks.length === 0) {
+        // 没有活跃任务，说明是UI重启，清理所有状态
+        this.context.logger.debug('检测到UI重启，清理所有状态');
+        socket.emit('clear-all-data');
+      } else {
+        // 有活跃任务，说明是页面刷新，恢复状态
+        this.context.logger.debug(`检测到页面刷新，恢复${activeTasks.length}个活跃任务状态`);
+
+        // 发送所有任务状态
+        const allTasks = taskStateManager.getAllTasks();
+        allTasks.forEach(task => {
+          socket.emit('task:update', task);
+
+          // 发送任务的输出历史
+          if (task.outputLines && task.outputLines.length > 0) {
+            task.outputLines.forEach(line => {
+              socket.emit('task:output', {
+                taskId: task.taskId,
+                output: line.content,
+                timestamp: line.timestamp,
+                type: line.type || 'info'
+              });
+            });
+          }
+        });
+
+        this.context.logger.debug('任务状态恢复完成');
+      }
+
       socket.on('disconnect', () => {
         this.context.logger.debug(`客户端断开: ${socket.id}`);
       });
@@ -654,7 +688,7 @@ export class WebServer {
       this.server.close(() => {
         try {
           this.db?.dispose();
-        } catch {}
+        } catch { }
         this.context.logger.info('Web UI 服务器已停止');
         resolve();
       });

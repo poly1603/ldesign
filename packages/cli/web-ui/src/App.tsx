@@ -24,6 +24,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/dev" element={<DevPage />} />
+              <Route path="/dev/:environment" element={<DevPage />} />
               <Route path="/build" element={<BuildPage />} />
               <Route path="/preview" element={<PreviewPage />} />
               <Route path="/tasks" element={<Tasks />} />

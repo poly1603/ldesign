@@ -72,7 +72,33 @@ const loadStateFromStorage = (): GlobalTaskState => {
     if (stored) {
       const parsed = JSON.parse(stored)
       console.log('从本地存储恢复任务状态:', parsed)
-      return parsed
+
+      // 验证和修复数据格式
+      const validatedState: GlobalTaskState = { tasks: {} }
+
+      if (parsed.tasks && typeof parsed.tasks === 'object') {
+        Object.keys(parsed.tasks).forEach(taskId => {
+          const task = parsed.tasks[taskId]
+          if (task && typeof task === 'object') {
+            validatedState.tasks[taskId] = {
+              taskId: task.taskId || taskId,
+              taskType: task.taskType || 'dev',
+              environment: task.environment || 'development',
+              status: task.status || 'idle',
+              outputLines: Array.isArray(task.outputLines) ? task.outputLines : [],
+              serverInfo: task.serverInfo || {},
+              startTime: task.startTime ? new Date(task.startTime) : undefined,
+              endTime: task.endTime ? new Date(task.endTime) : undefined
+            }
+          }
+        })
+      }
+
+      if (parsed.activeTask && typeof parsed.activeTask === 'string') {
+        validatedState.activeTask = parsed.activeTask
+      }
+
+      return validatedState
     }
   } catch (error) {
     console.error('Failed to load task state from storage:', error)
@@ -176,7 +202,10 @@ export const TaskStateProvider: React.FC<TaskStateProviderProps> = ({ children }
       const task = prev.tasks[taskId]
       if (!task) return prev
 
-      const newOutputLines = [...task.outputLines, line]
+      // 确保outputLines是数组
+      const currentOutputLines = Array.isArray(task.outputLines) ? task.outputLines : []
+      const newOutputLines = [...currentOutputLines, line]
+
       // 限制日志条数
       if (newOutputLines.length > MAX_OUTPUT_LINES) {
         newOutputLines.splice(0, newOutputLines.length - MAX_OUTPUT_LINES)

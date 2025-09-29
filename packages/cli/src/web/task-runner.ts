@@ -364,13 +364,13 @@ export class TaskRunner {
       child.stdout?.on('data', (data: string) => {
         // 累积数据到缓冲区
         stdoutBuffer += data;
-        
+
         // 分割成行
         const lines = stdoutBuffer.split(/\r?\n/);
-        
+
         // 最后一个元素可能是不完整的行，保留在缓冲区
         stdoutBuffer = lines.pop() || '';
-        
+
         // 处理完整的行
         lines.forEach(line => {
           if (line.trim()) {  // 忽略空行
@@ -379,7 +379,7 @@ export class TaskRunner {
               .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '') // 清理光标控制
               .replace(/\x1b\[\?25[hl]/g, '') // 清理光标显示/隐藏
               .replace(/\x1b\].*?\x07/g, ''); // 清理 OSC 序列
-            
+
             task.output.push(cleanedLine + '\n');
 
             // 保存到TaskStateManager
@@ -403,13 +403,13 @@ export class TaskRunner {
       child.stderr?.on('data', (data: string) => {
         // 累积数据到缓冲区
         stderrBuffer += data;
-        
+
         // 分割成行
         const lines = stderrBuffer.split(/\r?\n/);
-        
+
         // 最后一个元素可能是不完整的行，保留在缓冲区
         stderrBuffer = lines.pop() || '';
-        
+
         // 处理完整的行
         lines.forEach(line => {
           if (line.trim()) {  // 忽略空行
@@ -418,7 +418,7 @@ export class TaskRunner {
               .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '') // 清理光标控制
               .replace(/\x1b\[\?25[hl]/g, '') // 清理光标显示/隐藏
               .replace(/\x1b\].*?\x07/g, ''); // 清理 OSC 序列
-            
+
             task.output.push(cleanedLine + '\n');
 
             // 保存到TaskStateManager
@@ -442,7 +442,7 @@ export class TaskRunner {
             .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '')
             .replace(/\x1b\[\?25[hl]/g, '')
             .replace(/\x1b\].*?\x07/g, '');
-          
+
           const outputLine: TaskOutputLine = {
             timestamp: new Date().toLocaleTimeString(),
             content: cleanedLine,
@@ -460,7 +460,7 @@ export class TaskRunner {
             .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '')
             .replace(/\x1b\[\?25[hl]/g, '')
             .replace(/\x1b\].*?\x07/g, '');
-          
+
           const outputLine: TaskOutputLine = {
             timestamp: new Date().toLocaleTimeString(),
             content: cleanedLine,
@@ -507,8 +507,8 @@ export class TaskRunner {
       const child = spawn('node', [cliPath, ...args], {
         cwd: this.context.cwd,
         stdio: 'pipe',
-        env: { 
-          ...process.env, 
+        env: {
+          ...process.env,
           FORCE_COLOR: '1',
           NODE_NO_READLINE: '1'
         },
@@ -530,14 +530,14 @@ export class TaskRunner {
         stdoutBuffer += data;
         const lines = stdoutBuffer.split(/\r?\n/);
         stdoutBuffer = lines.pop() || '';
-        
+
         lines.forEach(line => {
           if (line.trim()) {
             const cleanedLine = line
               .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '')
               .replace(/\x1b\[\?25[hl]/g, '')
               .replace(/\x1b\].*?\x07/g, '');
-            
+
             task.output.push(cleanedLine + '\n');
             this.emitTaskOutput(taskId, cleanedLine, 'stdout');
           }
@@ -548,14 +548,14 @@ export class TaskRunner {
         stderrBuffer += data;
         const lines = stderrBuffer.split(/\r?\n/);
         stderrBuffer = lines.pop() || '';
-        
+
         lines.forEach(line => {
           if (line.trim()) {
             const cleanedLine = line
               .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '')
               .replace(/\x1b\[\?25[hl]/g, '')
               .replace(/\x1b\].*?\x07/g, '');
-            
+
             task.output.push(cleanedLine + '\n');
             this.emitTaskOutput(taskId, cleanedLine, 'stderr');
           }
@@ -569,7 +569,7 @@ export class TaskRunner {
             .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '')
             .replace(/\x1b\[\?25[hl]/g, '')
             .replace(/\x1b\].*?\x07/g, '');
-          
+
           this.emitTaskOutput(taskId, cleanedLine, 'stdout');
         }
       });
@@ -580,7 +580,7 @@ export class TaskRunner {
             .replace(/\x1b\[[0-9;?]*[HJKSTfGsu]/g, '')
             .replace(/\x1b\[\?25[hl]/g, '')
             .replace(/\x1b\].*?\x07/g, '');
-          
+
           this.emitTaskOutput(taskId, cleanedLine, 'stderr');
         }
       });
@@ -674,8 +674,25 @@ export class TaskRunner {
    * 发送任务更新事件
    */
   private emitTaskUpdate(taskId: string, task: TaskStatus): void {
-    // 向所有客户端广播任务状态更新
-    this.io.emit('task:update', task);
+    // 获取TaskStateManager中的任务状态，确保数据格式一致
+    const taskState = taskStateManager.getTask(taskId);
+    if (taskState) {
+      // 发送TaskState格式的数据，前端期望这种格式
+      this.io.emit('task:update', {
+        id: taskState.taskId,
+        name: task.name,
+        status: taskState.status,
+        output: taskState.outputLines || [],
+        outputLines: taskState.outputLines || [],
+        serverInfo: taskState.serverInfo || {},
+        startTime: taskState.startTime,
+        endTime: taskState.endTime,
+        environment: taskState.environment
+      });
+    } else {
+      // 如果TaskStateManager中没有，发送TaskStatus格式
+      this.io.emit('task:update', task);
+    }
     this.io.emit('tasks:list', this.getAllTasks());
   }
 

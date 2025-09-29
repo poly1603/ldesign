@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { Play, Square, Monitor, Trash2 } from 'lucide-react'
 import { useSocket } from '../contexts/SocketContext'
 import { useTaskState } from '../contexts/TaskStateContext'
@@ -34,6 +35,24 @@ const convert = new Convert({
 const processOutputContent = (content: string): { html: string; isQRCode: boolean } => {
   // 检测是否是二维码内容
   const isQRCode = /[▄█▀]/.test(content)
+
+  if (isQRCode) {
+    // 对于二维码内容，先清理ANSI转义序列，然后保持原始格式
+    const cleanedContent = content
+      .replace(/\x1b\[[0-9;]*m/g, '')  // 清理 \x1b[XXm 格式
+      .replace(/\[\d+m/g, '')          // 清理 [XXm 格式
+      .replace(/\[[\d;]*m/g, '')       // 清理 [XX;XXm 格式
+      .replace(/\[\d+;\d+m/g, '')      // 清理 [XX;XXm 格式
+      .replace(/\[2m/g, '')            // 清理 [2m (粗体开始)
+      .replace(/\[22m/g, '')           // 清理 [22m (粗体结束)
+      .replace(/\[36m/g, '')           // 清理 [36m (青色)
+      .replace(/\[39m/g, '')           // 清理 [39m (默认前景色)
+      .replace(/\[90m/g, '')           // 清理 [90m (暗灰色)
+      .replace(/\[0m/g, '')            // 清理 [0m (重置)
+
+    return { html: cleanedContent, isQRCode: true }
+  }
+
   // 转换ANSI颜色代码为HTML
   const html = convert.toHtml(content)
   return { html, isQRCode }
@@ -42,6 +61,10 @@ const processOutputContent = (content: string): { html: string; isQRCode: boolea
 
 const DevPage: React.FC = () => {
   const { socket, isConnected } = useSocket()
+  const { environment } = useParams<{ environment?: string }>()
+  const navigate = useNavigate()
+  const location = useLocation()
+
   const {
     getTask,
     createTask,
@@ -53,10 +76,13 @@ const DevPage: React.FC = () => {
     clearAllTasks
   } = useTaskState()
 
-  // 环境选择状态 - 从localStorage恢复，确保刷新后保持选择
+  // 环境选择状态 - 优先使用URL参数，然后是localStorage
   const [selectedEnv, setSelectedEnv] = useState(() => {
+    if (environment && ['development', 'test', 'staging', 'production'].includes(environment)) {
+      return environment
+    }
     try {
-      const stored = localStorage.getItem('ldesign-cli-selected-env')
+      const stored = localStorage.getItem('ldesign-cli-selected-env-dev')
       return stored || 'development'
     } catch {
       return 'development'
@@ -153,10 +179,11 @@ const DevPage: React.FC = () => {
 
     // 监听清理所有数据事件
     const handleClearAllData = () => {
-      console.log('收到清理所有数据事件，清理本地状态');
+      console.log('🧹 收到清理所有数据事件，清理本地状态');
       // 清理本地状态
       clearAllTasks();
       setProcessStatus({});
+      toast('🔄 UI状态已重置');
     };
 
     const handleTaskUpdate = (data: any) => {
@@ -187,11 +214,41 @@ const DevPage: React.FC = () => {
           [key]: data.status
         }))
 
-        // 更新全局任务状态
-        if (!getTask(key)) {
+        // 确保任务存在，避免重复创建
+        let task = getTask(key)
+        if (!task) {
+          console.log(`Creating task ${key} (${command}, ${environment})`)
           createTask(key, command as any, environment)
+          task = getTask(key)
         }
-        updateTaskStatus(key, data.status === 'running' ? 'running' : data.status === 'failed' ? 'error' : 'completed')
+
+        // 更新任务状态
+        const newStatus = data.status === 'running' ? 'running' :
+          data.status === 'failed' || data.status === 'error' ? 'error' :
+            data.status === 'completed' ? 'completed' : 'idle'
+        updateTaskStatus(key, newStatus)
+
+        // 如果后端数据包含输出行，恢复它们
+        if (data.outputLines && Array.isArray(data.outputLines) && data.outputLines.length > 0) {
+          console.log(`Restoring ${data.outputLines.length} output lines for ${key}`)
+          // 清空现有输出，避免重复
+          clearTaskOutput(key)
+          // 添加所有输出行
+          data.outputLines.forEach((line: any) => {
+            if (line && line.content && line.timestamp) {
+              addOutputLine(key, {
+                timestamp: line.timestamp,
+                content: line.content,
+                type: line.type || 'info'
+              })
+            }
+          })
+        }
+
+        // 如果后端数据包含服务器信息，恢复它
+        if (data.serverInfo && typeof data.serverInfo === 'object') {
+          updateServerInfo(key, data.serverInfo)
+        }
       }
     }
 
@@ -205,22 +262,47 @@ const DevPage: React.FC = () => {
         if (key === processKey) {
           const output = data.output
 
-          // 确保任务存在
-          if (!getTask(key)) {
+          // 确保任务存在，但避免重复创建
+          let task = getTask(key)
+          if (!task) {
             console.log(`Creating task ${key} from handleTaskOutput`)
             createTask(key, command as any, environment)
             // 设置任务为运行状态
+            updateTaskStatus(key, 'running')
+          } else if (task.status !== 'running') {
+            // 如果任务已存在但不是运行状态，更新为运行状态
             updateTaskStatus(key, 'running')
           }
 
           // 后端已经处理了行缓冲和清理，直接添加到输出
           // output 现在是一个完整的、已清理的行
-          if (output.trim()) {
+          if (output && output.trim()) {
             addOutputLine(key, {
               timestamp: new Date().toLocaleTimeString(),
-              content: output,
+              content: output.trim(),
               type: data.type === 'stderr' ? 'error' : 'info'
             })
+
+            // 检查是否包含服务器地址信息
+            const content = output.trim()
+
+            // 检查本地地址
+            const localMatch = content.match(/本地:\s*(https?:\/\/localhost:\d+\/?)/)
+            if (localMatch) {
+              console.log('🔍 检测到本地地址:', localMatch[1])
+              updateServerInfo(key, {
+                localUrl: localMatch[1]
+              })
+            }
+
+            // 检查网络地址
+            const networkMatch = content.match(/网络:\s*(https?:\/\/[\d.]+:\d+\/?)/)
+            if (networkMatch) {
+              console.log('🔍 检测到网络地址:', networkMatch[1])
+              updateServerInfo(key, {
+                networkUrl: networkMatch[1]
+              })
+            }
           }
 
           // 检测是否包含二维码块，如果包含则更新 serverInfo.qrCode（不影响日志显示）
@@ -243,33 +325,78 @@ const DevPage: React.FC = () => {
             .replace(/\[0m/g, '')            // 清理 [0m (重置)
             .replace(/\[32m/g, '')           // 清理 [32m (绿色)
             .trim()
-          const localMatch = cleanOutput.match(/本地[:\s]*(http:\/\/[^\s\n\r]+)/i)
-          const networkMatch = cleanOutput.match(/网络[:\s]*(http:\/\/[^\s\n\r]+)/i)
-          const portMatch = cleanOutput.match(/localhost:(\d+)/)
+
+          // 使用多种匹配模式来提取服务器信息
+          let localMatch = null
+          let networkMatch = null
+          let portMatch = null
+
+          // 模式1: "本地: http://localhost:3006" 或 "│  ✔ 开发服务器已启动                   │"
+          localMatch = cleanOutput.match(/本地[:\s]*(http:\/\/[^\s\n\r│]+)/i)
+          networkMatch = cleanOutput.match(/网络[:\s]*(http:\/\/[^\s\n\r│]+)/i)
+
+          // 模式2: "Local: http://localhost:3006"
+          if (!localMatch) {
+            localMatch = cleanOutput.match(/Local[:\s]*(http:\/\/[^\s\n\r│]+)/i)
+          }
+          if (!networkMatch) {
+            networkMatch = cleanOutput.match(/Network[:\s]*(http:\/\/[^\s\n\r│]+)/i)
+          }
+
+          // 模式3: 直接匹配localhost地址
+          if (!localMatch) {
+            localMatch = cleanOutput.match(/(http:\/\/localhost:\d+)/i)
+          }
+
+          // 模式4: 匹配IP地址
+          if (!networkMatch) {
+            networkMatch = cleanOutput.match(/(http:\/\/\d+\.\d+\.\d+\.\d+:\d+)/i)
+          }
+
+          // 模式5: 从表格格式中提取地址 "│  • 本地: http://localhost:3006        │"
+          if (!localMatch) {
+            localMatch = cleanOutput.match(/[│\|]\s*[•·]\s*本地[:\s]*(http:\/\/[^\s│\|]+)/i)
+          }
+          if (!networkMatch) {
+            networkMatch = cleanOutput.match(/[│\|]\s*[•·]\s*网络[:\s]*(http:\/\/[^\s│\|]+)/i)
+          }
+
+          // 提取端口号
+          portMatch = cleanOutput.match(/localhost:(\d+)/) || cleanOutput.match(/:(\d+)/)
 
           if (localMatch || networkMatch) {
-            console.log('🔍 服务器信息匹配成功:', { localMatch, networkMatch, portMatch })
+            console.log('🔍 服务器信息匹配成功:', {
+              localMatch: localMatch ? localMatch[1] || localMatch[0] : null,
+              networkMatch: networkMatch ? networkMatch[1] || networkMatch[0] : null,
+              portMatch: portMatch ? portMatch[1] : null
+            })
 
             // 更新全局服务器信息
+            const localUrl = localMatch ? (localMatch[1] || localMatch[0]).trim() : undefined
+            const networkUrl = networkMatch ? (networkMatch[1] || networkMatch[0]).trim() : undefined
+
             updateServerInfo(key, {
-              localUrl: localMatch ? localMatch[1].trim() : undefined,
-              networkUrl: networkMatch ? networkMatch[1].trim() : undefined,
+              localUrl,
+              networkUrl,
               port: portMatch ? portMatch[1] : undefined
             })
 
-            if (localMatch) {
-              toast.success(`🌐 本地开发地址: ${localMatch[1].trim()}`)
+            if (localUrl) {
+              toast.success(`🌐 本地开发地址: ${localUrl}`)
             }
-            if (networkMatch) {
-              toast.success(`📱 网络开发地址: ${networkMatch[1].trim()}`)
+            if (networkUrl) {
+              toast.success(`📱 网络开发地址: ${networkUrl}`)
             }
           } else {
-            console.log('❌ 服务器信息匹配失败')
-            console.log('输出内容长度:', output.length)
-            console.log('输出内容前200字符:', output.substring(0, 200))
-            console.log('是否包含"本地":', output.includes('本地'))
-            console.log('是否包含"网络":', output.includes('网络'))
-            console.log('是否包含"localhost":', output.includes('localhost'))
+            // 只在调试模式下输出详细信息，减少控制台噪音
+            if (process.env.NODE_ENV === 'development' && output.length > 20) {
+              console.log('❌ 服务器信息匹配失败')
+              console.log('输出内容长度:', output.length)
+              console.log('输出内容前200字符:', output.substring(0, 200))
+              console.log('是否包含"本地":', output.includes('本地'))
+              console.log('是否包含"网络":', output.includes('网络'))
+              console.log('是否包含"localhost":', output.includes('localhost'))
+            }
           }
 
           // 检测二维码
@@ -291,14 +418,28 @@ const DevPage: React.FC = () => {
     }
   }, [socket, processKey])
 
-  // 保存环境选择到localStorage
+  // 环境变化时更新URL和localStorage
   useEffect(() => {
+    // 更新URL
+    const newPath = `/dev/${selectedEnv}`
+    if (location.pathname !== newPath) {
+      navigate(newPath, { replace: true })
+    }
+
+    // 保存到localStorage
     try {
-      localStorage.setItem('ldesign-cli-selected-env', selectedEnv)
+      localStorage.setItem('ldesign-cli-selected-env-dev', selectedEnv)
     } catch (error) {
       console.warn('Failed to save selected environment to localStorage:', error)
     }
-  }, [selectedEnv])
+  }, [selectedEnv, navigate, location.pathname])
+
+  // URL参数变化时更新选中环境
+  useEffect(() => {
+    if (environment && ['development', 'test', 'staging', 'production'].includes(environment)) {
+      setSelectedEnv(environment)
+    }
+  }, [environment])
 
   // 环境切换时设置活动任务
   useEffect(() => {
@@ -312,21 +453,9 @@ const DevPage: React.FC = () => {
       const retryDelay = 1000 * (retryCount + 1) // 递增延迟
 
       try {
-        // 检查是否已经有了合适的状态，如果有则跳过恢复
+        // 检查是否已经有了合适的状态
         const existingTask = getTask(processKey)
-        if (existingTask && existingTask.outputLines.length > 0) {
-          console.log(`Task ${processKey} already has output, skipping restore to prevent clearing logs`)
-          // 但仍然需要恢复taskId和状态，以便增量日志拉取能正常工作
-          if (existingTask.taskId) {
-            currentTaskIdRef.current = existingTask.taskId
-            const status = existingTask.status === 'running' ? 'running' : existingTask.status === 'error' ? 'error' : 'idle'
-            setProcessStatus(prev => ({
-              ...prev,
-              [processKey]: status
-            }))
-          }
-          return
-        }
+        console.log(`Checking existing task for ${processKey}:`, existingTask)
 
         console.log(`Attempting to restore state for: dev-${selectedEnv} (attempt ${retryCount + 1})`)
 
@@ -356,25 +485,39 @@ const DevPage: React.FC = () => {
           const currentTask = getTask(processKey)
           const hasExistingOutput = currentTask && currentTask.outputLines.length > 0
 
-          // 恢复输出行 - 仅在没有现有输出时追加历史
-          if (!hasExistingOutput) {
-            // 安全地处理outputLines，确保它是数组
-            const outputLines = Array.isArray(task.outputLines) ? task.outputLines : []
-            outputLines.forEach((line: any) => {
-              // 验证line对象的完整性
-              if (line && typeof line === 'object' && line.content && line.timestamp && line.type) {
-                const isQRCodeOutput = line.content.includes('▄') || line.content.includes('█') || line.content.includes('▀')
-                if (!isQRCodeOutput) {
+          // 恢复输出行 - 智能合并历史日志
+          if (Array.isArray(task.outputLines) && task.outputLines.length > 0) {
+            if (!hasExistingOutput) {
+              // 如果没有现有输出，直接恢复所有历史输出
+              console.log(`Restoring ${task.outputLines.length} output lines for ${processKey}`)
+              task.outputLines.forEach((line: any) => {
+                if (line && typeof line === 'object' && line.content && line.timestamp && line.type) {
                   addOutputLine(processKey, {
                     timestamp: line.timestamp,
                     content: line.content,
                     type: line.type
                   })
                 }
-              } else {
-                console.warn('Invalid output line format:', line)
+              })
+            } else {
+              // 如果有现有输出，只添加新的输出（基于时间戳）
+              const lastLocalTimestamp = currentTask.outputLines[currentTask.outputLines.length - 1]?.timestamp || 0
+              const newLines = task.outputLines.filter((line: any) =>
+                line && line.timestamp && line.timestamp > lastLocalTimestamp
+              )
+              if (newLines.length > 0) {
+                console.log(`Adding ${newLines.length} new output lines for ${processKey}`)
+                newLines.forEach((line: any) => {
+                  if (line && typeof line === 'object' && line.content && line.timestamp && line.type) {
+                    addOutputLine(processKey, {
+                      timestamp: line.timestamp,
+                      content: line.content,
+                      type: line.type
+                    })
+                  }
+                })
               }
-            })
+            }
           }
 
           // 恢复服务器信息 - 安全地处理serverInfo
@@ -401,14 +544,11 @@ const DevPage: React.FC = () => {
                   newLogs.forEach((log: any) => {
                     // 验证log对象的完整性
                     if (log && typeof log === 'object' && log.content && log.ts && log.type && log.id) {
-                      const isQRCodeOutput = log.content.includes('▄') || log.content.includes('█') || log.content.includes('▀')
-                      if (!isQRCodeOutput) {
-                        addOutputLine(processKey, {
-                          timestamp: log.ts,
-                          content: log.content,
-                          type: log.type === 'stderr' ? 'error' : log.type
-                        })
-                      }
+                      addOutputLine(processKey, {
+                        timestamp: log.ts,
+                        content: log.content,
+                        type: log.type === 'stderr' ? 'error' : log.type
+                      })
                       lastLogIdRef.current = log.id
                     } else {
                       console.warn('Invalid log format:', log)
@@ -472,14 +612,11 @@ const DevPage: React.FC = () => {
         const logs = data?.logs || []
         if (logs.length) {
           logs.forEach((log: any) => {
-            const isQRCodeOutput = log.content.includes('▄') || log.content.includes('█') || log.content.includes('▀')
-            if (!isQRCodeOutput) {
-              addOutputLine(processKey, {
-                timestamp: log.ts,
-                content: log.content,
-                type: log.type === 'stderr' ? 'error' : log.type
-              })
-            }
+            addOutputLine(processKey, {
+              timestamp: log.ts,
+              content: log.content,
+              type: log.type === 'stderr' ? 'error' : log.type
+            })
             lastLogIdRef.current = log.id
           })
         }
@@ -508,14 +645,11 @@ const DevPage: React.FC = () => {
         const logs = data?.logs || []
         if (logs.length) {
           logs.forEach((log: any) => {
-            const isQRCodeOutput = log.content.includes('▄') || log.content.includes('█') || log.content.includes('▀')
-            if (!isQRCodeOutput) {
-              addOutputLine(processKey, {
-                timestamp: log.ts,
-                content: log.content,
-                type: log.type === 'stderr' ? 'error' : log.type
-              })
-            }
+            addOutputLine(processKey, {
+              timestamp: log.ts,
+              content: log.content,
+              type: log.type === 'stderr' ? 'error' : log.type
+            })
             lastLogIdRef.current = log.id
           })
         }
@@ -688,146 +822,140 @@ const DevPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={executeCommand}
-            disabled={isProcessRunning || !isConnected}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${isProcessRunning || !isConnected
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-          >
-            <Play className="w-4 h-4" />
-            <span>{isProcessRunning ? '启动中...' : '启动开发'}</span>
-          </button>
-
-          {isProcessRunning && (
+        <div className="flex items-start justify-between">
+          {/* 左侧按钮区域 */}
+          <div className="flex items-center space-x-4">
             <button
-              onClick={stopProcess}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+              onClick={executeCommand}
+              disabled={isProcessRunning || !isConnected}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${isProcessRunning || !isConnected
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
             >
-              <Square className="w-4 h-4" />
-              <span>停止</span>
+              <Play className="w-4 h-4" />
+              <span>{isProcessRunning ? '启动中...' : `启动${environments.find(env => env.key === selectedEnv)?.name || '服务'}`}</span>
             </button>
-          )}
 
-          {/* 打开页面按钮 */}
-          {(serverInfo.localUrl || serverInfo.networkUrl) && (
-            <button
-              onClick={() => {
-                const url = serverInfo.localUrl || serverInfo.networkUrl
-                if (url) {
-                  window.open(url, '_blank')
-                }
-              }}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
-            >
-              <Monitor className="w-4 h-4" />
-              <span>打开页面</span>
-            </button>
-          )}
-
-          <button
-            onClick={clearOutput}
-            disabled={!hasOutput}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${!hasOutput
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-gray-600 text-white hover:bg-gray-700'
-              }`}
-          >
-            <Trash2 className="w-4 h-4" />
-            <span>清空</span>
-          </button>
-
-        </div>
-      </div>
-
-      {/* 服务器信息显示区域 - 只在服务运行时显示 */}
-      {isProcessRunning && (serverInfo.localUrl || serverInfo.networkUrl) && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Monitor className="w-5 h-5 mr-2 text-green-600" />
-            服务器地址
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* 本地地址 */}
-            {serverInfo.localUrl && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium text-green-800">本地访问地址</h4>
-                    <p className="text-sm text-green-600 mt-1">推荐使用此地址访问</p>
-                  </div>
-                  <div className="text-right">
-                    <a
-                      href={serverInfo.localUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-green-700 hover:text-green-800 font-mono text-sm underline"
-                    >
-                      {serverInfo.localUrl}
-                    </a>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(serverInfo.localUrl!)
-                        toast.success('地址已复制到剪贴板')
-                      }}
-                      className="ml-2 px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                    >
-                      复制
-                    </button>
-                  </div>
-                </div>
-              </div>
+            {isProcessRunning && (
+              <button
+                onClick={stopProcess}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+              >
+                <Square className="w-4 h-4" />
+                <span>停止</span>
+              </button>
             )}
 
-            {/* 网络地址 */}
-            {serverInfo.networkUrl && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium text-blue-800">网络访问地址</h4>
-                    <p className="text-sm text-blue-600 mt-1">局域网内其他设备可访问</p>
-                  </div>
-                  <div className="text-right">
-                    <a
-                      href={serverInfo.networkUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-700 hover:text-blue-800 font-mono text-sm underline"
-                    >
-                      {serverInfo.networkUrl}
-                    </a>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(serverInfo.networkUrl!)
-                        toast.success('地址已复制到剪贴板')
-                      }}
-                      className="ml-2 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
-                    >
-                      复制
-                    </button>
-                  </div>
-                </div>
-              </div>
+            {/* 打开页面按钮 */}
+            {(serverInfo.localUrl || serverInfo.networkUrl) && (
+              <button
+                onClick={() => {
+                  const url = serverInfo.localUrl || serverInfo.networkUrl
+                  if (url) {
+                    window.open(url, '_blank')
+                  }
+                }}
+                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+              >
+                <Monitor className="w-4 h-4" />
+                <span>打开页面</span>
+              </button>
             )}
+
+            <button
+              onClick={clearOutput}
+              disabled={!hasOutput}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${!hasOutput
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-gray-600 text-white hover:bg-gray-700'
+                }`}
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>清空</span>
+            </button>
           </div>
 
-          {/* 二维码显示 */}
-          {serverInfo.networkUrl && (
-            <div className="mt-6">
-              <QRCodeDisplay
-                url={serverInfo.networkUrl}
-                title="手机扫码访问"
-                description="使用手机扫描二维码快速访问开发服务器"
-                size={180}
-                showCopy={true}
-              />
+          {/* 右侧服务器地址和二维码区域 */}
+          {(serverInfo.localUrl || serverInfo.networkUrl) && (
+            <div className="flex items-start space-x-6">
+              {/* 服务器地址 */}
+              <div className="space-y-3">
+                {/* 本地地址 */}
+                {serverInfo.localUrl && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-green-800 text-sm">🌐 本地开发地址</h4>
+                        <a
+                          href={serverInfo.localUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-green-700 hover:text-green-800 font-mono text-sm underline"
+                        >
+                          {serverInfo.localUrl}
+                        </a>
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(serverInfo.localUrl!)
+                          toast.success('地址已复制到剪贴板')
+                        }}
+                        className="ml-2 px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                      >
+                        复制
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* 网络地址 */}
+                {serverInfo.networkUrl && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-blue-800 text-sm">📱 网络开发地址</h4>
+                        <a
+                          href={serverInfo.networkUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-700 hover:text-blue-800 font-mono text-sm underline"
+                        >
+                          {serverInfo.networkUrl}
+                        </a>
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(serverInfo.networkUrl!)
+                          toast.success('地址已复制到剪贴板')
+                        }}
+                        className="ml-2 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                      >
+                        复制
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 二维码 */}
+              {serverInfo.networkUrl && (
+                <div className="flex-shrink-0">
+                  <QRCodeDisplay
+                    url={serverInfo.networkUrl}
+                    title="手机扫码访问"
+                    description={`扫码访问${environments.find(env => env.key === selectedEnv)?.name || '服务器'}`}
+                    size={120}
+                    showCopy={false}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+      </div>
+
+
 
       {/* 输出区域 - 始终显示 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -861,13 +989,13 @@ const DevPage: React.FC = () => {
                 className={`flex px-4 py-1 border-b border-gray-800 ${line.type === 'error' ? 'bg-red-900/20 text-red-300' :
                   line.type === 'success' ? 'bg-green-900/20 text-green-300' :
                     'text-gray-100'
-                  } ${isQRCode ? 'font-mono text-xs leading-none' : ''}`}
+                  } ${isQRCode ? 'bg-gray-800/50' : ''}`}
               >
                 <span className="w-20 text-gray-500 mr-4 flex-shrink-0">
                   {line.timestamp}
                 </span>
                 <span
-                  className={`flex-1 ${isQRCode ? 'whitespace-pre font-mono' : 'whitespace-pre-wrap break-words'}`}
+                  className={`flex-1 ${isQRCode ? 'whitespace-pre font-mono text-xs leading-tight text-white' : 'whitespace-pre-wrap break-words'}`}
                   dangerouslySetInnerHTML={{ __html: html }}
                 />
               </div>
