@@ -1,0 +1,324 @@
+/**
+ * Button 按钮组件变体样式
+ * 基于 Ant Design v5.21.0+ variant 和 color 系统
+ */
+
+// ==================== 预设颜色定义 ====================
+.preset-colors() {
+  @blue: #1677ff;
+  @purple: #722ed1;
+  @cyan: #13c2c2;
+  @green: #52c41a;
+  @magenta: #eb2f96;
+  @pink: #eb2f96;
+  @red: #ff4d4f;
+  @orange: #fa8c16;
+  @yellow: #fadb14;
+  @volcano: #fa541c;
+  @geekblue: #2f54eb;
+  @lime: #a0d911;
+  @gold: #faad14;
+}
+
+// ==================== Variant 基础样式 ====================
+.ldesign-button {
+  // Outlined 变体（默认）
+  &--variant-outlined {
+    background-color: transparent;
+    border-style: solid;
+    
+    &.ldesign-button--color-default {
+      color: var(--ld-color-text);
+      border-color: var(--ld-color-border);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-primary);
+        border-color: var(--ld-color-primary);
+      }
+      
+      &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-primary-active);
+        border-color: var(--ld-color-primary-active);
+      }
+    }
+    
+    &.ldesign-button--color-primary {
+      color: var(--ld-color-primary);
+      border-color: var(--ld-color-primary);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-primary-hover);
+        border-color: var(--ld-color-primary-hover);
+        background-color: rgba(22, 119, 255, 0.06);
+      }
+      
+      &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-primary-active);
+        border-color: var(--ld-color-primary-active);
+        background-color: rgba(22, 119, 255, 0.1);
+      }
+    }
+    
+    &.ldesign-button--color-danger {
+      color: var(--ld-color-error);
+      border-color: var(--ld-color-error);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-error-hover);
+        border-color: var(--ld-color-error-hover);
+        background-color: rgba(255, 77, 79, 0.06);
+      }
+      
+      &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-error-active);
+        border-color: var(--ld-color-error-active);
+        background-color: rgba(255, 77, 79, 0.1);
+      }
+    }
+  }
+  
+  // Dashed 变体
+  &--variant-dashed {
+    background-color: transparent;
+    border-style: dashed;
+    
+    &.ldesign-button--color-default {
+      color: var(--ld-color-text);
+      border-color: var(--ld-color-border);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-primary);
+        border-color: var(--ld-color-primary);
+      }
+      
+      &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-primary-active);
+        border-color: var(--ld-color-primary-active);
+      }
+    }
+    
+    &.ldesign-button--color-primary {
+      color: var(--ld-color-primary);
+      border-color: var(--ld-color-primary);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-primary-hover);
+        border-color: var(--ld-color-primary-hover);
+        background-color: rgba(22, 119, 255, 0.06);
+      }
+    }
+    
+    &.ldesign-button--color-danger {
+      color: var(--ld-color-error);
+      border-color: var(--ld-color-error);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-error-hover);
+        border-color: var(--ld-color-error-hover);
+        background-color: rgba(255, 77, 79, 0.06);
+      }
+    }
+  }
+  
+  // Solid 变体（实心）
+  &--variant-solid {
+    border-style: solid;
+    
+    &.ldesign-button--color-primary {
+      color: #ffffff;
+      background-color: var(--ld-color-primary);
+      border-color: var(--ld-color-primary);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: var(--ld-color-primary-hover);
+        border-color: var(--ld-color-primary-hover);
+      }
+      
+      &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: var(--ld-color-primary-active);
+        border-color: var(--ld-color-primary-active);
+      }
+    }
+    
+    &.ldesign-button--color-danger {
+      color: #ffffff;
+      background-color: var(--ld-color-error);
+      border-color: var(--ld-color-error);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: var(--ld-color-error-hover);
+        border-color: var(--ld-color-error-hover);
+      }
+      
+      &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: var(--ld-color-error-active);
+        border-color: var(--ld-color-error-active);
+      }
+    }
+    
+    // 预设颜色
+    &.ldesign-button--color-blue {
+      color: #ffffff;
+      background-color: #1677ff;
+      border-color: #1677ff;
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: #4096ff;
+        border-color: #4096ff;
+      }
+    }
+    
+    &.ldesign-button--color-green {
+      color: #ffffff;
+      background-color: #52c41a;
+      border-color: #52c41a;
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: #73d13d;
+        border-color: #73d13d;
+      }
+    }
+    
+    &.ldesign-button--color-orange {
+      color: #ffffff;
+      background-color: #fa8c16;
+      border-color: #fa8c16;
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: #ffa940;
+        border-color: #ffa940;
+      }
+    }
+  }
+  
+  // Filled 变体（填充）
+  &--variant-filled {
+    border: none;
+    
+    &.ldesign-button--color-default {
+      color: var(--ld-color-text);
+      background-color: rgba(0, 0, 0, 0.06);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: rgba(0, 0, 0, 0.12);
+      }
+    }
+    
+    &.ldesign-button--color-primary {
+      color: var(--ld-color-primary);
+      background-color: rgba(22, 119, 255, 0.1);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: rgba(22, 119, 255, 0.2);
+      }
+    }
+    
+    &.ldesign-button--color-danger {
+      color: var(--ld-color-error);
+      background-color: rgba(255, 77, 79, 0.1);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: rgba(255, 77, 79, 0.2);
+      }
+    }
+  }
+  
+  // Text 变体
+  &--variant-text {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    
+    &.ldesign-button--color-default {
+      color: var(--ld-color-text);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: rgba(0, 0, 0, 0.06);
+      }
+      
+      &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+    }
+    
+    &.ldesign-button--color-primary {
+      color: var(--ld-color-primary);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: rgba(22, 119, 255, 0.06);
+      }
+    }
+    
+    &.ldesign-button--color-danger {
+      color: var(--ld-color-error);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: rgba(255, 77, 79, 0.06);
+      }
+    }
+  }
+  
+  // Link 变体
+  &--variant-link {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    height: auto;
+    
+    &.ldesign-button--color-default {
+      color: var(--ld-color-text);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-text);
+      }
+    }
+    
+    &.ldesign-button--color-primary {
+      color: var(--ld-color-primary);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-primary-hover);
+      }
+    }
+    
+    &.ldesign-button--color-danger {
+      color: var(--ld-color-error);
+      
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ld-color-error-hover);
+      }
+    }
+  }
+  
+  // Ghost 状态修饰（可与任何 variant 组合）
+  &--ghost {
+    background-color: transparent !important;
+    color: inherit;
+    
+    &.ldesign-button--variant-solid,
+    &.ldesign-button--variant-filled {
+      &.ldesign-button--color-primary {
+        color: var(--ld-color-primary);
+        border-color: var(--ld-color-primary);
+        
+        &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+          color: var(--ld-color-primary-hover);
+          border-color: var(--ld-color-primary-hover);
+          background-color: rgba(22, 119, 255, 0.06) !important;
+        }
+      }
+      
+      &.ldesign-button--color-danger {
+        color: var(--ld-color-error);
+        border-color: var(--ld-color-error);
+        
+        &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+          color: var(--ld-color-error-hover);
+          border-color: var(--ld-color-error-hover);
+          background-color: rgba(255, 77, 79, 0.06) !important;
+        }
+      }
+    }
+  }
+}

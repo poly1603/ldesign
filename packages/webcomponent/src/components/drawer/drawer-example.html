@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Drawer 高级功能示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    h1 {
+      color: #1f2937;
+      margin-bottom: 10px;
+      font-size: 2.5rem;
+    }
+    
+    .subtitle {
+      color: #6b7280;
+      margin-bottom: 40px;
+      font-size: 1.1rem;
+    }
+    
+    .demo-section {
+      margin-bottom: 40px;
+    }
+    
+    .demo-section h2 {
+      color: #374151;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 10px;
+    }
+    
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .demo-button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .demo-button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .demo-button:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .demo-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #f85032 0%, #e73827 100%);
+    }
+    
+    .btn-warning {
+      background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+    }
+    
+    .btn-info {
+      background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+    }
+    
+    .btn-dark {
+      background: linear-gradient(135deg, #232526 0%, #414345 100%);
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .feature-list li {
+      padding: 10px 0;
+      color: #4b5563;
+      position: relative;
+      padding-left: 30px;
+    }
+    
+    .feature-list li::before {
+      content: '✨';
+      position: absolute;
+      left: 0;
+      top: 10px;
+    }
+    
+    .config-panel {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .config-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .config-label {
+      flex: 0 0 150px;
+      color: #374151;
+      font-weight: 500;
+    }
+    
+    .config-control {
+      flex: 1;
+    }
+    
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    
+    input[type="text"],
+    input[type="number"],
+    select {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      width: 200px;
+    }
+    
+    .drawer-content {
+      padding: 20px;
+    }
+    
+    .drawer-content h3 {
+      color: #1f2937;
+      margin-bottom: 16px;
+    }
+    
+    .drawer-content p {
+      color: #6b7280;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #374151;
+      font-weight: 500;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+    
+    .stat-card {
+      background: #f3f4f6;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 4px;
+    }
+    
+    .stat-label {
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 LDesign Drawer 组件</h1>
+    <p class="subtitle">功能丰富的高级抽屉组件，支持调整大小、吸附、手势等功能</p>
+    
+    <!-- 基础示例 -->
+    <div class="demo-section">
+      <h2>基础功能</h2>
+      <div class="button-grid">
+        <button class="demo-button btn-primary" onclick="showBasicDrawer('left')">
+          左侧抽屉
+        </button>
+        <button class="demo-button btn-success" onclick="showBasicDrawer('right')">
+          右侧抽屉
+        </button>
+        <button class="demo-button btn-warning" onclick="showBasicDrawer('top')">
+          顶部抽屉
+        </button>
+        <button class="demo-button btn-danger" onclick="showBasicDrawer('bottom')">
+          底部抽屉
+        </button>
+      </div>
+    </div>
+    
+    <!-- 高级功能示例 -->
+    <div class="demo-section">
+      <h2>高级功能</h2>
+      <div class="button-grid">
+        <button class="demo-button btn-info" onclick="showResizableDrawer()">
+          可调整大小
+        </button>
+        <button class="demo-button btn-dark" onclick="showRoundedDrawer()">
+          圆角抽屉
+        </button>
+        <button class="demo-button btn-primary" onclick="showSnapDrawer()">
+          吸附点示例
+        </button>
+        <button class="demo-button btn-success" onclick="showCustomFooterDrawer()">
+          自定义底部按钮
+        </button>
+        <button class="demo-button btn-warning" onclick="showFormDrawer()">
+          表单示例
+        </button>
+        <button class="demo-button btn-danger" onclick="showNestedDrawer()">
+          嵌套抽屉
+        </button>
+      </div>
+    </div>
+    
+    <!-- 功能列表 -->
+    <div class="demo-section">
+      <h2>✨ 组件特性</h2>
+      <ul class="feature-list">
+        <li>支持四个方向（上下左右）的抽屉展示</li>
+        <li>可自定义标题和圆角样式</li>
+        <li>支持鼠标和触摸拖拽调整大小</li>
+        <li>内置吸附点功能，自动吸附到预设位置</li>
+        <li>阻尼效果，让调整更加顺滑</li>
+        <li>移动端手势支持，可滑动关闭</li>
+        <li>自定义底部按钮，支持多种样式</li>
+        <li>键盘导航支持（Tab循环、Ctrl+方向键调整大小）</li>
+        <li>自动聚焦管理</li>
+        <li>响应式设计，自适应移动端</li>
+        <li>支持嵌套多层抽屉</li>
+        <li>可配置动画时长和效果</li>
+        <li>保留状态选项</li>
+        <li>完整的事件系统</li>
+      </ul>
+    </div>
+    
+    <!-- 动态配置面板 -->
+    <div class="demo-section">
+      <h2>⚙️ 动态配置</h2>
+      <div class="config-panel">
+        <div class="config-row">
+          <label class="config-label">方向：</label>
+          <div class="config-control">
+            <select id="config-placement">
+              <option value="right">右侧</option>
+              <option value="left">左侧</option>
+              <option value="top">顶部</option>
+              <option value="bottom">底部</option>
+            </select>
+          </div>
+        </div>
+        <div class="config-row">
+          <label class="config-label">大小：</label>
+          <div class="config-control">
+            <input type="text" id="config-size" value="400" placeholder="如: 400 或 50%">
+          </div>
+        </div>
+        <div class="config-row">
+          <label class="config-label">圆角：</label>
+          <div class="config-control">
+            <input type="checkbox" id="config-rounded" checked>
+          </div>
+        </div>
+        <div class="config-row">
+          <label class="config-label">可调整大小：</label>
+          <div class="config-control">
+            <input type="checkbox" id="config-resizable" checked>
+          </div>
+        </div>
+        <div class="config-row">
+          <label class="config-label">显示遮罩：</label>
+          <div class="config-control">
+            <input type="checkbox" id="config-mask" checked>
+          </div>
+        </div>
+        <div class="config-row">
+          <label class="config-label">动画时长(ms)：</label>
+          <div class="config-control">
+            <input type="number" id="config-duration" value="300" min="0" max="1000">
+          </div>
+        </div>
+        <button class="demo-button btn-primary" style="margin-top: 20px" onclick="showConfiguredDrawer()">
+          打开配置的抽屉
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 抽屉组件 -->
+  <ldesign-drawer id="basicDrawer">
+    <div class="drawer-content">
+      <h3>基础抽屉示例</h3>
+      <p>这是一个基础的抽屉组件示例。您可以在这里放置任何内容。</p>
+      <p>抽屉支持多种配置选项，包括方向、大小、动画效果等。</p>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">128</div>
+          <div class="stat-label">用户数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">99%</div>
+          <div class="stat-label">满意度</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">24/7</div>
+          <div class="stat-label">在线支持</div>
+        </div>
+      </div>
+    </div>
+  </ldesign-drawer>
+  
+  <ldesign-drawer id="resizableDrawer" 
+    resizable="true" 
+    show-resize-hint="true"
+    min-size="200"
+    max-size="80%"
+    drawer-title="可调整大小的抽屉">
+    <div class="drawer-content">
+      <h3>拖动边缘调整大小</h3>
+      <p>这个抽屉可以通过拖动边缘来调整大小。</p>
+      <p>特性：</p>
+      <ul>
+        <li>• 最小尺寸：200px</li>
+        <li>• 最大尺寸：80%</li>
+        <li>• 显示尺寸提示</li>
+        <li>• 支持触摸拖动</li>
+        <li>• 键盘快捷键：Ctrl + 方向键</li>
+      </ul>
+    </div>
+  </ldesign-drawer>
+  
+  <ldesign-drawer id="roundedDrawer"
+    rounded="true"
+    border-radius="20px"
+    drawer-title="圆角抽屉"
+    placement="right">
+    <div class="drawer-content">
+      <h3>优雅的圆角设计</h3>
+      <p>这个抽屉具有圆角边框，让界面看起来更加柔和。</p>
+      <p>圆角大小可以自定义，默认为12px。</p>
+    </div>
+  </ldesign-drawer>
+  
+  <ldesign-drawer id="snapDrawer"
+    resizable="true"
+    drawer-title="吸附点示例"
+    placement="right">
+    <div class="drawer-content">
+      <h3>自动吸附功能</h3>
+      <p>拖动调整大小时，会自动吸附到预设的位置：</p>
+      <ul>
+        <li>• 25% - 迷你模式</li>
+        <li>• 50% - 标准模式</li>
+        <li>• 75% - 扩展模式</li>
+      </ul>
+      <p>当接近吸附点时，会显示提示信息。</p>
+    </div>
+  </ldesign-drawer>
+  
+  <ldesign-drawer id="footerDrawer"
+    drawer-title="自定义操作"
+    footer-border="true">
+    <div class="drawer-content">
+      <h3>表单内容</h3>
+      <div class="form-group">
+        <label>姓名</label>
+        <input type="text" placeholder="请输入姓名">
+      </div>
+      <div class="form-group">
+        <label>邮箱</label>
+        <input type="email" placeholder="请输入邮箱">
+      </div>
+      <div class="form-group">
+        <label>留言</label>
+        <textarea placeholder="请输入留言内容"></textarea>
+      </div>
+    </div>
+  </ldesign-drawer>
+  
+  <ldesign-drawer id="formDrawer"
+    drawer-title="用户信息表单"
+    size="500">
+    <div class="drawer-content">
+      <form>
+        <div class="form-group">
+          <label>用户名 *</label>
+          <input type="text" placeholder="请输入用户名" required>
+        </div>
+        <div class="form-group">
+          <label>密码 *</label>
+          <input type="password" placeholder="请输入密码" required>
+        </div>
+        <div class="form-group">
+          <label>确认密码 *</label>
+          <input type="password" placeholder="请再次输入密码" required>
+        </div>
+        <div class="form-group">
+          <label>手机号码</label>
+          <input type="tel" placeholder="请输入手机号码">
+        </div>
+        <div class="form-group">
+          <label>个人简介</label>
+          <textarea placeholder="介绍一下自己..."></textarea>
+        </div>
+      </form>
+    </div>
+  </ldesign-drawer>
+  
+  <ldesign-drawer id="nestedDrawer1"
+    drawer-title="第一层抽屉"
+    placement="right"
+    size="400">
+    <div class="drawer-content">
+      <h3>嵌套抽屉示例</h3>
+      <p>这是第一层抽屉，点击下面的按钮打开第二层。</p>
+      <button class="demo-button btn-info" onclick="showNestedDrawer2()">
+        打开第二层抽屉
+      </button>
+    </div>
+  </ldesign-drawer>
+  
+  <ldesign-drawer id="nestedDrawer2"
+    drawer-title="第二层抽屉"
+    placement="right"
+    size="350">
+    <div class="drawer-content">
+      <h3>第二层内容</h3>
+      <p>这是嵌套的第二层抽屉。</p>
+      <p>多层抽屉会自动管理z-index层级。</p>
+    </div>
+  </ldesign-drawer>
+  
+  <ldesign-drawer id="configuredDrawer"
+    drawer-title="动态配置的抽屉">
+    <div class="drawer-content">
+      <h3>根据您的配置生成</h3>
+      <p>这个抽屉的所有属性都是根据您在配置面板中的选择动态设置的。</p>
+    </div>
+  </ldesign-drawer>
+  
+  <script>
+    // 基础抽屉
+    function showBasicDrawer(placement) {
+      const drawer = document.getElementById('basicDrawer');
+      drawer.placement = placement;
+      drawer.drawerTitle = `${getPlacementText(placement)}抽屉`;
+      drawer.visible = true;
+    }
+    
+    // 可调整大小的抽屉
+    function showResizableDrawer() {
+      const drawer = document.getElementById('resizableDrawer');
+      drawer.visible = true;
+      
+      // 监听大小变化事件
+      drawer.addEventListener('ldesignSizeChange', (e) => {
+        console.log('Size changed:', e.detail);
+      });
+    }
+    
+    // 圆角抽屉
+    function showRoundedDrawer() {
+      document.getElementById('roundedDrawer').visible = true;
+    }
+    
+    // 吸附点抽屉
+    function showSnapDrawer() {
+      const drawer = document.getElementById('snapDrawer');
+      drawer.snapPoints = [
+        { value: '25%', label: '迷你模式' },
+        { value: '50%', label: '标准模式' },
+        { value: '75%', label: '扩展模式' }
+      ];
+      drawer.snapThreshold = 50;
+      drawer.visible = true;
+      
+      // 监听吸附事件
+      drawer.addEventListener('ldesignSnapToPoint', (e) => {
+        console.log('Snapped to:', e.detail);
+      });
+    }
+    
+    // 自定义底部按钮抽屉
+    function showCustomFooterDrawer() {
+      const drawer = document.getElementById('footerDrawer');
+      drawer.footerButtons = [
+        {
+          text: '取消',
+          type: 'default',
+          onClick: () => {
+            drawer.visible = false;
+          }
+        },
+        {
+          text: '保存草稿',
+          type: 'warning',
+          onClick: () => {
+            console.log('保存草稿');
+          }
+        },
+        {
+          text: '提交',
+          type: 'primary',
+          onClick: async () => {
+            // 模拟异步操作
+            drawer.footerButtons[2].loading = true;
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            drawer.footerButtons[2].loading = false;
+            drawer.visible = false;
+            alert('提交成功！');
+          }
+        }
+      ];
+      drawer.visible = true;
+    }
+    
+    // 表单抽屉
+    function showFormDrawer() {
+      const drawer = document.getElementById('formDrawer');
+      drawer.footerButtons = [
+        {
+          text: '重置',
+          type: 'default',
+          onClick: () => {
+            drawer.querySelector('form').reset();
+          }
+        },
+        {
+          text: '提交',
+          type: 'primary',
+          onClick: () => {
+            alert('表单已提交！');
+            drawer.visible = false;
+          }
+        }
+      ];
+      drawer.visible = true;
+    }
+    
+    // 嵌套抽屉
+    function showNestedDrawer() {
+      document.getElementById('nestedDrawer1').visible = true;
+    }
+    
+    function showNestedDrawer2() {
+      document.getElementById('nestedDrawer2').visible = true;
+    }
+    
+    // 配置的抽屉
+    function showConfiguredDrawer() {
+      const drawer = document.getElementById('configuredDrawer');
+      
+      // 获取配置值
+      drawer.placement = document.getElementById('config-placement').value;
+      drawer.size = document.getElementById('config-size').value;
+      drawer.rounded = document.getElementById('config-rounded').checked;
+      drawer.resizable = document.getElementById('config-resizable').checked;
+      drawer.mask = document.getElementById('config-mask').checked;
+      drawer.animationDuration = parseInt(document.getElementById('config-duration').value);
+      
+      drawer.visible = true;
+    }
+    
+    // 工具函数
+    function getPlacementText(placement) {
+      const map = {
+        left: '左侧',
+        right: '右侧',
+        top: '顶部',
+        bottom: '底部'
+      };
+      return map[placement] || placement;
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('LDesign Drawer 示例页面已加载');
+      
+      // 添加全局事件监听
+      document.addEventListener('ldesignClose', (e) => {
+        console.log('Drawer closed:', e.target.id);
+      });
+    });
+  </script>
+</body>
+</html>

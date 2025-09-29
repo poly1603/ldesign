@@ -8,6 +8,7 @@
   z-index: var(--ld-overlay-z-index, 1000);
   display: none;
   overscroll-behavior: contain;
+  user-select: none;
 
   // 容器模式：使用绝对定位铺满容器（也通过内联 style 覆盖 position）
   &--in-container {
@@ -20,12 +21,63 @@
     display: block;
   }
 
+  // 移动端样式
+  &--mobile {
+    .ldesign-drawer__panel {
+      &--left,
+      &--right {
+        max-width: 90vw !important;
+        width: auto !important;
+        min-width: 280px;
+      }
+      
+      &--top,
+      &--bottom {
+        max-height: 90vh !important;
+        height: auto !important;
+        min-height: 200px;
+      }
+    }
+
+    // 移动端内容区域优化
+    .ldesign-drawer__content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ldesign-drawer__body {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch; // iOS 平滑滚动
+    }
+  }
+
+  // 调整大小状态
+  &--resizing {
+    cursor: col-resize;
+    
+    &.ldesign-drawer--top,
+    &.ldesign-drawer--bottom {
+      cursor: row-resize;
+    }
+  }
+
+  // 拖动状态
+  &--dragging {
+    .ldesign-drawer__panel {
+      transition: none !important;
+    }
+  }
+
   &__mask {
     position: absolute;
     inset: 0;
     background: var(--ld-overlay-backdrop, rgba(0, 0, 0, 0.45));
     opacity: 0;
     transition: opacity var(--ld-overlay-duration, 0.3s) var(--ld-overlay-ease, ease);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 
     .ldesign-drawer--visible & {
       opacity: 1;
@@ -33,24 +85,51 @@
     .ldesign-drawer--closing & {
       opacity: 0;
     }
+    
+    &--transparent {
+      opacity: 0.3;
+    }
   }
 
   &__panel {
     position: absolute;
     background: var(--ldesign-bg-color, #ffffff);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2), 0 2px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    max-width: 100vw;
-    max-height: 100vh;
     opacity: 1;
-    transition: transform var(--ld-overlay-duration, 0.3s) var(--ld-overlay-ease, cubic-bezier(0.4, 0, 0.2, 1));
+    transition: transform var(--ld-overlay-duration, 0.3s) var(--ld-overlay-ease, cubic-bezier(0.4, 0, 0.2, 1)),
+                box-shadow 0.3s ease,
+                border-radius 0.3s ease;
+    will-change: transform;
+    contain: layout style paint;
+    // 移除全局的 max-width/max-height，改为在具体方向上设置
+
+    // 圆角样式
+    &--rounded {
+      overflow: hidden;
+    }
+
+    // 调整大小时禁用过渡
+    &--resizing {
+      transition: none !important;
+      user-select: none;
+    }
+
+    // 拖动时的样式
+    &--dragging {
+      opacity: 0.95;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+    }
 
     &--left,
     &--right {
       top: 0;
       bottom: 0;
       width: 360px; // 由内联样式覆盖
+      max-width: 100vw;
+      height: 100%;
+      max-height: 100vh;
     }
 
     &--top,
@@ -58,6 +137,9 @@
       left: 0;
       right: 0;
       height: 360px; // 由内联样式覆盖
+      max-height: 100vh;
+      width: 100%;
+      max-width: 100vw;
     }
 
     // 初始位移（隐藏态）
@@ -87,6 +169,7 @@
     flex-direction: column;
     min-height: 0;
     height: 100%;
+    overflow: hidden; // 防止内容溢出
   }
 
   &__header {
@@ -95,7 +178,9 @@
     justify-content: space-between;
     padding: 16px 20px;
     border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    position: relative;
+    z-index: 1;
   }
 
   &__title {
@@ -125,14 +210,435 @@
 
   &__body {
     padding: 16px 20px;
-    flex: 1;
+    flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
     color: var(--ldesign-text-color, #1f2937);
+    user-select: text;
+    overscroll-behavior: contain;
+    // 保证内容区域可以正常滚动
+    position: relative;
+    
+    // 滚动条美化
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+      
+      &:hover {
+        background: rgba(0, 0, 0, 0.3);
+      }
+    }
+  }
+
+  // 底部区域
+  &__footer {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex: 0 0 auto;
+    background: var(--ldesign-bg-color, #ffffff);
+    position: relative;
+    z-index: 1;
+    
+    &--border {
+      border-top: 1px solid var(--ldesign-border-color, #e5e7eb);
+    }
+  }
+
+  &__footer-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  &__footer-button {
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 80px;
+    justify-content: center;
+    
+    &--default {
+      background: var(--ldesign-bg-color-secondary, #f3f4f6);
+      color: var(--ldesign-text-color, #1f2937);
+      border-color: var(--ldesign-border-color, #e5e7eb);
+      
+      &:hover:not(:disabled) {
+        background: var(--ldesign-bg-color-hover, #e5e7eb);
+      }
+    }
+    
+    &--primary {
+      background: var(--ldesign-color-primary, #3b82f6);
+      color: white;
+      
+      &:hover:not(:disabled) {
+        background: var(--ldesign-color-primary-hover, #2563eb);
+      }
+    }
+    
+    &--danger {
+      background: var(--ldesign-color-danger, #ef4444);
+      color: white;
+      
+      &:hover:not(:disabled) {
+        background: var(--ldesign-color-danger-hover, #dc2626);
+      }
+    }
+    
+    &--success {
+      background: var(--ldesign-color-success, #10b981);
+      color: white;
+      
+      &:hover:not(:disabled) {
+        background: var(--ldesign-color-success-hover, #059669);
+      }
+    }
+    
+    &--warning {
+      background: var(--ldesign-color-warning, #f59e0b);
+      color: white;
+      
+      &:hover:not(:disabled) {
+        background: var(--ldesign-color-warning-hover, #d97706);
+      }
+    }
+    
+    &--disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    &--loading {
+      cursor: wait;
+    }
+  }
+
+  &__button-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: ldesign-spin 0.6s linear infinite;
+  }
+
+  // 调整大小手柄
+  &__resize-handle {
+    position: absolute;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    
+    &--left {
+      right: -4px;
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      cursor: col-resize;
+    }
+    
+    &--right {
+      left: -4px;
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      cursor: col-resize;
+    }
+    
+    &--top {
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 8px;
+      cursor: row-resize;
+    }
+    
+    &--bottom {
+      top: -4px;
+      left: 0;
+      right: 0;
+      height: 8px;
+      cursor: row-resize;
+    }
+    
+    &:hover,
+    &--active {
+      opacity: 1;
+    }
+    
+    .ldesign-drawer--resizable .ldesign-drawer__panel:hover & {
+      opacity: 1;
+    }
+  }
+
+  &__resize-line {
+    position: absolute;
+    background: var(--ldesign-color-primary, #3b82f6);
+    border-radius: 2px;
+    transition: all 0.2s ease;
+    
+    .ldesign-drawer__resize-handle--left &,
+    .ldesign-drawer__resize-handle--right & {
+      width: 3px;
+      height: 40px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    .ldesign-drawer__resize-handle--top &,
+    .ldesign-drawer__resize-handle--bottom & {
+      width: 40px;
+      height: 3px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    .ldesign-drawer__resize-handle:hover &,
+    .ldesign-drawer__resize-handle--active & {
+      background: var(--ldesign-color-primary-hover, #2563eb);
+    }
+    
+    .ldesign-drawer__resize-handle--left:hover &,
+    .ldesign-drawer__resize-handle--right:hover & {
+      height: 60px;
+    }
+    
+    .ldesign-drawer__resize-handle--top:hover &,
+    .ldesign-drawer__resize-handle--bottom:hover & {
+      width: 60px;
+    }
+  }
+
+  &__resize-hint {
+    position: absolute;
+    background: var(--ldesign-color-primary, #3b82f6);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    
+    .ldesign-drawer__resize-handle--left & {
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    .ldesign-drawer__resize-handle--right & {
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    .ldesign-drawer__resize-handle--top & {
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    .ldesign-drawer__resize-handle--bottom & {
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+
+  // 吸附指示器
+  &__snap-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    pointer-events: none;
+    animation: ldesign-fade-in 0.3s ease;
+  }
+
+  &__snap-label {
+    background: var(--ldesign-color-primary, #3b82f6);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    animation: ldesign-bounce-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+}
+
+// 动画
+@keyframes ldesign-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ldesign-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ldesign-bounce-in {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .ldesign-drawer {
+    // 移除遮罩的模糊效果（性能优化）
+    &__mask {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
+    &__panel {
+      &--left,
+      &--right {
+        width: 85vw !important;
+        max-width: 85vw !important;
+        min-width: 280px;
+      }
+      
+      &--top,
+      &--bottom {
+        height: auto !important;
+        max-height: 85vh !important;
+        min-height: 40vh;
+      }
+    }
+    
+    &__header {
+      padding: 12px 16px;
+      flex-shrink: 0;
+    }
+
+    &__body {
+      padding: 12px 16px;
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    &__footer {
+      padding: 12px 16px;
+      flex-shrink: 0;
+    }
+    
+    &__footer-buttons {
+      flex-wrap: wrap;
+      width: 100%;
+      gap: 8px;
+      
+      .ldesign-drawer__footer-button {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+    }
+
+    // 调整关闭按钮大小
+    &__close {
+      width: 28px;
+      height: 28px;
+    }
+
+    // 调整大小手柄在移动端隐藏
+    &__resize-handle {
+      display: none;
+    }
+  }
+
+  // 小屏幕优化
+  .ldesign-drawer--mobile {
+    .ldesign-drawer__panel {
+      // 确保不会超出屏幕
+      &--left,
+      &--right {
+        width: calc(100vw - 40px) !important;
+        max-width: 400px !important;
+      }
+
+      &--top,
+      &--bottom {
+        height: auto !important;
+        max-height: calc(100vh - 80px) !important;
+        min-height: 300px;
+      }
+    }
+  }
+}
+
+// 超小屏幕（手机竖屏）
+@media (max-width: 480px) {
+  .ldesign-drawer {
+    &__panel {
+      &--left,
+      &--right {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        border-radius: 0 !important; // 移除圆角
+      }
+      
+      &--top {
+        height: auto !important;
+        max-height: 90vh !important;
+        min-height: 40vh;
+      }
+      
+      &--bottom {
+        height: auto !important;
+        max-height: 80vh !important;
+        min-height: 40vh;
+      }
+    }
+
+    // 全屏模式下的遮罩可以稍微透明一些
+    &__mask {
+      background: rgba(0, 0, 0, 0.5);
+    }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ldesign-drawer__mask { transition: none !important; }
   .ldesign-drawer__panel { transition: none !important; }
+  .ldesign-drawer__snap-label { animation: none !important; }
+  .ldesign-drawer__button-spinner { animation: none !important; }
 }

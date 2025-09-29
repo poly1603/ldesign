@@ -1,0 +1,882 @@
+/**
+ * Button 按钮组件样式
+ * 完全对标 Ant Design v5 设计规范
+ */
+
+// ==================== 设计令牌 Design Tokens ====================
+:root {
+  // 主色系
+  --ld-primary: #1677ff;
+  --ld-primary-hover: #4096ff; 
+  --ld-primary-active: #0958d9;
+  --ld-primary-bg: #f0f5ff;
+  --ld-primary-bg-hover: #e6f4ff;
+  
+  // 错误/危险色
+  --ld-error: #ff4d4f;
+  --ld-error-hover: #ff7875;
+  --ld-error-active: #d9363e;
+  --ld-error-bg: #fff1f0;
+  --ld-error-bg-hover: #ffebeb;
+  
+  // 成功色
+  --ld-success: #52c41a;
+  --ld-success-hover: #73d13d;
+  --ld-success-active: #389e0d;
+  --ld-success-bg: #f6ffed;
+  
+  // 警告色
+  --ld-warning: #faad14;
+  --ld-warning-hover: #ffc53d;
+  --ld-warning-active: #d48806;
+  --ld-warning-bg: #fffbe6;
+  
+  // 文本与边框
+  --ld-text: rgba(0, 0, 0, 0.88);
+  --ld-text-secondary: rgba(0, 0, 0, 0.65);
+  --ld-text-disabled: rgba(0, 0, 0, 0.25);
+  --ld-border: #d9d9d9;
+  --ld-bg: #ffffff;
+  --ld-bg-container: #ffffff;
+  --ld-bg-disabled: rgba(0, 0, 0, 0.04);
+}
+
+// ==================== 基础按钮样式 ====================
+.ldesign-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 4px 15px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.5714;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  outline: none;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
+  
+  // 防止水波纹溢出
+  overflow: hidden;
+  
+  // 图标样式
+  .ldesign-button__icon {
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    
+    &--loading {
+      animation: loadingCircle 1s infinite linear;
+    }
+  }
+  
+  // 内容容器
+  .ldesign-button__content {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  // 只有图标的按钮
+  &--icon-only {
+    padding: 4px 8px;
+    gap: 0;
+    
+    .ldesign-button__content {
+      gap: 0;
+    }
+  }
+}
+
+// ==================== Type 类型（语法糖，保持兼容） ====================
+
+// Default 默认按钮
+.ldesign-button--default,
+.ldesign-button--variant-outlined.ldesign-button--color-default {
+  color: var(--ld-text);
+  background-color: var(--ld-bg);
+  border-color: var(--ld-border);
+  
+  &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: var(--ld-primary-hover);
+    border-color: var(--ld-primary-hover);
+    background-color: var(--ld-bg);
+  }
+  
+  &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: var(--ld-primary-active);
+    border-color: var(--ld-primary-active);
+  }
+}
+
+// Primary 主按钮
+.ldesign-button--primary,
+.ldesign-button--variant-solid.ldesign-button--color-primary {
+  color: #ffffff;
+  background-color: var(--ld-primary);
+  border-color: var(--ld-primary);
+  box-shadow: 0 2px 0 rgba(5, 145, 255, 0.1);
+  
+  &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: #ffffff;
+    background-color: var(--ld-primary-hover);
+    border-color: var(--ld-primary-hover);
+  }
+  
+  &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: #ffffff;
+    background-color: var(--ld-primary-active);
+    border-color: var(--ld-primary-active);
+  }
+}
+
+// Dashed 虚线按钮
+.ldesign-button--dashed,
+.ldesign-button--variant-dashed {
+  color: var(--ld-text);
+  background-color: var(--ld-bg);
+  border-color: var(--ld-border);
+  border-style: dashed;
+  
+  &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: var(--ld-primary-hover);
+    border-color: var(--ld-primary-hover);
+    background-color: var(--ld-bg);
+  }
+  
+  &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: var(--ld-primary-active);
+    border-color: var(--ld-primary-active);
+  }
+}
+
+// Text 文本按钮
+.ldesign-button--text,
+.ldesign-button--variant-text {
+  color: var(--ld-text);
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  
+  &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: var(--ld-text);
+    background-color: rgba(0, 0, 0, 0.06);
+    border-color: transparent;
+  }
+  
+  &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: var(--ld-text);
+    background-color: rgba(0, 0, 0, 0.15);
+    border-color: transparent;
+  }
+}
+
+// Link 链接按钮
+.ldesign-button--link,
+.ldesign-button--variant-link {
+  color: var(--ld-primary);
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  padding: 0;
+  height: auto;
+  line-height: inherit;
+  
+  &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: var(--ld-primary-hover);
+  }
+  
+  &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: var(--ld-primary-active);
+  }
+}
+
+// ==================== Variant 变体系统 ====================
+
+// Solid 实心（填充）
+.ldesign-button--variant-solid {
+  color: #ffffff;
+  
+  &.ldesign-button--color-primary {
+    background-color: #1677ff;
+    border-color: #1677ff;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #4096ff;
+      border-color: #4096ff;
+    }
+  }
+  
+  &.ldesign-button--color-danger {
+    background-color: #ff4d4f;
+    border-color: #ff4d4f;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #ff7875;
+      border-color: #ff7875;
+    }
+  }
+  
+  // 预设颜色
+  &.ldesign-button--color-blue {
+    background-color: #1677ff;
+    border-color: #1677ff;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #4096ff;
+      border-color: #4096ff;
+    }
+  }
+  
+  &.ldesign-button--color-purple {
+    background-color: #722ed1;
+    border-color: #722ed1;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #9254de;
+      border-color: #9254de;
+    }
+  }
+  
+  &.ldesign-button--color-cyan {
+    background-color: #13c2c2;
+    border-color: #13c2c2;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #36cfc9;
+      border-color: #36cfc9;
+    }
+  }
+  
+  &.ldesign-button--color-green {
+    background-color: #52c41a;
+    border-color: #52c41a;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #73d13d;
+      border-color: #73d13d;
+    }
+  }
+  
+  &.ldesign-button--color-magenta {
+    background-color: #eb2f96;
+    border-color: #eb2f96;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #f759ab;
+      border-color: #f759ab;
+    }
+  }
+  
+  &.ldesign-button--color-pink {
+    background-color: #eb2f96;
+    border-color: #eb2f96;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #f759ab;
+      border-color: #f759ab;
+    }
+  }
+  
+  &.ldesign-button--color-red {
+    background-color: #f5222d;
+    border-color: #f5222d;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #ff4d4f;
+      border-color: #ff4d4f;
+    }
+  }
+  
+  &.ldesign-button--color-orange {
+    background-color: #fa8c16;
+    border-color: #fa8c16;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #ffa940;
+      border-color: #ffa940;
+    }
+  }
+  
+  &.ldesign-button--color-yellow {
+    background-color: #fadb14;
+    border-color: #fadb14;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #ffec3d;
+      border-color: #ffec3d;
+    }
+  }
+  
+  &.ldesign-button--color-volcano {
+    background-color: #fa541c;
+    border-color: #fa541c;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #ff7a45;
+      border-color: #ff7a45;
+    }
+  }
+  
+  &.ldesign-button--color-geekblue {
+    background-color: #2f54eb;
+    border-color: #2f54eb;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #597ef7;
+      border-color: #597ef7;
+    }
+  }
+  
+  &.ldesign-button--color-lime {
+    background-color: #a0d911;
+    border-color: #a0d911;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #bae637;
+      border-color: #bae637;
+    }
+  }
+  
+  &.ldesign-button--color-gold {
+    background-color: #faad14;
+    border-color: #faad14;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #ffc53d;
+      border-color: #ffc53d;
+    }
+  }
+}
+
+// Outlined 描边
+.ldesign-button--variant-outlined {
+  background-color: transparent;
+  border-style: solid;
+  
+  &.ldesign-button--color-default {
+    color: rgba(0, 0, 0, 0.88);
+    border-color: #d9d9d9;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #4096ff;
+      border-color: #4096ff;
+    }
+  }
+  
+  &.ldesign-button--color-primary {
+    color: #1677ff;
+    border-color: #1677ff;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #4096ff;
+      border-color: #4096ff;
+      background-color: rgba(22, 119, 255, 0.06);
+    }
+  }
+  
+  &.ldesign-button--color-danger {
+    color: #ff4d4f;
+    border-color: #ff4d4f;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ff7875;
+      border-color: #ff7875;
+      background-color: rgba(255, 77, 79, 0.06);
+    }
+  }
+  
+  // 预设颜色 - Outlined
+  &.ldesign-button--color-blue {
+    color: #1677ff;
+    border-color: #1677ff;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(22, 119, 255, 0.06);
+    }
+  }
+  
+  &.ldesign-button--color-purple {
+    color: #722ed1;
+    border-color: #722ed1;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(114, 46, 209, 0.06);
+    }
+  }
+  
+  &.ldesign-button--color-cyan {
+    color: #13c2c2;
+    border-color: #13c2c2;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(19, 194, 194, 0.06);
+    }
+  }
+  
+  &.ldesign-button--color-green {
+    color: #52c41a;
+    border-color: #52c41a;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(82, 196, 26, 0.06);
+    }
+  }
+  
+  &.ldesign-button--color-magenta,
+  &.ldesign-button--color-pink {
+    color: #eb2f96;
+    border-color: #eb2f96;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(235, 47, 150, 0.06);
+    }
+  }
+  
+  &.ldesign-button--color-red {
+    color: #f5222d;
+    border-color: #f5222d;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(245, 34, 45, 0.06);
+    }
+  }
+  
+  &.ldesign-button--color-orange {
+    color: #fa8c16;
+    border-color: #fa8c16;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(250, 140, 22, 0.06);
+    }
+  }
+  
+  &.ldesign-button--color-yellow {
+    color: #fadb14;
+    border-color: #fadb14;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(250, 219, 20, 0.06);
+    }
+  }
+  
+  &.ldesign-button--color-volcano {
+    color: #fa541c;
+    border-color: #fa541c;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(250, 84, 28, 0.06);
+    }
+  }
+  
+  &.ldesign-button--color-geekblue {
+    color: #2f54eb;
+    border-color: #2f54eb;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(47, 84, 235, 0.06);
+    }
+  }
+  
+  &.ldesign-button--color-lime {
+    color: #a0d911;
+    border-color: #a0d911;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(160, 217, 17, 0.06);
+    }
+  }
+  
+  &.ldesign-button--color-gold {
+    color: #faad14;
+    border-color: #faad14;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(250, 173, 20, 0.06);
+    }
+  }
+}
+
+// Filled 填充（浅色背景）
+.ldesign-button--variant-filled {
+  border: none;
+  
+  &.ldesign-button--color-default {
+    color: rgba(0, 0, 0, 0.88);
+    background-color: rgba(0, 0, 0, 0.04);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+  }
+  
+  &.ldesign-button--color-primary {
+    color: #1677ff;
+    background-color: #f0f5ff;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #e6f4ff;
+    }
+  }
+  
+  &.ldesign-button--color-danger {
+    color: #ff4d4f;
+    background-color: #fff1f0;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #ffebeb;
+    }
+  }
+  
+  // 预设颜色 - Filled
+  &.ldesign-button--color-blue {
+    color: #1677ff;
+    background-color: #f0f5ff;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #e6f4ff;
+    }
+  }
+  
+  &.ldesign-button--color-purple {
+    color: #722ed1;
+    background-color: #f9f0ff;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #f0e6ff;
+    }
+  }
+  
+  &.ldesign-button--color-cyan {
+    color: #13c2c2;
+    background-color: #e6fffb;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #d6fff7;
+    }
+  }
+  
+  &.ldesign-button--color-green {
+    color: #52c41a;
+    background-color: #f6ffed;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #eaffda;
+    }
+  }
+  
+  &.ldesign-button--color-magenta,
+  &.ldesign-button--color-pink {
+    color: #eb2f96;
+    background-color: #fff0f6;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #ffe6f0;
+    }
+  }
+  
+  &.ldesign-button--color-red {
+    color: #f5222d;
+    background-color: #fff1f0;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #ffebeb;
+    }
+  }
+  
+  &.ldesign-button--color-orange {
+    color: #fa8c16;
+    background-color: #fff7e6;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #fff1d6;
+    }
+  }
+  
+  &.ldesign-button--color-yellow {
+    color: #fadb14;
+    background-color: #feffe6;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #ffffd6;
+    }
+  }
+  
+  &.ldesign-button--color-volcano {
+    color: #fa541c;
+    background-color: #fff2e8;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #ffead6;
+    }
+  }
+  
+  &.ldesign-button--color-geekblue {
+    color: #2f54eb;
+    background-color: #f0f5ff;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #e6efff;
+    }
+  }
+  
+  &.ldesign-button--color-lime {
+    color: #a0d911;
+    background-color: #fcffe6;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #f9ffd6;
+    }
+  }
+  
+  &.ldesign-button--color-gold {
+    color: #faad14;
+    background-color: #fffbe6;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: #fff7d6;
+    }
+  }
+}
+
+// ==================== Danger 危险状态修饰 ====================
+.ldesign-button--danger {
+  // Primary Danger
+  &.ldesign-button--primary {
+    color: #ffffff;
+    background-color: var(--ld-error);
+    border-color: var(--ld-error);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ld-error-hover);
+      border-color: var(--ld-error-hover);
+    }
+  }
+  
+  // Default Danger  
+  &.ldesign-button--default,
+  &:not([class*="ldesign-button--"]) {
+    color: var(--ld-error);
+    background-color: var(--ld-bg);
+    border-color: var(--ld-error);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-error-hover);
+      border-color: var(--ld-error-hover);
+    }
+  }
+  
+  // Text Danger
+  &.ldesign-button--text {
+    color: var(--ld-error);
+    background-color: transparent;
+    border-color: transparent;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-error);
+      background-color: var(--ld-error-bg);
+    }
+  }
+  
+  // Link Danger
+  &.ldesign-button--link {
+    color: var(--ld-error);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-error-hover);
+    }
+  }
+}
+
+// ==================== 尺寸 Size ====================
+.ldesign-button {
+  // Small
+  &--sm {
+    min-height: 24px;
+    padding: 0 8px;
+    font-size: 14px;
+    
+    &.ldesign-button--icon-only {
+      padding: 0 4px;
+    }
+  }
+  
+  // Middle (默认)
+  &--md {
+    min-height: 32px;
+    padding: 4px 15px;
+    font-size: 14px;
+    
+    &.ldesign-button--icon-only {
+      padding: 4px 8px;
+    }
+  }
+  
+  // Large
+  &--lg {
+    min-height: 40px;
+    padding: 6px 20px;
+    font-size: 16px;
+    
+    &.ldesign-button--icon-only {
+      padding: 6px 10px;
+    }
+    
+    .ldesign-button__icon {
+      font-size: 16px;
+    }
+  }
+}
+
+// ==================== 形状 Shape ====================
+.ldesign-button {
+  // Circle 圆形
+  &--circle {
+    min-width: 32px;
+    width: 32px;
+    padding: 0;
+    border-radius: 50%;
+    
+    &.ldesign-button--sm {
+      min-width: 24px;
+      width: 24px;
+    }
+    
+    &.ldesign-button--lg {
+      min-width: 40px;
+      width: 40px;
+    }
+  }
+  
+  // Round 圆角
+  &--round {
+    border-radius: 32px;
+    
+    &.ldesign-button--sm {
+      border-radius: 24px;
+    }
+    
+    &.ldesign-button--lg {
+      border-radius: 40px;
+    }
+  }
+}
+
+// ==================== 状态 States ====================
+
+// Ghost 幽灵按钮
+.ldesign-button--ghost {
+  color: var(--ld-bg);
+  background-color: transparent;
+  border-color: var(--ld-bg);
+  
+  &.ldesign-button--primary {
+    color: var(--ld-primary);
+    border-color: var(--ld-primary);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-primary-hover);
+      border-color: var(--ld-primary-hover);
+      background-color: transparent;
+    }
+  }
+  
+  &.ldesign-button--danger {
+    color: var(--ld-error);
+    border-color: var(--ld-error);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-error-hover);
+      border-color: var(--ld-error-hover);
+      background-color: transparent;
+    }
+  }
+}
+
+// Disabled 禁用
+.ldesign-button--disabled,
+.ldesign-button:disabled {
+  cursor: not-allowed;
+  
+  &,
+  &:hover,
+  &:active {
+    color: var(--ld-text-disabled);
+    background-color: var(--ld-bg-disabled);
+    border-color: var(--ld-border);
+    box-shadow: none;
+  }
+  
+  &.ldesign-button--text,
+  &.ldesign-button--link {
+    background-color: transparent;
+    border-color: transparent;
+  }
+}
+
+// Loading 加载中
+.ldesign-button--loading {
+  cursor: default;
+  opacity: 0.65;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    bottom: -1px;
+    left: -1px;
+    z-index: 1;
+    display: block;
+    background: inherit;
+    border-radius: inherit;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+}
+
+// Block 块级按钮
+.ldesign-button--block {
+  width: 100%;
+  display: flex;
+}
+
+// ==================== 特殊样式 ====================
+
+// 渐变按钮
+.ldesign-button--gradient {
+  color: #ffffff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  
+  &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    background: linear-gradient(135deg, #7c8ff7 0%, #8e5bb9 100%);
+  }
+}
+
+// 两个汉字自动空格
+.ldesign-button--two-chinese-chars {
+  .ldesign-button__text {
+    letter-spacing: 0.34em;
+    margin-right: -0.34em;
+  }
+}
+
+// 动画
+@keyframes loadingCircle {
+  100% {
+    transform: rotate(360deg);
+  }
+}

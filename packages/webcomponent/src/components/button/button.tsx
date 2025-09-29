@@ -1,6 +1,6 @@
 import { Component, Prop, Event, EventEmitter, h, Host, Element, State, Watch } from '@stencil/core';
 import { ButtonType, ButtonShape, ButtonIconPosition } from '../../types';
-import { ButtonSize, ButtonHTMLType, LoadingConfig } from './interface';
+import { ButtonSize, ButtonHTMLType, ButtonVariant, ButtonColor, PresetColors, LoadingConfig } from './interface';
 import { getLoadingConfig, isTwoCNChar, spaceChildren, isUnBorderedButtonType, getSizeSuffix, combineClasses } from './utils';
 
 /**
@@ -18,10 +18,22 @@ export class LdesignButton {
 
   // ==================== Props ====================
   /**
-   * 按钮类型
+   * 按钮类型 (语法糖，推荐使用 variant 和 color)
    * @default 'default'
    */
   @Prop() type: ButtonType = 'default';
+
+  /**
+   * 按钮变体 (v5.21.0+)
+   * 设置按钮的样式变体
+   */
+  @Prop() variant?: ButtonVariant;
+
+  /**
+   * 按钮颜色 (v5.21.0+)
+   * 设置按钮的颜色
+   */
+  @Prop() color?: ButtonColor;
 
   /**
    * 按钮形状
@@ -50,7 +62,17 @@ export class LdesignButton {
    * 是否加载中
    * @default false
    */
-  @Prop() loading: boolean | { delay?: number } = false;
+  @Prop() loading: boolean = false;
+  
+  /**
+   * 加载延迟时间（毫秒）
+   */
+  @Prop() loadingDelay?: number;
+  
+  /**
+   * 自定义加载图标
+   */
+  @Prop() loadingIcon?: string;
 
   /**
    * 是否禁用
@@ -59,7 +81,7 @@ export class LdesignButton {
   @Prop() disabled: boolean = false;
 
   /**
-   * 是否为危险按钮
+   * 是否为危险按钮 (语法糖，当设置 color 时会以后者为准)
    * @default false
    */
   @Prop() danger: boolean = false;
@@ -95,6 +117,7 @@ export class LdesignButton {
   /**
    * 是否自动插入空格（仅在子节点为两个中文字符时生效）
    * @default true
+   * @since v5.17.0
    */
   @Prop() autoInsertSpace: boolean = true;
 
@@ -144,8 +167,8 @@ export class LdesignButton {
   // ==================== Lifecycle ====================
   componentWillLoad() {
     // 初始化加载状态
-    const loadingConfig = getLoadingConfig(this.loading);
-    this.innerLoading = loadingConfig.loading;
+    this.innerLoading = this.loading;
+    this.handleLoadingChange();
   }
 
   componentDidLoad() {
@@ -167,21 +190,20 @@ export class LdesignButton {
 
   // ==================== Watchers ====================
   @Watch('loading')
+  @Watch('loadingDelay')
   handleLoadingChange() {
-    const loadingConfig = getLoadingConfig(this.loading);
-    
     // 清理旧的定时器
     if (this.loadingDelayTimer) {
       clearTimeout(this.loadingDelayTimer);
       this.loadingDelayTimer = undefined;
     }
     
-    if (loadingConfig.delay && loadingConfig.delay > 0) {
+    if (this.loading && this.loadingDelay && this.loadingDelay > 0) {
       this.loadingDelayTimer = setTimeout(() => {
         this.innerLoading = true;
-      }, loadingConfig.delay);
+      }, this.loadingDelay);
     } else {
-      this.innerLoading = loadingConfig.loading;
+      this.innerLoading = this.loading;
     }
   }
 
@@ -239,16 +261,36 @@ export class LdesignButton {
     const prefixCls = 'ldesign-button';
     const sizeSuffix = getSizeSuffix(this.size);
     
+    // 如果有 variant 和 color，优先使用
+    if (this.variant && this.color) {
+      return combineClasses(
+        prefixCls,
+        `${prefixCls}--variant-${this.variant}`,
+        `${prefixCls}--color-${this.color}`,
+        this.shape !== 'default' && `${prefixCls}--${this.shape}`,
+        sizeSuffix && `${prefixCls}--${sizeSuffix}`,
+        this.ghost && `${prefixCls}--ghost`,
+        this.disabled && `${prefixCls}--disabled`,
+        this.innerLoading && `${prefixCls}--loading`,
+        this.block && `${prefixCls}--block`,
+        this.hasTwoCNChar && this.autoInsertSpace && `${prefixCls}--two-chinese-chars`,
+        !this.el?.textContent?.trim() && (this.icon || this.innerLoading) && `${prefixCls}--icon-only`,
+        this.iconPosition === 'end' && `${prefixCls}--icon-end`
+      );
+    }
+    
+    // 否则使用 type 系统（语法糖）
     return combineClasses(
       prefixCls,
-      // 类型
-      this.type && `${prefixCls}--${this.type}`,
+      // 类型（直接使用 type）
+      `${prefixCls}--${this.type}`,
+      // 危险状态
+      this.danger && `${prefixCls}--danger`,
       // 形状
       this.shape !== 'default' && `${prefixCls}--${this.shape}`,
       // 尺寸
       sizeSuffix && `${prefixCls}--${sizeSuffix}`,
       // 状态
-      this.danger && `${prefixCls}--danger`,
       this.ghost && `${prefixCls}--ghost`,
       this.disabled && `${prefixCls}--disabled`,
       this.innerLoading && `${prefixCls}--loading`,
@@ -258,7 +300,9 @@ export class LdesignButton {
       // 仅图标
       !this.el?.textContent?.trim() && (this.icon || this.innerLoading) && `${prefixCls}--icon-only`,
       // 图标位置
-      this.iconPosition === 'end' && `${prefixCls}--icon-end`
+      this.iconPosition === 'end' && `${prefixCls}--icon-end`,
+      // 渐变特殊处理
+      this.type === 'gradient' && `${prefixCls}--gradient`
     );
   }
 
@@ -267,9 +311,12 @@ export class LdesignButton {
    */
   private renderIcon() {
     if (this.innerLoading) {
+      // 支持自定义加载图标
+      const loadingIconName = this.loadingIcon || 'loader-2';
+      
       return (
         <ldesign-icon 
-          name="loader-2" 
+          name={loadingIconName} 
           class="ldesign-button__icon ldesign-button__icon--loading"
         />
       );

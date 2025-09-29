@@ -59,59 +59,18 @@
   </div>
   <div class="demo-row">
     <span class="demo-label">Outlined 变体：</span>
-    <ldesign-button variant="outlined" color="default">Default</ldesign-button>
     <ldesign-button variant="outlined" color="primary">Primary</ldesign-button>
     <ldesign-button variant="outlined" color="danger">Danger</ldesign-button>
   </div>
   <div class="demo-row">
-    <span class="demo-label">Dashed 变体：</span>
-    <ldesign-button variant="dashed" color="default">Default</ldesign-button>
-    <ldesign-button variant="dashed" color="primary">Primary</ldesign-button>
-    <ldesign-button variant="dashed" color="danger">Danger</ldesign-button>
-  </div>
-  <div class="demo-row">
     <span class="demo-label">Filled 变体：</span>
-    <ldesign-button variant="filled" color="default">Default</ldesign-button>
     <ldesign-button variant="filled" color="primary">Primary</ldesign-button>
     <ldesign-button variant="filled" color="danger">Danger</ldesign-button>
   </div>
   <div class="demo-row">
     <span class="demo-label">Text 变体：</span>
-    <ldesign-button variant="text" color="default">Default</ldesign-button>
     <ldesign-button variant="text" color="primary">Primary</ldesign-button>
     <ldesign-button variant="text" color="danger">Danger</ldesign-button>
-  </div>
-  <div class="demo-row">
-    <span class="demo-label">Link 变体：</span>
-    <ldesign-button variant="link" color="default">Default</ldesign-button>
-    <ldesign-button variant="link" color="primary">Primary</ldesign-button>
-    <ldesign-button variant="link" color="danger">Danger</ldesign-button>
-  </div>
-</div>
-
-#### 预设颜色
-
-支持 Ant Design 的 13 种预设颜色：
-
-<div class="demo-container">
-  <div class="demo-row">
-    <span class="demo-label">实心按钮：</span>
-    <ldesign-button variant="solid" color="blue">Blue</ldesign-button>
-    <ldesign-button variant="solid" color="purple">Purple</ldesign-button>
-    <ldesign-button variant="solid" color="cyan">Cyan</ldesign-button>
-    <ldesign-button variant="solid" color="green">Green</ldesign-button>
-    <ldesign-button variant="solid" color="magenta">Magenta</ldesign-button>
-    <ldesign-button variant="solid" color="pink">Pink</ldesign-button>
-    <ldesign-button variant="solid" color="red">Red</ldesign-button>
-  </div>
-  <div class="demo-row">
-    <span class="demo-label">更多颜色：</span>
-    <ldesign-button variant="solid" color="orange">Orange</ldesign-button>
-    <ldesign-button variant="solid" color="yellow">Yellow</ldesign-button>
-    <ldesign-button variant="solid" color="volcano">Volcano</ldesign-button>
-    <ldesign-button variant="solid" color="geekblue">Geekblue</ldesign-button>
-    <ldesign-button variant="solid" color="lime">Lime</ldesign-button>
-    <ldesign-button variant="solid" color="gold">Gold</ldesign-button>
   </div>
 </div>
 
@@ -241,7 +200,7 @@
   <div class="demo-row">
     <ldesign-button type="primary" loading>Click me!</ldesign-button>
     <ldesign-button type="primary" icon="power-off" loading>Click me!</ldesign-button>
-    <ldesign-button type="primary" loading loading-icon="loader">自定义图标</ldesign-button>
+    <ldesign-button type="primary" loading icon="loader">延迟加载</ldesign-button>
   </div>
 </div>
 
@@ -360,9 +319,7 @@
 | htmlType | 设置 `button` 原生的 `type` 值，可选值请参考 HTML 标准 | `submit` \| `reset` \| `button` | `button` | |
 | icon | 设置按钮的图标组件 | string | - | |
 | iconPosition | 设置按钮图标组件的位置 | `start` \| `end` | `start` | 5.17.0 |
-| loading | 设置按钮载入状态 | boolean | false | |
-| loadingDelay | 加载延迟时间（毫秒） | number | - | |
-| loadingIcon | 自定义加载图标 | string | - | |
+| loading | 设置按钮载入状态 | boolean \| { delay: number, icon: string } | false | icon: 5.23.0 |
 | shape | 设置按钮形状 | `default` \| `circle` \| `round` | `default` | |
 | size | 设置按钮大小 | `large` \| `middle` \| `small` | `middle` | |
 | target | 相当于 a 链接的 target 属性，href 存在时生效 | string | - | |

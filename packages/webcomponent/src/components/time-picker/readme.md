@@ -20,6 +20,7 @@
 | `drawerPlacement` | `drawer-placement` |              | `"bottom" \| "left" \| "right" \| "top"`                                                                                                                             | `'bottom'`                    |
 | `drawerSize`      | `drawer-size`      |              | `number \| string`                                                                                                                                                   | `undefined`                   |
 | `drawerTitle`     | `drawer-title`     |              | `string`                                                                                                                                                             | `undefined`                   |
+| `endValue`        | `end-value`        |              | `string`                                                                                                                                                             | `undefined`                   |
 | `hourStep`        | `hour-step`        |              | `number`                                                                                                                                                             | `1`                           |
 | `inline`          | `inline`           |              | `boolean`                                                                                                                                                            | `false`                       |
 | `loading`         | `loading`          |              | `boolean`                                                                                                                                                            | `false`                       |
@@ -33,11 +34,13 @@
 | `placeholder`     | `placeholder`      |              | `string`                                                                                                                                                             | `'选择时间'`                      |
 | `placement`       | `placement`        |              | `"bottom" \| "bottom-end" \| "bottom-start" \| "left" \| "left-end" \| "left-start" \| "right" \| "right-end" \| "right-start" \| "top" \| "top-end" \| "top-start"` | `'bottom-start' as Placement` |
 | `presets`         | `presets`          |              | `TimePreset[]`                                                                                                                                                       | `undefined`                   |
+| `range`           | `range`            |              | `boolean`                                                                                                                                                            | `false`                       |
 | `readonly`        | `readonly`         |              | `boolean`                                                                                                                                                            | `false`                       |
 | `secondStep`      | `second-step`      |              | `number`                                                                                                                                                             | `1`                           |
 | `showNow`         | `show-now`         | 是否展示"此刻"快捷按钮 | `boolean`                                                                                                                                                            | `true`                        |
 | `showSeconds`     | `show-seconds`     |              | `boolean`                                                                                                                                                            | `true`                        |
 | `size`            | `size`             |              | `"large" \| "medium" \| "small"`                                                                                                                                     | `'medium'`                    |
+| `startValue`      | `start-value`      |              | `string`                                                                                                                                                             | `undefined`                   |
 | `steps`           | `steps`            |              | `number[]`                                                                                                                                                           | `[1, 1, 1]`                   |
 | `trigger`         | `trigger`          |              | `"click" \| "focus" \| "manual"`                                                                                                                                     | `'click'`                     |
 | `value`           | `value`            |              | `string`                                                                                                                                                             | `undefined`                   |
@@ -49,7 +52,7 @@
 
 | Event                  | Description | Type                                                                                                                                              |
 | ---------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ldesignChange`        |             | `CustomEvent<string>`                                                                                                                             |
+| `ldesignChange`        |             | `CustomEvent<string \| { start: string; end: string; }>`                                                                                          |
 | `ldesignClose`         |             | `CustomEvent<void>`                                                                                                                               |
 | `ldesignOpen`          |             | `CustomEvent<void>`                                                                                                                               |
 | `ldesignPick`          |             | `CustomEvent<{ value: string; context: { trigger: "preset" \| "scroll" \| "click" \| "wheel" \| "keyboard" \| "touch" \| "now" \| "clear"; }; }>` |
@@ -57,10 +60,6 @@
 
 
 ## Dependencies
-
-### Used by
-
- - [ldesign-date-picker](../datepicker)
 
 ### Depends on
 
@@ -81,7 +80,6 @@ graph TD;
   ldesign-button --> ldesign-icon
   ldesign-button --> ldesign-ripple
   ldesign-drawer --> ldesign-icon
-  ldesign-date-picker --> ldesign-time-picker
   style ldesign-time-picker fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

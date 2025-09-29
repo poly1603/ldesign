@@ -7,11 +7,11 @@
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, Size, Theme } from "./types";
 import { AlertType } from "./components/alert/alert";
-import { ButtonHTMLType, ButtonSize } from "./components/button/interface";
+import { ButtonColor, ButtonHTMLType, ButtonSize, ButtonVariant } from "./components/button/interface";
 import { CalEvent } from "./components/calendar/calendar";
 import { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
 import { Placement } from "@floating-ui/dom";
-import { DrawerPlacement } from "./components/drawer/drawer";
+import { DrawerButton, DrawerPlacement, SnapPoint } from "./components/drawer/drawer";
 import { DropdownItem, DropdownNode, DropdownPlacement, DropdownTrigger, DropdownVariant } from "./components/dropdown/dropdown";
 import { ImageViewerItem } from "./components/image-viewer/image-viewer";
 import { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
@@ -30,11 +30,11 @@ import { TransferItem } from "./components/transfer/transfer";
 import { TreeNode } from "./components/tree/tree";
 export { ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, Size, Theme } from "./types";
 export { AlertType } from "./components/alert/alert";
-export { ButtonHTMLType, ButtonSize } from "./components/button/interface";
+export { ButtonColor, ButtonHTMLType, ButtonSize, ButtonVariant } from "./components/button/interface";
 export { CalEvent } from "./components/calendar/calendar";
 export { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
 export { Placement } from "@floating-ui/dom";
-export { DrawerPlacement } from "./components/drawer/drawer";
+export { DrawerButton, DrawerPlacement, SnapPoint } from "./components/drawer/drawer";
 export { DropdownItem, DropdownNode, DropdownPlacement, DropdownTrigger, DropdownVariant } from "./components/dropdown/dropdown";
 export { ImageViewerItem } from "./components/image-viewer/image-viewer";
 export { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
@@ -338,6 +338,7 @@ export namespace Components {
         /**
           * 是否自动插入空格（仅在子节点为两个中文字符时生效）
           * @default true
+          * @since v5.17.0
          */
         "autoInsertSpace": boolean;
         /**
@@ -346,7 +347,11 @@ export namespace Components {
          */
         "block": boolean;
         /**
-          * 是否为危险按钮
+          * 按钮颜色 (v5.21.0+) 设置按钮的颜色
+         */
+        "color"?: ButtonColor;
+        /**
+          * 是否为危险按钮 (语法糖，当设置 color 时会以后者为准)
           * @default false
          */
         "danger": boolean;
@@ -382,7 +387,15 @@ export namespace Components {
           * 是否加载中
           * @default false
          */
-        "loading": boolean | { delay?: number };
+        "loading": boolean;
+        /**
+          * 加载延迟时间（毫秒）
+         */
+        "loadingDelay"?: number;
+        /**
+          * 自定义加载图标
+         */
+        "loadingIcon"?: string;
         /**
           * 是否启用水波纹
           * @default true
@@ -447,10 +460,14 @@ export namespace Components {
          */
         "target"?: string;
         /**
-          * 按钮类型
+          * 按钮类型 (语法糖，推荐使用 variant 和 color)
           * @default 'default'
          */
         "type": ButtonType;
+        /**
+          * 按钮变体 (v5.21.0+) 设置按钮的样式变体
+         */
+        "variant"?: ButtonVariant;
     }
     interface LdesignCalendar {
         /**
@@ -1309,11 +1326,7 @@ export namespace Components {
           * @default true
          */
         "clearable": boolean;
-        /**
-          * @default true
-         */
-        "datetimeRangeSinglePanel": boolean;
-        "defaultValue"?: string | string[];
+        "defaultValue"?: string;
         /**
           * @default false
          */
@@ -1332,7 +1345,7 @@ export namespace Components {
         /**
           * @default 'date'
          */
-        "mode": 'date' | 'week' | 'month' | 'quarter' | 'year' | 'datetime';
+        "mode": 'date' | 'week' | 'month' | 'quarter' | 'year';
         /**
           * @default '请选择日期'
          */
@@ -1340,24 +1353,8 @@ export namespace Components {
         /**
           * @default false
          */
-        "range": boolean;
-        /**
-          * @default false
-         */
         "showWeekNumbers": boolean;
-        /**
-          * @default true
-         */
-        "timeShowSeconds": boolean;
-        /**
-          * @default [1, 1, 1]
-         */
-        "timeSteps": number[];
-        /**
-          * @default 7
-         */
-        "timeVisibleItems": number;
-        "value"?: string | string[];
+        "value"?: string;
     }
     /**
      * ldesign-draggable
@@ -1502,6 +1499,26 @@ export namespace Components {
      */
     interface LdesignDrawer {
         /**
+          * 是否显示进入/退出动画
+          * @default true
+         */
+        "animation": boolean;
+        /**
+          * 动画持续时间（毫秒）
+          * @default 300
+         */
+        "animationDuration": number;
+        /**
+          * 自动聚焦到第一个可交互元素
+          * @default true
+         */
+        "autoFocus": boolean;
+        /**
+          * 圆角大小
+          * @default '12px'
+         */
+        "borderRadius": string;
+        /**
           * 是否显示右上角关闭按钮
           * @default true
          */
@@ -1516,9 +1533,29 @@ export namespace Components {
          */
         "closeOnEsc": boolean;
         /**
+          * 是否启用阻尼效果
+          * @default true
+         */
+        "damping": boolean;
+        /**
+          * 阻尼系数（0-1）
+          * @default 0.5
+         */
+        "dampingFactor": number;
+        /**
           * 标题文本（可通过 slot=header 自定义头部）
          */
         "drawerTitle"?: string;
+        /**
+          * 是否显示底部分割线
+          * @default true
+         */
+        "footerBorder": boolean;
+        /**
+          * 自定义底部按钮
+          * @default []
+         */
+        "footerButtons": DrawerButton[];
         /**
           * 容器（选择器或元素）：若提供，则把组件节点移动到该容器下
          */
@@ -1527,6 +1564,11 @@ export namespace Components {
           * 隐藏抽屉（带动画）
          */
         "hide": () => Promise<void>;
+        /**
+          * 是否启用键盘导航
+          * @default true
+         */
+        "keyboardNavigation": boolean;
         /**
           * 是否显示遮罩层
           * @default true
@@ -1538,19 +1580,69 @@ export namespace Components {
          */
         "maskClosable": boolean;
         /**
+          * 最大尺寸（像素或百分比）
+          * @default '80%'
+         */
+        "maxSize": number | string;
+        /**
+          * 最小尺寸（像素或百分比）
+          * @default 200
+         */
+        "minSize": number | string;
+        /**
           * 抽屉出现的位置
           * @default 'right'
          */
         "placement": DrawerPlacement;
         /**
+          * 是否在关闭时保留状态
+          * @default false
+         */
+        "preserveState": boolean;
+        /**
+          * 是否可调整大小
+          * @default false
+         */
+        "resizable": boolean;
+        /**
+          * 是否启用圆角
+          * @default false
+         */
+        "rounded": boolean;
+        /**
           * 显示抽屉
          */
         "show": (emit?: boolean) => Promise<void>;
+        /**
+          * 是否显示调整大小的提示
+          * @default true
+         */
+        "showResizeHint": boolean;
         /**
           * 面板尺寸（left/right 为宽度，top/bottom 为高度）。可为数字（px）或任意 CSS 长度
           * @default 360
          */
         "size": number | string;
+        /**
+          * 吸附点配置
+          * @default []
+         */
+        "snapPoints": SnapPoint[];
+        /**
+          * 吸附阈值（像素）
+          * @default 50
+         */
+        "snapThreshold": number;
+        /**
+          * 手势关闭的阈值（百分比）
+          * @default 0.3
+         */
+        "swipeThreshold": number;
+        /**
+          * 是否在移动端启用手势关闭
+          * @default true
+         */
+        "swipeToClose": boolean;
         /**
           * 是否显示抽屉
           * @default false
@@ -3300,7 +3392,6 @@ export namespace Components {
           * @default 0
          */
         "hideDelay": number;
-        "innerStyle"?: string | { [key: string]: string };
         /**
           * @default true
          */
@@ -4619,6 +4710,7 @@ export namespace Components {
         "drawerPlacement": 'left' | 'right' | 'top' | 'bottom';
         "drawerSize"?: number | string;
         "drawerTitle"?: string;
+        "endValue"?: string;
         /**
           * @default 1
          */
@@ -4659,6 +4751,10 @@ export namespace Components {
         /**
           * @default false
          */
+        "range": boolean;
+        /**
+          * @default false
+         */
         "readonly": boolean;
         /**
           * @default 1
@@ -4677,6 +4773,7 @@ export namespace Components {
           * @default 'medium'
          */
         "size": TimePickerSize;
+        "startValue"?: string;
         /**
           * @default [1, 1, 1]
          */
@@ -5541,6 +5638,10 @@ declare global {
     interface HTMLLdesignDrawerElementEventMap {
         "ldesignVisibleChange": boolean;
         "ldesignClose": void;
+        "ldesignSizeChange": { size: number | string; placement: DrawerPlacement };
+        "ldesignResizeStart": void;
+        "ldesignResizeEnd": { size: number | string };
+        "ldesignSnapToPoint": SnapPoint;
     }
     /**
      * Drawer 抽屉组件
@@ -6346,7 +6447,7 @@ declare global {
         new (): HTMLLdesignTagGroupElement;
     };
     interface HTMLLdesignTimePickerElementEventMap {
-        "ldesignChange": string | undefined;
+        "ldesignChange": string | undefined | { start: string; end: string };
         "ldesignVisibleChange": boolean;
         "ldesignOpen": void;
         "ldesignClose": void;
@@ -6789,6 +6890,7 @@ declare namespace LocalJSX {
         /**
           * 是否自动插入空格（仅在子节点为两个中文字符时生效）
           * @default true
+          * @since v5.17.0
          */
         "autoInsertSpace"?: boolean;
         /**
@@ -6797,7 +6899,11 @@ declare namespace LocalJSX {
          */
         "block"?: boolean;
         /**
-          * 是否为危险按钮
+          * 按钮颜色 (v5.21.0+) 设置按钮的颜色
+         */
+        "color"?: ButtonColor;
+        /**
+          * 是否为危险按钮 (语法糖，当设置 color 时会以后者为准)
           * @default false
          */
         "danger"?: boolean;
@@ -6833,7 +6939,15 @@ declare namespace LocalJSX {
           * 是否加载中
           * @default false
          */
-        "loading"?: boolean | { delay?: number };
+        "loading"?: boolean;
+        /**
+          * 加载延迟时间（毫秒）
+         */
+        "loadingDelay"?: number;
+        /**
+          * 自定义加载图标
+         */
+        "loadingIcon"?: string;
         /**
           * 点击事件
          */
@@ -6902,10 +7016,14 @@ declare namespace LocalJSX {
          */
         "target"?: string;
         /**
-          * 按钮类型
+          * 按钮类型 (语法糖，推荐使用 variant 和 color)
           * @default 'default'
          */
         "type"?: ButtonType;
+        /**
+          * 按钮变体 (v5.21.0+) 设置按钮的样式变体
+         */
+        "variant"?: ButtonVariant;
     }
     interface LdesignCalendar {
         /**
@@ -7801,11 +7919,7 @@ declare namespace LocalJSX {
           * @default true
          */
         "clearable"?: boolean;
-        /**
-          * @default true
-         */
-        "datetimeRangeSinglePanel"?: boolean;
-        "defaultValue"?: string | string[];
+        "defaultValue"?: string;
         /**
           * @default false
          */
@@ -7824,7 +7938,7 @@ declare namespace LocalJSX {
         /**
           * @default 'date'
          */
-        "mode"?: 'date' | 'week' | 'month' | 'quarter' | 'year' | 'datetime';
+        "mode"?: 'date' | 'week' | 'month' | 'quarter' | 'year';
         "onLdesignChange"?: (event: LdesignDatePickerCustomEvent<any>) => void;
         "onLdesignVisibleChange"?: (event: LdesignDatePickerCustomEvent<boolean>) => void;
         /**
@@ -7834,24 +7948,8 @@ declare namespace LocalJSX {
         /**
           * @default false
          */
-        "range"?: boolean;
-        /**
-          * @default false
-         */
         "showWeekNumbers"?: boolean;
-        /**
-          * @default true
-         */
-        "timeShowSeconds"?: boolean;
-        /**
-          * @default [1, 1, 1]
-         */
-        "timeSteps"?: number[];
-        /**
-          * @default 7
-         */
-        "timeVisibleItems"?: number;
-        "value"?: string | string[];
+        "value"?: string;
     }
     /**
      * ldesign-draggable
@@ -7986,6 +8084,26 @@ declare namespace LocalJSX {
      */
     interface LdesignDrawer {
         /**
+          * 是否显示进入/退出动画
+          * @default true
+         */
+        "animation"?: boolean;
+        /**
+          * 动画持续时间（毫秒）
+          * @default 300
+         */
+        "animationDuration"?: number;
+        /**
+          * 自动聚焦到第一个可交互元素
+          * @default true
+         */
+        "autoFocus"?: boolean;
+        /**
+          * 圆角大小
+          * @default '12px'
+         */
+        "borderRadius"?: string;
+        /**
           * 是否显示右上角关闭按钮
           * @default true
          */
@@ -7996,13 +8114,38 @@ declare namespace LocalJSX {
          */
         "closeOnEsc"?: boolean;
         /**
+          * 是否启用阻尼效果
+          * @default true
+         */
+        "damping"?: boolean;
+        /**
+          * 阻尼系数（0-1）
+          * @default 0.5
+         */
+        "dampingFactor"?: number;
+        /**
           * 标题文本（可通过 slot=header 自定义头部）
          */
         "drawerTitle"?: string;
         /**
+          * 是否显示底部分割线
+          * @default true
+         */
+        "footerBorder"?: boolean;
+        /**
+          * 自定义底部按钮
+          * @default []
+         */
+        "footerButtons"?: DrawerButton[];
+        /**
           * 容器（选择器或元素）：若提供，则把组件节点移动到该容器下
          */
         "getContainer"?: string | HTMLElement;
+        /**
+          * 是否启用键盘导航
+          * @default true
+         */
+        "keyboardNavigation"?: boolean;
         /**
           * 是否显示遮罩层
           * @default true
@@ -8014,9 +8157,35 @@ declare namespace LocalJSX {
          */
         "maskClosable"?: boolean;
         /**
+          * 最大尺寸（像素或百分比）
+          * @default '80%'
+         */
+        "maxSize"?: number | string;
+        /**
+          * 最小尺寸（像素或百分比）
+          * @default 200
+         */
+        "minSize"?: number | string;
+        /**
           * 事件：关闭
          */
         "onLdesignClose"?: (event: LdesignDrawerCustomEvent<void>) => void;
+        /**
+          * 事件：调整大小结束
+         */
+        "onLdesignResizeEnd"?: (event: LdesignDrawerCustomEvent<{ size: number | string }>) => void;
+        /**
+          * 事件：调整大小开始
+         */
+        "onLdesignResizeStart"?: (event: LdesignDrawerCustomEvent<void>) => void;
+        /**
+          * 事件：尺寸变化
+         */
+        "onLdesignSizeChange"?: (event: LdesignDrawerCustomEvent<{ size: number | string; placement: DrawerPlacement }>) => void;
+        /**
+          * 事件：吸附到点
+         */
+        "onLdesignSnapToPoint"?: (event: LdesignDrawerCustomEvent<SnapPoint>) => void;
         /**
           * 事件：可见性变化
          */
@@ -8027,10 +8196,50 @@ declare namespace LocalJSX {
          */
         "placement"?: DrawerPlacement;
         /**
+          * 是否在关闭时保留状态
+          * @default false
+         */
+        "preserveState"?: boolean;
+        /**
+          * 是否可调整大小
+          * @default false
+         */
+        "resizable"?: boolean;
+        /**
+          * 是否启用圆角
+          * @default false
+         */
+        "rounded"?: boolean;
+        /**
+          * 是否显示调整大小的提示
+          * @default true
+         */
+        "showResizeHint"?: boolean;
+        /**
           * 面板尺寸（left/right 为宽度，top/bottom 为高度）。可为数字（px）或任意 CSS 长度
           * @default 360
          */
         "size"?: number | string;
+        /**
+          * 吸附点配置
+          * @default []
+         */
+        "snapPoints"?: SnapPoint[];
+        /**
+          * 吸附阈值（像素）
+          * @default 50
+         */
+        "snapThreshold"?: number;
+        /**
+          * 手势关闭的阈值（百分比）
+          * @default 0.3
+         */
+        "swipeThreshold"?: number;
+        /**
+          * 是否在移动端启用手势关闭
+          * @default true
+         */
+        "swipeToClose"?: boolean;
         /**
           * 是否显示抽屉
           * @default false
@@ -9886,7 +10095,6 @@ declare namespace LocalJSX {
           * @default 0
          */
         "hideDelay"?: number;
-        "innerStyle"?: string | { [key: string]: string };
         /**
           * @default true
          */
@@ -11275,6 +11483,7 @@ declare namespace LocalJSX {
         "drawerPlacement"?: 'left' | 'right' | 'top' | 'bottom';
         "drawerSize"?: number | string;
         "drawerTitle"?: string;
+        "endValue"?: string;
         /**
           * @default 1
          */
@@ -11294,7 +11503,7 @@ declare namespace LocalJSX {
           * @default 1
          */
         "minuteStep"?: number;
-        "onLdesignChange"?: (event: LdesignTimePickerCustomEvent<string | undefined>) => void;
+        "onLdesignChange"?: (event: LdesignTimePickerCustomEvent<string | undefined | { start: string; end: string }>) => void;
         "onLdesignClose"?: (event: LdesignTimePickerCustomEvent<void>) => void;
         "onLdesignOpen"?: (event: LdesignTimePickerCustomEvent<void>) => void;
         "onLdesignPick"?: (event: LdesignTimePickerCustomEvent<{ value: string; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' | 'clear' | 'preset' | 'touch' | 'wheel' } }>) => void;
@@ -11320,6 +11529,10 @@ declare namespace LocalJSX {
         /**
           * @default false
          */
+        "range"?: boolean;
+        /**
+          * @default false
+         */
         "readonly"?: boolean;
         /**
           * @default 1
@@ -11338,6 +11551,7 @@ declare namespace LocalJSX {
           * @default 'medium'
          */
         "size"?: TimePickerSize;
+        "startValue"?: string;
         /**
           * @default [1, 1, 1]
          */

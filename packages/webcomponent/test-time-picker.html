@@ -180,6 +180,30 @@
       ></ldesign-time-picker>
       <div class="test-result" id="result10">当前值: 未选择</div>
     </div>
+
+    <!-- 测试11: 时间范围选择 -->
+    <div class="test-section">
+      <div class="test-title">11. 时间范围选择</div>
+      <div class="test-description">选择开始和结束时间</div>
+      <ldesign-time-picker 
+        id="test11" 
+        range="true"
+        placeholder="选择时间范围"
+      ></ldesign-time-picker>
+      <div class="test-result" id="result11">开始: - 结束: -</div>
+    </div>
+
+    <!-- 测试12: 12小时制AM/PM在前 -->
+    <div class="test-section">
+      <div class="test-title">12. 12小时制 (AM/PM在最前)</div>
+      <div class="test-description">验证AM/PM选择器位置</div>
+      <ldesign-time-picker 
+        id="test12" 
+        output-format="12h"
+        placeholder="AM/PM在最前"
+      ></ldesign-time-picker>
+      <div class="test-result" id="result12">当前值: 未选择</div>
+    </div>
   </div>
 
   <script>
@@ -202,6 +226,20 @@
     for (let i = 1; i <= 10; i++) {
       setupListener(`test${i}`, `result${i}`);
     }
+    
+    // 特殊处理范围选择器
+    const rangePicker = document.getElementById('test11');
+    const rangeResult = document.getElementById('result11');
+    rangePicker.addEventListener('ldesignChange', (e) => {
+      if (e.detail && typeof e.detail === 'object') {
+        rangeResult.textContent = `开始: ${e.detail.start || '-'} 结束: ${e.detail.end || '-'}`;
+      } else {
+        rangeResult.textContent = `开始: - 结束: -`;
+      }
+    });
+    
+    // 设置test12监听器
+    setupListener('test12', 'result12');
 
     // 设置预设时间
     const preset = document.getElementById('test9');
@@ -228,6 +266,16 @@
     console.log('4. 禁用特定时间');
     console.log('5. 时间步进设置');
     console.log('6. 组合功能测试');
+    console.log('7. 时间范围选择');
+    console.log('8. 12小时制AM/PM位置');
+    console.log('9. 移动端自适应');
+    
+    // 测试移动端检测
+    if (window.innerWidth < 768) {
+      console.log('检测到移动端设备，将使用drawer模式');
+    } else {
+      console.log('检测到PC端，使用popup模式');
+    }
   </script>
 </body>
 </html>

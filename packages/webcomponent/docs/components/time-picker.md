@@ -143,12 +143,13 @@
 
 ## 预设时间
 
-提供常用时间选项，方便快速选择。
+提供常用时间选项，方便快速选择。支持单个时间和时间范围预设。
 
 <div class="demo-container">
   <ldesign-time-picker 
     id="tp-presets"
     placeholder="选择或使用预设时间"
+    default-value="09:00:00"
   ></ldesign-time-picker>
 </div>
 
@@ -156,14 +157,66 @@
 <ldesign-time-picker 
   id="tp-presets"
   placeholder="选择或使用预设时间"
+  default-value="09:00:00"
 ></ldesign-time-picker>
 <script>
   const picker = document.getElementById('tp-presets');
   picker.presets = [
-    { label: '早上9点', value: '09:00:00' },
-    { label: '中午12点', value: '12:00:00' },
-    { label: '下午6点', value: '18:00:00' },
-    { label: '晚上9点', value: '21:00:00' }
+    { label: '上班', value: '09:00:00', icon: 'work' },
+    { label: '中午', value: '12:00:00', icon: 'sun' },
+    { label: '下班', value: '18:00:00', icon: 'home' },
+    { label: '晚餐', value: '19:00:00', icon: 'food' }
+  ];
+</script>
+```
+
+## 时间范围选择
+
+支持选择时间范围，适用于选择工作时间、会议时间等场景。
+
+<div class="demo-container">
+  <ldesign-time-picker 
+    range="true"
+    placeholder="选择时间范围"
+    default-value="09:00-18:00"
+  ></ldesign-time-picker>
+</div>
+
+```html
+<ldesign-time-picker 
+  range="true"
+  placeholder="选择时间范围"
+  default-value="09:00-18:00"
+></ldesign-time-picker>
+```
+
+## 范围选择预设
+
+为范围选择器提供常用时间段预设。
+
+<div class="demo-container">
+  <ldesign-time-picker 
+    id="tp-range-presets"
+    range="true"
+    placeholder="选择工作时间"
+    show-seconds="false"
+  ></ldesign-time-picker>
+</div>
+
+```html
+<ldesign-time-picker 
+  id="tp-range-presets"
+  range="true"
+  placeholder="选择工作时间"
+  show-seconds="false"
+></ldesign-time-picker>
+<script>
+  const picker = document.getElementById('tp-range-presets');
+  picker.presets = [
+    { label: '早班', value: { start: '09:00', end: '12:00' }, icon: 'sun' },
+    { label: '中班', value: { start: '12:00', end: '18:00' }, icon: 'clock' },
+    { label: '晚班', value: { start: '18:00', end: '22:00' }, icon: 'moon' },
+    { label: '全天', value: { start: '09:00', end: '18:00' }, icon: 'calendar' }
   ];
 </script>
 ```
@@ -215,6 +268,9 @@
 | placeholder | 占位文案 | `string` | `选择时间` |
 | disabled | 是否禁用 | `boolean` | `false` |
 | readonly | 是否只读 | `boolean` | `false` |
+| range | 是否为范围选择模式 | `boolean` | `false` |
+| start-value | 范围选择的开始时间 | `string` | - |
+| end-value | 范围选择的结束时间 | `string` | - |
 | loading | 加载状态 | `boolean` | `false` |
 | clearable | 是否可清空 | `boolean` | `false` |
 | size | 尺寸 | `'small' \| 'medium' \| 'large'` | `'medium'` |
@@ -223,7 +279,7 @@
 
 | 属性 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| output-format | 输出格式 | `'24h' \| '12h'` | `'24h'` |
+| output-format | 输出格式（12h时AM/PM显示在最前面 | `'24h' \| '12h'` | `'24h'` |
 | show-seconds | 是否显示秒 | `boolean` | `true` |
 | show-now | 是否显示"此刻"按钮 | `boolean` | `true` |
 
@@ -255,6 +311,7 @@
 | trigger | 触发方式 | `'click' \| 'focus' \| 'manual'` | `'click'` |
 | placement | 弹层位置 | `Placement` | `'bottom-start'` |
 | visible | 手动控制显示（trigger='manual'时） | `boolean` | `false` |
+| overlay | 弹层类型（auto: 移动端自动使用drawer） | `'auto' \| 'popup' \| 'drawer'` | `'auto'` |
 
 #### 其他配置
 
@@ -280,7 +337,7 @@
 ```typescript
 interface TimePreset {
   label: string;    // 显示文本
-  value: string;    // 时间值，格式："HH:mm:ss"
+  value: string | { start: string; end: string }; // 单个时间或时间范围
   icon?: string;    // 图标名称（可选）
 }
 
@@ -310,11 +367,18 @@ picker.addEventListener('ldesignChange', (e) => {
   console.log('新时间:', e.detail);
 });
 
-// 设置预设选项
+// 设置单个时间预设
 picker.presets = [
-  { label: '上班时间', value: '09:00:00', icon: 'work' },
-  { label: '午餐时间', value: '12:00:00', icon: 'food' },
-  { label: '下班时间', value: '18:00:00', icon: 'home' }
+  { label: '上班', value: '09:00:00', icon: 'work' },
+  { label: '午餐', value: '12:00:00', icon: 'food' },
+  { label: '下班', value: '18:00:00', icon: 'home' }
+];
+
+// 设置范围预设（用于 range="true" 时）
+picker.presets = [
+  { label: '早班', value: { start: '09:00', end: '12:00' } },
+  { label: '中班', value: { start: '12:00', end: '18:00' } },
+  { label: '晚班', value: { start: '18:00', end: '22:00' } }
 ];
 
 // 国际化
@@ -333,6 +397,7 @@ picker.locale = {
 1. **时间格式**：
    - 24小时制：`"HH:mm:ss"` 或 `"HH:mm"`
    - 12小时制：`"HH:mm:ss AM/PM"` 或 `"HH:mm AM/PM"`
+   - 12小时制时，AM/PM 选择器显示在最前面
 
 2. **步进设置**：
    - 步进值必须能被60整除（对于分钟和秒）
@@ -350,3 +415,18 @@ picker.locale = {
 5. **禁用时间**：
    - 禁用的时间在选择器中会显示但不可选
    - 可以组合使用范围限制和禁用列表
+
+6. **移动端支持**：
+   - 默认情况下，移动端（屏幕宽度 < 768px）会自动使用 drawer 模式
+   - PC 端使用 popup 模式
+   - 可以通过 `overlay` 属性手动指定模式
+
+7. **初始值设置**：
+   - 使用 `default-value` 设置默认值
+   - 范围选择可使用 "09:00-18:00" 格式或分别设置 `start-value` 和 `end-value`
+   - 没有设置默认值时，打开选择器会显示当前时间
+
+8. **范围选择预设**：
+   - 预设支持单个时间和时间范围
+   - 范围预设使用 `{ start: '09:00', end: '18:00' }` 格式
+   - 适用于快速设置常用时间段（如早班、中班、晚班）

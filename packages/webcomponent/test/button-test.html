@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Component Test - Ldesign</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .test-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .test-label {
+            min-width: 150px;
+            font-weight: 600;
+            color: #666;
+        }
+        .dark-bg {
+            background: #121212;
+            padding: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Ldesign Button Component Test</h1>
+    <p>基于 Ant Design v5 规范的按钮组件测试</p>
+
+    <div class="test-section">
+        <h2>基础类型 (Type)</h2>
+        <div class="test-row">
+            <ldesign-button type="primary">Primary</ldesign-button>
+            <ldesign-button>Default</ldesign-button>
+            <ldesign-button type="dashed">Dashed</ldesign-button>
+            <ldesign-button type="text">Text</ldesign-button>
+            <ldesign-button type="link">Link</ldesign-button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>变体与颜色 (Variant & Color)</h2>
+        
+        <div class="test-row">
+            <span class="test-label">Solid 变体:</span>
+            <ldesign-button variant="solid" color="primary">Primary</ldesign-button>
+            <ldesign-button variant="solid" color="danger">Danger</ldesign-button>
+            <ldesign-button variant="solid" color="green">Green</ldesign-button>
+            <ldesign-button variant="solid" color="blue">Blue</ldesign-button>
+            <ldesign-button variant="solid" color="orange">Orange</ldesign-button>
+        </div>
+        
+        <div class="test-row">
+            <span class="test-label">Outlined 变体:</span>
+            <ldesign-button variant="outlined" color="primary">Primary</ldesign-button>
+            <ldesign-button variant="outlined" color="danger">Danger</ldesign-button>
+            <ldesign-button variant="outlined" color="default">Default</ldesign-button>
+        </div>
+        
+        <div class="test-row">
+            <span class="test-label">Dashed 变体:</span>
+            <ldesign-button variant="dashed" color="primary">Primary</ldesign-button>
+            <ldesign-button variant="dashed" color="danger">Danger</ldesign-button>
+            <ldesign-button variant="dashed" color="default">Default</ldesign-button>
+        </div>
+        
+        <div class="test-row">
+            <span class="test-label">Filled 变体:</span>
+            <ldesign-button variant="filled" color="primary">Primary</ldesign-button>
+            <ldesign-button variant="filled" color="danger">Danger</ldesign-button>
+            <ldesign-button variant="filled" color="default">Default</ldesign-button>
+        </div>
+        
+        <div class="test-row">
+            <span class="test-label">Text 变体:</span>
+            <ldesign-button variant="text" color="primary">Primary</ldesign-button>
+            <ldesign-button variant="text" color="danger">Danger</ldesign-button>
+            <ldesign-button variant="text" color="default">Default</ldesign-button>
+        </div>
+        
+        <div class="test-row">
+            <span class="test-label">Link 变体:</span>
+            <ldesign-button variant="link" color="primary">Primary</ldesign-button>
+            <ldesign-button variant="link" color="danger">Danger</ldesign-button>
+            <ldesign-button variant="link" color="default">Default</ldesign-button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>尺寸 (Size)</h2>
+        <div class="test-row">
+            <ldesign-button type="primary" size="large">Large</ldesign-button>
+            <ldesign-button type="primary">Middle</ldesign-button>
+            <ldesign-button type="primary" size="small">Small</ldesign-button>
+        </div>
+        <div class="test-row">
+            <ldesign-button type="primary" size="large" icon="download">Large</ldesign-button>
+            <ldesign-button type="primary" icon="download">Middle</ldesign-button>
+            <ldesign-button type="primary" size="small" icon="download">Small</ldesign-button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>形状 (Shape)</h2>
+        <div class="test-row">
+            <ldesign-button type="primary">Default</ldesign-button>
+            <ldesign-button type="primary" shape="round">Round</ldesign-button>
+            <ldesign-button type="primary" shape="circle" icon="search"></ldesign-button>
+            <ldesign-button shape="circle" icon="heart"></ldesign-button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>图标按钮 (Icon)</h2>
+        <div class="test-row">
+            <ldesign-button type="primary" icon="search">搜索</ldesign-button>
+            <ldesign-button icon="download">下载</ldesign-button>
+            <ldesign-button type="primary" icon="arrow-right" icon-position="end">下一步</ldesign-button>
+            <ldesign-button type="text" icon="heart">收藏</ldesign-button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>危险按钮 (Danger)</h2>
+        <div class="test-row">
+            <ldesign-button type="primary" danger>Primary</ldesign-button>
+            <ldesign-button danger>Default</ldesign-button>
+            <ldesign-button type="dashed" danger>Dashed</ldesign-button>
+            <ldesign-button type="text" danger>Text</ldesign-button>
+            <ldesign-button type="link" danger>Link</ldesign-button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>幽灵按钮 (Ghost)</h2>
+        <div class="dark-bg">
+            <div class="test-row">
+                <ldesign-button type="primary" ghost>Primary</ldesign-button>
+                <ldesign-button ghost>Default</ldesign-button>
+                <ldesign-button type="dashed" ghost>Dashed</ldesign-button>
+                <ldesign-button type="primary" danger ghost>Danger</ldesign-button>
+                <ldesign-button variant="solid" color="green" ghost>Success</ldesign-button>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>禁用状态 (Disabled)</h2>
+        <div class="test-row">
+            <ldesign-button type="primary" disabled>Primary</ldesign-button>
+            <ldesign-button disabled>Default</ldesign-button>
+            <ldesign-button type="dashed" disabled>Dashed</ldesign-button>
+            <ldesign-button type="text" disabled>Text</ldesign-button>
+            <ldesign-button type="link" disabled>Link</ldesign-button>
+            <ldesign-button type="primary" danger disabled>Danger</ldesign-button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>加载状态 (Loading)</h2>
+        <div class="test-row">
+            <ldesign-button type="primary" loading>Loading</ldesign-button>
+            <ldesign-button loading>Loading</ldesign-button>
+            <ldesign-button type="primary" loading loading-icon="loader">Custom Icon</ldesign-button>
+            <ldesign-button type="primary" size="small" loading>Small</ldesign-button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>块级按钮 (Block)</h2>
+        <div style="max-width: 500px;">
+            <div style="margin-bottom: 10px;">
+                <ldesign-button type="primary" block>Primary Block</ldesign-button>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <ldesign-button block>Default Block</ldesign-button>
+            </div>
+            <div>
+                <ldesign-button type="dashed" block>Dashed Block</ldesign-button>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>渐变按钮 (Gradient)</h2>
+        <div class="test-row">
+            <ldesign-button type="gradient">Gradient</ldesign-button>
+            <ldesign-button type="gradient" shape="round">Round Gradient</ldesign-button>
+            <ldesign-button type="gradient" shape="circle" icon="star"></ldesign-button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>两个汉字测试 (Auto Insert Space)</h2>
+        <div class="test-row">
+            <ldesign-button type="primary">登录</ldesign-button>
+            <ldesign-button type="primary">注册</ldesign-button>
+            <ldesign-button>提交</ldesign-button>
+            <ldesign-button type="primary" auto-insert-space="false">登录</ldesign-button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>事件测试 (Events)</h2>
+        <div class="test-row">
+            <ldesign-button type="primary" id="click-test">点击测试</ldesign-button>
+            <span id="click-count">点击次数: 0</span>
+        </div>
+    </div>
+
+    <script>
+        // 事件测试
+        let clickCount = 0;
+        const clickBtn = document.getElementById('click-test');
+        const countDisplay = document.getElementById('click-count');
+        
+        if (clickBtn) {
+            clickBtn.addEventListener('ldesignClick', () => {
+                clickCount++;
+                countDisplay.textContent = `点击次数: ${clickCount}`;
+            });
+        }
+    </script>
+
+    <!-- 引入组件库（需要根据实际路径调整） -->
+    <script type="module" src="../dist/ldesign.esm.js"></script>
+</body>
+</html>

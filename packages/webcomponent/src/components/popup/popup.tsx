@@ -41,7 +41,6 @@ export class LdesignPopup {
   @Prop({ reflect: true }) theme: 'light' | 'dark' = 'light';
   @Prop() width?: number | string;
   @Prop() maxWidth?: number | string;
-  @Prop() innerStyle?: string | { [key: string]: string };
   @Prop() lockOnScroll: boolean = false;
   @Prop() showDelay: number = 0;
   @Prop() hideDelay: number = 0;
@@ -476,28 +475,6 @@ export class LdesignPopup {
     return style;
   }
 
-  private getInnerStyle(): { [key: string]: string } | undefined {
-    if (!this.innerStyle) return undefined;
-    
-    if (typeof this.innerStyle === 'string') {
-      // 解析字符串样式为对象
-      const styleObj: { [key: string]: string } = {};
-      this.innerStyle.split(';').forEach(rule => {
-        const [key, value] = rule.split(':').map(s => s.trim());
-        if (key && value) {
-          styleObj[key] = value;
-        }
-      });
-      return styleObj;
-    }
-    
-    if (typeof this.innerStyle === 'object') {
-      return this.innerStyle;
-    }
-    
-    return undefined;
-  }
-
   render() {
     return (
       <Host class={{ 'ldesign-popup': true, 'ldesign-popup--disabled': this.disabled, 'ldesign-popup--dark': this.theme === 'dark' }}>
@@ -505,7 +482,7 @@ export class LdesignPopup {
         {this.isVisible && (
           <div id={this.uid} class="ldesign-popup__content" data-state={this.motionEnabled ? this.motion : 'open'} style={this.getPopupStyle()} role={this.popupRole} aria-hidden={!this.isVisible}>
             {this.arrow && (<div class="ldesign-popup__arrow"></div>)}
-            <div class="ldesign-popup__inner" style={this.getInnerStyle()}>
+            <div class="ldesign-popup__inner">
               {this.popupTitle && (<div class="ldesign-popup__title">{this.popupTitle}</div>)}
               <div class="ldesign-popup__body">{this.content ? (<div innerHTML={this.content}></div>) : (<slot />)}</div>
             </div>
