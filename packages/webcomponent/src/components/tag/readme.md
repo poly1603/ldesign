@@ -91,33 +91,39 @@ Tag 标签组件
 
 ## Properties
 
-| Property        | Attribute        | Description                                      | Type                                                                 | Default       |
-| --------------- | ---------------- | ------------------------------------------------ | -------------------------------------------------------------------- | ------------- |
-| `checkable`     | `checkable`      | 是否可选（切换选中态）                                  | `boolean`                                                            | `false`       |
-| `clickable`     | `clickable`      | 是否可点击（非选中态），用于标签作为动作的场景                        | `boolean`                                                            | `false`       |
-| `closable`      | `closable`       | 是否可关闭                                            | `boolean`                                                            | `false`       |
-| `closeAriaLabel`| `close-aria-label` | 关闭按钮的无障碍文案                                   | `string`                                                             | `'关闭标签'`  |
-| `color`         | `color`          | 语义颜色                                             | `"danger" \| "default" \| "primary" \| "success" \| "warning"` | `'default'`   |
-| `disabled`      | `disabled`       | 是否禁用                                             | `boolean`                                                            | `false`       |
-| `icon`          | `icon`           | 左侧图标                                             | `string`                                                             | `undefined`   |
-| `badge`         | `badge`          | 右上角数字/文本角标                                       | `string | number`                                                    | `undefined`   |
-| `dot`           | `dot`            | 右上角小圆点                                             | `boolean`                                                            | `false`       |
-| `customColor`   | `custom-color`   | 自定义主色（hex/rgb/hsl），覆盖预设语义色                         | `string`                                                             | `undefined`   |
-| `effect`        | `effect`         | 视觉效果：none | gradient | glass | neon                | `"none" | "gradient" | "glass" | "neon"`                      | `'none'`      |
-| `loading`       | `loading`        | 加载状态                                             | `boolean`                                                            | `false`       |
-| `selected`      | `selected`       | 选中状态（与 checkable 配合使用）                           | `boolean`                                                            | `false`       |
-| `shape`         | `shape`          | 形状                                               | `"pill" \| "rectangle" \| "round"`                              | `'rectangle'` |
-| `size`          | `size`           | 尺寸                                               | `"large" \| "medium" \| "middle" \| "small"`                   | `'middle'`    |
-| `variant`       | `variant`        | 外观风格 - light: 浅色背景（默认） - solid: 实底 - outline: 描边 - ghost: 透明背景 - dashed: 虚线 - elevated: 阴影 | `"dashed" \| "elevated" \| "ghost" \| "light" \| "outline" \| "solid"` | `'light'`     |
+| Property         | Attribute          | Description                                                                                             | Type                                                                   | Default       |
+| ---------------- | ------------------ | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------- |
+| `badge`          | `badge`            | 右上角数字/文本角标                                                                                              | `number \| string`                                                     | `undefined`   |
+| `checkable`      | `checkable`        | 是否可选（切换选中态）                                                                                             | `boolean`                                                              | `false`       |
+| `clickable`      | `clickable`        | 是否可点击（非选中态），用于标签作为动作的场景                                                                                 | `boolean`                                                              | `false`       |
+| `closable`       | `closable`         | 是否可关闭                                                                                                   | `boolean`                                                              | `false`       |
+| `closeAriaLabel` | `close-aria-label` | 关闭按钮的无障碍文案                                                                                              | `string`                                                               | `'关闭标签'`      |
+| `color`          | `color`            | 语义颜色                                                                                                    | `"danger" \| "default" \| "primary" \| "success" \| "warning"`         | `'default'`   |
+| `customColor`    | `custom-color`     | 自定义主色（hex/rgb/hsl）。设置后将覆盖 color 的预设色                                                                    | `string`                                                               | `undefined`   |
+| `disabled`       | `disabled`         | 是否禁用                                                                                                    | `boolean`                                                              | `false`       |
+| `dot`            | `dot`              | 右上角小圆点                                                                                                  | `boolean`                                                              | `false`       |
+| `effect`         | `effect`           | 效果风格：none（默认）、gradient（渐变）、glass（毛玻璃）、neon（霓虹）                                                          | `"glass" \| "gradient" \| "neon" \| "none"`                            | `'none'`      |
+| `icon`           | `icon`             | 左侧图标                                                                                                    | `string`                                                               | `undefined`   |
+| `loading`        | `loading`          | 加载状态                                                                                                    | `boolean`                                                              | `false`       |
+| `selected`       | `selected`         | 选中状态（与 checkable 配合使用）                                                                                  | `boolean`                                                              | `false`       |
+| `shape`          | `shape`            | 形状（rectangle：直角；round：全圆角；pill：胶囊）                                                                      | `"pill" \| "rectangle" \| "round"`                                     | `'rectangle'` |
+| `size`           | `size`             | 尺寸（small/middle/large，兼容 medium）                                                                        | `"large" \| "medium" \| "middle" \| "small"`                           | `'middle'`    |
+| `variant`        | `variant`          | 外观风格 - light: 浅色背景（默认） - solid: 实底 - outline: 描边 - ghost: 透明背景，悬停有轻微填充 - dashed: 虚线描边 - elevated: 浅色+阴影 | `"dashed" \| "elevated" \| "ghost" \| "light" \| "outline" \| "solid"` | `'light'`     |
+
 
 ## Events
 
-| Event           | Description                                   | Type                      |
-| --------------- | --------------------------------------------- | ------------------------- |
-| `ldesignChange` | 选中状态变化事件（仅当 checkable 为 true 时触发）        | `CustomEvent<boolean>`    |
-| `ldesignClose`  | 关闭事件                                           | `CustomEvent<MouseEvent>` |
+| Event           | Description                       | Type                      |
+| --------------- | --------------------------------- | ------------------------- |
+| `ldesignChange` | 选中状态变化事件（仅当 checkable 为 true 时触发） | `CustomEvent<boolean>`    |
+| `ldesignClose`  | 关闭事件                              | `CustomEvent<MouseEvent>` |
+
 
 ## Dependencies
+
+### Used by
+
+ - [ldesign-tag-group](../tag-group)
 
 ### Depends on
 
@@ -127,6 +133,7 @@ Tag 标签组件
 ```mermaid
 graph TD;
   ldesign-tag --> ldesign-icon
+  ldesign-tag-group --> ldesign-tag
   style ldesign-tag fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

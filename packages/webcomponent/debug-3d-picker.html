@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug 3D Picker</title>
+    <script type="module" src="./dist/ldesign/ldesign.esm.js"></script>
+    <link rel="stylesheet" href="./dist/ldesign/ldesign.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .picker-section {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .picker-wrapper {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .debug-panel {
+            flex: 1;
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            overflow: auto;
+            max-height: 500px;
+        }
+        .debug-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+        .debug-title {
+            color: #63b3ed;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .debug-value {
+            color: #68d391;
+        }
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+        button {
+            padding: 8px 16px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #3182ce;
+        }
+        .highlight {
+            background: yellow !important;
+            color: black !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>3D Picker Debug</h1>
+        
+        <div class="picker-section">
+            <div class="picker-wrapper">
+                <h3>Test Picker</h3>
+                <ldesign-picker 
+                    id="debug-picker"
+                    enable-3d
+                    visible-items="5"
+                    show-mask
+                    style="
+                        --ldesign-picker-3d-perspective: 600px;
+                        --ldesign-picker-3d-radius: 120px;
+                        --ldesign-picker-3d-rotate: 30deg;
+                        --ldesign-picker-3d-step-deg: 22deg;
+                        --ldesign-picker-3d-scale-min: 0.7;
+                        --ldesign-picker-3d-scale-max: 1.15;
+                    "
+                ></ldesign-picker>
+                
+                <div class="controls">
+                    <button onclick="inspectStyles()">Inspect Styles</button>
+                    <button onclick="toggleHighlight()">Toggle Highlight</button>
+                    <button onclick="logTransforms()">Log Transforms</button>
+                    <button onclick="forceUpdate()">Force Update</button>
+                </div>
+            </div>
+            
+            <div class="debug-panel" id="debug-output">
+                <div style="text-align: center; color: #718096;">
+                    Click "Inspect Styles" to see debug info
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: white; padding: 20px; border-radius: 8px; margin-top: 20px;">
+            <h3>Expected CSS Transform</h3>
+            <pre style="background: #f7fafc; padding: 10px; border-radius: 4px; overflow-x: auto;">
+/* Container */
+.ldesign-picker__picker {
+    perspective: 600px;
+    perspective-origin: center;
+}
+
+/* List */
+.ldesign-picker__column {
+    transform-style: preserve-3d;
+}
+
+/* Items (dynamically set by JS) */
+.ldesign-picker__item {
+    transform-origin: center center -120px;
+    transform: rotateX(var(--ld-pk-3d-angle)) translateZ(120px) scale(var(--ld-pk-3d-scale));
+    opacity: var(--ld-pk-3d-opacity);
+}
+            </pre>
+        </div>
+    </div>
+    
+    <script>
+        // Set up test data
+        const options = [];
+        for (let i = 1; i <= 20; i++) {
+            options.push({
+                value: `item${i}`,
+                label: `选项 ${i}`
+            });
+        }
+        
+        const picker = document.getElementById('debug-picker');
+        picker.options = options;
+        picker.value = 'item5';
+        
+        let highlightOn = false;
+        
+        function inspectStyles() {
+            const output = document.getElementById('debug-output');
+            let html = '';
+            
+            // Inspect container
+            const container = picker.shadowRoot ? 
+                picker.shadowRoot.querySelector('.ldesign-picker__picker') : 
+                picker.querySelector('.ldesign-picker__picker');
+            
+            if (container) {
+                const containerStyles = window.getComputedStyle(container);
+                html += `
+                    <div class="debug-item">
+                        <div class="debug-title">Container (.ldesign-picker__picker)</div>
+                        <div>perspective: <span class="debug-value">${containerStyles.perspective}</span></div>
+                        <div>perspective-origin: <span class="debug-value">${containerStyles.perspectiveOrigin}</span></div>
+                    </div>
+                `;
+            }
+            
+            // Inspect list
+            const list = picker.shadowRoot ? 
+                picker.shadowRoot.querySelector('.ldesign-picker__column') : 
+                picker.querySelector('.ldesign-picker__column');
+            
+            if (list) {
+                const listStyles = window.getComputedStyle(list);
+                html += `
+                    <div class="debug-item">
+                        <div class="debug-title">List (.ldesign-picker__column)</div>
+                        <div>transform-style: <span class="debug-value">${listStyles.transformStyle}</span></div>
+                        <div>transform: <span class="debug-value">${listStyles.transform}</span></div>
+                    </div>
+                `;
+            }
+            
+            // Inspect items
+            const items = picker.shadowRoot ? 
+                picker.shadowRoot.querySelectorAll('.ldesign-picker__item') : 
+                picker.querySelectorAll('.ldesign-picker__item');
+            
+            items.forEach((item, index) => {
+                const styles = window.getComputedStyle(item);
+                const isActive = item.classList.contains('ldesign-picker__item--active');
+                
+                html += `
+                    <div class="debug-item">
+                        <div class="debug-title">Item ${index} ${isActive ? '(ACTIVE)' : ''}</div>
+                        <div>transform-origin: <span class="debug-value">${styles.transformOrigin}</span></div>
+                        <div>transform: <span class="debug-value">${styles.transform}</span></div>
+                        <div>opacity: <span class="debug-value">${styles.opacity}</span></div>
+                        <div>--ld-pk-3d-angle: <span class="debug-value">${item.style.getPropertyValue('--ld-pk-3d-angle')}</span></div>
+                        <div>--ld-pk-3d-radius: <span class="debug-value">${item.style.getPropertyValue('--ld-pk-3d-radius')}</span></div>
+                        <div>--ld-pk-3d-scale: <span class="debug-value">${item.style.getPropertyValue('--ld-pk-3d-scale')}</span></div>
+                        <div>--ld-pk-3d-opacity: <span class="debug-value">${item.style.getPropertyValue('--ld-pk-3d-opacity')}</span></div>
+                    </div>
+                `;
+                
+                if (index >= 6) break; // Only show first 7 items
+            });
+            
+            output.innerHTML = html;
+        }
+        
+        function toggleHighlight() {
+            highlightOn = !highlightOn;
+            const items = picker.shadowRoot ? 
+                picker.shadowRoot.querySelectorAll('.ldesign-picker__item') : 
+                picker.querySelectorAll('.ldesign-picker__item');
+            
+            items.forEach(item => {
+                if (highlightOn) {
+                    item.classList.add('highlight');
+                } else {
+                    item.classList.remove('highlight');
+                }
+            });
+        }
+        
+        function logTransforms() {
+            const items = picker.shadowRoot ? 
+                picker.shadowRoot.querySelectorAll('.ldesign-picker__item') : 
+                picker.querySelectorAll('.ldesign-picker__item');
+            
+            console.group('3D Transform Details');
+            items.forEach((item, index) => {
+                const rect = item.getBoundingClientRect();
+                console.log(`Item ${index}:`, {
+                    angle: item.style.getPropertyValue('--ld-pk-3d-angle'),
+                    radius: item.style.getPropertyValue('--ld-pk-3d-radius'),
+                    scale: item.style.getPropertyValue('--ld-pk-3d-scale'),
+                    opacity: item.style.getPropertyValue('--ld-pk-3d-opacity'),
+                    transform: window.getComputedStyle(item).transform,
+                    position: { top: rect.top, height: rect.height }
+                });
+            });
+            console.groupEnd();
+        }
+        
+        function forceUpdate() {
+            // Force re-render
+            picker.enable3d = false;
+            setTimeout(() => {
+                picker.enable3d = true;
+                setTimeout(inspectStyles, 100);
+            }, 100);
+        }
+        
+        // Auto-inspect after load
+        setTimeout(inspectStyles, 500);
+    </script>
+</body>
+</html>

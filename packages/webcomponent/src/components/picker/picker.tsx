@@ -70,9 +70,9 @@ export class LdesignPicker {
 
   /* ---------------- 体验优化相关 ---------------- */
   /** 是否启用触觉反馈（需要浏览器支持 Vibration API） */
-  @Prop() hapticFeedback: boolean = true;
+  @Prop() hapticFeedback: boolean = true; // 默认开启触觉反馈
   /** 触觉反馈强度（毫秒） */
-  @Prop() hapticIntensity: number = 10;
+  @Prop() hapticIntensity: number = 5; // 减小默认振动强度，更接近iOS
   /** 是否启用音效 */
   @Prop() soundEffects: boolean = false;
   /** 音效音量 (0-1) */
@@ -80,9 +80,15 @@ export class LdesignPicker {
   /** 自定义音效 URL */
   @Prop() soundUrl?: string;
   /** 是否启用 3D 效果 */
-  @Prop() enable3d: boolean = false;
+  @Prop() enable3d: boolean = false; // 默认关闭3D效果，需要时手动开启
   /** 是否显示渐变遮罩 */
-  @Prop() showMask: boolean = false;
+  @Prop() showMask: boolean = true; // 默认显示渐变遮罩
+  /** 3D可视角度范围（度） */
+  @Prop() visibleRange?: number; // 不设置时根据visible-items自动计算
+  /** 3D旋转步长（度） */
+  @Prop() rotateStep?: number; // 不设置时根据visible-items自动计算
+  /** 3D圆柱半径（像素） */
+  @Prop() cylinderRadius?: number; // 不设置时根据容器高度自动计算
   /** 主题模式 */
   @Prop() theme: 'light' | 'dark' | 'auto' = 'light';
 
@@ -178,6 +184,12 @@ export class LdesignPicker {
     requestAnimationFrame(() => {
       // 测量实际的项目高度
       this.measureActualItemHeight();
+      // 读取 3D 旋转最大角（但默认值会在update3DEffects中根据实际情况计算）
+      this._maxRotateDeg = this.readCssVarDeg('--ldesign-picker-3d-rotate', null);
+      this._radiusPx = this.readCssVarPx('--ldesign-picker-3d-radius', null);
+      this._scaleMin = this.readCssVarNum('--ldesign-picker-3d-scale-min', 0.85);
+      this._scaleMax = this.readCssVarNum('--ldesign-picker-3d-scale-max', 1.0);
+      this._stepDeg = this.readCssVarDeg('--ldesign-picker-3d-step-deg', null);
       // 重新计算位置，确保使用实际测量的高度
       const idx = this.getIndexByValue(this.current);
       const validIdx = this.clampIndex(idx >= 0 ? idx : 0);
@@ -185,6 +197,8 @@ export class LdesignPicker {
       const y = this.yForIndex(enabledIdx);
       this.setTrackTransform(y, false);
       this.visual = this.parsed[enabledIdx]?.value;
+      // 初始应用一次 3D 效果
+      if (this.enable3d) this.update3DEffects();
       // 确保 current 也更新为有效值
       if (this.current !== this.visual) {
         this.current = this.visual;
@@ -428,6 +442,11 @@ export class LdesignPicker {
     el.style.transition = animate ? 'transform 200ms cubic-bezier(0.22,0.61,0.36,1)' : 'none';
     el.style.transform = `translate3d(0, ${appliedY}px, 0)`;
 
+    // 3D 透视：为每个可见子项应用基于中心偏移的旋转
+    if (this.enable3d) {
+      this.update3DEffects();
+    }
+
     // 更新视觉状态（四舍五入到最近项）
     const currentFloat = (this.centerOffset - appliedY) / itemH;
     const currentIdx = Math.max(0, Math.min(this.parsed.length - 1, Math.round(currentFloat)));
@@ -444,6 +463,151 @@ export class LdesignPicker {
   private cancelSnapAnim() { if (this.snapAnim?.raf) cancelAnimationFrame(this.snapAnim.raf); this.snapAnim = null; }
   private cancelInertia() { if (this.inertia?.raf) cancelAnimationFrame(this.inertia.raf as number); this.inertia = null; }
   private easeOutCubic(t: number) { return 1 - Math.pow(1 - t, 3); }
+
+  /* ---------------- 3D helpers ---------------- */
+  private _maxRotateDeg: number | null = null;
+  private _radiusPx: number | null = null;
+  private _scaleMin: number | undefined;
+  private _scaleMax: number | undefined;
+  private _stepDeg: number | null = null;
+
+  private readCssVarDeg(name: string, fallback: number | null): number | null {
+    try {
+      const cs = getComputedStyle(this.el);
+      const raw = cs.getPropertyValue(name)?.trim();
+      if (!raw) return fallback;
+      // 支持 "25deg" 或纯数字
+      const m = raw.match(/(-?\d+(?:\.\d+)?)\s*deg/i) || raw.match(/(-?\d+(?:\.\d+)?)/i);
+      if (!m) return fallback;
+      const v = parseFloat(m[1]);
+      return isFinite(v) ? v : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  private readCssVarPx(name: string, fallback: number | null): number | null {
+    try {
+      const cs = getComputedStyle(this.el);
+      const raw = cs.getPropertyValue(name)?.trim();
+      if (!raw) return fallback;
+      const m = raw.match(/(-?\d+(?:\.\d+)?)\s*px/i) || raw.match(/(-?\d+(?:\.\d+)?)/i);
+      if (!m) return fallback;
+      const v = parseFloat(m[1]);
+      return isFinite(v) ? v : fallback;
+    } catch { return fallback; }
+  }
+  private readCssVarNum(name: string, fallback: number): number {
+    try {
+      const cs = getComputedStyle(this.el);
+      const raw = cs.getPropertyValue(name)?.trim();
+      if (!raw) return fallback;
+      const v = parseFloat(raw);
+      return isFinite(v) ? v : fallback;
+    } catch { return fallback; }
+  }
+
+  private update3DEffects() {
+    if (!this.enable3d || !this.listEl) return;
+    const items = Array.from(this.listEl.children) as HTMLElement[];
+    if (items.length === 0) return;
+
+    const centerFloat = (this.centerOffset - this.trackY) / this.itemHeightBySize;
+    const half = Math.max(1, Math.floor(this.visibleItems / 2));
+    
+    // 根据visible-items自动调整旋转步长（让可见项目均匀分布）
+    const defaultStep = Math.min(25, Math.max(10, 70 / this.visibleItems)); // 根据可见项数调整
+    const step = this.rotateStep || (this._stepDeg !== null ? this._stepDeg : defaultStep);
+    
+    // 最大旋转角：根据可见项数调整
+    const defaultMaxA = step * half; // 最远的可见项的角度
+    const maxA = this._maxRotateDeg !== null ? this._maxRotateDeg : defaultMaxA;
+
+    // 半径：根据容器高度自动调整
+    const defaultRadius = this.panelHeightPx * 0.6; // 半径为容器高度的60%
+    const radius = this.cylinderRadius || (this._radiusPx !== null ? this._radiusPx : defaultRadius);
+    this._radiusPx = radius;
+    
+    const sMin = this._scaleMin ?? this.readCssVarNum('--ldesign-picker-3d-scale-min', 0.85); this._scaleMin = sMin;
+    const sMax = this._scaleMax ?? this.readCssVarNum('--ldesign-picker-3d-scale-max', 1.0); this._scaleMax = sMax;
+    const opacityMin = this.readCssVarNum('--ldesign-picker-3d-opacity-min', 0.6);
+    const opacityMax = this.readCssVarNum('--ldesign-picker-3d-opacity-max', 1);
+    
+    // 可视角度范围：根据可见项数自动调整（确保只显示正确数量的项目）
+    // 使用 visibleItems - 0.5 来确保只显示指定数量的项目，同时保持边缘平滑
+    const defaultVisibleRange = step * (this.visibleItems - 0.5); // 稍微小一点以确保只显示正确数量的项目
+    const visibleAngleRange = this.visibleRange || this.readCssVarDeg('--ldesign-picker-3d-visible-range', defaultVisibleRange);
+
+    for (let i = 0; i < items.length; i++) {
+      const li = items[i];
+      const idxAttr = li.getAttribute('data-index');
+      const idx = idxAttr ? parseInt(idxAttr, 10) : i;
+      const delta = idx - centerFloat; // 相对中心的偏移（可为小数）
+      
+      // 计算角度：使用线性步长
+      let ang = delta * step;
+      
+      // 判断是否在可见范围内（基于角度）
+      const isVisible = Math.abs(ang) <= visibleAngleRange / 2;
+      
+      // 如果角度超出可见范围，隐藏该项
+      if (!isVisible) {
+        li.style.visibility = 'hidden';
+        li.style.opacity = '0';
+        li.style.pointerEvents = 'none';
+        continue;
+      } else {
+        li.style.visibility = 'visible';
+        li.style.pointerEvents = 'auto';
+      }
+      
+      // 限制角度在最大值范围内（用于实际显示的项）
+      if (ang > maxA) ang = maxA;
+      else if (ang < -maxA) ang = -maxA;
+
+      // 缩放和透明度计算
+      const distFromCenter = Math.abs(delta);
+      
+      // 对于可视范围内的项，使用平滑的缓动
+      if (distFromCenter <= half) {
+        const t = distFromCenter / half;
+        const easedT = 1 - Math.cos(t * Math.PI / 2); // easeOutSine
+        const scale = sMax - (sMax - sMin) * easedT;
+        const opacity = opacityMax - (opacityMax - opacityMin) * easedT;
+        
+        // 根据size调整基础字体大小
+        let baseFontSize = 14;
+        if (this.size === 'small') baseFontSize = 13;
+        else if (this.size === 'large') baseFontSize = 15;
+        
+        // 更微妙的字体大小变化（最多增加2px）
+        const fontSize = baseFontSize + (1 - easedT) * 2;
+        
+        li.style.setProperty('--ld-pk-3d-scale', `${scale.toFixed(3)}`);
+        li.style.setProperty('--ld-pk-3d-opacity', `${opacity.toFixed(3)}`);
+        li.style.fontSize = `${fontSize.toFixed(1)}px`;
+        li.style.opacity = `${opacity.toFixed(3)}`;
+      } else {
+        // 对于超出可视范围的项，使用最小值
+        li.style.setProperty('--ld-pk-3d-scale', `${sMin.toFixed(3)}`);
+        li.style.setProperty('--ld-pk-3d-opacity', `${opacityMin.toFixed(3)}`);
+        li.style.opacity = `${opacityMin.toFixed(3)}`;
+        
+        // 根据size设置基础字体
+        let baseFontSize = 14;
+        if (this.size === 'small') baseFontSize = 13;
+        else if (this.size === 'large') baseFontSize = 15;
+        li.style.fontSize = `${baseFontSize}px`;
+      }
+
+      // 写入 CSS 变量
+      li.style.setProperty('--ld-pk-3d-angle', `${ang.toFixed(2)}deg`);
+      li.style.setProperty('--ld-pk-3d-radius', `${radius.toFixed(2)}px`);
+      li.style.backfaceVisibility = 'hidden';
+      (li.style as any).webkitBackfaceVisibility = 'hidden';
+      li.style.willChange = 'transform, opacity, font-size, visibility';
+    }
+  }
 
   private startSnapAnim(idx: number, opts?: { trigger?: 'click' | 'wheel' | 'keyboard' | 'touch' | 'scroll'; silent?: boolean }) {
     if (!this.listEl) return;
@@ -897,8 +1061,9 @@ export class LdesignPicker {
     const channel = buffer.getChannelData(0);
     
     for (let i = 0; i < channel.length; i++) {
-      // 生成一个快速衰减的正弦波
-      channel[i] = Math.sin(2 * Math.PI * 800 * i / sampleRate) * Math.exp(-i / (channel.length * 0.1));
+        // 生成一个更清脆的点击音（iOS风格）
+        const frequency = 1200; // 提高频率以获得更清脆的音效
+        channel[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * Math.exp(-i / (channel.length * 0.05));
     }
     
     this.clickSound = buffer;
@@ -926,10 +1091,23 @@ export class LdesignPicker {
   private triggerHaptic(intensity?: number) {
     if (!this.hapticFeedback) return;
     
-    // 检查是否支持 Vibration API
+    // 优先使用现代的触觉反馈API（iOS 13+）
+    if ('ontouchstart' in window && (window as any).webkit?.messageHandlers?.haptic) {
+      try {
+        // iOS特定的触觉反馈
+        (window as any).webkit.messageHandlers.haptic.postMessage('impact');
+        return;
+      } catch (err) {
+        // 静默失败，尝试其他方法
+      }
+    }
+    
+    // 检查是否支持 Vibration API（Android）
     if ('vibrate' in navigator) {
       try {
-        navigator.vibrate(intensity || this.hapticIntensity);
+        // 使用更短的振动时长，更接近iOS的触觉反馈
+        const duration = intensity || this.hapticIntensity || 10; // 默认10ms
+        navigator.vibrate(duration);
       } catch (err) {
         console.warn('触觉反馈失败:', err);
       }
@@ -1020,6 +1198,7 @@ export class LdesignPicker {
     requestAnimationFrame(() => {
       this.measureActualItemHeight();
       this.centerCurrent(false);
+      if (this.enable3d) this.update3DEffects();
     });
   };
 

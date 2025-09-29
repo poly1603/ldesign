@@ -105,6 +105,7 @@ ldesign-popup（重写版）
  - [ldesign-pagination](../pagination)
  - [ldesign-popconfirm](../popconfirm)
  - [ldesign-select](../select)
+ - [ldesign-tag-group](../tag-group)
  - [ldesign-time-picker](../time-picker)
  - [ldesign-tooltip](../tooltip)
 
@@ -121,6 +122,7 @@ graph TD;
   ldesign-pagination --> ldesign-popup
   ldesign-popconfirm --> ldesign-popup
   ldesign-select --> ldesign-popup
+  ldesign-tag-group --> ldesign-popup
   ldesign-time-picker --> ldesign-popup
   ldesign-tooltip --> ldesign-popup
   style ldesign-popup fill:#f9f,stroke:#333,stroke-width:4px

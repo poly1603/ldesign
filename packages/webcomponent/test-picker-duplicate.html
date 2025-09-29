@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Picker for Duplicate "02"</title>
+  <link rel="stylesheet" href="./dist/ldesign/ldesign.css">
+  <script type="module" src="./dist/ldesign/ldesign.esm.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h2 {
+      margin-top: 30px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    
+    .test-container {
+      border: 1px solid #ddd;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    
+    .flex-row {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    
+    .debug-info {
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      margin: 5px;
+      border: 1px solid #007bff;
+      background: #007bff;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Picker Duplicate "02" Test</h1>
+
+  <div class="test-container">
+    <h2>Test 1: Basic Picker (01-05)</h2>
+    <ldesign-picker
+      id="picker1"
+      visible-items="5"
+      options='[{"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},{"value":"05","label":"05"}]'
+    ></ldesign-picker>
+    <div class="debug-info" id="debug1">Options will be displayed here</div>
+  </div>
+
+  <div class="test-container">
+    <h2>Test 2: Longer Picker (01-09)</h2>
+    <ldesign-picker
+      id="picker2"
+      visible-items="5"
+      options='[{"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},{"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},{"value":"09","label":"09"}]'
+    ></ldesign-picker>
+    <div class="debug-info" id="debug2">Options will be displayed here</div>
+  </div>
+
+  <div class="test-container">
+    <h2>Test 3: 3D Picker (01-09)</h2>
+    <ldesign-picker
+      id="picker3"
+      enable-3d
+      visible-items="5"
+      style="--ldesign-picker-3d-perspective: 900px; --ldesign-picker-3d-rotate: 45deg;"
+      options='[{"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},{"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},{"value":"09","label":"09"}]'
+    ></ldesign-picker>
+    <div class="debug-info" id="debug3">Options will be displayed here</div>
+  </div>
+
+  <div class="test-container">
+    <h2>Test 4: Programmatically Set Options</h2>
+    <ldesign-picker
+      id="picker4"
+      visible-items="5"
+    ></ldesign-picker>
+    <button onclick="setOptions4()">Set Options (01-09)</button>
+    <button onclick="checkRenderedItems4()">Check Rendered Items</button>
+    <div class="debug-info" id="debug4">Options will be displayed here</div>
+  </div>
+
+  <script>
+    // Function to inspect picker options
+    function inspectPicker(pickerId, debugId) {
+      const picker = document.getElementById(pickerId);
+      const debug = document.getElementById(debugId);
+      
+      if (!picker) {
+        debug.textContent = 'Picker not found';
+        return;
+      }
+      
+      // Check the parsed options (internal state)
+      const parsed = picker.parsed || [];
+      const optionsText = parsed.map(opt => `${opt.value}: ${opt.label}`).join(', ');
+      
+      // Check the actual rendered DOM items
+      const items = picker.querySelectorAll('.ldesign-picker__item');
+      const renderedText = Array.from(items).map(item => {
+        const value = item.getAttribute('data-value');
+        const label = item.textContent?.trim();
+        return `${value}: ${label}`;
+      }).join(', ');
+      
+      // Check for duplicates
+      const values = Array.from(items).map(item => item.getAttribute('data-value'));
+      const duplicates = values.filter((value, index) => values.indexOf(value) !== index);
+      
+      debug.innerHTML = `
+        <strong>Parsed options (${parsed.length}):</strong> ${optionsText}<br>
+        <strong>Rendered items (${items.length}):</strong> ${renderedText}<br>
+        <strong>Duplicates found:</strong> ${duplicates.length > 0 ? duplicates.join(', ') : 'None'}
+      `;
+    }
+    
+    // Inspect all pickers on load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        inspectPicker('picker1', 'debug1');
+        inspectPicker('picker2', 'debug2');
+        inspectPicker('picker3', 'debug3');
+        inspectPicker('picker4', 'debug4');
+      }, 1000);
+    });
+    
+    // Function to set options programmatically
+    function setOptions4() {
+      const picker = document.getElementById('picker4');
+      picker.options = [
+        {"value":"01","label":"01"},
+        {"value":"02","label":"02"},
+        {"value":"03","label":"03"},
+        {"value":"04","label":"04"},
+        {"value":"05","label":"05"},
+        {"value":"06","label":"06"},
+        {"value":"07","label":"07"},
+        {"value":"08","label":"08"},
+        {"value":"09","label":"09"}
+      ];
+      setTimeout(() => inspectPicker('picker4', 'debug4'), 100);
+    }
+    
+    // Function to check rendered items
+    function checkRenderedItems4() {
+      inspectPicker('picker4', 'debug4');
+    }
+    
+    // Listen for changes and inspect
+    ['picker1', 'picker2', 'picker3', 'picker4'].forEach(id => {
+      const picker = document.getElementById(id);
+      if (picker) {
+        picker.addEventListener('ldesignChange', (e) => {
+          console.log(`${id} changed:`, e.detail);
+          inspectPicker(id, id.replace('picker', 'debug'));
+        });
+      }
+    });
+  </script>
+</body>
+</html>

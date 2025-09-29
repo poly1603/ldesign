@@ -14,25 +14,30 @@
   --ldesign-picker-highlight-color: #92400e;
   --ldesign-picker-search-bg: #f9fafb;
   --ldesign-picker-search-border: #e5e7eb;
-  --ldesign-picker-mask-gradient-top: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,255,255,0));
-  --ldesign-picker-mask-gradient-bottom: linear-gradient(to top, rgba(255,255,255,0.95), rgba(255,255,255,0));
-  --ldesign-picker-3d-perspective: 500px;
-  --ldesign-picker-3d-rotate: 25deg;
+  --ldesign-picker-mask-gradient-top: linear-gradient(to bottom, 
+    rgba(255,255,255,1) 0%, 
+    rgba(255,255,255,0.9) 20%, 
+    rgba(255,255,255,0.6) 40%, 
+    rgba(255,255,255,0.3) 60%, 
+    rgba(255,255,255,0) 100%);
+  --ldesign-picker-mask-gradient-bottom: linear-gradient(to top, 
+    rgba(255,255,255,1) 0%, 
+    rgba(255,255,255,0.9) 20%, 
+    rgba(255,255,255,0.6) 40%, 
+    rgba(255,255,255,0.3) 60%, 
+    rgba(255,255,255,0) 100%);
+  /* 3D 变量 - 更自然的iOS风格 */
+  --ldesign-picker-3d-perspective: 1000px;    /* 容器透视距离 */
+  --ldesign-picker-3d-rotate: 25deg;          /* 每边最大旋转角 */
+  --ldesign-picker-3d-step-deg: 15deg;        /* 相邻两项的角度步长 */
+  --ldesign-picker-3d-radius: 120px;          /* 圆柱半径 */
+  --ldesign-picker-3d-scale-min: 0.85;        /* 边缘最小缩放 */
+  --ldesign-picker-3d-scale-max: 1.0;         /* 中心最大缩放（不放大） */
+  --ldesign-picker-3d-opacity-min: 0.6;       /* 边缘最小透明度 */
+  --ldesign-picker-3d-opacity-max: 1;         /* 中心最大透明度 */
+  --ldesign-picker-3d-visible-range: 90deg;   /* 可视角度范围 - 超出此范围的项目将隐藏 */
 }
 
-/* 3D 效果增强 */
-.ldesign-picker--3d {
-  .ldesign-picker__column {
-    transform-style: preserve-3d;
-  }
-  
-  .ldesign-picker__item {
-    // 根据距离中心的位置添加 3D 旋转
-    &:nth-child(n) {
-      transform-origin: center center -100px;
-    }
-  }
-}
 
 /* 暗黑主题 */
 :host([theme="dark"]) {
@@ -46,8 +51,18 @@
   --ldesign-picker-search-border: #374151;
   --ldesign-picker-highlight-bg: #451a03;
   --ldesign-picker-highlight-color: #fbbf24;
-  --ldesign-picker-mask-gradient-top: linear-gradient(to bottom, rgba(31,41,55,0.9), transparent);
-  --ldesign-picker-mask-gradient-bottom: linear-gradient(to top, rgba(31,41,55,0.9), transparent);
+  --ldesign-picker-mask-gradient-top: linear-gradient(to bottom, 
+    rgba(31,41,55,1) 0%, 
+    rgba(31,41,55,0.9) 20%, 
+    rgba(31,41,55,0.6) 40%, 
+    rgba(31,41,55,0.3) 60%, 
+    rgba(31,41,55,0) 100%);
+  --ldesign-picker-mask-gradient-bottom: linear-gradient(to top, 
+    rgba(31,41,55,1) 0%, 
+    rgba(31,41,55,0.9) 20%, 
+    rgba(31,41,55,0.6) 40%, 
+    rgba(31,41,55,0.3) 60%, 
+    rgba(31,41,55,0) 100%);
 }
 
 /* 响应式设计 */
@@ -89,6 +104,15 @@
 
 .ldesign-picker {
   display: inline-block;
+  
+  // 全局移除所有列表标记
+  ul, li {
+    list-style: none !important;
+    list-style-type: none !important;
+    &::before, &::after {
+      display: none !important;
+    }
+  }
 
   &--disabled { 
     opacity: var(--ldesign-picker-disabled-opacity);
@@ -162,15 +186,13 @@
     -webkit-overflow-scrolling: touch;
     touch-action: none; // 移动端手势滑动不触发页面滚动
     
-    // 3D 透视效果（可通过变量禁用）
-    perspective: var(--ldesign-picker-3d-perspective);
-    perspective-origin: center;
   }
 
   &__column {
     margin: 0 !important;
     padding: 0 !important;
-    list-style: none;
+    list-style: none !important;
+    list-style-type: none !important;
     width: 100%;
     height: auto; // 让轨道高度由内容撑开，避免被内层裁剪
     overflow: visible; // 由外层容器裁剪
@@ -193,12 +215,15 @@
     font-size: 14px;
     color: var(--ldesign-picker-text);
     cursor: pointer;
-    margin: 0 !important; // 确保没有margin影响计算
-    padding: 0;
-    box-sizing: border-box; // 确保高度计算一致
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box;
     background: transparent !important;
     transition: color var(--ldesign-picker-transition), font-weight var(--ldesign-picker-transition);
     position: relative;
+    list-style: none !important;
+    list-style-type: none !important;
+    display: block;
 
     &:hover { 
       background: transparent !important;
@@ -247,9 +272,9 @@
     position: absolute;
     left: 0;
     right: 0;
-    height: 30%;
+    height: 40%; // 适中的遮罩高度
     pointer-events: none;
-    z-index: 2;
+    z-index: 3;
   }
   
   &__mask--top { 
@@ -260,5 +285,42 @@
   &__mask--bottom { 
     bottom: 0;
     background: var(--ldesign-picker-mask-gradient-bottom);
+  }
+}
+
+/* 3D 效果增强 - iOS风格 */
+.ldesign-picker.ldesign-picker--3d {
+  .ldesign-picker__picker {
+    perspective: var(--ldesign-picker-3d-perspective);
+    perspective-origin: center center;
+    transform-style: preserve-3d;
+    // 裁剪超出可视范围的内容
+    overflow: hidden;
+  }
+  
+  .ldesign-picker__column {
+    transform-style: preserve-3d;
+    transform: translateZ(0); // 启用硬件加速
+  }
+  
+  .ldesign-picker__item {
+    // 动态角度/半径/缩放由 JS 写入下列 CSS 变量
+    // --ld-pk-3d-angle: 旋转角度；--ld-pk-3d-radius: 半径；--ld-pk-3d-scale: 缩放；--ld-pk-3d-opacity: 透明度
+    transform-origin: center center calc(-1 * var(--ld-pk-3d-radius, var(--ldesign-picker-3d-radius, 120px)));
+    transform: rotateX(var(--ld-pk-3d-angle, 0deg)) 
+               translateZ(var(--ld-pk-3d-radius, var(--ldesign-picker-3d-radius, 120px))) 
+               scale(var(--ld-pk-3d-scale, 1));
+    opacity: var(--ld-pk-3d-opacity, 1);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform, opacity, font-size;
+    transition: transform var(--ldesign-picker-transition), 
+                opacity var(--ldesign-picker-transition),
+                font-size var(--ldesign-picker-transition);
+    
+    // 中心项字体效果
+    &--active {
+      font-weight: 600; // 只加粗，不放大
+    }
   }
 }

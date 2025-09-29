@@ -21,6 +21,9 @@
       "import": "./loader/index.js",
       "require": "./loader/index.cjs.js",
       "types": "./loader/index.d.ts"
+    },
+    "./components/*": {
+      "import": "./dist/components/*.js"
     }
   },
   "files": [

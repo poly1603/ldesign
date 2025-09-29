@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inline 3D Styles Test</title>
+    <script type="module" src="./dist/ldesign/ldesign.esm.js"></script>
+    <link rel="stylesheet" href="./dist/ldesign/ldesign.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .picker-demo {
+            margin: 30px auto;
+        }
+        
+        /* Force 3D styles */
+        .force-3d .ldesign-picker__picker {
+            perspective: 600px !important;
+            perspective-origin: center !important;
+        }
+        
+        .force-3d .ldesign-picker__column {
+            transform-style: preserve-3d !important;
+        }
+        
+        .force-3d .ldesign-picker__item {
+            transform-origin: center center -120px !important;
+            backface-visibility: hidden !important;
+            -webkit-backface-visibility: hidden !important;
+            will-change: transform, opacity !important;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-out !important;
+        }
+        
+        /* Override individual items with specific transforms */
+        .force-3d .ldesign-picker__item[data-index="0"] {
+            transform: rotateX(44deg) translateZ(120px) scale(0.7) !important;
+            opacity: 0.6 !important;
+        }
+        
+        .force-3d .ldesign-picker__item[data-index="1"] {
+            transform: rotateX(22deg) translateZ(120px) scale(0.85) !important;
+            opacity: 0.8 !important;
+        }
+        
+        .force-3d .ldesign-picker__item[data-index="2"] {
+            transform: rotateX(0deg) translateZ(120px) scale(1.1) !important;
+            opacity: 1 !important;
+        }
+        
+        .force-3d .ldesign-picker__item[data-index="3"] {
+            transform: rotateX(-22deg) translateZ(120px) scale(0.85) !important;
+            opacity: 0.8 !important;
+        }
+        
+        .force-3d .ldesign-picker__item[data-index="4"] {
+            transform: rotateX(-44deg) translateZ(120px) scale(0.7) !important;
+            opacity: 0.6 !important;
+        }
+        
+        .force-3d .ldesign-picker__item[data-index="5"] {
+            transform: rotateX(-66deg) translateZ(120px) scale(0.55) !important;
+            opacity: 0.4 !important;
+        }
+        
+        .force-3d .ldesign-picker__item[data-index="6"] {
+            transform: rotateX(-88deg) translateZ(120px) scale(0.4) !important;
+            opacity: 0.2 !important;
+        }
+        
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f7ff;
+            border-radius: 8px;
+            color: #1890ff;
+            font-size: 14px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #40a9ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>强制内联样式 3D 效果测试</h2>
+        
+        <div class="picker-demo" id="picker-container">
+            <ldesign-picker 
+                id="test-picker"
+                enable-3d
+                visible-items="5"
+                show-mask
+            ></ldesign-picker>
+        </div>
+        
+        <div>
+            <button onclick="applyForceStyles()">应用强制3D样式</button>
+            <button onclick="updateDynamic()">动态更新样式</button>
+            <button onclick="inspectComputed()">检查计算样式</button>
+        </div>
+        
+        <div class="info" id="info">
+            点击按钮应用强制3D样式
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3>预期效果：</h3>
+            <p>✅ 中心项放大（1.1x）并完全不透明</p>
+            <p>✅ 边缘项缩小（0.7x）并半透明（0.6）</p>
+            <p>✅ 圆柱形3D旋转效果</p>
+            <p>✅ 项目沿Z轴前移120px</p>
+        </div>
+    </div>
+    
+    <script>
+        // Set up test data
+        const options = [];
+        for (let i = 1; i <= 20; i++) {
+            options.push({
+                value: `item${i}`,
+                label: `选项 ${i}`
+            });
+        }
+        
+        const picker = document.getElementById('test-picker');
+        picker.options = options;
+        picker.value = 'item3';
+        
+        function applyForceStyles() {
+            // Add force-3d class to container
+            document.getElementById('picker-container').classList.add('force-3d');
+            document.getElementById('info').innerHTML = '✅ 强制3D样式已应用！观察圆柱形效果。';
+        }
+        
+        function updateDynamic() {
+            const items = picker.querySelectorAll('.ldesign-picker__item');
+            const activeIndex = Array.from(items).findIndex(item => 
+                item.classList.contains('ldesign-picker__item--active')
+            );
+            
+            items.forEach((item, index) => {
+                const offset = index - activeIndex;
+                const angle = offset * 22;
+                const scale = Math.max(0.4, 1.1 - Math.abs(offset) * 0.2);
+                const opacity = Math.max(0.2, 1 - Math.abs(offset) * 0.2);
+                
+                item.style.transform = `rotateX(${angle}deg) translateZ(120px) scale(${scale})`;
+                item.style.opacity = opacity;
+            });
+            
+            document.getElementById('info').innerHTML = '✅ 动态样式已更新！基于当前选中项。';
+        }
+        
+        function inspectComputed() {
+            const container = picker.querySelector('.ldesign-picker__picker');
+            const list = picker.querySelector('.ldesign-picker__column');
+            const activeItem = picker.querySelector('.ldesign-picker__item--active');
+            
+            let info = '<strong>计算样式检查：</strong><br>';
+            
+            if (container) {
+                const styles = window.getComputedStyle(container);
+                info += `容器 perspective: ${styles.perspective}<br>`;
+            }
+            
+            if (list) {
+                const styles = window.getComputedStyle(list);
+                info += `列表 transform-style: ${styles.transformStyle}<br>`;
+            }
+            
+            if (activeItem) {
+                const styles = window.getComputedStyle(activeItem);
+                info += `活动项 transform: ${styles.transform.substring(0, 50)}...<br>`;
+                info += `活动项 opacity: ${styles.opacity}`;
+            }
+            
+            document.getElementById('info').innerHTML = info;
+        }
+    </script>
+</body>
+</html>

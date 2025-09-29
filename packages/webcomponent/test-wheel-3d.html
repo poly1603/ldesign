@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 滚轮效果测试</title>
+    
+    <!-- 加载组件样式 -->
+    <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 36px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .picker-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .info {
+            background: #f5f5f7;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .info-value {
+            color: #007aff;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+        
+        .controls {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .control-slider {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .control-value {
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+        
+        .control-help {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        /* 自定义Picker样式 */
+        ldesign-picker {
+            --ldesign-picker-bg: #ffffff;
+            --ldesign-picker-border: #e0e0e0;
+            --ldesign-picker-active-color: #007aff;
+            width: 200px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #007aff;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge.green {
+            background: #34c759;
+        }
+        
+        .badge.orange {
+            background: #ff9500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎡 真正的 3D 滚轮效果</h1>
+        
+        <div class="demo-grid">
+            <!-- 窄视角 -->
+            <div class="card">
+                <h3 class="card-title">
+                    <span>🎯</span> 窄视角
+                    <span class="badge">60°</span>
+                </h3>
+                <div class="picker-container">
+                    <ldesign-picker 
+                        id="picker-narrow"
+                        enable-3d="true"
+                        visible-range="60"
+                        rotate-step="12"
+                        cylinder-radius="150"
+                        panel-height="180"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+                <div class="info">
+                    <div class="info-row">
+                        <span class="info-label">可视范围:</span>
+                        <span class="info-value">60°</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">旋转步长:</span>
+                        <span class="info-value">12°</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">效果:</span>
+                        <span class="info-value">更集中的视角</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 标准视角 -->
+            <div class="card">
+                <h3 class="card-title">
+                    <span>⭐</span> 标准视角
+                    <span class="badge green">90°</span>
+                </h3>
+                <div class="picker-container">
+                    <ldesign-picker 
+                        id="picker-standard"
+                        enable-3d="true"
+                        visible-range="90"
+                        rotate-step="15"
+                        cylinder-radius="120"
+                        panel-height="180"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+                <div class="info">
+                    <div class="info-row">
+                        <span class="info-label">可视范围:</span>
+                        <span class="info-value">90°</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">旋转步长:</span>
+                        <span class="info-value">15°</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">效果:</span>
+                        <span class="info-value">平衡的3D效果</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 宽视角 -->
+            <div class="card">
+                <h3 class="card-title">
+                    <span>🔭</span> 宽视角
+                    <span class="badge orange">120°</span>
+                </h3>
+                <div class="picker-container">
+                    <ldesign-picker 
+                        id="picker-wide"
+                        enable-3d="true"
+                        visible-range="120"
+                        rotate-step="20"
+                        cylinder-radius="100"
+                        panel-height="180"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+                <div class="info">
+                    <div class="info-row">
+                        <span class="info-label">可视范围:</span>
+                        <span class="info-value">120°</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">旋转步长:</span>
+                        <span class="info-value">20°</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">效果:</span>
+                        <span class="info-value">更多可见项目</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 动态调节控制 -->
+        <div class="controls">
+            <h2 style="margin-bottom: 25px;">🎛️ 动态调节 3D 参数</h2>
+            
+            <div class="control-group">
+                <label class="control-label">可视角度范围 (visible-range)</label>
+                <input type="range" class="control-slider" id="visible-range" min="45" max="135" value="90" step="5">
+                <div class="control-value" id="visible-range-value">90°</div>
+                <div class="control-help">控制"轮子背面"的隐藏点，小值=更早隐藏，大值=更多可见</div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">旋转步长 (rotate-step)</label>
+                <input type="range" class="control-slider" id="rotate-step" min="10" max="30" value="15" step="1">
+                <div class="control-value" id="rotate-step-value">15°</div>
+                <div class="control-help">每个项目之间的角度差，影响轮子的"密度"</div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">圆柱半径 (cylinder-radius)</label>
+                <input type="range" class="control-slider" id="cylinder-radius" min="80" max="200" value="120" step="10">
+                <div class="control-value" id="cylinder-radius-value">120px</div>
+                <div class="control-help">影响3D轮子的弧度，大值=更平缓，小值=更弯曲</div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">透视距离 (CSS变量)</label>
+                <input type="range" class="control-slider" id="perspective" min="500" max="2000" value="1000" step="100">
+                <div class="control-value" id="perspective-value">1000px</div>
+                <div class="control-help">影响3D透视强度，小值=透视更强，大值=更平面</div>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                <h3 style="margin-bottom: 15px; font-size: 16px;">🎯 测试选择器</h3>
+                <div class="picker-container">
+                    <ldesign-picker 
+                        id="picker-test"
+                        enable-3d="true"
+                        panel-height="200"
+                        visible-items="5"
+                        show-mask="true">
+                    </ldesign-picker>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <span style="color: #666;">当前值: </span>
+                    <span style="color: #007aff; font-weight: 600;" id="test-value">15</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 加载组件脚本 -->
+    <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    
+    <script>
+        window.addEventListener('load', () => {
+            // 生成测试数据
+            const monthOptions = Array.from({ length: 12 }, (_, i) => ({
+                value: String(i + 1).padStart(2, '0'),
+                label: `${String(i + 1).padStart(2, '0')}月`
+            }));
+            
+            const numberOptions = Array.from({ length: 30 }, (_, i) => ({
+                value: String(i + 1).padStart(2, '0'),
+                label: String(i + 1).padStart(2, '0')
+            }));
+            
+            // 设置所有picker的选项
+            document.getElementById('picker-narrow').options = monthOptions;
+            document.getElementById('picker-standard').options = monthOptions;
+            document.getElementById('picker-wide').options = monthOptions;
+            document.getElementById('picker-test').options = numberOptions;
+            
+            // 设置初始值
+            setTimeout(() => {
+                document.getElementById('picker-narrow').value = '06';
+                document.getElementById('picker-standard').value = '07';
+                document.getElementById('picker-wide').value = '08';
+                document.getElementById('picker-test').value = '15';
+            }, 100);
+            
+            // 测试选择器值变化
+            document.getElementById('picker-test').addEventListener('ldesignChange', (e) => {
+                document.getElementById('test-value').textContent = e.detail.value;
+            });
+            
+            // 动态调节控制
+            const testPicker = document.getElementById('picker-test');
+            
+            // 可视范围
+            document.getElementById('visible-range').addEventListener('input', (e) => {
+                const value = e.target.value;
+                document.getElementById('visible-range-value').textContent = value + '°';
+                testPicker.visibleRange = Number(value);
+                // 强制刷新3D效果
+                if (testPicker.enable3d) {
+                    testPicker.enable3d = false;
+                    setTimeout(() => testPicker.enable3d = true, 10);
+                }
+            });
+            
+            // 旋转步长
+            document.getElementById('rotate-step').addEventListener('input', (e) => {
+                const value = e.target.value;
+                document.getElementById('rotate-step-value').textContent = value + '°';
+                testPicker.rotateStep = Number(value);
+                if (testPicker.enable3d) {
+                    testPicker.enable3d = false;
+                    setTimeout(() => testPicker.enable3d = true, 10);
+                }
+            });
+            
+            // 圆柱半径
+            document.getElementById('cylinder-radius').addEventListener('input', (e) => {
+                const value = e.target.value;
+                document.getElementById('cylinder-radius-value').textContent = value + 'px';
+                testPicker.cylinderRadius = Number(value);
+                if (testPicker.enable3d) {
+                    testPicker.enable3d = false;
+                    setTimeout(() => testPicker.enable3d = true, 10);
+                }
+            });
+            
+            // 透视距离
+            document.getElementById('perspective').addEventListener('input', (e) => {
+                const value = e.target.value;
+                document.getElementById('perspective-value').textContent = value + 'px';
+                testPicker.style.setProperty('--ldesign-picker-3d-perspective', value + 'px');
+            });
+        });
+    </script>
+</body>
+</html>

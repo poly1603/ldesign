@@ -149,17 +149,17 @@ export class LdesignDraggable {
   // ── Public Methods ────────────────────────────────────
   @Method() async reset() { this.resetInternal(1, 0, 0, 0); this.applyTransform(); this.emitChange(); }
   @Method() async zoomTo(scale: number, clientX?: number, clientY?: number) { this.zoomToInternal(scale, clientX, clientY); }
+  @Method() async zoomIn(step?: number) { const inc = step ?? this.zoomStep; const target = Math.min(this.maxScale, Math.max(this.minScale, this.scale + inc)); this.zoomToInternal(target); }
+  @Method() async zoomOut(step?: number) { const dec = step ?? this.zoomStep; const target = Math.min(this.maxScale, Math.max(this.minScale, this.scale - dec)); this.zoomToInternal(target); }
   @Method() async setRotate(deg: number) { this.rotate = deg; this.applyTransform(); this.emitChange(); }
+  @Method() async rotateBy(deltaDeg: number) { await this.setRotate(this.rotate + deltaDeg); }
   @Method() async setOffsets(x: number, y: number) { this.offsetX = x; this.offsetY = y; this.visualOffsetX = x; this.visualOffsetY = y; this.applyTransform(); this.emitChange(); }
   @Method() async getTransformString() { return this.getTransformStringInternal(); }
   @Method() async getState() { return { scale: this.scale, rotate: this.rotate, offsetX: this.offsetX, offsetY: this.offsetY }; }
-  @Method() async setOffsets(x: number, y: number) { this.offsetX = x; this.offsetY = y; this.visualOffsetX = x; this.visualOffsetY = y; this.applyTransform(); this.emitChange(); }
   @Method() async panBy(dx: number, dy: number, clamp: boolean = true) { this.panInternal((this.offsetX || 0) + dx, (this.offsetY || 0) + dy, clamp); }
   @Method() async panTo(x: number, y: number, clamp: boolean = true) { this.panInternal(x, y, clamp); }
   @Method() async fitContain() { const s = this.computeContainScaleForCurrentRotate(); if (s) { this.scale = s; this.offsetX = 0; this.offsetY = 0; this.visualOffsetX = 0; this.visualOffsetY = 0; this.applyTransform(); this.emitChange(); } }
   @Method() async fitCover() { const s = this.computeCoverScaleForCurrentRotate(); if (s) { this.scale = s; this.offsetX = 0; this.offsetY = 0; this.visualOffsetX = 0; this.visualOffsetY = 0; this.applyTransform(); this.emitChange(); } }
-  @Method() async getTransformString() { return this.getTransformStringInternal(); }
-  @Method() async getState() { return { scale: this.scale, rotate: this.rotate, offsetX: this.offsetX, offsetY: this.offsetY }; }
 
   // ── Core ──────────────────────────────────────────────
   private resetInternal(s: number, r: number, x: number, y: number) {

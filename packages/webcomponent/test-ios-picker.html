@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iOS风格 Picker 测试 - 3D效果与触觉反馈</title>
+    
+    <!-- 加载组件样式 -->
+    <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .demo-section {
+            margin-bottom: 30px;
+        }
+        
+        .demo-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .demo-row {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .picker-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .picker-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        /* 自定义Picker样式 */
+        ldesign-picker {
+            --ldesign-picker-3d-perspective: 1200px;
+            --ldesign-picker-3d-rotate: 35deg;
+            --ldesign-picker-3d-radius: 150px;
+            --ldesign-picker-3d-scale-min: 0.6;
+            --ldesign-picker-3d-scale-max: 1.2;
+            --ldesign-picker-3d-opacity-min: 0.3;
+            --ldesign-picker-bg: #ffffff;
+            --ldesign-picker-border: #e0e0e0;
+            --ldesign-picker-active-color: #007aff;
+            width: 150px;
+        }
+        
+        /* 深色主题 */
+        ldesign-picker[theme="dark"] {
+            --ldesign-picker-bg: #1c1c1e;
+            --ldesign-picker-text: #ffffff;
+            --ldesign-picker-border: #38383a;
+            --ldesign-picker-active-color: #0a84ff;
+        }
+        
+        .controls {
+            background: #f5f5f7;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .control-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .control-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 51px;
+            height: 31px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 31px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 27px;
+            width: 27px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #007aff;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+        
+        .value-display {
+            background: #007aff;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 iOS风格 Picker</h1>
+        
+        <div class="demo-section">
+            <div class="demo-title">
+                <span>📱</span> 视觉效果（实时渲染）
+            </div>
+            
+            <div class="demo-row">
+                <div class="picker-wrapper">
+                    <div class="picker-label">3D 效果</div>
+                    <ldesign-picker 
+                        id="picker-3d"
+                        enable-3d="true"
+                        show-mask="false"
+                        haptic-feedback="true"
+                        sound-effects="true"
+                        panel-height="180"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+                
+                <div class="picker-wrapper">
+                    <div class="picker-label">渐变遮罩</div>
+                    <ldesign-picker 
+                        id="picker-mask"
+                        enable-3d="false"
+                        show-mask="true"
+                        haptic-feedback="true"
+                        panel-height="180"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+                
+                <div class="picker-wrapper">
+                    <div class="picker-label">3D + 渐变遮罩</div>
+                    <ldesign-picker 
+                        id="picker-both"
+                        enable-3d="true"
+                        show-mask="true"
+                        haptic-feedback="true"
+                        sound-effects="true"
+                        panel-height="180"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+            </div>
+            
+            <div class="value-display">
+                当前选中: <span id="current-value">01</span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-row">
+                <span class="control-label">3D 效果</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-3d" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label">渐变遮罩</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-mask" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label">触觉反馈</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-haptic" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label">音效反馈</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-sound" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label">深色主题</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-theme">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 加载组件脚本 -->
+    <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    
+    <script>
+        // 等待组件加载完成
+        window.addEventListener('load', () => {
+            // 生成选项数据
+            const monthOptions = [
+                { value: '01', label: '01月' },
+                { value: '02', label: '02月' },
+                { value: '03', label: '03月' },
+                { value: '04', label: '04月' },
+                { value: '05', label: '05月' },
+                { value: '06', label: '06月' },
+                { value: '07', label: '07月' },
+                { value: '08', label: '08月' },
+                { value: '09', label: '09月' },
+                { value: '10', label: '10月' },
+                { value: '11', label: '11月' },
+                { value: '12', label: '12月' }
+            ];
+            
+            const letterOptions = [
+                { value: 'A', label: 'A' },
+                { value: 'B', label: 'B' },
+                { value: 'C', label: 'C' },
+                { value: 'D', label: 'D' },
+                { value: 'E', label: 'E' },
+                { value: 'F', label: 'F' },
+                { value: 'G', label: 'G' },
+                { value: 'H', label: 'H' },
+                { value: 'I', label: 'I' },
+                { value: 'J', label: 'J' }
+            ];
+            
+            const numberOptions = Array.from({ length: 10 }, (_, i) => ({
+                value: String(i + 1),
+                label: String(i + 1).padStart(2, '0')
+            }));
+            
+            // 初始化所有picker
+            const picker3d = document.getElementById('picker-3d');
+            const pickerMask = document.getElementById('picker-mask');
+            const pickerBoth = document.getElementById('picker-both');
+            
+            picker3d.options = monthOptions;
+            pickerMask.options = letterOptions;
+            pickerBoth.options = numberOptions;
+            
+            // 监听值变化
+            const valueDisplay = document.getElementById('current-value');
+            
+            [picker3d, pickerMask, pickerBoth].forEach(picker => {
+                picker.addEventListener('ldesignChange', (e) => {
+                    const option = picker.options.find(opt => opt.value === e.detail.value);
+                    valueDisplay.textContent = option ? option.label : e.detail.value;
+                    
+                    // 控制台输出用于调试
+                    console.log('选中值:', e.detail.value, '选项:', option);
+                });
+            });
+            
+            // 控制开关
+            document.getElementById('toggle-3d').addEventListener('change', (e) => {
+                const enabled = e.target.checked;
+                [picker3d, pickerBoth].forEach(p => p.enable3d = enabled);
+            });
+            
+            document.getElementById('toggle-mask').addEventListener('change', (e) => {
+                const enabled = e.target.checked;
+                [pickerMask, pickerBoth].forEach(p => p.showMask = enabled);
+            });
+            
+            document.getElementById('toggle-haptic').addEventListener('change', (e) => {
+                const enabled = e.target.checked;
+                [picker3d, pickerMask, pickerBoth].forEach(p => p.hapticFeedback = enabled);
+            });
+            
+            document.getElementById('toggle-sound').addEventListener('change', (e) => {
+                const enabled = e.target.checked;
+                [picker3d, pickerMask, pickerBoth].forEach(p => p.soundEffects = enabled);
+            });
+            
+            document.getElementById('toggle-theme').addEventListener('change', (e) => {
+                const theme = e.target.checked ? 'dark' : 'light';
+                [picker3d, pickerMask, pickerBoth].forEach(p => p.theme = theme);
+                
+                // 调整背景色
+                if (theme === 'dark') {
+                    document.body.style.background = 'linear-gradient(135deg, #2d3436 0%, #000000 100%)';
+                    document.querySelector('.container').style.background = 'rgba(28, 28, 30, 0.95)';
+                    document.querySelector('.container').style.color = '#ffffff';
+                    document.querySelector('.controls').style.background = '#2c2c2e';
+                    document.querySelectorAll('.control-label').forEach(el => el.style.color = '#ffffff');
+                } else {
+                    document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    document.querySelector('.container').style.background = 'rgba(255, 255, 255, 0.95)';
+                    document.querySelector('.container').style.color = '#000000';
+                    document.querySelector('.controls').style.background = '#f5f5f7';
+                    document.querySelectorAll('.control-label').forEach(el => el.style.color = '#666');
+                }
+            });
+            
+            // 初始化第一个picker的值
+            setTimeout(() => {
+                picker3d.value = '01';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

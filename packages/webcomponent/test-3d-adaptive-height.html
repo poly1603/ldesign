@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Picker - Adaptive Height Test</title>
+  <script type="module" src="./dist/ldesign/ldesign.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign/ldesign.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1, h2 {
+      color: white;
+      text-align: center;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-top: 30px;
+    }
+
+    .test-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .test-card h3 {
+      margin: 0 0 15px 0;
+      color: #333;
+      font-size: 18px;
+    }
+
+    .picker-container {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .info {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .info code {
+      background: #fff;
+      padding: 2px 4px;
+      border-radius: 3px;
+      color: #e91e63;
+    }
+
+    /* Different height containers */
+    .height-200 { height: 200px; }
+    .height-300 { height: 300px; }
+    .height-400 { height: 400px; }
+    .height-500 { height: 500px; }
+
+    /* Controls */
+    .controls {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .control-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .control-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .control-item label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .control-item input {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .control-item input[type="range"] {
+      padding: 0;
+    }
+
+    .value-display {
+      font-size: 11px;
+      color: #999;
+      margin-top: 3px;
+    }
+
+    /* 3D perspective styles for picker items */
+    ldesign-picker::part(list-item) {
+      transform-style: preserve-3d;
+      transform: 
+        perspective(800px)
+        translateZ(calc(var(--ld-pk-3d-radius, 120px) * -1))
+        rotateX(var(--ld-pk-3d-angle, 0deg))
+        translateZ(var(--ld-pk-3d-radius, 120px))
+        scale(var(--ld-pk-3d-scale, 1));
+    }
+
+    ldesign-picker {
+      --ldesign-picker-3d-perspective: 800px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>3D Picker - Adaptive Height Test</h1>
+    <p style="color: white; text-align: center;">
+      The 3D wheel radius automatically adapts to the picker container height (60% by default)
+    </p>
+
+    <div class="controls">
+      <h3 style="margin-top: 0;">Global Controls</h3>
+      <div class="control-group">
+        <div class="control-item">
+          <label>Visible Items</label>
+          <input type="range" id="visibleItems" min="3" max="9" step="2" value="5">
+          <span class="value-display" id="visibleItemsValue">5</span>
+        </div>
+        <div class="control-item">
+          <label>Rotate Step (deg)</label>
+          <input type="range" id="rotateStep" min="5" max="30" step="5" value="15">
+          <span class="value-display" id="rotateStepValue">15°</span>
+        </div>
+        <div class="control-item">
+          <label>Custom Radius (px, 0 = auto)</label>
+          <input type="range" id="customRadius" min="0" max="300" step="10" value="0">
+          <span class="value-display" id="customRadiusValue">Auto</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-grid">
+      <!-- 200px height -->
+      <div class="test-card">
+        <h3>Height: 200px</h3>
+        <div class="picker-container height-200">
+          <ldesign-picker 
+            id="picker1"
+            enable-3d
+            visible-items="5"
+            value="3">
+          </ldesign-picker>
+        </div>
+        <div class="info">
+          Auto radius: <code>~120px</code> (60% of 200px)<br>
+          Compact wheel for small container
+        </div>
+      </div>
+
+      <!-- 300px height -->
+      <div class="test-card">
+        <h3>Height: 300px</h3>
+        <div class="picker-container height-300">
+          <ldesign-picker 
+            id="picker2"
+            enable-3d
+            visible-items="5"
+            value="5">
+          </ldesign-picker>
+        </div>
+        <div class="info">
+          Auto radius: <code>~180px</code> (60% of 300px)<br>
+          Standard wheel size
+        </div>
+      </div>
+
+      <!-- 400px height -->
+      <div class="test-card">
+        <h3>Height: 400px</h3>
+        <div class="picker-container height-400">
+          <ldesign-picker 
+            id="picker3"
+            enable-3d
+            visible-items="5"
+            value="7">
+          </ldesign-picker>
+        </div>
+        <div class="info">
+          Auto radius: <code>~240px</code> (60% of 400px)<br>
+          Larger wheel for taller container
+        </div>
+      </div>
+
+      <!-- 500px height with more visible items -->
+      <div class="test-card">
+        <h3>Height: 500px, 7 visible items</h3>
+        <div class="picker-container height-500">
+          <ldesign-picker 
+            id="picker4"
+            enable-3d
+            visible-items="7"
+            value="10">
+          </ldesign-picker>
+        </div>
+        <div class="info">
+          Auto radius: <code>~300px</code> (60% of 500px)<br>
+          Large wheel with more visible items
+        </div>
+      </div>
+
+      <!-- Custom radius example -->
+      <div class="test-card">
+        <h3>Height: 300px, Custom Radius</h3>
+        <div class="picker-container height-300">
+          <ldesign-picker 
+            id="picker5"
+            enable-3d
+            visible-items="5"
+            cylinder-radius="150"
+            value="4">
+          </ldesign-picker>
+        </div>
+        <div class="info">
+          Fixed radius: <code>150px</code><br>
+          Manually set cylinder radius
+        </div>
+      </div>
+
+      <!-- Small picker with 3 visible items -->
+      <div class="test-card">
+        <h3>Height: 200px, 3 visible items</h3>
+        <div class="picker-container height-200">
+          <ldesign-picker 
+            id="picker6"
+            enable-3d
+            visible-items="3"
+            value="2">
+          </ldesign-picker>
+        </div>
+        <div class="info">
+          Auto radius: <code>~120px</code><br>
+          Fewer items, tighter curve
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.9); border-radius: 20px;">
+      <h3 style="margin-top: 0;">How Adaptive Sizing Works</h3>
+      <ul>
+        <li><strong>Default Radius:</strong> Automatically set to 60% of container height</li>
+        <li><strong>Rotation Step:</strong> Automatically adjusts based on visible items (70° ÷ visible items)</li>
+        <li><strong>Visible Range:</strong> Calculated to show exactly the specified number of items</li>
+        <li><strong>Override:</strong> Use <code>cylinder-radius</code> prop to set a fixed radius</li>
+      </ul>
+      
+      <h3>Tips for Best Results</h3>
+      <ul>
+        <li>Container height should be at least 40px × visible items for optimal display</li>
+        <li>Use odd numbers for <code>visible-items</code> (3, 5, 7) for balanced appearance</li>
+        <li>Larger containers (400px+) work best with 5-7 visible items</li>
+        <li>Smaller containers (200px) work best with 3-5 visible items</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Sample data for all pickers
+    const sampleData = Array.from({ length: 30 }, (_, i) => ({
+      label: `Option ${i + 1}`,
+      value: `${i + 1}`
+    }));
+
+    // Initialize all pickers with data
+    document.addEventListener('DOMContentLoaded', () => {
+      const pickers = document.querySelectorAll('ldesign-picker');
+      pickers.forEach(picker => {
+        picker.options = sampleData;
+      });
+
+      // Setup global controls
+      const visibleItemsSlider = document.getElementById('visibleItems');
+      const visibleItemsValue = document.getElementById('visibleItemsValue');
+      const rotateStepSlider = document.getElementById('rotateStep');
+      const rotateStepValue = document.getElementById('rotateStepValue');
+      const customRadiusSlider = document.getElementById('customRadius');
+      const customRadiusValue = document.getElementById('customRadiusValue');
+
+      visibleItemsSlider.addEventListener('input', (e) => {
+        const value = e.target.value;
+        visibleItemsValue.textContent = value;
+        // Update first 4 pickers (not the custom ones)
+        ['picker1', 'picker2', 'picker3', 'picker4'].forEach(id => {
+          const picker = document.getElementById(id);
+          if (picker) picker.setAttribute('visible-items', value);
+        });
+      });
+
+      rotateStepSlider.addEventListener('input', (e) => {
+        const value = e.target.value;
+        rotateStepValue.textContent = `${value}°`;
+        // Update all pickers except picker5
+        pickers.forEach(picker => {
+          if (picker.id !== 'picker5') {
+            picker.setAttribute('rotate-step', value);
+          }
+        });
+      });
+
+      customRadiusSlider.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value);
+        customRadiusValue.textContent = value === 0 ? 'Auto' : `${value}px`;
+        // Update only first 4 pickers
+        ['picker1', 'picker2', 'picker3', 'picker4'].forEach(id => {
+          const picker = document.getElementById(id);
+          if (picker) {
+            if (value === 0) {
+              picker.removeAttribute('cylinder-radius');
+            } else {
+              picker.setAttribute('cylinder-radius', value);
+            }
+          }
+        });
+      });
+
+      // Log actual computed radius for debugging
+      setTimeout(() => {
+        pickers.forEach((picker, index) => {
+          const listItems = picker.shadowRoot?.querySelectorAll('[data-index]');
+          if (listItems && listItems.length > 0) {
+            const firstItem = listItems[0];
+            const radius = getComputedStyle(firstItem).getPropertyValue('--ld-pk-3d-radius');
+            console.log(`Picker ${index + 1}: Computed radius = ${radius}`);
+          }
+        });
+      }, 500);
+    });
+  </script>
+</body>
+</html>

@@ -90,10 +90,10 @@ defineCustomElements()
 如果你只需要使用特定的组件，可以按需引入以减少包体积：
 
 ```typescript
-// 只引入需要的组件
-import '@ldesign/webcomponent/dist/components/ldesign-button'
-import '@ldesign/webcomponent/dist/components/ldesign-input'
-import '@ldesign/webcomponent/dist/components/ldesign-icon'
+// 只引入需要的组件（不含 dist）
+import '@ldesign/webcomponent/components/ldesign-button'
+import '@ldesign/webcomponent/components/ldesign-input'
+import '@ldesign/webcomponent/components/ldesign-icon'
 ```
 
 ## 框架集成

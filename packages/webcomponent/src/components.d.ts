@@ -1451,6 +1451,7 @@ export namespace Components {
         "panBy": (dx: number, dy: number, clamp?: boolean) => Promise<void>;
         "panTo": (x: number, y: number, clamp?: boolean) => Promise<void>;
         "reset": () => Promise<void>;
+        "rotateBy": (deltaDeg: number) => Promise<void>;
         /**
           * 旋转吸附角度（度）。大于 0 时在捏合旋转接近该步进的倍数会吸附
           * @default 0
@@ -1486,6 +1487,8 @@ export namespace Components {
           * @default false
          */
         "wheelZoomRequiresCtrl": boolean;
+        "zoomIn": (step?: number) => Promise<void>;
+        "zoomOut": (step?: number) => Promise<void>;
         /**
           * 缩放步进（滚轮/按钮）
           * @default 0.1
@@ -3020,6 +3023,10 @@ export namespace Components {
     interface LdesignPicker {
         "centerToCurrent": (smooth?: boolean) => Promise<void>;
         /**
+          * 3D圆柱半径（像素）
+         */
+        "cylinderRadius"?: number;
+        /**
           * 默认值（非受控）
          */
         "defaultValue"?: string;
@@ -3054,7 +3061,7 @@ export namespace Components {
         "hapticFeedback": boolean;
         /**
           * 触觉反馈强度（毫秒）
-          * @default 10
+          * @default 5
          */
         "hapticIntensity": number;
         /**
@@ -3098,6 +3105,10 @@ export namespace Components {
           * @default 0.35
          */
         "resistance": number;
+        /**
+          * 3D旋转步长（度）
+         */
+        "rotateStep"?: number;
         "scrollToIndex": (index: number, opts?: { trigger?: "program" | "click" | "scroll" | "wheel" | "keyboard" | "touch"; animate?: boolean; silent?: boolean; }) => Promise<void>;
         "scrollToValue": (value: string, opts?: { trigger?: "program" | "click" | "scroll" | "wheel" | "keyboard" | "touch"; animate?: boolean; silent?: boolean; }) => Promise<void>;
         /**
@@ -3122,7 +3133,7 @@ export namespace Components {
         "searchable": boolean;
         /**
           * 是否显示渐变遮罩
-          * @default false
+          * @default true
          */
         "showMask": boolean;
         /**
@@ -3166,6 +3177,10 @@ export namespace Components {
           * @default 5
          */
         "visibleItems": number;
+        /**
+          * 3D可视角度范围（度）
+         */
+        "visibleRange"?: number;
     }
     /**
      * Popconfirm 气泡确认框
@@ -9564,6 +9579,10 @@ declare namespace LocalJSX {
      */
     interface LdesignPicker {
         /**
+          * 3D圆柱半径（像素）
+         */
+        "cylinderRadius"?: number;
+        /**
           * 默认值（非受控）
          */
         "defaultValue"?: string;
@@ -9598,7 +9617,7 @@ declare namespace LocalJSX {
         "hapticFeedback"?: boolean;
         /**
           * 触觉反馈强度（毫秒）
-          * @default 10
+          * @default 5
          */
         "hapticIntensity"?: number;
         /**
@@ -9651,6 +9670,10 @@ declare namespace LocalJSX {
          */
         "resistance"?: number;
         /**
+          * 3D旋转步长（度）
+         */
+        "rotateStep"?: number;
+        /**
           * 搜索防抖延迟（毫秒）
           * @default 300
          */
@@ -9672,7 +9695,7 @@ declare namespace LocalJSX {
         "searchable"?: boolean;
         /**
           * 是否显示渐变遮罩
-          * @default false
+          * @default true
          */
         "showMask"?: boolean;
         /**
@@ -9716,6 +9739,10 @@ declare namespace LocalJSX {
           * @default 5
          */
         "visibleItems"?: number;
+        /**
+          * 3D可视角度范围（度）
+         */
+        "visibleRange"?: number;
     }
     /**
      * Popconfirm 气泡确认框

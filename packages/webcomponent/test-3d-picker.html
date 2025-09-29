@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Picker Test</title>
+    <script type="module" src="./dist/ldesign/ldesign.esm.js"></script>
+    <link rel="stylesheet" href="./dist/ldesign/ldesign.css">
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        .demo-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .picker-wrapper {
+            margin-bottom: 40px;
+        }
+        .config-panel {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .config-item {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        label {
+            min-width: 150px;
+            color: #666;
+        }
+        input[type="range"] {
+            flex: 1;
+        }
+        .value-display {
+            min-width: 80px;
+            text-align: right;
+            color: #333;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h2>3D 透视滚轮选择器测试</h2>
+        
+        <div class="picker-wrapper">
+            <ldesign-picker 
+                id="test-picker"
+                enable-3d
+                visible-items="5"
+                style="
+                    --ldesign-picker-3d-perspective: 1000px;
+                    --ldesign-picker-3d-radius: 120px;
+                    --ldesign-picker-3d-rotate: 25deg;
+                    --ldesign-picker-3d-step-deg: 20deg;
+                    --ldesign-picker-3d-scale-min: 0.7;
+                    --ldesign-picker-3d-scale-max: 1.1;
+                "
+            ></ldesign-picker>
+        </div>
+        
+        <div class="config-panel">
+            <h3>动态调整 3D 参数</h3>
+            
+            <div class="config-item">
+                <label>透视距离 (perspective)</label>
+                <input type="range" id="perspective" min="200" max="2000" value="1000" step="50">
+                <span class="value-display" id="perspective-value">1000px</span>
+            </div>
+            
+            <div class="config-item">
+                <label>圆柱半径 (radius)</label>
+                <input type="range" id="radius" min="50" max="200" value="120" step="5">
+                <span class="value-display" id="radius-value">120px</span>
+            </div>
+            
+            <div class="config-item">
+                <label>最大旋转角度 (rotate)</label>
+                <input type="range" id="rotate" min="10" max="45" value="25" step="1">
+                <span class="value-display" id="rotate-value">25deg</span>
+            </div>
+            
+            <div class="config-item">
+                <label>步进角度 (step-deg)</label>
+                <input type="range" id="step" min="10" max="30" value="20" step="1">
+                <span class="value-display" id="step-value">20deg</span>
+            </div>
+            
+            <div class="config-item">
+                <label>最小缩放 (scale-min)</label>
+                <input type="range" id="scaleMin" min="0.5" max="0.95" value="0.7" step="0.05">
+                <span class="value-display" id="scaleMin-value">0.7</span>
+            </div>
+            
+            <div class="config-item">
+                <label>最大缩放 (scale-max)</label>
+                <input type="range" id="scaleMax" min="1.0" max="1.5" value="1.1" step="0.05">
+                <span class="value-display" id="scaleMax-value">1.1</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 20px; background: #f0f7ff; border-radius: 8px;">
+            <p style="margin: 0; color: #666;">
+                当前选中值：<strong id="current-value" style="color: #1890ff;">加载中...</strong>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // 生成测试数据
+        const options = [];
+        for (let i = 1; i <= 30; i++) {
+            options.push({
+                value: `item${i}`,
+                label: `选项 ${i}`
+            });
+        }
+        
+        // 获取picker元素
+        const picker = document.getElementById('test-picker');
+        
+        // 设置选项
+        picker.options = options;
+        picker.value = 'item8';
+        
+        // 监听值变化
+        picker.addEventListener('ldesignChange', (e) => {
+            document.getElementById('current-value').textContent = e.detail.option?.label || '未选择';
+        });
+        
+        // 配置面板控制
+        const configs = [
+            { id: 'perspective', prop: '--ldesign-picker-3d-perspective', unit: 'px' },
+            { id: 'radius', prop: '--ldesign-picker-3d-radius', unit: 'px' },
+            { id: 'rotate', prop: '--ldesign-picker-3d-rotate', unit: 'deg' },
+            { id: 'step', prop: '--ldesign-picker-3d-step-deg', unit: 'deg' },
+            { id: 'scaleMin', prop: '--ldesign-picker-3d-scale-min', unit: '' },
+            { id: 'scaleMax', prop: '--ldesign-picker-3d-scale-max', unit: '' }
+        ];
+        
+        configs.forEach(config => {
+            const input = document.getElementById(config.id);
+            const valueDisplay = document.getElementById(`${config.id}-value`);
+            
+            input.addEventListener('input', (e) => {
+                const value = e.target.value;
+                valueDisplay.textContent = value + config.unit;
+                picker.style.setProperty(config.prop, value + config.unit);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -60,8 +60,9 @@ document.body.innerHTML = `
 如果你只需要特定的组件，可以按需导入：
 
 ```typescript
-import '@ldesign/webcomponent/dist/components/ldesign-button'
-import '@ldesign/webcomponent/dist/components/ldesign-input'
+// 不含 dist 的按需导入
+import '@ldesign/webcomponent/components/ldesign-button'
+import '@ldesign/webcomponent/components/ldesign-input'
 ```
 
 ## 框架集成

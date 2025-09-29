@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picker 自然效果测试</title>
+    
+    <!-- 加载组件样式 -->
+    <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f7;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #1d1d1f;
+            font-size: 32px;
+        }
+        
+        h2 {
+            color: #1d1d1f;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .picker-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .date-display {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .date-display strong {
+            color: #007aff;
+            font-weight: 600;
+        }
+        
+        .feature-list {
+            margin-top: 15px;
+            padding-left: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .feature-list li {
+            margin-bottom: 5px;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .demo-row {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .size-demo {
+            text-align: center;
+        }
+        
+        .size-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .toggle-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 1px solid #007aff;
+            background: white;
+            color: #007aff;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .toggle-btn:hover {
+            background: #007aff;
+            color: white;
+        }
+        
+        .toggle-btn.active {
+            background: #007aff;
+            color: white;
+        }
+        
+        /* 确保Picker组件正确显示 */
+        ldesign-picker {
+            --ldesign-picker-bg: #ffffff;
+            --ldesign-picker-border: #e5e7eb;
+            --ldesign-picker-active-color: #007aff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Picker 组件自然效果展示</h1>
+        
+        <!-- 效果对比 -->
+        <div class="comparison-grid">
+            <div class="card">
+                <h3 class="card-title">默认效果（推荐）</h3>
+                <div class="picker-wrapper">
+                    <ldesign-picker 
+                        id="picker-default"
+                        panel-height="180"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+                <ul class="feature-list">
+                    <li>✅ 清晰易读</li>
+                    <li>✅ 渐变遮罩效果</li>
+                    <li>✅ 性能最优</li>
+                    <li>✅ 适合所有场景</li>
+                </ul>
+                <div class="date-display">
+                    选中：<strong id="default-value">2024年</strong>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">3D 效果（可选）</h3>
+                <div class="picker-wrapper">
+                    <ldesign-picker 
+                        id="picker-3d"
+                        enable-3d="true"
+                        panel-height="180"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+                <ul class="feature-list">
+                    <li>🎨 iOS 风格 3D 透视</li>
+                    <li>🎯 微妙的缩放效果</li>
+                    <li>📐 15° 角度步长</li>
+                    <li>💫 适合特殊场景</li>
+                </ul>
+                <div class="date-display">
+                    选中：<strong id="3d-value">2024年</strong>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 尺寸展示 -->
+        <div class="demo-section">
+            <h2>📏 不同尺寸效果</h2>
+            <div class="demo-row">
+                <div class="size-demo">
+                    <span class="size-label">小尺寸 (small)</span>
+                    <ldesign-picker 
+                        id="picker-small"
+                        size="small"
+                        panel-height="160"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+                
+                <div class="size-demo">
+                    <span class="size-label">中尺寸 (medium)</span>
+                    <ldesign-picker 
+                        id="picker-medium"
+                        size="medium"
+                        panel-height="180"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+                
+                <div class="size-demo">
+                    <span class="size-label">大尺寸 (large)</span>
+                    <ldesign-picker 
+                        id="picker-large"
+                        size="large"
+                        panel-height="200"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+            </div>
+            
+            <div class="toggle-group">
+                <button class="toggle-btn" id="toggle-3d">开启/关闭 3D 效果</button>
+                <button class="toggle-btn" id="toggle-mask">开启/关闭 遮罩</button>
+            </div>
+        </div>
+        
+        <!-- 日期选择器示例 -->
+        <div class="demo-section">
+            <h2>📆 日期选择器示例</h2>
+            <div class="demo-row">
+                <div class="size-demo">
+                    <span class="size-label">年份</span>
+                    <ldesign-picker 
+                        id="date-year"
+                        size="small"
+                        panel-height="160"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+                
+                <div class="size-demo">
+                    <span class="size-label">月份</span>
+                    <ldesign-picker 
+                        id="date-month"
+                        size="small"
+                        panel-height="160"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+                
+                <div class="size-demo">
+                    <span class="size-label">日期</span>
+                    <ldesign-picker 
+                        id="date-day"
+                        size="small"
+                        panel-height="160"
+                        visible-items="5">
+                    </ldesign-picker>
+                </div>
+            </div>
+            <div class="date-display" style="margin-top: 30px;">
+                选中日期：<strong id="full-date">2024-01-01</strong>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 加载组件脚本 -->
+    <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    
+    <script>
+        window.addEventListener('load', () => {
+            // 生成选项数据
+            const yearOptions = Array.from({ length: 11 }, (_, i) => ({
+                value: String(2020 + i),
+                label: `${2020 + i}年`
+            }));
+            
+            const monthOptions = Array.from({ length: 12 }, (_, i) => ({
+                value: String(i + 1).padStart(2, '0'),
+                label: `${i + 1}月`
+            }));
+            
+            const dayOptions = Array.from({ length: 31 }, (_, i) => ({
+                value: String(i + 1).padStart(2, '0'),
+                label: `${i + 1}日`
+            }));
+            
+            // 设置所有年份选择器
+            ['picker-default', 'picker-3d', 'picker-small', 'picker-medium', 'picker-large', 'date-year'].forEach(id => {
+                const picker = document.getElementById(id);
+                if (picker) {
+                    picker.options = yearOptions;
+                    picker.value = '2024';
+                }
+            });
+            
+            // 设置月份和日期选择器
+            const monthPicker = document.getElementById('date-month');
+            if (monthPicker) {
+                monthPicker.options = monthOptions;
+                monthPicker.value = '01';
+            }
+            
+            const dayPicker = document.getElementById('date-day');
+            if (dayPicker) {
+                dayPicker.options = dayOptions;
+                dayPicker.value = '01';
+            }
+            
+            // 监听默认选择器
+            document.getElementById('picker-default').addEventListener('ldesignChange', (e) => {
+                document.getElementById('default-value').textContent = e.detail.option?.label || e.detail.value;
+            });
+            
+            // 监听3D选择器
+            document.getElementById('picker-3d').addEventListener('ldesignChange', (e) => {
+                document.getElementById('3d-value').textContent = e.detail.option?.label || e.detail.value;
+            });
+            
+            // 监听日期选择器
+            const updateFullDate = () => {
+                const year = document.getElementById('date-year').value;
+                const month = document.getElementById('date-month').value;
+                const day = document.getElementById('date-day').value;
+                document.getElementById('full-date').textContent = `${year}-${month}-${day}`;
+            };
+            
+            ['date-year', 'date-month', 'date-day'].forEach(id => {
+                document.getElementById(id).addEventListener('ldesignChange', updateFullDate);
+            });
+            
+            // 切换3D效果
+            let is3D = false;
+            document.getElementById('toggle-3d').addEventListener('click', () => {
+                is3D = !is3D;
+                ['picker-small', 'picker-medium', 'picker-large'].forEach(id => {
+                    document.getElementById(id).enable3d = is3D;
+                });
+                document.getElementById('toggle-3d').classList.toggle('active', is3D);
+            });
+            
+            // 切换遮罩
+            let showMask = true;
+            document.getElementById('toggle-mask').addEventListener('click', () => {
+                showMask = !showMask;
+                ['picker-small', 'picker-medium', 'picker-large'].forEach(id => {
+                    document.getElementById(id).showMask = showMask;
+                });
+                document.getElementById('toggle-mask').classList.toggle('active', showMask);
+            });
+            
+            // 初始状态
+            document.getElementById('toggle-mask').classList.add('active');
+        });
+    </script>
+</body>
+</html>

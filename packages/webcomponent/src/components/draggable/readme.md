@@ -22,20 +22,32 @@ ldesign-draggable
 
 ## Properties
 
-| Property         | Attribute          | Description           | Type      | Default     |
-| ---------------- | ------------------ | --------------------- | --------- | ----------- |
-| `alt`            | `alt`              |                       | `string`  | `undefined` |
-| `doubleTapZoom`  | `double-tap-zoom`  | 双击切换到的缩放倍数            | `number`  | `2`         |
-| `enableRotate`   | `enable-rotate`    | 是否允许旋转（移动端双指）         | `boolean` | `true`      |
-| `initialOffsetX` | `initial-offset-x` |                       | `number`  | `0`         |
-| `initialOffsetY` | `initial-offset-y` |                       | `number`  | `0`         |
-| `initialRotate`  | `initial-rotate`   |                       | `number`  | `0`         |
-| `initialScale`   | `initial-scale`    | 初始状态                  | `number`  | `1`         |
-| `maxScale`       | `max-scale`        |                       | `number`  | `4`         |
-| `minScale`       | `min-scale`        | 最小/最大缩放               | `number`  | `0.25`      |
-| `src`            | `src`              | 若提供则内部渲染 img；否则使用默认插槽 | `string`  | `undefined` |
-| `wheelZoom`      | `wheel-zoom`       | PC 滚轮缩放               | `boolean` | `true`      |
-| `zoomStep`       | `zoom-step`        | 缩放步进（滚轮/按钮）           | `number`  | `0.1`       |
+| Property                | Attribute                  | Description                      | Type                                                           | Default       |
+| ----------------------- | -------------------------- | -------------------------------- | -------------------------------------------------------------- | ------------- |
+| `allowDoubleTap`        | `allow-double-tap`         | 是否允许双击/双指双击缩放                    | `boolean`                                                      | `true`        |
+| `alt`                   | `alt`                      |                                  | `string`                                                       | `undefined`   |
+| `controlsPosition`      | `controls-position`        |                                  | `"bottom-left" \| "bottom-right" \| "top-left" \| "top-right"` | `'top-right'` |
+| `disableContextMenu`    | `disable-context-menu`     | 是否禁用右键菜单（避免干扰拖拽）                 | `boolean`                                                      | `true`        |
+| `doubleTapZoom`         | `double-tap-zoom`          | 双击切换到的缩放倍数                       | `number`                                                       | `2`           |
+| `enableMomentum`        | `enable-momentum`          | 是否启用动量滚动                         | `boolean`                                                      | `true`        |
+| `enableRotate`          | `enable-rotate`            | 是否允许旋转（移动端双指）                    | `boolean`                                                      | `true`        |
+| `initialOffsetX`        | `initial-offset-x`         |                                  | `number`                                                       | `0`           |
+| `initialOffsetY`        | `initial-offset-y`         |                                  | `number`                                                       | `0`           |
+| `initialRotate`         | `initial-rotate`           |                                  | `number`                                                       | `0`           |
+| `initialScale`          | `initial-scale`            | 初始状态                             | `number`                                                       | `1`           |
+| `keyPanFastMultiplier`  | `key-pan-fast-multiplier`  | 按住 Shift 时的平移步长倍率                | `number`                                                       | `3`           |
+| `keyPanStep`            | `key-pan-step`             | 方向键平移基础步长（像素）                    | `number`                                                       | `40`          |
+| `keyboard`              | `keyboard`                 | 是否启用键盘交互（方向键平移、+/- 缩放、R 旋转、0 重置） | `boolean`                                                      | `true`        |
+| `maxScale`              | `max-scale`                |                                  | `number`                                                       | `4`           |
+| `minScale`              | `min-scale`                | 最小/最大缩放                          | `number`                                                       | `0.25`        |
+| `rotateSnapDeg`         | `rotate-snap-deg`          | 旋转吸附角度（度）。大于 0 时在捏合旋转接近该步进的倍数会吸附 | `number`                                                       | `0`           |
+| `rotateSnapEpsilon`     | `rotate-snap-epsilon`      | 旋转吸附阈值（度），仅当与最近倍数的差值不超过该阈值时生效    | `number`                                                       | `3`           |
+| `showControls`          | `show-controls`            |                                  | `boolean`                                                      | `false`       |
+| `src`                   | `src`                      | 若提供则内部渲染 img；否则使用默认插槽            | `string`                                                       | `undefined`   |
+| `wheelPan`              | `wheel-pan`                | 允许使用滚轮进行平移（当未触发缩放时）              | `boolean`                                                      | `true`        |
+| `wheelZoom`             | `wheel-zoom`               | PC 滚轮缩放                          | `boolean`                                                      | `true`        |
+| `wheelZoomRequiresCtrl` | `wheel-zoom-requires-ctrl` | 是否需要按住 Ctrl/⌘ 才进行滚轮缩放；否则滚轮优先缩放   | `boolean`                                                      | `false`       |
+| `zoomStep`              | `zoom-step`                | 缩放步进（滚轮/按钮）                      | `number`                                                       | `0.1`         |
 
 
 ## Events
@@ -48,6 +60,26 @@ ldesign-draggable
 
 
 ## Methods
+
+### `fitContain() => Promise<void>`
+
+
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `fitCover() => Promise<void>`
+
+
+
+#### Returns
+
+Type: `Promise<void>`
+
+
 
 ### `getState() => Promise<{ scale: number; rotate: number; offsetX: number; offsetY: number; }>`
 
@@ -69,9 +101,61 @@ Type: `Promise<string>`
 
 
 
+### `panBy(dx: number, dy: number, clamp?: boolean) => Promise<void>`
+
+
+
+#### Parameters
+
+| Name    | Type      | Description |
+| ------- | --------- | ----------- |
+| `dx`    | `number`  |             |
+| `dy`    | `number`  |             |
+| `clamp` | `boolean` |             |
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `panTo(x: number, y: number, clamp?: boolean) => Promise<void>`
+
+
+
+#### Parameters
+
+| Name    | Type      | Description |
+| ------- | --------- | ----------- |
+| `x`     | `number`  |             |
+| `y`     | `number`  |             |
+| `clamp` | `boolean` |             |
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
 ### `reset() => Promise<void>`
 
 
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `rotateBy(deltaDeg: number) => Promise<void>`
+
+
+
+#### Parameters
+
+| Name       | Type     | Description |
+| ---------- | -------- | ----------- |
+| `deltaDeg` | `number` |             |
 
 #### Returns
 
@@ -105,6 +189,38 @@ Type: `Promise<void>`
 | Name  | Type     | Description |
 | ----- | -------- | ----------- |
 | `deg` | `number` |             |
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `zoomIn(step?: number) => Promise<void>`
+
+
+
+#### Parameters
+
+| Name   | Type     | Description |
+| ------ | -------- | ----------- |
+| `step` | `number` |             |
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `zoomOut(step?: number) => Promise<void>`
+
+
+
+#### Parameters
+
+| Name   | Type     | Description |
+| ------ | -------- | ----------- |
+| `step` | `number` |             |
 
 #### Returns
 
