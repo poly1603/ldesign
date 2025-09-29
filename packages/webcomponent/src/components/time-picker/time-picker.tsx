@@ -55,7 +55,10 @@ export class LdesignTimePicker {
 
   // columns
   @Prop() showSeconds: boolean = true;
-  @Prop() steps: number[] = [1, 1, 1]; // [h, m, s]
+  @Prop() steps: number[] = [1, 1, 1]; // [h, m, s] - deprecated, use individual step props
+  @Prop() hourStep: number = 1;      // 小时步进
+  @Prop() minuteStep: number = 1;    // 分钟步进 
+  @Prop() secondStep: number = 1;    // 秒步进
   @Prop() panelHeight?: number; // 若未提供，将依据 visibleItems 与尺寸计算
   @Prop() visibleItems: number = 5;
   @Prop() confirm: boolean = true; // need Confirm button
@@ -136,11 +139,6 @@ export class LdesignTimePicker {
     // 设置AM/PM
     this.meridiem = this.h >= 12 ? 'PM' : 'AM';
     this.recomputeOptions();
-
-    // 如果是12小时制且有初始值，确保输出格式正确
-    if (this.outputFormat === '12h' && init) {
-      this.value = this.formatTime(this.h, this.m, this.s);
-    }
   }
 
   componentDidLoad() {
@@ -236,21 +234,21 @@ export class LdesignTimePicker {
   private isTimeInRange(h: number, m: number, s: number): boolean {
     if (!this.minTime && !this.maxTime) return true;
 
-    const currentMinutes = h * 60 + m + s / 60;
+    const currentSeconds = h * 3600 + m * 60 + s;
 
     if (this.minTime) {
       const min = this.parseTime(this.minTime);
       if (min) {
-        const minMinutes = min.h * 60 + min.m + min.s / 60;
-        if (currentMinutes < minMinutes) return false;
+        const minSeconds = min.h * 3600 + min.m * 60 + min.s;
+        if (currentSeconds < minSeconds) return false;
       }
     }
 
     if (this.maxTime) {
       const max = this.parseTime(this.maxTime);
       if (max) {
-        const maxMinutes = max.h * 60 + max.m + max.s / 60;
-        if (currentMinutes > maxMinutes) return false;
+        const maxSeconds = max.h * 3600 + max.m * 60 + max.s;
+        if (currentSeconds > maxSeconds) return false;
       }
     }
 
@@ -283,6 +281,15 @@ export class LdesignTimePicker {
 
   @Watch('steps')
   onStepsChanged() { this.recomputeOptions(); }
+
+  @Watch('hourStep')
+  onHourStepChanged() { this.recomputeOptions(); }
+
+  @Watch('minuteStep') 
+  onMinuteStepChanged() { this.recomputeOptions(); }
+
+  @Watch('secondStep')
+  onSecondStepChanged() { this.recomputeOptions(); }
 
   @Watch('showSeconds')
   onShowSecondsChanged() { this.recomputeOptions(); }
@@ -417,44 +424,134 @@ export class LdesignTimePicker {
   };
 
   private range(n: number) { return Array.from({ length: n }, (_, i) => i); }
-  private toPickerOptions(list: number[], step: number) { return list.filter(v => v % step === 0).map(v => ({ value: String(v), label: this.pad2(v) })); }
+  
+  private toPickerOptions(list: number[], step: number, type?: 'hour' | 'minute' | 'second') {
+    return list.filter(v => {
+      // 检查是否能被步进整除
+      if (v % step !== 0) return false;
+      
+      // 检查是否被禁用
+      if (type && this.isDisabled(v, type)) return false;
+      
+      // 对于24小时制的小时，检查范围限制
+      if (type === 'hour' && this.outputFormat !== '12h') {
+        // 简单检查小时是否在范围内
+        if (this.minTime) {
+          const min = this.parseTime(this.minTime);
+          if (min && v < min.h) return false;
+        }
+        if (this.maxTime) {
+          const max = this.parseTime(this.maxTime);
+          if (max && v > max.h) return false;
+        }
+      }
+      
+      return true;
+    }).map(v => ({ 
+      value: String(v), 
+      label: this.pad2(v),
+      disabled: false 
+    }));
+  }
+  
   private to12HourPickerOptions(step: number) {
     // 12小时制：1-12
     const hours = [];
     // 始终包含12（代表午夜12点或中午12点）
     if (step === 1 || 12 % step === 0) {
-      hours.push({ value: String(12), label: this.pad2(12) });
+      const hour24 = this.convertTo24Hour(12, this.meridiem);
+      const disabled = this.isDisabled(hour24, 'hour') || !this.isHourInRange(hour24);
+      hours.push({ value: String(12), label: this.pad2(12), disabled });
     }
     // 然后是1-11
     for (let i = 1; i <= 11; i++) {
       if (i % step === 0) {
-        hours.push({ value: String(i), label: this.pad2(i) });
+        const hour24 = this.convertTo24Hour(i, this.meridiem);
+        const disabled = this.isDisabled(hour24, 'hour') || !this.isHourInRange(hour24);
+        hours.push({ value: String(i), label: this.pad2(i), disabled });
       }
     }
     return hours;
   }
+  
+  // 新增：检查小时是否在范围内
+  private isHourInRange(h: number): boolean {
+    if (!this.minTime && !this.maxTime) return true;
+    
+    if (this.minTime) {
+      const min = this.parseTime(this.minTime);
+      if (min && h < min.h) return false;
+    }
+    
+    if (this.maxTime) {
+      const max = this.parseTime(this.maxTime);
+      if (max && h > max.h) return false;
+    }
+    
+    return true;
+  }
 
   private recomputeOptions() {
-    const sh = this.steps?.[0] || 1;
-    const sm = this.steps?.[1] || 1;
-    const ss = this.steps?.[2] || 1;
+    // 优先使用独立的step属性，如果没有则从steps数组获取
+    const sh = this.hourStep || this.steps?.[0] || 1;
+    const sm = this.minuteStep || this.steps?.[1] || 1;
+    const ss = this.secondStep || this.steps?.[2] || 1;
 
     if (this.outputFormat === '12h') {
       this.hourOpts = this.to12HourPickerOptions(sh);
-      // 确保AM/PM选项已经初始化（虽然已在类定义时初始化，但这里再次确保）
+      // 确保AM/PM选项已经初始化
       this.meridiemOpts = [
-        { value: 'AM', label: 'AM' },
-        { value: 'PM', label: 'PM' }
+        { value: 'AM', label: this.getLocaleText('am') || 'AM' },
+        { value: 'PM', label: this.getLocaleText('pm') || 'PM' }
       ];
     } else {
-      this.hourOpts = this.toPickerOptions(this.range(24), sh);
+      this.hourOpts = this.toPickerOptions(this.range(24), sh, 'hour');
     }
 
-    this.minuteOpts = this.toPickerOptions(this.range(60), sm);
-    this.secondOpts = this.toPickerOptions(this.range(60), ss);
+    this.minuteOpts = this.toPickerOptions(this.range(60), sm, 'minute');
+    this.secondOpts = this.toPickerOptions(this.range(60), ss, 'second');
   }
 
-  private commitValue() { const out = this.formatTime(this.h, this.m, this.s); if (this.value !== undefined) this.ldesignChange.emit(out); else { this.value = out as any; this.ldesignChange.emit(out); } }
+  private commitValue() { 
+    // 检查时间是否在允许的范围内
+    if (!this.isTimeInRange(this.h, this.m, this.s)) {
+      // 如果超出范围，调整到最近的有效时间
+      this.adjustToValidTime();
+    }
+    
+    const out = this.formatTime(this.h, this.m, this.s); 
+    this.value = out;
+    this.ldesignChange.emit(out);
+  }
+  
+  // 新增：调整时间到有效范围内
+  private adjustToValidTime() {
+    if (this.minTime) {
+      const min = this.parseTime(this.minTime);
+      if (min) {
+        const currentSeconds = this.h * 3600 + this.m * 60 + this.s;
+        const minSeconds = min.h * 3600 + min.m * 60 + min.s;
+        if (currentSeconds < minSeconds) {
+          this.h = min.h;
+          this.m = min.m;
+          this.s = min.s;
+        }
+      }
+    }
+    
+    if (this.maxTime) {
+      const max = this.parseTime(this.maxTime);
+      if (max) {
+        const currentSeconds = this.h * 3600 + this.m * 60 + this.s;
+        const maxSeconds = max.h * 3600 + max.m * 60 + max.s;
+        if (currentSeconds > maxSeconds) {
+          this.h = max.h;
+          this.m = max.m;
+          this.s = max.s;
+        }
+      }
+    }
+  }
   private emitPick(trigger: 'click' | 'scroll' | 'keyboard' | 'now' | 'clear' | 'preset') { const out = this.formatTime(this.h, this.m, this.s); this.ldesignPick.emit({ value: out, context: { trigger } }); }
 
   // 清除功能
@@ -485,9 +582,9 @@ export class LdesignTimePicker {
   private useNow = () => {
     const d = new Date();
     // 按步进量化，确保能命中列的选项从而产生动画
-    const sh = this.steps?.[0] ?? 1;
-    const sm = this.steps?.[1] ?? 1;
-    const ss = this.steps?.[2] ?? 1;
+    const sh = this.hourStep || this.steps?.[0] || 1;
+    const sm = this.minuteStep || this.steps?.[1] || 1;
+    const ss = this.secondStep || this.steps?.[2] || 1;
 
     const qh = this.quantizeToStep(d.getHours(), sh, 23);
     const qm = this.quantizeToStep(d.getMinutes(), sm, 59);
@@ -582,12 +679,10 @@ export class LdesignTimePicker {
       if (kind === 'meridiem') {
         const newMeridiem = e.detail?.value as 'AM' | 'PM';
         if (newMeridiem !== this.meridiem) {
-          // 切换AM/PM时，转换小时
+          // 切换AM/PM时，保持12小时制的显示小时不变，只转换内部24小时制的值
+          const hour12 = this.get12HourDisplay();
           this.meridiem = newMeridiem;
-          if (this.outputFormat === '12h') {
-            const hour12 = this.get12HourDisplay();
-            this.h = this.convertTo24Hour(hour12, newMeridiem);
-          }
+          this.h = this.convertTo24Hour(hour12, newMeridiem);
         }
       } else {
         const v = Math.max(0, parseInt(String(e.detail?.value ?? '0'), 10) || 0);
@@ -596,15 +691,30 @@ export class LdesignTimePicker {
             // 12小时制：将选择的小时（1-12）转换为24小时制
             this.h = this.convertTo24Hour(v, this.meridiem);
           } else {
-            this.h = Math.min(23, v);
+            // 24小时制：检查是否在有效范围内
+            if (!this.isDisabled(v, 'hour') && this.isHourInRange(v)) {
+              this.h = Math.min(23, v);
+            }
           }
         } else if (kind === 'minute') {
-          this.m = Math.min(59, v);
+          if (!this.isDisabled(v, 'minute')) {
+            this.m = Math.min(59, v);
+          }
         } else {
-          this.s = Math.min(59, v);
+          if (!this.isDisabled(v, 'second')) {
+            this.s = Math.min(59, v);
+          }
         }
       }
-      if (!this.confirm) this.commitValue();
+      
+      // 立即提交值（如果不需要确认）
+      if (!this.confirm) {
+        // 使用setTimeout确保值更新后再提交，解决即时生效问题
+        setTimeout(() => {
+          this.commitValue();
+        }, 0);
+      }
+      
       const trig = e.detail?.context?.trigger === 'touch' ? 'click' : (e.detail?.context?.trigger as any) || 'click';
       this.emitPick(trig);
     };

@@ -4620,6 +4620,10 @@ export namespace Components {
         "drawerSize"?: number | string;
         "drawerTitle"?: string;
         /**
+          * @default 1
+         */
+        "hourStep": number;
+        /**
           * @default false
          */
         "inline": boolean;
@@ -4630,6 +4634,10 @@ export namespace Components {
         "locale"?: TimePickerLocale;
         "maxTime"?: string;
         "minTime"?: string;
+        /**
+          * @default 1
+         */
+        "minuteStep": number;
         /**
           * @default '24h'
          */
@@ -4652,6 +4660,10 @@ export namespace Components {
           * @default false
          */
         "readonly": boolean;
+        /**
+          * @default 1
+         */
+        "secondStep": number;
         /**
           * 是否展示"此刻"快捷按钮
           * @default true
@@ -11264,6 +11276,10 @@ declare namespace LocalJSX {
         "drawerSize"?: number | string;
         "drawerTitle"?: string;
         /**
+          * @default 1
+         */
+        "hourStep"?: number;
+        /**
           * @default false
          */
         "inline"?: boolean;
@@ -11274,6 +11290,10 @@ declare namespace LocalJSX {
         "locale"?: TimePickerLocale;
         "maxTime"?: string;
         "minTime"?: string;
+        /**
+          * @default 1
+         */
+        "minuteStep"?: number;
         "onLdesignChange"?: (event: LdesignTimePickerCustomEvent<string | undefined>) => void;
         "onLdesignClose"?: (event: LdesignTimePickerCustomEvent<void>) => void;
         "onLdesignOpen"?: (event: LdesignTimePickerCustomEvent<void>) => void;
@@ -11301,6 +11321,10 @@ declare namespace LocalJSX {
           * @default false
          */
         "readonly"?: boolean;
+        /**
+          * @default 1
+         */
+        "secondStep"?: number;
         /**
           * 是否展示"此刻"快捷按钮
           * @default true
