@@ -18,6 +18,9 @@ export * from './config'
 export * from './build'
 export * from './plugin'
 export * from './performance'
+export * from './workspace-deps'
+export * from './build-cache'
+export * from './code-splitting'
 
 // 选择性导出以避免命名冲突
 export {

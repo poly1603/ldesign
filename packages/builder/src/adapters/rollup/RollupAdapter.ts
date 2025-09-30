@@ -1177,12 +1177,28 @@ export class RollupAdapter implements IBundlerAdapter {
    * 创建 UMD 配置（返回常规版本和压缩版本的数组）
    */
   private async createUMDConfig(config: UnifiedConfig, filteredInput?: string | string[] | Record<string, string>): Promise<any[]> {
+    // 检查顶层 umd 配置和 output.umd 配置的 enabled 字段
+    const topLevelUmd = (config as any).umd
+    const outputUmd = (config as any).output?.umd
+
+    // 如果顶层 umd.enabled === false，禁用 UMD
+    if (topLevelUmd && typeof topLevelUmd === 'object' && topLevelUmd.enabled === false) {
+      return [] // 通过顶层 umd.enabled: false 禁用 UMD，返回空数组
+    }
+
+    // 如果 output.umd.enabled === false，禁用 UMD
+    if (outputUmd && typeof outputUmd === 'object' && outputUmd.enabled === false) {
+      return [] // 通过 output.umd.enabled: false 禁用 UMD，返回空数组
+    }
+
     // 处理 boolean 配置
-    let umdSection = (config as any).umd || (config as any).output?.umd || {}
+    let umdSection = topLevelUmd || outputUmd || {}
     if (umdSection === true) {
       umdSection = {} // 使用默认配置
     } else if (umdSection === false) {
       return [] // 禁用 UMD，返回空数组
+    } else if (typeof umdSection === 'object' && umdSection.enabled === false) {
+      return [] // 通过 enabled: false 禁用 UMD，返回空数组
     }
     const outputConfig = config.output || {}
 

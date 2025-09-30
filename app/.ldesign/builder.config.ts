@@ -23,7 +23,7 @@ export default defineConfig({
   clean: true,
 
   // 不压缩代码（便于调试）
-  minify: false
+  minify: false,
 
   // external、globals、libraryType、formats、plugins 等配置将由 @ldesign/builder 自动检测和生成
 })

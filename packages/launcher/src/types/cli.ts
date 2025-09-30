@@ -111,6 +111,21 @@ export interface CliOptions {
   /** 是否分析构建产物 */
   analyze?: boolean
 
+  /** 是否跳过 workspace 依赖检查 */
+  skipDepsCheck?: boolean
+
+  /** 是否自动构建未构建的 workspace 依赖 */
+  autoBuildDeps?: boolean
+
+  /** 是否启用构建缓存 */
+  cache?: boolean
+
+  /** 是否清除构建缓存 */
+  clearCache?: boolean
+
+  /** 是否启用智能代码分割 */
+  smartSplit?: boolean
+
   /** 是否显示所有信息 */
   all?: boolean
 

@@ -44,6 +44,8 @@
   },
   "include": [
     "src/**/*",
+    "src/types/**/*.d.ts",
+    "shims-vue.d.ts",
     "examples/**/*",
     "__tests__/**/*",
     "e2e/**/*"

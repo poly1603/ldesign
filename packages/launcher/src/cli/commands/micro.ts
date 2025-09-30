@@ -555,7 +555,7 @@ export default defineConfig({
   }
 
   private async loadMicroConfig(configPath?: string): Promise<MicroFrontendConfig> {
-    const path = configPath || path.resolve(process.cwd(), 'micro.config.ts')
+    const configFile = configPath || path.resolve(process.cwd(), 'micro.config.ts')
     // 实现配置加载逻辑
     return {} as MicroFrontendConfig
   }
@@ -586,5 +586,109 @@ export default defineConfig({
 
   private async executeDeploy(config: MicroFrontendConfig, options: any): Promise<void> {
     // 实现部署执行逻辑
+  }
+
+  private getMainAppTemplate(config: MicroFrontendConfig): string {
+    return `// 主应用入口文件
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+import { registerMicroApps, start } from 'qiankun'
+import microConfig from './micro/config'
+
+const app = createApp(App)
+app.use(router)
+
+// 注册微应用
+registerMicroApps(microConfig.apps)
+
+// 启动 qiankun
+start()
+
+app.mount('#app')
+`
+  }
+
+  private getMicroConfigTemplate(config: MicroFrontendConfig): string {
+    return `// 微前端配置
+export default {
+  apps: ${JSON.stringify(config.subApps || [], null, 2)}
+}
+`
+  }
+
+  private getRouterTemplate(config: MicroFrontendConfig): string {
+    return `// 路由配置
+import { createRouter, createWebHistory } from 'vue-router'
+
+const routes = [
+  // 主应用路由
+]
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+})
+
+export default router
+`
+  }
+
+  private getSubAppTemplate(config: MicroFrontendConfig): string {
+    return `// 子应用入口文件
+import './public-path'
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+
+let instance: any = null
+
+function render(props: any = {}) {
+  const { container } = props
+  instance = createApp(App)
+  instance.use(router)
+  instance.mount(container ? container.querySelector('#app') : '#app')
+}
+
+if (!(window as any).__POWERED_BY_QIANKUN__) {
+  render()
+}
+
+export async function bootstrap() {
+  console.log('${config.name} bootstraped')
+}
+
+export async function mount(props: any) {
+  render(props)
+}
+
+export async function unmount() {
+  instance.unmount()
+  instance = null
+}
+`
+  }
+
+  private getPublicPathTemplate(config: MicroFrontendConfig): string {
+    return `// 设置 public path
+if ((window as any).__POWERED_BY_QIANKUN__) {
+  // eslint-disable-next-line no-undef
+  __webpack_public_path__ = (window as any).__INJECTED_PUBLIC_PATH_BY_QIANKUN__
+}
+`
+  }
+
+  private getBootstrapTemplate(config: MicroFrontendConfig): string {
+    return `// Bootstrap 文件
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+
+export default function bootstrap() {
+  const app = createApp(App)
+  app.use(router)
+  return app
+}
+`
   }
 }
