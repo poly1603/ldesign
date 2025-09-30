@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Component Complete Test</title>
+  <script type="module" src="./dist/webcomponent/webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/webcomponent/webcomponent.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+    }
+    h1 {
+      margin-bottom: 30px;
+      color: #1890ff;
+    }
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .demo-item {
+      border: 1px solid #e8e8e8;
+      border-radius: 4px;
+      padding: 15px;
+      background: #fafafa;
+    }
+    .demo-label {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+    .feature-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .feature-list li:before {
+      content: "✓ ";
+      color: #52c41a;
+      font-weight: bold;
+    }
+    .code-block {
+      background: #f6f8fa;
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 10px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>🖼️ Ldesign Image 组件完整功能测试</h1>
+
+  <!-- 1. 尺寸控制 -->
+  <div class="section">
+    <h2 class="section-title">📐 尺寸控制与比例</h2>
+    <div class="demo-grid">
+      <div class="demo-item">
+        <div class="demo-label">固定尺寸 (300x200)</div>
+        <ldesign-image
+          src="https://picsum.photos/600/400?random=1"
+          width="300"
+          height="200"
+          fit="cover"
+          radius="8"
+          alt="固定尺寸"
+        ></ldesign-image>
+      </div>
+      <div class="demo-item">
+        <div class="demo-label">响应式宽度 + ratio</div>
+        <ldesign-image
+          src="https://picsum.photos/600/400?random=2"
+          width="100%"
+          ratio="16/9"
+          fit="cover"
+          radius="8"
+          alt="响应式宽度"
+        ></ldesign-image>
+      </div>
+      <div class="demo-item">
+        <div class="demo-label">百分比尺寸 (100% x 180px)</div>
+        <ldesign-image
+          src="https://picsum.photos/600/400?random=3"
+          width="100%"
+          height="180"
+          fit="cover"
+          radius="8"
+          alt="百分比宽度"
+        ></ldesign-image>
+      </div>
+    </div>
+    <div class="code-block">
+      width/height 属性设置容器尺寸，内部 img 始终 100%，通过 object-fit 控制显示
+    </div>
+  </div>
+
+  <!-- 2. 预览功能 -->
+  <div class="section">
+    <h2 class="section-title">🔍 强大的预览功能</h2>
+    <div class="demo-grid">
+      <div class="demo-item">
+        <div class="demo-label">完整预览功能（点击体验）</div>
+        <ldesign-image
+          src="https://picsum.photos/400/300?random=4"
+          preview-src="https://picsum.photos/1600/1200?random=4"
+          width="260"
+          height="195"
+          fit="cover"
+          preview
+          downloadable
+          rotatable
+          fullscreenable
+          show-info
+          radius="6"
+          alt="完整预览"
+        ></ldesign-image>
+        <ul class="feature-list" style="margin-top: 10px; font-size: 12px;">
+          <li>缩放控制（滚轮/按钮/快捷键）</li>
+          <li>旋转（左右各90度）</li>
+          <li>下载原图</li>
+          <li>复制链接</li>
+          <li>全屏模式</li>
+          <li>显示尺寸信息</li>
+          <li>拖拽移动</li>
+        </ul>
+      </div>
+      <div class="demo-item">
+        <div class="demo-label">简单预览（仅缩放）</div>
+        <ldesign-image
+          src="https://picsum.photos/400/300?random=5"
+          width="260"
+          height="195"
+          fit="cover"
+          preview
+          zoomable
+          :rotatable="false"
+          :downloadable="false"
+          :fullscreenable="false"
+          radius="6"
+          alt="简单预览"
+        ></ldesign-image>
+      </div>
+      <div class="demo-item">
+        <div class="demo-label">亮色背景预览</div>
+        <ldesign-image
+          src="https://picsum.photos/400/300?random=6"
+          width="260"
+          height="195"
+          fit="cover"
+          preview
+          preview-backdrop="light"
+          radius="6"
+          alt="亮色背景"
+        ></ldesign-image>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 加载状态 -->
+  <div class="section">
+    <h2 class="section-title">⚡ 加载优化与错误处理</h2>
+    <div class="demo-grid">
+      <div class="demo-item">
+        <div class="demo-label">加载进度条</div>
+        <ldesign-image
+          src="https://picsum.photos/800/600?random=7&t=${Date.now()}"
+          width="260"
+          height="195"
+          show-progress
+          fit="cover"
+          alt="加载进度"
+        ></ldesign-image>
+      </div>
+      <div class="demo-item">
+        <div class="demo-label">错误处理（带重试）</div>
+        <ldesign-image
+          src="https://invalid-test-url.example.com/not-found.jpg"
+          width="260"
+          height="195"
+          retryable
+          max-retries="3"
+          show-error
+          fit="cover"
+          alt="错误处理"
+        ></ldesign-image>
+      </div>
+      <div class="demo-item">
+        <div class="demo-label">带回退图</div>
+        <ldesign-image
+          src="https://invalid-url.test/image.jpg"
+          fallback="https://picsum.photos/400/300?random=8"
+          width="260"
+          height="195"
+          fit="cover"
+          alt="回退图"
+        ></ldesign-image>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 形状与裁剪 -->
+  <div class="section">
+    <h2 class="section-title">🎨 形状与裁剪模式</h2>
+    <div class="demo-grid">
+      <div class="demo-item">
+        <div class="demo-label">圆形 (circle)</div>
+        <ldesign-image
+          src="https://picsum.photos/200/200?random=9"
+          width="120"
+          height="120"
+          shape="circle"
+          fit="cover"
+          alt="圆形"
+        ></ldesign-image>
+      </div>
+      <div class="demo-item">
+        <div class="demo-label">圆角 (rounded)</div>
+        <ldesign-image
+          src="https://picsum.photos/200/200?random=10"
+          width="120"
+          height="120"
+          shape="rounded"
+          fit="cover"
+          alt="圆角"
+        ></ldesign-image>
+      </div>
+      <div class="demo-item">
+        <div class="demo-label">自定义圆角 (radius="20")</div>
+        <ldesign-image
+          src="https://picsum.photos/200/200?random=11"
+          width="120"
+          height="120"
+          radius="20"
+          fit="cover"
+          alt="自定义圆角"
+        ></ldesign-image>
+      </div>
+    </div>
+    <div class="demo-grid" style="margin-top: 20px;">
+      <div class="demo-item">
+        <div class="demo-label">fit="contain"</div>
+        <ldesign-image
+          src="https://picsum.photos/300/200?random=12"
+          width="180"
+          height="120"
+          fit="contain"
+          style="background: #f0f0f0;"
+          alt="contain"
+        ></ldesign-image>
+      </div>
+      <div class="demo-item">
+        <div class="demo-label">fit="cover"</div>
+        <ldesign-image
+          src="https://picsum.photos/300/200?random=13"
+          width="180"
+          height="120"
+          fit="cover"
+          alt="cover"
+        ></ldesign-image>
+      </div>
+      <div class="demo-item">
+        <div class="demo-label">fit="fill"</div>
+        <ldesign-image
+          src="https://picsum.photos/300/200?random=14"
+          width="180"
+          height="120"
+          fit="fill"
+          alt="fill"
+        ></ldesign-image>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. 懒加载 -->
+  <div class="section">
+    <h2 class="section-title">🚀 懒加载示例（滚动查看）</h2>
+    <div class="demo-grid">
+      <div class="demo-item">
+        <div class="demo-label">懒加载图片1</div>
+        <ldesign-image
+          src="https://picsum.photos/400/300?random=15"
+          width="100%"
+          ratio="4/3"
+          lazy
+          intersection-root-margin="100px"
+          placeholder-color="#e6f7ff"
+          alt="懒加载1"
+        ></ldesign-image>
+      </div>
+      <div class="demo-item">
+        <div class="demo-label">懒加载图片2</div>
+        <ldesign-image
+          src="https://picsum.photos/400/300?random=16"
+          width="100%"
+          ratio="4/3"
+          lazy
+          intersection-root-margin="100px"
+          placeholder-color="#f6ffed"
+          alt="懒加载2"
+        ></ldesign-image>
+      </div>
+      <div class="demo-item">
+        <div class="demo-label">懒加载图片3</div>
+        <ldesign-image
+          src="https://picsum.photos/400/300?random=17"
+          width="100%"
+          ratio="4/3"
+          lazy
+          intersection-root-margin="100px"
+          placeholder-color="#fff1f0"
+          alt="懒加载3"
+        ></ldesign-image>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. 图集 -->
+  <div class="section">
+    <h2 class="section-title">🖼️ 图集展示 (ImageGroup)</h2>
+    <ldesign-image-group columns="4" gap="12" shape="rounded">
+      <ldesign-image
+        src="https://picsum.photos/300/300?random=18"
+        ratio="1/1"
+        fit="cover"
+        preview
+        downloadable
+        alt="图1"
+      ></ldesign-image>
+      <ldesign-image
+        src="https://picsum.photos/300/300?random=19"
+        ratio="1/1"
+        fit="cover"
+        preview
+        downloadable
+        alt="图2"
+      ></ldesign-image>
+      <ldesign-image
+        src="https://picsum.photos/300/300?random=20"
+        ratio="1/1"
+        fit="cover"
+        preview
+        downloadable
+        alt="图3"
+      ></ldesign-image>
+      <ldesign-image
+        src="https://picsum.photos/300/300?random=21"
+        ratio="1/1"
+        fit="cover"
+        preview
+        downloadable
+        alt="图4"
+      ></ldesign-image>
+    </ldesign-image-group>
+  </div>
+
+  <!-- 7. 键盘快捷键说明 -->
+  <div class="section">
+    <h2 class="section-title">⌨️ 预览模式键盘快捷键</h2>
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background: #fafafa;">
+          <th style="padding: 10px; text-align: left; border: 1px solid #e8e8e8;">快捷键</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #e8e8e8;">功能</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;"><kbd>ESC</kbd></td>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;">关闭预览/退出全屏</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;"><kbd>+</kbd> / <kbd>-</kbd></td>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;">放大/缩小</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;"><kbd>0</kbd></td>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;">重置缩放和位置</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;"><kbd>←</kbd> / <kbd>→</kbd></td>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;">向左/向右旋转90°</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;">鼠标滚轮</td>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;">缩放图片</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;">双击</td>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;">在1x和2x之间切换</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;">拖拽</td>
+          <td style="padding: 10px; border: 1px solid #e8e8e8;">移动图片位置</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // 监听事件
+    document.addEventListener('ldesignLoad', (e) => {
+      console.log('✅ 图片加载成功:', e.detail);
+    });
+    
+    document.addEventListener('ldesignError', (e) => {
+      console.log('❌ 图片加载失败:', e.detail);
+    });
+    
+    document.addEventListener('ldesignPreviewOpen', () => {
+      console.log('🔍 预览窗口打开');
+    });
+    
+    document.addEventListener('ldesignPreviewClose', () => {
+      console.log('❎ 预览窗口关闭');
+    });
+    
+    document.addEventListener('ldesignDownload', (e) => {
+      console.log('💾 图片下载:', e.detail);
+    });
+  </script>
+</body>
+</html>

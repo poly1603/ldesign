@@ -53,6 +53,10 @@ ImageViewer 图片预览器
 
 ## Dependencies
 
+### Used by
+
+ - [ldesign-image](../image)
+
 ### Depends on
 
 - [ldesign-icon](../icon)
@@ -63,6 +67,7 @@ ImageViewer 图片预览器
 graph TD;
   ldesign-image-viewer --> ldesign-icon
   ldesign-image-viewer --> ldesign-draggable
+  ldesign-image --> ldesign-image-viewer
   style ldesign-image-viewer fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

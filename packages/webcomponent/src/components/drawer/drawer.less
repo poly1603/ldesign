@@ -30,35 +30,6 @@
     display: block;
   }
 
-  // 移动端样式
-  &--mobile {
-    .ldesign-drawer__panel {
-      &--left,
-      &--right {
-        max-width: 90vw !important;
-        min-width: 280px;
-      }
-      
-      &--top,
-      &--bottom {
-        max-height: 85vh !important;
-        min-height: 200px;
-      }
-    }
-
-    // 移动端内容区域优化
-    .ldesign-drawer__content {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .ldesign-drawer__body {
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch; // iOS 平滑滚动
-    }
-  }
 
   // 调整大小状态
   &--resizing {
@@ -174,7 +145,8 @@
     transition: opacity var(--ld-overlay-duration, 0.3s) var(--ld-overlay-ease, ease);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-
+    z-index: 1; // 遮罩层级
+    
     .ldesign-drawer--visible & {
       opacity: 1;
     }
@@ -188,7 +160,7 @@
   }
 
   &__panel {
-    position: absolute; // 保持 absolute 定位
+    position: absolute;
     background: var(--ldesign-bg-color, #ffffff);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2), 0 2px 10px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -199,7 +171,7 @@
                 border-radius 0.3s ease;
     will-change: transform;
     contain: layout style paint;
-    // 移除全局的 max-width/max-height，改为在具体方向上设置
+    z-index: 2; // 确保面板在遮罩上方
 
     // 圆角样式
     &--rounded {
@@ -220,42 +192,58 @@
       box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
     }
 
-    &--left,
-    &--right {
+    &--left {
+      left: 0;
       top: 0;
       bottom: 0;
       width: 360px; // 由内联样式覆盖
-      max-width: 100vw;
       height: 100%;
+      max-width: 100vw;  // 防止超出视口
+      max-height: 100vh;
+    }
+    
+    &--right {
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 360px; // 由内联样式覆盖
+      height: 100%;
+      max-width: 100vw;  // 防止超出视口
       max-height: 100vh;
     }
 
-    &--top,
-    &--bottom {
+    &--top {
+      top: 0;
       left: 0;
       right: 0;
       height: 360px; // 由内联样式覆盖
-      max-height: 100vh;
       width: 100%;
       max-width: 100vw;
+      max-height: 100vh;  // 防止超出视口
+    }
+    
+    &--bottom {
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 360px; // 由内联样式覆盖
+      width: 100%;
+      max-width: 100vw;
+      max-height: 100vh;  // 防止超出视口
     }
 
-    // 初始位移（隐藏态）
+    // 初始位移（隐藏态） - 位置已在上面定义
     &--left { 
-      left: 0; 
-      transform: translate3d(-100%, 0, 0); // 使用 3D 变换优化性能
+      transform: translateX(-100%);
     }
     &--right { 
-      right: 0; 
-      transform: translate3d(100%, 0, 0);
+      transform: translateX(100%);
     }
     &--top { 
-      top: 0; 
-      transform: translate3d(0, -100%, 0);
+      transform: translateY(-100%);
     }
     &--bottom { 
-      bottom: 0; 
-      transform: translate3d(0, 100%, 0);
+      transform: translateY(100%);
     }
 
     // 打开态
@@ -263,14 +251,14 @@
     &--open&--right,
     &--open&--top,
     &--open&--bottom {
-      transform: translate3d(0, 0, 0);
+      transform: translateX(0) translateY(0);
     }
 
     // 关闭动画阶段
-    &--closing&--left { transform: translate3d(-100%, 0, 0); }
-    &--closing&--right { transform: translate3d(100%, 0, 0); }
-    &--closing&--top { transform: translate3d(0, -100%, 0); }
-    &--closing&--bottom { transform: translate3d(0, 100%, 0); }
+    &--closing&--left { transform: translateX(-100%); }
+    &--closing&--right { transform: translateX(100%); }
+    &--closing&--top { transform: translateY(-100%); }
+    &--closing&--bottom { transform: translateY(100%); }
   }
 
   &__content {
@@ -627,18 +615,6 @@
       opacity: 1;
     }
     
-    // 移动端优化：增加触摸区域
-    &--mobile {
-      &.ldesign-drawer__resize-handle--left,
-      &.ldesign-drawer__resize-handle--right {
-        width: 20px;
-      }
-      
-      &.ldesign-drawer__resize-handle--top,
-      &.ldesign-drawer__resize-handle--bottom {
-        height: 20px;
-      }
-    }
     
     .ldesign-drawer--resizable .ldesign-drawer__panel:hover & {
       opacity: 1;
@@ -894,123 +870,6 @@
   }
 }
 
-// 响应式设计
-@media (max-width: 768px) {
-  .ldesign-drawer {
-    // 移除遮罩的模糊效果（性能优化）
-    &__mask {
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-    }
-
-    &__panel {
-      &--left,
-      &--right {
-        width: 85vw !important;
-        max-width: 85vw !important;
-        min-width: 280px;
-      }
-      
-      &--top,
-      &--bottom {
-        height: auto !important;
-        max-height: 85vh !important;
-        min-height: 40vh;
-      }
-    }
-    
-    &__header {
-      padding: 12px 16px;
-      flex-shrink: 0;
-    }
-
-    &__body {
-      padding: 12px 16px;
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    &__footer {
-      padding: 12px 16px;
-      flex-shrink: 0;
-    }
-    
-    &__footer-buttons {
-      flex-wrap: wrap;
-      width: 100%;
-      gap: 8px;
-      
-      .ldesign-drawer__footer-button {
-        flex: 1;
-        min-width: 0;
-        padding: 10px 12px;
-        font-size: 14px;
-      }
-    }
-
-    // 调整关闭按钮大小
-    &__close {
-      width: 28px;
-      height: 28px;
-    }
-
-    // 调整大小手柄在移动端隐藏
-    &__resize-handle {
-      display: none;
-    }
-  }
-
-  // 小屏幕优化
-  .ldesign-drawer--mobile {
-    .ldesign-drawer__panel {
-      // 确保不会超出屏幕
-      &--left,
-      &--right {
-        width: calc(100vw - 40px) !important;
-        max-width: 400px !important;
-      }
-
-      &--top,
-      &--bottom {
-        height: auto !important;
-        max-height: calc(100vh - 80px) !important;
-        min-height: 300px;
-      }
-    }
-  }
-}
-
-// 超小屏幕（手机竖屏）
-@media (max-width: 480px) {
-  .ldesign-drawer {
-    &__panel {
-      &--left,
-      &--right {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        border-radius: 0 !important; // 移除圆角
-      }
-      
-      &--top {
-        height: auto !important;
-        max-height: 90vh !important;
-        min-height: 40vh;
-      }
-      
-      &--bottom {
-        height: auto !important;
-        max-height: 80vh !important;
-        min-height: 40vh;
-      }
-    }
-
-    // 全屏模式下的遮罩可以稍微透明一些
-    &__mask {
-      background: rgba(0, 0, 0, 0.5);
-    }
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .ldesign-drawer__mask { transition: none !important; }

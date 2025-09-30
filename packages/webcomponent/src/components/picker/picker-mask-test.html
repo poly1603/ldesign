@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picker Mask Gradient Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin-bottom: 40px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .test-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            background: white;
+        }
+        h2 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+        h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .control-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .control-group label {
+            min-width: 150px;
+            font-size: 14px;
+            color: #555;
+        }
+        .control-group input[type="text"],
+        .control-group input[type="color"],
+        .control-group input[type="range"] {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .control-group input[type="range"] {
+            max-width: 200px;
+        }
+        .range-value {
+            min-width: 50px;
+            font-size: 13px;
+            color: #888;
+        }
+        button {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .inspect-button {
+            background: #2196F3;
+            margin-right: 10px;
+        }
+        .inspect-button:hover {
+            background: #1976D2;
+        }
+        .debug-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fffbf0;
+            border: 1px solid #ffd580;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #333;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        ldesign-picker {
+            display: block;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-section">
+            <h2>🔍 Picker Mask Gradient Debugging</h2>
+            
+            <!-- Basic Test Cases -->
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Default Picker</h3>
+                    <ldesign-picker id="picker1"></ldesign-picker>
+                </div>
+                
+                <div class="test-item">
+                    <h3>With Custom Background</h3>
+                    <ldesign-picker id="picker2" style="--ldesign-picker-bg: #f5f5f5;"></ldesign-picker>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Dark Theme</h3>
+                    <ldesign-picker id="picker3" style="--ldesign-picker-bg: #1a1a1a; --ldesign-picker-item-color: #fff; --ldesign-picker-highlight-color: #fff;"></ldesign-picker>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Custom Mask Colors</h3>
+                    <ldesign-picker id="picker4"></ldesign-picker>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>⚙️ Mask Gradient Controls</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Background Color:</label>
+                    <input type="color" id="bgColor" value="#ffffff">
+                    <input type="text" id="bgColorText" value="#ffffff" placeholder="e.g., #ffffff">
+                </div>
+                
+                <div class="control-group">
+                    <label>Mask Height:</label>
+                    <input type="range" id="maskHeight" min="10" max="100" value="40">
+                    <span class="range-value">40px</span>
+                </div>
+                
+                <div class="control-group">
+                    <label>Mask Opacity:</label>
+                    <input type="range" id="maskOpacity" min="0" max="100" value="95">
+                    <span class="range-value">95%</span>
+                </div>
+                
+                <div class="control-group">
+                    <label>Gradient Start Stop:</label>
+                    <input type="range" id="gradientStart" min="0" max="100" value="0">
+                    <span class="range-value">0%</span>
+                </div>
+                
+                <div class="control-group">
+                    <label>Gradient Mid Stop:</label>
+                    <input type="range" id="gradientMid" min="0" max="100" value="50">
+                    <span class="range-value">50%</span>
+                </div>
+                
+                <div class="control-group">
+                    <label>Gradient End Stop:</label>
+                    <input type="range" id="gradientEnd" min="0" max="100" value="100">
+                    <span class="range-value">100%</span>
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="inspect-button" onclick="inspectStyles()">Inspect Computed Styles</button>
+                    <button onclick="applyGradients()">Apply Gradient Changes</button>
+                    <button onclick="resetDefaults()" style="background: #f44336;">Reset to Defaults</button>
+                </div>
+            </div>
+            
+            <div id="debugInfo" class="debug-info" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 Test Cases with Different Content</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Numbers (0-23)</h3>
+                    <ldesign-picker id="picker5" visible-items="5"></ldesign-picker>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Large Dataset (0-99)</h3>
+                    <ldesign-picker id="picker6" visible-items="7"></ldesign-picker>
+                </div>
+                
+                <div class="test-item">
+                    <h3>With 3D Effect</h3>
+                    <ldesign-picker id="picker7" visible-items="3" use3d="true"></ldesign-picker>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Custom Styled</h3>
+                    <ldesign-picker id="picker8" visible-items="5"></ldesign-picker>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { defineCustomElements } from '/dist/loader.js';
+        defineCustomElements();
+
+        // Helper function to wait for component to be ready
+        function waitForComponent(id) {
+            return new Promise((resolve) => {
+                const check = () => {
+                    const elem = document.getElementById(id);
+                    if (elem && elem.shadowRoot) {
+                        resolve(elem);
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        }
+
+        // Initialize pickers with test data
+        async function initPickers() {
+            const testData = {
+                picker1: Array.from({length: 10}, (_, i) => ({ value: i, label: `Item ${i}` })),
+                picker2: Array.from({length: 15}, (_, i) => ({ value: i, label: `Option ${i}` })),
+                picker3: Array.from({length: 20}, (_, i) => ({ value: i, label: `Dark ${i}` })),
+                picker4: Array.from({length: 12}, (_, i) => ({ value: i, label: `Custom ${i}` })),
+                picker5: Array.from({length: 24}, (_, i) => ({ value: i, label: String(i).padStart(2, '0') })),
+                picker6: Array.from({length: 100}, (_, i) => ({ value: i, label: String(i) })),
+                picker7: Array.from({length: 10}, (_, i) => ({ value: i, label: `3D Item ${i}` })),
+                picker8: Array.from({length: 30}, (_, i) => ({ value: i, label: `Styled ${i}` }))
+            };
+
+            for (const [id, data] of Object.entries(testData)) {
+                const picker = await waitForComponent(id);
+                picker.options = data;
+                picker.value = Math.floor(data.length / 2);
+            }
+
+            // Apply custom gradient to picker4
+            const picker4 = await waitForComponent('picker4');
+            const customGradientTop = 'linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 30%, transparent 100%)';
+            const customGradientBottom = 'linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 30%, transparent 100%)';
+            picker4.style.setProperty('--ldesign-picker-mask-gradient-top', customGradientTop);
+            picker4.style.setProperty('--ldesign-picker-mask-gradient-bottom', customGradientBottom);
+
+            // Apply custom styles to picker8
+            const picker8 = await waitForComponent('picker8');
+            picker8.style.setProperty('--ldesign-picker-bg', '#e3f2fd');
+            picker8.style.setProperty('--ldesign-picker-item-color', '#1976d2');
+            picker8.style.setProperty('--ldesign-picker-highlight-color', '#0d47a1');
+            picker8.style.setProperty('--ldesign-picker-mask-height', '50px');
+        }
+
+        // Apply gradient changes
+        window.applyGradients = async function() {
+            const bgColor = document.getElementById('bgColorText').value || document.getElementById('bgColor').value;
+            const maskHeight = document.getElementById('maskHeight').value;
+            const maskOpacity = document.getElementById('maskOpacity').value / 100;
+            const gradientStart = document.getElementById('gradientStart').value;
+            const gradientMid = document.getElementById('gradientMid').value;
+            const gradientEnd = document.getElementById('gradientEnd').value;
+
+            // Parse color to RGB
+            const hex2rgb = (hex) => {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : { r: 255, g: 255, b: 255 };
+            };
+
+            const rgb = hex2rgb(bgColor);
+            const colorBase = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+
+            // Create gradient strings
+            const gradientTop = `linear-gradient(to bottom, rgba(${colorBase}, ${maskOpacity}) ${gradientStart}%, rgba(${colorBase}, ${maskOpacity * 0.5}) ${gradientMid}%, transparent ${gradientEnd}%)`;
+            const gradientBottom = `linear-gradient(to top, rgba(${colorBase}, ${maskOpacity}) ${gradientStart}%, rgba(${colorBase}, ${maskOpacity * 0.5}) ${gradientMid}%, transparent ${gradientEnd}%)`;
+
+            // Apply to all pickers
+            const pickers = document.querySelectorAll('ldesign-picker');
+            for (const picker of pickers) {
+                picker.style.setProperty('--ldesign-picker-mask-gradient-top', gradientTop);
+                picker.style.setProperty('--ldesign-picker-mask-gradient-bottom', gradientBottom);
+                picker.style.setProperty('--ldesign-picker-mask-height', `${maskHeight}px`);
+                picker.style.setProperty('--ldesign-picker-bg', bgColor);
+            }
+
+            inspectStyles();
+        };
+
+        // Inspect computed styles
+        window.inspectStyles = async function() {
+            const picker = await waitForComponent('picker1');
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.style.display = 'block';
+
+            let info = '=== CSS Variables Inspection ===\n\n';
+            
+            // Check host-level variables
+            info += '📌 Host Element Variables:\n';
+            const hostStyle = getComputedStyle(picker);
+            const relevantVars = [
+                '--ldesign-picker-bg',
+                '--ldesign-picker-mask-gradient-top',
+                '--ldesign-picker-mask-gradient-bottom',
+                '--ldesign-picker-mask-height',
+                '--ldesign-picker-mask-opacity'
+            ];
+
+            for (const varName of relevantVars) {
+                const value = hostStyle.getPropertyValue(varName);
+                info += `  ${varName}: ${value || '(not set)'}\n`;
+            }
+
+            // Check shadow root
+            if (picker.shadowRoot) {
+                info += '\n📌 Shadow Root Inspection:\n';
+                const maskTop = picker.shadowRoot.querySelector('.ldesign-picker__mask--top');
+                const maskBottom = picker.shadowRoot.querySelector('.ldesign-picker__mask--bottom');
+
+                if (maskTop) {
+                    const maskTopStyle = getComputedStyle(maskTop);
+                    info += '\n  Top Mask Element:\n';
+                    info += `    background: ${maskTopStyle.background}\n`;
+                    info += `    height: ${maskTopStyle.height}\n`;
+                    info += `    opacity: ${maskTopStyle.opacity}\n`;
+                    info += `    display: ${maskTopStyle.display}\n`;
+                    info += `    position: ${maskTopStyle.position}\n`;
+                    info += `    z-index: ${maskTopStyle.zIndex}\n`;
+                }
+
+                if (maskBottom) {
+                    const maskBottomStyle = getComputedStyle(maskBottom);
+                    info += '\n  Bottom Mask Element:\n';
+                    info += `    background: ${maskBottomStyle.background}\n`;
+                    info += `    height: ${maskBottomStyle.height}\n`;
+                    info += `    opacity: ${maskBottomStyle.opacity}\n`;
+                    info += `    display: ${maskBottomStyle.display}\n`;
+                    info += `    position: ${maskBottomStyle.position}\n`;
+                    info += `    z-index: ${maskBottomStyle.zIndex}\n`;
+                }
+
+                // Check if variables are being inherited
+                const hostElem = picker.shadowRoot.host;
+                if (hostElem) {
+                    info += '\n📌 Inheritance Check:\n';
+                    const inheritedStyle = getComputedStyle(hostElem);
+                    for (const varName of relevantVars) {
+                        const value = inheritedStyle.getPropertyValue(varName);
+                        info += `  ${varName}: ${value || '(not inherited)'}\n`;
+                    }
+                }
+            } else {
+                info += '\n⚠️ Shadow Root not accessible\n';
+            }
+
+            debugInfo.textContent = info;
+        };
+
+        // Reset to defaults
+        window.resetDefaults = function() {
+            const pickers = document.querySelectorAll('ldesign-picker');
+            for (const picker of pickers) {
+                picker.style.removeProperty('--ldesign-picker-mask-gradient-top');
+                picker.style.removeProperty('--ldesign-picker-mask-gradient-bottom');
+                picker.style.removeProperty('--ldesign-picker-mask-height');
+                picker.style.removeProperty('--ldesign-picker-bg');
+            }
+            
+            // Reset controls
+            document.getElementById('bgColor').value = '#ffffff';
+            document.getElementById('bgColorText').value = '#ffffff';
+            document.getElementById('maskHeight').value = 40;
+            document.getElementById('maskOpacity').value = 95;
+            document.getElementById('gradientStart').value = 0;
+            document.getElementById('gradientMid').value = 50;
+            document.getElementById('gradientEnd').value = 100;
+            
+            // Update range displays
+            updateRangeDisplays();
+            
+            // Hide debug info
+            document.getElementById('debugInfo').style.display = 'none';
+        };
+
+        // Update range value displays
+        function updateRangeDisplays() {
+            document.querySelectorAll('.control-group input[type="range"]').forEach(input => {
+                const display = input.nextElementSibling;
+                if (display && display.classList.contains('range-value')) {
+                    const value = input.value;
+                    const unit = input.id === 'maskHeight' ? 'px' : '%';
+                    display.textContent = value + unit;
+                }
+            });
+        }
+
+        // Sync color inputs
+        document.getElementById('bgColor').addEventListener('input', (e) => {
+            document.getElementById('bgColorText').value = e.target.value;
+        });
+
+        document.getElementById('bgColorText').addEventListener('input', (e) => {
+            if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+                document.getElementById('bgColor').value = e.target.value;
+            }
+        });
+
+        // Update range displays on change
+        document.querySelectorAll('input[type="range"]').forEach(input => {
+            input.addEventListener('input', updateRangeDisplays);
+        });
+
+        // Initialize
+        initPickers();
+        updateRangeDisplays();
+
+        // Auto-inspect after a delay
+        setTimeout(() => {
+            console.log('🔍 Auto-inspecting picker styles...');
+            inspectStyles();
+        }, 1000);
+    </script>
+</body>
+</html>

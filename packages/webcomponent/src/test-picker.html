@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=no" />
+  <title>Picker 组件测试 - 橡皮筋效果</title>
+
+  <script type="module" src="/build/ldesign-webcomponent.esm.js"></script>
+  <script nomodule src="/build/ldesign-webcomponent.js"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+    
+    .description {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .test-section {
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .test-section:last-child {
+      border-bottom: none;
+    }
+    
+    .test-title {
+      font-size: 18px;
+      color: #444;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    
+    .test-desc {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 20px;
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    
+    .picker-container {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+    
+    .result-display {
+      background: #f0f8ff;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #333;
+      margin-top: 10px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      background: #722ED1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    
+    button:hover {
+      background: #5a23a8;
+    }
+    
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    .debug-info {
+      background: #2d3748;
+      color: #63b3ed;
+      padding: 10px;
+      border-radius: 6px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      margin-top: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .debug-info.hidden {
+      display: none;
+    }
+    
+    .toggle-debug {
+      background: #48bb78;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 Picker 组件测试</h1>
+    <div class="description">
+      测试橡皮筋效果：在列表边界继续拖拽时，应该有平滑的阻力效果，不应出现抖动
+    </div>
+
+    <!-- 测试1: 基础单列选择器 -->
+    <div class="test-section">
+      <h2 class="test-title">📋 基础单列选择器</h2>
+      <div class="test-desc">
+        测试要点：<br>
+        1. 拖拽到第一个选项后继续向下拉，检查橡皮筋效果<br>
+        2. 拖拽到最后一个选项后继续向上拉，检查橡皮筋效果<br>
+        3. 快速拖拽时是否平滑，有无抖动
+      </div>
+      
+      <div class="picker-container">
+        <ldesign-picker id="picker1"></ldesign-picker>
+      </div>
+      
+      <div class="button-group">
+        <button onclick="scrollToFirst('picker1')">滚动到第一项</button>
+        <button onclick="scrollToLast('picker1')">滚动到最后一项</button>
+        <button onclick="scrollToMiddle('picker1')">滚动到中间</button>
+      </div>
+      
+      <div class="result-display" id="result1">
+        当前选中: <span id="value1">-</span>
+      </div>
+      
+      <button class="toggle-debug" onclick="toggleDebug('debug1')">显示/隐藏调试信息</button>
+      <div class="debug-info hidden" id="debug1"></div>
+    </div>
+
+    <!-- 测试2: 多列联动选择器 -->
+    <div class="test-section">
+      <h2 class="test-title">🔗 多列联动选择器</h2>
+      <div class="test-desc">
+        测试要点：<br>
+        1. 每一列都测试边界橡皮筋效果<br>
+        2. 联动时检查新列的橡皮筋是否正常<br>
+        3. 列切换时状态是否正确重置
+      </div>
+      
+      <div class="picker-container">
+        <ldesign-picker id="picker2"></ldesign-picker>
+      </div>
+      
+      <div class="result-display" id="result2">
+        当前选中: <span id="value2">-</span>
+      </div>
+      
+      <button class="toggle-debug" onclick="toggleDebug('debug2')">显示/隐藏调试信息</button>
+      <div class="debug-info hidden" id="debug2"></div>
+    </div>
+
+    <!-- 测试3: 少量选项测试 -->
+    <div class="test-section">
+      <h2 class="test-title">📉 少量选项测试</h2>
+      <div class="test-desc">
+        测试要点：<br>
+        1. 只有 2-3 个选项时的橡皮筋效果<br>
+        2. 选项不足以填满视口时的边界处理
+      </div>
+      
+      <div class="picker-container">
+        <ldesign-picker id="picker3"></ldesign-picker>
+      </div>
+      
+      <div class="result-display" id="result3">
+        当前选中: <span id="value3">-</span>
+      </div>
+      
+      <button class="toggle-debug" onclick="toggleDebug('debug3')">显示/隐藏调试信息</button>
+      <div class="debug-info hidden" id="debug3"></div>
+    </div>
+
+    <!-- 测试4: 大量选项性能测试 -->
+    <div class="test-section">
+      <h2 class="test-title">🚀 大量选项性能测试</h2>
+      <div class="test-desc">
+        测试要点：<br>
+        1. 100+ 选项时的滚动性能<br>
+        2. 快速拖拽时橡皮筋是否流畅<br>
+        3. 惯性滚动与橡皮筋的配合
+      </div>
+      
+      <div class="picker-container">
+        <ldesign-picker id="picker4"></ldesign-picker>
+      </div>
+      
+      <div class="result-display" id="result4">
+        当前选中: <span id="value4">-</span>
+      </div>
+      
+      <button class="toggle-debug" onclick="toggleDebug('debug4')">显示/隐藏调试信息</button>
+      <div class="debug-info hidden" id="debug4"></div>
+    </div>
+  </div>
+
+  <script>
+    // 调试日志收集器
+    const debugLogs = {
+      picker1: [],
+      picker2: [],
+      picker3: [],
+      picker4: []
+    };
+
+    // 记录调试信息
+    function logDebug(pickerId, message) {
+      const timestamp = new Date().toLocaleTimeString('zh-CN', { hour12: false, milliseconds: true });
+      debugLogs[pickerId].push(`[${timestamp}] ${message}`);
+      
+      // 保持最近50条
+      if (debugLogs[pickerId].length > 50) {
+        debugLogs[pickerId].shift();
+      }
+      
+      // 更新显示
+      const debugEl = document.getElementById(pickerId.replace('picker', 'debug'));
+      if (debugEl && !debugEl.classList.contains('hidden')) {
+        debugEl.innerHTML = debugLogs[pickerId].join('<br>');
+        debugEl.scrollTop = debugEl.scrollHeight;
+      }
+    }
+
+    // 切换调试信息显示
+    function toggleDebug(debugId) {
+      const debugEl = document.getElementById(debugId);
+      debugEl.classList.toggle('hidden');
+    }
+
+    // 滚动到第一项
+    function scrollToFirst(pickerId) {
+      const picker = document.getElementById(pickerId);
+      if (picker && picker.scrollTo) {
+        picker.scrollTo(0, 0);
+        logDebug(pickerId, '滚动到第一项');
+      }
+    }
+
+    // 滚动到最后一项
+    function scrollToLast(pickerId) {
+      const picker = document.getElementById(pickerId);
+      if (picker && picker.scrollTo) {
+        const lastIndex = picker.options[0]?.length - 1 || 0;
+        picker.scrollTo(0, lastIndex);
+        logDebug(pickerId, `滚动到最后一项 (index: ${lastIndex})`);
+      }
+    }
+
+    // 滚动到中间
+    function scrollToMiddle(pickerId) {
+      const picker = document.getElementById(pickerId);
+      if (picker && picker.scrollTo) {
+        const middleIndex = Math.floor((picker.options[0]?.length - 1) / 2) || 0;
+        picker.scrollTo(0, middleIndex);
+        logDebug(pickerId, `滚动到中间项 (index: ${middleIndex})`);
+      }
+    }
+
+    // 初始化选择器
+    document.addEventListener('DOMContentLoaded', () => {
+      // Picker 1: 基础单列（月份）
+      const picker1 = document.getElementById('picker1');
+      picker1.options = [
+        [
+          { label: '1月', value: '1' },
+          { label: '2月', value: '2' },
+          { label: '3月', value: '3' },
+          { label: '4月', value: '4' },
+          { label: '5月', value: '5' },
+          { label: '6月', value: '6' },
+          { label: '7月', value: '7' },
+          { label: '8月', value: '8' },
+          { label: '9月', value: '9' },
+          { label: '10月', value: '10' },
+          { label: '11月', value: '11' },
+          { label: '12月', value: '12' }
+        ]
+      ];
+      picker1.value = ['6'];
+
+      // Picker 2: 多列联动（地区选择）
+      const picker2 = document.getElementById('picker2');
+      const provinces = [
+        { label: '北京', value: 'beijing' },
+        { label: '上海', value: 'shanghai' },
+        { label: '广东', value: 'guangdong' },
+        { label: '浙江', value: 'zhejiang' }
+      ];
+      
+      const cities = {
+        beijing: [
+          { label: '北京市', value: 'beijing_city' }
+        ],
+        shanghai: [
+          { label: '上海市', value: 'shanghai_city' }
+        ],
+        guangdong: [
+          { label: '广州市', value: 'guangzhou' },
+          { label: '深圳市', value: 'shenzhen' },
+          { label: '珠海市', value: 'zhuhai' }
+        ],
+        zhejiang: [
+          { label: '杭州市', value: 'hangzhou' },
+          { label: '宁波市', value: 'ningbo' },
+          { label: '温州市', value: 'wenzhou' }
+        ]
+      };
+      
+      picker2.options = [provinces, cities.beijing];
+      picker2.value = ['beijing', 'beijing_city'];
+      
+      // 联动逻辑
+      picker2.addEventListener('ldesignChange', (e) => {
+        const values = e.detail.value;
+        const province = values[0];
+        
+        if (province && cities[province]) {
+          const currentOptions = [...picker2.options];
+          currentOptions[1] = cities[province];
+          picker2.options = currentOptions;
+          
+          // 更新第二列的值
+          const newValues = [...values];
+          newValues[1] = cities[province][0].value;
+          picker2.value = newValues;
+        }
+      });
+
+      // Picker 3: 少量选项
+      const picker3 = document.getElementById('picker3');
+      picker3.options = [
+        [
+          { label: '选项 A', value: 'a' },
+          { label: '选项 B', value: 'b' },
+          { label: '选项 C', value: 'c' }
+        ]
+      ];
+      picker3.value = ['b'];
+
+      // Picker 4: 大量选项
+      const picker4 = document.getElementById('picker4');
+      const largeOptions = [];
+      for (let i = 1; i <= 100; i++) {
+        largeOptions.push({ 
+          label: `选项 ${i}`, 
+          value: `option_${i}` 
+        });
+      }
+      picker4.options = [largeOptions];
+      picker4.value = ['option_50'];
+
+      // 监听所有 picker 的变化事件
+      ['picker1', 'picker2', 'picker3', 'picker4'].forEach(pickerId => {
+        const picker = document.getElementById(pickerId);
+        const resultSpan = document.getElementById(pickerId.replace('picker', 'value'));
+        
+        picker.addEventListener('ldesignChange', (e) => {
+          const values = e.detail.value;
+          resultSpan.textContent = JSON.stringify(values);
+          logDebug(pickerId, `值变更: ${JSON.stringify(values)}`);
+        });
+        
+        // 监听滚动事件（如果组件支持）
+        picker.addEventListener('ldesignScroll', (e) => {
+          logDebug(pickerId, `滚动: column=${e.detail.column || 0}, offset=${e.detail.offset || 0}`);
+        });
+        
+        // 监听拖拽开始/结束（如果组件支持）
+        picker.addEventListener('ldesignDragStart', () => {
+          logDebug(pickerId, '开始拖拽');
+        });
+        
+        picker.addEventListener('ldesignDragEnd', () => {
+          logDebug(pickerId, '拖拽结束');
+        });
+      });
+
+      // 性能监控
+      let frameCount = 0;
+      let lastTime = performance.now();
+      
+      function measureFPS() {
+        frameCount++;
+        const currentTime = performance.now();
+        
+        if (currentTime >= lastTime + 1000) {
+          const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+          console.log(`FPS: ${fps}`);
+          frameCount = 0;
+          lastTime = currentTime;
+        }
+        
+        requestAnimationFrame(measureFPS);
+      }
+      
+      // 开始监控FPS（可选）
+      // measureFPS();
+    });
+  </script>
+</body>
+</html>

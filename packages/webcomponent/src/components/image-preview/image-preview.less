@@ -1,0 +1,373 @@
+@import '../../global/common.less';
+
+:host {
+  --preview-bg-color: rgba(0, 0, 0, 0.9);
+  --preview-z-index: 2000;
+  --preview-transition-duration: 300ms;
+  --preview-toolbar-bg: rgba(0, 0, 0, 0.7);
+  --preview-toolbar-hover-bg: rgba(255, 255, 255, 0.1);
+  --preview-control-color: #fff;
+  --preview-control-hover-color: #1890ff;
+  --preview-arrow-size: 48px;
+  --preview-close-size: 40px;
+  --preview-tool-size: 36px;
+}
+
+.ldesign-image-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--preview-z-index);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--preview-transition-duration) ease,
+              visibility var(--preview-transition-duration) ease;
+  
+  &.is-visible {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  &.is-animating {
+    pointer-events: none;
+  }
+}
+
+// 遮罩层
+.ldesign-image-preview__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--preview-bg-color);
+  backdrop-filter: blur(2px);
+  animation: fadeIn var(--preview-transition-duration) ease;
+}
+
+// 主内容区
+.ldesign-image-preview__content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+// 关闭按钮
+.ldesign-image-preview__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: var(--preview-close-size);
+  height: var(--preview-close-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--preview-toolbar-bg);
+  border: none;
+  border-radius: 50%;
+  color: var(--preview-control-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  &:hover {
+    background: var(--preview-toolbar-hover-bg);
+    color: var(--preview-control-hover-color);
+    transform: rotate(90deg);
+  }
+  
+  &:active {
+    transform: rotate(90deg) scale(0.9);
+  }
+}
+
+// 图片索引
+.ldesign-image-preview__index {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  background: var(--preview-toolbar-bg);
+  border-radius: 16px;
+  color: var(--preview-control-color);
+  font-size: 14px;
+  z-index: 10;
+  user-select: none;
+}
+
+// 切换箭头
+.ldesign-image-preview__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: var(--preview-arrow-size);
+  height: var(--preview-arrow-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--preview-toolbar-bg);
+  border: none;
+  border-radius: 50%;
+  color: var(--preview-control-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  
+  svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  &:hover {
+    background: var(--preview-toolbar-hover-bg);
+    color: var(--preview-control-hover-color);
+  }
+  
+  &:active {
+    transform: translateY(-50%) scale(0.9);
+  }
+  
+  &--prev {
+    left: 20px;
+  }
+  
+  &--next {
+    right: 20px;
+  }
+}
+
+// 图片容器
+.ldesign-image-preview__img-wrapper {
+  position: relative;
+  width: 90%;
+  height: 90%;
+  max-width: 1200px;
+  max-height: 800px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  // 覆盖 draggable 组件的默认样式
+  ldesign-draggable {
+    width: 100% !important;
+    height: 100% !important;
+    
+    // 确保图片在容器中居中
+    .draggable-container {
+      width: 100% !important;
+      height: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+  }
+}
+
+// 加载状态
+.ldesign-image-preview__loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ldesign-image-preview__spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--preview-control-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+// 错误状态
+.ldesign-image-preview__error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--preview-control-color);
+  
+  svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    opacity: 0.6;
+  }
+  
+  div {
+    font-size: 14px;
+    opacity: 0.8;
+  }
+}
+
+// 工具栏
+.ldesign-image-preview__toolbar {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--preview-toolbar-bg);
+  border-radius: 24px;
+  z-index: 10;
+  animation: slideUp var(--preview-transition-duration) ease;
+}
+
+.ldesign-image-preview__tool {
+  width: var(--preview-tool-size);
+  height: var(--preview-tool-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--preview-control-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  &:hover {
+    background: var(--preview-toolbar-hover-bg);
+    color: var(--preview-control-hover-color);
+  }
+  
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+// 动画定义
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 响应式适配
+@media (max-width: 768px) {
+  .ldesign-image-preview__close {
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+  
+  .ldesign-image-preview__arrow {
+    width: 40px;
+    height: 40px;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    &--prev {
+      left: 10px;
+    }
+    
+    &--next {
+      right: 10px;
+    }
+  }
+  
+  .ldesign-image-preview__img-wrapper {
+    width: 95%;
+    height: 80%;
+  }
+  
+  .ldesign-image-preview__toolbar {
+    bottom: 20px;
+    padding: 6px;
+    gap: 4px;
+  }
+  
+  .ldesign-image-preview__tool {
+    width: 32px;
+    height: 32px;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+// 深色模式支持
+@media (prefers-color-scheme: dark) {
+  :host {
+    --preview-bg-color: rgba(0, 0, 0, 0.95);
+    --preview-toolbar-bg: rgba(30, 30, 30, 0.9);
+    --preview-toolbar-hover-bg: rgba(255, 255, 255, 0.15);
+  }
+}
+
+// 打印时隐藏预览
+@media print {
+  .ldesign-image-preview {
+    display: none !important;
+  }
+}

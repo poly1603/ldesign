@@ -499,6 +499,7 @@ export class LdesignDrawer {
         }
       });
     });
+    
     if (emit) this.ldesignVisibleChange.emit(true);
   }
 
@@ -600,7 +601,6 @@ export class LdesignDrawer {
     if (this.isResizing) classes.push('ldesign-drawer--resizing');
     if (this.isDragging) classes.push('ldesign-drawer--dragging');
     if (this.showSnapIndicator) classes.push('ldesign-drawer--snapping');
-    if (this.isMobileDevice()) classes.push('ldesign-drawer--mobile');
     if (this.isFullscreen || this.fullscreen) classes.push('ldesign-drawer--fullscreen');
     if (this.isMinimized) classes.push('ldesign-drawer--minimized');
     if (this.darkMode) classes.push('ldesign-drawer--dark');
@@ -617,51 +617,61 @@ export class LdesignDrawer {
 
   private panelStyle(): { [k: string]: string } {
     const style: { [k: string]: string } = { zIndex: String(this.baseZ() + 1) };
-    const isMobile = this.isMobileDevice();
+    // 统一的尺寸计算
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    
+    // 如果是全屏模式，直接返回100%尺寸
+    if (this.isFullscreen || this.fullscreen) {
+      style.width = '100%';
+      style.height = '100%';
+      return style;
+    }
     
     // 使用当前尺寸或默认尺寸
     let val = this.currentSize || this.size;
     
-    // 移动端特殊处理
-    if (isMobile) {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      
-      if (this.placement === 'left' || this.placement === 'right') {
-        // 移动端左右抽屉默认占 85% 宽度
-        if (!this.currentSize) {
-          val = Math.min(vw * 0.85, 400);
+    // 解析尺寸值
+    let sizeInPx: number;
+    if (typeof val === 'number') {
+      sizeInPx = val;
+    } else if (typeof val === 'string') {
+      if (val.endsWith('%')) {
+        const percentage = parseFloat(val) / 100;
+        if (this.placement === 'left' || this.placement === 'right') {
+          sizeInPx = vw * percentage;
+        } else {
+          sizeInPx = vh * percentage;
         }
-        // 限制最大宽度
-        if (typeof val === 'number' && val > vw * 0.9) {
-          val = vw * 0.9;
-        }
+      } else if (val.endsWith('vh')) {
+        sizeInPx = (parseFloat(val) / 100) * vh;
+      } else if (val.endsWith('vw')) {
+        sizeInPx = (parseFloat(val) / 100) * vw;
+      } else if (val.endsWith('px')) {
+        sizeInPx = parseFloat(val);
       } else {
-        // 移动端上下抽屉默认占 70% 高度
-        if (!this.currentSize) {
-          val = vh * 0.7;
-        }
-        // 限制最大高度
-        if (typeof val === 'number' && val > vh * 0.85) {
-          val = vh * 0.85;
-        }
-      }
-    }
-    
-    const sizeValue = typeof val === 'number' ? `${val}px` : (val || '').toString();
-    
-    if (this.placement === 'left' || this.placement === 'right') {
-      style.width = sizeValue || '360px';
-      // 移动端高度始终100%
-      if (isMobile) {
-        style.height = '100%';
+        sizeInPx = parseFloat(val) || 360;
       }
     } else {
-      style.height = sizeValue || '360px';
-      // 移动端宽度始终100%
-      if (isMobile) {
-        style.width = '100%';
-      }
+      sizeInPx = 360;
+    }
+    
+    // 统一的限制逻辑，不区分设备
+    if (this.placement === 'left' || this.placement === 'right') {
+      // 限制最大宽度为视口的95%，最小200px
+      const maxWidth = vw * 0.95;
+      const minWidth = 200;
+      sizeInPx = Math.max(minWidth, Math.min(maxWidth, sizeInPx));
+      style.width = `${sizeInPx}px`;
+      style.height = '100%';
+    } else {
+      // top/bottom 方向
+      // 限制最大高度为视口的95%，最小200px
+      const maxHeight = vh * 0.95;
+      const minHeight = 200;
+      sizeInPx = Math.max(minHeight, Math.min(maxHeight, sizeInPx));
+      style.height = `${sizeInPx}px`;
+      style.width = '100%';
     }
     
     // 圆角
@@ -826,8 +836,7 @@ export class LdesignDrawer {
         class={{
           'ldesign-drawer__resize-handle': true,
           [`ldesign-drawer__resize-handle--${placement}`]: true,
-          'ldesign-drawer__resize-handle--active': this.isResizing,
-          'ldesign-drawer__resize-handle--mobile': this.isMobileDevice()
+          'ldesign-drawer__resize-handle--active': this.isResizing
         }}
         title={this.showResizeHint ? '拖动调整大小' : ''}
       >
@@ -1310,6 +1319,7 @@ export class LdesignDrawer {
     this.isDragging = true;
     document.addEventListener('touchmove', this.handleSwipeMove, { passive: false });
     document.addEventListener('touchend', this.handleSwipeEnd);
+    document.addEventListener('touchcancel', this.handleSwipeEnd);
   };
 
   private handleSwipeMove = (e: TouchEvent) => {
@@ -1353,6 +1363,7 @@ export class LdesignDrawer {
     this.dragOffset = 0;
     document.removeEventListener('touchmove', this.handleSwipeMove);
     document.removeEventListener('touchend', this.handleSwipeEnd);
+    document.removeEventListener('touchcancel', this.handleSwipeEnd);  // 清理 touchcancel
   };
 
   private animateBack() {
@@ -1440,15 +1451,10 @@ export class LdesignDrawer {
     }
   }
 
-  // ── 工具方法 ──────────────────────────────────────────────
-  private isMobileDevice(): boolean {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-  }
-  
 
   private handleResize = () => {
-    // 窗口大小变化时重新计算
-    if (this.isVisible && this.isMobileDevice()) {
+    // 窗口大小变化时重新计算 - 所有设备都需要响应窗口变化
+    if (this.isVisible) {
       // 触发重新渲染 - 使用状态更新来触发重渲染
       this.currentSize = this.currentSize || this.size;
     }
@@ -1467,6 +1473,12 @@ export class LdesignDrawer {
         return this.placement === 'left' || this.placement === 'right'
           ? window.innerWidth * percentage
           : window.innerHeight * percentage;
+      } else if (size.endsWith('vh')) {
+        return (parseFloat(size) / 100) * window.innerHeight;
+      } else if (size.endsWith('vw')) {
+        return (parseFloat(size) / 100) * window.innerWidth;
+      } else if (size.endsWith('px')) {
+        return parseFloat(size);
       }
       return parseFloat(size) || 360;
     }

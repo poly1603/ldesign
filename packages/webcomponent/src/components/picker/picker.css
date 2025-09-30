@@ -1,0 +1,275 @@
+:host {
+  /* 主题变量 */
+  --ldesign-picker-bg: #fff;
+  --ldesign-picker-border: #e5e7eb;
+  --ldesign-picker-text: #111827;
+  --ldesign-picker-text-secondary: #9ca3af;
+  --ldesign-picker-active-color: #1d4ed8;
+  --ldesign-picker-active-bg: rgba(29, 78, 216, 0.06);
+  --ldesign-picker-disabled-opacity: 0.6;
+  --ldesign-picker-border-radius: 6px;
+  --ldesign-picker-transition: 200ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ldesign-picker-highlight-bg: #fef3c7;
+  --ldesign-picker-highlight-color: #92400e;
+  --ldesign-picker-search-bg: #f9fafb;
+  --ldesign-picker-search-border: #e5e7eb;
+  --ldesign-picker-mask-gradient-top: linear-gradient(to bottom, var(--ldesign-picker-bg) 0%, var(--ldesign-picker-bg) 10%, rgba(255, 255, 255, 0.95) 25%, rgba(255, 255, 255, 0.8) 40%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0.2) 80%, rgba(255, 255, 255, 0) 100%);
+  --ldesign-picker-mask-gradient-bottom: linear-gradient(to top, var(--ldesign-picker-bg) 0%, var(--ldesign-picker-bg) 10%, rgba(255, 255, 255, 0.95) 25%, rgba(255, 255, 255, 0.8) 40%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0.2) 80%, rgba(255, 255, 255, 0) 100%);
+  /* 3D 变量 - 更自然的iOS风格 */
+  --ldesign-picker-3d-perspective: 1000px;
+  /* 容器透视距离 */
+  --ldesign-picker-3d-rotate: 25deg;
+  /* 每边最大旋转角 */
+  --ldesign-picker-3d-step-deg: 15deg;
+  /* 相邻两项的角度步长 */
+  --ldesign-picker-3d-radius: 120px;
+  /* 圆柱半径 */
+  --ldesign-picker-3d-scale-min: 0.85;
+  /* 边缘最小缩放 */
+  --ldesign-picker-3d-scale-max: 1;
+  /* 中心最大缩放（不放大） */
+  --ldesign-picker-3d-opacity-min: 0.6;
+  /* 边缘最小透明度 */
+  --ldesign-picker-3d-opacity-max: 1;
+  /* 中心最大透明度 */
+  --ldesign-picker-3d-visible-range: 90deg;
+  /* 可视角度范围 - 超出此范围的项目将隐藏 */
+}
+/* 暗黑主题 */
+:host([theme="dark"]) {
+  --ldesign-picker-bg: #1f2937;
+  --ldesign-picker-border: #374151;
+  --ldesign-picker-text: #f3f4f6;
+  --ldesign-picker-text-secondary: #9ca3af;
+  --ldesign-picker-active-color: #60a5fa;
+  --ldesign-picker-active-bg: rgba(96, 165, 250, 0.1);
+  --ldesign-picker-search-bg: #111827;
+  --ldesign-picker-search-border: #374151;
+  --ldesign-picker-highlight-bg: #451a03;
+  --ldesign-picker-highlight-color: #fbbf24;
+  --ldesign-picker-mask-gradient-top: linear-gradient(to bottom, var(--ldesign-picker-bg) 0%, var(--ldesign-picker-bg) 10%, rgba(31, 41, 55, 0.95) 25%, rgba(31, 41, 55, 0.8) 40%, rgba(31, 41, 55, 0.5) 60%, rgba(31, 41, 55, 0.2) 80%, rgba(31, 41, 55, 0) 100%);
+  --ldesign-picker-mask-gradient-bottom: linear-gradient(to top, var(--ldesign-picker-bg) 0%, var(--ldesign-picker-bg) 10%, rgba(31, 41, 55, 0.95) 25%, rgba(31, 41, 55, 0.8) 40%, rgba(31, 41, 55, 0.5) 60%, rgba(31, 41, 55, 0.2) 80%, rgba(31, 41, 55, 0) 100%);
+}
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .ldesign-picker__picker {
+    width: 100%;
+    max-width: 300px;
+  }
+  .ldesign-picker__item {
+    font-size: 16px;
+  }
+}
+/* 动画 */
+@keyframes ldesign-picker-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.ldesign-picker__search {
+  animation: ldesign-picker-fade-in 0.3s ease-out;
+}
+/* 触觉反馈支持（iOS） */
+@supports (-webkit-touch-callout: none) {
+  .ldesign-picker__item--active {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+.ldesign-picker {
+  display: inline-block;
+  /* 搜索框 */
+  /* 高亮匹配文本 */
+}
+.ldesign-picker ul,
+.ldesign-picker li {
+  list-style: none !important;
+  list-style-type: none !important;
+}
+.ldesign-picker ul::before,
+.ldesign-picker li::before,
+.ldesign-picker ul::after,
+.ldesign-picker li::after {
+  display: none !important;
+}
+.ldesign-picker--disabled {
+  opacity: var(--ldesign-picker-disabled-opacity);
+  pointer-events: none;
+}
+.ldesign-picker__search {
+  position: relative;
+  margin-bottom: 8px;
+}
+.ldesign-picker__search-input {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  border: 1px solid var(--ldesign-picker-search-border);
+  border-radius: var(--ldesign-picker-border-radius);
+  background: var(--ldesign-picker-search-bg);
+  color: var(--ldesign-picker-text);
+  font-size: 14px;
+  outline: none;
+  transition: var(--ldesign-picker-transition);
+}
+.ldesign-picker__search-input:focus {
+  border-color: var(--ldesign-picker-active-color);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+}
+.ldesign-picker__search-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ldesign-picker__search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: none;
+  color: var(--ldesign-picker-text-secondary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--ldesign-picker-transition);
+}
+.ldesign-picker__search-clear:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--ldesign-picker-text);
+}
+.ldesign-picker__picker {
+  position: relative;
+  width: 120px;
+  overflow: hidden;
+  background: var(--ldesign-picker-bg);
+  border-radius: var(--ldesign-picker-border-radius);
+  border: 1px solid var(--ldesign-picker-border);
+  box-sizing: border-box;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: none;
+}
+.ldesign-picker__column {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  list-style-type: none !important;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  user-select: none;
+  touch-action: none;
+  will-change: transform;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  position: relative;
+  z-index: 2;
+}
+.ldesign-picker__item {
+  text-align: center;
+  height: var(--ld-pk-item-height, 36px);
+  line-height: var(--ld-pk-item-height, 36px);
+  font-size: 14px;
+  color: var(--ldesign-picker-text);
+  cursor: pointer;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+  background: transparent !important;
+  transition: color var(--ldesign-picker-transition), font-weight var(--ldesign-picker-transition);
+  position: relative;
+  list-style: none !important;
+  list-style-type: none !important;
+  display: block;
+}
+.ldesign-picker__item:hover {
+  background: transparent !important;
+}
+.ldesign-picker__item--active {
+  color: var(--ldesign-picker-active-color);
+  font-weight: 600;
+  background: transparent !important;
+}
+.ldesign-picker__item--disabled {
+  color: var(--ldesign-picker-text-secondary);
+  cursor: not-allowed;
+}
+.ldesign-picker__item--disabled:hover {
+  background: transparent !important;
+}
+.ldesign-picker__highlight {
+  background: var(--ldesign-picker-highlight-bg);
+  color: var(--ldesign-picker-highlight-color);
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-weight: 500;
+}
+.ldesign-picker__indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  background: rgba(29, 78, 216, 0.06);
+  border-radius: 6px;
+  box-sizing: border-box;
+  z-index: 1;
+  height: var(--ld-pk-item-height, 36px);
+  border-top: 1px solid rgba(29, 78, 216, 0.1);
+  border-bottom: 1px solid rgba(29, 78, 216, 0.1);
+}
+.ldesign-picker__mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  -webkit-mask-box-image: -webkit-linear-gradient(top, transparent, transparent 5%, #000 20%, #000 80%, transparent 95%, transparent);
+  mask-image: linear-gradient(to bottom, transparent 0%, transparent 5%, black 20%, black 80%, transparent 95%, transparent 100%);
+}
+.ldesign-picker__mask--top {
+  top: 0;
+  display: none;
+}
+.ldesign-picker__mask--bottom {
+  bottom: 0;
+  display: none;
+}
+/* 3D 效果增强 - iOS风格 */
+.ldesign-picker.ldesign-picker--3d .ldesign-picker__picker {
+  perspective: var(--ldesign-picker-3d-perspective);
+  perspective-origin: center center;
+  transform-style: preserve-3d;
+  overflow: hidden;
+}
+.ldesign-picker.ldesign-picker--3d .ldesign-picker__column {
+  transform-style: preserve-3d;
+  transform: translateZ(0);
+}
+.ldesign-picker.ldesign-picker--3d .ldesign-picker__item {
+  transform-origin: center center calc(-1 * var(--ld-pk-3d-radius, var(--ldesign-picker-3d-radius, 120px)));
+  transform: rotateX(var(--ld-pk-3d-angle, 0deg)) translateZ(var(--ld-pk-3d-radius, var(--ldesign-picker-3d-radius, 120px))) scale(var(--ld-pk-3d-scale, 1));
+  opacity: var(--ld-pk-3d-opacity, 1);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform, opacity, font-size;
+  transition: transform var(--ldesign-picker-transition), opacity var(--ldesign-picker-transition), font-size var(--ldesign-picker-transition);
+}
+.ldesign-picker.ldesign-picker--3d .ldesign-picker__item--active {
+  font-weight: 600;
+}

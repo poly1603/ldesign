@@ -1,0 +1,178 @@
+// 全局通用样式变量和混合器
+
+// ── 颜色变量 ─────────────────────────────────────────────
+:root {
+  // 主色
+  --ldesign-color-primary: #3b82f6;
+  --ldesign-color-primary-hover: #2563eb;
+  --ldesign-color-primary-active: #1d4ed8;
+  
+  // 文字颜色
+  --ldesign-text-color: #1f2937;
+  --ldesign-text-color-secondary: #6b7280;
+  --ldesign-text-color-tertiary: #9ca3af;
+  --ldesign-text-color-disabled: #d1d5db;
+  
+  // 背景颜色
+  --ldesign-bg-color: #ffffff;
+  --ldesign-bg-color-hover: #f9fafb;
+  --ldesign-bg-color-active: #f3f4f6;
+  --ldesign-bg-color-secondary: #f9fafb;
+  
+  // 边框颜色
+  --ldesign-border-color: #e5e7eb;
+  --ldesign-border-color-light: #f3f4f6;
+  --ldesign-border-color-dark: #d1d5db;
+  
+  // 暗黑模式
+  --ldesign-dark-bg: #1f2937;
+  --ldesign-dark-text: #f9fafb;
+  --ldesign-dark-text-secondary: #9ca3af;
+  --ldesign-dark-border: #374151;
+  --ldesign-dark-hover: #374151;
+  
+  // 其他
+  --ldesign-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ldesign-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ldesign-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --ldesign-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --ldesign-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  // 动画
+  --ldesign-transition-fast: 150ms;
+  --ldesign-transition-base: 300ms;
+  --ldesign-transition-slow: 500ms;
+  
+  // 圆角
+  --ldesign-radius-sm: 4px;
+  --ldesign-radius: 6px;
+  --ldesign-radius-md: 8px;
+  --ldesign-radius-lg: 12px;
+  --ldesign-radius-xl: 16px;
+  --ldesign-radius-full: 9999px;
+}
+
+// ── 混合器 ───────────────────────────────────────────────
+
+// 清除浮动
+.clearfix() {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+// 文字省略
+.text-ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 多行文字省略
+.text-ellipsis-multiline(@lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: @lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// 禁用用户选择
+.user-select-none() {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+// 硬件加速
+.hardware-accelerate() {
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+  
+  // 启用硬件加速后防止字体模糊
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// 绝对定位居中
+.absolute-center() {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// Flex 居中
+.flex-center() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// 滚动条样式
+.custom-scrollbar() {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+  }
+}
+
+// 过渡动画
+.transition(@property: all, @duration: var(--ldesign-transition-base), @timing: ease) {
+  transition: @property @duration @timing;
+}
+
+// 按钮重置
+.button-reset() {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+  
+  &:focus-visible {
+    outline: 2px solid var(--ldesign-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// 全局样式重置
+* {
+  box-sizing: border-box;
+}
+
+// 焦点样式
+.focus-visible() {
+  &:focus-visible {
+    outline: 2px solid var(--ldesign-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// 暗黑模式支持
+@media (prefers-color-scheme: dark) {
+  :root {
+    // 可以在这里覆盖暗黑模式的变量
+  }
+}

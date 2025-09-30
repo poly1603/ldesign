@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Component Test</title>
+  <script type="module" src="./dist/webcomponent/webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/webcomponent/webcomponent.css">
+  <style>
+    body {
+      padding: 20px;
+      font-family: system-ui;
+    }
+    .test-section {
+      margin-bottom: 40px;
+    }
+    h2 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .test-item {
+      border: 1px solid #e0e0e0;
+      padding: 10px;
+      background: #f9f9f9;
+    }
+    .test-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ldesign Image Component Test</h1>
+
+  <!-- Test 1: Width/Height Testing -->
+  <div class="test-section">
+    <h2>1. 宽高属性测试</h2>
+    <div class="test-grid">
+      <div class="test-item">
+        <div class="test-label">width="300" height="200"</div>
+        <ldesign-image
+          src="https://picsum.photos/600/400"
+          width="300"
+          height="200"
+          fit="cover"
+          style="border: 2px solid red;"
+        ></ldesign-image>
+      </div>
+      <div class="test-item">
+        <div class="test-label">width="100%" height="150"</div>
+        <ldesign-image
+          src="https://picsum.photos/600/400"
+          width="100%"
+          height="150"
+          fit="cover"
+          style="border: 2px solid blue;"
+        ></ldesign-image>
+      </div>
+      <div class="test-item">
+        <div class="test-label">只设置 width="200"</div>
+        <ldesign-image
+          src="https://picsum.photos/600/400"
+          width="200"
+          ratio="16/9"
+          fit="cover"
+          style="border: 2px solid green;"
+        ></ldesign-image>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test 2: Loading States -->
+  <div class="test-section">
+    <h2>2. 加载状态测试</h2>
+    <div class="test-grid">
+      <div class="test-item">
+        <div class="test-label">正常加载</div>
+        <ldesign-image
+          src="https://picsum.photos/400/300?random=1"
+          width="200"
+          height="150"
+          fit="cover"
+        ></ldesign-image>
+      </div>
+      <div class="test-item">
+        <div class="test-label">加载失败（带fallback）</div>
+        <ldesign-image
+          src="https://invalid-url.example.com/image.jpg"
+          fallback="https://picsum.photos/400/300?random=2"
+          width="200"
+          height="150"
+          fit="cover"
+        ></ldesign-image>
+      </div>
+      <div class="test-item">
+        <div class="test-label">懒加载</div>
+        <ldesign-image
+          src="https://picsum.photos/400/300?random=3"
+          width="200"
+          height="150"
+          lazy
+          fit="cover"
+        ></ldesign-image>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test 3: Preview -->
+  <div class="test-section">
+    <h2>3. 预览功能测试</h2>
+    <div class="test-grid">
+      <div class="test-item">
+        <div class="test-label">点击预览</div>
+        <ldesign-image
+          src="https://picsum.photos/800/600?random=4"
+          width="200"
+          height="150"
+          fit="cover"
+          preview
+        ></ldesign-image>
+      </div>
+      <div class="test-item">
+        <div class="test-label">预览高清图</div>
+        <ldesign-image
+          src="https://picsum.photos/400/300?random=5"
+          preview-src="https://picsum.photos/1600/1200?random=5"
+          width="200"
+          height="150"
+          fit="cover"
+          preview
+        ></ldesign-image>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test 4: Shapes -->
+  <div class="test-section">
+    <h2>4. 形状测试</h2>
+    <div class="test-grid">
+      <div class="test-item">
+        <div class="test-label">square</div>
+        <ldesign-image
+          src="https://picsum.photos/200/200?random=6"
+          width="120"
+          height="120"
+          shape="square"
+          fit="cover"
+        ></ldesign-image>
+      </div>
+      <div class="test-item">
+        <div class="test-label">rounded</div>
+        <ldesign-image
+          src="https://picsum.photos/200/200?random=7"
+          width="120"
+          height="120"
+          shape="rounded"
+          fit="cover"
+        ></ldesign-image>
+      </div>
+      <div class="test-item">
+        <div class="test-label">circle</div>
+        <ldesign-image
+          src="https://picsum.photos/200/200?random=8"
+          width="120"
+          height="120"
+          shape="circle"
+          fit="cover"
+        ></ldesign-image>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 监听图片事件
+    document.addEventListener('ldesignLoad', (e) => {
+      console.log('Image loaded:', e.detail);
+    });
+    
+    document.addEventListener('ldesignError', (e) => {
+      console.log('Image error:', e.detail);
+    });
+    
+    document.addEventListener('ldesignPreviewOpen', () => {
+      console.log('Preview opened');
+    });
+    
+    document.addEventListener('ldesignPreviewClose', () => {
+      console.log('Preview closed');
+    });
+  </script>
+</body>
+</html>

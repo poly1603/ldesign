@@ -540,15 +540,18 @@ export class LdesignPicker {
     const half = Math.max(1, Math.floor(this.visibleItems / 2));
     
     // 根据visible-items自动调整旋转步长（让可见项目均匀分布）
-    const defaultStep = Math.min(25, Math.max(10, 70 / this.visibleItems)); // 根据可见项数调整
+    // 对于visibleItems=3时，步长更大，避免项目过于聚集
+    const defaultStep = this.visibleItems <= 3 ? 30 : Math.min(25, Math.max(10, 80 / this.visibleItems));
     const step = this.rotateStep || (this._stepDeg !== null ? this._stepDeg : defaultStep);
     
     // 最大旋转角：根据可见项数调整
-    const defaultMaxA = step * half; // 最远的可见项的角度
+    const defaultMaxA = step * Math.min(half, 2); // 限制最大角度，避免过度旋转
     const maxA = this._maxRotateDeg !== null ? this._maxRotateDeg : defaultMaxA;
 
-    // 半径：根据容器高度自动调整
-    const defaultRadius = this.panelHeightPx * 0.6; // 半径为容器高度的60%
+    // 半径：根据容器高度和可见项数自动调整
+    // 对于少量项目，使用更大的半径以获得更好的3D效果
+    const radiusFactor = this.visibleItems <= 3 ? 1.2 : 0.8;
+    const defaultRadius = this.panelHeightPx * radiusFactor;
     const radius = this.cylinderRadius || (this._radiusPx !== null ? this._radiusPx : defaultRadius);
     this._radiusPx = radius;
     
@@ -558,8 +561,9 @@ export class LdesignPicker {
     const opacityMax = this.readCssVarNum('--ldesign-picker-3d-opacity-max', 1);
     
     // 可视角度范围：根据可见项数自动调整（确保只显示正确数量的项目）
-    // 使用 visibleItems - 0.5 来确保只显示指定数量的项目，同时保持边缘平滑
-    const defaultVisibleRange = step * (this.visibleItems - 0.5); // 稍微小一点以确保只显示正确数量的项目
+    // 对于少量项目，增加可视范围以避免隐藏
+    const visibilityFactor = this.visibleItems <= 3 ? 1.5 : 1;
+    const defaultVisibleRange = step * this.visibleItems * visibilityFactor;
     const visibleAngleRange = this.visibleRange || this.readCssVarDeg('--ldesign-picker-3d-visible-range', defaultVisibleRange);
 
     for (let i = 0; i < items.length; i++) {
@@ -1561,10 +1565,9 @@ export class LdesignPicker {
               );
             })}
           </ul>
-          {this.showMask && [
-            <div class="ldesign-picker__mask ldesign-picker__mask--top"></div>,
-            <div class="ldesign-picker__mask ldesign-picker__mask--bottom"></div>
-          ]}
+          {this.showMask && (
+            <div class="ldesign-picker__mask"></div>
+          )}
         </div>
       </Host>
     );

@@ -9,33 +9,46 @@
   --ldesign-picker-active-bg: rgba(29, 78, 216, 0.06);
   --ldesign-picker-disabled-opacity: 0.6;
   --ldesign-picker-border-radius: 6px;
-  --ldesign-picker-transition: 200ms cubic-bezier(0.22,0.61,0.36,1);
+  --ldesign-picker-transition: 200ms cubic-bezier(0.22, 0.61, 0.36, 1);
   --ldesign-picker-highlight-bg: #fef3c7;
   --ldesign-picker-highlight-color: #92400e;
   --ldesign-picker-search-bg: #f9fafb;
   --ldesign-picker-search-border: #e5e7eb;
-  --ldesign-picker-mask-gradient-top: linear-gradient(to bottom, 
-    rgba(255,255,255,1) 0%, 
-    rgba(255,255,255,0.9) 20%, 
-    rgba(255,255,255,0.6) 40%, 
-    rgba(255,255,255,0.3) 60%, 
-    rgba(255,255,255,0) 100%);
-  --ldesign-picker-mask-gradient-bottom: linear-gradient(to top, 
-    rgba(255,255,255,1) 0%, 
-    rgba(255,255,255,0.9) 20%, 
-    rgba(255,255,255,0.6) 40%, 
-    rgba(255,255,255,0.3) 60%, 
-    rgba(255,255,255,0) 100%);
+  --ldesign-picker-mask-gradient-top: linear-gradient(to bottom,
+      var(--ldesign-picker-bg) 0%,
+      var(--ldesign-picker-bg) 10%,
+      rgba(255, 255, 255, 0.95) 25%,
+      rgba(255, 255, 255, 0.8) 40%,
+      rgba(255, 255, 255, 0.5) 60%,
+      rgba(255, 255, 255, 0.2) 80%,
+      rgba(255, 255, 255, 0) 100%);
+  --ldesign-picker-mask-gradient-bottom: linear-gradient(to top,
+      var(--ldesign-picker-bg) 0%,
+      var(--ldesign-picker-bg) 10%,
+      rgba(255, 255, 255, 0.95) 25%,
+      rgba(255, 255, 255, 0.8) 40%,
+      rgba(255, 255, 255, 0.5) 60%,
+      rgba(255, 255, 255, 0.2) 80%,
+      rgba(255, 255, 255, 0) 100%);
   /* 3D 变量 - 更自然的iOS风格 */
-  --ldesign-picker-3d-perspective: 1000px;    /* 容器透视距离 */
-  --ldesign-picker-3d-rotate: 25deg;          /* 每边最大旋转角 */
-  --ldesign-picker-3d-step-deg: 15deg;        /* 相邻两项的角度步长 */
-  --ldesign-picker-3d-radius: 120px;          /* 圆柱半径 */
-  --ldesign-picker-3d-scale-min: 0.85;        /* 边缘最小缩放 */
-  --ldesign-picker-3d-scale-max: 1.0;         /* 中心最大缩放（不放大） */
-  --ldesign-picker-3d-opacity-min: 0.6;       /* 边缘最小透明度 */
-  --ldesign-picker-3d-opacity-max: 1;         /* 中心最大透明度 */
-  --ldesign-picker-3d-visible-range: 90deg;   /* 可视角度范围 - 超出此范围的项目将隐藏 */
+  --ldesign-picker-3d-perspective: 1000px;
+  /* 容器透视距离 */
+  --ldesign-picker-3d-rotate: 25deg;
+  /* 每边最大旋转角 */
+  --ldesign-picker-3d-step-deg: 15deg;
+  /* 相邻两项的角度步长 */
+  --ldesign-picker-3d-radius: 120px;
+  /* 圆柱半径 */
+  --ldesign-picker-3d-scale-min: 0.85;
+  /* 边缘最小缩放 */
+  --ldesign-picker-3d-scale-max: 1.0;
+  /* 中心最大缩放（不放大） */
+  --ldesign-picker-3d-opacity-min: 0.6;
+  /* 边缘最小透明度 */
+  --ldesign-picker-3d-opacity-max: 1;
+  /* 中心最大透明度 */
+  --ldesign-picker-3d-visible-range: 90deg;
+  /* 可视角度范围 - 超出此范围的项目将隐藏 */
 }
 
 
@@ -51,18 +64,22 @@
   --ldesign-picker-search-border: #374151;
   --ldesign-picker-highlight-bg: #451a03;
   --ldesign-picker-highlight-color: #fbbf24;
-  --ldesign-picker-mask-gradient-top: linear-gradient(to bottom, 
-    rgba(31,41,55,1) 0%, 
-    rgba(31,41,55,0.9) 20%, 
-    rgba(31,41,55,0.6) 40%, 
-    rgba(31,41,55,0.3) 60%, 
-    rgba(31,41,55,0) 100%);
-  --ldesign-picker-mask-gradient-bottom: linear-gradient(to top, 
-    rgba(31,41,55,1) 0%, 
-    rgba(31,41,55,0.9) 20%, 
-    rgba(31,41,55,0.6) 40%, 
-    rgba(31,41,55,0.3) 60%, 
-    rgba(31,41,55,0) 100%);
+  --ldesign-picker-mask-gradient-top: linear-gradient(to bottom,
+      var(--ldesign-picker-bg) 0%,
+      var(--ldesign-picker-bg) 10%,
+      rgba(31, 41, 55, 0.95) 25%,
+      rgba(31, 41, 55, 0.8) 40%,
+      rgba(31, 41, 55, 0.5) 60%,
+      rgba(31, 41, 55, 0.2) 80%,
+      rgba(31, 41, 55, 0) 100%);
+  --ldesign-picker-mask-gradient-bottom: linear-gradient(to top,
+      var(--ldesign-picker-bg) 0%,
+      var(--ldesign-picker-bg) 10%,
+      rgba(31, 41, 55, 0.95) 25%,
+      rgba(31, 41, 55, 0.8) 40%,
+      rgba(31, 41, 55, 0.5) 60%,
+      rgba(31, 41, 55, 0.2) 80%,
+      rgba(31, 41, 55, 0) 100%);
 }
 
 /* 响应式设计 */
@@ -72,7 +89,7 @@
       width: 100%;
       max-width: 300px;
     }
-    
+
     &__item {
       font-size: 16px; // 移动端更大的字体
     }
@@ -85,6 +102,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -104,17 +122,20 @@
 
 .ldesign-picker {
   display: inline-block;
-  
+
   // 全局移除所有列表标记
-  ul, li {
+  ul,
+  li {
     list-style: none !important;
     list-style-type: none !important;
-    &::before, &::after {
+
+    &::before,
+    &::after {
       display: none !important;
     }
   }
 
-  &--disabled { 
+  &--disabled {
     opacity: var(--ldesign-picker-disabled-opacity);
     pointer-events: none;
   }
@@ -123,7 +144,7 @@
   &__search {
     position: relative;
     margin-bottom: 8px;
-    
+
     &-input {
       width: 100%;
       padding: 8px 32px 8px 12px;
@@ -134,18 +155,18 @@
       font-size: 14px;
       outline: none;
       transition: var(--ldesign-picker-transition);
-      
+
       &:focus {
         border-color: var(--ldesign-picker-active-color);
         box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
       }
-      
+
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
       }
     }
-    
+
     &-clear {
       position: absolute;
       right: 8px;
@@ -165,7 +186,7 @@
       justify-content: center;
       border-radius: 50%;
       transition: var(--ldesign-picker-transition);
-      
+
       &:hover {
         background: rgba(0, 0, 0, 0.05);
         color: var(--ldesign-picker-text);
@@ -186,6 +207,25 @@
     -webkit-overflow-scrolling: touch;
     touch-action: none; // 移动端手势滑动不触发页面滚动
     
+    // 应用遮罩效果到容器本身
+    -webkit-mask-image: linear-gradient(to bottom,
+        transparent 0%,
+        transparent 5%,
+        black 20%,
+        black 80%,
+        transparent 95%,
+        transparent 100%);
+    mask-image: linear-gradient(to bottom,
+        transparent 0%,
+        transparent 5%,
+        black 20%,
+        black 80%,
+        transparent 95%,
+        transparent 100%);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
   }
 
   &__column {
@@ -225,7 +265,7 @@
     list-style-type: none !important;
     display: block;
 
-    &:hover { 
+    &:hover {
       background: transparent !important;
     }
 
@@ -238,10 +278,13 @@
     &--disabled {
       color: var(--ldesign-picker-text-secondary);
       cursor: not-allowed;
-      &:hover { background: transparent !important; }
+
+      &:hover {
+        background: transparent !important;
+      }
     }
   }
-  
+
   /* 高亮匹配文本 */
   &__highlight {
     background: var(--ldesign-picker-highlight-bg);
@@ -253,7 +296,7 @@
 
   &__indicator {
     position: absolute;
-    left: 0; 
+    left: 0;
     right: 0;
     top: 50%;
     transform: translateY(-50%);
@@ -267,24 +310,20 @@
     border-bottom: 1px solid rgba(29, 78, 216, 0.1);
   }
 
-  // 顶部/底部渐隐遮罩
-  &__mask { 
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 40%; // 适中的遮罩高度
-    pointer-events: none;
-    z-index: 3;
+  // 顶部/底部渐隐遮罩 - 已移至 .ldesign-picker__picker
+  // 保留mask元素样式以备后用
+  &__mask {
+    display: none; // 暂时隐藏，因为遮罩效果已应用到picker容器
   }
-  
-  &__mask--top { 
+
+  &__mask--top {
     top: 0;
-    background: var(--ldesign-picker-mask-gradient-top);
+    display: none; // 暂时隐藏单独的顶部遮罩
   }
-  
-  &__mask--bottom { 
+
+  &__mask--bottom {
     bottom: 0;
-    background: var(--ldesign-picker-mask-gradient-bottom);
+    display: none; // 暂时隐藏单独的底部遮罩
   }
 }
 
@@ -297,27 +336,25 @@
     // 裁剪超出可视范围的内容
     overflow: hidden;
   }
-  
+
   .ldesign-picker__column {
     transform-style: preserve-3d;
     transform: translateZ(0); // 启用硬件加速
   }
-  
+
   .ldesign-picker__item {
     // 动态角度/半径/缩放由 JS 写入下列 CSS 变量
     // --ld-pk-3d-angle: 旋转角度；--ld-pk-3d-radius: 半径；--ld-pk-3d-scale: 缩放；--ld-pk-3d-opacity: 透明度
     transform-origin: center center calc(-1 * var(--ld-pk-3d-radius, var(--ldesign-picker-3d-radius, 120px)));
-    transform: rotateX(var(--ld-pk-3d-angle, 0deg)) 
-               translateZ(var(--ld-pk-3d-radius, var(--ldesign-picker-3d-radius, 120px))) 
-               scale(var(--ld-pk-3d-scale, 1));
+    transform: rotateX(var(--ld-pk-3d-angle, 0deg)) translateZ(var(--ld-pk-3d-radius, var(--ldesign-picker-3d-radius, 120px))) scale(var(--ld-pk-3d-scale, 1));
     opacity: var(--ld-pk-3d-opacity, 1);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     will-change: transform, opacity, font-size;
-    transition: transform var(--ldesign-picker-transition), 
-                opacity var(--ldesign-picker-transition),
-                font-size var(--ldesign-picker-transition);
-    
+    transition: transform var(--ldesign-picker-transition),
+      opacity var(--ldesign-picker-transition),
+      font-size var(--ldesign-picker-transition);
+
     // 中心项字体效果
     &--active {
       font-weight: 600; // 只加粗，不放大

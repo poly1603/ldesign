@@ -171,6 +171,11 @@
       &:hover {
         background-color: rgba(0, 0, 0, 0.02);
       }
+      
+      // 按钮区域不显示拖拽光标
+      .ldesign-modal__actions {
+        cursor: auto;
+      }
     }
   }
 
@@ -181,14 +186,23 @@
     line-height: var(--ld-modal-title-line-height, 1.5);
     margin: 0;
     flex: 1;
+    user-select: none;
+    // 在可拖拽模式下显示拖拽光标
+    .ldesign-modal--draggable & {
+      cursor: move;
+    }
   }
 
   &__actions {
     display: flex;
     align-items: center;
-    gap: var(--ld-modal-action-gap, 8px);
+    gap: var(--ld-modal-header-action-gap, 12px);
     margin-left: 16px;
     flex-shrink: 0;
+    position: relative;
+    z-index: 10; // 更高的层级确保按钮在拖拽层之上
+    pointer-events: auto; // 确保按钮可点击
+    isolation: isolate; // 创建新的堆叠上下文
   }
 
   &__maximize,
@@ -197,23 +211,43 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: transparent;
-    border-radius: 4px;
-    cursor: pointer;
-    color: var(--ldesign-text-color-secondary, #6b7280);
+    width: var(--ld-modal-header-btn-size, 36px);
+    height: var(--ld-modal-header-btn-size, 36px);
+    padding: 0;
+    margin: 0;
+    border: 1px solid transparent;
+    background: var(--ld-modal-header-btn-bg, transparent);
+    border-radius: var(--ld-modal-header-btn-radius, 6px);
+    cursor: pointer !important; // 强制显示指针光标
+    color: var(--ld-modal-header-btn-color, #6b7280);
     transition: all 0.2s ease;
+    outline: none;
+    box-sizing: border-box;
+    touch-action: manipulation; // 优化触摸响应
+    -webkit-tap-highlight-color: transparent; // 移除移动端点击高亮
 
-    // &:hover {
-    //   background: var(--ldesign-bg-color-hover, #f3f4f6);
-    //   color: var(--ldesign-text-color, #1f2937);
-    // }
+    &:hover {
+      background: var(--ld-modal-header-btn-hover-bg, rgba(0, 0, 0, 0.04));
+      color: var(--ld-modal-header-btn-hover-color, #374151);
+      border-color: var(--ld-modal-header-btn-hover-border, rgba(0, 0, 0, 0.06));
+    }
 
-    // &:active {
-    //   background: var(--ldesign-bg-color-active, #e5e7eb);
-    // }
+    &:active {
+      background: var(--ld-modal-header-btn-active-bg, rgba(0, 0, 0, 0.08));
+      transform: scale(0.98);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ldesign-brand-color, #7c3aed);
+      outline-offset: 2px;
+    }
+
+    // 确保图标居中
+    ldesign-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   }
 
   &__body {
@@ -233,14 +267,26 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: var(--ld-modal-action-gap, 12px);
+    gap: var(--ld-modal-footer-btn-gap, 16px);
     flex-shrink: 0;
 
     // 兜底：某些环境 gap 无效时，保证按钮间距
     > ldesign-button + ldesign-button,
     > * + ldesign-button,
     > ldesign-button + * {
-      margin-left: var(--ld-modal-btn-gap, 12px);
+      margin-left: var(--ld-modal-footer-btn-gap, 16px);
+    }
+
+    // 按钮组容器样式
+    &-group {
+      display: flex;
+      align-items: center;
+      gap: var(--ld-modal-footer-btn-gap, 16px);
+
+      // 兜底样式
+      > ldesign-button + ldesign-button {
+        margin-left: var(--ld-modal-footer-btn-gap, 16px);
+      }
     }
 
     &--shadow {
@@ -377,70 +423,136 @@
       top: -4px;
       left: 8px;
       right: 8px;
-      height: 8px;
+      height: var(--ld-modal-resize-handle-size, 8px);
       cursor: n-resize;
+      // 移动端增大触摸区域
+      @media (pointer: coarse) {
+        height: var(--ld-modal-resize-handle-size-touch, 16px);
+        top: -8px;
+      }
     }
 
     &--right {
       top: 8px;
       right: -4px;
       bottom: 8px;
-      width: 8px;
+      width: var(--ld-modal-resize-handle-size, 8px);
       cursor: e-resize;
+      @media (pointer: coarse) {
+        width: var(--ld-modal-resize-handle-size-touch, 16px);
+        right: -8px;
+      }
     }
 
     &--bottom {
       bottom: -4px;
       left: 8px;
       right: 8px;
-      height: 8px;
+      height: var(--ld-modal-resize-handle-size, 8px);
       cursor: s-resize;
+      @media (pointer: coarse) {
+        height: var(--ld-modal-resize-handle-size-touch, 16px);
+        bottom: -8px;
+      }
     }
 
     &--left {
       top: 8px;
       left: -4px;
       bottom: 8px;
-      width: 8px;
+      width: var(--ld-modal-resize-handle-size, 8px);
       cursor: w-resize;
+      @media (pointer: coarse) {
+        width: var(--ld-modal-resize-handle-size-touch, 16px);
+        left: -8px;
+      }
     }
 
     // 角落手柄
     &--top-left {
       top: -4px;
       left: -4px;
-      width: 12px;
-      height: 12px;
+      width: var(--ld-modal-resize-corner-size, 12px);
+      height: var(--ld-modal-resize-corner-size, 12px);
       cursor: nw-resize;
+      @media (pointer: coarse) {
+        width: var(--ld-modal-resize-corner-size-touch, 20px);
+        height: var(--ld-modal-resize-corner-size-touch, 20px);
+        top: -8px;
+        left: -8px;
+      }
     }
 
     &--top-right {
       top: -4px;
       right: -4px;
-      width: 12px;
-      height: 12px;
+      width: var(--ld-modal-resize-corner-size, 12px);
+      height: var(--ld-modal-resize-corner-size, 12px);
       cursor: ne-resize;
+      @media (pointer: coarse) {
+        width: var(--ld-modal-resize-corner-size-touch, 20px);
+        height: var(--ld-modal-resize-corner-size-touch, 20px);
+        top: -8px;
+        right: -8px;
+      }
     }
 
     &--bottom-left {
       bottom: -4px;
       left: -4px;
-      width: 12px;
-      height: 12px;
+      width: var(--ld-modal-resize-corner-size, 12px);
+      height: var(--ld-modal-resize-corner-size, 12px);
       cursor: sw-resize;
+      @media (pointer: coarse) {
+        width: var(--ld-modal-resize-corner-size-touch, 20px);
+        height: var(--ld-modal-resize-corner-size-touch, 20px);
+        bottom: -8px;
+        left: -8px;
+      }
     }
 
     &--bottom-right {
       bottom: -4px;
       right: -4px;
-      width: 12px;
-      height: 12px;
+      width: var(--ld-modal-resize-corner-size, 12px);
+      height: var(--ld-modal-resize-corner-size, 12px);
       cursor: se-resize;
+      @media (pointer: coarse) {
+        width: var(--ld-modal-resize-corner-size-touch, 20px);
+        height: var(--ld-modal-resize-corner-size-touch, 20px);
+        bottom: -8px;
+        right: -8px;
+      }
     }
 
     // 悬停效果
     &:hover {
-      background: rgba(59, 130, 246, 0.3);
+      background: var(--ld-modal-resize-handle-hover-bg, rgba(59, 130, 246, 0.3));
+    }
+    
+    // 移动端优化：显示视觉提示
+    @media (pointer: coarse) {
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 4px;
+        height: 4px;
+        background: var(--ld-modal-resize-handle-indicator, rgba(0, 0, 0, 0.2));
+        border-radius: 50%;
+      }
+      
+      // 角落手柄显示更大的指示器
+      &--top-left::after,
+      &--top-right::after,
+      &--bottom-left::after,
+      &--bottom-right::after {
+        width: 6px;
+        height: 6px;
+        background: var(--ld-modal-resize-corner-indicator, rgba(0, 0, 0, 0.3));
+      }
     }
   }
 
@@ -559,16 +671,16 @@
     .ldesign-modal__footer {
       border-top-color: transparent;
       padding-top: 12px;
-      gap: var(--ld-modal-btn-gap, 12px);
+      gap: var(--ld-modal-footer-btn-gap, 16px);
     }
     .ldesign-modal__quick-footer {
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      gap: var(--ld-modal-btn-gap, 12px);
+      gap: var(--ld-modal-footer-btn-gap, 16px);
     }
     // 兜底：gap 无效时，使用 margin
-    .ldesign-modal__quick-footer > * + * { margin-left: var(--ld-modal-btn-gap, 12px); }
+    .ldesign-modal__quick-footer > * + * { margin-left: var(--ld-modal-footer-btn-gap, 16px); }
     .ldesign-modal__body {
       padding-top: 12px;
       padding-bottom: 12px;

@@ -2136,6 +2136,11 @@ export namespace Components {
          */
         "disabled": boolean;
         /**
+          * 预览工具栏显示下载按钮
+          * @default true
+         */
+        "downloadable": boolean;
+        /**
           * 失败时的回退图片 URL
          */
         "fallback"?: string;
@@ -2144,6 +2149,11 @@ export namespace Components {
           * @default 'cover'
          */
         "fit": 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
+        /**
+          * 预览工具栏显示全屏按钮
+          * @default true
+         */
+        "fullscreenable": boolean;
         /**
           * GIF 默认静止，点击播放。建议同时提供 gifPreviewSrc（第一帧快照）与 ratio 避免CLS
           * @default false
@@ -2177,6 +2187,11 @@ export namespace Components {
          */
         "lazy": boolean;
         /**
+          * 最大重试次数
+          * @default 3
+         */
+        "maxRetries": number;
+        /**
           * 自定义占位图 URL（优先级高于骨架）
          */
         "placeholder"?: string;
@@ -2201,6 +2216,16 @@ export namespace Components {
          */
         "previewBackdrop": 'dark' | 'light';
         /**
+          * 当前图片在预览组中的索引
+          * @default 0
+         */
+        "previewCurrentIndex": number;
+        /**
+          * 预览图片组（用于gallery模式）
+          * @default []
+         */
+        "previewImages": string[];
+        /**
           * 预览使用的高清图（不填则使用 src）
          */
         "previewSrc"?: string;
@@ -2217,6 +2242,16 @@ export namespace Components {
          */
         "referrerPolicy"?: string;
         /**
+          * 显示重试按钮
+          * @default true
+         */
+        "retryable": boolean;
+        /**
+          * 预览工具栏显示旋转按钮
+          * @default true
+         */
+        "rotatable": boolean;
+        /**
           * 形状：square（默认）| rounded | circle
           * @default 'square'
          */
@@ -2227,10 +2262,20 @@ export namespace Components {
          */
         "showError": boolean;
         /**
+          * 显示图片信息（尺寸、大小等）
+          * @default false
+         */
+        "showInfo": boolean;
+        /**
           * 是否展示加载中骨架（当无自定义占位图时）
           * @default true
          */
         "showLoading": boolean;
+        /**
+          * 显示加载进度条
+          * @default false
+         */
+        "showProgress": boolean;
         /**
           * 响应式图片 sizes
          */
@@ -2247,6 +2292,11 @@ export namespace Components {
           * 响应式图片 srcset
          */
         "srcset"?: string;
+        /**
+          * 使用外部预览组件（用于多图gallery模式）
+          * @default false
+         */
+        "useExternalPreview": boolean;
         /**
           * 宽度（number 自动补 px，string 原样输出，如 '50%'、'320px'）
          */
@@ -2278,6 +2328,97 @@ export namespace Components {
           * 统一子项形状（子项已设置 shape 时不覆盖）
          */
         "shape"?: 'square' | 'rounded' | 'circle';
+    }
+    /**
+     * ldesign-image-preview
+     * 图片预览组件，支持缩放、拖拽、旋转等交互
+     * 用法：
+     * 1) 编程式调用：
+     *    const preview = document.querySelector('ldesign-image-preview');
+     *    preview.show('https://example.com/image.jpg');
+     * 2) 作为图片组件的预览功能：
+     *    <ldesign-image src="..." preview></ldesign-image>
+     */
+    interface LdesignImagePreview {
+        /**
+          * 当前显示的图片索引
+          * @default 0
+         */
+        "currentIndex": number;
+        /**
+          * 是否启用旋转
+          * @default true
+         */
+        "enableRotate": boolean;
+        "hide": () => Promise<void>;
+        /**
+          * 当前预览的图片列表
+          * @default []
+         */
+        "images": string[];
+        /**
+          * 初始缩放比例
+          * @default 1
+         */
+        "initialScale": number;
+        /**
+          * 是否启用键盘操作
+          * @default true
+         */
+        "keyboard": boolean;
+        /**
+          * 是否循环切换
+          * @default true
+         */
+        "loop": boolean;
+        /**
+          * 是否在点击遮罩时关闭
+          * @default true
+         */
+        "maskClosable": boolean;
+        /**
+          * 最大缩放比例
+          * @default 4
+         */
+        "maxScale": number;
+        /**
+          * 最小缩放比例
+          * @default 0.25
+         */
+        "minScale": number;
+        "next": () => Promise<void>;
+        "prev": () => Promise<void>;
+        "reset": () => Promise<void>;
+        "rotateLeft": () => Promise<void>;
+        "rotateRight": () => Promise<void>;
+        "show": (images?: string | string[], index?: number) => Promise<void>;
+        /**
+          * 是否显示关闭按钮
+          * @default true
+         */
+        "showCloseBtn": boolean;
+        /**
+          * 是否显示图片索引
+          * @default true
+         */
+        "showIndex": boolean;
+        /**
+          * 是否显示工具栏
+          * @default true
+         */
+        "showToolbar": boolean;
+        /**
+          * 动画过渡时长 (ms)
+          * @default 300
+         */
+        "transitionDuration": number;
+        /**
+          * 是否显示预览
+          * @default false
+         */
+        "visible": boolean;
+        "zoomIn": (step?: number) => Promise<void>;
+        "zoomOut": (step?: number) => Promise<void>;
     }
     /**
      * ImageViewer 图片预览器
@@ -5305,6 +5446,10 @@ export interface LdesignImageCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignImageElement;
 }
+export interface LdesignImagePreviewCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignImagePreviewElement;
+}
 export interface LdesignImageViewerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignImageViewerElement;
@@ -5944,10 +6089,11 @@ declare global {
         new (): HTMLLdesignIconElement;
     };
     interface HTMLLdesignImageElementEventMap {
-        "ldesignLoad": { width: number; height: number; src: string };
+        "ldesignLoad": { width: number; height: number; src: string; size?: number };
         "ldesignError": { src: string; error: string };
         "ldesignPreviewOpen": void;
         "ldesignPreviewClose": void;
+        "ldesignDownload": { src: string; filename: string };
     }
     /**
      * Image 图片组件
@@ -5982,6 +6128,36 @@ declare global {
     var HTMLLdesignImageGroupElement: {
         prototype: HTMLLdesignImageGroupElement;
         new (): HTMLLdesignImageGroupElement;
+    };
+    interface HTMLLdesignImagePreviewElementEventMap {
+        "ldesignPreviewOpen": { images: string[], index: number };
+        "ldesignPreviewClose": void;
+        "ldesignPreviewChange": { index: number, image: string };
+        "ldesignPreviewError": { index: number, image: string };
+    }
+    /**
+     * ldesign-image-preview
+     * 图片预览组件，支持缩放、拖拽、旋转等交互
+     * 用法：
+     * 1) 编程式调用：
+     *    const preview = document.querySelector('ldesign-image-preview');
+     *    preview.show('https://example.com/image.jpg');
+     * 2) 作为图片组件的预览功能：
+     *    <ldesign-image src="..." preview></ldesign-image>
+     */
+    interface HTMLLdesignImagePreviewElement extends Components.LdesignImagePreview, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignImagePreviewElementEventMap>(type: K, listener: (this: HTMLLdesignImagePreviewElement, ev: LdesignImagePreviewCustomEvent<HTMLLdesignImagePreviewElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignImagePreviewElementEventMap>(type: K, listener: (this: HTMLLdesignImagePreviewElement, ev: LdesignImagePreviewCustomEvent<HTMLLdesignImagePreviewElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignImagePreviewElement: {
+        prototype: HTMLLdesignImagePreviewElement;
+        new (): HTMLLdesignImagePreviewElement;
     };
     interface HTMLLdesignImageViewerElementEventMap {
         "ldesignVisibleChange": boolean;
@@ -6754,6 +6930,7 @@ declare global {
         "ldesign-icon": HTMLLdesignIconElement;
         "ldesign-image": HTMLLdesignImageElement;
         "ldesign-image-group": HTMLLdesignImageGroupElement;
+        "ldesign-image-preview": HTMLLdesignImagePreviewElement;
         "ldesign-image-viewer": HTMLLdesignImageViewerElement;
         "ldesign-input": HTMLLdesignInputElement;
         "ldesign-input-number": HTMLLdesignInputNumberElement;
@@ -8937,6 +9114,11 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
+          * 预览工具栏显示下载按钮
+          * @default true
+         */
+        "downloadable"?: boolean;
+        /**
           * 失败时的回退图片 URL
          */
         "fallback"?: string;
@@ -8945,6 +9127,11 @@ declare namespace LocalJSX {
           * @default 'cover'
          */
         "fit"?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
+        /**
+          * 预览工具栏显示全屏按钮
+          * @default true
+         */
+        "fullscreenable"?: boolean;
         /**
           * GIF 默认静止，点击播放。建议同时提供 gifPreviewSrc（第一帧快照）与 ratio 避免CLS
           * @default false
@@ -8978,13 +9165,22 @@ declare namespace LocalJSX {
          */
         "lazy"?: boolean;
         /**
+          * 最大重试次数
+          * @default 3
+         */
+        "maxRetries"?: number;
+        /**
+          * 图片下载
+         */
+        "onLdesignDownload"?: (event: LdesignImageCustomEvent<{ src: string; filename: string }>) => void;
+        /**
           * 加载失败
          */
         "onLdesignError"?: (event: LdesignImageCustomEvent<{ src: string; error: string }>) => void;
         /**
           * 加载成功
          */
-        "onLdesignLoad"?: (event: LdesignImageCustomEvent<{ width: number; height: number; src: string }>) => void;
+        "onLdesignLoad"?: (event: LdesignImageCustomEvent<{ width: number; height: number; src: string; size?: number }>) => void;
         /**
           * 预览关闭
          */
@@ -9018,6 +9214,16 @@ declare namespace LocalJSX {
          */
         "previewBackdrop"?: 'dark' | 'light';
         /**
+          * 当前图片在预览组中的索引
+          * @default 0
+         */
+        "previewCurrentIndex"?: number;
+        /**
+          * 预览图片组（用于gallery模式）
+          * @default []
+         */
+        "previewImages"?: string[];
+        /**
           * 预览使用的高清图（不填则使用 src）
          */
         "previewSrc"?: string;
@@ -9034,6 +9240,16 @@ declare namespace LocalJSX {
          */
         "referrerPolicy"?: string;
         /**
+          * 显示重试按钮
+          * @default true
+         */
+        "retryable"?: boolean;
+        /**
+          * 预览工具栏显示旋转按钮
+          * @default true
+         */
+        "rotatable"?: boolean;
+        /**
           * 形状：square（默认）| rounded | circle
           * @default 'square'
          */
@@ -9044,10 +9260,20 @@ declare namespace LocalJSX {
          */
         "showError"?: boolean;
         /**
+          * 显示图片信息（尺寸、大小等）
+          * @default false
+         */
+        "showInfo"?: boolean;
+        /**
           * 是否展示加载中骨架（当无自定义占位图时）
           * @default true
          */
         "showLoading"?: boolean;
+        /**
+          * 显示加载进度条
+          * @default false
+         */
+        "showProgress"?: boolean;
         /**
           * 响应式图片 sizes
          */
@@ -9064,6 +9290,11 @@ declare namespace LocalJSX {
           * 响应式图片 srcset
          */
         "srcset"?: string;
+        /**
+          * 使用外部预览组件（用于多图gallery模式）
+          * @default false
+         */
+        "useExternalPreview"?: boolean;
         /**
           * 宽度（number 自动补 px，string 原样输出，如 '50%'、'320px'）
          */
@@ -9095,6 +9326,92 @@ declare namespace LocalJSX {
           * 统一子项形状（子项已设置 shape 时不覆盖）
          */
         "shape"?: 'square' | 'rounded' | 'circle';
+    }
+    /**
+     * ldesign-image-preview
+     * 图片预览组件，支持缩放、拖拽、旋转等交互
+     * 用法：
+     * 1) 编程式调用：
+     *    const preview = document.querySelector('ldesign-image-preview');
+     *    preview.show('https://example.com/image.jpg');
+     * 2) 作为图片组件的预览功能：
+     *    <ldesign-image src="..." preview></ldesign-image>
+     */
+    interface LdesignImagePreview {
+        /**
+          * 当前显示的图片索引
+          * @default 0
+         */
+        "currentIndex"?: number;
+        /**
+          * 是否启用旋转
+          * @default true
+         */
+        "enableRotate"?: boolean;
+        /**
+          * 当前预览的图片列表
+          * @default []
+         */
+        "images"?: string[];
+        /**
+          * 初始缩放比例
+          * @default 1
+         */
+        "initialScale"?: number;
+        /**
+          * 是否启用键盘操作
+          * @default true
+         */
+        "keyboard"?: boolean;
+        /**
+          * 是否循环切换
+          * @default true
+         */
+        "loop"?: boolean;
+        /**
+          * 是否在点击遮罩时关闭
+          * @default true
+         */
+        "maskClosable"?: boolean;
+        /**
+          * 最大缩放比例
+          * @default 4
+         */
+        "maxScale"?: number;
+        /**
+          * 最小缩放比例
+          * @default 0.25
+         */
+        "minScale"?: number;
+        "onLdesignPreviewChange"?: (event: LdesignImagePreviewCustomEvent<{ index: number, image: string }>) => void;
+        "onLdesignPreviewClose"?: (event: LdesignImagePreviewCustomEvent<void>) => void;
+        "onLdesignPreviewError"?: (event: LdesignImagePreviewCustomEvent<{ index: number, image: string }>) => void;
+        "onLdesignPreviewOpen"?: (event: LdesignImagePreviewCustomEvent<{ images: string[], index: number }>) => void;
+        /**
+          * 是否显示关闭按钮
+          * @default true
+         */
+        "showCloseBtn"?: boolean;
+        /**
+          * 是否显示图片索引
+          * @default true
+         */
+        "showIndex"?: boolean;
+        /**
+          * 是否显示工具栏
+          * @default true
+         */
+        "showToolbar"?: boolean;
+        /**
+          * 动画过渡时长 (ms)
+          * @default 300
+         */
+        "transitionDuration"?: number;
+        /**
+          * 是否显示预览
+          * @default false
+         */
+        "visible"?: boolean;
     }
     /**
      * ImageViewer 图片预览器
@@ -12249,6 +12566,7 @@ declare namespace LocalJSX {
         "ldesign-icon": LdesignIcon;
         "ldesign-image": LdesignImage;
         "ldesign-image-group": LdesignImageGroup;
+        "ldesign-image-preview": LdesignImagePreview;
         "ldesign-image-viewer": LdesignImageViewer;
         "ldesign-input": LdesignInput;
         "ldesign-input-number": LdesignInputNumber;
@@ -12462,6 +12780,17 @@ declare module "@stencil/core" {
              * - 可给子项（ldesign-image）注入默认形状（若子项未手动指定）
              */
             "ldesign-image-group": LocalJSX.LdesignImageGroup & JSXBase.HTMLAttributes<HTMLLdesignImageGroupElement>;
+            /**
+             * ldesign-image-preview
+             * 图片预览组件，支持缩放、拖拽、旋转等交互
+             * 用法：
+             * 1) 编程式调用：
+             *    const preview = document.querySelector('ldesign-image-preview');
+             *    preview.show('https://example.com/image.jpg');
+             * 2) 作为图片组件的预览功能：
+             *    <ldesign-image src="..." preview></ldesign-image>
+             */
+            "ldesign-image-preview": LocalJSX.LdesignImagePreview & JSXBase.HTMLAttributes<HTMLLdesignImagePreviewElement>;
             /**
              * ImageViewer 图片预览器
              * - 支持多图预览、左右切换、循环

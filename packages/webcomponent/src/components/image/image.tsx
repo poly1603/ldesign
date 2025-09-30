@@ -86,6 +86,20 @@ export class LdesignImage {
   @Prop() zoomable: boolean = true;
   /** 是否允许拖拽原图（仅影响 img 的原生 draggable 属性，预览层可拖拽不受此限制）*/
   @Prop() imgDraggable: boolean = false;
+  /** 预览工具栏显示下载按钮 */
+  @Prop() downloadable: boolean = true;
+  /** 预览工具栏显示旋转按钮 */
+  @Prop() rotatable: boolean = true;
+  /** 预览工具栏显示全屏按钮 */
+  @Prop() fullscreenable: boolean = true;
+  /** 显示图片信息（尺寸、大小等） */
+  @Prop() showInfo: boolean = false;
+  /** 使用外部预览组件（用于多图gallery模式） */
+  @Prop() useExternalPreview: boolean = false;
+  /** 预览图片组（用于gallery模式） */
+  @Prop() previewImages: string[] = [];
+  /** 当前图片在预览组中的索引 */
+  @Prop() previewCurrentIndex: number = 0;
 
   // 形状与展示
   /** 形状：square（默认）| rounded | circle */
@@ -101,15 +115,27 @@ export class LdesignImage {
   /** GIF 静止时展示的静态预览图（例如第一帧 webp/jpg） */
   @Prop() gifPreviewSrc?: string;
 
+  // 错误重试
+  /** 显示重试按钮 */
+  @Prop() retryable: boolean = true;
+  /** 最大重试次数 */
+  @Prop() maxRetries: number = 3;
+
+  // 加载进度
+  /** 显示加载进度条 */
+  @Prop() showProgress: boolean = false;
+
   // 事件
   /** 加载成功 */
-  @Event() ldesignLoad: EventEmitter<{ width: number; height: number; src: string }>;
+  @Event() ldesignLoad: EventEmitter<{ width: number; height: number; src: string; size?: number }>;
   /** 加载失败 */
   @Event() ldesignError: EventEmitter<{ src: string; error: string }>;
   /** 预览打开 */
   @Event() ldesignPreviewOpen: EventEmitter<void>;
   /** 预览关闭 */
   @Event() ldesignPreviewClose: EventEmitter<void>;
+  /** 图片下载 */
+  @Event() ldesignDownload: EventEmitter<{ src: string; filename: string }>;
 
   // 内部状态
   @State() intersected: boolean = false;
@@ -124,11 +150,18 @@ export class LdesignImage {
   @State() previewScale: number = 1;
   @State() previewOffsetX: number = 0;
   @State() previewOffsetY: number = 0;
+  @State() previewRotate: number = 0;
+  @State() isFullscreen: boolean = false;
   private dragging = false;
   private dragStartX = 0;
   private dragStartY = 0;
   private startOffsetX = 0;
   private startOffsetY = 0;
+
+  // 加载进度状态
+  @State() loadProgress: number = 0;
+  @State() imageSize?: number;
+  @State() retryCount: number = 0;
 
   private io?: IntersectionObserver;
   private imgEl?: HTMLImageElement;
@@ -171,6 +204,10 @@ export class LdesignImage {
     this.previewScale = 1;
     this.previewOffsetX = 0;
     this.previewOffsetY = 0;
+    this.previewRotate = 0;
+    this.isFullscreen = false;
+    this.loadProgress = 0;
+    this.retryCount = 0;
   }
 
   private setupOrLoad() {
@@ -252,6 +289,12 @@ export class LdesignImage {
         s.aspectRatio = `${r} / 1`;
       }
     }
+    
+    // 如果设置了尺寸但图片还未加载，确保容器有背景色
+    if (!this.loaded && !this.error) {
+      s.backgroundColor = this.placeholderColor;
+    }
+    
     return s;
   }
 
@@ -266,16 +309,32 @@ export class LdesignImage {
   private onImgLoad = (ev: Event) => {
     this.loaded = true;
     this.error = false;
+    this.loadProgress = 100;
     const img = ev.currentTarget as HTMLImageElement;
     if (img.naturalWidth > 0 && img.naturalHeight > 0) {
       this.naturalRatio = img.naturalWidth / img.naturalHeight;
     }
-    this.ldesignLoad.emit({ width: img.naturalWidth, height: img.naturalHeight, src: img.currentSrc || img.src });
+    // Estimate image size if possible
+    this.estimateImageSize(img.currentSrc || img.src);
+    this.ldesignLoad.emit({ 
+      width: img.naturalWidth, 
+      height: img.naturalHeight, 
+      src: img.currentSrc || img.src,
+      size: this.imageSize 
+    });
   };
 
   private onImgError = () => {
-    if (!this.usingFallback) {
-      // 优先使用用户提供的 fallback，否则使用内置默认占位图
+    if (!this.usingFallback && this.retryCount < this.maxRetries) {
+      // 重试逻辑
+      this.retryCount++;
+      setTimeout(() => {
+        if (this.imgEl) this.imgEl.src = this.src + (this.src.includes('?') ? '&' : '?') + '_retry=' + this.retryCount;
+      }, 1000 * this.retryCount);
+      return;
+    }
+    if (!this.usingFallback && this.fallback) {
+      // 使用用户提供的 fallback
       this.usingFallback = true;
       const fallbackUrl = this.fallback || this.defaultFallbackDataUri;
       if (this.imgEl) this.imgEl.src = fallbackUrl;
@@ -283,6 +342,7 @@ export class LdesignImage {
     }
     this.error = true;
     this.loaded = false;
+    this.loadProgress = 0;
     this.ldesignError.emit({ src: this.src, error: 'load error' });
   };
 
@@ -303,22 +363,67 @@ export class LdesignImage {
 
   // 预览相关
   private keyHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && this.previewVisible) {
-      this.closePreview();
+    if (e.key === 'Escape') {
+      if (this.isFullscreen) {
+        this.exitFullscreen();
+      } else if (this.previewVisible) {
+        this.closePreview();
+      }
     }
-    if (!this.zoomable) return;
-    if (e.key === '+') this.zoom(0.1);
-    if (e.key === '-') this.zoom(-0.1);
-    if (e.key === '0') this.resetPreviewTransform();
+    if (!this.previewVisible) return;
+    if (this.zoomable) {
+      if (e.key === '+' || e.key === '=') this.zoom(0.1);
+      if (e.key === '-') this.zoom(-0.1);
+      if (e.key === '0') this.resetPreviewTransform();
+    }
+    if (this.rotatable) {
+      if (e.key === 'ArrowLeft') this.rotate(-90);
+      if (e.key === 'ArrowRight') this.rotate(90);
+    }
   };
 
   private bindPreviewKey() { document.addEventListener('keydown', this.keyHandler); }
   private unbindPreviewKey() { document.removeEventListener('keydown', this.keyHandler); }
 
   private openPreview() {
-    this.previewVisible = true;
+    if (this.useExternalPreview) {
+      // 使用外部预览组件（支持多图）
+      this.openExternalPreview();
+    } else {
+      // 使用内置预览
+      this.previewVisible = true;
+      this.ldesignPreviewOpen.emit();
+      this.bindPreviewKey();
+    }
+  }
+  
+  private openExternalPreview() {
+    // 使用 ldesign-image-viewer 组件（支持多图gallery预览）
+    let viewerEl = document.querySelector('ldesign-image-viewer') as any;
+    if (!viewerEl) {
+      viewerEl = document.createElement('ldesign-image-viewer') as any;
+      document.body.appendChild(viewerEl);
+    }
+    
+    // 准备图片数据
+    const images = this.previewImages.length > 0 
+      ? this.previewImages.map(src => ({ src })) 
+      : [{ src: this.previewSrc || this.src }];
+    const index = this.previewImages.length > 0 ? this.previewCurrentIndex : 0;
+    
+    // 配置并显示预览器
+    viewerEl.images = images;
+    viewerEl.startIndex = index;
+    viewerEl.visible = true;
+    
+    // 监听关闭事件
+    const handleClose = () => {
+      viewerEl.removeEventListener('ldesignClose', handleClose);
+      this.ldesignPreviewClose.emit();
+    };
+    viewerEl.addEventListener('ldesignClose', handleClose);
+    
     this.ldesignPreviewOpen.emit();
-    this.bindPreviewKey();
   }
 
   private closePreview = () => {
@@ -332,6 +437,7 @@ export class LdesignImage {
     this.previewScale = 1;
     this.previewOffsetX = 0;
     this.previewOffsetY = 0;
+    this.previewRotate = 0;
   }
 
   private onWheel = (e: WheelEvent) => {
@@ -384,6 +490,10 @@ export class LdesignImage {
     if (this.error) cls.push('ldesign-image--error');
     if (this.shape === 'rounded') cls.push('ldesign-image--shape-rounded');
     if (this.shape === 'circle') cls.push('ldesign-image--shape-circle');
+    // 如果设置了明确尺寸，添加标记类
+    if ((this.width != null && this.height != null) || (this.width != null && this.ratio != null)) {
+      cls.push('ldesign-image--has-size');
+    }
     return cls.join(' ');
   }
 
@@ -392,6 +502,95 @@ export class LdesignImage {
     if (!val) return undefined;
     if (Array.isArray(val)) return val;
     try { const arr = JSON.parse(String(val)); return Array.isArray(arr) ? arr : undefined; } catch { return undefined; }
+  }
+
+  // 新增功能方法
+  private rotate(deg: number) {
+    this.previewRotate = (this.previewRotate + deg) % 360;
+  }
+
+  private async downloadImage() {
+    const src = this.previewSrc || this.src;
+    const filename = src.split('/').pop()?.split('?')[0] || 'image.jpg';
+    
+    try {
+      const response = await fetch(src);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      this.ldesignDownload.emit({ src, filename });
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+  }
+
+  private toggleFullscreen() {
+    if (this.isFullscreen) {
+      this.exitFullscreen();
+    } else {
+      this.enterFullscreen();
+    }
+  }
+
+  private enterFullscreen() {
+    const elem = this.el.querySelector('.ldesign-image__preview') as HTMLElement;
+    if (elem?.requestFullscreen) {
+      elem.requestFullscreen();
+      this.isFullscreen = true;
+    }
+  }
+
+  private exitFullscreen() {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+      this.isFullscreen = false;
+    }
+  }
+
+  private async copyImageUrl() {
+    const url = this.previewSrc || this.src;
+    try {
+      await navigator.clipboard.writeText(url);
+      // You could emit an event or show a toast here
+      console.log('Image URL copied to clipboard');
+    } catch (err) {
+      console.error('Failed to copy URL:', err);
+    }
+  }
+
+  private estimateImageSize(src: string) {
+    // This is a rough estimation based on loaded image
+    // In a real scenario, you might want to get this from response headers
+    if (this.imgEl) {
+      const img = this.imgEl;
+      // Rough estimation: width * height * 3 bytes (RGB) / compression factor
+      const estimatedBytes = (img.naturalWidth * img.naturalHeight * 3) / 10;
+      this.imageSize = Math.round(estimatedBytes);
+    }
+  }
+
+  private formatFileSize(bytes?: number): string {
+    if (!bytes) return '';
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 B';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  private retryLoad = () => {
+    this.retryCount = 0;
+    this.error = false;
+    this.loaded = false;
+    this.usingFallback = false;
+    if (this.imgEl) {
+      this.imgEl.src = this.src;
+    }
   }
 
   render() {
@@ -439,11 +638,19 @@ export class LdesignImage {
               <img class="ldesign-image__placeholder" src={this.placeholder} aria-hidden="true" />
             ) : this.gifPlayOnClick && this.isGifSrc(this.src) && this.gifPreviewSrc ? (
               <img class="ldesign-image__placeholder" src={this.gifPreviewSrc} aria-hidden="true" />
-            ) : this.showLoading ? (
-              <div class="ldesign-image__skeleton" style={{ backgroundColor: this.placeholderColor }}>
-                <div class="ldesign-image__spinner"></div>
+            ) : (
+              // 默认显示加载骨架（只要设置了宽高或 ratio）
+              <div class="ldesign-image__skeleton">
+                {this.showLoading && <div class="ldesign-image__spinner"></div>}
               </div>
-            ) : null
+            )
+          )}
+
+          {/* 加载进度条 */}
+          {this.showProgress && !this.loaded && !this.error && this.loadProgress > 0 && this.loadProgress < 100 && (
+            <div class="ldesign-image__progress">
+              <div class="ldesign-image__progress-bar" style={{ width: `${this.loadProgress}%` }}></div>
+            </div>
           )}
 
           {/* 错误占位 */}
@@ -451,6 +658,12 @@ export class LdesignImage {
             <div class="ldesign-image__error">
               <ldesign-icon name="image-off" />
               <span>图片加载失败</span>
+              {this.retryable && (
+                <button class="ldesign-image__retry" onClick={this.retryLoad}>
+                  <ldesign-icon name="refresh-cw" />
+                  <span>重试</span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -465,34 +678,66 @@ export class LdesignImage {
               <img
                 class="ldesign-image__preview-img"
                 src={this.previewSrc || this.src}
+                alt={this.alt}
                 onWheel={this.onWheel}
                 onDblClick={this.onDblClick}
                 onPointerDown={this.onPointerDown}
                 onPointerMove={this.onPointerMove}
                 onPointerUp={this.onPointerUp}
                 style={{
-                  transform: `translate(${this.previewOffsetX}px, ${this.previewOffsetY}px) scale(${this.previewScale})`,
+                  transform: `translate(${this.previewOffsetX}px, ${this.previewOffsetY}px) scale(${this.previewScale}) rotate(${this.previewRotate}deg)`,
                   cursor: this.zoomable ? (this.dragging ? 'grabbing' : 'grab') : 'default',
                 }}
               />
               <div class="ldesign-image__preview-toolbar">
-                <button class="ldesign-image__tool" onClick={this.closePreview} aria-label="关闭">
-                  <ldesign-icon name="x" />
-                </button>
                 {this.zoomable && (
                   <Fragment>
-                    <button class="ldesign-image__tool" onClick={() => this.zoom(-0.1)} aria-label="缩小">
+                    <button class="ldesign-image__tool" onClick={() => this.zoom(-0.1)} aria-label="缩小" title="缩小 (-)">
                       <ldesign-icon name="minus" />
                     </button>
-                    <button class="ldesign-image__tool" onClick={() => this.zoom(0.1)} aria-label="放大">
+                    <span class="ldesign-image__zoom-text">{Math.round(this.previewScale * 100)}%</span>
+                    <button class="ldesign-image__tool" onClick={() => this.zoom(0.1)} aria-label="放大" title="放大 (+)">
                       <ldesign-icon name="plus" />
                     </button>
-                    <button class="ldesign-image__tool" onClick={() => this.resetPreviewTransform()} aria-label="重置">
+                    <button class="ldesign-image__tool" onClick={() => this.resetPreviewTransform()} aria-label="重置" title="重置 (0)">
                       <ldesign-icon name="refresh-ccw" />
                     </button>
                   </Fragment>
                 )}
+                {this.rotatable && (
+                  <Fragment>
+                    <button class="ldesign-image__tool" onClick={() => this.rotate(-90)} aria-label="向左旋转" title="向左旋转 (←)">
+                      <ldesign-icon name="rotate-ccw" />
+                    </button>
+                    <button class="ldesign-image__tool" onClick={() => this.rotate(90)} aria-label="向右旋转" title="向右旋转 (→)">
+                      <ldesign-icon name="rotate-cw" />
+                    </button>
+                  </Fragment>
+                )}
+                {this.downloadable && (
+                  <button class="ldesign-image__tool" onClick={() => this.downloadImage()} aria-label="下载" title="下载图片">
+                    <ldesign-icon name="download" />
+                  </button>
+                )}
+                <button class="ldesign-image__tool" onClick={() => this.copyImageUrl()} aria-label="复制链接" title="复制图片链接">
+                  <ldesign-icon name="copy" />
+                </button>
+                {this.fullscreenable && (
+                  <button class="ldesign-image__tool" onClick={() => this.toggleFullscreen()} aria-label="全屏" title="全屏 (F)">
+                    <ldesign-icon name={this.isFullscreen ? "minimize" : "maximize"} />
+                  </button>
+                )}
+                <button class="ldesign-image__tool" onClick={this.closePreview} aria-label="关闭" title="关闭 (ESC)">
+                  <ldesign-icon name="x" />
+                </button>
               </div>
+              {/* 图片信息显示 */}
+              {this.showInfo && this.imgEl && (
+                <div class="ldesign-image__preview-info">
+                  <span>{this.imgEl.naturalWidth} × {this.imgEl.naturalHeight}</span>
+                  {this.imageSize && <span>{this.formatFileSize(this.imageSize)}</span>}
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawer 自动化测试报告</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f7fa;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .controls {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    
+    .btn:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn.success {
+      background: #10b981;
+    }
+    
+    .btn.success:hover {
+      background: #059669;
+    }
+    
+    .btn.danger {
+      background: #ef4444;
+    }
+    
+    .btn.danger:hover {
+      background: #dc2626;
+    }
+    
+    .device-switch {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 15px;
+      background: #f0f9ff;
+      border-radius: 8px;
+    }
+    
+    .device-switch label {
+      font-size: 14px;
+      color: #0369a1;
+      font-weight: 500;
+    }
+    
+    .device-switch select {
+      padding: 8px 12px;
+      border: 1px solid #0ea5e9;
+      border-radius: 6px;
+      background: white;
+      color: #0369a1;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .test-results {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .test-results h2 {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .test-item {
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border-left: 4px solid #e5e7eb;
+      background: #f9fafb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s;
+    }
+    
+    .test-item.running {
+      border-left-color: #3b82f6;
+      background: #eff6ff;
+      animation: pulse 1.5s infinite;
+    }
+    
+    .test-item.pass {
+      border-left-color: #10b981;
+      background: #f0fdf4;
+    }
+    
+    .test-item.fail {
+      border-left-color: #ef4444;
+      background: #fef2f2;
+    }
+    
+    .test-name {
+      font-size: 14px;
+      color: #374151;
+      font-weight: 500;
+    }
+    
+    .test-status {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .test-status.pending {
+      background: #e5e7eb;
+      color: #6b7280;
+    }
+    
+    .test-status.running {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    
+    .test-status.pass {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .test-status.fail {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    
+    .test-details {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 8px;
+      padding: 8px;
+      background: white;
+      border-radius: 4px;
+    }
+    
+    .summary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .summary h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    
+    .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+    }
+    
+    .stat {
+      background: rgba(255,255,255,0.2);
+      padding: 15px;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-bottom: 5px;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    .device-info {
+      background: #fef3c7;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #f59e0b;
+    }
+    
+    .device-info strong {
+      color: #92400e;
+    }
+  </style>
+  <script type="module" src="/build/ldesign-webcomponent.esm.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🧪 Drawer 组件自动化测试</h1>
+      <p>全面测试 Drawer 组件在不同设备和配置下的表现</p>
+    </div>
+    
+    <div class="device-info" id="deviceInfo">
+      <strong>当前设备：</strong><span id="currentDevice">检测中...</span><br>
+      <strong>视口尺寸：</strong><span id="currentViewport">--</span>
+    </div>
+    
+    <div class="controls">
+      <div class="device-switch">
+        <label>模拟设备：</label>
+        <select id="deviceSelect" onchange="switchDevice(this.value)">
+          <option value="desktop">桌面端 (1440x900)</option>
+          <option value="tablet">平板 (768x1024)</option>
+          <option value="mobile">手机 (375x667)</option>
+          <option value="mobile-large">大屏手机 (414x896)</option>
+          <option value="mobile-small">小屏手机 (320x568)</option>
+        </select>
+      </div>
+      
+      <button class="btn" onclick="runAllTests()" id="runAllBtn">
+        🚀 运行所有测试
+      </button>
+      
+      <button class="btn success" onclick="runDesktopTests()">
+        💻 仅测试桌面端
+      </button>
+      
+      <button class="btn success" onclick="runMobileTests()">
+        📱 仅测试移动端
+      </button>
+      
+      <button class="btn danger" onclick="clearResults()">
+        🗑️ 清空结果
+      </button>
+    </div>
+    
+    <div class="summary" id="summary" style="display: none;">
+      <h3>测试摘要</h3>
+      <div class="summary-stats">
+        <div class="stat">
+          <div class="stat-label">总测试数</div>
+          <div class="stat-value" id="totalTests">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">通过</div>
+          <div class="stat-value" id="passedTests">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">失败</div>
+          <div class="stat-value" id="failedTests">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">通过率</div>
+          <div class="stat-value" id="passRate">0%</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="test-results">
+      <h2>测试结果</h2>
+      <div id="testList">
+        <p style="color: #9ca3af; text-align: center; padding: 40px;">
+          点击上方按钮开始测试
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 测试用的 Drawer -->
+  <ldesign-drawer id="testDrawer">
+    <div style="padding: 20px;">
+      <h2 id="testDrawerTitle">测试抽屉</h2>
+      <div id="testDrawerContent">测试内容</div>
+    </div>
+  </ldesign-drawer>
+  
+  <script>
+    const drawer = document.getElementById('testDrawer');
+    const testList = document.getElementById('testList');
+    
+    let tests = [];
+    let currentTestIndex = 0;
+    let results = { total: 0, passed: 0, failed: 0 };
+    
+    // 更新设备信息
+    function updateDeviceInfo() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const isMobile = width <= 768;
+      
+      document.getElementById('currentDevice').textContent = 
+        isMobile ? '移动设备' : '桌面设备';
+      document.getElementById('currentViewport').textContent = 
+        `${width} × ${height}px`;
+    }
+    
+    // 切换设备
+    function switchDevice(device) {
+      const sizes = {
+        'desktop': { width: 1440, height: 900 },
+        'tablet': { width: 768, height: 1024 },
+        'mobile': { width: 375, height: 667 },
+        'mobile-large': { width: 414, height: 896 },
+        'mobile-small': { width: 320, height: 568 }
+      };
+      
+      const size = sizes[device];
+      if (size) {
+        window.resizeTo(size.width, size.height);
+        setTimeout(updateDeviceInfo, 500);
+      }
+    }
+    
+    // 定义测试用例
+    const testCases = [
+      // 基础功能测试
+      {
+        name: '右侧抽屉 - 默认尺寸',
+        run: async () => {
+          drawer.placement = 'right';
+          drawer.size = 360;
+          drawer.visible = true;
+          await wait(800);
+          const panel = drawer.querySelector('.ldesign-drawer__panel');
+          const visible = drawer.visible && panel;
+          drawer.visible = false;
+          await wait(400);
+          return { pass: visible, message: visible ? '正常显示' : '未能显示' };
+        }
+      },
+      {
+        name: '左侧抽屉 - 默认尺寸',
+        run: async () => {
+          drawer.placement = 'left';
+          drawer.size = 360;
+          drawer.visible = true;
+          await wait(800);
+          const visible = drawer.visible;
+          drawer.visible = false;
+          await wait(400);
+          return { pass: visible, message: visible ? '正常显示' : '未能显示' };
+        }
+      },
+      {
+        name: '顶部抽屉 - 默认尺寸',
+        run: async () => {
+          drawer.placement = 'top';
+          drawer.size = 360;
+          drawer.visible = true;
+          await wait(800);
+          const visible = drawer.visible;
+          drawer.visible = false;
+          await wait(400);
+          return { pass: visible, message: visible ? '正常显示' : '未能显示' };
+        }
+      },
+      {
+        name: '底部抽屉 - 默认尺寸',
+        run: async () => {
+          drawer.placement = 'bottom';
+          drawer.size = 360;
+          drawer.visible = true;
+          await wait(800);
+          const visible = drawer.visible;
+          drawer.visible = false;
+          await wait(400);
+          return { pass: visible, message: visible ? '正常显示' : '未能显示' };
+        }
+      },
+      
+      // 尺寸测试
+      {
+        name: '百分比尺寸 - 80%',
+        run: async () => {
+          drawer.placement = 'right';
+          drawer.size = '80%';
+          drawer.visible = true;
+          await wait(800);
+          const panel = document.querySelector('.ldesign-drawer__panel');
+          const width = panel ? panel.offsetWidth : 0;
+          const expectedWidth = window.innerWidth * 0.8;
+          const pass = Math.abs(width - expectedWidth) < 50;
+          drawer.visible = false;
+          await wait(400);
+          return { pass, message: pass ? `宽度: ${width}px (预期: ${expectedWidth.toFixed(0)}px)` : '尺寸不匹配' };
+        }
+      },
+      {
+        name: '像素尺寸 - 300px',
+        run: async () => {
+          drawer.placement = 'right';
+          drawer.size = 300;
+          drawer.visible = true;
+          await wait(800);
+          const panel = document.querySelector('.ldesign-drawer__panel');
+          const width = panel ? panel.offsetWidth : 0;
+          const pass = Math.abs(width - 300) < 20;
+          drawer.visible = false;
+          await wait(400);
+          return { pass, message: pass ? `宽度: ${width}px` : `宽度异常: ${width}px` };
+        }
+      },
+      {
+        name: '视口单位 - 50vh',
+        run: async () => {
+          drawer.placement = 'bottom';
+          drawer.size = '50vh';
+          drawer.visible = true;
+          await wait(800);
+          const panel = document.querySelector('.ldesign-drawer__panel');
+          const height = panel ? panel.offsetHeight : 0;
+          const expectedHeight = window.innerHeight * 0.5;
+          const pass = Math.abs(height - expectedHeight) < 50;
+          drawer.visible = false;
+          await wait(400);
+          return { pass, message: pass ? `高度: ${height}px (预期: ${expectedHeight.toFixed(0)}px)` : '高度不匹配' };
+        }
+      },
+      
+      // 移动端特定测试
+      {
+        name: '移动端 - 不超出视口',
+        run: async () => {
+          drawer.placement = 'right';
+          drawer.size = '90%';
+          drawer.visible = true;
+          await wait(800);
+          const panel = document.querySelector('.ldesign-drawer__panel');
+          const width = panel ? panel.offsetWidth : 0;
+          const pass = width <= window.innerWidth;
+          drawer.visible = false;
+          await wait(400);
+          return { pass, message: pass ? `宽度 ${width}px ≤ 视口 ${window.innerWidth}px` : '超出视口' };
+        }
+      },
+      {
+        name: '移动端 - 圆角样式',
+        run: async () => {
+          drawer.placement = 'right';
+          drawer.size = '80%';
+          drawer.rounded = true;
+          drawer.borderRadius = '16px';
+          drawer.visible = true;
+          await wait(800);
+          const panel = document.querySelector('.ldesign-drawer__panel');
+          const hasRounded = panel && panel.classList.contains('ldesign-drawer__panel--rounded');
+          drawer.visible = false;
+          await wait(400);
+          return { pass: hasRounded, message: hasRounded ? '圆角样式已应用' : '圆角样式未应用' };
+        }
+      },
+      {
+        name: '功能 - 遮罩显示',
+        run: async () => {
+          drawer.placement = 'right';
+          drawer.mask = true;
+          drawer.visible = true;
+          await wait(800);
+          const mask = document.querySelector('.ldesign-drawer__mask');
+          const pass = mask !== null;
+          drawer.visible = false;
+          await wait(400);
+          return { pass, message: pass ? '遮罩正常显示' : '遮罩未显示' };
+        }
+      },
+      {
+        name: '功能 - 关闭按钮',
+        run: async () => {
+          drawer.placement = 'right';
+          drawer.closable = true;
+          drawer.visible = true;
+          await wait(800);
+          const closeBtn = document.querySelector('.ldesign-drawer__close');
+          const pass = closeBtn !== null;
+          drawer.visible = false;
+          await wait(400);
+          return { pass, message: pass ? '关闭按钮存在' : '关闭按钮不存在' };
+        }
+      },
+      {
+        name: '性能 - 快速切换',
+        run: async () => {
+          const startTime = Date.now();
+          for (let i = 0; i < 5; i++) {
+            drawer.placement = ['right', 'left', 'top', 'bottom'][i % 4];
+            drawer.visible = true;
+            await wait(200);
+            drawer.visible = false;
+            await wait(100);
+          }
+          const duration = Date.now() - startTime;
+          const pass = duration < 3000;
+          return { pass, message: pass ? `耗时: ${duration}ms` : `耗时过长: ${duration}ms` };
+        }
+      }
+    ];
+    
+    // 工具函数
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    // 添加测试项到 UI
+    function addTestItem(name, index) {
+      const item = document.createElement('div');
+      item.className = 'test-item';
+      item.id = `test-${index}`;
+      item.innerHTML = `
+        <span class="test-name">${name}</span>
+        <span class="test-status pending">等待中</span>
+      `;
+      return item;
+    }
+    
+    // 更新测试状态
+    function updateTestStatus(index, status, message = '') {
+      const item = document.getElementById(`test-${index}`);
+      if (!item) return;
+      
+      item.className = `test-item ${status}`;
+      const statusEl = item.querySelector('.test-status');
+      
+      const statusTexts = {
+        'pending': '等待中',
+        'running': '运行中...',
+        'pass': '✓ 通过',
+        'fail': '✗ 失败'
+      };
+      
+      statusEl.className = `test-status ${status}`;
+      statusEl.textContent = statusTexts[status];
+      
+      if (message && (status === 'pass' || status === 'fail')) {
+        let detailsEl = item.querySelector('.test-details');
+        if (!detailsEl) {
+          detailsEl = document.createElement('div');
+          detailsEl.className = 'test-details';
+          item.appendChild(detailsEl);
+        }
+        detailsEl.textContent = message;
+      }
+    }
+    
+    // 运行单个测试
+    async function runTest(test, index) {
+      updateTestStatus(index, 'running');
+      
+      try {
+        const result = await test.run();
+        const status = result.pass ? 'pass' : 'fail';
+        updateTestStatus(index, status, result.message);
+        
+        results.total++;
+        if (result.pass) {
+          results.passed++;
+        } else {
+          results.failed++;
+        }
+      } catch (error) {
+        updateTestStatus(index, 'fail', `错误: ${error.message}`);
+        results.total++;
+        results.failed++;
+      }
+      
+      updateSummary();
+    }
+    
+    // 更新摘要
+    function updateSummary() {
+      document.getElementById('summary').style.display = 'block';
+      document.getElementById('totalTests').textContent = results.total;
+      document.getElementById('passedTests').textContent = results.passed;
+      document.getElementById('failedTests').textContent = results.failed;
+      
+      const passRate = results.total > 0 
+        ? ((results.passed / results.total) * 100).toFixed(1)
+        : 0;
+      document.getElementById('passRate').textContent = `${passRate}%`;
+    }
+    
+    // 运行所有测试
+    async function runAllTests() {
+      clearResults();
+      
+      testList.innerHTML = '';
+      testCases.forEach((test, index) => {
+        testList.appendChild(addTestItem(test.name, index));
+      });
+      
+      document.getElementById('runAllBtn').disabled = true;
+      
+      for (let i = 0; i < testCases.length; i++) {
+        await runTest(testCases[i], i);
+        await wait(300);
+      }
+      
+      document.getElementById('runAllBtn').disabled = false;
+    }
+    
+    // 运行桌面端测试
+    async function runDesktopTests() {
+      switchDevice('desktop');
+      await wait(1000);
+      await runAllTests();
+    }
+    
+    // 运行移动端测试
+    async function runMobileTests() {
+      switchDevice('mobile');
+      await wait(1000);
+      await runAllTests();
+    }
+    
+    // 清空结果
+    function clearResults() {
+      results = { total: 0, passed: 0, failed: 0 };
+      testList.innerHTML = '<p style="color: #9ca3af; text-align: center; padding: 40px;">点击上方按钮开始测试</p>';
+      document.getElementById('summary').style.display = 'none';
+    }
+    
+    // 初始化
+    updateDeviceInfo();
+    window.addEventListener('resize', updateDeviceInfo);
+  </script>
+</body>
+</html>

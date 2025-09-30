@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Modal 移动端触摸测试</title>
+    <script type="module" src="../../dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    <link rel="stylesheet" href="../../dist/ldesign-webcomponent/ldesign-webcomponent.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
+        
+        .test-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: white;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        
+        .test-button:active {
+            transform: scale(0.98);
+            background: #f0f0f0;
+        }
+        
+        .event-log {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .event-log h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .log-entry {
+            padding: 5px;
+            margin-bottom: 5px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        
+        .log-entry.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .log-entry.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .log-entry.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .info-row strong {
+            color: #333;
+        }
+        
+        /* 自定义按钮样式以便调试 */
+        .debug-button {
+            position: relative;
+            z-index: 9999;
+            pointer-events: auto !important;
+            touch-action: manipulation !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Modal 移动端触摸测试</h1>
+        
+        <div class="info-card">
+            <div class="info-row">
+                <strong>设备类型：</strong>
+                <span id="deviceType">检测中...</span>
+            </div>
+            <div class="info-row">
+                <strong>触摸支持：</strong>
+                <span id="touchSupport">检测中...</span>
+            </div>
+            <div class="info-row">
+                <strong>指针类型：</strong>
+                <span id="pointerType">检测中...</span>
+            </div>
+        </div>
+        
+        <button class="test-button" onclick="openSimpleModal()">
+            打开简单模态框（无拖拽）
+        </button>
+        
+        <button class="test-button" onclick="openDraggableModal()">
+            打开可拖拽模态框
+        </button>
+        
+        <button class="test-button" onclick="openDebugModal()">
+            打开调试模态框（详细事件日志）
+        </button>
+        
+        <button class="test-button" onclick="clearLog()">
+            清除事件日志
+        </button>
+        
+        <div class="event-log">
+            <h3>事件日志</h3>
+            <div id="logContainer"></div>
+        </div>
+    </div>
+    
+    <!-- 简单模态框 -->
+    <ldesign-modal id="simpleModal" 
+                   modal-title="简单模态框" 
+                   closable="true">
+        <div style="padding: 20px;">
+            <p>这是一个没有拖拽功能的模态框。</p>
+            <p>关闭按钮应该可以正常工作。</p>
+        </div>
+    </ldesign-modal>
+    
+    <!-- 可拖拽模态框 -->
+    <ldesign-modal id="draggableModal" 
+                   modal-title="可拖拽模态框" 
+                   is-draggable="true"
+                   closable="true"
+                   maximizable="true">
+        <div style="padding: 20px;">
+            <p>这是一个可拖拽的模态框。</p>
+            <p style="margin-top: 10px; color: #666;">
+                测试步骤：
+            </p>
+            <ol style="margin: 10px 0; padding-left: 20px; color: #666; line-height: 1.6;">
+                <li>尝试拖动标题栏</li>
+                <li>点击关闭按钮</li>
+                <li>点击最大化按钮</li>
+            </ol>
+        </div>
+    </ldesign-modal>
+    
+    <!-- 调试模态框 -->
+    <ldesign-modal id="debugModal" 
+                   modal-title="调试模态框" 
+                   is-draggable="true"
+                   closable="true"
+                   maximizable="true">
+        <div style="padding: 20px;">
+            <p>这个模态框会记录所有触摸和点击事件。</p>
+            <button onclick="testButtonInModal()" style="
+                padding: 10px 20px;
+                background: #667eea;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                margin-top: 10px;
+                cursor: pointer;
+            ">测试内部按钮</button>
+        </div>
+    </ldesign-modal>
+    
+    <script>
+        // 事件日志系统
+        const eventLog = [];
+        let logId = 0;
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = {
+                id: ++logId,
+                time: timestamp,
+                message: message,
+                type: type
+            };
+            eventLog.unshift(entry);
+            if (eventLog.length > 50) {
+                eventLog.pop();
+            }
+            updateLogDisplay();
+        }
+        
+        function updateLogDisplay() {
+            const container = document.getElementById('logContainer');
+            container.innerHTML = eventLog.map(entry => 
+                `<div class="log-entry ${entry.type}">
+                    [${entry.time}] ${entry.message}
+                </div>`
+            ).join('');
+        }
+        
+        function clearLog() {
+            eventLog.length = 0;
+            logId = 0;
+            updateLogDisplay();
+            addLog('日志已清除', 'info');
+        }
+        
+        // 设备检测
+        function detectDevice() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const pointerCoarse = window.matchMedia('(pointer: coarse)').matches;
+            
+            document.getElementById('deviceType').textContent = isMobile ? '移动设备' : '桌面设备';
+            document.getElementById('touchSupport').textContent = hasTouch ? '支持' : '不支持';
+            document.getElementById('pointerType').textContent = pointerCoarse ? '触摸' : '鼠标';
+            
+            addLog(`设备检测: ${isMobile ? '移动' : '桌面'}, 触摸: ${hasTouch ? '是' : '否'}`, 'info');
+        }
+        
+        // 打开模态框
+        function openSimpleModal() {
+            addLog('打开简单模态框', 'info');
+            document.getElementById('simpleModal').visible = true;
+        }
+        
+        function openDraggableModal() {
+            addLog('打开可拖拽模态框', 'warning');
+            document.getElementById('draggableModal').visible = true;
+        }
+        
+        function openDebugModal() {
+            addLog('打开调试模态框', 'warning');
+            const modal = document.getElementById('debugModal');
+            modal.visible = true;
+            
+            // 为调试模态框添加详细的事件监听
+            setTimeout(() => {
+                const header = modal.querySelector('.ldesign-modal__header');
+                const closeBtn = modal.querySelector('.ldesign-modal__close');
+                const maxBtn = modal.querySelector('.ldesign-modal__maximize');
+                
+                if (header) {
+                    // 监听标题栏的各种事件
+                    ['touchstart', 'touchend', 'mousedown', 'mouseup', 'click'].forEach(eventType => {
+                        header.addEventListener(eventType, (e) => {
+                            const target = e.target;
+                            const targetName = target.classList ? Array.from(target.classList).join('.') : target.tagName;
+                            addLog(`Header ${eventType} on ${targetName}`, 'info');
+                        }, { capture: true, passive: true });
+                    });
+                }
+                
+                if (closeBtn) {
+                    // 监听关闭按钮的各种事件
+                    ['touchstart', 'touchend', 'mousedown', 'mouseup', 'click'].forEach(eventType => {
+                        closeBtn.addEventListener(eventType, (e) => {
+                            addLog(`Close button ${eventType}`, 'success');
+                            if (eventType === 'click' || eventType === 'touchend') {
+                                addLog('关闭按钮被激活！', 'success');
+                            }
+                        }, { capture: true });
+                    });
+                    
+                    // 添加调试类
+                    closeBtn.classList.add('debug-button');
+                    closeBtn.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
+                }
+                
+                if (maxBtn) {
+                    // 监听最大化按钮的各种事件
+                    ['touchstart', 'touchend', 'mousedown', 'mouseup', 'click'].forEach(eventType => {
+                        maxBtn.addEventListener(eventType, (e) => {
+                            addLog(`Maximize button ${eventType}`, 'success');
+                        }, { capture: true });
+                    });
+                    
+                    maxBtn.classList.add('debug-button');
+                    maxBtn.style.backgroundColor = 'rgba(0, 255, 0, 0.1)';
+                }
+            }, 100);
+        }
+        
+        function testButtonInModal() {
+            addLog('内部按钮被点击', 'success');
+            alert('按钮点击成功！');
+        }
+        
+        // 监听所有模态框事件
+        document.addEventListener('DOMContentLoaded', () => {
+            detectDevice();
+            
+            // 监听模态框事件
+            document.querySelectorAll('ldesign-modal').forEach(modal => {
+                modal.addEventListener('ldesignVisibleChange', (e) => {
+                    addLog(`Modal ${modal.id} visible: ${e.detail}`, e.detail ? 'warning' : 'info');
+                });
+                
+                modal.addEventListener('ldesignClose', () => {
+                    addLog(`Modal ${modal.id} 关闭事件触发`, 'success');
+                });
+            });
+            
+            // 全局触摸事件监听（用于调试）
+            document.addEventListener('touchstart', (e) => {
+                const target = e.target;
+                const targetDesc = target.id || target.className || target.tagName;
+                console.log('Global touchstart:', targetDesc, e);
+            }, { capture: true });
+            
+            document.addEventListener('touchend', (e) => {
+                const target = e.target;
+                const targetDesc = target.id || target.className || target.tagName;
+                console.log('Global touchend:', targetDesc, e);
+            }, { capture: true });
+            
+            // 检测点击事件是否被触发
+            document.addEventListener('click', (e) => {
+                const target = e.target;
+                if (target.closest('.ldesign-modal__close')) {
+                    addLog('检测到关闭按钮的 click 事件！', 'success');
+                }
+                if (target.closest('.ldesign-modal__maximize')) {
+                    addLog('检测到最大化按钮的 click 事件！', 'success');
+                }
+            }, { capture: true });
+        });
+        
+        // 添加调试信息
+        addLog('测试页面已加载', 'info');
+    </script>
+</body>
+</html>

@@ -599,9 +599,25 @@ export class LdesignModal {
   /**
    * 关闭按钮点击事件
    */
-  private handleCloseClick = (ev?: MouseEvent) => {
-    if (ev && typeof ev.clientX === 'number' && typeof ev.clientY === 'number') {
-      this.lastPointerX = ev.clientX; this.lastPointerY = ev.clientY; this.lastPointerTime = performance.now();
+  private handleCloseClick = (ev?: MouseEvent | TouchEvent) => {
+    // 阻止事件冒泡，防止触发拖拽
+    if (ev) {
+      ev.stopPropagation();
+      ev.preventDefault();
+      
+      // 记录点击位置（兼容触摸事件）
+      if ((ev as TouchEvent).touches) {
+        const touch = (ev as TouchEvent).touches[0];
+        if (touch) {
+          this.lastPointerX = touch.clientX;
+          this.lastPointerY = touch.clientY;
+          this.lastPointerTime = performance.now();
+        }
+      } else if ((ev as MouseEvent).clientX != null && (ev as MouseEvent).clientY != null) {
+        this.lastPointerX = (ev as MouseEvent).clientX;
+        this.lastPointerY = (ev as MouseEvent).clientY;
+        this.lastPointerTime = performance.now();
+      }
     }
     this.attemptClose('close');
   };
@@ -642,15 +658,35 @@ export class LdesignModal {
   };
 
   /**
-   * 拖拽开始
+   * 拖拽开始（支持鼠标和触摸）
    */
-  private handleDragStart = (event: MouseEvent) => {
+  private handleDragStart = (event: MouseEvent | TouchEvent) => {
     if (!this.isDraggable || !this.modalElement) return;
+    
+    // 检查是否点击了按钮或其子元素，如果是则不启动拖拽
+    const target = event.target as HTMLElement;
+    if (target) {
+      // 检查是否点击了按钮或按钮内的元素
+      const isButton = target.closest('ldesign-button') || 
+                       target.closest('.ldesign-modal__close') || 
+                       target.closest('.ldesign-modal__maximize') ||
+                       target.closest('.ldesign-modal__actions') ||
+                       target.tagName === 'LDESIGN-BUTTON' ||
+                       target.tagName === 'LDESIGN-ICON';
+      if (isButton) {
+        return; // 不启动拖拽，让按钮正常工作
+      }
+    }
 
     this.isDragging = true;
     this.hasUserMoved = true;
-    this.dragStartX = event.clientX;
-    this.dragStartY = event.clientY;
+    
+    // 获取坐标（兼容触摸事件）
+    const clientX = (event as TouchEvent).touches ? (event as TouchEvent).touches[0].clientX : (event as MouseEvent).clientX;
+    const clientY = (event as TouchEvent).touches ? (event as TouchEvent).touches[0].clientY : (event as MouseEvent).clientY;
+    
+    this.dragStartX = clientX;
+    this.dragStartY = clientY;
 
     // 添加拖拽样式类
     this.modalElement.classList.add('dragging');
@@ -686,15 +722,23 @@ export class LdesignModal {
   };
 
   /**
-   * 拖拽中
+   * 拖拽中（支持鼠标和触摸）
    */
-  private handleDragMove = (event: MouseEvent) => {
+  private handleDragMove = (event: MouseEvent | TouchEvent) => {
     if (!this.isDragging || !this.modalElement) return;
-    // 安全兜底：若鼠标已松开（例如在窗口外松开未收到 mouseup），立即结束拖拽
-    if ((event as MouseEvent).buttons === 0) { this.handleDragEnd(); return; }
+    
+    // 获取坐标（兼容触摸事件）
+    const clientX = (event as TouchEvent).touches ? (event as TouchEvent).touches[0].clientX : (event as MouseEvent).clientX;
+    const clientY = (event as TouchEvent).touches ? (event as TouchEvent).touches[0].clientY : (event as MouseEvent).clientY;
+    
+    // 安全兜底：若鼠标已松开（仅针对鼠标事件）
+    if (!(event as TouchEvent).touches && (event as MouseEvent).buttons === 0) { 
+      this.handleDragEnd(); 
+      return; 
+    }
 
-    const deltaX = event.clientX - this.dragStartX;
-    const deltaY = event.clientY - this.dragStartY;
+    const deltaX = clientX - this.dragStartX;
+    const deltaY = clientY - this.dragStartY;
 
     let newX = this.modalStartX + deltaX;
     let newY = this.modalStartY + deltaY;
@@ -730,31 +774,46 @@ export class LdesignModal {
   };
 
   /**
-   * 绑定拖拽事件
+   * 绑定拖拽事件（支持鼠标和触摸）
    */
   private bindDragEvents() {
-    document.addEventListener('mousemove', this.handleDragMove);
+    // 鼠标事件
+    document.addEventListener('mousemove', this.handleDragMove as EventListener);
     document.addEventListener('mouseup', this.handleDragEnd);
+    // 触摸事件
+    document.addEventListener('touchmove', this.handleDragMove as EventListener, { passive: false });
+    document.addEventListener('touchend', this.handleDragEnd, { passive: false });
+    document.addEventListener('touchcancel', this.handleDragEnd, { passive: false });
   }
 
   /**
-   * 解绑拖拽事件
+   * 解绑拖拽事件（支持鼠标和触摸）
    */
   private unbindDragEvents() {
-    document.removeEventListener('mousemove', this.handleDragMove);
+    // 鼠标事件
+    document.removeEventListener('mousemove', this.handleDragMove as EventListener);
     document.removeEventListener('mouseup', this.handleDragEnd);
+    // 触摸事件
+    document.removeEventListener('touchmove', this.handleDragMove as EventListener);
+    document.removeEventListener('touchend', this.handleDragEnd);
+    document.removeEventListener('touchcancel', this.handleDragEnd);
   }
 
   /**
-   * 调整大小开始
+   * 调整大小开始（支持鼠标和触摸）
    */
-  private handleResizeStart = (event: MouseEvent, direction: string) => {
+  private handleResizeStart = (event: MouseEvent | TouchEvent, direction: string) => {
     if (!this.resizable || !this.modalElement) return;
 
     this.isResizing = true;
     this.resizeDirection = direction;
-    this.resizeStartX = event.clientX;
-    this.resizeStartY = event.clientY;
+    
+    // 获取坐标（兼容触摸事件）
+    const clientX = (event as TouchEvent).touches ? (event as TouchEvent).touches[0].clientX : (event as MouseEvent).clientX;
+    const clientY = (event as TouchEvent).touches ? (event as TouchEvent).touches[0].clientY : (event as MouseEvent).clientY;
+    
+    this.resizeStartX = clientX;
+    this.resizeStartY = clientY;
 
     // 添加调整大小样式类
     this.modalElement.classList.add('resizing');
@@ -790,15 +849,23 @@ export class LdesignModal {
   };
 
   /**
-   * 调整大小中
+   * 调整大小中（支持鼠标和触摸）
    */
-  private handleResizeMove = (event: MouseEvent) => {
+  private handleResizeMove = (event: MouseEvent | TouchEvent) => {
     if (!this.isResizing || !this.modalElement) return;
-    // 安全兜底：若鼠标已松开（例如在窗口外松开未收到 mouseup），立即结束调整
-    if ((event as MouseEvent).buttons === 0) { this.handleResizeEnd(); return; }
+    
+    // 获取坐标（兼容触摸事件）
+    const clientX = (event as TouchEvent).touches ? (event as TouchEvent).touches[0].clientX : (event as MouseEvent).clientX;
+    const clientY = (event as TouchEvent).touches ? (event as TouchEvent).touches[0].clientY : (event as MouseEvent).clientY;
+    
+    // 安全兜底：若鼠标已松开（仅针对鼠标事件）
+    if (!(event as TouchEvent).touches && (event as MouseEvent).buttons === 0) { 
+      this.handleResizeEnd(); 
+      return; 
+    }
 
-    const deltaX = event.clientX - this.resizeStartX;
-    const deltaY = event.clientY - this.resizeStartY;
+    const deltaX = clientX - this.resizeStartX;
+    const deltaY = clientY - this.resizeStartY;
 
     const minW = this.minWidth ?? 200;
     const minH = this.minHeight ?? 150;
@@ -899,19 +966,29 @@ export class LdesignModal {
   };
 
   /**
-   * 绑定调整大小事件
+   * 绑定调整大小事件（支持鼠标和触摸）
    */
   private bindResizeEvents() {
-    document.addEventListener('mousemove', this.handleResizeMove);
+    // 鼠标事件
+    document.addEventListener('mousemove', this.handleResizeMove as EventListener);
     document.addEventListener('mouseup', this.handleResizeEnd);
+    // 触摸事件
+    document.addEventListener('touchmove', this.handleResizeMove as EventListener, { passive: false });
+    document.addEventListener('touchend', this.handleResizeEnd, { passive: false });
+    document.addEventListener('touchcancel', this.handleResizeEnd, { passive: false });
   }
 
   /**
-   * 解绑调整大小事件
+   * 解绑调整大小事件（支持鼠标和触摸）
    */
   private unbindResizeEvents() {
-    document.removeEventListener('mousemove', this.handleResizeMove);
+    // 鼠标事件
+    document.removeEventListener('mousemove', this.handleResizeMove as EventListener);
     document.removeEventListener('mouseup', this.handleResizeEnd);
+    // 触摸事件
+    document.removeEventListener('touchmove', this.handleResizeMove as EventListener);
+    document.removeEventListener('touchend', this.handleResizeEnd);
+    document.removeEventListener('touchcancel', this.handleResizeEnd);
   }
 
 
@@ -1750,12 +1827,18 @@ export class LdesignModal {
               {(this.modalTitle || this.closable) && (
                 <div
                   class={`ldesign-modal__header ${this.isDraggable ? 'ldesign-modal__header--draggable' : ''} ${this.showHeaderShadow ? 'ldesign-modal__header--shadow' : ''}`}
-                  onMouseDown={this.isDraggable ? this.handleDragStart : null}
                   onDblClick={this.maximizable ? this.handleMaximizeClick : null}
                   style={this.isDraggable ? { cursor: 'move' } : {}}
                 >
                   {this.modalTitle && (
-                    <div class="ldesign-modal__title" id={this.titleId}>{this.modalTitle}</div>
+                    <div 
+                      class="ldesign-modal__title" 
+                      id={this.titleId}
+                      onMouseDown={this.isDraggable ? (e) => this.handleDragStart(e) : null}
+                      onTouchStart={this.isDraggable ? (e) => this.handleDragStart(e) : null}
+                    >
+                      {this.modalTitle}
+                    </div>
                   )}
 
 {this.wizard && Array.isArray(this.steps) && this.steps.length > 0 && (
@@ -1775,7 +1858,18 @@ export class LdesignModal {
                     {this.maximizable && (
                       <ldesign-button
                         class="ldesign-modal__maximize"
-                        onClick={this.handleMaximizeClick}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          this.handleMaximizeClick();
+                        }}
+                        onPointerDown={(e) => {
+                          // 使用 pointerdown 事件，它同时支持鼠标和触摸
+                          e.stopPropagation();
+                        }}
+                        onTouchStart={(e) => {
+                          // 阻止触摸事件传播到父元素
+                          e.stopPropagation();
+                        }}
                         type="text"
                         size="small"
                         title={this.isMaximized ? '恢复' : '最大化'}
@@ -1789,7 +1883,18 @@ export class LdesignModal {
                     {this.closable && (
                       <ldesign-button
                         class="ldesign-modal__close"
-                        onClick={this.handleCloseClick}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          this.handleCloseClick(e as any);
+                        }}
+                        onPointerDown={(e) => {
+                          // 使用 pointerdown 事件，它同时支持鼠标和触摸
+                          e.stopPropagation();
+                        }}
+                        onTouchStart={(e) => {
+                          // 阻止触摸事件传播到父元素
+                          e.stopPropagation();
+                        }}
                         type="text"
                         size="small"
                         title="关闭"
@@ -1843,14 +1948,30 @@ export class LdesignModal {
             {/* 调整大小手柄 */}
             {this.resizable && !this.isMaximized && (
               <div class="ldesign-modal__resize-handles">
-                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--top" onMouseDown={(e) => this.handleResizeStart(e, 'top')} />
-                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--right" onMouseDown={(e) => this.handleResizeStart(e, 'right')} />
-                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--bottom" onMouseDown={(e) => this.handleResizeStart(e, 'bottom')} />
-                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--left" onMouseDown={(e) => this.handleResizeStart(e, 'left')} />
-                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--top-left" onMouseDown={(e) => this.handleResizeStart(e, 'top-left')} />
-                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--top-right" onMouseDown={(e) => this.handleResizeStart(e, 'top-right')} />
-                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--bottom-left" onMouseDown={(e) => this.handleResizeStart(e, 'bottom-left')} />
-                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--bottom-right" onMouseDown={(e) => this.handleResizeStart(e, 'bottom-right')} />
+                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--top" 
+                     onMouseDown={(e) => this.handleResizeStart(e, 'top')} 
+                     onTouchStart={(e) => this.handleResizeStart(e, 'top')} />
+                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--right" 
+                     onMouseDown={(e) => this.handleResizeStart(e, 'right')} 
+                     onTouchStart={(e) => this.handleResizeStart(e, 'right')} />
+                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--bottom" 
+                     onMouseDown={(e) => this.handleResizeStart(e, 'bottom')} 
+                     onTouchStart={(e) => this.handleResizeStart(e, 'bottom')} />
+                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--left" 
+                     onMouseDown={(e) => this.handleResizeStart(e, 'left')} 
+                     onTouchStart={(e) => this.handleResizeStart(e, 'left')} />
+                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--top-left" 
+                     onMouseDown={(e) => this.handleResizeStart(e, 'top-left')} 
+                     onTouchStart={(e) => this.handleResizeStart(e, 'top-left')} />
+                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--top-right" 
+                     onMouseDown={(e) => this.handleResizeStart(e, 'top-right')} 
+                     onTouchStart={(e) => this.handleResizeStart(e, 'top-right')} />
+                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--bottom-left" 
+                     onMouseDown={(e) => this.handleResizeStart(e, 'bottom-left')} 
+                     onTouchStart={(e) => this.handleResizeStart(e, 'bottom-left')} />
+                <div class="ldesign-modal__resize-handle ldesign-modal__resize-handle--bottom-right" 
+                     onMouseDown={(e) => this.handleResizeStart(e, 'bottom-right')} 
+                     onTouchStart={(e) => this.handleResizeStart(e, 'bottom-right')} />
               </div>
             )}
           </div>

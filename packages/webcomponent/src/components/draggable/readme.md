@@ -251,11 +251,13 @@ Type: `Promise<void>`
 
 ### Used by
 
+ - [ldesign-image-preview](../image-preview)
  - [ldesign-image-viewer](../image-viewer)
 
 ### Graph
 ```mermaid
 graph TD;
+  ldesign-image-preview --> ldesign-draggable
   ldesign-image-viewer --> ldesign-draggable
   style ldesign-draggable fill:#f9f,stroke:#333,stroke-width:4px
 ```

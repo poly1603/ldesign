@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>统一抽屉测试 - PC与移动端</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .test-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 24px;
+      text-align: center;
+    }
+
+    .device-info {
+      text-align: center;
+      padding: 15px;
+      background: #f7f7f7;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .device-info span {
+      display: inline-block;
+      margin: 0 10px;
+      padding: 4px 10px;
+      background: white;
+      border-radius: 4px;
+    }
+
+    .device-type { color: #667eea; font-weight: bold; }
+    .screen-size { color: #764ba2; }
+    .orientation { color: #f093fb; }
+
+    .test-grid {
+      display: grid;
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    @media (min-width: 768px) {
+      .test-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .test-section {
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .test-section h2 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .test-section h2::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(to bottom, #667eea, #764ba2);
+      border-radius: 2px;
+    }
+
+    .button-group {
+      display: grid;
+      gap: 10px;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .size-slider {
+      margin-top: 15px;
+    }
+
+    .size-slider label {
+      display: block;
+      margin-bottom: 8px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .size-slider input {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #e0e0e0;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .size-slider input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      cursor: pointer;
+    }
+
+    .size-display {
+      text-align: center;
+      margin-top: 5px;
+      color: #764ba2;
+      font-weight: bold;
+    }
+
+    .drawer-content {
+      padding: 20px;
+    }
+
+    .drawer-content h3 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .drawer-content p {
+      line-height: 1.6;
+      color: #666;
+    }
+
+    .test-form {
+      margin-top: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .console-log {
+      margin-top: 30px;
+      padding: 15px;
+      background: #2d2d2d;
+      color: #0f0;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .console-log .log-entry {
+      margin-bottom: 5px;
+      opacity: 0;
+      animation: fadeIn 0.3s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .status-desktop { background: #e3f2fd; color: #1976d2; }
+    .status-mobile { background: #fce4ec; color: #c2185b; }
+    .status-tablet { background: #f3e5f5; color: #7b1fa2; }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🎯 统一抽屉组件测试</h1>
+    
+    <div class="device-info">
+      <span class="device-type" id="deviceType">检测中...</span>
+      <span class="screen-size" id="screenSize">--</span>
+      <span class="orientation" id="orientation">--</span>
+    </div>
+
+    <div class="test-grid">
+      <!-- 基础功能测试 -->
+      <div class="test-section">
+        <h2>基础功能</h2>
+        <div class="button-group">
+          <button onclick="openDrawer('left', '30%')">
+            ← 左侧抽屉 (30%)
+          </button>
+          <button onclick="openDrawer('right', '400px')">
+            右侧抽屉 (400px) →
+          </button>
+          <button onclick="openDrawer('top', '40vh')">
+            ↑ 顶部抽屉 (40vh)
+          </button>
+          <button onclick="openDrawer('bottom', '50%')">
+            ↓ 底部抽屉 (50%)
+          </button>
+        </div>
+      </div>
+
+      <!-- 动态尺寸测试 -->
+      <div class="test-section">
+        <h2>动态尺寸调整</h2>
+        <div class="size-slider">
+          <label>抽屉尺寸调整：</label>
+          <input type="range" id="sizeSlider" min="20" max="90" value="50" 
+                 oninput="updateSizeDisplay(this.value)">
+          <div class="size-display" id="sizeDisplay">50%</div>
+        </div>
+        <div class="button-group">
+          <button onclick="openDynamicDrawer('left')">
+            左侧动态抽屉
+          </button>
+          <button onclick="openDynamicDrawer('right')">
+            右侧动态抽屉
+          </button>
+        </div>
+      </div>
+
+      <!-- 交互功能测试 -->
+      <div class="test-section">
+        <h2>交互功能</h2>
+        <div class="button-group">
+          <button onclick="openResizableDrawer()">
+            📏 可调整大小抽屉
+          </button>
+          <button onclick="openSwipeDrawer()">
+            👆 滑动关闭抽屉
+          </button>
+          <button onclick="openFullscreenDrawer()">
+            ⛶ 全屏抽屉
+          </button>
+        </div>
+      </div>
+
+      <!-- 高级功能测试 -->
+      <div class="test-section">
+        <h2>高级功能</h2>
+        <div class="button-group">
+          <button onclick="openNestedDrawer()">
+            📚 嵌套抽屉
+          </button>
+          <button onclick="openFormDrawer()">
+            📝 表单抽屉
+          </button>
+          <button onclick="openLoadingDrawer()">
+            ⏳ 加载状态抽屉
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 控制台输出 -->
+    <div class="console-log" id="console">
+      <div class="log-entry">🚀 统一抽屉测试页面已加载</div>
+    </div>
+  </div>
+
+  <!-- 抽屉组件 -->
+  <ldesign-drawer id="testDrawer">
+    <div class="drawer-content">
+      <h3 id="drawerTitle">测试抽屉</h3>
+      <p id="drawerContent">这是一个统一的抽屉组件，在PC端和移动端具有相同的逻辑，只是交互方式不同。</p>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 表单抽屉 -->
+  <ldesign-drawer id="formDrawer" drawer-title="用户信息表单" placement="right" size="400px">
+    <div class="test-form">
+      <div class="form-group">
+        <label>姓名</label>
+        <input type="text" placeholder="请输入姓名">
+      </div>
+      <div class="form-group">
+        <label>邮箱</label>
+        <input type="email" placeholder="请输入邮箱">
+      </div>
+      <div class="form-group">
+        <label>留言</label>
+        <textarea placeholder="请输入留言内容"></textarea>
+      </div>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 嵌套抽屉 -->
+  <ldesign-drawer id="parentDrawer" drawer-title="父级抽屉" placement="right" size="500px">
+    <div class="drawer-content">
+      <p>这是父级抽屉的内容。</p>
+      <button onclick="openChildDrawer()">打开子抽屉</button>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="childDrawer" drawer-title="子级抽屉" placement="right" size="400px">
+    <div class="drawer-content">
+      <p>这是子级抽屉的内容，展示了抽屉的嵌套功能。</p>
+    </div>
+  </ldesign-drawer>
+
+  <script>
+    // 设备信息检测
+    function detectDevice() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const userAgent = navigator.userAgent;
+      
+      let deviceType = 'Desktop';
+      let statusClass = 'status-desktop';
+      
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)) {
+        if (width <= 768) {
+          deviceType = 'Mobile';
+          statusClass = 'status-mobile';
+        } else {
+          deviceType = 'Tablet';
+          statusClass = 'status-tablet';
+        }
+      } else if (width <= 768) {
+        deviceType = 'Desktop (窄屏)';
+      }
+      
+      document.getElementById('deviceType').textContent = deviceType;
+      document.getElementById('deviceType').className = `device-type ${statusClass}`;
+      document.getElementById('screenSize').textContent = `${width} × ${height}`;
+      document.getElementById('orientation').textContent = width > height ? '横屏' : '竖屏';
+      
+      log(`设备类型: ${deviceType}, 屏幕尺寸: ${width}×${height}`);
+    }
+
+    // 日志输出
+    function log(message) {
+      const console = document.getElementById('console');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      console.appendChild(entry);
+      console.scrollTop = console.scrollHeight;
+      
+      // 限制日志条数
+      if (console.children.length > 20) {
+        console.removeChild(console.firstChild);
+      }
+    }
+
+    // 基础抽屉操作
+    function openDrawer(placement, size) {
+      const drawer = document.getElementById('testDrawer');
+      drawer.placement = placement;
+      drawer.size = size;
+      drawer.drawerTitle = `${placement.charAt(0).toUpperCase() + placement.slice(1)}侧抽屉`;
+      drawer.visible = true;
+      
+      document.getElementById('drawerTitle').textContent = `测试 ${placement} 抽屉`;
+      document.getElementById('drawerContent').textContent = 
+        `位置: ${placement}, 尺寸: ${size}, 统一逻辑处理PC和移动端。`;
+      
+      log(`打开 ${placement} 抽屉, 尺寸: ${size}`);
+    }
+
+    // 动态尺寸抽屉
+    function openDynamicDrawer(placement) {
+      const size = document.getElementById('sizeSlider').value + '%';
+      openDrawer(placement, size);
+    }
+
+    // 更新尺寸显示
+    function updateSizeDisplay(value) {
+      document.getElementById('sizeDisplay').textContent = value + '%';
+    }
+
+    // 可调整大小的抽屉
+    function openResizableDrawer() {
+      const drawer = document.getElementById('testDrawer');
+      drawer.placement = 'right';
+      drawer.size = '400px';
+      drawer.resizable = true;
+      drawer.minSize = '200px';
+      drawer.maxSize = '800px';
+      drawer.drawerTitle = '可调整大小的抽屉';
+      drawer.visible = true;
+      
+      document.getElementById('drawerTitle').textContent = '拖动边缘调整大小';
+      document.getElementById('drawerContent').textContent = 
+        '这个抽屉可以通过拖动边缘来调整大小。最小200px，最大800px。';
+      
+      log('打开可调整大小的抽屉');
+    }
+
+    // 滑动关闭抽屉
+    function openSwipeDrawer() {
+      const drawer = document.getElementById('testDrawer');
+      drawer.placement = 'bottom';
+      drawer.size = '60%';
+      drawer.swipeToClose = true;
+      drawer.drawerTitle = '滑动关闭抽屉';
+      drawer.visible = true;
+      
+      document.getElementById('drawerTitle').textContent = '向下滑动关闭';
+      document.getElementById('drawerContent').textContent = 
+        '在触摸设备上，您可以向下滑动来关闭这个抽屉。';
+      
+      log('打开可滑动关闭的抽屉');
+    }
+
+    // 全屏抽屉
+    function openFullscreenDrawer() {
+      const drawer = document.getElementById('testDrawer');
+      drawer.placement = 'right';
+      drawer.size = '500px';
+      drawer.fullscreenable = true;
+      drawer.drawerTitle = '支持全屏的抽屉';
+      drawer.visible = true;
+      
+      document.getElementById('drawerTitle').textContent = '点击全屏按钮';
+      document.getElementById('drawerContent').textContent = 
+        '这个抽屉支持全屏模式。点击标题栏的全屏按钮可以切换。';
+      
+      log('打开支持全屏的抽屉');
+    }
+
+    // 表单抽屉
+    function openFormDrawer() {
+      const drawer = document.getElementById('formDrawer');
+      drawer.visible = true;
+      log('打开表单抽屉');
+    }
+
+    // 嵌套抽屉
+    function openNestedDrawer() {
+      const drawer = document.getElementById('parentDrawer');
+      drawer.visible = true;
+      log('打开父级抽屉');
+    }
+
+    function openChildDrawer() {
+      const drawer = document.getElementById('childDrawer');
+      drawer.visible = true;
+      log('打开子级抽屉（嵌套）');
+    }
+
+    // 加载状态抽屉
+    function openLoadingDrawer() {
+      const drawer = document.getElementById('testDrawer');
+      drawer.placement = 'right';
+      drawer.size = '400px';
+      drawer.loading = true;
+      drawer.drawerTitle = '加载中...';
+      drawer.visible = true;
+      
+      document.getElementById('drawerTitle').textContent = '数据加载中';
+      document.getElementById('drawerContent').textContent = '正在加载数据，请稍候...';
+      
+      log('打开加载状态抽屉');
+      
+      // 3秒后关闭加载状态
+      setTimeout(() => {
+        drawer.loading = false;
+        document.getElementById('drawerTitle').textContent = '加载完成';
+        document.getElementById('drawerContent').textContent = '数据已成功加载！';
+        log('加载完成');
+      }, 3000);
+    }
+
+    // 监听抽屉事件
+    document.addEventListener('DOMContentLoaded', () => {
+      detectDevice();
+      
+      // 监听窗口大小变化
+      window.addEventListener('resize', detectDevice);
+      
+      // 监听抽屉事件
+      const drawers = document.querySelectorAll('ldesign-drawer');
+      drawers.forEach(drawer => {
+        drawer.addEventListener('ldesignClose', () => {
+          log(`抽屉 ${drawer.id} 已关闭`);
+        });
+        
+        drawer.addEventListener('ldesignVisibleChange', (e) => {
+          if (e.detail) {
+            log(`抽屉 ${drawer.id} 已打开`);
+          }
+        });
+        
+        drawer.addEventListener('ldesignSizeChange', (e) => {
+          log(`抽屉 ${drawer.id} 尺寸变更为: ${e.detail.size}`);
+        });
+      });
+      
+      log('✨ 所有功能已就绪，统一逻辑适配所有设备');
+    });
+  </script>
+</body>
+</html>
