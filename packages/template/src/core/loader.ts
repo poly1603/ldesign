@@ -69,13 +69,15 @@ export class TemplateLoader {
       // 转换 TemplateInfo 为 TemplateMetadata
       const metadata: TemplateMetadata = {
         name: template.name,
+        displayName: (template as any).displayName || template.name,
         category: template.category,
-        device: template.deviceType,
+        device: (template as any).device ?? (template as any).deviceType,
         description: template.metadata?.description || '',
         version: template.metadata?.version || '1.0.0',
         author: template.metadata?.author || '',
         tags: template.metadata?.tags || [],
-        componentPath: template.templateFile?.path,
+        componentPath: (template as any).componentPath ?? template.templateFile?.path ?? '',
+        configPath: (template as any).configPath ?? '',
         componentLoader: template.component ? () => Promise.resolve(template.component!) : undefined,
       }
 
@@ -105,13 +107,15 @@ export class TemplateLoader {
   async preload(templates: TemplateInfo[]): Promise<void> {
     const metadataList: TemplateMetadata[] = templates.map(template => ({
       name: template.name,
+      displayName: (template as any).displayName || template.name,
       category: template.category,
-      device: template.deviceType,
+      device: (template as any).device ?? (template as any).deviceType,
       description: template.metadata?.description || '',
       version: template.metadata?.version || '1.0.0',
       author: template.metadata?.author || '',
       tags: template.metadata?.tags || [],
-      componentPath: template.templateFile?.path,
+      componentPath: (template as any).componentPath ?? template.templateFile?.path ?? '',
+      configPath: (template as any).configPath ?? '',
       componentLoader: template.component ? () => Promise.resolve(template.component!) : undefined,
     }))
 

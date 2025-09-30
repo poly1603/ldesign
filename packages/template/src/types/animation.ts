@@ -90,68 +90,24 @@ export interface AnimationStyles extends Record<`--${string}`, string> {
 }
 
 /**
- * 使用模板动画的返回值接口
+ * 使用模板动画的返回值接口（简化版）
  */
 export interface UseTemplateAnimationReturn {
   /** 动画状态 */
   animationState: Ref<AnimationStateData>
   /** 动画配置 */
   config: Ref<AnimationConfig>
-  /** 动画配置（别名，兼容测试） */
-  animationConfig: Ref<AnimationConfig>
-  /** 当前动画 */
-  currentAnimation: Ref<AnimationConfig | undefined>
   /** 是否正在动画 */
   isAnimating: Ref<boolean>
-  /** 错误信息 */
-  error: Ref<string | null>
-  /** 更新动画配置 */
-  updateConfig: (newConfig: Partial<AnimationConfig>) => void
   /** 开始进入动画 */
   enter: () => Promise<void>
   /** 开始离开动画 */
   leave: () => Promise<void>
-  /** 播放动画 */
-  playAnimation: (type?: string) => Promise<void>
-  /** 暂停动画 */
-  pauseAnimation: () => void
-  /** 停止动画 */
-  stopAnimation: () => void
-  /** 重置动画 */
-  resetAnimation: () => void
-  /** 设置动画时长 */
-  setDuration: (duration: number) => void
-  /** 设置缓动函数 */
-  setEasing: (easing: string) => void
-  /** 设置是否启用 */
-  setEnabled: (enabled: boolean) => void
-  /** 淡入动画 */
-  fadeIn: () => Promise<void>
-  /** 淡出动画 */
-  fadeOut: () => Promise<void>
-  /** 滑入动画 */
-  slideIn: () => Promise<void>
-  /** 滑出动画 */
-  slideOut: () => Promise<void>
-  /** 缩放动画 */
-  scale: () => Promise<void>
-  /** 清除队列 */
-  clearQueue: () => void
-  /** 动画开始事件监听 */
-  onAnimationStart: (callback: () => void) => void
-  /** 动画结束事件监听 */
-  onAnimationEnd: (callback: () => void) => void
-  /** 取消动画开始事件监听 */
-  offAnimationStart: (callback: () => void) => void
-  /** 是否支持动画 */
-  isAnimationSupported: Ref<boolean>
-  /** 获取性能指标 */
-  getPerformanceMetrics: () => AnimationMetrics
-  /** 清除错误 */
-  clearError: () => void
-  /** 获取CSS类名 */
+  /** 更新配置 */
+  updateConfig: (newConfig: Partial<AnimationConfig>) => void
+  /** 获取过渡CSS类名 */
   getTransitionClasses: () => AnimationTransitionClasses
-  /** 获取CSS样式 */
+  /** 获取过渡CSS样式 */
   getTransitionStyles: () => AnimationStyles
   /** 重置动画状态 */
   reset: () => void

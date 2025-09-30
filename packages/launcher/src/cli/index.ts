@@ -22,6 +22,11 @@ import { CacheCommand } from './commands/cache'
 import { TestCommand } from './commands/test'
 import { DashboardCommand } from './commands/dashboard'
 import { AICommand } from './commands/ai'
+import { MicroCommand } from './commands/micro'
+import { DeployCommand } from './commands/deploy'
+import { MonitorCommand } from './commands/monitor'
+import { VisualCommand } from './commands/visual'
+import { TeamCommand } from './commands/team'
 
 /**
  * 创建 CLI 应用
@@ -119,6 +124,11 @@ export function createCli(config?: Partial<CliConfig>) {
     ['config', new ConfigCommand()],
     ['plugin', new PluginCommand()],
     ['cache', new CacheCommand()],
+    ['micro', new MicroCommand()],
+    ['deploy', new DeployCommand()],
+    ['monitor', new MonitorCommand()],
+    ['visual', new VisualCommand()],
+    ['team', new TeamCommand()],
     ['help', new HelpCommand()],
     ['version', new VersionCommand()]
   ])

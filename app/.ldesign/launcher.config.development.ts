@@ -7,7 +7,6 @@
  * @since 1.0.0
  */
 import { defineConfig } from '@ldesign/launcher'
-import vueJsx from '@vitejs/plugin-vue-jsx'
 
 export default defineConfig({
   // 继承基础配置中的 launcher 预设和 alias 配置
@@ -15,18 +14,10 @@ export default defineConfig({
     preset: 'ldesign'
   },
 
-  // 显式添加 Vue JSX 插件
-  plugins: [
-    vueJsx({
-      transformOn: true,
-      mergeProps: true
-    })
-  ],
-
   // 开发环境别名配置 - 指向源码目录
   // 开发环境服务器配置 - 测试通知功能 v3
   server: {
-    port: 3340, // 测试重启功能 - 终极测试！
+    port: 3330, // 测试重启功能 - 终极测试！
     open: false, // 开发环境自动打开浏览器
     host: '0.0.0.0' // 允许外部访问
   },

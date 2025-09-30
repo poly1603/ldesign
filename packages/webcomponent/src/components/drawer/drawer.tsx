@@ -1,53 +1,54 @@
 import { Component, Prop, State, Element, Event, EventEmitter, Watch, Method, h, Host } from '@stencil/core';
-import { lockPageScroll, unlockPageScroll } from '../../utils/scroll-lock';
-
-// 全局栈：用于管理多层抽屉（确保 ESC/遮罩仅作用于栈顶，并进行 z-index 叠加）
-const __drawerStack: any[] = [];
-// 容器 overflow 锁：同一容器内可能有多个抽屉并存，使用计数避免提前恢复
-const __containerOverflowLocks: WeakMap<HTMLElement, { count: number; original: string | null }> = new WeakMap();
-
-export type DrawerPlacement = 'left' | 'right' | 'top' | 'bottom';
-
-// 预设的吸附点
-export interface SnapPoint {
-  value: number; // 百分比或像素值
-  label?: string; // 可选标签
-}
-
-// 底部按钮配置
-export interface DrawerButton {
-  text: string;
-  type?: 'primary' | 'default' | 'danger' | 'success' | 'warning';
-  onClick?: () => void | Promise<void>;
-  disabled?: boolean;
-  loading?: boolean;
-  icon?: string; // 按钮图标
-}
-
-// 加载状态配置
-export interface LoadingConfig {
-  show: boolean;
-  text?: string;
-  spinner?: boolean;
-}
-
-// 头部配置
-export interface HeaderConfig {
-  title?: string;
-  subtitle?: string;
-  icon?: string;
-  showBack?: boolean;
-  onBack?: () => void;
-  actions?: Array<{
-    icon: string;
-    tooltip?: string;
-    onClick: () => void;
-  }>;
-}
+import {
+  DrawerPlacement,
+  DrawerState,
+  CloseReason,
+  DrawerButton,
+  LoadingConfig,
+  HeaderConfig,
+  FooterConfig,
+  AnimationConfig,
+  ResizeConfig,
+  SwipeConfig,
+  KeyboardConfig,
+  SnapPoint,
+  DrawerTheme,
+  DrawerLevel,
+  SizePreset,
+} from './drawer.types';
+import {
+  parseSize,
+  calculateActualSize,
+  getTransformStyle,
+  getAnimationClass,
+  getEasingFunction,
+  lockPageScroll,
+  unlockPageScroll,
+  addToStack,
+  removeFromStack,
+  isTopDrawer,
+  findNearestSnapPoint,
+  calculateVelocity,
+  shouldTriggerSwipeClose,
+  debounce,
+  throttle,
+  trapFocus,
+  releaseFocusTrap,
+  getContainer,
+  generateId,
+  isMobile,
+  isTouch,
+  getEventCoordinates,
+  waitForAnimation,
+  emitCustomEvent,
+} from './drawer.utils';
 
 /**
- * Drawer 抽屉组件
- * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
+ * @slot - 抽屉主内容区域
+ * @slot header - 自定义头部内容
+ * @slot footer - 自定义底部内容
+ * @slot loading - 自定义加载状态
+ * @slot extra - 头部右侧额外内容
  */
 @Component({
   tag: 'ldesign-drawer',
@@ -57,767 +58,953 @@ export interface HeaderConfig {
 export class LdesignDrawer {
   @Element() el!: HTMLElement;
 
+  // ==================== 基础属性 ====================
+
   /** 是否显示抽屉 */
   @Prop({ mutable: true, reflect: true }) visible: boolean = false;
 
-  /** 抽屉出现的位置 */
+  /** 抽屉位置 */
   @Prop() placement: DrawerPlacement = 'right';
 
-  /** 面板尺寸（left/right 为宽度，top/bottom 为高度）。可为数字（px）或任意 CSS 长度 */
-  @Prop() size: number | string = 360;
+  /** 抽屉大小 */
+  @Prop() size: number | string | SizePreset = 'md';
 
-  /** 是否显示遮罩层 */
+  /** 是否显示遮罩 */
   @Prop() mask: boolean = true;
 
   /** 点击遮罩是否关闭 */
   @Prop() maskClosable: boolean = true;
 
-  /** 是否允许按下 ESC 关闭 */
-  @Prop() closeOnEsc: boolean = true;
+  /** 遮罩样式类名 */
+  @Prop() maskClass: string = '';
 
-  /** 是否显示右上角关闭按钮 */
+  /** 是否显示关闭按钮 */
   @Prop() closable: boolean = true;
 
-  /** 标题文本（可通过 slot=header 自定义头部） */
-  @Prop() drawerTitle?: string;
-
-  /** z-index */
+  /** z-index 层级 */
   @Prop() zIndex: number = 1000;
 
-  /** 容器（选择器或元素）：若提供，则把组件节点移动到该容器下 */
-  @Prop() getContainer?: string | HTMLElement;
-
-  /** 是否启用圆角 */
-  @Prop() rounded: boolean = false;
-
-  /** 圆角大小 */
-  @Prop() borderRadius: string = '12px';
-
-  /** 是否可调整大小（桌面端和移动端统一配置） */
-  @Prop() resizable: boolean = false;
-  
-  /** 调整大小的手柄位置（'edge' | 'handle'） */
-  @Prop() resizeMode: 'edge' | 'handle' = 'edge';
-
-  /** 最小尺寸（像素或百分比） */
-  @Prop() minSize: number | string = 200;
-
-  /** 最大尺寸（像素或百分比） */
-  @Prop() maxSize: number | string = '80%';
-
-  /** 吸附点配置 */
-  @Prop() snapPoints: SnapPoint[] = [];
-
-  /** 吸附阈值（像素） */
-  @Prop() snapThreshold: number = 50;
-
-  /** 是否启用阻尼效果 */
-  @Prop() damping: boolean = true;
-
-  /** 阻尼系数（0-1） */
-  @Prop() dampingFactor: number = 0.5;
-
-  /** 自定义底部按钮 */
-  @Prop() footerButtons: DrawerButton[] = [];
-
-  /** 是否显示底部分割线 */
-  @Prop() footerBorder: boolean = true;
-
-  /** 是否启用键盘导航 */
-  @Prop() keyboardNavigation: boolean = true;
-
-  /** 自动聚焦到第一个可交互元素 */
-  @Prop() autoFocus: boolean = true;
-
-  /** 是否显示调整大小的提示 */
-  @Prop() showResizeHint: boolean = true;
-
-  /** 是否启用滑动关闭（支持所有方向） */
-  @Prop() swipeToClose: boolean = true;
-
-  /** 滑动关闭的阈值（百分比） */
-  @Prop() swipeThreshold: number = 0.3;
-  
-  /** 滑动关闭的触发区域（'anywhere' | 'handle' | 'header'） */
-  @Prop() swipeTriggerArea: 'anywhere' | 'handle' | 'header' = 'handle';
-  
-  /** 拖动手柄的高度（像素，用于 handle 模式） */
-  @Prop() handleHeight: number = 40;
-
-  /** 是否显示进入/退出动画 */
-  @Prop() animation: boolean = true;
-
-  /** 动画持续时间（毫秒） */
-  @Prop() animationDuration: number = 300;
-
-  /** 是否在关闭时保留状态 */
-  @Prop() preserveState: boolean = false;
-
-  /** 是否显示头部分割线 */
-  @Prop() headerBorder: boolean = true;
-
-  /** 内容区域内边距 */
-  @Prop() bodyPadding: string | boolean = true;
-
-  /** 是否全屏显示 */
-  @Prop() fullscreen: boolean = false;
-
-  /** 是否可以全屏切换 */
-  @Prop() fullscreenable: boolean = false;
-
-  /** 加载状态配置 */
-  @Prop() loading: LoadingConfig | boolean = false;
-
-  /** 头部高级配置 */
-  @Prop() headerConfig: HeaderConfig = {};
-
-  /** 是否显示进度条 */
-  @Prop() showProgress: boolean = false;
-
-  /** 进度条百分比 */
-  @Prop() progressPercent: number = 0;
+  /** 容器选择器或元素 */
+  @Prop() container?: string | HTMLElement;
 
   /** 自定义类名 */
   @Prop() customClass: string = '';
 
-  /** 是否启用暗黑模式 */
-  @Prop() darkMode: boolean = false;
+  /** 主题 */
+  @Prop() theme: DrawerTheme = 'light';
 
-  /** 打开时的回调 */
-  @Prop() onOpen: () => void | Promise<void>;
+  /** 抽屉层级 */
+  @Prop() level: DrawerLevel = 'normal';
 
-  /** 关闭前的钩子（返回false阻止关闭） */
-  @Prop() beforeClose: () => boolean | Promise<boolean>;
+  // ==================== 标题和内容 ====================
 
-  /** 是否显示最小化按钮 */
+  /** 标题 */
+  @Prop() drawerTitle?: string;
+
+  /** 副标题 */
+  @Prop() subtitle?: string;
+
+  /** 标题图标 */
+  @Prop() icon?: string;
+
+  /** 是否显示返回按钮 */
+  @Prop() showBack: boolean = false;
+
+  /** 内容内边距 */
+  @Prop() padding: string | boolean = true;
+
+  // ==================== 动画配置 ====================
+
+  /** 是否启用动画 */
+  @Prop() animation: boolean = true;
+
+  /** 动画类型 */
+  @Prop() animationType: string = 'slide';
+
+  /** 动画持续时间（毫秒） */
+  @Prop() animationDuration: number = 300;
+
+  /** 动画缓动函数 */
+  @Prop() animationEasing: string = 'ease-in-out';
+
+  // ==================== 调整大小 ====================
+
+  /** 是否可调整大小 */
+  @Prop() resizable: boolean = false;
+
+  /** 最小尺寸 */
+  @Prop() minSize: number | string = 200;
+
+  /** 最大尺寸 */
+  @Prop() maxSize: number | string = '90%';
+
+  /** 吸附点 */
+  @Prop() snapPoints: SnapPoint[] = [];
+
+  /** 吸附阈值 */
+  @Prop() snapThreshold: number = 30;
+
+  /** 是否显示尺寸提示 */
+  @Prop() showSizeHint: boolean = true;
+
+  // ==================== 滑动关闭 ====================
+
+  /** 是否启用滑动关闭 */
+  @Prop() swipeToClose: boolean = false;
+
+  /** 滑动阈值（0-1） */
+  @Prop() swipeThreshold: number = 0.3;
+
+  /** 滑动触发区域 */
+  @Prop() swipeTriggerArea: 'anywhere' | 'handle' | 'header' | 'edge' = 'edge';
+
+  // ==================== 键盘和无障碍 ====================
+
+  /** 按 ESC 关闭 */
+  @Prop() closeOnEsc: boolean = true;
+
+  /** 自动聚焦 */
+  @Prop() autoFocus: boolean = true;
+
+  /** 焦点捕获 */
+  @Prop() focusTrap: boolean = true;
+
+  /** 恢复焦点 */
+  @Prop() restoreFocus: boolean = true;
+
+  /** ARIA 标签 */
+  @Prop() ariaLabelText?: string;
+
+  // ==================== 样式定制 ====================
+
+  /** 是否启用圆角 */
+  @Prop() rounded: boolean = true;
+
+  /** 圆角大小 */
+  @Prop() borderRadius: string = '8px';
+
+  /** 是否全屏 */
+  @Prop() fullscreen: boolean = false;
+
+  /** 是否可全屏切换 */
+  @Prop() fullscreenable: boolean = false;
+
+  /** 是否可最小化 */
   @Prop() minimizable: boolean = false;
 
-  /** 是否处于最小化状态 */
-  @Prop() minimized: boolean = false;
+  /** 是否可最大化 */
+  @Prop() maximizable: boolean = false;
 
-  /** 抽屉层级模式（normal | high | top） */
-  @Prop() level: 'normal' | 'high' | 'top' = 'normal';
+  // ==================== 底部按钮 ====================
 
-  /** 内容延迟加载（毫秒） */
-  @Prop() lazyLoad: number = 0;
+  /** 底部按钮配置 */
+  @Prop() footerButtons: DrawerButton[] = [];
 
-  /** 是否启用虚拟滚动（适用于大量内容） */
-  @Prop() virtualScroll: boolean = false;
+  /** 底部按钮对齐方式 */
+  @Prop() footerAlign: 'left' | 'center' | 'right' | 'space-between' = 'right';
 
-  /** 是否显示内容区域边框 */
-  @Prop() contentBorder: boolean = false;
+  /** 是否显示底部边框 */
+  @Prop() footerBorder: boolean = true;
 
-  /** 是否启用内容区域阴影 */
-  @Prop() contentShadow: boolean = false;
+  // ==================== 头部配置 ====================
 
-  /** 内部状态：当前是否可见（控制渲染/展示） */
-  @State() isVisible: boolean = false;
+  /** 是否显示头部边框 */
+  @Prop() headerBorder: boolean = true;
 
-  /** 内部状态：是否处于关闭动画阶段 */
-  @State() isClosing: boolean = false;
+  /** 头部是否吸顶 */
+  @Prop() headerSticky: boolean = false;
 
-  /** 内部状态：面板是否处于"打开位移"状态（用于触发过渡） */
-  @State() isPanelOpen: boolean = false;
+  // ==================== 加载状态 ====================
 
-  /** 内部状态：当前尺寸 */
-  @State() currentSize: number | string;
+  /** 是否显示加载状态 */
+  @Prop() loading: boolean = false;
 
-  /** 内部状态：是否正在调整大小 */
+  /** 加载文本 */
+  @Prop() loadingText: string = '加载中...';
+
+  // ==================== 高级功能 ====================
+
+  /** 关闭时销毁 */
+  @Prop() destroyOnClose: boolean = false;
+
+  /** 是否锁定页面滚动 */
+  @Prop() lockScroll: boolean = true;
+
+  /** 性能优化：使用 transform */
+  @Prop() useTransform: boolean = true;
+
+  /** 性能优化：GPU 加速 */
+  @Prop() gpuAcceleration: boolean = true;
+
+  // ==================== 状态 ====================
+
+  @State() currentState: DrawerState = 'closed';
+  @State() currentSize: string = '400px';
   @State() isResizing: boolean = false;
-
-  /** 内部状态：是否正在拖动（用于手势） */
-  @State() isDragging: boolean = false;
-
-  /** 内部状态：当前拖动的偏移量 */
-  @State() dragOffset: number = 0;
-
-  /** 内部状态：显示吸附指示器 */
-  @State() showSnapIndicator: boolean = false;
-
-  /** 内部状态：当前吸附点 */
-  @State() currentSnapPoint: SnapPoint | null = null;
-
-  /** 内部状态：是否全屏 */
+  @State() isSwiping: boolean = false;
+  @State() swipeProgress: number = 0;
+  @State() isMinimized: boolean = false;
+  @State() isMaximized: boolean = false;
   @State() isFullscreen: boolean = false;
 
-  /** 内部状态：是否最小化 */
-  @State() isMinimized: boolean = false;
+  // ==================== 事件 ====================
 
-  /** 内部状态：内容是否加载 */
-  @State() contentLoaded: boolean = false;
+  /** 打开前触发 */
+  @Event() drawerBeforeOpen: EventEmitter<void>;
 
-  /** 内部状态：当前加载状态 */
-  @State() isLoading: boolean = false;
+  /** 打开后触发 */
+  @Event() drawerOpen: EventEmitter<void>;
 
-  /** 事件：可见性变化 */
-  @Event() ldesignVisibleChange: EventEmitter<boolean>;
+  /** 关闭前触发 */
+  @Event() drawerBeforeClose: EventEmitter<{ reason: CloseReason }>;
 
-  /** 事件：关闭 */
-  @Event() ldesignClose: EventEmitter<void>;
+  /** 关闭后触发 */
+  @Event() drawerClose: EventEmitter<{ reason: CloseReason }>;
 
-  /** 事件：尺寸变化 */
-  @Event() ldesignSizeChange: EventEmitter<{ size: number | string; placement: DrawerPlacement }>;  
+  /** 状态变化 */
+  @Event() drawerStateChange: EventEmitter<{ state: DrawerState }>;
 
-  /** 事件：调整大小开始 */
-  @Event() ldesignResizeStart: EventEmitter<void>;
+  /** 大小变化 */
+  @Event() drawerResize: EventEmitter<{ width: number; height: number }>;
 
-  /** 事件：调整大小结束 */
-  @Event() ldesignResizeEnd: EventEmitter<{ size: number | string }>;
+  /** 滑动进度变化 */
+  @Event() drawerSwipe: EventEmitter<{ progress: number }>;
 
-  /** 事件：吸附到点 */
-  @Event() ldesignSnapToPoint: EventEmitter<SnapPoint>;
+  // ==================== 私有属性 ====================
 
-  /** 事件：全屏切换 */
-  @Event() ldesignFullscreenChange: EventEmitter<boolean>;
-
-  /** 事件：最小化切换 */
-  @Event() ldesignMinimizeChange: EventEmitter<boolean>;
-
-  /** 事件：加载状态变化 */
-  @Event() ldesignLoadingChange: EventEmitter<boolean>;
-
-  private maskElement?: HTMLElement;
-  private escHandler?: (e: KeyboardEvent) => void;
-  private closeTimer?: number;
-  private panelElement?: HTMLElement;
-  private resizeHandleElement?: HTMLElement;
-  private startSize: number = 0;
-  private startPosition: { x: number; y: number } = { x: 0, y: 0 };
-  private touchStartPosition: { x: number; y: number } = { x: 0, y: 0 };
-  private touchStartTime: number = 0;
-  private animationFrame?: number;
+  private drawerId: string;
+  private drawerRef!: HTMLDivElement;
+  private contentRef!: HTMLDivElement;
+  private resizeHandleRef?: HTMLDivElement;
+  private containerElement?: HTMLElement;
+  private previousFocusedElement?: HTMLElement;
+  private resizeStartPos: { x: number; y: number } = { x: 0, y: 0 };
+  private resizeStartSize: number = 0;
+  private swipeStartPos: { x: number; y: number } = { x: 0, y: 0 };
+  private swipeStartTime: number = 0;
+  private animationFrameId?: number;
   private resizeObserver?: ResizeObserver;
 
-  // 容器引用与其原始 overflow（容器模式时在打开期间设置为 hidden 并在关闭时恢复）
-  private containerEl?: HTMLElement | null;
-  private assignedZIndex?: number;
-
-  /** 背景滚动锁（不隐藏滚动条，仅阻止页面滚动） */
-  private scrollLockHandler = (e: Event) => {
-    // 仅当本实例为栈顶时才拦截滚动，避免多层抽屉相互“抢”事件
-    if (!this.isVisible || !this.isTopMost()) return;
-    const body = this.el.querySelector('.ldesign-drawer__body') as HTMLElement | null;
-    if (!body) {
-      e.preventDefault();
-      return;
-    }
-    const target = e.target as Node | null;
-    if (!target || !body.contains(target)) {
-      e.preventDefault();
-    }
-  };
-
-  private keyScrollLockHandler = (e: KeyboardEvent) => {
-    // 仅当本实例为栈顶时才拦截按键滚动
-    if (!this.isVisible || !this.isTopMost()) return;
-    const keys = ['PageUp','PageDown','Home','End','ArrowUp','ArrowDown',' '];
-    if (keys.includes(e.key)) {
-      const body = this.el.querySelector('.ldesign-drawer__body') as HTMLElement | null;
-      if (!body) {
-        e.preventDefault();
-        return;
-      }
-      const active = (document.activeElement as HTMLElement) || null;
-      if (!active || !body.contains(active)) {
-        e.preventDefault();
-      }
-    }
-  };
-
-  private scrollScopeTarget?: EventTarget;
-
-  private bindScrollLock() {
-    const target = this.isInContainer() ? (this.containerEl as HTMLElement) : document;
-    this.scrollScopeTarget = target;
-    (target as any).addEventListener('wheel', this.scrollLockHandler, { passive: false } as any);
-    (target as any).addEventListener('touchmove', this.scrollLockHandler, { passive: false } as any);
-    // 仅非容器模式时拦截键盘滚动，避免影响容器外页面
-    if (!this.isInContainer()) {
-      document.addEventListener('keydown', this.keyScrollLockHandler as any, { passive: false } as any);
-    }
-  }
-
-  private unbindScrollLock() {
-    const target = this.scrollScopeTarget || document;
-    (target as any).removeEventListener('wheel', this.scrollLockHandler as any, false);
-    (target as any).removeEventListener('touchmove', this.scrollLockHandler as any, false);
-    document.removeEventListener('keydown', this.keyScrollLockHandler as any, false);
-    this.scrollScopeTarget = undefined;
-  }
-
-  @Watch('visible')
-  watchVisible(newVal: boolean) {
-    if (newVal) {
-      this.show();
-    } else {
-      this.hide();
-    }
-  }
-
-  @Watch('getContainer')
-  onGetContainerChange() {
-    const prev = this.containerEl || null;
-    this.moveToContainer();
-    const next = this.containerEl || null;
-    if (this.isVisible) {
-      // 切换容器时，恢复之前容器的 overflow，并为新容器设置 overflow:hidden
-      if (prev && prev !== document.body && prev !== document.documentElement) {
-        this.restoreContainerOverflow(prev);
-      }
-      if (next && next !== document.body && next !== document.documentElement) {
-        this.applyContainerOverflow(next);
-      }
-    }
-  }
+  // ==================== 生命周期 ====================
 
   componentWillLoad() {
-    // 在初次渲染前尽早尝试移动到容器
-    this.moveToContainer();
-    // 初始化当前尺寸
-    this.currentSize = this.size;
+    this.drawerId = generateId('ldesign-drawer');
+    this.currentSize = parseSize(this.size, this.placement);
   }
 
   componentDidLoad() {
-    // 兜底再尝试一次，防止部分环境下升级时机导致首次未移动
-    this.moveToContainer();
+    // 设置容器
+    if (this.container) {
+      this.containerElement = getContainer(this.container);
+      if (this.containerElement !== document.body) {
+        this.containerElement.appendChild(this.el);
+      }
+    }
 
-    this.maskElement = this.el.querySelector('.ldesign-drawer__mask') as HTMLElement;
-    this.panelElement = this.el.querySelector('.ldesign-drawer__panel') as HTMLElement;
-    this.resizeHandleElement = this.el.querySelector('.ldesign-drawer__resize-handle') as HTMLElement;
-
+    // 初始化可见状态
     if (this.visible) {
-      this.show(false);
+      this.handleOpen();
     }
-    if (this.closeOnEsc) {
-      this.bindEsc();
-    }
-    // 统一处理调整大小功能
-    if (this.resizable) {
-      this.initResize();
-    }
-    // 统一处理滑动关闭功能
-    if (this.swipeToClose) {
-      this.initSwipeGestures();
-    }
-    if (this.keyboardNavigation) {
-      this.initKeyboardNavigation();
-    }
-    
-    // 监听窗口大小变化
-    this.handleResize = this.handleResize.bind(this);
-    window.addEventListener('resize', this.handleResize);
+
+    // 设置 resize observer
+    this.setupResizeObserver();
   }
 
   disconnectedCallback() {
-    this.unbindEsc();
-    this.enableBodyScroll();
-    if (this.closeTimer) {
-      clearTimeout(this.closeTimer);
-      this.closeTimer = undefined;
-    }
-    if (this.animationFrame) {
-      cancelAnimationFrame(this.animationFrame);
-    }
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-    }
-    this.isPanelOpen = false;
-    this.unbindScrollLock();
-    this.cleanupResize();
-    this.cleanupSwipeGestures();
-    window.removeEventListener('resize', this.handleResize);
+    this.cleanup();
   }
 
-  private bindEsc() {
-    this.escHandler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && this.isVisible) {
-        if (this.isTopMost()) this.close();
-      }
-    };
-    document.addEventListener('keydown', this.escHandler);
-  }
+  // ==================== Watch ====================
 
-  private unbindEsc() {
-    if (this.escHandler) {
-      document.removeEventListener('keydown', this.escHandler);
-      this.escHandler = undefined;
-    }
-  }
+  @Watch('visible')
+  handleVisibleChange(newValue: boolean, oldValue: boolean) {
+    if (newValue === oldValue) return;
 
-  private disableBodyScroll() {
-    // 不再锁定页面滚动，让页面内容保持可滚动
-    // 只在容器模式下限制容器滚动
-    if (this.isInContainer()) {
-      const c = this.containerEl as HTMLElement;
-      if (c) this.applyContainerOverflow(c);
-      this.bindScrollLock();
-    }
-    // 移除页面滚动锁定，避免压缩页面内容
-  }
-
-  private enableBodyScroll() {
-    if (this.isInContainer()) {
-      this.unbindScrollLock();
-      const c = this.containerEl as HTMLElement;
-      if (c) this.restoreContainerOverflow(c);
-    }
-    // 移除页面滚动解锁，因为我们不再锁定它
-  }
-
-  /** 显示抽屉 */
-  @Method()
-  async show(emit: boolean = true) {
-    if (this.isVisible) return;
-    this.isClosing = false;
-
-    // 确保挂载到目标容器，并入栈分配基础 z-index（先于渲染）
-    this.moveToContainer();
-    this.pushToStack();
-
-    this.isVisible = true;
-    this.visible = true;
-    this.disableBodyScroll();
-    
-    // 重置状态
-    this.dragOffset = 0;
-    this.isDragging = false;
-    if (this.fullscreen) {
-      this.isFullscreen = true;
-    }
-    if (this.minimized) {
-      this.isMinimized = true;
-    }
-    
-    // 下一帧再添加"open"类，确保过渡触发
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (this.isVisible) {
-          this.isPanelOpen = true;
-          if (this.autoFocus) {
-            this.focusFirstElement();
-          }
-        }
-      });
-    });
-    
-    if (emit) this.ldesignVisibleChange.emit(true);
-  }
-
-  /** 隐藏抽屉（带动画） */
-  @Method()
-  async hide() {
-    if (!this.isVisible || this.isClosing) return;
-    this.isPanelOpen = false; // 先移除打开类，触发位移离场
-    this.isClosing = true;
-    
-    const duration = this.animation ? this.animationDuration : 0;
-    
-    // 动画后真正隐藏
-    this.closeTimer = window.setTimeout(() => {
-      this.isClosing = false;
-      this.isVisible = false;
-      this.visible = false;
-      this.enableBodyScroll();
-      // 出栈（恢复前一层的 inert）
-      this.removeFromStack();
-      this.ldesignVisibleChange.emit(false);
-      
-      // 如果不保留状态，重置尺寸
-      if (!this.preserveState) {
-        this.currentSize = this.size;
-        this.dragOffset = 0;
-      }
-    }, duration);
-  }
-
-  /** 关闭（等价于 hide），同时触发 close 事件 */
-  @Method()
-  async close() {
-    // 执行关闭前钩子
-    if (this.beforeClose) {
-      const canClose = await this.beforeClose();
-      if (!canClose) return;
-    }
-    this.ldesignClose.emit();
-    await this.hide();
-  }
-
-  /** 切换全屏 */
-  @Method()
-  async toggleFullscreen() {
-    if (!this.fullscreenable) return;
-    this.isFullscreen = !this.isFullscreen;
-    this.ldesignFullscreenChange.emit(this.isFullscreen);
-    
-    if (this.isFullscreen) {
-      // 保存当前尺寸
-      this.beforeFullscreenSize = this.currentSize;
-      this.currentSize = '100%';
+    if (newValue) {
+      this.handleOpen();
     } else {
-      // 恢复之前的尺寸
-      this.currentSize = this.beforeFullscreenSize || this.size;
+      this.handleClose('api');
     }
   }
 
-  /** 切换最小化 */
-  @Method()
-  async toggleMinimize() {
-    if (!this.minimizable) return;
-    this.isMinimized = !this.isMinimized;
-    this.ldesignMinimizeChange.emit(this.isMinimized);
+  @Watch('size')
+  handleSizeChange(newValue: number | string | SizePreset) {
+    this.currentSize = parseSize(newValue, this.placement);
+    this.emitResizeEvent();
   }
 
-  /** 设置加载状态 */
-  @Method()
-  async setLoading(loading: boolean | LoadingConfig) {
-    this.loading = loading;
-    this.isLoading = typeof loading === 'boolean' ? loading : loading.show;
-    this.ldesignLoadingChange.emit(this.isLoading);
+  @Watch('fullscreen')
+  handleFullscreenChange(newValue: boolean) {
+    this.isFullscreen = newValue;
   }
 
-  /** 更新进度 */
+  // ==================== 公开方法 ====================
+
+  /** 打开抽屉 */
   @Method()
-  async updateProgress(percent: number) {
-    this.progressPercent = Math.max(0, Math.min(100, percent));
+  async open() {
+    if (this.currentState === 'open' || this.currentState === 'opening') {
+      return;
+    }
+
+    this.visible = true;
   }
 
-  private beforeFullscreenSize: number | string;
+  /** 关闭抽屉 */
+  @Method()
+  async close(reason: CloseReason = 'api') {
+    if (this.currentState === 'closed' || this.currentState === 'closing') {
+      return;
+    }
 
-  private handleMaskClick = (event: Event) => {
-    if (!this.maskClosable) return;
-    if (event.target === this.maskElement) {
-      if (this.isTopMost()) this.close();
+    await this.handleClose(reason);
+  }
+
+  /** 切换显示状态 */
+  @Method()
+  async toggle() {
+    if (this.visible) {
+      await this.close();
+    } else {
+      await this.open();
+    }
+  }
+
+  /** 最小化 */
+  @Method()
+  async minimize() {
+    this.isMinimized = true;
+    this.currentState = 'minimized';
+    this.drawerStateChange.emit({ state: 'minimized' });
+  }
+
+  /** 最大化 */
+  @Method()
+  async maximize() {
+    this.isMaximized = true;
+    this.currentState = 'maximized';
+    this.drawerStateChange.emit({ state: 'maximized' });
+  }
+
+  /** 恢复 */
+  @Method()
+  async restore() {
+    this.isMinimized = false;
+    this.isMaximized = false;
+    this.currentState = 'open';
+    this.drawerStateChange.emit({ state: 'open' });
+  }
+
+  /** 调整大小 */
+  @Method()
+  async resize(size: number | string) {
+    this.currentSize = parseSize(size, this.placement);
+    this.emitResizeEvent();
+  }
+
+  /** 吸附到指定点 */
+  @Method()
+  async snapTo(point: SnapPoint) {
+    const containerSize = this.getContainerSize();
+    const newSize = calculateActualSize(
+      `${point.value}px`,
+      containerSize,
+      this.minSize.toString(),
+      this.maxSize.toString()
+    );
+    this.currentSize = `${newSize}px`;
+    this.emitResizeEvent();
+  }
+
+  /** 显示加载状态 */
+  @Method()
+  async showLoading(text?: string) {
+    this.loading = true;
+    if (text) {
+      this.loadingText = text;
+    }
+  }
+
+  /** 隐藏加载状态 */
+  @Method()
+  async hideLoading() {
+    this.loading = false;
+  }
+
+  /** 获取当前状态 */
+  @Method()
+  async getState(): Promise<DrawerState> {
+    return this.currentState;
+  }
+
+  /** 获取当前尺寸 */
+  @Method()
+  async getSize(): Promise<{ width: number; height: number }> {
+    if (!this.drawerRef) {
+      return { width: 0, height: 0 };
+    }
+
+    return {
+      width: this.drawerRef.offsetWidth,
+      height: this.drawerRef.offsetHeight,
+    };
+  }
+
+  // ==================== 私有方法 ====================
+
+  private async handleOpen() {
+    this.drawerBeforeOpen.emit();
+    this.currentState = 'opening';
+    this.drawerStateChange.emit({ state: 'opening' });
+
+    // 保存当前焦点元素
+    if (this.restoreFocus) {
+      this.previousFocusedElement = document.activeElement as HTMLElement;
+    }
+
+    // 添加到堆栈
+    addToStack(this.el);
+
+    // 锁定滚动
+    if (this.lockScroll) {
+      lockPageScroll();
+    }
+
+    // 等待动画
+    if (this.animation) {
+      await waitForAnimation(this.animationDuration);
+    }
+
+    this.currentState = 'open';
+    this.drawerStateChange.emit({ state: 'open' });
+    this.drawerOpen.emit();
+
+    // 焦点捕获
+    if (this.focusTrap && this.contentRef) {
+      trapFocus(this.contentRef, this.autoFocus);
+    }
+  }
+
+  private async handleClose(reason: CloseReason) {
+    this.drawerBeforeClose.emit({ reason });
+    this.currentState = 'closing';
+    this.drawerStateChange.emit({ state: 'closing' });
+
+    // 释放焦点捕获
+    if (this.focusTrap && this.contentRef) {
+      releaseFocusTrap(this.contentRef);
+    }
+
+    // 恢复焦点
+    if (this.restoreFocus && this.previousFocusedElement) {
+      this.previousFocusedElement.focus();
+    }
+
+    // 从堆栈移除
+    removeFromStack(this.el);
+
+    // 解锁滚动
+    if (this.lockScroll && !isTopDrawer(this.el)) {
+      unlockPageScroll();
+    }
+
+    // 等待动画
+    if (this.animation) {
+      await waitForAnimation(this.animationDuration);
+    }
+
+    this.currentState = 'closed';
+    this.drawerStateChange.emit({ state: 'closed' });
+    this.drawerClose.emit({ reason });
+    this.visible = false;
+
+    // 销毁内容
+    if (this.destroyOnClose) {
+      this.el.innerHTML = '';
+    }
+  }
+
+  private handleMaskClick = () => {
+    if (this.maskClosable && isTopDrawer(this.el)) {
+      this.close('mask');
     }
   };
 
-  private getRootClasses() {
-    const classes = ['ldesign-drawer'];
-    if (this.isVisible) classes.push('ldesign-drawer--visible');
-    if (this.isClosing) classes.push('ldesign-drawer--closing');
-    classes.push(`ldesign-drawer--${this.placement}`);
-    if (this.isInContainer()) classes.push('ldesign-drawer--in-container');
-    if (this.rounded) classes.push('ldesign-drawer--rounded');
-    if (this.resizable) classes.push('ldesign-drawer--resizable');
-    if (this.isResizing) classes.push('ldesign-drawer--resizing');
-    if (this.isDragging) classes.push('ldesign-drawer--dragging');
-    if (this.showSnapIndicator) classes.push('ldesign-drawer--snapping');
-    if (this.isFullscreen || this.fullscreen) classes.push('ldesign-drawer--fullscreen');
-    if (this.isMinimized) classes.push('ldesign-drawer--minimized');
-    if (this.darkMode) classes.push('ldesign-drawer--dark');
-    if (this.isLoading) classes.push('ldesign-drawer--loading');
-    if (this.customClass) classes.push(this.customClass);
-    
-    // 层级模式
-    classes.push(`ldesign-drawer--level-${this.level}`);
-    
-    return classes.join(' ');
+  private handleEscapeKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && this.closeOnEsc && isTopDrawer(this.el)) {
+      event.preventDefault();
+      this.close('escape');
+    }
+  };
+
+  private handleCloseClick = () => {
+    this.close('button');
+  };
+
+  private handleBackClick = () => {
+    this.close('button');
+  };
+
+  private handleFullscreenToggle = () => {
+    this.isFullscreen = !this.isFullscreen;
+    this.fullscreen = this.isFullscreen;
+  };
+
+  // ==================== 调整大小 ====================
+
+  private handleResizeStart = (event: MouseEvent | TouchEvent) => {
+    if (!this.resizable) return;
+
+    event.preventDefault();
+    this.isResizing = true;
+
+    const coords = getEventCoordinates(event);
+    this.resizeStartPos = coords;
+    this.resizeStartSize = this.getCurrentSizeInPixels();
+
+    document.addEventListener('mousemove', this.handleResizeMove);
+    document.addEventListener('mouseup', this.handleResizeEnd);
+    document.addEventListener('touchmove', this.handleResizeMove);
+    document.addEventListener('touchend', this.handleResizeEnd);
+
+    this.el.classList.add('drawer-resizing');
+  };
+
+  private handleResizeMove = (event: MouseEvent | TouchEvent) => {
+    if (!this.isResizing) return;
+
+    const coords = getEventCoordinates(event);
+    let delta = 0;
+
+    switch (this.placement) {
+      case 'left':
+        delta = coords.x - this.resizeStartPos.x;
+        break;
+      case 'right':
+        delta = this.resizeStartPos.x - coords.x;
+        break;
+      case 'top':
+        delta = coords.y - this.resizeStartPos.y;
+        break;
+      case 'bottom':
+        delta = this.resizeStartPos.y - coords.y;
+        break;
+    }
+
+    const newSize = this.resizeStartSize + delta;
+    const containerSize = this.getContainerSize();
+    const constrainedSize = calculateActualSize(
+      `${newSize}px`,
+      containerSize,
+      this.minSize.toString(),
+      this.maxSize.toString()
+    );
+
+    // 检查吸附点
+    if (this.snapPoints.length > 0) {
+      const snapPoint = findNearestSnapPoint(
+        constrainedSize,
+        this.snapPoints,
+        this.snapThreshold
+      );
+
+      if (snapPoint) {
+        this.currentSize = `${snapPoint.value}px`;
+      } else {
+        this.currentSize = `${constrainedSize}px`;
+      }
+    } else {
+      this.currentSize = `${constrainedSize}px`;
+    }
+  };
+
+  private handleResizeEnd = () => {
+    if (!this.isResizing) return;
+
+    this.isResizing = false;
+
+    document.removeEventListener('mousemove', this.handleResizeMove);
+    document.removeEventListener('mouseup', this.handleResizeEnd);
+    document.removeEventListener('touchmove', this.handleResizeMove);
+    document.removeEventListener('touchend', this.handleResizeEnd);
+
+    this.el.classList.remove('drawer-resizing');
+    this.emitResizeEvent();
+  };
+
+  // ==================== 滑动关闭 ====================
+
+  private handleSwipeStart = (event: TouchEvent | MouseEvent) => {
+    if (!this.swipeToClose) return;
+
+    // 检查触发区域
+    const target = event.target as HTMLElement;
+    if (!this.isSwipeTriggerArea(target)) return;
+
+    const coords = getEventCoordinates(event);
+    this.swipeStartPos = coords;
+    this.swipeStartTime = Date.now();
+    this.isSwiping = true;
+  };
+
+  private handleSwipeMove = (event: TouchEvent | MouseEvent) => {
+    if (!this.isSwiping) return;
+
+    const coords = getEventCoordinates(event);
+    let delta = 0;
+
+    switch (this.placement) {
+      case 'left':
+        delta = coords.x - this.swipeStartPos.x;
+        if (delta > 0) delta = 0; // 只允许向左滑动
+        break;
+      case 'right':
+        delta = this.swipeStartPos.x - coords.x;
+        if (delta > 0) delta = 0; // 只允许向右滑动
+        break;
+      case 'top':
+        delta = coords.y - this.swipeStartPos.y;
+        if (delta > 0) delta = 0; // 只允许向上滑动
+        break;
+      case 'bottom':
+        delta = this.swipeStartPos.y - coords.y;
+        if (delta > 0) delta = 0; // 只允许向下滑动
+        break;
+    }
+
+    const currentSize = this.getCurrentSizeInPixels();
+    this.swipeProgress = Math.abs(delta) / currentSize;
+    this.drawerSwipe.emit({ progress: this.swipeProgress });
+  };
+
+  private handleSwipeEnd = () => {
+    if (!this.isSwiping) return;
+
+    const duration = Date.now() - this.swipeStartTime;
+    const distance = this.swipeProgress * this.getCurrentSizeInPixels();
+    const velocity = calculateVelocity(0, distance, duration);
+
+    if (shouldTriggerSwipeClose(this.swipeProgress, velocity, this.swipeThreshold)) {
+      this.close('swipe');
+    }
+
+    this.isSwiping = false;
+    this.swipeProgress = 0;
+  };
+
+  private isSwipeTriggerArea(target: HTMLElement): boolean {
+    if (this.swipeTriggerArea === 'anywhere') return true;
+
+    if (this.swipeTriggerArea === 'handle') {
+      return target.classList.contains('drawer-swipe-handle');
+    }
+
+    if (this.swipeTriggerArea === 'header') {
+      return target.closest('.drawer-header') !== null;
+    }
+
+    if (this.swipeTriggerArea === 'edge') {
+      // 检查是否在边缘区域（例如前 20px）
+      const rect = this.drawerRef.getBoundingClientRect();
+      const coords = getEventCoordinates(event as any);
+
+      switch (this.placement) {
+        case 'left':
+          return coords.x - rect.left < 20;
+        case 'right':
+          return rect.right - coords.x < 20;
+        case 'top':
+          return coords.y - rect.top < 20;
+        case 'bottom':
+          return rect.bottom - coords.y < 20;
+      }
+    }
+
+    return false;
   }
 
-  private baseZ(): number { return typeof this.assignedZIndex === 'number' ? (this.assignedZIndex as number) : (this.zIndex || 1000); }
+  // ==================== 辅助方法 ====================
 
-  private panelStyle(): { [k: string]: string } {
-    const style: { [k: string]: string } = { zIndex: String(this.baseZ() + 1) };
-    // 统一的尺寸计算
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    
-    // 如果是全屏模式，直接返回100%尺寸
-    if (this.isFullscreen || this.fullscreen) {
-      style.width = '100%';
-      style.height = '100%';
-      return style;
+  private getCurrentSizeInPixels(): number {
+    if (!this.drawerRef) return 0;
+
+    return this.placement === 'left' || this.placement === 'right'
+      ? this.drawerRef.offsetWidth
+      : this.drawerRef.offsetHeight;
+  }
+
+  private getContainerSize(): number {
+    const container = this.containerElement || document.body;
+    return this.placement === 'left' || this.placement === 'right'
+      ? container.offsetWidth
+      : container.offsetHeight;
+  }
+
+  private emitResizeEvent() {
+    if (this.drawerRef) {
+      this.drawerResize.emit({
+        width: this.drawerRef.offsetWidth,
+        height: this.drawerRef.offsetHeight,
+      });
     }
-    
-    // 使用当前尺寸或默认尺寸
-    let val = this.currentSize || this.size;
-    
-    // 解析尺寸值
-    let sizeInPx: number;
-    if (typeof val === 'number') {
-      sizeInPx = val;
-    } else if (typeof val === 'string') {
-      if (val.endsWith('%')) {
-        const percentage = parseFloat(val) / 100;
-        if (this.placement === 'left' || this.placement === 'right') {
-          sizeInPx = vw * percentage;
-        } else {
-          sizeInPx = vh * percentage;
-        }
-      } else if (val.endsWith('vh')) {
-        sizeInPx = (parseFloat(val) / 100) * vh;
-      } else if (val.endsWith('vw')) {
-        sizeInPx = (parseFloat(val) / 100) * vw;
-      } else if (val.endsWith('px')) {
-        sizeInPx = parseFloat(val);
-      } else {
-        sizeInPx = parseFloat(val) || 360;
-      }
-    } else {
-      sizeInPx = 360;
+  }
+
+  private setupResizeObserver() {
+    if (typeof ResizeObserver === 'undefined') return;
+
+    this.resizeObserver = new ResizeObserver(
+      debounce(() => {
+        this.emitResizeEvent();
+      }, 100)
+    );
+
+    if (this.drawerRef) {
+      this.resizeObserver.observe(this.drawerRef);
     }
-    
-    // 统一的限制逻辑，不区分设备
+  }
+
+  private cleanup() {
+    removeFromStack(this.el);
+
+    if (this.lockScroll) {
+      unlockPageScroll();
+    }
+
+    if (this.focusTrap && this.contentRef) {
+      releaseFocusTrap(this.contentRef);
+    }
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
+
+    document.removeEventListener('keydown', this.handleEscapeKey);
+    document.removeEventListener('mousemove', this.handleResizeMove);
+    document.removeEventListener('mouseup', this.handleResizeEnd);
+    document.removeEventListener('touchmove', this.handleResizeMove);
+    document.removeEventListener('touchend', this.handleResizeEnd);
+  }
+
+  private getDrawerStyle() {
+    const style: any = {
+      zIndex: this.zIndex.toString(),
+    };
+
+    // 设置尺寸
     if (this.placement === 'left' || this.placement === 'right') {
-      // 限制最大宽度为视口的95%，最小200px
-      const maxWidth = vw * 0.95;
-      const minWidth = 200;
-      sizeInPx = Math.max(minWidth, Math.min(maxWidth, sizeInPx));
-      style.width = `${sizeInPx}px`;
-      style.height = '100%';
+      style.width = this.currentSize;
+      if (this.isFullscreen) style.width = '100%';
     } else {
-      // top/bottom 方向
-      // 限制最大高度为视口的95%，最小200px
-      const maxHeight = vh * 0.95;
-      const minHeight = 200;
-      sizeInPx = Math.max(minHeight, Math.min(maxHeight, sizeInPx));
-      style.height = `${sizeInPx}px`;
-      style.width = '100%';
+      style.height = this.currentSize;
+      if (this.isFullscreen) style.height = '100%';
     }
-    
+
     // 圆角
     if (this.rounded) {
-      if (this.placement === 'left') {
-        style.borderRadius = `0 ${this.borderRadius} ${this.borderRadius} 0`;
-      } else if (this.placement === 'right') {
-        style.borderRadius = `${this.borderRadius} 0 0 ${this.borderRadius}`;
-      } else if (this.placement === 'top') {
-        style.borderRadius = `0 0 ${this.borderRadius} ${this.borderRadius}`;
-      } else if (this.placement === 'bottom') {
-        style.borderRadius = `${this.borderRadius} ${this.borderRadius} 0 0`;
-      }
+      style.borderRadius = this.borderRadius;
     }
-    
-    // 拖动偏移
-    if (this.isDragging && this.dragOffset > 0) {
-      let transform = '';
-      if (this.placement === 'left') transform = `translateX(-${this.dragOffset}px)`;
-      else if (this.placement === 'right') transform = `translateX(${this.dragOffset}px)`;
-      else if (this.placement === 'top') transform = `translateY(-${this.dragOffset}px)`;
-      else if (this.placement === 'bottom') transform = `translateY(${this.dragOffset}px)`;
-      style.transform = transform;
+
+    // 动画
+    if (this.animation && !this.isSwiping) {
+      style.transition = `transform ${this.animationDuration}ms ${getEasingFunction(
+        this.animationEasing as any
+      )}`;
     }
-    
-    // 动画持续时间
-    if (this.animation) {
-      style.transitionDuration = `${this.animationDuration}ms`;
+
+    // GPU 加速
+    if (this.gpuAcceleration) {
+      style.willChange = 'transform';
     }
-    
+
+    // 滑动进度
+    if (this.isSwiping && this.swipeProgress > 0) {
+      style.transform = getTransformStyle(this.placement, 1 - this.swipeProgress, this.currentSize);
+    }
+
     return style;
   }
 
-  private renderHeader() {
-    const hasHeaderSlot = !!this.el.querySelector('[slot="header"]');
-    const config = this.headerConfig || {};
-    
-    if (!this.drawerTitle && !config.title && !this.closable && !hasHeaderSlot && !this.fullscreenable && !this.minimizable) {
+  private getContainerClass() {
+    const classes = ['ldesign-drawer-container'];
+
+    if (this.visible) classes.push('drawer-visible');
+    if (this.currentState) classes.push(`drawer-${this.currentState}`);
+    if (this.placement) classes.push(`drawer-${this.placement}`);
+    if (this.theme) classes.push(`drawer-theme-${this.theme}`);
+    if (this.isResizing) classes.push('drawer-resizing');
+    if (this.isSwiping) classes.push('drawer-swiping');
+    if (this.isMinimized) classes.push('drawer-minimized');
+    if (this.isMaximized) classes.push('drawer-maximized');
+    if (this.isFullscreen) classes.push('drawer-fullscreen');
+    if (this.customClass) classes.push(this.customClass);
+
+    return classes.join(' ');
+  }
+
+  // ==================== 渲染 ====================
+
+  render() {
+    if (!this.visible && this.currentState === 'closed') {
       return null;
     }
-    
+
     return (
-      <div class={{
-        'ldesign-drawer__header': true,
-        'ldesign-drawer__header--border': this.headerBorder
-      }}>
-        {/* 返回按钮 */}
-        {config.showBack && (
-          <button class="ldesign-drawer__back" onClick={() => config.onBack && config.onBack()}>
-            <ldesign-icon name="arrow-left"></ldesign-icon>
-          </button>
+      <Host class={this.getContainerClass()}>
+        {/* 遮罩层 */}
+        {this.mask && (
+          <div
+            class={`drawer-mask ${this.maskClass}`}
+            onClick={this.handleMaskClick}
+            style={{ zIndex: (this.zIndex - 1).toString() }}
+          />
         )}
-        
-        {/* 图标 */}
-        {config.icon && (
-          <div class="ldesign-drawer__header-icon">
-            <ldesign-icon name={config.icon}></ldesign-icon>
-          </div>
-        )}
-        
-        {/* 标题区域 */}
-        <div class="ldesign-drawer__title-wrapper">
-          <div class="ldesign-drawer__title">
-            {hasHeaderSlot ? <slot name="header" /> : (config.title || this.drawerTitle || '')}
-          </div>
-          {config.subtitle && (
-            <div class="ldesign-drawer__subtitle">{config.subtitle}</div>
-          )}
+
+        {/* 抽屉主体 */}
+        <div
+          ref={(el) => (this.drawerRef = el!)}
+          class="drawer-wrapper"
+          style={this.getDrawerStyle()}
+          role="dialog"
+          aria-modal="true"
+          aria-label={this.ariaLabelText || this.drawerTitle}
+          onKeyDown={this.handleEscapeKey}
+          onTouchStart={this.handleSwipeStart}
+          onTouchMove={this.handleSwipeMove}
+          onTouchEnd={this.handleSwipeEnd}
+        >
+          {/* 头部 */}
+          {this.renderHeader()}
+
+          {/* 内容 */}
+          {this.renderContent()}
+
+          {/* 底部 */}
+          {this.renderFooter()}
+
+          {/* 调整大小手柄 */}
+          {this.resizable && this.renderResizeHandle()}
+
+          {/* 滑动手柄 */}
+          {this.swipeToClose && this.renderSwipeHandle()}
+
+          {/* 加载状态 */}
+          {this.loading && this.renderLoading()}
         </div>
-        
-        {/* 操作按钮区域 */}
-        <div class="ldesign-drawer__header-actions">
-          {/* 自定义操作按钮 */}
-          {config.actions?.map(action => (
-            <button 
-              class="ldesign-drawer__action" 
-              title={action.tooltip}
-              onClick={() => action.onClick()}
-            >
-              <ldesign-icon name={action.icon}></ldesign-icon>
-            </button>
-          ))}
-          
-          {/* 最小化按钮 */}
-          {this.minimizable && (
-            <button 
-              class="ldesign-drawer__minimize" 
-              aria-label="Minimize"
-              onClick={() => this.toggleMinimize()}
-            >
-              <ldesign-icon name={this.isMinimized ? 'maximize-2' : 'minimize-2'}></ldesign-icon>
+      </Host>
+    );
+  }
+
+  private renderHeader() {
+    const hasHeader = this.drawerTitle || this.subtitle || this.showBack || this.closable || this.el.querySelector('[slot="header"]');
+
+    if (!hasHeader) return null;
+
+    return (
+      <div class={`drawer-header ${this.headerBorder ? 'drawer-header-border' : ''} ${this.headerSticky ? 'drawer-header-sticky' : ''}`}>
+        <div class="drawer-header-content">
+          {this.showBack && (
+            <button class="drawer-back-btn" onClick={this.handleBackClick} aria-label="返回">
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor" />
+              </svg>
             </button>
           )}
-          
-          {/* 全屏按钮 */}
-          {this.fullscreenable && (
-            <button 
-              class="ldesign-drawer__fullscreen" 
-              aria-label="Fullscreen"
-              onClick={() => this.toggleFullscreen()}
-            >
-              <ldesign-icon name={this.isFullscreen ? 'minimize' : 'maximize'}></ldesign-icon>
-            </button>
-          )}
-          
-          {/* 关闭按钮 */}
-          {this.closable && (
-            <button class="ldesign-drawer__close" aria-label="Close" onClick={() => this.close()}>
-              <ldesign-icon name="x"></ldesign-icon>
-            </button>
-          )}
+
+          {this.icon && <span class="drawer-icon">{this.icon}</span>}
+
+          <div class="drawer-title-wrapper">
+            {this.drawerTitle && <h3 class="drawer-title">{this.drawerTitle}</h3>}
+            {this.subtitle && <p class="drawer-subtitle">{this.subtitle}</p>}
+          </div>
+
+          <div class="drawer-header-actions">
+            <slot name="extra" />
+
+            {this.fullscreenable && (
+              <button
+                class="drawer-action-btn"
+                onClick={this.handleFullscreenToggle}
+                aria-label={this.isFullscreen ? '退出全屏' : '全屏'}
+              >
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  {this.isFullscreen ? (
+                    <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z" fill="currentColor" />
+                  ) : (
+                    <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" fill="currentColor" />
+                  )}
+                </svg>
+              </button>
+            )}
+
+            {this.minimizable && (
+              <button class="drawer-action-btn" onClick={() => this.minimize()} aria-label="最小化">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path d="M19 13H5v-2h14v2z" fill="currentColor" />
+                </svg>
+              </button>
+            )}
+
+            {this.closable && (
+              <button class="drawer-close-btn" onClick={this.handleCloseClick} aria-label="关闭">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path
+                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
+
+        <slot name="header" />
+      </div>
+    );
+  }
+
+  private renderContent() {
+    const paddingStyle = this.padding === true ? '24px' : this.padding === false ? '0' : this.padding;
+
+    return (
+      <div
+        ref={(el) => (this.contentRef = el!)}
+        class="drawer-content"
+        style={{ padding: paddingStyle }}
+      >
+        <slot />
       </div>
     );
   }
 
   private renderFooter() {
-    const hasFooterSlot = !!this.el.querySelector('[slot="footer"]');
-    if (!hasFooterSlot && this.footerButtons.length === 0) return null;
+    const hasFooter = this.footerButtons.length > 0 || this.el.querySelector('[slot="footer"]');
+
+    if (!hasFooter) return null;
 
     return (
-      <div class={{
-        'ldesign-drawer__footer': true,
-        'ldesign-drawer__footer--border': this.footerBorder
-      }}>
-        {hasFooterSlot ? (
-          <slot name="footer" />
-        ) : (
-          <div class="ldesign-drawer__footer-buttons">
-            {this.footerButtons.map(button => (
+      <div class={`drawer-footer ${this.footerBorder ? 'drawer-footer-border' : ''}`}>
+        <slot name="footer" />
+
+        {this.footerButtons.length > 0 && (
+          <div class={`drawer-footer-buttons drawer-footer-${this.footerAlign}`}>
+            {this.footerButtons.map((button) => (
               <button
-                class={{
-                  'ldesign-drawer__footer-button': true,
-                  [`ldesign-drawer__footer-button--${button.type || 'default'}`]: true,
-                  'ldesign-drawer__footer-button--loading': button.loading,
-                  'ldesign-drawer__footer-button--disabled': button.disabled,
-                  'ldesign-drawer__footer-button--with-icon': !!button.icon
-                }}
+                key={button.id || button.text}
+                class={`drawer-btn drawer-btn-${button.type || 'default'} ${button.className || ''}`}
                 disabled={button.disabled || button.loading}
-                onClick={() => button.onClick && button.onClick()}
+                onClick={(e) => button.onClick?.(e)}
+                aria-label={button.tooltip}
               >
-                {button.loading && <span class="ldesign-drawer__button-spinner" />}
-                {button.icon && !button.loading && (
-                  <ldesign-icon name={button.icon} class="ldesign-drawer__button-icon" />
-                )}
-                {button.text}
+                {button.loading ? (
+                  <span class="drawer-btn-loading">⏳</span>
+                ) : button.icon ? (
+                  <span class="drawer-btn-icon">{button.icon}</span>
+                ) : null}
+                <span class="drawer-btn-text">{button.text}</span>
               </button>
             ))}
           </div>
@@ -827,662 +1014,42 @@ export class LdesignDrawer {
   }
 
   private renderResizeHandle() {
-    // 统一显示调整手柄（桌面端和移动端）
-    if (!this.resizable || this.resizeMode !== 'edge') return null;
+    const handleClass = `drawer-resize-handle drawer-resize-handle-${this.placement}`;
 
-    const placement = this.placement;
     return (
       <div
-        class={{
-          'ldesign-drawer__resize-handle': true,
-          [`ldesign-drawer__resize-handle--${placement}`]: true,
-          'ldesign-drawer__resize-handle--active': this.isResizing
-        }}
-        title={this.showResizeHint ? '拖动调整大小' : ''}
+        ref={(el) => (this.resizeHandleRef = el)}
+        class={handleClass}
+        onMouseDown={this.handleResizeStart}
+        onTouchStart={this.handleResizeStart}
       >
-        <div class="ldesign-drawer__resize-line" />
-        {this.showResizeHint && this.isResizing && (
-          <div class="ldesign-drawer__resize-hint">
-            {Math.round(this.getCurrentSizeInPixels())}px
-          </div>
+        {this.showSizeHint && this.isResizing && (
+          <div class="drawer-size-hint">{this.currentSize}</div>
         )}
       </div>
     );
   }
-  
+
   private renderSwipeHandle() {
-    // 渲染滑动手柄区域（用于 swipeTriggerArea === 'handle' 模式）
-    if (!this.swipeToClose || this.swipeTriggerArea !== 'handle') return null;
-    
-    const placement = this.placement;
-    
-    return (
-      <div 
-        class={{
-          'ldesign-drawer__swipe-handle': true,
-          [`ldesign-drawer__swipe-handle--${placement}`]: true,
-          'ldesign-drawer__swipe-handle--dragging': this.isDragging
-        }}
-        style={{ 
-          height: placement === 'top' || placement === 'bottom' ? `${this.handleHeight}px` : undefined,
-          width: placement === 'left' || placement === 'right' ? `${this.handleHeight}px` : undefined
-        }}
-      >
-        <div class="ldesign-drawer__swipe-handle-bar" />
-      </div>
-    );
-  }
-
-  private renderSnapIndicator() {
-    if (!this.showSnapIndicator || !this.currentSnapPoint) return null;
+    if (this.swipeTriggerArea !== 'handle') return null;
 
     return (
-      <div class="ldesign-drawer__snap-indicator">
-        <div class="ldesign-drawer__snap-label">
-          {this.currentSnapPoint.label || `吸附到 ${this.currentSnapPoint.value}`}
-        </div>
-      </div>
-    );
-  }
-
-  private renderProgress() {
-    if (!this.showProgress) return null;
-    
-    return (
-      <div class="ldesign-drawer__progress">
-        <div 
-          class="ldesign-drawer__progress-bar" 
-          style={{ width: `${this.progressPercent}%` }}
-        />
+      <div class="drawer-swipe-handle">
+        <div class="drawer-swipe-indicator" />
       </div>
     );
   }
 
   private renderLoading() {
-    if (!this.isLoading) return null;
-    
-    const config = typeof this.loading === 'object' ? this.loading : { show: true, spinner: true };
-    
     return (
-      <div class="ldesign-drawer__loading">
-        {config.spinner !== false && (
-          <div class="ldesign-drawer__loading-spinner">
-            <div class="ldesign-drawer__loading-spin" />
+      <div class="drawer-loading-overlay">
+        <slot name="loading">
+          <div class="drawer-loading-content">
+            <div class="drawer-loading-spinner" />
+            {this.loadingText && <p class="drawer-loading-text">{this.loadingText}</p>}
           </div>
-        )}
-        {config.text && (
-          <div class="ldesign-drawer__loading-text">{config.text}</div>
-        )}
+        </slot>
       </div>
     );
   }
-
-  private renderBody() {
-    const getPadding = () => {
-      if (this.bodyPadding === false) return '0';
-      if (typeof this.bodyPadding === 'string') return this.bodyPadding;
-      return '16px 20px';
-    };
-
-    return (
-      <div class={{
-        'ldesign-drawer__body': true,
-        'ldesign-drawer__body--border': this.contentBorder,
-        'ldesign-drawer__body--shadow': this.contentShadow,
-        'ldesign-drawer__body--virtual': this.virtualScroll
-      }} style={{ padding: getPadding() }}>
-        {this.isLoading ? (
-          this.renderLoading()
-        ) : this.lazyLoad && !this.contentLoaded ? (
-          <div class="ldesign-drawer__lazy-placeholder">
-            <div class="ldesign-drawer__lazy-loading">加载中...</div>
-          </div>
-        ) : (
-          <slot />
-        )}
-      </div>
-    );
-  }
-
-  render() {
-    // 注意：mask 元素每次渲染重新查询引用
-    // 以便 handleMaskClick 判断点击来源
-    setTimeout(() => {
-      this.maskElement = this.el.querySelector('.ldesign-drawer__mask') as HTMLElement;
-      this.panelElement = this.el.querySelector('.ldesign-drawer__panel') as HTMLElement;
-      this.resizeHandleElement = this.el.querySelector('.ldesign-drawer__resize-handle') as HTMLElement;
-      
-      // 延迟加载内容
-      if (this.lazyLoad && !this.contentLoaded && this.isVisible) {
-        setTimeout(() => {
-          this.contentLoaded = true;
-        }, this.lazyLoad);
-      }
-    }, 0);
-
-    // 执行打开回调
-    if (this.isVisible && this.onOpen) {
-      setTimeout(() => this.onOpen(), 50);
-    }
-
-    return (
-      <Host>
-        <div class={this.getRootClasses()} style={this.getRootStyle()} role="dialog" aria-modal="true" aria-hidden={this.isVisible ? 'false' : 'true'}>
-          {this.mask && (
-            <div class={{
-              'ldesign-drawer__mask': true,
-              'ldesign-drawer__mask--transparent': this.isDragging
-            }} onClick={this.handleMaskClick}></div>
-          )}
-          <div class={{
-            'ldesign-drawer__panel': true,
-            'ldesign-drawer__panel--open': this.isPanelOpen,
-            'ldesign-drawer__panel--closing': this.isClosing,
-            [`ldesign-drawer__panel--${this.placement}`]: true,
-            'ldesign-drawer__panel--rounded': this.rounded,
-            'ldesign-drawer__panel--resizing': this.isResizing,
-            'ldesign-drawer__panel--dragging': this.isDragging,
-            'ldesign-drawer__panel--fullscreen': this.isFullscreen || this.fullscreen,
-            'ldesign-drawer__panel--minimized': this.isMinimized,
-          }} style={this.panelStyle()}>
-            {this.renderResizeHandle()}
-            {this.renderSwipeHandle()}
-            {this.renderProgress()}
-            <div class="ldesign-drawer__content">
-              {this.renderHeader()}
-              {this.renderBody()}
-              {this.renderFooter()}
-            </div>
-            {this.renderSnapIndicator()}
-          </div>
-        </div>
-      </Host>
-    );
-  }
-  // ── 容器辅助 ─────────────────────────────────────────────
-  private moveToContainer() {
-    try {
-      let target: HTMLElement | null = null;
-      if (typeof this.getContainer === 'string') {
-        target = document.querySelector(this.getContainer) as HTMLElement | null;
-      } else if ((this.getContainer as any) && (this.getContainer as any).nodeType === 1) {
-        target = this.getContainer as HTMLElement;
-      } else {
-        target = null;
-      }
-      if (target && this.el.parentElement !== target) {
-        target.appendChild(this.el);
-      }
-      this.containerEl = target;
-    } catch (_) { /* ignore */ }
-  }
-
-  private isInContainer(): boolean {
-    // 只有显式指定了 getContainer（或通过 moveToContainer 成功记录）时才视为容器模式
-    const c = this.containerEl;
-    return !!(c && c !== document.body && c !== document.documentElement);
-  }
-
-  private getRootStyle(): { [k: string]: string } {
-    // 根节点需要携带实例化的 z-index，确保多层时按栈顶顺序覆盖
-    const style: { [k: string]: string } = { zIndex: String(this.baseZ()) };
-    // 在容器内使用绝对定位以铺满容器
-    if (this.isInContainer()) {
-      style.position = 'absolute';
-    }
-    return style;
-  }
-
-  private applyContainerOverflow(container: HTMLElement) {
-    if (!container) return;
-    const rec = __containerOverflowLocks.get(container) || { count: 0, original: container.style.overflow || null };
-    if (rec.count === 0) {
-      rec.original = container.style.overflow || null;
-      container.style.overflow = 'hidden';
-    }
-    rec.count += 1;
-    __containerOverflowLocks.set(container, rec);
-  }
-
-  private restoreContainerOverflow(container: HTMLElement) {
-    if (!container) return;
-    const rec = __containerOverflowLocks.get(container);
-    if (!rec) return;
-    rec.count = Math.max(0, rec.count - 1);
-    if (rec.count === 0) {
-      if (rec.original == null || rec.original === '') container.style.removeProperty('overflow');
-      else container.style.overflow = rec.original;
-      __containerOverflowLocks.delete(container);
-    } else {
-      __containerOverflowLocks.set(container, rec);
-    }
-  }
-
-  // ── 栈管理 ─────────────────────────────────────────────
-  private getContainerElement(): HTMLElement {
-    const p = this.el.parentElement;
-    return p ?? document.body;
-  }
-  private applyInert() {
-    const container = this.getContainerElement();
-    const siblings = Array.from(container.children) as HTMLElement[];
-    const me = this.el as HTMLElement;
-    const targets = siblings.filter((el) => el !== me);
-    targets.forEach((el) => {
-      el.setAttribute('aria-hidden', 'true');
-      try { (el as any).setAttribute('inert', ''); } catch (_) {}
-    });
-  }
-  private clearInert() {
-    const container = this.getContainerElement();
-    const siblings = Array.from(container.children) as HTMLElement[];
-    siblings.forEach((el) => {
-      el.removeAttribute('aria-hidden');
-      try { (el as any).removeAttribute('inert'); } catch (_) {}
-    });
-  }
-  private pushToStack() {
-    const prevTop = __drawerStack[__drawerStack.length - 1];
-    if (prevTop && prevTop !== (this as any)) {
-      try { prevTop.clearInert(); } catch (_) {}
-    }
-    const idx = __drawerStack.indexOf(this as any);
-    if (idx >= 0) __drawerStack.splice(idx, 1);
-    const prevZ = prevTop && typeof prevTop.assignedZIndex === 'number' ? prevTop.assignedZIndex : (this.zIndex || 1000);
-    const base = Math.max(this.zIndex || 1000, (prevZ as number) + (prevTop ? 2 : 0));
-    this.assignedZIndex = base;
-    __drawerStack.push(this as any);
-    this.applyInert();
-  }
-  private removeFromStack() {
-    const idx = __drawerStack.indexOf(this as any);
-    if (idx >= 0) __drawerStack.splice(idx, 1);
-    this.clearInert();
-    const newTop = __drawerStack[__drawerStack.length - 1];
-    if (newTop) {
-      try { newTop.applyInert(); } catch (_) {}
-    }
-    this.assignedZIndex = undefined;
-  }
-  private isTopMost() {
-    return __drawerStack.length > 0 && __drawerStack[__drawerStack.length - 1] === (this as any);
-  }
-
-  // ── 调整大小功能 ──────────────────────────────────────────────
-  private initResize() {
-    if (!this.resizable || !this.resizeHandleElement) return;
-
-    // 鼠标事件
-    this.resizeHandleElement.addEventListener('mousedown', this.handleResizeMouseDown);
-    // 触摸事件
-    this.resizeHandleElement.addEventListener('touchstart', this.handleResizeTouchStart, { passive: false });
-  }
-
-  private cleanupResize() {
-    if (this.resizeHandleElement) {
-      this.resizeHandleElement.removeEventListener('mousedown', this.handleResizeMouseDown);
-      this.resizeHandleElement.removeEventListener('touchstart', this.handleResizeTouchStart);
-    }
-    document.removeEventListener('mousemove', this.handleResizeMouseMove);
-    document.removeEventListener('mouseup', this.handleResizeMouseUp);
-    document.removeEventListener('touchmove', this.handleResizeTouchMove);
-    document.removeEventListener('touchend', this.handleResizeTouchEnd);
-  }
-
-  private handleResizeMouseDown = (e: MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    this.startResize(e.clientX, e.clientY);
-    document.addEventListener('mousemove', this.handleResizeMouseMove);
-    document.addEventListener('mouseup', this.handleResizeMouseUp);
-    // 添加临时样式防止选中文本
-    document.body.style.userSelect = 'none';
-    document.body.style.cursor = this.placement === 'left' || this.placement === 'right' ? 'col-resize' : 'row-resize';
-  };
-
-  private handleResizeMouseMove = (e: MouseEvent) => {
-    this.doResize(e.clientX, e.clientY);
-  };
-
-  private handleResizeMouseUp = () => {
-    this.endResize();
-    document.removeEventListener('mousemove', this.handleResizeMouseMove);
-    document.removeEventListener('mouseup', this.handleResizeMouseUp);
-    // 恢复样式
-    document.body.style.userSelect = '';
-    document.body.style.cursor = '';
-  };
-
-  private handleResizeTouchStart = (e: TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const touch = e.touches[0];
-    this.startResize(touch.clientX, touch.clientY);
-    document.addEventListener('touchmove', this.handleResizeTouchMove, { passive: false });
-    document.addEventListener('touchend', this.handleResizeTouchEnd);
-    document.addEventListener('touchcancel', this.handleResizeTouchEnd);
-    // 移动端也禁用文本选择
-    document.body.style.userSelect = 'none';
-    document.body.style.webkitUserSelect = 'none';
-  };
-
-  private handleResizeTouchMove = (e: TouchEvent) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    this.doResize(touch.clientX, touch.clientY);
-  };
-
-  private handleResizeTouchEnd = () => {
-    this.endResize();
-    document.removeEventListener('touchmove', this.handleResizeTouchMove);
-    document.removeEventListener('touchend', this.handleResizeTouchEnd);
-    document.removeEventListener('touchcancel', this.handleResizeTouchEnd);
-    // 恢复样式
-    document.body.style.userSelect = '';
-    document.body.style.webkitUserSelect = '';
-  };
-
-  private startResize(x: number, y: number) {
-    this.isResizing = true;
-    this.startPosition = { x, y };
-    const currentSize = this.getCurrentSizeInPixels();
-    this.startSize = currentSize;
-    // 获取当前面板元素并保存引用
-    if (!this.panelElement) {
-      this.panelElement = this.el.querySelector('.ldesign-drawer__panel') as HTMLElement;
-    }
-    this.ldesignResizeStart.emit();
-  }
-
-  private doResize(x: number, y: number) {
-    if (!this.isResizing) return;
-
-    let delta = 0;
-    if (this.placement === 'left') {
-      delta = x - this.startPosition.x;
-    } else if (this.placement === 'right') {
-      delta = this.startPosition.x - x;
-    } else if (this.placement === 'top') {
-      delta = y - this.startPosition.y;
-    } else if (this.placement === 'bottom') {
-      delta = this.startPosition.y - y;
-    }
-
-    let newSize = this.startSize + delta;
-    
-    // 获取限制范围
-    const min = this.parseSize(this.minSize);
-    const max = this.parseSize(this.maxSize);
-    
-    // 在边界处应用阻尼效果
-    if (this.damping) {
-      if (newSize < min) {
-        // 超出最小值时的阻尼
-        const overMin = min - newSize;
-        newSize = min - overMin * this.dampingFactor;
-      } else if (newSize > max) {
-        // 超出最大值时的阻尼
-        const overMax = newSize - max;
-        newSize = max + overMax * this.dampingFactor;
-      }
-    } else {
-      // 不启用阻尼时直接限制
-      newSize = Math.max(min, Math.min(max, newSize));
-    }
-
-    // 检查吸附点
-    if (this.snapPoints.length > 0) {
-      for (const point of this.snapPoints) {
-        const snapValue = this.parseSize(point.value);
-        if (Math.abs(newSize - snapValue) < this.snapThreshold) {
-          newSize = snapValue;
-          if (this.currentSnapPoint !== point) {
-            this.currentSnapPoint = point;
-            this.showSnapIndicator = true;
-            this.ldesignSnapToPoint.emit(point);
-            setTimeout(() => {
-              this.showSnapIndicator = false;
-            }, 1000);
-          }
-          break;
-        }
-      }
-    }
-
-    this.currentSize = `${newSize}px`;
-    // 立即更新样式，不等待下一帧
-    if (this.panelElement) {
-      if (this.placement === 'left' || this.placement === 'right') {
-        this.panelElement.style.width = `${newSize}px`;
-      } else {
-        this.panelElement.style.height = `${newSize}px`;
-      }
-    }
-    this.ldesignSizeChange.emit({ size: this.currentSize, placement: this.placement });
-  }
-
-  private endResize() {
-    if (!this.isResizing) return;
-    this.isResizing = false;
-    this.currentSnapPoint = null;
-    this.showSnapIndicator = false;
-    // 确保最终尺寸在范围内
-    const min = this.parseSize(this.minSize);
-    const max = this.parseSize(this.maxSize);
-    const currentPixels = this.getCurrentSizeInPixels();
-    const finalSize = Math.max(min, Math.min(max, currentPixels));
-    if (finalSize !== currentPixels) {
-      this.currentSize = `${finalSize}px`;
-      if (this.panelElement) {
-        if (this.placement === 'left' || this.placement === 'right') {
-          this.panelElement.style.width = `${finalSize}px`;
-        } else {
-          this.panelElement.style.height = `${finalSize}px`;
-        }
-      }
-    }
-    this.ldesignResizeEnd.emit({ size: this.currentSize });
-  }
-
-  // ── 手势功能 ──────────────────────────────────────────────
-  private initSwipeGestures() {
-    if (!this.panelElement) return;
-    this.panelElement.addEventListener('touchstart', this.handleSwipeStart, { passive: false });
-  }
-
-  private cleanupSwipeGestures() {
-    if (this.panelElement) {
-      this.panelElement.removeEventListener('touchstart', this.handleSwipeStart);
-    }
-    document.removeEventListener('touchmove', this.handleSwipeMove);
-    document.removeEventListener('touchend', this.handleSwipeEnd);
-  }
-
-  private handleSwipeStart = (e: TouchEvent) => {
-    const target = e.target as HTMLElement;
-    
-    // 根据 swipeTriggerArea 配置决定是否允许拖动
-    if (this.swipeTriggerArea === 'handle') {
-      // 只在手柄区域允许拖动
-      const isSwipeHandle = target.closest('.ldesign-drawer__swipe-handle');
-      if (!isSwipeHandle) return;
-    } else if (this.swipeTriggerArea === 'header') {
-      // 只在头部区域允许拖动
-      const isHeader = target.closest('.ldesign-drawer__header');
-      if (!isHeader) return;
-    }
-    // swipeTriggerArea === 'anywhere' 时任何位置都可以拖动
-    
-    const touch = e.touches[0];
-    this.touchStartPosition = { x: touch.clientX, y: touch.clientY };
-    this.touchStartTime = Date.now();
-    this.isDragging = true;
-    document.addEventListener('touchmove', this.handleSwipeMove, { passive: false });
-    document.addEventListener('touchend', this.handleSwipeEnd);
-    document.addEventListener('touchcancel', this.handleSwipeEnd);
-  };
-
-  private handleSwipeMove = (e: TouchEvent) => {
-    if (!this.isDragging) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    
-    let offset = 0;
-    if (this.placement === 'left' || this.placement === 'right') {
-      offset = touch.clientX - this.touchStartPosition.x;
-    } else {
-      offset = touch.clientY - this.touchStartPosition.y;
-    }
-
-    // 只允许向关闭方向拖动
-    if (
-      (this.placement === 'left' && offset < 0) ||
-      (this.placement === 'right' && offset > 0) ||
-      (this.placement === 'top' && offset < 0) ||
-      (this.placement === 'bottom' && offset > 0)
-    ) {
-      this.dragOffset = Math.abs(offset);
-    }
-  };
-
-  private handleSwipeEnd = () => {
-    if (!this.isDragging) return;
-    
-    const panelSize = this.getCurrentSizeInPixels();
-    const threshold = panelSize * this.swipeThreshold;
-    const velocity = this.calculateVelocity();
-
-    if (this.dragOffset > threshold || velocity > 0.5) {
-      this.close();
-    } else {
-      // 弹回动画
-      this.animateBack();
-    }
-
-    this.isDragging = false;
-    this.dragOffset = 0;
-    document.removeEventListener('touchmove', this.handleSwipeMove);
-    document.removeEventListener('touchend', this.handleSwipeEnd);
-    document.removeEventListener('touchcancel', this.handleSwipeEnd);  // 清理 touchcancel
-  };
-
-  private animateBack() {
-    const animate = () => {
-      this.dragOffset = this.dragOffset * 0.8;
-      if (this.dragOffset > 1) {
-        this.animationFrame = requestAnimationFrame(animate);
-      } else {
-        this.dragOffset = 0;
-      }
-    };
-    animate();
-  }
-
-  private calculateVelocity(): number {
-    const duration = Date.now() - this.touchStartTime;
-    return this.dragOffset / duration;
-  }
-
-  // ── 键盘导航 ──────────────────────────────────────────────
-  private initKeyboardNavigation() {
-    this.el.addEventListener('keydown', this.handleKeyboardNavigation);
-  }
-
-  private handleKeyboardNavigation = (e: KeyboardEvent) => {
-    if (!this.keyboardNavigation || !this.isVisible) return;
-
-    // Tab 键循环焦点
-    if (e.key === 'Tab') {
-      const focusableElements = this.getFocusableElements();
-      if (focusableElements.length === 0) return;
-
-      const activeElement = document.activeElement as HTMLElement;
-      const currentIndex = focusableElements.indexOf(activeElement);
-
-      if (e.shiftKey) {
-        // Shift+Tab: 向前
-        if (currentIndex <= 0) {
-          e.preventDefault();
-          focusableElements[focusableElements.length - 1].focus();
-        }
-      } else {
-        // Tab: 向后
-        if (currentIndex === focusableElements.length - 1) {
-          e.preventDefault();
-          focusableElements[0].focus();
-        }
-      }
-    }
-
-    // Arrow keys for resize
-    if (this.resizable && e.ctrlKey) {
-      const step = e.shiftKey ? 50 : 10;
-      let newSize = this.getCurrentSizeInPixels();
-
-      if (
-        (this.placement === 'left' || this.placement === 'right') &&
-        (e.key === 'ArrowLeft' || e.key === 'ArrowRight')
-      ) {
-        e.preventDefault();
-        newSize += e.key === 'ArrowRight' ? step : -step;
-        this.currentSize = `${Math.max(this.parseSize(this.minSize), Math.min(this.parseSize(this.maxSize), newSize))}px`;
-        this.ldesignSizeChange.emit({ size: this.currentSize, placement: this.placement });
-      } else if (
-        (this.placement === 'top' || this.placement === 'bottom') &&
-        (e.key === 'ArrowUp' || e.key === 'ArrowDown')
-      ) {
-        e.preventDefault();
-        newSize += e.key === 'ArrowDown' ? step : -step;
-        this.currentSize = `${Math.max(this.parseSize(this.minSize), Math.min(this.parseSize(this.maxSize), newSize))}px`;
-        this.ldesignSizeChange.emit({ size: this.currentSize, placement: this.placement });
-      }
-    }
-  };
-
-  private getFocusableElements(): HTMLElement[] {
-    const selector = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-    return Array.from(this.el.querySelectorAll(selector));
-  }
-
-  private focusFirstElement() {
-    const focusableElements = this.getFocusableElements();
-    if (focusableElements.length > 0) {
-      setTimeout(() => focusableElements[0].focus(), 100);
-    }
-  }
-
-
-  private handleResize = () => {
-    // 窗口大小变化时重新计算 - 所有设备都需要响应窗口变化
-    if (this.isVisible) {
-      // 触发重新渲染 - 使用状态更新来触发重渲染
-      this.currentSize = this.currentSize || this.size;
-    }
-  };
-
-  private getCurrentSizeInPixels(): number {
-    const current = this.currentSize || this.size;
-    return this.parseSize(current);
-  }
-
-  private parseSize(size: number | string): number {
-    if (typeof size === 'number') return size;
-    if (typeof size === 'string') {
-      if (size.endsWith('%')) {
-        const percentage = parseFloat(size) / 100;
-        return this.placement === 'left' || this.placement === 'right'
-          ? window.innerWidth * percentage
-          : window.innerHeight * percentage;
-      } else if (size.endsWith('vh')) {
-        return (parseFloat(size) / 100) * window.innerHeight;
-      } else if (size.endsWith('vw')) {
-        return (parseFloat(size) / 100) * window.innerWidth;
-      } else if (size.endsWith('px')) {
-        return parseFloat(size);
-      }
-      return parseFloat(size) || 360;
-    }
-    return 360;
-  }
-
 }

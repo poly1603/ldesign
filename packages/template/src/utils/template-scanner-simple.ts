@@ -175,7 +175,7 @@ class SimpleTemplateScanner {
     const asyncComponent = markRaw(defineAsyncComponent({
       loader: async () => {
         try {
-          const module = await componentLoader()
+          const module: any = await componentLoader()
 
           // 处理不同的模块格式
           let component = null
@@ -273,7 +273,7 @@ class SimpleTemplateScanner {
     }
 
     try {
-      const module = await finalLoader()
+      const module: any = await finalLoader()
       const config = module.default || module
 
       // 缓存配置
@@ -301,8 +301,14 @@ class SimpleTemplateScanner {
     const configPath = `../templates/${category}/${device}/${name}/config.ts`
 
     // 优先使用 .vue.js 路径（生产环境），然后使用 .vue 路径（开发环境）
-    const componentLoader = this.componentModules[componentPathJs] || this.componentModules[componentPathVue]
+    const componentLoaderAny = this.componentModules[componentPathJs] || this.componentModules[componentPathVue]
     const componentPath = this.componentModules[componentPathJs] ? componentPathJs : componentPathVue
+
+    const loaderFn: () => Promise<Component> = async () => {
+      const m: any = await (componentLoaderAny as any)()
+      let c = m?.default ?? m
+      return c as Component
+    }
 
     return {
       ...config,
@@ -310,7 +316,7 @@ class SimpleTemplateScanner {
       device,
       componentPath,
       configPath,
-      componentLoader,
+      componentLoader: loaderFn,
       lastModified: Date.now(),
       isBuiltIn: true
     }

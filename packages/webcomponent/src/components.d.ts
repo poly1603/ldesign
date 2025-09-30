@@ -11,7 +11,7 @@ import { ButtonColor, ButtonHTMLType, ButtonSize, ButtonVariant } from "./compon
 import { CalEvent } from "./components/calendar/calendar";
 import { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
 import { Placement } from "@floating-ui/dom";
-import { DrawerButton, DrawerPlacement, HeaderConfig, LoadingConfig, SnapPoint } from "./components/drawer/drawer";
+import { CloseReason, DrawerButton, DrawerLevel, DrawerPlacement, DrawerState, DrawerTheme, SizePreset, SnapPoint } from "./components/drawer/drawer.types";
 import { DropdownItem, DropdownNode, DropdownPlacement, DropdownTrigger, DropdownVariant } from "./components/dropdown/dropdown";
 import { ImageViewerItem } from "./components/image-viewer/image-viewer";
 import { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
@@ -34,7 +34,7 @@ export { ButtonColor, ButtonHTMLType, ButtonSize, ButtonVariant } from "./compon
 export { CalEvent } from "./components/calendar/calendar";
 export { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
 export { Placement } from "@floating-ui/dom";
-export { DrawerButton, DrawerPlacement, HeaderConfig, LoadingConfig, SnapPoint } from "./components/drawer/drawer";
+export { CloseReason, DrawerButton, DrawerLevel, DrawerPlacement, DrawerState, DrawerTheme, SizePreset, SnapPoint } from "./components/drawer/drawer.types";
 export { DropdownItem, DropdownNode, DropdownPlacement, DropdownTrigger, DropdownVariant } from "./components/dropdown/dropdown";
 export { ImageViewerItem } from "./components/image-viewer/image-viewer";
 export { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
@@ -1493,13 +1493,9 @@ export namespace Components {
         "zoomStep": number;
         "zoomTo": (scale: number, clientX?: number, clientY?: number) => Promise<void>;
     }
-    /**
-     * Drawer 抽屉组件
-     * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
-     */
     interface LdesignDrawer {
         /**
-          * 是否显示进入/退出动画
+          * 是否启用动画
           * @default true
          */
         "animation": boolean;
@@ -1509,271 +1505,295 @@ export namespace Components {
          */
         "animationDuration": number;
         /**
-          * 自动聚焦到第一个可交互元素
+          * 动画缓动函数
+          * @default 'ease-in-out'
+         */
+        "animationEasing": string;
+        /**
+          * 动画类型
+          * @default 'slide'
+         */
+        "animationType": string;
+        /**
+          * ARIA 标签
+         */
+        "ariaLabelText"?: string;
+        /**
+          * 自动聚焦
           * @default true
          */
         "autoFocus": boolean;
         /**
-          * 关闭前的钩子（返回false阻止关闭）
-         */
-        "beforeClose": () => boolean | Promise<boolean>;
-        /**
-          * 内容区域内边距
-          * @default true
-         */
-        "bodyPadding": string | boolean;
-        /**
           * 圆角大小
-          * @default '12px'
+          * @default '8px'
          */
         "borderRadius": string;
         /**
-          * 是否显示右上角关闭按钮
+          * 是否显示关闭按钮
           * @default true
          */
         "closable": boolean;
         /**
-          * 关闭（等价于 hide），同时触发 close 事件
+          * 关闭抽屉
          */
-        "close": () => Promise<void>;
+        "close": (reason?: CloseReason) => Promise<void>;
         /**
-          * 是否允许按下 ESC 关闭
+          * 按 ESC 关闭
           * @default true
          */
         "closeOnEsc": boolean;
         /**
-          * 是否显示内容区域边框
-          * @default false
+          * 容器选择器或元素
          */
-        "contentBorder": boolean;
-        /**
-          * 是否启用内容区域阴影
-          * @default false
-         */
-        "contentShadow": boolean;
+        "container"?: string | HTMLElement;
         /**
           * 自定义类名
           * @default ''
          */
         "customClass": string;
         /**
-          * 是否启用阻尼效果
-          * @default true
-         */
-        "damping": boolean;
-        /**
-          * 阻尼系数（0-1）
-          * @default 0.5
-         */
-        "dampingFactor": number;
-        /**
-          * 是否启用暗黑模式
+          * 关闭时销毁
           * @default false
          */
-        "darkMode": boolean;
+        "destroyOnClose": boolean;
         /**
-          * 标题文本（可通过 slot=header 自定义头部）
+          * 标题
          */
         "drawerTitle"?: string;
         /**
-          * 是否显示底部分割线
+          * 焦点捕获
+          * @default true
+         */
+        "focusTrap": boolean;
+        /**
+          * 底部按钮对齐方式
+          * @default 'right'
+         */
+        "footerAlign": 'left' | 'center' | 'right' | 'space-between';
+        /**
+          * 是否显示底部边框
           * @default true
          */
         "footerBorder": boolean;
         /**
-          * 自定义底部按钮
+          * 底部按钮配置
           * @default []
          */
         "footerButtons": DrawerButton[];
         /**
-          * 是否全屏显示
+          * 是否全屏
           * @default false
          */
         "fullscreen": boolean;
         /**
-          * 是否可以全屏切换
+          * 是否可全屏切换
           * @default false
          */
         "fullscreenable": boolean;
         /**
-          * 容器（选择器或元素）：若提供，则把组件节点移动到该容器下
+          * 获取当前尺寸
          */
-        "getContainer"?: string | HTMLElement;
+        "getSize": () => Promise<{ width: number; height: number; }>;
         /**
-          * 拖动手柄的高度（像素，用于 handle 模式）
-          * @default 40
+          * 获取当前状态
          */
-        "handleHeight": number;
+        "getState": () => Promise<DrawerState>;
         /**
-          * 是否显示头部分割线
+          * 性能优化：GPU 加速
+          * @default true
+         */
+        "gpuAcceleration": boolean;
+        /**
+          * 是否显示头部边框
           * @default true
          */
         "headerBorder": boolean;
         /**
-          * 头部高级配置
-          * @default {}
-         */
-        "headerConfig": HeaderConfig;
-        /**
-          * 隐藏抽屉（带动画）
-         */
-        "hide": () => Promise<void>;
-        /**
-          * 是否启用键盘导航
-          * @default true
-         */
-        "keyboardNavigation": boolean;
-        /**
-          * 内容延迟加载（毫秒）
-          * @default 0
-         */
-        "lazyLoad": number;
-        /**
-          * 抽屉层级模式（normal | high | top）
-          * @default 'normal'
-         */
-        "level": 'normal' | 'high' | 'top';
-        /**
-          * 加载状态配置
+          * 头部是否吸顶
           * @default false
          */
-        "loading": LoadingConfig | boolean;
+        "headerSticky": boolean;
         /**
-          * 是否显示遮罩层
+          * 隐藏加载状态
+         */
+        "hideLoading": () => Promise<void>;
+        /**
+          * 标题图标
+         */
+        "icon"?: string;
+        /**
+          * 抽屉层级
+          * @default 'normal'
+         */
+        "level": DrawerLevel;
+        /**
+          * 是否显示加载状态
+          * @default false
+         */
+        "loading": boolean;
+        /**
+          * 加载文本
+          * @default '加载中...'
+         */
+        "loadingText": string;
+        /**
+          * 是否锁定页面滚动
+          * @default true
+         */
+        "lockScroll": boolean;
+        /**
+          * 是否显示遮罩
           * @default true
          */
         "mask": boolean;
+        /**
+          * 遮罩样式类名
+          * @default ''
+         */
+        "maskClass": string;
         /**
           * 点击遮罩是否关闭
           * @default true
          */
         "maskClosable": boolean;
         /**
-          * 最大尺寸（像素或百分比）
-          * @default '80%'
+          * 最大尺寸
+          * @default '90%'
          */
         "maxSize": number | string;
         /**
-          * 最小尺寸（像素或百分比）
+          * 是否可最大化
+          * @default false
+         */
+        "maximizable": boolean;
+        /**
+          * 最大化
+         */
+        "maximize": () => Promise<void>;
+        /**
+          * 最小尺寸
           * @default 200
          */
         "minSize": number | string;
         /**
-          * 是否显示最小化按钮
+          * 是否可最小化
           * @default false
          */
         "minimizable": boolean;
         /**
-          * 是否处于最小化状态
-          * @default false
+          * 最小化
          */
-        "minimized": boolean;
+        "minimize": () => Promise<void>;
         /**
-          * 打开时的回调
+          * 打开抽屉
          */
-        "onOpen": () => void | Promise<void>;
+        "open": () => Promise<void>;
         /**
-          * 抽屉出现的位置
+          * 内容内边距
+          * @default true
+         */
+        "padding": string | boolean;
+        /**
+          * 抽屉位置
           * @default 'right'
          */
         "placement": DrawerPlacement;
         /**
-          * 是否在关闭时保留状态
-          * @default false
-         */
-        "preserveState": boolean;
-        /**
-          * 进度条百分比
-          * @default 0
-         */
-        "progressPercent": number;
-        /**
-          * 是否可调整大小（桌面端和移动端统一配置）
+          * 是否可调整大小
           * @default false
          */
         "resizable": boolean;
         /**
-          * 调整大小的手柄位置（'edge' | 'handle'）
-          * @default 'edge'
+          * 调整大小
          */
-        "resizeMode": 'edge' | 'handle';
+        "resize": (size: number | string) => Promise<void>;
+        /**
+          * 恢复
+         */
+        "restore": () => Promise<void>;
+        /**
+          * 恢复焦点
+          * @default true
+         */
+        "restoreFocus": boolean;
         /**
           * 是否启用圆角
-          * @default false
+          * @default true
          */
         "rounded": boolean;
         /**
-          * 设置加载状态
-         */
-        "setLoading": (loading: boolean | LoadingConfig) => Promise<void>;
-        /**
-          * 显示抽屉
-         */
-        "show": (emit?: boolean) => Promise<void>;
-        /**
-          * 是否显示进度条
+          * 是否显示返回按钮
           * @default false
          */
-        "showProgress": boolean;
+        "showBack": boolean;
         /**
-          * 是否显示调整大小的提示
+          * 显示加载状态
+         */
+        "showLoading": (text?: string) => Promise<void>;
+        /**
+          * 是否显示尺寸提示
           * @default true
          */
-        "showResizeHint": boolean;
+        "showSizeHint": boolean;
         /**
-          * 面板尺寸（left/right 为宽度，top/bottom 为高度）。可为数字（px）或任意 CSS 长度
-          * @default 360
+          * 抽屉大小
+          * @default 'md'
          */
-        "size": number | string;
+        "size": number | string | SizePreset;
         /**
-          * 吸附点配置
+          * 吸附点
           * @default []
          */
         "snapPoints": SnapPoint[];
         /**
-          * 吸附阈值（像素）
-          * @default 50
+          * 吸附阈值
+          * @default 30
          */
         "snapThreshold": number;
         /**
-          * 滑动关闭的阈值（百分比）
+          * 吸附到指定点
+         */
+        "snapTo": (point: SnapPoint) => Promise<void>;
+        /**
+          * 副标题
+         */
+        "subtitle"?: string;
+        /**
+          * 滑动阈值（0-1）
           * @default 0.3
          */
         "swipeThreshold": number;
         /**
-          * 是否启用滑动关闭（支持所有方向）
-          * @default true
+          * 是否启用滑动关闭
+          * @default false
          */
         "swipeToClose": boolean;
         /**
-          * 滑动关闭的触发区域（'anywhere' | 'handle' | 'header'）
-          * @default 'handle'
+          * 滑动触发区域
+          * @default 'edge'
          */
-        "swipeTriggerArea": 'anywhere' | 'handle' | 'header';
+        "swipeTriggerArea": 'anywhere' | 'handle' | 'header' | 'edge';
         /**
-          * 切换全屏
+          * 主题
+          * @default 'light'
          */
-        "toggleFullscreen": () => Promise<void>;
+        "theme": DrawerTheme;
         /**
-          * 切换最小化
+          * 切换显示状态
          */
-        "toggleMinimize": () => Promise<void>;
+        "toggle": () => Promise<void>;
         /**
-          * 更新进度
+          * 性能优化：使用 transform
+          * @default true
          */
-        "updateProgress": (percent: number) => Promise<void>;
-        /**
-          * 是否启用虚拟滚动（适用于大量内容）
-          * @default false
-         */
-        "virtualScroll": boolean;
+        "useTransform": boolean;
         /**
           * 是否显示抽屉
           * @default false
          */
         "visible": boolean;
         /**
-          * z-index
+          * z-index 层级
           * @default 1000
          */
         "zIndex": number;
@@ -2999,6 +3019,11 @@ export namespace Components {
          */
         "animation": ModalAnimation;
         /**
+          * 新增：自动检测系统深色模式
+          * @default true
+         */
+        "autoDetectDarkMode": boolean;
+        /**
           * 软键盘（移动端）避让
           * @default true
          */
@@ -3045,6 +3070,11 @@ export namespace Components {
          */
         "currentStep": number;
         /**
+          * 新增：深色模式
+          * @default false
+         */
+        "darkMode": boolean;
+        /**
           * 是否销毁子元素
           * @default false
          */
@@ -3069,6 +3099,16 @@ export namespace Components {
          */
         "edgeSwipeWidth": number;
         /**
+          * 新增：是否启用手势操作
+          * @default true
+         */
+        "enableGestures": boolean;
+        /**
+          * 新增：是否支持画中画模式
+          * @default false
+         */
+        "enablePictureInPicture": boolean;
+        /**
           * 容器（选择器或元素）：若提供，则在加载时把组件节点移动到该容器下
          */
         "getContainer"?: string | HTMLElement;
@@ -3091,6 +3131,16 @@ export namespace Components {
           * @default true
          */
         "keyboard": boolean;
+        /**
+          * 新增：是否展示加载状态
+          * @default false
+         */
+        "loading": boolean;
+        /**
+          * 新增：加载文字
+          * @default '加载中...'
+         */
+        "loadingText": string;
         /**
           * 是否显示遮罩层
           * @default true
@@ -3150,6 +3200,11 @@ export namespace Components {
         "openOnEdgeSwipe": boolean;
         "preOk"?: () => boolean | Promise<boolean>;
         /**
+          * 新增：当前进度（0-100）
+          * @default 0
+         */
+        "progress": number;
+        /**
           * 是否可调整大小
           * @default false
          */
@@ -3166,6 +3221,11 @@ export namespace Components {
           * 显示模态框
          */
         "show": () => Promise<void>;
+        /**
+          * 新增：是否显示进度指示器
+          * @default false
+         */
+        "showProgress": boolean;
         /**
           * 模态框尺寸
           * @default 'medium'
@@ -5983,20 +6043,14 @@ declare global {
         new (): HTMLLdesignDraggableElement;
     };
     interface HTMLLdesignDrawerElementEventMap {
-        "ldesignVisibleChange": boolean;
-        "ldesignClose": void;
-        "ldesignSizeChange": { size: number | string; placement: DrawerPlacement };
-        "ldesignResizeStart": void;
-        "ldesignResizeEnd": { size: number | string };
-        "ldesignSnapToPoint": SnapPoint;
-        "ldesignFullscreenChange": boolean;
-        "ldesignMinimizeChange": boolean;
-        "ldesignLoadingChange": boolean;
+        "drawerBeforeOpen": void;
+        "drawerOpen": void;
+        "drawerBeforeClose": { reason: CloseReason };
+        "drawerClose": { reason: CloseReason };
+        "drawerStateChange": { state: DrawerState };
+        "drawerResize": { width: number; height: number };
+        "drawerSwipe": { progress: number };
     }
-    /**
-     * Drawer 抽屉组件
-     * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
-     */
     interface HTMLLdesignDrawerElement extends Components.LdesignDrawer, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignDrawerElementEventMap>(type: K, listener: (this: HTMLLdesignDrawerElement, ev: LdesignDrawerCustomEvent<HTMLLdesignDrawerElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
         addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
@@ -8460,13 +8514,9 @@ declare namespace LocalJSX {
          */
         "zoomStep"?: number;
     }
-    /**
-     * Drawer 抽屉组件
-     * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
-     */
     interface LdesignDrawer {
         /**
-          * 是否显示进入/退出动画
+          * 是否启用动画
           * @default true
          */
         "animation"?: boolean;
@@ -8476,279 +8526,275 @@ declare namespace LocalJSX {
          */
         "animationDuration"?: number;
         /**
-          * 自动聚焦到第一个可交互元素
+          * 动画缓动函数
+          * @default 'ease-in-out'
+         */
+        "animationEasing"?: string;
+        /**
+          * 动画类型
+          * @default 'slide'
+         */
+        "animationType"?: string;
+        /**
+          * ARIA 标签
+         */
+        "ariaLabelText"?: string;
+        /**
+          * 自动聚焦
           * @default true
          */
         "autoFocus"?: boolean;
         /**
-          * 关闭前的钩子（返回false阻止关闭）
-         */
-        "beforeClose"?: () => boolean | Promise<boolean>;
-        /**
-          * 内容区域内边距
-          * @default true
-         */
-        "bodyPadding"?: string | boolean;
-        /**
           * 圆角大小
-          * @default '12px'
+          * @default '8px'
          */
         "borderRadius"?: string;
         /**
-          * 是否显示右上角关闭按钮
+          * 是否显示关闭按钮
           * @default true
          */
         "closable"?: boolean;
         /**
-          * 是否允许按下 ESC 关闭
+          * 按 ESC 关闭
           * @default true
          */
         "closeOnEsc"?: boolean;
         /**
-          * 是否显示内容区域边框
-          * @default false
+          * 容器选择器或元素
          */
-        "contentBorder"?: boolean;
-        /**
-          * 是否启用内容区域阴影
-          * @default false
-         */
-        "contentShadow"?: boolean;
+        "container"?: string | HTMLElement;
         /**
           * 自定义类名
           * @default ''
          */
         "customClass"?: string;
         /**
-          * 是否启用阻尼效果
-          * @default true
-         */
-        "damping"?: boolean;
-        /**
-          * 阻尼系数（0-1）
-          * @default 0.5
-         */
-        "dampingFactor"?: number;
-        /**
-          * 是否启用暗黑模式
+          * 关闭时销毁
           * @default false
          */
-        "darkMode"?: boolean;
+        "destroyOnClose"?: boolean;
         /**
-          * 标题文本（可通过 slot=header 自定义头部）
+          * 标题
          */
         "drawerTitle"?: string;
         /**
-          * 是否显示底部分割线
+          * 焦点捕获
+          * @default true
+         */
+        "focusTrap"?: boolean;
+        /**
+          * 底部按钮对齐方式
+          * @default 'right'
+         */
+        "footerAlign"?: 'left' | 'center' | 'right' | 'space-between';
+        /**
+          * 是否显示底部边框
           * @default true
          */
         "footerBorder"?: boolean;
         /**
-          * 自定义底部按钮
+          * 底部按钮配置
           * @default []
          */
         "footerButtons"?: DrawerButton[];
         /**
-          * 是否全屏显示
+          * 是否全屏
           * @default false
          */
         "fullscreen"?: boolean;
         /**
-          * 是否可以全屏切换
+          * 是否可全屏切换
           * @default false
          */
         "fullscreenable"?: boolean;
         /**
-          * 容器（选择器或元素）：若提供，则把组件节点移动到该容器下
+          * 性能优化：GPU 加速
+          * @default true
          */
-        "getContainer"?: string | HTMLElement;
+        "gpuAcceleration"?: boolean;
         /**
-          * 拖动手柄的高度（像素，用于 handle 模式）
-          * @default 40
-         */
-        "handleHeight"?: number;
-        /**
-          * 是否显示头部分割线
+          * 是否显示头部边框
           * @default true
          */
         "headerBorder"?: boolean;
         /**
-          * 头部高级配置
-          * @default {}
-         */
-        "headerConfig"?: HeaderConfig;
-        /**
-          * 是否启用键盘导航
-          * @default true
-         */
-        "keyboardNavigation"?: boolean;
-        /**
-          * 内容延迟加载（毫秒）
-          * @default 0
-         */
-        "lazyLoad"?: number;
-        /**
-          * 抽屉层级模式（normal | high | top）
-          * @default 'normal'
-         */
-        "level"?: 'normal' | 'high' | 'top';
-        /**
-          * 加载状态配置
+          * 头部是否吸顶
           * @default false
          */
-        "loading"?: LoadingConfig | boolean;
+        "headerSticky"?: boolean;
         /**
-          * 是否显示遮罩层
+          * 标题图标
+         */
+        "icon"?: string;
+        /**
+          * 抽屉层级
+          * @default 'normal'
+         */
+        "level"?: DrawerLevel;
+        /**
+          * 是否显示加载状态
+          * @default false
+         */
+        "loading"?: boolean;
+        /**
+          * 加载文本
+          * @default '加载中...'
+         */
+        "loadingText"?: string;
+        /**
+          * 是否锁定页面滚动
+          * @default true
+         */
+        "lockScroll"?: boolean;
+        /**
+          * 是否显示遮罩
           * @default true
          */
         "mask"?: boolean;
+        /**
+          * 遮罩样式类名
+          * @default ''
+         */
+        "maskClass"?: string;
         /**
           * 点击遮罩是否关闭
           * @default true
          */
         "maskClosable"?: boolean;
         /**
-          * 最大尺寸（像素或百分比）
-          * @default '80%'
+          * 最大尺寸
+          * @default '90%'
          */
         "maxSize"?: number | string;
         /**
-          * 最小尺寸（像素或百分比）
+          * 是否可最大化
+          * @default false
+         */
+        "maximizable"?: boolean;
+        /**
+          * 最小尺寸
           * @default 200
          */
         "minSize"?: number | string;
         /**
-          * 是否显示最小化按钮
+          * 是否可最小化
           * @default false
          */
         "minimizable"?: boolean;
         /**
-          * 是否处于最小化状态
-          * @default false
+          * 关闭前触发
          */
-        "minimized"?: boolean;
+        "onDrawerBeforeClose"?: (event: LdesignDrawerCustomEvent<{ reason: CloseReason }>) => void;
         /**
-          * 事件：关闭
+          * 打开前触发
          */
-        "onLdesignClose"?: (event: LdesignDrawerCustomEvent<void>) => void;
+        "onDrawerBeforeOpen"?: (event: LdesignDrawerCustomEvent<void>) => void;
         /**
-          * 事件：全屏切换
+          * 关闭后触发
          */
-        "onLdesignFullscreenChange"?: (event: LdesignDrawerCustomEvent<boolean>) => void;
+        "onDrawerClose"?: (event: LdesignDrawerCustomEvent<{ reason: CloseReason }>) => void;
         /**
-          * 事件：加载状态变化
+          * 打开后触发
          */
-        "onLdesignLoadingChange"?: (event: LdesignDrawerCustomEvent<boolean>) => void;
+        "onDrawerOpen"?: (event: LdesignDrawerCustomEvent<void>) => void;
         /**
-          * 事件：最小化切换
+          * 大小变化
          */
-        "onLdesignMinimizeChange"?: (event: LdesignDrawerCustomEvent<boolean>) => void;
+        "onDrawerResize"?: (event: LdesignDrawerCustomEvent<{ width: number; height: number }>) => void;
         /**
-          * 事件：调整大小结束
+          * 状态变化
          */
-        "onLdesignResizeEnd"?: (event: LdesignDrawerCustomEvent<{ size: number | string }>) => void;
+        "onDrawerStateChange"?: (event: LdesignDrawerCustomEvent<{ state: DrawerState }>) => void;
         /**
-          * 事件：调整大小开始
+          * 滑动进度变化
          */
-        "onLdesignResizeStart"?: (event: LdesignDrawerCustomEvent<void>) => void;
+        "onDrawerSwipe"?: (event: LdesignDrawerCustomEvent<{ progress: number }>) => void;
         /**
-          * 事件：尺寸变化
+          * 内容内边距
+          * @default true
          */
-        "onLdesignSizeChange"?: (event: LdesignDrawerCustomEvent<{ size: number | string; placement: DrawerPlacement }>) => void;
+        "padding"?: string | boolean;
         /**
-          * 事件：吸附到点
-         */
-        "onLdesignSnapToPoint"?: (event: LdesignDrawerCustomEvent<SnapPoint>) => void;
-        /**
-          * 事件：可见性变化
-         */
-        "onLdesignVisibleChange"?: (event: LdesignDrawerCustomEvent<boolean>) => void;
-        /**
-          * 打开时的回调
-         */
-        "onOpen"?: () => void | Promise<void>;
-        /**
-          * 抽屉出现的位置
+          * 抽屉位置
           * @default 'right'
          */
         "placement"?: DrawerPlacement;
         /**
-          * 是否在关闭时保留状态
-          * @default false
-         */
-        "preserveState"?: boolean;
-        /**
-          * 进度条百分比
-          * @default 0
-         */
-        "progressPercent"?: number;
-        /**
-          * 是否可调整大小（桌面端和移动端统一配置）
+          * 是否可调整大小
           * @default false
          */
         "resizable"?: boolean;
         /**
-          * 调整大小的手柄位置（'edge' | 'handle'）
-          * @default 'edge'
+          * 恢复焦点
+          * @default true
          */
-        "resizeMode"?: 'edge' | 'handle';
+        "restoreFocus"?: boolean;
         /**
           * 是否启用圆角
-          * @default false
+          * @default true
          */
         "rounded"?: boolean;
         /**
-          * 是否显示进度条
+          * 是否显示返回按钮
           * @default false
          */
-        "showProgress"?: boolean;
+        "showBack"?: boolean;
         /**
-          * 是否显示调整大小的提示
+          * 是否显示尺寸提示
           * @default true
          */
-        "showResizeHint"?: boolean;
+        "showSizeHint"?: boolean;
         /**
-          * 面板尺寸（left/right 为宽度，top/bottom 为高度）。可为数字（px）或任意 CSS 长度
-          * @default 360
+          * 抽屉大小
+          * @default 'md'
          */
-        "size"?: number | string;
+        "size"?: number | string | SizePreset;
         /**
-          * 吸附点配置
+          * 吸附点
           * @default []
          */
         "snapPoints"?: SnapPoint[];
         /**
-          * 吸附阈值（像素）
-          * @default 50
+          * 吸附阈值
+          * @default 30
          */
         "snapThreshold"?: number;
         /**
-          * 滑动关闭的阈值（百分比）
+          * 副标题
+         */
+        "subtitle"?: string;
+        /**
+          * 滑动阈值（0-1）
           * @default 0.3
          */
         "swipeThreshold"?: number;
         /**
-          * 是否启用滑动关闭（支持所有方向）
-          * @default true
+          * 是否启用滑动关闭
+          * @default false
          */
         "swipeToClose"?: boolean;
         /**
-          * 滑动关闭的触发区域（'anywhere' | 'handle' | 'header'）
-          * @default 'handle'
+          * 滑动触发区域
+          * @default 'edge'
          */
-        "swipeTriggerArea"?: 'anywhere' | 'handle' | 'header';
+        "swipeTriggerArea"?: 'anywhere' | 'handle' | 'header' | 'edge';
         /**
-          * 是否启用虚拟滚动（适用于大量内容）
-          * @default false
+          * 主题
+          * @default 'light'
          */
-        "virtualScroll"?: boolean;
+        "theme"?: DrawerTheme;
+        /**
+          * 性能优化：使用 transform
+          * @default true
+         */
+        "useTransform"?: boolean;
         /**
           * 是否显示抽屉
           * @default false
          */
         "visible"?: boolean;
         /**
-          * z-index
+          * z-index 层级
           * @default 1000
          */
         "zIndex"?: number;
@@ -10065,6 +10111,11 @@ declare namespace LocalJSX {
          */
         "animation"?: ModalAnimation;
         /**
+          * 新增：自动检测系统深色模式
+          * @default true
+         */
+        "autoDetectDarkMode"?: boolean;
+        /**
           * 软键盘（移动端）避让
           * @default true
          */
@@ -10107,6 +10158,11 @@ declare namespace LocalJSX {
          */
         "currentStep"?: number;
         /**
+          * 新增：深色模式
+          * @default false
+         */
+        "darkMode"?: boolean;
+        /**
           * 是否销毁子元素
           * @default false
          */
@@ -10131,6 +10187,16 @@ declare namespace LocalJSX {
          */
         "edgeSwipeWidth"?: number;
         /**
+          * 新增：是否启用手势操作
+          * @default true
+         */
+        "enableGestures"?: boolean;
+        /**
+          * 新增：是否支持画中画模式
+          * @default false
+         */
+        "enablePictureInPicture"?: boolean;
+        /**
           * 容器（选择器或元素）：若提供，则在加载时把组件节点移动到该容器下
          */
         "getContainer"?: string | HTMLElement;
@@ -10149,6 +10215,16 @@ declare namespace LocalJSX {
           * @default true
          */
         "keyboard"?: boolean;
+        /**
+          * 新增：是否展示加载状态
+          * @default false
+         */
+        "loading"?: boolean;
+        /**
+          * 新增：加载文字
+          * @default '加载中...'
+         */
+        "loadingText"?: string;
         /**
           * 是否显示遮罩层
           * @default true
@@ -10217,6 +10293,11 @@ declare namespace LocalJSX {
         "openOnEdgeSwipe"?: boolean;
         "preOk"?: () => boolean | Promise<boolean>;
         /**
+          * 新增：当前进度（0-100）
+          * @default 0
+         */
+        "progress"?: number;
+        /**
           * 是否可调整大小
           * @default false
          */
@@ -10225,6 +10306,11 @@ declare namespace LocalJSX {
           * @default 'minimize-2'
          */
         "restoreIcon"?: string;
+        /**
+          * 新增：是否显示进度指示器
+          * @default false
+         */
+        "showProgress"?: boolean;
         /**
           * 模态框尺寸
           * @default 'medium'
@@ -12730,10 +12816,6 @@ declare module "@stencil/core" {
              *    </ldesign-draggable>
              */
             "ldesign-draggable": LocalJSX.LdesignDraggable & JSXBase.HTMLAttributes<HTMLLdesignDraggableElement>;
-            /**
-             * Drawer 抽屉组件
-             * 从屏幕边缘滑出一个面板，常用于显示导航、表单或详情
-             */
             "ldesign-drawer": LocalJSX.LdesignDrawer & JSXBase.HTMLAttributes<HTMLLdesignDrawerElement>;
             /**
              * Dropdown 下拉菜单（PC 级联 + 移动端单列）

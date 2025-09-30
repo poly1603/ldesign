@@ -62,7 +62,7 @@ export function useTemplateRenderer(options: UseTemplateRendererOptions = {}): U
 
       // 尝试从缓存获取
       if (enableCache) {
-        component = componentCache.getComponent(template.category, template.device, template.name)
+        component = componentCache.getComponent(template.category, template.device, template.name) ?? null
       }
 
       // 如果缓存中没有，则加载组件

@@ -12,7 +12,7 @@ export default defineConfig({
 
   // 开发服务器配置
   server: {
-    port: 3001,
+    port: 3333,
     host: 'localhost',
     open: false,
     https: false,
@@ -21,7 +21,7 @@ export default defineConfig({
 
   // 预览服务器配置
   preview: {
-    port: 4173,
+    port: 4443,
     host: '0.0.0.0',
     open: false,
     https: false,

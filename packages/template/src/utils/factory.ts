@@ -5,7 +5,7 @@
  */
 
 import { TemplateScanner } from '../scanner'
-import type { ScannerOptions, ScannerEventCallbacks } from '../scanner/types'
+import type { ScannerOptions, ScannerEventCallbacks, ScanResult, ScanError } from '../scanner/types'
 import type { TemplateSystemConfig } from '../types/config'
 
 /**
@@ -44,13 +44,13 @@ export function createTemplateScanner(
   }
 
   // 创建默认回调函数
-  const defaultCallbacks: ScannerCallbacks = {
-    onScanComplete: (result) => {
+  const defaultCallbacks: ScannerEventCallbacks = {
+    onScanComplete: (result: ScanResult) => {
       if (config.debug && (config.enablePerformanceMonitor || config.devtools.enableLogger)) {
         console.info('[TemplateScanner] Scan completed:', result.stats)
       }
     },
-    onScanError: (error) => {
+    onScanError: (error: ScanError) => {
       console.error('[TemplateScanner] Scan error:', error)
       if (config.errorHandling.enableReporting) {
         // 这里可以添加错误报告逻辑

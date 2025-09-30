@@ -251,6 +251,64 @@ const options = ref([
 ```
 :::
 
+## iOS 风格 3D 效果
+
+使用推荐参数实现最接近 iOS 原生的 3D 滚轮效果。
+
+:::demo
+```html
+<template>
+  <div>
+    <h4>iOS 风格 3D 选择器</h4>
+    <ldesign-picker
+      enable-3d
+      visible-items="5"
+      show-mask
+      :options="options"
+      v-model:value="iosValue"
+      :style="{
+        '--ldesign-picker-3d-perspective': '700px',
+        '--ldesign-picker-3d-radius': '120px',
+        '--ldesign-picker-3d-rotate': '30deg',
+        '--ldesign-picker-3d-step-deg': '22deg',
+        '--ldesign-picker-3d-scale-min': '0.7',
+        '--ldesign-picker-3d-scale-max': '1.12'
+      }"
+    ></ldesign-picker>
+    <div style="margin-top: 20px; padding: 15px; background: #f3f4f6; border-radius: 8px;">
+      <p style="margin: 0 0 10px 0; font-weight: bold;">推荐的 iOS 风格参数：</p>
+      <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #666;">
+        <li>透视距离: 700px</li>
+        <li>圆柱半径: 120px</li>
+        <li>最大旋转: 30deg</li>
+        <li>步进角度: 22deg</li>
+        <li>缩放范围: 0.7 - 1.12</li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const iosValue = ref('apple');
+
+const options = ref([
+  { value: 'apple', label: '🍎 苹果' },
+  { value: 'banana', label: '🍌 香蕉' },
+  { value: 'orange', label: '🍊 橙子' },
+  { value: 'grape', label: '🍇 葡萄' },
+  { value: 'watermelon', label: '🍉 西瓜' },
+  { value: 'peach', label: '🍑 桃子' },
+  { value: 'pear', label: '🍐 梨' },
+  { value: 'strawberry', label: '🍓 草莓' },
+  { value: 'cherry', label: '🍒 樱桃' },
+  { value: 'pineapple', label: '🍍 菠萝' }
+]);
+</script>
+```
+:::
+
 ## 交互增强
 
 支持触觉反馈和音效（移动端效果更佳）。
@@ -649,8 +707,12 @@ interface ScrollOptions {
   --ldesign-picker-mask-gradient-bottom: linear-gradient(to top, rgba(255,255,255,0.95), transparent);
   
   /* 3D 效果 */
-  --ldesign-picker-3d-perspective: 500px;
-  --ldesign-picker-3d-rotate: 25deg;
+  --ldesign-picker-3d-perspective: 500px;     /* 透视距离 */
+  --ldesign-picker-3d-radius: 100px;          /* 圆柱半径 */
+  --ldesign-picker-3d-rotate: 25deg;          /* 最大旋转角度 */
+  --ldesign-picker-3d-step-deg: 18deg;        /* 每项旋转步进 */
+  --ldesign-picker-3d-scale-min: 0.85;        /* 边缘最小缩放 */
+  --ldesign-picker-3d-scale-max: 1.05;        /* 中心最大缩放 */
 }
 ```
 

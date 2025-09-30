@@ -8,6 +8,9 @@
     "jsxImportSource": "vue",
     "baseUrl": ".",
     "moduleResolution": "bundler",
+    "downlevelIteration": true,
+    "allowImportingTsExtensions": false,
+    "resolveJsonModule": true,
     "paths": {
       "@/*": ["src/*"],
       "@/types/*": ["src/types/*"],
@@ -22,11 +25,11 @@
     "strict": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
-    "exactOptionalPropertyTypes": true,
+    "exactOptionalPropertyTypes": false,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
-    "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": false,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },

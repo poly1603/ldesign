@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picker 遮罩效果验证</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-card h3 {
+            margin-bottom: 15px;
+            color: #444;
+            font-size: 16px;
+        }
+        
+        .test-card .description {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .picker-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .picker-wrapper.dark {
+            background: #1a1a1a;
+        }
+        
+        .picker-wrapper.gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .picker-wrapper.image {
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="0" y="0" width="50" height="50" fill="%23e0e0e0"/><rect x="50" y="50" width="50" height="50" fill="%23e0e0e0"/></svg>');
+            background-size: 20px 20px;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .controls h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 13px;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+        }
+        
+        .control-group input[type="color"] {
+            width: 60px;
+            height: 30px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .control-group .value {
+            display: inline-block;
+            margin-left: 10px;
+            color: #666;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        
+        .debug-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .debug-panel h4 {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .debug-info {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background: #1d4ed8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #1e40af;
+        }
+        
+        button.secondary {
+            background: #6b7280;
+        }
+        
+        button.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .mask-preview {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .mask-preview h4 {
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .mask-visual {
+            width: 100%;
+            height: 150px;
+            border-radius: 6px;
+            position: relative;
+            background: #f9fafb;
+            overflow: hidden;
+        }
+        
+        .mask-visual-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .mask-visual-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-indicator.success {
+            background: #10b981;
+        }
+        
+        .status-indicator.warning {
+            background: #f59e0b;
+        }
+        
+        .status-indicator.error {
+            background: #ef4444;
+        }
+        
+        .tips {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fef3c7;
+            border-radius: 8px;
+            border: 1px solid #fcd34d;
+        }
+        
+        .tips h3 {
+            margin-bottom: 10px;
+            color: #92400e;
+            font-size: 16px;
+        }
+        
+        .tips ul {
+            margin-left: 20px;
+            color: #78350f;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Picker 遮罩效果验证</h1>
+        
+        <div class="test-grid">
+            <!-- 基础遮罩测试 -->
+            <div class="test-card">
+                <h3>📦 基础遮罩效果</h3>
+                <p class="description">标准配置下的遮罩渐变效果，应该在顶部和底部显示渐隐效果</p>
+                <div class="picker-wrapper">
+                    <ldesign-picker 
+                        id="picker-basic"
+                        value="item3"
+                        options='[
+                            {"value": "item1", "label": "选项 1"},
+                            {"value": "item2", "label": "选项 2"},
+                            {"value": "item3", "label": "选项 3"},
+                            {"value": "item4", "label": "选项 4"},
+                            {"value": "item5", "label": "选项 5"},
+                            {"value": "item6", "label": "选项 6"},
+                            {"value": "item7", "label": "选项 7"}
+                        ]'
+                        visible-items="5"
+                    ></ldesign-picker>
+                </div>
+                <div class="mask-preview">
+                    <h4>遮罩效果预览</h4>
+                    <div class="mask-visual">
+                        <div class="mask-visual-content">
+                            <div>顶部渐隐区域</div>
+                            <div>↑</div>
+                            <div>可见内容区域</div>
+                            <div>↓</div>
+                            <div>底部渐隐区域</div>
+                        </div>
+                        <div class="mask-visual-overlay" style="
+                            background: white;
+                            -webkit-mask-image: linear-gradient(
+                                to bottom,
+                                transparent 0%,
+                                transparent 5%,
+                                black 20%,
+                                black 80%,
+                                transparent 95%,
+                                transparent 100%
+                            );
+                            mask-image: linear-gradient(
+                                to bottom,
+                                transparent 0%,
+                                transparent 5%,
+                                black 20%,
+                                black 80%,
+                                transparent 95%,
+                                transparent 100%
+                            );
+                        "></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 暗色主题遮罩 -->
+            <div class="test-card">
+                <h3>🌙 暗色主题遮罩</h3>
+                <p class="description">暗色背景下的遮罩效果，遮罩应与背景色匹配</p>
+                <div class="picker-wrapper dark">
+                    <ldesign-picker 
+                        id="picker-dark"
+                        theme="dark"
+                        value="item3"
+                        options='[
+                            {"value": "item1", "label": "Dark 1"},
+                            {"value": "item2", "label": "Dark 2"},
+                            {"value": "item3", "label": "Dark 3"},
+                            {"value": "item4", "label": "Dark 4"},
+                            {"value": "item5", "label": "Dark 5"},
+                            {"value": "item6", "label": "Dark 6"},
+                            {"value": "item7", "label": "Dark 7"}
+                        ]'
+                        visible-items="5"
+                    ></ldesign-picker>
+                </div>
+            </div>
+            
+            <!-- 3D效果遮罩 -->
+            <div class="test-card">
+                <h3>🎭 3D效果遮罩</h3>
+                <p class="description">启用3D透视效果时的遮罩表现</p>
+                <div class="picker-wrapper">
+                    <ldesign-picker 
+                        id="picker-3d"
+                        enable3d="true"
+                        value="item3"
+                        options='[
+                            {"value": "item1", "label": "3D Item 1"},
+                            {"value": "item2", "label": "3D Item 2"},
+                            {"value": "item3", "label": "3D Item 3"},
+                            {"value": "item4", "label": "3D Item 4"},
+                            {"value": "item5", "label": "3D Item 5"}
+                        ]'
+                        visible-items="3"
+                    ></ldesign-picker>
+                </div>
+            </div>
+            
+            <!-- 大量选项遮罩 -->
+            <div class="test-card">
+                <h3>📚 大量选项遮罩</h3>
+                <p class="description">选项较多时的遮罩效果</p>
+                <div class="picker-wrapper">
+                    <ldesign-picker 
+                        id="picker-many"
+                        value="option10"
+                        visible-items="7"
+                    ></ldesign-picker>
+                </div>
+            </div>
+            
+            <!-- 渐变背景遮罩 -->
+            <div class="test-card">
+                <h3>🌈 渐变背景遮罩</h3>
+                <p class="description">在渐变背景上的遮罩效果</p>
+                <div class="picker-wrapper gradient">
+                    <ldesign-picker 
+                        id="picker-gradient"
+                        value="item3"
+                        options='[
+                            {"value": "item1", "label": "彩虹 1"},
+                            {"value": "item2", "label": "彩虹 2"},
+                            {"value": "item3", "label": "彩虹 3"},
+                            {"value": "item4", "label": "彩虹 4"},
+                            {"value": "item5", "label": "彩虹 5"}
+                        ]'
+                        visible-items="3"
+                        style="--ldesign-picker-bg: rgba(255, 255, 255, 0.95);"
+                    ></ldesign-picker>
+                </div>
+            </div>
+            
+            <!-- 自定义遮罩样式 -->
+            <div class="test-card">
+                <h3>🎨 自定义遮罩样式</h3>
+                <p class="description">通过CSS变量自定义遮罩效果</p>
+                <div class="picker-wrapper">
+                    <ldesign-picker 
+                        id="picker-custom"
+                        value="item3"
+                        options='[
+                            {"value": "item1", "label": "Custom 1"},
+                            {"value": "item2", "label": "Custom 2"},
+                            {"value": "item3", "label": "Custom 3"},
+                            {"value": "item4", "label": "Custom 4"},
+                            {"value": "item5", "label": "Custom 5"}
+                        ]'
+                        visible-items="5"
+                        style="
+                            --ldesign-picker-bg: #e8f5e9;
+                            --ldesign-picker-active-color: #2e7d32;
+                            --ldesign-picker-border: #81c784;
+                        "
+                    ></ldesign-picker>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 动态控制面板 -->
+        <div class="controls">
+            <h3>🔧 动态遮罩控制</h3>
+            
+            <div class="control-group">
+                <label>选择测试组件:</label>
+                <select id="targetPicker" onchange="updateTarget()">
+                    <option value="picker-basic">基础遮罩</option>
+                    <option value="picker-dark">暗色主题</option>
+                    <option value="picker-3d">3D效果</option>
+                    <option value="picker-many">大量选项</option>
+                    <option value="picker-gradient">渐变背景</option>
+                    <option value="picker-custom">自定义样式</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>遮罩渐变起始位置: <span class="value" id="gradientStart">5%</span></label>
+                <input type="range" id="maskGradientStart" min="0" max="30" value="5" oninput="updateMaskGradient()">
+            </div>
+            
+            <div class="control-group">
+                <label>遮罩渐变结束位置: <span class="value" id="gradientEnd">20%</span></label>
+                <input type="range" id="maskGradientEnd" min="10" max="50" value="20" oninput="updateMaskGradient()">
+            </div>
+            
+            <div class="control-group">
+                <label>背景色:</label>
+                <input type="color" id="bgColor" value="#ffffff" oninput="updateBackgroundColor()">
+                <span class="value" id="bgColorValue">#ffffff</span>
+            </div>
+            
+            <div class="button-group">
+                <button onclick="inspectMask()">🔍 检查遮罩元素</button>
+                <button onclick="toggleMask()" class="secondary">👁️ 切换遮罩显示</button>
+                <button onclick="resetStyles()" class="secondary">🔄 重置样式</button>
+            </div>
+        </div>
+        
+        <!-- 调试面板 -->
+        <div class="debug-panel">
+            <h4>🐛 调试信息</h4>
+            <div class="debug-info" id="debugInfo">
+                等待检查...
+            </div>
+        </div>
+        
+        <!-- 提示信息 -->
+        <div class="tips">
+            <h3>💡 验证要点</h3>
+            <ul>
+                <li>遮罩应该在列表的顶部和底部创建渐隐效果</li>
+                <li>遮罩颜色应该与背景色匹配，实现自然的淡出效果</li>
+                <li>滚动时，项目应该在进入/离开遮罩区域时逐渐显示/隐藏</li>
+                <li>3D效果下，遮罩应该正确覆盖透视变换的元素</li>
+                <li>暗色主题下，遮罩应该使用相应的暗色渐变</li>
+                <li>遮罩不应该影响交互，pointer-events 应该设置为 none</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- 引入组件 -->
+    <script type="module" src="./packages/webcomponent/dist/ldesign.es.js"></script>
+    
+    <script>
+        // 生成大量选项
+        window.addEventListener('DOMContentLoaded', () => {
+            const manyPicker = document.getElementById('picker-many');
+            const manyOptions = [];
+            for (let i = 1; i <= 30; i++) {
+                manyOptions.push({
+                    value: `option${i}`,
+                    label: `选项 ${i.toString().padStart(2, '0')}`
+                });
+            }
+            manyPicker.setAttribute('options', JSON.stringify(manyOptions));
+        });
+        
+        let currentTarget = 'picker-basic';
+        
+        function updateTarget() {
+            currentTarget = document.getElementById('targetPicker').value;
+            inspectMask();
+        }
+        
+        function updateMaskGradient() {
+            const start = document.getElementById('maskGradientStart').value;
+            const end = document.getElementById('maskGradientEnd').value;
+            
+            document.getElementById('gradientStart').textContent = start + '%';
+            document.getElementById('gradientEnd').textContent = end + '%';
+            
+            const picker = document.getElementById(currentTarget);
+            if (!picker || !picker.shadowRoot) return;
+            
+            const mask = picker.shadowRoot.querySelector('.ldesign-picker__mask');
+            if (mask) {
+                const gradient = `linear-gradient(
+                    to bottom,
+                    transparent 0%,
+                    transparent ${start}%,
+                    black ${end}%,
+                    black ${100 - end}%,
+                    transparent ${100 - start}%,
+                    transparent 100%
+                )`;
+                
+                mask.style.webkitMaskImage = gradient;
+                mask.style.maskImage = gradient;
+                
+                updateDebugInfo();
+            }
+        }
+        
+        function updateBackgroundColor() {
+            const color = document.getElementById('bgColor').value;
+            document.getElementById('bgColorValue').textContent = color;
+            
+            const picker = document.getElementById(currentTarget);
+            if (picker) {
+                picker.style.setProperty('--ldesign-picker-bg', color);
+                updateDebugInfo();
+            }
+        }
+        
+        function inspectMask() {
+            const picker = document.getElementById(currentTarget);
+            if (!picker || !picker.shadowRoot) {
+                document.getElementById('debugInfo').textContent = '⚠️ 未找到组件或 Shadow DOM';
+                return;
+            }
+            
+            const mask = picker.shadowRoot.querySelector('.ldesign-picker__mask');
+            if (!mask) {
+                document.getElementById('debugInfo').textContent = '❌ 未找到遮罩元素 .ldesign-picker__mask';
+                return;
+            }
+            
+            const styles = window.getComputedStyle(mask);
+            const debugInfo = {
+                '元素状态': '✅ 遮罩元素存在',
+                '位置': styles.position,
+                'z-index': styles.zIndex,
+                '高度': styles.height,
+                '背景色': styles.backgroundColor,
+                'mask-image': styles.maskImage || styles.webkitMaskImage || '未设置',
+                'pointer-events': styles.pointerEvents,
+                'display': styles.display,
+                'visibility': styles.visibility,
+                'opacity': styles.opacity,
+                '边界': `top: ${styles.top}, left: ${styles.left}, right: ${styles.right}`,
+                'CSS变量 (--ldesign-picker-bg)': getComputedStyle(picker).getPropertyValue('--ldesign-picker-bg') || '未定义'
+            };
+            
+            let output = '';
+            for (const [key, value] of Object.entries(debugInfo)) {
+                output += `${key}: ${value}\n`;
+            }
+            
+            document.getElementById('debugInfo').textContent = output;
+        }
+        
+        function toggleMask() {
+            const picker = document.getElementById(currentTarget);
+            if (!picker || !picker.shadowRoot) return;
+            
+            const mask = picker.shadowRoot.querySelector('.ldesign-picker__mask');
+            if (mask) {
+                const currentDisplay = mask.style.display;
+                mask.style.display = currentDisplay === 'none' ? '' : 'none';
+                
+                updateDebugInfo();
+            }
+        }
+        
+        function resetStyles() {
+            const picker = document.getElementById(currentTarget);
+            if (!picker) return;
+            
+            // 移除内联样式
+            picker.removeAttribute('style');
+            
+            // 重置控件
+            document.getElementById('maskGradientStart').value = 5;
+            document.getElementById('maskGradientEnd').value = 20;
+            document.getElementById('bgColor').value = '#ffffff';
+            
+            document.getElementById('gradientStart').textContent = '5%';
+            document.getElementById('gradientEnd').textContent = '20%';
+            document.getElementById('bgColorValue').textContent = '#ffffff';
+            
+            if (picker.shadowRoot) {
+                const mask = picker.shadowRoot.querySelector('.ldesign-picker__mask');
+                if (mask) {
+                    mask.removeAttribute('style');
+                }
+            }
+            
+            updateDebugInfo();
+        }
+        
+        function updateDebugInfo() {
+            setTimeout(inspectMask, 100);
+        }
+        
+        // 初始检查
+        setTimeout(inspectMask, 1000);
+    </script>
+</body>
+</html>

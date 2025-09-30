@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picker 3D效果修复测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .test-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .test-item h3 {
+            color: #444;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .test-item .description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        .controls {
+            background: #f0f4f8;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .controls h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+        .control-group label {
+            min-width: 150px;
+            color: #555;
+        }
+        .control-group input {
+            flex: 1;
+        }
+        .control-group output {
+            min-width: 60px;
+            font-weight: bold;
+            color: #764ba2;
+        }
+        .tips {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 12px;
+            padding: 20px;
+            color: #333;
+        }
+        .tips h3 {
+            margin-bottom: 10px;
+        }
+        .tips ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .tips li {
+            margin-bottom: 8px;
+        }
+        
+        /* 自定义picker样式 */
+        ldesign-picker {
+            margin: 0 auto;
+            display: block;
+        }
+        
+        /* 暗色主题测试 */
+        .dark-theme {
+            background: #1a1a2e;
+            color: white;
+        }
+        .dark-theme h3 {
+            color: white;
+        }
+        .dark-theme .description {
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Picker 3D效果修复测试</h1>
+        <p class="subtitle">测试不同visible-items配置下的3D显示和渐变遮罩效果</p>
+
+        <div class="controls">
+            <h3>🎛️ 动态调整参数</h3>
+            <div class="control-group">
+                <label>可见项数量：</label>
+                <input type="range" id="visibleItems" min="1" max="9" value="3" step="2">
+                <output id="visibleItemsValue">3</output>
+            </div>
+            <div class="control-group">
+                <label>容器高度：</label>
+                <input type="range" id="containerHeight" min="120" max="400" value="200" step="20">
+                <output id="containerHeightValue">200px</output>
+            </div>
+            <div class="control-group">
+                <label>3D效果强度：</label>
+                <input type="range" id="effect3d" min="0" max="100" value="100" step="10">
+                <output id="effect3dValue">100%</output>
+            </div>
+            <div class="control-group">
+                <label>遮罩透明度：</label>
+                <input type="range" id="maskOpacity" min="0" max="100" value="95" step="5">
+                <output id="maskOpacityValue">95%</output>
+            </div>
+        </div>
+
+        <div class="test-grid">
+            <div class="test-item">
+                <h3>少量项目 (3项)</h3>
+                <p class="description">测试3个可见项时的3D分布效果<br>应该均匀分散，不聚集</p>
+                <ldesign-picker 
+                    id="picker1"
+                    visible-items="3"
+                    container-height="200"
+                    enable-3d="true"
+                    value="2">
+                </ldesign-picker>
+            </div>
+
+            <div class="test-item">
+                <h3>标准项目 (5项)</h3>
+                <p class="description">测试5个可见项时的3D效果<br>经典iOS风格的圆柱效果</p>
+                <ldesign-picker 
+                    id="picker2"
+                    visible-items="5"
+                    container-height="200"
+                    enable-3d="true"
+                    value="3">
+                </ldesign-picker>
+            </div>
+
+            <div class="test-item">
+                <h3>多项目 (7项)</h3>
+                <p class="description">测试7个可见项时的显示<br>更多项目的3D层次感</p>
+                <ldesign-picker 
+                    id="picker3"
+                    visible-items="7"
+                    container-height="280"
+                    enable-3d="true"
+                    value="4">
+                </ldesign-picker>
+            </div>
+
+            <div class="test-item dark-theme">
+                <h3>暗色主题</h3>
+                <p class="description">测试暗色主题下的渐变遮罩<br>遮罩应该适配暗色背景</p>
+                <ldesign-picker 
+                    id="picker4"
+                    theme="dark"
+                    visible-items="5"
+                    container-height="200"
+                    enable-3d="true"
+                    value="3">
+                </ldesign-picker>
+            </div>
+
+            <div class="test-item">
+                <h3>小容器高度</h3>
+                <p class="description">测试小高度容器的3D效果<br>半径应自动调整</p>
+                <ldesign-picker 
+                    id="picker5"
+                    visible-items="3"
+                    container-height="120"
+                    enable-3d="true"
+                    value="2">
+                </ldesign-picker>
+            </div>
+
+            <div class="test-item">
+                <h3>大容器高度</h3>
+                <p class="description">测试大高度容器的3D效果<br>项目间距应合理</p>
+                <ldesign-picker 
+                    id="picker6"
+                    visible-items="5"
+                    container-height="400"
+                    enable-3d="true"
+                    value="3">
+                </ldesign-picker>
+            </div>
+        </div>
+
+        <div class="tips">
+            <h3>📝 重点验证项</h3>
+            <ul>
+                <li><strong>3D项目间距：</strong>少量项目（如3个）时，项目应该均匀分散，不应聚集成一团</li>
+                <li><strong>渐变遮罩显示：</strong>顶部和底部应该有明显的渐变遮罩效果，让边缘项目淡出</li>
+                <li><strong>圆柱半径适配：</strong>不同容器高度下，3D圆柱半径应自动调整，保持良好的视觉效果</li>
+                <li><strong>暗色主题遮罩：</strong>暗色主题下，遮罩应该是暗色渐变，与背景融合</li>
+                <li><strong>滚动流畅性：</strong>拖动时3D变换应该流畅，无卡顿或抖动</li>
+                <li><strong>选中项居中：</strong>当前选中项应该始终位于容器中心，无旋转角度</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        // 加载组件
+        import './packages/webcomponent/dist/ldesign.js';
+
+        // 等待组件加载
+        customElements.whenDefined('ldesign-picker').then(() => {
+            // 初始化所有picker的数据
+            const months = [
+                { value: '1', label: '一月' },
+                { value: '2', label: '二月' },
+                { value: '3', label: '三月' },
+                { value: '4', label: '四月' },
+                { value: '5', label: '五月' },
+                { value: '6', label: '六月' },
+                { value: '7', label: '七月' },
+                { value: '8', label: '八月' },
+                { value: '9', label: '九月' },
+                { value: '10', label: '十月' },
+                { value: '11', label: '十一月' },
+                { value: '12', label: '十二月' }
+            ];
+
+            // 设置所有picker的数据
+            const pickers = document.querySelectorAll('ldesign-picker');
+            pickers.forEach(picker => {
+                picker.data = months;
+            });
+
+            // 动态控制功能
+            const visibleItemsSlider = document.getElementById('visibleItems');
+            const visibleItemsValue = document.getElementById('visibleItemsValue');
+            const containerHeightSlider = document.getElementById('containerHeight');
+            const containerHeightValue = document.getElementById('containerHeightValue');
+            const effect3dSlider = document.getElementById('effect3d');
+            const effect3dValue = document.getElementById('effect3dValue');
+            const maskOpacitySlider = document.getElementById('maskOpacity');
+            const maskOpacityValue = document.getElementById('maskOpacityValue');
+
+            // 更新可见项数量
+            visibleItemsSlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                visibleItemsValue.textContent = value;
+                
+                // 更新第一个picker作为动态测试
+                const picker1 = document.getElementById('picker1');
+                picker1.visibleItems = parseInt(value);
+            });
+
+            // 更新容器高度
+            containerHeightSlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                containerHeightValue.textContent = value + 'px';
+                
+                const picker1 = document.getElementById('picker1');
+                picker1.containerHeight = parseInt(value);
+            });
+
+            // 更新3D效果强度
+            effect3dSlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                effect3dValue.textContent = value + '%';
+                
+                const picker1 = document.getElementById('picker1');
+                // 通过CSS变量调整3D效果强度
+                const factor = value / 100;
+                picker1.style.setProperty('--ldesign-picker-3d-scale-min', 0.85 + (1 - 0.85) * (1 - factor));
+                picker1.style.setProperty('--ldesign-picker-3d-opacity-min', 0.6 + (1 - 0.6) * (1 - factor));
+            });
+
+            // 更新遮罩透明度
+            maskOpacitySlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                maskOpacityValue.textContent = value + '%';
+                
+                // 更新所有picker的遮罩透明度
+                pickers.forEach(picker => {
+                    const masks = picker.shadowRoot.querySelectorAll('.ldesign-picker__mask');
+                    masks.forEach(mask => {
+                        mask.style.opacity = value / 100;
+                    });
+                });
+            });
+
+            // 监听选择变化
+            pickers.forEach((picker, index) => {
+                picker.addEventListener('change', (e) => {
+                    console.log(`Picker ${index + 1} 选中:`, e.detail);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

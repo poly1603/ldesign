@@ -10,9 +10,9 @@ import type { StrictCacheStats } from '../types/strict-types'
 import type { TemplateMetadata } from '../types/template'
 
 /**
- * 缓存策略类型（简化）
+ * 缓存策略类型
  */
-export type CacheStrategy = 'LRU' | 'FIFO'
+export type AdvancedCacheStrategy = 'LRU' | 'LFU' | 'FIFO' | 'TTL' | 'HYBRID'
 
 /**
  * 缓存项元数据
@@ -29,7 +29,7 @@ export interface CacheItemMeta {
   /** 过期时间 */
   expiresAt?: number
   /** 优先级 */
-  priority?: number
+  priority: number
   /** 是否压缩 */
   compressed?: boolean
   /** 标签 */
@@ -50,13 +50,43 @@ export interface CacheItem<T = any> {
  */
 export interface SimpleCacheConfig {
   /** 缓存策略 */
-  strategy?: CacheStrategy
+  strategy?: AdvancedCacheStrategy
   /** 最大缓存项数量 */
   maxItems?: number
   /** 默认TTL（毫秒） */
   defaultTTL?: number
   /** 是否启用统计 */
   enableStats?: boolean
+}
+
+/**
+ * 高级缓存配置
+ */
+export interface AdvancedCacheConfig {
+  /** 缓存策略 */
+  strategy?: AdvancedCacheStrategy
+  /** 最大缓存大小（字节） */
+  maxSize?: number
+  /** 最大缓存项数量 */
+  maxItems?: number
+  /** 默认TTL（毫秒） */
+  defaultTTL?: number
+  /** 是否启用压缩 */
+  enableCompression?: boolean
+  /** 压缩阈值（字节） */
+  compressionThreshold?: number
+  /** 是否启用持久化 */
+  enablePersistence?: boolean
+  /** 持久化存储键 */
+  persistenceKey?: string
+  /** 是否启用统计 */
+  enableStats?: boolean
+  /** 清理间隔（毫秒） */
+  cleanupInterval?: number
+  /** 是否启用内存警告 */
+  enableMemoryWarning?: boolean
+  /** 内存警告阈值 */
+  memoryWarningThreshold?: number
 }
 
 /**
@@ -71,10 +101,16 @@ export interface CacheStats {
   misses: number
   /** 命中率 */
   hitRate: number
+  /** 未命中率 */
+  missRate: number
   /** 当前大小（字节） */
   currentSize: number
   /** 当前项数 */
   currentItems: number
+  /** 总大小（字节） - 兼容性属性 */
+  totalSize: number
+  /** 总项数 - 兼容性属性 */
+  itemCount: number
   /** 最大大小 */
   maxSize: number
   /** 最大项数 */
@@ -135,7 +171,13 @@ export class AdvancedCache<T = any> {
    * 设置内存监控
    */
   private setupMemoryMonitoring(): void {
-    if (typeof window === 'undefined' || !('performance' in window) || !('memory' in window.performance)) {
+    if (typeof window === 'undefined' || !('performance' in window)) {
+      return
+    }
+
+    // 检查是否支持 memory API
+    const performance = window.performance as any
+    if (!performance.memory) {
       return
     }
 
@@ -149,19 +191,24 @@ export class AdvancedCache<T = any> {
    * 检查内存使用情况
    */
   private checkMemoryUsage(): void {
-    if (typeof window === 'undefined' || !window.performance?.memory) {
+    if (typeof window === 'undefined' || !('performance' in window)) {
       return
     }
 
-    // @ts-ignore
-    const memory = window.performance.memory
+    // 检查是否支持 memory API
+    const performance = window.performance as any
+    if (!performance.memory) {
+      return
+    }
+
+    const memory = performance.memory
     const usedRatio = memory.usedJSHeapSize / memory.jsHeapSizeLimit
 
     if (usedRatio > this.config.memoryWarningThreshold) {
       // 内存使用率过高，主动清理缓存
       this.aggressiveCleanup()
 
-      if (this.config.enableStats && import.meta.env?.DEV) {
+      if (this.config.enableStats && process.env.NODE_ENV === 'development') {
         console.warn(`[Cache] High memory usage detected (${Math.round(usedRatio * 100)}%), performing aggressive cleanup`)
       }
     }
@@ -201,14 +248,43 @@ export class AdvancedCache<T = any> {
       hits: 0,
       misses: 0,
       hitRate: 0,
+      missRate: 0,
       currentSize: 0,
       currentItems: 0,
+      totalSize: 0,
+      itemCount: 0,
       maxSize: this.config.maxSize,
       maxItems: this.config.maxItems,
       avgAccessTime: 0,
       evictions: 0,
       compressionSavings: 0
     }
+  }
+
+  /**
+   * 清理过期项
+   */
+  private cleanupExpired(): void {
+    const now = Date.now()
+    const expiredKeys: string[] = []
+
+    this.cache.forEach((item, key) => {
+      if (item.meta.expiresAt && item.meta.expiresAt < now) {
+        expiredKeys.push(key)
+      }
+    })
+
+    expiredKeys.forEach(key => {
+      const item = this.cache.get(key)
+      if (item) {
+        this.stats.currentSize -= item.meta.size
+        this.cache.delete(key)
+        this.removeFromStrategyInfo(key)
+        this.stats.evictions++
+      }
+    })
+
+    this.stats.currentItems = this.cache.size
   }
 
   /**
@@ -308,7 +384,7 @@ export class AdvancedCache<T = any> {
         size: compressed ? this.calculateSize(storedValue) : size,
         expiresAt: options.ttl ? Date.now() + options.ttl :
           this.config.defaultTTL ? Date.now() + this.config.defaultTTL : undefined,
-        priority: options.priority,
+        priority: options.priority || 0,
         compressed,
         tags: options.tags
       }
@@ -685,12 +761,16 @@ export class AdvancedCache<T = any> {
   }
 
   /**
-   * 更新命中率
+   * 更新命中率和相关统计
    */
   private updateHitRate(): void {
     if (this.stats.requests > 0) {
       this.stats.hitRate = this.stats.hits / this.stats.requests
+      this.stats.missRate = this.stats.misses / this.stats.requests
     }
+    // 同步兼容性属性
+    this.stats.totalSize = this.stats.currentSize
+    this.stats.itemCount = this.stats.currentItems
   }
 
   /**

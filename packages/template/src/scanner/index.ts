@@ -45,7 +45,7 @@ export class TemplateScanner {
   private callbacks: ScannerEventCallbacks = {}
   private scanCache = new Map<string, TemplateMetadata>()
   private lastScanTime = 0
-  private filePathBuilder: FilePathBuilder
+  private filePathBuilder: FilePathBuilder | null = null
   private fileWatcher: FileWatcher | null = null
   private isWatchingEnabled = false
   private categoryManager: TemplateCategoryManager
@@ -372,7 +372,13 @@ export class TemplateScanner {
       this.validateConfig(config, configPath)
 
       // 使用文件路径构建器构建路径
-      const templatePaths = this.filePathBuilder.buildTemplatePaths(configPath)
+      const templatePaths = this.filePathBuilder
+        ? this.filePathBuilder.buildTemplatePaths(configPath)
+        : {
+            componentPath: configPath.replace(/\/config\.(js|ts)$/, '/index.vue'),
+            stylePath: configPath.replace(/\/config\.(js|ts)$/, '/style.less'),
+            configPath,
+          }
 
       // 创建模板元数据
       const metadata: TemplateMetadata = {

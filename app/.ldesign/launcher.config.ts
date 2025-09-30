@@ -1,14 +1,8 @@
 import { defineConfig } from '@ldesign/launcher'
-import vueJsx from '@vitejs/plugin-vue-jsx'
 
 export default defineConfig({
-  // 显式添加 Vue JSX 插件 - 确保 JSX 支持
-  plugins: [
-    vueJsx({
-      transformOn: true,
-      mergeProps: true
-    })
-  ],
+  // Vue JSX 插件现在由 SmartPluginManager 自动处理
+  // 不需要手动配置
 
   // Launcher 基础配置
   launcher: {
@@ -86,7 +80,7 @@ export default defineConfig({
 
   // 预览服务器配置
   preview: {
-    port: 8888,
+    port: 4440,
     host: '0.0.0.0',
     open: false,
     https: false,

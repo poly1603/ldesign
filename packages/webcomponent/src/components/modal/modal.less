@@ -49,20 +49,23 @@
     margin: 0 auto;
     background: var(--ldesign-bg-color, #ffffff);
     border-radius: var(--ld-modal-radius, 8px);
-    box-shadow: var(--ld-modal-shadow, 0 10px 25px rgba(0, 0, 0, 0.15));
+    box-shadow: var(--ld-modal-shadow, 0 20px 60px -10px rgba(0, 0, 0, 0.2));
     opacity: 0;
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 40px);
+    will-change: transform, opacity;
     // 对定位属性添加过渡，确保 maximize/restore 时顺畅
-    transition: opacity var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
-      left var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
-      top var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
-      right var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
-      bottom var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
-      width var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
-      height var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1)),
-      border-radius var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.4, 0, 0.2, 1));
+    transition: opacity var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.25, 0.8, 0.25, 1)),
+      transform var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.25, 0.8, 0.25, 1)),
+      left var(--ld-modal-duration, 0.35s) var(--ld-modal-ease, cubic-bezier(0.25, 0.8, 0.25, 1)),
+      top var(--ld-modal-duration, 0.35s) var(--ld-modal-ease, cubic-bezier(0.25, 0.8, 0.25, 1)),
+      right var(--ld-modal-duration, 0.35s) var(--ld-modal-ease, cubic-bezier(0.25, 0.8, 0.25, 1)),
+      bottom var(--ld-modal-duration, 0.35s) var(--ld-modal-ease, cubic-bezier(0.25, 0.8, 0.25, 1)),
+      width var(--ld-modal-duration, 0.35s) var(--ld-modal-ease, cubic-bezier(0.25, 0.8, 0.25, 1)),
+      height var(--ld-modal-duration, 0.35s) var(--ld-modal-ease, cubic-bezier(0.25, 0.8, 0.25, 1)),
+      border-radius var(--ld-modal-duration, 0.3s) var(--ld-modal-ease, cubic-bezier(0.25, 0.8, 0.25, 1)),
+      box-shadow var(--ld-modal-duration, 0.4s) var(--ld-modal-ease, cubic-bezier(0.25, 0.8, 0.25, 1));
 
     .ldesign-modal--visible & {
       opacity: 1;
@@ -571,13 +574,13 @@
 
   &--zoom {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-zoom-in var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
+      animation: ldesign-modal-zoom-in var(--ld-modal-duration, 0.35s) var(--ld-modal-anim-ease, cubic-bezier(0.34, 1.56, 0.64, 1));
     }
   }
 
   &--zoom-out {
     .ldesign-modal__dialog {
-      animation: ldesign-modal-zoom-out var(--ld-modal-duration, 0.3s) var(--ld-modal-anim-ease, ease);
+      animation: ldesign-modal-zoom-out var(--ld-modal-duration, 0.25s) var(--ld-modal-anim-ease, cubic-bezier(0.4, 0, 0.6, 1));
     }
   }
 
@@ -648,6 +651,44 @@
   .ldesign-modal__dialog { transition: none !important; }
   .ldesign-modal__dialog { animation: none !important; }
   .ldesign-modal__mask { transition: none !important; }
+}
+
+// 深色模式支持
+.ldesign-modal--dark {
+  --ldesign-bg-color: #1f2937;
+  --ldesign-text-color: #f3f4f6;
+  --ldesign-text-color-secondary: #9ca3af;
+  --ldesign-border-color: #374151;
+  --ld-overlay-backdrop: rgba(0, 0, 0, 0.7);
+  --ld-modal-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.5);
+  --ldesign-bg-color-hover: #374151;
+  --ldesign-bg-color-active: #4b5563;
+  --ld-modal-header-btn-bg: rgba(255, 255, 255, 0.05);
+  --ld-modal-header-btn-hover-bg: rgba(255, 255, 255, 0.1);
+  --ld-modal-header-btn-active-bg: rgba(255, 255, 255, 0.15);
+  --ld-modal-header-btn-color: #9ca3af;
+  --ld-modal-header-btn-hover-color: #f3f4f6;
+  
+  .ldesign-modal__dialog {
+    background: var(--ldesign-bg-color);
+    color: var(--ldesign-text-color);
+  }
+  
+  .ldesign-modal__header,
+  .ldesign-modal__footer {
+    border-color: var(--ldesign-border-color);
+  }
+  
+  .ldesign-modal__body {
+    color: var(--ldesign-text-color);
+  }
+}
+
+// 自动深色模式
+@media (prefers-color-scheme: dark) {
+  .ldesign-modal:not(.ldesign-modal--light) {
+    @extend .ldesign-modal--dark;
+  }
 }
 
 /* Wizard 简易步骤指示（数字圆点）*/
@@ -749,7 +790,11 @@
 @keyframes ldesign-modal-zoom-in {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.7);
+  }
+  
+  50% {
+    transform: scale(1.02);
   }
 
   to {
@@ -862,7 +907,7 @@
 
   to {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.9);
   }
 }
 
@@ -886,6 +931,74 @@
   to {
     opacity: 0;
     transform: scale(0.6);
+  }
+}
+
+// 新增：弹性动画
+@keyframes ldesign-modal-elastic-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ldesign-modal-elastic-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+// 新增：摇摇晃晃动画
+@keyframes ldesign-modal-wobble-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) rotate(-3deg);
+  }
+  25% {
+    transform: scale(1.02) rotate(3deg);
+  }
+  50% {
+    transform: scale(0.98) rotate(-1deg);
+  }
+  75% {
+    transform: scale(1.01) rotate(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+// 新增：3D 翻转动画
+@keyframes ldesign-modal-flip-in {
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotateX(-90deg);
+  }
+  40% {
+    transform: perspective(400px) rotateX(20deg);
+  }
+  70% {
+    transform: perspective(400px) rotateX(-10deg);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(400px) rotateX(0);
   }
 }
 

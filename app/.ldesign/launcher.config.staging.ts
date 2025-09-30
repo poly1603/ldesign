@@ -8,7 +8,7 @@ export default defineConfig({
 
   // 服务器配置 - 预发布环境
   server: {
-    port: 3012,
+    port: 3332,
     host: '0.0.0.0',
     https: false,
     open: false,
@@ -25,7 +25,7 @@ export default defineConfig({
 
   // 预览服务器配置
   preview: {
-    port: 8889,
+    port: 4442,
     host: '0.0.0.0'  // 允许外部访问
   },
 

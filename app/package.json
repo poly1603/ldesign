@@ -13,6 +13,7 @@
   },
   "scripts": {
     "ui": "ldesign ui",
+    "build:lib": "ldesign-builder build",
     "ui:dev": "node scripts/ldesign-dev.js ui",
     "dev": "launcher dev --environment development",
     "dev:cli": "node scripts/ldesign-dev.js dev --environment development",

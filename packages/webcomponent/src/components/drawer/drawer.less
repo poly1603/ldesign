@@ -1,879 +1,826 @@
-// Drawer 抽屉组件样式
-.ldesign-drawer {
+// ==================== 变量定义 ====================
+
+@drawer-prefix: ldesign-drawer;
+@drawer-z-index-base: 1000;
+@drawer-animation-duration: 300ms;
+@drawer-animation-timing: ease-in-out;
+@drawer-border-radius: 8px;
+@drawer-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+@drawer-header-height: 56px;
+@drawer-footer-height: 64px;
+@drawer-padding: 24px;
+
+// Light theme
+@drawer-bg-light: #ffffff;
+@drawer-text-light: #333333;
+@drawer-border-light: #e5e5e5;
+@drawer-mask-light: rgba(0, 0, 0, 0.45);
+@drawer-hover-light: #f5f5f5;
+
+// Dark theme
+@drawer-bg-dark: #1f1f1f;
+@drawer-text-dark: #e5e5e5;
+@drawer-border-dark: #3a3a3a;
+@drawer-mask-dark: rgba(0, 0, 0, 0.65);
+@drawer-hover-dark: #2a2a2a;
+
+// Button colors
+@color-primary: #1890ff;
+@color-success: #52c41a;
+@color-warning: #faad14;
+@color-danger: #ff4d4f;
+@color-info: #909399;
+
+// ==================== 容器 ====================
+
+.@{drawer-prefix}-container {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: var(--ld-overlay-z-index, 1000);
-  display: none;
-  overscroll-behavior: contain;
-  user-select: none;
+  inset: 0;
+  pointer-events: none;
+  z-index: @drawer-z-index-base;
 
-  // 层级模式
-  &--level-high {
-    z-index: calc(var(--ld-overlay-z-index, 1000) + 100);
+  &.drawer-visible {
+    pointer-events: auto;
   }
+
+  // 状态类
+  &.drawer-opening,
+  &.drawer-closing {
+    pointer-events: auto;
+  }
+
+  &.drawer-closed {
+    display: none;
+  }
+}
+
+// ==================== 遮罩层 ====================
+
+.drawer-mask {
+  position: fixed;
+  inset: 0;
+  background-color: @drawer-mask-light;
+  opacity: 0;
+  transition: opacity @drawer-animation-duration @drawer-animation-timing;
+  pointer-events: auto;
   
-  &--level-top {
-    z-index: calc(var(--ld-overlay-z-index, 1000) + 200);
+  .drawer-visible & {
+    opacity: 1;
   }
 
-  // 容器模式：使用绝对定位铺满容器（也通过内联 style 覆盖 position）
-  &--in-container {
-    position: absolute;
+  .drawer-closing & {
+    opacity: 0;
   }
+}
 
-  // 可见或关闭动画阶段都需要展示以完成过渡
-  &--visible,
-  &--closing {
-    display: block;
-  }
+// ==================== 抽屉主体 ====================
 
+.drawer-wrapper {
+  position: fixed;
+  background-color: @drawer-bg-light;
+  color: @drawer-text-light;
+  box-shadow: @drawer-shadow;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  outline: none;
+  pointer-events: auto;
+  
+  // GPU 加速
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 
-  // 调整大小状态
-  &--resizing {
-    cursor: col-resize;
+  // 位置和动画
+  &.drawer-left {
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
     
-    &.ldesign-drawer--top,
-    &.ldesign-drawer--bottom {
-      cursor: row-resize;
+    .drawer-visible & {
+      transform: translateX(0);
     }
-    
-    // 调整大小时禁用文本选择
-    * {
-      user-select: none !important;
-      -webkit-user-select: none !important;
+
+    .drawer-closing & {
+      transform: translateX(-100%);
     }
   }
 
-  // 拖动状态
-  &--dragging {
-    .ldesign-drawer__panel {
-      transition: none !important;
+  &.drawer-right {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    transform: translateX(100%);
+    
+    .drawer-visible & {
+      transform: translateX(0);
+    }
+
+    .drawer-closing & {
+      transform: translateX(100%);
+    }
+  }
+
+  &.drawer-top {
+    top: 0;
+    left: 0;
+    right: 0;
+    transform: translateY(-100%);
+    
+    .drawer-visible & {
+      transform: translateY(0);
+    }
+
+    .drawer-closing & {
+      transform: translateY(-100%);
+    }
+  }
+
+  &.drawer-bottom {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: translateY(100%);
+    
+    .drawer-visible & {
+      transform: translateY(0);
+    }
+
+    .drawer-closing & {
+      transform: translateY(100%);
     }
   }
 
   // 全屏状态
-  &--fullscreen {
-    .ldesign-drawer__panel {
-      width: 100% !important;
-      height: 100% !important;
-      max-width: 100% !important;
-      max-height: 100% !important;
-      border-radius: 0 !important;
-      
-      &--left,
-      &--right,
-      &--top,
-      &--bottom {
-        transform: translate(0, 0) !important;
-      }
-    }
+  .drawer-fullscreen & {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
   }
 
   // 最小化状态
-  &--minimized {
-    .ldesign-drawer__panel {
-      &--left,
-      &--right {
-        width: 60px !important;
-      }
-      
-      &--top,
-      &--bottom {
-        height: 60px !important;
-      }
-    }
-    
-    .ldesign-drawer__body,
-    .ldesign-drawer__footer {
-      display: none;
-    }
-    
-    .ldesign-drawer__title-wrapper {
-      display: none;
-    }
-  }
-
-  // 暗黑模式
-  &--dark {
-    .ldesign-drawer__panel {
-      background: var(--ldesign-dark-bg, #1f2937);
-      color: var(--ldesign-dark-text, #f9fafb);
-    }
-    
-    .ldesign-drawer__header {
-      border-bottom-color: var(--ldesign-dark-border, #374151);
-    }
-    
-    .ldesign-drawer__title {
-      color: var(--ldesign-dark-text, #f9fafb);
-    }
-    
-    .ldesign-drawer__subtitle {
-      color: var(--ldesign-dark-text-secondary, #9ca3af);
-    }
-    
-    .ldesign-drawer__body {
-      color: var(--ldesign-dark-text, #f9fafb);
-    }
-    
-    .ldesign-drawer__footer {
-      background: var(--ldesign-dark-bg, #1f2937);
-      border-top-color: var(--ldesign-dark-border, #374151);
-    }
-    
-    .ldesign-drawer__close,
-    .ldesign-drawer__action,
-    .ldesign-drawer__minimize,
-    .ldesign-drawer__fullscreen {
-      color: var(--ldesign-dark-text-secondary, #9ca3af);
-      
-      &:hover {
-        background: var(--ldesign-dark-hover, #374151);
-        color: var(--ldesign-dark-text, #f9fafb);
-      }
-    }
-  }
-
-  &__mask {
-    position: absolute;
-    inset: 0;
-    background: var(--ld-overlay-backdrop, rgba(0, 0, 0, 0.45));
+  .drawer-minimized & {
+    transform: scale(0.1);
     opacity: 0;
-    transition: opacity var(--ld-overlay-duration, 0.3s) var(--ld-overlay-ease, ease);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 1; // 遮罩层级
-    
-    .ldesign-drawer--visible & {
-      opacity: 1;
-    }
-    .ldesign-drawer--closing & {
-      opacity: 0;
-    }
-    
-    &--transparent {
-      opacity: 0.3;
-    }
   }
 
-  &__panel {
-    position: absolute;
-    background: var(--ldesign-bg-color, #ffffff);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2), 0 2px 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    opacity: 1;
-    transition: transform var(--ld-overlay-duration, 0.3s) var(--ld-overlay-ease, cubic-bezier(0.4, 0, 0.2, 1)),
-                box-shadow 0.3s ease,
-                border-radius 0.3s ease;
-    will-change: transform;
-    contain: layout style paint;
-    z-index: 2; // 确保面板在遮罩上方
+  // 最大化状态
+  .drawer-maximized & {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
 
-    // 圆角样式
-    &--rounded {
-      overflow: hidden;
-    }
+// ==================== 头部 ====================
 
-    // 调整大小时禁用过渡
-    &--resizing {
-      transition: none !important;
-      user-select: none;
-      // 立即响应尺寸变化
-      will-change: width, height;
-    }
-
-    // 拖动时的样式
-    &--dragging {
-      opacity: 0.95;
-      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-    }
-
-    &--left {
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 360px; // 由内联样式覆盖
-      height: 100%;
-      max-width: 100vw;  // 防止超出视口
-      max-height: 100vh;
-    }
-    
-    &--right {
-      right: 0;
-      top: 0;
-      bottom: 0;
-      width: 360px; // 由内联样式覆盖
-      height: 100%;
-      max-width: 100vw;  // 防止超出视口
-      max-height: 100vh;
-    }
-
-    &--top {
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 360px; // 由内联样式覆盖
-      width: 100%;
-      max-width: 100vw;
-      max-height: 100vh;  // 防止超出视口
-    }
-    
-    &--bottom {
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 360px; // 由内联样式覆盖
-      width: 100%;
-      max-width: 100vw;
-      max-height: 100vh;  // 防止超出视口
-    }
-
-    // 初始位移（隐藏态） - 位置已在上面定义
-    &--left { 
-      transform: translateX(-100%);
-    }
-    &--right { 
-      transform: translateX(100%);
-    }
-    &--top { 
-      transform: translateY(-100%);
-    }
-    &--bottom { 
-      transform: translateY(100%);
-    }
-
-    // 打开态
-    &--open&--left,
-    &--open&--right,
-    &--open&--top,
-    &--open&--bottom {
-      transform: translateX(0) translateY(0);
-    }
-
-    // 关闭动画阶段
-    &--closing&--left { transform: translateX(-100%); }
-    &--closing&--right { transform: translateX(100%); }
-    &--closing&--top { transform: translateY(-100%); }
-    &--closing&--bottom { transform: translateY(100%); }
+.drawer-header {
+  flex-shrink: 0;
+  padding: 16px @drawer-padding;
+  border-bottom: 1px solid transparent;
+  
+  &.drawer-header-border {
+    border-bottom-color: @drawer-border-light;
   }
 
-  &__content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    height: 100%;
-    overflow: hidden; // 防止内容溢出
+  &.drawer-header-sticky {
+    position: sticky;
+    top: 0;
+    background-color: @drawer-bg-light;
+    z-index: 10;
+  }
+}
+
+.drawer-header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drawer-back-btn,
+.drawer-action-btn,
+.drawer-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: @drawer-text-light;
+  flex-shrink: 0;
+
+  &:hover {
+    background-color: @drawer-hover-light;
   }
 
-  &__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    flex: 0 0 auto;
-    position: relative;
-    z-index: 1;
-    gap: 12px;
-    
-    &--border {
-      border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
-    }
+  &:active {
+    opacity: 0.8;
   }
 
-  &__back,
-  &__action,
-  &__minimize,
-  &__fullscreen {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
+  &:focus-visible {
+    outline: 2px solid @color-primary;
+    outline-offset: 2px;
+  }
+
+  svg {
+    display: block;
+  }
+}
+
+.drawer-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.drawer-title-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.drawer-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: @drawer-text-light;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawer-subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #909399;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawer-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+// ==================== 内容区域 ====================
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: @drawer-padding;
+  
+  // 自定义滚动条
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
     background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
-    color: var(--ldesign-text-color-secondary, #6b7280);
-    cursor: pointer;
-    transition: all 0.2s ease;
     
     &:hover {
-      background: var(--ldesign-bg-color-hover, #f3f4f6);
-      color: var(--ldesign-text-color, #1f2937);
+      background-color: rgba(0, 0, 0, 0.3);
     }
   }
 
-  &__header-icon {
-    display: flex;
-    align-items: center;
+  // Firefox
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+// ==================== 底部 ====================
+
+.drawer-footer {
+  flex-shrink: 0;
+  padding: 16px @drawer-padding;
+  border-top: 1px solid transparent;
+  
+  &.drawer-footer-border {
+    border-top-color: @drawer-border-light;
+  }
+}
+
+.drawer-footer-buttons {
+  display: flex;
+  gap: 12px;
+  
+  &.drawer-footer-left {
+    justify-content: flex-start;
+  }
+
+  &.drawer-footer-center {
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    color: var(--ldesign-color-primary, #3b82f6);
   }
 
-  &__title-wrapper {
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__subtitle {
-    font-size: 12px;
-    color: var(--ldesign-text-color-secondary, #6b7280);
-    margin-top: 2px;
-  }
-
-  &__header-actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  &__title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--ldesign-text-color, #1f2937);
-  }
-
-  &__close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: transparent;
-    border-radius: 4px;
-    color: var(--ldesign-text-color-secondary, #6b7280);
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background: var(--ldesign-bg-color-hover, #f3f4f6);
-      color: var(--ldesign-text-color, #1f2937);
-    }
-  }
-
-  &__body {
-    padding: 16px 20px;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: auto;
-    color: var(--ldesign-text-color, #1f2937);
-    user-select: text;
-    overscroll-behavior: contain;
-    // 保证内容区域可以正常滚动
-    position: relative;
-    
-    // 滚动条美化
-    &::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    
-    &::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 3px;
-      
-      &:hover {
-        background: rgba(0, 0, 0, 0.3);
-      }
-    }
-  }
-
-  // 底部区域
-  &__footer {
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
+  &.drawer-footer-right {
     justify-content: flex-end;
-    gap: 12px;
-    flex: 0 0 auto;
-    background: var(--ldesign-bg-color, #ffffff);
-    position: relative;
-    z-index: 1;
-    
-    &--border {
-      border-top: 1px solid var(--ldesign-border-color, #e5e7eb);
+  }
+
+  &.drawer-footer-space-between {
+    justify-content: space-between;
+  }
+}
+
+// ==================== 按钮 ====================
+
+.drawer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  border-radius: 4px;
+  border: 1px solid @drawer-border-light;
+  background-color: @drawer-bg-light;
+  color: @drawer-text-light;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    border-color: @color-primary;
+    color: @color-primary;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid @color-primary;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.drawer-btn-primary {
+    background-color: @color-primary;
+    border-color: @color-primary;
+    color: #ffffff;
+
+    &:hover:not(:disabled) {
+      background-color: lighten(@color-primary, 10%);
+      border-color: lighten(@color-primary, 10%);
     }
   }
 
-  &__footer-buttons {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
+  &.drawer-btn-success {
+    background-color: @color-success;
+    border-color: @color-success;
+    color: #ffffff;
 
-  &__footer-button {
-    padding: 8px 16px;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 80px;
-    justify-content: center;
-    
-    &--default {
-      background: var(--ldesign-bg-color-secondary, #f3f4f6);
-      color: var(--ldesign-text-color, #1f2937);
-      border-color: var(--ldesign-border-color, #e5e7eb);
-      
-      &:hover:not(:disabled) {
-        background: var(--ldesign-bg-color-hover, #e5e7eb);
-      }
-    }
-    
-    &--primary {
-      background: var(--ldesign-color-primary, #3b82f6);
-      color: white;
-      
-      &:hover:not(:disabled) {
-        background: var(--ldesign-color-primary-hover, #2563eb);
-      }
-    }
-    
-    &--danger {
-      background: var(--ldesign-color-danger, #ef4444);
-      color: white;
-      
-      &:hover:not(:disabled) {
-        background: var(--ldesign-color-danger-hover, #dc2626);
-      }
-    }
-    
-    &--success {
-      background: var(--ldesign-color-success, #10b981);
-      color: white;
-      
-      &:hover:not(:disabled) {
-        background: var(--ldesign-color-success-hover, #059669);
-      }
-    }
-    
-    &--warning {
-      background: var(--ldesign-color-warning, #f59e0b);
-      color: white;
-      
-      &:hover:not(:disabled) {
-        background: var(--ldesign-color-warning-hover, #d97706);
-      }
-    }
-    
-    &--disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    &--loading {
-      cursor: wait;
+    &:hover:not(:disabled) {
+      background-color: lighten(@color-success, 10%);
+      border-color: lighten(@color-success, 10%);
     }
   }
 
-  &__button-spinner {
-    width: 14px;
-    height: 14px;
-    border: 2px solid currentColor;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: ldesign-spin 0.6s linear infinite;
+  &.drawer-btn-warning {
+    background-color: @color-warning;
+    border-color: @color-warning;
+    color: #ffffff;
+
+    &:hover:not(:disabled) {
+      background-color: lighten(@color-warning, 10%);
+      border-color: lighten(@color-warning, 10%);
+    }
   }
 
-  &__button-icon {
-    margin-right: 6px;
+  &.drawer-btn-danger {
+    background-color: @color-danger;
+    border-color: @color-danger;
+    color: #ffffff;
+
+    &:hover:not(:disabled) {
+      background-color: lighten(@color-danger, 10%);
+      border-color: lighten(@color-danger, 10%);
+    }
   }
 
-  // 进度条
-  &__progress {
+  &.drawer-btn-text {
+    border-color: transparent;
+    background-color: transparent;
+
+    &:hover:not(:disabled) {
+      background-color: @drawer-hover-light;
+    }
+  }
+
+  &.drawer-btn-link {
+    border-color: transparent;
+    background-color: transparent;
+    color: @color-primary;
+    padding: 0;
+
+    &:hover:not(:disabled) {
+      text-decoration: underline;
+    }
+  }
+}
+
+.drawer-btn-loading {
+  display: inline-block;
+  animation: drawer-spin 1s linear infinite;
+}
+
+.drawer-btn-icon {
+  font-size: 16px;
+}
+
+// ==================== 调整大小手柄 ====================
+
+.drawer-resize-handle {
+  position: absolute;
+  background-color: transparent;
+  z-index: 100;
+  transition: background-color 0.2s;
+
+  &::after {
+    content: '';
     position: absolute;
+    background-color: @color-primary;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  &:hover::after,
+  .drawer-resizing &::after {
+    opacity: 1;
+  }
+
+  &.drawer-resize-handle-left {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: ew-resize;
+
+    &::after {
+      top: 50%;
+      right: 3px;
+      width: 2px;
+      height: 40px;
+      transform: translateY(-50%);
+    }
+  }
+
+  &.drawer-resize-handle-right {
     top: 0;
     left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--ldesign-bg-color-secondary, #f3f4f6);
-    z-index: 10;
-  }
+    bottom: 0;
+    width: 8px;
+    cursor: ew-resize;
 
-  &__progress-bar {
-    height: 100%;
-    background: var(--ldesign-color-primary, #3b82f6);
-    transition: width 0.3s ease;
-    border-radius: 0 3px 3px 0;
-  }
-
-  // 加载状态
-  &__loading {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    z-index: 5;
-  }
-
-  &__loading-spinner {
-    margin-bottom: 16px;
-  }
-
-  &__loading-spin {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--ldesign-border-color, #e5e7eb);
-    border-top-color: var(--ldesign-color-primary, #3b82f6);
-    border-radius: 50%;
-    animation: ldesign-spin 0.8s linear infinite;
-    margin: 0 auto;
-  }
-
-  &__loading-text {
-    font-size: 14px;
-    color: var(--ldesign-text-color-secondary, #6b7280);
-  }
-
-  // 延迟加载占位符
-  &__lazy-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 200px;
-  }
-
-  &__lazy-loading {
-    color: var(--ldesign-text-color-secondary, #6b7280);
-  }
-
-  // 内容区域边框和阴影
-  &__body--border {
-    border: 1px solid var(--ldesign-border-color, #e5e7eb);
-    border-radius: 4px;
-    margin: 16px;
-  }
-
-  &__body--shadow {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  }
-
-  // 虚拟滚动
-  &__body--virtual {
-    overflow-y: auto !important;
-    contain: strict;
-  }
-
-  // 调整大小手柄
-  &__resize-handle {
-    position: absolute;
-    z-index: 10;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    
-    &--left {
-      right: -6px;
-      top: 0;
-      bottom: 0;
-      width: 12px;
-      cursor: col-resize;
-    }
-    
-    &--right {
-      left: -6px;
-      top: 0;
-      bottom: 0;
-      width: 12px;
-      cursor: col-resize;
-    }
-    
-    &--top {
-      bottom: -6px;
-      left: 0;
-      right: 0;
-      height: 12px;
-      cursor: row-resize;
-    }
-    
-    &--bottom {
-      top: -6px;
-      left: 0;
-      right: 0;
-      height: 12px;
-      cursor: row-resize;
-    }
-    
-    &:hover,
-    &--active {
-      opacity: 1;
-    }
-    
-    
-    .ldesign-drawer--resizable .ldesign-drawer__panel:hover & {
-      opacity: 1;
-    }
-  }
-  }
-
-  &__resize-line {
-    position: absolute;
-    background: var(--ldesign-color-primary, #3b82f6);
-    border-radius: 2px;
-    transition: all 0.2s ease;
-    
-    .ldesign-drawer__resize-handle--left &,
-    .ldesign-drawer__resize-handle--right & {
-      width: 3px;
+    &::after {
+      top: 50%;
+      left: 3px;
+      width: 2px;
       height: 40px;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateY(-50%);
     }
-    
-    .ldesign-drawer__resize-handle--top &,
-    .ldesign-drawer__resize-handle--bottom & {
+  }
+
+  &.drawer-resize-handle-top {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 8px;
+    cursor: ns-resize;
+
+    &::after {
+      left: 50%;
+      bottom: 3px;
       width: 40px;
-      height: 3px;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-    
-    .ldesign-drawer__resize-handle:hover &,
-    .ldesign-drawer__resize-handle--active & {
-      background: var(--ldesign-color-primary-hover, #2563eb);
-    }
-    
-    .ldesign-drawer__resize-handle--left:hover &,
-    .ldesign-drawer__resize-handle--right:hover & {
-      height: 60px;
-    }
-    
-    .ldesign-drawer__resize-handle--top:hover &,
-    .ldesign-drawer__resize-handle--bottom:hover & {
-      width: 60px;
-    }
-  }
-
-  &__resize-hint {
-    position: absolute;
-    background: var(--ldesign-color-primary, #3b82f6);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-    pointer-events: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    
-    .ldesign-drawer__resize-handle--left & {
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    
-    .ldesign-drawer__resize-handle--right & {
-      left: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    
-    .ldesign-drawer__resize-handle--top & {
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-    
-    .ldesign-drawer__resize-handle--bottom & {
-      top: 20px;
-      left: 50%;
+      height: 2px;
       transform: translateX(-50%);
     }
   }
 
-  // 吸附指示器
-  &__snap-indicator {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 100;
-    pointer-events: none;
-    animation: ldesign-fade-in 0.3s ease;
-  }
+  &.drawer-resize-handle-bottom {
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 8px;
+    cursor: ns-resize;
 
-  &__snap-label {
-    background: var(--ldesign-color-primary, #3b82f6);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-    animation: ldesign-bounce-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  }
-  
-  // 滑动手柄（支持所有方向）
-  &__swipe-handle {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: grab;
-    background: transparent;
-    z-index: 10;
-    transition: background-color 0.2s ease;
-    
-    &--top {
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 100%;
-      border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
-      border-radius: 0 0 var(--ldesign-drawer-radius, 12px) var(--ldesign-drawer-radius, 12px);
-    }
-    
-    &--bottom {
-      top: 0;
-      left: 0;
-      right: 0;
-      width: 100%;
-      border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
-      border-radius: var(--ldesign-drawer-radius, 12px) var(--ldesign-drawer-radius, 12px) 0 0;
-    }
-    
-    &--left {
-      right: 0;
-      top: 0;
-      bottom: 0;
-      height: 100%;
-      border-right: 1px solid var(--ldesign-border-color, #e5e7eb);
-    }
-    
-    &--right {
-      left: 0;
-      top: 0;
-      bottom: 0;
-      height: 100%;
-      border-left: 1px solid var(--ldesign-border-color, #e5e7eb);
-    }
-    
-    &:active,
-    &--dragging {
-      cursor: grabbing;
-      background: rgba(0, 0, 0, 0.02);
-    }
-    
-    // 暗黑模式
-    .ldesign-drawer--dark & {
-      border-color: var(--ldesign-dark-border, #374151);
-      
-      &:active,
-      &--dragging {
-        background: rgba(255, 255, 255, 0.02);
-      }
+    &::after {
+      left: 50%;
+      top: 3px;
+      width: 40px;
+      height: 2px;
+      transform: translateX(-50%);
     }
   }
-  
-  &__swipe-handle-bar {
-    background: var(--ldesign-border-color-light, #d1d5db);
-    border-radius: 2px;
-    transition: all 0.2s ease;
-    
-    // 上下方向的横条
-    .ldesign-drawer__swipe-handle--top &,
-    .ldesign-drawer__swipe-handle--bottom & {
-      width: 36px;
-      height: 4px;
-    }
-    
-    // 左右方向的竖条
-    .ldesign-drawer__swipe-handle--left &,
-    .ldesign-drawer__swipe-handle--right & {
-      width: 4px;
-      height: 36px;
-    }
-    
-    .ldesign-drawer__swipe-handle:hover & {
-      background: var(--ldesign-border-color, #9ca3af);
-      
-      // hover 时增加尺寸
-      .ldesign-drawer__swipe-handle--top &,
-      .ldesign-drawer__swipe-handle--bottom & {
-        width: 48px;
-      }
-      
-      .ldesign-drawer__swipe-handle--left &,
-      .ldesign-drawer__swipe-handle--right & {
-        height: 48px;
-      }
-    }
-    
-    .ldesign-drawer__swipe-handle--dragging & {
-      background: var(--ldesign-color-primary, #3b82f6);
-      
-      // 拖动时进一步增加尺寸
-      .ldesign-drawer__swipe-handle--top &,
-      .ldesign-drawer__swipe-handle--bottom & {
-        width: 60px;
-      }
-      
-      .ldesign-drawer__swipe-handle--left &,
-      .ldesign-drawer__swipe-handle--right & {
-        height: 60px;
-      }
-    }
-    
-    // 暗黑模式
-    .ldesign-drawer--dark & {
-      background: var(--ldesign-dark-border-light, #4b5563);
-      
-      .ldesign-drawer__swipe-handle:hover & {
-        background: var(--ldesign-dark-border, #6b7280);
-      }
-    }
-  }
-
-// 动画
-@keyframes ldesign-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
-@keyframes ldesign-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.drawer-size-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 4px 12px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
-@keyframes ldesign-bounce-in {
-  0% {
-    transform: scale(0.3);
+// ==================== 滑动手柄 ====================
+
+.drawer-swipe-handle {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .drawer-left & {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 20px;
+  }
+
+  .drawer-right & {
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 20px;
+  }
+
+  .drawer-top & {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 20px;
+  }
+
+  .drawer-bottom & {
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 20px;
+  }
+}
+
+.drawer-swipe-indicator {
+  width: 4px;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+
+  .drawer-top &,
+  .drawer-bottom & {
+    width: 40px;
+    height: 4px;
+  }
+}
+
+// ==================== 加载状态 ====================
+
+.drawer-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.drawer-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.drawer-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid @drawer-border-light;
+  border-top-color: @color-primary;
+  border-radius: 50%;
+  animation: drawer-spin 1s linear infinite;
+}
+
+.drawer-loading-text {
+  margin: 0;
+  font-size: 14px;
+  color: @drawer-text-light;
+}
+
+// ==================== 暗黑模式 ====================
+
+.drawer-theme-dark {
+  .drawer-mask {
+    background-color: @drawer-mask-dark;
+  }
+
+  .drawer-wrapper {
+    background-color: @drawer-bg-dark;
+    color: @drawer-text-dark;
+  }
+
+  .drawer-header.drawer-header-border {
+    border-bottom-color: @drawer-border-dark;
+  }
+
+  .drawer-header.drawer-header-sticky {
+    background-color: @drawer-bg-dark;
+  }
+
+  .drawer-title {
+    color: @drawer-text-dark;
+  }
+
+  .drawer-back-btn,
+  .drawer-action-btn,
+  .drawer-close-btn {
+    color: @drawer-text-dark;
+
+    &:hover {
+      background-color: @drawer-hover-dark;
+    }
+  }
+
+  .drawer-content::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  .drawer-content {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+
+  .drawer-footer.drawer-footer-border {
+    border-top-color: @drawer-border-dark;
+  }
+
+  .drawer-btn {
+    background-color: @drawer-bg-dark;
+    border-color: @drawer-border-dark;
+    color: @drawer-text-dark;
+
+    &.drawer-btn-text:hover:not(:disabled) {
+      background-color: @drawer-hover-dark;
+    }
+  }
+
+  .drawer-loading-overlay {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+
+  .drawer-loading-spinner {
+    border-color: @drawer-border-dark;
+    border-top-color: @color-primary;
+  }
+
+  .drawer-loading-text {
+    color: @drawer-text-dark;
+  }
+}
+
+// ==================== 动画 ====================
+
+@keyframes drawer-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes drawer-fade-in {
+  from {
     opacity: 0;
   }
-  50% {
-    transform: scale(1.05);
-  }
-  70% {
-    transform: scale(0.9);
-  }
-  100% {
-    transform: scale(1);
+  to {
     opacity: 1;
   }
 }
 
+@keyframes drawer-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+// ==================== 响应式设计 ====================
+
+@media (max-width: 768px) {
+  .drawer-wrapper {
+    // 移动端默认全屏
+    &.drawer-left,
+    &.drawer-right {
+      width: 100% !important;
+    }
+
+    &.drawer-top,
+    &.drawer-bottom {
+      height: 90% !important;
+    }
+  }
+
+  .drawer-header {
+    padding: 12px 16px;
+  }
+
+  .drawer-content {
+    padding: 16px;
+  }
+
+  .drawer-footer {
+    padding: 12px 16px;
+  }
+
+  .drawer-footer-buttons {
+    flex-direction: column;
+    width: 100%;
+
+    .drawer-btn {
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .drawer-title {
+    font-size: 14px;
+  }
+
+  .drawer-subtitle {
+    font-size: 12px;
+  }
+
+  .drawer-btn {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+}
+
+// ==================== 可访问性 ====================
 
 @media (prefers-reduced-motion: reduce) {
-  .ldesign-drawer__mask { transition: none !important; }
-  .ldesign-drawer__panel { transition: none !important; }
-  .ldesign-drawer__snap-label { animation: none !important; }
-  .ldesign-drawer__button-spinner { animation: none !important; }
+  .drawer-wrapper,
+  .drawer-mask,
+  .drawer-btn,
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ==================== 打印样式 ====================
+
+@media print {
+  .@{drawer-prefix}-container {
+    display: none !important;
+  }
+}
+
+// ==================== 工具类 ====================
+
+.drawer-resizing {
+  user-select: none;
+  
+  * {
+    user-select: none;
+    pointer-events: none;
+  }
+}
+
+.drawer-swiping {
+  transition: none !important;
 }

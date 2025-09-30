@@ -61,7 +61,7 @@ export interface TemplateMetadata extends TemplateConfig {
   /** 组件加载器函数 */
   componentLoader?: () => Promise<Component>
   /** 样式文件路径 */
-  stylePath?: string
+  stylePath?: string | undefined
   /** 配置文件路径 */
   configPath: string
   /** 最后修改时间 */
@@ -317,7 +317,7 @@ export interface ExtendedTemplateMetadata extends TemplateMetadata {
   /** 使用统计 */
   usage: {
     count: number
-    lastUsed: Date
+    lastUsed?: Date
     rating?: number
     ratingCount?: number
   }
@@ -372,7 +372,7 @@ export interface LoadResult<T = Component> {
  */
 export interface TemplateInfo extends TemplateMetadata {
   /** 模板组件 */
-  component?: Component
+  component?: Component | undefined
   /** 加载状态 */
   loaded: boolean
   /** 加载错误 */
@@ -381,6 +381,19 @@ export interface TemplateInfo extends TemplateMetadata {
   usageCount: number
   /** 最后使用时间 */
   lastUsed?: Date
+  /** 设备类型别名（兼容性） */
+  deviceType?: DeviceType
+  /** 模板元数据（兼容性） */
+  metadata?: {
+    description?: string
+    version?: string
+    author?: string
+    tags?: string[]
+  }
+  /** 模板文件信息（兼容性） */
+  templateFile?: {
+    path?: string
+  }
 }
 
 /**

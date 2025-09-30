@@ -160,17 +160,40 @@ fnmRouter.post('/install', async (_req, res) => {
       // Windows 平台 - 使用 winget 或下载安装
       fnmLogger.info('正在安装 fnm (Windows)...')
       
+      // 检查 winget 是否可用
+      const wingetCheck = executeCommand('winget --version')
+      
+      if (!wingetCheck) {
+        connectionManager.broadcast({
+          type: 'fnm-install-error',
+          data: { message: 'winget 不可用，请安装 Windows 应用商店 (Microsoft Store) 或使用手动安装' }
+        })
+        
+        throw new Error(
+          'winget 不可用。请确保已安装 Windows 应用商店，' +
+          '或从 https://github.com/Schniz/fnm#installation 下载 fnm 手动安装。'
+        )
+      }
+      
       connectionManager.broadcast({
         type: 'fnm-install-progress',
         data: { message: '正在使用 winget 安装 fnm...', progress: 30 }
       })
 
       // 尝试使用 winget 安装
-      const result = await executeCommandAsync('winget', ['install', 'Schniz.fnm', '--silent'], (data) => {
-        connectionManager.broadcast({
-          type: 'fnm-install-progress',
-          data: { message: data.trim(), progress: 60 }
-        })
+      const result = await executeCommandAsync('winget', [
+        'install', 
+        'Schniz.fnm', 
+        '--accept-package-agreements',
+        '--accept-source-agreements'
+      ], (data) => {
+        const message = data.trim()
+        if (message) {
+          connectionManager.broadcast({
+            type: 'fnm-install-progress',
+            data: { message, progress: 60 }
+          })
+        }
       })
 
       if (result.success) {
@@ -193,9 +216,20 @@ fnmRouter.post('/install', async (_req, res) => {
           data: { message: 'fnm 安装完成！请重启终端', success: true }
         })
       } else {
-        throw new Error(result.error || '安装失败')
+        // 提供详细的错误信息和解决方案
+        const errorMessage = result.error || '安装失败'
+        fnmLogger.error('winget 安装失败:', errorMessage)
+        
+        throw new Error(
+          `fnm 安装失败: ${errorMessage}\n\n` +
+          '请尝试以下解决方案：\n' +
+          '1. 以管理员身份运行终端\n' +
+          '2. 更新 winget: winget upgrade\n' +
+          '3. 手动从 https://github.com/Schniz/fnm/releases 下载安装\n' +
+          '4. 或者考虑使用 Volta 代替'
+        )
       }
-    } else if (platform === 'darwin' || platform === 'linux') {
+    }
       // macOS/Linux 平台 - 使用安装脚本
       fnmLogger.info('正在安装 fnm (Unix)...')
       

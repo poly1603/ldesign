@@ -10,7 +10,7 @@ export type ModalVariant = 'modal' | 'drawer-left' | 'drawer-right' | 'bottom-sh
 
 export type ModalSize = 'small' | 'medium' | 'large' | 'full';
 
-export type ModalAnimation = 'fade' | 'zoom' | 'slide-down' | 'slide-up' | 'slide-left' | 'slide-right' | 'zoom-origin';
+export type ModalAnimation = 'fade' | 'zoom' | 'slide-down' | 'slide-up' | 'slide-left' | 'slide-right' | 'zoom-origin' | 'elastic' | 'wobble' | 'flip';
 
 /**
  * Modal 模态框组件
@@ -179,6 +179,23 @@ export class LdesignModal {
   @Prop() openOnEdgeSwipe: boolean = false;
   /** 边缘感应宽度（px） */
   @Prop() edgeSwipeWidth: number = 24;
+  
+  /** 新增：深色模式 */
+  @Prop() darkMode: boolean = false;
+  /** 新增：自动检测系统深色模式 */
+  @Prop() autoDetectDarkMode: boolean = true;
+  /** 新增：是否支持画中画模式 */
+  @Prop() enablePictureInPicture: boolean = false;
+  /** 新增：是否启用手势操作 */
+  @Prop() enableGestures: boolean = true;
+  /** 新增：是否显示进度指示器 */
+  @Prop() showProgress: boolean = false;
+  /** 新增：当前进度（0-100） */
+  @Prop({ mutable: true }) progress: number = 0;
+  /** 新增：是否展示加载状态 */
+  @Prop() loading: boolean = false;
+  /** 新增：加载文字 */
+  @Prop() loadingText: string = '加载中...';
 
   /**
    * 模态框状态
@@ -212,6 +229,13 @@ export class LdesignModal {
   private modalElement?: HTMLElement;
   private titleId?: string;
   private bodyId?: string;
+  
+  /** 深色模式媒体查询 */
+  private darkModeQuery?: MediaQueryList;
+  /** 手势识别 */
+  private gestureStartX?: number;
+  private gestureStartY?: number;
+  private gestureStartTime?: number;
 
   /**
    * 可滚动主体区域引用
@@ -444,6 +468,9 @@ export class LdesignModal {
     this.modalElement = this.el.querySelector('.ldesign-modal__dialog') as HTMLElement;
     this.maskElement = this.el.querySelector('.ldesign-modal__mask') as HTMLElement;
     this.bodyElement = this.el.querySelector('.ldesign-modal__body') as HTMLElement;
+    
+    // 初始化深色模式
+    this.initDarkMode();
 
     // 若指定容器，则把 Host 节点移动过去（只做一次）
     this.moveToContainer();
@@ -469,6 +496,11 @@ export class LdesignModal {
 
     // 记录最近一次指针位置（zoom-origin 需要）
     this.attachPointerRecorders();
+    
+    // 初始化手势操作
+    if (this.enableGestures) {
+      this.initGestures();
+    }
   }
 
   /**
@@ -477,10 +509,23 @@ export class LdesignModal {
   disconnectedCallback() {
     // 移除键盘事件
     document.removeEventListener('keydown', this.handleKeyDown);
+    
+    // 清理深色模式监听
+    this.cleanupDarkMode();
 
     // 移除拖拽和调整大小事件
     this.unbindDragEvents();
     this.unbindResizeEvents();
+    
+    // 清理所有动画帧
+    if (this.dragRaf) {
+      cancelAnimationFrame(this.dragRaf);
+      this.dragRaf = undefined;
+    }
+    if (this.resizeRaf) {
+      cancelAnimationFrame(this.resizeRaf);
+      this.resizeRaf = undefined;
+    }
 
     // 窗口事件
     window.removeEventListener('resize', this.handleWindowResize);
@@ -724,6 +769,7 @@ export class LdesignModal {
   /**
    * 拖拽中（支持鼠标和触摸）
    */
+  private dragRaf?: number;
   private handleDragMove = (event: MouseEvent | TouchEvent) => {
     if (!this.isDragging || !this.modalElement) return;
     
@@ -737,8 +783,13 @@ export class LdesignModal {
       return; 
     }
 
-    const deltaX = clientX - this.dragStartX;
-    const deltaY = clientY - this.dragStartY;
+    // 使用 requestAnimationFrame 优化性能
+    if (this.dragRaf) cancelAnimationFrame(this.dragRaf);
+    this.dragRaf = requestAnimationFrame(() => {
+      if (!this.isDragging || !this.modalElement) return;
+      
+      const deltaX = clientX - this.dragStartX;
+      const deltaY = clientY - this.dragStartY;
 
     let newX = this.modalStartX + deltaX;
     let newY = this.modalStartY + deltaY;
@@ -750,13 +801,14 @@ export class LdesignModal {
     newX = Math.min(Math.max(0, newX), maxLeft);
     newY = Math.min(Math.max(0, newY), maxTop);
 
-    // 应用并记忆
-    this.modalElement.style.left = `${newX}px`;
-    this.modalElement.style.top = `${newY}px`;
-    this.modalElement.style.transform = 'none';
+      // 应用并记忆
+      this.modalElement.style.left = `${newX}px`;
+      this.modalElement.style.top = `${newY}px`;
+      this.modalElement.style.transform = 'none';
 
-    this.lastLeft = newX;
-    this.lastTop = newY;
+      this.lastLeft = newX;
+      this.lastTop = newY;
+    });
   };
 
   /**
@@ -764,6 +816,12 @@ export class LdesignModal {
    */
   private handleDragEnd = () => {
     this.isDragging = false;
+    
+    // 清理动画帧
+    if (this.dragRaf) {
+      cancelAnimationFrame(this.dragRaf);
+      this.dragRaf = undefined;
+    }
 
     // 移除拖拽样式类
     if (this.modalElement) {
@@ -864,8 +922,13 @@ export class LdesignModal {
       return; 
     }
 
-    const deltaX = clientX - this.resizeStartX;
-    const deltaY = clientY - this.resizeStartY;
+    // 使用 requestAnimationFrame 优化性能
+    if (this.resizeRaf) cancelAnimationFrame(this.resizeRaf);
+    this.resizeRaf = requestAnimationFrame(() => {
+      if (!this.isResizing || !this.modalElement) return;
+      
+      const deltaX = clientX - this.resizeStartX;
+      const deltaY = clientY - this.resizeStartY;
 
     const minW = this.minWidth ?? 200;
     const minH = this.minHeight ?? 150;
@@ -943,11 +1006,12 @@ export class LdesignModal {
     this.modalElement.style.position = 'absolute';
     this.modalElement.style.margin = '0';
 
-    // 记忆
-    this.lastLeft = newLeft;
-    this.lastTop = newTop;
-    this.lastWidth = newWidth;
-    this.lastHeight = newHeight;
+      // 记忆
+      this.lastLeft = newLeft;
+      this.lastTop = newTop;
+      this.lastWidth = newWidth;
+      this.lastHeight = newHeight;
+    });
   };
 
   /**
@@ -956,6 +1020,12 @@ export class LdesignModal {
   private handleResizeEnd = () => {
     this.isResizing = false;
     this.resizeDirection = '';
+    
+    // 清理动画帧
+    if (this.resizeRaf) {
+      cancelAnimationFrame(this.resizeRaf);
+      this.resizeRaf = undefined;
+    }
 
     // 移除调整大小样式类
     if (this.modalElement) {
@@ -1712,6 +1782,82 @@ export class LdesignModal {
   }
   private isTopMost() {
     return __modalStack.length > 0 && __modalStack[__modalStack.length - 1] === (this as any);
+  }
+  
+  /** 深色模式初始化 */
+  private initDarkMode() {
+    if (this.autoDetectDarkMode) {
+      this.darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      this.handleDarkModeChange(this.darkModeQuery);
+      this.darkModeQuery.addEventListener('change', this.handleDarkModeChange);
+    }
+    this.updateDarkModeClass();
+  }
+  
+  private handleDarkModeChange = (e: MediaQueryList | MediaQueryListEvent) => {
+    if (this.autoDetectDarkMode && !this.darkMode) {
+      this.updateDarkModeClass(e.matches);
+    }
+  };
+  
+  private updateDarkModeClass(isDark?: boolean) {
+    const shouldBeDark = isDark !== undefined ? isDark : this.darkMode;
+    if (shouldBeDark) {
+      this.el.classList.add('ldesign-modal--dark');
+    } else {
+      this.el.classList.remove('ldesign-modal--dark');
+    }
+  }
+  
+  private cleanupDarkMode() {
+    if (this.darkModeQuery) {
+      this.darkModeQuery.removeEventListener('change', this.handleDarkModeChange);
+      this.darkModeQuery = undefined;
+    }
+  }
+  
+  /** 手势操作初始化 */
+  private initGestures() {
+    if (!this.modalElement) return;
+    
+    // 双指缩放手势
+    let initialDistance = 0;
+    let currentScale = 1;
+    
+    this.modalElement.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        initialDistance = this.getDistance(e.touches[0], e.touches[1]);
+        e.preventDefault();
+      }
+    }, { passive: false });
+    
+    this.modalElement.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2 && initialDistance > 0) {
+        const currentDistance = this.getDistance(e.touches[0], e.touches[1]);
+        const scale = currentDistance / initialDistance;
+        currentScale = Math.min(Math.max(scale, 0.5), 2);
+        if (this.modalElement) {
+          this.modalElement.style.transform = `scale(${currentScale})`;
+        }
+        e.preventDefault();
+      }
+    }, { passive: false });
+    
+    this.modalElement.addEventListener('touchend', () => {
+      if (currentScale < 0.8) {
+        this.attemptClose('close');
+      } else if (this.modalElement) {
+        this.modalElement.style.transform = 'scale(1)';
+      }
+      initialDistance = 0;
+      currentScale = 1;
+    });
+  }
+  
+  private getDistance(touch1: Touch, touch2: Touch): number {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
   }
 
   private isLastStep() { return !!(this.steps && this.currentStep >= (this.steps.length - 1)); }

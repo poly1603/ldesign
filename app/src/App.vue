@@ -5,6 +5,7 @@ import { RouterView } from '@ldesign/router';
 
 <template>
   <RouterView />
+
 </template>
 <style lang="less">
 html,

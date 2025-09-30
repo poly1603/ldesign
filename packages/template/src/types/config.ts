@@ -267,7 +267,7 @@ export interface ConfigValidationResult {
   /** 警告信息 */
   warnings: string[]
   /** 已修复的配置 */
-  fixedConfig?: TemplateSystemConfig
+  fixedConfig?: TemplateSystemConfig | undefined
 }
 
 /**

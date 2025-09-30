@@ -93,7 +93,12 @@ export interface ScannerEventCallbacks {
   /** 扫描错误回调 */
   onScanError?: (error: ScanError) => void
   /** 文件变更回调 */
-onFileChange?: (event: ScannerFileChangeEvent) => void
+  onFileChange?: (event: ScannerFileChangeEvent) => void
   /** 模板更新回调 */
   onTemplateUpdate?: (template: TemplateMetadata) => void
 }
+
+/**
+ * 兼容性别名
+ */
+export type ScannerCallbacks = ScannerEventCallbacks

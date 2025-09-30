@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign Image Gallery Preview Test</title>
+    <link rel="stylesheet" href="packages/webcomponent/dist/ldesign/ldesign.css">
+    <script type="module" src="packages/webcomponent/dist/ldesign/ldesign.esm.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 32px;
+            color: #333;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+        }
+        
+        h2 {
+            font-size: 24px;
+            color: #444;
+            margin: 0 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .demo-box {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        h3 {
+            font-size: 18px;
+            color: #555;
+            margin: 0 0 15px 0;
+        }
+        
+        /* 单图预览 */
+        .single-image-demo {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        /* 图片画廊 */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .gallery-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        /* 带标题的画廊 */
+        .titled-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .gallery-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .gallery-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .gallery-card-image {
+            aspect-ratio: 16/10;
+        }
+        
+        .gallery-card-info {
+            padding: 15px;
+        }
+        
+        .gallery-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin: 0 0 5px 0;
+        }
+        
+        .gallery-card-desc {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+        
+        /* 瀑布流画廊 */
+        .masonry-gallery {
+            column-count: 3;
+            column-gap: 15px;
+        }
+        
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        @media (max-width: 768px) {
+            .masonry-gallery {
+                column-count: 2;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .masonry-gallery {
+                column-count: 1;
+            }
+        }
+        
+        /* 自定义控制按钮 */
+        .custom-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .custom-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+        
+        .custom-btn:hover {
+            opacity: 0.85;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffb347;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            color: #664d03;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Image Gallery & Preview</h1>
+        <p class="subtitle">点击图片查看预览，支持缩放、旋转、拖拽、多图切换等功能</p>
+        
+        <!-- 单图预览 -->
+        <div class="section">
+            <h2>📷 单图预览</h2>
+            
+            <div class="demo-box">
+                <h3>内置预览</h3>
+                <div class="single-image-demo">
+                    <ldesign-image 
+                        src="https://picsum.photos/400/300?random=1"
+                        width="200" 
+                        height="150"
+                        preview
+                        preview-src="https://picsum.photos/1600/1200?random=1"
+                        fit="cover"
+                        shape="rounded"
+                        show-info
+                        placeholder-color="#e0e7ff"
+                    ></ldesign-image>
+                    
+                    <ldesign-image 
+                        src="https://picsum.photos/400/400?random=2"
+                        width="200" 
+                        height="200"
+                        preview
+                        fit="cover"
+                        shape="circle"
+                        downloadable
+                    ></ldesign-image>
+                    
+                    <ldesign-image 
+                        src="https://picsum.photos/600/400?random=3"
+                        width="300" 
+                        height="200"
+                        preview
+                        fit="cover"
+                        rotatable
+                        fullscreenable
+                    ></ldesign-image>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 多图画廊 -->
+        <div class="section">
+            <h2>🏞️ 多图画廊</h2>
+            
+            <div class="demo-box">
+                <h3>网格画廊 (使用外部预览组件)</h3>
+                <div class="gallery-grid" id="gallery1">
+                    <!-- 将通过JS动态添加图片 -->
+                </div>
+                <div class="note">
+                    💡 点击任意图片进入预览模式，支持左右切换、键盘导航（ESC关闭，←→切换，+-缩放）
+                </div>
+            </div>
+            
+            <div class="demo-box">
+                <h3>带信息卡片画廊</h3>
+                <div class="titled-gallery" id="gallery2">
+                    <!-- 将通过JS动态添加图片 -->
+                </div>
+            </div>
+            
+            <div class="demo-box">
+                <h3>瀑布流画廊</h3>
+                <div class="masonry-gallery" id="gallery3">
+                    <!-- 将通过JS动态添加图片 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 编程式控制 -->
+        <div class="section">
+            <h2>🎮 编程式控制</h2>
+            
+            <div class="demo-box">
+                <h3>自定义预览控制</h3>
+                <div class="single-image-demo">
+                    <ldesign-image 
+                        id="controlled-image"
+                        src="https://picsum.photos/600/400?random=20"
+                        width="400" 
+                        height="267"
+                        preview
+                        fit="cover"
+                        shape="rounded"
+                    ></ldesign-image>
+                </div>
+                
+                <div class="custom-controls">
+                    <button class="custom-btn" onclick="openCustomPreview()">
+                        打开自定义预览
+                    </button>
+                    <button class="custom-btn" onclick="openGalleryAt(2)">
+                        打开画廊 (第3张)
+                    </button>
+                    <button class="custom-btn" onclick="downloadCurrentImage()">
+                        下载当前图片
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 准备图片数据
+        const galleryImages = [
+            'https://picsum.photos/400/300?random=11',
+            'https://picsum.photos/400/500?random=12',
+            'https://picsum.photos/500/400?random=13',
+            'https://picsum.photos/400/600?random=14',
+            'https://picsum.photos/600/400?random=15',
+            'https://picsum.photos/400/400?random=16',
+            'https://picsum.photos/500/600?random=17',
+            'https://picsum.photos/400/350?random=18',
+            'https://picsum.photos/450/400?random=19'
+        ];
+        
+        const imageInfo = [
+            { title: '山间晨曦', desc: '清晨的第一缕阳光' },
+            { title: '城市夜景', desc: '繁华都市的灯火' },
+            { title: '海岸线', desc: '蔚蓝海岸的风光' },
+            { title: '森林深处', desc: '幽静的森林小径' },
+            { title: '雪山之巅', desc: '壮丽的雪山景色' },
+            { title: '田园风光', desc: '宁静的乡村景色' },
+            { title: '沙漠落日', desc: '沙漠中的夕阳' },
+            { title: '湖光山色', desc: '湖泊与山峦' },
+            { title: '都市建筑', desc: '现代建筑艺术' }
+        ];
+        
+        // 初始化网格画廊
+        function initGallery1() {
+            const gallery = document.getElementById('gallery1');
+            galleryImages.forEach((src, index) => {
+                const img = document.createElement('ldesign-image');
+                img.src = src;
+                img.width = '100%';
+                img.height = '100%';
+                img.fit = 'cover';
+                img.preview = true;
+                img.useExternalPreview = true;
+                img.previewImages = galleryImages;
+                img.previewCurrentIndex = index;
+                img.placeholderColor = '#e0e7ff';
+                img.className = 'gallery-item';
+                gallery.appendChild(img);
+            });
+        }
+        
+        // 初始化卡片画廊
+        function initGallery2() {
+            const gallery = document.getElementById('gallery2');
+            galleryImages.slice(0, 6).forEach((src, index) => {
+                const card = document.createElement('div');
+                card.className = 'gallery-card';
+                card.innerHTML = `
+                    <ldesign-image 
+                        class="gallery-card-image"
+                        src="${src}"
+                        width="100%"
+                        height="100%"
+                        fit="cover"
+                        preview
+                        use-external-preview
+                        preview-images='${JSON.stringify(galleryImages)}'
+                        preview-current-index="${index}"
+                    ></ldesign-image>
+                    <div class="gallery-card-info">
+                        <h4 class="gallery-card-title">${imageInfo[index].title}</h4>
+                        <p class="gallery-card-desc">${imageInfo[index].desc}</p>
+                    </div>
+                `;
+                gallery.appendChild(card);
+            });
+        }
+        
+        // 初始化瀑布流画廊
+        function initGallery3() {
+            const gallery = document.getElementById('gallery3');
+            const heights = [200, 300, 250, 400, 350, 280, 320, 260, 380];
+            
+            galleryImages.forEach((src, index) => {
+                const img = document.createElement('ldesign-image');
+                img.src = src;
+                img.width = '100%';
+                img.height = heights[index] + 'px';
+                img.fit = 'cover';
+                img.preview = true;
+                img.useExternalPreview = true;
+                img.previewImages = galleryImages;
+                img.previewCurrentIndex = index;
+                img.className = 'masonry-item';
+                gallery.appendChild(img);
+            });
+        }
+        
+        // 编程式控制函数
+        function openCustomPreview() {
+            // 创建或获取 image-viewer
+            let viewer = document.querySelector('ldesign-image-viewer');
+            if (!viewer) {
+                viewer = document.createElement('ldesign-image-viewer');
+                document.body.appendChild(viewer);
+            }
+            
+            // 设置单图预览
+            viewer.images = [{
+                src: 'https://picsum.photos/1600/1200?random=20',
+                title: '高清大图',
+                description: '这是一张高清示例图片'
+            }];
+            viewer.startIndex = 0;
+            viewer.visible = true;
+        }
+        
+        function openGalleryAt(index) {
+            // 创建或获取 image-viewer
+            let viewer = document.querySelector('ldesign-image-viewer');
+            if (!viewer) {
+                viewer = document.createElement('ldesign-image-viewer');
+                document.body.appendChild(viewer);
+            }
+            
+            // 设置多图预览
+            viewer.images = galleryImages.map((src, i) => ({
+                src,
+                title: imageInfo[i].title,
+                description: imageInfo[i].desc
+            }));
+            viewer.startIndex = index;
+            viewer.visible = true;
+        }
+        
+        async function downloadCurrentImage() {
+            const img = document.getElementById('controlled-image');
+            if (img) {
+                // 触发下载
+                const src = img.src;
+                const link = document.createElement('a');
+                link.href = src;
+                link.download = 'image.jpg';
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+        
+        // 初始化所有画廊
+        document.addEventListener('DOMContentLoaded', () => {
+            initGallery1();
+            initGallery2();
+            initGallery3();
+        });
+    </script>
+</body>
+</html>

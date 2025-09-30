@@ -74,6 +74,21 @@ export type {
 // 导出所有类型定义
 export * from './types'
 
+// 导出UI配置相关函数
+export {
+  getConfigFields,
+  getFieldByPath,
+  getDefaultConfig,
+  validateConfigValue,
+  getEnvironmentConfig,
+  getDefaultEnvironment,
+  getEnvironmentConfigPath,
+  getNestedValue,
+  setNestedValue,
+  SUPPORTED_ENVIRONMENTS,
+  LAUNCHER_CONFIG_FIELDS
+} from './types/ui-config'
+
 // 导出常量
 export * from './constants'
 
