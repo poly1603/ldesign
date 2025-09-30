@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <title>LDesign Drawer - 移动端测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
+            color: #333;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #444;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn.btn-secondary {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+        
+        .btn.btn-success {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+        
+        .btn.btn-warning {
+            background: linear-gradient(135deg, #fa709a, #fee140);
+        }
+        
+        .device-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .device-info div {
+            margin-bottom: 5px;
+        }
+        
+        .device-info strong {
+            color: #333;
+        }
+        
+        .gesture-hint {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .gesture-hint-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #1976d2;
+        }
+        
+        .test-content {
+            padding: 20px;
+        }
+        
+        .test-content h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .test-content p {
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .scroll-content {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .scroll-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #f5f5f5;
+            border-radius: 6px;
+        }
+        
+        /* 深色模式支持 */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #434343 0%, #000000 100%);
+            }
+            
+            .container {
+                background: #1e1e1e;
+                color: #e0e0e0;
+            }
+            
+            h1, .section-title, .test-content h3 {
+                color: #e0e0e0;
+            }
+            
+            .subtitle, .test-content p, .device-info {
+                color: #b0b0b0;
+            }
+            
+            .device-info {
+                background: #2a2a2a;
+            }
+            
+            .device-info strong {
+                color: #e0e0e0;
+            }
+            
+            .gesture-hint {
+                background: #1e3a5f;
+                border-left-color: #64b5f6;
+            }
+            
+            .gesture-hint-title {
+                color: #90caf9;
+            }
+            
+            .scroll-content {
+                border-color: #444;
+                background: #1a1a1a;
+            }
+            
+            .scroll-item {
+                background: #2a2a2a;
+                color: #e0e0e0;
+            }
+        }
+        
+        /* 横屏优化 */
+        @media (orientation: landscape) and (max-width: 1024px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .button-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 抽屉组件移动端测试</h1>
+        <p class="subtitle">测试触摸手势、响应式布局和移动端优化</p>
+        
+        <!-- 设备信息 -->
+        <div class="device-info">
+            <div><strong>设备类型：</strong><span id="deviceType">检测中...</span></div>
+            <div><strong>屏幕尺寸：</strong><span id="screenSize">检测中...</span></div>
+            <div><strong>触摸支持：</strong><span id="touchSupport">检测中...</span></div>
+            <div><strong>屏幕方向：</strong><span id="orientation">检测中...</span></div>
+        </div>
+        
+        <!-- 手势提示 -->
+        <div class="gesture-hint">
+            <div class="gesture-hint-title">💡 支持的手势操作：</div>
+            <div>• 左右滑动打开/关闭侧边抽屉</div>
+            <div>• 上下滑动打开/关闭顶部/底部抽屉</div>
+            <div>• 拖动边缘调整抽屉大小（如果启用）</div>
+            <div>• 点击遮罩关闭抽屉</div>
+        </div>
+        
+        <!-- 方向测试 -->
+        <div class="section">
+            <h2 class="section-title">📍 方向测试</h2>
+            <div class="button-grid">
+                <button class="btn" onclick="openDrawer('left')">左侧抽屉</button>
+                <button class="btn btn-secondary" onclick="openDrawer('right')">右侧抽屉</button>
+                <button class="btn btn-success" onclick="openDrawer('top')">顶部抽屉</button>
+                <button class="btn btn-warning" onclick="openDrawer('bottom')">底部抽屉</button>
+            </div>
+        </div>
+        
+        <!-- 手势测试 -->
+        <div class="section">
+            <h2 class="section-title">👆 手势功能测试</h2>
+            <div class="button-grid">
+                <button class="btn" onclick="openSwipeDrawer()">滑动关闭测试</button>
+                <button class="btn btn-secondary" onclick="openResizableDrawer()">拖动调整大小</button>
+                <button class="btn btn-success" onclick="openPullDownDrawer()">下拉关闭(底部)</button>
+            </div>
+        </div>
+        
+        <!-- 响应式测试 -->
+        <div class="section">
+            <h2 class="section-title">📐 响应式布局测试</h2>
+            <div class="button-grid">
+                <button class="btn" onclick="openFullscreenDrawer()">全屏抽屉</button>
+                <button class="btn btn-secondary" onclick="openCustomSizeDrawer()">自定义尺寸</button>
+                <button class="btn btn-success" onclick="openScrollableDrawer()">滚动内容测试</button>
+            </div>
+        </div>
+        
+        <!-- 性能测试 -->
+        <div class="section">
+            <h2 class="section-title">⚡ 性能测试</h2>
+            <div class="button-grid">
+                <button class="btn" onclick="openPerformanceDrawer()">性能模式</button>
+                <button class="btn btn-secondary" onclick="testMultipleDrawers()">多抽屉测试</button>
+                <button class="btn btn-warning" onclick="testAnimationPerformance()">动画性能测试</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 左侧抽屉 -->
+    <ldesign-drawer id="leftDrawer" placement="left" drawerTitle="左侧抽屉" swipeable>
+        <div class="test-content">
+            <h3>左侧抽屉内容</h3>
+            <p>这是一个左侧抽屉的示例。支持从右向左滑动关闭。</p>
+            <p>在移动设备上，抽屉会自动适配屏幕宽度。</p>
+            <button class="btn" onclick="document.getElementById('leftDrawer').visible = false">关闭抽屉</button>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 右侧抽屉 -->
+    <ldesign-drawer id="rightDrawer" placement="right" drawerTitle="右侧抽屉" swipeable>
+        <div class="test-content">
+            <h3>右侧抽屉内容</h3>
+            <p>这是一个右侧抽屉的示例。支持从左向右滑动关闭。</p>
+            <button class="btn" onclick="document.getElementById('rightDrawer').visible = false">关闭抽屉</button>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 顶部抽屉 -->
+    <ldesign-drawer id="topDrawer" placement="top" drawerTitle="顶部抽屉" height="auto">
+        <div class="test-content">
+            <h3>顶部抽屉内容</h3>
+            <p>这是一个顶部抽屉的示例。高度自适应内容。</p>
+            <button class="btn" onclick="document.getElementById('topDrawer').visible = false">关闭抽屉</button>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 底部抽屉 -->
+    <ldesign-drawer id="bottomDrawer" placement="bottom" drawerTitle="底部抽屉" swipeable swipeThreshold="50">
+        <div class="test-content">
+            <h3>底部抽屉内容</h3>
+            <p>这是一个底部抽屉的示例。支持向下滑动关闭。</p>
+            <p>在移动设备上特别适合操作面板场景。</p>
+            <div class="button-grid">
+                <button class="btn">操作1</button>
+                <button class="btn btn-secondary">操作2</button>
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 可调整大小的抽屉 -->
+    <ldesign-drawer id="resizableDrawer" placement="right" drawerTitle="可调整大小" resizable swipeable>
+        <div class="test-content">
+            <h3>可调整大小的抽屉</h3>
+            <p>拖动左边缘可以调整抽屉宽度。</p>
+            <p>同时支持滑动关闭。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 全屏抽屉 -->
+    <ldesign-drawer id="fullscreenDrawer" placement="right" drawerTitle="全屏抽屉" fullscreen>
+        <div class="test-content">
+            <h3>全屏抽屉</h3>
+            <p>这是一个全屏抽屉，占据整个屏幕。</p>
+            <p>适合需要最大化显示内容的场景。</p>
+            <button class="btn" onclick="document.getElementById('fullscreenDrawer').visible = false">关闭抽屉</button>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 滚动内容抽屉 -->
+    <ldesign-drawer id="scrollableDrawer" placement="bottom" drawerTitle="滚动内容测试" height="70%" swipeable>
+        <div class="test-content">
+            <h3>滚动内容测试</h3>
+            <p>测试内容区域的滚动性能和触摸滚动体验。</p>
+            <div class="scroll-content">
+                <div class="scroll-item">滚动项目 1</div>
+                <div class="scroll-item">滚动项目 2</div>
+                <div class="scroll-item">滚动项目 3</div>
+                <div class="scroll-item">滚动项目 4</div>
+                <div class="scroll-item">滚动项目 5</div>
+                <div class="scroll-item">滚动项目 6</div>
+                <div class="scroll-item">滚动项目 7</div>
+                <div class="scroll-item">滚动项目 8</div>
+                <div class="scroll-item">滚动项目 9</div>
+                <div class="scroll-item">滚动项目 10</div>
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 性能模式抽屉 -->
+    <ldesign-drawer id="performanceDrawer" placement="right" drawerTitle="性能模式测试" enablePerformanceMode>
+        <div class="test-content">
+            <h3>性能模式已启用</h3>
+            <p>此抽屉启用了性能优化模式：</p>
+            <ul>
+                <li>GPU 硬件加速</li>
+                <li>CSS Containment</li>
+                <li>被动事件监听器</li>
+                <li>优化的动画</li>
+            </ul>
+        </div>
+    </ldesign-drawer>
+    
+    <script type="module">
+        // 导入抽屉组件
+        import './drawer.js';
+        
+        // 检测设备信息
+        function detectDevice() {
+            const deviceType = document.getElementById('deviceType');
+            const screenSize = document.getElementById('screenSize');
+            const touchSupport = document.getElementById('touchSupport');
+            const orientation = document.getElementById('orientation');
+            
+            // 设备类型
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isTablet = /(iPad|tablet|playbook|silk)|(android(?!.*mobile))/i.test(navigator.userAgent);
+            
+            if (isTablet) {
+                deviceType.textContent = '平板设备';
+            } else if (isMobile) {
+                deviceType.textContent = '移动设备';
+            } else {
+                deviceType.textContent = '桌面设备';
+            }
+            
+            // 屏幕尺寸
+            screenSize.textContent = `${window.innerWidth} × ${window.innerHeight}`;
+            
+            // 触摸支持
+            touchSupport.textContent = 'ontouchstart' in window ? '支持' : '不支持';
+            
+            // 屏幕方向
+            function updateOrientation() {
+                orientation.textContent = window.innerWidth > window.innerHeight ? '横屏' : '竖屏';
+            }
+            updateOrientation();
+            window.addEventListener('resize', updateOrientation);
+        }
+        
+        detectDevice();
+        
+        // 全局函数
+        window.openDrawer = function(placement) {
+            const drawer = document.getElementById(placement + 'Drawer');
+            if (drawer) {
+                drawer.visible = true;
+            }
+        };
+        
+        window.openSwipeDrawer = function() {
+            const drawer = document.getElementById('rightDrawer');
+            drawer.visible = true;
+            setTimeout(() => {
+                alert('尝试从左向右滑动关闭抽屉');
+            }, 500);
+        };
+        
+        window.openResizableDrawer = function() {
+            const drawer = document.getElementById('resizableDrawer');
+            drawer.visible = true;
+        };
+        
+        window.openPullDownDrawer = function() {
+            const drawer = document.getElementById('bottomDrawer');
+            drawer.visible = true;
+            setTimeout(() => {
+                alert('尝试向下拖动关闭底部抽屉');
+            }, 500);
+        };
+        
+        window.openFullscreenDrawer = function() {
+            const drawer = document.getElementById('fullscreenDrawer');
+            drawer.visible = true;
+        };
+        
+        window.openCustomSizeDrawer = function() {
+            const drawer = document.getElementById('bottomDrawer');
+            drawer.height = '60%';
+            drawer.visible = true;
+        };
+        
+        window.openScrollableDrawer = function() {
+            const drawer = document.getElementById('scrollableDrawer');
+            drawer.visible = true;
+        };
+        
+        window.openPerformanceDrawer = function() {
+            const drawer = document.getElementById('performanceDrawer');
+            drawer.visible = true;
+        };
+        
+        window.testMultipleDrawers = function() {
+            // 同时打开多个抽屉测试性能
+            setTimeout(() => document.getElementById('leftDrawer').visible = true, 0);
+            setTimeout(() => document.getElementById('bottomDrawer').visible = true, 200);
+            setTimeout(() => {
+                alert('已打开多个抽屉，测试渲染性能');
+            }, 500);
+        };
+        
+        window.testAnimationPerformance = function() {
+            const drawer = document.getElementById('rightDrawer');
+            let count = 0;
+            const interval = setInterval(() => {
+                drawer.visible = !drawer.visible;
+                count++;
+                if (count >= 6) {
+                    clearInterval(interval);
+                }
+            }, 400);
+        };
+        
+        // 监听抽屉事件
+        document.addEventListener('DOMContentLoaded', () => {
+            const drawers = document.querySelectorAll('ldesign-drawer');
+            drawers.forEach(drawer => {
+                drawer.addEventListener('drawerOpen', (e) => {
+                    console.log('抽屉打开:', e.detail);
+                });
+                
+                drawer.addEventListener('drawerClose', (e) => {
+                    console.log('抽屉关闭:', e.detail);
+                });
+                
+                drawer.addEventListener('drawerResize', (e) => {
+                    console.log('抽屉调整大小:', e.detail);
+                });
+            });
+        });
+        
+        // 监听键盘高度变化（虚拟键盘）
+        if ('visualViewport' in window) {
+            window.visualViewport.addEventListener('resize', () => {
+                const keyboardHeight = window.innerHeight - window.visualViewport.height;
+                document.documentElement.style.setProperty('--keyboard-height', keyboardHeight + 'px');
+            });
+        }
+    </script>
+</body>
+</html>

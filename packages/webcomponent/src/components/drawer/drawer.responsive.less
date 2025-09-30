@@ -1,0 +1,509 @@
+// ==================== 响应式断点定义 ====================
+@mobile-breakpoint: 768px;
+@tablet-breakpoint: 1024px;
+@desktop-breakpoint: 1280px;
+@wide-screen-breakpoint: 1920px;
+
+// ==================== 移动设备优化 ====================
+
+.drawer-mobile {
+  // 移动设备特定样式
+  .drawer-wrapper {
+    // 更平滑的触摸滚动
+    -webkit-overflow-scrolling: touch;
+    
+    // 避免点击延迟
+    touch-action: manipulation;
+    
+    // 禁用长按选中
+    -webkit-user-select: none;
+    user-select: none;
+    
+    // 禁用高亮
+    -webkit-tap-highlight-color: transparent;
+    
+    // 移动端拖动时禁用过渡
+    &.drawer-dragging {
+      transition: none !important;
+    }
+  }
+  
+  .drawer-content {
+    // 内容区域滚动优化
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    
+    // 防止过度滚动
+    overscroll-behavior-y: contain;
+  }
+  
+  // 底部抽屉适配虚拟键盘和安全区域
+  &.drawer-bottom .drawer-wrapper {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-bottom: constant(safe-area-inset-bottom, 0);
+    transition: padding-bottom 0.3s ease;
+    
+    // 键盘弹起时的适配
+    &.drawer-keyboard-open {
+      padding-bottom: calc(env(safe-area-inset-bottom, 0) + var(--keyboard-height, 0));
+    }
+  }
+  
+  // 移动端关闭按钮更大以提高可点击性
+  .drawer-close-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 12px;
+    
+    // 增加触摸区域
+    &::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      bottom: -8px;
+      left: -8px;
+    }
+  }
+  
+  // 滑动手柄更明显
+  .drawer-swipe-handle {
+    height: 6px;
+    padding: 12px 0;
+    
+    .drawer-swipe-indicator {
+      width: 60px;
+      height: 6px;
+      background-color: var(--drawer-border-color, #e5e5e5);
+      opacity: 0.6;
+      border-radius: 3px;
+      transition: opacity 0.2s, transform 0.2s;
+      
+      &:active {
+        opacity: 1;
+        transform: scaleX(1.2);
+      }
+    }
+  }
+  
+  // 移动端动画优化
+  &.drawer-visible .drawer-wrapper {
+    animation-duration: 250ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+// ==================== 性能模式样式 ====================
+
+.drawer-performance {
+  .drawer-wrapper {
+    // 启用硬件加速
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    
+    // CSS Containment
+    contain: layout style paint;
+    
+    // 减少重绘
+    isolation: isolate;
+  }
+  
+  .drawer-content {
+    // 优化重排
+    contain: layout style;
+    will-change: scroll-position;
+  }
+  
+  // 禁用不必要的阴影和效果
+  &.drawer-low-performance {
+    .drawer-wrapper {
+      box-shadow: none !important;
+    }
+    
+    * {
+      text-shadow: none !important;
+      filter: none !important;
+    }
+  }
+}
+
+// ==================== 响应式设计 ====================
+
+// 移动设备 (手机)
+@media (max-width: @mobile-breakpoint) {
+  :host,
+  .ldesign-drawer-container {
+    .drawer-wrapper {
+      // 移动端宽度优化
+      &.drawer-left,
+      &.drawer-right {
+        width: 85% !important;
+        max-width: calc(100vw - 48px);
+        
+        // iPhone X 等刘海屏适配
+        @supports (padding-left: env(safe-area-inset-left)) {
+          &.drawer-left {
+            padding-left: env(safe-area-inset-left);
+          }
+          &.drawer-right {
+            padding-right: env(safe-area-inset-right);
+          }
+        }
+      }
+
+      &.drawer-top,
+      &.drawer-bottom {
+        height: auto;
+        max-height: 80vh;
+        min-height: 200px;
+      }
+      
+      // 底部抽屉特殊处理
+      &.drawer-bottom {
+        border-radius: var(--drawer-radius, 12px) var(--drawer-radius, 12px) 0 0;
+        max-height: calc(100vh - 60px); // 保留顶部空间
+        
+        // 支持手势下拉关闭的视觉提示
+        &::before {
+          content: '';
+          position: absolute;
+          top: 8px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 36px;
+          height: 4px;
+          background-color: rgba(0, 0, 0, 0.2);
+          border-radius: 2px;
+        }
+      }
+    }
+    
+    .drawer-header {
+      padding: 12px 16px;
+      
+      .drawer-title {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      
+      .drawer-subtitle {
+        font-size: 13px;
+      }
+    }
+    
+    .drawer-content {
+      padding: 16px;
+      
+      // 移动端内容最大宽度
+      max-width: 100%;
+    }
+    
+    .drawer-footer {
+      padding: 12px 16px;
+      
+      // 移动端按钮堆叠布局
+      .drawer-footer-buttons {
+        flex-direction: column-reverse;
+        gap: 8px;
+        
+        .drawer-btn {
+          width: 100%;
+          padding: 12px 16px;
+          font-size: 14px;
+          
+          // 主按钮更突出
+          &.drawer-btn-primary {
+            padding: 14px 16px;
+            font-weight: 600;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 小屏幕移动设备
+@media (max-width: 480px) {
+  :host,
+  .ldesign-drawer-container {
+    .drawer-wrapper {
+      &.drawer-left,
+      &.drawer-right {
+        width: 90% !important;
+      }
+    }
+    
+    .drawer-title {
+      font-size: 15px;
+    }
+    
+    .drawer-subtitle {
+      font-size: 12px;
+    }
+    
+    .drawer-btn {
+      font-size: 13px;
+      padding: 10px 14px;
+    }
+  }
+}
+
+// 平板设备
+@media (min-width: (@mobile-breakpoint + 1px)) and (max-width: @tablet-breakpoint) {
+  :host,
+  .ldesign-drawer-container {
+    .drawer-wrapper {
+      &.drawer-left,
+      &.drawer-right {
+        width: 60%;
+        max-width: 500px;
+      }
+      
+      &.drawer-top,
+      &.drawer-bottom {
+        height: auto;
+        max-height: 70vh;
+      }
+    }
+    
+    .drawer-header {
+      padding: 16px 20px;
+    }
+    
+    .drawer-content {
+      padding: 20px;
+    }
+    
+    .drawer-footer {
+      padding: 16px 20px;
+      
+      .drawer-footer-buttons {
+        flex-direction: row;
+        
+        .drawer-btn {
+          min-width: 100px;
+        }
+      }
+    }
+  }
+}
+
+// 桌面设备
+@media (min-width: @desktop-breakpoint) {
+  :host,
+  .ldesign-drawer-container {
+    .drawer-wrapper {
+      // 桌面端保持默认尺寸
+      transition: transform var(--drawer-animation-duration, 300ms) var(--drawer-animation-easing, ease-in-out),
+                  opacity var(--drawer-animation-duration, 300ms) var(--drawer-animation-easing, ease-in-out);
+    }
+    
+    // 桌面端支持更复杂的动画
+    &.drawer-animation-slide-fade {
+      .drawer-wrapper {
+        animation: drawer-slide-fade-in 0.3s ease-out;
+      }
+    }
+  }
+}
+
+// 宽屏设备
+@media (min-width: @wide-screen-breakpoint) {
+  :host,
+  .ldesign-drawer-container {
+    .drawer-wrapper {
+      &.drawer-left,
+      &.drawer-right {
+        max-width: 600px;
+      }
+    }
+  }
+}
+
+// ==================== 特殊场景适配 ====================
+
+// 横屏模式优化
+@media (orientation: landscape) and (max-width: @tablet-breakpoint) {
+  :host,
+  .ldesign-drawer-container {
+    .drawer-bottom .drawer-wrapper {
+      max-height: 90vh; // 横屏时增加高度
+    }
+    
+    .drawer-left .drawer-wrapper,
+    .drawer-right .drawer-wrapper {
+      width: 50%; // 横屏时减少宽度
+      max-width: 400px;
+    }
+  }
+}
+
+// 高 DPI 屏幕优化
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  :host,
+  .ldesign-drawer-container {
+    .drawer-wrapper {
+      // 使用更细的边框
+      border: 0.5px solid var(--drawer-border-color, #e5e5e5);
+    }
+    
+    .drawer-resize-handle {
+      // 高分辨率屏幕下的 1px 边框
+      &::after {
+        content: '';
+        position: absolute;
+        background: var(--drawer-border-color, #e5e5e5);
+      }
+      
+      &.drawer-resize-handle-left::after,
+      &.drawer-resize-handle-right::after {
+        width: 1px;
+        height: 100%;
+        top: 0;
+        transform: scaleX(0.5);
+        transform-origin: center;
+      }
+      
+      &.drawer-resize-handle-top::after,
+      &.drawer-resize-handle-bottom::after {
+        width: 100%;
+        height: 1px;
+        left: 0;
+        transform: scaleY(0.5);
+        transform-origin: center;
+      }
+    }
+  }
+}
+
+// ==================== 主题适配 ====================
+
+// 暗黑模式支持
+@media (prefers-color-scheme: dark) {
+  :host(:not(.drawer-theme-light)),
+  .ldesign-drawer-container:not(.drawer-theme-light) {
+    --drawer-bg: #1f1f1f;
+    --drawer-text-color: #e0e0e0;
+    --drawer-border-color: #333;
+    --drawer-mask-bg: rgba(0, 0, 0, 0.75);
+    --drawer-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    
+    .drawer-wrapper {
+      background-color: var(--drawer-bg);
+      color: var(--drawer-text-color);
+      border-color: var(--drawer-border-color);
+    }
+    
+    .drawer-mask {
+      background-color: var(--drawer-mask-bg);
+    }
+    
+    .drawer-swipe-indicator {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+// 高对比度模式
+@media (prefers-contrast: high) {
+  :host,
+  .ldesign-drawer-container {
+    .drawer-wrapper {
+      border: 2px solid currentColor;
+    }
+    
+    .drawer-btn {
+      border: 2px solid currentColor;
+    }
+  }
+}
+
+// ==================== 动画优化 ====================
+
+// 动画减弱模式
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  .ldesign-drawer-container {
+    --drawer-animation-duration: 0.01ms;
+    
+    .drawer-wrapper,
+    .drawer-mask {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    * {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+// ==================== 打印样式 ====================
+
+@media print {
+  :host,
+  .ldesign-drawer-container {
+    display: none !important;
+  }
+}
+
+// ==================== 特殊状态动画 ====================
+
+@keyframes drawer-slide-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawer-bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// ==================== 触摸反馈 ====================
+
+.drawer-touch-feedback {
+  // 触摸时的视觉反馈
+  .drawer-btn,
+  .drawer-close-btn,
+  .drawer-back-btn {
+    position: relative;
+    overflow: hidden;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.1);
+      transform: translate(-50%, -50%);
+      transition: width 0.3s, height 0.3s;
+    }
+    
+    &:active::after {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
