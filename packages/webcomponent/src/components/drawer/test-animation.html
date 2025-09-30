@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawer 动画测试</title>
+  <script type="module" src="../../loader/index.ts"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .test-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    .button-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 14px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      color: #1890ff;
+      border-color: #1890ff;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .demo-content {
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .demo-content p {
+      margin-bottom: 16px;
+    }
+
+    .status {
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .status h3 {
+      margin-top: 0;
+    }
+
+    code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🎨 Drawer 动画测试</h1>
+
+    <div class="status">
+      <h3>测试说明</h3>
+      <p>测试所有方向的 Drawer 打开和关闭动画效果</p>
+      <ul>
+        <li>✅ 打开动画：从边缘滑入，遮罩从透明到不透明</li>
+        <li>✅ 关闭动画：滑出到边缘，遮罩从不透明到透明</li>
+        <li>✅ 动画时长：300ms</li>
+        <li>✅ 缓动函数：ease-in-out</li>
+      </ul>
+    </div>
+
+    <div class="button-group">
+      <button onclick="openDrawer('left')">⬅️ 左侧抽屉</button>
+      <button onclick="openDrawer('right')">➡️ 右侧抽屉</button>
+      <button onclick="openDrawer('top')">⬆️ 顶部抽屉</button>
+      <button onclick="openDrawer('bottom')">⬇️ 底部抽屉</button>
+    </div>
+
+    <h2>动画细节测试</h2>
+    <div class="button-group">
+      <button onclick="testSlowAnimation('right')">🐌 慢速动画 (1000ms)</button>
+      <button onclick="testFastAnimation('right')">⚡ 快速动画 (150ms)</button>
+      <button onclick="testNoAnimation('right')">🚫 无动画</button>
+      <button onclick="testWithoutMask('right')">👻 无遮罩</button>
+    </div>
+  </div>
+
+  <!-- 基本 Drawer 测试 -->
+  <ldesign-drawer id="drawer-left" placement="left" drawerTitle="左侧抽屉" size="400px">
+    <div class="demo-content">
+      <p>这是从<strong>左侧</strong>滑入的抽屉。</p>
+      <p>观察：</p>
+      <ul>
+        <li>打开时应该从左边滑入</li>
+        <li>关闭时应该滑出到左边</li>
+        <li>遮罩应该同步淡入淡出</li>
+      </ul>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawer-right" placement="right" drawerTitle="右侧抽屉" size="400px">
+    <div class="demo-content">
+      <p>这是从<strong>右侧</strong>滑入的抽屉（默认方向）。</p>
+      <p>观察：</p>
+      <ul>
+        <li>打开时应该从右边滑入</li>
+        <li>关闭时应该滑出到右边</li>
+        <li>遮罩应该同步淡入淡出</li>
+      </ul>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawer-top" placement="top" drawerTitle="顶部抽屉" size="300px">
+    <div class="demo-content">
+      <p>这是从<strong>顶部</strong>滑入的抽屉。</p>
+      <p>观察：</p>
+      <ul>
+        <li>打开时应该从顶部滑入</li>
+        <li>关闭时应该滑出到顶部</li>
+        <li>遮罩应该同步淡入淡出</li>
+      </ul>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawer-bottom" placement="bottom" drawerTitle="底部抽屉" size="300px">
+    <div class="demo-content">
+      <p>这是从<strong>底部</strong>滑入的抽屉。</p>
+      <p>观察：</p>
+      <ul>
+        <li>打开时应该从底部滑入</li>
+        <li>关闭时应该滑出到底部</li>
+        <li>遮罩应该同步淡入淡出</li>
+      </ul>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 特殊测试 Drawer -->
+  <ldesign-drawer id="drawer-slow" placement="right" drawerTitle="慢速动画" size="500px">
+    <div class="demo-content">
+      <h3>慢速动画测试</h3>
+      <p>动画持续时间：<code>1000ms</code></p>
+      <p>这样可以更清楚地观察动画过程。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawer-fast" placement="right" drawerTitle="快速动画" size="500px">
+    <div class="demo-content">
+      <h3>快速动画测试</h3>
+      <p>动画持续时间：<code>150ms</code></p>
+      <p>快速响应，适合频繁操作。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawer-no-animation" placement="right" drawerTitle="无动画" size="500px" animation="false">
+    <div class="demo-content">
+      <h3>无动画测试</h3>
+      <p>禁用所有动画效果，立即显示/隐藏。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawer-no-mask" placement="right" drawerTitle="无遮罩" size="500px" mask="false">
+    <div class="demo-content">
+      <h3>无遮罩测试</h3>
+      <p>只有抽屉动画，没有背景遮罩。</p>
+    </div>
+  </ldesign-drawer>
+
+  <script>
+    function openDrawer(placement) {
+      const drawer = document.getElementById(`drawer-${placement}`);
+      drawer.open();
+    }
+
+    function testSlowAnimation(placement) {
+      const drawer = document.getElementById('drawer-slow');
+      drawer.animationDuration = 1000;
+      drawer.open();
+    }
+
+    function testFastAnimation(placement) {
+      const drawer = document.getElementById('drawer-fast');
+      drawer.animationDuration = 150;
+      drawer.open();
+    }
+
+    function testNoAnimation(placement) {
+      const drawer = document.getElementById('drawer-no-animation');
+      drawer.open();
+    }
+
+    function testWithoutMask(placement) {
+      const drawer = document.getElementById('drawer-no-mask');
+      drawer.open();
+    }
+
+    // 监听所有 drawer 的事件
+    document.querySelectorAll('ldesign-drawer').forEach(drawer => {
+      drawer.addEventListener('drawerBeforeOpen', () => {
+        console.log(`📂 ${drawer.id}: 准备打开`);
+      });
+
+      drawer.addEventListener('drawerOpen', () => {
+        console.log(`✅ ${drawer.id}: 已打开`);
+      });
+
+      drawer.addEventListener('drawerBeforeClose', () => {
+        console.log(`📁 ${drawer.id}: 准备关闭`);
+      });
+
+      drawer.addEventListener('drawerClose', () => {
+        console.log(`✅ ${drawer.id}: 已关闭`);
+      });
+
+      drawer.addEventListener('drawerStateChange', (e) => {
+        console.log(`🔄 ${drawer.id}: 状态变化 ->`, e.detail.state);
+      });
+    });
+
+    console.log('✨ Drawer 动画测试页面已加载');
+    console.log('💡 打开浏览器开发者工具查看事件日志');
+  </script>
+</body>
+</html>

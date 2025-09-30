@@ -1032,7 +1032,7 @@ export class LdesignTimePicker {
     return (
       <Host class={{ 'ldesign-time-picker': true, 'ldesign-time-picker--disabled': this.disabled }}>
         <slot name="trigger">{this.renderTrigger()}</slot>
-        <ldesign-drawer visible={drawerVisible} placement={this.drawerPlacement} size={sizeProp as any} drawerTitle={this.drawerTitle} onLdesignVisibleChange={this.handleDrawerVisibleChange}>
+        <ldesign-drawer visible={drawerVisible} placement={this.drawerPlacement} size={sizeProp as any} drawerTitle={this.drawerTitle} onDrawerClose={() => this.hideOverlay()}>
           {this.renderPanel()}
         </ldesign-drawer>
       </Host>

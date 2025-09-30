@@ -58,7 +58,6 @@ graph TD;
   ldesign-cascader --> ldesign-icon
   ldesign-cascader --> ldesign-popup
   ldesign-cascader --> ldesign-drawer
-  ldesign-drawer --> ldesign-icon
   style ldesign-cascader fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

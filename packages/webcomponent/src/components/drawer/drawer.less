@@ -33,24 +33,58 @@
 
 // ==================== 容器 ====================
 
+// Shadow DOM: Use :host for the container
+:host {
+  position: fixed !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: @drawer-z-index-base !important;
+  // 默认隐藏，防止初始化时内容闪现
+  visibility: hidden !important;
+  display: block !important;
+}
+
+:host(.drawer-visible) {
+  pointer-events: auto !important;
+  visibility: visible !important;
+}
+
+// 状态类
+:host(.drawer-opening),
+:host(.drawer-closing) {
+  pointer-events: auto !important;
+  visibility: visible !important;
+}
+
+:host(.drawer-closed) {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+// Also keep the old selectors for backwards compatibility
 .@{drawer-prefix}-container {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: @drawer-z-index-base;
+  // 默认隐藏，防止初始化时内容闪现
+  visibility: hidden;
 
   &.drawer-visible {
     pointer-events: auto;
+    visibility: visible;
   }
 
   // 状态类
   &.drawer-opening,
   &.drawer-closing {
     pointer-events: auto;
+    visibility: visible;
   }
 
   &.drawer-closed {
     display: none;
+    visibility: hidden;
   }
 }
 
@@ -63,14 +97,23 @@
   opacity: 0;
   transition: opacity @drawer-animation-duration @drawer-animation-timing;
   pointer-events: auto;
-  
-  .drawer-visible & {
-    opacity: 1;
-  }
+}
 
-  .drawer-closing & {
-    opacity: 0;
-  }
+:host(.drawer-visible) .drawer-mask {
+  opacity: 1;
+}
+
+:host(.drawer-closing) .drawer-mask {
+  opacity: 0;
+}
+
+// Backwards compatibility
+.drawer-visible .drawer-mask {
+  opacity: 1;
+}
+
+.drawer-closing .drawer-mask {
+  opacity: 0;
 }
 
 // ==================== 抽屉主体 ====================
@@ -85,73 +128,12 @@
   overflow: hidden;
   outline: none;
   pointer-events: auto;
+  transition: transform @drawer-animation-duration @drawer-animation-timing;
   
   // GPU 加速
-  transform: translateZ(0);
   backface-visibility: hidden;
-  perspective: 1000px;
-
-  // 位置和动画
-  &.drawer-left {
-    top: 0;
-    left: 0;
-    bottom: 0;
-    transform: translateX(-100%);
-    
-    .drawer-visible & {
-      transform: translateX(0);
-    }
-
-    .drawer-closing & {
-      transform: translateX(-100%);
-    }
-  }
-
-  &.drawer-right {
-    top: 0;
-    right: 0;
-    bottom: 0;
-    transform: translateX(100%);
-    
-    .drawer-visible & {
-      transform: translateX(0);
-    }
-
-    .drawer-closing & {
-      transform: translateX(100%);
-    }
-  }
-
-  &.drawer-top {
-    top: 0;
-    left: 0;
-    right: 0;
-    transform: translateY(-100%);
-    
-    .drawer-visible & {
-      transform: translateY(0);
-    }
-
-    .drawer-closing & {
-      transform: translateY(-100%);
-    }
-  }
-
-  &.drawer-bottom {
-    bottom: 0;
-    left: 0;
-    right: 0;
-    transform: translateY(100%);
-    
-    .drawer-visible & {
-      transform: translateY(0);
-    }
-
-    .drawer-closing & {
-      transform: translateY(100%);
-    }
-  }
-
+  will-change: transform;
+  
   // 全屏状态
   .drawer-fullscreen & {
     width: 100% !important;
@@ -170,6 +152,142 @@
     width: 100% !important;
     height: 100% !important;
   }
+}
+
+// ==================== 左侧抽屉 ====================
+:host(.drawer-left) .drawer-wrapper {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  transform: translateX(-100%); // 初始位置：隐藏在左边
+}
+
+// 只有 visible 才触发动画到最终位置
+:host(.drawer-left.drawer-visible) .drawer-wrapper {
+  transform: translateX(0);
+}
+
+// 关闭时滑出
+:host(.drawer-left.drawer-closing) .drawer-wrapper {
+  transform: translateX(-100%);
+}
+
+// Backwards compatibility
+.drawer-left .drawer-wrapper {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  transform: translateX(-100%);
+}
+
+.drawer-left.drawer-visible .drawer-wrapper {
+  transform: translateX(0);
+}
+
+.drawer-left.drawer-closing .drawer-wrapper {
+  transform: translateX(-100%);
+}
+
+// ==================== 右侧抽屉 ====================
+:host(.drawer-right) .drawer-wrapper {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  transform: translateX(100%); // 初始位置：隐藏在右边
+}
+
+// 只有 visible 才触发动画到最终位置
+:host(.drawer-right.drawer-visible) .drawer-wrapper {
+  transform: translateX(0);
+}
+
+// 关闭时滑出
+:host(.drawer-right.drawer-closing) .drawer-wrapper {
+  transform: translateX(100%);
+}
+
+// Backwards compatibility
+.drawer-right .drawer-wrapper {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  transform: translateX(100%);
+}
+
+.drawer-right.drawer-visible .drawer-wrapper {
+  transform: translateX(0);
+}
+
+.drawer-right.drawer-closing .drawer-wrapper {
+  transform: translateX(100%);
+}
+
+// ==================== 顶部抽屉 ====================
+:host(.drawer-top) .drawer-wrapper {
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(-100%); // 初始位置：隐藏在顶部
+}
+
+// 只有 visible 才触发动画到最终位置
+:host(.drawer-top.drawer-visible) .drawer-wrapper {
+  transform: translateY(0);
+}
+
+// 关闭时滑出
+:host(.drawer-top.drawer-closing) .drawer-wrapper {
+  transform: translateY(-100%);
+}
+
+// Backwards compatibility
+.drawer-top .drawer-wrapper {
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(-100%);
+}
+
+.drawer-top.drawer-visible .drawer-wrapper {
+  transform: translateY(0);
+}
+
+.drawer-top.drawer-closing .drawer-wrapper {
+  transform: translateY(-100%);
+}
+
+// ==================== 底部抽屉 ====================
+:host(.drawer-bottom) .drawer-wrapper {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(100%); // 初始位置：隐藏在底部
+}
+
+// 只有 visible 才触发动画到最终位置
+:host(.drawer-bottom.drawer-visible) .drawer-wrapper {
+  transform: translateY(0);
+}
+
+// 关闭时滑出
+:host(.drawer-bottom.drawer-closing) .drawer-wrapper {
+  transform: translateY(100%);
+}
+
+// Backwards compatibility
+.drawer-bottom .drawer-wrapper {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(100%);
+}
+
+.drawer-bottom.drawer-visible .drawer-wrapper {
+  transform: translateY(0);
+}
+
+.drawer-bottom.drawer-closing .drawer-wrapper {
+  transform: translateY(100%);
 }
 
 // ==================== 头部 ====================

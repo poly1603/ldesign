@@ -53,7 +53,7 @@ import {
 @Component({
   tag: 'ldesign-drawer',
   styleUrl: 'drawer.less',
-  shadow: false,
+  shadow: true,
 })
 export class LdesignDrawer {
   @Element() el!: HTMLElement;
@@ -246,6 +246,7 @@ export class LdesignDrawer {
   @State() isMinimized: boolean = false;
   @State() isMaximized: boolean = false;
   @State() isFullscreen: boolean = false;
+  @State() isAnimating: boolean = false; // 用于控制动画触发
 
   // ==================== 事件 ====================
 
@@ -290,6 +291,13 @@ export class LdesignDrawer {
   componentWillLoad() {
     this.drawerId = generateId('ldesign-drawer');
     this.currentSize = parseSize(this.size, this.placement);
+    
+    // 处理字符串 "false" 的情况（HTML 属性传递）
+    // 在 HTML 中 visible="false" 会被当作字符串，需要转换为布尔值
+    if (this.visible === 'false' as any || this.visible === false || !this.visible) {
+      this.visible = false;
+      this.currentState = 'closed';
+    }
   }
 
   componentDidLoad() {
@@ -454,9 +462,7 @@ export class LdesignDrawer {
 
   private async handleOpen() {
     this.drawerBeforeOpen.emit();
-    this.currentState = 'opening';
-    this.drawerStateChange.emit({ state: 'opening' });
-
+    
     // 保存当前焦点元素
     if (this.restoreFocus) {
       this.previousFocusedElement = document.activeElement as HTMLElement;
@@ -470,11 +476,30 @@ export class LdesignDrawer {
       lockPageScroll();
     }
 
-    // 等待动画
+    // 第 1 步：设置为 opening 状态，但还不触发动画
+    this.currentState = 'opening';
+    this.isAnimating = false; // 确保初始为 false
+    this.drawerStateChange.emit({ state: 'opening' });
+
+    // 第 2 步：强制浏览器重排，让初始 transform 先生效
+    if (this.drawerRef) {
+      void this.drawerRef.offsetHeight; // 触发 reflow
+    }
+
+    // 第 3 步：等待下一帧，确保初始状态已经渲染
+    await new Promise(resolve => requestAnimationFrame(() => {
+      requestAnimationFrame(resolve); // 双重 RAF 更保险
+    }));
+    
+    // 第 4 步：现在触发动画
+    this.isAnimating = true; // 这会触发重新渲染，加上 drawer-visible 类
+    
+    // 第 5 步：等待动画完成
     if (this.animation) {
       await waitForAnimation(this.animationDuration);
     }
 
+    // 第 6 步：动画完成，设置最终状态
     this.currentState = 'open';
     this.drawerStateChange.emit({ state: 'open' });
     this.drawerOpen.emit();
@@ -487,6 +512,9 @@ export class LdesignDrawer {
 
   private async handleClose(reason: CloseReason) {
     this.drawerBeforeClose.emit({ reason });
+    
+    // 移除 isAnimating 以触发关闭动画
+    this.isAnimating = false;
     this.currentState = 'closing';
     this.drawerStateChange.emit({ state: 'closing' });
 
@@ -808,11 +836,22 @@ export class LdesignDrawer {
       style.borderRadius = this.borderRadius;
     }
 
-    // 动画
+    // 动画 - 只在自定义动画时长或缓动函数时覆盖 CSS
     if (this.animation && !this.isSwiping) {
-      style.transition = `transform ${this.animationDuration}ms ${getEasingFunction(
-        this.animationEasing as any
-      )}`;
+      // 只在非默认值时设置，否则使用 CSS 中的 transition
+      if (this.animationDuration !== 300 || this.animationEasing !== 'ease-in-out') {
+        style.transition = `transform ${this.animationDuration}ms ${getEasingFunction(
+          this.animationEasing as any
+        )}`;
+      }
+    } else if (!this.animation) {
+      // 如果禁用动画，显式设置 transition: none
+      style.transition = 'none';
+    }
+
+    // 滑动时禁用 transition
+    if (this.isSwiping) {
+      style.transition = 'none';
     }
 
     // GPU 加速
@@ -831,7 +870,8 @@ export class LdesignDrawer {
   private getContainerClass() {
     const classes = ['ldesign-drawer-container'];
 
-    if (this.visible) classes.push('drawer-visible');
+    // 只在动画开始后才添加 drawer-visible，这样才能触发 CSS 过渡
+    if (this.visible && this.isAnimating) classes.push('drawer-visible');
     if (this.currentState) classes.push(`drawer-${this.currentState}`);
     if (this.placement) classes.push(`drawer-${this.placement}`);
     if (this.theme) classes.push(`drawer-theme-${this.theme}`);
@@ -848,7 +888,11 @@ export class LdesignDrawer {
   // ==================== 渲染 ====================
 
   render() {
-    if (!this.visible && this.currentState === 'closed') {
+    // 最严格的条件：直接检查 visible 属性
+    // 只有当 visible = true 或者正在执行关闭动画时才渲染
+    const shouldRender = this.visible || this.currentState === 'closing';
+    
+    if (!shouldRender) {
       return null;
     }
 

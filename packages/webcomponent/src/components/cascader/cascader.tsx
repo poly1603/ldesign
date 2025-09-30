@@ -476,8 +476,7 @@ export class LdesignCascader {
           size={this.drawerSize as any}
           drawerTitle={this.drawerTitle}
           visible={drawerVisible}
-          onLdesignVisibleChange={this.handleDrawerVisibleChange}
-          onLdesignClose={() => this.hideOverlay()}
+          onDrawerClose={() => this.hideOverlay()}
         >
           <div class="ldesign-cascader__mobile">
             {this.renderColumns()}

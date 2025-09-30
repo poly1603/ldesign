@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawer 初始化测试</title>
+  <script type="module" src="../../loader/index.ts"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .page-content {
+      padding: 40px;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 14px;
+      background: #1890ff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 10px;
+    }
+
+    button:hover {
+      background: #40a9ff;
+    }
+
+    .test-section {
+      margin-bottom: 40px;
+      padding: 20px;
+      background: #f5f5f5;
+      border-radius: 8px;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 0;
+    }
+
+    .warning {
+      padding: 12px;
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    .success {
+      padding: 12px;
+      background: #d4edda;
+      border: 1px solid #28a745;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-content">
+    <h1>🧪 Drawer 初始化测试</h1>
+
+    <div class="test-section">
+      <h2>测试 1: 初始 visible=false（默认）</h2>
+      <p>✅ 正确行为：页面加载时，drawer 应该完全隐藏，不显示任何内容</p>
+      <p>❌ 错误行为：如果看到 drawer 内容显示在页面上，说明有问题</p>
+      <button onclick="document.getElementById('drawer-1').open()">打开 Drawer 1</button>
+    </div>
+
+    <div class="test-section">
+      <h2>测试 2: 初始 visible=true</h2>
+      <p>⚠️ 这个 drawer 初始设置了 visible="true"，应该在页面加载时就打开</p>
+      <button onclick="document.getElementById('drawer-2').close()">关闭 Drawer 2</button>
+    </div>
+
+    <div class="test-section">
+      <h2>测试 3: 多个 Drawer（都是 visible=false）</h2>
+      <button onclick="document.getElementById('drawer-3').open()">打开左侧</button>
+      <button onclick="document.getElementById('drawer-4').open()">打开右侧</button>
+      <button onclick="document.getElementById('drawer-5').open()">打开顶部</button>
+      <button onclick="document.getElementById('drawer-6').open()">打开底部</button>
+    </div>
+
+    <div id="status" class="warning" style="display: none;">
+      <strong>⚠️ 检测到问题：</strong> 
+      页面上可能显示了不应该显示的 drawer 内容！
+    </div>
+  </div>
+
+  <!-- 测试 1: 默认 visible=false -->
+  <ldesign-drawer 
+    id="drawer-1" 
+    placement="right" 
+    drawerTitle="测试 Drawer 1">
+    <div style="padding: 20px;">
+      <h3>这是 Drawer 1 的内容</h3>
+      <p>如果在页面初始加载时就能看到这段文字，说明有问题！</p>
+      <p>Drawer 应该完全隐藏，只有点击"打开"按钮才应该显示。</p>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 测试 2: 初始 visible=true -->
+  <ldesign-drawer 
+    id="drawer-2" 
+    placement="right" 
+    drawerTitle="测试 Drawer 2（初始打开）"
+    visible="true">
+    <div style="padding: 20px;">
+      <h3>这是 Drawer 2 的内容</h3>
+      <p>✅ 这个 drawer 设置了 visible="true"，所以应该一开始就显示。</p>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 测试 3: 多个方向 -->
+  <ldesign-drawer 
+    id="drawer-3" 
+    placement="left" 
+    drawerTitle="左侧抽屉">
+    <div style="padding: 20px;">
+      <p>从左侧滑入</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer 
+    id="drawer-4" 
+    placement="right" 
+    drawerTitle="右侧抽屉">
+    <div style="padding: 20px;">
+      <p>从右侧滑入</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer 
+    id="drawer-5" 
+    placement="top" 
+    drawerTitle="顶部抽屉">
+    <div style="padding: 20px;">
+      <p>从顶部滑入</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer 
+    id="drawer-6" 
+    placement="bottom" 
+    drawerTitle="底部抽屉">
+    <div style="padding: 20px;">
+      <p>从底部滑入</p>
+    </div>
+  </ldesign-drawer>
+
+  <script>
+    // 监听页面加载完成
+    window.addEventListener('load', () => {
+      console.log('📊 页面加载完成，开始检查 drawer 状态...');
+      console.log('='.repeat(60));
+      
+      // 检查所有 drawer
+      const drawers = document.querySelectorAll('ldesign-drawer');
+      console.log(`找到 ${drawers.length} 个 drawer 组件\n`);
+      
+      drawers.forEach((drawer, index) => {
+        const visible = drawer.getAttribute('visible');
+        const id = drawer.getAttribute('id');
+        const shadowRoot = drawer.shadowRoot;
+        
+        console.log(`🔍 Drawer #${index + 1} (${id}):`);
+        console.log(`  - visible 属性: ${visible || 'false (default)'}`);
+        console.log(`  - 是否有 Shadow DOM: ${!!shadowRoot}`);
+        
+        if (shadowRoot) {
+          const container = shadowRoot.querySelector('.ldesign-drawer-container');
+          const wrapper = shadowRoot.querySelector('.drawer-wrapper');
+          
+          console.log(`  - Shadow DOM 中是否有容器: ${!!container}`);
+          console.log(`  - Shadow DOM 中是否有 wrapper: ${!!wrapper}`);
+          
+          if (container) {
+            const computedStyle = window.getComputedStyle(container);
+            console.log(`  - 容器 display: ${computedStyle.display}`);
+            console.log(`  - 容器 visibility: ${computedStyle.visibility}`);
+            console.log(`  - 容器 classes: ${container.className}`);
+          }
+          
+          if (wrapper) {
+            const computedStyle = window.getComputedStyle(wrapper);
+            console.log(`  - Wrapper transform: ${computedStyle.transform}`);
+          }
+        } else {
+          // 非 Shadow DOM 情况
+          const container = drawer.querySelector('.ldesign-drawer-container');
+          console.log(`  - 是否在 Light DOM 中渲染: ${!!container}`);
+        }
+        
+        console.log('');
+      });
+
+      // 检查 drawer-1 是否正确隐藏
+      setTimeout(() => {
+        console.log('='.repeat(60));
+        console.log('🎯 检查 Drawer-1 的隐藏状态...');
+        
+        const drawer1 = document.getElementById('drawer-1');
+        const shadowRoot = drawer1.shadowRoot;
+        
+        if (!shadowRoot) {
+          console.error('❌ Drawer 1 没有 Shadow DOM！');
+          document.getElementById('status').style.display = 'block';
+          return;
+        }
+        
+        const container = shadowRoot.querySelector('.ldesign-drawer-container');
+        
+        if (!container) {
+          console.log('✅ Drawer 1 完全没有渲染（最佳情况）');
+          const successDiv = document.createElement('div');
+          successDiv.className = 'success';
+          successDiv.innerHTML = '<strong>✅ 完美！</strong> Drawer 初始化时完全没有渲染任何 DOM 内容。';
+          document.getElementById('status').parentElement.insertBefore(successDiv, document.getElementById('status'));
+          return;
+        }
+        
+        const computedStyle = window.getComputedStyle(container);
+        console.log(`Drawer-1 容器状态:`);
+        console.log(`  - display: ${computedStyle.display}`);
+        console.log(`  - visibility: ${computedStyle.visibility}`);
+        console.log(`  - classes: ${container.className}`);
+        
+        if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+          console.log('✅ Drawer 1 已正确隐藏（通过 CSS）');
+        } else {
+          document.getElementById('status').style.display = 'block';
+          console.error('❌ Drawer 1 should be hidden but it\'s visible!');
+        }
+      }, 100);
+    });
+
+    // 监听所有 drawer 事件
+    document.querySelectorAll('ldesign-drawer').forEach(drawer => {
+      ['drawerBeforeOpen', 'drawerOpen', 'drawerBeforeClose', 'drawerClose', 'drawerStateChange'].forEach(eventName => {
+        drawer.addEventListener(eventName, (e) => {
+          console.log(`📢 ${drawer.id}: ${eventName}`, e.detail || '');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -116,7 +116,6 @@ Type: `Promise<string[]>`
  - [ldesign-checkbox](../checkbox)
  - [ldesign-collapse-panel](../collapse)
  - [ldesign-date-picker](../datepicker)
- - [ldesign-drawer](../drawer)
  - [ldesign-dropdown](../dropdown)
  - [ldesign-ellipsis](../ellipsis)
  - [ldesign-image](../image)
@@ -152,7 +151,6 @@ graph TD;
   ldesign-checkbox --> ldesign-icon
   ldesign-collapse-panel --> ldesign-icon
   ldesign-date-picker --> ldesign-icon
-  ldesign-drawer --> ldesign-icon
   ldesign-dropdown --> ldesign-icon
   ldesign-ellipsis --> ldesign-icon
   ldesign-image --> ldesign-icon
