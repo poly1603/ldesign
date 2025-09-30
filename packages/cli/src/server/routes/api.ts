@@ -15,6 +15,7 @@ import { logger } from '../../utils/logger.js'
 import { connectionManager } from '../websocket.js'
 import { projectsRouter } from './projects.js'
 import { ProcessManager } from '../ProcessManager.js'
+import { configManager } from '../config.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -169,6 +170,97 @@ function getGitInfo(): Record<string, any> {
 }
 
 /**
+ * 获取网络信息
+ */
+function getNetworkInfo(): Record<string, any> {
+  const networkInterfaces = os.networkInterfaces()
+  const interfaces: any[] = []
+
+  for (const [name, addrs] of Object.entries(networkInterfaces)) {
+    if (!addrs) continue
+
+    for (const addr of addrs) {
+      // 过滤掉内部地址和IPv6链路本地地址
+      if (!addr.internal && !(addr.family === 'IPv6' && addr.address.startsWith('fe80'))) {
+        interfaces.push({
+          name,
+          family: addr.family,
+          address: addr.address,
+          netmask: addr.netmask,
+          mac: addr.mac
+        })
+      }
+    }
+  }
+
+  return {
+    interfaces,
+    hostname: os.hostname()
+  }
+}
+
+/**
+ * 获取显示器信息（Windows）
+ */
+function getDisplayInfo(): Record<string, any> {
+  try {
+    if (process.platform === 'win32') {
+      // 使用 WMIC 获取显示器信息
+      const output = executeCommand('wmic path Win32_VideoController get Name,CurrentHorizontalResolution,CurrentVerticalResolution,CurrentRefreshRate /format:csv')
+
+      if (output) {
+        const lines = output.split('\n').filter(line => line.trim() && !line.startsWith('Node'))
+        const displays: any[] = []
+
+        for (const line of lines) {
+          const parts = line.split(',').map(p => p.trim())
+          if (parts.length >= 5) {
+            displays.push({
+              name: parts[4] || 'Unknown',
+              resolution: `${parts[1]}x${parts[2]}`,
+              refreshRate: `${parts[3]}Hz`
+            })
+          }
+        }
+
+        return { displays, count: displays.length }
+      }
+    }
+
+    return { displays: [], count: 0, message: '仅支持 Windows 系统' }
+  } catch (error) {
+    return { displays: [], count: 0, error: '获取显示器信息失败' }
+  }
+}
+
+/**
+ * 获取设备能力信息
+ */
+function getDeviceCapabilities(): Record<string, any> {
+  const cpus = os.cpus()
+  const cpuModel = cpus[0]?.model || 'Unknown'
+  const cpuSpeed = cpus[0]?.speed || 0
+
+  return {
+    cpu: {
+      model: cpuModel,
+      cores: cpus.length,
+      speed: `${cpuSpeed} MHz`
+    },
+    memory: {
+      total: os.totalmem(),
+      free: os.freemem(),
+      used: os.totalmem() - os.freemem()
+    },
+    platform: {
+      type: os.type(),
+      release: os.release(),
+      arch: os.arch()
+    }
+  }
+}
+
+/**
  * 获取系统详细信息
  */
 function getSystemInfo(): Record<string, any> {
@@ -183,7 +275,6 @@ function getSystemInfo(): Record<string, any> {
       arch: process.arch,
       execPath: process.execPath,
       pid: process.pid,
-      uptime: Math.floor(process.uptime()),
       versions: process.versions
     },
 
@@ -200,6 +291,15 @@ function getSystemInfo(): Record<string, any> {
       loadAverage: os.loadavg(),
       uptime: Math.floor(os.uptime())
     },
+
+    // 网络信息
+    network: getNetworkInfo(),
+
+    // 显示器信息
+    display: getDisplayInfo(),
+
+    // 设备能力
+    capabilities: getDeviceCapabilities(),
 
     // 进程内存使用
     memory: {
@@ -876,6 +976,99 @@ apiRouter.post('/node/switch', async (req, res) => {
       success: false,
       message: '切换Node版本失败',
       error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+// ==================== 配置管理 API ====================
+
+/**
+ * 获取服务器配置
+ */
+apiRouter.get('/config', (req, res) => {
+  try {
+    const runtimeConfig = configManager.getRuntimeConfig()
+    if (!runtimeConfig) {
+      return res.status(500).json({
+        success: false,
+        message: '服务器配置未初始化'
+      })
+    }
+
+    res.json({
+      success: true,
+      data: runtimeConfig
+    })
+  } catch (error: any) {
+    apiLogger.error('获取配置失败:', error)
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+})
+
+/**
+ * 更新服务器配置
+ */
+apiRouter.post('/config', (req, res) => {
+  try {
+    const { defaultPort, defaultHost, autoOpen, debug } = req.body
+
+    // 验证配置
+    const updates: any = {}
+    if (defaultPort !== undefined) {
+      if (typeof defaultPort !== 'number' || defaultPort < 1 || defaultPort > 65535) {
+        return res.status(400).json({
+          success: false,
+          message: '端口号必须在 1-65535 之间'
+        })
+      }
+      updates.defaultPort = defaultPort
+    }
+    if (defaultHost !== undefined) {
+      if (typeof defaultHost !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: '主机地址必须是字符串'
+        })
+      }
+      updates.defaultHost = defaultHost
+    }
+    if (autoOpen !== undefined) {
+      if (typeof autoOpen !== 'boolean') {
+        return res.status(400).json({
+          success: false,
+          message: 'autoOpen 必须是布尔值'
+        })
+      }
+      updates.autoOpen = autoOpen
+    }
+    if (debug !== undefined) {
+      if (typeof debug !== 'boolean') {
+        return res.status(400).json({
+          success: false,
+          message: 'debug 必须是布尔值'
+        })
+      }
+      updates.debug = debug
+    }
+
+    // 保存配置
+    configManager.saveConfig(updates)
+
+    // 返回更新后的配置
+    const config = configManager.getConfig()
+    res.json({
+      success: true,
+      data: config,
+      message: '配置已保存'
+    })
+  } catch (error: any) {
+    apiLogger.error('保存配置失败:', error)
+    res.status(500).json({
+      success: false,
+      message: error.message
     })
   }
 })

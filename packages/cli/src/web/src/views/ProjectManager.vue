@@ -118,6 +118,18 @@
       </div>
     </div>
 
+    <!-- 目录选择器 Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="showDirectoryPicker" class="directory-picker-overlay" @click="showDirectoryPicker = false">
+          <div class="directory-picker-modal" @click.stop>
+            <DirectoryPicker :initial-path="importForm.path" @select="handleDirectorySelect"
+              @close="showDirectoryPicker = false" />
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- 导入项目 Modal -->
     <Modal v-model:visible="showImportModal" title="导入项目" :icon="FolderPlus" @confirm="importProject"
       @cancel="resetImportForm">
@@ -130,15 +142,13 @@
           <div class="input-group">
             <input type="text" v-model="importForm.path" placeholder="请输入项目完整路径，例如：D:\Projects\my-project"
               class="form-input" @input="handlePathInput" @blur="validateProjectPath" />
-            <input type="file" ref="directoryInput" webkitdirectory @change="handleDirectorySelect"
-              style="display: none" />
-            <button @click="selectDirectory" class="btn-secondary" title="选择目录（仅支持部分浏览器）">
+            <button @click="selectDirectory" class="btn-secondary" title="打开系统目录选择对话框" :disabled="validating">
               <FolderSearch :size="16" />
               <span>浏览</span>
             </button>
           </div>
           <div class="form-hint" v-if="!validating && !importError">
-            <span>💡 提示：请输入项目的完整路径，或点击"浏览"按钮选择目录</span>
+            <span>💡 提示：请输入项目的完整路径，或点击"浏览"按钮打开系统目录选择对话框</span>
           </div>
           <div class="form-hint validating" v-if="validating">
             <Loader2 :size="14" class="spinning" />
@@ -186,14 +196,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, Teleport, Transition } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   RefreshCw, FolderPlus, FolderOpen, FolderGit2, Trash2, Tag,
   Loader2, X, Folder, FolderSearch, FileText, AlignLeft, AlertCircle,
-  Rocket, Package, Layers, Clock, Search, Grid, Box, Boxes
+  Rocket, Package, Layers, Clock, Search, Grid
 } from 'lucide-vue-next'
 import Modal from '../components/Modal.vue'
+import DirectoryPicker from '../components/DirectoryPicker.vue'
 import { useApi } from '../composables/useApi'
 import { useMessage } from '../composables/useMessage'
 import { useConfirm } from '../composables/useConfirm'
@@ -223,10 +234,10 @@ const tabs = [
 
 // 导入表单
 const showImportModal = ref(false)
+const showDirectoryPicker = ref(false)
 const importing = ref(false)
 const importError = ref('')
 const validating = ref(false)
-const directoryInput = ref<HTMLInputElement>()
 const importForm = ref({
   path: '',
   name: '',
@@ -389,45 +400,27 @@ const validateProjectPath = async () => {
 }
 
 /**
- * 选择目录
+ * 选择目录（打开目录选择器）
  */
 const selectDirectory = () => {
-  directoryInput.value?.click()
+  showDirectoryPicker.value = true
 }
 
 /**
  * 处理目录选择
  */
-const handleDirectorySelect = async (event: Event) => {
-  const input = event.target as HTMLInputElement
-  const files = input.files
+const handleDirectorySelect = async (path: string) => {
+  showDirectoryPicker.value = false
+  importForm.value.path = path
+  importError.value = ''
 
-  if (files && files.length > 0) {
-    // 获取第一个文件的路径（去掉文件名，只保留目录）
-    const firstFile = files[0]
-    const fullPath = (firstFile as any).path || firstFile.webkitRelativePath
+  message.success('已选择目录，正在验证...')
 
-    if (fullPath) {
-      // 提取目录路径
-      const pathParts = fullPath.split(/[/\\]/)
-
-      // 如果是 webkitRelativePath，需要移除文件名
-      if (firstFile.webkitRelativePath) {
-        pathParts.pop()
-      }
-
-      const dirPath = pathParts.join('\\')
-
-      importForm.value.path = dirPath
-      importError.value = ''
-
-      message.info('已选择目录，正在验证...')
-
-      // 验证路径并自动填充
-      await validateProjectPath()
-    }
-  }
+  // 验证路径并自动填充
+  await validateProjectPath()
 }
+
+
 
 /**
  * 导入项目
@@ -485,9 +478,6 @@ const resetImportForm = () => {
   }
   importError.value = ''
   validating.value = false
-  if (directoryInput.value) {
-    directoryInput.value.value = ''
-  }
 }
 
 /**
@@ -1100,5 +1090,41 @@ onMounted(() => {
 
 .spinning {
   animation: spin 1s linear infinite;
+}
+
+// 目录选择器遮罩层
+.directory-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.directory-picker-modal {
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  background: var(--ldesign-bg-color-container);
+  border-radius: var(--ls-border-radius-lg);
+  box-shadow: var(--ldesign-shadow-3);
+  overflow: hidden;
+}
+
+// Modal 过渡动画
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
 }
 </style>

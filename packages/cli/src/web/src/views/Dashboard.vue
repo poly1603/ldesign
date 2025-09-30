@@ -35,16 +35,6 @@
       <!-- 统计卡片 -->
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon projects">
-            <FolderGit2 :size="24" />
-          </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ projectCount }}</div>
-            <div class="stat-label">项目总数</div>
-          </div>
-        </div>
-
-        <div class="stat-card">
           <div class="stat-icon node">
             <Cpu :size="24" />
           </div>
@@ -69,32 +59,60 @@
             <Zap :size="24" />
           </div>
           <div class="stat-content">
-            <div class="stat-value">{{ systemInfo?.system?.cpus || 'N/A' }} 核</div>
+            <div class="stat-value">{{ systemInfo?.capabilities?.cpu?.cores || 'N/A' }} 核</div>
             <div class="stat-label">CPU 核心</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon network">
+            <Wifi :size="24" />
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ systemInfo?.network?.interfaces?.length || 0 }}</div>
+            <div class="stat-label">网络接口</div>
           </div>
         </div>
       </div>
 
       <!-- 信息卡片网格 -->
       <div class="info-cards-grid">
-        <!-- 项目信息 -->
+        <!-- 网络信息 -->
         <div class="info-card">
           <div class="card-header">
-            <Package :size="20" />
-            <h3>项目信息</h3>
+            <Wifi :size="20" />
+            <h3>网络信息</h3>
           </div>
           <div class="card-content">
             <div class="info-item">
-              <span class="info-label">项目名称</span>
-              <span class="info-value">{{ systemInfo?.project?.name || 'N/A' }}</span>
+              <span class="info-label">主机名</span>
+              <span class="info-value">{{ systemInfo?.network?.hostname || 'N/A' }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">版本</span>
-              <span class="info-value">{{ systemInfo?.project?.version || 'N/A' }}</span>
+            <div v-for="(iface, index) in systemInfo?.network?.interfaces?.slice(0, 3)" :key="index" class="info-item">
+              <span class="info-label">{{ iface.name }} ({{ iface.family }})</span>
+              <span class="info-value">{{ iface.address }}</span>
             </div>
+          </div>
+        </div>
+
+        <!-- 显示器信息 -->
+        <div class="info-card">
+          <div class="card-header">
+            <Monitor :size="20" />
+            <h3>显示器信息</h3>
+          </div>
+          <div class="card-content">
             <div class="info-item">
-              <span class="info-label">描述</span>
-              <span class="info-value">{{ systemInfo?.project?.description || 'N/A' }}</span>
+              <span class="info-label">显示器数量</span>
+              <span class="info-value">{{ systemInfo?.display?.count || 0 }}</span>
+            </div>
+            <div v-for="(display, index) in systemInfo?.display?.displays" :key="index" class="info-item">
+              <span class="info-label">{{ display.name }}</span>
+              <span class="info-value">{{ display.resolution }} @ {{ display.refreshRate }}</span>
+            </div>
+            <div v-if="!systemInfo?.display?.displays?.length" class="info-item">
+              <span class="info-label">状态</span>
+              <span class="info-value">{{ systemInfo?.display?.message || '无法获取' }}</span>
             </div>
           </div>
         </div>
@@ -118,9 +136,32 @@
               <span class="info-label">架构</span>
               <span class="info-value">{{ systemInfo?.node?.arch || 'N/A' }}</span>
             </div>
+          </div>
+        </div>
+
+        <!-- 设备能力 -->
+        <div class="info-card">
+          <div class="card-header">
+            <Cpu :size="20" />
+            <h3>设备能力</h3>
+          </div>
+          <div class="card-content">
             <div class="info-item">
-              <span class="info-label">运行时间</span>
-              <span class="info-value">{{ formatUptime(systemInfo?.node?.uptime) }}</span>
+              <span class="info-label">CPU 型号</span>
+              <span class="info-value">{{ systemInfo?.capabilities?.cpu?.model || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">CPU 核心</span>
+              <span class="info-value">{{ systemInfo?.capabilities?.cpu?.cores || 'N/A' }} 核</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">CPU 频率</span>
+              <span class="info-value">{{ systemInfo?.capabilities?.cpu?.speed || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">内存使用</span>
+              <span class="info-value">{{ formatBytes(systemInfo?.capabilities?.memory?.used) }} / {{
+                formatBytes(systemInfo?.capabilities?.memory?.total) }}</span>
             </div>
           </div>
         </div>
@@ -139,15 +180,15 @@
             <div class="info-item">
               <span class="info-label">操作系统</span>
               <span class="info-value">{{ systemInfo?.system?.type || 'N/A' }} {{ systemInfo?.system?.release || ''
-                }}</span>
+              }}</span>
             </div>
             <div class="info-item">
-              <span class="info-label">CPU 核心</span>
-              <span class="info-value">{{ systemInfo?.system?.cpus || 'N/A' }} 核</span>
+              <span class="info-label">平台架构</span>
+              <span class="info-value">{{ systemInfo?.system?.arch || 'N/A' }}</span>
             </div>
             <div class="info-item">
-              <span class="info-label">总内存</span>
-              <span class="info-value">{{ formatBytes(systemInfo?.system?.totalMemory) }}</span>
+              <span class="info-label">系统运行时间</span>
+              <span class="info-value">{{ formatUptime(systemInfo?.system?.uptime) }}</span>
             </div>
           </div>
         </div>
@@ -181,8 +222,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import {
-  RefreshCw, Loader2, Sparkles, FolderGit2, Cpu, HardDrive, Zap,
-  Package, Hexagon, Monitor, GitBranch
+  RefreshCw, Loader2, Sparkles, Cpu, HardDrive, Zap, Wifi,
+  Hexagon, Monitor, GitBranch
 } from 'lucide-vue-next'
 import { useApi } from '../composables/useApi'
 
@@ -197,7 +238,6 @@ const api = useApi()
 // 响应式数据
 const loading = ref(true)
 const systemInfo = ref<any>(null)
-const projectCount = ref(0)
 
 // 格式化字节数
 const formatBytes = (bytes: number | undefined): string => {
@@ -222,12 +262,6 @@ const loadData = async () => {
     const infoResponse = await api.get('/api/info')
     if (infoResponse.success) {
       systemInfo.value = infoResponse.data
-    }
-
-    // 加载项目列表
-    const projectsResponse = await api.get('/api/projects')
-    if (projectsResponse.success) {
-      projectCount.value = projectsResponse.data?.length || 0
     }
   } catch (error) {
     console.error('加载数据失败:', error)

@@ -45,7 +45,7 @@ class WebSocketManager {
   /**
    * 连接 WebSocket
    */
-  connect(): void {
+  async connect(): Promise<void> {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       return
     }
@@ -56,14 +56,16 @@ class WebSocketManager {
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
 
-      // 在开发模式下，使用环境变量或默认端口
-      const isDev = import.meta.env.DEV
+      // 获取服务器配置以确定实际端口
       let wsUrl: string
+      const isDev = import.meta.env.DEV
 
       if (isDev) {
-        // 开发模式：连接到后端服务器的 3000 端口
+        // 开发模式：直接连接到后端服务器（前端在3001/3002，后端在3000）
+        // 由于 CORS 已配置，可以直接跨域连接
         const host = window.location.hostname
         wsUrl = `${protocol}//${host}:3000`
+        console.log('开发模式：直接连接到后端 WebSocket 服务器')
       } else {
         // 生产模式：连接到当前主机
         wsUrl = `${protocol}//${window.location.host}`

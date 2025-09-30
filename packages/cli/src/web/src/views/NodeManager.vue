@@ -16,9 +16,9 @@
       <p>正在加载 Node.js 信息...</p>
     </div>
 
-    <!-- NVM 未安装 -->
-    <div v-else-if="!nvmStatus.installed" class="nvm-install-section">
-      <NvmInstaller :platform="nvmStatus.platform" @installed="handleNvmInstalled" />
+    <!-- fnm 未安装 -->
+    <div v-else-if="!fnmStatus.installed" class="fnm-install-section">
+      <FnmInstaller :platform="fnmStatus.platform" @installed="handleFnmInstalled" />
     </div>
 
     <!-- Node 版本管理 -->
@@ -48,21 +48,13 @@
           <p>暂无已安装的版本</p>
         </div>
         <div v-else class="versions-grid">
-          <div 
-            v-for="version in nodeVersions.installed" 
-            :key="version"
-            class="version-item"
-            :class="{ active: version === nodeVersions.current }"
-          >
+          <div v-for="version in nodeVersions.installed" :key="version" class="version-item"
+            :class="{ active: version === nodeVersions.current }">
             <div class="version-info">
               <div class="version-number">{{ version }}</div>
               <div class="version-actions">
-                <button 
-                  v-if="version !== nodeVersions.current"
-                  class="switch-btn"
-                  @click="switchVersion(version)"
-                  :disabled="switching"
-                >
+                <button v-if="version !== nodeVersions.current" class="switch-btn" @click="switchVersion(version)"
+                  :disabled="switching">
                   切换
                 </button>
                 <span v-else class="current-badge">当前</span>
@@ -80,17 +72,9 @@
         </h2>
         <div class="install-form">
           <div class="input-group">
-            <input
-              v-model="newVersionInput"
-              type="text"
-              placeholder="输入版本号，如: 18.17.0 或 lts"
-              class="version-input"
-            />
-            <button
-              class="install-version-btn"
-              @click="installVersion"
-              :disabled="!newVersionInput.trim() || installing"
-            >
+            <input v-model="newVersionInput" type="text" placeholder="输入版本号，如: 18.17.0 或 lts" class="version-input" />
+            <button class="install-version-btn" @click="installVersion"
+              :disabled="!newVersionInput.trim() || installing">
               <Loader2 v-if="installing" :size="16" class="spinner" />
               <Download v-else :size="16" />
               <span v-if="installing">安装中...</span>
@@ -130,7 +114,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RefreshCw, Loader2, CheckCircle, XCircle, Download, Circle as CircleIcon } from 'lucide-vue-next'
-import NvmInstaller from '../components/NvmInstaller.vue'
+import FnmInstaller from '../components/FnmInstaller.vue'
 import { useApi } from '../composables/useApi'
 import { useWebSocket } from '../composables/useWebSocket'
 
@@ -144,8 +128,8 @@ const installingVersion = ref<string | null>(null)
 const versionFilter = ref<'lts' | 'latest' | 'all'>('lts')
 const newVersionInput = ref('')
 
-// NVM 状态
-const nvmStatus = ref({
+// fnm 状态
+const fnmStatus = ref({
   installed: false,
   version: null,
   platform: 'unknown'
@@ -180,40 +164,34 @@ const { subscribe } = useWebSocket()
 // WebSocket 消息监听
 let unsubscribeList: (() => void)[] = []
 
-// 检查 NVM 状态
-const checkNVMStatus = async () => {
+// 检查 fnm 状态
+const checkFnmStatus = async () => {
   try {
-    const response = await api.get('/api/node/nvm/status')
+    const response = await api.get('/api/fnm/status')
     if (response.success) {
-      nvmStatus.value = response.data
+      fnmStatus.value = response.data
     }
   } catch (err) {
-    console.error('检查NVM状态失败:', err)
+    console.error('检查 fnm 状态失败:', err)
   }
 }
 
 // 获取 Node 版本信息
 const getNodeVersions = async () => {
   try {
-    const response = await api.get('/api/node/versions')
+    const response = await api.get('/api/fnm/versions')
     if (response.success) {
       nodeVersions.value = response.data
     }
   } catch (err) {
-    console.error('获取Node版本失败:', err)
+    console.error('获取 Node 版本失败:', err)
   }
 }
 
-// 获取可用版本列表
+// 获取可用版本列表（fnm 不需要预加载可用版本列表）
 const getAvailableVersions = async () => {
-  try {
-    const response = await api.get('/api/node/available')
-    if (response.success) {
-      availableVersions.value = response.data
-    }
-  } catch (err) {
-    console.error('获取可用版本失败:', err)
-  }
+  // fnm 支持直接安装任意版本，不需要预加载列表
+  availableVersions.value = []
 }
 
 // 刷新数据
@@ -222,9 +200,9 @@ const refreshData = async () => {
   error.value = null
 
   try {
-    await checkNVMStatus()
-    await getAvailableVersions() // 总是获取可用版本
-    if (nvmStatus.value.installed) {
+    await checkFnmStatus()
+    await getAvailableVersions()
+    if (fnmStatus.value.installed) {
       await getNodeVersions()
     }
   } catch (err) {
@@ -234,24 +212,9 @@ const refreshData = async () => {
   }
 }
 
-// 安装 NVM
-const installNVM = async () => {
-  installing.value = true
-  error.value = null
-
-  try {
-    // 使用长时间操作的API方法，超时时间为5分钟
-    const response = await api.postLongOperation('/api/node/nvm/install')
-    if (response.success) {
-      successMessage.value = response.data.message
-    } else {
-      error.value = response.message || '安装失败'
-    }
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : '安装失败'
-  } finally {
-    installing.value = false
-  }
+// fnm 安装完成处理
+const handleFnmInstalled = async () => {
+  await refreshData()
 }
 
 // 切换版本
@@ -260,7 +223,7 @@ const switchVersion = async (version: string) => {
   error.value = null
 
   try {
-    const response = await api.postLongOperation('/api/node/switch', { version })
+    const response = await api.postLongOperation('/api/fnm/use', { version })
     if (response.success) {
       successMessage.value = response.data.message
       await getNodeVersions() // 刷新版本信息
@@ -284,7 +247,7 @@ const installVersion = async (version?: string) => {
   error.value = null
 
   try {
-    const response = await api.postLongOperation('/api/node/install', { version: versionToInstall })
+    const response = await api.postLongOperation('/api/fnm/install-node', { version: versionToInstall })
     if (response.success) {
       successMessage.value = response.data.message
       if (!version) newVersionInput.value = '' // 只有手动输入时才清空
@@ -320,40 +283,32 @@ const clearSuccess = () => {
   successMessage.value = null
 }
 
-// 处理 NVM 安装完成
-const handleNvmInstalled = () => {
-  successMessage.value = 'NVM 安装成功！'
-  setTimeout(() => {
-    refreshData()
-  }, 2000)
-}
-
 // 设置WebSocket消息监听
 const setupWebSocketListeners = () => {
-  // NVM安装相关消息
-  unsubscribeList.push(subscribe('nvm-install-start', (data) => {
+  // fnm安装相关消息
+  unsubscribeList.push(subscribe('fnm-install-start', (data) => {
     installing.value = true
-    console.log('NVM安装开始:', data.message)
+    console.log('fnm 安装开始:', data.message)
   }))
 
-  unsubscribeList.push(subscribe('nvm-install-progress', (data) => {
-    console.log('NVM安装进度:', data.message)
+  unsubscribeList.push(subscribe('fnm-install-progress', (data) => {
+    console.log('fnm 安装进度:', data.message)
   }))
 
-  unsubscribeList.push(subscribe('nvm-install-complete', (data) => {
+  unsubscribeList.push(subscribe('fnm-install-complete', (data) => {
     installing.value = false
     successMessage.value = data.message
-    console.log('NVM安装完成:', data.message)
-    // 刷新NVM状态
+    console.log('fnm 安装完成:', data.message)
+    // 刷新fnm状态
     setTimeout(() => {
       refreshData()
     }, 2000)
   }))
 
-  unsubscribeList.push(subscribe('nvm-install-error', (data) => {
+  unsubscribeList.push(subscribe('fnm-install-error', (data) => {
     installing.value = false
     error.value = data.message
-    console.error('NVM安装失败:', data.message)
+    console.error('fnm 安装失败:', data.message)
   }))
 
   // Node版本安装相关消息
@@ -495,6 +450,7 @@ onUnmounted(() => {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

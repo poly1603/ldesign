@@ -41,7 +41,7 @@ const defaultOptions: RequestOptions = {
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 30000 // 增加到30秒
+  timeout: 10000 // 10秒超时
 }
 
 /**
@@ -57,12 +57,13 @@ const longOperationOptions: RequestOptions = {
 
 /**
  * API 基础 URL
+ * 在开发模式下，Vite 会自动代理 /api 请求到后端服务器
+ * 在生产模式下，前后端在同一个端口
  */
 const getBaseUrl = (): string => {
-  if (typeof window !== 'undefined') {
-    return `${window.location.protocol}//${window.location.host}`
-  }
-  return 'http://localhost:3000'
+  // 在开发模式和生产模式下都使用相对路径
+  // Vite 会自动代理 /api 请求到 3000 端口
+  return ''
 }
 
 /**

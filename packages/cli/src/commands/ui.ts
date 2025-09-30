@@ -9,6 +9,7 @@ import open from 'open'
 import { logger } from '../utils/logger.js'
 import { getAvailablePort, formatPortInfo } from '../utils/port.js'
 import { createServer } from '../server/app.js'
+import { configManager } from '../server/config.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -28,11 +29,14 @@ export interface UICommandOptions {
  * UI 命令处理器
  */
 export async function uiCommand(options: UICommandOptions = {}): Promise<void> {
+  // 获取保存的配置
+  const savedConfig = configManager.getConfig()
+
   const {
-    port: preferredPort = 3000,
-    host = 'localhost',
-    open: shouldOpen = true,
-    debug = false,
+    port: preferredPort = options.port || savedConfig.defaultPort,
+    host = options.host || savedConfig.defaultHost,
+    open: shouldOpen = options.open !== undefined ? options.open : savedConfig.autoOpen,
+    debug = options.debug !== undefined ? options.debug : savedConfig.debug,
     silent = false
   } = options
 
@@ -55,6 +59,9 @@ export async function uiCommand(options: UICommandOptions = {}): Promise<void> {
     if (availablePort !== preferredPort) {
       uiLogger.warn(`端口 ${preferredPort} 已被占用，使用端口 ${availablePort}`)
     }
+
+    // 保存运行时配置
+    configManager.setRuntimeConfig(availablePort, host)
 
     // 创建服务器
     const { server } = await createServer({

@@ -3,8 +3,11 @@
  */
 
 import { Router, type IRouter } from 'express'
-import { readFileSync, existsSync, statSync } from 'fs'
-import { join, resolve, basename } from 'path'
+import { readFileSync, existsSync, statSync, readdirSync } from 'fs'
+import { join, resolve, basename, dirname, sep } from 'path'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+import { homedir } from 'os'
 import {
   getAllProjects,
   getProjectById,
@@ -15,6 +18,8 @@ import {
   detectProjectType,
   type Project
 } from '../database/projects.js'
+
+const execAsync = promisify(exec)
 
 const projectsRouter: IRouter = Router()
 
@@ -146,6 +151,179 @@ projectsRouter.get('/:id/package', (req, res) => {
     res.status(500).json({
       success: false,
       message: '获取package.json失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 获取目录列表
+ */
+projectsRouter.post('/list-directories', (req, res) => {
+  try {
+    const { path: dirPath } = req.body
+
+    // 如果没有提供路径，返回根目录列表
+    if (!dirPath) {
+      // Windows 系统返回所有驱动器
+      if (process.platform === 'win32') {
+        const drives: Array<{ name: string; path: string; type: 'drive' }> = []
+
+        // 获取所有驱动器（A-Z）
+        for (let i = 65; i <= 90; i++) {
+          const drive = String.fromCharCode(i) + ':\\'
+          try {
+            if (existsSync(drive)) {
+              drives.push({
+                name: drive,
+                path: drive,
+                type: 'drive'
+              })
+            }
+          } catch (error) {
+            // 忽略无法访问的驱动器
+          }
+        }
+
+        // 添加用户主目录
+        const homeDir = homedir()
+
+        return res.json({
+          success: true,
+          data: {
+            current: '',
+            parent: null,
+            directories: drives,
+            specialDirs: [
+              { name: '用户目录', path: homeDir, type: 'special' }
+            ]
+          }
+        })
+      } else {
+        // Unix/Linux/Mac 返回根目录
+        return res.json({
+          success: true,
+          data: {
+            current: '/',
+            parent: null,
+            directories: [{ name: '/', path: '/', type: 'directory' }],
+            specialDirs: [
+              { name: '用户目录', path: homedir(), type: 'special' }
+            ]
+          }
+        })
+      }
+    }
+
+    // 验证路径是否存在
+    if (!existsSync(dirPath)) {
+      return res.status(400).json({
+        success: false,
+        message: '路径不存在'
+      })
+    }
+
+    // 验证是否为目录
+    const stats = statSync(dirPath)
+    if (!stats.isDirectory()) {
+      return res.status(400).json({
+        success: false,
+        message: '不是有效的目录'
+      })
+    }
+
+    // 读取目录内容
+    const items = readdirSync(dirPath, { withFileTypes: true })
+
+    // 只返回目录
+    const directories = items
+      .filter(item => item.isDirectory())
+      .map(item => ({
+        name: item.name,
+        path: join(dirPath, item.name),
+        type: 'directory' as const
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+
+    // 获取父目录
+    const parentPath = dirname(dirPath)
+    const parent = parentPath !== dirPath ? parentPath : null
+
+    res.json({
+      success: true,
+      data: {
+        current: dirPath,
+        parent,
+        directories
+      }
+    })
+  } catch (error) {
+    console.error('获取目录列表失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '获取目录列表失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 打开系统目录选择对话框（已废弃，保留用于兼容）
+ */
+projectsRouter.post('/select-directory', async (req, res) => {
+  try {
+    // Windows PowerShell 脚本来打开文件夹选择对话框
+    // 使用 Base64 编码避免转义问题
+    const powershellScript = `
+Add-Type -AssemblyName System.Windows.Forms
+$folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
+$folderBrowser.Description = '选择项目目录'
+$folderBrowser.ShowNewFolderButton = $false
+$result = $folderBrowser.ShowDialog()
+if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
+  Write-Output $folderBrowser.SelectedPath
+}
+`.trim()
+
+    // 将脚本转换为 Base64 编码
+    const encodedScript = Buffer.from(powershellScript, 'utf16le').toString('base64')
+
+    // 执行 PowerShell 脚本（使用 -EncodedCommand 避免转义问题）
+    const { stdout, stderr } = await execAsync(
+      `powershell -NoProfile -NonInteractive -EncodedCommand ${encodedScript}`,
+      {
+        encoding: 'utf8',
+        maxBuffer: 1024 * 1024,
+        timeout: 60000 // 60秒超时
+      }
+    )
+
+    if (stderr && stderr.trim()) {
+      console.error('PowerShell 错误:', stderr)
+    }
+
+    const selectedPath = stdout.trim()
+
+    if (selectedPath) {
+      console.log('用户选择的目录:', selectedPath)
+      res.json({
+        success: true,
+        data: {
+          path: selectedPath
+        }
+      })
+    } else {
+      console.log('用户取消了目录选择')
+      res.json({
+        success: false,
+        message: '未选择目录'
+      })
+    }
+  } catch (error) {
+    console.error('打开目录选择对话框失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '打开目录选择对话框失败',
       error: error instanceof Error ? error.message : String(error)
     })
   }

@@ -18,6 +18,17 @@
         </div>
       </div>
       <div class="header-actions">
+        <!-- 如果是 both 类型且是 build 操作，显示产物构建按钮 -->
+        <button
+          v-if="actionType === 'build' && project?.type === 'both' && !running"
+          @click="buildLibrary"
+          class="btn-secondary"
+          title="构建库产物"
+        >
+          <Package :size="18" />
+          <span>产物构建</span>
+        </button>
+
         <button v-if="!running" @click="startAction" :disabled="running" class="btn-primary">
           <Play :size="18" />
           <span>开始{{ actionTitle }}</span>
@@ -223,7 +234,24 @@ const actionType = computed(() => route.params.action as string)
 const actionConfig = computed(() => actionMap[actionType.value] || actionMap.dev)
 const actionTitle = computed(() => actionConfig.value.title)
 const actionIcon = computed(() => actionConfig.value.icon)
-const showEnvironmentSelector = computed(() => actionConfig.value.supportsEnv)
+
+// 根据项目类型和操作类型决定是否显示环境选择器
+const showEnvironmentSelector = computed(() => {
+  // 如果操作本身不支持环境选择，直接返回 false
+  if (!actionConfig.value.supportsEnv) {
+    return false
+  }
+
+  // 如果是 build 操作
+  if (actionType.value === 'build') {
+    // 如果是纯库项目，不显示环境选择器
+    if (project.value?.type === 'library') {
+      return false
+    }
+  }
+
+  return true
+})
 
 const statusIcon = computed(() => {
   // 如果有服务地址，说明启动成功
@@ -537,6 +565,69 @@ const startAction = async () => {
       elapsedTimer = null
     }
     addLog(error instanceof Error ? error.message : `${actionTitle.value}失败`, 'error')
+  }
+}
+
+/**
+ * 构建库产物（执行 build:lib 命令）
+ */
+const buildLibrary = async () => {
+  if (!project.value) {
+    addLog('项目信息未加载', 'error')
+    return
+  }
+
+  if (running.value) {
+    message.warning('已有任务正在运行，请先停止')
+    return
+  }
+
+  running.value = true
+  startTime.value = Date.now()
+  logs.value = []
+  serverUrls.value = { local: [], network: [], all: [] }
+
+  addLog('开始构建库产物...', 'info')
+  addLog('执行命令: pnpm run build:lib', 'info')
+
+  // 启动计时器
+  elapsedTimer = window.setInterval(updateElapsedTime, 1000)
+
+  try {
+    const projectId = route.params.id as string
+
+    // 调用进程管理 API 启动进程，使用特殊的 action 类型
+    const response = await api.post('/api/process/start', {
+      projectPath: project.value.path,
+      projectId,
+      action: 'build:lib', // 特殊的 action 类型
+      environment: 'production' // 库构建通常使用 production 环境
+    })
+
+    if (response.success) {
+      currentProcessId.value = response.data.processId
+      addLog(`进程已启动 (ID: ${response.data.processId})`, 'success')
+
+      // 订阅进程事件
+      subscribeToProcess()
+
+      // 保存状态
+      saveState()
+    } else {
+      running.value = false
+      if (elapsedTimer) {
+        clearInterval(elapsedTimer)
+        elapsedTimer = null
+      }
+      addLog(response.message || '构建库产物失败', 'error')
+    }
+  } catch (error) {
+    running.value = false
+    if (elapsedTimer) {
+      clearInterval(elapsedTimer)
+      elapsedTimer = null
+    }
+    addLog(error instanceof Error ? error.message : '构建库产物失败', 'error')
   }
 }
 

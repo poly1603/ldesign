@@ -28,12 +28,6 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
         secure: false
-      },
-      // 代理 WebSocket 连接
-      '/ws': {
-        target: 'ws://localhost:3000',
-        ws: true,
-        changeOrigin: true
       }
     }
   },

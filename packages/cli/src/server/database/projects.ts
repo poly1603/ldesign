@@ -100,9 +100,39 @@ function generateId(data: ProjectDatabase): string {
 
 /**
  * 获取所有项目
+ * 自动更新缺失的 type 字段
  */
 export function getAllProjects(): Project[] {
   const data = initDatabase()
+
+  // 检查并更新缺失 type 字段的项目
+  let needsSave = false
+  data.projects.forEach(project => {
+    if (!project.type) {
+      // 尝试读取 package.json 来检测类型
+      try {
+        const packageJsonPath = join(project.path, 'package.json')
+        if (existsSync(packageJsonPath)) {
+          const packageJsonContent = readFileSync(packageJsonPath, 'utf-8')
+          const packageJson = JSON.parse(packageJsonContent)
+          project.type = detectProjectType(packageJson)
+          needsSave = true
+        } else {
+          project.type = 'project' // 默认为项目
+          needsSave = true
+        }
+      } catch (error) {
+        project.type = 'project' // 出错时默认为项目
+        needsSave = true
+      }
+    }
+  })
+
+  // 如果有更新，保存数据库
+  if (needsSave) {
+    saveDatabase(data)
+  }
+
   return data.projects
 }
 
@@ -116,10 +146,32 @@ export function getProjectById(id: string): Project | null {
 
 /**
  * 根据 package.json 判断项目类型
+ * 优先使用依赖判断，其次使用 package.json 字段判断
  */
 export function detectProjectType(packageJson: any): ProjectType {
   if (!packageJson) return 'project'
 
+  // 获取所有依赖
+  const dependencies = packageJson.dependencies || {}
+  const devDependencies = packageJson.devDependencies || {}
+  const allDeps = { ...dependencies, ...devDependencies }
+
+  // 优先判断：检查是否有 @ldesign/builder 或 @ldesign/launcher
+  const hasBuilder = '@ldesign/builder' in allDeps
+  const hasLauncher = '@ldesign/launcher' in allDeps
+
+  // 如果有明确的 ldesign 工具依赖，优先使用这个判断
+  if (hasBuilder || hasLauncher) {
+    if (hasBuilder && hasLauncher) {
+      return 'both'
+    } else if (hasBuilder) {
+      return 'library'
+    } else {
+      return 'project'
+    }
+  }
+
+  // 次要判断：基于 package.json 字段
   const hasMain = !!packageJson.main
   const hasModule = !!packageJson.module
   const hasExports = !!packageJson.exports

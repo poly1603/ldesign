@@ -2,8 +2,9 @@
   "projects": [
     {
       "name": "@ldesign/app",
-      "path": "d:\\WorkBench\\ldesign\\app",
+      "path": "D:\\WorkBench\\ldesign\\app",
       "description": "LDesign 设计系统演示应用 - 展示完整的组件库和工具集，包含 Vue3、TypeScript、Vite 等现代前端技术栈",
+      "type": "both",
       "packageJson": {
         "name": "@ldesign/app",
         "version": "4.0.0",
@@ -19,6 +20,7 @@
         },
         "scripts": {
           "ui": "ldesign ui",
+          "build:lib": "ldesign-builder build",
           "ui:dev": "node scripts/ldesign-dev.js ui",
           "dev": "launcher dev --environment development",
           "dev:cli": "node scripts/ldesign-dev.js dev --environment development",
@@ -153,10 +155,11 @@
           "not ie 11"
         ]
       },
-      "id": "1",
-      "createdAt": "2025-09-29T16:09:01.629Z",
-      "updatedAt": "2025-09-29T16:09:01.629Z"
+      "id": "3",
+      "importedAt": "2025-09-30T05:53:48.086Z",
+      "createdAt": "2025-09-30T05:53:48.086Z",
+      "updatedAt": "2025-09-30T05:53:48.086Z"
     }
   ],
-  "lastId": 1
+  "lastId": 3
 }
