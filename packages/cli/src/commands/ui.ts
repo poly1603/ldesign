@@ -1,154 +1,114 @@
 /**
- * UI 命令 - 启动 Web 界面
+ * UI 命令实现
+ * 启动 Web UI 管理界面
  */
 
-import { Command, CLIContext } from '../types/index';
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import open from 'open'
+import { logger } from '../utils/logger.js'
+import { getAvailablePort, formatPortInfo } from '../utils/port.js'
+import { createServer } from '../server/app.js'
 
-export const uiCommand: Command = {
-  name: 'ui',
-  description: '启动 Web 可视化界面',
-  aliases: ['web', 'dashboard'],
-  options: [
-    {
-      name: 'port',
-      alias: 'p',
-      type: 'number',
-      description: '服务器端口',
-      default: 3000
-    },
-    {
-      name: 'host',
-      alias: 'H',
-      type: 'string',
-      description: '服务器主机',
-      default: 'localhost'
-    },
-    {
-      name: 'open',
-      type: 'boolean',
-      description: '自动打开浏览器',
-      default: true
-    },
-    {
-      name: 'dev',
-      type: 'boolean',
-      description: '开发模式（启用热重载）',
-      default: false
-    },
-    {
-      name: 'persistent',
-      type: 'boolean',
-      description: '持久会话（不清理数据库，保留历史任务与日志）',
-      default: false
-    }
-  ],
-  examples: [
-    'ldesign ui',
-    'ldesign ui --port 8080',
-    'ldesign ui --host 0.0.0.0 --no-open',
-    'ldesign ui --dev'
-  ],
-  async action(options, context: CLIContext) {
-    context.logger.info('🚀 [开发模式] 启动 Web 可视化界面...');
-
-    try {
-      // 动态导入 WebServer
-      const { WebServer } = await import('../web/server');
-
-      const server = new WebServer(context, {
-        port: parseInt(options.port),
-        host: options.host,
-        open: options.open,
-        persistent: !!options.persistent
-      });
-
-      // 启动服务器
-      await server.start({
-        port: parseInt(options.port),
-        host: options.host,
-        open: options.open
-      });
-
-      // 处理优雅关闭
-      const gracefulShutdown = async () => {
-        context.logger.info('\n正在关闭 Web 服务器...');
-        await server.stop();
-        process.exit(0);
-      };
-
-      process.on('SIGINT', gracefulShutdown);
-      process.on('SIGTERM', gracefulShutdown);
-
-      // 如果是开发模式，启用文件监听
-      if (options.dev) {
-        context.logger.info('🔥 开发模式已启用');
-        await setupDevMode(context, server);
-      }
-
-      context.logger.info('按 Ctrl+C 停止服务器');
-
-      // 保持进程运行
-      await new Promise(() => { });
-
-    } catch (error) {
-      if (error.code === 'EADDRINUSE') {
-        context.logger.error(`端口 ${options.port} 已被占用，请尝试其他端口`);
-        context.logger.info(`例如: ldesign ui --port ${parseInt(options.port) + 1}`);
-      } else {
-        context.logger.error('启动 Web 界面失败:', error);
-      }
-      process.exit(1);
-    }
-  }
-};
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 /**
- * 设置开发模式
+ * UI 命令选项
  */
-async function setupDevMode(context: CLIContext, server: any): Promise<void> {
-  try {
-    const chokidar = await import('chokidar');
-
-    // 监听配置文件变化
-    const configWatcher = chokidar.watch([
-      'ldesign.config.*',
-      '.ldesignrc*',
-      'package.json'
-    ], {
-      cwd: context.cwd,
-      ignoreInitial: true
-    });
-
-    configWatcher.on('change', (path) => {
-      context.logger.info(`📝 配置文件已更改: ${path}`);
-      // 通知客户端重新加载配置
-      server.getIO().emit('config:changed', { path });
-    });
-
-    // 监听源代码变化
-    const sourceWatcher = chokidar.watch([
-      'src/**/*',
-      'lib/**/*',
-      '*.js',
-      '*.ts',
-      '*.json'
-    ], {
-      cwd: context.cwd,
-      ignoreInitial: true,
-      ignored: ['node_modules/**', 'dist/**', '.git/**']
-    });
-
-    sourceWatcher.on('change', (path) => {
-      context.logger.debug(`📄 源文件已更改: ${path}`);
-      // 通知客户端文件变化
-      server.getIO().emit('file:changed', { path });
-    });
-
-    context.logger.debug('文件监听已启用');
-
-  } catch (error) {
-    context.logger.warn('无法启用开发模式文件监听:', error);
-  }
+export interface UICommandOptions {
+  port?: number
+  host?: string
+  open?: boolean
+  debug?: boolean
+  silent?: boolean
 }
 
-export default uiCommand;
+/**
+ * UI 命令处理器
+ */
+export async function uiCommand(options: UICommandOptions = {}): Promise<void> {
+  const {
+    port: preferredPort = 3000,
+    host = 'localhost',
+    open: shouldOpen = true,
+    debug = false,
+    silent = false
+  } = options
+
+  // 设置日志级别
+  if (silent) {
+    logger.setLevel('silent')
+  } else if (debug) {
+    logger.setLevel('debug')
+  }
+
+  const uiLogger = logger.withPrefix('UI')
+
+  try {
+    uiLogger.info('正在启动 LDesign UI 管理界面...')
+
+    // 获取可用端口
+    const availablePort = await getAvailablePort(preferredPort)
+    const portInfo = formatPortInfo(availablePort, host)
+
+    if (availablePort !== preferredPort) {
+      uiLogger.warn(`端口 ${preferredPort} 已被占用，使用端口 ${availablePort}`)
+    }
+
+    // 创建服务器
+    const { server } = await createServer({
+      port: availablePort,
+      host,
+      debug
+    })
+
+    // 启动服务器
+    await new Promise<void>((resolve, reject) => {
+      server.listen(availablePort, host, () => {
+        resolve()
+      })
+
+      server.on('error', (error) => {
+        reject(error)
+      })
+    })
+
+    // 显示启动信息
+    uiLogger.success('LDesign UI 管理界面已启动')
+    console.log()
+    console.log(`  本地访问:   ${portInfo.localUrl}`)
+    if (host !== 'localhost') {
+      console.log(`  网络访问:   ${portInfo.url}`)
+    }
+    console.log()
+    console.log('  按 Ctrl+C 停止服务器')
+    console.log()
+
+    // 自动打开浏览器
+    if (shouldOpen) {
+      try {
+        await open(portInfo.localUrl)
+        uiLogger.info('已在默认浏览器中打开 UI 界面')
+      } catch (error) {
+        uiLogger.warn('无法自动打开浏览器，请手动访问上述地址')
+      }
+    }
+
+    // 处理进程退出
+    const gracefulShutdown = () => {
+      uiLogger.info('正在关闭服务器...')
+      server.close(() => {
+        uiLogger.success('服务器已关闭')
+        process.exit(0)
+      })
+    }
+
+    process.on('SIGINT', gracefulShutdown)
+    process.on('SIGTERM', gracefulShutdown)
+
+  } catch (error) {
+    uiLogger.error('启动 UI 管理界面失败:', error)
+    throw error
+  }
+}

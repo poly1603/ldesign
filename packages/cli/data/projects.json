@@ -1,0 +1,162 @@
+{
+  "projects": [
+    {
+      "name": "@ldesign/app",
+      "path": "d:\\WorkBench\\ldesign\\app",
+      "description": "LDesign 设计系统演示应用 - 展示完整的组件库和工具集，包含 Vue3、TypeScript、Vite 等现代前端技术栈",
+      "packageJson": {
+        "name": "@ldesign/app",
+        "version": "4.0.0",
+        "description": "LDesign 设计系统演示应用 - 展示完整的组件库和工具集，包含 Vue3、TypeScript、Vite 等现代前端技术栈",
+        "type": "module",
+        "main": "./src/index.ts",
+        "types": "./src/index.ts",
+        "exports": {
+          ".": {
+            "import": "./src/index.ts",
+            "types": "./src/index.ts"
+          }
+        },
+        "scripts": {
+          "ui": "ldesign ui",
+          "ui:dev": "node scripts/ldesign-dev.js ui",
+          "dev": "launcher dev --environment development",
+          "dev:cli": "node scripts/ldesign-dev.js dev --environment development",
+          "dev:prod": "launcher dev --environment production",
+          "dev:prod:cli": "node scripts/ldesign-dev.js dev --environment production",
+          "dev:staging": "launcher dev --environment staging",
+          "dev:staging:cli": "node scripts/ldesign-dev.js dev --environment staging",
+          "dev:test": "launcher dev --environment test",
+          "dev:test:cli": "node scripts/ldesign-dev.js dev --environment test",
+          "build": "launcher build --environment production",
+          "build:cli": "node scripts/ldesign-dev.js build --environment production",
+          "build:prod": "launcher build --environment production",
+          "build:prod:cli": "node scripts/ldesign-dev.js build --environment production",
+          "build:dev": "launcher build --environment development",
+          "build:dev:cli": "node scripts/ldesign-dev.js build --environment development",
+          "build:staging": "launcher build --environment staging",
+          "build:staging:cli": "node scripts/ldesign-dev.js build --environment staging",
+          "build:test": "launcher build --environment test",
+          "build:test:cli": "node scripts/ldesign-dev.js build --environment test",
+          "preview": "launcher preview --environment production",
+          "preview:cli": "node scripts/ldesign-dev.js preview --environment production",
+          "preview:prod": "launcher preview --environment production",
+          "preview:prod:cli": "node scripts/ldesign-dev.js preview --environment production",
+          "preview:dev": "launcher preview --environment development",
+          "preview:dev:cli": "node scripts/ldesign-dev.js preview --environment development",
+          "preview:staging": "launcher preview --environment staging",
+          "preview:staging:cli": "node scripts/ldesign-dev.js preview --environment staging",
+          "preview:test": "launcher preview --environment test",
+          "preview:test:cli": "node scripts/ldesign-dev.js preview --environment test",
+          "build:builder": "ldesign-builder build --mode production",
+          "watch:builder": "ldesign-builder watch --mode development",
+          "clean:builder": "ldesign-builder clean",
+          "analyze:builder": "ldesign-builder analyze",
+          "ldesign": "ldesign",
+          "ld": "ld",
+          "server": "cd server && pnpm start",
+          "server:dev": "cd server && pnpm dev",
+          "server:install": "cd server && pnpm install",
+          "dev:full": "concurrently \"pnpm server:dev\" \"pnpm dev\"",
+          "type-check": "vue-tsc --noEmit",
+          "type-check:watch": "vue-tsc --noEmit --watch",
+          "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+          "lint:check": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore",
+          "test": "vitest",
+          "test:run": "vitest run",
+          "test:coverage": "vitest run --coverage",
+          "test:ui": "vitest --ui",
+          "clean": "rimraf dist .cache node_modules/.cache",
+          "clean:all": "rimraf dist .cache node_modules",
+          "reinstall": "pnpm clean:all && pnpm install",
+          "serve": "pnpm preview",
+          "start": "pnpm dev"
+        },
+        "dependencies": {
+          "@ldesign/api": "workspace:*",
+          "@ldesign/cache": "workspace:*",
+          "@ldesign/color": "workspace:*",
+          "@ldesign/config-editor": "workspace:*",
+          "@ldesign/crypto": "workspace:*",
+          "@ldesign/device": "workspace:*",
+          "@ldesign/engine": "workspace:*",
+          "@ldesign/http": "workspace:*",
+          "@ldesign/i18n": "workspace:*",
+          "@ldesign/kit": "workspace:*",
+          "@ldesign/router": "workspace:*",
+          "@ldesign/shared": "workspace:*",
+          "@ldesign/size": "workspace:*",
+          "@ldesign/store": "workspace:*",
+          "@ldesign/template": "workspace:*",
+          "@ldesign/webcomponent": "workspace:*",
+          "vue": "3.5.22",
+          "vue-router": "4.5.1"
+        },
+        "devDependencies": {
+          "@ldesign/builder": "workspace:*",
+          "@ldesign/cli": "workspace:*",
+          "@ldesign/launcher": "workspace:*",
+          "@types/node": "24.5.2",
+          "@vitejs/plugin-vue": "6.0.1",
+          "@vitejs/plugin-vue-jsx": "^5.1.1",
+          "@vue/eslint-config-typescript": "14.6.0",
+          "@vue/test-utils": "2.4.6",
+          "alova": "^3.3.4",
+          "axios": "^1.12.2",
+          "concurrently": "^8.2.0",
+          "eslint": "9.36.0",
+          "eslint-plugin-vue": "10.5.0",
+          "jiti": "^1.21.0",
+          "jsdom": "27.0.0",
+          "rimraf": "6.0.1",
+          "socket.io-client": "^4.7.2",
+          "vite": "7.1.7",
+          "vitest": "3.2.4",
+          "vue-tsc": "3.0.8",
+          "typescript": "^5.9.2"
+        },
+        "keywords": [
+          "vue3",
+          "typescript",
+          "vite",
+          "design-system",
+          "component-library",
+          "ldesign",
+          "frontend",
+          "ui-framework",
+          "demo-app",
+          "modern-frontend"
+        ],
+        "author": {
+          "name": "LDesign Team",
+          "email": "team@ldesign.com",
+          "url": "https://ldesign.github.io"
+        },
+        "license": "MIT",
+        "homepage": "https://ldesign.github.io",
+        "repository": {
+          "type": "git",
+          "url": "https://github.com/ldesign/ldesign.git",
+          "directory": "app"
+        },
+        "bugs": {
+          "url": "https://github.com/ldesign/ldesign/issues"
+        },
+        "engines": {
+          "node": ">=16.0.0",
+          "pnpm": ">=8.0.0"
+        },
+        "browserslist": [
+          "> 1%",
+          "last 2 versions",
+          "not dead",
+          "not ie 11"
+        ]
+      },
+      "id": "1",
+      "createdAt": "2025-09-29T16:09:01.629Z",
+      "updatedAt": "2025-09-29T16:09:01.629Z"
+    }
+  ],
+  "lastId": 1
+}

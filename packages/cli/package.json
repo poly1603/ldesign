@@ -1,91 +1,89 @@
 {
   "name": "@ldesign/cli",
   "version": "1.0.0",
-  "description": "LDesign CLI - 强大的脚手架工具，支持插件系统、中间件和多环境配置",
+  "description": "LDesign CLI 工具 - 提供脚手架、UI 管理界面等功能",
   "type": "module",
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "ldesign": "./bin/ldesign.js",
-    "ld": "./bin/ldesign.js"
+    "ldesign": "./bin/cli.js",
+    "ld": "./bin/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
     "bin",
-    "templates",
-    "web-ui/dist"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "start": "node ./bin/ldesign.js",
+    "dev": "concurrently --raw \"pnpm:dev:web\" \"pnpm:dev:server\"",
+    "dev:web": "cd src/web && pnpm dev",
+    "dev:server": "tsx watch --clear-screen=false src/server/dev.ts",
+    "build": "pnpm run clean && pnpm run build:web && pnpm run build:cli && pnpm run copy:web",
+    "build:cli": "tsup",
+    "build:web": "cd src/web && pnpm build",
+    "copy:web": "node scripts/copy-web.js",
+    "clean": "rimraf dist && cd src/web && rimraf dist",
     "test": "vitest",
-    "lint": "eslint src/**/*.ts",
-    "clean": "rimraf dist",
-    "build:ui": "cd web-ui && npm run build",
-    "dev:ui": "cd web-ui && npm run dev",
-    "install:ui": "cd web-ui && npm install"
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts --fix",
+    "type-check": "tsc --noEmit",
+    "install:web": "cd src/web && pnpm install",
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run"
   },
   "keywords": [
+    "ldesign",
     "cli",
     "scaffold",
-    "generator",
-    "template",
-    "plugin",
-    "middleware",
-    "ldesign"
+    "ui",
+    "vue",
+    "typescript"
   ],
   "author": "LDesign Team",
   "license": "MIT",
-  "dependencies": {
-    "axios": "^1.6.0",
-    "chalk": "^5.3.0",
-    "chokidar": "^3.6.0",
-    "commander": "^11.1.0",
-    "cors": "^2.8.5",
-    "cosmiconfig": "^8.3.6",
-    "dotenv": "^16.3.1",
-    "execa": "^8.0.1",
-    "express": "^4.21.2",
-    "fs-extra": "^11.1.1",
-    "glob": "^10.3.10",
-    "inquirer": "^9.2.12",
-    "jiti": "^1.21.0",
-    "listr2": "^7.0.2",
-    "open": "^9.1.0",
-    "ora": "^7.0.1",
-    "semver": "^7.5.4",
-    "socket.io": "^4.8.1",
-    "update-notifier": "^7.0.0",
-    "validate-npm-package-name": "^5.0.0"
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
   },
-  "optionalDependencies": {
-    "better-sqlite3": "^12.4.1"
+  "dependencies": {
+    "cac": "^6.7.14",
+    "chalk": "^5.3.0",
+    "chokidar": "^3.5.3",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "open": "^10.0.3",
+    "portfinder": "^1.0.32",
+    "ws": "^8.16.0"
   },
   "devDependencies": {
+    "@ldesign/builder": "workspace:*",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
-    "@types/fs-extra": "^11.0.4",
-    "@types/inquirer": "^9.0.7",
     "@types/node": "^20.0.0",
-    "@types/semver": "^7.5.6",
-    "@types/validate-npm-package-name": "^4.0.2",
+    "@types/ws": "^8.5.10",
+    "concurrently": "^9.2.1",
     "eslint": "^8.0.0",
-    "rimraf": "^5.0.5",
+    "rimraf": "^5.0.0",
     "tsup": "^8.0.0",
+    "tsx": "^4.20.5",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"
   },
-  "engines": {
-    "node": ">=18.0.0"
+  "peerDependencies": {
+    "vue": "^3.3.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/ldesign.git",
-    "directory": "packages/cli"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign/ldesign/issues"
-  },
-  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/cli#readme"
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  }
 }

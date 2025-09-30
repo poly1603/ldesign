@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign UI 管理界面</title>
+  <meta name="description" content="LDesign 设计系统管理界面">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    /* 设计系统变量 */
+    :root {
+      --ldesign-brand-color-1: #f1ecf9;
+      --ldesign-brand-color-2: #d8c8ee;
+      --ldesign-brand-color-3: #bfa4e5;
+      --ldesign-brand-color-4: #a67fdb;
+      --ldesign-brand-color-5: #8c5ad3;
+      --ldesign-brand-color-6: #7334cb;
+      --ldesign-brand-color-7: #5e2aa7;
+      --ldesign-brand-color-8: #491f84;
+      --ldesign-brand-color-9: #35165f;
+      --ldesign-brand-color-10: #200d3b;
+      --ldesign-gray-color-1: #f2f2f2;
+      --ldesign-gray-color-2: #dbdbdb;
+      --ldesign-gray-color-3: #c4c4c4;
+      --ldesign-gray-color-4: #adadad;
+      --ldesign-gray-color-5: #969696;
+      --ldesign-gray-color-6: #808080;
+      --ldesign-gray-color-7: #696969;
+      --ldesign-gray-color-8: #525252;
+      --ldesign-gray-color-9: #3b3b3b;
+      --ldesign-gray-color-10: #242424;
+      --ldesign-font-gray-1: rgba(0, 0, 0, 90%);
+      --ldesign-font-gray-2: rgba(0, 0, 0, 70%);
+      --ldesign-font-gray-3: rgba(0, 0, 0, 50%);
+      --ldesign-font-gray-4: rgba(0, 0, 0, 30%);
+      --ldesign-bg-color-page: #ffffff;
+      --ldesign-bg-color-container: #ffffff;
+      --ldesign-bg-color-container-hover: #fafafa;
+      --ldesign-bg-color-container-active: #f0f0f0;
+      --ldesign-bg-color-component: #ffffff;
+      --ldesign-bg-color-component-hover: #f8f8f8;
+      --ldesign-bg-color-component-active: #f0f0f0;
+      --ldesign-border-level-1-color: #e5e5e5;
+      --ldesign-border-level-2-color: #d9d9d9;
+      --ldesign-border-level-3-color: #cccccc;
+      --ldesign-brand-color: var(--ldesign-brand-color-7);
+      --ldesign-text-color-primary: var(--ldesign-font-gray-1);
+      --ldesign-text-color-secondary: var(--ldesign-font-gray-2);
+      --ldesign-text-color-placeholder: var(--ldesign-font-gray-3);
+      --ldesign-border-color: var(--ldesign-border-level-1-color);
+      --ls-font-size-base: 18px;
+      --ls-spacing-base: 20px;
+      --ls-border-radius-base: 6px;
+    }
+
+    /* 基础样式重置 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-size: var(--ls-font-size-base);
+      color: var(--ldesign-text-color-primary);
+      background-color: var(--ldesign-bg-color-page);
+      line-height: 1.5;
+    }
+
+    /* 加载动画 */
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--ldesign-bg-color-page);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--ldesign-border-color);
+      border-top: 3px solid var(--ldesign-brand-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      margin-top: var(--ls-spacing-base);
+      color: var(--ldesign-text-color-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="loading">
+      <div>
+        <div class="loading-spinner"></div>
+        <div class="loading-text">正在加载 LDesign UI...</div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

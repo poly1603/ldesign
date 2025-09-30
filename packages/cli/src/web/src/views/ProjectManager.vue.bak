@@ -1,0 +1,666 @@
+<template>
+  <div class="project-manager">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1>项目管理</h1>
+      <div class="header-actions">
+        <button @click="refreshProjects" :disabled="loading" class="btn-secondary">
+          <span class="icon">🔄</span>
+          <span>刷新</span>
+        </button>
+        <button @click="showImportDialog = true" class="btn-primary">
+          <span class="icon">📁</span>
+          <span>导入项目</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 项目列表 -->
+    <div class="projects-container">
+      <div v-if="loading" class="loading-state">
+        <span class="icon">⏳</span>
+        <p>正在加载项目列表...</p>
+      </div>
+
+      <div v-else-if="projects.length === 0" class="empty-state">
+        <span class="icon">📂</span>
+        <h2>暂无项目</h2>
+        <p>点击"导入项目"按钮添加您的第一个项目</p>
+        <button @click="showImportDialog = true" class="btn-primary">
+          <span class="icon">📁</span>
+          <span>导入项目</span>
+        </button>
+      </div>
+
+      <div v-else class="projects-grid">
+        <div 
+          v-for="project in projects" 
+          :key="project.id" 
+          class="project-card"
+          @click="goToProject(project.id)"
+        >
+          <div class="project-header">
+            <div class="project-info">
+              <h3 class="project-name">{{ project.name }}</h3>
+              <p class="project-path">{{ project.path }}</p>
+            </div>
+            <div class="project-actions">
+              <button 
+                @click.stop="deleteProject(project.id)" 
+                class="btn-danger-small"
+                title="删除项目"
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+          
+          <div class="project-description">
+            <p>{{ project.description || '暂无描述' }}</p>
+          </div>
+          
+          <div class="project-meta">
+            <span class="meta-item">
+              <span class="icon">📅</span>
+              <span>{{ formatDate(project.createdAt) }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 导入项目对话框 -->
+    <div v-if="showImportDialog" class="modal-overlay" @click="closeImportDialog">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2>导入项目</h2>
+          <button @click="closeImportDialog" class="btn-close">✕</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="form-group">
+            <label>选择项目目录：</label>
+            <div class="input-group">
+              <input 
+                type="text" 
+                v-model="importForm.path" 
+                placeholder="请输入项目路径或选择目录"
+                class="form-input"
+              />
+              <input 
+                type="file" 
+                ref="directoryInput"
+                webkitdirectory 
+                @change="handleDirectorySelect"
+                style="display: none"
+              />
+              <button @click="selectDirectory" class="btn-secondary">
+                选择目录
+              </button>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>项目名称：</label>
+            <input 
+              type="text" 
+              v-model="importForm.name" 
+              placeholder="项目名称（可选，将从package.json读取）"
+              class="form-input"
+            />
+          </div>
+          
+          <div class="form-group">
+            <label>项目描述：</label>
+            <textarea 
+              v-model="importForm.description" 
+              placeholder="项目描述（可选）"
+              class="form-textarea"
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button @click="closeImportDialog" class="btn-secondary">
+            取消
+          </button>
+          <button 
+            @click="importProject" 
+            :disabled="!importForm.path || importing"
+            class="btn-primary"
+          >
+            <span v-if="importing">导入中...</span>
+            <span v-else>导入项目</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 成功提示 -->
+    <div v-if="successMessage" class="success-toast">
+      <span class="icon">✅</span>
+      <span>{{ successMessage }}</span>
+      <button @click="successMessage = ''" class="btn-close">✕</button>
+    </div>
+
+    <!-- 错误提示 -->
+    <div v-if="error" class="error-toast">
+      <span class="icon">❌</span>
+      <span>{{ error }}</span>
+      <button @click="error = ''" class="btn-close">✕</button>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useApi } from '../composables/useApi'
+
+// 路由
+const router = useRouter()
+
+// API 实例
+const api = useApi()
+
+// 响应式数据
+const loading = ref(false)
+const importing = ref(false)
+const projects = ref<any[]>([])
+const showImportDialog = ref(false)
+const successMessage = ref('')
+const error = ref('')
+
+// 导入表单
+const importForm = reactive({
+  path: '',
+  name: '',
+  description: ''
+})
+
+// 目录选择引用
+const directoryInput = ref<HTMLInputElement>()
+
+// 格式化日期
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('zh-CN')
+}
+
+// 获取项目列表
+const getProjects = async () => {
+  loading.value = true
+  error.value = ''
+  
+  try {
+    const response = await api.get('/api/projects')
+    if (response.success) {
+      projects.value = response.data
+    } else {
+      error.value = response.message || '获取项目列表失败'
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : '获取项目列表失败'
+  } finally {
+    loading.value = false
+  }
+}
+
+// 刷新项目列表
+const refreshProjects = () => {
+  getProjects()
+}
+
+// 选择目录
+const selectDirectory = () => {
+  directoryInput.value?.click()
+}
+
+// 处理目录选择
+const handleDirectorySelect = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  
+  if (files && files.length > 0) {
+    // 获取第一个文件的路径，去掉文件名得到目录路径
+    const firstFile = files[0]
+    const fullPath = firstFile.webkitRelativePath
+    const pathParts = fullPath.split('/')
+    pathParts.pop() // 移除文件名
+    const directoryPath = pathParts.join('/')
+    
+    // 在Windows环境下，需要转换路径格式
+    if (navigator.platform.includes('Win')) {
+      importForm.path = directoryPath.replace(/\//g, '\\')
+    } else {
+      importForm.path = directoryPath
+    }
+  }
+}
+
+// 导入项目
+const importProject = async () => {
+  if (!importForm.path) return
+  
+  importing.value = true
+  error.value = ''
+  
+  try {
+    const response = await api.post('/api/projects', {
+      path: importForm.path,
+      name: importForm.name,
+      description: importForm.description
+    })
+    
+    if (response.success) {
+      successMessage.value = '项目导入成功'
+      closeImportDialog()
+      await getProjects() // 刷新项目列表
+    } else {
+      error.value = response.message || '导入项目失败'
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : '导入项目失败'
+  } finally {
+    importing.value = false
+  }
+}
+
+// 删除项目
+const deleteProject = async (projectId: string) => {
+  if (!confirm('确定要删除这个项目吗？')) return
+  
+  try {
+    const response = await api.delete(`/api/projects/${projectId}`)
+    if (response.success) {
+      successMessage.value = '项目删除成功'
+      await getProjects() // 刷新项目列表
+    } else {
+      error.value = response.message || '删除项目失败'
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : '删除项目失败'
+  }
+}
+
+// 跳转到项目详情
+const goToProject = (projectId: string) => {
+  router.push(`/projects/${projectId}`)
+}
+
+// 关闭导入对话框
+const closeImportDialog = () => {
+  showImportDialog.value = false
+  importForm.path = ''
+  importForm.name = ''
+  importForm.description = ''
+}
+
+// 组件挂载时加载数据
+onMounted(() => {
+  getProjects()
+})
+</script>
+
+<style scoped lang="less">
+.project-manager {
+  padding: var(--ls-padding-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ls-margin-lg);
+
+  h1 {
+    margin: 0;
+    color: var(--ldesign-text-color-primary);
+    font-size: var(--ls-font-size-h2);
+  }
+
+  .header-actions {
+    display: flex;
+    gap: var(--ls-spacing-sm);
+  }
+}
+
+.projects-container {
+  min-height: 400px;
+}
+
+.loading-state, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ls-padding-xxl);
+  text-align: center;
+
+  .icon {
+    font-size: 48px;
+    margin-bottom: var(--ls-margin-base);
+  }
+
+  h2 {
+    margin: 0 0 var(--ls-margin-sm) 0;
+    color: var(--ldesign-text-color-primary);
+  }
+
+  p {
+    margin: 0 0 var(--ls-margin-lg) 0;
+    color: var(--ldesign-text-color-secondary);
+  }
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: var(--ls-spacing-lg);
+}
+
+.project-card {
+  background: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-lg);
+  padding: var(--ls-padding-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--ldesign-brand-color);
+    box-shadow: var(--ldesign-shadow-2);
+    transform: translateY(-2px);
+  }
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--ls-margin-base);
+}
+
+.project-info {
+  flex: 1;
+
+  .project-name {
+    margin: 0 0 var(--ls-margin-xs) 0;
+    color: var(--ldesign-text-color-primary);
+    font-size: var(--ls-font-size-lg);
+    font-weight: 600;
+  }
+
+  .project-path {
+    margin: 0;
+    color: var(--ldesign-text-color-secondary);
+    font-size: var(--ls-font-size-sm);
+    font-family: monospace;
+    word-break: break-all;
+  }
+}
+
+.project-actions {
+  .btn-danger-small {
+    background: none;
+    border: none;
+    padding: var(--ls-padding-xs);
+    border-radius: var(--ls-border-radius-base);
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--ldesign-error-color-focus);
+    }
+  }
+}
+
+.project-description {
+  margin-bottom: var(--ls-margin-base);
+
+  p {
+    margin: 0;
+    color: var(--ldesign-text-color-secondary);
+    font-size: var(--ls-font-size-sm);
+    line-height: 1.5;
+  }
+}
+
+.project-meta {
+  display: flex;
+  gap: var(--ls-spacing-base);
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-xs);
+    color: var(--ldesign-text-color-placeholder);
+    font-size: var(--ls-font-size-xs);
+
+    .icon {
+      font-size: 14px;
+    }
+  }
+}
+
+/* 模态框样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--ldesign-bg-color-container);
+  border-radius: var(--ls-border-radius-lg);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--ls-padding-lg);
+  border-bottom: 1px solid var(--ldesign-border-color);
+
+  h2 {
+    margin: 0;
+    color: var(--ldesign-text-color-primary);
+  }
+
+  .btn-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: var(--ls-padding-xs);
+    border-radius: var(--ls-border-radius-base);
+
+    &:hover {
+      background: var(--ldesign-bg-color-component-hover);
+    }
+  }
+}
+
+.modal-body {
+  padding: var(--ls-padding-lg);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ls-spacing-sm);
+  padding: var(--ls-padding-lg);
+  border-top: 1px solid var(--ldesign-border-color);
+}
+
+.form-group {
+  margin-bottom: var(--ls-margin-lg);
+
+  label {
+    display: block;
+    margin-bottom: var(--ls-margin-xs);
+    color: var(--ldesign-text-color-primary);
+    font-weight: 500;
+  }
+}
+
+.input-group {
+  display: flex;
+  gap: var(--ls-spacing-sm);
+
+  .form-input {
+    flex: 1;
+  }
+}
+
+.form-input, .form-textarea {
+  width: 100%;
+  padding: var(--ls-padding-sm);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  font-size: var(--ls-font-size-sm);
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--ldesign-brand-color);
+  }
+
+  &::placeholder {
+    color: var(--ldesign-text-color-placeholder);
+  }
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* 按钮样式 */
+.btn-primary, .btn-secondary, .btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ls-spacing-xs);
+  padding: var(--ls-padding-sm) var(--ls-padding-base);
+  border: 1px solid transparent;
+  border-radius: var(--ls-border-radius-base);
+  font-size: var(--ls-font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background: var(--ldesign-brand-color);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: var(--ldesign-brand-color-hover);
+  }
+}
+
+.btn-secondary {
+  background: var(--ldesign-bg-color-component);
+  color: var(--ldesign-text-color-primary);
+  border-color: var(--ldesign-border-color);
+
+  &:hover:not(:disabled) {
+    background: var(--ldesign-bg-color-component-hover);
+    border-color: var(--ldesign-border-color-hover);
+  }
+}
+
+.btn-back {
+  background: none;
+  color: var(--ldesign-text-color-secondary);
+  padding: var(--ls-padding-xs) var(--ls-padding-sm);
+
+  &:hover {
+    color: var(--ldesign-text-color-primary);
+    background: var(--ldesign-bg-color-component-hover);
+  }
+}
+
+/* 提示消息样式 */
+.success-toast, .error-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: var(--ls-spacing-sm);
+  padding: var(--ls-padding-base);
+  border-radius: var(--ls-border-radius-base);
+  box-shadow: var(--ldesign-shadow-2);
+  z-index: 1001;
+
+  .btn-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.success-toast {
+  background: var(--ldesign-success-color-focus);
+  color: var(--ldesign-success-color-8);
+  border: 1px solid var(--ldesign-success-color-3);
+}
+
+.error-toast {
+  background: var(--ldesign-error-color-focus);
+  color: var(--ldesign-error-color-8);
+  border: 1px solid var(--ldesign-error-color-3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .project-manager {
+    padding: var(--ls-padding-base);
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: var(--ls-spacing-base);
+    align-items: stretch;
+
+    .header-actions {
+      justify-content: center;
+    }
+  }
+
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    width: 95%;
+    margin: var(--ls-margin-base);
+  }
+}
+</style>

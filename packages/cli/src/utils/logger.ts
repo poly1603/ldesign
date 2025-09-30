@@ -1,113 +1,108 @@
 /**
  * 日志工具
+ * 提供统一的日志输出功能
  */
 
-import chalk from 'chalk';
-import { Logger } from '../types/index';
+import chalk from 'chalk'
 
-export interface LoggerOptions {
-  level?: 'debug' | 'info' | 'warn' | 'error';
-  prefix?: string;
-  timestamp?: boolean;
-}
-
-export class ConsoleLogger implements Logger {
-  private level: string;
-  private prefix: string;
-  private timestamp: boolean;
-
-  constructor(options: LoggerOptions = {}) {
-    this.level = options.level || 'info';
-    this.prefix = options.prefix || 'ldesign';
-    this.timestamp = options.timestamp || false;
-  }
-
-  debug(message: string, ...args: any[]): void {
-    if (this.shouldLog('debug')) {
-      console.log(this.format('debug', message), ...args);
-    }
-  }
-
-  info(message: string, ...args: any[]): void {
-    if (this.shouldLog('info')) {
-      console.log(this.format('info', message), ...args);
-    }
-  }
-
-  warn(message: string, ...args: any[]): void {
-    if (this.shouldLog('warn')) {
-      console.warn(this.format('warn', message), ...args);
-    }
-  }
-
-  error(message: string, ...args: any[]): void {
-    if (this.shouldLog('error')) {
-      console.error(this.format('error', message), ...args);
-    }
-  }
-
-  success(message: string, ...args: any[]): void {
-    if (this.shouldLog('info')) {
-      console.log(this.format('success', message), ...args);
-    }
-  }
-
-  private shouldLog(level: string): boolean {
-    const levels = ['debug', 'info', 'warn', 'error'];
-    const currentLevelIndex = levels.indexOf(this.level);
-    const messageLevelIndex = levels.indexOf(level);
-    return messageLevelIndex >= currentLevelIndex;
-  }
-
-  private format(level: string, message: string): string {
-    let formatted = '';
-
-    // 添加时间戳
-    if (this.timestamp) {
-      const now = new Date().toISOString();
-      formatted += chalk.gray(`[${now}] `);
-    }
-
-    // 添加前缀
-    formatted += chalk.blue(`[${this.prefix}] `);
-
-    // 添加级别标识
-    switch (level) {
-      case 'debug':
-        formatted += chalk.gray('[DEBUG] ');
-        break;
-      case 'info':
-        formatted += chalk.cyan('[INFO] ');
-        break;
-      case 'warn':
-        formatted += chalk.yellow('[WARN] ');
-        break;
-      case 'error':
-        formatted += chalk.red('[ERROR] ');
-        break;
-      case 'success':
-        formatted += chalk.green('[SUCCESS] ');
-        break;
-    }
-
-    // 添加消息
-    formatted += message;
-
-    return formatted;
-  }
-
-  setLevel(level: string): void {
-    this.level = level;
-  }
-
-  setPrefix(prefix: string): void {
-    this.prefix = prefix;
-  }
-}
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent'
 
 /**
- * 创建默认日志器
+ * 日志记录器类
  */
-export function createLogger(options?: LoggerOptions): Logger {
-  return new ConsoleLogger(options);
+class Logger {
+  private level: LogLevel = 'info'
+
+  /**
+   * 设置日志级别
+   */
+  setLevel(level: LogLevel): void {
+    this.level = level
+  }
+
+  /**
+   * 获取当前日志级别
+   */
+  getLevel(): LogLevel {
+    return this.level
+  }
+
+  /**
+   * 检查是否应该输出指定级别的日志
+   */
+  private shouldLog(level: LogLevel): boolean {
+    if (this.level === 'silent') return false
+    
+    const levels: LogLevel[] = ['debug', 'info', 'warn', 'error']
+    const currentIndex = levels.indexOf(this.level)
+    const targetIndex = levels.indexOf(level)
+    
+    return targetIndex >= currentIndex
+  }
+
+  /**
+   * 格式化时间戳
+   */
+  private getTimestamp(): string {
+    return new Date().toLocaleTimeString()
+  }
+
+  /**
+   * 调试日志
+   */
+  debug(message: string, ...args: any[]): void {
+    if (!this.shouldLog('debug')) return
+    console.log(chalk.gray(`[${this.getTimestamp()}] [DEBUG]`), message, ...args)
+  }
+
+  /**
+   * 信息日志
+   */
+  info(message: string, ...args: any[]): void {
+    if (!this.shouldLog('info')) return
+    console.log(chalk.blue(`[${this.getTimestamp()}] [INFO]`), message, ...args)
+  }
+
+  /**
+   * 警告日志
+   */
+  warn(message: string, ...args: any[]): void {
+    if (!this.shouldLog('warn')) return
+    console.warn(chalk.yellow(`[${this.getTimestamp()}] [WARN]`), message, ...args)
+  }
+
+  /**
+   * 错误日志
+   */
+  error(message: string, ...args: any[]): void {
+    if (!this.shouldLog('error')) return
+    console.error(chalk.red(`[${this.getTimestamp()}] [ERROR]`), message, ...args)
+  }
+
+  /**
+   * 成功日志
+   */
+  success(message: string, ...args: any[]): void {
+    if (!this.shouldLog('info')) return
+    console.log(chalk.green(`[${this.getTimestamp()}] [SUCCESS]`), message, ...args)
+  }
+
+  /**
+   * 带前缀的日志
+   */
+  withPrefix(prefix: string) {
+    return {
+      debug: (message: string, ...args: any[]) => this.debug(`[${prefix}] ${message}`, ...args),
+      info: (message: string, ...args: any[]) => this.info(`[${prefix}] ${message}`, ...args),
+      warn: (message: string, ...args: any[]) => this.warn(`[${prefix}] ${message}`, ...args),
+      error: (message: string, ...args: any[]) => this.error(`[${prefix}] ${message}`, ...args),
+      success: (message: string, ...args: any[]) => this.success(`[${prefix}] ${message}`, ...args)
+    }
+  }
 }
+
+// 导出单例实例
+export const logger = new Logger()
+
+// 导出类型
+export { Logger }

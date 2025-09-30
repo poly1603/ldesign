@@ -1,0 +1,118 @@
+/**
+ * Less 变量文件
+ * 定义设计系统的 Less 变量
+ */
+
+// 品牌色
+@brand-color-1: var(--ldesign-brand-color-1);
+@brand-color-2: var(--ldesign-brand-color-2);
+@brand-color-3: var(--ldesign-brand-color-3);
+@brand-color-4: var(--ldesign-brand-color-4);
+@brand-color-5: var(--ldesign-brand-color-5);
+@brand-color-6: var(--ldesign-brand-color-6);
+@brand-color-7: var(--ldesign-brand-color-7);
+@brand-color-8: var(--ldesign-brand-color-8);
+@brand-color-9: var(--ldesign-brand-color-9);
+@brand-color-10: var(--ldesign-brand-color-10);
+
+// 功能色
+@success-color: var(--ldesign-success-color-5);
+@warning-color: var(--ldesign-warning-color-5);
+@error-color: var(--ldesign-error-color-5);
+@brand-color: var(--ldesign-brand-color);
+
+// 文本色
+@text-color-primary: var(--ldesign-text-color-primary);
+@text-color-secondary: var(--ldesign-text-color-secondary);
+@text-color-placeholder: var(--ldesign-text-color-placeholder);
+
+// 背景色
+@bg-color-page: var(--ldesign-bg-color-page);
+@bg-color-container: var(--ldesign-bg-color-container);
+@bg-color-component: var(--ldesign-bg-color-component);
+
+// 边框色
+@border-color: var(--ldesign-border-color);
+@border-color-hover: var(--ldesign-border-level-2-color);
+
+// 尺寸
+@font-size-xs: var(--ls-font-size-xs);
+@font-size-sm: var(--ls-font-size-sm);
+@font-size-base: var(--ls-font-size-base);
+@font-size-lg: var(--ls-font-size-lg);
+@font-size-xl: var(--ls-font-size-xl);
+
+@spacing-xs: var(--ls-spacing-xs);
+@spacing-sm: var(--ls-spacing-sm);
+@spacing-base: var(--ls-spacing-base);
+@spacing-lg: var(--ls-spacing-lg);
+@spacing-xl: var(--ls-spacing-xl);
+
+@border-radius-sm: var(--ls-border-radius-sm);
+@border-radius-base: var(--ls-border-radius-base);
+@border-radius-lg: var(--ls-border-radius-lg);
+
+// 混合器
+.button-base() {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: @spacing-sm @spacing-base;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-base;
+  background: @bg-color-component;
+  color: @text-color-primary;
+  font-size: @font-size-base;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+
+  &:hover {
+    border-color: @brand-color;
+    background: var(--ldesign-bg-color-component-hover);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.button-primary() {
+  .button-base();
+  background: @brand-color;
+  color: white;
+  border-color: @brand-color;
+
+  &:hover {
+    background: @brand-color-6;
+    border-color: @brand-color-6;
+  }
+}
+
+.card() {
+  background: @bg-color-container;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-base;
+  padding: @spacing-base;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.input-base() {
+  padding: @spacing-sm @spacing-base;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-base;
+  background: @bg-color-component;
+  color: @text-color-primary;
+  font-size: @font-size-base;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: @brand-color;
+  }
+
+  &::placeholder {
+    color: @text-color-placeholder;
+  }
+}

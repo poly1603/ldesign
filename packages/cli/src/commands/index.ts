@@ -1,10 +1,7 @@
 /**
- * 命令模块导出
+ * 命令导出文件
+ * 统一导出所有 CLI 命令
  */
 
-export * from './init';
-export * from './build';
-export * from './dev';
-export * from './preview';
-export * from './test';
-export * from './ui';
+export { uiCommand } from './ui.js'
+export type { UICommandOptions } from './ui.js'
