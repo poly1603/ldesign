@@ -19,14 +19,14 @@ export interface CoreWebVitalsMetrics {
     timestamp: number
     element?: Element
   }
-  
+
   // First Contentful Paint - 首次内容绘制
   fcp?: {
     value: number
     rating: 'good' | 'needs-improvement' | 'poor'
     timestamp: number
   }
-  
+
   // Cumulative Layout Shift - 累积布局偏移
   cls?: {
     value: number
@@ -34,7 +34,7 @@ export interface CoreWebVitalsMetrics {
     timestamp: number
     sources: LayoutShiftAttribution[]
   }
-  
+
   // First Input Delay - 首次输入延迟
   fid?: {
     value: number
@@ -42,14 +42,14 @@ export interface CoreWebVitalsMetrics {
     timestamp: number
     eventType: string
   }
-  
+
   // Time to First Byte - 首字节时间
   ttfb?: {
     value: number
     rating: 'good' | 'needs-improvement' | 'poor'
     timestamp: number
   }
-  
+
   // Interaction to Next Paint - 交互到下次绘制
   inp?: {
     value: number
@@ -92,22 +92,22 @@ export class CoreWebVitalsMonitor {
     }
 
     this.isMonitoring = true
-    
+
     // 监控 LCP
     this.observeLCP()
-    
+
     // 监控 FCP
     this.observeFCP()
-    
+
     // 监控 CLS
     this.observeCLS()
-    
+
     // 监控 FID
     this.observeFID()
-    
+
     // 监控 TTFB
     this.observeTTFB()
-    
+
     // 监控 INP (如果支持)
     this.observeINP()
   }
@@ -145,7 +145,7 @@ export class CoreWebVitalsMonitor {
         const lastEntry = entries[entries.length - 1] as PerformanceEntry & {
           element?: Element
         }
-        
+
         if (lastEntry) {
           const value = lastEntry.startTime
           this.metrics.lcp = {
@@ -157,7 +157,7 @@ export class CoreWebVitalsMonitor {
           this.notifyCallbacks()
         }
       })
-      
+
       observer.observe({ type: 'largest-contentful-paint', buffered: true })
       this.observers.push(observer)
     } catch (error) {
@@ -173,7 +173,7 @@ export class CoreWebVitalsMonitor {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         const fcpEntry = entries.find(entry => entry.name === 'first-contentful-paint')
-        
+
         if (fcpEntry) {
           const value = fcpEntry.startTime
           this.metrics.fcp = {
@@ -184,7 +184,7 @@ export class CoreWebVitalsMonitor {
           this.notifyCallbacks()
         }
       })
-      
+
       observer.observe({ type: 'paint', buffered: true })
       this.observers.push(observer)
     } catch (error) {
@@ -200,7 +200,7 @@ export class CoreWebVitalsMonitor {
       let clsValue = 0
       let sessionValue = 0
       let sessionEntries: PerformanceEntry[] = []
-      
+
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries() as (PerformanceEntry & {
           value: number
@@ -213,20 +213,20 @@ export class CoreWebVitalsMonitor {
           if (!entry.hadRecentInput) {
             const firstSessionEntry = sessionEntries[0]
             const lastSessionEntry = sessionEntries[sessionEntries.length - 1]
-            
+
             // 如果条目与当前会话相距超过1秒，或者与第一个条目相距超过5秒，则开始新会话
-            if (sessionValue && 
-                (entry.startTime - lastSessionEntry.startTime > 1000 ||
-                 entry.startTime - firstSessionEntry.startTime > 5000)) {
+            if (sessionValue &&
+              (entry.startTime - lastSessionEntry.startTime > 1000 ||
+                entry.startTime - firstSessionEntry.startTime > 5000)) {
               clsValue = Math.max(clsValue, sessionValue)
               sessionValue = 0
               sessionEntries = []
             }
-            
+
             sessionValue += entry.value
             sessionEntries.push(entry)
             clsValue = Math.max(clsValue, sessionValue)
-            
+
             this.metrics.cls = {
               value: clsValue,
               rating: getRating(clsValue, THRESHOLDS.cls),
@@ -237,7 +237,7 @@ export class CoreWebVitalsMonitor {
           }
         }
       })
-      
+
       observer.observe({ type: 'layout-shift', buffered: true })
       this.observers.push(observer)
     } catch (error) {
@@ -255,7 +255,7 @@ export class CoreWebVitalsMonitor {
           processingStart: number
           eventType: string
         })[]
-        
+
         for (const entry of entries) {
           const value = entry.processingStart - entry.startTime
           this.metrics.fid = {
@@ -267,7 +267,7 @@ export class CoreWebVitalsMonitor {
           this.notifyCallbacks()
         }
       })
-      
+
       observer.observe({ type: 'first-input', buffered: true })
       this.observers.push(observer)
     } catch (error) {
@@ -283,7 +283,7 @@ export class CoreWebVitalsMonitor {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         const navigationEntry = entries[0] as PerformanceNavigationTiming
-        
+
         if (navigationEntry) {
           const value = navigationEntry.responseStart - navigationEntry.requestStart
           this.metrics.ttfb = {
@@ -294,7 +294,7 @@ export class CoreWebVitalsMonitor {
           this.notifyCallbacks()
         }
       })
-      
+
       observer.observe({ type: 'navigation', buffered: true })
       this.observers.push(observer)
     } catch (error) {
@@ -314,7 +314,7 @@ export class CoreWebVitalsMonitor {
           processingEnd: number
           eventType: string
         })[]
-        
+
         for (const entry of entries) {
           const value = entry.processingEnd - entry.startTime
           this.metrics.inp = {
@@ -326,7 +326,7 @@ export class CoreWebVitalsMonitor {
           this.notifyCallbacks()
         }
       })
-      
+
       // 尝试观察事件时序
       observer.observe({ type: 'event', buffered: true })
       this.observers.push(observer)
@@ -355,35 +355,29 @@ export class CoreWebVitalsMonitor {
   getPerformanceScore(): number {
     const metrics = this.getMetrics()
     let score = 100
-    let count = 0
 
     // 根据各项指标计算分数
     if (metrics.lcp) {
-      count++
       if (metrics.lcp.rating === 'poor') score -= 25
       else if (metrics.lcp.rating === 'needs-improvement') score -= 10
     }
 
     if (metrics.fcp) {
-      count++
       if (metrics.fcp.rating === 'poor') score -= 20
       else if (metrics.fcp.rating === 'needs-improvement') score -= 8
     }
 
     if (metrics.cls) {
-      count++
       if (metrics.cls.rating === 'poor') score -= 25
       else if (metrics.cls.rating === 'needs-improvement') score -= 10
     }
 
     if (metrics.fid) {
-      count++
       if (metrics.fid.rating === 'poor') score -= 20
       else if (metrics.fid.rating === 'needs-improvement') score -= 8
     }
 
     if (metrics.ttfb) {
-      count++
       if (metrics.ttfb.rating === 'poor') score -= 10
       else if (metrics.ttfb.rating === 'needs-improvement') score -= 5
     }

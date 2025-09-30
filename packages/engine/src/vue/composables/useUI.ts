@@ -1,4 +1,4 @@
-import { computed, onUnmounted, ref, type Ref, type Component } from 'vue'
+import { type Component, computed, onUnmounted, ref, type Ref } from 'vue'
 import { useEngine } from './useEngine'
 
 /**

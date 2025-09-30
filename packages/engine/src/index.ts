@@ -36,32 +36,35 @@
 import type { App } from 'vue'
 import type { CreateEngineOptions, Engine } from './types'
 
-// 核心功能 - 最常用的导出
-export { createEngine, createApp, createAndMountApp } from './core/factory'
-export { EngineImpl } from './core/engine'
-
 // 基础管理器 - 最常用的管理器
 export { createConfigManager } from './config/config-manager'
-export { createEventManager, ENGINE_EVENTS } from './events/event-manager'
-export { createLogger } from './logger/logger'
-
-// 常用工具函数
-export { debounce, throttle, deepClone, generateId } from './utils/index'
-
-// Vue集成 - 最常用的Vue功能
-export { useEngine } from './vue/composables/useEngine'
-
 // 常量
 export * from './constants'
 
+export { EngineImpl } from './core/engine'
+// 核心功能 - 最常用的导出
+export { createAndMountApp, createApp, createEngine } from './core/factory'
+export { createEventManager, ENGINE_EVENTS } from './events/event-manager'
+
+export { createLogger } from './logger/logger'
+
+// 预设配置
+export { presets } from './presets'
+
 // 基础类型导出
 export type {
+  ConfigManager,
+  CreateEngineOptions,
   Engine,
   EngineConfig,
-  CreateEngineOptions,
-  ConfigManager,
   EventManager,
 } from './types'
+
+// 常用工具函数
+export { debounce, deepClone, generateId, throttle } from './utils/index'
+
+// Vue集成 - 最常用的Vue功能
+export { useEngine } from './vue/composables/useEngine'
 
 // 版本信息
 export const version = '0.1.0'

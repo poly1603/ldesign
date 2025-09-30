@@ -8,7 +8,7 @@ import type { CoreWebVitalsMetrics } from './core-web-vitals'
 // 实时性能数据接口
 export interface RealtimePerformanceData {
   timestamp: number
-  
+
   // 系统性能
   system: {
     memory: {
@@ -23,7 +23,7 @@ export interface RealtimePerformanceData {
     fps: number
     frameDrops: number
   }
-  
+
   // 网络性能
   network: {
     latency: number
@@ -31,7 +31,7 @@ export interface RealtimePerformanceData {
     connectionType: string
     effectiveType: string
   }
-  
+
   // DOM性能
   dom: {
     nodeCount: number
@@ -39,10 +39,10 @@ export interface RealtimePerformanceData {
     renderTime: number
     layoutTime: number
   }
-  
+
   // Core Web Vitals
   webVitals: CoreWebVitalsMetrics
-  
+
   // 自定义指标
   custom: Record<string, number>
 }
@@ -85,14 +85,14 @@ export class RealtimePerformanceMonitor {
   private lastFrameTime = 0
   private frameCount = 0
   private frameDrops = 0
-  
+
   private data: RealtimePerformanceData[] = []
   private alerts: PerformanceAlert[] = []
   private thresholds: PerformanceThresholds = DEFAULT_THRESHOLDS
-  
+
   private callbacks: Array<(data: RealtimePerformanceData) => void> = []
   private alertCallbacks: Array<(alert: PerformanceAlert) => void> = []
-  
+
   private readonly maxDataPoints = 1000
   private readonly monitoringIntervalMs = 1000 // 1秒
 
@@ -105,12 +105,12 @@ export class RealtimePerformanceMonitor {
     }
 
     this.isMonitoring = true
-    
+
     // 启动数据收集
     this.monitoringInterval = window.setInterval(() => {
       this.collectData()
     }, this.monitoringIntervalMs)
-    
+
     // 启动FPS监控
     this.startFPSMonitoring()
   }
@@ -120,12 +120,12 @@ export class RealtimePerformanceMonitor {
    */
   stop(): void {
     this.isMonitoring = false
-    
+
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval)
       this.monitoringInterval = undefined
     }
-    
+
     if (this.fpsMonitoringId) {
       cancelAnimationFrame(this.fpsMonitoringId)
       this.fpsMonitoringId = undefined
@@ -199,7 +199,7 @@ export class RealtimePerformanceMonitor {
    */
   private collectData(): void {
     const timestamp = Date.now()
-    
+
     const data: RealtimePerformanceData = {
       timestamp,
       system: this.collectSystemData(),
@@ -208,18 +208,18 @@ export class RealtimePerformanceMonitor {
       webVitals: this.collectWebVitalsData(),
       custom: {}
     }
-    
+
     // 添加到数据数组
     this.data.push(data)
-    
+
     // 限制数据点数量
     if (this.data.length > this.maxDataPoints) {
       this.data.shift()
     }
-    
+
     // 检查告警
     this.checkAlerts(data)
-    
+
     // 通知回调
     this.notifyCallbacks(data)
   }
@@ -230,7 +230,7 @@ export class RealtimePerformanceMonitor {
   private collectSystemData() {
     const memory = this.getMemoryInfo()
     const cpu = this.getCPUInfo()
-    
+
     return {
       memory,
       cpu,
@@ -244,7 +244,7 @@ export class RealtimePerformanceMonitor {
    */
   private collectNetworkData() {
     const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
-    
+
     return {
       latency: this.measureLatency(),
       bandwidth: connection?.downlink || 0,
@@ -259,7 +259,7 @@ export class RealtimePerformanceMonitor {
   private collectDOMData() {
     const nodeCount = document.querySelectorAll('*').length
     const depth = this.getDOMDepth()
-    
+
     return {
       nodeCount,
       depth,
@@ -291,7 +291,7 @@ export class RealtimePerformanceMonitor {
         percentage: (used / total) * 100
       }
     }
-    
+
     return { used: 0, total: 0, percentage: 0 }
   }
 
@@ -311,30 +311,30 @@ export class RealtimePerformanceMonitor {
   private startFPSMonitoring(): void {
     let lastTime = performance.now()
     let frames = 0
-    
+
     const measureFPS = (currentTime: number) => {
       frames++
-      
+
       if (currentTime >= lastTime + 1000) {
         const fps = Math.round((frames * 1000) / (currentTime - lastTime))
-        
+
         // 检测掉帧
         if (fps < 55) {
           this.frameDrops++
         }
-        
+
         this.lastFrameTime = currentTime
         this.frameCount = fps
-        
+
         frames = 0
         lastTime = currentTime
       }
-      
+
       if (this.isMonitoring) {
         this.fpsMonitoringId = requestAnimationFrame(measureFPS)
       }
     }
-    
+
     this.fpsMonitoringId = requestAnimationFrame(measureFPS)
   }
 
@@ -358,21 +358,21 @@ export class RealtimePerformanceMonitor {
    */
   private getDOMDepth(): number {
     let maxDepth = 0
-    
+
     function getDepth(element: Element, depth = 0): number {
       maxDepth = Math.max(maxDepth, depth)
-      
+
       for (const child of element.children) {
         getDepth(child, depth + 1)
       }
-      
+
       return maxDepth
     }
-    
+
     if (document.documentElement) {
       return getDepth(document.documentElement)
     }
-    
+
     return 0
   }
 
@@ -397,28 +397,28 @@ export class RealtimePerformanceMonitor {
    */
   private checkAlerts(data: RealtimePerformanceData): void {
     const alerts: PerformanceAlert[] = []
-    
+
     // 检查内存使用率
     if (data.system.memory.percentage > this.thresholds.memory.critical) {
       alerts.push(this.createAlert('critical', 'memory', '内存使用率过高', data.system.memory.percentage, this.thresholds.memory.critical))
     } else if (data.system.memory.percentage > this.thresholds.memory.warning) {
       alerts.push(this.createAlert('warning', 'memory', '内存使用率较高', data.system.memory.percentage, this.thresholds.memory.warning))
     }
-    
+
     // 检查FPS
     if (data.system.fps < this.thresholds.fps.critical) {
       alerts.push(this.createAlert('critical', 'fps', 'FPS过低', data.system.fps, this.thresholds.fps.critical))
     } else if (data.system.fps < this.thresholds.fps.warning) {
       alerts.push(this.createAlert('warning', 'fps', 'FPS较低', data.system.fps, this.thresholds.fps.warning))
     }
-    
+
     // 检查DOM节点数量
     if (data.dom.nodeCount > this.thresholds.domNodes.critical) {
       alerts.push(this.createAlert('critical', 'domNodes', 'DOM节点过多', data.dom.nodeCount, this.thresholds.domNodes.critical))
     } else if (data.dom.nodeCount > this.thresholds.domNodes.warning) {
       alerts.push(this.createAlert('warning', 'domNodes', 'DOM节点较多', data.dom.nodeCount, this.thresholds.domNodes.warning))
     }
-    
+
     // 添加新告警
     alerts.forEach(alert => {
       this.alerts.push(alert)

@@ -14,7 +14,7 @@ export type DeepReadonly<T> = T extends (infer R)[]
   ? DeepReadonlyObject<T>
   : T
 
-interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {}
+interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> { }
 
 type DeepReadonlyObject<T> = {
   readonly [P in keyof T]: DeepReadonly<T[P]>
@@ -31,7 +31,7 @@ export type DeepPartial<T> = T extends (infer R)[]
   ? DeepPartialObject<T>
   : T | undefined
 
-interface DeepPartialArray<T> extends Array<DeepPartial<T>> {}
+interface DeepPartialArray<T> extends Array<DeepPartial<T>> { }
 
 type DeepPartialObject<T> = {
   [P in keyof T]?: DeepPartial<T[P]>
@@ -48,7 +48,7 @@ export type DeepRequired<T> = T extends (infer R)[]
   ? DeepRequiredObject<T>
   : T
 
-interface DeepRequiredArray<T> extends Array<DeepRequired<T>> {}
+interface DeepRequiredArray<T> extends Array<DeepRequired<T>> { }
 
 type DeepRequiredObject<T> = {
   [P in keyof T]-?: DeepRequired<T[P]>
@@ -59,10 +59,10 @@ type DeepRequiredObject<T> = {
  */
 export type RecursiveOptional<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
-    ? RecursiveOptional<U>[]
-    : T[P] extends object
-    ? RecursiveOptional<T[P]>
-    : T[P]
+  ? RecursiveOptional<U>[]
+  : T[P] extends object
+  ? RecursiveOptional<T[P]>
+  : T[P]
 }
 
 /**
@@ -108,17 +108,17 @@ export type ValueOrPromise<T> = T | Promise<T>
 /**
  * 异步函数类型
  */
-export type AsyncFunction<T = any, R = any> = (...args: T[]) => Promise<R>
+export type AsyncFunction<T = unknown, R = unknown> = (...args: T[]) => Promise<R>
 
 /**
  * 同步函数类型
  */
-export type SyncFunction<T = any, R = any> = (...args: T[]) => R
+export type SyncFunction<T = unknown, R = unknown> = (...args: T[]) => R
 
 /**
  * 任意函数类型
  */
-export type AnyFunction<T = any, R = any> = (...args: T[]) => R | Promise<R>
+export type AnyFunction<T = unknown, R = unknown> = (...args: T[]) => R | Promise<R>
 
 /**
  * 构造函数类型
@@ -192,24 +192,24 @@ export type FunctionReturn<T extends (...args: unknown[]) => unknown> = T extend
  */
 export type Path<T, K extends keyof T = keyof T> =
   K extends string | number
-    ? T[K] extends Record<string, any>
-      ? K | `${K}.${Path<T[K], keyof T[K]>}`
-      : K
-    : never
+  ? T[K] extends Record<string, any>
+  ? K | `${K}.${Path<T[K], keyof T[K]>}`
+  : K
+  : never
 
 /**
  * 路径值类型
  */
 export type PathValue<T, P extends Path<T>> =
   P extends `${infer K}.${infer Rest}`
-    ? K extends keyof T
-      ? Rest extends Path<T[K]>
-        ? PathValue<T[K], Rest>
-        : never
-      : never
-    : P extends keyof T
-    ? T[P]
-    : never
+  ? K extends keyof T
+  ? Rest extends Path<T[K]>
+  ? PathValue<T[K], Rest>
+  : never
+  : never
+  : P extends keyof T
+  ? T[P]
+  : never
 
 /**
  * 类型守卫
@@ -259,7 +259,7 @@ export type ErrorHandler<T = Error> = (error: T) => void | Promise<void>
 /**
  * 成功回调
  */
-export type SuccessCallback<T = any> = (result: T) => void | Promise<void>
+export type SuccessCallback<T = unknown> = (result: T) => void | Promise<void>
 
 /**
  * 失败回调
@@ -293,7 +293,7 @@ export interface CancellablePromise<T> extends Promise<T> {
 export interface Deferred<T> {
   promise: Promise<T>
   resolve: (value: T) => void
-  reject: (reason?: any) => void
+  reject: (reason?: unknown) => void
 }
 
 /**
@@ -322,7 +322,7 @@ export type Option<T> =
  */
 export function createDeferred<T>(): Deferred<T> {
   let resolve: (value: T) => void
-  let reject: (reason?: any) => void
+  let reject: (reason?: unknown) => void
 
   const promise = new Promise<T>((res, rej) => {
     resolve = res
@@ -363,7 +363,7 @@ export function createCancelToken(): CancelToken {
 export function createCancellablePromise<T>(
   executor: (
     resolve: (value: T) => void,
-    reject: (reason?: any) => void,
+    reject: (reason?: unknown) => void,
     token: CancelToken
   ) => void
 ): CancellablePromise<T> {

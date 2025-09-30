@@ -80,7 +80,7 @@ export class ConsoleLogHandler implements LogHandler {
 
   private resetColor = '\x1B[0m'
 
-  constructor(private minLevel: LogLevel = LogLevel.INFO) {}
+  constructor(private minLevel: LogLevel = LogLevel.INFO) { }
 
   shouldHandle(level: LogLevel): boolean {
     return level >= this.minLevel
@@ -124,6 +124,10 @@ export class ConsoleLogHandler implements LogHandler {
     if (entry.level >= LogLevel.ERROR && entry.stack) {
       console.error('Stack trace:', entry.stack)
     }
+  }
+
+  setMinLevel(level: LogLevel): void {
+    this.minLevel = level
   }
 
   private formatContext(context: LogContext): string {
@@ -181,7 +185,7 @@ export class MemoryLogHandler implements LogHandler {
 
       if (filter.module) {
         filteredLogs = filteredLogs.filter(log =>
-          log.context?.module === filter.module
+          log.context?.module === filter.module,
         )
       }
 
@@ -194,7 +198,8 @@ export class MemoryLogHandler implements LogHandler {
       }
     }
 
-    return filteredLogs
+    // 返回反转的数组，最新的日志在前
+    return [...filteredLogs].reverse()
   }
 
   clear(): void {
@@ -203,6 +208,18 @@ export class MemoryLogHandler implements LogHandler {
 
   export(): string {
     return JSON.stringify(this.logs, null, 2)
+  }
+
+  setMinLevel(level: LogLevel): void {
+    this.minLevel = level
+  }
+
+  setMaxSize(size: number): void {
+    this.maxSize = size
+    // 如果当前日志数量超过新的最大值，进行裁剪
+    if (this.logs.length > size) {
+      this.logs.splice(0, this.logs.length - size)
+    }
   }
 }
 
@@ -481,15 +498,28 @@ export class ErrorTracker {
   }
 }
 
+// 增强的日志记录器配置
+export interface EnhancedLoggerConfig {
+  minLevel?: LogLevel
+  context?: LogContext
+  autoAddConsoleHandler?: boolean
+}
+
 // 增强的日志记录器
 export class EnhancedLogger {
   private handlers: LogHandler[] = []
   private context: LogContext = {}
   private errorTracker = new ErrorTracker()
+  private minLevel: LogLevel = LogLevel.INFO
 
-  constructor() {
+  constructor(config: EnhancedLoggerConfig = {}) {
+    this.minLevel = config.minLevel ?? LogLevel.INFO
+    this.context = config.context ?? {}
+
     // 默认添加控制台处理器
-    this.addHandler(new ConsoleLogHandler())
+    if (config.autoAddConsoleHandler !== false) {
+      this.addHandler(new ConsoleLogHandler(this.minLevel))
+    }
   }
 
   addHandler(handler: LogHandler): this {
@@ -507,8 +537,17 @@ export class EnhancedLogger {
     return this
   }
 
+  setMinLevel(level: LogLevel): this {
+    this.minLevel = level
+    return this
+  }
+
+  getMinLevel(): LogLevel {
+    return this.minLevel
+  }
+
   createChild(context: Partial<LogContext>): EnhancedLogger {
-    const child = new EnhancedLogger()
+    const child = new EnhancedLogger({ minLevel: this.minLevel, context: this.context, autoAddConsoleHandler: false })
     child.handlers = [...this.handlers]
     child.context = { ...this.context, ...context }
     child.errorTracker = this.errorTracker

@@ -1,128 +1,106 @@
-import type { LogEntry, Logger, LogLevel } from '../types'
+/**
+ * 简化的日志器实现
+ *
+ * 这是一个兼容层，将简单的日志API映射到功能更强大的 logging-system
+ * 保持向后兼容性，同时提供更强大的日志功能
+ */
 
+import type { LogEntry, Logger, LogLevel } from '../types'
+import {
+  ConsoleLogHandler,
+  EnhancedLogger,
+  LogLevel as SystemLogLevel,
+  MemoryLogHandler,
+} from '../utils/logging-system'
+
+// 日志级别映射
+const LEVEL_MAP: Record<LogLevel, SystemLogLevel> = {
+  debug: SystemLogLevel.DEBUG,
+  info: SystemLogLevel.INFO,
+  warn: SystemLogLevel.WARN,
+  error: SystemLogLevel.ERROR,
+}
+
+// 反向映射
+const REVERSE_LEVEL_MAP: Record<SystemLogLevel, LogLevel> = {
+  [SystemLogLevel.TRACE]: 'debug',
+  [SystemLogLevel.DEBUG]: 'debug',
+  [SystemLogLevel.INFO]: 'info',
+  [SystemLogLevel.WARN]: 'warn',
+  [SystemLogLevel.ERROR]: 'error',
+  [SystemLogLevel.FATAL]: 'error',
+}
+
+/**
+ * 日志器实现
+ *
+ * 使用 EnhancedLogger 作为底层实现，提供简单的API接口
+ */
 export class LoggerImpl implements Logger {
-  private logs: LogEntry[] = []
-  private level: LogLevel = 'info'
+  private enhancedLogger: EnhancedLogger
+  private memoryHandler: MemoryLogHandler
+  private consoleHandler: ConsoleLogHandler
   private maxLogs = 1000
-  private levels: Record<LogLevel, number> = {
-    debug: 0,
-    info: 1,
-    warn: 2,
-    error: 3,
-  }
 
   constructor(level: LogLevel = 'info') {
-    this.level = level
+    // 创建内存处理器用于存储日志
+    this.memoryHandler = new MemoryLogHandler(this.maxLogs, LEVEL_MAP[level])
+
+    // 创建控制台处理器
+    this.consoleHandler = new ConsoleLogHandler(LEVEL_MAP[level])
+
+    // 创建增强日志器
+    this.enhancedLogger = new EnhancedLogger({
+      minLevel: LEVEL_MAP[level],
+      context: { module: 'engine' },
+    })
+
+    // 添加处理器
+    this.enhancedLogger.addHandler(this.consoleHandler)
+    this.enhancedLogger.addHandler(this.memoryHandler)
   }
 
   debug(message: string, data?: unknown): void {
-    this.log('debug', message, data)
+    this.enhancedLogger.log(SystemLogLevel.DEBUG, message, data)
   }
 
   info(message: string, data?: unknown): void {
-    this.log('info', message, data)
+    this.enhancedLogger.log(SystemLogLevel.INFO, message, data)
   }
 
   warn(message: string, data?: unknown): void {
-    this.log('warn', message, data)
+    this.enhancedLogger.log(SystemLogLevel.WARN, message, data)
   }
 
   error(message: string, data?: unknown): void {
-    this.log('error', message, data)
-  }
-
-  private log(level: LogLevel, message: string, data?: unknown): void {
-    // 检查日志级别
-    if (this.levels[level] < this.levels[this.level]) {
-      return
-    }
-
-    const entry: LogEntry = {
-      level,
-      message,
-      timestamp: Date.now(),
-      data,
-    }
-
-    // 添加到日志列表
-    this.addLog(entry)
-
-    // 输出到控制台
-    this.outputToConsole(entry)
-  }
-
-  private addLog(entry: LogEntry): void {
-    this.logs.unshift(entry)
-
-    // 限制日志数量
-    if (this.logs.length > this.maxLogs) {
-      this.logs = this.logs.slice(0, this.maxLogs)
-    }
-  }
-
-  private outputToConsole(entry: LogEntry): void {
-    const timestamp = new Date(entry.timestamp).toISOString()
-    const prefix = `[${timestamp}] [${entry.level.toUpperCase()}]`
-
-    const styles = this.getConsoleStyles(entry.level)
-
-    if (entry.data) {
-      console.groupCollapsed(`%c${prefix} ${entry.message}`, styles.prefix)
-
-      console.log('%cData:', styles.data, entry.data)
-
-      console.groupEnd()
-    } else {
-      console.log(`%c${prefix} ${entry.message}`, styles.prefix)
-    }
-  }
-
-  private getConsoleStyles(level: LogLevel): { prefix: string; data: string } {
-    const baseStyle = 'font-weight: bold; padding: 2px 4px; border-radius: 2px;'
-
-    switch (level) {
-      case 'debug':
-        return {
-          prefix: `${baseStyle} background: #e3f2fd; color: #1976d2;`,
-          data: 'color: #1976d2;',
-        }
-      case 'info':
-        return {
-          prefix: `${baseStyle} background: #e8f5e8; color: #2e7d32;`,
-          data: 'color: #2e7d32;',
-        }
-      case 'warn':
-        return {
-          prefix: `${baseStyle} background: #fff3e0; color: #f57c00;`,
-          data: 'color: #f57c00;',
-        }
-      case 'error':
-        return {
-          prefix: `${baseStyle} background: #ffebee; color: #d32f2f;`,
-          data: 'color: #d32f2f;',
-        }
-      default:
-        return {
-          prefix: baseStyle,
-          data: '',
-        }
-    }
+    this.enhancedLogger.log(SystemLogLevel.ERROR, message, data)
   }
 
   setLevel(level: LogLevel): void {
-    this.level = level
+    const systemLevel = LEVEL_MAP[level]
+    this.enhancedLogger.setMinLevel(systemLevel)
+    this.memoryHandler.setMinLevel(systemLevel)
+    this.consoleHandler.setMinLevel(systemLevel)
   }
 
   getLevel(): LogLevel {
-    return this.level
+    const systemLevel = this.enhancedLogger.getMinLevel()
+    return REVERSE_LEVEL_MAP[systemLevel] || 'info'
   }
 
   getLogs(): LogEntry[] {
-    return [...this.logs]
+    // 从内存处理器获取日志并转换格式
+    const systemLogs = this.memoryHandler.getLogs()
+    return systemLogs.map(log => ({
+      level: REVERSE_LEVEL_MAP[log.level] || 'info',
+      message: log.message,
+      timestamp: log.timestamp,
+      data: log.data,
+    }))
   }
 
   clearLogs(): void {
-    this.logs = []
+    this.memoryHandler.clear()
   }
 
   clear(): void {
@@ -132,9 +110,7 @@ export class LoggerImpl implements Logger {
   // 设置最大日志数量
   setMaxLogs(max: number): void {
     this.maxLogs = max
-    if (this.logs.length > max) {
-      this.logs = this.logs.slice(0, max)
-    }
+    this.memoryHandler.setMaxSize(max)
   }
 
   // 获取最大日志数量
@@ -144,24 +120,27 @@ export class LoggerImpl implements Logger {
 
   // 按级别获取日志
   getLogsByLevel(level: LogLevel): LogEntry[] {
-    return this.logs.filter(log => log.level === level)
+    const logs = this.getLogs()
+    return logs.filter(log => log.level === level)
   }
 
   // 按时间范围获取日志
   getLogsByTimeRange(startTime: number, endTime: number): LogEntry[] {
-    return this.logs.filter(
-      log => log.timestamp >= startTime && log.timestamp <= endTime
+    const logs = this.getLogs()
+    return logs.filter(
+      log => log.timestamp >= startTime && log.timestamp <= endTime,
     )
   }
 
   // 搜索日志
   searchLogs(query: string): LogEntry[] {
     const lowerQuery = query.toLowerCase()
-    return this.logs.filter(
+    const logs = this.getLogs()
+    return logs.filter(
       log =>
-        log.message.toLowerCase().includes(lowerQuery) ||
-        (log.data &&
-          JSON.stringify(log.data).toLowerCase().includes(lowerQuery))
+        log.message.toLowerCase().includes(lowerQuery)
+        || (log.data
+          && JSON.stringify(log.data).toLowerCase().includes(lowerQuery)),
     )
   }
 
@@ -186,7 +165,8 @@ export class LoggerImpl implements Logger {
     let recent24h = 0
     let recentHour = 0
 
-    for (const log of this.logs) {
+    const logs = this.getLogs()
+    for (const log of logs) {
       byLevel[log.level]++
 
       if (now - log.timestamp <= day) {
@@ -199,7 +179,7 @@ export class LoggerImpl implements Logger {
     }
 
     return {
-      total: this.logs.length,
+      total: logs.length,
       byLevel,
       recent24h,
       recentHour,
@@ -208,13 +188,15 @@ export class LoggerImpl implements Logger {
 
   // 导出日志
   exportLogs(format: 'json' | 'csv' | 'txt' = 'json'): string {
+    const logs = this.getLogs()
+
     switch (format) {
       case 'json':
-        return JSON.stringify(this.logs, null, 2)
+        return JSON.stringify(logs, null, 2)
 
       case 'csv': {
         const headers = ['timestamp', 'level', 'message', 'data']
-        const rows = this.logs.map(log => [
+        const rows = logs.map(log => [
           new Date(log.timestamp).toISOString(),
           log.level,
           `"${log.message.replace(/"/g, '""')}"`,
@@ -224,8 +206,8 @@ export class LoggerImpl implements Logger {
       }
 
       case 'txt':
-        return this.logs
-          .map(log => {
+        return logs
+          .map((log) => {
             const timestamp = new Date(log.timestamp).toISOString()
             const dataStr = log.data
               ? ` | Data: ${JSON.stringify(log.data)}`
@@ -255,7 +237,7 @@ class ChildLogger implements Logger {
   constructor(
     private parent: Logger,
     private prefix: string
-  ) {}
+  ) { }
 
   debug(message: string, data?: unknown): void {
     this.parent.debug(`${this.prefix} ${message}`, data)
@@ -335,37 +317,37 @@ export const logTransports = {
   // 控制台传输器
   console:
     (formatter = logFormatters.simple) =>
-    (entry: LogEntry) => {
-      const formatted = formatter(entry)
-      const method =
-        entry.level === 'error'
-          ? 'error'
-          : entry.level === 'warn'
-            ? 'warn'
-            : 'log'
+      (entry: LogEntry) => {
+        const formatted = formatter(entry)
+        const method =
+          entry.level === 'error'
+            ? 'error'
+            : entry.level === 'warn'
+              ? 'warn'
+              : 'log'
 
-      console[method](formatted)
-    },
+        console[method](formatted)
+      },
 
   // 本地存储传输器
   localStorage:
     (key = 'engine-logs', maxEntries = 100) =>
-    (entry: LogEntry) => {
-      try {
-        const stored = localStorage.getItem(key)
-        const logs = stored ? JSON.parse(stored) : []
+      (entry: LogEntry) => {
+        try {
+          const stored = localStorage.getItem(key)
+          const logs = stored ? JSON.parse(stored) : []
 
-        logs.unshift(entry)
+          logs.unshift(entry)
 
-        if (logs.length > maxEntries) {
-          logs.splice(maxEntries)
+          if (logs.length > maxEntries) {
+            logs.splice(maxEntries)
+          }
+
+          localStorage.setItem(key, JSON.stringify(logs))
+        } catch (error) {
+          console.error('Failed to store log in localStorage:', error)
         }
-
-        localStorage.setItem(key, JSON.stringify(logs))
-      } catch (error) {
-        console.error('Failed to store log in localStorage:', error)
-      }
-    },
+      },
 
   // 远程传输器
   remote: (config: {

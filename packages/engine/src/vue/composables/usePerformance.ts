@@ -1,12 +1,12 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useEngine } from './useEngine'
 import {
+  type CoreWebVitalsMetrics,
   globalCoreWebVitalsMonitor,
   globalRealtimePerformanceMonitor,
-  type CoreWebVitalsMetrics,
-  type RealtimePerformanceData,
-  type PerformanceAlert
+  type PerformanceAlert,
+  type RealtimePerformanceData
 } from '../../utils'
+import { useEngine } from './useEngine'
 
 /**
  * 性能监控组合式函数
@@ -116,7 +116,7 @@ export function usePerformance() {
   // 开始性能测量
   const startMeasure = (name: string) => {
     if (typeof (performance as any).startMeasure === 'function') {
-      ;(performance as any).startMeasure(name)
+      ; (performance as any).startMeasure(name)
     } else if (typeof window !== 'undefined' && window.performance && window.performance.mark) {
       window.performance.mark(`${name}-start`)
     }
@@ -125,7 +125,7 @@ export function usePerformance() {
   // 结束性能测量
   const endMeasure = (name: string) => {
     if (typeof (performance as any).endMeasure === 'function') {
-      ;(performance as any).endMeasure(name)
+      ; (performance as any).endMeasure(name)
       updateMetrics()
     } else if (typeof window !== 'undefined' && window.performance && window.performance.mark && window.performance.measure) {
       window.performance.mark(`${name}-end`)
@@ -149,7 +149,7 @@ export function usePerformance() {
   // 清除所有测量
   const clearMeasures = () => {
     if (typeof (performance as any).clearMeasures === 'function') {
-      ;(performance as any).clearMeasures()
+      ; (performance as any).clearMeasures()
     }
     metrics.value = {}
   }
@@ -242,7 +242,7 @@ export function useMemoryManager() {
   const memoryManager = (globalThis as any).GlobalMemoryManager || (engine as any).memory || {
     getOverallStats: () => ({ totalResources: 0, activeTimers: 0, activeListeners: 0 }),
     registerResource: () => 'mock-id',
-    cleanup: () => {},
+    cleanup: () => { },
     setTimeout: (cb: () => void, delay: number) => globalThis.setTimeout(cb, delay),
     addEventListener: () => 'mock-id'
   }
@@ -498,7 +498,7 @@ export function useRealtimePerformance() {
     })
 
     // 监听性能告警
-    globalRealtimePerformanceMonitor.onAlert((alert) => {
+    globalRealtimePerformanceMonitor.onAlert((_alert) => {
       alerts.value = globalRealtimePerformanceMonitor.getActiveAlerts()
     })
 

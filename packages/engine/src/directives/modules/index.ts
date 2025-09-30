@@ -118,7 +118,7 @@ export function getVueDirectives(names: VueDirectiveName[]) {
       acc[name] = vueDirectives[name]
       return acc
     },
-    {} as Record<VueDirectiveName, any>
+    {} as Record<VueDirectiveName, import('vue').Directive>
   )
 }
 
@@ -129,8 +129,8 @@ export interface DirectiveInfo {
   version: string
   category: string
   tags: string[]
-  instance: any
-  vueDirective: any
+  instance: import('../base/directive-base').DirectiveBase
+  vueDirective: import('vue').Directive
 }
 
 // 获取指令信息

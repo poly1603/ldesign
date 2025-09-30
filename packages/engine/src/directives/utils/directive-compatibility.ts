@@ -235,7 +235,7 @@ export const directiveAdapterFactory: DirectiveAdapterFactory = {
 /**
  * 安全的指令调用包装器
  */
-export function safeDirectiveCall<T extends any[]>(
+export function safeDirectiveCall<T extends unknown[]>(
   fn: ((...args: T) => void) | undefined,
   args: T,
   context?: string

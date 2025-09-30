@@ -14,9 +14,9 @@ export interface RequestConfig {
   /** 请求头 */
   headers?: Record<string, string>
   /** 请求体 */
-  body?: any
+  body?: unknown
   /** 查询参数 */
-  params?: Record<string, any>
+  params?: Record<string, unknown>
   /** 超时时间（毫秒） */
   timeout?: number
   /** 是否缓存响应 */
@@ -30,7 +30,7 @@ export interface RequestConfig {
   /** 是否跟踪进度 */
   trackProgress?: boolean
   /** 自定义元数据 */
-  metadata?: any
+  metadata?: Record<string, unknown>
 }
 
 /**
@@ -56,12 +56,12 @@ export interface ResponseData<T = any> {
 /**
  * 拦截器函数类型
  */
-export type InterceptorFn<T = any> = (value: T) => T | Promise<T>
+export type InterceptorFn<T = unknown> = (value: T) => T | Promise<T>
 
 /**
  * 错误拦截器函数类型
  */
-export type ErrorInterceptorFn = (error: any) => any | Promise<any>
+export type ErrorInterceptorFn<T = unknown> = (error: unknown) => T | Promise<T>
 
 /**
  * 进度事件
@@ -85,15 +85,15 @@ export interface ProgressEvent {
 export class RequestInterceptorManager {
   private requestInterceptors: Array<{
     fulfilled: InterceptorFn<RequestConfig>
-    rejected?: ErrorInterceptorFn
+    rejected?: ErrorInterceptorFn<RequestConfig>
   }> = []
 
   private responseInterceptors: Array<{
     fulfilled: InterceptorFn<ResponseData>
-    rejected?: ErrorInterceptorFn
+    rejected?: ErrorInterceptorFn<ResponseData>
   }> = []
 
-  private cache = new Map<string, { data: any; expiry: number }>()
+  private cache = new Map<string, { data: unknown; expiry: number }>()
   private pendingRequests = new Map<string, Promise<ResponseData>>()
 
   /**
@@ -101,7 +101,7 @@ export class RequestInterceptorManager {
    */
   useRequestInterceptor(
     onFulfilled: InterceptorFn<RequestConfig>,
-    onRejected?: ErrorInterceptorFn
+    onRejected?: ErrorInterceptorFn<RequestConfig>
   ): number {
     this.requestInterceptors.push({
       fulfilled: onFulfilled,
@@ -115,7 +115,7 @@ export class RequestInterceptorManager {
    */
   useResponseInterceptor(
     onFulfilled: InterceptorFn<ResponseData>,
-    onRejected?: ErrorInterceptorFn
+    onRejected?: ErrorInterceptorFn<ResponseData>
   ): number {
     this.responseInterceptors.push({
       fulfilled: onFulfilled,
@@ -201,7 +201,7 @@ export class RequestInterceptorManager {
       }
     } catch (error) {
       // 执行错误拦截器
-      throw await this.runErrorInterceptors(error)
+      throw await this.runErrorInterceptors(error as Error)
     }
   }
 
@@ -236,7 +236,7 @@ export class RequestInterceptorManager {
           requestOptions.body = JSON.stringify(body)
           headersObj.set('Content-Type', 'application/json')
         } else {
-          requestOptions.body = body
+          requestOptions.body = body as BodyInit
         }
       }
 
@@ -386,7 +386,7 @@ export class RequestInterceptorManager {
       return null
     }
 
-    return cached.data
+    return cached.data as ResponseData
   }
 
   /**
@@ -448,8 +448,8 @@ export class RequestInterceptorManager {
   /**
    * 执行错误拦截器
    */
-  private async runErrorInterceptors(error: any): Promise<any> {
-    let result = error
+  private async runErrorInterceptors(error: Error): Promise<Error> {
+    let result: unknown = error
 
     for (const interceptor of this.responseInterceptors) {
       if (interceptor.rejected) {
@@ -461,7 +461,7 @@ export class RequestInterceptorManager {
       }
     }
 
-    return result
+    return result as Error
   }
 
   /**

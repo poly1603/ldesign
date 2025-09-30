@@ -4,8 +4,8 @@
  * 提供详细的性能监控、分析和报告功能
  */
 
-import { CoreWebVitalsMonitor, type CoreWebVitalsMetrics } from './core-web-vitals'
-import { RealtimePerformanceMonitor, type RealtimePerformanceData, type PerformanceAlert } from './realtime-performance-monitor'
+import { type CoreWebVitalsMetrics, CoreWebVitalsMonitor } from './core-web-vitals'
+import { type PerformanceAlert, type RealtimePerformanceData, RealtimePerformanceMonitor } from './realtime-performance-monitor'
 
 export interface PerformanceMeasure {
   name: string

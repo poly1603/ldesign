@@ -8,7 +8,18 @@ import type {
   ValidationResult,
 } from '../types'
 import { getNestedValue, isObject, setNestedValue } from '../utils'
+import type { ConfigLoader, ConfigObject } from './loaders'
 
+/**
+ * 配置管理器实现
+ *
+ * 提供完整的配置管理功能，包括：
+ * - 配置加载和保存
+ * - 配置验证
+ * - 配置监听
+ * - 快照和回滚
+ * - 环境检测
+ */
 export class ConfigManagerImpl implements ConfigManager {
   private config: Record<string, unknown> = {}
   private schema?: ConfigSchema
@@ -18,6 +29,8 @@ export class ConfigManagerImpl implements ConfigManager {
   private autoSaveInterval?: NodeJS.Timeout
   private maxSnapshots = 10
   private logger?: Logger
+  private loaders: ConfigLoader[] = []
+  private loadWatchers: Array<() => void> = []
 
   constructor(initialConfig: Record<string, unknown> = {}, logger?: Logger) {
     this.config = { ...initialConfig }
@@ -31,6 +44,64 @@ export class ConfigManagerImpl implements ConfigManager {
       environment: this.environment,
       keys: Object.keys(this.config).length,
     })
+  }
+
+  /**
+   * 添加配置加载器
+   *
+   * @param loader 配置加载器实例
+   * @returns this 支持链式调用
+   */
+  addLoader(loader: ConfigLoader): this {
+    this.loaders.push(loader)
+    return this
+  }
+
+  /**
+   * 从所有加载器加载配置
+   *
+   * 按顺序加载所有配置源，后面的配置会覆盖前面的
+   */
+  async loadFromLoaders(): Promise<void> {
+    for (const loader of this.loaders) {
+      try {
+        const loadedConfig = await loader.load()
+        this.merge(loadedConfig as Record<string, unknown>)
+
+        // 如果加载器支持监听，启用热重载
+        if (loader.watch) {
+          const unwatcher = loader.watch((newConfig: ConfigObject) => {
+            this.merge(newConfig as Record<string, unknown>)
+            this.logger?.info('Configuration hot-reloaded')
+          })
+          if (unwatcher) {
+            this.loadWatchers.push(unwatcher)
+          }
+        }
+      }
+      catch (error) {
+        this.logger?.error('Failed to load config from loader', error)
+      }
+    }
+  }
+
+  /**
+   * 销毁配置管理器
+   *
+   * 清理所有监听器和定时器
+   */
+  destroy(): void {
+    // 清理加载器监听器
+    this.loadWatchers.forEach(unwatch => unwatch())
+    this.loadWatchers = []
+
+    // 清理自动保存定时器
+    if (this.autoSaveInterval) {
+      clearInterval(this.autoSaveInterval)
+      this.autoSaveInterval = undefined
+    }
+
+    this.logger?.info('ConfigManager destroyed')
   }
 
   // 基础操作

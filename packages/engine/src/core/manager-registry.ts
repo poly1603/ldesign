@@ -267,11 +267,13 @@ export function Manager(
   dependencies: string[] = [],
   lazy = false
 ) {
+  // eslint-disable-next-line ts/no-explicit-any
   return function <T extends new (...args: any[]) => object>(constructor: T) {
     const registry = getGlobalManagerRegistry()
     registry.register(name, dependencies, lazy)
 
     return class extends constructor {
+      // eslint-disable-next-line ts/no-explicit-any
       constructor(...args: any[]) {
         super(...args)
         registry.markInitialized(name)

@@ -82,7 +82,7 @@ export interface VueDirectiveHooks {
  */
 export function createVueDirective(directive: DirectiveBase): Directive {
   return {
-    created(el: HTMLElement, binding: DirectiveBinding<any, string, string>) {
+    created(el: HTMLElement, binding: DirectiveBinding<unknown, string, string>) {
       try {
         directive.lifecycle.beforeCreate?.()
 
@@ -105,7 +105,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
 
     beforeMount(
       el: HTMLElement,
-      binding: DirectiveBinding<any, string, string>
+      binding: DirectiveBinding<unknown, string, string>
     ) {
       try {
         const compatibleBinding = createCompatibleBinding(binding)
@@ -116,7 +116,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
       }
     },
 
-    mounted(el: HTMLElement, binding: DirectiveBinding<any, string, string>) {
+    mounted(el: HTMLElement, binding: DirectiveBinding<unknown, string, string>) {
       try {
         const compatibleBinding = createCompatibleBinding(binding)
         safeCallLifecycleMethod(directive.lifecycle.mounted, el, compatibleBinding, 'lifecycle.mounted')
@@ -128,7 +128,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
 
     beforeUpdate(
       el: HTMLElement,
-      binding: DirectiveBinding<any, string, string>
+      binding: DirectiveBinding<unknown, string, string>
     ) {
       try {
         const compatibleBinding = createCompatibleBinding(binding)
@@ -139,7 +139,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
       }
     },
 
-    updated(el: HTMLElement, binding: DirectiveBinding<any, string, string>) {
+    updated(el: HTMLElement, binding: DirectiveBinding<unknown, string, string>) {
       try {
         const compatibleBinding = createCompatibleBinding(binding)
         safeCallLifecycleMethod(directive.lifecycle.updated, el, compatibleBinding, 'lifecycle.updated')
@@ -151,7 +151,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
 
     beforeUnmount(
       el: HTMLElement,
-      binding: DirectiveBinding<any, string, string>
+      binding: DirectiveBinding<unknown, string, string>
     ) {
       try {
         const compatibleBinding = createCompatibleBinding(binding)
@@ -162,7 +162,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
       }
     },
 
-    unmounted(el: HTMLElement, binding: DirectiveBinding<any, string, string>) {
+    unmounted(el: HTMLElement, binding: DirectiveBinding<unknown, string, string>) {
       try {
         const compatibleBinding = createCompatibleBinding(binding)
         safeCallLifecycleMethod(directive.unmounted, el, compatibleBinding, 'unmounted')

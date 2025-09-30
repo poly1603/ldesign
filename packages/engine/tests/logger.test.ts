@@ -19,6 +19,7 @@ describe('logger', () => {
     console.warn = vi.fn()
     console.error = vi.fn()
     console.debug = vi.fn()
+    console.info = vi.fn()
   })
 
   afterEach(() => {
@@ -79,8 +80,11 @@ describe('logger', () => {
       logger.warn('Warning message')
       logger.error('Error message')
 
-      // 实际实现使用 console.log 输出所有级别的日志
-      expect(console.log).toHaveBeenCalled()
+      // 新实现使用不同的 console 方法
+      expect(console.debug).toHaveBeenCalled()
+      expect(console.info).toHaveBeenCalled()
+      expect(console.warn).toHaveBeenCalled()
+      expect(console.error).toHaveBeenCalled()
     })
   })
 
@@ -108,15 +112,29 @@ describe('logger', () => {
     })
 
     it('应该在不同级别下正确过滤控制台输出', () => {
-      logger.setLevel('error')
+      // 创建新的 logger 实例并清除 mock
+      const errorSpy = vi.fn()
+      const debugSpy = vi.fn()
+      const infoSpy = vi.fn()
+      const warnSpy = vi.fn()
 
-      logger.debug('Debug message')
-      logger.info('Info message')
-      logger.warn('Warning message')
-      logger.error('Error message')
+      console.error = errorSpy
+      console.debug = debugSpy
+      console.info = infoSpy
+      console.warn = warnSpy
 
-      // 只有 error 级别的日志应该输出到控制台（使用 console.log）
-      expect(console.log).toHaveBeenCalledTimes(1)
+      const testLogger = createLogger('error')
+
+      testLogger.debug('Debug message')
+      testLogger.info('Info message')
+      testLogger.warn('Warning message')
+      testLogger.error('Error message')
+
+      // 只有 error 级别的日志应该输出到控制台
+      expect(errorSpy).toHaveBeenCalled()
+      expect(debugSpy).not.toHaveBeenCalled()
+      expect(infoSpy).not.toHaveBeenCalled()
+      expect(warnSpy).not.toHaveBeenCalled()
     })
   })
 

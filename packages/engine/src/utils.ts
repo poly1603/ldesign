@@ -1,31 +1,124 @@
 /**
  * @ldesign/engine/utils - 工具模块
- * 
+ *
  * 提供各种工具函数和实用工具
  */
 
+// Bundle优化工具
+export {
+  BundleOptimizer,
+  dynamicImport,
+  globalBundleOptimizer,
+  LazyLoad,
+  preloadCriticalModules
+} from './utils/bundle-optimizer'
+
+// 配置管理
+export {
+  CompositeConfigLoader,
+  EnvironmentConfigLoader,
+  JsonConfigLoader,
+  LocalStorageConfigLoader,
+  MemoryConfigLoader,
+} from './config/loaders'
+export type {
+  ConfigLoader,
+  ConfigObject,
+  ConfigValue,
+} from './config/loaders'
+export {
+  applyConfigDefaults,
+  ConfigValidators,
+  validateConfig,
+  validateConfigType,
+} from './utils/config-validators'
+export type {
+  ConfigChangeEvent,
+  ConfigSchema,
+  ConfigValidator,
+} from './utils/config-validators'
+
+// Core Web Vitals 监控
+export {
+  type CoreWebVitalsMetrics,
+  CoreWebVitalsMonitor,
+  getCoreWebVitals,
+  getCoreWebVitalsScore,
+  globalCoreWebVitalsMonitor,
+  startCoreWebVitalsMonitoring
+} from './utils/core-web-vitals'
+
 // 基础工具函数
 export {
-  deepClone,
+  chunk,
   debounce,
-  throttle,
-  generateId,
-  isEmpty,
+  deepClone,
+  delay,
   formatFileSize,
   formatTime,
-  safeJsonParse,
-  safeJsonStringify,
+  generateId,
   getNestedValue,
-  setNestedValue,
+  groupBy,
+  isEmpty,
   isFunction,
   isObject,
   isPromise,
-  delay,
   retry,
-  unique,
-  groupBy,
-  chunk
+  safeJsonParse,
+  safeJsonStringify,
+  setNestedValue,
+  throttle,
+  unique
 } from './utils/index'
+
+// 日志系统
+export {
+  ConsoleLogHandler,
+  createModuleLogger,
+  EnhancedLogger,
+  ErrorTracker,
+  logger,
+  LogLevel,
+  MemoryLogHandler,
+  RemoteLogHandler
+} from './utils/logging-system'
+
+// 内存管理工具
+export {
+  createManagedPromise,
+  GlobalMemoryManager,
+  ListenerManager,
+  managedLifecycle,
+  MemoryLeakDetector,
+  memoryManager,
+  ReferenceTracker,
+  ResourceManager,
+  TimerManager
+} from './utils/memory-manager'
+
+// 性能分析工具
+export {
+  BatchProcessor,
+  globalPerformanceAnalyzer,
+  measurePerformance,
+  ObjectPool,
+  PerformanceAnalyzer,
+  debounce as performanceDebounce,
+  throttle as performanceThrottle
+} from './utils/performance-analyzer'
+
+// 实时性能监控
+export {
+  getPerformanceAlerts,
+  getRealtimePerformanceData,
+  globalRealtimePerformanceMonitor,
+  type PerformanceAlert,
+  type PerformanceThresholds,
+  type RealtimePerformanceData,
+  RealtimePerformanceMonitor,
+  startRealtimeMonitoring,
+  stopRealtimeMonitoring
+} from './utils/realtime-performance-monitor'
 
 // 类型安全工具
 export {
@@ -34,6 +127,7 @@ export {
   isNumber,
   isString,
   isValidObject,
+  PromiseUtil,
   safeAsync,
   safeDeepClone,
   safeFilter,
@@ -43,84 +137,5 @@ export {
   safeJsonStringify as safeJsonStringifyTyped,
   safeMap,
   safeMerge,
-  TypedConfigWrapper,
-  PromiseUtil
+  TypedConfigWrapper
 } from './utils/type-safety'
-
-// 性能分析工具
-export {
-  PerformanceAnalyzer,
-  measurePerformance,
-  debounce as performanceDebounce,
-  throttle as performanceThrottle,
-  ObjectPool,
-  BatchProcessor,
-  globalPerformanceAnalyzer
-} from './utils/performance-analyzer'
-
-// Core Web Vitals 监控
-export {
-  CoreWebVitalsMonitor,
-  globalCoreWebVitalsMonitor,
-  startCoreWebVitalsMonitoring,
-  getCoreWebVitals,
-  getCoreWebVitalsScore,
-  type CoreWebVitalsMetrics
-} from './utils/core-web-vitals'
-
-// 实时性能监控
-export {
-  RealtimePerformanceMonitor,
-  globalRealtimePerformanceMonitor,
-  startRealtimeMonitoring,
-  stopRealtimeMonitoring,
-  getRealtimePerformanceData,
-  getPerformanceAlerts,
-  type RealtimePerformanceData,
-  type PerformanceAlert,
-  type PerformanceThresholds
-} from './utils/realtime-performance-monitor'
-
-// 内存管理工具
-export {
-  GlobalMemoryManager,
-  memoryManager,
-  TimerManager,
-  ListenerManager,
-  ResourceManager,
-  MemoryLeakDetector,
-  ReferenceTracker,
-  managedLifecycle,
-  createManagedPromise
-} from './utils/memory-manager'
-
-// Bundle优化工具
-export {
-  BundleOptimizer,
-  LazyLoad,
-  dynamicImport,
-  preloadCriticalModules,
-  globalBundleOptimizer
-} from './utils/bundle-optimizer'
-
-// 日志系统
-export {
-  EnhancedLogger,
-  logger,
-  createModuleLogger,
-  LogLevel,
-  ConsoleLogHandler,
-  MemoryLogHandler,
-  RemoteLogHandler,
-  ErrorTracker
-} from './utils/logging-system'
-
-// 配置管理
-export {
-  EnhancedConfigManager,
-  createEnhancedConfigManager,
-  ConfigValidators,
-  JsonConfigLoader,
-  EnvironmentConfigLoader,
-  MemoryConfigLoader
-} from './utils/config-manager'

@@ -53,7 +53,7 @@ export interface DialogInstance {
   maskElement?: HTMLElement
   visible: boolean
   zIndex: number
-  result?: any
+  result?: unknown
   open: () => Promise<void>
   close: (result?: unknown) => Promise<void>
   update: (options: Partial<DialogOptions>) => void
@@ -802,7 +802,7 @@ export class DialogManager extends BaseManager<DialogManagerConfig> {
    */
   private async hideInstance(
     instance: DialogInstance,
-    result?: any
+    result?: unknown
   ): Promise<void> {
     if (!instance.visible) {
       return

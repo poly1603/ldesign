@@ -7,9 +7,9 @@ import type {
   CacheItem,
   CacheOptions,
   CacheStorage,
-  MemoryCacheConfig,
+  IndexedDBCacheConfig,
   LocalStorageCacheConfig,
-  IndexedDBCacheConfig
+  MemoryCacheConfig
 } from '../types/cache'
 
 /**

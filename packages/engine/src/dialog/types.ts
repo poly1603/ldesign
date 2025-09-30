@@ -86,7 +86,7 @@ export interface DialogInstance {
   maskElement?: HTMLElement
   visible: boolean
   zIndex: number
-  result?: any
+  result?: unknown
   open: () => Promise<void>
   close: (result?: unknown) => Promise<void>
   update: (options: Partial<DialogConfig>) => void
@@ -132,9 +132,9 @@ export interface DialogGlobalConfig {
 // Dialog事件类型
 export interface DialogEvents {
   'dialog:open': { instance: DialogInstance }
-  'dialog:close': { instance: DialogInstance; result?: any }
+  'dialog:close': { instance: DialogInstance; result?: unknown }
   'dialog:cancel': { instance: DialogInstance }
-  'dialog:confirm': { instance: DialogInstance; result?: any }
+  'dialog:confirm': { instance: DialogInstance; result?: unknown }
   'dialog:resize': { instance: DialogInstance; size: DialogSize }
   'dialog:move': { instance: DialogInstance; position: DialogPosition }
   'dialog:focus': { instance: DialogInstance }
@@ -273,7 +273,7 @@ export interface DialogLifecycleHooks {
   opened?: (instance: DialogInstance) => void
   beforeClose?: (
     instance: DialogInstance,
-    result?: any
+    result?: unknown
   ) => boolean | Promise<boolean>
   closed?: (instance: DialogInstance, result?: unknown) => void
 }

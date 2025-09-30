@@ -1,7 +1,10 @@
 {
   "name": "@ldesign/engine",
+  "type": "module",
   "version": "0.1.0",
   "description": "A powerful Vue3 application engine with plugin system, middleware support, and global management",
+  "author": "ldesign",
+  "license": "MIT",
   "keywords": [
     "vue3",
     "engine",
@@ -10,9 +13,6 @@
     "framework",
     "typescript"
   ],
-  "author": "ldesign",
-  "license": "MIT",
-  "type": "module",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -178,16 +178,16 @@
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
-  "types": "./es/index.d.ts",
   "unpkg": "./dist/index.min.js",
   "jsdelivr": "./dist/index.min.js",
+  "types": "./es/index.d.ts",
   "files": [
-    "README.md",
     "LICENSE",
-    "package.json",
+    "README.md",
+    "dist",
     "es",
     "lib",
-    "dist"
+    "package.json"
   ],
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs,umd",
@@ -238,6 +238,11 @@
   "peerDependencies": {
     "vue": "^3.5.18"
   },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
     "@rollup/plugin-commonjs": "^25.0.7",
@@ -271,10 +276,5 @@
       "path": "dist/index.js",
       "limit": "50 KB"
     }
-  ],
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  }
+  ]
 }

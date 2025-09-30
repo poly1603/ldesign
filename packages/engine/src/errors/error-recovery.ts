@@ -157,7 +157,7 @@ export class ErrorRecoveryManager {
   async handleError(
     error: Error,
     context?: Partial<ErrorContext>
-  ): Promise<any> {
+  ): Promise<void> {
     const errorContext: ErrorContext = {
       timestamp: Date.now(),
       errorId: this.generateErrorId(),
@@ -174,7 +174,7 @@ export class ErrorRecoveryManager {
       if (result.recovered) {
         report.recovered = true
         report.recoveryStrategy = result.strategy
-        return result.value
+        // 恢复成功，不需要返回值
       }
     }
 

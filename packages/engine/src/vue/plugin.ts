@@ -1,4 +1,4 @@
-import type { App, Plugin, Component, SetupContext, ComponentInternalInstance } from 'vue'
+import type { App, Component, ComponentInternalInstance, Plugin, SetupContext } from 'vue'
 import type { CreateEngineOptions, Engine } from '../types'
 import { createEngine } from '../core/factory'
 
@@ -181,7 +181,7 @@ export function createVueEnginePlugin(options: VueEnginePluginOptions = {}): Plu
 
       // 在开发环境下暴露到全局
       if (exposeGlobal && typeof window !== 'undefined') {
-        ;(window as any).__LDESIGN_ENGINE__ = engine
+        ; (window as any).__LDESIGN_ENGINE__ = engine
       }
 
       // 注册全局组件（如果需要）
@@ -352,7 +352,7 @@ export function engineComponent(options: {
     const {
       performance = false,
       errorBoundary = false,
-      cache = false,
+      cache: _cache = false,
       memoryManagement = false
     } = options
 
