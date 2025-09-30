@@ -49,6 +49,25 @@
           <EnvironmentSelector v-model="selectedEnvironment" />
         </div>
 
+        <!-- 版本管理（仅在打包页面显示） -->
+        <div class="version-card" v-if="actionType === 'build' && packageInfo">
+          <div class="version-header">
+            <Package :size="20" />
+            <div class="version-info">
+              <h3>包信息</h3>
+              <div class="package-name">{{ packageInfo.name }}</div>
+            </div>
+          </div>
+          <div class="version-current">
+            <span class="label">当前版本:</span>
+            <span class="version-badge">v{{ packageInfo.version }}</span>
+            <span v-if="packageInfo.isLibrary" class="library-badge">库项目</span>
+          </div>
+          <div class="version-selector-wrapper">
+            <VersionSelector v-model="selectedVersionBump" :current-version="packageInfo.version" :disabled="running" />
+          </div>
+        </div>
+
         <!-- 状态卡片 -->
         <div class="status-card">
           <div class="status-header">
@@ -177,6 +196,8 @@ import {
   Loader2, CheckCircle, XCircle, AlertCircle, Globe, Copy, ChevronLeft, ChevronRight
 } from 'lucide-vue-next'
 import EnvironmentSelector from '../components/EnvironmentSelector.vue'
+import VersionSelector from '../components/VersionSelector.vue'
+import type { VersionBumpType } from '../components/VersionSelector.vue'
 import { useApi } from '../composables/useApi'
 import { useWebSocket } from '../composables/useWebSocket'
 import { useMessage } from '../composables/useMessage'
@@ -209,6 +230,8 @@ const currentProcessId = ref<string | null>(null)
 const serverUrls = ref<ExtractedUrls>({ local: [], network: [], all: [] })
 const logPanelCollapsed = ref(false)
 const logPanelWidth = ref(60) // 日志面板宽度百分比
+const packageInfo = ref<any>(null) // 包信息
+const selectedVersionBump = ref<VersionBumpType>('none') // 选择的版本升级方式
 let elapsedTimer: number | null = null
 let unsubscribeList: (() => void)[] = []
 
@@ -517,6 +540,32 @@ const startAction = async () => {
     return
   }
 
+  // 如果是打包操作，且选择了版本升级，先升级版本
+  if (actionType.value === 'build' && selectedVersionBump.value !== 'none') {
+    try {
+      addLog(`正在升级版本号 (${selectedVersionBump.value})...`, 'info')
+      const projectId = route.params.id as string
+      const versionResult = await api.post(`/api/projects/${projectId}/update-version`, {
+        bumpType: selectedVersionBump.value
+      })
+
+      if (versionResult.success) {
+        addLog(`✓ 版本已更新: ${versionResult.data.oldVersion} → ${versionResult.data.newVersion}`, 'success')
+        // 重新加载包信息
+        await loadPackageInfo()
+      } else {
+        addLog(`版本更新失败: ${versionResult.message}`, 'error')
+        message.error('版本更新失败，打包已取消')
+        return
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : '版本更新失败'
+      addLog(errorMsg, 'error')
+      message.error('版本更新失败，打包已取消')
+      return
+    }
+  }
+
   running.value = true
   startTime.value = Date.now()
   logs.value = []
@@ -525,6 +574,10 @@ const startAction = async () => {
   addLog(`开始${actionTitle.value}...`, 'info')
   if (showEnvironmentSelector.value) {
     addLog(`环境: ${selectedEnvironment.value}`, 'info')
+  }
+  if (actionType.value === 'build' && packageInfo.value) {
+    addLog(`包名: ${packageInfo.value.name}`, 'info')
+    addLog(`版本: ${packageInfo.value.version}`, 'info')
   }
 
   // 启动计时器
@@ -688,9 +741,28 @@ const loadProject = async () => {
     const response = await api.get(`/api/projects/${projectId}`)
     if (response.success) {
       project.value = response.data
+      // 如果是打包页面，加载包信息
+      if (actionType.value === 'build') {
+        await loadPackageInfo()
+      }
     }
   } catch (error) {
     console.error('加载项目失败:', error)
+  }
+}
+
+/**
+ * 加载包信息
+ */
+const loadPackageInfo = async () => {
+  const projectId = route.params.id as string
+  try {
+    const response = await api.get(`/api/projects/${projectId}/package-info`)
+    if (response.success) {
+      packageInfo.value = response.data
+    }
+  } catch (error) {
+    console.error('加载包信息失败:', error)
   }
 }
 
@@ -887,12 +959,92 @@ onUnmounted(() => {
 .environment-card,
 .status-card,
 .config-card,
-.server-card {
+.server-card,
+.version-card {
   background: var(--ldesign-bg-color-container);
   border: 1px solid var(--ldesign-border-color);
   border-radius: var(--ls-border-radius-lg);
   padding: var(--ls-padding-lg);
   box-shadow: var(--ldesign-shadow-1);
+}
+
+// 版本卡片样式
+.version-card {
+  .version-header {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--ls-spacing-sm);
+    margin-bottom: var(--ls-margin-base);
+    padding-bottom: var(--ls-padding-base);
+    border-bottom: 1px solid var(--ldesign-border-color);
+
+    svg {
+      color: var(--ldesign-brand-color);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .version-info {
+      flex: 1;
+      min-width: 0;
+
+      h3 {
+        margin: 0 0 4px 0;
+        font-size: var(--ls-font-size-base);
+        color: var(--ldesign-text-color-primary);
+        font-weight: 600;
+      }
+
+      .package-name {
+        font-size: var(--ls-font-size-sm);
+        color: var(--ldesign-text-color-secondary);
+        font-family: 'Consolas', 'Monaco', monospace;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .version-current {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-sm);
+    margin-bottom: var(--ls-margin-base);
+
+    .label {
+      font-size: var(--ls-font-size-sm);
+      color: var(--ldesign-text-color-secondary);
+    }
+
+    .version-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      background: linear-gradient(135deg, var(--ldesign-brand-color-light), var(--ldesign-brand-color-focus));
+      border: 1px solid var(--ldesign-brand-color);
+      border-radius: var(--ls-border-radius-md);
+      font-size: var(--ls-font-size-sm);
+      font-weight: 600;
+      color: var(--ldesign-brand-color);
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
+
+    .library-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      background: var(--ldesign-success-bg);
+      border-radius: var(--ls-border-radius-sm);
+      font-size: var(--ls-font-size-xs);
+      color: var(--ldesign-success-color);
+      font-weight: 500;
+    }
+  }
+
+  .version-selector-wrapper {
+    margin-top: var(--ls-margin-base);
+  }
 }
 
 .status-card {

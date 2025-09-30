@@ -14,6 +14,7 @@ import { logger } from '../utils/logger.js'
 import { apiRouter } from './routes/api.js'
 import { fnmRouter } from './routes/fnm.js'
 import { voltaRouter } from './routes/volta.js'
+import { npmSourcesRouter } from './routes/npm-sources.js'
 import { setupWebSocket, connectionManager } from './websocket.js'
 
 // 获取当前文件的目录路径，兼容 ESM 和 CJS
@@ -66,6 +67,7 @@ export async function createServer(options: ServerOptions) {
   app.use('/api', apiRouter)
   app.use('/api/fnm', fnmRouter)
   app.use('/api/volta', voltaRouter)
+  app.use('/api/npm-sources', npmSourcesRouter)
 
   // 静态文件服务
   // 尝试多个可能的路径，优先使用构建后的文件

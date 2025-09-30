@@ -47,6 +47,14 @@ export const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/npm-sources',
+    name: 'NpmSourceManager',
+    component: () => import('../views/NpmSourceManager.vue'),
+    meta: {
+      title: 'NPM 源管理'
+    }
+  },
+  {
     path: '/settings',
     name: 'Settings',
     component: () => import('../views/Settings.vue'),

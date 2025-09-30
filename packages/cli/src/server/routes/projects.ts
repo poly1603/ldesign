@@ -18,6 +18,13 @@ import {
   detectProjectType,
   type Project
 } from '../database/projects.js'
+import {
+  getPackageInfo,
+  updateProjectVersion,
+  isLibraryProject,
+  previewVersionBump,
+  type VersionBumpType
+} from '../services/version-manager.js'
 
 const execAsync = promisify(exec)
 
@@ -528,6 +535,174 @@ projectsRouter.post('/validate', (req, res) => {
     res.status(500).json({
       success: false,
       message: '验证项目路径失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 获取项目包信息（用于打包页面）
+ */
+projectsRouter.get('/:id/package-info', (req, res) => {
+  try {
+    const { id } = req.params
+    const project = getProjectById(id)
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: '项目不存在'
+      })
+    }
+
+    // 获取包信息
+    const packageInfo = getPackageInfo(project.path)
+
+    if (!packageInfo.success) {
+      return res.status(500).json({
+        success: false,
+        message: packageInfo.message || '获取包信息失败'
+      })
+    }
+
+    // 检查是否为库项目
+    const isLibrary = isLibraryProject(project.path)
+
+    res.json({
+      success: true,
+      data: {
+        ...packageInfo.data,
+        isLibrary,
+        projectType: project.type
+      }
+    })
+  } catch (error) {
+    console.error('获取包信息失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '获取包信息失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 更新项目版本号
+ */
+projectsRouter.post('/:id/update-version', (req, res) => {
+  try {
+    const { id } = req.params
+    const { bumpType } = req.body as { bumpType: VersionBumpType }
+
+    if (!bumpType) {
+      return res.status(400).json({
+        success: false,
+        message: '请提供版本升级类型'
+      })
+    }
+
+    // 验证 bumpType
+    const validBumpTypes = ['none', 'patch', 'minor', 'major']
+    if (!validBumpTypes.includes(bumpType)) {
+      return res.status(400).json({
+        success: false,
+        message: `无效的版本升级类型: ${bumpType}`
+      })
+    }
+
+    const project = getProjectById(id)
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: '项目不存在'
+      })
+    }
+
+    // 更新版本号
+    const result = updateProjectVersion(project.path, bumpType)
+
+    if (!result.success) {
+      return res.status(500).json({
+        success: false,
+        message: result.message
+      })
+    }
+
+    res.json({
+      success: true,
+      data: {
+        oldVersion: result.oldVersion,
+        newVersion: result.newVersion,
+        bumpType
+      },
+      message: result.message
+    })
+  } catch (error) {
+    console.error('更新版本号失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '更新版本号失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 预览版本升级（不实际修改）
+ */
+projectsRouter.post('/:id/preview-version', (req, res) => {
+  try {
+    const { id } = req.params
+    const { bumpType } = req.body as { bumpType: VersionBumpType }
+
+    if (!bumpType) {
+      return res.status(400).json({
+        success: false,
+        message: '请提供版本升级类型'
+      })
+    }
+
+    const project = getProjectById(id)
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: '项目不存在'
+      })
+    }
+
+    // 获取当前版本
+    const packageInfo = getPackageInfo(project.path)
+
+    if (!packageInfo.success || !packageInfo.data) {
+      return res.status(500).json({
+        success: false,
+        message: '无法读取包信息'
+      })
+    }
+
+    const currentVersion = packageInfo.data.version
+
+    // 预览版本升级
+    const preview = previewVersionBump(currentVersion, bumpType)
+
+    if (!preview) {
+      return res.status(500).json({
+        success: false,
+        message: '预览版本升级失败'
+      })
+    }
+
+    res.json({
+      success: true,
+      data: preview
+    })
+  } catch (error) {
+    console.error('预览版本升级失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '预览版本升级失败',
       error: error instanceof Error ? error.message : String(error)
     })
   }
