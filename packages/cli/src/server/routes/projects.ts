@@ -25,6 +25,7 @@ import {
   previewVersionBump,
   type VersionBumpType
 } from '../services/version-manager.js'
+import { analyzeBuild, getBuildSummary, formatSize } from '../services/build-analyzer.js'
 
 const execAsync = promisify(exec)
 
@@ -703,6 +704,70 @@ projectsRouter.post('/:id/preview-version', (req, res) => {
     res.status(500).json({
       success: false,
       message: '预览版本升级失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 获取产物分析
+ */
+projectsRouter.get('/:id/build-analysis', (req, res) => {
+  try {
+    const { id } = req.params
+    const project = getProjectById(id)
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: '项目不存在'
+      })
+    }
+
+    // 分析产物
+    const analysis = analyzeBuild(project.path)
+
+    res.json({
+      success: true,
+      data: analysis
+    })
+  } catch (error) {
+    console.error('分析产物失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '分析产物失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 获取产物摘要（轻量级）
+ */
+projectsRouter.get('/:id/build-summary', (req, res) => {
+  try {
+    const { id } = req.params
+    const project = getProjectById(id)
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: '项目不存在'
+      })
+    }
+
+    // 获取产物摘要
+    const summary = getBuildSummary(project.path)
+
+    res.json({
+      success: true,
+      data: summary
+    })
+  } catch (error) {
+    console.error('获取产物摘要失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '获取产物摘要失败',
       error: error instanceof Error ? error.message : String(error)
     })
   }

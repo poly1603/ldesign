@@ -29,6 +29,28 @@
           <span>产物构建</span>
         </button>
 
+        <!-- 发布到npm按钮（打包完成且产物存在时显示） -->
+        <button
+          v-if="actionType === 'build' && !running && buildSummary?.exists"
+          @click="openPublish"
+          class="btn-publish"
+          title="发布到npm"
+        >
+          <Upload :size="18" />
+          <span>发布到npm</span>
+        </button>
+
+        <!-- 产物分析按钮（打包完成且产物存在时显示） -->
+        <button
+          v-if="actionType === 'build' && !running && buildSummary?.exists"
+          @click="openBuildAnalysis"
+          class="btn-info"
+          title="产物分析"
+        >
+          <BarChart :size="18" />
+          <span>产物分析</span>
+        </button>
+
         <button v-if="!running" @click="startAction" :disabled="running" class="btn-primary">
           <Play :size="18" />
           <span>开始{{ actionTitle }}</span>
@@ -80,6 +102,54 @@
           <div v-if="running || elapsedTime !== '00:00:00'" class="status-footer">
             <Clock :size="16" />
             <span class="elapsed-time">{{ elapsedTime }}</span>
+          </div>
+          <!-- 构建完成时间信息 -->
+          <div v-if="actionType === 'build' && !running && buildEndTime" class="build-time-info">
+            <div class="build-time-item">
+              <span class="build-time-label">完成时间:</span>
+              <span class="build-time-value">{{ buildEndTime }}</span>
+            </div>
+            <div class="build-time-item">
+              <span class="build-time-label">耗时:</span>
+              <span class="build-time-value">{{ buildDuration }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 产物摘要卡片（仅在打包页面且产物存在时显示） -->
+        <div class="build-summary-card" v-if="actionType === 'build' && buildSummary?.exists">
+          <div class="card-header">
+            <BarChart :size="20" />
+            <h3>产物信息</h3>
+          </div>
+          <div class="build-summary-content">
+            <div class="summary-item">
+              <span class="label">上次打包:</span>
+              <span class="value">{{ formatBuildTime(buildSummary.lastBuildTime) }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">产物目录:</span>
+              <div class="value">
+                <div v-if="buildSummary.distDirectories && buildSummary.distDirectories.length > 0" class="dist-directories">
+                  <span v-for="(dir, index) in buildSummary.distDirectories" :key="index" class="directory-badge">
+                    {{ dir }}
+                  </span>
+                </div>
+                <span v-else class="directory">{{ buildSummary.distPath }}</span>
+              </div>
+            </div>
+            <div class="summary-item">
+              <span class="label">文件数量:</span>
+              <span class="value">{{ buildSummary.totalFiles }} 个</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">总大小:</span>
+              <span class="value size">{{ formatSize(buildSummary.totalSize) }}</span>
+            </div>
+            <div v-if="buildSummary.largestFile" class="summary-item">
+              <span class="label">最大文件:</span>
+              <span class="value file">{{ buildSummary.largestFile.name }} ({{ formatSize(buildSummary.largestFile.size) }})</span>
+            </div>
           </div>
         </div>
 
@@ -193,7 +263,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft, Play, Square, Clock, Terminal, Trash2, Download, FileText, Settings,
   Code, Package, Eye, Upload, Rocket, TestTube,
-  Loader2, CheckCircle, XCircle, AlertCircle, Globe, Copy, ChevronLeft, ChevronRight
+  Loader2, CheckCircle, XCircle, AlertCircle, Globe, Copy, ChevronLeft, ChevronRight, BarChart
 } from 'lucide-vue-next'
 import EnvironmentSelector from '../components/EnvironmentSelector.vue'
 import VersionSelector from '../components/VersionSelector.vue'
@@ -232,6 +302,9 @@ const logPanelCollapsed = ref(false)
 const logPanelWidth = ref(60) // 日志面板宽度百分比
 const packageInfo = ref<any>(null) // 包信息
 const selectedVersionBump = ref<VersionBumpType>('none') // 选择的版本升级方式
+const buildSummary = ref<any>(null) // 产物摘要
+const buildEndTime = ref<string>('') // 构建完成时间
+const buildDuration = ref<string>('') // 构建耗时
 let elapsedTimer: number | null = null
 let unsubscribeList: (() => void)[] = []
 
@@ -507,7 +580,27 @@ const subscribeToProcess = () => {
         elapsedTimer = null
       }
       addLog(`进程已退出 (退出码: ${data.code})`, data.code === 0 ? 'success' : 'error')
+      
+      // 如果退出码为0，显示成功消息
+      if (data.code === 0) {
+        message.success('执行成功')
+        
+        // 记录构建完成时间和耗时
+        if (actionType.value === 'build') {
+          const now = new Date()
+          buildEndTime.value = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
+          buildDuration.value = elapsedTime.value
+        }
+      }
+      
       saveState()
+      
+      // 如果是打包操作且成功，加载产物摘要
+      if (actionType.value === 'build' && data.code === 0) {
+        setTimeout(() => {
+          loadBuildSummary()
+        }, 500) // 等待文件写入完成
+      }
     }
   })
 
@@ -719,6 +812,10 @@ const stopAction = async () => {
       currentProcessId.value = null
       serverUrls.value = { local: [], network: [], all: [] }
       saveState()
+      // 重新加载产物摘要
+      if (actionType.value === 'build') {
+        await loadBuildSummary()
+      }
     } else {
       addLog(response.message || '停止进程失败', 'error')
       message.error(response.message || '停止进程失败')
@@ -741,9 +838,10 @@ const loadProject = async () => {
     const response = await api.get(`/api/projects/${projectId}`)
     if (response.success) {
       project.value = response.data
-      // 如果是打包页面，加载包信息
+      // 如果是打包页面，加载包信息和产物摘要
       if (actionType.value === 'build') {
         await loadPackageInfo()
+        await loadBuildSummary()
       }
     }
   } catch (error) {
@@ -764,6 +862,83 @@ const loadPackageInfo = async () => {
   } catch (error) {
     console.error('加载包信息失败:', error)
   }
+}
+
+/**
+ * 加载产物摘要
+ */
+const loadBuildSummary = async () => {
+  const projectId = route.params.id as string
+  try {
+    const response = await api.get(`/api/projects/${projectId}/build-summary`)
+    if (response.success) {
+      buildSummary.value = response.data
+    }
+  } catch (error) {
+    console.error('加载产物摘要失败:', error)
+  }
+}
+
+/**
+ * 打开产物分析页面
+ */
+const openBuildAnalysis = () => {
+  const projectId = route.params.id as string
+  // 使用路由导航到产物分析页面
+  router.push(`/projects/${projectId}/build-analysis`)
+}
+
+/**
+ * 打开发布页面
+ */
+const openPublish = () => {
+  const projectId = route.params.id as string
+  // 使用路由导航到发布页面
+  router.push(`/projects/${projectId}/publish`)
+}
+
+/**
+ * 格式化构建时间
+ */
+const formatBuildTime = (timestamp: number) => {
+  if (!timestamp) return '未知'
+  
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  
+  // 如果是今天，只显示时间
+  if (date.toDateString() === now.toDateString()) {
+    return `今天 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+  }
+  
+  // 如果是昨天
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (date.toDateString() === yesterday.toDateString()) {
+    return `昨天 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+  }
+  
+  // 其他，显示完整日期
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
+  
+  return `${month}-${day} ${hours}:${minutes}`
+}
+
+/**
+ * 格式化文件大小
+ */
+const formatSize = (bytes: number) => {
+  if (bytes === 0) return '0 B'
+  
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  
+  return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`
 }
 
 // 监听环境变化，更新 URL 并重新加载状态
@@ -792,6 +967,8 @@ watch(selectedEnvironment, (newEnv, oldEnv) => {
   currentProcessId.value = null
   startTime.value = 0
   elapsedTime.value = '00:00:00'
+  buildEndTime.value = ''
+  buildDuration.value = ''
 
   if (elapsedTimer) {
     clearInterval(elapsedTimer)
@@ -1047,11 +1224,34 @@ onUnmounted(() => {
   }
 }
 
+.status-card,
+.build-summary-card {
+  .status-header,
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-sm);
+    margin-bottom: var(--ls-margin-base);
+
+    svg {
+      color: var(--ldesign-brand-color);
+    }
+
+    h3 {
+      margin: 0;
+      font-size: var(--ls-font-size-base);
+      color: var(--ldesign-text-color-primary);
+      font-weight: 600;
+    }
+  }
+}
+
 .status-card {
   .status-header {
     display: flex;
     align-items: flex-start;
     gap: var(--ls-spacing-base);
+    margin-bottom: 0;
 
     .status-icon {
       flex-shrink: 0;
@@ -1111,6 +1311,121 @@ onUnmounted(() => {
       font-size: var(--ls-font-size-base);
       color: var(--ldesign-text-color-primary);
       font-weight: 600;
+    }
+  }
+
+  .build-time-info {
+    margin-top: var(--ls-margin-sm);
+    padding: var(--ls-padding-sm);
+    background: var(--ldesign-bg-color-component);
+    border-radius: var(--ls-border-radius-sm);
+    border: 1px solid var(--ldesign-border-level-1-color);
+
+    .build-time-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--ls-padding-xs) 0;
+
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--ldesign-border-color);
+      }
+
+      .build-time-label {
+        font-size: var(--ls-font-size-sm);
+        color: var(--ldesign-text-color-secondary);
+        font-weight: 500;
+      }
+
+      .build-time-value {
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: var(--ls-font-size-sm);
+        color: var(--ldesign-text-color-primary);
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+.build-summary-card {
+  .build-summary-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ls-spacing-sm);
+
+    .summary-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--ls-spacing-xs);
+      padding: var(--ls-padding-xs) 0;
+
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--ldesign-border-level-1-color);
+      }
+
+      .label {
+        min-width: 70px;
+        font-size: var(--ls-font-size-sm);
+        color: var(--ldesign-text-color-secondary);
+        font-weight: 500;
+        flex-shrink: 0;
+      }
+
+      .value {
+        flex: 1;
+        font-size: var(--ls-font-size-sm);
+        color: var(--ldesign-text-color-primary);
+        word-break: break-word;
+
+        &.directory {
+          font-family: 'Consolas', 'Monaco', monospace;
+          font-size: var(--ls-font-size-xs);
+          color: var(--ldesign-brand-color);
+        }
+
+        &.size {
+          font-family: 'Consolas', 'Monaco', monospace;
+          font-weight: 600;
+          color: var(--ldesign-success-color);
+        }
+
+        &.file {
+          font-family: 'Consolas', 'Monaco', monospace;
+          font-size: var(--ls-font-size-xs);
+          color: var(--ldesign-text-color-secondary);
+        }
+
+        .dist-directories {
+          display: flex;
+          flex-wrap: wrap;
+          gap: var(--ls-spacing-xs);
+
+          .directory-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            background: linear-gradient(135deg, var(--ldesign-brand-color-focus), var(--ldesign-brand-color-light));
+            border: 1px solid var(--ldesign-brand-color);
+            border-radius: var(--ls-border-radius-sm);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: var(--ls-font-size-xs);
+            font-weight: 600;
+            color: var(--ldesign-brand-color);
+            transition: all 0.2s ease;
+
+            &:hover {
+              transform: translateY(-1px);
+              box-shadow: 0 2px 8px rgba(var(--ldesign-brand-color-rgb), 0.2);
+            }
+          }
+        }
+
+        .directory {
+          font-family: 'Consolas', 'Monaco', monospace;
+          font-size: var(--ls-font-size-xs);
+          color: var(--ldesign-brand-color);
+        }
+      }
     }
   }
 }
@@ -1422,6 +1737,8 @@ onUnmounted(() => {
 /* 按钮样式 */
 .btn-primary,
 .btn-secondary,
+.btn-info,
+.btn-publish,
 .btn-back,
 .btn-danger {
   display: inline-flex;
@@ -1449,6 +1766,47 @@ onUnmounted(() => {
     background: var(--ldesign-brand-color-hover);
     transform: translateY(-1px);
     box-shadow: var(--ldesign-shadow-2);
+  }
+}
+
+.btn-secondary {
+  background: var(--ldesign-bg-color-container);
+  color: var(--ldesign-text-color-primary);
+  border-color: var(--ldesign-border-color);
+
+  &:hover:not(:disabled) {
+    background: var(--ldesign-bg-color-container-hover);
+    border-color: var(--ldesign-brand-color);
+    transform: translateY(-1px);
+    box-shadow: var(--ldesign-shadow-2);
+  }
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  color: #1565c0;
+  border-color: #90caf9;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #bbdefb, #90caf9);
+    color: #0d47a1;
+    border-color: #42a5f5;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+  }
+}
+
+.btn-publish {
+  background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+  color: #7b1fa2;
+  border-color: #ce93d8;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #e1bee7, #ce93d8);
+    color: #4a148c;
+    border-color: #ba68c8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
   }
 }
 

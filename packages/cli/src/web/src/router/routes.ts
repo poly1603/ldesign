@@ -31,6 +31,22 @@ export const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/projects/:id/build-analysis',
+    name: 'BuildAnalysis',
+    component: () => import('../views/BuildAnalysis.vue'),
+    meta: {
+      title: '产物分析'
+    }
+  },
+  {
+    path: '/projects/:id/publish',
+    name: 'ProjectPublish',
+    component: () => import('../views/ProjectPublish.vue'),
+    meta: {
+      title: '发布'
+    }
+  },
+  {
     path: '/projects/:id/:action',
     name: 'ProjectAction',
     component: () => import('../views/ProjectAction.vue'),
