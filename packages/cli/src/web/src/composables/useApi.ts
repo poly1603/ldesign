@@ -22,6 +22,7 @@ export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
   headers?: Record<string, string>
   body?: any
+  params?: Record<string, any> // 添加 URL 查询参数支持
   timeout?: number
 }
 
@@ -74,7 +75,20 @@ async function request<T = any>(
   options: RequestOptions = {}
 ): Promise<ApiResponse<T>> {
   const mergedOptions = { ...defaultOptions, ...options }
-  const fullUrl = url.startsWith('http') ? url : `${getBaseUrl()}${url}`
+  
+  // 处理 URL 查询参数
+  let fullUrl = url.startsWith('http') ? url : `${getBaseUrl()}${url}`
+  if (mergedOptions.params && Object.keys(mergedOptions.params).length > 0) {
+    const queryString = new URLSearchParams(
+      Object.entries(mergedOptions.params)
+        .filter(([_, value]) => value !== undefined && value !== null)
+        .map(([key, value]) => [key, String(value)])
+    ).toString()
+    
+    if (queryString) {
+      fullUrl += (fullUrl.includes('?') ? '&' : '?') + queryString
+    }
+  }
 
   try {
     const controller = new AbortController()

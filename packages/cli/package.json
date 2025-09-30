@@ -24,7 +24,8 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "dev": "concurrently --raw \"pnpm:dev:web\" \"pnpm:dev:server\"",
+    "dev": "node scripts/dev-universal.js",
+    "dev:legacy": "concurrently --kill-others --kill-others-on-fail --raw -n web,server -c bgBlue.bold,bgMagenta.bold \"pnpm:dev:web\" \"pnpm:dev:server\"",
     "dev:web": "cd src/web && pnpm dev",
     "dev:server": "tsx watch --clear-screen=false src/server/dev.ts",
     "build": "pnpm run clean && pnpm run build:web && pnpm run build:cli && pnpm run copy:web",

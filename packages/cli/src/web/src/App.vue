@@ -4,8 +4,10 @@
     <aside class="sidebar" :class="{ collapsed: sidebarCollapsed }">
       <div class="sidebar-header">
         <div class="logo">
-          <span class="logo-icon">L</span>
-          <span v-show="!sidebarCollapsed" class="logo-text">Design</span>
+          <span class="logo-icon">
+            <img src="/logo.svg" alt="">
+          </span>
+          <span v-show="!sidebarCollapsed" class="logo-text">LDesign UI</span>
         </div>
         <button class="collapse-btn" @click="toggleSidebar" :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'">
           <ChevronRight v-if="sidebarCollapsed" :size="16" />
@@ -205,9 +207,7 @@ onMounted(() => {
 .logo-icon {
   width: 32px;
   height: 32px;
-  background: var(--ldesign-brand-color);
   color: white;
-  border-radius: var(--ls-border-radius-base);
   display: flex;
   align-items: center;
   justify-content: center;

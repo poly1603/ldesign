@@ -135,14 +135,47 @@ async function main() {
       console.log('\n🛑 正在停止所有服务...')
       processes.forEach(proc => {
         if (proc && !proc.killed) {
-          proc.kill('SIGTERM')
+          try {
+            if (process.platform === 'win32') {
+              // Windows 下使用 taskkill 强制终止进程树
+              spawn('taskkill', ['/pid', proc.pid.toString(), '/f', '/t'], { shell: true })
+            } else {
+              // Unix/Linux 下发送 SIGTERM
+              proc.kill('SIGTERM')
+            }
+          } catch (error) {
+            console.error(`停止进程失败 (PID: ${proc.pid}):`, error.message)
+          }
         }
       })
-      process.exit(0)
+      
+      // 等待进程终止
+      setTimeout(() => {
+        console.log('✅ 所有服务已停止')
+        process.exit(0)
+      }, 1000)
     }
 
+    // 处理各种终止信号
     process.on('SIGINT', cleanup)
     process.on('SIGTERM', cleanup)
+    process.on('SIGQUIT', cleanup)
+    
+    // Windows 特殊处理
+    if (process.platform === 'win32') {
+      process.on('SIGBREAK', cleanup)
+      
+      // 启用原始模式以正确捕获 Ctrl+C
+      if (process.stdin.isTTY) {
+        process.stdin.setRawMode(true)
+        process.stdin.on('data', (data) => {
+          // Ctrl+C 的字节码是 3
+          if (data[0] === 3) {
+            cleanup()
+          }
+        })
+      }
+    }
 
     // 等待所有进程结束
     await Promise.all(

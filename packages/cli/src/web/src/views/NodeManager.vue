@@ -138,25 +138,251 @@
           <CircleIcon :size="20" />
           <span>安装自定义版本</span>
         </h2>
-        <div class="install-form">
-          <div class="input-group">
-            <input v-model="newVersionInput" type="text" placeholder="输入版本号，如: 18.17.0 或 lts" class="version-input" />
-            <button class="install-version-btn" @click="installVersion()"
-              :disabled="!newVersionInput.trim() || installing">
-              <Loader2 v-if="installing" :size="16" class="spinner" />
-              <Download v-else :size="16" />
-              <span v-if="installing">安装中...</span>
-              <span v-else>安装</span>
+        
+        <!-- 搜索栏 -->
+        <div class="search-bar">
+          <div class="search-input-group">
+            <input 
+              v-model="searchQuery" 
+              type="text" 
+              placeholder="搜索版本号，如: 18, 20.11, lts..." 
+              class="version-search-input"
+              @input="handleSearch"
+            />
+            <button v-if="searchQuery" @click="clearSearch" class="clear-search-btn">
+              <XCircle :size="14" />
             </button>
           </div>
-          <div class="install-tips">
-            <p>💡 提示：</p>
-            <ul>
-              <li>可以输入具体版本号，如: <code>18.17.0</code></li>
-              <li>可以使用别名，如: <code>lts</code>, <code>latest</code></li>
-              <li>安装完成后会自动切换到新版本</li>
-            </ul>
+          
+          <!-- 筛选按钮 -->
+          <div class="filter-buttons">
+            <button 
+              :class="['filter-btn', { active: !showOnlyLTS }]"
+              @click="toggleFilter(false)"
+            >
+              全部版本
+            </button>
+            <button 
+              :class="['filter-btn', { active: showOnlyLTS }]"
+              @click="toggleFilter(true)"
+            >
+              <Star :size="14" />
+              仅 LTS
+            </button>
+            <button 
+              class="sync-versions-btn"
+              @click="syncVersions"
+              :disabled="syncing"
+              :title="syncing ? '同步中...' : '同步最新版本列表'"
+            >
+              <RefreshCw :size="14" :class="{ spinning: syncing }" />
+              <span>同步</span>
+            </button>
           </div>
+        </div>
+        
+        <!-- 版本列表 -->
+        <div class="available-versions-list">
+          <!-- 加载状态 -->
+          <div v-if="loadingAvailable" class="loading-state">
+            <Loader2 :size="24" class="spinner" />
+            <span>加载中...</span>
+          </div>
+          
+          <!-- 空状态 -->
+          <div v-else-if="availableVersions.length === 0 && !searchQuery" class="empty-state">
+            <p>🔍 请在搜索框输入版本号（如 18, 20, lts）来查找 Node.js 版本</p>
+            <p style="font-size: 12px; color: var(--ldesign-text-color-secondary); margin-top: 8px;">或点击“同步”按钮获取所有可用版本</p>
+          </div>
+          
+          <div v-else-if="paginatedVersions.length === 0" class="empty-state">
+            <p>未找到匹配的版本</p>
+          </div>
+          
+          <!-- 版本表格 -->
+          <div v-else class="versions-table">
+            <div class="table-header">
+              <div class="col-version">版本</div>
+              <div class="col-type">类型</div>
+              <div class="col-release">发布信息</div>
+              <div class="col-engines">引擎版本</div>
+              <div class="col-features">特性</div>
+              <div class="col-status">状态</div>
+              <div class="col-action">操作</div>
+            </div>
+            
+            <div class="table-body">
+              <div 
+                v-for="item in paginatedVersions" 
+                :key="item.version" 
+                class="table-row"
+                :class="{ 
+                  installed: isVersionInstalled(item.version),
+                  current: item.version === nodeVersions.current 
+                }"
+              >
+                <!-- 版本号 -->
+                <div class="col-version">
+                  <div class="version-main">
+                    <code class="version-number">{{ item.version }}</code>
+                    <span v-if="item.majorVersion" class="major-version">v{{ item.majorVersion }}</span>
+                  </div>
+                </div>
+                
+                <!-- 类型 -->
+                <div class="col-type">
+                  <span v-if="item.lts" class="badge badge-lts">
+                    <Star :size="10" />
+                    LTS
+                  </span>
+                  <span v-else-if="item.status === 'Current'" class="badge badge-current">
+                    Current
+                  </span>
+                  <span v-else class="badge badge-maintenance">
+                    Maintenance
+                  </span>
+                  <div v-if="item.lts" class="lts-name">{{ item.lts }}</div>
+                  <div v-if="item.maintenanceStatus" class="maintenance-status" :class="`status-${item.maintenanceStatus.toLowerCase()}`">
+                    {{ item.maintenanceStatus }}
+                  </div>
+                </div>
+                
+                <!-- 发布信息 -->
+                <div class="col-release">
+                  <div v-if="item.releaseDate" class="release-date">
+                    📅 {{ formatDate(item.releaseDate) }}
+                  </div>
+                  <div v-if="item.releaseDate" class="release-relative">
+                    {{ getRelativeTime(item.releaseDate) }}
+                  </div>
+                  <div v-else class="release-unknown">
+                    -
+                  </div>
+                </div>
+                
+                <!-- 引擎版本 -->
+                <div class="col-engines">
+                  <div v-if="item.npm" class="engine-item">
+                    <span class="engine-label">npm</span>
+                    <span class="engine-version">{{ item.npm }}</span>
+                  </div>
+                  <div v-if="item.v8" class="engine-item">
+                    <span class="engine-label">V8</span>
+                    <span class="engine-version">{{ item.v8 }}</span>
+                  </div>
+                  <div v-if="!item.npm && !item.v8" class="engine-unknown">
+                    -
+                  </div>
+                </div>
+                
+                <!-- 特性 -->
+                <div class="col-features">
+                  <div class="features-list">
+                    <span v-if="item.features?.fetch" class="feature-tag" title="Fetch API 支持">
+                      Fetch
+                    </span>
+                    <span v-if="item.features?.esm" class="feature-tag" title="ES Modules 支持">
+                      ESM
+                    </span>
+                    <span v-if="item.features?.corepack" class="feature-tag" title="Corepack 支持">
+                      Corepack
+                    </span>
+                    <span v-if="item.features?.testRunner" class="feature-tag" title="原生测试运行器">
+                      Test
+                    </span>
+                    <span v-if="item.features?.webStreams" class="feature-tag" title="Web Streams 支持">
+                      Streams
+                    </span>
+                    <span v-if="item.features?.watchMode" class="feature-tag" title="Watch 模式支持">
+                      Watch
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- 安装状态 -->
+                <div class="col-status">
+                  <span v-if="item.version === nodeVersions.current" class="status-current">
+                    <CheckCircle :size="14" />
+                    当前版本
+                  </span>
+                  <span v-else-if="isVersionInstalled(item.version)" class="status-installed">
+                    <CheckCircle :size="14" />
+                    已安装
+                  </span>
+                  <span v-else class="status-available">
+                    未安装
+                  </span>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="col-action">
+                  <template v-if="isVersionInstalling(item.version)">
+                    <button class="action-btn installing" disabled>
+                      <Loader2 :size="14" class="spinner" />
+                      安装中 {{ getVersionProgress(item.version)?.progress }}%
+                    </button>
+                  </template>
+                  <template v-else-if="item.version === nodeVersions.current">
+                    <span class="current-label">使用中</span>
+                  </template>
+                  <template v-else-if="isVersionInstalled(item.version)">
+                    <button 
+                      class="action-btn switch" 
+                      @click="switchVersion(item.version)"
+                      :disabled="switching"
+                    >
+                      <RefreshCw :size="14" />
+                      切换
+                    </button>
+                  </template>
+                  <template v-else>
+                    <button 
+                      class="action-btn install" 
+                      @click="installVersion(item.version)"
+                      :disabled="installing"
+                    >
+                      <Download :size="14" />
+                      安装
+                    </button>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 分页 -->
+          <div v-if="totalPages > 1" class="pagination">
+            <button 
+              class="page-btn" 
+              :disabled="currentPage === 1"
+              @click="prevPage"
+            >
+              上一页
+            </button>
+            
+            <span class="page-info">
+              第 {{ currentPage }} / {{ totalPages }} 页
+              （共 {{ totalVersions }} 个版本）
+            </span>
+            
+            <button 
+              class="page-btn" 
+              :disabled="currentPage === totalPages"
+              @click="nextPage"
+            >
+              下一页
+            </button>
+          </div>
+        </div>
+        
+        <!-- 提示 -->
+        <div class="install-tips">
+          <p>💡 提示：</p>
+          <ul>
+            <li>LTS 版本适合生产环境，更稳定</li>
+            <li>Current 版本包含最新特性</li>
+            <li>可以搜索主版本号（如 18）或精确版本（如 20.11.0）</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -244,18 +470,21 @@ const nodeVersions = ref({
 const systemNodeVersion = ref<string | null>(null)
 
 // 可用版本列表
-const availableVersions = ref<any[]>([])
+const availableVersions = ref<Array<{ version: string; lts: string | null }>>([])
+const loadingAvailable = ref(false)
+const syncing = ref(false) // 同步状态
+const searchQuery = ref('')
+const showOnlyLTS = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(20)
+const totalVersions = ref(0)
+const totalPages = ref(0)
 
 // 推荐版本列表
 const recommendedVersions = ref<any[]>([])
 
-// 过滤版本列表
-const filteredVersions = computed(() => {
-  if (versionFilter.value === 'lts') {
-    return availableVersions.value.filter(v => v.lts)
-  } else if (versionFilter.value === 'latest') {
-    return availableVersions.value.filter(v => v.latest)
-  }
+// 分页后的版本列表（后端已分页，直接使用）
+const paginatedVersions = computed(() => {
   return availableVersions.value
 })
 
@@ -333,10 +562,136 @@ const getNodeVersions = async () => {
   }
 }
 
-// 获取可用版本列表（fnm 不需要预加载可用版本列表）
-const getAvailableVersions = async () => {
-  // fnm 支持直接安装任意版本，不需要预加载列表
-  availableVersions.value = []
+// 获取可用版本列表
+const fetchAvailableVersions = async (resetPage: boolean = true) => {
+  loadingAvailable.value = true
+  try {
+    const params: any = {
+      page: currentPage.value,
+      pageSize: pageSize.value
+    }
+    
+    // 添加调试日志
+    console.log('[fetchAvailableVersions] searchQuery.value:', searchQuery.value)
+    console.log('[fetchAvailableVersions] searchQuery.value.trim():', searchQuery.value.trim())
+    
+    if (searchQuery.value.trim()) {
+      params.filter = searchQuery.value.trim()
+      console.log('[fetchAvailableVersions] 添加 filter 参数:', params.filter)
+    } else {
+      console.log('[fetchAvailableVersions] 搜索关键词为空，不添加 filter 参数')
+    }
+    
+    if (showOnlyLTS.value) {
+      params.lts = 'true'
+    }
+    
+    console.log('[fetchAvailableVersions] 最终请求参数:', params)
+    
+    const response = await api.get('/api/fnm/available-versions', { params })
+    
+    if (response.success) {
+      const data = response.data
+      availableVersions.value = data.versions || []
+      totalVersions.value = data.total || 0
+      totalPages.value = data.totalPages || 0
+      
+      // 调试：检查第一个版本的数据结构
+      if (data.versions && data.versions.length > 0) {
+        console.log('[fetchAvailableVersions] 第一个版本数据:', data.versions[0])
+        console.log('[fetchAvailableVersions] releaseDate:', data.versions[0].releaseDate)
+        console.log('[fetchAvailableVersions] npm:', data.versions[0].npm)
+        console.log('[fetchAvailableVersions] features:', data.versions[0].features)
+      }
+      
+      // 如果需要重置页码
+      if (resetPage && currentPage.value !== data.page) {
+        currentPage.value = data.page
+      }
+    }
+  } catch (err) {
+    console.error('获取可用版本失败:', err)
+    error.value = '获取版本列表失败'
+    availableVersions.value = []
+    totalVersions.value = 0
+    totalPages.value = 0
+  } finally {
+    loadingAvailable.value = false
+  }
+}
+
+// 搜索处理
+let searchTimer: any = null
+const handleSearch = () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    currentPage.value = 1 // 搜索时重置到第一页
+    fetchAvailableVersions()
+  }, 500) // 500ms 防抖
+}
+
+// 清除搜索
+const clearSearch = () => {
+  searchQuery.value = ''
+  currentPage.value = 1
+  fetchAvailableVersions()
+}
+
+// 切换筛选
+const toggleFilter = (ltsOnly: boolean) => {
+  showOnlyLTS.value = ltsOnly
+  currentPage.value = 1 // 切换筛选时重置到第一页
+  fetchAvailableVersions()
+}
+
+// 同步版本列表（清理缓存并重新获取）
+const syncVersions = async () => {
+  syncing.value = true
+  try {
+    // 清理后端缓存
+    const response = await api.post('/api/fnm/clear-cache')
+    if (response.success) {
+      // 重置状态
+      searchQuery.value = ''
+      currentPage.value = 1
+      availableVersions.value = []
+      totalVersions.value = 0
+      totalPages.value = 0
+      
+      // 重新获取版本列表
+      await fetchAvailableVersions()
+      
+      successMessage.value = '版本列表已更新'
+    } else {
+      error.value = response.message || '同步失败'
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : '同步失败'
+  } finally {
+    syncing.value = false
+  }
+}
+
+// 分页控制
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    fetchAvailableVersions(false) // 不重置页码
+  }
+}
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+    fetchAvailableVersions(false)
+  }
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+    fetchAvailableVersions(false)
+  }
 }
 
 // 获取推荐版本列表
@@ -361,10 +716,11 @@ const refreshData = async () => {
 
   try {
     await checkFnmStatus()
-    await getAvailableVersions()
     if (fnmStatus.value.installed) {
       await getNodeVersions()
       await getRecommendedVersions()
+      // 页面加载时自动获取版本列表（不带 filter）
+      await fetchAvailableVersions()
     }
   } catch (err) {
     error.value = err instanceof Error ? err.message : '刷新数据失败'
@@ -560,6 +916,29 @@ const formatDate = (dateStr: string) => {
     month: 'short',
     day: 'numeric'
   })
+}
+
+// 获取相对时间
+const getRelativeTime = (dateStr: string) => {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffInMs = now.getTime() - date.getTime()
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
+  
+  if (diffInDays < 1) {
+    return '今天'
+  } else if (diffInDays < 7) {
+    return `${diffInDays} 天前`
+  } else if (diffInDays < 30) {
+    const weeks = Math.floor(diffInDays / 7)
+    return `${weeks} 周前`
+  } else if (diffInDays < 365) {
+    const months = Math.floor(diffInDays / 30)
+    return `${months} 月前`
+  } else {
+    const years = Math.floor(diffInDays / 365)
+    return `${years} 年前`
+  }
 }
 
 // 清除错误
@@ -1184,6 +1563,750 @@ onUnmounted(() => {
   }
 }
 
+// 搜索框和筛选按钮
+.search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ls-spacing-base);
+  margin-bottom: var(--ls-spacing-lg);
+
+  .search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .version-search-input {
+      width: 100%;
+      padding: 12px 40px 12px 16px;
+      border: 2px solid var(--ldesign-border-color);
+      border-radius: 10px;
+      background: var(--ldesign-bg-color-container);
+      color: var(--ldesign-text-color-primary);
+      font-size: 14px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+      &:hover {
+        border-color: var(--ldesign-brand-color-2);
+      }
+
+      &:focus {
+        outline: none;
+        border-color: var(--ldesign-brand-color);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        transform: translateY(-1px);
+      }
+
+      &::placeholder {
+        color: var(--ldesign-text-color-placeholder);
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+    }
+
+    .clear-search-btn {
+      position: absolute;
+      right: 12px;
+      background: var(--ldesign-gray-color-1);
+      border: none;
+      color: var(--ldesign-text-color-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 6px;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: var(--ldesign-error-color-1);
+        color: var(--ldesign-error-color);
+        transform: scale(1.1);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+
+  .filter-buttons {
+    display: flex;
+    gap: var(--ls-spacing-sm);
+    align-items: center;
+    flex-wrap: wrap;
+
+    .filter-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: 2px solid var(--ldesign-border-color);
+      background: var(--ldesign-bg-color-container);
+      color: var(--ldesign-text-color-primary);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: var(--ldesign-brand-color-1);
+        transform: translate(-50%, -50%);
+        transition: width 0.4s ease, height 0.4s ease;
+      }
+
+      &:hover:not(:disabled) {
+        border-color: var(--ldesign-brand-color);
+        color: var(--ldesign-brand-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+
+        &::before {
+          width: 300px;
+          height: 300px;
+        }
+      }
+
+      &.active {
+        background: linear-gradient(135deg, var(--ldesign-brand-color) 0%, var(--ldesign-brand-color-hover) 100%);
+        color: white;
+        border-color: var(--ldesign-brand-color);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+
+        svg {
+          filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+        }
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+    }
+
+    .refresh-versions-btn,
+    .sync-versions-btn {
+      padding: 8px 10px;
+      border: 2px solid var(--ldesign-border-color);
+      background: var(--ldesign-bg-color-container);
+      color: var(--ldesign-brand-color);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+      font-size: 13px;
+      font-weight: 500;
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, var(--ldesign-brand-color) 0%, var(--ldesign-brand-color-hover) 100%);
+        color: white;
+        border-color: var(--ldesign-brand-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.95);
+      }
+
+      svg.spinning {
+        animation: spin 1s linear infinite;
+      }
+    }
+    
+    .sync-versions-btn {
+      padding: 8px 14px;
+      background: linear-gradient(135deg, var(--ldesign-success-color-1) 0%, var(--ldesign-bg-color-container) 100%);
+      border-color: var(--ldesign-success-color-2);
+      
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, var(--ldesign-success-color) 0%, var(--ldesign-success-color-hover) 100%);
+        border-color: var(--ldesign-success-color);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      }
+    }
+  }
+}
+
+// 版本表格
+.available-versions-list {
+  margin-top: var(--ls-spacing-base);
+
+  .loading-state,
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ls-spacing-base);
+    padding: var(--ls-spacing-xxl);
+    color: var(--ldesign-text-color-secondary);
+    background: var(--ldesign-bg-color-container);
+    border-radius: 12px;
+    border: 2px dashed var(--ldesign-border-color);
+    
+    .spinner {
+      animation: spin 1s linear infinite;
+      color: var(--ldesign-brand-color);
+    }
+
+    p {
+      font-size: 14px;
+      margin: 0;
+    }
+  }
+
+  .versions-table {
+    border: 2px solid var(--ldesign-border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    background: var(--ldesign-bg-color-component);
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 1.5fr 1.2fr 1.3fr 1.3fr 1.8fr 1fr 1.3fr;
+      gap: var(--ls-spacing-base);
+      padding: 14px 20px;
+      background: linear-gradient(135deg, var(--ldesign-brand-color-1) 0%, var(--ldesign-bg-color-container) 100%);
+      border-bottom: 2px solid var(--ldesign-border-color);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ldesign-text-color-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .table-body {
+      .table-row {
+        display: grid;
+        grid-template-columns: 1.5fr 1.2fr 1.3fr 1.3fr 1.8fr 1fr 1.3fr;
+        gap: var(--ls-spacing-base);
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--ldesign-border-color);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        align-items: center;
+        background: var(--ldesign-bg-color-component);
+        position: relative;
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          height: 100%;
+          width: 0;
+          background: linear-gradient(90deg, var(--ldesign-brand-color-1), transparent);
+          transition: width 0.3s ease;
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &:hover {
+          background: var(--ldesign-bg-color-container);
+          transform: translateX(4px);
+
+          &::before {
+            width: 4px;
+          }
+        }
+
+        &.installed {
+          background: linear-gradient(90deg, var(--ldesign-success-color-1) 0%, var(--ldesign-bg-color-component) 100%);
+          
+          &::before {
+            background: var(--ldesign-success-color);
+            width: 3px;
+          }
+        }
+
+        &.current {
+          background: linear-gradient(90deg, var(--ldesign-brand-color-1) 0%, var(--ldesign-bg-color-component) 100%);
+          border-left: 4px solid var(--ldesign-brand-color);
+          padding-left: 16px;
+          box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.1);
+
+          &::before {
+            display: none;
+          }
+
+          .col-version code {
+            color: var(--ldesign-brand-color);
+            font-weight: 700;
+            font-size: 15px;
+          }
+        }
+
+        .col-version {
+          .version-main {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            
+            .version-number {
+              font-family: 'Consolas', 'Monaco', monospace;
+              font-size: 14px;
+              color: var(--ldesign-brand-color);
+              font-weight: 600;
+              background: var(--ldesign-brand-color-1);
+              padding: 4px 10px;
+              border-radius: 6px;
+              display: inline-block;
+            }
+            
+            .major-version {
+              font-size: 10px;
+              color: var(--ldesign-text-color-secondary);
+              background: var(--ldesign-bg-color-container);
+              padding: 2px 6px;
+              border-radius: 4px;
+              font-weight: 500;
+            }
+          }
+        }
+
+        .col-type {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          
+          .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            width: fit-content;
+            
+            &.badge-lts {
+              background: linear-gradient(135deg, var(--ldesign-success-color) 0%, #10b981 100%);
+              color: white;
+              box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+              
+              svg {
+                filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+              }
+            }
+            
+            &.badge-current {
+              background: linear-gradient(135deg, var(--ldesign-warning-color) 0%, #f59e0b 100%);
+              color: white;
+              box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+            }
+            
+            &.badge-maintenance {
+              background: var(--ldesign-bg-color-container);
+              color: var(--ldesign-text-color-secondary);
+              border: 1px solid var(--ldesign-border-color);
+            }
+          }
+          
+          .lts-name {
+            font-size: 11px;
+            color: var(--ldesign-text-color-secondary);
+            font-weight: 500;
+          }
+          
+          .maintenance-status {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            width: fit-content;
+            
+            &.status-active {
+              background: var(--ldesign-success-color-1);
+              color: var(--ldesign-success-color);
+              border: 1px solid var(--ldesign-success-color-2);
+            }
+            
+            &.status-current {
+              background: var(--ldesign-warning-color-1);
+              color: var(--ldesign-warning-color);
+              border: 1px solid var(--ldesign-warning-color-2);
+            }
+            
+            &.status-maintenance {
+              background: var(--ldesign-bg-color-container);
+              color: var(--ldesign-text-color-tertiary);
+              border: 1px solid var(--ldesign-border-color);
+            }
+            
+            &.status-eol {
+              background: var(--ldesign-error-color-1);
+              color: var(--ldesign-error-color);
+              border: 1px solid var(--ldesign-error-color-2);
+            }
+          }
+        }
+        
+        .col-release {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          font-size: 12px;
+          
+          .release-date {
+            color: var(--ldesign-text-color-primary);
+            font-weight: 500;
+          }
+          
+          .release-relative {
+            color: var(--ldesign-text-color-secondary);
+            font-size: 11px;
+          }
+          
+          .release-unknown {
+            color: var(--ldesign-text-color-tertiary);
+          }
+        }
+        
+        .col-engines {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          
+          .engine-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            
+            .engine-label {
+              font-size: 10px;
+              font-weight: 600;
+              text-transform: uppercase;
+              color: var(--ldesign-text-color-secondary);
+              background: var(--ldesign-bg-color-container);
+              padding: 2px 4px;
+              border-radius: 3px;
+              min-width: 32px;
+              text-align: center;
+            }
+            
+            .engine-version {
+              font-size: 11px;
+              font-family: 'Consolas', 'Monaco', monospace;
+              color: var(--ldesign-text-color-primary);
+              font-weight: 500;
+            }
+          }
+          
+          .engine-unknown {
+            color: var(--ldesign-text-color-tertiary);
+            font-size: 12px;
+          }
+        }
+        
+        .col-features {
+          .features-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            
+            .feature-tag {
+              display: inline-block;
+              padding: 2px 6px;
+              background: var(--ldesign-brand-color-1);
+              color: var(--ldesign-brand-color);
+              border-radius: 4px;
+              font-size: 9px;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.3px;
+              border: 1px solid var(--ldesign-brand-color-2);
+              cursor: help;
+              transition: all 0.2s ease;
+              
+              &:hover {
+                background: var(--ldesign-brand-color);
+                color: white;
+                transform: translateY(-1px);
+              }
+            }
+          }
+        }
+
+        .col-lts {
+          display: flex;
+          align-items: center;
+
+          .lts-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, var(--ldesign-success-color) 0%, #10b981 100%);
+            color: white;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+
+            svg {
+              filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+            }
+          }
+
+          .current-version-badge {
+            display: inline-flex;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, var(--ldesign-warning-color) 0%, #f59e0b 100%);
+            color: white;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+          }
+        }
+
+        .col-status {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+
+          .status-current {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--ldesign-brand-color);
+            font-weight: 600;
+
+            svg {
+              animation: pulse 2s ease-in-out infinite;
+            }
+          }
+
+          .status-installed {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--ldesign-success-color);
+            font-weight: 500;
+          }
+
+          .status-available {
+            color: var(--ldesign-text-color-secondary);
+            font-style: italic;
+          }
+        }
+
+        .col-action {
+          display: flex;
+          gap: 6px;
+
+          .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+
+            &::before {
+              content: '';
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              width: 0;
+              height: 0;
+              border-radius: 50%;
+              background: rgba(255, 255, 255, 0.3);
+              transform: translate(-50%, -50%);
+              transition: width 0.6s ease, height 0.6s ease;
+            }
+
+            &:hover::before {
+              width: 300px;
+              height: 300px;
+            }
+
+            &.install {
+              background: linear-gradient(135deg, var(--ldesign-brand-color) 0%, var(--ldesign-brand-color-hover) 100%);
+              color: white;
+              box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+
+              &:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+              }
+
+              &:active:not(:disabled) {
+                transform: scale(0.95);
+              }
+            }
+
+            &.switch {
+              background: linear-gradient(135deg, var(--ldesign-success-color) 0%, #10b981 100%);
+              color: white;
+              box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+
+              &:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
+              }
+
+              &:active:not(:disabled) {
+                transform: scale(0.95);
+              }
+            }
+
+            &.installing {
+              background: linear-gradient(135deg, var(--ldesign-warning-color) 0%, #f59e0b 100%);
+              color: white;
+              cursor: not-allowed;
+              box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+
+              .spinner {
+                animation: spin 1s linear infinite;
+              }
+            }
+
+            &:disabled {
+              opacity: 0.5;
+              cursor: not-allowed;
+              transform: none;
+            }
+          }
+
+          .current-label {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            background: var(--ldesign-brand-color-1);
+            color: var(--ldesign-brand-color);
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 2px solid var(--ldesign-brand-color-2);
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// 分页
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ls-spacing-base);
+  margin-top: var(--ls-spacing-lg);
+  padding: var(--ls-spacing-lg);
+  background: var(--ldesign-bg-color-container);
+  border-radius: 10px;
+  border: 2px solid var(--ldesign-border-color);
+
+  .page-btn {
+    padding: 8px 18px;
+    border: 2px solid var(--ldesign-border-color);
+    background: var(--ldesign-bg-color-component);
+    color: var(--ldesign-text-color-primary);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--ldesign-brand-color) 0%, var(--ldesign-brand-color-hover) 100%);
+      color: white;
+      border-color: var(--ldesign-brand-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+
+      &::before {
+        left: 100%;
+      }
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+
+  .page-info {
+    font-size: 13px;
+    color: var(--ldesign-text-color-secondary);
+    font-weight: 500;
+    padding: 8px 16px;
+    background: var(--ldesign-bg-color-component);
+    border-radius: 8px;
+    border: 2px solid var(--ldesign-border-color);
+  }
+}
+
 .install-form {
   .input-group {
     display: flex;
@@ -1238,30 +2361,47 @@ onUnmounted(() => {
   }
 
   .install-tips {
-    background: var(--ldesign-bg-color-container);
-    border-radius: var(--ls-border-radius-base);
-    padding: var(--ls-spacing-base);
-    font-size: var(--ls-font-size-sm);
+    background: linear-gradient(135deg, var(--ldesign-warning-color-1) 0%, var(--ldesign-bg-color-container) 100%);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 13px;
     color: var(--ldesign-text-color-secondary);
+    border: 2px solid var(--ldesign-warning-color-2);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+    margin-top: var(--ls-spacing-lg);
 
     p {
-      margin: 0 0 var(--ls-spacing-xs) 0;
-      font-weight: 500;
+      margin: 0 0 var(--ls-spacing-sm) 0;
+      font-weight: 600;
+      color: var(--ldesign-text-color-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
     }
 
     ul {
       margin: 0;
-      padding-left: var(--ls-spacing-base);
+      padding-left: 24px;
 
       li {
-        margin: var(--ls-spacing-xs) 0;
+        margin: 8px 0;
+        line-height: 1.6;
+        position: relative;
+
+        &::marker {
+          color: var(--ldesign-warning-color);
+        }
 
         code {
           background: var(--ldesign-gray-color-1);
-          padding: 2px 6px;
-          border-radius: 3px;
+          padding: 3px 8px;
+          border-radius: 4px;
           font-family: 'Consolas', 'Monaco', monospace;
-          font-size: 11px;
+          font-size: 12px;
+          color: var(--ldesign-brand-color);
+          font-weight: 600;
+          border: 1px solid var(--ldesign-border-color);
         }
       }
     }

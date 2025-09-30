@@ -12,12 +12,36 @@ import https from 'https'
 import { createWriteStream, existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { logger } from '../../utils/logger.js'
 import { connectionManager } from '../websocket.js'
+import { cacheManager } from '../utils/cache.js'
 
 const fnmLogger = logger.withPrefix('FNM')
 export const fnmRouter: IRouter = Router()
 
 // 存储活跃的安装进程
 const activeInstallProcesses = new Map<string, ChildProcess>()
+
+// Node 版本类型定义
+interface NodeVersion {
+  version: string
+  lts: string | null
+  isLTS: boolean
+  isCurrent: boolean
+  majorVersion: number
+  status: string
+  maintenanceStatus: string
+  releaseDate: string | null
+  npm: string | null
+  v8: string | null
+  modules: string | null
+  features: {
+    esm: boolean
+    corepack: boolean
+    testRunner: boolean
+    fetch: boolean
+    webStreams: boolean
+    watchMode: boolean
+  }
+}
 
 /**
  * 配置 PowerShell Profile 以自动加载 FNM 环境
@@ -550,7 +574,352 @@ fnmRouter.post('/install', async (_req, res) => {
 })
 
 /**
- * 获取 Node 版本列表
+ * 手动清理缓存
+ */
+fnmRouter.post('/clear-cache', (_req, res) => {
+  try {
+    // 清理 Node 版本缓存
+    cacheManager.delete('node-versions:all')
+    cacheManager.delete('node-versions:lts')
+    
+    // 清理 Node 官方数据缓存
+    nodeOfficialData = null
+    nodeOfficialDataTimestamp = 0
+    
+    fnmLogger.info('[缓存清理] Node 版本缓存和官方数据缓存已清理')
+    
+    res.json({
+      success: true,
+      data: {
+        message: '缓存已清理，下次查询将重新获取最新版本列表和官方数据'
+      }
+    })
+  } catch (error) {
+    fnmLogger.error('清理缓存失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '清理缓存失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+// Node.js 官方版本信息缓存
+let nodeOfficialData: any[] | null = null
+let nodeOfficialDataTimestamp = 0
+const NODE_DATA_CACHE_DURATION = 30 * 60 * 1000 // 30分钟
+
+/**
+ * 获取 Node.js 官方版本详细信息
+ */
+async function fetchNodeOfficialData(): Promise<any[]> {
+  const now = Date.now()
+  
+  // 检查缓存
+  if (nodeOfficialData && (now - nodeOfficialDataTimestamp) < NODE_DATA_CACHE_DURATION) {
+    fnmLogger.info('[Node官方数据] 使用缓存')
+    return nodeOfficialData
+  }
+  
+  try {
+    fnmLogger.info('[Node官方数据] 开始获取...')
+    const https = require('https')
+    
+    return new Promise((resolve, reject) => {
+      const req = https.get('https://nodejs.org/dist/index.json', (res: any) => {
+        let data = ''
+        
+        res.on('data', (chunk: any) => {
+          data += chunk
+        })
+        
+        res.on('end', () => {
+          try {
+            const versions = JSON.parse(data)
+            nodeOfficialData = versions
+            nodeOfficialDataTimestamp = now
+            fnmLogger.info(`[Node官方数据] 成功获取 ${versions.length} 个版本`)
+            resolve(versions)
+          } catch (err) {
+            fnmLogger.error('[Node官方数据] 解析失败:', err)
+            resolve([])
+          }
+        })
+      })
+      
+      req.on('error', (err: any) => {
+        fnmLogger.error('[Node官方数据] 获取失败:', err)
+        resolve([])
+      })
+      
+      req.setTimeout(10000, () => {
+        req.destroy()
+        fnmLogger.warn('[Node官方数据] 请求超时')
+        resolve([])
+      })
+    })
+  } catch (error) {
+    fnmLogger.error('[Node官方数据] 异常:', error)
+    return []
+  }
+}
+
+/**
+ * 获取可用的远程 Node 版本列表
+ * 添加了缓存机制，减少 fnm list-remote 调用次数
+ */
+fnmRouter.get('/available-versions', async (req, res) => {
+  try {
+    const { filter, lts, page = '1', pageSize = '50' } = req.query
+    
+    // 构建缓存键（基于 LTS 筛选）
+    const cacheKey = `node-versions:${lts === 'true' ? 'lts' : 'all'}`
+    
+    fnmLogger.info(`[获取可用版本] filter=${filter}, lts=${lts}, page=${page}, pageSize=${pageSize}`)
+    
+    // 获取 Node 官方详细数据
+    const officialData = await fetchNodeOfficialData()
+    const officialDataMap = new Map()
+    officialData.forEach((item: any) => {
+      const version = item.version.replace(/^v/, '')
+      officialDataMap.set(version, {
+        date: item.date,
+        npm: item.npm,
+        v8: item.v8,
+        modules: item.modules,
+        lts: item.lts || null
+      })
+    })
+    
+    // 先尝试从缓存获取
+    let allVersions = cacheManager.get<NodeVersion[]>(cacheKey)
+    
+    if (!allVersions) {
+      fnmLogger.info(`[缓存未命中] 执行 fnm list-remote 命令`)
+      
+      // 构建命令参数
+      const args = ['list-remote', '--sort=desc']
+      
+      if (lts === 'true') {
+        args.push('--lts')
+      }
+      
+      // 使用国内镜像
+      args.push('--node-dist-mirror=https://npmmirror.com/mirrors/node')
+      
+      // 执行命令
+      const output = executeCommand(`fnm ${args.join(' ')}`, true)
+      
+      if (!output) {
+        return res.json({
+          success: true,
+          data: {
+            versions: [],
+            total: 0,
+            page: parseInt(page as string),
+            pageSize: parseInt(pageSize as string),
+            totalPages: 0
+          }
+        })
+      }
+      
+      // 解析版本列表
+      allVersions = output.split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0 && line.match(/^v?\d+\.\d+\.\d+/))
+        .map(line => {
+          // 移除 'v' 前缀和可能的 LTS 标记
+          const match = line.match(/v?(\d+\.\d+\.\d+)(\s+\((.+)\))?/)
+          if (match) {
+            const version = match[1]
+            const ltsName = match[3] || null
+            const majorVersion = parseInt(version.split('.')[0])
+            
+            // 从官方数据获取详细信息
+            const officialInfo = officialDataMap.get(version) || {}
+            
+            // 根据主版本号推断状态
+            const isEven = majorVersion % 2 === 0
+            const isCurrent = majorVersion >= 23 // 最新的非-LTS 版本
+            
+            // 计算维护状态
+            let maintenanceStatus = 'Unknown'
+            if (officialInfo.lts) {
+              // LTS 版本根据时间判断
+              if (officialInfo.date) {
+                const releaseDate = new Date(officialInfo.date)
+                const now = new Date()
+                const monthsDiff = (now.getTime() - releaseDate.getTime()) / (1000 * 60 * 60 * 24 * 30)
+                
+                if (monthsDiff < 6) {
+                  maintenanceStatus = 'Active'
+                } else if (monthsDiff < 30) {
+                  maintenanceStatus = 'Maintenance'
+                } else {
+                  maintenanceStatus = 'EOL'
+                }
+              } else {
+                maintenanceStatus = 'Active'
+              }
+            } else if (isCurrent) {
+              maintenanceStatus = 'Current'
+            } else {
+              maintenanceStatus = 'Maintenance'
+            }
+            
+            return {
+              version: version,
+              lts: ltsName,
+              isLTS: !!ltsName,
+              isCurrent: !ltsName && isCurrent,
+              majorVersion: majorVersion,
+              // 根据 Node.js 版本生命周期推断状态
+              status: ltsName ? 'LTS' : (isCurrent ? 'Current' : 'Maintenance'),
+              maintenanceStatus,
+              // 根据主版本号估算特性
+              features: {
+                esm: majorVersion >= 12,
+                corepack: majorVersion >= 16,
+                testRunner: majorVersion >= 18,
+                fetch: majorVersion >= 18, // Fetch API
+                webStreams: majorVersion >= 16, // Web Streams
+                watchMode: majorVersion >= 18 // Watch mode
+              },
+              // 官方数据
+              releaseDate: officialInfo.date || null,
+              npm: officialInfo.npm || null,
+              v8: officialInfo.v8 || null,
+              modules: officialInfo.modules || null
+            }
+          }
+          return null
+        })
+        .filter(Boolean) as NodeVersion[]
+      
+      // 缓存结果（30分钟有效期）
+      cacheManager.set(cacheKey, allVersions, 30 * 60 * 1000)
+      fnmLogger.info(`[缓存已更新] 共 ${allVersions.length} 个版本，有效期 30 分钟`)
+    } else {
+      fnmLogger.info(`[缓存命中] 共 ${allVersions.length} 个版本`)
+      
+      // 缓存命中时，也需要用官方数据增强版本信息（如果缓存数据不包含这些字段）
+      allVersions = allVersions.map(v => {
+        // 如果缓存数据已经包含 npm 和 releaseDate，则不需要重新增强
+        if (v.npm && v.releaseDate) {
+          return v
+        }
+        
+        // 否则从官方数据增强
+        const officialInfo = officialDataMap.get(v.version) || {}
+        const majorVersion = v.majorVersion || parseInt(v.version.split('.')[0])
+        
+        // 计算维护状态
+        let maintenanceStatus = v.maintenanceStatus || 'Unknown'
+        if (!v.maintenanceStatus) {
+          if (officialInfo.lts || v.isLTS) {
+            if (officialInfo.date) {
+              const releaseDate = new Date(officialInfo.date)
+              const now = new Date()
+              const monthsDiff = (now.getTime() - releaseDate.getTime()) / (1000 * 60 * 60 * 24 * 30)
+              
+              if (monthsDiff < 6) {
+                maintenanceStatus = 'Active'
+              } else if (monthsDiff < 30) {
+                maintenanceStatus = 'Maintenance'
+              } else {
+                maintenanceStatus = 'EOL'
+              }
+            } else {
+              maintenanceStatus = 'Active'
+            }
+          } else if (v.isCurrent) {
+            maintenanceStatus = 'Current'
+          } else {
+            maintenanceStatus = 'Maintenance'
+          }
+        }
+        
+        return {
+          ...v,
+          maintenanceStatus,
+          releaseDate: officialInfo.date || null,
+          npm: officialInfo.npm || null,
+          v8: officialInfo.v8 || null,
+          modules: officialInfo.modules || null,
+          features: v.features || {
+            esm: majorVersion >= 12,
+            corepack: majorVersion >= 16,
+            testRunner: majorVersion >= 18,
+            fetch: majorVersion >= 18,
+            webStreams: majorVersion >= 16,
+            watchMode: majorVersion >= 18
+          }
+        }
+      })
+      
+      // 更新缓存（如果数据被增强了）
+      cacheManager.set(cacheKey, allVersions, 30 * 60 * 1000)
+    }
+    
+    // 应用搜索过滤器
+    let filteredVersions = allVersions
+    if (filter) {
+      const filterStr = (filter as string).toLowerCase().trim()
+      fnmLogger.info(`[搜索过滤] 开始过滤，关键词: "${filterStr}", 总版本数: ${allVersions.length}`)
+      
+      filteredVersions = allVersions.filter(v => {
+        if (!v) return false
+        const version = v.version.toLowerCase()
+        // 支持精确匹配主版本号（如 "18" 匹配 "18.x.x"）
+        // 或部分匹配（如 "20.11" 匹配 "20.11.x"）
+        return version.startsWith(filterStr) || version.includes(filterStr)
+      })
+      
+      fnmLogger.info(`[搜索结果] 关键词 "${filter}" 匹配 ${filteredVersions.length} 个版本`)
+      
+      // 输出前3个匹配结果
+      if (filteredVersions.length > 0 && filteredVersions.length <= 10) {
+        fnmLogger.info(`[匹配版本] ${filteredVersions.map(v => v.version).join(', ')}`)
+      } else if (filteredVersions.length > 10) {
+        fnmLogger.info(`[部分匹配版本] ${filteredVersions.slice(0, 5).map(v => v.version).join(', ')} ...`)
+      }
+    }
+    
+    const total = filteredVersions.length
+    const currentPage = parseInt(page as string)
+    const currentPageSize = parseInt(pageSize as string)
+    const totalPages = Math.ceil(total / currentPageSize)
+    
+    // 分页
+    const start = (currentPage - 1) * currentPageSize
+    const end = start + currentPageSize
+    const paginatedVersions = filteredVersions.slice(start, end)
+    
+    fnmLogger.info(`[返回结果] 第 ${currentPage}/${totalPages} 页，共 ${total} 个版本`)
+    
+    res.json({
+      success: true,
+      data: {
+        versions: paginatedVersions,
+        total,
+        page: currentPage,
+        pageSize: currentPageSize,
+        totalPages,
+        cached: allVersions === cacheManager.get(cacheKey) // 标记是否来自缓存
+      }
+    })
+  } catch (error) {
+    fnmLogger.error('获取可用版本列表失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '获取可用版本列表失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 获取 Node 版本列表（已安装）
  */
 fnmRouter.get('/versions', (_req, res) => {
   try {
