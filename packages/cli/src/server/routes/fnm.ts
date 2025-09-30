@@ -196,21 +196,47 @@ function executeCommandAsync(
   args: string[], 
   onProgress?: (data: string) => void, 
   useFnmEnv: boolean = false,
-  processId?: string
-): Promise<{ success: boolean, output: string, error?: string, child?: ChildProcess }> {
+  processId?: string,
+  timeout: number = 120000, // 默认120秒超时
+  useDirectExec: boolean = false // 是否直接执行（不用 shell）
+): Promise<{ success: boolean, output: string, error?: string, child?: ChildProcess, timedOut?: boolean }> {
   return new Promise((resolve) => {
     const spawnOptions: any = {
-      shell: 'powershell.exe',
+      shell: useDirectExec ? false : 'powershell.exe',
       stdio: ['pipe', 'pipe', 'pipe']
     }
     
     // 如果需要 FNM 环境，则添加环境变量
     if (useFnmEnv) {
       const fnmEnv = getFnmEnv()
-      spawnOptions.env = { ...process.env, ...fnmEnv }
+      spawnOptions.env = { 
+        ...process.env, 
+        ...fnmEnv,
+        // 强制无缓冲输出
+        RUST_LOG: 'info',
+        NO_COLOR: '0',
+        FORCE_COLOR: '1'
+      }
+    } else {
+      spawnOptions.env = { 
+        ...process.env,
+        // 强制无缓冲输出
+        RUST_LOG: 'info',
+        NO_COLOR: '0',
+        FORCE_COLOR: '1'
+      }
     }
     
+    fnmLogger.info(`[执行命令] ${command} ${args.join(' ')}`)
     const child = spawn(command, args, spawnOptions)
+    
+    // 设置流编码为 UTF-8，立即处理
+    if (child.stdout) {
+      child.stdout.setEncoding('utf8')
+    }
+    if (child.stderr) {
+      child.stderr.setEncoding('utf8')
+    }
     
     // 如果提供了 processId，则存储进程引用
     if (processId) {
@@ -219,10 +245,34 @@ function executeCommandAsync(
 
     let output = ''
     let errorOutput = ''
+    let resolved = false
+
+    // 设置超时
+    const timeoutId = setTimeout(() => {
+      if (!resolved) {
+        resolved = true
+        fnmLogger.error(`命令超时: ${command} ${args.join(' ')}`)
+        child.kill('SIGTERM')
+        
+        // 清理进程引用
+        if (processId) {
+          activeInstallProcesses.delete(processId)
+        }
+        
+        resolve({
+          success: false,
+          output: output.trim(),
+          error: `命令执行超时 (${timeout}ms)`,
+          child,
+          timedOut: true
+        })
+      }
+    }, timeout)
 
     child.stdout?.on('data', (data) => {
       const text = data.toString()
       output += text
+      fnmLogger.info(`[STDOUT] ${text.trim()}`)
       if (onProgress) {
         onProgress(text)
       }
@@ -231,6 +281,7 @@ function executeCommandAsync(
     child.stderr?.on('data', (data) => {
       const text = data.toString()
       errorOutput += text
+      fnmLogger.info(`[STDERR] ${text.trim()}`)
       // 不要将 PowerShell 错误信息发送给前端
       if (onProgress && !text.includes('所在位置') && !text.includes('CategoryInfo')) {
         onProgress(text)
@@ -238,31 +289,48 @@ function executeCommandAsync(
     })
 
     child.on('close', (code) => {
-      // 清理进程引用
-      if (processId) {
-        activeInstallProcesses.delete(processId)
+      if (!resolved) {
+        resolved = true
+        clearTimeout(timeoutId)
+        
+        // 清理进程引用
+        if (processId) {
+          activeInstallProcesses.delete(processId)
+        }
+        
+        fnmLogger.info(`[进程退出] 退出码: ${code}, 输出长度: ${output.length}, 错误长度: ${errorOutput.length}`)
+        if (output.length === 0 && errorOutput.length === 0) {
+          fnmLogger.warn(`[警告] 命令没有任何输出！`)
+        }
+        
+        resolve({
+          success: code === 0,
+          output: output.trim(),
+          error: code !== 0 ? errorOutput.trim() : undefined,
+          child
+        })
       }
-      
-      resolve({
-        success: code === 0,
-        output: output.trim(),
-        error: code !== 0 ? errorOutput.trim() : undefined,
-        child
-      })
     })
 
     child.on('error', (error) => {
-      // 清理进程引用
-      if (processId) {
-        activeInstallProcesses.delete(processId)
+      if (!resolved) {
+        resolved = true
+        clearTimeout(timeoutId)
+        
+        // 清理进程引用
+        if (processId) {
+          activeInstallProcesses.delete(processId)
+        }
+        
+        fnmLogger.error(`进程错误: ${error.message}`)
+        
+        resolve({
+          success: false,
+          output: '',
+          error: error.message,
+          child
+        })
       }
-      
-      resolve({
-        success: false,
-        output: '',
-        error: error.message,
-        child
-      })
     })
   })
 }
@@ -530,6 +598,7 @@ fnmRouter.get('/versions', (_req, res) => {
 fnmRouter.post('/install-node', async (req, res) => {
   try {
     const { version } = req.body
+    const clientId = req.headers['x-client-id'] as string || 'system'
 
     if (!version) {
       return res.status(400).json({
@@ -538,82 +607,124 @@ fnmRouter.post('/install-node', async (req, res) => {
       })
     }
 
+    fnmLogger.info(`[API调用] 开始安装 Node.js ${version}, clientId: ${clientId}`)
+    
     connectionManager.broadcast({
       type: 'node-install-start',
-      data: { message: `开始安装 Node.js ${version}...`, version }
+      data: { message: `开始安装 Node.js ${version}...`, version, clientId }
     })
 
-    fnmLogger.info(`开始安装 Node.js ${version}`)
-
-    // 使用定时器模拟进度更新（因为 fnm install 使用交互式进度条，在非 TTY 环境下无输出）
-    let simulatedProgress = 20
-    let progressInterval: NodeJS.Timeout | null = setInterval(() => {
-      if (simulatedProgress < 85) {
-        simulatedProgress += 15
+    // 使用 FNM 环境执行安装，强制显示进度
+    const processId = `install-${version}-${Date.now()}`
+    fnmLogger.info(`[执行命令] fnm install ${version} --progress=always --log-level=info`)
+    
+    // 直接输出 FNM 日志
+    let currentProgress = 10
+    let logCount = 0
+    
+    try {
+      // 直接调用 fnm.exe，不通过 PowerShell，避免缓冲
+      // 使用国内镜像加速下载
+      const args = [
+        'install', 
+        version, 
+        '--progress=always', 
+        '--log-level=info',
+        '--node-dist-mirror=https://npmmirror.com/mirrors/node' // 添加阿里云镜像
+      ]
+      
+      fnmLogger.info(`[使用镜像] https://npmmirror.com/mirrors/node`)
+      
+      const result = await executeCommandAsync(
+        'fnm', 
+        args, 
+        (data) => {
+        const message = data.trim()
+        if (!message) return
+        
+        // 过滤 PowerShell 错误信息
+        if (message.includes('所在位置') || message.includes('CategoryInfo')) {
+          return
+        }
+        
+        logCount++
+        fnmLogger.info(`[FNM] ${message}`)
+        
+        // 根据日志数量估算进度
+        if (logCount <= 2) {
+          currentProgress = 20
+        } else if (logCount <= 5) {
+          currentProgress = 40
+        } else if (logCount <= 10) {
+          currentProgress = 60
+        } else if (logCount <= 15) {
+          currentProgress = 80
+        } else {
+          currentProgress = Math.min(90, currentProgress + 2)
+        }
+        
+        // 直接转发 FNM 原始日志
         connectionManager.broadcast({
           type: 'node-install-progress',
           data: { 
-            message: `正在下载并安装 Node.js ${version}...`,
+            message: message,
             version,
-            progress: simulatedProgress,
-            step: '下载并安装中...'
+            progress: currentProgress,
+            step: message,
+            clientId
           }
         })
-      }
-    }, 2000)
+      }, true, processId, 600000, true) // 10分钟超时，直接执行 fnm.exe
 
-    try {
-      // 使用 FNM 环境执行安装，添加 --progress=never 禁用交互式进度条
-      const processId = `install-${version}`
-      const result = await executeCommandAsync('fnm', ['install', version, '--progress=never'], (data) => {
-        const message = data.trim()
-        if (message && !message.includes('所在位置') && !message.includes('CategoryInfo')) {
-          fnmLogger.info(`FNM output: ${message}`)
-          connectionManager.broadcast({
-            type: 'node-install-progress',
-            data: { 
-              message, 
-              version,
-              progress: Math.min(simulatedProgress, 95),
-              step: message
-            }
-          })
-        }
-      }, true, processId)
-
-      // 清除进度定时器
-      if (progressInterval) {
-        clearInterval(progressInterval)
-        progressInterval = null
+      fnmLogger.info(`[命令执行完成] 退出码: ${result.success ? 0 : '非0'}, 输出长度: ${result.output?.length || 0}, 错误长度: ${result.error?.length || 0}, 超时: ${result.timedOut ? '是' : '否'}`)
+      fnmLogger.info(`[命令完整输出] ${result.output || '(空)'}`)
+      if (result.error) {
+        fnmLogger.error(`[命令错误输出] ${result.error}`)
       }
 
       // FNM 在已安装时返回非0退出码但实际安装成功，需要检查版本是否已存在
-      const isAlreadyInstalled = result.error?.includes('already installed') || result.error?.includes('Version already installed')
+      const isAlreadyInstalled = result.error?.includes('already installed') || result.error?.includes('Version already installed') || result.output?.includes('already installed')
+      
+      fnmLogger.info(`[安装状态判断] result.success=${result.success}, isAlreadyInstalled=${isAlreadyInstalled}`)
+      
+      // 检查是否因为超时失败
+      if (result.timedOut) {
+        fnmLogger.error(`[安装失败] 超时`)
+        throw new Error('安装超时，请检查网络连接或稍后重试')
+      }
       
       if (result.success || isAlreadyInstalled) {
-        // 发送最终进度
+        fnmLogger.info(`[安装成功] 开始发送完成消息`)
+        
+        // 发送最终进度 100%
+        fnmLogger.info(`[WebSocket消息] 发送 node-install-progress, progress=100`)
         connectionManager.broadcast({
           type: 'node-install-progress',
           data: { 
             message: '安装完成，正在验证...',
             version,
-            progress: 95,
-            step: '验证安装...'
+            progress: 100,
+            step: '验证安装...',
+            clientId
           }
         })
 
+        // 立即发送完成消息
+        fnmLogger.info(`[WebSocket消息] 发送 node-install-complete`)
         connectionManager.broadcast({
           type: 'node-install-complete',
           data: {
             message: `Node.js ${version} 安装成功`,
             version,
-            success: true
+            success: true,
+            clientId
           }
         })
 
         // 等待 WebSocket 消息发送完成
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise(resolve => setTimeout(resolve, 300))
 
+        fnmLogger.info(`[HTTP响应] 返回成功响应`)
         res.json({
           success: true,
           data: {
@@ -622,22 +733,34 @@ fnmRouter.post('/install-node', async (req, res) => {
           }
         })
       } else {
+        fnmLogger.error(`[安装失败] 退出码非0且不是已安装状态`)
         throw new Error(result.error || '安装失败')
       }
-    } finally {
-      // 确保定时器被清除
-      if (progressInterval) {
-        clearInterval(progressInterval)
-      }
+    } catch (installError) {
+      fnmLogger.error('安装过程出错:', installError)
+      throw installError
     }
   } catch (error) {
     fnmLogger.error('安装 Node 版本失败:', error)
 
+    fnmLogger.info(`[WebSocket消息] 发送 node-install-error`)
     connectionManager.broadcast({
       type: 'node-install-error',
       data: { 
         message: error instanceof Error ? error.message : '安装失败',
-        version: req.body.version
+        version: req.body.version,
+        clientId: req.headers['x-client-id'] as string || 'system'
+      }
+    })
+    
+    // 同时发送完成消息（失败状态）
+    connectionManager.broadcast({
+      type: 'node-install-complete',
+      data: {
+        message: error instanceof Error ? error.message : '安装失败',
+        version: req.body.version,
+        success: false,
+        clientId: req.headers['x-client-id'] as string || 'system'
       }
     })
 

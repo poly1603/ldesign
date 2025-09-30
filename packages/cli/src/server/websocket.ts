@@ -48,13 +48,22 @@ class ConnectionManager {
       timestamp: new Date().toISOString()
     })
 
+    let sentCount = 0
     this.connections.forEach((ws) => {
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(messageStr)
+        try {
+          ws.send(messageStr)
+          sentCount++
+        } catch (error) {
+          // 连接已断开，静默失败
+          wsLogger.debug(`发送消息失败，连接已断开`)
+        }
       }
     })
 
-    wsLogger.debug(`广播消息: ${message.type}`)
+    if (sentCount > 0) {
+      wsLogger.debug(`广播消息: ${message.type}, 发送成功: ${sentCount}/${this.connections.size}`)
+    }
   }
 
   /**

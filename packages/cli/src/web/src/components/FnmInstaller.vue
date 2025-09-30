@@ -336,14 +336,14 @@ const verifyInstallation = async () => {
 
 // 设置WebSocket消息监听
 const setupWebSocketListeners = () => {
-  // fnm安装相关消息
-  unsubscribeList.push(subscribe('fnm-install-start', (data) => {
+  // Node安装相关消息（注意：事件名是 node-install-* 而非 fnm-install-*）
+  unsubscribeList.push(subscribe('node-install-start', (data) => {
     currentStep.value = data.message
     progressPercentage.value = 10
     addLog(data.message, 'info')
   }))
 
-  unsubscribeList.push(subscribe('fnm-install-progress', (data) => {
+  unsubscribeList.push(subscribe('node-install-progress', (data) => {
     currentStep.value = data.message
     if (data.progress !== undefined) {
       progressPercentage.value = data.progress
@@ -351,14 +351,14 @@ const setupWebSocketListeners = () => {
     addLog(data.message, 'info')
   }))
 
-  unsubscribeList.push(subscribe('fnm-install-complete', (data) => {
+  unsubscribeList.push(subscribe('node-install-complete', (data) => {
     currentStep.value = data.message
     progressPercentage.value = 100
     installSuccess.value = data.success
     addLog(data.message, 'success')
   }))
 
-  unsubscribeList.push(subscribe('fnm-install-error', (data) => {
+  unsubscribeList.push(subscribe('node-install-error', (data) => {
     currentStep.value = '安装失败'
     addLog(data.message, 'error')
   }))

@@ -52,7 +52,7 @@ const longOperationOptions: RequestOptions = {
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 300000 // 5分钟，用于下载和安装操作
+  timeout: 600000 // 10分钟，用于下载和安装操作（网络慢时需要更长时间）
 }
 
 /**
