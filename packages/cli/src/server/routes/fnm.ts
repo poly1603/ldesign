@@ -360,6 +360,97 @@ fnmRouter.post('/install-node', async (req, res) => {
 })
 
 /**
+ * 验证 fnm 安装
+ */
+fnmRouter.post('/verify', async (_req, res) => {
+  try {
+    // 检查 fnm 命令是否可用
+    const fnmVersion = executeCommand('fnm --version')
+    
+    if (!fnmVersion) {
+      return res.json({
+        success: false,
+        data: {
+          installed: false,
+          message: 'fnm 未正确安装或不在 PATH 中'
+        }
+      })
+    }
+
+    // 检查 fnm 是否能正常执行
+    const fnmEnv = executeCommand('fnm env')
+    
+    res.json({
+      success: true,
+      data: {
+        installed: true,
+        version: fnmVersion,
+        working: fnmEnv !== null,
+        message: `fnm ${fnmVersion} 运行正常`
+      }
+    })
+  } catch (error) {
+    fnmLogger.error('验证 fnm 失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '验证 fnm 失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 获取推荐的 Node 版本列表
+ */
+fnmRouter.get('/recommended-versions', (_req, res) => {
+  try {
+    // 推荐的 Node.js 版本（包括 LTS 和最新版）
+    const recommendedVersions = [
+      {
+        version: '20.11.0',
+        label: 'Node 20 LTS (Iron)',
+        lts: true,
+        recommended: true,
+        description: '推荐用于生产环境的长期支持版本'
+      },
+      {
+        version: '18.19.0',
+        label: 'Node 18 LTS (Hydrogen)',
+        lts: true,
+        recommended: true,
+        description: '稳定的长期支持版本'
+      },
+      {
+        version: '21.6.1',
+        label: 'Node 21 (Current)',
+        lts: false,
+        recommended: false,
+        description: '最新特性版本（非 LTS）'
+      },
+      {
+        version: '16.20.2',
+        label: 'Node 16 LTS (Gallium)',
+        lts: true,
+        recommended: false,
+        description: '较旧的长期支持版本'
+      }
+    ]
+
+    res.json({
+      success: true,
+      data: recommendedVersions
+    })
+  } catch (error) {
+    fnmLogger.error('获取推荐版本失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '获取推荐版本失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
  * 切换 Node 版本
  */
 fnmRouter.post('/use', async (req, res) => {

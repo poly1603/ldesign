@@ -61,11 +61,11 @@ class WebSocketManager {
       const isDev = import.meta.env.DEV
 
       if (isDev) {
-        // 开发模式：直接连接到后端服务器（前端在3001/3002，后端在3000）
-        // 由于 CORS 已配置，可以直接跨域连接
-        const host = window.location.hostname
-        wsUrl = `${protocol}//${host}:3000`
-        console.log('开发模式：直接连接到后端 WebSocket 服务器')
+        // 开发模式：通过 Vite 代理连接到后端 WebSocket 服务器
+        // 使用 /ws 路径，Vite 会将其代理到 ws://localhost:3000
+        const host = window.location.host // 使用当前 Vite 服务器的 host
+        wsUrl = `${protocol}//${host}/ws`
+        console.log('开发模式：通过 Vite 代理连接 WebSocket')
       } else {
         // 生产模式：连接到当前主机
         wsUrl = `${protocol}//${window.location.host}`

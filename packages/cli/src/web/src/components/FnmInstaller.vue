@@ -65,9 +65,19 @@
           <span>开始安装</span>
         </button>
 
-        <button v-if="installSuccess" class="success-btn" @click="$emit('installed')">
+        <button v-if="installSuccess && !verifying" class="verify-btn" @click="verifyInstallation">
+          <Shield :size="20" />
+          <span>校验安装</span>
+        </button>
+
+        <button v-if="verifying" class="verifying-btn" disabled>
+          <Loader2 :size="20" class="spinner" />
+          <span>校验中...</span>
+        </button>
+
+        <button v-if="verified" class="success-btn" @click="$emit('installed')">
           <CheckCircle2 :size="20" />
-          <span>安装完成</span>
+          <span>验证通过，继续</span>
         </button>
 
         <button v-if="installing" class="cancel-btn" @click="cancelInstall">
@@ -123,6 +133,39 @@
             <span>{{ instruction.replace(/^[✓→]\s*/, '') }}</span>
           </div>
         </div>
+        <div class="next-steps">
+          <p class="next-steps-title">👉 下一步：</p>
+          <p>请点击上方的 <strong>"校验安装"</strong> 按钮验证 fnm 是否正常工作。</p>
+          <p class="warning-text">⚠️ 如果校验失败，请重启终端或 IDE，然后刷新页面。</p>
+        </div>
+      </div>
+
+      <!-- 校验结果 -->
+      <div v-if="verifyError" class="verify-error">
+        <h3>
+          <XCircle :size="20" />
+          <span>校验失败</span>
+        </h3>
+        <p class="error-message">{{ verifyError }}</p>
+        <div class="error-actions">
+          <button class="retry-btn" @click="verifyInstallation">
+            <RefreshCw :size="16" />
+            <span>重新校验</span>
+          </button>
+          <button class="manual-btn" @click="showManualInstructions = !showManualInstructions">
+            <FileText :size="16" />
+            <span>查看手动配置</span>
+          </button>
+        </div>
+        <div v-if="showManualInstructions" class="manual-instructions">
+          <h4>手动配置指南：</h4>
+          <ol>
+            <li>重启终端或 IDE</li>
+            <li>运行 <code>fnm --version</code> 验证安装</li>
+            <li>如果仍然失败，检查环境变量配置</li>
+            <li>刷新此页面查看 fnm 状态</li>
+          </ol>
+        </div>
       </div>
     </div>
   </div>
@@ -132,7 +175,8 @@
 import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import {
   Package, Monitor, Download, Loader2, Terminal, Trash2,
-  Rocket, CheckCircle2, XCircle, Zap, Layers, Settings, Shield
+  Rocket, CheckCircle2, XCircle, Zap, Layers, Settings, Shield,
+  RefreshCw, FileText
 } from 'lucide-vue-next'
 import { useApi } from '../composables/useApi'
 import { useWebSocket } from '../composables/useWebSocket'
@@ -161,6 +205,10 @@ const { subscribe } = useWebSocket()
 // 响应式数据
 const installing = ref(false)
 const installSuccess = ref(false)
+const verifying = ref(false)
+const verified = ref(false)
+const verifyError = ref<string | null>(null)
+const showManualInstructions = ref(false)
 const progressPercentage = ref(0)
 const currentStep = ref('')
 const logs = ref<Array<{ time: string, message: string, type: string }>>([])
@@ -251,6 +299,39 @@ const cancelInstall = () => {
   installing.value = false
   currentStep.value = '安装已取消'
   addLog('用户取消了安装', 'warning')
+}
+
+// 校验安装
+const verifyInstallation = async () => {
+  verifying.value = true
+  verifyError.value = null
+  verified.value = false
+  showManualInstructions.value = false
+  
+  addLog('开始校验 fnm 安装...', 'info')
+  
+  try {
+    const response = await api.post('/api/fnm/verify', {})
+    
+    if (response.success && response.data.installed) {
+      verified.value = true
+      addLog(`校验成功: ${response.data.message}`, 'success')
+      addLog(`fnm 版本: ${response.data.version}`, 'info')
+      
+      // 稍后自动进入下一步
+      setTimeout(() => {
+        emit('installed')
+      }, 2000)
+    } else {
+      verifyError.value = response.data?.message || 'fnm 未正确安装'
+      addLog(`校验失败: ${verifyError.value}`, 'error')
+    }
+  } catch (error) {
+    verifyError.value = error instanceof Error ? error.message : '校验请求失败'
+    addLog(`校验失败: ${verifyError.value}`, 'error')
+  } finally {
+    verifying.value = false
+  }
 }
 
 // 设置WebSocket消息监听

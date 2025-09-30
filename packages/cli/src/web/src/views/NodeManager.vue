@@ -64,16 +64,66 @@
         </div>
       </div>
 
-      <!-- 安装新版本 -->
+      <!-- 推荐版本 -->
+      <div class="recommended-versions-card">
+        <h2>
+          <Star :size="20" />
+          <span>推荐版本</span>
+        </h2>
+        <div v-if="loadingRecommended" class="loading-versions">
+          <Loader2 :size="24" class="spinner" />
+          <span>加载中...</span>
+        </div>
+        <div v-else-if="recommendedVersions.length > 0" class="versions-grid">
+          <div v-for="version in recommendedVersions" :key="version.version" 
+            class="recommended-version-item"
+            :class="{ installed: isVersionInstalled(version.version), recommended: version.recommended }">
+            <div class="version-header">
+              <div class="version-badge" :class="{ lts: version.lts, current: !version.lts }">
+                {{ version.lts ? 'LTS' : 'Current' }}
+              </div>
+              <div v-if="version.recommended" class="recommended-badge">
+                <Star :size="12" />
+                推荐
+              </div>
+            </div>
+            <div class="version-label">{{ version.label }}</div>
+            <div class="version-number">{{ version.version }}</div>
+            <div class="version-description">{{ version.description }}</div>
+            <div class="version-actions">
+              <button v-if="!isVersionInstalled(version.version)" 
+                class="install-recommended-btn" 
+                @click="installVersion(version.version)"
+                :disabled="installing">
+                <Download :size="14" />
+                <span>安装</span>
+              </button>
+              <button v-else-if="version.version !== nodeVersions.current" 
+                class="switch-recommended-btn" 
+                @click="switchVersion(version.version)"
+                :disabled="switching">
+                <RefreshCw :size="14" />
+                <span>切换</span>
+              </button>
+              <div v-else class="current-indicator">
+                <CheckCircle :size="14" />
+                <span>当前版本</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 安装自定义版本 -->
       <div class="install-version-card">
         <h2>
           <CircleIcon :size="20" />
-          <span>安装新版本</span>
+          <span>安装自定义版本</span>
         </h2>
         <div class="install-form">
           <div class="input-group">
             <input v-model="newVersionInput" type="text" placeholder="输入版本号，如: 18.17.0 或 lts" class="version-input" />
-            <button class="install-version-btn" @click="installVersion"
+            <button class="install-version-btn" @click="installVersion()"
               :disabled="!newVersionInput.trim() || installing">
               <Loader2 v-if="installing" :size="16" class="spinner" />
               <Download v-else :size="16" />
@@ -113,7 +163,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { RefreshCw, Loader2, CheckCircle, XCircle, Download, Circle as CircleIcon } from 'lucide-vue-next'
+import { RefreshCw, Loader2, CheckCircle, XCircle, Download, Circle as CircleIcon, Star } from 'lucide-vue-next'
 import FnmInstaller from '../components/FnmInstaller.vue'
 import { useApi } from '../composables/useApi'
 import { useWebSocket } from '../composables/useWebSocket'
@@ -122,6 +172,7 @@ import { useWebSocket } from '../composables/useWebSocket'
 const loading = ref(true)
 const installing = ref(false)
 const switching = ref(false)
+const loadingRecommended = ref(false)
 const error = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 const installingVersion = ref<string | null>(null)
@@ -145,6 +196,9 @@ const nodeVersions = ref({
 // 可用版本列表
 const availableVersions = ref<any[]>([])
 
+// 推荐版本列表
+const recommendedVersions = ref<any[]>([])
+
 // 过滤版本列表
 const filteredVersions = computed(() => {
   if (versionFilter.value === 'lts') {
@@ -154,6 +208,11 @@ const filteredVersions = computed(() => {
   }
   return availableVersions.value
 })
+
+// 检查版本是否已安装
+const isVersionInstalled = (version: string) => {
+  return nodeVersions.value.installed.some(v => v.includes(version) || version.includes(v))
+}
 
 // API 实例
 const api = useApi()
@@ -194,6 +253,21 @@ const getAvailableVersions = async () => {
   availableVersions.value = []
 }
 
+// 获取推荐版本列表
+const getRecommendedVersions = async () => {
+  loadingRecommended.value = true
+  try {
+    const response = await api.get('/api/fnm/recommended-versions')
+    if (response.success) {
+      recommendedVersions.value = response.data
+    }
+  } catch (err) {
+    console.error('获取推荐版本失败:', err)
+  } finally {
+    loadingRecommended.value = false
+  }
+}
+
 // 刷新数据
 const refreshData = async () => {
   loading.value = true
@@ -204,6 +278,7 @@ const refreshData = async () => {
     await getAvailableVersions()
     if (fnmStatus.value.installed) {
       await getNodeVersions()
+      await getRecommendedVersions()
     }
   } catch (err) {
     error.value = err instanceof Error ? err.message : '刷新数据失败'
@@ -471,6 +546,7 @@ onUnmounted(() => {
 
 .current-version-card,
 .installed-versions-card,
+.recommended-versions-card,
 .install-version-card {
   background: var(--ldesign-bg-color-component);
   border: 1px solid var(--ldesign-border-color);
@@ -589,6 +665,172 @@ onUnmounted(() => {
   text-align: center;
   padding: var(--ls-spacing-xl);
   color: var(--ldesign-text-color-secondary);
+}
+
+// 推荐版本样式
+.loading-versions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ls-spacing-sm);
+  padding: var(--ls-spacing-xl);
+  color: var(--ldesign-text-color-secondary);
+
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+}
+
+.recommended-version-item {
+  background: var(--ldesign-bg-color-container);
+  border: 2px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-lg);
+  padding: var(--ls-spacing-base);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ls-spacing-xs);
+
+  &.recommended {
+    border-color: var(--ldesign-brand-color-2);
+    background: linear-gradient(135deg, 
+      var(--ldesign-brand-color-1) 0%, 
+      var(--ldesign-bg-color-container) 100%);
+  }
+
+  &.installed {
+    background: var(--ldesign-success-color-1);
+  }
+
+  &:hover {
+    border-color: var(--ldesign-brand-color);
+    box-shadow: var(--ldesign-shadow-2);
+    transform: translateY(-2px);
+  }
+
+  .version-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--ls-spacing-xs);
+
+    .version-badge {
+      padding: 2px 8px;
+      border-radius: var(--ls-border-radius-sm);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      &.lts {
+        background: var(--ldesign-success-color);
+        color: white;
+      }
+
+      &.current {
+        background: var(--ldesign-warning-color);
+        color: white;
+      }
+    }
+
+    .recommended-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: var(--ldesign-brand-color);
+      color: white;
+      border-radius: var(--ls-border-radius-sm);
+      font-size: 10px;
+      font-weight: 600;
+    }
+  }
+
+  .version-label {
+    font-size: var(--ls-font-size-sm);
+    font-weight: 600;
+    color: var(--ldesign-text-color-primary);
+  }
+
+  .version-number {
+    font-size: var(--ls-font-size-lg);
+    font-weight: 700;
+    font-family: 'Consolas', 'Monaco', monospace;
+    color: var(--ldesign-brand-color);
+    margin: var(--ls-spacing-xs) 0;
+  }
+
+  .version-description {
+    font-size: var(--ls-font-size-xs);
+    color: var(--ldesign-text-color-secondary);
+    line-height: 1.5;
+    margin-bottom: var(--ls-spacing-sm);
+    min-height: 36px;
+  }
+
+  .version-actions {
+    display: flex;
+    gap: var(--ls-spacing-xs);
+    margin-top: auto;
+
+    button {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--ls-spacing-xs);
+      padding: var(--ls-spacing-xs) var(--ls-spacing-sm);
+      border: none;
+      border-radius: var(--ls-border-radius-base);
+      font-size: var(--ls-font-size-xs);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.install-recommended-btn {
+        background: var(--ldesign-brand-color);
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: var(--ldesign-brand-color-hover);
+          transform: translateY(-1px);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+
+      &.switch-recommended-btn {
+        background: var(--ldesign-success-color);
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: var(--ldesign-success-color-hover);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .current-indicator {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--ls-spacing-xs);
+      padding: var(--ls-spacing-xs) var(--ls-spacing-sm);
+      background: var(--ldesign-success-color-1);
+      color: var(--ldesign-success-color);
+      border-radius: var(--ls-border-radius-base);
+      font-size: var(--ls-font-size-xs);
+      font-weight: 600;
+    }
+  }
 }
 
 .install-form {
