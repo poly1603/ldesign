@@ -30,10 +30,11 @@
           <span>当前版本</span>
         </h2>
         <div class="version-info">
-          <div class="version-number">{{ nodeVersions.current || 'N/A' }}</div>
+          <div class="version-number">{{ displayCurrentVersion }}</div>
           <div class="version-status">
             <span class="status-dot active"></span>
             <span>正在使用</span>
+            <span v-if="!nodeVersions.current && systemNodeVersion" class="system-badge">(系统)</span>
           </div>
         </div>
       </div>
@@ -58,6 +59,12 @@
                   切换
                 </button>
                 <span v-else class="current-badge">当前</span>
+                <button class="delete-btn" 
+                  @click="uninstallVersion(version)"
+                  :disabled="version === nodeVersions.current"
+                  :title="version === nodeVersions.current ? '无法删除当前使用的版本' : '删除此版本'">
+                  <Trash2 :size="14" />
+                </button>
               </div>
             </div>
           </div>
@@ -91,20 +98,31 @@
             <div class="version-number">{{ version.version }}</div>
             <div class="version-description">{{ version.description }}</div>
             <div class="version-actions">
-              <button v-if="!isVersionInstalled(version.version)" 
-                class="install-recommended-btn" 
-                @click="installVersion(version.version)"
-                :disabled="installing">
-                <Download :size="14" />
-                <span>安装</span>
-              </button>
-              <button v-else-if="version.version !== nodeVersions.current" 
-                class="switch-recommended-btn" 
-                @click="switchVersion(version.version)"
-                :disabled="switching">
-                <RefreshCw :size="14" />
-                <span>切换</span>
-              </button>
+              <template v-if="isVersionInstalling(version.version)">
+                <button class="installing-btn" disabled>
+                  <Loader2 :size="14" class="spinner" />
+                  <span>安装中 {{ getVersionProgress(version.version)?.progress }}%</span>
+                </button>
+                <button class="view-progress-btn" @click="showInstallProgress(version.version)">
+                  <Eye :size="14" />
+                </button>
+              </template>
+              <template v-else-if="!isVersionInstalled(version.version)">
+                <button class="install-recommended-btn" 
+                  @click="installVersion(version.version)"
+                  :disabled="installing">
+                  <Download :size="14" />
+                  <span>安装</span>
+                </button>
+              </template>
+              <template v-else-if="version.version !== nodeVersions.current">
+                <button class="switch-recommended-btn" 
+                  @click="switchVersion(version.version)"
+                  :disabled="switching">
+                  <RefreshCw :size="14" />
+                  <span>切换</span>
+                </button>
+              </template>
               <div v-else class="current-indicator">
                 <CheckCircle :size="14" />
                 <span>当前版本</span>
@@ -158,15 +176,39 @@
       <p>{{ successMessage }}</p>
       <button @click="clearSuccess" class="ok-btn">确定</button>
     </div>
+
+    <!-- 安装进度弹窗 -->
+    <InstallProgressModal
+      v-if="currentProgress"
+      v-model:visible="showProgressModal"
+      :title="`安装 Node.js ${currentProgressVersion}`"
+      :progress-percentage="currentProgress.progress"
+      :current-step="currentProgress.step"
+      :logs="currentProgress.logs"
+      :is-complete="currentProgress.isComplete"
+      @cancel="cancelInstall"
+      @close="showProgressModal = false"
+      @clear-logs="clearProgressLogs"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { RefreshCw, Loader2, CheckCircle, XCircle, Download, Circle as CircleIcon, Star } from 'lucide-vue-next'
+import { RefreshCw, Loader2, CheckCircle, XCircle, Download, Circle as CircleIcon, Star, Eye, Trash2 } from 'lucide-vue-next'
 import FnmInstaller from '../components/FnmInstaller.vue'
+import InstallProgressModal from '../components/InstallProgressModal.vue'
 import { useApi } from '../composables/useApi'
 import { useWebSocket } from '../composables/useWebSocket'
+
+// 安装进度数据结构
+interface InstallProgress {
+  version: string
+  progress: number
+  step: string
+  logs: Array<{ time: string; message: string; type: string }>
+  isComplete: boolean
+}
 
 // 响应式数据
 const loading = ref(true)
@@ -178,6 +220,11 @@ const successMessage = ref<string | null>(null)
 const installingVersion = ref<string | null>(null)
 const versionFilter = ref<'lts' | 'latest' | 'all'>('lts')
 const newVersionInput = ref('')
+
+// 安装进度管理
+const installProgressMap = ref<Map<string, InstallProgress>>(new Map())
+const showProgressModal = ref(false)
+const currentProgressVersion = ref<string | null>(null)
 
 // fnm 状态
 const fnmStatus = ref({
@@ -192,6 +239,9 @@ const nodeVersions = ref({
   current: null as string | null,
   available: [] as any[]
 })
+
+// 系统 Node 版本
+const systemNodeVersion = ref<string | null>(null)
 
 // 可用版本列表
 const availableVersions = ref<any[]>([])
@@ -214,6 +264,28 @@ const isVersionInstalled = (version: string) => {
   return nodeVersions.value.installed.some(v => v.includes(version) || version.includes(v))
 }
 
+// 检查版本是否正在安装
+const isVersionInstalling = (version: string) => {
+  const progress = installProgressMap.value.get(version)
+  return progress && !progress.isComplete
+}
+
+// 获取版本安装进度
+const getVersionProgress = (version: string) => {
+  return installProgressMap.value.get(version)
+}
+
+// 当前进度数据（用于弹窗）
+const currentProgress = computed(() => {
+  if (!currentProgressVersion.value) return null
+  return installProgressMap.value.get(currentProgressVersion.value)
+})
+
+// 显示的当前版本（优先显示管理工具版本，否则显示系统版本）
+const displayCurrentVersion = computed(() => {
+  return nodeVersions.value.current || systemNodeVersion.value || 'N/A'
+})
+
 // API 实例
 const api = useApi()
 
@@ -235,6 +307,18 @@ const checkFnmStatus = async () => {
   }
 }
 
+// 获取系统 Node 版本
+const getSystemNodeVersion = async () => {
+  try {
+    const response = await api.get('/api/system/node-version')
+    if (response.success && response.data.version) {
+      systemNodeVersion.value = response.data.version
+    }
+  } catch (err) {
+    console.error('获取系统 Node 版本失败:', err)
+  }
+}
+
 // 获取 Node 版本信息
 const getNodeVersions = async () => {
   try {
@@ -242,6 +326,8 @@ const getNodeVersions = async () => {
     if (response.success) {
       nodeVersions.value = response.data
     }
+    // 同时获取系统版本
+    await getSystemNodeVersion()
   } catch (err) {
     console.error('获取 Node 版本失败:', err)
   }
@@ -312,6 +398,32 @@ const switchVersion = async (version: string) => {
   }
 }
 
+// 删除版本
+const uninstallVersion = async (version: string) => {
+  // 不能删除当前使用的版本
+  if (version === nodeVersions.value.current) {
+    error.value = '无法删除当前正在使用的版本'
+    return
+  }
+
+  // 确认删除
+  if (!confirm(`确定要删除 Node.js ${version} 吗？`)) {
+    return
+  }
+
+  try {
+    const response = await api.post('/api/fnm/uninstall-node', { version })
+    if (response.success) {
+      successMessage.value = response.data.message
+      await getNodeVersions() // 刷新版本信息
+    } else {
+      error.value = response.message || '删除失败'
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : '删除失败'
+  }
+}
+
 // 安装版本
 const installVersion = async (version?: string) => {
   const versionToInstall = version || newVersionInput.value.trim()
@@ -321,20 +433,122 @@ const installVersion = async (version?: string) => {
   installingVersion.value = versionToInstall
   error.value = null
 
+  // 初始化安装进度
+  const progress: InstallProgress = {
+    version: versionToInstall,
+    progress: 0,
+    step: '准备安装...',
+    logs: [{
+      time: new Date().toLocaleTimeString(),
+      message: `开始安装 Node.js ${versionToInstall}`,
+      type: 'info'
+    }],
+    isComplete: false
+  }
+  installProgressMap.value.set(versionToInstall, progress)
+
   try {
     const response = await api.postLongOperation('/api/fnm/install-node', { version: versionToInstall })
     if (response.success) {
       successMessage.value = response.data.message
       if (!version) newVersionInput.value = '' // 只有手动输入时才清空
+      
+      // 标记安装完成
+      const finalProgress = installProgressMap.value.get(versionToInstall)
+      if (finalProgress) {
+        finalProgress.isComplete = true
+        finalProgress.progress = 100
+        finalProgress.step = '安装完成'
+        finalProgress.logs.push({
+          time: new Date().toLocaleTimeString(),
+          message: response.data.message || '安装成功',
+          type: 'success'
+        })
+      }
+      
       await getNodeVersions() // 刷新版本信息
     } else {
       error.value = response.message || '安装失败'
+      
+      // 标记安装失败
+      const failedProgress = installProgressMap.value.get(versionToInstall)
+      if (failedProgress) {
+        failedProgress.isComplete = true
+        failedProgress.step = '安装失败'
+        failedProgress.logs.push({
+          time: new Date().toLocaleTimeString(),
+          message: response.message || '安装失败',
+          type: 'error'
+        })
+      }
     }
   } catch (err) {
     error.value = err instanceof Error ? err.message : '安装失败'
+    
+    // 标记安装失败
+    const failedProgress = installProgressMap.value.get(versionToInstall)
+    if (failedProgress) {
+      failedProgress.isComplete = true
+      failedProgress.step = '安装失败'
+      failedProgress.logs.push({
+        time: new Date().toLocaleTimeString(),
+        message: err instanceof Error ? err.message : '安装失败',
+        type: 'error'
+      })
+    }
   } finally {
     installing.value = false
     installingVersion.value = null
+  }
+}
+
+// 打开安装进度弹窗
+const showInstallProgress = (version: string) => {
+  currentProgressVersion.value = version
+  showProgressModal.value = true
+}
+
+// 取消安装
+const cancelInstall = async () => {
+  if (!currentProgressVersion.value) return
+
+  try {
+    const response = await api.post('/api/fnm/cancel-install', { 
+      version: currentProgressVersion.value 
+    })
+    
+    if (response.success) {
+      const progress = installProgressMap.value.get(currentProgressVersion.value)
+      if (progress) {
+        progress.isComplete = true
+        progress.step = '已取消'
+        progress.logs.push({
+          time: new Date().toLocaleTimeString(),
+          message: response.data.message || '安装已取消',
+          type: 'warning'
+        })
+      }
+      
+      successMessage.value = response.data.message
+      showProgressModal.value = false
+      currentProgressVersion.value = null
+      installing.value = false
+      installingVersion.value = null
+    } else {
+      error.value = response.message || '取消安装失败'
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : '取消安装失败'
+  }
+}
+
+// 清空日志
+const clearProgressLogs = () => {
+  if (currentProgressVersion.value) {
+    const progress = installProgressMap.value.get(currentProgressVersion.value)
+    if (progress) {
+      progress.logs = []
+    }
   }
 }
 
@@ -390,10 +604,33 @@ const setupWebSocketListeners = () => {
   unsubscribeList.push(subscribe('node-install-start', (data) => {
     installing.value = true
     installingVersion.value = data.version
+    
+    const progress = installProgressMap.value.get(data.version)
+    if (progress) {
+      progress.step = '开始下载...'
+      progress.progress = 10
+      progress.logs.push({
+        time: new Date().toLocaleTimeString(),
+        message: data.message,
+        type: 'info'
+      })
+    }
     console.log('Node安装开始:', data.message)
   }))
 
   unsubscribeList.push(subscribe('node-install-progress', (data) => {
+    if (data.version) {
+      const progress = installProgressMap.value.get(data.version)
+      if (progress) {
+        progress.step = data.step || '安装中...'
+        progress.progress = data.progress || progress.progress + 10
+        progress.logs.push({
+          time: new Date().toLocaleTimeString(),
+          message: data.message,
+          type: 'info'
+        })
+      }
+    }
     console.log('Node安装进度:', data.message)
   }))
 
@@ -401,6 +638,21 @@ const setupWebSocketListeners = () => {
     installing.value = false
     installingVersion.value = null
     successMessage.value = data.message
+    
+    if (data.version) {
+      const progress = installProgressMap.value.get(data.version)
+      if (progress) {
+        progress.isComplete = true
+        progress.progress = 100
+        progress.step = '安装完成'
+        progress.logs.push({
+          time: new Date().toLocaleTimeString(),
+          message: data.message,
+          type: 'success'
+        })
+      }
+    }
+    
     console.log('Node安装完成:', data.message)
     // 刷新版本列表
     setTimeout(() => {
@@ -412,6 +664,20 @@ const setupWebSocketListeners = () => {
     installing.value = false
     installingVersion.value = null
     error.value = data.message
+    
+    if (data.version) {
+      const progress = installProgressMap.value.get(data.version)
+      if (progress) {
+        progress.isComplete = true
+        progress.step = '安装失败'
+        progress.logs.push({
+          time: new Date().toLocaleTimeString(),
+          message: data.message,
+          type: 'error'
+        })
+      }
+    }
+    
     console.error('Node安装失败:', data.message)
   }))
 
@@ -435,6 +701,33 @@ const setupWebSocketListeners = () => {
     switching.value = false
     error.value = data.message
     console.error('Node切换失败:', data.message)
+  }))
+
+  // Node版本安装取消相关消息
+  unsubscribeList.push(subscribe('node-install-cancelled', (data) => {
+    installing.value = false
+    installingVersion.value = null
+    
+    if (data.version) {
+      const progress = installProgressMap.value.get(data.version)
+      if (progress) {
+        progress.isComplete = true
+        progress.step = '已取消'
+        progress.logs.push({
+          time: new Date().toLocaleTimeString(),
+          message: data.message,
+          type: 'warning'
+        })
+      }
+    }
+    
+    console.log('Node安装已取消:', data.message)
+  }))
+
+  // Shell 重启提示
+  unsubscribeList.push(subscribe('shell-restart-needed', (data) => {
+    successMessage.value = data.message + '\n\n请重新打开终端窗口以使 FNM 环境生效'
+    console.log('Shell 重启提示:', data.message)
   }))
 }
 
@@ -580,7 +873,7 @@ onUnmounted(() => {
       font-family: 'Consolas', 'Monaco', monospace;
     }
 
-    .version-status {
+  .version-status {
       display: flex;
       align-items: center;
       gap: var(--ls-spacing-xs);
@@ -592,6 +885,15 @@ onUnmounted(() => {
         height: 8px;
         border-radius: 50%;
         background: var(--ldesign-success-color);
+      }
+
+      .system-badge {
+        margin-left: var(--ls-spacing-xs);
+        padding: 2px 6px;
+        background: var(--ldesign-gray-color-1);
+        color: var(--ldesign-text-color-secondary);
+        border-radius: var(--ls-border-radius-sm);
+        font-size: 10px;
       }
     }
   }
@@ -657,6 +959,32 @@ onUnmounted(() => {
       border-radius: var(--ls-border-radius-sm);
       font-size: var(--ls-font-size-xs);
       font-weight: 500;
+    }
+
+    .delete-btn {
+      padding: 4px 8px;
+      background: transparent;
+      color: var(--ldesign-error-color);
+      border: 1px solid var(--ldesign-error-color);
+      border-radius: var(--ls-border-radius-sm);
+      cursor: pointer;
+      font-size: var(--ls-font-size-xs);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover:not(:disabled) {
+        background: var(--ldesign-error-color);
+        color: white;
+      }
+
+      &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        border-color: var(--ldesign-border-color);
+        color: var(--ldesign-text-color-disabled);
+      }
     }
   }
 }
@@ -813,6 +1141,29 @@ onUnmounted(() => {
         &:disabled {
           opacity: 0.5;
           cursor: not-allowed;
+        }
+      }
+
+      &.installing-btn {
+        background: var(--ldesign-warning-color);
+        color: white;
+        cursor: not-allowed;
+
+        .spinner {
+          animation: spin 1s linear infinite;
+        }
+      }
+
+      &.view-progress-btn {
+        flex: 0 0 auto;
+        padding: var(--ls-spacing-xs);
+        background: var(--ldesign-bg-color-component);
+        border: 1px solid var(--ldesign-border-color);
+        color: var(--ldesign-brand-color);
+
+        &:hover {
+          background: var(--ldesign-bg-color-component-hover);
+          border-color: var(--ldesign-brand-color);
         }
       }
     }

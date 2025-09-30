@@ -13,6 +13,7 @@ import { existsSync } from 'fs'
 import { logger } from '../utils/logger.js'
 import { apiRouter } from './routes/api.js'
 import { fnmRouter } from './routes/fnm.js'
+import { voltaRouter } from './routes/volta.js'
 import { setupWebSocket, connectionManager } from './websocket.js'
 
 // 获取当前文件的目录路径，兼容 ESM 和 CJS
@@ -64,6 +65,7 @@ export async function createServer(options: ServerOptions) {
   // API 路由
   app.use('/api', apiRouter)
   app.use('/api/fnm', fnmRouter)
+  app.use('/api/volta', voltaRouter)
 
   // 静态文件服务
   // 尝试多个可能的路径，优先使用构建后的文件

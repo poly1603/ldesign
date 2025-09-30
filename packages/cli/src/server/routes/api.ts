@@ -327,6 +327,41 @@ function getSystemInfo(): Record<string, any> {
 }
 
 /**
+ * 获取系统 Node 版本（不依赖版本管理工具）
+ */
+apiRouter.get('/system/node-version', (_req, res) => {
+  try {
+    // 直接获取当前运行的 Node.js 版本
+    const version = process.version
+    
+    // 也可以尝试从命令行获取（备用方案）
+    let commandVersion = null
+    try {
+      commandVersion = executeCommand('node --version')
+    } catch {
+      // 忽略错误
+    }
+
+    res.json({
+      success: true,
+      data: {
+        version: version || commandVersion,
+        fromProcess: true,
+        platform: process.platform,
+        arch: process.arch
+      }
+    })
+  } catch (error) {
+    apiLogger.error('获取系统 Node 版本失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '获取系统 Node 版本失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
  * 健康检查接口
  */
 apiRouter.get('/health', (_req, res) => {

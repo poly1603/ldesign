@@ -5,23 +5,184 @@
 
 import { Router } from 'express'
 import type { IRouter } from 'express'
-import { execSync, spawn } from 'child_process'
+import { execSync, spawn, ChildProcess } from 'child_process'
 import os from 'os'
-import { resolve } from 'path'
+import { resolve, join, dirname } from 'path'
 import https from 'https'
-import { createWriteStream, existsSync } from 'fs'
+import { createWriteStream, existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { logger } from '../../utils/logger.js'
 import { connectionManager } from '../websocket.js'
 
 const fnmLogger = logger.withPrefix('FNM')
 export const fnmRouter: IRouter = Router()
 
+// 存储活跃的安装进程
+const activeInstallProcesses = new Map<string, ChildProcess>()
+
+/**
+ * 配置 PowerShell Profile 以自动加载 FNM 环境
+ */
+function setupPowerShellProfile(): boolean {
+  try {
+    const platform = process.platform
+    
+    if (platform !== 'win32') {
+      fnmLogger.info('非 Windows 系统，跳过 PowerShell Profile 配置')
+      return true
+    }
+    
+    // 获取 PowerShell Profile 路径
+    const profilePathCmd = '$PROFILE'
+    const profilePath = execSync(profilePathCmd, { 
+      encoding: 'utf-8', 
+      shell: 'powershell.exe' 
+    }).trim()
+    
+    fnmLogger.info(`PowerShell Profile 路径: ${profilePath}`)
+    
+    // FNM 初始化代码
+    const fnmInitCode = `
+# FNM (Fast Node Manager) 自动配置
+# 由 LDesign CLI 自动生成
+fnm env --shell powershell | Out-String | Invoke-Expression
+`
+    
+    let profileContent = ''
+    let needsUpdate = false
+    
+    // 检查 Profile 文件是否存在
+    if (existsSync(profilePath)) {
+      profileContent = readFileSync(profilePath, 'utf-8')
+      
+      // 检查是否已经包含 FNM 配置
+      if (profileContent.includes('fnm env') && profileContent.includes('Invoke-Expression')) {
+        fnmLogger.info('PowerShell Profile 已包含 FNM 配置')
+        return true
+      }
+      
+      needsUpdate = true
+    } else {
+      // Profile 不存在，需要创建
+      needsUpdate = true
+      
+      // 确保目录存在
+      const profileDir = dirname(profilePath)
+      if (!existsSync(profileDir)) {
+        mkdirSync(profileDir, { recursive: true })
+        fnmLogger.info(`创建 Profile 目录: ${profileDir}`)
+      }
+    }
+    
+    if (needsUpdate) {
+      // 添加 FNM 配置
+      const newContent = profileContent + '\n' + fnmInitCode
+      writeFileSync(profilePath, newContent, 'utf-8')
+      fnmLogger.info('PowerShell Profile 配置完成')
+      
+      // 通知用户需要重启 shell
+      connectionManager.broadcast({
+        type: 'shell-restart-needed',
+        data: {
+          message: 'PowerShell Profile 已更新，请重启终端以应用更改',
+          profilePath
+        }
+      })
+    }
+    
+    return true
+  } catch (error) {
+    fnmLogger.error('PowerShell Profile 配置失败:', error)
+    return false
+  }
+}
+
+/**
+ * 刷新当前 shell 会话的 FNM 环境（立即生效）
+ */
+function refreshFnmEnvInCurrentShell(): void {
+  try {
+    // 尝试刷新当前进程的 PATH
+    const fnmEnv = getFnmEnv()
+    
+    // 更新当前 Node.js 进程的环境变量
+    if (fnmEnv.PATH) {
+      process.env.PATH = fnmEnv.PATH
+      fnmLogger.info('FNM 环境变量已刷新')
+    }
+    
+    if (fnmEnv.FNM_MULTISHELL_PATH) {
+      process.env.FNM_MULTISHELL_PATH = fnmEnv.FNM_MULTISHELL_PATH
+    }
+    
+    if (fnmEnv.FNM_VERSION_FILE_STRATEGY) {
+      process.env.FNM_VERSION_FILE_STRATEGY = fnmEnv.FNM_VERSION_FILE_STRATEGY
+    }
+    
+    if (fnmEnv.FNM_DIR) {
+      process.env.FNM_DIR = fnmEnv.FNM_DIR
+    }
+    
+    if (fnmEnv.FNM_LOGLEVEL) {
+      process.env.FNM_LOGLEVEL = fnmEnv.FNM_LOGLEVEL
+    }
+    
+    if (fnmEnv.FNM_NODE_DIST_MIRROR) {
+      process.env.FNM_NODE_DIST_MIRROR = fnmEnv.FNM_NODE_DIST_MIRROR
+    }
+    
+    if (fnmEnv.FNM_ARCH) {
+      process.env.FNM_ARCH = fnmEnv.FNM_ARCH
+    }
+  } catch (error) {
+    fnmLogger.warn('刷新 FNM 环境变量失败:', error)
+  }
+}
+
+/**
+ * 获取 FNM 环境变量
+ */
+function getFnmEnv(): Record<string, string> {
+  try {
+    // 获取 fnm env 输出
+    const envOutput = execSync('fnm env --shell powershell', { encoding: 'utf-8' })
+    const env: Record<string, string> = {}
+    
+    // 解析环境变量（PowerShell 格式）
+    const lines = envOutput.split('\n')
+    for (const line of lines) {
+      // 匹配 $env:VAR = "value" 格式（支持多行值）
+      const match = line.match(/\$env:(\w+)\s*=\s*"(.+?)"\s*$/)
+      if (match) {
+        env[match[1]] = match[2]
+      }
+    }
+    
+    fnmLogger.debug('FNM 环境变量:', env)
+    return env
+  } catch (error) {
+    fnmLogger.warn('无法获取 FNM 环境变量:', error)
+    return {}
+  }
+}
+
 /**
  * 执行命令并返回结果
  */
-function executeCommand(command: string): string | null {
+function executeCommand(command: string, useFnmEnv: boolean = false): string | null {
   try {
-    return execSync(command, { encoding: 'utf-8', timeout: 10000 }).trim()
+    const options: any = { 
+      encoding: 'utf-8', 
+      timeout: 10000,
+      shell: 'powershell.exe'
+    }
+    
+    // 如果需要 FNM 环境，则添加环境变量
+    if (useFnmEnv) {
+      const fnmEnv = getFnmEnv()
+      options.env = { ...process.env, ...fnmEnv }
+    }
+    
+    return execSync(command, options).trim()
   } catch (error) {
     return null
   }
@@ -30,12 +191,31 @@ function executeCommand(command: string): string | null {
 /**
  * 异步执行命令
  */
-function executeCommandAsync(command: string, args: string[], onProgress?: (data: string) => void): Promise<{ success: boolean, output: string, error?: string }> {
+function executeCommandAsync(
+  command: string, 
+  args: string[], 
+  onProgress?: (data: string) => void, 
+  useFnmEnv: boolean = false,
+  processId?: string
+): Promise<{ success: boolean, output: string, error?: string, child?: ChildProcess }> {
   return new Promise((resolve) => {
-    const child = spawn(command, args, {
-      shell: true,
+    const spawnOptions: any = {
+      shell: 'powershell.exe',
       stdio: ['pipe', 'pipe', 'pipe']
-    })
+    }
+    
+    // 如果需要 FNM 环境，则添加环境变量
+    if (useFnmEnv) {
+      const fnmEnv = getFnmEnv()
+      spawnOptions.env = { ...process.env, ...fnmEnv }
+    }
+    
+    const child = spawn(command, args, spawnOptions)
+    
+    // 如果提供了 processId，则存储进程引用
+    if (processId) {
+      activeInstallProcesses.set(processId, child)
+    }
 
     let output = ''
     let errorOutput = ''
@@ -51,24 +231,37 @@ function executeCommandAsync(command: string, args: string[], onProgress?: (data
     child.stderr?.on('data', (data) => {
       const text = data.toString()
       errorOutput += text
-      if (onProgress) {
+      // 不要将 PowerShell 错误信息发送给前端
+      if (onProgress && !text.includes('所在位置') && !text.includes('CategoryInfo')) {
         onProgress(text)
       }
     })
 
     child.on('close', (code) => {
+      // 清理进程引用
+      if (processId) {
+        activeInstallProcesses.delete(processId)
+      }
+      
       resolve({
         success: code === 0,
         output: output.trim(),
-        error: code !== 0 ? errorOutput.trim() : undefined
+        error: code !== 0 ? errorOutput.trim() : undefined,
+        child
       })
     })
 
     child.on('error', (error) => {
+      // 清理进程引用
+      if (processId) {
+        activeInstallProcesses.delete(processId)
+      }
+      
       resolve({
         success: false,
         output: '',
-        error: error.message
+        error: error.message,
+        child
       })
     })
   })
@@ -229,7 +422,7 @@ fnmRouter.post('/install', async (_req, res) => {
           '4. 或者考虑使用 Volta 代替'
         )
       }
-    }
+    } else if (platform === 'darwin' || platform === 'linux') {
       // macOS/Linux 平台 - 使用安装脚本
       fnmLogger.info('正在安装 fnm (Unix)...')
       
@@ -293,17 +486,19 @@ fnmRouter.post('/install', async (_req, res) => {
  */
 fnmRouter.get('/versions', (_req, res) => {
   try {
-    // 获取已安装的版本
-    const installedOutput = executeCommand('fnm list')
-    const currentOutput = executeCommand('fnm current')
+    // 获取已安装的版本（使用 FNM 环境）
+    const installedOutput = executeCommand('fnm list', true)
+    const currentOutput = executeCommand('fnm current', true)
 
     // 解析已安装版本
+    // fnm list 输出格式: "* v20.11.0 default" 或 "v20.11.0"
     const installed = installedOutput
       ? installedOutput.split('\n')
           .map(line => line.trim())
-          .filter(line => line.match(/^v?\d+\.\d+\.\d+/))
+          .filter(line => line.length > 0 && line !== '* system') // 过滤空行和 system
           .map(line => {
-            const match = line.match(/v?(\d+\.\d+\.\d+)/)
+            // 匹配 "* v20.11.0 default" 或 "v20.11.0" 格式
+            const match = line.match(/\*?\s*v?(\d+\.\d+\.\d+)/)
             return match ? match[1] : null
           })
           .filter(Boolean) as string[]
@@ -350,44 +545,204 @@ fnmRouter.post('/install-node', async (req, res) => {
 
     fnmLogger.info(`开始安装 Node.js ${version}`)
 
-    const result = await executeCommandAsync('fnm', ['install', version], (data) => {
-      connectionManager.broadcast({
-        type: 'node-install-progress',
-        data: { message: data.trim(), version }
-      })
-    })
+    // 使用定时器模拟进度更新（因为 fnm install 使用交互式进度条，在非 TTY 环境下无输出）
+    let simulatedProgress = 20
+    let progressInterval: NodeJS.Timeout | null = setInterval(() => {
+      if (simulatedProgress < 85) {
+        simulatedProgress += 15
+        connectionManager.broadcast({
+          type: 'node-install-progress',
+          data: { 
+            message: `正在下载并安装 Node.js ${version}...`,
+            version,
+            progress: simulatedProgress,
+            step: '下载并安装中...'
+          }
+        })
+      }
+    }, 2000)
 
-    if (result.success) {
-      connectionManager.broadcast({
-        type: 'node-install-complete',
-        data: {
-          message: `Node.js ${version} 安装成功`,
-          version,
-          success: true
+    try {
+      // 使用 FNM 环境执行安装，添加 --progress=never 禁用交互式进度条
+      const processId = `install-${version}`
+      const result = await executeCommandAsync('fnm', ['install', version, '--progress=never'], (data) => {
+        const message = data.trim()
+        if (message && !message.includes('所在位置') && !message.includes('CategoryInfo')) {
+          fnmLogger.info(`FNM output: ${message}`)
+          connectionManager.broadcast({
+            type: 'node-install-progress',
+            data: { 
+              message, 
+              version,
+              progress: Math.min(simulatedProgress, 95),
+              step: message
+            }
+          })
         }
-      })
+      }, true, processId)
 
-      res.json({
-        success: true,
-        data: {
-          message: `Node.js ${version} 安装成功`,
-          version
-        }
-      })
-    } else {
-      throw new Error(result.error || '安装失败')
+      // 清除进度定时器
+      if (progressInterval) {
+        clearInterval(progressInterval)
+        progressInterval = null
+      }
+
+      // FNM 在已安装时返回非0退出码但实际安装成功，需要检查版本是否已存在
+      const isAlreadyInstalled = result.error?.includes('already installed') || result.error?.includes('Version already installed')
+      
+      if (result.success || isAlreadyInstalled) {
+        // 发送最终进度
+        connectionManager.broadcast({
+          type: 'node-install-progress',
+          data: { 
+            message: '安装完成，正在验证...',
+            version,
+            progress: 95,
+            step: '验证安装...'
+          }
+        })
+
+        connectionManager.broadcast({
+          type: 'node-install-complete',
+          data: {
+            message: `Node.js ${version} 安装成功`,
+            version,
+            success: true
+          }
+        })
+
+        // 等待 WebSocket 消息发送完成
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        res.json({
+          success: true,
+          data: {
+            message: `Node.js ${version} 安装成功`,
+            version
+          }
+        })
+      } else {
+        throw new Error(result.error || '安装失败')
+      }
+    } finally {
+      // 确保定时器被清除
+      if (progressInterval) {
+        clearInterval(progressInterval)
+      }
     }
   } catch (error) {
     fnmLogger.error('安装 Node 版本失败:', error)
 
     connectionManager.broadcast({
       type: 'node-install-error',
-      data: { message: error instanceof Error ? error.message : '安装失败' }
+      data: { 
+        message: error instanceof Error ? error.message : '安装失败',
+        version: req.body.version
+      }
     })
 
     res.status(500).json({
       success: false,
       message: '安装 Node 版本失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 删除 Node 版本
+ */
+fnmRouter.post('/uninstall-node', async (req, res) => {
+  try {
+    const { version } = req.body
+
+    if (!version) {
+      return res.status(400).json({
+        success: false,
+        message: '请提供要删除的版本号'
+      })
+    }
+
+    fnmLogger.info(`开始删除 Node.js ${version}`)
+
+    // 使用 FNM 环境执行删除
+    const result = await executeCommandAsync('fnm', ['uninstall', version], (data) => {
+      const message = data.trim()
+      if (message && !message.includes('所在位置') && !message.includes('CategoryInfo')) {
+        fnmLogger.info(`FNM output: ${message}`)
+      }
+    }, true)
+
+    if (result.success) {
+      res.json({
+        success: true,
+        data: {
+          message: `Node.js ${version} 删除成功`,
+          version
+        }
+      })
+    } else {
+      throw new Error(result.error || '删除失败')
+    }
+  } catch (error) {
+    fnmLogger.error('删除 Node 版本失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '删除 Node 版本失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 取消 Node 版本安装
+ */
+fnmRouter.post('/cancel-install', async (req, res) => {
+  try {
+    const { version } = req.body
+
+    if (!version) {
+      return res.status(400).json({
+        success: false,
+        message: '请提供要取消安装的版本号'
+      })
+    }
+
+    const processId = `install-${version}`
+    const process = activeInstallProcesses.get(processId)
+
+    if (!process) {
+      return res.status(404).json({
+        success: false,
+        message: '未找到该版本的安装进程'
+      })
+    }
+
+    // 终止进程
+    process.kill('SIGTERM')
+    activeInstallProcesses.delete(processId)
+
+    fnmLogger.info(`已取消 Node.js ${version} 的安装`)
+
+    connectionManager.broadcast({
+      type: 'node-install-cancelled',
+      data: {
+        message: `已取消 Node.js ${version} 的安装`,
+        version
+      }
+    })
+
+    res.json({
+      success: true,
+      data: {
+        message: `已取消 Node.js ${version} 的安装`
+      }
+    })
+  } catch (error) {
+    fnmLogger.error('取消安装失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '取消安装失败',
       error: error instanceof Error ? error.message : String(error)
     })
   }
@@ -485,7 +840,7 @@ fnmRouter.get('/recommended-versions', (_req, res) => {
 })
 
 /**
- * 切换 Node 版本
+ * 切换 Node 版本（设置为默认版本）
  */
 fnmRouter.post('/use', async (req, res) => {
   try {
@@ -505,28 +860,45 @@ fnmRouter.post('/use', async (req, res) => {
 
     fnmLogger.info(`开始切换到 Node.js ${version}`)
 
-    const result = await executeCommandAsync('fnm', ['use', version], (data) => {
-      connectionManager.broadcast({
-        type: 'node-switch-progress',
-        data: { message: data.trim(), version }
-      })
-    })
+    // Windows 上使用 fnm default 来设置默认版本（fnm use 需要 shell 集成）
+    const result = await executeCommandAsync('fnm', ['default', version], (data) => {
+      const message = data.trim()
+      if (message && !message.includes('所在位置') && !message.includes('CategoryInfo')) {
+        connectionManager.broadcast({
+          type: 'node-switch-progress',
+          data: { message, version }
+        })
+      }
+    }, true)
 
     if (result.success) {
+      // 自动配置 PowerShell Profile
+      fnmLogger.info('开始配置 PowerShell Profile...')
+      const profileSetup = setupPowerShellProfile()
+      
+      if (profileSetup) {
+        fnmLogger.info('PowerShell Profile 配置成功')
+      }
+      
+      // 刷新当前进程的环境变量
+      refreshFnmEnvInCurrentShell()
+      
       connectionManager.broadcast({
         type: 'node-switch-complete',
         data: {
-          message: `已切换到 Node.js ${version}`,
+          message: `已将 Node.js ${version} 设置为默认版本`,
           version,
-          success: true
+          success: true,
+          needsRestart: profileSetup
         }
       })
 
       res.json({
         success: true,
         data: {
-          message: `已切换到 Node.js ${version}`,
-          version
+          message: `已将 Node.js ${version} 设置为默认版本`,
+          version,
+          needsRestart: profileSetup
         }
       })
     } else {

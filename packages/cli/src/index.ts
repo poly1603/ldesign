@@ -47,7 +47,7 @@ function createCLI() {
   cli
     .command('ui', '打开 LDesign UI 管理界面')
     .option('-p, --port <port>', '指定端口号', { default: 3000 })
-    .option('-h, --host <host>', '指定主机地址', { default: 'localhost' })
+    .option('-H, --host <host>', '指定主机地址', { default: 'localhost' })
     .option('--no-open', '不自动打开浏览器')
     .action(async (options) => {
       try {
