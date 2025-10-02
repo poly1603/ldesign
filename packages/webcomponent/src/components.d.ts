@@ -11,7 +11,7 @@ import { ButtonColor, ButtonHTMLType, ButtonSize, ButtonVariant } from "./compon
 import { CalEvent } from "./components/calendar/calendar";
 import { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
 import { Placement } from "@floating-ui/dom";
-import { CloseReason, DrawerButton, DrawerLevel, DrawerPlacement, DrawerState, DrawerTheme, SizePreset, SnapPoint } from "./components/drawer/drawer.types";
+import { AnchorAlign, AnchorMode, CloseReason, DrawerButton, DrawerLevel, DrawerPlacement, DrawerState, DrawerTheme, SizePreset, SnapPoint } from "./components/drawer/drawer.types";
 import { DropdownItem, DropdownNode, DropdownPlacement, DropdownTrigger, DropdownVariant } from "./components/dropdown/dropdown";
 import { ImageViewerItem } from "./components/image-viewer/image-viewer";
 import { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
@@ -34,7 +34,7 @@ export { ButtonColor, ButtonHTMLType, ButtonSize, ButtonVariant } from "./compon
 export { CalEvent } from "./components/calendar/calendar";
 export { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
 export { Placement } from "@floating-ui/dom";
-export { CloseReason, DrawerButton, DrawerLevel, DrawerPlacement, DrawerState, DrawerTheme, SizePreset, SnapPoint } from "./components/drawer/drawer.types";
+export { AnchorAlign, AnchorMode, CloseReason, DrawerButton, DrawerLevel, DrawerPlacement, DrawerState, DrawerTheme, SizePreset, SnapPoint } from "./components/drawer/drawer.types";
 export { DropdownItem, DropdownNode, DropdownPlacement, DropdownTrigger, DropdownVariant } from "./components/dropdown/dropdown";
 export { ImageViewerItem } from "./components/image-viewer/image-viewer";
 export { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
@@ -1495,6 +1495,55 @@ export namespace Components {
     }
     interface LdesignDrawer {
         /**
+          * 锚点对齐方式
+          * @default 'start'
+         */
+        "anchorAlign": AnchorAlign;
+        /**
+          * 自动更新位置
+          * @default true
+         */
+        "anchorAutoUpdate": boolean;
+        /**
+          * 边界限制
+          * @default 'viewport'
+         */
+        "anchorBoundary": HTMLElement | string | 'viewport' | 'scrollParent';
+        /**
+          * 约束在边界内
+          * @default true
+         */
+        "anchorConstrain": boolean;
+        /**
+          * 锚点元素（选择器或元素）
+         */
+        "anchorElement"?: HTMLElement | string;
+        /**
+          * 自动翻转位置
+          * @default true
+         */
+        "anchorFlip": boolean;
+        /**
+          * 跟随滚动
+          * @default true
+         */
+        "anchorFollowScroll": boolean;
+        /**
+          * 部分遮罩（仅遮罩展开区域）
+          * @default true
+         */
+        "anchorMaskPartial": boolean;
+        /**
+          * 是否启用锚点定位
+          * @default 'disabled'
+         */
+        "anchorMode": AnchorMode;
+        /**
+          * 锚点偏移量
+          * @default { x: 0, y: 0 }
+         */
+        "anchorOffset": { x?: number; y?: number };
+        /**
           * 是否启用动画
           * @default true
          */
@@ -1547,6 +1596,11 @@ export namespace Components {
          */
         "container"?: string | HTMLElement;
         /**
+          * 性能优化：使用 CSS contain
+          * @default true
+         */
+        "cssContain": boolean;
+        /**
           * 自定义类名
           * @default ''
          */
@@ -1593,7 +1647,7 @@ export namespace Components {
         /**
           * 获取当前尺寸
          */
-        "getSize": () => Promise<{ width: number; height: number; }>;
+        "getSize": () => Promise<{ drawerWidth: number; drawerHeight: number; }>;
         /**
           * 获取当前状态
          */
@@ -1621,6 +1675,11 @@ export namespace Components {
           * 标题图标
          */
         "icon"?: string;
+        /**
+          * 性能优化：懒加载内容
+          * @default false
+         */
+        "lazyLoad": boolean;
         /**
           * 抽屉层级
           * @default 'normal'
@@ -1787,6 +1846,11 @@ export namespace Components {
           * @default true
          */
         "useTransform": boolean;
+        /**
+          * 性能优化：使用虚拟滚动
+          * @default false
+         */
+        "virtualScroll": boolean;
         /**
           * 是否显示抽屉
           * @default false
@@ -6048,7 +6112,7 @@ declare global {
         "drawerBeforeClose": { reason: CloseReason };
         "drawerClose": { reason: CloseReason };
         "drawerStateChange": { state: DrawerState };
-        "drawerResize": { width: number; height: number };
+        "drawerResize": { drawerWidth: number; drawerHeight: number };
         "drawerSwipe": { progress: number };
     }
     interface HTMLLdesignDrawerElement extends Components.LdesignDrawer, HTMLStencilElement {
@@ -8516,6 +8580,55 @@ declare namespace LocalJSX {
     }
     interface LdesignDrawer {
         /**
+          * 锚点对齐方式
+          * @default 'start'
+         */
+        "anchorAlign"?: AnchorAlign;
+        /**
+          * 自动更新位置
+          * @default true
+         */
+        "anchorAutoUpdate"?: boolean;
+        /**
+          * 边界限制
+          * @default 'viewport'
+         */
+        "anchorBoundary"?: HTMLElement | string | 'viewport' | 'scrollParent';
+        /**
+          * 约束在边界内
+          * @default true
+         */
+        "anchorConstrain"?: boolean;
+        /**
+          * 锚点元素（选择器或元素）
+         */
+        "anchorElement"?: HTMLElement | string;
+        /**
+          * 自动翻转位置
+          * @default true
+         */
+        "anchorFlip"?: boolean;
+        /**
+          * 跟随滚动
+          * @default true
+         */
+        "anchorFollowScroll"?: boolean;
+        /**
+          * 部分遮罩（仅遮罩展开区域）
+          * @default true
+         */
+        "anchorMaskPartial"?: boolean;
+        /**
+          * 是否启用锚点定位
+          * @default 'disabled'
+         */
+        "anchorMode"?: AnchorMode;
+        /**
+          * 锚点偏移量
+          * @default { x: 0, y: 0 }
+         */
+        "anchorOffset"?: { x?: number; y?: number };
+        /**
           * 是否启用动画
           * @default true
          */
@@ -8563,6 +8676,11 @@ declare namespace LocalJSX {
           * 容器选择器或元素
          */
         "container"?: string | HTMLElement;
+        /**
+          * 性能优化：使用 CSS contain
+          * @default true
+         */
+        "cssContain"?: boolean;
         /**
           * 自定义类名
           * @default ''
@@ -8626,6 +8744,11 @@ declare namespace LocalJSX {
           * 标题图标
          */
         "icon"?: string;
+        /**
+          * 性能优化：懒加载内容
+          * @default false
+         */
+        "lazyLoad"?: boolean;
         /**
           * 抽屉层级
           * @default 'normal'
@@ -8700,7 +8823,7 @@ declare namespace LocalJSX {
         /**
           * 大小变化
          */
-        "onDrawerResize"?: (event: LdesignDrawerCustomEvent<{ width: number; height: number }>) => void;
+        "onDrawerResize"?: (event: LdesignDrawerCustomEvent<{ drawerWidth: number; drawerHeight: number }>) => void;
         /**
           * 状态变化
          */
@@ -8788,6 +8911,11 @@ declare namespace LocalJSX {
           * @default true
          */
         "useTransform"?: boolean;
+        /**
+          * 性能优化：使用虚拟滚动
+          * @default false
+         */
+        "virtualScroll"?: boolean;
         /**
           * 是否显示抽屉
           * @default false

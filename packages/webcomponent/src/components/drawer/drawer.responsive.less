@@ -12,8 +12,16 @@
     // 更平滑的触摸滚动
     -webkit-overflow-scrolling: touch;
     
-    // 避免点击延迟
-    touch-action: manipulation;
+    // touch-action 设置：允许按方向滚动，但阻止不相关的触摸手势
+    &.drawer-left,
+    &.drawer-right {
+      touch-action: pan-y pinch-zoom; // 水平抽屉允许垂直滚动
+    }
+    
+    &.drawer-top,
+    &.drawer-bottom {
+      touch-action: pan-x pinch-zoom; // 垂直抽屉允许水平滚动
+    }
     
     // 禁用长按选中
     -webkit-user-select: none;
@@ -22,10 +30,17 @@
     // 禁用高亮
     -webkit-tap-highlight-color: transparent;
     
+    // GPU 加速 - 不使用 transform，避免覆盖动画的 transform
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    
     // 移动端拖动时禁用过渡
     &.drawer-dragging {
       transition: none !important;
     }
+    
+    // 渲染优化
+    contain: layout style paint;
   }
   
   .drawer-content {
@@ -88,10 +103,21 @@
     }
   }
   
-  // 移动端动画优化
-  &.drawer-visible .drawer-wrapper {
-    animation-duration: 250ms;
-    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  // 移动端动画优化 - 使用更流畅的动画
+  .drawer-wrapper {
+    // 使用适中的动画时间，不要过快或过慢
+    // 注意：不强制覆盖，使用组件设置的时长
+    transition-property: transform, opacity !important;
+    transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1) !important; // 更平滑的缓动函数
+    
+    // GPU加速 - 使用 will-change 而不是 transform
+    will-change: transform, opacity;
+  }
+  
+  // 遭罩层动画也要同步
+  .drawer-mask {
+    transition-property: opacity !important;
+    transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1) !important;
   }
 }
 

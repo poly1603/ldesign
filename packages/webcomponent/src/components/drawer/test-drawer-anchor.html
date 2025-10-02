@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawer Anchor Positioning Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .test-section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-section h2 {
+      color: #1890ff;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .test-btn {
+      padding: 12px 20px;
+      border: 1px solid #d9d9d9;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .test-btn:hover {
+      border-color: #1890ff;
+      color: #1890ff;
+      box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
+    }
+
+    .test-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* 特殊定位的按钮 */
+    .positioned-buttons {
+      position: relative;
+      height: 300px;
+      background: linear-gradient(45deg, #f0f2f5 25%, transparent 25%),
+                  linear-gradient(-45deg, #f0f2f5 25%, transparent 25%),
+                  linear-gradient(45deg, transparent 75%, #f0f2f5 75%),
+                  linear-gradient(-45deg, transparent 75%, #f0f2f5 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+
+    .positioned-btn {
+      position: absolute;
+      padding: 10px 16px;
+      background: #1890ff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .positioned-btn:hover {
+      background: #40a9ff;
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+    }
+
+    .positioned-btn.top-left { top: 20px; left: 20px; }
+    .positioned-btn.top-right { top: 20px; right: 20px; }
+    .positioned-btn.bottom-left { bottom: 20px; left: 20px; }
+    .positioned-btn.bottom-right { bottom: 20px; right: 20px; }
+    .positioned-btn.center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .positioned-btn.center:hover { transform: translate(-50%, -50%) scale(1.05); }
+
+    /* 列表项样式 */
+    .list-container {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #e8e8e8;
+      border-radius: 4px;
+      margin-top: 15px;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.3s;
+    }
+
+    .list-item:hover {
+      background: #f5f5f5;
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+    }
+
+    .item-info {
+      flex: 1;
+    }
+
+    .item-title {
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .item-desc {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .item-action {
+      padding: 6px 12px;
+      background: #52c41a;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .item-action:hover {
+      background: #73d13d;
+    }
+
+    /* 抽屉内容样式 */
+    .drawer-demo-content {
+      padding: 20px;
+    }
+
+    .drawer-demo-content h3 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .drawer-demo-content p {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .drawer-demo-form {
+      margin-top: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .button-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  
+  <!-- 引入编译后的 Web Component -->
+  <script type="module" src="../../build/ldesign.esm.js"></script>
+  <link rel="stylesheet" href="../../build/ldesign.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 Drawer Anchor Positioning Test</h1>
+    <p class="subtitle">测试抽屉组件的锚点定位功能</p>
+
+    <!-- 元素锚点模式测试 -->
+    <div class="test-section">
+      <h2>📍 元素锚点模式</h2>
+      <p>点击按钮，抽屉会从按钮位置弹出</p>
+      
+      <div class="button-grid">
+        <button class="test-btn" id="anchor-left">
+          从左侧弹出 →
+        </button>
+        <button class="test-btn" id="anchor-right">
+          ← 从右侧弹出
+        </button>
+        <button class="test-btn" id="anchor-top">
+          从顶部弹出 ↓
+        </button>
+        <button class="test-btn" id="anchor-bottom">
+          ↑ 从底部弹出
+        </button>
+      </div>
+
+      <div class="positioned-buttons">
+        <button class="positioned-btn top-left" id="anchor-tl">左上角</button>
+        <button class="positioned-btn top-right" id="anchor-tr">右上角</button>
+        <button class="positioned-btn center" id="anchor-center">中心</button>
+        <button class="positioned-btn bottom-left" id="anchor-bl">左下角</button>
+        <button class="positioned-btn bottom-right" id="anchor-br">右下角</button>
+      </div>
+    </div>
+
+    <!-- 光标锚点模式测试 -->
+    <div class="test-section">
+      <h2>🖱️ 光标锚点模式</h2>
+      <p>点击下面的区域，抽屉会从鼠标点击位置弹出</p>
+      
+      <div class="positioned-buttons" id="cursor-area">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #999;">
+          <p>在此区域任意位置点击</p>
+          <p style="font-size: 12px; margin-top: 5px;">抽屉将从点击位置展开</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 列表项锚点测试 -->
+    <div class="test-section">
+      <h2>📋 列表项锚点</h2>
+      <p>点击列表项的操作按钮，显示详情抽屉</p>
+      
+      <div class="list-container">
+        <div class="list-item">
+          <div class="item-info">
+            <div class="item-title">订单 #001</div>
+            <div class="item-desc">2024-01-15 14:30</div>
+          </div>
+          <button class="item-action anchor-list-btn" data-id="001">查看详情</button>
+        </div>
+        <div class="list-item">
+          <div class="item-info">
+            <div class="item-title">订单 #002</div>
+            <div class="item-desc">2024-01-15 15:45</div>
+          </div>
+          <button class="item-action anchor-list-btn" data-id="002">查看详情</button>
+        </div>
+        <div class="list-item">
+          <div class="item-info">
+            <div class="item-title">订单 #003</div>
+            <div class="item-desc">2024-01-15 16:20</div>
+          </div>
+          <button class="item-action anchor-list-btn" data-id="003">查看详情</button>
+        </div>
+        <div class="list-item">
+          <div class="item-info">
+            <div class="item-title">订单 #004</div>
+            <div class="item-desc">2024-01-15 17:10</div>
+          </div>
+          <button class="item-action anchor-list-btn" data-id="004">查看详情</button>
+        </div>
+        <div class="list-item">
+          <div class="item-info">
+            <div class="item-title">订单 #005</div>
+            <div class="item-desc">2024-01-15 18:00</div>
+          </div>
+          <button class="item-action anchor-list-btn" data-id="005">查看详情</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 对齐方式测试 -->
+    <div class="test-section">
+      <h2>⚡ 对齐方式测试</h2>
+      <p>测试不同的对齐方式</p>
+      
+      <div class="button-grid">
+        <button class="test-btn" id="align-start">
+          起始对齐
+        </button>
+        <button class="test-btn" id="align-center">
+          中心对齐
+        </button>
+        <button class="test-btn" id="align-end">
+          末尾对齐
+        </button>
+        <button class="test-btn" id="align-stretch">
+          拉伸对齐
+        </button>
+      </div>
+    </div>
+
+    <!-- 配置测试 -->
+    <div class="test-section">
+      <h2>⚙️ 配置测试</h2>
+      <p>测试各种锚点配置选项</p>
+      
+      <div class="button-grid">
+        <button class="test-btn" id="config-flip">
+          自动翻转
+        </button>
+        <button class="test-btn" id="config-constrain">
+          边界约束
+        </button>
+        <button class="test-btn" id="config-offset">
+          偏移定位
+        </button>
+        <button class="test-btn" id="config-partial-mask">
+          部分遮罩
+        </button>
+        <button class="test-btn" id="config-follow">
+          跟随滚动
+        </button>
+        <button class="test-btn" id="config-auto-update">
+          自动更新位置
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer Components -->
+  <ldesign-drawer id="anchorDrawer">
+    <div class="drawer-demo-content">
+      <h3 id="drawer-title">锚点抽屉</h3>
+      <p id="drawer-desc">这是一个锚点定位的抽屉示例</p>
+      
+      <div class="drawer-demo-form">
+        <div class="form-group">
+          <label>名称</label>
+          <input type="text" placeholder="请输入名称">
+        </div>
+        <div class="form-group">
+          <label>描述</label>
+          <textarea placeholder="请输入描述"></textarea>
+        </div>
+        <div class="form-group">
+          <label>类型</label>
+          <select>
+            <option>类型 1</option>
+            <option>类型 2</option>
+            <option>类型 3</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </ldesign-drawer>
+
+  <script>
+    // 记录点击位置（用于光标模式）
+    document.addEventListener('click', (e) => {
+      window.__lastClickPosition = { x: e.clientX, y: e.clientY };
+    });
+
+    const drawer = document.getElementById('anchorDrawer');
+
+    // 元素锚点模式 - 基本方向
+    document.getElementById('anchor-left').addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawer.anchorMode = 'element';
+      drawer.anchorElement = e.target;
+      drawer.placement = 'left';
+      drawer.drawerTitle = '从左侧展开';
+      drawer.size = '300px';
+      drawer.anchorAlign = 'start';
+      drawer.anchorMaskPartial = true;
+      drawer.visible = true;
+    });
+
+    document.getElementById('anchor-right').addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawer.anchorMode = 'element';
+      drawer.anchorElement = e.target;
+      drawer.placement = 'right';
+      drawer.drawerTitle = '从右侧展开';
+      drawer.size = '300px';
+      drawer.anchorAlign = 'start';
+      drawer.anchorMaskPartial = true;
+      drawer.visible = true;
+    });
+
+    document.getElementById('anchor-top').addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawer.anchorMode = 'element';
+      drawer.anchorElement = e.target;
+      drawer.placement = 'top';
+      drawer.drawerTitle = '从顶部展开';
+      drawer.size = '200px';
+      drawer.anchorAlign = 'center';
+      drawer.anchorMaskPartial = true;
+      drawer.visible = true;
+    });
+
+    document.getElementById('anchor-bottom').addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawer.anchorMode = 'element';
+      drawer.anchorElement = e.target;
+      drawer.placement = 'bottom';
+      drawer.drawerTitle = '从底部展开';
+      drawer.size = '200px';
+      drawer.anchorAlign = 'center';
+      drawer.anchorMaskPartial = true;
+      drawer.visible = true;
+    });
+
+    // 特殊位置按钮
+    ['tl', 'tr', 'center', 'bl', 'br'].forEach(pos => {
+      document.getElementById(`anchor-${pos}`).addEventListener('click', (e) => {
+        e.stopPropagation();
+        drawer.anchorMode = 'element';
+        drawer.anchorElement = e.target;
+        drawer.placement = pos.includes('t') ? 'bottom' : pos.includes('b') ? 'top' : 'right';
+        drawer.drawerTitle = `位置: ${pos.toUpperCase()}`;
+        drawer.size = '250px';
+        drawer.anchorAlign = 'center';
+        drawer.anchorFlip = true;
+        drawer.anchorConstrain = true;
+        drawer.anchorMaskPartial = true;
+        drawer.visible = true;
+      });
+    });
+
+    // 光标锚点模式
+    document.getElementById('cursor-area').addEventListener('click', (e) => {
+      if (e.target.id === 'cursor-area') {
+        drawer.anchorMode = 'cursor';
+        drawer.placement = 'right';
+        drawer.drawerTitle = '光标位置抽屉';
+        drawer.size = '280px';
+        drawer.anchorMaskPartial = false;
+        drawer.visible = true;
+        
+        document.getElementById('drawer-desc').textContent = 
+          `点击位置: (${e.clientX}, ${e.clientY})`;
+      }
+    });
+
+    // 列表项锚点
+    document.querySelectorAll('.anchor-list-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const orderId = e.target.dataset.id;
+        drawer.anchorMode = 'element';
+        drawer.anchorElement = e.target;
+        drawer.placement = 'right';
+        drawer.drawerTitle = `订单 #${orderId} 详情`;
+        drawer.size = '350px';
+        drawer.anchorAlign = 'start';
+        drawer.anchorOffset = 10;
+        drawer.anchorMaskPartial = true;
+        drawer.anchorFollowScroll = true;
+        drawer.visible = true;
+        
+        document.getElementById('drawer-desc').textContent = 
+          `查看订单 #${orderId} 的详细信息`;
+      });
+    });
+
+    // 对齐方式测试
+    const alignTests = {
+      'align-start': { align: 'start', title: '起始对齐' },
+      'align-center': { align: 'center', title: '中心对齐' },
+      'align-end': { align: 'end', title: '末尾对齐' },
+      'align-stretch': { align: 'stretch', title: '拉伸对齐' }
+    };
+
+    Object.keys(alignTests).forEach(id => {
+      document.getElementById(id).addEventListener('click', (e) => {
+        e.stopPropagation();
+        const config = alignTests[id];
+        drawer.anchorMode = 'element';
+        drawer.anchorElement = e.target;
+        drawer.placement = 'bottom';
+        drawer.drawerTitle = config.title;
+        drawer.size = '200px';
+        drawer.anchorAlign = config.align;
+        drawer.anchorMaskPartial = true;
+        drawer.visible = true;
+      });
+    });
+
+    // 配置测试
+    document.getElementById('config-flip').addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawer.anchorMode = 'element';
+      drawer.anchorElement = e.target;
+      drawer.placement = 'top';
+      drawer.drawerTitle = '自动翻转';
+      drawer.size = '250px';
+      drawer.anchorFlip = true;
+      drawer.anchorMaskPartial = true;
+      drawer.visible = true;
+      document.getElementById('drawer-desc').textContent = 
+        '当空间不足时自动翻转到对面';
+    });
+
+    document.getElementById('config-constrain').addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawer.anchorMode = 'element';
+      drawer.anchorElement = e.target;
+      drawer.placement = 'right';
+      drawer.drawerTitle = '边界约束';
+      drawer.size = '300px';
+      drawer.anchorConstrain = true;
+      drawer.anchorBoundary = 'viewport';
+      drawer.anchorMaskPartial = true;
+      drawer.visible = true;
+      document.getElementById('drawer-desc').textContent = 
+        '抽屉会被约束在视口边界内';
+    });
+
+    document.getElementById('config-offset').addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawer.anchorMode = 'element';
+      drawer.anchorElement = e.target;
+      drawer.placement = 'right';
+      drawer.drawerTitle = '偏移定位';
+      drawer.size = '280px';
+      drawer.anchorOffset = 20;
+      drawer.anchorMaskPartial = true;
+      drawer.visible = true;
+      document.getElementById('drawer-desc').textContent = 
+        '抽屉相对锚点有 20px 的偏移';
+    });
+
+    document.getElementById('config-partial-mask').addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawer.anchorMode = 'element';
+      drawer.anchorElement = e.target;
+      drawer.placement = 'bottom';
+      drawer.drawerTitle = '部分遮罩';
+      drawer.size = '200px';
+      drawer.anchorMaskPartial = true;
+      drawer.visible = true;
+      document.getElementById('drawer-desc').textContent = 
+        '遮罩只覆盖抽屉展开的区域';
+    });
+
+    document.getElementById('config-follow').addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawer.anchorMode = 'element';
+      drawer.anchorElement = e.target;
+      drawer.placement = 'right';
+      drawer.drawerTitle = '跟随滚动';
+      drawer.size = '300px';
+      drawer.anchorFollowScroll = true;
+      drawer.anchorMaskPartial = true;
+      drawer.visible = true;
+      document.getElementById('drawer-desc').textContent = 
+        '滚动页面时抽屉会跟随锚点移动';
+    });
+
+    document.getElementById('config-auto-update').addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawer.anchorMode = 'element';
+      drawer.anchorElement = e.target;
+      drawer.placement = 'left';
+      drawer.drawerTitle = '自动更新';
+      drawer.size = '300px';
+      drawer.anchorAutoUpdate = true;
+      drawer.anchorMaskPartial = true;
+      drawer.visible = true;
+      document.getElementById('drawer-desc').textContent = 
+        '锚点位置变化时抽屉会自动更新位置';
+    });
+  </script>
+</body>
+</html>

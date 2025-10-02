@@ -15,6 +15,9 @@ import {
   DrawerTheme,
   DrawerLevel,
   SizePreset,
+  AnchorConfig,
+  AnchorMode,
+  AnchorAlign,
 } from './drawer.types';
 import {
   parseSize,
@@ -42,6 +45,15 @@ import {
   waitForAnimation,
   emitCustomEvent,
 } from './drawer.utils';
+import {
+  calculateAnchorPosition,
+  observeAnchorPosition,
+  createPartialMask,
+  createVirtualAnchor,
+  cleanupVirtualAnchor,
+  getClickPosition,
+  AnchorPosition,
+} from './drawer.anchor';
 
 /**
  * @slot - 抽屉主内容区域
@@ -195,6 +207,38 @@ export class LdesignDrawer {
   /** 是否可最大化 */
   @Prop() maximizable: boolean = false;
 
+  // ==================== 锚点定位 ====================
+
+  /** 是否启用锚点定位 */
+  @Prop() anchorMode: AnchorMode = 'disabled';
+
+  /** 锚点元素（选择器或元素） */
+  @Prop() anchorElement?: HTMLElement | string;
+
+  /** 锚点对齐方式 */
+  @Prop() anchorAlign: AnchorAlign = 'start';
+
+  /** 锚点偏移量 */
+  @Prop() anchorOffset: { x?: number; y?: number } = { x: 0, y: 0 };
+
+  /** 边界限制 */
+  @Prop() anchorBoundary: HTMLElement | string | 'viewport' | 'scrollParent' = 'viewport';
+
+  /** 自动翻转位置 */
+  @Prop() anchorFlip: boolean = true;
+
+  /** 约束在边界内 */
+  @Prop() anchorConstrain: boolean = true;
+
+  /** 部分遮罩（仅遮罩展开区域） */
+  @Prop() anchorMaskPartial: boolean = true;
+
+  /** 跟随滚动 */
+  @Prop() anchorFollowScroll: boolean = true;
+
+  /** 自动更新位置 */
+  @Prop() anchorAutoUpdate: boolean = true;
+
   // ==================== 底部按钮 ====================
 
   /** 底部按钮配置 */
@@ -260,6 +304,8 @@ export class LdesignDrawer {
   @State() touchStartX: number = 0; // 触摸起始点
   @State() touchStartY: number = 0;
   @State() isDragging: boolean = false; // 是否正在拖动
+  @State() anchorPosition?: AnchorPosition; // 锚点位置信息
+  @State() isAnchorMode: boolean = false; // 是否处于锚点模式
 
   // ==================== 事件 ====================
 
@@ -279,7 +325,7 @@ export class LdesignDrawer {
   @Event() drawerStateChange: EventEmitter<{ state: DrawerState }>;
 
   /** 大小变化 */
-  @Event() drawerResize: EventEmitter<{ width: number; height: number }>;
+  @Event() drawerResize: EventEmitter<{ drawerWidth: number; drawerHeight: number }>;
 
   /** 滑动进度变化 */
   @Event() drawerSwipe: EventEmitter<{ progress: number }>;
@@ -309,6 +355,11 @@ export class LdesignDrawer {
   private contentLoaded: boolean = false;
   private throttledResize?: () => void;
   private throttledScroll?: () => void;
+  private anchorEl?: HTMLElement; // 锚点元素
+  private virtualAnchor?: HTMLElement; // 虚拟锚点元素
+  private partialMask?: HTMLElement; // 部分遮罩元素
+  private anchorCleanup?: () => void; // 锚点位置监听清理函数
+  private lastClickEvent?: MouseEvent; // 最后的点击事件
 
   // ==================== 生命周期 ====================
 
@@ -333,6 +384,9 @@ export class LdesignDrawer {
     
     // 性能模式检测
     this.performanceMode = this.shouldUsePerformanceMode();
+    
+    // 检查是否启用锚点模式
+    this.isAnchorMode = this.anchorMode !== 'disabled';
   }
 
   componentDidLoad() {
@@ -365,9 +419,14 @@ export class LdesignDrawer {
     if (this.isMobileDevice) {
       this.setupMobileTouchListeners();
     }
+    
+    // 添加全局点击事件监听（捕获阶段）
+    document.addEventListener('click', this.handleGlobalClick, true);
   }
 
   disconnectedCallback() {
+    // 移除全局点击事件监听
+    document.removeEventListener('click', this.handleGlobalClick, true);
     this.cleanup();
   }
 
@@ -496,14 +555,14 @@ export class LdesignDrawer {
 
   /** 获取当前尺寸 */
   @Method()
-  async getSize(): Promise<{ width: number; height: number }> {
+  async getSize(): Promise<{ drawerWidth: number; drawerHeight: number }> {
     if (!this.drawerRef) {
-      return { width: 0, height: 0 };
+      return { drawerWidth: 0, drawerHeight: 0 };
     }
 
     return {
-      width: this.drawerRef.offsetWidth,
-      height: this.drawerRef.offsetHeight,
+      drawerWidth: this.drawerRef.offsetWidth,
+      drawerHeight: this.drawerRef.offsetHeight,
     };
   }
 
@@ -517,11 +576,16 @@ export class LdesignDrawer {
       this.previousFocusedElement = document.activeElement as HTMLElement;
     }
 
+    // 处理锚点定位
+    if (this.isAnchorMode) {
+      await this.setupAnchorPositioning();
+    }
+
     // 添加到堆栈
     addToStack(this.el);
 
-    // 锁定滚动
-    if (this.lockScroll) {
+    // 锁定滚动（锚点模式不锁定）
+    if (this.lockScroll && !this.isAnchorMode) {
       lockPageScroll();
     }
 
@@ -530,21 +594,22 @@ export class LdesignDrawer {
     this.isAnimating = false; // 确保初始为 false
     this.drawerStateChange.emit({ state: 'opening' });
 
-    // 第 2 步：强制浏览器重排，让初始 transform 先生效
-    if (this.drawerRef) {
-      void this.drawerRef.offsetHeight; // 触发 reflow
-    }
-
-    // 第 3 步：等待下一帧，确保初始状态已经渲染
-    await new Promise(resolve => requestAnimationFrame(() => {
-      requestAnimationFrame(resolve); // 双重 RAF 更保险
-    }));
+    // 第 2 步：等待浏览器完成初始渲染
+    // 使用单次 RAF，避免强制 reflow 造成卡顿
+    await new Promise(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          resolve(undefined);
+        });
+      });
+    });
     
-    // 第 4 步：现在触发动画
+    // 第 3 步：现在触发动画
     this.isAnimating = true; // 这会触发重新渲染，加上 drawer-visible 类
     
-    // 第 5 步：等待动画完成
+    // 第 4 步：等待动画完成
     if (this.animation) {
+      // 移动端使用实际设置的动画时长，不强制缩短
       await waitForAnimation(this.animationDuration);
     }
 
@@ -587,6 +652,7 @@ export class LdesignDrawer {
 
     // 等待动画
     if (this.animation) {
+      // 移动端使用实际设置的动画时长，不强制缩短
       await waitForAnimation(this.animationDuration);
     }
 
@@ -878,10 +944,8 @@ export class LdesignDrawer {
       this.size = this.placement === 'bottom' || this.placement === 'top' ? '60%' : '85%';
     }
     
-    // 优化动画时长
-    if (this.animationDuration === 300) {
-      this.animationDuration = 250; // 移动设备稍快的动画
-    }
+    // 移动设备不修改动画时长，使用用户设置或默认值
+    // 这样可以保证动画流畅性
     
     // 默认启用 GPU 加速
     this.gpuAcceleration = true;
@@ -899,11 +963,13 @@ export class LdesignDrawer {
   
   private setupMobileTouchListeners() {
     // 使用被动监听器提升性能
-    const options: AddEventListenerOptions = { passive: true };
+    // touchstart 和 touchend 使用 passive: true
+    const passiveOptions: AddEventListenerOptions = { passive: true };
     
-    this.el.addEventListener('touchstart', this.handleTouchStart as any, options);
-    this.el.addEventListener('touchmove', this.handleTouchMove as any, { passive: false }); // 需要 preventDefault
-    this.el.addEventListener('touchend', this.handleTouchEnd as any, options);
+    this.el.addEventListener('touchstart', this.handleTouchStart as any, passiveOptions);
+    // touchmove 也尝试使用 passive，让浏览器自行优化滚动
+    this.el.addEventListener('touchmove', this.handleTouchMove as any, passiveOptions);
+    this.el.addEventListener('touchend', this.handleTouchEnd as any, passiveOptions);
   }
   
   private handleTouchStart = (event: TouchEvent) => {
@@ -928,16 +994,8 @@ export class LdesignDrawer {
       
       if (Math.abs(deltaX) > threshold || Math.abs(deltaY) > threshold) {
         this.isDragging = true;
-        
-        // 根据方向决定是否阻止默认行为
-        const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY);
-        const isVerticalSwipe = Math.abs(deltaY) > Math.abs(deltaX);
-        
-        if ((this.placement === 'left' || this.placement === 'right') && isHorizontalSwipe) {
-          event.preventDefault(); // 阻止水平滚动
-        } else if ((this.placement === 'top' || this.placement === 'bottom') && isVerticalSwipe) {
-          event.preventDefault(); // 阻止垂直滚动
-        }
+        // 注意：由于使用了 passive listener，这里无法 preventDefault
+        // 如果需要阻止默认滚动，应该在 CSS 中使用 touch-action
       }
     }
   };
@@ -1103,8 +1161,9 @@ export class LdesignDrawer {
     
     // 添加滚动优化样式
     if (this.performanceMode) {
-      this.contentRef.style.overflowScrolling = 'touch';
-      this.contentRef.style.webkitOverflowScrolling = 'touch';
+      // 使用setAttribute来设置webkit前缀属性
+      this.contentRef.style.setProperty('-webkit-overflow-scrolling', 'touch');
+      (this.contentRef.style as any)['-webkit-overflow-scrolling'] = 'touch';
     }
     
     // 监听滚动事件（节流）
@@ -1161,8 +1220,8 @@ export class LdesignDrawer {
   private emitResizeEvent() {
     if (this.drawerRef) {
       this.drawerResize.emit({
-        width: this.drawerRef.offsetWidth,
-        height: this.drawerRef.offsetHeight,
+        drawerWidth: this.drawerRef.offsetWidth,
+        drawerHeight: this.drawerRef.offsetHeight,
       });
     }
   }
@@ -1226,65 +1285,239 @@ export class LdesignDrawer {
       window.removeEventListener('orientationchange', this.handleViewportResize);
       window.removeEventListener('resize', this.handleViewportResize);
     }
+    
+    // 清理锚点相关
+    this.cleanupAnchorPositioning();
+  }
+  
+  // ==================== 锚点定位方法 ====================
+  
+  private async setupAnchorPositioning() {
+    // 获取锚点元素
+    let anchorElement: HTMLElement | null = null;
+    
+    if (this.anchorMode === 'element' && this.anchorElement) {
+      anchorElement = typeof this.anchorElement === 'string'
+        ? document.querySelector(this.anchorElement) as HTMLElement
+        : this.anchorElement;
+    } else if (this.anchorMode === 'cursor') {
+      // 创建虚拟锚点（鼠标位置）
+      const lastClick = this.getLastClickPosition();
+      if (lastClick) {
+        this.virtualAnchor = createVirtualAnchor(lastClick.x, lastClick.y);
+        anchorElement = this.virtualAnchor;
+      }
+    }
+    
+    if (!anchorElement) {
+      console.warn('Anchor element not found, falling back to default positioning');
+      return;
+    }
+    
+    this.anchorEl = anchorElement;
+    
+    // 计算锚点位置
+    const drawerSize = {
+      width: parseFloat(this.currentSize),
+      height: parseFloat(this.currentSize)
+    };
+    
+    const config: AnchorConfig = {
+      mode: this.anchorMode,
+      placement: this.placement,
+      align: this.anchorAlign,
+      offset: this.anchorOffset,
+      boundary: this.anchorBoundary,
+      flip: this.anchorFlip,
+      constrain: this.anchorConstrain,
+      maskPartial: this.anchorMaskPartial,
+      followScroll: this.anchorFollowScroll,
+      autoUpdate: this.anchorAutoUpdate
+    };
+    
+    this.anchorPosition = calculateAnchorPosition(anchorElement, drawerSize, config);
+    
+    // 创建部分遮罩
+    if (config.maskPartial && this.anchorPosition.maskBounds) {
+      this.partialMask = createPartialMask(this.anchorPosition.maskBounds);
+      document.body.appendChild(this.partialMask);
+      
+      // 点击遮罩关闭
+      this.partialMask.addEventListener('click', () => {
+        if (this.maskClosable) {
+          this.close('mask');
+        }
+      });
+    }
+    
+    // 设置位置监听
+    if (config.followScroll || config.autoUpdate) {
+      this.anchorCleanup = observeAnchorPosition(
+        anchorElement,
+        () => this.updateAnchorPosition(),
+        config
+      );
+    }
+  }
+  
+  private updateAnchorPosition() {
+    if (!this.anchorEl || !this.isAnchorMode) return;
+    
+    const drawerSize = {
+      width: parseFloat(this.currentSize),
+      height: parseFloat(this.currentSize)
+    };
+    
+    const config: AnchorConfig = {
+      mode: this.anchorMode,
+      placement: this.placement,
+      align: this.anchorAlign,
+      offset: this.anchorOffset,
+      boundary: this.anchorBoundary,
+      flip: this.anchorFlip,
+      constrain: this.anchorConstrain,
+      maskPartial: this.anchorMaskPartial,
+      followScroll: this.anchorFollowScroll,
+      autoUpdate: this.anchorAutoUpdate
+    };
+    
+    this.anchorPosition = calculateAnchorPosition(this.anchorEl, drawerSize, config);
+    
+    // 更新部分遮罩位置
+    if (this.partialMask && this.anchorPosition.maskBounds) {
+      const bounds = this.anchorPosition.maskBounds;
+      this.partialMask.style.top = `${bounds.top}px`;
+      this.partialMask.style.left = `${bounds.left}px`;
+      this.partialMask.style.width = `${bounds.width}px`;
+      this.partialMask.style.height = `${bounds.height}px`;
+    }
+  }
+  
+  private cleanupAnchorPositioning() {
+    // 清理锚点监听
+    if (this.anchorCleanup) {
+      this.anchorCleanup();
+      this.anchorCleanup = undefined;
+    }
+    
+    // 清理虚拟锚点
+    if (this.virtualAnchor) {
+      cleanupVirtualAnchor(this.virtualAnchor);
+      this.virtualAnchor = undefined;
+    }
+    
+    // 清理部分遮罩
+    if (this.partialMask) {
+      this.partialMask.remove();
+      this.partialMask = undefined;
+    }
+    
+    // 重置锚点位置
+    this.anchorPosition = undefined;
+  }
+  
+  private handleGlobalClick = (event: MouseEvent) => {
+    // 保存点击事件
+    this.lastClickEvent = event;
+  }
+  
+  private getLastClickPosition(): { x: number; y: number } | null {
+    // 获取最后点击位置
+    if (this.lastClickEvent) {
+      return {
+        x: this.lastClickEvent.clientX,
+        y: this.lastClickEvent.clientY
+      };
+    }
+    return null;
   }
 
   private getDrawerStyle() {
-    const style: any = {
-      zIndex: this.zIndex.toString(),
-    };
+    const style: { [key: string]: string } = {};
+    
+    style['z-index'] = this.zIndex.toString();
 
-    // 设置尺寸
-    if (this.placement === 'left' || this.placement === 'right') {
-      style.width = this.currentSize;
-      if (this.isFullscreen) style.width = '100%';
+    // 锚点模式的特殊处理
+    if (this.isAnchorMode && this.anchorPosition) {
+      // 使用锚点计算的位置
+      style['position'] = 'fixed';
+      style['top'] = `${this.anchorPosition.top}px`;
+      style['left'] = `${this.anchorPosition.left}px`;
+      
+      // 设置固定尺寸（锚点模式不需要响应式尺寸）
+      style['width'] = `${this.anchorPosition.width}px`;
+      style['height'] = `${this.anchorPosition.height}px`;
+      
+      // 锚点模式下，根据展开方向设置初始 transform
+      if (!this.isAnimating) {
+        // 初始收起状态
+        const collapsedOffset = 20; // 收起时显示的边缘宽度
+        switch (this.placement) {
+          case 'left':
+            style['transform'] = `translateX(-${this.anchorPosition.width - collapsedOffset}px)`;
+            break;
+          case 'right':
+            style['transform'] = `translateX(${this.anchorPosition.width - collapsedOffset}px)`;
+            break;
+          case 'top':
+            style['transform'] = `translateY(-${this.anchorPosition.height - collapsedOffset}px)`;
+            break;
+          case 'bottom':
+            style['transform'] = `translateY(${this.anchorPosition.height - collapsedOffset}px)`;
+            break;
+        }
+      }
     } else {
-      style.height = this.currentSize;
-      if (this.isFullscreen) style.height = '100%';
+      // 普通模式：设置尺寸
+      if (this.placement === 'left' || this.placement === 'right') {
+        style['width'] = this.currentSize;
+        if (this.isFullscreen) style['width'] = '100%';
+      } else {
+        style['height'] = this.currentSize;
+        if (this.isFullscreen) style['height'] = '100%';
+      }
     }
 
     // 圆角
     if (this.rounded) {
-      style.borderRadius = this.borderRadius;
+      style['border-radius'] = this.borderRadius;
     }
 
     // 动画 - 只在自定义动画时长或缓动函数时覆盖 CSS
     if (this.animation && !this.isSwiping) {
       // 只在非默认值时设置，否则使用 CSS 中的 transition
       if (this.animationDuration !== 300 || this.animationEasing !== 'ease-in-out') {
-        style.transition = `transform ${this.animationDuration}ms ${getEasingFunction(
+        style['transition'] = `transform ${this.animationDuration}ms ${getEasingFunction(
           this.animationEasing as any
         )}`;
       }
     } else if (!this.animation) {
       // 如果禁用动画，显式设置 transition: none
-      style.transition = 'none';
+      style['transition'] = 'none';
     }
 
     // 滑动时禁用 transition
     if (this.isSwiping) {
-      style.transition = 'none';
+      style['transition'] = 'none';
     }
 
     // GPU 加速和性能优化
     if (this.gpuAcceleration) {
-      style.willChange = 'transform';
+      style['will-change'] = 'transform';
+      style['backface-visibility'] = 'hidden'; // 避免不必要的重绘
       
-      // 性能模式下的额外优化
-      if (this.performanceMode) {
-        style.transform3d = 'translateZ(0)'; // 强制启用 GPU 加速
-        style.backfaceVisibility = 'hidden'; // 避免不必要的重绘
-        style.perspective = '1000px'; // 创建 3D 渲染上下文
-      }
+      // 注意：不在这里设置 transform，避免覆盖动画的 transform
+      // GPU 加速由 CSS 的 translateX/Y/Z 自动触发
     }
     
     // CSS containment 优化
     if (this.cssContain) {
-      style.contain = 'layout style paint';
+      style['contain'] = 'layout style paint';
     }
 
-    // 滑动进度
-    if (this.isSwiping && this.swipeProgress > 0) {
-      style.transform = getTransformStyle(this.placement, 1 - this.swipeProgress, this.currentSize);
+    // 滑动进度（非锚点模式）
+    if (!this.isAnchorMode && this.isSwiping && this.swipeProgress > 0) {
+      style['transform'] = getTransformStyle(this.placement, 1 - this.swipeProgress, this.currentSize);
     }
 
     return style;
@@ -1293,8 +1526,15 @@ export class LdesignDrawer {
   private getContainerClass() {
     const classes = ['ldesign-drawer-container'];
 
-    // 只在动画开始后才添加 drawer-visible，这样才能触发 CSS 过渡
-    if (this.visible && this.isAnimating) classes.push('drawer-visible');
+    // 关键修复：只有当 isAnimating 为 true 时才添加 drawer-visible
+    // 这样可以确保：
+    // 1. opening 状态且 isAnimating=false：初始位置（隐藏）
+    // 2. opening 状态且 isAnimating=true：触发动画（显示）
+    // 3. open 状态：始终显示
+    if ((this.currentState === 'opening' && this.isAnimating) || this.currentState === 'open') {
+      classes.push('drawer-visible');
+    }
+    
     if (this.currentState) classes.push(`drawer-${this.currentState}`);
     if (this.placement) classes.push(`drawer-${this.placement}`);
     if (this.theme) classes.push(`drawer-theme-${this.theme}`);
@@ -1305,6 +1545,7 @@ export class LdesignDrawer {
     if (this.isFullscreen) classes.push('drawer-fullscreen');
     if (this.isMobileDevice) classes.push('drawer-mobile');
     if (this.performanceMode) classes.push('drawer-performance');
+    if (this.isAnchorMode) classes.push('drawer-anchor-mode');
     if (this.customClass) classes.push(this.customClass);
 
     return classes.join(' ');
@@ -1313,13 +1554,8 @@ export class LdesignDrawer {
   // ==================== 渲染 ====================
 
   render() {
-    // 最严格的条件：直接检查 visible 属性
-    // 只有当 visible = true 或者正在执行关闭动画时才渲染
-    const shouldRender = this.visible || this.currentState === 'closing';
-    
-    if (!shouldRender) {
-      return null;
-    }
+    // 始终渲染 DOM 结构，通过 CSS 类控制显示/隐藏
+    // 这样可以确保组件的方法（如 open()）始终可用
 
     return (
       <Host class={this.getContainerClass()}>

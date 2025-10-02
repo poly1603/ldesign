@@ -60,8 +60,9 @@
 }
 
 :host(.drawer-closed) {
-  display: none !important;
+  pointer-events: none !important;
   visibility: hidden !important;
+  // 保持 DOM 存在，但完全隐藏，这样组件方法仍然可用
 }
 
 // Also keep the old selectors for backwards compatibility
@@ -86,8 +87,9 @@
   }
 
   &.drawer-closed {
-    display: none;
+    pointer-events: none;
     visibility: hidden;
+    // 保持 DOM 存在，但完全隐藏，这样组件方法仍然可用
   }
 }
 

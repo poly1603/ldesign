@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawer 组件测试</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    
+    .demo-section {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .demo-section h2 {
+      margin: 0 0 15px;
+      font-size: 18px;
+      color: #333;
+    }
+    
+    .demo-section p {
+      color: #666;
+      font-size: 14px;
+      margin: 0 0 15px;
+    }
+    
+    .demo-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: 1px solid #1890ff;
+      background: white;
+      color: #1890ff;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    button:hover {
+      background: #1890ff;
+      color: white;
+    }
+    
+    .content-example {
+      padding: 20px;
+    }
+    
+    .content-example h3 {
+      margin-top: 0;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+    }
+    
+    .status {
+      padding: 10px;
+      margin-top: 20px;
+      background: #f0f2f5;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      min-height: 100px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Drawer 组件测试页</h1>
+  
+  <!-- 基础用法 -->
+  <div class="demo-section">
+    <h2>📌 基础用法</h2>
+    <p>从不同方向打开抽屉</p>
+    <div class="demo-buttons">
+      <button onclick="openDrawer('right')">右侧抽屉</button>
+      <button onclick="openDrawer('left')">左侧抽屉</button>
+      <button onclick="openDrawer('top')">顶部抽屉</button>
+      <button onclick="openDrawer('bottom')">底部抽屉</button>
+    </div>
+  </div>
+  
+  <!-- 自定义尺寸 -->
+  <div class="demo-section">
+    <h2>📏 自定义尺寸</h2>
+    <p>设置不同的抽屉尺寸</p>
+    <div class="demo-buttons">
+      <button onclick="openCustomSize('small')">小尺寸 (200px)</button>
+      <button onclick="openCustomSize('medium')">中尺寸 (400px)</button>
+      <button onclick="openCustomSize('large')">大尺寸 (600px)</button>
+      <button onclick="openCustomSize('percent')">百分比 (50%)</button>
+      <button onclick="openCustomSize('fullscreen')">全屏</button>
+    </div>
+  </div>
+  
+  <!-- 动画效果 -->
+  <div class="demo-section">
+    <h2>✨ 动画效果</h2>
+    <p>不同的动画速度和缓动函数</p>
+    <div class="demo-buttons">
+      <button onclick="openWithAnimation('fast')">快速 (200ms)</button>
+      <button onclick="openWithAnimation('normal')">正常 (300ms)</button>
+      <button onclick="openWithAnimation('slow')">缓慢 (600ms)</button>
+      <button onclick="openWithAnimation('bounce')">弹性动画</button>
+      <button onclick="openWithAnimation('none')">无动画</button>
+    </div>
+  </div>
+  
+  <!-- 交互功能 -->
+  <div class="demo-section">
+    <h2>🎯 交互功能</h2>
+    <p>各种交互特性</p>
+    <div class="demo-buttons">
+      <button onclick="openInteractive('mask')">点击遮罩关闭</button>
+      <button onclick="openInteractive('nomask')">无遮罩</button>
+      <button onclick="openInteractive('esc')">ESC 键关闭</button>
+      <button onclick="openInteractive('resize')">可拖动调整大小</button>
+      <button onclick="openInteractive('swipe')">滑动关闭（移动端）</button>
+    </div>
+  </div>
+  
+  <!-- 嵌套抽屉 -->
+  <div class="demo-section">
+    <h2>🌲 嵌套抽屉</h2>
+    <p>多层抽屉嵌套</p>
+    <div class="demo-buttons">
+      <button onclick="openNested()">打开嵌套抽屉</button>
+    </div>
+  </div>
+  
+  <!-- 状态显示 -->
+  <div class="demo-section">
+    <h2>📊 事件监控</h2>
+    <div id="status" class="status">等待操作...</div>
+  </div>
+  
+  <!-- 抽屉组件 -->
+  <ldesign-drawer 
+    id="basicDrawer"
+    drawer-title="基础抽屉"
+    placement="right"
+    size="400px"
+    mask="true"
+    mask-closable="true"
+    close-on-escape="true"
+    animation="true"
+    animation-duration="300"
+  >
+    <div class="content-example">
+      <h3>这是一个基础抽屉</h3>
+      <p>支持从四个方向打开，并具有遮罩层。</p>
+      <p>可以通过点击遮罩或按 ESC 键关闭。</p>
+      <br>
+      <div class="form-group">
+        <label>姓名：</label>
+        <input type="text" placeholder="请输入姓名">
+      </div>
+      <div class="form-group">
+        <label>描述：</label>
+        <input type="text" placeholder="请输入描述">
+      </div>
+      <button onclick="closeDrawer('basicDrawer')">关闭抽屉</button>
+    </div>
+  </ldesign-drawer>
+  
+  <!-- 自定义尺寸抽屉 -->
+  <ldesign-drawer 
+    id="sizeDrawer"
+    drawer-title="自定义尺寸抽屉"
+    placement="right"
+    size="400px"
+    mask="true"
+  >
+    <div class="content-example">
+      <h3>动态尺寸展示</h3>
+      <p id="sizeInfo">当前尺寸：400px</p>
+    </div>
+  </ldesign-drawer>
+  
+  <!-- 动画测试抽屉 -->
+  <ldesign-drawer 
+    id="animationDrawer"
+    drawer-title="动画效果测试"
+    placement="right"
+    size="400px"
+    mask="true"
+  >
+    <div class="content-example">
+      <h3>动画配置</h3>
+      <p id="animationInfo">查看不同的动画效果</p>
+    </div>
+  </ldesign-drawer>
+  
+  <!-- 交互功能抽屉 -->
+  <ldesign-drawer 
+    id="interactiveDrawer"
+    drawer-title="交互功能测试"
+    placement="right"
+    size="400px"
+  >
+    <div class="content-example">
+      <h3>交互测试</h3>
+      <p id="interactiveInfo">测试各种交互特性</p>
+      <div style="height: 500px; background: linear-gradient(#f0f0f0, #e0e0e0);">
+        <p>长内容区域，可测试滚动...</p>
+      </div>
+    </div>
+  </ldesign-drawer>
+  
+  <!-- 嵌套抽屉 -->
+  <ldesign-drawer 
+    id="nestedDrawer1"
+    drawer-title="第一层抽屉"
+    placement="right"
+    size="600px"
+    mask="true"
+  >
+    <div class="content-example">
+      <h3>第一层内容</h3>
+      <p>这是第一层抽屉，可以在此基础上打开第二层。</p>
+      <button onclick="openSecondDrawer()">打开第二层抽屉</button>
+    </div>
+  </ldesign-drawer>
+  
+  <ldesign-drawer 
+    id="nestedDrawer2"
+    drawer-title="第二层抽屉"
+    placement="right"
+    size="400px"
+    mask="true"
+  >
+    <div class="content-example">
+      <h3>第二层内容</h3>
+      <p>这是第二层抽屉，层叠在第一层之上。</p>
+      <button onclick="closeDrawer('nestedDrawer2')">关闭第二层</button>
+    </div>
+  </ldesign-drawer>
+  
+  <script>
+    const statusEl = document.getElementById('status');
+    let eventLog = [];
+    
+    function log(message) {
+      const time = new Date().toLocaleTimeString();
+      eventLog.unshift(`[${time}] ${message}`);
+      if (eventLog.length > 10) eventLog.pop();
+      statusEl.textContent = eventLog.join('\n');
+    }
+    
+    // 监听所有抽屉事件
+    document.addEventListener('DOMContentLoaded', () => {
+      const drawers = document.querySelectorAll('ldesign-drawer');
+      
+      drawers.forEach(drawer => {
+        drawer.addEventListener('drawerOpen', (e) => {
+          log(`✅ 抽屉打开: ${drawer.id} (来源: ${e.detail.trigger})`);
+        });
+        
+        drawer.addEventListener('drawerClose', (e) => {
+          log(`❌ 抽屉关闭: ${drawer.id} (来源: ${e.detail.trigger})`);
+        });
+        
+        drawer.addEventListener('drawerResize', (e) => {
+          log(`📐 尺寸调整: ${drawer.id} (宽:${e.detail.width}px, 高:${e.detail.height}px)`);
+        });
+      });
+    });
+    
+    // 基础用法
+    function openDrawer(placement) {
+      const drawer = document.getElementById('basicDrawer');
+      drawer.placement = placement;
+      drawer.visible = true;
+      log(`📍 设置方向: ${placement}`);
+    }
+    
+    // 自定义尺寸
+    function openCustomSize(type) {
+      const drawer = document.getElementById('sizeDrawer');
+      const sizeInfo = document.getElementById('sizeInfo');
+      
+      switch(type) {
+        case 'small':
+          drawer.size = '200px';
+          drawer.fullscreen = false;
+          sizeInfo.textContent = '当前尺寸：200px (小)';
+          break;
+        case 'medium':
+          drawer.size = '400px';
+          drawer.fullscreen = false;
+          sizeInfo.textContent = '当前尺寸：400px (中)';
+          break;
+        case 'large':
+          drawer.size = '600px';
+          drawer.fullscreen = false;
+          sizeInfo.textContent = '当前尺寸：600px (大)';
+          break;
+        case 'percent':
+          drawer.size = '50%';
+          drawer.fullscreen = false;
+          sizeInfo.textContent = '当前尺寸：50% (百分比)';
+          break;
+        case 'fullscreen':
+          drawer.fullscreen = true;
+          sizeInfo.textContent = '当前尺寸：全屏';
+          break;
+      }
+      
+      drawer.visible = true;
+    }
+    
+    // 动画效果
+    function openWithAnimation(type) {
+      const drawer = document.getElementById('animationDrawer');
+      const animationInfo = document.getElementById('animationInfo');
+      
+      switch(type) {
+        case 'fast':
+          drawer.animation = true;
+          drawer.animationDuration = 200;
+          drawer.animationEasing = 'ease-out';
+          animationInfo.textContent = '快速动画 (200ms, ease-out)';
+          break;
+        case 'normal':
+          drawer.animation = true;
+          drawer.animationDuration = 300;
+          drawer.animationEasing = 'ease-in-out';
+          animationInfo.textContent = '正常动画 (300ms, ease-in-out)';
+          break;
+        case 'slow':
+          drawer.animation = true;
+          drawer.animationDuration = 600;
+          drawer.animationEasing = 'ease-in';
+          animationInfo.textContent = '缓慢动画 (600ms, ease-in)';
+          break;
+        case 'bounce':
+          drawer.animation = true;
+          drawer.animationDuration = 500;
+          drawer.animationEasing = 'bounce';
+          animationInfo.textContent = '弹性动画 (500ms, bounce)';
+          break;
+        case 'none':
+          drawer.animation = false;
+          animationInfo.textContent = '无动画效果';
+          break;
+      }
+      
+      drawer.visible = true;
+    }
+    
+    // 交互功能
+    function openInteractive(type) {
+      const drawer = document.getElementById('interactiveDrawer');
+      const interactiveInfo = document.getElementById('interactiveInfo');
+      
+      // 重置所有设置
+      drawer.mask = true;
+      drawer.maskClosable = true;
+      drawer.closeOnEscape = true;
+      drawer.resizable = false;
+      drawer.swipeToClose = false;
+      
+      switch(type) {
+        case 'mask':
+          drawer.maskClosable = true;
+          interactiveInfo.textContent = '点击遮罩可关闭';
+          break;
+        case 'nomask':
+          drawer.mask = false;
+          interactiveInfo.textContent = '无遮罩层';
+          break;
+        case 'esc':
+          drawer.closeOnEscape = true;
+          interactiveInfo.textContent = '按 ESC 键关闭';
+          break;
+        case 'resize':
+          drawer.resizable = true;
+          interactiveInfo.textContent = '拖动边缘可调整大小';
+          break;
+        case 'swipe':
+          drawer.swipeToClose = true;
+          interactiveInfo.textContent = '支持滑动关闭（移动端）';
+          break;
+      }
+      
+      drawer.visible = true;
+    }
+    
+    // 嵌套抽屉
+    function openNested() {
+      const drawer = document.getElementById('nestedDrawer1');
+      drawer.visible = true;
+    }
+    
+    function openSecondDrawer() {
+      const drawer = document.getElementById('nestedDrawer2');
+      drawer.visible = true;
+    }
+    
+    // 关闭抽屉
+    function closeDrawer(id) {
+      const drawer = document.getElementById(id);
+      drawer.visible = false;
+    }
+  </script>
+</body>
+</html>

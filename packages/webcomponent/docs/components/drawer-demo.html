@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawer 组件演示</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    
+    .description {
+      color: #666;
+      margin-bottom: 40px;
+    }
+    
+    .demo-section {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .demo-section h2 {
+      margin-top: 0;
+      color: #1890ff;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .demo-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .demo-label {
+      font-weight: 600;
+      color: #666;
+      min-width: 100px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    
+    button:hover {
+      color: #1890ff;
+      border-color: #1890ff;
+    }
+    
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    .primary-button {
+      background: #1890ff;
+      color: white;
+      border-color: #1890ff;
+    }
+    
+    .primary-button:hover {
+      background: #40a9ff;
+      border-color: #40a9ff;
+    }
+    
+    code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      color: #1890ff;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Drawer 抽屉组件演示</h1>
+  <p class="description">点击下面的按钮体验不同配置的抽屉效果</p>
+
+  <!-- 四个方向 -->
+  <div class="demo-section">
+    <h2>四个方向</h2>
+    <p>抽屉可以从屏幕的四个方向滑出，通过 <code>placement</code> 属性控制。</p>
+    <div class="demo-row">
+      <button id="leftDrawerBtn">从左侧打开</button>
+      <button id="rightDrawerBtn">从右侧打开</button>
+      <button id="topDrawerBtn">从顶部打开</button>
+      <button id="bottomDrawerBtn">从底部打开</button>
+    </div>
+  </div>
+
+  <!-- 尺寸配置 -->
+  <div class="demo-section">
+    <h2>尺寸配置</h2>
+    <p>支持预设尺寸、像素值、百分比等多种尺寸设置方式。</p>
+    <div class="demo-row">
+      <span class="demo-label">预设尺寸：</span>
+      <button onclick="document.getElementById('xsDrawer').open()">XS (200px)</button>
+      <button onclick="document.getElementById('smDrawer').open()">SM (300px)</button>
+      <button onclick="document.getElementById('mdDrawer').open()">MD (400px)</button>
+      <button onclick="document.getElementById('lgDrawer').open()">LG (600px)</button>
+      <button onclick="document.getElementById('xlDrawer').open()">XL (800px)</button>
+    </div>
+    <div class="demo-row">
+      <span class="demo-label">自定义：</span>
+      <button onclick="document.getElementById('customPxDrawer').open()">固定宽度 500px</button>
+      <button onclick="document.getElementById('customPercentDrawer').open()">百分比 60%</button>
+      <button onclick="document.getElementById('fullscreenDrawer').open()">全屏模式</button>
+    </div>
+  </div>
+
+  <!-- 高级功能 -->
+  <div class="demo-section">
+    <h2>高级功能</h2>
+    <div class="demo-row">
+      <button onclick="document.getElementById('animationDrawer').open()">动画效果</button>
+      <button onclick="document.getElementById('noMaskDrawer').open()">无遮罩</button>
+      <button onclick="document.getElementById('resizableDrawer').open()">可调整大小</button>
+      <button onclick="document.getElementById('loadingDrawer').open()">加载状态</button>
+    </div>
+  </div>
+
+  <!-- 实际应用 -->
+  <div class="demo-section">
+    <h2>实际应用示例</h2>
+    <div class="demo-row">
+      <button class="primary-button" onclick="document.getElementById('formDrawer').open()">表单编辑</button>
+      <button class="primary-button" onclick="document.getElementById('detailDrawer').open()">详情查看</button>
+      <button class="primary-button" onclick="document.getElementById('menuDrawer').open()">导航菜单</button>
+      <button class="primary-button" onclick="document.getElementById('settingsDrawer').open()">设置面板</button>
+    </div>
+  </div>
+
+  <!-- ========== 抽屉定义 ========== -->
+
+  <!-- 四个方向 -->
+  <ldesign-drawer id="leftDrawer" placement="left" drawer-title="左侧抽屉">
+    <div style="padding: 20px;">
+      <p>从左侧滑出的抽屉，适合用于导航菜单。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="rightDrawer" placement="right" drawer-title="右侧抽屉">
+    <div style="padding: 20px;">
+      <p>从右侧滑出的抽屉（默认），适合用于设置面板、详情信息。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="topDrawer" placement="top" drawer-title="顶部抽屉">
+    <div style="padding: 20px;">
+      <p>从顶部滑出的抽屉，适合用于通知、消息面板。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="bottomDrawer" placement="bottom" drawer-title="底部抽屉">
+    <div style="padding: 20px;">
+      <p>从底部滑出的抽屉，适合用于操作面板、选项卡。</p>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 尺寸配置 -->
+  <ldesign-drawer id="xsDrawer" size="xs" drawer-title="XS 尺寸">
+    <div style="padding: 20px;">200px 宽度</div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="smDrawer" size="sm" drawer-title="SM 尺寸">
+    <div style="padding: 20px;">300px 宽度</div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="mdDrawer" size="md" drawer-title="MD 尺寸">
+    <div style="padding: 20px;">默认 400px 宽度</div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="lgDrawer" size="lg" drawer-title="LG 尺寸">
+    <div style="padding: 20px;">600px 宽度</div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="xlDrawer" size="xl" drawer-title="XL 尺寸">
+    <div style="padding: 20px;">800px 宽度</div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="customPxDrawer" size="500px" drawer-title="自定义像素">
+    <div style="padding: 20px;">固定 500px 宽度</div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="customPercentDrawer" size="60%" drawer-title="自定义百分比">
+    <div style="padding: 20px;">占屏幕 60% 宽度</div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="fullscreenDrawer" fullscreen="true" drawer-title="全屏模式">
+    <div style="padding: 20px;">全屏显示，适合于复杂表单或详细内容</div>
+  </ldesign-drawer>
+
+  <!-- 高级功能 -->
+  <ldesign-drawer id="animationDrawer" drawer-title="动画效果" animation-duration="600">
+    <div style="padding: 20px;">
+      <p>这个抽屉使用了较慢的动画效果（600ms）</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="noMaskDrawer" drawer-title="无遮罩抽屉" mask="false">
+    <div style="padding: 20px;">
+      <p>这个抽屉没有遮罩层</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer 
+    id="resizableDrawer" 
+    drawer-title="可调整大小" 
+    resizable="true"
+    min-size="200px"
+    max-size="800px">
+    <div style="padding: 20px;">
+      <p>拖动边缘可以调整抽屉大小</p>
+      <p style="color: #666; font-size: 14px;">提示：鼠标移到抽屉边缘会出现调整光标</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="loadingDrawer" drawer-title="加载示例" loading="false">
+    <div id="loadingContent" style="padding: 20px;">
+      <p>点击下方按钮加载数据</p>
+      <button onclick="loadData()">加载数据</button>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 表单编辑抽屉 -->
+  <ldesign-drawer 
+    id="formDrawer"
+    drawer-title="创建新用户"
+    subtitle="填写用户基本信息"
+    placement="right"
+    size="md">
+    <form id="userForm" style="padding: 20px;">
+      <div style="margin-bottom: 16px;">
+        <label>用户名：</label>
+        <input type="text" name="username" required style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+      </div>
+      
+      <div style="margin-bottom: 16px;">
+        <label>邮箱：</label>
+        <input type="email" name="email" required style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+      </div>
+      
+      <div style="margin-bottom: 16px;">
+        <label>角色：</label>
+        <select name="role" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+          <option value="user">普通用户</option>
+          <option value="admin">管理员</option>
+        </select>
+      </div>
+    </form>
+    
+    <div slot="footer" style="display: flex; justify-content: flex-end; gap: 10px; padding: 16px; border-top: 1px solid #f0f0f0;">
+      <button onclick="document.getElementById('formDrawer').close()">取消</button>
+      <button class="primary-button" onclick="submitForm()">确定</button>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 详情查看抽屉 -->
+  <ldesign-drawer 
+    id="detailDrawer"
+    drawer-title="用户详情"
+    placement="right"
+    size="lg">
+    <div style="padding: 20px;">
+      <div style="margin-bottom: 20px;">
+        <img src="https://via.placeholder.com/80" style="width: 80px; height: 80px; border-radius: 50%;">
+      </div>
+      <h3>张三</h3>
+      <p><strong>邮箱：</strong>zhangsan@example.com</p>
+      <p><strong>手机：</strong>138****8888</p>
+      <p><strong>角色：</strong>管理员</p>
+      <p><strong>注册时间：</strong>2024-01-01</p>
+      <p><strong>状态：</strong><span style="color: green">活跃</span></p>
+    </div>
+  </ldesign-drawer>
+
+  <!-- 导航菜单抽屉 -->
+  <ldesign-drawer 
+    id="menuDrawer"
+    placement="left"
+    size="sm"
+    drawer-title="导航菜单">
+    <nav style="padding: 20px;">
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        <li style="margin-bottom: 10px;">
+          <a href="#home" style="display: block; padding: 12px; text-decoration: none; color: #333; border-radius: 4px;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
+            🏠 首页
+          </a>
+        </li>
+        <li style="margin-bottom: 10px;">
+          <a href="#products" style="display: block; padding: 12px; text-decoration: none; color: #333; border-radius: 4px;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
+            📚 产品
+          </a>
+        </li>
+        <li style="margin-bottom: 10px;">
+          <a href="#about" style="display: block; padding: 12px; text-decoration: none; color: #333; border-radius: 4px;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
+            ℹ️ 关于我们
+          </a>
+        </li>
+        <li style="margin-bottom: 10px;">
+          <a href="#contact" style="display: block; padding: 12px; text-decoration: none; color: #333; border-radius: 4px;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
+            ✉️ 联系我们
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </ldesign-drawer>
+
+  <!-- 设置面板 -->
+  <ldesign-drawer 
+    id="settingsDrawer"
+    drawer-title="设置"
+    icon="⚙️"
+    placement="right"
+    size="md">
+    <div style="padding: 20px;">
+      <section style="margin-bottom: 30px;">
+        <h4>外观</h4>
+        <div style="margin-bottom: 16px;">
+          <label>
+            主题模式：
+            <select style="margin-left: 10px; padding: 6px;">
+              <option value="light">亮色</option>
+              <option value="dark">暗色</option>
+              <option value="auto">自动</option>
+            </select>
+          </label>
+        </div>
+      </section>
+      
+      <section style="margin-bottom: 30px;">
+        <h4>通知</h4>
+        <div style="margin-bottom: 16px;">
+          <label>
+            <input type="checkbox" checked>
+            邮件通知
+          </label>
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label>
+            <input type="checkbox" checked>
+            推送通知
+          </label>
+        </div>
+      </section>
+    </div>
+  </ldesign-drawer>
+
+  <script>
+    // 绑定按钮事件
+    document.getElementById('leftDrawerBtn').onclick = () => 
+      document.getElementById('leftDrawer').open();
+      
+    document.getElementById('rightDrawerBtn').onclick = () => 
+      document.getElementById('rightDrawer').open();
+      
+    document.getElementById('topDrawerBtn').onclick = () => 
+      document.getElementById('topDrawer').open();
+      
+    document.getElementById('bottomDrawerBtn').onclick = () => 
+      document.getElementById('bottomDrawer').open();
+
+    // 加载数据示例
+    async function loadData() {
+      const drawer = document.getElementById('loadingDrawer');
+      await drawer.showLoading('正在加载数据...');
+      
+      // 模拟异步加载
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      document.getElementById('loadingContent').innerHTML = `
+        <p style="color: green;">✅ 数据加载成功！</p>
+        <p>这是模拟加载的数据内容。</p>
+      `;
+      
+      await drawer.hideLoading();
+    }
+
+    // 提交表单
+    function submitForm() {
+      const form = document.getElementById('userForm');
+      if (form.checkValidity()) {
+        alert('创建成功！');
+        form.reset();
+        document.getElementById('formDrawer').close();
+      } else {
+        alert('请填写完整信息');
+      }
+    }
+
+    // 监听所有抽屉的打开事件
+    document.querySelectorAll('ldesign-drawer').forEach(drawer => {
+      drawer.addEventListener('drawerOpen', () => {
+        console.log(`抽屉已打开: ${drawer.id}`);
+      });
+      
+      drawer.addEventListener('drawerClose', (e) => {
+        console.log(`抽屉已关闭: ${drawer.id}, 原因: ${e.detail.reason}`);
+      });
+    });
+  </script>
+
+  <!-- 引入组件库 -->
+  <script type="module" src="../../dist/ldesign/ldesign.esm.js"></script>
+</body>
+</html>
