@@ -79,6 +79,22 @@ export const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/ai-settings',
+    name: 'AISettings',
+    component: () => import('../views/AISettings.vue'),
+    meta: {
+      title: 'AI 设置'
+    }
+  },
+  {
+    path: '/ai-demo',
+    name: 'AIDemo',
+    component: () => import('../views/AIDemo.vue'),
+    meta: {
+      title: 'AI 对话'
+    }
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('../views/NotFound.vue'),

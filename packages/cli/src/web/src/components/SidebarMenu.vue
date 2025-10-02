@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { LayoutDashboard, FolderKanban, Circle, Package, Settings } from 'lucide-vue-next'
+import { LayoutDashboard, FolderKanban, Circle, Package, Settings, Bot } from 'lucide-vue-next'
 import { useApi } from '../composables/useApi'
 
 // Props
@@ -58,6 +58,7 @@ const loadMenuData = async () => {
     { id: 'projects', name: '项目管理', icon: FolderKanban, path: '/projects' },
     { id: 'node', name: 'Node 管理', icon: Circle, path: '/node' },
     { id: 'npm-sources', name: 'NPM 源管理', icon: Package, path: '/npm-sources' },
+    { id: 'ai', name: 'AI 助手', icon: Bot, path: '/ai-demo' },
     { id: 'settings', name: '设置', icon: Settings, path: '/settings' }
   ]
 }
