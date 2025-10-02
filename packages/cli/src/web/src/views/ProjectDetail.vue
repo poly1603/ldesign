@@ -60,54 +60,99 @@
       </div>
 
       <!-- 基本信息卡片 -->
-      <div class="info-card">
+      <div class="info-card-enhanced">
         <div class="card-header">
-          <Info :size="20" />
-          <h2>基本信息</h2>
+          <div class="header-title">
+            <Info :size="20" />
+            <h2>基本信息</h2>
+          </div>
         </div>
         <div class="card-body">
-          <div class="info-grid">
-            <div class="info-item">
-              <label>
-                <FolderOpen :size="16" />
-                <span>项目名称</span>
-              </label>
-              <span class="value">{{ project.name }}</span>
+          <!-- 主要信息区域 -->
+          <div class="primary-info">
+            <div class="info-row">
+              <div class="info-icon-wrapper">
+                <FolderOpen :size="24" />
+              </div>
+              <div class="info-content">
+                <label>项目名称</label>
+                <div class="value-primary">{{ project.name }}</div>
+              </div>
             </div>
-            <div class="info-item">
-              <label>
-                <MapPin :size="16" />
-                <span>项目路径</span>
-              </label>
-              <span class="value path-text">{{ project.path }}</span>
+            
+            <div class="info-row">
+              <div class="info-icon-wrapper">
+                <MapPin :size="24" />
+              </div>
+              <div class="info-content">
+                <label>项目路径</label>
+                <div class="value-path">
+                  <code>{{ project.path }}</code>
+                  <button 
+                    class="btn-open-folder" 
+                    :class="{ opening: isOpeningFolder }"
+                    @click="openFolder" 
+                    :title="'打开文件夹'"
+                    :disabled="isOpeningFolder"
+                  >
+                    <FolderOpen :size="16" />
+                  </button>
+                </div>
+              </div>
             </div>
-            <div class="info-item">
-              <label>
-                <FileText :size="16" />
-                <span>项目描述</span>
-              </label>
-              <span class="value">{{ project.description || '暂无描述' }}</span>
+
+            <div v-if="project.description" class="info-row description-row">
+              <div class="info-icon-wrapper">
+                <FileText :size="24" />
+              </div>
+              <div class="info-content">
+                <label>项目描述</label>
+                <div class="value-description">{{ project.description }}</div>
+              </div>
             </div>
-            <div class="info-item">
-              <label>
-                <Calendar :size="16" />
-                <span>创建时间</span>
-              </label>
-              <span class="value">{{ formatDate(project.createdAt) }}</span>
+          </div>
+
+          <!-- 元数据网格 -->
+          <div class="metadata-grid">
+            <div class="meta-item">
+              <div class="meta-icon">
+                <Tag :size="18" />
+              </div>
+              <div class="meta-content">
+                <label>项目类型</label>
+                <span class="badge-type">{{ projectTypeLabel }}</span>
+              </div>
             </div>
-            <div class="info-item">
-              <label>
-                <Clock :size="16" />
-                <span>更新时间</span>
-              </label>
-              <span class="value">{{ formatDate(project.updatedAt) }}</span>
+            
+            <div class="meta-item">
+              <div class="meta-icon">
+                <Calendar :size="18" />
+              </div>
+              <div class="meta-content">
+                <label>创建时间</label>
+                <span class="meta-value">{{ formatDate(project.createdAt) }}</span>
+              </div>
             </div>
-            <div class="info-item">
-              <label>
-                <Tag :size="16" />
-                <span>项目类型</span>
-              </label>
-              <span class="value">{{ projectTypeLabel }}</span>
+            
+            <div class="meta-item">
+              <div class="meta-icon">
+                <Clock :size="18" />
+              </div>
+              <div class="meta-content">
+                <label>更新时间</label>
+                <span class="meta-value">{{ formatDate(project.updatedAt) }}</span>
+              </div>
+            </div>
+
+            <!-- 可以添加更多元数据 -->
+            <div class="meta-item" v-if="project.version">
+              <div class="meta-icon">
+                <Package :size="18" />
+              </div>
+              <div class="meta-content">
+                <label>版本号</label>
+                <span class="meta-value">{{ project.version }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -285,6 +330,27 @@ const scrollToTop = () => {
     top: 0,
     behavior: 'smooth'
   })
+}
+
+// 打开文件夹状态
+const isOpeningFolder = ref(false)
+
+const openFolder = async () => {
+  if (!project.value?.id || isOpeningFolder.value) return
+  
+  isOpeningFolder.value = true
+  try {
+    const response = await api.post(`/api/projects/${project.value.id}/open-folder`)
+    if (response.success) {
+      console.log('文件夹已打开')
+    } else {
+      console.error('打开文件夹失败:', response.message)
+    }
+  } catch (error) {
+    console.error('打开文件夹失败:', error)
+  } finally {
+    isOpeningFolder.value = false
+  }
 }
 
 onMounted(() => {
@@ -683,6 +749,290 @@ onUnmounted(() => {
     right: 20px;
     width: 44px;
     height: 44px;
+  }
+}
+
+/* 基本信息卡片增强样式 */
+.info-card-enhanced {
+  background: var(--ldesign-bg-color-container);
+  border-radius: var(--ls-border-radius-lg);
+  border: 1px solid var(--ldesign-border-color);
+  box-shadow: var(--ldesign-shadow-1);
+  overflow: hidden;
+
+  .card-header {
+    padding: var(--ls-padding-lg);
+    background: var(--ldesign-bg-color-component);
+    border-bottom: 1px solid var(--ldesign-border-color);
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: var(--ls-spacing-sm);
+
+      svg {
+        color: var(--ldesign-brand-color);
+        flex-shrink: 0;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: var(--ls-font-size-lg);
+        color: var(--ldesign-text-color-primary);
+        font-weight: 600;
+      }
+    }
+  }
+
+  .card-body {
+    padding: var(--ls-padding-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--ls-spacing-xl);
+  }
+
+  /* 主要信息区 */
+  .primary-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ls-spacing-lg);
+
+    .info-row {
+      display: flex;
+      gap: var(--ls-spacing-base);
+      align-items: flex-start;
+
+      &.description-row {
+        padding-top: var(--ls-padding-sm);
+        border-top: 1px dashed var(--ldesign-border-color);
+      }
+
+      .info-icon-wrapper {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--ldesign-brand-bg);
+        border-radius: var(--ls-border-radius-base);
+        flex-shrink: 0;
+
+        svg {
+          color: var(--ldesign-brand-color);
+        }
+      }
+
+      .info-content {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--ls-spacing-xs);
+
+        label {
+          font-size: var(--ls-font-size-sm);
+          color: var(--ldesign-text-color-secondary);
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .value-primary {
+          font-size: var(--ls-font-size-h3);
+          color: var(--ldesign-text-color-primary);
+          font-weight: 600;
+          line-height: 1.4;
+        }
+
+        .value-path {
+          display: flex;
+          align-items: center;
+          gap: var(--ls-spacing-sm);
+          padding: var(--ls-padding-sm) var(--ls-padding-base);
+          background: var(--ldesign-bg-color-component);
+          border: 1px solid var(--ldesign-border-color);
+          border-radius: var(--ls-border-radius-base);
+          transition: all 0.2s ease;
+
+          &:hover {
+            border-color: var(--ldesign-brand-color-hover);
+            background: var(--ldesign-bg-color-container-hover);
+          }
+
+          code {
+            flex: 1;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: var(--ls-font-size-sm);
+            color: var(--ldesign-brand-color);
+            word-break: break-all;
+            line-height: 1.6;
+          }
+
+          .btn-open-folder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            background: transparent;
+            border: 1px solid var(--ldesign-border-color);
+            border-radius: var(--ls-border-radius-sm);
+            color: var(--ldesign-text-color-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+
+            &:hover:not(:disabled) {
+              background: var(--ldesign-brand-bg);
+              border-color: var(--ldesign-brand-color);
+              color: var(--ldesign-brand-color);
+            }
+
+            &:active:not(:disabled) {
+              transform: scale(0.95);
+            }
+
+            &:disabled {
+              opacity: 0.6;
+              cursor: not-allowed;
+            }
+
+            &.opening {
+              svg {
+                animation: pulse 1s ease-in-out infinite;
+              }
+            }
+
+            svg {
+              display: block;
+            }
+          }
+        }
+
+        .value-description {
+          font-size: var(--ls-font-size-base);
+          color: var(--ldesign-text-color-primary);
+          line-height: 1.6;
+          white-space: pre-wrap;
+          word-break: break-word;
+        }
+      }
+    }
+  }
+
+  /* 元数据网格 */
+  .metadata-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--ls-spacing-base);
+    padding: var(--ls-padding-base);
+    background: var(--ldesign-bg-color-component);
+    border-radius: var(--ls-border-radius-base);
+    border: 1px solid var(--ldesign-border-color);
+
+    .meta-item {
+      display: flex;
+      gap: var(--ls-spacing-sm);
+      align-items: flex-start;
+
+      .meta-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--ldesign-bg-color-container);
+        border-radius: var(--ls-border-radius-sm);
+        flex-shrink: 0;
+
+        svg {
+          color: var(--ldesign-brand-color);
+        }
+      }
+
+      .meta-content {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        label {
+          font-size: 12px;
+          color: var(--ldesign-text-color-secondary);
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .meta-value {
+          font-size: var(--ls-font-size-sm);
+          color: var(--ldesign-text-color-primary);
+          font-weight: 500;
+        }
+
+        .badge-type {
+          display: inline-block;
+          padding: 4px 10px;
+          background: var(--ldesign-brand-bg);
+          color: var(--ldesign-brand-color);
+          border-radius: var(--ls-border-radius-sm);
+          font-size: 12px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+    }
+  }
+}
+
+/* 打开文件夹脉冲动画 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .info-card-enhanced {
+    .primary-info {
+      .info-row {
+        .info-icon-wrapper {
+          width: 36px;
+          height: 36px;
+        }
+
+        .info-content {
+          .value-primary {
+            font-size: var(--ls-font-size-h4);
+          }
+
+          .value-path {
+            flex-direction: column;
+            align-items: stretch;
+
+            code {
+              font-size: 12px;
+            }
+
+            .btn-open-folder {
+              width: 100%;
+              height: 36px;
+            }
+          }
+        }
+      }
+    }
+
+    .metadata-grid {
+      grid-template-columns: 1fr;
+    }
   }
 }
 </style>

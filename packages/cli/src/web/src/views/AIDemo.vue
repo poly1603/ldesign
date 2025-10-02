@@ -322,7 +322,7 @@ const checkConfig = () => {
 }
 
 const goToSettings = () => {
-  router.push('/ai-settings')
+  router.push('/settings?tab=ai')
 }
 
 const scrollToBottom = async () => {

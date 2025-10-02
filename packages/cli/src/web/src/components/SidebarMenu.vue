@@ -58,7 +58,7 @@ const loadMenuData = async () => {
     { id: 'projects', name: '项目管理', icon: FolderKanban, path: '/projects' },
     { id: 'node', name: 'Node 管理', icon: Circle, path: '/node' },
     { id: 'npm-sources', name: 'NPM 源管理', icon: Package, path: '/npm-sources' },
-    { id: 'ai', name: 'AI 助手', icon: Bot, path: '/ai-demo' },
+    { id: 'ai', name: 'AI 助手', icon: Bot, path: '/ai' },
     { id: 'settings', name: '设置', icon: Settings, path: '/settings' }
   ]
 }

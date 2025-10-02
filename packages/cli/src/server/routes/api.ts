@@ -1024,10 +1024,17 @@ apiRouter.post('/node/switch', async (req, res) => {
 apiRouter.get('/config', (req, res) => {
   try {
     const runtimeConfig = configManager.getRuntimeConfig()
+    
+    // 如果运行时配置不存在，返回基础配置
     if (!runtimeConfig) {
-      return res.status(500).json({
-        success: false,
-        message: '服务器配置未初始化'
+      const baseConfig = configManager.getConfig()
+      return res.json({
+        success: true,
+        data: {
+          ...baseConfig,
+          currentPort: baseConfig.defaultPort,
+          currentHost: baseConfig.defaultHost
+        }
       })
     }
 

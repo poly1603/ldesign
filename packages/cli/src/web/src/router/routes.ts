@@ -78,16 +78,16 @@ export const routes: RouteRecordRaw[] = [
       title: '设置'
     }
   },
+  // {
+  //   path: '/ai-settings',
+  //   name: 'AISettings',
+  //   component: () => import('../views/AISettings.vue'),
+  //   meta: {
+  //     title: 'AI 设置'
+  //   }
+  // },
   {
-    path: '/ai-settings',
-    name: 'AISettings',
-    component: () => import('../views/AISettings.vue'),
-    meta: {
-      title: 'AI 设置'
-    }
-  },
-  {
-    path: '/ai-demo',
+    path: '/ai',
     name: 'AIDemo',
     component: () => import('../views/AIDemo.vue'),
     meta: {

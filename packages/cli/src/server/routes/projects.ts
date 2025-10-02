@@ -5,7 +5,7 @@
 import { Router, type IRouter } from 'express'
 import { readFileSync, existsSync, statSync, readdirSync, writeFileSync } from 'fs'
 import { join, resolve, basename, dirname, sep } from 'path'
-import { exec } from 'child_process'
+import { exec, spawn } from 'child_process'
 import { promisify } from 'util'
 import { homedir } from 'os'
 import {
@@ -822,6 +822,89 @@ projectsRouter.get('/:id/readme', (req, res) => {
     res.status(500).json({
       success: false,
       message: '获取README.md失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 打开项目目录
+ */
+projectsRouter.post('/:id/open-folder', async (req, res) => {
+  try {
+    const { id } = req.params
+    const project = getProjectById(id)
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: '项目不存在'
+      })
+    }
+
+    const projectPath = project.path
+
+    // 检查路径是否存在
+    if (!existsSync(projectPath)) {
+      return res.status(404).json({
+        success: false,
+        message: '项目路径不存在'
+      })
+    }
+
+    try {
+      // 使用 spawn 代替 exec，不等待进程结束
+      switch (process.platform) {
+        case 'win32': {
+          // Windows: 使用 explorer 打开文件夹
+          const normalizedPath = projectPath.replace(/\//g, '\\\\')
+          spawn('explorer', [normalizedPath], {
+            detached: true,
+            stdio: 'ignore'
+          }).unref()
+          break
+        }
+        case 'darwin': {
+          // macOS: 使用 open 打开文件夹
+          spawn('open', [projectPath], {
+            detached: true,
+            stdio: 'ignore'
+          }).unref()
+          break
+        }
+        case 'linux': {
+          // Linux: 尝试使用 xdg-open 打开文件夹
+          spawn('xdg-open', [projectPath], {
+            detached: true,
+            stdio: 'ignore'
+          }).unref()
+          break
+        }
+        default:
+          return res.status(500).json({
+            success: false,
+            message: `不支持的操作系统: ${process.platform}`
+          })
+      }
+
+      // 立即返回成功，不等待进程结束
+      res.json({
+        success: true,
+        message: '已打开项目目录'
+      })
+    } catch (error) {
+      console.error('打开目录失败:', error)
+      res.status(500).json({
+        success: false,
+        message: '打开目录失败',
+        error: error instanceof Error ? error.message : String(error)
+      })
+    }
+  } catch (error) {
+    console.error('打开项目目录失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '打开项目目录失败',
       error: error instanceof Error ? error.message : String(error)
     })
   }
