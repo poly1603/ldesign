@@ -887,6 +887,50 @@ swipeDrawer.addEventListener('drawerSwipe', (e) => {
 <ldesign-drawer id="swipeTriggerDrawer" drawer-title="指定滑动区域" swipe-to-close="true" swipe-trigger-area="edge" animation="true">
   <div style="padding: 20px;">
     <p>只有从边缘滑动才能关闭</p>
+    <p style="color: #999; font-size: 13px; margin-top: 10px;">提示：请在抽屉边缘 20px 内滑动</p>
+  </div>
+</ldesign-drawer>
+
+<!-- 移动端实际应用示例的抽屉 -->
+<ldesign-drawer id="mobileBottomDrawer" drawer-title="选项列表" placement="bottom" swipe-to-close="true" swipe-trigger-area="anywhere" swipe-threshold="0.3" animation="true">
+  <div style="padding: 20px;">
+    <p>在任何位置滑动都可以关闭</p>
+  </div>
+</ldesign-drawer>
+
+<ldesign-drawer id="mobileRightDrawer" drawer-title="详情查看" placement="right" swipe-to-close="true" swipe-trigger-area="header" swipe-threshold="0.3" animation="true">
+  <div>
+    <p style="padding: 20px;">只有在头部区域滑动才能关闭，内容区可以滚动</p>
+    <div style="height: 1000px; background: linear-gradient(to bottom, #f0f0f0, #ffffff); padding: 20px;">
+      <h4>长内容区域</h4>
+      <p>这里是可滚动的内容区域</p>
+      <p>向下滚动查看更多...</p>
+    </div>
+  </div>
+</ldesign-drawer>
+
+<ldesign-drawer id="mobileLeftDrawer" drawer-title="导航菜单" placement="left" swipe-to-close="true" swipe-trigger-area="edge" swipe-threshold="0.25" animation="true">
+  <nav style="padding-top: 10px;">
+    <ul style="list-style: none; padding: 0; margin: 0;">
+      <li style="padding: 14px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer;">🏠 首页</li>
+      <li style="padding: 14px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer;">💻 产品</li>
+      <li style="padding: 14px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer;">🛠️ 服务</li>
+      <li style="padding: 14px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer;">ℹ️ 关于</li>
+    </ul>
+  </nav>
+</ldesign-drawer>
+
+<ldesign-drawer id="mobileOptimizedDrawer" drawer-title="实际应用示例" placement="bottom" swipe-to-close="true" animation="true">
+  <div style="padding: 20px;">
+    <h4 style="margin-top: 0; color: #333;">移动端优化特性：</h4>
+    <ul style="line-height: 1.8; color: #555;">
+      <li>✅ 自动限制尺寸，不超出屏幕</li>
+      <li>✅ 支持安全区域（齐屏适配）</li>
+      <li>✅ 流畅的滑动关闭动画</li>
+      <li>✅ 触摸优化，无点击延迟</li>
+      <li>✅ GPU 加速，动画更平滑</li>
+    </ul>
+    <p style="margin-top: 20px; color: #999; font-size: 14px;">提示：在移动设备上测试效果更佳！</p>
   </div>
 </ldesign-drawer>
 
@@ -2072,14 +2116,82 @@ dataDrawer.addEventListener('drawerOpen', async () => {
 ### 5. 移动端适配
 
 ```html
-<!-- ✅ 移动端优化 -->
+<!-- ✅ 移动端优化：底部抽屉 -->
 <ldesign-drawer 
+  id="mobileBottomDrawer"
   placement="bottom"
-  size="85%"
+  drawer-title="选项列表"
   swipe-to-close="true"
+  swipe-trigger-area="anywhere"
   swipe-threshold="0.3">
   <!-- 移动端内容 -->
 </ldesign-drawer>
+
+<!-- ✅ 移动端右侧抽屉：在头部滑动关闭 -->
+<ldesign-drawer 
+  id="mobileRightDrawer"
+  placement="right"
+  drawer-title="详情查看"
+  swipe-to-close="true"
+  swipe-trigger-area="header"
+  swipe-threshold="0.3">
+  <div>
+    <p>只有在头部区域滑动才能关闭，内容区可以滚动</p>
+    <div style="height: 1000px; background: linear-gradient(to bottom, #f0f0f0, #ffffff);">
+      长内容区域
+    </div>
+  </div>
+</ldesign-drawer>
+
+<!-- ✅ 移动端左侧抽屉：从边缘滑动关闭 -->
+<ldesign-drawer 
+  id="mobileLeftDrawer"
+  placement="left"
+  drawer-title="导航菜单"
+  swipe-to-close="true"
+  swipe-trigger-area="edge"
+  swipe-threshold="0.25">
+  <nav>
+    <ul style="list-style: none; padding: 0;">
+      <li style="padding: 12px; border-bottom: 1px solid #f0f0f0;">首页</li>
+      <li style="padding: 12px; border-bottom: 1px solid #f0f0f0;">产品</li>
+      <li style="padding: 12px; border-bottom: 1px solid #f0f0f0;">服务</li>
+      <li style="padding: 12px; border-bottom: 1px solid #f0f0f0;">关于</li>
+    </ul>
+  </nav>
+</ldesign-drawer>
+
+<!-- ✅ 移动端尺寸优化：确保不超出屏幕 -->
+<ldesign-drawer 
+  id="mobileOptimizedDrawer"
+  placement="bottom"
+  drawer-title="实际应用示例"
+  swipe-to-close="true">
+  <div style="padding: 20px;">
+    <h4>移动端优化特性：</h4>
+    <ul>
+      <li>✅ 自动限制尺寸，不超出屏幕</li>
+      <li>✅ 支持安全区域（齐屏适配）</li>
+      <li>✅ 流畅的滑动关闭动画</li>
+      <li>✅ 触摸优化，无点击延迟</li>
+      <li>✅ GPU 加速，动画更平滑</li>
+    </ul>
+  </div>
+</ldesign-drawer>
+```
+
+```javascript path=null start=null
+// 移动端滑动区域说明：
+// - 'anywhere': 在抽屉任何位置滑动都可以关闭（适合无滚动内容）
+// - 'header': 只有在头部滑动才能关闭（适合有滚动内容）
+// - 'edge': 只有从边缘 20px 内滑动才能关闭（最精确）
+// - 'handle': 只有在滑动手柄上滑动才能关闭（需要显示手柄）
+
+// 监听滑动进度
+const drawer = document.getElementById('mobileBottomDrawer');
+drawer.addEventListener('drawerSwipe', (e) => {
+  console.log(`滑动进度: ${(e.detail.progress * 100).toFixed(0)}%`);
+});
 ```
 
 ```css
@@ -2090,6 +2202,13 @@ dataDrawer.addEventListener('drawerOpen', async () => {
     --drawer-header-height: 48px;
   }
 }
+
+/* 移动端尺寸自动优化 */
+/* 注意：组件已内置以下逺辑，无需手动设置：
+ * - 水平抽屉：自动限制在 85vw 和 calc(100vw - 48px) 之间
+ * - 垂直抽屉：自动限制在 80vh 和 calc(100vh - 60px) 之间
+ * - 所有抽屉：绝不超出 100vw × 100vh
+ */
 ```
 
 ### 6. 状态管理
