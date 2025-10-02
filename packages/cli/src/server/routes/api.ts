@@ -14,6 +14,7 @@ import https from 'https'
 import { logger } from '../../utils/logger.js'
 import { connectionManager } from '../websocket.js'
 import { projectsRouter } from './projects.js'
+import { projectToolsRouter } from './project-tools.js'
 import { ProcessManager } from '../ProcessManager.js'
 import { configManager } from '../config.js'
 
@@ -1110,6 +1111,9 @@ apiRouter.post('/config', (req, res) => {
 
 // 注册项目管理路由
 apiRouter.use('/projects', projectsRouter)
+
+// 注册项目工具路由
+apiRouter.use(projectToolsRouter)
 
 // ==================== 进程管理 API ====================
 

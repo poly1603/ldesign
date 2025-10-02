@@ -43,12 +43,8 @@
           <h2>快速操作</h2>
         </div>
         <div class="actions-grid">
-          <button
-            v-for="action in availableActions"
-            :key="action.id"
-            class="action-card"
-            @click="navigateToAction(action)"
-          >
+          <button v-for="action in availableActions" :key="action.id" class="action-card"
+            @click="navigateToAction(action)">
             <component :is="getActionIcon(action.icon)" :size="32" class="action-icon" />
             <div class="action-info">
               <h3>{{ action.name }}</h3>
@@ -116,12 +112,8 @@
       <!-- 标签页导航 -->
       <div class="tabs-container">
         <div class="tabs-header">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            :class="['tab-button', { active: activeTab === tab.id }]"
-            @click="activeTab = tab.id"
-          >
+          <button v-for="tab in tabs" :key="tab.id" :class="['tab-button', { active: activeTab === tab.id }]"
+            @click="activeTab = tab.id">
             <component :is="tab.icon" :size="18" />
             <span>{{ tab.label }}</span>
           </button>
@@ -130,7 +122,7 @@
         <div class="tabs-content">
           <!-- README 标签 -->
           <div v-show="activeTab === 'readme'" class="tab-pane">
-            <ReadmeTab :project-id="project.id" />
+            <ReadmeTab :project-path="project.path" />
           </div>
 
           <!-- 依赖管理标签 -->
@@ -155,24 +147,17 @@
         </div>
       </div>
     </div>
-
-    <!-- Back to Top Button -->
-    <transition name="fade-slide">
-      <button v-if="showBackToTop" @click="scrollToTop" class="back-to-top">
-        <ArrowUp :size="20" />
-      </button>
-    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft, RefreshCw, Loader2, XCircle, Zap, ChevronRight,
   Info, FolderOpen, MapPin, FileText, Calendar, Clock, Tag,
   FileCode, Package, Terminal, Settings, MoreHorizontal,
-  Code, Eye, Upload, Rocket, TestTube, ArrowUp
+  Code, Eye, Upload, Rocket, TestTube
 } from 'lucide-vue-next'
 import { useApi } from '../composables/useApi'
 import { useProjectType } from '../composables/useProjectType'
@@ -190,7 +175,6 @@ const { getProjectTypeLabel } = useProjectType()
 const project = ref<any>(null)
 const loading = ref(true)
 const activeTab = ref('readme')
-const showBackToTop = ref(false)
 
 const tabs = [
   { id: 'readme', label: 'README', icon: FileCode },
@@ -276,24 +260,8 @@ const refreshData = () => {
   loadProject()
 }
 
-const handleScroll = () => {
-  showBackToTop.value = window.scrollY > 300
-}
-
-const scrollToTop = () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  })
-}
-
 onMounted(() => {
   loadProject()
-  window.addEventListener('scroll', handleScroll)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -311,6 +279,10 @@ onUnmounted(() => {
   margin-bottom: var(--ls-margin-lg);
   padding-bottom: var(--ls-padding-base);
   border-bottom: 1px solid var(--ldesign-border-color);
+  position: sticky;
+  top: 0;
+  background-color: var(--ldesign-bg-color-container);
+  z-index: 100;
 
   .header-left {
     display: flex;
@@ -605,6 +577,7 @@ onUnmounted(() => {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -615,56 +588,17 @@ onUnmounted(() => {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.back-to-top {
-  position: fixed;
-  bottom: 32px;
-  right: 32px;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--ldesign-brand-color);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: var(--ldesign-shadow-3);
-  transition: all 0.3s ease;
-  z-index: 100;
-
-  &:hover {
-    background: var(--ldesign-brand-color-hover);
-    transform: translateY(-4px);
-    box-shadow: var(--ldesign-shadow-4);
-  }
-
-  &:active {
-    transform: translateY(-2px);
-  }
-}
-
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.3s ease;
-}
-
-.fade-slide-enter-from,
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
 @media (max-width: 768px) {
   .tabs-header {
     overflow-x: auto;
-    
+
     .tab-button {
       flex-shrink: 0;
     }
@@ -676,13 +610,6 @@ onUnmounted(() => {
 
   .info-grid {
     grid-template-columns: 1fr;
-  }
-
-  .back-to-top {
-    bottom: 20px;
-    right: 20px;
-    width: 44px;
-    height: 44px;
   }
 }
 </style>

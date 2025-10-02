@@ -3,7 +3,7 @@
  */
 
 import { Router, type IRouter } from 'express'
-import { readFileSync, existsSync, statSync, readdirSync } from 'fs'
+import { readFileSync, existsSync, statSync, readdirSync, writeFileSync } from 'fs'
 import { join, resolve, basename, dirname, sep } from 'path'
 import { exec } from 'child_process'
 import { promisify } from 'util'
@@ -768,6 +768,110 @@ projectsRouter.get('/:id/build-summary', (req, res) => {
     res.status(500).json({
       success: false,
       message: '获取产物摘要失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 获取项目的README.md内容
+ */
+projectsRouter.get('/:id/readme', (req, res) => {
+  try {
+    const { id } = req.params
+    const project = getProjectById(id)
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: '项目不存在'
+      })
+    }
+
+    // 尝试读取README.md文件
+    const readmePath = join(project.path, 'README.md')
+    
+    if (!existsSync(readmePath)) {
+      return res.json({
+        success: true,
+        data: {
+          content: '',
+          exists: false
+        }
+      })
+    }
+
+    try {
+      const content = readFileSync(readmePath, 'utf-8')
+      res.json({
+        success: true,
+        data: {
+          content,
+          exists: true
+        }
+      })
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: '读取README.md文件失败',
+        error: error instanceof Error ? error.message : String(error)
+      })
+    }
+  } catch (error) {
+    console.error('获取README.md失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '获取README.md失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 保存项目的README.md内容
+ */
+projectsRouter.post('/:id/readme', (req, res) => {
+  try {
+    const { id } = req.params
+    const { content } = req.body
+
+    if (typeof content !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: '内容必须是字符串'
+      })
+    }
+
+    const project = getProjectById(id)
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: '项目不存在'
+      })
+    }
+
+    // 写入README.md文件
+    const readmePath = join(project.path, 'README.md')
+    
+    try {
+      writeFileSync(readmePath, content, 'utf-8')
+      res.json({
+        success: true,
+        message: 'README.md保存成功'
+      })
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: '保存README.md文件失败',
+        error: error instanceof Error ? error.message : String(error)
+      })
+    }
+  } catch (error) {
+    console.error('保存README.md失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '保存README.md失败',
       error: error instanceof Error ? error.message : String(error)
     })
   }

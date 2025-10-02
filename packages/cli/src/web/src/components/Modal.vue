@@ -20,12 +20,14 @@
     <Transition name="modal">
       <div v-if="visible" class="modal-overlay" @click="handleOverlayClick">
         <Transition name="modal-content">
-          <div v-if="visible" class="modal-container" :style="{ width: width + 'px' }" @click.stop>
+          <div v-if="visible" class="modal-container" :class="$attrs.class" :style="{ width: width + 'px' }" @click.stop>
             <!-- 头部 -->
             <div class="modal-header">
               <div class="modal-title">
-                <component v-if="icon" :is="icon" class="modal-icon" />
-                <span>{{ title }}</span>
+                <slot name="title">
+                  <component v-if="icon" :is="icon" class="modal-icon" />
+                  <span>{{ title }}</span>
+                </slot>
               </div>
               <button class="modal-close" @click="handleCancel">
                 <X :size="20" />
@@ -60,6 +62,11 @@
 <script setup lang="ts">
 import { X, Check } from 'lucide-vue-next'
 import type { Component } from 'vue'
+
+// 禁用自动继承 attrs，因为使用了 Teleport
+defineOptions({
+  inheritAttrs: false
+})
 
 /**
  * Props 定义
@@ -144,6 +151,11 @@ const handleOverlayClick = () => {
   flex-direction: column;
   max-height: 90vh;
   max-width: 90vw;
+  
+  // 允许外部通过 class 自定义样式
+  :deep(.modal-content) {
+    // 外部可以覆盖这个 class
+  }
 }
 
 // 头部

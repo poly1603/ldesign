@@ -111,9 +111,28 @@ export function getAvailableActions(projectType: ProjectType): ProjectAction[] {
 }
 
 /**
+ * 获取项目类型标签（独立工具函数）
+ */
+export function getProjectTypeLabel(type: string): string {
+  const typeMap: Record<string, string> = {
+    'app': '项目',
+    'library': '库',
+    'both': '项目 & 库'
+  }
+  return typeMap[type] || '未知'
+}
+
+/**
  * 项目类型 Hook
  */
-export function useProjectType(packageJson: Ref<any>) {
+export function useProjectType(packageJson?: Ref<any>) {
+  if (!packageJson) {
+    // 如果没有传入 packageJson，只返回工具函数
+    return {
+      getProjectTypeLabel
+    }
+  }
+
   // 计算项目类型
   const projectType = computed(() => detectProjectType(packageJson.value))
 
@@ -135,7 +154,8 @@ export function useProjectType(packageJson: Ref<any>) {
   return {
     projectType,
     availableActions,
-    projectTypeLabel
+    projectTypeLabel,
+    getProjectTypeLabel
   }
 }
 
