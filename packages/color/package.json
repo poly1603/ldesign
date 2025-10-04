@@ -99,12 +99,10 @@
     "./es/vue/components/ColorThemeProvider.vue.css": "./es/vue/components/ColorThemeProvider.vue.css",
     "./es/vue/components/DarkModeToggle.vue.css": "./es/vue/components/DarkModeToggle.vue.css",
     "./es/vue/components/SimpleThemeToggle.vue.css": "./es/vue/components/SimpleThemeToggle.vue.css",
-    "./es/vue/components/ThemeSelector.vue.css": "./es/vue/components/ThemeSelector.vue.css",
     "./lib/exports/vue.css": "./lib/exports/vue.css",
     "./lib/vue/components/ColorThemeProvider.vue.css": "./lib/vue/components/ColorThemeProvider.vue.css",
     "./lib/vue/components/DarkModeToggle.vue.css": "./lib/vue/components/DarkModeToggle.vue.css",
-    "./lib/vue/components/SimpleThemeToggle.vue.css": "./lib/vue/components/SimpleThemeToggle.vue.css",
-    "./lib/vue/components/ThemeSelector.vue.css": "./lib/vue/components/ThemeSelector.vue.css"
+    "./lib/vue/components/SimpleThemeToggle.vue.css": "./lib/vue/components/SimpleThemeToggle.vue.css"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",

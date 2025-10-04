@@ -11,16 +11,111 @@
     </div>
 
     <div v-else class="content">
-      <!-- 工具栏 -->
-      <div class="toolbar">
-        <button class="btn btn-primary" @click="showAddDialog">
-          <span class="icon">+</span>
-          添加源
-        </button>
-        <button class="btn btn-secondary" @click="loadSources">
-          <span class="icon">⟳</span>
-          刷新
-        </button>
+      <!-- Verdaccio 本地服务器管理区域 -->
+      <div class="verdaccio-section">
+        <div class="section-header">
+          <h2>📦 本地 NPM 服务器 (Verdaccio)</h2>
+          <p class="section-description">使用 Verdaccio 搭建本地私有 NPM 注册表，管理本地包和代理公共包</p>
+        </div>
+
+        <div class="verdaccio-card">
+          <div class="verdaccio-status">
+            <div class="status-left">
+              <div class="status-indicator" :class="{ 'running': verdaccioStatus.isRunning }">
+                <span class="status-dot"></span>
+                <span class="status-text">{{ verdaccioStatus.isRunning ? '运行中' : '已停止' }}</span>
+              </div>
+              
+              <div v-if="verdaccioStatus.isRunning" class="status-info">
+                <div class="info-item">
+                  <span class="label">访问地址:</span>
+                  <a :href="verdaccioStatus.url" target="_blank" class="url-link">
+                    {{ verdaccioStatus.url }}
+                    <span class="icon">↗️</span>
+                  </a>
+                </div>
+                <div class="info-item">
+                  <span class="label">PID:</span>
+                  <span>{{ verdaccioStatus.pid }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">运行时间:</span>
+                  <span>{{ formatUptime(verdaccioStatus.uptime) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="status-actions">
+              <button 
+                v-if="!verdaccioStatus.isRunning" 
+                class="btn btn-primary" 
+                @click="startVerdaccio"
+                :disabled="verdaccioLoading"
+              >
+                {{ verdaccioLoading ? '启动中...' : '启动服务' }}
+              </button>
+              <button 
+                v-else 
+                class="btn btn-warning" 
+                @click="stopVerdaccio"
+                :disabled="verdaccioLoading"
+              >
+                {{ verdaccioLoading ? '停止中...' : '停止服务' }}
+              </button>
+              <button 
+                class="btn btn-secondary" 
+                @click="restartVerdaccio"
+                :disabled="verdaccioLoading || !verdaccioStatus.isRunning"
+              >
+                {{ verdaccioLoading ? '重启中...' : '重启' }}
+              </button>
+              <button 
+                class="btn btn-secondary" 
+                @click="showVerdaccioConfigDialog"
+              >
+                配置
+              </button>
+            </div>
+          </div>
+
+          <div v-if="verdaccioStatus.isRunning" class="verdaccio-quick-actions">
+            <div class="quick-action-card">
+              <h4>📤 发布包到本地源</h4>
+              <pre class="command-block">npm publish --registry {{ verdaccioStatus.url }}</pre>
+            </div>
+            <div class="quick-action-card">
+              <h4>🔗 设置为默认源</h4>
+              <pre class="command-block">npm config set registry {{ verdaccioStatus.url }}</pre>
+            </div>
+            <div class="quick-action-card">
+              <h4>👥 创建用户</h4>
+              <pre class="command-block">npm adduser --registry {{ verdaccioStatus.url }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分隔线 -->
+      <div class="section-divider"></div>
+
+      <!-- NPM 源管理区域 -->
+      <div class="sources-section">
+        <div class="section-header">
+          <h2>🌐 NPM 源管理</h2>
+          <p class="section-description">管理和切换不同的 NPM 注册表源</p>
+        </div>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+          <button class="btn btn-primary" @click="showAddDialog">
+            <span class="icon">+</span>
+            添加源
+          </button>
+          <button class="btn btn-secondary" @click="loadSources">
+            <span class="icon">⟳</span>
+            刷新
+          </button>
+        </div>
       </div>
 
       <!-- 源列表 -->
@@ -181,6 +276,131 @@
         </div>
       </div>
     </div>
+
+    <!-- Verdaccio 配置对话框 -->
+    <div v-if="showVerdaccioConfig" class="dialog-overlay" @click="closeVerdaccioConfigDialog">
+      <div class="dialog dialog-large" @click.stop>
+        <div class="dialog-header">
+          <h2>Verdaccio 配置</h2>
+          <button class="close-btn" @click="closeVerdaccioConfigDialog">×</button>
+        </div>
+        
+        <div class="dialog-body">
+          <div class="config-tabs">
+            <button 
+              class="tab-btn" 
+              :class="{ active: configTab === 'basic' }"
+              @click="configTab = 'basic'"
+            >
+              基本配置
+            </button>
+            <button 
+              class="tab-btn" 
+              :class="{ active: configTab === 'advanced' }"
+              @click="configTab = 'advanced'"
+            >
+              高级配置
+            </button>
+            <button 
+              class="tab-btn" 
+              :class="{ active: configTab === 'file' }"
+              @click="loadConfigFile"
+            >
+              配置文件
+            </button>
+          </div>
+
+          <!-- 基本配置面板 -->
+          <div v-if="configTab === 'basic'" class="config-panel">
+            <div class="form-item">
+              <label for="verdaccio-port">监听端口 *</label>
+              <input 
+                id="verdaccio-port" 
+                v-model.number="verdaccioConfig.port" 
+                type="number" 
+                min="1" 
+                max="65535"
+                placeholder="4873" 
+              />
+              <span class="form-hint">默认: 4873</span>
+            </div>
+
+            <div class="form-item">
+              <label for="verdaccio-host">监听地址 *</label>
+              <input 
+                id="verdaccio-host" 
+                v-model="verdaccioConfig.host" 
+                type="text" 
+                placeholder="127.0.0.1" 
+              />
+              <span class="form-hint">默认: 127.0.0.1（本地访问），使用 0.0.0.0 允许外部访问</span>
+            </div>
+
+            <div class="info-box info">
+              <strong>提示：</strong> 修改配置后需要重启 Verdaccio 服务才能生效
+            </div>
+          </div>
+
+          <!-- 高级配置面板 -->
+          <div v-if="configTab === 'advanced'" class="config-panel">
+            <div class="info-box warning">
+              <strong>注意：</strong> 高级配置需要直接编辑配置文件，请切换到 "配置文件" 选项卡
+            </div>
+
+            <h4>当前配置信息</h4>
+            <div class="info-list">
+              <div class="info-item">
+                <span class="label">配置文件路径:</span>
+                <span class="value">{{ verdaccioStatus.configPath || '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">存储路径:</span>
+                <span class="value">{{ verdaccioStatus.storageePath || '-' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 配置文件编辑面板 -->
+          <div v-if="configTab === 'file'" class="config-panel">
+            <div v-if="loadingConfigFile" class="loading-state">
+              <div class="loading-spinner"></div>
+              <p>加载配置文件...</p>
+            </div>
+            <div v-else>
+              <div class="info-box info">
+                直接编辑 Verdaccio 的 YAML 配置文件。修改后记得保存并重启服务。
+              </div>
+              <textarea 
+                v-model="configFileContent" 
+                class="config-file-editor"
+                spellcheck="false"
+                placeholder="配置文件内容..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="dialog-footer">
+          <button class="btn btn-secondary" @click="closeVerdaccioConfigDialog">取消</button>
+          <button 
+            v-if="configTab === 'basic'" 
+            class="btn btn-primary" 
+            @click="saveVerdaccioConfig"
+            :disabled="savingConfig"
+          >
+            {{ savingConfig ? '保存中...' : '保存' }}
+          </button>
+          <button 
+            v-if="configTab === 'file'" 
+            class="btn btn-primary" 
+            @click="saveConfigFile"
+            :disabled="savingConfig"
+          >
+            {{ savingConfig ? '保存中...' : '保存文件' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -218,6 +438,26 @@ const showLoginForm = ref(false)
 const editingSource = ref<NpmSource | null>(null)
 const loginTarget = ref<NpmSource | null>(null)
 const operatingSourceId = ref<string | null>(null) // 正在操作的源ID
+
+// Verdaccio 状态
+const verdaccioStatus = ref<any>({
+  isRunning: false,
+  pid: null,
+  port: null,
+  host: null,
+  url: null,
+  uptime: null
+})
+const verdaccioLoading = ref(false)
+const showVerdaccioConfig = ref(false)
+const verdaccioConfig = reactive({
+  port: 4873,
+  host: '127.0.0.1'
+})
+const configTab = ref<'basic' | 'advanced' | 'file'>('basic')
+const savingConfig = ref(false)
+const loadingConfigFile = ref(false)
+const configFileContent = ref('')
 
 // 表单数据
 const formData = reactive({
@@ -477,9 +717,230 @@ function formatDate(dateString?: string): string {
   })
 }
 
+/**
+ * 格式化运行时间
+ */
+function formatUptime(ms?: number): string {
+  if (!ms) return '-'
+  const seconds = Math.floor(ms / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+  
+  if (days > 0) return `${days}天 ${hours % 24}小时`
+  if (hours > 0) return `${hours}小时 ${minutes % 60}分钟`
+  if (minutes > 0) return `${minutes}分钟 ${seconds % 60}秒`
+  return `${seconds}秒`
+}
+
+/**
+ * 获取 Verdaccio 状态
+ */
+async function loadVerdaccioStatus() {
+  try {
+    const result = await get<any>('/api/verdaccio/status')
+    if (result.success && result.data) {
+      verdaccioStatus.value = result.data
+    }
+  } catch (error: any) {
+    console.error('获取 Verdaccio 状态失败:', error)
+  }
+}
+
+/**
+ * 启动 Verdaccio
+ */
+async function startVerdaccio() {
+  try {
+    verdaccioLoading.value = true
+    showMessage('正在启动 Verdaccio 服务...', 'info')
+    
+    const result = await post('/api/verdaccio/start', verdaccioConfig)
+    if (result.success) {
+      showMessage(result.message || 'Verdaccio 服务已启动', 'success')
+      await loadVerdaccioStatus()
+    } else {
+      showMessage(result.message || '启动失败', 'error')
+    }
+  } catch (error: any) {
+    showMessage('启动 Verdaccio 失败: ' + error.message, 'error')
+  } finally {
+    verdaccioLoading.value = false
+  }
+}
+
+/**
+ * 停止 Verdaccio
+ */
+async function stopVerdaccio() {
+  try {
+    verdaccioLoading.value = true
+    showMessage('正在停止 Verdaccio 服务...', 'info')
+    
+    const result = await post('/api/verdaccio/stop', {})
+    if (result.success) {
+      showMessage(result.message || 'Verdaccio 服务已停止', 'success')
+      await loadVerdaccioStatus()
+    } else {
+      showMessage(result.message || '停止失败', 'error')
+    }
+  } catch (error: any) {
+    showMessage('停止 Verdaccio 失败: ' + error.message, 'error')
+  } finally {
+    verdaccioLoading.value = false
+  }
+}
+
+/**
+ * 重启 Verdaccio
+ */
+async function restartVerdaccio() {
+  try {
+    verdaccioLoading.value = true
+    showMessage('正在重启 Verdaccio 服务...', 'info')
+    
+    const result = await post('/api/verdaccio/restart', verdaccioConfig)
+    if (result.success) {
+      showMessage(result.message || 'Verdaccio 服务已重启', 'success')
+      await loadVerdaccioStatus()
+    } else {
+      showMessage(result.message || '重启失败', 'error')
+    }
+  } catch (error: any) {
+    showMessage('重启 Verdaccio 失败: ' + error.message, 'error')
+  } finally {
+    verdaccioLoading.value = false
+  }
+}
+
+/**
+ * 显示 Verdaccio 配置对话框
+ */
+async function showVerdaccioConfigDialog() {
+  showVerdaccioConfig.value = true
+  configTab.value = 'basic'
+  
+  // 加载当前配置
+  try {
+    const result = await get<any>('/api/verdaccio/config')
+    if (result.success && result.data) {
+      verdaccioConfig.port = result.data.port || 4873
+      verdaccioConfig.host = result.data.host || '127.0.0.1'
+    }
+  } catch (error: any) {
+    console.error('加载配置失败:', error)
+  }
+}
+
+/**
+ * 关闭 Verdaccio 配置对话框
+ */
+function closeVerdaccioConfigDialog() {
+  showVerdaccioConfig.value = false
+  configFileContent.value = ''
+}
+
+/**
+ * 保存 Verdaccio 配置
+ */
+async function saveVerdaccioConfig() {
+  try {
+    // 验证
+    if (!verdaccioConfig.port || verdaccioConfig.port < 1 || verdaccioConfig.port > 65535) {
+      showMessage('请输入有效的端口号 (1-65535)', 'error')
+      return
+    }
+
+    if (!verdaccioConfig.host || !verdaccioConfig.host.trim()) {
+      showMessage('请输入有效的主机地址', 'error')
+      return
+    }
+
+    savingConfig.value = true
+
+    const result = await put('/api/verdaccio/config', {
+      port: verdaccioConfig.port,
+      host: verdaccioConfig.host
+    })
+
+    if (result.success) {
+      showMessage('配置已保存，请重启服务以应用新配置', 'success')
+      closeVerdaccioConfigDialog()
+    } else {
+      showMessage(result.message || '保存配置失败', 'error')
+    }
+  } catch (error: any) {
+    showMessage('保存配置失败: ' + error.message, 'error')
+  } finally {
+    savingConfig.value = false
+  }
+}
+
+/**
+ * 加载配置文件
+ */
+async function loadConfigFile() {
+  configTab.value = 'file'
+  
+  if (configFileContent.value) {
+    return // 已经加载过
+  }
+
+  try {
+    loadingConfigFile.value = true
+
+    const result = await get<any>('/api/verdaccio/config-file')
+    if (result.success && result.data) {
+      configFileContent.value = result.data.content || ''
+    } else {
+      showMessage('配置文件不存在，请先启动 Verdaccio 服务', 'warning')
+    }
+  } catch (error: any) {
+    showMessage('加载配置文件失败: ' + error.message, 'error')
+  } finally {
+    loadingConfigFile.value = false
+  }
+}
+
+/**
+ * 保存配置文件
+ */
+async function saveConfigFile() {
+  try {
+    if (!configFileContent.value.trim()) {
+      showMessage('配置文件内容不能为空', 'error')
+      return
+    }
+
+    savingConfig.value = true
+
+    const result = await post('/api/verdaccio/config-file', {
+      content: configFileContent.value
+    })
+
+    if (result.success) {
+      showMessage('配置文件已保存，请重启服务以应用新配置', 'success')
+    } else {
+      showMessage(result.message || '保存失败', 'error')
+    }
+  } catch (error: any) {
+    showMessage('保存配置文件失败: ' + error.message, 'error')
+  } finally {
+    savingConfig.value = false
+  }
+}
+
 // 加载数据
 onMounted(() => {
   loadSources()
+  loadVerdaccioStatus()
+  
+  // 定时刷新 Verdaccio 状态
+  setInterval(() => {
+    if (verdaccioStatus.value.isRunning) {
+      loadVerdaccioStatus()
+    }
+  }, 5000)
 })
 </script>
 
@@ -812,9 +1273,302 @@ onMounted(() => {
     }
   }
 
-  &.btn-sm {
+.btn-sm {
     padding: 6px 12px;
     font-size: var(--ls-font-size-xs);
+  }
+}
+
+// Verdaccio 管理区域样式
+.verdaccio-section,
+.sources-section {
+  margin-bottom: var(--ls-spacing-xl);
+}
+
+.section-header {
+  margin-bottom: var(--ls-spacing-lg);
+
+  h2 {
+    font-size: var(--ls-font-size-lg);
+    color: var(--ldesign-text-color-primary);
+    margin-bottom: var(--ls-spacing-xs);
+  }
+
+  .section-description {
+    color: var(--ldesign-text-color-secondary);
+    font-size: var(--ls-font-size-sm);
+  }
+}
+
+.section-divider {
+  height: 1px;
+  background: var(--ldesign-border-color);
+  margin: var(--ls-spacing-xxl) 0;
+}
+
+.verdaccio-card {
+  background: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  padding: var(--ls-spacing-lg);
+}
+
+.verdaccio-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--ls-spacing-lg);
+
+  .status-left {
+    flex: 1;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-sm);
+    margin-bottom: var(--ls-spacing-md);
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--ldesign-text-color-secondary);
+      opacity: 0.3;
+    }
+
+    .status-text {
+      font-size: var(--ls-font-size-lg);
+      font-weight: 600;
+      color: var(--ldesign-text-color-secondary);
+    }
+
+    &.running {
+      .status-dot {
+        background: var(--ldesign-success-color);
+        opacity: 1;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      .status-text {
+        color: var(--ldesign-success-color);
+      }
+    }
+  }
+
+  .status-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ls-spacing-xs);
+
+    .info-item {
+      font-size: var(--ls-font-size-sm);
+      color: var(--ldesign-text-color-secondary);
+
+      .label {
+        font-weight: 500;
+        margin-right: var(--ls-spacing-xs);
+      }
+
+      .url-link {
+        color: var(--ldesign-brand-color);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+
+        &:hover {
+          text-decoration: underline;
+        }
+
+        .icon {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+
+  .status-actions {
+    display: flex;
+    gap: var(--ls-spacing-sm);
+    flex-wrap: wrap;
+  }
+}
+
+.verdaccio-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--ls-spacing-md);
+  margin-top: var(--ls-spacing-lg);
+  padding-top: var(--ls-spacing-lg);
+  border-top: 1px solid var(--ldesign-border-color);
+}
+
+.quick-action-card {
+  h4 {
+    font-size: var(--ls-font-size-sm);
+    color: var(--ldesign-text-color-primary);
+    margin-bottom: var(--ls-spacing-sm);
+  }
+
+  .command-block {
+    background: var(--ldesign-bg-color-page);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: 4px;
+    padding: var(--ls-spacing-sm);
+    font-size: var(--ls-font-size-xs);
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    color: var(--ldesign-brand-color);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// 配置对话框样式
+.dialog-large {
+  max-width: 800px;
+}
+
+.config-tabs {
+  display: flex;
+  gap: var(--ls-spacing-xs);
+  margin-bottom: var(--ls-spacing-lg);
+  border-bottom: 1px solid var(--ldesign-border-color);
+
+  .tab-btn {
+    padding: var(--ls-spacing-sm) var(--ls-spacing-md);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--ldesign-text-color-secondary);
+    font-size: var(--ls-font-size-sm);
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      color: var(--ldesign-text-color-primary);
+      background: var(--ldesign-bg-color-component-hover);
+    }
+
+    &.active {
+      color: var(--ldesign-brand-color);
+      border-bottom-color: var(--ldesign-brand-color);
+      font-weight: 500;
+    }
+  }
+}
+
+.config-panel {
+  min-height: 300px;
+
+  h4 {
+    font-size: var(--ls-font-size-base);
+    color: var(--ldesign-text-color-primary);
+    margin-bottom: var(--ls-spacing-md);
+    margin-top: var(--ls-spacing-lg);
+  }
+
+  .form-hint {
+    display: block;
+    margin-top: var(--ls-spacing-xs);
+    font-size: var(--ls-font-size-xs);
+    color: var(--ldesign-text-color-secondary);
+  }
+}
+
+.info-box {
+  padding: var(--ls-spacing-md);
+  border-radius: var(--ls-border-radius-base);
+  margin-bottom: var(--ls-spacing-md);
+  
+  &.info {
+    background: var(--ldesign-brand-color-1);
+    border: 1px solid var(--ldesign-brand-color-3);
+    color: var(--ldesign-text-color-primary);
+  }
+
+  &.warning {
+    background: var(--ldesign-warning-color-1);
+    border: 1px solid var(--ldesign-warning-color-3);
+    color: var(--ldesign-warning-color);
+  }
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+.info-list {
+  .info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--ls-spacing-sm) 0;
+    border-bottom: 1px solid var(--ldesign-border-color);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .label {
+      font-weight: 500;
+      color: var(--ldesign-text-color-secondary);
+    }
+
+    .value {
+      color: var(--ldesign-text-color-primary);
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: var(--ls-font-size-xs);
+      word-break: break-all;
+      text-align: right;
+      max-width: 60%;
+    }
+  }
+}
+
+.config-file-editor {
+  width: 100%;
+  min-height: 400px;
+  padding: var(--ls-spacing-md);
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: var(--ls-font-size-sm);
+  line-height: 1.6;
+  background: var(--ldesign-bg-color-page);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  color: var(--ldesign-text-color-primary);
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: var(--ldesign-brand-color);
+  }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--ldesign-text-color-secondary);
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    margin-bottom: var(--ls-spacing-md);
+    border: 3px solid var(--ldesign-border-color);
+    border-top-color: var(--ldesign-brand-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
   }
 }
 </style>

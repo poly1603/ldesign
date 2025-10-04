@@ -15,6 +15,8 @@ import { logger } from '../../utils/logger.js'
 import { connectionManager } from '../websocket.js'
 import { projectsRouter } from './projects.js'
 import { projectToolsRouter } from './project-tools.js'
+import { npmSourcesRouter } from './npm-sources.js'
+import { verdaccioRouter } from './verdaccio.js'
 import { ProcessManager } from '../ProcessManager.js'
 import { configManager } from '../config.js'
 
@@ -1121,6 +1123,12 @@ apiRouter.use('/projects', projectsRouter)
 
 // 注册项目工具路由
 apiRouter.use(projectToolsRouter)
+
+// 注册 NPM 源管理路由
+apiRouter.use('/npm-sources', npmSourcesRouter)
+
+// 注册 Verdaccio 管理路由
+apiRouter.use('/verdaccio', verdaccioRouter)
 
 // ==================== 进程管理 API ====================
 

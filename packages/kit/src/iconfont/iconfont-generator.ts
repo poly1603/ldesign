@@ -9,7 +9,7 @@ import { promises as fs } from 'node:fs'
 import { resolve } from 'node:path'
 import { Readable } from 'node:stream'
 import svg2ttf from 'svg2ttf'
-import SVGIcons2SVGFont from 'svgicons2svgfont'
+import { SVGIcons2SVGFontStream } from 'svgicons2svgfont'
 import ttf2eot from 'ttf2eot'
 import ttf2woff from 'ttf2woff'
 import ttf2woff2 from 'ttf2woff2'
@@ -74,12 +74,12 @@ export class IconFontGenerator extends EventEmitter {
    */
   private async generateSvgFont(icons: SvgIcon[]): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      const fontStream = new SVGIcons2SVGFont({
+      const fontStream = new SVGIcons2SVGFontStream({
         fontName: this.options.fontName,
         fontHeight: this.options.fontHeight,
         descent: this.options.descent,
         normalize: this.options.normalize,
-        metadata: this.options.metadata,
+        metadata: JSON.stringify(this.options.metadata),
       })
 
       const chunks: Buffer[] = []

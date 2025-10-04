@@ -336,6 +336,8 @@
   transition: background-color 0.2s;
   color: @drawer-text-light;
   flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent; // 移除移动端点击高亮
+  touch-action: manipulation; // 优化触摸响应
 
   &:hover {
     background-color: @drawer-hover-light;
@@ -352,6 +354,7 @@
 
   svg {
     display: block;
+    pointer-events: none; // 确保SVG不拦截点击事件
   }
 }
 

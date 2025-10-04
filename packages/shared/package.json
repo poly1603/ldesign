@@ -27,16 +27,6 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
-    "./components": {
-      "types": "./es/components/index.d.ts",
-      "import": "./es/components/index.js",
-      "require": "./lib/components/index.cjs"
-    },
-    "./components/*": {
-      "types": "./es/components/*.d.ts",
-      "import": "./es/components/*.js",
-      "require": "./lib/components/*.cjs"
-    },
     "./hooks": {
       "types": "./es/hooks/index.d.ts",
       "import": "./es/hooks/index.js",
@@ -66,19 +56,7 @@
       "types": "./es/utils/*.d.ts",
       "import": "./es/utils/*.js",
       "require": "./lib/utils/*.cjs"
-    },
-    "./es/components/button/LButton.css": "./es/components/button/LButton.css",
-    "./es/components/dialog/LDialog.vue.css": "./es/components/dialog/LDialog.vue.css",
-    "./es/components/popup/LPopup.vue.css": "./es/components/popup/LPopup.vue.css",
-    "./es/components/select/LSelect.vue.css": "./es/components/select/LSelect.vue.css",
-    "./es/index.css": "./es/index.css",
-    "./lib/components/button/LButton.css": "./lib/components/button/LButton.css",
-    "./lib/components/dialog/LDialog.vue.css": "./lib/components/dialog/LDialog.vue.css",
-    "./lib/components/popup/LPopup.vue.css": "./lib/components/popup/LPopup.vue.css",
-    "./lib/components/select/LSelect.vue.css": "./lib/components/select/LSelect.vue.css",
-    "./lib/index.css": "./lib/index.css",
-    "./dist/index.css": "./dist/index.css",
-    "./dist/index.min.css": "./dist/index.min.css"
+    }
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",

@@ -12,8 +12,9 @@ export { default as ColorThemeProvider } from './components/ColorThemeProvider.v
 export { default as ModeToggle } from './components/DarkModeToggle.vue'
 export { default as DarkModeToggle } from './components/DarkModeToggle.vue'
 export { default as SimpleThemeToggle } from './components/SimpleThemeToggle.vue'
-export { default as ColorPicker } from './components/ThemeSelector.vue'
-export { default as ThemeSelector } from './components/ThemeSelector.vue'
+// Temporarily disabled due to missing LSelect, LDialog, LPopup components in @ldesign/shared
+// export { default as ColorPicker } from './components/ThemeSelector.vue'
+// export { default as ThemeSelector } from './components/ThemeSelector.vue'
 // 导出组合式API
 export { useColorTheme } from './composables/useColorTheme'
 export type { UseColorThemeOptions, UseColorThemeReturn } from './composables/useColorTheme'

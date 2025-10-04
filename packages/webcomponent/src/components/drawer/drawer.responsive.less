@@ -74,6 +74,7 @@
     min-width: 44px;
     min-height: 44px;
     padding: 12px;
+    position: relative; // 确保定位上下文正确
     
     // 增加触摸区域
     &::before {
@@ -83,6 +84,7 @@
       right: -8px;
       bottom: -8px;
       left: -8px;
+      pointer-events: none; // 关键修复：伪元素不应拦截事件
     }
   }
   
@@ -165,68 +167,71 @@
 @media (max-width: @mobile-breakpoint) {
   :host,
   .ldesign-drawer-container {
-    .drawer-wrapper {
-      // 移动端宽度优化
-      &.drawer-left,
-      &.drawer-right {
+    // 左右侧抽屉的移动端优化
+    &.drawer-left,
+    &.drawer-right {
+      .drawer-wrapper {
         // 使用 min 函数确保不超出屏幕
         width: min(85vw, calc(100vw - 48px)) !important;
         max-width: 100vw !important;
         max-height: 100vh !important;
-        
-        // iPhone X 等刘海屏适配
-        @supports (padding-left: env(safe-area-inset-left)) {
-          &.drawer-left {
-            padding-left: env(safe-area-inset-left);
-            max-width: calc(100vw - env(safe-area-inset-left)) !important;
-          }
-          &.drawer-right {
-            padding-right: env(safe-area-inset-right);
-            max-width: calc(100vw - env(safe-area-inset-right)) !important;
-          }
-        }
       }
-
-      &.drawer-top,
-      &.drawer-bottom {
+    }
+    
+    // iPhone X 等刘海屏适配
+    @supports (padding-left: env(safe-area-inset-left)) {
+      &.drawer-left .drawer-wrapper {
+        padding-left: env(safe-area-inset-left);
+        max-width: calc(100vw - env(safe-area-inset-left)) !important;
+      }
+      &.drawer-right .drawer-wrapper {
+        padding-right: env(safe-area-inset-right);
+        max-width: calc(100vw - env(safe-area-inset-right)) !important;
+      }
+    }
+    
+    // 上下抽屉的移动端优化
+    &.drawer-top,
+    &.drawer-bottom {
+      .drawer-wrapper {
         width: 100vw !important;
         max-width: 100vw !important;
         height: auto !important;
         max-height: min(80vh, calc(100vh - 60px)) !important;
         min-height: 200px;
       }
+    }
+    
+    // 底部抽屉特殊处理
+    &.drawer-bottom .drawer-wrapper {
+      border-radius: var(--drawer-radius, 12px) var(--drawer-radius, 12px) 0 0;
+      max-height: calc(100vh - 60px) !important; // 保留顶部空间
       
-      // 底部抽屉特殊处理
-      &.drawer-bottom {
-        border-radius: var(--drawer-radius, 12px) var(--drawer-radius, 12px) 0 0;
-        max-height: calc(100vh - 60px) !important; // 保留顶部空间
-        
-        // 支持安全区域
-        @supports (padding-bottom: env(safe-area-inset-bottom)) {
-          max-height: calc(100vh - env(safe-area-inset-bottom) - 20px) !important;
-        }
-        
-        // 支持手势下拉关闭的视觉提示
-        &::before {
-          content: '';
-          position: absolute;
-          top: 8px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 36px;
-          height: 4px;
-          background-color: rgba(0, 0, 0, 0.2);
-          border-radius: 2px;
-        }
+      // 支持安全区域
+      @supports (padding-bottom: env(safe-area-inset-bottom)) {
+        max-height: calc(100vh - env(safe-area-inset-bottom) - 20px) !important;
       }
       
-      // 顶部抽屉也需要限制
-      &.drawer-top {
-        max-height: calc(100vh - 60px) !important;
-        
-        @supports (padding-top: env(safe-area-inset-top)) {
-          max-height: calc(100vh - env(safe-area-inset-top) - 20px) !important;
-        }
+      // 支持手势下拉关闭的视觉提示
+      &::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 36px;
+        height: 4px;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 2px;
+      }
+    }
+    
+    // 顶部抽屉也需要限制
+    &.drawer-top .drawer-wrapper {
+      max-height: calc(100vh - 60px) !important;
+      
+      @supports (padding-top: env(safe-area-inset-top)) {
+        max-height: calc(100vh - env(safe-area-inset-top) - 20px) !important;
       }
     }
     
@@ -278,15 +283,17 @@
 @media (max-width: 480px) {
   :host,
   .ldesign-drawer-container {
-    .drawer-wrapper {
-      &.drawer-left,
-      &.drawer-right {
+    &.drawer-left,
+    &.drawer-right {
+      .drawer-wrapper {
         width: min(90vw, calc(100vw - 32px)) !important;
         max-width: 100vw !important;
       }
-      
-      &.drawer-top,
-      &.drawer-bottom {
+    }
+    
+    &.drawer-top,
+    &.drawer-bottom {
+      .drawer-wrapper {
         max-height: min(85vh, calc(100vh - 40px)) !important;
       }
     }

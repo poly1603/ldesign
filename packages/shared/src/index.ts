@@ -75,4 +75,5 @@ export type {
 } from './types'
 
 // 导出 UI 组件
-export * from './components'
+// TEMPORARY: Components disabled during build fix
+// export * from './components'

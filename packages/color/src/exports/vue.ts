@@ -5,13 +5,13 @@
 
 // Vue 集成（组件和组合式 API）
 export {
-  ColorPicker,
+  // ColorPicker, // Temporarily disabled due to missing dependencies
   ColorVuePlugin,
   createColorEnginePlugin,
   createColorPlugin,
   DarkModeToggle,
   ModeToggle,
-  ThemeSelector,
+  // ThemeSelector, // Temporarily disabled due to missing dependencies
   useSystemThemeSync,
   useTheme,
   useThemeSelector,

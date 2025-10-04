@@ -1693,7 +1693,15 @@ export class LdesignDrawer {
       <div class={`drawer-header ${this.headerBorder ? 'drawer-header-border' : ''} ${this.headerSticky ? 'drawer-header-sticky' : ''}`}>
         <div class="drawer-header-content">
           {this.showBack && (
-            <button class="drawer-back-btn" onClick={this.handleBackClick} aria-label="返回">
+            <button 
+              class="drawer-back-btn" 
+              onClick={this.handleBackClick}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                this.handleBackClick();
+              }}
+              aria-label="返回"
+            >
               <svg viewBox="0 0 24 24" width="20" height="20">
                 <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor" />
               </svg>
@@ -1714,6 +1722,10 @@ export class LdesignDrawer {
               <button
                 class="drawer-action-btn"
                 onClick={this.handleFullscreenToggle}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  this.handleFullscreenToggle();
+                }}
                 aria-label={this.isFullscreen ? '退出全屏' : '全屏'}
               >
                 <svg viewBox="0 0 24 24" width="20" height="20">
@@ -1727,7 +1739,15 @@ export class LdesignDrawer {
             )}
 
             {this.minimizable && (
-              <button class="drawer-action-btn" onClick={() => this.minimize()} aria-label="最小化">
+              <button 
+                class="drawer-action-btn" 
+                onClick={() => this.minimize()}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  this.minimize();
+                }}
+                aria-label="最小化"
+              >
                 <svg viewBox="0 0 24 24" width="20" height="20">
                   <path d="M19 13H5v-2h14v2z" fill="currentColor" />
                 </svg>
@@ -1735,7 +1755,15 @@ export class LdesignDrawer {
             )}
 
             {this.closable && (
-              <button class="drawer-close-btn" onClick={this.handleCloseClick} aria-label="关闭">
+              <button 
+                class="drawer-close-btn" 
+                onClick={this.handleCloseClick}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  this.handleCloseClick();
+                }}
+                aria-label="关闭"
+              >
                 <svg viewBox="0 0 24 24" width="20" height="20">
                   <path
                     d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"

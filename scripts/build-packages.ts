@@ -478,7 +478,8 @@ class PackageBuilder {
       const child = spawn(command, args, {
         cwd,
         stdio: this.options.verbose ? 'inherit' : 'pipe',
-        shell: process.platform === 'win32'
+        shell: process.platform === 'win32',
+        env: { ...process.env }
       })
 
       let stdout = ''

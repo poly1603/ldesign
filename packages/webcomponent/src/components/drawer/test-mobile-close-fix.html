@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>移动端关闭按钮修复测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .test-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .test-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #444;
+        }
+        
+        .test-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: transform 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            margin: 5px;
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #fa709a, #fee140);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .event-log {
+            margin-top: 15px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .event-log-item {
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .event-log-item:last-child {
+            border-bottom: none;
+        }
+        
+        .timestamp {
+            color: #999;
+            margin-right: 8px;
+        }
+        
+        .drawer-content {
+            padding: 20px;
+        }
+        
+        .drawer-content h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .drawer-content p {
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .close-test-area {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border: 2px dashed #2196f3;
+        }
+        
+        .close-test-area h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .close-instruction {
+            color: #0d47a1;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 移动端 Drawer 修复测试</h1>
+        <p class="subtitle">测试关闭按钮点击 & 超出屏幕修复</p>
+        
+        <div class="test-section">
+            <div class="test-title">📱 设备信息</div>
+            <div id="device-info" class="status info">
+                <div>屏幕宽度: <span id="screen-width"></span>px</div>
+                <div>屏幕高度: <span id="screen-height"></span>px</div>
+                <div>设备类型: <span id="device-type"></span></div>
+            </div>
+        </div>
+        
+        <!-- 测试1：基础关闭按钮测试 -->
+        <div class="test-section">
+            <div class="test-title">测试 1: 基础关闭按钮</div>
+            <div class="test-description">
+                点击按钮打开抽屉，然后尝试点击右上角的 ✕ 按钮关闭抽屉
+            </div>
+            <button class="btn" onclick="openTest1()">打开测试抽屉 1</button>
+            <div id="test1-status"></div>
+        </div>
+        
+        <!-- 测试2：多个位置测试 -->
+        <div class="test-section">
+            <div class="test-title">测试 2: 不同位置的抽屉</div>
+            <div class="test-description">
+                测试左、右、上、下四个位置的抽屉关闭按钮是否都能正常工作
+            </div>
+            <button class="btn btn-success" onclick="openTest2('left')">左侧抽屉</button>
+            <button class="btn btn-success" onclick="openTest2('right')">右侧抽屉</button>
+            <button class="btn btn-success" onclick="openTest2('top')">顶部抽屉</button>
+            <button class="btn btn-success" onclick="openTest2('bottom')">底部抽屉</button>
+            <div id="test2-status"></div>
+        </div>
+        
+        <!-- 测试3：带返回按钮测试 -->
+        <div class="test-section">
+            <div class="test-title">测试 3: 带返回和关闭按钮</div>
+            <div class="test-description">
+                测试同时有返回按钮和关闭按钮时，两个按钮是否都能正常工作
+            </div>
+            <button class="btn btn-warning" onclick="openTest3()">打开测试抽屉 3</button>
+            <div id="test3-status"></div>
+        </div>
+        
+        <!-- 测试4：全屏切换按钮测试 -->
+        <div class="test-section">
+            <div class="test-title">测试 4: 全屏切换和关闭按钮</div>
+            <div class="test-description">
+                测试全屏切换按钮和关闭按钮是否都能正常响应触摸事件
+            </div>
+            <button class="btn btn-danger" onclick="openTest4()">打开测试抽屉 4</button>
+            <div id="test4-status"></div>
+        </div>
+        
+        <!-- 事件日志 -->
+        <div class="test-section">
+            <div class="test-title">📊 事件日志</div>
+            <button class="btn" onclick="clearLog()">清空日志</button>
+            <div id="event-log" class="event-log">
+                <div class="event-log-item">
+                    <span class="timestamp">等待事件...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 测试抽屉组件 -->
+    
+    <!-- 测试1抽屉 -->
+    <ldesign-drawer id="drawer1" placement="right" drawer-title="测试抽屉 1">
+        <div class="drawer-content">
+            <div class="close-test-area">
+                <h4>✋ 关闭按钮测试区域</h4>
+                <p class="close-instruction">
+                    请点击右上角的 <strong>✕ 关闭按钮</strong>
+                </p>
+                <p class="close-instruction">
+                    如果关闭按钮无响应，说明存在问题
+                </p>
+                <p class="close-instruction">
+                    正常情况下，点击关闭按钮应该立即关闭抽屉
+                </p>
+            </div>
+            <h3>测试内容</h3>
+            <p>这是一个用于测试关闭按钮的抽屉。</p>
+            <p>在移动设备上，关闭按钮应该：</p>
+            <ul>
+                <li>触摸区域足够大（至少 44x44px）</li>
+                <li>响应触摸事件（touchend）</li>
+                <li>防止事件穿透</li>
+                <li>有视觉反馈</li>
+            </ul>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 测试2抽屉 - 左 -->
+    <ldesign-drawer id="drawer2-left" placement="left" drawer-title="左侧抽屉">
+        <div class="drawer-content">
+            <div class="close-test-area">
+                <h4>左侧抽屉测试</h4>
+                <p class="close-instruction">点击右上角的 ✕ 关闭按钮</p>
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 测试2抽屉 - 右 -->
+    <ldesign-drawer id="drawer2-right" placement="right" drawer-title="右侧抽屉">
+        <div class="drawer-content">
+            <div class="close-test-area">
+                <h4>右侧抽屉测试</h4>
+                <p class="close-instruction">点击右上角的 ✕ 关闭按钮</p>
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 测试2抽屉 - 上 -->
+    <ldesign-drawer id="drawer2-top" placement="top" drawer-title="顶部抽屉">
+        <div class="drawer-content">
+            <div class="close-test-area">
+                <h4>顶部抽屉测试</h4>
+                <p class="close-instruction">点击右上角的 ✕ 关闭按钮</p>
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 测试2抽屉 - 下 -->
+    <ldesign-drawer id="drawer2-bottom" placement="bottom" drawer-title="底部抽屉">
+        <div class="drawer-content">
+            <div class="close-test-area">
+                <h4>底部抽屉测试</h4>
+                <p class="close-instruction">点击右上角的 ✕ 关闭按钮</p>
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 测试3抽屉 -->
+    <ldesign-drawer id="drawer3" placement="right" drawer-title="带返回按钮" show-back>
+        <div class="drawer-content">
+            <div class="close-test-area">
+                <h4>多按钮测试</h4>
+                <p class="close-instruction">测试左侧的 ← 返回按钮</p>
+                <p class="close-instruction">测试右侧的 ✕ 关闭按钮</p>
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 测试4抽屉 -->
+    <ldesign-drawer id="drawer4" placement="right" drawer-title="全屏切换测试" fullscreenable>
+        <div class="drawer-content">
+            <div class="close-test-area">
+                <h4>全屏切换和关闭</h4>
+                <p class="close-instruction">测试全屏切换按钮</p>
+                <p class="close-instruction">测试关闭按钮</p>
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <script type="module">
+        // 日志记录
+        function logEvent(message, type = 'info') {
+            const log = document.getElementById('event-log');
+            const now = new Date();
+            const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}`;
+            
+            const item = document.createElement('div');
+            item.className = 'event-log-item';
+            item.innerHTML = `<span class="timestamp">${timestamp}</span><span style="color: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#333'}">${message}</span>`;
+            
+            log.appendChild(item);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function showStatus(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        window.clearLog = function() {
+            const log = document.getElementById('event-log');
+            log.innerHTML = '<div class="event-log-item"><span class="timestamp">日志已清空</span></div>';
+        };
+        
+        // 测试1
+        window.openTest1 = function() {
+            const drawer = document.getElementById('drawer1');
+            drawer.open();
+            logEvent('测试1: 打开抽屉 1');
+            showStatus('test1-status', '✅ 抽屉已打开，请点击右上角关闭按钮', 'success');
+            checkDrawerOverflow('drawer1');
+        };
+        
+        // 测试2
+        window.openTest2 = function(placement) {
+            const drawer = document.getElementById(`drawer2-${placement}`);
+            drawer.open();
+            logEvent(`测试2: 打开 ${placement} 抽屉`);
+            showStatus('test2-status', `✅ ${placement} 抽屉已打开，请点击关闭按钮`, 'success');
+            checkDrawerOverflow(`drawer2-${placement}`);
+        };
+        
+        // 测试3
+        window.openTest3 = function() {
+            const drawer = document.getElementById('drawer3');
+            drawer.open();
+            logEvent('测试3: 打开带返回按钮的抽屉');
+            showStatus('test3-status', '✅ 抽屉已打开，请分别测试返回和关闭按钮', 'success');
+            checkDrawerOverflow('drawer3');
+        };
+        
+        // 测试4
+        window.openTest4 = function() {
+            const drawer = document.getElementById('drawer4');
+            drawer.open();
+            logEvent('测试4: 打开全屏切换抽屉');
+            showStatus('test4-status', '✅ 抽屉已打开，请测试全屏切换和关闭按钮', 'success');
+            checkDrawerOverflow('drawer4');
+        };
+        
+        // 监听所有抽屉事件
+        document.addEventListener('DOMContentLoaded', () => {
+            const drawers = document.querySelectorAll('ldesign-drawer');
+            
+            drawers.forEach((drawer, index) => {
+                drawer.addEventListener('drawerOpen', () => {
+                    logEvent(`抽屉 ${drawer.id} 已打开`, 'success');
+                });
+                
+                drawer.addEventListener('drawerClose', (e) => {
+                    const reason = e.detail?.reason || 'unknown';
+                    logEvent(`抽屉 ${drawer.id} 已关闭 (原因: ${reason})`, 'success');
+                    
+                    // 根据关闭原因更新状态
+                    if (reason === 'button') {
+                        const testId = drawer.id.replace('drawer', 'test').replace('-left', '').replace('-right', '').replace('-top', '').replace('-bottom', '');
+                        const statusId = testId + '-status';
+                        if (document.getElementById(statusId)) {
+                            showStatus(statusId, '✅ 成功！关闭按钮工作正常', 'success');
+                        }
+                    }
+                });
+                
+                drawer.addEventListener('drawerBeforeClose', (e) => {
+                    logEvent(`抽屉 ${drawer.id} 准备关闭...`);
+                });
+            });
+            
+            logEvent('页面加载完成，测试准备就绪', 'success');
+        });
+        
+        // 检测设备信息
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isTouch = 'ontouchstart' in window;
+        
+        // 更新设备信息显示
+        function updateDeviceInfo() {
+            document.getElementById('screen-width').textContent = window.innerWidth;
+            document.getElementById('screen-height').textContent = window.innerHeight;
+            document.getElementById('device-type').textContent = isMobile ? '移动设备' : '桌面设备';
+        }
+        updateDeviceInfo();
+        window.addEventListener('resize', updateDeviceInfo);
+        
+        logEvent(`设备类型: ${isMobile ? '移动设备' : '桌面设备'}, 触摸支持: ${isTouch ? '是' : '否'}`);
+        logEvent(`屏幕尺寸: ${window.innerWidth} x ${window.innerHeight}`);
+        logEvent(`User Agent: ${navigator.userAgent.substring(0, 60)}...`);
+        
+        // 检测抽屉是否超出屏幕
+        function checkDrawerOverflow(drawerId) {
+            setTimeout(() => {
+                const drawer = document.getElementById(drawerId);
+                if (!drawer) return;
+                
+                const wrapper = drawer.shadowRoot?.querySelector('.drawer-wrapper');
+                if (!wrapper) return;
+                
+                const rect = wrapper.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                
+                let isOverflow = false;
+                let message = '';
+                
+                if (rect.right > viewportWidth) {
+                    isOverflow = true;
+                    message = `⚠️ 警告: 抽屉超出右侧屏幕 ${(rect.right - viewportWidth).toFixed(0)}px`;
+                } else if (rect.left < 0) {
+                    isOverflow = true;
+                    message = `⚠️ 警告: 抽屉超出左侧屏幕 ${Math.abs(rect.left).toFixed(0)}px`;
+                } else if (rect.bottom > viewportHeight) {
+                    isOverflow = true;
+                    message = `⚠️ 警告: 抽屉超出底部屏幕 ${(rect.bottom - viewportHeight).toFixed(0)}px`;
+                } else if (rect.top < 0) {
+                    isOverflow = true;
+                    message = `⚠️ 警告: 抽屉超出顶部屏幕 ${Math.abs(rect.top).toFixed(0)}px`;
+                } else {
+                    message = `✅ 抽屉尺寸正常: 宽=${rect.width.toFixed(0)}px, 高=${rect.height.toFixed(0)}px`;
+                }
+                
+                logEvent(message, isOverflow ? 'error' : 'success');
+            }, 500);
+        }
+    </script>
+</body>
+</html>

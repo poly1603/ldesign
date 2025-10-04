@@ -55,5 +55,22 @@ export default defineConfig([
     minify: false,
     target: 'node18',
     platform: 'node'
+  },
+  // 服务器启动文件构建配置
+  {
+    entry: ['src/server/start.ts'],
+    format: ['esm', 'cjs'],
+    dts: true,
+    sourcemap: true,
+    outDir: 'dist/server',
+    external: ['express', 'cors', 'fs-extra', 'open'],
+    splitting: false,
+    treeshake: true,
+    minify: false,
+    target: 'node18',
+    platform: 'node',
+    banner: {
+      js: '#!/usr/bin/env node'
+    }
   }
 ])
