@@ -2,5 +2,5 @@
  * Vue 插件导出
  */
 
-export * from './plugin'
 export * from './components'
+export * from './plugin'

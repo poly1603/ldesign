@@ -83,7 +83,7 @@ export class CSSInjectorImpl implements CSSInjector {
     const sheet = this.styleSheets.get(styleId)
     if (sheet) {
       const adopted = (document as any).adoptedStyleSheets || []
-      ;(document as any).adoptedStyleSheets = adopted.filter((s: any) => s !== sheet)
+        ; (document as any).adoptedStyleSheets = adopted.filter((s: any) => s !== sheet)
       this.styleSheets.delete(styleId)
     }
 
@@ -121,11 +121,22 @@ export class CSSInjectorImpl implements CSSInjector {
     id?: string,
   ): void {
     const styleId = id || this.options.styleId
+    console.log('🔧 [CSSInjectorImpl] injectThemeVariables 被调用', {
+      styleId,
+      lightCount: Object.keys(lightVariables).length,
+      darkCount: Object.keys(darkVariables).length,
+      themeInfo,
+    })
     const cssText = this.composeThemeCSSText(lightVariables, darkVariables, themeInfo)
-    if (this.lastCssText.get(styleId) === cssText)
+    console.log('🔧 [CSSInjectorImpl] 生成的CSS长度', cssText.length)
+    if (this.lastCssText.get(styleId) === cssText) {
+      console.log('🔧 [CSSInjectorImpl] CSS内容未变化，跳过更新')
       return
+    }
+    console.log('🔧 [CSSInjectorImpl] 准备更新样式元素', styleId)
     this.updateStyleElement(styleId, cssText)
     this.lastCssText.set(styleId, cssText)
+    console.log('🔧 [CSSInjectorImpl] 样式元素已更新')
   }
 
   /**
@@ -184,8 +195,8 @@ export class CSSInjectorImpl implements CSSInjector {
     // 优先使用 Constructable Stylesheet（如果开启且环境支持）
     const canUseConstructable
       = this.options.useConstructable
-        && typeof (document as any).adoptedStyleSheets !== 'undefined'
-        && typeof (window as any).CSSStyleSheet !== 'undefined'
+      && typeof (document as any).adoptedStyleSheets !== 'undefined'
+      && typeof (window as any).CSSStyleSheet !== 'undefined'
 
     if (canUseConstructable) {
       this.updateConstructableStyleSheet(id, cssText)
@@ -207,18 +218,18 @@ export class CSSInjectorImpl implements CSSInjector {
       // 采用样式表（避免重复）
       const adopted = (document as any).adoptedStyleSheets || []
       if (!adopted.includes(sheet)) {
-        ;(document as any).adoptedStyleSheets = [...adopted, sheet]
+        ; (document as any).adoptedStyleSheets = [...adopted, sheet]
       }
     }
 
     if (sheet) {
       try {
         // 同步替换内容（测试环境更稳定）
-        ;(sheet as any).replaceSync(cssText)
+        ; (sheet as any).replaceSync(cssText)
       }
       catch {
         // 某些环境只能异步
-        ;(sheet as any).replace(cssText)
+        ; (sheet as any).replace(cssText)
       }
     }
   }
@@ -227,24 +238,34 @@ export class CSSInjectorImpl implements CSSInjector {
    * 更新 Style 标签（批量优化）
    */
   private updateStyleTag(id: string, cssText: string): void {
+    console.log('🔧 [CSSInjectorImpl] updateStyleTag 被调用', { id, cssLength: cssText.length })
     let styleElement = this.styleElements.get(id)
     if (!styleElement) {
+      console.log('🔧 [CSSInjectorImpl] 创建新的style元素', id)
       // 创建样式元素
       styleElement = document.createElement('style')
       styleElement.id = id
       styleElement.type = 'text/css'
       document.head.appendChild(styleElement)
       this.styleElements.set(id, styleElement)
+      console.log('🔧 [CSSInjectorImpl] style元素已创建并添加到head')
+    }
+    else {
+      console.log('🔧 [CSSInjectorImpl] 使用已存在的style元素', id)
     }
 
     // 使用 requestAnimationFrame 进行异步更新，避免阻塞主线程
     if (typeof requestAnimationFrame !== 'undefined') {
+      console.log('🔧 [CSSInjectorImpl] 使用 requestAnimationFrame 更新内容')
       requestAnimationFrame(() => {
         styleElement!.textContent = cssText
+        console.log('🔧 [CSSInjectorImpl] textContent 已设置', { id, length: cssText.length })
       })
     }
     else {
+      console.log('🔧 [CSSInjectorImpl] 直接更新内容（无 requestAnimationFrame）')
       styleElement.textContent = cssText
+      console.log('🔧 [CSSInjectorImpl] textContent 已设置', { id, length: cssText.length })
     }
   }
 

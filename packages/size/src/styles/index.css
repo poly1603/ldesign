@@ -1,6 +1,7 @@
 /*
  * @ldesign/size 样式入口文件
  * 导入所有尺寸相关的组件样式
+ * 优化版本：使用新的 token 系统，提升性能和可维护性
  */
 
 /* 导入尺寸切换器组件样式 */
@@ -9,25 +10,98 @@
 /* 导入Vue组件通用样式 */
 @import '../vue/styles.less';
 
+/* 基础尺寸 Token 定义 */
+:root {
+  /* 基础尺寸刻度 - 固定值，不随尺寸模式变化 */
+  --ls-size-1: 2px;
+  --ls-size-2: 4px;
+  --ls-size-3: 6px;
+  --ls-size-4: 8px;
+  --ls-size-5: 12px;
+  --ls-size-6: 16px;
+  --ls-size-7: 20px;
+  --ls-size-8: 24px;
+  --ls-size-9: 28px;
+  --ls-size-10: 32px;
+  --ls-size-11: 36px;
+  --ls-size-12: 40px;
+  --ls-size-13: 48px;
+  --ls-size-14: 56px;
+  --ls-size-15: 64px;
+  --ls-size-16: 72px;
+
+  /* 组件尺寸 Token - 基于基础尺寸 */
+  --ls-comp-size-xxxs: var(--ls-size-6);
+  --ls-comp-size-xxs: var(--ls-size-7);
+  --ls-comp-size-xs: var(--ls-size-8);
+  --ls-comp-size-s: var(--ls-size-9);
+  --ls-comp-size-m: var(--ls-size-10);
+  --ls-comp-size-l: var(--ls-size-11);
+  --ls-comp-size-xl: var(--ls-size-12);
+  --ls-comp-size-xxl: var(--ls-size-13);
+  --ls-comp-size-xxxl: var(--ls-size-14);
+  --ls-comp-size-xxxxl: var(--ls-size-15);
+  --ls-comp-size-xxxxxl: var(--ls-size-16);
+
+  /* 弹出层边距 Token */
+  --ls-pop-padding-s: var(--ls-size-2);
+  --ls-pop-padding-m: var(--ls-size-3);
+  --ls-pop-padding-l: var(--ls-size-4);
+  --ls-pop-padding-xl: var(--ls-size-5);
+  --ls-pop-padding-xxl: var(--ls-size-6);
+
+  /* 组件左右边距 Token */
+  --ls-comp-padding-lr-xxs: var(--ls-size-1);
+  --ls-comp-padding-lr-xs: var(--ls-size-2);
+  --ls-comp-padding-lr-s: var(--ls-size-4);
+  --ls-comp-padding-lr-m: var(--ls-size-5);
+  --ls-comp-padding-lr-l: var(--ls-size-6);
+  --ls-comp-padding-lr-xl: var(--ls-size-8);
+  --ls-comp-padding-lr-xxl: var(--ls-size-10);
+
+  /* 组件上下边距 Token */
+  --ls-comp-padding-tb-xxs: var(--ls-size-1);
+  --ls-comp-padding-tb-xs: var(--ls-size-2);
+  --ls-comp-padding-tb-s: var(--ls-size-4);
+  --ls-comp-padding-tb-m: var(--ls-size-5);
+  --ls-comp-padding-tb-l: var(--ls-size-6);
+  --ls-comp-padding-tb-xl: var(--ls-size-8);
+  --ls-comp-padding-tb-xxl: var(--ls-size-10);
+
+  /* 组件间距 Token */
+  --ls-comp-margin-xxs: var(--ls-size-1);
+  --ls-comp-margin-xs: var(--ls-size-2);
+  --ls-comp-margin-s: var(--ls-size-4);
+  --ls-comp-margin-m: var(--ls-size-5);
+  --ls-comp-margin-l: var(--ls-size-6);
+  --ls-comp-margin-xl: var(--ls-size-7);
+  --ls-comp-margin-xxl: var(--ls-size-8);
+  --ls-comp-margin-xxxl: var(--ls-size-10);
+  --ls-comp-margin-xxxxl: var(--ls-size-12);
+
+  /* 过渡动画 */
+  --ls-size-transition: all 0.3s ease;
+}
+
 /* 基础尺寸样式类 */
 .size-system {
   /* 尺寸系统基础样式 */
-  --size-transition: all 0.3s ease;
+  transition: var(--ls-size-transition);
 }
 
 /* 尺寸模式样式类 */
 .size-mode-small {
-  font-size: var(--ls-font-size-xs, 12px);
+  font-size: var(--ls-font-size-base, 12px);
 }
 
 .size-mode-medium {
-  font-size: var(--ls-font-size-sm, 14px);
-}
-
-.size-mode-large {
   font-size: var(--ls-font-size-base, 16px);
 }
 
+.size-mode-large {
+  font-size: var(--ls-font-size-base, 18px);
+}
+
 .size-mode-extra-large {
-  font-size: var(--ls-font-size-lg, 18px);
+  font-size: var(--ls-font-size-base, 20px);
 }

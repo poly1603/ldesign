@@ -9,7 +9,7 @@ import type {
   SizeMode,
 } from '../types'
 import { computed, inject, onMounted, onUnmounted, reactive, ref, type Ref, toRefs } from 'vue'
-import { createSizeManager, globalSizeManager } from '../core/size-manager'
+import { globalSizeManager } from '../core/size-manager'
 import {
   createResponsiveSizeWatcher,
   getNextSizeMode,

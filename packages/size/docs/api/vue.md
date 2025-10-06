@@ -6,34 +6,34 @@
 
 ```typescript
 import {
-  // Composition API
-  useSize,
-  useGlobalSize,
-  useSizeResponsive,
-  useSizeSwitcher,
-  useSizeWatcher,
-  useSmartSize,
-  useSizeAnimation,
-  useSizeState,
-
-  // 组件
-  SizeSwitcher,
-  SizeIndicator,
-  SizeControlPanel,
-
-  // 插件
-  VueSizePlugin,
+  createSizeApp,
   createVueSizePlugin,
-
   // 工具函数
   installSizePlugin,
   installWithPreset,
-  createSizeApp,
   registerSizeComponents,
+  SizeControlPanel,
+  SizeIndicator,
+  // 组件
+  SizeSwitcher,
+
+  useGlobalSize,
+  // Composition API
+  useSize,
+  useSizeAnimation,
 
   // 类型
   type UseSizeOptions,
+  useSizeResponsive,
+
   type UseSizeReturn,
+  useSizeState,
+  useSizeSwitcher,
+  useSizeWatcher,
+
+  useSmartSize,
+  // 插件
+  VueSizePlugin,
 } from '@ldesign/size/vue'
 ```
 
@@ -87,11 +87,11 @@ interface UseSizeReturn {
 <script setup>
 import { useSize } from '@ldesign/size/vue'
 
-const { 
-  currentMode, 
-  setMode, 
-  nextMode, 
-  currentModeDisplayName 
+const {
+  currentMode,
+  setMode,
+  nextMode,
+  currentModeDisplayName
 } = useSize()
 
 // 设置尺寸模式
@@ -104,8 +104,12 @@ const handleNext = () => nextMode()
 <template>
   <div>
     <p>当前模式: {{ currentModeDisplayName }}</p>
-    <button @click="handleSetLarge">设置为大尺寸</button>
-    <button @click="handleNext">下一个模式</button>
+    <button @click="handleSetLarge">
+      设置为大尺寸
+    </button>
+    <button @click="handleNext">
+      下一个模式
+    </button>
   </div>
 </template>
 ```
@@ -150,20 +154,26 @@ function useSizeResponsive(): {
 <script setup>
 import { useSizeResponsive } from '@ldesign/size/vue'
 
-const { 
-  isSmall, 
-  isMedium, 
-  isLarge, 
-  isAtLeast 
+const {
+  isSmall,
+  isMedium,
+  isLarge,
+  isAtLeast
 } = useSizeResponsive()
 </script>
 
 <template>
   <div>
-    <div v-if="isSmall">小尺寸布局</div>
-    <div v-else-if="isMedium">中等尺寸布局</div>
-    <div v-else-if="isLarge">大尺寸布局</div>
-    
+    <div v-if="isSmall">
+      小尺寸布局
+    </div>
+    <div v-else-if="isMedium">
+      中等尺寸布局
+    </div>
+    <div v-else-if="isLarge">
+      大尺寸布局
+    </div>
+
     <div v-if="isAtLeast('medium')">
       中等尺寸及以上显示的内容
     </div>
@@ -284,8 +294,8 @@ function useSizeWatcher(
 Vue 插件，提供全局尺寸管理功能。
 
 ```typescript
-import { createApp } from 'vue'
 import { VueSizePlugin } from '@ldesign/size/vue'
+import { createApp } from 'vue'
 
 const app = createApp(App)
 
@@ -323,8 +333,8 @@ installSizePlugin(app)
 
 // 使用预设配置
 installWithPreset(app, 'responsive') // 响应式
-installWithPreset(app, 'mobile')     // 移动端优先
-installWithPreset(app, 'desktop')    // 桌面端优先
+installWithPreset(app, 'mobile') // 移动端优先
+installWithPreset(app, 'desktop') // 桌面端优先
 ```
 
 ## 🎯 最佳实践
@@ -334,9 +344,9 @@ installWithPreset(app, 'desktop')    // 桌面端优先
 在应用入口文件中配置插件：
 
 ```typescript
+import { VueSizePlugin } from '@ldesign/size/vue'
 // main.ts
 import { createApp } from 'vue'
-import { VueSizePlugin } from '@ldesign/size/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -354,8 +364,7 @@ app.mount('#app')
 
 ```vue
 <script setup>
-import { useSize, useSizeResponsive } from '@ldesign/size/vue'
-import { SizeSwitcher } from '@ldesign/size/vue'
+import { SizeSwitcher, useSize, useSizeResponsive } from '@ldesign/size/vue'
 
 const { currentMode, setMode } = useSize()
 const { isSmall, isMedium } = useSizeResponsive()
@@ -365,7 +374,7 @@ const { isSmall, isMedium } = useSizeResponsive()
   <div class="app">
     <!-- 尺寸切换器 -->
     <SizeSwitcher v-model:mode="currentMode" />
-    
+
     <!-- 响应式内容 -->
     <div v-if="isSmall" class="mobile-layout">
       移动端布局
@@ -391,7 +400,7 @@ const { isSmall, isMedium } = useSizeResponsive()
 ```typescript
 import type { SizeMode, UseSizeReturn } from '@ldesign/size/vue'
 
-const handleSizeChange = (mode: SizeMode) => {
+function handleSizeChange(mode: SizeMode) {
   console.log('尺寸变化:', mode)
 }
 

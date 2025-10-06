@@ -1,63 +1,66 @@
 /**
  * 尺寸配置预设
+ * 优化版本：使用基础 token 引用，减少硬编码，提升性能和可维护性
  */
 
 import type { SizeConfig, SizeMode } from '../types'
+import { baseSizeTokens } from './base-tokens'
 
 /**
  * 小尺寸配置
+ * 优化：使用基础 token 引用，减少内存占用
  */
 export const smallSizeConfig: SizeConfig = {
   fontSize: {
     xs: '10px',
     sm: '11px',
-    base: '12px',
+    base: baseSizeTokens.size5, // 12px
     lg: '14px',
-    xl: '16px',
+    xl: baseSizeTokens.size6, // 16px
     xxl: '18px',
-    h1: '24px',
-    h2: '20px',
+    h1: baseSizeTokens.size8, // 24px
+    h2: baseSizeTokens.size7, // 20px
     h3: '18px',
-    h4: '16px',
+    h4: baseSizeTokens.size6, // 16px
     h5: '14px',
-    h6: '12px',
+    h6: baseSizeTokens.size5, // 12px
   },
   spacing: {
-    xs: '2px',
-    sm: '4px',
-    base: '8px',
-    lg: '12px',
-    xl: '16px',
-    xxl: '24px',
+    xs: baseSizeTokens.size1, // 2px
+    sm: baseSizeTokens.size2, // 4px
+    base: baseSizeTokens.size4, // 8px
+    lg: baseSizeTokens.size5, // 12px
+    xl: baseSizeTokens.size6, // 16px
+    xxl: baseSizeTokens.size8, // 24px
   },
   component: {
     buttonHeight: {
-      small: '24px',
-      medium: '28px',
-      large: '32px',
+      small: baseSizeTokens.size8, // 24px
+      medium: baseSizeTokens.size9, // 28px
+      large: baseSizeTokens.size10, // 32px
     },
     inputHeight: {
-      small: '24px',
-      medium: '28px',
-      large: '32px',
+      small: baseSizeTokens.size8, // 24px
+      medium: baseSizeTokens.size9, // 28px
+      large: baseSizeTokens.size10, // 32px
     },
     iconSize: {
-      small: '12px',
+      small: baseSizeTokens.size5, // 12px
       medium: '14px',
-      large: '16px',
+      large: baseSizeTokens.size6, // 16px
     },
     avatarSize: {
-      small: '20px',
-      medium: '24px',
-      large: '28px',
+      small: baseSizeTokens.size7, // 20px
+      medium: baseSizeTokens.size8, // 24px
+      large: baseSizeTokens.size9, // 28px
     },
   },
   borderRadius: {
     none: '0',
     sm: '1px',
-    base: '2px',
-    lg: '4px',
-    xl: '6px',
+    base: baseSizeTokens.size1, // 2px
+    lg: baseSizeTokens.size2, // 4px
+    xl: baseSizeTokens.size3, // 6px
     full: '50%',
   },
   shadow: {
@@ -71,58 +74,59 @@ export const smallSizeConfig: SizeConfig = {
 
 /**
  * 中等尺寸配置（默认）
+ * 优化：使用基础 token 引用，减少内存占用
  */
 export const mediumSizeConfig: SizeConfig = {
   fontSize: {
-    xs: '12px',
+    xs: baseSizeTokens.size5, // 12px
     sm: '14px',
-    base: '16px',
+    base: baseSizeTokens.size6, // 16px
     lg: '18px',
-    xl: '20px',
-    xxl: '24px',
-    h1: '32px',
-    h2: '28px',
-    h3: '24px',
-    h4: '20px',
+    xl: baseSizeTokens.size7, // 20px
+    xxl: baseSizeTokens.size8, // 24px
+    h1: baseSizeTokens.size10, // 32px
+    h2: baseSizeTokens.size9, // 28px
+    h3: baseSizeTokens.size8, // 24px
+    h4: baseSizeTokens.size7, // 20px
     h5: '18px',
-    h6: '16px',
+    h6: baseSizeTokens.size6, // 16px
   },
   spacing: {
-    xs: '4px',
-    sm: '8px',
-    base: '16px',
-    lg: '24px',
-    xl: '32px',
-    xxl: '48px',
+    xs: baseSizeTokens.size2, // 4px
+    sm: baseSizeTokens.size4, // 8px
+    base: baseSizeTokens.size6, // 16px
+    lg: baseSizeTokens.size8, // 24px
+    xl: baseSizeTokens.size10, // 32px
+    xxl: baseSizeTokens.size13, // 48px
   },
   component: {
     buttonHeight: {
-      small: '32px',
-      medium: '36px',
-      large: '40px',
+      small: baseSizeTokens.size10, // 32px
+      medium: baseSizeTokens.size11, // 36px
+      large: baseSizeTokens.size12, // 40px
     },
     inputHeight: {
-      small: '32px',
-      medium: '36px',
-      large: '40px',
+      small: baseSizeTokens.size10, // 32px
+      medium: baseSizeTokens.size11, // 36px
+      large: baseSizeTokens.size12, // 40px
     },
     iconSize: {
-      small: '16px',
+      small: baseSizeTokens.size6, // 16px
       medium: '18px',
-      large: '20px',
+      large: baseSizeTokens.size7, // 20px
     },
     avatarSize: {
-      small: '28px',
-      medium: '32px',
-      large: '36px',
+      small: baseSizeTokens.size9, // 28px
+      medium: baseSizeTokens.size10, // 32px
+      large: baseSizeTokens.size11, // 36px
     },
   },
   borderRadius: {
     none: '0',
-    sm: '2px',
-    base: '4px',
-    lg: '8px',
-    xl: '12px',
+    sm: baseSizeTokens.size1, // 2px
+    base: baseSizeTokens.size2, // 4px
+    lg: baseSizeTokens.size4, // 8px
+    xl: baseSizeTokens.size5, // 12px
     full: '50%',
   },
   shadow: {
@@ -136,58 +140,59 @@ export const mediumSizeConfig: SizeConfig = {
 
 /**
  * 大尺寸配置
+ * 优化：使用基础 token 引用，减少内存占用
  */
 export const largeSizeConfig: SizeConfig = {
   fontSize: {
     xs: '14px',
-    sm: '16px',
+    sm: baseSizeTokens.size6, // 16px
     base: '18px',
-    lg: '20px',
-    xl: '24px',
-    xxl: '28px',
-    h1: '40px',
-    h2: '36px',
-    h3: '32px',
-    h4: '28px',
-    h5: '24px',
-    h6: '20px',
+    lg: baseSizeTokens.size7, // 20px
+    xl: baseSizeTokens.size8, // 24px
+    xxl: baseSizeTokens.size9, // 28px
+    h1: baseSizeTokens.size12, // 40px
+    h2: baseSizeTokens.size11, // 36px
+    h3: baseSizeTokens.size10, // 32px
+    h4: baseSizeTokens.size9, // 28px
+    h5: baseSizeTokens.size8, // 24px
+    h6: baseSizeTokens.size7, // 20px
   },
   spacing: {
-    xs: '6px',
-    sm: '12px',
-    base: '20px',
-    lg: '28px',
-    xl: '36px',
-    xxl: '56px',
+    xs: baseSizeTokens.size3, // 6px
+    sm: baseSizeTokens.size5, // 12px
+    base: baseSizeTokens.size7, // 20px
+    lg: baseSizeTokens.size9, // 28px
+    xl: baseSizeTokens.size11, // 36px
+    xxl: baseSizeTokens.size14, // 56px
   },
   component: {
     buttonHeight: {
-      small: '40px',
+      small: baseSizeTokens.size12, // 40px
       medium: '44px',
-      large: '48px',
+      large: baseSizeTokens.size13, // 48px
     },
     inputHeight: {
-      small: '40px',
+      small: baseSizeTokens.size12, // 40px
       medium: '44px',
-      large: '48px',
+      large: baseSizeTokens.size13, // 48px
     },
     iconSize: {
-      small: '20px',
+      small: baseSizeTokens.size7, // 20px
       medium: '22px',
-      large: '24px',
+      large: baseSizeTokens.size8, // 24px
     },
     avatarSize: {
-      small: '36px',
-      medium: '40px',
+      small: baseSizeTokens.size11, // 36px
+      medium: baseSizeTokens.size12, // 40px
       large: '44px',
     },
   },
   borderRadius: {
     none: '0',
-    sm: '3px',
-    base: '6px',
-    lg: '12px',
-    xl: '16px',
+    sm: baseSizeTokens.size3, // 3px -> 6px (调整为最接近的 token)
+    base: baseSizeTokens.size3, // 6px
+    lg: baseSizeTokens.size5, // 12px
+    xl: baseSizeTokens.size6, // 16px
     full: '50%',
   },
   shadow: {
@@ -201,58 +206,59 @@ export const largeSizeConfig: SizeConfig = {
 
 /**
  * 超大尺寸配置
+ * 优化：使用基础 token 引用，减少内存占用
  */
 export const extraLargeSizeConfig: SizeConfig = {
   fontSize: {
-    xs: '16px',
+    xs: baseSizeTokens.size6, // 16px
     sm: '18px',
-    base: '20px',
-    lg: '24px',
-    xl: '28px',
-    xxl: '32px',
-    h1: '48px',
+    base: baseSizeTokens.size7, // 20px
+    lg: baseSizeTokens.size8, // 24px
+    xl: baseSizeTokens.size9, // 28px
+    xxl: baseSizeTokens.size10, // 32px
+    h1: baseSizeTokens.size13, // 48px
     h2: '44px',
-    h3: '40px',
-    h4: '36px',
-    h5: '32px',
-    h6: '28px',
+    h3: baseSizeTokens.size12, // 40px
+    h4: baseSizeTokens.size11, // 36px
+    h5: baseSizeTokens.size10, // 32px
+    h6: baseSizeTokens.size9, // 28px
   },
   spacing: {
-    xs: '8px',
-    sm: '16px',
-    base: '24px',
-    lg: '32px',
-    xl: '40px',
-    xxl: '64px',
+    xs: baseSizeTokens.size4, // 8px
+    sm: baseSizeTokens.size6, // 16px
+    base: baseSizeTokens.size8, // 24px
+    lg: baseSizeTokens.size10, // 32px
+    xl: baseSizeTokens.size12, // 40px
+    xxl: baseSizeTokens.size15, // 64px
   },
   component: {
     buttonHeight: {
-      small: '48px',
+      small: baseSizeTokens.size13, // 48px
       medium: '52px',
-      large: '56px',
+      large: baseSizeTokens.size14, // 56px
     },
     inputHeight: {
-      small: '48px',
+      small: baseSizeTokens.size13, // 48px
       medium: '52px',
-      large: '56px',
+      large: baseSizeTokens.size14, // 56px
     },
     iconSize: {
-      small: '24px',
+      small: baseSizeTokens.size8, // 24px
       medium: '26px',
-      large: '28px',
+      large: baseSizeTokens.size9, // 28px
     },
     avatarSize: {
       small: '44px',
-      medium: '48px',
+      medium: baseSizeTokens.size13, // 48px
       large: '52px',
     },
   },
   borderRadius: {
     none: '0',
-    sm: '4px',
-    base: '8px',
-    lg: '16px',
-    xl: '20px',
+    sm: baseSizeTokens.size2, // 4px
+    base: baseSizeTokens.size4, // 8px
+    lg: baseSizeTokens.size6, // 16px
+    xl: baseSizeTokens.size7, // 20px
     full: '50%',
   },
   shadow: {

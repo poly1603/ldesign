@@ -68,6 +68,12 @@ app.mount('#app')
 
 ```vue
 <!-- 在组件中使用 -->
+<script setup>
+import { SizeControlPanel, useSize } from '@ldesign/size/vue'
+
+const { currentMode, setMode } = useSize()
+</script>
+
 <template>
   <div>
     <!-- 使用组件 -->
@@ -77,13 +83,6 @@ app.mount('#app')
     <div>当前模式: {{ currentMode }}</div>
   </div>
 </template>
-
-<script setup>
-import { SizeControlPanel } from '@ldesign/size/vue'
-import { useSize } from '@ldesign/size/vue'
-
-const { currentMode, setMode } = useSize()
-</script>
 ```
 
 ## 🎨 尺寸模式
@@ -265,7 +264,3 @@ pnpm build
   <p>如果这个项目对你有帮助，请给我们一个 ⭐️ Star！</p>
   <p>Made with ❤️ by LDesign Team</p>
 </div>
-
-
-
-

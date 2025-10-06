@@ -4,6 +4,7 @@
  */
 
 import type { ColorConfig, ColorMode, ColorScale, NeutralColors } from '../core/types'
+import { CSSInjectorImpl } from './css-injector'
 
 /**
  * CSS变量配置接口
@@ -106,15 +107,31 @@ export class CSSVariableInjector {
    * 注入CSS变量
    */
   injectVariables(variables: Record<string, string>): void {
+    console.log('🔧 [CSSVariableInjector] injectVariables 被调用', {
+      variableCount: Object.keys(variables).length,
+      prefix: this.config.prefix,
+    })
     // 确保样式元素存在（处理被外部清空 DOM 的场景）
     this.ensureStyleElement()
-    if (!this.styleElement)
+    if (!this.styleElement) {
+      console.log('🔧 [CSSVariableInjector] styleElement 不存在')
       return
+    }
+
+    console.log('🔧 [CSSVariableInjector] styleElement 存在', {
+      id: this.styleElement.id,
+      inDocument: document.contains(this.styleElement),
+    })
 
     this.currentVariables = { ...variables }
 
     const cssText = this.generateCSSText(variables)
+    console.log('🔧 [CSSVariableInjector] 生成的CSS长度', cssText.length)
     this.styleElement.textContent = cssText
+    console.log('🔧 [CSSVariableInjector] textContent 已设置', {
+      id: this.styleElement.id,
+      length: this.styleElement.textContent?.length,
+    })
   }
 
   /**
@@ -418,8 +435,13 @@ export class CSSVariableInjector {
 
 /**
  * 全局CSS变量注入器实例
+ * 使用新的 CSSInjectorImpl 以确保与 EnhancedThemeApplier 使用相同的实现
  */
-export const globalCSSInjector = new CSSVariableInjector()
+export const globalCSSInjector = new CSSInjectorImpl({
+  prefix: '--ldesign',
+  styleId: 'ldesign-color-variables',
+  selector: ':root',
+})
 
 /**
  * 创建配置化的CSS变量注入器
@@ -588,21 +610,53 @@ export function injectThemeVariables(
 }
 
 /**
+ * 颜色转换缓存
+ * 使用LRU策略，避免重复计算
+ */
+class ColorConversionCache {
+  private cache = new Map<string, { h: number, s: number, l: number } | string>()
+  private maxSize = 100
+
+  get(key: string): { h: number, s: number, l: number } | string | undefined {
+    return this.cache.get(key)
+  }
+
+  set(key: string, value: { h: number, s: number, l: number } | string): void {
+    // LRU策略：如果超过最大容量，删除最早的条目
+    if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey)
+      }
+    }
+    this.cache.set(key, value)
+  }
+
+  clear(): void {
+    this.cache.clear()
+  }
+}
+
+/**
  * 增强的主题应用器
  * 根据当前模式生成完整的色阶CSS变量并注入到专门的style标签中
  * 支持主题状态缓存和恢复
+ * 性能优化：添加颜色转换缓存，减少重复计算
  */
 export class EnhancedThemeApplier {
-  private cssInjector: CSSVariableInjector
+  private cssInjector: CSSInjectorImpl
   private cacheManager: ThemeCacheManager
   private currentTheme: string = 'blue'
   private currentMode: 'light' | 'dark' = 'light'
   private debugMode: boolean = false
+  private colorCache = new ColorConversionCache()
 
   constructor(options?: { debug?: boolean }) {
-    // 使用更具体的配置，确保不与其他包冲突
-    this.cssInjector = new CSSVariableInjector({
-      prefix: 'ldesign-color-theme', // 使用更具体的前缀，避免与size包冲突
+    // 使用统一的 styleId，确保所有CSS变量都注入到同一个标签中
+    this.cssInjector = new CSSInjectorImpl({
+      prefix: '--ldesign',
+      styleId: 'ldesign-color-variables', // 统一使用这个ID
+      selector: ':root',
     })
     this.cacheManager = new ThemeCacheManager({ debug: this.debugMode })
     this.debugMode = options?.debug ?? false
@@ -622,6 +676,8 @@ export class EnhancedThemeApplier {
     saveToCache: boolean = true,
   ): void {
     try {
+      console.log('🎨 [EnhancedThemeApplier] applyTheme 被调用', { primaryColor, currentMode, themeConfig })
+
       // 更新当前状态
       this.currentMode = currentMode
 
@@ -632,12 +688,19 @@ export class EnhancedThemeApplier {
       // 生成完整的色彩系统
       this.generateCompleteColorSystem(primaryColor, lightVariables, darkVariables)
 
+      console.log('🎨 [EnhancedThemeApplier] 生成的变量数量', {
+        light: Object.keys(lightVariables).length,
+        dark: Object.keys(darkVariables).length,
+      })
+
       // 注入两套CSS变量到不同的选择器，并添加主题信息注释
       const themeInfo = {
         name: themeConfig?.name || 'Custom',
         primaryColor,
       }
+      console.log('🎨 [EnhancedThemeApplier] 准备注入CSS变量', { themeInfo, styleId: 'ldesign-color-variables' })
       this.cssInjector.injectThemeVariables(lightVariables, darkVariables, themeInfo)
+      console.log('🎨 [EnhancedThemeApplier] CSS变量已注入')
 
       // 设置模式属性
       this.setModeAttributes(currentMode)
@@ -724,7 +787,8 @@ export class EnhancedThemeApplier {
   }
 
   /**
-   * 生成功能色系（warning、success、error、gray）各1-10级色阶
+   * 生成功能色系（warning、success、error）1-10级色阶和gray 1-14级色阶
+   * 参考TDesign的色阶系统
    */
   private generateFunctionalColorScales(
     lightVariables: Record<string, string>,
@@ -735,17 +799,16 @@ export class EnhancedThemeApplier {
       warning: { h: 45, s: 100, l: 50 }, // 橙色
       success: { h: 120, s: 60, l: 45 }, // 绿色
       error: { h: 0, s: 85, l: 55 }, // 红色
-      gray: { h: 0, s: 0, l: 50 }, // 纯中性灰色，不混入主色
     }
 
+    // 生成warning、success、error的1-10级色阶
     Object.entries(functionalColors).forEach(([colorName, baseHsl]) => {
-      // 生成1-10级色阶（与其他色阶保持一致）
       for (let i = 1; i <= 10; i++) {
         // 亮色模式
         const lightLightness = Math.max(5, Math.min(95, 95 - (i - 1) * 9))
         const lightColor = this.hslToHex({
           h: baseHsl.h,
-          s: colorName === 'gray' ? 0 : Math.max(20, baseHsl.s - i * 2), // gray色阶饱和度为0，保持纯中性
+          s: Math.max(20, baseHsl.s - i * 2),
           l: lightLightness,
         })
         lightVariables[`--ldesign-${colorName}-color-${i}`] = lightColor
@@ -754,12 +817,37 @@ export class EnhancedThemeApplier {
         const darkLightness = Math.max(5, Math.min(95, 10 + (i - 1) * 9))
         const darkColor = this.hslToHex({
           h: baseHsl.h,
-          s: colorName === 'gray' ? 0 : Math.max(15, baseHsl.s - i * 1.5), // gray色阶饱和度为0，保持纯中性
+          s: Math.max(15, baseHsl.s - i * 1.5),
           l: darkLightness,
         })
         darkVariables[`--ldesign-${colorName}-color-${i}`] = darkColor
       }
     })
+
+    // 生成gray的1-14级色阶（参考TDesign）
+    // 纯中性灰色，饱和度为0
+    const grayLightnesses = {
+      light: [95, 93, 91, 87, 78, 65, 54, 47, 37, 29, 22, 17, 14, 9], // 1-14级
+      dark: [95, 93, 91, 87, 78, 65, 54, 47, 37, 29, 22, 17, 14, 9], // 1-14级
+    }
+
+    for (let i = 1; i <= 14; i++) {
+      // 亮色模式 - 纯中性灰
+      const lightColor = this.hslToHex({
+        h: 0,
+        s: 0,
+        l: grayLightnesses.light[i - 1],
+      })
+      lightVariables[`--ldesign-gray-color-${i}`] = lightColor
+
+      // 暗色模式 - 纯中性灰
+      const darkColor = this.hslToHex({
+        h: 0,
+        s: 0,
+        l: grayLightnesses.dark[i - 1],
+      })
+      darkVariables[`--ldesign-gray-color-${i}`] = darkColor
+    }
   }
 
   /**
@@ -843,7 +931,8 @@ export class EnhancedThemeApplier {
   }
 
   /**
-   * 生成边框和阴影系统
+   * 生成边框、阴影、遮罩和滚动条系统
+   * 参考TDesign的完整设计系统
    */
   private generateBorderAndShadowSystem(
     lightVariables: Record<string, string>,
@@ -854,24 +943,42 @@ export class EnhancedThemeApplier {
     lightVariables['--ldesign-border-level-2-color'] = '#d9d9d9' // 二级边框
     lightVariables['--ldesign-border-level-3-color'] = '#cccccc' // 三级边框
 
-    // 亮色模式阴影
-    lightVariables['--ldesign-shadow-1'] = '0 1px 10px rgba(0, 0, 0, 5%)' // 一级阴影
-    lightVariables['--ldesign-shadow-2'] = '0 4px 20px rgba(0, 0, 0, 8%)' // 二级阴影
-    lightVariables['--ldesign-shadow-3'] = '0 8px 30px rgba(0, 0, 0, 12%)' // 三级阴影
-    lightVariables['--ldesign-shadow-inset'] = 'inset 0 1px 2px rgba(0, 0, 0, 8%)' // 内阴影
-    lightVariables['--ldesign-shadow-table'] = '0 2px 8px rgba(0, 0, 0, 6%)' // 表格阴影
+    // 亮色模式阴影（参考TDesign）
+    lightVariables['--ldesign-shadow-1'] = '0 1px 10px rgba(0, 0, 0, 5%), 0 4px 5px rgba(0, 0, 0, 8%), 0 2px 4px -1px rgba(0, 0, 0, 12%)'
+    lightVariables['--ldesign-shadow-2'] = '0 3px 14px 2px rgba(0, 0, 0, 5%), 0 8px 10px 1px rgba(0, 0, 0, 6%), 0 5px 5px -3px rgba(0, 0, 0, 10%)'
+    lightVariables['--ldesign-shadow-3'] = '0 6px 30px 5px rgba(0, 0, 0, 5%), 0 16px 24px 2px rgba(0, 0, 0, 4%), 0 8px 10px -5px rgba(0, 0, 0, 8%)'
+    lightVariables['--ldesign-shadow-inset'] = 'inset 0 1px 2px rgba(0, 0, 0, 8%)'
+    lightVariables['--ldesign-shadow-table'] = '0 2px 8px rgba(0, 0, 0, 6%)'
+
+    // 亮色模式遮罩（参考TDesign）
+    lightVariables['--ldesign-mask-active'] = 'rgba(0, 0, 0, 60%)' // 遮罩-弹出
+    lightVariables['--ldesign-mask-disabled'] = 'rgba(255, 255, 255, 60%)' // 遮罩-禁用
+
+    // 亮色模式滚动条（参考TDesign）
+    lightVariables['--ldesign-scrollbar-color'] = 'rgba(0, 0, 0, 10%)'
+    lightVariables['--ldesign-scrollbar-hover-color'] = 'rgba(0, 0, 0, 30%)'
+    lightVariables['--ldesign-scroll-track-color'] = '#ffffff'
 
     // 暗色模式边框色
     darkVariables['--ldesign-border-level-1-color'] = '#404040'
     darkVariables['--ldesign-border-level-2-color'] = '#4a4a4a'
     darkVariables['--ldesign-border-level-3-color'] = '#555555'
 
-    // 暗色模式阴影
-    darkVariables['--ldesign-shadow-1'] = '0 1px 10px rgba(0, 0, 0, 20%)'
-    darkVariables['--ldesign-shadow-2'] = '0 4px 20px rgba(0, 0, 0, 25%)'
-    darkVariables['--ldesign-shadow-3'] = '0 8px 30px rgba(0, 0, 0, 30%)'
+    // 暗色模式阴影（参考TDesign）
+    darkVariables['--ldesign-shadow-1'] = '0 4px 6px rgba(0, 0, 0, 6%), 0 1px 10px rgba(0, 0, 0, 8%), 0 2px 4px rgba(0, 0, 0, 12%)'
+    darkVariables['--ldesign-shadow-2'] = '0 8px 10px rgba(0, 0, 0, 12%), 0 3px 14px rgba(0, 0, 0, 10%), 0 5px 5px rgba(0, 0, 0, 16%)'
+    darkVariables['--ldesign-shadow-3'] = '0 16px 24px rgba(0, 0, 0, 14%), 0 6px 30px rgba(0, 0, 0, 12%), 0 8px 10px rgba(0, 0, 0, 20%)'
     darkVariables['--ldesign-shadow-inset'] = 'inset 0 1px 2px rgba(0, 0, 0, 25%)'
     darkVariables['--ldesign-shadow-table'] = '0 2px 8px rgba(0, 0, 0, 20%)'
+
+    // 暗色模式遮罩（参考TDesign）
+    darkVariables['--ldesign-mask-active'] = 'rgba(0, 0, 0, 40%)' // 遮罩-弹出
+    darkVariables['--ldesign-mask-disabled'] = 'rgba(0, 0, 0, 60%)' // 遮罩-禁用
+
+    // 暗色模式滚动条（参考TDesign）
+    darkVariables['--ldesign-scrollbar-color'] = 'rgba(255, 255, 255, 10%)'
+    darkVariables['--ldesign-scrollbar-hover-color'] = 'rgba(255, 255, 255, 30%)'
+    darkVariables['--ldesign-scroll-track-color'] = '#333333'
   }
 
   /**
@@ -987,21 +1094,38 @@ export class EnhancedThemeApplier {
    * 清除所有主题变量和缓存
    */
   clearTheme(): void {
-    this.cssInjector.clearVariables()
+    this.cssInjector.removeVariables() // 移除默认的样式标签
     this.cacheManager.clearThemeState()
+    this.colorCache.clear() // 清除颜色转换缓存
   }
 
   /**
-   * 将十六进制颜色转换为HSL
+   * 销毁主题应用器，释放所有资源
+   */
+  destroy(): void {
+    this.clearTheme()
+    this.cssInjector.clearAll() // 清除所有注入的样式
+    this.colorCache.clear()
+  }
+
+  /**
+   * 将十六进制颜色转换为HSL（带缓存优化）
    */
   private hexToHsl(hex: string): { h: number, s: number, l: number } {
+    // 检查缓存
+    const cacheKey = `hex2hsl:${hex}`
+    const cached = this.colorCache.get(cacheKey)
+    if (cached && typeof cached === 'object' && 'h' in cached) {
+      return cached
+    }
+
     // 移除 # 符号
     hex = hex.replace('#', '')
 
-    // 转换为RGB
-    const r = Number.parseInt(hex.substr(0, 2), 16) / 255
-    const g = Number.parseInt(hex.substr(2, 2), 16) / 255
-    const b = Number.parseInt(hex.substr(4, 2), 16) / 255
+    // 转换为RGB - 使用 substring 替代已废弃的 substr
+    const r = Number.parseInt(hex.substring(0, 2), 16) / 255
+    const g = Number.parseInt(hex.substring(2, 4), 16) / 255
+    const b = Number.parseInt(hex.substring(4, 6), 16) / 255
 
     const max = Math.max(r, g, b)
     const min = Math.min(r, g, b)
@@ -1027,17 +1151,28 @@ export class EnhancedThemeApplier {
       h /= 6
     }
 
-    return {
+    const result = {
       h: Math.round(h * 360),
       s: Math.round(s * 100),
       l: Math.round(l * 100),
     }
+
+    // 缓存结果
+    this.colorCache.set(cacheKey, result)
+    return result
   }
 
   /**
-   * 将HSL颜色转换为十六进制
+   * 将HSL颜色转换为十六进制（带缓存优化）
    */
   private hslToHex({ h, s, l }: { h: number, s: number, l: number }): string {
+    // 检查缓存
+    const cacheKey = `hsl2hex:${h},${s},${l}`
+    const cached = this.colorCache.get(cacheKey)
+    if (cached && typeof cached === 'string') {
+      return cached
+    }
+
     h /= 360
     s /= 100
     l /= 100
@@ -1074,7 +1209,11 @@ export class EnhancedThemeApplier {
       return hex.length === 1 ? `0${hex}` : hex
     }
 
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+    const result = `#${toHex(r)}${toHex(g)}${toHex(b)}`
+
+    // 缓存结果
+    this.colorCache.set(cacheKey, result)
+    return result
   }
 }
 

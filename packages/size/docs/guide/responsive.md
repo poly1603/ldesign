@@ -99,6 +99,64 @@ unwatch()
 ### Vue 响应式集成
 
 ```vue
+<script setup>
+import { SizeSwitcher, useSizeResponsive } from '@ldesign/size/vue'
+import { computed } from 'vue'
+
+// 使用响应式 hook
+const {
+  isSmall,
+  isMedium,
+  isLarge,
+  isSmallScreen,
+  isMediumScreen,
+  isLargeScreen,
+  isAtLeast,
+  isAtMost
+} = useSizeResponsive()
+
+// 计算可用模式
+const availableModes = computed(() => {
+  if (isSmallScreen.value) {
+    return ['small', 'medium']
+  }
+  else if (isMediumScreen.value) {
+    return ['small', 'medium', 'large']
+  }
+  else {
+    return ['small', 'medium', 'large', 'extra-large']
+  }
+})
+
+// 响应式样式类
+const responsiveClasses = computed(() => ({
+  'content--small': isSmall.value,
+  'content--medium': isMedium.value,
+  'content--large': isLarge.value,
+  'content--mobile': isSmallScreen.value,
+  'content--desktop': isLargeScreen.value
+}))
+
+// 响应式内容
+const title = computed(() => {
+  if (isSmallScreen.value) {
+    return '移动版标题'
+  }
+  else if (isLargeScreen.value) {
+    return '桌面版详细标题'
+  }
+  else {
+    return '标准标题'
+  }
+})
+
+const description = computed(() => {
+  return isAtLeast('medium')
+    ? '这是详细的描述内容，适合中等及以上尺寸显示。'
+    : '简化描述'
+})
+</script>
+
 <template>
   <div class="responsive-container">
     <!-- 响应式组件 -->
@@ -122,60 +180,6 @@ unwatch()
     </div>
   </div>
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import { useSizeResponsive, SizeSwitcher } from '@ldesign/size/vue'
-
-// 使用响应式 hook
-const {
-  isSmall,
-  isMedium,
-  isLarge,
-  isSmallScreen,
-  isMediumScreen,
-  isLargeScreen,
-  isAtLeast,
-  isAtMost
-} = useSizeResponsive()
-
-// 计算可用模式
-const availableModes = computed(() => {
-  if (isSmallScreen.value) {
-    return ['small', 'medium']
-  } else if (isMediumScreen.value) {
-    return ['small', 'medium', 'large']
-  } else {
-    return ['small', 'medium', 'large', 'extra-large']
-  }
-})
-
-// 响应式样式类
-const responsiveClasses = computed(() => ({
-  'content--small': isSmall.value,
-  'content--medium': isMedium.value,
-  'content--large': isLarge.value,
-  'content--mobile': isSmallScreen.value,
-  'content--desktop': isLargeScreen.value
-}))
-
-// 响应式内容
-const title = computed(() => {
-  if (isSmallScreen.value) {
-    return '移动版标题'
-  } else if (isLargeScreen.value) {
-    return '桌面版详细标题'
-  } else {
-    return '标准标题'
-  }
-})
-
-const description = computed(() => {
-  return isAtLeast('medium')
-    ? '这是详细的描述内容，适合中等及以上尺寸显示。'
-    : '简化描述'
-})
-</script>
 
 <style scoped>
 .responsive-container {
@@ -330,15 +334,6 @@ const unwatchOrientation = createOrientationWatcher({
 ### Vue 方向响应
 
 ```vue
-<template>
-  <div :class="orientationClasses">
-    <SizeSwitcher
-      :layout="isLandscape ? 'horizontal' : 'vertical'"
-      :size="isPortrait && isSmallScreen ? 'small' : 'medium'"
-    />
-  </div>
-</template>
-
 <script setup>
 import { useOrientation } from '@ldesign/size/vue'
 
@@ -354,6 +349,15 @@ const orientationClasses = computed(() => ({
   'layout--landscape': isLandscape.value
 }))
 </script>
+
+<template>
+  <div :class="orientationClasses">
+    <SizeSwitcher
+      :layout="isLandscape ? 'horizontal' : 'vertical'"
+      :size="isPortrait && isSmallScreen ? 'small' : 'medium'"
+    />
+  </div>
+</template>
 ```
 
 ## 🚀 性能优化

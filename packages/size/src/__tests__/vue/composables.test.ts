@@ -6,6 +6,15 @@ import type { SizeMode } from '../../types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from 'vue'
 
+// 导入composables（在mock之后）
+import {
+  useGlobalSize,
+  useSize,
+  useSizeResponsive,
+  useSizeSwitcher,
+  useSizeWatcher,
+} from '../../vue/composables'
+
 // Mock size manager 模块
 vi.mock('../../core/size-manager', () => {
   const mockSizeManager = {
@@ -24,15 +33,6 @@ vi.mock('../../core/size-manager', () => {
     createSizeManager: vi.fn(() => mockSizeManager),
   }
 })
-
-// 导入composables（在mock之后）
-import {
-  useGlobalSize,
-  useSize,
-  useSizeResponsive,
-  useSizeSwitcher,
-  useSizeWatcher,
-} from '../../vue/composables'
 
 // Mock utils
 vi.mock('../../utils', () => ({

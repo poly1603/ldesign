@@ -3,13 +3,13 @@
  * 使用 @ldesign/builder VueBuilder 处理 Vue + TypeScript 项目
  */
 
+import { sep } from 'node:path'
 import { VueBuilder } from '@ldesign/builder'
-import { sep } from 'path'
 
 async function build() {
   const isDev = process.argv.includes('--dev')
   const includeVue = process.argv.includes('--vue') // 实验性 Vue 支持
-  
+
   if (!process.env.CI) {
     console.log(`🚀 构建 size 包...`)
   }
@@ -18,7 +18,7 @@ async function build() {
     root: process.cwd(),
     src: 'src',
     outDir: 'dist',
-    formats: ["esm","cjs"],
+    formats: ['esm', 'cjs'],
     sourcemap: true,
     minify: !isDev,
     clean: true,
@@ -30,13 +30,13 @@ async function build() {
       'react-dom',
       '@ldesign/shared',
       '@ldesign/utils',
-      '@ldesign/kit'
+      '@ldesign/kit',
     ],
     globals: {
       'vue': 'Vue',
       'react': 'React',
-      'react-dom': 'ReactDOM'
-    }
+      'react-dom': 'ReactDOM',
+    },
   })
 
   try {
@@ -54,11 +54,13 @@ async function build() {
 
         console.log(`📦 处理了 ${result.processedTsFiles} 个 TypeScript 文件`)
       }
-    } else {
+    }
+    else {
       console.error(`❌ 构建失败: ${result.errors?.join(', ')}`)
       process.exit(1)
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 构建过程中发生错误:', error)
     process.exit(1)
   }

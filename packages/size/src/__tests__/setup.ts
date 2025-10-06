@@ -3,7 +3,7 @@
  * 为测试环境提供必要的polyfill和mock
  */
 
-import { vi, beforeEach } from 'vitest'
+import { beforeEach, vi } from 'vitest'
 
 // ===== DOM API Polyfills =====
 
@@ -11,7 +11,7 @@ import { vi, beforeEach } from 'vitest'
 if (typeof window !== 'undefined' && window.document) {
   // 确保 Element.prototype 有 setAttribute 方法
   if (!Element.prototype.setAttribute) {
-    Element.prototype.setAttribute = function(name: string, value: string) {
+    Element.prototype.setAttribute = function (name: string, value: string) {
       // @ts-ignore
       this[name] = value
     }
@@ -19,7 +19,7 @@ if (typeof window !== 'undefined' && window.document) {
 
   // 确保 Element.prototype 有 getAttribute 方法
   if (!Element.prototype.getAttribute) {
-    Element.prototype.getAttribute = function(name: string) {
+    Element.prototype.getAttribute = function (name: string) {
       // @ts-ignore
       return this[name] || null
     }
@@ -27,7 +27,7 @@ if (typeof window !== 'undefined' && window.document) {
 
   // 确保 Element.prototype 有 remove 方法
   if (!Element.prototype.remove) {
-    Element.prototype.remove = function() {
+    Element.prototype.remove = function () {
       if (this.parentNode) {
         this.parentNode.removeChild(this)
       }
@@ -60,7 +60,8 @@ if (typeof window !== 'undefined' && window.document) {
             // @ts-ignore
             this.children.splice(index, 0, newNode)
           }
-        } else {
+        }
+        else {
           // 如果找不到参考节点，追加到末尾
           // @ts-ignore
           this.childNodes.push(newNode)
@@ -69,7 +70,8 @@ if (typeof window !== 'undefined' && window.document) {
             this.children.push(newNode)
           }
         }
-      } else {
+      }
+      else {
         // 如果没有参考节点，追加到末尾
         // @ts-ignore
         this.childNodes.push(newNode)
@@ -155,7 +157,7 @@ if (document.head && !document.head.insertBefore) {
 }
 
 // 为所有可能的DOM节点类型添加insertBefore方法
-const addInsertBeforeToPrototype = (prototype: any) => {
+function addInsertBeforeToPrototype(prototype: any) {
   if (prototype && !prototype.insertBefore) {
     prototype.insertBefore = Element.prototype.insertBefore
   }
@@ -254,7 +256,8 @@ beforeEach(() => {
     if (document.body) {
       document.body.innerHTML = ''
     }
-  } catch (error) {
+  }
+  catch (error) {
     // 在某些测试环境中可能无法设置innerHTML，忽略错误
     console.warn('[Test Setup] Failed to clear DOM:', error)
   }

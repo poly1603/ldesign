@@ -98,7 +98,7 @@ registerShortcut({
 
 ### 使用主题系统
 ```typescript
-import { themeManager, setTheme, registerTheme } from '@ldesign/size'
+import { registerTheme, setTheme, themeManager } from '@ldesign/size'
 
 // 切换到暗黑主题
 setTheme('dark')
@@ -123,9 +123,16 @@ const unsubscribe = themeManager.onThemeChange((theme) => {
 
 ### 使用新的 Vue 组件
 ```vue
+<script setup>
+import { SizeControlPanel, SizeIndicator, SizeSwitcher } from '@ldesign/size/vue'
+import { ref } from 'vue'
+
+const currentMode = ref('medium')
+</script>
+
 <template>
   <!-- 尺寸指示器 -->
-  <SizeIndicator 
+  <SizeIndicator
     :show-scale="true"
     :show-icon="true"
     theme="auto"
@@ -147,18 +154,11 @@ const unsubscribe = themeManager.onThemeChange((theme) => {
     position="top"
   />
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import { SizeIndicator, SizeSwitcher, SizeControlPanel } from '@ldesign/size/vue'
-
-const currentMode = ref('medium')
-</script>
 ```
 
 ### 使用性能优化工具
 ```typescript
-import { throttle, debounce, memoize, PerformanceMeasure } from '@ldesign/size'
+import { debounce, memoize, PerformanceMeasure, throttle } from '@ldesign/size'
 
 // 节流窗口大小调整处理
 const handleResize = throttle(() => {

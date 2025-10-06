@@ -41,7 +41,7 @@ export class KeyboardManager {
       key: '+',
       modifiers: { ctrl: true },
       action: 'increase',
-      description: '增大页面尺寸'
+      description: '增大页面尺寸',
     })
 
     // 减小尺寸: Ctrl + Minus
@@ -49,7 +49,7 @@ export class KeyboardManager {
       key: '-',
       modifiers: { ctrl: true },
       action: 'decrease',
-      description: '减小页面尺寸'
+      description: '减小页面尺寸',
     })
 
     // 重置尺寸: Ctrl + 0
@@ -58,7 +58,7 @@ export class KeyboardManager {
       modifiers: { ctrl: true },
       action: 'set',
       targetMode: 'medium',
-      description: '重置页面尺寸'
+      description: '重置页面尺寸',
     })
 
     // 切换尺寸: Ctrl + Shift + S
@@ -66,7 +66,7 @@ export class KeyboardManager {
       key: 's',
       modifiers: { ctrl: true, shift: true },
       action: 'toggle',
-      description: '切换页面尺寸'
+      description: '切换页面尺寸',
     })
   }
 
@@ -91,10 +91,14 @@ export class KeyboardManager {
    */
   private generateKey(shortcut: KeyboardShortcut): string {
     const parts: string[] = []
-    if (shortcut.modifiers?.ctrl) parts.push('ctrl')
-    if (shortcut.modifiers?.alt) parts.push('alt')
-    if (shortcut.modifiers?.shift) parts.push('shift')
-    if (shortcut.modifiers?.meta) parts.push('meta')
+    if (shortcut.modifiers?.ctrl)
+      parts.push('ctrl')
+    if (shortcut.modifiers?.alt)
+      parts.push('alt')
+    if (shortcut.modifiers?.shift)
+      parts.push('shift')
+    if (shortcut.modifiers?.meta)
+      parts.push('meta')
     parts.push(shortcut.key.toLowerCase())
     return parts.join('+')
   }
@@ -104,16 +108,22 @@ export class KeyboardManager {
    */
   private generateKeyFromEvent(e: KeyboardEvent): string {
     const parts: string[] = []
-    if (e.ctrlKey) parts.push('ctrl')
-    if (e.altKey) parts.push('alt')
-    if (e.shiftKey) parts.push('shift')
-    if (e.metaKey) parts.push('meta')
-    
+    if (e.ctrlKey)
+      parts.push('ctrl')
+    if (e.altKey)
+      parts.push('alt')
+    if (e.shiftKey)
+      parts.push('shift')
+    if (e.metaKey)
+      parts.push('meta')
+
     // 处理特殊键
     let key = e.key.toLowerCase()
-    if (key === '=' || key === '+') key = '+'
-    if (key === '_' || key === '-') key = '-'
-    
+    if (key === '=' || key === '+')
+      key = '+'
+    if (key === '_' || key === '-')
+      key = '-'
+
     parts.push(key)
     return parts.join('+')
   }
@@ -122,7 +132,8 @@ export class KeyboardManager {
    * 处理键盘事件
    */
   private handleKeydown = (e: KeyboardEvent) => {
-    if (!this.enabled) return
+    if (!this.enabled)
+      return
 
     const key = this.generateKeyFromEvent(e)
     const shortcut = this.shortcuts.get(key)
@@ -133,7 +144,8 @@ export class KeyboardManager {
 
       if (typeof shortcut.action === 'function') {
         shortcut.action()
-      } else {
+      }
+      else {
         switch (shortcut.action) {
           case 'increase':
             this.increaseSize()
@@ -161,7 +173,7 @@ export class KeyboardManager {
     const modes: SizeMode[] = ['small', 'medium', 'large', 'extra-large']
     const currentMode = globalSizeManager.getCurrentMode()
     const currentIndex = modes.indexOf(currentMode)
-    
+
     if (currentIndex < modes.length - 1) {
       globalSizeManager.setMode(modes[currentIndex + 1])
     }
@@ -174,7 +186,7 @@ export class KeyboardManager {
     const modes: SizeMode[] = ['small', 'medium', 'large', 'extra-large']
     const currentMode = globalSizeManager.getCurrentMode()
     const currentIndex = modes.indexOf(currentMode)
-    
+
     if (currentIndex > 0) {
       globalSizeManager.setMode(modes[currentIndex - 1])
     }
@@ -195,8 +207,9 @@ export class KeyboardManager {
    * 启用键盘快捷键
    */
   enable() {
-    if (this.enabled || typeof window === 'undefined') return
-    
+    if (this.enabled || typeof window === 'undefined')
+      return
+
     this.enabled = true
     this.boundHandler = this.handleKeydown.bind(this)
     window.addEventListener('keydown', this.boundHandler)
@@ -206,8 +219,9 @@ export class KeyboardManager {
    * 禁用键盘快捷键
    */
   disable() {
-    if (!this.enabled || typeof window === 'undefined') return
-    
+    if (!this.enabled || typeof window === 'undefined')
+      return
+
     this.enabled = false
     if (this.boundHandler) {
       window.removeEventListener('keydown', this.boundHandler)
@@ -227,10 +241,14 @@ export class KeyboardManager {
    */
   formatShortcut(shortcut: KeyboardShortcut): string {
     const parts: string[] = []
-    if (shortcut.modifiers?.ctrl) parts.push('Ctrl')
-    if (shortcut.modifiers?.alt) parts.push('Alt')
-    if (shortcut.modifiers?.shift) parts.push('Shift')
-    if (shortcut.modifiers?.meta) parts.push('Meta')
+    if (shortcut.modifiers?.ctrl)
+      parts.push('Ctrl')
+    if (shortcut.modifiers?.alt)
+      parts.push('Alt')
+    if (shortcut.modifiers?.shift)
+      parts.push('Shift')
+    if (shortcut.modifiers?.meta)
+      parts.push('Meta')
     parts.push(shortcut.key.toUpperCase())
     return parts.join(' + ')
   }

@@ -134,13 +134,6 @@ app.mount('#app')
 **在组件中使用全局属性**：
 
 ```vue
-<template>
-  <div>
-    <p>当前模式: {{ $getSizeMode() }}</p>
-    <button @click="$setSize('large')">切换到大尺寸</button>
-  </div>
-</template>
-
 <script>
 export default {
   mounted() {
@@ -148,6 +141,15 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div>
+    <p>当前模式: {{ $getSizeMode() }}</p>
+    <button @click="$setSize('large')">
+      切换到大尺寸
+    </button>
+  </div>
+</template>
 ```
 
 ### 2. Composition API 使用
@@ -155,6 +157,18 @@ export default {
 **基础 Hook 使用**：
 
 ```vue
+<script setup>
+import { useSize } from '@ldesign/size/vue'
+
+const { currentMode, currentConfig, currentModeDisplayName, setMode, nextMode, previousMode }
+  = useSize({ global: true })
+
+// 监听模式变化
+watch(currentMode, (newMode, oldMode) => {
+  console.log(`尺寸从 ${oldMode} 变为 ${newMode}`)
+})
+</script>
+
 <template>
   <div>
     <h2>当前模式: {{ currentModeDisplayName }}</h2>
@@ -162,30 +176,32 @@ export default {
     <p>基础间距: {{ currentConfig.spacing.base }}</p>
 
     <div class="controls">
-      <button @click="previousMode">上一个</button>
-      <button @click="nextMode">下一个</button>
-      <button @click="setMode('small')">小尺寸</button>
-      <button @click="setMode('large')">大尺寸</button>
+      <button @click="previousMode">
+        上一个
+      </button>
+      <button @click="nextMode">
+        下一个
+      </button>
+      <button @click="setMode('small')">
+        小尺寸
+      </button>
+      <button @click="setMode('large')">
+        大尺寸
+      </button>
     </div>
   </div>
 </template>
-
-<script setup>
-import { useSize } from '@ldesign/size/vue'
-
-const { currentMode, currentConfig, currentModeDisplayName, setMode, nextMode, previousMode } =
-  useSize({ global: true })
-
-// 监听模式变化
-watch(currentMode, (newMode, oldMode) => {
-  console.log(`尺寸从 ${oldMode} 变为 ${newMode}`)
-})
-</script>
 ```
 
 **响应式 Hook 使用**：
 
 ```vue
+<script setup>
+import { useSizeResponsive } from '@ldesign/size/vue'
+
+const { isSmall, isMedium, isLarge, isExtraLarge, isAtLeast, isAtMost } = useSizeResponsive()
+</script>
+
 <template>
   <div>
     <div v-if="isSmall" class="mobile-layout">
@@ -209,12 +225,6 @@ watch(currentMode, (newMode, oldMode) => {
     </div>
   </div>
 </template>
-
-<script setup>
-import { useSizeResponsive } from '@ldesign/size/vue'
-
-const { isSmall, isMedium, isLarge, isExtraLarge, isAtLeast, isAtMost } = useSizeResponsive()
-</script>
 ```
 
 ### 3. 组件使用
@@ -222,6 +232,15 @@ const { isSmall, isMedium, isLarge, isExtraLarge, isAtLeast, isAtMost } = useSiz
 **尺寸切换器组件**：
 
 ```vue
+<script setup>
+import { SizeControlPanel, SizeIndicator, SizeSwitcher } from '@ldesign/size/vue'
+
+function handleSizeChange(mode) {
+  console.log('尺寸变化:', mode)
+  // 可以在这里执行额外的逻辑
+}
+</script>
+
 <template>
   <div class="demo-page">
     <!-- 页面头部的尺寸控制 -->
@@ -247,15 +266,6 @@ const { isSmall, isMedium, isLarge, isExtraLarge, isAtLeast, isAtMost } = useSiz
     </main>
   </div>
 </template>
-
-<script setup>
-import { SizeSwitcher, SizeIndicator, SizeControlPanel } from '@ldesign/size/vue'
-
-const handleSizeChange = mode => {
-  console.log('尺寸变化:', mode)
-  // 可以在这里执行额外的逻辑
-}
-</script>
 ```
 
 ## 🔧 高级配置
@@ -351,11 +361,31 @@ const conditionalUnsubscribe = globalSizeManager.onSizeChange((event) => {
 ### 1. 管理后台系统
 
 ```vue
+<script setup>
+import { useSizeResponsive } from '@ldesign/size/vue'
+import { computed } from 'vue'
+
+const { isSmall, isMedium, currentMode } = useSizeResponsive()
+
+// 根据尺寸调整布局
+const sidebarClass = computed(() => ({
+  'sidebar--collapsed': isSmall.value,
+  'sidebar--expanded': !isSmall.value,
+}))
+
+const contentClass = computed(() => ({
+  'content--compact': isSmall.value || isMedium.value,
+  'content--spacious': !isSmall.value && !isMedium.value,
+}))
+</script>
+
 <template>
   <div class="admin-layout">
     <!-- 顶部导航 -->
     <header class="admin-header">
-      <div class="logo">管理系统</div>
+      <div class="logo">
+        管理系统
+      </div>
       <div class="header-controls">
         <SizeSwitcher switcher-style="select" />
         <UserMenu />
@@ -380,24 +410,6 @@ const conditionalUnsubscribe = globalSizeManager.onSizeChange((event) => {
     </main>
   </div>
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import { useSizeResponsive } from '@ldesign/size/vue'
-
-const { isSmall, isMedium, currentMode } = useSizeResponsive()
-
-// 根据尺寸调整布局
-const sidebarClass = computed(() => ({
-  'sidebar--collapsed': isSmall.value,
-  'sidebar--expanded': !isSmall.value,
-}))
-
-const contentClass = computed(() => ({
-  'content--compact': isSmall.value || isMedium.value,
-  'content--spacious': !isSmall.value && !isMedium.value,
-}))
-</script>
 
 <style>
 .admin-layout {
@@ -452,40 +464,9 @@ const contentClass = computed(() => ({
 ### 2. 电商产品页面
 
 ```vue
-<template>
-  <div class="product-page">
-    <!-- 产品图片区域 -->
-    <div class="product-images" :class="imageLayoutClass">
-      <ProductGallery :size="imageSize" />
-    </div>
-
-    <!-- 产品信息区域 -->
-    <div class="product-info" :class="infoLayoutClass">
-      <h1 class="product-title">{{ product.title }}</h1>
-      <div class="product-price">¥{{ product.price }}</div>
-
-      <!-- 根据尺寸显示不同详细程度的信息 -->
-      <div v-if="showDetailedInfo" class="product-details">
-        <ProductSpecs :specs="product.specs" />
-        <ProductReviews :reviews="product.reviews" />
-      </div>
-
-      <div v-else class="product-summary">
-        <p>{{ product.summary }}</p>
-      </div>
-
-      <!-- 购买按钮 -->
-      <div class="purchase-actions">
-        <button class="btn-primary" :class="buttonSizeClass">立即购买</button>
-        <button class="btn-secondary" :class="buttonSizeClass">加入购物车</button>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { computed } from 'vue'
 import { useSizeResponsive } from '@ldesign/size/vue'
+import { computed } from 'vue'
 
 const { currentMode, isSmall, isAtLeast } = useSizeResponsive()
 
@@ -524,46 +505,53 @@ const buttonSizeClass = computed(() => ({
   'btn--large': isAtLeast('large'),
 }))
 </script>
+
+<template>
+  <div class="product-page">
+    <!-- 产品图片区域 -->
+    <div class="product-images" :class="imageLayoutClass">
+      <ProductGallery :size="imageSize" />
+    </div>
+
+    <!-- 产品信息区域 -->
+    <div class="product-info" :class="infoLayoutClass">
+      <h1 class="product-title">
+        {{ product.title }}
+      </h1>
+      <div class="product-price">
+        ¥{{ product.price }}
+      </div>
+
+      <!-- 根据尺寸显示不同详细程度的信息 -->
+      <div v-if="showDetailedInfo" class="product-details">
+        <ProductSpecs :specs="product.specs" />
+        <ProductReviews :reviews="product.reviews" />
+      </div>
+
+      <div v-else class="product-summary">
+        <p>{{ product.summary }}</p>
+      </div>
+
+      <!-- 购买按钮 -->
+      <div class="purchase-actions">
+        <button class="btn-primary" :class="buttonSizeClass">
+          立即购买
+        </button>
+        <button class="btn-secondary" :class="buttonSizeClass">
+          加入购物车
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
 ```
 
 ### 3. 在线阅读应用
 
 ```vue
-<template>
-  <div class="reader-app">
-    <!-- 阅读设置面板 -->
-    <div class="reader-controls" v-show="showControls">
-      <div class="control-group">
-        <label>字体大小:</label>
-        <SizeSwitcher switcher-style="button" @change="handleFontSizeChange" />
-      </div>
-
-      <div class="control-group">
-        <label>行间距:</label>
-        <select v-model="lineHeight">
-          <option value="1.4">紧凑</option>
-          <option value="1.6">标准</option>
-          <option value="1.8">宽松</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- 阅读内容 -->
-    <article class="reader-content" :style="contentStyle">
-      <h1>{{ article.title }}</h1>
-      <div class="article-meta">
-        <span>作者: {{ article.author }}</span>
-        <span>发布时间: {{ article.publishTime }}</span>
-      </div>
-
-      <div class="article-body" v-html="article.content"></div>
-    </article>
-  </div>
-</template>
-
 <script setup>
-import { ref, computed } from 'vue'
 import { useSize } from '@ldesign/size/vue'
+import { computed, ref } from 'vue'
 
 const { currentConfig } = useSize({ global: true })
 const lineHeight = ref(1.6)
@@ -578,7 +566,7 @@ const contentStyle = computed(() => ({
   margin: '0 auto',
 }))
 
-const getMaxWidth = () => {
+function getMaxWidth() {
   switch (currentConfig.value.fontSize.base) {
     case '12px':
       return '600px' // 小字体，窄一些
@@ -593,11 +581,49 @@ const getMaxWidth = () => {
   }
 }
 
-const handleFontSizeChange = mode => {
+function handleFontSizeChange(mode) {
   // 可以添加阅读进度保存等逻辑
   saveReadingPreferences({ fontSize: mode, lineHeight: lineHeight.value })
 }
 </script>
+
+<template>
+  <div class="reader-app">
+    <!-- 阅读设置面板 -->
+    <div v-show="showControls" class="reader-controls">
+      <div class="control-group">
+        <label>字体大小:</label>
+        <SizeSwitcher switcher-style="button" @change="handleFontSizeChange" />
+      </div>
+
+      <div class="control-group">
+        <label>行间距:</label>
+        <select v-model="lineHeight">
+          <option value="1.4">
+            紧凑
+          </option>
+          <option value="1.6">
+            标准
+          </option>
+          <option value="1.8">
+            宽松
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 阅读内容 -->
+    <article class="reader-content" :style="contentStyle">
+      <h1>{{ article.title }}</h1>
+      <div class="article-meta">
+        <span>作者: {{ article.author }}</span>
+        <span>发布时间: {{ article.publishTime }}</span>
+      </div>
+
+      <div class="article-body" v-html="article.content" />
+    </article>
+  </div>
+</template>
 ```
 
 ## 💡 最佳实践

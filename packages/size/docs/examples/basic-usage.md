@@ -20,6 +20,16 @@ console.log(currentMode) // 'large'
 ### 2. Vue 组件中使用
 
 ```vue
+<script setup>
+import { SizeSwitcher, useSize } from '@ldesign/size/vue'
+
+const {
+  currentMode,
+  currentConfig,
+  currentModeDisplayName
+} = useSize()
+</script>
+
 <template>
   <div class="app">
     <h1>我的应用</h1>
@@ -38,16 +48,6 @@ console.log(currentMode) // 'large'
     </div>
   </div>
 </template>
-
-<script setup>
-import { useSize, SizeSwitcher } from '@ldesign/size/vue'
-
-const {
-  currentMode,
-  currentConfig,
-  currentModeDisplayName
-} = useSize()
-</script>
 
 <style scoped>
 .app {
@@ -98,29 +98,9 @@ const unwatch = createResponsiveSizeWatcher({
 ### Vue 响应式组件
 
 ```vue
-<template>
-  <div class="responsive-layout">
-    <!-- 桌面版导航 -->
-    <nav v-if="isLargeScreen" class="desktop-nav">
-      <SizeSwitcher switcher-style="segmented" />
-    </nav>
-
-    <!-- 移动版导航 -->
-    <nav v-else class="mobile-nav">
-      <SizeSwitcher switcher-style="select" size="small" />
-    </nav>
-
-    <!-- 主要内容 -->
-    <main class="main-content">
-      <h1 :class="titleClasses">{{ title }}</h1>
-      <p :class="textClasses">{{ description }}</p>
-    </main>
-  </div>
-</template>
-
 <script setup>
+import { SizeSwitcher, useSizeResponsive } from '@ldesign/size/vue'
 import { computed } from 'vue'
-import { useSizeResponsive, SizeSwitcher } from '@ldesign/size/vue'
 
 const {
   isSmall,
@@ -131,8 +111,10 @@ const {
 } = useSizeResponsive()
 
 const title = computed(() => {
-  if (isSmallScreen.value) return '移动版'
-  if (isLargeScreen.value) return '桌面版应用'
+  if (isSmallScreen.value)
+    return '移动版'
+  if (isLargeScreen.value)
+    return '桌面版应用'
   return '平板版应用'
 })
 
@@ -153,6 +135,30 @@ const textClasses = computed(() => ({
   'text--comfortable': isLargeScreen.value
 }))
 </script>
+
+<template>
+  <div class="responsive-layout">
+    <!-- 桌面版导航 -->
+    <nav v-if="isLargeScreen" class="desktop-nav">
+      <SizeSwitcher switcher-style="segmented" />
+    </nav>
+
+    <!-- 移动版导航 -->
+    <nav v-else class="mobile-nav">
+      <SizeSwitcher switcher-style="select" size="small" />
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="main-content">
+      <h1 :class="titleClasses">
+        {{ title }}
+      </h1>
+      <p :class="textClasses">
+        {{ description }}
+      </p>
+    </main>
+  </div>
+</template>
 
 <style scoped>
 .responsive-layout {
@@ -224,6 +230,17 @@ const textClasses = computed(() => ({
 ### 动态主题切换
 
 ```vue
+<script setup>
+import { SizeSwitcher } from '@ldesign/size/vue'
+import { ref } from 'vue'
+
+const selectedTheme = ref('light')
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', selectedTheme.value)
+}
+</script>
+
 <template>
   <div class="theme-demo">
     <div class="controls">
@@ -237,9 +254,15 @@ const textClasses = computed(() => ({
 
       <h3>主题控制</h3>
       <select v-model="selectedTheme" @change="applyTheme">
-        <option value="light">浅色主题</option>
-        <option value="dark">深色主题</option>
-        <option value="auto">自动主题</option>
+        <option value="light">
+          浅色主题
+        </option>
+        <option value="dark">
+          深色主题
+        </option>
+        <option value="auto">
+          自动主题
+        </option>
       </select>
     </div>
 
@@ -247,22 +270,13 @@ const textClasses = computed(() => ({
       <div class="card">
         <h4>预览卡片</h4>
         <p>这是一个示例卡片，展示当前的尺寸和主题效果。</p>
-        <button class="btn">示例按钮</button>
+        <button class="btn">
+          示例按钮
+        </button>
       </div>
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import { SizeSwitcher } from '@ldesign/size/vue'
-
-const selectedTheme = ref('light')
-
-const applyTheme = () => {
-  document.documentElement.setAttribute('data-theme', selectedTheme.value)
-}
-</script>
 
 <style scoped>
 .theme-demo {

@@ -1,3 +1,31 @@
+<script setup lang="ts">
+import { useSizeResponsive } from '../../../../src/vue'
+import CustomButton from './CustomButton.vue'
+
+const {
+  currentMode,
+  isSmall,
+  isMedium,
+  isLarge,
+  isExtraLarge,
+} = useSizeResponsive()
+
+function getLayoutDescription() {
+  switch (currentMode.value) {
+    case 'small':
+      return '单列布局'
+    case 'medium':
+      return '双列布局'
+    case 'large':
+      return '三列布局'
+    case 'extra-large':
+      return '四列布局'
+    default:
+      return '未知布局'
+  }
+}
+</script>
+
 <template>
   <div class="responsive-demo">
     <div class="demo-grid">
@@ -54,11 +82,21 @@
         <p>间距随尺寸模式调整</p>
 
         <div class="spacing-examples">
-          <div class="spacing-item spacing-xs">XS 间距</div>
-          <div class="spacing-item spacing-sm">SM 间距</div>
-          <div class="spacing-item spacing-base">Base 间距</div>
-          <div class="spacing-item spacing-lg">LG 间距</div>
-          <div class="spacing-item spacing-xl">XL 间距</div>
+          <div class="spacing-item spacing-xs">
+            XS 间距
+          </div>
+          <div class="spacing-item spacing-sm">
+            SM 间距
+          </div>
+          <div class="spacing-item spacing-base">
+            Base 间距
+          </div>
+          <div class="spacing-item spacing-lg">
+            LG 间距
+          </div>
+          <div class="spacing-item spacing-xl">
+            XL 间距
+          </div>
         </div>
       </div>
 
@@ -71,27 +109,37 @@
           <div v-if="isSmall" class="size-content small-content">
             <h4>小尺寸模式</h4>
             <p>显示简化的内容和布局</p>
-            <CustomButton size="small">小按钮</CustomButton>
+            <CustomButton size="small">
+              小按钮
+            </CustomButton>
           </div>
 
           <div v-else-if="isMedium" class="size-content medium-content">
             <h4>中等尺寸模式</h4>
             <p>显示标准的内容和布局</p>
-            <CustomButton size="medium">中等按钮</CustomButton>
+            <CustomButton size="medium">
+              中等按钮
+            </CustomButton>
           </div>
 
           <div v-else-if="isLarge" class="size-content large-content">
             <h4>大尺寸模式</h4>
             <p>显示丰富的内容和布局，包含更多细节</p>
-            <CustomButton size="large">大按钮</CustomButton>
+            <CustomButton size="large">
+              大按钮
+            </CustomButton>
           </div>
 
           <div v-else class="size-content xl-content">
             <h4>超大尺寸模式</h4>
             <p>显示最丰富的内容和布局，包含所有功能和细节信息</p>
             <div class="button-group">
-              <CustomButton size="large" variant="primary">主要操作</CustomButton>
-              <CustomButton size="large" variant="secondary">次要操作</CustomButton>
+              <CustomButton size="large" variant="primary">
+                主要操作
+              </CustomButton>
+              <CustomButton size="large" variant="secondary">
+                次要操作
+              </CustomButton>
             </div>
           </div>
         </div>
@@ -99,35 +147,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed } from 'vue'
-import { useSizeResponsive } from '../../../../src/vue'
-import CustomButton from './CustomButton.vue'
-
-const {
-  currentMode,
-  isSmall,
-  isMedium,
-  isLarge,
-  isExtraLarge,
-} = useSizeResponsive()
-
-const getLayoutDescription = () => {
-  switch (currentMode.value) {
-    case 'small':
-      return '单列布局'
-    case 'medium':
-      return '双列布局'
-    case 'large':
-      return '三列布局'
-    case 'extra-large':
-      return '四列布局'
-    default:
-      return '未知布局'
-  }
-}
-</script>
 
 <style scoped>
 .responsive-demo {

@@ -61,19 +61,19 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
       text: '#1e293b',
       textSecondary: '#64748b',
       border: '#e2e8f0',
-      shadow: 'rgba(0, 0, 0, 0.1)'
+      shadow: 'rgba(0, 0, 0, 0.1)',
     },
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     borderRadius: '0.375rem',
     shadow: {
       small: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
       medium: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-      large: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+      large: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
     },
     transition: {
       duration: '200ms',
-      easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
-    }
+      easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    },
   },
   dark: {
     name: 'Dark',
@@ -89,19 +89,19 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
       text: '#f1f5f9',
       textSecondary: '#94a3b8',
       border: '#334155',
-      shadow: 'rgba(0, 0, 0, 0.3)'
+      shadow: 'rgba(0, 0, 0, 0.3)',
     },
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     borderRadius: '0.375rem',
     shadow: {
       small: '0 1px 2px 0 rgba(0, 0, 0, 0.2)',
       medium: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
-      large: '0 20px 25px -5px rgba(0, 0, 0, 0.4)'
+      large: '0 20px 25px -5px rgba(0, 0, 0, 0.4)',
     },
     transition: {
       duration: '200ms',
-      easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
-    }
+      easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    },
   },
   blue: {
     name: 'Blue',
@@ -117,18 +117,18 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
       text: '#1e3a8a',
       textSecondary: '#3730a3',
       border: '#93c5fd',
-      shadow: 'rgba(37, 99, 235, 0.2)'
+      shadow: 'rgba(37, 99, 235, 0.2)',
     },
     borderRadius: '0.5rem',
     shadow: {
       small: '0 1px 3px 0 rgba(37, 99, 235, 0.1)',
       medium: '0 4px 8px -1px rgba(37, 99, 235, 0.2)',
-      large: '0 20px 30px -5px rgba(37, 99, 235, 0.3)'
+      large: '0 20px 30px -5px rgba(37, 99, 235, 0.3)',
     },
     transition: {
       duration: '250ms',
-      easing: 'ease-in-out'
-    }
+      easing: 'ease-in-out',
+    },
   },
   green: {
     name: 'Green',
@@ -144,19 +144,19 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
       text: '#14532d',
       textSecondary: '#166534',
       border: '#86efac',
-      shadow: 'rgba(34, 197, 94, 0.2)'
+      shadow: 'rgba(34, 197, 94, 0.2)',
     },
     borderRadius: '0.375rem',
     shadow: {
       small: '0 1px 3px 0 rgba(34, 197, 94, 0.1)',
       medium: '0 4px 8px -1px rgba(34, 197, 94, 0.2)',
-      large: '0 20px 30px -5px rgba(34, 197, 94, 0.3)'
+      large: '0 20px 30px -5px rgba(34, 197, 94, 0.3)',
     },
     transition: {
       duration: '200ms',
-      easing: 'ease-out'
-    }
-  }
+      easing: 'ease-out',
+    },
+  },
 }
 
 export class ThemeManager {
@@ -172,7 +172,7 @@ export class ThemeManager {
       autoDetect: true,
       persist: true,
       storageKey: 'ldesign-theme',
-      ...options
+      ...options,
     }
 
     // 加载预设主题
@@ -215,7 +215,8 @@ export class ThemeManager {
    * 检测系统主题
    */
   private detectSystemTheme() {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
     this.currentTheme = isDarkMode ? 'dark' : 'light'
@@ -254,9 +255,11 @@ export class ThemeManager {
    */
   private applyTheme(themeName: string) {
     const theme = this.themes.get(themeName)
-    if (!theme) return
+    if (!theme)
+      return
 
-    if (typeof document === 'undefined') return
+    if (typeof document === 'undefined')
+      return
 
     // 创建或更新样式元素
     if (!this.styleElement) {
@@ -411,13 +414,14 @@ export class ThemeManager {
    */
   generateSizeThemeCSS(sizeMode: SizeMode): string {
     const theme = this.getTheme()
-    if (!theme) return ''
+    if (!theme)
+      return ''
 
     const sizeMultipliers: Record<SizeMode, number> = {
       'small': 0.875,
       'medium': 1,
       'large': 1.125,
-      'extra-large': 1.25
+      'extra-large': 1.25,
     }
 
     const multiplier = sizeMultipliers[sizeMode]
@@ -425,7 +429,7 @@ export class ThemeManager {
 
     // 根据尺寸模式调整某些主题值
     if (theme.borderRadius) {
-      const baseRadius = parseFloat(theme.borderRadius)
+      const baseRadius = Number.parseFloat(theme.borderRadius)
       lines.push(`--theme-border-radius-${sizeMode}: ${baseRadius * multiplier}rem;`)
     }
 

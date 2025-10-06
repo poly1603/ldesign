@@ -6,33 +6,33 @@
 export {
   useGlobalSize,
   useSize,
+  useSizeAnimation,
   type UseSizeOptions,
   useSizeResponsive,
   type UseSizeReturn,
+  useSizeState,
   useSizeSwitcher,
   useSizeWatcher,
   useSmartSize,
-  useSizeAnimation,
-  useSizeState,
 } from './composables'
 
 // 插件
 export { createVueSizePlugin, VueSizePlugin, VueSizeSymbol } from './plugin'
 
+// 默认导出插件
+export { VueSizePlugin as default } from './plugin'
+export { SizeControlPanel } from './SizeControlPanel'
+export { SizeIndicator } from './SizeIndicator'
+
 // 组件
 export { SizeSwitcher } from './SizeSwitcher'
-export { SizeIndicator } from './SizeIndicator'
-export { SizeControlPanel } from './SizeControlPanel'
 
 // 便捷工具函数
 export {
+  createSizeApp,
   installSizePlugin,
   installWithPreset,
-  createSizeApp,
   registerSizeComponents,
+  SizeComponents,
   sizePresets,
-  SizeComponents
 } from './utils'
-
-// 默认导出插件
-export { VueSizePlugin as default } from './plugin'

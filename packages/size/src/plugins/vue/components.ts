@@ -3,7 +3,7 @@
  */
 
 import type { SizeMode } from '../../types'
-import { defineComponent, ref, onMounted, onUnmounted, inject, h } from 'vue'
+import { defineComponent, h, inject, onMounted, onUnmounted, ref } from 'vue'
 import { SizeSymbol } from './plugin'
 
 /**
@@ -41,9 +41,9 @@ export const SizeSwitcher = defineComponent({
 
     // 尺寸模式标签
     const modeLabels: Record<SizeMode, string> = {
-      small: '小',
-      medium: '中',
-      large: '大',
+      'small': '小',
+      'medium': '中',
+      'large': '大',
       'extra-large': '超大',
     }
 
@@ -69,7 +69,8 @@ export const SizeSwitcher = defineComponent({
           await sizeManager.setMode(mode)
           currentMode.value = sizeManager.getCurrentMode()
           console.log('SizeSwitcher: Size changed to:', mode)
-        } catch (error) {
+        }
+        catch (error) {
           console.error('SizeSwitcher: Failed to change size:', error)
         }
       }
@@ -81,7 +82,8 @@ export const SizeSwitcher = defineComponent({
           await sizeManager.setMode(mode)
           currentMode.value = sizeManager.getCurrentMode()
           console.log('SizeSwitcher: Size changed to:', mode)
-        } catch (error) {
+        }
+        catch (error) {
           console.error('SizeSwitcher: Failed to change size:', error)
         }
       }
@@ -95,67 +97,61 @@ export const SizeSwitcher = defineComponent({
             h('select', {
               class: 'size-switcher__select',
               value: currentMode.value,
-              onChange: handleModeChange
+              onChange: handleModeChange,
             }, props.modes.map(mode =>
-              h('option', { key: mode, value: mode }, modeLabels[mode])
-            ))
-          ])
+              h('option', { key: mode, value: mode }, modeLabels[mode]),
+            )),
+          ]),
         ])
       }
 
       if (props.style === 'button') {
         return h('div', { class: 'size-switcher size-switcher--button' }, [
           props.showLabels && h('span', { class: 'size-switcher__label' }, '尺寸：'),
-          h('div', { class: 'size-switcher__buttons' },
-            props.modes.map(mode =>
-              h('button', {
-                key: mode,
-                class: [
-                  'size-switcher__button',
-                  { 'size-switcher__button--active': currentMode.value === mode }
-                ],
-                onClick: () => handleButtonClick(mode)
-              }, modeLabels[mode])
-            )
-          )
+          h('div', { class: 'size-switcher__buttons' }, props.modes.map(mode =>
+            h('button', {
+              key: mode,
+              class: [
+                'size-switcher__button',
+                { 'size-switcher__button--active': currentMode.value === mode },
+              ],
+              onClick: () => handleButtonClick(mode),
+            }, modeLabels[mode]),
+          )),
         ])
       }
 
       if (props.style === 'radio') {
         return h('div', { class: 'size-switcher size-switcher--radio' }, [
           props.showLabels && h('span', { class: 'size-switcher__label' }, '尺寸：'),
-          h('div', { class: 'size-switcher__radios' },
-            props.modes.map(mode =>
-              h('label', { key: mode, class: 'size-switcher__radio' }, [
-                h('input', {
-                  type: 'radio',
-                  name: 'size-mode',
-                  value: mode,
-                  checked: currentMode.value === mode,
-                  onChange: handleModeChange
-                }),
-                h('span', modeLabels[mode])
-              ])
-            )
-          )
+          h('div', { class: 'size-switcher__radios' }, props.modes.map(mode =>
+            h('label', { key: mode, class: 'size-switcher__radio' }, [
+              h('input', {
+                type: 'radio',
+                name: 'size-mode',
+                value: mode,
+                checked: currentMode.value === mode,
+                onChange: handleModeChange,
+              }),
+              h('span', modeLabels[mode]),
+            ]),
+          )),
         ])
       }
 
       if (props.style === 'segmented') {
         return h('div', { class: 'size-switcher size-switcher--segmented' }, [
           props.showLabels && h('span', { class: 'size-switcher__label' }, '尺寸：'),
-          h('div', { class: 'size-switcher__segmented' },
-            props.modes.map(mode =>
-              h('button', {
-                key: mode,
-                class: [
-                  'size-switcher__segment',
-                  { 'size-switcher__segment--active': currentMode.value === mode }
-                ],
-                onClick: () => handleButtonClick(mode)
-              }, modeLabels[mode])
-            )
-          )
+          h('div', { class: 'size-switcher__segmented' }, props.modes.map(mode =>
+            h('button', {
+              key: mode,
+              class: [
+                'size-switcher__segment',
+                { 'size-switcher__segment--active': currentMode.value === mode },
+              ],
+              onClick: () => handleButtonClick(mode),
+            }, modeLabels[mode]),
+          )),
         ])
       }
 

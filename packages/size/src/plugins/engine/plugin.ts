@@ -3,7 +3,7 @@
  */
 
 import type { SizeMode } from '../../types'
-import type { SizeEnginePluginOptions, SizeAdapter } from './types'
+import type { SizeAdapter, SizeEnginePluginOptions } from './types'
 import { SizeManagerImpl } from '../../core/size-manager'
 import { SizePlugin } from '../vue/plugin'
 
@@ -11,7 +11,7 @@ import { SizePlugin } from '../vue/plugin'
  * 创建尺寸管理器实例
  */
 async function createSizeManagerInstance(
-  options: SizeEnginePluginOptions = {}
+  options: SizeEnginePluginOptions = {},
 ): Promise<SizeManagerImpl> {
   console.log('[Size Plugin] Creating size manager with options:', options)
 
@@ -63,7 +63,7 @@ export interface EnginePluginContext {
  * @returns Engine 插件
  */
 export function createSizeEnginePlugin(
-  options: SizeEnginePluginOptions = {}
+  options: SizeEnginePluginOptions = {},
 ): Plugin {
   const {
     name = 'size',
@@ -155,10 +155,11 @@ export function createSizeEnginePlugin(
 
               // 触发所有组件重新渲染
               forceUpdateCounter++
-              forceUpdateCallbacks.forEach(callback => {
+              forceUpdateCallbacks.forEach((callback) => {
                 try {
                   callback()
-                } catch (error) {
+                }
+                catch (error) {
                   console.warn('[Size Plugin] Force update callback error:', error)
                 }
               })
@@ -182,7 +183,7 @@ export function createSizeEnginePlugin(
               'adapter': !!sizeAdapter,
               'adapter.install': typeof sizeAdapter.install,
               'engine.size': !!engine.size,
-              'engine.size.install': typeof engine.size?.install
+              'engine.size.install': typeof engine.size?.install,
             })
           }
 
@@ -202,7 +203,8 @@ export function createSizeEnginePlugin(
         if (vueApp) {
           engine.logger.info(`[Size Plugin] Vue app found, installing immediately`)
           await performInstall()
-        } else {
+        }
+        else {
           engine.logger.info(`[Size Plugin] Vue app not found, registering event listener`)
           // 如果 Vue 应用还没有创建，监听 app:created 事件
           engine.events.once('app:created', async () => {
@@ -212,11 +214,13 @@ export function createSizeEnginePlugin(
         }
 
         engine.logger.info(`${name} plugin registered, waiting for Vue app creation...`)
-      } catch (error) {
+      }
+      catch (error) {
         // 使用engine.logger记录错误，如果不可用则使用console.error
         if (context.engine?.logger) {
           context.engine.logger.error(`[Size Plugin] Installation failed:`, error)
-        } else {
+        }
+        else {
           console.error(`[Size Plugin] Installation failed:`, error)
         }
         throw error

@@ -111,6 +111,10 @@ setGlobalSizeMode(nextMode)
 ### 使用 Vue 组件
 
 ```vue
+<script setup>
+import { SizeIndicator, SizeSwitcher } from '@ldesign/size/vue'
+</script>
+
 <template>
   <div>
     <!-- 尺寸切换器 -->
@@ -130,10 +134,6 @@ setGlobalSizeMode(nextMode)
     />
   </div>
 </template>
-
-<script setup>
-import { SizeSwitcher, SizeIndicator } from '@ldesign/size/vue'
-</script>
 ```
 
 ## 🎯 智能模式推荐
@@ -273,24 +273,24 @@ if (savedSize) {
 为有特殊需求的用户提供快速切换：
 
 ```vue
-<template>
-  <div>
-    <!-- 可访问性快捷按钮 -->
-    <button @click="toggleLargeMode" aria-label="切换大字体模式">
-      🔍 大字体
-    </button>
-  </div>
-</template>
-
 <script setup>
 import { useSize } from '@ldesign/size/vue'
 
 const { currentMode, setMode } = useSize()
 
-const toggleLargeMode = () => {
+function toggleLargeMode() {
   setMode(currentMode.value === 'large' ? 'medium' : 'large')
 }
 </script>
+
+<template>
+  <div>
+    <!-- 可访问性快捷按钮 -->
+    <button aria-label="切换大字体模式" @click="toggleLargeMode">
+      🔍 大字体
+    </button>
+  </div>
+</template>
 ```
 
 ## 🔍 调试和开发

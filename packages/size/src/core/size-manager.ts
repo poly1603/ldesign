@@ -177,8 +177,6 @@ export class SizeManagerImpl implements SizeManager {
     }
   }
 
-
-
   /**
    * 监听事件
    */
@@ -208,10 +206,11 @@ export class SizeManagerImpl implements SizeManager {
   emit(event: string, data?: any): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
-      listeners.forEach(callback => {
+      listeners.forEach((callback) => {
         try {
           callback(data)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`[SizeManager] Event callback error for "${event}":`, error)
         }
       })

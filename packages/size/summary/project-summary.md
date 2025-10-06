@@ -139,14 +139,18 @@ interface SizePlugin {
 
 ```vue
 <!-- 声明式的尺寸响应 -->
-<template>
-  <div v-if="isSmall">移动端布局</div>
-  <div v-else-if="isLarge">桌面端布局</div>
-</template>
-
 <script setup>
 const { isSmall, isLarge } = useSizeResponsive()
 </script>
+
+<template>
+  <div v-if="isSmall">
+    移动端布局
+  </div>
+  <div v-else-if="isLarge">
+    桌面端布局
+  </div>
+</template>
 ```
 
 ### 3. TypeScript 优先的设计

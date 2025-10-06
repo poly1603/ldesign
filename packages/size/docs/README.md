@@ -78,6 +78,10 @@ Size.watch((mode) => {
     <h3>Vue 组件</h3>
 
 ```vue
+<script setup>
+import { SizeIndicator, SizeSwitcher } from '@ldesign/size/vue'
+</script>
+
 <template>
   <div>
     <!-- 尺寸切换器 -->
@@ -91,10 +95,6 @@ Size.watch((mode) => {
     <SizeIndicator :show-scale="true" />
   </div>
 </template>
-
-<script setup>
-import { SizeSwitcher, SizeIndicator } from '@ldesign/size/vue'
-</script>
 ```
   </div>
 
@@ -116,7 +116,7 @@ const {
 })
 
 // 智能切换
-const handleSizeChange = (mode) => {
+function handleSizeChange(mode) {
   setMode(mode, true) // 记住用户选择
 }
 </script>

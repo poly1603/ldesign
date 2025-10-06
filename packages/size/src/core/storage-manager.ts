@@ -34,10 +34,10 @@ export class SizeStorageManager {
 
   constructor(options?: SizeStorageManagerOptions) {
     this.options = { ...DEFAULT_STORAGE_OPTIONS, ...options }
-    
+
     if (this.options.enabled && typeof window !== 'undefined') {
-      this.storage = this.options.type === 'localStorage' 
-        ? window.localStorage 
+      this.storage = this.options.type === 'localStorage'
+        ? window.localStorage
         : window.sessionStorage
     }
   }
@@ -46,11 +46,13 @@ export class SizeStorageManager {
    * 保存当前尺寸模式
    */
   saveCurrentMode(mode: SizeMode): void {
-    if (!this.storage) return
+    if (!this.storage)
+      return
 
     try {
       this.storage.setItem(this.options.key, mode)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('[SizeStorageManager] Failed to save size mode:', error)
     }
   }
@@ -59,14 +61,16 @@ export class SizeStorageManager {
    * 获取保存的尺寸模式
    */
   getSavedMode(): SizeMode | null {
-    if (!this.storage) return null
+    if (!this.storage)
+      return null
 
     try {
       const saved = this.storage.getItem(this.options.key)
       if (saved && ['small', 'medium', 'large', 'extra-large'].includes(saved)) {
         return saved as SizeMode
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('[SizeStorageManager] Failed to get saved size mode:', error)
     }
 
@@ -77,11 +81,13 @@ export class SizeStorageManager {
    * 清除保存的尺寸模式
    */
   clearSavedMode(): void {
-    if (!this.storage) return
+    if (!this.storage)
+      return
 
     try {
       this.storage.removeItem(this.options.key)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('[SizeStorageManager] Failed to clear saved size mode:', error)
     }
   }

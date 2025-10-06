@@ -1,23 +1,60 @@
 /**
  * CSS变量生成器
+ * 优化版本：添加缓存机制，支持基础 token 生成，提升性能
  */
 
 import type { SizeConfig } from '../types'
+import { generateAllBaseTokenVariables } from './base-tokens'
 
 /**
  * CSS变量生成器类
  */
 export class CSSVariableGenerator {
   private prefix: string
+  /** 缓存生成的 CSS 变量，避免重复计算 */
+  private cache: Map<string, Record<string, string>> = new Map()
+  /** 基础 token 缓存 */
+  private baseTokensCache: Record<string, string> | null = null
 
   constructor(prefix: string = '--ls') {
     this.prefix = prefix
   }
 
   /**
-   * 生成完整的CSS变量集合
+   * 生成基础 Token CSS 变量
+   * 这些变量是固定的，不随尺寸模式变化
+   * @returns 基础 token CSS 变量对象
    */
-  generateVariables(config: SizeConfig): Record<string, string> {
+  generateBaseTokens(): Record<string, string> {
+    // 使用缓存避免重复生成
+    if (this.baseTokensCache) {
+      return this.baseTokensCache
+    }
+
+    this.baseTokensCache = generateAllBaseTokenVariables(this.prefix)
+    return this.baseTokensCache
+  }
+
+  /**
+   * 生成完整的CSS变量集合
+   * 优化：添加缓存机制，避免重复计算
+   * @param config - 尺寸配置
+   * @param includeBaseTokens - 是否包含基础 token，默认为 true
+   * @returns CSS 变量对象
+   */
+  generateVariables(config: SizeConfig, includeBaseTokens: boolean = true): Record<string, string> {
+    // 生成缓存键
+    const cacheKey = JSON.stringify(config)
+
+    // 检查缓存
+    if (this.cache.has(cacheKey)) {
+      const cached = this.cache.get(cacheKey)!
+      if (includeBaseTokens) {
+        return { ...this.generateBaseTokens(), ...cached }
+      }
+      return cached
+    }
+
     const variables: Record<string, string> = {}
 
     // 生成字体大小变量
@@ -34,6 +71,14 @@ export class CSSVariableGenerator {
 
     // 生成阴影变量
     this.generateShadowVariables(config.shadow, variables)
+
+    // 缓存结果
+    this.cache.set(cacheKey, variables)
+
+    // 如果需要包含基础 token，则合并
+    if (includeBaseTokens) {
+      return { ...this.generateBaseTokens(), ...variables }
+    }
 
     return variables
   }
@@ -168,9 +213,13 @@ export class CSSVariableGenerator {
 
   /**
    * 更新前缀
+   * 优化：清除缓存，因为前缀变化会影响所有变量
    */
   updatePrefix(prefix: string): void {
-    this.prefix = prefix
+    if (this.prefix !== prefix) {
+      this.prefix = prefix
+      this.clearCache()
+    }
   }
 
   /**
@@ -178,6 +227,23 @@ export class CSSVariableGenerator {
    */
   getPrefix(): string {
     return this.prefix
+  }
+
+  /**
+   * 清除缓存
+   * 当配置变化时调用，释放内存
+   */
+  clearCache(): void {
+    this.cache.clear()
+    this.baseTokensCache = null
+  }
+
+  /**
+   * 获取缓存大小
+   * 用于性能监控
+   */
+  getCacheSize(): number {
+    return this.cache.size
   }
 }
 

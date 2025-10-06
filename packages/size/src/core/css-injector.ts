@@ -89,7 +89,8 @@ export class CSSInjector {
         this.styleElement.setAttribute('data-package', 'ldesign-size')
         this.styleElement.setAttribute('data-protected', 'true')
         this.styleElement.setAttribute('data-injector', 'size-css-injector')
-      } catch (error) {
+      }
+      catch (error) {
         // 在某些环境中 setAttribute 可能不可用，忽略错误
         console.warn('[CSS Injector] Failed to set protection attributes:', error)
       }
@@ -121,7 +122,8 @@ export class CSSInjector {
         if (!packageAttr || packageAttr === 'ldesign-size') {
           existingStyle.remove()
         }
-      } catch (error) {
+      }
+      catch (error) {
         // 如果 getAttribute 失败，直接移除（可能是我们创建的元素）
         if (existingStyle.id === this.options.styleId) {
           existingStyle.remove()

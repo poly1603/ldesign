@@ -2,11 +2,11 @@
  * 尺寸控制面板组件
  */
 
-import { defineComponent, type PropType, computed, h } from 'vue'
-import { SizeSwitcher } from './SizeSwitcher'
-import { SizeIndicator } from './SizeIndicator'
 import type { SizeMode } from '../types'
 import { Settings } from 'lucide-vue-next'
+import { computed, defineComponent, h, type PropType } from 'vue'
+import { SizeIndicator } from './SizeIndicator'
+import { SizeSwitcher } from './SizeSwitcher'
 
 /**
  * 尺寸控制面板组件属性
@@ -102,7 +102,8 @@ export const SizeControlPanel = defineComponent({
         if (typeof window !== 'undefined' && window.matchMedia) {
           try {
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-          } catch (error) {
+          }
+          catch (error) {
             console.warn('[SizeControlPanel] Failed to detect system theme:', error)
             return 'light'
           }
@@ -142,13 +143,13 @@ export const SizeControlPanel = defineComponent({
       // 标题栏
       if (props.showTitle || props.collapsible) {
         children.push(
-          h('div', { 
+          h('div', {
             class: 'size-control-panel__header',
-            onClick: toggleExpanded
+            onClick: toggleExpanded,
           }, [
             h(Settings, { class: 'size-control-panel__icon', size: 16 }),
             props.showTitle && h('span', { class: 'size-control-panel__title' }, '尺寸控制'),
-          ])
+          ]),
         )
       }
 
@@ -164,8 +165,8 @@ export const SizeControlPanel = defineComponent({
                 showScale: true,
                 size: props.size,
                 theme: props.theme,
-              })
-            ])
+              }),
+            ]),
           )
         }
 
@@ -173,20 +174,20 @@ export const SizeControlPanel = defineComponent({
           contentChildren.push(
             h('div', { class: 'size-control-panel__switcher' }, [
               h(SizeSwitcher, {
-                mode: props.mode,
-                modes: props.modes,
-                switcherStyle: props.switcherStyle,
-                size: props.size,
-                theme: props.theme,
-                onChange: handleModeChange,
+                'mode': props.mode,
+                'modes': props.modes,
+                'switcherStyle': props.switcherStyle,
+                'size': props.size,
+                'theme': props.theme,
+                'onChange': handleModeChange,
                 'onUpdate:mode': handleModeChange,
-              })
-            ])
+              }),
+            ]),
           )
         }
 
         children.push(
-          h('div', { class: 'size-control-panel__content' }, contentChildren)
+          h('div', { class: 'size-control-panel__content' }, contentChildren),
         )
       }
 

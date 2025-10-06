@@ -1,7 +1,7 @@
-import { defineConfig } from 'vitest/config'
+import { resolve } from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import { resolve } from 'path'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [vue(), vueJsx()],
@@ -26,13 +26,13 @@ export default defineConfig({
         'lib/',
         'types/',
         '*.config.*',
-        'scripts/'
-      ]
-    }
+        'scripts/',
+      ],
+    },
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
-  }
+      '@': resolve(__dirname, 'src'),
+    },
+  },
 })

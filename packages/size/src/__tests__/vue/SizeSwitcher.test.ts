@@ -5,7 +5,7 @@
 import type { SizeMode } from '../../types'
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { SizeSwitcher, SizeIndicator, SizeControlPanel } from '../../vue'
+import { SizeControlPanel, SizeIndicator, SizeSwitcher } from '../../vue'
 
 // Mock CSS import
 vi.mock('../../vue/SizeSwitcher.less', () => ({}))
@@ -287,7 +287,7 @@ describe('sizeSwitcher', () => {
   })
 })
 
-describe('SizeIndicator', () => {
+describe('sizeIndicator', () => {
   it('应该正确显示当前模式', () => {
     const wrapper = mount(SizeIndicator, {
       props: {
@@ -320,7 +320,7 @@ describe('SizeIndicator', () => {
   })
 })
 
-describe('SizeControlPanel', () => {
+describe('sizeControlPanel', () => {
   it('应该同时渲染指示器和切换器', () => {
     const wrapper = mount(SizeControlPanel, {
       props: {

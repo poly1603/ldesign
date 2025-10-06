@@ -2,16 +2,16 @@
  * 尺寸指示器组件
  */
 
-import { defineComponent, type PropType, computed, h } from 'vue'
-import { useSizeSwitcher } from './composables'
 import type { SizeMode } from '../types'
-import { Info, Gauge } from 'lucide-vue-next'
+import { Gauge, Info } from 'lucide-vue-next'
+import { computed, defineComponent, h, type PropType } from 'vue'
+import { useSizeSwitcher } from './composables'
 
 // 尺寸模式比例
 const SIZE_MODE_SCALES: Partial<Record<SizeMode, number>> = {
-  small: 0.75,
-  medium: 1,
-  large: 1.25,
+  'small': 0.75,
+  'medium': 1,
+  'large': 1.25,
   'extra-large': 1.5,
 }
 
@@ -72,7 +72,8 @@ export const SizeIndicator = defineComponent({
         if (typeof window !== 'undefined' && window.matchMedia) {
           try {
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-          } catch (error) {
+          }
+          catch (error) {
             console.warn('[SizeIndicator] Failed to detect system theme:', error)
             return 'light'
           }
@@ -99,7 +100,7 @@ export const SizeIndicator = defineComponent({
           h(Info, {
             class: 'size-indicator__icon',
             size: props.size === 'small' ? 14 : props.size === 'large' ? 20 : 16,
-          })
+          }),
         )
       }
 
@@ -108,7 +109,7 @@ export const SizeIndicator = defineComponent({
           h('div', { class: 'size-indicator__mode' }, [
             h('span', { class: 'size-indicator__label' }, '当前尺寸：'),
             h('span', { class: 'size-indicator__value' }, getModeDisplayName(currentMode.value)),
-          ])
+          ]),
         )
       }
 
@@ -117,7 +118,7 @@ export const SizeIndicator = defineComponent({
           h('div', { class: 'size-indicator__scale' }, [
             h(Gauge, { class: 'size-indicator__scale-icon', size: 14 }),
             h('span', { class: 'size-indicator__scale-value' }, `${(currentScale.value * 100).toFixed(0)}%`),
-          ])
+          ]),
         )
       }
 

@@ -16,6 +16,22 @@ export interface CSSVariableConfig {
 }
 
 /**
+ * 基础尺寸 Token 接口
+ * 定义从 2px 到 72px 的标准尺寸刻度
+ * 注意：这个接口也在 core/base-tokens.ts 中定义，这里仅作为类型导出
+ */
+export type { BaseSizeTokens } from '../core/base-tokens'
+
+/**
+ * 扩展的尺寸配置接口
+ * 包含基础 token 和语义化配置
+ */
+export interface ExtendedSizeConfig extends SizeConfig {
+  /** 基础尺寸 token */
+  baseTokens?: import('../core/base-tokens').BaseSizeTokens
+}
+
+/**
  * 尺寸配置接口
  */
 export interface SizeConfig {

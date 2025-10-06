@@ -6,32 +6,32 @@
 
 ```typescript
 import type {
-  // 基础类型
-  SizeMode,
-  SizeConfig,
-  SizeManager,
-  SizeManagerOptions,
-  SizeChangeEvent,
-
+  BorderRadiusConfig,
+  ComponentSizeConfig,
+  CSSInjectorOptions,
+  CSSVariableConfig,
   // 配置类型
   FontSizeConfig,
-  SpacingConfig,
-  ComponentSizeConfig,
-  BorderRadiusConfig,
+
   ShadowConfig,
-  CSSVariableConfig,
+  SizeChangeEvent,
+  SizeConfig,
+  SizeControlPanelProps,
+  SizeIndicatorProps,
+  SizeManager,
+
+  SizeManagerOptions,
+  // 基础类型
+  SizeMode,
+  SizeStorageOptions,
+  SizeSwitcherProps,
+  SpacingConfig,
 
   // Vue 相关类型
   UseSizeOptions,
   UseSizeReturn,
-  SizeSwitcherProps,
-  SizeIndicatorProps,
-  SizeControlPanelProps,
-
   // 插件类型
   VueSizePluginOptions,
-  SizeStorageOptions,
-  CSSInjectorOptions,
 } from '@ldesign/size'
 ```
 
@@ -77,31 +77,31 @@ interface SizeConfig {
 ```typescript
 interface SizeManager {
   /** 获取当前尺寸模式 */
-  getCurrentMode(): SizeMode
-  
+  getCurrentMode: () => SizeMode
+
   /** 设置尺寸模式 */
-  setMode(mode: SizeMode): Promise<void>
-  
+  setMode: (mode: SizeMode) => Promise<void>
+
   /** 获取尺寸配置 */
-  getConfig(mode?: SizeMode): SizeConfig
-  
+  getConfig: (mode?: SizeMode) => SizeConfig
+
   /** 生成CSS变量 */
-  generateCSSVariables(mode?: SizeMode): Record<string, string>
-  
+  generateCSSVariables: (mode?: SizeMode) => Record<string, string>
+
   /** 注入CSS变量 */
-  injectCSS(mode?: SizeMode): void
-  
+  injectCSS: (mode?: SizeMode) => void
+
   /** 移除CSS变量 */
-  removeCSS(): void
-  
+  removeCSS: () => void
+
   /** 监听尺寸变化 */
-  onSizeChange(callback: (event: SizeChangeEvent) => void): () => void
-  
+  onSizeChange: (callback: (event: SizeChangeEvent) => void) => () => void
+
   /** 初始化管理器 */
-  init(): Promise<void>
-  
+  init: () => Promise<void>
+
   /** 销毁管理器 */
-  destroy(): void
+  destroy: () => void
 }
 ```
 
@@ -113,28 +113,28 @@ interface SizeManager {
 interface SizeManagerOptions {
   /** CSS变量前缀，默认 '--ls' */
   prefix?: string
-  
+
   /** 默认尺寸模式，默认 'medium' */
   defaultMode?: SizeMode
-  
+
   /** 样式标签ID，默认 'ldesign-size-variables' */
   styleId?: string
-  
+
   /** 目标选择器，默认 ':root' */
   selector?: string
-  
+
   /** 是否自动注入样式，默认 true */
   autoInject?: boolean
-  
+
   /** 是否启用本地存储，默认 true */
   enableStorage?: boolean
-  
+
   /** 存储类型，默认 'localStorage' */
   storageType?: 'localStorage' | 'sessionStorage' | 'memory'
-  
+
   /** 是否启用动画过渡，默认 true */
   enableTransition?: boolean
-  
+
   /** 过渡持续时间，默认 '0.3s' */
   transitionDuration?: string
 }
@@ -148,10 +148,10 @@ interface SizeManagerOptions {
 interface SizeChangeEvent {
   /** 之前的尺寸模式 */
   previousMode: SizeMode
-  
+
   /** 当前的尺寸模式 */
   currentMode: SizeMode
-  
+
   /** 变化时间戳 */
   timestamp: number
 }
