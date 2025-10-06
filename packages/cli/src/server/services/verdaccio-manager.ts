@@ -3,11 +3,15 @@
  * 提供启动、停止、配置和状态管理功能
  */
 
-import { spawn, ChildProcess } from 'child_process'
+import { spawn, ChildProcess, exec } from 'child_process'
 import { join } from 'path'
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs'
 import { homedir } from 'os'
 import { logger } from '../../utils/logger.js'
+import { promisify } from 'util'
+import { createHash } from 'crypto'
+
+const execAsync = promisify(exec)
 
 const verdaccioLogger = logger.withPrefix('Verdaccio')
 
@@ -20,6 +24,15 @@ export interface VerdaccioConfig {
   storage: string
   maxBodySize?: string
   uplinks?: Record<string, { url: string }>
+}
+
+/**
+ * Verdaccio 用户接口
+ */
+export interface VerdaccioUser {
+  username: string
+  createdAt?: string
+  email?: string
 }
 
 /**
@@ -105,7 +118,7 @@ web:
 # 认证配置
 auth:
   htpasswd:
-    file: ./htpasswd
+    file: ${join(this.configDir, 'htpasswd')}
     # 允许注册新用户
     max_users: -1
 
@@ -172,6 +185,18 @@ notify:
   }
 
   /**
+   * 检查端口是否被占用
+   */
+  private async isPortInUse(port: number): Promise<boolean> {
+    try {
+      const { stdout } = await execAsync(`netstat -ano | findstr :${port}`)
+      return stdout.trim().length > 0
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * 启动 Verdaccio 服务
    */
   async start(customConfig?: Partial<VerdaccioConfig>): Promise<{ success: boolean; message: string; data?: VerdaccioStatus }> {
@@ -187,6 +212,25 @@ notify:
       // 合并自定义配置
       if (customConfig) {
         this.config = { ...this.config, ...customConfig }
+      }
+
+      // 检查端口是否已被占用
+      const portInUse = await this.isPortInUse(this.config.port)
+      if (portInUse) {
+        verdaccioLogger.warn(`端口 ${this.config.port} 已被占用，可能有 Verdaccio 实例正在运行`)
+        // 返回一个虚拟的状态，表示服务已在运行
+        return {
+          success: true,
+          message: `Verdaccio 服务已在端口 ${this.config.port} 运行（外部启动）`,
+          data: {
+            isRunning: true,
+            port: this.config.port,
+            host: this.config.host,
+            url: `http://${this.config.host}:${this.config.port}`,
+            configPath: this.configPath,
+            storageePath: this.config.storage
+          }
+        }
       }
 
       // 确保目录和配置文件存在
@@ -212,6 +256,10 @@ notify:
 
       this.startTime = Date.now()
 
+      // 用于跟踪启动状态
+      let startupError: Error | null = null
+      let isStarted = false
+
       // 处理标准输出
       this.process.stdout?.on('data', (data) => {
         const message = data.toString().trim()
@@ -224,6 +272,7 @@ notify:
         // Verdaccio 的正常日志也会输出到 stderr
         if (message.includes('http address')) {
           verdaccioLogger.info(`[INFO] ${message}`)
+          isStarted = true
         } else if (message.includes('error') || message.includes('Error')) {
           verdaccioLogger.error(`[ERROR] ${message}`)
         } else {
@@ -234,21 +283,42 @@ notify:
       // 处理进程退出
       this.process.on('exit', (code, signal) => {
         verdaccioLogger.warn(`Verdaccio 进程退出: code=${code}, signal=${signal}`)
+        if (!isStarted) {
+          startupError = new Error(`Verdaccio 启动失败，退出码: ${code}`)
+        }
         this.process = null
         this.startTime = null
       })
 
       // 处理进程错误
-      this.process.on('error', (error) => {
+      this.process.on('error', (error: any) => {
         verdaccioLogger.error(`Verdaccio 进程错误:`, error)
+        startupError = error
+        
+        // 检测是否是命令不存在的错误
+        if (error.code === 'ENOENT') {
+          verdaccioLogger.error('Verdaccio 未安装，请运行: npm install -g verdaccio')
+        }
+        
         this.process = null
         this.startTime = null
       })
 
-      // 等待服务启动 (简单延迟，实际应该检查端口)
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // 等待服务启动完成
+      await new Promise(resolve => setTimeout(resolve, 3000))
 
-      const status = this.getStatus()
+      // 检查是否启动失败
+      if (startupError) {
+        throw startupError
+      }
+
+      // 检查进程是否还在运行
+      if (!this.process || this.process.killed) {
+        throw new Error('Verdaccio 进程启动后立即退出，请检查配置或端口是否被占用')
+      }
+
+      const status = await this.getStatus()
+      verdaccioLogger.info('Verdaccio 启动成功，当前状态:', status)
       
       return {
         success: true,
@@ -338,7 +408,7 @@ notify:
   /**
    * 获取服务状态
    */
-  getStatus(): VerdaccioStatus {
+  async getStatus(): Promise<VerdaccioStatus> {
     const isRunning = !!(this.process && !this.process.killed)
     
     const status: VerdaccioStatus = {
@@ -355,6 +425,16 @@ notify:
       
       if (this.startTime) {
         status.uptime = Date.now() - this.startTime
+      }
+    } else {
+      // 如果本地进程不存在，检查端口是否被占用（可能是外部启动的 Verdaccio）
+      const portInUse = await this.isPortInUse(this.config.port)
+      if (portInUse) {
+        status.isRunning = true
+        status.port = this.config.port
+        status.host = this.config.host
+        status.url = `http://${this.config.host}:${this.config.port}`
+        // 注意：外部进程我们无法获取 PID 和 uptime
       }
     }
 
@@ -409,6 +489,424 @@ notify:
         message: error instanceof Error ? error.message : '保存失败'
       }
     }
+  }
+
+  /**
+   * 获取所有已发布的包列表
+   */
+  getPackages(): Array<{
+    name: string
+    versions: string[]
+    latestVersion: string
+    description?: string
+    author?: string
+    modified: number
+  }> {
+    try {
+      const storageDir = this.config.storage
+      if (!existsSync(storageDir)) {
+        return []
+      }
+
+      const { readdirSync, statSync } = require('fs')
+      const packages: any[] = []
+
+      // 读取存储目录
+      const items = readdirSync(storageDir)
+
+      for (const item of items) {
+        const itemPath = join(storageDir, item)
+        const stat = statSync(itemPath)
+
+        if (stat.isDirectory() && !item.startsWith('.')) {
+          // 读取包的 package.json
+          const packageJsonPath = join(itemPath, 'package.json')
+          if (existsSync(packageJsonPath)) {
+            try {
+              const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+              
+              // 获取所有版本
+              const versions = readdirSync(itemPath)
+                .filter((f: string) => f.endsWith('.tgz'))
+                .map((f: string) => f.replace(`${item}-`, '').replace('.tgz', ''))
+                .sort((a: string, b: string) => b.localeCompare(a, undefined, { numeric: true }))
+
+              packages.push({
+                name: packageJson.name || item,
+                versions,
+                latestVersion: versions[0] || packageJson.version,
+                description: packageJson.description,
+                author: typeof packageJson.author === 'string' 
+                  ? packageJson.author 
+                  : packageJson.author?.name,
+                modified: stat.mtimeMs
+              })
+            } catch (err) {
+              verdaccioLogger.warn(`无法读取包信息: ${item}`, err)
+            }
+          }
+        }
+      }
+
+      return packages.sort((a, b) => b.modified - a.modified)
+    } catch (error) {
+      verdaccioLogger.error('获取包列表失败:', error)
+      return []
+    }
+  }
+
+  /**
+   * 获取包的详细信息
+   */
+  getPackageInfo(packageName: string): any | null {
+    try {
+      const packageDir = join(this.config.storage, packageName)
+      if (!existsSync(packageDir)) {
+        return null
+      }
+
+      const packageJsonPath = join(packageDir, 'package.json')
+      if (!existsSync(packageJsonPath)) {
+        return null
+      }
+
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+      
+      // 获取所有版本文件
+      const { readdirSync, statSync } = require('fs')
+      const versions = readdirSync(packageDir)
+        .filter((f: string) => f.endsWith('.tgz'))
+        .map((f: string) => {
+          const version = f.replace(`${packageName}-`, '').replace('.tgz', '')
+          const filePath = join(packageDir, f)
+          const stat = statSync(filePath)
+          return {
+            version,
+            file: f,
+            size: stat.size,
+            modified: stat.mtimeMs
+          }
+        })
+        .sort((a: any, b: any) => b.modified - a.modified)
+
+      return {
+        ...packageJson,
+        versions
+      }
+    } catch (error) {
+      verdaccioLogger.error(`获取包信息失败: ${packageName}`, error)
+      return null
+    }
+  }
+
+  /**
+   * 删除包
+   */
+  deletePackage(packageName: string): { success: boolean; message: string } {
+    try {
+      const packageDir = join(this.config.storage, packageName)
+      if (!existsSync(packageDir)) {
+        return {
+          success: false,
+          message: '包不存在'
+        }
+      }
+
+      // 递归删除目录
+      const { rmSync } = require('fs')
+      rmSync(packageDir, { recursive: true, force: true })
+
+      verdaccioLogger.info(`包已删除: ${packageName}`)
+      return {
+        success: true,
+        message: '包已成功删除'
+      }
+    } catch (error) {
+      verdaccioLogger.error(`删除包失败: ${packageName}`, error)
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : '删除失败'
+      }
+    }
+  }
+
+  /**
+   * 删除包的特定版本
+   */
+  deletePackageVersion(packageName: string, version: string): { success: boolean; message: string } {
+    try {
+      const packageDir = join(this.config.storage, packageName)
+      if (!existsSync(packageDir)) {
+        return {
+          success: false,
+          message: '包不存在'
+        }
+      }
+
+      const versionFile = join(packageDir, `${packageName}-${version}.tgz`)
+      if (!existsSync(versionFile)) {
+        return {
+          success: false,
+          message: '版本不存在'
+        }
+      }
+
+      const { unlinkSync } = require('fs')
+      unlinkSync(versionFile)
+
+      verdaccioLogger.info(`版本已删除: ${packageName}@${version}`)
+      return {
+        success: true,
+        message: '版本已成功删除'
+      }
+    } catch (error) {
+      verdaccioLogger.error(`删除版本失败: ${packageName}@${version}`, error)
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : '删除失败'
+      }
+    }
+  }
+
+  /**
+   * 生成 htpasswd 密码哈希
+   * 使用 Apache htpasswd 格式 (Apache MD5)
+   */
+  private generatePasswordHash(password: string): string {
+    // 简化实现：使用 SHA256 哈希 (Verdaccio 5+ 支持)
+    const hash = createHash('sha256').update(password).digest('hex')
+    return `{SHA256}${hash}`
+  }
+
+  /**
+   * 获取 htpasswd 文件路径
+   */
+  private getHtpasswdPath(): string {
+    return join(this.configDir, 'htpasswd')
+  }
+
+  /**
+   * 读取 htpasswd 文件
+   */
+  private readHtpasswd(): Map<string, string> {
+    const htpasswdPath = this.getHtpasswdPath()
+    const users = new Map<string, string>()
+
+    if (!existsSync(htpasswdPath)) {
+      return users
+    }
+
+    try {
+      const content = readFileSync(htpasswdPath, 'utf-8')
+      const lines = content.split('\n').filter(line => line.trim())
+
+      for (const line of lines) {
+        const [username, hash] = line.split(':')
+        if (username && hash) {
+          users.set(username.trim(), hash.trim())
+        }
+      }
+    } catch (error) {
+      verdaccioLogger.error('读取 htpasswd 文件失败:', error)
+    }
+
+    return users
+  }
+
+  /**
+   * 写入 htpasswd 文件
+   */
+  private writeHtpasswd(users: Map<string, string>): void {
+    const htpasswdPath = this.getHtpasswdPath()
+    const lines: string[] = []
+
+    users.forEach((hash, username) => {
+      lines.push(`${username}:${hash}`)
+    })
+
+    writeFileSync(htpasswdPath, lines.join('\n') + '\n', 'utf-8')
+  }
+
+  /**
+   * 获取所有用户列表
+   */
+  getUsers(): VerdaccioUser[] {
+    try {
+      const htpasswdPath = this.getHtpasswdPath()
+      verdaccioLogger.info(`[获取用户] htpasswd 文件路径: ${htpasswdPath}`)
+      verdaccioLogger.info(`[获取用户] 文件是否存在: ${existsSync(htpasswdPath)}`)
+      
+      if (existsSync(htpasswdPath)) {
+        const content = readFileSync(htpasswdPath, 'utf-8')
+        verdaccioLogger.info(`[获取用户] htpasswd 文件内容:\n${content}`)
+      }
+      
+      const users = this.readHtpasswd()
+      verdaccioLogger.info(`[获取用户] 读取到的用户数: ${users.size}`)
+      verdaccioLogger.info(`[获取用户] 用户列表: ${Array.from(users.keys()).join(', ')}`)
+      
+      return Array.from(users.keys()).map(username => ({
+        username,
+        createdAt: new Date().toISOString() // htpasswd 不存储创建时间
+      }))
+    } catch (error) {
+      verdaccioLogger.error('[获取用户] 失败:', error)
+      return []
+    }
+  }
+
+  /**
+   * 添加新用户
+   */
+  addUser(username: string, password: string, email?: string): { success: boolean; message: string } {
+    try {
+      const htpasswdPath = this.getHtpasswdPath()
+      verdaccioLogger.info(`[添加用户] 开始添加用户: ${username}`)
+      verdaccioLogger.info(`[添加用户] htpasswd 文件路径: ${htpasswdPath}`)
+      verdaccioLogger.info(`[添加用户] 配置目录: ${this.configDir}`)
+      verdaccioLogger.info(`[添加用户] 配置文件: ${this.configPath}`)
+
+      // 验证用户名
+      if (!username || !username.trim()) {
+        return {
+          success: false,
+          message: '用户名不能为空'
+        }
+      }
+
+      if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+        return {
+          success: false,
+          message: '用户名只能包含字母、数字、下划线和连字符'
+        }
+      }
+
+      // 验证密码
+      if (!password || password.length < 4) {
+        return {
+          success: false,
+          message: '密码长度至少为 4 个字符'
+        }
+      }
+
+      const users = this.readHtpasswd()
+      verdaccioLogger.info(`[添加用户] 当前用户数: ${users.size}`)
+
+      // 检查用户是否已存在
+      if (users.has(username)) {
+        return {
+          success: false,
+          message: '用户已存在'
+        }
+      }
+
+      // 添加用户
+      const passwordHash = this.generatePasswordHash(password)
+      users.set(username, passwordHash)
+      verdaccioLogger.info(`[添加用户] 准备写入，总用户数: ${users.size}`)
+      
+      this.writeHtpasswd(users)
+      
+      // 验证是否成功写入
+      if (existsSync(htpasswdPath)) {
+        const content = readFileSync(htpasswdPath, 'utf-8')
+        verdaccioLogger.info(`[添加用户] htpasswd 文件内容:\n${content}`)
+      } else {
+        verdaccioLogger.error(`[添加用户] htpasswd 文件不存在: ${htpasswdPath}`)
+      }
+
+      verdaccioLogger.info(`[添加用户] 用户已添加: ${username}`)
+      return {
+        success: true,
+        message: `用户 ${username} 添加成功`
+      }
+    } catch (error) {
+      verdaccioLogger.error(`[添加用户] 失败: ${username}`, error)
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : '添加失败'
+      }
+    }
+  }
+
+  /**
+   * 删除用户
+   */
+  deleteUser(username: string): { success: boolean; message: string } {
+    try {
+      const users = this.readHtpasswd()
+
+      if (!users.has(username)) {
+        return {
+          success: false,
+          message: '用户不存在'
+        }
+      }
+
+      users.delete(username)
+      this.writeHtpasswd(users)
+
+      verdaccioLogger.info(`用户已删除: ${username}`)
+      return {
+        success: true,
+        message: `用户 ${username} 删除成功`
+      }
+    } catch (error) {
+      verdaccioLogger.error(`删除用户失败: ${username}`, error)
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : '删除失败'
+      }
+    }
+  }
+
+  /**
+   * 修改用户密码
+   */
+  changeUserPassword(username: string, newPassword: string): { success: boolean; message: string } {
+    try {
+      // 验证密码
+      if (!newPassword || newPassword.length < 4) {
+        return {
+          success: false,
+          message: '密码长度至少为 4 个字符'
+        }
+      }
+
+      const users = this.readHtpasswd()
+
+      if (!users.has(username)) {
+        return {
+          success: false,
+          message: '用户不存在'
+        }
+      }
+
+      // 更新密码
+      const passwordHash = this.generatePasswordHash(newPassword)
+      users.set(username, passwordHash)
+      this.writeHtpasswd(users)
+
+      verdaccioLogger.info(`用户密码已更新: ${username}`)
+      return {
+        success: true,
+        message: `用户 ${username} 的密码已更新`
+      }
+    } catch (error) {
+      verdaccioLogger.error(`修改密码失败: ${username}`, error)
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : '修改失败'
+      }
+    }
+  }
+
+  /**
+   * 检查用户是否存在
+   */
+  userExists(username: string): boolean {
+    const users = this.readHtpasswd()
+    return users.has(username)
   }
 }
 

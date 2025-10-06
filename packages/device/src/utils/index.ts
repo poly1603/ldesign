@@ -1,24 +1,52 @@
 import type { DeviceType, Orientation } from '../types'
 
 /**
- * 简单的 LRU 缓存实现
+ * 高性能 LRU 缓存实现
+ *
+ * 优化特性:
+ * - 使用Map保持插入顺序
+ * - 支持TTL过期
+ * - 添加性能统计
  */
 class LRUCache<K, V> {
-  private cache = new Map<K, V>()
+  private cache = new Map<K, { value: V, timestamp: number }>()
   private maxSize: number
+  private ttl: number // 缓存过期时间(毫秒)
 
-  constructor(maxSize = 50) {
+  // 性能统计
+  private stats = {
+    hits: 0,
+    misses: 0,
+    evictions: 0,
+  }
+
+  constructor(maxSize = 50, ttl = 300000) { // 默认5分钟过期
     this.maxSize = maxSize
+    this.ttl = ttl
   }
 
   get(key: K): V | undefined {
-    const value = this.cache.get(key)
-    if (value !== undefined) {
-      // 重新插入以更新顺序
-      this.cache.delete(key)
-      this.cache.set(key, value)
+    const entry = this.cache.get(key)
+    if (entry === undefined) {
+      this.stats.misses++
+      return undefined
     }
-    return value
+
+    // 检查是否过期
+    if (Date.now() - entry.timestamp > this.ttl) {
+      this.cache.delete(key)
+      this.stats.misses++
+      this.stats.evictions++
+      return undefined
+    }
+
+    this.stats.hits++
+
+    // 重新插入以更新顺序
+    this.cache.delete(key)
+    this.cache.set(key, { value: entry.value, timestamp: Date.now() })
+
+    return entry.value
   }
 
   set(key: K, value: V): void {
@@ -30,13 +58,45 @@ class LRUCache<K, V> {
       const firstKey = this.cache.keys().next().value
       if (firstKey !== undefined) {
         this.cache.delete(firstKey)
+        this.stats.evictions++
       }
     }
-    this.cache.set(key, value)
+    this.cache.set(key, { value, timestamp: Date.now() })
   }
 
   clear(): void {
     this.cache.clear()
+    this.stats = { hits: 0, misses: 0, evictions: 0 }
+  }
+
+  /**
+   * 获取缓存统计信息
+   */
+  getStats() {
+    return {
+      ...this.stats,
+      size: this.cache.size,
+      hitRate: this.stats.hits / (this.stats.hits + this.stats.misses) || 0,
+    }
+  }
+
+  /**
+   * 清理过期项
+   */
+  cleanup(): void {
+    const now = Date.now()
+    const keysToDelete: K[] = []
+
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > this.ttl) {
+        keysToDelete.push(key)
+      }
+    }
+
+    keysToDelete.forEach(key => {
+      this.cache.delete(key)
+      this.stats.evictions++
+    })
   }
 }
 
@@ -150,19 +210,23 @@ function parseUserAgent(userAgent: string): {
 
 /**
  * 高性能防抖函数
+ *
+ * 优化: 返回带清理函数的包装器
+ *
  * @param func - 要防抖的函数
  * @param wait - 等待时间（毫秒）
  * @param immediate - 是否立即执行
+ * @returns 防抖函数及清理函数
  */
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
   immediate = false,
-): (...args: Parameters<T>) => void {
+): ((...args: Parameters<T>) => void) & { cancel: () => void } {
   let timeout: NodeJS.Timeout | null = null
   let result: ReturnType<T>
 
-  return (...args: Parameters<T>) => {
+  const debounced = (...args: Parameters<T>) => {
     const callNow = immediate && !timeout
 
     if (timeout) {
@@ -182,26 +246,40 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
 
     return result as void
   }
+
+  // 添加清理函数
+  debounced.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout)
+      timeout = null
+    }
+  }
+
+  return debounced
 }
 
 /**
  * 高性能节流函数
+ *
+ * 优化: 返回带清理函数的包装器
+ *
  * @param func - 要节流的函数
  * @param wait - 等待时间（毫秒）
  * @param options - 配置选项
  * @param options.leading - 是否在开始时执行
  * @param options.trailing - 是否在结束时执行
+ * @returns 节流函数及清理函数
  */
 export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
   options: { leading?: boolean, trailing?: boolean } = {},
-): (...args: Parameters<T>) => void {
+): ((...args: Parameters<T>) => void) & { cancel: () => void } {
   let timeout: NodeJS.Timeout | null = null
   let previous = 0
   const { leading = true, trailing = true } = options
 
-  return (...args: Parameters<T>) => {
+  const throttled = (...args: Parameters<T>) => {
     const now = Date.now()
 
     if (!previous && !leading) {
@@ -226,6 +304,17 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
       }, remaining)
     }
   }
+
+  // 添加清理函数
+  throttled.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout)
+      timeout = null
+    }
+    previous = 0
+  }
+
+  return throttled
 }
 
 /**
@@ -238,7 +327,7 @@ export function isMobileDevice(userAgent?: string): boolean {
 
   const ua
     = userAgent
-      || (typeof window !== 'undefined' ? window.navigator.userAgent : '')
+    || (typeof window !== 'undefined' ? window.navigator.userAgent : '')
   const mobileRegex
     = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
   return mobileRegex.test(ua)
@@ -410,6 +499,6 @@ export function formatBytes(bytes: number, decimals = 2): string {
 export function generateId(prefix?: string): string {
   const id
     = Math.random().toString(36).substring(2, 15)
-      + Math.random().toString(36).substring(2, 15)
+    + Math.random().toString(36).substring(2, 15)
   return prefix ? `${prefix}-${id}` : id
 }

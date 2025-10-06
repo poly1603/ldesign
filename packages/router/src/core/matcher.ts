@@ -91,7 +91,7 @@ class LRUCache {
   private head: LRUNode
   private tail: LRUNode
 
-  constructor(capacity: number = 200) {
+  constructor(capacity: number = 50) {
     this.capacity = capacity
     this.size = 0
     this.cache = new Map()
@@ -218,7 +218,7 @@ export class RouteMatcher {
     averageMatchTime: 0,
   }
 
-  constructor(cacheSize: number = 200) {
+  constructor(cacheSize: number = 50) {
     this.root = this.createNode()
     this.routes = new Map()
     this.rawRoutes = new Map()
@@ -238,11 +238,14 @@ export class RouteMatcher {
   }
 
   /**
-   * 获取缓存键
+   * 获取缓存键（优化版：减少字符串拼接）
    */
   private getCacheKey(path: string, query?: Record<string, unknown>): string {
-    const queryStr = query ? JSON.stringify(query) : ''
-    return `${path}${queryStr}`
+    // 优化：大多数情况下没有query，避免不必要的JSON.stringify
+    if (!query || Object.keys(query).length === 0) {
+      return path
+    }
+    return `${path}?${JSON.stringify(query)}`
   }
 
   /**

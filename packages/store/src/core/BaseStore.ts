@@ -70,6 +70,12 @@ export abstract class BaseStore<
   /** 缓存的装饰器元数据 */
   private _cachedMetadata?: DecoratorMetadata[]
 
+  /** 缓存的 actions 对象 */
+  private _cachedActions?: TActions
+
+  /** 缓存的 getters 对象 */
+  private _cachedGetters?: TGetters
+
   /** 清理函数列表 */
   private _cleanupFunctions: (() => void)[] = []
 
@@ -147,6 +153,7 @@ export abstract class BaseStore<
    *
    * 返回包含所有动作方法的对象，这些方法已经绑定了正确的上下文。
    * 动作方法用于修改状态，支持同步和异步操作。
+   * 使用缓存避免重复构建对象。
    *
    * @returns 包含所有动作方法的对象
    *
@@ -157,6 +164,11 @@ export abstract class BaseStore<
    * ```
    */
   get $actions(): TActions {
+    // 使用缓存避免重复构建
+    if (this._cachedActions) {
+      return this._cachedActions
+    }
+
     const actions = {} as TActions
     const metadata = this._getDecoratorMetadata()
 
@@ -169,6 +181,8 @@ export abstract class BaseStore<
         }
       })
 
+    // 缓存结果
+    this._cachedActions = actions
     return actions
   }
 
@@ -177,6 +191,7 @@ export abstract class BaseStore<
    *
    * 返回包含所有计算属性的对象，这些属性会根据状态的变化自动重新计算。
    * 计算属性是只读的，用于派生状态值。
+   * 使用缓存避免重复构建对象。
    *
    * @returns 包含所有计算属性的对象
    *
@@ -187,6 +202,11 @@ export abstract class BaseStore<
    * ```
    */
   get $getters(): TGetters {
+    // 使用缓存避免重复构建
+    if (this._cachedGetters) {
+      return this._cachedGetters
+    }
+
     const getters = {} as TGetters
     const metadata = this._getDecoratorMetadata()
 
@@ -199,6 +219,8 @@ export abstract class BaseStore<
         }
       })
 
+    // 缓存结果
+    this._cachedGetters = getters
     return getters
   }
 
@@ -319,6 +341,8 @@ export abstract class BaseStore<
 
     // 清理缓存
     this._cachedMetadata = undefined
+    this._cachedActions = undefined
+    this._cachedGetters = undefined
     this._initialState = undefined
 
     // 清理 Pinia Store

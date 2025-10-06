@@ -71,6 +71,14 @@ export const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/packages',
+    name: 'PackageManager',
+    component: () => import('../views/PackageManager.vue'),
+    meta: {
+      title: '私有包管理'
+    }
+  },
+  {
     path: '/settings',
     name: 'Settings',
     component: () => import('../views/Settings.vue'),

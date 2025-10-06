@@ -11,93 +11,6 @@
     </div>
 
     <div v-else class="content">
-      <!-- Verdaccio 本地服务器管理区域 -->
-      <div class="verdaccio-section">
-        <div class="section-header">
-          <h2>📦 本地 NPM 服务器 (Verdaccio)</h2>
-          <p class="section-description">使用 Verdaccio 搭建本地私有 NPM 注册表，管理本地包和代理公共包</p>
-        </div>
-
-        <div class="verdaccio-card">
-          <div class="verdaccio-status">
-            <div class="status-left">
-              <div class="status-indicator" :class="{ 'running': verdaccioStatus.isRunning }">
-                <span class="status-dot"></span>
-                <span class="status-text">{{ verdaccioStatus.isRunning ? '运行中' : '已停止' }}</span>
-              </div>
-              
-              <div v-if="verdaccioStatus.isRunning" class="status-info">
-                <div class="info-item">
-                  <span class="label">访问地址:</span>
-                  <a :href="verdaccioStatus.url" target="_blank" class="url-link">
-                    {{ verdaccioStatus.url }}
-                    <span class="icon">↗️</span>
-                  </a>
-                </div>
-                <div class="info-item">
-                  <span class="label">PID:</span>
-                  <span>{{ verdaccioStatus.pid }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">运行时间:</span>
-                  <span>{{ formatUptime(verdaccioStatus.uptime) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="status-actions">
-              <button 
-                v-if="!verdaccioStatus.isRunning" 
-                class="btn btn-primary" 
-                @click="startVerdaccio"
-                :disabled="verdaccioLoading"
-              >
-                {{ verdaccioLoading ? '启动中...' : '启动服务' }}
-              </button>
-              <button 
-                v-else 
-                class="btn btn-warning" 
-                @click="stopVerdaccio"
-                :disabled="verdaccioLoading"
-              >
-                {{ verdaccioLoading ? '停止中...' : '停止服务' }}
-              </button>
-              <button 
-                class="btn btn-secondary" 
-                @click="restartVerdaccio"
-                :disabled="verdaccioLoading || !verdaccioStatus.isRunning"
-              >
-                {{ verdaccioLoading ? '重启中...' : '重启' }}
-              </button>
-              <button 
-                class="btn btn-secondary" 
-                @click="showVerdaccioConfigDialog"
-              >
-                配置
-              </button>
-            </div>
-          </div>
-
-          <div v-if="verdaccioStatus.isRunning" class="verdaccio-quick-actions">
-            <div class="quick-action-card">
-              <h4>📤 发布包到本地源</h4>
-              <pre class="command-block">npm publish --registry {{ verdaccioStatus.url }}</pre>
-            </div>
-            <div class="quick-action-card">
-              <h4>🔗 设置为默认源</h4>
-              <pre class="command-block">npm config set registry {{ verdaccioStatus.url }}</pre>
-            </div>
-            <div class="quick-action-card">
-              <h4>👥 创建用户</h4>
-              <pre class="command-block">npm adduser --registry {{ verdaccioStatus.url }}</pre>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 分隔线 -->
-      <div class="section-divider"></div>
-
       <!-- NPM 源管理区域 -->
       <div class="sources-section">
         <div class="section-header">
@@ -137,6 +50,30 @@
               <span class="source-type" :class="source.type">{{ source.type === 'public' ? '公共' : '私有' }}</span>
             </div>
             <div class="source-status">
+              <!-- 服务可用性状态 -->
+              <span 
+                v-if="source.isChecking" 
+                class="status-badge checking"
+                title="检测中"
+              >
+                <span class="status-spinner"></span>
+                检测中
+              </span>
+              <span 
+                v-else-if="source.isAvailable === true" 
+                class="status-badge available"
+                title="服务可用"
+              >
+                ✓ 可用
+              </span>
+              <span 
+                v-else-if="source.isAvailable === false" 
+                class="status-badge unavailable"
+                title="服务不可用"
+              >
+                ✗ 不可用
+              </span>
+              <!-- 登录状态 -->
               <span v-if="source.isLoggedIn" class="status-badge logged-in">已登录</span>
               <span v-else class="status-badge">未登录</span>
             </div>
@@ -212,6 +149,7 @@
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- 添加/编辑源对话框 -->
@@ -277,130 +215,7 @@
       </div>
     </div>
 
-    <!-- Verdaccio 配置对话框 -->
-    <div v-if="showVerdaccioConfig" class="dialog-overlay" @click="closeVerdaccioConfigDialog">
-      <div class="dialog dialog-large" @click.stop>
-        <div class="dialog-header">
-          <h2>Verdaccio 配置</h2>
-          <button class="close-btn" @click="closeVerdaccioConfigDialog">×</button>
-        </div>
-        
-        <div class="dialog-body">
-          <div class="config-tabs">
-            <button 
-              class="tab-btn" 
-              :class="{ active: configTab === 'basic' }"
-              @click="configTab = 'basic'"
-            >
-              基本配置
-            </button>
-            <button 
-              class="tab-btn" 
-              :class="{ active: configTab === 'advanced' }"
-              @click="configTab = 'advanced'"
-            >
-              高级配置
-            </button>
-            <button 
-              class="tab-btn" 
-              :class="{ active: configTab === 'file' }"
-              @click="loadConfigFile"
-            >
-              配置文件
-            </button>
-          </div>
 
-          <!-- 基本配置面板 -->
-          <div v-if="configTab === 'basic'" class="config-panel">
-            <div class="form-item">
-              <label for="verdaccio-port">监听端口 *</label>
-              <input 
-                id="verdaccio-port" 
-                v-model.number="verdaccioConfig.port" 
-                type="number" 
-                min="1" 
-                max="65535"
-                placeholder="4873" 
-              />
-              <span class="form-hint">默认: 4873</span>
-            </div>
-
-            <div class="form-item">
-              <label for="verdaccio-host">监听地址 *</label>
-              <input 
-                id="verdaccio-host" 
-                v-model="verdaccioConfig.host" 
-                type="text" 
-                placeholder="127.0.0.1" 
-              />
-              <span class="form-hint">默认: 127.0.0.1（本地访问），使用 0.0.0.0 允许外部访问</span>
-            </div>
-
-            <div class="info-box info">
-              <strong>提示：</strong> 修改配置后需要重启 Verdaccio 服务才能生效
-            </div>
-          </div>
-
-          <!-- 高级配置面板 -->
-          <div v-if="configTab === 'advanced'" class="config-panel">
-            <div class="info-box warning">
-              <strong>注意：</strong> 高级配置需要直接编辑配置文件，请切换到 "配置文件" 选项卡
-            </div>
-
-            <h4>当前配置信息</h4>
-            <div class="info-list">
-              <div class="info-item">
-                <span class="label">配置文件路径:</span>
-                <span class="value">{{ verdaccioStatus.configPath || '-' }}</span>
-              </div>
-              <div class="info-item">
-                <span class="label">存储路径:</span>
-                <span class="value">{{ verdaccioStatus.storageePath || '-' }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 配置文件编辑面板 -->
-          <div v-if="configTab === 'file'" class="config-panel">
-            <div v-if="loadingConfigFile" class="loading-state">
-              <div class="loading-spinner"></div>
-              <p>加载配置文件...</p>
-            </div>
-            <div v-else>
-              <div class="info-box info">
-                直接编辑 Verdaccio 的 YAML 配置文件。修改后记得保存并重启服务。
-              </div>
-              <textarea 
-                v-model="configFileContent" 
-                class="config-file-editor"
-                spellcheck="false"
-                placeholder="配置文件内容..."
-              ></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="dialog-footer">
-          <button class="btn btn-secondary" @click="closeVerdaccioConfigDialog">取消</button>
-          <button 
-            v-if="configTab === 'basic'" 
-            class="btn btn-primary" 
-            @click="saveVerdaccioConfig"
-            :disabled="savingConfig"
-          >
-            {{ savingConfig ? '保存中...' : '保存' }}
-          </button>
-          <button 
-            v-if="configTab === 'file'" 
-            class="btn btn-primary" 
-            @click="saveConfigFile"
-            :disabled="savingConfig"
-          >
-            {{ savingConfig ? '保存中...' : '保存文件' }}
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -423,6 +238,9 @@ interface NpmSource {
   }
   createdAt: string
   updatedAt: string
+  // 服务可用性状态
+  isAvailable?: boolean
+  isChecking?: boolean
 }
 
 const { get, post, put, del } = useApi()
@@ -478,6 +296,7 @@ const loginFormData = reactive({
   password: ''
 })
 
+
 /**
  * 加载源列表
  */
@@ -487,12 +306,45 @@ async function loadSources() {
     const result = await get<NpmSource[]>('/api/npm-sources')
     if (result.success && result.data) {
       sources.value = result.data
+      // 加载完成后自动检测所有源的可用性
+      checkAllSourcesAvailability()
     }
   } catch (error: any) {
     showMessage('加载源列表失败: ' + error.message, 'error')
   } finally {
     loading.value = false
   }
+}
+
+/**
+ * 检测单个源的服务可用性
+ */
+async function checkSourceAvailability(source: NpmSource) {
+  // 设置检测中状态
+  source.isChecking = true
+  source.isAvailable = undefined
+  
+  try {
+    const result = await get<{ available: boolean }>(`/api/npm-sources/${source.id}/check-availability`)
+    if (result.success && result.data) {
+      source.isAvailable = result.data.available
+    } else {
+      source.isAvailable = false
+    }
+  } catch (error: any) {
+    // 出错说明服务不可用
+    source.isAvailable = false
+  } finally {
+    source.isChecking = false
+  }
+}
+
+/**
+ * 检测所有源的服务可用性
+ */
+async function checkAllSourcesAvailability() {
+  // 并发检测所有源
+  await Promise.all(sources.value.map(source => checkSourceAvailability(source)))
 }
 
 /**
@@ -935,17 +787,14 @@ async function saveConfigFile() {
   }
 }
 
+
+
+
+
 // 加载数据
 onMounted(() => {
   loadSources()
   loadVerdaccioStatus()
-  
-  // 定时刷新 Verdaccio 状态
-  setInterval(() => {
-    if (verdaccioStatus.value.isRunning) {
-      loadVerdaccioStatus()
-    }
-  }, 5000)
 })
 </script>
 
@@ -1066,16 +915,51 @@ onMounted(() => {
   }
 
   .source-status {
+    display: flex;
+    gap: var(--ls-spacing-xs);
+    align-items: center;
+    flex-wrap: wrap;
+
     .status-badge {
       font-size: var(--ls-font-size-sm);
       padding: 4px 12px;
       border-radius: 12px;
       background: var(--ldesign-bg-color-component);
       color: var(--ldesign-text-color-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
 
       &.logged-in {
         background: var(--ldesign-success-color-1);
         color: var(--ldesign-success-color);
+      }
+
+      &.available {
+        background: var(--ldesign-success-color-1);
+        color: var(--ldesign-success-color);
+        font-weight: 500;
+      }
+
+      &.unavailable {
+        background: var(--ldesign-danger-color-1);
+        color: var(--ldesign-danger-color);
+        font-weight: 500;
+      }
+
+      &.checking {
+        background: var(--ldesign-brand-color-1);
+        color: var(--ldesign-brand-color);
+        
+        .status-spinner {
+          display: inline-block;
+          width: 12px;
+          height: 12px;
+          border: 2px solid currentColor;
+          border-top-color: transparent;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
       }
     }
   }
@@ -1576,4 +1460,5 @@ onMounted(() => {
     animation: spin 1s linear infinite;
   }
 }
+
 </style>

@@ -19,54 +19,124 @@ export interface EvictionStrategy {
 }
 
 /**
+ * 双向链表节点
+ */
+class LRUNode {
+  constructor(
+    public key: string,
+    public prev: LRUNode | null = null,
+    public next: LRUNode | null = null,
+  ) {}
+}
+
+/**
  * LRU (Least Recently Used) 淘汰策略
- * 
- * 淘汰最近最少使用的缓存项
+ *
+ * 优化版本：使用双向链表+哈希表实现O(1)复杂度
+ * - recordAccess: O(1)
+ * - recordAdd: O(1)
+ * - getEvictionKey: O(1)
+ * - removeKey: O(1)
+ *
+ * 性能提升：从O(n)优化到O(1)，在大量缓存项时性能提升显著
  */
 export class LRUStrategy implements EvictionStrategy {
   readonly name = 'LRU'
-  private accessOrder: Map<string, number> = new Map()
-  private counter = 0
+  private nodeMap: Map<string, LRUNode> = new Map()
+  private head: LRUNode | null = null // 最近使用的
+  private tail: LRUNode | null = null // 最久未使用的
 
   recordAccess(key: string): void {
-    // 更新访问顺序
-    this.accessOrder.set(key, this.counter++)
+    const node = this.nodeMap.get(key)
+    if (node) {
+      // 将节点移到头部
+      this.moveToHead(node)
+    }
   }
 
   recordAdd(key: string): void {
-    this.accessOrder.set(key, this.counter++)
+    // 如果已存在，移到头部
+    if (this.nodeMap.has(key)) {
+      this.recordAccess(key)
+      return
+    }
+
+    // 创建新节点并添加到头部
+    const node = new LRUNode(key)
+    this.nodeMap.set(key, node)
+    this.addToHead(node)
   }
 
   getEvictionKey(): string | null {
-    if (this.accessOrder.size === 0) 
-      return null
-
-    let oldestKey: string | null = null
-    let oldestTime = Infinity
-
-    for (const [key, time] of this.accessOrder) {
-      if (time < oldestTime) {
-        oldestTime = time
-        oldestKey = key
-      }
-    }
-
-    return oldestKey
+    // 返回尾部节点（最久未使用）
+    return this.tail?.key ?? null
   }
 
   removeKey(key: string): void {
-    this.accessOrder.delete(key)
+    const node = this.nodeMap.get(key)
+    if (node) {
+      this.removeNode(node)
+      this.nodeMap.delete(key)
+    }
   }
 
   clear(): void {
-    this.accessOrder.clear()
-    this.counter = 0
+    this.nodeMap.clear()
+    this.head = null
+    this.tail = null
   }
 
   getStats(): Record<string, any> {
     return {
-      totalKeys: this.accessOrder.size,
-      accessCounter: this.counter,
+      totalKeys: this.nodeMap.size,
+      headKey: this.head?.key,
+      tailKey: this.tail?.key,
+    }
+  }
+
+  /**
+   * 将节点移到头部
+   */
+  private moveToHead(node: LRUNode): void {
+    if (node === this.head) return
+
+    // 从当前位置移除
+    this.removeNode(node)
+    // 添加到头部
+    this.addToHead(node)
+  }
+
+  /**
+   * 添加节点到头部
+   */
+  private addToHead(node: LRUNode): void {
+    node.next = this.head
+    node.prev = null
+
+    if (this.head) {
+      this.head.prev = node
+    }
+    this.head = node
+
+    if (!this.tail) {
+      this.tail = node
+    }
+  }
+
+  /**
+   * 从链表中移除节点
+   */
+  private removeNode(node: LRUNode): void {
+    if (node.prev) {
+      node.prev.next = node.next
+    } else {
+      this.head = node.next
+    }
+
+    if (node.next) {
+      node.next.prev = node.prev
+    } else {
+      this.tail = node.prev
     }
   }
 }

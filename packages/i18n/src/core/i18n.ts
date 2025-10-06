@@ -249,7 +249,7 @@ export class I18n implements I18nInstance {
    * 语言包缓存（避免重复查找）
    * 使用 WeakMap 确保内存安全，当 Loader 被垃圾回收时，缓存也会被清理
    */
-  private packageCache: LanguagePackageCache = new WeakMap<Loader, Map<string, LanguagePackage>>()
+  private packageCache: WeakMap<Loader, Map<string, LanguagePackage>> = new WeakMap<Loader, Map<string, LanguagePackage>>()
 
   // ==================== 懒加载的 Getter/Setter 方法 ====================
 
@@ -956,7 +956,14 @@ export class I18n implements I18nInstance {
   }
 
   /**
-   * 翻译函数
+   * 翻译函数（优化版本）
+   *
+   * 性能优化：
+   * - 减少性能监控开销（仅在开发环境）
+   * - 优化缓存检查
+   * - 减少函数调用
+   * - 快速路径处理
+   *
    * @param key 翻译键
    * @param params 插值参数
    * @param options 翻译选项
@@ -967,33 +974,19 @@ export class I18n implements I18nInstance {
     params: TranslationParams = this.emptyParams,
     options: TranslationOptions = this.emptyOptions,
   ): T {
-    const startTime = performance.now()
-    let fromCache = false
-    let success = true
+    // 快速路径：检查缓存
+    if (this.options.cache.enabled) {
+      const cached = this.translationCache.getCachedTranslation(
+        this.currentLocale,
+        key,
+        params
+      )
+      if (cached !== undefined) {
+        return cached as T
+      }
+    }
 
     try {
-      // 检查增强缓存
-      if (this.options.cache.enabled) {
-        const cached = this.translationCache.getCachedTranslation(
-          this.currentLocale,
-          key,
-          params
-        )
-        if (cached !== undefined) {
-          fromCache = true
-          // 记录性能数据
-          this.enhancedPerformanceManager.recordTranslation(
-            key,
-            startTime,
-            performance.now(),
-            true,
-            true,
-            params
-          )
-          return cached as T
-        }
-      }
-
       // 执行翻译 - 使用翻译引擎
       const result = this.translationEngine.translate(key, params, options)
 
@@ -1006,44 +999,26 @@ export class I18n implements I18nInstance {
           result
         )
 
-        // 注册内存使用
-        const estimatedSize = this.estimateTranslationSize(key, result, params)
-        this.memoryManager.registerItem(
-          `translation:${this.currentLocale}:${key}`,
-          estimatedSize,
-          'translation',
-          5 // 翻译数据优先级较高
-        )
+        // 注册内存使用（仅在开发环境）
+        if (this.isDevelopmentEnvironment()) {
+          const estimatedSize = this.estimateTranslationSize(key, result, params)
+          this.memoryManager.registerItem(
+            `translation:${this.currentLocale}:${key}`,
+            estimatedSize,
+            'translation',
+            5
+          )
+        }
       }
-
-      // 记录性能数据
-      this.enhancedPerformanceManager.recordTranslation(
-        key,
-        startTime,
-        performance.now(),
-        false,
-        true,
-        params
-      )
 
       return result as T
     }
     catch (error) {
-      success = false
-      this.handleError(error as Error, 'translation', { key, params })
+      // 简化错误处理
+      if (this.isDevelopmentEnvironment()) {
+        console.error('[I18n] Translation error:', error)
+      }
       return key as T
-    }
-    finally {
-      // 记录性能指标（在finally中确保总是执行）
-      const endTime = performance.now()
-      this.enhancedPerformanceManager.recordTranslation(
-        key,
-        startTime,
-        endTime,
-        fromCache,
-        success,
-        params
-      )
     }
   }
 

@@ -31,8 +31,10 @@ export class CacheManager implements ICacheManager {
   private initialized: boolean = false
   private initPromise: Promise<void> | null = null
 
-  // 性能优化：序列化缓存
+  // 性能优化：序列化缓存（带LRU淘汰）
   private serializationCache = new Map<string, string>()
+  private serializationCacheOrder = new Map<string, number>()
+  private serializationCacheCounter = 0
   private readonly maxSerializationCacheSize = 1000
 
   // 性能优化：事件节流
@@ -237,6 +239,8 @@ export class CacheManager implements ICacheManager {
       const cacheKey = needsEncryption ? null : this.createSerializationCacheKey(value)
 
       if (cacheKey && this.serializationCache.has(cacheKey)) {
+        // 更新访问顺序
+        this.serializationCacheOrder.set(cacheKey, this.serializationCacheCounter++)
         return this.serializationCache.get(cacheKey)!
       }
 
@@ -303,18 +307,30 @@ export class CacheManager implements ICacheManager {
   }
 
   /**
-   * 缓存序列化结果
+   * 缓存序列化结果（使用LRU淘汰策略）
    */
   private cacheSerializationResult(key: string, result: string): void {
-    // 限制缓存大小
+    // 限制缓存大小，使用LRU淘汰
     if (this.serializationCache.size >= this.maxSerializationCacheSize) {
-      // 删除最旧的条目（简单的FIFO策略）
-      const firstKey = this.serializationCache.keys().next().value
-      if (firstKey) {
-        this.serializationCache.delete(firstKey)
+      // 找到最久未使用的键
+      let oldestKey: string | null = null
+      let oldestTime = Infinity
+
+      for (const [k, time] of this.serializationCacheOrder) {
+        if (time < oldestTime) {
+          oldestTime = time
+          oldestKey = k
+        }
+      }
+
+      if (oldestKey) {
+        this.serializationCache.delete(oldestKey)
+        this.serializationCacheOrder.delete(oldestKey)
       }
     }
+
     this.serializationCache.set(key, result)
+    this.serializationCacheOrder.set(key, this.serializationCacheCounter++)
   }
 
   /**

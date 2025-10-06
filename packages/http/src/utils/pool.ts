@@ -48,7 +48,21 @@ export interface PoolStats {
 }
 
 /**
- * 请求连接池
+ * 等待队列项
+ */
+interface WaitingRequest {
+  resolve: (connection: ConnectionInfo) => void
+  reject: (error: Error) => void
+  timestamp: number
+}
+
+/**
+ * 请求连接池（优化版）
+ *
+ * 优化点：
+ * 1. 事件驱动替代轮询，减少 CPU 占用
+ * 2. 优化连接验证，缓存验证结果
+ * 3. 合并定时器，减少定时器数量
  */
 export class RequestPool {
   private connections = new Map<string, ConnectionInfo[]>()
@@ -60,6 +74,8 @@ export class RequestPool {
   }
 
   private cleanupTimer?: NodeJS.Timeout
+  // 等待队列（事件驱动）
+  private waitingQueues = new Map<string, WaitingRequest[]>()
 
   constructor(config: PoolConfig = {}) {
     this.config = {
@@ -169,34 +185,33 @@ export class RequestPool {
   }
 
   /**
-   * 等待可用连接
+   * 等待可用连接（优化版 - 事件驱动）
    */
   private async waitForConnection(key: string, _config: RequestConfig): Promise<ConnectionInfo> {
     return new Promise((resolve, reject) => {
+      const waitingRequest: WaitingRequest = {
+        resolve,
+        reject,
+        timestamp: Date.now(),
+      }
+
+      // 添加到等待队列
+      const queue = this.waitingQueues.get(key) || []
+      queue.push(waitingRequest)
+      this.waitingQueues.set(key, queue)
+
+      // 设置超时
       const timeout = setTimeout(() => {
+        // 从队列中移除
+        const index = queue.indexOf(waitingRequest)
+        if (index !== -1) {
+          queue.splice(index, 1)
+        }
         reject(new Error('Connection pool timeout'))
       }, this.config.connectionTimeout)
 
-      // 添加到等待队列
-      const checkConnection = () => {
-        const connections = this.connections.get(key) || []
-        const idleConnection = connections.find(conn =>
-          conn.state === 'idle'
-          && this.isConnectionValid(conn),
-        )
-
-        if (idleConnection) {
-          clearTimeout(timeout)
-          this.markConnectionActive(idleConnection)
-          resolve(idleConnection)
-        }
-        else {
-          // 继续等待
-          setTimeout(checkConnection, 100)
-        }
-      }
-
-      checkConnection()
+      // 保存超时句柄以便清理
+      ;(waitingRequest as any).timeout = timeout
     })
   }
 
@@ -269,11 +284,39 @@ export class RequestPool {
   }
 
   /**
-   * 通知等待者
+   * 通知等待者（优化版 - 事件驱动）
    */
-  private notifyWaiters(_key: string): void {
-    // 这里可以实现等待队列的通知机制
-    // 当前简化实现，依赖轮询
+  private notifyWaiters(key: string): void {
+    const queue = this.waitingQueues.get(key)
+    if (!queue || queue.length === 0) {
+      return
+    }
+
+    const connections = this.connections.get(key) || []
+    const idleConnection = connections.find(conn =>
+      conn.state === 'idle' && this.isConnectionValid(conn),
+    )
+
+    if (idleConnection) {
+      // 取出第一个等待的请求
+      const waitingRequest = queue.shift()
+      if (waitingRequest) {
+        // 清除超时
+        const timeout = (waitingRequest as any).timeout
+        if (timeout) {
+          clearTimeout(timeout)
+        }
+
+        // 标记连接为活跃并返回
+        this.markConnectionActive(idleConnection)
+        waitingRequest.resolve(idleConnection)
+
+        // 如果还有等待的请求，继续通知
+        if (queue.length > 0) {
+          this.notifyWaiters(key)
+        }
+      }
+    }
   }
 
   /**

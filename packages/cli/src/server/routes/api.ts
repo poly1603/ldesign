@@ -17,6 +17,7 @@ import { projectsRouter } from './projects.js'
 import { projectToolsRouter } from './project-tools.js'
 import { npmSourcesRouter } from './npm-sources.js'
 import { verdaccioRouter } from './verdaccio.js'
+import { packageManagerRouter } from './package-manager.js'
 import { ProcessManager } from '../ProcessManager.js'
 import { configManager } from '../config.js'
 
@@ -1130,6 +1131,9 @@ apiRouter.use('/npm-sources', npmSourcesRouter)
 // 注册 Verdaccio 管理路由
 apiRouter.use('/verdaccio', verdaccioRouter)
 
+// 注册包管理路由
+apiRouter.use('/packages', packageManagerRouter)
+
 // ==================== 进程管理 API ====================
 
 const processManager = ProcessManager.getInstance()
@@ -1140,21 +1144,24 @@ const processManager = ProcessManager.getInstance()
  */
 apiRouter.post('/process/start', async (req, res) => {
   try {
-    const { projectPath, projectId, action, environment } = req.body
+    const { projectPath, projectId, action, environment, registry } = req.body
 
-    if (!projectPath || !projectId || !action || !environment) {
+    if (!projectPath || !projectId || !action) {
       return res.status(400).json({
         success: false,
         message: '缺少必要参数'
       })
     }
 
+    // 对于 publish 动作，使用 registry 作为 environment
+    const finalEnvironment = action === 'publish' && registry ? registry : (environment || 'development')
+
     // 启动进程
     const processInfo = await processManager.startProcess(
       projectPath,
       projectId,
       action,
-      environment
+      finalEnvironment
     )
 
     // 监听进程日志并通过 WebSocket 发送

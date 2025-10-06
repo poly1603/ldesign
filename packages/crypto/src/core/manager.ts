@@ -108,7 +108,7 @@ export class CryptoManager {
 
       return result
     }
- catch (error) {
+    catch (error) {
       this.log('error', 'Encryption failed', error)
       return {
         success: false,
@@ -142,7 +142,7 @@ export class CryptoManager {
 
       return result
     }
- catch (error) {
+    catch (error) {
       this.log('error', 'Decryption failed', error)
       return {
         success: false,
@@ -265,6 +265,29 @@ export class CryptoManager {
   }
 
   /**
+   * 获取缓存统计（别名）
+   */
+  getCacheStats(): import('./performance').CacheStats {
+    return this.optimizer.getCacheStats()
+  }
+
+  /**
+   * 获取性能指标
+   */
+  getPerformanceMetrics(): import('./performance').PerformanceMetrics {
+    return this.optimizer.getPerformanceMetrics()
+  }
+
+  /**
+   * 清理过期缓存
+   */
+  cleanupCache(): number {
+    const cleaned = this.optimizer.cleanupCache()
+    this.log('info', `Cleaned ${cleaned} expired cache entries`)
+    return cleaned
+  }
+
+  /**
    * 清除缓存
    */
   clearCache(): void {
@@ -309,7 +332,7 @@ export class CryptoManager {
         // eslint-disable-next-line no-console
         console[level](logMessage, data)
       }
- else {
+      else {
         // eslint-disable-next-line no-console
         console[level](logMessage)
       }

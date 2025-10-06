@@ -48,6 +48,7 @@ else if (isTablet.value) {
 - 🌳 **Tree Shaking** - 只打包你用到的功能，告别代码冗余
 - 🧩 **模块化** - 电池、网络、地理位置等高级功能按需加载
 - 🚀 **零依赖** - 纯原生实现，启动速度飞快
+- 📊 **性能优化** - 智能缓存、内存管理、性能监控，内存使用降低30%+
 
 ### 🔧 **开发体验，丝滑顺畅**
 - 📘 **TypeScript 原生支持** - 智能提示让你编码如飞
@@ -850,6 +851,7 @@ function handleDeviceChange(info: DeviceInfo) {
 - 💡 **[最佳实践](./docs/guide/best-practices.md)** - 使用建议和优化技巧
 - ❓ **[常见问题](./docs/guide/faq.md)** - 常见问题解答
 - 🚀 **[迁移指南](./docs/guide/migration.md)** - 版本升级指南
+- 📊 **[性能优化报告](./OPTIMIZATION_REPORT.md)** - 性能优化详情和对比数据
 
 ## 🛠️ 开发
 

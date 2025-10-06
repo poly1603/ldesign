@@ -221,12 +221,30 @@ export function useColorTheme(options: UseColorThemeOptions = {}): UseColorTheme
   // 方法实现
   const setTheme = async (theme: string): Promise<void> => {
     try {
+      // 🔥 关键修复: 从 themeManager 获取最新模式，避免使用过时的状态
+      let latestMode = currentMode.value
+      if (themeManager && typeof themeManager.getCurrentMode === 'function') {
+        try {
+          const mode = themeManager.getCurrentMode()
+          if (mode) {
+            latestMode = mode
+            // 同步本地状态
+            currentMode.value = mode
+          }
+        }
+        catch (error) {
+          if (import.meta.env.DEV) {
+            console.warn('[useColorTheme] 获取当前模式失败:', error)
+          }
+        }
+      }
+
       if (themeManager && typeof themeManager.setTheme === 'function') {
-        await themeManager.setTheme(theme, currentMode.value)
+        await themeManager.setTheme(theme, latestMode)
       }
 
       currentTheme.value = theme
-      onThemeChange?.(theme, currentMode.value)
+      onThemeChange?.(theme, latestMode)
 
       if (autoSave) {
         saveToStorage()
@@ -330,6 +348,33 @@ export function useColorTheme(options: UseColorThemeOptions = {}): UseColorTheme
     // 应用初始主题
     if (themeManager) {
       setTheme(theme).then(() => setMode(mode))
+
+      // 🔥 新增: 监听主题管理器的模式变化事件
+      if (typeof themeManager.on === 'function') {
+        const handleThemeChanged = (event: any) => {
+          if (event.mode && event.mode !== currentMode.value) {
+            currentMode.value = event.mode
+            if (import.meta.env.DEV) {
+              console.log(`🔄 [useColorTheme] 模式已同步: ${event.mode}`)
+            }
+          }
+          if (event.theme && event.theme !== currentTheme.value) {
+            currentTheme.value = event.theme
+            if (import.meta.env.DEV) {
+              console.log(`🔄 [useColorTheme] 主题已同步: ${event.theme}`)
+            }
+          }
+        }
+
+        themeManager.on('theme-changed', handleThemeChanged)
+
+        // 清理监听器
+        onUnmounted(() => {
+          if (typeof themeManager.off === 'function') {
+            themeManager.off('theme-changed', handleThemeChanged)
+          }
+        })
+      }
     }
 
     // 启用系统同步

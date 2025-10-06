@@ -239,12 +239,12 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
     // 检查是否有变化
     const hasChanged
       = oldInfo.online !== newInfo.online
-        || oldInfo.status !== newInfo.status
-        || oldInfo.type !== newInfo.type
-        || oldInfo.effectiveType !== newInfo.effectiveType
-        || oldInfo.downlink !== newInfo.downlink
-        || oldInfo.rtt !== newInfo.rtt
-        || oldInfo.saveData !== newInfo.saveData
+      || oldInfo.status !== newInfo.status
+      || oldInfo.type !== newInfo.type
+      || oldInfo.effectiveType !== newInfo.effectiveType
+      || oldInfo.downlink !== newInfo.downlink
+      || oldInfo.rtt !== newInfo.rtt
+      || oldInfo.saveData !== newInfo.saveData
 
     this.networkInfo = newInfo
 
@@ -274,9 +274,9 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
     window.addEventListener('online', this.onlineHandler)
     window.addEventListener('offline', this.offlineHandler)
 
-    // 同时设置 ononline/onoffline，避免测试环境中 addEventListener 被 stub 后无法触发处理器
-    ;(window as any).ononline = this.onlineHandler
-    ;(window as any).onoffline = this.offlineHandler
+      // 同时设置 ononline/onoffline，避免测试环境中 addEventListener 被 stub 后无法触发处理器
+      ; (window as any).ononline = this.onlineHandler
+      ; (window as any).onoffline = this.offlineHandler
 
     // 监听网络连接变化
     if (this.connection && 'addEventListener' in this.connection) {
@@ -298,13 +298,13 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
 
     if (this.onlineHandler) {
       window.removeEventListener('online', this.onlineHandler)
-      ;(window as any).ononline = null
+        ; (window as any).ononline = null
       this.onlineHandler = undefined
     }
 
     if (this.offlineHandler) {
       window.removeEventListener('offline', this.offlineHandler)
-      ;(window as any).onoffline = null
+        ; (window as any).onoffline = null
       this.offlineHandler = undefined
     }
 
@@ -314,9 +314,7 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
       this.changeHandler = undefined
     }
 
-    if (this.connection?.removeEventListener && this.changeHandler) {
-      this.connection.removeEventListener('change', this.changeHandler)
-      this.changeHandler = undefined
-    }
+    // 清理connection引用,帮助垃圾回收
+    this.connection = null
   }
 }

@@ -4,53 +4,38 @@
  */
 
 import type { PersistOptions } from '@/types'
+import { LRUCache } from '../utils/cache'
 
 /**
  * 缓存管理器
+ * 使用 LRU 缓存策略，自动淘汰最少使用的条目
  */
 export class CacheManager {
-  private cache = new Map<string, { value: any; timestamp: number; ttl?: number }>()
-  private maxSize: number
-  private defaultTTL: number
+  private cache: LRUCache<string, any>
 
   constructor(maxSize = 1000, defaultTTL = 5 * 60 * 1000) {
-    this.maxSize = maxSize
-    this.defaultTTL = defaultTTL
+    this.cache = new LRUCache(maxSize, defaultTTL)
   }
 
   /**
    * 设置缓存
    */
   set(key: string, value: any, ttl?: number): void {
-    // 如果缓存已满，删除最旧的条目
-    if (this.cache.size >= this.maxSize) {
-      const firstKey = this.cache.keys().next().value
-      if (firstKey) {
-        this.cache.delete(firstKey)
-      }
-    }
-
-    this.cache.set(key, {
-      value,
-      timestamp: Date.now(),
-      ttl: ttl ?? this.defaultTTL,
-    })
+    this.cache.set(key, value, ttl)
   }
 
   /**
    * 获取缓存
    */
   get(key: string): any {
-    const item = this.cache.get(key)
-    if (!item) return undefined
+    return this.cache.get(key)
+  }
 
-    const now = Date.now()
-    if (item.ttl && now - item.timestamp > item.ttl) {
-      this.cache.delete(key)
-      return undefined
-    }
-
-    return item.value
+  /**
+   * 检查缓存是否存在
+   */
+  has(key: string): boolean {
+    return this.cache.has(key)
   }
 
   /**
@@ -71,19 +56,21 @@ export class CacheManager {
    * 获取缓存大小
    */
   size(): number {
-    return this.cache.size
+    return this.cache.size()
   }
 
   /**
-   * 清理过期缓存
+   * 清理过期缓存（LRU 缓存会自动清理）
    */
   cleanup(): void {
-    const now = Date.now()
-    for (const [key, item] of this.cache.entries()) {
-      if (item.ttl && now - item.timestamp > item.ttl) {
-        this.cache.delete(key)
-      }
-    }
+    // LRU 缓存内部已经有定期清理机制
+  }
+
+  /**
+   * 销毁缓存管理器
+   */
+  dispose(): void {
+    this.cache.dispose()
   }
 }
 
@@ -316,6 +303,17 @@ export class PerformanceOptimizer {
    * 清理所有资源
    */
   dispose(): void {
+    // 清理缓存（包括定时器）
+    this.cache.dispose()
+    // 清理防抖和节流
+    this.debounce.clear()
+    this.throttle.clear()
+  }
+
+  /**
+   * 清空所有缓存（向后兼容）
+   */
+  clear(): void {
     this.cache.clear()
     this.debounce.clear()
     this.throttle.clear()

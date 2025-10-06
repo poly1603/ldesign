@@ -178,6 +178,8 @@ export type {
 export {
   CONSTANTS,
   ErrorUtils,
+  LRUCache,
+  type LRUCacheOptions,
   RandomUtils,
   StringUtils,
   ValidationUtils,

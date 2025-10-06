@@ -2,8 +2,7 @@
 import { computed } from 'vue'
 import type { LoginTemplateProps } from '../../types'
 
-/* 使用统一的Props接口
- */
+/* 使用统一的Props接口 */
 const props = withDefaults(defineProps<LoginTemplateProps>(), {
   title: '平板登录',
   subtitle: '在平板上享受更好的体验',
@@ -17,73 +16,76 @@ const props = withDefaults(defineProps<LoginTemplateProps>(), {
   enableAnimations: true,
 })
 
-/* 计算属性 */
-const cssVars = computed(() => ({
-  '--primary-color': props.primaryColor,
-  '--secondary-color': props.secondaryColor,
-  '--tertiary-color': '#45b7d1',
-}))
+/* 定义事件 - 使用emit替代console.log，提供更好的组件通信 */
+const emit = defineEmits<{
+  themeChange: [theme: string]
+  languageChange: [language: string]
+  darkModeChange: [isDark: boolean]
+  sizeChange: [size: string]
+}>()
 
-const backgroundStyle = computed(() => {
-  if (props.backgroundImage) {
-    return {
-      backgroundImage: `url(${props.backgroundImage})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-    }
+/* 优化：合并计算属性，减少响应式开销 */
+const combinedStyles = computed(() => {
+  const styles: Record<string, any> = {
+    '--primary-color': props.primaryColor,
+    '--secondary-color': props.secondaryColor,
+    '--tertiary-color': '#45b7d1',
   }
-  return {}
+
+  // 合并背景样式到同一个计算属性中
+  if (props.backgroundImage) {
+    styles.backgroundImage = `url(${props.backgroundImage})`
+    styles.backgroundSize = 'cover'
+    styles.backgroundPosition = 'center'
+    styles.backgroundRepeat = 'no-repeat'
+  }
+
+  return styles
 })
 
-/* 配置选择器事件处理方法 */
+/* 配置选择器事件处理方法 - 优化：使用emit替代console.log */
 const handleThemeChange = (theme: string) => {
-  console.log('主题切换:', theme)
+  emit('themeChange', theme)
 }
 
 const handleLanguageChange = (language: string) => {
-  console.log('语言切换:', language)
+  emit('languageChange', language)
 }
 
 const handleDarkModeChange = (isDark: boolean) => {
-  console.log('暗黑模式切换:', isDark)
+  emit('darkModeChange', isDark)
 }
 
 const handleSizeChange = (size: string) => {
-  console.log('尺寸切换:', size)
+  emit('sizeChange', size)
 }
-
-
 </script>
 
 <template>
-  <div class="ldesign-template-login ldesign-template-tablet" :style="cssVars">
-    <!-- 平板优化背景 -->
-    <div class="ldesign-template-tablet-background" :style="backgroundStyle">
-      <!-- 平板专用装饰元素 -->
+  <div class="ldesign-template-login ldesign-template-tablet" :style="combinedStyles">
+    <!-- 平板优化背景 - 优化：合并样式到combinedStyles -->
+    <div class="ldesign-template-tablet-background">
+      <!-- 平板专用装饰元素 - 优化：减少DOM节点，提升性能 -->
       <div v-if="enableAnimations" class="ldesign-template-tablet-decorations">
         <div class="ldesign-template-decoration-hexagon ldesign-template-hex-1"></div>
         <div class="ldesign-template-decoration-hexagon ldesign-template-hex-2"></div>
         <div class="ldesign-template-decoration-hexagon ldesign-template-hex-3"></div>
         <div class="ldesign-template-decoration-grid"></div>
+        <!-- 优化：粒子数量从8个减少到4个，减少50%的DOM节点和动画开销 -->
         <div class="decoration-particles">
           <div class="particle particle-1"></div>
           <div class="particle particle-2"></div>
           <div class="particle particle-3"></div>
           <div class="particle particle-4"></div>
-          <div class="particle particle-5"></div>
-          <div class="particle particle-6"></div>
-          <div class="particle particle-7"></div>
-          <div class="particle particle-8"></div>
         </div>
       </div>
     </div>
 
     <div class="tablet-container">
-      <!-- 头部区域 -->
+      <!-- 头部区域 - 优化：使用v-once标记静态内容，减少重渲染 -->
       <div class="tablet-header">
         <slot name="header">
-          <div class="header-content">
+          <div v-once class="header-content">
             <div v-if="logoUrl" class="logo-section">
               <img :src="logoUrl" :alt="title" class="logo-image">
             </div>
@@ -156,17 +158,33 @@ const handleSizeChange = (size: string) => {
 </template>
 
 <style lang="less" scoped>
-/* 平板端登录模板样式 */
+/*
+ * 平板端登录模板样式
+ * 性能优化：
+ * 1. 使用 CSS contain 优化渲染
+ * 2. 使用 transform3d 启用GPU加速
+ * 3. 减少动画元素数量
+ * 4. 支持 prefers-reduced-motion
+ */
+
+/* CSS变量定义 - 统一管理动画时长 */
+:root {
+  --animation-duration-slow: 12s;
+  --animation-duration-medium: 8s;
+  --animation-duration-fast: 6s;
+}
+
 .ldesign-template-login.ldesign-template-tablet {
   min-height: 100vh;
   position: relative;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: linear-gradient(135deg, #48cae4, #023e8a);
+  /* 性能优化：使用 contain 属性优化渲染 */
+  contain: layout style paint;
 }
 
-/* 平板背景
- */
+/* 平板背景 - 优化：添加渲染优化 */
 .ldesign-template-tablet-background {
   position: absolute;
   top: 0;
@@ -174,10 +192,11 @@ const handleSizeChange = (size: string) => {
   right: 0;
   bottom: 0;
   z-index: 1;
+  /* 性能优化：隔离背景层的渲染 */
+  contain: strict;
 }
 
-/* 装饰元素
- */
+/* 装饰元素 - 优化：添加性能提示和GPU加速 */
 .ldesign-template-tablet-decorations {
   position: absolute;
   top: 0;
@@ -185,6 +204,8 @@ const handleSizeChange = (size: string) => {
   right: 0;
   bottom: 0;
   pointer-events: none;
+  /* 性能优化：隔离装饰层 */
+  contain: layout style;
 
   .ldesign-template-decoration-hexagon {
     position: absolute;
@@ -192,7 +213,11 @@ const handleSizeChange = (size: string) => {
     height: 60px;
     background: rgba(255, 255, 255, 0.08);
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    animation: rotate-hexagon 12s linear infinite;
+    animation: rotate-hexagon var(--animation-duration-slow) linear infinite;
+    /* 性能优化：使用will-change提示浏览器优化 */
+    will-change: transform, opacity;
+    /* 性能优化：强制GPU加速 */
+    transform: translate3d(0, 0, 0);
 
     &.ldesign-template-hex-1 {
       top: 20%;
@@ -204,18 +229,19 @@ const handleSizeChange = (size: string) => {
       top: 60%;
       left: 15%;
       animation-delay: 4s;
-      transform: scale(0.8);
+      transform: scale(0.8) translate3d(0, 0, 0);
     }
 
-    &.hex-3 {
+    /* Bug修复：修正类名 .hex-3 -> .ldesign-template-hex-3 */
+    &.ldesign-template-hex-3 {
       bottom: 20%;
       right: 30%;
       animation-delay: 8s;
-      transform: scale(1.2);
+      transform: scale(1.2) translate3d(0, 0, 0);
     }
   }
 
-  .decoration-grid {
+  .ldesign-template-decoration-grid {
     position: absolute;
     top: 10%;
     left: 10%;
@@ -226,6 +252,9 @@ const handleSizeChange = (size: string) => {
       linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
     background-size: 20px 20px;
     animation: grid-move 15s linear infinite;
+    /* 性能优化：GPU加速 */
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
   }
 
   .decoration-particles {
@@ -241,13 +270,17 @@ const handleSizeChange = (size: string) => {
       height: 4px;
       background: rgba(255, 255, 255, 0.6);
       border-radius: 50%;
-      animation: particle-float 8s ease-in-out infinite;
+      animation: particle-float var(--animation-duration-medium) ease-in-out infinite;
+      /* 性能优化：GPU加速和will-change */
+      will-change: transform, opacity;
+      transform: translate3d(0, 0, 0);
 
+      /* 优化：只保留4个粒子，减少50%的DOM和动画开销 */
       &.particle-1 {
         top: 20%;
         left: 15%;
         animation-delay: 1s;
-        animation-duration: 6s;
+        animation-duration: var(--animation-duration-fast);
       }
 
       &.particle-2 {
@@ -261,7 +294,7 @@ const handleSizeChange = (size: string) => {
         top: 60%;
         left: 25%;
         animation-delay: 3s;
-        animation-duration: 8s;
+        animation-duration: var(--animation-duration-medium);
       }
 
       &.particle-4 {
@@ -270,80 +303,61 @@ const handleSizeChange = (size: string) => {
         animation-delay: 4s;
         animation-duration: 9s;
       }
-
-      &.particle-5 {
-        top: 45%;
-        left: 50%;
-        animation-delay: 5s;
-        animation-duration: 10s;
-      }
-
-      &.particle-6 {
-        top: 15%;
-        left: 60%;
-        animation-delay: 6s;
-        animation-duration: 7s;
-      }
-
-      &.particle-7 {
-        top: 85%;
-        left: 30%;
-        animation-delay: 7s;
-        animation-duration: 8s;
-      }
-
-      &.particle-8 {
-        top: 25%;
-        left: 85%;
-        animation-delay: 8s;
-        animation-duration: 6s;
-      }
     }
   }
 }
 
+/* 动画定义 - 优化：使用transform3d启用GPU加速 */
 @keyframes rotate-hexagon {
   0% {
-    transform: rotate(0deg) scale(1);
+    transform: rotate(0deg) scale(1) translate3d(0, 0, 0);
     opacity: 0.8;
   }
 
   50% {
-    transform: rotate(180deg) scale(1.1);
+    transform: rotate(180deg) scale(1.1) translate3d(0, 0, 0);
     opacity: 0.4;
   }
 
   100% {
-    transform: rotate(360deg) scale(1);
+    transform: rotate(360deg) scale(1) translate3d(0, 0, 0);
     opacity: 0.8;
   }
 }
 
 @keyframes grid-move {
   0% {
-    transform: translate(0, 0);
+    transform: translate3d(0, 0, 0);
   }
 
   100% {
-    transform: translate(20px, 20px);
+    transform: translate3d(20px, 20px, 0);
   }
 }
 
 @keyframes particle-float {
-
   0%,
   100% {
-    transform: translateY(0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
     opacity: 0.6;
   }
 
   50% {
-    transform: translateY(-20px) scale(1.2);
+    transform: translate3d(0, -20px, 0) scale(1.2);
     opacity: 1;
   }
 }
 
-/* 主容☰ */
+/* 可访问性：支持减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .ldesign-template-tablet-decorations * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 主容器 - 优化：添加渲染优化 */
 .tablet-container {
   position: relative;
   z-index: 10;
@@ -351,42 +365,44 @@ const handleSizeChange = (size: string) => {
   display: flex;
   flex-direction: column;
   padding: var(--ls-padding-lg);
+  /* 性能优化：优化容器渲染 */
+  contain: layout;
 }
 
-/* 头部区域
- */
+/* 头部区域 - 优化：简化选择器嵌套 */
 .tablet-header {
   text-align: center;
   padding: var(--ls-padding-xl) 0;
+}
 
-  .header-content {
-    .logo-section {
-      margin-bottom: var(--ls-margin-lg);
+.header-content {
+  /* 性能优化：静态内容使用v-once，减少不必要的渲染 */
+  .logo-section {
+    margin-bottom: var(--ls-margin-lg);
 
-      .logo-image {
-        height: 80px;
-        width: auto;
-        object-fit: contain;
-      }
+    .logo-image {
+      height: 80px;
+      width: auto;
+      object-fit: contain;
     }
+  }
 
-    .app-icon {
-      font-size: 4rem;
-      margin-bottom: var(--ls-margin-lg);
-    }
+  .app-icon {
+    font-size: 4rem;
+    margin-bottom: var(--ls-margin-lg);
+  }
 
-    .app-title {
-      font-size: var(--ls-font-size-h1);
-      font-weight: 700;
-      color: var(--ldesign-font-white-1);
-      margin-bottom: var(--ls-margin-sm);
-    }
+  .app-title {
+    font-size: var(--ls-font-size-h1);
+    font-weight: 700;
+    color: var(--ldesign-font-white-1);
+    margin-bottom: var(--ls-margin-sm);
+  }
 
-    .app-subtitle {
-      font-size: var(--ls-font-size-lg);
-      color: var(--ldesign-font-white-3);
-      margin: 0;
-    }
+  .app-subtitle {
+    font-size: var(--ls-font-size-lg);
+    color: var(--ldesign-font-white-3);
+    margin: 0;
   }
 }
 
@@ -441,8 +457,7 @@ const handleSizeChange = (size: string) => {
   justify-content: center;
 }
 
-/* 登录面板
- */
+/* 登录面板 - 优化：添加渲染优化 */
 .login-panel {
   background: var(--ldesign-bg-color-container);
   backdrop-filter: blur(20px);
@@ -455,6 +470,10 @@ const handleSizeChange = (size: string) => {
   border: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
+  /* 性能优化：隔离面板渲染 */
+  contain: layout style;
+  /* 性能优化：优化backdrop-filter性能 */
+  will-change: transform;
 }
 
 /* 面板内容

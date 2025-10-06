@@ -109,11 +109,19 @@ async function request<T = any>(
     const response = await fetch(fullUrl, fetchOptions)
     clearTimeout(timeoutId)
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    const data = await response.json()
+    
+    // 即使 HTTP 状态码不是 2xx，也返回响应体中的数据
+    // 因为后端可能在 400/500 响应中包含有用的错误信息
+    if (!response.ok && !data.success) {
+      // 如果响应不成功，返回包含错误信息的响应对象
+      return {
+        success: false,
+        message: data.message || `HTTP ${response.status}: ${response.statusText}`,
+        error: data.error
+      } as ApiResponse<T>
     }
 
-    const data = await response.json()
     return data as ApiResponse<T>
 
   } catch (error) {

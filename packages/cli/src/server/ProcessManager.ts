@@ -89,24 +89,42 @@ export class ProcessManager extends EventEmitter {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
     const scripts = packageJson.scripts || {}
 
-    // 根据 action 和 environment 确定要执行的脚本
-    let scriptName = action
-    if (environment !== 'development' && environment !== 'production') {
-      // 对于 test 和 staging 环境，尝试使用带环境后缀的脚本
-      const envScriptName = `${action}:${environment}`
-      if (scripts[envScriptName]) {
-        scriptName = envScriptName
-      }
-    } else if (environment === 'production' && action === 'dev') {
-      // 开发环境的生产模式
-      const prodScriptName = `${action}:prod`
-      if (scripts[prodScriptName]) {
-        scriptName = prodScriptName
-      }
-    }
+    // 处理 publish 动作的特殊情况
+    let command: string
+    let args: string[]
 
-    if (!scripts[scriptName]) {
-      throw new Error(`脚本 "${scriptName}" 不存在`)
+    if (action === 'publish') {
+      // 发布动作，直接使用 npm publish
+      command = 'npm'
+      args = ['publish']
+      
+      // 如果 environment 是 URL，则作为 registry 参数
+      if (environment && (environment.startsWith('http://') || environment.startsWith('https://'))) {
+        args.push('--registry', environment)
+      }
+    } else {
+      // 其他动作，根据 action 和 environment 确定要执行的脚本
+      let scriptName = action
+      if (environment !== 'development' && environment !== 'production') {
+        // 对于 test 和 staging 环境，尝试使用带环境后缀的脚本
+        const envScriptName = `${action}:${environment}`
+        if (scripts[envScriptName]) {
+          scriptName = envScriptName
+        }
+      } else if (environment === 'production' && action === 'dev') {
+        // 开发环境的生产模式
+        const prodScriptName = `${action}:prod`
+        if (scripts[prodScriptName]) {
+          scriptName = prodScriptName
+        }
+      }
+
+      if (!scripts[scriptName]) {
+        throw new Error(`脚本 "${scriptName}" 不存在`)
+      }
+
+      command = 'pnpm'
+      args = ['run', scriptName]
     }
 
     // 创建进程信息
@@ -121,7 +139,7 @@ export class ProcessManager extends EventEmitter {
     }
 
     // 启动子进程
-    const child = spawn('pnpm', ['run', scriptName], {
+    const child = spawn(command, args, {
       cwd: projectPath,
       shell: true,
       stdio: 'pipe'

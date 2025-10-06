@@ -1,6 +1,9 @@
 import type { EncodingType } from '../types'
 import CryptoJS from 'crypto-js'
 
+// 导出 LRU 缓存
+export { LRUCache, type LRUCacheOptions } from './lru-cache'
+
 /**
  * 字符串转换工具
  *
@@ -192,7 +195,7 @@ export class ValidationUtils {
         return btoa(atob(str)) === str
       }
     }
- catch {
+    catch {
       // 若原生 API 失败，继续使用 CryptoJS 进行校验
     }
 
@@ -203,7 +206,7 @@ export class ValidationUtils {
       // 去除末尾填充后比较，避免等价的不同填充形式导致误判
       return roundtrip.replace(/=+$/, '') === str.replace(/=+$/, '')
     }
- catch {
+    catch {
       return false
     }
   }

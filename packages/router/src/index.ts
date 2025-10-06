@@ -367,12 +367,12 @@ export async function createFullRouter(options: {
     )
   }
 
-  // 缓存插件
+  // 缓存插件（优化：减少默认缓存大小）
   if (options.cache?.enabled !== false) {
     plugins.push(
       cachePlugin.createCachePlugin({
         strategy: options.cache?.strategy || CacheStrategy.MEMORY,
-        maxSize: options.cache?.maxSize || 10,
+        maxSize: options.cache?.maxSize || 5, // 优化：从10降低到5
       }),
     )
   }

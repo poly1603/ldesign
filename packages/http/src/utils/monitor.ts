@@ -29,6 +29,8 @@ export interface MonitorConfig {
   enabled?: boolean
   maxMetrics?: number // 最大保存的指标数量
   slowRequestThreshold?: number // 慢请求阈值(ms)
+  samplingRate?: number // 采样率 (0-1)，高负载时降低采样
+  enableSampling?: boolean // 是否启用采样
   onSlowRequest?: (metrics: PerformanceMetrics) => void
   onError?: (metrics: PerformanceMetrics) => void
   onMetricsUpdate?: (metrics: PerformanceMetrics[]) => void
@@ -55,7 +57,12 @@ export interface PerformanceStats {
 }
 
 /**
- * 请求监控器
+ * 请求监控器（优化版）
+ *
+ * 优化点：
+ * 1. 添加采样机制，高负载时降低采样率
+ * 2. 缓存统计结果，避免重复计算
+ * 3. 使用更紧凑的数据结构
  */
 export class RequestMonitor {
   private metrics: PerformanceMetrics[] = []
@@ -63,11 +70,21 @@ export class RequestMonitor {
   private config: Required<MonitorConfig>
   private requestMap = new Map<string, { startTime: number, retries: number }>()
 
+  // 统计缓存
+  private statsCache?: PerformanceStats
+  private statsCacheTime = 0
+  private statsCacheTTL = 1000 // 统计缓存1秒
+
+  // 采样计数器
+  private sampleCounter = 0
+
   constructor(config: MonitorConfig = {}) {
     this.config = {
       enabled: true,
       maxMetrics: 1000,
       slowRequestThreshold: 3000,
+      samplingRate: 1.0, // 默认100%采样
+      enableSampling: false, // 默认不启用采样
       onSlowRequest: () => {},
       onError: () => {},
       onMetricsUpdate: () => {},
@@ -76,11 +93,24 @@ export class RequestMonitor {
   }
 
   /**
-   * 开始监控请求
+   * 检查是否应该采样
+   */
+  private shouldSample(): boolean {
+    if (!this.config.enableSampling) {
+      return true
+    }
+
+    this.sampleCounter++
+    return Math.random() < this.config.samplingRate
+  }
+
+  /**
+   * 开始监控请求（优化版 - 带采样）
    */
   startRequest(requestId: string, _config: RequestConfig): void {
-    if (!this.config.enabled)
+    if (!this.config.enabled || !this.shouldSample()) {
       return
+    }
 
     this.requestMap.set(requestId, {
       startTime: Date.now(),
@@ -89,7 +119,7 @@ export class RequestMonitor {
   }
 
   /**
-   * 结束监控请求
+   * 结束监控请求（优化版）
    */
   endRequest<T>(
     requestId: string,
@@ -97,12 +127,14 @@ export class RequestMonitor {
     response?: ResponseData<T>,
     error?: Error,
   ): void {
-    if (!this.config.enabled)
+    if (!this.config.enabled) {
       return
+    }
 
     const requestInfo = this.requestMap.get(requestId)
-    if (!requestInfo)
+    if (!requestInfo) {
       return
+    }
 
     const endTime = Date.now()
     const duration = endTime - requestInfo.startTime
@@ -123,6 +155,9 @@ export class RequestMonitor {
 
     this.addMetrics(metrics)
     this.requestMap.delete(requestId)
+
+    // 清除统计缓存
+    this.invalidateStatsCache()
 
     // 触发回调
     if (duration > this.config.slowRequestThreshold) {
@@ -194,23 +229,62 @@ export class RequestMonitor {
   }
 
   /**
-   * 获取性能统计
+   * 获取性能统计（优化版 - 带缓存）
    */
   getStats(): PerformanceStats {
-    const total = this.metrics.length
-    const successful = this.metrics.filter(m => !m.error).length
-    const failed = total - successful
-    const cached = this.metrics.filter(m => m.cached).length
-    const slow = this.metrics.filter(m => m.duration > this.config.slowRequestThreshold).length
+    // 检查缓存
+    const now = Date.now()
+    if (this.statsCache && (now - this.statsCacheTime) < this.statsCacheTTL) {
+      return this.statsCache
+    }
 
-    const durations = this.metrics.map(m => m.duration).sort((a, b) => a - b)
-    const totalDuration = durations.reduce((sum, d) => sum + d, 0)
-    const totalSize = this.metrics.reduce((sum, m) => sum + (m.size || 0), 0)
+    // 计算统计信息
+    const stats = this.calculateStats()
+
+    // 缓存结果
+    this.statsCache = stats
+    this.statsCacheTime = now
+
+    return stats
+  }
+
+  /**
+   * 计算统计信息
+   */
+  private calculateStats(): PerformanceStats {
+    const total = this.metrics.length
+    let successful = 0
+    let failed = 0
+    let cached = 0
+    let slow = 0
+    let totalDuration = 0
+    let totalSize = 0
 
     const requestsByMethod: Record<string, number> = {}
     const requestsByStatus: Record<number, number> = {}
+    const durations: number[] = []
 
+    // 单次遍历收集所有数据
     for (const metric of this.metrics) {
+      durations.push(metric.duration)
+      totalDuration += metric.duration
+      totalSize += metric.size || 0
+
+      if (metric.error) {
+        failed++
+      }
+      else {
+        successful++
+      }
+
+      if (metric.cached) {
+        cached++
+      }
+
+      if (metric.duration > this.config.slowRequestThreshold) {
+        slow++
+      }
+
       // 按方法统计
       requestsByMethod[metric.method] = (requestsByMethod[metric.method] || 0) + 1
 
@@ -219,6 +293,9 @@ export class RequestMonitor {
         requestsByStatus[metric.status] = (requestsByStatus[metric.status] || 0) + 1
       }
     }
+
+    // 排序用于百分位计算
+    durations.sort((a, b) => a - b)
 
     return {
       totalRequests: total,
@@ -236,6 +313,13 @@ export class RequestMonitor {
       errorRate: total > 0 ? failed / total : 0,
       cacheHitRate: total > 0 ? cached / total : 0,
     }
+  }
+
+  /**
+   * 清除统计缓存
+   */
+  private invalidateStatsCache(): void {
+    this.statsCache = undefined
   }
 
   /**

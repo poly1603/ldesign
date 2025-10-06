@@ -1,9 +1,15 @@
 /**
  * 翻译引擎
- * 
+ *
  * 从 I18n 类中提取的翻译逻辑，负责处理翻译的核心功能
  * 包括翻译执行、插值处理、复数化等
- * 
+ *
+ * 性能优化：
+ * - 使用 WeakMap 缓存语言包，自动垃圾回收
+ * - 减少函数调用层级
+ * - 优化字符串操作
+ * - 快速路径处理常见情况
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
@@ -30,23 +36,32 @@ export interface TranslationEngineOptions {
   /** 语言包加载器 */
   loader: Loader
   /** 包缓存 */
-  packageCache: Map<Loader, Map<string, LanguagePackage>>
+  packageCache: WeakMap<Loader, Map<string, LanguagePackage>>
   /** 是否启用调试模式 */
   debug?: boolean
 }
 
 /**
  * 翻译引擎类
- * 
+ *
  * 负责处理翻译的核心逻辑，从 I18n 主类中分离出来以提高可维护性
+ *
+ * 性能优化：
+ * - 冻结的空对象避免重复创建
+ * - 内联热路径代码
+ * - 减少条件判断
  */
 export class TranslationEngine {
   private options: TranslationEngineOptions
-  private emptyParams: TranslationParams = {}
-  private emptyOptions: TranslationOptions = {}
+  private readonly emptyParams: TranslationParams = Object.freeze({})
+  private readonly emptyOptions: TranslationOptions = Object.freeze({})
+
+  // 缓存常用的检查结果
+  private hasFallback: boolean
 
   constructor(options: TranslationEngineOptions) {
     this.options = options
+    this.hasFallback = !!(options.fallbackLocale && options.fallbackLocale !== options.currentLocale)
   }
 
   /**
@@ -54,10 +69,17 @@ export class TranslationEngine {
    */
   updateOptions(options: Partial<TranslationEngineOptions>): void {
     this.options = { ...this.options, ...options }
+    this.hasFallback = !!(this.options.fallbackLocale && this.options.fallbackLocale !== this.options.currentLocale)
   }
 
   /**
-   * 执行翻译
+   * 执行翻译（优化版本）
+   *
+   * 性能优化：
+   * - 内联常见路径
+   * - 减少函数调用
+   * - 快速返回
+   *
    * @param key 翻译键
    * @param params 插值参数
    * @param options 翻译选项
@@ -68,7 +90,38 @@ export class TranslationEngine {
     params: TranslationParams = this.emptyParams,
     options: TranslationOptions = this.emptyOptions,
   ): string {
-    return this.performTranslation(key, params, options)
+    // 快速路径：获取翻译文本
+    let text = this.getTranslationTextFast(key, this.options.currentLocale)
+
+    // 降级处理
+    if (text === undefined && this.hasFallback) {
+      text = this.getTranslationTextFast(key, this.options.fallbackLocale!)
+    }
+
+    // 使用默认值或键名
+    if (text === undefined) {
+      return options.defaultValue || key
+    }
+
+    // 快速路径：无需处理的情况
+    const hasParams = params !== this.emptyParams && Object.keys(params).length > 0
+    if (!hasParams) {
+      return text
+    }
+
+    // 处理复数化
+    if (hasPluralExpression(text)) {
+      text = processPluralization(text, params, this.options.currentLocale)
+    }
+
+    // 处理插值
+    if (hasInterpolation(text)) {
+      text = interpolate(text, params, {
+        escapeValue: options.escapeValue,
+      })
+    }
+
+    return text
   }
 
   /**
@@ -159,52 +212,55 @@ export class TranslationEngine {
   }
 
   /**
-   * 获取翻译文本（优化版本）
+   * 快速获取翻译文本（优化版本）
+   *
+   * 性能优化：
+   * - 移除调试代码到生产环境
+   * - 减少条件判断
+   * - 内联常用操作
+   *
    * @param key 翻译键
    * @param locale 语言代码
    * @returns 翻译文本或 undefined
    */
-  private getTranslationTextOptimized(
+  private getTranslationTextFast(
     key: string,
     locale: string,
   ): string | undefined {
-    // 使用缓存避免重复查找
+    // 获取或创建 loader 缓存
     let loaderCache = this.options.packageCache.get(this.options.loader)
     if (!loaderCache) {
       loaderCache = new Map()
       this.options.packageCache.set(this.options.loader, loaderCache)
     }
 
+    // 获取或加载语言包
     let packageData = loaderCache.get(locale)
     if (!packageData) {
-      packageData = (
-        this.options.loader as Loader & {
-          getLoadedPackage?: (
-            _locale: string
-          ) => { translations: Record<string, unknown> } | undefined
-        }
-      ).getLoadedPackage?.(locale)
+      const loader = this.options.loader as Loader & {
+        getLoadedPackage?: (_locale: string) => LanguagePackage | undefined
+      }
+      packageData = loader.getLoadedPackage?.(locale)
 
       if (packageData) {
         loaderCache.set(locale, packageData)
+      } else {
+        return undefined
       }
     }
 
-    if (!packageData) {
-      if (this.options.debug) {
-        console.debug(`[TranslationEngine] No package data found for locale: ${locale}, key: ${key}`)
-        console.debug(`[TranslationEngine] Loader cache size:`, loaderCache.size)
-        console.debug(`[TranslationEngine] Loader has getLoadedPackage:`, typeof (this.options.loader as any).getLoadedPackage)
-      }
-      return undefined
-    }
+    // 获取嵌套值
+    return getNestedValue(packageData.translations as NestedObject, key)
+  }
 
-    const result = getNestedValue(packageData.translations as NestedObject, key)
-    if (result === undefined && this.options.debug) {
-      console.debug(`[TranslationEngine] Translation not found for key: ${key} in locale: ${locale}`)
-      console.debug(`[TranslationEngine] Available translations:`, Object.keys(packageData.translations || {}))
-    }
-    return result
+  /**
+   * 获取翻译文本（优化版本，保留用于兼容性）
+   */
+  private getTranslationTextOptimized(
+    key: string,
+    locale: string,
+  ): string | undefined {
+    return this.getTranslationTextFast(key, locale)
   }
 
   /**

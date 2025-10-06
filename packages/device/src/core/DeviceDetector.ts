@@ -59,8 +59,13 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   private cachedUserAgent?: string
   private cachedOS?: { name: string, version: string }
   private cachedBrowser?: { name: string, version: string }
+  private cachedWebGLSupport?: boolean // 缓存WebGL检测结果
   private lastDetectionTime = 0
   private readonly minDetectionInterval = 16 // 约60fps
+
+  // 缓存过期时间(毫秒)
+  private readonly cacheExpireTime = 60000 // 1分钟
+  private cacheTimestamp = 0
 
   // 错误处理和重试机制
   private errorCount = 0
@@ -271,7 +276,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
         try {
           fn()
         }
-        catch {}
+        catch { }
       })
       this.moduleEventUnsubscribers.delete(name)
     }
@@ -310,7 +315,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
         try {
           fn()
         }
-        catch {}
+        catch { }
       })
     })
     this.moduleEventUnsubscribers.clear()
@@ -325,6 +330,8 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     this.cachedUserAgent = undefined
     this.cachedOS = undefined
     this.cachedBrowser = undefined
+    this.cachedWebGLSupport = undefined
+    this.cacheTimestamp = 0
   }
 
   /**
@@ -407,14 +414,17 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
       const height = window.innerHeight
       const userAgent = navigator.userAgent
 
-      // 性能优化：缓存用户代理解析结果
+      // 性能优化：缓存用户代理解析结果,带过期时间
       let os = this.cachedOS
       let browser = this.cachedBrowser
 
-      if (this.cachedUserAgent !== userAgent) {
+      const cacheExpired = now - this.cacheTimestamp > this.cacheExpireTime
+
+      if (this.cachedUserAgent !== userAgent || cacheExpired) {
         this.cachedUserAgent = userAgent
         this.cachedOS = os = parseOS(userAgent)
         this.cachedBrowser = browser = parseBrowser(userAgent)
+        this.cacheTimestamp = now
       }
 
       const pixelRatio = getPixelRatio()
@@ -460,14 +470,28 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
 
   /**
    * 检测 WebGL 支持
+   *
+   * 优化: 缓存检测结果,避免重复创建canvas
    */
   private detectWebGL(): boolean {
+    // 使用缓存结果
+    if (this.cachedWebGLSupport !== undefined) {
+      return this.cachedWebGLSupport
+    }
+
     try {
       const canvas = document.createElement('canvas')
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
-      return !!gl
+      this.cachedWebGLSupport = !!gl
+
+      // 清理canvas引用,帮助垃圾回收
+      canvas.width = 0
+      canvas.height = 0
+
+      return this.cachedWebGLSupport
     }
     catch {
+      this.cachedWebGLSupport = false
       return false
     }
   }

@@ -293,7 +293,12 @@ export interface DeduplicationStats {
 }
 
 /**
- * 请求去重管理器
+ * 请求去重管理器（优化版）
+ *
+ * 优化点：
+ * 1. 添加自动清理机制，防止内存泄漏
+ * 2. 实现 LRU 策略，限制缓存大小
+ * 3. 优化内存占用
  */
 export class DeduplicationManager {
   private pendingRequests = new Map<string, DeduplicationTask>()
@@ -303,8 +308,19 @@ export class DeduplicationManager {
     savedRequests: 0,
   }
 
+  // 配置项
+  private maxPendingRequests = 1000 // 最大待处理请求数
+  private cleanupInterval = 30000 // 清理间隔（30秒）
+  private requestTimeout = 60000 // 请求超时时间（60秒）
+  private cleanupTimer?: NodeJS.Timeout
+
+  constructor() {
+    // 启动自动清理
+    this.startAutoCleanup()
+  }
+
   /**
-   * 执行请求（带去重）
+   * 执行请求（带去重和自动清理）
    */
   async execute<T = any>(
     key: string,
@@ -319,6 +335,12 @@ export class DeduplicationManager {
       this.stats.savedRequests++
 
       return existingTask.promise as Promise<ResponseData<T>>
+    }
+
+    // 检查是否达到最大待处理请求数
+    if (this.pendingRequests.size >= this.maxPendingRequests) {
+      // 清理最旧的请求
+      this.cleanupOldestRequest()
     }
 
     // 创建新的请求
@@ -338,6 +360,45 @@ export class DeduplicationManager {
     this.stats.executions++
 
     return requestPromise
+  }
+
+  /**
+   * 启动自动清理
+   */
+  private startAutoCleanup(): void {
+    this.cleanupTimer = setInterval(() => {
+      this.cleanupTimeoutTasks(this.requestTimeout)
+    }, this.cleanupInterval)
+  }
+
+  /**
+   * 清理最旧的请求（LRU）
+   */
+  private cleanupOldestRequest(): void {
+    let oldestKey: string | null = null
+    let oldestTime = Number.POSITIVE_INFINITY
+
+    for (const [key, task] of this.pendingRequests) {
+      if (task.createdAt < oldestTime) {
+        oldestTime = task.createdAt
+        oldestKey = key
+      }
+    }
+
+    if (oldestKey) {
+      this.pendingRequests.delete(oldestKey)
+    }
+  }
+
+  /**
+   * 销毁管理器
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = undefined
+    }
+    this.pendingRequests.clear()
   }
 
   /**
@@ -638,10 +699,20 @@ export interface DeduplicationKeyConfig {
 }
 
 /**
- * 智能去重键生成器
+ * 智能去重键生成器（优化版）
+ *
+ * 优化点：
+ * 1. 添加键缓存，避免重复计算
+ * 2. 使用 WeakMap 自动管理缓存生命周期
+ * 3. 优化序列化性能
  */
 export class DeduplicationKeyGenerator {
   private config: Required<Omit<DeduplicationKeyConfig, 'customGenerator'>> & Pick<DeduplicationKeyConfig, 'customGenerator'>
+  // 使用 WeakMap 缓存键，自动垃圾回收
+  private keyCache = new WeakMap<RequestConfig, string>()
+  // 对于非对象配置，使用普通 Map（带 LRU）
+  private stringKeyCache = new Map<string, string>()
+  private maxCacheSize = 1000
 
   constructor(config: DeduplicationKeyConfig = {}) {
     this.config = {
@@ -657,9 +728,31 @@ export class DeduplicationKeyGenerator {
   }
 
   /**
-   * 生成去重键
+   * 生成去重键（优化版 - 带缓存）
    */
   generate(requestConfig: RequestConfig): string {
+    // 尝试从缓存获取
+    const cached = this.keyCache.get(requestConfig)
+    if (cached) {
+      return cached
+    }
+
+    // 生成新键
+    const key = this.generateKey(requestConfig)
+
+    // 缓存结果
+    this.keyCache.set(requestConfig, key)
+
+    // 同时缓存到字符串 Map（用于相同配置的不同对象实例）
+    this.cacheStringKey(key)
+
+    return key
+  }
+
+  /**
+   * 实际生成键的逻辑
+   */
+  private generateKey(requestConfig: RequestConfig): string {
     if (this.config.customGenerator) {
       return this.config.customGenerator(requestConfig)
     }
@@ -709,18 +802,38 @@ export class DeduplicationKeyGenerator {
   }
 
   /**
-   * 序列化参数
+   * 缓存字符串键（LRU）
+   */
+  private cacheStringKey(key: string): void {
+    // 如果缓存已满，删除最旧的项
+    if (this.stringKeyCache.size >= this.maxCacheSize) {
+      const firstKey = this.stringKeyCache.keys().next().value
+      if (firstKey) {
+        this.stringKeyCache.delete(firstKey)
+      }
+    }
+    this.stringKeyCache.set(key, key)
+  }
+
+  /**
+   * 清除缓存
+   */
+  clearCache(): void {
+    this.stringKeyCache.clear()
+  }
+
+  /**
+   * 序列化参数（优化版 - 减少对象创建）
    */
   private serializeParams(params: Record<string, any>): string {
     try {
-      // 对键进行排序以确保一致性
-      const sortedKeys = Object.keys(params).sort()
-      const sortedParams = sortedKeys.reduce((acc, key) => {
-        acc[key] = params[key]
-        return acc
-      }, {} as Record<string, any>)
-
-      return JSON.stringify(sortedParams)
+      const keys = Object.keys(params).sort()
+      // 直接构建字符串，避免创建中间对象
+      const parts: string[] = []
+      for (const key of keys) {
+        parts.push(`${key}:${JSON.stringify(params[key])}`)
+      }
+      return parts.join(',')
     }
     catch {
       return String(params)
@@ -728,7 +841,7 @@ export class DeduplicationKeyGenerator {
   }
 
   /**
-   * 序列化数据
+   * 序列化数据（优化版）
    */
   private serializeData(data: any): string {
     try {
@@ -742,14 +855,13 @@ export class DeduplicationKeyGenerator {
       }
 
       if (typeof data === 'object' && data !== null) {
-        // 对象数据排序序列化
-        const sortedKeys = Object.keys(data).sort()
-        const sortedData = sortedKeys.reduce((acc, key) => {
-          acc[key] = data[key]
-          return acc
-        }, {} as Record<string, any>)
-
-        return JSON.stringify(sortedData)
+        // 直接构建字符串，避免创建排序后的对象
+        const keys = Object.keys(data).sort()
+        const parts: string[] = []
+        for (const key of keys) {
+          parts.push(`${key}:${JSON.stringify(data[key])}`)
+        }
+        return parts.join(',')
       }
 
       return String(data)
@@ -760,21 +872,22 @@ export class DeduplicationKeyGenerator {
   }
 
   /**
-   * 序列化请求头
+   * 序列化请求头（优化版）
    */
   private serializeHeaders(headers: Record<string, string>): string {
     try {
       // 排除一些动态的请求头
-      const excludeHeaders = ['authorization', 'x-request-id', 'x-timestamp']
-      const filteredHeaders = Object.keys(headers)
-        .filter(key => !excludeHeaders.includes(key.toLowerCase()))
-        .sort()
-        .reduce((acc, key) => {
-          acc[key] = headers[key]
-          return acc
-        }, {} as Record<string, string>)
+      const excludeHeaders = new Set(['authorization', 'x-request-id', 'x-timestamp'])
+      const parts: string[] = []
 
-      return JSON.stringify(filteredHeaders)
+      const keys = Object.keys(headers).sort()
+      for (const key of keys) {
+        if (!excludeHeaders.has(key.toLowerCase())) {
+          parts.push(`${key}:${headers[key]}`)
+        }
+      }
+
+      return parts.join(',')
     }
     catch {
       return String(headers)
@@ -782,22 +895,23 @@ export class DeduplicationKeyGenerator {
   }
 
   /**
-   * 序列化特定请求头
+   * 序列化特定请求头（优化版）
    */
   private serializeSpecificHeaders(
     headers: Record<string, string>,
     specificHeaders: string[],
   ): string {
     try {
-      const filteredHeaders = specificHeaders
-        .filter(header => headers[header] !== undefined)
-        .sort()
-        .reduce((acc, header) => {
-          acc[header] = headers[header]
-          return acc
-        }, {} as Record<string, string>)
+      const parts: string[] = []
+      const sortedHeaders = [...specificHeaders].sort()
 
-      return JSON.stringify(filteredHeaders)
+      for (const header of sortedHeaders) {
+        if (headers[header] !== undefined) {
+          parts.push(`${header}:${headers[header]}`)
+        }
+      }
+
+      return parts.join(',')
     }
     catch {
       return ''

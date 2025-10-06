@@ -14,9 +14,9 @@ export const verdaccioRouter: IRouter = Router()
  * 获取 Verdaccio 服务状态
  * GET /api/verdaccio/status
  */
-verdaccioRouter.get('/status', (_req, res) => {
+verdaccioRouter.get('/status', async (_req, res) => {
   try {
-    const status = verdaccioManager.getStatus()
+    const status = await verdaccioManager.getStatus()
     res.json({
       success: true,
       data: status
@@ -239,7 +239,7 @@ verdaccioRouter.post('/notify', (req, res) => {
     const { name, version, tag } = req.body
     verdaccioLogger.info(`📦 新包发布通知: ${name}@${version} [${tag}]`)
     
-    // 这里可以添加更多逻辑，比如通过 WebSocket 通知前端
+    // 这里可以添加更多逻辑,比如通过 WebSocket 通知前端
     
     res.json({
       success: true,
@@ -250,6 +250,160 @@ verdaccioRouter.post('/notify', (req, res) => {
     res.status(500).json({
       success: false,
       message: '处理通知失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 获取所有用户列表
+ * GET /api/verdaccio/users
+ */
+verdaccioRouter.get('/users', (_req, res) => {
+  try {
+    const users = verdaccioManager.getUsers()
+    res.json({
+      success: true,
+      data: users
+    })
+  } catch (error) {
+    verdaccioLogger.error('获取用户列表失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '获取用户列表失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 添加新用户
+ * POST /api/verdaccio/users
+ */
+verdaccioRouter.post('/users', (req, res) => {
+  try {
+    verdaccioLogger.info('[添加用户 API] 收到请求')
+    verdaccioLogger.info('[添加用户 API] Content-Type:', req.headers['content-type'])
+    verdaccioLogger.info('[添加用户 API] req.body:', JSON.stringify(req.body))
+    verdaccioLogger.info('[添加用户 API] req.body type:', typeof req.body)
+    
+    const { username, password, email } = req.body
+    
+    verdaccioLogger.info(`[添加用户 API] 解析到: username=${username}, password=${password ? '***' : 'undefined'}, email=${email}`)
+    
+    if (!username || !password) {
+      verdaccioLogger.warn('[添加用户 API] 验证失败: 用户名或密码为空')
+      return res.status(400).json({
+        success: false,
+        message: '用户名和密码不能为空'
+      })
+    }
+    
+    verdaccioLogger.info(`添加用户请求: ${username}`)
+    const result = verdaccioManager.addUser(username, password, email)
+    
+    if (result.success) {
+      verdaccioLogger.info(`[添加用户 API] 成功: ${username}`)
+      res.json(result)
+    } else {
+      verdaccioLogger.warn(`[添加用户 API] 失败: ${result.message}`)
+      res.status(400).json(result)
+    }
+  } catch (error) {
+    verdaccioLogger.error('[添加用户 API] 异常:', error)
+    res.status(500).json({
+      success: false,
+      message: '添加用户失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 删除用户
+ * DELETE /api/verdaccio/users/:username
+ */
+verdaccioRouter.delete('/users/:username', (req, res) => {
+  try {
+    const { username } = req.params
+    
+    if (!username) {
+      return res.status(400).json({
+        success: false,
+        message: '用户名不能为空'
+      })
+    }
+    
+    verdaccioLogger.info(`删除用户请求: ${username}`)
+    const result = verdaccioManager.deleteUser(username)
+    
+    if (result.success) {
+      res.json(result)
+    } else {
+      res.status(400).json(result)
+    }
+  } catch (error) {
+    verdaccioLogger.error('删除用户失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '删除用户失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 修改用户密码
+ * PUT /api/verdaccio/users/:username/password
+ */
+verdaccioRouter.put('/users/:username/password', (req, res) => {
+  try {
+    const { username } = req.params
+    const { password } = req.body
+    
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: '用户名和密码不能为空'
+      })
+    }
+    
+    verdaccioLogger.info(`修改密码请求: ${username}`)
+    const result = verdaccioManager.changeUserPassword(username, password)
+    
+    if (result.success) {
+      res.json(result)
+    } else {
+      res.status(400).json(result)
+    }
+  } catch (error) {
+    verdaccioLogger.error('修改密码失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '修改密码失败',
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+})
+
+/**
+ * 检查用户是否存在
+ * GET /api/verdaccio/users/:username/exists
+ */
+verdaccioRouter.get('/users/:username/exists', (req, res) => {
+  try {
+    const { username } = req.params
+    const exists = verdaccioManager.userExists(username)
+    
+    res.json({
+      success: true,
+      data: { exists }
+    })
+  } catch (error) {
+    verdaccioLogger.error('检查用户失败:', error)
+    res.status(500).json({
+      success: false,
+      message: '检查用户失败',
       error: error instanceof Error ? error.message : String(error)
     })
   }

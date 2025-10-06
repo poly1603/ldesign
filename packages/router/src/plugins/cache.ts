@@ -318,12 +318,17 @@ export class CacheManager {
   }
 
   /**
-   * 生成缓存键
+   * 生成缓存键（优化：减少JSON序列化开销）
    */
   private generateKey(route: RouteLocationNormalized): string {
-    return `${route.path}-${JSON.stringify(route.params)}-${JSON.stringify(
-      route.query,
-    )}`
+    // 优化：只在有参数时才序列化
+    const paramsStr = Object.keys(route.params).length > 0
+      ? `-${JSON.stringify(route.params)}`
+      : ''
+    const queryStr = Object.keys(route.query).length > 0
+      ? `-${JSON.stringify(route.query)}`
+      : ''
+    return `${route.path}${paramsStr}${queryStr}`
   }
 
   /**
@@ -506,7 +511,7 @@ export function createCachePlugin(options: CachePluginOptions = {}) {
   const {
     enabled = true,
     strategy = 'memory',
-    maxSize = 10,
+    maxSize = 5, // 优化：减少默认缓存大小
     ttl,
     include,
     exclude,
@@ -564,7 +569,7 @@ export function createCachePlugin(options: CachePluginOptions = {}) {
 export function createCacheConfig(config: Partial<CacheConfig>): CacheConfig {
   return {
     strategy: 'memory',
-    maxSize: 10,
+    maxSize: 5, // 优化：减少默认缓存大小
     ...config,
   }
 }

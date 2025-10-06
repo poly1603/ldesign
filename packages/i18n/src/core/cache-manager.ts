@@ -1,21 +1,29 @@
 /**
  * 缓存管理器
- * 
+ *
  * 统一管理各种缓存，提供一致的缓存接口和优化策略
- * 
+ *
+ * 性能优化：
+ * - 使用快速缓存键生成器
+ * - 减少对象创建
+ * - 优化缓存查找
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
 
 import type { TranslationParams, CacheOptions } from './types'
 import { TranslationCache } from './cache'
+import { FastCacheKeyGenerator } from './fast-cache-key'
 
 /**
- * 缓存键生成器
+ * 缓存键生成器（优化版本）
  */
 export class CacheKeyGenerator {
+  private static fastGenerator = new FastCacheKeyGenerator({ compact: true, sortParams: true })
+
   /**
-   * 生成翻译缓存键
+   * 生成翻译缓存键（优化版本）
    * @param locale 语言代码
    * @param key 翻译键
    * @param params 插值参数
@@ -26,20 +34,7 @@ export class CacheKeyGenerator {
     key: string,
     params: TranslationParams = {}
   ): string {
-    // 使用数组拼接，比字符串拼接更高效
-    const parts = [locale, key]
-
-    const paramKeys = Object.keys(params)
-    if (paramKeys.length > 0) {
-      // 对参数键进行排序，确保相同参数的不同顺序生成相同的缓存键
-      const sortedParams = paramKeys
-        .sort()
-        .map(k => `${k}:${params[k]}`)
-        .join(',')
-      parts.push(sortedParams)
-    }
-
-    return parts.join(':')
+    return this.fastGenerator.generateTranslationKey(locale, key, params)
   }
 
   /**

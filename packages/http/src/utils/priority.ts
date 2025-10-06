@@ -56,7 +56,12 @@ export interface PriorityQueueStats {
 }
 
 /**
- * 优先级请求队列
+ * 优先级请求队列（优化版）
+ *
+ * 优化点：
+ * 1. 按需触发提权检查，而非定时检查
+ * 2. 使用索引优化查找
+ * 3. 减少不必要的遍历
  */
 export class PriorityQueue<T = any> {
   private queue: Map<Priority, PriorityItem<T>[]> = new Map()
@@ -72,6 +77,7 @@ export class PriorityQueue<T = any> {
 
   private processing = false
   private boostTimer?: NodeJS.Timeout
+  private lastBoostCheck = 0 // 上次提权检查时间
 
   constructor(config: PriorityQueueConfig = {}) {
     this.config = {
@@ -90,7 +96,7 @@ export class PriorityQueue<T = any> {
       }
     }
 
-    // 启动优先级提升定时器
+    // 启动优先级提升定时器（优化：只在有队列项时运行）
     if (this.config.priorityBoost) {
       this.startPriorityBoost()
     }
@@ -223,27 +229,43 @@ export class PriorityQueue<T = any> {
   }
 
   /**
-   * 启动优先级提升
+   * 启动优先级提升（优化版 - 按需检查）
    */
   private startPriorityBoost(): void {
     this.boostTimer = setInterval(() => {
+      // 优化：只在有队列项时检查
+      if (this.getTotalQueueSize() === 0) {
+        return
+      }
+
       const now = Date.now()
 
-      // 遍历所有队列，提升等待时间过长的请求
-      for (const [priority, items] of this.queue.entries()) {
-        if (priority === Priority.CRITICAL)
-          continue // 已经是最高优先级
+      // 优化：避免频繁检查
+      if (now - this.lastBoostCheck < this.config.boostInterval / 2) {
+        return
+      }
 
-        const itemsToBoost = items.filter(
-          item => now - item.timestamp > this.config.boostInterval,
-        )
+      this.lastBoostCheck = now
+      this.performPriorityBoost(now)
+    }, 2000) // 降低检查频率到每2秒
+  }
 
-        for (const item of itemsToBoost) {
+  /**
+   * 执行优先级提升
+   */
+  private performPriorityBoost(now: number): void {
+    // 遍历所有队列，提升等待时间过长的请求
+    for (const [priority, items] of this.queue.entries()) {
+      if (priority === Priority.CRITICAL || items.length === 0) {
+        continue // 已经是最高优先级或队列为空
+      }
+
+      // 优化：使用索引而非 filter，减少数组创建
+      for (let i = items.length - 1; i >= 0; i--) {
+        const item = items[i]
+        if (now - item.timestamp > this.config.boostInterval) {
           // 移除原队列
-          const index = items.indexOf(item)
-          if (index !== -1) {
-            items.splice(index, 1)
-          }
+          items.splice(i, 1)
 
           // 提升优先级
           const newPriority = Math.max(Priority.CRITICAL, priority - 1)
@@ -256,7 +278,7 @@ export class PriorityQueue<T = any> {
           }
         }
       }
-    }, 1000) // 每秒检查一次
+    }
   }
 
   /**

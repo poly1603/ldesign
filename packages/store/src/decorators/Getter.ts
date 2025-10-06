@@ -1,5 +1,6 @@
 import type { DecoratorMetadata, GetterDecoratorOptions } from '../types'
 import { DECORATOR_METADATA_KEY } from '../types/decorators'
+import { fastHash } from '../utils/cache'
 import 'reflect-metadata'
 
 /**
@@ -71,7 +72,7 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
 
     // 包装 getter
     descriptor.get = function (this: any) {
-      // 检查依赖是否变化（优化版本）
+      // 检查依赖是否变化（优化版本 - 使用快速哈希）
       if (options.deps && options.deps.length > 0) {
         const currentDepsValues = options.deps.map((dep) => {
           if (this._store) {
@@ -80,8 +81,8 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
           return (this as any)[dep]
         })
 
-        // 使用哈希比较优化性能
-        const currentDepsHash = JSON.stringify(currentDepsValues)
+        // 使用快速哈希替代 JSON.stringify，性能提升显著
+        const currentDepsHash = fastHash(currentDepsValues)
         if (isCached && lastDepsHash !== currentDepsHash) {
           isCached = false
         }

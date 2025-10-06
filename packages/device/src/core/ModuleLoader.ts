@@ -21,6 +21,10 @@ export class ModuleLoader implements IModuleLoader {
   private maxRetries = 3
   private retryDelay = 1000
 
+  // 统计信息清理
+  private readonly maxStatsEntries = 50 // 最多保留50个模块的统计信息
+  private statsCleanupThreshold = 100 // 当统计信息超过100条时触发清理
+
   /**
    * 加载模块并返回数据
    */
@@ -166,6 +170,41 @@ export class ModuleLoader implements IModuleLoader {
   }
 
   /**
+   * 清理统计信息
+   *
+   * 优化: 防止统计信息无限增长
+   */
+  clearStats(name?: string): void {
+    if (name) {
+      this.loadingStats.delete(name)
+    } else {
+      this.loadingStats.clear()
+    }
+  }
+
+  /**
+   * 清理旧的统计信息
+   *
+   * 当统计信息过多时,只保留最近使用的模块统计
+   */
+  private cleanupOldStats(): void {
+    if (this.loadingStats.size <= this.statsCleanupThreshold) {
+      return
+    }
+
+    // 按最后加载时间排序,删除最旧的统计
+    const entries = Array.from(this.loadingStats.entries())
+      .sort((a, b) => b[1].lastLoadTime - a[1].lastLoadTime)
+
+    // 只保留最近的maxStatsEntries个
+    const toKeep = entries.slice(0, this.maxStatsEntries)
+    this.loadingStats.clear()
+    toKeep.forEach(([name, stats]) => {
+      this.loadingStats.set(name, stats)
+    })
+  }
+
+  /**
    * 实际加载模块的方法
    */
   private async loadModule(name: string): Promise<DeviceModule> {
@@ -277,5 +316,8 @@ export class ModuleLoader implements IModuleLoader {
     }
 
     stats.lastLoadTime = safeLoadTime
+
+    // 定期清理旧统计
+    this.cleanupOldStats()
   }
 }

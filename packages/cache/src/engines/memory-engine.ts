@@ -117,22 +117,34 @@ export class MemoryEngine extends BaseStorageEngine {
    * ```
    */
   async setItem(key: string, value: string, ttl?: number): Promise<void> {
-    const dataSize = this.calculateSize(key) + this.calculateSize(value)
+    // 优化：使用更快的大小计算方法
+    const keySize = this.calculateSizeFast(key)
+    const valueSize = this.calculateSizeFast(value)
+    const dataSize = keySize + valueSize
 
     // 检查项数限制
     if (this.storage.size >= this.maxItems && !this.storage.has(key)) {
       await this.evictByStrategy()
     }
 
-    // 检查存储空间
-    if (!this.checkStorageSpace(dataSize)) {
+    // 如果是更新操作，先减去旧值的大小
+    const isUpdate = this.storage.has(key)
+    let oldSize = 0
+    if (isUpdate) {
+      const oldItem = this.storage.get(key)!
+      oldSize = keySize + this.calculateSizeFast(oldItem.value)
+    }
+
+    // 检查存储空间（考虑更新情况）
+    const netSizeChange = dataSize - oldSize
+    if (!this.checkStorageSpace(netSizeChange)) {
       // 尝试清理过期项
       await this.cleanup()
 
       // 再次检查
-      if (!this.checkStorageSpace(dataSize)) {
+      if (!this.checkStorageSpace(netSizeChange)) {
         // 根据策略清理项
-        await this.evictUntilSpaceAvailable(dataSize)
+        await this.evictUntilSpaceAvailable(netSizeChange)
       }
     }
 
@@ -144,18 +156,17 @@ export class MemoryEngine extends BaseStorageEngine {
     }
 
     // 更新或添加到存储
-    const isUpdate = this.storage.has(key)
     this.storage.set(key, item)
-    
-    // 记录到淘汰策略
+
+    // 增量更新大小（优化：避免遍历整个存储）
     if (isUpdate) {
+      this._usedSize = this._usedSize - oldSize + dataSize
       this.evictionStrategy.recordAccess(key)
     }
     else {
+      this._usedSize += dataSize
       this.evictionStrategy.recordAdd(key, ttl)
     }
-    
-    await this.updateUsedSize()
   }
 
   /**
@@ -170,15 +181,17 @@ export class MemoryEngine extends BaseStorageEngine {
 
     // 检查是否过期
     if (item.expiresAt && Date.now() > item.expiresAt) {
+      // 优化：增量更新大小
+      const itemSize = this.calculateSizeFast(key) + this.calculateSizeFast(item.value)
       this.storage.delete(key)
       this.evictionStrategy.removeKey(key)
-      await this.updateUsedSize()
+      this._usedSize -= itemSize
       return null
     }
 
     // 记录访问
     this.evictionStrategy.recordAccess(key)
-    
+
     return item.value
   }
 
@@ -200,9 +213,14 @@ export class MemoryEngine extends BaseStorageEngine {
    * 删除缓存项
    */
   async removeItem(key: string): Promise<void> {
+    const item = this.storage.get(key)
+    if (item) {
+      // 优化：增量更新大小
+      const itemSize = this.calculateSizeFast(key) + this.calculateSizeFast(item.value)
+      this._usedSize -= itemSize
+    }
     this.storage.delete(key)
     this.evictionStrategy.removeKey(key)
-    await this.updateUsedSize()
   }
 
   /**
@@ -241,10 +259,13 @@ export class MemoryEngine extends BaseStorageEngine {
   async cleanup(): Promise<void> {
     const now = Date.now()
     const keysToDelete: string[] = []
+    let freedSize = 0
 
     for (const [key, item] of this.storage) {
       if (item.expiresAt && now > item.expiresAt) {
         keysToDelete.push(key)
+        // 优化：在遍历时计算释放的大小
+        freedSize += this.calculateSizeFast(key) + this.calculateSizeFast(item.value)
       }
     }
 
@@ -253,9 +274,35 @@ export class MemoryEngine extends BaseStorageEngine {
       this.evictionStrategy.removeKey(key)
     }
 
+    // 优化：增量更新大小
     if (keysToDelete.length > 0) {
-      await this.updateUsedSize()
+      this._usedSize -= freedSize
     }
+  }
+
+  /**
+   * 快速计算字符串大小（字节）
+   * 优化版本：使用字符串长度估算，避免创建Blob对象
+   *
+   * UTF-8编码规则：
+   * - ASCII字符（0-127）：1字节
+   * - 其他字符：平均3字节（简化估算）
+   */
+  private calculateSizeFast(str: string): number {
+    let size = 0
+    for (let i = 0; i < str.length; i++) {
+      const code = str.charCodeAt(i)
+      if (code < 128) {
+        size += 1
+      } else if (code < 2048) {
+        size += 2
+      } else if (code < 65536) {
+        size += 3
+      } else {
+        size += 4
+      }
+    }
+    return size
   }
 
   /**
@@ -264,10 +311,12 @@ export class MemoryEngine extends BaseStorageEngine {
   private async evictByStrategy(): Promise<void> {
     const keyToEvict = this.evictionStrategy.getEvictionKey()
     if (keyToEvict && this.storage.has(keyToEvict)) {
+      const item = this.storage.get(keyToEvict)!
+      const itemSize = this.calculateSizeFast(keyToEvict) + this.calculateSizeFast(item.value)
       this.storage.delete(keyToEvict)
       this.evictionStrategy.removeKey(keyToEvict)
       this.evictionCount++
-      await this.updateUsedSize()
+      this._usedSize -= itemSize
     }
   }
 
@@ -288,17 +337,16 @@ export class MemoryEngine extends BaseStorageEngine {
       }
 
       const item = this.storage.get(keyToEvict)!
-      const itemSize = this.calculateSize(keyToEvict) + this.calculateSize(item.value)
-      
+      const itemSize = this.calculateSizeFast(keyToEvict) + this.calculateSizeFast(item.value)
+
       this.storage.delete(keyToEvict)
       this.evictionStrategy.removeKey(keyToEvict)
       this.evictionCount++
-      
+      this._usedSize -= itemSize
+
       freedSpace += itemSize
       evictionCount++
     }
-
-    await this.updateUsedSize()
   }
 
   /**
@@ -314,7 +362,7 @@ export class MemoryEngine extends BaseStorageEngine {
     const keysToDelete: string[] = []
 
     for (const [key, item] of items) {
-      const itemSize = this.calculateSize(key) + this.calculateSize(item.value)
+      const itemSize = this.calculateSizeFast(key) + this.calculateSizeFast(item.value)
       keysToDelete.push(key)
       freedSpace += itemSize
 
@@ -330,27 +378,30 @@ export class MemoryEngine extends BaseStorageEngine {
       const halfLength = Math.ceil(items.length / 2)
       for (let i = keysToDelete.length; i < halfLength; i++) {
         if (items[i]) {
-          keysToDelete.push(items[i][0])
+          const [key, item] = items[i]
+          keysToDelete.push(key)
+          freedSpace += this.calculateSizeFast(key) + this.calculateSizeFast(item.value)
         }
       }
     }
 
+    // 批量删除并更新大小
     for (const key of keysToDelete) {
       this.storage.delete(key)
       this.evictionStrategy.removeKey(key)
     }
-
-    await this.updateUsedSize()
+    this._usedSize -= freedSpace
   }
 
   /**
-   * 更新使用大小
+   * 更新使用大小（完整重新计算）
+   * 注意：此方法现在主要用于初始化或校验，日常操作使用增量更新
    */
   protected async updateUsedSize(): Promise<void> {
     let totalSize = 0
 
     for (const [key, item] of this.storage) {
-      totalSize += this.calculateSize(key) + this.calculateSize(item.value)
+      totalSize += this.calculateSizeFast(key) + this.calculateSizeFast(item.value)
     }
 
     this._usedSize = totalSize

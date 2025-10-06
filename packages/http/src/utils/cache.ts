@@ -20,12 +20,12 @@ interface CacheItem<T = any> {
 }
 
 /**
- * 内存缓存存储实现
+ * 内存缓存存储实现（优化版）
  *
- * 基于 Map 的内存缓存存储，支持：
- * - TTL（生存时间）管理
- * - 自动过期清理
- * - 定时器管理
+ * 优化点：
+ * 1. 使用单个定时器替代多个定时器，减少内存占用
+ * 2. 延迟过期检查，只在访问时检查
+ * 3. 批量清理过期项
  *
  * @example
  * ```typescript
@@ -43,7 +43,14 @@ interface CacheItem<T = any> {
  */
 export class MemoryCacheStorage implements CacheStorage {
   private cache = new Map<string, CacheItem>()
-  private timers = new Map<string, NodeJS.Timeout>()
+  // 优化：使用单个定时器进行批量清理
+  private cleanupTimer?: NodeJS.Timeout
+  private cleanupInterval = 60000 // 每分钟清理一次
+
+  constructor() {
+    // 启动定期清理
+    this.startCleanup()
+  }
 
   async get(key: string): Promise<any> {
     const item = this.cache.get(key)
@@ -52,9 +59,9 @@ export class MemoryCacheStorage implements CacheStorage {
       return null
     }
 
-    // 检查是否过期
+    // 检查是否过期（延迟过期检查）
     if (Date.now() - item.timestamp > item.ttl) {
-      this.delete(key)
+      this.cache.delete(key)
       return null
     }
 
@@ -62,44 +69,49 @@ export class MemoryCacheStorage implements CacheStorage {
   }
 
   async set(key: string, value: any, ttl = 300000): Promise<void> {
-    // 清除旧的定时器
-    const existingTimer = this.timers.get(key)
-    if (existingTimer) {
-      clearTimeout(existingTimer)
-    }
-
-    // 存储数据
+    // 存储数据（不再为每个项设置定时器）
     this.cache.set(key, {
       data: value,
       timestamp: Date.now(),
       ttl,
     })
-
-    // 设置过期定时器
-    const timer = setTimeout(() => {
-      this.delete(key)
-    }, ttl)
-
-    this.timers.set(key, timer)
   }
 
   async delete(key: string): Promise<void> {
     this.cache.delete(key)
-
-    const timer = this.timers.get(key)
-    if (timer) {
-      clearTimeout(timer)
-      this.timers.delete(key)
-    }
   }
 
   async clear(): Promise<void> {
     this.cache.clear()
+  }
 
-    this.timers.forEach((timer) => {
-      clearTimeout(timer)
-    })
-    this.timers.clear()
+  /**
+   * 启动定期清理（优化：单个定时器）
+   */
+  private startCleanup(): void {
+    this.cleanupTimer = setInterval(() => {
+      this.cleanupExpired()
+    }, this.cleanupInterval)
+  }
+
+  /**
+   * 批量清理过期项
+   */
+  private cleanupExpired(): void {
+    const now = Date.now()
+    const keysToDelete: string[] = []
+
+    // 收集过期的键
+    for (const [key, item] of this.cache.entries()) {
+      if (now - item.timestamp > item.ttl) {
+        keysToDelete.push(key)
+      }
+    }
+
+    // 批量删除
+    for (const key of keysToDelete) {
+      this.cache.delete(key)
+    }
   }
 
   /**
@@ -114,6 +126,17 @@ export class MemoryCacheStorage implements CacheStorage {
    */
   keys(): string[] {
     return Array.from(this.cache.keys())
+  }
+
+  /**
+   * 销毁缓存
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = undefined
+    }
+    this.cache.clear()
   }
 }
 

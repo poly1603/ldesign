@@ -308,6 +308,33 @@ export {
   createOptimizedTranslator
 } from './utils/performance-optimizations'
 
+// 对象池工具
+export {
+  ObjectPool,
+  GenericObjectPool,
+  ArrayPool,
+  ObjectLiteralPool,
+  StringBuilderPool,
+  GlobalPoolManager,
+  globalPools,
+  withPooledArray,
+  withPooledObject,
+  buildString
+} from './utils/object-pool'
+
+// 快速缓存键生成器
+export {
+  FastCacheKeyGenerator,
+  HashCacheKeyGenerator,
+  CacheKeyFactory,
+  defaultCacheKeyGenerator,
+  generateCacheKey,
+  generatePackageCacheKey
+} from './core/fast-cache-key'
+export type {
+  CacheKeyConfig
+} from './core/fast-cache-key'
+
 // ==================== 便捷创建函数 ====================
 // 注意：createI18n 已经从 './core/createI18n' 导出，这里不需要重复定义
 

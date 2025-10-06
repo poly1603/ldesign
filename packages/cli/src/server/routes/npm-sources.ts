@@ -203,6 +203,56 @@ npmSourcesRouter.delete('/:id', (req, res) => {
 })
 
 /**
+ * 检测源服务是否可用
+ * GET /api/npm-sources/:id/check-availability
+ */
+npmSourcesRouter.get('/:id/check-availability', async (req, res) => {
+  try {
+    const { id } = req.params
+    const source = getNpmSourceById(id)
+
+    if (!source) {
+      return res.status(404).json({
+        success: false,
+        message: 'NPM源不存在'
+      })
+    }
+
+    // 尝试 ping 该源来检测可用性
+    // 使用 npm ping 命令或直接访问源的根路径
+    const result = executeCommand(`npm ping --registry=${source.url}`)
+
+    let available = false
+    if (result.success) {
+      available = true
+    } else {
+      // npm ping 失败，尝试使用 curl 检测
+      const curlResult = executeCommand(`curl -s -o /dev/null -w "%{http_code}" ${source.url} --max-time 5`)
+      if (curlResult.success && curlResult.output) {
+        const statusCode = parseInt(curlResult.output.trim())
+        // 200-399 认为服务可用
+        available = statusCode >= 200 && statusCode < 400
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        available
+      }
+    })
+  } catch (error) {
+    npmLogger.error('检测源可用性失败:', error)
+    res.json({
+      success: true,
+      data: {
+        available: false
+      }
+    })
+  }
+})
+
+/**
  * 检测源是否登录
  * GET /api/npm-sources/:id/login-status
  */

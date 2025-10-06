@@ -50,8 +50,8 @@ export function lazyLoadComponent(
     loading,
     error,
     delay = 200,
-    timeout = 30000,
-    retries = 3,
+    timeout = 15000, // 优化：减少超时时间从30秒到15秒
+    retries = 2, // 优化：减少重试次数从3次到2次
     retryDelay = 1000,
     prefetch = false,
     preload = false,

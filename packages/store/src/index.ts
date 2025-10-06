@@ -19,6 +19,13 @@ export {
   ThrottleManager,
 } from './core/PerformanceOptimizer'
 
+// 缓存工具
+export {
+  LRUCache,
+  fastHash,
+  ObjectPool,
+} from './utils/cache'
+
 // 函数式 Store
 export {
   createFunctionalStore,

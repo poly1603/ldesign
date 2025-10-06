@@ -69,13 +69,13 @@ export class RouterImpl implements Router {
     this.matcher = new RouteMatcher()
     this.currentRoute = ref(START_LOCATION)
 
-    // 初始化内存管理器
+    // 初始化内存管理器（优化：降低阈值以更早触发清理）
     this.memoryManager = new MemoryManager(
       {
-        warning: 50,
-        critical: 100,
-        maxCache: 20,
-        maxListeners: 1000,
+        warning: 30, // 优化：从50MB降低到30MB
+        critical: 60, // 优化：从100MB降低到60MB
+        maxCache: 10, // 优化：从20MB降低到10MB
+        maxListeners: 500, // 优化：从1000降低到500
       },
       'moderate',
     )

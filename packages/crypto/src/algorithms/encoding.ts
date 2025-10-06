@@ -4,8 +4,26 @@ import { ErrorUtils, ValidationUtils } from '../utils'
 
 /**
  * 编码器
+ * 优化：使用单例模式，避免重复创建实例
  */
 export class Encoder implements IEncoder {
+  private static instance: Encoder | null = null
+
+  /**
+   * 获取单例实例
+   */
+  static getInstance(): Encoder {
+    if (!Encoder.instance) {
+      Encoder.instance = new Encoder()
+    }
+    return Encoder.instance
+  }
+
+  /**
+   * 私有构造函数，防止外部直接实例化
+   */
+  private constructor() { }
+
   /**
    * 编码字符串
    */
@@ -172,6 +190,7 @@ export class Encoder implements IEncoder {
 
 /**
  * 编码便捷函数
+ * 优化：使用单例实例，避免重复创建
  */
 export const encoding = {
   /**
@@ -179,20 +198,16 @@ export const encoding = {
    */
   base64: {
     encode: (data: string): string => {
-      const encoder = new Encoder()
-      return encoder.encode(data, 'base64')
+      return Encoder.getInstance().encode(data, 'base64')
     },
     decode: (encodedData: string): string => {
-      const encoder = new Encoder()
-      return encoder.decode(encodedData, 'base64')
+      return Encoder.getInstance().decode(encodedData, 'base64')
     },
     encodeUrl: (data: string): string => {
-      const encoder = new Encoder()
-      return encoder.encodeBase64Url(data)
+      return Encoder.getInstance().encodeBase64Url(data)
     },
     decodeUrl: (encodedData: string): string => {
-      const encoder = new Encoder()
-      return encoder.decodeBase64Url(encodedData)
+      return Encoder.getInstance().decodeBase64Url(encodedData)
     },
   },
 
@@ -201,12 +216,10 @@ export const encoding = {
    */
   hex: {
     encode: (data: string): string => {
-      const encoder = new Encoder()
-      return encoder.encode(data, 'hex')
+      return Encoder.getInstance().encode(data, 'hex')
     },
     decode: (encodedData: string): string => {
-      const encoder = new Encoder()
-      return encoder.decode(encodedData, 'hex')
+      return Encoder.getInstance().decode(encodedData, 'hex')
     },
   },
 
@@ -214,16 +227,14 @@ export const encoding = {
    * 通用编码函数
    */
   encode: (data: string, encoding: EncodingType): string => {
-    const encoder = new Encoder()
-    return encoder.encode(data, encoding)
+    return Encoder.getInstance().encode(data, encoding)
   },
 
   /**
    * 通用解码函数
    */
   decode: (encodedData: string, encoding: EncodingType): string => {
-    const encoder = new Encoder()
-    return encoder.decode(encodedData, encoding)
+    return Encoder.getInstance().decode(encodedData, encoding)
   },
 }
 

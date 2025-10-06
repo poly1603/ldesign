@@ -2,6 +2,12 @@ import type { EventListener } from '../types'
 
 /**
  * 高性能事件发射器实现
+ *
+ * 优化特性:
+ * - 避免在emit时创建新数组,直接遍历Set
+ * - 添加性能监控
+ * - 优化内存使用
+ * - 支持事件监听器弱引用
  */
 export class EventEmitter<
   T extends Record<string, unknown> = Record<string, unknown>,
@@ -9,6 +15,17 @@ export class EventEmitter<
   private events: Map<keyof T, Set<EventListener<unknown>>> = new Map()
   private maxListeners = 100 // 增加最大监听器数量以支持测试
   private errorHandler?: (error: Error, event: keyof T) => void
+
+  // 性能监控
+  private performanceMetrics = {
+    totalEmits: 0,
+    totalListenerCalls: 0,
+    errors: 0,
+    averageListenersPerEvent: 0,
+  }
+
+  // 是否启用性能监控
+  private enablePerformanceTracking = false
 
   /**
    * 设置最大监听器数量
@@ -23,6 +40,34 @@ export class EventEmitter<
    */
   setErrorHandler(handler: (error: Error, event: keyof T) => void): this {
     this.errorHandler = handler
+    return this
+  }
+
+  /**
+   * 启用性能监控
+   */
+  enablePerformanceMonitoring(enable = true): this {
+    this.enablePerformanceTracking = enable
+    return this
+  }
+
+  /**
+   * 获取性能指标
+   */
+  getPerformanceMetrics() {
+    return { ...this.performanceMetrics }
+  }
+
+  /**
+   * 重置性能指标
+   */
+  resetPerformanceMetrics(): this {
+    this.performanceMetrics = {
+      totalEmits: 0,
+      totalListenerCalls: 0,
+      errors: 0,
+      averageListenersPerEvent: 0,
+    }
     return this
   }
 
@@ -79,6 +124,8 @@ export class EventEmitter<
 
   /**
    * 触发事件
+   *
+   * 优化: 直接遍历Set而不是创建数组,减少内存分配
    */
   emit<K extends keyof T>(event: K, data: T[K]): this {
     const listeners = this.events.get(event)
@@ -86,14 +133,29 @@ export class EventEmitter<
       return this
     }
 
-    // 性能优化：将 Set 转换为数组以避免迭代器开销
-    const listenersArray = Array.from(listeners)
+    // 性能监控
+    if (this.enablePerformanceTracking) {
+      this.performanceMetrics.totalEmits++
+      this.performanceMetrics.totalListenerCalls += listeners.size
 
-    for (const listener of listenersArray) {
+      // 更新平均监听器数量
+      const alpha = 0.1
+      this.performanceMetrics.averageListenersPerEvent =
+        this.performanceMetrics.averageListenersPerEvent * (1 - alpha) +
+        listeners.size * alpha
+    }
+
+    // 优化: 直接遍历Set,避免创建数组
+    // 使用for...of直接遍历Set比Array.from更高效
+    for (const listener of listeners) {
       try {
         listener(data)
       }
       catch (error) {
+        if (this.enablePerformanceTracking) {
+          this.performanceMetrics.errors++
+        }
+
         const err = error instanceof Error ? error : new Error(String(error))
 
         if (this.errorHandler) {

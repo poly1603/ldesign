@@ -1,6 +1,13 @@
 import type { ActionDecoratorOptions, DecoratorMetadata } from '../types'
 import { DECORATOR_METADATA_KEY } from '../types/decorators'
+import { LRUCache, fastHash } from '../utils/cache'
 import 'reflect-metadata'
+
+/**
+ * 缓存清理器管理
+ * 用于管理装饰器创建的定时器，防止内存泄漏
+ */
+const cacheCleanupTimers = new WeakMap<any, Map<string, NodeJS.Timeout>>()
 
 /**
  * Action 装饰器
@@ -58,36 +65,22 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
       throw new TypeError(`Action decorator can only be applied to methods`)
     }
 
-    // 创建缓存 Map（如果需要缓存）
-    let cache: Map<string, { result: any, timestamp: number }> | undefined
+    // 创建 LRU 缓存（如果需要缓存）
+    let cache: LRUCache<string, any> | undefined
     if (options.cache) {
-      cache = new Map()
-      // 定期清理过期缓存
-      if (options.cacheTime) {
-        setInterval(() => {
-          const now = Date.now()
-          for (const [key, entry] of cache!.entries()) {
-            if (now - entry.timestamp > options.cacheTime!) {
-              cache!.delete(key)
-            }
-          }
-        }, Math.max(options.cacheTime / 2, 60000)) // 至少每分钟清理一次
-      }
+      // 使用 LRU 缓存，自动管理过期和容量
+      cache = new LRUCache(100, options.cacheTime || 5 * 60 * 1000)
     }
 
     // 包装方法
     descriptor.value = function (this: any, ...args: any[]) {
-      // 缓存逻辑
+      // 缓存逻辑 - 使用快速哈希替代 JSON.stringify
       if (options.cache && cache) {
-        const cacheKey = JSON.stringify(args)
+        const cacheKey = fastHash(args)
         const cached = cache.get(cacheKey)
-        const now = Date.now()
 
-        if (
-          cached
-          && (!options.cacheTime || now - cached.timestamp < options.cacheTime)
-        ) {
-          return cached.result
+        if (cached !== undefined) {
+          return cached
         }
       }
 
@@ -129,10 +122,10 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
       if (options.async && result instanceof Promise) {
         return result
           .then((res: any) => {
-            // 缓存结果
+            // 缓存结果 - 使用快速哈希
             if (options.cache && cache) {
-              const cacheKey = JSON.stringify(args)
-              cache.set(cacheKey, { result: res, timestamp: Date.now() })
+              const cacheKey = fastHash(args)
+              cache.set(cacheKey, res)
             }
 
             // 保存节流结果
@@ -148,10 +141,10 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
           })
       }
 
-      // 缓存同步结果
+      // 缓存同步结果 - 使用快速哈希
       if (options.cache && cache) {
-        const cacheKey = JSON.stringify(args)
-        cache.set(cacheKey, { result, timestamp: Date.now() })
+        const cacheKey = fastHash(args)
+        cache.set(cacheKey, result)
       }
 
       // 保存节流结果
@@ -160,6 +153,19 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
       }
 
       return result
+    }
+
+    // 添加清理方法，防止内存泄漏
+    const originalDispose = (target as any).$dispose
+    if (originalDispose) {
+      ; (target as any).$dispose = function (this: any) {
+        // 清理缓存
+        if (cache) {
+          cache.dispose()
+        }
+        // 调用原始 dispose
+        return originalDispose.call(this)
+      }
     }
 
     return descriptor

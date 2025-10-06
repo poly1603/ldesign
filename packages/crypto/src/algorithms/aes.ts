@@ -6,9 +6,11 @@ import type {
   IEncryptor,
 } from '../types'
 import { CONSTANTS, ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
+import { LRUCache } from '../utils/lru-cache'
 
 /**
  * AES 加密器
+ * 优化：添加密钥派生缓存，减少重复计算
  */
 export class AESEncryptor implements IEncryptor {
   private readonly defaultOptions: Required<AESOptions> = {
@@ -18,9 +20,13 @@ export class AESEncryptor implements IEncryptor {
     padding: 'Pkcs7',
   }
 
-  // 密钥缓存，避免重复的 PBKDF2 计算
-  private keyCache = new Map<string, CryptoJS.lib.WordArray>()
-  private maxKeyCacheSize = 100
+  // 密钥派生缓存（最多缓存 100 个派生密钥，5 分钟过期）
+  // 使用静态缓存，所有实例共享，提高缓存命中率
+  private static keyCache = new LRUCache<string, CryptoJS.lib.WordArray>({
+    maxSize: 100,
+    ttl: 5 * 60 * 1000,
+    updateAgeOnGet: true,
+  })
 
   /**
    * AES 加密
@@ -284,13 +290,14 @@ export class AESEncryptor implements IEncryptor {
 
   /**
    * 准备密钥
+   * 优化：使用 LRU 缓存，自动管理缓存大小和过期
    */
   private prepareKey(key: string, keySize: number): CryptoJS.lib.WordArray {
-    // 生成缓存键
-    const cacheKey = `${key}_${keySize}`
+    // 生成缓存键（使用哈希避免长密钥导致的内存问题）
+    const cacheKey = CryptoJS.MD5(`${key}_${keySize}`).toString()
 
     // 检查缓存
-    const cachedKey = this.keyCache.get(cacheKey)
+    const cachedKey = AESEncryptor.keyCache.get(cacheKey)
     if (cachedKey) {
       return cachedKey
     }
@@ -302,7 +309,7 @@ export class AESEncryptor implements IEncryptor {
       keyWordArray = CryptoJS.enc.Hex.parse(key)
       // 确保密钥长度正确
       if (keyWordArray.sigBytes * 8 === keySize) {
-        this.cacheKey(cacheKey, keyWordArray)
+        AESEncryptor.keyCache.set(cacheKey, keyWordArray)
         return keyWordArray
       }
     }
@@ -314,28 +321,10 @@ export class AESEncryptor implements IEncryptor {
       iterations: 1000,
     }) as CryptoJS.lib.WordArray
 
-    // 缓存派生的密钥
-    this.cacheKey(cacheKey, keyWordArray)
+    // 缓存派生的密钥（LRU 缓存会自动管理大小）
+    AESEncryptor.keyCache.set(cacheKey, keyWordArray)
 
     return keyWordArray
-  }
-
-  /**
-   * 缓存密钥
-   */
-  private cacheKey(
-    cacheKey: string,
-    keyWordArray: CryptoJS.lib.WordArray,
-  ): void {
-    // 如果缓存已满，删除最旧的条目
-    if (this.keyCache.size >= this.maxKeyCacheSize) {
-      const firstKey = this.keyCache.keys().next().value
-      if (firstKey) {
-        this.keyCache.delete(firstKey)
-      }
-    }
-
-    this.keyCache.set(cacheKey, keyWordArray)
   }
 
   /**

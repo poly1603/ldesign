@@ -231,10 +231,10 @@ export class MemoryMonitor {
   }
 
   private thresholds: MemoryThresholds = {
-    warning: 50, // 50MB
-    critical: 100, // 100MB
-    maxCache: 20, // 20MB
-    maxListeners: 1000,
+    warning: 30, // 30MB (优化：更早触发清理)
+    critical: 60, // 60MB (优化：降低严重阈值)
+    maxCache: 10, // 10MB (优化：减少缓存上限)
+    maxListeners: 500, // 优化：减少监听器上限
   }
 
   private listeners = new Set<EventListener>()
@@ -264,9 +264,9 @@ export class MemoryMonitor {
   }
 
   /**
-   * 开始监控
+   * 开始监控（优化：增加默认间隔以减少CPU占用）
    */
-  startMonitoring(interval: number = 30000): void {
+  startMonitoring(interval: number = 60000): void {
     this.stopMonitoring()
 
     this.monitoringInterval = window.setInterval(() => {
@@ -289,7 +289,7 @@ export class MemoryMonitor {
   }
 
   /**
-   * 更新统计信息
+   * 更新统计信息（优化：减少不必要的GC调用）
    */
   updateStats(): void {
     // 获取性能信息（如果可用）
@@ -300,10 +300,13 @@ export class MemoryMonitor {
 
     this.stats.listenerCount = this.listeners.size
 
-    // 触发垃圾回收（如果可用）
+    // 优化：只在内存压力大时触发GC
     if ('gc' in window && typeof (window as any).gc === 'function') {
-      ; (window as any).gc()
-      this.stats.gcCount++
+      const totalMB = this.stats.totalMemory / (1024 * 1024)
+      if (totalMB > this.thresholds.warning) {
+        ; (window as any).gc()
+        this.stats.gcCount++
+      }
     }
   }
 
