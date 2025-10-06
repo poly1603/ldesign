@@ -14,7 +14,7 @@ import {
   updateNpmSource,
   deleteNpmSource,
   updateLoginStatus
-} from '../database/npm-sources.js'
+} from '../database/adapters.js'
 
 const npmLogger = logger.withPrefix('NPM-Sources')
 export const npmSourcesRouter: IRouter = Router()

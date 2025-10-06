@@ -23,6 +23,107 @@ function cleanupEventListeners() {
   eventListeners = []
 }
 
+// 全局函数：打开锚点部分遮罩抽屉
+window.openAnchorPartialDrawer = function(direction, buttonElement) {
+  console.log('Opening anchor partial drawer:', direction, buttonElement)
+  const drawerIds = {
+    bottom: 'anchorPartialDrawerBottom',
+    top: 'anchorPartialDrawerTop',
+    left: 'anchorPartialDrawerLeft',
+    right: 'anchorPartialDrawerRight'
+  }
+  
+  const drawerId = drawerIds[direction]
+  if (!drawerId) {
+    console.error('Invalid direction:', direction)
+    return
+  }
+  
+  const drawer = document.getElementById(drawerId)
+  console.log('Found drawer:', drawer)
+  
+  if (drawer) {
+    // 设置锚点元素
+    drawer.anchorElement = buttonElement
+    console.log('Set anchorElement:', drawer.anchorElement)
+    
+    // 尝试两种方式打开抽屉
+    drawer.visible = true
+    console.log('Set visible to true')
+    
+    // 也调用 open 方法
+    if (typeof drawer.open === 'function') {
+      drawer.open()
+      console.log('Called open() method')
+    }
+    
+    console.log('Drawer state:', {
+      visible: drawer.visible,
+      anchorMode: drawer.anchorMode,
+      anchorMaskPartial: drawer.anchorMaskPartial,
+      placement: drawer.placement
+    })
+    
+    // 等待一下再检查 DOM
+    setTimeout(() => {
+      console.log('=== Drawer Element Debug ===')
+      console.log('Drawer element:', drawer)
+      console.log('Drawer classes:', drawer.className)
+      console.log('Drawer visible attr:', drawer.visible)
+      console.log('Has shadowRoot:', !!drawer.shadowRoot)
+      
+      // 检查 Shadow DOM
+      if (drawer.shadowRoot) {
+        const container = drawer.shadowRoot.querySelector('.ldesign-drawer-container')
+        console.log('Shadow DOM container:', container)
+        if (container) {
+          const rect = container.getBoundingClientRect()
+          console.log('Container rect:', rect)
+        }
+      }
+      
+      // 直接检查 drawer 元素本身
+      const drawerRect = drawer.getBoundingClientRect()
+      const drawerStyles = window.getComputedStyle(drawer)
+      console.log('Drawer itself:', {
+        rect: drawerRect,
+        display: drawerStyles.display,
+        position: drawerStyles.position,
+        width: drawerStyles.width,
+        height: drawerStyles.height,
+        top: drawerStyles.top,
+        left: drawerStyles.left,
+        transform: drawerStyles.transform,
+        zIndex: drawerStyles.zIndex
+      })
+      
+      // 检查是否有部分遮罩（正确的类名）
+      const masks = document.querySelectorAll('.drawer-partial-mask')
+      console.log('Partial masks found:', masks.length, masks)
+      if (masks.length > 0) {
+        masks.forEach((m, i) => {
+          const r = m.getBoundingClientRect()
+          console.log(`Mask ${i}:`, r)
+        })
+      }
+      
+      // 检查所有抽屉相关元素
+      const allDrawerElements = document.querySelectorAll('ldesign-drawer')
+      console.log('All drawer elements:', allDrawerElements.length)
+      allDrawerElements.forEach((d, i) => {
+        const r = d.getBoundingClientRect()
+        console.log(`Drawer ${i} (${d.id}):`, {
+          visible: d.hasAttribute('visible'),
+          rect: r,
+          isInViewport: r.top >= 0 && r.left >= 0 && r.bottom <= window.innerHeight && r.right <= window.innerWidth
+        })
+      })
+    }, 500)
+  } else {
+    console.error('Drawer not found:', drawerId)
+  }
+}
+
 onMounted(() => {
   // 清理之前的事件监听器（防止重复绑定）
   cleanupEventListeners()
@@ -79,6 +180,61 @@ onMounted(() => {
     const drawer = document.getElementById('cursorDrawer')
     if (drawer) drawer.visible = true
   })
+
+  // 绑定锚点部分遮罩按钮（使用 setTimeout 确保元素已加载）
+  setTimeout(() => {
+    const anchorPartialBtn1 = document.getElementById('anchorPartialBtn1')
+    const anchorPartialBtn2 = document.getElementById('anchorPartialBtn2')
+    const anchorPartialBtn3 = document.getElementById('anchorPartialBtn3')
+    const anchorPartialBtn4 = document.getElementById('anchorPartialBtn4')
+
+    console.log('Anchor partial buttons:', {
+      btn1: anchorPartialBtn1,
+      btn2: anchorPartialBtn2,
+      btn3: anchorPartialBtn3,
+      btn4: anchorPartialBtn4
+    })
+
+    addEventListenerSafe(anchorPartialBtn1, 'click', function() {
+      console.log('Button 1 clicked!')
+      const drawer = document.getElementById('anchorPartialDrawerBottom')
+      console.log('Drawer bottom:', drawer)
+      if (drawer) {
+        drawer.anchorElement = this
+        drawer.open()
+      }
+    })
+
+    addEventListenerSafe(anchorPartialBtn2, 'click', function() {
+      console.log('Button 2 clicked!')
+      const drawer = document.getElementById('anchorPartialDrawerTop')
+      console.log('Drawer top:', drawer)
+      if (drawer) {
+        drawer.anchorElement = this
+        drawer.open()
+      }
+    })
+
+    addEventListenerSafe(anchorPartialBtn3, 'click', function() {
+      console.log('Button 3 clicked!')
+      const drawer = document.getElementById('anchorPartialDrawerLeft')
+      console.log('Drawer left:', drawer)
+      if (drawer) {
+        drawer.anchorElement = this
+        drawer.open()
+      }
+    })
+
+    addEventListenerSafe(anchorPartialBtn4, 'click', function() {
+      console.log('Button 4 clicked!')
+      const drawer = document.getElementById('anchorPartialDrawerRight')
+      console.log('Drawer right:', drawer)
+      if (drawer) {
+        drawer.anchorElement = this
+        drawer.open()
+      }
+    })
+  }, 500)
 
   // 加载示例
   const loadDataBtn = document.getElementById('loadDataBtn')
@@ -999,6 +1155,313 @@ document.addEventListener('contextmenu', (e) => {
     <p style="color: #666; font-size: 14px;">注：光标定位功能需要组件支持</p>
   </div>
 </ldesign-drawer>
+
+### 锚点定位 - 部分遮罩展开
+
+这是一个高级的锚点定位功能，抽屉会从触发按钮的位置向指定方向展开，**只在展开方向显示遮罩**，未展开的区域保持可交互。这种模式非常适合下拉菜单、筛选器等场景。
+
+<div class="demo-container">
+  <div class="demo-row">
+    <button id="anchorPartialBtn1" style="margin: 5px;" onclick="openAnchorPartialDrawer('bottom', this)">向下展开 ▼</button>
+    <button id="anchorPartialBtn2" style="margin: 5px;" onclick="openAnchorPartialDrawer('top', this)">向上展开 ▲</button>
+    <button id="anchorPartialBtn3" style="margin: 5px;" onclick="openAnchorPartialDrawer('left', this)">向左展开 ◀</button>
+    <button id="anchorPartialBtn4" style="margin: 5px;" onclick="openAnchorPartialDrawer('right', this)">向右展开 ▶</button>
+  </div>
+</div>
+
+#### 核心特性
+
+- 🎯 **精确锚定** - 抽屉从触发按钮位置展开
+- 🎭 **部分遮罩** - 只在展开方向显示遮罩，其他区域可正常交互
+- 🔄 **四向支持** - 支持向上、下、左、右四个方向展开
+- 📱 **响应式** - 自动适配屏幕边界，防止溢出
+- ⚡ **流畅动画** - 平滑的展开和收起动画效果
+
+#### 基础用法
+
+```html
+<!-- 触发按钮 -->
+<button id="filterButton">筛选 ▼</button>
+
+<!-- 锚点抽屉 -->
+<ldesign-drawer 
+  id="filterDrawer"
+  placement="bottom"
+  anchor-mode="element"
+  anchor-mask-partial="true"
+  drawer-title="筛选选项"
+  size="300px">
+  <div style="padding: 20px;">
+    <p>筛选内容...</p>
+  </div>
+</ldesign-drawer>
+```
+
+```javascript path=null start=null
+// JavaScript 绑定
+const button = document.getElementById('filterButton');
+const drawer = document.getElementById('filterDrawer');
+
+button.addEventListener('click', function() {
+  // 动态设置锚点元素为当前按钮
+  drawer.anchorElement = this;
+  drawer.open();
+});
+```
+
+#### 四个方向示例
+
+```html
+<!-- 向下展开（最常用，类似下拉菜单） -->
+<button id="btn-bottom">向下展开 ▼</button>
+<ldesign-drawer 
+  id="drawer-bottom"
+  placement="bottom"
+  anchor-mode="element"
+  anchor-mask-partial="true"
+  drawer-title="向下展开"
+  size="400px">
+  <div style="padding: 20px;">
+    <p>从按钮下方展开，只在下方区域有遮罩</p>
+  </div>
+</ldesign-drawer>
+
+<!-- 向上展开 -->
+<button id="btn-top">向上展开 ▲</button>
+<ldesign-drawer 
+  id="drawer-top"
+  placement="top"
+  anchor-mode="element"
+  anchor-mask-partial="true"
+  drawer-title="向上展开"
+  size="400px">
+  <div style="padding: 20px;">
+    <p>从按钮上方展开，只在上方区域有遮罩</p>
+  </div>
+</ldesign-drawer>
+
+<!-- 向左展开 -->
+<button id="btn-left">向左展开 ◀</button>
+<ldesign-drawer 
+  id="drawer-left"
+  placement="left"
+  anchor-mode="element"
+  anchor-mask-partial="true"
+  drawer-title="向左展开"
+  size="350px">
+  <div style="padding: 20px;">
+    <p>从按钮左侧展开，只在左侧区域有遮罩</p>
+  </div>
+</ldesign-drawer>
+
+<!-- 向右展开 -->
+<button id="btn-right">向右展开 ▶</button>
+<ldesign-drawer 
+  id="drawer-right"
+  placement="right"
+  anchor-mode="element"
+  anchor-mask-partial="true"
+  drawer-title="向右展开"
+  size="350px">
+  <div style="padding: 20px;">
+    <p>从按钮右侧展开，只在右侧区域有遮罩</p>
+  </div>
+</ldesign-drawer>
+```
+
+```javascript path=null start=null
+// 绑定所有按钮
+const buttons = [
+  { btnId: 'btn-bottom', drawerId: 'drawer-bottom' },
+  { btnId: 'btn-top', drawerId: 'drawer-top' },
+  { btnId: 'btn-left', drawerId: 'drawer-left' },
+  { btnId: 'btn-right', drawerId: 'drawer-right' }
+];
+
+buttons.forEach(({ btnId, drawerId }) => {
+  const button = document.getElementById(btnId);
+  const drawer = document.getElementById(drawerId);
+  
+  button.addEventListener('click', function() {
+    drawer.anchorElement = this;
+    drawer.open();
+  });
+});
+```
+
+#### 实际应用场景
+
+##### 1. 电商筛选下拉菜单
+
+```html
+<!-- 筛选栏 -->
+<div class="filter-bar">
+  <button id="filter-category" class="filter-btn">
+    全部商品 ▼
+  </button>
+  <button id="filter-sort" class="filter-btn">
+    默认排序 ▼
+  </button>
+  <button id="filter-price" class="filter-btn">
+    价格筛选 ▼
+  </button>
+</div>
+
+<!-- 分类筛选抽屉 -->
+<ldesign-drawer 
+  id="drawer-category"
+  placement="bottom"
+  anchor-mode="element"
+  anchor-mask-partial="true"
+  drawer-title="商品分类"
+  size="auto">
+  <div style="padding: 20px;">
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+      <button style="padding: 10px;">全部商品</button>
+      <button style="padding: 10px;">新款商品</button>
+      <button style="padding: 10px;">活动商品</button>
+    </div>
+  </div>
+</ldesign-drawer>
+
+<!-- 排序筛选抽屉 -->
+<ldesign-drawer 
+  id="drawer-sort"
+  placement="bottom"
+  anchor-mode="element"
+  anchor-mask-partial="true"
+  drawer-title="排序方式"
+  size="auto">
+  <div style="padding: 20px;">
+    <ul style="list-style: none; padding: 0; margin: 0;">
+      <li style="padding: 12px; cursor: pointer;">默认排序</li>
+      <li style="padding: 12px; cursor: pointer;">价格从低到高</li>
+      <li style="padding: 12px; cursor: pointer;">价格从高到低</li>
+      <li style="padding: 12px; cursor: pointer;">销量排序</li>
+    </ul>
+  </div>
+</ldesign-drawer>
+```
+
+```javascript path=null start=null
+// 绑定筛选按钮
+const filters = ['category', 'sort', 'price'];
+filters.forEach(filter => {
+  const btn = document.getElementById(`filter-${filter}`);
+  const drawer = document.getElementById(`drawer-${filter}`);
+  
+  btn.addEventListener('click', function() {
+    drawer.anchorElement = this;
+    drawer.open();
+  });
+});
+```
+
+##### 2. 浮动购物车按钮
+
+```html
+<!-- 固定定位的购物车按钮 -->
+<button id="cart-button" style="
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+">
+  🛒
+</button>
+
+<!-- 购物车抽屉 -->
+<ldesign-drawer 
+  id="drawer-cart"
+  placement="right"
+  anchor-mode="element"
+  anchor-mask-partial="true"
+  drawer-title="购物车"
+  size="400px">
+  <div style="padding: 20px;">
+    <h3>我的购物车</h3>
+    <p>购物车是空的</p>
+  </div>
+</ldesign-drawer>
+```
+
+```javascript path=null start=null
+const cartButton = document.getElementById('cart-button');
+const cartDrawer = document.getElementById('drawer-cart');
+
+cartButton.addEventListener('click', function() {
+  cartDrawer.anchorElement = this;
+  cartDrawer.open();
+});
+```
+
+#### 关键属性说明
+
+| 属性 | 说明 | 类型 | 默认值 | 示例 |
+|------|------|------|--------|------|
+| `anchor-mode` | 锚点模式，必须设为 `"element"` | `string` | `'disabled'` | `'element'` |
+| `anchor-element` | 锚点元素，指定触发按钮 | `string \| HTMLElement` | `null` | `'#myButton'` 或 DOM 元素 |
+| `anchor-mask-partial` | 启用部分遮罩 | `boolean` | `false` | `true` |
+| `placement` | 展开方向 | `string` | `'right'` | `'top'` / `'bottom'` / `'left'` / `'right'` |
+| `size` | 抽屉尺寸 | `string` | `'md'` | `'300px'` / `'50%'` / `'auto'` |
+
+#### 工作原理
+
+1. **锚点定位计算**：抽屉根据锚点元素（触发按钮）的位置和尺寸，计算自己应该出现的位置
+2. **方向展开**：根据 `placement` 属性，从锚点元素向指定方向展开
+3. **部分遮罩**：只在展开方向创建遮罩层，遮罩范围为：
+   - `bottom`：从按钮底部到屏幕底部
+   - `top`：从屏幕顶部到按钮顶部
+   - `left`：从屏幕左侧到按钮左侧
+   - `right`：从按钮右侧到屏幕右侧
+4. **边界检测**：自动检测屏幕边界，确保抽屉不会溢出可视区域
+
+#### 最佳实践
+
+```javascript path=null start=null
+// ✅ 推荐：动态绑定锚点元素
+button.addEventListener('click', function() {
+  drawer.anchorElement = this; // 使用 this 引用当前按钮
+  drawer.open();
+});
+
+// ✅ 推荐：使用 size="auto" 让抽屉根据内容自适应
+<ldesign-drawer size="auto" ...>
+
+// ✅ 推荐：向下展开时，使用较小的动画时长
+<ldesign-drawer animation-duration="200" ...>
+
+// ❌ 不推荐：使用选择器字符串（静态绑定）
+<ldesign-drawer anchor-element="#button1" ...>
+// 这种方式在多个按钮共用一个抽屉时会有问题
+```
+
+#### 完整示例
+
+完整的交互演示请参考：[demo/drawer-anchor-partial-mask.html](../../../demo/drawer-anchor-partial-mask.html)
+
+该示例包含：
+- 四个方向的基础展开示例
+- 四方向布局示例
+- 实际应用场景（电商筛选、购物车）
+- 完整的交互逻辑和样式
+
+#### 注意事项
+
+⚠️ **重要提示**：
+
+1. 必须同时设置 `anchor-mode="element"` 和 `anchor-mask-partial="true"` 才能启用部分遮罩功能
+2. 推荐使用 JavaScript 动态设置 `anchorElement` 属性，而不是静态的选择器字符串
+3. 部分遮罩只在锚点模式下生效，普通抽屉模式下会显示全屏遮罩
+4. 抽屉会自动处理边界溢出，确保始终在可视区域内
+5. 移动端建议使用 `swipe-to-close="true"` 支持手势关闭
 
 ### 加载状态
 
@@ -2018,6 +2481,75 @@ ldesign-drawer {
     <div>
       <button id="cancelSettingsBtn" style="padding: 8px 16px; margin-right: 10px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer;">取消</button>
       <button id="saveSettingsBtn" style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">保存</button>
+    </div>
+  </div>
+</ldesign-drawer>
+
+<!-- 锚点部分遮罩演示抽屉 -->
+<ldesign-drawer 
+  id="anchorPartialDrawerBottom"
+  placement="bottom"
+  anchor-mode="element"
+  anchor-mask-partial="true"
+  drawer-title="向下展开"
+  size="300px"
+  animation="true">
+  <div style="padding: 20px;">
+    <h4 style="margin-top: 0;">🎯 向下展开的抽屉</h4>
+    <p>这个抽屉从按钮<strong>下方</strong>展开，只在下方区域有遮罩。</p>
+    <div style="background: #e3f2fd; padding: 12px; border-radius: 6px; margin-top: 12px;">
+      <p style="margin: 0; color: #1976d2; font-size: 14px;"><strong>提示：</strong>注意按钮上方的区域是透明的，可以点击。</p>
+    </div>
+  </div>
+</ldesign-drawer>
+
+<ldesign-drawer 
+  id="anchorPartialDrawerTop"
+  placement="top"
+  anchor-mode="element"
+  anchor-mask-partial="true"
+  drawer-title="向上展开"
+  size="300px"
+  animation="true">
+  <div style="padding: 20px;">
+    <h4 style="margin-top: 0;">⬆️ 向上展开的抽屉</h4>
+    <p>这个抽屉从按钮<strong>上方</strong>展开，只在上方区域有遮罩。</p>
+    <div style="background: #fff3e0; padding: 12px; border-radius: 6px; margin-top: 12px;">
+      <p style="margin: 0; color: #e65100; font-size: 14px;"><strong>提示：</strong>按钮下方的区域仍然可以交互。</p>
+    </div>
+  </div>
+</ldesign-drawer>
+
+<ldesign-drawer 
+  id="anchorPartialDrawerLeft"
+  placement="left"
+  anchor-mode="element"
+  anchor-mask-partial="true"
+  drawer-title="向左展开"
+  size="320px"
+  animation="true">
+  <div style="padding: 20px;">
+    <h4 style="margin-top: 0;">⬅️ 向左展开的拽屉</h4>
+    <p>这个拽屉从按钮<strong>左侧</strong>展开，只在左侧区域有遮罩。</p>
+    <div style="background: #f3e5f5; padding: 12px; border-radius: 6px; margin-top: 12px;">
+      <p style="margin: 0; color: #6a1b9a; font-size: 14px;"><strong>提示：</strong>按钮右侧区域保持可交互。</p>
+    </div>
+  </div>
+</ldesign-drawer>
+
+<ldesign-drawer 
+  id="anchorPartialDrawerRight"
+  placement="right"
+  anchor-mode="element"
+  anchor-mask-partial="true"
+  drawer-title="向右展开"
+  size="320px"
+  animation="true">
+  <div style="padding: 20px;">
+    <h4 style="margin-top: 0;">➡️ 向右展开的拽屉</h4>
+    <p>这个拽屉从按钮<strong>右侧</strong>展开，只在右侧区域有遮罩。</p>
+    <div style="background: #e8f5e9; padding: 12px; border-radius: 6px; margin-top: 12px;">
+      <p style="margin: 0; color: #2e7d32; font-size: 14px;"><strong>提示：</strong>按钮左侧区域保持可交互。</p>
     </div>
   </div>
 </ldesign-drawer>

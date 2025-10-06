@@ -1,0 +1,29 @@
+{
+  "sources": [
+    {
+      "id": "1",
+      "name": "npm 官方源",
+      "url": "https://registry.npmjs.org/",
+      "type": "public",
+      "description": "NPM 官方默认源",
+      "isLoggedIn": true,
+      "createdAt": "2025-09-30T13:11:53.549Z",
+      "updatedAt": "2025-09-30T13:24:26.630Z",
+      "loginInfo": {
+        "username": "swimly",
+        "lastLoginAt": "2025-09-30T13:24:26.630Z"
+      }
+    },
+    {
+      "id": "2",
+      "name": "淘宝镜像",
+      "url": "https://registry.npmmirror.com/",
+      "type": "public",
+      "description": "淘宝 NPM 镜像源",
+      "isLoggedIn": false,
+      "createdAt": "2025-09-30T13:11:53.549Z",
+      "updatedAt": "2025-09-30T13:11:53.549Z"
+    }
+  ],
+  "lastId": 2
+}

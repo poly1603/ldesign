@@ -17,7 +17,7 @@ import {
   getProjectByPath,
   detectProjectType,
   type Project
-} from '../database/projects.js'
+} from '../database/adapters.js'
 import {
   getPackageInfo,
   updateProjectVersion,

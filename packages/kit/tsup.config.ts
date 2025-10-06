@@ -13,7 +13,7 @@ export default defineConfig({
   },
   format: ['esm', 'cjs'],
   outDir: 'dist',
-  dts: true,
+  dts: false, // 暂时禁用 DTS 生成以避免 svgicons2svgfont 导入问题
   sourcemap: true,
   clean: true,
   splitting: false,

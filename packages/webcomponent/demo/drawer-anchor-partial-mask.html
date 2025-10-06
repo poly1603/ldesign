@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>锚点抽屉 - 部分遮罩展开</title>
+    <script type="module" src="/src/index.ts"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-desc {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .trigger-btn {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .trigger-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .trigger-btn:active {
+            transform: translateY(0);
+        }
+        
+        .trigger-btn.bottom {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+        
+        .trigger-btn.top {
+            background: linear-gradient(135deg, #fa709a, #fee140);
+        }
+        
+        .trigger-btn.left {
+            background: linear-gradient(135deg, #30cfd0, #330867);
+        }
+        
+        .trigger-btn.right {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            color: #333;
+        }
+        
+        /* 特殊布局示例 */
+        .layout-demo {
+            display: grid;
+            grid-template-areas: 
+                "top top top"
+                "left center right"
+                "bottom bottom bottom";
+            gap: 20px;
+            min-height: 400px;
+        }
+        
+        .layout-demo .top { grid-area: top; }
+        .layout-demo .left { grid-area: left; }
+        .layout-demo .center { 
+            grid-area: center; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            color: #999;
+        }
+        .layout-demo .right { grid-area: right; }
+        .layout-demo .bottom { grid-area: bottom; }
+        
+        /* 抽屉内容样式 */
+        .drawer-content {
+            padding: 20px;
+        }
+        
+        .drawer-content h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .drawer-content p {
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .drawer-content .feature-list {
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+        
+        .drawer-content .feature-list li {
+            margin: 8px 0;
+            color: #555;
+        }
+        
+        .drawer-content .highlight {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+            margin: 15px 0;
+        }
+        
+        .drawer-content .highlight strong {
+            color: #1976d2;
+        }
+        
+        /* 示例：购物车按钮 */
+        .cart-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 24px;
+            z-index: 100;
+        }
+        
+        .cart-button:hover {
+            transform: scale(1.1);
+        }
+        
+        /* 示例：过滤器按钮 */
+        .filter-bar {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        /* 商品网格 */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .product-card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .product-card h4 {
+            margin: 10px 0;
+            color: #333;
+        }
+        
+        .product-card .price {
+            color: #ff6b6b;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        /* 代码示例 */
+        .code-example {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+        
+        .code-example .keyword { color: #c678dd; }
+        .code-example .string { color: #98c379; }
+        .code-example .comment { color: #5c6370; font-style: italic; }
+        .code-example .function { color: #61afef; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 锚点抽屉 - 部分遮罩展开</h1>
+        <p class="subtitle">从点击位置向指定方向展开，只在展开方向添加遮罩</p>
+        
+        <!-- 基础示例 -->
+        <div class="demo-section">
+            <h2 class="section-title">
+                📱 基础示例
+            </h2>
+            <p class="section-desc">
+                点击按钮，抽屉会从按钮位置向指定方向展开，只在展开方向显示遮罩。
+            </p>
+            
+            <div class="button-grid">
+                <button id="btn-bottom" class="trigger-btn bottom">
+                    ⬇️ 向下展开
+                </button>
+                <button id="btn-top" class="trigger-btn top">
+                    ⬆️ 向上展开
+                </button>
+                <button id="btn-left" class="trigger-btn left">
+                    ⬅️ 向左展开
+                </button>
+                <button id="btn-right" class="trigger-btn right">
+                    ➡️ 向右展开
+                </button>
+            </div>
+        </div>
+        
+        <!-- 布局示例 -->
+        <div class="demo-section">
+            <h2 class="section-title">
+                🎨 四方向布局示例
+            </h2>
+            <p class="section-desc">
+                模拟实际应用场景，从不同位置触发抽屉。
+            </p>
+            
+            <div class="layout-demo">
+                <button id="layout-top" class="trigger-btn top">顶部触发</button>
+                <button id="layout-left" class="trigger-btn left">左侧触发</button>
+                <div class="center">
+                    点击四周的按钮<br>查看部分遮罩效果
+                </div>
+                <button id="layout-right" class="trigger-btn right">右侧触发</button>
+                <button id="layout-bottom" class="trigger-btn bottom">底部触发</button>
+            </div>
+        </div>
+        
+        <!-- 实际应用示例 -->
+        <div class="demo-section">
+            <h2 class="section-title">
+                🛒 实际应用示例
+            </h2>
+            <p class="section-desc">
+                模拟常见的电商筛选场景。
+            </p>
+            
+            <!-- 顶部过滤栏 -->
+            <div class="filter-bar">
+                <button id="filter-category" class="filter-btn">
+                    全部商品 ▼
+                </button>
+                <button id="filter-sort" class="filter-btn">
+                    默认排序 ▼
+                </button>
+                <button id="filter-price" class="filter-btn">
+                    价格筛选 ▼
+                </button>
+            </div>
+            
+            <!-- 商品网格 -->
+            <div class="product-grid">
+                <div class="product-card">
+                    <div style="height: 120px; background: #e0e0e0; border-radius: 6px; margin-bottom: 10px;"></div>
+                    <h4>商品 1</h4>
+                    <div class="price">¥99</div>
+                </div>
+                <div class="product-card">
+                    <div style="height: 120px; background: #e0e0e0; border-radius: 6px; margin-bottom: 10px;"></div>
+                    <h4>商品 2</h4>
+                    <div class="price">¥149</div>
+                </div>
+                <div class="product-card">
+                    <div style="height: 120px; background: #e0e0e0; border-radius: 6px; margin-bottom: 10px;"></div>
+                    <h4>商品 3</h4>
+                    <div class="price">¥199</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 代码示例 -->
+        <div class="demo-section">
+            <h2 class="section-title">
+                💻 代码示例
+            </h2>
+            
+            <div class="code-example">
+<span class="comment">// HTML</span>
+&lt;<span class="keyword">button</span> <span class="function">id</span>=<span class="string">"myButton"</span>&gt;点击我&lt;/<span class="keyword">button</span>&gt;
+
+&lt;<span class="keyword">ldesign-drawer</span> 
+  <span class="function">id</span>=<span class="string">"myDrawer"</span>
+  <span class="function">placement</span>=<span class="string">"bottom"</span>
+  <span class="function">anchor-mode</span>=<span class="string">"element"</span>
+  <span class="function">anchor-element</span>=<span class="string">"#myButton"</span>
+  <span class="function">anchor-mask-partial</span>=<span class="string">"true"</span>
+  <span class="function">drawer-title</span>=<span class="string">"向下展开的抽屉"</span>
+&gt;
+  &lt;<span class="keyword">div</span>&gt;抽屉内容&lt;/<span class="keyword">div</span>&gt;
+&lt;/<span class="keyword">ldesign-drawer</span>&gt;
+
+<span class="comment">// JavaScript</span>
+<span class="keyword">const</span> button = document.<span class="function">getElementById</span>(<span class="string">'myButton'</span>);
+<span class="keyword">const</span> drawer = document.<span class="function">getElementById</span>(<span class="string">'myDrawer'</span>);
+
+button.<span class="function">addEventListener</span>(<span class="string">'click'</span>, () => {
+  drawer.<span class="function">open</span>();
+});
+            </div>
+            
+            <div class="drawer-content">
+                <div class="highlight">
+                    <strong>核心属性：</strong>
+                    <ul class="feature-list">
+                        <li><code>anchor-mode="element"</code> - 启用锚点模式</li>
+                        <li><code>anchor-element="#button"</code> - 指定锚点元素</li>
+                        <li><code>anchor-mask-partial="true"</code> - 启用部分遮罩</li>
+                        <li><code>placement</code> - 展开方向（top/bottom/left/right）</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 购物车按钮（固定定位） -->
+    <button id="cart-button" class="cart-button" title="购物车">
+        🛒
+    </button>
+    
+    <!-- 抽屉定义 -->
+    
+    <!-- 基础示例的抽屉 -->
+    <ldesign-drawer 
+        id="drawer-bottom" 
+        placement="bottom" 
+        anchor-mode="element"
+        anchor-mask-partial="true"
+        drawer-title="向下展开"
+        size="400px"
+    >
+        <div class="drawer-content">
+            <h3>🎯 向下展开的抽屉</h3>
+            <p>这个抽屉从按钮下方展开，<strong>只在下方区域有遮罩</strong>，上方区域可以正常交互。</p>
+            <div class="highlight">
+                <strong>特点：</strong>
+                <ul class="feature-list">
+                    <li>从触发按钮位置展开</li>
+                    <li>只在展开方向添加遮罩</li>
+                    <li>未展开区域可以正常点击</li>
+                    <li>适合下拉菜单、筛选器等场景</li>
+                </ul>
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <ldesign-drawer 
+        id="drawer-top" 
+        placement="top" 
+        anchor-mode="element"
+        anchor-mask-partial="true"
+        drawer-title="向上展开"
+        size="400px"
+    >
+        <div class="drawer-content">
+            <h3>⬆️ 向上展开的抽屉</h3>
+            <p>这个抽屉从按钮上方展开，只在上方区域有遮罩。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <ldesign-drawer 
+        id="drawer-left" 
+        placement="left" 
+        anchor-mode="element"
+        anchor-mask-partial="true"
+        drawer-title="向左展开"
+        size="350px"
+    >
+        <div class="drawer-content">
+            <h3>⬅️ 向左展开的抽屉</h3>
+            <p>这个抽屉从按钮左侧展开，只在左侧区域有遮罩。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <ldesign-drawer 
+        id="drawer-right" 
+        placement="right" 
+        anchor-mode="element"
+        anchor-mask-partial="true"
+        drawer-title="向右展开"
+        size="350px"
+    >
+        <div class="drawer-content">
+            <h3>➡️ 向右展开的抽屉</h3>
+            <p>这个抽屉从按钮右侧展开，只在右侧区域有遮罩。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 布局示例的抽屉 -->
+    <ldesign-drawer 
+        id="drawer-layout-top" 
+        placement="top" 
+        anchor-mode="element"
+        anchor-mask-partial="true"
+        drawer-title="顶部触发"
+        size="300px"
+    >
+        <div class="drawer-content">
+            <h3>从顶部展开</h3>
+            <p>注意：只有下方有遮罩，上方的按钮仍然可以点击。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <ldesign-drawer 
+        id="drawer-layout-bottom" 
+        placement="bottom" 
+        anchor-mode="element"
+        anchor-mask-partial="true"
+        drawer-title="底部触发"
+        size="300px"
+    >
+        <div class="drawer-content">
+            <h3>从底部展开</h3>
+            <p>只有上方有遮罩，下方的按钮仍然可以点击。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <ldesign-drawer 
+        id="drawer-layout-left" 
+        placement="left" 
+        anchor-mode="element"
+        anchor-mask-partial="true"
+        drawer-title="左侧触发"
+        size="300px"
+    >
+        <div class="drawer-content">
+            <h3>从左侧展开</h3>
+            <p>只有右侧有遮罩。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <ldesign-drawer 
+        id="drawer-layout-right" 
+        placement="right" 
+        anchor-mode="element"
+        anchor-mask-partial="true"
+        drawer-title="右侧触发"
+        size="300px"
+    >
+        <div class="drawer-content">
+            <h3>从右侧展开</h3>
+            <p>只有左侧有遮罩。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 过滤器抽屉 -->
+    <ldesign-drawer 
+        id="drawer-category" 
+        placement="bottom" 
+        anchor-mode="element"
+        anchor-mask-partial="true"
+        drawer-title="商品分类"
+        size="auto"
+    >
+        <div class="drawer-content">
+            <h3>选择分类</h3>
+            <div class="button-grid">
+                <button class="trigger-btn">全部商品</button>
+                <button class="trigger-btn">新款商品</button>
+                <button class="trigger-btn">活动商品</button>
+                <button class="trigger-btn">禁用菜单</button>
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <ldesign-drawer 
+        id="drawer-sort" 
+        placement="bottom" 
+        anchor-mode="element"
+        anchor-mask-partial="true"
+        drawer-title="排序方式"
+        size="auto"
+    >
+        <div class="drawer-content">
+            <h3>选择排序</h3>
+            <div class="feature-list">
+                <li>默认排序</li>
+                <li>价格从低到高</li>
+                <li>价格从高到低</li>
+                <li>销量排序</li>
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <ldesign-drawer 
+        id="drawer-price" 
+        placement="bottom" 
+        anchor-mode="element"
+        anchor-mask-partial="true"
+        drawer-title="价格筛选"
+        size="auto"
+    >
+        <div class="drawer-content">
+            <h3>价格区间</h3>
+            <div class="feature-list">
+                <li>0-100元</li>
+                <li>100-500元</li>
+                <li>500-1000元</li>
+                <li>1000元以上</li>
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 购物车抽屉 -->
+    <ldesign-drawer 
+        id="drawer-cart" 
+        placement="right" 
+        anchor-mode="element"
+        anchor-mask-partial="true"
+        drawer-title="购物车"
+        size="400px"
+    >
+        <div class="drawer-content">
+            <h3>🛒 我的购物车</h3>
+            <p>购物车是空的</p>
+            <div class="highlight">
+                <strong>提示：</strong> 这个抽屉从右上角的购物车按钮展开，只在左侧有遮罩。
+            </div>
+        </div>
+    </ldesign-drawer>
+    
+    <script>
+        // 基础示例绑定
+        document.getElementById('btn-bottom').addEventListener('click', function() {
+            const drawer = document.getElementById('drawer-bottom');
+            drawer.anchorElement = this;
+            drawer.open();
+        });
+        
+        document.getElementById('btn-top').addEventListener('click', function() {
+            const drawer = document.getElementById('drawer-top');
+            drawer.anchorElement = this;
+            drawer.open();
+        });
+        
+        document.getElementById('btn-left').addEventListener('click', function() {
+            const drawer = document.getElementById('drawer-left');
+            drawer.anchorElement = this;
+            drawer.open();
+        });
+        
+        document.getElementById('btn-right').addEventListener('click', function() {
+            const drawer = document.getElementById('drawer-right');
+            drawer.anchorElement = this;
+            drawer.open();
+        });
+        
+        // 布局示例绑定
+        document.getElementById('layout-top').addEventListener('click', function() {
+            const drawer = document.getElementById('drawer-layout-top');
+            drawer.anchorElement = this;
+            drawer.open();
+        });
+        
+        document.getElementById('layout-bottom').addEventListener('click', function() {
+            const drawer = document.getElementById('drawer-layout-bottom');
+            drawer.anchorElement = this;
+            drawer.open();
+        });
+        
+        document.getElementById('layout-left').addEventListener('click', function() {
+            const drawer = document.getElementById('drawer-layout-left');
+            drawer.anchorElement = this;
+            drawer.open();
+        });
+        
+        document.getElementById('layout-right').addEventListener('click', function() {
+            const drawer = document.getElementById('drawer-layout-right');
+            drawer.anchorElement = this;
+            drawer.open();
+        });
+        
+        // 过滤器绑定
+        document.getElementById('filter-category').addEventListener('click', function() {
+            const drawer = document.getElementById('drawer-category');
+            drawer.anchorElement = this;
+            drawer.open();
+        });
+        
+        document.getElementById('filter-sort').addEventListener('click', function() {
+            const drawer = document.getElementById('drawer-sort');
+            drawer.anchorElement = this;
+            drawer.open();
+        });
+        
+        document.getElementById('filter-price').addEventListener('click', function() {
+            const drawer = document.getElementById('drawer-price');
+            drawer.anchorElement = this;
+            drawer.open();
+        });
+        
+        // 购物车按钮
+        document.getElementById('cart-button').addEventListener('click', function() {
+            const drawer = document.getElementById('drawer-cart');
+            drawer.anchorElement = this;
+            drawer.open();
+        });
+        
+        // 监听抽屉事件
+        document.addEventListener('DOMContentLoaded', () => {
+            const drawers = document.querySelectorAll('ldesign-drawer');
+            drawers.forEach(drawer => {
+                drawer.addEventListener('drawerOpen', (e) => {
+                    console.log('抽屉打开:', drawer.id);
+                });
+                
+                drawer.addEventListener('drawerClose', (e) => {
+                    console.log('抽屉关闭:', drawer.id, '原因:', e.detail?.reason);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

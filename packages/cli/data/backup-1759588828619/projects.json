@@ -1,0 +1,1586 @@
+{
+  "projects": [
+    {
+      "name": "@ldesign/app",
+      "path": "D:\\WorkBench\\ldesign\\app",
+      "description": "LDesign 设计系统演示应用 - 展示完整的组件库和工具集，包含 Vue3、TypeScript、Vite 等现代前端技术栈",
+      "type": "both",
+      "packageJson": {
+        "name": "@ldesign/app",
+        "version": "4.0.0",
+        "description": "LDesign 设计系统演示应用 - 展示完整的组件库和工具集，包含 Vue3、TypeScript、Vite 等现代前端技术栈",
+        "type": "module",
+        "main": "./src/index.ts",
+        "types": "./src/index.ts",
+        "exports": {
+          ".": {
+            "import": "./src/index.ts",
+            "types": "./src/index.ts"
+          }
+        },
+        "scripts": {
+          "ui": "ldesign ui",
+          "build:lib": "ldesign-builder build",
+          "ui:dev": "node scripts/ldesign-dev.js ui",
+          "dev": "launcher dev --environment development",
+          "dev:cli": "node scripts/ldesign-dev.js dev --environment development",
+          "dev:prod": "launcher dev --environment production",
+          "dev:prod:cli": "node scripts/ldesign-dev.js dev --environment production",
+          "dev:staging": "launcher dev --environment staging",
+          "dev:staging:cli": "node scripts/ldesign-dev.js dev --environment staging",
+          "dev:test": "launcher dev --environment test",
+          "dev:test:cli": "node scripts/ldesign-dev.js dev --environment test",
+          "build": "launcher build --environment production",
+          "build:cli": "node scripts/ldesign-dev.js build --environment production",
+          "build:prod": "launcher build --environment production",
+          "build:prod:cli": "node scripts/ldesign-dev.js build --environment production",
+          "build:dev": "launcher build --environment development",
+          "build:dev:cli": "node scripts/ldesign-dev.js build --environment development",
+          "build:staging": "launcher build --environment staging",
+          "build:staging:cli": "node scripts/ldesign-dev.js build --environment staging",
+          "build:test": "launcher build --environment test",
+          "build:test:cli": "node scripts/ldesign-dev.js build --environment test",
+          "preview": "launcher preview --environment production",
+          "preview:cli": "node scripts/ldesign-dev.js preview --environment production",
+          "preview:prod": "launcher preview --environment production",
+          "preview:prod:cli": "node scripts/ldesign-dev.js preview --environment production",
+          "preview:dev": "launcher preview --environment development",
+          "preview:dev:cli": "node scripts/ldesign-dev.js preview --environment development",
+          "preview:staging": "launcher preview --environment staging",
+          "preview:staging:cli": "node scripts/ldesign-dev.js preview --environment staging",
+          "preview:test": "launcher preview --environment test",
+          "preview:test:cli": "node scripts/ldesign-dev.js preview --environment test",
+          "build:builder": "ldesign-builder build --mode production",
+          "watch:builder": "ldesign-builder watch --mode development",
+          "clean:builder": "ldesign-builder clean",
+          "analyze:builder": "ldesign-builder analyze",
+          "ldesign": "ldesign",
+          "ld": "ld",
+          "server": "cd server && pnpm start",
+          "server:dev": "cd server && pnpm dev",
+          "server:install": "cd server && pnpm install",
+          "dev:full": "concurrently \"pnpm server:dev\" \"pnpm dev\"",
+          "type-check": "vue-tsc --noEmit",
+          "type-check:watch": "vue-tsc --noEmit --watch",
+          "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+          "lint:check": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore",
+          "test": "vitest",
+          "test:run": "vitest run",
+          "test:coverage": "vitest run --coverage",
+          "test:ui": "vitest --ui",
+          "clean": "rimraf dist .cache node_modules/.cache",
+          "clean:all": "rimraf dist .cache node_modules",
+          "reinstall": "pnpm clean:all && pnpm install",
+          "serve": "pnpm preview",
+          "start": "pnpm dev"
+        },
+        "dependencies": {
+          "@ldesign/api": "workspace:*",
+          "@ldesign/cache": "workspace:*",
+          "@ldesign/color": "workspace:*",
+          "@ldesign/config-editor": "workspace:*",
+          "@ldesign/crypto": "workspace:*",
+          "@ldesign/device": "workspace:*",
+          "@ldesign/engine": "workspace:*",
+          "@ldesign/http": "workspace:*",
+          "@ldesign/i18n": "workspace:*",
+          "@ldesign/kit": "workspace:*",
+          "@ldesign/router": "workspace:*",
+          "@ldesign/shared": "workspace:*",
+          "@ldesign/size": "workspace:*",
+          "@ldesign/store": "workspace:*",
+          "@ldesign/template": "workspace:*",
+          "@ldesign/webcomponent": "workspace:*",
+          "vue": "3.5.22",
+          "vue-router": "4.5.1"
+        },
+        "devDependencies": {
+          "@ldesign/builder": "workspace:*",
+          "@ldesign/cli": "workspace:*",
+          "@ldesign/launcher": "workspace:*",
+          "@types/node": "24.5.2",
+          "@vitejs/plugin-vue": "6.0.1",
+          "@vitejs/plugin-vue-jsx": "^5.1.1",
+          "@vue/eslint-config-typescript": "14.6.0",
+          "@vue/test-utils": "2.4.6",
+          "alova": "^3.3.4",
+          "axios": "^1.12.2",
+          "concurrently": "^8.2.0",
+          "eslint": "9.36.0",
+          "eslint-plugin-vue": "10.5.0",
+          "jiti": "^1.21.0",
+          "jsdom": "27.0.0",
+          "rimraf": "6.0.1",
+          "socket.io-client": "^4.7.2",
+          "vite": "7.1.7",
+          "vitest": "3.2.4",
+          "vue-tsc": "3.0.8",
+          "typescript": "^5.9.2"
+        },
+        "keywords": [
+          "vue3",
+          "typescript",
+          "vite",
+          "design-system",
+          "component-library",
+          "ldesign",
+          "frontend",
+          "ui-framework",
+          "demo-app",
+          "modern-frontend"
+        ],
+        "author": {
+          "name": "LDesign Team",
+          "email": "team@ldesign.com",
+          "url": "https://ldesign.github.io"
+        },
+        "license": "MIT",
+        "homepage": "https://ldesign.github.io",
+        "repository": {
+          "type": "git",
+          "url": "https://github.com/ldesign/ldesign.git",
+          "directory": "app"
+        },
+        "bugs": {
+          "url": "https://github.com/ldesign/ldesign/issues"
+        },
+        "engines": {
+          "node": ">=16.0.0",
+          "pnpm": ">=8.0.0"
+        },
+        "browserslist": [
+          "> 1%",
+          "last 2 versions",
+          "not dead",
+          "not ie 11"
+        ]
+      },
+      "id": "3",
+      "importedAt": "2025-09-30T05:53:48.086Z",
+      "createdAt": "2025-09-30T05:53:48.086Z",
+      "updatedAt": "2025-09-30T05:53:48.086Z"
+    },
+    {
+      "name": "@ldesign/cache",
+      "path": "D:\\WorkBench\\ldesign\\packages\\cache",
+      "description": "LDesign cache package",
+      "type": "library",
+      "packageJson": {
+        "name": "@ldesign/cache",
+        "version": "0.1.0",
+        "description": "LDesign cache package",
+        "keywords": [
+          "ldesign",
+          "vue3",
+          "typescript",
+          "cache"
+        ],
+        "author": "LDesign Team",
+        "license": "MIT",
+        "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/cache#readme",
+        "repository": {
+          "type": "git",
+          "url": "https://github.com/ldesign/ldesign.git",
+          "directory": "packages/cache"
+        },
+        "bugs": {
+          "url": "https://github.com/ldesign/ldesign/issues"
+        },
+        "type": "module",
+        "sideEffects": [
+          "./src/test-setup.ts",
+          "./src/vue/cache-provider.tsx",
+          "**/*.css",
+          "**/*.scss",
+          "**/*.less"
+        ],
+        "exports": {
+          ".": {
+            "types": "./es/index.d.ts",
+            "import": "./es/index.js",
+            "require": "./lib/index.cjs"
+          },
+          "./core/*": {
+            "types": "./es/core/*.d.ts",
+            "import": "./es/core/*.js",
+            "require": "./lib/core/*.cjs"
+          },
+          "./engine/*": {
+            "types": "./es/engine/*.d.ts",
+            "import": "./es/engine/*.js",
+            "require": "./lib/engine/*.cjs"
+          },
+          "./engines/*": {
+            "types": "./es/engines/*.d.ts",
+            "import": "./es/engines/*.js",
+            "require": "./lib/engines/*.cjs"
+          },
+          "./security/*": {
+            "types": "./es/security/*.d.ts",
+            "import": "./es/security/*.js",
+            "require": "./lib/security/*.cjs"
+          },
+          "./strategies/*": {
+            "types": "./es/strategies/*.d.ts",
+            "import": "./es/strategies/*.js",
+            "require": "./lib/strategies/*.cjs"
+          },
+          "./types": {
+            "types": "./es/types/index.d.ts",
+            "import": "./es/types/index.js",
+            "require": "./lib/types/index.cjs"
+          },
+          "./types/*": {
+            "types": "./es/types/*.d.ts",
+            "import": "./es/types/*.js",
+            "require": "./lib/types/*.cjs"
+          },
+          "./utils": {
+            "types": "./es/utils/index.d.ts",
+            "import": "./es/utils/index.js",
+            "require": "./lib/utils/index.cjs"
+          },
+          "./utils/*": {
+            "types": "./es/utils/*.d.ts",
+            "import": "./es/utils/*.js",
+            "require": "./lib/utils/*.cjs"
+          },
+          "./vue": {
+            "types": "./es/vue/index.d.ts",
+            "import": "./es/vue/index.js",
+            "require": "./lib/vue/index.cjs"
+          },
+          "./vue/*": {
+            "types": "./es/vue/*.d.ts",
+            "import": "./es/vue/*.js",
+            "require": "./lib/vue/*.cjs"
+          }
+        },
+        "main": "./lib/index.cjs",
+        "module": "./es/index.js",
+        "types": "./es/index.d.ts",
+        "unpkg": "./dist/index.min.js",
+        "jsdelivr": "./dist/index.min.js",
+        "files": [
+          "README.md",
+          "LICENSE",
+          "package.json",
+          "es",
+          "lib",
+          "dist"
+        ],
+        "scripts": {
+          "// Build Scripts": "",
+          "build": "ldesign-builder build -f esm,cjs,umd",
+          "build:clean": "ldesign-builder build -f esm,cjs,umd --clean",
+          "build:watch": "ldesign-builder build --watch",
+          "build:dev": "node scripts/build.js --dev",
+          "// Development Scripts": "",
+          "dev": "rollup -c -w",
+          "dev:test": "vitest -c vitest.local.config.ts --watch",
+          "// Type Checking": "",
+          "type-check": "tsc -p tsconfig.json --noEmit",
+          "type-check:watch": "tsc -p tsconfig.json --noEmit --watch",
+          "// Linting Scripts": "",
+          "lint": "eslint . --fix",
+          "lint:check": "eslint .",
+          "lint:ci": "eslint . --max-warnings 0",
+          "lint:fix": "eslint . --fix --ext .ts,.tsx,.js,.jsx,.vue",
+          "// Testing Scripts": "",
+          "test": "vitest -c vitest.local.config.ts",
+          "test:ui": "vitest -c vitest.local.config.ts --ui",
+          "test:run": "node scripts/run-vitest.mjs -c vitest.local.config.ts --reporter=basic --silent",
+          "test:coverage": "node scripts/run-vitest.mjs -c vitest.local.config.ts --coverage",
+          "test:ci": "node scripts/run-vitest.mjs --config vitest.config.ci.ts",
+          "test:watch": "vitest -c vitest.local.config.ts --watch",
+          "test:fast": "node scripts/run-vitest.mjs --fast -c vitest.local.config.ts",
+          "// Performance Testing": "",
+          "test:performance": "node scripts/performance-test.js",
+          "test:benchmark": "node scripts/benchmark.js",
+          "// E2E Testing": "",
+          "test:e2e": "playwright test",
+          "test:e2e:ui": "playwright test --ui",
+          "test:e2e:debug": "playwright test --debug",
+          "// Documentation Scripts": "",
+          "docs:dev": "vitepress dev docs",
+          "docs:build": "vitepress build docs",
+          "docs:preview": "vitepress preview docs",
+          "docs:check-links": "node scripts/docs-check-links.js",
+          "// Formatting Scripts": "",
+          "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\" \"__tests__/**/*.{ts,tsx}\" \"tests/**/*.{ts,tsx}\"",
+          "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\" \"__tests__/**/*.{ts,tsx}\" \"tests/**/*.{ts,tsx}\"",
+          "format:fix": "prettier --write .",
+          "// Utility Scripts": "",
+          "clean": "rimraf esm cjs dist types lib coverage .nyc_output test-results.json junit.xml",
+          "clean:all": "rimraf esm cjs dist types lib coverage .nyc_output test-results.json junit.xml node_modules",
+          "size-check": "size-limit",
+          "size-check:why": "size-limit --why",
+          "// CI/CD Scripts": "",
+          "ci": "pnpm lint:ci && pnpm type-check && pnpm test:ci && pnpm build && pnpm docs:build && pnpm docs:check-links",
+          "ci:test": "pnpm lint:check && pnpm type-check && pnpm test:ci",
+          "ci:build": "pnpm build && pnpm docs:build",
+          "// Git Hooks": "",
+          "precommit": "lint-staged",
+          "pre-push": "pnpm ci:test",
+          "// Release Scripts": "",
+          "release": "semantic-release",
+          "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
+          "// Deployment Scripts": "",
+          "deploy": "tsx ../../tools/deploy/package-deployer.ts cache",
+          "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts cache --tag beta",
+          "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts cache --tag alpha",
+          "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts cache --dry-run"
+        },
+        "peerDependencies": {
+          "vue": "^3.3.0"
+        },
+        "devDependencies": {
+          "@antfu/eslint-config": "^3.0.0",
+          "@ldesign/builder": "workspace:*",
+          "@playwright/test": "^1.40.1",
+          "@rollup/plugin-alias": "^5.1.0",
+          "@rollup/plugin-commonjs": "^25.0.7",
+          "@rollup/plugin-node-resolve": "^15.2.3",
+          "@rollup/plugin-terser": "^0.4.4",
+          "@rollup/plugin-typescript": "^11.1.6",
+          "@types/node": "^22.0.0",
+          "@vitejs/plugin-vue": "^5.0.3",
+          "@vitest/coverage-v8": "^2.0.0",
+          "@vitest/ui": "^2.0.0",
+          "@vue/test-utils": "^2.4.4",
+          "eslint": "^9.0.0",
+          "glob": "^10.3.10",
+          "jsdom": "^24.0.0",
+          "playwright": "^1.40.1",
+          "rimraf": "^5.0.0",
+          "rollup": "^4.9.6",
+          "rollup-plugin-dts": "^6.1.0",
+          "size-limit": "^11.0.0",
+          "typescript": "^5.6.0",
+          "vite": "^5.0.12",
+          "vitepress": "^1.0.0",
+          "vitest": "^2.0.0",
+          "vue": "^3.4.15",
+          "vue-tsc": "^1.8.27"
+        },
+        "size-limit": [
+          {
+            "path": "src/index.ts",
+            "limit": "50 KB",
+            "environment": "node"
+          }
+        ],
+        "peerDependenciesMeta": {
+          "vue": {
+            "optional": true
+          }
+        }
+      },
+      "id": "4",
+      "importedAt": "2025-09-30T06:09:25.011Z",
+      "createdAt": "2025-09-30T06:09:25.011Z",
+      "updatedAt": "2025-09-30T06:09:25.011Z"
+    },
+    {
+      "name": "@ldesign/color",
+      "path": "D:\\WorkBench\\ldesign\\packages\\color",
+      "description": "A framework-agnostic theme color management library with Vue 3 integration",
+      "type": "library",
+      "packageJson": {
+        "name": "@ldesign/color",
+        "version": "0.1.0",
+        "description": "A framework-agnostic theme color management library with Vue 3 integration",
+        "keywords": [
+          "color",
+          "theme",
+          "color-management",
+          "css-variables",
+          "vue3",
+          "typescript",
+          "framework-agnostic"
+        ],
+        "author": "ldesign",
+        "license": "MIT",
+        "type": "module",
+        "exports": {
+          ".": {
+            "types": "./es/index.d.ts",
+            "import": "./es/index.js",
+            "require": "./lib/index.cjs"
+          },
+          "./accessibility/*": {
+            "types": "./es/accessibility/*.d.ts",
+            "import": "./es/accessibility/*.js",
+            "require": "./lib/accessibility/*.cjs"
+          },
+          "./collaboration/*": {
+            "types": "./es/collaboration/*.d.ts",
+            "import": "./es/collaboration/*.js",
+            "require": "./lib/collaboration/*.cjs"
+          },
+          "./core/*": {
+            "types": "./es/core/*.d.ts",
+            "import": "./es/core/*.js",
+            "require": "./lib/core/*.cjs"
+          },
+          "./exports": {
+            "types": "./es/exports/index.d.ts",
+            "import": "./es/exports/index.js",
+            "require": "./lib/exports/index.cjs"
+          },
+          "./exports/*": {
+            "types": "./es/exports/*.d.ts",
+            "import": "./es/exports/*.js",
+            "require": "./lib/exports/*.cjs"
+          },
+          "./extraction/*": {
+            "types": "./es/extraction/*.d.ts",
+            "import": "./es/extraction/*.js",
+            "require": "./lib/extraction/*.cjs"
+          },
+          "./harmony/*": {
+            "types": "./es/harmony/*.d.ts",
+            "import": "./es/harmony/*.js",
+            "require": "./lib/harmony/*.cjs"
+          },
+          "./themes/*": {
+            "types": "./es/themes/*.d.ts",
+            "import": "./es/themes/*.js",
+            "require": "./lib/themes/*.cjs"
+          },
+          "./types/*": {
+            "types": "./es/types/*.d.ts",
+            "import": "./es/types/*.js",
+            "require": "./lib/types/*.cjs"
+          },
+          "./ui/*": {
+            "types": "./es/ui/*.d.ts",
+            "import": "./es/ui/*.js",
+            "require": "./lib/ui/*.cjs"
+          },
+          "./utils/*": {
+            "types": "./es/utils/*.d.ts",
+            "import": "./es/utils/*.js",
+            "require": "./lib/utils/*.cjs"
+          },
+          "./vue": {
+            "types": "./es/vue/index.d.ts",
+            "import": "./es/vue/index.js",
+            "require": "./lib/vue/index.cjs"
+          },
+          "./vue/*": {
+            "types": "./es/vue/*.d.ts",
+            "import": "./es/vue/*.js",
+            "require": "./lib/vue/*.cjs"
+          },
+          "./wasm/*": {
+            "types": "./es/wasm/*.d.ts",
+            "import": "./es/wasm/*.js",
+            "require": "./lib/wasm/*.cjs"
+          },
+          "./workers/*": {
+            "types": "./es/workers/*.d.ts",
+            "import": "./es/workers/*.js",
+            "require": "./lib/workers/*.cjs"
+          },
+          "./es/exports/vue.css": "./es/exports/vue.css",
+          "./es/vue/components/ColorThemeProvider.vue.css": "./es/vue/components/ColorThemeProvider.vue.css",
+          "./es/vue/components/DarkModeToggle.vue.css": "./es/vue/components/DarkModeToggle.vue.css",
+          "./es/vue/components/SimpleThemeToggle.vue.css": "./es/vue/components/SimpleThemeToggle.vue.css",
+          "./es/vue/components/ThemeSelector.vue.css": "./es/vue/components/ThemeSelector.vue.css",
+          "./lib/exports/vue.css": "./lib/exports/vue.css",
+          "./lib/vue/components/ColorThemeProvider.vue.css": "./lib/vue/components/ColorThemeProvider.vue.css",
+          "./lib/vue/components/DarkModeToggle.vue.css": "./lib/vue/components/DarkModeToggle.vue.css",
+          "./lib/vue/components/SimpleThemeToggle.vue.css": "./lib/vue/components/SimpleThemeToggle.vue.css",
+          "./lib/vue/components/ThemeSelector.vue.css": "./lib/vue/components/ThemeSelector.vue.css"
+        },
+        "main": "./lib/index.cjs",
+        "module": "./es/index.js",
+        "types": "./es/index.d.ts",
+        "unpkg": "./dist/index.min.js",
+        "jsdelivr": "./dist/index.min.js",
+        "files": [
+          "README.md",
+          "LICENSE",
+          "package.json",
+          "es",
+          "lib",
+          "dist"
+        ],
+        "scripts": {
+          "build": "ldesign-builder build -f esm,cjs,umd",
+          "build:prod": "ldesign-builder build --config .ldesign/prod.config.ts",
+          "build:dev": "ldesign-builder build --config .ldesign/dev.config.ts",
+          "dev": "ldesign-builder watch --config .ldesign/dev.config.ts",
+          "type-check": "tsc --noEmit --project tsconfig.json",
+          "type-check:test": "tsc --noEmit --project tsconfig.test.json",
+          "lint": "eslint . --fix --cache",
+          "lint:check": "eslint . --cache",
+          "format": "prettier --write .",
+          "format:check": "prettier --check .",
+          "test": "vitest",
+          "test:ui": "vitest --ui",
+          "test:run": "vitest run",
+          "test:coverage": "vitest run --coverage",
+          "test:watch": "vitest --watch",
+          "test:e2e": "playwright test",
+          "test:e2e:ui": "playwright test --ui",
+          "clean": "rimraf esm cjs dist types lib coverage .nyc_output .tsbuildinfo node_modules/.cache",
+          "size-check": "size-limit",
+          "prepublishOnly": "pnpm run clean && pnpm run build:prod && pnpm run test:run && pnpm run lint:check",
+          "build:check": "node scripts/build-monitor.js pnpm run build",
+          "build:analyze": "node scripts/build-monitor.js pnpm run build:prod",
+          "build:monitor": "node scripts/build-monitor.js",
+          "docs:dev": "vitepress dev docs --port 3000",
+          "docs:build": "vitepress build docs",
+          "docs:preview": "vitepress preview docs",
+          "docs:serve": "vitepress serve docs --port 4173",
+          "ci": "pnpm run lint:check && pnpm run type-check && pnpm run test:run",
+          "ci:coverage": "pnpm run lint:check && pnpm run type-check && pnpm run test:coverage",
+          "release": "pnpm run ci:coverage && pnpm run build:prod && changeset publish",
+          "dev:watch": "ldesign-builder watch --config .ldesign/dev.config.ts",
+          "build:fast": "ldesign-builder build -f esm --mode development --no-dts",
+          "postinstall": "echo '✨ @ldesign/color 安装完成！'",
+          "prepack": "pnpm run ci:coverage",
+          "deps:analyze": "node scripts/deps-analyzer.js",
+          "deps:check": "pnpm audit --audit-level moderate"
+        },
+        "dependencies": {
+          "@arco-design/color": "^0.4.0",
+          "@ldesign/shared": "workspace:*",
+          "chroma-js": "^3.1.2",
+          "lucide-vue-next": "^0.542.0",
+          "tslib": "^2.6.2"
+        },
+        "peerDependencies": {
+          "vue": "^3.3.0"
+        },
+        "devDependencies": {
+          "@ldesign/builder": "workspace:*",
+          "@size-limit/preset-big-lib": "^11.2.0",
+          "@types/node": "^22.0.0",
+          "@typescript-eslint/eslint-plugin": "^8.39.0",
+          "@typescript-eslint/parser": "^8.39.0",
+          "@vitejs/plugin-vue": "^5.0.3",
+          "@vitest/coverage-v8": "^3.2.4",
+          "@vitest/ui": "^3.2.4",
+          "@vue/test-utils": "^2.4.4",
+          "eslint": "^9.32.0",
+          "jsdom": "^24.0.0",
+          "less": "^4.4.1",
+          "size-limit": "^11.0.0",
+          "typescript": "^5.6.0",
+          "vite": "^5.0.12",
+          "vitest": "^3.2.4",
+          "vue": "^3.4.15",
+          "vue-tsc": "^3.0.5"
+        },
+        "size-limit": [
+          {
+            "name": "Core Bundle (ESM)",
+            "path": "es/exports/core.js",
+            "limit": "15 KB"
+          },
+          {
+            "name": "Color Processing",
+            "path": "es/exports/color-processing.js",
+            "limit": "8 KB"
+          },
+          {
+            "name": "Accessibility",
+            "path": "es/exports/accessibility.js",
+            "limit": "5 KB"
+          },
+          {
+            "name": "Vue Integration",
+            "path": "es/exports/vue.js",
+            "limit": "20 KB"
+          },
+          {
+            "name": "Full Bundle (UMD)",
+            "path": "dist/index.min.js",
+            "limit": "80 KB"
+          }
+        ],
+        "peerDependenciesMeta": {
+          "vue": {
+            "optional": true
+          }
+        },
+        "style": "es/index-lib.css"
+      },
+      "id": "5",
+      "importedAt": "2025-09-30T07:00:07.004Z",
+      "createdAt": "2025-09-30T07:00:07.004Z",
+      "updatedAt": "2025-09-30T07:00:07.004Z"
+    },
+    {
+      "name": "@ldesign/engine",
+      "path": "D:\\WorkBench\\ldesign\\packages\\engine",
+      "description": "A powerful Vue3 application engine with plugin system, middleware support, and global management",
+      "type": "library",
+      "packageJson": {
+        "name": "@ldesign/engine",
+        "version": "0.1.0",
+        "description": "A powerful Vue3 application engine with plugin system, middleware support, and global management",
+        "keywords": [
+          "vue3",
+          "engine",
+          "plugin",
+          "middleware",
+          "framework",
+          "typescript"
+        ],
+        "author": "ldesign",
+        "license": "MIT",
+        "type": "module",
+        "sideEffects": false,
+        "exports": {
+          ".": {
+            "types": "./es/index.d.ts",
+            "import": "./es/index.js",
+            "require": "./lib/index.cjs"
+          },
+          "./cache/*": {
+            "types": "./es/cache/*.d.ts",
+            "import": "./es/cache/*.js",
+            "require": "./lib/cache/*.cjs"
+          },
+          "./config/*": {
+            "types": "./es/config/*.d.ts",
+            "import": "./es/config/*.js",
+            "require": "./lib/config/*.cjs"
+          },
+          "./constants": {
+            "types": "./es/constants/index.d.ts",
+            "import": "./es/constants/index.js",
+            "require": "./lib/constants/index.cjs"
+          },
+          "./constants/*": {
+            "types": "./es/constants/*.d.ts",
+            "import": "./es/constants/*.js",
+            "require": "./lib/constants/*.cjs"
+          },
+          "./core/*": {
+            "types": "./es/core/*.d.ts",
+            "import": "./es/core/*.js",
+            "require": "./lib/core/*.cjs"
+          },
+          "./dialog": {
+            "types": "./es/dialog/index.d.ts",
+            "import": "./es/dialog/index.js",
+            "require": "./lib/dialog/index.cjs"
+          },
+          "./dialog/*": {
+            "types": "./es/dialog/*.d.ts",
+            "import": "./es/dialog/*.js",
+            "require": "./lib/dialog/*.cjs"
+          },
+          "./directives": {
+            "types": "./es/directives/index.d.ts",
+            "import": "./es/directives/index.js",
+            "require": "./lib/directives/index.cjs"
+          },
+          "./directives/*": {
+            "types": "./es/directives/*.d.ts",
+            "import": "./es/directives/*.js",
+            "require": "./lib/directives/*.cjs"
+          },
+          "./environment/*": {
+            "types": "./es/environment/*.d.ts",
+            "import": "./es/environment/*.js",
+            "require": "./lib/environment/*.cjs"
+          },
+          "./errors/*": {
+            "types": "./es/errors/*.d.ts",
+            "import": "./es/errors/*.js",
+            "require": "./lib/errors/*.cjs"
+          },
+          "./events/*": {
+            "types": "./es/events/*.d.ts",
+            "import": "./es/events/*.js",
+            "require": "./lib/events/*.cjs"
+          },
+          "./interceptors/*": {
+            "types": "./es/interceptors/*.d.ts",
+            "import": "./es/interceptors/*.js",
+            "require": "./lib/interceptors/*.cjs"
+          },
+          "./lifecycle/*": {
+            "types": "./es/lifecycle/*.d.ts",
+            "import": "./es/lifecycle/*.js",
+            "require": "./lib/lifecycle/*.cjs"
+          },
+          "./logger/*": {
+            "types": "./es/logger/*.d.ts",
+            "import": "./es/logger/*.js",
+            "require": "./lib/logger/*.cjs"
+          },
+          "./message": {
+            "types": "./es/message/index.d.ts",
+            "import": "./es/message/index.js",
+            "require": "./lib/message/index.cjs"
+          },
+          "./message/*": {
+            "types": "./es/message/*.d.ts",
+            "import": "./es/message/*.js",
+            "require": "./lib/message/*.cjs"
+          },
+          "./middleware/*": {
+            "types": "./es/middleware/*.d.ts",
+            "import": "./es/middleware/*.js",
+            "require": "./lib/middleware/*.cjs"
+          },
+          "./notifications/*": {
+            "types": "./es/notifications/*.d.ts",
+            "import": "./es/notifications/*.js",
+            "require": "./lib/notifications/*.cjs"
+          },
+          "./performance/*": {
+            "types": "./es/performance/*.d.ts",
+            "import": "./es/performance/*.js",
+            "require": "./lib/performance/*.cjs"
+          },
+          "./plugins/*": {
+            "types": "./es/plugins/*.d.ts",
+            "import": "./es/plugins/*.js",
+            "require": "./lib/plugins/*.cjs"
+          },
+          "./presets": {
+            "types": "./es/presets/index.d.ts",
+            "import": "./es/presets/index.js",
+            "require": "./lib/presets/index.cjs"
+          },
+          "./presets/*": {
+            "types": "./es/presets/*.d.ts",
+            "import": "./es/presets/*.js",
+            "require": "./lib/presets/*.cjs"
+          },
+          "./security/*": {
+            "types": "./es/security/*.d.ts",
+            "import": "./es/security/*.js",
+            "require": "./lib/security/*.cjs"
+          },
+          "./state/*": {
+            "types": "./es/state/*.d.ts",
+            "import": "./es/state/*.js",
+            "require": "./lib/state/*.cjs"
+          },
+          "./types": {
+            "types": "./es/types/index.d.ts",
+            "import": "./es/types/index.js",
+            "require": "./lib/types/index.cjs"
+          },
+          "./types/*": {
+            "types": "./es/types/*.d.ts",
+            "import": "./es/types/*.js",
+            "require": "./lib/types/*.cjs"
+          },
+          "./utils": {
+            "types": "./es/utils/index.d.ts",
+            "import": "./es/utils/index.js",
+            "require": "./lib/utils/index.cjs"
+          },
+          "./utils/*": {
+            "types": "./es/utils/*.d.ts",
+            "import": "./es/utils/*.js",
+            "require": "./lib/utils/*.cjs"
+          },
+          "./vue": {
+            "types": "./es/vue/index.d.ts",
+            "import": "./es/vue/index.js",
+            "require": "./lib/vue/index.cjs"
+          },
+          "./vue/*": {
+            "types": "./es/vue/*.d.ts",
+            "import": "./es/vue/*.js",
+            "require": "./lib/vue/*.cjs"
+          }
+        },
+        "main": "./lib/index.cjs",
+        "module": "./es/index.js",
+        "types": "./es/index.d.ts",
+        "unpkg": "./dist/index.min.js",
+        "jsdelivr": "./dist/index.min.js",
+        "files": [
+          "README.md",
+          "LICENSE",
+          "package.json",
+          "es",
+          "lib",
+          "dist"
+        ],
+        "scripts": {
+          "build": "ldesign-builder build -f esm,cjs,umd",
+          "build:clean": "node scripts/build.js --clean",
+          "build:types": "node scripts/build.js --types",
+          "build:analyze": "node scripts/analyze-bundle.js",
+          "build:watch": "rollup -c -w",
+          "build:check": "pnpm run build && pnpm run build:analyze",
+          "dev": "rollup -c -w",
+          "type-check": "vue-tsc --noEmit",
+          "lint": "eslint . --fix",
+          "lint:check": "eslint .",
+          "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+          "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+          "test": "vitest",
+          "test:unit": "vitest run tests/utils --reporter=verbose --coverage",
+          "test:integration": "vitest run tests/integration --reporter=verbose",
+          "test:performance": "vitest run tests/performance --reporter=verbose --testTimeout=60000",
+          "test:benchmark": "vitest run --config=vitest.benchmark.config.ts",
+          "test:benchmark:watch": "vitest --config=vitest.benchmark.config.ts --watch",
+          "test:ui": "vitest --ui",
+          "test:run": "vitest run",
+          "test:coverage": "vitest run --coverage",
+          "test:e2e": "playwright test",
+          "test:e2e:ui": "playwright test --ui",
+          "test:e2e:debug": "playwright test --debug",
+          "test:all": "pnpm run test:unit && pnpm run test:integration && pnpm run test:performance && pnpm run test:e2e",
+          "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
+          "size-check": "size-limit",
+          "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
+          "docs:dev": "vitepress dev docs",
+          "docs:build": "vitepress build docs",
+          "docs:preview": "vitepress preview docs",
+          "dev:examples": "vite serve examples --port 5173",
+          "serve:examples": "vite preview examples --port 5173",
+          "ci": "pnpm run lint:check && pnpm run format:check && pnpm run type-check && pnpm run test:all",
+          "precommit": "pnpm run lint && pnpm run format && pnpm run type-check",
+          "security:audit": "pnpm audit",
+          "security:fix": "pnpm audit --fix",
+          "build:dev": "node scripts/build.js --dev",
+          "test:watch": "vitest --watch",
+          "test:performance:watch": "vitest tests/performance --watch --testTimeout=60000",
+          "analyze:bundle": "pnpm run build:analyze",
+          "analyze:performance": "pnpm run test:benchmark",
+          "quality:check": "pnpm run lint:check && pnpm run format:check && pnpm run type-check && pnpm run test:unit",
+          "quality:fix": "pnpm run lint && pnpm run format && pnpm run test:unit"
+        },
+        "peerDependencies": {
+          "vue": "^3.5.18"
+        },
+        "devDependencies": {
+          "@ldesign/builder": "workspace:*",
+          "@rollup/plugin-commonjs": "^25.0.7",
+          "@rollup/plugin-node-resolve": "^15.2.3",
+          "@rollup/plugin-typescript": "^11.1.6",
+          "@types/node": "^22.0.0",
+          "@typescript-eslint/eslint-plugin": "^8.42.0",
+          "@typescript-eslint/parser": "^8.42.0",
+          "@vitejs/plugin-vue": "^5.0.3",
+          "@vitest/ui": "^3.2.4",
+          "@vue/compiler-dom": "^3.5.18",
+          "@vue/runtime-dom": "^3.5.18",
+          "@vue/shared": "^3.5.18",
+          "@vue/test-utils": "^2.4.4",
+          "bundle-analyzer": "^0.0.6",
+          "eslint": "^9.0.0",
+          "rollup": "^4.9.6",
+          "rollup-plugin-dts": "^6.1.0",
+          "size-limit": "^11.0.0",
+          "typescript": "^5.6.0",
+          "typescript-eslint": "^8.0.0",
+          "vite": "^5.0.12",
+          "vitepress": "^1.6.4",
+          "vitest": "^3.2.4",
+          "vue": "^3.5.18",
+          "vue-tsc": "^3.0.5",
+          "webpack-bundle-analyzer": "^4.10.2"
+        },
+        "size-limit": [
+          {
+            "path": "dist/index.js",
+            "limit": "50 KB"
+          }
+        ],
+        "peerDependenciesMeta": {
+          "vue": {
+            "optional": true
+          }
+        }
+      },
+      "id": "6",
+      "importedAt": "2025-09-30T07:00:35.038Z",
+      "createdAt": "2025-09-30T07:00:35.038Z",
+      "updatedAt": "2025-09-30T07:00:35.038Z"
+    },
+    {
+      "name": "@ldesign/shared",
+      "path": "D:\\WorkBench\\ldesign\\packages\\shared",
+      "description": "LDesign shared package",
+      "type": "library",
+      "packageJson": {
+        "name": "@ldesign/shared",
+        "version": "0.1.0",
+        "description": "LDesign shared package",
+        "keywords": [
+          "ldesign",
+          "vue3",
+          "typescript",
+          "shared"
+        ],
+        "author": "LDesign Team",
+        "license": "MIT",
+        "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/shared#readme",
+        "repository": {
+          "type": "git",
+          "url": "git+https://github.com/ldesign/ldesign.git",
+          "directory": "packages/shared"
+        },
+        "bugs": {
+          "url": "https://github.com/ldesign/ldesign/issues"
+        },
+        "type": "module",
+        "sideEffects": false,
+        "exports": {
+          ".": {
+            "types": "./es/index.d.ts",
+            "import": "./es/index.js",
+            "require": "./lib/index.cjs"
+          },
+          "./components": {
+            "types": "./es/components/index.d.ts",
+            "import": "./es/components/index.js",
+            "require": "./lib/components/index.cjs"
+          },
+          "./components/*": {
+            "types": "./es/components/*.d.ts",
+            "import": "./es/components/*.js",
+            "require": "./lib/components/*.cjs"
+          },
+          "./hooks": {
+            "types": "./es/hooks/index.d.ts",
+            "import": "./es/hooks/index.js",
+            "require": "./lib/hooks/index.cjs"
+          },
+          "./hooks/*": {
+            "types": "./es/hooks/*.d.ts",
+            "import": "./es/hooks/*.js",
+            "require": "./lib/hooks/*.cjs"
+          },
+          "./types": {
+            "types": "./es/types/index.d.ts",
+            "import": "./es/types/index.js",
+            "require": "./lib/types/index.cjs"
+          },
+          "./types/*": {
+            "types": "./es/types/*.d.ts",
+            "import": "./es/types/*.js",
+            "require": "./lib/types/*.cjs"
+          },
+          "./utils": {
+            "types": "./es/utils/index.d.ts",
+            "import": "./es/utils/index.js",
+            "require": "./lib/utils/index.cjs"
+          },
+          "./utils/*": {
+            "types": "./es/utils/*.d.ts",
+            "import": "./es/utils/*.js",
+            "require": "./lib/utils/*.cjs"
+          },
+          "./es/components/button/LButton.css": "./es/components/button/LButton.css",
+          "./es/components/dialog/LDialog.vue.css": "./es/components/dialog/LDialog.vue.css",
+          "./es/components/popup/LPopup.vue.css": "./es/components/popup/LPopup.vue.css",
+          "./es/components/select/LSelect.vue.css": "./es/components/select/LSelect.vue.css",
+          "./es/index.css": "./es/index.css",
+          "./lib/components/button/LButton.css": "./lib/components/button/LButton.css",
+          "./lib/components/dialog/LDialog.vue.css": "./lib/components/dialog/LDialog.vue.css",
+          "./lib/components/popup/LPopup.vue.css": "./lib/components/popup/LPopup.vue.css",
+          "./lib/components/select/LSelect.vue.css": "./lib/components/select/LSelect.vue.css",
+          "./lib/index.css": "./lib/index.css",
+          "./dist/index.css": "./dist/index.css",
+          "./dist/index.min.css": "./dist/index.min.css"
+        },
+        "main": "./lib/index.cjs",
+        "module": "./es/index.js",
+        "types": "./es/index.d.ts",
+        "unpkg": "./dist/index.min.js",
+        "jsdelivr": "./dist/index.min.js",
+        "files": [
+          "README.md",
+          "LICENSE",
+          "package.json",
+          "es",
+          "lib",
+          "dist"
+        ],
+        "scripts": {
+          "build": "node scripts/build.js",
+          "build:dev": "node scripts/build.js --dev",
+          "build:watch": "ldesign-builder build --watch",
+          "dev": "ldesign-builder watch",
+          "type-check": "vue-tsc --noEmit",
+          "type-check:watch": "vue-tsc --noEmit --watch",
+          "lint": "eslint . --fix",
+          "lint:check": "eslint .",
+          "format": "prettier --write .",
+          "format:check": "prettier --check .",
+          "test": "vitest",
+          "test:ui": "vitest --ui",
+          "test:run": "vitest run",
+          "test:coverage": "vitest run --coverage",
+          "test:watch": "vitest --watch",
+          "test:e2e": "playwright test",
+          "test:e2e:ui": "playwright test --ui",
+          "docs:dev": "vitepress dev docs",
+          "docs:build": "vitepress build docs",
+          "docs:preview": "vitepress preview docs",
+          "clean": "rimraf dist es lib types types-temp coverage .nyc_output temp_vue_files test-build",
+          "clean:deps": "rimraf node_modules pnpm-lock.yaml",
+          "size-check": "size-limit",
+          "ci": "pnpm run lint:check && pnpm run type-check && pnpm run test:run",
+          "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run ci",
+          "deploy": "tsx ../../tools/deploy/package-deployer.ts shared",
+          "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts shared --tag beta",
+          "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts shared --tag alpha",
+          "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts shared --dry-run"
+        },
+        "dependencies": {
+          "lodash-es": "^4.17.21",
+          "raf": "^3.4.1"
+        },
+        "peerDependencies": {
+          "vue": "^3.3.0"
+        },
+        "devDependencies": {
+          "@antfu/eslint-config": "^3.0.0",
+          "@ldesign/builder": "workspace:*",
+          "@playwright/test": "^1.40.1",
+          "@rollup/plugin-alias": "^5.1.1",
+          "@rollup/plugin-commonjs": "^25.0.8",
+          "@rollup/plugin-json": "^6.1.0",
+          "@rollup/plugin-node-resolve": "^15.3.1",
+          "@rollup/plugin-replace": "^6.0.2",
+          "@rollup/plugin-terser": "^0.4.4",
+          "@rollup/plugin-typescript": "^11.1.6",
+          "@types/lodash-es": "^4.17.12",
+          "@types/node": "^22.0.0",
+          "@types/raf": "^3.4.3",
+          "@vitejs/plugin-vue": "^5.2.4",
+          "@vitejs/plugin-vue-jsx": "^5.1.1",
+          "@vitest/coverage-v8": "^2.0.0",
+          "@vitest/ui": "^2.0.0",
+          "@vue/test-utils": "^2.4.4",
+          "autoprefixer": "^10.4.21",
+          "eslint": "^9.0.0",
+          "fs-extra": "^11.2.0",
+          "glob": "^10.3.10",
+          "jsdom": "^24.0.0",
+          "less": "^4.4.1",
+          "playwright": "^1.40.1",
+          "prettier": "^3.0.0",
+          "rimraf": "^5.0.0",
+          "rollup": "^4.9.6",
+          "rollup-plugin-dts": "^6.1.0",
+          "rollup-plugin-esbuild": "^6.1.0",
+          "rollup-plugin-less": "^1.1.3",
+          "rollup-plugin-postcss": "^4.0.2",
+          "size-limit": "^11.0.0",
+          "typescript": "^5.6.0",
+          "vite": "^5.0.12",
+          "vitepress": "^1.0.0",
+          "vitest": "^2.0.0",
+          "vue": "^3.4.15",
+          "vue-tsc": "^1.8.27"
+        },
+        "size-limit": [
+          {
+            "path": "dist/index.js",
+            "limit": "50 KB"
+          }
+        ],
+        "peerDependenciesMeta": {
+          "vue": {
+            "optional": true
+          }
+        },
+        "directories": {
+          "doc": "docs"
+        }
+      },
+      "id": "7",
+      "importedAt": "2025-09-30T07:00:57.679Z",
+      "createdAt": "2025-09-30T07:00:57.679Z",
+      "updatedAt": "2025-09-30T07:00:57.679Z"
+    },
+    {
+      "name": "@ldesign/device",
+      "path": "D:\\WorkBench\\ldesign\\packages\\device",
+      "description": "Modern device information detection library with Vue3 integration",
+      "type": "library",
+      "packageJson": {
+        "name": "@ldesign/device",
+        "version": "0.1.0",
+        "description": "Modern device information detection library with Vue3 integration",
+        "keywords": [
+          "device",
+          "detection",
+          "responsive",
+          "vue3",
+          "typescript"
+        ],
+        "author": "ldesign",
+        "license": "MIT",
+        "homepage": "https://github.com/ldesign/device#readme",
+        "repository": {
+          "type": "git",
+          "url": "git+https://github.com/ldesign/device.git"
+        },
+        "bugs": {
+          "url": "https://github.com/ldesign/device/issues"
+        },
+        "type": "module",
+        "exports": {
+          ".": {
+            "types": "./es/index.d.ts",
+            "import": "./es/index.js",
+            "require": "./lib/index.cjs"
+          },
+          "./core/*": {
+            "types": "./es/core/*.d.ts",
+            "import": "./es/core/*.js",
+            "require": "./lib/core/*.cjs"
+          },
+          "./engine": {
+            "types": "./es/engine/index.d.ts",
+            "import": "./es/engine/index.js",
+            "require": "./lib/engine/index.cjs"
+          },
+          "./engine/*": {
+            "types": "./es/engine/*.d.ts",
+            "import": "./es/engine/*.js",
+            "require": "./lib/engine/*.cjs"
+          },
+          "./modules/*": {
+            "types": "./es/modules/*.d.ts",
+            "import": "./es/modules/*.js",
+            "require": "./lib/modules/*.cjs"
+          },
+          "./types": {
+            "types": "./es/types/index.d.ts",
+            "import": "./es/types/index.js",
+            "require": "./lib/types/index.cjs"
+          },
+          "./types/*": {
+            "types": "./es/types/*.d.ts",
+            "import": "./es/types/*.js",
+            "require": "./lib/types/*.cjs"
+          },
+          "./utils": {
+            "types": "./es/utils/index.d.ts",
+            "import": "./es/utils/index.js",
+            "require": "./lib/utils/index.cjs"
+          },
+          "./utils/*": {
+            "types": "./es/utils/*.d.ts",
+            "import": "./es/utils/*.js",
+            "require": "./lib/utils/*.cjs"
+          },
+          "./vue": {
+            "types": "./es/vue/index.d.ts",
+            "import": "./es/vue/index.js",
+            "require": "./lib/vue/index.cjs"
+          },
+          "./vue/*": {
+            "types": "./es/vue/*.d.ts",
+            "import": "./es/vue/*.js",
+            "require": "./lib/vue/*.cjs"
+          },
+          "./es/index.css": "./es/index.css",
+          "./es/vue/components/DeviceInfo.vue.css": "./es/vue/components/DeviceInfo.vue.css",
+          "./es/vue/components/NetworkStatus.vue.css": "./es/vue/components/NetworkStatus.vue.css",
+          "./lib/index.css": "./lib/index.css",
+          "./lib/vue/components/DeviceInfo.vue.css": "./lib/vue/components/DeviceInfo.vue.css",
+          "./lib/vue/components/NetworkStatus.vue.css": "./lib/vue/components/NetworkStatus.vue.css",
+          "./dist/index.css": "./dist/index.css",
+          "./dist/index.min.css": "./dist/index.min.css"
+        },
+        "main": "./lib/index.cjs",
+        "module": "./es/index.js",
+        "types": "./es/index.d.ts",
+        "unpkg": "./dist/index.min.js",
+        "jsdelivr": "./dist/index.min.js",
+        "files": [
+          "README.md",
+          "LICENSE",
+          "package.json",
+          "es",
+          "lib",
+          "dist"
+        ],
+        "scripts": {
+          "build": "ldesign-builder build -f esm,cjs,umd",
+          "build:watch": "ldesign-builder build --watch",
+          "dev": "rollup -c -w",
+          "type-check": "vue-tsc --noEmit --project tsconfig.test.json",
+          "lint": "eslint . --fix",
+          "lint:check": "eslint .",
+          "test": "vitest",
+          "test:ui": "vitest --ui",
+          "test:run": "vitest run",
+          "test:coverage": "vitest run --coverage",
+          "test:e2e": "playwright test",
+          "test:e2e:ui": "playwright test --ui",
+          "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
+          "size-check": "size-limit",
+          "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
+          "docs:dev": "vitepress dev docs",
+          "docs:build": "vitepress build docs",
+          "docs:preview": "vitepress preview docs",
+          "build:check": "pnpm run build && node ../../tools/scripts/build/bundle-validator.js",
+          "build:analyze": "pnpm run build && node ../../tools/scripts/build/bundle-analyzer.js",
+          "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
+          "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
+          "build:dev": "node scripts/build.js --dev"
+        },
+        "peerDependencies": {
+          "vue": "^3.3.0"
+        },
+        "devDependencies": {
+          "@ldesign/builder": "workspace:*",
+          "@playwright/test": "^1.40.1",
+          "@rollup/plugin-commonjs": "^25.0.7",
+          "@rollup/plugin-node-resolve": "^15.2.3",
+          "@rollup/plugin-typescript": "^11.1.6",
+          "@types/node": "^22.0.0",
+          "@vitejs/plugin-vue": "^5.0.3",
+          "@vitest/ui": "^3.2.4",
+          "@vue/test-utils": "^2.4.4",
+          "eslint": "^9.0.0",
+          "jsdom": "^24.0.0",
+          "rollup": "^4.9.6",
+          "rollup-plugin-dts": "^6.1.0",
+          "size-limit": "^11.0.0",
+          "typescript": "^5.6.0",
+          "vite": "^5.0.12",
+          "vitepress": "^1.3.0",
+          "vitest": "^3.2.4",
+          "vue": "^3.4.15",
+          "vue-tsc": "^3.0.5"
+        },
+        "engines": {
+          "node": ">=16"
+        },
+        "size-limit": [
+          {
+            "path": "dist/index.js",
+            "limit": "40 KB"
+          }
+        ],
+        "peerDependenciesMeta": {
+          "vue": {
+            "optional": true
+          }
+        }
+      },
+      "id": "8",
+      "importedAt": "2025-09-30T07:01:20.629Z",
+      "createdAt": "2025-09-30T07:01:20.629Z",
+      "updatedAt": "2025-09-30T07:01:20.629Z"
+    },
+    {
+      "name": "@ldesign/router",
+      "path": "D:\\WorkBench\\ldesign\\packages\\router",
+      "description": "A modern, high-performance Vue router library with TypeScript support, independent of vue-router",
+      "type": "library",
+      "packageJson": {
+        "name": "@ldesign/router",
+        "version": "1.0.0",
+        "description": "A modern, high-performance Vue router library with TypeScript support, independent of vue-router",
+        "keywords": [
+          "vue",
+          "router",
+          "navigation",
+          "spa",
+          "typescript",
+          "performance",
+          "modern",
+          "independent"
+        ],
+        "author": "ldesign",
+        "license": "MIT",
+        "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/router#readme",
+        "repository": {
+          "type": "git",
+          "url": "https://github.com/ldesign/ldesign.git",
+          "directory": "packages/router"
+        },
+        "bugs": {
+          "url": "https://github.com/ldesign/ldesign/issues"
+        },
+        "type": "module",
+        "exports": {
+          ".": {
+            "types": "./es/index.d.ts",
+            "import": "./es/index.js",
+            "require": "./lib/index.cjs"
+          },
+          "./analytics/*": {
+            "types": "./es/analytics/*.d.ts",
+            "import": "./es/analytics/*.js",
+            "require": "./lib/analytics/*.cjs"
+          },
+          "./components": {
+            "types": "./es/components/index.d.ts",
+            "import": "./es/components/index.js",
+            "require": "./lib/components/index.cjs"
+          },
+          "./components/*": {
+            "types": "./es/components/*.d.ts",
+            "import": "./es/components/*.js",
+            "require": "./lib/components/*.cjs"
+          },
+          "./composables": {
+            "types": "./es/composables/index.d.ts",
+            "import": "./es/composables/index.js",
+            "require": "./lib/composables/index.cjs"
+          },
+          "./composables/*": {
+            "types": "./es/composables/*.d.ts",
+            "import": "./es/composables/*.js",
+            "require": "./lib/composables/*.cjs"
+          },
+          "./core": {
+            "types": "./es/core/index.d.ts",
+            "import": "./es/core/index.js",
+            "require": "./lib/core/index.cjs"
+          },
+          "./core/*": {
+            "types": "./es/core/*.d.ts",
+            "import": "./es/core/*.js",
+            "require": "./lib/core/*.cjs"
+          },
+          "./debug/*": {
+            "types": "./es/debug/*.d.ts",
+            "import": "./es/debug/*.js",
+            "require": "./lib/debug/*.cjs"
+          },
+          "./device": {
+            "types": "./es/device/index.d.ts",
+            "import": "./es/device/index.js",
+            "require": "./lib/device/index.cjs"
+          },
+          "./device/*": {
+            "types": "./es/device/*.d.ts",
+            "import": "./es/device/*.js",
+            "require": "./lib/device/*.cjs"
+          },
+          "./engine": {
+            "types": "./es/engine/index.d.ts",
+            "import": "./es/engine/index.js",
+            "require": "./lib/engine/index.cjs"
+          },
+          "./engine/*": {
+            "types": "./es/engine/*.d.ts",
+            "import": "./es/engine/*.js",
+            "require": "./lib/engine/*.cjs"
+          },
+          "./guards": {
+            "types": "./es/guards/index.d.ts",
+            "import": "./es/guards/index.js",
+            "require": "./lib/guards/index.cjs"
+          },
+          "./guards/*": {
+            "types": "./es/guards/*.d.ts",
+            "import": "./es/guards/*.js",
+            "require": "./lib/guards/*.cjs"
+          },
+          "./middleware": {
+            "types": "./es/middleware/index.d.ts",
+            "import": "./es/middleware/index.js",
+            "require": "./lib/middleware/index.cjs"
+          },
+          "./middleware/*": {
+            "types": "./es/middleware/*.d.ts",
+            "import": "./es/middleware/*.js",
+            "require": "./lib/middleware/*.cjs"
+          },
+          "./optimization/*": {
+            "types": "./es/optimization/*.d.ts",
+            "import": "./es/optimization/*.js",
+            "require": "./lib/optimization/*.cjs"
+          },
+          "./plugins": {
+            "types": "./es/plugins/index.d.ts",
+            "import": "./es/plugins/index.js",
+            "require": "./lib/plugins/index.cjs"
+          },
+          "./plugins/*": {
+            "types": "./es/plugins/*.d.ts",
+            "import": "./es/plugins/*.js",
+            "require": "./lib/plugins/*.cjs"
+          },
+          "./security/*": {
+            "types": "./es/security/*.d.ts",
+            "import": "./es/security/*.js",
+            "require": "./lib/security/*.cjs"
+          },
+          "./smart/*": {
+            "types": "./es/smart/*.d.ts",
+            "import": "./es/smart/*.js",
+            "require": "./lib/smart/*.cjs"
+          },
+          "./state/*": {
+            "types": "./es/state/*.d.ts",
+            "import": "./es/state/*.js",
+            "require": "./lib/state/*.cjs"
+          },
+          "./testing/*": {
+            "types": "./es/testing/*.d.ts",
+            "import": "./es/testing/*.js",
+            "require": "./lib/testing/*.cjs"
+          },
+          "./types": {
+            "types": "./es/types/index.d.ts",
+            "import": "./es/types/index.js",
+            "require": "./lib/types/index.cjs"
+          },
+          "./types/*": {
+            "types": "./es/types/*.d.ts",
+            "import": "./es/types/*.js",
+            "require": "./lib/types/*.cjs"
+          },
+          "./utils": {
+            "types": "./es/utils/index.d.ts",
+            "import": "./es/utils/index.js",
+            "require": "./lib/utils/index.cjs"
+          },
+          "./utils/*": {
+            "types": "./es/utils/*.d.ts",
+            "import": "./es/utils/*.js",
+            "require": "./lib/utils/*.cjs"
+          }
+        },
+        "main": "./lib/index.cjs",
+        "module": "./es/index.js",
+        "types": "./es/index.d.ts",
+        "unpkg": "./dist/index.min.js",
+        "jsdelivr": "./dist/index.min.js",
+        "files": [
+          "README.md",
+          "LICENSE",
+          "package.json",
+          "es",
+          "lib",
+          "dist"
+        ],
+        "scripts": {
+          "build": "ldesign-builder build",
+          "build:watch": "ldesign-builder build --watch",
+          "dev": "rollup -c -w",
+          "type-check": "vue-tsc --noEmit",
+          "lint": "eslint . --fix",
+          "lint:check": "eslint .",
+          "test": "vitest",
+          "test:ui": "vitest --ui",
+          "test:run": "vitest run",
+          "test:coverage": "vitest run --coverage",
+          "test:performance": "node scripts/performance-test.js",
+          "benchmark": "node scripts/performance-benchmark.js",
+          "benchmark:regression": "node scripts/performance-regression.js",
+          "benchmark:baseline": "node scripts/performance-regression.js --create-baseline",
+          "test:e2e": "playwright test",
+          "test:e2e:ui": "playwright test --ui",
+          "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
+          "size-check": "size-limit",
+          "analyze": "rollup -c --bundleConfigAsCjs --environment ANALYZE",
+          "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
+          "docs:dev": "vitepress dev docs",
+          "docs:build": "vitepress build docs",
+          "docs:preview": "vitepress preview docs",
+          "build:check": "pnpm run build && node ../../tools/scripts/build/bundle-validator.js",
+          "build:analyze": "pnpm run build && node ../../tools/scripts/build/bundle-analyzer.js",
+          "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
+          "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
+          "validate": "pnpm run type-check && pnpm run test:run && pnpm run build",
+          "validate:quick": "pnpm run type-check",
+          "commit": "git-cz",
+          "precommit": "lint-staged",
+          "commit-msg": "commitlint --edit",
+          "commit:interactive": "node scripts/commit.js",
+          "validate:full": "node scripts/validate.js",
+          "validate:e2e": "node scripts/validate.js --e2e",
+          "build:dev": "node scripts/build.js --dev"
+        },
+        "dependencies": {
+          "@ldesign/device": "workspace:*"
+        },
+        "peerDependencies": {
+          "@ldesign/device": "^1.0.0",
+          "@ldesign/engine": "^1.0.0",
+          "vue": "^3.3.0"
+        },
+        "devDependencies": {
+          "@ldesign/builder": "workspace:*",
+          "@ldesign/engine": "workspace:*",
+          "@playwright/test": "^1.54.2",
+          "@rollup/plugin-commonjs": "^25.0.7",
+          "@rollup/plugin-node-resolve": "^15.2.3",
+          "@rollup/plugin-typescript": "^11.1.6",
+          "@types/node": "^22.0.0",
+          "@vitejs/plugin-vue": "^5.0.3",
+          "@vitest/ui": "^3.2.4",
+          "@vue/test-utils": "^2.4.4",
+          "eslint": "^9.0.0",
+          "jsdom": "^24.0.0",
+          "rollup": "^4.9.6",
+          "rollup-plugin-dts": "^6.1.0",
+          "size-limit": "^11.0.0",
+          "typescript": "^5.6.0",
+          "vite": "^5.0.12",
+          "vitepress": "^1.6.4",
+          "vitest": "^3.2.4",
+          "vue": "^3.4.15",
+          "vue-tsc": "^3.0.5"
+        },
+        "engines": {
+          "node": ">=16.0.0",
+          "pnpm": ">=8.0.0"
+        },
+        "publishConfig": {
+          "access": "public",
+          "registry": "https://registry.npmjs.org/"
+        },
+        "size-limit": [
+          {
+            "name": "UMD Bundle",
+            "path": "dist/index.js",
+            "limit": "45 KB"
+          },
+          {
+            "name": "UMD Bundle (minified)",
+            "path": "dist/index.min.js",
+            "limit": "20 KB"
+          },
+          {
+            "name": "ES Module",
+            "path": "esm/index.js",
+            "limit": "40 KB",
+            "import": "{ createRouter }"
+          },
+          {
+            "name": "CommonJS",
+            "path": "cjs/index.js",
+            "limit": "40 KB"
+          }
+        ],
+        "peerDependenciesMeta": {
+          "@ldesign/device": {
+            "optional": false
+          },
+          "@ldesign/engine": {
+            "optional": true
+          },
+          "vue": {
+            "optional": true
+          }
+        }
+      },
+      "id": "9",
+      "importedAt": "2025-09-30T07:01:44.862Z",
+      "createdAt": "2025-09-30T07:01:44.862Z",
+      "updatedAt": "2025-09-30T07:01:44.862Z"
+    }
+  ],
+  "lastId": 9
+}

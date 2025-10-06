@@ -16,6 +16,7 @@ import { fnmRouter } from './routes/fnm.js'
 import { voltaRouter } from './routes/volta.js'
 import { npmSourcesRouter } from './routes/npm-sources.js'
 import { setupWebSocket, connectionManager } from './websocket.js'
+import { initializeDatabase, closeDatabase } from './database/index.js'
 
 // 获取当前文件的目录路径，兼容 ESM 和 CJS
 let __dirname: string
@@ -42,6 +43,24 @@ export interface ServerOptions {
 export async function createServer(options: ServerOptions) {
   const { port, host, debug = false } = options
   const serverLogger = logger.withPrefix('Server')
+
+  // 初始化数据库
+  try {
+    const dbResult = await initializeDatabase({
+      verbose: debug,
+      autoMigrate: true,
+    })
+    
+    if (!dbResult.success) {
+      serverLogger.error('数据库初始化失败:', dbResult.message)
+      throw new Error(dbResult.message)
+    }
+    
+    serverLogger.info('✅ 数据库初始化成功')
+  } catch (error) {
+    serverLogger.error('数据库初始化错误:', error)
+    throw error
+  }
 
   // 创建 Express 应用
   const app = express()
@@ -147,6 +166,14 @@ export async function createServer(options: ServerOptions) {
 
     // 等待消息发送完成后关闭服务器
     setTimeout(() => {
+      // 关闭数据库
+      try {
+        closeDatabase()
+        serverLogger.info('✅ 数据库连接已关闭')
+      } catch (error) {
+        serverLogger.error('关闭数据库时出错:', error)
+      }
+
       server.close(() => {
         serverLogger.info('服务器已关闭')
         process.exit(0)

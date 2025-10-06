@@ -25,5 +25,75 @@ export default defineConfig({
   // 不压缩代码（便于调试）
   minify: false,
 
-  // external、globals、libraryType、formats、plugins 等配置将由 @ldesign/builder 自动检测和生成
+  // UMD 构建配置
+  umd: {
+    enabled: true,
+    entry: 'src/index-lib.ts', // 明确指定 UMD 入口文件
+    minify: true, // UMD版本启用压缩
+    fileName: 'index.js' // 去掉 .umd 后缀
+  },
+
+  // 外部依赖配置
+  external: [
+    'vue',
+    'vue-router',
+    'pinia',
+    'axios',
+    'alova',
+    'socket.io-client',
+    // LDesign 包
+    '@ldesign/api',
+    '@ldesign/cache',
+    '@ldesign/color',
+    '@ldesign/config-editor',
+    '@ldesign/crypto',
+    '@ldesign/device',
+    '@ldesign/engine',
+    '@ldesign/http',
+    '@ldesign/i18n',
+    '@ldesign/kit',
+    '@ldesign/router',
+    '@ldesign/shared',
+    '@ldesign/size',
+    '@ldesign/store',
+    '@ldesign/template',
+    '@ldesign/webcomponent',
+    // Node.js 内置模块
+    'node:fs',
+    'node:path',
+    'node:os',
+    'node:util',
+    'node:events',
+    'node:stream',
+    'node:crypto',
+    'node:http',
+    'node:https',
+    'node:url',
+    'node:buffer',
+    'node:child_process',
+    'node:worker_threads'
+  ],
+
+  // 全局变量配置
+  globals: {
+    'vue': 'Vue',
+    'vue-router': 'VueRouter',
+    'pinia': 'Pinia',
+    'axios': 'axios',
+    'alova': 'alova'
+  },
+
+  // 日志级别设置为 silent，只显示错误信息
+  logLevel: 'silent',
+
+  // 构建选项
+  build: {
+    // 禁用构建警告
+    rollupOptions: {
+      onwarn: (warning, warn) => {
+        // 完全静默，不输出任何警告
+        return
+      }
+    }
+  }
 })
