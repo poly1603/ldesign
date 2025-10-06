@@ -426,7 +426,12 @@ interface NpmSource {
 }
 
 const { get, post, put, del } = useApi()
-const { showMessage } = useMessage()
+const message = useMessage()
+
+// Helper function to show message with type
+const showMessage = (content: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+  message[type](content)
+}
 
 // 状态
 const loading = ref(true)

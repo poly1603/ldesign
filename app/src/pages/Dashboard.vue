@@ -16,7 +16,7 @@
 
     <!-- 主题色选择器插槽 -->
     <template #color-selector="{ onThemeChange }">
-      <ThemeSelector mode="popup" :show-preview="true" @themeChange="onThemeChange" />
+      <ThemeSelector :show-preview="true" @themeChange="onThemeChange" />
     </template>
 
     <!-- 暗黑模式切换器插槽 -->
@@ -56,7 +56,7 @@ import { getAvailableLocales } from '../i18n'
 
 // 导入配置面板需要的真实组件
 import { LanguageSwitcher } from '@ldesign/i18n/vue'
-import { ThemeSelector, DarkModeToggle } from '@ldesign/color/vue'
+import { DarkModeToggle, ThemeSelector } from '@ldesign/color/vue'
 import { SizeSwitcher } from '@ldesign/size/vue'
 
 // 国际化

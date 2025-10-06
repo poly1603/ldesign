@@ -9,11 +9,14 @@ import { promises as fs } from 'node:fs'
 import { resolve } from 'node:path'
 import { Readable } from 'node:stream'
 import svg2ttf from 'svg2ttf'
-import { SVGIcons2SVGFontStream } from 'svgicons2svgfont'
+import * as svgicons2svgfont from 'svgicons2svgfont'
 import ttf2eot from 'ttf2eot'
 import ttf2woff from 'ttf2woff'
 import ttf2woff2 from 'ttf2woff2'
 import { FileSystem } from '../filesystem'
+
+// 兼容 CommonJS 和 ESM 导入
+const SVGIcons2SVGFontStream = (svgicons2svgfont as any).SVGIcons2SVGFontStream || (svgicons2svgfont as any).default?.SVGIcons2SVGFontStream || svgicons2svgfont
 
 /**
  * 字体生成结果

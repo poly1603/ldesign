@@ -116,7 +116,16 @@ export function useColorTheme(options: UseColorThemeOptions = {}): UseColorTheme
   } = options
 
   // 获取主题管理器
-  const themeManager = inject<any>('themeManager', null)
+  // 优先从 Vue 的 provide/inject 获取，如果失败则尝试从 window 对象获取
+  let themeManager = inject<any>('themeManager', null)
+
+  // 如果 inject 失败，尝试从 window 对象获取（备用方案）
+  if (!themeManager && typeof window !== 'undefined') {
+    themeManager = (window as any).themeManager || null
+    if (import.meta.env.DEV && themeManager) {
+      console.warn('[useColorTheme] themeManager 从 window 对象获取（inject 失败）')
+    }
+  }
 
   // 响应式状态
   const currentTheme = ref<string>(defaultTheme)

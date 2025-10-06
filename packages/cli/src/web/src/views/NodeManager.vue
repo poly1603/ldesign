@@ -190,9 +190,17 @@
           </div>
           
           <!-- 空状态 -->
-          <div v-else-if="availableVersions.length === 0 && !searchQuery" class="empty-state">
-            <p>🔍 请在搜索框输入版本号（如 18, 20, lts）来查找 Node.js 版本</p>
-            <p style="font-size: 12px; color: var(--ldesign-text-color-secondary); margin-top: 8px;">或点击“同步”按钮获取所有可用版本</p>
+          <div v-else-if="availableVersions.length === 0 && !searchQuery && !loadingAvailable" class="empty-state">
+            <div class="empty-icon">🚀</div>
+            <h3>快速开始</h3>
+            <p class="empty-main-text">上方“<strong>推荐版本</strong>”区域已展示常用 Node.js 版本，可直接安装</p>
+            <div class="empty-actions">
+              <p class="empty-hint">🔍 如需安装特定版本，请：</p>
+              <ul class="empty-list">
+                <li>在搜索框输入版本号（如 <code>18</code>, <code>20.11</code>, <code>lts</code>）</li>
+                <li>或点击 <strong>“同步”</strong> 按钮获取所有可用版本</li>
+              </ul>
+            </div>
           </div>
           
           <div v-else-if="paginatedVersions.length === 0" class="empty-state">
@@ -476,7 +484,7 @@ const syncing = ref(false) // 同步状态
 const searchQuery = ref('')
 const showOnlyLTS = ref(false)
 const currentPage = ref(1)
-const pageSize = ref(20)
+const pageSize = ref(10) // 减少到 10 个，初始加载更快
 const totalVersions = ref(0)
 const totalPages = ref(0)
 
@@ -719,7 +727,8 @@ const refreshData = async () => {
     if (fnmStatus.value.installed) {
       await getNodeVersions()
       await getRecommendedVersions()
-      // 页面加载时自动获取版本列表（不带 filter）
+      // 初始加载时获取第一页数据（20个版本），快速展示界面
+      // 这样既能看到数据，又不会太慢
       await fetchAvailableVersions()
     }
   } catch (err) {
@@ -1777,6 +1786,98 @@ onUnmounted(() => {
     p {
       font-size: 14px;
       margin: 0;
+    }
+  }
+  
+  .empty-state {
+    padding: 48px 32px;
+    text-align: center;
+    
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    h3 {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--ldesign-text-color-primary);
+      margin: 0 0 12px 0;
+    }
+    
+    .empty-main-text {
+      font-size: 16px;
+      color: var(--ldesign-text-color-secondary);
+      margin-bottom: 24px;
+      line-height: 1.6;
+      
+      strong {
+        color: var(--ldesign-brand-color);
+        font-weight: 600;
+      }
+    }
+    
+    .empty-actions {
+      margin-top: 24px;
+      padding: 20px;
+      background: var(--ldesign-bg-color-component);
+      border-radius: 8px;
+      border: 1px solid var(--ldesign-border-color);
+      
+      .empty-hint {
+        font-size: 14px;
+        color: var(--ldesign-text-color-primary);
+        margin: 0 0 12px 0;
+        font-weight: 500;
+      }
+      
+      .empty-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        text-align: left;
+        
+        li {
+          padding: 8px 0;
+          font-size: 14px;
+          color: var(--ldesign-text-color-secondary);
+          display: flex;
+          align-items: center;
+          
+          &::before {
+            content: '•';
+            color: var(--ldesign-brand-color);
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-right: 8px;
+          }
+          
+          code {
+            background: var(--ldesign-brand-color-1);
+            color: var(--ldesign-brand-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+          }
+          
+          strong {
+            color: var(--ldesign-brand-color);
+            font-weight: 600;
+          }
+        }
+      }
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
     }
   }
 

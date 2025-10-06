@@ -98,10 +98,12 @@
     "./es/exports/vue.css": "./es/exports/vue.css",
     "./es/vue/components/ColorThemeProvider.vue.css": "./es/vue/components/ColorThemeProvider.vue.css",
     "./es/vue/components/DarkModeToggle.vue.css": "./es/vue/components/DarkModeToggle.vue.css",
+    "./es/vue/components/SimpleThemeSelector.vue.css": "./es/vue/components/SimpleThemeSelector.vue.css",
     "./es/vue/components/SimpleThemeToggle.vue.css": "./es/vue/components/SimpleThemeToggle.vue.css",
     "./lib/exports/vue.css": "./lib/exports/vue.css",
     "./lib/vue/components/ColorThemeProvider.vue.css": "./lib/vue/components/ColorThemeProvider.vue.css",
     "./lib/vue/components/DarkModeToggle.vue.css": "./lib/vue/components/DarkModeToggle.vue.css",
+    "./lib/vue/components/SimpleThemeSelector.vue.css": "./lib/vue/components/SimpleThemeSelector.vue.css",
     "./lib/vue/components/SimpleThemeToggle.vue.css": "./lib/vue/components/SimpleThemeToggle.vue.css"
   },
   "main": "./lib/index.cjs",

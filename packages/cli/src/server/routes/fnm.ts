@@ -670,32 +670,32 @@ async function fetchNodeOfficialData(): Promise<any[]> {
  */
 fnmRouter.get('/available-versions', async (req, res) => {
   try {
-    const { filter, lts, page = '1', pageSize = '50' } = req.query
+    const { filter, lts, page = '1', pageSize = '10' } = req.query
     
     // 构建缓存键（基于 LTS 筛选）
     const cacheKey = `node-versions:${lts === 'true' ? 'lts' : 'all'}`
     
     fnmLogger.info(`[获取可用版本] filter=${filter}, lts=${lts}, page=${page}, pageSize=${pageSize}`)
     
-    // 获取 Node 官方详细数据
-    const officialData = await fetchNodeOfficialData()
-    const officialDataMap = new Map()
-    officialData.forEach((item: any) => {
-      const version = item.version.replace(/^v/, '')
-      officialDataMap.set(version, {
-        date: item.date,
-        npm: item.npm,
-        v8: item.v8,
-        modules: item.modules,
-        lts: item.lts || null
-      })
-    })
-    
-    // 先尝试从缓存获取
+    // 先尝试从缓存获取版本列表
     let allVersions = cacheManager.get<NodeVersion[]>(cacheKey)
     
     if (!allVersions) {
       fnmLogger.info(`[缓存未命中] 执行 fnm list-remote 命令`)
+      
+      // 获取 Node 官方详细数据
+      const officialData = await fetchNodeOfficialData()
+      const officialDataMap = new Map()
+      officialData.forEach((item: any) => {
+        const version = item.version.replace(/^v/, '')
+        officialDataMap.set(version, {
+          date: item.date,
+          npm: item.npm,
+          v8: item.v8,
+          modules: item.modules,
+          lts: item.lts || null
+        })
+      })
       
       // 构建命令参数
       const args = ['list-remote', '--sort=desc']
@@ -802,63 +802,84 @@ fnmRouter.get('/available-versions', async (req, res) => {
     } else {
       fnmLogger.info(`[缓存命中] 共 ${allVersions.length} 个版本`)
       
-      // 缓存命中时，也需要用官方数据增强版本信息（如果缓存数据不包含这些字段）
-      allVersions = allVersions.map(v => {
-        // 如果缓存数据已经包含 npm 和 releaseDate，则不需要重新增强
-        if (v.npm && v.releaseDate) {
-          return v
-        }
-        
-        // 否则从官方数据增强
-        const officialInfo = officialDataMap.get(v.version) || {}
-        const majorVersion = v.majorVersion || parseInt(v.version.split('.')[0])
-        
-        // 计算维护状态
-        let maintenanceStatus = v.maintenanceStatus || 'Unknown'
-        if (!v.maintenanceStatus) {
-          if (officialInfo.lts || v.isLTS) {
-            if (officialInfo.date) {
-              const releaseDate = new Date(officialInfo.date)
-              const now = new Date()
-              const monthsDiff = (now.getTime() - releaseDate.getTime()) / (1000 * 60 * 60 * 24 * 30)
-              
-              if (monthsDiff < 6) {
-                maintenanceStatus = 'Active'
-              } else if (monthsDiff < 30) {
-                maintenanceStatus = 'Maintenance'
-              } else {
-                maintenanceStatus = 'EOL'
-              }
-            } else {
-              maintenanceStatus = 'Active'
-            }
-          } else if (v.isCurrent) {
-            maintenanceStatus = 'Current'
-          } else {
-            maintenanceStatus = 'Maintenance'
-          }
-        }
-        
-        return {
-          ...v,
-          maintenanceStatus,
-          releaseDate: officialInfo.date || null,
-          npm: officialInfo.npm || null,
-          v8: officialInfo.v8 || null,
-          modules: officialInfo.modules || null,
-          features: v.features || {
-            esm: majorVersion >= 12,
-            corepack: majorVersion >= 16,
-            testRunner: majorVersion >= 18,
-            fetch: majorVersion >= 18,
-            webStreams: majorVersion >= 16,
-            watchMode: majorVersion >= 18
-          }
-        }
-      })
+      // 检查缓存数据是否完整（有 npm 和 releaseDate 字段）
+      const hasMissingData = allVersions.some(v => !v.npm || !v.releaseDate)
       
-      // 更新缓存（如果数据被增强了）
-      cacheManager.set(cacheKey, allVersions, 30 * 60 * 1000)
+      if (hasMissingData) {
+        fnmLogger.info(`[缓存数据不完整] 需要从官方数据增强`)
+        
+        // 获取 Node 官方详细数据
+        const officialData = await fetchNodeOfficialData()
+        const officialDataMap = new Map()
+        officialData.forEach((item: any) => {
+          const version = item.version.replace(/^v/, '')
+          officialDataMap.set(version, {
+            date: item.date,
+            npm: item.npm,
+            v8: item.v8,
+            modules: item.modules,
+            lts: item.lts || null
+          })
+        })
+        
+        // 缓存命中时，也需要用官方数据增强版本信息（如果缓存数据不包含这些字段）
+        allVersions = allVersions.map(v => {
+          // 如果缓存数据已经包含 npm 和 releaseDate，则不需要重新增强
+          if (v.npm && v.releaseDate) {
+            return v
+          }
+          
+          // 否则从官方数据增强
+          const officialInfo = officialDataMap.get(v.version) || {}
+          const majorVersion = v.majorVersion || parseInt(v.version.split('.')[0])
+          
+          // 计算维护状态
+          let maintenanceStatus = v.maintenanceStatus || 'Unknown'
+          if (!v.maintenanceStatus) {
+            if (officialInfo.lts || v.isLTS) {
+              if (officialInfo.date) {
+                const releaseDate = new Date(officialInfo.date)
+                const now = new Date()
+                const monthsDiff = (now.getTime() - releaseDate.getTime()) / (1000 * 60 * 60 * 24 * 30)
+                
+                if (monthsDiff < 6) {
+                  maintenanceStatus = 'Active'
+                } else if (monthsDiff < 30) {
+                  maintenanceStatus = 'Maintenance'
+                } else {
+                  maintenanceStatus = 'EOL'
+                }
+              } else {
+                maintenanceStatus = 'Active'
+              }
+            } else if (v.isCurrent) {
+              maintenanceStatus = 'Current'
+            } else {
+              maintenanceStatus = 'Maintenance'
+            }
+          }
+          
+          return {
+            ...v,
+            maintenanceStatus,
+            releaseDate: officialInfo.date || null,
+            npm: officialInfo.npm || null,
+            v8: officialInfo.v8 || null,
+            modules: officialInfo.modules || null,
+            features: v.features || {
+              esm: majorVersion >= 12,
+              corepack: majorVersion >= 16,
+              testRunner: majorVersion >= 18,
+              fetch: majorVersion >= 18,
+              webStreams: majorVersion >= 16,
+              watchMode: majorVersion >= 18
+            }
+          }
+        })
+        
+        // 更新缓存（如果数据被增强了）
+        cacheManager.set(cacheKey, allVersions, 30 * 60 * 1000)
+      }
     }
     
     // 应用搜索过滤器
