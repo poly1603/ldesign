@@ -25,7 +25,7 @@ import { I18nInjectionKey } from '../plugin'
 /**
  * 翻译链组件属性
  */
-interface Props {
+export interface I18nChainProps {
   /** 初始翻译键路径 */
   keypath?: string
   /** 预定义的翻译链 */
@@ -46,7 +46,7 @@ interface Props {
   circularDetection?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<I18nChainProps>(), {
   maxDepth: 5,
   separator: '->',
   debug: false,
@@ -56,7 +56,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // 注入 I18n 实例
-const i18n = inject(I18nInjectionKey)
+const i18n = inject(I18nInjectionKey)!
 if (!i18n) {
   throw new Error('I18nChain 组件必须在安装了 I18n 插件的 Vue 应用中使用')
 }

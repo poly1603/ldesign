@@ -155,7 +155,7 @@ export interface GeolocationInfo {
 /**
  * 事件监听器类型
  */
-export type EventListener<T = any> = (data: T) => void
+export type EventListener<T = unknown> = (data: T) => void
 
 /**
  * 设备检测器事件映射
@@ -177,7 +177,7 @@ export interface DeviceDetectorEvents extends Record<string, unknown> {
  */
 export interface ModuleLoader {
   /** 加载模块 */
-  load: <T = any>(name: string) => Promise<T>
+  load: <T = unknown>(name: string) => Promise<T>
   /** 卸载模块 */
   unload: (name: string) => Promise<void>
   /** 检查模块是否已加载 */

@@ -581,8 +581,6 @@ export interface DeviceGuardOptions {
   ) => RouteLocationRaw | void
 }
 
-
-
 /**
  * 设备路由插件选项
  */

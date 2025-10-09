@@ -73,9 +73,16 @@ export class CacheManager implements ICacheManager {
 
     for (const engineType of engineTypes) {
       try {
+        const engineConfig = this.options.engines?.[engineType]
+
+        // 检查引擎是否被显式禁用
+        if (engineConfig && 'enabled' in engineConfig && engineConfig.enabled === false) {
+          continue
+        }
+
         const engine = await StorageEngineFactory.create(
           engineType,
-          this.options.engines?.[engineType],
+          engineConfig,
         )
         if (engine.available) {
           this.engines.set(engineType, engine)

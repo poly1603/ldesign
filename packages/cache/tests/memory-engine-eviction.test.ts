@@ -26,7 +26,7 @@ describe('MemoryEngine 淘汰策略集成', () => {
 
     it('应该基于内存限制自动淘汰', async () => {
       const engine = new MemoryEngine({
-        maxMemory: 1000, // 1KB
+        maxSize: 1000, // 1KB
         evictionStrategy: 'LRU',
       })
 
@@ -243,7 +243,7 @@ describe('MemoryEngine 淘汰策略集成', () => {
   describe('批量淘汰', () => {
     it('应该能批量淘汰以腾出空间', async () => {
       const engine = new MemoryEngine({
-        maxMemory: 1000,
+        maxSize: 1000,
         evictionStrategy: 'LRU',
       })
 

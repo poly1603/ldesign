@@ -63,8 +63,6 @@ export function useDeviceComponent(
     return deviceComponents?.[device] || null
   }
 
-
-
   // 组件解析结果
   const resolution = computed<DeviceComponentResolution | null>(() => {
     const currentRecord = route.value.matched[route.value.matched.length - 1]
@@ -113,8 +111,6 @@ export function useDeviceComponent(
           source: 'component',
         }
       }
-
-
 
       return null
     }

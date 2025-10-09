@@ -205,7 +205,7 @@ export class Encrypt {
  * ```
  */
 export class Decrypt {
-  private encoder = new Encoder()
+  private encoder = Encoder.getInstance()
   /**
    * AES 解密
    */

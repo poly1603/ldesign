@@ -17,6 +17,13 @@ export type { MediaDeviceInfo, MediaDeviceItem, MediaModuleEvents } from './modu
 // 扩展模块
 export { NetworkModule } from './modules/NetworkModule'
 
+// 新增模块
+export { FeatureDetectionModule } from './modules/FeatureDetectionModule'
+export type { FeatureDetectionInfo, FeatureDetectionEvents } from './modules/FeatureDetectionModule'
+
+export { PerformanceModule } from './modules/PerformanceModule'
+export type { DevicePerformanceInfo, PerformanceTestOptions, PerformanceModuleEvents } from './modules/PerformanceModule'
+
 // 类型定义
 export type {
   BatteryInfo,

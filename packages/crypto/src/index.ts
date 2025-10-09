@@ -132,8 +132,8 @@ export type {
   BatchResult,
   CacheStats,
   CryptoConfig,
-  MemoryPoolConfig,
   PerformanceMetrics,
+  PerformanceOptimizerConfig,
 } from './core'
 
 // === Engine 插件模块（已移至独立入口，避免将可选依赖纳入基础构建）===
@@ -185,6 +185,51 @@ export {
   ValidationUtils,
 } from './utils'
 
+// === 密码强度检测 ===
+export {
+  PasswordStrength,
+  type PasswordAnalysis,
+  PasswordStrengthChecker,
+} from './utils/password-strength'
+
+// === 性能监控 ===
+export {
+  PerformanceMonitor,
+  type PerformanceMetric,
+  type PerformanceReport,
+  type AlgorithmStats,
+  type OperationStats,
+  type TimeSeriesData,
+  type PerformanceMonitorConfig,
+} from './utils/performance-monitor'
+
+// === 数据压缩 ===
+export {
+  compress,
+  DataCompressor,
+  decompress,
+  type CompressionOptions,
+  type CompressionResult,
+  type DecompressionResult,
+} from './utils/compression'
+
+// === 密钥派生 ===
+export {
+  deriveKey,
+  generateSalt,
+  KeyDerivation,
+  verifyKey,
+  type KeyDerivationOptions,
+  type KeyDerivationResult,
+} from './utils/key-derivation'
+
+// === 安全存储 ===
+export {
+  createSecureStorage,
+  SecureStorage,
+  type SecureStorageOptions,
+} from './utils/secure-storage'
+
 const LDesignCrypto = {
   // === 核心功能 ===
   encrypt,
@@ -231,5 +276,17 @@ const LDesignCrypto = {
   version: '0.1.0',
   name: '@ldesign/crypto',
 }
+
+// 导入实用工具类
+import { PasswordStrengthChecker } from './utils/password-strength'
+import { PerformanceMonitor } from './utils/performance-monitor'
+
+// 添加到默认导出
+Object.assign(LDesignCrypto, {
+  // 密码强度检测
+  PasswordStrengthChecker,
+  // 性能监控
+  PerformanceMonitor,
+})
 
 export default LDesignCrypto

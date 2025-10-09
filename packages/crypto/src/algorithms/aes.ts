@@ -20,6 +20,18 @@ export class AESEncryptor implements IEncryptor {
     padding: 'Pkcs7',
   }
 
+  /**
+   * 获取默认选项（公开方法，用于外部访问）
+   */
+  static getDefaultOptions(): Required<AESOptions> {
+    return {
+      mode: CONSTANTS.AES.DEFAULT_MODE,
+      keySize: CONSTANTS.AES.DEFAULT_KEY_SIZE,
+      iv: '',
+      padding: 'Pkcs7',
+    }
+  }
+
   // 密钥派生缓存（最多缓存 100 个派生密钥，5 分钟过期）
   // 使用静态缓存，所有实例共享，提高缓存命中率
   private static keyCache = new LRUCache<string, CryptoJS.lib.WordArray>({
@@ -363,7 +375,7 @@ export const aes = {
       const encryptor = new AESEncryptor()
       return encryptor.encrypt(data, key, options)
     } catch (error) {
-      const opts = { ...new AESEncryptor().defaultOptions, ...options }
+      const opts = { ...AESEncryptor.getDefaultOptions(), ...options }
       if (error instanceof Error) {
         return {
           success: false,
@@ -399,7 +411,7 @@ export const aes = {
       const encryptor = new AESEncryptor()
       return encryptor.decrypt(encryptedData, key, options)
     } catch (error) {
-      const opts = { ...new AESEncryptor().defaultOptions, ...options }
+      const opts = { ...AESEncryptor.getDefaultOptions(), ...options }
       if (error instanceof Error) {
         return {
           success: false,

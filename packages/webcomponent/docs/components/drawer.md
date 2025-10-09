@@ -23,107 +23,6 @@ function cleanupEventListeners() {
   eventListeners = []
 }
 
-// 全局函数：打开锚点部分遮罩抽屉
-window.openAnchorPartialDrawer = function(direction, buttonElement) {
-  console.log('Opening anchor partial drawer:', direction, buttonElement)
-  const drawerIds = {
-    bottom: 'anchorPartialDrawerBottom',
-    top: 'anchorPartialDrawerTop',
-    left: 'anchorPartialDrawerLeft',
-    right: 'anchorPartialDrawerRight'
-  }
-  
-  const drawerId = drawerIds[direction]
-  if (!drawerId) {
-    console.error('Invalid direction:', direction)
-    return
-  }
-  
-  const drawer = document.getElementById(drawerId)
-  console.log('Found drawer:', drawer)
-  
-  if (drawer) {
-    // 设置锚点元素
-    drawer.anchorElement = buttonElement
-    console.log('Set anchorElement:', drawer.anchorElement)
-    
-    // 尝试两种方式打开抽屉
-    drawer.visible = true
-    console.log('Set visible to true')
-    
-    // 也调用 open 方法
-    if (typeof drawer.open === 'function') {
-      drawer.open()
-      console.log('Called open() method')
-    }
-    
-    console.log('Drawer state:', {
-      visible: drawer.visible,
-      anchorMode: drawer.anchorMode,
-      anchorMaskPartial: drawer.anchorMaskPartial,
-      placement: drawer.placement
-    })
-    
-    // 等待一下再检查 DOM
-    setTimeout(() => {
-      console.log('=== Drawer Element Debug ===')
-      console.log('Drawer element:', drawer)
-      console.log('Drawer classes:', drawer.className)
-      console.log('Drawer visible attr:', drawer.visible)
-      console.log('Has shadowRoot:', !!drawer.shadowRoot)
-      
-      // 检查 Shadow DOM
-      if (drawer.shadowRoot) {
-        const container = drawer.shadowRoot.querySelector('.ldesign-drawer-container')
-        console.log('Shadow DOM container:', container)
-        if (container) {
-          const rect = container.getBoundingClientRect()
-          console.log('Container rect:', rect)
-        }
-      }
-      
-      // 直接检查 drawer 元素本身
-      const drawerRect = drawer.getBoundingClientRect()
-      const drawerStyles = window.getComputedStyle(drawer)
-      console.log('Drawer itself:', {
-        rect: drawerRect,
-        display: drawerStyles.display,
-        position: drawerStyles.position,
-        width: drawerStyles.width,
-        height: drawerStyles.height,
-        top: drawerStyles.top,
-        left: drawerStyles.left,
-        transform: drawerStyles.transform,
-        zIndex: drawerStyles.zIndex
-      })
-      
-      // 检查是否有部分遮罩（正确的类名）
-      const masks = document.querySelectorAll('.drawer-partial-mask')
-      console.log('Partial masks found:', masks.length, masks)
-      if (masks.length > 0) {
-        masks.forEach((m, i) => {
-          const r = m.getBoundingClientRect()
-          console.log(`Mask ${i}:`, r)
-        })
-      }
-      
-      // 检查所有抽屉相关元素
-      const allDrawerElements = document.querySelectorAll('ldesign-drawer')
-      console.log('All drawer elements:', allDrawerElements.length)
-      allDrawerElements.forEach((d, i) => {
-        const r = d.getBoundingClientRect()
-        console.log(`Drawer ${i} (${d.id}):`, {
-          visible: d.hasAttribute('visible'),
-          rect: r,
-          isInViewport: r.top >= 0 && r.left >= 0 && r.bottom <= window.innerHeight && r.right <= window.innerWidth
-        })
-      })
-    }, 500)
-  } else {
-    console.error('Drawer not found:', drawerId)
-  }
-}
-
 onMounted(() => {
   // 清理之前的事件监听器（防止重复绑定）
   cleanupEventListeners()
@@ -1164,10 +1063,10 @@ document.addEventListener('contextmenu', (e) => {
 
 <div class="demo-container">
   <div class="demo-row">
-    <button id="anchorPartialBtn1" style="margin: 5px;" onclick="openAnchorPartialDrawer('bottom', this)">向下展开 ▼</button>
-    <button id="anchorPartialBtn2" style="margin: 5px;" onclick="openAnchorPartialDrawer('top', this)">向上展开 ▲</button>
-    <button id="anchorPartialBtn3" style="margin: 5px;" onclick="openAnchorPartialDrawer('left', this)">向左展开 ◀</button>
-    <button id="anchorPartialBtn4" style="margin: 5px;" onclick="openAnchorPartialDrawer('right', this)">向右展开 ▶</button>
+    <button id="anchorPartialBtn1" style="margin: 5px;">向下展开 ▼</button>
+    <button id="anchorPartialBtn2" style="margin: 5px;">向上展开 ▲</button>
+    <button id="anchorPartialBtn3" style="margin: 5px;">向左展开 ◀</button>
+    <button id="anchorPartialBtn4" style="margin: 5px;">向右展开 ▶</button>
   </div>
 </div>
 

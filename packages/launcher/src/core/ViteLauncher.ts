@@ -38,7 +38,7 @@ import type {
   LauncherEventData,
   LauncherOptions,
   LauncherStats,
-  PerformanceMetrics,
+  RuntimePerformanceMetrics,
   ServerInfo
 } from '../types'
 import { LauncherStatus, LauncherEvent, ServerType } from '../types'
@@ -97,7 +97,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
   }
 
   /** 性能监控数据 */
-  private performanceMetrics: PerformanceMetrics = {
+  private performanceMetrics: RuntimePerformanceMetrics = {
     memory: { used: 0, total: 0, percentage: 0 },
     cpu: { usage: 0, loadAverage: [] },
     startupTime: 0,
@@ -969,7 +969,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    *
    * @returns 性能指标
    */
-  getPerformanceMetrics(): PerformanceMetrics {
+  getPerformanceMetrics(): RuntimePerformanceMetrics {
     return { ...this.performanceMetrics }
   }
 

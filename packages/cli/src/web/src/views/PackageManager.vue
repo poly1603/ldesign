@@ -554,9 +554,16 @@ const loadPackages = async () => {
     const result = await get<Package[]>('/api/packages')
     if (result.success && result.data) {
       packages.value = result.data
+    } else {
+      // API 调用失败，但不阻塞页面显示
+      console.warn('加载包列表失败:', result.message)
+      packages.value = []
     }
     await loadStats()
   } catch (error: any) {
+    console.error('加载包列表异常:', error)
+    // 即使出错，也要设置为空数组，让页面正常显示
+    packages.value = []
     message.error('加载包列表失败: ' + error.message)
   } finally {
     loading.value = false
@@ -960,15 +967,22 @@ const changeUserPassword = async () => {
 }
 
 onMounted(async () => {
-  loadPackages()
-  await loadVerdaccioStatus()
-  
-  // 加载用户列表（不依赖服务运行状态，因为用户数据存储在文件中）
-  await loadVerdaccioUsers()
-  
-  // 如果服务正在运行，启动状态轮询
-  if (verdaccioStatus.value.isRunning) {
-    startStatusPolling()
+  try {
+    // 先加载 Verdaccio 状态
+    await loadVerdaccioStatus()
+    
+    // 并行加载包列表和用户列表
+    await Promise.all([
+      loadPackages(),
+      loadVerdaccioUsers()
+    ])
+    
+    // 如果服务正在运行，启动状态轮询
+    if (verdaccioStatus.value.isRunning) {
+      startStatusPolling()
+    }
+  } catch (error) {
+    console.error('初始化页面失败:', error)
   }
 })
 </script>

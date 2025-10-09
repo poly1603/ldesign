@@ -54,8 +54,6 @@ export class DeviceComponentResolver {
       }
     }
 
-
-
     return null
   }
 
@@ -142,8 +140,6 @@ export class DeviceComponentResolver {
 
     return record.components[viewName] || null
   }
-
-
 
   /**
    * 创建错误组件

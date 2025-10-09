@@ -268,6 +268,55 @@ export {
   validateFile,
 } from './utils/upload'
 
+// 批处理导出
+export {
+  BatchManager,
+  createBatchManager,
+} from './utils/batch'
+
+export type {
+  BatchConfig,
+  BatchStats,
+} from './utils/batch'
+
+// 离线队列导出
+export {
+  createOfflineQueueManager,
+  OfflineQueueManager,
+} from './utils/offline'
+
+export type {
+  OfflineQueueConfig,
+  OfflineQueueStats,
+} from './utils/offline'
+
+// 签名功能导出
+export {
+  createSignatureInterceptor,
+  createSignatureManager,
+  SignatureManager,
+} from './utils/signature'
+
+export type {
+  SignatureConfig,
+  SignatureResult,
+} from './utils/signature'
+
+// 内存监控导出
+export {
+  createMemoryMonitor,
+  globalMemoryCleaner,
+  globalMemoryMonitor,
+  MemoryCleaner,
+  MemoryMonitor,
+} from './utils/memory'
+
+export type {
+  MemoryMonitorConfig,
+  MemoryStats,
+  MemoryUsage,
+} from './utils/memory'
+
 // Vue 相关导出
 export * from './vue'
 

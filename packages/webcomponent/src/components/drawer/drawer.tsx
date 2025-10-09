@@ -1529,20 +1529,23 @@ export class LdesignDrawer {
       
       // 锚点模式下，根据展开方向设置初始 transform
       if (!this.isAnimating) {
-        // 初始收起状态
-        const collapsedOffset = 20; // 收起时显示的边缘宽度
+        // 初始收起状态：抽屉应该隐藏在展开方向的外面
         switch (this.placement) {
           case 'left':
-            style['transform'] = `translateX(-${this.anchorPosition.width - collapsedOffset}px)`;
+            // 向左展开：初始时在左侧外面（负偏移）
+            style['transform'] = `translateX(-${this.anchorPosition.width}px)`;
             break;
           case 'right':
-            style['transform'] = `translateX(${this.anchorPosition.width - collapsedOffset}px)`;
+            // 向右展开：初始时在右侧外面（正偏移）
+            style['transform'] = `translateX(${this.anchorPosition.width}px)`;
             break;
           case 'top':
-            style['transform'] = `translateY(-${this.anchorPosition.height - collapsedOffset}px)`;
+            // 向上展开：初始时在上方外面（负偏移）
+            style['transform'] = `translateY(-${this.anchorPosition.height}px)`;
             break;
           case 'bottom':
-            style['transform'] = `translateY(${this.anchorPosition.height - collapsedOffset}px)`;
+            // 向下展开：初始时在下方外面（正偏移），从按钮下方向下滑出
+            style['transform'] = `translateY(-${this.anchorPosition.height}px)`;
             break;
         }
       }
@@ -1595,7 +1598,30 @@ export class LdesignDrawer {
 
     // 圆角
     if (this.rounded) {
-      style['border-radius'] = this.borderRadius;
+      // 锚点部分遮罩模式：根据展开方向设置圆角
+      if (this.isAnchorMode && this.anchorMaskPartial) {
+        switch (this.placement) {
+          case 'bottom':
+            // 向下展开：顶部无圆角（紧贴按钮），底部有圆角
+            style['border-radius'] = `0 0 ${this.borderRadius} ${this.borderRadius}`;
+            break;
+          case 'top':
+            // 向上展开：底部无圆角（紧贴按钮），顶部有圆角
+            style['border-radius'] = `${this.borderRadius} ${this.borderRadius} 0 0`;
+            break;
+          case 'left':
+            // 向左展开：右侧无圆角（紧贴按钮），左侧有圆角
+            style['border-radius'] = `${this.borderRadius} 0 0 ${this.borderRadius}`;
+            break;
+          case 'right':
+            // 向右展开：左侧无圆角（紧贴按钮），右侧有圆角
+            style['border-radius'] = `0 ${this.borderRadius} ${this.borderRadius} 0`;
+            break;
+        }
+      } else {
+        // 默认：全部圆角
+        style['border-radius'] = this.borderRadius;
+      }
     }
 
     // 动画 - 只在自定义动画时长或缓动函数时覆盖 CSS
@@ -1674,8 +1700,8 @@ export class LdesignDrawer {
 
     return (
       <Host class={this.getContainerClass()}>
-        {/* 遮罩层 */}
-        {this.mask && (
+        {/* 遮罩层（锚点模式下使用部分遮罩，不显示默认遮罩） */}
+        {this.mask && !this.isAnchorMode && (
           <div
             class={`drawer-mask ${this.maskClass}`}
             onClick={this.handleMaskClick}

@@ -165,7 +165,7 @@ const interpolatedParts = computed((): InterpolationPart[] => {
     }
 
     // 添加组件部分
-    const component = props.components?.[componentName] || componentName
+    const component = (props.components as Record<string, any>)?.[componentName] || componentName
     parts.push({
       type: 'component',
       content,

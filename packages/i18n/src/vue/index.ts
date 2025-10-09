@@ -136,7 +136,7 @@ export {
 export {
   useI18nPerformance,
   type PerformanceOptions,
-  type PerformanceMetrics
+  type LocalPerformanceMetrics
 } from './composables/useI18nPerformance'
 
 export {

@@ -121,7 +121,8 @@ describe('工具函数', () => {
 
     it('应该限制函数执行频率', () => {
       const fn = vi.fn()
-      const throttledFn = throttle(fn, 100)
+      // 禁用 trailing 选项以匹配旧的行为
+      const throttledFn = throttle(fn, 100, { leading: true, trailing: false })
 
       throttledFn()
       throttledFn()

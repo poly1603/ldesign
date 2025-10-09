@@ -44,7 +44,7 @@ interface LoadingState {
  */
 export function lazyLoadComponent(
   loader: () => Promise<any>,
-  options: LazyLoadOptions = {}
+  options: LazyLoadOptions = {},
 ): RouteComponent {
   const {
     loading,
@@ -72,7 +72,7 @@ export function lazyLoadComponent(
         const module = await Promise.race([
           loader(),
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Loading timeout')), timeout)
+            setTimeout(() => reject(new Error('Loading timeout')), timeout),
           ),
         ])
 
@@ -81,7 +81,8 @@ export function lazyLoadComponent(
         state.error = null
         state.isLoading = false
         return component!
-      } catch (err) {
+      }
+      catch (err) {
         state.error = err as Error
         state.retryCount++
 
@@ -100,8 +101,10 @@ export function lazyLoadComponent(
 
   // 主加载函数
   const load = async (): Promise<Component> => {
-    if (component) return component
-    if (loadPromise) return loadPromise
+    if (component)
+      return component
+    if (loadPromise)
+      return loadPromise
 
     state.isLoading = true
     state.retryCount = 0
@@ -115,7 +118,8 @@ export function lazyLoadComponent(
     // 在浏览器空闲时预取
     if ('requestIdleCallback' in window) {
       requestIdleCallback(() => load())
-    } else {
+    }
+    else {
       setTimeout(() => load(), 1000)
     }
   }
@@ -142,9 +146,9 @@ export function lazyLoadComponent(
  */
 export function lazyLoadRoutes(
   routes: RouteRecordRaw[],
-  options: LazyLoadOptions = {}
+  options: LazyLoadOptions = {},
 ): RouteRecordRaw[] {
-  return routes.map(route => {
+  return routes.map((route) => {
     const processedRoute = { ...route }
 
     // 处理组件懒加载
@@ -168,9 +172,10 @@ export function lazyLoadRoutes(
             {
               ...options,
               ...metaOptions,
-            }
+            },
           )
-        } else {
+        }
+        else {
           processedRoute.components[name] = comp
         }
       }
@@ -192,11 +197,11 @@ export function lazyLoadRoutes(
  */
 export function splitChunk(
   chunkName: string,
-  loader: () => Promise<any>
+  loader: () => Promise<any>,
 ): () => Promise<any> {
   return () =>
     import(/* @vite-ignore */ /* webpackChunkName: "[request]" */ `${chunkName}`).then(
-      () => loader()
+      () => loader(),
     )
 }
 
@@ -207,9 +212,9 @@ export function splitChunk(
  */
 export async function preloadRoutes(
   routes: string[],
-  router: any
+  router: any,
 ): Promise<void> {
-  const promises = routes.map(async route => {
+  const promises = routes.map(async (route) => {
     const resolved = router.resolve(route)
     if (resolved && resolved.matched.length > 0) {
       const components = resolved.matched
@@ -217,7 +222,7 @@ export async function preloadRoutes(
         .filter((comp: any) => typeof comp === 'function')
 
       await Promise.all(
-        components.map((comp: any) => comp())
+        components.map((comp: any) => comp()),
       )
     }
   })
@@ -234,15 +239,15 @@ export async function preloadRoutes(
 export function visibilityPreload(
   element: HTMLElement,
   loader: () => Promise<any>,
-  options: IntersectionObserverInit = {}
+  options: IntersectionObserverInit = {},
 ): () => void {
   if (!('IntersectionObserver' in window)) {
     return () => { }
   }
 
   const observer = new IntersectionObserver(
-    entries => {
-      entries.forEach(entry => {
+    (entries) => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting) {
           loader()
           observer.disconnect()
@@ -252,7 +257,7 @@ export function visibilityPreload(
     {
       rootMargin: '50px',
       ...options,
-    }
+    },
   )
 
   observer.observe(element)
@@ -270,7 +275,7 @@ export function visibilityPreload(
 export function hoverPreload(
   element: HTMLElement,
   loader: () => Promise<any>,
-  delay = 100
+  delay = 100,
 ): () => void {
   let timeoutId: ReturnType<typeof setTimeout>
 
@@ -372,17 +377,17 @@ export class SmartPreloader {
 
     // 高性能设备和快速网络
     if (
-      this.networkType === '4g' &&
-      this.deviceMemory >= 8 &&
-      this.hardwareConcurrency >= 4
+      this.networkType === '4g'
+      && this.deviceMemory >= 8
+      && this.hardwareConcurrency >= 4
     ) {
       return 'aggressive'
     }
 
     // 中等性能
     if (
-      ['3g', '4g'].includes(this.networkType) &&
-      this.deviceMemory >= 4
+      ['3g', '4g'].includes(this.networkType)
+      && this.deviceMemory >= 4
     ) {
       return 'moderate'
     }
@@ -419,7 +424,7 @@ export function optimizeRoutes(
     enableLazyLoad?: boolean
     enablePrefetch?: boolean
     enableSmartPreload?: boolean
-  } = {}
+  } = {},
 ): RouteRecordRaw[] {
   const {
     enableLazyLoad = true,

@@ -61,6 +61,10 @@ export interface PerformanceOptimizerConfig {
   enableCache?: boolean
   /** 最大操作时间记录数 */
   maxOperationTimes?: number
+  /** 自动清理间隔（毫秒），0 表示禁用自动清理 */
+  autoCleanupInterval?: number
+  /** 内存使用阈值（字节），超过此值将触发清理 */
+  memoryThreshold?: number
 }
 
 /**
@@ -78,6 +82,9 @@ export class PerformanceOptimizer {
   private operationTimes: number[] = []
   private maxOperationTimes: number
   private enableCache: boolean
+  private autoCleanupInterval: number
+  private memoryThreshold: number
+  private cleanupTimer?: NodeJS.Timeout | number
 
   constructor(config: PerformanceOptimizerConfig = {}) {
     const {
@@ -85,10 +92,14 @@ export class PerformanceOptimizer {
       cacheTTL = 5 * 60 * 1000, // 默认 5 分钟过期
       enableCache = true,
       maxOperationTimes = 1000,
+      autoCleanupInterval = 60 * 1000, // 默认 1 分钟清理一次
+      memoryThreshold = 50 * 1024 * 1024, // 默认 50MB
     } = config
 
     this.enableCache = enableCache
     this.maxOperationTimes = maxOperationTimes
+    this.autoCleanupInterval = autoCleanupInterval
+    this.memoryThreshold = memoryThreshold
 
     // 使用 LRU 缓存
     this.resultCache = new LRUCache({
@@ -96,6 +107,11 @@ export class PerformanceOptimizer {
       ttl: cacheTTL,
       updateAgeOnGet: true,
     })
+
+    // 启动自动清理
+    if (this.autoCleanupInterval > 0) {
+      this.startAutoCleanup()
+    }
   }
 
   /**
@@ -325,6 +341,57 @@ export class PerformanceOptimizer {
    */
   resetStats(): void {
     this.resultCache.resetStats()
+    this.operationTimes = []
+  }
+
+  /**
+   * 启动自动清理
+   */
+  private startAutoCleanup(): void {
+    this.cleanupTimer = setInterval(() => {
+      this.performCleanup()
+    }, this.autoCleanupInterval)
+  }
+
+  /**
+   * 停止自动清理
+   */
+  stopAutoCleanup(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer as number)
+      this.cleanupTimer = undefined
+    }
+  }
+
+  /**
+   * 执行清理
+   */
+  private performCleanup(): void {
+    // 清理过期的缓存项
+    this.resultCache.cleanup()
+
+    // 检查内存使用
+    const memoryUsage = this.getMemoryUsage()
+
+    // 如果内存使用超过阈值，清理一半的缓存
+    if (memoryUsage > this.memoryThreshold) {
+      const stats = this.resultCache.getStats()
+      const targetSize = Math.floor(stats.size / 2)
+      const keys = this.resultCache.keys()
+
+      // 删除最旧的一半缓存
+      for (let i = 0; i < keys.length - targetSize; i++) {
+        this.resultCache.delete(keys[i])
+      }
+    }
+  }
+
+  /**
+   * 销毁优化器
+   */
+  destroy(): void {
+    this.stopAutoCleanup()
+    this.clearCache()
     this.operationTimes = []
   }
 }

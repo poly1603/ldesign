@@ -47,7 +47,7 @@ class PerformanceMonitor {
     hits: 0,
     misses: 0,
     size: 0,
-    maxSize: 1000
+    maxSize: 1000,
   }
 
   recordHit(): void {
@@ -72,7 +72,7 @@ class PerformanceMonitor {
       hits: 0,
       misses: 0,
       size: this.stats.size,
-      maxSize: this.stats.maxSize
+      maxSize: this.stats.maxSize,
     }
   }
 }
@@ -493,7 +493,7 @@ export class RoutePrewarmer {
     return {
       prewarmedCount: this.prewarmedRoutes.size,
       cacheHitRate: performanceMonitor.getHitRate(),
-      cacheStats: performanceMonitor.getStats()
+      cacheStats: performanceMonitor.getStats(),
     }
   }
 }
@@ -558,7 +558,7 @@ export class MemoryOptimizer {
       cacheSize: patternCache.size,
       maxCacheSize: this.maxCacheSize,
       usageRatio: patternCache.size / this.maxCacheSize,
-      needsCleanup: patternCache.size > this.maxCacheSize * this.cleanupThreshold
+      needsCleanup: patternCache.size > this.maxCacheSize * this.cleanupThreshold,
     }
   }
 }
@@ -574,6 +574,6 @@ export function getPerformanceStats() {
   return {
     monitor: performanceMonitor.getStats(),
     prewarmer: routePrewarmer.getStats(),
-    memory: memoryOptimizer.getMemoryUsage()
+    memory: memoryOptimizer.getMemoryUsage(),
   }
 }

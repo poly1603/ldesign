@@ -945,79 +945,8 @@ export function measurePerformanceFunction<T>(
   }
 }
 
-/**
- * 防抖函数
- */
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): ((...args: Parameters<T>) => void) & { cancel: () => void } {
-  let timeout: NodeJS.Timeout | null = null
-
-  const debouncedFn = (...args: Parameters<T>): void => {
-    const later = () => {
-      timeout = null
-      func(...args)
-    }
-
-    if (timeout) {
-      clearTimeout(timeout)
-    }
-    timeout = setTimeout(later, wait)
-  }
-
-  debouncedFn.cancel = () => {
-    if (timeout) {
-      clearTimeout(timeout)
-      timeout = null
-    }
-  }
-
-  return debouncedFn
-}
-
-/**
- * 节流函数
- */
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  limit: number,
-  options: { leading?: boolean; trailing?: boolean } = {}
-): (...args: Parameters<T>) => void {
-  let inThrottle = false
-  let lastArgs: Parameters<T> | null = null
-  let timeout: NodeJS.Timeout | null = null
-
-  const { leading = true, trailing = true } = options
-
-  return (...args: Parameters<T>): void => {
-    if (!inThrottle) {
-      if (leading) {
-        func(...args)
-      } else if (trailing) {
-        // 如果不是leading，但是trailing，保存参数用于后续执行
-        lastArgs = args
-      }
-
-      inThrottle = true
-
-      if (timeout) {
-        clearTimeout(timeout)
-      }
-
-      timeout = setTimeout(() => {
-        inThrottle = false
-        if (trailing && lastArgs) {
-          func(...lastArgs)
-          lastArgs = null
-        }
-        timeout = null
-      }, limit)
-    } else if (trailing) {
-      lastArgs = args
-    }
-  }
-}
+// 重新导出 debounce 和 throttle，避免重复实现
+export { debounce, throttle } from './index'
 
 /**
  * 对象池

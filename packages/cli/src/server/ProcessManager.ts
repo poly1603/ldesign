@@ -3,10 +3,11 @@
  * 管理项目的开发、构建、预览等子进程
  */
 
-import { spawn, ChildProcess } from 'child_process'
+import { spawn, ChildProcess, execSync } from 'child_process'
 import { EventEmitter } from 'events'
 import * as path from 'path'
 import * as fs from 'fs'
+import * as os from 'os'
 
 /**
  * 进程信息接口
@@ -60,6 +61,22 @@ export class ProcessManager extends EventEmitter {
   }
 
   /**
+   * 检查并提示 Verdaccio 认证
+   */
+  private checkVerdaccioAuth(registry: string): boolean {
+    try {
+      // 检查是否已经登录
+      execSync(`npm whoami --registry=${registry}`, {
+        encoding: 'utf-8',
+        stdio: 'pipe'
+      })
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * 启动进程
    * @param projectPath 项目路径
    * @param projectId 项目 ID
@@ -94,13 +111,26 @@ export class ProcessManager extends EventEmitter {
     let args: string[]
 
     if (action === 'publish') {
-      // 发布动作，直接使用 npm publish
-      command = 'npm'
-      args = ['publish']
+      // 发布动作，直接使用 pnpm publish
+      command = 'pnpm'
+      // --no-git-checks: 跳过 git 检查
+      // --ignore-scripts: 跳过 prepublishOnly 等生命周期脚本，适用于私有源快速发布
+      args = ['publish', '--no-git-checks', '--ignore-scripts']
       
       // 如果 environment 是 URL，则作为 registry 参数
       if (environment && (environment.startsWith('http://') || environment.startsWith('https://'))) {
         args.push('--registry', environment)
+        
+        // 对于 Verdaccio 本地源，检查认证状态
+        if (environment.includes('127.0.0.1') || environment.includes('localhost')) {
+          if (!this.checkVerdaccioAuth(environment)) {
+            throw new Error(
+              `未登录到 ${environment}。\n` +
+              `请先在终端执行： npm adduser --registry=${environment}\n` +
+              `然后再尝试发布。`
+            )
+          }
+        }
       }
     } else {
       // 其他动作，根据 action 和 environment 确定要执行的脚本

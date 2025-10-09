@@ -270,9 +270,10 @@ export const createCommonScopes = () => {
 }
 
 /**
- * 导出类型
+ * 导出类型（仅导出本地定义的类型）
  */
-export type {
-  ScopeOptions,
-  UseI18nScopeReturn
-}
+// 这些类型已在本文件中定义，不需要重复导出
+// export type {
+//   ScopeOptions,
+//   UseI18nScopeReturn
+// }

@@ -58,6 +58,7 @@
   --ldesign-font-gray-2: rgba(0, 0, 0, 70%);
   --ldesign-font-gray-3: rgba(0, 0, 0, 50%);
   --ldesign-font-gray-4: rgba(0, 0, 0, 30%);
+  --ldesign-font-white-1: rgba(255, 255, 255, 90%);
 
   /* 背景色 */
   --ldesign-bg-color-page: #ffffff;
@@ -80,6 +81,7 @@
   --ldesign-error-color: var(--ldesign-error-color-5);
   --ldesign-text-color-primary: var(--ldesign-font-gray-1);
   --ldesign-text-color-secondary: var(--ldesign-font-gray-2);
+  --ldesign-text-color-tertiary: var(--ldesign-font-gray-3);
   --ldesign-text-color-placeholder: var(--ldesign-font-gray-3);
   --ldesign-border-color: var(--ldesign-border-level-1-color);
 
@@ -133,11 +135,13 @@
   --ldesign-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.1);
   --ldesign-shadow-2: 0 2px 8px rgba(0, 0, 0, 0.12);
   --ldesign-shadow-3: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --ldesign-shadow-4: 0 6px 24px rgba(0, 0, 0, 0.18);
 
   /* 品牌色悬停和焦点状态 */
   --ldesign-brand-color-hover: var(--ldesign-brand-color-6);
   --ldesign-brand-color-focus: var(--ldesign-brand-color-2);
   --ldesign-brand-color-active: var(--ldesign-brand-color-8);
+  --ldesign-brand-color-light: var(--ldesign-brand-color-3);
 
   /* 成功色状态 */
   --ldesign-success-color-hover: var(--ldesign-success-color-4);
@@ -150,6 +154,64 @@
   /* 警告色状态 */
   --ldesign-warning-color-hover: var(--ldesign-warning-color-4);
   --ldesign-warning-color-focus: var(--ldesign-warning-color-2);
+
+  /* 语义化背景色 */
+  --ldesign-brand-bg: var(--ldesign-brand-color-1);
+  --ldesign-success-bg: var(--ldesign-success-color-1);
+  --ldesign-warning-bg: var(--ldesign-warning-color-1);
+  --ldesign-error-bg: var(--ldesign-error-color-1);
+  --ldesign-info-bg: var(--ldesign-brand-color-1);
+
+  /* 其他语义化颜色 */
+  --ldesign-info-color: var(--ldesign-brand-color-6);
+  --ldesign-danger-color: var(--ldesign-error-color);
+  --ldesign-danger-bg: var(--ldesign-error-color-1);
+  --ldesign-danger-color-hover: var(--ldesign-error-color-4);
+}
+
+/* 暗色主题 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* 灰色（暗色主题反转） */
+    --ldesign-gray-color-1: #2a2a2a;
+    --ldesign-gray-color-2: #3a3a3a;
+    --ldesign-gray-color-3: #4a4a4a;
+    --ldesign-gray-color-4: #5a5a5a;
+    --ldesign-gray-color-5: #6a6a6a;
+    --ldesign-gray-color-6: #7a7a7a;
+    --ldesign-gray-color-7: #8a8a8a;
+    --ldesign-gray-color-8: #9a9a9a;
+    --ldesign-gray-color-9: #aaaaaa;
+    --ldesign-gray-color-10: #bababa;
+
+    /* 字体颜色（暗色主题） */
+    --ldesign-font-gray-1: rgba(255, 255, 255, 90%);
+    --ldesign-font-gray-2: rgba(255, 255, 255, 70%);
+    --ldesign-font-gray-3: rgba(255, 255, 255, 50%);
+    --ldesign-font-gray-4: rgba(255, 255, 255, 30%);
+
+    /* 背景色（暗色主题） */
+    --ldesign-bg-color-page: #1a1a1a;
+    --ldesign-bg-color-container: #242424;
+    --ldesign-bg-color-container-hover: #2a2a2a;
+    --ldesign-bg-color-container-active: #303030;
+    --ldesign-bg-color-component: #2a2a2a;
+    --ldesign-bg-color-component-hover: #303030;
+    --ldesign-bg-color-component-active: #363636;
+
+    /* 边框色（暗色主题） */
+    --ldesign-border-level-1-color: #3a3a3a;
+    --ldesign-border-level-2-color: #404040;
+    --ldesign-border-level-3-color: #4a4a4a;
+
+    /* 品牌色背景（暗色主题） */
+    --ldesign-brand-bg: rgba(115, 52, 203, 0.15);
+    --ldesign-success-bg: rgba(98, 203, 98, 0.15);
+    --ldesign-warning-bg: rgba(245, 197, 56, 0.15);
+    --ldesign-error-bg: rgba(229, 72, 72, 0.15);
+    --ldesign-info-bg: rgba(115, 52, 203, 0.15);
+    --ldesign-danger-bg: rgba(229, 72, 72, 0.15);
+  }
 }
 
 /* 基础样式重置 */

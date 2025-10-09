@@ -1,11 +1,11 @@
 /**
  * @ldesign/router 路由状态管理
- * 
+ *
  * 提供路由状态的集中管理和响应式更新
  */
 
-import type { Router, RouteLocationNormalized } from '../types'
-import { ref, computed, watch, reactive } from 'vue'
+import type { RouteLocationNormalized, Router } from '../types'
+import { computed, reactive, watch } from 'vue'
 
 /**
  * 路由历史记录项
@@ -55,7 +55,7 @@ export class RouteStateManager {
       isNavigating: false,
       error: undefined,
       isLoading: false,
-      cache: new Map()
+      cache: new Map(),
     })
 
     this.setupWatchers()
@@ -71,7 +71,7 @@ export class RouteStateManager {
       (to, from) => {
         this.updateState(to, from)
       },
-      { immediate: true }
+      { immediate: true },
     )
 
     // 监听导航开始
@@ -83,7 +83,7 @@ export class RouteStateManager {
     })
 
     // 监听导航完成
-    this.router.afterEach((to, from) => {
+    this.router.afterEach((_to, _from) => {
       this.state.isNavigating = false
       this.state.isLoading = false
     })
@@ -101,7 +101,7 @@ export class RouteStateManager {
    */
   private updateState(to: RouteLocationNormalized, from?: RouteLocationNormalized): void {
     const previousRoute = this.state.current
-    
+
     this.state.current = to
     this.state.previous = previousRoute
 
@@ -129,7 +129,7 @@ export class RouteStateManager {
     const historyItem: RouteHistoryItem = {
       route,
       timestamp: Date.now(),
-      source
+      source,
     }
 
     this.state.history.push(historyItem)
@@ -180,17 +180,18 @@ export class RouteStateManager {
   /**
    * 获取访问频率最高的路由
    */
-  getMostVisitedRoutes(limit = 10): Array<{ path: string; count: number; lastVisit: number }> {
-    const pathCounts = new Map<string, { count: number; lastVisit: number }>()
+  getMostVisitedRoutes(limit = 10): Array<{ path: string, count: number, lastVisit: number }> {
+    const pathCounts = new Map<string, { count: number, lastVisit: number }>()
 
     for (const item of this.state.history) {
       const path = item.route.path
       const existing = pathCounts.get(path)
-      
+
       if (existing) {
         existing.count++
         existing.lastVisit = Math.max(existing.lastVisit, item.timestamp)
-      } else {
+      }
+      else {
         pathCounts.set(path, { count: 1, lastVisit: item.timestamp })
       }
     }
@@ -248,7 +249,7 @@ export class RouteStateManager {
    */
   subscribe(callback: (state: RouteState) => void): () => void {
     this.subscribers.push(callback)
-    
+
     // 返回取消订阅函数
     return () => {
       const index = this.subscribers.indexOf(callback)
@@ -265,7 +266,8 @@ export class RouteStateManager {
     for (const callback of this.subscribers) {
       try {
         callback(this.state)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('路由状态订阅者回调执行失败:', error)
       }
     }
@@ -290,7 +292,7 @@ export class RouteStateManager {
       averageNavigationsPerHour: recentHistory.length,
       cacheSize: this.state.cache.size,
       isNavigating: this.state.isNavigating,
-      hasError: !!this.state.error
+      hasError: !!this.state.error,
     }
   }
 
@@ -302,7 +304,7 @@ export class RouteStateManager {
       current: this.state.current,
       previous: this.state.previous,
       history: this.getHistory(),
-      stats: this.getStats()
+      stats: this.getStats(),
     }
   }
 
@@ -339,22 +341,22 @@ export function useRouteState(stateManager: RouteStateManager) {
     isNavigating: computed(() => state.isNavigating),
     isLoading: computed(() => state.isLoading),
     error: computed(() => state.error),
-    
+
     // 历史记录
     history: computed(() => state.history),
     recentRoutes: computed(() => stateManager.getRecentRoutes()),
     mostVisitedRoutes: computed(() => stateManager.getMostVisitedRoutes()),
-    
+
     // 工具方法
     canGoBack: computed(() => stateManager.canGoBack()),
     stats: computed(() => stateManager.getStats()),
-    
+
     // 方法
     clearHistory: () => stateManager.clearHistory(),
     clearCache: () => stateManager.clearCache(),
     isInHistory: (path: string) => stateManager.isInHistory(path),
     setCache: (key: string, data: any) => stateManager.setCache(key, data),
     getCache: (key: string) => stateManager.getCache(key),
-    subscribe: (callback: (state: RouteState) => void) => stateManager.subscribe(callback)
+    subscribe: (callback: (state: RouteState) => void) => stateManager.subscribe(callback),
   }
 }

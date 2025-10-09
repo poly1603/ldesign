@@ -75,16 +75,6 @@
       "types": "./es/utils/*.d.ts",
       "import": "./es/utils/*.js",
       "require": "./lib/utils/*.cjs"
-    },
-    "./vue": {
-      "types": "./es/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.cjs"
-    },
-    "./vue/*": {
-      "types": "./es/vue/*.d.ts",
-      "import": "./es/vue/*.js",
-      "require": "./lib/vue/*.cjs"
     }
   },
   "main": "./lib/index.cjs",

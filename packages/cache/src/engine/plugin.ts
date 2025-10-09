@@ -9,6 +9,7 @@ interface Plugin {
   name: string
   version?: string
   install?: (app: any, options?: any) => void
+  destroy?: (app: any) => void
 }
 
 // import type { Plugin } from '@ldesign/engine/types'
@@ -146,7 +147,6 @@ export function createCacheEnginePlugin(
   return {
     name,
     version,
-    dependencies,
 
     async install(context: any) {
       try {
@@ -270,10 +270,11 @@ export function createCacheEnginePlugin(
       }
     },
 
-    async uninstall(context: any) {
+    // 卸载方法（可选）
+    destroy(context: any) {
       try {
         if (debug) {
-          console.warn('[Cache Plugin] uninstall method called')
+          console.warn('[Cache Plugin] destroy method called')
         }
 
         // 从上下文中获取引擎实例

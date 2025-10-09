@@ -503,39 +503,64 @@ export default {
 
 // ==================== 性能优化工具导出 ====================
 
-export {
-  // 性能监控
-  getPerformanceStats,
-  routePrewarmer,
-  memoryOptimizer,
-  RoutePrewarmer,
-  MemoryOptimizer,
-} from './performance'
+// 导出增强类型
+export type * from '../types/enhanced-types'
 
 export {
+  ComponentCacheOptimizer,
+  componentCacheOptimizer,
   // 缓存优化
   LRUCache,
   SmartRouteCache,
-  ComponentCacheOptimizer,
   smartRouteCache,
-  componentCacheOptimizer,
 } from './cache-optimizer'
 
 export {
-  // 错误处理
-  RouterErrorType,
+  CodeQualityChecker,
+  codeQualityChecker,
+  IssueSeverity,
+  // 代码质量检查
+  QualityIssueType,
+} from './code-quality'
+
+export {
+  createRouterError,
   RouterErrorHandler,
   routerErrorHandler,
-  createRouterError,
+  // 错误处理
+  RouterErrorType,
 } from './error-handler'
 
 export {
-  // 代码质量检查
-  QualityIssueType,
-  IssueSeverity,
-  CodeQualityChecker,
-  codeQualityChecker,
-} from './code-quality'
+  // 性能监控
+  getPerformanceStats,
+  memoryOptimizer,
+  MemoryOptimizer,
+  routePrewarmer,
+  RoutePrewarmer,
+} from './performance'
 
-// 导出增强类型
-export type * from './enhanced-types'
+// ==================== 新增实用工具 ====================
+
+export {
+  RoutePerformanceMonitor,
+  createRoutePerformanceMonitor,
+  createPerformanceMonitorPlugin,
+  getPerformanceMonitor,
+} from './route-performance-monitor'
+
+export type {
+  RoutePerformanceMetric,
+  PerformanceMonitorConfig,
+} from './route-performance-monitor'
+
+export {
+  RouteCacheWarmer,
+  createRouteCacheWarmer,
+  warmupRoutes,
+} from './route-cache-warmer'
+
+export type {
+  WarmupConfig,
+  WarmupResult,
+} from './route-cache-warmer'

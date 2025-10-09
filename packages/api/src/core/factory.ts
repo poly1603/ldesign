@@ -35,6 +35,106 @@ export function createApiEngine(config: ApiEngineConfig = {}): ApiEngine {
 }
 
 /**
+ * 默认配置预设
+ */
+const DEFAULT_PRESETS = {
+  base: {
+    http: {
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+    cache: {
+      enabled: true,
+      ttl: 300000, // 5分钟
+      maxSize: 100,
+      storage: 'memory' as const,
+    },
+    debounce: {
+      enabled: true,
+      delay: 300,
+    },
+    deduplication: {
+      enabled: true,
+    },
+  },
+  development: {
+    debug: true,
+    http: {
+      timeout: 30000,
+    },
+    cache: {
+      enabled: false,
+    },
+  },
+  production: {
+    debug: false,
+    http: {
+      timeout: 10000,
+    },
+    cache: {
+      enabled: true,
+      ttl: 600000, // 10分钟
+      maxSize: 200,
+      storage: 'lru' as const,
+    },
+    debounce: {
+      enabled: true,
+      delay: 500,
+    },
+  },
+  test: {
+    debug: true,
+    http: {
+      timeout: 5000,
+    },
+    cache: {
+      enabled: false,
+    },
+    debounce: {
+      enabled: false,
+    },
+    deduplication: {
+      enabled: false,
+    },
+  },
+}
+
+/**
+ * 合并配置（深度合并）
+ */
+function mergeConfig(
+  baseURL: string,
+  preset: Partial<ApiEngineConfig>,
+  options: Omit<ApiEngineConfig, 'http'> & {
+    http?: Omit<ApiEngineConfig['http'], 'baseURL'>
+  } = {},
+): ApiEngineConfig {
+  return {
+    ...preset,
+    ...options,
+    http: {
+      baseURL,
+      ...preset.http,
+      ...options.http,
+    },
+    cache: {
+      ...preset.cache,
+      ...options.cache,
+    },
+    debounce: {
+      ...preset.debounce,
+      ...options.debounce,
+    },
+    deduplication: {
+      ...preset.deduplication,
+      ...options.deduplication,
+    },
+  }
+}
+
+/**
  * 创建带有默认配置的 API 引擎
  *
  * @param baseURL API 基础地址
@@ -57,35 +157,7 @@ export function createApiEngineWithDefaults(
     http?: Omit<ApiEngineConfig['http'], 'baseURL'>
   } = {},
 ): ApiEngine {
-  const config: ApiEngineConfig = {
-    debug: false,
-    ...options,
-    http: {
-      baseURL,
-      timeout: 10000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      ...options.http,
-    },
-    cache: {
-      enabled: true,
-      ttl: 300000, // 5分钟
-      maxSize: 100,
-      storage: 'memory',
-      ...options.cache,
-    },
-    debounce: {
-      enabled: true,
-      delay: 300,
-      ...options.debounce,
-    },
-    deduplication: {
-      enabled: true,
-      ...options.deduplication,
-    },
-  }
-
+  const config = mergeConfig(baseURL, DEFAULT_PRESETS.base, options)
   return new ApiEngineImpl(config)
 }
 
@@ -109,17 +181,11 @@ export function createDevelopmentApiEngine(
     http?: Omit<ApiEngineConfig['http'], 'baseURL'>
   } = {},
 ): ApiEngine {
-  return createApiEngineWithDefaults(baseURL, {
-    debug: true,
-    http: {
-      timeout: 30000, // 开发环境超时时间更长
-      ...options.http,
-    },
-    cache: {
-      enabled: false, // 开发环境默认禁用缓存
-    },
-    ...options,
-  })
+  const config = mergeConfig(baseURL, {
+    ...DEFAULT_PRESETS.base,
+    ...DEFAULT_PRESETS.development,
+  }, options)
+  return new ApiEngineImpl(config)
 }
 
 /**
@@ -142,27 +208,11 @@ export function createProductionApiEngine(
     http?: Omit<ApiEngineConfig['http'], 'baseURL'>
   } = {},
 ): ApiEngine {
-  return createApiEngineWithDefaults(baseURL, {
-    debug: false,
-    http: {
-      timeout: 10000,
-      ...options.http,
-    },
-    cache: {
-      enabled: true,
-      ttl: 600000, // 生产环境缓存时间更长
-      maxSize: 200,
-      storage: 'memory',
-    },
-    debounce: {
-      enabled: true,
-      delay: 500, // 生产环境防抖时间更长
-    },
-    deduplication: {
-      enabled: true,
-    },
-    ...options,
-  })
+  const config = mergeConfig(baseURL, {
+    ...DEFAULT_PRESETS.base,
+    ...DEFAULT_PRESETS.production,
+  }, options)
+  return new ApiEngineImpl(config)
 }
 
 /**
@@ -185,23 +235,11 @@ export function createTestApiEngine(
     http?: Omit<ApiEngineConfig['http'], 'baseURL'>
   } = {},
 ): ApiEngine {
-  return createApiEngineWithDefaults(baseURL, {
-    debug: true,
-    http: {
-      timeout: 5000, // 测试环境超时时间较短
-      ...options.http,
-    },
-    cache: {
-      enabled: false, // 测试环境禁用缓存
-    },
-    debounce: {
-      enabled: false, // 测试环境禁用防抖
-    },
-    deduplication: {
-      enabled: false, // 测试环境禁用去重
-    },
-    ...options,
-  })
+  const config = mergeConfig(baseURL, {
+    ...DEFAULT_PRESETS.base,
+    ...DEFAULT_PRESETS.test,
+  }, options)
+  return new ApiEngineImpl(config)
 }
 
 /**

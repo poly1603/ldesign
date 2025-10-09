@@ -4,7 +4,7 @@ import { createBrowserCache, createSSRCache, createNodeCache, createOfflineCache
 async function basicSetGetWorks(factory: () => any) {
   const cache = factory()
   await cache.set('p', 'v')
-  const v = await cache.get<string>('p')
+  const v = await cache.get('p')
   expect(v).toBe('v')
 }
 
@@ -25,7 +25,7 @@ describe('presets', () => {
   it('createSSRCache: should set/get and use memory by default', async () => {
     const cache = createSSRCache()
     await cache.set('p', 'v')
-    const v = await cache.get<string>('p')
+    const v = await cache.get('p')
     expect(v).toBe('v')
     const keys = await cache.keys('memory')
     expect(keys).toContain('p')
@@ -54,7 +54,7 @@ describe('presets', () => {
   it.skip('createCache(): auto detects browser preset in jsdom', async () => {
     const cache = createCache()
     await cache.set('auto', 'yes')
-    const v = await cache.get<string>('auto')
+    const v = await cache.get('auto')
     expect(v).toBe('yes')
     const k = await cache.keys('localStorage')
     expect(k).toContain('auto')

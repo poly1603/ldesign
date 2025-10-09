@@ -33,7 +33,7 @@
     "**/*.test.ts",
     "**/*.spec.ts",
     "src/adapt/**/*",
-    "src/vue/**/*",
+    "src/vue.ts",
     "src/core/encrypted-storage.ts",
     "src/core/modern-ciphers.ts",
     "src/core/wasm-accelerator.ts",

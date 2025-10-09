@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import type { LoginTemplateProps } from '../../types'
 
 /* 使用统一的Props接口 */
@@ -16,13 +16,23 @@ const props = withDefaults(defineProps<LoginTemplateProps>(), {
   enableAnimations: true,
 })
 
-/* 定义事件 - 使用emit替代console.log，提供更好的组件通信 */
+/* 定义事件 - 提供完整的组件通信 */
 const emit = defineEmits<{
   themeChange: [theme: string]
   languageChange: [language: string]
   darkModeChange: [isDark: boolean]
   sizeChange: [size: string]
+  login: [credentials: { username: string, password: string, remember: boolean }]
+  register: []
+  forgotPassword: []
+  orientationChange: [orientation: 'portrait' | 'landscape']
 }>()
+
+/* 响应式状态 */
+const isLandscape = ref(false)
+const isTouchDevice = ref(false)
+const showPasswordStrength = ref(false)
+const isKeyboardVisible = ref(false)
 
 /* 优化：合并计算属性，减少响应式开销 */
 const combinedStyles = computed(() => {
@@ -43,7 +53,16 @@ const combinedStyles = computed(() => {
   return styles
 })
 
-/* 配置选择器事件处理方法 - 优化：使用emit替代console.log */
+/* 计算容器类名 */
+const containerClasses = computed(() => ({
+  'ldesign-template-login': true,
+  'ldesign-template-tablet': true,
+  'is-landscape': isLandscape.value,
+  'is-touch': isTouchDevice.value,
+  'keyboard-visible': isKeyboardVisible.value,
+}))
+
+/* 配置选择器事件处理方法 */
 const handleThemeChange = (theme: string) => {
   emit('themeChange', theme)
 }
@@ -59,10 +78,70 @@ const handleDarkModeChange = (isDark: boolean) => {
 const handleSizeChange = (size: string) => {
   emit('sizeChange', size)
 }
+
+/* 新增：屏幕方向检测 */
+const detectOrientation = () => {
+  if (typeof window === 'undefined') return
+
+  const width = window.innerWidth
+  const height = window.innerHeight
+  const newOrientation = width > height ? 'landscape' : 'portrait'
+  const wasLandscape = isLandscape.value
+
+  isLandscape.value = newOrientation === 'landscape'
+
+  if (wasLandscape !== isLandscape.value) {
+    emit('orientationChange', newOrientation)
+  }
+}
+
+/* 新增：触摸设备检测 */
+const detectTouchDevice = () => {
+  if (typeof window === 'undefined') return
+
+  isTouchDevice.value = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+}
+
+/* 新增：键盘可见性检测 */
+const handleResize = () => {
+  if (typeof window === 'undefined') return
+
+  // 在移动设备上，当键盘弹出时视口高度会减小
+  const viewportHeight = window.visualViewport?.height || window.innerHeight
+  const windowHeight = window.innerHeight
+
+  isKeyboardVisible.value = viewportHeight < windowHeight * 0.75
+}
+
+/* 生命周期钩子 */
+onMounted(() => {
+  detectOrientation()
+  detectTouchDevice()
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', detectOrientation)
+    window.addEventListener('orientationchange', detectOrientation)
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize)
+    }
+  }
+})
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', detectOrientation)
+    window.removeEventListener('orientationchange', detectOrientation)
+
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', handleResize)
+    }
+  }
+})
 </script>
 
 <template>
-  <div class="ldesign-template-login ldesign-template-tablet" :style="combinedStyles">
+  <div :class="containerClasses" :style="combinedStyles">
     <!-- 平板优化背景 - 优化：合并样式到combinedStyles -->
     <div class="ldesign-template-tablet-background">
       <!-- 平板专用装饰元素 - 优化：减少DOM节点，提升性能 -->
@@ -527,8 +606,73 @@ const handleSizeChange = (size: string) => {
   }
 }
 
-/* 横屏模式优化
- */
+/* 横屏模式优化 - 使用类名而非媒体查询，性能更好 */
+.ldesign-template-tablet.is-landscape {
+  .tablet-container {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--ls-spacing-xl);
+  }
+
+  .tablet-header {
+    flex: 1;
+    padding-right: var(--ls-padding-xl);
+    text-align: left;
+  }
+
+  .tablet-main {
+    flex: 1;
+  }
+
+  .login-panel {
+    max-width: 600px;
+  }
+}
+
+/* 触摸设备优化 */
+.ldesign-template-tablet.is-touch {
+  /* 增大触摸目标 */
+  .ldesign-template-selector-placeholder {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .footer-link {
+    padding: var(--ls-padding-sm);
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* 触摸反馈 */
+  .ldesign-template-selector-placeholder:active,
+  .footer-link:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* 键盘可见时优化 */
+.ldesign-template-tablet.keyboard-visible {
+  .tablet-header {
+    padding: var(--ls-padding-base) 0;
+  }
+
+  .app-title {
+    font-size: var(--ls-font-size-h3);
+  }
+
+  .app-subtitle {
+    display: none;
+  }
+
+  .ldesign-template-header-selectors {
+    display: none;
+  }
+}
+
+/* 横屏模式媒体查询回退 */
 @media (orientation: landscape) and (min-width: 768px) {
   .tablet-container {
     flex-direction: row;

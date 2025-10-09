@@ -58,8 +58,44 @@ export {
   TimeTravelDebugger,
   StateDiffer,
   StateValidator,
-  createAdvancedStore
+  MiddlewareSystem,
+  createAdvancedStore,
+  createMiddlewareSystem
 } from './AdvancedFeatures'
+
+export type {
+  ActionInfo,
+  Middleware,
+  MiddlewareContext,
+  LoggerOptions
+} from './AdvancedFeatures'
+
+// 持久化增强
+export {
+  EnhancedPersistenceManager,
+  IndexedDBStorage,
+  createEnhancedPersistence,
+  PersistenceStrategy
+} from './PersistenceEnhancement'
+
+export type {
+  StorageEngine,
+  StateMigration,
+  EnhancedPersistOptions
+} from './PersistenceEnhancement'
+
+// 智能预加载
+export {
+  SmartPreloader,
+  createSmartPreloader,
+  PreloadPriority,
+  PreloadStrategy
+} from './SmartPreloader'
+
+export type {
+  PreloadTask,
+  PreloadResult
+} from './SmartPreloader'
 
 // 类型定义
 export type {

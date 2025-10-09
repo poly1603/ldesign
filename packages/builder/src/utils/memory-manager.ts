@@ -1,11 +1,15 @@
 /**
  * 内存管理器 - 防止内存泄漏和优化内存使用
- * 
+ *
+ * 提供流式处理、资源自动释放、内存监控等功能
+ *
  * @author LDesign Team
  * @version 1.0.0
  */
 
 import { EventEmitter } from 'events'
+import { Readable, Transform } from 'stream'
+import { Logger } from './logger'
 
 /**
  * 资源清理接口
@@ -29,6 +33,20 @@ export interface MemoryManagerOptions {
   monitoringInterval?: number
   /** 是否自动清理 */
   autoCleanup?: boolean
+  /** 是否启用 GC 提示 */
+  enableGCHints?: boolean
+}
+
+/**
+ * 流式处理选项
+ */
+export interface StreamProcessOptions {
+  /** 块大小 */
+  chunkSize?: number
+  /** 高水位标记 */
+  highWaterMark?: number
+  /** 是否自动销毁 */
+  autoDestroy?: boolean
 }
 
 /**
@@ -234,6 +252,7 @@ export class MemoryManager extends EventEmitter {
       cleanupInterval: 60000, // 1分钟
       monitoringInterval: 10000, // 10秒
       autoCleanup: true,
+      enableGCHints: false,
       ...options
     }
 
@@ -506,4 +525,196 @@ export function managedResource(target: any, propertyKey: string, descriptor: Pr
   }
 
   return descriptor
+}
+
+/**
+ * 流式文件处理器
+ * 用于处理大文件，避免一次性加载到内存
+ */
+export class StreamProcessor {
+  private logger: Logger
+
+  constructor() {
+    this.logger = new Logger({ prefix: 'StreamProcessor' })
+  }
+
+  /**
+   * 创建转换流
+   */
+  createTransformStream<T = any, R = any>(
+    transformer: (chunk: T) => R | Promise<R>,
+    options: StreamProcessOptions = {}
+  ): Transform {
+    const { highWaterMark = 16 * 1024, autoDestroy = true } = options
+
+    return new Transform({
+      objectMode: true,
+      highWaterMark,
+      autoDestroy,
+      async transform(chunk: T, _encoding, callback) {
+        try {
+          const result = await transformer(chunk)
+          callback(null, result)
+        } catch (error) {
+          callback(error as Error)
+        }
+      }
+    })
+  }
+
+  /**
+   * 批量流式处理
+   */
+  createBatchStream<T = any>(
+    batchSize: number,
+    options: StreamProcessOptions = {}
+  ): Transform {
+    let batch: T[] = []
+
+    return new Transform({
+      objectMode: true,
+      highWaterMark: options.highWaterMark || 16,
+      autoDestroy: options.autoDestroy !== false,
+      transform(chunk: T, _encoding, callback) {
+        batch.push(chunk)
+
+        if (batch.length >= batchSize) {
+          const currentBatch = batch
+          batch = []
+          callback(null, currentBatch)
+        } else {
+          callback()
+        }
+      },
+      flush(callback) {
+        if (batch.length > 0) {
+          callback(null, batch)
+        } else {
+          callback()
+        }
+      }
+    })
+  }
+
+  /**
+   * 流式处理数组
+   */
+  async processStream<T, R>(
+    items: T[],
+    processor: (item: T) => R | Promise<R>,
+    options: StreamProcessOptions = {}
+  ): Promise<R[]> {
+    const results: R[] = []
+    const { chunkSize = 100 } = options
+
+    const readable = Readable.from(items, { objectMode: true })
+    const transform = this.createTransformStream(processor, options)
+
+    return new Promise((resolve, reject) => {
+      readable
+        .pipe(transform)
+        .on('data', (result: R) => {
+          results.push(result)
+
+          // 定期触发 GC（如果可用）
+          if (results.length % chunkSize === 0 && global.gc) {
+            global.gc()
+          }
+        })
+        .on('end', () => resolve(results))
+        .on('error', reject)
+    })
+  }
+}
+
+/**
+ * GC 优化器
+ */
+export class GCOptimizer {
+  private logger: Logger
+  private gcEnabled: boolean
+
+  constructor() {
+    this.logger = new Logger({ prefix: 'GCOptimizer' })
+    this.gcEnabled = typeof global.gc === 'function'
+
+    if (!this.gcEnabled) {
+      this.logger.debug('GC 未启用，需要使用 --expose-gc 标志运行 Node.js')
+    }
+  }
+
+  /**
+   * 手动触发 GC
+   */
+  triggerGC(): boolean {
+    if (this.gcEnabled && global.gc) {
+      try {
+        global.gc()
+        this.logger.debug('已触发垃圾回收')
+        return true
+      } catch (error) {
+        this.logger.warn('触发 GC 失败:', error)
+        return false
+      }
+    }
+    return false
+  }
+
+  /**
+   * 在内存压力下触发 GC
+   */
+  triggerGCIfNeeded(threshold: number = 0.8): boolean {
+    const usage = process.memoryUsage()
+    const heapUsedRatio = usage.heapUsed / usage.heapTotal
+
+    if (heapUsedRatio > threshold) {
+      this.logger.debug(`内存使用率 ${(heapUsedRatio * 100).toFixed(1)}% 超过阈值，触发 GC`)
+      return this.triggerGC()
+    }
+
+    return false
+  }
+
+  /**
+   * 创建带 GC 优化的异步函数包装器
+   */
+  withGC<T extends (...args: any[]) => Promise<any>>(
+    fn: T,
+    options: { threshold?: number; force?: boolean } = {}
+  ): T {
+    const { threshold = 0.8, force = false } = options
+
+    return (async (...args: Parameters<T>): Promise<ReturnType<T>> => {
+      try {
+        const result = await fn(...args)
+
+        // 执行后检查是否需要 GC
+        if (force) {
+          this.triggerGC()
+        } else {
+          this.triggerGCIfNeeded(threshold)
+        }
+
+        return result
+      } catch (error) {
+        // 出错时也尝试清理内存
+        this.triggerGC()
+        throw error
+      }
+    }) as T
+  }
+}
+
+/**
+ * 创建流处理器实例
+ */
+export function createStreamProcessor(): StreamProcessor {
+  return new StreamProcessor()
+}
+
+/**
+ * 创建 GC 优化器实例
+ */
+export function createGCOptimizer(): GCOptimizer {
+  return new GCOptimizer()
 }

@@ -1,40 +1,40 @@
 {
-  "timestamp": 1759721337245,
+  "timestamp": 1759757486957,
   "version": "1.0.0",
   "environment": {
     "nodeVersion": "v20.19.5",
     "platform": "win32",
     "arch": "x64",
-    "memory": 80248832
+    "memory": 79986688
   },
   "benchmarks": {
     "ProductStore-添加产品": {
-      "opsPerSecond": 171262.20243169824,
-      "meanTime": 0.005839000000007672,
+      "opsPerSecond": 119175.3068761364,
+      "meanTime": 0.008391000000019631,
       "samples": 100,
-      "variance": 6.371789999753691e-7,
-      "standardDeviation": 0.0007982349278097076
+      "variance": 0.000003797418999728428,
+      "standardDeviation": 0.0019486967439107676
     },
     "PersistenceStore-保存数据": {
-      "opsPerSecond": 61980.90987974999,
-      "meanTime": 0.016134000000001834,
+      "opsPerSecond": 43855.80212261794,
+      "meanTime": 0.022802000000001498,
       "samples": 100,
-      "variance": 0.00005144944399995044,
-      "standardDeviation": 0.007172826778889229
+      "variance": 0.000060187996000270166,
+      "standardDeviation": 0.007758092291296242
     },
     "RealtimeStore-添加消息": {
-      "opsPerSecond": 29861.442904919295,
-      "meanTime": 0.0334880000000021,
+      "opsPerSecond": 27714.64996398048,
+      "meanTime": 0.0360819999999876,
       "samples": 100,
-      "variance": 0.008093501655996142,
-      "standardDeviation": 0.08996389084513932
+      "variance": 0.007130934875998295,
+      "standardDeviation": 0.08444486293433305
     },
     "大数据集处理": {
-      "opsPerSecond": 194.12699827052353,
-      "meanTime": 5.151266999999975,
+      "opsPerSecond": 44.78074986619525,
+      "meanTime": 22.331023999999935,
       "samples": 100,
-      "variance": 1.5820318686110764,
-      "standardDeviation": 1.25778848325586
+      "variance": 804.0877535042221,
+      "standardDeviation": 28.356441129031374
     }
   }
 }

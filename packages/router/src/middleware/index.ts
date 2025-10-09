@@ -1,10 +1,10 @@
 /**
  * @ldesign/router 中间件系统
- * 
+ *
  * 提供灵活的路由中间件机制，支持认证、权限、日志等功能
  */
 
-import type { RouteLocationNormalized, NavigationGuardNext } from '../types'
+import type { NavigationGuardNext, RouteLocationNormalized } from '../types'
 
 /**
  * 中间件函数类型
@@ -62,7 +62,7 @@ export class MiddlewareManager {
     this.middlewares.set(config.name, {
       priority: 100,
       enabled: true,
-      ...config
+      ...config,
     })
     this.updateSortedMiddlewares()
   }
@@ -108,10 +108,10 @@ export class MiddlewareManager {
   async execute(
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
-    next: NavigationGuardNext
+    next: NavigationGuardNext,
   ): Promise<void> {
     const applicableMiddlewares = this.sortedMiddlewares.filter(
-      m => !m.condition || m.condition(to)
+      m => !m.condition || m.condition(to),
     )
 
     if (applicableMiddlewares.length === 0) {
@@ -123,7 +123,7 @@ export class MiddlewareManager {
     const context: MiddlewareContext = {
       data: {},
       index: 0,
-      total: applicableMiddlewares.length
+      total: applicableMiddlewares.length,
     }
 
     const executeNext = async (): Promise<void> => {
@@ -138,7 +138,8 @@ export class MiddlewareManager {
 
       try {
         await middleware.handler(to, from, executeNext, context)
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`中间件 "${middleware.name}" 执行失败:`, error)
         next(error as Error)
       }
@@ -182,7 +183,7 @@ export const authMiddleware: MiddlewareConfig = {
     if (to.meta?.requiresAuth) {
       // 检查用户是否已登录
       const isAuthenticated = context.user || localStorage.getItem('token')
-      
+
       if (!isAuthenticated) {
         next({ name: 'Login', query: { redirect: to.fullPath } })
         return
@@ -190,7 +191,7 @@ export const authMiddleware: MiddlewareConfig = {
     }
     next()
   },
-  condition: (route) => route.meta?.requiresAuth === true
+  condition: route => route.meta?.requiresAuth === true,
 }
 
 /**
@@ -201,13 +202,13 @@ export const permissionMiddleware: MiddlewareConfig = {
   priority: 20,
   handler: async (to, from, next, context) => {
     const requiredPermissions = to.meta?.permissions as string[]
-    
+
     if (requiredPermissions && requiredPermissions.length > 0) {
       const userPermissions = context.permissions || []
       const hasPermission = requiredPermissions.some(
-        permission => userPermissions.includes(permission)
+        permission => userPermissions.includes(permission),
       )
-      
+
       if (!hasPermission) {
         next({ name: 'Forbidden' })
         return
@@ -215,7 +216,7 @@ export const permissionMiddleware: MiddlewareConfig = {
     }
     next()
   },
-  condition: (route) => Array.isArray(route.meta?.permissions)
+  condition: route => Array.isArray(route.meta?.permissions),
 }
 
 /**
@@ -226,10 +227,10 @@ export const roleMiddleware: MiddlewareConfig = {
   priority: 15,
   handler: async (to, from, next, context) => {
     const requiredRoles = to.meta?.roles as string[]
-    
+
     if (requiredRoles && requiredRoles.length > 0) {
       const userRole = context.user?.role
-      
+
       if (!userRole || !requiredRoles.includes(userRole)) {
         next({ name: 'Unauthorized' })
         return
@@ -237,7 +238,7 @@ export const roleMiddleware: MiddlewareConfig = {
     }
     next()
   },
-  condition: (route) => Array.isArray(route.meta?.roles)
+  condition: route => Array.isArray(route.meta?.roles),
 }
 
 /**
@@ -248,16 +249,16 @@ export const loggingMiddleware: MiddlewareConfig = {
   priority: 1,
   handler: async (to, from, next, context) => {
     const startTime = performance.now()
-    
+
     console.log(`[Router] 导航开始: ${from.path} -> ${to.path}`)
-    
+
     // 继续执行
     next()
-    
+
     // 记录导航完成时间
     const endTime = performance.now()
     console.log(`[Router] 导航完成: ${to.path} (${(endTime - startTime).toFixed(2)}ms)`)
-  }
+  },
 }
 
 /**
@@ -268,13 +269,13 @@ export const titleMiddleware: MiddlewareConfig = {
   priority: 90,
   handler: async (to, from, next, context) => {
     if (to.meta?.title) {
-      document.title = typeof to.meta.title === 'function' 
-        ? to.meta.title(to) 
+      document.title = typeof to.meta.title === 'function'
+        ? to.meta.title(to)
         : to.meta.title
     }
     next()
   },
-  condition: (route) => !!route.meta?.title
+  condition: route => !!route.meta?.title,
 }
 
 /**
@@ -303,7 +304,7 @@ export const progressMiddleware: MiddlewareConfig = {
         }, 200)
       }
     }, 100)
-  }
+  },
 }
 
 // ==================== 中间件工厂函数 ====================
@@ -315,7 +316,7 @@ export function createCacheMiddleware(options: {
   maxAge?: number
   exclude?: string[]
 }): MiddlewareConfig {
-  const cache = new Map<string, { data: any; timestamp: number }>()
+  const cache = new Map<string, { data: any, timestamp: number }>()
   const maxAge = options.maxAge || 5 * 60 * 1000 // 5分钟
 
   return {
@@ -324,21 +325,21 @@ export function createCacheMiddleware(options: {
     handler: async (to, from, next, context) => {
       const cacheKey = to.fullPath
       const cached = cache.get(cacheKey)
-      
+
       if (cached && Date.now() - cached.timestamp < maxAge) {
         context.data.cached = cached.data
       }
-      
+
       next()
-      
+
       // 缓存路由数据
       if (!options.exclude?.includes(to.name as string)) {
         cache.set(cacheKey, {
           data: context.data,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
       }
-    }
+    },
   }
 }
 
@@ -358,21 +359,21 @@ export function createRateLimitMiddleware(options: {
       const key = to.path
       const now = Date.now()
       const windowStart = now - options.windowMs
-      
+
       // 清理过期记录
       const userRequests = requests.get(key) || []
       const validRequests = userRequests.filter(time => time > windowStart)
-      
+
       if (validRequests.length >= options.maxRequests) {
         next(new Error('请求过于频繁，请稍后再试'))
         return
       }
-      
+
       validRequests.push(now)
       requests.set(key, validRequests)
-      
+
       next()
-    }
+    },
   }
 }
 
@@ -386,5 +387,5 @@ middlewareManager.registerMultiple([
   authMiddleware,
   roleMiddleware,
   permissionMiddleware,
-  titleMiddleware
+  titleMiddleware,
 ])

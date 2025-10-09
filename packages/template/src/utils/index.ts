@@ -34,3 +34,9 @@ export * from './i18n'
 
 // 导出工厂函数
 export * from './factory'
+
+// 导出密码强度检测
+export * from './password-strength'
+
+// 导出存储工具
+export * from './storage'

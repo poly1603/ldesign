@@ -60,6 +60,8 @@ export interface CacheOptions {
   maxSize: number
   /** 最大内存使用量（字节，用于内存压力检测） */
   maxMemory?: number
+  /** 生存时间（毫秒，缓存项的有效期） - 兼容性别名 */
+  ttl?: number
   /** 默认生存时间（毫秒，缓存项的有效期） */
   defaultTTL?: number
   /** 是否启用 TTL 功能（时间到期自动清理） */
@@ -295,6 +297,14 @@ export interface Loader {
    * @returns 语言包数据或 undefined
    */
   getLoadedPackage?(locale: string): LanguagePackage | undefined
+
+  /**
+   * 加载命名空间（可选方法）
+   * @param locale 语言代码
+   * @param namespace 命名空间
+   * @returns 命名空间数据的 Promise
+   */
+  loadNamespace?(locale: string, namespace: string): Promise<Record<string, any>>
 }
 
 /**

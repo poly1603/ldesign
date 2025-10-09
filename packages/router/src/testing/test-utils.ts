@@ -1,13 +1,13 @@
 /**
  * @ldesign/router 测试工具
- * 
+ *
  * 提供路由测试的辅助函数和工具
  */
 
 import type { App } from 'vue'
-import type { Router, RouteRecordRaw, RouteLocationNormalized } from '../types'
+import type { RouteLocationNormalized, Router, RouteRecordRaw } from '../types'
 import { createApp, nextTick } from 'vue'
-import { createRouter, createMemoryHistory } from '../core'
+import { createMemoryHistory, createRouter } from '../core'
 
 /**
  * 测试路由器配置
@@ -28,7 +28,7 @@ export class RouterTestUtils {
   constructor(config: TestRouterConfig = {}) {
     this.router = createRouter({
       history: config.history || createMemoryHistory(),
-      routes: config.routes || []
+      routes: config.routes || [],
     })
 
     if (config.initialRoute) {
@@ -55,7 +55,7 @@ export class RouterTestUtils {
   /**
    * 导航到指定路由
    */
-  async navigateTo(to: string | { name: string; params?: any; query?: any }): Promise<void> {
+  async navigateTo(to: string | { name: string, params?: any, query?: any }): Promise<void> {
     await this.router.push(to)
     await nextTick()
   }
@@ -77,7 +77,7 @@ export class RouterTestUtils {
    */
   mockGuard(
     type: 'beforeEach' | 'beforeResolve' | 'afterEach',
-    guard: (...args: any[]) => any
+    guard: (...args: any[]) => any,
   ): () => void {
     return this.router[type](guard)
   }
@@ -178,11 +178,11 @@ export class RouteAssertions {
    */
   expectParams(expectedParams: Record<string, any>): void {
     const currentParams = this.utils.getRouteParams()
-    
+
     for (const [key, value] of Object.entries(expectedParams)) {
       if (currentParams[key] !== value) {
         throw new Error(
-          `Expected param "${key}" to be "${value}", but got "${currentParams[key]}"`
+          `Expected param "${key}" to be "${value}", but got "${currentParams[key]}"`,
         )
       }
     }
@@ -193,11 +193,11 @@ export class RouteAssertions {
    */
   expectQuery(expectedQuery: Record<string, any>): void {
     const currentQuery = this.utils.getRouteQuery()
-    
+
     for (const [key, value] of Object.entries(expectedQuery)) {
       if (currentQuery[key] !== value) {
         throw new Error(
-          `Expected query "${key}" to be "${value}", but got "${currentQuery[key]}"`
+          `Expected query "${key}" to be "${value}", but got "${currentQuery[key]}"`,
         )
       }
     }
@@ -208,11 +208,11 @@ export class RouteAssertions {
    */
   expectMeta(expectedMeta: Record<string, any>): void {
     const currentMeta = this.utils.getCurrentRoute().meta
-    
+
     for (const [key, value] of Object.entries(expectedMeta)) {
       if (currentMeta[key] !== value) {
         throw new Error(
-          `Expected meta "${key}" to be "${value}", but got "${currentMeta[key]}"`
+          `Expected meta "${key}" to be "${value}", but got "${currentMeta[key]}"`,
         )
       }
     }
@@ -223,17 +223,17 @@ export class RouteAssertions {
    */
   expectMatched(expectedPaths: string[]): void {
     const matched = this.utils.getCurrentRoute().matched.map(record => record.path)
-    
+
     if (matched.length !== expectedPaths.length) {
       throw new Error(
-        `Expected ${expectedPaths.length} matched routes, but got ${matched.length}`
+        `Expected ${expectedPaths.length} matched routes, but got ${matched.length}`,
       )
     }
 
     for (let i = 0; i < expectedPaths.length; i++) {
       if (matched[i] !== expectedPaths[i]) {
         throw new Error(
-          `Expected matched route at index ${i} to be "${expectedPaths[i]}", but got "${matched[i]}"`
+          `Expected matched route at index ${i} to be "${expectedPaths[i]}", but got "${matched[i]}"`,
         )
       }
     }
@@ -256,12 +256,12 @@ export class RoutePerformanceTester {
    */
   async measureNavigation(
     utils: RouterTestUtils,
-    to: string | { name: string; params?: any; query?: any }
+    to: string | { name: string, params?: any, query?: any },
   ): Promise<number> {
     const startTime = performance.now()
-    
+
     await utils.navigateTo(to)
-    
+
     const endTime = performance.now()
     const duration = endTime - startTime
 
@@ -269,7 +269,7 @@ export class RoutePerformanceTester {
       route: typeof to === 'string' ? to : to.name,
       startTime,
       endTime,
-      duration
+      duration,
     })
 
     return duration
@@ -295,7 +295,7 @@ export class RoutePerformanceTester {
       average,
       min,
       max,
-      measurements: [...this.measurements]
+      measurements: [...this.measurements],
     }
   }
 
@@ -328,17 +328,17 @@ export const testRoutes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Home',
-    component: { template: '<div>Home</div>' }
+    component: { template: '<div>Home</div>' },
   },
   {
     path: '/about',
     name: 'About',
-    component: { template: '<div>About</div>' }
+    component: { template: '<div>About</div>' },
   },
   {
     path: '/user/:id',
     name: 'User',
-    component: { template: '<div>User {{ $route.params.id }}</div>' }
+    component: { template: '<div>User {{ $route.params.id }}</div>' },
   },
   {
     path: '/nested',
@@ -347,10 +347,10 @@ export const testRoutes: RouteRecordRaw[] = [
       {
         path: 'child',
         name: 'NestedChild',
-        component: { template: '<div>Child</div>' }
-      }
-    ]
-  }
+        component: { template: '<div>Child</div>' },
+      },
+    ],
+  },
 ]
 
 /**
@@ -365,6 +365,6 @@ export function setupRouterTest(routes: RouteRecordRaw[] = testRoutes) {
     utils,
     assertions,
     performance,
-    router: utils.getRouter()
+    router: utils.getRouter(),
   }
 }

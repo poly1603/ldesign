@@ -34,9 +34,25 @@ interface ElementBounds {
 
 /**
  * 获取元素边界信息
+ * @param useViewportCoords - 如果为 true，返回相对于视口的坐标（用于 fixed 定位）
  */
-function getElementBounds(element: HTMLElement): ElementBounds {
+function getElementBounds(element: HTMLElement, useViewportCoords: boolean = false): ElementBounds {
   const rect = element.getBoundingClientRect();
+  
+  // 对于 fixed 定位，使用视口坐标；否则使用文档坐标
+  if (useViewportCoords) {
+    return {
+      top: rect.top,
+      left: rect.left,
+      right: rect.right,
+      bottom: rect.bottom,
+      width: rect.width,
+      height: rect.height,
+      centerX: rect.left + rect.width / 2,
+      centerY: rect.top + rect.height / 2
+    };
+  }
+  
   return {
     top: rect.top + window.scrollY,
     left: rect.left + window.scrollX,
@@ -51,8 +67,22 @@ function getElementBounds(element: HTMLElement): ElementBounds {
 
 /**
  * 获取视口边界
+ * @param useViewportCoords - 如果为 true，返回相对于视口的坐标（用于 fixed 定位）
  */
-function getViewportBounds(): ElementBounds {
+function getViewportBounds(useViewportCoords: boolean = false): ElementBounds {
+  if (useViewportCoords) {
+    return {
+      top: 0,
+      left: 0,
+      right: window.innerWidth,
+      bottom: window.innerHeight,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      centerX: window.innerWidth / 2,
+      centerY: window.innerHeight / 2
+    };
+  }
+  
   return {
     top: window.scrollY,
     left: window.scrollX,
@@ -114,13 +144,12 @@ function getBoundaryBounds(
 export function calculateAnchorPosition(
   anchorElement: HTMLElement,
   drawerSize: { width: number; height: number },
-  config: AnchorConfig
+  config: AnchorConfig,
+  _skipFlip: boolean = false  // 内部参数，防止递归翻转
 ): AnchorPosition {
-  const anchorBounds = getElementBounds(anchorElement);
-  const boundaryBounds = getBoundaryBounds(
-    config.boundary || 'viewport',
-    anchorElement
-  );
+  // 使用视口坐标系统（因为抽屉和遮罩都使用 fixed 定位）
+  const anchorBounds = getElementBounds(anchorElement, true);
+  const boundaryBounds = getViewportBounds(true);
   
   const placement = config.placement || 'bottom';
   const align = config.align || 'start';
@@ -146,12 +175,22 @@ export function calculateAnchorPosition(
       
       // 设置遮罩范围（上方区域）
       if (config.maskPartial) {
+        // 抽屉使用固定高度，不铺满到屏幕顶部
+        const availableHeight = anchorBounds.top - boundaryBounds.top;
+        const drawerHeight = Math.min(drawerSize.height, availableHeight);
+        
         position.maskBounds = {
           top: boundaryBounds.top,
           left: boundaryBounds.left,
           width: boundaryBounds.width,
-          height: anchorBounds.top - boundaryBounds.top
+          height: availableHeight  // 遮罩覆盖整个上方区域
         };
+        
+        // 抽屉使用固定尺寸，从按钮顶部向上定位
+        position.width = boundaryBounds.width;
+        position.height = drawerHeight;
+        position.top = anchorBounds.top - drawerHeight;
+        position.left = boundaryBounds.left;
       }
       break;
       
@@ -165,12 +204,21 @@ export function calculateAnchorPosition(
       
       // 设置遮罩范围（下方区域）
       if (config.maskPartial) {
+        // 抽屉使用固定高度，不铺满到屏幕底部
+        const availableHeight = boundaryBounds.bottom - anchorBounds.bottom;
+        const drawerHeight = Math.min(drawerSize.height, availableHeight);
+        
         position.maskBounds = {
           top: anchorBounds.bottom,
           left: boundaryBounds.left,
           width: boundaryBounds.width,
-          height: boundaryBounds.bottom - anchorBounds.bottom
+          height: availableHeight  // 遮罩覆盖整个下方区域
         };
+        
+        // 抽屉使用固定尺寸
+        position.width = boundaryBounds.width;
+        position.height = drawerHeight;  // 使用固定高度
+        position.left = boundaryBounds.left;
       }
       break;
       
@@ -184,12 +232,22 @@ export function calculateAnchorPosition(
       
       // 设置遮罩范围（左侧区域）
       if (config.maskPartial) {
+        // 抽屉使用固定宽度，不铺满到屏幕左边缘
+        const availableWidth = anchorBounds.left - boundaryBounds.left;
+        const drawerWidth = Math.min(drawerSize.width, availableWidth);
+        
         position.maskBounds = {
           top: boundaryBounds.top,
           left: boundaryBounds.left,
-          width: anchorBounds.left - boundaryBounds.left,
+          width: availableWidth,  // 遮罩覆盖整个左侧区域
           height: boundaryBounds.height
         };
+        
+        // 抽屉使用固定尺寸，从按钮左侧向左定位
+        position.width = drawerWidth;
+        position.height = boundaryBounds.height;
+        position.left = anchorBounds.left - drawerWidth;
+        position.top = boundaryBounds.top;
       }
       break;
       
@@ -203,20 +261,31 @@ export function calculateAnchorPosition(
       
       // 设置遮罩范围（右侧区域）
       if (config.maskPartial) {
+        // 抽屉使用固定宽度，不铺满到屏幕右边缘
+        const availableWidth = boundaryBounds.right - anchorBounds.right;
+        const drawerWidth = Math.min(drawerSize.width, availableWidth);
+        
         position.maskBounds = {
           top: boundaryBounds.top,
           left: anchorBounds.right,
-          width: boundaryBounds.right - anchorBounds.right,
+          width: availableWidth,  // 遮罩覆盖整个右侧区域
           height: boundaryBounds.height
         };
+        
+        // 抽屉使用固定尺寸
+        position.width = drawerWidth;
+        position.height = boundaryBounds.height;
+        position.left = anchorBounds.right;
+        position.top = boundaryBounds.top;
       }
       break;
   }
   
   // 自动翻转位置（如果启用）
-  if (config.flip) {
+  if (config.flip && !_skipFlip) {
     position = tryFlipPosition(
       position,
+      anchorElement,
       anchorBounds,
       boundaryBounds,
       drawerSize,
@@ -295,6 +364,7 @@ function calculateVerticalAlign(
  */
 function tryFlipPosition(
   position: AnchorPosition,
+  anchorElement: HTMLElement,
   anchorBounds: ElementBounds,
   boundaryBounds: ElementBounds,
   drawerSize: { width: number; height: number },
@@ -334,11 +404,13 @@ function tryFlipPosition(
   
   // 如果需要翻转，重新计算位置
   if (shouldFlip) {
-    const flippedConfig = { ...config, placement: flippedPlacement, flip: false };
+    const flippedConfig = { ...config, placement: flippedPlacement };
+    // 使用原始的 anchorElement，并设置 _skipFlip 为 true 防止递归翻转
     return calculateAnchorPosition(
-      document.querySelector(`[data-anchor-id="${anchorBounds.centerX}-${anchorBounds.centerY}"]`) as HTMLElement || anchorBounds as any,
+      anchorElement,
       drawerSize,
-      flippedConfig
+      flippedConfig,
+      true  // 跳过进一步的翻转检查
     );
   }
   
@@ -442,9 +514,10 @@ export function createPartialMask(
     left: ${bounds.left}px;
     width: ${bounds.width}px;
     height: ${bounds.height}px;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.45);
     pointer-events: auto;
-    z-index: 999;
+    z-index: 998;
+    transition: opacity 0.3s ease;
   `;
   return mask;
 }

@@ -249,7 +249,7 @@ export class PreloadManager {
       return this.loadingPromises.get(key)!
     }
 
-    const promise = this.executePreload(locale, namespace, priority)
+    const promise = this.executePreload(locale, priority, namespace)
     this.loadingPromises.set(key, promise)
 
     try {
@@ -264,8 +264,8 @@ export class PreloadManager {
    */
   private async executePreload(
     locale: string,
-    namespace?: string,
-    priority: number
+    priority: number,
+    namespace?: string
   ): Promise<void> {
     const key = this.generateKey(locale, namespace)
     const item = this.preloadQueue.get(key)
@@ -282,7 +282,7 @@ export class PreloadManager {
         setTimeout(() => reject(new Error('Preload timeout')), this.config.timeout)
       })
 
-      const loadPromise = namespace 
+      const loadPromise = namespace && this.loader.loadNamespace
         ? this.loader.loadNamespace(locale, namespace)
         : this.loader.load(locale)
 

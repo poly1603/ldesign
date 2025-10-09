@@ -9,8 +9,10 @@ import type {
   SizeManagerOptions,
   SizeMode,
 } from '../types'
+import { globalConfigCache, globalCSSVariableCache } from './cache-manager'
 import { CSSVariableGenerator } from './css-generator'
 import { CSSInjector } from './css-injector'
+import { globalPerformanceMonitor } from './performance-monitor'
 import { getSizeConfig } from './presets'
 import { SizeStorageManager } from './storage-manager'
 
@@ -71,26 +73,28 @@ export class SizeManagerImpl implements SizeManager {
   }
 
   /**
-   * 设置尺寸模式
+   * 设置尺寸模式（带性能监控）
    * @param mode - 要设置的尺寸模式
    * @throws {Error} 当传入无效的尺寸模式时抛出错误
    */
   async setMode(mode: SizeMode): Promise<void> {
-    // 输入验证
-    if (!mode || typeof mode !== 'string') {
-      throw new Error('Invalid size mode: mode must be a non-empty string')
-    }
-
-    const validModes: SizeMode[] = ['small', 'medium', 'large', 'extra-large']
-    if (!validModes.includes(mode)) {
-      throw new Error(`Invalid size mode: ${mode}. Valid modes are: ${validModes.join(', ')}`)
-    }
-
-    if (mode === this.currentMode) {
-      return
-    }
+    const endMeasure = globalPerformanceMonitor.startMeasure('mode-switch', { from: this.currentMode, to: mode })
 
     try {
+      // 输入验证
+      if (!mode || typeof mode !== 'string') {
+        throw new Error('Invalid size mode: mode must be a non-empty string')
+      }
+
+      const validModes: SizeMode[] = ['small', 'medium', 'large', 'extra-large']
+      if (!validModes.includes(mode)) {
+        throw new Error(`Invalid size mode: ${mode}. Valid modes are: ${validModes.join(', ')}`)
+      }
+
+      if (mode === this.currentMode) {
+        return
+      }
+
       const previousMode = this.currentMode
       this.currentMode = mode
 
@@ -116,33 +120,61 @@ export class SizeManagerImpl implements SizeManager {
     }
     catch (error) {
       // 如果出错，恢复之前的模式
-      this.currentMode = this.currentMode
       throw new Error(`Failed to set size mode: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+    finally {
+      endMeasure()
     }
   }
 
   /**
-   * 获取尺寸配置
+   * 获取尺寸配置（带缓存）
    */
   getConfig(mode?: SizeMode): SizeConfig {
     const targetMode = mode || this.currentMode
-    return getSizeConfig(targetMode)
+
+    // 尝试从缓存获取
+    const cached = globalConfigCache.get(targetMode)
+    if (cached) {
+      return cached
+    }
+
+    // 获取配置并缓存
+    const config = getSizeConfig(targetMode)
+    globalConfigCache.set(targetMode, config)
+    return config
   }
 
   /**
-   * 生成CSS变量
+   * 生成CSS变量（带缓存）
    */
   generateCSSVariables(mode?: SizeMode): Record<string, string> {
-    const config = this.getConfig(mode)
-    return this.cssGenerator.generateVariables(config)
+    const targetMode = mode || this.currentMode
+
+    // 尝试从缓存获取
+    const cached = globalCSSVariableCache.get(targetMode)
+    if (cached) {
+      return cached
+    }
+
+    // 生成变量并缓存
+    const endMeasure = globalPerformanceMonitor.startMeasure('css-injection', { mode: targetMode })
+    const config = this.getConfig(targetMode)
+    const variables = this.cssGenerator.generateVariables(config)
+    globalCSSVariableCache.set(targetMode, variables)
+    endMeasure()
+
+    return variables
   }
 
   /**
-   * 注入CSS变量
+   * 注入CSS变量（带性能监控）
    */
   injectCSS(mode?: SizeMode): void {
+    const endMeasure = globalPerformanceMonitor.startMeasure('css-injection', { mode })
     const variables = this.generateCSSVariables(mode)
     this.cssInjector.injectVariables(variables)
+    endMeasure()
   }
 
   /**

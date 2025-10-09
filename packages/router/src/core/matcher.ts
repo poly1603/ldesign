@@ -500,7 +500,7 @@ export class RouteMatcher {
   private updateAverageMatchTime(time: number): void {
     this.stats.averageMatchTime
       = (this.stats.averageMatchTime * (this.stats.totalMatches - 1) + time)
-      / this.stats.totalMatches
+        / this.stats.totalMatches
   }
 
   /**

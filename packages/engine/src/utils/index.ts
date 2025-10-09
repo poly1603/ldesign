@@ -181,12 +181,17 @@ export function deepMerge<T extends Record<string, unknown>>(
 }
 
 /**
- * 防抖函数
+ * 防抖函数（增强版）
  * ⏱️ 延迟执行函数，如果在延迟期间再次调用则重新计时
+ *
+ * 增强功能：
+ * - 支持取消防抖
+ * - 更好的类型推断
+ * - 内存优化
  *
  * @param func 要防抖的函数
  * @param wait 延迟时间（毫秒）
- * @returns 防抖后的函数
+ * @returns 防抖后的函数（带 cancel 方法）
  *
  * @example
  * ```typescript
@@ -194,46 +199,97 @@ export function deepMerge<T extends Record<string, unknown>>(
  *
  * // 用户输入时
  * input.addEventListener('input', debouncedSearch)
+ *
+ * // 取消防抖
+ * debouncedSearch.cancel()
  * ```
  */
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | number
+): ((...args: Parameters<T>) => void) & { cancel: () => void } {
+  let timeout: NodeJS.Timeout | null = null
 
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => func(...args), wait)
+  const debouncedFn = (...args: Parameters<T>): void => {
+    const later = () => {
+      timeout = null
+      func(...args)
+    }
+
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+    timeout = setTimeout(later, wait)
   }
+
+  debouncedFn.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout)
+      timeout = null
+    }
+  }
+
+  return debouncedFn
 }
 
 /**
- * 节流函数
+ * 节流函数（增强版）
  * 🚦 限制函数执行频率，确保在指定时间内最多执行一次
+ *
+ * 增强功能：
+ * - 支持 leading 和 trailing 选项
+ * - 更精确的时间控制
+ * - 内存优化
  *
  * @param func 要节流的函数
  * @param wait 节流时间间隔（毫秒）
+ * @param options 配置选项
+ * @param options.leading 是否在开始时立即执行（默认 true）
+ * @param options.trailing 是否在结束时执行（默认 true）
  * @returns 节流后的函数
  *
  * @example
  * ```typescript
- * const throttledScroll = throttle(handleScroll, 100)
+ * const throttledScroll = throttle(handleScroll, 100, { leading: true, trailing: false })
  *
  * window.addEventListener('scroll', throttledScroll)
  * ```
  */
 export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
-  wait: number
+  wait: number,
+  options: { leading?: boolean; trailing?: boolean } = {}
 ): (...args: Parameters<T>) => void {
-  let lastTime = 0
+  let inThrottle = false
+  let lastArgs: Parameters<T> | null = null
+  let timeout: NodeJS.Timeout | null = null
 
-  return (...args: Parameters<T>) => {
-    const now = Date.now()
-    if (now - lastTime >= wait) {
-      lastTime = now
-      func(...args)
+  const { leading = true, trailing = true } = options
+
+  return (...args: Parameters<T>): void => {
+    if (!inThrottle) {
+      if (leading) {
+        func(...args)
+      } else if (trailing) {
+        lastArgs = args
+      }
+
+      inThrottle = true
+
+      if (timeout) {
+        clearTimeout(timeout)
+      }
+
+      timeout = setTimeout(() => {
+        inThrottle = false
+        if (trailing && lastArgs) {
+          func(...lastArgs)
+          lastArgs = null
+        }
+        timeout = null
+      }, wait)
+    } else if (trailing) {
+      lastArgs = args
     }
   }
 }

@@ -44,7 +44,7 @@ interface BatchRequest {
 /**
  * 批量结果接口
  */
-interface BatchResult {
+export interface BatchResult {
   success: Record<string, string>
   failed: Record<string, Error>
   duration: number
@@ -55,7 +55,7 @@ interface BatchResult {
 /**
  * 批量统计接口
  */
-interface BatchStats {
+export interface BatchStats {
   totalRequests: number
   totalBatches: number
   averageBatchSize: number

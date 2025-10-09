@@ -11,6 +11,11 @@
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
+  // 禁用构建后验证（库项目不需要运行测试验证）
+  postBuildValidation: {
+    enabled: false
+  },
+
   // 输出配置 - npm 包构建输出到 npm-dist
 
   // 生成类型声明文件

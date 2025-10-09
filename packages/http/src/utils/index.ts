@@ -352,3 +352,9 @@ export const ErrorClassifier = {
     return messages[type as keyof typeof messages] || messages.unknown
   },
 } as const
+
+// 导出新增的工具模块
+export * from './batch'
+export * from './offline'
+export * from './signature'
+export * from './memory'

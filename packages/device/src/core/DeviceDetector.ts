@@ -74,7 +74,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   private readonly errorCooldown = 5000 // 5秒错误冷却时间
 
   // 性能监控
-  private performanceMetrics = {
+  private detectionMetrics = {
     detectionCount: 0,
     averageDetectionTime: 0,
     lastDetectionDuration: 0,
@@ -175,10 +175,10 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   }
 
   /**
-   * 获取性能指标
+   * 获取检测性能指标
    */
-  getPerformanceMetrics() {
-    return { ...this.performanceMetrics }
+  getDetectionMetrics() {
+    return { ...this.detectionMetrics }
   }
 
   /**
@@ -338,13 +338,13 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
    * 更新性能指标
    */
   private updatePerformanceMetrics(detectionTime: number): void {
-    this.performanceMetrics.detectionCount++
-    this.performanceMetrics.lastDetectionDuration = detectionTime
+    this.detectionMetrics.detectionCount++
+    this.detectionMetrics.lastDetectionDuration = detectionTime
 
     // 计算平均检测时间（使用移动平均）
     const alpha = 0.1 // 平滑因子
-    this.performanceMetrics.averageDetectionTime
-      = this.performanceMetrics.averageDetectionTime * (1 - alpha) + detectionTime * alpha
+    this.detectionMetrics.averageDetectionTime
+      = this.detectionMetrics.averageDetectionTime * (1 - alpha) + detectionTime * alpha
   }
 
   /**

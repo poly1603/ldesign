@@ -8,6 +8,9 @@ export { AdvancedCacheManager } from './cache/advanced-cache'
 // 缓存管理
 export { CacheManagerImpl, createCacheManager } from './cache/cache-manager'
 
+// DevTools 集成
+export { createDevToolsIntegration, DevToolsIntegration } from './devtools'
+
 // 错误管理
 export { createErrorManager, errorHandlers } from './errors/error-manager'
 
@@ -41,3 +44,5 @@ export type {
   SecurityManager,
   StateManager,
 } from './types'
+
+export type { DevToolsOptions, DevToolsTimelineEvent, DevToolsInspectorState } from './devtools'

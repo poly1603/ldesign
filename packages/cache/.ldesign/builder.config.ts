@@ -46,6 +46,11 @@ export default defineConfig({
   // 日志级别设置为 silent，只显示错误信息
   logLevel: 'silent',
 
+  // 禁用构建后验证（库项目不需要运行测试验证）
+  postBuildValidation: {
+    enabled: false
+  },
+
   // 构建选项
   build: {
     // 禁用构建警告

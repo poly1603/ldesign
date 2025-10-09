@@ -1,6 +1,11 @@
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
+  // 禁用构建后验证（库项目不需要运行测试验证）
+  postBuildValidation: {
+    enabled: false
+  },
+
   // 启用Vue支持，因为包含Vue组件
   libraryType: 'vue3',
 

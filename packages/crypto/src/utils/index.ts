@@ -344,3 +344,8 @@ export const CONSTANTS = {
     DEFAULT: 'hex' as const,
   },
 } as const
+
+// 导出新增实用工具
+export * from './compression'
+export * from './key-derivation'
+export * from './secure-storage'

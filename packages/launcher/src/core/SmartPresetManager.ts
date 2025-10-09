@@ -74,9 +74,9 @@ export class SmartPresetManager {
           }
         },
         resolve: {
-          alias: {
-            '@': './src'
-          }
+          alias: [
+            { find: '@', replacement: './src' }
+          ]
         },
         server: {
           port: 3000,
@@ -110,9 +110,9 @@ export class SmartPresetManager {
           }
         },
         resolve: {
-          alias: {
-            '@': './src'
-          }
+          alias: [
+            { find: '@', replacement: './src' }
+          ]
         },
         server: {
           port: 3000,

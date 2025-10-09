@@ -34,7 +34,7 @@ import {
 } from '../utils/pluralization'
 import { TranslationEngine, type TranslationEngineOptions } from './translation-engine'
 import { CacheManager } from './cache-manager'
-import { ErrorHandler } from './error-handler'
+import { ErrorHandler, ErrorHandlingStrategy } from './error-handler'
 import { EnhancedPerformanceManager } from './performance-manager'
 import { MemoryManager } from './memory-manager'
 import { PreloadManager } from './preload-manager'
@@ -565,17 +565,19 @@ export class I18n implements I18nInstance {
 
     // 初始化缓存管理器
     this.cacheManager = new CacheManager({
+      enabled: this.options.cache?.enabled ?? true,
       maxSize: this.options.cache?.maxSize || 1000,
-      ttl: this.options.cache?.ttl || 300000, // 5分钟
-      enableStats: process?.env?.NODE_ENV === 'development'
+      ttl: this.options.cache?.ttl,
+      defaultTTL: this.options.cache?.defaultTTL || 300000, // 5分钟
+      enableTTL: this.options.cache?.enableTTL ?? true
     })
 
     // 初始化错误处理器
     this.errorHandler = new ErrorHandler({
-      strategy: 'FALLBACK',
-      maxRetries: 3,
-      retryDelay: 1000,
-      enableLogging: process?.env?.NODE_ENV === 'development'
+      defaultStrategy: ErrorHandlingStrategy.FALLBACK,
+      strategies: new Map(),
+      enableRecovery: true,
+      maxRetries: 3
     })
 
     // 初始化增强性能管理器

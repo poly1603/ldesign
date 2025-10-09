@@ -61,7 +61,6 @@
     "src/**/*",
     "__tests__/**/*",
     "tests/**/*",
-    "examples/**/*",
     "scripts/**/*"
   ],
   "exclude": [
@@ -73,6 +72,7 @@
     "types",
     "coverage",
     "docs/.vitepress/cache",
+    "examples",
     "**/*.d.ts",
     "**/__tests__/**/*.js",
     "**/*.test.js",

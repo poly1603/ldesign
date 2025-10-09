@@ -6,53 +6,70 @@ import type { SizeMode } from '../types'
 import { getSizeConfig } from '../core/presets'
 
 /**
+ * 所有可用的尺寸模式常量
+ */
+const SIZE_MODES: readonly SizeMode[] = ['small', 'medium', 'large', 'extra-large'] as const
+
+/**
+ * 尺寸模式显示名称映射
+ */
+const SIZE_MODE_DISPLAY_NAMES: Record<SizeMode, string> = {
+  'small': '小',
+  'medium': '中',
+  'large': '大',
+  'extra-large': '超大',
+}
+
+/**
  * 检查是否为有效的尺寸模式
+ * @param mode - 要检查的模式字符串
+ * @returns 如果是有效的尺寸模式则返回 true
  */
 export function isValidSizeMode(mode: string): mode is SizeMode {
-  return ['small', 'medium', 'large', 'extra-large'].includes(mode)
+  return SIZE_MODES.includes(mode as SizeMode)
 }
 
 /**
  * 获取下一个尺寸模式
+ * @param currentMode - 当前尺寸模式
+ * @returns 下一个尺寸模式
  */
 export function getNextSizeMode(currentMode: SizeMode): SizeMode {
-  const modes: SizeMode[] = ['small', 'medium', 'large', 'extra-large']
-  const currentIndex = modes.indexOf(currentMode)
-  const nextIndex = (currentIndex + 1) % modes.length
-  return modes[nextIndex]
+  const currentIndex = SIZE_MODES.indexOf(currentMode)
+  const nextIndex = (currentIndex + 1) % SIZE_MODES.length
+  return SIZE_MODES[nextIndex]
 }
 
 /**
  * 获取上一个尺寸模式
+ * @param currentMode - 当前尺寸模式
+ * @returns 上一个尺寸模式
  */
 export function getPreviousSizeMode(currentMode: SizeMode): SizeMode {
-  const modes: SizeMode[] = ['small', 'medium', 'large', 'extra-large']
-  const currentIndex = modes.indexOf(currentMode)
-  const previousIndex = currentIndex === 0 ? modes.length - 1 : currentIndex - 1
-  return modes[previousIndex]
+  const currentIndex = SIZE_MODES.indexOf(currentMode)
+  const previousIndex = currentIndex === 0 ? SIZE_MODES.length - 1 : currentIndex - 1
+  return SIZE_MODES[previousIndex]
 }
 
 /**
  * 比较两个尺寸模式的大小
+ * @param mode1 - 第一个尺寸模式
+ * @param mode2 - 第二个尺寸模式
+ * @returns 负数表示 mode1 < mode2，0 表示相等，正数表示 mode1 > mode2
  */
 export function compareSizeModes(mode1: SizeMode, mode2: SizeMode): number {
-  const modes: SizeMode[] = ['small', 'medium', 'large', 'extra-large']
-  const index1 = modes.indexOf(mode1)
-  const index2 = modes.indexOf(mode2)
+  const index1 = SIZE_MODES.indexOf(mode1)
+  const index2 = SIZE_MODES.indexOf(mode2)
   return index1 - index2
 }
 
 /**
  * 获取尺寸模式的显示名称
+ * @param mode - 尺寸模式
+ * @returns 显示名称
  */
 export function getSizeModeDisplayName(mode: SizeMode): string {
-  const displayNames: Record<SizeMode, string> = {
-    'small': '小',
-    'medium': '中',
-    'large': '大',
-    'extra-large': '超大',
-  }
-  return displayNames[mode]
+  return SIZE_MODE_DISPLAY_NAMES[mode]
 }
 
 /**

@@ -72,7 +72,7 @@ describe('CacheAnalyzer', () => {
     it('应该能够处理缓存事件', () => {
       // 模拟事件处理
       const getHandler = mockCacheManager.on.mock.calls.find(
-        call => call[0] === 'get'
+        (call: any[]) => call[0] === 'get'
       )?.[1]
 
       if (getHandler) {
@@ -112,7 +112,7 @@ describe('CacheAnalyzer', () => {
     it('应该能够记录操作性能', () => {
       // 模拟多个操作
       const getHandler = mockCacheManager.on.mock.calls.find(
-        call => call[0] === 'get'
+        (call: any[]) => call[0] === 'get'
       )?.[1]
 
       if (getHandler) {
@@ -140,7 +140,7 @@ describe('CacheAnalyzer', () => {
   describe('访问模式分析', () => {
     it('应该跟踪访问模式', () => {
       const getHandler = mockCacheManager.on.mock.calls.find(
-        call => call[0] === 'get'
+        (call: any[]) => call[0] === 'get'
       )?.[1]
 
       if (getHandler) {
@@ -161,7 +161,7 @@ describe('CacheAnalyzer', () => {
 
     it('应该区分命中和未命中', () => {
       const getHandler = mockCacheManager.on.mock.calls.find(
-        call => call[0] === 'get'
+        (call: any[]) => call[0] === 'get'
       )?.[1]
 
       if (getHandler) {
@@ -191,7 +191,7 @@ describe('CacheAnalyzer', () => {
   describe('错误处理', () => {
     it('应该记录错误信息', () => {
       const errorHandler = mockCacheManager.on.mock.calls.find(
-        call => call[0] === 'error'
+        (call: any[]) => call[0] === 'error'
       )?.[1]
 
       if (errorHandler) {

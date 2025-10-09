@@ -137,63 +137,83 @@ const handleSelect = (value: VersionBumpType) => {
 
 <style lang="less" scoped>
 .version-selector {
-  background: var(--ldesign-bg-color);
-  border: 1px solid var(--ldesign-border-color);
-  border-radius: var(--ls-radius-md);
-  padding: var(--ls-spacing-lg);
+  // 移除外层边框和背景，使其融入父容器
 }
 
 .selector-header {
-  margin-bottom: var(--ls-spacing-lg);
+  margin-bottom: var(--ls-spacing-base);
 
   h4 {
-    font-size: var(--ls-font-size-md);
-    color: var(--ldesign-text-color-primary);
-    margin: 0 0 var(--ls-spacing-sm) 0;
+    font-size: var(--ls-font-size-sm);
+    color: var(--ldesign-text-color-secondary);
+    margin: 0 0 8px 0;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .current-version {
-    display: flex;
-    align-items: center;
-    gap: var(--ls-spacing-xs);
-    font-size: var(--ls-font-size-sm);
-
-    .label {
-      color: var(--ldesign-text-color-secondary);
-    }
-
-    .version {
-      color: var(--ldesign-primary-color);
-      font-weight: 600;
-      font-family: 'Consolas', 'Monaco', monospace;
-    }
+    display: none; // 隐藏，因为已经在上面显示了
   }
 }
 
 .version-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ls-spacing-md);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--ls-spacing-sm);
 }
 
 .version-option {
+  position: relative;
   border: 2px solid var(--ldesign-border-color);
-  border-radius: var(--ls-radius-md);
-  padding: var(--ls-spacing-md);
+  border-radius: var(--ls-border-radius-lg);
+  padding: var(--ls-padding-base);
   cursor: pointer;
-  transition: all 0.2s;
-  background: var(--ldesign-bg-color-secondary);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--ldesign-bg-color-component);
+  overflow: hidden;
+
+  // 添加微妙的渐变背景
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 0%, var(--ldesign-brand-bg) 100%);
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+  }
 
   &:hover:not(.disabled) {
-    border-color: var(--ldesign-primary-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-color: var(--ldesign-brand-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    &:before {
+      opacity: 0.5;
+    }
   }
 
   &.active {
-    border-color: var(--ldesign-primary-color);
-    background: var(--ldesign-primary-color-light);
-    box-shadow: 0 2px 12px rgba(var(--ldesign-primary-color-rgb), 0.15);
+    border-color: var(--ldesign-brand-color);
+    background: var(--ldesign-brand-bg);
+    box-shadow: 0 4px 16px rgba(94, 42, 167, 0.15);
+
+    &:before {
+      opacity: 1;
+    }
+
+    .option-radio .radio-circle {
+      border-color: var(--ldesign-brand-color);
+      background: var(--ldesign-brand-color);
+    }
+
+    .radio-dot {
+      background: white;
+    }
   }
 
   &.disabled {
@@ -204,13 +224,17 @@ const handleSelect = (value: VersionBumpType) => {
 
 .option-header {
   display: flex;
-  gap: var(--ls-spacing-md);
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
 }
 
 .option-radio {
-  flex-shrink: 0;
-  padding-top: 2px;
+  position: absolute;
+  top: var(--ls-padding-base);
+  right: var(--ls-padding-base);
+  z-index: 2;
 
   .radio-circle {
     width: 20px;
@@ -220,70 +244,95 @@ const handleSelect = (value: VersionBumpType) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--ldesign-bg-color-container);
 
     &.checked {
-      border-color: var(--ldesign-primary-color);
-      background: var(--ldesign-bg-color);
+      border-color: var(--ldesign-brand-color);
+      background: var(--ldesign-brand-color);
+      transform: scale(1.1);
     }
 
     .radio-dot {
-      width: 10px;
-      height: 10px;
-      background: var(--ldesign-primary-color);
+      width: 8px;
+      height: 8px;
+      background: white;
       border-radius: 50%;
+      transform: scale(0);
+      animation: radioCheckAnimation 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
+  }
+}
+
+@keyframes radioCheckAnimation {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 
 .option-content {
   flex: 1;
+  padding-right: 32px; // 给右上角的单选按钮预留空间
 }
 
 .option-title {
   display: flex;
-  align-items: center;
-  gap: var(--ls-spacing-sm);
-  margin-bottom: var(--ls-spacing-xs);
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
 
   .type-badge {
     display: inline-flex;
-    padding: 2px 8px;
-    border-radius: var(--ls-radius-sm);
+    align-self: flex-start;
+    padding: 4px 10px;
+    border-radius: var(--ls-border-radius-base);
     font-size: var(--ls-font-size-xs);
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
     
     &.badge-none {
-      background: var(--ldesign-gray-2);
-      color: var(--ldesign-gray-8);
+      background: linear-gradient(135deg, #e0e0e0, #bdbdbd);
+      color: #424242;
     }
 
     &.badge-patch {
-      background: #e3f2fd;
-      color: #1976d2;
+      background: linear-gradient(135deg, #bbdefb, #64b5f6);
+      color: #0d47a1;
     }
 
     &.badge-minor {
-      background: #f3e5f5;
-      color: #7b1fa2;
+      background: linear-gradient(135deg, #e1bee7, #ba68c8);
+      color: #4a148c;
     }
 
     &.badge-major {
-      background: #ffebee;
-      color: #c62828;
+      background: linear-gradient(135deg, #ffcdd2, #ef5350);
+      color: #b71c1c;
     }
   }
 
   .version-preview {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     color: var(--ldesign-text-color-secondary);
     font-size: var(--ls-font-size-sm);
 
+    svg {
+      color: var(--ldesign-brand-color);
+    }
+
     .new-version {
-      font-weight: 600;
-      color: var(--ldesign-primary-color);
+      font-weight: 700;
+      font-size: var(--ls-font-size-base);
+      color: var(--ldesign-brand-color);
       font-family: 'Consolas', 'Monaco', monospace;
     }
   }
@@ -291,46 +340,56 @@ const handleSelect = (value: VersionBumpType) => {
 
 .option-description {
   color: var(--ldesign-text-color-secondary);
-  font-size: var(--ls-font-size-sm);
-  line-height: 1.5;
+  font-size: var(--ls-font-size-xs);
+  line-height: 1.6;
+  margin-bottom: 0;
 }
 
 .option-examples {
-  margin-top: var(--ls-spacing-sm);
-  padding-top: var(--ls-spacing-sm);
-  border-top: 1px solid var(--ldesign-border-color);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--ldesign-border-color);
   display: flex;
   flex-direction: column;
-  gap: var(--ls-spacing-xs);
+  gap: 4px;
 
   .example-item {
     display: flex;
     align-items: center;
 
     code {
-      font-size: var(--ls-font-size-xs);
-      color: var(--ldesign-text-color-tertiary);
-      background: var(--ldesign-bg-color);
-      padding: 2px 6px;
-      border-radius: var(--ls-radius-xs);
+      font-size: 10px;
+      color: var(--ldesign-text-color-secondary);
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
       font-family: 'Consolas', 'Monaco', monospace;
+      font-weight: 500;
     }
   }
 }
 
 .version-note {
   display: flex;
-  align-items: center;
-  gap: var(--ls-spacing-xs);
-  margin-top: var(--ls-spacing-md);
-  padding: var(--ls-spacing-sm);
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: var(--ls-spacing-base);
+  padding: 10px 12px;
   background: var(--ldesign-info-bg);
-  border-radius: var(--ls-radius-sm);
-  color: var(--ldesign-info-color);
-  font-size: var(--ls-font-size-xs);
+  border-left: 3px solid var(--ldesign-brand-color);
+  border-radius: var(--ls-border-radius-base);
+  color: var(--ldesign-text-color-secondary);
+  font-size: 12px;
+  line-height: 1.5;
 
   svg {
     flex-shrink: 0;
+    color: var(--ldesign-brand-color);
+    margin-top: 2px;
+  }
+
+  span {
+    flex: 1;
   }
 }
 </style>

@@ -3,17 +3,16 @@
  * 展示所有高级功能的集成使用
  */
 
-import { 
-  Router, 
-  RouteCache, 
-  RouteLazyLoader,
-  RoutePrefetcher,
-  RouteRenderer,
+import {
+  createRouter,
+  createWebHistory,
+  CacheManager,
   SmartRouteManager,
   RouteSecurityManager,
   RouterDebugger,
-  RouterVisualDebugger,
-  LogLevel
+  LogLevel,
+  type Router,
+  type RouteRecordRaw
 } from '../src';
 
 // ==================== 1. 初始化路由器 ====================
@@ -390,7 +389,7 @@ securityManager.registerGuards(router);
 
 // ==================== 8. 调试工具 ====================
 
-const debugger = new RouterDebugger({
+const routeDebugger = new RouterDebugger({
   logLevel: process.env.NODE_ENV === 'development' ? LogLevel.DEBUG : LogLevel.ERROR,
   maxEvents: 500,
   consoleEnabled: true,
@@ -400,8 +399,8 @@ const debugger = new RouterDebugger({
 
 // 可视化调试面板（仅开发环境）
 if (process.env.NODE_ENV === 'development') {
-  const visualDebugger = new RouterVisualDebugger(debugger, 'debug-panel');
-  
+  const visualDebugger = new RouterVisualDebugger(routeDebugger, 'debug-panel');
+
   // 添加调试面板切换快捷键
   document.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.shiftKey && e.key === 'D') {
@@ -415,13 +414,13 @@ if (process.env.NODE_ENV === 'development') {
 
 // 集成调试器到路由器
 router.beforeEach((to, from, next) => {
-  debugger.logNavigation(from.path, to.path, to.params);
+  routeDebugger.logNavigation(from.path, to.path, to.params);
   next();
 });
 
 router.afterEach((to, from) => {
-  const navigationTime = debugger.endPerformanceMark(`navigation:${to.path}`);
-  debugger.logPerformance(to.path, {
+  const navigationTime = routeDebugger.endPerformanceMark(`navigation:${to.path}`);
+  routeDebugger.logPerformance(to.path, {
     navigationTime,
     renderTime: 0, // 将在组件中更新
     totalTime: navigationTime,
@@ -432,7 +431,7 @@ router.afterEach((to, from) => {
 });
 
 router.onError((error, to, from) => {
-  debugger.logError(error, to, { from: from.path });
+  routeDebugger.logError(error, to, { from: from.path });
 });
 
 // ==================== 9. 高级功能示例 ====================
@@ -511,7 +510,7 @@ function setupPerformanceMonitoring() {
   const observer = new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
       if (entry.entryType === 'navigation' || entry.entryType === 'resource') {
-        debugger.logPerformance(location.pathname, {
+        routeDebugger.logPerformance(location.pathname, {
           navigationTime: entry.duration,
           renderTime: entry.renderTime || 0,
           totalTime: entry.duration + (entry.renderTime || 0),
@@ -522,7 +521,7 @@ function setupPerformanceMonitoring() {
       }
     }
   });
-  
+
   observer.observe({ entryTypes: ['navigation', 'resource'] });
 }
 
@@ -606,7 +605,7 @@ async function initializeApp() {
     
   } catch (error) {
     console.error('Failed to initialize application:', error);
-    debugger.logError(error as Error, undefined, { phase: 'initialization' });
+    routeDebugger.logError(error as Error, undefined, { phase: 'initialization' });
   }
 }
 
@@ -817,7 +816,7 @@ export const RouterPlugin = {
     // 注入工具
     app.config.globalProperties.$routeCache = cache;
     app.config.globalProperties.$routeSecurity = securityManager;
-    app.config.globalProperties.$routeDebug = debugger;
+    app.config.globalProperties.$routeDebug = routeDebugger;
     
     // 全局组件
     app.component('RouterLink', {

@@ -102,9 +102,7 @@ export {
   globalPerformanceAnalyzer,
   measurePerformance,
   ObjectPool,
-  PerformanceAnalyzer,
-  debounce as performanceDebounce,
-  throttle as performanceThrottle
+  PerformanceAnalyzer
 } from './utils/performance-analyzer'
 
 // 实时性能监控

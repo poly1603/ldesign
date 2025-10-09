@@ -7,7 +7,7 @@
 
 import type { ComputedRef, Ref } from 'vue'
 import type { ColorMode, ThemeConfig } from '../../core/types'
-import { computed, inject, onMounted, ref, watch } from 'vue'
+import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
 
 /**
  * useColorTheme 配置选项

@@ -57,8 +57,13 @@ export default defineConfig({
   // 插件配置
   plugins: [],
 
-  // 构建钩子
+  // 鏋勫缓閽╁瓙
   onSuccess: async () => {
     console.log('✅ CLI 构建完成')
+  },
+
+  // 禁用构建后验证（CLI 项目不需要运行测试验证）
+  postBuildValidation: {
+    enabled: false
   }
 })

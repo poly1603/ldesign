@@ -75,7 +75,7 @@ export interface ValidationOptions {
  * 表单验证翻译组合式API
  */
 export function useI18nValidation(options: ValidationOptions = {}) {
-  const i18n = inject(I18nInjectionKey)
+  const i18n = inject(I18nInjectionKey)!
   if (!i18n) {
     console.warn('useI18nValidation: I18n plugin not found. Make sure to install the i18n plugin.')
     return createFallbackValidation()
@@ -159,7 +159,9 @@ export function useI18nValidation(options: ValidationOptions = {}) {
     
     // 自动生成占位符
     const label = getFieldLabel(fieldName)
-    return i18n.t('common.enter_field', { field: label }, `请输入${label}`)
+    const placeholder = i18n.t('common.enter_field', { field: label })
+    // 如果翻译不存在，使用默认值
+    return placeholder === 'common.enter_field' ? `请输入${label}` : placeholder
   }
 
   /**

@@ -1,10 +1,14 @@
 /**
  * 高级功能模块
- * 提供批量操作、事务支持、状态快照、时间旅行调试等高级功能
+ * 提供批量操作、事务支持、状态快照、时间旅行调试、中间件系统、状态同步等高级功能
+ *
+ * @module AdvancedFeatures
+ * @description 统一的高级功能模块，整合了所有高级特性
  */
 
 import type { StateDefinition, ActionDefinition, GetterDefinition } from '@/types'
 import type { Store } from 'pinia'
+import { readonly, toRaw } from 'vue'
 
 /**
  * 批量操作管理器
@@ -171,10 +175,18 @@ export class TransactionManager<TState extends StateDefinition = StateDefinition
 
 /**
  * 状态快照管理器
- * 支持创建、保存和恢复状态快照
+ * 支持创建、保存、恢复状态快照，支持标签和比较功能
  */
 export class SnapshotManager<TState extends StateDefinition = StateDefinition> {
-  private snapshots: Map<string, { state: TState; metadata: any; timestamp: number }> = new Map()
+  private snapshots: Map<string, {
+    id: string
+    name: string
+    state: TState
+    metadata: any
+    timestamp: number
+    tags?: string[]
+  }> = new Map()
+  private tags = new Map<string, Set<string>>() // tag -> snapshot ids
   private maxSnapshots = 50
   private autoSnapshot = false
   private autoSnapshotInterval: number | null = null
@@ -195,19 +207,35 @@ export class SnapshotManager<TState extends StateDefinition = StateDefinition> {
   /**
    * 创建快照
    */
-  create(name: string, metadata?: any): void {
+  create(name: string, metadata?: any, tags?: string[]): string {
+    const id = this.generateId()
     const snapshot = {
-      state: JSON.parse(JSON.stringify(this.store.$state)),
+      id,
+      name,
+      state: JSON.parse(JSON.stringify(toRaw(this.store.$state))),
       metadata: metadata || {},
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      tags
     }
-    this.snapshots.set(name, snapshot)
+    this.snapshots.set(id, snapshot)
+
+    // 添加标签索引
+    if (tags) {
+      tags.forEach(tag => {
+        if (!this.tags.has(tag)) {
+          this.tags.set(tag, new Set())
+        }
+        this.tags.get(tag)!.add(id)
+      })
+    }
 
     // 限制快照数量
     if (this.snapshots.size > this.maxSnapshots) {
       const oldestKey = Array.from(this.snapshots.keys())[0]
       this.snapshots.delete(oldestKey)
     }
+
+    return id
   }
 
   /**
@@ -291,6 +319,13 @@ export class SnapshotManager<TState extends StateDefinition = StateDefinition> {
     } catch (error) {
       throw new Error('Invalid snapshot data')
     }
+  }
+
+  /**
+   * 生成唯一ID
+   */
+  private generateId(): string {
+    return `snapshot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 }
 
@@ -694,4 +729,174 @@ export function createAdvancedStore<
       return stateValidator.validate(state || (store.$state as TState))
     }
   }
+}
+
+/**
+ * 中间件系统
+ * 提供灵活的中间件机制，支持 action 和 state 拦截
+ */
+export class MiddlewareSystem<S = any> {
+  private middlewares: Middleware<S>[] = []
+
+  /**
+   * 注册中间件
+   */
+  use(middleware: Middleware<S>): void {
+    this.middlewares.push(middleware)
+  }
+
+  /**
+   * 执行中间件链
+   */
+  async execute(context: MiddlewareContext<S>): Promise<void> {
+    let index = 0
+
+    const next = async (): Promise<void> => {
+      if (index >= this.middlewares.length) return
+
+      const middleware = this.middlewares[index++]
+      await middleware(context, next)
+    }
+
+    await next()
+  }
+
+  /**
+   * 创建 action 中间件
+   */
+  static createActionMiddleware<S>(
+    handler: (action: ActionInfo, state: S) => void | Promise<void>
+  ): Middleware<S> {
+    return async (context, next) => {
+      if (context.type === 'action') {
+        await handler(context.action!, context.state)
+      }
+      await next()
+    }
+  }
+
+  /**
+   * 创建 state 中间件
+   */
+  static createStateMiddleware<S>(
+    handler: (oldState: S, newState: S) => void | Promise<void>
+  ): Middleware<S> {
+    return async (context, next) => {
+      if (context.type === 'state') {
+        await handler(context.oldState!, context.state)
+      }
+      await next()
+    }
+  }
+
+  /**
+   * 创建日志中间件
+   */
+  static createLogger<S>(options?: LoggerOptions): Middleware<S> {
+    const { collapsed = false, duration = true, diff = false } = options || {}
+
+    return async (context, next) => {
+      const startTime = performance.now()
+
+      if (collapsed) {
+        console.groupCollapsed(
+          `[${context.type}] ${context.action?.type || 'state change'}`
+        )
+      } else {
+        console.group(
+          `[${context.type}] ${context.action?.type || 'state change'}`
+        )
+      }
+
+      if (context.action) {
+        console.log('Action:', context.action)
+      }
+
+      if (context.oldState) {
+        console.log('Previous State:', context.oldState)
+      }
+
+      await next()
+
+      console.log('Next State:', context.state)
+
+      if (duration) {
+        const endTime = performance.now()
+        console.log(`Duration: ${(endTime - startTime).toFixed(2)}ms`)
+      }
+
+      if (diff && context.oldState) {
+        console.log('Diff:', this.computeDiff(context.oldState, context.state))
+      }
+
+      console.groupEnd()
+    }
+  }
+
+  /**
+   * 创建性能监控中间件
+   */
+  static createPerformanceMonitor<S>(
+    threshold = 16 // 默认16ms（60fps）
+  ): Middleware<S> {
+    return async (context, next) => {
+      const startTime = performance.now()
+
+      await next()
+
+      const duration = performance.now() - startTime
+
+      if (duration > threshold) {
+        console.warn(
+          `Slow ${context.type}: ${duration.toFixed(2)}ms`,
+          context.action || context.state
+        )
+      }
+    }
+  }
+
+  private static computeDiff(oldObj: any, newObj: any): any {
+    const diff: any = {}
+
+    for (const key in newObj) {
+      if (oldObj[key] !== newObj[key]) {
+        diff[key] = {
+          old: oldObj[key],
+          new: newObj[key]
+        }
+      }
+    }
+
+    return diff
+  }
+}
+
+// 类型定义
+export interface ActionInfo {
+  type: string
+  payload?: any
+  meta?: any
+}
+
+export interface Middleware<S = any> {
+  (context: MiddlewareContext<S>, next: () => Promise<void>): Promise<void>
+}
+
+export interface MiddlewareContext<S = any> {
+  type: 'action' | 'state'
+  state: S
+  oldState?: S
+  action?: ActionInfo
+  [key: string]: any
+}
+
+export interface LoggerOptions {
+  collapsed?: boolean
+  duration?: boolean
+  diff?: boolean
+}
+
+// 便捷函数
+export function createMiddlewareSystem<S>() {
+  return new MiddlewareSystem<S>()
 }

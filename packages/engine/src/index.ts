@@ -63,6 +63,10 @@ export type {
 // 常用工具函数
 export { debounce, deepClone, generateId, throttle } from './utils/index'
 
+// DevTools 集成
+export { createDevToolsIntegration, DevToolsIntegration } from './devtools'
+export type { DevToolsOptions, DevToolsTimelineEvent, DevToolsInspectorState } from './devtools'
+
 // Vue集成 - 最常用的Vue功能
 export { useEngine } from './vue/composables/useEngine'
 

@@ -502,3 +502,229 @@ export function generateId(prefix?: string): string {
     + Math.random().toString(36).substring(2, 15)
   return prefix ? `${prefix}-${id}` : id
 }
+
+/**
+ * 批量执行函数（性能优化）
+ *
+ * 使用 requestIdleCallback 在浏览器空闲时批量执行任务
+ *
+ * @param tasks - 要执行的任务数组
+ * @param options - 配置选项
+ */
+export function batchExecute<T>(
+  tasks: Array<() => T>,
+  options: { timeout?: number, chunkSize?: number } = {},
+): Promise<T[]> {
+  const { timeout = 1000, chunkSize = 10 } = options
+  const results: T[] = []
+  let currentIndex = 0
+
+  return new Promise((resolve, reject) => {
+    const executeChunk = (deadline?: IdleDeadline) => {
+      try {
+        const endTime = deadline ? deadline.timeRemaining() : 16
+        const startTime = performance.now()
+
+        while (
+          currentIndex < tasks.length &&
+          (performance.now() - startTime < endTime || currentIndex % chunkSize !== 0)
+        ) {
+          results.push(tasks[currentIndex]())
+          currentIndex++
+        }
+
+        if (currentIndex < tasks.length) {
+          if (typeof requestIdleCallback !== 'undefined') {
+            requestIdleCallback(executeChunk, { timeout })
+          }
+          else {
+            setTimeout(() => executeChunk(), 0)
+          }
+        }
+        else {
+          resolve(results)
+        }
+      }
+      catch (error) {
+        reject(error)
+      }
+    }
+
+    executeChunk()
+  })
+}
+
+/**
+ * 内存优化的对象池
+ */
+export class ObjectPool<T> {
+  private pool: T[] = []
+  private factory: () => T
+  private reset: (obj: T) => void
+  private maxSize: number
+
+  constructor(
+    factory: () => T,
+    reset: (obj: T) => void,
+    maxSize = 100,
+  ) {
+    this.factory = factory
+    this.reset = reset
+    this.maxSize = maxSize
+  }
+
+  /**
+   * 获取对象
+   */
+  acquire(): T {
+    return this.pool.pop() || this.factory()
+  }
+
+  /**
+   * 释放对象
+   */
+  release(obj: T): void {
+    if (this.pool.length < this.maxSize) {
+      this.reset(obj)
+      this.pool.push(obj)
+    }
+  }
+
+  /**
+   * 清空对象池
+   */
+  clear(): void {
+    this.pool = []
+  }
+
+  /**
+   * 获取池大小
+   */
+  size(): number {
+    return this.pool.length
+  }
+}
+
+/**
+ * 高性能的 Memoize 函数
+ *
+ * 使用 WeakMap 避免内存泄漏
+ */
+export function memoize<T extends (...args: any[]) => any>(
+  fn: T,
+  options: {
+    maxSize?: number
+    ttl?: number
+    keyGenerator?: (...args: Parameters<T>) => string
+  } = {},
+): T {
+  const { maxSize = 100, ttl, keyGenerator } = options
+  const cache = new Map<string, { value: ReturnType<T>, timestamp: number }>()
+
+  const memoized = (...args: Parameters<T>): ReturnType<T> => {
+    const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args)
+    const cached = cache.get(key)
+
+    if (cached) {
+      // 检查 TTL
+      if (ttl && Date.now() - cached.timestamp > ttl) {
+        cache.delete(key)
+      }
+      else {
+        return cached.value
+      }
+    }
+
+    const value = fn(...args)
+
+    // 限制缓存大小
+    if (cache.size >= maxSize) {
+      const firstKey = cache.keys().next().value
+      if (firstKey !== undefined) {
+        cache.delete(firstKey)
+      }
+    }
+
+    cache.set(key, { value, timestamp: Date.now() })
+    return value
+  }
+
+  // 添加清除缓存的方法
+  ;(memoized as any).clear = () => cache.clear()
+  ;(memoized as any).delete = (key: string) => cache.delete(key)
+  ;(memoized as any).size = () => cache.size
+
+  return memoized as T
+}
+
+/**
+ * 延迟执行函数
+ */
+export function defer(fn: () => void): void {
+  if (typeof queueMicrotask !== 'undefined') {
+    queueMicrotask(fn)
+  }
+  else if (typeof Promise !== 'undefined') {
+    Promise.resolve().then(fn)
+  }
+  else {
+    setTimeout(fn, 0)
+  }
+}
+
+/**
+ * 安全的 JSON 解析
+ */
+export function safeJSONParse<T = unknown>(
+  json: string,
+  fallback: T,
+): T {
+  try {
+    return JSON.parse(json) as T
+  }
+  catch {
+    return fallback
+  }
+}
+
+/**
+ * 深度克隆对象（性能优化版）
+ */
+export function deepClone<T>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') {
+    return obj
+  }
+
+  if (obj instanceof Date) {
+    return new Date(obj.getTime()) as unknown as T
+  }
+
+  if (obj instanceof Array) {
+    return obj.map(item => deepClone(item)) as unknown as T
+  }
+
+  if (obj instanceof Map) {
+    const cloned = new Map()
+    obj.forEach((value, key) => {
+      cloned.set(key, deepClone(value))
+    })
+    return cloned as unknown as T
+  }
+
+  if (obj instanceof Set) {
+    const cloned = new Set()
+    obj.forEach(value => {
+      cloned.add(deepClone(value))
+    })
+    return cloned as unknown as T
+  }
+
+  const cloned = {} as T
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      cloned[key] = deepClone(obj[key])
+    }
+  }
+
+  return cloned
+}

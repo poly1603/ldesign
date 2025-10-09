@@ -11,7 +11,7 @@
 
 <template>
   <component :is="tag">
-    <template v-if="useSlots && $slots.default">
+    <template v-if="hasDefaultSlot">
       <!-- 使用插槽渲染每个项目 -->
       <template v-for="(item, index) in items" :key="index">
         <slot :item="item" :index="index" :isLast="index === items.length - 1">
@@ -78,7 +78,7 @@ const props = withDefaults(defineProps<{
 /**
  * 注入 I18n 实例
  */
-const i18n = inject(I18nInjectionKey)
+const i18n = inject(I18nInjectionKey)!
 if (!i18n) {
   throw new Error('I18nL 组件必须在安装了 I18n 插件的 Vue 应用中使用')
 }
@@ -87,6 +87,11 @@ if (!i18n) {
  * 获取插槽
  */
 const slots = useSlots()
+
+/**
+ * 是否有默认插槽
+ */
+const hasDefaultSlot = computed(() => !!slots.default)
 
 /**
  * 当前语言
@@ -100,10 +105,14 @@ const currentLocale = computed(() => {
  */
 const listFormatter = computed(() => {
   try {
-    return new Intl.ListFormat(currentLocale.value, {
-      style: props.style,
-      type: props.type
-    })
+    // 检查 Intl.ListFormat 是否可用
+    if (typeof Intl !== 'undefined' && 'ListFormat' in Intl) {
+      return new (Intl as any).ListFormat(currentLocale.value, {
+        style: props.style,
+        type: props.type
+      })
+    }
+    return null
   } catch (error) {
     console.warn('创建列表格式化器失败:', error)
     return null

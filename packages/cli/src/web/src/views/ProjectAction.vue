@@ -66,6 +66,43 @@
     <div class="action-content">
       <!-- 左侧：环境选择和状态 -->
       <div class="left-panel">
+        <!-- 产物摘要卡片（优先显示，仅在打包页面且产物存在时显示） -->
+        <div class="build-summary-card" v-if="actionType === 'build' && buildSummary?.exists">
+          <div class="card-header">
+            <BarChart :size="20" />
+            <h3>产物信息</h3>
+          </div>
+          <div class="build-summary-content">
+            <div class="summary-item">
+              <span class="label">上次打包:</span>
+              <span class="value">{{ formatBuildTime(buildSummary.lastBuildTime) }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">产物目录:</span>
+              <div class="value">
+                <div v-if="buildSummary.distDirectories && buildSummary.distDirectories.length > 0" class="dist-directories">
+                  <span v-for="(dir, index) in buildSummary.distDirectories" :key="index" class="directory-badge">
+                    {{ dir }}
+                  </span>
+                </div>
+                <span v-else class="directory">{{ buildSummary.distPath }}</span>
+              </div>
+            </div>
+            <div class="summary-item">
+              <span class="label">文件数量:</span>
+              <span class="value">{{ buildSummary.totalFiles }} 个</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">总大小:</span>
+              <span class="value size">{{ formatSize(buildSummary.totalSize) }}</span>
+            </div>
+            <div v-if="buildSummary.largestFile" class="summary-item">
+              <span class="label">最大文件:</span>
+              <span class="value file">{{ buildSummary.largestFile.name }} ({{ formatSize(buildSummary.largestFile.size) }})</span>
+            </div>
+          </div>
+        </div>
+
         <!-- 环境选择器 -->
         <div class="environment-card" v-if="showEnvironmentSelector">
           <EnvironmentSelector v-model="selectedEnvironment" />
@@ -116,42 +153,6 @@
           </div>
         </div>
 
-        <!-- 产物摘要卡片（仅在打包页面且产物存在时显示） -->
-        <div class="build-summary-card" v-if="actionType === 'build' && buildSummary?.exists">
-          <div class="card-header">
-            <BarChart :size="20" />
-            <h3>产物信息</h3>
-          </div>
-          <div class="build-summary-content">
-            <div class="summary-item">
-              <span class="label">上次打包:</span>
-              <span class="value">{{ formatBuildTime(buildSummary.lastBuildTime) }}</span>
-            </div>
-            <div class="summary-item">
-              <span class="label">产物目录:</span>
-              <div class="value">
-                <div v-if="buildSummary.distDirectories && buildSummary.distDirectories.length > 0" class="dist-directories">
-                  <span v-for="(dir, index) in buildSummary.distDirectories" :key="index" class="directory-badge">
-                    {{ dir }}
-                  </span>
-                </div>
-                <span v-else class="directory">{{ buildSummary.distPath }}</span>
-              </div>
-            </div>
-            <div class="summary-item">
-              <span class="label">文件数量:</span>
-              <span class="value">{{ buildSummary.totalFiles }} 个</span>
-            </div>
-            <div class="summary-item">
-              <span class="label">总大小:</span>
-              <span class="value size">{{ formatSize(buildSummary.totalSize) }}</span>
-            </div>
-            <div v-if="buildSummary.largestFile" class="summary-item">
-              <span class="label">最大文件:</span>
-              <span class="value file">{{ buildSummary.largestFile.name }} ({{ formatSize(buildSummary.largestFile.size) }})</span>
-            </div>
-          </div>
-        </div>
 
         <!-- 服务地址卡片 -->
         <div v-if="serverUrls.local.length > 0 || serverUrls.network.length > 0" class="server-card">
@@ -1348,40 +1349,52 @@ onUnmounted(() => {
 }
 
 .build-summary-card {
+  // 使用与包信息相同的样式结构
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--ls-spacing-sm);
+    margin-bottom: var(--ls-margin-base);
+    padding-bottom: var(--ls-padding-base);
+    border-bottom: 1px solid var(--ldesign-border-color);
+
+    svg {
+      color: var(--ldesign-brand-color);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: var(--ls-font-size-base);
+      color: var(--ldesign-text-color-primary);
+      font-weight: 600;
+    }
+  }
+
   .build-summary-content {
     display: flex;
     flex-direction: column;
-    gap: var(--ls-spacing-sm);
+    gap: var(--ls-spacing-base);
 
     .summary-item {
       display: flex;
-      align-items: flex-start;
-      gap: var(--ls-spacing-xs);
-      padding: var(--ls-padding-xs) 0;
-
-      &:not(:last-child) {
-        border-bottom: 1px solid var(--ldesign-border-level-1-color);
-      }
+      align-items: center;
+      gap: var(--ls-spacing-sm);
 
       .label {
-        min-width: 70px;
         font-size: var(--ls-font-size-sm);
         color: var(--ldesign-text-color-secondary);
-        font-weight: 500;
-        flex-shrink: 0;
       }
 
       .value {
-        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--ls-spacing-xs);
         font-size: var(--ls-font-size-sm);
         color: var(--ldesign-text-color-primary);
-        word-break: break-word;
-
-        &.directory {
-          font-family: 'Consolas', 'Monaco', monospace;
-          font-size: var(--ls-font-size-xs);
-          color: var(--ldesign-brand-color);
-        }
+        font-weight: 500;
 
         &.size {
           font-family: 'Consolas', 'Monaco', monospace;
@@ -1392,7 +1405,6 @@ onUnmounted(() => {
         &.file {
           font-family: 'Consolas', 'Monaco', monospace;
           font-size: var(--ls-font-size-xs);
-          color: var(--ldesign-text-color-secondary);
         }
 
         .dist-directories {
@@ -1403,10 +1415,10 @@ onUnmounted(() => {
           .directory-badge {
             display: inline-flex;
             align-items: center;
-            padding: 2px 8px;
-            background: linear-gradient(135deg, var(--ldesign-brand-color-focus), var(--ldesign-brand-color-light));
+            padding: 4px 10px;
+            background: linear-gradient(135deg, var(--ldesign-brand-color-light), var(--ldesign-brand-color-focus));
             border: 1px solid var(--ldesign-brand-color);
-            border-radius: var(--ls-border-radius-sm);
+            border-radius: var(--ls-border-radius-base);
             font-family: 'Consolas', 'Monaco', monospace;
             font-size: var(--ls-font-size-xs);
             font-weight: 600;
@@ -1415,14 +1427,14 @@ onUnmounted(() => {
 
             &:hover {
               transform: translateY(-1px);
-              box-shadow: 0 2px 8px rgba(var(--ldesign-brand-color-rgb), 0.2);
+              box-shadow: 0 2px 8px rgba(94, 42, 167, 0.2);
             }
           }
         }
 
         .directory {
           font-family: 'Consolas', 'Monaco', monospace;
-          font-size: var(--ls-font-size-xs);
+          font-size: var(--ls-font-size-sm);
           color: var(--ldesign-brand-color);
         }
       }

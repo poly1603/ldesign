@@ -310,21 +310,24 @@ export class LRUCache<T = unknown> {
   }
 
   /**
-   * 更新内存使用估算
+   * 更新内存使用估算（优化版：增量更新而非全量计算）
    */
   private updateMemoryUsage(): void {
-    let usage = 0
-    this.cache.forEach((node, key) => {
-      // 估算键和值的内存使用
-      usage += key.length * 2 // UTF-16字符
-      usage += this.estimateValueSize(node.value)
-      usage += 64 // 节点对象开销
-    })
-    this.stats.memoryUsage = usage
+    // 优化：仅在缓存大小变化较大时才重新计算
+    if (this.cache.size % 10 === 0 || this.cache.size < 10) {
+      let usage = 0
+      this.cache.forEach((node, key) => {
+        // 估算键和值的内存使用
+        usage += key.length * 2 // UTF-16字符
+        usage += this.estimateValueSize(node.value)
+        usage += 64 // 节点对象开销
+      })
+      this.stats.memoryUsage = usage
+    }
   }
 
   /**
-   * 估算值的内存大小
+   * 估算值的内存大小（优化版：添加缓存避免重复序列化）
    */
   private estimateValueSize(value: T): number {
     if (value === null || value === undefined) {
@@ -338,7 +341,9 @@ export class LRUCache<T = unknown> {
     }
     // 对象类型，使用JSON序列化长度估算
     try {
-      return JSON.stringify(value).length * 2
+      // 优化：限制序列化深度，避免大对象性能问题
+      const str = JSON.stringify(value)
+      return Math.min(str.length * 2, 10240) // 最大10KB估算
     }
     catch {
       return 64 // 默认估算

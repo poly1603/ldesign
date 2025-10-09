@@ -5,7 +5,21 @@
 
 import type { SizeManagerOptions, SizeMode } from '../types'
 import { createSizeManager, globalSizeManager } from '../core/size-manager'
-import { detectPreferredSizeMode, getRecommendedSizeMode } from '../utils'
+import {
+  compareSizeModes,
+  createResponsiveSizeWatcher,
+  detectPreferredSizeMode,
+  getNextSizeMode,
+  getPreviousSizeMode,
+  getRecommendedSizeMode,
+  getSizeModeDisplayName,
+  isValidSizeMode,
+} from '../utils'
+
+/**
+ * 所有可用的尺寸模式常量
+ */
+export const SIZE_MODES: readonly SizeMode[] = ['small', 'medium', 'large', 'extra-large'] as const
 
 /**
  * 快速设置全局尺寸模式
@@ -25,22 +39,16 @@ export function getGlobalSize(): SizeMode {
  * 切换到下一个尺寸模式
  */
 export function nextGlobalSize(): void {
-  const modes: SizeMode[] = ['small', 'medium', 'large']
-  const current = globalSizeManager.getCurrentMode()
-  const currentIndex = modes.indexOf(current)
-  const nextIndex = (currentIndex + 1) % modes.length
-  globalSizeManager.setMode(modes[nextIndex])
+  const next = getNextSizeMode(globalSizeManager.getCurrentMode())
+  globalSizeManager.setMode(next)
 }
 
 /**
  * 切换到上一个尺寸模式
  */
 export function previousGlobalSize(): void {
-  const modes: SizeMode[] = ['small', 'medium', 'large']
-  const current = globalSizeManager.getCurrentMode()
-  const currentIndex = modes.indexOf(current)
-  const previousIndex = (currentIndex - 1 + modes.length) % modes.length
-  globalSizeManager.setMode(modes[previousIndex])
+  const previous = getPreviousSizeMode(globalSizeManager.getCurrentMode())
+  globalSizeManager.setMode(previous)
 }
 
 /**
@@ -86,105 +94,61 @@ export function createSize(options?: SizeManagerOptions) {
 }
 
 /**
- * 批量设置尺寸配置
- * @deprecated 此功能暂未实现，请使用 createSizeManager 创建自定义管理器
- */
-export function configureSizes(_configs: Record<SizeMode, any>): void {
-  throw new Error('configureSizes is not yet implemented. Please use createSizeManager to create custom managers.')
-}
-
-/**
  * 获取所有可用的尺寸模式
  */
-export function getAvailableSizes(): SizeMode[] {
-  return ['small', 'medium', 'large', 'extra-large']
-}
-
-/**
- * 检查是否为有效的尺寸模式
- */
-export function isValidSize(mode: string): mode is SizeMode {
-  return ['small', 'medium', 'large', 'extra-large'].includes(mode as SizeMode)
-}
-
-/**
- * 获取尺寸模式的显示名称
- */
-export function getSizeDisplayName(mode: SizeMode): string {
-  const names: Partial<Record<SizeMode, string>> = {
-    'small': '小',
-    'medium': '中',
-    'large': '大',
-    'extra-large': '超大',
-  }
-  return names[mode] || mode
+export function getAvailableSizes(): readonly SizeMode[] {
+  return SIZE_MODES
 }
 
 /**
  * 获取尺寸模式的描述
  */
 export function getSizeDescription(mode: SizeMode): string {
-  const descriptions: Partial<Record<SizeMode, string>> = {
+  const descriptions: Record<SizeMode, string> = {
     'small': '适合移动设备和小屏幕',
     'medium': '适合桌面和平板设备',
     'large': '适合大屏幕和高分辨率显示器',
     'extra-large': '适合超大屏幕和演示模式',
   }
-  return descriptions[mode] || ''
-}
-
-/**
- * 比较两个尺寸模式的大小
- */
-export function compareSizes(a: SizeMode, b: SizeMode): number {
-  const order: Partial<Record<SizeMode, number>> = {
-    'small': 0,
-    'medium': 1,
-    'large': 2,
-    'extra-large': 3,
-  }
-  return (order[a] ?? 0) - (order[b] ?? 0)
+  return descriptions[mode]
 }
 
 /**
  * 获取比指定模式更大的模式
  */
 export function getLargerSize(mode: SizeMode): SizeMode | null {
-  const modes: SizeMode[] = ['small', 'medium', 'large']
-  const index = modes.indexOf(mode)
-  return index < modes.length - 1 ? modes[index + 1] : null
+  const currentIndex = SIZE_MODES.indexOf(mode)
+  return currentIndex < SIZE_MODES.length - 1 ? SIZE_MODES[currentIndex + 1] : null
 }
 
 /**
  * 获取比指定模式更小的模式
  */
 export function getSmallerSize(mode: SizeMode): SizeMode | null {
-  const modes: SizeMode[] = ['small', 'medium', 'large']
-  const index = modes.indexOf(mode)
-  return index > 0 ? modes[index - 1] : null
+  const currentIndex = SIZE_MODES.indexOf(mode)
+  return currentIndex > 0 ? SIZE_MODES[currentIndex - 1] : null
 }
 
 /**
  * 检查是否为最小尺寸
  */
 export function isSmallestSize(mode: SizeMode): boolean {
-  return mode === 'small'
+  return mode === SIZE_MODES[0]
 }
 
 /**
  * 检查是否为最大尺寸
  */
 export function isLargestSize(mode: SizeMode): boolean {
-  return mode === 'large'
+  return mode === SIZE_MODES[SIZE_MODES.length - 1]
 }
 
 /**
  * 获取尺寸范围内的所有模式
  */
 export function getSizeRange(from: SizeMode, to: SizeMode): SizeMode[] {
-  const modes: SizeMode[] = ['small', 'medium', 'large']
-  const fromIndex = modes.indexOf(from)
-  const toIndex = modes.indexOf(to)
+  const fromIndex = SIZE_MODES.indexOf(from)
+  const toIndex = SIZE_MODES.indexOf(to)
 
   if (fromIndex === -1 || toIndex === -1) {
     return []
@@ -193,7 +157,7 @@ export function getSizeRange(from: SizeMode, to: SizeMode): SizeMode[] {
   const start = Math.min(fromIndex, toIndex)
   const end = Math.max(fromIndex, toIndex)
 
-  return modes.slice(start, end + 1)
+  return SIZE_MODES.slice(start, end + 1) as SizeMode[]
 }
 
 /**
@@ -255,6 +219,31 @@ export function createSizeState(initialMode: SizeMode = 'medium') {
 }
 
 /**
+ * 创建响应式尺寸管理器
+ * 自动根据视口大小调整尺寸模式
+ */
+export function createResponsiveSize(options: {
+  /** 是否自动应用推荐的尺寸 */
+  autoApply?: boolean
+  /** 自定义回调函数 */
+  onChange?: (mode: SizeMode) => void
+} = {}) {
+  const { autoApply = true, onChange } = options
+
+  const unsubscribe = createResponsiveSizeWatcher((recommendedMode) => {
+    if (autoApply) {
+      globalSizeManager.setMode(recommendedMode)
+    }
+    onChange?.(recommendedMode)
+  })
+
+  return {
+    unsubscribe,
+    getCurrentRecommended: getRecommendedSizeMode,
+  }
+}
+
+/**
  * 便捷的尺寸管理对象
  */
 export const Size = {
@@ -273,10 +262,10 @@ export const Size = {
   // 监听
   watch: watchGlobalSize,
 
-  // 工具函数
-  isValid: isValidSize,
-  compare: compareSizes,
-  displayName: getSizeDisplayName,
+  // 工具函数（从 utils 导入）
+  isValid: isValidSizeMode,
+  compare: compareSizeModes,
+  displayName: getSizeModeDisplayName,
   description: getSizeDescription,
 
   // 范围操作
@@ -292,9 +281,10 @@ export const Size = {
   createToggler: createSizeToggler,
   createState: createSizeState,
   createManager: createSize,
+  createResponsive: createResponsiveSize,
 
   // 常量
-  MODES: getAvailableSizes(),
+  MODES: SIZE_MODES,
   SMALL: 'small' as const,
   MEDIUM: 'medium' as const,
   LARGE: 'large' as const,

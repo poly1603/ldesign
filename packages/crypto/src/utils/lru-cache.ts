@@ -222,6 +222,86 @@ export class LRUCache<K = string, V = any> {
   }
 
   /**
+   * 批量获取缓存值
+   * 性能优化：减少多次调用的开销
+   */
+  getMany(keys: K[]): Map<K, V> {
+    const results = new Map<K, V>()
+
+    for (const key of keys) {
+      const value = this.get(key)
+      if (value !== undefined) {
+        results.set(key, value)
+      }
+    }
+
+    return results
+  }
+
+  /**
+   * 批量设置缓存值
+   * 性能优化：减少多次调用的开销
+   */
+  setMany(entries: Array<[K, V]>): void {
+    for (const [key, value] of entries) {
+      this.set(key, value)
+    }
+  }
+
+  /**
+   * 批量删除缓存项
+   * 性能优化：减少多次调用的开销
+   */
+  deleteMany(keys: K[]): number {
+    let deleted = 0
+
+    for (const key of keys) {
+      if (this.delete(key)) {
+        deleted++
+      }
+    }
+
+    return deleted
+  }
+
+  /**
+   * 获取所有键
+   */
+  keys(): K[] {
+    return Array.from(this.cache.keys())
+  }
+
+  /**
+   * 获取所有值
+   */
+  values(): V[] {
+    const values: V[] = []
+
+    for (const node of this.cache.values()) {
+      if (!this.isExpired(node)) {
+        values.push(node.value)
+      }
+    }
+
+    return values
+  }
+
+  /**
+   * 获取所有条目
+   */
+  entries(): Array<[K, V]> {
+    const entries: Array<[K, V]> = []
+
+    for (const [key, node] of this.cache.entries()) {
+      if (!this.isExpired(node)) {
+        entries.push([key, node.value])
+      }
+    }
+
+    return entries
+  }
+
+  /**
    * 检查节点是否过期
    */
   private isExpired(node: LRUNode<K, V>): boolean {

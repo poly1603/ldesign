@@ -42,7 +42,7 @@ const defaultOptions: RequestOptions = {
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 10000 // 10秒超时
+  timeout: 30000 // 30秒超时，因为npm命令可能较慢
 }
 
 /**
@@ -109,7 +109,46 @@ async function request<T = any>(
     const response = await fetch(fullUrl, fetchOptions)
     clearTimeout(timeoutId)
 
-    const data = await response.json()
+    // 检查响应是否为空
+    const contentType = response.headers.get('content-type')
+    const isJson = contentType?.includes('application/json')
+    
+    // 如果响应为空或不是 JSON
+    if (!isJson || response.status === 204) {
+      if (!response.ok) {
+        return {
+          success: false,
+          message: `HTTP ${response.status}: ${response.statusText}`,
+          error: `服务器返回非 JSON 响应`
+        } as ApiResponse<T>
+      }
+      // 204 No Content 或其他成功但无内容的响应
+      return {
+        success: true,
+        data: undefined as T
+      } as ApiResponse<T>
+    }
+
+    // 尝试解析 JSON
+    let data: any
+    try {
+      const text = await response.text()
+      if (!text || text.trim() === '') {
+        return {
+          success: false,
+          message: '服务器返回空响应',
+          error: 'Empty response body'
+        } as ApiResponse<T>
+      }
+      data = JSON.parse(text)
+    } catch (parseError) {
+      console.error('JSON 解析失败:', parseError)
+      return {
+        success: false,
+        message: '服务器返回无效的 JSON 数据',
+        error: parseError instanceof Error ? parseError.message : 'JSON parse error'
+      } as ApiResponse<T>
+    }
     
     // 即使 HTTP 状态码不是 2xx，也返回响应体中的数据
     // 因为后端可能在 400/500 响应中包含有用的错误信息

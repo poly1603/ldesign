@@ -7,7 +7,6 @@
 export { ApiEngineImpl } from './core/ApiEngine'
 
 // 核心工厂与辅助创建方法
-
 export {
   createApiEngine,
   createApiEngineByEnv,
@@ -21,6 +20,39 @@ export {
   createTestApiEngine,
   destroySingletonApiEngine,
 } from './core/factory'
+
+// 工具类 - 智能缓存策略
+export {
+  CachePriority,
+  createSmartCacheStrategy,
+  SmartCacheStrategy,
+} from './utils/SmartCacheStrategy'
+export type { SmartCacheStrategyConfig } from './utils/SmartCacheStrategy'
+
+// 工具类 - 请求取消
+export {
+  CancellationError,
+  CancellationToken,
+  createRequestCancellationManager,
+  globalCancellationManager,
+  isCancellationError,
+  RequestCancellationManager,
+} from './utils/RequestCancellation'
+
+// 工具类 - 请求分析
+export {
+  createRequestAnalytics,
+  RequestAnalytics,
+} from './utils/RequestAnalytics'
+export type {
+  MethodStats,
+  RequestAnalyticsConfig,
+  RequestRecord,
+} from './utils/RequestAnalytics'
+
+// 工具类 - LRU缓存
+export { LRUCache } from './utils/LRUCache'
+export type { LRUCacheConfig, LRUCacheStats } from './utils/LRUCache'
 
 // 认证中间件插件
 export { authMiddlewaresPlugin, createAuthMiddlewaresPlugin } from './plugins/auth'
@@ -100,8 +132,6 @@ export {
   deduplicateGlobally,
   globalDeduplicationManager,
 } from './utils/DeduplicationManager'
-
-export { LRUCache } from './utils/LRUCache'
 
 export { renameKeysDeep, renameKeysShallow } from './utils/object'
 export { createPerformanceMonitor, getGlobalPerformanceMonitor, PerformanceMonitor, setGlobalPerformanceMonitor } from './utils/PerformanceMonitor'

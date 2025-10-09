@@ -38,6 +38,56 @@ export interface ApiEngineConfig {
   }
   /** 请求队列配置（限流/并发控制） */
   queue?: RequestQueueConfig
+  /** 智能缓存策略配置 */
+  smartCache?: SmartCacheStrategyConfig
+  /** 请求分析配置 */
+  analytics?: RequestAnalyticsConfig
+  /** 请求取消配置 */
+  cancellation?: RequestCancellationConfig
+}
+
+/**
+ * 智能缓存策略配置
+ */
+export interface SmartCacheStrategyConfig {
+  /** 是否启用 */
+  enabled?: boolean
+  /** 最小访问次数阈值 */
+  minAccessThreshold?: number
+  /** 热点数据TTL倍数 */
+  hotDataTTLMultiplier?: number
+  /** 冷数据TTL倍数 */
+  coldDataTTLMultiplier?: number
+  /** 统计窗口大小 */
+  statsWindowSize?: number
+  /** 自动调整间隔（毫秒） */
+  autoAdjustInterval?: number
+}
+
+/**
+ * 请求分析配置
+ */
+export interface RequestAnalyticsConfig {
+  /** 是否启用 */
+  enabled?: boolean
+  /** 最大记录数 */
+  maxRecords?: number
+  /** 记录保留时间（毫秒） */
+  recordRetention?: number
+  /** 是否记录请求详情 */
+  recordDetails?: boolean
+  /** 自动清理间隔（毫秒） */
+  cleanupInterval?: number
+}
+
+/**
+ * 请求取消配置
+ */
+export interface RequestCancellationConfig {
+  /** 是否启用 */
+  enabled?: boolean
+  /** 自动取消超时时间（毫秒） */
+  autoTimeout?: number
 }
 
 /**

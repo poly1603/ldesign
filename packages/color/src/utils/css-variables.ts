@@ -463,7 +463,8 @@ export function injectThemeVariables(
   prefix = '--ldesign',
   config?: Partial<CSSVariableConfig>,
 ): void {
-  const injector = config ? createCSSVariableInjector(config) : globalCSSInjector
+  // 使用 CSSVariableInjector 而不是 CSSInjectorImpl，因为需要 getConfig 和 generateBackgroundColors 方法
+  const injector = config ? createCSSVariableInjector(config) : new CSSVariableInjector({ prefix })
   const variables: Record<string, string> = {}
   const variableInfos: ColorVariableInfo[] = []
 

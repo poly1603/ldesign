@@ -98,6 +98,7 @@ export type {
   // 缓存相关
   LRUCache,
   CacheStats,
+  CacheOptions,
 
   // 事件相关
   I18nEventType,
@@ -217,8 +218,7 @@ export {
 } from './utils/cache-operations'
 export type {
   CacheItem,
-  CacheOperationConfig,
-  CacheStats
+  CacheOperationConfig
 } from './utils/cache-operations'
 
 // 错误处理工具
@@ -246,7 +246,6 @@ export {
   createEnhancedPerformanceManager
 } from './core/performance-manager'
 export type {
-  PerformanceMetrics,
   PerformanceConfig
 } from './core/performance-manager'
 
@@ -310,7 +309,6 @@ export {
 
 // 对象池工具
 export {
-  ObjectPool,
   GenericObjectPool,
   ArrayPool,
   ObjectLiteralPool,
@@ -320,6 +318,9 @@ export {
   withPooledArray,
   withPooledObject,
   buildString
+} from './utils/object-pool'
+export type {
+  ObjectPool
 } from './utils/object-pool'
 
 // 快速缓存键生成器

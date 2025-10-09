@@ -50,6 +50,18 @@ export type { SyncOptions } from './core/sync-manager'
 // 缓存预热
 export { createWarmupManager, WarmupManager } from './core/warmup-manager'
 
+// 版本管理
+export { createVersionManager, VersionManager } from './core/version-manager'
+export type { VersionConfig, MigrationConfig, MigrationFunction } from './core/version-manager'
+
+// 快照管理
+export { createSnapshotManager, SnapshotManager } from './core/snapshot-manager'
+export type { CacheSnapshot, SnapshotOptions, RestoreOptions } from './core/snapshot-manager'
+
+// 标签管理
+export { createTagManager, TagManager } from './core/tag-manager'
+export type { TagConfig } from './core/tag-manager'
+
 // ============================================================================
 // 存储引擎导出
 // ============================================================================

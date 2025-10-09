@@ -58,7 +58,8 @@ async function main() {
 
   // 3. 命名空间演示
   console.log('🗂️ 命名空间演示:')
-  const appNs = createNamespace('app', cache)
+  const cacheManager = createCache()
+  const appNs = createNamespace('app', cacheManager)
   const userNs = appNs.namespace('users')
   const settingsNs = appNs.namespace('settings')
   
@@ -100,7 +101,7 @@ async function main() {
   // 添加预取规则
   smartCache.prefetcher.addRule({
     id: 'related-data',
-    trigger: (ctx) => ctx.currentKey?.startsWith('product'),
+    trigger: (ctx) => ctx.currentKey?.startsWith('product') ?? false,
     keys: ['reviews', 'recommendations'],
     fetcher: async (key) => {
       console.log(`预取 ${key}...`)
@@ -206,9 +207,10 @@ async function main() {
 
   // 10. 缓存预热演示
   console.log('🔥 缓存预热演示:')
-  const warmup = new WarmupManager(cache)
-  
-  await warmup.warmup([
+  const warmup = new WarmupManager(cacheManager)
+
+  // 注册预热项
+  warmup.register([
     {
       key: 'config',
       fetcher: async () => ({ version: '1.0.0', features: ['cache', 'sync'] }),
@@ -218,17 +220,20 @@ async function main() {
       fetcher: async () => ({ en: 'Hello', zh: '你好' }),
     },
   ])
-  
+
+  // 执行预热
+  await warmup.warmup()
+
   console.log('预热完成，配置:', await cache.get('config'))
   console.log()
 
   // 11. 淘汰策略演示
   console.log('🌪️ 淘汰策略演示:')
   const strategies = ['LRU', 'LFU', 'FIFO', 'Random', 'TTL']
-  
+
   strategies.forEach(name => {
     const strategy = EvictionStrategyFactory.create(name as any)
-    console.log(`${name} 策略: ${strategy.getDescription()}`)
+    console.log(`${name} 策略:`, strategy.name)
   })
   console.log()
 

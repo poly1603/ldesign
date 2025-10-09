@@ -1,10 +1,10 @@
 /**
  * @ldesign/router 开发工具增强
- * 
+ *
  * 提供更强大的开发调试和分析工具
  */
 
-import type { Router, RouteLocationNormalized, RouteRecordRaw } from '../types'
+import type { RouteLocationNormalized, Router, RouteRecordRaw } from '../types'
 import { codeQualityChecker } from '../utils/code-quality'
 import { getPerformanceStats } from '../utils/performance'
 
@@ -70,13 +70,13 @@ export class RouteInspector {
         matched: route.matched.map(record => ({
           path: record.path,
           name: record.name,
-          component: record.components?.default?.name || 'Anonymous'
-        }))
+          component: record.components?.default?.name || 'Anonymous',
+        })),
       },
       performance: this.analyzeRoutePerformance(route),
       accessibility: this.checkAccessibility(route),
       seo: this.checkSEO(route),
-      security: this.checkSecurity(route)
+      security: this.checkSecurity(route),
     }
   }
 
@@ -92,8 +92,8 @@ export class RouteInspector {
       recommendations: [
         '考虑使用路由懒加载',
         '启用组件缓存',
-        '优化组件大小'
-      ]
+        '优化组件大小',
+      ],
     }
   }
 
@@ -102,11 +102,11 @@ export class RouteInspector {
    */
   private checkAccessibility(route: RouteLocationNormalized) {
     const issues: string[] = []
-    
+
     if (!route.meta?.title) {
       issues.push('缺少页面标题')
     }
-    
+
     if (!route.meta?.description) {
       issues.push('缺少页面描述')
     }
@@ -117,8 +117,8 @@ export class RouteInspector {
       suggestions: [
         '添加页面标题和描述',
         '确保键盘导航可用',
-        '检查颜色对比度'
-      ]
+        '检查颜色对比度',
+      ],
     }
   }
 
@@ -127,11 +127,11 @@ export class RouteInspector {
    */
   private checkSEO(route: RouteLocationNormalized) {
     const issues: string[] = []
-    
+
     if (!route.meta?.title) {
       issues.push('缺少页面标题')
     }
-    
+
     if (!route.meta?.description) {
       issues.push('缺少meta描述')
     }
@@ -146,8 +146,8 @@ export class RouteInspector {
       suggestions: [
         '添加页面标题和描述',
         '设置合适的关键词',
-        '优化URL结构'
-      ]
+        '优化URL结构',
+      ],
     }
   }
 
@@ -156,7 +156,7 @@ export class RouteInspector {
    */
   private checkSecurity(route: RouteLocationNormalized) {
     const issues: string[] = []
-    
+
     // 检查是否需要认证
     if (route.meta?.requiresAuth && !route.meta?.auth) {
       issues.push('需要认证但未配置认证检查')
@@ -173,8 +173,8 @@ export class RouteInspector {
       suggestions: [
         '配置适当的认证检查',
         '设置角色权限',
-        '验证输入参数'
-      ]
+        '验证输入参数',
+      ],
     }
   }
 
@@ -183,7 +183,7 @@ export class RouteInspector {
    */
   highlightRouteElement(selector: string): void {
     this.clearHighlight()
-    
+
     const element = document.querySelector(selector) as HTMLElement
     if (element) {
       element.style.outline = '2px solid #007acc'
@@ -262,21 +262,21 @@ export class DevToolsPanel {
         toggle: 'Ctrl+Shift+D',
         inspect: 'Ctrl+Shift+I',
         performance: 'Ctrl+Shift+P',
-        quality: 'Ctrl+Shift+Q'
+        quality: 'Ctrl+Shift+Q',
       },
       panel: {
         position: 'bottom',
         size: 300,
-        theme: 'auto'
+        theme: 'auto',
       },
       features: {
         routeInspector: true,
         performanceMonitor: true,
         qualityChecker: true,
         networkTracker: true,
-        stateViewer: true
+        stateViewer: true,
       },
-      ...config
+      ...config,
     }
 
     if (this.config.enabled) {
@@ -299,11 +299,14 @@ export class DevToolsPanel {
     document.addEventListener('keydown', (event) => {
       if (this.matchHotkey(event, this.config.hotkeys.toggle)) {
         this.toggle()
-      } else if (this.matchHotkey(event, this.config.hotkeys.inspect)) {
+      }
+      else if (this.matchHotkey(event, this.config.hotkeys.inspect)) {
         this.showInspector()
-      } else if (this.matchHotkey(event, this.config.hotkeys.performance)) {
+      }
+      else if (this.matchHotkey(event, this.config.hotkeys.performance)) {
         this.showPerformance()
-      } else if (this.matchHotkey(event, this.config.hotkeys.quality)) {
+      }
+      else if (this.matchHotkey(event, this.config.hotkeys.quality)) {
         this.showQuality()
       }
     })
@@ -316,10 +319,14 @@ export class DevToolsPanel {
     const keys = hotkey.split('+').map(k => k.trim().toLowerCase())
     const pressed = []
 
-    if (event.ctrlKey) pressed.push('ctrl')
-    if (event.shiftKey) pressed.push('shift')
-    if (event.altKey) pressed.push('alt')
-    if (event.metaKey) pressed.push('meta')
+    if (event.ctrlKey)
+      pressed.push('ctrl')
+    if (event.shiftKey)
+      pressed.push('shift')
+    if (event.altKey)
+      pressed.push('alt')
+    if (event.metaKey)
+      pressed.push('meta')
     pressed.push(event.key.toLowerCase())
 
     return keys.every(key => pressed.includes(key)) && keys.length === pressed.length
@@ -356,7 +363,8 @@ export class DevToolsPanel {
   toggle(): void {
     if (this.isVisible) {
       this.hide()
-    } else {
+    }
+    else {
       this.show()
     }
   }
@@ -423,7 +431,8 @@ export class DevToolsPanel {
    * 渲染面板内容
    */
   private render(): void {
-    if (!this.container) return
+    if (!this.container)
+      return
 
     this.container.innerHTML = `
       <div style="padding: 10px; border-bottom: 1px solid #333;">
@@ -446,7 +455,8 @@ export class DevToolsPanel {
    */
   private renderInspector(result: RouteInspectionResult): void {
     const content = document.getElementById('devtools-content')
-    if (!content) return
+    if (!content)
+      return
 
     content.innerHTML = `
       <h4>路由检查结果</h4>
@@ -464,7 +474,8 @@ export class DevToolsPanel {
    */
   private renderPerformance(stats: any): void {
     const content = document.getElementById('devtools-content')
-    if (!content) return
+    if (!content)
+      return
 
     content.innerHTML = `
       <h4>性能监控</h4>
@@ -479,7 +490,8 @@ export class DevToolsPanel {
    */
   private renderQuality(issues: any[]): void {
     const content = document.getElementById('devtools-content')
-    if (!content) return
+    if (!content)
+      return
 
     content.innerHTML = `
       <h4>代码质量检查</h4>

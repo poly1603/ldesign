@@ -71,6 +71,22 @@ export const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/npm-sources/:id',
+    name: 'NpmSourceDetail',
+    component: () => import('../views/NpmSourceDetail.vue'),
+    meta: {
+      title: 'NPM 源详情'
+    }
+  },
+  {
+    path: '/npm-sources/:id/packages/:packageName',
+    name: 'PackageDetail',
+    component: () => import('../views/PackageDetail.vue'),
+    meta: {
+      title: '包详情'
+    }
+  },
+  {
     path: '/packages',
     name: 'PackageManager',
     component: () => import('../views/PackageManager.vue'),

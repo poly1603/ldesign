@@ -125,57 +125,96 @@ export interface SecurityConfig {
 }
 
 /**
+ * 基础引擎配置选项
+ */
+export interface BaseEngineOptions {
+  /** 是否启用该引擎 */
+  enabled?: boolean
+  /** 最大存储大小（字节） */
+  maxSize?: number
+}
+
+/**
+ * localStorage 引擎配置
+ */
+export interface LocalStorageEngineOptions extends BaseEngineOptions {
+  /** 键前缀 */
+  keyPrefix?: string
+}
+
+/**
+ * sessionStorage 引擎配置
+ */
+export interface SessionStorageEngineOptions extends BaseEngineOptions {
+  /** 键前缀 */
+  keyPrefix?: string
+}
+
+/**
+ * Cookie 引擎配置
+ */
+export interface CookieEngineOptions extends BaseEngineOptions {
+  /** 域名 */
+  domain?: string
+  /** 路径 */
+  path?: string
+  /** 是否安全传输 */
+  secure?: boolean
+  /** SameSite 策略 */
+  sameSite?: 'strict' | 'lax' | 'none'
+  /** HttpOnly */
+  httpOnly?: boolean
+}
+
+/**
+ * IndexedDB 引擎配置
+ */
+export interface IndexedDBEngineOptions extends BaseEngineOptions {
+  /** 数据库名称 */
+  dbName?: string
+  /** 数据库版本 */
+  version?: number
+  /** 对象存储名称 */
+  storeName?: string
+}
+
+/**
+ * Memory 引擎配置
+ */
+export interface MemoryEngineOptions extends BaseEngineOptions {
+  /** 最大项数 */
+  maxItems?: number
+  /** 清理间隔（毫秒） */
+  cleanupInterval?: number
+  /** 淘汰策略：'LRU' | 'LFU' | 'FIFO' | 'MRU' | 'Random' | 'TTL' | 'ARC' */
+  evictionStrategy?: string
+}
+
+/**
  * 存储引擎配置
  */
 export interface StorageEngineConfig {
   /** localStorage 配置 */
-  localStorage?: {
-    /** 最大存储大小（字节） */
-    maxSize?: number
-    /** 键前缀 */
-    keyPrefix?: string
-  }
+  localStorage?: LocalStorageEngineOptions
   /** sessionStorage 配置 */
-  sessionStorage?: {
-    /** 最大存储大小（字节） */
-    maxSize?: number
-    /** 键前缀 */
-    keyPrefix?: string
-  }
+  sessionStorage?: SessionStorageEngineOptions
   /** Cookie 配置 */
-  cookie?: {
-    /** 域名 */
-    domain?: string
-    /** 路径 */
-    path?: string
-    /** 是否安全传输 */
-    secure?: boolean
-    /** SameSite 策略 */
-    sameSite?: 'strict' | 'lax' | 'none'
-    /** HttpOnly */
-    httpOnly?: boolean
-  }
+  cookie?: CookieEngineOptions
   /** IndexedDB 配置 */
-  indexedDB?: {
-    /** 数据库名称 */
-    dbName?: string
-    /** 数据库版本 */
-    version?: number
-    /** 对象存储名称 */
-    storeName?: string
-  }
+  indexedDB?: IndexedDBEngineOptions
   /** Memory 配置 */
-  memory?: {
-    /** 最大存储大小（字节） */
-    maxSize?: number
-    /** 最大项数 */
-    maxItems?: number
-    /** 清理间隔（毫秒） */
-    cleanupInterval?: number
-    /** 淘汰策略：'LRU' | 'LFU' | 'FIFO' | 'MRU' | 'Random' | 'TTL' | 'ARC' */
-    evictionStrategy?: string
-  }
+  memory?: MemoryEngineOptions
 }
+
+/**
+ * 通用引擎选项类型（用于向后兼容）
+ */
+export type EngineOptions =
+  | LocalStorageEngineOptions
+  | SessionStorageEngineOptions
+  | CookieEngineOptions
+  | IndexedDBEngineOptions
+  | MemoryEngineOptions
 
 /**
  * 智能存储策略配置
@@ -355,6 +394,36 @@ export interface SetOptions {
 }
 
 /**
+ * 获取选项
+ */
+export interface GetOptions {
+  /** 指定存储引擎 */
+  engine?: StorageEngine
+  /** 是否解密 */
+  decrypt?: boolean
+  /** 默认值（当缓存不存在时返回） */
+  defaultValue?: SerializableValue
+}
+
+/**
+ * 删除选项
+ */
+export interface RemoveOptions {
+  /** 指定存储引擎 */
+  engine?: StorageEngine
+}
+
+/**
+ * 清空选项
+ */
+export interface ClearOptions {
+  /** 指定存储引擎 */
+  engine?: StorageEngine
+  /** 是否清空所有引擎 */
+  all?: boolean
+}
+
+/**
  * 缓存统计信息
  */
 export interface CacheStats {
@@ -440,6 +509,50 @@ export interface CacheEvent<T = any> {
  * 事件监听器
  */
 export type CacheEventListener<T = any> = (event: CacheEvent<T>) => void
+
+/**
+ * 事件映射类型
+ */
+export interface EventMap {
+  set: CacheEvent
+  get: CacheEvent
+  remove: CacheEvent
+  clear: CacheEvent
+  expired: CacheEvent
+  error: CacheEvent
+  strategy: CacheEvent
+}
+
+/**
+ * 事件监听器类型
+ */
+export type EventListener<K extends keyof EventMap = keyof EventMap> = (event: EventMap[K]) => void
+
+/**
+ * 错误类型
+ */
+export type ErrorType =
+  | 'VALIDATION_ERROR'
+  | 'STORAGE_ERROR'
+  | 'SERIALIZATION_ERROR'
+  | 'ENCRYPTION_ERROR'
+  | 'NETWORK_ERROR'
+  | 'TIMEOUT_ERROR'
+  | 'UNKNOWN_ERROR'
+
+/**
+ * 缓存错误接口
+ */
+export interface CacheError extends Error {
+  /** 错误类型 */
+  type: ErrorType
+  /** 错误代码 */
+  code?: string
+  /** 原始错误 */
+  originalError?: Error
+  /** 错误上下文 */
+  context?: Record<string, unknown>
+}
 
 /**
  * Vue 组合式函数选项

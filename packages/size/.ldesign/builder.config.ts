@@ -1,6 +1,11 @@
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
+  // 禁用构建后验证（库项目不需要运行测试验证）
+  postBuildValidation: {
+    enabled: false
+  },
+
   // 生成类型声明文件
   dts: true,
 

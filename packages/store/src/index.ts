@@ -7,65 +7,12 @@
 
 import 'reflect-metadata'
 
-// 核心功能
+// ============================================
+// 核心模块导出
+// ============================================
+
+// 核心功能（包含 BaseStore, 性能优化器, Store工厂等）
 export * from './core'
-
-// 性能优化器
-export {
-  PerformanceOptimizer,
-  CacheManager,
-  PersistenceManager,
-  DebounceManager,
-  ThrottleManager,
-} from './core/PerformanceOptimizer'
-
-// 缓存工具
-export {
-  LRUCache,
-  fastHash,
-  ObjectPool,
-} from './utils/cache'
-
-// 函数式 Store
-export {
-  createFunctionalStore,
-  defineStore as defineFunctionalStore,
-  defineStoreWithOptions,
-} from './core/FunctionalStore'
-export type {
-  FunctionalStoreOptions,
-  FunctionalStoreInstance,
-} from './core/FunctionalStore'
-
-// Composition Store
-export {
-  createCompositionStore,
-  defineCompositionStore,
-  defineCompositionStoreWithOptions,
-} from './core/CompositionStore'
-export type {
-  CompositionStoreContext,
-  CompositionStoreSetup,
-  CompositionStoreOptions,
-  CompositionStoreInstance,
-} from './core/CompositionStore'
-
-// Store 工厂
-export {
-  StoreFactory,
-  factory,
-  createClassStore,
-  createStore,
-  createCompositionStoreFactory,
-  defineStore,
-  StoreType,
-} from './core/StoreFactory'
-export type {
-  ClassStoreOptions,
-  FunctionalStoreFactoryOptions,
-  CompositionStoreFactoryOptions,
-  UnifiedStoreOptions,
-} from './core/StoreFactory'
 
 // 装饰器
 export * from './decorators'
@@ -79,20 +26,54 @@ export * from './vue'
 // Engine 集成
 export * from './engine'
 
-// 类型定义
+// ============================================
+// 工具函数导出
+// ============================================
+
+// 缓存工具
+export {
+  LRUCache,
+  fastHash,
+  ObjectPool,
+} from './utils/cache'
+
+// 性能监控（额外导出，方便直接使用）
+export {
+  PerformanceMonitor
+} from './PerformanceMonitoring'
+
+// DevTools（额外导出，方便直接使用）
+export {
+  StoreDevTools,
+  DevToolsConnection,
+  ConsoleFormatter,
+  VisualInspector
+} from './DevTools'
+
+// ============================================
+// 类型定义导出
+// ============================================
+
 export type {
+  // 基础类型
   StateDefinition,
   ActionDefinition,
   GetterDefinition,
   StrictStateDefinition,
   StrictActionDefinition,
   StrictGetterDefinition,
+
+  // 配置类型
   CacheOptions,
   StoreOptions,
   PersistOptions,
+
+  // 元数据类型
   DecoratorMetadata,
   MutationCallback,
   ActionContext,
+
+  // Store 接口
   IBaseStore,
   BaseStore as IBaseStoreAlias,
 } from './types'

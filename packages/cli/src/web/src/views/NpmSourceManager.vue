@@ -44,7 +44,7 @@
           class="source-card"
           :class="{ 'logged-in': source.isLoggedIn }"
         >
-          <div class="source-header">
+          <div class="source-header" @click="goToSourceDetail(source)" style="cursor: pointer;">
             <div class="source-info">
               <h3>{{ source.name }}</h3>
               <span class="source-type" :class="source.type">{{ source.type === 'public' ? '公共' : '私有' }}</span>
@@ -62,16 +62,16 @@
               <span 
                 v-else-if="source.isAvailable === true" 
                 class="status-badge available"
-                title="服务可用"
+                :title="`服务可用 - 延迟: ${source.latency}ms`"
               >
-                ✓ 可用
+                ✓ 可用 <span v-if="source.latency" class="latency-text">({{ source.latency }}ms)</span>
               </span>
               <span 
                 v-else-if="source.isAvailable === false" 
                 class="status-badge unavailable"
-                title="服务不可用"
+                :title="`服务不可用 - 尝试时间: ${source.latency}ms`"
               >
-                ✗ 不可用
+                ✗ 不可用 <span v-if="source.latency" class="latency-text">({{ source.latency }}ms)</span>
               </span>
               <!-- 登录状态 -->
               <span v-if="source.isLoggedIn" class="status-badge logged-in">已登录</span>
@@ -106,11 +106,19 @@
             </button>
             <button 
               class="btn btn-sm btn-secondary" 
+              @click="checkSourceAvailability(source)" 
+              :disabled="source.isChecking"
+              title="重新检测服务可用性"
+            >
+              {{ source.isChecking ? '检测中...' : '重检' }}
+            </button>
+            <button 
+              class="btn btn-sm btn-secondary" 
               @click="checkLoginStatus(source)" 
               :disabled="operatingSourceId === source.id"
               title="检测登录状态"
             >
-              {{ operatingSourceId === source.id ? '检测中...' : '检测' }}
+              {{ operatingSourceId === source.id ? '检测中...' : '登录检测' }}
             </button>
             <button 
               v-if="!source.isLoggedIn" 
@@ -220,7 +228,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useApi } from '../composables/useApi'
 import { useMessage } from '../composables/useMessage'
 
@@ -241,10 +250,13 @@ interface NpmSource {
   // 服务可用性状态
   isAvailable?: boolean
   isChecking?: boolean
+  latency?: number // 检测延迟（毫秒）
+  lastCheckTime?: string // 最后检测时间
 }
 
 const { get, post, put, del } = useApi()
 const message = useMessage()
+const router = useRouter()
 
 // Helper function to show message with type
 const showMessage = (content: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
@@ -296,6 +308,17 @@ const loginFormData = reactive({
   password: ''
 })
 
+// 服务可用性检测相关状态
+const autoCheckInterval = ref<number | null>(null)
+const autoCheckEnabled = ref(true) // 是否启用自动检测
+
+
+/**
+ * 跳转到源详情页
+ */
+function goToSourceDetail(source: NpmSource) {
+  router.push(`/npm-sources/${source.id}`)
+}
 
 /**
  * 加载源列表
@@ -324,18 +347,24 @@ async function checkSourceAvailability(source: NpmSource) {
   source.isChecking = true
   source.isAvailable = undefined
   
+  const startTime = Date.now()
+  
   try {
-    const result = await get<{ available: boolean }>(`/api/npm-sources/${source.id}/check-availability`)
+    const result = await get<{ available: boolean; latency?: number }>(`/api/npm-sources/${source.id}/check-availability`)
     if (result.success && result.data) {
       source.isAvailable = result.data.available
+      source.latency = result.data.latency || (Date.now() - startTime)
     } else {
       source.isAvailable = false
+      source.latency = Date.now() - startTime
     }
   } catch (error: any) {
     // 出错说明服务不可用
     source.isAvailable = false
+    source.latency = Date.now() - startTime
   } finally {
     source.isChecking = false
+    source.lastCheckTime = new Date().toISOString()
   }
 }
 
@@ -791,10 +820,56 @@ async function saveConfigFile() {
 
 
 
+/**
+ * 启动定时自动检测
+ */
+function startAutoCheck() {
+  if (autoCheckInterval.value) {
+    return // 已经在运行
+  }
+  
+  // 每 60 秒检测一次
+  autoCheckInterval.value = window.setInterval(() => {
+    if (autoCheckEnabled.value && sources.value.length > 0) {
+      checkAllSourcesAvailability()
+    }
+  }, 60000) // 60秒
+}
+
+/**
+ * 停止定时自动检测
+ */
+function stopAutoCheck() {
+  if (autoCheckInterval.value) {
+    clearInterval(autoCheckInterval.value)
+    autoCheckInterval.value = null
+  }
+}
+
+/**
+ * 切换自动检测状态
+ */
+function toggleAutoCheck() {
+  autoCheckEnabled.value = !autoCheckEnabled.value
+  if (autoCheckEnabled.value) {
+    showMessage('已启用自动检测', 'success')
+    checkAllSourcesAvailability() // 立即检测一次
+  } else {
+    showMessage('已禁用自动检测', 'info')
+  }
+}
+
 // 加载数据
 onMounted(() => {
   loadSources()
   loadVerdaccioStatus()
+  // 启动定时检测
+  startAutoCheck()
+})
+
+// 组件卸载时清理
+onUnmounted(() => {
+  stopAutoCheck()
 })
 </script>
 
@@ -960,6 +1035,12 @@ onMounted(() => {
           border-radius: 50%;
           animation: spin 1s linear infinite;
         }
+      }
+
+      .latency-text {
+        font-size: 0.85em;
+        opacity: 0.8;
+        margin-left: 2px;
       }
     }
   }

@@ -1,6 +1,6 @@
 /**
  * 模板路由解析器
- * 
+ *
  * 为路由系统提供模板相关的功能
  */
 
@@ -32,7 +32,7 @@ export class TemplateRouteResolver {
       enabled: true,
       defaultTemplate: 'default',
       templatePrefix: '/templates',
-      ...options
+      ...options,
     }
   }
 

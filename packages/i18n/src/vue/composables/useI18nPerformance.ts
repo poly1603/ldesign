@@ -44,9 +44,9 @@ interface BatchRequest {
 }
 
 /**
- * 性能统计
+ * 本地性能统计（用于 composable）
  */
-interface PerformanceMetrics {
+interface LocalPerformanceMetrics {
   /** 缓存命中次数 */
   cacheHits: number
   /** 缓存未命中次数 */
@@ -111,7 +111,7 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
   let batchTimer: number | null = null
   
   // 性能统计
-  const metrics = ref<PerformanceMetrics>({
+  const metrics = ref<LocalPerformanceMetrics>({
     cacheHits: 0,
     cacheMisses: 0,
     batchTranslations: 0,
@@ -156,7 +156,9 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
     // 如果缓存已满，删除最旧的项
     if (localCache.value.size >= localCacheSize) {
       const oldestKey = localCache.value.keys().next().value
-      localCache.value.delete(oldestKey)
+      if (oldestKey !== undefined) {
+        localCache.value.delete(oldestKey)
+      }
     }
 
     localCache.value.set(cacheKey, {
@@ -358,7 +360,7 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
  * 创建降级的性能优化 I18n 对象
  */
 function createFallbackPerformanceI18n() {
-  const metrics = ref<PerformanceMetrics>({
+  const metrics = ref<LocalPerformanceMetrics>({
     cacheHits: 0,
     cacheMisses: 0,
     batchTranslations: 0,
@@ -399,6 +401,5 @@ function createFallbackPerformanceI18n() {
  * 导出类型
  */
 export type {
-  PerformanceOptions,
-  PerformanceMetrics
+  LocalPerformanceMetrics
 }

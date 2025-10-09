@@ -31,7 +31,7 @@ import { I18nInjectionKey } from '../plugin'
 /**
  * 日期时间格式化组件属性
  */
-interface Props {
+export interface I18nDTProps {
   /** 日期时间值 */
   value: Date | string | number
   /** 格式化类型 */
@@ -54,7 +54,7 @@ interface Props {
   timeStyle?: 'full' | 'long' | 'medium' | 'short'
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<I18nDTProps>(), {
   format: 'medium',
   updateInterval: 60000, // 1分钟
   showTimeZone: false

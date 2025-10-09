@@ -1,8 +1,10 @@
 /**
  * @ldesign/cache - 核心入口
- * 
+ *
  * 只包含最基础的缓存功能，体积最小
  */
+
+import { CacheManager } from './core/cache-manager'
 
 // 核心缓存管理器
 export { CacheManager } from './core/cache-manager'
@@ -25,18 +27,31 @@ export type {
   GetOptions,
   RemoveOptions,
   ClearOptions,
-  
+
   // 存储引擎类型
   StorageEngine,
   EngineOptions,
-  
+  BaseEngineOptions,
+  MemoryEngineOptions,
+  LocalStorageEngineOptions,
+  SessionStorageEngineOptions,
+  IndexedDBEngineOptions,
+  CookieEngineOptions,
+
   // 事件类型
   EventMap,
   EventListener,
-  
+  CacheEventListener,
+  CacheEventType,
+
   // 错误类型
   CacheError,
-  ErrorType
+  ErrorType,
+
+  // 其他类型
+  SerializableValue,
+  CacheMetadata,
+  CacheStats
 } from './types'
 
 // 预设配置

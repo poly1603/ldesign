@@ -91,6 +91,6 @@ export type {
   BatchOperation,
   BatchResult,
   CacheStats,
-  MemoryPoolConfig,
   PerformanceMetrics,
+  PerformanceOptimizerConfig,
 } from './performance'

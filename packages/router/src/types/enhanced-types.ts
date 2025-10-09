@@ -1,10 +1,10 @@
 /**
  * @ldesign/router 增强类型定义
- * 
+ *
  * 提供更强大的类型推导和类型安全功能
  */
 
-import type { Component, ComputedRef, Ref } from 'vue'
+import type { Component, Ref } from 'vue'
 import type { RouteLocationNormalized, RouteRecordRaw } from './index'
 
 // ==================== 高级类型工具 ====================
@@ -45,7 +45,7 @@ export interface TypedRouteRecord<
   TPath extends string = string,
   TName extends string = string,
   TParams extends Record<string, any> = Record<string, any>,
-  TMeta extends Record<string, any> = Record<string, any>
+  TMeta extends Record<string, any> = Record<string, any>,
 > extends Omit<RouteRecordRaw, 'path' | 'name' | 'meta'> {
   path: TPath
   name?: TName
@@ -56,7 +56,7 @@ export interface TypedRouteRecord<
 /**
  * 路由参数类型推导
  */
-export type InferRouteParams<T extends string> = 
+export type InferRouteParams<T extends string> =
   T extends `${infer _Start}:${infer Param}/${infer Rest}`
     ? { [K in Param]: string } & InferRouteParams<Rest>
     : T extends `${infer _Start}:${infer Param}?/${infer Rest}`
@@ -76,29 +76,29 @@ export type InferRouteMeta<T> = T extends TypedRouteRecord<any, any, any, infer 
  * 强类型路由导航
  */
 export interface TypedRouter<TRoutes extends Record<string, TypedRouteRecord> = Record<string, TypedRouteRecord>> {
-  push<K extends keyof TRoutes>(
+  push: <K extends keyof TRoutes>(
     to: K | {
       name: K
       params?: InferRouteParams<TRoutes[K]['path']>
       query?: Record<string, string | string[]>
     }
-  ): Promise<void>
-  
-  replace<K extends keyof TRoutes>(
+  ) => Promise<void>
+
+  replace: <K extends keyof TRoutes>(
     to: K | {
       name: K
       params?: InferRouteParams<TRoutes[K]['path']>
       query?: Record<string, string | string[]>
     }
-  ): Promise<void>
-  
-  resolve<K extends keyof TRoutes>(
+  ) => Promise<void>
+
+  resolve: <K extends keyof TRoutes>(
     to: K | {
       name: K
       params?: InferRouteParams<TRoutes[K]['path']>
       query?: Record<string, string | string[]>
     }
-  ): RouteLocationNormalized
+  ) => RouteLocationNormalized
 }
 
 // ==================== 组件类型增强 ====================
@@ -149,7 +149,7 @@ export interface EnhancedRouteComponent {
  */
 export type TypedNavigationGuard<
   TFrom extends RouteLocationNormalized = RouteLocationNormalized,
-  TTo extends RouteLocationNormalized = RouteLocationNormalized
+  TTo extends RouteLocationNormalized = RouteLocationNormalized,
 > = (
   to: TTo,
   from: TFrom,
@@ -211,15 +211,15 @@ export interface RouterPlugin<TOptions = any> {
  */
 export interface PluginManager {
   /** 注册插件 */
-  register<T>(plugin: RouterPlugin<T>, options?: T): Promise<void>
+  register: <T>(plugin: RouterPlugin<T>, options?: T) => Promise<void>
   /** 卸载插件 */
-  unregister(name: string): Promise<void>
+  unregister: (name: string) => Promise<void>
   /** 获取插件 */
-  get(name: string): RouterPlugin | undefined
+  get: (name: string) => RouterPlugin | undefined
   /** 获取所有插件 */
-  getAll(): RouterPlugin[]
+  getAll: () => RouterPlugin[]
   /** 检查插件是否已注册 */
-  has(name: string): boolean
+  has: (name: string) => boolean
 }
 
 // ==================== 状态管理类型 ====================
@@ -245,13 +245,13 @@ export interface RouterState {
  */
 export interface RouterStateManager {
   /** 获取状态 */
-  getState(): RouterState
+  getState: () => RouterState
   /** 更新状态 */
-  updateState(updates: Partial<RouterState>): void
+  updateState: (updates: Partial<RouterState>) => void
   /** 重置状态 */
-  resetState(): void
+  resetState: () => void
   /** 订阅状态变化 */
-  subscribe(callback: (state: RouterState) => void): () => void
+  subscribe: (callback: (state: RouterState) => void) => () => void
 }
 
 // ==================== 性能监控类型 ====================
@@ -293,41 +293,6 @@ export interface PerformanceMonitorConfig {
   onReport?: (metrics: RoutePerformanceMetrics) => void
 }
 
-// ==================== 工具类型导出 ====================
-
-export type {
-  // 基础工具类型
-  DeepReadonly,
-  Optional,
-  Required,
-  ExtractFunctionParams,
-  ExtractFunctionReturn,
-  
-  // 路由相关类型
-  TypedRouteRecord,
-  InferRouteParams,
-  InferRouteMeta,
-  TypedRouter,
-  
-  // 组件相关类型
-  AsyncComponentLoader,
-  ComponentPreloadConfig,
-  EnhancedRouteComponent,
-  
-  // 守卫相关类型
-  TypedNavigationGuard,
-  GuardContext,
-  ConditionalGuardConfig,
-  
-  // 插件相关类型
-  RouterPlugin,
-  PluginManager,
-  
-  // 状态管理类型
-  RouterState,
-  RouterStateManager,
-  
-  // 性能监控类型
-  RoutePerformanceMetrics,
-  PerformanceMonitorConfig
-}
+// ==================== 类型已通过export导出 ====================
+// 所有类型已在上方使用 export type/export interface 导出
+// 无需重复导出

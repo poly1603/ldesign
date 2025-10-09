@@ -67,7 +67,7 @@ export interface RouterI18nOptions {
  * 路由国际化组合式API
  */
 export function useI18nRouter(options: RouterI18nOptions = {}) {
-  const i18n = inject(I18nInjectionKey)
+  const i18n = inject(I18nInjectionKey)!
   if (!i18n) {
     console.warn('useI18nRouter: I18n plugin not found. Make sure to install the i18n plugin.')
     return createFallbackRouter()
@@ -248,14 +248,15 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
     if (!currentRoute.value) {
       return
     }
-    
+
     const title = getRouteTitle(currentRoute.value.name)
-    const siteName = i18n.t('site.name', {}, 'Site')
-    
+    const siteNameTranslation = i18n.t('site.name')
+    const siteName = siteNameTranslation === 'site.name' ? 'Site' : siteNameTranslation
+
     const fullTitle = titleTemplate
       .replace('{title}', title)
       .replace('{siteName}', siteName)
-    
+
     if (typeof document !== 'undefined') {
       document.title = fullTitle
     }

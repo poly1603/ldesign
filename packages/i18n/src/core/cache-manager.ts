@@ -170,14 +170,17 @@ export class CacheManager {
     keys: string[],
     translator: (key: string) => string
   ): void {
-    const entries: Array<[string, string]> = []
+    const entries: Array<{ locale: string; key: string; params?: Record<string, any>; value: string }> = []
 
     for (const key of keys) {
       try {
         const translation = translator(key)
         if (translation && translation !== key) {
-          const cacheKey = CacheKeyGenerator.generateTranslationKey(locale, key)
-          entries.push([cacheKey, translation])
+          entries.push({
+            locale,
+            key,
+            value: translation
+          })
         }
       } catch (error) {
         // 忽略翻译错误，继续处理其他键
@@ -231,7 +234,7 @@ export class CacheManager {
     }
 
     // 检查内存使用
-    if (this.stats.memoryUsage > this.options.maxMemory * 0.9) {
+    if (this.options.maxMemory && this.stats.memoryUsage > this.options.maxMemory * 0.9) {
       issues.push('内存使用率过高')
       recommendations.push('考虑清理缓存或减少缓存大小')
     }
@@ -250,14 +253,63 @@ export class CacheManager {
   }
 
   /**
+   * 批量获取翻译缓存（减少函数调用开销）
+   * @param requests 批量请求数组
+   * @returns 翻译结果数组
+   */
+  batchGetTranslations(
+    requests: Array<{ locale: string; key: string; params?: TranslationParams }>
+  ): Array<string | undefined> {
+    const results: Array<string | undefined> = []
+    
+    for (const req of requests) {
+      const cached = this.translationCache.getCachedTranslation(req.locale, req.key, req.params)
+      results.push(cached)
+      
+      this.stats.totalRequests++
+      if (cached !== undefined) {
+        this.stats.hits++
+      } else {
+        this.stats.misses++
+      }
+    }
+    
+    this.updateHitRate()
+    return results
+  }
+
+  /**
+   * 批量设置翻译缓存（减少函数调用开销）
+   * @param entries 批量缓存条目
+   */
+  batchSetTranslations(
+    entries: Array<{
+      locale: string
+      key: string
+      params?: TranslationParams
+      value: string
+    }>
+  ): void {
+    for (const entry of entries) {
+      this.translationCache.cacheTranslation(
+        entry.locale,
+        entry.key,
+        entry.params || {},
+        entry.value
+      )
+    }
+    this.updateStats()
+  }
+
+  /**
    * 自动优化缓存
    */
   optimize(): void {
     const health = this.checkHealth()
-    
+
     if (!health.isHealthy) {
       // 如果内存使用过高，清理部分缓存
-      if (this.stats.memoryUsage > this.options.maxMemory * 0.8) {
+      if (this.options.maxMemory && this.stats.memoryUsage > this.options.maxMemory * 0.8) {
         this.translationCache.cleanup()
       }
     }
@@ -276,7 +328,7 @@ export class CacheManager {
    * 更新统计信息
    */
   private updateStats(): void {
-    this.stats.size = this.translationCache.size
+    this.stats.size = this.translationCache.size()
     this.stats.memoryUsage = this.translationCache.getMemoryUsage()
     this.updateHitRate()
   }

@@ -1,8 +1,8 @@
 /**
  * 性能监控和分析系统
- * 
+ *
  * 提供构建性能分析、运行时监控、性能优化建议等功能
- * 
+ *
  * @author LDesign Team
  * @since 1.0.0
  */
@@ -11,54 +11,42 @@ import { EventEmitter } from 'events'
 import { performance, PerformanceObserver } from 'perf_hooks'
 import { Logger } from '../utils/logger'
 import { FileSystem } from '../utils/file-system'
+import type {
+  PerformanceMetrics,
+  PerformanceReport,
+  PerformanceScore,
+  PerformanceRecommendation,
+  PerformanceMonitorConfig,
+  PerformanceEventType,
+  PluginPerformanceStats
+} from '../types/performance'
+
+// 为了向后兼容，重新导出类型
+export type {
+  PerformanceMetrics,
+  PerformanceReport,
+  PerformanceScore,
+  PerformanceRecommendation,
+  PerformanceMonitorConfig
+} from '../types/performance'
 
 /**
- * 性能指标接口
+ * 性能监控配置（内部使用）
  */
-export interface PerformanceMetrics {
-  /** 构建开始时间 */
-  buildStartTime: number
-  /** 构建结束时间 */
-  buildEndTime: number
-  /** 总构建时间 */
-  totalBuildTime: number
-  /** 各阶段耗时 */
-  phases: Record<string, number>
-  /** 内存使用情况 */
-  memoryUsage: {
-    heapUsed: number
-    heapTotal: number
-    external: number
-    rss: number
-  }
-  /** 文件系统操作统计 */
-  fileSystemStats: {
-    reads: number
-    writes: number
-    totalReadTime: number
-    totalWriteTime: number
-  }
-  /** 插件性能统计 */
-  pluginStats: Array<{
-    name: string
-    loadTime: number
-    transformTime: number
-    generateTime: number
-  }>
-  /** 缓存命中率 */
-  cacheHitRate: number
-  /** 热更新统计 */
-  hmrStats: {
-    updateCount: number
-    averageUpdateTime: number
-    totalUpdateTime: number
-  }
+interface InternalMonitorConfig extends PerformanceMonitorConfig {
+  /** 报告输出路径 */
+  reportPath: string
+  /** 采样间隔 */
+  sampleInterval: number
+  /** 内存警告阈值 */
+  memoryWarningThreshold: number
 }
 
 /**
- * 性能报告接口
+ * 旧版本兼容接口
+ * @deprecated 使用 PerformanceReport 替代
  */
-export interface PerformanceReport {
+export interface PerformanceReportLegacy {
   /** 报告时间戳 */
   timestamp: number
   /** 项目信息 */
@@ -77,13 +65,7 @@ export interface PerformanceReport {
     memoryUsage: number
   }
   /** 优化建议 */
-  recommendations: Array<{
-    type: 'error' | 'warning' | 'info'
-    category: string
-    title: string
-    description: string
-    solution: string
-  }>
+  recommendations: PerformanceRecommendation[]
 }
 
 /**
@@ -322,8 +304,8 @@ export class PerformanceMonitor extends EventEmitter {
   /**
    * 计算性能评分
    */
-  private calculatePerformanceScore(metrics: PerformanceMetrics): PerformanceReport['score'] {
-    const buildSpeedScore = this.calculateBuildSpeedScore(metrics.totalBuildTime)
+  private calculatePerformanceScore(metrics: PerformanceMetrics): PerformanceScore {
+    const buildSpeedScore = this.calculateBuildSpeedScore(metrics.totalBuildTime || 0)
     const bundleSizeScore = 85 // 简化计算
     const memoryUsageScore = this.calculateMemoryScore(metrics.memoryUsage)
 
@@ -353,8 +335,10 @@ export class PerformanceMonitor extends EventEmitter {
    * 计算内存使用评分
    */
   private calculateMemoryScore(memoryUsage: PerformanceMetrics['memoryUsage']): number {
+    if (!memoryUsage) return 100 // 如果没有内存数据，给满分
+
     const heapUsedMB = memoryUsage.heapUsed / 1024 / 1024
-    
+
     if (heapUsedMB < 100) return 100
     if (heapUsedMB < 200) return 90
     if (heapUsedMB < 300) return 80
@@ -367,13 +351,13 @@ export class PerformanceMonitor extends EventEmitter {
    * 生成优化建议
    */
   private generateRecommendations(
-    metrics: PerformanceMetrics, 
-    score: PerformanceReport['score']
-  ): PerformanceReport['recommendations'] {
-    const recommendations: PerformanceReport['recommendations'] = []
+    metrics: PerformanceMetrics,
+    score: PerformanceScore
+  ): PerformanceRecommendation[] {
+    const recommendations: PerformanceRecommendation[] = []
 
     // 构建速度建议
-    if (score.buildSpeed < 70) {
+    if (score.buildSpeed < 70 && metrics.totalBuildTime) {
       recommendations.push({
         type: 'warning',
         category: 'build-speed',
@@ -384,7 +368,7 @@ export class PerformanceMonitor extends EventEmitter {
     }
 
     // 内存使用建议
-    if (score.memoryUsage < 70) {
+    if (score.memoryUsage < 70 && metrics.memoryUsage) {
       const heapUsedMB = Math.round(metrics.memoryUsage.heapUsed / 1024 / 1024)
       recommendations.push({
         type: 'warning',
@@ -396,7 +380,7 @@ export class PerformanceMonitor extends EventEmitter {
     }
 
     // 缓存建议
-    if (metrics.cacheHitRate < 0.8) {
+    if (metrics.cacheHitRate !== undefined && metrics.cacheHitRate < 0.8) {
       recommendations.push({
         type: 'info',
         category: 'cache',
@@ -407,25 +391,27 @@ export class PerformanceMonitor extends EventEmitter {
     }
 
     // 插件性能建议
-    const slowPlugins = metrics.pluginStats.filter(p => 
-      (p.loadTime + p.transformTime + p.generateTime) > 1000
-    )
-    
-    if (slowPlugins.length > 0) {
-      recommendations.push({
-        type: 'warning',
-        category: 'plugins',
-        title: '插件性能问题',
-        description: `发现 ${slowPlugins.length} 个较慢的插件`,
-        solution: `检查插件配置和版本，考虑替代方案：${slowPlugins.map(p => p.name).join(', ')}`
-      })
+    if (metrics.pluginStats && metrics.pluginStats.length > 0) {
+      const slowPlugins = metrics.pluginStats.filter(p =>
+        (p.loadTime + p.transformTime + p.generateTime) > 1000
+      )
+
+      if (slowPlugins.length > 0) {
+        recommendations.push({
+          type: 'warning',
+          category: 'plugins',
+          title: '插件性能问题',
+          description: `发现 ${slowPlugins.length} 个较慢的插件`,
+          solution: `检查插件配置和版本，考虑替代方案：${slowPlugins.map(p => p.name).join(', ')}`
+        })
+      }
     }
 
     // 热更新建议
-    if (metrics.hmrStats.averageUpdateTime > 500) {
+    if (metrics.hmrStats && metrics.hmrStats.averageUpdateTime > 500) {
       recommendations.push({
         type: 'info',
-        category: 'hmr',
+        category: 'dependencies',
         title: '热更新速度可优化',
         description: `平均热更新时间 ${metrics.hmrStats.averageUpdateTime.toFixed(0)}ms`,
         solution: '减少热更新范围、优化模块依赖关系、考虑使用更细粒度的更新策略'
@@ -461,23 +447,32 @@ export class PerformanceMonitor extends EventEmitter {
     console.log('='.repeat(50))
 
     console.log('\n⏱️  构建时间:')
-    console.log(`   总时间: ${(metrics.totalBuildTime / 1000).toFixed(2)}s`)
-    
-    if (Object.keys(metrics.phases).length > 0) {
+    if (metrics.totalBuildTime) {
+      console.log(`   总时间: ${(metrics.totalBuildTime / 1000).toFixed(2)}s`)
+    }
+
+    if (metrics.phases && Object.keys(metrics.phases).length > 0) {
       console.log('   分阶段时间:')
       Object.entries(metrics.phases)
-        .sort(([,a], [,b]) => b - a)
+        .filter(([, time]) => time !== undefined)
+        .sort(([,a], [,b]) => (b || 0) - (a || 0))
         .slice(0, 5)
         .forEach(([phase, time]) => {
-          console.log(`     ${phase}: ${(time / 1000).toFixed(2)}s`)
+          if (time) {
+            console.log(`     ${phase}: ${(time / 1000).toFixed(2)}s`)
+          }
         })
     }
 
-    console.log('\n💾 内存使用:')
-    const heapUsedMB = Math.round(metrics.memoryUsage.heapUsed / 1024 / 1024)
-    const heapTotalMB = Math.round(metrics.memoryUsage.heapTotal / 1024 / 1024)
-    console.log(`   堆内存: ${heapUsedMB}MB / ${heapTotalMB}MB`)
-    console.log(`   RSS: ${Math.round(metrics.memoryUsage.rss / 1024 / 1024)}MB`)
+    if (metrics.memoryUsage) {
+      console.log('\n💾 内存使用:')
+      const heapUsedMB = Math.round(metrics.memoryUsage.heapUsed / 1024 / 1024)
+      const heapTotalMB = Math.round(metrics.memoryUsage.heapTotal / 1024 / 1024)
+      console.log(`   堆内存: ${heapUsedMB}MB / ${heapTotalMB}MB`)
+      if (metrics.memoryUsage.rss) {
+        console.log(`   RSS: ${Math.round(metrics.memoryUsage.rss / 1024 / 1024)}MB`)
+      }
+    }
 
     console.log('\n🎯 性能评分:')
     console.log(`   综合评分: ${score.overall}/100`)

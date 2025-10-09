@@ -225,6 +225,15 @@ export class ModuleLoader implements IModuleLoader {
           case 'geolocation':
             module = await this.loadGeolocationModule()
             break
+          case 'feature':
+            module = await this.loadFeatureDetectionModule()
+            break
+          case 'performance':
+            module = await this.loadPerformanceModule()
+            break
+          case 'media':
+            module = await this.loadMediaModule()
+            break
           default:
             // 对未知模块不进行重试，直接抛出原始错误，符合测试期望
             throw new Error(`Unknown module: ${name}`)
@@ -284,6 +293,36 @@ export class ModuleLoader implements IModuleLoader {
   private async loadGeolocationModule(): Promise<DeviceModule> {
     const { GeolocationModule } = await import('../modules/GeolocationModule')
     const module = new GeolocationModule()
+    await module.init()
+    return module
+  }
+
+  /**
+   * 加载特性检测模块
+   */
+  private async loadFeatureDetectionModule(): Promise<DeviceModule> {
+    const { FeatureDetectionModule } = await import('../modules/FeatureDetectionModule')
+    const module = new FeatureDetectionModule()
+    await module.init()
+    return module
+  }
+
+  /**
+   * 加载性能评估模块
+   */
+  private async loadPerformanceModule(): Promise<DeviceModule> {
+    const { PerformanceModule } = await import('../modules/PerformanceModule')
+    const module = new PerformanceModule()
+    await module.init()
+    return module
+  }
+
+  /**
+   * 加载媒体设备模块
+   */
+  private async loadMediaModule(): Promise<DeviceModule> {
+    const { MediaModule } = await import('../modules/MediaModule')
+    const module = new MediaModule()
     await module.init()
     return module
   }

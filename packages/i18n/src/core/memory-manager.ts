@@ -60,7 +60,7 @@ interface MemoryItem {
 /**
  * 清理结果接口
  */
-interface CleanupResult {
+export interface CleanupResult {
   itemsRemoved: number
   memoryFreed: number
   duration: number
@@ -75,6 +75,9 @@ export class MemoryManager {
   private stats: MemoryStats
   private cleanupTimer?: NodeJS.Timeout
   private lastCleanup = 0
+  // 懒清理优化
+  private operationCount = 0
+  private cleanupCheckThreshold = 50
 
   constructor(config: Partial<MemoryConfig> = {}) {
     this.config = {
@@ -298,6 +301,14 @@ export class MemoryManager {
    * 检查内存压力
    */
   private checkMemoryPressure(): void {
+    // 懒检查：每50次操作才检查一次，除非已经在压力下
+    this.operationCount++
+    const shouldCheck = this.operationCount >= this.cleanupCheckThreshold || this.stats.underPressure
+    
+    if (!shouldCheck) return
+    
+    this.operationCount = 0
+    
     if (this.stats.pressureLevel > this.config.emergencyThreshold) {
       // 紧急清理
       this.emergencyCleanup()
@@ -322,7 +333,13 @@ export class MemoryManager {
    * 选择要清理的项目
    */
   private selectItemsForCleanup(): MemoryItem[] {
-    const items = Array.from(this.items.values())
+    // 优化：如果项目太多，使用采样而非完整扫描
+    const allItems = Array.from(this.items.values())
+    const sampleSize = Math.min(allItems.length, 500) // 最多采样500个
+    const items = allItems.length > sampleSize 
+      ? this.sampleItems(allItems, sampleSize)
+      : allItems
+    
     const targetReduction = Math.max(
       this.stats.totalMemory * 0.1, // 至少清理10%
       this.stats.totalMemory - this.config.maxMemory * this.config.pressureThreshold
@@ -460,6 +477,20 @@ export class MemoryManager {
       pressureLevel: 0,
       underPressure: false
     }
+  }
+
+  /**
+   * 采样项目（为大集合优化）
+   */
+  private sampleItems(items: MemoryItem[], sampleSize: number): MemoryItem[] {
+    const sampled: MemoryItem[] = []
+    const step = Math.floor(items.length / sampleSize)
+    
+    for (let i = 0; i < items.length && sampled.length < sampleSize; i += step) {
+      sampled.push(items[i])
+    }
+    
+    return sampled
   }
 }
 

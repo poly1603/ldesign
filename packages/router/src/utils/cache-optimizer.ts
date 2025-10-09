@@ -1,6 +1,6 @@
 /**
  * @ldesign/router 缓存优化器
- * 
+ *
  * 提供智能缓存管理和优化策略
  */
 
@@ -30,7 +30,8 @@ export class LRUCache<K, V> {
   set(key: K, value: V): void {
     if (this.cache.has(key)) {
       this.cache.delete(key)
-    } else if (this.cache.size >= this.maxSize) {
+    }
+    else if (this.cache.size >= this.maxSize) {
       // 删除最久未使用的项
       const firstKey = this.cache.keys().next().value
       this.cache.delete(firstKey)
@@ -78,13 +79,13 @@ export class SmartRouteCache {
    */
   get(path: string): RouteLocationNormalized | undefined {
     const route = this.routeCache.get(path)
-    
+
     if (route) {
       this.hitCount++
       this.updateAccessStats(path)
       return route
     }
-    
+
     this.missCount++
     return undefined
   }
@@ -109,7 +110,7 @@ export class SmartRouteCache {
   /**
    * 获取热门路由
    */
-  getHotRoutes(limit = 10): Array<{ path: string; count: number }> {
+  getHotRoutes(limit = 10): Array<{ path: string, count: number }> {
     return Array.from(this.accessCount.entries())
       .sort(([, a], [, b]) => b - a)
       .slice(0, limit)
@@ -159,7 +160,7 @@ export class SmartRouteCache {
       missCount: this.missCount,
       cacheSize: this.routeCache.size,
       totalAccess: total,
-      hotRoutes: this.getHotRoutes(5)
+      hotRoutes: this.getHotRoutes(5),
     }
   }
 
@@ -206,11 +207,11 @@ export class ComponentCacheOptimizer {
     }
 
     // 开始加载
-    const promise = loader().then(component => {
+    const promise = loader().then((component) => {
       this.componentCache.set(path, component)
       this.loadingPromises.delete(path)
       return component
-    }).catch(error => {
+    }).catch((error) => {
       this.loadingPromises.delete(path)
       throw error
     })
@@ -226,7 +227,8 @@ export class ComponentCacheOptimizer {
     if (!this.componentCache.has(path) && !this.loadingPromises.has(path)) {
       try {
         await this.getComponent(path, loader)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`预加载组件失败: ${path}`, error)
       }
     }
@@ -235,11 +237,11 @@ export class ComponentCacheOptimizer {
   /**
    * 批量预加载组件
    */
-  async preloadComponents(components: Array<{ path: string; loader: () => Promise<any> }>): Promise<void> {
-    const promises = components.map(({ path, loader }) => 
-      this.preloadComponent(path, loader)
+  async preloadComponents(components: Array<{ path: string, loader: () => Promise<any> }>): Promise<void> {
+    const promises = components.map(({ path, loader }) =>
+      this.preloadComponent(path, loader),
     )
-    
+
     await Promise.allSettled(promises)
   }
 
@@ -249,7 +251,7 @@ export class ComponentCacheOptimizer {
   getStats() {
     return {
       cacheSize: this.componentCache.size,
-      loadingCount: this.loadingPromises.size
+      loadingCount: this.loadingPromises.size,
     }
   }
 

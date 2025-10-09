@@ -15,6 +15,7 @@ export * from './plugin'
 export * from './server'
 export * from './build'
 export * from './cli'
+export * from './performance'
 
 // 从 ui-config 中选择性导出，避免与 config.ts 中的 EnvironmentConfig 冲突
 export type {

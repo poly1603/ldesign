@@ -297,14 +297,14 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
 
         // 预设可用语言列表，基于 messages 和配置
         const messageKeys = messages ? Object.keys(messages as Record<string, unknown>) : []
-        let initialLanguages = Array.from(new Set([locale, fallbackLocale, ...messageKeys].filter(Boolean)))
+        let initialLanguages: string[] = Array.from(new Set([locale, fallbackLocale, ...messageKeys].filter((lang): lang is string => Boolean(lang))))
 
         // 应用语言过滤规则
         if (Array.isArray(enabledLanguages) && enabledLanguages.length) {
-          initialLanguages = initialLanguages.filter(code => enabledLanguages!.includes(code))
+          initialLanguages = initialLanguages.filter(code => enabledLanguages.includes(code))
         }
         if (Array.isArray(disabledLanguages) && disabledLanguages.length) {
-          initialLanguages = initialLanguages.filter(code => !disabledLanguages!.includes(code))
+          initialLanguages = initialLanguages.filter(code => !disabledLanguages.includes(code))
         }
 
         // 确保至少有当前语言和回退语言

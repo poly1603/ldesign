@@ -9,7 +9,7 @@ export {
   createComputed,
   createPersistedState,
   createState,
-  createStore,
+  createStore as createHookStore, // 重命名以避免与 core 模块冲突
 } from './createStore'
 
 // Store 使用 Hooks

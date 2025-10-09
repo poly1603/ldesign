@@ -29,5 +29,24 @@ export {
   type PerformanceMetrics as PerformanceOptimizerMetrics
 } from './PerformanceOptimizer'
 
+// 新增：增强版模块导出
+export {
+  PerformanceMonitorEnhanced,
+  createEnhancedMonitor,
+  type MemoryPressure,
+  type MemoryPressureLevel,
+  type RealtimeMetrics,
+  type HistoricalMetrics,
+  type DashboardMetrics,
+  type EnhancedMonitorConfig
+} from './PerformanceMonitorEnhanced'
+
+export {
+  SmartCacheManager,
+  createSmartCache,
+  type CacheStatistics,
+  type SmartCacheConfig
+} from './SmartCacheManager'
+
 // 移除默认导出，保持导出一致性
 // export { ViteLauncher as default } from './ViteLauncher'

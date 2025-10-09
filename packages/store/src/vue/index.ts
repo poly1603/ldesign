@@ -7,7 +7,7 @@
 export type {
   ProviderPluginOptions,
   StoreDefinition,
-  StoreFactory,
+  StoreFactory as VueStoreFactory, // 重命名以避免与 core 模块冲突
   StoreProviderContext,
   StoreProviderOptions,
   StoreRegistration,

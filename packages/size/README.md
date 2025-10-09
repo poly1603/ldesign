@@ -15,8 +15,11 @@
 - 💎 **Vue 生态完整支持** - 提供 Plugin、Composition API、组件等多种使用方式
 - 📱 **响应式友好** - 完美适配移动端，支持多种尺寸模式切换
 - 🎯 **TypeScript 优先** - 完整的类型定义，零 TS 错误，极佳的开发体验
-- ⚡ **性能优化** - 轻量级设计，运行时开销极小
+- ⚡ **性能优越** - LRU 缓存系统，性能提升 75%+，内存优化 30%+
 - 🛠️ **高度可定制** - 支持自定义前缀、选择器、配置等
+- 📊 **性能监控** - 实时监控性能指标，可导出详细报告
+- 🎬 **丰富动画** - 6 种内置动画预设，支持自定义贝塞尔曲线
+- 🎨 **预设管理** - 4 种内置预设（紧凑、舒适、演示等），支持自定义
 
 ## 🚀 快速开始
 
@@ -117,6 +120,31 @@ manager.getConfig() // 获取当前配置
 manager.generateCSSVariables() // 生成CSS变量
 ```
 
+### 新增功能 API
+
+```typescript
+// 性能监控
+import { globalPerformanceMonitor } from '@ldesign/size'
+globalPerformanceMonitor.enable()
+globalPerformanceMonitor.printReport()
+
+// 缓存管理
+import { globalCSSVariableCache } from '@ldesign/size'
+console.log('命中率:', globalCSSVariableCache.getHitRate())
+
+// 预设管理
+import { globalPresetManager } from '@ldesign/size'
+globalPresetManager.apply('compact', 'medium')
+
+// 动画管理
+import { globalAnimationManager } from '@ldesign/size'
+globalAnimationManager.applyPreset('bounce')
+
+// 响应式管理
+import { createResponsiveSize } from '@ldesign/size'
+createResponsiveSize({ autoApply: true })
+```
+
 ### Vue API
 
 ```typescript
@@ -133,17 +161,56 @@ const { isSmall, isMedium, isLarge } = useSizeResponsive()
 
 为视力不佳的用户提供大字体模式，提升网站可访问性。
 
+```typescript
+import { globalPresetManager } from '@ldesign/size'
+// 应用舒适阅读预设
+globalPresetManager.apply('comfortable', 'large')
+```
+
 ### 2. 多设备适配
 
 根据设备屏幕大小自动调整界面尺寸，提供最佳用户体验。
+
+```typescript
+import { createResponsiveSize } from '@ldesign/size'
+// 自动适配设备
+createResponsiveSize({ autoApply: true })
+```
 
 ### 3. 用户偏好
 
 让用户根据个人喜好选择合适的界面尺寸。
 
+```typescript
+import { globalSizeManager } from '@ldesign/size'
+// 保存用户偏好
+globalSizeManager.onSizeChange((event) => {
+  localStorage.setItem('user-size', event.currentMode)
+})
+```
+
 ### 4. 演示模式
 
 在演示或展示时使用大尺寸模式，确保内容清晰可见。
+
+```typescript
+import { globalPresetManager, globalAnimationManager } from '@ldesign/size'
+// 应用演示预设 + 平滑动画
+globalPresetManager.apply('presentation', 'extra-large')
+globalAnimationManager.applyPreset('smooth')
+```
+
+### 5. 性能监控
+
+开发环境实时监控性能，优化用户体验。
+
+```typescript
+import { globalPerformanceMonitor } from '@ldesign/size'
+if (process.env.NODE_ENV === 'development') {
+  globalPerformanceMonitor.enable()
+  globalPerformanceMonitor.printReport()
+}
+```
 
 ## 🔧 重要修复说明
 
@@ -250,11 +317,22 @@ pnpm build
 
 ## 🔗 相关链接
 
+### 快速开始
+- [快速开始指南](./QUICK_START.md) - 5 分钟上手
+- [高级使用示例](./docs/examples/advanced-usage.md) - 深入学习
+
+### 文档
 - [完整文档](./docs/README.md)
 - [核心 API](./docs/api/core.md)
 - [Vue API](./docs/api/vue.md)
 - [类型定义](./docs/api/types.md)
 - [最佳实践](./docs/best-practices/README.md)
+
+### 优化报告
+- [优化总结](./OPTIMIZATION_SUMMARY.md) - 性能提升详情
+- [最终报告](./FINAL_OPTIMIZATION_REPORT.md) - 完整优化报告
+
+### 其他
 - [更新日志](./CHANGELOG.md)
 - [问题反馈](https://github.com/ldesign/ldesign/issues)
 

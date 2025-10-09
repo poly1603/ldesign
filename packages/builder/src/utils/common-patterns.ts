@@ -1,10 +1,25 @@
 /**
  * 通用模式和工具函数
- * 
+ *
  * 提供常用的代码模式和工具函数，减少代码重复
  */
 
 import { BUILD_CONSTANTS } from '../constants/defaults'
+
+// 从 performance-utils 导出，避免重复定义
+export {
+  debounce,
+  throttle,
+  memoize,
+  memoizeAsync,
+  formatBytes as formatFileSize,
+  formatDuration,
+  MemoryMonitor,
+  BatchProcessor
+} from './performance-utils'
+
+// 导入 formatDuration 用于内部使用
+import { formatDuration } from './performance-utils'
 
 /**
  * 重试配置
@@ -35,26 +50,26 @@ export async function withRetry<T>(
   } = options
 
   let lastError: Error | null = null
-  
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn()
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error))
-      
+
       if (attempt === maxRetries) {
         break
       }
-      
+
       // 计算延迟时间
-      const delay = exponentialBackoff 
+      const delay = exponentialBackoff
         ? Math.min(delayBase * Math.pow(2, attempt), maxDelay)
         : delayBase
-      
+
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   }
-  
+
   throw lastError
 }
 
@@ -84,7 +99,7 @@ export async function batchProcess<T, R>(
   batchSize = 10
 ): Promise<R[]> {
   const results: R[] = []
-  
+
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize)
     const batchResults = await Promise.all(
@@ -92,92 +107,8 @@ export async function batchProcess<T, R>(
     )
     results.push(...batchResults)
   }
-  
+
   return results
-}
-
-/**
- * 防抖函数
- */
-export function debounce<T extends (...args: any[]) => any>(
-  fn: T,
-  delay: number
-): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout | undefined
-  
-  return (...args: Parameters<T>) => {
-    if (timeoutId) {
-      clearTimeout(timeoutId)
-    }
-    
-    timeoutId = setTimeout(() => {
-      fn(...args)
-    }, delay)
-  }
-}
-
-/**
- * 节流函数
- */
-export function throttle<T extends (...args: any[]) => any>(
-  fn: T,
-  delay: number
-): (...args: Parameters<T>) => void {
-  let lastCall = 0
-  
-  return (...args: Parameters<T>) => {
-    const now = Date.now()
-    
-    if (now - lastCall >= delay) {
-      lastCall = now
-      fn(...args)
-    }
-  }
-}
-
-/**
- * 缓存装饰器
- */
-export function memoize<T extends (...args: any[]) => any>(
-  fn: T,
-  keyGenerator?: (...args: Parameters<T>) => string
-): T {
-  const cache = new Map<string, ReturnType<T>>()
-  
-  return ((...args: Parameters<T>) => {
-    const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args)
-    
-    if (cache.has(key)) {
-      return cache.get(key)!
-    }
-    
-    const result = fn(...args)
-    cache.set(key, result)
-    return result
-  }) as T
-}
-
-/**
- * 格式化文件大小
- */
-export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`
-}
-
-/**
- * 格式化持续时间
- */
-export function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`
-  if (ms < 60000) return `${(ms / 1000).toFixed(2)}s`
-  if (ms < 3600000) return `${(ms / 60000).toFixed(2)}m`
-  return `${(ms / 3600000).toFixed(2)}h`
 }
 
 /**

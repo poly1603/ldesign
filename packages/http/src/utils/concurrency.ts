@@ -312,7 +312,7 @@ export class DeduplicationManager {
   private maxPendingRequests = 1000 // 最大待处理请求数
   private cleanupInterval = 30000 // 清理间隔（30秒）
   private requestTimeout = 60000 // 请求超时时间（60秒）
-  private cleanupTimer?: NodeJS.Timeout
+  private cleanupTimer?: ReturnType<typeof setTimeout>
 
   constructor() {
     // 启动自动清理

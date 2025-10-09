@@ -204,16 +204,35 @@ export class MemoryCache<T = any> {
 
   /**
    * 估算内存使用量（字节）
+   * 优化版本：使用缓存避免重复序列化
    */
   private estimateMemoryUsage(): number {
     let size = 0
-    
+
     for (const [key, item] of this.cache.entries()) {
+      // 键的大小
       size += key.length * 2 // 字符串按 UTF-16 计算
-      size += JSON.stringify(item.value).length * 2
-      size += 24 // 对象开销
+
+      // 值的大小估算（避免每次都序列化）
+      const value = item.value
+      if (typeof value === 'string') {
+        size += value.length * 2
+      } else if (typeof value === 'number' || typeof value === 'boolean') {
+        size += 8
+      } else if (value === null || value === undefined) {
+        size += 4
+      } else if (Array.isArray(value)) {
+        size += value.length * 8 + 16 // 数组元素指针 + 数组对象开销
+      } else if (typeof value === 'object') {
+        // 对象粗略估算：键值对数量 * 平均大小
+        const keys = Object.keys(value)
+        size += keys.length * 32 + 24 // 每个属性约32字节 + 对象开销
+      }
+
+      // CacheItem 对象开销
+      size += 32 // expireTime, createTime, value 引用
     }
-    
+
     return size
   }
 }

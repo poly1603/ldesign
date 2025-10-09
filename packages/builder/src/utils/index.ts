@@ -1,8 +1,8 @@
 /**
  * @ldesign/builder - 工具函数统一导出
- * 
+ *
  * 提供所有工具函数的统一导出
- * 
+ *
  * @author LDesign Team
  * @version 1.0.0
  */
@@ -10,7 +10,7 @@
 // 配置相关工具
 export * from './config'
 
-// 通用工具函数 (复用 launcher 的实现)
+// 通用工具函数
 export * from './file-system'
 export * from './path-utils'
 export * from './logger'
@@ -22,6 +22,32 @@ export * from './banner-generator'
 export * from './minify-processor'
 export * from './package-updater'
 
+// 性能工具 - 统一从 performance-utils 导出
+export {
+  MemoryMonitor,
+  BatchProcessor,
+  debounce,
+  throttle,
+  memoize,
+  memoizeAsync,
+  formatBytes,
+  formatDuration
+} from './performance-utils'
+
+// 通用模式工具
+export {
+  withRetry,
+  safeAsync,
+  batchProcess,
+  deepMerge,
+  isEmpty,
+  ensureArray,
+  safeJsonParse,
+  createTimer,
+  ConcurrencyLimiter,
+  type RetryOptions
+} from './common-patterns'
+
 // 高级功能模块 - 使用命名导出避免类型冲突
 export {
   CodeQualityAnalyzer,
@@ -29,14 +55,6 @@ export {
   type QualityIssue,
   type QualityMetrics
 } from './code-quality-analyzer'
-
-export {
-  MemoryMonitor,
-  debounce,
-  throttle,
-  formatBytes,
-  formatDuration
-} from './performance-utils'
 
 export {
   DependencyAnalyzer,
@@ -81,4 +99,47 @@ export {
   createAutoConfigEnhancer
 } from './auto-config-enhancer'
 
-// 注意：detection.ts, performance.ts, validation.ts 暂时为空，不导出
+// 增量构建管理器
+export {
+  IncrementalBuildManager,
+  createIncrementalBuildManager,
+  type FileChangeInfo,
+  type IncrementalBuildState,
+  type IncrementalBuildOptions
+} from './incremental-build-manager'
+
+// 构建报告生成器
+export {
+  BuildReportGenerator,
+  createBuildReportGenerator,
+  type BuildReportData,
+  type ReportFormat,
+  type BuildReportOptions
+} from './build-report-generator'
+
+// 内存管理和流式处理
+export {
+  ResourceManager,
+  MemoryManager,
+  StreamProcessor,
+  GCOptimizer,
+  getGlobalMemoryManager,
+  resetGlobalMemoryManager,
+  createCleanupable,
+  managedResource,
+  createStreamProcessor,
+  createGCOptimizer,
+  type ICleanupable,
+  type MemoryManagerOptions,
+  type StreamProcessOptions
+} from './memory-manager'
+
+// 并行处理器
+export {
+  ParallelProcessor,
+  createParallelProcessor,
+  TaskStatus,
+  type Task,
+  type TaskResult,
+  type ParallelProcessorOptions
+} from './parallel-processor'

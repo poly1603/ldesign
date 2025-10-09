@@ -302,9 +302,9 @@ function createFallbackEnhancedI18n() {
 }
 
 /**
- * 导出类型
+ * 导出类型（已在核心类型中定义，这里不再重复导出）
  */
-export type {
-  TranslationOptions,
-  TranslationResult
-}
+// export type {
+//   TranslationOptions,
+//   TranslationResult
+// }

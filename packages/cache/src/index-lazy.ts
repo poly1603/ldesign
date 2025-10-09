@@ -6,7 +6,7 @@
 
 // 核心模块 - 立即加载
 export { CacheManager } from './core/cache-manager'
-export type { CacheOptions, CacheEvent, SetOptions, GetOptions } from './types'
+export type { CacheOptions, CacheEvent, SetOptions } from './types'
 
 // 懒加载模块
 export const lazyModules = {
@@ -36,8 +36,8 @@ export const lazyModules = {
 
   // 命名空间管理 - 按需加载
   async loadNamespaceManager() {
-    const { NamespaceManager, createNamespace } = await import('./core/namespace-manager')
-    return { NamespaceManager, createNamespace }
+    const { CacheNamespace, createNamespace } = await import('./core/namespace-manager')
+    return { CacheNamespace, createNamespace }
   },
 
   // 存储引擎 - 按需加载
@@ -102,33 +102,8 @@ export const lazyModules = {
 
   // 工具模块 - 按需加载
   async loadUtils() {
-    const [
-      { Compressor },
-      { EventEmitter },
-      { ErrorHandler },
-      { RetryManager },
-      { Prefetcher },
-      { Validator },
-      utils
-    ] = await Promise.all([
-      import('./utils/compressor'),
-      import('./utils/event-emitter'),
-      import('./utils/error-handler'),
-      import('./utils/retry-manager'),
-      import('./utils/prefetcher'),
-      import('./utils/validator'),
-      import('./utils/index')
-    ])
-    
-    return {
-      Compressor,
-      EventEmitter,
-      ErrorHandler,
-      RetryManager,
-      Prefetcher,
-      Validator,
-      ...utils
-    }
+    const utils = await import('./utils/index')
+    return utils
   },
 
   // Vue 集成 - 按需加载
@@ -136,7 +111,7 @@ export const lazyModules = {
     const [
       { useCache },
       { useCacheStats },
-      { useCacheHelpers },
+      vueHelpers,
       { CacheProvider }
     ] = await Promise.all([
       import('./vue/use-cache'),
@@ -144,11 +119,11 @@ export const lazyModules = {
       import('./vue/use-cache-helpers'),
       import('./vue/cache-provider')
     ])
-    
+
     return {
       useCache,
       useCacheStats,
-      useCacheHelpers,
+      ...vueHelpers,
       CacheProvider
     }
   },

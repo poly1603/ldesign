@@ -1,6 +1,11 @@
 /**
- * HTTP请求缓存功能
- * 提供智能缓存机制，支持多种缓存策略和存储方式
+ * HTTP请求缓存功能 - 中间件层
+ *
+ * 注意：此文件提供缓存中间件功能，与 utils/cache.ts 的职责不同：
+ * - features/cache.ts: 提供 HTTP 缓存中间件（用于拦截器）
+ * - utils/cache.ts: 提供缓存管理器（用于 HTTP 客户端内部）
+ *
+ * 两者的接口定义略有不同，这是设计上的考虑。
  */
 
 export interface CacheConfig {
@@ -76,7 +81,7 @@ export class MemoryCacheStorage implements CacheStorage {
   }
 
   async set(key: string, item: CacheItem): Promise<void> {
-    // 如果超过最大大小，删除最旧的条目
+    // 如果超过最大大小，删除最旧的条目（LRU）
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value
       if (firstKey) {
@@ -105,7 +110,7 @@ export class MemoryCacheStorage implements CacheStorage {
 }
 
 /**
- * LocalStorage缓存存储
+ * LocalStorage 缓存存储
  */
 export class LocalStorageCacheStorage implements CacheStorage {
   private prefix: string

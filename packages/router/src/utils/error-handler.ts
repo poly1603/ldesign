@@ -1,10 +1,10 @@
 /**
  * @ldesign/router 错误处理增强
- * 
+ *
  * 提供统一的错误处理、恢复机制和错误报告
  */
 
-import type { RouteLocationNormalized, NavigationFailure } from '../types'
+import type { RouteLocationNormalized } from '../types'
 
 /**
  * 路由错误类型
@@ -18,7 +18,7 @@ export enum RouterErrorType {
   INVALID_ROUTE = 'INVALID_ROUTE',
   PERMISSION_DENIED = 'PERMISSION_DENIED',
   NETWORK_ERROR = 'NETWORK_ERROR',
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
 /**
@@ -71,7 +71,7 @@ export class RouterErrorHandler {
         console.warn('组件加载失败，尝试重新加载:', error.route?.path)
         await this.delay(1000)
         return true // 允许重试
-      }
+      },
     })
 
     // 网络错误恢复策略
@@ -83,7 +83,7 @@ export class RouterErrorHandler {
         console.warn('网络错误，等待重试:', error.message)
         await this.delay(2000)
         return navigator.onLine // 只有在线时才重试
-      }
+      },
     })
 
     // 权限拒绝处理
@@ -95,7 +95,7 @@ export class RouterErrorHandler {
       handler: async (error) => {
         console.warn('权限不足，重定向到登录页:', error.route?.path)
         return false // 不重试，直接跳转
-      }
+      },
     })
   }
 
@@ -111,10 +111,10 @@ export class RouterErrorHandler {
    */
   async handleError(error: Error | RouterError, route?: RouteLocationNormalized): Promise<boolean> {
     const routerError = this.normalizeError(error, route)
-    
+
     // 记录错误
     this.logError(routerError)
-    
+
     // 尝试恢复
     return this.attemptRecovery(routerError)
   }
@@ -131,7 +131,8 @@ export class RouterErrorHandler {
     let type = RouterErrorType.UNKNOWN_ERROR
     if (error.message.includes('Loading chunk')) {
       type = RouterErrorType.COMPONENT_LOAD_FAILED
-    } else if (error.message.includes('Network')) {
+    }
+    else if (error.message.includes('Network')) {
       type = RouterErrorType.NETWORK_ERROR
     }
 
@@ -145,8 +146,8 @@ export class RouterErrorHandler {
       context: {
         userAgent: navigator.userAgent,
         url: window.location.href,
-        online: navigator.onLine
-      }
+        online: navigator.onLine,
+      },
     } as RouterError
   }
 
@@ -162,7 +163,7 @@ export class RouterErrorHandler {
    */
   private logError(error: RouterError): void {
     this.errorLog.push(error)
-    
+
     // 限制日志大小
     if (this.errorLog.length > this.maxLogSize) {
       this.errorLog.shift()
@@ -173,7 +174,7 @@ export class RouterErrorHandler {
       message: error.message,
       route: error.route?.path,
       timestamp: new Date(error.timestamp).toISOString(),
-      context: error.context
+      context: error.context,
     })
   }
 
@@ -198,13 +199,14 @@ export class RouterErrorHandler {
     try {
       // 执行恢复策略
       const shouldRetry = await strategy.handler(error)
-      
+
       if (shouldRetry) {
         this.retryCount.set(retryKey, currentRetries + 1)
         console.log(`错误恢复成功，重试次数: ${currentRetries + 1}/${strategy.maxRetries}`)
         return true
       }
-    } catch (recoveryError) {
+    }
+    catch (recoveryError) {
       console.error('错误恢复失败:', recoveryError)
     }
 
@@ -235,21 +237,21 @@ export class RouterErrorHandler {
       recentErrors: recentErrors.length,
       errorsByType: Object.fromEntries(errorsByType),
       mostCommonError: this.getMostCommonError(),
-      errorRate: this.calculateErrorRate()
+      errorRate: this.calculateErrorRate(),
     }
   }
 
   /**
    * 获取最常见的错误类型
    */
-  private getMostCommonError(): { type: RouterErrorType; count: number } | null {
+  private getMostCommonError(): { type: RouterErrorType, count: number } | null {
     const errorCounts = new Map<RouterErrorType, number>()
-    
+
     for (const error of this.errorLog) {
       errorCounts.set(error.type, (errorCounts.get(error.type) || 0) + 1)
     }
 
-    let mostCommon: { type: RouterErrorType; count: number } | null = null
+    let mostCommon: { type: RouterErrorType, count: number } | null = null
     for (const [type, count] of errorCounts) {
       if (!mostCommon || count > mostCommon.count) {
         mostCommon = { type, count }
@@ -293,7 +295,7 @@ export function createRouterError(
   type: RouterErrorType,
   message: string,
   route?: RouteLocationNormalized,
-  originalError?: Error
+  originalError?: Error,
 ): RouterError {
   return {
     name: 'RouterError',
@@ -306,7 +308,7 @@ export function createRouterError(
     context: {
       userAgent: navigator.userAgent,
       url: window.location.href,
-      online: navigator.onLine
-    }
+      online: navigator.onLine,
+    },
   } as RouterError
 }

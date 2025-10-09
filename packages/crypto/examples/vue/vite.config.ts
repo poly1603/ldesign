@@ -13,7 +13,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@ldesign/crypto/vue': path.resolve(__dirname, '../../src/vue/index.ts'),
+      '@ldesign/crypto/vue': path.resolve(__dirname, '../../src/vue.ts'),
       '@ldesign/crypto': path.resolve(__dirname, '../../src/index.ts'),
       '@': path.resolve(__dirname, '../../src'),
     },

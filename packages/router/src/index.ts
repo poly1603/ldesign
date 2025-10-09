@@ -7,6 +7,17 @@
 
 // ==================== 核心功能导出 ====================
 
+export {
+  createRouteAnalytics,
+  // 路由分析
+  RouteAnalytics,
+} from './analytics/route-analytics'
+export type {
+  AnalyticsConfig,
+  PerformanceMetrics as AnalyticsPerformanceMetrics,
+  RouteVisit,
+  UserBehaviorEvent,
+} from './analytics/route-analytics'
 // Vue 组件
 export {
   DeviceUnsupported,
@@ -17,12 +28,14 @@ export {
   RouterView,
   withErrorBoundary,
 } from './components'
+
 // 组件类型
 export type {
   DeviceUnsupportedProps,
   ErrorBoundaryProps,
   RouteErrorInfo,
 } from './components'
+
 // 组件类型
 export type {
   AnimationConfig,
@@ -44,6 +57,8 @@ export type {
 // 核心 Hooks
 export { useLink, useNavigation, useRoute, useRouter } from './composables'
 
+// ==================== 类型定义导出 ====================
+
 // 参数 Hooks
 export {
   useHash,
@@ -55,14 +70,14 @@ export {
 
 // 守卫 Hooks
 export { onBeforeRouteLeave, onBeforeRouteUpdate } from './composables'
-
-// ==================== 类型定义导出 ====================
-
 // 工具 Hooks
 export { hasRoute, hasRouter } from './composables'
 
+// ==================== 组件导出 ====================
+
 // 设备适配 Hooks
 export { useDeviceComponent, useDeviceRoute } from './composables'
+
 export type {
   // UseDeviceComponentOptions,
   // UseDeviceComponentReturn,
@@ -70,10 +85,10 @@ export type {
   UseDeviceRouteReturn,
 } from './composables'
 
-// ==================== 组件导出 ====================
-
 // 组合式 API 类型
 export type { UseLinkOptions, UseLinkReturn } from './composables'
+
+// ==================== 组合式 API 导出 ====================
 
 // 常量
 export {
@@ -95,8 +110,6 @@ export {
   createWebHistory,
 } from './core/history'
 
-// ==================== 组合式 API 导出 ====================
-
 // 路由匹配
 export { RouteMatcher } from './core/matcher'
 
@@ -104,6 +117,17 @@ export { RouteMatcher } from './core/matcher'
 export { createRouter } from './core/router'
 
 export type { RouterImpl } from './core/router'
+
+// ==================== 插件系统导出 ====================
+
+// ==================== Engine集成导出 ====================
+
+export {
+  // 开发调试工具
+  createDevTools,
+  DevToolsPanel,
+  RouteInspector,
+} from './debug/dev-tools'
 
 // 设备适配核心功能
 export {
@@ -119,19 +143,13 @@ export {
   resolveDeviceComponent,
 } from './device/utils'
 
-// ==================== 插件系统导出 ====================
-
-// ==================== Engine集成导出 ====================
-
 // Engine插件（用于Engine集成）
 export {
   createDefaultRouterEnginePlugin,
   createRouterEnginePlugin,
   routerPlugin,
 } from './engine'
-
 export type { RouterEnginePluginOptions } from './engine'
-
 export {
   combineGuards,
   createAuthGuard,
@@ -152,6 +170,28 @@ export type {
   ScrollGuardOptions,
   TitleGuardOptions,
 } from './guards'
+export {
+  authMiddleware,
+  createCacheMiddleware,
+  createRateLimitMiddleware,
+  loggingMiddleware,
+  // 中间件系统
+  MiddlewareManager,
+  middlewareManager,
+  permissionMiddleware,
+  progressMiddleware,
+  roleMiddleware,
+  titleMiddleware,
+} from './middleware'
+
+// ==================== 路由守卫导出 ====================
+
+export type {
+  MiddlewareConfig,
+  MiddlewareContext,
+  MiddlewareFunction,
+} from './middleware'
+
 // 动画插件
 export {
   ANIMATION_PRESETS,
@@ -161,7 +201,12 @@ export {
   getAnimationDuration,
   supportsAnimations,
 } from './plugins/animation'
+
+// ==================== 工具函数导出 ====================
+
 export type { AnimationPluginOptions } from './plugins/animation'
+
+// ==================== Engine 集成导出 ====================
 
 // 缓存插件
 export {
@@ -170,9 +215,10 @@ export {
   createCachePlugin,
   supportsCaching,
 } from './plugins/cache'
-export type { CachePluginOptions } from './plugins/cache'
 
-// ==================== 路由守卫导出 ====================
+// ==================== 设备适配功能 ====================
+
+export type { CachePluginOptions } from './plugins/cache'
 
 // 性能监控插件
 export {
@@ -187,7 +233,7 @@ export {
 
 export type { PerformancePluginOptions } from './plugins/performance'
 
-// ==================== 工具函数导出 ====================
+// ==================== 性能优化工具 ====================
 
 // 预加载插件
 export {
@@ -200,97 +246,7 @@ export {
   VisibilityPreloadStrategy,
 } from './plugins/preload'
 
-// ==================== Engine 集成导出 ====================
-
 export type { PreloadPluginOptions } from './plugins/preload'
-
-// ==================== 设备适配功能 ====================
-
-// 核心类型
-export type {
-  HistoryLocation,
-  HistoryState,
-  NavigationCallback,
-  NavigationDirection,
-  NavigationFailure,
-  NavigationGuard,
-  NavigationGuardNext,
-  NavigationGuardReturn,
-  NavigationHookAfter,
-  NavigationInformation,
-  NavigationType,
-  RouteComponent,
-  RouteLocationBase,
-  RouteLocationNormalized,
-  RouteLocationRaw,
-  RouteMeta,
-  RouteParams,
-  RouteQuery,
-  Router,
-  RouteRecordNormalized,
-  RouteRecordRaw,
-  RouterHistory,
-  RouterOptions,
-  ScrollBehavior,
-  ScrollPosition,
-  UseRouteReturn,
-  UseRouterReturn,
-} from './types'
-
-// 设备适配类型
-export type {
-  DeviceComponentResolution,
-  DeviceGuardOptions,
-  DeviceRouteConfig,
-  DeviceRouterPluginOptions,
-} from './types'
-
-export {
-  buildPath,
-  // 工具函数
-  cloneRouteLocation,
-  // 导航失败处理
-  createNavigationFailure,
-  extractParams,
-  getRouteDepth,
-  isChildRoute,
-  isNavigationFailure,
-  isSameRouteLocation,
-  joinPaths,
-
-  // 路由匹配
-  matchPath,
-  mergeQuery,
-  // 路由位置处理
-  normalizeParams,
-
-  // 路径处理
-  normalizePath,
-  parsePathParams,
-
-  // 查询参数处理
-  parseQuery,
-  // URL 处理
-  parseURL,
-  resolveRouteLocation,
-  stringifyQuery,
-  stringifyURL,
-} from './utils'
-
-// ==================== 性能优化工具 ====================
-
-export {
-  hoverPreload,
-  lazyLoadComponent,
-  lazyLoadRoutes,
-  optimizeRoutes,
-  preloadRoutes,
-  SmartPreloader,
-  splitChunk,
-  visibilityPreload,
-} from './utils/lazy-load'
-
-export type { LazyLoadOptions } from './utils/lazy-load'
 
 // ==================== 便捷创建函数 ====================
 
@@ -331,8 +287,8 @@ export async function createFullRouter(options: {
   scrollBehavior?: import('./types').ScrollBehavior
 }) {
   // 动态导入以支持代码分割
-  const [vueRouter, animationPlugin, cachePlugin, performancePlugin, preloadPlugin] =
-    await Promise.all([
+  const [vueRouter, animationPlugin, cachePlugin, performancePlugin, preloadPlugin]
+    = await Promise.all([
       import('./core/router'),
       import('./plugins/animation'),
       import('./plugins/cache'),
@@ -423,50 +379,9 @@ export async function createFullRouter(options: {
 // ==================== 开发工具导出 ====================
 
 export {
-  // 开发调试工具
-  createDevTools,
-  DevToolsPanel,
-  RouteInspector,
-} from './debug/dev-tools'
-
-export {
-  // 测试工具
-  RouterTestUtils,
-  RouteAssertions,
-  RoutePerformanceTester,
-  createTestRouter,
-  createRouteAssertions,
-  createPerformanceTester,
-  setupRouterTest,
-  testRoutes,
-} from './testing/test-utils'
-
-// ==================== 功能扩展导出 ====================
-
-export {
-  // 中间件系统
-  MiddlewareManager,
-  middlewareManager,
-  authMiddleware,
-  permissionMiddleware,
-  roleMiddleware,
-  loggingMiddleware,
-  titleMiddleware,
-  progressMiddleware,
-  createCacheMiddleware,
-  createRateLimitMiddleware,
-} from './middleware'
-
-export type {
-  MiddlewareFunction,
-  MiddlewareContext,
-  MiddlewareConfig,
-} from './middleware'
-
-export {
+  createRouteStateManager,
   // 路由状态管理
   RouteStateManager,
-  createRouteStateManager,
   useRouteState,
 } from './state/route-state'
 
@@ -475,18 +390,103 @@ export type {
   RouteState,
 } from './state/route-state'
 
-export {
-  // 路由分析
-  RouteAnalytics,
-  createRouteAnalytics,
-} from './analytics/route-analytics'
+// ==================== 功能扩展导出 ====================
 
+export {
+  createPerformanceTester,
+  createRouteAssertions,
+  createTestRouter,
+  RouteAssertions,
+  RoutePerformanceTester,
+  // 测试工具
+  RouterTestUtils,
+  setupRouterTest,
+  testRoutes,
+} from './testing/test-utils'
+
+// 核心类型
 export type {
-  RouteVisit,
-  PerformanceMetrics,
-  UserBehaviorEvent,
-  AnalyticsConfig,
-} from './analytics/route-analytics'
+  HistoryLocation,
+  HistoryState,
+  NavigationCallback,
+  NavigationDirection,
+  NavigationFailure,
+  NavigationGuard,
+  NavigationGuardNext,
+  NavigationGuardReturn,
+  NavigationHookAfter,
+  NavigationInformation,
+  NavigationType,
+  RouteComponent,
+  RouteLocationBase,
+  RouteLocationNormalized,
+  RouteLocationRaw,
+  RouteMeta,
+  RouteParams,
+  RouteQuery,
+  Router,
+  RouteRecordNormalized,
+  RouteRecordRaw,
+  RouterHistory,
+  RouterOptions,
+  ScrollBehavior,
+  ScrollPosition,
+  UseRouteReturn,
+  UseRouterReturn,
+} from './types'
+
+// 设备适配类型
+export type {
+  DeviceComponentResolution,
+  DeviceGuardOptions,
+  DeviceRouteConfig,
+  DeviceRouterPluginOptions,
+} from './types'
+
+export {
+  buildPath,
+  // 工具函数
+  cloneRouteLocation,
+  // 导航失败处理
+  createNavigationFailure,
+  extractParams,
+  getRouteDepth,
+  isChildRoute,
+  isNavigationFailure,
+  isSameRouteLocation,
+  joinPaths,
+
+  // 路由匹配
+  matchPath,
+  mergeQuery,
+  // 路由位置处理
+  normalizeParams,
+
+  // 路径处理
+  normalizePath,
+  parsePathParams,
+
+  // 查询参数处理
+  parseQuery,
+  // URL 处理
+  parseURL,
+  resolveRouteLocation,
+  stringifyQuery,
+  stringifyURL,
+} from './utils'
+
+export {
+  hoverPreload,
+  lazyLoadComponent,
+  lazyLoadRoutes,
+  optimizeRoutes,
+  preloadRoutes,
+  SmartPreloader,
+  splitChunk,
+  visibilityPreload,
+} from './utils/lazy-load'
+
+export type { LazyLoadOptions } from './utils/lazy-load'
 
 // ==================== 默认导出 ====================
 

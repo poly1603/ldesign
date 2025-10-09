@@ -46,6 +46,10 @@ interface TranslationStats {
   locales: Set<string>
   /** 是否缺失 */
   missing: boolean
+  /** 使用的参数集合 */
+  params: Array<Record<string, any>>
+  /** 总翻译时间 */
+  totalTime?: number
 }
 
 /**
@@ -158,10 +162,10 @@ class I18nDevTools {
         const result = originalT.call(this.i18n, key, params)
         const endTime = performance.now()
 
-        this.trackTranslation(key, endTime - startTime, false)
+        this.trackTranslation(key, endTime - startTime, false, params)
         return result
       } catch (error) {
-        this.trackTranslation(key, 0, true)
+        this.trackTranslation(key, 0, true, params)
         throw error
       }
     }
@@ -181,7 +185,7 @@ class I18nDevTools {
   /**
    * 追踪翻译使用情况
    */
-  private trackTranslation(key: string, duration: number, missing: boolean) {
+  private trackTranslation(key: string, duration: number, missing: boolean, params?: Record<string, unknown>) {
     if (!this.options.trackTranslations) return
 
     const currentLocale = this.i18n?.locale.value || 'unknown'
@@ -192,13 +196,19 @@ class I18nDevTools {
       count: 0,
       lastUsed: 0,
       locales: new Set(),
-      missing: false
+      missing: false,
+      params: [],
+      totalTime: 0
     }
 
     stats.count++
     stats.lastUsed = Date.now()
     stats.locales.add(currentLocale)
     stats.missing = missing
+    if (params) {
+      stats.params.push(params)
+    }
+    stats.totalTime = (stats.totalTime || 0) + duration
 
     this.translationStats.set(key, stats)
 
@@ -471,8 +481,9 @@ export function getI18nDevTools(): I18nDevTools | null {
 }
 
 /**
- * 导出类型
+ * 导出类型（仅导出本地定义的类型）
  */
-export type {
-  DevToolsOptions
-}
+// DevToolsOptions 已在本文件中定义，不需要重复导出
+// export type {
+//   DevToolsOptions
+// }

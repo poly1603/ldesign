@@ -26,7 +26,7 @@ import { I18nInjectionKey } from '../plugin'
 /**
  * 货币格式化组件属性
  */
-interface Props {
+export interface I18nCProps {
   /** 货币数值 */
   value: number
   /** 货币代码 (ISO 4217) */
@@ -51,7 +51,7 @@ interface Props {
   maximumFractionDigits?: number
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<I18nCProps>(), {
   currency: 'USD',
   precision: 2,
   showCode: false,

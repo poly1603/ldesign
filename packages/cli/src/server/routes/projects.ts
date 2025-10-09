@@ -451,8 +451,7 @@ projectsRouter.post('/', (req, res) => {
       name: projectName,
       path: normalizedPath,
       description: description || validation.packageJson?.description || '',
-      type: projectType,
-      packageJson: validation.packageJson
+      type: projectType
     })
 
     res.json({

@@ -640,7 +640,7 @@ importers:
         version: 5.9.2
       vitepress:
         specifier: ^1.0.0
-        version: 1.6.4(@algolia/client-search@5.37.0)(@types/node@24.5.2)(@types/react@18.3.24)(async-validator@4.2.5)(axios@1.12.2)(less@4.4.1)(postcss@8.5.6)(qrcode@1.5.4)(sass-embedded@1.93.0)(sass@1.93.0)(search-insights@2.17.3)(sortablejs@1.15.6)(stylus@0.64.0)(terser@5.44.0)(typescript@5.9.2)
+        version: 1.6.4(@algolia/client-search@5.37.0)(@types/node@24.5.2)(@types/react@18.3.24)(async-validator@4.2.5)(axios@1.12.2)(less@4.4.1)(postcss@8.5.6)(qrcode@1.5.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass-embedded@1.93.0)(sass@1.93.0)(search-insights@2.17.3)(sortablejs@1.15.6)(stylus@0.64.0)(terser@5.44.0)(typescript@5.9.2)
 
   library/form/examples:
     dependencies:
@@ -2259,7 +2259,7 @@ importers:
     devDependencies:
       vitepress:
         specifier: ^1.0.0
-        version: 1.6.4(@algolia/client-search@5.37.0)(@types/node@24.5.2)(@types/react@18.3.24)(async-validator@4.2.5)(axios@1.12.2)(less@4.4.1)(postcss@8.5.6)(qrcode@1.5.4)(sass-embedded@1.93.0)(sass@1.93.0)(search-insights@2.17.3)(sortablejs@1.15.6)(stylus@0.64.0)(terser@5.44.0)(typescript@5.9.2)
+        version: 1.6.4(@algolia/client-search@5.37.0)(@types/node@24.5.2)(@types/react@18.3.24)(async-validator@4.2.5)(axios@1.12.2)(less@4.4.1)(postcss@8.5.6)(qrcode@1.5.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass-embedded@1.93.0)(sass@1.93.0)(search-insights@2.17.3)(sortablejs@1.15.6)(stylus@0.64.0)(terser@5.44.0)(typescript@5.9.2)
       vue:
         specifier: ^3.4.0
         version: 3.5.21(typescript@5.9.2)
@@ -3236,8 +3236,8 @@ importers:
         specifier: ^3.4.15
         version: 3.5.21(typescript@5.9.2)
       vue-tsc:
-        specifier: ^1.8.27
-        version: 1.8.27(typescript@5.9.2)
+        specifier: ^3.1.0
+        version: 3.1.0(typescript@5.9.2)
 
   packages/size:
     dependencies:
@@ -3457,7 +3457,7 @@ importers:
         version: 5.9.2
       vitepress:
         specifier: ^1.6.4
-        version: 1.6.4(@algolia/client-search@5.37.0)(@types/node@24.5.2)(@types/react@18.3.24)(async-validator@4.2.5)(axios@1.12.2)(less@4.4.1)(postcss@8.5.6)(qrcode@1.5.4)(sass-embedded@1.93.0)(sass@1.93.0)(search-insights@2.17.3)(sortablejs@1.15.6)(stylus@0.64.0)(terser@5.44.0)(typescript@5.9.2)
+        version: 1.6.4(@algolia/client-search@5.37.0)(@types/node@24.5.2)(@types/react@18.3.24)(async-validator@4.2.5)(axios@1.12.2)(less@4.4.1)(postcss@8.5.6)(qrcode@1.5.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass-embedded@1.93.0)(sass@1.93.0)(search-insights@2.17.3)(sortablejs@1.15.6)(stylus@0.64.0)(terser@5.44.0)(typescript@5.9.2)
       vue:
         specifier: ^3.5.0
         version: 3.5.21(typescript@5.9.2)
@@ -8090,6 +8090,14 @@ packages:
       typescript:
         optional: true
 
+  '@vue/language-core@3.1.0':
+    resolution: {integrity: sha512-a7ns+X9vTbdmk7QLrvnZs8s4E1wwtxG/sELzr6F2j4pU+r/OoAv6jJGSz+5tVTU6e4+3rjepGhSP8jDmBBcb3w==}
+    peerDependencies:
+      typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   '@vue/reactivity@3.5.21':
     resolution: {integrity: sha512-3ah7sa+Cwr9iiYEERt9JfZKPw4A2UlbY8RbbnH2mGCE8NwHkhmlZt2VsH0oDA3P08X3jJd29ohBDtX+TbD9AsA==}
 
@@ -8402,6 +8410,9 @@ packages:
 
   alien-signals@2.0.7:
     resolution: {integrity: sha512-wE7y3jmYeb0+h6mr5BOovuqhFv22O/MV9j5p0ndJsa7z1zJNPGQ4ph5pQk/kTTCWRC3xsA4SmtwmkzQO+7NCNg==}
+
+  alien-signals@3.0.0:
+    resolution: {integrity: sha512-JHoRJf18Y6HN4/KZALr3iU+0vW9LKG+8FMThQlbn4+gv8utsLIkwpomjElGPccGeNwh0FI2HN6BLnyFLo6OyLQ==}
 
   alova@3.3.4:
     resolution: {integrity: sha512-UKKqXdvf8aQ4C7m3brO77YWe5CDz8N59PdAUz7M8gowKUUXTutbk0Vk5DRBrCe0hMUyyNMUhdCZ38llGxCViyQ==}
@@ -17064,6 +17075,12 @@ packages:
     peerDependencies:
       typescript: '>=5.0.0'
 
+  vue-tsc@3.1.0:
+    resolution: {integrity: sha512-fbMynMG7kXSnqZTRBSCh9ROYaVpXfCZbEO0gY3lqOjLbp361uuS88n6BDajiUriDIF+SGLWoinjvf6stS2J3Gg==}
+    hasBin: true
+    peerDependencies:
+      typescript: '>=5.0.0'
+
   vue@2.7.16:
     resolution: {integrity: sha512-4gCtFXaAA3zYZdTp5s4Hl2sozuySsgz4jy1EnpBHNfpMa9dK1ZCG7viqBPCwXtmgc8nHqUsAu3G4gtmXkkY3Sw==}
     deprecated: Vue 2 has reached EOL and is no longer actively maintained. See https://v2.vuejs.org/eol/ for more details.
@@ -23378,7 +23395,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.1.1
       sirv: 2.0.4
-      vitest: 1.6.1(@types/node@20.19.16)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@27.0.0(postcss@8.5.6))(less@4.4.1)(sass-embedded@1.93.0)(sass@1.93.0)(stylus@0.64.0)(terser@5.44.0)
+      vitest: 1.6.1(@types/node@20.19.16)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@23.2.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.1)(sass-embedded@1.93.0)(sass@1.93.0)(stylus@0.64.0)(terser@5.44.0)
 
   '@vitest/ui@2.1.9(vitest@2.1.9)':
     dependencies:
@@ -23847,6 +23864,18 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.2
 
+  '@vue/language-core@3.1.0(typescript@5.9.2)':
+    dependencies:
+      '@volar/language-core': 2.4.23
+      '@vue/compiler-dom': 3.5.22
+      '@vue/shared': 3.5.22
+      alien-signals: 3.0.0
+      muggle-string: 0.4.1
+      path-browserify: 1.0.1
+      picomatch: 4.0.3
+    optionalDependencies:
+      typescript: 5.9.2
+
   '@vue/reactivity@3.5.21':
     dependencies:
       '@vue/shared': 3.5.21
@@ -24200,6 +24229,8 @@ snapshots:
   alien-signals@1.0.13: {}
 
   alien-signals@2.0.7: {}
+
+  alien-signals@3.0.0: {}
 
   alova@3.3.4:
     dependencies:
@@ -35398,7 +35429,7 @@ snapshots:
       - typescript
       - universal-cookie
 
-  vitepress@1.6.4(@algolia/client-search@5.37.0)(@types/node@24.5.2)(@types/react@18.3.24)(async-validator@4.2.5)(axios@1.12.2)(less@4.4.1)(postcss@8.5.6)(qrcode@1.5.4)(sass-embedded@1.93.0)(sass@1.93.0)(search-insights@2.17.3)(sortablejs@1.15.6)(stylus@0.64.0)(terser@5.44.0)(typescript@5.9.2):
+  vitepress@1.6.4(@algolia/client-search@5.37.0)(@types/node@24.5.2)(@types/react@18.3.24)(async-validator@4.2.5)(axios@1.12.2)(less@4.4.1)(postcss@8.5.6)(qrcode@1.5.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass-embedded@1.93.0)(sass@1.93.0)(search-insights@2.17.3)(sortablejs@1.15.6)(stylus@0.64.0)(terser@5.44.0)(typescript@5.9.2):
     dependencies:
       '@docsearch/css': 3.8.2
       '@docsearch/js': 3.8.2(@algolia/client-search@5.37.0)(@types/react@18.3.24)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)
@@ -36067,6 +36098,12 @@ snapshots:
     dependencies:
       '@volar/typescript': 2.4.23
       '@vue/language-core': 3.0.8(typescript@5.9.2)
+      typescript: 5.9.2
+
+  vue-tsc@3.1.0(typescript@5.9.2):
+    dependencies:
+      '@volar/typescript': 2.4.23
+      '@vue/language-core': 3.1.0(typescript@5.9.2)
       typescript: 5.9.2
 
   vue@2.7.16:

@@ -16,8 +16,6 @@ export { DeviceRouteGuard } from './guard'
 export { createDeviceRouterPlugin } from './plugin'
 export { DeviceComponentResolver } from './resolver'
 
-
-
 // 工具函数
 export {
   checkDeviceSupport,

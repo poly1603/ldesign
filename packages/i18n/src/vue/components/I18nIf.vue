@@ -32,7 +32,7 @@ import I18nT from './I18nT.vue'
 /**
  * 条件配置接口
  */
-interface ConditionConfig {
+export interface ConditionConfig {
   /** 条件表达式 */
   when: string | ((context: any) => boolean)
   /** 翻译键路径 */
@@ -46,7 +46,7 @@ interface ConditionConfig {
 /**
  * 条件翻译组件属性
  */
-interface Props {
+export interface I18nIfProps {
   /** 条件配置列表 */
   conditions: ConditionConfig[]
   /** 上下文数据 */
@@ -65,7 +65,7 @@ interface Props {
   translationProps?: Record<string, unknown>
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<I18nIfProps>(), {
   tag: 'span',
   debug: false,
   context: () => ({}),

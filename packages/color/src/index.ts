@@ -7,6 +7,8 @@
  * - 可访问性检查 (WCAG 标准)
  * - 主题管理系统
  * - Vue 3 深度集成
+ * - 主题导入/导出
+ * - 性能监控工具
  *
  * @version 1.0.0
  * @author LDesign Team
@@ -25,6 +27,9 @@ export * from './exports/core'
 export * from './exports/css-integration'
 
 export type * from './exports/performance'
+
+// 实用工具 - 按需导入
+export * from './exports/utilities'
 
 // 版本信息
 export const version = '0.1.0'
