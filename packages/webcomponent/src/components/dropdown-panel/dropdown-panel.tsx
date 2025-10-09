@@ -61,6 +61,7 @@ export class DropdownPanel {
   @State() panelHeight: number = 0;
   @State() actualPlacement: 'top' | 'bottom' = 'bottom';
   @State() isReady: boolean = false;
+  @State() disableTransition: boolean = false; // 禁用过渡效果的标志
 
   private triggerRef?: HTMLDivElement;
   private panelRef?: HTMLDivElement;
@@ -95,13 +96,25 @@ export class DropdownPanel {
       
       // 计算并更新新的placement，确保在动画开始前就是正确的
       const newPlacement = this.getNewPlacement();
-      console.log('[open] calculated placement:', newPlacement, 'previous:', this.actualPlacement);
+      const placementChanged = this.actualPlacement !== newPlacement;
+      console.log('[open] calculated placement:', newPlacement, 'previous:', this.actualPlacement, 'changed:', placementChanged);
+      
+      // 如果 placement 改变了，需要先禁用 transition，避免从旧状态到新状态的过渡动画
+      if (placementChanged) {
+        this.disableTransition = true;
+      }
+      
       this.actualPlacement = newPlacement;
       this.previousPlacement = newPlacement;
       this.lockBodyScroll();
       
       // 双RAF确保：第一次RAF让Stencil完成DOM渲染和CSS类更新，第二次RAF让浏览器完成初始状态绘制
       requestAnimationFrame(() => {
+        // 如果禁用了 transition，在这里重新启用
+        if (this.disableTransition) {
+          this.disableTransition = false;
+        }
+        
         requestAnimationFrame(() => {
           console.log('[open] setting isReady to true, visible:', this.visible, 'placement:', this.actualPlacement);
           if (this.visible) {
@@ -166,14 +179,22 @@ export class DropdownPanel {
         
         // 等待隐藏动画完成，然后更新方向并重新显示
         requestAnimationFrame(() => {
+          // 禁用 transition，避免从旧状态到新状态的过渡动画
+          this.disableTransition = true;
+          
           // 更新方向
           this.actualPlacement = newPlacement;
           
-          // 等待DOM更新，然后显示
+          // 等待DOM更新，启用 transition，然后显示
           requestAnimationFrame(() => {
-            if (this.visible) {
-              this.isReady = true;
-            }
+            // 重新启用 transition
+            this.disableTransition = false;
+            
+            requestAnimationFrame(() => {
+              if (this.visible) {
+                this.isReady = true;
+              }
+            });
           });
         });
       } else {
@@ -307,7 +328,8 @@ export class DropdownPanel {
 
     const style: any = {
       maxHeight: calculatedMaxHeight,
-      transition: `transform ${this.duration}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+      // 如果 disableTransition 为 true，则禁用过渡效果
+      transition: this.disableTransition ? 'none' : `transform ${this.duration}ms cubic-bezier(0.4, 0, 0.2, 1)`,
     };
 
     return style;
