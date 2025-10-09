@@ -60,8 +60,8 @@ export class Logger {
   constructor(options: LoggerOptions = {}) {
     this.level = LOG_LEVEL_MAP[options.level || 'info']
     this.colors = options.colors ?? true
-    this.timestamp = options.timestamp ?? false
-    this.prefix = options.prefix || '@ldesign/builder'
+    this.timestamp = options.timestamp ?? true  // 默认启用时间戳
+    this.prefix = options.prefix || ''  // 默认不显示前缀
     this.silent = options.silent ?? false
   }
 
@@ -266,34 +266,34 @@ export class Logger {
 
   /**
    * 格式化消息
+   * 新格式: [HH:mm:ss] [LEVEL] 消息内容
+   * - 时间戳使用灰色
+   * - 日志级别标签使用对应颜色
+   * - 消息内容使用默认颜色（不着色）
+   * - 只对特殊内容（路径、数字等）进行高亮
    */
   private formatMessage(type: string, message: string, colorFn: (str: string) => string): string {
     let formatted = ''
 
-    // 添加时间戳
+    // 添加时间戳 [HH:mm:ss]
     if (this.timestamp) {
-      const timestamp = new Date().toISOString()
+      const now = new Date()
+      const hours = String(now.getHours()).padStart(2, '0')
+      const minutes = String(now.getMinutes()).padStart(2, '0')
+      const seconds = String(now.getSeconds()).padStart(2, '0')
+      const timestamp = `${hours}:${minutes}:${seconds}`
       formatted += chalk.gray(`[${timestamp}] `)
     }
 
-    // 添加前缀
-    if (this.prefix) {
-      formatted += chalk.gray(`[${this.prefix}] `)
-    }
-
-    // 添加类型
+    // 添加日志级别标签（带颜色）
     if (this.colors) {
-      formatted += colorFn(`[${type}] `)
+      formatted += colorFn(`[${type}]`) + ' '
     } else {
       formatted += `[${type}] `
     }
 
-    // 添加消息
-    if (this.colors) {
-      formatted += colorFn(message)
-    } else {
-      formatted += message
-    }
+    // 添加消息内容（不着色，保持原始消息中的颜色）
+    formatted += message
 
     return formatted
   }
@@ -333,4 +333,59 @@ export function setLogLevel(level: LogLevel): void {
  */
 export function setSilent(silent: boolean): void {
   logger.setSilent(silent)
+}
+
+/**
+ * 高亮工具函数 - 用于在日志消息中高亮特定内容
+ */
+export const highlight = {
+  /**
+   * 高亮文件路径（青色）
+   */
+  path: (path: string): string => chalk.cyan(path),
+
+  /**
+   * 高亮数字/数据（黄色）
+   */
+  number: (value: number | string): string => chalk.yellow(String(value)),
+
+  /**
+   * 高亮百分比（黄色）
+   */
+  percent: (value: number): string => chalk.yellow(`${value}%`),
+
+  /**
+   * 高亮文件大小（青色）
+   */
+  size: (size: string): string => chalk.cyan(size),
+
+  /**
+   * 高亮耗时（黄色）
+   */
+  time: (time: string): string => chalk.yellow(time),
+
+  /**
+   * 高亮成功信息（绿色）
+   */
+  success: (text: string): string => chalk.green(text),
+
+  /**
+   * 高亮错误信息（红色）
+   */
+  error: (text: string): string => chalk.red(text),
+
+  /**
+   * 高亮警告信息（黄色）
+   */
+  warn: (text: string): string => chalk.yellow(text),
+
+  /**
+   * 高亮重要信息（青色加粗）
+   */
+  important: (text: string): string => chalk.cyan.bold(text),
+
+  /**
+   * 高亮次要信息（灰色）
+   */
+  dim: (text: string): string => chalk.gray(text)
 }

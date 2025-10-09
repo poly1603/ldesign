@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>抽屉页面抖动测试</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    /* 固定导航栏 - 添加 data-fixed-compensate 属性以防止抖动 */
+    .fixed-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+      transition: padding-right 0.3s ease;
+    }
+
+    .fixed-header h1 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    /* 主内容区 */
+    .main-content {
+      margin-top: 80px;
+      padding: 20px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .test-section {
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .test-section h2 {
+      color: #667eea;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .test-section p {
+      margin-bottom: 15px;
+      color: #666;
+    }
+
+    /* 测试标记线 */
+    .marker-line {
+      position: fixed;
+      top: 80px;
+      right: 50%;
+      width: 2px;
+      height: 100px;
+      background: red;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .marker-line::before {
+      content: '参考线';
+      position: absolute;
+      top: -25px;
+      right: 5px;
+      color: red;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    /* 按钮组 */
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .test-button {
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .test-button.primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .test-button.primary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .test-button.secondary {
+      background: #48bb78;
+      color: white;
+    }
+
+    .test-button.secondary:hover {
+      background: #38a169;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+    }
+
+    .test-button.danger {
+      background: #f56565;
+      color: white;
+    }
+
+    .test-button.danger:hover {
+      background: #e53e3e;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4);
+    }
+
+    /* 状态指示器 */
+    .status-indicator {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: 10px;
+    }
+
+    .status-indicator.success {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+
+    .status-indicator.warning {
+      background: #feebc8;
+      color: #7c2d12;
+    }
+
+    /* 长内容区域 */
+    .long-content {
+      min-height: 200vh;
+      padding: 20px;
+      background: linear-gradient(180deg, #f7fafc 0%, #edf2f7 100%);
+      border-radius: 8px;
+    }
+
+    .content-block {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .content-block h3 {
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    /* 信息框 */
+    .info-box {
+      background: #bee3f8;
+      border-left: 4px solid #3182ce;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+
+    .info-box strong {
+      color: #2c5282;
+    }
+
+    /* 代码块 */
+    .code-block {
+      background: #2d3748;
+      color: #e2e8f0;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- 固定导航栏 - 添加 data-fixed-compensate 防止抖动 -->
+  <header class="fixed-header" data-fixed-compensate>
+    <h1>🎯 抽屉页面抖动测试</h1>
+    <span class="status-indicator success">防抖动已启用</span>
+  </header>
+
+  <!-- 参考线 - 用于观察页面是否抖动 -->
+  <div class="marker-line"></div>
+
+  <!-- 主内容区 -->
+  <div class="main-content">
+    <div class="test-section">
+      <h2>📋 测试说明</h2>
+      <p><strong>目的：</strong>验证抽屉打开/关闭时，页面内容不会发生横向抖动。</p>
+      
+      <div class="info-box">
+        <strong>观察要点：</strong><br>
+        1. 注意页面右侧的红色参考线<br>
+        2. 打开抽屉时，参考线和内容不应发生横向移动<br>
+        3. 顶部固定导航栏不应抖动<br>
+        4. 滚动条消失时，页面宽度应保持不变
+      </div>
+
+      <h3>测试步骤：</h3>
+      <ol>
+        <li>点击下方按钮打开各个方向的抽屉</li>
+        <li>观察页面内容是否发生横向偏移</li>
+        <li>向下滚动页面，然后再打开抽屉测试</li>
+        <li>在移动设备上测试（特别是 iOS）</li>
+      </ol>
+    </div>
+
+    <div class="test-section">
+      <h2>🎮 测试控制</h2>
+      
+      <h3>基础抽屉测试</h3>
+      <div class="button-group">
+        <button class="test-button primary" onclick="openDrawer('left')">
+          ← 左侧抽屉
+        </button>
+        <button class="test-button primary" onclick="openDrawer('right')">
+          右侧抽屉 →
+        </button>
+        <button class="test-button primary" onclick="openDrawer('top')">
+          ↑ 顶部抽屉
+        </button>
+        <button class="test-button primary" onclick="openDrawer('bottom')">
+          ↓ 底部抽屉
+        </button>
+      </div>
+
+      <h3>特殊场景测试</h3>
+      <div class="button-group">
+        <button class="test-button secondary" onclick="openLargeDrawer()">
+          🔳 大尺寸抽屉
+        </button>
+        <button class="test-button secondary" onclick="openFullscreenDrawer()">
+          📱 全屏抽屉
+        </button>
+        <button class="test-button danger" onclick="openMultipleDrawers()">
+          🔁 嵌套抽屉
+        </button>
+      </div>
+
+      <div class="info-box">
+        <strong>当前滚动条宽度：</strong>
+        <span id="scrollbarWidth">计算中...</span>px
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>💡 技术实现</h2>
+      <p><strong>解决方案核心：</strong></p>
+      <div class="code-block">
+// 1. 计算滚动条宽度
+const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+// 2. 补偿滚动条宽度
+if (scrollbarWidth > 0) {
+  document.body.style.paddingRight = `${scrollbarWidth}px`;
+}
+
+// 3. iOS 特殊处理
+if (isIOS) {
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${scrollY}px`;
+}
+      </div>
+    </div>
+
+    <!-- 长内容区域 - 用于测试滚动 -->
+    <div class="long-content">
+      <h2 style="color: #667eea; margin-bottom: 20px;">📜 长内容区域（测试滚动）</h2>
+      
+      <div class="content-block">
+        <h3>为什么会出现页面抖动？</h3>
+        <p>当抽屉打开时，为了防止背景页面滚动，通常会对 body 设置 <code>overflow: hidden</code>。这会导致浏览器隐藏滚动条，页面宽度突然增加约15-17px（滚动条宽度），使内容向右偏移，产生抖动感。</p>
+      </div>
+
+      <div class="content-block">
+        <h3>解决方案的关键</h3>
+        <p><strong>1. 精确计算滚动条宽度</strong><br>
+        使用 <code>window.innerWidth - document.documentElement.clientWidth</code> 可以准确计算出当前浏览器的滚动条宽度。</p>
+        
+        <p><strong>2. 补偿宽度</strong><br>
+        在隐藏滚动条的同时，给 body 添加等量的 <code>padding-right</code>，保持页面总宽度不变。</p>
+        
+        <p><strong>3. 处理固定元素</strong><br>
+        通过 <code>data-fixed-compensate</code> 标记，自动为固定定位元素（如顶部导航栏）也添加补偿宽度。</p>
+        
+        <p><strong>4. iOS 特殊处理</strong><br>
+        iOS 上 <code>overflow: hidden</code> 不够可靠，需要配合 <code>position: fixed</code> 来完全锁定滚动，并保存恢复滚动位置。</p>
+      </div>
+
+      <div class="content-block">
+        <h3>兼容性</h3>
+        <p>✅ Chrome/Edge/Firefox/Safari (PC)<br>
+        ✅ iOS Safari (iPhone/iPad)<br>
+        ✅ Android Chrome<br>
+        ✅ 各类移动端浏览器</p>
+      </div>
+
+      <div class="content-block">
+        <h3>测试建议</h3>
+        <p>1. 向下滚动页面到中间位置，然后打开抽屉<br>
+        2. 快速连续打开/关闭多个抽屉<br>
+        3. 在真实的 iOS 设备上测试<br>
+        4. 测试不同尺寸的抽屉<br>
+        5. 测试嵌套抽屉场景</p>
+      </div>
+
+      <div class="content-block">
+        <h3>示例内容块 #1</h3>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      </div>
+
+      <div class="content-block">
+        <h3>示例内容块 #2</h3>
+        <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+      </div>
+
+      <div class="content-block">
+        <h3>示例内容块 #3</h3>
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+      </div>
+
+      <div class="content-block">
+        <h3>示例内容块 #4</h3>
+        <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 抽屉组件 -->
+  <ldesign-drawer id="drawerLeft" placement="left" size="400px">
+    <div style="padding: 20px;">
+      <h2>左侧抽屉</h2>
+      <p>这是一个从左侧滑入的抽屉。</p>
+      <p>打开抽屉时，页面不应该发生横向抖动。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawerRight" placement="right" size="400px">
+    <div style="padding: 20px;">
+      <h2>右侧抽屉</h2>
+      <p>这是一个从右侧滑入的抽屉。</p>
+      <p>注意观察顶部导航栏和参考线是否抖动。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawerTop" placement="top" size="300px">
+    <div style="padding: 20px;">
+      <h2>顶部抽屉</h2>
+      <p>这是一个从顶部滑入的抽屉。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawerBottom" placement="bottom" size="300px">
+    <div style="padding: 20px;">
+      <h2>底部抽屉</h2>
+      <p>这是一个从底部滑入的抽屉。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawerLarge" placement="right" size="800px">
+    <div style="padding: 20px;">
+      <h2>大尺寸抽屉</h2>
+      <p>这是一个800px宽的大抽屉。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawerFullscreen" placement="right" fullscreen="true">
+    <div style="padding: 20px;">
+      <h2>全屏抽屉</h2>
+      <p>这是一个全屏抽屉。</p>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawerNested1" placement="right" size="500px">
+    <div style="padding: 20px;">
+      <h2>外层抽屉</h2>
+      <p>这是第一层抽屉。</p>
+      <button class="test-button secondary" onclick="openNestedDrawer2()">
+        打开内层抽屉
+      </button>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawerNested2" placement="right" size="400px">
+    <div style="padding: 20px;">
+      <h2>内层抽屉</h2>
+      <p>这是第二层嵌套抽屉。</p>
+      <p>多层嵌套时也不应该出现抖动。</p>
+    </div>
+  </ldesign-drawer>
+
+  <script>
+    // 计算并显示滚动条宽度
+    function updateScrollbarWidth() {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.getElementById('scrollbarWidth').textContent = scrollbarWidth;
+    }
+
+    // 打开指定方向的抽屉
+    async function openDrawer(placement) {
+      const drawerId = 'drawer' + placement.charAt(0).toUpperCase() + placement.slice(1);
+      const drawer = document.getElementById(drawerId);
+      if (drawer) {
+        await drawer.open();
+      }
+    }
+
+    // 打开大尺寸抽屉
+    async function openLargeDrawer() {
+      const drawer = document.getElementById('drawerLarge');
+      if (drawer) {
+        await drawer.open();
+      }
+    }
+
+    // 打开全屏抽屉
+    async function openFullscreenDrawer() {
+      const drawer = document.getElementById('drawerFullscreen');
+      if (drawer) {
+        await drawer.open();
+      }
+    }
+
+    // 打开嵌套抽屉
+    async function openMultipleDrawers() {
+      const drawer1 = document.getElementById('drawerNested1');
+      if (drawer1) {
+        await drawer1.open();
+      }
+    }
+
+    // 打开第二层嵌套抽屉
+    async function openNestedDrawer2() {
+      const drawer2 = document.getElementById('drawerNested2');
+      if (drawer2) {
+        await drawer2.open();
+      }
+    }
+
+    // 页面加载时更新滚动条宽度
+    window.addEventListener('load', updateScrollbarWidth);
+    window.addEventListener('resize', updateScrollbarWidth);
+  </script>
+</body>
+</html>

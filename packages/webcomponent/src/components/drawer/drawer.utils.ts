@@ -171,21 +171,96 @@ export function unlockContainerScroll(container: HTMLElement): void {
   }
 }
 
-/** 锁定页面滚动 */
+/** 锁定页面滚动 - 优化版本，防止页面抖动 */
 export function lockPageScroll(): void {
+  // 计算滚动条宽度
   const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
+  
+  // 保存原始样式（用于恢复）
+  if (!document.body.hasAttribute('data-scroll-locked')) {
+    const originalOverflow = window.getComputedStyle(document.body).overflow;
+    const originalPaddingRight = window.getComputedStyle(document.body).paddingRight;
+    const originalPosition = window.getComputedStyle(document.body).position;
+    
+    document.body.setAttribute('data-scroll-locked', 'true');
+    document.body.setAttribute('data-original-overflow', originalOverflow);
+    document.body.setAttribute('data-original-padding-right', originalPaddingRight);
+    document.body.setAttribute('data-original-position', originalPosition);
+    
+    // 保存当前滚动位置
+    const scrollY = window.scrollY || window.pageYOffset;
+    document.body.setAttribute('data-scroll-y', scrollY.toString());
+  }
+  
+  // 锁定滚动
   document.body.style.overflow = 'hidden';
   
+  // 补偿滚动条宽度，防止内容抖动
   if (scrollbarWidth > 0) {
-    document.body.style.paddingRight = `${scrollbarWidth}px`;
+    const currentPadding = parseInt(document.body.getAttribute('data-original-padding-right') || '0');
+    document.body.style.paddingRight = `${currentPadding + scrollbarWidth}px`;
+    
+    // 同时补偿 fixed 元素（如头部导航栏）
+    const fixedElements = document.querySelectorAll('[data-fixed-compensate]');
+    fixedElements.forEach((el: Element) => {
+      const htmlEl = el as HTMLElement;
+      const originalPadding = window.getComputedStyle(htmlEl).paddingRight;
+      htmlEl.setAttribute('data-original-padding-right', originalPadding);
+      const currentPadding = parseInt(originalPadding) || 0;
+      htmlEl.style.paddingRight = `${currentPadding + scrollbarWidth}px`;
+    });
+  }
+  
+  // 移动设备的额外处理：使用 position: fixed 防止滚动突破
+  // 仅在 iOS 上使用，因为 overflow:hidden 在 iOS 上不可靠
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+  if (isIOS) {
+    const scrollY = parseInt(document.body.getAttribute('data-scroll-y') || '0');
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
   }
 }
 
-/** 解锁页面滚动 */
+/** 解锁页面滚动 - 优化版本，恢复原始状态 */
 export function unlockPageScroll(): void {
-  document.body.style.overflow = '';
-  document.body.style.paddingRight = '';
+  if (!document.body.hasAttribute('data-scroll-locked')) {
+    return;
+  }
+  
+  // 恢复原始样式
+  const originalOverflow = document.body.getAttribute('data-original-overflow') || '';
+  const originalPaddingRight = document.body.getAttribute('data-original-padding-right') || '';
+  const originalPosition = document.body.getAttribute('data-original-position') || '';
+  const scrollY = parseInt(document.body.getAttribute('data-scroll-y') || '0');
+  
+  document.body.style.overflow = originalOverflow;
+  document.body.style.paddingRight = originalPaddingRight;
+  
+  // 移除标记
+  document.body.removeAttribute('data-scroll-locked');
+  document.body.removeAttribute('data-original-overflow');
+  document.body.removeAttribute('data-original-padding-right');
+  document.body.removeAttribute('data-original-position');
+  document.body.removeAttribute('data-scroll-y');
+  
+  // 恢复 fixed 元素的 padding
+  const fixedElements = document.querySelectorAll('[data-fixed-compensate][data-original-padding-right]');
+  fixedElements.forEach((el: Element) => {
+    const htmlEl = el as HTMLElement;
+    const originalPadding = htmlEl.getAttribute('data-original-padding-right') || '';
+    htmlEl.style.paddingRight = originalPadding;
+    htmlEl.removeAttribute('data-original-padding-right');
+  });
+  
+  // iOS 的特殊处理：恢复位置和滚动
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+  if (isIOS) {
+    document.body.style.position = originalPosition;
+    document.body.style.top = '';
+    document.body.style.width = '';
+    window.scrollTo(0, scrollY);
+  }
 }
 
 /** 管理抽屉堆栈 */

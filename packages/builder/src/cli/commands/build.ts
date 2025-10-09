@@ -5,7 +5,7 @@
 import { Command } from 'commander'
 import chalk from 'chalk'
 import { LibraryBuilder } from '../../core/LibraryBuilder'
-import { logger } from '../../utils/logger'
+import { logger, highlight } from '../../utils/logger'
 import { formatFileSize, formatDuration } from '../../utils/format-utils'
 import { ConfigLoader } from '../../utils/config/config-loader'
 import type { BuilderConfig } from '../../types/config'
@@ -73,7 +73,7 @@ async function executeBuild(options: BuildOptions, globalOptions: any = {}): Pro
     let phaseStart = Date.now()
 
     // 创建构建器实例
-    logger.info('🚀 开始构建...')
+    logger.info(`🚀 开始构建...`)
     logger.newLine()
 
     const builder = new LibraryBuilder({
@@ -82,13 +82,13 @@ async function executeBuild(options: BuildOptions, globalOptions: any = {}): Pro
     })
 
     // 初始化构建器
-    logger.info('⚙️  初始化构建器...')
+    logger.info(`⚙️  初始化构建器...`)
     await builder.initialize()
     timings['初始化'] = Date.now() - phaseStart
 
     // 构建配置
     phaseStart = Date.now()
-    logger.info('📝 加载配置...')
+    logger.info(`📝 加载配置...`)
     const config = await buildConfig(options, globalOptions)
     timings['配置加载'] = Date.now() - phaseStart
 
@@ -105,7 +105,7 @@ async function executeBuild(options: BuildOptions, globalOptions: any = {}): Pro
 
       // 监听构建事件
       watcher.on('change', (file) => {
-        logger.info(`文件变化: ${file}`)
+        logger.info(`文件变化: ${highlight.path(file)}`)
       })
 
       watcher.on('build', (result) => {
@@ -114,17 +114,17 @@ async function executeBuild(options: BuildOptions, globalOptions: any = {}): Pro
 
       // 保持进程运行
       process.on('SIGINT', async () => {
-        logger.info('正在停止监听...')
+        logger.info(`正在停止监听...`)
         await watcher.close()
         await builder.dispose()
         process.exit(0)
       })
 
-      logger.success('监听模式已启动，按 Ctrl+C 停止')
+      logger.success(`监听模式已启动，按 Ctrl+C 停止`)
       return
     } else {
       phaseStart = Date.now()
-      logger.info('🔨 开始打包...')
+      logger.info(`🔨 开始打包...`)
       result = await builder.build(config)
       timings['打包'] = Date.now() - phaseStart
     }
@@ -146,7 +146,7 @@ async function executeBuild(options: BuildOptions, globalOptions: any = {}): Pro
         ? options.report
         : path.join((config.output?.dir || 'dist'), 'build-report.json')
       await writeBuildReport(result, reportPath)
-      logger.info(`报告已输出: ${chalk.cyan(reportPath)}`)
+      logger.info(`报告已输出: ${highlight.path(reportPath)}`)
       timings['报告生成'] = Date.now() - phaseStart
     }
 
@@ -161,7 +161,7 @@ async function executeBuild(options: BuildOptions, globalOptions: any = {}): Pro
     timings['清理'] = Date.now() - phaseStart
 
     logger.newLine()
-    logger.complete('✨ 构建完成')
+    logger.complete(`✨ 构建完成`)
 
     // 确保进程正常退出
     // 使用 setImmediate 确保所有日志都已输出
@@ -171,7 +171,7 @@ async function executeBuild(options: BuildOptions, globalOptions: any = {}): Pro
 
   } catch (error) {
     const duration = Date.now() - startTime
-    logger.fail(`构建失败 (${formatDuration(duration)})`)
+    logger.fail(`构建失败 ${highlight.time(`(${formatDuration(duration)})`)}`)
 
     // 确保进程退出
     setImmediate(() => {
@@ -194,22 +194,22 @@ async function buildConfig(options: BuildOptions, globalOptions: any): Promise<B
   try {
     const configPath = options.config
     if (configPath) {
-      logger.info(`加载配置文件: ${configPath}`)
+      logger.info(`加载配置文件: ${highlight.path(configPath)}`)
       baseConfig = await configManager.loadConfig({ configFile: configPath })
     } else {
       // 查找配置文件
       const configLoader = new ConfigLoader()
       const foundConfigPath = await configLoader.findConfigFile()
       if (foundConfigPath) {
-        logger.info(`加载配置文件: ${foundConfigPath}`)
+        logger.info(`加载配置文件: ${highlight.path(foundConfigPath)}`)
         baseConfig = await configManager.loadConfig({ configFile: foundConfigPath })
       } else {
-        logger.info('未找到配置文件，使用默认配置')
+        logger.info(`未找到配置文件，使用默认配置`)
         baseConfig = await configManager.loadConfig({})
       }
     }
   } catch (error) {
-    logger.warn('配置文件加载失败，使用默认配置:', (error as Error).message)
+    logger.warn(`配置文件加载失败，使用默认配置: ${(error as Error).message}`)
     baseConfig = await configManager.loadConfig({})
   }
 
@@ -263,31 +263,36 @@ async function buildConfig(options: BuildOptions, globalOptions: any): Promise<B
  * 显示构建信息
  */
 function showBuildInfo(config: BuilderConfig): void {
-  logger.info(chalk.bold('📋 构建配置:'))
+  logger.info(`📋 构建配置:`)
 
   const configItems: string[] = []
 
   if (config.input) {
-    configItems.push(`入口: ${chalk.cyan(config.input)}`)
+    const inputStr = typeof config.input === 'string'
+      ? config.input
+      : Array.isArray(config.input)
+        ? config.input.join(', ')
+        : JSON.stringify(config.input)
+    configItems.push(`入口: ${highlight.path(inputStr)}`)
   }
 
   if (config.output?.dir) {
-    configItems.push(`输出: ${chalk.cyan(config.output.dir)}`)
+    configItems.push(`输出: ${highlight.path(config.output.dir)}`)
   }
 
   if (config.output?.format) {
     const formats = Array.isArray(config.output.format)
       ? config.output.format.join(', ')
       : config.output.format
-    configItems.push(`格式: ${chalk.cyan(formats)}`)
+    configItems.push(`格式: ${highlight.important(formats)}`)
   }
 
   if (config.bundler) {
-    configItems.push(`打包器: ${chalk.cyan(config.bundler)}`)
+    configItems.push(`打包器: ${highlight.important(config.bundler)}`)
   }
 
   if (config.mode) {
-    configItems.push(`模式: ${chalk.cyan(config.mode)}`)
+    configItems.push(`模式: ${highlight.important(config.mode)}`)
   }
 
   // 一行显示所有配置项
@@ -301,7 +306,7 @@ function showBuildResult(result: any, startTime: number, timings?: Record<string
   const duration = Date.now() - startTime
 
   logger.newLine()
-  logger.success(`✅ 构建成功 (${formatDuration(duration)})`)
+  logger.success(`✅ 构建成功 ${highlight.time(`(${formatDuration(duration)})`)}`)
   logger.newLine()
 
   if (result.outputs && result.outputs.length > 0) {
@@ -336,27 +341,28 @@ function showBuildResult(result: any, startTime: number, timings?: Record<string
 
     if (logLevel === 'debug' || logLevel === 'verbose') {
       // Debug 模式: 显示所有文件
-      logger.info('输出文件:')
+      logger.info(`输出文件:`)
       for (const output of result.outputs) {
         const size = formatFileSize(output.size)
-        const gzipSize = output.gzipSize ? ` (gzip: ${formatFileSize(output.gzipSize)})` : ''
-        logger.info(`  ${chalk.cyan(output.fileName)} ${chalk.gray(size)}${chalk.gray(gzipSize)}`)
+        const gzipSize = output.gzipSize ? ` ${highlight.dim(`(gzip: ${formatFileSize(output.gzipSize)})`)}` : ''
+        logger.info(`  ${highlight.path(output.fileName)} ${highlight.dim(size)}${gzipSize}`)
       }
       logger.newLine()
     }
 
     // 所有模式都显示摘要
-    logger.info(chalk.bold('📦 构建摘要:'))
-    logger.info(`  ${chalk.cyan('总文件数:')} ${stats.total}`)
-    logger.info(`  ${chalk.cyan('  - JS 文件:')} ${stats.js}`)
-    logger.info(`  ${chalk.cyan('  - DTS 文件:')} ${stats.dts}`)
-    logger.info(`  ${chalk.cyan('  - Source Map:')} ${stats.map}`)
+    logger.info(`📦 构建摘要:`)
+    logger.info(`  总文件数: ${highlight.number(stats.total)}`)
+    logger.info(`    - JS 文件: ${highlight.number(stats.js)}`)
+    logger.info(`    - DTS 文件: ${highlight.number(stats.dts)}`)
+    logger.info(`    - Source Map: ${highlight.number(stats.map)}`)
     if (stats.other > 0) {
-      logger.info(`  ${chalk.cyan('  - 其他文件:')} ${stats.other}`)
+      logger.info(`    - 其他文件: ${highlight.number(stats.other)}`)
     }
-    logger.info(`  ${chalk.cyan('总大小:')} ${formatFileSize(stats.totalSize)}`)
+    logger.info(`  总大小: ${highlight.size(formatFileSize(stats.totalSize))}`)
     if (stats.totalGzipSize > 0) {
-      logger.info(`  ${chalk.cyan('Gzip 后:')} ${formatFileSize(stats.totalGzipSize)} ${chalk.gray(`(压缩率: ${Math.round((1 - stats.totalGzipSize / stats.totalSize) * 100)}%)`)}`)
+      const compressionRatio = Math.round((1 - stats.totalGzipSize / stats.totalSize) * 100)
+      logger.info(`  Gzip 后: ${highlight.size(formatFileSize(stats.totalGzipSize))} ${highlight.dim(`(压缩率: ${compressionRatio}%)`)}`)
     }
   }
 
@@ -370,17 +376,17 @@ function showBuildResult(result: any, startTime: number, timings?: Record<string
       parts.push(result.cache.hit ? '命中' : '未命中')
     }
     if (typeof result.cache.lookupMs === 'number') {
-      parts.push(`查询 ${formatDuration(result.cache.lookupMs)}`)
+      parts.push(`查询 ${highlight.time(formatDuration(result.cache.lookupMs))}`)
     }
     if (result.cache.hit && typeof result.cache.savedMs === 'number' && result.cache.savedMs > 0) {
-      parts.push(`节省 ${formatDuration(result.cache.savedMs)}`)
+      parts.push(`节省 ${highlight.time(formatDuration(result.cache.savedMs))}`)
     }
     logger.info(`💾 缓存: ${parts.join('， ')}`)
   }
 
   if (result.warnings && result.warnings.length > 0) {
     logger.newLine()
-    logger.warn(`⚠️  发现 ${result.warnings.length} 个警告:`)
+    logger.warn(`⚠️  发现 ${highlight.number(result.warnings.length)} 个警告:`)
     for (const warning of result.warnings) {
       logger.warn(`  ${warning.message}`)
     }
@@ -389,7 +395,7 @@ function showBuildResult(result: any, startTime: number, timings?: Record<string
   // 显示阶段耗时统计
   if (timings && Object.keys(timings).length > 0) {
     logger.newLine()
-    logger.info(chalk.bold('⏱️  阶段耗时:'))
+    logger.info(`⏱️  阶段耗时:`)
 
     const sortedTimings = Object.entries(timings).sort((a, b) => b[1] - a[1])
     const maxTime = Math.max(...sortedTimings.map(([, time]) => time))
@@ -399,7 +405,7 @@ function showBuildResult(result: any, startTime: number, timings?: Record<string
       const barLength = Math.round((time / maxTime) * 20)
       const bar = '█'.repeat(barLength) + '░'.repeat(20 - barLength)
 
-      logger.info(`  ${chalk.cyan(phase.padEnd(12))} ${chalk.gray(bar)} ${formatDuration(time).padStart(8)} ${chalk.gray(`(${percentage}%)`)}`)
+      logger.info(`  ${phase.padEnd(12)} ${highlight.dim(bar)} ${highlight.time(formatDuration(time).padStart(8))} ${highlight.dim(`(${percentage}%)`)}`)
     }
   }
 

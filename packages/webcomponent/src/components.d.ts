@@ -81,6 +81,50 @@ export namespace Components {
          */
         "theme": Theme;
     }
+    interface LDropdownPanel {
+        /**
+          * 动画持续时间（毫秒）
+          * @default 300
+         */
+        "duration": number;
+        /**
+          * 隐藏面板
+         */
+        "hide": () => Promise<void>;
+        /**
+          * 遮罩层背景色
+          * @default 'rgba(0, 0, 0, 0.3)'
+         */
+        "maskBackground": string;
+        /**
+          * 点击遮罩层是否关闭
+          * @default true
+         */
+        "maskClosable": boolean;
+        /**
+          * 面板最大高度
+          * @default '60vh'
+         */
+        "maxHeight": string;
+        /**
+          * 面板弹出位置，'top' 或 'bottom'
+          * @default 'bottom'
+         */
+        "placement": 'top' | 'bottom';
+        /**
+          * 显示面板
+         */
+        "show": () => Promise<void>;
+        /**
+          * 切换面板显示状态
+         */
+        "toggle": () => Promise<void>;
+        /**
+          * 面板是否可见
+          * @default false
+         */
+        "visible": boolean;
+    }
     /**
      * Affix 固钉组件
      * - 将元素固定在页面（或指定滚动容器）顶部
@@ -5441,6 +5485,10 @@ export namespace Components {
         "value"?: string | string[];
     }
 }
+export interface LDropdownPanelCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLDropdownPanelElement;
+}
 export interface LdesignAffixCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignAffixElement;
@@ -5647,6 +5695,23 @@ declare global {
     var HTMLBaseComponentElement: {
         prototype: HTMLBaseComponentElement;
         new (): HTMLBaseComponentElement;
+    };
+    interface HTMLLDropdownPanelElementEventMap {
+        "visibleChange": boolean;
+    }
+    interface HTMLLDropdownPanelElement extends Components.LDropdownPanel, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLDropdownPanelElementEventMap>(type: K, listener: (this: HTMLLDropdownPanelElement, ev: LDropdownPanelCustomEvent<HTMLLDropdownPanelElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLDropdownPanelElementEventMap>(type: K, listener: (this: HTMLLDropdownPanelElement, ev: LDropdownPanelCustomEvent<HTMLLDropdownPanelElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLDropdownPanelElement: {
+        prototype: HTMLLDropdownPanelElement;
+        new (): HTMLLDropdownPanelElement;
     };
     interface HTMLLdesignAffixElementEventMap {
         "ldesignAffixChange": boolean;
@@ -6971,6 +7036,7 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "base-component": HTMLBaseComponentElement;
+        "l-dropdown-panel": HTMLLDropdownPanelElement;
         "ldesign-affix": HTMLLdesignAffixElement;
         "ldesign-alert": HTMLLdesignAlertElement;
         "ldesign-avatar": HTMLLdesignAvatarElement;
@@ -7067,6 +7133,42 @@ declare namespace LocalJSX {
           * @default 'light'
          */
         "theme"?: Theme;
+    }
+    interface LDropdownPanel {
+        /**
+          * 动画持续时间（毫秒）
+          * @default 300
+         */
+        "duration"?: number;
+        /**
+          * 遮罩层背景色
+          * @default 'rgba(0, 0, 0, 0.3)'
+         */
+        "maskBackground"?: string;
+        /**
+          * 点击遮罩层是否关闭
+          * @default true
+         */
+        "maskClosable"?: boolean;
+        /**
+          * 面板最大高度
+          * @default '60vh'
+         */
+        "maxHeight"?: string;
+        /**
+          * 面板显示/隐藏时触发
+         */
+        "onVisibleChange"?: (event: LDropdownPanelCustomEvent<boolean>) => void;
+        /**
+          * 面板弹出位置，'top' 或 'bottom'
+          * @default 'bottom'
+         */
+        "placement"?: 'top' | 'bottom';
+        /**
+          * 面板是否可见
+          * @default false
+         */
+        "visible"?: boolean;
     }
     /**
      * Affix 固钉组件
@@ -12654,6 +12756,7 @@ declare namespace LocalJSX {
     }
     interface IntrinsicElements {
         "base-component": BaseComponent;
+        "l-dropdown-panel": LDropdownPanel;
         "ldesign-affix": LdesignAffix;
         "ldesign-alert": LdesignAlert;
         "ldesign-avatar": LdesignAvatar;
@@ -12730,6 +12833,7 @@ declare module "@stencil/core" {
              * 提供通用的属性和方法
              */
             "base-component": LocalJSX.BaseComponent & JSXBase.HTMLAttributes<HTMLBaseComponentElement>;
+            "l-dropdown-panel": LocalJSX.LDropdownPanel & JSXBase.HTMLAttributes<HTMLLDropdownPanelElement>;
             /**
              * Affix 固钉组件
              * - 将元素固定在页面（或指定滚动容器）顶部

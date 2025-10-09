@@ -16,6 +16,7 @@ import type {
 } from '../../types/adapter'
 import type { BuildResult, BuildWatcher } from '../../types/builder'
 import type { PerformanceMetrics } from '../../types/performance'
+import type { BuilderConfig } from '../../types/config'
 import path from 'path'
 import fs from 'fs'
 import { execSync } from 'child_process'
@@ -295,6 +296,9 @@ export class RollupAdapter implements IBundlerAdapter {
 
       this.logger.success(`Rollup 构建完成 (${duration}ms)`)
 
+      // 复制 DTS 文件到所有格式的输出目录
+      await this.copyDtsFiles(config as any)
+
       // 缓存构建结果
       if (cacheEnabled) {
         await cache.cacheBuildResult(cacheKey, buildResult)
@@ -462,6 +466,7 @@ export class RollupAdapter implements IBundlerAdapter {
           const isSimpleConfig = outputConfig.cjs === true
           const cjsConfig = isSimpleConfig ? {} : outputConfig.cjs
           const cjsDir = cjsConfig.dir || 'lib'
+          // CJS 格式也生成 DTS 文件
           const cjsPlugins = await this.transformPluginsForFormat(config.plugins || [], cjsDir, { emitDts: true })
           // 使用 output 中的 input 配置，如果没有则使用默认或顶层 input
           const cjsInput = cjsConfig.input
@@ -738,33 +743,32 @@ export class RollupAdapter implements IBundlerAdapter {
             const originalOptions = (plugin as any).options || {}
 
             // 清理不被 @rollup/plugin-typescript 支持的字段
-            const { tsconfigOverride: _ignored, compilerOptions: origCO = {}, ...rest } = originalOptions as any
+            const { tsconfigOverride: _ignored, compilerOptions: origCO = {}, tsconfig: _tsconfig, ...rest } = originalOptions as any
 
-            // 创建新的TypeScript插件，保留 include/exclude 等选项，并覆盖声明目录
-            // 若指定的 tsconfig 不存在，则删除该字段，避免插件内部解析异常
-            try {
-              const pathMod = await import('path')
-              const fsMod = await import('fs')
-              if (typeof (rest as any).tsconfig === 'string') {
-                const tsconfigAbs = pathMod.resolve(process.cwd(), (rest as any).tsconfig)
-                if (!fsMod.existsSync(tsconfigAbs)) {
-                  delete (rest as any).tsconfig
-                }
-              }
-            } catch { }
+            // 从 origCO 中排除 outDir,避免与 Rollup 的输出配置冲突
+            const { outDir: _outDir, ...cleanedCO } = origCO as any
+
+            // 不传递 tsconfig 选项,避免从文件中读取 outDir
+            // 所有配置都通过 compilerOptions 显式传递
 
             const newPlugin = typescript.default({
               ...rest,
               compilerOptions: {
-                ...origCO,
+                ...cleanedCO,
                 declaration: emitDts,
-                emitDeclarationOnly: emitDts,
+                // 不使用 emitDeclarationOnly,因为 Rollup 需要 JS 文件
                 // 关闭 d.ts 的 sourceMap，避免生成到上级目录等不合法路径
                 declarationMap: false,
                 declarationDir: emitDts ? outputDir : undefined,
-                outDir: emitDts ? outputDir : undefined,
+                // 显式设置 outDir 为 undefined,覆盖 tsconfig.json 中的值
+                // 让 Rollup 自己处理 JS 文件的输出
+                outDir: undefined,
                 // 避免 @rollup/plugin-typescript 在缺少 tsconfig 时的根目录推断失败
-                rootDir: (origCO as any)?.rootDir ?? 'src'
+                rootDir: cleanedCO?.rootDir ?? 'src',
+                // 性能优化: 禁用不必要的检查
+                skipLibCheck: true,
+                // 性能优化: 只编译必要的文件
+                isolatedModules: !emitDts
               }
             })
 
@@ -1704,6 +1708,99 @@ export class RollupAdapter implements IBundlerAdapter {
     }
 
     return parts.length > 0 ? `/*!\n * ${parts.join('\n * ')}\n */` : ''
+  }
+
+  /**
+   * 复制 DTS 文件到所有格式的输出目录
+   * 确保 ESM 和 CJS 格式都有完整的类型定义文件
+   */
+  private async copyDtsFiles(config: BuilderConfig): Promise<void> {
+    const fs = await import('fs-extra')
+    const path = await import('path')
+
+    // 获取输出配置
+    const outputConfig = config.output || {}
+    const esmDir = (typeof outputConfig.esm === 'object' ? outputConfig.esm.dir : 'es') || 'es'
+    const cjsDir = (typeof outputConfig.cjs === 'object' ? outputConfig.cjs.dir : 'lib') || 'lib'
+
+    // 如果两个目录相同，不需要复制
+    if (esmDir === cjsDir) {
+      return
+    }
+
+    // 如果没有启用 CJS 输出，不需要复制
+    if (!outputConfig.cjs) {
+      return
+    }
+
+    // 确定源目录和目标目录
+    // ESM 目录有 .d.ts 文件，需要复制到 CJS 目录并重命名为 .d.cts
+    const sourceDir = path.resolve(process.cwd(), esmDir)
+    const targetDir = path.resolve(process.cwd(), cjsDir)
+
+    // 检查源目录是否存在
+    if (!await fs.pathExists(sourceDir)) {
+      return
+    }
+
+    try {
+      // 递归查找所有 .d.ts 文件
+      const dtsFiles = await this.findDtsFiles(sourceDir)
+
+      if (dtsFiles.length === 0) {
+        return
+      }
+
+      this.logger.debug(`复制 ${dtsFiles.length} 个 DTS 文件从 ${esmDir} 到 ${cjsDir} (重命名为 .d.cts)...`)
+
+      // 复制每个 DTS 文件并重命名
+      for (const dtsFile of dtsFiles) {
+        const relativePath = path.relative(sourceDir, dtsFile)
+        // 将 .d.ts 替换为 .d.cts
+        const targetRelativePath = relativePath.replace(/\.d\.ts$/, '.d.cts')
+        const targetPath = path.join(targetDir, targetRelativePath)
+
+        // 确保目标目录存在
+        await fs.ensureDir(path.dirname(targetPath))
+
+        // 复制文件
+        await fs.copy(dtsFile, targetPath, { overwrite: true })
+      }
+
+      this.logger.debug(`DTS 文件复制完成 (${dtsFiles.length} 个文件)`)
+    } catch (error) {
+      this.logger.warn(`复制 DTS 文件失败:`, (error as Error).message)
+    }
+  }
+
+  /**
+   * 递归查找目录中的所有 .d.ts 文件
+   */
+  private async findDtsFiles(dir: string): Promise<string[]> {
+    const fs = await import('fs-extra')
+    const path = await import('path')
+    const files: string[] = []
+
+    try {
+      const entries = await fs.readdir(dir, { withFileTypes: true })
+
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name)
+
+        if (entry.isDirectory()) {
+          // 递归查找子目录
+          const subFiles = await this.findDtsFiles(fullPath)
+          files.push(...subFiles)
+        } else if (entry.isFile() && entry.name.endsWith('.d.ts')) {
+          // 添加 .d.ts 文件
+          files.push(fullPath)
+        }
+      }
+    } catch (error) {
+      // 忽略错误
+    }
+
+    return files
   }
 
 }

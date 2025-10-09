@@ -64,6 +64,7 @@ export { LdesignGridItem } from './grid-item/grid-item';
 export { LdesignRow } from './row/row';
 export { LdesignCol } from './col/col';
 export { LdesignEllipsis } from './ellipsis/ellipsis';
+export { DropdownPanel } from './dropdown-panel/dropdown-panel';
 
 // Modal quick APIs
 export { alertModal, confirmModal, promptModal, promptPassword, promptForm } from './modal/modal-api';
