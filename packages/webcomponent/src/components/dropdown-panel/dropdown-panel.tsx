@@ -60,6 +60,7 @@ export class DropdownPanel {
   private triggerRef?: HTMLDivElement;
   private panelRef?: HTMLDivElement;
   private resizeObserver?: ResizeObserver;
+  private previousPlacement: 'top' | 'bottom' = 'bottom';
 
   componentDidLoad() {
     // 监听窗口大小变化
@@ -83,22 +84,29 @@ export class DropdownPanel {
   @Watch('visible')
   onVisibleChange(newValue: boolean) {
     if (newValue) {
-      // 打开：立即重置isReady并更新位置和方向
-      this.isReady = false; // 先重置为false
+      // 打开：先重置isReady，然后更新位置和方向
+      this.isReady = false;
       this.updateTriggerRect();
-      this.calculatePlacement();
+      
+      // 计算并更新新的placement，确保在动画开始前就是正确的
+      const newPlacement = this.getNewPlacement();
+      console.log('[open] calculated placement:', newPlacement, 'previous:', this.actualPlacement);
+      this.actualPlacement = newPlacement;
+      this.previousPlacement = newPlacement;
       this.lockBodyScroll();
       
-      // 双RAF确保：第一次RAF让Stencil完成DOM渲染，第二次RAF让浏览器完成初始状态绘制
+      // 双RAF确保：第一次RAF让Stencil完成DOM渲染和CSS类更新，第二次RAF让浏览器完成初始状态绘制
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          console.log('[open] setting isReady to true, visible:', this.visible);
-          this.isReady = true;
-          if (this.panelRef) {
-            this.panelHeight = this.panelRef.scrollHeight;
-            console.log('[open] panelRef classes:', this.panelRef.className);
-          } else {
-            console.warn('[open] panelRef is null!');
+          console.log('[open] setting isReady to true, visible:', this.visible, 'placement:', this.actualPlacement);
+          if (this.visible) {
+            this.isReady = true;
+            if (this.panelRef) {
+              this.panelHeight = this.panelRef.scrollHeight;
+              console.log('[open] panelRef classes:', this.panelRef.className);
+            } else {
+              console.warn('[open] panelRef is null!');
+            }
           }
         });
       });
@@ -139,8 +147,34 @@ export class DropdownPanel {
 
   private handleScroll = () => {
     if (this.visible) {
+      const oldPlacement = this.actualPlacement;
       this.updateTriggerRect();
-      this.calculatePlacement();
+      
+      // 计算新的方向（但不立即应用）
+      const newPlacement = this.getNewPlacement();
+      
+      // 如果方向改变了，需要先隐藏，然后改变方向，再显示
+      if (oldPlacement !== newPlacement) {
+        console.log(`[scroll] placement changed from ${oldPlacement} to ${newPlacement}, resetting animation`);
+        // 先隐藏面板
+        this.isReady = false;
+        
+        // 等待隐藏动画完成，然后更新方向并重新显示
+        requestAnimationFrame(() => {
+          // 更新方向
+          this.actualPlacement = newPlacement;
+          
+          // 等待DOM更新，然后显示
+          requestAnimationFrame(() => {
+            if (this.visible) {
+              this.isReady = true;
+            }
+          });
+        });
+      } else {
+        // 方向没有改变，直接更新
+        this.actualPlacement = newPlacement;
+      }
     }
   };
 
@@ -150,10 +184,9 @@ export class DropdownPanel {
     }
   };
 
-  private calculatePlacement = () => {
+  private getNewPlacement = (): 'top' | 'bottom' => {
     if (!this.triggerRect) {
-      this.actualPlacement = 'bottom';
-      return;
+      return 'bottom';
     }
 
     const windowHeight = window.innerHeight;
@@ -181,18 +214,17 @@ export class DropdownPanel {
 
       if (canFitBelow && canFitAbove) {
         // 两侧都能完全显示，优先选择下方（更符合用户习惯）
-        this.actualPlacement = 'bottom';
+        return 'bottom';
       } else if (canFitBelow) {
         // 只有下方能完全显示
-        this.actualPlacement = 'bottom';
+        return 'bottom';
       } else if (canFitAbove) {
         // 只有上方能完全显示
-        this.actualPlacement = 'top';
+        return 'top';
       } else {
         // 两侧都无法完全显示，选择空间更大的一侧
-        this.actualPlacement = spaceAbove > spaceBelow ? 'top' : 'bottom';
+        return spaceAbove > spaceBelow ? 'top' : 'bottom';
       }
-      return;
     }
 
     // 手动指定方向，但需要检查空间是否足够，不足时智能切换
@@ -202,21 +234,25 @@ export class DropdownPanel {
       // 想从下方弹出，检查下方空间是否足够
       if (spaceBelow < estimatedPanelHeight && spaceAbove > spaceBelow) {
         // 下方空间不足以显示面板，且上方空间更大，切换到上方
-        this.actualPlacement = 'top';
         console.warn(`[l-dropdown-panel] 下方空间不足（需要 ${estimatedPanelHeight}px，可用 ${spaceBelow}px），自动切换为从上方弹出`);
+        return 'top';
       } else {
-        this.actualPlacement = 'bottom';
+        return 'bottom';
       }
     } else {
       // 想从上方弹出，检查上方空间是否足够
       if (spaceAbove < estimatedPanelHeight && spaceBelow > spaceAbove) {
         // 上方空间不足以显示面板，且下方空间更大，切换到下方
-        this.actualPlacement = 'bottom';
         console.warn(`[l-dropdown-panel] 上方空间不足（需要 ${estimatedPanelHeight}px，可用 ${spaceAbove}px），自动切换为从下方弹出`);
+        return 'bottom';
       } else {
-        this.actualPlacement = 'top';
+        return 'top';
       }
     }
+  };
+
+  private calculatePlacement = () => {
+    this.actualPlacement = this.getNewPlacement();
   };
 
   private handleTriggerClick = () => {
