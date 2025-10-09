@@ -157,32 +157,62 @@ export class DropdownPanel {
     }
 
     const windowHeight = window.innerHeight;
-    const spaceBelow = windowHeight - this.triggerRect.bottom;
-    const spaceAbove = this.triggerRect.top;
-    const minRequiredSpace = 100; // 最小需要的空间
+    const spaceBelow = windowHeight - this.triggerRect.bottom - this.safeDistance;
+    const spaceAbove = this.triggerRect.top - this.safeDistance;
+    
+    // 估算面板高度：优先使用实际测量的高度，否则使用maxHeight配置
+    let estimatedPanelHeight: number;
+    if (this.panelHeight > 0) {
+      estimatedPanelHeight = this.panelHeight;
+    } else {
+      // 从maxHeight配置中估算
+      if (this.maxHeight.includes('vh')) {
+        estimatedPanelHeight = parseFloat(this.maxHeight) * windowHeight / 100;
+      } else {
+        estimatedPanelHeight = parseFloat(this.maxHeight);
+      }
+    }
 
-    // 如果是 auto 模式，根据空间大小自动选择
+    // 如果是 auto 模式，根据空间大小和面板高度智能选择
     if (this.placement === 'auto') {
-      this.actualPlacement = spaceBelow >= spaceAbove ? 'bottom' : 'top';
+      // 检查上方和下方是否有足够空间完全显示面板
+      const canFitBelow = spaceBelow >= estimatedPanelHeight;
+      const canFitAbove = spaceAbove >= estimatedPanelHeight;
+
+      if (canFitBelow && canFitAbove) {
+        // 两侧都能完全显示，优先选择下方（更符合用户习惯）
+        this.actualPlacement = 'bottom';
+      } else if (canFitBelow) {
+        // 只有下方能完全显示
+        this.actualPlacement = 'bottom';
+      } else if (canFitAbove) {
+        // 只有上方能完全显示
+        this.actualPlacement = 'top';
+      } else {
+        // 两侧都无法完全显示，选择空间更大的一侧
+        this.actualPlacement = spaceAbove > spaceBelow ? 'top' : 'bottom';
+      }
       return;
     }
 
-    // 手动指定方向，但需要检查空间是否足够
+    // 手动指定方向，但需要检查空间是否足够，不足时智能切换
     const preferredPlacement = this.placement as 'top' | 'bottom';
     
     if (preferredPlacement === 'bottom') {
-      // 想从下方弹出，但下方空间不足，且上方空间更大
-      if (spaceBelow < minRequiredSpace && spaceAbove > spaceBelow) {
+      // 想从下方弹出，检查下方空间是否足够
+      if (spaceBelow < estimatedPanelHeight && spaceAbove > spaceBelow) {
+        // 下方空间不足以显示面板，且上方空间更大，切换到上方
         this.actualPlacement = 'top';
-        console.warn(`[l-dropdown-panel] 下方空间不足，自动切换为从上方弹出`);
+        console.warn(`[l-dropdown-panel] 下方空间不足（需要 ${estimatedPanelHeight}px，可用 ${spaceBelow}px），自动切换为从上方弹出`);
       } else {
         this.actualPlacement = 'bottom';
       }
     } else {
-      // 想从上方弹出，但上方空间不足，且下方空间更大
-      if (spaceAbove < minRequiredSpace && spaceBelow > spaceAbove) {
+      // 想从上方弹出，检查上方空间是否足够
+      if (spaceAbove < estimatedPanelHeight && spaceBelow > spaceAbove) {
+        // 上方空间不足以显示面板，且下方空间更大，切换到下方
         this.actualPlacement = 'bottom';
-        console.warn(`[l-dropdown-panel] 上方空间不足，自动切换为从下方弹出`);
+        console.warn(`[l-dropdown-panel] 上方空间不足（需要 ${estimatedPanelHeight}px，可用 ${spaceAbove}px），自动切换为从下方弹出`);
       } else {
         this.actualPlacement = 'top';
       }
