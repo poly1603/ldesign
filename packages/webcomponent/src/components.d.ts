@@ -107,10 +107,15 @@ export namespace Components {
          */
         "maxHeight": string;
         /**
-          * 面板弹出位置，'top' 或 'bottom'
-          * @default 'bottom'
+          * 面板弹出位置，'top' 或 'bottom'，'auto' 自动判断
+          * @default 'auto'
          */
-        "placement": 'top' | 'bottom';
+        "placement": 'top' | 'bottom' | 'auto';
+        /**
+          * 面板与遮罩边缘的安全距离（像素）
+          * @default 16
+         */
+        "safeDistance": number;
         /**
           * 显示面板
          */
@@ -7160,10 +7165,15 @@ declare namespace LocalJSX {
          */
         "onVisibleChange"?: (event: LDropdownPanelCustomEvent<boolean>) => void;
         /**
-          * 面板弹出位置，'top' 或 'bottom'
-          * @default 'bottom'
+          * 面板弹出位置，'top' 或 'bottom'，'auto' 自动判断
+          * @default 'auto'
          */
-        "placement"?: 'top' | 'bottom';
+        "placement"?: 'top' | 'bottom' | 'auto';
+        /**
+          * 面板与遮罩边缘的安全距离（像素）
+          * @default 16
+         */
+        "safeDistance"?: number;
         /**
           * 面板是否可见
           * @default false

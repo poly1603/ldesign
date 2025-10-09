@@ -25,46 +25,56 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    background: transparent;
 
     &--visible {
       opacity: 1;
       pointer-events: auto;
     }
+
+    // 遮罩背景层
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--mask-bg, rgba(0, 0, 0, 0.3));
+      pointer-events: none;
+    }
   }
 
   &__panel {
-    position: fixed;
+    position: absolute;
     left: 0;
     right: 0;
     background: #fff;
-    overflow: hidden;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
     pointer-events: auto;
-    z-index: 1;
+    z-index: 2;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     // 从下方滑出
     &--bottom {
-      transform: translateY(100%);
-      opacity: 0;
-      border-radius: 12px 12px 0 0;
+      top: 0;
+      transform: translateY(-100%);
       box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
 
       &.l-dropdown-panel__panel--visible {
         transform: translateY(0);
-        opacity: 1;
       }
     }
 
     // 从上方滑出
     &--top {
-      transform: translateY(-100%);
-      opacity: 0;
-      border-radius: 0 0 12px 12px;
+      bottom: 0;
+      transform: translateY(100%);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 
       &.l-dropdown-panel__panel--visible {
         transform: translateY(0);
-        opacity: 1;
       }
     }
   }

@@ -18,9 +18,9 @@ export class DropdownPanel {
   @Prop({ mutable: true, reflect: true }) visible: boolean = false;
 
   /**
-   * 面板弹出位置，'top' 或 'bottom'
+   * 面板弹出位置，'top' 或 'bottom'，'auto' 自动判断
    */
-  @Prop() placement: 'top' | 'bottom' = 'bottom';
+  @Prop() placement: 'top' | 'bottom' | 'auto' = 'auto';
 
   /**
    * 遮罩层背景色
@@ -31,6 +31,11 @@ export class DropdownPanel {
    * 面板最大高度
    */
   @Prop() maxHeight: string = '60vh';
+
+  /**
+   * 面板与遮罩边缘的安全距离（像素）
+   */
+  @Prop() safeDistance: number = 16;
 
   /**
    * 动画持续时间（毫秒）
@@ -49,6 +54,8 @@ export class DropdownPanel {
 
   @State() triggerRect: DOMRect | null = null;
   @State() panelHeight: number = 0;
+  @State() actualPlacement: 'top' | 'bottom' = 'bottom';
+  @State() isReady: boolean = false;
 
   private triggerRef?: HTMLDivElement;
   private panelRef?: HTMLDivElement;
@@ -59,6 +66,7 @@ export class DropdownPanel {
     this.resizeObserver = new ResizeObserver(() => {
       if (this.visible) {
         this.updateTriggerRect();
+        this.calculatePlacement();
       }
     });
     this.resizeObserver.observe(document.body);
@@ -75,16 +83,32 @@ export class DropdownPanel {
   @Watch('visible')
   onVisibleChange(newValue: boolean) {
     if (newValue) {
+      // 打开：立即重置isReady并更新位置和方向
+      this.isReady = false; // 先重置为false
       this.updateTriggerRect();
+      this.calculatePlacement();
       this.lockBodyScroll();
-      // 计算面板高度
-      setTimeout(() => {
-        if (this.panelRef) {
-          this.panelHeight = this.panelRef.scrollHeight;
-        }
-      }, 0);
+      
+      // 双RAF确保：第一次RAF让Stencil完成DOM渲染，第二次RAF让浏览器完成初始状态绘制
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          console.log('[open] setting isReady to true, visible:', this.visible);
+          this.isReady = true;
+          if (this.panelRef) {
+            this.panelHeight = this.panelRef.scrollHeight;
+            console.log('[open] panelRef classes:', this.panelRef.className);
+          } else {
+            console.warn('[open] panelRef is null!');
+          }
+        });
+      });
     } else {
+      // 关闭：先隐藏动画
+      this.isReady = false;
       this.unlockBodyScroll();
+      
+      // 动画完成后清理 - 不清空triggerRect，保留以便下次打开时有初始渲染条件
+      // 注释掉：triggerRect的更新由下次打开时的updateTriggerRect处理
     }
     this.visibleChange.emit(newValue);
   }
@@ -116,12 +140,52 @@ export class DropdownPanel {
   private handleScroll = () => {
     if (this.visible) {
       this.updateTriggerRect();
+      this.calculatePlacement();
     }
   };
 
   private updateTriggerRect = () => {
     if (this.triggerRef) {
       this.triggerRect = this.triggerRef.getBoundingClientRect();
+    }
+  };
+
+  private calculatePlacement = () => {
+    if (!this.triggerRect) {
+      this.actualPlacement = 'bottom';
+      return;
+    }
+
+    const windowHeight = window.innerHeight;
+    const spaceBelow = windowHeight - this.triggerRect.bottom;
+    const spaceAbove = this.triggerRect.top;
+    const minRequiredSpace = 100; // 最小需要的空间
+
+    // 如果是 auto 模式，根据空间大小自动选择
+    if (this.placement === 'auto') {
+      this.actualPlacement = spaceBelow >= spaceAbove ? 'bottom' : 'top';
+      return;
+    }
+
+    // 手动指定方向，但需要检查空间是否足够
+    const preferredPlacement = this.placement as 'top' | 'bottom';
+    
+    if (preferredPlacement === 'bottom') {
+      // 想从下方弹出，但下方空间不足，且上方空间更大
+      if (spaceBelow < minRequiredSpace && spaceAbove > spaceBelow) {
+        this.actualPlacement = 'top';
+        console.warn(`[l-dropdown-panel] 下方空间不足，自动切换为从上方弹出`);
+      } else {
+        this.actualPlacement = 'bottom';
+      }
+    } else {
+      // 想从上方弹出，但上方空间不足，且下方空间更大
+      if (spaceAbove < minRequiredSpace && spaceBelow > spaceAbove) {
+        this.actualPlacement = 'bottom';
+        console.warn(`[l-dropdown-panel] 上方空间不足，自动切换为从下方弹出`);
+      } else {
+        this.actualPlacement = 'top';
+      }
     }
   };
 
@@ -148,22 +212,32 @@ export class DropdownPanel {
   private getPanelStyle() {
     if (!this.triggerRect) return {};
 
-    const style: any = {
-      maxHeight: this.maxHeight,
-      transition: `transform ${this.duration}ms cubic-bezier(0.4, 0, 0.2, 1), opacity ${this.duration}ms cubic-bezier(0.4, 0, 0.2, 1)`,
-    };
+    const windowHeight = window.innerHeight;
+    let calculatedMaxHeight: string;
 
-    if (this.placement === 'bottom') {
-      // 从触发器下方滑出
-      style.top = `${this.triggerRect.bottom}px`;
-      style.left = '0';
-      style.right = '0';
+    // 计算实际可用空间：遮罩区域 - 安全距离
+    if (this.actualPlacement === 'bottom') {
+      // 从下方弹出：遮罩高度 - 底部安全距离
+      const maskHeight = windowHeight - this.triggerRect.bottom;
+      const availableSpace = maskHeight - this.safeDistance;
+      const userMaxHeight = this.maxHeight.includes('vh') 
+        ? parseFloat(this.maxHeight) * windowHeight / 100
+        : parseFloat(this.maxHeight);
+      calculatedMaxHeight = `${Math.min(availableSpace, userMaxHeight)}px`;
     } else {
-      // 从触发器上方滑出
-      style.bottom = `${window.innerHeight - this.triggerRect.top}px`;
-      style.left = '0';
-      style.right = '0';
+      // 从上方弹出：遮罩高度 - 顶部安全距离
+      const maskHeight = this.triggerRect.top;
+      const availableSpace = maskHeight - this.safeDistance;
+      const userMaxHeight = this.maxHeight.includes('vh') 
+        ? parseFloat(this.maxHeight) * windowHeight / 100
+        : parseFloat(this.maxHeight);
+      calculatedMaxHeight = `${Math.min(availableSpace, userMaxHeight)}px`;
     }
+
+    const style: any = {
+      maxHeight: calculatedMaxHeight,
+      transition: `transform ${this.duration}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+    };
 
     return style;
   }
@@ -172,29 +246,37 @@ export class DropdownPanel {
     if (!this.triggerRect) return {};
 
     const style: any = {
-      background: this.maskBackground,
+      '--mask-bg': this.maskBackground,
       transition: `opacity ${this.duration}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+      // 设置 padding 为安全距离，使面板与遮罩边缘保持距离
     };
 
-    if (this.placement === 'bottom') {
+    if (this.actualPlacement === 'bottom') {
       // 遮罩显示在触发器下方到底部
       style.top = `${this.triggerRect.bottom}px`;
       style.bottom = '0';
+      style.paddingBottom = `${this.safeDistance}px`;
     } else {
       // 遮罩显示在触发器上方到顶部
       style.top = '0';
       style.bottom = `${window.innerHeight - this.triggerRect.top}px`;
+      style.paddingTop = `${this.safeDistance}px`;
     }
 
     return style;
   }
 
   render() {
+    // 打开或关闭动画过程中都需要渲染
+    const shouldRender = this.visible || !!this.triggerRect;
+    
     const panelClasses = {
       'l-dropdown-panel__panel': true,
-      'l-dropdown-panel__panel--visible': this.visible,
-      [`l-dropdown-panel__panel--${this.placement}`]: true,
+      'l-dropdown-panel__panel--visible': this.visible && this.isReady,
+      [`l-dropdown-panel__panel--${this.actualPlacement}`]: true,
     };
+    
+    console.log('[render] panelClasses:', panelClasses, 'visible:', this.visible, 'isReady:', this.isReady);
 
     const maskClasses = {
       'l-dropdown-panel__mask': true,
@@ -213,23 +295,23 @@ export class DropdownPanel {
         </div>
 
         {/* 遮罩层和面板容器 */}
-        {(this.visible || this.triggerRect) && (
+        {shouldRender && (
           <div class="l-dropdown-panel__overlay">
-            {/* 遮罩层 */}
+            {/* 遮罩层容器 */}
             <div
               class={maskClasses}
               style={this.getMaskStyle()}
               onClick={this.handleMaskClick}
-            />
-
-            {/* 面板 */}
-            <div
-              class={panelClasses}
-              style={this.getPanelStyle()}
-              ref={el => (this.panelRef = el)}
             >
-              <div class="l-dropdown-panel__content">
-                <slot />
+              {/* 面板 */}
+              <div
+                class={panelClasses}
+                style={this.getPanelStyle()}
+                ref={el => (this.panelRef = el)}
+              >
+                <div class="l-dropdown-panel__content">
+                  <slot />
+                </div>
               </div>
             </div>
           </div>

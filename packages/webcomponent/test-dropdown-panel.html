@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dropdown Panel 测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      min-height: 200vh;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      padding: 40px 20px;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .header p {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+
+    .demo-container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .demo-section {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-section h2 {
+      margin-bottom: 8px;
+      font-size: 20px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .demo-section p {
+      margin-bottom: 20px;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* 触发按钮样式 */
+    .trigger-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 14px 18px;
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 15px;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+
+    .trigger-button:active {
+      background: #f8f8f8;
+      transform: scale(0.98);
+    }
+
+    .trigger-button .label {
+      color: #667eea;
+      font-weight: 500;
+    }
+
+    .trigger-button .arrow {
+      font-size: 14px;
+      color: #999;
+      transition: transform 0.3s ease;
+    }
+
+    l-dropdown-panel[visible] .trigger-button {
+      border-color: #667eea;
+    }
+
+    l-dropdown-panel[visible] .trigger-button .arrow {
+      transform: rotate(180deg);
+    }
+
+    /* 面板内容样式 */
+    .panel-content {
+      background: white;
+    }
+
+    .menu-item {
+      padding: 18px 24px;
+      border-bottom: 1px solid #f5f5f5;
+      font-size: 16px;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .menu-item:active {
+      background: #f8f8f8;
+    }
+
+    .menu-item.selected {
+      color: #667eea;
+      font-weight: 500;
+    }
+
+    .menu-item.selected::after {
+      content: '✓';
+      position: absolute;
+      right: 24px;
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    /* 筛选面板样式 */
+    .filter-section {
+      padding: 24px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .filter-section:last-child {
+      border-bottom: none;
+    }
+
+    .filter-title {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .filter-chip {
+      padding: 10px 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 24px;
+      font-size: 14px;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+
+    .filter-chip:active {
+      transform: scale(0.95);
+    }
+
+    .filter-chip.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-color: #667eea;
+      color: white;
+    }
+
+    /* 控制按钮 */
+    .control-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .control-buttons button {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #667eea;
+      border-radius: 10px;
+      background: white;
+      color: #667eea;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .control-buttons button:active {
+      background: #667eea;
+      color: white;
+      transform: scale(0.95);
+    }
+
+    /* 页脚 */
+    .footer {
+      text-align: center;
+      color: white;
+      padding: 40px 20px;
+      margin-top: 40px;
+      opacity: 0.8;
+    }
+
+    .footer p {
+      font-size: 14px;
+    }
+
+    /* 响应式 */
+    @media (max-width: 600px) {
+      .demo-container {
+        padding: 0 10px;
+      }
+
+      .demo-section {
+        padding: 20px;
+      }
+
+      .header h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📱 Dropdown Panel</h1>
+    <p>移动端下拉面板组件演示</p>
+  </div>
+
+  <div class="demo-container">
+    <!-- 基础用法 -->
+    <div class="demo-section">
+      <h2>🎯 基础用法</h2>
+      <p>点击按钮从下方滑出面板，遮罩只覆盖触发器下方区域</p>
+      
+      <l-dropdown-panel id="demo1">
+        <div slot="trigger" class="trigger-button">
+          <span class="label">全部商品</span>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="panel-content">
+          <div class="menu-item selected">全部商品</div>
+          <div class="menu-item">新款商品</div>
+          <div class="menu-item">活动商品</div>
+        </div>
+      </l-dropdown-panel>
+    </div>
+
+    <!-- 排序功能 -->
+    <div class="demo-section">
+      <h2>🔀 排序选择</h2>
+      <p>选择后自动关闭面板并更新显示文本</p>
+      
+      <l-dropdown-panel id="demo2">
+        <div slot="trigger" class="trigger-button">
+          <span class="label">默认排序</span>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="panel-content">
+          <div class="menu-item selected" data-sort="default">默认排序</div>
+          <div class="menu-item" data-sort="rating">好评排序</div>
+          <div class="menu-item" data-sort="sales">销量排序</div>
+          <div class="menu-item" data-sort="price-low">价格从低到高</div>
+          <div class="menu-item" data-sort="price-high">价格从高到低</div>
+        </div>
+      </l-dropdown-panel>
+    </div>
+
+    <!-- 从上方滑出 -->
+    <div class="demo-section">
+      <h2>⬆️ 从上方滑出</h2>
+      <p>通过 placement="top" 设置面板从上方滑出</p>
+      
+      <l-dropdown-panel id="demo3" placement="top">
+        <div slot="trigger" class="trigger-button">
+          <span class="label">向上展开</span>
+          <span class="arrow">▲</span>
+        </div>
+        <div class="panel-content">
+          <div class="menu-item">选项 1</div>
+          <div class="menu-item">选项 2</div>
+          <div class="menu-item">选项 3</div>
+          <div class="menu-item">选项 4</div>
+        </div>
+      </l-dropdown-panel>
+    </div>
+
+    <!-- 复杂筛选 -->
+    <div class="demo-section">
+      <h2>🎨 复杂筛选面板</h2>
+      <p>支持自定义复杂的面板内容，如多选筛选器</p>
+      
+      <l-dropdown-panel id="demo4" max-height="70vh">
+        <div slot="trigger" class="trigger-button">
+          <span class="label">筛选</span>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="panel-content">
+          <div class="filter-section">
+            <div class="filter-title">类型</div>
+            <div class="filter-options">
+              <div class="filter-chip active">全部</div>
+              <div class="filter-chip">品牌</div>
+              <div class="filter-chip">包邮</div>
+              <div class="filter-chip">团购</div>
+            </div>
+          </div>
+          <div class="filter-section">
+            <div class="filter-title">价格区间</div>
+            <div class="filter-options">
+              <div class="filter-chip">0-100</div>
+              <div class="filter-chip">100-500</div>
+              <div class="filter-chip">500-1000</div>
+              <div class="filter-chip">1000+</div>
+            </div>
+          </div>
+          <div class="filter-section">
+            <div class="filter-title">品牌</div>
+            <div class="filter-options">
+              <div class="filter-chip">Apple</div>
+              <div class="filter-chip">Samsung</div>
+              <div class="filter-chip">Huawei</div>
+              <div class="filter-chip">Xiaomi</div>
+              <div class="filter-chip">OPPO</div>
+              <div class="filter-chip">vivo</div>
+            </div>
+          </div>
+        </div>
+      </l-dropdown-panel>
+    </div>
+
+    <!-- 编程控制 -->
+    <div class="demo-section">
+      <h2>⚙️ 编程式控制</h2>
+      <p>通过 show()、hide()、toggle() 方法控制面板</p>
+      
+      <l-dropdown-panel id="demo5">
+        <div slot="trigger" class="trigger-button">
+          <span class="label">API 控制</span>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="panel-content">
+          <div class="menu-item">这是一个</div>
+          <div class="menu-item">可以通过代码</div>
+          <div class="menu-item">控制显示的面板</div>
+        </div>
+      </l-dropdown-panel>
+
+      <div class="control-buttons">
+        <button onclick="document.getElementById('demo5').show()">显示</button>
+        <button onclick="document.getElementById('demo5').hide()">隐藏</button>
+        <button onclick="document.getElementById('demo5').toggle()">切换</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>🎉 基于 Stencil 构建的 Web Component</p>
+    <p>支持所有现代框架和原生 HTML</p>
+  </div>
+
+  <!-- 加载组件库 -->
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  
+  <script>
+    // 等待组件加载完成
+    window.addEventListener('load', () => {
+      // 排序选择交互
+      const demo2 = document.getElementById('demo2');
+      const sortItems = demo2.querySelectorAll('[data-sort]');
+      const sortLabel = demo2.querySelector('.trigger-button .label');
+
+      sortItems.forEach(item => {
+        item.addEventListener('click', () => {
+          // 移除所有选中状态
+          sortItems.forEach(i => i.classList.remove('selected'));
+          // 添加当前选中状态
+          item.classList.add('selected');
+          // 更新标签
+          sortLabel.textContent = item.textContent;
+          // 关闭面板
+          demo2.hide();
+        });
+      });
+
+      // 筛选交互
+      const demo4 = document.getElementById('demo4');
+      const filterChips = demo4.querySelectorAll('.filter-chip');
+
+      filterChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          chip.classList.toggle('active');
+        });
+      });
+
+      // 监听所有面板的状态变化
+      document.querySelectorAll('l-dropdown-panel').forEach(panel => {
+        panel.addEventListener('visibleChange', (e) => {
+          console.log(`面板 ${panel.id} 状态:`, e.detail ? '✅ 显示' : '❌ 隐藏');
+        });
+      });
+
+      console.log('✨ Dropdown Panel 组件已加载完成！');
+      console.log('📖 可以在控制台查看面板状态变化日志');
+    });
+  </script>
+</body>
+</html>
