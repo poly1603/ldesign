@@ -9,6 +9,7 @@
 
 | Property         | Attribute         | Description                         | Type                          | Default                |
 | ---------------- | ----------------- | ----------------------------------- | ----------------------------- | ---------------------- |
+| `animationMode`  | `animation-mode`  | 动画模式：'scale' 展开动画，'slide' 滑动动画      | `"scale" \| "slide"`          | `'scale'`              |
 | `duration`       | `duration`        | 动画持续时间（毫秒）                          | `number`                      | `300`                  |
 | `maskBackground` | `mask-background` | 遮罩层背景色                              | `string`                      | `'rgba(0, 0, 0, 0.3)'` |
 | `maskClosable`   | `mask-closable`   | 点击遮罩层是否关闭                           | `boolean`                     | `true`                 |

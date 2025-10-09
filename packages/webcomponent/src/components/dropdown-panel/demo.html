@@ -259,10 +259,46 @@
   </div>
 
   <div class="demo-section">
+    <h2>动画模式 - Scale（展开/收缩）</h2>
+    <p>默认动画模式：面板从触发器位置展开和收缩</p>
+    
+    <l-dropdown-panel id="demo5" animation-mode="scale">
+      <div slot="trigger" class="trigger-button">
+        <span class="label">Scale 动画</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="panel-content">
+        <div class="menu-item">选项 1</div>
+        <div class="menu-item">选项 2</div>
+        <div class="menu-item">选项 3</div>
+        <div class="menu-item">选项 4</div>
+      </div>
+    </l-dropdown-panel>
+  </div>
+
+  <div class="demo-section">
+    <h2>动画模式 - Slide（滑入/滑出）</h2>
+    <p>滑动动画模式：面板从遮罩边缘滑入和滑出</p>
+    
+    <l-dropdown-panel id="demo6" animation-mode="slide">
+      <div slot="trigger" class="trigger-button">
+        <span class="label">Slide 动画</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="panel-content">
+        <div class="menu-item">选项 1</div>
+        <div class="menu-item">选项 2</div>
+        <div class="menu-item">选项 3</div>
+        <div class="menu-item">选项 4</div>
+      </div>
+    </l-dropdown-panel>
+  </div>
+
+  <div class="demo-section">
     <h2>编程式控制</h2>
     <p>通过方法控制面板的显示和隐藏</p>
     
-    <l-dropdown-panel id="demo5">
+    <l-dropdown-panel id="demo7">
       <div slot="trigger" class="trigger-button">
         <span class="label">可编程控制</span>
         <span class="arrow">▼</span>
@@ -275,9 +311,9 @@
     </l-dropdown-panel>
 
     <div class="control-buttons">
-      <button onclick="document.getElementById('demo5').show()">显示</button>
-      <button onclick="document.getElementById('demo5').hide()">隐藏</button>
-      <button onclick="document.getElementById('demo5').toggle()">切换</button>
+      <button onclick="document.getElementById('demo7').show()">显示</button>
+      <button onclick="document.getElementById('demo7').hide()">隐藏</button>
+      <button onclick="document.getElementById('demo7').toggle()">切换</button>
     </div>
   </div>
 

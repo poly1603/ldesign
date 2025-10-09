@@ -83,6 +83,11 @@ export namespace Components {
     }
     interface LDropdownPanel {
         /**
+          * 动画模式：'scale' 展开动画，'slide' 滑动动画
+          * @default 'scale'
+         */
+        "animationMode": 'scale' | 'slide';
+        /**
           * 动画持续时间（毫秒）
           * @default 300
          */
@@ -7140,6 +7145,11 @@ declare namespace LocalJSX {
         "theme"?: Theme;
     }
     interface LDropdownPanel {
+        /**
+          * 动画模式：'scale' 展开动画，'slide' 滑动动画
+          * @default 'scale'
+         */
+        "animationMode"?: 'scale' | 'slide';
         /**
           * 动画持续时间（毫秒）
           * @default 300

@@ -283,12 +283,74 @@
 </l-dropdown-panel>
 ```
 
+### 动画模式 - Scale
+
+默认的 Scale 动画模式，面板从触发器位置展开和收缩。
+
+<div class="demo-container mobile-demo">
+  <l-dropdown-panel id="demo8" animation-mode="scale">
+    <div slot="trigger" class="demo-trigger">
+      <span class="label">Scale 动画</span>
+      <span class="arrow">▼</span>
+    </div>
+    <div class="demo-panel">
+      <div class="demo-menu-item">选项 1</div>
+      <div class="demo-menu-item">选项 2</div>
+      <div class="demo-menu-item">选项 3</div>
+      <div class="demo-menu-item">选项 4</div>
+    </div>
+  </l-dropdown-panel>
+</div>
+
+```html
+<l-dropdown-panel animation-mode="scale">
+  <div slot="trigger">
+    <button>Scale 动画</button>
+  </div>
+  <div>
+    <div>选项 1</div>
+    <div>选项 2</div>
+  </div>
+</l-dropdown-panel>
+```
+
+### 动画模式 - Slide
+
+Slide 动画模式，面板从触发器位置滑入和滑出（不缩放）。
+
+<div class="demo-container mobile-demo">
+  <l-dropdown-panel id="demo9" animation-mode="slide">
+    <div slot="trigger" class="demo-trigger">
+      <span class="label">Slide 动画</span>
+      <span class="arrow">▼</span>
+    </div>
+    <div class="demo-panel">
+      <div class="demo-menu-item">选项 1</div>
+      <div class="demo-menu-item">选项 2</div>
+      <div class="demo-menu-item">选项 3</div>
+      <div class="demo-menu-item">选项 4</div>
+    </div>
+  </l-dropdown-panel>
+</div>
+
+```html
+<l-dropdown-panel animation-mode="slide">
+  <div slot="trigger">
+    <button>Slide 动画</button>
+  </div>
+  <div>
+    <div>选项 1</div>
+    <div>选项 2</div>
+  </div>
+</l-dropdown-panel>
+```
+
 ### 编程式控制
 
 通过组件方法控制面板的显示和隐藏。
 
 <div class="demo-container mobile-demo">
-  <l-dropdown-panel id="demo8">
+  <l-dropdown-panel id="demo10">
     <div slot="trigger" class="demo-trigger">
       <span class="label">API 控制</span>
       <span class="arrow">▼</span>
@@ -300,9 +362,9 @@
     </div>
   </l-dropdown-panel>
   <div class="demo-buttons">
-    <button class="demo-button" onclick="document.getElementById('demo8').show()">显示</button>
-    <button class="demo-button" onclick="document.getElementById('demo8').hide()">隐藏</button>
-    <button class="demo-button" onclick="document.getElementById('demo8').toggle()">切换</button>
+    <button class="demo-button" onclick="document.getElementById('demo10').show()">显示</button>
+    <button class="demo-button" onclick="document.getElementById('demo10').hide()">隐藏</button>
+    <button class="demo-button" onclick="document.getElementById('demo10').toggle()">切换</button>
   </div>
 </div>
 
@@ -351,9 +413,11 @@
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | visible | 面板是否可见 | `boolean` | `false` |
-| placement | 面板弹出位置 | `'top' \| 'bottom'` | `'bottom'` |
+| placement | 面板弹出位置，'auto' 为自动判断 | `'auto' \| 'top' \| 'bottom'` | `'auto'` |
+| animation-mode | 动画模式：'scale' 为展开/收缩，'slide' 为滑入/滑出 | `'scale' \| 'slide'` | `'scale'` |
 | mask-background | 遮罩层背景色 | `string` | `'rgba(0, 0, 0, 0.3)'` |
 | max-height | 面板最大高度 | `string` | `'60vh'` |
+| safe-distance | 面板与遮罩边缘的安全距离（像素） | `number` | `16` |
 | duration | 动画持续时间（毫秒） | `number` | `300` |
 | mask-closable | 点击遮罩层是否关闭 | `boolean` | `true` |
 

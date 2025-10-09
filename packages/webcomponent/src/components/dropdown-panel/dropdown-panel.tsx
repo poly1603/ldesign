@@ -43,6 +43,11 @@ export class DropdownPanel {
   @Prop() duration: number = 300;
 
   /**
+   * 动画模式：'scale' 展开动画，'slide' 滑动动画
+   */
+  @Prop() animationMode: 'scale' | 'slide' = 'scale';
+
+  /**
    * 点击遮罩层是否关闭
    */
   @Prop() maskClosable: boolean = true;
@@ -340,9 +345,10 @@ export class DropdownPanel {
       'l-dropdown-panel__panel': true,
       'l-dropdown-panel__panel--visible': this.visible && this.isReady,
       [`l-dropdown-panel__panel--${this.actualPlacement}`]: true,
+      [`l-dropdown-panel__panel--animation-${this.animationMode}`]: true,
     };
     
-    console.log('[render] panelClasses:', panelClasses, 'visible:', this.visible, 'isReady:', this.isReady);
+    console.log('[render] panelClasses:', panelClasses, 'visible:', this.visible, 'isReady:', this.isReady, 'animationMode:', this.animationMode);
 
     const maskClasses = {
       'l-dropdown-panel__mask': true,

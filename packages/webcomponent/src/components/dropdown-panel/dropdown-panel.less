@@ -56,31 +56,63 @@
     overflow: hidden;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    // 在触发器下方打开：面板在遮罩顶部，从触发器位置向下展开
-    &--bottom {
-      top: 0;
-      // 初始状态：面板在触发器位置，但高度为0（向上收缩）
-      transform: scaleY(0);
-      transform-origin: top; // 从顶部（触发器位置）开始变换
-      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
+    // Scale 动画模式：面板从触发器位置展开/收缩
+    &--animation-scale {
+      // 在触发器下方打开：面板在遮罩顶部，从触发器位置向下展开
+      &.l-dropdown-panel__panel--bottom {
+        top: 0;
+        // 初始状态：面板在触发器位置，但高度为0（向上收缩）
+        transform: scaleY(0);
+        transform-origin: top; // 从顶部（触发器位置）开始变换
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
 
-      &.l-dropdown-panel__panel--visible {
-        // 展开状态：面板从触发器位置向下展开到完整高度
-        transform: scaleY(1);
+        &.l-dropdown-panel__panel--visible {
+          // 展开状态：面板从触发器位置向下展开到完整高度
+          transform: scaleY(1);
+        }
+      }
+
+      // 在触发器上方打开：面板在遮罩底部，从触发器位置向上展开
+      &.l-dropdown-panel__panel--top {
+        bottom: 0;
+        // 初始状态：面板在触发器位置，但高度为0（向下收缩）
+        transform: scaleY(0);
+        transform-origin: bottom; // 从底部（触发器位置）开始变换
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+        &.l-dropdown-panel__panel--visible {
+          // 展开状态：面板从触发器位置向上展开到完整高度
+          transform: scaleY(1);
+        }
       }
     }
 
-    // 在触发器上方打开：面板在遮罩底部，从触发器位置向上展开
-    &--top {
-      bottom: 0;
-      // 初始状态：面板在触发器位置，但高度为0（向下收缩）
-      transform: scaleY(0);
-      transform-origin: bottom; // 从底部（触发器位置）开始变换
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    // Slide 动画模式：面板从触发器位置滑入/滑出（不缩放）
+    &--animation-slide {
+      // 在触发器下方打开：面板从触发器位置向下滑出
+      &.l-dropdown-panel__panel--bottom {
+        top: 0;
+        // 初始状态：面板在触发器位置（遮罩顶部）之外，向上隐藏
+        transform: translateY(-100%);
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
 
-      &.l-dropdown-panel__panel--visible {
-        // 展开状态：面板从触发器位置向上展开到完整高度
-        transform: scaleY(1);
+        &.l-dropdown-panel__panel--visible {
+          // 展开状态：面板从触发器位置向下滑入
+          transform: translateY(0);
+        }
+      }
+
+      // 在触发器上方打开：面板从触发器位置向上滑出
+      &.l-dropdown-panel__panel--top {
+        bottom: 0;
+        // 初始状态：面板在触发器位置（遮罩底部）之外，向下隐藏
+        transform: translateY(100%);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+        &.l-dropdown-panel__panel--visible {
+          // 展开状态：面板从触发器位置向上滑入
+          transform: translateY(0);
+        }
       }
     }
   }
