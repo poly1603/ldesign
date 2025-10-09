@@ -145,26 +145,48 @@ export class RollupAdapter implements IBundlerAdapter {
       const rollupConfig = await this.transformConfig(config)
 
       this.logger.info('开始 Rollup 构建...')
+
+      // 显示构建配置信息
+      if (this.multiConfigs && this.multiConfigs.length > 1) {
+        const formats = this.multiConfigs.map(c => String(c.output?.format || 'es').toUpperCase()).join(', ')
+        this.logger.info(`构建格式: ${formats}`)
+      }
+
       const startTime = Date.now()
 
       // 收集带格式信息的输出
       const results: Array<{ chunk: any; format: string }> = []
 
-      // 如果有多个配置，分别构建每个配置
+      // 如果有多个配置，使用并行构建提升速度
       if (this.multiConfigs && this.multiConfigs.length > 1) {
-        for (const singleConfig of this.multiConfigs) {
+        this.logger.info(`开始并行构建 ${this.multiConfigs.length} 个配置...`)
+
+        // 并行构建所有配置
+        const buildPromises = this.multiConfigs.map(async (singleConfig, index) => {
+          const formatName = String(singleConfig.output?.format || 'es').toUpperCase()
+          this.logger.info(`[${index + 1}/${this.multiConfigs!.length}] 构建 ${formatName} 格式...`)
+
           const bundle = await rollup.rollup(singleConfig)
 
           // 生成并记录输出（保留每个配置的 format）
           const { output } = await bundle.generate(singleConfig.output)
-          for (const item of output) {
-            results.push({ chunk: item, format: String(singleConfig.output?.format || 'es') })
-          }
+          const formatResults = output.map((item: any) => ({
+            chunk: item,
+            format: String(singleConfig.output?.format || 'es')
+          }))
 
           // 写入文件
           await bundle.write(singleConfig.output)
           await bundle.close()
-        }
+
+          this.logger.success(`[${index + 1}/${this.multiConfigs!.length}] ${formatName} 格式构建完成`)
+
+          return formatResults
+        })
+
+        // 等待所有构建完成
+        const allResults = await Promise.all(buildPromises)
+        results.push(...allResults.flat())
       } else {
         // 单配置构建
         const bundle = await rollup.rollup(rollupConfig)
@@ -746,7 +768,13 @@ export class RollupAdapter implements IBundlerAdapter {
               }
             })
 
-            transformedPlugins.push(newPlugin)
+            // 如果需要生成 DTS，包装插件以添加进度日志
+            if (emitDts) {
+              const wrappedPlugin = this.wrapPluginWithProgress(newPlugin, 'TypeScript 类型定义')
+              transformedPlugins.push(wrappedPlugin)
+            } else {
+              transformedPlugins.push(newPlugin)
+            }
           } else {
             // 其他插件正常处理
             const actualPlugin = await plugin.plugin()
@@ -978,6 +1006,54 @@ export class RollupAdapter implements IBundlerAdapter {
     return opts
   }
 
+
+  /**
+   * 包装插件以添加进度日志
+   * 用于在 DTS 生成等耗时操作时提供进度反馈
+   */
+  private wrapPluginWithProgress(plugin: any, taskName: string): any {
+    const logger = this.logger
+    let fileCount = 0
+    let startTime = 0
+
+    return {
+      ...plugin,
+      name: plugin.name,
+
+      // 在构建开始时记录
+      buildStart(...args: any[]) {
+        startTime = Date.now()
+        fileCount = 0
+        logger.info(`开始生成 ${taskName}...`)
+
+        if (plugin.buildStart) {
+          return plugin.buildStart.apply(this, args)
+        }
+      },
+
+      // 在处理每个文件时记录
+      transform(...args: any[]) {
+        fileCount++
+        if (fileCount % 10 === 0) {
+          logger.debug(`${taskName}: 已处理 ${fileCount} 个文件...`)
+        }
+
+        if (plugin.transform) {
+          return plugin.transform.apply(this, args)
+        }
+      },
+
+      // 在构建结束时记录
+      buildEnd(...args: any[]) {
+        const duration = Date.now() - startTime
+        logger.success(`${taskName} 生成完成 (${fileCount} 个文件, ${duration}ms)`)
+
+        if (plugin.buildEnd) {
+          return plugin.buildEnd.apply(this, args)
+        }
+      }
+    }
+  }
 
   /**
    * 尝试加载 Acorn 插件（JSX 与 TypeScript），以便 Rollup 在插件转换之前也能解析相应语法

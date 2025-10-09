@@ -65,10 +65,10 @@ export class ConfigManager extends EventEmitter {
       if (Object.keys(providedConfig).length > 0) {
         config = providedConfig
       } else if (configPath) {
-        this.logger.info(`加载配置文件: ${configPath}`)
+        this.logger.debug(`加载配置文件: ${configPath}`)
         config = await configLoader.loadConfigFile(configPath)
       } else {
-        this.logger.info('未找到配置文件，使用默认配置')
+        this.logger.debug('未找到配置文件，使用默认配置')
         config = {}
       }
 

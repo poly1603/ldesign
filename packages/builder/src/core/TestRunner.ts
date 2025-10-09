@@ -77,6 +77,9 @@ export class TestRunner implements ITestRunner {
   /** 错误处理器 */
   private errorHandler: ErrorHandler
 
+  /** 活跃的子进程列表 */
+  private activeProcesses: Set<any> = new Set()
+
   /**
    * 构造函数
    */
@@ -247,6 +250,30 @@ export class TestRunner implements ITestRunner {
    * 清理资源
    */
   async dispose(): Promise<void> {
+    // 清理所有活跃的子进程
+    if (this.activeProcesses.size > 0) {
+      this.logger.debug(`清理 ${this.activeProcesses.size} 个活跃子进程...`)
+
+      for (const child of this.activeProcesses) {
+        try {
+          if (child && !child.killed) {
+            child.kill('SIGTERM')
+
+            // 如果 SIGTERM 不起作用,等待 1 秒后强制 SIGKILL
+            setTimeout(() => {
+              if (!child.killed) {
+                child.kill('SIGKILL')
+              }
+            }, 1000)
+          }
+        } catch (error) {
+          this.logger.debug('清理子进程失败:', error)
+        }
+      }
+
+      this.activeProcesses.clear()
+    }
+
     this.logger.info('TestRunner 资源清理完成')
   }
 
@@ -287,6 +314,9 @@ export class TestRunner implements ITestRunner {
         shell: true
       })
 
+      // 添加到活跃进程列表
+      this.activeProcesses.add(child)
+
       let stdout = ''
       let stderr = ''
 
@@ -300,11 +330,13 @@ export class TestRunner implements ITestRunner {
 
       const timer = setTimeout(() => {
         child.kill('SIGTERM')
+        this.activeProcesses.delete(child)
         reject(new Error(`测试超时 (${timeout}ms)`))
       }, timeout)
 
       child.on('close', (code) => {
         clearTimeout(timer)
+        this.activeProcesses.delete(child)
         if (code === 0) {
           resolve(stdout)
         } else {
@@ -314,6 +346,7 @@ export class TestRunner implements ITestRunner {
 
       child.on('error', (error) => {
         clearTimeout(timer)
+        this.activeProcesses.delete(child)
         reject(error)
       })
     })
@@ -335,6 +368,9 @@ export class TestRunner implements ITestRunner {
         shell: true
       })
 
+      // 添加到活跃进程列表
+      this.activeProcesses.add(child)
+
       let stdout = ''
       let stderr = ''
 
@@ -348,11 +384,13 @@ export class TestRunner implements ITestRunner {
 
       const timer = setTimeout(() => {
         child.kill('SIGTERM')
+        this.activeProcesses.delete(child)
         reject(new Error(`命令超时 (${timeout}ms)`))
       }, timeout)
 
       child.on('close', (code) => {
         clearTimeout(timer)
+        this.activeProcesses.delete(child)
         if (code === 0) {
           resolve(stdout)
         } else {
@@ -362,6 +400,7 @@ export class TestRunner implements ITestRunner {
 
       child.on('error', (error) => {
         clearTimeout(timer)
+        this.activeProcesses.delete(child)
         reject(error)
       })
     })

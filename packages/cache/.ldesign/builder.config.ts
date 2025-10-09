@@ -1,6 +1,7 @@
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
+  bundler: 'rolldown',
   // 生成类型声明文件
   dts: true,
 
@@ -36,12 +37,12 @@ export default defineConfig({
     'node:buffer',
     'node:child_process',
     'node:worker_threads'
-],
+  ],
 
   // 全局变量配置
   globals: {
     'vue': 'Vue'
-},
+  },
 
   // 日志级别设置为 silent，只显示错误信息
   logLevel: 'silent',

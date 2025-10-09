@@ -45,11 +45,6 @@ export type SizePreset = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto';
 /** 抽屉层级 */
 export type DrawerLevel = 'normal' | 'high' | 'top' | 'modal';
 
-/** 锚点定位模式 */
-export type AnchorMode = 'disabled' | 'element' | 'cursor' | 'custom';
-
-/** 锚点对齐方式 */
-export type AnchorAlign = 'start' | 'center' | 'end' | 'auto';
 
 /** 吸附点配置 */
 export interface SnapPoint {
@@ -202,20 +197,6 @@ export interface PerformanceConfig {
   gpuAcceleration?: boolean;
 }
 
-/** 锚点定位配置 */
-export interface AnchorConfig {
-  mode?: AnchorMode;
-  element?: HTMLElement | string | null;
-  placement?: DrawerPlacement;
-  align?: AnchorAlign;
-  offset?: { x?: number; y?: number };
-  boundary?: HTMLElement | string | 'viewport' | 'scrollParent';
-  flip?: boolean;
-  constrain?: boolean;
-  maskPartial?: boolean;
-  followScroll?: boolean;
-  autoUpdate?: boolean;
-}
 
 /** 抽屉选项 */
 export interface DrawerOptions {
@@ -249,7 +230,6 @@ export interface DrawerOptions {
   maximizable?: boolean;
   performance?: PerformanceConfig;
   a11y?: A11yConfig;
-  anchor?: boolean | AnchorConfig;
   destroyOnClose?: boolean;
   beforeOpen?: () => boolean | Promise<boolean>;
   beforeClose?: (reason?: CloseReason) => boolean | Promise<boolean>;

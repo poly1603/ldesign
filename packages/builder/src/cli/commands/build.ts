@@ -68,20 +68,34 @@ async function executeBuild(options: BuildOptions, globalOptions: any = {}): Pro
   logger.start('开始构建...')
 
   try {
+    // 阶段计时器
+    const timings: Record<string, number> = {}
+    let phaseStart = Date.now()
+
     // 创建构建器实例
+    logger.info('🚀 开始构建...')
+    logger.newLine()
+
     const builder = new LibraryBuilder({
       logger,
       autoDetect: true
     })
 
     // 初始化构建器
+    logger.info('⚙️  初始化构建器...')
     await builder.initialize()
+    timings['初始化'] = Date.now() - phaseStart
 
     // 构建配置
+    phaseStart = Date.now()
+    logger.info('📝 加载配置...')
     const config = await buildConfig(options, globalOptions)
+    timings['配置加载'] = Date.now() - phaseStart
 
     // 显示配置信息
+    logger.newLine()
     showBuildInfo(config)
+    logger.newLine()
 
     // 执行构建
     let result
@@ -95,7 +109,7 @@ async function executeBuild(options: BuildOptions, globalOptions: any = {}): Pro
       })
 
       watcher.on('build', (result) => {
-        showBuildResult(result, startTime)
+        showBuildResult(result, startTime, timings)
       })
 
       // 保持进程运行
@@ -109,24 +123,31 @@ async function executeBuild(options: BuildOptions, globalOptions: any = {}): Pro
       logger.success('监听模式已启动，按 Ctrl+C 停止')
       return
     } else {
+      phaseStart = Date.now()
+      logger.info('🔨 开始打包...')
       result = await builder.build(config)
+      timings['打包'] = Date.now() - phaseStart
     }
 
     // 显示构建结果
-    showBuildResult(result, startTime)
+    showBuildResult(result, startTime, timings)
 
     // 分析打包结果
     if (options.analyze) {
+      phaseStart = Date.now()
       await analyzeBuildResult(result)
+      timings['分析'] = Date.now() - phaseStart
     }
 
     // 输出构建报告（JSON）
     if (options.report) {
+      phaseStart = Date.now()
       const reportPath = typeof options.report === 'string' && options.report.trim()
         ? options.report
         : path.join((config.output?.dir || 'dist'), 'build-report.json')
       await writeBuildReport(result, reportPath)
       logger.info(`报告已输出: ${chalk.cyan(reportPath)}`)
+      timings['报告生成'] = Date.now() - phaseStart
     }
 
     // 体积阈值检查（使用 gzip 优先，回退原始大小）
@@ -135,13 +156,28 @@ async function executeBuild(options: BuildOptions, globalOptions: any = {}): Pro
     }
 
     // 清理资源
+    phaseStart = Date.now()
     await builder.dispose()
+    timings['清理'] = Date.now() - phaseStart
 
-    logger.complete('构建完成')
+    logger.newLine()
+    logger.complete('✨ 构建完成')
+
+    // 确保进程正常退出
+    // 使用 setImmediate 确保所有日志都已输出
+    setImmediate(() => {
+      process.exit(0)
+    })
 
   } catch (error) {
     const duration = Date.now() - startTime
     logger.fail(`构建失败 (${formatDuration(duration)})`)
+
+    // 确保进程退出
+    setImmediate(() => {
+      process.exit(1)
+    })
+
     throw error
   }
 }
@@ -208,9 +244,12 @@ async function buildConfig(options: BuildOptions, globalOptions: any): Promise<B
     config.output = { ...config.output, sourcemap: options.sourcemap }
   }
 
-  // 全局选项
+  // 全局选项 - CLI 参数优先级最高
   if (globalOptions.bundler) {
     config.bundler = globalOptions.bundler
+    logger.debug(`CLI 指定打包器: ${globalOptions.bundler}`)
+  } else if (config.bundler) {
+    logger.debug(`配置文件指定打包器: ${config.bundler}`)
   }
 
   if (globalOptions.mode) {
@@ -224,53 +263,106 @@ async function buildConfig(options: BuildOptions, globalOptions: any): Promise<B
  * 显示构建信息
  */
 function showBuildInfo(config: BuilderConfig): void {
-  logger.info('构建配置:')
+  logger.info(chalk.bold('📋 构建配置:'))
+
+  const configItems: string[] = []
 
   if (config.input) {
-    logger.info(`  入口: ${chalk.cyan(config.input)}`)
+    configItems.push(`入口: ${chalk.cyan(config.input)}`)
   }
 
   if (config.output?.dir) {
-    logger.info(`  输出: ${chalk.cyan(config.output.dir)}`)
+    configItems.push(`输出: ${chalk.cyan(config.output.dir)}`)
   }
 
   if (config.output?.format) {
     const formats = Array.isArray(config.output.format)
       ? config.output.format.join(', ')
       : config.output.format
-    logger.info(`  格式: ${chalk.cyan(formats)}`)
+    configItems.push(`格式: ${chalk.cyan(formats)}`)
   }
 
   if (config.bundler) {
-    logger.info(`  打包器: ${chalk.cyan(config.bundler)}`)
+    configItems.push(`打包器: ${chalk.cyan(config.bundler)}`)
   }
 
   if (config.mode) {
-    logger.info(`  模式: ${chalk.cyan(config.mode)}`)
+    configItems.push(`模式: ${chalk.cyan(config.mode)}`)
   }
 
-  logger.newLine()
+  // 一行显示所有配置项
+  logger.info(`  ${configItems.join(' | ')}`)
 }
 
 /**
  * 显示构建结果
  */
-function showBuildResult(result: any, startTime: number): void {
+function showBuildResult(result: any, startTime: number, timings?: Record<string, number>): void {
   const duration = Date.now() - startTime
 
-  logger.success(`构建成功 (${formatDuration(duration)})`)
+  logger.newLine()
+  logger.success(`✅ 构建成功 (${formatDuration(duration)})`)
+  logger.newLine()
 
   if (result.outputs && result.outputs.length > 0) {
-    logger.info('输出文件:')
+    // 计算统计信息
+    const stats = {
+      total: result.outputs.length,
+      js: 0,
+      map: 0,
+      dts: 0,
+      other: 0,
+      totalSize: 0,
+      totalGzipSize: 0
+    }
 
     for (const output of result.outputs) {
-      const size = formatFileSize(output.size)
-      const gzipSize = output.gzipSize ? ` (gzip: ${formatFileSize(output.gzipSize)})` : ''
-      logger.info(`  ${chalk.cyan(output.fileName)} ${chalk.gray(size)}${chalk.gray(gzipSize)}`)
+      stats.totalSize += output.size || 0
+      stats.totalGzipSize += output.gzipSize || 0
+
+      if (output.fileName.endsWith('.d.ts') || output.fileName.endsWith('.d.cts')) {
+        stats.dts++
+      } else if (output.fileName.endsWith('.map')) {
+        stats.map++
+      } else if (output.fileName.endsWith('.js') || output.fileName.endsWith('.cjs')) {
+        stats.js++
+      } else {
+        stats.other++
+      }
+    }
+
+    // 根据日志级别显示不同详细程度的信息
+    const logLevel = logger.getLevel()
+
+    if (logLevel === 'debug' || logLevel === 'verbose') {
+      // Debug 模式: 显示所有文件
+      logger.info('输出文件:')
+      for (const output of result.outputs) {
+        const size = formatFileSize(output.size)
+        const gzipSize = output.gzipSize ? ` (gzip: ${formatFileSize(output.gzipSize)})` : ''
+        logger.info(`  ${chalk.cyan(output.fileName)} ${chalk.gray(size)}${chalk.gray(gzipSize)}`)
+      }
+      logger.newLine()
+    }
+
+    // 所有模式都显示摘要
+    logger.info(chalk.bold('📦 构建摘要:'))
+    logger.info(`  ${chalk.cyan('总文件数:')} ${stats.total}`)
+    logger.info(`  ${chalk.cyan('  - JS 文件:')} ${stats.js}`)
+    logger.info(`  ${chalk.cyan('  - DTS 文件:')} ${stats.dts}`)
+    logger.info(`  ${chalk.cyan('  - Source Map:')} ${stats.map}`)
+    if (stats.other > 0) {
+      logger.info(`  ${chalk.cyan('  - 其他文件:')} ${stats.other}`)
+    }
+    logger.info(`  ${chalk.cyan('总大小:')} ${formatFileSize(stats.totalSize)}`)
+    if (stats.totalGzipSize > 0) {
+      logger.info(`  ${chalk.cyan('Gzip 后:')} ${formatFileSize(stats.totalGzipSize)} ${chalk.gray(`(压缩率: ${Math.round((1 - stats.totalGzipSize / stats.totalSize) * 100)}%)`)}`)
     }
   }
+
   // 缓存摘要
   if (result.cache) {
+    logger.newLine()
     const parts: string[] = []
     const enabledStr = result.cache.enabled ? '启用' : '禁用'
     parts.push(`状态 ${enabledStr}`)
@@ -283,15 +375,31 @@ function showBuildResult(result: any, startTime: number): void {
     if (result.cache.hit && typeof result.cache.savedMs === 'number' && result.cache.savedMs > 0) {
       parts.push(`节省 ${formatDuration(result.cache.savedMs)}`)
     }
-    logger.info(`缓存: ${parts.join('， ')}`)
+    logger.info(`💾 缓存: ${parts.join('， ')}`)
   }
-
 
   if (result.warnings && result.warnings.length > 0) {
     logger.newLine()
-    logger.warn(`发现 ${result.warnings.length} 个警告:`)
+    logger.warn(`⚠️  发现 ${result.warnings.length} 个警告:`)
     for (const warning of result.warnings) {
       logger.warn(`  ${warning.message}`)
+    }
+  }
+
+  // 显示阶段耗时统计
+  if (timings && Object.keys(timings).length > 0) {
+    logger.newLine()
+    logger.info(chalk.bold('⏱️  阶段耗时:'))
+
+    const sortedTimings = Object.entries(timings).sort((a, b) => b[1] - a[1])
+    const maxTime = Math.max(...sortedTimings.map(([, time]) => time))
+
+    for (const [phase, time] of sortedTimings) {
+      const percentage = Math.round((time / duration) * 100)
+      const barLength = Math.round((time / maxTime) * 20)
+      const bar = '█'.repeat(barLength) + '░'.repeat(20 - barLength)
+
+      logger.info(`  ${chalk.cyan(phase.padEnd(12))} ${chalk.gray(bar)} ${formatDuration(time).padStart(8)} ${chalk.gray(`(${percentage}%)`)}`)
     }
   }
 
@@ -374,8 +482,8 @@ function parseSizeLimit(input: string): number {
   const unit = (m[2] || 'b').toLowerCase()
   const factor = unit === 'gb' || unit === 'g' ? 1024 ** 3
     : unit === 'mb' || unit === 'm' ? 1024 ** 2
-    : unit === 'kb' || unit === 'k' ? 1024
-    : 1
+      : unit === 'kb' || unit === 'k' ? 1024
+        : 1
   return Math.round(n * factor)
 }
 

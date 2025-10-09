@@ -558,11 +558,17 @@ const restoreState = () => {
   }
 }
 
+// 标记是否已经处理过退出事件，防止重复处理
+let isExitHandled = false
+
 // 订阅进程事件
 const subscribeToProcess = () => {
   // 清理旧的订阅
   unsubscribeList.forEach(unsubscribe => unsubscribe())
   unsubscribeList = []
+  
+  // 重置退出处理标记
+  isExitHandled = false
 
   const unsubscribeLog = subscribe('process-log', (data: any) => {
     if (data.processId === currentProcessId.value) {
@@ -574,16 +580,22 @@ const subscribeToProcess = () => {
   })
 
   const unsubscribeExit = subscribe('process-exit', (data: any) => {
-    if (data.processId === currentProcessId.value) {
+    if (data.processId === currentProcessId.value && !isExitHandled) {
+      // 标记已处理，防止重复触发
+      isExitHandled = true
+      
       running.value = false
       if (elapsedTimer) {
         clearInterval(elapsedTimer)
         elapsedTimer = null
       }
-      addLog(`进程已退出 (退出码: ${data.code})`, data.code === 0 ? 'success' : 'error')
       
-      // 如果退出码为0，显示成功消息
-      if (data.code === 0) {
+      // 基于退出码判断成功/失败
+      const isSuccess = data.code === 0
+      addLog(`进程已退出 (退出码: ${data.code})`, isSuccess ? 'success' : 'error')
+      
+      // 只在成功时显示成功消息
+      if (isSuccess) {
         message.success('执行成功')
         
         // 记录构建完成时间和耗时
@@ -592,12 +604,15 @@ const subscribeToProcess = () => {
           buildEndTime.value = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
           buildDuration.value = elapsedTime.value
         }
+      } else {
+        // 失败时显示错误消息
+        message.error('执行失败')
       }
       
       saveState()
       
       // 如果是打包操作且成功，加载产物摘要
-      if (actionType.value === 'build' && data.code === 0) {
+      if (actionType.value === 'build' && isSuccess) {
         setTimeout(() => {
           loadBuildSummary()
         }, 500) // 等待文件写入完成
@@ -613,6 +628,7 @@ const subscribeToProcess = () => {
         elapsedTimer = null
       }
       addLog(`进程错误: ${data.error}`, 'error')
+      message.error('进程错误')
       saveState()
     }
   })
@@ -629,6 +645,12 @@ const updateElapsedTime = () => {
 }
 
 const startAction = async () => {
+  // 防止重复执行
+  if (running.value) {
+    message.warning('任务正在执行中，请稍候...')
+    return
+  }
+  
   if (!project.value) {
     addLog('项目信息未加载', 'error')
     return

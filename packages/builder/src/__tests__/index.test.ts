@@ -54,7 +54,7 @@ describe('@ldesign/builder', () => {
       }
 
       const override = {
-        output: { format: ['esm', 'cjs'] }
+        output: { format: ['esm', 'cjs'] as any }
       }
 
       const merged = builder.mergeConfig(base, override)

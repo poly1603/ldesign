@@ -61,21 +61,21 @@ export class AutoConfigEnhancer {
    * 增强配置
    */
   async enhanceConfig(config: BuilderConfig): Promise<BuilderConfig> {
-    this.logger.info('开始配置自动增强...')
+    this.logger.debug('开始配置自动增强...')
     const enhanced = { ...config }
 
     // 读取 package.json
-    this.logger.info('读取 package.json...')
+    this.logger.debug('读取 package.json...')
     await this.loadPackageInfo()
 
     // 自动检测库类型
-    this.logger.info(`当前 libraryType: ${enhanced.libraryType}`)
+    this.logger.debug(`当前 libraryType: ${enhanced.libraryType}`)
     if (!enhanced.libraryType || enhanced.libraryType === LibraryType.TYPESCRIPT) {
-      this.logger.info('libraryType 为空或为默认的 TypeScript 类型，开始自动检测...')
+      this.logger.debug('libraryType 为空或为默认的 TypeScript 类型，开始自动检测...')
       enhanced.libraryType = await this.detectLibraryType()
-      this.logger.info(`自动检测库类型: ${enhanced.libraryType}`)
+      this.logger.debug(`自动检测库类型: ${enhanced.libraryType}`)
     } else {
-      this.logger.info('libraryType 已明确设置，跳过自动检测')
+      this.logger.debug('libraryType 已明确设置，跳过自动检测')
     }
 
     // 自动生成 external
@@ -94,15 +94,15 @@ export class AutoConfigEnhancer {
     }
 
     // 自动添加 Vue 插件
-    this.logger.info(`检查是否需要添加 Vue 插件，libraryType: ${enhanced.libraryType}`)
+    this.logger.debug(`检查是否需要添加 Vue 插件，libraryType: ${enhanced.libraryType}`)
     if (enhanced.libraryType === LibraryType.VUE3 || enhanced.libraryType === LibraryType.VUE2) {
-      this.logger.info(`检测到 ${enhanced.libraryType} 项目，自动添加 Vue 插件`)
+      this.logger.debug(`检测到 ${enhanced.libraryType} 项目，自动添加 Vue 插件`)
       enhanced.plugins = await this.addVuePlugin(enhanced.plugins || [], enhanced.libraryType)
     } else {
-      this.logger.info('非 Vue 项目，不添加 Vue 插件')
+      this.logger.debug('非 Vue 项目，不添加 Vue 插件')
     }
 
-    this.logger.info('配置自动增强完成')
+    this.logger.debug('配置自动增强完成')
     return enhanced
   }
 
@@ -124,10 +124,10 @@ export class AutoConfigEnhancer {
    * 检测库类型
    */
   private async detectLibraryType(): Promise<LibraryType> {
-    this.logger.info('开始检测库类型...')
+    this.logger.debug('开始检测库类型...')
 
     if (!this.packageInfo) {
-      this.logger.info('没有 package.json 信息，返回 TypeScript 类型')
+      this.logger.debug('没有 package.json 信息，返回 TypeScript 类型')
       return LibraryType.TYPESCRIPT
     }
 
@@ -136,11 +136,11 @@ export class AutoConfigEnhancer {
       ...this.packageInfo.devDependencies,
       ...this.packageInfo.peerDependencies
     }
-    this.logger.info(`所有依赖: ${JSON.stringify(Object.keys(allDeps))}`)
+    this.logger.debug(`所有依赖: ${JSON.stringify(Object.keys(allDeps))}`)
 
     // 检查是否有 Vue 文件
     const hasVueFiles = await this.hasVueFiles()
-    this.logger.info(`是否有 Vue 文件: ${hasVueFiles}`)
+    this.logger.debug(`是否有 Vue 文件: ${hasVueFiles}`)
 
     if (hasVueFiles) {
       // 检查 Vue 版本
@@ -179,7 +179,7 @@ export class AutoConfigEnhancer {
     try {
       const srcPath = path.join(this.projectPath, 'src')
       const files = await this.findVueFiles(srcPath)
-      this.logger.info(`在 ${srcPath} 中找到 ${files.length} 个 Vue 文件: ${files.join(', ')}`)
+      this.logger.debug(`在 ${srcPath} 中找到 ${files.length} 个 Vue 文件: ${files.join(', ')}`)
       return files.length > 0
     } catch (error) {
       this.logger.warn(`检查 Vue 文件时出错: ${error}`)

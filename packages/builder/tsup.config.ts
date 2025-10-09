@@ -84,10 +84,8 @@ const sharedOutExtension = ({ format }: { format: string }) => ({
 })
 
 export default defineConfig({
-  entry: {
-    index: 'src/index.ts',
-    'cli/index': 'src/cli/index.ts'
-  },
+  // 打包所有 TypeScript 文件，但排除测试文件
+  entry: ['src/**/*.ts', '!src/**/*.test.ts', '!src/**/__tests__/**', '!src/tests/**'],
   format: ['esm', 'cjs'],
   outDir: 'dist',
   dts: true,
