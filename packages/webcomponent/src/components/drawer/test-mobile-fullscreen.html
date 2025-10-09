@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>移动端全屏模式测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: #333;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .test-section h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        .test-section p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            margin: 8px 0;
+            font-size: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+            box-shadow: 0 4px 12px rgba(82, 196, 26, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #faad14 0%, #ffc53d 100%);
+            box-shadow: 0 4px 12px rgba(250, 173, 20, 0.3);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .check-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        
+        .check-list li {
+            padding: 8px 0 8px 30px;
+            position: relative;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .check-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 8px;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .drawer-fullscreen-content {
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 100%;
+        }
+        
+        .drawer-fullscreen-content h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .drawer-fullscreen-content p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #666;
+            margin-bottom: 15px;
+            max-width: 600px;
+        }
+        
+        .fullscreen-demo {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        .fullscreen-demo h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        .dimension-display {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .dimension-display .label {
+            color: #666;
+            display: inline-block;
+            width: 150px;
+        }
+        
+        .dimension-display .value {
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .dimension-display .pass {
+            color: #28a745;
+        }
+        
+        .dimension-display .fail {
+            color: #dc3545;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .test-section {
+                padding: 12px;
+            }
+            
+            .btn {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+    </style>
+    <script type="module" src="../../../dist/ldesign.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ 移动端全屏模式测试</h1>
+        <p class="subtitle">
+            验证抽屉全屏模式在移动设备上正确铺满整个屏幕<br>
+            请在真实移动设备或浏览器模拟器上测试
+        </p>
+        
+        <div class="info-box">
+            <strong>📱 当前视口：</strong><br>
+            宽度: <span id="vw-width"></span>px | 
+            高度: <span id="vw-height"></span>px
+        </div>
+        
+        <div class="test-section">
+            <h3>测试 1: 右侧全屏抽屉</h3>
+            <p>预期：完全铺满整个屏幕，无边距，无圆角</p>
+            <button class="btn" onclick="openDrawer('right-fullscreen')">
+                打开右侧全屏抽屉
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试 2: 左侧全屏抽屉</h3>
+            <p>预期：完全铺满整个屏幕</p>
+            <button class="btn btn-success" onclick="openDrawer('left-fullscreen')">
+                打开左侧全屏抽屉
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试 3: 底部全屏抽屉</h3>
+            <p>预期：完全铺满整个屏幕</p>
+            <button class="btn btn-warning" onclick="openDrawer('bottom-fullscreen')">
+                打开底部全屏抽屉
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试 4: 顶部全屏抽屉</h3>
+            <p>预期：完全铺满整个屏幕</p>
+            <button class="btn" onclick="openDrawer('top-fullscreen')">
+                打开顶部全屏抽屉
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3>对比测试: 非全屏右侧抽屉</h3>
+            <p>预期：占据 85% 宽度，有圆角</p>
+            <button class="btn" onclick="openDrawer('right-normal')">
+                打开普通右侧抽屉 (85%)
+            </button>
+        </div>
+        
+        <div class="success-box">
+            <strong>✅ 全屏模式检查清单：</strong>
+            <ul class="check-list">
+                <li>抽屉宽度 = 屏幕宽度 (100vw)</li>
+                <li>抽屉高度 = 屏幕高度 (100vh)</li>
+                <li>无边距，四边完全对齐屏幕边缘</li>
+                <li>无圆角（border-radius: 0）</li>
+                <li>遮罩层完全覆盖</li>
+                <li>关闭按钮可见且可点击</li>
+                <li>内容区域可滚动</li>
+            </ul>
+        </div>
+        
+        <button class="btn btn-danger" onclick="closeAllDrawers()">
+            🔒 关闭所有抽屉
+        </button>
+    </div>
+    
+    <!-- 右侧全屏抽屉 -->
+    <ldesign-drawer 
+        id="drawer-right-fullscreen"
+        placement="right" 
+        fullscreen="true"
+        drawer-title="右侧全屏抽屉"
+        closable="true"
+        mask-closable="true">
+        <div class="drawer-fullscreen-content">
+            <h2>🖼️ 全屏模式</h2>
+            <p>这是一个全屏抽屉，应该完全铺满整个屏幕。</p>
+            
+            <div class="fullscreen-demo">
+                <h3>尺寸验证</h3>
+                <div class="dimension-display" id="fullscreen-info-right">
+                    正在检测...
+                </div>
+            </div>
+            
+            <p>请检查：</p>
+            <p>✓ 抽屉是否铺满整个屏幕？<br>
+               ✓ 四周是否有边距或空隙？<br>
+               ✓ 圆角是否被正确移除？<br>
+               ✓ 内容是否可以正常滚动？</p>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 左侧全屏抽屉 -->
+    <ldesign-drawer 
+        id="drawer-left-fullscreen"
+        placement="left" 
+        fullscreen="true"
+        drawer-title="左侧全屏抽屉"
+        closable="true"
+        mask-closable="true">
+        <div class="drawer-fullscreen-content">
+            <h2>📱 左侧全屏</h2>
+            <p>这是一个从左侧滑入的全屏抽屉。</p>
+            
+            <div class="fullscreen-demo">
+                <h3>尺寸验证</h3>
+                <div class="dimension-display" id="fullscreen-info-left">
+                    正在检测...
+                </div>
+            </div>
+            
+            <p>应该完全占据屏幕，从左到右、从上到下。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 底部全屏抽屉 -->
+    <ldesign-drawer 
+        id="drawer-bottom-fullscreen"
+        placement="bottom" 
+        fullscreen="true"
+        drawer-title="底部全屏抽屉"
+        closable="true"
+        mask-closable="true">
+        <div class="drawer-fullscreen-content">
+            <h2>⬆️ 底部全屏</h2>
+            <p>这是一个从底部滑入的全屏抽屉。</p>
+            
+            <div class="fullscreen-demo">
+                <h3>尺寸验证</h3>
+                <div class="dimension-display" id="fullscreen-info-bottom">
+                    正在检测...
+                </div>
+            </div>
+            
+            <p>在移动端，底部抽屉的全屏模式特别有用，<br>
+               可以实现类似原生 App 的全屏页面效果。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 顶部全屏抽屉 -->
+    <ldesign-drawer 
+        id="drawer-top-fullscreen"
+        placement="top" 
+        fullscreen="true"
+        drawer-title="顶部全屏抽屉"
+        closable="true"
+        mask-closable="true">
+        <div class="drawer-fullscreen-content">
+            <h2>⬇️ 顶部全屏</h2>
+            <p>这是一个从顶部滑入的全屏抽屉。</p>
+            
+            <div class="fullscreen-demo">
+                <h3>尺寸验证</h3>
+                <div class="dimension-display" id="fullscreen-info-top">
+                    正在检测...
+                </div>
+            </div>
+            
+            <p>全屏模式下，所有位置的抽屉都应该表现一致。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 普通右侧抽屉（对比） -->
+    <ldesign-drawer 
+        id="drawer-right-normal"
+        placement="right" 
+        size="85%"
+        drawer-title="普通右侧抽屉 (85%)"
+        closable="true"
+        mask-closable="true">
+        <div class="drawer-fullscreen-content">
+            <h2>📐 普通模式（对比）</h2>
+            <p>这是一个普通的右侧抽屉，宽度为 85%。</p>
+            
+            <div class="fullscreen-demo">
+                <h3>尺寸对比</h3>
+                <div class="dimension-display" id="fullscreen-info-normal">
+                    正在检测...
+                </div>
+            </div>
+            
+            <p>与全屏抽屉对比：<br>
+               • 宽度应该是 85% 而不是 100%<br>
+               • 应该有圆角<br>
+               • 左侧应该有空隙</p>
+        </div>
+    </ldesign-drawer>
+    
+    <script>
+        // 更新视口信息
+        function updateViewportInfo() {
+            document.getElementById('vw-width').textContent = window.innerWidth;
+            document.getElementById('vw-height').textContent = window.innerHeight;
+        }
+        
+        // 检查抽屉尺寸
+        function checkDrawerDimensions(drawer, infoElementId) {
+            setTimeout(() => {
+                const wrapper = drawer.shadowRoot.querySelector('.drawer-wrapper');
+                if (!wrapper) return;
+                
+                const rect = wrapper.getBoundingClientRect();
+                const computedStyle = window.getComputedStyle(wrapper);
+                
+                const actualWidth = rect.width;
+                const actualHeight = rect.height;
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                
+                const widthMatch = Math.abs(actualWidth - viewportWidth) < 2;
+                const heightMatch = Math.abs(actualHeight - viewportHeight) < 2;
+                const borderRadius = computedStyle.borderRadius;
+                
+                const isFullscreen = drawer.hasAttribute('fullscreen') && drawer.getAttribute('fullscreen') !== 'false';
+                
+                let html = '';
+                
+                if (isFullscreen) {
+                    html = `
+                        <div class="label">实际宽度:</div>
+                        <span class="value ${widthMatch ? 'pass' : 'fail'}">
+                            ${actualWidth.toFixed(1)}px ${widthMatch ? '✓' : '✗'}
+                        </span><br>
+                        
+                        <div class="label">视口宽度:</div>
+                        <span class="value">${viewportWidth}px</span><br>
+                        
+                        <div class="label">实际高度:</div>
+                        <span class="value ${heightMatch ? 'pass' : 'fail'}">
+                            ${actualHeight.toFixed(1)}px ${heightMatch ? '✓' : '✗'}
+                        </span><br>
+                        
+                        <div class="label">视口高度:</div>
+                        <span class="value">${viewportHeight}px</span><br>
+                        
+                        <div class="label">圆角:</div>
+                        <span class="value ${borderRadius === '0px' ? 'pass' : 'fail'}">
+                            ${borderRadius} ${borderRadius === '0px' ? '✓' : '✗'}
+                        </span><br>
+                        
+                        <div class="label">左边距:</div>
+                        <span class="value ${Math.abs(rect.left) < 1 ? 'pass' : 'fail'}">
+                            ${rect.left.toFixed(1)}px ${Math.abs(rect.left) < 1 ? '✓' : '✗'}
+                        </span><br>
+                        
+                        <div class="label">顶边距:</div>
+                        <span class="value ${Math.abs(rect.top) < 1 ? 'pass' : 'fail'}">
+                            ${rect.top.toFixed(1)}px ${Math.abs(rect.top) < 1 ? '✓' : '✗'}
+                        </span><br>
+                        
+                        <div class="label">全屏检测:</div>
+                        <span class="value ${widthMatch && heightMatch && borderRadius === '0px' ? 'pass' : 'fail'}">
+                            ${widthMatch && heightMatch && borderRadius === '0px' ? '✅ 通过' : '❌ 未通过'}
+                        </span>
+                    `;
+                } else {
+                    html = `
+                        <div class="label">实际宽度:</div>
+                        <span class="value">${actualWidth.toFixed(1)}px</span><br>
+                        
+                        <div class="label">视口宽度:</div>
+                        <span class="value">${viewportWidth}px</span><br>
+                        
+                        <div class="label">宽度占比:</div>
+                        <span class="value">${(actualWidth / viewportWidth * 100).toFixed(1)}%</span><br>
+                        
+                        <div class="label">圆角:</div>
+                        <span class="value">${borderRadius}</span><br>
+                        
+                        <div class="label">左边距:</div>
+                        <span class="value">${rect.left.toFixed(1)}px</span>
+                    `;
+                }
+                
+                document.getElementById(infoElementId).innerHTML = html;
+                
+                // 控制台日志
+                console.log(`[Drawer ${drawer.id}]`, {
+                    fullscreen: isFullscreen,
+                    actualWidth,
+                    actualHeight,
+                    viewportWidth,
+                    viewportHeight,
+                    widthMatch,
+                    heightMatch,
+                    borderRadius,
+                    rect: {
+                        left: rect.left,
+                        top: rect.top,
+                        right: rect.right,
+                        bottom: rect.bottom
+                    }
+                });
+                
+                // 提示问题
+                if (isFullscreen && (!widthMatch || !heightMatch || borderRadius !== '0px')) {
+                    console.error(`❌ 全屏模式问题检测 [${drawer.id}]:`, {
+                        widthProblem: !widthMatch,
+                        heightProblem: !heightMatch,
+                        borderRadiusProblem: borderRadius !== '0px'
+                    });
+                }
+            }, 500);
+        }
+        
+        // 打开指定抽屉
+        async function openDrawer(type) {
+            const drawerMap = {
+                'right-fullscreen': { id: 'drawer-right-fullscreen', info: 'fullscreen-info-right' },
+                'left-fullscreen': { id: 'drawer-left-fullscreen', info: 'fullscreen-info-left' },
+                'bottom-fullscreen': { id: 'drawer-bottom-fullscreen', info: 'fullscreen-info-bottom' },
+                'top-fullscreen': { id: 'drawer-top-fullscreen', info: 'fullscreen-info-top' },
+                'right-normal': { id: 'drawer-right-normal', info: 'fullscreen-info-normal' }
+            };
+            
+            const config = drawerMap[type];
+            if (!config) return;
+            
+            const drawer = document.getElementById(config.id);
+            if (drawer) {
+                await drawer.open();
+                checkDrawerDimensions(drawer, config.info);
+            }
+        }
+        
+        // 关闭所有抽屉
+        async function closeAllDrawers() {
+            const drawers = document.querySelectorAll('ldesign-drawer');
+            for (const drawer of drawers) {
+                await drawer.close();
+            }
+        }
+        
+        // 初始化
+        updateViewportInfo();
+        
+        // 监听窗口大小变化
+        window.addEventListener('resize', updateViewportInfo);
+        
+        // 监听方向变化
+        window.addEventListener('orientationchange', () => {
+            setTimeout(updateViewportInfo, 100);
+        });
+        
+        // 页面加载完成提示
+        window.addEventListener('load', () => {
+            console.log('%c移动端全屏模式测试', 'font-size: 16px; font-weight: bold; color: #667eea;');
+            console.log('请打开不同的全屏抽屉，检查是否完全铺满屏幕。');
+        });
+    </script>
+</body>
+</html>

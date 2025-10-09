@@ -1003,8 +1003,9 @@ snapDrawer.addEventListener('drawerResize', (e) => {
 <ldesign-drawer 
   id="mobileFullscreenDrawer"
   drawer-title="移动端全屏"
+  fullscreen="true"
   swipe-to-close="true">
-  移动设备上自动全屏显示
+  移动设备上全屏显示
 </ldesign-drawer>
 
 <!-- 指定滑动区域 -->
@@ -1034,9 +1035,10 @@ swipeDrawer.addEventListener('drawerSwipe', (e) => {
   </div>
 </ldesign-drawer>
 
-<ldesign-drawer id="mobileFullscreenDrawer" drawer-title="移动端全屏" swipe-to-close="true" animation="true">
+<ldesign-drawer id="mobileFullscreenDrawer" drawer-title="移动端全屏" fullscreen="true" swipe-to-close="true" animation="true">
   <div style="padding: 20px;">
-    <p>移动设备上自动全屏显示</p>
+    <p>移动设备上全屏显示，完全铺满整个屏幕</p>
+    <p style="color: #666; font-size: 14px;">提示：全屏模式下无圆角、无边距，完全对齐屏幕边缘</p>
   </div>
 </ldesign-drawer>
 

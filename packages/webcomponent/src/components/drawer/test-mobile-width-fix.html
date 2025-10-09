@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>移动端抽屉宽度修复验证</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            overflow-x: hidden; /* 确保页面本身不滚动 */
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: #333;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .test-section h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        .test-section p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            margin: 8px 0;
+            font-size: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .check-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        
+        .check-list li {
+            padding: 8px 0 8px 30px;
+            position: relative;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .check-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 8px;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .drawer-content-sample {
+            padding: 20px;
+        }
+        
+        .drawer-content-sample h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .drawer-content-sample p {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .drawer-content-sample .highlight {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .viewport-info {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 12px;
+            font-family: monospace;
+            color: #495057;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .test-section {
+                padding: 12px;
+            }
+            
+            .btn {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+    </style>
+    <script type="module" src="../../../dist/ldesign.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 移动端抽屉宽度修复验证</h1>
+        <p class="subtitle">
+            验证抽屉组件在移动设备上的宽度不会超出屏幕<br>
+            请在真实移动设备或浏览器模拟器上测试
+        </p>
+        
+        <div class="info-box">
+            <strong>📱 当前视口信息：</strong><br>
+            <div class="viewport-info" id="viewport-info">
+                宽度: <span id="vw-width"></span>px<br>
+                高度: <span id="vw-height"></span>px<br>
+                设备像素比: <span id="vw-dpr"></span><br>
+                User Agent: <span id="vw-ua"></span>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试 1: 左侧抽屉 (85% 宽度)</h3>
+            <p>预期：抽屉宽度不超出屏幕，左右保留适当空间</p>
+            <button class="btn" onclick="openDrawer('left', '85%')">
+                打开左侧抽屉 (85%)
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试 2: 右侧抽屉 (400px 固定宽度)</h3>
+            <p>预期：在小屏幕上宽度被限制在 100vw 内</p>
+            <button class="btn" onclick="openDrawer('right', '400px')">
+                打开右侧抽屉 (400px)
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试 3: 右侧抽屉 (90% 宽度)</h3>
+            <p>预期：占据屏幕 90% 宽度，但不超出</p>
+            <button class="btn" onclick="openDrawer('right', '90%')">
+                打开右侧抽屉 (90%)
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试 4: 底部抽屉 (60% 高度)</h3>
+            <p>预期：占据屏幕 60% 高度</p>
+            <button class="btn btn-secondary" onclick="openDrawer('bottom', '60%')">
+                打开底部抽屉 (60%)
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试 5: 底部抽屉 (80% 高度)</h3>
+            <p>预期：占据屏幕 80% 高度</p>
+            <button class="btn btn-secondary" onclick="openDrawer('bottom', '80%')">
+                打开底部抽屉 (80%)
+            </button>
+        </div>
+        
+        <div class="success-box">
+            <strong>✅ 验证检查清单：</strong>
+            <ul class="check-list">
+                <li>抽屉宽度/高度不超出屏幕边界</li>
+                <li>无水平或垂直滚动条出现</li>
+                <li>关闭按钮完全可见且可点击</li>
+                <li>内容区域正常滚动</li>
+                <li>动画流畅，无卡顿</li>
+                <li>遮罩层正确显示</li>
+                <li>可以通过滑动关闭</li>
+                <li>点击遮罩可以关闭</li>
+            </ul>
+        </div>
+        
+        <div class="warning-box">
+            <strong>⚠️ 如果发现问题：</strong><br>
+            1. 检查页面是否有水平滚动条<br>
+            2. 抽屉是否超出屏幕右边或底部<br>
+            3. 关闭按钮是否被截断<br>
+            4. 在开发者工具中检查 .drawer-wrapper 的计算样式
+        </div>
+        
+        <button class="btn btn-danger" onclick="closeAllDrawers()">
+            🔒 关闭所有抽屉
+        </button>
+    </div>
+    
+    <!-- 左侧抽屉 -->
+    <ldesign-drawer 
+        id="drawer-left"
+        placement="left" 
+        size="85%"
+        drawer-title="左侧抽屉 (85%)"
+        closable="true"
+        mask-closable="true"
+        swipe-to-close="true">
+        <div class="drawer-content-sample">
+            <h2>📏 宽度测试</h2>
+            <p>这是一个左侧抽屉，设置宽度为 85%。</p>
+            <p>在移动设备上，应该：</p>
+            <div class="highlight">
+                • 宽度不超过屏幕宽度 (100vw)<br>
+                • 左右保留适当空间<br>
+                • 关闭按钮完全可见<br>
+                • 内容可正常滚动
+            </div>
+            <p>请检查抽屉是否完全在屏幕内，没有超出右边界。</p>
+            <p>您可以尝试向左滑动来关闭抽屉。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 右侧抽屉 (400px) -->
+    <ldesign-drawer 
+        id="drawer-right-400"
+        placement="right" 
+        size="400px"
+        drawer-title="右侧抽屉 (400px)"
+        closable="true"
+        mask-closable="true"
+        swipe-to-close="true">
+        <div class="drawer-content-sample">
+            <h2>📱 固定宽度测试</h2>
+            <p>这是一个右侧抽屉，设置固定宽度为 400px。</p>
+            <p>在小屏幕设备上（宽度 < 400px）：</p>
+            <div class="highlight">
+                • 宽度应被限制为屏幕宽度<br>
+                • max-width: 100vw 生效<br>
+                • 不会超出屏幕左边界<br>
+                • 关闭按钮在屏幕内
+            </div>
+            <p>如果您的设备宽度小于 400px，抽屉应该自动适配到屏幕宽度。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 右侧抽屉 (90%) -->
+    <ldesign-drawer 
+        id="drawer-right-90"
+        placement="right" 
+        size="90%"
+        drawer-title="右侧抽屉 (90%)"
+        closable="true"
+        mask-closable="true"
+        swipe-to-close="true">
+        <div class="drawer-content-sample">
+            <h2>📐 大宽度测试</h2>
+            <p>这是一个右侧抽屉，设置宽度为 90%。</p>
+            <p>应该占据屏幕的 90% 宽度：</p>
+            <div class="highlight">
+                • 左侧保留 10% 空间<br>
+                • 右边界与屏幕对齐<br>
+                • 不超出屏幕<br>
+                • 内容完整可见
+            </div>
+            <p>这是一个较大的抽屉，用于测试高百分比宽度下的表现。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 底部抽屉 (60%) -->
+    <ldesign-drawer 
+        id="drawer-bottom-60"
+        placement="bottom" 
+        size="60%"
+        drawer-title="底部抽屉 (60%)"
+        closable="true"
+        mask-closable="true"
+        swipe-to-close="true">
+        <div class="drawer-content-sample">
+            <h2>📏 高度测试 (60%)</h2>
+            <p>这是一个底部抽屉，设置高度为 60%。</p>
+            <div class="highlight">
+                • 高度占屏幕 60%<br>
+                • 顶部保留 40% 空间<br>
+                • 不超出屏幕底部<br>
+                • 支持向下滑动关闭
+            </div>
+            <p>请检查抽屉顶部是否留有足够空间，以及底部是否与屏幕对齐。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <!-- 底部抽屉 (80%) -->
+    <ldesign-drawer 
+        id="drawer-bottom-80"
+        placement="bottom" 
+        size="80%"
+        drawer-title="底部抽屉 (80%)"
+        closable="true"
+        mask-closable="true"
+        swipe-to-close="true">
+        <div class="drawer-content-sample">
+            <h2>📏 高度测试 (80%)</h2>
+            <p>这是一个底部抽屉，设置高度为 80%。</p>
+            <div class="highlight">
+                • 高度占屏幕 80%<br>
+                • 顶部保留 20% 空间<br>
+                • 不超出屏幕底部<br>
+                • max-height: 100vh 生效
+            </div>
+            <p>这是一个较高的底部抽屉，用于测试大高度下的表现。</p>
+            <p>内容区域应该可以正常滚动，不会影响页面滚动。</p>
+        </div>
+    </ldesign-drawer>
+    
+    <script>
+        // 更新视口信息
+        function updateViewportInfo() {
+            document.getElementById('vw-width').textContent = window.innerWidth;
+            document.getElementById('vw-height').textContent = window.innerHeight;
+            document.getElementById('vw-dpr').textContent = window.devicePixelRatio;
+            document.getElementById('vw-ua').textContent = navigator.userAgent.substring(0, 80) + '...';
+        }
+        
+        // 打开指定抽屉
+        async function openDrawer(placement, size) {
+            let drawerId;
+            
+            // 根据配置确定抽屉 ID
+            if (placement === 'left') {
+                drawerId = 'drawer-left';
+            } else if (placement === 'right') {
+                drawerId = size === '400px' ? 'drawer-right-400' : 'drawer-right-90';
+            } else if (placement === 'bottom') {
+                drawerId = size === '60%' ? 'drawer-bottom-60' : 'drawer-bottom-80';
+            }
+            
+            const drawer = document.getElementById(drawerId);
+            if (drawer) {
+                await drawer.open();
+                
+                // 打开后检查样式
+                setTimeout(() => {
+                    const wrapper = drawer.shadowRoot.querySelector('.drawer-wrapper');
+                    if (wrapper) {
+                        const computedStyle = window.getComputedStyle(wrapper);
+                        const actualWidth = wrapper.offsetWidth;
+                        const actualHeight = wrapper.offsetHeight;
+                        
+                        console.log(`[Drawer ${placement}] Computed Style:`, {
+                            width: computedStyle.width,
+                            maxWidth: computedStyle.maxWidth,
+                            actualWidth: actualWidth + 'px',
+                            viewportWidth: window.innerWidth + 'px',
+                            exceeds: actualWidth > window.innerWidth,
+                            height: computedStyle.height,
+                            maxHeight: computedStyle.maxHeight,
+                            actualHeight: actualHeight + 'px',
+                            viewportHeight: window.innerHeight + 'px'
+                        });
+                        
+                        // 检查是否超出
+                        if (placement === 'left' || placement === 'right') {
+                            if (actualWidth > window.innerWidth) {
+                                console.error('❌ 宽度超出屏幕！', {
+                                    actual: actualWidth,
+                                    viewport: window.innerWidth,
+                                    exceeds: actualWidth - window.innerWidth
+                                });
+                                alert(`⚠️ 检测到问题！\n抽屉宽度 (${actualWidth}px) 超出屏幕宽度 (${window.innerWidth}px)`);
+                            } else {
+                                console.log('✅ 宽度正常，未超出屏幕');
+                            }
+                        } else {
+                            if (actualHeight > window.innerHeight) {
+                                console.error('❌ 高度超出屏幕！', {
+                                    actual: actualHeight,
+                                    viewport: window.innerHeight,
+                                    exceeds: actualHeight - window.innerHeight
+                                });
+                                alert(`⚠️ 检测到问题！\n抽屉高度 (${actualHeight}px) 超出屏幕高度 (${window.innerHeight}px)`);
+                            } else {
+                                console.log('✅ 高度正常，未超出屏幕');
+                            }
+                        }
+                    }
+                }, 500);
+            }
+        }
+        
+        // 关闭所有抽屉
+        async function closeAllDrawers() {
+            const drawers = document.querySelectorAll('ldesign-drawer');
+            for (const drawer of drawers) {
+                await drawer.close();
+            }
+        }
+        
+        // 初始化
+        updateViewportInfo();
+        
+        // 监听窗口大小变化
+        window.addEventListener('resize', updateViewportInfo);
+        
+        // 监听方向变化
+        window.addEventListener('orientationchange', () => {
+            setTimeout(updateViewportInfo, 100);
+        });
+        
+        // 页面加载完成提示
+        window.addEventListener('load', () => {
+            console.log('%c移动端抽屉宽度修复验证测试', 'font-size: 16px; font-weight: bold; color: #667eea;');
+            console.log('请点击按钮打开不同配置的抽屉，检查宽度是否超出屏幕。');
+            console.log('控制台会输出详细的样式信息供调试使用。');
+        });
+    </script>
+</body>
+</html>

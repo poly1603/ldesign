@@ -378,6 +378,9 @@ export class LdesignDrawer {
       this.adjustForMobile(hasUserSpecifiedTriggerArea);
     }
     
+    // 初始化全屏状态
+    this.isFullscreen = this.fullscreen;
+    
     // 处理字符串 "false" 的情况（HTML 属性传递）
     // 在 HTML 中 visible="false" 会被当作字符串，需要转换为布尔值
     if (this.visible === 'false' as any || this.visible === false || !this.visible) {
@@ -1547,10 +1550,46 @@ export class LdesignDrawer {
       // 普通模式：设置尺寸
       if (this.placement === 'left' || this.placement === 'right') {
         style['width'] = this.currentSize;
-        if (this.isFullscreen) style['width'] = '100%';
+        
+        // 全屏模式特殊处理
+        if (this.isFullscreen) {
+          style['width'] = '100vw';
+          style['height'] = '100vh';
+          style['max-width'] = '100vw';
+          style['max-height'] = '100vh';
+          // 确保左右抽屉在全屏时铺满整个视口
+          style['left'] = '0';
+          style['right'] = '0';
+          style['top'] = '0';
+          style['bottom'] = '0';
+        } else {
+          // 非全屏模式：移动端关键修复
+          // 确保内联样式也包含 max-width 约束，防止宽度超出视口
+          if (this.isMobileDevice) {
+            style['max-width'] = '100vw';
+          }
+        }
       } else {
         style['height'] = this.currentSize;
-        if (this.isFullscreen) style['height'] = '100%';
+        
+        // 全屏模式特殊处理
+        if (this.isFullscreen) {
+          style['width'] = '100vw';
+          style['height'] = '100vh';
+          style['max-width'] = '100vw';
+          style['max-height'] = '100vh';
+          // 确保上下抽屉在全屏时铺满整个视口
+          style['left'] = '0';
+          style['right'] = '0';
+          style['top'] = '0';
+          style['bottom'] = '0';
+        } else {
+          // 非全屏模式：移动端关键修复
+          // 确保内联样式也包含 max-height 约束
+          if (this.isMobileDevice) {
+            style['max-height'] = '100vh';
+          }
+        }
       }
     }
 
