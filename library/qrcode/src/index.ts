@@ -1,120 +1,160 @@
+import type { QRCodeConfig, QRCodeInstance, GenerateOptions, DownloadOptions, RenderType } from './types';
+import { CanvasRenderer } from './renderers/canvas';
+import { SVGRenderer } from './renderers/svg';
+
+// Export types
+export * from './types';
+
 /**
- * LDesign QR Code Library
- * 通用的Web端二维码生成库，支持多种前端框架
+ * QR Code class
  */
+class QRCode implements QRCodeInstance {
+  private renderer: CanvasRenderer | SVGRenderer;
+  private renderType: RenderType;
+  private container?: HTMLElement;
 
-// 核心功能
-export { QRCodeGenerator } from './core/generator'
-export { LogoProcessor, createLogoProcessor } from './core/logo'
-export { StyleProcessor } from './core/styles'
-export { createQRCodeInstance } from './core/instance'
-export type { QRCodeInstance } from './core/instance'
+  constructor(config: GenerateOptions) {
+    this.renderType = config.renderType || 'canvas';
+    this.container = config.container;
 
-// 便捷函数
-export { downloadQRCode } from './helpers'
+    // Create renderer based on type
+    if (this.renderType === 'svg') {
+      this.renderer = new SVGRenderer(config);
+    } else {
+      this.renderer = new CanvasRenderer(config);
+    }
 
-// 原生JavaScript API
-export {
-  generateQRCode,
-  SimpleQRCodeGenerator,
-  generateQRCodeBatch,
-} from './vanilla'
-export type { SimpleQRCodeOptions } from './vanilla'
+    // Append to container if provided
+    if (this.container) {
+      this.container.appendChild(this.getElement()!);
+    }
+  }
 
-// 框架适配器
-export {
-  detectFramework,
-  generateQRCodeAuto,
-  createFrameworkFactory,
-  getFrameworkBestPractices,
-  checkFrameworkCompatibility,
-  createCrossFrameworkConfig,
-} from './adapters'
-export type { FrameworkDetection, AdapterOptions } from './adapters'
+  /**
+   * Update QR code configuration
+   */
+  async update(config: Partial<QRCodeConfig>): Promise<void> {
+    if (this.renderer instanceof CanvasRenderer) {
+      await this.renderer.update(config);
+    } else {
+      this.renderer.update(config);
+    }
+  }
 
-// 类型定义
-export type {
-  QRCodeOptions,
-  QRCodeResult,
-  QRCodeError,
-  LogoOptions,
-  StyleOptions,
-  ColorOptions,
-  GradientColor,
-  ColorStop,
-  PerformanceMetric,
-} from './types'
+  /**
+   * Get data URL (canvas only)
+   */
+  toDataURL(format: 'png' | 'jpeg' = 'png', quality?: number): string {
+    if (this.renderer instanceof CanvasRenderer) {
+      return this.renderer.toDataURL(format, quality);
+    }
+    throw new Error('toDataURL is only available for canvas render type');
+  }
 
-// 工具函数
-export {
-  isValidColor,
-  getDefaultOptions,
-  generateCacheKey,
-  createError,
-  PerformanceMonitor,
-  calculateActualSize,
-} from './utils'
+  /**
+   * Download QR code
+   */
+  download(options: DownloadOptions = {}): void {
+    const { fileName = 'qrcode', format = 'png', quality } = options;
 
-// 新功能模块
-export {
-  QRDataValidator,
-  ValidatorPresets,
-  type ValidationResult,
-} from './features/validation'
+    if (this.renderer instanceof CanvasRenderer) {
+      this.renderer.download(`${fileName}.${format}`, format, quality);
+    } else {
+      this.renderer.download(`${fileName}.svg`);
+    }
+  }
 
-export {
-  BatchDownloader,
-  batchDownload,
-  type BatchDownloadOptions,
-  type BatchItem,
-} from './features/batch-download'
+  /**
+   * Get SVG string (SVG only)
+   */
+  toSVGString(): string {
+    if (this.renderer instanceof SVGRenderer) {
+      return this.renderer.toString();
+    }
+    throw new Error('toSVGString is only available for SVG render type');
+  }
 
-export {
-  ThemeManager,
-  themeManager,
-  presetThemes,
-  applyTheme,
-  getTheme,
-  registerTheme,
-  getAllThemes,
-} from './features/themes'
+  /**
+   * Destroy QR code instance
+   */
+  destroy(): void {
+    const element = this.getElement();
+    if (element && element.parentNode) {
+      element.parentNode.removeChild(element);
+    }
+  }
 
-// 高级类型
-export type {
-  StrictLogoOptions,
-  StrictQRCodeOptions,
-  ThemeConfig,
-  PresetThemes,
-  ValidationOptions,
-  DownloadOptions,
-  BatchGenerateOptions,
-  QRCodeElement,
-} from './types/advanced'
-
-export {
-  TypeSafeConverter,
-  RuntimeTypeChecker,
-  isCanvasRenderingContext2D,
-  isSVGElement,
-  isHTMLImageElement,
-  isHTMLCanvasElement,
-  isQRCodeGenerationSuccess,
-  isQRCodeGenerationError,
-} from './types/advanced'
-// Vue集成
-export * from './vue'
-
-// React集成 (需要单独导入)
-// export * from './react'
-
-// Angular集成 (需要单独导入)
-// export * from './angular'
-
-// 版本信息
-// 注意：这里应该从 package.json 动态读取版本，但在构建时会被替换
-export const version = '1.0.1'
-
-// 默认导出
-export default {
-  version,
+  /**
+   * Get the rendered element
+   */
+  getElement(): HTMLCanvasElement | SVGSVGElement | null {
+    if (this.renderer instanceof CanvasRenderer) {
+      return this.renderer.getCanvas();
+    } else {
+      return this.renderer.getSVG();
+    }
+  }
 }
+
+/**
+ * Create a QR code instance
+ */
+export function createQRCode(config: GenerateOptions): QRCodeInstance {
+  return new QRCode(config);
+}
+
+/**
+ * Generate QR code and append to container
+ */
+export function generateQRCode(container: HTMLElement, config: QRCodeConfig): QRCodeInstance {
+  return new QRCode({ ...config, container });
+}
+
+/**
+ * Generate QR code as data URL (canvas only)
+ */
+export async function toDataURL(
+  content: string,
+  config?: Omit<QRCodeConfig, 'content'>,
+  format: 'png' | 'jpeg' = 'png',
+  quality?: number
+): Promise<string> {
+  const qr = new QRCode({
+    ...config,
+    content,
+    renderType: 'canvas',
+  });
+
+  // Wait for rendering to complete (especially for logos)
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  const dataURL = qr.toDataURL(format, quality);
+  qr.destroy();
+  return dataURL;
+}
+
+/**
+ * Generate QR code as SVG string
+ */
+export function toSVGString(
+  content: string,
+  config?: Omit<QRCodeConfig, 'content'>
+): string {
+  const qr = new QRCode({
+    ...config,
+    content,
+    renderType: 'svg',
+  });
+
+  const svgString = qr.toSVGString();
+  qr.destroy();
+  return svgString;
+}
+
+// Default export
+export default {
+  createQRCode,
+  generateQRCode,
+  toDataURL,
+  toSVGString,
+};

@@ -1,319 +1,691 @@
-# 使用示例
+# 示例集合
 
-本节提供了 LDesign QR Code 在不同框架中的详细使用示例，帮助您快速上手并掌握各种功能。
+实用的二维码生成示例，涵盖各种场景和功能组合。
 
-## 框架支持
+## 基础示例
 
-LDesign QR Code 支持多种前端框架，为每个框架提供了原生的集成方式：
-
-### 🟢 原生 JavaScript
-- ✅ 简洁的函数式API
-- ✅ 批量生成支持
-- ✅ 自动资源管理
-- ✅ 完整的错误处理
-
-[查看原生JavaScript示例 →](./vanilla.md)
-
-### 🟢 Vue 3
-- ✅ 组件和Composition API
-- ✅ 响应式数据绑定
-- ✅ 自定义Hook支持
-- ✅ TypeScript完整支持
-
-[查看Vue示例 →](./vue.md)
-
-### 🟢 React
-- ✅ 函数组件和Hook
-- ✅ forwardRef支持
-- ✅ 错误边界集成
-- ✅ 严格模式兼容
-
-[查看React示例 →](./react.md)
-
-### 🟢 Angular
-- ✅ 组件和服务
-- ✅ 依赖注入支持
-- ✅ RxJS集成
-- ✅ 自定义指令
-
-[查看Angular示例 →](./angular.md)
-
-## 快速开始
-
-### 安装
-
-::: code-group
-
-```bash [npm]
-npm install @ldesign/qrcode
-```
-
-```bash [yarn]
-yarn add @ldesign/qrcode
-```
-
-```bash [pnpm]
-pnpm add @ldesign/qrcode
-```
-
-:::
-
-### 基础使用
-
-#### 原生JavaScript
-
-```javascript
-import { generateQRCode } from '@ldesign/qrcode'
-
-// 生成二维码
-const result = await generateQRCode('Hello World', {
-  size: 200,
-  format: 'canvas'
-})
-
-// 添加到页面
-document.body.appendChild(result.element)
-```
-
-#### Vue
-
-```vue
-<template>
-  <QRCode text="Hello Vue!" :size="200" />
-</template>
-
-<script setup>
-import { QRCode } from '@ldesign/qrcode/vue'
-</script>
-```
-
-#### React
-
-```jsx
-import { QRCode } from '@ldesign/qrcode/react'
-
-function App() {
-  return <QRCode text="Hello React!" size={200} />
-}
-```
-
-#### Angular
+### 最简单的二维码
 
 ```typescript
-// app.module.ts
-import { QRCodeModule } from '@ldesign/qrcode/angular'
+import { createQRCode } from '@ldesign/qrcode';
 
-@NgModule({
-  imports: [QRCodeModule]
-})
-export class AppModule { }
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+});
 ```
+
+### 自定义尺寸和颜色
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: {
+    size: 300,
+    fgColor: '#2563eb',
+    bgColor: '#dbeafe',
+  },
+});
+```
+
+### 带 Logo 的二维码
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  errorCorrectionLevel: 'H',
+  logo: {
+    src: '/logo.png',
+    width: '25%',
+    height: '25%',
+  },
+});
+```
+
+## 样式示例
+
+### 现代蓝色渐变
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: {
+    size: 300,
+    dotStyle: 'rounded',
+    gradient: {
+      type: 'linear',
+      colors: ['#667eea', '#764ba2'],
+      direction: 45,
+    },
+  },
+});
+```
+
+### 优雅紫色圆点
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  errorCorrectionLevel: 'H',
+  style: {
+    size: 300,
+    dotStyle: 'dots',
+    gradient: {
+      type: 'radial',
+      colors: ['#f97316', '#dc2626'],
+      position: { x: 0.5, y: 0.5 },
+    },
+    eyeStyle: {
+      outer: {
+        style: 'rounded',
+        gradient: {
+          type: 'linear',
+          colors: ['#8b5cf6', '#ec4899'],
+          direction: 45,
+        },
+      },
+      inner: { style: 'dots', color: '#ffffff' },
+    },
+    shadow: {
+      blur: 8,
+      color: 'rgba(0, 0, 0, 0.2)',
+      offsetY: 4,
+    },
+  },
+});
+```
+
+### 极简黑白
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: {
+    size: 300,
+    dotStyle: 'square',
+    fgColor: '#000000',
+    bgColor: '#ffffff',
+  },
+});
+```
+
+### 企业品牌风格
+
+```typescript
+createQRCode({
+  content: 'https://company.com',
+  container: document.getElementById('qr')!,
+  errorCorrectionLevel: 'H',
+  style: {
+    size: 350,
+    dotStyle: 'classy-rounded',
+    fgColor: '#1e40af',
+  },
+  logo: {
+    src: '/company-logo.svg',
+    width: '28%',
+    height: '28%',
+    logoShape: 'square',
+    aspectRatio: 'keep',
+    logoBackground: true,
+    logoBackgroundColor: '#ffffff',
+    logoBackgroundPadding: 12,
+    border: true,
+    borderColor: '#e5e7eb',
+    borderWidth: 2,
+  },
+});
+```
+
+## 内容类型示例
+
+### URL 二维码
+
+```typescript
+createQRCode({
+  content: 'https://example.com/page?param=value',
+  container: document.getElementById('qr')!,
+  style: { size: 250 },
+});
+```
+
+### Email 二维码
+
+```typescript
+createQRCode({
+  content: 'mailto:contact@example.com?subject=Hello&body=Message',
+  container: document.getElementById('qr')!,
+  style: { size: 250 },
+});
+```
+
+### 电话号码二维码
+
+```typescript
+createQRCode({
+  content: 'tel:+1234567890',
+  container: document.getElementById('qr')!,
+  style: { size: 250 },
+});
+```
+
+### SMS 二维码
+
+```typescript
+createQRCode({
+  content: 'sms:+1234567890?body=Hello',
+  container: document.getElementById('qr')!,
+  style: { size: 250 },
+});
+```
+
+### WiFi 二维码
+
+```typescript
+createQRCode({
+  content: 'WIFI:T:WPA;S:MyNetwork;P:MyPassword;;',
+  container: document.getElementById('qr')!,
+  errorCorrectionLevel: 'H',
+  style: {
+    size: 300,
+    fgColor: '#3b82f6',
+  },
+});
+```
+
+### vCard 联系人
+
+```typescript
+const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:John Doe
+ORG:Example Company
+TEL:+1234567890
+EMAIL:john@example.com
+URL:https://example.com
+END:VCARD`;
+
+createQRCode({
+  content: vcard,
+  container: document.getElementById('qr')!,
+  errorCorrectionLevel: 'H',
+  style: { size: 350 },
+});
+```
+
+### 地理位置
+
+```typescript
+createQRCode({
+  content: 'geo:37.7749,-122.4194',  // San Francisco
+  container: document.getElementById('qr')!,
+  style: { size: 250 },
+});
+```
+
+## 交互示例
+
+### 动态内容更新
+
+```typescript
+const qrCode = createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+});
+
+// 更新按钮
+document.getElementById('update-btn')!.addEventListener('click', async () => {
+  const input = document.getElementById('content-input') as HTMLInputElement;
+  await qrCode.update({ content: input.value });
+});
+```
+
+### 实时颜色选择器
+
+```typescript
+const qrCode = createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: { size: 250 },
+});
+
+// 前景色选择器
+document.getElementById('fg-color')!.addEventListener('change', async (e) => {
+  const color = (e.target as HTMLInputElement).value;
+  await qrCode.update({ style: { fgColor: color } });
+});
+
+// 背景色选择器
+document.getElementById('bg-color')!.addEventListener('change', async (e) => {
+  const color = (e.target as HTMLInputElement).value;
+  await qrCode.update({ style: { bgColor: color } });
+});
+```
+
+### 样式切换器
+
+```typescript
+const qrCode = createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: { size: 250 },
+});
+
+const styles = ['square', 'rounded', 'dots', 'diamond', 'star'];
+let currentIndex = 0;
+
+document.getElementById('next-style')!.addEventListener('click', async () => {
+  currentIndex = (currentIndex + 1) % styles.length;
+  await qrCode.update({
+    style: { dotStyle: styles[currentIndex] },
+  });
+});
+```
+
+## 下载示例
+
+### 下载为 PNG
+
+```typescript
+const qrCode = createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+});
+
+document.getElementById('download-png')!.addEventListener('click', () => {
+  qrCode.download({ fileName: 'qrcode', format: 'png' });
+});
+```
+
+### 批量下载
+
+```typescript
+import { batchDownload } from '@ldesign/qrcode';
+
+const items = [
+  { content: 'https://example.com/page1', fileName: 'qr-page-1' },
+  { content: 'https://example.com/page2', fileName: 'qr-page-2' },
+  { content: 'https://example.com/page3', fileName: 'qr-page-3' },
+];
+
+document.getElementById('batch-download')!.addEventListener('click', async () => {
+  await batchDownload({
+    items,
+    format: 'png',
+    zipFileName: 'qrcodes.zip',
+    style: { size: 300 },
+    onProgress: (current, total) => {
+      const progress = Math.round((current / total) * 100);
+      document.getElementById('progress')!.textContent = `${progress}%`;
+    },
+  });
+});
+```
+
+### 获取 Data URL 用于预览
+
+```typescript
+const qrCode = createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+});
+
+// 获取 Data URL
+const dataUrl = qrCode.toDataURL('png');
+
+// 显示在 img 标签中
+document.getElementById('preview')!.setAttribute('src', dataUrl);
+
+// 复制到剪贴板
+navigator.clipboard.writeText(dataUrl);
+```
+
+## 响应式示例
+
+### 自适应容器尺寸
+
+```typescript
+function createResponsiveQR() {
+  const container = document.getElementById('qr')!;
+  const size = Math.min(container.clientWidth - 40, 400);
+
+  return createQRCode({
+    content: 'https://example.com',
+    container,
+    style: { size },
+  });
+}
+
+let qrCode = createResponsiveQR();
+
+// 窗口大小变化时重新生成
+let resizeTimeout: NodeJS.Timeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    qrCode.destroy();
+    qrCode = createResponsiveQR();
+  }, 300);
+});
+```
+
+### 暗色模式自适应
+
+```typescript
+function getThemeColors() {
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return isDark
+    ? { fgColor: '#ffffff', bgColor: '#1f2937' }
+    : { fgColor: '#000000', bgColor: '#ffffff' };
+}
+
+const qrCode = createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: {
+    size: 250,
+    ...getThemeColors(),
+  },
+});
+
+// 监听主题变化
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async () => {
+  await qrCode.update({ style: getThemeColors() });
+});
+```
+
+## 性能优化示例
+
+### 懒加载
+
+```typescript
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      const container = entry.target as HTMLElement;
+      const content = container.dataset.qrContent;
+
+      if (content) {
+        createQRCode({
+          content,
+          container,
+          style: { size: 200 },
+        });
+        observer.unobserve(container);
+      }
+    }
+  });
+});
+
+// 观察所有二维码容器
+document.querySelectorAll('.qr-lazy').forEach((el) => {
+  observer.observe(el);
+});
+```
+
+HTML 结构：
 
 ```html
-<!-- app.component.html -->
-<qr-code text="Hello Angular!" [size]="200"></qr-code>
+<div class="qr-lazy" data-qr-content="https://example.com/1"></div>
+<div class="qr-lazy" data-qr-content="https://example.com/2"></div>
 ```
 
-## 功能特性
+### 防抖优化
 
-### 🎨 样式定制
+```typescript
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
 
-```javascript
-// 渐变色彩
-const result = await generateQRCode('Gradient QR', {
-  size: 300,
-  color: {
-    foreground: {
-      type: 'linear',
-      direction: 45,
-      colors: [
-        { offset: 0, color: '#ff0000' },
-        { offset: 1, color: '#0000ff' }
-      ]
+const qrCode = createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+});
+
+const input = document.getElementById('content') as HTMLInputElement;
+
+const updateQR = debounce(async () => {
+  await qrCode.update({ content: input.value });
+}, 500);
+
+input.addEventListener('input', updateQR);
+```
+
+## 实际应用场景
+
+### 活动签到系统
+
+```typescript
+// 生成唯一的签到二维码
+function generateCheckInQR(eventId: string, userId: string) {
+  const timestamp = Date.now();
+  const checkInUrl = `https://example.com/checkin?event=${eventId}&user=${userId}&time=${timestamp}`;
+
+  return createQRCode({
+    content: checkInUrl,
+    container: document.getElementById('checkin-qr')!,
+    errorCorrectionLevel: 'H',
+    style: {
+      size: 400,
+      dotStyle: 'rounded',
+      gradient: {
+        type: 'linear',
+        colors: ['#3b82f6', '#8b5cf6'],
+        direction: 45,
+      },
+    },
+  });
+}
+```
+
+### 名片二维码
+
+```typescript
+function createBusinessCardQR(info: {
+  name: string;
+  company: string;
+  phone: string;
+  email: string;
+  website: string;
+}) {
+  const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:${info.name}
+ORG:${info.company}
+TEL:${info.phone}
+EMAIL:${info.email}
+URL:${info.website}
+END:VCARD`;
+
+  return createQRCode({
+    content: vcard,
+    container: document.getElementById('business-card-qr')!,
+    errorCorrectionLevel: 'H',
+    style: {
+      size: 300,
+      dotStyle: 'classy-rounded',
+      fgColor: '#1e40af',
+    },
+    logo: {
+      src: '/company-logo.png',
+      width: '25%',
+      height: '25%',
+      logoBackground: true,
+    },
+  });
+}
+
+// 使用
+createBusinessCardQR({
+  name: 'John Doe',
+  company: 'Example Inc.',
+  phone: '+1234567890',
+  email: 'john@example.com',
+  website: 'https://example.com',
+});
+```
+
+### WiFi 分享
+
+```typescript
+function createWiFiQR(network: {
+  ssid: string;
+  password: string;
+  security: 'WPA' | 'WEP' | 'nopass';
+}) {
+  const wifiString = `WIFI:T:${network.security};S:${network.ssid};P:${network.password};;`;
+
+  return createQRCode({
+    content: wifiString,
+    container: document.getElementById('wifi-qr')!,
+    errorCorrectionLevel: 'H',
+    style: {
+      size: 350,
+      dotStyle: 'rounded',
+      gradient: {
+        type: 'radial',
+        colors: ['#10b981', '#059669'],
+        position: { x: 0.5, y: 0.5 },
+      },
+    },
+  });
+}
+
+// 使用
+createWiFiQR({
+  ssid: 'MyWiFi',
+  password: 'MyPassword123',
+  security: 'WPA',
+});
+```
+
+### 支付二维码
+
+```typescript
+function createPaymentQR(paymentInfo: {
+  amount: number;
+  currency: string;
+  recipient: string;
+  note?: string;
+}) {
+  const paymentUrl = `https://pay.example.com/pay?amount=${paymentInfo.amount}&currency=${paymentInfo.currency}&to=${paymentInfo.recipient}&note=${paymentInfo.note || ''}`;
+
+  return createQRCode({
+    content: paymentUrl,
+    container: document.getElementById('payment-qr')!,
+    errorCorrectionLevel: 'H',
+    style: {
+      size: 400,
+      dotStyle: 'rounded',
+      fgColor: '#059669',
+    },
+    logo: {
+      src: '/payment-logo.png',
+      width: '30%',
+      height: '30%',
+      logoShape: 'circle',
+      logoBackground: true,
+      logoBackgroundColor: '#ffffff',
+      logoBackgroundPadding: 10,
+    },
+  });
+}
+
+// 使用
+createPaymentQR({
+  amount: 50.00,
+  currency: 'USD',
+  recipient: 'merchant@example.com',
+  note: 'Order #12345',
+});
+```
+
+### 产品溯源
+
+```typescript
+function createProductTraceQR(productInfo: {
+  id: string;
+  batch: string;
+  manufactureDate: string;
+  expiryDate: string;
+}) {
+  const traceUrl = `https://trace.example.com/product/${productInfo.id}?batch=${productInfo.batch}`;
+
+  return createQRCode({
+    content: traceUrl,
+    container: document.getElementById('trace-qr')!,
+    errorCorrectionLevel: 'H',
+    style: {
+      size: 300,
+      dotStyle: 'square',
+      fgColor: '#000000',
+      bgColor: '#ffffff',
+    },
+  });
+}
+```
+
+## 错误处理示例
+
+### 完整的错误处理
+
+```typescript
+import { createQRCode, QRCodeError } from '@ldesign/qrcode';
+
+try {
+  const qrCode = createQRCode({
+    content: 'https://example.com',
+    container: document.getElementById('qr')!,
+    logo: {
+      src: '/logo.png',
+      onError: (error) => {
+        console.error('Logo 加载失败:', error);
+        return '/fallback-logo.png';
+      },
+    },
+    onError: (error) => {
+      console.error('生成失败:', error);
+      showErrorMessage('二维码生成失败，请重试');
+    },
+  });
+} catch (error) {
+  if (error instanceof QRCodeError) {
+    switch (error.code) {
+      case 'INVALID_CONTENT':
+        showErrorMessage('内容格式不正确');
+        break;
+      case 'CONTAINER_NOT_FOUND':
+        showErrorMessage('容器元素不存在');
+        break;
+      default:
+        showErrorMessage('未知错误');
     }
   }
-})
-```
+}
 
-### 🖼️ Logo嵌入
-
-```javascript
-// 添加Logo
-const result = await generateQRCode('Logo QR', {
-  size: 300,
-  logo: {
-    src: 'logo.png',
-    size: 60,
-    shape: 'circle',
-    borderWidth: 2,
-    borderColor: '#ffffff'
-  }
-})
-```
-
-### 📱 响应式设计
-
-```javascript
-// 自适应尺寸
-function generateResponsiveQR(container) {
-  const size = Math.min(container.offsetWidth - 40, 400)
-  
-  return generateQRCode('Responsive QR', {
-    size: size,
-    format: 'svg',  // SVG更适合响应式
-    container: container
-  })
+function showErrorMessage(message: string) {
+  const errorDiv = document.getElementById('error')!;
+  errorDiv.textContent = message;
+  errorDiv.style.display = 'block';
 }
 ```
-
-### ⚡ 批量处理
-
-```javascript
-// 批量生成
-const texts = ['URL 1', 'URL 2', 'URL 3']
-const results = await generateQRCodeBatch(texts, {
-  size: 200,
-  format: 'svg'
-})
-```
-
-### 💾 下载功能
-
-```javascript
-// 下载二维码
-const result = await generateQRCode('Download QR', {
-  size: 400,
-  format: 'canvas'
-})
-
-await downloadQRCode(result, 'my-qrcode')
-```
-
-## 高级用法
-
-### 🔧 自定义生成器
-
-```javascript
-import { SimpleQRCodeGenerator } from '@ldesign/qrcode'
-
-const generator = new SimpleQRCodeGenerator({
-  size: 200,
-  format: 'canvas',
-  performance: {
-    enableCache: true,
-    cacheSize: 50
-  }
-})
-
-// 生成多个二维码
-const result1 = await generator.generate('Text 1')
-const result2 = await generator.generate('Text 2')
-
-// 清理资源
-generator.destroy()
-```
-
-### 📊 性能监控
-
-```javascript
-import { PerformanceMonitor } from '@ldesign/qrcode'
-
-const monitor = new PerformanceMonitor()
-const id = monitor.start('qr-generation')
-
-const result = await generateQRCode('Performance Test', {
-  size: 500
-})
-
-const metric = monitor.end(id)
-console.log(`生成耗时: ${metric.duration}ms`)
-```
-
-### 🌐 跨框架兼容
-
-```javascript
-import { 
-  detectFramework, 
-  generateQRCodeAuto,
-  getFrameworkBestPractices 
-} from '@ldesign/qrcode'
-
-// 自动检测框架
-const detection = detectFramework()
-console.log('当前框架:', detection.framework)
-
-// 获取最佳实践配置
-const config = getFrameworkBestPractices(detection.framework)
-
-// 自动适配生成
-const result = await generateQRCodeAuto('Auto QR', {
-  ...config,
-  autoDetect: true
-})
-```
-
-## 错误处理
-
-### 基础错误处理
-
-```javascript
-try {
-  const result = await generateQRCode('', {  // 空文本会报错
-    size: 200
-  })
-} catch (error) {
-  console.error('生成失败:', error.message)
-  console.error('错误代码:', error.code)
-  
-  // 根据错误类型处理
-  switch (error.code) {
-    case 'INVALID_TEXT':
-      // 处理无效文本
-      break
-    case 'INVALID_OPTIONS':
-      // 处理无效选项
-      break
-    default:
-      // 处理其他错误
-  }
-}
-```
-
-### 框架特定错误处理
-
-每个框架都有其特定的错误处理方式，详见各框架的示例页面：
-
-- [Vue错误处理](./vue.md#错误处理)
-- [React错误处理](./react.md#错误处理)
-- [Angular错误处理](./angular.md#错误处理)
-
-## 最佳实践
-
-### 性能优化
-
-1. **启用缓存** - 避免重复生成相同内容
-2. **选择合适格式** - 根据使用场景选择最优格式
-3. **批量处理** - 使用并行生成提高效率
-4. **及时清理** - 释放不需要的资源
-
-### 用户体验
-
-1. **加载状态** - 显示生成进度
-2. **错误提示** - 友好的错误信息
-3. **响应式设计** - 适配不同屏幕尺寸
-4. **可访问性** - 提供替代文本和键盘导航
-
-### 安全性
-
-1. **输入验证** - 验证文本内容和选项
-2. **内容过滤** - 防止恶意内容
-3. **隐私保护** - 避免敏感信息泄露
-
-更多最佳实践请参考 [最佳实践指南](../best-practices.md)。
 
 ## 下一步
 
-- 📖 阅读 [API参考文档](../api/) 了解详细的API说明
-- 🎯 查看 [最佳实践](../best-practices.md) 学习优化技巧
-- 🚀 探索 [高级功能](../guide/advanced-features.md) 发现更多可能性
-- 💬 加入 [社区讨论](https://github.com/ldesign/qrcode/discussions) 获取帮助
+- [基础使用](../guide/basic-usage.md) - 学习基础概念
+- [样式定制](../guide/styling.md) - 深入了解样式
+- [Logo 集成](../guide/logo.md) - Logo 详细指南
+- [Vue 集成](../guide/vue.md) - Vue 3 框架集成
+- [React 集成](../guide/react.md) - React 框架集成

@@ -1,170 +1,83 @@
 {
   "name": "@ldesign/qrcode",
-  "version": "1.0.1",
-  "description": "LDesign QRCode - A powerful and flexible QR code generator for Vue.js and vanilla JavaScript",
-  "keywords": [
-    "qrcode",
-    "qr-code",
-    "vue",
-    "vue3",
-    "typescript",
-    "canvas",
-    "svg",
-    "generator",
-    "ldesign"
-  ],
-  "author": "LDesign Team",
-  "license": "MIT",
-  "homepage": "https://github.com/ldesign/qrcode#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/qrcode.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign/qrcode/issues"
-  },
+  "version": "1.0.0",
   "type": "module",
+  "description": "A powerful and flexible QR code generator for web applications, supporting multiple frameworks",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "unpkg": "dist/index.umd.js",
+  "jsdelivr": "dist/index.umd.js",
   "exports": {
     ".": {
-      "types": "./es/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.cjs"
-    },
-    "./adapters": {
-      "types": "./es/adapters/index.d.ts",
-      "import": "./es/adapters/index.js",
-      "require": "./lib/adapters/index.cjs"
-    },
-    "./adapters/*": {
-      "types": "./es/adapters/*.d.ts",
-      "import": "./es/adapters/*.js",
-      "require": "./lib/adapters/*.cjs"
-    },
-    "./core": {
-      "types": "./es/core/index.d.ts",
-      "import": "./es/core/index.js",
-      "require": "./lib/core/index.cjs"
-    },
-    "./core/*": {
-      "types": "./es/core/*.d.ts",
-      "import": "./es/core/*.js",
-      "require": "./lib/core/*.cjs"
-    },
-    "./features/*": {
-      "types": "./es/features/*.d.ts",
-      "import": "./es/features/*.js",
-      "require": "./lib/features/*.cjs"
-    },
-    "./helpers": {
-      "types": "./es/helpers/index.d.ts",
-      "import": "./es/helpers/index.js",
-      "require": "./lib/helpers/index.cjs"
-    },
-    "./helpers/*": {
-      "types": "./es/helpers/*.d.ts",
-      "import": "./es/helpers/*.js",
-      "require": "./lib/helpers/*.cjs"
-    },
-    "./types": {
-      "types": "./es/types/index.d.ts",
-      "import": "./es/types/index.js",
-      "require": "./lib/types/index.cjs"
-    },
-    "./types/*": {
-      "types": "./es/types/*.d.ts",
-      "import": "./es/types/*.js",
-      "require": "./lib/types/*.cjs"
-    },
-    "./utils": {
-      "types": "./es/utils/index.d.ts",
-      "import": "./es/utils/index.js",
-      "require": "./lib/utils/index.cjs"
-    },
-    "./utils/*": {
-      "types": "./es/utils/*.d.ts",
-      "import": "./es/utils/*.js",
-      "require": "./lib/utils/*.cjs"
-    },
-    "./vanilla": {
-      "types": "./es/vanilla/index.d.ts",
-      "import": "./es/vanilla/index.js",
-      "require": "./lib/vanilla/index.cjs"
-    },
-    "./vanilla/*": {
-      "types": "./es/vanilla/*.d.ts",
-      "import": "./es/vanilla/*.js",
-      "require": "./lib/vanilla/*.cjs"
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js",
+      "types": "./dist/index.d.ts"
     },
     "./vue": {
-      "types": "./es/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.cjs"
+      "import": "./dist/vue.esm.js",
+      "require": "./dist/vue.cjs.js",
+      "types": "./dist/vue.d.ts"
     },
-    "./vue/*": {
-      "types": "./es/vue/*.d.ts",
-      "import": "./es/vue/*.js",
-      "require": "./lib/vue/*.cjs"
-    },
-    "./es/index.css": "./es/index.css",
-    "./lib/index.core.css": "./lib/index.core.css",
-    "./dist/index.css": "./dist/index.css",
-    "./dist/index.min.css": "./dist/index.min.css"
+    "./react": {
+      "import": "./dist/react.esm.js",
+      "require": "./dist/react.cjs.js",
+      "types": "./dist/react.d.ts"
+    }
   },
-  "main": "./lib/index.cjs",
-  "module": "./es/index.js",
-  "types": "./es/index.d.ts",
-  "unpkg": "./dist/index.min.js",
-  "jsdelivr": "./dist/index.min.js",
   "files": [
-    "README.md",
-    "LICENSE",
-    "package.json",
-    "es",
-    "lib",
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
-    "dev": "vite",
-    "build": "ldesign-builder build",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage",
-    "lint": "eslint src --ext .ts,.vue",
-    "lint:fix": "eslint src --ext .ts,.vue --fix",
-    "check": "npm run lint && npm run test && npm run build",
+    "dev": "rollup -c -w",
+    "build": "rimraf dist && rollup -c",
+    "example": "cd examples/vite-demo && npm run dev",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "publish:dry": "npm publish --dry-run",
-    "version:patch": "npm version patch",
-    "version:minor": "npm version minor",
-    "version:major": "npm version major",
-    "type-check": "tsc --noEmit"
+    "prepublishOnly": "npm run build"
   },
-  "dependencies": {
-    "qrcode": "^1.5.3"
+  "keywords": [
+    "qrcode",
+    "qr-code",
+    "generator",
+    "vue",
+    "react",
+    "canvas",
+    "svg",
+    "web"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20.11.16",
+    "@types/react": "^18.2.52",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.9.6",
+    "rollup-plugin-dts": "^6.1.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3",
+    "vitepress": "^1.0.0-rc.40",
+    "vue": "^3.4.15"
   },
   "peerDependencies": {
-    "vue": "^3.0.0"
+    "react": ">=16.8.0",
+    "vue": ">=3.0.0"
   },
-  "devDependencies": {
-    "@ldesign/builder": "workspace:*",
-    "@types/node": "^20.0.0",
-    "@types/qrcode": "^1.5.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "@vitejs/plugin-vue": "^4.0.0",
-    "@vitest/coverage-v8": "^0.34.0",
-    "@vitest/ui": "^0.34.0",
-    "@vue/test-utils": "^2.4.0",
-    "eslint": "^8.0.0",
-    "eslint-plugin-vue": "^9.0.0",
-    "jsdom": "^22.0.0",
-    "typescript": "^5.0.0",
-    "vite": "^4.0.0",
-    "vitepress": "^1.0.0",
-    "vitest": "^0.34.0",
-    "vue": "^3.3.0",
-    "vue-tsc": "^1.8.0"
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "qrcode-generator": "^1.4.4"
   }
 }

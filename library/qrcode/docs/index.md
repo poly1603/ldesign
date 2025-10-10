@@ -2,134 +2,61 @@
 layout: home
 
 hero:
-  name: "LDesign QR Code"
-  text: "通用二维码生成库"
-  tagline: "支持多种前端框架，功能强大，使用简单"
-  image:
-    src: /logo.svg
-    alt: LDesign QR Code
+  name: "@ldesign/qrcode"
+  text: "Beautiful QR Code Generator"
+  tagline: "Generate stunning, fully customizable QR codes with gradients, custom styles, and logo integration. Works with Vue, React, or vanilla JavaScript."
   actions:
     - theme: brand
-      text: 快速开始
-      link: /guide/getting-started
+      text: Get Started
+      link: /guide/basic-usage
     - theme: alt
-      text: 查看示例
+      text: View Examples
       link: /examples/
     - theme: alt
       text: GitHub
-      link: https://github.com/ldesign/qrcode
+      link: https://github.com
 
 features:
-  - icon: 🚀
-    title: 多框架支持
-    details: 原生支持 Vue、React、Angular 和原生 JavaScript，提供一致的 API 体验
-
-  - icon: ⚡️
-    title: 高性能
-    details: 内置缓存机制、批量处理和性能监控，确保最佳的生成性能
-
   - icon: 🎨
-    title: 丰富样式
-    details: 支持渐变色彩、自定义样式、Logo 嵌入等多种视觉效果
+    title: 7 Dot Styles
+    details: Choose from square, rounded, dots, diamond, star, classy, and classy-rounded styles for unique QR codes.
 
-  - icon: 📱
-    title: 响应式设计
-    details: 完美适配各种屏幕尺寸，支持 SVG、Canvas 和 Image 多种输出格式
+  - icon: 🌈
+    title: Gradient Colors
+    details: Apply linear or radial gradients with multiple colors for eye-catching designs.
 
-  - icon: 🛠️
-    title: TypeScript
-    details: 完整的 TypeScript 类型定义，提供优秀的开发体验
+  - icon: 👁️
+    title: Custom Eye Styles
+    details: Customize the three finder patterns (eyes) with independent colors and styles.
 
-  - icon: 🔧
-    title: 易于集成
-    details: 简单的 API 设计，支持自动框架检测和跨框架兼容性
+  - icon: 🖼️
+    title: Smart Logo Integration
+    details: Add logos with shape control (square/circle/rounded), aspect ratio handling, and background support.
+
+  - icon: 🎭
+    title: Visual Effects
+    details: Add shadows, strokes, background gradients, and images for professional results.
+
+  - icon: ⚛️
+    title: Framework Support
+    details: First-class support for Vue 3, React, and vanilla JavaScript with components and hooks.
+
+  - icon: 📦
+    title: Multiple Formats
+    details: Generate as Canvas or SVG, download as PNG/JPEG/SVG, or get Data URLs.
+
+  - icon: 🛡️
+    title: TypeScript Support
+    details: Fully typed API with comprehensive TypeScript definitions and IntelliSense support.
+
+  - icon: ⚡
+    title: Performance Optimized
+    details: Built-in caching, lazy loading support, and optimized rendering for smooth performance.
 ---
 
-## 快速体验
+## Quick Start
 
-### 原生 JavaScript
-
-```javascript
-import { generateQRCode } from '@ldesign/qrcode'
-
-// 最简单的使用
-const result = await generateQRCode('Hello World', {
-  container: '#qrcode-container'
-})
-```
-
-### Vue
-
-```vue
-<template>
-  <QRCode
-    text="Hello Vue!"
-    :size="200"
-    format="svg"
-    :show-download-button="true"
-  />
-</template>
-
-<script setup>
-import { QRCode } from '@ldesign/qrcode/vue'
-</script>
-```
-
-### React
-
-```jsx
-import { QRCode } from '@ldesign/qrcode/react'
-
-function App() {
-  return (
-    <QRCode
-      text="Hello React!"
-      size={200}
-      format="canvas"
-      showDownloadButton={true}
-    />
-  )
-}
-```
-
-### Angular
-
-```html
-<qr-code
-  text="Hello Angular!"
-  [size]="200"
-  format="svg"
-  [showDownloadButton]="true">
-</qr-code>
-```
-
-## 主要特性
-
-### 🎯 多种输出格式
-
-- **Canvas** - 适合像素级操作和高性能场景
-- **SVG** - 适合响应式设计和矢量图形
-- **Image** - 适合直接显示和下载
-
-### 🎨 丰富的样式选项
-
-- **颜色配置** - 支持纯色和渐变色（线性/径向）
-- **样式定制** - 点样式、角样式、圆角等
-- **Logo 嵌入** - 支持多种形状和边框样式
-
-### ⚡ 性能优化
-
-- **智能缓存** - 自动缓存生成结果，避免重复计算
-- **批量处理** - 支持并行生成多个二维码
-- **性能监控** - 内置性能指标收集和分析
-
-### 🔧 开发体验
-
-- **TypeScript** - 完整的类型定义和智能提示
-- **框架适配** - 自动检测框架并使用最佳实践
-- **错误处理** - 详细的错误信息和恢复建议
-
-## 安装
+### Installation
 
 ::: code-group
 
@@ -147,8 +74,273 @@ pnpm add @ldesign/qrcode
 
 :::
 
-## 许可证
+### Basic Usage
 
-[MIT License](https://github.com/ldesign/qrcode/blob/main/LICENSE) © 2024 LDesign
+```typescript
+import { createQRCode } from '@ldesign/qrcode';
 
+const qrCode = createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: {
+    size: 300,
+    fgColor: '#2563eb',
+    bgColor: '#ffffff',
+  },
+});
+```
 
+### With Gradient & Effects
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  errorCorrectionLevel: 'H',
+  style: {
+    size: 300,
+    dotStyle: 'rounded',
+    gradient: {
+      type: 'linear',
+      colors: ['#667eea', '#764ba2'],
+      direction: 45,
+    },
+    shadow: {
+      blur: 10,
+      color: 'rgba(0, 0, 0, 0.2)',
+      offsetY: 4,
+    },
+  },
+});
+```
+
+### With Logo
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  errorCorrectionLevel: 'H',
+  style: {
+    size: 300,
+    dotStyle: 'dots',
+  },
+  logo: {
+    src: '/logo.png',
+    width: '25%',
+    height: '25%',
+    logoShape: 'circle',
+    logoBackground: true,
+    logoBackgroundPadding: 8,
+  },
+});
+```
+
+## Framework Integration
+
+### Vue 3
+
+```vue
+<template>
+  <QRCode
+    content="https://example.com"
+    error-correction-level="H"
+    :style-config="{
+      size: 300,
+      dotStyle: 'rounded',
+      gradient: {
+        type: 'linear',
+        colors: ['#667eea', '#764ba2'],
+        direction: 45,
+      },
+    }"
+  />
+</template>
+
+<script setup lang="ts">
+import { QRCode } from '@ldesign/qrcode/vue';
+</script>
+```
+
+[Learn more about Vue integration →](/guide/vue)
+
+### React
+
+```tsx
+import { QRCode } from '@ldesign/qrcode/react';
+
+function App() {
+  return (
+    <QRCode
+      content="https://example.com"
+      errorCorrectionLevel="H"
+      styleConfig={{
+        size: 300,
+        dotStyle: 'rounded',
+        gradient: {
+          type: 'linear',
+          colors: ['#667eea', '#764ba2'],
+          direction: 45,
+        },
+      }}
+    />
+  );
+}
+```
+
+[Learn more about React integration →](/guide/react)
+
+## Advanced Features
+
+### Custom Eye Styles
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: {
+    size: 300,
+    eyeStyle: [
+      { outer: { style: 'rounded', color: '#ef4444' }, inner: { style: 'dots', color: '#dc2626' } },
+      { outer: { style: 'rounded', color: '#3b82f6' }, inner: { style: 'dots', color: '#2563eb' } },
+      { outer: { style: 'rounded', color: '#10b981' }, inner: { style: 'dots', color: '#059669' } },
+    ],
+  },
+});
+```
+
+### Radial Gradient
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: {
+    size: 300,
+    dotStyle: 'dots',
+    gradient: {
+      type: 'radial',
+      colors: ['#f97316', '#dc2626'],
+      position: { x: 0.5, y: 0.5 },
+    },
+  },
+});
+```
+
+### Batch Download
+
+```typescript
+import { batchDownload } from '@ldesign/qrcode';
+
+await batchDownload({
+  items: [
+    { content: 'https://example.com/1', fileName: 'qr-1' },
+    { content: 'https://example.com/2', fileName: 'qr-2' },
+    { content: 'https://example.com/3', fileName: 'qr-3' },
+  ],
+  format: 'png',
+  zipFileName: 'qrcodes.zip',
+  style: { size: 300 },
+});
+```
+
+[Explore all features →](/guide/advanced-features)
+
+## Key Features
+
+### 🎨 Rich Styling Options
+
+- **7 Dot Styles**: square, rounded, dots, diamond, star, classy, classy-rounded
+- **Gradients**: Linear and radial gradients with multiple colors
+- **Custom Colors**: Foreground, background, and eye colors
+- **Corner Radius**: Adjustable corner radius for softer edges
+- **Visual Effects**: Shadows, strokes, background images
+
+### 🖼️ Smart Logo Integration
+
+- **Multiple Shapes**: square, circle, rounded, or auto
+- **Aspect Ratio Control**: keep, fill, cover, or contain
+- **Background Support**: Optional background with padding
+- **Border Options**: Customizable border color and width
+- **Error Handling**: Fallback logo support
+
+### 👁️ Eye Customization
+
+- **Independent Styling**: Style each finder pattern separately
+- **Gradient Support**: Apply gradients to eyes
+- **Multi-Color Eyes**: Use different colors for each eye
+- **Flexible Patterns**: Choose from all dot styles
+
+### ⚡ Performance
+
+- **Built-in Caching**: Automatic caching for repeated content
+- **Lazy Loading**: IntersectionObserver support
+- **Optimized Rendering**: Fast Canvas/SVG rendering
+- **Memory Efficient**: Smart resource management
+
+### 🛠️ Developer Experience
+
+- **TypeScript First**: Full type definitions
+- **Framework Adapters**: Vue, React, and vanilla JS
+- **Comprehensive Docs**: Detailed guides and examples
+- **Error Messages**: Clear, actionable error messages
+
+## Use Cases
+
+- **Marketing Materials**: Eye-catching QR codes for campaigns
+- **Business Cards**: Professional QR codes with logo
+- **Event Tickets**: Unique codes for check-in systems
+- **Product Packaging**: Brand-consistent codes
+- **WiFi Sharing**: Beautiful QR codes for network access
+- **Payment Systems**: Secure payment QR codes
+- **Contact Information**: vCard QR codes
+
+## Why Choose @ldesign/qrcode?
+
+- ✅ **Most Feature-Rich**: 7 dot styles, gradients, custom eyes, and more
+- ✅ **Beautiful by Default**: Professional-looking QR codes out of the box
+- ✅ **Easy to Use**: Intuitive API with sensible defaults
+- ✅ **Production Ready**: Battle-tested in real applications
+- ✅ **Well Documented**: Comprehensive guides and examples
+- ✅ **Active Development**: Regular updates and improvements
+- ✅ **MIT Licensed**: Free for personal and commercial use
+
+## Browser Support
+
+Works in all modern browsers:
+
+- ✅ Chrome 90+
+- ✅ Firefox 88+
+- ✅ Safari 14+
+- ✅ Edge 90+
+- ✅ Mobile browsers
+
+## What's New
+
+### Version 2.0
+
+- 🎨 7 different dot styles
+- 🌈 Linear and radial gradients
+- 👁️ Custom eye (finder pattern) styles
+- 🖼️ Advanced logo features (shapes, aspect ratios, backgrounds)
+- 🎭 Visual effects (shadows, strokes)
+- 📦 Batch download with ZIP support
+- ⚡ Performance improvements
+- 📚 Comprehensive documentation
+
+## Getting Help
+
+- 📖 [Read the Documentation](/guide/basic-usage)
+- 💡 [Browse Examples](/examples/)
+- 🐛 [Report Issues](https://github.com)
+- 💬 [Discussions](https://github.com)
+
+## License
+
+MIT License © 2024-present
+
+---
+
+<div style="text-align: center; margin-top: 40px;">
+  <a href="/guide/basic-usage" style="font-size: 1.2em; font-weight: 600;">Get Started →</a>
+</div>

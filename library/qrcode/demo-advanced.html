@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Advanced Features Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      font-size: 3rem;
+      margin-bottom: 40px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 1.5rem;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    .qr-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 250px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .description {
+      margin-top: 15px;
+      color: #666;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 QR Code Advanced Features</h1>
+
+    <div class="grid">
+      <!-- 渐变二维码 -->
+      <div class="card">
+        <h2>渐变色二维码</h2>
+        <div class="qr-container" id="gradient-qr"></div>
+        <div class="description">
+          使用线性渐变，从蓝色到紫色，45度角
+        </div>
+      </div>
+
+      <!-- 圆点样式 -->
+      <div class="card">
+        <h2>圆点样式</h2>
+        <div class="qr-container" id="dots-qr"></div>
+        <div class="description">
+          模块使用圆点样式，更加柔和美观
+        </div>
+      </div>
+
+      <!-- 菱形样式 -->
+      <div class="card">
+        <h2>菱形样式</h2>
+        <div class="qr-container" id="diamond-qr"></div>
+        <div class="description">
+          模块使用菱形形状，独特的视觉效果
+        </div>
+      </div>
+
+      <!-- 优雅样式 + 渐变 -->
+      <div class="card">
+        <h2>优雅样式 + 渐变</h2>
+        <div class="qr-container" id="classy-qr"></div>
+        <div class="description">
+          圆角优雅样式配合渐变色，高端大气
+        </div>
+      </div>
+
+      <!-- 自定义眼睛样式 -->
+      <div class="card">
+        <h2>自定义眼睛</h2>
+        <div class="qr-container" id="custom-eyes-qr"></div>
+        <div class="description">
+          三个眼睛使用不同的颜色和样式
+        </div>
+      </div>
+
+      <!-- 方形Logo -->
+      <div class="card">
+        <h2>方形Logo</h2>
+        <div class="qr-container" id="square-logo-qr"></div>
+        <div class="description">
+          Logo保持方形，带白色背景和内边距
+        </div>
+      </div>
+
+      <!-- 阴影效果 -->
+      <div class="card">
+        <h2>阴影效果</h2>
+        <div class="qr-container" id="shadow-qr"></div>
+        <div class="description">
+          添加阴影效果，增加立体感
+        </div>
+      </div>
+
+      <!-- 综合效果 -->
+      <div class="card">
+        <h2>综合效果</h2>
+        <div class="qr-container" id="combined-qr"></div>
+        <div class="description">
+          渐变 + 圆点 + 自定义眼睛 + 阴影
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createQRCode } from './dist/index.esm.js';
+
+    // 1. 渐变色二维码
+    createQRCode({
+      content: 'https://github.com',
+      container: document.getElementById('gradient-qr'),
+      style: {
+        size: 200,
+        gradient: {
+          type: 'linear',
+          colors: ['#667eea', '#764ba2'],
+          direction: 45,
+        },
+      },
+    });
+
+    // 2. 圆点样式
+    createQRCode({
+      content: 'https://example.com/dots',
+      container: document.getElementById('dots-qr'),
+      style: {
+        size: 200,
+        dotStyle: 'dots',
+        fgColor: '#10b981',
+      },
+    });
+
+    // 3. 菱形样式
+    createQRCode({
+      content: 'https://example.com/diamond',
+      container: document.getElementById('diamond-qr'),
+      style: {
+        size: 200,
+        dotStyle: 'diamond',
+        fgColor: '#f59e0b',
+      },
+    });
+
+    // 4. 优雅样式 + 渐变
+    createQRCode({
+      content: 'https://example.com/classy',
+      container: document.getElementById('classy-qr'),
+      style: {
+        size: 200,
+        dotStyle: 'classy-rounded',
+        gradient: {
+          type: 'linear',
+          colors: ['#ec4899', '#8b5cf6'],
+          direction: 90,
+        },
+      },
+    });
+
+    // 5. 自定义眼睛样式
+    createQRCode({
+      content: 'https://example.com/eyes',
+      container: document.getElementById('custom-eyes-qr'),
+      style: {
+        size: 200,
+        eyeStyle: [
+          {
+            outer: { style: 'rounded', color: '#ef4444' },
+            inner: { style: 'dots', color: '#dc2626' },
+          },
+          {
+            outer: { style: 'rounded', color: '#3b82f6' },
+            inner: { style: 'dots', color: '#2563eb' },
+          },
+          {
+            outer: { style: 'rounded', color: '#10b981' },
+            inner: { style: 'dots', color: '#059669' },
+          },
+        ],
+      },
+    });
+
+    // 6. 方形Logo (使用 emoji 作为 logo)
+    // 创建一个 emoji 的 canvas 作为 logo
+    const createEmojiLogo = (emoji, size = 100) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // 绘制白色背景
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+
+      // 绘制 emoji
+      ctx.font = `${size * 0.7}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(emoji, size / 2, size / 2);
+
+      return canvas.toDataURL();
+    };
+
+    createQRCode({
+      content: 'https://example.com/logo',
+      container: document.getElementById('square-logo-qr'),
+      errorCorrectionLevel: 'H', // 使用高容错等级以支持 logo
+      style: {
+        size: 200,
+        fgColor: '#1e40af',
+      },
+      logo: {
+        src: createEmojiLogo('🚀'),
+        width: '20%',
+        height: '20%',
+        logoShape: 'square',
+        aspectRatio: 'keep',
+        logoBackground: true,
+        logoBackgroundPadding: 5,
+        borderRadius: 8,
+      },
+    });
+
+    // 7. 阴影效果
+    createQRCode({
+      content: 'https://example.com/shadow',
+      container: document.getElementById('shadow-qr'),
+      style: {
+        size: 200,
+        fgColor: '#7c3aed',
+        shadow: {
+          blur: 10,
+          color: 'rgba(124, 58, 237, 0.3)',
+          offsetX: 3,
+          offsetY: 3,
+        },
+      },
+    });
+
+    // 8. 综合效果 (修复版 - 提高容错等级，优化样式确保可扫描)
+    createQRCode({
+      content: 'https://example.com/combined',
+      container: document.getElementById('combined-qr'),
+      errorCorrectionLevel: 'H', // 使用最高容错等级
+      style: {
+        size: 200,
+        dotStyle: 'rounded', // 改用圆角而非圆点，保持更好的可读性
+        gradient: {
+          type: 'linear', // 改用线性渐变，比径向渐变更容易识别
+          colors: ['#f97316', '#dc2626'],
+          direction: 45,
+        },
+        eyeStyle: {
+          outer: {
+            style: 'rounded',
+            gradient: {
+              type: 'linear',
+              colors: ['#8b5cf6', '#ec4899'],
+              direction: 45,
+            }
+          },
+          inner: {
+            style: 'rounded', // 改用圆角
+            color: '#4b5563' // 使用深色而非白色，确保对比度
+          },
+        },
+        shadow: {
+          blur: 6,
+          color: 'rgba(0, 0, 0, 0.15)',
+          offsetY: 3,
+        },
+      },
+    });
+
+    console.log('All QR codes generated successfully!');
+  </script>
+</body>
+</html>
