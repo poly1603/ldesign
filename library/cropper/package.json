@@ -1,102 +1,84 @@
 {
   "name": "@ldesign/cropper",
+  "version": "1.0.0",
+  "description": "A powerful, flexible image cropper library that works with any framework",
   "type": "module",
-  "version": "0.1.0",
-  "description": "A powerful, framework-agnostic image cropping library with Vue 3, React, Angular support",
-  "author": "LDesign Team",
-  "license": "MIT",
-  "keywords": [
-    "cropper",
-    "image-cropper",
-    "canvas",
-    "image-processing",
-    "vue3",
-    "react",
-    "angular",
-    "typescript",
-    "framework-agnostic",
-    "responsive",
-    "touch-support"
-  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.cjs"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./vue": {
-      "types": "./dist/vue/index.d.ts",
-      "import": "./dist/esm/vue/index.js",
-      "require": "./dist/cjs/vue/index.cjs"
+      "types": "./dist/vue.d.ts",
+      "import": "./dist/vue.js",
+      "require": "./dist/vue.cjs"
     },
     "./react": {
-      "types": "./dist/react/index.d.ts",
-      "import": "./dist/esm/react/index.js",
-      "require": "./dist/cjs/react/index.cjs"
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
     },
     "./angular": {
-      "types": "./dist/angular/index.d.ts",
-      "import": "./dist/esm/angular/index.js",
-      "require": "./dist/cjs/angular/index.cjs"
+      "types": "./dist/angular.d.ts",
+      "import": "./dist/angular.js",
+      "require": "./dist/angular.cjs"
     },
-    "./style.css": "./dist/index.css"
+    "./style.css": "./dist/style.css"
   },
-  "main": "dist/cjs/index.cjs",
-  "module": "dist/esm/index.js",
-  "types": "dist/index.d.ts",
-  "style": "dist/index.css",
-  "unpkg": "dist/index.umd.js",
-  "jsdelivr": "dist/index.umd.js",
   "files": [
-    "CHANGELOG.md",
-    "README.md",
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
-    "build": "node scripts/build.js",
-    "build:prod": "pnpm run clean && node scripts/build.js --prod",
-    "build:dev": "node scripts/build.js --dev",
-    "build:watch": "node scripts/build.js --watch",
-    "build:analyze": "node scripts/build.js --analyze",
     "dev": "vite",
+    "build": "vite build && tsc --emitDeclarationOnly",
     "preview": "vite preview",
-    "type-check": "tsc --noEmit --project tsconfig.json",
-    "type-check:test": "tsc --noEmit --project tsconfig.test.json",
-    "lint": "eslint . --fix --cache",
-    "lint:check": "eslint . --cache",
-    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest --watch",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:performance": "vitest run tests/performance",
-    "clean": "rimraf dist coverage .nyc_output .tsbuildinfo node_modules/.cache",
-    "size-check": "size-limit",
-    "docs:dev": "vitepress dev docs --port 3000",
+    "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "docs:serve": "vitepress serve docs --port 4173",
-    "ci": "pnpm run lint:check && pnpm run type-check && pnpm run test:run",
-    "ci:coverage": "pnpm run lint:check && pnpm run type-check && pnpm run test:coverage",
-    "prepare-release": "node scripts/prepare-release.js",
-    "release": "node scripts/release.js",
-    "release:dry": "node scripts/release.js --dry-run",
-    "version": "node scripts/version.js",
-    "version:info": "node scripts/version.js info",
-    "version:suggest": "node scripts/version.js suggest",
-    "changeset": "changeset",
-    "changeset:version": "changeset version",
-    "changeset:publish": "changeset publish",
-    "prepublishOnly": "pnpm run clean && pnpm run build:prod && pnpm run test:run && pnpm run lint:check"
+    "docs:preview": "vitepress preview docs"
+  },
+  "keywords": [
+    "cropper",
+    "image-cropper",
+    "crop",
+    "image",
+    "vue",
+    "react",
+    "angular",
+    "typescript"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "devDependencies": {
+    "@angular/core": "^17.0.0",
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vitest/ui": "^1.0.0",
+    "jsdom": "^23.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.7.0",
+    "vitepress": "^1.0.0",
+    "vitest": "^1.0.0",
+    "vue": "^3.4.0"
   },
   "peerDependencies": {
-    "@angular/core": "^17.0.0",
-    "react": "^18.0.0",
-    "vue": "^3.3.0"
+    "vue": "^3.0.0",
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "@angular/core": "^15.0.0 || ^16.0.0 || ^17.0.0"
   },
   "peerDependenciesMeta": {
     "vue": {
@@ -105,66 +87,11 @@
     "react": {
       "optional": true
     },
+    "react-dom": {
+      "optional": true
+    },
     "@angular/core": {
       "optional": true
     }
-  },
-  "dependencies": {
-    "@ldesign/shared": "workspace:*",
-    "lucide": "^0.544.0",
-    "tslib": "^2.6.2"
-  },
-  "devDependencies": {
-    "@changesets/cli": "^2.27.1",
-    "@ldesign/builder": "workspace:*",
-    "@playwright/test": "^1.40.0",
-    "@rollup/plugin-commonjs": "^25.0.8",
-    "@rollup/plugin-node-resolve": "^15.3.1",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@testing-library/jest-dom": "^6.0.0",
-    "@testing-library/react": "^14.0.0",
-    "@types/node": "^22.0.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@typescript-eslint/eslint-plugin": "^8.39.0",
-    "@typescript-eslint/parser": "^8.39.0",
-    "@vitejs/plugin-react": "^4.2.1",
-    "@vitejs/plugin-vue": "^5.0.3",
-    "@vitest/coverage-v8": "^3.2.4",
-    "@vitest/ui": "^3.2.4",
-    "@vue/test-utils": "^2.4.4",
-    "autoprefixer": "^10.4.16",
-    "cssnano": "^6.0.1",
-    "eslint": "^9.32.0",
-    "jsdom": "^24.0.0",
-    "less": "^4.4.1",
-    "postcss": "^8.4.32",
-    "postcss-cli": "^11.0.1",
-    "postcss-custom-properties": "^13.3.2",
-    "postcss-import": "^15.1.0",
-    "postcss-nested": "^6.0.1",
-    "prettier": "^3.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "rimraf": "^5.0.5",
-    "rollup": "^4.9.6",
-    "rollup-plugin-dts": "^6.1.0",
-    "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-vue": "^6.0.0",
-    "semver": "^7.5.4",
-    "size-limit": "^11.0.0",
-    "typescript": "^5.6.0",
-    "vite": "^5.0.12",
-    "vite-plugin-dts": "^3.6.4",
-    "vitepress": "^1.6.4",
-    "vitest": "^3.2.4",
-    "vue": "^3.4.15",
-    "vue-tsc": "^3.0.5"
-  },
-  "size-limit": [
-    {
-      "path": "dist/index.js",
-      "limit": "50 KB"
-    }
-  ]
+  }
 }

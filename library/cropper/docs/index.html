@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@ldesign/cropper - Quick Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    p {
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .section {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .section h2 {
+      margin-bottom: 15px;
+      color: #333;
+      font-size: 18px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    input[type="file"] {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      background: white;
+    }
+
+    .cropper-container-wrapper {
+      width: 100%;
+      height: 500px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #f9f9f9;
+      position: relative;
+    }
+
+    .cropper-container-wrapper.empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+    }
+
+    .preview-container {
+      margin-top: 15px;
+    }
+
+    .preview-box {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      background: #f9f9f9;
+    }
+
+    .preview-box h3 {
+      margin-bottom: 10px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .preview-content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+      background: white;
+      border-radius: 4px;
+    }
+
+    .preview-content canvas {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+
+    .info-box {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+    }
+
+    .info-box pre {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+      color: #333;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-group label {
+      font-size: 14px;
+      color: #666;
+      min-width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>@ldesign/cropper - Quick Test</h1>
+    <p>Test the image cropper functionality</p>
+
+    <!-- Load Image Section -->
+    <div class="section">
+      <h2>1. Load Image</h2>
+      <div class="controls">
+        <input type="file" id="fileInput" accept="image/*">
+        <button onclick="loadSampleImage()">Load Sample Image</button>
+      </div>
+    </div>
+
+    <!-- Cropper Section -->
+    <div class="section">
+      <h2>2. Crop Image</h2>
+      <div class="cropper-container-wrapper empty" id="cropperWrapper">
+        <span>Please load an image to start cropping</span>
+      </div>
+
+      <div class="controls" style="margin-top: 15px;">
+        <div class="control-group">
+          <label>Aspect Ratio:</label>
+          <select id="aspectRatio" onchange="setAspectRatio()">
+            <option value="NaN">Free</option>
+            <option value="1">1:1 (Square)</option>
+            <option value="1.7778">16:9</option>
+            <option value="1.3333">4:3</option>
+            <option value="1.5">3:2</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transform Controls -->
+    <div class="section">
+      <h2>3. Transform</h2>
+      <div class="controls">
+        <button onclick="rotateLeft()" id="rotateLeftBtn" disabled>Rotate Left</button>
+        <button onclick="rotateRight()" id="rotateRightBtn" disabled>Rotate Right</button>
+        <button onclick="flipHorizontal()" id="flipHBtn" disabled>Flip Horizontal</button>
+        <button onclick="flipVertical()" id="flipVBtn" disabled>Flip Vertical</button>
+        <button onclick="reset()" id="resetBtn" disabled>Reset</button>
+      </div>
+    </div>
+
+    <!-- Export Section -->
+    <div class="section">
+      <h2>4. Export</h2>
+      <div class="controls">
+        <button onclick="getCroppedImage()" id="exportBtn" disabled>Get Cropped Image</button>
+        <button onclick="downloadImage()" id="downloadBtn" disabled>Download</button>
+      </div>
+
+      <div class="preview-container" id="previewContainer" style="display: none;">
+        <div class="preview-box">
+          <h3>Preview</h3>
+          <div class="preview-content">
+            <canvas id="previewCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Crop Data Section -->
+    <div class="section">
+      <h2>5. Crop Data</h2>
+      <div class="info-box">
+        <pre id="cropDataDisplay">{}</pre>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Cropper } from '../dist/index.js'
+    import '../dist/style.css'
+
+    let cropper = null
+    let croppedCanvas = null
+
+    // Sample image URL
+    const sampleImageUrl = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800'
+
+    // File input handler
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = function(event) {
+          initCropper(event.target.result)
+        }
+        reader.readAsDataURL(file)
+      }
+    })
+
+    // Load sample image
+    window.loadSampleImage = function() {
+      initCropper(sampleImageUrl)
+    }
+
+    // Initialize cropper
+    function initCropper(src) {
+      const wrapper = document.getElementById('cropperWrapper')
+
+      // Destroy existing cropper
+      if (cropper) {
+        cropper.destroy()
+      }
+
+      // Clear wrapper
+      wrapper.innerHTML = ''
+      wrapper.classList.remove('empty')
+
+      // Create new cropper
+      cropper = new Cropper(wrapper, {
+        src: src,
+        aspectRatio: NaN,
+        viewMode: 0,
+        dragMode: 'crop',
+        autoCrop: true,
+        autoCropArea: 0.8,
+        movable: true,
+        rotatable: true,
+        scalable: true,
+        zoomable: true,
+        zoomOnWheel: true,
+        cropBoxMovable: true,
+        cropBoxResizable: true,
+        modal: true,
+        guides: true,
+        center: true,
+        highlight: true,
+        background: true,
+        ready: function(e) {
+          console.log('Cropper is ready', e)
+          enableButtons()
+        },
+        crop: function(e) {
+          updateCropData(e.detail)
+        }
+      })
+    }
+
+    // Set aspect ratio
+    window.setAspectRatio = function() {
+      if (!cropper) return
+      const select = document.getElementById('aspectRatio')
+      const value = select.value === 'NaN' ? NaN : parseFloat(select.value)
+      cropper.setData({ aspectRatio: value })
+    }
+
+    // Transform methods
+    window.rotateLeft = function() {
+      if (cropper) cropper.rotate(-90)
+    }
+
+    window.rotateRight = function() {
+      if (cropper) cropper.rotate(90)
+    }
+
+    window.flipHorizontal = function() {
+      if (cropper) {
+        const imageData = cropper.getImageData()
+        cropper.scaleX(-imageData.scaleX)
+      }
+    }
+
+    window.flipVertical = function() {
+      if (cropper) {
+        const imageData = cropper.getImageData()
+        cropper.scaleY(-imageData.scaleY)
+      }
+    }
+
+    window.reset = function() {
+      if (cropper) cropper.reset()
+    }
+
+    // Export methods
+    window.getCroppedImage = function() {
+      if (!cropper) return
+
+      const canvas = cropper.getCroppedCanvas({
+        width: 400,
+        height: 400,
+        imageSmoothingQuality: 'high'
+      })
+
+      if (canvas) {
+        croppedCanvas = canvas
+        const previewCanvas = document.getElementById('previewCanvas')
+        const ctx = previewCanvas.getContext('2d')
+
+        previewCanvas.width = canvas.width
+        previewCanvas.height = canvas.height
+        ctx.drawImage(canvas, 0, 0)
+
+        document.getElementById('previewContainer').style.display = 'block'
+        document.getElementById('downloadBtn').disabled = false
+      }
+    }
+
+    window.downloadImage = function() {
+      if (croppedCanvas) {
+        const link = document.createElement('a')
+        link.download = 'cropped-image.png'
+        link.href = croppedCanvas.toDataURL()
+        link.click()
+      }
+    }
+
+    // Update crop data display
+    function updateCropData(data) {
+      document.getElementById('cropDataDisplay').textContent = JSON.stringify(data, null, 2)
+    }
+
+    // Enable buttons
+    function enableButtons() {
+      document.getElementById('rotateLeftBtn').disabled = false
+      document.getElementById('rotateRightBtn').disabled = false
+      document.getElementById('flipHBtn').disabled = false
+      document.getElementById('flipVBtn').disabled = false
+      document.getElementById('resetBtn').disabled = false
+      document.getElementById('exportBtn').disabled = false
+    }
+
+    // Make functions available globally
+    window.cropper = cropper
+  </script>
+</body>
+</html>

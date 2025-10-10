@@ -1,345 +1,177 @@
 /**
- * Vue Adapter for Enhanced Rich Text Editor
- * 
- * Provides Vue components and composables for the editor.
+ * Vue 3 适配器
  */
 
-import {
-  defineComponent,
-  ref,
-  onMounted,
-  onUnmounted,
-  watch,
-  nextTick,
-  h,
-  type PropType,
-  type Ref
-} from 'vue';
-import type { EnhancedEditor, EditorOptions, Plugin, Delta as IDelta } from '@/types';
-import { EnhancedEditor as Editor } from '@/core/editor';
-import { Delta } from '@/core/delta';
+import { defineComponent, ref, onMounted, onBeforeUnmount, watch, h } from 'vue'
+import { Editor } from '../../core/Editor'
+import { Toolbar } from '../../ui/Toolbar'
+import type { EditorOptions, Plugin } from '../../types'
 
-/**
- * Vue-specific editor options
- */
-export interface VueEditorOptions extends EditorOptions {
-  onChange?: (delta: IDelta, oldDelta: IDelta, source: string) => void;
-  onSelectionChange?: (range: any, oldRange: any, source: string) => void;
-  onTextChange?: (delta: IDelta, oldDelta: IDelta, source: string) => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
+export interface RichEditorProps {
+  modelValue?: string
+  plugins?: (Plugin | string)[]
+  editable?: boolean
+  autofocus?: boolean
+  placeholder?: string
+  showToolbar?: boolean
 }
 
 /**
- * Enhanced Rich Text Editor Vue Component
+ * Vue 富文本编辑器组件
  */
-export const EnhancedRichEditor = defineComponent({
-  name: 'EnhancedRichEditor',
+export const RichEditor = defineComponent({
+  name: 'RichEditor',
   props: {
     modelValue: {
-      type: Object as PropType<IDelta>,
-      default: () => new Delta()
-    },
-    placeholder: {
       type: String,
       default: ''
     },
-    readOnly: {
+    plugins: {
+      type: Array as () => (Plugin | string)[],
+      default: () => []
+    },
+    editable: {
+      type: Boolean,
+      default: true
+    },
+    autofocus: {
       type: Boolean,
       default: false
     },
-    options: {
-      type: Object as PropType<EditorOptions>,
-      default: () => ({})
+    placeholder: {
+      type: String,
+      default: '请输入内容...'
     },
-    plugins: {
-      type: Array as PropType<Plugin[]>,
-      default: () => []
+    showToolbar: {
+      type: Boolean,
+      default: true
     }
   },
-  emits: [
-    'update:modelValue',
-    'text-change',
-    'selection-change',
-    'focus',
-    'blur',
-    'ready'
-  ],
+  emits: ['update:modelValue', 'update', 'focus', 'blur'],
   setup(props, { emit, expose }) {
-    const containerRef = ref<HTMLDivElement>();
-    const editorRef = ref<EnhancedEditor | null>(null);
+    const editorContainer = ref<HTMLElement>()
+    const editorInstance = ref<Editor>()
+    const toolbarInstance = ref<Toolbar>()
 
-    // Initialize editor
-    onMounted(async () => {
-      await nextTick();
-      
-      if (!containerRef.value) return;
+    // 初始化编辑器
+    const initEditor = () => {
+      if (!editorContainer.value) return
 
-      const editor = new Editor(containerRef.value, {
+      const options: EditorOptions = {
+        element: editorContainer.value,
+        content: props.modelValue,
+        plugins: props.plugins,
+        editable: props.editable,
+        autofocus: props.autofocus,
         placeholder: props.placeholder,
-        readOnly: props.readOnly,
-        ...props.options
-      });
-
-      editorRef.value = editor;
-
-      // Install plugins
-      props.plugins.forEach(plugin => {
-        editor.addPlugin(plugin);
-      });
-
-      // Set initial content
-      if (props.modelValue) {
-        editor.setContents(props.modelValue);
-      }
-
-      // Setup event listeners
-      editor.on('text-change', (delta: IDelta, oldDelta: IDelta, source: string) => {
-        emit('text-change', delta, oldDelta, source);
-        emit('update:modelValue', editor.getContents());
-      });
-
-      editor.on('selection-change', (range: any, oldRange: any, source: string) => {
-        emit('selection-change', range, oldRange, source);
-      });
-
-      editor.on('focus', () => {
-        emit('focus');
-      });
-
-      editor.on('blur', () => {
-        emit('blur');
-      });
-
-      emit('ready', editor);
-    });
-
-    // Cleanup
-    onUnmounted(() => {
-      if (editorRef.value) {
-        editorRef.value.destroy();
-        editorRef.value = null;
-      }
-    });
-
-    // Watch for content changes
-    watch(
-      () => props.modelValue,
-      (newValue) => {
-        if (editorRef.value && newValue) {
-          const currentContents = editorRef.value.getContents();
-          if (!currentContents.isEqual(newValue)) {
-            editorRef.value.setContents(newValue, 'silent');
-          }
-        }
-      },
-      { deep: true }
-    );
-
-    // Watch for readOnly changes
-    watch(
-      () => props.readOnly,
-      (readOnly) => {
-        if (editorRef.value) {
-          editorRef.value.enable(!readOnly);
+        onChange: (content) => {
+          emit('update:modelValue', content)
+        },
+        onUpdate: (state) => {
+          emit('update', state)
+        },
+        onFocus: () => {
+          emit('focus')
+        },
+        onBlur: () => {
+          emit('blur')
         }
       }
-    );
 
-    // Watch for plugins changes
-    watch(
-      () => props.plugins,
-      (newPlugins, oldPlugins) => {
-        if (!editorRef.value) return;
+      editorInstance.value = new Editor(options)
 
-        // Remove old plugins
-        if (oldPlugins) {
-          oldPlugins.forEach(plugin => {
-            editorRef.value!.removePlugin(plugin.name);
-          });
+      // 创建工具栏
+      if (props.showToolbar && editorContainer.value) {
+        const toolbarContainer = editorContainer.value.querySelector('.toolbar-container') as HTMLElement
+        if (toolbarContainer) {
+          toolbarInstance.value = new Toolbar(editorInstance.value, {
+            container: toolbarContainer
+          })
         }
+      }
+    }
 
-        // Add new plugins
-        newPlugins.forEach(plugin => {
-          editorRef.value!.addPlugin(plugin);
-        });
-      },
-      { deep: true }
-    );
+    // 监听内容变化
+    watch(() => props.modelValue, (newValue) => {
+      if (editorInstance.value && newValue !== editorInstance.value.getHTML()) {
+        editorInstance.value.setHTML(newValue || '')
+      }
+    })
 
-    // Expose editor methods
+    // 监听可编辑状态
+    watch(() => props.editable, (newValue) => {
+      editorInstance.value?.setEditable(newValue)
+    })
+
+    // 生命周期
+    onMounted(() => {
+      initEditor()
+    })
+
+    onBeforeUnmount(() => {
+      toolbarInstance.value?.destroy()
+      editorInstance.value?.destroy()
+    })
+
+    // 暴露编辑器实例方法
     expose({
-      getEditor: () => editorRef.value,
-      focus: () => editorRef.value?.focus(),
-      blur: () => editorRef.value?.blur(),
-      getContents: () => editorRef.value?.getContents() || new Delta(),
-      setContents: (delta: IDelta, source = 'api') => {
-        editorRef.value?.setContents(delta, source);
-      },
-      getText: () => editorRef.value?.getText() || '',
-      getLength: () => editorRef.value?.getLength() || 0,
-      insertText: (index: number, text: string, source = 'api') => {
-        editorRef.value?.insertText(index, text, source);
-      },
-      deleteText: (index: number, length: number, source = 'api') => {
-        editorRef.value?.deleteText(index, length, source);
-      },
-      formatText: (index: number, length: number, format: string, value: any, source = 'api') => {
-        editorRef.value?.formatText(index, length, format, value, source);
-      },
-      getSelection: () => editorRef.value?.getSelection(),
-      setSelection: (range: any, source = 'api') => {
-        editorRef.value?.setSelection(range, source);
-      }
-    });
+      getEditor: () => editorInstance.value,
+      focus: () => editorInstance.value?.focus(),
+      blur: () => editorInstance.value?.blur(),
+      clear: () => editorInstance.value?.clear(),
+      getHTML: () => editorInstance.value?.getHTML(),
+      setHTML: (html: string) => editorInstance.value?.setHTML(html),
+      getJSON: () => editorInstance.value?.getJSON(),
+      setJSON: (json: any) => editorInstance.value?.setJSON(json)
+    })
 
-    return {
-      containerRef
-    };
-  },
-  render() {
-    return h('div', { ref: 'containerRef' }, this.$slots.default?.());
+    return () => h('div', { class: 'ldesign-editor-wrapper' }, [
+      props.showToolbar && h('div', { class: 'toolbar-container' }),
+      h('div', { ref: editorContainer })
+    ])
   }
-});
+})
 
 /**
- * Composable for using the editor
+ * Vue Composition API Hook
  */
-export function useEditor(options?: EditorOptions) {
-  const editorRef = ref<EnhancedEditor | null>(null);
-  const containerRef = ref<HTMLDivElement | null>(null);
+export function useEditor(options: EditorOptions = {}) {
+  const editorInstance = ref<Editor>()
+  const content = ref(options.content as string || '')
 
-  const createEditor = (container: HTMLDivElement) => {
-    if (editorRef.value) {
-      editorRef.value.destroy();
-    }
+  const init = (element: HTMLElement | string) => {
+    editorInstance.value = new Editor({
+      ...options,
+      element,
+      onChange: (html) => {
+        content.value = html
+        options.onChange?.(html)
+      }
+    })
+  }
 
-    editorRef.value = new Editor(container, options);
-    containerRef.value = container;
-    
-    return editorRef.value;
-  };
+  const destroy = () => {
+    editorInstance.value?.destroy()
+  }
 
-  const destroyEditor = () => {
-    if (editorRef.value) {
-      editorRef.value.destroy();
-      editorRef.value = null;
-      containerRef.value = null;
-    }
-  };
-
-  onUnmounted(() => {
-    destroyEditor();
-  });
+  onBeforeUnmount(() => {
+    destroy()
+  })
 
   return {
-    editor: editorRef,
-    container: containerRef,
-    createEditor,
-    destroyEditor
-  };
-}
-
-/**
- * Composable for editor content
- */
-export function useEditorContent(editor: Ref<EnhancedEditor | null>, initialContent?: IDelta) {
-  const content = ref<IDelta>(initialContent || new Delta());
-
-  watch(
-    editor,
-    (newEditor, oldEditor) => {
-      if (oldEditor) {
-        oldEditor.off('text-change', handleTextChange);
-      }
-
-      if (newEditor) {
-        newEditor.on('text-change', handleTextChange);
-        content.value = newEditor.getContents();
-      }
-    },
-    { immediate: true }
-  );
-
-  const handleTextChange = () => {
-    if (editor.value) {
-      content.value = editor.value.getContents();
-    }
-  };
-
-  const updateContent = (newContent: IDelta, source = 'api') => {
-    if (editor.value) {
-      editor.value.setContents(newContent, source);
-    }
-  };
-
-  return {
+    editor: editorInstance,
     content,
-    updateContent
-  };
+    init,
+    destroy,
+    focus: () => editorInstance.value?.focus(),
+    blur: () => editorInstance.value?.blur(),
+    clear: () => editorInstance.value?.clear(),
+    getHTML: () => editorInstance.value?.getHTML(),
+    setHTML: (html: string) => editorInstance.value?.setHTML(html),
+    getJSON: () => editorInstance.value?.getJSON(),
+    setJSON: (json: any) => editorInstance.value?.setJSON(json)
+  }
 }
 
-/**
- * Composable for editor selection
- */
-export function useEditorSelection(editor: Ref<EnhancedEditor | null>) {
-  const selection = ref<any>(null);
-
-  watch(
-    editor,
-    (newEditor, oldEditor) => {
-      if (oldEditor) {
-        oldEditor.off('selection-change', handleSelectionChange);
-      }
-
-      if (newEditor) {
-        newEditor.on('selection-change', handleSelectionChange);
-        selection.value = newEditor.getSelection();
-      }
-    },
-    { immediate: true }
-  );
-
-  const handleSelectionChange = (range: any) => {
-    selection.value = range;
-  };
-
-  const updateSelection = (range: any, source = 'api') => {
-    if (editor.value) {
-      editor.value.setSelection(range, source);
-    }
-  };
-
-  return {
-    selection,
-    updateSelection
-  };
-}
-
-/**
- * Composable for managing editor plugins
- */
-export function useEditorPlugins(editor: Ref<EnhancedEditor | null>, plugins: Ref<Plugin[]>) {
-  watch(
-    [editor, plugins],
-    ([newEditor, newPlugins], [oldEditor, oldPlugins]) => {
-      if (oldEditor && oldPlugins) {
-        oldPlugins.forEach(plugin => {
-          oldEditor.removePlugin(plugin.name);
-        });
-      }
-
-      if (newEditor && newPlugins) {
-        newPlugins.forEach(plugin => {
-          newEditor.addPlugin(plugin);
-        });
-      }
-    },
-    { immediate: true, deep: true }
-  );
-}
-
-/**
- * Default export
- */
-export default EnhancedRichEditor;
+// 导出
+export default RichEditor

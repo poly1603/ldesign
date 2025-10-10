@@ -1,116 +1,216 @@
-# 贡献指南
+# Contributing to @ldesign/cropper
 
-感谢您对 LDESIGN Cropper 的关注！我们欢迎所有形式的贡献。
+Thank you for your interest in contributing to @ldesign/cropper! This document provides guidelines and instructions for contributing.
 
-## 开发环境设置
+## Code of Conduct
 
-### 前置要求
+By participating in this project, you agree to maintain a respectful and inclusive environment for all contributors.
 
-- Node.js >= 18.0.0
-- pnpm >= 8.0.0
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm, yarn, or pnpm
 - Git
 
-### 安装依赖
+### Setup Development Environment
 
+1. Fork and clone the repository:
 ```bash
-# 克隆仓库
-git clone https://github.com/ldesign/cropper.git
+git clone https://github.com/your-username/cropper.git
 cd cropper
-
-# 安装依赖
-pnpm install
-
-# 运行测试
-pnpm test
-
-# 启动开发服务器
-pnpm dev
 ```
 
-## 开发流程
+2. Install dependencies:
+```bash
+npm install
+```
 
-### 1. 创建分支
+3. Run the development server:
+```bash
+npm run dev
+```
 
+4. Run tests:
+```bash
+npm test
+```
+
+## Project Structure
+
+```
+cropper/
+├── src/                  # Source code
+│   ├── core/            # Core cropper functionality
+│   ├── adapters/        # Framework adapters
+│   ├── utils/           # Utility functions
+│   ├── types/           # TypeScript types
+│   └── styles/          # CSS styles
+├── examples/            # Example projects
+├── docs/                # Documentation
+├── __tests__/           # Tests
+└── dist/                # Build output
+```
+
+## Development Workflow
+
+### Making Changes
+
+1. Create a new branch:
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
-### 2. 开发和测试
+2. Make your changes
 
-- 编写代码时请遵循项目的代码规范
-- 为新功能编写相应的测试用例
-- 确保所有测试通过：`pnpm test`
-- 运行类型检查：`pnpm type-check`
+3. Write or update tests
 
-### 3. 提交代码
-
+4. Run tests:
 ```bash
-# 添加文件
-git add .
-
-# 提交（请使用有意义的提交信息）
-git commit -m "feat: add new cropping feature"
-
-# 推送到远程分支
-git push origin feature/your-feature-name
+npm test
 ```
 
-### 4. 创建 Pull Request
+5. Build the project:
+```bash
+npm run build
+```
 
-- 在 GitHub 上创建 Pull Request
-- 填写详细的描述信息
-- 等待代码审查
+6. Commit your changes:
+```bash
+git commit -m "feat: add your feature"
+```
 
-## 代码规范
+### Commit Message Format
+
+We follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation changes
+- `style:` - Code style changes (formatting, etc.)
+- `refactor:` - Code refactoring
+- `test:` - Test additions or changes
+- `chore:` - Build process or auxiliary tool changes
+
+Examples:
+```
+feat: add pinch-to-zoom support
+fix: resolve crop box resize issue on mobile
+docs: update installation guide
+```
+
+### Pull Request Process
+
+1. Update documentation if needed
+2. Add tests for new features
+3. Ensure all tests pass
+4. Update CHANGELOG.md
+5. Create a pull request with a clear description
+
+## Coding Standards
 
 ### TypeScript
 
-- 使用严格的 TypeScript 配置
-- 避免使用 `any` 类型
-- 为所有公共 API 提供完整的类型定义
-- 使用有意义的变量和函数名
+- Use TypeScript for all new code
+- Define proper types and interfaces
+- Avoid `any` type when possible
+- Export public types
 
-### 测试
+### Code Style
 
-- 为所有新功能编写单元测试
-- 测试覆盖率应保持在 90% 以上
-- 使用 Vitest 作为测试框架
-- 测试文件应放在 `__tests__` 目录下
+- Use 2 spaces for indentation
+- Use single quotes for strings
+- Add semicolons
+- Use ES6+ features
+- Follow existing code patterns
 
-### 文档
+### Naming Conventions
 
-- 为新功能更新相应的文档
-- 使用 JSDoc 注释描述函数和类
-- 更新 README.md 和 API 文档
+- Classes: `PascalCase`
+- Functions/variables: `camelCase`
+- Constants: `UPPER_CASE`
+- Types/Interfaces: `PascalCase`
+- Files: `kebab-case.ts`
 
-## 提交信息规范
+## Testing
 
-我们使用 [Conventional Commits](https://conventionalcommits.org/) 规范：
+### Writing Tests
 
-- `feat:` 新功能
-- `fix:` 修复 bug
-- `docs:` 文档更新
-- `style:` 代码格式调整
-- `refactor:` 代码重构
-- `test:` 测试相关
-- `chore:` 构建过程或辅助工具的变动
+- Write unit tests for new functionality
+- Use descriptive test names
+- Test edge cases
+- Aim for high coverage
 
-## 问题报告
+```typescript
+describe('Cropper', () => {
+  it('should initialize with default options', () => {
+    const cropper = new Cropper('#container')
+    expect(cropper).toBeDefined()
+  })
 
-如果您发现了 bug 或有功能建议，请：
+  it('should load image from URL', async () => {
+    const cropper = new Cropper('#container', {
+      src: 'image.jpg'
+    })
+    await cropper.ready
+    expect(cropper.getImageData()).toBeDefined()
+  })
+})
+```
 
-1. 检查是否已有相关的 issue
-2. 如果没有，请创建新的 issue
-3. 提供详细的描述和复现步骤
-4. 如果可能，提供最小化的复现示例
+### Running Tests
 
-## 许可证
+```bash
+# Run all tests
+npm test
 
-通过贡献代码，您同意您的贡献将在 MIT 许可证下发布。
+# Run tests in watch mode
+npm test -- --watch
 
-## 联系我们
+# Run tests with coverage
+npm test -- --coverage
 
-- GitHub Issues: [项目 Issues 页面]
-- 邮箱: support@ldesign.com
+# Run E2E tests
+npm run test:e2e
+```
 
-感谢您的贡献！
+## Documentation
+
+### Updating Docs
+
+- Update relevant documentation for changes
+- Add examples for new features
+- Keep API reference up to date
+- Check for broken links
+
+### Building Docs
+
+```bash
+npm run docs:dev    # Development server
+npm run docs:build  # Production build
+```
+
+## Release Process
+
+Maintainers will handle releases:
+
+1. Update version in `package.json`
+2. Update CHANGELOG.md
+3. Create git tag
+4. Publish to npm
+5. Create GitHub release
+
+## Questions or Issues?
+
+- Check existing issues on GitHub
+- Join discussions
+- Ask in pull request comments
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the MIT License.
+
+## Thank You!
+
+Your contributions make @ldesign/cropper better for everyone. We appreciate your time and effort!

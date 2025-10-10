@@ -1,0 +1,38 @@
+/**
+ * 插件导出
+ */
+
+export * from './formatting'
+export * from './heading'
+export * from './list'
+export * from './blockquote'
+export * from './codeblock'
+export * from './link'
+export * from './image'
+export * from './table'
+export * from './history'
+export * from './align'
+export * from './color'
+export * from './font'
+export * from './script'
+export * from './horizontal-rule'
+export * from './indent'
+export * from './fullscreen'
+
+// 默认插件集合
+export { BoldPlugin, ItalicPlugin, UnderlinePlugin, StrikePlugin, CodePlugin, ClearFormatPlugin } from './formatting'
+export { HeadingPlugin } from './heading'
+export { BulletListPlugin, OrderedListPlugin, TaskListPlugin } from './list'
+export { BlockquotePlugin } from './blockquote'
+export { CodeBlockPlugin } from './codeblock'
+export { LinkPlugin } from './link'
+export { ImagePlugin } from './image'
+export { TablePlugin } from './table'
+export { HistoryPlugin } from './history'
+export { AlignPlugin } from './align'
+export { TextColorPlugin, BackgroundColorPlugin, PRESET_COLORS } from './color'
+export { FontSizePlugin, FontFamilyPlugin, FONT_SIZES, FONT_FAMILIES } from './font'
+export { SuperscriptPlugin, SubscriptPlugin } from './script'
+export { HorizontalRulePlugin } from './horizontal-rule'
+export { IndentPlugin } from './indent'
+export { FullscreenPlugin } from './fullscreen'

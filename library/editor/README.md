@@ -1,170 +1,116 @@
-# Enhanced Rich Text Editor
+# @ldesign/editor
 
-一个现代化、可扩展的富文本编辑器，基于 Quill 架构设计，提供更强大的功能和更好的用户体验。
+一个功能强大、扩展性强的富文本编辑器，支持 Vue、React 和原生 JavaScript。
 
 ## ✨ 特性
 
-### 🎯 核心功能
-- **完整的文本格式化**：粗体、斜体、下划线、删除线、颜色、字体等
-- **段落格式**：标题、列表、对齐、缩进等
-- **媒体支持**：图片、链接、视频嵌入
-- **撤销/重做**：完整的历史记录系统
-
-### 🚀 增强功能
-- **表格编辑器**：支持合并单元格、调整列宽、表格样式
-- **代码块语法高亮**：支持 100+ 编程语言
-- **数学公式编辑**：LaTeX 支持，实时预览
-- **协作编辑**：实时多人编辑，冲突解决
-- **文件上传**：拖拽上传，进度显示
-- **自定义主题**：完全可定制的外观
-
-### 🛠️ 开发者友好
-- **TypeScript**：完整的类型定义
-- **插件系统**：易于扩展的架构
-- **框架集成**：React、Vue、Angular 支持
-- **移动端优化**：触摸操作支持
-- **无障碍访问**：ARIA 标准支持
+- 🚀 **高性能** - 优化的虚拟 DOM 和增量更新
+- 🔌 **插件化** - 灵活的插件系统，易于扩展
+- 🎨 **可定制** - 完全可定制的样式和行为
+- 🌐 **框架无关** - 支持 Vue 3、React 18+ 和原生 JavaScript
+- 📝 **功能全面** - 支持所有常见的富文本编辑功能
+- 🎯 **TypeScript** - 完整的类型定义
+- 🎭 **Lucide 图标** - 使用现代化的 Lucide 图标库
+- 📦 **轻量级** - Tree-shaking 友好，按需加载
 
 ## 📦 安装
 
 ```bash
-# 使用 npm
-npm install @ldesign/enhanced-rich-editor
-
-# 使用 pnpm
-pnpm add @ldesign/enhanced-rich-editor
-
-# 使用 yarn
-yarn add @ldesign/enhanced-rich-editor
+npm install @ldesign/editor
+# 或
+yarn add @ldesign/editor
+# 或
+pnpm add @ldesign/editor
 ```
 
 ## 🚀 快速开始
 
-### 基础使用
+### 原生 JavaScript
 
 ```typescript
-import { EnhancedEditor } from '@ldesign/enhanced-rich-editor';
-import '@ldesign/enhanced-rich-editor/styles';
+import { Editor } from '@ldesign/editor'
+import '@ldesign/editor/style.css'
 
-const editor = new EnhancedEditor('#editor', {
-  theme: 'snow',
-  modules: {
-    toolbar: true,
-    history: true,
-  },
-});
+const editor = new Editor({
+  element: document.getElementById('editor'),
+  content: '<p>Hello World!</p>',
+  plugins: ['bold', 'italic', 'underline']
+})
 ```
 
-### React 集成
-
-```tsx
-import { useEnhancedEditor } from '@ldesign/enhanced-rich-editor/react';
-
-function MyEditor() {
-  const { editor, editorRef } = useEnhancedEditor({
-    theme: 'snow',
-    placeholder: '开始编写...',
-  });
-
-  return <div ref={editorRef} />;
-}
-```
-
-### Vue 集成
+### Vue 3
 
 ```vue
 <template>
-  <EnhancedEditor
-    v-model="content"
-    :options="editorOptions"
-    @change="handleChange"
-  />
+  <RichEditor v-model="content" :plugins="plugins" />
 </template>
 
-<script setup>
-import { EnhancedEditor } from '@ldesign/enhanced-rich-editor/vue';
+<script setup lang="ts">
+import { ref } from 'vue'
+import { RichEditor } from '@ldesign/editor/vue'
+import '@ldesign/editor/style.css'
 
-const content = ref('');
-const editorOptions = {
-  theme: 'snow',
-  modules: {
-    toolbar: true,
-  },
-};
+const content = ref('<p>Hello World!</p>')
+const plugins = ['bold', 'italic', 'underline', 'link', 'image']
 </script>
 ```
 
-## 📖 文档
+### React
 
-- [完整文档](./docs/README.md)
-- [API 参考](./docs/api/README.md)
-- [插件开发](./docs/plugins/README.md)
-- [示例集合](./examples/README.md)
+```tsx
+import { useState } from 'react'
+import { RichEditor } from '@ldesign/editor/react'
+import '@ldesign/editor/style.css'
 
-## 🏗️ 开发
+function App() {
+  const [content, setContent] = useState('<p>Hello World!</p>')
+
+  return (
+    <RichEditor
+      value={content}
+      onChange={setContent}
+      plugins={['bold', 'italic', 'underline', 'link', 'image']}
+    />
+  )
+}
+```
+
+## 📚 文档
+
+访问 [完整文档](./docs) 了解更多信息。
+
+## 🔌 插件
+
+编辑器支持以下内置插件：
+
+- **基础格式化**: bold, italic, underline, strikethrough, code
+- **标题**: h1, h2, h3, h4, h5, h6
+- **列表**: bulletList, orderedList, taskList
+- **块级元素**: blockquote, codeBlock, horizontalRule
+- **内联元素**: link, image
+- **表格**: table
+- **历史记录**: undo, redo
+- **对齐**: textAlign
+
+## 🛠️ 开发
 
 ```bash
-# 克隆项目
-git clone https://github.com/ldesign/enhanced-rich-editor.git
-cd enhanced-rich-editor
-
 # 安装依赖
 pnpm install
 
-# 启动开发服务器
+# 开发模式
 pnpm dev
 
-# 运行测试
-pnpm test
-
-# 构建项目
+# 构建
 pnpm build
+
+# 文档开发
+pnpm docs:dev
+
+# 文档构建
+pnpm docs:build
 ```
 
-## 🧪 测试
+## 📄 License
 
-```bash
-# 单元测试
-pnpm test
-
-# 测试覆盖率
-pnpm test:coverage
-
-# E2E 测试
-pnpm test:e2e
-
-# 测试 UI
-pnpm test:ui
-```
-
-## 📋 项目状态
-
-当前版本：`0.1.0` (开发中)
-
-### 开发进度
-
-- [x] 项目架构设计
-- [x] 基础配置和工具链
-- [ ] 核心编辑器引擎
-- [ ] 基础格式化功能
-- [ ] 插件系统
-- [ ] UI 组件库
-- [ ] 高级功能插件
-- [ ] 框架集成
-- [ ] 文档和示例
-
-## 🤝 贡献
-
-欢迎贡献代码！请查看 [贡献指南](./CONTRIBUTING.md) 了解详情。
-
-## 📄 许可证
-
-[MIT License](./LICENSE)
-
-## 🙏 致谢
-
-本项目受到以下优秀项目的启发：
-
-- [Quill](https://quilljs.com/) - 模块化富文本编辑器
-- [ProseMirror](https://prosemirror.net/) - 工具包式编辑器
-- [Slate](https://slatejs.org/) - 完全可定制的编辑器框架
+MIT

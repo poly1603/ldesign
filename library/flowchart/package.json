@@ -1,135 +1,91 @@
 {
-  "name": "@ldesign/flowchart",
+  "name": "@ldesign/approval-flow",
   "version": "1.0.0",
-  "description": "基于 @logicflow/core 的审批流程图编辑器组件，专为 OA 系统的流程审批流程可视化设计",
+  "description": "A powerful approval workflow editor based on LogicFlow, supporting multiple frameworks",
   "type": "module",
-  "main": "./es/index.js",
-  "module": "./es/index.js",
-  "types": "./es/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./es/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./cjs/index.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./vue": {
-      "types": "./es/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./cjs/vue/index.cjs"
+      "types": "./dist/vue.d.ts",
+      "import": "./dist/vue.js",
+      "require": "./dist/vue.cjs"
     },
-    "./styles": {
-      "import": "./es/styles/index.css",
-      "require": "./cjs/styles/index.css"
-    }
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
+    },
+    "./style.css": "./dist/style.css"
   },
   "files": [
-    "es",
-    "cjs",
     "dist",
-    "README.md",
-    "CHANGELOG.md"
+    "README.md"
   ],
   "scripts": {
-    "dev": "launcher dev",
-    "dev:vite": "vite dev",
-    "build": "ldesign-builder build",
-    "build:prod": "vite build --config vite.config.prod.ts",
-    "build:lib": "vite build --mode production",
+    "dev": "vite",
+    "build": "vite build && tsc",
+    "build:types": "tsc",
     "preview": "vite preview",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:unit": "vitest run --reporter=verbose",
-    "test:integration": "vitest run src/__tests__/integration.test.ts",
-    "test:performance": "vitest run src/__tests__/performance.test.ts",
-    "test:e2e": "playwright test",
-    "test:coverage": "vitest run --coverage",
-    "lint": "eslint src --ext .ts,.tsx",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix",
-    "lint:check": "eslint src --ext .ts,.tsx --max-warnings 0",
-    "lint:style": "stylelint 'src/**/*.{css,scss,less}' --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "type-check": "tsc --noEmit",
-    "bundle:analyze": "node scripts/bundle-size-check.js",
-    "bundle:visualize": "vite-bundle-analyzer dist",
-    "perf:report": "node scripts/performance-report.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "clean": "rimraf es cjs dist coverage reports",
-    "test:run": "vitest run",
-    "test:ui": "vitest --ui"
+    "docs:preview": "vitepress preview docs"
   },
   "keywords": [
-    "flowchart",
-    "workflow",
-    "editor",
-    "logicflow",
     "approval",
-    "process",
-    "oa",
-    "diagram",
-    "visualization",
-    "typescript",
+    "workflow",
+    "flowchart",
+    "logicflow",
+    "editor",
     "vue",
     "react",
-    "angular"
+    "typescript"
   ],
-  "author": "LDESIGN Team",
+  "author": "ldesign",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/ldesign.git",
-    "directory": "packages/flowchart"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign/ldesign/issues"
-  },
-  "homepage": "https://ldesign.github.io/flowchart",
   "dependencies": {
-    "@ldesign/shared": "workspace:*",
-    "@logicflow/core": "^1.2.26",
-    "@logicflow/extension": "^1.2.26",
-    "lucide": "^0.544.0"
+    "@logicflow/core": "^1.2.27",
+    "@logicflow/extension": "^1.2.27"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vitest/ui": "^1.0.0",
+    "jsdom": "^23.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.7.0",
+    "vitepress": "^1.0.0",
+    "vitest": "^1.0.0",
+    "vue": "^3.4.0"
   },
   "peerDependencies": {
-    "vue": "^3.3.0",
-    "typescript": ">=4.5.0"
+    "vue": "^3.0.0",
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
   },
   "peerDependenciesMeta": {
     "vue": {
       "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
     }
-  },
-  "devDependencies": {
-    "@ldesign/builder": "workspace:*",
-    "@ldesign/launcher": "workspace:*",
-    "@playwright/test": "^1.40.0",
-    "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "@vitest/coverage-v8": "^1.0.0",
-    "@vitest/ui": "^1.0.0",
-    "autoprefixer": "^10.4.0",
-    "chalk": "^5.3.0",
-    "cssnano": "^6.0.0",
-    "eslint": "^8.0.0",
-    "jsdom": "^23.0.0",
-    "less": "^4.2.0",
-    "postcss": "^8.4.0",
-    "prettier": "^3.1.0",
-    "rimraf": "^5.0.0",
-    "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-visualizer": "^5.11.0",
-    "stylelint": "^15.11.0",
-    "stylelint-config-standard": "^34.0.0",
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0",
-    "vite-bundle-analyzer": "^0.7.0",
-    "vitepress": "^1.0.0",
-    "vitest": "^1.0.0"
-  },
-  "engines": {
-    "node": ">=16.0.0"
   }
 }

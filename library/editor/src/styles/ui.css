@@ -1,0 +1,107 @@
+/**
+ * UI 组件样式
+ */
+
+/* 颜色选择器 */
+.editor-color-picker {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: 240px;
+}
+
+.editor-color-preset {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.editor-color-item {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  padding: 0;
+}
+
+.editor-color-item:hover {
+  transform: scale(1.2);
+  border-color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.editor-color-custom {
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+}
+
+.editor-color-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #666;
+  cursor: pointer;
+}
+
+.editor-color-input {
+  width: 40px;
+  height: 24px;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+/* 下拉选择器 */
+.editor-dropdown {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-height: 300px;
+  overflow-y: auto;
+  min-width: 150px;
+}
+
+.editor-dropdown-list {
+  padding: 4px 0;
+}
+
+.editor-dropdown-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: background-color 0.2s;
+}
+
+.editor-dropdown-option:hover {
+  background-color: #f5f5f5;
+}
+
+.editor-dropdown-option:active {
+  background-color: #e8e8e8;
+}
+
+/* 滚动条样式 */
+.editor-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.editor-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.editor-dropdown::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.editor-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

@@ -4,12 +4,14 @@ import { QRCodeGenerator } from '../core/generator';
 /**
  * Default style configuration
  */
-const DEFAULT_STYLE: Required<QRCodeStyle> = {
+const DEFAULT_STYLE = {
   fgColor: '#000000',
   bgColor: '#ffffff',
   size: 200,
   margin: 4,
   cornerRadius: 0,
+  rotate: 0,
+  invert: false,
 };
 
 /**
@@ -39,6 +41,13 @@ export class SVGRenderer {
     const totalModules = moduleCount + margin * 2;
     const moduleSize = this.style.size / totalModules;
 
+    // Apply invert (swap foreground and background colors)
+    if (this.config.style?.invert) {
+      const temp = this.style.fgColor;
+      this.style.fgColor = this.style.bgColor;
+      this.style.bgColor = temp;
+    }
+
     // Clear existing content
     while (this.svg.firstChild) {
       this.svg.removeChild(this.svg.firstChild);
@@ -60,6 +69,14 @@ export class SVGRenderer {
     // Create group for QR modules
     const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     group.setAttribute('fill', this.style.fgColor);
+
+    // Apply rotation if configured
+    const rotate = this.config.style?.rotate || 0;
+    if (rotate !== 0) {
+      const centerX = this.style.size / 2;
+      const centerY = this.style.size / 2;
+      group.setAttribute('transform', `rotate(${rotate} ${centerX} ${centerY})`);
+    }
 
     // Draw QR modules
     for (let row = 0; row < moduleCount; row++) {

@@ -15,6 +15,8 @@ const DEFAULT_STYLE: Required<Omit<QRCodeStyle, 'gradient' | 'backgroundGradient
   margin: 4,
   cornerRadius: 0,
   dotStyle: 'square' as DotStyle,
+  rotate: 0,
+  invert: false,
 };
 
 /**
@@ -54,6 +56,24 @@ export class CanvasRenderer {
     // Set canvas size
     this.canvas.width = this.style.size;
     this.canvas.height = this.style.size;
+
+    // Apply rotation if configured
+    const rotate = this.config.style?.rotate || 0;
+    if (rotate !== 0) {
+      this.ctx.save();
+      const centerX = this.style.size / 2;
+      const centerY = this.style.size / 2;
+      this.ctx.translate(centerX, centerY);
+      this.ctx.rotate((rotate * Math.PI) / 180);
+      this.ctx.translate(-centerX, -centerY);
+    }
+
+    // Apply invert (swap foreground and background colors)
+    if (this.config.style?.invert) {
+      const temp = this.style.fgColor;
+      this.style.fgColor = this.style.bgColor;
+      this.style.bgColor = temp;
+    }
 
     // Draw background
     await this.drawBackground();
@@ -110,6 +130,11 @@ export class CanvasRenderer {
     // Draw logo if configured
     if (this.config.logo) {
       await this.drawLogo(this.config.logo);
+    }
+
+    // Restore canvas state if rotation was applied
+    if (rotate !== 0) {
+      this.ctx.restore();
     }
   }
 

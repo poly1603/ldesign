@@ -1,9 +1,8 @@
 /**
- * @file 核心模块入口文件
- * @description 导出所有核心类和功能
+ * Core exports
  */
 
 export { Cropper } from './Cropper'
-export { ImageProcessor } from './ImageProcessor'
 export { CropBox } from './CropBox'
+export { ImageProcessor } from './ImageProcessor'
 export { InteractionManager } from './InteractionManager'

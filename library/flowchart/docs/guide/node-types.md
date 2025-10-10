@@ -1,275 +1,184 @@
 # 节点类型
 
-LDesign Flowchart 提供了 7 种专为审批流程设计的节点类型，覆盖了各种审批场景的需求。
+ApprovalFlow 提供了多种审批流程中常用的节点类型。
 
-## 节点类型概览
+## 开始节点 (Start)
 
-| 类型 | 名称 | 图标 | 用途 | 特性 |
-|------|------|------|------|------|
-| `start` | 开始节点 | ⭕ | 流程起始点 | 只能有出口，无入口 |
-| `approval` | 审批节点 | 📋 | 审批处理 | 支持多人审批、状态跟踪 |
-| `condition` | 条件节点 | ◆ | 条件判断 | 支持条件分支 |
-| `end` | 结束节点 | ⭕ | 流程结束点 | 只能有入口，无出口 |
-| `process` | 处理节点 | ▭ | 一般处理步骤 | 通用的处理节点 |
-| `parallel-gateway` | 并行网关 | ◆ | 并行分支 | 分支和汇聚并行流程 |
-| `exclusive-gateway` | 排他网关 | ◆ | 互斥分支 | 互斥条件选择 |
+流程的起点，每个流程只能有一个开始节点。
 
-## 开始节点 (start)
-
-流程的起始点，每个流程图必须有且只有一个开始节点。
-
-### 特性
-- ✅ 只能有出口连接
-- ✅ 不能有入口连接
-- ✅ 圆形外观
-- ✅ 通常标记为"开始"
-
-### 使用示例
-
-```typescript
-const startNode = FlowchartAPI.createNode({
+```js
+{
+  id: 'start-1',
   type: 'start',
-  x: 100,
-  y: 100,
-  text: '开始'
-})
+  name: '开始',
+}
 ```
 
-## 审批节点 (approval)
+**特点**：
+- 圆形节点，绿色背景
+- 不能有输入连线
+- 必须有输出连线
 
-专为审批流程设计的核心节点，支持复杂的审批逻辑。
+## 审批节点 (Approval)
 
-### 特性
-- ✅ 支持多人审批
-- ✅ 支持并行审批
-- ✅ 审批状态跟踪
-- ✅ 审批意见记录
-- ✅ 审批人配置
-- ✅ 截止时间设置
+用于审批操作的节点，支持多种审批模式。
 
-### 审批状态
-- `pending` - 待审批（黄色）
-- `approved` - 已通过（绿色）
-- `rejected` - 已拒绝（红色）
-- `processing` - 审批中（蓝色）
-
-### 使用示例
-
-```typescript
-const approvalNode = FlowchartAPI.createNode({
+```js
+{
+  id: 'approval-1',
   type: 'approval',
-  x: 300,
-  y: 100,
-  text: '部门经理审批',
-  properties: {
-    approvers: ['张三', '李四'],           // 审批人列表
-    approvalType: 'any',                  // 审批类型：any(任一) | all(全部)
-    deadline: '2025-12-31T23:59:59',     // 截止时间
-    status: 'pending',                    // 当前状态
-    priority: 'high',                     // 优先级
-    description: '请审批员工请假申请'      // 描述
-  }
-})
+  name: '部门审批',
+  approvalMode: 'single', // single | all | any | sequence
+  approvers: [
+    {
+      id: '1',
+      name: '张三',
+      role: '部门经理',
+      department: '技术部',
+      avatar: 'https://...',
+    },
+  ],
+}
 ```
 
-## 条件节点 (condition)
+### 审批模式
 
-用于流程中的条件判断，根据条件结果选择不同的流程分支。
+- **single**: 单人审批 - 只需一人审批
+- **all**: 会签 - 所有人都需审批
+- **any**: 或签 - 任意一人审批即可
+- **sequence**: 顺序审批 - 按顺序依次审批
 
-### 特性
-- ✅ 支持条件表达式
-- ✅ 多分支输出
-- ✅ 菱形外观
-- ✅ 条件逻辑配置
+**特点**：
+- 矩形节点，蓝色背景
+- 必须配置至少一个审批人
+- 支持多种审批模式
 
-### 使用示例
+## 条件节点 (Condition)
 
-```typescript
-const conditionNode = FlowchartAPI.createNode({
+根据条件表达式进行分支判断。
+
+```js
+{
+  id: 'condition-1',
   type: 'condition',
-  x: 500,
-  y: 100,
-  text: '请假天数判断',
-  properties: {
-    conditions: [
-      {
-        expression: 'days <= 3',
-        label: '3天以内',
-        output: 'short-leave'
-      },
-      {
-        expression: 'days > 3',
-        label: '超过3天',
-        output: 'long-leave'
-      }
-    ]
-  }
-})
+  name: '金额判断',
+  conditions: [
+    {
+      id: 'c1',
+      name: '大于10000',
+      expression: 'amount > 10000',
+      description: '金额大于10000元',
+      priority: 1,
+    },
+    {
+      id: 'c2',
+      name: '小于等于10000',
+      expression: 'amount <= 10000',
+      description: '金额小于等于10000元',
+      priority: 2,
+    },
+  ],
+}
 ```
 
-## 结束节点 (end)
+**特点**：
+- 菱形节点，橙色背景
+- 必须配置条件表达式
+- 支持多个分支
+- 通过优先级控制条件判断顺序
 
-流程的结束点，表示流程执行完毕。
+## 并行节点 (Parallel)
 
-### 特性
-- ✅ 只能有入口连接
-- ✅ 不能有出口连接
-- ✅ 圆形外观
-- ✅ 通常标记为"结束"
+用于并行执行多个分支。
 
-### 使用示例
+```js
+{
+  id: 'parallel-1',
+  type: 'parallel',
+  name: '并行审批',
+}
+```
 
-```typescript
-const endNode = FlowchartAPI.createNode({
+**特点**：
+- 矩形节点，紫色背景
+- 可以有多个输出连线
+- 所有分支并行执行
+
+## 抄送节点 (CC)
+
+用于通知相关人员，不需要审批。
+
+```js
+{
+  id: 'cc-1',
+  type: 'cc',
+  name: '抄送财务',
+  ccUsers: [
+    {
+      id: '1',
+      name: '李四',
+      role: '财务',
+      department: '财务部',
+    },
+  ],
+}
+```
+
+**特点**：
+- 矩形节点，青色背景
+- 可以配置抄送人列表
+- 不阻塞流程执行
+
+## 结束节点 (End)
+
+流程的终点，可以有多个结束节点。
+
+```js
+{
+  id: 'end-1',
   type: 'end',
-  x: 700,
-  y: 100,
-  text: '结束'
-})
+  name: '结束',
+}
 ```
 
-## 处理节点 (process)
+**特点**：
+- 圆形节点，红色背景
+- 不能有输出连线
+- 必须有输入连线
 
-通用的处理步骤节点，用于表示各种处理操作。
+## 节点通用属性
 
-### 特性
-- ✅ 矩形外观
-- ✅ 支持自定义处理逻辑
-- ✅ 可配置处理参数
-
-### 使用示例
+所有节点都支持以下通用属性：
 
 ```typescript
-const processNode = FlowchartAPI.createNode({
-  type: 'process',
-  x: 400,
-  y: 200,
-  text: '发送通知',
-  properties: {
-    action: 'sendNotification',
-    recipients: ['申请人', '审批人'],
-    template: 'approval-result'
-  }
-})
+interface NodeData {
+  // 必填属性
+  id: string;          // 节点ID
+  type: string;        // 节点类型
+  name: string;        // 节点名称
+
+  // 可选属性
+  description?: string;              // 节点描述
+  properties?: Record<string, any>;  // 自定义属性
+}
 ```
 
-## 并行网关 (parallel-gateway)
+## 自定义属性
 
-用于创建并行分支或汇聚并行流程。
+你可以通过 `properties` 字段添加自定义属性：
 
-### 特性
-- ✅ 分支：一个输入，多个输出
-- ✅ 汇聚：多个输入，一个输出
-- ✅ 并行执行
-- ✅ 菱形外观，内含"+"符号
-
-### 使用示例
-
-```typescript
-// 并行分支
-const parallelSplit = FlowchartAPI.createNode({
-  type: 'parallel-gateway',
-  x: 300,
-  y: 150,
-  text: '并行审批',
-  properties: {
-    gatewayType: 'split',
-    branches: ['部门审批', 'HR审批', '财务审批']
-  }
-})
-
-// 并行汇聚
-const parallelJoin = FlowchartAPI.createNode({
-  type: 'parallel-gateway',
-  x: 600,
-  y: 150,
-  text: '汇聚',
-  properties: {
-    gatewayType: 'join',
-    waitForAll: true  // 等待所有分支完成
-  }
-})
-```
-
-## 排他网关 (exclusive-gateway)
-
-用于互斥条件选择，只能选择一个分支执行。
-
-### 特性
-- ✅ 互斥分支选择
-- ✅ 基于条件的路由
-- ✅ 菱形外观，内含"×"符号
-
-### 使用示例
-
-```typescript
-const exclusiveGateway = FlowchartAPI.createNode({
-  type: 'exclusive-gateway',
-  x: 400,
-  y: 150,
-  text: '审批结果',
-  properties: {
-    conditions: [
-      {
-        expression: 'result === "approved"',
-        label: '通过',
-        default: false
-      },
-      {
-        expression: 'result === "rejected"',
-        label: '拒绝',
-        default: false
-      },
-      {
-        expression: 'true',
-        label: '其他',
-        default: true  // 默认分支
-      }
-    ]
-  }
-})
-```
-
-## 节点样式定制
-
-每种节点类型都支持样式定制：
-
-```typescript
-const customNode = FlowchartAPI.createNode({
+```js
+{
+  id: 'approval-1',
   type: 'approval',
-  x: 200,
-  y: 200,
-  text: '自定义审批',
+  name: '部门审批',
   properties: {
-    style: {
-      fill: '#e3f2fd',           // 填充色
-      stroke: '#1976d2',         // 边框色
-      strokeWidth: 2,            // 边框宽度
-      fontSize: 14,              // 字体大小
-      fontColor: '#333333'       // 字体颜色
-    }
-  }
-})
+    timeout: 24 * 60 * 60 * 1000,  // 超时时间（毫秒）
+    reminder: true,                 // 是否发送提醒
+    reminderTime: 2 * 60 * 60 * 1000, // 提醒时间
+    customData: {
+      // 其他自定义数据
+    },
+  },
+}
 ```
-
-## 最佳实践
-
-### 1. 节点命名
-- 使用清晰、简洁的节点名称
-- 避免使用技术术语，使用业务语言
-- 保持命名一致性
-
-### 2. 流程设计
-- 每个流程必须有开始和结束节点
-- 避免创建无法到达的节点
-- 合理使用并行和排他网关
-
-### 3. 审批节点配置
-- 明确指定审批人
-- 设置合理的截止时间
-- 配置适当的审批类型（任一/全部）
-
-### 4. 条件节点设计
-- 确保条件表达式的完整性
-- 提供默认分支处理异常情况
-- 使用清晰的条件描述

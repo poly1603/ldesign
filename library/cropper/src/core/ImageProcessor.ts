@@ -1,385 +1,302 @@
 /**
- * @file 图片处理器
- * @description 处理图片的加载、变换、滤镜等操作
+ * ImageProcessor - Handles image processing operations
  */
 
-import type {
-  ImageSource,
-  ImageInfo,
-  TransformState,
-  Size,
-  Point,
-  ImageFormat,
-  CropOutputOptions,
-} from '../types'
+import type { ImageData, CanvasData, GetCroppedCanvasOptions } from '../types'
+import { loadImage, createCanvas, canvasToBlob, canvasToDataURL } from '../utils/image'
+import { createElement, setStyle } from '../utils/dom'
+import { getAspectRatio, clamp } from '../utils/math'
 
-import {
-  loadImageSource,
-  getImageInfo,
-  imageToCanvas,
-  resizeImage,
-  rotateImage,
-  flipImage,
-  cropImage,
-  canvasToBlob,
-  canvasToDataURL,
-  applyImageFilter,
-} from '../utils/image'
-
-import { createCanvas, getCanvasContext } from '../utils/dom'
-import { degToRad } from '../utils/math'
-
-/**
- * 图片处理器类
- */
 export class ImageProcessor {
-  private image: HTMLImageElement | null = null
-  private imageInfo: ImageInfo | null = null
-  private canvas: HTMLCanvasElement
-  private ctx: CanvasRenderingContext2D
-  private transformState: TransformState
+  private container: HTMLElement
+  private imageElement: HTMLImageElement | null = null
+  private canvasElement: HTMLCanvasElement | null = null
+  private imageData: ImageData | null = null
+  private src: string = ''
 
-  constructor() {
-    this.canvas = createCanvas()
-    const ctx = getCanvasContext(this.canvas)
-    if (!ctx) {
-      throw new Error('Failed to get canvas context')
-    }
-    this.ctx = ctx
-
-    this.transformState = {
-      scale: 1,
-      rotation: 0,
-      flipX: false,
-      flipY: false,
-      translate: { x: 0, y: 0 },
-    }
+  constructor(container: HTMLElement) {
+    this.container = container
   }
 
   /**
-   * 加载图片
+   * Load image from URL
    */
-  async loadImage(source: ImageSource): Promise<ImageInfo> {
-    this.image = await loadImageSource(source)
-    this.imageInfo = getImageInfo(this.image)
-    
-    // 重置变换状态
-    this.resetTransform()
-    
-    return this.imageInfo
-  }
+  async load(src: string, crossOrigin?: string): Promise<void> {
+    this.src = src
 
-  /**
-   * 获取图片信息
-   */
-  getImageInfo(): ImageInfo | null {
-    return this.imageInfo
-  }
+    try {
+      const image = await loadImage(src, crossOrigin)
+      this.imageElement = image
 
-  /**
-   * 获取当前图片
-   */
-  getImage(): HTMLImageElement | null {
-    return this.image
-  }
+      this.imageData = {
+        left: 0,
+        top: 0,
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        rotate: 0,
+        scaleX: 1,
+        scaleY: 1,
+        naturalWidth: image.naturalWidth,
+        naturalHeight: image.naturalHeight,
+        aspectRatio: getAspectRatio(image.naturalWidth, image.naturalHeight)
+      }
 
-  /**
-   * 获取变换状态
-   */
-  getTransformState(): TransformState {
-    return { ...this.transformState }
-  }
-
-  /**
-   * 设置变换状态
-   */
-  setTransformState(state: Partial<TransformState>): void {
-    this.transformState = { ...this.transformState, ...state }
-  }
-
-  /**
-   * 重置变换
-   */
-  resetTransform(): void {
-    this.transformState = {
-      scale: 1,
-      rotation: 0,
-      flipX: false,
-      flipY: false,
-      translate: { x: 0, y: 0 },
+      this.render()
+    } catch (error) {
+      throw new Error(`Failed to load image: ${error}`)
     }
   }
 
   /**
-   * 缩放
+   * Render image to container
    */
-  scale(factor: number): void {
-    this.transformState.scale = Math.max(0.1, Math.min(10, factor))
-  }
+  render(): void {
+    if (!this.imageElement) return
 
-  /**
-   * 旋转
-   */
-  rotate(angle: number): void {
-    this.transformState.rotation = angle % 360
-  }
+    // Create image wrapper
+    const wrapper = createElement('div', 'cropper-canvas')
+    wrapper.appendChild(this.imageElement)
 
-  /**
-   * 翻转
-   */
-  flip(horizontal: boolean, vertical: boolean): void {
-    this.transformState.flipX = horizontal
-    this.transformState.flipY = vertical
-  }
-
-  /**
-   * 平移
-   */
-  translate(x: number, y: number): void {
-    this.transformState.translate = { x, y }
-  }
-
-  /**
-   * 渲染到Canvas
-   */
-  renderToCanvas(
-    targetCanvas: HTMLCanvasElement,
-    size?: Size,
-    backgroundColor?: string
-  ): void {
-    if (!this.image) {
-      throw new Error('No image loaded')
+    // Clear container
+    while (this.container.firstChild) {
+      this.container.removeChild(this.container.firstChild)
     }
 
-    const ctx = getCanvasContext(targetCanvas)
-    if (!ctx) {
-      throw new Error('Failed to get canvas context')
-    }
-
-    const renderSize = size || {
-      width: this.image.naturalWidth,
-      height: this.image.naturalHeight,
-    }
-
-    targetCanvas.width = renderSize.width
-    targetCanvas.height = renderSize.height
-
-    // 清除画布
-    ctx.clearRect(0, 0, renderSize.width, renderSize.height)
-
-    // 填充背景
-    if (backgroundColor) {
-      ctx.fillStyle = backgroundColor
-      ctx.fillRect(0, 0, renderSize.width, renderSize.height)
-    }
-
-    // 保存上下文状态
-    ctx.save()
-
-    // 移动到中心点
-    const centerX = renderSize.width / 2
-    const centerY = renderSize.height / 2
-    ctx.translate(centerX, centerY)
-
-    // 应用变换
-    ctx.scale(
-      this.transformState.scale * (this.transformState.flipX ? -1 : 1),
-      this.transformState.scale * (this.transformState.flipY ? -1 : 1)
-    )
-
-    ctx.rotate(degToRad(this.transformState.rotation))
-    ctx.translate(this.transformState.translate.x, this.transformState.translate.y)
-
-    // 绘制图片
-    const imageWidth = this.image.naturalWidth
-    const imageHeight = this.image.naturalHeight
-    
-    ctx.drawImage(
-      this.image,
-      -imageWidth / 2,
-      -imageHeight / 2,
-      imageWidth,
-      imageHeight
-    )
-
-    // 恢复上下文状态
-    ctx.restore()
+    this.container.appendChild(wrapper)
+    this.updateTransform()
   }
 
   /**
-   * 获取渲染后的Canvas
+   * Update image transform
    */
-  getRenderedCanvas(size?: Size, backgroundColor?: string): HTMLCanvasElement {
-    const canvas = createCanvas()
-    this.renderToCanvas(canvas, size, backgroundColor)
+  updateTransform(): void {
+    if (!this.imageElement || !this.imageData) return
+
+    const { rotate, scaleX, scaleY } = this.imageData
+
+    const transforms = [
+      `rotate(${rotate}deg)`,
+      `scaleX(${scaleX})`,
+      `scaleY(${scaleY})`
+    ]
+
+    setStyle(this.imageElement, {
+      transform: transforms.join(' ')
+    })
+  }
+
+  /**
+   * Rotate image
+   */
+  rotate(degrees: number): void {
+    if (!this.imageData) return
+
+    this.imageData.rotate = (this.imageData.rotate + degrees) % 360
+    this.updateTransform()
+  }
+
+  /**
+   * Scale image
+   */
+  scale(scaleX: number, scaleY?: number): void {
+    if (!this.imageData) return
+
+    this.imageData.scaleX = scaleX
+    this.imageData.scaleY = scaleY ?? scaleX
+    this.updateTransform()
+  }
+
+  /**
+   * Flip horizontal
+   */
+  flipHorizontal(): void {
+    if (!this.imageData) return
+
+    this.imageData.scaleX *= -1
+    this.updateTransform()
+  }
+
+  /**
+   * Flip vertical
+   */
+  flipVertical(): void {
+    if (!this.imageData) return
+
+    this.imageData.scaleY *= -1
+    this.updateTransform()
+  }
+
+  /**
+   * Reset image
+   */
+  reset(): void {
+    if (!this.imageData) return
+
+    this.imageData.rotate = 0
+    this.imageData.scaleX = 1
+    this.imageData.scaleY = 1
+    this.updateTransform()
+  }
+
+  /**
+   * Get image data
+   */
+  getImageData(): ImageData | null {
+    return this.imageData ? { ...this.imageData } : null
+  }
+
+  /**
+   * Get cropped canvas
+   */
+  getCroppedCanvas(
+    cropBoxData: { left: number; top: number; width: number; height: number },
+    options: GetCroppedCanvasOptions = {}
+  ): HTMLCanvasElement | null {
+    if (!this.imageElement || !this.imageData) return null
+
+    const {
+      width = cropBoxData.width,
+      height = cropBoxData.height,
+      minWidth = 0,
+      minHeight = 0,
+      maxWidth = Infinity,
+      maxHeight = Infinity,
+      fillColor = 'transparent',
+      imageSmoothingEnabled = true,
+      imageSmoothingQuality = 'high'
+    } = options
+
+    // Clamp dimensions
+    const finalWidth = clamp(width, minWidth, maxWidth)
+    const finalHeight = clamp(height, minHeight, maxHeight)
+
+    // Create canvas
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+
+    if (!ctx) return null
+
+    canvas.width = finalWidth
+    canvas.height = finalHeight
+
+    // Set canvas options
+    ctx.imageSmoothingEnabled = imageSmoothingEnabled
+    ctx.imageSmoothingQuality = imageSmoothingQuality
+
+    // Fill background
+    if (fillColor && fillColor !== 'transparent') {
+      ctx.fillStyle = fillColor
+      ctx.fillRect(0, 0, finalWidth, finalHeight)
+    }
+
+    const { rotate, scaleX, scaleY } = this.imageData
+
+    // Calculate the actual source coordinates in the original image
+    // The cropBoxData is in the display coordinate system
+    // We need to convert it to the natural image coordinate system
+    const naturalWidth = this.imageElement.naturalWidth
+    const naturalHeight = this.imageElement.naturalHeight
+    const displayWidth = this.imageData.width
+    const displayHeight = this.imageData.height
+
+    // Scale factor between display and natural size
+    const scaleFactorX = naturalWidth / displayWidth
+    const scaleFactorY = naturalHeight / displayHeight
+
+    // Source rectangle in natural coordinates
+    const sourceLeft = cropBoxData.left * scaleFactorX
+    const sourceTop = cropBoxData.top * scaleFactorY
+    const sourceWidth = cropBoxData.width * scaleFactorX
+    const sourceHeight = cropBoxData.height * scaleFactorY
+
+    // Apply transformations if needed
+    if (rotate !== 0 || scaleX !== 1 || scaleY !== 1) {
+      ctx.save()
+      ctx.translate(finalWidth / 2, finalHeight / 2)
+      ctx.rotate((rotate * Math.PI) / 180)
+      ctx.scale(scaleX, scaleY)
+
+      // Draw image with transformations
+      ctx.drawImage(
+        this.imageElement,
+        sourceLeft,
+        sourceTop,
+        sourceWidth,
+        sourceHeight,
+        -finalWidth / 2,
+        -finalHeight / 2,
+        finalWidth,
+        finalHeight
+      )
+
+      ctx.restore()
+    } else {
+      // Draw image without transformations (faster path)
+      ctx.drawImage(
+        this.imageElement,
+        sourceLeft,
+        sourceTop,
+        sourceWidth,
+        sourceHeight,
+        0,
+        0,
+        finalWidth,
+        finalHeight
+      )
+    }
+
     return canvas
   }
 
   /**
-   * 裁剪图片
+   * Get cropped image as blob
    */
-  crop(
-    cropArea: { x: number; y: number; width: number; height: number },
-    outputSize?: Size,
-    options?: CropOutputOptions
-  ): HTMLCanvasElement {
-    if (!this.image) {
-      throw new Error('No image loaded')
-    }
+  async getCroppedBlob(
+    cropBoxData: { left: number; top: number; width: number; height: number },
+    options: GetCroppedCanvasOptions & { type?: string; quality?: number } = {}
+  ): Promise<Blob | null> {
+    const canvas = this.getCroppedCanvas(cropBoxData, options)
+    if (!canvas) return null
 
-    // 首先渲染完整的变换后图片
-    const fullCanvas = this.getRenderedCanvas(undefined, options?.backgroundColor)
-
-    // 然后裁剪指定区域
-    const croppedCanvas = createCanvas()
-    const ctx = getCanvasContext(croppedCanvas)
-    
-    if (!ctx) {
-      throw new Error('Failed to get canvas context')
-    }
-
-    const finalSize = outputSize || { width: cropArea.width, height: cropArea.height }
-    croppedCanvas.width = finalSize.width
-    croppedCanvas.height = finalSize.height
-
-    // 填充背景
-    if (options?.fillBackground && options.backgroundColor) {
-      ctx.fillStyle = options.backgroundColor
-      ctx.fillRect(0, 0, finalSize.width, finalSize.height)
-    }
-
-    // 启用高质量缩放
-    ctx.imageSmoothingEnabled = true
-    ctx.imageSmoothingQuality = 'high'
-
-    // 绘制裁剪区域
-    ctx.drawImage(
-      fullCanvas,
-      cropArea.x, cropArea.y, cropArea.width, cropArea.height,
-      0, 0, finalSize.width, finalSize.height
-    )
-
-    return croppedCanvas
+    const { type = 'image/png', quality = 1 } = options
+    return await canvasToBlob(canvas, type, quality)
   }
 
   /**
-   * 导出为DataURL
+   * Get cropped image as data URL
    */
-  exportAsDataURL(
-    cropArea?: { x: number; y: number; width: number; height: number },
-    options?: CropOutputOptions
-  ): string {
-    let canvas: HTMLCanvasElement
+  getCroppedDataURL(
+    cropBoxData: { left: number; top: number; width: number; height: number },
+    options: GetCroppedCanvasOptions & { type?: string; quality?: number } = {}
+  ): string | null {
+    const canvas = this.getCroppedCanvas(cropBoxData, options)
+    if (!canvas) return null
 
-    if (cropArea) {
-      canvas = this.crop(cropArea, options?.size, options)
-    } else {
-      canvas = this.getRenderedCanvas(options?.size, options?.backgroundColor)
-    }
-
-    return canvasToDataURL(canvas, options?.format, options?.quality)
+    const { type = 'image/png', quality = 1 } = options
+    return canvasToDataURL(canvas, type, quality)
   }
 
   /**
-   * 导出为Blob
+   * Get image element
    */
-  async exportAsBlob(
-    cropArea?: { x: number; y: number; width: number; height: number },
-    options?: CropOutputOptions
-  ): Promise<Blob> {
-    let canvas: HTMLCanvasElement
-
-    if (cropArea) {
-      canvas = this.crop(cropArea, options?.size, options)
-    } else {
-      canvas = this.getRenderedCanvas(options?.size, options?.backgroundColor)
-    }
-
-    return canvasToBlob(canvas, options?.format, options?.quality)
+  getImageElement(): HTMLImageElement | null {
+    return this.imageElement
   }
 
   /**
-   * 应用滤镜
+   * Get source URL
    */
-  applyFilter(filter: string): HTMLCanvasElement {
-    if (!this.image) {
-      throw new Error('No image loaded')
-    }
-
-    return applyImageFilter(this.image, filter)
+  getSrc(): string {
+    return this.src
   }
 
   /**
-   * 获取图片的变换矩阵
-   */
-  getTransformMatrix(): DOMMatrix {
-    const matrix = new DOMMatrix()
-
-    // 应用变换（顺序很重要）
-    matrix.translateSelf(this.transformState.translate.x, this.transformState.translate.y)
-    matrix.scaleSelf(
-      this.transformState.scale * (this.transformState.flipX ? -1 : 1),
-      this.transformState.scale * (this.transformState.flipY ? -1 : 1)
-    )
-    matrix.rotateSelf(this.transformState.rotation)
-
-    return matrix
-  }
-
-  /**
-   * 计算变换后的边界框
-   */
-  getTransformedBounds(originalSize?: Size): {
-    width: number
-    height: number
-    left: number
-    top: number
-  } {
-    if (!this.image && !originalSize) {
-      throw new Error('No image loaded and no size provided')
-    }
-
-    const size = originalSize || {
-      width: this.image!.naturalWidth,
-      height: this.image!.naturalHeight,
-    }
-
-    // 计算四个角的坐标
-    const corners = [
-      { x: -size.width / 2, y: -size.height / 2 },
-      { x: size.width / 2, y: -size.height / 2 },
-      { x: size.width / 2, y: size.height / 2 },
-      { x: -size.width / 2, y: size.height / 2 },
-    ]
-
-    const matrix = this.getTransformMatrix()
-    const transformedCorners = corners.map(corner => {
-      const point = new DOMPoint(corner.x, corner.y)
-      return matrix.transformPoint(point)
-    })
-
-    const xs = transformedCorners.map(p => p.x)
-    const ys = transformedCorners.map(p => p.y)
-
-    const left = Math.min(...xs)
-    const top = Math.min(...ys)
-    const right = Math.max(...xs)
-    const bottom = Math.max(...ys)
-
-    return {
-      width: right - left,
-      height: bottom - top,
-      left,
-      top,
-    }
-  }
-
-  /**
-   * 销毁处理器
+   * Destroy
    */
   destroy(): void {
-    this.image = null
-    this.imageInfo = null
-    // Canvas会被垃圾回收
+    this.imageElement = null
+    this.canvasElement = null
+    this.imageData = null
+    this.src = ''
   }
 }

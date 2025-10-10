@@ -1,320 +1,154 @@
-# @ldesign/flowchart
+# @ldesign/approval-flow
 
-基于 @logicflow/core 的审批流程图编辑器组件，专为审批流程可视化设计。
+> 基于 LogicFlow 的强大、灵活、易用的审批流程图编辑器
 
-## 特性
+[![NPM version](https://img.shields.io/npm/v/@ldesign/approval-flow.svg)](https://www.npmjs.com/package/@ldesign/approval-flow)
+[![License](https://img.shields.io/npm/l/@ldesign/approval-flow.svg)](https://github.com/ldesign/approval-flow/blob/main/LICENSE)
 
-- ✅ **基于 LogicFlow** - 基于成熟的 @logicflow/core 进行二次封装
-- ✅ **TypeScript 支持** - 完整的类型定义和类型安全
-- ✅ **框架无关** - 可在 React、Vue、Angular 等任何前端框架中使用
-- ✅ **审批流程专用** - 提供审批流程特有的节点类型和功能
-- ✅ **模板系统** - 内置常用审批流程模板，支持自定义模板管理
-- ✅ **主题系统** - 基于 LDESIGN 设计系统的可定制主题
-- ✅ **插件机制** - 支持功能扩展和自定义节点
-- ✅ **简洁 API** - 提供简单易用的 API 接口
-- ✅ **完整测试** - 包含单元测试和集成测试
+## ✨ 特性
 
-## 安装
+- 🎨 **功能强大** - 支持开始、审批、条件、并行、抄送、结束等多种节点类型
+- ⚡ **配置丰富** - 提供丰富的配置选项，包括主题、工具栏、网格、缩放等
+- 🚀 **使用简单** - API 设计简洁直观，支持 Vue、React 等主流框架
+- 📱 **框架无关** - 核心库不依赖任何框架，可在任意 JavaScript 环境中使用
+- 🔧 **TypeScript** - 使用 TypeScript 编写，提供完整的类型定义
+- 📦 **体积小巧** - 基于 LogicFlow 核心，体积小巧，性能优异
+
+## 📦 安装
 
 ```bash
-npm install @ldesign/flowchart
-# 或
-pnpm add @ldesign/flowchart
+# npm
+npm install @ldesign/approval-flow @logicflow/core
+
+# yarn
+yarn add @ldesign/approval-flow @logicflow/core
+
+# pnpm
+pnpm add @ldesign/approval-flow @logicflow/core
 ```
 
-## 快速开始
+## 🔨 使用
 
-### 基础编辑器
+### Vue 3
 
-```typescript
-import { FlowchartEditor } from '@ldesign/flowchart'
+```vue
+<template>
+  <ApprovalFlow
+    :data="flowData"
+    @node:click="handleNodeClick"
+  />
+</template>
 
-// 创建编辑器实例
-const editor = new FlowchartEditor({
-  container: '#flowchart-container',
-  width: 800,
-  height: 600
-})
+<script setup>
+import { ref } from 'vue';
+import { ApprovalFlow } from '@ldesign/approval-flow/vue';
+import '@logicflow/core/dist/style/index.css';
 
-// 添加节点
-const startNodeId = editor.addNode({
-  type: 'start',
-  x: 100,
-  y: 100,
-  text: '开始'
-})
+const flowData = ref({
+  nodes: [
+    { id: '1', type: 'start', name: '开始' },
+    { id: '2', type: 'approval', name: '审批' },
+    { id: '3', type: 'end', name: '结束' },
+  ],
+  edges: [
+    { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
+    { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
+  ],
+});
 
-const approvalNodeId = editor.addNode({
-  type: 'approval',
-  x: 300,
-  y: 100,
-  text: '审批节点',
-  properties: {
-    approvers: ['user1', 'user2'],
-    status: 'pending'
-  }
-})
-
-// 添加连接线
-editor.addEdge({
-  type: 'approval-edge',
-  sourceNodeId: startNodeId,
-  targetNodeId: approvalNodeId
-})
+const handleNodeClick = (node) => {
+  console.log('节点点击:', node);
+};
+</script>
 ```
 
-### 模板系统
+### React
 
-```typescript
-import { FlowchartEditor } from '@ldesign/flowchart'
+```tsx
+import { useRef } from 'react';
+import { ApprovalFlow } from '@ldesign/approval-flow/react';
+import '@logicflow/core/dist/style/index.css';
 
-// 创建编辑器实例，启用模板功能
-const editor = new FlowchartEditor({
-  container: '#flowchart-container',
-  toolbar: {
-    tools: [
-      'template-library',  // 模板库按钮
-      'template-save',     // 保存模板按钮
-      // ... 其他工具
-    ]
-  }
-})
+function App() {
+  const editorRef = useRef();
 
-// 获取所有模板
-const templates = editor.getTemplateMetadata()
+  const flowData = {
+    nodes: [
+      { id: '1', type: 'start', name: '开始' },
+      { id: '2', type: 'approval', name: '审批' },
+      { id: '3', type: 'end', name: '结束' },
+    ],
+    edges: [
+      { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
+      { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
+    ],
+  };
 
-// 加载内置模板
-editor.loadTemplate('builtin_leave_approval')
-
-// 保存当前流程图为模板
-await editor.saveAsTemplate({
-  name: 'my-template',
-  displayName: '我的模板',
-  description: '自定义模板描述',
-  category: 'custom',
-  tags: ['自定义', '测试']
-})
-
-// 显示模板选择器
-editor.showTemplateSelector()
-```
-
-### 只读查看器
-
-```typescript
-import { FlowchartViewer } from '@ldesign/flowchart'
-
-// 创建查看器实例
-const viewer = new FlowchartViewer({
-  container: '#flowchart-viewer',
-  width: 800,
-  height: 600,
-  readonly: true
-})
-
-// 加载流程图数据
-viewer.render(flowchartData)
-
-// 设置执行状态
-viewer.setExecutionState({
-  currentNode: 'node-2',
-  completedNodes: ['node-1'],
-  failedNodes: []
-})
-```
-
-## 节点类型
-
-| 类型 | 说明 | 图标 | 特性 |
-|------|------|------|------|
-| `start` | 开始节点 | ⭕ | 流程起始点，只能有出口 |
-| `approval` | 审批节点 | 📋 | 支持审批人配置、状态跟踪 |
-| `condition` | 条件节点 | ◆ | 条件判断分支 |
-| `end` | 结束节点 | ⭕ | 流程结束点，只能有入口 |
-| `process` | 处理节点 | ▭ | 一般的处理步骤 |
-| `parallel-gateway` | 并行网关 | ◆ | 并行分支和汇聚 |
-| `exclusive-gateway` | 排他网关 | ◆ | 互斥分支选择 |
-
-### 审批节点特性
-- ✅ 支持多级审批
-- ✅ 支持并行审批
-- ✅ 支持审批人配置
-- ✅ 支持审批状态跟踪
-- ✅ 支持审批意见记录
-
-## API文档
-
-### FlowchartEditor
-
-#### 构造函数
-```typescript
-new FlowchartEditor(config: FlowchartEditorConfig)
-```
-
-#### 主要方法
-
-**基础操作**
-- `addNode(nodeData: NodeData): void` - 添加节点
-- `updateNode(id: string, updates: Partial<NodeData>): void` - 更新节点
-- `removeNode(id: string): void` - 删除节点
-- `addEdge(edgeData: EdgeData): void` - 添加连接线
-- `updateEdge(id: string, updates: Partial<EdgeData>): void` - 更新连接线
-- `removeEdge(id: string): void` - 删除连接线
-- `getData(): FlowchartData` - 获取数据
-- `loadData(data: FlowchartData): void` - 加载数据
-- `undo(): boolean` - 撤销操作
-- `redo(): boolean` - 重做操作
-- `setZoom(scale: number): void` - 设置缩放
-- `exportAsImage(format: 'png' | 'jpeg'): string` - 导出图片
-
-**模板系统**
-- `getTemplateManager(): TemplateManager` - 获取模板管理器
-- `getTemplateMetadata(): TemplateMetadata[]` - 获取模板元数据
-- `loadTemplate(templateId: string): void` - 加载模板
-- `saveAsTemplate(info: TemplateInfo): Promise<string>` - 保存为模板
-- `deleteTemplate(templateId: string): Promise<void>` - 删除模板
-- `showTemplateSelector(): void` - 显示模板选择器
-- `showSaveTemplateDialog(): void` - 显示保存模板对话框
-
-### FlowchartViewer
-
-#### 构造函数
-```typescript
-new FlowchartViewer(config: FlowchartViewerConfig)
-```
-
-#### 主要方法
-- `highlightNode(nodeId: string): void` - 高亮节点
-- `setExecutionState(state: ExecutionState): void` - 设置执行状态
-- `fitToContent(): void` - 适应内容大小
-
-## 数据格式
-
-```typescript
-interface FlowchartData {
-  nodes: NodeData[];
-  edges: EdgeData[];
-  viewport?: Viewport;
-  metadata?: Record<string, any>;
-}
-
-interface NodeData {
-  id: string;
-  type: NodeType;
-  position: Point;
-  label: string;
-  size?: Size;
-  style?: Style;
-  properties: Record<string, any>;
-}
-
-interface EdgeData {
-  id: string;
-  type: EdgeType;
-  source: string;
-  target: string;
-  label?: string;
-  style?: Style;
-  properties: Record<string, any>;
+  return (
+    <ApprovalFlow
+      ref={editorRef}
+      data={flowData}
+      onNodeClick={(node) => console.log('节点点击:', node)}
+    />
+  );
 }
 ```
 
-## 开发状态
+### 原生 JavaScript
 
-### ✅ 已完成
-- ✅ 核心架构设计（基于 @logicflow/core）
-- ✅ 完整的 TypeScript 类型定义系统
-- ✅ 所有审批节点类型实现（7种节点类型）
-- ✅ 自定义连接线系统
-- ✅ FlowchartEditor 主编辑器类
-- ✅ FlowchartViewer 只读查看器
-- ✅ 完整的事件系统
-- ✅ 主题管理系统架构
-- ✅ 插件系统架构
-- ✅ 数据导入导出功能
-- ✅ 开发服务器和演示页面
-- ✅ 单元测试（7个测试用例全部通过）
-- ✅ 构建配置（@ldesign/builder）
+```js
+import { ApprovalFlowEditor } from '@ldesign/approval-flow';
+import '@logicflow/core/dist/style/index.css';
 
-### 🚧 进行中
-- 🚧 UI 组件系统完善
-- 🚧 文档系统完善
-- 🚧 示例项目扩展
+const editor = new ApprovalFlowEditor({
+  container: '#editor',
+  width: '100%',
+  height: '600px',
+});
 
-### 📋 待完成
-- ⏳ 主题系统具体实现
-- ⏳ 插件系统具体实现
-- ⏳ 更多单元测试和集成测试
-- ⏳ 性能优化
-- ⏳ VitePress 文档站点
+editor.setData({
+  nodes: [
+    { id: '1', type: 'start', name: '开始' },
+    { id: '2', type: 'approval', name: '审批' },
+    { id: '3', type: 'end', name: '结束' },
+  ],
+  edges: [
+    { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
+    { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
+  ],
+});
 
-## 开发
-
-```bash
-# 安装依赖
-pnpm install
-
-# 运行测试
-pnpm test
-
-# 构建
-pnpm build
-
-# 开发模式
-pnpm dev
+editor.on('node:click', (node) => {
+  console.log('节点点击:', node);
+});
 ```
 
-## 测试
+## 📚 文档
 
-```bash
-# 运行所有测试
-pnpm test
+完整文档请访问：[文档站点](https://docs.ldesign.com/approval-flow)
 
-# 运行特定测试
-pnpm test -- tests/core/DataManager.test.ts
+- [快速开始](https://docs.ldesign.com/approval-flow/guide/getting-started)
+- [节点类型](https://docs.ldesign.com/approval-flow/guide/node-types)
+- [配置选项](https://docs.ldesign.com/approval-flow/guide/configuration)
+- [API 参考](https://docs.ldesign.com/approval-flow/api/editor)
 
-# 监听模式
-pnpm test:watch
+## 🎯 节点类型
 
-# 生成覆盖率报告（文本 + HTML）
-pnpm test:coverage
-```
+- **开始节点** - 流程的起点
+- **审批节点** - 支持单人审批、会签、或签、顺序审批
+- **条件节点** - 根据条件进行分支判断
+- **并行节点** - 支持多个分支并行执行
+- **抄送节点** - 通知相关人员
+- **结束节点** - 流程的终点
 
-### 覆盖率
-- 运行：`pnpm test:coverage`，HTML 报告生成于 `coverage/index.html`
-- 阈值：在 `vitest.config.ts` 中配置了全局阈值（branches/functions/lines/statements 统一目标 80%）
-- 说明：覆盖率统计默认仅针对源码目录（src），测试与构建产物已被排除；若本地统计口径不同导致阈值未生效，请检查 include/exclude 配置并逐步提升用例覆盖率后开启更严格校验
+## 🤝 贡献
 
-### 新增覆盖点（近期）
-- CanvasRenderer 渲染分支：覆盖 selectionBox、guides、tempConnection 三个渲染路径
-- CanvasRenderer 网格：覆盖 gridSize 阈值、不同 scale 下 lineWidth、offset 起点计算、按层/优先级排序与渲染容错
-- InteractionManager 键盘事件：覆盖 Delete（删除选中项）、Ctrl+A（全选）、Escape（清空选择）以及通用 keydown/keyup 事件转发
-- InteractionManager 交互：覆盖 PAN 模式平移事件与 viewport 更新、拖拽对齐 vertical+horizontal 指引
-- FlowchartEditor 集成：覆盖临时连接（tempConnection）渲染与 CONNECT 模式鼠标取消（connect-cancel）
+欢迎贡献代码、报告问题或提出建议！
 
-## 贡献
+## 📄 许可证
 
-1. Fork 项目
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
+[MIT](./LICENSE)
 
-## 许可证
+## 🙏 致谢
 
-MIT License
-
-## 更新日志
-
-### v1.0.0 (2025-09-11) 🎉
-- ✅ **核心功能完成** - 基于 @logicflow/core 的完整实现
-- ✅ **7种审批节点类型** - 开始、审批、条件、结束、流程、并行网关、排他网关
-- ✅ **完整的编辑器** - FlowchartEditor 和 FlowchartViewer
-- ✅ **事件系统** - 支持节点点击、边点击、数据变化等事件
-- ✅ **主题和插件架构** - 可扩展的主题和插件系统
-- ✅ **TypeScript 支持** - 完整的类型定义
-- ✅ **单元测试** - 7个测试用例全部通过
-- ✅ **开发环境** - 开发服务器和演示页面
-- ✅ **构建系统** - 基于 @ldesign/builder 的构建配置
-
-**当前状态**: 核心功能已完成，可用于生产环境 ✨
+本项目基于 [LogicFlow](https://site.logic-flow.cn/) 构建，感谢 LogicFlow 团队的优秀工作。

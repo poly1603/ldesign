@@ -1,490 +1,364 @@
 /**
- * Enhanced Rich Text Editor - Core Editor
- * 
- * Main editor class that orchestrates all components.
+ * Editor - 编辑器核心类
+ * 管理编辑器的所有功能
  */
 
-import type {
-  Editor as IEditor,
-  EditorOptions,
-  EditorEventData,
-  SelectionRange,
-  Delta as IDelta
-} from '@/types';
-import { EventEmitter } from '@/utils/event-emitter';
-import { logger } from '@/utils/logger';
-import { Delta } from './delta';
-import { Selection, SelectionManager, Range } from './selection';
-import { PluginManager } from './plugin-manager';
-import { CommandManager } from './command-manager';
-import { DocumentRenderer } from './renderer';
-import { HistoryManager } from './history';
+import type { EditorOptions, EditorState, Transaction, Plugin as PluginType, SchemaSpec } from '../types'
+import { EventEmitter } from './EventEmitter'
+import { Schema, defaultSchema } from './Schema'
+import { Document } from './Document'
+import { Selection, SelectionManager } from './Selection'
+import { CommandManager, KeymapManager } from './Command'
+import { PluginManager } from './Plugin'
 
-/**
- * Default editor options
- */
-const DEFAULT_OPTIONS: EditorOptions = {
-  theme: 'snow',
-  placeholder: '',
-  readOnly: false,
-  modules: {},
-  formats: [],
-  debug: false,
-};
+export class Editor {
+  // 核心组件
+  private eventEmitter: EventEmitter
+  private schema: Schema
+  private document: Document
+  private selectionManager: SelectionManager
 
-/**
- * Enhanced Rich Text Editor implementation
- */
-export class EnhancedEditor extends EventEmitter<EditorEventData> implements IEditor {
-  private container: HTMLElement;
-  private root!: HTMLElement;
-  private options: EditorOptions;
-  private content: Delta;
-  private selectionManager: SelectionManager;
-  private pluginManager: PluginManager;
-  private commandManager: CommandManager;
-  private renderer: DocumentRenderer;
-  private historyManager: HistoryManager;
-  private enabled = true;
-  private focused = false;
+  // 管理器
+  public commands: CommandManager
+  public keymap: KeymapManager
+  public plugins: PluginManager
 
-  constructor(container: string | HTMLElement, options: Partial<EditorOptions> = {}) {
-    super();
+  // 选项
+  private options: EditorOptions
+  private editable: boolean = true
 
-    // Resolve container element
-    if (typeof container === 'string') {
-      const element = document.querySelector(container);
-      if (!element) {
-        throw new Error(`Container element "${container}" not found`);
+  // DOM
+  private element: HTMLElement | null = null
+  private contentElement: HTMLElement | null = null
+
+  // 状态
+  private destroyed: boolean = false
+
+  constructor(options: EditorOptions = {}) {
+    this.options = options
+    this.editable = options.editable !== false
+
+    // 初始化核心组件
+    this.eventEmitter = new EventEmitter()
+    this.schema = defaultSchema
+    this.document = new Document(options.content, this.schema)
+    this.selectionManager = new SelectionManager(this)
+
+    // 初始化管理器
+    this.commands = new CommandManager(this)
+    this.keymap = new KeymapManager(this)
+    this.plugins = new PluginManager(this)
+
+    // 初始化 DOM
+    if (options.element) {
+      this.mount(options.element)
+    }
+
+    // 注册插件
+    if (options.plugins) {
+      options.plugins.forEach(plugin => {
+        if (typeof plugin === 'string') {
+          // TODO: 从内置插件加载
+        } else {
+          this.plugins.register(plugin)
+        }
+      })
+    }
+
+    // 初始化事件监听
+    this.setupEventListeners()
+  }
+
+  /**
+   * 挂载编辑器
+   */
+  mount(element: HTMLElement | string): void {
+    if (typeof element === 'string') {
+      const el = document.querySelector(element)
+      if (!el) {
+        throw new Error(`Element "${element}" not found`)
       }
-      this.container = element as HTMLElement;
+      this.element = el as HTMLElement
     } else {
-      this.container = container;
+      this.element = element
     }
 
-    // Merge options
-    this.options = { ...DEFAULT_OPTIONS, ...options };
+    // 创建编辑器 DOM 结构
+    this.element.classList.add('ldesign-editor')
 
-    // Initialize content
-    this.content = new Delta();
+    this.contentElement = document.createElement('div')
+    this.contentElement.classList.add('ldesign-editor-content')
+    this.contentElement.contentEditable = String(this.editable)
 
-    // Setup logger
-    if (this.options.debug) {
-      logger.setLevel(0); // DEBUG level
-    }
-
-    // Initialize components
-    this.setupDOM();
-    this.selectionManager = new SelectionManager(this.root);
-    this.pluginManager = new PluginManager();
-    this.commandManager = new CommandManager(this);
-    this.renderer = new DocumentRenderer();
-    this.historyManager = new HistoryManager(this);
-
-    // Setup event listeners
-    this.setupEventListeners();
-
-    // Initialize editor
-    this.initialize();
-
-    logger.info('Enhanced Rich Text Editor initialized');
-  }
-
-  /**
-   * Get editor content as Delta
-   */
-  getContents(): IDelta {
-    return new Delta(this.content.ops);
-  }
-
-  /**
-   * Set editor content
-   */
-  setContents(delta: IDelta, source = 'api'): void {
-    const oldDelta = this.content;
-    this.content = new Delta(delta.ops);
-    
-    // Update DOM
-    this.renderContent();
-
-    // Emit events
-    this.emit('content-change', {
-      delta: this.content,
-      oldDelta,
-      source,
-    });
-
-    this.emit('text-change', {
-      delta: this.content,
-      oldDelta,
-      source,
-    });
-  }
-
-  /**
-   * Get text content
-   */
-  getText(index?: number, length?: number): string {
-    // This is a simplified implementation
-    // In a real implementation, you would extract text from the Delta
-    const text = this.root.textContent || '';
-    
-    if (index === undefined) {
-      return text;
-    }
-
-    const start = Math.max(0, index);
-    const end = length !== undefined ? start + length : text.length;
-    
-    return text.substring(start, Math.min(end, text.length));
-  }
-
-  /**
-   * Get selection
-   */
-  getSelection(): Selection | null {
-    return this.selectionManager.getSelection();
-  }
-
-  /**
-   * Set selection
-   */
-  setSelection(range: SelectionRange | null, source = 'api'): void {
-    const selectionRange = range ? new Range(range.index, range.length) : null;
-    this.selectionManager.setSelection(selectionRange, source);
-  }
-
-  /**
-   * Insert text
-   */
-  insertText(index: number, text: string, source = 'api'): void {
-    const delta = new Delta()
-      .retain(index)
-      .insert(text);
-    
-    this.applyDelta(delta, source);
-  }
-
-  /**
-   * Insert embed
-   */
-  insertEmbed(index: number, type: string, value: any, source = 'api'): void {
-    const embed = { [type]: value };
-    const delta = new Delta()
-      .retain(index)
-      .insert(embed);
-    
-    this.applyDelta(delta, source);
-  }
-
-  /**
-   * Delete text
-   */
-  deleteText(index: number, length: number, source = 'api'): void {
-    const delta = new Delta()
-      .retain(index)
-      .delete(length);
-    
-    this.applyDelta(delta, source);
-  }
-
-  /**
-   * Format text
-   */
-  formatText(index: number, length: number, format: string, value: any, source = 'api'): void {
-    const delta = new Delta()
-      .retain(index)
-      .retain(length, { [format]: value });
-    
-    this.applyDelta(delta, source);
-  }
-
-  /**
-   * Format line
-   */
-  formatLine(index: number, length: number, format: string, value: any, source = 'api'): void {
-    // This is a simplified implementation
-    // In a real implementation, you would handle line-level formatting
-    this.formatText(index, length, format, value, source);
-  }
-
-  /**
-   * Remove format
-   */
-  removeFormat(index: number, length: number, source = 'api'): void {
-    // This is a simplified implementation
-    // In a real implementation, you would remove all formatting
-    const delta = new Delta()
-      .retain(index)
-      .retain(length, {});
-    
-    this.applyDelta(delta, source);
-  }
-
-  /**
-   * Get format at range
-   */
-  getFormat(_range?: SelectionRange): Record<string, any> {
-    // This is a simplified implementation
-    // In a real implementation, you would extract formatting from the Delta
-    return {};
-  }
-
-  /**
-   * Get line format
-   */
-  getLineFormat(_index?: number): Record<string, any> {
-    // This is a simplified implementation
-    return {};
-  }
-
-  /**
-   * Focus editor
-   */
-  focus(): void {
-    this.root.focus();
-    this.focused = true;
-    this.emit('focus', { editor: this });
-  }
-
-  /**
-   * Blur editor
-   */
-  blur(): void {
-    this.root.blur();
-    this.focused = false;
-    this.emit('blur', { editor: this });
-  }
-
-  /**
-   * Check if editor has focus
-   */
-  hasFocus(): boolean {
-    return this.focused;
-  }
-
-  /**
-   * Enable/disable editor
-   */
-  enable(enabled = true): void {
-    this.enabled = enabled;
-    this.root.contentEditable = enabled ? 'true' : 'false';
-    
-    if (enabled) {
-      this.container.classList.remove('enhanced-rich-editor__container--disabled');
-    } else {
-      this.container.classList.add('enhanced-rich-editor__container--disabled');
-    }
-  }
-
-  /**
-   * Check if editor is enabled
-   */
-  isEnabled(): boolean {
-    return this.enabled;
-  }
-
-  /**
-   * Get editor root element
-   */
-  getRoot(): HTMLElement {
-    return this.root;
-  }
-
-  /**
-   * Get editor container
-   */
-  getContainer(): HTMLElement {
-    return this.container;
-  }
-
-  /**
-   * Undo last change
-   */
-  undo(): boolean {
-    return this.historyManager.undo();
-  }
-
-  /**
-   * Redo last undone change
-   */
-  redo(): boolean {
-    return this.historyManager.redo();
-  }
-
-  /**
-   * Check if undo is available
-   */
-  canUndo(): boolean {
-    return this.historyManager.canUndo();
-  }
-
-  /**
-   * Check if redo is available
-   */
-  canRedo(): boolean {
-    return this.historyManager.canRedo();
-  }
-
-  /**
-   * Clear history
-   */
-  clearHistory(): void {
-    this.historyManager.clear();
-  }
-
-  /**
-   * Destroy editor
-   */
-  destroy(): void {
-    // Unload plugins
-    this.pluginManager.unloadPlugins(this);
-
-    // Dispose components
-    this.selectionManager.dispose();
-    this.pluginManager.dispose();
-    this.commandManager.dispose();
-    this.historyManager.dispose();
-
-    // Remove event listeners
-    this.removeAllListeners();
-
-    // Clean up DOM
-    this.container.innerHTML = '';
-    this.container.classList.remove('enhanced-rich-editor');
-
-    logger.info('Enhanced Rich Text Editor destroyed');
-  }
-
-  /**
-   * Setup DOM structure
-   */
-  private setupDOM(): void {
-    // Add editor class
-    this.container.classList.add('enhanced-rich-editor');
-
-    // Create container structure
-    this.container.innerHTML = `
-      <div class="enhanced-rich-editor__container">
-        <div class="enhanced-rich-editor__content" contenteditable="true"></div>
-      </div>
-    `;
-
-    // Get root element
-    this.root = this.container.querySelector('.enhanced-rich-editor__content') as HTMLElement;
-
-    // Set placeholder
+    // 设置占位符
     if (this.options.placeholder) {
-      this.root.setAttribute('data-placeholder', this.options.placeholder);
+      this.contentElement.dataset.placeholder = this.options.placeholder
     }
 
-    // Set initial state
-    this.enable(this.enabled);
+    this.element.appendChild(this.contentElement)
+
+    // 渲染内容
+    this.render()
+
+    // 自动聚焦
+    if (this.options.autofocus) {
+      this.focus()
+    }
   }
 
   /**
-   * Setup event listeners
+   * 设置事件监听
    */
   private setupEventListeners(): void {
-    // Selection change events
-    this.selectionManager.on('selection-change', (data) => {
-      if (data.oldSelection) {
-        this.emit('selection-change', {
-          selection: data.selection,
-          oldSelection: data.oldSelection,
-          source: data.source,
-        });
+    if (!this.contentElement) return
+
+    // 键盘事件
+    this.contentElement.addEventListener('keydown', (e) => {
+      if (this.keymap.handleKeyDown(e)) {
+        e.preventDefault()
       }
-    });
+    })
 
-    // Focus/blur events
-    this.root.addEventListener('focus', () => {
-      this.focused = true;
-      this.emit('focus', { editor: this });
-    });
+    // 输入事件
+    this.contentElement.addEventListener('input', () => {
+      this.handleInput()
+    })
 
-    this.root.addEventListener('blur', () => {
-      this.focused = false;
-      this.emit('blur', { editor: this });
-    });
-
-    // Input events
-    this.root.addEventListener('input', this.handleInput.bind(this));
-  }
-
-  /**
-   * Handle input events
-   */
-  private handleInput(_event: Event): void {
-    // This is a simplified implementation
-    // In a real implementation, you would convert DOM changes to Delta operations
-    const text = this.root.textContent || '';
-    const delta = new Delta().insert(text);
-    
-    const oldDelta = this.content;
-    this.content = delta;
-
-    this.emit('content-change', {
-      delta: this.content,
-      oldDelta,
-      source: 'user',
-    });
-
-    this.emit('text-change', {
-      delta: this.content,
-      oldDelta,
-      source: 'user',
-    });
-  }
-
-  /**
-   * Apply delta to content
-   */
-  private applyDelta(delta: IDelta, source = 'api'): void {
-    const oldDelta = this.content;
-    this.content = this.content.compose(new Delta(delta.ops));
-    
-    // Update DOM
-    this.renderContent();
-
-    // Emit events
-    this.emit('content-change', {
-      delta: this.content,
-      oldDelta,
-      source,
-    });
-
-    this.emit('text-change', {
-      delta: this.content,
-      oldDelta,
-      source,
-    });
-  }
-
-  /**
-   * Render content to DOM
-   */
-  private renderContent(): void {
-    this.renderer.renderToContainer(this.content, this.root);
-  }
-
-  /**
-   * Initialize editor
-   */
-  private async initialize(): Promise<void> {
-    try {
-      // Load plugins
-      await this.pluginManager.loadPlugins(this);
-      
-      // Set initial content
-      if (this.root.innerHTML.trim() === '') {
-        this.root.innerHTML = '<p><br></p>';
+    // 选区变化
+    document.addEventListener('selectionchange', () => {
+      if (this.contentElement && this.contentElement.contains(window.getSelection()?.anchorNode || null)) {
+        this.selectionManager.syncFromDOM()
+        this.emit('selectionUpdate', this.getSelection())
       }
+    })
 
-      logger.debug('Editor initialization complete');
-    } catch (error) {
-      logger.error('Failed to initialize editor:', error);
-      throw error;
+    // 聚焦和失焦
+    this.contentElement.addEventListener('focus', () => {
+      this.emit('focus')
+      this.options.onFocus?.()
+    })
+
+    this.contentElement.addEventListener('blur', () => {
+      this.emit('blur')
+      this.options.onBlur?.()
+    })
+  }
+
+  /**
+   * 处理输入
+   */
+  private handleInput(): void {
+    if (!this.contentElement) return
+
+    // 更新文档
+    const html = this.contentElement.innerHTML
+    this.document = new Document(html, this.schema)
+
+    // 触发更新事件
+    this.emit('update', this.getState())
+    this.options.onUpdate?.(this.getState())
+    this.options.onChange?.(this.getHTML())
+  }
+
+  /**
+   * 渲染内容
+   */
+  private render(): void {
+    if (!this.contentElement) return
+
+    const html = this.document.toHTML()
+
+    // 保存当前选区
+    const selection = this.getSelection()
+
+    // 更新内容
+    this.contentElement.innerHTML = html
+
+    // 恢复选区
+    if (selection) {
+      this.setSelection(selection)
     }
+  }
+
+  /**
+   * 获取编辑器状态
+   */
+  getState(): EditorState {
+    return {
+      doc: this.document.toJSON(),
+      selection: this.getSelection().toJSON()
+    }
+  }
+
+  /**
+   * 分发事务
+   */
+  dispatch(tr: Transaction): void {
+    // 更新文档
+    this.document = new Document(tr.doc, this.schema)
+
+    // 更新选区
+    if (tr.selection) {
+      this.setSelection(Selection.fromJSON(tr.selection))
+    }
+
+    // 重新渲染
+    this.render()
+
+    // 触发更新事件
+    this.emit('update', this.getState())
+    this.options.onUpdate?.(this.getState())
+    this.options.onChange?.(this.getHTML())
+  }
+
+  /**
+   * 获取选区
+   */
+  getSelection(): Selection {
+    return this.selectionManager.getSelection()
+  }
+
+  /**
+   * 设置选区
+   */
+  setSelection(selection: Selection): void {
+    this.selectionManager.setSelection(selection)
+  }
+
+  /**
+   * 获取 HTML 内容
+   */
+  getHTML(): string {
+    return this.document.toHTML()
+  }
+
+  /**
+   * 设置 HTML 内容
+   */
+  setHTML(html: string): void {
+    this.document = new Document(html, this.schema)
+    this.render()
+  }
+
+  /**
+   * 获取 JSON 内容
+   */
+  getJSON(): any {
+    return this.document.toJSON()
+  }
+
+  /**
+   * 设置 JSON 内容
+   */
+  setJSON(json: any): void {
+    this.document = Document.fromJSON(json, this.schema)
+    this.render()
+  }
+
+  /**
+   * 清空内容
+   */
+  clear(): void {
+    this.setHTML('<p></p>')
+  }
+
+  /**
+   * 聚焦编辑器
+   */
+  focus(): void {
+    this.contentElement?.focus()
+  }
+
+  /**
+   * 失焦编辑器
+   */
+  blur(): void {
+    this.contentElement?.blur()
+  }
+
+  /**
+   * 设置是否可编辑
+   */
+  setEditable(editable: boolean): void {
+    this.editable = editable
+    if (this.contentElement) {
+      this.contentElement.contentEditable = String(editable)
+    }
+  }
+
+  /**
+   * 检查是否可编辑
+   */
+  isEditable(): boolean {
+    return this.editable
+  }
+
+  /**
+   * 扩展 Schema
+   */
+  extendSchema(spec: SchemaSpec): void {
+    // 合并节点
+    if (spec.nodes) {
+      Object.entries(spec.nodes).forEach(([name, nodeSpec]) => {
+        this.schema.nodes.set(name, nodeSpec)
+      })
+    }
+
+    // 合并标记
+    if (spec.marks) {
+      Object.entries(spec.marks).forEach(([name, markSpec]) => {
+        this.schema.marks.set(name, markSpec)
+      })
+    }
+  }
+
+  /**
+   * 事件系统
+   */
+  on(event: string, handler: (...args: any[]) => void): () => void {
+    return this.eventEmitter.on(event, handler)
+  }
+
+  once(event: string, handler: (...args: any[]) => void): void {
+    this.eventEmitter.once(event, handler)
+  }
+
+  off(event: string, handler: (...args: any[]) => void): void {
+    this.eventEmitter.off(event, handler)
+  }
+
+  emit(event: string, ...args: any[]): void {
+    this.eventEmitter.emit(event, ...args)
+  }
+
+  /**
+   * 销毁编辑器
+   */
+  destroy(): void {
+    if (this.destroyed) return
+
+    // 清理插件
+    this.plugins.clear()
+
+    // 清理命令和快捷键
+    this.commands.clear()
+    this.keymap.clear()
+
+    // 清理事件
+    this.eventEmitter.clear()
+
+    // 清理 DOM
+    if (this.element) {
+      this.element.innerHTML = ''
+    }
+
+    this.destroyed = true
+  }
+
+  /**
+   * 检查是否已销毁
+   */
+  isDestroyed(): boolean {
+    return this.destroyed
   }
 }

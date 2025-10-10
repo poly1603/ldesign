@@ -1,0 +1,43 @@
+/**
+ * Custom theme styles
+ */
+
+:root {
+  --vp-c-brand: #42b983;
+  --vp-c-brand-light: #42d392;
+  --vp-c-brand-lighter: #35eb9a;
+  --vp-c-brand-dark: #33a06f;
+  --vp-c-brand-darker: #155f3e;
+}
+
+.dark {
+  --vp-c-brand: #42d392;
+  --vp-c-brand-light: #35eb9a;
+  --vp-c-brand-lighter: #42ffb3;
+  --vp-c-brand-dark: #33a06f;
+  --vp-c-brand-darker: #155f3e;
+}
+
+/* Custom hero gradient */
+.VPHero {
+  padding-top: 80px !important;
+}
+
+/* Code block improvements */
+.vp-code-group .tabs {
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+/* Feature grid improvements */
+.VPFeatures {
+  padding-top: 48px !important;
+}
+
+.VPFeature {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.VPFeature:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,33 @@
+# Source files
+src/
+__tests__/
+tests/
+examples/
+docs/
+
+# Configuration
+tsconfig.json
+tsconfig.test.json
+vite.config.ts
+vitest.config.ts
+playwright.config.ts
+.prettierrc
+.prettierignore
+.eslintrc
+.eslintignore
+
+# Build scripts
+scripts/
+
+# Development
+.github/
+.vscode/
+.idea/
+
+# Documentation
+*.md
+!README.md
+
+# Misc
+.gitignore
+.editorconfig

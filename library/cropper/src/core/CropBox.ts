@@ -1,404 +1,306 @@
 /**
- * @file 裁剪框组件
- * @description 管理裁剪区域的显示和交互
+ * CropBox - Manages the crop box
  */
 
-import type {
-  CropData,
-  CropShape,
-  Point,
-  Size,
-  Rect,
-  DragType,
-  CropperEventType,
-} from '../types'
+import type { CropBoxData, Rectangle } from '../types'
+import { clamp } from '../utils/math'
+import { createElement, setStyle, addClass } from '../utils/dom'
 
-import {
-  createElement,
-  addClass,
-  removeClass,
-  setStyle,
-  getBoundingRect,
-  getRelativePosition,
-} from '../utils/dom'
+export interface CropBoxOptions {
+  aspectRatio?: number
+  minWidth?: number
+  minHeight?: number
+  maxWidth?: number
+  maxHeight?: number
+  modal?: boolean
+  guides?: boolean
+  center?: boolean
+  highlight?: boolean
+  background?: boolean
+}
 
-import {
-  clamp,
-  isPointInRect,
-  isPointInCircle,
-  getRectCenter,
-  adjustRectByAspectRatio,
-  constrainRect,
-} from '../utils/math'
-
-import { EventEmitter } from '../utils/events'
-
-/**
- * 裁剪框类
- */
-export class CropBox extends EventEmitter {
+export class CropBox {
+  private element: HTMLDivElement
   private container: HTMLElement
-  private element: HTMLElement
-  private overlay: HTMLElement
-  private handles: HTMLElement[] = []
-  private guides: HTMLElement[] = []
-  
-  private cropData: CropData
-  private shape: CropShape
-  private aspectRatio: number
-  private minSize: Size
-  private maxSize: Size
-  private bounds: Rect
-  
-  private isDragging = false
-  private isResizing = false
-  private dragType: DragType | null = null
-  private dragStartPoint: Point | null = null
-  private dragStartCrop: Rect | null = null
-  
-  private showGuides = true
-  private showCenterLines = false
+  private data: CropBoxData
+  private aspectRatio?: number
+  private minWidth: number
+  private minHeight: number
+  private maxWidth?: number
+  private maxHeight?: number
+  private modal?: boolean
+  private guides?: boolean
+  private center?: boolean
+  private highlight?: boolean
+  private background?: boolean
+
+  // UI Elements
+  private modalElement?: HTMLDivElement
+  private backgroundElement?: HTMLDivElement
+  private viewBoxElement?: HTMLDivElement
+  private dashedElements?: HTMLDivElement[]
+  private centerElement?: HTMLDivElement
 
   constructor(
     container: HTMLElement,
-    options: {
-      shape?: CropShape
-      aspectRatio?: number
-      minSize?: Size
-      maxSize?: Size
-      showGuides?: boolean
-      showCenterLines?: boolean
-    } = {}
+    options: CropBoxOptions = {}
   ) {
-    super()
-    
     this.container = container
-    this.shape = options.shape || CropShape.RECTANGLE
-    this.aspectRatio = options.aspectRatio || 0
-    this.minSize = options.minSize || { width: 50, height: 50 }
-    this.maxSize = options.maxSize || { width: Infinity, height: Infinity }
-    this.showGuides = options.showGuides !== false
-    this.showCenterLines = options.showCenterLines || false
-    
-    this.cropData = {
-      x: 0,
-      y: 0,
-      width: 100,
-      height: 100,
-      shape: this.shape,
+    this.aspectRatio = options.aspectRatio
+    this.minWidth = options.minWidth || 0
+    this.minHeight = options.minHeight || 0
+    this.maxWidth = options.maxWidth
+    this.maxHeight = options.maxHeight
+    this.modal = options.modal ?? true
+    this.guides = options.guides ?? true
+    this.center = options.center ?? true
+    this.highlight = options.highlight ?? true
+    this.background = options.background ?? true
+
+    this.element = this.createCropBox()
+    this.data = {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0
     }
-    
-    this.bounds = { x: 0, y: 0, width: 0, height: 0 }
-    
-    this.createElement()
-    this.bindEvents()
   }
 
   /**
-   * 创建元素
+   * Create crop box element
    */
-  private createElement(): void {
-    // 创建主元素
-    this.element = createElement('div', 'cropper-crop-box')
-    setStyle(this.element, {
-      position: 'absolute',
-      border: '2px solid #39f',
-      cursor: 'move',
-      boxSizing: 'border-box',
-      zIndex: '1000',
-    })
+  private createCropBox(): HTMLDivElement {
+    const cropBox = createElement('div', 'cropper-crop-box')
 
-    // 创建遮罩
-    this.overlay = createElement('div', 'cropper-overlay')
-    setStyle(this.overlay, {
-      position: 'absolute',
-      top: '0',
-      left: '0',
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      pointerEvents: 'none',
-    })
+    // Create view box (inner container)
+    this.viewBoxElement = createElement('div', 'cropper-view-box')
 
-    // 根据形状设置样式
-    if (this.shape === CropShape.CIRCLE) {
-      setStyle(this.element, { borderRadius: '50%' })
-    } else if (this.shape === CropShape.ELLIPSE) {
-      setStyle(this.element, { borderRadius: '50%' })
+    // Create face (center draggable area)
+    const face = createElement('div', 'cropper-face')
+    if (this.highlight) {
+      addClass(face, 'cropper-highlight')
     }
 
-    // 创建拖拽手柄
-    this.createHandles()
-    
-    // 创建辅助线
-    if (this.showGuides) {
-      this.createGuides()
+    // Create dashed lines (guides)
+    this.dashedElements = []
+    if (this.guides) {
+      const dashedH = createElement('div', 'cropper-dashed dashed-h')
+      const dashedV = createElement('div', 'cropper-dashed dashed-v')
+      this.dashedElements.push(dashedH, dashedV)
+      this.viewBoxElement.appendChild(dashedH)
+      this.viewBoxElement.appendChild(dashedV)
     }
 
-    // 添加到容器
-    this.container.appendChild(this.overlay)
+    // Create center indicator
+    if (this.center) {
+      this.centerElement = createElement('div', 'cropper-center')
+      this.viewBoxElement.appendChild(this.centerElement)
+    }
+
+    // Create lines (edges for resizing)
+    const lineN = createElement('div', 'cropper-line line-n')
+    const lineE = createElement('div', 'cropper-line line-e')
+    const lineS = createElement('div', 'cropper-line line-s')
+    const lineW = createElement('div', 'cropper-line line-w')
+
+    // Create points (corners and midpoints)
+    const pointN = createElement('div', 'cropper-point point-n')
+    const pointE = createElement('div', 'cropper-point point-e')
+    const pointS = createElement('div', 'cropper-point point-s')
+    const pointW = createElement('div', 'cropper-point point-w')
+    const pointNE = createElement('div', 'cropper-point point-ne')
+    const pointNW = createElement('div', 'cropper-point point-nw')
+    const pointSE = createElement('div', 'cropper-point point-se')
+    const pointSW = createElement('div', 'cropper-point point-sw')
+
+    // Append all elements to view box
+    this.viewBoxElement.appendChild(face)
+
+    // Append all elements to crop box
+    cropBox.appendChild(this.viewBoxElement)
+    cropBox.appendChild(lineN)
+    cropBox.appendChild(lineE)
+    cropBox.appendChild(lineS)
+    cropBox.appendChild(lineW)
+    cropBox.appendChild(pointN)
+    cropBox.appendChild(pointE)
+    cropBox.appendChild(pointS)
+    cropBox.appendChild(pointW)
+    cropBox.appendChild(pointNE)
+    cropBox.appendChild(pointNW)
+    cropBox.appendChild(pointSE)
+    cropBox.appendChild(pointSW)
+
+    return cropBox
+  }
+
+  /**
+   * Render crop box to DOM
+   */
+  render(): void {
+    // Create and append background
+    if (this.background) {
+      this.backgroundElement = createElement('div', 'cropper-bg')
+      this.container.appendChild(this.backgroundElement)
+    }
+
+    // Create and append modal (overlay)
+    if (this.modal) {
+      this.modalElement = createElement('div', 'cropper-modal')
+      this.container.appendChild(this.modalElement)
+    }
+
+    // Append crop box
     this.container.appendChild(this.element)
   }
 
   /**
-   * 创建拖拽手柄
+   * Set crop box data
    */
-  private createHandles(): void {
-    const handlePositions = [
-      'nw', 'n', 'ne',
-      'w',       'e',
-      'sw', 's', 'se',
-    ]
+  setData(data: Partial<CropBoxData>, constrain = true): void {
+    const newData = { ...this.data, ...data }
 
-    handlePositions.forEach(position => {
-      const handle = createElement('div', `cropper-handle cropper-handle-${position}`)
-      setStyle(handle, {
-        position: 'absolute',
-        width: '8px',
-        height: '8px',
-        backgroundColor: '#39f',
-        border: '1px solid #fff',
-        cursor: this.getHandleCursor(position),
-        zIndex: '1001',
-      })
+    if (constrain) {
+      // Apply aspect ratio constraint
+      if (this.aspectRatio) {
+        if (data.width !== undefined) {
+          newData.height = newData.width / this.aspectRatio
+        } else if (data.height !== undefined) {
+          newData.width = newData.height * this.aspectRatio
+        }
+      }
 
-      this.positionHandle(handle, position)
-      this.handles.push(handle)
-      this.element.appendChild(handle)
-    })
-  }
+      // Apply size constraints
+      newData.width = clamp(
+        newData.width,
+        this.minWidth,
+        this.maxWidth || Infinity
+      )
+      newData.height = clamp(
+        newData.height,
+        this.minHeight,
+        this.maxHeight || Infinity
+      )
 
-  /**
-   * 创建辅助线
-   */
-  private createGuides(): void {
-    // 创建九宫格线
-    for (let i = 1; i <= 2; i++) {
-      // 垂直线
-      const vLine = createElement('div', 'cropper-guide cropper-guide-v')
-      setStyle(vLine, {
-        position: 'absolute',
-        top: '0',
-        left: `${(i * 33.33)}%`,
-        width: '1px',
-        height: '100%',
-        backgroundColor: 'rgba(255, 255, 255, 0.5)',
-        pointerEvents: 'none',
-      })
-      this.guides.push(vLine)
-      this.element.appendChild(vLine)
-
-      // 水平线
-      const hLine = createElement('div', 'cropper-guide cropper-guide-h')
-      setStyle(hLine, {
-        position: 'absolute',
-        top: `${(i * 33.33)}%`,
-        left: '0',
-        width: '100%',
-        height: '1px',
-        backgroundColor: 'rgba(255, 255, 255, 0.5)',
-        pointerEvents: 'none',
-      })
-      this.guides.push(hLine)
-      this.element.appendChild(hLine)
+      // Apply position constraints (keep within container)
+      const containerRect = this.container.getBoundingClientRect()
+      newData.left = clamp(newData.left, 0, containerRect.width - newData.width)
+      newData.top = clamp(newData.top, 0, containerRect.height - newData.height)
     }
 
-    // 中心线
-    if (this.showCenterLines) {
-      const centerV = createElement('div', 'cropper-center-line cropper-center-v')
-      setStyle(centerV, {
-        position: 'absolute',
-        top: '0',
-        left: '50%',
-        width: '1px',
-        height: '100%',
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        pointerEvents: 'none',
-      })
-      this.guides.push(centerV)
-      this.element.appendChild(centerV)
-
-      const centerH = createElement('div', 'cropper-center-line cropper-center-h')
-      setStyle(centerH, {
-        position: 'absolute',
-        top: '50%',
-        left: '0',
-        width: '100%',
-        height: '1px',
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        pointerEvents: 'none',
-      })
-      this.guides.push(centerH)
-      this.element.appendChild(centerH)
-    }
+    this.data = newData
+    this.update()
   }
 
   /**
-   * 获取手柄光标
+   * Get crop box data
    */
-  private getHandleCursor(position: string): string {
-    const cursors: Record<string, string> = {
-      nw: 'nw-resize',
-      n: 'n-resize',
-      ne: 'ne-resize',
-      w: 'w-resize',
-      e: 'e-resize',
-      sw: 'sw-resize',
-      s: 's-resize',
-      se: 'se-resize',
-    }
-    return cursors[position] || 'default'
+  getData(): CropBoxData {
+    return { ...this.data }
   }
 
   /**
-   * 定位手柄
+   * Update crop box visual
    */
-  private positionHandle(handle: HTMLElement, position: string): void {
-    const size = 8
-    const offset = -size / 2
-
-    switch (position) {
-      case 'nw':
-        setStyle(handle, { top: `${offset}px`, left: `${offset}px` })
-        break
-      case 'n':
-        setStyle(handle, { top: `${offset}px`, left: '50%', marginLeft: `${offset}px` })
-        break
-      case 'ne':
-        setStyle(handle, { top: `${offset}px`, right: `${offset}px` })
-        break
-      case 'w':
-        setStyle(handle, { top: '50%', left: `${offset}px`, marginTop: `${offset}px` })
-        break
-      case 'e':
-        setStyle(handle, { top: '50%', right: `${offset}px`, marginTop: `${offset}px` })
-        break
-      case 'sw':
-        setStyle(handle, { bottom: `${offset}px`, left: `${offset}px` })
-        break
-      case 's':
-        setStyle(handle, { bottom: `${offset}px`, left: '50%', marginLeft: `${offset}px` })
-        break
-      case 'se':
-        setStyle(handle, { bottom: `${offset}px`, right: `${offset}px` })
-        break
-    }
-  }
-
-  /**
-   * 绑定事件
-   */
-  private bindEvents(): void {
-    // 裁剪框拖拽
-    this.element.addEventListener('mousedown', this.handleMouseDown.bind(this))
-    this.element.addEventListener('touchstart', this.handleTouchStart.bind(this))
-
-    // 手柄拖拽
-    this.handles.forEach((handle, index) => {
-      handle.addEventListener('mousedown', (e) => this.handleHandleMouseDown(e, index))
-      handle.addEventListener('touchstart', (e) => this.handleHandleTouchStart(e, index))
-    })
-
-    // 全局事件
-    document.addEventListener('mousemove', this.handleMouseMove.bind(this))
-    document.addEventListener('mouseup', this.handleMouseUp.bind(this))
-    document.addEventListener('touchmove', this.handleTouchMove.bind(this))
-    document.addEventListener('touchend', this.handleTouchEnd.bind(this))
-  }
-
-  /**
-   * 设置边界
-   */
-  setBounds(bounds: Rect): void {
-    this.bounds = bounds
-    this.constrainCropData()
-    this.updatePosition()
-  }
-
-  /**
-   * 设置裁剪数据
-   */
-  setCropData(data: Partial<CropData>): void {
-    this.cropData = { ...this.cropData, ...data }
-    this.constrainCropData()
-    this.updatePosition()
-  }
-
-  /**
-   * 获取裁剪数据
-   */
-  getCropData(): CropData {
-    return { ...this.cropData }
-  }
-
-  /**
-   * 更新位置
-   */
-  private updatePosition(): void {
+  update(): void {
     setStyle(this.element, {
-      left: `${this.cropData.x}px`,
-      top: `${this.cropData.y}px`,
-      width: `${this.cropData.width}px`,
-      height: `${this.cropData.height}px`,
-    })
-
-    this.updateOverlay()
-  }
-
-  /**
-   * 更新遮罩
-   */
-  private updateOverlay(): void {
-    // 使用CSS clip-path创建遮罩效果
-    const clipPath = this.shape === CropShape.CIRCLE || this.shape === CropShape.ELLIPSE
-      ? `ellipse(${this.cropData.width/2}px ${this.cropData.height/2}px at ${this.cropData.x + this.cropData.width/2}px ${this.cropData.y + this.cropData.height/2}px)`
-      : `polygon(0% 0%, 0% 100%, ${this.cropData.x}px 100%, ${this.cropData.x}px ${this.cropData.y}px, ${this.cropData.x + this.cropData.width}px ${this.cropData.y}px, ${this.cropData.x + this.cropData.width}px ${this.cropData.y + this.cropData.height}px, ${this.cropData.x}px ${this.cropData.y + this.cropData.height}px, ${this.cropData.x}px 100%, 100% 100%, 100% 0%)`
-
-    setStyle(this.overlay, {
-      clipPath: `polygon(0% 0%, 0% 100%, ${this.cropData.x}px 100%, ${this.cropData.x}px ${this.cropData.y}px, ${this.cropData.x + this.cropData.width}px ${this.cropData.y}px, ${this.cropData.x + this.cropData.width}px ${this.cropData.y + this.cropData.height}px, ${this.cropData.x}px ${this.cropData.y + this.cropData.height}px, ${this.cropData.x}px 100%, 100% 100%, 100% 0%)`,
+      left: `${this.data.left}px`,
+      top: `${this.data.top}px`,
+      width: `${this.data.width}px`,
+      height: `${this.data.height}px`
     })
   }
 
   /**
-   * 约束裁剪数据
+   * Move crop box
    */
-  private constrainCropData(): void {
-    // 约束尺寸
-    this.cropData.width = clamp(this.cropData.width, this.minSize.width, Math.min(this.maxSize.width, this.bounds.width))
-    this.cropData.height = clamp(this.cropData.height, this.minSize.height, Math.min(this.maxSize.height, this.bounds.height))
+  move(deltaX: number, deltaY: number): void {
+    this.setData({
+      left: this.data.left + deltaX,
+      top: this.data.top + deltaY
+    })
+  }
 
-    // 应用宽高比
-    if (this.aspectRatio > 0) {
-      const rect = adjustRectByAspectRatio(this.cropData, this.aspectRatio)
-      this.cropData.width = rect.width
-      this.cropData.height = rect.height
+  /**
+   * Resize crop box
+   */
+  resize(width: number, height: number): void {
+    this.setData({ width, height })
+  }
+
+  /**
+   * Set aspect ratio
+   */
+  setAspectRatio(aspectRatio?: number): void {
+    this.aspectRatio = aspectRatio
+
+    if (aspectRatio && this.data.width) {
+      this.setData({ height: this.data.width / aspectRatio })
     }
-
-    // 约束位置
-    this.cropData.x = clamp(this.cropData.x, this.bounds.x, this.bounds.x + this.bounds.width - this.cropData.width)
-    this.cropData.y = clamp(this.cropData.y, this.bounds.y, this.bounds.y + this.bounds.height - this.cropData.height)
   }
 
-  // 事件处理方法（占位符）
-  private handleMouseDown(event: MouseEvent): void {}
-  private handleTouchStart(event: TouchEvent): void {}
-  private handleHandleMouseDown(event: MouseEvent, handleIndex: number): void {}
-  private handleHandleTouchStart(event: TouchEvent, handleIndex: number): void {}
-  private handleMouseMove(event: MouseEvent): void {}
-  private handleMouseUp(event: MouseEvent): void {}
-  private handleTouchMove(event: TouchEvent): void {}
-  private handleTouchEnd(event: TouchEvent): void {}
+  /**
+   * Get element
+   */
+  getElement(): HTMLDivElement {
+    return this.element
+  }
 
   /**
-   * 销毁
+   * Show crop box
+   */
+  show(): void {
+    setStyle(this.element, { display: 'block' })
+  }
+
+  /**
+   * Hide crop box
+   */
+  hide(): void {
+    setStyle(this.element, { display: 'none' })
+  }
+
+  /**
+   * Check if point is inside crop box
+   */
+  contains(x: number, y: number): boolean {
+    return (
+      x >= this.data.left &&
+      x <= this.data.left + this.data.width &&
+      y >= this.data.top &&
+      y <= this.data.top + this.data.height
+    )
+  }
+
+  /**
+   * Get rectangle
+   */
+  getRectangle(): Rectangle {
+    return {
+      left: this.data.left,
+      top: this.data.top,
+      width: this.data.width,
+      height: this.data.height
+    }
+  }
+
+  /**
+   * Destroy crop box
    */
   destroy(): void {
+    // Remove background
+    if (this.backgroundElement && this.backgroundElement.parentNode) {
+      this.backgroundElement.parentNode.removeChild(this.backgroundElement)
+    }
+
+    // Remove modal
+    if (this.modalElement && this.modalElement.parentNode) {
+      this.modalElement.parentNode.removeChild(this.modalElement)
+    }
+
+    // Remove crop box
     if (this.element.parentNode) {
       this.element.parentNode.removeChild(this.element)
     }
-    if (this.overlay.parentNode) {
-      this.overlay.parentNode.removeChild(this.overlay)
-    }
-    this.removeAllListeners()
   }
 }

@@ -1,0 +1,182 @@
+/**
+ * ApprovalFlow 样式
+ */
+
+.approval-flow-container {
+  position: relative;
+  overflow: hidden;
+  background-color: #f5f5f5;
+}
+
+.approval-flow-container * {
+  box-sizing: border-box;
+}
+
+/* LogicFlow 样式覆盖 */
+.lf-canvas-overlay {
+  pointer-events: none;
+}
+
+/* 节点文本样式 */
+.lf-node-text {
+  user-select: none;
+}
+
+/* 边文本样式 */
+.lf-edge-text {
+  user-select: none;
+  font-size: 12px;
+  fill: #666;
+}
+
+/* 选中样式 */
+.lf-node-selected .lf-node-outline,
+.lf-edge-selected .lf-edge-outline {
+  stroke: #1890ff;
+  stroke-width: 2;
+}
+
+/* 悬停样式 */
+.lf-node:hover {
+  cursor: pointer;
+}
+
+/* 锚点样式 */
+.lf-anchor {
+  r: 4;
+  fill: #1890ff;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.lf-anchor:hover {
+  r: 5;
+  fill: #40a9ff;
+}
+
+/* 网格样式 */
+.lf-grid {
+  background-size: 20px 20px;
+  background-image:
+    linear-gradient(to right, #e0e0e0 1px, transparent 1px),
+    linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
+}
+
+/* 小地图样式 */
+.lf-mini-map {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 工具栏样式 */
+.lf-toolbar {
+  position: absolute;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lf-toolbar.top {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.lf-toolbar.left {
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  flex-direction: column;
+}
+
+.lf-toolbar.right {
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  flex-direction: column;
+}
+
+.lf-toolbar.bottom {
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.lf-toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.lf-toolbar-button:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+  background: #e6f7ff;
+}
+
+.lf-toolbar-button:active {
+  background: #bae7ff;
+}
+
+.lf-toolbar-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 对齐线样式 */
+.lf-snapline {
+  stroke: #1890ff;
+  stroke-width: 1;
+  stroke-dasharray: 5, 5;
+  pointer-events: none;
+}
+
+/* 只读模式样式 */
+.approval-flow-container.readonly {
+  background-color: #fafafa;
+}
+
+.approval-flow-container.readonly .lf-node,
+.approval-flow-container.readonly .lf-edge {
+  cursor: default !important;
+}
+
+/* 动画 */
+@keyframes node-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.lf-node-animating {
+  animation: node-pulse 1s ease-in-out infinite;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .lf-toolbar {
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .lf-toolbar-button {
+    width: 28px;
+    height: 28px;
+  }
+}

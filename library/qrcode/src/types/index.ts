@@ -23,6 +23,22 @@ export enum RenderType {
 }
 
 /**
+ * Render layer for selective module rendering
+ */
+export enum RenderLayer {
+  /** Render all modules (default) */
+  All = 'all',
+  /** Render only function modules (finder patterns, timing patterns, alignment patterns) */
+  Function = 'function',
+  /** Render only data modules (encoded data and error correction) */
+  Data = 'data',
+  /** Render only guide patterns (timing patterns) */
+  Guide = 'guide',
+  /** Render only marker patterns (finder patterns) */
+  Marker = 'marker',
+}
+
+/**
  * Dot style for QR code modules
  */
 export enum DotStyle {
@@ -48,6 +64,48 @@ export enum DotStyle {
   Liquid = 'liquid',
   /** Smooth dots with gradient-like appearance */
   SmoothDots = 'smooth-dots',
+}
+
+/**
+ * Marker (finder pattern) outer frame shape
+ */
+export enum MarkerShape {
+  /** Square frame */
+  Square = 'square',
+  /** Circular frame */
+  Circle = 'circle',
+  /** Rounded square frame */
+  RoundedSquare = 'rounded-square',
+  /** Octagon frame */
+  Octagon = 'octagon',
+  /** Leaf shape frame */
+  Leaf = 'leaf',
+  /** Frame with decorative elements */
+  Frame = 'frame',
+  /** Extra decorative style */
+  Extra = 'extra',
+}
+
+/**
+ * Marker (finder pattern) inner shape
+ */
+export enum MarkerInner {
+  /** Square inner */
+  Square = 'square',
+  /** Circle inner */
+  Circle = 'circle',
+  /** Diamond inner */
+  Diamond = 'diamond',
+  /** Rounded square inner */
+  Rounded = 'rounded',
+  /** Petal/flower inner */
+  Petal = 'petal',
+  /** Plus/cross inner */
+  Plus = 'plus',
+  /** Star inner */
+  Star = 'star',
+  /** Auto-match outer shape */
+  Auto = 'auto',
 }
 
 /**
@@ -122,13 +180,20 @@ export interface StrokeConfig {
  * Eye (finder pattern) style configuration
  */
 export interface EyeStyleConfig {
-  /** Outer frame style */
+  /** Marker outer frame shape (new enhanced API) */
+  markerShape?: MarkerShape;
+  /** Marker inner shape (new enhanced API) */
+  markerInner?: MarkerInner;
+  /** Pixel style for the outer frame modules (new enhanced API) */
+  pixelStyle?: DotStyle;
+
+  /** Outer frame style (legacy, for backward compatibility) */
   outer?: {
     style?: DotStyle;
     color?: string;
     gradient?: GradientConfig;
   };
-  /** Inner square style */
+  /** Inner square style (legacy, for backward compatibility) */
   inner?: {
     style?: DotStyle;
     color?: string;
@@ -166,6 +231,13 @@ export interface QRCodeStyle {
   shadow?: ShadowConfig;
   /** Stroke effect */
   stroke?: StrokeConfig;
+
+  /** Rotation angle in degrees (0, 90, 180, 270) */
+  rotate?: 0 | 90 | 180 | 270;
+  /** Invert colors (swap foreground and background) */
+  invert?: boolean;
+  /** Render layer for selective module rendering */
+  renderLayer?: RenderLayer;
 }
 
 /**
@@ -217,6 +289,8 @@ export interface QRCodeConfig {
   logo?: LogoConfig;
   /** Type number (version) of QR code (1-40, auto if not specified) */
   typeNumber?: number;
+  /** Mask pattern (0-7, or -1 for auto selection) */
+  maskPattern?: -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 }
 
 /**

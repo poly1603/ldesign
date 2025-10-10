@@ -1,242 +1,128 @@
 /**
- * @file 图片处理工具函数
- * @description 提供图片加载、处理和转换相关的工具函数
+ * Image utilities
  */
 
-import type { ImageSource, ImageInfo, ImageFormat, Size } from '../types'
-import { loadImage, readFileAsDataURL, createCanvas, getCanvasContext } from './dom'
+import type { GetCroppedCanvasOptions } from '../types'
 
 /**
- * 加载图片源
+ * Load an image from URL
  */
-export async function loadImageSource(source: ImageSource): Promise<HTMLImageElement> {
-  if (source instanceof HTMLImageElement) {
-    // 如果图片还没有加载完成，等待加载
-    if (!source.complete) {
-      await new Promise<void>((resolve, reject) => {
-        const onLoad = () => {
-          source.removeEventListener('load', onLoad)
-          source.removeEventListener('error', onError)
-          resolve()
-        }
-        const onError = () => {
-          source.removeEventListener('load', onLoad)
-          source.removeEventListener('error', onError)
-          reject(new Error('Failed to load image'))
-        }
-        source.addEventListener('load', onLoad)
-        source.addEventListener('error', onError)
-      })
+export function loadImage(src: string, crossOrigin?: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error(`Failed to load image: ${src}`))
+
+    if (crossOrigin) {
+      image.crossOrigin = crossOrigin
     }
-    return source
-  }
-  
-  if (source instanceof HTMLCanvasElement) {
-    const img = new Image()
-    img.src = source.toDataURL()
-    return loadImage(img.src)
-  }
-  
-  if (source instanceof File) {
-    const dataURL = await readFileAsDataURL(source)
-    return loadImage(dataURL)
-  }
-  
-  if (typeof source === 'string') {
-    return loadImage(source)
-  }
-  
-  throw new Error('Unsupported image source type')
+
+    image.src = src
+  })
 }
 
 /**
- * 获取图片信息
+ * Get image EXIF orientation
  */
-export function getImageInfo(image: HTMLImageElement, file?: File): ImageInfo {
-  return {
-    naturalWidth: image.naturalWidth,
-    naturalHeight: image.naturalHeight,
-    width: image.width || image.naturalWidth,
-    height: image.height || image.naturalHeight,
-    aspectRatio: image.naturalWidth / image.naturalHeight,
-    src: image.src,
-    size: file?.size,
-    type: file?.type,
-  }
+export function getOrientation(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+
+    reader.onload = (e) => {
+      const view = new DataView(e.target?.result as ArrayBuffer)
+
+      if (view.getUint16(0, false) !== 0xffd8) {
+        resolve(1)
+        return
+      }
+
+      const length = view.byteLength
+      let offset = 2
+
+      while (offset < length) {
+        if (view.getUint16(offset + 2, false) <= 8) {
+          resolve(1)
+          return
+        }
+        const marker = view.getUint16(offset, false)
+        offset += 2
+
+        if (marker === 0xffe1) {
+          offset += 2
+          if (view.getUint32(offset, false) !== 0x45786966) {
+            resolve(1)
+            return
+          }
+
+          const little = view.getUint16((offset += 6), false) === 0x4949
+          offset += view.getUint32(offset + 4, little)
+          const tags = view.getUint16(offset, little)
+          offset += 2
+
+          for (let i = 0; i < tags; i++) {
+            if (view.getUint16(offset + i * 12, little) === 0x0112) {
+              resolve(view.getUint16(offset + i * 12 + 8, little))
+              return
+            }
+          }
+        } else if ((marker & 0xff00) !== 0xff00) {
+          break
+        } else {
+          offset += view.getUint16(offset, false)
+        }
+      }
+
+      resolve(1)
+    }
+
+    reader.readAsArrayBuffer(file)
+  })
 }
 
 /**
- * 创建图片的Canvas副本
+ * Create a canvas from image
  */
-export function imageToCanvas(
+export function createCanvas(
   image: HTMLImageElement,
-  size?: Size
+  options: GetCroppedCanvasOptions = {}
 ): HTMLCanvasElement {
-  const canvas = createCanvas()
-  const ctx = getCanvasContext(canvas)
-  
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+
   if (!ctx) {
     throw new Error('Failed to get canvas context')
   }
-  
-  const width = size?.width || image.naturalWidth
-  const height = size?.height || image.naturalHeight
-  
+
+  const {
+    width = image.naturalWidth,
+    height = image.naturalHeight,
+    fillColor,
+    imageSmoothingEnabled = true,
+    imageSmoothingQuality = 'high'
+  } = options
+
   canvas.width = width
   canvas.height = height
-  
-  ctx.drawImage(image, 0, 0, width, height)
-  
-  return canvas
-}
 
-/**
- * 调整图片大小
- */
-export function resizeImage(
-  image: HTMLImageElement,
-  targetSize: Size,
-  quality: number = 0.9
-): HTMLCanvasElement {
-  const canvas = createCanvas(targetSize.width, targetSize.height)
-  const ctx = getCanvasContext(canvas)
-  
-  if (!ctx) {
-    throw new Error('Failed to get canvas context')
+  ctx.imageSmoothingEnabled = imageSmoothingEnabled
+  ctx.imageSmoothingQuality = imageSmoothingQuality
+
+  if (fillColor) {
+    ctx.fillStyle = fillColor
+    ctx.fillRect(0, 0, width, height)
   }
-  
-  // 使用高质量的图片缩放
-  ctx.imageSmoothingEnabled = true
-  ctx.imageSmoothingQuality = 'high'
-  
-  ctx.drawImage(image, 0, 0, targetSize.width, targetSize.height)
-  
+
   return canvas
 }
 
 /**
- * 旋转图片
- */
-export function rotateImage(
-  image: HTMLImageElement,
-  angle: number
-): HTMLCanvasElement {
-  const canvas = createCanvas()
-  const ctx = getCanvasContext(canvas)
-  
-  if (!ctx) {
-    throw new Error('Failed to get canvas context')
-  }
-  
-  const rad = (angle * Math.PI) / 180
-  const cos = Math.abs(Math.cos(rad))
-  const sin = Math.abs(Math.sin(rad))
-  
-  // 计算旋转后的尺寸
-  const newWidth = image.naturalWidth * cos + image.naturalHeight * sin
-  const newHeight = image.naturalWidth * sin + image.naturalHeight * cos
-  
-  canvas.width = newWidth
-  canvas.height = newHeight
-  
-  // 移动到中心点
-  ctx.translate(newWidth / 2, newHeight / 2)
-  
-  // 旋转
-  ctx.rotate(rad)
-  
-  // 绘制图片
-  ctx.drawImage(
-    image,
-    -image.naturalWidth / 2,
-    -image.naturalHeight / 2,
-    image.naturalWidth,
-    image.naturalHeight
-  )
-  
-  return canvas
-}
-
-/**
- * 翻转图片
- */
-export function flipImage(
-  image: HTMLImageElement,
-  horizontal: boolean = false,
-  vertical: boolean = false
-): HTMLCanvasElement {
-  const canvas = createCanvas(image.naturalWidth, image.naturalHeight)
-  const ctx = getCanvasContext(canvas)
-  
-  if (!ctx) {
-    throw new Error('Failed to get canvas context')
-  }
-  
-  ctx.save()
-  
-  // 设置翻转
-  const scaleX = horizontal ? -1 : 1
-  const scaleY = vertical ? -1 : 1
-  
-  ctx.scale(scaleX, scaleY)
-  
-  // 调整绘制位置
-  const x = horizontal ? -image.naturalWidth : 0
-  const y = vertical ? -image.naturalHeight : 0
-  
-  ctx.drawImage(image, x, y, image.naturalWidth, image.naturalHeight)
-  
-  ctx.restore()
-  
-  return canvas
-}
-
-/**
- * 裁剪图片
- */
-export function cropImage(
-  image: HTMLImageElement,
-  cropArea: { x: number; y: number; width: number; height: number },
-  outputSize?: Size
-): HTMLCanvasElement {
-  const canvas = createCanvas()
-  const ctx = getCanvasContext(canvas)
-  
-  if (!ctx) {
-    throw new Error('Failed to get canvas context')
-  }
-  
-  const outputWidth = outputSize?.width || cropArea.width
-  const outputHeight = outputSize?.height || cropArea.height
-  
-  canvas.width = outputWidth
-  canvas.height = outputHeight
-  
-  ctx.imageSmoothingEnabled = true
-  ctx.imageSmoothingQuality = 'high'
-  
-  ctx.drawImage(
-    image,
-    cropArea.x,
-    cropArea.y,
-    cropArea.width,
-    cropArea.height,
-    0,
-    0,
-    outputWidth,
-    outputHeight
-  )
-  
-  return canvas
-}
-
-/**
- * Canvas转换为Blob
+ * Canvas to Blob
  */
 export function canvasToBlob(
   canvas: HTMLCanvasElement,
-  format: ImageFormat = ImageFormat.PNG,
-  quality: number = 0.9
+  type = 'image/png',
+  quality = 1
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
@@ -247,133 +133,91 @@ export function canvasToBlob(
           reject(new Error('Failed to convert canvas to blob'))
         }
       },
-      format,
+      type,
       quality
     )
   })
 }
 
 /**
- * Canvas转换为DataURL
+ * Canvas to Data URL
  */
 export function canvasToDataURL(
   canvas: HTMLCanvasElement,
-  format: ImageFormat = ImageFormat.PNG,
-  quality: number = 0.9
+  type = 'image/png',
+  quality = 1
 ): string {
-  return canvas.toDataURL(format, quality)
+  return canvas.toDataURL(type, quality)
 }
 
 /**
- * 检查图片格式
+ * Download canvas as image
  */
-export function getImageFormat(file: File): ImageFormat | null {
-  const type = file.type.toLowerCase()
-  
-  if (type === 'image/png') return ImageFormat.PNG
-  if (type === 'image/jpeg' || type === 'image/jpg') return ImageFormat.JPEG
-  if (type === 'image/webp') return ImageFormat.WEBP
-  
-  return null
+export function downloadCanvas(
+  canvas: HTMLCanvasElement,
+  filename: string,
+  type = 'image/png',
+  quality = 1
+): void {
+  const url = canvasToDataURL(canvas, type, quality)
+  const link = document.createElement('a')
+  link.download = filename
+  link.href = url
+  link.click()
 }
 
 /**
- * 检查是否为支持的图片格式
+ * Check if image has transparency
  */
-export function isSupportedImageFormat(file: File): boolean {
-  return getImageFormat(file) !== null
-}
+export function hasTransparency(image: HTMLImageElement): boolean {
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
 
-/**
- * 获取图片的主要颜色
- */
-export function getImageDominantColor(image: HTMLImageElement): string {
-  const canvas = createCanvas(1, 1)
-  const ctx = getCanvasContext(canvas)
-  
   if (!ctx) {
-    return '#000000'
+    return false
   }
-  
-  ctx.drawImage(image, 0, 0, 1, 1)
-  const imageData = ctx.getImageData(0, 0, 1, 1)
-  const [r, g, b] = imageData.data
-  
-  return `rgb(${r}, ${g}, ${b})`
+
+  canvas.width = image.naturalWidth
+  canvas.height = image.naturalHeight
+  ctx.drawImage(image, 0, 0)
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+  const { data } = imageData
+
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] < 255) {
+      return true
+    }
+  }
+
+  return false
 }
 
 /**
- * 计算图片的平均亮度
+ * Get image aspect ratio
  */
-export function getImageBrightness(image: HTMLImageElement): number {
-  const canvas = createCanvas(100, 100)
-  const ctx = getCanvasContext(canvas)
-  
-  if (!ctx) {
-    return 0.5
-  }
-  
-  ctx.drawImage(image, 0, 0, 100, 100)
-  const imageData = ctx.getImageData(0, 0, 100, 100)
-  const data = imageData.data
-  
-  let totalBrightness = 0
-  const pixelCount = data.length / 4
-  
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i]
-    const g = data[i + 1]
-    const b = data[i + 2]
-    
-    // 使用相对亮度公式
-    const brightness = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-    totalBrightness += brightness
-  }
-  
-  return totalBrightness / pixelCount
+export function getImageAspectRatio(image: HTMLImageElement): number {
+  return image.naturalWidth / image.naturalHeight
 }
 
 /**
- * 应用图片滤镜
+ * Check if URL is blob URL
  */
-export function applyImageFilter(
-  image: HTMLImageElement,
-  filter: string
-): HTMLCanvasElement {
-  const canvas = imageToCanvas(image)
-  const ctx = getCanvasContext(canvas)
-  
-  if (!ctx) {
-    throw new Error('Failed to get canvas context')
-  }
-  
-  ctx.filter = filter
-  ctx.drawImage(canvas, 0, 0)
-  
-  return canvas
+export function isBlobURL(url: string): boolean {
+  return url.startsWith('blob:')
 }
 
 /**
- * 创建图片缩略图
+ * Check if URL is data URL
  */
-export function createThumbnail(
-  image: HTMLImageElement,
-  maxSize: number = 200,
-  quality: number = 0.8
-): HTMLCanvasElement {
-  const { naturalWidth, naturalHeight } = image
-  const aspectRatio = naturalWidth / naturalHeight
-  
-  let width: number
-  let height: number
-  
-  if (naturalWidth > naturalHeight) {
-    width = Math.min(maxSize, naturalWidth)
-    height = width / aspectRatio
-  } else {
-    height = Math.min(maxSize, naturalHeight)
-    width = height * aspectRatio
-  }
-  
-  return resizeImage(image, { width, height }, quality)
+export function isDataURL(url: string): boolean {
+  return url.startsWith('data:')
+}
+
+/**
+ * Check if browser supports canvas
+ */
+export function supportsCanvas(): boolean {
+  const canvas = document.createElement('canvas')
+  return !!(canvas.getContext && canvas.getContext('2d'))
 }

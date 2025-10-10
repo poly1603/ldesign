@@ -1,93 +1,40 @@
-import { defineConfig } from 'vite';
-import { resolve } from 'path';
-import dts from 'vite-plugin-dts';
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
 export default defineConfig({
-  plugins: [
-    dts({
-      insertTypesEntry: true,
-      rollupTypes: true,
-      tsconfigPath: './tsconfig.json',
-    }),
-  ],
-  
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src'),
-      '@/core': resolve(__dirname, 'src/core'),
-      '@/plugins': resolve(__dirname, 'src/plugins'),
-      '@/ui': resolve(__dirname, 'src/ui'),
-      '@/utils': resolve(__dirname, 'src/utils'),
-      '@/types': resolve(__dirname, 'src/types'),
-    },
-  },
-  
+  plugins: [vue(), react()],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'EnhancedRichEditor',
-      formats: ['es', 'umd'],
-      fileName: (format) => {
-        return format === 'es' ? 'index.js' : `index.${format}.js`;
+      entry: {
+        index: resolve(__dirname, 'src/index.ts'),
+        vue: resolve(__dirname, 'src/adapters/vue/index.ts'),
+        react: resolve(__dirname, 'src/adapters/react/index.tsx'),
       },
+      formats: ['es'],
+      fileName: (format, entryName) => `${entryName}.js`
     },
-    
     rollupOptions: {
-      external: [
-        'react',
-        'react-dom',
-        'vue',
-        '@angular/core',
-        '@angular/common',
-      ],
+      external: ['vue', 'react', 'react-dom', 'react/jsx-runtime'],
       output: {
         globals: {
-          'react': 'React',
-          'react-dom': 'ReactDOM',
-          'vue': 'Vue',
-          '@angular/core': 'ng.core',
-          '@angular/common': 'ng.common',
+          vue: 'Vue',
+          react: 'React',
+          'react-dom': 'ReactDOM'
         },
-      },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === 'style.css') return 'style.css'
+          return assetInfo.name || ''
+        }
+      }
     },
-    
-    sourcemap: true,
-    minify: 'esbuild',
-    target: 'es2020',
+    cssCodeSplit: false,
+    sourcemap: true
   },
-  
-  css: {
-    preprocessorOptions: {
-      scss: {
-        additionalData: `@import "@/styles/variables.scss";`,
-      },
-    },
-  },
-  
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./tests/setup.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'tests/',
-        'examples/',
-        'docs/',
-        '**/*.d.ts',
-        '**/*.config.*',
-      ],
-    },
-  },
-  
-  server: {
-    port: 3000,
-    open: true,
-  },
-  
-  preview: {
-    port: 4173,
-  },
-});
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
+    }
+  }
+})

@@ -1,33 +1,15 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import { resolve } from 'node:path'
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { resolve } from 'path';
 
 export default defineConfig({
-  plugins: [
-    vue(),
-    vueJsx(),
-  ],
+  plugins: [vue()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
       '@ldesign/pdf': resolve(__dirname, '../../src'),
-      'pdfjs-dist': resolve(__dirname, '../../node_modules/pdfjs-dist'),
     },
   },
   server: {
-    port: 5173,
-    open: true,
+    port: 3000,
   },
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-  },
-  css: {
-    preprocessorOptions: {
-      less: {
-        javascriptEnabled: true,
-      },
-    },
-  },
-})
+});

@@ -9,7 +9,10 @@
       "Bash(npm install)",
       "Bash(npm run build)",
       "Bash(tree -L 3 -I \"node_modules|dist\" --charset ascii)",
-      "Bash(rimraf dist)"
+      "Bash(rimraf dist)",
+      "WebFetch(domain:qrcode.antfu.me)",
+      "WebSearch",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

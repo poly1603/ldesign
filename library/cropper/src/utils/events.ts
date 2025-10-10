@@ -1,349 +1,199 @@
 /**
- * @file 事件工具函数
- * @description 提供事件处理相关的工具函数
+ * Event utilities
  */
 
-import type { CropperEventType, EventListener, EventListenerMap } from '../types'
+import type { Point } from '../types'
 
 /**
- * 事件发射器类
+ * Event listener options
  */
-export class EventEmitter {
-  private listeners: EventListenerMap = {}
+export interface EventOptions {
+  capture?: boolean
+  passive?: boolean
+  once?: boolean
+}
 
-  /**
-   * 添加事件监听器
-   */
-  on(type: CropperEventType, listener: EventListener): void {
-    if (!this.listeners[type]) {
-      this.listeners[type] = []
-    }
-    this.listeners[type]!.push(listener)
-  }
+/**
+ * Add event listener
+ */
+export function on<K extends keyof HTMLElementEventMap>(
+  element: Element | Window | Document,
+  type: K,
+  listener: (event: HTMLElementEventMap[K]) => void,
+  options?: EventOptions
+): void {
+  element.addEventListener(type, listener as EventListener, options)
+}
 
-  /**
-   * 移除事件监听器
-   */
-  off(type: CropperEventType, listener?: EventListener): void {
-    if (!this.listeners[type]) return
+/**
+ * Remove event listener
+ */
+export function off<K extends keyof HTMLElementEventMap>(
+  element: Element | Window | Document,
+  type: K,
+  listener: (event: HTMLElementEventMap[K]) => void,
+  options?: EventOptions
+): void {
+  element.removeEventListener(type, listener as EventListener, options)
+}
 
-    if (listener) {
-      const index = this.listeners[type]!.indexOf(listener)
-      if (index > -1) {
-        this.listeners[type]!.splice(index, 1)
-      }
-    } else {
-      this.listeners[type] = []
-    }
-  }
+/**
+ * Dispatch custom event
+ */
+export function dispatch(
+  element: Element,
+  type: string,
+  detail?: any
+): boolean {
+  const event = new CustomEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    detail
+  })
+  return element.dispatchEvent(event)
+}
 
-  /**
-   * 添加一次性事件监听器
-   */
-  once(type: CropperEventType, listener: EventListener): void {
-    const onceListener: EventListener = (event) => {
-      listener(event)
-      this.off(type, onceListener)
-    }
-    this.on(type, onceListener)
-  }
+/**
+ * Get pointer coordinates from event
+ */
+export function getPointer(
+  event: MouseEvent | TouchEvent,
+  endTouch = false
+): Point {
+  const touches = (event as TouchEvent).touches
+  const changedTouches = (event as TouchEvent).changedTouches
 
-  /**
-   * 触发事件
-   */
-  emit(type: CropperEventType, data?: any): void {
-    if (!this.listeners[type]) return
-
-    const event = {
-      type,
-      target: this,
-      ...data,
-    }
-
-    this.listeners[type]!.forEach(listener => {
-      try {
-        listener(event)
-      } catch (error) {
-        console.error('Error in event listener:', error)
-      }
-    })
-  }
-
-  /**
-   * 移除所有事件监听器
-   */
-  removeAllListeners(type?: CropperEventType): void {
-    if (type) {
-      this.listeners[type] = []
-    } else {
-      this.listeners = {}
+  if (touches && touches.length > 0) {
+    const touch = endTouch ? changedTouches[0] : touches[0]
+    return {
+      x: touch.pageX,
+      y: touch.pageY
     }
   }
 
-  /**
-   * 获取事件监听器数量
-   */
-  listenerCount(type: CropperEventType): number {
-    return this.listeners[type]?.length || 0
-  }
-
-  /**
-   * 检查是否有事件监听器
-   */
-  hasListeners(type: CropperEventType): boolean {
-    return this.listenerCount(type) > 0
+  const mouseEvent = event as MouseEvent
+  return {
+    x: mouseEvent.pageX,
+    y: mouseEvent.pageY
   }
 }
 
 /**
- * 防抖函数
+ * Get center point of multiple pointers
  */
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null
+export function getCenter(event: TouchEvent): Point {
+  const touches = event.touches
+  if (touches.length < 2) {
+    return getPointer(event)
+  }
 
-  return (...args: Parameters<T>) => {
-    if (timeout) {
-      clearTimeout(timeout)
-    }
-    timeout = setTimeout(() => func(...args), wait)
+  const touch1 = touches[0]
+  const touch2 = touches[1]
+
+  return {
+    x: (touch1.pageX + touch2.pageX) / 2,
+    y: (touch1.pageY + touch2.pageY) / 2
   }
 }
 
 /**
- * 节流函数
+ * Get distance between two touch points
+ */
+export function getTouchDistance(event: TouchEvent): number {
+  const touches = event.touches
+  if (touches.length < 2) {
+    return 0
+  }
+
+  const touch1 = touches[0]
+  const touch2 = touches[1]
+
+  const dx = touch2.pageX - touch1.pageX
+  const dy = touch2.pageY - touch1.pageY
+
+  return Math.sqrt(dx * dx + dy * dy)
+}
+
+/**
+ * Prevent default behavior
+ */
+export function preventDefault(event: Event): void {
+  if (event.cancelable) {
+    event.preventDefault()
+  }
+}
+
+/**
+ * Stop propagation
+ */
+export function stopPropagation(event: Event): void {
+  event.stopPropagation()
+}
+
+/**
+ * Throttle function execution
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  delay: number
 ): (...args: Parameters<T>) => void {
-  let lastTime = 0
+  let timeoutId: number | undefined
+  let lastExecTime = 0
 
-  return (...args: Parameters<T>) => {
-    const now = Date.now()
-    if (now - lastTime >= wait) {
-      lastTime = now
-      func(...args)
+  return function (this: any, ...args: Parameters<T>) {
+    const currentTime = Date.now()
+
+    if (currentTime - lastExecTime > delay) {
+      func.apply(this, args)
+      lastExecTime = currentTime
+    } else {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId)
+      }
+      timeoutId = window.setTimeout(() => {
+        func.apply(this, args)
+        lastExecTime = Date.now()
+      }, delay)
     }
   }
 }
 
 /**
- * 检查是否为鼠标事件
+ * Debounce function execution
  */
-export function isMouseEvent(event: Event): event is MouseEvent {
-  return event.type.startsWith('mouse')
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: number | undefined
+
+  return function (this: any, ...args: Parameters<T>) {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId)
+    }
+    timeoutId = window.setTimeout(() => {
+      func.apply(this, args)
+    }, delay)
+  }
 }
 
 /**
- * 检查是否为触摸事件
+ * Check if event is touch event
  */
 export function isTouchEvent(event: Event): event is TouchEvent {
   return event.type.startsWith('touch')
 }
 
 /**
- * 检查是否为指针事件
+ * Check if event is mouse event
+ */
+export function isMouseEvent(event: Event): event is MouseEvent {
+  return event.type.startsWith('mouse')
+}
+
+/**
+ * Check if event is pointer event
  */
 export function isPointerEvent(event: Event): event is PointerEvent {
   return event.type.startsWith('pointer')
-}
-
-/**
- * 获取事件的按键信息
- */
-export function getEventKeys(event: KeyboardEvent): {
-  ctrl: boolean
-  shift: boolean
-  alt: boolean
-  meta: boolean
-} {
-  return {
-    ctrl: event.ctrlKey,
-    shift: event.shiftKey,
-    alt: event.altKey,
-    meta: event.metaKey,
-  }
-}
-
-/**
- * 检查是否按下了修饰键
- */
-export function hasModifierKey(event: KeyboardEvent): boolean {
-  const keys = getEventKeys(event)
-  return keys.ctrl || keys.shift || keys.alt || keys.meta
-}
-
-/**
- * 创建自定义事件
- */
-export function createCustomEvent(
-  type: string,
-  detail?: any,
-  options?: EventInit
-): CustomEvent {
-  return new CustomEvent(type, {
-    detail,
-    bubbles: true,
-    cancelable: true,
-    ...options,
-  })
-}
-
-/**
- * 事件委托
- */
-export function delegate(
-  container: HTMLElement,
-  selector: string,
-  eventType: string,
-  handler: (event: Event, target: HTMLElement) => void
-): () => void {
-  const delegateHandler = (event: Event) => {
-    const target = event.target as HTMLElement
-    const delegateTarget = target.closest(selector) as HTMLElement
-    
-    if (delegateTarget && container.contains(delegateTarget)) {
-      handler(event, delegateTarget)
-    }
-  }
-
-  container.addEventListener(eventType, delegateHandler)
-
-  // 返回清理函数
-  return () => {
-    container.removeEventListener(eventType, delegateHandler)
-  }
-}
-
-/**
- * 一次性事件监听器
- */
-export function once(
-  element: HTMLElement | Document | Window,
-  eventType: string,
-  handler: EventListener
-): void {
-  const onceHandler = (event: Event) => {
-    handler(event)
-    element.removeEventListener(eventType, onceHandler)
-  }
-  element.addEventListener(eventType, onceHandler)
-}
-
-/**
- * 等待事件触发
- */
-export function waitForEvent(
-  element: HTMLElement | Document | Window,
-  eventType: string,
-  timeout?: number
-): Promise<Event> {
-  return new Promise((resolve, reject) => {
-    let timeoutId: NodeJS.Timeout | null = null
-
-    const handler = (event: Event) => {
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
-      element.removeEventListener(eventType, handler)
-      resolve(event)
-    }
-
-    element.addEventListener(eventType, handler)
-
-    if (timeout) {
-      timeoutId = setTimeout(() => {
-        element.removeEventListener(eventType, handler)
-        reject(new Error(`Event ${eventType} timeout after ${timeout}ms`))
-      }, timeout)
-    }
-  })
-}
-
-/**
- * 批量添加事件监听器
- */
-export function addEventListeners(
-  element: HTMLElement | Document | Window,
-  events: Record<string, EventListener>
-): () => void {
-  const cleanupFunctions: (() => void)[] = []
-
-  Object.entries(events).forEach(([eventType, handler]) => {
-    element.addEventListener(eventType, handler)
-    cleanupFunctions.push(() => {
-      element.removeEventListener(eventType, handler)
-    })
-  })
-
-  // 返回清理函数
-  return () => {
-    cleanupFunctions.forEach(cleanup => cleanup())
-  }
-}
-
-/**
- * 检查事件是否来自指定元素或其子元素
- */
-export function isEventFromElement(
-  event: Event,
-  element: HTMLElement
-): boolean {
-  const target = event.target as HTMLElement
-  return element === target || element.contains(target)
-}
-
-/**
- * 获取事件路径
- */
-export function getEventPath(event: Event): HTMLElement[] {
-  if ('composedPath' in event && typeof event.composedPath === 'function') {
-    return event.composedPath() as HTMLElement[]
-  }
-
-  // 兼容性处理
-  const path: HTMLElement[] = []
-  let target = event.target as HTMLElement
-
-  while (target) {
-    path.push(target)
-    target = target.parentElement as HTMLElement
-  }
-
-  return path
-}
-
-/**
- * 阻止事件冒泡和默认行为
- */
-export function stopEvent(event: Event): void {
-  event.preventDefault()
-  event.stopPropagation()
-  event.stopImmediatePropagation()
-}
-
-/**
- * 检查事件是否被阻止
- */
-export function isEventPrevented(event: Event): boolean {
-  return event.defaultPrevented
-}
-
-/**
- * 模拟事件触发
- */
-export function simulateEvent(
-  element: HTMLElement,
-  eventType: string,
-  options?: EventInit
-): void {
-  const event = new Event(eventType, {
-    bubbles: true,
-    cancelable: true,
-    ...options,
-  })
-  element.dispatchEvent(event)
 }

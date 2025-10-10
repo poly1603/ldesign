@@ -1,79 +1,62 @@
 {
   "name": "@ldesign/pdf",
+  "version": "1.0.0",
+  "description": "功能强大的PDF阅读器插件，支持Vue、React和原生JavaScript",
   "type": "module",
-  "version": "0.1.0",
-  "description": "A framework-agnostic PDF preview library with Vue 3 integration",
-  "author": "ldesign",
-  "license": "MIT",
-  "keywords": [
-    "pdf",
-    "pdf-viewer",
-    "pdf-preview",
-    "document-viewer",
-    "vue3",
-    "typescript",
-    "framework-agnostic"
-  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./adapt/vue": {
-      "types": "./types/adapt/vue/index.d.ts",
-      "import": "./esm/adapt/vue/index.js",
-      "require": "./cjs/adapt/vue/index.js"
-    },
     "./vue": {
-      "types": "./types/adapt/vue/index.d.ts",
-      "import": "./esm/adapt/vue/index.js",
-      "require": "./cjs/adapt/vue/index.js"
+      "types": "./dist/adapters/vue/index.d.ts",
+      "import": "./dist/adapters/vue/index.js",
+      "require": "./dist/adapters/vue/index.cjs"
     },
-    "./esm/adapt/vue/index.css": "./esm/adapt/vue/index.css",
-    "./cjs/adapt/vue/index.css": "./cjs/adapt/vue/index.css",
-    "./adapt/vue/index.css": "./esm/adapt/vue/index.css",
-    "./style.css": "./esm/adapt/vue/index.css"
+    "./style.css": "./dist/style.css"
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
   "files": [
-    "README.md",
-    "CHANGELOG.md",
     "dist",
-    "esm",
-    "cjs",
-    "types"
+    "README.md"
   ],
   "scripts": {
-    "build": "ldesign-builder build",
-    "build:rollup": "rollup -c",
-    "build:watch": "ldesign-builder build --watch",
-    "dev": "rollup -c -w",
-    "type-check": "vue-tsc --noEmit --project tsconfig.test.json",
-    "lint": "eslint . --fix",
-    "lint:check": "eslint .",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
-    "size-check": "size-limit",
-    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run build:rollup && pnpm run test:run",
-    "build:check": "pnpm run build && node ../../tools/scripts/build/bundle-validator.js",
-    "build:analyze": "pnpm run build && node ../../tools/scripts/build/bundle-analyzer.js",
-    "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
-    "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "postinstall": "node scripts/copy-worker.js",
+    "copy-worker": "node scripts/copy-worker.js",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "build:dev": "node scripts/build.js --dev"
+    "dev:vue3": "node scripts/dev.js vue3",
+    "dev:vanilla": "node scripts/dev.js vanilla",
+    "dev:docs": "node scripts/dev.js docs",
+    "build:all": "node scripts/build-all.js",
+    "example:vue3": "cd examples/vue3-demo && pnpm dev",
+    "example:vanilla": "cd examples/vanilla-demo && pnpm dev"
+  },
+  "keywords": [
+    "pdf",
+    "pdf-viewer",
+    "pdf-reader",
+    "vue",
+    "vue3",
+    "react",
+    "typescript",
+    "pdfjs"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/pdf"
   },
   "peerDependencies": {
-    "vue": "^3.3.0"
+    "vue": "^3.0.0"
   },
   "peerDependenciesMeta": {
     "vue": {
@@ -81,43 +64,17 @@
     }
   },
   "dependencies": {
-    "pdfjs-dist": "^3.11.174",
-    "tslib": "^2.6.2"
+    "pdfjs-dist": "^4.0.379"
   },
   "devDependencies": {
-    "@ldesign/builder": "workspace:*",
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@rollup/plugin-babel": "^6.0.4",
-    "@babel/core": "^7.25.0",
-    "@babel/preset-typescript": "^7.24.7",
-    "@vue/babel-plugin-jsx": "^1.2.2",
-    "rollup-plugin-postcss": "^4.0.2",
-    "less": "^4.2.0",
-    "@types/node": "^22.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.39.0",
-    "@typescript-eslint/parser": "^8.39.0",
-    "@vitejs/plugin-vue": "^5.0.3",
-    "@vitest/ui": "^3.2.4",
-    "@vue/test-utils": "^2.4.4",
-    "eslint": "^9.32.0",
-    "jsdom": "^24.0.0",
-    "rollup": "^4.9.6",
-    "rollup-plugin-dts": "^6.1.0",
-    "size-limit": "^11.0.0",
-    "typescript": "^5.6.0",
-    "vite": "^5.0.12",
-    "vitest": "^3.2.4",
-    "vue": "^3.4.15",
-    "vue-tsc": "^3.0.5"
-  },
-  "size-limit": [
-    {
-      "path": "dist/index.js",
-      "limit": "100 KB"
-    }
-  ],
-  "browser": "dist/index.js"
+    "@types/node": "^20.10.6",
+    "@vitejs/plugin-vue": "^5.0.2",
+    "@vue/tsconfig": "^0.5.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.11",
+    "vite-plugin-dts": "^3.7.0",
+    "vitepress": "^1.0.0-rc.35",
+    "vue": "^3.4.3",
+    "vue-tsc": "^1.8.27"
+  }
 }

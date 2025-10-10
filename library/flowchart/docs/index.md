@@ -2,178 +2,135 @@
 layout: home
 
 hero:
-  name: "LDesign Flowchart"
-  text: "审批流程图编辑器"
-  tagline: "基于 LogicFlow 的专业审批流程可视化组件"
-  image:
-    src: /logo.svg
-    alt: LDesign Flowchart
+  name: ApprovalFlow
+  text: 审批流程图编辑器
+  tagline: 基于 LogicFlow 的强大、灵活、易用的审批流程图编辑器
   actions:
     - theme: brand
       text: 快速开始
       link: /guide/getting-started
     - theme: alt
-      text: 查看示例
-      link: /examples/basic
-    - theme: alt
-      text: GitHub
-      link: https://github.com/ldesign/flowchart
+      text: 在 GitHub 上查看
+      link: https://github.com/ldesign/approval-flow
 
 features:
+  - icon: 🎨
+    title: 功能强大
+    details: 支持开始、审批、条件、并行、抄送、结束等多种节点类型，满足复杂审批流程需求
   - icon: ⚡
-    title: 基于 LogicFlow
-    details: 基于成熟的 @logicflow/core 进行二次封装，稳定可靠
+    title: 配置丰富
+    details: 提供丰富的配置选项，包括主题、工具栏、网格、缩放等，高度可定制
+  - icon: 🚀
+    title: 使用简单
+    details: API 设计简洁直观，支持 Vue、React 等主流框架，开箱即用
+  - icon: 📱
+    title: 框架无关
+    details: 核心库不依赖任何框架，可在任意 JavaScript 环境中使用
   - icon: 🔧
     title: TypeScript 支持
-    details: 完整的类型定义和类型安全，提供优秀的开发体验
-  - icon: 🌐
-    title: 框架无关
-    details: 可在 React、Vue、Angular 等任何前端框架中使用
-  - icon: 📋
-    title: 审批流程专用
-    details: 提供审批流程特有的节点类型和功能，专为审批场景设计
-  - icon: 🎨
-    title: 主题系统
-    details: 基于 LDESIGN 设计系统的可定制主题，支持暗色模式
-  - icon: 🔌
-    title: 插件机制
-    details: 支持功能扩展和自定义节点，提供丰富的插件生态
-  - icon: 🚀
-    title: 简洁 API
-    details: 提供简单易用的 API 接口，快速上手，轻松集成
-  - icon: ✅
-    title: 完整测试
-    details: 包含 46 个单元测试和集成测试，确保代码质量
+    details: 使用 TypeScript 编写，提供完整的类型定义，开发体验极佳
+  - icon: 📦
+    title: 体积小巧
+    details: 基于 LogicFlow 核心，体积小巧，性能优异
 ---
 
-## 快速预览
+## 快速开始
+
+### 安装
 
 ::: code-group
 
-```typescript [基础编辑器]
-import { FlowchartAPI } from '@ldesign/flowchart'
-
-// 使用简洁的 API 创建编辑器
-const editor = FlowchartAPI.createEditor({
-  container: '#flowchart-container',
-  width: 800,
-  height: 600,
-  plugins: {
-    minimap: true,
-    history: true,
-    export: true
-  }
-})
-
-// 创建审批流程模板
-const template = FlowchartAPI.createApprovalTemplate({
-  title: '请假审批流程',
-  steps: ['申请提交', '直属领导审批', 'HR审批', '总经理审批']
-})
-
-editor.setData(template)
+```bash [npm]
+npm install @ldesign/approval-flow
 ```
 
-```typescript [只读查看器]
-import { FlowchartAPI } from '@ldesign/flowchart'
-
-// 创建只读查看器
-const viewer = FlowchartAPI.createViewer({
-  container: '#flowchart-viewer',
-  data: flowchartData
-})
-
-// 设置执行状态
-viewer.setExecutionState({
-  currentNode: 'approval-node-2',
-  completedNodes: ['start-node', 'approval-node-1'],
-  failedNodes: []
-})
+```bash [yarn]
+yarn add @ldesign/approval-flow
 ```
 
-```typescript [自定义节点]
-import { FlowchartAPI } from '@ldesign/flowchart'
-
-// 快速创建节点
-const approvalNode = FlowchartAPI.createNode({
-  type: 'approval',
-  x: 300,
-  y: 200,
-  text: '部门审批',
-  properties: {
-    approvers: ['张三', '李四'],
-    deadline: '2025-12-31',
-    status: 'pending'
-  }
-})
-
-editor.addNode(approvalNode)
+```bash [pnpm]
+pnpm add @ldesign/approval-flow
 ```
 
 :::
 
-## 核心特性
+### Vue 3 使用
 
-### 🎯 专业的审批节点
+```vue
+<template>
+  <ApprovalFlow
+    :data="flowData"
+    @node:click="handleNodeClick"
+  />
+</template>
 
-支持 7 种审批流程专用节点类型，满足各种审批场景需求：
+<script setup>
+import { ref } from 'vue';
+import { ApprovalFlow } from '@ldesign/approval-flow/vue';
+import '@logicflow/core/dist/style/index.css';
 
-- **开始节点** - 流程起始点
-- **审批节点** - 支持多人审批、并行审批
-- **条件节点** - 条件判断分支
-- **结束节点** - 流程结束点
-- **处理节点** - 一般处理步骤
-- **并行网关** - 并行分支和汇聚
-- **排他网关** - 互斥分支选择
+const flowData = ref({
+  nodes: [
+    { id: '1', type: 'start', name: '开始' },
+    { id: '2', type: 'approval', name: '审批' },
+    { id: '3', type: 'end', name: '结束' },
+  ],
+  edges: [
+    { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
+    { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
+  ],
+});
 
-### 🔌 强大的插件系统
+const handleNodeClick = (node) => {
+  console.log('节点点击:', node);
+};
+</script>
+```
 
-内置 3 个实用插件，支持自定义扩展：
+### React 使用
 
-- **小地图插件** - 提供流程图缩略图导航
-- **历史记录插件** - 支持撤销/重做操作
-- **导出插件** - 支持多种格式导出（PNG、JPG、SVG、JSON、XML）
+```tsx
+import { useRef } from 'react';
+import { ApprovalFlow } from '@ldesign/approval-flow/react';
+import '@logicflow/core/dist/style/index.css';
 
-### 🎨 灵活的主题系统
+function App() {
+  const editorRef = useRef();
 
-基于 LDESIGN 设计系统，支持多种主题：
+  const flowData = {
+    nodes: [
+      { id: '1', type: 'start', name: '开始' },
+      { id: '2', type: 'approval', name: '审批' },
+      { id: '3', type: 'end', name: '结束' },
+    ],
+    edges: [
+      { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
+      { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
+    ],
+  };
 
-- **默认主题** - 清新明亮的默认风格
-- **暗色主题** - 适合夜间使用的深色主题
-- **蓝色主题** - 专业商务风格主题
-- **自定义主题** - 支持完全自定义的主题配置
+  return (
+    <ApprovalFlow
+      ref={editorRef}
+      data={flowData}
+      onNodeClick={(node) => console.log('节点点击:', node)}
+    />
+  );
+}
+```
 
-## 开发状态
+## 为什么选择 ApprovalFlow？
 
-::: tip 当前版本：v1.0.0 🎉
-核心功能已完成，可用于生产环境！
-:::
+- **专为审批流程设计**：专门为审批流程场景设计，提供审批节点、条件节点、并行节点等
+- **开箱即用**：提供 Vue、React 组件，无需复杂配置即可使用
+- **高度可定制**：支持自定义主题、节点样式、工具栏等
+- **完善的验证**：内置流程验证功能，确保流程的正确性
+- **丰富的事件**：提供丰富的事件回调，方便集成到业务系统
 
-### ✅ 已完成功能
+## 贡献
 
-- ✅ **核心架构** - 基于 @logicflow/core 的稳定架构
-- ✅ **完整类型定义** - 100% TypeScript 支持
-- ✅ **7种节点类型** - 覆盖所有审批场景
-- ✅ **双编辑器系统** - 编辑器 + 查看器
-- ✅ **事件系统** - 完整的交互事件支持
-- ✅ **主题系统** - 3种内置主题 + 自定义支持
-- ✅ **插件系统** - 3个内置插件 + 扩展机制
-- ✅ **简洁 API** - FlowchartAPI 统一接口
-- ✅ **完整测试** - 46个测试用例全部通过
-- ✅ **构建系统** - 基于 @ldesign/builder
+欢迎贡献代码、报告问题或提出建议！
 
-### 🚀 即将推出
+## 许可证
 
-- 📋 VitePress 文档站点完善
-- 🎨 更多主题选项
-- 🔌 社区插件生态
-- 📱 移动端适配优化
-- ⚡ 性能进一步优化
-
-## 社区与支持
-
-- 📖 [完整文档](/guide/getting-started)
-- 🎯 [在线示例](/examples/basic)
-- 🐛 [问题反馈](https://github.com/ldesign/flowchart/issues)
-- 💬 [讨论区](https://github.com/ldesign/flowchart/discussions)
-- 📧 [邮件支持](mailto:support@ldesign.com)
+[MIT License](https://github.com/ldesign/approval-flow/blob/main/LICENSE)

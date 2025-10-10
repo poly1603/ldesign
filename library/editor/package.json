@@ -1,138 +1,77 @@
 {
-  "name": "@ldesign/enhanced-rich-editor",
-  "version": "0.1.0",
-  "description": "A modern, extensible rich text editor with advanced features",
-  "keywords": [
-    "rich-text-editor",
-    "wysiwyg",
-    "editor",
-    "typescript",
-    "collaborative",
-    "extensible"
-  ],
-  "author": "LDesign Team",
-  "license": "MIT",
+  "name": "@ldesign/editor",
+  "version": "1.0.0",
+  "description": "A powerful and extensible rich text editor with framework adapters",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./react": {
-      "import": "./dist/react/index.js",
-      "types": "./dist/react/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./vue": {
-      "import": "./dist/vue/index.js",
-      "types": "./dist/vue/index.d.ts"
+      "types": "./dist/vue.d.ts",
+      "import": "./dist/vue.js"
     },
-    "./angular": {
-      "import": "./dist/angular/index.js",
-      "types": "./dist/angular/index.d.ts"
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
     },
-    "./styles": "./dist/styles/index.css"
+    "./style.css": "./dist/style.css"
   },
   "files": [
     "dist",
-    "README.md",
-    "LICENSE"
+    "README.md"
   ],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:types": "tsc --emitDeclarationOnly",
     "preview": "vite preview",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
-    "test:e2e": "playwright test",
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "clean": "rimraf dist"
+    "docs:preview": "vitepress preview docs"
   },
-  "dependencies": {
-    "@types/katex": "^0.16.7",
-    "@types/prismjs": "^1.26.5",
-    "eventemitter3": "^5.0.1",
-    "katex": "^0.16.22",
-    "lodash-es": "^4.17.21",
-    "prismjs": "^1.30.0",
-    "uuid": "^9.0.1"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.40.0",
-    "@types/lodash-es": "^4.17.12",
-    "@types/node": "^20.10.0",
-    "@types/uuid": "^9.0.7",
-    "@typescript-eslint/eslint-plugin": "^6.13.0",
-    "@typescript-eslint/parser": "^6.13.0",
-    "@vitejs/plugin-react": "^4.2.0",
-    "@vitejs/plugin-vue": "^4.5.0",
-    "@vitest/coverage-v8": "^1.0.0",
-    "@vitest/ui": "^1.0.0",
-    "eslint": "^8.54.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.1",
-    "husky": "^8.0.3",
-    "jsdom": "^23.0.0",
-    "lint-staged": "^15.2.0",
-    "prettier": "^3.1.0",
-    "rimraf": "^5.0.5",
-    "typescript": "^5.9.2",
-    "vite": "^5.0.0",
-    "vite-plugin-dts": "^3.6.0",
-    "vitepress": "^1.0.0-rc.31",
-    "vitest": "^1.0.0"
-  },
+  "keywords": [
+    "editor",
+    "rich-text",
+    "wysiwyg",
+    "contenteditable",
+    "vue",
+    "react",
+    "typescript"
+  ],
+  "author": "LDesign",
+  "license": "MIT",
+  "dependencies": {},
   "peerDependencies": {
-    "@angular/core": ">=15.0.0",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "vue": ">=3.0.0"
+    "vue": "^3.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
   "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
     "react": {
       "optional": true
     },
     "react-dom": {
       "optional": true
-    },
-    "vue": {
-      "optional": true
-    },
-    "@angular/core": {
-      "optional": true
     }
   },
-  "engines": {
-    "node": ">=16.0.0",
-    "pnpm": ">=8.0.0"
-  },
-  "packageManager": "pnpm@8.10.0",
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yml,yaml}": [
-      "prettier --write"
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/enhanced-rich-editor.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign/enhanced-rich-editor/issues"
-  },
-  "homepage": "https://github.com/ldesign/enhanced-rich-editor#readme"
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vitepress": "^1.5.0",
+    "vue": "^3.5.13",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
 }

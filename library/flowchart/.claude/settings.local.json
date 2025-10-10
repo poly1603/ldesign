@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/WorkBench/ldesign/library/cropper/src/**)",
+      "Read(//d/WorkBench/ldesign/library/qrcode/**)",
+      "Read(//d/WorkBench/ldesign/library/cropper/**)",
+      "Bash(tree -L 3 -I node_modules)",
+      "Bash(npm install)",
+      "Bash(npm install --legacy-peer-deps)",
+      "Bash(test -f src/vue.ts)",
+      "Bash(test -f src/types/index.ts)",
+      "Bash(test -f src/styles/index.css)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

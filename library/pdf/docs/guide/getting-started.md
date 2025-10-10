@@ -1,384 +1,249 @@
 # 快速开始
 
-本指南将帮助你快速上手 @ldesign/pdf，在几分钟内实现PDF预览功能。
-
 ## 安装
-
-首先安装 @ldesign/pdf 包：
 
 ::: code-group
 
-```bash [pnpm]
-pnpm add @ldesign/pdf
-```
-
 ```bash [npm]
-npm install @ldesign/pdf
+npm install @ldesign/pdf pdfjs-dist
 ```
 
 ```bash [yarn]
-yarn add @ldesign/pdf
+yarn add @ldesign/pdf pdfjs-dist
+```
+
+```bash [pnpm]
+pnpm add @ldesign/pdf pdfjs-dist
 ```
 
 :::
 
 ## 基础使用
 
-### 原生 JavaScript
+### Vue 3
 
-```javascript
-import { createPdfViewer } from '@ldesign/pdf'
-import '@ldesign/pdf/style.css'
-
-// 创建PDF查看器
-const container = document.getElementById('pdf-container')
-const viewer = createPdfViewer({
-  container,
-  enableToolbar: true,
-  enableSearch: true,
-  theme: 'light'
-})
-
-// 加载PDF文档
-await viewer.loadDocument('path/to/document.pdf')
-
-// 监听事件
-viewer.on('documentLoaded', (info) => {
-  console.log('文档已加载:', info)
-})
-
-viewer.on('pageChanged', ({ currentPage, totalPages }) => {
-  console.log(`当前页: ${currentPage}/${totalPages}`)
-})
-```
-
-### Vue 3 组件方式
-
-```vue
-<template>
-  <div class="pdf-demo">
-    <PdfViewer
-      :src="pdfUrl"
-      :enable-toolbar="true"
-      :enable-search="true"
-      :enable-thumbnails="true"
-      :theme="theme"
-      @document-loaded="onDocumentLoaded"
-      @page-changed="onPageChanged"
-      @error="onError"
-    />
-  </div>
-</template>
-
-<script setup>
-import { ref } from 'vue'
-import { PdfViewer } from '@ldesign/pdf/vue'
-import '@ldesign/pdf/style.css'
-
-const pdfUrl = ref('path/to/document.pdf')
-const theme = ref('light')
-
-const onDocumentLoaded = (info) => {
-  console.log('文档已加载:', info)
-}
-
-const onPageChanged = ({ currentPage, totalPages }) => {
-  console.log(`当前页: ${currentPage}/${totalPages}`)
-}
-
-const onError = (error) => {
-  console.error('PDF加载错误:', error)
-}
-</script>
-
-<style scoped>
-.pdf-demo {
-  width: 100%;
-  height: 600px;
-}
-</style>
-```
-
-### Vue 3 Hook 方式
+#### 使用组件
 
 ```vue
 <template>
   <div class="pdf-container">
-    <div class="toolbar">
-      <button @click="previousPage" :disabled="!canGoPrevious">上一页</button>
-      <span>{{ currentPage }} / {{ totalPages }}</span>
-      <button @click="nextPage" :disabled="!canGoNext">下一页</button>
-      <button @click="zoomIn">放大</button>
-      <button @click="zoomOut">缩小</button>
-      <button @click="rotate">旋转</button>
-    </div>
-    <div ref="containerRef" class="viewer"></div>
+    <PDFViewer
+      :source="pdfUrl"
+      :workerSrc="workerSrc"
+      @pageChange="handlePageChange"
+      @loadComplete="handleLoadComplete"
+    />
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import { usePdfViewer } from '@ldesign/pdf/vue'
-import '@ldesign/pdf/style.css'
+<script setup lang="ts">
+import { ref } from 'vue';
+import { PDFViewerComponent as PDFViewer } from '@ldesign/pdf/vue';
 
-const containerRef = ref()
+const pdfUrl = ref('https://example.com/sample.pdf');
+const workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.js';
 
-const {
-  loadDocument,
-  currentPage,
-  totalPages,
-  canGoPrevious,
-  canGoNext,
-  previousPage,
-  nextPage,
-  zoomIn,
-  zoomOut,
-  rotate,
-  isLoading,
-  error
-} = usePdfViewer(containerRef, {
-  enableToolbar: false, // 使用自定义工具栏
-  enableSearch: true,
-  theme: 'light'
-})
+const handlePageChange = (page: number) => {
+  console.log('当前页:', page);
+};
 
-onMounted(async () => {
-  try {
-    await loadDocument('path/to/document.pdf')
-  } catch (err) {
-    console.error('加载PDF失败:', err)
-  }
-})
+const handleLoadComplete = (info: any) => {
+  console.log('文档加载完成:', info);
+};
 </script>
 
-<style scoped>
+<style>
 .pdf-container {
-  display: flex;
-  flex-direction: column;
-  height: 600px;
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.viewer {
-  flex: 1;
+  width: 100%;
+  height: 100vh;
 }
 </style>
 ```
 
-## 配置选项
-
-### 基础配置
-
-```javascript
-const viewer = createPdfViewer({
-  container: document.getElementById('pdf-container'),
-  
-  // 显示选项
-  enableToolbar: true,        // 显示工具栏
-  enableSearch: true,         // 启用搜索功能
-  enableThumbnails: true,     // 显示缩略图
-  enableTextSelection: true,  // 启用文本选择
-  enableAnnotations: true,    // 显示注释
-  
-  // 外观设置
-  theme: 'light',            // 主题: 'light' | 'dark'
-  scale: 1.0,                // 初始缩放比例
-  rotation: 0,               // 初始旋转角度
-  
-  // 性能选项
-  cacheSize: 10,             // 页面缓存数量
-  preloadPages: 2,           // 预加载页面数
-  
-  // 自定义样式
-  className: 'my-pdf-viewer',
-  style: {
-    backgroundColor: '#f5f5f5'
-  }
-})
-```
-
-### Vue 组件属性
+#### 使用 Composable
 
 ```vue
-<PdfViewer
-  :src="pdfUrl"                    <!-- PDF文档URL或File对象 -->
-  :enable-toolbar="true"           <!-- 显示工具栏 -->
-  :enable-search="true"            <!-- 启用搜索 -->
-  :enable-thumbnails="true"        <!-- 显示缩略图 -->
-  :enable-text-selection="true"    <!-- 启用文本选择 -->
-  :enable-annotations="true"       <!-- 显示注释 -->
-  :theme="'light'"                 <!-- 主题 -->
-  :scale="1.0"                     <!-- 缩放比例 -->
-  :rotation="0"                    <!-- 旋转角度 -->
-  :cache-size="10"                 <!-- 缓存大小 -->
-  :preload-pages="2"               <!-- 预加载页面数 -->
-  :class-name="'my-pdf-viewer'"    <!-- 自定义CSS类 -->
-  @document-loaded="onDocumentLoaded"
-  @page-changed="onPageChanged"
-  @scale-changed="onScaleChanged"
-  @rotation-changed="onRotationChanged"
-  @search-completed="onSearchCompleted"
-  @error="onError"
-/>
+<template>
+  <div class="pdf-viewer">
+    <div class="toolbar">
+      <button @click="previousPage" :disabled="currentPage <= 1">
+        上一页
+      </button>
+      <span>{{ currentPage }} / {{ totalPages }}</span>
+      <button @click="nextPage" :disabled="currentPage >= totalPages">
+        下一页
+      </button>
+      <button @click="zoomIn">放大</button>
+      <button @click="zoomOut">缩小</button>
+    </div>
+
+    <div v-if="loading">加载中... {{ Math.round(progress * 100) }}%</div>
+    <div v-if="error">错误: {{ error.message }}</div>
+    <div ref="containerRef" class="pdf-content"></div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import { usePDFViewer } from '@ldesign/pdf/vue';
+
+const pdfSource = ref('https://example.com/sample.pdf');
+
+const {
+  containerRef,
+  loading,
+  progress,
+  error,
+  currentPage,
+  totalPages,
+  nextPage,
+  previousPage,
+  zoomIn,
+  zoomOut,
+} = usePDFViewer(pdfSource, {
+  workerSrc: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.js',
+});
+</script>
 ```
 
-## 加载不同类型的PDF
+#### 全局注册
 
-### 从URL加载
+```typescript
+// main.ts
+import { createApp } from 'vue';
+import { PDFViewerPlugin } from '@ldesign/pdf/vue';
+import App from './App.vue';
 
-```javascript
-await viewer.loadDocument('https://example.com/document.pdf')
+const app = createApp(App);
+
+app.use(PDFViewerPlugin);
+
+app.mount('#app');
 ```
 
-### 从File对象加载
-
-```javascript
-const fileInput = document.getElementById('file-input')
-fileInput.addEventListener('change', async (event) => {
-  const file = event.target.files[0]
-  if (file && file.type === 'application/pdf') {
-    await viewer.loadDocument(file)
-  }
-})
+```vue
+<!-- App.vue -->
+<template>
+  <PDFViewer :source="pdfUrl" :workerSrc="workerSrc" />
+</template>
 ```
 
-### 从ArrayBuffer加载
+### 原生 JavaScript
 
 ```javascript
-const response = await fetch('path/to/document.pdf')
-const arrayBuffer = await response.arrayBuffer()
-await viewer.loadDocument(arrayBuffer)
+import { PDFViewer } from '@ldesign/pdf';
+
+// 创建实例
+const viewer = new PDFViewer({
+  container: '#pdf-container',
+  workerSrc: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.js',
+  scale: 'auto',
+  quality: 'high',
+  on: {
+    loadComplete: (info) => {
+      console.log('文档加载完成:', info);
+    },
+    pageChange: (page) => {
+      console.log('当前页:', page);
+    },
+  },
+});
+
+// 加载PDF
+viewer.load('https://example.com/sample.pdf');
+
+// 控制方法
+viewer.nextPage();
+viewer.previousPage();
+viewer.setScale(1.5);
+viewer.zoomIn();
+viewer.zoomOut();
+
+// 销毁
+viewer.destroy();
 ```
 
-### 从Uint8Array加载
+### TypeScript
 
-```javascript
-const uint8Array = new Uint8Array(arrayBuffer)
-await viewer.loadDocument(uint8Array)
+```typescript
+import { PDFViewer, type PDFViewerConfig } from '@ldesign/pdf';
+
+const config: PDFViewerConfig = {
+  container: '#pdf-container',
+  workerSrc: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.js',
+  scale: 1.2,
+  quality: 'high',
+  cache: {
+    enabled: true,
+    maxPages: 50,
+    strategy: 'lru',
+  },
+};
+
+const viewer = new PDFViewer(config);
+viewer.load('https://example.com/sample.pdf');
 ```
 
-## 事件监听
+## Worker配置
+
+PDF.js需要一个worker文件来处理PDF解析。有两种方式配置：
+
+### CDN方式（推荐）
 
 ```javascript
-// 文档加载完成
-viewer.on('documentLoaded', (info) => {
-  console.log('文档信息:', info)
-  // info: { numPages, title, author, subject, creator, producer, ... }
-})
+const workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.js';
 
-// 页面变化
-viewer.on('pageChanged', ({ currentPage, totalPages }) => {
-  console.log(`当前页: ${currentPage}/${totalPages}`)
-})
-
-// 缩放变化
-viewer.on('scaleChanged', ({ scale, scaleMode }) => {
-  console.log(`缩放: ${scale} (${scaleMode})`)
-})
-
-// 旋转变化
-viewer.on('rotationChanged', ({ rotation }) => {
-  console.log(`旋转: ${rotation}度`)
-})
-
-// 搜索完成
-viewer.on('searchCompleted', ({ query, results, totalMatches }) => {
-  console.log(`搜索"${query}"找到${totalMatches}个结果`)
-})
-
-// 错误处理
-viewer.on('error', ({ error, context }) => {
-  console.error(`${context}错误:`, error)
-})
+// 或者使用unpkg
+const workerSrc = 'https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.js';
 ```
 
-## 常用操作
-
-### 页面导航
+### 本地文件方式
 
 ```javascript
-// 跳转到指定页面
-await viewer.goToPage(3)
-
-// 下一页
-await viewer.nextPage()
-
-// 上一页
-await viewer.previousPage()
-
-// 获取当前页码
-const currentPage = viewer.getCurrentPage()
-const totalPages = viewer.getTotalPages()
+// 从node_modules复制worker文件到public目录
+// 然后引用
+const workerSrc = '/pdf.worker.min.js';
 ```
 
-### 缩放控制
+## 加载PDF
+
+支持多种PDF来源：
+
+### URL
 
 ```javascript
-// 设置缩放比例
-await viewer.setScale(1.5)
-
-// 放大
-await viewer.zoomIn()
-
-// 缩小
-await viewer.zoomOut()
-
-// 适应宽度
-await viewer.fitToWidth()
-
-// 适应页面
-await viewer.fitToPage()
-
-// 获取当前缩放
-const scale = viewer.getScale()
+viewer.load('https://example.com/sample.pdf');
 ```
 
-### 旋转控制
+### 本地文件
 
 ```javascript
-// 顺时针旋转90度
-await viewer.rotateClockwise()
-
-// 逆时针旋转90度
-await viewer.rotateCounterClockwise()
-
-// 设置特定角度
-await viewer.setRotation(180)
-
-// 获取当前旋转角度
-const rotation = viewer.getRotation()
+const fileInput = document.getElementById('file-input');
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  const url = URL.createObjectURL(file);
+  viewer.load(url);
+});
 ```
 
-### 搜索功能
+### ArrayBuffer
 
 ```javascript
-// 搜索文本
-const results = await viewer.search('关键词')
+fetch('https://example.com/sample.pdf')
+  .then(res => res.arrayBuffer())
+  .then(buffer => viewer.load(buffer));
+```
 
-// 查找下一个
-const nextResult = await viewer.findNext()
+### Uint8Array
 
-// 查找上一个
-const prevResult = await viewer.findPrevious()
-
-// 清除搜索结果
-viewer.clearSearch()
-
-// 获取搜索结果
-const searchResults = viewer.getSearchResults()
+```javascript
+const data = new Uint8Array([...]); // PDF数据
+viewer.load(data);
 ```
 
 ## 下一步
 
-- [配置选项详解](/guide/configuration) - 了解所有配置选项
-- [API 参考](/guide/api) - 查看完整的API文档
-- [主题定制](/guide/theming) - 学习如何定制外观
-- [插件开发](/guide/plugins) - 扩展功能
-- [常见问题](/guide/faq) - 解决常见问题
+- [基础用法](/guide/basic-usage) - 学习基本使用方法
+- [配置选项](/guide/configuration) - 了解所有配置选项
+- [事件系统](/guide/events) - 了解如何使用事件
+- [API 参考](/api/) - 查看完整的API文档

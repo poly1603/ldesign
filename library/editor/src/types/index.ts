@@ -1,329 +1,173 @@
 /**
- * Enhanced Rich Text Editor - Type Definitions
- * 
- * This file contains all the core type definitions for the editor.
+ * 核心类型定义
  */
 
-// ============================================================================
-// Core Types
-// ============================================================================
+// 节点类型
+export type NodeType = 'doc' | 'paragraph' | 'text' | 'heading' | 'blockquote' |
+  'codeBlock' | 'bulletList' | 'orderedList' | 'listItem' | 'taskList' | 'taskItem' |
+  'table' | 'tableRow' | 'tableCell' | 'tableHeader' | 'image' | 'horizontalRule'
 
-/**
- * Editor configuration options
- */
-export interface EditorOptions {
-  /** Editor theme */
-  theme?: string;
-  /** Placeholder text */
-  placeholder?: string;
-  /** Read-only mode */
-  readOnly?: boolean;
-  /** Module configurations */
-  modules?: Record<string, any>;
-  /** Custom formats */
-  formats?: string[];
-  /** Debug mode */
-  debug?: boolean;
+// 标记类型
+export type MarkType = 'bold' | 'italic' | 'underline' | 'strike' | 'code' | 'link' | 'textColor' | 'backgroundColor'
+
+// 节点属性
+export interface NodeAttrs {
+  [key: string]: any
 }
 
-/**
- * Document node structure
- */
-export interface DocumentNode {
-  /** Node type */
-  type: string;
-  /** Node attributes */
-  attributes?: Record<string, any>;
-  /** Child nodes */
-  children?: DocumentNode[];
-  /** Text content (for text nodes) */
-  text?: string;
+// 标记
+export interface Mark {
+  type: MarkType
+  attrs?: NodeAttrs
 }
 
-/**
- * Selection range
- */
-export interface SelectionRange {
-  /** Start index */
-  index: number;
-  /** Selection length */
-  length: number;
+// 节点定义
+export interface Node {
+  type: NodeType
+  attrs?: NodeAttrs
+  content?: Node[]
+  text?: string
+  marks?: Mark[]
 }
 
-/**
- * Editor selection state
- */
+// 选区位置
+export interface Position {
+  node: Node
+  offset: number
+  path: number[]
+}
+
+// 选区范围
+export interface Range {
+  from: number
+  to: number
+}
+
+// 选区
 export interface Selection {
-  /** Selection range */
-  range: SelectionRange | null;
-  /** Selection source */
-  source: string;
+  anchor: number
+  head: number
+  empty: boolean
 }
 
-// ============================================================================
-// Event Types
-// ============================================================================
-
-/**
- * Editor event data
- */
-export interface EditorEventData {
-  'content-change': {
-    delta: Delta;
-    oldDelta: Delta;
-    source: string;
-  };
-  'selection-change': {
-    selection: Selection;
-    oldSelection: Selection;
-    source: string;
-  };
-  'text-change': {
-    delta: Delta;
-    oldDelta: Delta;
-    source: string;
-  };
-  'editor-change': {
-    eventName: string;
-    args: any[];
-  };
-  'focus': {
-    editor: Editor;
-  };
-  'blur': {
-    editor: Editor;
-  };
+// 编辑器状态
+export interface EditorState {
+  doc: Node
+  selection: Selection
+  [key: string]: any
 }
 
-/**
- * Event handler type
- */
-export type EventHandler<T = any> = (data: T) => void;
+// 命令函数
+export type Command = (state: EditorState, dispatch?: (tr: Transaction) => void) => boolean
 
-// ============================================================================
-// Delta Types (Operation-based document format)
-// ============================================================================
-
-/**
- * Delta operation
- */
-export interface DeltaOperation {
-  /** Insert operation */
-  insert?: string | Record<string, any>;
-  /** Delete operation */
-  delete?: number;
-  /** Retain operation */
-  retain?: number;
-  /** Operation attributes */
-  attributes?: Record<string, any>;
+// 事务
+export interface Transaction {
+  doc: Node
+  selection?: Selection
+  steps: TransformStep[]
+  meta: Map<string, any>
 }
 
-/**
- * Delta document format
- */
-export interface Delta {
-  /** Operations array */
-  ops: DeltaOperation[];
-  
-  /** Insert content */
-  insert(text: string | Record<string, any>, attributes?: Record<string, any>): Delta;
-  /** Delete content */
-  delete(length: number): Delta;
-  /** Retain content */
-  retain(length: number, attributes?: Record<string, any>): Delta;
-  /** Compose with another delta */
-  compose(other: Delta): Delta;
-  /** Transform against another delta */
-  transform(other: Delta, priority?: boolean): Delta;
-  /** Invert delta against base */
-  invert(base: Delta): Delta;
-  /** Remove trailing retain */
-  chop(): Delta;
-  /** Get delta length */
-  length(): number;
+// 变换步骤
+export interface TransformStep {
+  type: 'replace' | 'addMark' | 'removeMark' | 'setAttrs'
+  from?: number
+  to?: number
+  slice?: any
+  mark?: Mark
+  attrs?: NodeAttrs
 }
 
-// ============================================================================
-// Plugin System Types
-// ============================================================================
+// 插件配置
+export interface PluginConfig {
+  name: string
+  commands?: Record<string, Command>
+  keys?: Record<string, Command>
+  schema?: SchemaSpec
+  toolbar?: ToolbarItem[]
+}
 
-/**
- * Plugin interface
- */
+// Schema 规范
+export interface SchemaSpec {
+  nodes?: Record<string, NodeSpec>
+  marks?: Record<string, MarkSpec>
+}
+
+// 节点规范
+export interface NodeSpec {
+  content?: string
+  marks?: string
+  group?: string
+  inline?: boolean
+  atom?: boolean
+  attrs?: Record<string, AttrSpec>
+  parseDOM?: ParseRule[]
+  toDOM?: (node: Node) => DOMOutputSpec
+}
+
+// 标记规范
+export interface MarkSpec {
+  attrs?: Record<string, AttrSpec>
+  inclusive?: boolean
+  excludes?: string
+  parseDOM?: ParseRule[]
+  toDOM?: (mark: Mark, inline: boolean) => DOMOutputSpec
+}
+
+// 属性规范
+export interface AttrSpec {
+  default?: any
+  validate?: (value: any) => boolean
+}
+
+// 解析规则
+export interface ParseRule {
+  tag?: string
+  style?: string
+  attrs?: NodeAttrs | ((dom: HTMLElement) => NodeAttrs | null)
+  getAttrs?: (dom: HTMLElement) => NodeAttrs | null
+}
+
+// DOM 输出规范
+export type DOMOutputSpec = string | [string, NodeAttrs?, ...DOMOutputSpec[]] | { dom: HTMLElement }
+
+// 工具栏项
+export interface ToolbarItem {
+  name: string
+  title: string
+  icon: string
+  command: Command
+  active?: (state: EditorState) => boolean
+  disabled?: (state: EditorState) => boolean
+}
+
+// 编辑器选项
+export interface EditorOptions {
+  element?: HTMLElement | string
+  content?: string | Node
+  plugins?: (Plugin | string)[]
+  editable?: boolean
+  autofocus?: boolean
+  placeholder?: string
+  onChange?: (content: string) => void
+  onUpdate?: (state: EditorState) => void
+  onFocus?: () => void
+  onBlur?: () => void
+}
+
+// 插件接口
 export interface Plugin {
-  /** Plugin name */
-  name: string;
-  /** Plugin version */
-  version: string;
-  /** Plugin dependencies */
-  dependencies?: string[];
-  
-  /** Install plugin */
-  install(editor: Editor): void;
-  /** Uninstall plugin */
-  uninstall(editor: Editor): void;
-  
-  /** Plugin commands */
-  commands?: Record<string, Command>;
-  /** Plugin formats */
-  formats?: Record<string, Format>;
-  /** Plugin UI components */
-  ui?: UIComponent[];
+  name: string
+  config: PluginConfig
+  install?: (editor: any) => void
+  destroy?: () => void
 }
 
-/**
- * Command interface
- */
-export interface Command {
-  /** Command name */
-  name: string;
-  /** Execute command */
-  execute(editor: Editor, ...args: any[]): any;
-  /** Check if command can execute */
-  canExecute?(editor: Editor, ...args: any[]): boolean;
+// 键盘事件
+export interface KeyboardEvent {
+  key: string
+  shiftKey?: boolean
+  ctrlKey?: boolean
+  metaKey?: boolean
+  altKey?: boolean
 }
-
-/**
- * Format interface
- */
-export interface Format {
-  /** Format name */
-  name: string;
-  /** Format type */
-  type: 'inline' | 'block' | 'embed';
-  /** Apply format */
-  apply(editor: Editor, range: SelectionRange, value: any): void;
-  /** Remove format */
-  remove(editor: Editor, range: SelectionRange): void;
-  /** Get format value */
-  getValue(editor: Editor, range: SelectionRange): any;
-}
-
-/**
- * UI Component interface
- */
-export interface UIComponent {
-  /** Component name */
-  name: string;
-  /** Component type */
-  type: 'button' | 'dropdown' | 'input' | 'custom';
-  /** Render component */
-  render(container: HTMLElement, editor: Editor): void;
-  /** Destroy component */
-  destroy?(): void;
-}
-
-// ============================================================================
-// Editor Core Types
-// ============================================================================
-
-/**
- * Main Editor interface
- */
-export interface Editor {
-  /** Get editor content as Delta */
-  getContents(): Delta;
-  /** Set editor content */
-  setContents(delta: Delta, source?: string): void;
-  /** Get text content */
-  getText(index?: number, length?: number): string;
-  /** Get selection */
-  getSelection(): Selection | null;
-  /** Set selection */
-  setSelection(range: SelectionRange | null, source?: string): void;
-  
-  /** Insert text */
-  insertText(index: number, text: string, source?: string): void;
-  /** Insert embed */
-  insertEmbed(index: number, type: string, value: any, source?: string): void;
-  /** Delete text */
-  deleteText(index: number, length: number, source?: string): void;
-  
-  /** Format text */
-  formatText(index: number, length: number, format: string, value: any, source?: string): void;
-  /** Format line */
-  formatLine(index: number, length: number, format: string, value: any, source?: string): void;
-  /** Remove format */
-  removeFormat(index: number, length: number, source?: string): void;
-  
-  /** Get format */
-  getFormat(range?: SelectionRange): Record<string, any>;
-  /** Get line format */
-  getLineFormat(index?: number): Record<string, any>;
-  
-  /** Focus editor */
-  focus(): void;
-  /** Blur editor */
-  blur(): void;
-  /** Check if editor has focus */
-  hasFocus(): boolean;
-  
-  /** Enable/disable editor */
-  enable(enabled?: boolean): void;
-  /** Check if editor is enabled */
-  isEnabled(): boolean;
-  
-  /** Add event listener */
-  on<K extends keyof EditorEventData>(event: K, handler: EventHandler<EditorEventData[K]>): void;
-  /** Remove event listener */
-  off<K extends keyof EditorEventData>(event: K, handler?: EventHandler<EditorEventData[K]>): void;
-  /** Emit event */
-  emit<K extends keyof EditorEventData>(event: K, data: EditorEventData[K]): void;
-  
-  /** Get editor root element */
-  getRoot(): HTMLElement;
-  /** Get editor container */
-  getContainer(): HTMLElement;
-  
-  /** Destroy editor */
-  destroy(): void;
-}
-
-// ============================================================================
-// Module Types
-// ============================================================================
-
-/**
- * Editor module interface
- */
-export interface Module {
-  /** Module name */
-  name: string;
-  /** Initialize module */
-  init(editor: Editor, options: any): void;
-  /** Destroy module */
-  destroy?(): void;
-}
-
-// ============================================================================
-// Utility Types
-// ============================================================================
-
-/**
- * Deep partial type
- */
-export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
-
-/**
- * Event emitter interface
- */
-export interface EventEmitter<T = Record<string, any>> {
-  on<K extends keyof T>(event: K, handler: EventHandler<T[K]>): void;
-  off<K extends keyof T>(event: K, handler?: EventHandler<T[K]>): void;
-  emit<K extends keyof T>(event: K, data: T[K]): void;
-  removeAllListeners(event?: keyof T): void;
-}
-
-/**
- * Disposable interface
- */
-export interface Disposable {
-  dispose(): void;
-}
-
-/**
- * Source types for operations
- */
-export type Source = 'api' | 'user' | 'silent';

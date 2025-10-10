@@ -1,397 +1,174 @@
 /**
- * Selection Management
- * 
- * Manages editor selection state and provides utilities for working with selections.
+ * Selection - 选区管理
+ * 处理光标和选中内容
  */
 
-import type { Selection as ISelection, SelectionRange } from '@/types';
-import { EventEmitter } from '@/utils/event-emitter';
-import { logger } from '@/utils/logger';
+import type { Selection as SelectionType, Range } from '../types'
 
-/**
- * Selection range implementation
- */
-export class Range implements SelectionRange {
-  index: number;
-  length: number;
+export class Selection {
+  public anchor: number
+  public head: number
 
-  constructor(index: number, length = 0) {
-    this.index = Math.max(0, index);
-    this.length = Math.max(0, length);
+  constructor(anchor: number, head?: number) {
+    this.anchor = anchor
+    this.head = head !== undefined ? head : anchor
   }
 
   /**
-   * Check if range is collapsed (zero length)
+   * 是否为空选区（光标）
    */
-  isCollapsed(): boolean {
-    return this.length === 0;
+  get empty(): boolean {
+    return this.anchor === this.head
   }
 
   /**
-   * Get range end index
+   * 选区起始位置
    */
-  getEnd(): number {
-    return this.index + this.length;
+  get from(): number {
+    return Math.min(this.anchor, this.head)
   }
 
   /**
-   * Check if range contains index
+   * 选区结束位置
    */
-  contains(index: number): boolean {
-    return index >= this.index && index < this.getEnd();
+  get to(): number {
+    return Math.max(this.anchor, this.head)
   }
 
   /**
-   * Check if range intersects with another range
+   * 获取范围
    */
-  intersects(other: Range): boolean {
-    return this.index < other.getEnd() && other.index < this.getEnd();
+  get range(): Range {
+    return {
+      from: this.from,
+      to: this.to
+    }
   }
 
   /**
-   * Clone range
+   * 转换为类型
    */
-  clone(): Range {
-    return new Range(this.index, this.length);
+  toJSON(): SelectionType {
+    return {
+      anchor: this.anchor,
+      head: this.head,
+      empty: this.empty
+    }
   }
 
   /**
-   * Check if ranges are equal
+   * 从类型创建
    */
-  equals(other: Range | null): boolean {
-    if (!other) return false;
-    return this.index === other.index && this.length === other.length;
+  static fromJSON(json: SelectionType): Selection {
+    return new Selection(json.anchor, json.head)
   }
 
   /**
-   * Convert to string representation
+   * 创建空选区（光标）
    */
-  toString(): string {
-    return `Range(${this.index}, ${this.length})`;
-  }
-}
-
-/**
- * Selection events
- */
-interface SelectionEvents {
-  'selection-change': {
-    selection: Selection;
-    oldSelection: Selection | null;
-    source: string;
-  };
-}
-
-/**
- * Selection implementation
- */
-export class Selection extends EventEmitter<SelectionEvents> implements ISelection {
-  range: Range | null;
-  source: string;
-
-  constructor(range: Range | null = null, source = 'api') {
-    super();
-    this.range = range;
-    this.source = source;
+  static cursor(pos: number): Selection {
+    return new Selection(pos, pos)
   }
 
   /**
-   * Set selection range
+   * 创建范围选区
    */
-  setRange(range: Range | null, source = 'api'): void {
-    const oldSelection = this.clone();
-    this.range = range;
-    this.source = source;
-
-    this.emit('selection-change', {
-      selection: this,
-      oldSelection,
-      source,
-    });
+  static range(from: number, to: number): Selection {
+    return new Selection(from, to)
   }
 
   /**
-   * Get selection range
+   * 比较两个选区是否相等
    */
-  getRange(): Range | null {
-    return this.range;
+  equals(other: Selection): boolean {
+    return this.anchor === other.anchor && this.head === other.head
   }
 
   /**
-   * Check if selection is collapsed
-   */
-  isCollapsed(): boolean {
-    return !this.range || this.range.isCollapsed();
-  }
-
-  /**
-   * Get selection start index
-   */
-  getIndex(): number {
-    return this.range ? this.range.index : 0;
-  }
-
-  /**
-   * Get selection length
-   */
-  getLength(): number {
-    return this.range ? this.range.length : 0;
-  }
-
-  /**
-   * Get selection end index
-   */
-  getEnd(): number {
-    return this.range ? this.range.getEnd() : 0;
-  }
-
-  /**
-   * Check if selection contains index
-   */
-  contains(index: number): boolean {
-    return this.range ? this.range.contains(index) : false;
-  }
-
-  /**
-   * Clone selection
+   * 克隆选区
    */
   clone(): Selection {
-    return new Selection(this.range ? this.range.clone() : null, this.source);
-  }
-
-  /**
-   * Check if selections are equal
-   */
-  equals(other: Selection | null): boolean {
-    if (!other) return !this.range;
-    if (!this.range && !other.range) return true;
-    if (!this.range || !other.range) return false;
-    return this.range.equals(other.range);
-  }
-
-  /**
-   * Convert to string representation
-   */
-  override toString(): string {
-    return `Selection(${this.range ? this.range.toString() : 'null'}, ${this.source})`;
+    return new Selection(this.anchor, this.head)
   }
 }
 
 /**
- * Selection manager for handling DOM selections
+ * 选区管理器
+ * 管理 DOM 选区和编辑器选区的同步
  */
-export class SelectionManager extends EventEmitter<SelectionEvents> {
-  private container: HTMLElement;
-  private selection: Selection;
-  private isUpdating = false;
+export class SelectionManager {
+  private editor: any
+  private selection: Selection
 
-  constructor(container: HTMLElement) {
-    super();
-    this.container = container;
-    this.selection = new Selection();
-    this.setupEventListeners();
+  constructor(editor: any) {
+    this.editor = editor
+    this.selection = Selection.cursor(0)
   }
 
   /**
-   * Get current selection
+   * 获取当前选区
    */
   getSelection(): Selection {
-    return this.selection;
+    return this.selection
   }
 
   /**
-   * Set selection
+   * 设置选区
    */
-  setSelection(range: Range | null, source = 'api'): void {
-    if (this.isUpdating) return;
-
-    this.isUpdating = true;
-    
-    try {
-      const oldSelection = this.selection.clone();
-      this.selection.setRange(range, source);
-
-      // Update DOM selection
-      this.updateDOMSelection(range);
-
-      this.emit('selection-change', {
-        selection: this.selection,
-        oldSelection,
-        source,
-      });
-    } finally {
-      this.isUpdating = false;
-    }
+  setSelection(selection: Selection): void {
+    this.selection = selection
+    this.syncToDOM()
   }
 
   /**
-   * Update DOM selection to match internal selection
+   * 从 DOM 同步选区
    */
-  private updateDOMSelection(range: Range | null): void {
-    const domSelection = window.getSelection();
-    if (!domSelection) return;
+  syncFromDOM(): void {
+    const domSelection = window.getSelection()
+    if (!domSelection || domSelection.rangeCount === 0) return
 
-    if (!range) {
-      domSelection.removeAllRanges();
-      return;
-    }
+    const range = domSelection.getRangeAt(0)
+    const anchor = this.domPositionToEditorPosition(range.startContainer, range.startOffset)
+    const head = this.domPositionToEditorPosition(range.endContainer, range.endOffset)
 
-    try {
-      const domRange = this.rangeToDOMRange(range);
-      if (domRange) {
-        domSelection.removeAllRanges();
-        domSelection.addRange(domRange);
-      }
-    } catch (error) {
-      logger.warn('Failed to update DOM selection:', error);
+    this.selection = new Selection(anchor, head)
+  }
+
+  /**
+   * 同步到 DOM
+   */
+  syncToDOM(): void {
+    const domSelection = window.getSelection()
+    if (!domSelection) return
+
+    const range = this.editorRangeToDOMRange(this.selection.range)
+    if (range) {
+      domSelection.removeAllRanges()
+      domSelection.addRange(range)
     }
   }
 
   /**
-   * Convert internal range to DOM range
+   * DOM 位置转编辑器位置
    */
-  private rangeToDOMRange(range: Range): globalThis.Range | null {
-    // This is a simplified implementation
-    // In a real implementation, you would need to traverse the DOM tree
-    // and find the correct text nodes and offsets
-    
-    const walker = document.createTreeWalker(
-      this.container,
-      NodeFilter.SHOW_TEXT
-    );
-
-    let currentIndex = 0;
-    let startNode: Node | null = null;
-    let startOffset = 0;
-    let endNode: Node | null = null;
-    let endOffset = 0;
-
-    let node: Node | null;
-    while ((node = walker.nextNode())) {
-      const textLength = node.textContent?.length || 0;
-      
-      if (!startNode && currentIndex + textLength > range.index) {
-        startNode = node;
-        startOffset = range.index - currentIndex;
-      }
-
-      if (!endNode && currentIndex + textLength >= range.getEnd()) {
-        endNode = node;
-        endOffset = range.getEnd() - currentIndex;
-        break;
-      }
-
-      currentIndex += textLength;
-    }
-
-    if (startNode && endNode) {
-      const domRange = document.createRange();
-      domRange.setStart(startNode, startOffset);
-      domRange.setEnd(endNode, endOffset);
-      return domRange as any; // Type assertion for compatibility
-    }
-
-    return null;
+  private domPositionToEditorPosition(node: Node, offset: number): number {
+    // 简化实现，实际需要遍历 DOM 树计算位置
+    return offset
   }
 
   /**
-   * Convert DOM selection to internal range
+   * 编辑器范围转 DOM 范围
    */
-  private domSelectionToRange(): Range | null {
-    const domSelection = window.getSelection();
-    if (!domSelection || domSelection.rangeCount === 0) {
-      return null;
-    }
-
-    const domRange = domSelection.getRangeAt(0);
-    if (!this.container.contains(domRange.commonAncestorContainer)) {
-      return null;
-    }
-
-    // This is a simplified implementation
-    // In a real implementation, you would need to calculate the text offset
-    // by traversing the DOM tree
-    
-    const walker = document.createTreeWalker(
-      this.container,
-      NodeFilter.SHOW_TEXT
-    );
-
-    let currentIndex = 0;
-    let startIndex = -1;
-    let endIndex = -1;
-
-    let node: Node | null;
-    while ((node = walker.nextNode())) {
-      const textLength = node.textContent?.length || 0;
-
-      if (node === domRange.startContainer) {
-        startIndex = currentIndex + domRange.startOffset;
-      }
-
-      if (node === domRange.endContainer) {
-        endIndex = currentIndex + domRange.endOffset;
-        break;
-      }
-
-      currentIndex += textLength;
-    }
-
-    if (startIndex >= 0 && endIndex >= 0) {
-      return new Range(startIndex, endIndex - startIndex);
-    }
-
-    return null;
+  private editorRangeToDOMRange(range: Range): Range | null {
+    // 简化实现，实际需要将编辑器位置转换为 DOM 位置
+    return null
   }
 
   /**
-   * Setup event listeners for DOM selection changes
+   * 清除选区
    */
-  private setupEventListeners(): void {
-    // Listen for selection changes
-    document.addEventListener('selectionchange', this.handleSelectionChange.bind(this));
-
-    // Listen for mouse events
-    this.container.addEventListener('mouseup', this.handleMouseUp.bind(this));
-    this.container.addEventListener('keyup', this.handleKeyUp.bind(this));
-  }
-
-  /**
-   * Handle DOM selection change
-   */
-  private handleSelectionChange(): void {
-    if (this.isUpdating) return;
-
-    const range = this.domSelectionToRange();
-    if (!this.selection.range?.equals(range)) {
-      this.setSelection(range, 'user');
-    }
-  }
-
-  /**
-   * Handle mouse up event
-   */
-  private handleMouseUp(): void {
-    // Small delay to ensure selection has been updated
-    setTimeout(() => {
-      this.handleSelectionChange();
-    }, 0);
-  }
-
-  /**
-   * Handle key up event
-   */
-  private handleKeyUp(): void {
-    this.handleSelectionChange();
-  }
-
-  /**
-   * Dispose of the selection manager
-   */
-  override dispose(): void {
-    document.removeEventListener('selectionchange', this.handleSelectionChange.bind(this));
-    this.container.removeEventListener('mouseup', this.handleMouseUp.bind(this));
-    this.container.removeEventListener('keyup', this.handleKeyUp.bind(this));
-    super.dispose();
+  clear(): void {
+    this.selection = Selection.cursor(0)
+    window.getSelection()?.removeAllRanges()
   }
 }

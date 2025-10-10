@@ -1,60 +1,32 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "jsx": "preserve",
-    "jsxImportSource": "react",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "useDefineForClassFields": true,
-    "baseUrl": ".",
-    "rootDir": "src",
     "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
     "moduleResolution": "bundler",
-    "paths": {
-      "@/*": ["src/*"],
-      "@/core/*": ["src/core/*"],
-      "@/ui/*": ["src/ui/*"],
-      "@/utils/*": ["src/utils/*"],
-      "@/types/*": ["src/types/*"],
-      "@/adapters/*": ["src/adapters/*"]
-    },
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
-    "allowJs": false,
+    "isolatedModules": true,
+    "noEmit": false,
+    "jsx": "react-jsx",
+    "emitDeclarationOnly": true,
+
+    /* Linting */
     "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitReturns": true,
-    "noImplicitOverride": true,
+
+    /* Type declarations */
     "declaration": true,
     "declarationMap": true,
-    "downlevelIteration": true,
-    "outDir": "dist",
-    "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "skipLibCheck": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
   "include": ["src/**/*"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "esm",
-    "cjs",
-    "types",
-    "__tests__",
-    "tests",
-    "test",
-    "e2e",
-    "examples",
-    "docs",
-    "*.test.ts",
-    "*.spec.ts",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ]
+  "exclude": ["node_modules", "dist", "examples", "docs", "__tests__"]
 }

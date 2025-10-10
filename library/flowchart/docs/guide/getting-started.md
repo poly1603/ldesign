@@ -1,273 +1,368 @@
 # 快速开始
 
-欢迎使用 LDesign Flowchart！这是一个基于 LogicFlow 的专业审批流程图编辑器组件。
+本指南将帮助你快速上手 ApprovalFlow。
 
 ## 安装
 
+首先，安装 ApprovalFlow 包：
+
 ::: code-group
 
-```bash [pnpm]
-pnpm add @ldesign/flowchart
-```
-
 ```bash [npm]
-npm install @ldesign/flowchart
+npm install @ldesign/approval-flow @logicflow/core
 ```
 
 ```bash [yarn]
-yarn add @ldesign/flowchart
+yarn add @ldesign/approval-flow @logicflow/core
+```
+
+```bash [pnpm]
+pnpm add @ldesign/approval-flow @logicflow/core
 ```
 
 :::
 
-## 基础使用
+::: tip
+ApprovalFlow 依赖 LogicFlow 核心库，所以需要同时安装 `@logicflow/core`。
+:::
 
-### 1. 创建编辑器
+## 引入样式
 
-使用 `FlowchartAPI` 提供的简洁接口快速创建编辑器：
+在使用组件之前，需要引入 LogicFlow 的样式文件：
 
-```typescript
-import { FlowchartAPI } from '@ldesign/flowchart'
+```js
+import '@logicflow/core/dist/style/index.css';
+```
+
+## Vue 3 使用
+
+### 基础用法
+
+```vue
+<template>
+  <div class="container">
+    <ApprovalFlow
+      ref="editorRef"
+      :data="flowData"
+      :width="'100%'"
+      :height="'600px'"
+      @node:click="handleNodeClick"
+      @data:change="handleDataChange"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import { ApprovalFlow } from '@ldesign/approval-flow/vue';
+import type { FlowChartData, NodeData } from '@ldesign/approval-flow';
+
+const editorRef = ref();
+
+// 流程数据
+const flowData = ref<FlowChartData>({
+  nodes: [
+    {
+      id: 'start-1',
+      type: 'start',
+      name: '开始',
+    },
+    {
+      id: 'approval-1',
+      type: 'approval',
+      name: '部门审批',
+      approvalMode: 'single',
+      approvers: [
+        { id: '1', name: '张三', role: '部门经理' },
+      ],
+    },
+    {
+      id: 'end-1',
+      type: 'end',
+      name: '结束',
+    },
+  ],
+  edges: [
+    {
+      id: 'edge-1',
+      sourceNodeId: 'start-1',
+      targetNodeId: 'approval-1',
+    },
+    {
+      id: 'edge-2',
+      sourceNodeId: 'approval-1',
+      targetNodeId: 'end-1',
+    },
+  ],
+});
+
+// 节点点击事件
+const handleNodeClick = (node: NodeData) => {
+  console.log('节点点击:', node);
+};
+
+// 数据变化事件
+const handleDataChange = (data: FlowChartData) => {
+  console.log('数据变化:', data);
+};
+
+// 添加节点
+const addNode = () => {
+  editorRef.value?.addNode({
+    type: 'approval',
+    name: '新审批节点',
+  });
+};
+
+// 验证流程
+const validate = () => {
+  const result = editorRef.value?.validate();
+  if (result?.valid) {
+    console.log('验证通过');
+  } else {
+    console.error('验证失败:', result?.errors);
+  }
+};
+</script>
+
+<style>
+.container {
+  width: 100%;
+  height: 600px;
+}
+</style>
+```
+
+### 使用 Composition API
+
+你也可以使用 `useApprovalFlow` Hook：
+
+```vue
+<template>
+  <div ref="containerRef" class="container"></div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { useApprovalFlow } from '@ldesign/approval-flow/vue';
+import type { FlowChartData } from '@ldesign/approval-flow';
+
+const containerRef = ref<HTMLDivElement>();
+
+onMounted(() => {
+  if (!containerRef.value) return;
+
+  const { editor, setData, getData, validate } = useApprovalFlow({
+    container: containerRef.value,
+    width: '100%',
+    height: '600px',
+  });
+
+  // 设置数据
+  setData({
+    nodes: [
+      { id: '1', type: 'start', name: '开始' },
+      { id: '2', type: 'approval', name: '审批' },
+      { id: '3', type: 'end', name: '结束' },
+    ],
+    edges: [
+      { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
+      { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
+    ],
+  });
+
+  // 获取数据
+  const data = getData();
+  console.log(data);
+
+  // 验证
+  const result = validate();
+  console.log(result);
+});
+</script>
+```
+
+## React 使用
+
+### 基础用法
+
+```tsx
+import { useRef } from 'react';
+import { ApprovalFlow, ApprovalFlowRef } from '@ldesign/approval-flow/react';
+import type { FlowChartData, NodeData } from '@ldesign/approval-flow';
+import '@logicflow/core/dist/style/index.css';
+
+function App() {
+  const editorRef = useRef<ApprovalFlowRef>(null);
+
+  const flowData: FlowChartData = {
+    nodes: [
+      {
+        id: 'start-1',
+        type: 'start',
+        name: '开始',
+      },
+      {
+        id: 'approval-1',
+        type: 'approval',
+        name: '部门审批',
+        approvalMode: 'single',
+        approvers: [
+          { id: '1', name: '张三', role: '部门经理' },
+        ],
+      },
+      {
+        id: 'end-1',
+        type: 'end',
+        name: '结束',
+      },
+    ],
+    edges: [
+      {
+        id: 'edge-1',
+        sourceNodeId: 'start-1',
+        targetNodeId: 'approval-1',
+      },
+      {
+        id: 'edge-2',
+        sourceNodeId: 'approval-1',
+        targetNodeId: 'end-1',
+      },
+    ],
+  };
+
+  const handleNodeClick = (node: NodeData) => {
+    console.log('节点点击:', node);
+  };
+
+  const handleDataChange = (data: FlowChartData) => {
+    console.log('数据变化:', data);
+  };
+
+  const addNode = () => {
+    editorRef.current?.addNode({
+      type: 'approval',
+      name: '新审批节点',
+    });
+  };
+
+  const validate = () => {
+    const result = editorRef.current?.validate();
+    if (result?.valid) {
+      console.log('验证通过');
+    } else {
+      console.error('验证失败:', result?.errors);
+    }
+  };
+
+  return (
+    <div className="container">
+      <button onClick={addNode}>添加节点</button>
+      <button onClick={validate}>验证</button>
+
+      <ApprovalFlow
+        ref={editorRef}
+        data={flowData}
+        width="100%"
+        height="600px"
+        onNodeClick={handleNodeClick}
+        onDataChange={handleDataChange}
+      />
+    </div>
+  );
+}
+
+export default App;
+```
+
+### 使用 Hook
+
+```tsx
+import { useEffect, useRef } from 'react';
+import { useApprovalFlow } from '@ldesign/approval-flow/react';
+import '@logicflow/core/dist/style/index.css';
+
+function App() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const { editor, setData, getData, validate } = useApprovalFlow({
+      container: containerRef.current,
+      width: '100%',
+      height: '600px',
+    });
+
+    // 设置数据
+    setData({
+      nodes: [
+        { id: '1', type: 'start', name: '开始' },
+        { id: '2', type: 'approval', name: '审批' },
+        { id: '3', type: 'end', name: '结束' },
+      ],
+      edges: [
+        { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
+        { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
+      ],
+    });
+
+    // 获取数据
+    const data = getData();
+    console.log(data);
+
+    // 验证
+    const result = validate();
+    console.log(result);
+  }, []);
+
+  return <div ref={containerRef} className="container"></div>;
+}
+```
+
+## 原生 JavaScript 使用
+
+```js
+import { ApprovalFlowEditor } from '@ldesign/approval-flow';
+import '@logicflow/core/dist/style/index.css';
 
 // 创建编辑器实例
-const editor = FlowchartAPI.createEditor({
-  container: '#flowchart-container', // 容器选择器或 HTMLElement
-  width: 800,
-  height: 600,
-  plugins: {
-    minimap: true,    // 启用小地图
-    history: true,    // 启用历史记录
-    export: true      // 启用导出功能
-  }
-})
-```
+const editor = new ApprovalFlowEditor({
+  container: document.getElementById('container'),
+  width: '100%',
+  height: '600px',
+});
 
-### 2. 添加节点
+// 设置数据
+editor.setData({
+  nodes: [
+    { id: '1', type: 'start', name: '开始' },
+    { id: '2', type: 'approval', name: '审批' },
+    { id: '3', type: 'end', name: '结束' },
+  ],
+  edges: [
+    { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
+    { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
+  ],
+});
 
-```typescript
-// 使用 API 快速创建节点
-const startNode = FlowchartAPI.createNode({
-  type: 'start',
-  x: 100,
-  y: 100,
-  text: '开始'
-})
+// 监听事件
+editor.on('node:click', (node) => {
+  console.log('节点点击:', node);
+});
 
-const approvalNode = FlowchartAPI.createNode({
-  type: 'approval',
-  x: 300,
-  y: 100,
-  text: '部门审批',
-  properties: {
-    approvers: ['张三', '李四'],
-    deadline: '2025-12-31',
-    status: 'pending'
-  }
-})
+// 获取数据
+const data = editor.getData();
+console.log(data);
 
-// 添加到编辑器
-const startId = editor.addNode(startNode)
-const approvalId = editor.addNode(approvalNode)
-```
-
-### 3. 连接节点
-
-```typescript
-// 创建连接线
-const edge = FlowchartAPI.createEdge({
-  source: startId,
-  target: approvalId,
-  text: '提交申请'
-})
-
-editor.addEdge(edge)
-```
-
-### 4. 使用模板
-
-快速创建审批流程模板：
-
-```typescript
-// 创建审批流程模板
-const template = FlowchartAPI.createApprovalTemplate({
-  title: '请假审批流程',
-  steps: ['申请提交', '直属领导审批', 'HR审批', '总经理审批'],
-  layout: 'horizontal' // 或 'vertical'
-})
-
-// 加载模板
-editor.setData(template)
-```
-
-## 只读查看器
-
-创建只读的流程图查看器：
-
-```typescript
-import { FlowchartAPI } from '@ldesign/flowchart'
-
-// 创建查看器
-const viewer = FlowchartAPI.createViewer({
-  container: '#flowchart-viewer',
-  data: flowchartData
-})
-
-// 设置执行状态
-viewer.setExecutionState({
-  currentNode: 'approval-node-2',
-  completedNodes: ['start-node', 'approval-node-1'],
-  failedNodes: []
-})
-```
-
-## 事件处理
-
-监听编辑器事件：
-
-```typescript
-// 监听节点点击事件
-editor.on('node:click', (data) => {
-  console.log('节点被点击:', data)
-})
-
-// 监听数据变化事件
-editor.on('data:change', (data) => {
-  console.log('数据已变化:', data)
-  // 自动保存数据
-  saveFlowchartData(data)
-})
-
-// 监听边点击事件
-editor.on('edge:click', (data) => {
-  console.log('连接线被点击:', data)
-})
-```
-
-## 主题切换
-
-```typescript
-// 切换到暗色主题
-editor.setTheme('dark')
-
-// 切换到蓝色主题
-editor.setTheme('blue')
-
-// 获取主题管理器
-const themeManager = editor.getThemeManager()
-
-// 注册自定义主题
-themeManager.registerTheme('custom', {
-  name: 'custom',
-  nodes: {
-    start: { fill: '#ff6b6b', stroke: '#e55656' },
-    approval: { fill: '#4ecdc4', stroke: '#45b7b8' }
-    // ... 更多节点样式
-  },
-  edges: {
-    'approval-edge': { stroke: '#6c5ce7', strokeWidth: 2 }
-  },
-  canvas: {
-    backgroundColor: '#f8f9fa'
-  }
-})
-
-// 使用自定义主题
-themeManager.setTheme('custom')
-```
-
-## 插件使用
-
-```typescript
-// 获取插件管理器
-const pluginManager = editor.getPluginManager()
-
-// 检查插件状态
-console.log('已安装的插件:', pluginManager.getInstalledPlugins())
-
-// 手动安装插件
-import { MiniMapPlugin } from '@ldesign/flowchart'
-pluginManager.install(new MiniMapPlugin({
-  width: 200,
-  height: 150
-}))
-```
-
-## 数据操作
-
-```typescript
-// 获取流程图数据
-const data = editor.getFlowchartData()
-
-// 验证数据
-const validation = FlowchartAPI.validateData(data)
-if (!validation.valid) {
-  console.error('数据验证失败:', validation.errors)
-}
-
-// 导出为 BPMN
-const bpmn = FlowchartAPI.convertToBPMN(data)
-
-// 导出为图片（需要导出插件）
-const exportPlugin = pluginManager.getPlugin('export')
-if (exportPlugin) {
-  exportPlugin.exportAs('png', 'my-flowchart.png')
-}
-```
-
-## 完整示例
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>LDesign Flowchart 示例</title>
-  <style>
-    #flowchart-container {
-      width: 100%;
-      height: 600px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
-  </style>
-</head>
-<body>
-  <div id="flowchart-container"></div>
-  
-  <script type="module">
-    import { FlowchartAPI } from '@ldesign/flowchart'
-    
-    // 创建编辑器
-    const editor = FlowchartAPI.createEditor({
-      container: '#flowchart-container',
-      width: 800,
-      height: 600,
-      plugins: {
-        minimap: true,
-        history: true,
-        export: true
-      }
-    })
-    
-    // 创建审批流程
-    const template = FlowchartAPI.createApprovalTemplate({
-      title: '请假审批流程',
-      steps: ['申请提交', '直属领导审批', 'HR审批']
-    })
-    
-    editor.setData(template)
-    
-    // 监听事件
-    editor.on('node:click', (data) => {
-      console.log('节点点击:', data)
-    })
-  </script>
-</body>
-</html>
+// 验证
+const result = editor.validate();
+console.log(result);
 ```
 
 ## 下一步
 
-- 了解更多 [节点类型](/guide/node-types)
-- 查看 [API 文档](/api/flowchart-api)
-- 浏览 [示例代码](/examples/basic)
-- 学习 [插件开发](/plugins/development)
+- [节点类型](/guide/node-types) - 了解各种节点类型
+- [配置选项](/guide/configuration) - 查看所有配置选项
+- [事件系统](/guide/events) - 了解事件系统
+- [API 参考](/api/editor) - 查看完整的 API 文档

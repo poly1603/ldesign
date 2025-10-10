@@ -1,405 +1,300 @@
 /**
- * @file 裁剪器类型定义
- * @description 定义裁剪器的所有类型、接口和枚举
+ * Cropper Types
  */
 
-// ============================================================================
-// 基础类型
-// ============================================================================
+// View modes
+export type ViewMode = 0 | 1 | 2 | 3
 
-/**
- * 坐标点
- */
+// Drag modes
+export type DragMode = 'crop' | 'move' | 'none'
+
+// Image formats
+export type ImageFormat = 'image/png' | 'image/jpeg' | 'image/webp'
+
+// Canvas data
+export interface CanvasData {
+  left: number
+  top: number
+  width: number
+  height: number
+  naturalWidth: number
+  naturalHeight: number
+}
+
+// Crop box data
+export interface CropBoxData {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+// Container data
+export interface ContainerData {
+  width: number
+  height: number
+}
+
+// Image data
+export interface ImageData {
+  left: number
+  top: number
+  width: number
+  height: number
+  rotate: number
+  scaleX: number
+  scaleY: number
+  naturalWidth: number
+  naturalHeight: number
+  aspectRatio: number
+}
+
+// Crop data (event detail)
+export interface CropData {
+  x: number
+  y: number
+  width: number
+  height: number
+  rotate: number
+  scaleX: number
+  scaleY: number
+}
+
+// Cropper options
+export interface CropperOptions {
+  // View mode
+  viewMode?: ViewMode
+
+  // Drag mode
+  dragMode?: DragMode
+
+  // Initial aspect ratio
+  initialAspectRatio?: number
+
+  // Aspect ratio
+  aspectRatio?: number
+
+  // Data (for restore)
+  data?: Partial<CropData>
+
+  // Preview elements
+  preview?: string | Element | Element[]
+
+  // Responsive
+  responsive?: boolean
+
+  // Restore
+  restore?: boolean
+
+  // Check cross origin
+  checkCrossOrigin?: boolean
+
+  // Check orientation
+  checkOrientation?: boolean
+
+  // Modal
+  modal?: boolean
+
+  // Guides
+  guides?: boolean
+
+  // Center
+  center?: boolean
+
+  // Highlight
+  highlight?: boolean
+
+  // Background
+  background?: boolean
+
+  // Auto crop
+  autoCrop?: boolean
+
+  // Auto crop area
+  autoCropArea?: number
+
+  // Movable
+  movable?: boolean
+
+  // Rotatable
+  rotatable?: boolean
+
+  // Scalable
+  scalable?: boolean
+
+  // Zoomable
+  zoomable?: boolean
+
+  // Zoom on touch
+  zoomOnTouch?: boolean
+
+  // Zoom on wheel
+  zoomOnWheel?: boolean
+
+  // Wheel zoom ratio
+  wheelZoomRatio?: number
+
+  // Crop box movable
+  cropBoxMovable?: boolean
+
+  // Crop box resizable
+  cropBoxResizable?: boolean
+
+  // Toggle drag mode on dblclick
+  toggleDragModeOnDblclick?: boolean
+
+  // Min container width
+  minContainerWidth?: number
+
+  // Min container height
+  minContainerHeight?: number
+
+  // Min canvas width
+  minCanvasWidth?: number
+
+  // Min canvas height
+  minCanvasHeight?: number
+
+  // Min crop box width
+  minCropBoxWidth?: number
+
+  // Min crop box height
+  minCropBoxHeight?: number
+
+  // Max crop box width
+  maxCropBoxWidth?: number
+
+  // Max crop box height
+  maxCropBoxHeight?: number
+
+  // Image source
+  src?: string
+
+  // Alt text
+  alt?: string
+
+  // Crossorigin attribute
+  crossorigin?: string
+
+  // Events
+  ready?: (event: CustomEvent) => void
+  cropstart?: (event: CustomEvent) => void
+  cropmove?: (event: CustomEvent) => void
+  cropend?: (event: CustomEvent) => void
+  crop?: (event: CustomEvent) => void
+  zoom?: (event: CustomEvent) => void
+}
+
+// Get cropped canvas options
+export interface GetCroppedCanvasOptions {
+  width?: number
+  height?: number
+  minWidth?: number
+  minHeight?: number
+  maxWidth?: number
+  maxHeight?: number
+  fillColor?: string
+  imageSmoothingEnabled?: boolean
+  imageSmoothingQuality?: ImageSmoothingQuality
+}
+
+// Point
 export interface Point {
   x: number
   y: number
 }
 
-/**
- * 尺寸
- */
-export interface Size {
-  width: number
-  height: number
-}
-
-/**
- * 矩形区域
- */
-export interface Rect extends Point, Size {}
-
-/**
- * 边界框
- */
-export interface BoundingBox {
+// Rectangle
+export interface Rectangle {
   left: number
   top: number
-  right: number
-  bottom: number
-}
-
-// ============================================================================
-// 枚举类型
-// ============================================================================
-
-/**
- * 裁剪形状
- */
-export enum CropShape {
-  RECTANGLE = 'rectangle',
-  CIRCLE = 'circle',
-  ELLIPSE = 'ellipse',
-}
-
-/**
- * 图片格式
- */
-export enum ImageFormat {
-  PNG = 'image/png',
-  JPEG = 'image/jpeg',
-  WEBP = 'image/webp',
-}
-
-/**
- * 裁剪器事件类型
- */
-export enum CropperEventType {
-  // 图片相关事件
-  IMAGE_LOADED = 'imageLoaded',
-  IMAGE_ERROR = 'imageError',
-  
-  // 裁剪相关事件
-  CROP_START = 'cropStart',
-  CROP_MOVE = 'cropMove',
-  CROP_END = 'cropEnd',
-  CROP_CHANGE = 'cropChange',
-  
-  // 变换相关事件
-  ZOOM_CHANGE = 'zoomChange',
-  ROTATION_CHANGE = 'rotationChange',
-  FLIP_CHANGE = 'flipChange',
-  
-  // 交互事件
-  DRAG_START = 'dragStart',
-  DRAG_MOVE = 'dragMove',
-  DRAG_END = 'dragEnd',
-  
-  // 生命周期事件
-  READY = 'ready',
-  DESTROY = 'destroy',
-  RESET = 'reset',
-}
-
-/**
- * 拖拽类型
- */
-export enum DragType {
-  MOVE = 'move',
-  RESIZE_N = 'resize-n',
-  RESIZE_S = 'resize-s',
-  RESIZE_E = 'resize-e',
-  RESIZE_W = 'resize-w',
-  RESIZE_NE = 'resize-ne',
-  RESIZE_NW = 'resize-nw',
-  RESIZE_SE = 'resize-se',
-  RESIZE_SW = 'resize-sw',
-}
-
-/**
- * 预设裁剪比例
- */
-export enum AspectRatio {
-  FREE = 0,
-  SQUARE = 1,
-  RATIO_4_3 = 4 / 3,
-  RATIO_3_4 = 3 / 4,
-  RATIO_16_9 = 16 / 9,
-  RATIO_9_16 = 9 / 16,
-  RATIO_3_2 = 3 / 2,
-  RATIO_2_3 = 2 / 3,
-}
-
-// ============================================================================
-// 配置接口
-// ============================================================================
-
-/**
- * 裁剪器配置选项
- */
-export interface CropperOptions {
-  /** 容器元素或选择器 */
-  container: HTMLElement | string
-  
-  /** 裁剪形状 */
-  shape?: CropShape
-  
-  /** 宽高比 */
-  aspectRatio?: number
-  
-  /** 初始裁剪区域 */
-  initialCrop?: Partial<Rect>
-  
-  /** 最小裁剪尺寸 */
-  minCropSize?: Size
-  
-  /** 最大裁剪尺寸 */
-  maxCropSize?: Size
-  
-  /** 是否可拖拽移动 */
-  movable?: boolean
-  
-  /** 是否可调整大小 */
-  resizable?: boolean
-  
-  /** 是否可缩放 */
-  zoomable?: boolean
-  
-  /** 是否可旋转 */
-  rotatable?: boolean
-  
-  /** 缩放范围 */
-  zoomRange?: [number, number]
-  
-  /** 背景颜色 */
-  backgroundColor?: string
-  
-  /** 遮罩透明度 */
-  maskOpacity?: number
-  
-  /** 网格线 */
-  guides?: boolean
-  
-  /** 中心线 */
-  centerLines?: boolean
-  
-  /** 响应式 */
-  responsive?: boolean
-  
-  /** 触摸支持 */
-  touchEnabled?: boolean
-  
-  /** 自动裁剪 */
-  autoCrop?: boolean
-  
-  /** 预览配置 */
-  preview?: PreviewOptions
-  
-  /** 事件回调 */
-  onReady?: (event: CropperEvent) => void
-  onCropStart?: (event: CropperEvent) => void
-  onCropMove?: (event: CropperEvent) => void
-  onCropEnd?: (event: CropperEvent) => void
-  onZoomChange?: (event: CropperEvent) => void
-  onRotationChange?: (event: CropperEvent) => void
-}
-
-/**
- * 预览配置
- */
-export interface PreviewOptions {
-  /** 预览容器 */
-  container?: HTMLElement | string
-  
-  /** 预览尺寸 */
-  size?: Size
-  
-  /** 是否实时预览 */
-  realtime?: boolean
-}
-
-// ============================================================================
-// 数据接口
-// ============================================================================
-
-/**
- * 裁剪数据
- */
-export interface CropData {
-  /** X坐标 */
-  x: number
-  
-  /** Y坐标 */
-  y: number
-  
-  /** 宽度 */
   width: number
-  
-  /** 高度 */
   height: number
-  
-  /** 裁剪形状 */
-  shape: CropShape
-  
-  /** 旋转角度 */
-  rotation?: number
-  
-  /** 缩放比例 */
-  scale?: number
-  
-  /** 是否水平翻转 */
-  flipX?: boolean
-  
-  /** 是否垂直翻转 */
-  flipY?: boolean
 }
 
-/**
- * 图片信息
- */
-export interface ImageInfo {
-  /** 原始宽度 */
-  naturalWidth: number
-  
-  /** 原始高度 */
-  naturalHeight: number
-  
-  /** 显示宽度 */
-  width: number
-  
-  /** 显示高度 */
-  height: number
-  
-  /** 宽高比 */
-  aspectRatio: number
-  
-  /** 图片源 */
-  src: string
-  
-  /** 文件大小 */
-  size?: number
-  
-  /** 文件类型 */
-  type?: string
+// Action types
+export type Action =
+  | 'all'
+  | 'crop'
+  | 'move'
+  | 'zoom'
+  | 'e'
+  | 'w'
+  | 's'
+  | 'n'
+  | 'se'
+  | 'sw'
+  | 'ne'
+  | 'nw'
+
+// Internal data structure
+export interface InternalData {
+  // Container
+  container: HTMLElement
+
+  // Canvas (image wrapper)
+  canvas: HTMLCanvasElement | null
+
+  // Crop box
+  cropBox: HTMLDivElement | null
+
+  // Image
+  image: HTMLImageElement | null
+
+  // Options
+  options: CropperOptions
+
+  // Canvas data
+  canvasData: CanvasData | null
+
+  // Crop box data
+  cropBoxData: CropBoxData | null
+
+  // Container data
+  containerData: ContainerData | null
+
+  // Image data
+  imageData: ImageData | null
+
+  // Initial canvas data
+  initialCanvasData: CanvasData | null
+
+  // Initial crop box data
+  initialCropBoxData: CropBoxData | null
+
+  // Initial image data
+  initialImageData: ImageData | null
+
+  // Is ready
+  ready: boolean
+
+  // Is cropping
+  cropping: boolean
+
+  // Current action
+  action: Action
+
+  // Is disabled
+  disabled: boolean
+
+  // Is limited
+  limited: boolean
+
+  // Pointer data
+  pointer: Point
+
+  // Wheel zoom timeout
+  wheelZoomTimeout?: number
 }
 
-/**
- * 变换状态
- */
-export interface TransformState {
-  /** 缩放比例 */
-  scale: number
-  
-  /** 旋转角度 */
-  rotation: number
-  
-  /** 水平翻转 */
-  flipX: boolean
-  
-  /** 垂直翻转 */
-  flipY: boolean
-  
-  /** 平移 */
-  translate: Point
+// Event types
+export interface CropperEvent extends CustomEvent {
+  detail: CropData
 }
 
-// ============================================================================
-// 事件接口
-// ============================================================================
-
-/**
- * 裁剪器事件
- */
-export interface CropperEvent {
-  /** 事件类型 */
-  type: CropperEventType
-  
-  /** 事件目标 */
-  target: any
-  
-  /** 裁剪数据 */
-  cropData?: CropData
-  
-  /** 图片信息 */
-  imageInfo?: ImageInfo
-  
-  /** 变换状态 */
-  transformState?: TransformState
-  
-  /** 原始事件 */
-  originalEvent?: Event
-  
-  /** 额外数据 */
+// Plugin interface
+export interface CropperPlugin {
+  name: string
+  install: (cropper: any) => void
   [key: string]: any
-}
-
-/**
- * 事件监听器
- */
-export type EventListener = (event: CropperEvent) => void
-
-/**
- * 事件监听器映射
- */
-export type EventListenerMap = {
-  [K in CropperEventType]?: EventListener[]
-}
-
-// ============================================================================
-// 输出接口
-// ============================================================================
-
-/**
- * 裁剪输出选项
- */
-export interface CropOutputOptions {
-  /** 输出格式 */
-  format?: ImageFormat
-  
-  /** 输出质量 (0-1) */
-  quality?: number
-  
-  /** 输出尺寸 */
-  size?: Size
-  
-  /** 是否填充背景 */
-  fillBackground?: boolean
-  
-  /** 背景颜色 */
-  backgroundColor?: string
-}
-
-/**
- * 兼容性检查结果
- */
-export interface CompatibilityResult {
-  /** 是否支持 */
-  supported: boolean
-  
-  /** 功能支持情况 */
-  features: {
-    canvas: boolean
-    fileReader: boolean
-    blob: boolean
-    touch: boolean
-    webgl: boolean
-  }
-  
-  /** 错误信息 */
-  errors?: string[]
-}
-
-// ============================================================================
-// 工具类型
-// ============================================================================
-
-/**
- * 图片源类型
- */
-export type ImageSource = string | File | HTMLImageElement | HTMLCanvasElement
-
-/**
- * 容器类型
- */
-export type ContainerElement = HTMLElement | string
-
-/**
- * 可选的裁剪数据
- */
-export type PartialCropData = Partial<CropData>
-
-/**
- * 事件处理器映射
- */
-export type EventHandlerMap = {
-  [K in CropperEventType]?: (event: CropperEvent) => void
 }
