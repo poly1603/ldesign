@@ -2,8 +2,8 @@ import { Component, Prop, State, Element, h, Host, Watch, Method, Event, EventEm
 
 /**
  * ldesign-ellipsis 文本省略/展开组件
- * - 折叠时按指定行数展示，右下角显示“更多”按钮
- * - 展开后：若最后一行还有空间，则“收起”出现在最后一行最右侧；否则换到下一行右侧
+ * - 折叠时按指定行数展示，右下角显示"更多"按钮
+ * - 展开后：若最后一行还有空间，则"收起"出现在最后一行最右侧；否则换到下一行右侧
  * - 兼容 PC 与移动端，按钮有较大点击热区
  */
 @Component({ tag: 'ldesign-ellipsis', styleUrl: 'ellipsis.less', shadow: false })
@@ -30,7 +30,7 @@ export class LdesignEllipsis {
 
   /** 行为控制：auto（默认）| inline（强制同行右置）| newline（强制换行右对齐） */
   @Prop() actionPlacement: 'auto' | 'inline' | 'newline' = 'auto';
-  /** 同行放置时，文本与“收起”的间距（像素） */
+  /** 同行放置时，文本与"收起"的间距（像素） */
   @Prop() inlineGap: number = 8;
   /** 折叠态是否显示渐变遮罩 */
   @Prop() showFade: boolean = true;
@@ -54,40 +54,51 @@ export class LdesignEllipsis {
   /** 自定义按钮 class 和 style */
   @Prop() actionClass?: string;
   @Prop() actionStyle?: any;
+  /** 双击文本切换展开/收起 */
+  @Prop() doubleClickToggle: boolean = false;
+  /** 展开时滚动到组件顶部 */
+  @Prop() scrollIntoViewOnExpand: boolean = false;
+  /** 收起时滚动到组件顶部 */
+  @Prop() scrollIntoViewOnCollapse: boolean = false;
+  /** 渐变遮罩颜色（可自定义多个颜色点） */
+  @Prop() fadeColors?: string;
+  /** 按钮悬浮效果增强 */
+  @Prop() enhancedHover: boolean = true;
+  /** 自动折叠延迟（毫秒，0为不自动折叠） */
+  @Prop() autoCollapseDelay: number = 0;
 
   /** 展开/折叠状态变化回调（自定义事件：ldesignToggle） */
-  // 使用自定义事件名以保持与其他组件一致的命名风格
   @Event() ldesignTruncateChange!: EventEmitter<{ overflowed: boolean }>;
 
   @State() private isExpanded: boolean = false;
-  @State() private isOverflowed: boolean = false; // 是否需要“更多”
-  @State() private inlineFits: boolean = false;   // 展开态“收起”是否能放在最后一行
-  @State() private actionWidth: number = 0;       // “收起”按钮宽度用于占位
+  @State() private isOverflowed: boolean = false;
+  @State() private inlineFits: boolean = false;
+  @State() private actionWidth: number = 0;
   @State() private textToRender: string = '';
-  @State() private effectiveLines: number = 3;    // 当前生效的行数（考虑响应式）
-  @State() private targetMaxHeight: number = 0;   // 用于动画的 max-height 目标
-  @State() private fadeOpacity: number = 1;       // 渐变遮罩透明度（用于动画）
-  @State() private actualHeight: number = 0;      // 实际高度（用于优化动画）
-  @State() private transformScale: number = 1;    // 缩放比例（用于动画优化）
+  @State() private effectiveLines: number = 3;
+  @State() private targetMaxHeight: number = 0;
+  @State() private fadeOpacity: number = 1;
+  @State() private actualHeight: number = 0;
+  @State() private transformScale: number = 1;
   private prevOverflowed?: boolean;
-  private initialLightText?: string;             // 记录最初的直写文本
-  @State() private isCollapsing: boolean = false; // 正在执行收起动画
-  @State() private isAnimating: boolean = false;  // 动画进行中标志
-  private animationFrame?: number;               // requestAnimationFrame ID
-  private animationTimeout?: number;             // 动画超时处理
-  private debounceTimer?: number;                // 防抖处理
-  private lastRefreshTime: number = 0;           // 上次刷新时间（节流用）
+  private initialLightText?: string;
+  @State() private isCollapsing: boolean = false;
+  @State() private isAnimating: boolean = false;
+  private animationFrame?: number;
+  private animationTimeout?: number;
+  private debounceTimer?: number;
+  private lastRefreshTime: number = 0;
+  private autoCollapseTimer?: number;
 
   private ro?: ResizeObserver;
-  private containerEl?: HTMLDivElement;      // 可视区域容器
-  private contentEl?: HTMLDivElement;        // 实际文本（可视）
+  private containerEl?: HTMLDivElement;
+  private contentEl?: HTMLDivElement;
 
-  // 测量容器（离屏）
   private measureWrap?: HTMLDivElement;
-  private measureFull?: HTMLDivElement;      // 全文高度
-  private measureClamp?: HTMLDivElement;     // 行数裁剪高度
-  private measureInline?: HTMLDivElement;    // 文本 + 收起（行内）高度
-  private measureAction?: HTMLSpanElement;   // 收起按钮测量宽度
+  private measureFull?: HTMLDivElement;
+  private measureClamp?: HTMLDivElement;
+  private measureInline?: HTMLDivElement;
+  private measureAction?: HTMLSpanElement;
 
   @Watch('content')
   @Watch('lines')
@@ -107,7 +118,6 @@ export class LdesignEllipsis {
   componentWillLoad() {
     this.isExpanded = typeof this.expanded === 'boolean' ? !!this.expanded : !!this.defaultExpanded;
     this.textToRender = this.computeText();
-    // 清理直写文本，避免与渲染内容重复显示
     this.stripInitialLightDom();
     this.effectiveLines = this.getEffectiveLines();
   }
@@ -128,27 +138,20 @@ export class LdesignEllipsis {
     this.ro = undefined;
     window.removeEventListener('resize', this.onWindowResize as any);
     window.removeEventListener('keydown', this.onKeyDown as any);
-    if (this.animationFrame) {
-      cancelAnimationFrame(this.animationFrame);
-    }
-    if (this.animationTimeout) {
-      clearTimeout(this.animationTimeout);
-    }
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer);
-    }
+    if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
+    if (this.animationTimeout) clearTimeout(this.animationTimeout);
+    if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    if (this.autoCollapseTimer) clearTimeout(this.autoCollapseTimer);
   }
 
   private computeText(): string {
     const fromProp = (this.content ?? '').toString();
     if (fromProp && fromProp.trim().length > 0) return fromProp;
-    // 首次加载前读取直写文本并缓存
     const fromLight = (this.host?.textContent ?? '').toString();
     if (fromLight && fromLight.trim().length > 0) {
       this.initialLightText = fromLight.trim();
       return this.initialLightText;
     }
-    // 后续若已清空 Light DOM，则使用缓存
     return (this.initialLightText || '').toString();
   }
 
@@ -168,31 +171,17 @@ export class LdesignEllipsis {
 
   private stripInitialLightDom() {
     try {
-      // 移除初始写在标签内的纯文本，避免页面上显示两份内容
-      // 在 Stencil 渲染前清空子节点不影响后续 VDOM 挂载
       while (this.host?.firstChild) {
         this.host.removeChild(this.host.firstChild);
       }
     } catch {}
   }
 
-  // 防抖刷新，避免频繁重计算
   private debouncedRefresh = () => {
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer);
-    }
+    if (this.debounceTimer) clearTimeout(this.debounceTimer);
     this.debounceTimer = setTimeout(() => {
       this.refreshAll();
-    }, 16) as any; // 约一帧时间
-  };
-
-  // 节流刷新，避免在短时间内多次调用
-  private throttledRefresh = () => {
-    const now = Date.now();
-    if (now - this.lastRefreshTime > 16) { // 60fps
-      this.lastRefreshTime = now;
-      this.refreshAll();
-    }
+    }, 16) as any;
   };
 
   private ensureMeasureNodes() {
@@ -200,8 +189,6 @@ export class LdesignEllipsis {
       const wrap = document.createElement('div');
       wrap.className = 'ld-ellipsis__measure';
       wrap.setAttribute('aria-hidden', 'true');
-      // 离屏且不影响布局
-      // 使用 fixed 并放到视口外，确保能获取到准确尺寸（width 由可视容器赋值）
       Object.assign(wrap.style, {
         position: 'fixed',
         left: '-100000px',
@@ -211,15 +198,12 @@ export class LdesignEllipsis {
         zIndex: '-1',
       } as CSSStyleDeclaration);
 
-      // full
       const full = document.createElement('div');
       full.className = 'ld-ellipsis__m-full';
 
-      // clamp
       const clamp = document.createElement('div');
       clamp.className = 'ld-ellipsis__m-clamp';
 
-      // inline (text + [收起])
       const inline = document.createElement('div');
       inline.className = 'ld-ellipsis__m-inline';
       const inlineAction = document.createElement('span');
@@ -240,50 +224,37 @@ export class LdesignEllipsis {
   }
 
   private refreshAll = () => {
-    // 同步测量节点内容与宽度
     this.syncMeasureContentAndWidth();
 
-    // 1) 判断是否溢出（是否需要“更多”）
     const fullH = this.measureFull?.scrollHeight || 0;
     const clampH = this.measureClamp?.getBoundingClientRect().height || 0;
-    const overflowed = fullH > clampH + 0.5; // 容错
+    const overflowed = fullH > clampH + 0.5;
 
-    // 变化时派发事件
     if (this.prevOverflowed !== overflowed) {
       this.prevOverflowed = overflowed;
       try { this.ldesignTruncateChange?.emit?.({ overflowed }); } catch {}
     }
     this.isOverflowed = overflowed;
 
-    // 2) 展开态下，判断“收起”是否能放在最后一行的最右侧
     if (this.isExpanded && overflowed) {
-      // 设置 inline 文案与测量
       if (this.measureAction) this.measureAction.textContent = this.collapseText;
-      // 有按钮的高度
       const hWithAction = this.measureInline?.scrollHeight || 0;
-      // 无按钮的高度（full）
       const hTextOnly = fullH;
-      let fits = hWithAction <= hTextOnly + 0.5; // 没有产生换行
-      // 行为覆盖
+      let fits = hWithAction <= hTextOnly + 0.5;
       if (this.actionPlacement === 'inline') fits = true;
       if (this.actionPlacement === 'newline') fits = false;
       this.inlineFits = fits;
 
-      // 测出按钮宽度
       const aw = this.measureAction?.getBoundingClientRect().width || 0;
       this.actionWidth = Math.ceil(aw);
     } else {
-      // 折叠态或未溢出：inlineFits 不生效
       this.inlineFits = this.actionPlacement === 'inline';
     }
 
-    // 3) 计算动画目标高度和实际高度
     const target = (this.isExpanded && !this.isCollapsing) ? fullH : clampH;
     this.targetMaxHeight = Math.max(0, Math.ceil(target));
     this.actualHeight = target;
     
-    // 4) 设置渐变透明度（折叠时显示，展开时隐藏）
-    // 使用延迟来确保动画平滑
     if (!this.isAnimating) {
       this.fadeOpacity = (this.isExpanded && !this.isCollapsing) ? 0 : 1;
     }
@@ -291,7 +262,6 @@ export class LdesignEllipsis {
 
   private syncMeasureContentAndWidth() {
     this.ensureMeasureNodes();
-    const wrap = this.measureWrap!;
     const full = this.measureFull!;
     const clamp = this.measureClamp!;
     const inline = this.measureInline!;
@@ -300,7 +270,6 @@ export class LdesignEllipsis {
     const width = this.host?.getBoundingClientRect().width || 0;
     const cssWidth = width > 0 ? `${width}px` : 'auto';
 
-    // 保持相同的字体/行高/断行策略
     [full, clamp, inline].forEach(el => {
       Object.assign(el.style, {
         width: cssWidth,
@@ -310,44 +279,39 @@ export class LdesignEllipsis {
       } as CSSStyleDeclaration);
     });
 
-    // clamp 行数（考虑响应式）
     clamp.style.display = '-webkit-box';
     (clamp.style as any)['-webkitBoxOrient'] = 'vertical';
     (clamp.style as any)['-webkitLineClamp'] = String(this.effectiveLines);
     clamp.style.overflow = 'hidden';
 
-    // inline：文本 + 按钮
     inline.textContent = this.textToRender || '';
-    const act = inlineAction; // 末尾附加按钮
-    act.textContent = this.collapseText;
+    inlineAction.textContent = this.collapseText;
 
-    // full：纯文本
     full.textContent = this.textToRender || '';
-    // clamp：纯文本（行数限制）
     clamp.textContent = this.textToRender || '';
   }
 
   private onExpand = () => {
     const next = true;
     if (typeof this.expanded === 'boolean') {
-      // 受控时，仅派发事件
       this.dispatchToggle(next);
     } else {
-      // 使用渐进式动画
       this.isAnimating = true;
-      
-      // 先淑出渐变遮罩
       this.fadeOpacity = 0;
       
-      // 然后展开内容
       this.animationFrame = requestAnimationFrame(() => {
         this.isExpanded = next;
         this.dispatchToggle(next);
         this.refreshAll();
         
-        // 动画结束后清理
         this.animationTimeout = setTimeout(() => {
           this.isAnimating = false;
+          
+          if (this.scrollIntoViewOnExpand) {
+            this.scrollToView();
+          }
+          
+          this.setAutoCollapseTimer();
         }, this.transitionDuration) as any;
       });
     }
@@ -355,24 +319,27 @@ export class LdesignEllipsis {
 
   private onCollapse = () => {
     const next = false;
+    
+    if (this.autoCollapseTimer) {
+      clearTimeout(this.autoCollapseTimer);
+      this.autoCollapseTimer = undefined;
+    }
+    
     if (typeof this.expanded === 'boolean') {
-      // 受控：仅派发事件，交给外部控制 expanded
       this.dispatchToggle(next);
     } else {
-      // 非受控：使用渐进式动画
       this.isAnimating = true;
       this.isCollapsing = true;
-      
-      // 先淡入渐变遮罩
       this.fadeOpacity = 1;
       
-      // 然后收起内容
       this.animationFrame = requestAnimationFrame(() => {
         this.dispatchToggle(next);
         this.refreshAll();
+        
+        if (this.scrollIntoViewOnCollapse) {
+          setTimeout(() => this.scrollToView(), this.transitionDuration);
+        }
       });
-      
-      // 在 transitionend 回调内收尾（见 onWrapTransitionEnd）
     }
   };
 
@@ -383,18 +350,54 @@ export class LdesignEllipsis {
     } catch {}
   }
 
+  private scrollToView() {
+    try {
+      this.host?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch {}
+  }
+
+  private setAutoCollapseTimer() {
+    if (this.autoCollapseTimer) {
+      clearTimeout(this.autoCollapseTimer);
+      this.autoCollapseTimer = undefined;
+    }
+    
+    if (this.autoCollapseDelay > 0 && this.isExpanded) {
+      this.autoCollapseTimer = setTimeout(() => {
+        if (this.isExpanded) {
+          this.onCollapse();
+        }
+      }, this.autoCollapseDelay) as any;
+    }
+  }
+
+  private onDoubleClick = () => {
+    if (!this.doubleClickToggle || !this.isOverflowed) return;
+    
+    if (this.isExpanded) {
+      this.onCollapse();
+    } else {
+      this.onExpand();
+    }
+  };
+
   private renderCollapsed() {
     const showMore = this.isOverflowed;
     const wrapStyle: any = {
       maxHeight: this.targetMaxHeight ? `${this.targetMaxHeight}px` : undefined,
-      transition: this.transitionDuration > 0 ? `max-height ${this.transitionDuration}ms cubic-bezier(0.4, 0, 0.2, 1)` : undefined,
+      transition: this.transitionDuration > 0 ? `max-height ${this.transitionDuration}ms cubic-bezier(0.4, 0, 0.2, 1), opacity ${this.transitionDuration * 0.6}ms ease` : undefined,
       overflow: 'hidden',
-      willChange: this.isAnimating ? 'max-height' : 'auto',
+      willChange: this.isAnimating ? 'max-height, opacity' : 'auto',
     };
+    
+    const defaultFadeColors = 'rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 40%, rgba(255, 255, 255, 0.8) 60%, var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff)) 80%';
+    const fadeBackground = this.fadeColors ? `linear-gradient(90deg, ${this.fadeColors})` : `linear-gradient(90deg, ${defaultFadeColors})`;
+    
     const fadeStyle: any = { 
       width: typeof this.fadeWidth === 'number' ? `${this.fadeWidth}px` : this.fadeWidth,
       opacity: this.fadeOpacity,
-      transition: this.transitionDuration > 0 ? `opacity ${this.transitionDuration * 0.8}ms cubic-bezier(0.4, 0, 0.6, 1)` : undefined,
+      background: fadeBackground,
+      transition: this.transitionDuration > 0 ? `opacity ${this.transitionDuration * 0.7}ms cubic-bezier(0.4, 0, 0.2, 1)` : undefined,
       willChange: this.isAnimating ? 'opacity' : 'auto',
     };
 
@@ -404,6 +407,7 @@ export class LdesignEllipsis {
           class="ldesign-ellipsis__content ldesign-ellipsis__content--clamp"
           style={{ ['--ld-ellipsis-lines' as any]: String(this.effectiveLines) }}
           ref={el => (this.contentEl = el as HTMLDivElement)}
+          onDblClick={this.onDoubleClick}
         >
           {this.textToRender}
         </div>
@@ -426,7 +430,7 @@ export class LdesignEllipsis {
 
     if (showMore && this.tooltipOnCollapsed) {
       return (
-<ldesign-tooltip content={this.textToRender} placement={this.tooltipPlacement as any} maxWidth={this.tooltipMaxWidth} arrow={true}>
+        <ldesign-tooltip content={this.textToRender} placement={this.tooltipPlacement as any} maxWidth={this.tooltipMaxWidth} arrow={true}>
           {inner}
         </ldesign-tooltip>
       );
@@ -442,23 +446,24 @@ export class LdesignEllipsis {
     const spacerStyle = fits && this.actionWidth > 0 ? { width: `${this.actionWidth + gap}px` } : undefined;
     const wrapStyle: any = {
       maxHeight: this.targetMaxHeight ? `${this.targetMaxHeight}px` : undefined,
-      transition: this.transitionDuration > 0 ? `max-height ${this.transitionDuration}ms cubic-bezier(0.4, 0, 0.2, 1)` : undefined,
+      transition: this.transitionDuration > 0 ? `max-height ${this.transitionDuration}ms cubic-bezier(0.4, 0, 0.2, 1), opacity ${this.transitionDuration * 0.6}ms ease` : undefined,
       overflow: 'hidden',
-      willChange: this.isAnimating ? 'max-height' : 'auto',
+      willChange: this.isAnimating ? 'max-height, opacity' : 'auto',
     };
+    
+    const actionExtraClass = this.enhancedHover ? 'ldesign-ellipsis__action--enhanced' : '';
 
     return (
       <div class="ldesign-ellipsis__wrap ldesign-ellipsis__wrap--expanded" style={wrapStyle} onTransitionEnd={this.onWrapTransitionEnd as any} ref={el => (this.containerEl = el as HTMLDivElement)}>
-        <div class="ldesign-ellipsis__content" ref={el => (this.contentEl = el as HTMLDivElement)}>
+        <div class="ldesign-ellipsis__content" ref={el => (this.contentEl = el as HTMLDivElement)} onDblClick={this.onDoubleClick}>
           {this.textToRender}
-          {/* 占位：为绝对定位的“收起”预留末尾空间，避免覆盖文本 */}
           {fits && showCollapse ? <span class="ldesign-ellipsis__spacer" style={spacerStyle as any} aria-hidden="true" /> : null}
         </div>
         {showCollapse ? (
           fits ? (
             <button
               type="button"
-              class={['ldesign-ellipsis__action', 'ldesign-ellipsis__action--less', 'ldesign-ellipsis__action--abs', this.actionClass].filter(Boolean).join(' ')}
+              class={['ldesign-ellipsis__action', 'ldesign-ellipsis__action--less', 'ldesign-ellipsis__action--abs', actionExtraClass, this.actionClass].filter(Boolean).join(' ')}
               style={this.actionStyle}
               onClick={this.onCollapse}
             >
@@ -469,7 +474,7 @@ export class LdesignEllipsis {
             <div class="ldesign-ellipsis__action-row">
               <button
                 type="button"
-                class={['ldesign-ellipsis__action', 'ldesign-ellipsis__action--less', this.actionClass].filter(Boolean).join(' ')}
+                class={['ldesign-ellipsis__action', 'ldesign-ellipsis__action--less', actionExtraClass, this.actionClass].filter(Boolean).join(' ')}
                 style={this.actionStyle}
                 onClick={this.onCollapse}
               >
@@ -487,7 +492,6 @@ export class LdesignEllipsis {
     if (e.propertyName !== 'max-height') return;
     if (this.isCollapsing) {
       if (typeof this.expanded !== 'boolean') {
-        // 非受控：动画结束后再切换到折叠态（渲染 clamp 版本）
         this.isExpanded = false;
       }
       this.isCollapsing = false;
@@ -501,7 +505,6 @@ export class LdesignEllipsis {
     const map = this.linesMap;
     const w = typeof window !== 'undefined' ? window.innerWidth : 0;
     if (!map) return base;
-    // 简单断点：sm<576, md<768, lg<992, xl>=1200
     if (w >= 1200 && typeof map.xl === 'number') return map.xl!;
     if (w >= 992 && typeof map.lg === 'number') return map.lg!;
     if (w >= 768 && typeof map.md === 'number') return map.md!;

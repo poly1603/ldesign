@@ -2017,8 +2017,8 @@ export namespace Components {
     }
     /**
      * ldesign-ellipsis 文本省略/展开组件
-     * - 折叠时按指定行数展示，右下角显示“更多”按钮
-     * - 展开后：若最后一行还有空间，则“收起”出现在最后一行最右侧；否则换到下一行右侧
+     * - 折叠时按指定行数展示，右下角显示"更多"按钮
+     * - 展开后：若最后一行还有空间，则"收起"出现在最后一行最右侧；否则换到下一行右侧
      * - 兼容 PC 与移动端，按钮有较大点击热区
      */
     interface LdesignEllipsis {
@@ -2032,6 +2032,11 @@ export namespace Components {
          */
         "actionPlacement": 'auto' | 'inline' | 'newline';
         "actionStyle"?: any;
+        /**
+          * 自动折叠延迟（毫秒，0为不自动折叠）
+          * @default 0
+         */
+        "autoCollapseDelay": number;
         "collapseIcon"?: string;
         /**
           * 展开态允许 ESC 收起
@@ -2053,6 +2058,16 @@ export namespace Components {
          */
         "defaultExpanded": boolean;
         /**
+          * 双击文本切换展开/收起
+          * @default false
+         */
+        "doubleClickToggle": boolean;
+        /**
+          * 按钮悬浮效果增强
+          * @default true
+         */
+        "enhancedHover": boolean;
+        /**
           * 按钮图标（可选）
          */
         "expandIcon"?: string;
@@ -2066,12 +2081,16 @@ export namespace Components {
          */
         "expanded"?: boolean;
         /**
+          * 渐变遮罩颜色（可自定义多个颜色点）
+         */
+        "fadeColors"?: string;
+        /**
           * 渐变遮罩宽度（如 40% 或 120）
           * @default '40%'
          */
         "fadeWidth": number | string;
         /**
-          * 同行放置时，文本与“收起”的间距（像素）
+          * 同行放置时，文本与"收起"的间距（像素）
           * @default 8
          */
         "inlineGap": number;
@@ -2084,6 +2103,16 @@ export namespace Components {
           * 响应式行数，根据屏宽选择不同行数
          */
         "linesMap"?: { sm?: number; md?: number; lg?: number; xl?: number };
+        /**
+          * 收起时滚动到组件顶部
+          * @default false
+         */
+        "scrollIntoViewOnCollapse": boolean;
+        /**
+          * 展开时滚动到组件顶部
+          * @default false
+         */
+        "scrollIntoViewOnExpand": boolean;
         /**
           * 折叠态是否显示渐变遮罩
           * @default true
@@ -6332,8 +6361,8 @@ declare global {
     }
     /**
      * ldesign-ellipsis 文本省略/展开组件
-     * - 折叠时按指定行数展示，右下角显示“更多”按钮
-     * - 展开后：若最后一行还有空间，则“收起”出现在最后一行最右侧；否则换到下一行右侧
+     * - 折叠时按指定行数展示，右下角显示"更多"按钮
+     * - 展开后：若最后一行还有空间，则"收起"出现在最后一行最右侧；否则换到下一行右侧
      * - 兼容 PC 与移动端，按钮有较大点击热区
      */
     interface HTMLLdesignEllipsisElement extends Components.LdesignEllipsis, HTMLStencilElement {
@@ -9272,8 +9301,8 @@ declare namespace LocalJSX {
     }
     /**
      * ldesign-ellipsis 文本省略/展开组件
-     * - 折叠时按指定行数展示，右下角显示“更多”按钮
-     * - 展开后：若最后一行还有空间，则“收起”出现在最后一行最右侧；否则换到下一行右侧
+     * - 折叠时按指定行数展示，右下角显示"更多"按钮
+     * - 展开后：若最后一行还有空间，则"收起"出现在最后一行最右侧；否则换到下一行右侧
      * - 兼容 PC 与移动端，按钮有较大点击热区
      */
     interface LdesignEllipsis {
@@ -9287,6 +9316,11 @@ declare namespace LocalJSX {
          */
         "actionPlacement"?: 'auto' | 'inline' | 'newline';
         "actionStyle"?: any;
+        /**
+          * 自动折叠延迟（毫秒，0为不自动折叠）
+          * @default 0
+         */
+        "autoCollapseDelay"?: number;
         "collapseIcon"?: string;
         /**
           * 展开态允许 ESC 收起
@@ -9308,6 +9342,16 @@ declare namespace LocalJSX {
          */
         "defaultExpanded"?: boolean;
         /**
+          * 双击文本切换展开/收起
+          * @default false
+         */
+        "doubleClickToggle"?: boolean;
+        /**
+          * 按钮悬浮效果增强
+          * @default true
+         */
+        "enhancedHover"?: boolean;
+        /**
           * 按钮图标（可选）
          */
         "expandIcon"?: string;
@@ -9321,12 +9365,16 @@ declare namespace LocalJSX {
          */
         "expanded"?: boolean;
         /**
+          * 渐变遮罩颜色（可自定义多个颜色点）
+         */
+        "fadeColors"?: string;
+        /**
           * 渐变遮罩宽度（如 40% 或 120）
           * @default '40%'
          */
         "fadeWidth"?: number | string;
         /**
-          * 同行放置时，文本与“收起”的间距（像素）
+          * 同行放置时，文本与"收起"的间距（像素）
           * @default 8
          */
         "inlineGap"?: number;
@@ -9343,6 +9391,16 @@ declare namespace LocalJSX {
           * 展开/折叠状态变化回调（自定义事件：ldesignToggle）
          */
         "onLdesignTruncateChange"?: (event: LdesignEllipsisCustomEvent<{ overflowed: boolean }>) => void;
+        /**
+          * 收起时滚动到组件顶部
+          * @default false
+         */
+        "scrollIntoViewOnCollapse"?: boolean;
+        /**
+          * 展开时滚动到组件顶部
+          * @default false
+         */
+        "scrollIntoViewOnExpand"?: boolean;
         /**
           * 折叠态是否显示渐变遮罩
           * @default true
@@ -13299,8 +13357,8 @@ declare module "@stencil/core" {
             "ldesign-dropdown": LocalJSX.LdesignDropdown & JSXBase.HTMLAttributes<HTMLLdesignDropdownElement>;
             /**
              * ldesign-ellipsis 文本省略/展开组件
-             * - 折叠时按指定行数展示，右下角显示“更多”按钮
-             * - 展开后：若最后一行还有空间，则“收起”出现在最后一行最右侧；否则换到下一行右侧
+             * - 折叠时按指定行数展示，右下角显示"更多"按钮
+             * - 展开后：若最后一行还有空间，则"收起"出现在最后一行最右侧；否则换到下一行右侧
              * - 兼容 PC 与移动端，按钮有较大点击热区
              */
             "ldesign-ellipsis": LocalJSX.LdesignEllipsis & JSXBase.HTMLAttributes<HTMLLdesignEllipsisElement>;

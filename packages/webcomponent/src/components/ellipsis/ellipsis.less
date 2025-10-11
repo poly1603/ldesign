@@ -1,20 +1,20 @@
 /**
  * ldesign-ellipsis 样式
- * - 折叠：多行截断 + 右下角“更多”
- * - 展开：尽可能将“收起”放在最后一行最右边，否则换行右对齐
+ * - 折叠：多行截断 + 右下角"更多"
+ * - 展开：尽可能将"收起"放在最后一行最右边，否则换行右对齐
  */
 
 .ldesign-ellipsis {
   display: block;
   color: inherit;
   font: inherit;
-  contain: layout style; // 优化重排性能
+  contain: layout style;
 }
 
 .ldesign-ellipsis__wrap {
   position: relative;
-  transform: translateZ(0); // 开启硬件加速
-  backface-visibility: hidden; // 避免动画闪烁
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .ldesign-ellipsis__wrap--expanded {
@@ -25,10 +25,9 @@
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
-  transform: translateZ(0); // 开启硬件加速
+  transform: translateZ(0);
 }
 
-// 折叠态：多行截断
 .ldesign-ellipsis__content--clamp {
   display: -webkit-box;
   -webkit-line-clamp: var(--ld-ellipsis-lines, 3);
@@ -36,7 +35,7 @@
   overflow: hidden;
 }
 
-// 渐变遮罩（折叠态右下角）
+// 渐变遮罩（折叠态右下角） - 优化为更自然柔和的渐变
 .ldesign-ellipsis__fade {
   position: absolute;
   right: 0;
@@ -44,13 +43,16 @@
   width: 40%;
   height: 1.2em;
   pointer-events: none;
+  // 默认渐变，可通过 fadeColors prop 覆盖
   background: linear-gradient(90deg, 
     rgba(255, 255, 255, 0) 0%, 
-    rgba(255, 255, 255, 0.4) 30%,
-    rgba(255, 255, 255, 0.7) 50%,
-    var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff)) 70%);
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.5) 40%,
+    rgba(255, 255, 255, 0.8) 60%,
+    var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff)) 80%);
   will-change: opacity;
-  transform: translateZ(0); // 开启硬件加速
+  transform: translateZ(0);
+  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 // 通用按钮样式（无边框，文字按钮）
@@ -66,19 +68,24 @@
   border-radius: 4px;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
 
   .ldesign-ellipsis__action-icon {
     width: 1em;
     height: 1em;
     margin-right: 4px;
     vertical-align: -0.15em;
+    transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &:hover {
     color: var(--ldesign-brand-color-hover, #4096ff);
+    background: rgba(22, 119, 255, 0.06);
   }
   &:active {
     color: var(--ldesign-brand-color-active, #0958d9);
+    transform: scale(0.95);
   }
   &:focus-visible {
     outline: 2px solid var(--ldesign-brand-color-focus, rgba(22, 119, 255, 0.35));
@@ -86,26 +93,46 @@
   }
 }
 
-// 折叠态"更多"：右下角绝对定位，底色遮住渐变
+// 增强按钮样式 - 更明显的悬浮效果
+.ldesign-ellipsis__action--enhanced {
+  &:hover {
+    background: rgba(22, 119, 255, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(22, 119, 255, 0.15);
+    
+    .ldesign-ellipsis__action-icon {
+      transform: scale(1.1);
+    }
+  }
+  
+  &:active {
+    transform: translateY(0) scale(0.96);
+    box-shadow: 0 1px 2px rgba(22, 119, 255, 0.1);
+  }
+}
+
+// 折叠态"更多"：右下角绝对定位，底色遮住渐变 - 优化背景过渡
 .ldesign-ellipsis__action--more {
   position: absolute;
   right: 0;
   bottom: 0;
   background: var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff));
-  padding-left: 4px;
-  transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 2; // 确保按钮在渐变层上方
+  padding-left: 8px;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2;
+  box-shadow: -4px 0 8px var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff));
 }
 
-// 展开态：若能同行放置"收起"，则绝对定位到右下角
+// 展开态：若能同行放置"收起"，则绝对定位到右下角 - 优化背景过渡
 .ldesign-ellipsis__action--abs {
   position: absolute;
   right: 0;
   bottom: 0;
   background: var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff));
-  padding-left: 8px;
-  transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  padding-left: 12px;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 2;
+  box-shadow: -6px 0 10px var(--ld-ellipsis-bg, var(--ldesign-bg-color, #fff));
 }
 
 // 展开态：无法同行，另起一行右对齐
@@ -114,11 +141,11 @@
   margin-top: 4px;
 }
 
-// 同行放置“收起”时，为文本末尾预留水平空间，避免覆盖
+// 同行放置"收起"时，为文本末尾预留水平空间，避免覆盖
 .ldesign-ellipsis__spacer {
   display: inline-block;
   width: 0;
-  height: 0; // 不改变行高
+  height: 0;
   line-height: 0;
   font-size: 0;
   vertical-align: baseline;
