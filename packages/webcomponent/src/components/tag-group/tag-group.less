@@ -1,6 +1,13 @@
-/* TagGroup 样式 */
+/* TagGroup 样式（增强版） */
 .ldesign-tag-group {
   display: block;
+  position: relative;
+  
+  &--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 }
 
 .ldesign-tag-group__viewport {
@@ -12,43 +19,13 @@
 .ldesign-tag-group__list {
   display: flex;
   align-items: center;
-  gap: var(--ls-spacing-xs);
-  overflow: hidden;
+  gap: var(--ls-spacing-xs, 8px);
   flex: 1 1 auto;
+  flex-wrap: wrap;
+  padding: 4px 0;
 }
 
-/* scroll 模式：横向滚动容器 */
-.ldesign-tag-group--scroll .ldesign-tag-group__list {
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-behavior: smooth;
-  padding-bottom: 2px; /* 保留滚动条空间 */
-}
-.ldesign-tag-group--scroll .ldesign-tag-group__list::-webkit-scrollbar {
-  height: 6px;
-}
-.ldesign-tag-group--scroll .ldesign-tag-group__list::-webkit-scrollbar-thumb {
-  background-color: var(--ldesign-border-color);
-  border-radius: 99px;
-}
-
-/* 两侧箭头（可选） */
-.ldesign-tag-group__arrow {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  margin: 0 4px;
-  border: none;
-  border-radius: 9999px;
-  background-color: var(--ldesign-bg-color-component);
-  color: var(--ldesign-text-color-secondary, var(--ldesign-text-color-primary));
-  cursor: pointer;
-}
-.ldesign-tag-group__arrow:hover { filter: brightness(0.98); }
-.ldesign-tag-group__arrow:focus-visible { outline: 2px solid var(--ldesign-border-color-focus); outline-offset: 2px; }
+/* scroll 模式：横向滚动容器 - 已移除，使用换行显示 */
 
 /* more 模式：隐藏多余的 slotted 标签 */
 .ldesign-tag-group--more ::slotted([data-hidden-by-group]) {
@@ -66,5 +43,204 @@
   padding: 6px 8px;
   border-radius: 6px;
   line-height: 1.2;
+  transition: background-color .2s ease;
+  cursor: pointer;
 }
-.ldesign-tag-group__more-item:hover { background-color: var(--ldesign-bg-color-component-hover); }
+.ldesign-tag-group__more-item:hover { 
+  background-color: var(--ldesign-bg-color-component-hover, #f3f4f6); 
+}
+
+/* 拖拽排序样式 - 增强版 */
+.ldesign-tag-group__item {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity .3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow .3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &--dragging {
+    opacity: 0.6;
+    transform: scale(1.05) rotate(3deg);
+    z-index: 1000;
+    cursor: grabbing !important;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2), 
+                0 6px 12px rgba(0, 0, 0, 0.15),
+                0 0 0 2px rgba(59, 130, 246, 0.3);
+    filter: brightness(1.05) saturate(1.1);
+    animation: drag-float .6s ease-in-out infinite alternate;
+  }
+  
+  &--drag-over {
+    &::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 80%;
+      width: 4px;
+      background: linear-gradient(180deg, 
+        transparent, 
+        var(--ldesign-brand-color, #3b82f6), 
+        transparent
+      );
+      border-radius: 2px;
+      animation: drag-indicator .3s ease;
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+    }
+  }
+  
+  &--newly-added {
+    animation: tag-bounce-in .6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}
+
+.ldesign-tag-group--draggable .ldesign-tag-group__item {
+  cursor: move;
+  cursor: grab;
+  transition: all .25s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+  
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+@keyframes drag-indicator {
+  0% { 
+    opacity: 0;
+    height: 0;
+  }
+  100% { 
+    opacity: 1;
+    height: 80%;
+  }
+}
+
+@keyframes drag-float {
+  0% { 
+    transform: scale(1.05) rotate(3deg) translateY(0px);
+  }
+  100% { 
+    transform: scale(1.05) rotate(3deg) translateY(-3px);
+  }
+}
+
+@keyframes tag-bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-20px);
+  }
+  50% {
+    transform: scale(1.08) translateY(0);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  85% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 添加标签功能样式 */
+.ldesign-tag-group__add-btn {
+  cursor: pointer;
+  transition: all .25s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.ldesign-tag-group__input-wrapper {
+  display: inline-flex;
+  align-items: center;
+  animation: input-fade-in .3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ldesign-tag-group__input {
+  width: 120px;
+  height: 28px;
+  padding: 5px 12px;
+  border: 1.5px solid var(--ldesign-border-color, #e5e7eb);
+  border-radius: var(--ls-border-radius-base, 6px);
+  background-color: var(--ldesign-bg-color-component, #fff);
+  color: var(--ldesign-text-color-primary, #374151);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  outline: none;
+  transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  
+  &::placeholder {
+    color: var(--ldesign-text-color-placeholder, #9ca3af);
+    font-size: 12px;
+  }
+  
+  &:hover {
+    border-color: var(--ldesign-border-color-hover, #d1d5db);
+  }
+  
+  &:focus {
+    border-color: var(--ldesign-brand-color, #3b82f6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 2px 6px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--ldesign-bg-color-component-disabled, #f3f4f6);
+  }
+}
+
+@keyframes input-fade-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-5px);
+  }
+  60% {
+    transform: scale(1.05) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .ldesign-tag-group__input {
+    width: 100px;
+  }
+}
+
+/* 减少动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .ldesign-tag-group__item,
+  .ldesign-tag-group__add-btn,
+  .ldesign-tag-group__input,
+  .ldesign-tag-group__arrow {
+    transition: none;
+  }
+  
+  .ldesign-tag-group__item--newly-added,
+  .ldesign-tag-group__input-wrapper {
+    animation: none;
+  }
+}

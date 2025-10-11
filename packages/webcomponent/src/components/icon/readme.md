@@ -134,7 +134,6 @@ Type: `Promise<string[]>`
  - [ldesign-select](../select)
  - [ldesign-switch](../switch)
  - [ldesign-tag](../tag)
- - [ldesign-tag-group](../tag-group)
  - [ldesign-time-picker](../time-picker)
  - [ldesign-transfer](../transfer)
  - [ldesign-tree](../tree)
@@ -169,7 +168,6 @@ graph TD;
   ldesign-select --> ldesign-icon
   ldesign-switch --> ldesign-icon
   ldesign-tag --> ldesign-icon
-  ldesign-tag-group --> ldesign-icon
   ldesign-time-picker --> ldesign-icon
   ldesign-transfer --> ldesign-icon
   ldesign-tree --> ldesign-icon

@@ -24,6 +24,7 @@ import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { Element } from "@stencil/core";
 import { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 import { TabMeta, TabsPlacement, TabsType } from "./components/tabs/tabs";
+import { TagData } from "./components/tag-group/tag-group";
 import { Breakpoints as Breakpoints1, TimePickerLocale, TimePickerOverlay, TimePickerSize, TimePickerTrigger, TimePreset } from "./components/time-picker/time-picker";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 import { TransferItem } from "./components/transfer/transfer";
@@ -47,6 +48,7 @@ export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 export { Element } from "@stencil/core";
 export { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 export { TabMeta, TabsPlacement, TabsType } from "./components/tabs/tabs";
+export { TagData } from "./components/tag-group/tag-group";
 export { Breakpoints as Breakpoints1, TimePickerLocale, TimePickerOverlay, TimePickerSize, TimePickerTrigger, TimePreset } from "./components/time-picker/time-picker";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
 export { TransferItem } from "./components/transfer/transfer";
@@ -5096,6 +5098,16 @@ export namespace Components {
          */
         "badge"?: string | number;
         /**
+          * 右上角角标脉动效果
+          * @default false
+         */
+        "badgePulse": boolean;
+        /**
+          * 是否显示边框动画（仅在 checkable 或 clickable 时有效）
+          * @default false
+         */
+        "borderAnimation": boolean;
+        /**
           * 是否可选（切换选中态）
           * @default false
          */
@@ -5171,10 +5183,47 @@ export namespace Components {
     }
     /**
      * TagGroup 标签组
+     * - 支持拖拽排序
+     * - 支持动态添加标签
      * - overflow="scroll" 提供横向滚动和可选箭头
-     * - overflow="more" 根据 maxVisible 折叠为 +N，并使用 ldesign-popup 展示剩余项
+     * - overflow="more" 根据 maxVisible 折叠为 +N
      */
     interface LdesignTagGroup {
+        /**
+          * 添加按钮文本
+          * @default '+ 添加标签'
+         */
+        "addText": string;
+        /**
+          * 是否显示添加按钮
+          * @default false
+         */
+        "addable": boolean;
+        /**
+          * 新标签默认颜色
+          * @default 'default'
+         */
+        "defaultColor": 'default' | 'primary' | 'success' | 'warning' | 'danger';
+        /**
+          * 新标签默认样式
+          * @default 'light'
+         */
+        "defaultVariant": 'light' | 'solid' | 'outline' | 'ghost' | 'dashed' | 'elevated';
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 是否启用拖拽排序
+          * @default false
+         */
+        "enableDrag": boolean;
+        /**
+          * 输入框占位符
+          * @default '请输入标签名'
+         */
+        "inputPlaceholder": string;
         /**
           * more 模式下最多展示的项数（超出将折叠）
           * @default 5
@@ -5186,20 +5235,15 @@ export namespace Components {
          */
         "morePrefix": string;
         /**
-          * 溢出策略：scroll（水平滚动） | more（+N 收纳）
-          * @default 'scroll'
+          * 溢出策略：wrap（自动换行） | more（+N 收纳）
+          * @default 'wrap'
          */
-        "overflow": 'scroll' | 'more';
+        "overflow": 'wrap' | 'more';
         /**
-          * 滚动步长（像素）
-          * @default 120
+          * 标签数据（受控模式）
+          * @default []
          */
-        "scrollStep": number;
-        /**
-          * 是否显示滚动箭头（仅 overflow=scroll 时生效）
-          * @default true
-         */
-        "showArrows": boolean;
+        "tags": TagData[];
     }
     interface LdesignTimePicker {
         "breakpoints"?: Breakpoints1;
@@ -5725,6 +5769,10 @@ export interface LdesignTabsCustomEvent<T> extends CustomEvent<T> {
 export interface LdesignTagCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignTagElement;
+}
+export interface LdesignTagGroupCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignTagGroupElement;
 }
 export interface LdesignTimePickerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -7003,12 +7051,27 @@ declare global {
         prototype: HTMLLdesignTagElement;
         new (): HTMLLdesignTagElement;
     };
+    interface HTMLLdesignTagGroupElementEventMap {
+        "ldesignAdd": { label: string; id: string };
+        "ldesignRemove": { tag: TagData; index: number };
+        "ldesignChange": TagData[];
+    }
     /**
      * TagGroup 标签组
+     * - 支持拖拽排序
+     * - 支持动态添加标签
      * - overflow="scroll" 提供横向滚动和可选箭头
-     * - overflow="more" 根据 maxVisible 折叠为 +N，并使用 ldesign-popup 展示剩余项
+     * - overflow="more" 根据 maxVisible 折叠为 +N
      */
     interface HTMLLdesignTagGroupElement extends Components.LdesignTagGroup, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignTagGroupElementEventMap>(type: K, listener: (this: HTMLLdesignTagGroupElement, ev: LdesignTagGroupCustomEvent<HTMLLdesignTagGroupElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignTagGroupElementEventMap>(type: K, listener: (this: HTMLLdesignTagGroupElement, ev: LdesignTagGroupCustomEvent<HTMLLdesignTagGroupElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
     var HTMLLdesignTagGroupElement: {
         prototype: HTMLLdesignTagGroupElement;
@@ -12390,6 +12453,16 @@ declare namespace LocalJSX {
          */
         "badge"?: string | number;
         /**
+          * 右上角角标脉动效果
+          * @default false
+         */
+        "badgePulse"?: boolean;
+        /**
+          * 是否显示边框动画（仅在 checkable 或 clickable 时有效）
+          * @default false
+         */
+        "borderAnimation"?: boolean;
+        /**
           * 是否可选（切换选中态）
           * @default false
          */
@@ -12473,10 +12546,47 @@ declare namespace LocalJSX {
     }
     /**
      * TagGroup 标签组
+     * - 支持拖拽排序
+     * - 支持动态添加标签
      * - overflow="scroll" 提供横向滚动和可选箭头
-     * - overflow="more" 根据 maxVisible 折叠为 +N，并使用 ldesign-popup 展示剩余项
+     * - overflow="more" 根据 maxVisible 折叠为 +N
      */
     interface LdesignTagGroup {
+        /**
+          * 添加按钮文本
+          * @default '+ 添加标签'
+         */
+        "addText"?: string;
+        /**
+          * 是否显示添加按钮
+          * @default false
+         */
+        "addable"?: boolean;
+        /**
+          * 新标签默认颜色
+          * @default 'default'
+         */
+        "defaultColor"?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
+        /**
+          * 新标签默认样式
+          * @default 'light'
+         */
+        "defaultVariant"?: 'light' | 'solid' | 'outline' | 'ghost' | 'dashed' | 'elevated';
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 是否启用拖拽排序
+          * @default false
+         */
+        "enableDrag"?: boolean;
+        /**
+          * 输入框占位符
+          * @default '请输入标签名'
+         */
+        "inputPlaceholder"?: string;
         /**
           * more 模式下最多展示的项数（超出将折叠）
           * @default 5
@@ -12488,20 +12598,27 @@ declare namespace LocalJSX {
          */
         "morePrefix"?: string;
         /**
-          * 溢出策略：scroll（水平滚动） | more（+N 收纳）
-          * @default 'scroll'
+          * 标签添加事件
          */
-        "overflow"?: 'scroll' | 'more';
+        "onLdesignAdd"?: (event: LdesignTagGroupCustomEvent<{ label: string; id: string }>) => void;
         /**
-          * 滚动步长（像素）
-          * @default 120
+          * 标签顺序改变事件
          */
-        "scrollStep"?: number;
+        "onLdesignChange"?: (event: LdesignTagGroupCustomEvent<TagData[]>) => void;
         /**
-          * 是否显示滚动箭头（仅 overflow=scroll 时生效）
-          * @default true
+          * 标签删除事件
          */
-        "showArrows"?: boolean;
+        "onLdesignRemove"?: (event: LdesignTagGroupCustomEvent<{ tag: TagData; index: number }>) => void;
+        /**
+          * 溢出策略：wrap（自动换行） | more（+N 收纳）
+          * @default 'wrap'
+         */
+        "overflow"?: 'wrap' | 'more';
+        /**
+          * 标签数据（受控模式）
+          * @default []
+         */
+        "tags"?: TagData[];
     }
     interface LdesignTimePicker {
         "breakpoints"?: Breakpoints1;
@@ -13301,8 +13418,10 @@ declare module "@stencil/core" {
             "ldesign-tag": LocalJSX.LdesignTag & JSXBase.HTMLAttributes<HTMLLdesignTagElement>;
             /**
              * TagGroup 标签组
+             * - 支持拖拽排序
+             * - 支持动态添加标签
              * - overflow="scroll" 提供横向滚动和可选箭头
-             * - overflow="more" 根据 maxVisible 折叠为 +N，并使用 ldesign-popup 展示剩余项
+             * - overflow="more" 根据 maxVisible 折叠为 +N
              */
             "ldesign-tag-group": LocalJSX.LdesignTagGroup & JSXBase.HTMLAttributes<HTMLLdesignTagGroupElement>;
             "ldesign-time-picker": LocalJSX.LdesignTimePicker & JSXBase.HTMLAttributes<HTMLLdesignTimePickerElement>;

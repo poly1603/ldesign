@@ -25,6 +25,11 @@ export class LdesignTag {
   @Prop() variant: 'light' | 'solid' | 'outline' | 'ghost' | 'dashed' | 'elevated' = 'light';
 
   /**
+   * 是否显示边框动画（仅在 checkable 或 clickable 时有效）
+   */
+  @Prop() borderAnimation: boolean = false;
+
+  /**
    * 语义颜色
    */
   @Prop() color: 'default' | 'primary' | 'success' | 'warning' | 'danger' = 'default';
@@ -82,6 +87,9 @@ export class LdesignTag {
 
   /** 右上角小圆点 */
   @Prop() dot: boolean = false;
+
+  /** 右上角角标脉动效果 */
+  @Prop() badgePulse: boolean = false;
 
   /**
    * 是否禁用
@@ -150,23 +158,39 @@ export class LdesignTag {
     if (this.selected) classes.push('ldesign-tag--selected');
     if (this.loading) classes.push('ldesign-tag--loading');
     if (this.badge != null || this.dot) classes.push('ldesign-tag--with-badge');
+    if (this.badgePulse) classes.push('ldesign-tag--badge-pulse');
     if (this.customColor) classes.push('ldesign-tag--custom');
     if (this.effect !== 'none') classes.push(`ldesign-tag--effect-${this.effect}`);
+    if (this.borderAnimation) classes.push('ldesign-tag--border-animation');
 
     return classes.join(' ');
   }
 
-  // 为标签内的图标提供更贴合的尺寸映射，避免使用全局 small 过大导致的视觉不均衡
+  // 为标签内的图标提供更贴合的尺寸映射
   private getIconSizeValue(): number {
     switch (this.size) {
       case 'small':
-        return 14; // 更紧凑
+        return 12;
       case 'large':
-        return 18; // 相对更清晰
+        return 14;
       case 'middle':
       case 'medium':
       default:
-        return 16;
+        return 13;
+    }
+  }
+
+  // 关闭按钮图标尺寸（更小更精致）
+  private getCloseIconSize(): number {
+    switch (this.size) {
+      case 'small':
+        return 9;
+      case 'large':
+        return 11;
+      case 'middle':
+      case 'medium':
+      default:
+        return 10;
     }
   }
 
@@ -245,7 +269,7 @@ export class LdesignTag {
             aria-label={this.closeAriaLabel}
             onClick={this.onCloseClick}
           >
-            <ldesign-icon name="x" size={this.getIconSizeValue()}></ldesign-icon>
+            <ldesign-icon name="x" size={this.getCloseIconSize()}></ldesign-icon>
           </button>
         )}
 
