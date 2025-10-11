@@ -2600,6 +2600,24 @@ export namespace Components {
          */
         "backdrop": 'dark' | 'light';
         /**
+          * 标题与描述的对齐方式：left 左对齐；center 居中；right 右对齐
+          * @default 'center'
+         */
+        "captionAlign": 'left' | 'center' | 'right';
+        /**
+          * 标题与描述的显示位置：bottom 底部（工具栏上方）；top 顶部（缩略图下方）
+          * @default 'bottom'
+         */
+        "captionPosition": 'bottom' | 'top';
+        /**
+          * 关闭动画效果（不设置则使用 openAnimation）
+         */
+        "closeAnimation"?: 'fade' | 'zoom' | 'fade-zoom' | 'slide-up' | 'slide-down' | 'none';
+        /**
+          * 关闭动画时长（ms，不设置则使用 openDuration 或 transitionDuration）
+         */
+        "closeDuration"?: number;
+        /**
           * 图片列表（数组或 JSON 字符串）
          */
         "images": string | Array<ImageViewerItem | string>;
@@ -2628,6 +2646,15 @@ export namespace Components {
          */
         "minScale": number;
         /**
+          * 打开/关闭动画效果：fade 淡入淡出；zoom 缩放；slide-up 上滑；slide-down 下滑；none 无动画
+          * @default 'fade-zoom'
+         */
+        "openAnimation": 'fade' | 'zoom' | 'fade-zoom' | 'slide-up' | 'slide-down' | 'none';
+        /**
+          * 打开动画时长（ms，不设置则使用 transitionDuration）
+         */
+        "openDuration"?: number;
+        /**
           * 小窗拖拽方式：title 标题栏拖拽；anywhere 全面板可拖拽
           * @default 'title'
          */
@@ -2653,7 +2680,7 @@ export namespace Components {
          */
         "startIndex": number;
         /**
-          * 过渡类型
+          * 图片切换过渡类型
           * @default 'fade-zoom'
          */
         "transition": 'fade' | 'fade-zoom';
@@ -2673,7 +2700,7 @@ export namespace Components {
          */
         "viewerMode": 'overlay' | 'modal' | 'embedded';
         /**
-          * 小窗标题
+          * 小窗标题（modal模式顶部标题栏）
          */
         "viewerTitle"?: string;
         /**
@@ -9838,6 +9865,24 @@ declare namespace LocalJSX {
          */
         "backdrop"?: 'dark' | 'light';
         /**
+          * 标题与描述的对齐方式：left 左对齐；center 居中；right 右对齐
+          * @default 'center'
+         */
+        "captionAlign"?: 'left' | 'center' | 'right';
+        /**
+          * 标题与描述的显示位置：bottom 底部（工具栏上方）；top 顶部（缩略图下方）
+          * @default 'bottom'
+         */
+        "captionPosition"?: 'bottom' | 'top';
+        /**
+          * 关闭动画效果（不设置则使用 openAnimation）
+         */
+        "closeAnimation"?: 'fade' | 'zoom' | 'fade-zoom' | 'slide-up' | 'slide-down' | 'none';
+        /**
+          * 关闭动画时长（ms，不设置则使用 openDuration 或 transitionDuration）
+         */
+        "closeDuration"?: number;
+        /**
           * 图片列表（数组或 JSON 字符串）
          */
         "images": string | Array<ImageViewerItem | string>;
@@ -9870,6 +9915,15 @@ declare namespace LocalJSX {
         "onLdesignOpen"?: (event: LdesignImageViewerCustomEvent<void>) => void;
         "onLdesignVisibleChange"?: (event: LdesignImageViewerCustomEvent<boolean>) => void;
         /**
+          * 打开/关闭动画效果：fade 淡入淡出；zoom 缩放；slide-up 上滑；slide-down 下滑；none 无动画
+          * @default 'fade-zoom'
+         */
+        "openAnimation"?: 'fade' | 'zoom' | 'fade-zoom' | 'slide-up' | 'slide-down' | 'none';
+        /**
+          * 打开动画时长（ms，不设置则使用 transitionDuration）
+         */
+        "openDuration"?: number;
+        /**
           * 小窗拖拽方式：title 标题栏拖拽；anywhere 全面板可拖拽
           * @default 'title'
          */
@@ -9895,7 +9949,7 @@ declare namespace LocalJSX {
          */
         "startIndex"?: number;
         /**
-          * 过渡类型
+          * 图片切换过渡类型
           * @default 'fade-zoom'
          */
         "transition"?: 'fade' | 'fade-zoom';
@@ -9915,7 +9969,7 @@ declare namespace LocalJSX {
          */
         "viewerMode"?: 'overlay' | 'modal' | 'embedded';
         /**
-          * 小窗标题
+          * 小窗标题（modal模式顶部标题栏）
          */
         "viewerTitle"?: string;
         /**

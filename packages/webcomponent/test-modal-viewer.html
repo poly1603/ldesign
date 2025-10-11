@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片查看器小窗模式测试</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 40px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-top: 0;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      background: #1890ff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 8px;
+    }
+    button:hover {
+      background: #40a9ff;
+    }
+    .note {
+      background: #fff7e6;
+      border: 1px solid #ffd591;
+      padding: 16px;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+  </style>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>🖼️ 图片查看器小窗模式测试</h1>
+    
+    <div class="note">
+      <strong>测试说明：</strong>
+      <ul>
+        <li>点击下方按钮打开小窗模式的图片查看器</li>
+        <li>验证是否可以点击关闭按钮、工具栏按钮、左右切换按钮</li>
+        <li>验证是否可以缩放、旋转、翻转图片</li>
+        <li>验证是否可以通过标题栏拖拽窗口</li>
+      </ul>
+    </div>
+
+    <div>
+      <button onclick="openModalViewer()">打开小窗查看器（Modal）</button>
+      <button onclick="openOverlayViewer()">打开全屏查看器（Overlay）</button>
+    </div>
+  </div>
+
+  <ldesign-image-viewer 
+    id="modalViewer"
+    viewer-mode="modal"
+    panel-width="900px"
+    panel-height="600px"
+    viewer-title="图片预览（小窗模式）"
+  ></ldesign-image-viewer>
+
+  <ldesign-image-viewer 
+    id="overlayViewer"
+    viewer-mode="overlay"
+  ></ldesign-image-viewer>
+
+  <script>
+    const images = [
+      {
+        src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200',
+        thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200',
+        title: '山脉风景',
+        description: '壮丽的山脉景色'
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200',
+        thumbnail: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=200',
+        title: '森林之路',
+        description: '通往森林深处的小路'
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1200',
+        thumbnail: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=200',
+        title: '夕阳余晖',
+        description: '日落时分的美丽景色'
+      }
+    ];
+
+    function openModalViewer() {
+      const viewer = document.getElementById('modalViewer');
+      viewer.images = JSON.stringify(images);
+      viewer.startIndex = 0;
+      viewer.visible = true;
+    }
+
+    function openOverlayViewer() {
+      const viewer = document.getElementById('overlayViewer');
+      viewer.images = JSON.stringify(images);
+      viewer.startIndex = 0;
+      viewer.visible = true;
+    }
+
+    // 监听事件
+    document.getElementById('modalViewer').addEventListener('ldesignOpen', () => {
+      console.log('Modal viewer opened');
+    });
+    document.getElementById('modalViewer').addEventListener('ldesignClose', () => {
+      console.log('Modal viewer closed');
+    });
+    document.getElementById('modalViewer').addEventListener('ldesignChange', (e) => {
+      console.log('Image changed to index:', e.detail.index);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>动画测试 - 快速验证</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 40px;
+      background: #f0f2f5;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #1a202c;
+      margin-bottom: 30px;
+    }
+    .section {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #2d3748;
+    }
+    .button-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .note {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    .current-config {
+      background: #e7f3ff;
+      border-left: 4px solid #2196f3;
+      padding: 12px 16px;
+      margin-top: 16px;
+      font-size: 13px;
+      font-family: 'Consolas', monospace;
+    }
+  </style>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>🎬 动画效果快速测试</h1>
+    
+    <div class="note">
+      <strong>使用说明：</strong>点击按钮后，仔细观察打开动画和关闭动画的区别。关闭时点击右上角的 ✕ 按钮或按 ESC 键。
+    </div>
+
+    <!-- Overlay 模式 -->
+    <div class="section">
+      <div class="section-title">📱 Overlay 模式（全屏）</div>
+      <div class="button-group">
+        <button onclick="testAnimation('overlay', 'fade')">Fade 淡入淡出</button>
+        <button onclick="testAnimation('overlay', 'zoom')">Zoom 缩放</button>
+        <button onclick="testAnimation('overlay', 'fade-zoom')">Fade+Zoom</button>
+        <button onclick="testAnimation('overlay', 'slide-up')">Slide Up 上滑</button>
+        <button onclick="testAnimation('overlay', 'slide-down')">Slide Down 下滑</button>
+        <button onclick="testAnimation('overlay', 'mixed')">Mixed 混合</button>
+      </div>
+      <div class="current-config" id="overlay-config"></div>
+    </div>
+
+    <!-- Modal 模式 -->
+    <div class="section">
+      <div class="section-title">🪟 Modal 模式（小窗）</div>
+      <div class="button-group">
+        <button onclick="testAnimation('modal', 'fade')">Fade 淡入淡出</button>
+        <button onclick="testAnimation('modal', 'zoom')">Zoom 缩放</button>
+        <button onclick="testAnimation('modal', 'fade-zoom')">Fade+Zoom</button>
+        <button onclick="testAnimation('modal', 'slide-up')">Slide Up 上滑</button>
+        <button onclick="testAnimation('modal', 'slide-down')">Slide Down 下滑</button>
+        <button onclick="testAnimation('modal', 'mixed')">Mixed 混合</button>
+      </div>
+      <div class="current-config" id="modal-config"></div>
+    </div>
+  </div>
+
+  <!-- 动态查看器容器 -->
+  <div id="viewer-container"></div>
+
+  <script>
+    const images = [
+      {
+        src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200',
+        thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200',
+        title: '测试动画效果',
+        description: '观察打开和关闭的动画是否不同'
+      }
+    ];
+
+    let currentViewer = null;
+
+    function testAnimation(mode, animType) {
+      // 清理旧的查看器
+      if (currentViewer) {
+        currentViewer.remove();
+        currentViewer = null;
+      }
+
+      // 创建新查看器
+      const viewer = document.createElement('ldesign-image-viewer');
+      viewer.images = JSON.stringify(images);
+      viewer.viewerMode = mode;
+      
+      // 配置动画
+      let openAnim, closeAnim, openDur, closeDur;
+      
+      if (animType === 'mixed') {
+        // 混合动画：打开用slide-up，关闭用fade
+        openAnim = 'slide-up';
+        closeAnim = 'fade';
+        openDur = 400;
+        closeDur = 200;
+      } else {
+        // 统一动画
+        openAnim = animType;
+        closeAnim = animType;
+        openDur = 350;
+        closeDur = 300;
+      }
+      
+      viewer.openAnimation = openAnim;
+      viewer.closeAnimation = closeAnim;
+      viewer.openDuration = openDur;
+      viewer.closeDuration = closeDur;
+      
+      // Modal模式特定配置
+      if (mode === 'modal') {
+        viewer.panelWidth = '800px';
+        viewer.panelHeight = '600px';
+        viewer.viewerTitle = `Modal - ${animType}`;
+      }
+
+      // 显示当前配置
+      const configText = `open: ${openAnim} (${openDur}ms) | close: ${closeAnim} (${closeDur}ms)`;
+      document.getElementById(`${mode}-config`).textContent = `当前配置: ${configText}`;
+
+      // 添加到DOM并打开
+      document.getElementById('viewer-container').appendChild(viewer);
+      currentViewer = viewer;
+      
+      // 延迟打开，让DOM渲染完成
+      setTimeout(() => {
+        viewer.visible = true;
+      }, 50);
+
+      // 监听关闭事件
+      viewer.addEventListener('ldesignClose', () => {
+        console.log(`${mode} - ${animType} 已关闭`);
+      });
+    }
+  </script>
+</body>
+</html>

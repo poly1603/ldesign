@@ -15,7 +15,7 @@
   background: fade(@bg-dark, 95%);
   user-select: none;
   -webkit-user-select: none;
-  touch-action: none; // 避免移动端双指缩放干扰
+  // touch-action 仅在画布上禁用，不在根容器上禁用
   opacity: 0;
   transition: opacity var(--iv-duration, .24s) var(--iv-ease, ease);
 }
@@ -38,17 +38,22 @@
   display: flex; flex-direction: column;
   border-radius: 12px;
   overflow: hidden;
-  /* overlay（全屏）下不做位移，仅用于开合 scale 动画 */
-  transform: scale(0.98);
-  transition: transform var(--iv-duration, .24s) var(--iv-ease, ease), opacity var(--iv-duration, .24s) var(--iv-ease, ease);
   will-change: transform, opacity;
   opacity: 0;
 }
 
-/* 面板进入/退出动画（基础） */
-.ldesign-image-viewer[data-motion="opening"] .ldesign-image-viewer__panel,
-.ldesign-image-viewer[data-motion="open"] .ldesign-image-viewer__panel { transform: scale(1); opacity: 1; }
-.ldesign-image-viewer[data-motion="closing"] .ldesign-image-viewer__panel { transform: scale(0.98); opacity: 0; }
+/* 面板进入/退出动画（仅用于没有指定自定义动画的情况） */
+.ldesign-image-viewer:not([class*="--open-"]):not([class*="--close-"])[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer:not([class*="--open-"]):not([class*="--close-"])[data-motion="open"] .ldesign-image-viewer__panel { 
+  transform: scale(1); 
+  opacity: 1; 
+  transition: transform var(--iv-duration, .24s) var(--iv-ease, ease), opacity var(--iv-duration, .24s) var(--iv-ease, ease);
+}
+.ldesign-image-viewer:not([class*="--open-"]):not([class*="--close-"])[data-motion="closing"] .ldesign-image-viewer__panel { 
+  transform: scale(0.98); 
+  opacity: 0; 
+  transition: transform var(--iv-duration, .24s) var(--iv-ease, ease), opacity var(--iv-duration, .24s) var(--iv-ease, ease);
+}
 
 /* 增强动效：使用关键帧获得更顺滑的开合动画 */
 @keyframes iv-panel-in-overlay {
@@ -84,21 +89,163 @@
   }
 }
 
-/* 应用关键帧动画（overlay 与 modal 分别处理）*/
-/* overlay */
-.ldesign-image-viewer:not(.ldesign-image-viewer--modal)[data-motion="opening"] .ldesign-image-viewer__panel {
-  animation: iv-panel-in-overlay var(--iv-duration, .24s) var(--iv-ease, ease) both;
+/* 旧的默认动画已被下面的自定义动画取代，这里保留keyframes供备用 */
+
+/* 根据 open/close 动画类型切换关键帧：fade, zoom, fade-zoom, slide-up, slide-down */
+@keyframes iv-open-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes iv-close-fade { from { opacity: 1; } to { opacity: 0; } }
+@keyframes iv-open-zoom { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes iv-close-zoom { from { transform: scale(1); opacity: 1; } to { transform: scale(0.96); opacity: 0; } }
+@keyframes iv-open-fade-zoom { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes iv-close-fade-zoom { from { transform: scale(1); opacity: 1; } to { transform: scale(0.96); opacity: 0; } }
+@keyframes iv-open-slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes iv-close-slide-up { from { transform: translateY(0); opacity: 1; } to { transform: translateY(20px); opacity: 0; } }
+@keyframes iv-open-slide-down { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes iv-close-slide-down { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-20px); opacity: 0; } }
+
+/* 通过 BEM 修饰类控制开合动画类型 - overlay 模式 */
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--open-fade[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--open-fade[data-motion="open"] .ldesign-image-viewer__panel { animation: iv-open-fade var(--iv-open-duration, .22s) var(--iv-ease, ease) both !important; }
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--close-fade[data-motion="closing"] .ldesign-image-viewer__panel { animation: iv-close-fade var(--iv-close-duration, .22s) var(--iv-ease, ease) both !important; }
+
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--open-zoom[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--open-zoom[data-motion="open"] .ldesign-image-viewer__panel { animation: iv-open-zoom var(--iv-open-duration, .24s) var(--iv-ease, ease) both !important; }
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--close-zoom[data-motion="closing"] .ldesign-image-viewer__panel { animation: iv-close-zoom var(--iv-close-duration, .20s) var(--iv-ease, ease) both !important; }
+
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--open-fade-zoom[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--open-fade-zoom[data-motion="open"] .ldesign-image-viewer__panel { animation: iv-open-fade-zoom var(--iv-open-duration, .26s) var(--iv-ease, ease) both !important; }
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--close-fade-zoom[data-motion="closing"] .ldesign-image-viewer__panel { animation: iv-close-fade-zoom var(--iv-close-duration, .22s) var(--iv-ease, ease) both !important; }
+
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--open-slide-up[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--open-slide-up[data-motion="open"] .ldesign-image-viewer__panel { animation: iv-open-slide-up var(--iv-open-duration, .26s) var(--iv-ease, ease) both !important; }
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--close-slide-up[data-motion="closing"] .ldesign-image-viewer__panel { animation: iv-close-slide-up var(--iv-close-duration, .22s) var(--iv-ease, ease) both !important; }
+
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--open-slide-down[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--open-slide-down[data-motion="open"] .ldesign-image-viewer__panel { animation: iv-open-slide-down var(--iv-open-duration, .26s) var(--iv-ease, ease) both !important; }
+.ldesign-image-viewer:not(.ldesign-image-viewer--modal).ldesign-image-viewer--close-slide-down[data-motion="closing"] .ldesign-image-viewer__panel { animation: iv-close-slide-down var(--iv-close-duration, .22s) var(--iv-ease, ease) both !important; }
+
+/* modal 模式专用动画：保留 translate 居中定位 */
+@keyframes iv-modal-open-fade {
+  from { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))); 
+    opacity: 1; 
+  }
 }
-.ldesign-image-viewer:not(.ldesign-image-viewer--modal)[data-motion="closing"] .ldesign-image-viewer__panel {
-  animation: iv-panel-out-overlay var(--iv-duration, .22s) var(--iv-ease, ease) both;
+@keyframes iv-modal-close-fade {
+  from { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))); 
+    opacity: 1; 
+  }
+  to { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))); 
+    opacity: 0; 
+  }
 }
-/* modal */
-.ldesign-image-viewer--modal[data-motion="opening"] .ldesign-image-viewer__panel {
-  animation: iv-panel-in-modal var(--iv-duration, .28s) var(--iv-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) both;
+@keyframes iv-modal-open-zoom {
+  from { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(0.9); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(1); 
+    opacity: 1; 
+  }
 }
-.ldesign-image-viewer--modal[data-motion="closing"] .ldesign-image-viewer__panel {
-  animation: iv-panel-out-modal var(--iv-duration, .22s) var(--iv-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) both;
+@keyframes iv-modal-close-zoom {
+  from { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(1); 
+    opacity: 1; 
+  }
+  to { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(0.96); 
+    opacity: 0; 
+  }
 }
+@keyframes iv-modal-open-fade-zoom {
+  from { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(0.95); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(1); 
+    opacity: 1; 
+  }
+}
+@keyframes iv-modal-close-fade-zoom {
+  from { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(1); 
+    opacity: 1; 
+  }
+  to { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(0.96); 
+    opacity: 0; 
+  }
+}
+@keyframes iv-modal-open-slide-up {
+  from { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px) + 30px)); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))); 
+    opacity: 1; 
+  }
+}
+@keyframes iv-modal-close-slide-up {
+  from { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))); 
+    opacity: 1; 
+  }
+  to { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px) + 30px)); 
+    opacity: 0; 
+  }
+}
+@keyframes iv-modal-open-slide-down {
+  from { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px) - 30px)); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))); 
+    opacity: 1; 
+  }
+}
+@keyframes iv-modal-close-slide-down {
+  from { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))); 
+    opacity: 1; 
+  }
+  to { 
+    transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px) - 30px)); 
+    opacity: 0; 
+  }
+}
+
+/* modal 模式动画应用 */
+.ldesign-image-viewer--modal.ldesign-image-viewer--open-fade[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer--modal.ldesign-image-viewer--open-fade[data-motion="open"] .ldesign-image-viewer__panel { animation: iv-modal-open-fade var(--iv-open-duration, .24s) var(--iv-ease, ease) both !important; }
+.ldesign-image-viewer--modal.ldesign-image-viewer--close-fade[data-motion="closing"] .ldesign-image-viewer__panel { animation: iv-modal-close-fade var(--iv-close-duration, .22s) var(--iv-ease, ease) both !important; }
+
+.ldesign-image-viewer--modal.ldesign-image-viewer--open-zoom[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer--modal.ldesign-image-viewer--open-zoom[data-motion="open"] .ldesign-image-viewer__panel { animation: iv-modal-open-zoom var(--iv-open-duration, .28s) var(--iv-ease, ease) both !important; }
+.ldesign-image-viewer--modal.ldesign-image-viewer--close-zoom[data-motion="closing"] .ldesign-image-viewer__panel { animation: iv-modal-close-zoom var(--iv-close-duration, .22s) var(--iv-ease, ease) both !important; }
+
+.ldesign-image-viewer--modal.ldesign-image-viewer--open-fade-zoom[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer--modal.ldesign-image-viewer--open-fade-zoom[data-motion="open"] .ldesign-image-viewer__panel { animation: iv-modal-open-fade-zoom var(--iv-open-duration, .30s) var(--iv-ease, ease) both !important; }
+.ldesign-image-viewer--modal.ldesign-image-viewer--close-fade-zoom[data-motion="closing"] .ldesign-image-viewer__panel { animation: iv-modal-close-fade-zoom var(--iv-close-duration, .24s) var(--iv-ease, ease) both !important; }
+
+.ldesign-image-viewer--modal.ldesign-image-viewer--open-slide-up[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer--modal.ldesign-image-viewer--open-slide-up[data-motion="open"] .ldesign-image-viewer__panel { animation: iv-modal-open-slide-up var(--iv-open-duration, .32s) var(--iv-ease, ease) both !important; }
+.ldesign-image-viewer--modal.ldesign-image-viewer--close-slide-up[data-motion="closing"] .ldesign-image-viewer__panel { animation: iv-modal-close-slide-up var(--iv-close-duration, .24s) var(--iv-ease, ease) both !important; }
+
+.ldesign-image-viewer--modal.ldesign-image-viewer--open-slide-down[data-motion="opening"] .ldesign-image-viewer__panel,
+.ldesign-image-viewer--modal.ldesign-image-viewer--open-slide-down[data-motion="open"] .ldesign-image-viewer__panel { animation: iv-modal-open-slide-down var(--iv-open-duration, .32s) var(--iv-ease, ease) both !important; }
+.ldesign-image-viewer--modal.ldesign-image-viewer--close-slide-down[data-motion="closing"] .ldesign-image-viewer__panel { animation: iv-modal-close-slide-down var(--iv-close-duration, .24s) var(--iv-ease, ease) both !important; }
 
 @media (prefers-reduced-motion: reduce) {
   .ldesign-image-viewer__panel { transition-duration: 120ms; }
@@ -111,9 +258,14 @@
   top: 0; left: 0; right: 0;
   padding: 8px 12px 0 12px;
   display: flex;
-  justify-content: center;
-  pointer-events: auto; // 允许交互，避免被画布拦截
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none; /* 容器本身不拦截点击 */
   z-index: 35; // 高于画布与导航，保证可点击
+}
+
+.ldesign-image-viewer__top > * {
+  pointer-events: auto; /* 子元素可交互 */
 }
 /* 在小窗模式下，为了不被标题栏遮挡，把顶部缩略图整体下移到标题栏下方 */
 .ldesign-image-viewer--modal .ldesign-image-viewer__top {
@@ -300,9 +452,17 @@
 /* 底部工具栏 */
 .ldesign-image-viewer__bottom {
   position: absolute; left: 0; right: 0; bottom: 18px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; 
+  flex-direction: column;
+  align-items: center; 
+  justify-content: center;
+  gap: 0;
   z-index: 30; // 工具栏在最顶层（高于导航）
-  pointer-events: auto;
+  pointer-events: none; /* 容器本身不拦截点击 */
+}
+
+.ldesign-image-viewer__bottom > * {
+  pointer-events: auto; /* 子元素可交互 */
 }
 
 /* UI 自动隐藏（移动端沉浸模式） */
@@ -319,18 +479,56 @@
 
 /* 标题与描述 */
 .ldesign-image-viewer__caption {
-  position: absolute; left: 24px; right: 24px; bottom: 72px; // 位于工具栏之上
-  z-index: 3;
-  display: flex; flex-direction: column; gap: 6px;
-  max-width: 70vw;
+  display: flex; 
+  flex-direction: column; 
+  gap: 6px;
   color: #fff;
+  pointer-events: none;
+  max-width: 70%;
+  padding: 0 24px;
 }
-.ldesign-image-viewer--light .ldesign-image-viewer__caption { color: @text-light; }
+
+/* caption 位置：top 在顶部区域缩略图下方 */
+.ldesign-image-viewer__caption--top {
+  margin-top: 12px; /* 与缩略图留出间距 */
+}
+
+/* caption 位置：bottom 在底部区域工具栏上方 */
+.ldesign-image-viewer__caption--bottom {
+  margin-bottom: 12px; /* 与工具栏留出间距 */
+}
+
+/* caption 对齐方式 */
+.ldesign-image-viewer__caption--left {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.ldesign-image-viewer__caption--center {
+  align-items: center;
+  text-align: center;
+}
+
+.ldesign-image-viewer__caption--right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.ldesign-image-viewer--light .ldesign-image-viewer__caption { 
+  color: @text-light; 
+}
 
 /* 小窗模式容器阴影与背景 */
- .ldesign-image-viewer--modal { background: transparent !important; }
-.ldesign-image-viewer--modal.ldesign-image-viewer--light { background: transparent !important; }
-.ldesign-image-viewer--modal.ldesign-image-viewer--dark { background: transparent !important; }
+ .ldesign-image-viewer--modal { 
+  background: rgba(0, 0, 0, 0.4) !important; 
+  pointer-events: auto; /* 确保可以接收点击事件 */
+}
+.ldesign-image-viewer--modal.ldesign-image-viewer--light { 
+  background: rgba(255, 255, 255, 0.5) !important; 
+}
+.ldesign-image-viewer--modal.ldesign-image-viewer--dark { 
+  background: rgba(0, 0, 0, 0.4) !important; 
+}
 /* 嵌入模式（放在其他容器内，比如 ldesign-modal 的内容区） */
 .ldesign-image-viewer--embedded { background: transparent !important; }
 .ldesign-image-viewer--embedded .ldesign-image-viewer__panel { position: relative; left: 0; top: 0; transform: none; background: transparent; box-shadow: none; border-radius: 0; }
@@ -341,6 +539,7 @@
   transform: translate(calc(-50% + var(--panel-x, 0px)), calc(-50% + var(--panel-y, 0px))) scale(0.98);
   background: #fff;
   box-shadow: 0 24px 64px rgba(0,0,0,0.24);
+  pointer-events: auto; /* 确保面板可以接收所有交互事件 */
 }
 /* 拖动弹窗时禁用过渡，避免拖动时出现动画迟滞 */
 .ldesign-image-viewer__panel.is-dragging {
@@ -378,6 +577,13 @@
   font-size: 13px; line-height: 1.5;
   opacity: 0.85;
   text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* 亮色主题下caption文字增强对比度 */
+.ldesign-image-viewer--light .ldesign-image-viewer__caption-title,
+.ldesign-image-viewer--light .ldesign-image-viewer__caption-desc {
+  text-shadow: 0 1px 3px rgba(255,255,255,0.9), 0 0 10px rgba(255,255,255,0.8);
+  font-weight: 600;
 }
 
 .ldesign-image-viewer__toolbar {

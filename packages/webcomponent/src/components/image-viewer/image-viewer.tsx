@@ -55,15 +55,29 @@ export class LdesignImageViewer {
   @Prop() panelWidth?: number | string;
   @Prop() panelHeight?: number | string;
 
-  /** 过渡类型 */
+  /** 图片切换过渡类型 */
   @Prop() transition: 'fade' | 'fade-zoom' = 'fade-zoom';
   /** 过渡时长（ms） */
   @Prop() transitionDuration: number = 240;
   /** 过渡缓动函数 */
   @Prop() transitionEasing: string = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+  
+  /** 打开/关闭动画效果：fade 淡入淡出；zoom 缩放；slide-up 上滑；slide-down 下滑；none 无动画 */
+  @Prop() openAnimation: 'fade' | 'zoom' | 'fade-zoom' | 'slide-up' | 'slide-down' | 'none' = 'fade-zoom';
+  /** 打开动画时长（ms，不设置则使用 transitionDuration） */
+  @Prop() openDuration?: number;
+  /** 关闭动画效果（不设置则使用 openAnimation） */
+  @Prop() closeAnimation?: 'fade' | 'zoom' | 'fade-zoom' | 'slide-up' | 'slide-down' | 'none';
+  /** 关闭动画时长（ms，不设置则使用 openDuration 或 transitionDuration） */
+  @Prop() closeDuration?: number;
+  
   /** 是否显示标题与描述 */
   @Prop() showCaption: boolean = true;
-  /** 小窗标题 */
+  /** 标题与描述的显示位置：bottom 底部（工具栏上方）；top 顶部（缩略图下方） */
+  @Prop() captionPosition: 'bottom' | 'top' = 'bottom';
+  /** 标题与描述的对齐方式：left 左对齐；center 居中；right 右对齐 */
+  @Prop() captionAlign: 'left' | 'center' | 'right' = 'center';
+  /** 小窗标题（modal模式顶部标题栏） */
   @Prop() viewerTitle?: string;
   /** 小窗拖拽方式：title 标题栏拖拽；anywhere 全面板可拖拽 */
   @Prop() panelDraggable: 'title' | 'anywhere' = 'title';
@@ -418,15 +432,23 @@ export class LdesignImageViewer {
     if (prev < 0) { if (this.loop) this.startSwitch(n - 1); else return; } else { this.startSwitch(prev); }
   }
 
-  // ── Panel drag (modal) ──────────────────────────────────────────
+  // ── Panel drag (modal) ────────────────────────────────────────────
   private onPanelPointerDown = (e: PointerEvent) => {
     if (this.viewerMode !== 'modal') return;
+    
+    // 检查是否点击在交互元素上（按钮、链接等）
+    const target = e.target as HTMLElement | null;
+    if (target) {
+      const isInteractive = target.closest('button, a, input, select, textarea, [role="button"], .ldesign-image-viewer__tool, .ldesign-image-viewer__thumb, .ldesign-image-viewer__nav');
+      if (isInteractive) return; // 在交互元素上不启动拖拽
+    }
+    
     // 只允许在标题栏内启动拖动（当 panelDraggable='title' 时）
     if (this.panelDraggable === 'title') {
-      const target = e.target as HTMLElement | null;
       const inTitle = target && target.closest && target.closest('.ldesign-image-viewer__titlebar');
       if (!inTitle) return; // 非标题区域忽略，避免与图片拖拽冲突
     }
+    
     this.panelDragging = true;
     this.panelStartX = e.clientX; this.panelStartY = e.clientY;
     this.panelStartOffsetX = this.panelOffsetX; this.panelStartOffsetY = this.panelOffsetY;
@@ -631,10 +653,44 @@ export class LdesignImageViewer {
     );
   }
 
+  private renderCaption() {
+    if (!this.showCaption) return null;
+    const prev = this.prevSrc ? this.list.find(it => it.src === this.prevSrc) : undefined;
+    const captionItem = (this.loading && prev) ? prev : this.current();
+    if (!captionItem || (!captionItem.title && !captionItem.description)) return null;
+    
+    return (
+      <div class={`ldesign-image-viewer__caption ldesign-image-viewer__caption--${this.captionPosition} ldesign-image-viewer__caption--${this.captionAlign}`}>
+        {captionItem.title ? <div class="ldesign-image-viewer__caption-title">{captionItem.title}</div> : null}
+        {captionItem.description ? <div class="ldesign-image-viewer__caption-desc">{captionItem.description}</div> : null}
+      </div>
+    );
+  }
+
   render() {
     if (!this.visible && !this.isClosing) return null as any;
     const item = this.current();
-    const classes = ['ldesign-image-viewer', this.backdrop === 'dark' ? 'ldesign-image-viewer--dark' : 'ldesign-image-viewer--light', this.viewerMode === 'modal' ? 'ldesign-image-viewer--modal' : '', this.viewerMode === 'embedded' ? 'ldesign-image-viewer--embedded' : '', this.uiHidden ? 'ldesign-image-viewer--ui-hidden' : ''].join(' ');
+    
+    // 动画相关
+    const openAnim = this.openAnimation;
+    const closeAnim = this.closeAnimation || this.openAnimation;
+    const openDur = this.openDuration || this.transitionDuration;
+    const closeDur = this.closeDuration || this.openDuration || this.transitionDuration;
+    
+    const classes = [
+      'ldesign-image-viewer',
+      this.backdrop === 'dark' ? 'ldesign-image-viewer--dark' : 'ldesign-image-viewer--light',
+      this.viewerMode === 'modal' ? 'ldesign-image-viewer--modal' : '',
+      this.viewerMode === 'embedded' ? 'ldesign-image-viewer--embedded' : '',
+      this.uiHidden ? 'ldesign-image-viewer--ui-hidden' : '',
+      `ldesign-image-viewer--open-${openAnim}`,
+      `ldesign-image-viewer--close-${closeAnim}`
+    ].filter(c => c).join(' ');
+    
+    // 调试日志
+    console.log('[ImageViewer] Classes:', classes);
+    console.log('[ImageViewer] openAnim:', openAnim, 'closeAnim:', closeAnim);
+    console.log('[ImageViewer] motion:', this.motion);
 
     const panelStyle: any = this.viewerMode === 'modal' ? { width: this.toPx(this.panelWidth) || '80vw', height: this.toPx(this.panelHeight) || '70vh' } : this.viewerMode === 'embedded' ? { width: '100%', height: '100%' } : { width: '100%', height: '100%' };
 
@@ -644,7 +700,13 @@ export class LdesignImageViewer {
 
     return (
       <Host>
-        <div class={classes} data-motion={this.motion} style={{ zIndex: String(this.zIndex), ['--iv-duration' as any]: `${this.transitionDuration}ms`, ['--iv-ease' as any]: this.transitionEasing }} onClick={this.viewerMode==='overlay' ? this.onMaskClick : undefined}>
+        <div class={classes} data-motion={this.motion} style={{ 
+          zIndex: String(this.zIndex), 
+          ['--iv-duration' as any]: `${this.transitionDuration}ms`, 
+          ['--iv-ease' as any]: this.transitionEasing,
+          ['--iv-open-duration' as any]: `${openDur}ms`,
+          ['--iv-close-duration' as any]: `${closeDur}ms`
+        }} onClick={this.viewerMode==='overlay' ? this.onMaskClick : undefined}>
           <div
             ref={el => (this.panelEl = el as HTMLElement)}
             class="ldesign-image-viewer__panel"
@@ -670,6 +732,8 @@ export class LdesignImageViewer {
             <div class="ldesign-image-viewer__top">
               {this.renderHeader()}
               <div class="ldesign-image-viewer__counter">{this.index + 1}/{this.list.length}</div>
+              {/* top 位置的 caption */}
+              {this.captionPosition === 'top' && this.renderCaption()}
             </div>
             )}
 
@@ -714,20 +778,11 @@ export class LdesignImageViewer {
                 <ldesign-icon name="chevron-right" />
               </button>
             )}
-          </div>
+            </div>
 
             {/* 底部：标题/描述 + 工具栏 */}
-            {this.showCaption && (() => {
-              const prev = this.prevSrc ? this.list.find(it => it.src === this.prevSrc) : undefined;
-              const captionItem = (this.loading && prev) ? prev : item;
-              return captionItem && (captionItem.title || captionItem.description) ? (
-                <div class="ldesign-image-viewer__caption">
-                  {captionItem.title ? <div class="ldesign-image-viewer__caption-title">{captionItem.title}</div> : null}
-                  {captionItem.description ? <div class="ldesign-image-viewer__caption-desc">{captionItem.description}</div> : null}
-                </div>
-              ) : null;
-            })()}
             <div class="ldesign-image-viewer__bottom">
+              {this.captionPosition === 'bottom' && this.renderCaption()}
               {this.renderToolbar()}
             </div>
           </div>

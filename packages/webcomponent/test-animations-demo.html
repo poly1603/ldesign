@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片查看器 - 动画与Caption演示</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      margin: 0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      margin: 0 0 12px;
+      color: #1a202c;
+      font-size: 32px;
+    }
+    .subtitle {
+      color: #718096;
+      margin-bottom: 32px;
+      font-size: 16px;
+    }
+    .section {
+      margin-bottom: 48px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    button {
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .note {
+      background: #fff7ed;
+      border-left: 4px solid #fb923c;
+      padding: 16px;
+      border-radius: 4px;
+      margin: 20px 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .note strong {
+      color: #ea580c;
+    }
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 16px 0;
+    }
+    .feature-list li {
+      padding: 8px 0 8px 28px;
+      position: relative;
+      color: #4a5568;
+    }
+    .feature-list li::before {
+      content: '✨';
+      position: absolute;
+      left: 0;
+    }
+  </style>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 图片查看器 - 增强演示</h1>
+    <p class="subtitle">测试不同的动画效果和标题显示位置</p>
+
+    <div class="note">
+      <strong>✨ 新功能亮点：</strong>
+      <ul class="feature-list">
+        <li>支持6种打开/关闭动画效果</li>
+        <li>支持4种Caption（标题与描述）显示位置</li>
+        <li>所有模式下都会显示标题和描述信息</li>
+        <li>可独立配置打开和关闭动画的类型与时长</li>
+      </ul>
+    </div>
+
+    <!-- 动画效果测试 -->
+    <div class="section">
+      <h2 class="section-title">🎬 动画效果测试</h2>
+      <div class="button-grid">
+        <button onclick="openWithAnimation('fade')">淡入淡出 (Fade)</button>
+        <button onclick="openWithAnimation('zoom')">缩放 (Zoom)</button>
+        <button onclick="openWithAnimation('fade-zoom')">淡入缩放 (Fade+Zoom)</button>
+        <button onclick="openWithAnimation('slide-up')">上滑 (Slide Up)</button>
+        <button onclick="openWithAnimation('slide-down')">下滑 (Slide Down)</button>
+        <button onclick="openWithAnimation('none')">无动画 (None)</button>
+      </div>
+    </div>
+
+    <!-- Caption位置测试 -->
+    <div class="section">
+      <h2 class="section-title">📝 Caption位置测试</h2>
+      <div class="button-grid">
+        <button onclick="openWithCaption('bottom')">底部浮层 (Bottom)</button>
+        <button onclick="openWithCaption('top')">顶部显示 (Top)</button>
+        <button onclick="openWithCaption('inside-bottom')">内嵌底部 (Inside Bottom)</button>
+      </div>
+    </div>
+
+    <!-- 组合测试 -->
+    <div class="section">
+      <h2 class="section-title">🚀 组合效果测试</h2>
+      <div class="button-grid">
+        <button onclick="openCustom1()">Modal + Slide Up + Top Caption</button>
+        <button onclick="openCustom2()">Overlay + Zoom + Inside Bottom</button>
+        <button onclick="openCustom3()">快速打开 + 慢速关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 动态创建的查看器 -->
+  <div id="viewerContainer"></div>
+
+  <script>
+    const images = [
+      {
+        src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200',
+        thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200',
+        title: '壮丽山脉',
+        description: '雪山连绵，云雾缭绕，展现大自然的磅礴气势'
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200',
+        thumbnail: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=200',
+        title: '森林小径',
+        description: '阳光穿过树林，洒在幽静的林间小路上'
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1200',
+        thumbnail: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=200',
+        title: '日落余晖',
+        description: '夕阳西下，金色的光芒映照在湖面上，美不胜收'
+      }
+    ];
+
+    let currentViewer = null;
+
+    function createViewer(config = {}) {
+      // 移除旧的查看器
+      if (currentViewer) {
+        currentViewer.remove();
+      }
+
+      // 创建新的查看器
+      const viewer = document.createElement('ldesign-image-viewer');
+      viewer.images = JSON.stringify(images);
+      viewer.startIndex = 0;
+      
+      // 应用配置
+      Object.assign(viewer, {
+        viewerMode: 'overlay',
+        showCaption: true,
+        captionPosition: 'bottom',
+        openAnimation: 'fade-zoom',
+        closeAnimation: null,
+        openDuration: 300,
+        closeDuration: null,
+        showThumbnails: true,
+        loop: true,
+        ...config
+      });
+
+      document.getElementById('viewerContainer').appendChild(viewer);
+      currentViewer = viewer;
+
+      // 打开查看器
+      setTimeout(() => {
+        viewer.visible = true;
+      }, 50);
+
+      // 监听关闭事件
+      viewer.addEventListener('ldesignClose', () => {
+        console.log('Viewer closed');
+      });
+    }
+
+    function openWithAnimation(animationType) {
+      createViewer({
+        openAnimation: animationType,
+        closeAnimation: animationType,
+        captionPosition: 'bottom'
+      });
+    }
+
+    function openWithCaption(position) {
+      createViewer({
+        captionPosition: position,
+        openAnimation: 'fade-zoom'
+      });
+    }
+
+    function openCustom1() {
+      createViewer({
+        viewerMode: 'modal',
+        panelWidth: '900px',
+        panelHeight: '650px',
+        openAnimation: 'slide-up',
+        closeAnimation: 'slide-down',
+        captionPosition: 'top',
+        viewerTitle: '图片预览 - 自定义组合',
+        openDuration: 350,
+        closeDuration: 300
+      });
+    }
+
+    function openCustom2() {
+      createViewer({
+        viewerMode: 'overlay',
+        openAnimation: 'zoom',
+        closeAnimation: 'zoom',
+        captionPosition: 'inside-bottom',
+        openDuration: 400,
+        closeDuration: 250
+      });
+    }
+
+    function openCustom3() {
+      createViewer({
+        openAnimation: 'fade-zoom',
+        closeAnimation: 'fade',
+        openDuration: 200,  // 快速打开
+        closeDuration: 800, // 慢速关闭
+        captionPosition: 'bottom'
+      });
+    }
+  </script>
+</body>
+</html>

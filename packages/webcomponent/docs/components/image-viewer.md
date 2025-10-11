@@ -122,6 +122,54 @@ onMounted(() => {
   b3 && b3.addEventListener('click', o3)
   b4 && b4.addEventListener('click', o4)
 
+  // 动画测试
+  const animImages = [
+    { src: 'https://picsum.photos/seed/41/1600/1100', thumbnail: 'https://picsum.photos/seed/41/200/140', title: '测试动画效果', description: '点击左上角关闭按钮查看关闭动画' }
+  ]
+  const animViewers = ['fade', 'zoom', 'slide-up', 'mixed']
+  animViewers.forEach(id => {
+    const v = document.getElementById('iv-' + id)
+    if (v) v.images = animImages
+  })
+  
+  const btnFade = document.getElementById('iv-anim-fade')
+  const btnZoom = document.getElementById('iv-anim-zoom')
+  const btnSlideUp = document.getElementById('iv-anim-slide-up')
+  const btnMixed = document.getElementById('iv-anim-mixed')
+  
+  const onFade = () => { const v = document.getElementById('iv-fade'); v && (v.visible = true) }
+  const onZoom = () => { const v = document.getElementById('iv-zoom'); v && (v.visible = true) }
+  const onSlideUp = () => { const v = document.getElementById('iv-slide-up'); v && (v.visible = true) }
+  const onMixed = () => { const v = document.getElementById('iv-mixed'); v && (v.visible = true) }
+  
+  btnFade && btnFade.addEventListener('click', onFade)
+  btnZoom && btnZoom.addEventListener('click', onZoom)
+  btnSlideUp && btnSlideUp.addEventListener('click', onSlideUp)
+  btnMixed && btnMixed.addEventListener('click', onMixed)
+  
+  // Caption测试
+  const capImages = [
+    { src: 'https://picsum.photos/seed/51/1600/1100', thumbnail: 'https://picsum.photos/seed/51/200/140', title: '标题示例', description: '这是一段描述文字，用于测试不同位置的Caption显示效果' },
+    { src: 'https://picsum.photos/seed/52/1600/1100', thumbnail: 'https://picsum.photos/seed/52/200/140', title: '第二张图', description: '可以切换图片查看效果' }
+  ]
+  const capViewers = ['bottom', 'top', 'inside']
+  capViewers.forEach(id => {
+    const v = document.getElementById('iv-' + id)
+    if (v) v.images = capImages
+  })
+  
+  const btnCapBottom = document.getElementById('iv-cap-bottom')
+  const btnCapTop = document.getElementById('iv-cap-top')
+  const btnCapInside = document.getElementById('iv-cap-inside')
+  
+  const onCapBottom = () => { const v = document.getElementById('iv-bottom'); v && (v.visible = true) }
+  const onCapTop = () => { const v = document.getElementById('iv-top'); v && (v.visible = true) }
+  const onCapInside = () => { const v = document.getElementById('iv-inside'); v && (v.visible = true) }
+  
+  btnCapBottom && btnCapBottom.addEventListener('click', onCapBottom)
+  btnCapTop && btnCapTop.addEventListener('click', onCapTop)
+  btnCapInside && btnCapInside.addEventListener('click', onCapInside)
+
   onBeforeUnmount(() => {
     btnBasic && btnBasic.removeEventListener('click', onBasic)
     btnJson && btnJson.removeEventListener('click', onJson)
@@ -131,6 +179,13 @@ onMounted(() => {
     b2 && b2.removeEventListener('click', o2)
     b3 && b3.removeEventListener('click', o3)
     b4 && b4.removeEventListener('click', o4)
+    btnFade && btnFade.removeEventListener('click', onFade)
+    btnZoom && btnZoom.removeEventListener('click', onZoom)
+    btnSlideUp && btnSlideUp.removeEventListener('click', onSlideUp)
+    btnMixed && btnMixed.removeEventListener('click', onMixed)
+    btnCapBottom && btnCapBottom.removeEventListener('click', onCapBottom)
+    btnCapTop && btnCapTop.removeEventListener('click', onCapTop)
+    btnCapInside && btnCapInside.removeEventListener('click', onCapInside)
   })
 })
 </script>
@@ -227,6 +282,46 @@ onMounted(() => {
   <ldesign-image-viewer id="iv-modal-any" viewer-mode="modal" panel-width="900px" panel-height="640px" panel-draggable="anywhere" viewer-title="图片预览（可任意拖动）" transition="fade-zoom"></ldesign-image-viewer>
 </div>
 
+
+## 动画效果
+
+支持6种打开/关闭动画效果，可独立配置。
+
+<div class="demo-block">
+  <div style="display:flex;gap:12px;flex-wrap:wrap;">
+    <ldesign-button id="iv-anim-fade">Fade</ldesign-button>
+    <ldesign-button id="iv-anim-zoom">Zoom</ldesign-button>
+    <ldesign-button id="iv-anim-slide-up">Slide Up</ldesign-button>
+    <ldesign-button id="iv-anim-mixed">Mixed</ldesign-button>
+  </div>
+  <ldesign-image-viewer id="iv-fade" open-animation="fade" close-animation="fade"></ldesign-image-viewer>
+  <ldesign-image-viewer id="iv-zoom" open-animation="zoom"></ldesign-image-viewer>
+  <ldesign-image-viewer id="iv-slide-up" open-animation="slide-up"></ldesign-image-viewer>
+  <ldesign-image-viewer id="iv-mixed" open-animation="slide-up" close-animation="fade" open-duration="400" close-duration="200"></ldesign-image-viewer>
+</div>
+
+```html
+<ldesign-image-viewer open-animation="slide-up" close-animation="fade" open-duration="400"></ldesign-image-viewer>
+```
+
+## Caption位置
+
+支持4种标题与描述显示位置。
+
+<div class="demo-block">
+  <div style="display:flex;gap:12px;flex-wrap:wrap;">
+    <ldesign-button id="iv-cap-bottom">Bottom</ldesign-button>
+    <ldesign-button id="iv-cap-top">Top</ldesign-button>
+    <ldesign-button id="iv-cap-inside">Inside Bottom</ldesign-button>
+  </div>
+  <ldesign-image-viewer id="iv-bottom" caption-position="bottom"></ldesign-image-viewer>
+  <ldesign-image-viewer id="iv-top" caption-position="top"></ldesign-image-viewer>
+  <ldesign-image-viewer id="iv-inside" caption-position="inside-bottom"></ldesign-image-viewer>
+</div>
+
+```html
+<ldesign-image-viewer caption-position="inside-bottom"></ldesign-image-viewer>
+```
 
 ## 事件
 
