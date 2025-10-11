@@ -34,7 +34,6 @@
   user-select: none;
   white-space: nowrap;
   transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
 
   /* 尺寸变体 - 精致调整 */
   &--small {
@@ -80,11 +79,16 @@
     min-width: 0;
   }
 
+  /* 角标容器：确保不被裁剪 */
+  &--with-badge {
+    overflow: visible;
+  }
+
   /* 右上角角标/小圆点 - 精致设计 */
   &__badge {
     position: absolute;
-    top: -6px;
-    right: -6px;
+    top: -8px;
+    right: -8px;
     min-width: 18px;
     height: 18px;
     padding: 0 5px;
@@ -100,23 +104,23 @@
     box-shadow: 0 0 0 2px var(--ldesign-bg-color-component, #fff);
     transform: scale(1);
     transition: transform .2s ease;
-    z-index: 1;
+    z-index: 10;
   }
   &--small &__badge { 
     min-width: 16px; 
     height: 16px; 
     line-height: 16px; 
     font-size: 10px;
-    top: -5px;
-    right: -5px; 
+    top: -7px;
+    right: -7px; 
   }
   &--large &__badge { 
     min-width: 20px; 
     height: 20px; 
     line-height: 20px; 
     font-size: 12px;
-    top: -7px;
-    right: -7px; 
+    top: -9px;
+    right: -9px; 
   }
   
   /* 不同颜色的角标 */

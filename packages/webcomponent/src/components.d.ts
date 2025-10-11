@@ -2256,6 +2256,19 @@ export namespace Components {
          */
         "alt"?: string;
         /**
+          * BlurHash 占位符
+         */
+        "blurhash"?: string;
+        /**
+          * 启用图片对比模式
+          * @default false
+         */
+        "comparison": boolean;
+        /**
+          * 对比图片源
+         */
+        "comparisonSrc"?: string;
+        /**
           * crossorigin
          */
         "crossorigin"?: 'anonymous' | 'use-credentials';
@@ -2278,6 +2291,16 @@ export namespace Components {
           * 失败时的回退图片 URL
          */
         "fallback"?: string;
+        /**
+          * 图片加载优先级
+          * @default 'auto'
+         */
+        "fetchpriority"?: 'high' | 'low' | 'auto';
+        /**
+          * 图片滤镜效果
+          * @default 'none'
+         */
+        "filter"?: 'grayscale' | 'sepia' | 'blur' | 'brightness' | 'contrast' | 'none';
         /**
           * object-fit
           * @default 'cover'
@@ -2431,6 +2454,15 @@ export namespace Components {
           * @default false
          */
         "useExternalPreview": boolean;
+        /**
+          * 水印文本
+         */
+        "watermark"?: string;
+        /**
+          * 水印位置
+          * @default 'bottom-right'
+         */
+        "watermarkPosition": 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
         /**
           * 宽度（number 自动补 px，string 原样输出，如 '50%'、'320px'）
          */
@@ -9447,6 +9479,19 @@ declare namespace LocalJSX {
          */
         "alt"?: string;
         /**
+          * BlurHash 占位符
+         */
+        "blurhash"?: string;
+        /**
+          * 启用图片对比模式
+          * @default false
+         */
+        "comparison"?: boolean;
+        /**
+          * 对比图片源
+         */
+        "comparisonSrc"?: string;
+        /**
           * crossorigin
          */
         "crossorigin"?: 'anonymous' | 'use-credentials';
@@ -9469,6 +9514,16 @@ declare namespace LocalJSX {
           * 失败时的回退图片 URL
          */
         "fallback"?: string;
+        /**
+          * 图片加载优先级
+          * @default 'auto'
+         */
+        "fetchpriority"?: 'high' | 'low' | 'auto';
+        /**
+          * 图片滤镜效果
+          * @default 'none'
+         */
+        "filter"?: 'grayscale' | 'sepia' | 'blur' | 'brightness' | 'contrast' | 'none';
         /**
           * object-fit
           * @default 'cover'
@@ -9642,6 +9697,15 @@ declare namespace LocalJSX {
           * @default false
          */
         "useExternalPreview"?: boolean;
+        /**
+          * 水印文本
+         */
+        "watermark"?: string;
+        /**
+          * 水印位置
+          * @default 'bottom-right'
+         */
+        "watermarkPosition"?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
         /**
           * 宽度（number 自动补 px，string 原样输出，如 '50%'、'320px'）
          */

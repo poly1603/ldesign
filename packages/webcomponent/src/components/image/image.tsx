@@ -55,6 +55,8 @@ export class LdesignImage {
   @Prop() srcset?: string;
   /** 响应式图片 sizes */
   @Prop() sizes?: string;
+  /** 图片加载优先级 */
+  @Prop() fetchpriority?: 'high' | 'low' | 'auto' = 'auto';
 
   /**
    * 期望的宽高比（用于在未设置高度、尚未加载时提供正确的占位比例，避免布局抖动）
@@ -125,6 +127,22 @@ export class LdesignImage {
   /** 显示加载进度条 */
   @Prop() showProgress: boolean = false;
 
+  // 图像处理
+  /** 图片滤镜效果 */
+  @Prop() filter?: 'grayscale' | 'sepia' | 'blur' | 'brightness' | 'contrast' | 'none' = 'none';
+  /** 水印文本 */
+  @Prop() watermark?: string;
+  /** 水印位置 */
+  @Prop() watermarkPosition: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center' = 'bottom-right';
+  /** BlurHash 占位符 */
+  @Prop() blurhash?: string;
+  
+  // 图片对比
+  /** 启用图片对比模式 */
+  @Prop() comparison: boolean = false;
+  /** 对比图片源 */
+  @Prop() comparisonSrc?: string;
+
   // 事件
   /** 加载成功 */
   @Event() ldesignLoad: EventEmitter<{ width: number; height: number; src: string; size?: number }>;
@@ -157,11 +175,19 @@ export class LdesignImage {
   private dragStartY = 0;
   private startOffsetX = 0;
   private startOffsetY = 0;
+  
+  // 触摸手势支持
+  private touchStartDistance = 0;
+  private initialScale = 1;
 
   // 加载进度状态
   @State() loadProgress: number = 0;
   @State() imageSize?: number;
   @State() retryCount: number = 0;
+  
+  // 对比模式状态
+  @State() comparisonPosition: number = 50; // 百分比
+  private isDraggingComparison = false;
 
   private io?: IntersectionObserver;
   private imgEl?: HTMLImageElement;
@@ -183,11 +209,18 @@ export class LdesignImage {
   }
 
   componentDidRender() {
-    // 避免 TSX 属性类型不兼容，运行时补充 referrerpolicy
-    if (this.imgEl && this.referrerPolicy) {
-      try {
-        this.imgEl.setAttribute('referrerpolicy', this.referrerPolicy);
-      } catch {}
+    // 避免 TSX 属性类型不兼容，运行时补充 referrerpolicy 和 fetchpriority
+    if (this.imgEl) {
+      if (this.referrerPolicy) {
+        try {
+          this.imgEl.setAttribute('referrerpolicy', this.referrerPolicy);
+        } catch {}
+      }
+      if (this.fetchpriority) {
+        try {
+          this.imgEl.setAttribute('fetchpriority', this.fetchpriority);
+        } catch {}
+      }
     }
   }
 
@@ -299,11 +332,34 @@ export class LdesignImage {
   }
 
   private getImgStyle(): { [key: string]: string } {
-    return {
+    const style: any = {
       objectFit: this.fit,
       objectPosition: this.position,
       opacity: this.loaded && !this.error ? '1' : '0',
-    } as any;
+    };
+    
+    // 应用滤镜效果
+    if (this.filter && this.filter !== 'none') {
+      switch (this.filter) {
+        case 'grayscale':
+          style.filter = 'grayscale(100%)';
+          break;
+        case 'sepia':
+          style.filter = 'sepia(80%)';
+          break;
+        case 'blur':
+          style.filter = 'blur(4px)';
+          break;
+        case 'brightness':
+          style.filter = 'brightness(1.2)';
+          break;
+        case 'contrast':
+          style.filter = 'contrast(1.3)';
+          break;
+      }
+    }
+    
+    return style;
   }
 
   private onImgLoad = (ev: Event) => {
@@ -593,6 +649,62 @@ export class LdesignImage {
     }
   }
 
+  // 对比模式相关方法
+  private onComparisonPointerDown = (e: PointerEvent) => {
+    if (!this.comparison) return;
+    this.isDraggingComparison = true;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    this.updateComparisonPosition(e);
+  };
+
+  private onComparisonPointerMove = (e: PointerEvent) => {
+    if (!this.isDraggingComparison) return;
+    this.updateComparisonPosition(e);
+  };
+
+  private onComparisonPointerUp = (e: PointerEvent) => {
+    this.isDraggingComparison = false;
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+  };
+
+  private updateComparisonPosition(e: PointerEvent) {
+    const rect = this.el.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    this.comparisonPosition = (x / rect.width) * 100;
+  }
+
+  // 触摸手势支持
+  private onTouchStart = (e: TouchEvent) => {
+    if (e.touches.length === 2) {
+      // 双指缩放
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      this.touchStartDistance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+      this.initialScale = this.previewScale;
+    }
+  };
+
+  private onTouchMove = (e: TouchEvent) => {
+    if (e.touches.length === 2 && this.touchStartDistance > 0) {
+      e.preventDefault();
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const currentDistance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+      const scale = (currentDistance / this.touchStartDistance) * this.initialScale;
+      this.previewScale = Math.min(4, Math.max(0.25, scale));
+    }
+  };
+
+  private onTouchEnd = () => {
+    this.touchStartDistance = 0;
+  };
+
   render() {
     const shouldRenderImg = (this.intersected || !this.lazy) && (!this.gifPlayOnClick || !this.isGifSrc(this.src) || this.isGifPlaying);
     const actualSrc = this.usingFallback ? (this.fallback || this.defaultFallbackDataUri) : this.src;
@@ -666,6 +778,38 @@ export class LdesignImage {
               )}
             </div>
           )}
+
+          {/* 水印 */}
+          {this.watermark && this.loaded && !this.error && (
+            <div class={`ldesign-image__watermark ldesign-image__watermark--${this.watermarkPosition}`}>
+              {this.watermark}
+            </div>
+          )}
+
+          {/* 对比模式 */}
+          {this.comparison && this.comparisonSrc && this.loaded && !this.error && (
+            <div class="ldesign-image__comparison">
+              <div class="ldesign-image__comparison-overlay" style={{ clipPath: `inset(0 ${100 - this.comparisonPosition}% 0 0)` }}>
+                <img
+                  class="ldesign-image__img"
+                  src={this.comparisonSrc}
+                  alt={this.alt}
+                  style={this.getImgStyle()}
+                />
+              </div>
+              <div 
+                class="ldesign-image__comparison-slider"
+                style={{ left: `${this.comparisonPosition}%` }}
+                onPointerDown={this.onComparisonPointerDown}
+                onPointerMove={this.onComparisonPointerMove}
+                onPointerUp={this.onComparisonPointerUp}
+              >
+                <div class="ldesign-image__comparison-handle">
+                  <ldesign-icon name="chevrons-left-right" />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 预览层 */}
@@ -674,7 +818,13 @@ export class LdesignImage {
             class={"ldesign-image__preview " + (this.previewBackdrop === 'dark' ? 'ldesign-image__preview--dark' : 'ldesign-image__preview--light')}
             onClick={this.closePreview}
           >
-            <div class="ldesign-image__preview-inner" onClick={e => e.stopPropagation()}>
+            <div 
+              class="ldesign-image__preview-inner" 
+              onClick={e => e.stopPropagation()}
+              onTouchStart={this.onTouchStart}
+              onTouchMove={this.onTouchMove}
+              onTouchEnd={this.onTouchEnd}
+            >
               <img
                 class="ldesign-image__preview-img"
                 src={this.previewSrc || this.src}

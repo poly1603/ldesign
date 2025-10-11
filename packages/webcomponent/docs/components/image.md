@@ -870,6 +870,7 @@
 | intersection-root-margin | 懒加载预加载距离 | string | '200px' |
 | show-progress | 显示加载进度条 | boolean | false |
 | decoding | 解码模式 | 'auto'/'async'/'sync' | 'auto' |
+| fetchpriority | 图片加载优先级 | 'high'/'low'/'auto' | 'auto' |
 
 #### 占位与错误
 | 属性 | 说明 | 类型 | 默认值 |
@@ -909,6 +910,15 @@
 | --- | --- | --- | --- |
 | gif-play-on-click | GIF点击播放 | boolean | false |
 | gif-preview-src | GIF静态预览图 | string | - |
+
+#### 图像处理与增强
+| 属性 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| filter | 图片滤镜效果 | 'none'/'grayscale'/'sepia'/'blur'/'brightness'/'contrast' | 'none' |
+| watermark | 水印文本 | string | - |
+| watermark-position | 水印位置 | 'top-left'/'top-right'/'bottom-left'/'bottom-right'/'center' | 'bottom-right' |
+| comparison | 启用图片对比模式 | boolean | false |
+| comparison-src | 对比图片源 | string | - |
 
 ## 高级功能
 
@@ -983,6 +993,228 @@
     </div>
   </div>
 </div>
+
+## 图片效果与增强
+
+### 滤镜效果
+
+<div class="demo-block">
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+    <div>
+      <p style="font-size: 12px; color: #666; margin: 0 0 8px;">黑白（grayscale）</p>
+      <ldesign-image
+        src="https://picsum.photos/300/200?random=200"
+        width="100%"
+        ratio="3/2"
+        fit="cover"
+        filter="grayscale"
+        radius="8"
+        alt="黑白滤镜"
+      />
+    </div>
+    <div>
+      <p style="font-size: 12px; color: #666; margin: 0 0 8px;">复古（sepia）</p>
+      <ldesign-image
+        src="https://picsum.photos/300/200?random=201"
+        width="100%"
+        ratio="3/2"
+        fit="cover"
+        filter="sepia"
+        radius="8"
+        alt="复古滤镜"
+      />
+    </div>
+    <div>
+      <p style="font-size: 12px; color: #666; margin: 0 0 8px;">亮度（brightness）</p>
+      <ldesign-image
+        src="https://picsum.photos/300/200?random=202"
+        width="100%"
+        ratio="3/2"
+        fit="cover"
+        filter="brightness"
+        radius="8"
+        alt="亮度滤镜"
+      />
+    </div>
+    <div>
+      <p style="font-size: 12px; color: #666; margin: 0 0 8px;">对比度（contrast）</p>
+      <ldesign-image
+        src="https://picsum.photos/300/200?random=203"
+        width="100%"
+        ratio="3/2"
+        fit="cover"
+        filter="contrast"
+        radius="8"
+        alt="对比度滤镜"
+      />
+    </div>
+    <div>
+      <p style="font-size: 12px; color: #666; margin: 0 0 8px;">模糊（blur）</p>
+      <ldesign-image
+        src="https://picsum.photos/300/200?random=204"
+        width="100%"
+        ratio="3/2"
+        fit="cover"
+        filter="blur"
+        radius="8"
+        alt="模糊滤镜"
+      />
+    </div>
+    <div>
+      <p style="font-size: 12px; color: #666; margin: 0 0 8px;">原图（none）</p>
+      <ldesign-image
+        src="https://picsum.photos/300/200?random=205"
+        width="100%"
+        ratio="3/2"
+        fit="cover"
+        filter="none"
+        radius="8"
+        alt="原图"
+      />
+    </div>
+  </div>
+</div>
+
+```html
+<!-- 滤镜效果示例 -->
+<ldesign-image src="image.jpg" filter="grayscale" />
+<ldesign-image src="image.jpg" filter="sepia" />
+<ldesign-image src="image.jpg" filter="brightness" />
+<ldesign-image src="image.jpg" filter="contrast" />
+<ldesign-image src="image.jpg" filter="blur" />
+```
+
+### 水印
+
+<div class="demo-block">
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+    <div>
+      <p style="font-size: 12px; color: #666; margin: 0 0 8px;">右下角水印（默认）</p>
+      <ldesign-image
+        src="https://picsum.photos/400/300?random=210"
+        width="100%"
+        ratio="4/3"
+        fit="cover"
+        watermark="© 2024 Your Brand"
+        watermark-position="bottom-right"
+        radius="8"
+        alt="右下角水印"
+      />
+    </div>
+    <div>
+      <p style="font-size: 12px; color: #666; margin: 0 0 8px;">居中水印</p>
+      <ldesign-image
+        src="https://picsum.photos/400/300?random=211"
+        width="100%"
+        ratio="4/3"
+        fit="cover"
+        watermark="CONFIDENTIAL"
+        watermark-position="center"
+        radius="8"
+        alt="居中水印"
+      />
+    </div>
+    <div>
+      <p style="font-size: 12px; color: #666; margin: 0 0 8px;">左上角水印</p>
+      <ldesign-image
+        src="https://picsum.photos/400/300?random=212"
+        width="100%"
+        ratio="4/3"
+        fit="cover"
+        watermark="Brand Logo"
+        watermark-position="top-left"
+        radius="8"
+        alt="左上角水印"
+      />
+    </div>
+    <div>
+      <p style="font-size: 12px; color: #666; margin: 0 0 8px;">右上角水印</p>
+      <ldesign-image
+        src="https://picsum.photos/400/300?random=213"
+        width="100%"
+        ratio="4/3"
+        fit="cover"
+        watermark="Premium"
+        watermark-position="top-right"
+        radius="8"
+        alt="右上角水印"
+      />
+    </div>
+  </div>
+</div>
+
+```html
+<!-- 水印示例 -->
+<ldesign-image
+  src="image.jpg"
+  watermark="© 2024 Your Brand"
+  watermark-position="bottom-right"
+/>
+
+<ldesign-image
+  src="image.jpg"
+  watermark="CONFIDENTIAL"
+  watermark-position="center"
+/>
+```
+
+### 图片对比
+
+<div class="demo-block">
+  <p style="font-size: 14px; color: #666; margin: 0 0 12px;">拖动滑块对比两张图片 ↔️</p>
+  <ldesign-image
+    src="https://picsum.photos/600/400?random=220"
+    comparison-src="https://picsum.photos/600/400?random=220&grayscale"
+    comparison
+    width="100%"
+    ratio="3/2"
+    fit="cover"
+    radius="8"
+    alt="图片对比示例"
+  />
+</div>
+
+<div class="demo-block" style="margin-top: 16px;">
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+    <div>
+      <p style="font-size: 12px; color: #666; margin: 0 0 8px;">前后对比</p>
+      <ldesign-image
+        src="https://picsum.photos/400/300?random=221"
+        comparison-src="https://picsum.photos/400/300?random=221&blur=5"
+        comparison
+        width="100%"
+        ratio="4/3"
+        fit="cover"
+        radius="8"
+        alt="前后对比"
+      />
+    </div>
+    <div>
+      <p style="font-size: 12px; color: #666; margin: 0 0 8px;">滤镜对比</p>
+      <ldesign-image
+        src="https://picsum.photos/400/300?random=222"
+        comparison-src="https://picsum.photos/400/300?random=222&grayscale"
+        comparison
+        width="100%"
+        ratio="4/3"
+        fit="cover"
+        radius="8"
+        alt="滤镜对比"
+      />
+    </div>
+  </div>
+</div>
+
+```html
+<!-- 图片对比 -->
+<ldesign-image
+  src="before.jpg"
+  comparison-src="after.jpg"
+  comparison
+  width="600"
+  height="400"
+/>
+```
 
 ```html
 <!-- 点击播放 GIF -->
@@ -1195,13 +1427,324 @@
 </ldesign-image-group>
 ```
 
+## 高级应用场景
+
+### 电商商品多图展示
+
+结合多个功能实现专业的电商商品展示系统。
+
+```html
+<!-- 主图：高优先级 + 完整预览 + 水印 -->
+<ldesign-image
+  src="product-main.jpg"
+  preview-src="product-main-4k.jpg"
+  width="100%"
+  ratio="1/1"
+  fit="contain"
+  lazy="false"
+  fetchpriority="high"
+  preview
+  zoomable
+  downloadable
+  watermark="© 2024 Your Brand"
+  fallback="placeholder.jpg"
+  retryable
+  max-retries="3"
+/>
+```
+
+### 前后对比工具
+
+适用于展示产品改进、设计效果对比等场景。
+
+```html
+<ldesign-image
+  src="before.jpg"
+  comparison-src="after.jpg"
+  comparison
+  width="800"
+  height="600"
+  watermark="产品优化对比"
+  watermark-position="top-left"
+  preview
+  downloadable
+/>
+```
+
+### 博客文章图片优化
+
+结合现代图片格式和懒加载实现最优性能。
+
+```html
+<!-- 封面图：高优先级 + 多格式 -->
+<ldesign-image
+  sources='[
+    {"type":"image/avif","srcset":"hero.avif"},
+    {"type":"image/webp","srcset":"hero.webp"}
+  ]'
+  src="hero.jpg"
+  width="100%"
+  ratio="16/9"
+  lazy="false"
+  fetchpriority="high"
+  radius="12"
+/>
+
+<!-- 内容图：懒加载 + 响应式 -->
+<ldesign-image
+  src="content.jpg"
+  srcset="content-400.jpg 400w, content-800.jpg 800w"
+  sizes="(max-width: 768px) 100vw, 800px"
+  width="100%"
+  lazy
+  preview
+/>
+```
+
+### 摄影作品展示
+
+带版权保护的作品集展示。
+
+```html
+<ldesign-image-group columns="2" gap="16">
+  <ldesign-image
+    v-for="artwork in artworks"
+    :key="artwork.id"
+    :src="artwork.thumb"
+    :preview-src="artwork.hd"
+    width="100%"
+    ratio="4/3"
+    preview
+    watermark="© 2024 Your Studio"
+    watermark-position="bottom-right"
+    downloadable
+    show-info
+  />
+</ldesign-image-group>
+```
+
 ## 性能优化建议
+
+### 图片对比工具
+
+适用于展示前后对比、产品改进、设计效果对比等场景。
+
+```html
+<!-- 产品优化前后对比 -->
+<ldesign-image
+  src="product-before.jpg"
+  comparison-src="product-after.jpg"
+  comparison
+  width="800"
+  height="600"
+  watermark="产品优化对比"
+  watermark-position="top-left"
+/>
+
+<!-- 设计效果对比 -->
+<ldesign-image
+  src="design-v1.png"
+  comparison-src="design-v2.png"
+  comparison
+  width="100%"
+  ratio="16/9"
+  fit="contain"
+/>
+```
+
+### 带水印的作品展示
+
+适用于摄影作品、设计作品集等需要版权保护的场景。
+
+```html
+<ldesign-image-group columns="2" gap="16">
+  <ldesign-image
+    src="artwork-1.jpg"
+    preview-src="artwork-1-hd.jpg"
+    width="100%"
+    ratio="4/3"
+    preview
+    watermark="© 2024 Your Studio"
+    watermark-position="bottom-right"
+    downloadable
+    show-info
+  />
+  <ldesign-image
+    src="artwork-2.jpg"
+    preview-src="artwork-2-hd.jpg"
+    width="100%"
+    ratio="4/3"
+    preview
+    watermark="© 2024 Your Studio"
+    watermark-position="bottom-right"
+    downloadable
+    show-info
+  />
+</ldesign-image-group>
+```
+
+### 电商商品展示完整方案
+
+结合多个功能实现专业的电商商品展示。
+
+```html
+<div class="product-detail">
+  <!-- 主图：高优先级加载 + 完整预览功能 -->
+  <ldesign-image
+    src="product-main.jpg"
+    preview-src="product-main-4k.jpg"
+    srcset="product-main-400.jpg 400w, product-main-800.jpg 800w, product-main.jpg 1200w"
+    sizes="(max-width: 768px) 400px, 800px"
+    width="100%"
+    ratio="1/1"
+    fit="contain"
+    lazy="false"
+    fetchpriority="high"
+    preview
+    zoomable
+    rotatable
+    downloadable
+    show-info
+    fallback="product-placeholder.jpg"
+    retryable
+    max-retries="3"
+  />
+  
+  <!-- 缩略图列表：懒加载 + 快速切换 -->
+  <ldesign-image-group columns="4" gap="8">
+    <ldesign-image 
+      src="thumb-1.jpg" 
+      ratio="1/1" 
+      lazy
+      shape="rounded"
+    />
+    <ldesign-image 
+      src="thumb-2.jpg" 
+      ratio="1/1" 
+      lazy
+      shape="rounded"
+    />
+    <ldesign-image 
+      src="thumb-3.jpg" 
+      ratio="1/1" 
+      lazy
+      shape="rounded"
+    />
+    <ldesign-image 
+      src="thumb-4.jpg" 
+      ratio="1/1" 
+      lazy
+      shape="rounded"
+    />
+  </ldesign-image-group>
+</div>
+```
+
+### 博客文章图片优化
+
+结合现代图片格式和懒加载实现最优性能。
+
+```html
+<!-- 文章封面图：高优先级 -->
+<ldesign-image
+  sources='[
+    {"type":"image/avif","srcset":"hero.avif"},
+    {"type":"image/webp","srcset":"hero.webp"}
+  ]'
+  src="hero.jpg"
+  width="100%"
+  ratio="16/9"
+  fit="cover"
+  lazy="false"
+  fetchpriority="high"
+  radius="12"
+  placeholder-color="#f0f0f0"
+  show-loading
+/>
+
+<!-- 文章内容图：懒加载 + 响应式 -->
+<ldesign-image
+  src="content-image.jpg"
+  srcset="content-400.jpg 400w, content-800.jpg 800w, content-1200.jpg 1200w"
+  sizes="(max-width: 768px) 100vw, 800px"
+  width="100%"
+  lazy
+  intersection-root-margin="200px"
+  placeholder-color="#f5f5f5"
+  show-loading
+  radius="8"
+  preview
+  alt="文章配图"
+/>
+```
+
+## 性能优化建议
+
+### 核心优化策略
 
 1. **使用懒加载**：对于非首屏图片，始终启用 `lazy` 属性
 2. **设置 ratio**：避免布局抖动，提升用户体验
 3. **使用 WebP/AVIF**：通过 `sources` 提供现代格式
 4. **合理的缩略图**：列表使用小图，预览使用大图
 5. **CDN 加速**：使用 CDN 并配置合适的缓存策略
+6. **fetchpriority 优先级**：首屏关键图片设置 `fetchpriority="high"`
+7. **合理使用滤镜**：滤镜效果会增加 GPU 负载，谨慎使用
+
+### 实际场景优化示例
+
+```html
+<!-- 首屏英雄图：高优先级，禁用懒加载 -->
+<ldesign-image
+  src="hero.jpg"
+  width="100%"
+  ratio="16/9"
+  fit="cover"
+  lazy="false"
+  fetchpriority="high"
+  decoding="async"
+/>
+
+<!-- 列表缩略图：启用懒加载 + 响应式 -->
+<ldesign-image
+  src="thumb-400.jpg"
+  srcset="thumb-200.jpg 200w, thumb-400.jpg 400w, thumb-800.jpg 800w"
+  sizes="(max-width: 600px) 200px, 400px"
+  width="100%"
+  ratio="4/3"
+  lazy
+  intersection-root-margin="300px"
+/>
+
+<!-- 多格式支持：现代格式优先 -->
+<ldesign-image
+  sources='[
+    {"type":"image/avif","srcset":"image.avif"},
+    {"type":"image/webp","srcset":"image.webp"}
+  ]'
+  src="image.jpg"
+  width="600"
+  height="400"
+/>
+
+<!-- 商品列表：懒加载 + 占位 + 回退 -->
+<ldesign-image
+  src="product.jpg"
+  fallback="placeholder.jpg"
+  width="200"
+  height="200"
+  ratio="1/1"
+  lazy
+  placeholder-color="#f5f5f5"
+  show-loading
+/>
+```
+
+### 性能指标
+
+- **LCP (最大内容绘制)**：首屏关键图片使用 `fetchpriority="high"` 和 `lazy="false"`
+- **CLS (布局偏移)**：始终设置 `ratio` 属性避免图片加载后的布局抖动
+- **带宽优化**：使用 WebP/AVIF 可节省 30-50% 的文件大小
+- **内存优化**：大量图片列表启用懒加载，减少同时加载的图片数量
 
 ## 浏览器兼容性
 
