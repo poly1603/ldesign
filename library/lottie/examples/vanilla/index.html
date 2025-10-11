@@ -222,7 +222,97 @@
         </div>
       </div>
 
-      <!-- Example 6: Animation Sequence -->
+      <!-- Example 6: Direction Control -->
+      <div class="card">
+        <h2>⇄ Direction Control</h2>
+        <div id="lottie6" class="lottie-container"></div>
+        <div class="controls">
+          <button onclick="example6.play()">Forward</button>
+          <button onclick="example6.setDirection(-1); example6.play()">Reverse</button>
+          <button onclick="window.toggleDirection()">Toggle</button>
+        </div>
+        <div class="info">
+          <p>Control playback direction</p>
+          <p><strong>Direction:</strong> <span id="direction6">1</span></p>
+        </div>
+      </div>
+
+      <!-- Example 7: Frame Control -->
+      <div class="card">
+        <h2>🎬 Frame Control</h2>
+        <div id="lottie7" class="lottie-container"></div>
+        <div class="speed-control">
+          <label>Frame: <span id="currentFrame">0</span> / <span id="totalFrames">0</span></label>
+          <input type="range" id="frameSlider" min="0" max="100" value="0">
+        </div>
+        <div class="controls">
+          <button onclick="example7.play()">Play</button>
+          <button onclick="example7.goToAndStop(0, true)">First Frame</button>
+          <button onclick="example7.goToAndStop(example7.animation.totalFrames - 1, true)">Last Frame</button>
+        </div>
+      </div>
+
+      <!-- Example 8: Segment Play -->
+      <div class="card">
+        <h2>✂️ Segment Play</h2>
+        <div id="lottie8" class="lottie-container"></div>
+        <div class="controls">
+          <button onclick="window.playSegment1()">Part 1</button>
+          <button onclick="window.playSegment2()">Part 2</button>
+          <button onclick="window.playFull()">Full</button>
+        </div>
+        <div class="info">
+          <p>Play specific segments</p>
+        </div>
+      </div>
+
+      <!-- Example 9: Renderer Switching -->
+      <div class="card">
+        <h2>🎨 Renderer Switch</h2>
+        <div id="lottie9" class="lottie-container"></div>
+        <div class="controls">
+          <button onclick="window.switchRenderer('svg')">SVG</button>
+          <button onclick="window.switchRenderer('canvas')">Canvas</button>
+          <button onclick="window.switchRenderer('html')">HTML</button>
+        </div>
+        <div class="info">
+          <p><strong>Current:</strong> <span id="currentRenderer">svg</span></p>
+          <p>Compare rendering performance</p>
+        </div>
+      </div>
+
+      <!-- Example 10: Event Monitoring -->
+      <div class="card">
+        <h2>📊 Event Monitor</h2>
+        <div id="lottie10" class="lottie-container"></div>
+        <div class="controls">
+          <button onclick="example10.play()">Play</button>
+          <button onclick="example10.pause()">Pause</button>
+        </div>
+        <div class="info" style="max-height: 150px; overflow-y: auto;">
+          <p><strong>Events:</strong></p>
+          <div id="eventLog" style="font-size: 12px;"></div>
+        </div>
+      </div>
+
+      <!-- Example 11: Loading States -->
+      <div class="card">
+        <h2>🔄 Loading States</h2>
+        <div id="lottie11" class="lottie-container" style="position: relative;">
+          <div id="loadingOverlay" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.9);">
+            <span>Loading...</span>
+          </div>
+        </div>
+        <div class="controls">
+          <button onclick="window.reloadAnimation()">Reload</button>
+          <button onclick="window.simulateError()">Simulate Error</button>
+        </div>
+        <div class="info">
+          <p><strong>Status:</strong> <span id="loadStatus">Loading</span></p>
+        </div>
+      </div>
+
+      <!-- Example 12: Animation Sequence -->
       <div class="card" style="grid-column: 1 / -1;">
         <h2>📽️ Animation Sequence</h2>
         <div style="display: flex; gap: 16px; margin-bottom: 16px;">

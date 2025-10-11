@@ -6,6 +6,17 @@ export { PerformanceMonitor } from './core/PerformanceMonitor'
 export { AnimationSequence } from './core/AnimationSequence'
 export { InteractiveController } from './core/InteractiveController'
 
+// 导出设备检测工具
+export {
+  DeviceDetector,
+  ResponsiveObserver,
+  getDeviceInfo,
+  getRecommendedConfig,
+  type DeviceType,
+  type PerformanceTier,
+  type DeviceInfo,
+} from './utils/device'
+
 export type * from './types'
 
 /**

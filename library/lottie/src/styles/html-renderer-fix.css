@@ -1,0 +1,195 @@
+/**
+ * HTML Renderer Fixes
+ * 修复 HTML 渲染器在不同设备上的显示问题
+ */
+
+/* 基础容器样式 */
+.lottie-html {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 修复 HTML 渲染器的常见问题 */
+.lottie-html * {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 确保 SVG 元素正确缩放 */
+.lottie-html svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 修复透明度问题 */
+.lottie-html [style*="opacity"] {
+  will-change: opacity;
+}
+
+/* 修复变换问题 */
+.lottie-html [style*="transform"] {
+  will-change: transform;
+  transform-origin: center center;
+}
+
+/* 移动设备优化 */
+@media (max-width: 768px) {
+  .lottie-html {
+    /* 禁用某些可能影响性能的特性 */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-perspective: 1000px;
+    perspective: 1000px;
+  }
+
+  .lottie-html * {
+    /* 简化移动设备上的渲染 */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
+
+/* 平板设备优化 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .lottie-html {
+    /* 平衡性能和质量 */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* 桌面设备 - 最高质量 */
+@media (min-width: 1025px) {
+  .lottie-html {
+    image-rendering: auto;
+  }
+}
+
+/* 修复 flexbox 布局问题 */
+.lottie-html-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* 响应式容器 */
+.lottie-responsive {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%; /* 默认 1:1 比例 */
+}
+
+.lottie-responsive-16-9 {
+  padding-bottom: 56.25%; /* 16:9 */
+}
+
+.lottie-responsive-4-3 {
+  padding-bottom: 75%; /* 4:3 */
+}
+
+.lottie-responsive .lottie-html {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* 修复文字渲染问题 */
+.lottie-html text {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  pointer-events: none;
+}
+
+/* 禁用拖拽和选择 */
+.lottie-html img {
+  user-drag: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  pointer-events: none;
+}
+
+/* 低性能设备优化 */
+@media (prefers-reduced-motion: reduce) {
+  .lottie-html {
+    /* 尊重用户的动画偏好设置 */
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* 高 DPI 屏幕优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .lottie-html {
+    /* 高分辨率屏幕使用更好的渲染质量 */
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .lottie-html {
+    /* 触摸设备的特殊处理 */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .lottie-html {
+    /* 深色模式下的调整 */
+    filter: brightness(0.95);
+  }
+}
+
+/* 加载状态 */
+.lottie-loading {
+  position: relative;
+}
+
+.lottie-loading::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #333;
+  border-radius: 50%;
+  animation: lottie-spin 0.8s linear infinite;
+}
+
+@keyframes lottie-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 错误状态 */
+.lottie-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f44336;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+}
+
+.lottie-error::before {
+  content: '⚠️';
+  font-size: 24px;
+  margin-right: 8px;
+}

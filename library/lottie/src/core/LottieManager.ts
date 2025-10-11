@@ -8,6 +8,7 @@ import type {
 import { LottieInstance } from './LottieInstance'
 import { InstancePool } from './InstancePool'
 import { CacheManager } from './CacheManager'
+import { DeviceDetector, getRecommendedConfig, type DeviceInfo } from '../utils/device'
 
 /**
  * Lottie 管理器 - 全局单例
@@ -18,9 +19,11 @@ export class LottieManager {
   private instancePool: InstancePool
   private cacheManager: CacheManager
   private instances: Map<string, ILottieInstance> = new Map()
+  private deviceDetector: DeviceDetector
 
   private constructor(config?: LottieManagerConfig) {
     this.config = this.normalizeConfig(config)
+    this.deviceDetector = DeviceDetector.getInstance()
     this.instancePool = new InstancePool(this.config.poolSize)
     this.cacheManager = new CacheManager(
       this.config.cache.maxSize,
@@ -32,6 +35,11 @@ export class LottieManager {
       setInterval(() => {
         this.cacheManager.cleanExpired()
       }, 60000) // 每分钟清理一次
+    }
+
+    // 监听窗口大小变化，自动优化低性能设备
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', this.handleResize.bind(this))
     }
   }
 
@@ -59,17 +67,41 @@ export class LottieManager {
    * 标准化配置
    */
   private normalizeConfig(config?: LottieManagerConfig): Required<LottieManagerConfig> {
+    // 获取设备推荐配置
+    const recommended = getRecommendedConfig()
+    
     return {
       maxInstances: config?.maxInstances ?? 100,
-      defaultRenderer: config?.defaultRenderer ?? 'svg',
+      defaultRenderer: config?.defaultRenderer ?? recommended.renderer,
       enableInstancePool: config?.enableInstancePool ?? true,
       poolSize: config?.poolSize ?? 50,
-      enableGlobalPerformanceMonitor: config?.enableGlobalPerformanceMonitor ?? true,
+      enableGlobalPerformanceMonitor: config?.enableGlobalPerformanceMonitor ?? recommended.enableMonitoring,
       cache: {
         enabled: config?.cache?.enabled ?? true,
         maxSize: config?.cache?.maxSize ?? 50,
         ttl: config?.cache?.ttl ?? 3600000,
       },
+    }
+  }
+
+  /**
+   * 处理窗口大小变化
+   */
+  private handleResize(): void {
+    const deviceInfo = this.deviceDetector.getInfo()
+    
+    // 如果是低性能设备或移动设备，在窗口变化时暂停所有动画
+    if (deviceInfo.performanceTier === 'low' || deviceInfo.isMobile) {
+      const activeInstances = Array.from(this.instances.values())
+        .filter(i => i.state === 'playing')
+      
+      // 暂停所有动画，等待 resize 完成
+      activeInstances.forEach(i => i.pause())
+      
+      // 延迟恢复播放
+      setTimeout(() => {
+        activeInstances.forEach(i => i.play())
+      }, 300)
     }
   }
 
@@ -82,10 +114,37 @@ export class LottieManager {
       throw new Error(`Maximum instances limit reached (${this.config.maxInstances})`)
     }
 
-    // 合并默认配置
+    // 获取设备推荐配置
+    const recommended = getRecommendedConfig()
+    const deviceInfo = this.deviceDetector.getInfo()
+
+    // 合并默认配置（优先使用用户配置，其次使用设备推荐配置）
     const finalConfig: LottieConfig = {
-      renderer: this.config.defaultRenderer,
+      renderer: config.renderer ?? this.config.defaultRenderer ?? recommended.renderer,
       ...config,
+    }
+
+    // 如果是移动设备，自动启用性能监控
+    if (deviceInfo.isMobile && !finalConfig.advanced?.enablePerformanceMonitor) {
+      finalConfig.advanced = {
+        ...finalConfig.advanced,
+        enablePerformanceMonitor: true,
+        targetFPS: recommended.targetFPS,
+      }
+    }
+
+    // 修复 HTML 渲染器的问题 - 添加特殊配置
+    if (finalConfig.renderer === 'html') {
+      finalConfig.rendererSettings = {
+        ...finalConfig.rendererSettings,
+        // HTML 渲染器特殊设置
+        className: finalConfig.rendererSettings?.className || 'lottie-html',
+        hideOnTransparent: true,
+        // 移动设备上禁用某些特性以提升性能
+        ...(deviceInfo.isMobile && {
+          progressiveLoad: false,
+        }),
+      }
     }
 
     // 尝试从缓存加载动画数据
@@ -371,6 +430,59 @@ export class LottieManager {
    */
   updateConfig(config: Partial<LottieManagerConfig>): void {
     this.config = this.normalizeConfig({ ...this.config, ...config })
+  }
+
+  /**
+   * 获取设备信息
+   */
+  getDeviceInfo(): DeviceInfo {
+    return this.deviceDetector.getInfo()
+  }
+
+  /**
+   * 获取推荐配置
+   */
+  getRecommendedConfig() {
+    return getRecommendedConfig()
+  }
+
+  /**
+   * 根据设备自动优化所有实例
+   */
+  autoOptimize(): { optimized: number; downgraded: number } {
+    const deviceInfo = this.deviceDetector.getInfo()
+    const recommended = getRecommendedConfig()
+    let optimized = 0
+    let downgraded = 0
+
+    // 如果是低性能设备，降级所有实例
+    if (deviceInfo.performanceTier === 'low') {
+      this.instances.forEach(instance => {
+        try {
+          // 降低播放速度
+          const currentSpeed = (instance.animation as any)?.playSpeed || 1
+          if (currentSpeed > 0.8) {
+            instance.setSpeed(0.8)
+            downgraded++
+          }
+
+          // 切换到更高效的渲染器
+          if (instance.config.renderer === 'svg') {
+            // SVG 在低性能设备上可能较慢，尝试切换到 canvas
+            instance.switchRenderer('canvas')
+            downgraded++
+          }
+        } catch (error) {
+          console.warn('[LottieManager] Failed to optimize instance:', error)
+        }
+      })
+    }
+
+    // 优化空闲实例
+    const result = this.optimize()
+    optimized = result.cleaned
+
+    return { optimized, downgraded }
   }
 }
 
