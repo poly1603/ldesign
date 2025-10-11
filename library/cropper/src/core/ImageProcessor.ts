@@ -36,6 +36,10 @@ export class ImageProcessor {
         rotate: 0,
         scaleX: 1,
         scaleY: 1,
+        skewX: 0,
+        skewY: 0,
+        translateX: 0,
+        translateY: 0,
         naturalWidth: image.naturalWidth,
         naturalHeight: image.naturalHeight,
         aspectRatio: getAspectRatio(image.naturalWidth, image.naturalHeight)
@@ -51,17 +55,62 @@ export class ImageProcessor {
    * Render image to container
    */
   render(): void {
-    if (!this.imageElement) return
-
-    // Create image wrapper
-    const wrapper = createElement('div', 'cropper-canvas')
-    wrapper.appendChild(this.imageElement)
+    if (!this.imageElement || !this.imageData) return
 
     // Clear container
     while (this.container.firstChild) {
       this.container.removeChild(this.container.firstChild)
     }
 
+    // Create image wrapper
+    const wrapper = createElement('div', 'cropper-canvas')
+    
+    // Calculate the container size
+    const containerRect = this.container.getBoundingClientRect()
+    const containerWidth = containerRect.width
+    const containerHeight = containerRect.height
+    
+    // Calculate the display size to fit the image in the container
+    const imageAspect = this.imageData.naturalWidth / this.imageData.naturalHeight
+    const containerAspect = containerWidth / containerHeight
+    
+    let displayWidth, displayHeight
+    
+    if (imageAspect > containerAspect) {
+      // Image is wider than container
+      displayWidth = containerWidth
+      displayHeight = containerWidth / imageAspect
+    } else {
+      // Image is taller than container
+      displayHeight = containerHeight
+      displayWidth = containerHeight * imageAspect
+    }
+    
+    // Update image data with display dimensions
+    this.imageData.width = displayWidth
+    this.imageData.height = displayHeight
+    this.imageData.left = (containerWidth - displayWidth) / 2
+    this.imageData.top = (containerHeight - displayHeight) / 2
+    
+    // Style the wrapper to position the image
+    setStyle(wrapper, {
+      position: 'absolute',
+      left: `${this.imageData.left}px`,
+      top: `${this.imageData.top}px`,
+      width: `${displayWidth}px`,
+      height: `${displayHeight}px`
+    })
+    
+    // Style the image element
+    setStyle(this.imageElement, {
+      display: 'block',
+      width: '100%',
+      height: '100%',
+      maxWidth: 'none',
+      maxHeight: 'none'
+    })
+    
+    wrapper.appendChild(this.imageElement)
     this.container.appendChild(wrapper)
     this.updateTransform()
   }
@@ -72,12 +121,14 @@ export class ImageProcessor {
   updateTransform(): void {
     if (!this.imageElement || !this.imageData) return
 
-    const { rotate, scaleX, scaleY } = this.imageData
+    const { rotate, scaleX, scaleY, skewX, skewY, translateX, translateY } = this.imageData
 
     const transforms = [
+      `translate(${translateX}px, ${translateY}px)`,
       `rotate(${rotate}deg)`,
       `scaleX(${scaleX})`,
-      `scaleY(${scaleY})`
+      `scaleY(${scaleY})`,
+      `skew(${skewX}deg, ${skewY}deg)`
     ]
 
     setStyle(this.imageElement, {
@@ -127,6 +178,59 @@ export class ImageProcessor {
   }
 
   /**
+   * Skew image
+   */
+  skew(skewX: number, skewY?: number): void {
+    if (!this.imageData) return
+
+    this.imageData.skewX = skewX
+    this.imageData.skewY = skewY ?? skewX
+    this.updateTransform()
+  }
+
+  /**
+   * Skew X
+   */
+  skewX(skewX: number): void {
+    if (!this.imageData) return
+
+    this.imageData.skewX = skewX
+    this.updateTransform()
+  }
+
+  /**
+   * Skew Y
+   */
+  skewY(skewY: number): void {
+    if (!this.imageData) return
+
+    this.imageData.skewY = skewY
+    this.updateTransform()
+  }
+
+  /**
+   * Translate image
+   */
+  translate(x: number, y: number): void {
+    if (!this.imageData) return
+
+    this.imageData.translateX = x
+    this.imageData.translateY = y
+    this.updateTransform()
+  }
+
+  /**
+   * Move image (relative)
+   */
+  move(deltaX: number, deltaY: number): void {
+    if (!this.imageData) return
+
+    this.imageData.translateX += deltaX
+    this.imageData.translateY += deltaY
+    this.updateTransform()
+  }
+
+  /**
    * Reset image
    */
   reset(): void {
@@ -135,6 +239,10 @@ export class ImageProcessor {
     this.imageData.rotate = 0
     this.imageData.scaleX = 1
     this.imageData.scaleY = 1
+    this.imageData.skewX = 0
+    this.imageData.skewY = 0
+    this.imageData.translateX = 0
+    this.imageData.translateY = 0
     this.updateTransform()
   }
 
@@ -152,7 +260,16 @@ export class ImageProcessor {
     cropBoxData: { left: number; top: number; width: number; height: number },
     options: GetCroppedCanvasOptions = {}
   ): HTMLCanvasElement | null {
-    if (!this.imageElement || !this.imageData) return null
+    if (!this.imageElement || !this.imageData) {
+      console.log('getCroppedCanvas: Missing image element or image data')
+      return null
+    }
+    
+    console.log('getCroppedCanvas called with:', { 
+      cropBoxData, 
+      imageData: this.imageData,
+      options 
+    })
 
     const {
       width = cropBoxData.width,
@@ -169,6 +286,8 @@ export class ImageProcessor {
     // Clamp dimensions
     const finalWidth = clamp(width, minWidth, maxWidth)
     const finalHeight = clamp(height, minHeight, maxHeight)
+    
+    console.log('Canvas dimensions:', { finalWidth, finalHeight })
 
     // Create canvas
     const canvas = document.createElement('canvas')
@@ -192,22 +311,51 @@ export class ImageProcessor {
     const { rotate, scaleX, scaleY } = this.imageData
 
     // Calculate the actual source coordinates in the original image
-    // The cropBoxData is in the display coordinate system
-    // We need to convert it to the natural image coordinate system
+    // The cropBoxData is in the container coordinate system
+    // We need to convert it to coordinates relative to the image
     const naturalWidth = this.imageElement.naturalWidth
     const naturalHeight = this.imageElement.naturalHeight
     const displayWidth = this.imageData.width
     const displayHeight = this.imageData.height
+    const imageLeft = this.imageData.left
+    const imageTop = this.imageData.top
+
+    // Calculate crop box relative to image (not container)
+    const cropRelativeToImageLeft = cropBoxData.left - imageLeft
+    const cropRelativeToImageTop = cropBoxData.top - imageTop
+    const cropRelativeToImageWidth = cropBoxData.width
+    const cropRelativeToImageHeight = cropBoxData.height
 
     // Scale factor between display and natural size
     const scaleFactorX = naturalWidth / displayWidth
     const scaleFactorY = naturalHeight / displayHeight
 
     // Source rectangle in natural coordinates
-    const sourceLeft = cropBoxData.left * scaleFactorX
-    const sourceTop = cropBoxData.top * scaleFactorY
-    const sourceWidth = cropBoxData.width * scaleFactorX
-    const sourceHeight = cropBoxData.height * scaleFactorY
+    const sourceLeft = Math.max(0, cropRelativeToImageLeft * scaleFactorX)
+    const sourceTop = Math.max(0, cropRelativeToImageTop * scaleFactorY)
+    const sourceWidth = Math.min(
+      cropRelativeToImageWidth * scaleFactorX,
+      naturalWidth - sourceLeft
+    )
+    const sourceHeight = Math.min(
+      cropRelativeToImageHeight * scaleFactorY,
+      naturalHeight - sourceTop
+    )
+    
+    console.log('Crop calculation:', {
+      imageLeft,
+      imageTop,
+      cropRelativeToImageLeft,
+      cropRelativeToImageTop,
+      cropRelativeToImageWidth,
+      cropRelativeToImageHeight,
+      scaleFactorX,
+      scaleFactorY,
+      sourceLeft,
+      sourceTop,
+      sourceWidth,
+      sourceHeight
+    })
 
     // Apply transformations if needed
     if (rotate !== 0 || scaleX !== 1 || scaleY !== 1) {
@@ -244,6 +392,8 @@ export class ImageProcessor {
         finalHeight
       )
     }
+    
+    console.log('Returning canvas:', canvas, 'Canvas has content:', canvas.width > 0 && canvas.height > 0)
 
     return canvas
   }

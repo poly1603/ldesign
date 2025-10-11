@@ -40,10 +40,13 @@ const DEFAULTS = {
   movable: true,
   rotatable: true,
   scalable: true,
+  skewable: true,
+  translatable: true,
   zoomable: true,
   zoomOnTouch: true,
   zoomOnWheel: true,
   wheelZoomRatio: 0.1,
+  scaleStep: 0.1,
   cropBoxMovable: true,
   cropBoxResizable: true,
   toggleDragModeOnDblclick: true,
@@ -56,7 +59,8 @@ const DEFAULTS = {
   maxCropBoxWidth: Infinity,
   maxCropBoxHeight: Infinity,
   alt: '',
-  crossorigin: ''
+  crossorigin: '',
+  themeColor: '#39f'
 }
 
 export class Cropper {
@@ -365,14 +369,24 @@ export class Cropper {
    */
   getData(rounded = false): CropData {
     if (!this.cropBox || !this.imageProcessor) {
-      return { x: 0, y: 0, width: 0, height: 0, rotate: 0, scaleX: 1, scaleY: 1 }
+      return {
+        x: 0, y: 0, width: 0, height: 0,
+        rotate: 0, scaleX: 1, scaleY: 1,
+        skewX: 0, skewY: 0,
+        translateX: 0, translateY: 0
+      }
     }
 
     const cropBoxData = this.cropBox.getData()
     const imageData = this.imageProcessor.getImageData()
 
     if (!imageData) {
-      return { x: 0, y: 0, width: 0, height: 0, rotate: 0, scaleX: 1, scaleY: 1 }
+      return {
+        x: 0, y: 0, width: 0, height: 0,
+        rotate: 0, scaleX: 1, scaleY: 1,
+        skewX: 0, skewY: 0,
+        translateX: 0, translateY: 0
+      }
     }
 
     const data: CropData = {
@@ -382,7 +396,11 @@ export class Cropper {
       height: cropBoxData.height,
       rotate: imageData.rotate,
       scaleX: imageData.scaleX,
-      scaleY: imageData.scaleY
+      scaleY: imageData.scaleY,
+      skewX: imageData.skewX,
+      skewY: imageData.skewY,
+      translateX: imageData.translateX,
+      translateY: imageData.translateY
     }
 
     if (rounded) {
@@ -453,6 +471,46 @@ export class Cropper {
     if (imageData) {
       this.scale(imageData.scaleX, scaleY)
     }
+  }
+
+  /**
+   * Skew image
+   */
+  skew(skewX: number, skewY?: number): void {
+    if (!this.ready || !this.imageProcessor || !this.options.skewable) return
+    this.imageProcessor.skew(skewX, skewY)
+  }
+
+  /**
+   * Skew horizontal
+   */
+  skewX(skewX: number): void {
+    if (!this.ready || !this.imageProcessor || !this.options.skewable) return
+    this.imageProcessor.skewX(skewX)
+  }
+
+  /**
+   * Skew vertical
+   */
+  skewY(skewY: number): void {
+    if (!this.ready || !this.imageProcessor || !this.options.skewable) return
+    this.imageProcessor.skewY(skewY)
+  }
+
+  /**
+   * Translate image
+   */
+  translate(x: number, y: number): void {
+    if (!this.ready || !this.imageProcessor || !this.options.translatable) return
+    this.imageProcessor.translate(x, y)
+  }
+
+  /**
+   * Move image
+   */
+  move(deltaX: number, deltaY: number): void {
+    if (!this.ready || !this.imageProcessor || !this.options.translatable) return
+    this.imageProcessor.move(deltaX, deltaY)
   }
 
   /**

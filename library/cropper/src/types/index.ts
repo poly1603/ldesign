@@ -44,6 +44,10 @@ export interface ImageData {
   rotate: number
   scaleX: number
   scaleY: number
+  skewX: number
+  skewY: number
+  translateX: number
+  translateY: number
   naturalWidth: number
   naturalHeight: number
   aspectRatio: number
@@ -58,6 +62,10 @@ export interface CropData {
   rotate: number
   scaleX: number
   scaleY: number
+  skewX: number
+  skewY: number
+  translateX: number
+  translateY: number
 }
 
 // Cropper options
@@ -122,8 +130,20 @@ export interface CropperOptions {
   // Scalable
   scalable?: boolean
 
+  // Skewable
+  skewable?: boolean
+
+  // Translatable
+  translatable?: boolean
+
   // Zoomable
   zoomable?: boolean
+
+  // Scale step for zoom
+  scaleStep?: number
+
+  // Theme color
+  themeColor?: string
 
   // Zoom on touch
   zoomOnTouch?: boolean

@@ -16,7 +16,9 @@
       "Bash(else echo \"No docs/package.json found\")",
       "Bash(timeout 10 npm run docs:dev)",
       "Bash(npm run docs:build)",
-      "Bash(test -f QUICK_START.md)"
+      "Bash(test -f QUICK_START.md)",
+      "WebFetch(domain:fengyuanchen.github.io)",
+      "Bash(npm run dev -- --port 3000)"
     ],
     "deny": [],
     "ask": []

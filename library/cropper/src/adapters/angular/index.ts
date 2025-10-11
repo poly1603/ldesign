@@ -38,7 +38,7 @@ import '../../styles/cropper.css'
     `
   ]
 })
-export class AngularCropperComponent implements OnInit, OnDestroy, OnChanges {
+class AngularCropperComponent implements OnInit, OnDestroy, OnChanges {
   @ViewChild('container', { static: true }) containerRef!: ElementRef<HTMLDivElement>
 
   @Input() src!: string
@@ -144,7 +144,11 @@ export class AngularCropperComponent implements OnInit, OnDestroy, OnChanges {
         height: 0,
         rotate: 0,
         scaleX: 1,
-        scaleY: 1
+        scaleY: 1,
+        skewX: 0,
+        skewY: 0,
+        translateX: 0,
+        translateY: 0
       }
     )
   }
@@ -190,6 +194,9 @@ export class AngularCropperComponent implements OnInit, OnDestroy, OnChanges {
   }
 }
 
+// Export the component
+export { AngularCropperComponent }
+
 // Angular Module
 import { NgModule } from '@angular/core'
 
@@ -198,4 +205,7 @@ import { NgModule } from '@angular/core'
   imports: [],
   exports: [AngularCropperComponent]
 })
-export class AngularCropperModule {}
+class AngularCropperModule {}
+
+// Export the module
+export { AngularCropperModule }

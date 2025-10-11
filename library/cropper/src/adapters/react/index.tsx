@@ -108,7 +108,11 @@ export const ReactCropper = forwardRef<ReactCropperRef, ReactCropperProps>(
           height: 0,
           rotate: 0,
           scaleX: 1,
-          scaleY: 1
+          scaleY: 1,
+          skewX: 0,
+          skewY: 0,
+          translateX: 0,
+          translateY: 0
         },
       setData: (data: any) => cropperRef.current?.setData(data),
       rotate: (degrees: number) => cropperRef.current?.rotate(degrees),
