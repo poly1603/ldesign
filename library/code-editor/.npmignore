@@ -1,0 +1,23 @@
+# Source files
+src/
+examples/
+
+# Config files
+vite.config.ts
+tsconfig.json
+tsconfig.node.json
+pnpm-workspace.yaml
+
+# Documentation
+*.md
+!README.md
+
+# Dev files
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
+
+# Other
+.DS_Store

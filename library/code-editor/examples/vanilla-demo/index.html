@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Editor - Vanilla JS Demo</title>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>@ldesign/code-editor</h1>
+      <p>基于 Monaco Editor 的高性能代码编辑器 - Vanilla JS 示例</p>
+    </header>
+
+    <main>
+      <section class="demo-section">
+        <h2>基础示例</h2>
+        <div class="controls">
+          <button id="getValue">获取值</button>
+          <button id="setValue">设置值</button>
+          <button id="format">格式化代码</button>
+          <button id="undo">撤销</button>
+          <button id="redo">重做</button>
+        </div>
+        <div id="editor1" class="editor-container"></div>
+      </section>
+
+      <section class="demo-section">
+        <h2>主题切换</h2>
+        <div class="controls">
+          <select id="themeSelect">
+            <option value="vs">Light</option>
+            <option value="vs-dark" selected>Dark</option>
+            <option value="hc-black">High Contrast</option>
+          </select>
+          <select id="languageSelect">
+            <option value="javascript" selected>JavaScript</option>
+            <option value="typescript">TypeScript</option>
+            <option value="json">JSON</option>
+            <option value="html">HTML</option>
+            <option value="css">CSS</option>
+            <option value="python">Python</option>
+            <option value="java">Java</option>
+            <option value="go">Go</option>
+          </select>
+        </div>
+        <div id="editor2" class="editor-container"></div>
+      </section>
+
+      <section class="demo-section">
+        <h2>只读模式</h2>
+        <div class="controls">
+          <label>
+            <input type="checkbox" id="readOnlyCheckbox">
+            只读模式
+          </label>
+        </div>
+        <div id="editor3" class="editor-container"></div>
+      </section>
+
+      <section class="demo-section">
+        <h2>自定义配置</h2>
+        <div class="controls">
+          <label>
+            <input type="checkbox" id="minimapCheckbox" checked>
+            显示 Minimap
+          </label>
+          <label>
+            <input type="checkbox" id="lineNumbersCheckbox" checked>
+            显示行号
+          </label>
+          <label>
+            <input type="checkbox" id="foldingCheckbox" checked>
+            代码折叠
+          </label>
+          <label>
+            字体大小: <input type="number" id="fontSizeInput" value="14" min="10" max="30">
+          </label>
+        </div>
+        <div id="editor4" class="editor-container"></div>
+      </section>
+
+      <section class="demo-section">
+        <h2>事件监听</h2>
+        <div id="editor5" class="editor-container"></div>
+        <div class="event-log">
+          <h3>事件日志:</h3>
+          <div id="eventLog"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
