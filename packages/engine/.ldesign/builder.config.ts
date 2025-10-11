@@ -1,13 +1,54 @@
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
+  // 入口文件
+  input: 'src/index.ts',
+
+  // TypeScript 配置
+  tsconfig: 'tsconfig.build.json',
+
+  // 输出配置
+  output: {
+    dir: 'dist',
+    format: ['esm', 'cjs', 'umd'],
+    esm: {
+      dir: 'es',
+      format: 'esm',
+      preserveStructure: true,
+      dts: true,
+      input: [
+        'src/**/*.ts',
+        '!src/**/*.test.ts',
+        '!src/**/*.spec.ts'
+      ]
+    },
+    cjs: {
+      dir: 'lib',
+      format: 'cjs',
+      preserveStructure: true,
+      dts: true,
+      input: [
+        'src/**/*.ts',
+        '!src/**/*.test.ts',
+        '!src/**/*.spec.ts'
+      ]
+    },
+    umd: {
+      dir: 'dist',
+      format: 'umd',
+      minify: true,
+      sourcemap: true,
+      input: 'src/index.ts'
+    }
+  },
+
   // 禁用构建后验证（库项目不需要运行测试验证）
   postBuildValidation: {
     enabled: false
   },
 
   // 生成类型声明文件
-  dts: true,
+  dts: false,
 
   // 生成 source map
   sourcemap: true,
@@ -58,6 +99,8 @@ export default defineConfig({
       onwarn: () => {
         // 完全静默，不输出任何警告
       }
-    }
+    },
+    // TypeScript 配置
+    tsconfig: 'tsconfig.build.json'
   }
 })

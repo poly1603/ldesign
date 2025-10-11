@@ -82,7 +82,7 @@ interface CompiledPath {
 // ==================== LRU 缓存实现 ====================
 
 /**
- * LRU 缓存实现
+ * LRU 缓存实现（优化版 - 支持动态容量调整）
  */
 class LRUCache {
   private capacity: number
@@ -90,9 +90,19 @@ class LRUCache {
   private cache: Map<string, LRUNode>
   private head: LRUNode
   private tail: LRUNode
+  
+  // 性能指标
+  private hits: number = 0
+  private misses: number = 0
+  private lastOptimizeTime: number = Date.now()
+  
+  // 动态容量配置
+  private readonly minCapacity: number = 50
+  private readonly maxCapacity: number = 500
+  private readonly optimizeInterval: number = 60000 // 1分钟
 
   constructor(capacity: number = 50) {
-    this.capacity = capacity
+    this.capacity = Math.max(this.minCapacity, Math.min(capacity, this.maxCapacity))
     this.size = 0
     this.cache = new Map()
 
@@ -105,12 +115,17 @@ class LRUCache {
 
   get(key: string): MatchResult | null | undefined {
     const node = this.cache.get(key)
-    if (!node)
+    if (!node) {
+      this.misses++
+      this.tryOptimizeCapacity()
       return undefined
+    }
 
+    this.hits++
     // 移动到头部（最近使用）
     this.moveToHead(node)
     node.timestamp = Date.now()
+    this.tryOptimizeCapacity()
     return node.value
   }
 
@@ -187,12 +202,68 @@ class LRUCache {
     return null
   }
 
-  getStats(): { size: number, capacity: number, hitRate: number } {
+  getStats(): { size: number, capacity: number, hitRate: number, hits: number, misses: number } {
+    const total = this.hits + this.misses
     return {
       size: this.size,
       capacity: this.capacity,
-      hitRate: 0, // 可以添加命中率统计
+      hitRate: total > 0 ? this.hits / total : 0,
+      hits: this.hits,
+      misses: this.misses,
     }
+  }
+  
+  /**
+   * 尝试优化缓存容量（基于命中率动态调整）
+   */
+  private tryOptimizeCapacity(): void {
+    const now = Date.now()
+    // 每分钟最多优化一次
+    if (now - this.lastOptimizeTime < this.optimizeInterval) {
+      return
+    }
+    
+    this.lastOptimizeTime = now
+    const total = this.hits + this.misses
+    
+    // 需要至少100次访问才进行优化
+    if (total < 100) {
+      return
+    }
+    
+    const hitRate = this.hits / total
+    
+    // 命中率低于70%且未达到最大容量，增加容量
+    if (hitRate < 0.7 && this.capacity < this.maxCapacity) {
+      const newCapacity = Math.min(
+        Math.floor(this.capacity * 1.5),
+        this.maxCapacity
+      )
+      this.capacity = newCapacity
+      // console.log(`LRU缓存容量增加至: ${newCapacity}, 命中率: ${(hitRate * 100).toFixed(2)}%`)
+    }
+    // 命中率高于95%且超过最小容量，减少容量
+    else if (hitRate > 0.95 && this.capacity > this.minCapacity) {
+      const newCapacity = Math.max(
+        Math.floor(this.capacity * 0.8),
+        this.minCapacity
+      )
+      this.capacity = newCapacity
+      
+      // 如果缓存项超过新容量，需要清理
+      while (this.size > this.capacity) {
+        const removed = this.removeTail()
+        if (removed) {
+          this.cache.delete(removed.key)
+          this.size--
+        }
+      }
+      // console.log(`LRU缓存容量减少至: ${newCapacity}, 命中率: ${(hitRate * 100).toFixed(2)}%`)
+    }
+    
+    // 重置统计数据
+    this.hits = 0
+    this.misses = 0
   }
 }
 

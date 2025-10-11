@@ -11,106 +11,10 @@
   <LanguageSwitcher type="buttons" :use-icons="true" />
 -->
 
-<template>
-  <div class="language-switcher" :class="`language-switcher--${type}`">
-    <!-- 下拉选择器模式 -->
-    <select
-      v-if="type === 'dropdown'"
-      :value="currentLocale"
-      @change="handleLanguageChange"
-      class="language-switcher__select"
-      :disabled="loading"
-    >
-      <option
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        :value="lang.code"
-      >
-        {{ showFlag ? lang.flag + ' ' : '' }}{{ lang.name }}
-      </option>
-    </select>
-
-    <!-- 标签页模式 -->
-    <div v-else-if="type === 'tabs'" class="language-switcher__tabs">
-      <button
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        @click="switchLanguage(lang.code)"
-        :class="[
-          'language-switcher__tab',
-          { 'language-switcher__tab--active': currentLocale === lang.code }
-        ]"
-        :disabled="loading"
-        :title="lang.name"
-      >
-        <component
-          v-if="useIcons"
-          :is="getLanguageIcon(lang.code)"
-          class="language-switcher__icon"
-        />
-        <span v-else-if="showFlag" class="language-switcher__flag">{{ lang.flag }}</span>
-        <span class="language-switcher__name">{{ lang.name }}</span>
-      </button>
-    </div>
-
-    <!-- 按钮组模式 -->
-    <div v-else-if="type === 'buttons'" class="language-switcher__buttons">
-      <button
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        @click="switchLanguage(lang.code)"
-        :class="[
-          'language-switcher__button',
-          { 'language-switcher__button--active': currentLocale === lang.code }
-        ]"
-        :disabled="loading"
-        :title="lang.name"
-      >
-        <component
-          v-if="useIcons"
-          :is="getLanguageIcon(lang.code)"
-          class="language-switcher__icon"
-        />
-        <span v-else-if="showFlag" class="language-switcher__flag">{{ lang.flag }}</span>
-        <span v-else class="language-switcher__text">{{ lang.code.toUpperCase() }}</span>
-      </button>
-    </div>
-
-    <!-- 简单链接模式 -->
-    <div v-else class="language-switcher__links">
-      <a
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        @click.prevent="switchLanguage(lang.code)"
-        :class="[
-          'language-switcher__link',
-          { 'language-switcher__link--active': currentLocale === lang.code }
-        ]"
-        href="#"
-        :title="lang.name"
-      >
-        <component
-          v-if="useIcons"
-          :is="getLanguageIcon(lang.code)"
-          class="language-switcher__icon"
-        />
-        <span v-else-if="showFlag" class="language-switcher__flag">{{ lang.flag }}</span>
-        <span class="language-switcher__name">{{ lang.name }}</span>
-      </a>
-    </div>
-
-    <!-- 加载状态 -->
-    <div v-if="loading" class="language-switcher__loading">
-      <Loader2 class="language-switcher__spinner" />
-      <span v-if="showLoadingText">{{ loadingText }}</span>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
+import { Globe, Languages, Loader2 } from 'lucide-vue-next'
 import { computed, inject, ref } from 'vue'
 import { I18nInjectionKey as InjectionKey } from '../plugin'
-import { Globe, Languages, Loader2 } from 'lucide-vue-next'
 
 /**
  * 切换器类型
@@ -130,13 +34,13 @@ const props = withDefaults(defineProps<{
   /** 自定义加载文本 */
   loadingText?: string
   /** 自定义语言列表 */
-  languages?: Array<{ code: string; name: string; flag: string; nativeName?: string }>
+  languages?: Array<{ code: string, name: string, flag: string, nativeName?: string }>
 }>(), {
   type: 'dropdown',
   showFlag: false,
   useIcons: true,
   showLoadingText: true,
-  loadingText: '切换中...'
+  loadingText: '切换中...',
 })
 
 // 使用内联类型定义以避免私有 Emits 名称泄漏
@@ -167,7 +71,7 @@ const currentLocale = computed(() => (i18n as any).locale?.value ?? i18n.getCurr
 /**
  * 默认语言信息映射
  */
-const defaultLanguageMap: Record<string, { code: string; name: string; flag: string; nativeName?: string }> = {
+const defaultLanguageMap: Record<string, { code: string, name: string, flag: string, nativeName?: string }> = {
   'zh-CN': { code: 'zh-CN', name: '简体中文', flag: '🇨🇳', nativeName: '简体中文' },
   'zh-TW': { code: 'zh-TW', name: '繁體中文', flag: '🇹🇼', nativeName: '繁體中文' },
   'en': { code: 'en', name: 'English', flag: '🇺🇸', nativeName: 'English' },
@@ -184,7 +88,7 @@ const defaultLanguageMap: Record<string, { code: string; name: string; flag: str
   'ar': { code: 'ar', name: 'العربية', flag: '🇸🇦', nativeName: 'العربية' },
   'hi': { code: 'hi', name: 'हिन्दी', flag: '🇮🇳', nativeName: 'हिन्दी' },
   'th': { code: 'th', name: 'ไทย', flag: '🇹🇭', nativeName: 'ไทย' },
-  'vi': { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳', nativeName: 'Tiếng Việt' }
+  'vi': { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳', nativeName: 'Tiếng Việt' },
 }
 
 /**
@@ -204,11 +108,11 @@ const availableLanguages = computed(() => {
     return []
   }
 
-  return availableCodes.map(code => {
+  return availableCodes.map((code) => {
     return defaultLanguageMap[code] || {
       code,
       name: code.toUpperCase(),
-      flag: '🌐'
+      flag: '🌐',
     }
   })
 })
@@ -216,28 +120,29 @@ const availableLanguages = computed(() => {
 /**
  * 切换语言
  */
-const switchLanguage = async (locale: string) => {
+async function switchLanguage(locale: string) {
   if (loading.value || locale === currentLocale.value) {
     return
   }
 
   try {
     loading.value = true
-    
+
     // 触发切换前事件
     emit('before-change', locale)
-    
+
     // 执行语言切换
     const changer = (i18n as any).changeLanguage ?? i18n.setLocale
     await changer(locale)
-    
+
     // 触发切换事件
     emit('change', locale)
     emit('after-change', locale)
-    
-  } catch (error) {
+  }
+  catch (error) {
     console.error('语言切换失败:', error)
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -245,7 +150,7 @@ const switchLanguage = async (locale: string) => {
 /**
  * 获取语言对应的图标组件
  */
-const getLanguageIcon = (langCode: string) => {
+function getLanguageIcon(langCode: string) {
   const iconMap: Record<string, any> = {
     'zh-CN': Languages,
     'zh-TW': Languages,
@@ -264,7 +169,7 @@ const getLanguageIcon = (langCode: string) => {
     'ar': Globe,
     'hi': Globe,
     'th': Globe,
-    'vi': Globe
+    'vi': Globe,
   }
 
   return iconMap[langCode] || Globe
@@ -273,7 +178,7 @@ const getLanguageIcon = (langCode: string) => {
 /**
  * 处理下拉选择器变化
  */
-const handleLanguageChange = (event: Event) => {
+function handleLanguageChange(event: Event) {
   const target = event.target as HTMLSelectElement
   switchLanguage(target.value)
 }
@@ -285,9 +190,102 @@ const handleLanguageChange = (event: Event) => {
  */
 export default {
   name: 'LanguageSwitcher',
-  inheritAttrs: false
+  inheritAttrs: false,
 }
 </script>
+
+<template>
+  <div class="language-switcher" :class="`language-switcher--${type}`">
+    <!-- 下拉选择器模式 -->
+    <select
+      v-if="type === 'dropdown'"
+      :value="currentLocale"
+      class="language-switcher__select"
+      :disabled="loading"
+      @change="handleLanguageChange"
+    >
+      <option
+        v-for="lang in availableLanguages"
+        :key="lang.code"
+        :value="lang.code"
+      >
+        {{ showFlag ? `${lang.flag} ` : '' }}{{ lang.name }}
+      </option>
+    </select>
+
+    <!-- 标签页模式 -->
+    <div v-else-if="type === 'tabs'" class="language-switcher__tabs">
+      <button
+        v-for="lang in availableLanguages"
+        :key="lang.code"
+        class="language-switcher__tab" :class="[
+          { 'language-switcher__tab--active': currentLocale === lang.code },
+        ]"
+        :disabled="loading"
+        :title="lang.name"
+        @click="switchLanguage(lang.code)"
+      >
+        <component
+          :is="getLanguageIcon(lang.code)"
+          v-if="useIcons"
+          class="language-switcher__icon"
+        />
+        <span v-else-if="showFlag" class="language-switcher__flag">{{ lang.flag }}</span>
+        <span class="language-switcher__name">{{ lang.name }}</span>
+      </button>
+    </div>
+
+    <!-- 按钮组模式 -->
+    <div v-else-if="type === 'buttons'" class="language-switcher__buttons">
+      <button
+        v-for="lang in availableLanguages"
+        :key="lang.code"
+        class="language-switcher__button" :class="[
+          { 'language-switcher__button--active': currentLocale === lang.code },
+        ]"
+        :disabled="loading"
+        :title="lang.name"
+        @click="switchLanguage(lang.code)"
+      >
+        <component
+          :is="getLanguageIcon(lang.code)"
+          v-if="useIcons"
+          class="language-switcher__icon"
+        />
+        <span v-else-if="showFlag" class="language-switcher__flag">{{ lang.flag }}</span>
+        <span v-else class="language-switcher__text">{{ lang.code.toUpperCase() }}</span>
+      </button>
+    </div>
+
+    <!-- 简单链接模式 -->
+    <div v-else class="language-switcher__links">
+      <a
+        v-for="lang in availableLanguages"
+        :key="lang.code"
+        class="language-switcher__link" :class="[
+          { 'language-switcher__link--active': currentLocale === lang.code },
+        ]"
+        href="#"
+        :title="lang.name"
+        @click.prevent="switchLanguage(lang.code)"
+      >
+        <component
+          :is="getLanguageIcon(lang.code)"
+          v-if="useIcons"
+          class="language-switcher__icon"
+        />
+        <span v-else-if="showFlag" class="language-switcher__flag">{{ lang.flag }}</span>
+        <span class="language-switcher__name">{{ lang.name }}</span>
+      </a>
+    </div>
+
+    <!-- 加载状态 -->
+    <div v-if="loading" class="language-switcher__loading">
+      <Loader2 class="language-switcher__spinner" />
+      <span v-if="showLoadingText">{{ loadingText }}</span>
+    </div>
+  </div>
+</template>
 
 <style lang="less">
 @import './LanguageSwitcher.less';

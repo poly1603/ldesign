@@ -1,31 +1,41 @@
-import { defineConfig } from '@ldesign/builder'
+﻿import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
-  // 禁用构建后验证（库项目不需要运行测试验证）
+  // Output format config
+  output: {
+    format: ['esm', 'cjs', 'umd']
+  },
+
+  // 绂佺敤鏋勫缓鍚庨獙璇侊紙搴撻」鐩笉闇€瑕佽繍琛屾祴璇曢獙璇侊級
   postBuildValidation: {
     enabled: false
   },
 
-  // 生成类型声明文件
+  // 鐢熸垚绫诲瀷澹版槑鏂囦欢
   dts: true,
 
-  // 生成 source map（生产环境可考虑关闭以减少体积）
+  // 鐢熸垚 source map锛堢敓浜х幆澧冨彲鑰冭檻鍏抽棴浠ュ噺灏戜綋绉級
   sourcemap: true,
 
-  // 清理输出目录
+  // 娓呯悊杈撳嚭鐩綍
   clean: true,
 
-  // 启用代码压缩以减少包体积
+  // 鍚敤浠ｇ爜鍘嬬缉浠ュ噺灏戝寘浣撶Н
   minify: true,
 
-  // UMD 构建配置
-  umd: {
-    enabled: true,
-    minify: true, // UMD版本启用压缩
-    fileName: 'index.js', // 去掉 .umd 后缀
+  // TypeScript 閰嶇疆
+  typescript: {
+    tsconfig: './tsconfig.build.json',
   },
 
-  // 外部依赖配置
+  // UMD 鏋勫缓閰嶇疆
+  umd: {
+    enabled: true,
+    minify: true, // UMD鐗堟湰鍚敤鍘嬬缉
+    fileName: 'index.js', // 鍘绘帀 .umd 鍚庣紑
+  },
+
+  // 澶栭儴渚濊禆閰嶇疆
   external: [
     'vue',
     'node:fs',
@@ -43,38 +53,16 @@ export default defineConfig({
     'node:worker_threads',
   ],
 
-  // 全局变量配置
+  // 鍏ㄥ眬鍙橀噺閰嶇疆
   globals: {
     vue: 'Vue',
   },
 
-  // 日志级别设置为 silent，只显示错误信息
+  // 鏃ュ織绾у埆璁剧疆涓?silent锛屽彧鏄剧ず閿欒淇℃伅
   logLevel: 'silent',
 
-  // 构建选项
-  build: {
-    // 禁用构建警告
-    rollupOptions: {
-      onwarn: (_warning, _warn) => {
-        // 完全静默，不输出任何警告
-
-      },
-      // 性能优化配置
-      treeshake: {
-        // 启用更激进的 tree-shaking
-        moduleSideEffects: false,
-        propertyReadSideEffects: false,
-        tryCatchDeoptimization: false,
-      },
-      output: {
-        // 优化输出格式
-        compact: true,
-        // 启用更好的压缩
-        generatedCode: {
-          constBindings: true,
-          objectShorthand: true,
-        },
-      },
-    },
-  },
+  // 杈撳嚭鐩綍锛堝彲閫夛紝榛樿浣跨敤 package.json 涓殑璁剧疆锛?
+  // ESM 杈撳嚭鍒?es/锛孋ommonJS 杈撳嚭鍒?lib/锛孶MD 杈撳嚭鍒?dist/
+  // 杩欎簺榛樿鍊肩敱 builder 鑷姩鎺ㄦ柇锛屾牴鎹?package.json 涓殑閰嶇疆
 })
+

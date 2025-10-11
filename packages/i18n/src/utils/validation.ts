@@ -7,7 +7,7 @@
  * @version 2.0.0
  */
 
-import { TypeGuards, StringUtils } from './common'
+import { StringUtils, TypeGuards } from './common'
 
 /**
  * 语言代码正则表达式
@@ -19,7 +19,7 @@ const LANGUAGE_CODE_REGEX = /^[a-z]{2}(-[A-Z]{2})?$/
  * 翻译键正则表达式
  * 支持点分隔的嵌套键，允许字母、数字、下划线、连字符
  */
-const TRANSLATION_KEY_REGEX = /^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*$/
+const TRANSLATION_KEY_REGEX = /^[\w-]+(\.[\w-]+)*$/
 
 /**
  * 统一验证工具类
@@ -40,7 +40,7 @@ export class ValidationUtils {
    */
   static validateString(value: unknown, name: string, allowEmpty = false): string {
     if (!TypeGuards.isString(value)) {
-      throw new Error(`${name} must be a string`)
+      throw new TypeError(`${name} must be a string`)
     }
     if (!allowEmpty && StringUtils.isBlank(value)) {
       throw new Error(`${name} cannot be empty`)
@@ -53,7 +53,7 @@ export class ValidationUtils {
    */
   static validateObject(value: unknown, name: string): Record<string, unknown> {
     if (!TypeGuards.isObject(value)) {
-      throw new Error(`${name} must be an object`)
+      throw new TypeError(`${name} must be an object`)
     }
     return value
   }
@@ -63,7 +63,7 @@ export class ValidationUtils {
    */
   static validateArray(value: unknown, name: string): unknown[] {
     if (!TypeGuards.isArray(value)) {
-      throw new Error(`${name} must be an array`)
+      throw new TypeError(`${name} must be an array`)
     }
     return value
   }
@@ -73,7 +73,7 @@ export class ValidationUtils {
    */
   static validateFunction(value: unknown, name: string): Function {
     if (!TypeGuards.isFunction(value)) {
-      throw new Error(`${name} must be a function`)
+      throw new TypeError(`${name} must be a function`)
     }
     return value
   }
@@ -84,7 +84,7 @@ export class ValidationUtils {
   static validateEnum<T extends string | number>(
     value: unknown,
     enumValues: T[],
-    name: string
+    name: string,
   ): T {
     if (!enumValues.includes(value as T)) {
       throw new Error(`${name} must be one of: ${enumValues.join(', ')}`)
@@ -99,7 +99,7 @@ export class ValidationUtils {
     value: number,
     min: number,
     max: number,
-    name: string
+    name: string,
   ): number {
     if (value < min || value > max) {
       throw new Error(`${name} must be between ${min} and ${max}`)
@@ -131,10 +131,10 @@ export function validateLanguageCode(languageCode: string): boolean {
 
 /**
  * 验证翻译键
- * 
+ *
  * @param key 翻译键
  * @returns 是否有效
- * 
+ *
  * @example
  * ```typescript
  * validateTranslationKey('common.ok') // true
@@ -166,10 +166,10 @@ export function validateTranslationKey(key: string): boolean {
 
 /**
  * 验证翻译参数
- * 
+ *
  * @param params 翻译参数
  * @returns 是否有效
- * 
+ *
  * @example
  * ```typescript
  * validateTranslationParams({ name: 'John', age: 25 }) // true
@@ -192,7 +192,7 @@ export function validateTranslationParams(params: any): boolean {
   // 检查所有值是否为基本类型
   for (const [key, value] of Object.entries(params)) {
     // 键必须是有效的标识符
-    if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key)) {
+    if (!/^[a-z_$][\w$]*$/i.test(key)) {
       return false
     }
 
@@ -208,10 +208,10 @@ export function validateTranslationParams(params: any): boolean {
 
 /**
  * 验证语言环境
- * 
+ *
  * @param locale 语言环境字符串
  * @returns 是否有效
- * 
+ *
  * @example
  * ```typescript
  * isValidLocale('zh-CN') // true
@@ -228,17 +228,18 @@ export function isValidLocale(locale: string): boolean {
     // 使用 Intl.Locale 验证
     new Intl.Locale(locale)
     return true
-  } catch {
+  }
+  catch {
     return false
   }
 }
 
 /**
  * 验证翻译消息对象
- * 
+ *
  * @param messages 翻译消息对象
  * @returns 验证结果
- * 
+ *
  * @example
  * ```typescript
  * const result = validateMessages({
@@ -288,7 +289,7 @@ export function validateMessages(messages: any): {
         const fullPath = path ? `${path}.${key}` : key
 
         // 验证键
-        if (!/^[a-zA-Z0-9_-]+$/.test(key)) {
+        if (!/^[\w-]+$/.test(key)) {
           errors.push(`Invalid message key "${fullPath}" in locale "${locale}"`)
           continue
         }
@@ -297,10 +298,12 @@ export function validateMessages(messages: any): {
         if (typeof value === 'string') {
           // 字符串值是有效的
           continue
-        } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+        }
+        else if (value && typeof value === 'object' && !Array.isArray(value)) {
           // 递归验证嵌套对象
           validateMessageObject(value, fullPath)
-        } else {
+        }
+        else {
           errors.push(`Invalid message value for key "${fullPath}" in locale "${locale}". Must be string or object.`)
         }
       }
@@ -317,7 +320,7 @@ export function validateMessages(messages: any): {
 
 /**
  * 验证 I18n 配置选项
- * 
+ *
  * @param options I18n 配置选项
  * @returns 验证结果
  */
@@ -336,7 +339,8 @@ export function validateI18nOptions(options: any): {
   if (options.locale !== undefined) {
     if (typeof options.locale !== 'string') {
       errors.push('locale must be a string')
-    } else if (!validateLanguageCode(options.locale)) {
+    }
+    else if (!validateLanguageCode(options.locale)) {
       errors.push(`Invalid locale: ${options.locale}`)
     }
   }
@@ -345,7 +349,8 @@ export function validateI18nOptions(options: any): {
   if (options.fallbackLocale !== undefined) {
     if (typeof options.fallbackLocale !== 'string') {
       errors.push('fallbackLocale must be a string')
-    } else if (!validateLanguageCode(options.fallbackLocale)) {
+    }
+    else if (!validateLanguageCode(options.fallbackLocale)) {
       errors.push(`Invalid fallbackLocale: ${options.fallbackLocale}`)
     }
   }
@@ -366,10 +371,10 @@ export function validateI18nOptions(options: any): {
 
 /**
  * 标准化语言代码
- * 
+ *
  * @param languageCode 语言代码
  * @returns 标准化后的语言代码
- * 
+ *
  * @example
  * ```typescript
  * normalizeLanguageCode('zh_CN') // 'zh-CN'
@@ -382,15 +387,16 @@ export function normalizeLanguageCode(languageCode: string): string {
   }
 
   // 替换下划线为连字符
-  let normalized = languageCode.replace('_', '-')
+  const normalized = languageCode.replace('_', '-')
 
   // 分割语言和地区
   const parts = normalized.split('-')
-  
+
   if (parts.length === 1) {
     // 只有语言代码，转为小写
     return parts[0].toLowerCase()
-  } else if (parts.length === 2) {
+  }
+  else if (parts.length === 2) {
     // 语言代码转小写，地区代码转大写
     return `${parts[0].toLowerCase()}-${parts[1].toUpperCase()}`
   }
@@ -401,10 +407,10 @@ export function normalizeLanguageCode(languageCode: string): string {
 
 /**
  * 检查是否为有效的插值表达式
- * 
+ *
  * @param expression 插值表达式
  * @returns 是否有效
- * 
+ *
  * @example
  * ```typescript
  * isValidInterpolation('{name}') // true
@@ -424,9 +430,9 @@ export function isValidInterpolation(expression: string): boolean {
   }
 
   const key = match[1]
-  
+
   // 验证键格式
-  return /^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*)*$/.test(key)
+  return /^[a-z_$][\w$]*(\.[a-z_$][\w$]*)*$/i.test(key)
 }
 
 /**

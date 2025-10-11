@@ -3,11 +3,11 @@
  * 提供类似 vue-i18n 的 API 和功能
  */
 
-import type { App, Plugin, InjectionKey } from 'vue'
-import { inject, reactive, computed, ref, watch } from 'vue'
+import type { App, InjectionKey, Plugin } from 'vue'
 import type { CreateI18nOptions } from '../core/createI18n'
-import { createI18n } from '../core/createI18n'
 import type { VueI18n } from './types'
+import { computed, inject, reactive, ref } from 'vue'
+import { createI18n } from '../core/createI18n'
 import { installComponents } from './components/index.js'
 
 /**
@@ -29,7 +29,7 @@ export function createVueI18n(options: CreateI18nOptions): VueI18n {
   // 创建响应式状态
   const state = reactive({
     locale: options.locale || 'en',
-    availableLocales: [] as string[]
+    availableLocales: [] as string[],
   })
 
   // 添加语言变化监听器到选项中
@@ -43,7 +43,7 @@ export function createVueI18n(options: CreateI18nOptions): VueI18n {
       if (options.onLanguageChanged) {
         options.onLanguageChanged(newLocale)
       }
-    }
+    },
   }
 
   // 创建核心 I18n 实例
@@ -59,17 +59,21 @@ export function createVueI18n(options: CreateI18nOptions): VueI18n {
         // 处理同步和异步结果
         if (result instanceof Promise) {
           state.availableLocales = await result
-        } else if (Array.isArray(result)) {
+        }
+        else if (Array.isArray(result)) {
           state.availableLocales = result
-        } else {
+        }
+        else {
           console.warn('[Vue I18n] getAvailableLocales returned non-array:', result)
           state.availableLocales = [options.locale || 'en']
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('[Vue I18n] Failed to get available locales:', error)
         state.availableLocales = [options.locale || 'en']
       }
-    } else {
+    }
+    else {
       state.availableLocales = [options.locale || 'en']
     }
   }
@@ -120,7 +124,8 @@ export function createVueI18n(options: CreateI18nOptions): VueI18n {
     getLocaleMessage,
     getCurrentLanguage: () => state.locale,
     getAvailableLanguages: () => (Array.isArray(state.availableLocales) ? state.availableLocales : []),
-    changeLanguage: setLocale
+    changeLanguage: setLocale,
+    exists: te, // Alias for te
   }
 }
 
@@ -145,10 +150,11 @@ export function createI18nPlugin(options: CreateI18nOptions): Plugin {
       // 安装组件
       try {
         installComponents(app)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Failed to install i18n components:', error)
       }
-    }
+    },
   }
 }
 
@@ -186,9 +192,10 @@ export function useI18n() {
       te, // 使用响应式的 te 函数
       setLocale: i18n.setLocale,
       setLocaleMessage: i18n.setLocaleMessage,
-      getLocaleMessage: i18n.getLocaleMessage
+      getLocaleMessage: i18n.getLocaleMessage,
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('useI18n() called outside of setup context. Using fallback values.', error)
     return createFallbackI18n()
   }
@@ -205,7 +212,7 @@ function createFallbackI18n() {
       // 简单的键名回退，显示键名本身
       if (params) {
         let result = key
-        Object.keys(params).forEach(paramKey => {
+        Object.keys(params).forEach((paramKey) => {
           result = result.replace(`{${paramKey}}`, String(params[paramKey]))
         })
         return result
@@ -222,7 +229,7 @@ function createFallbackI18n() {
     getLocaleMessage: (locale: string) => {
       console.warn('i18n plugin not available, cannot get locale message:', locale)
       return {}
-    }
+    },
   }
 }
 
@@ -233,7 +240,7 @@ export default {
   createVueI18n,
   createI18nPlugin,
   useI18n,
-  I18nInjectionKey
+  I18nInjectionKey,
 }
 
 // 重新导出类型，供外部模块引用

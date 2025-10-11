@@ -9,6 +9,7 @@ import { ref, computed, markRaw, onMounted, onUnmounted, unref, watch, nextTick,
 import type {
   DeviceType,
   TemplateMetadata,
+  TemplateSelectorConfig,
   UseTemplateOptions,
   UseTemplateReturn,
 } from '../types/template'
@@ -23,7 +24,7 @@ import { simpleTemplateScanner } from '../utils/template-scanner-simple'
 /**
  * 简化版模板Hook - 返回可直接渲染的组件
  */
-export function useTemplate(options: UseTemplateOptions = {}) {
+export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn {
   const {
     category = 'login',
     device: initialDevice,
@@ -49,12 +50,12 @@ export function useTemplate(options: UseTemplateOptions = {}) {
 
   // 选择器相关状态
   const showSelector = ref(showSelectorOption)
-  const selectorConfig = ref({
-    theme: 'default',
-    position: 'bottom',
-    triggerStyle: 'dropdown',
-    modalStyle: 'dropdown',
-    animation: 'slide',
+  const selectorConfig = ref<Partial<TemplateSelectorConfig>>({
+    theme: 'default' as const,
+    position: 'bottom' as const,
+    triggerStyle: 'dropdown' as const,
+    modalStyle: 'dropdown' as const,
+    animation: 'slide' as const,
     showSearch: false,
     showTags: false,
     showSort: false,

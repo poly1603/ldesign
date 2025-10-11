@@ -1,8 +1,8 @@
 /**
  * Performance optimization utilities for i18n
- * 
+ *
  * 提供各种性能优化工具和技术
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
@@ -11,7 +11,7 @@ import type { TranslationParams } from '../core/types'
 
 /**
  * Memoization decorator for functions
- * 
+ *
  * 缓存函数调用结果，避免重复计算
  */
 export function memoize<T extends (...args: any[]) => any>(
@@ -20,7 +20,7 @@ export function memoize<T extends (...args: any[]) => any>(
     maxSize?: number
     ttl?: number
     keyGenerator?: (...args: Parameters<T>) => string
-  } = {}
+  } = {},
 ): T {
   const { maxSize = 100, ttl = 0, keyGenerator = (...args: any[]) => JSON.stringify(args) } = options
   const cache = new Map<string, { value: ReturnType<T>, timestamp: number }>()
@@ -55,12 +55,12 @@ export function memoize<T extends (...args: any[]) => any>(
 
 /**
  * Debounce function calls
- * 
+ *
  * 防抖函数，减少频繁调用
  */
 export function debounce<T extends (...args: any[]) => any>(
   fn: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
   let timeoutId: NodeJS.Timeout | null = null
 
@@ -78,12 +78,12 @@ export function debounce<T extends (...args: any[]) => any>(
 
 /**
  * Throttle function calls
- * 
+ *
  * 节流函数，限制调用频率
  */
 export function throttle<T extends (...args: any[]) => any>(
   fn: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => ReturnType<T> | undefined {
   let inThrottle = false
   let lastResult: ReturnType<T> | undefined
@@ -103,7 +103,7 @@ export function throttle<T extends (...args: any[]) => any>(
 
 /**
  * Request Animation Frame based batching
- * 
+ *
  * 使用 requestAnimationFrame 批处理更新
  */
 export class BatchProcessor<T> {
@@ -121,13 +121,15 @@ export class BatchProcessor<T> {
   }
 
   private scheduleProcessing(): void {
-    if (this.processing) return
+    if (this.processing)
+      return
 
     this.processing = true
 
     if (typeof requestAnimationFrame !== 'undefined') {
       requestAnimationFrame(() => this.process())
-    } else {
+    }
+    else {
       setTimeout(() => this.process(), 0)
     }
   }
@@ -145,7 +147,7 @@ export class BatchProcessor<T> {
 
 /**
  * Lazy loading wrapper
- * 
+ *
  * 懒加载包装器，延迟资源加载
  */
 export class LazyLoader<T> {
@@ -173,7 +175,8 @@ export class LazyLoader<T> {
     try {
       this.value = await this.loadPromise
       return this.value
-    } finally {
+    }
+    finally {
       this.loading = false
       this.loadPromise = undefined
     }
@@ -192,7 +195,7 @@ export class LazyLoader<T> {
 
 /**
  * String interpolation optimization
- * 
+ *
  * 优化字符串插值性能
  */
 export class OptimizedInterpolator {
@@ -232,7 +235,7 @@ export class OptimizedInterpolator {
         if (value !== undefined) {
           result = result.replace(
             new RegExp(`\\{\\{\\s*${placeholder}\\s*\\}\\}`, 'g'),
-            String(value)
+            String(value),
           )
         }
       }
@@ -248,7 +251,7 @@ export class OptimizedInterpolator {
 
 /**
  * Virtual scrolling for language lists
- * 
+ *
  * 虚拟滚动优化大列表性能
  */
 export class VirtualScroller<T> {
@@ -261,7 +264,7 @@ export class VirtualScroller<T> {
     items: T[],
     itemHeight: number,
     containerHeight: number,
-    overscan = 3
+    overscan = 3,
   ) {
     this.items = items
     this.itemHeight = itemHeight
@@ -277,18 +280,18 @@ export class VirtualScroller<T> {
   } {
     const startIndex = Math.max(
       0,
-      Math.floor(scrollTop / this.itemHeight) - this.overscan
+      Math.floor(scrollTop / this.itemHeight) - this.overscan,
     )
     const endIndex = Math.min(
       this.items.length - 1,
-      Math.ceil((scrollTop + this.containerHeight) / this.itemHeight) + this.overscan
+      Math.ceil((scrollTop + this.containerHeight) / this.itemHeight) + this.overscan,
     )
 
     return {
       items: this.items.slice(startIndex, endIndex + 1),
       startIndex,
       endIndex,
-      offsetY: startIndex * this.itemHeight
+      offsetY: startIndex * this.itemHeight,
     }
   }
 
@@ -299,7 +302,7 @@ export class VirtualScroller<T> {
 
 /**
  * Resource preloader
- * 
+ *
  * 资源预加载器
  */
 export class ResourcePreloader {
@@ -323,7 +326,8 @@ export class ResourcePreloader {
       requestIdleCallback(async () => {
         await this.preloadNext()
       })
-    } else {
+    }
+    else {
       setTimeout(async () => {
         await this.preloadNext()
       }, 100)
@@ -336,7 +340,8 @@ export class ResourcePreloader {
     if (loader) {
       try {
         await loader()
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Preload error:', error)
       }
     }
@@ -351,7 +356,7 @@ export class ResourcePreloader {
 
 /**
  * Memory usage monitor
- * 
+ *
  * 内存使用监控
  */
 export class MemoryMonitor {
@@ -365,7 +370,8 @@ export class MemoryMonitor {
   }
 
   start(intervalMs = 5000): void {
-    if (this.interval) return
+    if (this.interval)
+      return
 
     this.interval = setInterval(() => {
       const usage = this.getMemoryUsage()
@@ -393,7 +399,7 @@ export class MemoryMonitor {
 
 /**
  * Web Worker based translator
- * 
+ *
  * 使用 Web Worker 进行翻译处理
  */
 export class WorkerTranslator {
@@ -438,16 +444,16 @@ export class WorkerTranslator {
 
 /**
  * Create optimized translation function
- * 
+ *
  * 创建优化的翻译函数
  */
 export function createOptimizedTranslator(
-  translator: (key: string, params?: TranslationParams) => string
+  translator: (key: string, params?: TranslationParams) => string,
 ): (key: string, params?: TranslationParams) => string {
   const memoized = memoize(translator, {
     maxSize: 500,
     ttl: 60000, // 1 minute
-    keyGenerator: (key, params) => `${key}:${JSON.stringify(params || {})}`
+    keyGenerator: (key, params) => `${key}:${JSON.stringify(params || {})}`,
   })
 
   const interpolator = new OptimizedInterpolator()
@@ -474,5 +480,5 @@ export default {
   ResourcePreloader,
   MemoryMonitor,
   WorkerTranslator,
-  createOptimizedTranslator
+  createOptimizedTranslator,
 }

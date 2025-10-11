@@ -12,8 +12,7 @@
  * @since 1.0.0
  */
 
-import { CacheManager } from './CacheManager'
-import type { CacheEntry, CacheType } from '../types'
+import { CacheManager, type CacheType, type CacheEntry } from './CacheManager'
 
 /**
  * 缓存统计信息
@@ -139,8 +138,8 @@ export class SmartCacheManager extends CacheManager {
   /**
    * 增强的 get 方法
    */
-  get<T = any>(key: string): T | undefined {
-    const value = super.get<T>(key)
+  async get<T = any>(key: string, type: CacheType = 'other'): Promise<T | null> {
+    const value = await super.get<T>(key, type)
     
     // 更新元数据
     const meta = this.metadata.get(key)
@@ -165,8 +164,8 @@ export class SmartCacheManager extends CacheManager {
   /**
    * 删除缓存项
    */
-  delete(key: string): void {
-    super.delete(key)
+  async delete(key: string, type: CacheType = 'other'): Promise<void> {
+    await super.delete(key, type)
     this.metadata.delete(key)
     this.updateStatistics()
   }
@@ -218,7 +217,7 @@ export class SmartCacheManager extends CacheManager {
   /**
    * 检查并清理缓存
    */
-  private checkAndCleanup(): void {
+  private async checkAndCleanup(): Promise<void> {
     // 检查内存压力
     if (this.config.enableMemoryPressureCleanup) {
       const memUsage = process.memoryUsage()
@@ -226,7 +225,7 @@ export class SmartCacheManager extends CacheManager {
       
       if (heapUsedPercent > this.config.memoryPressureThreshold) {
         console.warn(`🧹 内存压力过高 (${heapUsedPercent.toFixed(1)}%), 开始清理缓存...`)
-        this.cleanup(0.3) // 清理 30% 的缓存
+        await this.cleanup(0.3) // 清理 30% 的缓存
       }
     }
     
@@ -234,7 +233,7 @@ export class SmartCacheManager extends CacheManager {
     const sizeMB = this.statistics.memoryUsage / 1024 / 1024
     if (sizeMB > this.config.maxSize) {
       console.warn(`🧹 缓存大小超限 (${sizeMB.toFixed(1)}MB), 开始清理...`)
-      this.cleanup(0.2) // 清理 20% 的缓存
+      await this.cleanup(0.2) // 清理 20% 的缓存
     }
   }
 
@@ -242,7 +241,7 @@ export class SmartCacheManager extends CacheManager {
    * 清理缓存
    * @param ratio 清理比例 (0-1)
    */
-  cleanup(ratio: number = 0.1): void {
+  async cleanup(ratio: number = 0.1): Promise<void> {
     const entries = Array.from(this.metadata.entries())
     const now = Date.now()
     
@@ -274,7 +273,7 @@ export class SmartCacheManager extends CacheManager {
     // 清理得分最低的项
     for (let i = 0; i < cleanupCount; i++) {
       const [key] = entries[i]
-      this.delete(key)
+      await this.delete(key)
     }
     
     console.log(`✅ 已清理 ${cleanupCount} 个缓存项`)
@@ -292,7 +291,7 @@ export class SmartCacheManager extends CacheManager {
   /**
    * 清理过期项
    */
-  private cleanupExpired(): void {
+  private async cleanupExpired(): Promise<void> {
     const now = Date.now()
     const expired: string[] = []
     
@@ -307,7 +306,7 @@ export class SmartCacheManager extends CacheManager {
       // 分批清理
       const batch = expired.slice(0, this.config.cleanupBatchSize)
       for (const key of batch) {
-        this.delete(key)
+        await this.delete(key)
       }
       
       console.log(`🧹 渐进式清理: 删除 ${batch.length} 个过期项`)
@@ -424,9 +423,9 @@ export class SmartCacheManager extends CacheManager {
   /**
    * 清理并销毁管理器
    */
-  destroy(): void {
+  async destroy(): Promise<void> {
     this.stopProgressiveCleanup()
-    this.clear()
+    await this.clear()
   }
 }
 

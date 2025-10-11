@@ -1,23 +1,22 @@
 /**
  * 选择性 I18n 创建函数
- * 
+ *
  * 提供便捷的创建函数，支持语言选择配置和内容扩展
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
 
-import { I18n } from './i18n'
+import type { SelectiveI18nOptions } from './language-config'
 import type { I18nInstance, I18nOptions } from './types'
 import { BuiltInLoader, type BuiltInLoaderOptions } from './built-in-loader'
 import { ExtensionLoader, type ExtensionLoaderOptions, type TranslationExtension } from './extension-loader'
-import type { LanguageConfig, SelectiveI18nOptions } from './language-config'
+import { I18n } from './i18n'
 import { createLanguageRegistry } from './language-config'
-import type { MergeOptions } from './merger'
 
 /**
  * 选择性 I18n 配置选项
- * 
+ *
  * 整合语言选择和内容扩展功能的配置接口
  */
 export interface ConfigurableI18nOptions extends SelectiveI18nOptions {
@@ -85,12 +84,12 @@ export interface ConfigurableI18nOptions extends SelectiveI18nOptions {
 
 /**
  * 创建选择性 I18n 实例
- * 
+ *
  * 支持语言选择配置，只加载启用的语言
- * 
+ *
  * @param options 配置选项
  * @returns I18n 实例
- * 
+ *
  * @example
  * ```typescript
  * // 只启用中文和英文
@@ -104,7 +103,7 @@ export interface ConfigurableI18nOptions extends SelectiveI18nOptions {
  *     'en': { hello: 'Hello' }
  *   }
  * })
- * 
+ *
  * // 使用过滤器启用亚洲语言
  * const i18n = createSelectiveI18n({
  *   locale: 'zh-CN',
@@ -132,14 +131,14 @@ export function createSelectiveI18n(options: ConfigurableI18nOptions): I18nInsta
     fallbackToBuiltIn: true,
     languageConfig: options.languageConfig,
     enabledLanguages: options.languageConfig?.enabled,
-    strictMode: options.strictMode
+    strictMode: options.strictMode,
   }
 
   // 创建语言注册表
   const registry = createLanguageRegistry(options.languageConfig || {
     enabled: [],
     defaultLocale: options.locale,
-    fallbackLocale: options.fallbackLocale || options.locale
+    fallbackLocale: options.fallbackLocale || options.locale,
   })
 
   // 创建内置加载器
@@ -172,7 +171,7 @@ export function createSelectiveI18n(options: ConfigurableI18nOptions): I18nInsta
 
     // 添加访问内部组件的方法
     ; (i18n as any).getLanguageRegistry = () => registry
-    ; (i18n as any).getBuiltInLoader = () => builtInLoader
+  ; (i18n as any).getBuiltInLoader = () => builtInLoader
 
   // 添加初始化回调支持
   if (options.onInit) {
@@ -188,12 +187,12 @@ export function createSelectiveI18n(options: ConfigurableI18nOptions): I18nInsta
 
 /**
  * 创建可扩展 I18n 实例
- * 
+ *
  * 支持翻译内容扩展功能
- * 
+ *
  * @param options 配置选项
  * @returns I18n 实例
- * 
+ *
  * @example
  * ```typescript
  * // 基础扩展用法
@@ -209,7 +208,7 @@ export function createSelectiveI18n(options: ConfigurableI18nOptions): I18nInsta
  *     }
  *   }]
  * })
- * 
+ *
  * // 语言特定扩展
  * const i18n = createExtensibleI18n({
  *   locale: 'zh-CN',
@@ -239,7 +238,7 @@ export function createExtensibleI18n(options: ConfigurableI18nOptions): I18nInst
     fallbackToBuiltIn: true,
     languageConfig: options.languageConfig,
     enabledLanguages: options.languageConfig?.enabled,
-    strictMode: options.strictMode
+    strictMode: options.strictMode,
   }
 
   const builtInLoader = new BuiltInLoader(builtInLoaderOptions)
@@ -249,7 +248,7 @@ export function createExtensibleI18n(options: ConfigurableI18nOptions): I18nInst
     baseLoader: builtInLoader,
     globalExtensions: options.globalExtensions,
     languageExtensions: options.languageExtensions,
-    ...options.extensionOptions
+    ...options.extensionOptions,
   }
 
   const extensionLoader = new ExtensionLoader(extensionLoaderOptions)
@@ -281,7 +280,7 @@ export function createExtensibleI18n(options: ConfigurableI18nOptions): I18nInst
 
     // 添加访问内部组件的方法
     ; (i18n as any).getExtensionLoader = () => extensionLoader
-    ; (i18n as any).getBuiltInLoader = () => builtInLoader
+  ; (i18n as any).getBuiltInLoader = () => builtInLoader
 
   // 添加初始化回调支持
   if (options.onInit) {
@@ -297,12 +296,12 @@ export function createExtensibleI18n(options: ConfigurableI18nOptions): I18nInst
 
 /**
  * 创建可配置 I18n 实例
- * 
+ *
  * 整合语言选择和内容扩展功能
- * 
+ *
  * @param options 配置选项
  * @returns I18n 实例
- * 
+ *
  * @example
  * ```typescript
  * // 完整功能配置
@@ -344,8 +343,8 @@ export function createConfigurableI18n(options: ConfigurableI18nOptions): I18nIn
     languageConfig: options.languageConfig || {
       enabled: [], // 空数组表示启用所有语言
       defaultLocale: options.locale,
-      fallbackLocale: options.fallbackLocale || options.locale
-    }
+      fallbackLocale: options.fallbackLocale || options.locale,
+    },
   }
 
   // 如果有扩展配置，使用扩展加载器

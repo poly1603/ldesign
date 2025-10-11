@@ -13,9 +13,9 @@ Object.defineProperty(window, 'localStorage', {
     removeItem: vi.fn(),
     clear: vi.fn(),
     length: 0,
-    key: vi.fn()
+    key: vi.fn(),
   },
-  writable: true
+  writable: true,
 })
 
 Object.defineProperty(window, 'sessionStorage', {
@@ -25,9 +25,9 @@ Object.defineProperty(window, 'sessionStorage', {
     removeItem: vi.fn(),
     clear: vi.fn(),
     length: 0,
-    key: vi.fn()
+    key: vi.fn(),
   },
-  writable: true
+  writable: true,
 })
 
 // Mock navigator
@@ -35,9 +35,9 @@ Object.defineProperty(window, 'navigator', {
   value: {
     language: 'en-US',
     languages: ['en-US', 'en'],
-    userAgent: 'Mozilla/5.0 (Test Environment)'
+    userAgent: 'Mozilla/5.0 (Test Environment)',
   },
-  writable: true
+  writable: true,
 })
 
 // Mock location
@@ -51,15 +51,15 @@ Object.defineProperty(window, 'location', {
     port: '3000',
     pathname: '/',
     search: '',
-    hash: ''
+    hash: '',
   },
-  writable: true
+  writable: true,
 })
 
 // Mock document.cookie
 Object.defineProperty(document, 'cookie', {
   value: '',
-  writable: true
+  writable: true,
 })
 
 // Mock fetch
@@ -72,33 +72,33 @@ global.createMockLanguagePackage = (locale: string, translations: Record<string,
     nativeName: locale === 'zh-CN' ? '中文' : 'English',
     code: locale,
     direction: 'ltr',
-    dateFormat: 'YYYY-MM-DD'
+    dateFormat: 'YYYY-MM-DD',
   },
-  translations
+  translations,
 })
 
 // 清理函数
 beforeEach(() => {
   vi.clearAllMocks()
-  
+
   // 重置 localStorage mock
   const localStorageMock = window.localStorage as any
   localStorageMock.getItem.mockReturnValue(null)
   localStorageMock.setItem.mockImplementation(() => {})
   localStorageMock.removeItem.mockImplementation(() => {})
   localStorageMock.clear.mockImplementation(() => {})
-  
+
   // 重置 sessionStorage mock
   const sessionStorageMock = window.sessionStorage as any
   sessionStorageMock.getItem.mockReturnValue(null)
   sessionStorageMock.setItem.mockImplementation(() => {})
   sessionStorageMock.removeItem.mockImplementation(() => {})
   sessionStorageMock.clear.mockImplementation(() => {})
-  
+
   // 重置 fetch mock
   const fetchMock = global.fetch as any
   fetchMock.mockClear()
-  
+
   // 重置 document.cookie
   document.cookie = ''
 })

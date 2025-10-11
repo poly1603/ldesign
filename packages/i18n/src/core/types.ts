@@ -275,28 +275,28 @@ export interface Loader {
    * @param locale 语言代码
    * @returns 语言包数据的 Promise
    */
-  load(locale: string): Promise<LanguagePackage>
+  load: (locale: string) => Promise<LanguagePackage>
 
   /**
    * 预加载语言包（不切换当前语言）
    * @param locale 语言代码
    * @returns 预加载完成的 Promise
    */
-  preload(locale: string): Promise<void>
+  preload: (locale: string) => Promise<void>
 
   /**
    * 检查语言包是否已加载
    * @param locale 语言代码
    * @returns 是否已加载
    */
-  isLoaded(locale: string): boolean
+  isLoaded: (locale: string) => boolean
 
   /**
    * 获取已加载的语言包（可选方法）
    * @param locale 语言代码
    * @returns 语言包数据或 undefined
    */
-  getLoadedPackage?(locale: string): LanguagePackage | undefined
+  getLoadedPackage?: (locale: string) => LanguagePackage | undefined
 
   /**
    * 加载命名空间（可选方法）
@@ -304,7 +304,7 @@ export interface Loader {
    * @param namespace 命名空间
    * @returns 命名空间数据的 Promise
    */
-  loadNamespace?(locale: string, namespace: string): Promise<Record<string, any>>
+  loadNamespace?: (locale: string, namespace: string) => Promise<Record<string, any>>
 }
 
 /**
@@ -337,18 +337,18 @@ export interface Storage {
    * 获取存储的语言代码
    * @returns 语言代码或 null（如果未设置）
    */
-  getLanguage(): string | null
+  getLanguage: () => string | null
 
   /**
    * 设置存储的语言代码
    * @param locale 语言代码
    */
-  setLanguage(locale: string): void
+  setLanguage: (locale: string) => void
 
   /**
    * 清除存储的语言代码
    */
-  clearLanguage(): void
+  clearLanguage: () => void
 }
 
 /**
@@ -372,7 +372,7 @@ export interface Detector {
    * 检测浏览器支持的语言列表
    * @returns 语言代码数组（按优先级排序）
    */
-  detect(): readonly string[]
+  detect: () => readonly string[]
 }
 
 /**
@@ -515,38 +515,38 @@ export interface LRUCache<T = string> {
    * @param key 缓存键
    * @returns 缓存值或 undefined
    */
-  get(key: string): T | undefined
+  get: (key: string) => T | undefined
 
   /**
    * 设置缓存项
    * @param key 缓存键
    * @param value 缓存值
    */
-  set(key: string, value: T): void
+  set: (key: string, value: T) => void
 
   /**
    * 删除缓存项
    * @param key 缓存键
    * @returns 是否删除成功
    */
-  delete(key: string): boolean
+  delete: (key: string) => boolean
 
   /**
    * 清空所有缓存
    */
-  clear(): void
+  clear: () => void
 
   /**
    * 获取缓存项数量
    * @returns 缓存项总数
    */
-  size(): number
+  size: () => number
 
   /**
    * 获取缓存统计信息
    * @returns 缓存统计数据
    */
-  getStats?(): CacheStats
+  getStats?: () => CacheStats
 }
 
 /**
@@ -555,11 +555,11 @@ export interface LRUCache<T = string> {
  * 定义了国际化系统支持的所有事件类型
  */
 export type I18nEventType =
-  | 'languageChanged'  // 语言切换事件
-  | 'loaded'           // 语言包加载完成事件
-  | 'loadError'        // 语言包加载失败事件
+  | 'languageChanged' // 语言切换事件
+  | 'loaded' // 语言包加载完成事件
+  | 'loadError' // 语言包加载失败事件
   | 'translationMissing' // 翻译缺失事件
-  | 'cacheCleared'     // 缓存清理事件
+  | 'cacheCleared' // 缓存清理事件
 
 /**
  * 语言切换事件参数
@@ -648,21 +648,21 @@ export interface EventEmitter {
    * @param event 事件类型
    * @param listener 监听器函数
    */
-  on<T extends I18nEventType>(event: T, listener: I18nEventListener<T>): void
+  on: <T extends I18nEventType>(event: T, listener: I18nEventListener<T>) => void
 
   /**
    * 移除事件监听器
    * @param event 事件类型
    * @param listener 监听器函数
    */
-  off<T extends I18nEventType>(event: T, listener: I18nEventListener<T>): void
+  off: <T extends I18nEventType>(event: T, listener: I18nEventListener<T>) => void
 
   /**
    * 触发事件
    * @param event 事件类型
    * @param args 事件参数
    */
-  emit<T extends I18nEventType>(event: T, args: I18nEventArgsMap[T]): void
+  emit: <T extends I18nEventType>(event: T, args: I18nEventArgsMap[T]) => void
 }
 
 /**
@@ -789,20 +789,20 @@ export interface I18nInstance extends EventEmitter {
    * 提供基础的同步初始化，确保翻译功能立即可用
    * 主要用于解决组件渲染时 i18n 还未准备好的问题
    */
-  initSync?(): void
+  initSync?: () => void
 
   /**
    * 异步初始化国际化系统（完整功能）
    * @returns 初始化完成的 Promise
    */
-  init(): Promise<void>
+  init: () => Promise<void>
 
   /**
    * 切换当前语言
    * @param locale 目标语言代码
    * @returns 切换完成的 Promise
    */
-  changeLanguage(locale: string): Promise<void>
+  changeLanguage: (locale: string) => Promise<void>
 
   /** 翻译函数（核心功能） */
   readonly t: TranslationFunction
@@ -813,42 +813,42 @@ export interface I18nInstance extends EventEmitter {
    * @param params 公共插值参数
    * @returns 批量翻译结果
    */
-  batchTranslate(
+  batchTranslate: (
     keys: readonly string[],
     params?: TranslationParams
-  ): BatchTranslationResult
+  ) => BatchTranslationResult
 
   /**
    * 获取可用语言列表
    * @returns 语言信息数组
    */
-  getAvailableLanguages(): readonly LanguageInfo[]
+  getAvailableLanguages: () => readonly LanguageInfo[]
 
   /**
    * 获取当前语言代码
    * @returns 当前语言代码
    */
-  getCurrentLanguage(): string
+  getCurrentLanguage: () => string
 
   /**
    * 获取当前语言信息
    * @returns 当前语言信息或 undefined
    */
-  getCurrentLanguageInfo(): LanguageInfo | undefined
+  getCurrentLanguageInfo: () => LanguageInfo | undefined
 
   /**
    * 预加载指定语言
    * @param locale 语言代码
    * @returns 预加载完成的 Promise
    */
-  preloadLanguage(locale: string): Promise<void>
+  preloadLanguage: (locale: string) => Promise<void>
 
   /**
    * 检查语言是否已加载
    * @param locale 语言代码
    * @returns 是否已加载
    */
-  isLanguageLoaded(locale: string): boolean
+  isLanguageLoaded: (locale: string) => boolean
 
   /**
    * 检查翻译键是否存在
@@ -856,26 +856,26 @@ export interface I18nInstance extends EventEmitter {
    * @param locale 语言代码（可选，默认为当前语言）
    * @returns 是否存在
    */
-  exists(key: string, locale?: string): boolean
+  exists: (key: string, locale?: string) => boolean
 
   /**
    * 获取所有翻译键
    * @param locale 语言代码（可选，默认为当前语言）
    * @returns 翻译键数组
    */
-  getKeys(locale?: string): readonly string[]
+  getKeys: (locale?: string) => readonly string[]
 
   /**
    * 检查是否已初始化
    * @returns 是否已初始化
    */
-  isReady(): boolean
+  isReady: () => boolean
 
   /**
    * 销毁实例并清理资源
    * @returns 销毁完成的 Promise
    */
-  destroy(): Promise<void>
+  destroy: () => Promise<void>
 
   /** 加载器实例（内部使用，可选） */
   readonly loader?: Loader
@@ -884,30 +884,30 @@ export interface I18nInstance extends EventEmitter {
    * 获取性能指标
    * @returns 性能指标数据
    */
-  getPerformanceMetrics?(): PerformanceMetrics
+  getPerformanceMetrics?: () => PerformanceMetrics
 
   /**
    * 生成性能报告
    * @returns 性能报告字符串
    */
-  generatePerformanceReport?(): string
+  generatePerformanceReport?: () => string
 
   /**
    * 获取优化建议
    * @returns 优化建议数组
    */
-  getOptimizationSuggestions?(): readonly OptimizationSuggestion[]
+  getOptimizationSuggestions?: () => readonly OptimizationSuggestion[]
 
   /**
    * 预热缓存
    * @param keys 要预热的翻译键数组
    */
-  warmUpCache?(keys: readonly string[]): void
+  warmUpCache?: (keys: readonly string[]) => void
 
   /**
    * 清理缓存
    */
-  cleanupCache?(): void
+  cleanupCache?: () => void
 }
 
 // 注意：Vue 集成相关的类型定义已移除，专注于核心功能

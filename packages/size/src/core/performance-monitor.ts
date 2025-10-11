@@ -184,7 +184,10 @@ export class PerformanceMonitor {
    */
   getReport(): {
     metrics: PerformanceMetrics
-    averages: ReturnType<typeof this.getAveragePerformance>
+    averages: {
+      avgCssInjectionTime: number
+      avgModeSwitchTime: number
+    }
     recentEntries: PerformanceEntry[]
   } {
     return {

@@ -46,7 +46,7 @@ if (typeof URL.revokeObjectURL !== 'function') {
 
 // 7) 统一定时器：部分代码读取 window.setInterval
 if (typeof (globalThis as any).window !== 'undefined') {
-  const w = (globalThis as any).window as any
+  const w = (globalThis as any).window
   w.setInterval ||= globalThis.setInterval.bind(globalThis)
   w.clearInterval ||= globalThis.clearInterval.bind(globalThis)
 }

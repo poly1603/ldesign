@@ -362,6 +362,22 @@ export interface LRUCache<T = unknown> {
   size: () => number
   /** 检查是否存在 */
   has: (key: string) => boolean
+  
+  /** 获取缓存统计信息（可选）*/
+  getStats?: () => {
+    hits: number
+    misses: number
+    evictions: number
+    expirations: number
+    size: number
+    hitRate: number
+  }
+  
+  /** 手动清理过期条目（可选）*/
+  cleanup?: () => number
+  
+  /** 销毁缓存实例（可选）*/
+  destroy?: () => void
 }
 
 /**

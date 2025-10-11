@@ -1,13 +1,13 @@
 /**
  * 统一错误处理工具
- * 
+ *
  * 提供标准化的错误处理模式和工具函数
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
 
-import { ErrorUtils, TimeUtils } from './common'
+import { TimeUtils } from './common'
 
 /**
  * 错误处理策略
@@ -16,7 +16,7 @@ export enum ErrorHandlingStrategy {
   SILENT = 'SILENT',
   WARN = 'WARN',
   THROW = 'THROW',
-  FALLBACK = 'FALLBACK'
+  FALLBACK = 'FALLBACK',
 }
 
 /**
@@ -57,7 +57,7 @@ export interface RetryConfig {
  */
 export class UnifiedErrorHandler {
   private retryAttempts = new Map<string, number>()
-  private errorHistory: Array<{ error: Error; context: ErrorContext; timestamp: number }> = []
+  private errorHistory: Array<{ error: Error, context: ErrorContext, timestamp: number }> = []
 
   constructor(
     private strategy: ErrorHandlingStrategy = ErrorHandlingStrategy.WARN,
@@ -65,8 +65,8 @@ export class UnifiedErrorHandler {
       maxRetries: 3,
       baseDelay: 1000,
       maxDelay: 10000,
-      backoffFactor: 2
-    }
+      backoffFactor: 2,
+    },
   ) {}
 
   /**
@@ -75,7 +75,7 @@ export class UnifiedErrorHandler {
   handle<T>(
     error: Error,
     context: ErrorContext,
-    fallbackValue?: T
+    fallbackValue?: T,
   ): ErrorHandlingResult<T> {
     // 记录错误历史
     this.recordError(error, context)
@@ -109,7 +109,7 @@ export class UnifiedErrorHandler {
   async handleWithRetry<T>(
     operation: () => Promise<T>,
     context: ErrorContext,
-    fallbackValue?: T
+    fallbackValue?: T,
   ): Promise<ErrorHandlingResult<T>> {
     const retryKey = this.getRetryKey(context)
     let lastError: Error | undefined
@@ -120,9 +120,10 @@ export class UnifiedErrorHandler {
         // 成功时重置重试计数
         this.retryAttempts.delete(retryKey)
         return { success: true, value: result, retryCount: attempt }
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error as Error
-        
+
         if (attempt < this.retryConfig.maxRetries) {
           const delay = this.calculateDelay(attempt)
           await TimeUtils.delay(delay)
@@ -142,12 +143,13 @@ export class UnifiedErrorHandler {
   safeExecute<T>(
     fn: () => T,
     context: ErrorContext,
-    fallbackValue?: T
+    fallbackValue?: T,
   ): ErrorHandlingResult<T> {
     try {
       const result = fn()
       return { success: true, value: result }
-    } catch (error) {
+    }
+    catch (error) {
       return this.handle(error as Error, context, fallbackValue)
     }
   }
@@ -158,12 +160,13 @@ export class UnifiedErrorHandler {
   async safeExecuteAsync<T>(
     fn: () => Promise<T>,
     context: ErrorContext,
-    fallbackValue?: T
+    fallbackValue?: T,
   ): Promise<ErrorHandlingResult<T>> {
     try {
       const result = await fn()
       return { success: true, value: result }
-    } catch (error) {
+    }
+    catch (error) {
       return this.handle(error as Error, context, fallbackValue)
     }
   }
@@ -172,8 +175,8 @@ export class UnifiedErrorHandler {
    * 批量错误处理
    */
   handleBatch<T>(
-    operations: Array<{ fn: () => T; context: ErrorContext; fallback?: T }>,
-    continueOnError = true
+    operations: Array<{ fn: () => T, context: ErrorContext, fallback?: T }>,
+    continueOnError = true,
   ): Array<ErrorHandlingResult<T>> {
     const results: Array<ErrorHandlingResult<T>> = []
 
@@ -196,20 +199,20 @@ export class UnifiedErrorHandler {
     totalErrors: number
     recentErrors: number
     errorsByOperation: Record<string, number>
-    mostCommonErrors: Array<{ message: string; count: number }>
+    mostCommonErrors: Array<{ message: string, count: number }>
   } {
     const now = TimeUtils.now()
     const oneHourAgo = now - 60 * 60 * 1000
-    
+
     const recentErrors = this.errorHistory.filter(entry => entry.timestamp > oneHourAgo)
-    
+
     const errorsByOperation: Record<string, number> = {}
     const errorMessages: Record<string, number> = {}
 
     for (const entry of this.errorHistory) {
       const operation = entry.context.operation
       errorsByOperation[operation] = (errorsByOperation[operation] || 0) + 1
-      
+
       const message = entry.error.message
       errorMessages[message] = (errorMessages[message] || 0) + 1
     }
@@ -223,7 +226,7 @@ export class UnifiedErrorHandler {
       totalErrors: this.errorHistory.length,
       recentErrors: recentErrors.length,
       errorsByOperation,
-      mostCommonErrors
+      mostCommonErrors,
     }
   }
 
@@ -249,7 +252,7 @@ export class UnifiedErrorHandler {
     this.errorHistory.push({
       error,
       context: { ...context, timestamp: TimeUtils.now() },
-      timestamp: TimeUtils.now()
+      timestamp: TimeUtils.now(),
     })
 
     // 保持历史记录在合理范围内
@@ -269,7 +272,7 @@ export class UnifiedErrorHandler {
    * 计算重试延迟
    */
   private calculateDelay(attempt: number): number {
-    const delay = this.retryConfig.baseDelay * Math.pow(this.retryConfig.backoffFactor, attempt)
+    const delay = this.retryConfig.baseDelay * this.retryConfig.backoffFactor ** attempt
     return Math.min(delay, this.retryConfig.maxDelay)
   }
 }
@@ -280,7 +283,7 @@ export class UnifiedErrorHandler {
 export function withErrorHandling<T extends (...args: any[]) => any>(
   handler: UnifiedErrorHandler,
   context: Omit<ErrorContext, 'timestamp'>,
-  fallbackValue?: ReturnType<T>
+  fallbackValue?: ReturnType<T>,
 ) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
@@ -288,13 +291,13 @@ export function withErrorHandling<T extends (...args: any[]) => any>(
     descriptor.value = function (...args: any[]) {
       const fullContext: ErrorContext = {
         ...context,
-        timestamp: TimeUtils.now()
+        timestamp: TimeUtils.now(),
       }
 
       return handler.safeExecute(
         () => originalMethod.apply(this, args),
         fullContext,
-        fallbackValue
+        fallbackValue,
       )
     }
 
@@ -308,7 +311,7 @@ export function withErrorHandling<T extends (...args: any[]) => any>(
 export function withAsyncErrorHandling<T extends (...args: any[]) => Promise<any>>(
   handler: UnifiedErrorHandler,
   context: Omit<ErrorContext, 'timestamp'>,
-  fallbackValue?: Awaited<ReturnType<T>>
+  fallbackValue?: Awaited<ReturnType<T>>,
 ) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
@@ -316,13 +319,13 @@ export function withAsyncErrorHandling<T extends (...args: any[]) => Promise<any
     descriptor.value = async function (...args: any[]) {
       const fullContext: ErrorContext = {
         ...context,
-        timestamp: TimeUtils.now()
+        timestamp: TimeUtils.now(),
       }
 
       return handler.safeExecuteAsync(
         () => originalMethod.apply(this, args),
         fullContext,
-        fallbackValue
+        fallbackValue,
       )
     }
 

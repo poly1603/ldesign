@@ -3,6 +3,7 @@ import type {
   StorageEngine,
   StorageEngineConfig,
 } from '../types'
+
 import { CookieEngine } from './cookie-engine'
 import { IndexedDBEngine } from './indexeddb-engine'
 import { LocalStorageEngine } from './local-storage-engine'
@@ -35,7 +36,7 @@ export class StorageEngineFactory {
         return new CookieEngine(config as StorageEngineConfig['cookie'])
 
       case 'indexedDB':
-        return await IndexedDBEngine.create(
+        return IndexedDBEngine.create(
           config as StorageEngineConfig['indexedDB'],
         )
 

@@ -1,4 +1,5 @@
 import type { SecurityConfig } from '../types'
+
 import { AESCrypto } from './aes-crypto'
 import { KeyObfuscator } from './key-obfuscator'
 

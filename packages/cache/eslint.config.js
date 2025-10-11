@@ -33,10 +33,9 @@ export default antfu({
     'docs/**/*',
     'examples/**/*',
     'summary/**/*',
-    'mindmap.md',
-    'README.md',
-    'FEATURES.md',
+    '*.md',
     'codecov.yml',
+    '.type-test.ts',
 
     // 测试相关
     '__tests__/**/*',

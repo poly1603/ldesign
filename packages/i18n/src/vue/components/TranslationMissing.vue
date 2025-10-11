@@ -10,63 +10,9 @@
   <TranslationMissing keypath="missing.key" show-similar-keys />
 -->
 
-<template>
-  <div class="translation-missing" :class="{
-    'translation-missing--dev': isDev,
-    'translation-missing--with-suggestions': hasSuggestions,
-    'translation-missing--inline': inline
-  }">
-    <!-- 开发模式显示 -->
-    <div v-if="isDev" class="translation-missing__dev">
-      <div class="translation-missing__header">
-        <span class="translation-missing__icon">⚠️</span>
-        <span class="translation-missing__text">
-          翻译缺失: <code class="translation-missing__key">{{ keypath }}</code>
-        </span>
-        <span v-if="currentLocale" class="translation-missing__locale">
-          ({{ currentLocale }})
-        </span>
-      </div>
-
-      <!-- 相似键建议 -->
-      <div v-if="hasSuggestions" class="translation-missing__suggestions">
-        <div class="translation-missing__suggestions-title">建议的键名:</div>
-        <ul class="translation-missing__suggestions-list">
-          <li v-for="suggestion in displaySuggestions" :key="suggestion.key" class="translation-missing__suggestion"
-            :class="{ 'translation-missing__suggestion--exact': suggestion.exact }">
-            <code @click="copySuggestion(suggestion.key)">{{ suggestion.key }}</code>
-            <span v-if="suggestion.similarity" class="translation-missing__similarity">
-              ({{ Math.round(suggestion.similarity * 100) }}% 匹配)
-            </span>
-          </li>
-        </ul>
-      </div>
-
-      <!-- 操作按钮 -->
-      <div class="translation-missing__actions">
-        <button v-if="showReportButton" @click="reportMissing" class="translation-missing__report" title="报告缺失翻译">
-          📝 报告
-        </button>
-        <button v-if="showCopyButton" @click="copyKeypath" class="translation-missing__copy" title="复制键名">
-          📋 复制
-        </button>
-        <button v-if="showSimilarKeys && !hasSuggestions" @click="findSimilarKeys"
-          class="translation-missing__find-similar" title="查找相似键名">
-          🔍 查找相似
-        </button>
-      </div>
-    </div>
-
-    <!-- 生产模式显示 -->
-    <span v-else class="translation-missing__fallback">
-      {{ fallbackText || keypath }}
-    </span>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, inject, ref, nextTick } from 'vue'
 import type { I18nInjectionKey } from '../types'
+import { computed, inject, ref } from 'vue'
 
 /**
  * 键名建议接口
@@ -103,7 +49,7 @@ const props = withDefaults(defineProps<{
   showSimilarKeys: true,
   forceDev: false,
   inline: false,
-  maxSuggestions: 5
+  maxSuggestions: 5,
 })
 
 // 使用内联类型定义以避免私有 Emits 名称泄漏
@@ -160,7 +106,7 @@ const displaySuggestions = computed(() => {
 
   // 去重并限制数量
   const uniqueSuggestions = suggestions.filter((suggestion, index, arr) =>
-    arr.findIndex(s => s.key === suggestion.key) === index
+    arr.findIndex(s => s.key === suggestion.key) === index,
   )
 
   return uniqueSuggestions.slice(0, props.maxSuggestions)
@@ -169,14 +115,14 @@ const displaySuggestions = computed(() => {
 /**
  * 报告缺失翻译
  */
-const reportMissing = () => {
+function reportMissing() {
   const reportData = {
     keypath: props.keypath,
     locale: currentLocale.value,
     timestamp: new Date().toISOString(),
     suggestions: displaySuggestions.value.map(s => s.key),
     userAgent: navigator.userAgent,
-    url: window.location.href
+    url: window.location.href,
   }
 
   console.warn(`翻译缺失报告: ${props.keypath}`, reportData)
@@ -193,12 +139,13 @@ const reportMissing = () => {
 /**
  * 复制键名到剪贴板
  */
-const copyKeypath = async () => {
+async function copyKeypath() {
   try {
     await navigator.clipboard.writeText(props.keypath)
     console.log(`已复制键名: ${props.keypath}`)
     emit('copy', props.keypath)
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('复制失败:', error)
     // 降级方案：选择文本
     const textArea = document.createElement('textarea')
@@ -213,12 +160,13 @@ const copyKeypath = async () => {
 /**
  * 复制建议键名
  */
-const copySuggestion = async (suggestion: string) => {
+async function copySuggestion(suggestion: string) {
   try {
     await navigator.clipboard.writeText(suggestion)
     console.log(`已复制建议键名: ${suggestion}`)
     emit('suggestion-click', suggestion)
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('复制建议失败:', error)
   }
 }
@@ -226,7 +174,7 @@ const copySuggestion = async (suggestion: string) => {
 /**
  * 查找相似键名
  */
-const findSimilarKeys = () => {
+function findSimilarKeys() {
   if (!i18n) {
     console.warn('I18n 实例不可用，无法查找相似键名')
     return
@@ -246,7 +194,7 @@ const findSimilarKeys = () => {
       .map(key => ({
         key,
         similarity: calculateSimilarity(props.keypath, key),
-        exact: key === props.keypath
+        exact: key === props.keypath,
       }))
       .filter(item => item.similarity > 0.3) // 只保留相似度大于30%的
       .sort((a, b) => b.similarity - a.similarity)
@@ -256,10 +204,12 @@ const findSimilarKeys = () => {
 
     if (similarities.length === 0) {
       console.log(`未找到与 "${props.keypath}" 相似的键名`)
-    } else {
+    }
+    else {
       console.log(`找到 ${similarities.length} 个相似键名:`, similarities.map(s => s.key))
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('查找相似键名失败:', error)
   }
 }
@@ -267,12 +217,14 @@ const findSimilarKeys = () => {
 /**
  * 计算两个字符串的相似度（使用编辑距离算法）
  */
-const calculateSimilarity = (str1: string, str2: string): number => {
+function calculateSimilarity(str1: string, str2: string): number {
   const len1 = str1.length
   const len2 = str2.length
 
-  if (len1 === 0) return len2 === 0 ? 1 : 0
-  if (len2 === 0) return 0
+  if (len1 === 0)
+    return len2 === 0 ? 1 : 0
+  if (len2 === 0)
+    return 0
 
   // 创建编辑距离矩阵
   const matrix: number[][] = []
@@ -290,7 +242,7 @@ const calculateSimilarity = (str1: string, str2: string): number => {
       matrix[i][j] = Math.min(
         matrix[i - 1][j] + 1,     // 删除
         matrix[i][j - 1] + 1,     // 插入
-        matrix[i - 1][j - 1] + cost // 替换
+        matrix[i - 1][j - 1] + cost, // 替换
       )
     }
   }
@@ -309,9 +261,71 @@ const calculateSimilarity = (str1: string, str2: string): number => {
  */
 export default {
   name: 'TranslationMissing',
-  inheritAttrs: false
+  inheritAttrs: false,
 }
 </script>
+
+<template>
+  <div
+    class="translation-missing" :class="{
+      'translation-missing--dev': isDev,
+      'translation-missing--with-suggestions': hasSuggestions,
+      'translation-missing--inline': inline,
+    }"
+  >
+    <!-- 开发模式显示 -->
+    <div v-if="isDev" class="translation-missing__dev">
+      <div class="translation-missing__header">
+        <span class="translation-missing__icon">⚠️</span>
+        <span class="translation-missing__text">
+          翻译缺失: <code class="translation-missing__key">{{ keypath }}</code>
+        </span>
+        <span v-if="currentLocale" class="translation-missing__locale">
+          ({{ currentLocale }})
+        </span>
+      </div>
+
+      <!-- 相似键建议 -->
+      <div v-if="hasSuggestions" class="translation-missing__suggestions">
+        <div class="translation-missing__suggestions-title">
+          建议的键名:
+        </div>
+        <ul class="translation-missing__suggestions-list">
+          <li
+            v-for="suggestion in displaySuggestions" :key="suggestion.key" class="translation-missing__suggestion"
+            :class="{ 'translation-missing__suggestion--exact': suggestion.exact }"
+          >
+            <code @click="copySuggestion(suggestion.key)">{{ suggestion.key }}</code>
+            <span v-if="suggestion.similarity" class="translation-missing__similarity">
+              ({{ Math.round(suggestion.similarity * 100) }}% 匹配)
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="translation-missing__actions">
+        <button v-if="showReportButton" class="translation-missing__report" title="报告缺失翻译" @click="reportMissing">
+          📝 报告
+        </button>
+        <button v-if="showCopyButton" class="translation-missing__copy" title="复制键名" @click="copyKeypath">
+          📋 复制
+        </button>
+        <button
+          v-if="showSimilarKeys && !hasSuggestions" class="translation-missing__find-similar"
+          title="查找相似键名" @click="findSimilarKeys"
+        >
+          🔍 查找相似
+        </button>
+      </div>
+    </div>
+
+    <!-- 生产模式显示 -->
+    <span v-else class="translation-missing__fallback">
+      {{ fallbackText || keypath }}
+    </span>
+  </div>
+</template>
 
 <style lang="less">
 @import './TranslationMissing.less';

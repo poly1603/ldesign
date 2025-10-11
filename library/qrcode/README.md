@@ -4,11 +4,16 @@ A beautiful, powerful, and flexible QR code generator for web applications. Gene
 
 ## Features
 
-- 🎨 **7 Dot Styles** - square, rounded, dots, diamond, star, classy, classy-rounded
+- 🎨 **7+ Dot Styles** - square, rounded, dots, diamond, star, classy, classy-rounded, extra-rounded, hexagon, liquid, smooth-dots
 - 🌈 **Gradient Colors** - Linear and radial gradients with multiple colors
 - 👁️ **Custom Eye Styles** - Customize the three finder patterns independently
 - 🖼️ **Smart Logo Integration** - Shapes, aspect ratios, backgrounds, and borders
 - 🎭 **Visual Effects** - Shadows, strokes, background gradients and images
+- 🔄 **Transform Effects** - Perspective transformation (X/Y) and scale effects
+- 🎯 **Selective Rendering** - Render only specific module types (function/data/guide/marker)
+- ✨ **Margin Noise** - Decorative noise in margin area with seeded randomness
+- 🎭 **Mask Patterns** - Custom mask pattern selection (0-7 or auto)
+- 🔄 **Rotation** - Rotate QR codes (0°, 90°, 180°, 270°)
 - ⚛️ **Framework Support** - Vue 3, React, and vanilla JavaScript with full TypeScript support
 - 📦 **Multiple Formats** - Canvas/SVG rendering, download as PNG/JPEG/SVG
 - ⚡ **Performance Optimized** - Built-in caching, lazy loading support
@@ -277,6 +282,103 @@ createQRCode({
 });
 ```
 
+### Transform Effects (NEW ✨)
+
+Apply perspective transformation and scaling:
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: {
+    size: 300,
+    dotStyle: 'classy-rounded',
+    gradient: {
+      type: 'linear',
+      colors: ['#667eea', '#764ba2'],
+      direction: 45,
+    },
+    transform: {
+      perspectiveX: -0.05,  // X-axis perspective (-1 to 1)
+      perspectiveY: -0.09,  // Y-axis perspective (-1 to 1)
+      scale: 0.89,          // Scale factor (0.1 to 2)
+    },
+  },
+});
+```
+
+### Selective Rendering (NEW ✨)
+
+Render only specific module types:
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: {
+    size: 300,
+    fgColor: '#2563eb',
+    renderLayer: 'function',  // 'all' | 'function' | 'data' | 'guide' | 'marker'
+  },
+});
+
+// Different render layers:
+// - 'all': Render all modules (default)
+// - 'function': Only function modules (finder patterns, timing patterns, alignment patterns)
+// - 'data': Only data modules (encoded data and error correction)
+// - 'guide': Only timing patterns
+// - 'marker': Only finder patterns (position markers)
+```
+
+### Margin Noise (NEW ✨)
+
+Add decorative noise in margin area:
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: {
+    size: 300,
+    dotStyle: 'rounded',
+    fgColor: '#f59e0b',
+    margin: 6,
+    marginNoise: true,     // Enable margin noise
+    seed: 12345,           // Random seed for reproducible noise
+  },
+});
+```
+
+### Mask Pattern Selection (NEW ✨)
+
+Choose specific mask patterns:
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  maskPattern: 4,  // -1 (auto) or 0-7
+  style: {
+    size: 300,
+    dotStyle: 'dots',
+  },
+});
+```
+
+### Rotation & Invert
+
+```typescript
+createQRCode({
+  content: 'https://example.com',
+  container: document.getElementById('qr')!,
+  style: {
+    size: 300,
+    rotate: 90,      // 0, 90, 180, or 270
+    invert: true,    // Swap foreground and background colors
+  },
+});
+```
+
 ## Download & Export
 
 ### Download as Image
@@ -532,11 +634,16 @@ Open http://localhost:3333 to see all features in action.
 
 ## What's New in v2.0
 
-- 🎨 7 different dot styles
+- 🎨 10+ different dot styles (square, rounded, dots, diamond, star, classy, classy-rounded, extra-rounded, hexagon, liquid, smooth-dots)
 - 🌈 Linear and radial gradients
-- 👁️ Custom eye (finder pattern) styles
-- 🖼️ Advanced logo features (shapes, aspect ratios, backgrounds)
-- 🎭 Visual effects (shadows, strokes, background effects)
+- 👁️ Custom eye (finder pattern) styles with gradients
+- 🖼️ Advanced logo features (shapes, aspect ratios, backgrounds, borders)
+- 🎭 Visual effects (shadows, strokes, background gradients and images)
+- 🔄 **NEW: Transform effects** - Perspective transformation (X/Y) and scaling
+- 🎯 **NEW: Selective rendering** - Render only specific module types
+- ✨ **NEW: Margin noise** - Decorative patterns in margin area with seeded randomness
+- 🎭 **NEW: Mask pattern selection** - Custom mask patterns (0-7 or auto)
+- 🔄 **NEW: Rotation support** - Rotate QR codes (0°, 90°, 180°, 270°)
 - 📦 Batch download with ZIP support
 - ⚡ Performance improvements and caching
 - 📚 Comprehensive documentation

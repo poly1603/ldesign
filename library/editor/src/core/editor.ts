@@ -110,7 +110,11 @@ export class Editor {
    * 设置事件监听
    */
   private setupEventListeners(): void {
-    if (!this.contentElement) return
+    console.log('🎬 [Editor] Setting up event listeners')
+    if (!this.contentElement) {
+      console.log('❌ [Editor] No contentElement for event listeners')
+      return
+    }
 
     // 键盘事件
     this.contentElement.addEventListener('keydown', (e) => {
@@ -120,7 +124,9 @@ export class Editor {
     })
 
     // 输入事件
-    this.contentElement.addEventListener('input', () => {
+    console.log('🎬 [Editor] Adding input event listener to contentElement')
+    this.contentElement.addEventListener('input', (e) => {
+      console.log('🔔 [Editor] Input event fired on contentElement', e)
       this.handleInput()
     })
 
@@ -148,16 +154,23 @@ export class Editor {
    * 处理输入
    */
   private handleInput(): void {
-    if (!this.contentElement) return
+    console.log('📝 [Editor] handleInput called')
+    if (!this.contentElement) {
+      console.log('❌ [Editor] No contentElement')
+      return
+    }
 
     // 更新文档
     const html = this.contentElement.innerHTML
+    console.log('📝 [Editor] Current HTML length:', html.length)
     this.document = new Document(html, this.schema)
 
     // 触发更新事件
+    console.log('📝 [Editor] Emitting update event')
     this.emit('update', this.getState())
     this.options.onUpdate?.(this.getState())
     this.options.onChange?.(this.getHTML())
+    console.log('✅ [Editor] handleInput completed')
   }
 
   /**

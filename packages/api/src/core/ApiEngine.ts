@@ -16,6 +16,7 @@ import type {
 } from '../types'
 import type { ErrorReporter } from '../utils/ErrorReporter'
 import type { PerformanceMonitor } from '../utils/PerformanceMonitor'
+import type { ErrorMiddleware, RequestMiddleware, ResponseMiddleware } from '../types'
 import { createHttpClient } from '@ldesign/http'
 import { ApiError, ApiErrorFactory } from '../utils/ApiError'
 import { CacheManager } from '../utils/CacheManager'
@@ -23,8 +24,29 @@ import { DebounceManagerImpl } from '../utils/DebounceManager'
 import { DeduplicationManagerImpl } from '../utils/DeduplicationManager'
 import { getGlobalErrorReporter } from '../utils/ErrorReporter'
 import { getGlobalPerformanceMonitor } from '../utils/PerformanceMonitor'
+import { LRUCache } from '../utils/LRUCache'
 import { RequestQueueManager } from '../utils/RequestQueue'
 import { version as libVersion } from '../version'
+
+/**
+ * 默认配置常量
+ */
+const DEFAULT_CONFIG = {
+  HTTP_TIMEOUT: 10000,
+  CACHE_TTL: 300000, // 5分钟
+  CACHE_MAX_SIZE: 100,
+  DEBOUNCE_DELAY: 300,
+  DEFAULT_CONCURRENCY: 5,
+  CIRCUIT_CLEANUP_INTERVAL: 3600000, // 1小时
+  CIRCUIT_EXPIRE_TIME: 24 * 60 * 60 * 1000, // 24小时
+} as const
+
+/**
+ * 断路器默认配置
+ */
+const DEFAULT_FAILURE_THRESHOLD = 5
+const DEFAULT_HALF_OPEN_AFTER = 30000
+const DEFAULT_SUCCESS_THRESHOLD = 1
 
 /**
  * API 引擎实现类
@@ -66,6 +88,16 @@ export class ApiEngineImpl implements ApiEngine {
   /** 性能监控器 */
   private performanceMonitor: PerformanceMonitor | null = null
 
+  /** 断路器状态清理定时器 */
+  private circuitStatesCleanupTimer: ReturnType<typeof setInterval> | null = null
+
+  /** 中间件缓存 */
+  private middlewareCache: LRUCache<{
+    request: RequestMiddleware[]
+    response: ResponseMiddleware[]
+    error: ErrorMiddleware[]
+  }>
+
   constructor(config: ApiEngineConfig = {}) {
     this.config = {
       appName: 'LDesign API',
@@ -73,19 +105,19 @@ export class ApiEngineImpl implements ApiEngine {
       debug: false,
       ...config,
       http: {
-        timeout: 10000,
+        timeout: DEFAULT_CONFIG.HTTP_TIMEOUT,
         ...(config.http || {}),
       },
       cache: {
         enabled: true,
-        ttl: 300000, // 5分钟
-        maxSize: 100,
+        ttl: DEFAULT_CONFIG.CACHE_TTL,
+        maxSize: DEFAULT_CONFIG.CACHE_MAX_SIZE,
         storage: 'memory',
         ...(config.cache || {}),
       },
       debounce: {
         enabled: true,
-        delay: 300,
+        delay: DEFAULT_CONFIG.DEBOUNCE_DELAY,
         ...(config.debounce || {}),
       },
       deduplication: {
@@ -102,11 +134,18 @@ export class ApiEngineImpl implements ApiEngine {
     this.debounceManager = new DebounceManagerImpl()
     this.deduplicationManager = new DeduplicationManagerImpl()
 
+    // 初始化中间件缓存（最多缓存 100 个不同的中间件组合）
+    this.middlewareCache = new LRUCache({
+      maxSize: 100,
+      defaultTTL: 3600000, // 1小时
+      enabled: true,
+    })
+
     // 创建请求队列（按需）
     if (this.config.queue?.enabled) {
       const q = {
         enabled: true,
-        concurrency: this.config.queue.concurrency ?? 5,
+        concurrency: this.config.queue.concurrency ?? DEFAULT_CONFIG.DEFAULT_CONCURRENCY,
         maxQueue: this.config.queue.maxQueue ?? 0,
       }
       this.requestQueueManager = new RequestQueueManager(q)
@@ -117,6 +156,9 @@ export class ApiEngineImpl implements ApiEngine {
 
     // 初始化性能监控器
     this.performanceMonitor = getGlobalPerformanceMonitor()
+
+    // 启动断路器状态清理定时器
+    this.startCircuitBreakerCleanup()
 
     this.log('API Engine initialized', this.config)
   }
@@ -240,6 +282,231 @@ export class ApiEngineImpl implements ApiEngine {
   }
 
   /**
+   * 检查缓存并返回缓存数据（如果存在）
+   */
+  private checkCache<T>(
+    methodName: string,
+    params: unknown,
+    methodConfig: ApiMethodConfig,
+    options: ApiCallOptions,
+    cacheKey: string,
+  ): T | null {
+    if (!options.skipCache && this.shouldUseCache(methodConfig, options)) {
+      const cachedData = this.cacheManager.get<T>(cacheKey)
+      if (cachedData !== null) {
+        this.log(`Cache hit for method "${methodName}"`)
+        return cachedData
+      }
+    }
+    return null
+  }
+
+  /**
+   * 构建重试配置
+   */
+  private buildRetryConfig(
+    methodConfig: ApiMethodConfig,
+    options: ApiCallOptions,
+  ) {
+    return {
+      enabled: false,
+      retries: 0,
+      delay: 0,
+      backoff: 'fixed' as 'fixed' | 'exponential',
+      maxDelay: undefined as number | undefined,
+      retryOn: (error: unknown, _attempt: number) => true,
+      ...this.config.retry,
+      ...methodConfig.retry,
+      ...options.retry,
+    }
+  }
+
+  /**
+   * 构建断路器配置
+   */
+  private buildCircuitBreakerConfig(
+    methodConfig: ApiMethodConfig,
+    options: ApiCallOptions,
+  ) {
+    return {
+      enabled: this.config.retry?.circuitBreaker?.enabled || methodConfig.retry?.circuitBreaker?.enabled || options.retry?.circuitBreaker?.enabled || false,
+      failureThreshold: options.retry?.circuitBreaker?.failureThreshold ?? methodConfig.retry?.circuitBreaker?.failureThreshold ?? this.config.retry?.circuitBreaker?.failureThreshold ?? DEFAULT_FAILURE_THRESHOLD,
+      halfOpenAfter: options.retry?.circuitBreaker?.halfOpenAfter ?? methodConfig.retry?.circuitBreaker?.halfOpenAfter ?? this.config.retry?.circuitBreaker?.halfOpenAfter ?? DEFAULT_HALF_OPEN_AFTER,
+      successThreshold: options.retry?.circuitBreaker?.successThreshold ?? methodConfig.retry?.circuitBreaker?.successThreshold ?? this.config.retry?.circuitBreaker?.successThreshold ?? DEFAULT_SUCCESS_THRESHOLD,
+    }
+  }
+
+  /**
+   * 检查断路器状态并抛出错误（如果需要）
+   */
+  private checkCircuitBreaker(
+    methodName: string,
+    methodConfig: ApiMethodConfig,
+    options: ApiCallOptions,
+    cb: ReturnType<typeof this.buildCircuitBreakerConfig>,
+  ): void {
+    if (!cb.enabled) {
+      return
+    }
+
+    const st = this.circuitStates.get(methodName)
+    const now = Date.now()
+    
+    if (st?.state === 'open' && now < st.nextTryAt) {
+      const err = new Error(`Circuit breaker open for method "${methodName}"`)
+      methodConfig.onError?.(err)
+      options.onError?.(err)
+      throw err
+    }
+    
+    if (st?.state === 'open' && now >= st.nextTryAt) {
+      // 半开
+      this.circuitStates.set(methodName, { 
+        state: 'half-open', 
+        failureCount: st.failureCount, 
+        successCount: 0, 
+        nextTryAt: now + cb.halfOpenAfter,
+      })
+    }
+  }
+
+  /**
+   * 处理断路器成功反馈
+   */
+  private handleCircuitBreakerSuccess(
+    methodName: string,
+    cb: ReturnType<typeof this.buildCircuitBreakerConfig>,
+  ): void {
+    if (!cb.enabled) {
+      return
+    }
+
+    const st = this.circuitStates.get(methodName)
+    if (st?.state === 'half-open') {
+      const successCount = (st.successCount ?? 0) + 1
+      if (successCount >= cb.successThreshold) {
+        this.circuitStates.set(methodName, { 
+          state: 'closed', 
+          failureCount: 0, 
+          successCount: 0, 
+          nextTryAt: 0,
+        })
+      }
+      else {
+        this.circuitStates.set(methodName, { ...st, successCount })
+      }
+    }
+    else if (!st || st.state !== 'closed') {
+      this.circuitStates.set(methodName, { 
+        state: 'closed', 
+        failureCount: 0, 
+        successCount: 0, 
+        nextTryAt: 0,
+      })
+    }
+  }
+
+  /**
+   * 处理断路器失败反馈
+   */
+  private handleCircuitBreakerFailure(
+    methodName: string,
+    cb: ReturnType<typeof this.buildCircuitBreakerConfig>,
+  ): void {
+    if (!cb.enabled) {
+      return
+    }
+
+    const st = this.circuitStates.get(methodName) ?? { 
+      state: 'closed' as const, 
+      failureCount: 0, 
+      successCount: 0, 
+      nextTryAt: 0,
+    }
+    const failureCount = st.failureCount + 1
+    
+    if (st.state === 'half-open') {
+      // 半开失败立即打开
+      this.circuitStates.set(methodName, { 
+        state: 'open', 
+        failureCount, 
+        successCount: 0, 
+        nextTryAt: Date.now() + cb.halfOpenAfter,
+      })
+    }
+    else if (failureCount >= cb.failureThreshold) {
+      this.circuitStates.set(methodName, { 
+        state: 'open', 
+        failureCount, 
+        successCount: 0, 
+        nextTryAt: Date.now() + cb.halfOpenAfter,
+      })
+    }
+    else {
+      this.circuitStates.set(methodName, { ...st, failureCount })
+    }
+  }
+
+  /**
+   * 缓存成功结果
+   */
+  private cacheResult<T>(
+    cacheKey: string,
+    data: T,
+    methodConfig: ApiMethodConfig,
+    options: ApiCallOptions,
+  ): void {
+    if (!options.skipCache && this.shouldUseCache(methodConfig, options)) {
+      const cacheConfig = {
+        ...this.config.cache,
+        ...methodConfig.cache,
+        ...options.cache,
+      }
+      this.cacheManager.set<T>(cacheKey, data, cacheConfig.ttl!)
+    }
+  }
+
+  /**
+   * 调用成功回调
+   */
+  private invokeSuccessCallbacks<T>(
+    data: T,
+    methodConfig: ApiMethodConfig,
+    options: ApiCallOptions,
+  ): void {
+    methodConfig.onSuccess?.(data)
+    options.onSuccess?.(data)
+  }
+
+  /**
+   * 计算重试延迟（包括错动）
+   */
+  private calculateRetryDelay(
+    attempt: number,
+    retryConfig: ReturnType<typeof this.buildRetryConfig>,
+  ): number {
+    const baseDelay = retryConfig.delay || 0
+    let delay = baseDelay
+    
+    if (retryConfig.backoff === 'exponential') {
+      delay = baseDelay * 2 ** attempt
+      if (retryConfig.maxDelay) {
+        delay = Math.min(delay, retryConfig.maxDelay)
+      }
+    }
+    
+    const jitter = (retryConfig as any).jitter ?? this.config.retry?.jitter ?? 0
+    if (typeof jitter === 'number' && jitter > 0) {
+      const delta = delay * jitter
+      const min = Math.max(0, delay - delta)
+      const max = delay + delta
+      delay = Math.floor(min + Math.random() * (max - min))
+    }
+    
+    return delay
+  }
+
+  /**
    * 调用 API 方法
    */
   async call<T = unknown>(
@@ -264,44 +531,20 @@ export class ApiEngineImpl implements ApiEngine {
       const cacheKey = this.generateCacheKey(methodName, params)
 
       // 检查缓存
-      if (!options.skipCache && this.shouldUseCache(methodConfig, options)) {
-        const cachedData = this.cacheManager.get<T>(cacheKey)
-        if (cachedData !== null) {
-          this.log(`Cache hit for method "${methodName}"`)
-          endMonitoring() // 成功结束监控
-          return cachedData
-        }
+      const cachedData = this.checkCache<T>(methodName, params, methodConfig, options, cacheKey)
+      if (cachedData !== null) {
+        endMonitoring() // 成功结束监控
+        return cachedData
       }
 
-      // 组装中间件
-      const reqMiddlewares = [
-        ...(this.config.middlewares?.request || []),
-        ...(methodConfig.middlewares?.request || []),
-        ...(options.middlewares?.request || []),
-      ]
-      const resMiddlewares = [
-        ...(this.config.middlewares?.response || []),
-        ...(methodConfig.middlewares?.response || []),
-        ...(options.middlewares?.response || []),
-      ]
-      const errMiddlewares = [
-        ...(this.config.middlewares?.error || []),
-        ...(methodConfig.middlewares?.error || []),
-        ...(options.middlewares?.error || []),
-      ]
+      // 获取中间件（带缓存）
+      const middlewares = this.getMiddlewares(methodName, methodConfig, options)
+      const reqMiddlewares = middlewares.request
+      const resMiddlewares = middlewares.response
+      const errMiddlewares = middlewares.error
 
       // 计算重试配置
-      const retryConfig = {
-        enabled: false,
-        retries: 0,
-        delay: 0,
-        backoff: 'fixed' as 'fixed' | 'exponential',
-        maxDelay: undefined as number | undefined,
-        retryOn: (error: unknown, _attempt: number) => true,
-        ...this.config.retry,
-        ...methodConfig.retry,
-        ...options.retry,
-      }
+      const retryConfig = this.buildRetryConfig(methodConfig, options)
 
       const ctx = { methodName, params, engine: this }
 
@@ -377,61 +620,20 @@ export class ApiEngineImpl implements ApiEngine {
         let attempt = 0
 
         // 断路器预检查
-        const cb = {
-          enabled: this.config.retry?.circuitBreaker?.enabled || methodConfig.retry?.circuitBreaker?.enabled || options.retry?.circuitBreaker?.enabled || false,
-          failureThreshold: options.retry?.circuitBreaker?.failureThreshold ?? methodConfig.retry?.circuitBreaker?.failureThreshold ?? this.config.retry?.circuitBreaker?.failureThreshold ?? 5,
-          halfOpenAfter: options.retry?.circuitBreaker?.halfOpenAfter ?? methodConfig.retry?.circuitBreaker?.halfOpenAfter ?? this.config.retry?.circuitBreaker?.halfOpenAfter ?? 30000,
-          successThreshold: options.retry?.circuitBreaker?.successThreshold ?? methodConfig.retry?.circuitBreaker?.successThreshold ?? this.config.retry?.circuitBreaker?.successThreshold ?? 1,
-        }
-
-        if (cb.enabled) {
-          const st = this.circuitStates.get(methodName)
-          const now = Date.now()
-          if (st?.state === 'open' && now < st.nextTryAt) {
-            const err = new Error(`Circuit breaker open for method "${methodName}"`)
-            methodConfig.onError?.(err)
-            options.onError?.(err)
-            throw err
-          }
-          if (st?.state === 'open' && now >= st.nextTryAt) {
-            // 半开
-            this.circuitStates.set(methodName, { state: 'half-open', failureCount: st.failureCount, successCount: 0, nextTryAt: now + cb.halfOpenAfter })
-          }
-        }
+        const cb = this.buildCircuitBreakerConfig(methodConfig, options)
+        this.checkCircuitBreaker(methodName, methodConfig, options, cb)
 
         while (true) {
           try {
             const data = await performOnce()
             // 断路器成功反馈
-            if (cb.enabled) {
-              const st = this.circuitStates.get(methodName)
-              if (st?.state === 'half-open') {
-                const successCount = (st.successCount ?? 0) + 1
-                if (successCount >= cb.successThreshold) {
-                  this.circuitStates.set(methodName, { state: 'closed', failureCount: 0, successCount: 0, nextTryAt: 0 })
-                }
-                else {
-                  this.circuitStates.set(methodName, { ...st, successCount })
-                }
-              }
-              else if (!st || st.state !== 'closed') {
-                this.circuitStates.set(methodName, { state: 'closed', failureCount: 0, successCount: 0, nextTryAt: 0 })
-              }
-            }
+            this.handleCircuitBreakerSuccess(methodName, cb)
 
             // 缓存结果
-            if (!options.skipCache && this.shouldUseCache(methodConfig, options)) {
-              const cacheConfig = {
-                ...this.config.cache,
-                ...methodConfig.cache,
-                ...options.cache,
-              }
-              this.cacheManager.set<T>(cacheKey, data, cacheConfig.ttl!)
-            }
+            this.cacheResult(cacheKey, data, methodConfig, options)
 
             // 成功回调
-            methodConfig.onSuccess?.(data)
-            options.onSuccess?.(data)
+            this.invokeSuccessCallbacks(data, methodConfig, options)
 
             // 结束性能监控（成功）
             endMonitoring()
@@ -440,20 +642,7 @@ export class ApiEngineImpl implements ApiEngine {
           }
           catch (err) {
             // 断路器失败反馈
-            if (cb.enabled) {
-              const st = this.circuitStates.get(methodName) ?? { state: 'closed', failureCount: 0, successCount: 0, nextTryAt: 0 }
-              const failureCount = st.failureCount + 1
-              if (st.state === 'half-open') {
-                // 半开失败立即打开
-                this.circuitStates.set(methodName, { state: 'open', failureCount, successCount: 0, nextTryAt: Date.now() + cb.halfOpenAfter })
-              }
-              else if (failureCount >= cb.failureThreshold) {
-                this.circuitStates.set(methodName, { state: 'open', failureCount, successCount: 0, nextTryAt: Date.now() + cb.halfOpenAfter })
-              }
-              else {
-                this.circuitStates.set(methodName, { ...st, failureCount })
-              }
-            }
+            this.handleCircuitBreakerFailure(methodName, cb)
 
             // 错误中间件尝试恢复
             let recovered: any | undefined
@@ -475,17 +664,8 @@ export class ApiEngineImpl implements ApiEngine {
                 throw new Error(`Data validation failed for method "${methodName}"`)
               }
 
-              if (!options.skipCache && this.shouldUseCache(methodConfig, options)) {
-                const cacheConfig = {
-                  ...this.config.cache,
-                  ...methodConfig.cache,
-                  ...options.cache,
-                }
-                this.cacheManager.set<T>(cacheKey, data, cacheConfig.ttl!)
-              }
-
-              methodConfig.onSuccess?.(data)
-              options.onSuccess?.(data)
+              this.cacheResult(cacheKey, data, methodConfig, options)
+              this.invokeSuccessCallbacks(data, methodConfig, options)
               return data
             }
 
@@ -501,22 +681,7 @@ export class ApiEngineImpl implements ApiEngine {
             }
 
             // 退避计算 + 抖动
-            const baseDelay = retryConfig.delay || 0
-            let delay = baseDelay
-            if (retryConfig.backoff === 'exponential') {
-              delay = baseDelay * 2 ** attempt
-              if (retryConfig.maxDelay) {
-                delay = Math.min(delay, retryConfig.maxDelay)
-              }
-            }
-            const jitter = (retryConfig as any).jitter ?? this.config.retry?.jitter ?? 0
-            if (typeof jitter === 'number' && jitter > 0) {
-              const delta = delay * jitter
-              const min = Math.max(0, delay - delta)
-              const max = delay + delta
-              delay = Math.floor(min + Math.random() * (max - min))
-            }
-
+            const delay = this.calculateRetryDelay(attempt, retryConfig)
             await new Promise(resolve => globalThis.setTimeout(resolve, delay))
             attempt++
           }
@@ -644,6 +809,18 @@ export class ApiEngineImpl implements ApiEngine {
     if (this.destroyed) {
       return
     }
+
+    // 清理断路器状态定时器
+    if (this.circuitStatesCleanupTimer) {
+      clearInterval(this.circuitStatesCleanupTimer)
+      this.circuitStatesCleanupTimer = null
+    }
+
+    // 清理断路器状态
+    this.circuitStates.clear()
+
+    // 清理中间件缓存
+    this.middlewareCache.destroy()
 
     // 优先调用管理器的销毁方法以清理定时器等资源
     if (typeof (this.cacheManager as unknown as { destroy?: () => void }).destroy === 'function') {
@@ -856,6 +1033,99 @@ export class ApiEngineImpl implements ApiEngine {
    */
   getPerformanceMonitor(): PerformanceMonitor | null {
     return this.performanceMonitor
+  }
+
+  /**
+   * 获取中间件数组（带缓存）
+   */
+  private getMiddlewares(
+    methodName: string,
+    methodConfig: ApiMethodConfig,
+    options: ApiCallOptions,
+  ): {
+    request: RequestMiddleware[]
+    response: ResponseMiddleware[]
+    error: ErrorMiddleware[]
+  } {
+    // 如果 options 中有中间件，不使用缓存
+    if (options.middlewares) {
+      return {
+        request: [
+          ...(this.config.middlewares?.request || []),
+          ...(methodConfig.middlewares?.request || []),
+          ...(options.middlewares?.request || []),
+        ],
+        response: [
+          ...(this.config.middlewares?.response || []),
+          ...(methodConfig.middlewares?.response || []),
+          ...(options.middlewares?.response || []),
+        ],
+        error: [
+          ...(this.config.middlewares?.error || []),
+          ...(methodConfig.middlewares?.error || []),
+          ...(options.middlewares?.error || []),
+        ],
+      }
+    }
+
+    // 尝试从缓存获取
+    const cacheKey = methodName
+    const cached = this.middlewareCache.get(cacheKey)
+    if (cached) {
+      return cached
+    }
+
+    // 创建新的中间件数组
+    const middlewares = {
+      request: [
+        ...(this.config.middlewares?.request || []),
+        ...(methodConfig.middlewares?.request || []),
+      ],
+      response: [
+        ...(this.config.middlewares?.response || []),
+        ...(methodConfig.middlewares?.response || []),
+      ],
+      error: [
+        ...(this.config.middlewares?.error || []),
+        ...(methodConfig.middlewares?.error || []),
+      ],
+    }
+
+    // 存入缓存
+    this.middlewareCache.set(cacheKey, middlewares)
+
+    return middlewares
+  }
+
+  /**
+   * 启动断路器状态清理定时器
+   */
+  private startCircuitBreakerCleanup(): void {
+    // 每小时清理一次过期的断路器状态
+    this.circuitStatesCleanupTimer = setInterval(() => {
+      const now = Date.now()
+      const expiredKeys: string[] = []
+
+      for (const [methodName, state] of this.circuitStates.entries()) {
+        // 清理24小时未使用的状态（closed 且 failureCount 为 0）
+        if (
+          state.state === 'closed'
+          && state.failureCount === 0
+          && now - state.nextTryAt > DEFAULT_CONFIG.CIRCUIT_EXPIRE_TIME
+        ) {
+          expiredKeys.push(methodName)
+        }
+      }
+
+      // 批量删除过期项
+      expiredKeys.forEach((key) => {
+        this.circuitStates.delete(key)
+      })
+
+      if (expiredKeys.length > 0) {
+        this.log(`Cleaned up ${expiredKeys.length} expired circuit breaker states`)
+      }
+    }, DEFAULT_CONFIG.CIRCUIT_CLEANUP_INTERVAL)
   }
 
   /**

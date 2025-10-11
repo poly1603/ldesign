@@ -2,7 +2,7 @@
  * Vue I18n 类型定义
  */
 
-import type { InjectionKey, ComputedRef } from 'vue'
+import type { ComputedRef, InjectionKey } from 'vue'
 import type { I18n } from '../core/i18n'
 
 /**
@@ -126,13 +126,13 @@ export interface I18nEnginePluginOptions extends I18nPluginOptions {
  * I18n 预设类型
  */
 export type I18nPreset =
-  | 'spa'        // 单页应用
-  | 'mpa'        // 多页应用
-  | 'mobile'     // 移动端应用
-  | 'desktop'    // 桌面应用
-  | 'admin'      // 管理后台
-  | 'blog'       // 博客网站
-  | 'ecommerce'  // 电商网站
+  | 'spa' // 单页应用
+  | 'mpa' // 多页应用
+  | 'mobile' // 移动端应用
+  | 'desktop' // 桌面应用
+  | 'admin' // 管理后台
+  | 'blog' // 博客网站
+  | 'ecommerce' // 电商网站
 
 /**
  * 组合式 API 返回类型
@@ -223,5 +223,5 @@ declare module '@vue/runtime-core' {
  * 导出所有类型
  */
 export type {
-  I18n
+  I18n,
 } from '../core/i18n'

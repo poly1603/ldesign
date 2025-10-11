@@ -4,9 +4,9 @@
  * 将所有设备适配功能整合到一个易用的插件中
  */
 
-import type { DeviceType } from '@ldesign/device'
+import type { DeviceDetector, DeviceType } from '@ldesign/device'
 import type { DeviceRouterPluginOptions, Router } from '../types'
-import { DeviceDetector } from '@ldesign/device'
+import { createDeviceDetector } from '@ldesign/device'
 import { DeviceRouteGuard } from './guard'
 import { DeviceComponentResolver } from './resolver'
 import { TemplateRouteResolver } from './template'
@@ -28,29 +28,25 @@ export class DeviceRouterPlugin {
     this.options = this.normalizeOptions(options)
 
     // 初始化设备检测器
-    this.deviceDetector = new DeviceDetector({
-      enableResize: true,
-      enableOrientation: true,
-      debounceDelay: 100,
-    })
+    this.deviceDetector = createDeviceDetector()
 
     // 初始化组件解析器
     this.componentResolver = new DeviceComponentResolver(() =>
-      this.deviceDetector.getDeviceType(),
+      this.deviceDetector.detectDeviceType(),
     )
 
     // 初始化设备守卫
     this.deviceGuard = new DeviceRouteGuard(
-      () => this.deviceDetector.getDeviceType(),
+      () => this.deviceDetector.detectDeviceType(),
       this.options.guardOptions,
     )
 
-    // 如果启用模板路由，初始化模板解析器
-    if (this.options.enableTemplateRoutes) {
-      this.templateResolver = new TemplateRouteResolver(
-        this.options.templateConfig,
-      )
-    }
+    // 模板路由功能待实现
+    // if (this.options.enableTemplateRoutes) {
+    //   this.templateResolver = new TemplateRouteResolver(
+    //     this.options.templateConfig,
+    //   )
+    // }
   }
 
   /**
@@ -78,8 +74,7 @@ export class DeviceRouterPlugin {
       this.guardRemover = null
     }
 
-    // 销毁设备检测器
-    this.deviceDetector.destroy()
+    // 设备检测器无需销毁（没有 destroy 方法）
 
     // 销毁模板解析器
     if (this.templateResolver) {
@@ -123,7 +118,7 @@ export class DeviceRouterPlugin {
    * 获取当前设备类型
    */
   getCurrentDevice(): DeviceType {
-    return this.deviceDetector.getDeviceType()
+    return this.deviceDetector.detectDeviceType()
   }
 
   /**
@@ -157,12 +152,10 @@ export class DeviceRouterPlugin {
    * 监听设备变化
    */
   onDeviceChange(callback: (deviceType: DeviceType) => void): () => void {
-    this.deviceDetector.on('deviceChange', (info) => {
+    const unsubscribe = this.deviceDetector.onChange((info) => {
       callback(info.type)
     })
-    return () => {
-      // 清理设备变化监听器
-    }
+    return unsubscribe
   }
 
   /**

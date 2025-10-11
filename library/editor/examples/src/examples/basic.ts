@@ -17,6 +17,7 @@ import {
   CodeBlockPlugin,
   LinkPlugin,
   ImagePlugin,
+  TablePlugin,
   HistoryPlugin,
   AlignPlugin,
   TextColorPlugin,
@@ -27,7 +28,10 @@ import {
   SubscriptPlugin,
   HorizontalRulePlugin,
   IndentPlugin,
-  FullscreenPlugin
+  FullscreenPlugin,
+  LineHeightPlugin,
+  TextTransformPlugin,
+  FindReplacePlugin
 } from '@/plugins'
 import '@/styles/editor.css'
 
@@ -139,6 +143,10 @@ greet('World')</code></pre>
           <li>水平线分隔符</li>
           <li>文本缩进功能</li>
           <li>全屏编辑模式（按 F11）</li>
+          <li>🆕 <strong>表格插入功能</strong> - 可视化表格选择器</li>
+          <li>🆕 <strong>查找替换</strong> (Ctrl+F) - 支持正则表达式</li>
+          <li>🆕 <strong>行高调整</strong> - 灵活的行距控制</li>
+          <li>🆕 <strong>文本转换</strong> - 大小写转换、全角半角</li>
         </ul>
         <hr>
 
@@ -159,16 +167,20 @@ greet('World')</code></pre>
         CodeBlockPlugin,
         LinkPlugin,
         ImagePlugin,
+        TablePlugin,
         HistoryPlugin,
         AlignPlugin,
         TextColorPlugin,
         BackgroundColorPlugin,
         FontSizePlugin,
         FontFamilyPlugin,
+        LineHeightPlugin,
+        TextTransformPlugin,
         SuperscriptPlugin,
         SubscriptPlugin,
         HorizontalRulePlugin,
         IndentPlugin,
+        FindReplacePlugin,
         FullscreenPlugin
       ],
       onChange: (content) => {
@@ -185,7 +197,7 @@ greet('World')</code></pre>
 
     // 存储编辑器实例供按钮使用
     ;(window as any).basicEditor = editor
-  }, 100)
+  }, 200)
 
   // 操作按钮
   const actions = document.createElement('div')

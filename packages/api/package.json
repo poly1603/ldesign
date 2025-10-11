@@ -38,6 +38,11 @@
       "import": "./es/core/*.js",
       "require": "./lib/core/*.cjs"
     },
+    "./examples/*": {
+      "types": "./es/examples/*.d.ts",
+      "import": "./es/examples/*.js",
+      "require": "./lib/examples/*.cjs"
+    },
     "./plugins/*": {
       "types": "./es/plugins/*.d.ts",
       "import": "./es/plugins/*.js",
@@ -89,7 +94,8 @@
     "LICENSE",
     "package.json",
     "es",
-    "lib"
+    "lib",
+    "dist"
   ],
   "scripts": {
     "build": "ldesign-builder build",
@@ -102,6 +108,8 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "bench": "vitest bench",
+    "bench:run": "vitest bench --run",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "docs:dev": "vitepress dev docs",

@@ -179,26 +179,33 @@ export class FormatterEngine {
       if (absDiffMs < 60000) { // 小于1分钟
         targetUnit = 'second'
         value = Math.round(diffMs / 1000)
-      } else if (absDiffMs < 3600000) { // 小于1小时
+      }
+      else if (absDiffMs < 3600000) { // 小于1小时
         targetUnit = 'minute'
         value = Math.round(diffMs / 60000)
-      } else if (absDiffMs < 86400000) { // 小于1天
+      }
+      else if (absDiffMs < 86400000) { // 小于1天
         targetUnit = 'hour'
         value = Math.round(diffMs / 3600000)
-      } else if (absDiffMs < 604800000) { // 小于1周
+      }
+      else if (absDiffMs < 604800000) { // 小于1周
         targetUnit = 'day'
         value = Math.round(diffMs / 86400000)
-      } else if (absDiffMs < 2629746000) { // 小于1月
+      }
+      else if (absDiffMs < 2629746000) { // 小于1月
         targetUnit = 'week'
         value = Math.round(diffMs / 604800000)
-      } else if (absDiffMs < 31556952000) { // 小于1年
+      }
+      else if (absDiffMs < 31556952000) { // 小于1年
         targetUnit = 'month'
         value = Math.round(diffMs / 2629746000)
-      } else {
+      }
+      else {
         targetUnit = 'year'
         value = Math.round(diffMs / 31556952000)
       }
-    } else {
+    }
+    else {
       targetUnit = unit as Intl.RelativeTimeFormatUnit
 
       switch (unit) {
@@ -358,9 +365,12 @@ export class FormatterEngine {
       }
 
       const parts: string[] = []
-      if (hours > 0) parts.push(`${hours}h`)
-      if (minutes > 0) parts.push(`${minutes}m`)
-      if (secs > 0) parts.push(`${secs}s`)
+      if (hours > 0)
+        parts.push(`${hours}h`)
+      if (minutes > 0)
+        parts.push(`${minutes}m`)
+      if (secs > 0)
+        parts.push(`${secs}s`)
 
       return parts.join(' ')
     })

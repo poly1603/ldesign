@@ -256,7 +256,7 @@ onMounted(() => {
   setTimeout(() => {
     const vueApp = createApp(VueExample)
     vueApp.mount('#vue-example-root')
-  }, 100)
+  }, 200)
 
   return container
 }

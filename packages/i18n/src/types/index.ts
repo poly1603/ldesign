@@ -1,8 +1,8 @@
 /**
  * @ldesign/i18n 类型定义
- * 
+ *
  * 统一导出所有类型定义，提供完整的 TypeScript 支持
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
@@ -11,49 +11,49 @@
 
 // 从核心模块导出所有类型
 export type {
+  // 批量翻译
+  BatchTranslationResult,
+  CacheItem,
+  CacheOptions,
+  CacheStats,
+  // 检测器相关
+  Detector,
+  EventEmitter,
+  I18nEventArgsMap,
+
+  // 事件系统
+  I18nEventType,
+
   // 基础接口
   I18nInstance,
   I18nOptions,
+
+  LanguageChangedEventArgs,
+
   LanguageInfo,
   LanguagePackage,
-  TranslationParams,
-  TranslationOptions,
-  TranslationFunction,
-
+  LoadedEventArgs,
   // 加载器相关
   Loader,
 
+  LoadErrorEventArgs,
+  // 缓存相关
+  LRUCache,
+  // 工具类型
+  NestedObject,
+  OptimizationSuggestion,
+  // 性能监控
+  PerformanceMetrics,
   // 存储相关
   Storage,
   StorageType,
 
-  // 检测器相关
-  Detector,
-
-  // 缓存相关
-  LRUCache,
-  CacheItem,
-  CacheStats,
-  CacheOptions,
-
-  // 事件系统
-  I18nEventType,
-  I18nEventArgsMap,
-  LanguageChangedEventArgs,
-  LoadedEventArgs,
-  LoadErrorEventArgs,
+  TranslationFunction,
   TranslationMissingEventArgs,
-  EventEmitter,
 
-  // 性能监控
-  PerformanceMetrics,
-  OptimizationSuggestion,
+  TranslationOptions,
 
-  // 批量翻译
-  BatchTranslationResult,
-
-  // 工具类型
-  NestedObject,
+  TranslationParams,
 } from '../core/types'
 
 // ==================== 重新导出 Vue 类型（占位） ====================
@@ -63,7 +63,7 @@ export type {
 
 /**
  * 深度只读类型
- * 
+ *
  * 将对象的所有属性递归设置为只读
  */
 export type DeepReadonly<T> = {
@@ -72,7 +72,7 @@ export type DeepReadonly<T> = {
 
 /**
  * 可选的深度部分类型
- * 
+ *
  * 将对象的所有属性递归设置为可选
  */
 export type DeepOptional<T> = {
@@ -81,35 +81,35 @@ export type DeepOptional<T> = {
 
 /**
  * 非空类型
- * 
+ *
  * 排除 null 和 undefined
  */
 export type NonNullable<T> = T extends null | undefined ? never : T
 
 /**
  * 函数参数类型提取
- * 
+ *
  * 提取函数的参数类型
  */
 export type Parameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never
 
 /**
  * 函数返回类型提取
- * 
+ *
  * 提取函数的返回类型
  */
 export type ReturnType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? R : any
 
 /**
  * 构造函数参数类型提取
- * 
+ *
  * 提取构造函数的参数类型
  */
 export type ConstructorParameters<T extends abstract new (...args: any) => any> = T extends abstract new (...args: infer P) => any ? P : never
 
 /**
  * 实例类型提取
- * 
+ *
  * 提取构造函数的实例类型
  */
 export type InstanceType<T extends abstract new (...args: any) => any> = T extends abstract new (...args: any) => infer R ? R : any

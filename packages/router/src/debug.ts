@@ -101,10 +101,10 @@ export class RouterDebugger {
     this.startPerformanceMark(`navigation:${to}`)
   }
 
-  /**
-   * 记录路由加载
-   */
-  logRouteLoad(route: Route, duration: number, success: boolean): void {
+/**
+ * 记录路由加载
+ */
+logRouteLoad(route: string, duration: number, success: boolean): void {
     if (!this.enabled)
       return
 
@@ -118,14 +118,14 @@ export class RouterDebugger {
     this.addEvent(event)
     this.log(
       success ? LogLevel.DEBUG : LogLevel.ERROR,
-      `Route load ${success ? 'success' : 'failed'}: ${route.path} (${duration}ms)`,
+      `Route load ${success ? 'success' : 'failed'}: ${route} (${duration}ms)`,
     )
   }
 
-  /**
-   * 记录路由错误
-   */
-  logError(error: Error, route?: Route, context?: any): void {
+/**
+ * 记录路由错误
+ */
+logError(error: Error, route?: string, context?: any): void {
     if (!this.enabled)
       return
 
@@ -141,10 +141,10 @@ export class RouterDebugger {
     this.log(LogLevel.ERROR, `Route error: ${error.message}`, { route, context, stack: error.stack })
   }
 
-  /**
-   * 记录路由守卫
-   */
-  logGuard(guardName: string, route: Route, allowed: boolean, reason?: string): void {
+/**
+ * 记录路由守卫
+ */
+logGuard(guardName: string, route: string, allowed: boolean, reason?: string): void {
     if (!this.enabled)
       return
 
@@ -158,7 +158,7 @@ export class RouterDebugger {
     this.addEvent(event)
     this.log(
       allowed ? LogLevel.DEBUG : LogLevel.WARN,
-      `Guard ${guardName}: ${allowed ? 'allowed' : 'blocked'} for ${route.path}`,
+      `Guard ${guardName}: ${allowed ? 'allowed' : 'blocked'} for ${route}`,
       { reason },
     )
   }

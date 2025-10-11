@@ -1,4 +1,4 @@
-import type { QRCodeConfig, QRCodeStyle, LogoConfig, DotStyle, LogoShape, LogoAspectRatio } from '../types';
+import type { QRCodeConfig, QRCodeStyle, LogoConfig, DotStyle, LogoShape, LogoAspectRatio, EffectType } from '../types';
 import { QRCodeGenerator } from '../core/generator';
 import { drawDot } from './styles/dots';
 import { createCanvasGradient } from './styles/gradients';
@@ -8,7 +8,7 @@ import { applyShadow, clearShadow, drawBackgroundImage } from './styles/effects'
 /**
  * Default style configuration
  */
-const DEFAULT_STYLE: Required<Omit<QRCodeStyle, 'gradient' | 'backgroundGradient' | 'backgroundImage' | 'eyeStyle' | 'shadow' | 'stroke' | 'dotStyle'>> & Pick<QRCodeStyle, 'dotStyle'> = {
+const DEFAULT_STYLE: Partial<QRCodeStyle> & { fgColor: string; bgColor: string; size: number; margin: number; cornerRadius: number; dotStyle: DotStyle; rotate: 0; invert: false } = {
   fgColor: '#000000',
   bgColor: '#ffffff',
   size: 200,
@@ -27,11 +27,11 @@ export class CanvasRenderer {
   private ctx: CanvasRenderingContext2D;
   private generator: QRCodeGenerator;
   private config: QRCodeConfig;
-  private style: Required<QRCodeStyle>;
+  private style: typeof DEFAULT_STYLE & Partial<QRCodeStyle>;
 
   constructor(config: QRCodeConfig) {
     this.config = config;
-    this.style = { ...DEFAULT_STYLE, ...config.style };
+    this.style = { ...DEFAULT_STYLE, ...config.style } as typeof DEFAULT_STYLE & Partial<QRCodeStyle>;
     this.generator = new QRCodeGenerator(config);
 
     this.canvas = document.createElement('canvas');
@@ -68,6 +68,31 @@ export class CanvasRenderer {
       this.ctx.translate(-centerX, -centerY);
     }
 
+    // Apply transform if configured (perspective and scale)
+    const transform = this.config.style?.transform;
+    if (transform) {
+      this.ctx.save();
+      const centerX = this.style.size / 2;
+      const centerY = this.style.size / 2;
+      this.ctx.translate(centerX, centerY);
+
+      // Apply perspective using transform matrix
+      if (transform.perspectiveX || transform.perspectiveY) {
+        const px = transform.perspectiveX || 0;
+        const py = transform.perspectiveY || 0;
+        // Simplified perspective effect using setTransform
+        // This creates a skew-like effect that simulates 3D perspective
+        this.ctx.transform(1, py, px, 1, 0, 0);
+      }
+
+      // Apply scale
+      if (transform.scale && transform.scale !== 1) {
+        this.ctx.scale(transform.scale, transform.scale);
+      }
+
+      this.ctx.translate(-centerX, -centerY);
+    }
+
     // Apply invert (swap foreground and background colors)
     if (this.config.style?.invert) {
       const temp = this.style.fgColor;
@@ -77,6 +102,11 @@ export class CanvasRenderer {
 
     // Draw background
     await this.drawBackground();
+
+    // Draw margin noise if enabled
+    if (this.config.style?.marginNoise) {
+      this.drawMarginNoise(moduleCount, margin, moduleSize);
+    }
 
     // Get eye positions
     const eyePositions = getEyePositions(moduleCount);
@@ -100,12 +130,27 @@ export class CanvasRenderer {
       this.ctx.fillStyle = this.style.fgColor;
     }
 
-    // Draw QR modules (excluding eyes if custom eye style is specified)
+    // Get render layer setting
+    const renderLayer = this.config.style?.renderLayer || 'all';
+
+    // Draw QR modules (excluding eyes if custom eye style is configured)
     for (let row = 0; row < moduleCount; row++) {
       for (let col = 0; col < moduleCount; col++) {
         if (this.generator.isDark(row, col)) {
+          // Check if this module should be rendered based on renderLayer setting
+          const isInEyeArea = isInEye(row, col, eyePositions);
+          const isFunctionModule = this.generator.isFunctionModule(row, col);
+          const isDataModule = this.generator.isDataModule(row, col);
+          const isTimingModule = this.generator.isTimingPattern(row, col);
+
+          // Filter based on renderLayer
+          if (renderLayer === 'function' && !isFunctionModule) continue;
+          if (renderLayer === 'data' && !isDataModule) continue;
+          if (renderLayer === 'guide' && !isTimingModule) continue;
+          if (renderLayer === 'marker' && !isInEyeArea) continue;
+
           // Skip if this module is part of an eye and custom eye style is configured
-          if (this.config.style?.eyeStyle && isInEye(row, col, eyePositions)) {
+          if (this.config.style?.eyeStyle && isInEyeArea) {
             continue;
           }
 
@@ -127,9 +172,19 @@ export class CanvasRenderer {
       this.drawEyes(eyePositions, moduleSize, margin);
     }
 
+    // Apply visual effects if configured
+    if (this.config.style?.effect && this.config.style.effect !== 'none') {
+      this.applyEffect(this.config.style.effect);
+    }
+
     // Draw logo if configured
     if (this.config.logo) {
       await this.drawLogo(this.config.logo);
+    }
+
+    // Restore canvas state if transform was applied
+    if (transform) {
+      this.ctx.restore();
     }
 
     // Restore canvas state if rotation was applied
@@ -386,6 +441,151 @@ export class CanvasRenderer {
   toDataURL(format: 'png' | 'jpeg' = 'png', quality?: number): string {
     const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
     return this.canvas.toDataURL(mimeType, quality);
+  }
+
+  /**
+   * Draw margin noise (decorative dots in margin area)
+   */
+  private drawMarginNoise(moduleCount: number, margin: number, moduleSize: number): void {
+    const seed = this.config.style?.seed || Date.now();
+    const random = this.seededRandom(seed);
+    const density = 0.15; // 15% of margin cells will have noise
+
+    const totalSize = moduleCount + margin * 2;
+    this.ctx.fillStyle = this.style.fgColor;
+    this.ctx.globalAlpha = 0.2; // Make noise subtle
+
+    for (let row = 0; row < totalSize; row++) {
+      for (let col = 0; col < totalSize; col++) {
+        // Check if in margin area
+        const inMargin = row < margin || row >= moduleCount + margin ||
+                        col < margin || col >= moduleCount + margin;
+
+        if (inMargin && random() < density) {
+          const x = col * moduleSize + moduleSize / 2;
+          const y = row * moduleSize + moduleSize / 2;
+          const size = moduleSize * (0.2 + random() * 0.3);
+
+          this.ctx.beginPath();
+          this.ctx.arc(x, y, size, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+      }
+    }
+
+    this.ctx.globalAlpha = 1.0; // Reset alpha
+  }
+
+  /**
+   * Seeded pseudo-random number generator
+   */
+  private seededRandom(seed: number): () => number {
+    let current = seed;
+    return () => {
+      current = (current * 9301 + 49297) % 233280;
+      return current / 233280;
+    };
+  }
+
+  /**
+   * Apply visual effect to canvas
+   */
+  private applyEffect(effectType: EffectType): void {
+    const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+
+    if (effectType === 'crystalize') {
+      // Crystalize effect: creates crystalline patterns
+      this.applyCrystalizeEffect(imageData);
+    } else if (effectType === 'liquidify') {
+      // Liquidify effect: creates liquid/fluid appearance
+      this.applyLiquidifyEffect(imageData);
+    }
+
+    this.ctx.putImageData(imageData, 0, 0);
+  }
+
+  /**
+   * Apply crystalize effect
+   */
+  private applyCrystalizeEffect(imageData: ImageData): void {
+    const data = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+    const blockSize = 4; // Size of crystalline blocks
+
+    // Create a copy of the original data
+    const original = new Uint8ClampedArray(data);
+
+    for (let y = 0; y < height; y += blockSize) {
+      for (let x = 0; x < width; x += blockSize) {
+        // Calculate average color for this block
+        let r = 0, g = 0, b = 0, a = 0, count = 0;
+
+        for (let by = 0; by < blockSize && y + by < height; by++) {
+          for (let bx = 0; bx < blockSize && x + bx < width; bx++) {
+            const idx = ((y + by) * width + (x + bx)) * 4;
+            r += original[idx];
+            g += original[idx + 1];
+            b += original[idx + 2];
+            a += original[idx + 3];
+            count++;
+          }
+        }
+
+        // Average color
+        r = Math.round(r / count);
+        g = Math.round(g / count);
+        b = Math.round(b / count);
+        a = Math.round(a / count);
+
+        // Apply averaged color to all pixels in block
+        for (let by = 0; by < blockSize && y + by < height; by++) {
+          for (let bx = 0; bx < blockSize && x + bx < width; bx++) {
+            const idx = ((y + by) * width + (x + bx)) * 4;
+            data[idx] = r;
+            data[idx + 1] = g;
+            data[idx + 2] = b;
+            data[idx + 3] = a;
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Apply liquidify effect
+   */
+  private applyLiquidifyEffect(imageData: ImageData): void {
+    const data = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+    const strength = 6; // Distortion strength
+
+    // Create a copy of the original data
+    const original = new Uint8ClampedArray(data);
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        // Calculate distortion using sine waves
+        const distortX = Math.sin(y * 0.05) * strength;
+        const distortY = Math.cos(x * 0.05) * strength;
+
+        // Source coordinates with distortion
+        const srcX = Math.round(x + distortX);
+        const srcY = Math.round(y + distortY);
+
+        // Bounds check
+        if (srcX >= 0 && srcX < width && srcY >= 0 && srcY < height) {
+          const srcIdx = (srcY * width + srcX) * 4;
+          const dstIdx = (y * width + x) * 4;
+
+          data[dstIdx] = original[srcIdx];
+          data[dstIdx + 1] = original[srcIdx + 1];
+          data[dstIdx + 2] = original[srcIdx + 2];
+          data[dstIdx + 3] = original[srcIdx + 3];
+        }
+      }
+    }
   }
 
   /**

@@ -83,7 +83,7 @@ export class ObjectPool<T> {
       acquiredCount: this.acquiredCount,
       releasedCount: this.releasedCount,
       reuseRate: this.acquiredCount > 0 
-        ? ((this.acquiredCount - (this.acquiredCount - this.releasedCount)) / this.acquiredCount * 100).toFixed(2) + '%'
+        ? `${((this.acquiredCount - (this.acquiredCount - this.releasedCount)) / this.acquiredCount * 100).toFixed(2)}%`
         : '0%',
     }
   }

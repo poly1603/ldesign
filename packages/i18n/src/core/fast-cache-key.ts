@@ -1,14 +1,14 @@
 /**
  * 快速缓存键生成器
- * 
+ *
  * 优化的缓存键生成算法，减少字符串操作和内存分配
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
 
 import type { TranslationParams } from './types'
-import { buildString, globalPools } from '../utils/object-pool'
+import { buildString } from '../utils/object-pool'
 
 /**
  * 缓存键生成器配置
@@ -39,7 +39,7 @@ export class FastCacheKeyGenerator {
 
   /**
    * 生成翻译缓存键
-   * 
+   *
    * 优化策略：
    * 1. 使用字符串构建器池减少内存分配
    * 2. 快速路径处理无参数情况
@@ -49,7 +49,7 @@ export class FastCacheKeyGenerator {
   generateTranslationKey(
     locale: string,
     key: string,
-    params?: TranslationParams
+    params?: TranslationParams,
   ): string {
     // 快速路径：无参数
     if (!params || Object.keys(params).length === 0) {
@@ -67,18 +67,21 @@ export class FastCacheKeyGenerator {
         }
 
         builder.push(this.config.separator)
-        
+
         if (this.config.compact) {
           // 紧凑模式：使用更短的格式
           for (let i = 0; i < paramKeys.length; i++) {
-            if (i > 0) builder.push(',')
+            if (i > 0)
+              builder.push(',')
             const k = paramKeys[i]
             builder.push(k, '=', String(params[k]))
           }
-        } else {
+        }
+        else {
           // 标准模式：更易读
           for (let i = 0; i < paramKeys.length; i++) {
-            if (i > 0) builder.push(this.config.separator)
+            if (i > 0)
+              builder.push(this.config.separator)
             const k = paramKeys[i]
             builder.push(k, ':', String(params[k]))
           }
@@ -103,10 +106,11 @@ export class FastCacheKeyGenerator {
   generateBatchKey(locale: string, keys: string[]): string {
     return buildString((builder) => {
       builder.push(locale, this.config.separator, 'batch', this.config.separator)
-      
+
       if (this.config.compact) {
         builder.push(keys.join(','))
-      } else {
+      }
+      else {
         builder.push(keys.join(this.config.separator))
       }
     })
@@ -121,29 +125,33 @@ export class FastCacheKeyGenerator {
     params?: Record<string, string>
   } | null {
     const parts = cacheKey.split(this.config.separator)
-    if (parts.length < 2) return null
+    if (parts.length < 2)
+      return null
 
     const [locale, key, ...paramParts] = parts
-    
+
     if (paramParts.length === 0) {
       return { locale, key }
     }
 
     const params: Record<string, string> = {}
     const paramStr = paramParts.join(this.config.separator)
-    
+
     if (this.config.compact) {
       // 解析紧凑格式
       const pairs = paramStr.split(',')
       for (const pair of pairs) {
         const [k, v] = pair.split('=')
-        if (k && v) params[k] = v
+        if (k && v)
+          params[k] = v
       }
-    } else {
+    }
+    else {
       // 解析标准格式
       for (const part of paramParts) {
         const [k, v] = part.split(':')
-        if (k && v) params[k] = v
+        if (k && v)
+          params[k] = v
       }
     }
 
@@ -153,7 +161,7 @@ export class FastCacheKeyGenerator {
 
 /**
  * 哈希缓存键生成器
- * 
+ *
  * 使用哈希算法生成固定长度的键，适合大量参数的场景
  */
 export class HashCacheKeyGenerator {
@@ -176,7 +184,7 @@ export class HashCacheKeyGenerator {
   generateTranslationKey(
     locale: string,
     key: string,
-    params?: TranslationParams
+    params?: TranslationParams,
   ): string {
     if (!params || Object.keys(params).length === 0) {
       return `${locale}:${key}`
@@ -185,7 +193,7 @@ export class HashCacheKeyGenerator {
     // 序列化参数
     const paramStr = JSON.stringify(params)
     const paramHash = this.hash(paramStr)
-    
+
     return `${locale}:${key}:${paramHash}`
   }
 
@@ -267,7 +275,7 @@ export const defaultCacheKeyGenerator = CacheKeyFactory.getStandard()
 export function generateCacheKey(
   locale: string,
   key: string,
-  params?: TranslationParams
+  params?: TranslationParams,
 ): string {
   return defaultCacheKeyGenerator.generateTranslationKey(locale, key, params)
 }
@@ -278,4 +286,3 @@ export function generateCacheKey(
 export function generatePackageCacheKey(locale: string, namespace?: string): string {
   return defaultCacheKeyGenerator.generatePackageKey(locale, namespace)
 }
-

@@ -8,8 +8,23 @@
 // 模块导出
 // ============================================================================
 
+// 批量操作工具
+export * from './batch-helpers'
+
 // 数据压缩工具
 export * from './compressor'
+
+// 序列化缓存工具
+export * from './serialization-cache'
+
+// 事件节流工具
+export * from './event-throttle'
+
+// 最小堆数据结构
+export * from './min-heap'
+
+// 性能分析工具
+export * from './performance-profiler'
 
 // 错误处理工具
 export * from './error-handler'
@@ -17,17 +32,17 @@ export * from './error-handler'
 // 事件发射器
 export { EventEmitter } from './event-emitter'
 
+// 对象池
+export * from './object-pool'
+
 // 智能预取器
 export * from './prefetcher'
-
-// 数据验证工具
-export * from './validator'
 
 // 重试和容错机制
 export * from './retry-manager'
 
-// 对象池
-export * from './object-pool'
+// 数据验证工具
+export * from './validator'
 
 // ============================================================================
 // 环境检测工具
@@ -251,10 +266,10 @@ export function deepMerge<T extends Record<string, unknown>>(
   target: T,
   ...sources: Partial<T>[]
 ): T {
-  if (!sources.length) return target
+  if (!sources.length) { return target }
 
   const source = sources.shift()
-  if (!source) return target
+  if (!source) { return target }
 
   for (const key in source) {
     if (Object.prototype.hasOwnProperty.call(source, key)) {
@@ -262,15 +277,16 @@ export function deepMerge<T extends Record<string, unknown>>(
       const targetValue = target[key]
 
       if (
-        sourceValue &&
-        typeof sourceValue === 'object' &&
-        !Array.isArray(sourceValue) &&
-        targetValue &&
-        typeof targetValue === 'object' &&
-        !Array.isArray(targetValue)
+        sourceValue
+        && typeof sourceValue === 'object'
+        && !Array.isArray(sourceValue)
+        && targetValue
+        && typeof targetValue === 'object'
+        && !Array.isArray(targetValue)
       ) {
         target[key] = deepMerge(targetValue as Record<string, unknown>, sourceValue as Record<string, unknown>) as T[Extract<keyof T, string>]
-      } else {
+      }
+      else {
         target[key] = sourceValue as T[Extract<keyof T, string>]
       }
     }
@@ -301,14 +317,14 @@ export function deepMerge<T extends Record<string, unknown>>(
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
-  immediate = false
+  immediate = false,
 ): (...args: Parameters<T>) => void {
   let timeout: ReturnType<typeof setTimeout> | undefined
 
   return (...args: Parameters<T>) => {
     const later = () => {
       timeout = undefined
-      if (!immediate) func(...args)
+      if (!immediate) { func(...args) }
     }
 
     const callNow = immediate && !timeout
@@ -319,7 +335,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
 
     timeout = setTimeout(later, wait)
 
-    if (callNow) func(...args)
+    if (callNow) { func(...args) }
   }
 }
 
@@ -338,7 +354,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
  */
 export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean
 
@@ -358,7 +374,7 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
  * @returns 只能调用一次的函数
  */
 export function once<T extends (...args: unknown[]) => unknown>(
-  func: T
+  func: T,
 ): (...args: Parameters<T>) => ReturnType<T> | undefined {
   let called = false
   let result: ReturnType<T>
@@ -392,15 +408,15 @@ export function once<T extends (...args: unknown[]) => unknown>(
  * ```
  */
 export function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0) return '0 Bytes'
-  if (bytes < 0) return '-' + formatBytes(-bytes, decimals)
+  if (bytes === 0) { return '0 Bytes' }
+  if (bytes < 0) { return `-${formatBytes(-bytes, decimals)}` }
 
   const k = 1024
   const dm = decimals < 0 ? 0 : decimals
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
 
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  const size = bytes / Math.pow(k, i)
+  const size = bytes / k ** i
 
   return `${Number.parseFloat(size.toFixed(dm))} ${sizes[i]}`
 }
@@ -475,7 +491,7 @@ export function generateUUID(): string {
  * await delay(1000) // 等待 1 秒
  * ```
  */
-export function delay(ms: number): Promise<void> {
+export async function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
@@ -487,10 +503,10 @@ export function delay(ms: number): Promise<void> {
  * @param timeoutMessage - 超时错误消息
  * @returns 带超时的 Promise
  */
-export function withTimeout<T>(
+export async function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,
-  timeoutMessage = 'Operation timed out'
+  timeoutMessage = 'Operation timed out',
 ): Promise<T> {
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs)

@@ -1,4 +1,5 @@
 import type { CacheOptions, SerializableValue, SetOptions } from '../types'
+
 import { CacheManager } from './cache-manager'
 
 /**
@@ -123,12 +124,12 @@ export class CacheNamespace {
   async clear(includeChildren = false): Promise<void> {
     // 清空当前命名空间
     const keys = await this.manager.keys()
-    await Promise.all(keys.map(key => this.manager.remove(key)))
+    await Promise.all(keys.map(async key => this.manager.remove(key)))
 
     // 递归清空子命名空间
     if (includeChildren) {
       await Promise.all(
-        Array.from(this.children.values()).map(child => child.clear(true)),
+        Array.from(this.children.values()).map(async child => child.clear(true)),
       )
     }
   }
@@ -147,7 +148,7 @@ export class CacheNamespace {
 
     // 递归获取子命名空间的键
     const childKeysArrays = await Promise.all(
-      Array.from(this.children.values()).map(child => child.keys(true)),
+      Array.from(this.children.values()).map(async child => child.keys(true)),
     )
     
     return currentKeys.concat(...childKeysArrays)
@@ -220,7 +221,7 @@ export class CacheNamespace {
   async destroy(includeChildren = true): Promise<void> {
     if (includeChildren) {
       await Promise.all(
-        Array.from(this.children.values()).map(child => child.destroy(true)),
+        Array.from(this.children.values()).map(async child => child.destroy(true)),
       )
       this.children.clear()
     }
@@ -342,7 +343,7 @@ export class CacheNamespace {
       if (data.children) {
         for (const [name, childData] of Object.entries(data.children)) {
           const child = this.namespace(name)
-          await child.import(childData as any)
+          await child.import(childData)
         }
       }
     }

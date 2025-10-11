@@ -93,7 +93,7 @@ class LRUCache<K, V> {
       }
     }
 
-    keysToDelete.forEach(key => {
+    keysToDelete.forEach((key) => {
       this.cache.delete(key)
       this.stats.evictions++
     })
@@ -327,7 +327,7 @@ export function isMobileDevice(userAgent?: string): boolean {
 
   const ua
     = userAgent
-    || (typeof window !== 'undefined' ? window.navigator.userAgent : '')
+      || (typeof window !== 'undefined' ? window.navigator.userAgent : '')
   const mobileRegex
     = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
   return mobileRegex.test(ua)
@@ -499,7 +499,7 @@ export function formatBytes(bytes: number, decimals = 2): string {
 export function generateId(prefix?: string): string {
   const id
     = Math.random().toString(36).substring(2, 15)
-    + Math.random().toString(36).substring(2, 15)
+      + Math.random().toString(36).substring(2, 15)
   return prefix ? `${prefix}-${id}` : id
 }
 
@@ -526,8 +526,8 @@ export function batchExecute<T>(
         const startTime = performance.now()
 
         while (
-          currentIndex < tasks.length &&
-          (performance.now() - startTime < endTime || currentIndex % chunkSize !== 0)
+          currentIndex < tasks.length
+          && (performance.now() - startTime < endTime || currentIndex % chunkSize !== 0)
         ) {
           results.push(tasks[currentIndex]())
           currentIndex++
@@ -699,7 +699,7 @@ export function deepClone<T>(obj: T): T {
     return new Date(obj.getTime()) as unknown as T
   }
 
-  if (obj instanceof Array) {
+  if (Array.isArray(obj)) {
     return obj.map(item => deepClone(item)) as unknown as T
   }
 
@@ -713,7 +713,7 @@ export function deepClone<T>(obj: T): T {
 
   if (obj instanceof Set) {
     const cloned = new Set()
-    obj.forEach(value => {
+    obj.forEach((value) => {
       cloned.add(deepClone(value))
     })
     return cloned as unknown as T
@@ -728,3 +728,449 @@ export function deepClone<T>(obj: T): T {
 
   return cloned
 }
+
+/**
+ * 深度合并对象
+ *
+ * @param target - 目标对象
+ * @param sources - 源对象数组
+ * @returns 合并后的对象
+ */
+export function deepMerge<T extends Record<string, any>>(
+  target: T,
+  ...sources: Array<Partial<T>>
+): T {
+  if (!sources.length)
+    return target
+
+  const source = sources.shift()
+
+  if (source === undefined)
+    return target
+
+  if (isObject(target) && isObject(source)) {
+    for (const key in source) {
+      if (isObject(source[key])) {
+        if (!target[key])
+          Object.assign(target, { [key]: {} })
+        deepMerge(target[key] as Record<string, any>, source[key] as Record<string, any>)
+      }
+      else {
+        Object.assign(target, { [key]: source[key] })
+      }
+    }
+  }
+
+  return deepMerge(target, ...sources)
+}
+
+/**
+ * 判断是否为对象
+ */
+function isObject(item: unknown): item is Record<string, any> {
+  return item !== null && typeof item === 'object' && !Array.isArray(item)
+}
+
+/**
+ * 带重试机制的异步函数执行
+ *
+ * @param fn - 要执行的异步函数
+ * @param options - 配置选项
+ * @returns Promise
+ *
+ * @example
+ * ```typescript
+ * const result = await retry(
+ *   () => fetch('/api/data'),
+ *   {
+ *     retries: 3,
+ *     delay: 1000,
+ *     backoff: 2,
+ *     onRetry: (error, attempt) => {
+ *       console.log(`Retry attempt ${attempt}:`, error)
+ *     }
+ *   }
+ * )
+ * ```
+ */
+export async function retry<T>(
+  fn: () => Promise<T>,
+  options: {
+    retries?: number
+    delay?: number
+    backoff?: number
+    maxDelay?: number
+    onRetry?: (error: Error, attempt: number) => void
+  } = {},
+): Promise<T> {
+  const {
+    retries = 3,
+    delay = 1000,
+    backoff = 1.5,
+    maxDelay = 10000,
+    onRetry,
+  } = options
+
+  let lastError: Error
+  let currentDelay = delay
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn()
+    }
+    catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error))
+
+      if (attempt < retries) {
+        onRetry?.(lastError, attempt + 1)
+
+        await new Promise(resolve => setTimeout(resolve, currentDelay))
+
+        // 指数退避
+        currentDelay = Math.min(currentDelay * backoff, maxDelay)
+      }
+    }
+  }
+
+  throw new Error(lastError!.message)
+}
+
+/**
+ * 并发控制的异步任务池
+ *
+ * @param poolLimit - 并发限制数量
+ * @param array - 任务数组
+ * @param iteratorFn - 迭代函数
+ * @returns Promise<结果数组>
+ *
+ * @example
+ * ```typescript
+ * const results = await asyncPool(
+ *   3, // 最多3个并发
+ *   [1, 2, 3, 4, 5],
+ *   async (num) => {
+ *     const response = await fetch(`/api/${num}`)
+ *     return response.json()
+ *   }
+ * )
+ * ```
+ */
+export async function asyncPool<T, R>(
+  poolLimit: number,
+  array: T[],
+  iteratorFn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = []
+  const executing: Promise<void>[] = []
+
+  for (let i = 0; i < array.length; i++) {
+    const item = array[i]
+
+    const p = Promise.resolve().then(async () => {
+      const result = await iteratorFn(item, i)
+      results[i] = result
+    })
+
+    results.push(p as any)
+
+    if (poolLimit <= array.length) {
+      const e: Promise<void> = p.then(() => {
+        executing.splice(executing.indexOf(e), 1)
+      })
+      executing.push(e)
+
+      if (executing.length >= poolLimit) {
+        await Promise.race(executing)
+      }
+    }
+  }
+
+  await Promise.all(results)
+  return results as R[]
+}
+
+/**
+ * Promise 超时控制
+ *
+ * @param promise - 要执行的 Promise
+ * @param ms - 超时时间（毫秒）
+ * @param timeoutError - 自定义超时错误
+ * @returns Promise
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   const result = await promiseTimeout(
+ *     fetch('/api/data'),
+ *     5000,
+ *     new Error('Request timeout')
+ *   )
+ * } catch (error) {
+ *   console.error('Timeout or error:', error)
+ * }
+ * ```
+ */
+export function promiseTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  timeoutError?: Error,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(timeoutError || new Error(`Promise timeout after ${ms}ms`))
+    }, ms)
+
+    promise
+      .then((value) => {
+        clearTimeout(timer)
+        resolve(value)
+      })
+      .catch((error) => {
+        clearTimeout(timer)
+        reject(error)
+      })
+  })
+}
+
+/**
+ * 异步防抖函数
+ *
+ * @param fn - 要防抖的异步函数
+ * @param wait - 等待时间（毫秒）
+ * @returns 防抖后的函数
+ *
+ * @example
+ * ```typescript
+ * const debouncedFetch = asyncDebounce(
+ *   async (query: string) => {
+ *     const response = await fetch(`/api/search?q=${query}`)
+ *     return response.json()
+ *   },
+ *   300
+ * )
+ *
+ * // 只有最后一次调用会真正执行
+ * debouncedFetch('hello')
+ * debouncedFetch('world') // 只有这次会执行
+ * ```
+ */
+export function asyncDebounce<T extends (...args: any[]) => Promise<any>>(
+  fn: T,
+  wait: number,
+): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+  let timeout: NodeJS.Timeout | null = null
+  let pendingPromise: Promise<ReturnType<T>> | null = null
+
+  return (...args: Parameters<T>): Promise<ReturnType<T>> => {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+
+    if (!pendingPromise) {
+      pendingPromise = new Promise<ReturnType<T>>((resolve, reject) => {
+        timeout = setTimeout(async () => {
+          timeout = null
+          try {
+            const result = await fn(...args)
+            resolve(result)
+          }
+          catch (error) {
+            reject(error)
+          }
+          finally {
+            pendingPromise = null
+          }
+        }, wait)
+      })
+    }
+
+    return pendingPromise
+  }
+}
+
+/**
+ * 异步节流函数
+ *
+ * @param fn - 要节流的异步函数
+ * @param wait - 等待时间（毫秒）
+ * @returns 节流后的函数
+ */
+export function asyncThrottle<T extends (...args: any[]) => Promise<any>>(
+  fn: T,
+  wait: number,
+): (...args: Parameters<T>) => Promise<ReturnType<T> | undefined> {
+  let timeout: NodeJS.Timeout | null = null
+  let previous = 0
+  let pendingPromise: Promise<ReturnType<T>> | null = null
+
+  return async (...args: Parameters<T>): Promise<ReturnType<T> | undefined> => {
+    const now = Date.now()
+    const remaining = wait - (now - previous)
+
+    if (remaining <= 0) {
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = null
+      }
+
+      previous = now
+      pendingPromise = fn(...args)
+      return pendingPromise
+    }
+    else if (!timeout && !pendingPromise) {
+      return new Promise<ReturnType<T>>((resolve) => {
+        timeout = setTimeout(async () => {
+          previous = Date.now()
+          timeout = null
+          pendingPromise = fn(...args)
+          const result = await pendingPromise
+          pendingPromise = null
+          resolve(result)
+        }, remaining)
+      })
+    }
+
+    return pendingPromise || undefined
+  }
+}
+
+/**
+ * 睡眠函数
+ *
+ * @param ms - 睡眠时间（毫秒）
+ * @returns Promise
+ */
+export function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * 检查值是否为空（null、undefined、空字符串、空数组、空对象）
+ *
+ * @param value - 要检查的值
+ * @returns 是否为空
+ */
+export function isEmpty(value: unknown): boolean {
+  if (value === null || value === undefined) {
+    return true
+  }
+
+  if (typeof value === 'string') {
+    return value.trim().length === 0
+  }
+
+  if (Array.isArray(value)) {
+    return value.length === 0
+  }
+
+  if (typeof value === 'object') {
+    return Object.keys(value).length === 0
+  }
+
+  return false
+}
+
+/**
+ * 数组去重
+ *
+ * @param array - 要去重的数组
+ * @param key - 可选的键名（用于对象数组）
+ * @returns 去重后的数组
+ */
+export function unique<T>(
+  array: T[],
+  key?: keyof T,
+): T[] {
+  if (!key) {
+    return Array.from(new Set(array))
+  }
+
+  const seen = new Set()
+  return array.filter((item) => {
+    const val = item[key]
+    if (seen.has(val)) {
+      return false
+    }
+    seen.add(val)
+    return true
+  })
+}
+
+/**
+ * 数组分组
+ *
+ * @param array - 要分组的数组
+ * @param fn - 分组函数
+ * @returns 分组后的对象
+ */
+export function groupBy<T>(
+  array: T[],
+  fn: (item: T) => string | number,
+): Record<string | number, T[]> {
+  return array.reduce(
+    (result, item) => {
+      const key = fn(item)
+      if (!result[key]) {
+        result[key] = []
+      }
+      result[key].push(item)
+      return result
+    },
+    {} as Record<string | number, T[]>,
+  )
+}
+
+/**
+ * 数组分块
+ *
+ * @param array - 要分块的数组
+ * @param size - 每块的大小
+ * @returns 分块后的二维数组
+ */
+export function chunk<T>(array: T[], size: number): T[][] {
+  const chunks: T[][] = []
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size))
+  }
+  return chunks
+}
+
+/**
+ * 随机生成指定范围内的整数
+ *
+ * @param min - 最小值
+ * @param max - 最大值
+ * @returns 随机整数
+ */
+export function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+/**
+ * 随机选择数组中的元素
+ *
+ * @param array - 数组
+ * @returns 随机元素
+ */
+export function randomItem<T>(array: T[]): T {
+  return array[randomInt(0, array.length - 1)]
+}
+
+/**
+ * 打乱数组顺序（Fisher-Yates 洗牌算法）
+ *
+ * @param array - 要打乱的数组
+ * @returns 打乱后的数组（不修改原数组）
+ */
+export function shuffle<T>(array: T[]): T[] {
+  const result = [...array]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
+// 导出 ResourceManager 和 ErrorBoundary
+export * from './ResourceManager'
+export * from './ErrorBoundary'

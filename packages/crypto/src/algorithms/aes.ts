@@ -175,20 +175,11 @@ export class AESEncryptor implements IEncryptor {
             }
 
             // 对于非空解密结果，进行额外验证
-            if (decryptedString.length > 0) {
-              try {
-                // 尝试重新编码以验证UTF-8有效性
-                const testEncode = CryptoJS.enc.Utf8.parse(decryptedString)
-                const reEncoded = testEncode.toString(CryptoJS.enc.Utf8)
-                if (reEncoded !== decryptedString) {
-                  throw new Error('Invalid UTF-8 sequence')
-                }
-              } catch {
-                throw ErrorUtils.createDecryptionError(
-                  'Decrypted data contains invalid characters - wrong key',
-                  'AES',
-                )
-              }
+            if (!this.validateUtf8String(decryptedString)) {
+              throw ErrorUtils.createDecryptionError(
+                'Decrypted data contains invalid characters - wrong key',
+                'AES',
+              )
             }
 
             return {
@@ -258,20 +249,11 @@ export class AESEncryptor implements IEncryptor {
       }
 
       // 对于非空解密结果，进行额外验证
-      if (decryptedString.length > 0) {
-        try {
-          // 尝试重新编码以验证UTF-8有效性
-          const testEncode = CryptoJS.enc.Utf8.parse(decryptedString)
-          const reEncoded = testEncode.toString(CryptoJS.enc.Utf8)
-          if (reEncoded !== decryptedString) {
-            throw new Error('Invalid UTF-8 sequence')
-          }
-        } catch {
-          throw ErrorUtils.createDecryptionError(
-            'Decrypted data contains invalid characters - wrong key',
-            'AES',
-          )
-        }
+      if (!this.validateUtf8String(decryptedString)) {
+        throw ErrorUtils.createDecryptionError(
+          'Decrypted data contains invalid characters - wrong key',
+          'AES',
+        )
       }
 
       return {
@@ -297,6 +279,25 @@ export class AESEncryptor implements IEncryptor {
         mode: opts.mode,
         error: 'Unknown decryption error',
       }
+    }
+  }
+
+  /**
+   * 验证 UTF-8 字符串有效性
+   * 优化：提取为独立方法，避免代码重复
+   */
+  private validateUtf8String(str: string): boolean {
+    if (str.length === 0) {
+      return true
+    }
+
+    try {
+      // 尝试重新编码以验证UTF-8有效性
+      const testEncode = CryptoJS.enc.Utf8.parse(str)
+      const reEncoded = testEncode.toString(CryptoJS.enc.Utf8)
+      return reEncoded === str
+    } catch {
+      return false
     }
   }
 

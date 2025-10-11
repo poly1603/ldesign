@@ -1,24 +1,17 @@
 <!--
   I18nD 日期格式化组件
-  
+
   用于日期格式化的 Vue 组件
-  
+
   @example
   <I18nD :value="new Date()" />
   <I18nD :value="new Date()" format="long" />
   <I18nD :value="new Date()" format="short" />
 -->
 
-<template>
-  <component :is="tag" v-if="formattedDate">
-    {{ formattedDate }}
-  </component>
-</template>
-
 <script setup lang="ts">
-import { computed, inject } from 'vue'
 import type { I18nInjectionKey } from '../types'
-
+import { computed, inject } from 'vue'
 
 /**
  * 日期格式化类型
@@ -39,7 +32,7 @@ const props = withDefaults(defineProps<{
   locale?: string
 }>(), {
   format: 'medium',
-  tag: 'span'
+  tag: 'span',
 })
 
 /**
@@ -57,16 +50,16 @@ const formattedDate = computed(() => {
   try {
     const locale = props.locale || i18n.getCurrentLanguage()
     const date = new Date(props.value)
-    
+
     if (isNaN(date.getTime())) {
-      throw new Error('Invalid date')
+      throw new TypeError('Invalid date')
     }
-    
+
     // 如果提供了自定义选项，使用自定义选项
     if (props.options) {
       return new Intl.DateTimeFormat(locale, props.options).format(date)
     }
-    
+
     // 根据格式类型选择预设选项
     switch (props.format) {
       case 'full':
@@ -74,47 +67,50 @@ const formattedDate = computed(() => {
           weekday: 'long',
           year: 'numeric',
           month: 'long',
-          day: 'numeric'
+          day: 'numeric',
         }).format(date)
-      
+
       case 'long':
         return new Intl.DateTimeFormat(locale, {
           year: 'numeric',
           month: 'long',
-          day: 'numeric'
+          day: 'numeric',
         }).format(date)
-      
+
       case 'short':
         return new Intl.DateTimeFormat(locale, {
           year: '2-digit',
           month: 'numeric',
-          day: 'numeric'
+          day: 'numeric',
         }).format(date)
-      
+
       case 'relative':
         // 相对时间格式化
         const now = new Date()
         const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-        
+
         if (Math.abs(diffInSeconds) < 60) {
           return '刚刚'
-        } else if (Math.abs(diffInSeconds) < 3600) {
+        }
+ else if (Math.abs(diffInSeconds) < 3600) {
           const minutes = Math.floor(Math.abs(diffInSeconds) / 60)
           return diffInSeconds > 0 ? `${minutes}分钟前` : `${minutes}分钟后`
-        } else if (Math.abs(diffInSeconds) < 86400) {
+        }
+ else if (Math.abs(diffInSeconds) < 86400) {
           const hours = Math.floor(Math.abs(diffInSeconds) / 3600)
           return diffInSeconds > 0 ? `${hours}小时前` : `${hours}小时后`
-        } else {
+        }
+ else {
           const days = Math.floor(Math.abs(diffInSeconds) / 86400)
           return diffInSeconds > 0 ? `${days}天前` : `${days}天后`
         }
-      
+
       case 'medium':
       default:
         return new Intl.DateTimeFormat(locale, {
           year: 'numeric',
           month: 'short',
-          day: 'numeric'
+          day: 'numeric',
         }).format(date)
     }
   } catch (error) {
@@ -125,13 +121,14 @@ const formattedDate = computed(() => {
 </script>
 
 <script lang="ts">
-/**
- * 组件名称
- */
 export default {
   name: 'I18nD',
-  inheritAttrs: false
+  inheritAttrs: false,
 }
 </script>
 
-
+<template>
+  <component :is="tag" v-bind="$attrs">
+    {{ formattedDate }}
+  </component>
+</template>

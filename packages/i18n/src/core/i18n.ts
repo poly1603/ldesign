@@ -1,10 +1,7 @@
 // 全局声明 process 变量
-declare const process: any
-
 import type {
   BatchTranslationResult,
   CacheOptions,
-  CacheStats,
   Detector,
   I18nEventType,
   I18nInstance,
@@ -12,9 +9,8 @@ import type {
   LanguageChangedEventArgs,
   LanguageInfo,
   LanguagePackage,
-  LoadErrorEventArgs,
-  LoadedEventArgs,
   Loader,
+  LoadErrorEventArgs,
   LRUCache,
   NestedObject,
   OptimizationSuggestion,
@@ -23,7 +19,6 @@ import type {
   StorageType,
   TranslationOptions,
   TranslationParams,
-  TranslationMissingEventArgs,
 } from './types'
 import { hasInterpolation, interpolate } from '../utils/interpolation'
 import { getNestedValue } from '../utils/path'
@@ -32,27 +27,28 @@ import {
   hasPluralExpression,
   processPluralization,
 } from '../utils/pluralization'
-import { TranslationEngine, type TranslationEngineOptions } from './translation-engine'
-import { CacheManager } from './cache-manager'
-import { ErrorHandler, ErrorHandlingStrategy } from './error-handler'
-import { EnhancedPerformanceManager } from './performance-manager'
-import { MemoryManager } from './memory-manager'
-import { PreloadManager } from './preload-manager'
 import { BatchManager } from './batch-manager'
+import { TranslationCache } from './cache'
+import { CacheManager } from './cache-manager'
 import { createDetector } from './detector'
+import { ErrorHandler, ErrorHandlingStrategy } from './error-handler'
 import {
   ErrorManager,
-  handleErrors,
   InitializationError,
   LanguageLoadError,
 } from './errors'
-import { TranslationCache } from './cache'
-import { PluralizationEngine, PluralCategory, PluralUtils } from './pluralization'
 import { FormatterEngine } from './formatters'
 import { DefaultLoader, StaticLoader } from './loader'
+import { MemoryManager } from './memory-manager'
 import { PerformanceManager } from './performance'
+import { EnhancedPerformanceManager } from './performance-manager'
+import { PluralizationEngine, PluralUtils } from './pluralization'
+import { PreloadManager } from './preload-manager'
 import { I18nCoreManager, ManagerRegistry } from './registry'
 import { createStorage, LRUCacheImpl } from './storage'
+import { TranslationEngine } from './translation-engine'
+
+declare const process: any
 
 /**
  * 默认配置选项
@@ -537,20 +533,22 @@ export class I18n implements I18nInstance {
             nativeName: locale === 'zh-CN' ? '中文' : locale === 'en' ? 'English' : locale,
             code: locale,
             direction: 'ltr',
-            dateFormat: 'YYYY-MM-DD'
+            dateFormat: 'YYYY-MM-DD',
           },
-          translations
+          translations,
         }
         const staticLoader = this._loader as StaticLoader
         staticLoader.registerPackage(locale, packageData)
         // 同步加载包，确保getLoadedPackage能够返回数据
         try {
           staticLoader.loadSync(locale)
-        } catch (err) {
+        }
+        catch (err) {
           console.warn(`Failed to load package for locale ${locale}:`, err)
         }
       }
-    } else if (options.customLoader) {
+    }
+    else if (options.customLoader) {
       this._loader = options.customLoader
     }
 
@@ -560,7 +558,7 @@ export class I18n implements I18nInstance {
       fallbackLocale: this.options.fallbackLocale,
       loader: this.loader,
       packageCache: this.packageCache,
-      debug: process?.env?.NODE_ENV === 'development'
+      debug: process?.env?.NODE_ENV === 'development',
     })
 
     // 初始化缓存管理器
@@ -569,7 +567,7 @@ export class I18n implements I18nInstance {
       maxSize: this.options.cache?.maxSize || 1000,
       ttl: this.options.cache?.ttl,
       defaultTTL: this.options.cache?.defaultTTL || 300000, // 5分钟
-      enableTTL: this.options.cache?.enableTTL ?? true
+      enableTTL: this.options.cache?.enableTTL ?? true,
     })
 
     // 初始化错误处理器
@@ -577,7 +575,7 @@ export class I18n implements I18nInstance {
       defaultStrategy: ErrorHandlingStrategy.FALLBACK,
       strategies: new Map(),
       enableRecovery: true,
-      maxRetries: 3
+      maxRetries: 3,
     })
 
     // 初始化增强性能管理器
@@ -586,7 +584,7 @@ export class I18n implements I18nInstance {
       sampleRate: 0.1,
       slowTranslationThreshold: 10,
       maxSlowTranslations: 50,
-      maxFrequentKeys: 20
+      maxFrequentKeys: 20,
     })
 
     // 初始化内存管理器
@@ -594,7 +592,7 @@ export class I18n implements I18nInstance {
       maxMemory: this.options.cache?.maxMemory || 100 * 1024 * 1024, // 100MB
       pressureThreshold: 0.8,
       autoCleanup: true,
-      cleanupStrategy: 'hybrid'
+      cleanupStrategy: 'hybrid',
     })
 
     // 初始化预加载管理器
@@ -602,7 +600,7 @@ export class I18n implements I18nInstance {
       enabled: true,
       strategy: 'smart',
       maxConcurrent: 3,
-      enablePrediction: true
+      enablePrediction: true,
     })
 
     // 初始化批量管理器
@@ -610,7 +608,7 @@ export class I18n implements I18nInstance {
       batchSize: 50,
       batchDelay: 10,
       enableSmartBatching: true,
-      enableParallel: true
+      enableParallel: true,
     })
 
     // 设置批量管理器的翻译函数
@@ -657,7 +655,8 @@ export class I18n implements I18nInstance {
           if (stored && typeof stored === 'string') {
             initialLocale = stored
           }
-        } catch (error) {
+        }
+        catch (error) {
           // 存储读取失败，使用默认语言（静默处理，避免测试中的噪音）
           // console.warn('Failed to read stored locale, using default:', error)
         }
@@ -675,7 +674,8 @@ export class I18n implements I18nInstance {
               // 优先精确匹配
               if (this.options.messages[detected]) {
                 initialLocale = detected
-              } else {
+              }
+              else {
                 // 尝试基础语言代码
                 const baseCode = detected.split('-')[0]
                 if (this.options.messages[baseCode]) {
@@ -685,7 +685,8 @@ export class I18n implements I18nInstance {
               }
             }
           }
-        } catch (error) {
+        }
+        catch (error) {
           // 静默处理，使用默认语言
         }
       }
@@ -705,7 +706,7 @@ export class I18n implements I18nInstance {
             direction: 'ltr',
             dateFormat: 'YYYY-MM-DD',
           },
-          translations: this.options.messages[initialLocale]
+          translations: this.options.messages[initialLocale],
         }
 
         // 将完整的包数据添加到缓存中
@@ -732,7 +733,8 @@ export class I18n implements I18nInstance {
       if (this.isDevelopmentEnvironment()) {
         console.debug(`I18n sync initialized with locale: ${initialLocale}`)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('I18n sync initialization failed:', error)
       // 即使失败，也要确保基础功能可用
       this.currentLocale = this.options.defaultLocale
@@ -791,10 +793,12 @@ export class I18n implements I18nInstance {
           const localesResult = (this.loader as any)?.getAvailableLocales?.()
           if (localesResult instanceof Promise) {
             availableLocales = await localesResult
-          } else if (Array.isArray(localesResult)) {
+          }
+          else if (Array.isArray(localesResult)) {
             availableLocales = localesResult
           }
-        } catch (e) {
+        }
+        catch (e) {
           // 忽略，保持空数组
         }
 
@@ -809,7 +813,7 @@ export class I18n implements I18nInstance {
           // 主语言匹配（例如：'en-US' 匹配 'en'）
           const mainLang = detected.split('-')[0]
           const match = availableLocales.find(locale =>
-            locale.startsWith(mainLang)
+            locale.startsWith(mainLang),
           )
           if (match) {
             initialLocale = match
@@ -829,8 +833,8 @@ export class I18n implements I18nInstance {
                 locale,
                 error,
               )
-            })
-          )
+            }),
+          ),
         )
       }
 
@@ -917,7 +921,7 @@ export class I18n implements I18nInstance {
 
       // 更新翻译引擎配置
       this.translationEngine.updateOptions({
-        currentLocale: locale
+        currentLocale: locale,
       })
 
       // 清除缓存
@@ -933,7 +937,7 @@ export class I18n implements I18nInstance {
       // 触发事件
       this.emit('languageChanged', {
         newLocale: locale,
-        previousLocale
+        previousLocale,
       } as LanguageChangedEventArgs)
 
       // 调用回调
@@ -945,7 +949,7 @@ export class I18n implements I18nInstance {
       // 触发错误事件
       this.emit('loadError', {
         locale,
-        error: error as Error
+        error: error as Error,
       } as LoadErrorEventArgs)
 
       // 调用错误回调
@@ -981,7 +985,7 @@ export class I18n implements I18nInstance {
       const cached = this.translationCache.getCachedTranslation(
         this.currentLocale,
         key,
-        params
+        params,
       )
       if (cached !== undefined) {
         return cached as T
@@ -998,7 +1002,7 @@ export class I18n implements I18nInstance {
           this.currentLocale,
           key,
           params,
-          result
+          result,
         )
 
         // 注册内存使用（仅在开发环境）
@@ -1008,7 +1012,7 @@ export class I18n implements I18nInstance {
             `translation:${this.currentLocale}:${key}`,
             estimatedSize,
             'translation',
-            5
+            5,
           )
         }
       }
@@ -1027,15 +1031,15 @@ export class I18n implements I18nInstance {
   /**
    * 优化的异步批量翻译
    * @param keys 翻译键数组
-   * @param params 插值参数
+   * @param params 插值参数（可选）
    * @returns Promise<翻译结果对象>
    */
   async tBatchAsync(
     keys: string[],
-    params: TranslationParams = this.emptyParams,
+    params?: TranslationParams,
   ): Promise<Record<string, string>> {
     const promises = keys.map(key =>
-      this.batchManager.addRequest(key, params)
+      this.batchManager.addRequest(key, params || {}),
     )
 
     const results = await Promise.allSettled(promises)
@@ -1045,7 +1049,8 @@ export class I18n implements I18nInstance {
       const key = keys[index]
       if (result.status === 'fulfilled') {
         translations[key] = result.value
-      } else {
+      }
+      else {
         translations[key] = key // 回退到键名
       }
     })
@@ -1056,12 +1061,12 @@ export class I18n implements I18nInstance {
   /**
    * 批量翻译（同步版本）
    * @param keys 翻译键数组
-   * @param params 插值参数
+   * @param params 插值参数（可选）
    * @returns 翻译结果对象
    */
   batchTranslate(
-    keys: string[],
-    params: TranslationParams = this.emptyParams,
+    keys: readonly string[],
+    params?: TranslationParams,
   ): BatchTranslationResult {
     const translations: Record<string, string> = {}
     const failedKeys: string[] = []
@@ -1072,7 +1077,7 @@ export class I18n implements I18nInstance {
     const keysLength = keys.length
 
     // 优化：批量缓存查找
-    const hasParams = Object.keys(params).length > 0
+    const hasParams = params && Object.keys(params).length > 0
     const uncachedKeys: string[] = []
 
     if (this.options.cache.enabled && !hasParams) {
@@ -1098,7 +1103,8 @@ export class I18n implements I18nInstance {
     // 处理未缓存的键
     for (const key of uncachedKeys) {
       try {
-        const translation = this.t(key, params)
+        // 如果没有提供 params，传递空对象以确保插值占位符被替换为空字符串
+        const translation = this.t(key, params || {})
         translations[key] = translation
 
         // 检查是否是回退值（简单检查是否等于键本身）
@@ -1149,19 +1155,22 @@ export class I18n implements I18nInstance {
       // 处理同步和异步结果
       if (localesResult instanceof Promise) {
         // 如果是 Promise，异步更新缓存
-        localesResult.then(locales => {
+        localesResult.then((locales) => {
           this.updateCachedAvailableLanguages(locales)
-        }).catch(error => {
+        }).catch((error) => {
           console.error('[I18n] Failed to load available locales:', error)
         })
         return this.cachedAvailableLanguages || []
-      } else if (Array.isArray(localesResult)) {
+      }
+      else if (Array.isArray(localesResult)) {
         availableLocales = localesResult
-      } else if (localesResult) {
+      }
+      else if (localesResult) {
         console.warn('[I18n] getAvailableLanguages: Loader returned non-array result:', localesResult)
         return this.cachedAvailableLanguages || []
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('[I18n] getAvailableLanguages: Error getting locales from loader:', error)
       return this.cachedAvailableLanguages || []
     }
@@ -1185,7 +1194,6 @@ export class I18n implements I18nInstance {
     return languages
   }
 
-
   /**
    * 异步更新缓存的可用语言列表
    * @param locales 语言代码数组
@@ -1207,7 +1215,8 @@ export class I18n implements I18nInstance {
         }
       }
       this.cachedAvailableLanguages = languages
-    } catch (error) {
+    }
+    catch (error) {
       console.error('[I18n] Failed to update cached available languages:', error)
     }
   }
@@ -1219,6 +1228,7 @@ export class I18n implements I18nInstance {
   getCurrentLanguage(): string {
     return this.currentLocale
   }
+
   /**
    * 预加载语言
    * @param locale 语言代码
@@ -1331,7 +1341,8 @@ export class I18n implements I18nInstance {
   removeAllListeners(event?: I18nEventType): void {
     if (event) {
       this.eventListeners.delete(event)
-    } else {
+    }
+    else {
       this.eventListeners.clear()
     }
   }
@@ -1412,7 +1423,7 @@ export class I18n implements I18nInstance {
   private processEnhancedPluralization(
     text: string,
     params: TranslationParams,
-    locale: string
+    locale: string,
   ): string {
     // 检查是否包含 ICU 格式的多元化表达式
     const icuFormatMatch = text.match(/\{([^,]+),\s*plural,\s*(.+)\}/)
@@ -1462,7 +1473,7 @@ export class I18n implements I18nInstance {
     rules: string,
     count: number,
     params: TranslationParams,
-    locale: string
+    locale: string,
   ): string {
     // 解析 ICU 格式：=0{no items} =1{one item} other{# items}
     const rulePattern = /(=\d+|zero|one|two|few|many|other)\{([^}]*)\}/g
@@ -1481,14 +1492,16 @@ export class I18n implements I18nInstance {
     const exactKey = `=${count}`
     if (parsedRules[exactKey]) {
       selectedRule = parsedRules[exactKey]
-    } else {
+    }
+    else {
       // 使用多元化引擎确定类别
       const category = this.pluralizationEngine.getCategory(locale, count)
 
       // 映射类别到规则
       if (parsedRules[category]) {
         selectedRule = parsedRules[category]
-      } else if (parsedRules.other) {
+      }
+      else if (parsedRules.other) {
         selectedRule = parsedRules.other
       }
     }
@@ -1680,7 +1693,7 @@ export class I18n implements I18nInstance {
    * @param locale 语言代码，默认为当前语言
    * @returns 翻译键数组
    */
-  getKeys(locale?: string): string[] {
+  getKeys(locale?: string): readonly string[] {
     const targetLocale = locale || this.currentLocale
     const packageData = (
       this.loader as Loader & {
@@ -1744,8 +1757,8 @@ export class I18n implements I18nInstance {
       slowTranslations: (metrics.slowestTranslations || []).map(item => ({
         key: item.key,
         time: item.time,
-        timestamp: Date.now()
-      }))
+        timestamp: Date.now(),
+      })),
     }
   }
 
@@ -1770,7 +1783,7 @@ export class I18n implements I18nInstance {
       type: 'performance' as const,
       title: `优化建议 ${index + 1}`,
       description: suggestion,
-      priority: 3 as const
+      priority: 3 as const,
     }))
   }
 
@@ -1778,7 +1791,7 @@ export class I18n implements I18nInstance {
    * 预热缓存
    * @param keys 要预热的翻译键
    */
-  warmUpCache(keys: string[]): void {
+  warmUpCache(keys: readonly string[]): void {
     const entries: Array<[string, string]> = []
 
     for (const key of keys) {
@@ -2042,7 +2055,7 @@ export class I18n implements I18nInstance {
   private estimateTranslationSize(
     key: string,
     value: string,
-    params?: TranslationParams
+    params?: TranslationParams,
   ): number {
     let size = 0
 
@@ -2063,16 +2076,12 @@ export class I18n implements I18nInstance {
     return size
   }
 
-
-
   /**
    * 获取内存统计
    */
   getMemoryStats() {
     return this.memoryManager.getStats()
   }
-
-
 
   /**
    * 获取详细的性能报告
@@ -2081,7 +2090,7 @@ export class I18n implements I18nInstance {
     return {
       performance: this.enhancedPerformanceManager.getDetailedReport(),
       memory: this.memoryManager.getMemoryReport(),
-      cache: this.getCacheStats()
+      cache: this.getCacheStats(),
     }
   }
 

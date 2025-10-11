@@ -78,8 +78,9 @@ class I18nDevTools {
     translationCalls: 0,
     averageTranslationTime: 0,
     cacheHitRate: 0,
-    languageChanges: 0
+    languageChanges: 0,
   }
+
   private missingTranslations = new Set<string>()
 
   constructor(options: DevToolsOptions = {}) {
@@ -89,7 +90,7 @@ class I18nDevTools {
       trackPerformance: true,
       trackMissing: true,
       verbose: false,
-      ...options
+      ...options,
     }
   }
 
@@ -129,7 +130,8 @@ class I18nDevTools {
   private registerVueDevTools() {
     const hook = (window as any).__VUE_DEVTOOLS_GLOBAL_HOOK__
 
-    if (!hook) return
+    if (!hook)
+      return
 
     hook.on('app:init', (app: App) => {
       if (app === this.app) {
@@ -141,7 +143,7 @@ class I18nDevTools {
     hook.addTimelineLayer({
       id: 'i18n',
       label: 'I18n',
-      color: 0x722ED1
+      color: 0x722ED1,
     })
   }
 
@@ -149,7 +151,8 @@ class I18nDevTools {
    * 包装翻译函数
    */
   private wrapTranslationFunctions() {
-    if (!this.i18n) return
+    if (!this.i18n)
+      return
 
     const originalT = this.i18n.t
     const originalTe = this.i18n.te
@@ -164,7 +167,8 @@ class I18nDevTools {
 
         this.trackTranslation(key, endTime - startTime, false, params)
         return result
-      } catch (error) {
+      }
+      catch (error) {
         this.trackTranslation(key, 0, true, params)
         throw error
       }
@@ -186,7 +190,8 @@ class I18nDevTools {
    * 追踪翻译使用情况
    */
   private trackTranslation(key: string, duration: number, missing: boolean, params?: Record<string, unknown>) {
-    if (!this.options.trackTranslations) return
+    if (!this.options.trackTranslations)
+      return
 
     const currentLocale = this.i18n?.locale.value || 'unknown'
 
@@ -198,7 +203,7 @@ class I18nDevTools {
       locales: new Set(),
       missing: false,
       params: [],
-      totalTime: 0
+      totalTime: 0,
     }
 
     stats.count++
@@ -214,8 +219,8 @@ class I18nDevTools {
 
     // 更新性能统计
     this.performanceStats.translationCalls++
-    this.performanceStats.averageTranslationTime =
-      (this.performanceStats.averageTranslationTime + duration) / 2
+    this.performanceStats.averageTranslationTime
+      = (this.performanceStats.averageTranslationTime + duration) / 2
 
     // 发送到 Vue DevTools
     this.sendToDevTools('translation', {
@@ -223,7 +228,7 @@ class I18nDevTools {
       duration,
       missing,
       locale: currentLocale,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     if (this.options.verbose) {
@@ -243,7 +248,7 @@ class I18nDevTools {
       this.sendToDevTools('missing-translation', {
         key,
         locale: locale || this.i18n?.locale.value,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
 
       console.warn(`[I18n DevTools] 缺失翻译: ${key}`, { locale })
@@ -267,18 +272,20 @@ class I18nDevTools {
    * 发送数据到 Vue DevTools
    */
   private sendToDevTools(event: string, data: any) {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     const hook = (window as any).__VUE_DEVTOOLS_GLOBAL_HOOK__
-    if (!hook) return
+    if (!hook)
+      return
 
     hook.addTimelineEvent({
       layerId: 'i18n',
       event: {
         time: Date.now(),
         title: event,
-        data
-      }
+        data,
+      },
     })
   }
 
@@ -294,8 +301,8 @@ class I18nDevTools {
         totalTranslations: this.translationStats.size,
         totalCalls: this.performanceStats.translationCalls,
         missingCount: this.missingTranslations.size,
-        averageTime: this.performanceStats.averageTranslationTime
-      }
+        averageTime: this.performanceStats.averageTranslationTime,
+      },
     }
   }
 
@@ -303,7 +310,8 @@ class I18nDevTools {
    * 翻译覆盖率分析
    */
   analyzeCoverage() {
-    if (!this.i18n) return null
+    if (!this.i18n)
+      return null
 
     const allKeys = new Set<string>()
     const usedKeys = new Set(this.translationStats.keys())
@@ -319,7 +327,7 @@ class I18nDevTools {
       unused: Math.max(0, allKeys.size - usedKeys.size),
       percentage: allKeys.size > 0 ? (usedKeys.size / allKeys.size) * 100 : 100,
       unusedKeys: Array.from(allKeys).filter(key => !usedKeys.has(key)),
-      locales: availableLocales
+      locales: availableLocales,
     }
 
     this.log('翻译覆盖率分析完成', 'info', coverage)
@@ -344,7 +352,7 @@ class I18nDevTools {
         issues.push({
           type: 'empty_translation',
           key,
-          message: '翻译内容为空或缺失'
+          message: '翻译内容为空或缺失',
         })
       }
 
@@ -352,7 +360,7 @@ class I18nDevTools {
       const paramSets = stats.params
       if (paramSets.length > 1) {
         const firstParams = Object.keys(paramSets[0] || {}).sort()
-        const inconsistent = paramSets.some(params => {
+        const inconsistent = paramSets.some((params) => {
           const currentParams = Object.keys(params || {}).sort()
           return JSON.stringify(firstParams) !== JSON.stringify(currentParams)
         })
@@ -361,7 +369,7 @@ class I18nDevTools {
           issues.push({
             type: 'inconsistent_format',
             key,
-            message: '插值参数在不同调用中不一致'
+            message: '插值参数在不同调用中不一致',
           })
         }
       }
@@ -385,12 +393,12 @@ class I18nDevTools {
           lastUsed: data.lastUsed,
           missing: data.missing,
           locales: Array.from(data.locales),
-          avgParams: data.params.length
-        }))
+          avgParams: data.params.length,
+        })),
       },
       missing: {
         total: this.missingTranslations.size,
-        keys: Array.from(this.missingTranslations)
+        keys: Array.from(this.missingTranslations),
       },
       performance: {
         ...this.performanceStats,
@@ -400,17 +408,17 @@ class I18nDevTools {
           .map(([key, data]) => ({
             key,
             avgTime: (data.totalTime || 0) / data.count,
-            count: data.count
-          }))
+            count: data.count,
+          })),
       },
       coverage: this.options.trackCoverage ? this.analyzeCoverage() : null,
-      quality: this.options.trackQuality ? this.checkQuality() : null
+      quality: this.options.trackQuality ? this.checkQuality() : null,
     }
 
     this.log('开发报告生成完成', 'info', {
       translations: report.translations.total,
       missing: report.missing.total,
-      avgTime: report.performance.averageTranslationTime
+      avgTime: report.performance.averageTranslationTime,
     })
 
     return report
@@ -426,7 +434,7 @@ class I18nDevTools {
       translationCalls: 0,
       averageTranslationTime: 0,
       cacheHitRate: 0,
-      languageChanges: 0
+      languageChanges: 0,
     }
     this.log('统计数据已清除')
   }
@@ -435,7 +443,8 @@ class I18nDevTools {
    * 日志输出
    */
   private log(message: string, level: 'info' | 'warn' | 'error' = 'info', data?: any) {
-    if (!this.options.verbose && level === 'info') return
+    if (!this.options.verbose && level === 'info')
+      return
 
     const prefix = '[I18n DevTools]'
     const args = data ? [message, data] : [message]

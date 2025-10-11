@@ -3,6 +3,7 @@
  */
 
 @import './ui.css';
+@import './dialog.css';
 
 .ldesign-editor {
   display: flex;

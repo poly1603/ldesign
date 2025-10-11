@@ -1,23 +1,23 @@
 /**
  * Vue I18n 组件导出
- * 
+ *
  * 提供所有 Vue I18n 组件的统一导出
  */
 
-// 导入所有组件
-import I18nT from './I18nT.vue'
-import I18nN from './I18nN.vue'
-import I18nD from './I18nD.vue'
-import I18nP from './I18nP.vue'
-import I18nR from './I18nR.vue'
-import I18nL from './I18nL.vue'
 import I18nC from './I18nC.vue'
+import I18nChain from './I18nChain.vue'
+import I18nD from './I18nD.vue'
 import I18nDT from './I18nDT.vue'
 import I18nIf from './I18nIf.vue'
-import I18nChain from './I18nChain.vue'
+import I18nL from './I18nL.vue'
+import I18nN from './I18nN.vue'
+import I18nP from './I18nP.vue'
+import I18nR from './I18nR.vue'
+// 导入所有组件
+import I18nT from './I18nT.vue'
 import LanguageSwitcher from './LanguageSwitcher.vue'
-import TranslationProvider from './TranslationProvider.vue'
 import TranslationMissing from './TranslationMissing.vue'
+import TranslationProvider from './TranslationProvider.vue'
 
 // 注意：不再重新导出 .vue 组件的类型，以避免私有 Props 类型泄漏导致的 TS 声明错误
 
@@ -37,7 +37,7 @@ export const components = {
   I18nChain,
   LanguageSwitcher,
   TranslationProvider,
-  TranslationMissing
+  TranslationMissing,
 } as const
 
 /**
@@ -56,7 +56,8 @@ export function installComponents(app: any) {
   Object.entries(components).forEach(([name, component]) => {
     try {
       app.component(name, component)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Failed to register component ${name}:`, error)
     }
   })
@@ -66,19 +67,19 @@ export function installComponents(app: any) {
  * 单独导出所有组件
  */
 export {
-  I18nT,
-  I18nN,
-  I18nD,
-  I18nP,
-  I18nR,
-  I18nL,
   I18nC,
+  I18nChain,
+  I18nD,
   I18nDT,
   I18nIf,
-  I18nChain,
+  I18nL,
+  I18nN,
+  I18nP,
+  I18nR,
+  I18nT,
   LanguageSwitcher,
+  TranslationMissing,
   TranslationProvider,
-  TranslationMissing
 }
 
 /**

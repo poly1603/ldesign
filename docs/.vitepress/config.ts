@@ -24,6 +24,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '指南', link: '/guide/introduction' },
       { text: '组件', link: '/components/button' },
+      { text: 'API', link: '/api/' },
       { text: '示例', link: '/examples/' },
       {
         text: '相关链接',
@@ -69,9 +70,10 @@ export default defineConfig({
             { text: 'Image 图片', link: '/components/image' },
             { text: 'Draggable 拖拽缩放', link: '/components/draggable' },
             { text: 'Popconfirm 气泡确认框', link: '/components/popconfirm' },
-{ text: 'Tree 树', link: '/components/tree' },
+            { text: 'DropdownPanel 下拉面板', link: '/components/dropdown-panel' },
+            { text: 'Tree 树', link: '/components/tree' },
             { text: 'Split 面板分割', link: '/components/split' },
-{ text: 'Scrollbar 滚动条', link: '/components/scrollbar' },
+            { text: 'Scrollbar 滚动条', link: '/components/scrollbar' },
             { text: 'InputNumber 数字输入框', link: '/components/input-number' },
             { text: 'Ellipsis 文本省略', link: '/components/ellipsis' }
           ]
@@ -85,6 +87,21 @@ export default defineConfig({
             { text: '基础应用', link: '/examples/basic-app' },
             { text: '完整示例', link: '/examples/complete-example' },
             { text: 'TimePicker 示例', link: '/examples/time-picker' }
+          ]
+        }
+      ],
+      '/api/': [
+        {
+          text: 'API 文档',
+          items: [
+            { text: '包总览', link: '/api/packages' },
+            { text: '@ldesign/color', link: '/api/color' },
+            { text: '@ldesign/api', link: '/api/api' },
+            { text: '@ldesign/cache', link: '/api/cache' },
+            { text: '@ldesign/http', link: '/api/http' },
+            { text: '@ldesign/i18n', link: '/api/i18n' },
+            { text: '@ldesign/router', link: '/api/router' },
+            { text: '@ldesign/store', link: '/api/store' }
           ]
         }
       ]

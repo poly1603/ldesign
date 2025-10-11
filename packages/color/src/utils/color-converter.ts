@@ -46,58 +46,278 @@ export interface LAB {
 }
 
 /**
- * LRU 缓存实现
- * 用于提高频繁转换的性能
+ * 缓存条目接口
  */
-class LRUCache<K, V> {
-  private cache = new Map<K, V>()
+interface CacheEntry<V> {
+  value: V
+  expiresAt: number
+  accessCount: number
+}
+
+/**
+ * 缓存统计信息
+ */
+interface CacheStats {
+  hits: number
+  misses: number
+  evictions: number
+  expirations: number
+  hitRate: number
+}
+
+/**
+ * 增强的 LRU 缓存实现
+ * 
+ * 特性:
+ * - 基于时间的过期策略 (TTL)
+ * - 自动清理过期条目
+ * - 缓存统计和性能监控
+ * - 内存使用优化
+ * 
+ * @template K 键类型
+ * @template V 值类型
+ */
+class EnhancedLRUCache<K, V> {
+  private cache = new Map<K, CacheEntry<V>>()
   private readonly maxSize: number
+  private readonly ttl: number // Time to live in milliseconds
+  private stats: CacheStats = {
+    hits: 0,
+    misses: 0,
+    evictions: 0,
+    expirations: 0,
+    hitRate: 0,
+  }
+  private cleanupTimer: NodeJS.Timeout | null = null
 
-  constructor(maxSize: number = 500) {
+  /**
+   * 创建增强的 LRU 缓存
+   * @param maxSize 最大缓存条目数量 (默认: 500)
+   * @param ttl 缓存过期时间（毫秒）(默认: 5分钟)
+   */
+  constructor(maxSize: number = 500, ttl: number = 5 * 60 * 1000) {
     this.maxSize = maxSize
+    this.ttl = ttl
+    this.startPeriodicCleanup()
   }
 
+  /**
+   * 获取缓存值
+   * @param key 缓存键
+   * @returns 缓存值，如果不存在或已过期则返回 undefined
+   */
   get(key: K): V | undefined {
-    const value = this.cache.get(key)
-    if (value !== undefined) {
-      // 重新插入以更新访问顺序
-      this.cache.delete(key)
-      this.cache.set(key, value)
+    const entry = this.cache.get(key)
+    
+    if (!entry) {
+      this.stats.misses++
+      this.updateHitRate()
+      return undefined
     }
-    return value
+
+    // 检查是否过期
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key)
+      this.stats.expirations++
+      this.stats.misses++
+      this.updateHitRate()
+      return undefined
+    }
+
+    // 更新访问信息并重新插入以更新顺序
+    entry.accessCount++
+    this.cache.delete(key)
+    this.cache.set(key, entry)
+    
+    this.stats.hits++
+    this.updateHitRate()
+    return entry.value
   }
 
+  /**
+   * 设置缓存值
+   * @param key 缓存键
+   * @param value 缓存值
+   */
   set(key: K, value: V): void {
+    // 如果键已存在，删除旧值
     if (this.cache.has(key)) {
       this.cache.delete(key)
     }
+    // 如果缓存已满，删除最久未使用的项
     else if (this.cache.size >= this.maxSize) {
-      // 删除最久未使用的项
       const firstKey = this.cache.keys().next().value
       if (firstKey !== undefined) {
         this.cache.delete(firstKey)
+        this.stats.evictions++
       }
     }
-    this.cache.set(key, value)
+
+    // 添加新条目
+    this.cache.set(key, {
+      value,
+      expiresAt: Date.now() + this.ttl,
+      accessCount: 0,
+    })
   }
 
+  /**
+   * 检查键是否存在且未过期
+   * @param key 缓存键
+   * @returns 是否存在
+   */
   has(key: K): boolean {
-    return this.cache.has(key)
+    const entry = this.cache.get(key)
+    if (!entry)
+      return false
+
+    // 检查是否过期
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key)
+      this.stats.expirations++
+      return false
+    }
+
+    return true
   }
 
+  /**
+   * 清空所有缓存
+   */
   clear(): void {
     this.cache.clear()
+    this.resetStats()
   }
 
+  /**
+   * 获取当前缓存大小
+   */
   get size(): number {
     return this.cache.size
+  }
+
+  /**
+   * 获取缓存统计信息
+   * @returns 统计信息对象
+   */
+  getStats(): Readonly<CacheStats> {
+    return { ...this.stats }
+  }
+
+  /**
+   * 重置统计信息
+   */
+  resetStats(): void {
+    this.stats = {
+      hits: 0,
+      misses: 0,
+      evictions: 0,
+      expirations: 0,
+      hitRate: 0,
+    }
+  }
+
+  /**
+   * 手动清理过期条目
+   * @returns 清理的条目数量
+   */
+  cleanup(): number {
+    const now = Date.now()
+    let cleaned = 0
+
+    for (const [key, entry] of this.cache.entries()) {
+      if (now > entry.expiresAt) {
+        this.cache.delete(key)
+        this.stats.expirations++
+        cleaned++
+      }
+    }
+
+    return cleaned
+  }
+
+  /**
+   * 销毁缓存，停止定时清理
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+    this.clear()
+  }
+
+  /**
+   * 启动定期清理
+   */
+  private startPeriodicCleanup(): void {
+    // 每分钟清理一次过期条目
+    this.cleanupTimer = setInterval(() => {
+      this.cleanup()
+    }, 60 * 1000)
+
+    // 在 Node.js 环境中，允许进程退出
+    if (typeof process !== 'undefined' && this.cleanupTimer.unref) {
+      this.cleanupTimer.unref()
+    }
+  }
+
+  /**
+   * 更新命中率
+   */
+  private updateHitRate(): void {
+    const total = this.stats.hits + this.stats.misses
+    this.stats.hitRate = total > 0 ? this.stats.hits / total : 0
   }
 }
 
 /**
  * 颜色转换结果缓存
+ * 
+ * 使用增强的 LRU 缓存，支持：
+ * - 500 个条目的缓存限制
+ * - 5 分钟的 TTL
+ * - 自动清理过期条目
  */
-const conversionCache = new LRUCache<string, any>(500)
+const conversionCache = new EnhancedLRUCache<string, any>(500, 5 * 60 * 1000)
+
+/**
+ * 获取缓存统计信息
+ * @returns 缓存统计对象
+ * @example
+ * ```ts
+ * const stats = getCacheStats()
+ * console.log(`命中率: ${(stats.hitRate * 100).toFixed(2)}%`)
+ * ```
+ */
+export function getCacheStats() {
+  return conversionCache.getStats()
+}
+
+/**
+ * 清空颜色转换缓存
+ * @example
+ * ```ts
+ * // 在内存压力大时手动清理缓存
+ * clearConversionCache()
+ * ```
+ */
+export function clearConversionCache(): void {
+  conversionCache.clear()
+}
+
+/**
+ * 手动触发缓存清理
+ * @returns 清理的过期条目数量
+ * @example
+ * ```ts
+ * const cleaned = cleanupConversionCache()
+ * console.log(`清理了 ${cleaned} 个过期条目`)
+ * ```
+ */
+export function cleanupConversionCache(): number {
+  return conversionCache.cleanup()
+}
 
 /**
  * 验证并规范化hex颜色值

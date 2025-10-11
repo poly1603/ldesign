@@ -1,14 +1,15 @@
 /**
  * 批量操作管理器
- * 
+ *
  * 优化批量翻译操作，提供智能批处理和缓存策略
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
 
-import { TimeUtils } from '../utils/common'
 import type { TranslationParams } from './types'
+import { TimeUtils } from '../utils/common'
+import { globalPools } from '../utils/object-pool'
 
 /**
  * 批量配置接口
@@ -66,6 +67,10 @@ export interface BatchStats {
 
 /**
  * 批量操作管理器类
+ *
+ * 内存优化：
+ * - 使用 WeakMap 管理请求生命周期
+ * - 使用对象池复用结果对象
  */
 export class BatchManager {
   private config: BatchConfig
@@ -73,6 +78,8 @@ export class BatchManager {
   private batchTimer?: NodeJS.Timeout
   private stats: BatchStats
   private requestCounter = 0
+  // 使用 WeakMap 跟踪请求状态，避免内存泄漏
+  private requestStates = new WeakMap<BatchRequest, { processed: boolean, result?: string | Error }>()
 
   constructor(config: Partial<BatchConfig> = {}) {
     this.config = {
@@ -82,7 +89,7 @@ export class BatchManager {
       enableSmartBatching: true,
       enableParallel: true,
       maxParallel: 3,
-      ...config
+      ...config,
     }
 
     this.stats = {
@@ -91,7 +98,7 @@ export class BatchManager {
       averageBatchSize: 0,
       averageProcessingTime: 0,
       cacheHitRate: 0,
-      errorRate: 0
+      errorRate: 0,
     }
   }
 
@@ -101,11 +108,11 @@ export class BatchManager {
   addRequest(
     key: string,
     params?: TranslationParams,
-    priority: number = 1
+    priority: number = 1,
   ): Promise<string> {
     return new Promise((resolve, reject) => {
       const id = `${++this.requestCounter}-${TimeUtils.now()}`
-      
+
       const request: BatchRequest = {
         id,
         key,
@@ -113,8 +120,11 @@ export class BatchManager {
         resolve,
         reject,
         timestamp: TimeUtils.now(),
-        priority
+        priority,
       }
+
+      // 使用 WeakMap 跟踪请求状态
+      this.requestStates.set(request, { processed: false })
 
       this.pendingRequests.set(id, request)
       this.stats.totalRequests++
@@ -153,7 +163,7 @@ export class BatchManager {
       averageBatchSize: 0,
       averageProcessingTime: 0,
       cacheHitRate: 0,
-      errorRate: 0
+      errorRate: 0,
     }
   }
 
@@ -202,7 +212,7 @@ export class BatchManager {
    */
   private shouldFlushImmediately(): boolean {
     const pendingCount = this.pendingRequests.size
-    
+
     // 达到批量大小
     if (pendingCount >= this.config.batchSize) {
       return true
@@ -211,7 +221,7 @@ export class BatchManager {
     // 有高优先级请求
     const hasHighPriority = Array.from(this.pendingRequests.values())
       .some(request => request.priority > 5)
-    
+
     if (hasHighPriority && pendingCount > 0) {
       return true
     }
@@ -219,8 +229,8 @@ export class BatchManager {
     // 最老的请求等待时间过长
     const now = TimeUtils.now()
     const oldestRequest = Array.from(this.pendingRequests.values())
-      .reduce((oldest, current) => 
-        current.timestamp < oldest.timestamp ? current : oldest
+      .reduce((oldest, current) =>
+        current.timestamp < oldest.timestamp ? current : oldest,
       )
 
     if (now - oldestRequest.timestamp > this.config.maxWaitTime) {
@@ -243,41 +253,50 @@ export class BatchManager {
     this.pendingRequests.clear()
 
     if (requests.length === 0) {
-      return {
-        success: {},
-        failed: {},
-        duration: 0,
-        cacheHits: 0,
-        cacheMisses: 0
-      }
+      // 使用对象池复用结果对象
+      const result = globalPools.objects.acquire()
+      result.success = {}
+      result.failed = {}
+      result.duration = 0
+      result.cacheHits = 0
+      result.cacheMisses = 0
+      return result as BatchResult
     }
 
     const startTime = TimeUtils.now()
-    
+
     // 按优先级排序
     requests.sort((a, b) => b.priority - a.priority)
 
-    const result: BatchResult = {
-      success: {},
-      failed: {},
-      duration: 0,
-      cacheHits: 0,
-      cacheMisses: 0
-    }
+    // 使用对象池创建结果
+    const result = globalPools.objects.acquire() as BatchResult
+    result.success = {}
+    result.failed = {}
+    result.duration = 0
+    result.cacheHits = 0
+    result.cacheMisses = 0
 
     try {
       if (this.config.enableParallel && requests.length > this.config.maxParallel) {
         // 并行处理
         await this.processParallel(requests, result)
-      } else {
+      }
+      else {
         // 串行处理
         await this.processSerial(requests, result)
       }
-    } catch (error) {
+    }
+    catch (error) {
       // 处理所有失败的请求
       for (const request of requests) {
         request.reject(error as Error)
         result.failed[request.key] = error as Error
+        // 更新请求状态
+        const state = this.requestStates.get(request)
+        if (state) {
+          state.processed = true
+          state.result = error as Error
+        }
       }
     }
 
@@ -295,20 +314,35 @@ export class BatchManager {
    */
   private async processSerial(
     requests: BatchRequest[],
-    result: BatchResult
+    result: BatchResult,
   ): Promise<void> {
     for (const request of requests) {
       try {
         // 这里应该调用实际的翻译函数
         // 为了演示，我们使用模拟的翻译逻辑
         const translation = await this.translateSingle(request.key, request.params)
-        
+
         request.resolve(translation)
         result.success[request.key] = translation
         result.cacheMisses++
-      } catch (error) {
+
+        // 更新请求状态
+        const state = this.requestStates.get(request)
+        if (state) {
+          state.processed = true
+          state.result = translation
+        }
+      }
+      catch (error) {
         request.reject(error as Error)
         result.failed[request.key] = error as Error
+
+        // 更新请求状态
+        const state = this.requestStates.get(request)
+        if (state) {
+          state.processed = true
+          state.result = error as Error
+        }
       }
     }
   }
@@ -318,10 +352,10 @@ export class BatchManager {
    */
   private async processParallel(
     requests: BatchRequest[],
-    result: BatchResult
+    result: BatchResult,
   ): Promise<void> {
     const chunks = this.chunkArray(requests, this.config.maxParallel)
-    
+
     for (const chunk of chunks) {
       const promises = chunk.map(async (request) => {
         try {
@@ -329,9 +363,24 @@ export class BatchManager {
           request.resolve(translation)
           result.success[request.key] = translation
           result.cacheMisses++
-        } catch (error) {
+
+          // 更新请求状态
+          const state = this.requestStates.get(request)
+          if (state) {
+            state.processed = true
+            state.result = translation
+          }
+        }
+        catch (error) {
           request.reject(error as Error)
           result.failed[request.key] = error as Error
+
+          // 更新请求状态
+          const state = this.requestStates.get(request)
+          if (state) {
+            state.processed = true
+            state.result = error as Error
+          }
         }
       })
 
@@ -345,11 +394,11 @@ export class BatchManager {
    */
   private async translateSingle(
     key: string,
-    params?: TranslationParams
+    params?: TranslationParams,
   ): Promise<string> {
     // 模拟异步翻译
     await new Promise(resolve => setTimeout(resolve, 1))
-    
+
     // 这里应该调用实际的翻译逻辑
     // 返回模拟的翻译结果
     return `translated_${key}`
@@ -371,32 +420,32 @@ export class BatchManager {
    */
   private updateStats(batchSize: number, result: BatchResult): void {
     this.stats.totalBatches++
-    
+
     // 更新平均批量大小
-    this.stats.averageBatchSize = 
-      (this.stats.averageBatchSize * (this.stats.totalBatches - 1) + batchSize) / 
-      this.stats.totalBatches
+    this.stats.averageBatchSize
+      = (this.stats.averageBatchSize * (this.stats.totalBatches - 1) + batchSize)
+        / this.stats.totalBatches
 
     // 更新平均处理时间
-    this.stats.averageProcessingTime = 
-      (this.stats.averageProcessingTime * (this.stats.totalBatches - 1) + result.duration) / 
-      this.stats.totalBatches
+    this.stats.averageProcessingTime
+      = (this.stats.averageProcessingTime * (this.stats.totalBatches - 1) + result.duration)
+        / this.stats.totalBatches
 
     // 更新缓存命中率
     const totalOperations = result.cacheHits + result.cacheMisses
     if (totalOperations > 0) {
       const currentHitRate = result.cacheHits / totalOperations
-      this.stats.cacheHitRate = 
-        (this.stats.cacheHitRate * (this.stats.totalBatches - 1) + currentHitRate) / 
-        this.stats.totalBatches
+      this.stats.cacheHitRate
+        = (this.stats.cacheHitRate * (this.stats.totalBatches - 1) + currentHitRate)
+          / this.stats.totalBatches
     }
 
     // 更新错误率
     const errorCount = Object.keys(result.failed).length
     const currentErrorRate = errorCount / batchSize
-    this.stats.errorRate = 
-      (this.stats.errorRate * (this.stats.totalBatches - 1) + currentErrorRate) / 
-      this.stats.totalBatches
+    this.stats.errorRate
+      = (this.stats.errorRate * (this.stats.totalBatches - 1) + currentErrorRate)
+        / this.stats.totalBatches
   }
 
   /**
@@ -404,7 +453,7 @@ export class BatchManager {
    * 允许外部设置实际的翻译函数
    */
   setTranslateFunction(
-    translateFn: (key: string, params?: TranslationParams) => Promise<string>
+    translateFn: (key: string, params?: TranslationParams) => Promise<string>,
   ): void {
     this.translateSingle = translateFn
   }

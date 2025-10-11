@@ -98,10 +98,13 @@ describe('设备路由工具函数', () => {
   })
 
   describe('resolveDeviceComponent', () => {
-    const mockComponents = {
+    const mockComponents: Record<DeviceType, RouteComponent> = {
       mobile: { name: 'MobileComponent' } as RouteComponent,
       tablet: { name: 'TabletComponent' } as RouteComponent,
       desktop: { name: 'DesktopComponent' } as RouteComponent,
+      tv: { name: 'TVComponent' } as RouteComponent,
+      watch: { name: 'WatchComponent' } as RouteComponent,
+      unknown: { name: 'UnknownComponent' } as RouteComponent,
     }
 
     it('应该解析当前设备的组件', () => {

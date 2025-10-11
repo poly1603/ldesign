@@ -1,19 +1,18 @@
 /**
  * 语言配置功能测试
- * 
+ *
  * 测试语言选择配置、过滤器和注册表功能
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { 
-  LanguageRegistry, 
+import { beforeEach, describe, expect, it } from 'vitest'
+import {
   createLanguageRegistry,
   type LanguageConfig,
-  type LanguageFilter,
-  type LanguageFilterConfig
+  type LanguageFilterConfig,
+  LanguageRegistry,
 } from '../src/core/language-config'
 
-describe('LanguageRegistry', () => {
+describe('languageRegistry', () => {
   let registry: LanguageRegistry
 
   beforeEach(() => {
@@ -51,10 +50,10 @@ describe('LanguageRegistry', () => {
   describe('语言过滤器', () => {
     it('应该支持数组过滤器', () => {
       const config: LanguageConfig = {
-        enabled: ['zh-CN', 'en']
+        enabled: ['zh-CN', 'en'],
       }
       registry = new LanguageRegistry(config)
-      
+
       const enabled = registry.getEnabledLanguages()
       expect(enabled).toEqual(['zh-CN', 'en'])
     })
@@ -63,14 +62,14 @@ describe('LanguageRegistry', () => {
       const config: LanguageConfig = {
         enabled: (locale, info) => {
           return info?.direction === 'ltr'
-        }
+        },
       }
       registry = new LanguageRegistry(config)
-      
+
       const enabled = registry.getEnabledLanguages()
       expect(enabled.length).toBeGreaterThan(0)
       // 所有启用的语言都应该是 ltr
-      enabled.forEach(locale => {
+      enabled.forEach((locale) => {
         const info = registry.getLanguageInfo(locale)
         expect(info?.direction).toBe('ltr')
       })
@@ -80,14 +79,14 @@ describe('LanguageRegistry', () => {
       const filterConfig: LanguageFilterConfig = {
         include: ['zh-CN', 'en', 'ja', 'ko'],
         exclude: ['ko'],
-        regions: ['CN', 'US']
+        regions: ['CN', 'US'],
       }
-      
+
       const config: LanguageConfig = {
-        enabled: filterConfig
+        enabled: filterConfig,
       }
       registry = new LanguageRegistry(config)
-      
+
       const enabled = registry.getEnabledLanguages()
       expect(enabled).toContain('zh-CN')
       expect(enabled).not.toContain('ko') // 被排除
@@ -97,16 +96,16 @@ describe('LanguageRegistry', () => {
       const filterConfig: LanguageFilterConfig = {
         custom: (locale, info) => {
           return locale.startsWith('zh') || locale.startsWith('en')
-        }
+        },
       }
-      
+
       const config: LanguageConfig = {
-        enabled: filterConfig
+        enabled: filterConfig,
       }
       registry = new LanguageRegistry(config)
-      
+
       const enabled = registry.getEnabledLanguages()
-      enabled.forEach(locale => {
+      enabled.forEach((locale) => {
         expect(locale.startsWith('zh') || locale.startsWith('en')).toBe(true)
       })
     })
@@ -115,7 +114,7 @@ describe('LanguageRegistry', () => {
   describe('语言管理', () => {
     beforeEach(() => {
       const config: LanguageConfig = {
-        enabled: ['zh-CN', 'en', 'ja']
+        enabled: ['zh-CN', 'en', 'ja'],
       }
       registry = new LanguageRegistry(config)
     })
@@ -151,9 +150,9 @@ describe('LanguageRegistry', () => {
     it('应该能够更新配置', () => {
       registry.updateConfig({
         enabled: ['zh-CN', 'en'],
-        defaultLocale: 'zh-CN'
+        defaultLocale: 'zh-CN',
       })
-      
+
       const enabled = registry.getEnabledLanguages()
       expect(enabled).toEqual(['zh-CN', 'en'])
     })
@@ -161,9 +160,9 @@ describe('LanguageRegistry', () => {
     it('应该确保默认语言被启用', () => {
       registry.updateConfig({
         enabled: ['en'],
-        defaultLocale: 'zh-CN'
+        defaultLocale: 'zh-CN',
       })
-      
+
       expect(registry.isLanguageEnabled('zh-CN')).toBe(true)
       expect(registry.isLanguageEnabled('en')).toBe(true)
     })
@@ -171,9 +170,9 @@ describe('LanguageRegistry', () => {
     it('应该确保回退语言被启用', () => {
       registry.updateConfig({
         enabled: ['zh-CN'],
-        fallbackLocale: 'en'
+        fallbackLocale: 'en',
       })
-      
+
       expect(registry.isLanguageEnabled('zh-CN')).toBe(true)
       expect(registry.isLanguageEnabled('en')).toBe(true)
     })
@@ -183,10 +182,10 @@ describe('LanguageRegistry', () => {
     it('应该正确处理禁用列表', () => {
       const config: LanguageConfig = {
         enabled: ['zh-CN', 'en', 'ja', 'ko'],
-        disabled: ['ko']
+        disabled: ['ko'],
       }
       registry = new LanguageRegistry(config)
-      
+
       expect(registry.isLanguageEnabled('zh-CN')).toBe(true)
       expect(registry.isLanguageEnabled('en')).toBe(true)
       expect(registry.isLanguageEnabled('ja')).toBe(true)
@@ -196,10 +195,10 @@ describe('LanguageRegistry', () => {
     it('禁用列表应该优先于启用列表', () => {
       const config: LanguageConfig = {
         enabled: ['zh-CN', 'en', 'ja'],
-        disabled: ['ja']
+        disabled: ['ja'],
       }
       registry = new LanguageRegistry(config)
-      
+
       expect(registry.isLanguageEnabled('ja')).toBe(false)
     })
   })
@@ -214,7 +213,7 @@ describe('LanguageRegistry', () => {
     it('别名应该指向正确的主语言', () => {
       const zhInfo = registry.getLanguageInfo('zh')
       const zhCNInfo = registry.getLanguageInfo('zh-CN')
-      
+
       expect(zhInfo?.name).toBe(zhCNInfo?.name)
       expect(zhInfo?.nativeName).toBe(zhCNInfo?.nativeName)
     })
@@ -230,9 +229,9 @@ describe('createLanguageRegistry', () => {
   it('应该使用提供的配置', () => {
     const config: LanguageConfig = {
       enabled: ['zh-CN', 'en'],
-      defaultLocale: 'zh-CN'
+      defaultLocale: 'zh-CN',
     }
-    
+
     const registry = createLanguageRegistry(config)
     const enabled = registry.getEnabledLanguages()
     expect(enabled).toEqual(['zh-CN', 'en'])
@@ -245,23 +244,23 @@ describe('复杂场景测试', () => {
       enabled: {
         include: ['zh-CN', 'en', 'ja', 'ko', 'es', 'fr'],
         exclude: ['es', 'fr'],
-        custom: (locale) => !locale.includes('-')
+        custom: locale => !locale.includes('-'),
       },
       defaultLocale: 'zh-CN',
-      fallbackLocale: 'en'
+      fallbackLocale: 'en',
     }
-    
+
     const registry = createLanguageRegistry(config)
     const enabled = registry.getEnabledLanguages()
-    
+
     // 应该包含默认语言和回退语言
     expect(enabled).toContain('zh-CN')
     expect(enabled).toContain('en')
-    
+
     // 应该排除 es 和 fr
     expect(enabled).not.toContain('es')
     expect(enabled).not.toContain('fr')
-    
+
     // 自定义函数：不包含 '-' 的语言
     expect(enabled).toContain('ja')
     expect(enabled).toContain('ko')
@@ -271,7 +270,7 @@ describe('复杂场景测试', () => {
     const registry = createLanguageRegistry({})
     const enabled = registry.getEnabledLanguages()
     const available = registry.getAvailableLanguages()
-    
+
     // 空配置应该启用所有可用语言
     expect(enabled.length).toBe(available.length)
   })
@@ -282,10 +281,10 @@ describe('复杂场景测试', () => {
       priority: {
         'zh-CN': 100,
         'en': 90,
-        'ja': 80
-      }
+        'ja': 80,
+      },
     }
-    
+
     const registry = createLanguageRegistry(config)
     expect(registry.getConfig().priority).toEqual(config.priority)
   })

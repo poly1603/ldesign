@@ -3,11 +3,11 @@
  * 测试 I18n 类的基础功能
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { I18n } from '../src/core/i18n'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { createI18n } from '../src/core/createI18n'
+import { I18n } from '../src/core/i18n'
 
-describe('I18n 核心功能', () => {
+describe('i18n 核心功能', () => {
   let i18n: I18n
 
   beforeEach(() => {
@@ -23,9 +23,9 @@ describe('I18n 核心功能', () => {
           count: '{count, plural, =0{没有项目} =1{一个项目} other{# 个项目}}',
           nested: {
             deep: {
-              value: '深层嵌套值'
-            }
-          }
+              value: '深层嵌套值',
+            },
+          },
         },
         'en': {
           hello: 'Hello',
@@ -34,11 +34,11 @@ describe('I18n 核心功能', () => {
           missing: 'This key only exists in English',
           nested: {
             deep: {
-              value: 'Deep nested value'
-            }
-          }
-        }
-      }
+              value: 'Deep nested value',
+            },
+          },
+        },
+      },
     })
   })
 
@@ -182,8 +182,8 @@ describe('createI18n 便捷函数', () => {
     const i18n = createI18n({
       locale: 'zh-CN',
       messages: {
-        'zh-CN': { test: '测试' }
-      }
+        'zh-CN': { test: '测试' },
+      },
     })
 
     expect(i18n).toBeInstanceOf(I18n)
@@ -201,7 +201,7 @@ describe('全局 I18n 管理', () => {
     // 创建全局实例
     const globalI18n = createGlobalI18n({
       locale: 'zh-CN',
-      messages: { 'zh-CN': { test: '全局测试' } }
+      messages: { 'zh-CN': { test: '全局测试' } },
     })
 
     expect(hasGlobalI18n()).toBe(true)

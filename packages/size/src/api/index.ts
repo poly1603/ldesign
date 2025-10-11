@@ -291,5 +291,12 @@ export const Size = {
   EXTRA_LARGE: 'extra-large' as const,
 }
 
+// 重新导出 utils 中的函数，使用更简洁的名称
+export {
+  isValidSizeMode as isValidSize,
+  compareSizeModes as compareSizes,
+  getSizeModeDisplayName as getSizeDisplayName,
+} from '../utils'
+
 // 默认导出便捷对象
 export default Size

@@ -1,12 +1,12 @@
 /**
  * 应用集成测试
- * 
+ *
  * 测试多语言包在应用中的集成功能
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { createConfigurableI18n } from '../src/core/selective-i18n'
 import type { ConfigurableI18nOptions } from '../src/core/types'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { createConfigurableI18n } from '../src/core/selective-i18n'
 
 describe('应用集成测试', () => {
   let i18n: any
@@ -25,19 +25,19 @@ describe('应用集成测试', () => {
       languageConfig: {
         enabled: ['zh-CN', 'en'],
         defaultLocale: 'zh-CN',
-        fallbackLocale: 'en'
+        fallbackLocale: 'en',
       },
       messages: {
         'zh-CN': {
           app: { name: 'LDesign 应用' },
-          navigation: { home: '首页' }
+          navigation: { home: '首页' },
         },
         'en': {
           app: { name: 'LDesign App' },
-          navigation: { home: 'Home' }
-        }
+          navigation: { home: 'Home' },
+        },
       },
-      strictMode: true
+      strictMode: true,
     }
 
     i18n = createConfigurableI18n(appConfig)
@@ -63,10 +63,10 @@ describe('应用集成测试', () => {
           translations: {
             common: {
               save: 'Save',
-              cancel: 'Cancel'
-            }
-          }
-        }
+              cancel: 'Cancel',
+            },
+          },
+        },
       ],
       languageExtensions: {
         'zh-CN': [
@@ -75,12 +75,12 @@ describe('应用集成测试', () => {
             translations: {
               common: {
                 save: '保存',
-                cancel: '取消'
-              }
-            }
-          }
-        ]
-      }
+                cancel: '取消',
+              },
+            },
+          },
+        ],
+      },
     }
 
     i18n = createConfigurableI18n(appConfig)
@@ -96,8 +96,8 @@ describe('应用集成测试', () => {
       autoDetect: false,
       storage: 'none', // 先测试无存储的情况
       languageConfig: {
-        enabled: ['zh-CN', 'en']
-      }
+        enabled: ['zh-CN', 'en'],
+      },
     }
 
     i18n = createConfigurableI18n(appConfig)
@@ -120,13 +120,13 @@ describe('应用集成测试', () => {
       cache: {
         enabled: true,
         maxSize: 100,
-        defaultTTL: 30000
+        defaultTTL: 30000,
       },
       messages: {
         'zh-CN': {
-          test: { key: '测试值' }
-        }
-      }
+          test: { key: '测试值' },
+        },
+      },
     }
 
     i18n = createConfigurableI18n(appConfig)
@@ -146,14 +146,14 @@ describe('应用集成测试', () => {
       locale: 'zh-CN',
       autoDetect: false,
       languageConfig: {
-        enabled: ['zh-CN', 'en']
+        enabled: ['zh-CN', 'en'],
       },
       strictMode: true,
       messages: {
         'zh-CN': { hello: '你好' },
         'en': { hello: 'Hello' },
-        'ja': { hello: 'こんにちは' }
-      }
+        'ja': { hello: 'こんにちは' },
+      },
     }
 
     i18n = createConfigurableI18n(appConfig)
@@ -172,8 +172,8 @@ describe('应用集成测试', () => {
       locale: 'zh-CN',
       autoDetect: false,
       languageConfig: {
-        enabled: ['zh-CN', 'en']
-      }
+        enabled: ['zh-CN', 'en'],
+      },
     }
 
     i18n = createConfigurableI18n(appConfig)
@@ -200,13 +200,13 @@ describe('应用集成测试', () => {
       globalExtensions: [
         {
           name: 'extension-1',
-          translations: { key1: 'value1' }
+          translations: { key1: 'value1' },
         },
         {
           name: 'extension-2',
-          translations: { key2: 'value2' }
-        }
-      ]
+          translations: { key2: 'value2' },
+        },
+      ],
     }
 
     i18n = createConfigurableI18n(appConfig)
@@ -227,14 +227,14 @@ describe('应用集成测试', () => {
       locale: 'zh-CN',
       autoDetect: false,
       languageConfig: {
-        enabled: ['zh-CN', 'en']
+        enabled: ['zh-CN', 'en'],
       },
       onInit: () => {
         initCalled = true
       },
       onLanguageChanged: () => {
         languageChanged = true
-      }
+      },
     }
 
     i18n = createConfigurableI18n(appConfig)

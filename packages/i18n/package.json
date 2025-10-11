@@ -75,6 +75,7 @@
     "./es/vue/components/I18nR.vue.css": "./es/vue/components/I18nR.vue.css",
     "./es/vue/components/LanguageSwitcher.vue.css": "./es/vue/components/LanguageSwitcher.vue.css",
     "./es/vue/components/TranslationMissing.vue.css": "./es/vue/components/TranslationMissing.vue.css",
+    "./es/vue/composables/useI18nEnhanced.css": "./es/vue/composables/useI18nEnhanced.css",
     "./lib/index.css": "./lib/index.css",
     "./lib/vue/components/I18nC.vue.css": "./lib/vue/components/I18nC.vue.css",
     "./lib/vue/components/I18nChain.vue.css": "./lib/vue/components/I18nChain.vue.css",
@@ -85,6 +86,7 @@
     "./lib/vue/components/I18nR.vue.css": "./lib/vue/components/I18nR.vue.css",
     "./lib/vue/components/LanguageSwitcher.vue.css": "./lib/vue/components/LanguageSwitcher.vue.css",
     "./lib/vue/components/TranslationMissing.vue.css": "./lib/vue/components/TranslationMissing.vue.css",
+    "./lib/vue/composables/useI18nEnhanced.css": "./lib/vue/composables/useI18nEnhanced.css",
     "./dist/index.css": "./dist/index.css",
     "./dist/index.min.css": "./dist/index.min.css"
   },

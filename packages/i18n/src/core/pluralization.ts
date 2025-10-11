@@ -1,5 +1,3 @@
-import type { PluralRule } from './types'
-
 /**
  * 多元化类别
  */
@@ -47,7 +45,7 @@ export class PluralizationEngine {
    */
   getCategory(locale: string, count: number, options: PluralOptions = {}): PluralCategory {
     const cacheKey = `${locale}:${count}:${options.ordinal || false}`
-    
+
     // 检查缓存
     if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey)!
@@ -58,7 +56,8 @@ export class PluralizationEngine {
     // 使用自定义规则
     if (options.customRule) {
       category = options.customRule(count, options.ordinal)
-    } else {
+    }
+    else {
       // 使用内置规则
       const rule = this.rules.get(locale) || this.rules.get('en')!
       category = rule(count, options.ordinal)
@@ -66,7 +65,7 @@ export class PluralizationEngine {
 
     // 缓存结果
     this.cache.set(cacheKey, category)
-    
+
     return category
   }
 
@@ -96,7 +95,8 @@ export class PluralizationEngine {
   clearCache(locale?: string): void {
     if (locale) {
       this.clearCacheForLocale(locale)
-    } else {
+    }
+    else {
       this.cache.clear()
     }
   }
@@ -110,9 +110,12 @@ export class PluralizationEngine {
       if (ordinal) {
         const mod10 = count % 10
         const mod100 = count % 100
-        if (mod10 === 1 && mod100 !== 11) return PluralCategory.ONE
-        if (mod10 === 2 && mod100 !== 12) return PluralCategory.TWO
-        if (mod10 === 3 && mod100 !== 13) return PluralCategory.FEW
+        if (mod10 === 1 && mod100 !== 11)
+          return PluralCategory.ONE
+        if (mod10 === 2 && mod100 !== 12)
+          return PluralCategory.TWO
+        if (mod10 === 3 && mod100 !== 13)
+          return PluralCategory.FEW
         return PluralCategory.OTHER
       }
       return count === 1 ? PluralCategory.ONE : PluralCategory.OTHER
@@ -129,13 +132,16 @@ export class PluralizationEngine {
 
     // 俄语规则
     this.rules.set('ru', (count: number, ordinal = false) => {
-      if (ordinal) return PluralCategory.OTHER
-      
+      if (ordinal)
+        return PluralCategory.OTHER
+
       const mod10 = count % 10
       const mod100 = count % 100
-      
-      if (mod10 === 1 && mod100 !== 11) return PluralCategory.ONE
-      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return PluralCategory.FEW
+
+      if (mod10 === 1 && mod100 !== 11)
+        return PluralCategory.ONE
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14))
+        return PluralCategory.FEW
       return PluralCategory.MANY
     })
 
@@ -149,41 +155,51 @@ export class PluralizationEngine {
 
     // 德语规则
     this.rules.set('de', (count: number, ordinal = false) => {
-      if (ordinal) return PluralCategory.OTHER
+      if (ordinal)
+        return PluralCategory.OTHER
       return count === 1 ? PluralCategory.ONE : PluralCategory.OTHER
     })
 
     // 西班牙语规则
     this.rules.set('es', (count: number, ordinal = false) => {
-      if (ordinal) return PluralCategory.OTHER
+      if (ordinal)
+        return PluralCategory.OTHER
       return count === 1 ? PluralCategory.ONE : PluralCategory.OTHER
     })
 
     // 阿拉伯语规则
     this.rules.set('ar', (count: number, ordinal = false) => {
-      if (ordinal) return PluralCategory.OTHER
-      
-      if (count === 0) return PluralCategory.ZERO
-      if (count === 1) return PluralCategory.ONE
-      if (count === 2) return PluralCategory.TWO
-      if (count % 100 >= 3 && count % 100 <= 10) return PluralCategory.FEW
-      if (count % 100 >= 11 && count % 100 <= 99) return PluralCategory.MANY
+      if (ordinal)
+        return PluralCategory.OTHER
+
+      if (count === 0)
+        return PluralCategory.ZERO
+      if (count === 1)
+        return PluralCategory.ONE
+      if (count === 2)
+        return PluralCategory.TWO
+      if (count % 100 >= 3 && count % 100 <= 10)
+        return PluralCategory.FEW
+      if (count % 100 >= 11 && count % 100 <= 99)
+        return PluralCategory.MANY
       return PluralCategory.OTHER
     })
 
     // 波兰语规则
     this.rules.set('pl', (count: number, ordinal = false) => {
-      if (ordinal) return PluralCategory.OTHER
-      
-      if (count === 1) return PluralCategory.ONE
-      
+      if (ordinal)
+        return PluralCategory.OTHER
+
+      if (count === 1)
+        return PluralCategory.ONE
+
       const mod10 = count % 10
       const mod100 = count % 100
-      
+
       if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
         return PluralCategory.FEW
       }
-      
+
       return PluralCategory.MANY
     })
   }
@@ -194,13 +210,13 @@ export class PluralizationEngine {
    */
   private clearCacheForLocale(locale: string): void {
     const keysToDelete: string[] = []
-    
+
     for (const key of this.cache.keys()) {
       if (key.startsWith(`${locale}:`)) {
         keysToDelete.push(key)
       }
     }
-    
+
     for (const key of keysToDelete) {
       this.cache.delete(key)
     }
@@ -218,16 +234,16 @@ export class PluralUtils {
    */
   static parsePluralString(pluralString: string): Record<PluralCategory, string> {
     const result: Partial<Record<PluralCategory, string>> = {}
-    
+
     const parts = pluralString.split('|')
-    
+
     for (const part of parts) {
       const [category, text] = part.split(':')
       if (category && text && Object.values(PluralCategory).includes(category as PluralCategory)) {
         result[category as PluralCategory] = text.trim()
       }
     }
-    
+
     return result as Record<PluralCategory, string>
   }
 
@@ -243,19 +259,19 @@ export class PluralUtils {
     pluralObject: Record<PluralCategory, string>,
     category: PluralCategory,
     count: number,
-    params: Record<string, any> = {}
+    params: Record<string, any> = {},
   ): string {
     let text = pluralObject[category] || pluralObject[PluralCategory.OTHER] || ''
-    
+
     // 替换 count 参数
     text = text.replace(/\{\{count\}\}/g, count.toString())
-    
+
     // 替换其他参数
     for (const [key, value] of Object.entries(params)) {
       const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
       text = text.replace(regex, String(value))
     }
-    
+
     return text
   }
 

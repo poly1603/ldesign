@@ -37,6 +37,81 @@ export {
   ObjectPool,
 } from './utils/cache'
 
+// 高级缓存
+export {
+  CacheAnalyzer,
+  AdaptiveCache,
+  CacheWarmer,
+  MultiLevelCache,
+} from './utils/advanced-cache'
+
+export type {
+  CacheStats,
+} from './utils/advanced-cache'
+
+// 验证和错误处理工具
+export {
+  Validator,
+  ValidationError,
+  StoreConfigValidator,
+  TypeGuards,
+  Assert,
+  AssertionError,
+  ErrorHandler,
+  safeJsonParse,
+  safeJsonStringify,
+} from './utils/validation'
+
+export type {
+  ValidationRule,
+  ValidationResult,
+} from './utils/validation'
+
+// 辅助工具函数
+export {
+  deepClone,
+  deepMerge,
+  deepFreeze,
+  getDeepValue,
+  setDeepValue,
+  deleteDeepValue,
+  deepEqual,
+  pick,
+  omit,
+  flattenObject,
+  unflattenObject,
+  debounce,
+  throttle,
+  delay,
+  retry,
+  memoize,
+  batch,
+  pLimit,
+  generateId,
+  formatBytes,
+  formatDuration,
+  safeKeys,
+  safeValues,
+  safeEntries,
+  range,
+  unique,
+  uniqueBy,
+  groupBy,
+  sum,
+  average,
+  min,
+  max,
+  randomInt,
+  randomItem,
+  shuffle,
+  chunk,
+  zip,
+  unzip,
+  intersection,
+  union,
+  difference,
+} from './utils/helpers'
+
 // 性能监控（额外导出，方便直接使用）
 export {
   PerformanceMonitor
@@ -52,7 +127,7 @@ export {
 
 // ============================================
 // 类型定义导出
-// ============================================
+// 类型定义导出
 
 export type {
   // 基础类型
@@ -77,6 +152,74 @@ export type {
   IBaseStore,
   BaseStore as IBaseStoreAlias,
 } from './types'
+
+// 实用类型定义导出
+export type {
+  // 深度类型
+  DeepReadonly,
+  DeepPartial,
+  DeepRequired,
+  DeepMutable,
+  DeepMerge,
+  
+  // 可空类型
+  Nullable,
+  Optional,
+  Maybe,
+  
+  // 函数类型
+  AnyFunction,
+  AsyncFunction,
+  FunctionArgs,
+  FunctionReturn,
+  
+  // 对象类型
+  AnyObject,
+  EmptyObject,
+  ValueOf,
+  KeyOf,
+  
+  // 数组类型
+  ArrayElement,
+  ArrayType,
+  Flatten,
+  
+  // 路径类型
+  PathsOf,
+  PathValue,
+  
+  // 条件类型
+  If,
+  Equals,
+  
+  // 修饰类型
+  Mutable,
+  Merge,
+  Override,
+  PartialBy,
+  RequiredBy,
+  ReadonlyBy,
+  WritableBy,
+  NullableBy,
+  OptionalBy,
+  
+  // JSON 类型
+  JSONValue,
+  JSONObject,
+  JSONArray,
+  Serializable,
+  
+  // 其他实用类型
+  Primitive,
+  NonPrimitive,
+  Class,
+  AbstractClass,
+  RequiredKeys,
+  OptionalKeys,
+  KeysOfType,
+  FunctionKeys,
+  NonFunctionKeys,
+} from './types/utility-types'
 
 // 版本信息
 export const version = '0.1.0'

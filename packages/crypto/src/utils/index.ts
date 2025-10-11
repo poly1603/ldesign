@@ -349,3 +349,7 @@ export const CONSTANTS = {
 export * from './compression'
 export * from './key-derivation'
 export * from './secure-storage'
+export * from './rate-limiter'
+export * from './errors'
+export * from './benchmark'
+export * from './object-pool'

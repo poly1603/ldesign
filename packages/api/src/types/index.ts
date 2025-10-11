@@ -572,3 +572,6 @@ export interface CaptchaInfo {
 // 导出错误处理相关类型
 export * from '../utils/ApiError'
 export * from '../utils/ErrorReporter'
+
+// 导出类型安全的 API 引擎
+export * from './typed-api'

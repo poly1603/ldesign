@@ -44,22 +44,74 @@ export const FONT_FAMILIES = [
  */
 function setFontSize(size: string): Command {
   return (state, dispatch) => {
-    if (!dispatch) return true
+    console.log('🎨 [FontSize] Command called with size:', size)
+    console.log('🎨 [FontSize] dispatch:', dispatch ? 'exists' : 'null')
+    
+    if (!dispatch) {
+      console.log('🎨 [FontSize] No dispatch, returning true')
+      return true
+    }
 
     const selection = window.getSelection()
-    if (!selection || selection.rangeCount === 0) return false
+    console.log('🎨 [FontSize] Selection:', selection)
+    
+    if (!selection || selection.rangeCount === 0) {
+      console.log('❌ [FontSize] No selection or range')
+      return false
+    }
 
     const range = selection.getRangeAt(0)
     const selectedText = range.toString()
+    console.log('🎨 [FontSize] Selected text:', selectedText)
+
+    let span: HTMLElement
 
     if (selectedText) {
-      const span = document.createElement('span')
+      console.log('🎨 [FontSize] Creating span for selected text')
+      span = document.createElement('span')
       span.style.fontSize = size
       span.textContent = selectedText
       range.deleteContents()
       range.insertNode(span)
+      console.log('🎨 [FontSize] Span inserted:', span)
+
+      // 恢复选区到新插入的内容
+      range.selectNodeContents(span)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    } else {
+      console.log('🎨 [FontSize] Creating span at cursor')
+      // 如果没有选中文本，在光标处插入一个带字体大小的占位符
+      span = document.createElement('span')
+      span.style.fontSize = size
+      span.innerHTML = '&#8203;' // 零宽字符
+      range.insertNode(span)
+
+      // 将光标放在span内
+      range.selectNodeContents(span)
+      range.collapse(false)
+      selection.removeAllRanges()
+      selection.addRange(range)
     }
 
+    // 触发输入事件以更新编辑器状态
+    setTimeout(() => {
+      console.log('🎨 [FontSize] setTimeout callback executing')
+      // 从document中查找编辑器内容元素
+      const editorContent = document.querySelector('.ldesign-editor-content') as HTMLElement
+      console.log('🎨 [FontSize] editorContent found:', editorContent)
+      
+      if (editorContent) {
+        const event = new Event('input', { bubbles: true, cancelable: true })
+        console.log('🎨 [FontSize] Dispatching input event')
+        editorContent.dispatchEvent(event)
+        console.log('✅ [FontSize] Event dispatched successfully')
+      } else {
+        console.log('❌ [FontSize] No editorContent found in document')
+      }
+    }, 0)
+
+    console.log('✅ [FontSize] Command returning true')
     return true
   }
 }
@@ -77,13 +129,42 @@ function setFontFamily(family: string): Command {
     const range = selection.getRangeAt(0)
     const selectedText = range.toString()
 
+    let span: HTMLElement
+
     if (selectedText) {
-      const span = document.createElement('span')
+      span = document.createElement('span')
       span.style.fontFamily = family
       span.textContent = selectedText
       range.deleteContents()
       range.insertNode(span)
+
+      // 恢复选区到新插入的内容
+      range.selectNodeContents(span)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    } else {
+      // 如果没有选中文本，在光标处插入一个带字体的占位符
+      span = document.createElement('span')
+      span.style.fontFamily = family
+      span.innerHTML = '&#8203;' // 零宽字符
+      range.insertNode(span)
+
+      // 将光标放在span内
+      range.selectNodeContents(span)
+      range.collapse(false)
+      selection.removeAllRanges()
+      selection.addRange(range)
     }
+
+    // 触发输入事件以更新编辑器状态
+    setTimeout(() => {
+      // 从document中查找编辑器内容元素
+      const editorContent = document.querySelector('.ldesign-editor-content') as HTMLElement
+      if (editorContent) {
+        const event = new Event('input', { bubbles: true, cancelable: true })
+        editorContent.dispatchEvent(event)
+      }
+    }, 0)
 
     return true
   }

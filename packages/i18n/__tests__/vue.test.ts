@@ -2,17 +2,15 @@
  * Vue 集成测试
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createApp, nextTick } from 'vue'
-import { mount } from '@vue/test-utils'
+import { describe, expect, it, vi } from 'vitest'
 import {
-  createVueI18n,
   createI18nPlugin,
-  useI18n,
-  I18nT,
-  I18nN,
+  createVueI18n,
   I18nD,
-  installI18n
+  I18nN,
+  I18nT,
+  installI18n,
+  useI18n,
 } from '../src/vue'
 
 // Mock Vue 相关功能（使用 hoisted 避免顶层初始化顺序问题）
@@ -23,7 +21,7 @@ const hoisted = vi.hoisted(() => ({
   mockRef: vi.fn((val: any) => ({ value: val })),
   mockWatch: vi.fn(),
   mockH: vi.fn((tag: any, props: any, children: any) => ({ tag, props, children })),
-  mockDefineComponent: vi.fn((options: any) => options)
+  mockDefineComponent: vi.fn((options: any) => options),
 }))
 
 const { mockInject, mockReactive, mockComputed, mockRef, mockWatch, mockH, mockDefineComponent } = hoisted as any
@@ -38,26 +36,26 @@ vi.mock('vue', async () => {
     ref: (hoisted as any).mockRef,
     watch: (hoisted as any).mockWatch,
     h: (hoisted as any).mockH,
-    defineComponent: (hoisted as any).mockDefineComponent
+    defineComponent: (hoisted as any).mockDefineComponent,
   }
 })
 
-describe('Vue I18n 集成', () => {
+describe('vue I18n 集成', () => {
   const testMessages = {
     'zh-CN': {
       hello: '你好',
       welcome: '欢迎 {name}',
       nested: {
-        message: '嵌套消息'
-      }
+        message: '嵌套消息',
+      },
     },
     'en': {
       hello: 'Hello',
       welcome: 'Welcome {name}',
       nested: {
-        message: 'Nested message'
-      }
-    }
+        message: 'Nested message',
+      },
+    },
   }
 
   describe('createVueI18n', () => {
@@ -65,7 +63,7 @@ describe('Vue I18n 集成', () => {
       const vueI18n = createVueI18n({
         locale: 'zh-CN',
         fallbackLocale: 'en',
-        messages: testMessages
+        messages: testMessages,
       })
 
       expect(vueI18n).toBeDefined()
@@ -78,7 +76,7 @@ describe('Vue I18n 集成', () => {
     it('应该正确翻译文本', async () => {
       const vueI18n = createVueI18n({
         locale: 'zh-CN',
-        messages: testMessages
+        messages: testMessages,
       })
 
       // 等待初始化完成
@@ -91,7 +89,7 @@ describe('Vue I18n 集成', () => {
     it('应该正确检查键存在性', async () => {
       const vueI18n = createVueI18n({
         locale: 'zh-CN',
-        messages: testMessages
+        messages: testMessages,
       })
 
       await vueI18n.global.init()
@@ -104,7 +102,7 @@ describe('Vue I18n 集成', () => {
       const vueI18n = createVueI18n({
         locale: 'zh-CN',
         fallbackLocale: 'en',
-        messages: testMessages
+        messages: testMessages,
       })
 
       await vueI18n.global.init()
@@ -122,7 +120,7 @@ describe('Vue I18n 集成', () => {
     it('应该正确创建 Vue 插件', () => {
       const plugin = createI18nPlugin({
         locale: 'zh-CN',
-        messages: testMessages
+        messages: testMessages,
       })
 
       expect(plugin).toBeDefined()
@@ -133,13 +131,13 @@ describe('Vue I18n 集成', () => {
       const mockApp = {
         provide: vi.fn(),
         config: {
-          globalProperties: {}
-        }
+          globalProperties: {},
+        },
       }
 
       const plugin = createI18nPlugin({
         locale: 'zh-CN',
-        messages: testMessages
+        messages: testMessages,
       })
 
       plugin.install(mockApp)
@@ -166,11 +164,11 @@ describe('Vue I18n 集成', () => {
         te: vi.fn(),
         setLocale: vi.fn(),
         setLocaleMessage: vi.fn(),
-        getLocaleMessage: vi.fn()
+        getLocaleMessage: vi.fn(),
       }
 
       mockInject.mockReturnValue(mockI18n)
-      mockComputed.mockImplementation((fn) => ({ value: fn() }))
+      mockComputed.mockImplementation(fn => ({ value: fn() }))
 
       const result = useI18n()
 
@@ -182,8 +180,8 @@ describe('Vue I18n 集成', () => {
     })
   })
 
-  describe('I18n 组件', () => {
-    describe('I18nT', () => {
+  describe('i18n 组件', () => {
+    describe('i18nT', () => {
       it('应该正确定义组件', () => {
         expect(I18nT).toBeDefined()
         expect(I18nT.name).toBe('I18nT')
@@ -200,7 +198,7 @@ describe('Vue I18n 集成', () => {
       })
     })
 
-    describe('I18nN', () => {
+    describe('i18nN', () => {
       it('应该正确定义组件', () => {
         expect(I18nN).toBeDefined()
         expect(I18nN.name).toBe('I18nN')
@@ -216,7 +214,7 @@ describe('Vue I18n 集成', () => {
       })
     })
 
-    describe('I18nD', () => {
+    describe('i18nD', () => {
       it('应该正确定义组件', () => {
         expect(I18nD).toBeDefined()
         expect(I18nD.name).toBe('I18nD')
@@ -241,13 +239,13 @@ describe('Vue I18n 集成', () => {
         directive: vi.fn(),
         provide: vi.fn(),
         config: {
-          globalProperties: {}
-        }
+          globalProperties: {},
+        },
       }
 
       installI18n(mockApp, {
         locale: 'zh-CN',
-        messages: testMessages
+        messages: testMessages,
       })
 
       expect(mockApp.use).toHaveBeenCalled()

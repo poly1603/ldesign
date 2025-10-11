@@ -1,12 +1,25 @@
 import type { DeviceModule, ModuleLoader as IModuleLoader } from '../types'
 import process from 'node:process'
+import { asyncPool } from '../utils'
 
 /**
  * 高性能模块加载器实现
+ * 
+ * 新增特性：
+ * - 模块预加载
+ * - 并行加载
+ * - 依赖管理
+ * - 优先级加载
  */
 export class ModuleLoader implements IModuleLoader {
   private modules: Map<string, DeviceModule> = new Map()
   private loadingPromises: Map<string, Promise<unknown>> = new Map()
+  
+  // 模块依赖关系映射
+  private dependencies: Map<string, string[]> = new Map()
+  
+  // 模块优先级
+  private priorities: Map<string, number> = new Map()
 
   // 性能监控
   private loadingStats = new Map<string, {
@@ -177,7 +190,8 @@ export class ModuleLoader implements IModuleLoader {
   clearStats(name?: string): void {
     if (name) {
       this.loadingStats.delete(name)
-    } else {
+    }
+    else {
       this.loadingStats.clear()
     }
   }
@@ -358,5 +372,121 @@ export class ModuleLoader implements IModuleLoader {
 
     // 定期清理旧统计
     this.cleanupOldStats()
+  }
+
+  /**
+   * 设置模块依赖关系
+   * 
+   * @param name - 模块名称
+   * @param deps - 依赖的模块列表
+   */
+  setDependencies(name: string, deps: string[]): void {
+    this.dependencies.set(name, deps)
+  }
+
+  /**
+   * 设置模块优先级
+   * 
+   * @param name - 模块名称
+   * @param priority - 优先级（数字越大优先级越高）
+   */
+  setPriority(name: string, priority: number): void {
+    this.priorities.set(name, priority)
+  }
+
+  /**
+   * 预加载模块（在后台加载，不阻塞）
+   * 
+   * @param names - 要预加载的模块名称列表
+   */
+  async preload(names: string[]): Promise<void> {
+    // 按优先级排序
+    const sortedNames = names.sort((a, b) => {
+      const priorityA = this.priorities.get(a) || 0
+      const priorityB = this.priorities.get(b) || 0
+      return priorityB - priorityA
+    })
+
+    // 解析依赖关系
+    const toLoad = this.resolveDependencies(sortedNames)
+
+    // 过滤掉已加载的模块
+    const needLoad = toLoad.filter(name => !this.isLoaded(name))
+
+    if (needLoad.length === 0) {
+      return
+    }
+
+    // 并行加载（最多3个并发）
+    try {
+      await asyncPool(3, needLoad, async (name) => {
+        if (!this.isLoaded(name)) {
+          await this.loadModuleInstance(name)
+        }
+      })
+    }
+    catch (error) {
+      console.warn('Preload failed for some modules:', error)
+    }
+  }
+
+  /**
+   * 批量加载模块（并行加载）
+   * 
+   * @param names - 要加载的模块名称列表
+   * @param concurrency - 并发数（默认3）
+   * @returns Promise<模块实例数组>
+   */
+  async loadMultiple<T extends DeviceModule = DeviceModule>(
+    names: string[],
+    concurrency = 3,
+  ): Promise<T[]> {
+    // 解析依赖关系
+    const toLoad = this.resolveDependencies(names)
+
+    // 并行加载
+    const modules = await asyncPool(concurrency, toLoad, async (name) => {
+      return this.loadModuleInstance<T>(name)
+    })
+
+    return modules
+  }
+
+  /**
+   * 解析模块依赖关系（拓扑排序）
+   * 
+   * @param names - 模块名称列表
+   * @returns 排序后的模块名称列表
+   */
+  private resolveDependencies(names: string[]): string[] {
+    const result: string[] = []
+    const visited = new Set<string>()
+    const visiting = new Set<string>()
+
+    const visit = (name: string): void => {
+      if (visited.has(name))
+        return
+
+      if (visiting.has(name)) {
+        throw new Error(`Circular dependency detected: ${name}`)
+      }
+
+      visiting.add(name)
+
+      const deps = this.dependencies.get(name) || []
+      for (const dep of deps) {
+        visit(dep)
+      }
+
+      visiting.delete(name)
+      visited.add(name)
+      result.push(name)
+    }
+
+    for (const name of names) {
+      visit(name)
+    }
+
+    return result
   }
 }

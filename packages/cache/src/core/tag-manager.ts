@@ -1,5 +1,6 @@
-import type { CacheManager } from './cache-manager'
 import type { SerializableValue, SetOptions } from '../types'
+
+import type { CacheManager } from './cache-manager'
 
 /**
  * 标签配置
@@ -41,7 +42,7 @@ export class TagManager {
 
   constructor(
     private cache: CacheManager,
-    config: TagConfig = {}
+    config: TagConfig = {},
   ) {
     this.tagPrefix = config.tagPrefix || '__tag__'
     this.autoCleanup = config.autoCleanup ?? true
@@ -53,7 +54,7 @@ export class TagManager {
   async set<T extends SerializableValue>(
     key: string,
     value: T,
-    options?: SetOptions & { tags?: string[] }
+    options?: SetOptions & { tags?: string[] },
   ): Promise<void> {
     const { tags, ...cacheOptions } = options || {}
 
@@ -99,7 +100,8 @@ export class TagManager {
         if (keys.length === 0 && this.autoCleanup) {
           // 删除空标签
           await this.cache.remove(tagKey)
-        } else {
+        }
+        else {
           await this.cache.set(tagKey, keys)
         }
       }
@@ -123,17 +125,17 @@ export class TagManager {
    */
   async getKeysByTag(tag: string): Promise<string[]> {
     const tagKey = this.getTagKey(tag)
-    return await this.getTagKeys(tagKey)
+    return this.getTagKeys(tagKey)
   }
 
   /**
    * 获取多个标签的交集键
    */
   async getKeysByTags(tags: string[], mode: 'and' | 'or' = 'and'): Promise<string[]> {
-    if (tags.length === 0) return []
+    if (tags.length === 0) { return [] }
 
     const keySets = await Promise.all(
-      tags.map(tag => this.getKeysByTag(tag))
+      tags.map(async tag => this.getKeysByTag(tag)),
     )
 
     if (mode === 'and') {
@@ -141,10 +143,11 @@ export class TagManager {
       return keySets.reduce((acc, keys) => {
         return acc.filter(key => keys.includes(key))
       })
-    } else {
+    }
+    else {
       // 并集
       const allKeys = new Set<string>()
-      keySets.forEach(keys => {
+      keySets.forEach((keys) => {
         keys.forEach(key => allKeys.add(key))
       })
       return Array.from(allKeys)
@@ -158,7 +161,7 @@ export class TagManager {
     const keys = await this.getKeysByTag(tag)
 
     // 删除所有键
-    await Promise.all(keys.map(key => this.cache.remove(key)))
+    await Promise.all(keys.map(async key => this.cache.remove(key)))
 
     // 删除标签索引
     const tagKey = this.getTagKey(tag)
@@ -166,7 +169,7 @@ export class TagManager {
 
     // 清理键的标签索引
     await Promise.all(
-      keys.map(key => this.removeKeyTagIndex(key))
+      keys.map(async key => this.removeKeyTagIndex(key)),
     )
   }
 
@@ -177,12 +180,12 @@ export class TagManager {
     const keys = await this.getKeysByTags(tags, mode)
 
     // 删除所有键
-    await Promise.all(keys.map(key => this.cache.remove(key)))
+    await Promise.all(keys.map(async key => this.cache.remove(key)))
 
     // 如果是 AND 模式，只清理这些键的标签索引
     // 如果是 OR 模式，清理所有相关标签
     if (mode === 'or') {
-      await Promise.all(tags.map(tag => {
+      await Promise.all(tags.map(async (tag) => {
         const tagKey = this.getTagKey(tag)
         return this.cache.remove(tagKey)
       }))
@@ -190,7 +193,7 @@ export class TagManager {
 
     // 清理键的标签索引
     await Promise.all(
-      keys.map(key => this.removeKeyTagIndex(key))
+      keys.map(async key => this.removeKeyTagIndex(key)),
     )
   }
 
@@ -252,7 +255,7 @@ export class TagManager {
     const keys = await this.getKeysByTag(oldTag)
 
     // 为所有键添加新标签
-    await Promise.all(keys.map(key => this.addTags(key, [newTag])))
+    await Promise.all(keys.map(async key => this.addTags(key, [newTag])))
 
     // 移除旧标签
     await this.clearByTag(oldTag)
@@ -291,13 +294,15 @@ export class TagManager {
 
     if (action === 'add') {
       updatedTags = Array.from(new Set([...currentTags, ...tags]))
-    } else {
+    }
+    else {
       updatedTags = currentTags.filter(t => !tags.includes(t))
     }
 
     if (updatedTags.length === 0) {
       await this.cache.remove(indexKey)
-    } else {
+    }
+    else {
       await this.cache.set(indexKey, updatedTags)
     }
   }

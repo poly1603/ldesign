@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawer 滚动条补偿测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    /* 固定头部 - 用于测试补偿 */
+    .fixed-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .fixed-header h1 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    /* 主内容区域 */
+    .main-content {
+      margin-top: 60px;
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* 测试区域 */
+    .test-section {
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .test-section h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #667eea;
+    }
+
+    .test-section p {
+      margin-bottom: 15px;
+      color: #666;
+    }
+
+    /* 按钮样式 */
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+      color: white;
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(86, 171, 47, 0.4);
+    }
+
+    .btn-info {
+      background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
+      color: white;
+    }
+
+    .btn-info:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    /* 固定右侧元素 - 用于测试补偿 */
+    .fixed-right-panel {
+      position: fixed;
+      right: 20px;
+      top: 100px;
+      width: 200px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      z-index: 99;
+    }
+
+    .fixed-right-panel h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #667eea;
+    }
+
+    .fixed-right-panel p {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    /* 状态指示器 */
+    .status-indicator {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .status-locked {
+      background: #fee;
+      color: #c33;
+    }
+
+    .status-unlocked {
+      background: #efe;
+      color: #3c3;
+    }
+
+    /* 长内容区域 */
+    .long-content {
+      height: 200vh;
+      background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+      padding: 40px;
+      border-radius: 8px;
+    }
+
+    .long-content h3 {
+      margin-bottom: 20px;
+      color: #667eea;
+    }
+
+    .long-content p {
+      margin-bottom: 15px;
+      line-height: 1.8;
+    }
+
+    /* 调试信息 */
+    .debug-info {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      z-index: 9999;
+      max-width: 300px;
+    }
+
+    .debug-info h4 {
+      margin-bottom: 10px;
+      color: #ffd700;
+    }
+
+    .debug-info p {
+      margin-bottom: 5px;
+    }
+
+    .debug-info .value {
+      color: #4ade80;
+      font-weight: bold;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .fixed-right-panel {
+        display: none;
+      }
+      
+      .debug-info {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 固定头部 -->
+  <header class="fixed-header" data-fixed-compensate>
+    <h1>🎨 Drawer 滚动条补偿测试</h1>
+    <span class="status-indicator status-unlocked" id="scrollStatus">未锁定</span>
+  </header>
+
+  <!-- 固定右侧面板 -->
+  <aside class="fixed-right-panel" data-fixed-compensate>
+    <h3>📌 固定面板</h3>
+    <p>这个面板是 fixed 定位的，用于测试滚动条补偿。</p>
+    <p>打开 drawer 时，这个面板应该不会发生位移。</p>
+  </aside>
+
+  <!-- 主内容 -->
+  <main class="main-content">
+    <!-- 测试说明 -->
+    <section class="test-section">
+      <h2>📖 测试说明</h2>
+      <p>这个页面用于测试 drawer 组件的滚动条补偿功能。</p>
+      <p><strong>测试步骤：</strong></p>
+      <ol style="margin-left: 20px; color: #666;">
+        <li>注意观察页面上的固定头部和右侧面板</li>
+        <li>点击下方按钮打开 drawer</li>
+        <li>观察页面内容是否发生抖动</li>
+        <li>检查固定元素是否保持位置</li>
+        <li>查看底部的调试信息</li>
+      </ol>
+    </section>
+
+    <!-- 测试按钮 -->
+    <section class="test-section">
+      <h2>🎯 测试用例</h2>
+      
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="openDrawer('right')">
+          打开右侧抽屉
+        </button>
+        <button class="btn btn-primary" onclick="openDrawer('left')">
+          打开左侧抽屉
+        </button>
+        <button class="btn btn-primary" onclick="openDrawer('top')">
+          打开顶部抽屉
+        </button>
+        <button class="btn btn-primary" onclick="openDrawer('bottom')">
+          打开底部抽屉
+        </button>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-success" onclick="openMultipleDrawers()">
+          同时打开多个抽屉
+        </button>
+        <button class="btn btn-info" onclick="toggleDrawerQuickly()">
+          快速切换抽屉
+        </button>
+      </div>
+    </section>
+
+    <!-- 长内容区域 -->
+    <section class="long-content">
+      <h3>📜 长内容区域（用于产生滚动条）</h3>
+      <p>这是一个很长的内容区域，用于确保页面有滚动条。只有当页面有滚动条时，才能测试滚动条补偿功能。</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+      <p>滚动条补偿是一个常见的 UI 问题，当模态框、抽屉等组件打开时，为了防止页面滚动，通常会设置 body 的 overflow 为 hidden。</p>
+      <p>但这会导致滚动条消失，页面内容会向右移动（滚动条的宽度），产生视觉上的跳动。</p>
+      <p>解决方案是在隐藏滚动条的同时，给 body 添加与滚动条宽度相等的 padding-right，以补偿滚动条消失带来的位移。</p>
+      <p>同时，需要为所有 fixed 和 sticky 定位的元素也做相同的补偿，确保它们的位置不会发生变化。</p>
+    </section>
+  </main>
+
+  <!-- 调试信息 -->
+  <div class="debug-info" id="debugInfo">
+    <h4>🔍 调试信息</h4>
+    <p>滚动条宽度: <span class="value" id="scrollbarWidth">-</span></p>
+    <p>锁定计数: <span class="value" id="lockCount">0</span></p>
+    <p>补偿元素数: <span class="value" id="compensatedCount">0</span></p>
+    <p>Body Padding: <span class="value" id="bodyPadding">-</span></p>
+  </div>
+
+  <!-- Drawer 组件 -->
+  <ldesign-drawer id="drawer-right" placement="right" drawer-title="右侧抽屉">
+    <div style="padding: 20px;">
+      <h3>抽屉内容</h3>
+      <p>这是右侧抽屉的内容。</p>
+      <p>打开时页面应该不会发生抖动。</p>
+      <button class="btn btn-primary" onclick="closeDrawer('right')">关闭</button>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawer-left" placement="left" drawer-title="左侧抽屉">
+    <div style="padding: 20px;">
+      <h3>抽屉内容</h3>
+      <p>这是左侧抽屉的内容。</p>
+      <button class="btn btn-primary" onclick="closeDrawer('left')">关闭</button>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawer-top" placement="top" drawer-title="顶部抽屉">
+    <div style="padding: 20px;">
+      <h3>抽屉内容</h3>
+      <p>这是顶部抽屉的内容。</p>
+      <button class="btn btn-primary" onclick="closeDrawer('top')">关闭</button>
+    </div>
+  </ldesign-drawer>
+
+  <ldesign-drawer id="drawer-bottom" placement="bottom" drawer-title="底部抽屉">
+    <div style="padding: 20px;">
+      <h3>抽屉内容</h3>
+      <p>这是底部抽屉的内容。</p>
+      <button class="btn btn-primary" onclick="closeDrawer('bottom')">关闭</button>
+    </div>
+  </ldesign-drawer>
+
+  <script type="module">
+    // 导入组件（根据你的实际路径调整）
+    // import '../dist/components/ldesign-drawer.js';
+  </script>
+
+  <script>
+    // 打开抽屉
+    async function openDrawer(placement) {
+      const drawer = document.getElementById(`drawer-${placement}`);
+      if (drawer) {
+        await drawer.open();
+        updateDebugInfo();
+      }
+    }
+
+    // 关闭抽屉
+    async function closeDrawer(placement) {
+      const drawer = document.getElementById(`drawer-${placement}`);
+      if (drawer) {
+        await drawer.close();
+        updateDebugInfo();
+      }
+    }
+
+    // 同时打开多个抽屉
+    async function openMultipleDrawers() {
+      await openDrawer('right');
+      setTimeout(() => openDrawer('left'), 500);
+      setTimeout(() => openDrawer('bottom'), 1000);
+    }
+
+    // 快速切换抽屉
+    async function toggleDrawerQuickly() {
+      for (let i = 0; i < 3; i++) {
+        await openDrawer('right');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await closeDrawer('right');
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+    }
+
+    // 更新调试信息
+    function updateDebugInfo() {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      const lockCount = document.body.getAttribute('data-scroll-lock-count') || '0';
+      const compensatedElements = document.querySelectorAll('[data-scroll-compensated="true"]');
+      const bodyPadding = window.getComputedStyle(document.body).paddingRight;
+
+      document.getElementById('scrollbarWidth').textContent = scrollbarWidth + 'px';
+      document.getElementById('lockCount').textContent = lockCount;
+      document.getElementById('compensatedCount').textContent = compensatedElements.length;
+      document.getElementById('bodyPadding').textContent = bodyPadding;
+
+      // 更新状态指示器
+      const statusIndicator = document.getElementById('scrollStatus');
+      if (parseInt(lockCount) > 0) {
+        statusIndicator.textContent = '已锁定';
+        statusIndicator.className = 'status-indicator status-locked';
+      } else {
+        statusIndicator.textContent = '未锁定';
+        statusIndicator.className = 'status-indicator status-unlocked';
+      }
+    }
+
+    // 定期更新调试信息
+    setInterval(updateDebugInfo, 500);
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      updateDebugInfo();
+      console.log('%c滚动条补偿测试页面已加载', 'color: #667eea; font-weight: bold; font-size: 14px;');
+      console.log('打开浏览器控制台查看更多调试信息');
+    });
+
+    // 监听 drawer 事件
+    document.addEventListener('drawerOpen', (e) => {
+      console.log('Drawer opened:', e.detail);
+      updateDebugInfo();
+    });
+
+    document.addEventListener('drawerClose', (e) => {
+      console.log('Drawer closed:', e.detail);
+      updateDebugInfo();
+    });
+  </script>
+</body>
+</html>

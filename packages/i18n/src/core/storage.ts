@@ -1,4 +1,4 @@
-import type { LRUCache, Storage, CacheStats } from './types'
+import type { CacheStats, LRUCache, Storage } from './types'
 
 /**
  * 缓存项接口

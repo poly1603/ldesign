@@ -153,6 +153,15 @@ export class LRUCache<K = string, V = any> {
    * 清空缓存
    */
   clear(): void {
+    // 优化：显式解除节点引用，帮助垃圾回收
+    let current = this.head
+    while (current) {
+      const next = current.next
+      current.prev = null
+      current.next = null
+      current = next
+    }
+    
     this.cache.clear()
     this.head = null
     this.tail = null
@@ -363,9 +372,14 @@ export class LRUCache<K = string, V = any> {
     }
 
     const key = this.tail.key
-    this.removeNode(this.tail)
+    const tailNode = this.tail
+    this.removeNode(tailNode)
     this.cache.delete(key)
     this.evictions++
+    
+    // 优化：显式清除节点引用
+    tailNode.prev = null
+    tailNode.next = null
   }
 }
 

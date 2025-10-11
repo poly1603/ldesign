@@ -6,6 +6,11 @@ export default defineConfig({
     enabled: false
   },
 
+  // 禁用性能监控
+  performance: {
+    enabled: false
+  },
+
   // 生成类型声明文件
   dts: true,
 
@@ -23,6 +28,7 @@ export default defineConfig({
     enabled: true,
     minify: true, // UMD版本启用压缩
     fileName: 'index.js', // 去掉 .umd 后缀
+    name: 'LDesignColor', // UMD 全局变量名
   },
 
   // 外部依赖配置 - 优化 tree-shaking

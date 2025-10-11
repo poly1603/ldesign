@@ -33,4 +33,3 @@ const notification: NotificationTranslations = {
 }
 
 export default notification
-

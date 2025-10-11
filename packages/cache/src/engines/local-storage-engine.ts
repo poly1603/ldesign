@@ -1,4 +1,5 @@
 import type { StorageEngineConfig } from '../types'
+
 import { BaseStorageEngine } from './base-engine'
 
 /**
@@ -117,7 +118,7 @@ export class LocalStorageEngine extends BaseStorageEngine {
       return value
     }
     catch (error) {
-      console.warn(`Error getting item from localStorage:`, error)
+      console.warn('Error getting item from localStorage:', error)
       return null
     }
   }

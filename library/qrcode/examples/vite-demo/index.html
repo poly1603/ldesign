@@ -497,11 +497,193 @@
           </p>
         </div>
       </div>
+
+      <!-- Transform: Perspective X (NEW ADVANCED) -->
+      <div class="demo-card" style="border: 3px solid #e74c3c;">
+        <h2>🔄 Perspective X Transform ✨ NEW</h2>
+        <div class="qr-container" id="perspective-x-qr"></div>
+        <div class="controls">
+          <p style="font-size: 0.85rem; color: #e74c3c; margin-bottom: 10px;">
+            ✨ 高级功能 - X轴透视变换,创造3D倾斜效果
+          </p>
+          <div class="control-group">
+            <label for="px-input">Perspective X: <span id="px-value">-0.05</span></label>
+            <input type="range" id="px-input" min="-0.3" max="0.3" step="0.01" value="-0.05" />
+          </div>
+          <button id="px-update">Update Transform</button>
+        </div>
+      </div>
+
+      <!-- Transform: Perspective Y (NEW ADVANCED) -->
+      <div class="demo-card" style="border: 3px solid #e74c3c;">
+        <h2>🔄 Perspective Y Transform ✨ NEW</h2>
+        <div class="qr-container" id="perspective-y-qr"></div>
+        <div class="controls">
+          <p style="font-size: 0.85rem; color: #e74c3c; margin-bottom: 10px;">
+            ✨ 高级功能 - Y轴透视变换,创造垂直倾斜效果
+          </p>
+          <div class="control-group">
+            <label for="py-input">Perspective Y: <span id="py-value">-0.09</span></label>
+            <input type="range" id="py-input" min="-0.3" max="0.3" step="0.01" value="-0.09" />
+          </div>
+          <button id="py-update">Update Transform</button>
+        </div>
+      </div>
+
+      <!-- Transform: Scale (NEW ADVANCED) -->
+      <div class="demo-card" style="border: 3px solid #e74c3c;">
+        <h2>🔍 Scale Transform ✨ NEW</h2>
+        <div class="qr-container" id="scale-qr"></div>
+        <div class="controls">
+          <p style="font-size: 0.85rem; color: #e74c3c; margin-bottom: 10px;">
+            ✨ 高级功能 - 缩放变换,调整二维码大小
+          </p>
+          <div class="control-group">
+            <label for="scale-input">Scale: <span id="scale-value">0.89</span></label>
+            <input type="range" id="scale-input" min="0.5" max="1.5" step="0.01" value="0.89" />
+          </div>
+          <button id="scale-update">Update Scale</button>
+        </div>
+      </div>
+
+      <!-- Combined Transform (NEW ADVANCED) -->
+      <div class="demo-card" style="border: 3px solid #e74c3c;">
+        <h2>🎯 Combined Transform ✨ NEW</h2>
+        <div class="qr-container" id="combined-transform-qr"></div>
+        <div class="controls">
+          <p style="font-size: 0.85rem; color: #e74c3c; margin-bottom: 10px;">
+            ✨ 高级功能 - 组合透视和缩放效果
+          </p>
+          <div class="control-group">
+            <label for="ct-px-input">Perspective X: <span id="ct-px-value">-0.05</span></label>
+            <input type="range" id="ct-px-input" min="-0.2" max="0.2" step="0.01" value="-0.05" />
+          </div>
+          <div class="control-group">
+            <label for="ct-py-input">Perspective Y: <span id="ct-py-value">-0.09</span></label>
+            <input type="range" id="ct-py-input" min="-0.2" max="0.2" step="0.01" value="-0.09" />
+          </div>
+          <div class="control-group">
+            <label for="ct-scale-input">Scale: <span id="ct-scale-value">0.85</span></label>
+            <input type="range" id="ct-scale-input" min="0.5" max="1.2" step="0.01" value="0.85" />
+          </div>
+          <button id="ct-update">Update All</button>
+        </div>
+      </div>
+
+      <!-- Render Layer (NEW ADVANCED) -->
+      <div class="demo-card" style="border: 3px solid #3498db;">
+        <h2>🎯 Render Layer ✨ NEW</h2>
+        <div class="qr-container" id="render-layer-qr"></div>
+        <div class="controls">
+          <p style="font-size: 0.85rem; color: #3498db; margin-bottom: 10px;">
+            ✨ 高级功能 - 选择性渲染不同的QR模块类型
+          </p>
+          <div class="control-group">
+            <label for="render-layer-select">渲染层级:</label>
+            <select id="render-layer-select">
+              <option value="all">All - 全部模块</option>
+              <option value="function">Function - 功能模块</option>
+              <option value="data">Data - 数据模块</option>
+              <option value="guide">Guide - 定时图案</option>
+              <option value="marker">Marker - 定位点</option>
+            </select>
+          </div>
+          <button id="render-layer-update">切换渲染层级</button>
+        </div>
+      </div>
+
+      <!-- Margin Noise (NEW ADVANCED) -->
+      <div class="demo-card" style="border: 3px solid #f39c12;">
+        <h2>✨ Margin Noise ✨ NEW</h2>
+        <div class="qr-container" id="margin-noise-qr"></div>
+        <div class="controls">
+          <p style="font-size: 0.85rem; color: #f39c12; margin-bottom: 10px;">
+            ✨ 高级功能 - 边距装饰噪声,增加艺术感
+          </p>
+          <div class="control-group">
+            <label>
+              <input type="checkbox" id="margin-noise-check" checked />
+              启用边距噪声
+            </label>
+          </div>
+          <div class="control-group">
+            <label for="seed-input">随机种子: <span id="seed-value">12345</span></label>
+            <input type="range" id="seed-input" min="1" max="99999" step="1" value="12345" />
+          </div>
+          <button id="margin-noise-update">更新效果</button>
+        </div>
+      </div>
+
+      <!-- Mask Pattern (NEW ADVANCED) -->
+      <div class="demo-card" style="border: 3px solid #9b59b6;">
+        <h2>🎭 Mask Pattern ✨ NEW</h2>
+        <div class="qr-container" id="mask-pattern-qr"></div>
+        <div class="controls">
+          <p style="font-size: 0.85rem; color: #9b59b6; margin-bottom: 10px;">
+            ✨ 高级功能 - 自定义遮罩模式(0-7或Auto)
+          </p>
+          <div class="control-group">
+            <label for="mask-pattern-select">遮罩模式:</label>
+            <select id="mask-pattern-select">
+              <option value="-1">Auto</option>
+              <option value="0">Pattern 0</option>
+              <option value="1">Pattern 1</option>
+              <option value="2">Pattern 2</option>
+              <option value="3">Pattern 3</option>
+              <option value="4">Pattern 4</option>
+              <option value="5">Pattern 5</option>
+              <option value="6">Pattern 6</option>
+              <option value="7">Pattern 7</option>
+            </select>
+          </div>
+          <button id="mask-pattern-update">切换遮罩</button>
+        </div>
+      </div>
+
+      <!-- Crystalize Effect (NEW ADVANCED) -->
+      <div class="demo-card" style="border: 3px solid #16a085;">
+        <h2>💎 Crystalize Effect ✨ NEW</h2>
+        <div class="qr-container" id="crystalize-qr"></div>
+        <div class="controls">
+          <p style="font-size: 0.85rem; color: #16a085; margin-bottom: 10px;">
+            ✨ 高级功能 - 结晶化效果，创造独特的晶体质感
+          </p>
+          <div class="control-group">
+            <label for="crystalize-effect-select">Effect:</label>
+            <select id="crystalize-effect-select">
+              <option value="none">None - 无效果</option>
+              <option value="crystalize" selected>Crystalize - 结晶化</option>
+            </select>
+          </div>
+          <button id="crystalize-update">切换效果</button>
+          <button id="crystalize-download">Download</button>
+        </div>
+      </div>
+
+      <!-- Liquidify Effect (NEW ADVANCED) -->
+      <div class="demo-card" style="border: 3px solid #3498db;">
+        <h2>💧 Liquidify Effect ✨ NEW</h2>
+        <div class="qr-container" id="liquidify-qr"></div>
+        <div class="controls">
+          <p style="font-size: 0.85rem; color: #3498db; margin-bottom: 10px;">
+            ✨ 高级功能 - 液化效果，创造流动的液体质感
+          </p>
+          <div class="control-group">
+            <label for="liquidify-effect-select">Effect:</label>
+            <select id="liquidify-effect-select">
+              <option value="none">None - 无效果</option>
+              <option value="liquidify" selected>Liquidify - 液化</option>
+            </select>
+          </div>
+          <button id="liquidify-update">切换���果</button>
+          <button id="liquidify-download">Download</button>
+        </div>
+      </div>
     </div>
 
     <div class="footer">
       <p>Built with <strong>@ldesign/qrcode</strong> | <a href="https://github.com">View Documentation</a></p>
-      <p style="margin-top: 10px;">✨ <strong>4 New Styles Added:</strong> Extra Rounded, Hexagon, Liquid, Smooth Dots</p>
+      <p style="margin-top: 10px;">✨ <strong>高级功能:</strong> Transform变换、渲染层级、边距噪声、遮罩模式、视觉效果</p>
     </div>
   </div>
 

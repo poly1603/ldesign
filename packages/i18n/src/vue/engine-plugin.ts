@@ -1,12 +1,12 @@
 /**
  * @ldesign/i18n Engine 插件
- * 
+ *
  * 将 I18n 集成到 LDesign Engine 中的插件实现
  * 参考 template 和 router 的架构模式
  */
 
-import { computed, reactive } from 'vue'
 import type { I18nEnginePluginOptions, I18nPreset } from './types'
+import { computed, reactive } from 'vue'
 import { createI18n } from '../core/createI18n'
 import { installComponents } from './components/index'
 import { installDirectives } from './directives'
@@ -39,14 +39,14 @@ function getPresetConfig(preset: I18nPreset): Partial<I18nEnginePluginOptions> {
         defaultTTL: 60 * 60 * 1000, // 1小时
         enableTTL: true,
         cleanupInterval: 5 * 60 * 1000, // 5分钟
-        memoryPressureThreshold: 0.8
+        memoryPressureThreshold: 0.8,
       },
       devtools: true,
       performance: true,
       errorHandling: {
         enableGlobalHandler: true,
-        enableReporting: false
-      }
+        enableReporting: false,
+      },
     },
     mpa: {
       storage: 'sessionStorage',
@@ -58,14 +58,14 @@ function getPresetConfig(preset: I18nPreset): Partial<I18nEnginePluginOptions> {
         defaultTTL: 30 * 60 * 1000, // 30分钟
         enableTTL: false,
         cleanupInterval: 10 * 60 * 1000, // 10分钟
-        memoryPressureThreshold: 0.9
+        memoryPressureThreshold: 0.9,
       },
       devtools: false,
       performance: false,
       errorHandling: {
         enableGlobalHandler: false,
-        enableReporting: false
-      }
+        enableReporting: false,
+      },
     },
     mobile: {
       storage: 'localStorage',
@@ -77,14 +77,14 @@ function getPresetConfig(preset: I18nPreset): Partial<I18nEnginePluginOptions> {
         defaultTTL: 2 * 60 * 60 * 1000, // 2小时
         enableTTL: true,
         cleanupInterval: 10 * 60 * 1000, // 10分钟
-        memoryPressureThreshold: 0.7
+        memoryPressureThreshold: 0.7,
       },
       devtools: false,
       performance: true,
       errorHandling: {
         enableGlobalHandler: true,
-        enableReporting: true
-      }
+        enableReporting: true,
+      },
     },
     desktop: {
       storage: 'localStorage',
@@ -96,14 +96,14 @@ function getPresetConfig(preset: I18nPreset): Partial<I18nEnginePluginOptions> {
         defaultTTL: 4 * 60 * 60 * 1000, // 4小时
         enableTTL: true,
         cleanupInterval: 5 * 60 * 1000, // 5分钟
-        memoryPressureThreshold: 0.8
+        memoryPressureThreshold: 0.8,
       },
       devtools: true,
       performance: true,
       errorHandling: {
         enableGlobalHandler: true,
-        enableReporting: false
-      }
+        enableReporting: false,
+      },
     },
     admin: {
       storage: 'localStorage',
@@ -115,15 +115,15 @@ function getPresetConfig(preset: I18nPreset): Partial<I18nEnginePluginOptions> {
         defaultTTL: 8 * 60 * 60 * 1000, // 8小时
         enableTTL: true,
         cleanupInterval: 15 * 60 * 1000, // 15分钟
-        memoryPressureThreshold: 0.8
+        memoryPressureThreshold: 0.8,
       },
       devtools: true,
       performance: true,
       errorHandling: {
         enableGlobalHandler: true,
         enableReporting: true,
-        reportEndpoint: '/api/errors'
-      }
+        reportEndpoint: '/api/errors',
+      },
     },
     blog: {
       storage: 'localStorage',
@@ -135,14 +135,14 @@ function getPresetConfig(preset: I18nPreset): Partial<I18nEnginePluginOptions> {
         defaultTTL: 24 * 60 * 60 * 1000, // 24小时
         enableTTL: true,
         cleanupInterval: 30 * 60 * 1000, // 30分钟
-        memoryPressureThreshold: 0.8
+        memoryPressureThreshold: 0.8,
       },
       devtools: false,
       performance: true,
       errorHandling: {
         enableGlobalHandler: false,
-        enableReporting: false
-      }
+        enableReporting: false,
+      },
     },
     ecommerce: {
       storage: 'localStorage',
@@ -154,16 +154,16 @@ function getPresetConfig(preset: I18nPreset): Partial<I18nEnginePluginOptions> {
         defaultTTL: 6 * 60 * 60 * 1000, // 6小时
         enableTTL: true,
         cleanupInterval: 10 * 60 * 1000, // 10分钟
-        memoryPressureThreshold: 0.8
+        memoryPressureThreshold: 0.8,
       },
       devtools: false,
       performance: true,
       errorHandling: {
         enableGlobalHandler: true,
         enableReporting: true,
-        reportEndpoint: '/api/i18n-errors'
-      }
-    }
+        reportEndpoint: '/api/i18n-errors',
+      },
+    },
   }
 
   return presets[preset] || {}
@@ -183,13 +183,13 @@ function mergeOptions(options: I18nEnginePluginOptions): I18nEnginePluginOptions
       // 深度合并缓存配置
       cache: {
         ...(presetConfig.cache as any),
-        ...(userOptions.cache as any)
+        ...(userOptions.cache as any),
       } as Required<I18nEnginePluginOptions['cache']>,
       // 深度合并错误处理配置
       errorHandling: {
         ...presetConfig.errorHandling,
-        ...userOptions.errorHandling
-      }
+        ...userOptions.errorHandling,
+      },
     }
   }
 
@@ -208,7 +208,7 @@ interface I18nPluginState {
 const pluginState: I18nPluginState = {
   i18n: null,
   installed: false,
-  options: null
+  options: null,
 }
 
 /**
@@ -217,19 +217,19 @@ const pluginState: I18nPluginState = {
  */
 const reactiveState = reactive({
   currentLocale: 'zh-CN',
-  availableLocales: ['zh-CN', 'en', 'ja'] as string[] // 提供默认的语言列表，避免初始化时为空
+  availableLocales: ['zh-CN', 'en', 'ja'] as string[], // 提供默认的语言列表，避免初始化时为空
 })
 
 /**
  * 创建 I18n Engine 插件
- * 
+ *
  * @param options I18n 配置选项
  * @returns Engine 插件实例
- * 
+ *
  * @example
  * ```typescript
  * import { createI18nEnginePlugin } from '@ldesign/i18n'
- * 
+ *
  * // 使用预设配置
  * const i18nPlugin = createI18nEnginePlugin({
  *   preset: 'spa',
@@ -240,7 +240,7 @@ const reactiveState = reactive({
  *     'en': { hello: 'Hello' }
  *   }
  * })
- * 
+ *
  * await engine.use(i18nPlugin)
  * ```
  */
@@ -273,7 +273,7 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
     preferBuiltIn,
     fallbackToBuiltIn,
     builtInNamespace,
-    mergeOptions: mergeOpts
+    mergeOptions: mergeOpts,
   } = mergedOptions
 
   return {
@@ -367,14 +367,15 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
               if (onLoadError) {
                 onLoadError(err as Error)
               }
-            }
+            },
           })
 
           // 同步初始化 I18n，确保基础功能立即可用
           if (typeof pluginState.i18n.initSync === 'function') {
             pluginState.i18n.initSync()
             engine.logger.debug('I18n initialized synchronously')
-          } else if (typeof pluginState.i18n.init === 'function') {
+          }
+          else if (typeof pluginState.i18n.init === 'function') {
             // 如果没有同步初始化方法，同步执行基础初始化
             const initPromise = pluginState.i18n.init()
             if (initPromise && typeof initPromise.then === 'function') {
@@ -409,7 +410,8 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
           }
 
           engine.logger.debug('I18n basic functionality ready')
-        } catch (error) {
+        }
+        catch (error) {
           engine.logger.error('Failed to initialize i18n:', error)
         }
 
@@ -424,7 +426,8 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
           changeLanguage: async (locale: string) => {
             if (pluginState.i18n) {
               await pluginState.i18n.changeLanguage(locale)
-            } else {
+            }
+            else {
               // 降级处理
               reactiveState.currentLocale = locale
             }
@@ -459,10 +462,9 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
             locale: computed(() => reactiveState.currentLocale),
             t: (key: string, params?: Record<string, unknown>) => {
               return pluginState.i18n?.t(key, params) || key
-            }
-          }
+            },
+          },
         }
-
 
         // 定义实际的安装逻辑
         const performInstall = async () => {
@@ -470,7 +472,7 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
           const vueApp = engine.getApp()
           if (!vueApp) {
             throw new Error(
-              'Vue app not found. Make sure the engine has created a Vue app before installing i18n plugin.'
+              'Vue app not found. Make sure the engine has created a Vue app before installing i18n plugin.',
             )
           }
 
@@ -527,8 +529,8 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
               locale: computed(() => reactiveState.currentLocale), // 现在依赖响应式状态
               t: (key: string, params?: Record<string, unknown>) => {
                 return pluginState.i18n?.t(key, params) || key
-              }
-            }
+              },
+            },
           }
 
           // 更新已经提供的 basicVueI18n 实例，使其使用完整的功能
@@ -563,7 +565,7 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
               const languages = pluginState.i18n.getAvailableLanguages()
               if (Array.isArray(languages) && languages.length > 0) {
                 return languages.map(lang =>
-                  typeof lang === 'string' ? lang : lang.code
+                  typeof lang === 'string' ? lang : lang.code,
                 )
               }
               // 如果没有可用语言，返回默认语言
@@ -571,7 +573,7 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
             },
             setLocaleMessage: pluginState.i18n.setLocaleMessage?.bind(pluginState.i18n),
             getLocaleMessage: pluginState.i18n.getLocaleMessage?.bind(pluginState.i18n),
-            getI18n: () => pluginState.i18n // 返回原始 I18n 实例
+            getI18n: () => pluginState.i18n, // 返回原始 I18n 实例
           }
 
           engine.i18n = i18nAdapter
@@ -599,9 +601,9 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
                     stack: error.stack,
                     info,
                     locale: pluginState.i18n.getCurrentLanguage(),
-                    timestamp: new Date().toISOString()
-                  })
-                }).catch(reportError => {
+                    timestamp: new Date().toISOString(),
+                  }),
+                }).catch((reportError) => {
                   engine.logger.error('Failed to report I18n error:', reportError)
                 })
               }
@@ -615,7 +617,7 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
           // 记录插件安装完成
           engine.logger.info(`${name} plugin installed successfully`, {
             currentLocale: pluginState.i18n.getCurrentLanguage(),
-            availableLocales: pluginState.i18n.getAvailableLanguages()
+            availableLocales: pluginState.i18n.getAvailableLanguages(),
           })
 
           // 触发插件安装完成事件
@@ -624,7 +626,7 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
               i18n: pluginState.i18n,
               locale,
               fallbackLocale,
-              availableLocales: pluginState.i18n.getAvailableLanguages()
+              availableLocales: pluginState.i18n.getAvailableLanguages(),
             })
           }
         }
@@ -634,19 +636,22 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
         if (currentVueApp) {
           // 如果 Vue 应用已经创建，立即安装
           await performInstall()
-        } else {
+        }
+        else {
           // 如果 Vue 应用还没创建，监听应用创建事件
           engine.events.once('app:created', async () => {
             try {
               await performInstall()
-            } catch (error) {
+            }
+            catch (error) {
               engine.logger.error(`Failed to install ${name} plugin after app creation:`, error)
             }
           })
 
           engine.logger.info(`${name} plugin registered, waiting for Vue app creation...`)
         }
-      } catch (error) {
+      }
+      catch (error) {
         // 安全地记录错误
         if (
           context.engine
@@ -654,7 +659,8 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
           && typeof context.engine.logger.error === 'function'
         ) {
           context.engine.logger.error(`Failed to install ${name} plugin:`, error)
-        } else {
+        }
+        else {
           console.error(`Failed to install ${name} plugin:`, error)
         }
         throw error
@@ -691,7 +697,8 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
         }
 
         engine.logger.info(`${name} plugin uninstalled successfully`)
-      } catch (error) {
+      }
+      catch (error) {
         const engine = context.engine || context
         if (
           engine
@@ -699,12 +706,13 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
           && typeof engine.logger.error === 'function'
         ) {
           engine.logger.error(`Failed to uninstall ${name} plugin:`, error)
-        } else {
+        }
+        else {
           console.error(`Failed to uninstall ${name} plugin:`, error)
         }
         throw error
       }
-    }
+    },
   }
 }
 
@@ -737,13 +745,13 @@ export function getI18nPluginOptions(): I18nEnginePluginOptions | null {
 export function createSPAI18n(
   locale: string,
   messages: Record<string, Record<string, unknown>>,
-  options?: Partial<I18nEnginePluginOptions>
+  options?: Partial<I18nEnginePluginOptions>,
 ) {
   return createI18nEnginePlugin({
     preset: 'spa',
     locale,
     messages,
-    ...options
+    ...options,
   })
 }
 
@@ -753,13 +761,13 @@ export function createSPAI18n(
 export function createMobileI18n(
   locale: string,
   messages: Record<string, Record<string, unknown>>,
-  options?: Partial<I18nEnginePluginOptions>
+  options?: Partial<I18nEnginePluginOptions>,
 ) {
   return createI18nEnginePlugin({
     preset: 'mobile',
     locale,
     messages,
-    ...options
+    ...options,
   })
 }
 
@@ -769,13 +777,13 @@ export function createMobileI18n(
 export function createDesktopI18n(
   locale: string,
   messages: Record<string, Record<string, unknown>>,
-  options?: Partial<I18nEnginePluginOptions>
+  options?: Partial<I18nEnginePluginOptions>,
 ) {
   return createI18nEnginePlugin({
     preset: 'desktop',
     locale,
     messages,
-    ...options
+    ...options,
   })
 }
 
@@ -785,13 +793,13 @@ export function createDesktopI18n(
 export function createAdminI18n(
   locale: string,
   messages: Record<string, Record<string, unknown>>,
-  options?: Partial<I18nEnginePluginOptions>
+  options?: Partial<I18nEnginePluginOptions>,
 ) {
   return createI18nEnginePlugin({
     preset: 'admin',
     locale,
     messages,
-    ...options
+    ...options,
   })
 }
 
@@ -801,13 +809,13 @@ export function createAdminI18n(
 export function createBlogI18n(
   locale: string,
   messages: Record<string, Record<string, unknown>>,
-  options?: Partial<I18nEnginePluginOptions>
+  options?: Partial<I18nEnginePluginOptions>,
 ) {
   return createI18nEnginePlugin({
     preset: 'blog',
     locale,
     messages,
-    ...options
+    ...options,
   })
 }
 
@@ -817,13 +825,13 @@ export function createBlogI18n(
 export function createEcommerceI18n(
   locale: string,
   messages: Record<string, Record<string, unknown>>,
-  options?: Partial<I18nEnginePluginOptions>
+  options?: Partial<I18nEnginePluginOptions>,
 ) {
   return createI18nEnginePlugin({
     preset: 'ecommerce',
     locale,
     messages,
-    ...options
+    ...options,
   })
 }
 
@@ -833,7 +841,7 @@ export function createEcommerceI18n(
 export function createSimpleI18n(
   locale: string,
   messages: Record<string, Record<string, unknown>>,
-  fallbackLocale = 'en'
+  fallbackLocale = 'en',
 ) {
   return createI18nEnginePlugin({
     locale,
@@ -848,10 +856,10 @@ export function createSimpleI18n(
       defaultTTL: 30 * 60 * 1000,
       enableTTL: false,
       cleanupInterval: 60 * 1000,
-      memoryPressureThreshold: 0.9
+      memoryPressureThreshold: 0.9,
     },
     devtools: false,
-    performance: false
+    performance: false,
   })
 }
 
@@ -906,7 +914,7 @@ export default {
   mergeOptions,
   getI18nPluginState,
   getI18nInstance,
-  getI18nPluginOptions
+  getI18nPluginOptions,
 }
 
 /**

@@ -75,4 +75,3 @@ const ui: UITranslations = {
 }
 
 export default ui
-

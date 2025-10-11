@@ -1,5 +1,6 @@
-import type { CacheManager } from './cache-manager'
 import type { SerializableValue } from '../types'
+
+import type { CacheManager } from './cache-manager'
 
 /**
  * 版本迁移函数类型
@@ -69,7 +70,7 @@ export class VersionManager {
 
   constructor(
     private cache: CacheManager,
-    config: VersionConfig
+    config: VersionConfig,
   ) {
     this.currentVersion = config.version
     this.versionKey = config.versionKey || '__cache_version__'
@@ -138,11 +139,11 @@ export class VersionManager {
 
     // 对每个缓存项执行迁移
     for (const key of keys) {
-      if (key === this.versionKey) continue
+      if (key === this.versionKey) { continue }
 
       try {
         const data = await this.cache.get(key)
-        if (data === null) continue
+        if (data === null) { continue }
 
         let migratedData: SerializableValue = data
 
@@ -153,7 +154,8 @@ export class VersionManager {
 
         // 更新缓存
         await this.cache.set(key, migratedData)
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`Failed to migrate key ${key}:`, error)
         // 继续迁移其他键
       }
@@ -195,7 +197,7 @@ export class VersionManager {
         }
       }
 
-      if (!found) break
+      if (!found) { break }
     }
 
     return null
@@ -205,7 +207,7 @@ export class VersionManager {
    * 获取存储的版本号
    */
   private async getStoredVersion(): Promise<string | null> {
-    return await this.cache.get<string>(this.versionKey)
+    return this.cache.get<string>(this.versionKey)
   }
 
   /**
@@ -257,7 +259,7 @@ export class VersionManager {
  */
 export function createVersionManager(
   cache: CacheManager,
-  config: VersionConfig
+  config: VersionConfig,
 ): VersionManager {
   return new VersionManager(cache, config)
 }

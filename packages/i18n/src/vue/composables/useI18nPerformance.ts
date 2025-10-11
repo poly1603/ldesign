@@ -3,7 +3,7 @@
  * 提供缓存、批量翻译、预加载等性能优化功能
  */
 
-import { computed, ref, watch, onMounted, onUnmounted, inject } from 'vue'
+import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
 import { I18nInjectionKey } from '../plugin'
 
 /**
@@ -61,26 +61,26 @@ interface LocalPerformanceMetrics {
 
 /**
  * I18n 性能优化组合式 API
- * 
+ *
  * @param options 性能优化选项
- * 
+ *
  * @example
  * ```vue
  * <script setup>
  * import { useI18nPerformance } from '@ldesign/i18n/vue'
- * 
+ *
  * const { t, tBatch, preload, getMetrics } = useI18nPerformance({
  *   enableLocalCache: true,
  *   enableBatchTranslation: true,
  *   preloadKeys: ['common.hello', 'common.goodbye']
  * })
- * 
+ *
  * // 使用缓存的翻译
  * const hello = t('common.hello')
- * 
+ *
  * // 批量翻译
  * const translations = await tBatch(['key1', 'key2', 'key3'])
- * 
+ *
  * // 预加载翻译
  * await preload(['page.title', 'page.description'])
  * </script>
@@ -93,11 +93,11 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
     enableBatchTranslation = true,
     batchDelay = 10,
     enablePreload = true,
-    preloadKeys = []
+    preloadKeys = [],
   } = options
 
   const i18n = inject(I18nInjectionKey)
-  
+
   if (!i18n) {
     console.warn('useI18nPerformance: I18n plugin not found. Make sure to install the i18n plugin.')
     return createFallbackPerformanceI18n()
@@ -105,18 +105,18 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
 
   // 本地缓存
   const localCache = ref(new Map<string, CacheItem>())
-  
+
   // 批量翻译队列
   const batchQueue = ref<BatchRequest[]>([])
   let batchTimer: number | null = null
-  
+
   // 性能统计
   const metrics = ref<LocalPerformanceMetrics>({
     cacheHits: 0,
     cacheMisses: 0,
     batchTranslations: 0,
     preloadCount: 0,
-    averageTranslationTime: 0
+    averageTranslationTime: 0,
   })
 
   /**
@@ -132,10 +132,12 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
    * 从缓存获取翻译
    */
   const getFromCache = (cacheKey: string): string | null => {
-    if (!enableLocalCache) return null
+    if (!enableLocalCache)
+      return null
 
     const item = localCache.value.get(cacheKey)
-    if (!item) return null
+    if (!item)
+      return null
 
     // 检查缓存是否过期（1小时）
     if (Date.now() - item.timestamp > 3600000) {
@@ -151,7 +153,8 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
    * 设置缓存
    */
   const setCache = (cacheKey: string, value: string, params?: Record<string, unknown>) => {
-    if (!enableLocalCache) return
+    if (!enableLocalCache)
+      return
 
     // 如果缓存已满，删除最旧的项
     if (localCache.value.size >= localCacheSize) {
@@ -165,7 +168,7 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
       value,
       timestamp: Date.now(),
       locale: i18n.locale.value,
-      params
+      params,
     })
   }
 
@@ -174,11 +177,11 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
    */
   const t = (key: string, params?: Record<string, unknown>): string => {
     const startTime = performance.now()
-    
+
     // 尝试从缓存获取
     const cacheKey = generateCacheKey(key, params)
     const cached = getFromCache(cacheKey)
-    
+
     if (cached) {
       return cached
     }
@@ -186,14 +189,14 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
     // 缓存未命中，执行翻译
     metrics.value.cacheMisses++
     const result = i18n.t(key, params)
-    
+
     // 设置缓存
     setCache(cacheKey, result, params)
-    
+
     // 更新性能统计
     const duration = performance.now() - startTime
-    metrics.value.averageTranslationTime = 
-      (metrics.value.averageTranslationTime + duration) / 2
+    metrics.value.averageTranslationTime
+      = (metrics.value.averageTranslationTime + duration) / 2
 
     return result
   }
@@ -206,7 +209,7 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
       if (!enableBatchTranslation) {
         // 如果不启用批量翻译，直接逐个翻译
         const results: Record<string, string> = {}
-        keys.forEach(key => {
+        keys.forEach((key) => {
           results[key] = t(key, params)
         })
         resolve(results)
@@ -217,13 +220,14 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
       const pendingKeys: string[] = []
 
       // 先检查缓存
-      keys.forEach(key => {
+      keys.forEach((key) => {
         const cacheKey = generateCacheKey(key, params)
         const cached = getFromCache(cacheKey)
-        
+
         if (cached) {
           results[key] = cached
-        } else {
+        }
+        else {
           pendingKeys.push(key)
         }
       })
@@ -236,7 +240,7 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
 
       // 添加到批量队列
       let resolvedCount = 0
-      pendingKeys.forEach(key => {
+      pendingKeys.forEach((key) => {
         batchQueue.value.push({
           key,
           params,
@@ -246,7 +250,7 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
             if (resolvedCount === pendingKeys.length) {
               resolve(results)
             }
-          }
+          },
         })
       })
 
@@ -271,7 +275,7 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
     batchTimer = null
 
     // 执行批量翻译
-    currentBatch.forEach(request => {
+    currentBatch.forEach((request) => {
       const result = i18n.t(request.key, request.params)
       const cacheKey = generateCacheKey(request.key, request.params)
       setCache(cacheKey, result, request.params)
@@ -285,11 +289,12 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
    * 预加载翻译
    */
   const preload = async (keys: string[], params?: Record<string, unknown>): Promise<void> => {
-    if (!enablePreload) return
+    if (!enablePreload)
+      return
 
     const translations = await tBatch(keys, params)
     metrics.value.preloadCount += keys.length
-    
+
     console.log(`[I18n Performance] 预加载了 ${keys.length} 个翻译键`)
   }
 
@@ -307,11 +312,11 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
   const getMetrics = () => {
     const cacheSize = localCache.value.size
     const hitRate = metrics.value.cacheHits / (metrics.value.cacheHits + metrics.value.cacheMisses) || 0
-    
+
     return {
       ...metrics.value,
       cacheSize,
-      hitRate: Math.round(hitRate * 100) / 100
+      hitRate: Math.round(hitRate * 100) / 100,
     }
   }
 
@@ -345,14 +350,14 @@ export function useI18nPerformance(options: PerformanceOptions = {}) {
     // 翻译函数
     t,
     tBatch,
-    
+
     // 性能功能
     preload,
     clearCache,
     getMetrics,
-    
+
     // 响应式数据
-    metrics: computed(() => getMetrics())
+    metrics: computed(() => getMetrics()),
   }
 }
 
@@ -365,13 +370,13 @@ function createFallbackPerformanceI18n() {
     cacheMisses: 0,
     batchTranslations: 0,
     preloadCount: 0,
-    averageTranslationTime: 0
+    averageTranslationTime: 0,
   })
 
   const t = (key: string, params?: Record<string, unknown>) => {
     if (params) {
       let result = key
-      Object.keys(params).forEach(paramKey => {
+      Object.keys(params).forEach((paramKey) => {
         result = result.replace(`{${paramKey}}`, String(params[paramKey]))
       })
       return result
@@ -381,7 +386,7 @@ function createFallbackPerformanceI18n() {
 
   const tBatch = async (keys: string[], params?: Record<string, unknown>) => {
     const results: Record<string, string> = {}
-    keys.forEach(key => {
+    keys.forEach((key) => {
       results[key] = t(key, params)
     })
     return results
@@ -393,7 +398,7 @@ function createFallbackPerformanceI18n() {
     preload: async () => {},
     clearCache: () => {},
     getMetrics: () => metrics.value,
-    metrics: computed(() => metrics.value)
+    metrics: computed(() => metrics.value),
   }
 }
 
@@ -401,5 +406,5 @@ function createFallbackPerformanceI18n() {
  * 导出类型
  */
 export type {
-  LocalPerformanceMetrics
+  LocalPerformanceMetrics,
 }

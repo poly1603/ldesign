@@ -564,3 +564,35 @@ export type {
   WarmupConfig,
   WarmupResult,
 } from './route-cache-warmer'
+
+// ==================== 导航优化工具 ====================
+
+export {
+  NavigationThrottler,
+  NavigationDebouncer,
+  NavigationPerformanceMonitor,
+  GuardExecutionTimer,
+  ParallelGuardExecutor,
+  NavigationQueueManager,
+  createNavigationOptimizer,
+} from './navigation-optimizer'
+
+export type {
+  NavigationThrottlerOptions,
+  NavigationMetrics,
+} from './navigation-optimizer'
+
+// ==================== 高级内存管理 ====================
+
+export {
+  TieredCacheManager,
+  WeakRefCache,
+  SmartMemoryReclaimer,
+  CachePriority,
+  MemoryPressure,
+  createAdvancedMemoryManager,
+} from './advanced-memory-manager'
+
+export type {
+  TieredCacheConfig,
+} from './advanced-memory-manager'

@@ -18,6 +18,10 @@ export interface CSSInjectionOptions {
   transitionDuration?: string
   /** 过渡缓动函数 */
   transitionEasing?: string
+  /** 是否启用批量更新 */
+  enableBatching?: boolean
+  /** 批量更新延迟（毫秒） */
+  batchDelay?: number
 }
 
 /**
@@ -30,6 +34,8 @@ const DEFAULT_CSS_OPTIONS: Required<CSSInjectionOptions> = {
   enableTransition: true,
   transitionDuration: '0.3s',
   transitionEasing: 'ease-in-out',
+  enableBatching: true,
+  batchDelay: 16, // ~1 帧
 }
 
 /**
@@ -40,13 +46,16 @@ export class CSSInjector {
   private options: Required<CSSInjectionOptions>
   private styleElement: HTMLStyleElement | null = null
   private isProtected: boolean = true // 默认启用保护
+  private pendingVariables: Record<string, string> | null = null
+  private batchTimer: NodeJS.Timeout | null = null
+  private lastCSSString = ''
 
   constructor(options?: CSSInjectionOptions) {
     this.options = { ...DEFAULT_CSS_OPTIONS, ...options }
   }
 
   /**
-   * 注入CSS变量
+   * 注入CSS变量（支持批量处理）
    */
   injectVariables(variables: Record<string, string>): void {
     if (typeof document === 'undefined') {
@@ -54,16 +63,52 @@ export class CSSInjector {
       return
     }
 
-    const cssString = this.generateCSSString(variables)
-    this.injectCSS(cssString)
+    if (this.options.enableBatching) {
+      this.batchInjectVariables(variables)
+    }
+    else {
+      const cssString = this.generateCSSString(variables)
+      this.injectCSS(cssString)
+    }
   }
 
   /**
-   * 注入CSS字符串（增强版，带保护机制）
+   * 批量注入CSS变量
+   */
+  private batchInjectVariables(variables: Record<string, string>): void {
+    // 合并待处理的变量
+    this.pendingVariables = {
+      ...this.pendingVariables,
+      ...variables,
+    }
+
+    // 清除之前的定时器
+    if (this.batchTimer) {
+      clearTimeout(this.batchTimer)
+    }
+
+    // 设置新的定时器
+    this.batchTimer = setTimeout(() => {
+      if (this.pendingVariables) {
+        const cssString = this.generateCSSString(this.pendingVariables)
+        this.injectCSS(cssString)
+        this.pendingVariables = null
+      }
+      this.batchTimer = null
+    }, this.options.batchDelay)
+  }
+
+  /**
+   * 注入CSS字符串（增强版，带保护机制和 diff 优化）
    */
   injectCSS(cssString: string): void {
     if (typeof document === 'undefined') {
       console.warn('CSS injection is only available in browser environment')
+      return
+    }
+
+    // 快速比较：如果内容没有变化，直接返回
+    if (this.lastCSSString === cssString) {
       return
     }
 
@@ -72,32 +117,42 @@ export class CSSInjector {
     if (existingStyle && existingStyle.textContent === cssString) {
       // 内容相同，无需重新注入
       this.styleElement = existingStyle as HTMLStyleElement
+      this.lastCSSString = cssString
       return
     }
 
-    // 移除现有的样式元素
-    this.removeCSS()
-
-    // 创建新的样式元素
-    this.styleElement = document.createElement('style')
-    this.styleElement.id = this.options.styleId
-    this.styleElement.textContent = cssString
-
-    // 添加保护属性，防止被其他包误删（安全检查）
-    if (this.isProtected && this.styleElement.setAttribute) {
-      try {
-        this.styleElement.setAttribute('data-package', 'ldesign-size')
-        this.styleElement.setAttribute('data-protected', 'true')
-        this.styleElement.setAttribute('data-injector', 'size-css-injector')
+    // 使用 requestAnimationFrame 优化，减少重排重绘
+    requestAnimationFrame(() => {
+      if (existingStyle) {
+        // 直接更新内容，避免重新创建元素
+        existingStyle.textContent = cssString
+        this.styleElement = existingStyle as HTMLStyleElement
       }
-      catch (error) {
-        // 在某些环境中 setAttribute 可能不可用，忽略错误
-        console.warn('[CSS Injector] Failed to set protection attributes:', error)
-      }
-    }
+      else {
+        // 创建新的样式元素
+        this.styleElement = document.createElement('style')
+        this.styleElement.id = this.options.styleId
+        this.styleElement.textContent = cssString
 
-    // 插入到head中
-    document.head.appendChild(this.styleElement)
+        // 添加保护属性，防止被其他包误删（安全检查）
+        if (this.isProtected && this.styleElement.setAttribute) {
+          try {
+            this.styleElement.setAttribute('data-package', 'ldesign-size')
+            this.styleElement.setAttribute('data-protected', 'true')
+            this.styleElement.setAttribute('data-injector', 'size-css-injector')
+          }
+          catch (error) {
+            // 在某些环境中 setAttribute 可能不可用，忽略错误
+            console.warn('[CSS Injector] Failed to set protection attributes:', error)
+          }
+        }
+
+        // 插入到head中
+        document.head.appendChild(this.styleElement)
+      }
+
+      this.lastCSSString = cssString
+    })
   }
 
   /**
@@ -193,9 +248,29 @@ export class CSSInjector {
   }
 
   /**
+   * 立即刷新批处理的变量
+   */
+  flush(): void {
+    if (this.batchTimer) {
+      clearTimeout(this.batchTimer)
+      this.batchTimer = null
+    }
+
+    if (this.pendingVariables) {
+      const cssString = this.generateCSSString(this.pendingVariables)
+      this.injectCSS(cssString)
+      this.pendingVariables = null
+    }
+  }
+
+  /**
    * 销毁注入器
    */
   destroy(): void {
+    if (this.batchTimer) {
+      clearTimeout(this.batchTimer)
+      this.batchTimer = null
+    }
     this.removeCSS()
   }
 }

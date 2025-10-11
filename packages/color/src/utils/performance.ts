@@ -478,3 +478,392 @@ export function withPerformance<T extends (...args: any[]) => any>(
     return result
   }) as T
 }
+
+/**
+ * 内存使用信息接口
+ */
+export interface MemoryInfo {
+  /** 已使用的堆内存（字节） */
+  usedJSHeapSize: number
+  /** 总堆内存大小（字节） */
+  totalJSHeapSize: number
+  /** 堆内存限制（字节） */
+  jsHeapSizeLimit: number
+  /** 内存使用率（0-1） */
+  usageRatio: number
+  /** 格式化的内存信息 */
+  formatted: {
+    used: string
+    total: string
+    limit: string
+    usage: string
+  }
+}
+
+/**
+ * FPS 监控器
+ */
+export class FPSMonitor {
+  private frames: number[] = []
+  private lastTime: number = performance.now()
+  private rafId: number | null = null
+  private isRunning: boolean = false
+  private readonly maxSamples: number
+
+  constructor(maxSamples: number = 60) {
+    this.maxSamples = maxSamples
+  }
+
+  /**
+   * 开始监控 FPS
+   */
+  start(): void {
+    if (this.isRunning)
+      return
+
+    this.isRunning = true
+    this.lastTime = performance.now()
+    this.tick()
+  }
+
+  /**
+   * 停止监控
+   */
+  stop(): void {
+    this.isRunning = false
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId)
+      this.rafId = null
+    }
+  }
+
+  /**
+   * 获取当前 FPS
+   */
+  getFPS(): number {
+    if (this.frames.length === 0)
+      return 0
+
+    const sum = this.frames.reduce((a, b) => a + b, 0)
+    return sum / this.frames.length
+  }
+
+  /**
+   * 获取 FPS 统计信息
+   */
+  getStats(): {
+    current: number
+    average: number
+    min: number
+    max: number
+    samples: number
+  } {
+    if (this.frames.length === 0) {
+      return {
+        current: 0,
+        average: 0,
+        min: 0,
+        max: 0,
+        samples: 0,
+      }
+    }
+
+    return {
+      current: this.frames[this.frames.length - 1] || 0,
+      average: this.getFPS(),
+      min: Math.min(...this.frames),
+      max: Math.max(...this.frames),
+      samples: this.frames.length,
+    }
+  }
+
+  /**
+   * 重置统计
+   */
+  reset(): void {
+    this.frames = []
+    this.lastTime = performance.now()
+  }
+
+  /**
+   * FPS 计算循环
+   */
+  private tick(): void {
+    if (!this.isRunning)
+      return
+
+    const now = performance.now()
+    const delta = now - this.lastTime
+    const fps = 1000 / delta
+
+    this.frames.push(fps)
+    if (this.frames.length > this.maxSamples) {
+      this.frames.shift()
+    }
+
+    this.lastTime = now
+    this.rafId = requestAnimationFrame(() => this.tick())
+  }
+}
+
+/**
+ * 内存监控器
+ */
+export class MemoryMonitor {
+  private samples: MemoryInfo[] = []
+  private readonly maxSamples: number
+  private timerId: NodeJS.Timeout | null = null
+
+  constructor(maxSamples: number = 100) {
+    this.maxSamples = maxSamples
+  }
+
+  /**
+   * 检查内存 API 是否可用
+   */
+  static isSupported(): boolean {
+    return typeof performance !== 'undefined'
+      && 'memory' in performance
+      && performance.memory !== undefined
+  }
+
+  /**
+   * 获取当前内存使用情况
+   */
+  getMemoryInfo(): MemoryInfo | null {
+    if (!MemoryMonitor.isSupported())
+      return null
+
+    const memory = (performance as any).memory
+    const usageRatio = memory.usedJSHeapSize / memory.jsHeapSizeLimit
+
+    return {
+      usedJSHeapSize: memory.usedJSHeapSize,
+      totalJSHeapSize: memory.totalJSHeapSize,
+      jsHeapSizeLimit: memory.jsHeapSizeLimit,
+      usageRatio,
+      formatted: {
+        used: this.formatBytes(memory.usedJSHeapSize),
+        total: this.formatBytes(memory.totalJSHeapSize),
+        limit: this.formatBytes(memory.jsHeapSizeLimit),
+        usage: `${(usageRatio * 100).toFixed(2)}%`,
+      },
+    }
+  }
+
+  /**
+   * 开始定期监控内存
+   * @param interval 采样间隔（毫秒）
+   */
+  startMonitoring(interval: number = 5000): void {
+    if (this.timerId)
+      return
+
+    this.timerId = setInterval(() => {
+      const info = this.getMemoryInfo()
+      if (info) {
+        this.samples.push(info)
+        if (this.samples.length > this.maxSamples) {
+          this.samples.shift()
+        }
+      }
+    }, interval)
+
+    // 在 Node.js 环境中允许进程退出
+    if (typeof process !== 'undefined' && this.timerId.unref) {
+      this.timerId.unref()
+    }
+  }
+
+  /**
+   * 停止监控
+   */
+  stopMonitoring(): void {
+    if (this.timerId) {
+      clearInterval(this.timerId)
+      this.timerId = null
+    }
+  }
+
+  /**
+   * 获取内存趋势统计
+   */
+  getStats(): {
+    current: MemoryInfo | null
+    average: number
+    peak: number
+    samples: number
+  } {
+    if (this.samples.length === 0) {
+      return {
+        current: this.getMemoryInfo(),
+        average: 0,
+        peak: 0,
+        samples: 0,
+      }
+    }
+
+    const usages = this.samples.map(s => s.usedJSHeapSize)
+    const average = usages.reduce((a, b) => a + b, 0) / usages.length
+    const peak = Math.max(...usages)
+
+    return {
+      current: this.getMemoryInfo(),
+      average,
+      peak,
+      samples: this.samples.length,
+    }
+  }
+
+  /**
+   * 检查内存压力
+   * @param threshold 阈值（0-1）
+   * @returns 是否超过阈值
+   */
+  isMemoryPressureHigh(threshold: number = 0.85): boolean {
+    const info = this.getMemoryInfo()
+    return info ? info.usageRatio > threshold : false
+  }
+
+  /**
+   * 清空采样数据
+   */
+  clear(): void {
+    this.samples = []
+  }
+
+  /**
+   * 格式化字节数
+   */
+  private formatBytes(bytes: number): string {
+    if (bytes === 0)
+      return '0 Bytes'
+
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+    return `${(bytes / k ** i).toFixed(2)} ${sizes[i]}`
+  }
+}
+
+/**
+ * 慢操作检测器
+ */
+export class SlowOperationDetector {
+  private threshold: number
+  private operations: Map<string, {
+    count: number
+    totalTime: number
+    slowCount: number
+    maxTime: number
+  }> = new Map()
+
+  /**
+   * @param threshold 慢操作阈值（毫秒）
+   */
+  constructor(threshold: number = 16) {
+    this.threshold = threshold
+  }
+
+  /**
+   * 记录操作
+   * @param name 操作名称
+   * @param duration 持续时间（毫秒）
+   */
+  record(name: string, duration: number): void {
+    if (!this.operations.has(name)) {
+      this.operations.set(name, {
+        count: 0,
+        totalTime: 0,
+        slowCount: 0,
+        maxTime: 0,
+      })
+    }
+
+    const op = this.operations.get(name)!
+    op.count++
+    op.totalTime += duration
+    op.maxTime = Math.max(op.maxTime, duration)
+
+    if (duration > this.threshold) {
+      op.slowCount++
+      console.warn(
+        `⚠️ Slow operation detected: ${name} took ${duration.toFixed(2)}ms (threshold: ${this.threshold}ms)`,
+      )
+    }
+  }
+
+  /**
+   * 获取操作统计
+   */
+  getStats(name?: string): Map<string, {
+    count: number
+    averageTime: number
+    slowCount: number
+    slowRatio: number
+    maxTime: number
+  }> {
+    const stats = new Map<string, {
+      count: number
+      averageTime: number
+      slowCount: number
+      slowRatio: number
+      maxTime: number
+    }>()
+
+    const entries: [string, {
+      count: number
+      totalTime: number
+      slowCount: number
+      maxTime: number
+    }][] = name
+      ? [[name, this.operations.get(name)!]].filter(([_, data]) => data !== undefined) as any
+      : Array.from(this.operations.entries())
+
+    for (const [opName, data] of entries) {
+      if (data) {
+        stats.set(opName, {
+          count: data.count,
+          averageTime: data.totalTime / data.count,
+          slowCount: data.slowCount,
+          slowRatio: data.slowCount / data.count,
+          maxTime: data.maxTime,
+        })
+      }
+    }
+
+    return stats
+  }
+
+  /**
+   * 包装函数以自动检测慢操作
+   */
+  wrap<T extends (...args: any[]) => any>(
+    name: string,
+    fn: T,
+  ): T {
+    return ((...args: Parameters<T>): ReturnType<T> => {
+      const start = performance.now()
+      const result = fn(...args)
+      const duration = performance.now() - start
+      this.record(name, duration)
+      return result
+    }) as T
+  }
+
+  /**
+   * 重置统计
+   */
+  clear(): void {
+    this.operations.clear()
+  }
+}
+
+/**
+ * 全局性能监控实例
+ */
+export const globalPerformanceMonitor = new PerformanceMonitor()
+export const globalMemoryMonitor = new MemoryMonitor()
+export const globalFPSMonitor = new FPSMonitor()
+export const globalSlowOpDetector = new SlowOperationDetector()

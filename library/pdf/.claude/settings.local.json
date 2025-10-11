@@ -10,7 +10,8 @@
       "Bash(pnpm dev)",
       "Bash(pnpm build --registry https://registry.npmmirror.com)",
       "Bash(pnpm vite build)",
-      "Bash(pnpm list pdfjs-dist)"
+      "Bash(pnpm list pdfjs-dist)",
+      "Bash(tree -L 3 -I 'node_modules')"
     ],
     "deny": [],
     "ask": []

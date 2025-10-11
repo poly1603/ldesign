@@ -58,23 +58,23 @@ export interface PerformanceModuleEvents extends Record<string, unknown> {
 
 /**
  * 设备性能评估模块
- * 
+ *
  * 提供设备性能评分和分级功能，包括：
  * - CPU 性能测试
  * - GPU 性能测试
  * - 内存容量评估
  * - 网络性能评估
  * - 综合性能评分
- * 
+ *
  * @example
  * ```typescript
  * const detector = new DeviceDetector()
  * const perfModule = await detector.loadModule<PerformanceModule>('performance')
  * const perfInfo = perfModule.getData()
- * 
+ *
  * console.log(`设备性能评分: ${perfInfo.score}`)
  * console.log(`性能等级: ${perfInfo.tier}`)
- * 
+ *
  * // 根据性能等级调整应用配置
  * if (perfInfo.tier === 'low') {
  *   // 降低图形质量
@@ -85,8 +85,7 @@ export interface PerformanceModuleEvents extends Record<string, unknown> {
  */
 export class PerformanceModule
   extends EventEmitter<PerformanceModuleEvents>
-  implements DeviceModule
-{
+  implements DeviceModule {
   name = 'performance'
   private performanceInfo: DevicePerformanceInfo | null = null
   private isInitialized = false
@@ -96,7 +95,8 @@ export class PerformanceModule
    * 初始化模块
    */
   async init(): Promise<void> {
-    if (this.isInitialized) return
+    if (this.isInitialized)
+      return
 
     this.performanceInfo = await this.runPerformanceTest()
     this.isInitialized = true
@@ -170,7 +170,7 @@ export class PerformanceModule
     } = options
 
     const hardware = this.detectHardware()
-    
+
     // 并行运行各项测试
     const [cpuScore, gpuScore, memoryScore, networkScore] = await Promise.all([
       this.testCPUPerformance(timeout),
@@ -195,10 +195,10 @@ export class PerformanceModule
     }
 
     const score = Math.round(
-      cpuScore * weights.cpu +
-      gpuScore * weights.gpu +
-      memoryScore * weights.memory +
-      networkScore * weights.network,
+      cpuScore * weights.cpu
+      + gpuScore * weights.gpu
+      + memoryScore * weights.memory
+      + networkScore * weights.network,
     )
 
     const tier = this.calculateTier(score)
@@ -235,8 +235,6 @@ export class PerformanceModule
       const maxIterations = 1000000
 
       const test = () => {
-        const testStart = performance.now()
-        
         // 执行计算密集型任务
         for (let i = 0; i < 10000 && iterations < maxIterations; i++) {
           Math.sqrt(Math.random() * 1000)
@@ -249,7 +247,8 @@ export class PerformanceModule
           // 根据完成的迭代次数计算评分
           const score = Math.min(100, (iterations / maxIterations) * 100)
           resolve(score)
-        } else {
+        }
+        else {
           requestIdleCallback ? requestIdleCallback(test) : setTimeout(test, 0)
         }
       }
@@ -266,9 +265,10 @@ export class PerformanceModule
       const canvas = document.createElement('canvas')
       canvas.width = 256
       canvas.height = 256
-      
+
       const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
-      if (!gl) return 30 // 不支持 WebGL，给低分
+      if (!gl)
+        return 30 // 不支持 WebGL，给低分
 
       const startTime = performance.now()
       let frames = 0
@@ -293,7 +293,8 @@ export class PerformanceModule
             const fps = (frames / elapsed) * 1000
             const score = Math.min(100, (fps / 60) * 100)
             resolve(score)
-          } else {
+          }
+          else {
             requestAnimationFrame(render)
           }
         }
@@ -311,22 +312,27 @@ export class PerformanceModule
    */
   private async evaluateMemory(deviceMemory: number): Promise<number> {
     // 根据设备内存大小评分
-    if (deviceMemory >= 8) return 100
-    if (deviceMemory >= 6) return 85
-    if (deviceMemory >= 4) return 70
-    if (deviceMemory >= 2) return 50
+    if (deviceMemory >= 8)
+      return 100
+    if (deviceMemory >= 6)
+      return 85
+    if (deviceMemory >= 4)
+      return 70
+    if (deviceMemory >= 2)
+      return 50
     return 30
   }
 
   /**
    * 测试网络性能
    */
-  private async testNetworkPerformance(timeout: number): Promise<number> {
+  private async testNetworkPerformance(_timeout: number): Promise<number> {
     try {
       // 使用 Network Information API
       const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
 
-      if (!connection) return 50
+      if (!connection)
+        return 50
 
       const effectiveType = connection.effectiveType
       const downlink = connection.downlink || 0
@@ -355,9 +361,12 @@ export class PerformanceModule
    * 计算性能等级
    */
   private calculateTier(score: number): 'low' | 'medium' | 'high' | 'ultra' {
-    if (score >= 85) return 'ultra'
-    if (score >= 70) return 'high'
-    if (score >= 50) return 'medium'
+    if (score >= 85)
+      return 'ultra'
+    if (score >= 70)
+      return 'high'
+    if (score >= 50)
+      return 'medium'
     return 'low'
   }
 
@@ -399,4 +408,3 @@ export class PerformanceModule
     return recommendations
   }
 }
-

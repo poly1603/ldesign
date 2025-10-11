@@ -27,14 +27,20 @@ export class CommandManager {
    * 执行命令
    */
   execute(name: string, ...args: any[]): boolean {
+    console.log(`🚀 [CommandManager] Executing command: "${name}" with args:`, args)
     const command = this.commands.get(name)
     if (!command) {
-      console.warn(`Command "${name}" not found`)
+      console.warn(`❌ [CommandManager] Command "${name}" not found`)
+      console.log(`🚀 [CommandManager] Available commands:`, Array.from(this.commands.keys()))
       return false
     }
 
     const state = this.editor.getState()
-    return command(state, this.editor.dispatch.bind(this.editor), ...args)
+    console.log(`🚀 [CommandManager] State:`, state)
+    console.log(`🚀 [CommandManager] Calling command function`)
+    const result = command(state, this.editor.dispatch.bind(this.editor), ...args)
+    console.log(`🚀 [CommandManager] Command returned:`, result)
+    return result
   }
 
   /**

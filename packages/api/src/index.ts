@@ -136,6 +136,27 @@ export {
 export { renameKeysDeep, renameKeysShallow } from './utils/object'
 export { createPerformanceMonitor, getGlobalPerformanceMonitor, PerformanceMonitor, setGlobalPerformanceMonitor } from './utils/PerformanceMonitor'
 
+// 新增工具类 - 请求节流器
+export {
+  createRequestThrottler,
+  RequestThrottler,
+} from './utils/RequestThrottler'
+export type {
+  ThrottlerConfig,
+  ThrottlerStats,
+} from './utils/RequestThrottler'
+
+// 新增工具类 - 健康检查器
+export {
+  createHealthChecker,
+  HealthChecker,
+} from './utils/HealthChecker'
+export type {
+  HealthCheckConfig,
+  HealthMetrics,
+  HealthStatus,
+} from './utils/HealthChecker'
+
 /**
  * 版本信息
  */

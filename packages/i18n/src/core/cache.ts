@@ -24,42 +24,111 @@ interface CacheItem<T> {
 
 /**
  * CacheItem对象池（减少GC压力）
+ *
+ * 优化特性：
+ * - 使用 WeakMap 跟踪对象元数据
+ * - 自动调整池大小
+ * - 统计对象复用率
  */
 class CacheItemPool<T> {
   private pool: CacheItem<T>[] = []
   private maxSize: number
+  private minSize: number
+  private acquireCount = 0
+  private releaseCount = 0
+  // 使用 WeakMap 跟踪对象元数据，避免内存泄漏
+  private itemMetadata = new WeakMap<CacheItem<T>, { createdAt: number, reuseCount: number }>()
 
-  constructor(maxSize: number = 50) {
+  constructor(maxSize: number = 50, minSize: number = 10) {
     this.maxSize = maxSize
+    this.minSize = minSize
   }
 
   acquire(value: T, timestamp: number): CacheItem<T> {
+    this.acquireCount++
+    let item: CacheItem<T>
+
     if (this.pool.length > 0) {
-      const item = this.pool.pop()!
+      item = this.pool.pop()!
       item.value = value
       item.timestamp = timestamp
       item.accessCount = 0
       item.lastAccessed = timestamp
-      return item
+
+      // 更新复用计数
+      const metadata = this.itemMetadata.get(item)
+      if (metadata) {
+        metadata.reuseCount++
+      }
     }
-    return {
-      value,
-      timestamp,
-      accessCount: 0,
-      lastAccessed: timestamp
+    else {
+      item = {
+        value,
+        timestamp,
+        accessCount: 0,
+        lastAccessed: timestamp,
+      }
+
+      // 初始化元数据
+      this.itemMetadata.set(item, {
+        createdAt: Date.now(),
+        reuseCount: 0,
+      })
     }
+
+    return item
   }
 
   release(item: CacheItem<T>): void {
+    this.releaseCount++
+
     if (this.pool.length < this.maxSize) {
       // 清理引用，避免内存泄漏
       (item as any).value = null
       this.pool.push(item)
     }
+
+    // 自动调整：如果池太大，缩减到最小值
+    if (this.pool.length > this.maxSize * 1.5) {
+      this.shrink()
+    }
   }
 
   clear(): void {
     this.pool = []
+    this.acquireCount = 0
+    this.releaseCount = 0
+  }
+
+  /**
+   * 获取对象池统计信息
+   */
+  getStats(): {
+    poolSize: number
+    acquireCount: number
+    releaseCount: number
+    hitRate: number
+  } {
+    const hitRate = this.acquireCount > 0
+      ? this.releaseCount / this.acquireCount
+      : 0
+
+    return {
+      poolSize: this.pool.length,
+      acquireCount: this.acquireCount,
+      releaseCount: this.releaseCount,
+      hitRate,
+    }
+  }
+
+  /**
+   * 缩小池大小
+   */
+  private shrink(): void {
+    const targetSize = Math.max(this.minSize, Math.floor(this.maxSize * 0.5))
+    if (this.pool.length > targetSize) {
+      this.pool.length = targetSize
+    }
   }
 }
 
@@ -88,6 +157,7 @@ export class PerformanceCache<T = any> {
     missCount: 0,
     evictionCount: 0,
   }
+
   // 对象池用于复用CacheItem
   private itemPool: CacheItemPool<T>
   // 懒清理跟踪
@@ -114,7 +184,7 @@ export class PerformanceCache<T = any> {
    */
   set(key: string, value: T): void {
     const now = Date.now()
-    
+
     // 懒清理：每100次操作或距离上次清理超过30秒才执行
     this.operationCount++
     if (this.operationCount >= this.cleanupThreshold || now - this.lastCleanupTime > 30000) {
@@ -122,7 +192,7 @@ export class PerformanceCache<T = any> {
       this.lastCleanupTime = now
       this.operationCount = 0
     }
-    
+
     // 如果已存在，更新值
     if (this.cache.has(key)) {
       const item = this.cache.get(key)!
@@ -152,7 +222,7 @@ export class PerformanceCache<T = any> {
    */
   get(key: string): T | undefined {
     const item = this.cache.get(key)
-    
+
     if (!item) {
       this.stats.missCount++
       return undefined
@@ -170,7 +240,7 @@ export class PerformanceCache<T = any> {
     item.accessCount++
     item.lastAccessed = Date.now()
     this.updateAccessOrder(key)
-    
+
     this.stats.hitCount++
     return item.value
   }
@@ -182,14 +252,15 @@ export class PerformanceCache<T = any> {
    */
   has(key: string): boolean {
     const item = this.cache.get(key)
-    if (!item) return false
-    
+    if (!item)
+      return false
+
     if (this.isExpired(item)) {
       this.cache.delete(key)
       this.removeFromAccessOrder(key)
       return false
     }
-    
+
     return true
   }
 
@@ -286,8 +357,9 @@ export class PerformanceCache<T = any> {
 
     // 只检查一部分项目，避免完整遍历
     for (const [key, item] of this.cache) {
-      if (checkedCount++ >= maxChecks) break
-      
+      if (checkedCount++ >= maxChecks)
+        break
+
       if (now - item.timestamp > this.config.ttl) {
         expiredKeys.push(key)
       }
@@ -308,7 +380,8 @@ export class PerformanceCache<T = any> {
    * 驱逐缓存项
    */
   private evict(): void {
-    if (this.cache.size === 0) return
+    if (this.cache.size === 0)
+      return
 
     let keyToEvict: string
 
@@ -359,7 +432,8 @@ export class PerformanceCache<T = any> {
    * @param key 键
    */
   private updateAccessOrder(key: string): void {
-    if (!this.config.enableLRU) return
+    if (!this.config.enableLRU)
+      return
 
     // 使用Set进行快速查找，避免O(n)的indexOf
     if (this.accessSet.has(key)) {
@@ -405,7 +479,8 @@ export class TranslationCache extends PerformanceCache<string> {
       try {
         const { FastCacheKeyGenerator } = require('./fast-cache-key')
         this.keyGenerator = new FastCacheKeyGenerator({ compact: true, sortParams: true })
-      } catch {
+      }
+      catch {
         // 回退到简单生成器
         this.keyGenerator = {
           generateTranslationKey: (locale: string, key: string, params?: Record<string, any>) => {
@@ -414,7 +489,7 @@ export class TranslationCache extends PerformanceCache<string> {
             }
             const paramStr = JSON.stringify(params)
             return `${locale}:${key}:${paramStr}`
-          }
+          },
         }
       }
     }
@@ -476,7 +551,7 @@ export class TranslationCache extends PerformanceCache<string> {
    * 预热缓存
    * @param entries 缓存条目数组
    */
-  warmUp(entries: Array<{ locale: string; key: string; params?: Record<string, any>; value: string }>): void {
+  warmUp(entries: Array<{ locale: string, key: string, params?: Record<string, any>, value: string }>): void {
     for (const entry of entries) {
       this.cacheTranslation(entry.locale, entry.key, entry.params, entry.value)
     }

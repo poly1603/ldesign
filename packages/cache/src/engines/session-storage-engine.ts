@@ -1,4 +1,5 @@
 import type { StorageEngineConfig } from '../types'
+
 import { BaseStorageEngine } from './base-engine'
 
 /**
@@ -115,7 +116,7 @@ export class SessionStorageEngine extends BaseStorageEngine {
       return value
     }
     catch (error) {
-      console.warn(`Error getting item from sessionStorage:`, error)
+      console.warn('Error getting item from sessionStorage:', error)
       return null
     }
   }

@@ -71,7 +71,7 @@ export class AESCrypto {
 
     // 使用内置 AES 加密
     if (this.config.algorithm === 'AES') {
-      return await this.encryptAES(data)
+      return this.encryptAES(data)
     }
 
     // 使用简单的 Base64 编码作为回退
@@ -93,7 +93,7 @@ export class AESCrypto {
 
     // 使用内置 AES 解密
     if (this.config.algorithm === 'AES') {
-      return await this.decryptAES(data)
+      return this.decryptAES(data)
     }
 
     // 使用简单的 Base64 解码作为回退

@@ -1,18 +1,17 @@
 /**
  * 选择性 I18n 创建函数测试
- * 
+ *
  * 测试便捷创建函数的功能
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import {
-  createSelectiveI18n,
-  createExtensibleI18n,
-  createConfigurableI18n,
-  type ConfigurableI18nOptions
-} from '../src/core/selective-i18n'
+import { describe, expect, it } from 'vitest'
 import { ExtensionStrategy } from '../src/core/extension-loader'
-import type { I18nInstance } from '../src/core/types'
+import {
+  type ConfigurableI18nOptions,
+  createConfigurableI18n,
+  createExtensibleI18n,
+  createSelectiveI18n,
+} from '../src/core/selective-i18n'
 
 describe('createSelectiveI18n', () => {
   it('应该创建选择性 I18n 实例', async () => {
@@ -20,12 +19,12 @@ describe('createSelectiveI18n', () => {
       locale: 'zh-CN',
       autoDetect: false, // 禁用自动检测
       languageConfig: {
-        enabled: ['zh-CN', 'en']
+        enabled: ['zh-CN', 'en'],
       },
       messages: {
         'zh-CN': { hello: '你好' },
-        'en': { hello: 'Hello' }
-      }
+        'en': { hello: 'Hello' },
+      },
     }
 
     const i18n = createSelectiveI18n(options)
@@ -42,15 +41,15 @@ describe('createSelectiveI18n', () => {
     const options: ConfigurableI18nOptions = {
       locale: 'zh-CN',
       languageConfig: {
-        enabled: ['zh-CN', 'en']
+        enabled: ['zh-CN', 'en'],
       },
       strictMode: true,
       autoDetect: false, // 禁用自动检测避免检测到未启用的语言
       messages: {
         'zh-CN': { hello: '你好' },
         'en': { hello: 'Hello' },
-        'ja': { hello: 'こんにちは' }
-      }
+        'ja': { hello: 'こんにちは' },
+      },
     }
 
     const i18n = createSelectiveI18n(options)
@@ -70,10 +69,10 @@ describe('createSelectiveI18n', () => {
       autoDetect: false, // 禁用自动检测
       languageConfig: {
         enabled: {
-          regions: ['CN', 'US']
-        }
+          regions: ['CN', 'US'],
+        },
       },
-      strictMode: true
+      strictMode: true,
     }
 
     const i18n = createSelectiveI18n(options)
@@ -86,7 +85,7 @@ describe('createSelectiveI18n', () => {
   it('应该使用默认配置', async () => {
     const options: ConfigurableI18nOptions = {
       locale: 'zh-CN',
-      autoDetect: false // 禁用自动检测
+      autoDetect: false, // 禁用自动检测
     }
 
     const i18n = createSelectiveI18n(options)
@@ -103,16 +102,16 @@ describe('createExtensibleI18n', () => {
       locale: 'zh-CN',
       messages: {
         'zh-CN': { hello: '你好' },
-        'en': { hello: 'Hello' }
+        'en': { hello: 'Hello' },
       },
       globalExtensions: [
         {
           name: 'global-test',
           translations: {
-            common: { welcome: '欢迎' }
-          }
-        }
-      ]
+            common: { welcome: '欢迎' },
+          },
+        },
+      ],
     }
 
     const i18n = createExtensibleI18n(options)
@@ -127,26 +126,26 @@ describe('createExtensibleI18n', () => {
       locale: 'zh-CN',
       messages: {
         'zh-CN': { hello: '你好' },
-        'en': { hello: 'Hello' }
+        'en': { hello: 'Hello' },
       },
       languageExtensions: {
         'zh-CN': [
           {
             name: 'zh-extension',
             translations: {
-              ui: { button: '按钮' }
-            }
-          }
+              ui: { button: '按钮' },
+            },
+          },
         ],
         'en': [
           {
             name: 'en-extension',
             translations: {
-              ui: { button: 'Button' }
-            }
-          }
-        ]
-      }
+              ui: { button: 'Button' },
+            },
+          },
+        ],
+      },
     }
 
     const i18n = createExtensibleI18n(options)
@@ -162,17 +161,17 @@ describe('createExtensibleI18n', () => {
     const options: ConfigurableI18nOptions = {
       locale: 'zh-CN',
       messages: {
-        'zh-CN': { hello: '你好' }
+        'zh-CN': { hello: '你好' },
       },
       globalExtensions: [
         {
           name: 'override-test',
           strategy: ExtensionStrategy.OVERRIDE,
           translations: {
-            hello: '覆盖的你好'
-          }
-        }
-      ]
+            hello: '覆盖的你好',
+          },
+        },
+      ],
     }
 
     const i18n = createExtensibleI18n(options)
@@ -185,20 +184,20 @@ describe('createExtensibleI18n', () => {
     const options: ConfigurableI18nOptions = {
       locale: 'zh-CN',
       messages: {
-        'zh-CN': { test: '原始' }
+        'zh-CN': { test: '原始' },
       },
       globalExtensions: [
         {
           name: 'low-priority',
           priority: 1,
-          translations: { test: '低优先级' }
+          translations: { test: '低优先级' },
         },
         {
           name: 'high-priority',
           priority: 10,
-          translations: { test: '高优先级' }
-        }
-      ]
+          translations: { test: '高优先级' },
+        },
+      ],
     }
 
     const i18n = createExtensibleI18n(options)
@@ -216,9 +215,9 @@ describe('createConfigurableI18n', () => {
       globalExtensions: [
         {
           name: 'test',
-          translations: { test: 'value' }
-        }
-      ]
+          translations: { test: 'value' },
+        },
+      ],
     }
 
     const extensibleI18n = createConfigurableI18n(extensibleOptions)
@@ -230,8 +229,8 @@ describe('createConfigurableI18n', () => {
       locale: 'zh-CN',
       autoDetect: false, // 禁用自动检测
       languageConfig: {
-        enabled: ['zh-CN', 'en']
-      }
+        enabled: ['zh-CN', 'en'],
+      },
     }
 
     const selectiveI18n = createConfigurableI18n(selectiveOptions)
@@ -243,8 +242,8 @@ describe('createConfigurableI18n', () => {
       locale: 'zh-CN',
       autoDetect: false, // 禁用自动检测
       messages: {
-        'zh-CN': { hello: '你好' }
-      }
+        'zh-CN': { hello: '你好' },
+      },
     }
 
     const standardI18n = createConfigurableI18n(standardOptions)
@@ -259,33 +258,33 @@ describe('createConfigurableI18n', () => {
       languageConfig: {
         enabled: ['zh-CN', 'en', 'ja'],
         defaultLocale: 'zh-CN',
-        fallbackLocale: 'en'
+        fallbackLocale: 'en',
       },
       messages: {
         'zh-CN': { hello: '你好' },
         'en': { hello: 'Hello' },
-        'ja': { hello: 'こんにちは' }
+        'ja': { hello: 'こんにちは' },
       },
       globalExtensions: [
         {
           name: 'global',
           translations: {
-            common: { welcome: '欢迎' }
-          }
-        }
+            common: { welcome: '欢迎' },
+          },
+        },
       ],
       languageExtensions: {
         'zh-CN': [
           {
             name: 'zh-specific',
             translations: {
-              ui: { button: '按钮' }
-            }
-          }
-        ]
+              ui: { button: '按钮' },
+            },
+          },
+        ],
       },
       strictMode: true,
-      loadingStrategy: 'lazy'
+      loadingStrategy: 'lazy',
     }
 
     const i18n = createConfigurableI18n(options)
@@ -306,8 +305,8 @@ describe('createConfigurableI18n', () => {
         enabled: true,
         maxSize: 100,
         maxMemory: 1024 * 1024,
-        defaultTTL: 30000
-      }
+        defaultTTL: 30000,
+      },
     }
 
     const i18n = createConfigurableI18n(options)
@@ -321,7 +320,7 @@ describe('createConfigurableI18n', () => {
       locale: 'zh-CN',
       autoDetect: false, // 禁用自动检测
       storage: 'sessionStorage',
-      storageKey: 'test-locale'
+      storageKey: 'test-locale',
     }
 
     const i18n = createConfigurableI18n(options)
@@ -341,7 +340,7 @@ describe('createConfigurableI18n', () => {
       },
       onLoadError: (error: Error) => {
         loadError = error
-      }
+      },
     }
 
     const i18n = createConfigurableI18n(options)
@@ -362,7 +361,7 @@ describe('配置验证', () => {
   it('应该使用合理的默认值', async () => {
     const options: ConfigurableI18nOptions = {
       locale: 'zh-CN',
-      autoDetect: false // 禁用自动检测
+      autoDetect: false, // 禁用自动检测
     }
 
     const i18n = createConfigurableI18n(options)
@@ -376,7 +375,7 @@ describe('配置验证', () => {
     const options: ConfigurableI18nOptions = {
       locale: 'zh-CN',
       globalExtensions: [],
-      languageExtensions: {}
+      languageExtensions: {},
     }
 
     const i18n = createConfigurableI18n(options)

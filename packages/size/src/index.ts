@@ -28,5 +28,5 @@ export * from './types'
 // 工具函数导出
 export * from './utils'
 
-// Vue 支持（可选导入）
-export * as Vue from './vue'
+// Vue 支持（主要的 Vue 支持已通过 plugins 导出）
+// 这里不再导出以避免与 plugins/vue 冲突

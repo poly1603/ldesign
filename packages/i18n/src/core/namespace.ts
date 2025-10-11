@@ -1,8 +1,8 @@
 /**
  * Namespace support for i18n
- * 
+ *
  * 提供命名空间功能，支持模块化的翻译组织
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
@@ -50,7 +50,7 @@ export interface NamespaceMetadata {
 
 /**
  * Namespace manager class
- * 
+ *
  * 管理翻译的命名空间
  */
 export class NamespaceManager {
@@ -66,7 +66,7 @@ export class NamespaceManager {
       separator: config.separator || ':',
       allowNesting: config.allowNesting ?? true,
       loadingStrategy: config.loadingStrategy || 'lazy',
-      isolation: config.isolation ?? false
+      isolation: config.isolation ?? false,
     }
 
     // Initialize default namespace
@@ -86,7 +86,7 @@ export class NamespaceManager {
       parent,
       children: new Set(),
       loaded: false,
-      accessCount: 0
+      accessCount: 0,
     }
 
     this.namespaces.set(name, metadata)
@@ -105,7 +105,7 @@ export class NamespaceManager {
   loadNamespace(
     namespace: string,
     locale: string,
-    translations: NestedObject
+    translations: NestedObject,
   ): void {
     if (!this.namespaces.has(namespace)) {
       this.createNamespace(namespace)
@@ -125,7 +125,7 @@ export class NamespaceManager {
   getTranslation(
     key: string,
     locale: string,
-    namespace?: string
+    namespace?: string,
   ): string | undefined {
     const ns = namespace || this.config.defaultNamespace
 
@@ -163,7 +163,7 @@ export class NamespaceManager {
     key: string,
     value: string,
     locale: string,
-    namespace?: string
+    namespace?: string,
   ): void {
     const ns = namespace || this.config.defaultNamespace
 
@@ -189,19 +189,19 @@ export class NamespaceManager {
   /**
    * Parse namespace from key
    */
-  parseNamespaceKey(key: string): { namespace: string; key: string } {
+  parseNamespaceKey(key: string): { namespace: string, key: string } {
     const separatorIndex = key.indexOf(this.config.separator)
 
     if (separatorIndex === -1) {
       return {
         namespace: this.config.defaultNamespace,
-        key
+        key,
       }
     }
 
     return {
       namespace: key.substring(0, separatorIndex),
-      key: key.substring(separatorIndex + this.config.separator.length)
+      key: key.substring(separatorIndex + this.config.separator.length),
     }
   }
 
@@ -324,7 +324,7 @@ export class NamespaceManager {
       totalSize: 0,
       mostUsed: '',
       leastUsed: '',
-      recentlyAccessed: [...this.accessHistory].reverse().slice(0, 10)
+      recentlyAccessed: [...this.accessHistory].reverse().slice(0, 10),
     }
 
     let maxAccess = 0
@@ -361,8 +361,8 @@ export class NamespaceManager {
 
     for (const [name, metadata] of this.namespaces) {
       if (
-        name !== this.config.defaultNamespace &&
-        metadata.accessCount < threshold
+        name !== this.config.defaultNamespace
+        && metadata.accessCount < threshold
       ) {
         if (this.removeNamespace(name)) {
           removed.push(name)
@@ -388,9 +388,9 @@ export class NamespaceManager {
       metadata: {
         name: metadata.name,
         parent: metadata.parent,
-        children: Array.from(metadata.children)
+        children: Array.from(metadata.children),
       },
-      translations: Object.fromEntries(translations)
+      translations: Object.fromEntries(translations),
     }
   }
 
@@ -413,6 +413,13 @@ export class NamespaceManager {
         meta.children.add(child)
       }
     }
+  }
+
+  /**
+   * Get namespace configuration
+   */
+  getConfig(): Readonly<Required<NamespaceConfig>> {
+    return this.config
   }
 }
 
@@ -452,11 +459,12 @@ export interface NamespaceExport {
  */
 export function createNamespacedTranslator(
   manager: NamespaceManager,
-  defaultLocale: string
+  defaultLocale: string,
 ): (key: string, params?: TranslationParams, namespace?: string) => string {
   return (key: string, params?: TranslationParams, namespace?: string): string => {
     // Parse namespace from key if not provided
-    if (!namespace && key.includes(manager['config'].separator)) {
+    const config = manager.getConfig()
+    if (!namespace && key.includes(config.separator)) {
       const parsed = manager.parseNamespaceKey(key)
       namespace = parsed.namespace
       key = parsed.key
@@ -474,7 +482,7 @@ export function createNamespacedTranslator(
       for (const [param, value] of Object.entries(params)) {
         result = result.replace(
           new RegExp(`\\{\\{\\s*${param}\\s*\\}\\}`, 'g'),
-          String(value)
+          String(value),
         )
       }
       return result

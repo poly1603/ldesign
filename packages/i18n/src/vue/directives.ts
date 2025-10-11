@@ -20,19 +20,19 @@ interface VTBinding {
 
 /**
  * v-t 指令 - 用于元素文本的翻译
- * 
+ *
  * @example
  * ```vue
  * <template>
  *   <!-- 基础用法 -->
  *   <p v-t="'hello'"></p>
- *   
+ *
  *   <!-- 带参数 -->
  *   <p v-t="{ key: 'welcome', params: { name: 'John' } }"></p>
- *   
+ *
  *   <!-- 指定语言 -->
  *   <p v-t="{ key: 'hello', locale: 'en' }"></p>
- *   
+ *
  *   <!-- 修饰符用法 -->
  *   <p v-t.preserve="'hello'"></p> <!-- 保留原有内容 -->
  * </template>
@@ -45,7 +45,7 @@ export const vT: Directive<HTMLElement, string | VTBinding> = {
 
   updated(el, binding, vnode) {
     updateElement(el, binding, vnode)
-  }
+  },
 }
 
 /**
@@ -67,11 +67,13 @@ function updateElement(el: HTMLElement, binding: DirectiveBinding<string | VTBin
 
   if (typeof binding.value === 'string') {
     key = binding.value
-  } else if (binding.value && typeof binding.value === 'object') {
+  }
+  else if (binding.value && typeof binding.value === 'object') {
     key = binding.value.key
     params = binding.value.params
     locale = binding.value.locale
-  } else {
+  }
+  else {
     console.warn('v-t 指令的值必须是字符串或对象')
     return
   }
@@ -88,24 +90,26 @@ function updateElement(el: HTMLElement, binding: DirectiveBinding<string | VTBin
         el.setAttribute('data-original-content', originalContent || '')
       }
       el.textContent = translatedText
-    } else {
+    }
+    else {
       // 直接替换内容
       el.textContent = translatedText
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('翻译失败:', error)
   }
 }
 
 /**
  * v-t-html 指令 - 用于元素 HTML 内容的翻译
- * 
+ *
  * @example
  * ```vue
  * <template>
  *   <!-- HTML 内容翻译 -->
  *   <div v-t-html="'rich_content'"></div>
- *   
+ *
  *   <!-- 带参数的 HTML 翻译 -->
  *   <div v-t-html="{ key: 'rich_welcome', params: { name: 'John' } }"></div>
  * </template>
@@ -118,7 +122,7 @@ export const vTHtml: Directive<HTMLElement, string | VTBinding> = {
 
   updated(el, binding, vnode) {
     updateElementHtml(el, binding, vnode)
-  }
+  },
 }
 
 /**
@@ -139,10 +143,12 @@ function updateElementHtml(el: HTMLElement, binding: DirectiveBinding<string | V
 
   if (typeof binding.value === 'string') {
     key = binding.value
-  } else if (binding.value && typeof binding.value === 'object') {
+  }
+  else if (binding.value && typeof binding.value === 'object') {
     key = binding.value.key
     params = binding.value.params
-  } else {
+  }
+  else {
     console.warn('v-t-html 指令的值必须是字符串或对象')
     return
   }
@@ -151,20 +157,21 @@ function updateElementHtml(el: HTMLElement, binding: DirectiveBinding<string | V
   try {
     const translatedHtml = i18n.t(key, params)
     el.innerHTML = translatedHtml
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('HTML 翻译失败:', error)
   }
 }
 
 /**
  * v-t-title 指令 - 用于元素 title 属性的翻译
- * 
+ *
  * @example
  * ```vue
  * <template>
  *   <!-- title 属性翻译 -->
  *   <button v-t-title="'button_tooltip'">按钮</button>
- *   
+ *
  *   <!-- 带参数的 title 翻译 -->
  *   <img v-t-title="{ key: 'image_alt', params: { name: 'logo' } }" />
  * </template>
@@ -177,7 +184,7 @@ export const vTTitle: Directive<HTMLElement, string | VTBinding> = {
 
   updated(el, binding, vnode) {
     updateElementTitle(el, binding, vnode)
-  }
+  },
 }
 
 /**
@@ -198,10 +205,12 @@ function updateElementTitle(el: HTMLElement, binding: DirectiveBinding<string | 
 
   if (typeof binding.value === 'string') {
     key = binding.value
-  } else if (binding.value && typeof binding.value === 'object') {
+  }
+  else if (binding.value && typeof binding.value === 'object') {
     key = binding.value.key
     params = binding.value.params
-  } else {
+  }
+  else {
     console.warn('v-t-title 指令的值必须是字符串或对象')
     return
   }
@@ -210,7 +219,8 @@ function updateElementTitle(el: HTMLElement, binding: DirectiveBinding<string | 
   try {
     const translatedTitle = i18n.t(key, params)
     el.setAttribute('title', translatedTitle)
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('title 翻译失败:', error)
   }
 }
@@ -253,7 +263,7 @@ export const vTPlural: Directive<HTMLElement, VTPluralBinding> = {
 
   updated(el, binding, vnode) {
     updateElementPlural(el, binding, vnode)
-  }
+  },
 }
 
 /**
@@ -280,7 +290,8 @@ function updateElementPlural(el: HTMLElement, binding: DirectiveBinding<VTPlural
   try {
     const translatedText = translatePlural(i18n, key, count, params, locale)
     el.textContent = translatedText
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('复数化翻译失败:', error)
   }
 }
@@ -293,7 +304,7 @@ function translatePlural(
   key: string,
   count: number,
   params?: Record<string, unknown>,
-  locale?: string
+  locale?: string,
 ): string {
   const currentLocale = locale || i18n.getCurrentLanguage()
 
@@ -302,11 +313,15 @@ function translatePlural(
     try {
       const pluralRules = new Intl.PluralRules(locale)
       return pluralRules.select(count)
-    } catch (error) {
+    }
+    catch (error) {
       // 默认英语规则
-      if (count === 0) return 'zero'
-      if (count === 1) return 'one'
-      if (count === 2) return 'two'
+      if (count === 0)
+        return 'zero'
+      if (count === 1)
+        return 'one'
+      if (count === 2)
+        return 'two'
       return 'other'
     }
   }
@@ -316,14 +331,14 @@ function translatePlural(
   // 构建参数对象
   const translationParams = {
     ...params,
-    count
+    count,
   }
 
   // 尝试复数化键名
   const pluralKeys = [
     `${key}.${rule}`,
     `${key}.other`,
-    key
+    key,
   ]
 
   for (const pluralKey of pluralKeys) {
@@ -360,8 +375,10 @@ function processPipeDelimitedPlural(text: string, count: number): string {
 
   // 复杂的多元复数形式 "no items | one item | {count} items"
   if (parts.length >= 3) {
-    if (count === 0 && parts[0]) return parts[0]
-    if (count === 1 && parts[1]) return parts[1]
+    if (count === 0 && parts[0])
+      return parts[0]
+    if (count === 1 && parts[1])
+      return parts[1]
     return parts[2] || parts[parts.length - 1]
   }
 
@@ -387,7 +404,7 @@ export const directives = {
   vT,
   vTHtml,
   vTTitle,
-  vTPlural
+  vTPlural,
 } as const
 
 /**
@@ -399,5 +416,5 @@ export default {
   vTTitle,
   vTPlural,
   installDirectives,
-  directives
+  directives,
 }

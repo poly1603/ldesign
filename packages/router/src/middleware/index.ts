@@ -389,3 +389,26 @@ middlewareManager.registerMultiple([
   permissionMiddleware,
   titleMiddleware,
 ])
+
+// ==================== 新增：Koa 风格中间件系统 ====================
+
+export {
+  MiddlewareComposer,
+  createMiddlewareComposer,
+  createRouteContext,
+  // 内置中间件
+  createLoggerMiddleware,
+  createPerformanceMiddleware,
+  createAuthMiddleware as createAuthMiddlewareV2,
+  createPermissionMiddleware,
+  createTitleMiddleware as createTitleMiddlewareV2,
+  createProgressMiddleware as createProgressMiddlewareV2,
+  createScrollMiddleware,
+} from './route-middleware'
+
+export type {
+  RouteContext,
+  RouteMiddleware,
+  MiddlewareConfig as MiddlewareConfigV2,
+  MiddlewareWrapper,
+} from './route-middleware'

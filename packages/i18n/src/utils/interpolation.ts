@@ -40,6 +40,7 @@ function formatValue(
   value: string | number | boolean | null | undefined,
   escapeValue: boolean,
 ): string {
+  // 如果值为 null 或 undefined，返回空字符串（移除占位符）
   if (value === null || value === undefined) {
     return ''
   }
@@ -76,12 +77,12 @@ function parseExpression(
     }
     if (typeof value === 'object' && value !== null) {
       value = (value as Record<string, unknown>)[key] as
-        | string
-        | number
-        | boolean
-        | null
-        | undefined
-        | Record<string, unknown>
+      | string
+      | number
+      | boolean
+      | null
+      | undefined
+      | Record<string, unknown>
     }
     else {
       return undefined
@@ -229,4 +230,36 @@ export function batchInterpolate(
   options: InterpolationOptions = {},
 ): string[] {
   return templates.map(template => interpolate(template, params, options))
+}
+
+/**
+ * 转义 HTML 字符串
+ * @param str 要转义的字符串
+ * @returns 转义后的字符串
+ * @public
+ */
+export function escapeHtmlString(str: string): string {
+  return str.replace(/[&<>"'/]/g, char => HTML_ESCAPE_MAP[char] || char)
+}
+
+/**
+ * HTML 反转义映射
+ */
+const HTML_UNESCAPE_MAP: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#x27;': '\'',
+  '&#x2F;': '/',
+}
+
+/**
+ * 反转义 HTML 字符串
+ * @param str 要反转义的字符串
+ * @returns 反转义后的字符串
+ * @public
+ */
+export function unescapeHtmlString(str: string): string {
+  return str.replace(/&(?:amp|lt|gt|quot|#x27|#x2F);/g, entity => HTML_UNESCAPE_MAP[entity] || entity)
 }

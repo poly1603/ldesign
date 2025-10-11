@@ -1,23 +1,17 @@
 <!--
   I18nC - 货币格式化组件
-  
+
   功能：
   - 支持多种货币格式化
   - 自动本地化货币符号和格式
   - 支持自定义货币代码和精度
   - 支持货币转换（可选）
-  
+
   使用示例：
   <I18nC :value="1234.56" currency="USD" />
   <I18nC :value="price" :currency="userCurrency" :precision="2" />
   <I18nC :value="amount" currency="CNY" show-code />
 -->
-
-<template>
-  <span :class="['i18n-currency', currencyClass]" :title="fullCurrencyName">
-    {{ formattedCurrency }}
-  </span>
-</template>
 
 <script setup lang="ts">
 import { computed, inject } from 'vue'
@@ -58,7 +52,7 @@ const props = withDefaults(defineProps<I18nCProps>(), {
   style: 'currency',
   currencyDisplay: 'symbol',
   useGrouping: true,
-  minimumIntegerDigits: 1
+  minimumIntegerDigits: 1,
 })
 
 // 注入 I18n 实例
@@ -81,7 +75,7 @@ const formatOptions = computed((): Intl.NumberFormatOptions => {
   const options: Intl.NumberFormatOptions = {
     style: props.style,
     useGrouping: props.useGrouping,
-    minimumIntegerDigits: props.minimumIntegerDigits
+    minimumIntegerDigits: props.minimumIntegerDigits,
   }
 
   if (props.style === 'currency') {
@@ -93,7 +87,8 @@ const formatOptions = computed((): Intl.NumberFormatOptions => {
   if (props.precision !== undefined) {
     options.minimumFractionDigits = props.precision
     options.maximumFractionDigits = props.precision
-  } else {
+  }
+  else {
     if (props.minimumFractionDigits !== undefined) {
       options.minimumFractionDigits = props.minimumFractionDigits
     }
@@ -112,14 +107,15 @@ const formattedCurrency = computed(() => {
   try {
     const formatter = new Intl.NumberFormat(currentLocale.value, formatOptions.value)
     let result = formatter.format(props.value)
-    
+
     // 如果需要显示货币代码
     if (props.showCode && props.style === 'currency') {
       result += ` (${props.currency})`
     }
-    
+
     return result
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('I18nC: 货币格式化失败', error)
     return `${props.value} ${props.currency}`
   }
@@ -132,7 +128,8 @@ const fullCurrencyName = computed(() => {
   try {
     const displayNames = new Intl.DisplayNames([currentLocale.value], { type: 'currency' })
     return displayNames.of(props.currency)
-  } catch (error) {
+  }
+  catch (error) {
     return props.currency
   }
 })
@@ -146,8 +143,8 @@ const currencyClass = computed(() => {
     `i18n-currency--${props.style}`,
     {
       'i18n-currency--with-code': props.showCode,
-      'i18n-currency--no-grouping': !props.useGrouping
-    }
+      'i18n-currency--no-grouping': !props.useGrouping,
+    },
   ]
 })
 </script>
@@ -155,65 +152,71 @@ const currencyClass = computed(() => {
 <script lang="ts">
 /**
  * I18nC - 货币格式化组件
- * 
+ *
  * 提供强大的货币格式化功能，支持：
  * - 多种货币和区域设置
  * - 自定义精度和显示格式
  * - 货币符号和代码显示
  * - 完整的本地化支持
- * 
+ *
  * @example
  * ```vue
  * <template>
  *   <!-- 基础用法 -->
  *   <I18nC :value="1234.56" currency="USD" />
- *   
+ *
  *   <!-- 自定义精度 -->
  *   <I18nC :value="price" currency="EUR" :precision="3" />
- *   
+ *
  *   <!-- 显示货币代码 -->
  *   <I18nC :value="amount" currency="JPY" show-code />
- *   
+ *
  *   <!-- 自定义显示方式 -->
  *   <I18nC :value="total" currency="GBP" currency-display="name" />
  * </template>
  * ```
  */
 export default {
-  name: 'I18nC'
+  name: 'I18nC',
 }
 </script>
+
+<template>
+  <span class="i18n-currency" :class="[currencyClass]" :title="fullCurrencyName">
+    {{ formattedCurrency }}
+  </span>
+</template>
 
 <style lang="less">
 .i18n-currency {
   display: inline;
   font-variant-numeric: tabular-nums;
-  
+
   &--usd {
     color: var(--ldesign-success-color);
   }
-  
+
   &--eur {
     color: var(--ldesign-brand-color);
   }
-  
+
   &--cny,
   &--rmb {
     color: var(--ldesign-error-color);
   }
-  
+
   &--jpy {
     color: var(--ldesign-warning-color);
   }
-  
+
   &--with-code {
     font-weight: 500;
   }
-  
+
   &--decimal {
     font-family: monospace;
   }
-  
+
   &--percent {
     color: var(--ldesign-brand-color);
     font-weight: 500;

@@ -1,4 +1,5 @@
 import type { StorageEngineConfig } from '../types'
+
 import { BaseStorageEngine } from './base-engine'
 
 /**
@@ -98,7 +99,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
   /**
    * 执行 IndexedDB 请求
    */
-  private executeRequest<T>(request: IDBRequest<T>): Promise<T> {
+  private async executeRequest<T>(request: IDBRequest<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => reject(request.error)
@@ -152,7 +153,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
       return item.value
     }
     catch (error) {
-      console.warn(`Error getting item from IndexedDB:`, error)
+      console.warn('Error getting item from IndexedDB:', error)
       return null
     }
   }
@@ -171,7 +172,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
       await this.updateUsedSize()
     }
     catch (error) {
-      console.warn(`Error removing item from IndexedDB:`, error)
+      console.warn('Error removing item from IndexedDB:', error)
     }
   }
 
@@ -189,7 +190,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
       this._usedSize = 0
     }
     catch (error) {
-      console.warn(`Error clearing IndexedDB:`, error)
+      console.warn('Error clearing IndexedDB:', error)
     }
   }
 
@@ -207,7 +208,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
       return keys.map(key => String(key))
     }
     catch (error) {
-      console.warn(`Error getting keys from IndexedDB:`, error)
+      console.warn('Error getting keys from IndexedDB:', error)
       return []
     }
   }
@@ -225,7 +226,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
       return await this.executeRequest(store.count())
     }
     catch (error) {
-      console.warn(`Error getting count from IndexedDB:`, error)
+      console.warn('Error getting count from IndexedDB:', error)
       return 0
     }
   }
@@ -265,7 +266,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
       await this.updateUsedSize()
     }
     catch (error) {
-      console.warn(`Error cleaning up IndexedDB:`, error)
+      console.warn('Error cleaning up IndexedDB:', error)
     }
   }
 
@@ -290,7 +291,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
       return totalSize
     }
     catch (error) {
-      console.warn(`Error calculating IndexedDB size:`, error)
+      console.warn('Error calculating IndexedDB size:', error)
       return 0
     }
   }

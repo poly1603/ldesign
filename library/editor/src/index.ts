@@ -20,6 +20,8 @@ export { Toolbar } from './ui/Toolbar'
 export { createIcon, getIconHTML } from './ui/icons'
 export { createColorPicker, showColorPicker } from './ui/ColorPicker'
 export { createDropdown, showDropdown } from './ui/Dropdown'
+export { createTableDialog, showTableDialog } from './ui/TableDialog'
+export { createFindReplaceDialog, showFindReplaceDialog } from './ui/FindReplaceDialog'
 
 // 类型
 export type * from './types'

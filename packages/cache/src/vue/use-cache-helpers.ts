@@ -1,6 +1,6 @@
 import { computed } from 'vue'
-
 import type { SerializableValue } from '../types'
+
 import { useCache } from './use-cache'
 
 /**
@@ -9,7 +9,7 @@ import { useCache } from './use-cache'
 export function useCacheList<T extends SerializableValue = SerializableValue>(
   key: string,
   defaultValue: T[] = [],
-  options?: { ttl?: number, immediate?: boolean }
+  options?: { ttl?: number, immediate?: boolean },
 ) {
   const { useReactiveCache } = useCache()
   const cache = useReactiveCache<T[]>(key, defaultValue)
@@ -75,7 +75,7 @@ export function useCacheList<T extends SerializableValue = SerializableValue>(
 export function useCacheObject<T extends Record<string, SerializableValue> = Record<string, SerializableValue>>(
   key: string,
   defaultValue: T = {} as T,
-  options?: { ttl?: number, immediate?: boolean }
+  options?: { ttl?: number, immediate?: boolean },
 ) {
   const { useReactiveCache } = useCache()
   const cache = useReactiveCache<T>(key, defaultValue)
@@ -127,7 +127,7 @@ export function useCacheObject<T extends Record<string, SerializableValue> = Rec
 export function useCacheCounter(
   key: string,
   defaultValue: number = 0,
-  options?: { ttl?: number, immediate?: boolean, min?: number, max?: number }
+  options?: { ttl?: number, immediate?: boolean, min?: number, max?: number },
 ) {
   const { useReactiveCache } = useCache()
   const cache = useReactiveCache<number>(key, defaultValue)
@@ -179,7 +179,7 @@ export function useCacheCounter(
 export function useCacheBoolean(
   key: string,
   defaultValue: boolean = false,
-  options?: { ttl?: number, immediate?: boolean }
+  options?: { ttl?: number, immediate?: boolean },
 ) {
   const { useReactiveCache } = useCache()
   const cache = useReactiveCache<boolean>(key, defaultValue)
@@ -223,7 +223,7 @@ export function useCacheAsync<T extends SerializableValue = SerializableValue>(
     immediate?: boolean
     refreshInterval?: number
     staleWhileRevalidate?: boolean
-  }
+  },
 ) {
   const { useReactiveCache } = useCache()
   const cache = useReactiveCache<T>(key)
@@ -235,7 +235,7 @@ export function useCacheAsync<T extends SerializableValue = SerializableValue>(
       // 如果启用了 stale-while-revalidate 且有缓存数据，先返回缓存数据
       if (options?.staleWhileRevalidate && !forceRefresh && cache.value.value !== null) {
         // 异步更新数据
-        fetcher().then(data => {
+        fetcher().then((data) => {
           cache.set(data, options?.ttl ? { ttl: options.ttl } : undefined)
         }).catch(console.error)
         return cache.value.value
@@ -244,7 +244,8 @@ export function useCacheAsync<T extends SerializableValue = SerializableValue>(
       const data = await fetcher()
       await cache.set(data, options?.ttl ? { ttl: options.ttl } : undefined)
       return data
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to fetch data:', error)
       throw error
     }
@@ -269,8 +270,8 @@ export function useCacheAsync<T extends SerializableValue = SerializableValue>(
     exists: cache.exists,
     
     // 异步操作方法
-    fetch: () => fetchData(true),
-    refresh: () => fetchData(true),
+    fetch: async () => fetchData(true),
+    refresh: async () => fetchData(true),
     
     // 清理函数
     cleanup: () => {
@@ -278,6 +279,6 @@ export function useCacheAsync<T extends SerializableValue = SerializableValue>(
         clearInterval(refreshTimer)
         refreshTimer = undefined
       }
-    }
+    },
   }
 }

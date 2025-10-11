@@ -1,32 +1,14 @@
 <!--
   I18nL 列表格式化组件
-  
+
   用于格式化列表，支持不同的连接方式和样式
-  
+
   @example
   <I18nL :items="['Apple', 'Banana', 'Orange']" />  <!-- "Apple, Banana, and Orange" -->
   <I18nL :items="['Red', 'Green']" type="disjunction" />  <!-- "Red or Green" -->
+
   <I18nL :items="tags" type="unit" />  <!-- "Apple, Banana, Orange" -->
 -->
-
-<template>
-  <component :is="tag">
-    <template v-if="hasDefaultSlot">
-      <!-- 使用插槽渲染每个项目 -->
-      <template v-for="(item, index) in items" :key="index">
-        <slot :item="item" :index="index" :isLast="index === items.length - 1">
-          {{ item }}
-        </slot>
-        <span v-if="index < items.length - 1" class="i18n-list__separator">
-          {{ getSeparator(index) }}
-        </span>
-      </template>
-    </template>
-    <template v-else>
-      {{ formattedList }}
-    </template>
-  </component>
-</template>
 
 <script setup lang="ts">
 import { computed, inject, useSlots } from 'vue'
@@ -72,7 +54,7 @@ const props = withDefaults(defineProps<{
   style: 'long',
   tag: 'span',
   useSlots: false,
-  moreTextKey: 'common.and_more'
+  moreTextKey: 'common.and_more',
 })
 
 /**
@@ -109,11 +91,12 @@ const listFormatter = computed(() => {
     if (typeof Intl !== 'undefined' && 'ListFormat' in Intl) {
       return new (Intl as any).ListFormat(currentLocale.value, {
         style: props.style,
-        type: props.type
+        type: props.type,
       })
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('创建列表格式化器失败:', error)
     return null
   }
@@ -124,22 +107,22 @@ const listFormatter = computed(() => {
  */
 const processedItems = computed(() => {
   let items = props.items.map(item => String(item))
-  
+
   // 如果设置了最大项目数且超出限制
   if (props.maxItems && items.length > props.maxItems) {
     const visibleItems = items.slice(0, props.maxItems)
     const remainingCount = items.length - props.maxItems
-    
+
     // 获取"更多"文本
     let moreText = `+${remainingCount}`
     if (i18n.te(props.moreTextKey)) {
       moreText = i18n.t(props.moreTextKey, { count: remainingCount })
     }
-    
+
     visibleItems.push(moreText)
     items = visibleItems
   }
-  
+
   return items
 })
 
@@ -150,20 +133,21 @@ const formattedList = computed(() => {
   if (processedItems.value.length === 0) {
     return ''
   }
-  
+
   if (processedItems.value.length === 1) {
     return processedItems.value[0]
   }
-  
+
   // 使用 Intl.ListFormat
   if (listFormatter.value) {
     try {
       return listFormatter.value.format(processedItems.value)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('列表格式化失败:', error)
     }
   }
-  
+
   // 降级处理：使用自定义分隔符或默认逻辑
   return formatListFallback(processedItems.value)
 })
@@ -171,37 +155,39 @@ const formattedList = computed(() => {
 /**
  * 降级的列表格式化函数
  */
-const formatListFallback = (items: string[]): string => {
-  if (items.length === 0) return ''
-  if (items.length === 1) return items[0]
+function formatListFallback(items: string[]): string {
+  if (items.length === 0)
+    return ''
+  if (items.length === 1)
+    return items[0]
   if (items.length === 2) {
     const connector = getConnector()
     return `${items[0]} ${connector} ${items[1]}`
   }
-  
+
   const lastItem = items[items.length - 1]
   const otherItems = items.slice(0, -1)
   const connector = getConnector()
-  
+
   if (props.customSeparators) {
     const normalSep = props.customSeparators.normal || ', '
     const finalSep = props.customSeparators.final || ` ${connector} `
     return `${otherItems.join(normalSep)}${finalSep}${lastItem}`
   }
-  
+
   return `${otherItems.join(', ')} ${connector} ${lastItem}`
 }
 
 /**
  * 获取连接词
  */
-const getConnector = (): string => {
+function getConnector(): string {
   // 尝试从翻译中获取连接词
   const connectorKey = `common.list.${props.type}`
   if (i18n.te(connectorKey)) {
     return i18n.t(connectorKey)
   }
-  
+
   // 默认连接词
   switch (props.type) {
     case 'conjunction':
@@ -218,19 +204,19 @@ const getConnector = (): string => {
 /**
  * 获取分隔符（用于插槽模式）
  */
-const getSeparator = (index: number): string => {
+function getSeparator(index: number): string {
   const isLast = index === processedItems.value.length - 2
-  
+
   if (props.customSeparators) {
-    return isLast 
+    return isLast
       ? (props.customSeparators.final || ` ${getConnector()} `)
       : (props.customSeparators.normal || ', ')
   }
-  
+
   if (processedItems.value.length === 2) {
     return ` ${getConnector()} `
   }
-  
+
   return isLast ? ` ${getConnector()} ` : ', '
 }
 </script>
@@ -241,36 +227,55 @@ const getSeparator = (index: number): string => {
  */
 export default {
   name: 'I18nL',
-  inheritAttrs: false
+  inheritAttrs: false,
 }
 </script>
+
+<template>
+  <component :is="tag">
+    <template v-if="hasDefaultSlot">
+      <!-- 使用插槽渲染每个项目 -->
+      <template v-for="(item, index) in items" :key="index">
+        <slot :item="item" :index="index" :is-last="index === items.length - 1">
+          {{ item }}
+        </slot>
+        <span v-if="index < items.length - 1" class="i18n-list__separator">
+          {{ getSeparator(index) }}
+        </span>
+      </template>
+    </template>
+    <template v-else>
+      {{ formattedList }}
+    </template>
+  </component>
+</template>
 
 <style lang="less">
 .i18n-list {
   display: inline;
-  
+
   &__separator {
     color: var(--ldesign-text-color-secondary, rgba(0, 0, 0, 0.7));
   }
-  
+
   &__item {
     display: inline;
-    
+
     &--highlighted {
       font-weight: 600;
       color: var(--ldesign-brand-color-6, #7334cb);
     }
-    
+
     &--muted {
       color: var(--ldesign-text-color-placeholder, rgba(0, 0, 0, 0.3));
     }
   }
-  
+
   &__more {
     color: var(--ldesign-text-color-secondary, rgba(0, 0, 0, 0.7));
     font-style: italic;
     cursor: help;
-    
+
     &:hover {
       color: var(--ldesign-brand-color-6, #7334cb);
     }
@@ -300,7 +305,7 @@ export default {
 /* 不同样式的格式 */
 .i18n-list--narrow {
   font-size: 0.9em;
-  
+
   .i18n-list__separator {
     margin: 0 2px;
   }
@@ -333,20 +338,20 @@ export default {
     &__separator {
       color: rgba(255, 255, 255, 0.7);
     }
-    
+
     &__item--muted {
       color: rgba(255, 255, 255, 0.3);
     }
-    
+
     &__more {
       color: rgba(255, 255, 255, 0.7);
-      
+
       &:hover {
         color: var(--ldesign-brand-color-4, #a67fdb);
       }
     }
   }
-  
+
   .i18n-list--unit {
     .i18n-list__separator {
       color: rgba(255, 255, 255, 0.3);

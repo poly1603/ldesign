@@ -1,15 +1,13 @@
 /**
  * 性能管理器
- * 
+ *
  * 统一管理I18n系统的性能优化功能
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
 
 import { TimeUtils } from '../utils/common'
-import { CacheOperations } from '../utils/cache-operations'
-import { UnifiedErrorHandler } from '../utils/error-handling'
 
 /**
  * 性能指标接口
@@ -24,9 +22,9 @@ export interface PerformanceMetrics {
   /** 内存使用量（估算，字节） */
   memoryUsage: number
   /** 最慢的翻译操作 */
-  slowestTranslations: Array<{ key: string; time: number; timestamp: number }>
+  slowestTranslations: Array<{ key: string, time: number, timestamp: number }>
   /** 最频繁的翻译键 */
-  mostFrequentKeys: Array<{ key: string; count: number }>
+  mostFrequentKeys: Array<{ key: string, count: number }>
   /** 错误率 */
   errorRate: number
 }
@@ -82,7 +80,7 @@ export class EnhancedPerformanceManager {
       maxSlowTranslations: 50,
       maxFrequentKeys: 20,
       statisticsWindow: 60 * 1000, // 1分钟
-      ...config
+      ...config,
     }
 
     this.metrics = {
@@ -92,7 +90,7 @@ export class EnhancedPerformanceManager {
       memoryUsage: 0,
       slowestTranslations: [],
       mostFrequentKeys: [],
-      errorRate: 0
+      errorRate: 0,
     }
   }
 
@@ -105,12 +103,14 @@ export class EnhancedPerformanceManager {
     endTime: number,
     fromCache: boolean,
     success: boolean = true,
-    params?: Record<string, unknown>
+    params?: Record<string, unknown>,
   ): void {
-    if (!this.config.enabled) return
+    if (!this.config.enabled)
+      return
 
     // 采样检查
-    if (Math.random() > this.config.sampleRate) return
+    if (Math.random() > this.config.sampleRate)
+      return
 
     const duration = endTime - startTime
     const record: TranslationRecord = {
@@ -119,7 +119,7 @@ export class EnhancedPerformanceManager {
       endTime,
       fromCache,
       success,
-      params
+      params,
     }
 
     // 更新统计
@@ -210,7 +210,7 @@ export class EnhancedPerformanceManager {
       memoryUsage: 0,
       slowestTranslations: [],
       mostFrequentKeys: [],
-      errorRate: 0
+      errorRate: 0,
     }
   }
 
@@ -236,14 +236,14 @@ export class EnhancedPerformanceManager {
     suggestions: string[]
     topSlowKeys: string[]
     topFrequentKeys: string[]
-    recentErrors: Array<{ key: string; timestamp: number }>
+    recentErrors: Array<{ key: string, timestamp: number }>
   } {
     const recentErrors = this.translationHistory
       .filter(record => !record.success)
       .slice(-10)
       .map(record => ({
         key: record.key,
-        timestamp: record.startTime
+        timestamp: record.startTime,
       }))
 
     const topSlowKeys = this.metrics.slowestTranslations
@@ -259,7 +259,7 @@ export class EnhancedPerformanceManager {
       suggestions: this.getOptimizationSuggestions(),
       topSlowKeys,
       topFrequentKeys,
-      recentErrors
+      recentErrors,
     }
   }
 
@@ -270,7 +270,7 @@ export class EnhancedPerformanceManager {
     const slowTranslation = {
       key,
       time,
-      timestamp: TimeUtils.now()
+      timestamp: TimeUtils.now(),
     }
 
     this.metrics.slowestTranslations.push(slowTranslation)
@@ -288,7 +288,7 @@ export class EnhancedPerformanceManager {
   private cleanupOldRecords(): void {
     const cutoffTime = TimeUtils.now() - this.config.statisticsWindow
     this.translationHistory = this.translationHistory.filter(
-      record => record.startTime > cutoffTime
+      record => record.startTime > cutoffTime,
     )
   }
 
@@ -339,7 +339,7 @@ export class EnhancedPerformanceManager {
 
     this.metrics.mostFrequentKeys = sortedKeys.map(([key, count]) => ({
       key,
-      count
+      count,
     }))
   }
 }

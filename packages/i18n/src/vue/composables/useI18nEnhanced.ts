@@ -3,9 +3,9 @@
  * 提供更智能的翻译功能，包括键名不存在时的自动提示
  */
 
-import { computed, h, ref, inject, type VNode } from 'vue'
-import { I18nInjectionKey } from '../plugin'
+import { computed, h, inject, ref, type VNode } from 'vue'
 import TranslationMissing from '../components/TranslationMissing.vue'
+import { I18nInjectionKey } from '../plugin'
 
 /**
  * 翻译选项接口
@@ -41,20 +41,20 @@ export interface TranslationResult {
 
 /**
  * 增强的 useI18n 组合式 API
- * 
+ *
  * @example
  * ```vue
  * <script setup>
  * import { useI18nEnhanced } from '@ldesign/i18n/vue'
- * 
+ *
  * const { t, te, tSafe, tComponent } = useI18nEnhanced()
- * 
+ *
  * // 基础翻译
  * const text = t('hello')
- * 
+ *
  * // 安全翻译（自动处理缺失）
  * const safeText = tSafe('maybe.missing.key', { fallback: 'Default text' })
- * 
+ *
  * // 组件翻译（返回 VNode）
  * const component = tComponent('missing.key')
  * </script>
@@ -62,7 +62,7 @@ export interface TranslationResult {
  */
 export function useI18nEnhanced() {
   const i18n = inject(I18nInjectionKey)
-  
+
   if (!i18n) {
     console.warn('useI18nEnhanced: I18n plugin not found. Make sure to install the i18n plugin.')
     return createFallbackEnhancedI18n()
@@ -97,7 +97,7 @@ export function useI18nEnhanced() {
       fallback,
       showMissingWarning = true,
       logWarning = true,
-      onMissing
+      onMissing,
     } = options
 
     // 触发响应式更新
@@ -110,7 +110,7 @@ export function useI18nEnhanced() {
       return {
         text: i18n.t(key, params),
         exists: true,
-        fallback: false
+        fallback: false,
       }
     }
 
@@ -127,7 +127,8 @@ export function useI18nEnhanced() {
       const customResult = onMissing(key, currentLocale)
       if (typeof customResult === 'string') {
         resultText = customResult
-      } else if (customResult) {
+      }
+      else if (customResult) {
         warningComponent = customResult
         resultText = key // 保持原键名作为文本降级
       }
@@ -138,7 +139,7 @@ export function useI18nEnhanced() {
       warningComponent = h(TranslationMissing, {
         keypath: key,
         fallbackText: fallback,
-        inline: true
+        inline: true,
       })
     }
 
@@ -146,7 +147,7 @@ export function useI18nEnhanced() {
       text: resultText,
       exists: false,
       fallback: true,
-      warningComponent
+      warningComponent,
     }
   }
 
@@ -156,15 +157,15 @@ export function useI18nEnhanced() {
    */
   const tComponent = (key: string, options: TranslationOptions = {}): VNode => {
     const result = tSafe(key, options)
-    
+
     if (result.exists) {
       // 如果键名存在，返回简单的文本节点
       return h('span', result.text)
     }
 
     // 如果键名不存在，返回警告组件或降级文本
-    return result.warningComponent || h('span', { 
-      class: 'translation-missing__fallback' 
+    return result.warningComponent || h('span', {
+      class: 'translation-missing__fallback',
     }, result.text)
   }
 
@@ -173,11 +174,11 @@ export function useI18nEnhanced() {
    */
   const tBatch = (keys: string[], options: TranslationOptions = {}): Record<string, TranslationResult> => {
     const results: Record<string, TranslationResult> = {}
-    
-    keys.forEach(key => {
+
+    keys.forEach((key) => {
       results[key] = tSafe(key, options)
     })
-    
+
     return results
   }
 
@@ -186,9 +187,9 @@ export function useI18nEnhanced() {
    * 返回一个计算属性，当语言或参数变化时自动更新
    */
   const tReactive = (
-    key: string, 
+    key: string,
     params?: Record<string, unknown> | (() => Record<string, unknown>),
-    options: TranslationOptions = {}
+    options: TranslationOptions = {},
   ) => {
     return computed(() => {
       const resolvedParams = typeof params === 'function' ? params() : params
@@ -200,14 +201,14 @@ export function useI18nEnhanced() {
    * 获取翻译统计信息
    */
   const getTranslationStats = () => {
-    const allKeys = i18n.getAvailableLanguages().flatMap(locale => 
-      (i18n as any).getKeys?.(locale) || []
+    const allKeys = i18n.getAvailableLanguages().flatMap(locale =>
+      (i18n as any).getKeys?.(locale) || [],
     )
-    
+
     return {
       totalKeys: allKeys.length,
       availableLocales: i18n.getAvailableLanguages(),
-      currentLocale: i18n.locale.value
+      currentLocale: i18n.locale.value,
     }
   }
 
@@ -216,7 +217,7 @@ export function useI18nEnhanced() {
     locale: i18n.locale,
     availableLocales: i18n.availableLocales,
     setLocale: i18n.setLocale,
-    
+
     // 翻译函数
     t,
     te,
@@ -224,9 +225,9 @@ export function useI18nEnhanced() {
     tComponent,
     tBatch,
     tReactive,
-    
+
     // 工具函数
-    getTranslationStats
+    getTranslationStats,
   }
 }
 
@@ -240,7 +241,7 @@ function createFallbackEnhancedI18n() {
   const t = (key: string, params?: Record<string, unknown>) => {
     if (params) {
       let result = key
-      Object.keys(params).forEach(paramKey => {
+      Object.keys(params).forEach((paramKey) => {
         result = result.replace(`{${paramKey}}`, String(params[paramKey]))
       })
       return result
@@ -258,8 +259,8 @@ function createFallbackEnhancedI18n() {
       warningComponent: h(TranslationMissing, {
         keypath: key,
         fallbackText: options.fallback,
-        inline: true
-      })
+        inline: true,
+      }),
     }
   }
 
@@ -267,13 +268,13 @@ function createFallbackEnhancedI18n() {
     return h(TranslationMissing, {
       keypath: key,
       fallbackText: options.fallback,
-      inline: true
+      inline: true,
     })
   }
 
   const tBatch = (keys: string[], options: TranslationOptions = {}) => {
     const results: Record<string, TranslationResult> = {}
-    keys.forEach(key => {
+    keys.forEach((key) => {
       results[key] = tSafe(key, options)
     })
     return results
@@ -296,8 +297,8 @@ function createFallbackEnhancedI18n() {
     getTranslationStats: () => ({
       totalKeys: 0,
       availableLocales: ['en'],
-      currentLocale: 'en'
-    })
+      currentLocale: 'en',
+    }),
   }
 }
 

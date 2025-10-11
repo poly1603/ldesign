@@ -515,18 +515,12 @@ export class StorageStrategy {
    * 获取数据类型
    */
   private getDataType(value: any): DataType {
-    if (value === null || value === undefined)
-      return 'string'
-    if (typeof value === 'string')
-      return 'string'
-    if (typeof value === 'number')
-      return 'number'
-    if (typeof value === 'boolean')
-      return 'boolean'
-    if (Array.isArray(value))
-      return 'array'
-    if (value instanceof ArrayBuffer || value instanceof Uint8Array)
-      return 'binary'
+    if (value === null || value === undefined) { return 'string' }
+    if (typeof value === 'string') { return 'string' }
+    if (typeof value === 'number') { return 'number' }
+    if (typeof value === 'boolean') { return 'boolean' }
+    if (Array.isArray(value)) { return 'array' }
+    if (value instanceof ArrayBuffer || value instanceof Uint8Array) { return 'binary' }
     return 'object'
   }
 

@@ -411,7 +411,8 @@ export abstract class EnhancedLoader implements Loader {
               console.debug(`空闲时预加载语言包失败: ${locale}`)
             })
           })
-        } else {
+        }
+        else {
           // 降级方案：使用 setTimeout
           setTimeout(() => {
             this.load(locale).catch(() => {
@@ -894,7 +895,7 @@ export class HttpLoader extends EnhancedLoader {
     }
     catch (error) {
       throw new Error(
-        `Failed to load namespace '${namespace}' for locale '${locale}': ${error}`
+        `Failed to load namespace '${namespace}' for locale '${locale}': ${error}`,
       )
     }
   }
@@ -936,7 +937,7 @@ export class HttpLoader extends EnhancedLoader {
    */
   async preloadLocales(locales: string[], priority: 'high' | 'normal' | 'low' = 'normal'): Promise<void> {
     const loadPromises = locales.map(locale =>
-      this.loadWithPriority(locale, priority)
+      this.loadWithPriority(locale, priority),
     )
 
     await Promise.allSettled(loadPromises)

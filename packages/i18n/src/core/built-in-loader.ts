@@ -1,17 +1,17 @@
 /**
  * 内置翻译加载器
- * 
+ *
  * 负责加载内置翻译并与用户翻译合并
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
 
-import type { Loader, LanguagePackage, NestedObject, LanguageInfo } from './types'
-import { getBuiltInTranslation, hasBuiltInTranslation, getBuiltInLocales } from '../locales'
-import { mergeLanguagePackages, MergeStrategy, type MergeOptions } from './merger'
+import type { LanguageInfo, LanguagePackage, Loader, NestedObject } from './types'
+import { getBuiltInLocales, getBuiltInTranslation, hasBuiltInTranslation } from '../locales'
 import { I18nError, LanguageLoadError } from './errors'
-import { LanguageRegistry, type LanguageConfig, type LanguageFilter } from './language-config'
+import { type LanguageConfig, type LanguageFilter, LanguageRegistry } from './language-config'
+import { mergeLanguagePackages, type MergeOptions, MergeStrategy } from './merger'
 
 /**
  * 内置加载器配置选项
@@ -41,7 +41,7 @@ export interface BuiltInLoaderOptions {
 
 /**
  * 内置翻译加载器
- * 
+ *
  * 整合内置翻译和用户自定义翻译的加载器
  */
 export class BuiltInLoader implements Loader {
@@ -71,7 +71,7 @@ export class BuiltInLoader implements Loader {
     // 如果指定了启用的语言过滤器，更新注册表配置
     if (options.enabledLanguages) {
       this.languageRegistry.updateConfig({
-        enabled: options.enabledLanguages
+        enabled: options.enabledLanguages,
       })
     }
 
@@ -79,7 +79,7 @@ export class BuiltInLoader implements Loader {
     this.mergeOptions = {
       strategy: this.preferBuiltIn ? MergeStrategy.BUILTIN_FIRST : MergeStrategy.USER_FIRST,
       clone: true,
-      ...options.mergeOptions
+      ...options.mergeOptions,
     }
 
     // 预加载用户消息到缓存中，确保getLoadedPackage能立即返回数据
@@ -94,7 +94,8 @@ export class BuiltInLoader implements Loader {
       try {
         const packageData = this.createPackageFromMessages(locale, messages)
         this.loadedPackages.set(locale, packageData)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`Failed to preload user messages for locale ${locale}:`, error)
       }
     }
@@ -109,7 +110,7 @@ export class BuiltInLoader implements Loader {
       throw new I18nError(
         `Language '${locale}' is not enabled in strict mode`,
         'LANGUAGE_NOT_ENABLED',
-        { context: { locale, custom: { enabledLanguages: this.languageRegistry.getEnabledLanguages() } } }
+        { context: { locale, custom: { enabledLanguages: this.languageRegistry.getEnabledLanguages() } } },
       )
     }
 
@@ -133,10 +134,12 @@ export class BuiltInLoader implements Loader {
       if (builtInPackage && userPackage) {
         // 两者都存在，进行合并
         finalPackage = this.mergePackages(builtInPackage, userPackage)
-      } else if (userPackage) {
+      }
+      else if (userPackage) {
         // 只有用户翻译
         finalPackage = userPackage
-      } else if (builtInPackage && this.fallbackToBuiltIn) {
+      }
+      else if (builtInPackage && this.fallbackToBuiltIn) {
         // 只有内置翻译且允许降级
         finalPackage = builtInPackage
       }
@@ -145,15 +148,15 @@ export class BuiltInLoader implements Loader {
         throw new I18nError(
           `No translation found for locale: ${locale}`,
           'TRANSLATION_NOT_FOUND',
-          { context: { locale } }
+          { context: { locale } },
         )
       }
 
       // 缓存结果
       this.loadedPackages.set(locale, finalPackage)
       return finalPackage
-
-    } catch (error) {
+    }
+    catch (error) {
       // 错误处理
       if (error instanceof I18nError) {
         throw error
@@ -204,14 +207,14 @@ export class BuiltInLoader implements Loader {
       return {
         info: builtIn.info,
         translations: {
-          [this.builtInNamespace]: builtIn.translations as unknown as NestedObject
-        } as NestedObject
+          [this.builtInNamespace]: builtIn.translations as unknown as NestedObject,
+        } as NestedObject,
       }
     }
 
     return {
       info: builtIn.info,
-      translations: builtIn.translations as unknown as NestedObject
+      translations: builtIn.translations as unknown as NestedObject,
     }
   }
 
@@ -228,7 +231,8 @@ export class BuiltInLoader implements Loader {
     if (this.customLoader) {
       try {
         return await this.customLoader.load(locale)
-      } catch (error) {
+      }
+      catch (error) {
         // 自定义加载器失败，继续尝试其他方式
         console.warn(`Custom loader failed for locale ${locale}:`, error)
       }
@@ -244,7 +248,8 @@ export class BuiltInLoader implements Loader {
       if (this.customLoader) {
         try {
           return await this.customLoader.load(baseLang)
-        } catch (error) {
+        }
+        catch (error) {
           console.warn(`Custom loader failed for base locale ${baseLang}:`, error)
         }
       }
@@ -258,7 +263,7 @@ export class BuiltInLoader implements Loader {
    */
   private createPackageFromMessages(
     locale: string,
-    messages: Record<string, any>
+    messages: Record<string, any>,
   ): LanguagePackage {
     // 尝试从内置翻译获取语言信息
     const builtIn = getBuiltInTranslation(locale)
@@ -267,12 +272,12 @@ export class BuiltInLoader implements Loader {
       nativeName: locale,
       code: locale,
       direction: 'ltr',
-      dateFormat: 'YYYY-MM-DD'
+      dateFormat: 'YYYY-MM-DD',
     }
 
     return {
       info,
-      translations: messages as NestedObject
+      translations: messages as NestedObject,
     }
   }
 
@@ -281,7 +286,7 @@ export class BuiltInLoader implements Loader {
    */
   private mergePackages(
     builtIn: LanguagePackage,
-    user: LanguagePackage
+    user: LanguagePackage,
   ): LanguagePackage {
     return mergeLanguagePackages(builtIn, user, this.mergeOptions)
   }
@@ -292,7 +297,8 @@ export class BuiltInLoader implements Loader {
   clearCache(locale?: string): void {
     if (locale) {
       this.loadedPackages.delete(locale)
-    } else {
+    }
+    else {
       this.loadedPackages.clear()
     }
   }
@@ -328,15 +334,14 @@ export class BuiltInLoader implements Loader {
   async getAvailableLocales(): Promise<string[]> {
     const locales = new Set<string>()
 
-
-
     // 添加内置语言
     if (this.useBuiltIn) {
       try {
         // 使用静态导入避免动态导入冲突
         const builtInLocales = getBuiltInLocales()
         builtInLocales.forEach(locale => locales.add(locale))
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('[BuiltInLoader] Failed to load built-in locales:', error)
       }
     }
@@ -374,7 +379,8 @@ export class BuiltInLoader implements Loader {
       try {
         await this.customLoader.load(locale)
         return true
-      } catch {
+      }
+      catch {
         // 加载失败
       }
     }
@@ -400,7 +406,7 @@ export class BuiltInLoader implements Loader {
   }> {
     const stats: any = {
       hasBuiltIn: false,
-      hasUser: false
+      hasUser: false,
     }
 
     // 检查内置翻译
@@ -434,7 +440,8 @@ export class BuiltInLoader implements Loader {
       const value = obj[key]
       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         count = this.countKeys(value as NestedObject, count)
-      } else {
+      }
+      else {
         count++
       }
     }

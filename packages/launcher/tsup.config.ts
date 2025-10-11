@@ -1,4 +1,9 @@
 import { defineConfig } from 'tsup'
+import type { Options } from 'tsup'
+
+// 环境变量控制是否启用优化
+const isDev = process.env.NODE_ENV !== 'production'
+const skipDts = process.env.SKIP_DTS === 'true'
 
 export default defineConfig({
   // 明确的入口点配置，避免打包每个.ts文件
@@ -26,15 +31,17 @@ export default defineConfig({
     // 插件预设（独立模块）
     'plugins/presets': 'src/plugins/presets.ts',
     // 市场管理（独立模块）
-    'marketplace/index': 'src/marketplace/index.ts'
+    'marketplace/index': 'src/marketplace/index.ts',
+    // Vite优化器（独立模块）
+    'plugins/vite-optimizer': 'src/plugins/vite-optimizer.ts'
   },
   format: ['cjs', 'esm'],
-  dts: true,
+  dts: !skipDts, // 支持跳过类型声明生成以加快开发构建
   tsconfig: 'tsconfig.json',
-  clean: true,
+  clean: !isDev, // 开发模式不清理以支持增量构建
   splitting: true, // 启用代码分割以减少重复代码
-  sourcemap: true,
-  minify: false,
+  sourcemap: isDev ? 'inline' : false, // 开发模式内联sourcemap，生产模式不生成
+  minify: !isDev, // 只在生产模式压缩
   target: 'node16',
   outDir: 'dist',
   shims: true,
@@ -134,20 +141,38 @@ export default defineConfig({
   esbuildOptions(options) {
     options.conditions = ['node']
     options.chunkNames = 'chunks/[name]-[hash]'
-    options.logLevel = 'error' // 只显示错误，减少警告输出
+    options.logLevel = isDev ? 'warning' : 'error' // 开发模式显示警告
     // 优化打包策略
     options.treeShaking = true
     // 避免过大的bundle，设置分割阈值
     options.mangleProps = undefined // 不混淆属性名以保证兼容性
-    options.keepNames = true // 保持函数名以便调试
+    options.keepNames = isDev // 开发模式保持函数名以便调试
     // 减少不必要的警告
     options.ignoreAnnotations = false
     options.legalComments = 'none' // 不包含法律注释以减少输出
+    // 优化解析性能
+    options.resolveExtensions = ['.ts', '.js', '.mjs', '.json']
+    // 平台特定优化
+    options.platform = 'node'
   },
   // 使用 tsup 的 noDefaultExport 选项来避免混合导出警告
   noDefaultExport: false,
   // 减少控制台输出
   silent: false,
   // 优化构建性能
-  skipNodeModulesBundle: true
-})
+  skipNodeModulesBundle: true,
+  // 启用并发构建（生产模式）
+  ...(isDev ? {} : {
+    // 生产模式启用额外优化
+    minifyWhitespace: true,
+    minifyIdentifiers: true,
+    minifySyntax: true
+  }),
+  // 监听模式配置（开发时）
+  watch: isDev ? {
+    // 忽略不必要的文件以提升性能
+    ignore: ['**/__tests__/**', '**/*.test.ts', '**/node_modules/**', '**/dist/**']
+  } : false,
+  // onSuccess 钩子用于构建后操作
+  onSuccess: isDev ? undefined : 'echo "✅ Build completed successfully!"'
+} as Options)

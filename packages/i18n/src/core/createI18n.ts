@@ -1,21 +1,21 @@
 /**
  * 创建 I18n 实例的便捷函数
- * 
+ *
  * 参考 vue-i18n 的 createI18n API 设计
  * 提供更简洁、更直观的创建方式
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
 
-import { I18n } from './i18n'
+import type { MergeOptions } from './merger'
 import type { I18nInstance, I18nOptions } from './types'
 import { BuiltInLoader, type BuiltInLoaderOptions } from './built-in-loader'
-import type { MergeOptions } from './merger'
+import { I18n } from './i18n'
 
 /**
  * 简化的 I18n 配置选项
- * 
+ *
  * 参考 vue-i18n 的配置结构，提供更直观的配置方式
  */
 export interface CreateI18nOptions extends Omit<I18nOptions, 'defaultLocale'> {
@@ -67,12 +67,12 @@ export interface CreateI18nOptions extends Omit<I18nOptions, 'defaultLocale'> {
 
 /**
  * 创建 I18n 实例
- * 
+ *
  * 这是创建国际化实例的推荐方式，提供了简洁的 API 和合理的默认配置
- * 
+ *
  * @param options 配置选项
  * @returns I18n 实例
- * 
+ *
  * @example
  * ```typescript
  * // 基础用法
@@ -89,7 +89,7 @@ export interface CreateI18nOptions extends Omit<I18nOptions, 'defaultLocale'> {
  *     }
  *   }
  * })
- * 
+ *
  * // 高级用法
  * const i18n = createI18n({
  *   locale: 'zh-CN',
@@ -118,7 +118,8 @@ export function createI18n(options: CreateI18nOptions): I18nInstance {
     // 使用StaticLoader处理纯用户消息
     // 这种情况下不需要内置翻译，直接传递messages给I18n构造函数
     loader = undefined // 让I18n构造函数处理messages
-  } else if (!loader && options.useBuiltIn !== false) {
+  }
+  else if (!loader && options.useBuiltIn !== false) {
     // 需要内置翻译或默认情况，使用BuiltInLoader
     const builtInLoaderOptions: BuiltInLoaderOptions = {
       userMessages: options.messages,
@@ -127,7 +128,7 @@ export function createI18n(options: CreateI18nOptions): I18nInstance {
       preferBuiltIn: options.preferBuiltIn,
       fallbackToBuiltIn: options.fallbackToBuiltIn !== false,
       builtInNamespace: options.builtInNamespace,
-      mergeOptions: options.mergeOptions
+      mergeOptions: options.mergeOptions,
     }
 
     loader = new BuiltInLoader(builtInLoaderOptions)
@@ -165,12 +166,12 @@ export function createI18n(options: CreateI18nOptions): I18nInstance {
 
 /**
  * 创建全局 I18n 实例
- * 
+ *
  * 创建一个全局共享的 I18n 实例，适用于单页应用
- * 
+ *
  * @param options 配置选项
  * @returns 全局 I18n 实例
- * 
+ *
  * @example
  * ```typescript
  * const globalI18n = createGlobalI18n({
@@ -180,7 +181,7 @@ export function createI18n(options: CreateI18nOptions): I18nInstance {
  *     'en': { hello: 'Hello' }
  *   }
  * })
- * 
+ *
  * // 在应用的任何地方使用
  * console.log(globalI18n.t('hello')) // '你好'
  * ```
@@ -198,9 +199,9 @@ export function createGlobalI18n(options: CreateI18nOptions): I18nInstance {
 
 /**
  * 获取全局 I18n 实例
- * 
+ *
  * @returns 全局 I18n 实例或 undefined
- * 
+ *
  * @example
  * ```typescript
  * const i18n = getGlobalI18n()
@@ -218,7 +219,7 @@ export function getGlobalI18n(): I18nInstance | undefined {
 
 /**
  * 检查是否存在全局 I18n 实例
- * 
+ *
  * @returns 是否存在全局实例
  */
 export function hasGlobalI18n(): boolean {
@@ -227,7 +228,7 @@ export function hasGlobalI18n(): boolean {
 
 /**
  * 销毁全局 I18n 实例
- * 
+ *
  * @example
  * ```typescript
  * // 在应用卸载时清理全局实例
@@ -246,13 +247,13 @@ export async function destroyGlobalI18n(): Promise<void> {
 
 /**
  * 创建作用域 I18n 实例
- * 
+ *
  * 创建一个具有特定作用域的 I18n 实例，适用于组件级别的国际化
- * 
+ *
  * @param scope 作用域名称
  * @param options 配置选项
  * @returns 作用域 I18n 实例
- * 
+ *
  * @example
  * ```typescript
  * // 为特定组件创建作用域实例

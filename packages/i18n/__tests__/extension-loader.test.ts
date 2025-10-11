@@ -1,34 +1,36 @@
 /**
  * 扩展加载器功能测试
- * 
+ *
  * 测试翻译内容扩展功能
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { 
-  ExtensionLoader, 
+import type { LanguagePackage, Loader } from '../src/core/types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
   createExtensionLoader,
+  ExtensionLoader,
+  type ExtensionLoaderOptions,
   ExtensionStrategy,
   type TranslationExtension,
-  type ExtensionLoaderOptions
 } from '../src/core/extension-loader'
-import type { Loader, LanguagePackage } from '../src/core/types'
 
 // 模拟基础加载器
-const createMockLoader = (packages: Record<string, LanguagePackage>): Loader => ({
-  async load(locale: string): Promise<LanguagePackage> {
-    const pkg = packages[locale]
-    if (!pkg) {
-      throw new Error(`Package not found for locale: ${locale}`)
-    }
-    return pkg
-  },
-  async preload(locale: string): Promise<void> {
-    await this.load(locale)
-  },
-  isLoaded: vi.fn(),
-  getLoadedPackage: vi.fn()
-})
+function createMockLoader(packages: Record<string, LanguagePackage>): Loader {
+  return {
+    async load(locale: string): Promise<LanguagePackage> {
+      const pkg = packages[locale]
+      if (!pkg) {
+        throw new Error(`Package not found for locale: ${locale}`)
+      }
+      return pkg
+    },
+    async preload(locale: string): Promise<void> {
+      await this.load(locale)
+    },
+    isLoaded: vi.fn(),
+    getLoadedPackage: vi.fn(),
+  }
+}
 
 // 测试用的语言包
 const mockPackages: Record<string, LanguagePackage> = {
@@ -40,18 +42,18 @@ const mockPackages: Record<string, LanguagePackage> = {
       region: 'CN',
       direction: 'ltr',
       dateFormat: 'YYYY年MM月DD日',
-      flag: '🇨🇳'
+      flag: '🇨🇳',
     },
     translations: {
       common: {
         hello: '你好',
-        goodbye: '再见'
+        goodbye: '再见',
       },
       ui: {
         button: '按钮',
-        input: '输入框'
-      }
-    }
+        input: '输入框',
+      },
+    },
   },
   'en': {
     info: {
@@ -61,22 +63,22 @@ const mockPackages: Record<string, LanguagePackage> = {
       region: 'US',
       direction: 'ltr',
       dateFormat: 'YYYY-MM-DD',
-      flag: '🇺🇸'
+      flag: '🇺🇸',
     },
     translations: {
       common: {
         hello: 'Hello',
-        goodbye: 'Goodbye'
+        goodbye: 'Goodbye',
       },
       ui: {
         button: 'Button',
-        input: 'Input'
-      }
-    }
-  }
+        input: 'Input',
+      },
+    },
+  },
 }
 
-describe('ExtensionLoader', () => {
+describe('extensionLoader', () => {
   let baseLoader: Loader
   let extensionLoader: ExtensionLoader
 
@@ -96,7 +98,7 @@ describe('ExtensionLoader', () => {
     it('应该缓存已加载的语言包', async () => {
       await extensionLoader.load('zh-CN')
       expect(extensionLoader.isLoaded('zh-CN')).toBe(true)
-      
+
       const cached = extensionLoader.getLoadedPackage('zh-CN')
       expect(cached).toBeDefined()
     })
@@ -114,15 +116,15 @@ describe('ExtensionLoader', () => {
           name: 'global-test',
           translations: {
             common: {
-              welcome: '欢迎'
-            }
-          }
-        }
+              welcome: '欢迎',
+            },
+          },
+        },
       ]
 
       extensionLoader.addGlobalExtensions(globalExtensions)
       const pkg = await extensionLoader.load('zh-CN')
-      
+
       expect(pkg.translations.common.welcome).toBe('欢迎')
       expect(pkg.translations.common.hello).toBe('你好') // 原有翻译保持
     })
@@ -133,21 +135,21 @@ describe('ExtensionLoader', () => {
           name: 'low-priority',
           priority: 1,
           translations: {
-            common: { test: 'low' }
-          }
+            common: { test: 'low' },
+          },
         },
         {
           name: 'high-priority',
           priority: 10,
           translations: {
-            common: { test: 'high' }
-          }
-        }
+            common: { test: 'high' },
+          },
+        },
       ]
 
       extensionLoader.addGlobalExtensions(extensions)
       const pkg = await extensionLoader.load('zh-CN')
-      
+
       // 高优先级的扩展应该覆盖低优先级的
       expect(pkg.translations.common.test).toBe('high')
     })
@@ -160,17 +162,17 @@ describe('ExtensionLoader', () => {
           name: 'zh-specific',
           translations: {
             ui: {
-              customButton: '自定义按钮'
-            }
-          }
-        }
+              customButton: '自定义按钮',
+            },
+          },
+        },
       ]
 
       extensionLoader.addLanguageExtensions('zh-CN', zhExtensions)
-      
+
       const zhPkg = await extensionLoader.load('zh-CN')
       const enPkg = await extensionLoader.load('en')
-      
+
       expect(zhPkg.translations.ui.customButton).toBe('自定义按钮')
       expect(enPkg.translations.ui.customButton).toBeUndefined()
     })
@@ -180,25 +182,25 @@ describe('ExtensionLoader', () => {
         {
           name: 'global',
           translations: {
-            common: { global: '全局' }
-          }
-        }
+            common: { global: '全局' },
+          },
+        },
       ]
 
       const zhExtensions: TranslationExtension[] = [
         {
           name: 'zh-specific',
           translations: {
-            common: { specific: '特定' }
-          }
-        }
+            common: { specific: '特定' },
+          },
+        },
       ]
 
       extensionLoader.addGlobalExtensions(globalExtensions)
       extensionLoader.addLanguageExtensions('zh-CN', zhExtensions)
-      
+
       const pkg = await extensionLoader.load('zh-CN')
-      
+
       expect(pkg.translations.common.global).toBe('全局')
       expect(pkg.translations.common.specific).toBe('特定')
     })
@@ -208,7 +210,7 @@ describe('ExtensionLoader', () => {
     beforeEach(() => {
       extensionLoader = new ExtensionLoader({
         baseLoader,
-        defaultStrategy: ExtensionStrategy.MERGE
+        defaultStrategy: ExtensionStrategy.MERGE,
       })
     })
 
@@ -218,14 +220,14 @@ describe('ExtensionLoader', () => {
         strategy: ExtensionStrategy.OVERRIDE,
         translations: {
           common: {
-            hello: '覆盖的你好'
-          }
-        }
+            hello: '覆盖的你好',
+          },
+        },
       }
 
       extensionLoader.addGlobalExtensions([extension])
       const pkg = await extensionLoader.load('zh-CN')
-      
+
       expect(pkg.translations.common.hello).toBe('覆盖的你好')
     })
 
@@ -236,14 +238,14 @@ describe('ExtensionLoader', () => {
         translations: {
           common: {
             hello: '不应该覆盖',
-            newKey: '新键值'
-          }
-        }
+            newKey: '新键值',
+          },
+        },
       }
 
       extensionLoader.addGlobalExtensions([extension])
       const pkg = await extensionLoader.load('zh-CN')
-      
+
       expect(pkg.translations.common.hello).toBe('你好') // 不应该被覆盖
       expect(pkg.translations.common.newKey).toBe('新键值') // 新键应该被添加
     })
@@ -254,14 +256,14 @@ describe('ExtensionLoader', () => {
         strategy: ExtensionStrategy.APPEND,
         translations: {
           common: {
-            hello: '世界'
-          }
-        }
+            hello: '世界',
+          },
+        },
       }
 
       extensionLoader.addGlobalExtensions([extension])
       const pkg = await extensionLoader.load('zh-CN')
-      
+
       expect(pkg.translations.common.hello).toBe('你好 世界')
     })
   })
@@ -273,7 +275,7 @@ describe('ExtensionLoader', () => {
         { test: { key: 'value' } },
         ExtensionStrategy.MERGE,
         5,
-        'test-extension'
+        'test-extension',
       )
 
       const extensions = extensionLoader.getExtensions('zh-CN')
@@ -285,7 +287,7 @@ describe('ExtensionLoader', () => {
       extensionLoader.overrideTranslations(
         'zh-CN',
         { common: { hello: '覆盖' } },
-        'override-test'
+        'override-test',
       )
 
       const extensions = extensionLoader.getExtensions('zh-CN')
@@ -300,11 +302,11 @@ describe('ExtensionLoader', () => {
         { test: 'value' },
         ExtensionStrategy.MERGE,
         0,
-        'removable'
+        'removable',
       )
 
       expect(extensionLoader.getExtensions('zh-CN')).toHaveLength(1)
-      
+
       const removed = extensionLoader.removeExtension('zh-CN', 'removable')
       expect(removed).toBe(true)
       expect(extensionLoader.getExtensions('zh-CN')).toHaveLength(0)
@@ -312,15 +314,15 @@ describe('ExtensionLoader', () => {
 
     it('应该能够清除所有扩展', () => {
       extensionLoader.addGlobalExtensions([
-        { name: 'global1', translations: { test: 'value1' } }
+        { name: 'global1', translations: { test: 'value1' } },
       ])
       extensionLoader.addLanguageExtensions('zh-CN', [
-        { name: 'zh1', translations: { test: 'value2' } }
+        { name: 'zh1', translations: { test: 'value2' } },
       ])
 
       extensionLoader.clearExtensions()
       expect(extensionLoader.getExtensions()).toHaveLength(0)
-      
+
       extensionLoader.clearExtensions('zh-CN')
       expect(extensionLoader.getExtensions('zh-CN')).toHaveLength(0)
     })
@@ -330,11 +332,11 @@ describe('ExtensionLoader', () => {
     it('应该提供扩展统计信息', () => {
       extensionLoader.addGlobalExtensions([
         { name: 'global1', translations: { test: 'value1' } },
-        { name: 'global2', translations: { test: 'value2' } }
+        { name: 'global2', translations: { test: 'value2' } },
       ])
-      
+
       extensionLoader.addLanguageExtensions('zh-CN', [
-        { name: 'zh1', translations: { test: 'value3' } }
+        { name: 'zh1', translations: { test: 'value3' } },
       ])
 
       const stats = extensionLoader.getExtensionStats()
@@ -347,14 +349,14 @@ describe('ExtensionLoader', () => {
   describe('错误处理', () => {
     it('应该在没有基础包和扩展时抛出错误', async () => {
       const emptyLoader = new ExtensionLoader()
-      
+
       await expect(emptyLoader.load('invalid')).rejects.toThrow('No translation found')
     })
 
     it('应该验证扩展格式', () => {
       expect(() => {
         extensionLoader.addGlobalExtensions([
-          { name: 'invalid', translations: null as any }
+          { name: 'invalid', translations: null as any },
         ])
       }).toThrow('Extension must have valid translations object')
     })
@@ -362,14 +364,14 @@ describe('ExtensionLoader', () => {
     it('应该限制扩展数量', () => {
       const loader = new ExtensionLoader({
         baseLoader,
-        maxExtensions: 2
+        maxExtensions: 2,
       })
 
       expect(() => {
         loader.addGlobalExtensions([
           { name: 'ext1', translations: { test: 'value1' } },
           { name: 'ext2', translations: { test: 'value2' } },
-          { name: 'ext3', translations: { test: 'value3' } }
+          { name: 'ext3', translations: { test: 'value3' } },
         ])
       }).toThrow('Too many extensions')
     })
@@ -385,9 +387,9 @@ describe('createExtensionLoader', () => {
   it('应该使用提供的配置', () => {
     const options: ExtensionLoaderOptions = {
       defaultStrategy: ExtensionStrategy.OVERRIDE,
-      maxExtensions: 50
+      maxExtensions: 50,
     }
-    
+
     const loader = createExtensionLoader(options)
     expect(loader).toBeInstanceOf(ExtensionLoader)
   })

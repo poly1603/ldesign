@@ -1,0 +1,293 @@
+/* 对话框样式 */
+
+/* 遮罩层 */
+.editor-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 对话框 */
+.editor-dialog {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  min-width: 320px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 对话框标题 */
+.editor-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.editor-dialog-title svg {
+  flex-shrink: 0;
+  color: #3b82f6;
+}
+
+/* 对话框按钮组 */
+.editor-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 0 0 8px 8px;
+}
+
+.editor-dialog-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editor-dialog-button-cancel {
+  background: #fff;
+  color: #6b7280;
+  border-color: #d1d5db;
+}
+
+.editor-dialog-button-cancel:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.editor-dialog-button-confirm {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.editor-dialog-button-confirm:hover {
+  background: #2563eb;
+}
+
+.editor-dialog-button-confirm:active {
+  background: #1d4ed8;
+}
+
+/* 表格对话框 */
+.editor-table-dialog {
+  min-width: 400px;
+}
+
+.editor-table-selector-section {
+  padding: 24px;
+}
+
+.editor-table-selector-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+/* 表格选择器 */
+.editor-table-selector {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.editor-table-cell {
+  aspect-ratio: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 2px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.editor-table-cell:hover {
+  border-color: #3b82f6;
+  background: #dbeafe;
+}
+
+.editor-table-cell.selected {
+  border-color: #3b82f6;
+  background: #3b82f6;
+}
+
+.editor-table-label {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3b82f6;
+  padding: 8px;
+}
+
+/* 自定义输入 */
+.editor-table-custom-section {
+  padding: 0 24px 24px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+}
+
+.editor-table-custom-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+.editor-table-input-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.editor-table-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1f2937;
+  transition: all 0.2s;
+}
+
+.editor-table-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.editor-table-input-separator {
+  font-size: 18px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+/* 查找替换对话框 */
+.editor-find-dialog {
+  min-width: 450px;
+}
+
+.editor-find-content {
+  padding: 24px;
+}
+
+.editor-find-input-group {
+  margin-bottom: 16px;
+}
+
+.editor-find-input-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.editor-find-input-group input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1f2937;
+  transition: all 0.2s;
+}
+
+.editor-find-input-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.editor-find-options {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.editor-find-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.editor-find-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.editor-find-checkbox label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  user-select: none;
+}
+
+.editor-find-result {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* 高亮样式 */
+.editor-highlight {
+  background: #fef08a;
+  border-radius: 2px;
+  padding: 0 2px;
+  transition: background 0.2s;
+}
+
+.editor-highlight-active {
+  background: #facc15;
+  font-weight: 600;
+}
+

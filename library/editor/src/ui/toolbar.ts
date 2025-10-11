@@ -8,6 +8,7 @@ import { createIcon } from './icons'
 import { showColorPicker } from './ColorPicker'
 import { showDropdown } from './Dropdown'
 import { FONT_SIZES, FONT_FAMILIES } from '../plugins/font'
+import { LINE_HEIGHTS } from '../plugins/line-height'
 
 export interface ToolbarOptions {
   items?: ToolbarItem[]
@@ -126,6 +127,35 @@ export class Toolbar {
         return
       }
 
+      // 特殊处理：行高选择器
+      if (item.name === 'lineHeight') {
+        showDropdown(button, {
+          options: LINE_HEIGHTS,
+          onSelect: (height) => {
+            this.editor.commands.execute('setLineHeight', height)
+          }
+        })
+        return
+      }
+
+      // 特殊处理：文本转换
+      if (item.name === 'textTransform') {
+        showDropdown(button, {
+          options: [
+            { label: '大写', value: 'toUpperCase' },
+            { label: '小写', value: 'toLowerCase' },
+            { label: '首字母大写', value: 'toCapitalize' },
+            { label: '句子大小写', value: 'toSentenceCase' },
+            { label: '全角转半角', value: 'toHalfWidth' },
+            { label: '半角转全角', value: 'toFullWidth' }
+          ],
+          onSelect: (command) => {
+            this.editor.commands.execute(command)
+          }
+        })
+        return
+      }
+
       // 默认命令执行
       const state = this.editor.getState()
       item.command(state, this.editor.dispatch.bind(this.editor))
@@ -139,7 +169,7 @@ export class Toolbar {
    */
   private shouldAddSeparator(index: number, items: ToolbarItem[]): boolean {
     // 在特定组之间添加分隔符
-    const separatorAfter = ['redo', 'clearFormat', 'heading3', 'orderedList', 'codeBlock', 'image', 'alignJustify', 'backgroundColor', 'fontFamily', 'subscript', 'outdent']
+    const separatorAfter = ['redo', 'clearFormat', 'heading3', 'orderedList', 'codeBlock', 'image', 'alignJustify', 'backgroundColor', 'fontFamily', 'lineHeight', 'subscript', 'outdent', 'findReplace']
     return separatorAfter.includes(items[index].name) && index < items.length - 1
   }
 

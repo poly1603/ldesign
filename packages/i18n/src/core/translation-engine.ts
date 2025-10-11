@@ -15,14 +15,14 @@
  */
 
 import type {
-  TranslationParams,
-  TranslationOptions,
   LanguagePackage,
   Loader,
   NestedObject,
+  TranslationOptions,
+  TranslationParams,
 } from './types'
-import { getNestedValue } from '../utils/path'
 import { hasInterpolation, interpolate } from '../utils/interpolation'
+import { getNestedValue } from '../utils/path'
 import { hasPluralExpression, processPluralization } from '../utils/pluralization'
 
 /**
@@ -35,11 +35,17 @@ export interface TranslationEngineOptions {
   fallbackLocale?: string
   /** 语言包加载器 */
   loader: Loader
-  /** 包缓存 */
+  /** 包缓存（使用 WeakMap 实现自动垃圾回收） */
   packageCache: WeakMap<Loader, Map<string, LanguagePackage>>
   /** 是否启用调试模式 */
   debug?: boolean
 }
+
+/**
+ * WeakMap缓存用于翻译文本
+ * 当loader对象被垃圾回收时，相关的缓存也会自动清理
+ */
+const translationTextCache = new WeakMap<Loader, Map<string, Map<string, string>>>()
 
 /**
  * 翻译引擎类
@@ -59,9 +65,14 @@ export class TranslationEngine {
   // 缓存常用的检查结果
   private hasFallback: boolean
 
+  // 使用 WeakMap 缓存翻译文本，避免内存泄漏
+  // 键为 loader，值为 locale -> key -> text 的多级映射
+  private textCache: WeakMap<Loader, Map<string, Map<string, string>>>
+
   constructor(options: TranslationEngineOptions) {
     this.options = options
     this.hasFallback = !!(options.fallbackLocale && options.fallbackLocale !== options.currentLocale)
+    this.textCache = translationTextCache
   }
 
   /**
@@ -103,9 +114,12 @@ export class TranslationEngine {
       return options.defaultValue || key
     }
 
-    // 快速路径：无需处理的情况
+    // 快速路径：检查是否需要处理
     const hasParams = params !== this.emptyParams && Object.keys(params).length > 0
-    if (!hasParams) {
+    const needsProcessing = hasParams || hasPluralExpression(text) || hasInterpolation(text)
+
+    // 如果不需要任何处理，直接返回
+    if (!needsProcessing) {
       return text
     }
 
@@ -114,7 +128,7 @@ export class TranslationEngine {
       text = processPluralization(text, params, this.options.currentLocale)
     }
 
-    // 处理插值
+    // 处理插值（即使 params 为空，也要处理以移除占位符）
     if (hasInterpolation(text)) {
       text = interpolate(text, params, {
         escapeValue: options.escapeValue,
@@ -137,11 +151,11 @@ export class TranslationEngine {
     options: TranslationOptions = this.emptyOptions,
   ): Record<string, string> {
     const results: Record<string, string> = {}
-    
+
     for (const key of keys) {
       results[key] = this.translate(key, params, options)
     }
-    
+
     return results
   }
 
@@ -215,6 +229,7 @@ export class TranslationEngine {
    * 快速获取翻译文本（优化版本）
    *
    * 性能优化：
+   * - 使用 WeakMap 多级缓存避免重复查找
    * - 移除调试代码到生产环境
    * - 减少条件判断
    * - 内联常用操作
@@ -227,15 +242,34 @@ export class TranslationEngine {
     key: string,
     locale: string,
   ): string | undefined {
-    // 获取或创建 loader 缓存
-    let loaderCache = this.options.packageCache.get(this.options.loader)
-    if (!loaderCache) {
-      loaderCache = new Map()
-      this.options.packageCache.set(this.options.loader, loaderCache)
+    // 第一级缓存：检查翻译文本缓存（最快）
+    let loaderTextCache = this.textCache.get(this.options.loader)
+    if (!loaderTextCache) {
+      loaderTextCache = new Map()
+      this.textCache.set(this.options.loader, loaderTextCache)
+    }
+
+    let localeCache = loaderTextCache.get(locale)
+    if (!localeCache) {
+      localeCache = new Map()
+      loaderTextCache.set(locale, localeCache)
+    }
+
+    // 检查文本缓存
+    const cachedText = localeCache.get(key)
+    if (cachedText !== undefined) {
+      return cachedText
+    }
+
+    // 第二级缓存：获取或创建 package 缓存
+    let loaderPackageCache = this.options.packageCache.get(this.options.loader)
+    if (!loaderPackageCache) {
+      loaderPackageCache = new Map()
+      this.options.packageCache.set(this.options.loader, loaderPackageCache)
     }
 
     // 获取或加载语言包
-    let packageData = loaderCache.get(locale)
+    let packageData = loaderPackageCache.get(locale)
     if (!packageData) {
       const loader = this.options.loader as Loader & {
         getLoadedPackage?: (_locale: string) => LanguagePackage | undefined
@@ -243,14 +277,20 @@ export class TranslationEngine {
       packageData = loader.getLoadedPackage?.(locale)
 
       if (packageData) {
-        loaderCache.set(locale, packageData)
-      } else {
+        loaderPackageCache.set(locale, packageData)
+      }
+      else {
         return undefined
       }
     }
 
-    // 获取嵌套值
-    return getNestedValue(packageData.translations as NestedObject, key)
+    // 获取嵌套值并缓存
+    const text = getNestedValue(packageData.translations as NestedObject, key)
+    if (text !== undefined) {
+      localeCache.set(key, text)
+    }
+
+    return text
   }
 
   /**
@@ -273,7 +313,7 @@ export class TranslationEngine {
   private processEnhancedPluralization(
     text: string,
     params: TranslationParams,
-    locale: string
+    locale: string,
   ): string {
     // 检查是否包含 ICU 格式的多元化表达式
     const icuFormatMatch = text.match(/\{([^,]+),\s*plural,\s*(.+)\}/)
@@ -304,13 +344,13 @@ export class TranslationEngine {
   private parseICUPluralRules(rulesText: string): Record<string, string> {
     const rules: Record<string, string> = {}
     const rulePattern = /(=\d+|zero|one|two|few|many|other)\s*\{([^}]+)\}/g
-    
+
     let match
     while ((match = rulePattern.exec(rulesText)) !== null) {
       const [, key, value] = match
       rules[key] = value.trim()
     }
-    
+
     return rules
   }
 
@@ -324,11 +364,12 @@ export class TranslationEngine {
   private selectPluralRule(
     count: number,
     rules: Record<string, string>,
-    locale: string
+    locale: string,
   ): string | undefined {
     // 精确匹配
     const exactMatch = rules[`=${count}`]
-    if (exactMatch) return exactMatch
+    if (exactMatch)
+      return exactMatch
 
     // 根据语言选择复数规则
     if (locale.startsWith('zh') || locale.startsWith('ja') || locale.startsWith('ko')) {
@@ -337,8 +378,10 @@ export class TranslationEngine {
     }
 
     // 英语复数规则
-    if (count === 0) return rules.zero || rules.other
-    if (count === 1) return rules.one || rules.other
+    if (count === 0)
+      return rules.zero || rules.other
+    if (count === 1)
+      return rules.one || rules.other
     return rules.other
   }
 }

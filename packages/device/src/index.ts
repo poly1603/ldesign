@@ -4,25 +4,52 @@ export { DeviceDetector } from './core/DeviceDetector'
 export { DeviceDetector as default } from './core/DeviceDetector'
 export { EventEmitter } from './core/EventEmitter'
 
+// 工厂函数
+import { DeviceDetector } from './core/DeviceDetector'
+import type { DeviceDetectorOptions } from './types'
+
+/**
+ * 创建设备检测器实例的工厂函数
+ * 
+ * @param options - 设备检测器配置选项
+ * @returns DeviceDetector 实例
+ * 
+ * @example
+ * ```typescript
+ * // 使用默认配置
+ * const detector = createDeviceDetector()
+ * 
+ * // 使用自定义配置
+ * const detector = createDeviceDetector({
+ *   enableResize: true,
+ *   enableOrientation: true,
+ *   modules: ['network', 'battery']
+ * })
+ * ```
+ */
+export function createDeviceDetector(options?: DeviceDetectorOptions): DeviceDetector {
+  return new DeviceDetector(options)
+}
+
 export { ModuleLoader } from './core/ModuleLoader'
 // Engine集成
 export * from './engine'
 export { BatteryModule } from './modules/BatteryModule'
 
+// 新增模块
+export { FeatureDetectionModule } from './modules/FeatureDetectionModule'
+export type { FeatureDetectionEvents, FeatureDetectionInfo } from './modules/FeatureDetectionModule'
+
 export { GeolocationModule } from './modules/GeolocationModule'
+
 export { MediaModule } from './modules/MediaModule'
 
 export type { MediaDeviceInfo, MediaDeviceItem, MediaModuleEvents } from './modules/MediaModule'
-
 // 扩展模块
 export { NetworkModule } from './modules/NetworkModule'
 
-// 新增模块
-export { FeatureDetectionModule } from './modules/FeatureDetectionModule'
-export type { FeatureDetectionInfo, FeatureDetectionEvents } from './modules/FeatureDetectionModule'
-
 export { PerformanceModule } from './modules/PerformanceModule'
-export type { DevicePerformanceInfo, PerformanceTestOptions, PerformanceModuleEvents } from './modules/PerformanceModule'
+export type { DevicePerformanceInfo, PerformanceModuleEvents, PerformanceTestOptions } from './modules/PerformanceModule'
 
 // 类型定义
 export type {
@@ -58,5 +85,6 @@ export {
   throttle,
 } from './utils'
 
-// Vue集成
-export * from './vue'
+// Vue集成 - 暂时禁用以修复构建问题
+// TODO: 修复 Vue 组件构建后重新启用
+// export * from './vue'

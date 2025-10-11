@@ -2,18 +2,17 @@
  * Vue I18n 高级功能测试
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createApp } from 'vue'
 import { mount } from '@vue/test-utils'
-import { createI18nPlugin } from '../src/vue/plugin'
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
   I18nC,
+  I18nChain,
   I18nDT,
   I18nIf,
-  I18nChain,
+  useI18nRouter,
   useI18nValidation,
-  useI18nRouter
 } from '../src/vue/index'
+import { createI18nPlugin } from '../src/vue/plugin'
 
 // 测试消息
 const messages = {
@@ -22,96 +21,96 @@ const messages = {
     welcome: 'Welcome {name}',
     item: {
       one: 'one item',
-      other: '{count} items'
+      other: '{count} items',
     },
     user: {
       profile: {
         name: 'Profile Name',
-        title: 'User Profile'
-      }
+        title: 'User Profile',
+      },
     },
     validation: {
       required: '{field} is required',
       email: '{field} must be a valid email',
-      minLength: '{field} must be at least {minLength} characters'
+      minLength: '{field} must be at least {minLength} characters',
     },
     routes: {
       titles: {
         home: 'Home',
         about: 'About Us',
-        contact: 'Contact'
-      }
+        contact: 'Contact',
+      },
     },
     conditions: {
       empty: 'No items',
       single: 'One item',
-      multiple: '{count} items'
+      multiple: '{count} items',
     },
     chain: {
       step1: 'chain.step2',
       step2: 'chain.step3',
-      step3: 'Final result'
-    }
+      step3: 'Final result',
+    },
   },
   'zh-CN': {
     hello: '你好',
     welcome: '欢迎 {name}',
     item: {
       one: '一个项目',
-      other: '{count} 个项目'
+      other: '{count} 个项目',
     },
     user: {
       profile: {
         name: '个人资料名称',
-        title: '用户资料'
-      }
+        title: '用户资料',
+      },
     },
     validation: {
       required: '{field}是必填项',
       email: '{field}必须是有效的邮箱地址',
-      minLength: '{field}长度不能少于{minLength}个字符'
+      minLength: '{field}长度不能少于{minLength}个字符',
     },
     routes: {
       titles: {
         home: '首页',
         about: '关于我们',
-        contact: '联系我们'
-      }
+        contact: '联系我们',
+      },
     },
     conditions: {
       empty: '没有项目',
       single: '一个项目',
-      multiple: '{count} 个项目'
+      multiple: '{count} 个项目',
     },
     chain: {
       step1: 'chain.step2',
       step2: 'chain.step3',
-      step3: '最终结果'
-    }
-  }
+      step3: '最终结果',
+    },
+  },
 }
 
-describe('Vue I18n Advanced Features', () => {
+describe('vue I18n Advanced Features', () => {
   let plugin: any
 
   beforeEach(() => {
     plugin = createI18nPlugin({
       locale: 'en',
       fallbackLocale: 'en',
-      messages
+      messages,
     })
   })
 
-  describe('I18nC Currency Component', () => {
+  describe('i18nC Currency Component', () => {
     it('should format currency correctly', () => {
       const wrapper = mount(I18nC, {
         props: {
           value: 1234.56,
-          currency: 'USD'
+          currency: 'USD',
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toMatch(/\$1,234\.56|\$1234\.56|USD/)
@@ -122,29 +121,29 @@ describe('Vue I18n Advanced Features', () => {
         props: {
           value: 100,
           currency: 'EUR',
-          showCode: true
+          showCode: true,
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toContain('EUR')
     })
   })
 
-  describe('I18nDT DateTime Component', () => {
+  describe('i18nDT DateTime Component', () => {
     it('should format date correctly', () => {
       const testDate = new Date('2023-12-25T10:30:00Z')
 
       const wrapper = mount(I18nDT, {
         props: {
           value: testDate,
-          format: 'medium'
+          format: 'medium',
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBeTruthy()
@@ -158,11 +157,11 @@ describe('Vue I18n Advanced Features', () => {
         props: {
           value: pastDate,
           format: 'relative',
-          updateInterval: 0 // Disable auto-update for testing
+          updateInterval: 0, // Disable auto-update for testing
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toMatch(/minute|ago|前/)
@@ -175,32 +174,32 @@ describe('Vue I18n Advanced Features', () => {
         props: {
           value: testDate,
           format: 'custom',
-          template: 'YYYY-MM-DD'
+          template: 'YYYY-MM-DD',
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('2023-12-25')
     })
   })
 
-  describe('I18nIf Conditional Component', () => {
+  describe('i18nIf Conditional Component', () => {
     it('should render based on conditions', () => {
       const wrapper = mount(I18nIf, {
         props: {
           conditions: [
             { when: 'count > 1', keypath: 'conditions.multiple' },
             { when: 'count === 1', keypath: 'conditions.single' },
-            { when: 'count === 0', keypath: 'conditions.empty' }
+            { when: 'count === 0', keypath: 'conditions.empty' },
           ],
           context: { count: 5 },
-          params: { count: 5 }
+          params: { count: 5 },
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('5 items')
@@ -210,14 +209,14 @@ describe('Vue I18n Advanced Features', () => {
       const wrapper = mount(I18nIf, {
         props: {
           conditions: [
-            { when: 'count > 10', keypath: 'conditions.multiple' }
+            { when: 'count > 10', keypath: 'conditions.multiple' },
           ],
           context: { count: 5 },
-          defaultKeypath: 'conditions.single'
+          defaultKeypath: 'conditions.single',
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('One item')
@@ -230,36 +229,36 @@ describe('Vue I18n Advanced Features', () => {
             {
               when: (ctx: any) => ctx.count === 0,
               keypath: 'conditions.empty',
-              priority: 10
+              priority: 10,
             },
             {
               when: (ctx: any) => ctx.count > 0,
               keypath: 'conditions.multiple',
-              priority: 5
-            }
+              priority: 5,
+            },
           ],
           context: { count: 0 },
-          params: { count: 0 }
+          params: { count: 0 },
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('No items')
     })
   })
 
-  describe('I18nChain Translation Chain Component', () => {
+  describe('i18nChain Translation Chain Component', () => {
     it('should resolve translation chain', () => {
       const wrapper = mount(I18nChain, {
         props: {
           keypath: 'chain.step1',
-          maxDepth: 5
+          maxDepth: 5,
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('Final result')
@@ -268,11 +267,11 @@ describe('Vue I18n Advanced Features', () => {
     it('should handle predefined chain', () => {
       const wrapper = mount(I18nChain, {
         props: {
-          chain: ['chain.step1', 'chain.step2', 'chain.step3']
+          chain: ['chain.step1', 'chain.step2', 'chain.step3'],
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('Final result')
@@ -283,24 +282,24 @@ describe('Vue I18n Advanced Features', () => {
       const circularMessages = {
         en: {
           circular1: 'circular2',
-          circular2: 'circular1'
-        }
+          circular2: 'circular1',
+        },
       }
 
       const circularPlugin = createI18nPlugin({
         locale: 'en',
-        messages: circularMessages
+        messages: circularMessages,
       })
 
       const wrapper = mount(I18nChain, {
         props: {
           keypath: 'circular1',
           maxDepth: 3,
-          circularDetection: true
+          circularDetection: true,
         },
         global: {
-          plugins: [circularPlugin]
-        }
+          plugins: [circularPlugin],
+        },
       })
 
       // Should stop at circular reference
@@ -314,13 +313,13 @@ describe('Vue I18n Advanced Features', () => {
         template: '<div>{{ fieldLabel }} - {{ errorMessage }}</div>',
         setup() {
           const validation = useI18nValidation({
-            defaultMessagePrefix: 'validation'
+            defaultMessagePrefix: 'validation',
           })
 
           validation.registerField({
             name: 'email',
             labelKey: 'fields.email',
-            rules: ['required', 'email']
+            rules: ['required', 'email'],
           })
 
           const fieldLabel = validation.getFieldLabel('email')
@@ -329,15 +328,15 @@ describe('Vue I18n Advanced Features', () => {
 
           return {
             fieldLabel,
-            errorMessage
+            errorMessage,
           }
-        }
+        },
       }
 
       const wrapper = mount(TestComponent, {
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toContain('email')
@@ -351,20 +350,20 @@ describe('Vue I18n Advanced Features', () => {
         template: '<div>{{ routeTitle }} - {{ breadcrumbs.length }}</div>',
         setup() {
           const router = useI18nRouter({
-            titlePrefix: 'routes.titles'
+            titlePrefix: 'routes.titles',
           })
 
           router.registerRoute({
             name: 'home',
             path: '/',
-            titleKey: 'routes.titles.home'
+            titleKey: 'routes.titles.home',
           })
 
           router.registerRoute({
             name: 'about',
             path: '/about',
             titleKey: 'routes.titles.about',
-            parent: 'home'
+            parent: 'home',
           })
 
           const routeTitle = router.getRouteTitle('home')
@@ -372,15 +371,15 @@ describe('Vue I18n Advanced Features', () => {
 
           return {
             routeTitle,
-            breadcrumbs
+            breadcrumbs,
           }
-        }
+        },
       }
 
       const wrapper = mount(TestComponent, {
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toContain('Home')

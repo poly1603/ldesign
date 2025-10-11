@@ -9,50 +9,50 @@ import { CacheManager } from './core/cache-manager'
 // 核心缓存管理器
 export { CacheManager } from './core/cache-manager'
 
+export { LocalStorageEngine } from './engines/local-storage-engine'
 // 基础存储引擎
 export { MemoryEngine } from './engines/memory-engine'
-export { LocalStorageEngine } from './engines/local-storage-engine'
 export { SessionStorageEngine } from './engines/session-storage-engine'
-
-// 基础工具
-export { EventEmitter } from './utils/event-emitter'
-export { ErrorHandler } from './utils/error-handler'
 
 // 类型定义
 export type {
-  // 核心类型
-  CacheOptions,
-  CacheEvent,
-  SetOptions,
-  GetOptions,
-  RemoveOptions,
-  ClearOptions,
-
-  // 存储引擎类型
-  StorageEngine,
-  EngineOptions,
   BaseEngineOptions,
-  MemoryEngineOptions,
-  LocalStorageEngineOptions,
-  SessionStorageEngineOptions,
-  IndexedDBEngineOptions,
-  CookieEngineOptions,
-
-  // 事件类型
-  EventMap,
-  EventListener,
-  CacheEventListener,
-  CacheEventType,
-
   // 错误类型
   CacheError,
-  ErrorType,
+  CacheEvent,
+  CacheEventListener,
+  CacheEventType,
+  CacheMetadata,
 
+  // 核心类型
+  CacheOptions,
+  CacheStats,
+  ClearOptions,
+  CookieEngineOptions,
+  EngineOptions,
+  ErrorType,
+  EventListener,
+  // 事件类型
+  EventMap,
+
+  GetOptions,
+  IndexedDBEngineOptions,
+  LocalStorageEngineOptions,
+  MemoryEngineOptions,
+
+  RemoveOptions,
   // 其他类型
   SerializableValue,
-  CacheMetadata,
-  CacheStats
+
+  SessionStorageEngineOptions,
+  SetOptions,
+  // 存储引擎类型
+  StorageEngine,
 } from './types'
+export { ErrorHandler } from './utils/error-handler'
+
+// 基础工具
+export { EventEmitter } from './utils/event-emitter'
 
 // 预设配置
 export const corePresets = {
@@ -61,8 +61,8 @@ export const corePresets = {
    */
   memory: {
     engines: {
-      memory: { enabled: true }
-    }
+      memory: { enabled: true },
+    },
   },
   
   /**
@@ -71,8 +71,8 @@ export const corePresets = {
   browser: {
     engines: {
       memory: { enabled: true },
-      localStorage: { enabled: true }
-    }
+      localStorage: { enabled: true },
+    },
   },
   
   /**
@@ -81,9 +81,9 @@ export const corePresets = {
   session: {
     engines: {
       memory: { enabled: true },
-      sessionStorage: { enabled: true }
-    }
-  }
+      sessionStorage: { enabled: true },
+    },
+  },
 }
 
 /**

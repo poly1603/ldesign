@@ -98,7 +98,7 @@ export class LRUStrategy implements EvictionStrategy {
    * 将节点移到头部
    */
   private moveToHead(node: LRUNode): void {
-    if (node === this.head) return
+    if (node === this.head) { return }
 
     // 从当前位置移除
     this.removeNode(node)
@@ -129,13 +129,15 @@ export class LRUStrategy implements EvictionStrategy {
   private removeNode(node: LRUNode): void {
     if (node.prev) {
       node.prev.next = node.next
-    } else {
+    }
+    else {
       this.head = node.next
     }
 
     if (node.next) {
       node.next.prev = node.prev
-    } else {
+    }
+    else {
       this.tail = node.prev
     }
   }
@@ -163,8 +165,7 @@ export class LFUStrategy implements EvictionStrategy {
   }
 
   getEvictionKey(): string | null {
-    if (this.frequencyMap.size === 0) 
-      return null
+    if (this.frequencyMap.size === 0) { return null }
 
     let evictionKey: string | null = null
     let lowestFrequency = Infinity
@@ -275,8 +276,7 @@ export class MRUStrategy implements EvictionStrategy {
   }
 
   getEvictionKey(): string | null {
-    if (this.accessOrder.size === 0) 
-      return null
+    if (this.accessOrder.size === 0) { return null }
 
     let newestKey: string | null = null
     let newestTime = -1
@@ -326,8 +326,7 @@ export class RandomStrategy implements EvictionStrategy {
   }
 
   getEvictionKey(): string | null {
-    if (this.keys.size === 0) 
-      return null
+    if (this.keys.size === 0) { return null }
 
     const keysArray = Array.from(this.keys)
     const randomIndex = Math.floor(Math.random() * keysArray.length)
@@ -369,8 +368,7 @@ export class TTLStrategy implements EvictionStrategy {
   }
 
   getEvictionKey(): string | null {
-    if (this.ttlMap.size === 0) 
-      return null
+    if (this.ttlMap.size === 0) { return null }
 
     const now = Date.now()
     let soonestKey: string | null = null

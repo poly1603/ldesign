@@ -3,11 +3,10 @@
  * 测试各种语言包加载器
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { DefaultLoader, StaticLoader, HttpLoader } from '../src/core/loader'
-import type { LanguagePackage } from '../src/core/types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { DefaultLoader, HttpLoader, StaticLoader } from '../src/core/loader'
 
-describe('DefaultLoader', () => {
+describe('defaultLoader', () => {
   let loader: DefaultLoader
 
   beforeEach(() => {
@@ -32,7 +31,7 @@ describe('DefaultLoader', () => {
   })
 })
 
-describe('StaticLoader', () => {
+describe('staticLoader', () => {
   let loader: StaticLoader
 
   const testPackages = {
@@ -42,12 +41,12 @@ describe('StaticLoader', () => {
         nativeName: '中文',
         code: 'zh-CN',
         direction: 'ltr',
-        dateFormat: 'YYYY-MM-DD'
+        dateFormat: 'YYYY-MM-DD',
       },
       translations: {
         hello: '你好',
-        welcome: '欢迎使用 {name}'
-      }
+        welcome: '欢迎使用 {name}',
+      },
     },
     'en': {
       info: {
@@ -55,13 +54,13 @@ describe('StaticLoader', () => {
         nativeName: 'English',
         code: 'en',
         direction: 'ltr',
-        dateFormat: 'YYYY-MM-DD'
+        dateFormat: 'YYYY-MM-DD',
       },
       translations: {
         hello: 'Hello',
-        welcome: 'Welcome to {name}'
-      }
-    }
+        welcome: 'Welcome to {name}',
+      },
+    },
   }
 
   beforeEach(() => {
@@ -94,7 +93,7 @@ describe('StaticLoader', () => {
   })
 })
 
-describe('HttpLoader', () => {
+describe('httpLoader', () => {
   let loader: HttpLoader
 
   beforeEach(() => {

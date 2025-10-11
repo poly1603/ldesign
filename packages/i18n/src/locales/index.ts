@@ -1,18 +1,18 @@
 /**
  * 内置翻译模块
- * 
+ *
  * 汇总所有内置语言包，提供统一的导出接口
  */
 
 import type { BuiltInLanguagePackage } from './types'
-import zhCN from './zh-CN'
+import de from './de'
 import en from './en'
-import ja from './ja'
-import ko from './ko'
 import es from './es'
 import fr from './fr'
-import de from './de'
+import ja from './ja'
+import ko from './ko'
 import ru from './ru'
+import zhCN from './zh-CN'
 
 /**
  * 所有内置语言包
@@ -38,7 +38,7 @@ export const builtInTranslations: Record<string, BuiltInLanguagePackage> = {
 
 /**
  * 获取内置语言包
- * 
+ *
  * @param locale 语言代码
  * @returns 内置语言包或 undefined
  */
@@ -48,7 +48,7 @@ export function getBuiltInTranslation(locale: string): BuiltInLanguagePackage | 
 
 /**
  * 检查是否有内置语言包
- * 
+ *
  * @param locale 语言代码
  * @returns 是否有内置语言包
  */
@@ -58,7 +58,7 @@ export function hasBuiltInTranslation(locale: string): boolean {
 
 /**
  * 获取所有支持的内置语言列表
- * 
+ *
  * @returns 内置语言代码数组
  */
 export function getBuiltInLocales(): string[] {
@@ -67,7 +67,7 @@ export function getBuiltInLocales(): string[] {
 
 /**
  * 获取内置语言的信息列表
- * 
+ *
  * @returns 语言信息数组
  */
 export function getBuiltInLanguageInfos() {
@@ -75,17 +75,17 @@ export function getBuiltInLanguageInfos() {
 }
 
 // 导出类型定义
-export type { 
-  BuiltInTranslations, 
+export type {
   BuiltInLanguagePackage,
+  BuiltInTranslations,
+  BusinessTranslations,
   CommonTranslations,
-  ValidationTranslations,
   DateTimeTranslations,
   ErrorTranslations,
   NotificationTranslations,
   UITranslations,
-  BusinessTranslations
+  ValidationTranslations,
 } from './types'
 
 // 导出各语言包
-export { zhCN, en, ja, ko, es, fr, de, ru }
+export { de, en, es, fr, ja, ko, ru, zhCN }

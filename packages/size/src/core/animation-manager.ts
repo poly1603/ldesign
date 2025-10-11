@@ -28,6 +28,8 @@ export interface AnimationOptions {
   cubicBezier?: [number, number, number, number]
   /** 延迟时间（毫秒） */
   delay?: number
+  /** 填充模式 */
+  fillMode?: 'none' | 'forwards' | 'backwards' | 'both'
   /** 是否启用动画 */
   enabled?: boolean
 }
@@ -103,8 +105,9 @@ export class AnimationManager {
       easing: options.easing ?? 'ease-in-out',
       cubicBezier: options.cubicBezier,
       delay: options.delay ?? 0,
+      fillMode: options.fillMode ?? 'forwards',
       enabled: options.enabled ?? true,
-    }
+    } as Required<AnimationOptions>
   }
 
   /**
@@ -302,7 +305,7 @@ export class AnimationManager {
     }
 
     const duration = `${this.options.duration}ms`
-    let timing = this.options.easing
+    let timing: string = this.options.easing
 
     if (this.options.easing === 'cubic-bezier' && this.options.cubicBezier) {
       timing = `cubic-bezier(${this.options.cubicBezier.join(', ')})`

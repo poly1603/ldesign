@@ -1,0 +1,206 @@
+/**
+ * 滚动条补偿 CSS 增强
+ * @description 提供平滑的过渡效果，减少视觉跳动
+ */
+
+/* 
+ * 注意：这些 CSS 过渡是可选的
+ * 在某些情况下可能导致动画不同步，建议根据实际情况调整
+ */
+
+/* 默认禁用过渡，通过 JS 动态启用 */
+body {
+  /* 不设置默认过渡，避免影响其他样式变化 */
+}
+
+/* 当启用平滑补偿时（通过添加 class） */
+body.smooth-scrollbar-compensation {
+  transition: padding-right 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 固定元素的平滑过渡 */
+[data-scroll-compensated="true"] {
+  transition: 
+    padding-right 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-right 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    right 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 手动标记的固定元素 */
+[data-fixed-compensate] {
+  /* 预留，等待补偿时应用过渡 */
+}
+
+[data-fixed-compensate].compensating {
+  transition: 
+    padding-right 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-right 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    right 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 禁用动画的类（用于快速切换） */
+.no-scrollbar-transition,
+.no-scrollbar-transition * {
+  transition: none !important;
+}
+
+/* 调试模式：高亮被补偿的元素 */
+body.scrollbar-compensation-debug [data-scroll-compensated="true"] {
+  outline: 2px dashed rgba(255, 0, 0, 0.5);
+  outline-offset: -2px;
+}
+
+body.scrollbar-compensation-debug [data-scroll-compensated="true"]::before {
+  content: '已补偿';
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(255, 0, 0, 0.8);
+  color: white;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+/* 页面锁定状态指示器 */
+body[data-scroll-locked] {
+  /* 可以添加自定义样式 */
+}
+
+body[data-scroll-locked]::after {
+  /* 可选：添加锁定状态的视觉提示 */
+  /* content: '🔒'; */
+  /* position: fixed; */
+  /* top: 10px; */
+  /* right: 10px; */
+  /* z-index: 99999; */
+}
+
+/* 性能优化：减少重绘 */
+[data-scroll-compensated="true"] {
+  will-change: padding-right, margin-right, right;
+  contain: layout style;
+}
+
+/* 移除 will-change（补偿结束后） */
+[data-scroll-compensated="false"],
+body:not([data-scroll-lock-count]) [data-scroll-compensated="true"] {
+  will-change: auto;
+}
+
+/* 响应式处理 */
+@media (max-width: 768px) {
+  /* 移动设备通常没有滚动条，可以禁用过渡 */
+  body.smooth-scrollbar-compensation {
+    transition: none;
+  }
+  
+  [data-scroll-compensated="true"] {
+    transition: none;
+  }
+}
+
+/* 打印时移除补偿 */
+@media print {
+  body {
+    padding-right: 0 !important;
+  }
+  
+  [data-scroll-compensated="true"] {
+    padding-right: revert !important;
+    margin-right: revert !important;
+    right: revert !important;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  body.scrollbar-compensation-debug [data-scroll-compensated="true"] {
+    outline-color: rgba(255, 0, 0, 1);
+    outline-width: 3px;
+  }
+}
+
+/* 动画减弱模式支持 */
+@media (prefers-reduced-motion: reduce) {
+  body.smooth-scrollbar-compensation,
+  [data-scroll-compensated="true"],
+  [data-fixed-compensate].compensating {
+    transition: none !important;
+  }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  body.scrollbar-compensation-debug [data-scroll-compensated="true"]::before {
+    background: rgba(255, 100, 100, 0.9);
+  }
+}
+
+/* 
+ * 工具类
+ */
+
+/* 强制启用平滑补偿 */
+.force-smooth-scrollbar-compensation {
+  transition: padding-right 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.force-smooth-scrollbar-compensation * {
+  transition: 
+    padding-right 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-right 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    right 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 强制禁用补偿过渡 */
+.disable-scrollbar-compensation-transition,
+.disable-scrollbar-compensation-transition * {
+  transition: none !important;
+}
+
+/* 自定义滚动条样式（可选） */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+/*
+ * 动画关键帧（可选）
+ */
+
+@keyframes scrollbar-compensation-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* 补偿过程中的脉冲动画（调试用） */
+body.scrollbar-compensation-debug [data-scroll-compensated="true"] {
+  animation: scrollbar-compensation-pulse 1s ease-in-out infinite;
+}

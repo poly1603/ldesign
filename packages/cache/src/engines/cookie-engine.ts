@@ -1,4 +1,5 @@
 import type { StorageEngineConfig } from '../types'
+
 import { BaseStorageEngine } from './base-engine'
 
 /**
@@ -120,7 +121,7 @@ export class CookieEngine extends BaseStorageEngine {
       return null
     }
     catch (error) {
-      console.warn(`Error getting cookie:`, error)
+      console.warn('Error getting cookie:', error)
       return null
     }
   }
@@ -146,7 +147,7 @@ export class CookieEngine extends BaseStorageEngine {
       await this.updateUsedSize()
     }
     catch (error) {
-      console.warn(`Error removing cookie:`, error)
+      console.warn('Error removing cookie:', error)
     }
   }
 
@@ -193,7 +194,7 @@ export class CookieEngine extends BaseStorageEngine {
       return keys
     }
     catch (error) {
-      console.warn(`Error getting cookie keys:`, error)
+      console.warn('Error getting cookie keys:', error)
       return []
     }
   }

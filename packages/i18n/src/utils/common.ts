@@ -1,8 +1,8 @@
 /**
  * 通用工具函数
- * 
+ *
  * 提供项目中常用的工具函数，消除重复代码
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
@@ -58,11 +58,11 @@ export const TypeGuards = {
    */
   isPromise(value: unknown): value is Promise<unknown> {
     return value instanceof Promise || (
-      value !== null &&
-      typeof value === 'object' &&
-      typeof (value as any).then === 'function'
+      value !== null
+      && typeof value === 'object'
+      && typeof (value as any).then === 'function'
     )
-  }
+  },
 }
 
 /**
@@ -93,7 +93,7 @@ export const ArrayUtils = {
    */
   groupBy<T, K extends string | number | symbol>(
     array: T[],
-    keyFn: (item: T) => K
+    keyFn: (item: T) => K,
   ): Record<K, T[]> {
     return array.reduce((groups, item) => {
       const key = keyFn(item)
@@ -117,7 +117,7 @@ export const ArrayUtils = {
    */
   last<T>(array: T[]): T | undefined {
     return array.length > 0 ? array[array.length - 1] : undefined
-  }
+  },
 }
 
 /**
@@ -150,7 +150,7 @@ export const ObjectUtils = {
       return new Date(obj.getTime()) as unknown as T
     }
 
-    if (obj instanceof Array) {
+    if (Array.isArray(obj)) {
       return obj.map(item => ObjectUtils.deepClone(item)) as unknown as T
     }
 
@@ -179,7 +179,7 @@ export const ObjectUtils = {
    */
   keys<T extends Record<string, unknown>>(obj: T): (keyof T)[] {
     return Object.keys(obj) as (keyof T)[]
-  }
+  },
 }
 
 /**
@@ -222,7 +222,7 @@ export const StringUtils = {
    */
   isBlank(str: string): boolean {
     return str.trim().length === 0
-  }
+  },
 }
 
 /**
@@ -264,7 +264,7 @@ export const TimeUtils = {
    */
   delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
-  }
+  },
 }
 
 /**
@@ -277,7 +277,8 @@ export const ErrorUtils = {
   safeExecute<T>(fn: () => T, fallback?: T): T | undefined {
     try {
       return fn()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Safe execution failed:', error)
       return fallback
     }
@@ -289,7 +290,8 @@ export const ErrorUtils = {
   async safeExecuteAsync<T>(fn: () => Promise<T>, fallback?: T): Promise<T | undefined> {
     try {
       return await fn()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Safe async execution failed:', error)
       return fallback
     }
@@ -307,7 +309,7 @@ export const ErrorUtils = {
    */
   isError(value: unknown): value is Error {
     return value instanceof Error
-  }
+  },
 }
 
 /**
@@ -318,8 +320,8 @@ export const CacheKeyUtils = {
    * 生成翻译缓存键
    */
   translationKey(locale: string, key: string, params?: Record<string, unknown>): string {
-    const paramsStr = params && Object.keys(params).length > 0 
-      ? JSON.stringify(params) 
+    const paramsStr = params && Object.keys(params).length > 0
+      ? JSON.stringify(params)
       : ''
     return `translation:${locale}:${key}:${paramsStr}`
   },
@@ -336,5 +338,5 @@ export const CacheKeyUtils = {
    */
   genericKey(prefix: string, ...parts: string[]): string {
     return [prefix, ...parts].join(':')
-  }
+  },
 }

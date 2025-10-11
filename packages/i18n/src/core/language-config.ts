@@ -1,25 +1,25 @@
 /**
  * 语言选择配置模块
- * 
+ *
  * 提供灵活的语言启用/禁用配置功能，支持多种过滤方式
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
 
 import type { LanguageInfo } from './types'
-import { getBuiltInLocales, getBuiltInLanguageInfos } from '../locales'
+import { getBuiltInLanguageInfos, getBuiltInLocales } from '../locales'
 
 /**
  * 语言过滤器类型
- * 
+ *
  * 支持多种过滤方式：
  * - string[]: 直接指定语言代码列表
  * - function: 自定义过滤函数
  * - object: 详细的过滤配置
  */
-export type LanguageFilter = 
-  | string[] 
+export type LanguageFilter =
+  | string[]
   | ((locale: string, info?: LanguageInfo) => boolean)
   | LanguageFilterConfig
 
@@ -41,7 +41,7 @@ export interface LanguageFilterConfig {
 
 /**
  * 语言配置接口
- * 
+ *
  * 定义语言启用/禁用和相关配置选项
  */
 export interface LanguageConfig {
@@ -65,7 +65,7 @@ export interface LanguageConfig {
 
 /**
  * 选择性 I18n 配置选项
- * 
+ *
  * 扩展现有的 I18n 配置，添加语言选择功能
  */
 export interface SelectiveI18nOptions {
@@ -83,7 +83,7 @@ export interface SelectiveI18nOptions {
 
 /**
  * 语言注册表类
- * 
+ *
  * 管理可用语言列表和相关信息
  */
 export class LanguageRegistry {
@@ -94,7 +94,7 @@ export class LanguageRegistry {
 
   /**
    * 构造函数
-   * 
+   *
    * @param config 语言配置
    */
   constructor(config: LanguageConfig = {}) {
@@ -105,7 +105,7 @@ export class LanguageRegistry {
 
   /**
    * 初始化语言列表
-   * 
+   *
    * 从内置语言包中加载所有可用语言信息
    */
   private initializeLanguages(): void {
@@ -138,7 +138,7 @@ export class LanguageRegistry {
 
   /**
    * 查找主语言代码
-   * 
+   *
    * @param locale 语言代码
    * @returns 主语言代码或 undefined
    */
@@ -160,7 +160,7 @@ export class LanguageRegistry {
 
   /**
    * 应用语言配置
-   * 
+   *
    * 根据配置启用或禁用语言
    */
   private applyConfig(): void {
@@ -178,12 +178,13 @@ export class LanguageRegistry {
     // 处理启用列表
     if (enabled) {
       const enabledLocales = this.applyLanguageFilter(enabled)
-      enabledLocales.forEach(locale => {
+      enabledLocales.forEach((locale) => {
         if (!this.disabledLanguages.has(locale)) {
           this.enabledLanguages.add(locale)
         }
       })
-    } else {
+    }
+    else {
       // 如果没有指定启用列表，默认启用所有可用语言
       this.availableLanguages.forEach((_, locale) => {
         if (!this.disabledLanguages.has(locale)) {
@@ -206,7 +207,7 @@ export class LanguageRegistry {
 
   /**
    * 应用语言过滤器
-   * 
+   *
    * @param filter 语言过滤器
    * @returns 过滤后的语言列表
    */
@@ -239,7 +240,7 @@ export class LanguageRegistry {
 
     // 按地区过滤
     if (config.regions) {
-      result = result.filter(locale => {
+      result = result.filter((locale) => {
         const info = this.availableLanguages.get(locale)
         return info && info.region && config.regions!.includes(info.region)
       })
@@ -247,7 +248,7 @@ export class LanguageRegistry {
 
     // 按语言方向过滤
     if (config.directions) {
-      result = result.filter(locale => {
+      result = result.filter((locale) => {
         const info = this.availableLanguages.get(locale)
         return info && config.directions!.includes(info.direction)
       })
@@ -255,7 +256,7 @@ export class LanguageRegistry {
 
     // 应用自定义过滤函数
     if (config.custom) {
-      result = result.filter(locale => {
+      result = result.filter((locale) => {
         const info = this.availableLanguages.get(locale)
         return config.custom!(locale, info)
       })
@@ -266,7 +267,7 @@ export class LanguageRegistry {
 
   /**
    * 获取所有可用语言
-   * 
+   *
    * @returns 可用语言列表
    */
   getAvailableLanguages(): string[] {
@@ -275,7 +276,7 @@ export class LanguageRegistry {
 
   /**
    * 获取启用的语言
-   * 
+   *
    * @returns 启用的语言列表
    */
   getEnabledLanguages(): string[] {
@@ -284,7 +285,7 @@ export class LanguageRegistry {
 
   /**
    * 获取禁用的语言
-   * 
+   *
    * @returns 禁用的语言列表
    */
   getDisabledLanguages(): string[] {
@@ -293,7 +294,7 @@ export class LanguageRegistry {
 
   /**
    * 检查语言是否启用
-   * 
+   *
    * @param locale 语言代码
    * @returns 是否启用
    */
@@ -303,7 +304,7 @@ export class LanguageRegistry {
 
   /**
    * 检查语言是否可用
-   * 
+   *
    * @param locale 语言代码
    * @returns 是否可用
    */
@@ -313,7 +314,7 @@ export class LanguageRegistry {
 
   /**
    * 获取语言信息
-   * 
+   *
    * @param locale 语言代码
    * @returns 语言信息或 undefined
    */
@@ -323,7 +324,7 @@ export class LanguageRegistry {
 
   /**
    * 启用语言
-   * 
+   *
    * @param locale 语言代码
    * @returns 是否成功启用
    */
@@ -339,7 +340,7 @@ export class LanguageRegistry {
 
   /**
    * 禁用语言
-   * 
+   *
    * @param locale 语言代码
    * @returns 是否成功禁用
    */
@@ -355,7 +356,7 @@ export class LanguageRegistry {
 
   /**
    * 更新配置
-   * 
+   *
    * @param config 新的语言配置
    */
   updateConfig(config: LanguageConfig): void {
@@ -365,7 +366,7 @@ export class LanguageRegistry {
 
   /**
    * 获取当前配置
-   * 
+   *
    * @returns 当前语言配置
    */
   getConfig(): LanguageConfig {
@@ -375,24 +376,24 @@ export class LanguageRegistry {
 
 /**
  * 创建语言注册表
- * 
+ *
  * @param config 语言配置
  * @returns 语言注册表实例
- * 
+ *
  * @example
  * ```typescript
  * // 只启用中文和英文
  * const registry = createLanguageRegistry({
  *   enabled: ['zh-CN', 'en']
  * })
- * 
+ *
  * // 使用过滤器启用亚洲语言
  * const registry = createLanguageRegistry({
  *   enabled: {
  *     regions: ['CN', 'JP', 'KR']
  *   }
  * })
- * 
+ *
  * // 使用自定义过滤函数
  * const registry = createLanguageRegistry({
  *   enabled: (locale, info) => {

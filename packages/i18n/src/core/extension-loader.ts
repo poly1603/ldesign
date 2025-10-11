@@ -1,20 +1,20 @@
 /**
  * 翻译内容扩展加载器
- * 
+ *
  * 支持修改、扩展和添加自定义翻译内容
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
 
-import type { Loader, LanguagePackage, NestedObject } from './types'
-import { mergeLanguagePackages, MergeStrategy, type MergeOptions } from './merger'
+import type { LanguagePackage, Loader, NestedObject } from './types'
 import { I18nError, LanguageLoadError } from './errors'
+import { mergeLanguagePackages, type MergeOptions, MergeStrategy } from './merger'
 
 /**
  * 翻译扩展类型
  */
-export type TranslationExtension = {
+export interface TranslationExtension {
   /** 扩展的翻译内容 */
   translations: NestedObject
   /** 扩展策略 */
@@ -38,7 +38,7 @@ export enum ExtensionStrategy {
   /** 只添加不存在的翻译 */
   ADD_ONLY = 'add-only',
   /** 追加到现有翻译 */
-  APPEND = 'append'
+  APPEND = 'append',
 }
 
 /**
@@ -63,7 +63,7 @@ export interface ExtensionLoaderOptions {
 
 /**
  * 翻译内容扩展加载器
- * 
+ *
  * 支持对翻译内容进行灵活的扩展和修改
  */
 export class ExtensionLoader implements Loader {
@@ -86,7 +86,7 @@ export class ExtensionLoader implements Loader {
     this.mergeOptions = {
       strategy: MergeStrategy.USER_FIRST,
       clone: true,
-      ...options.mergeOptions
+      ...options.mergeOptions,
     }
 
     // 初始化扩展
@@ -125,15 +125,15 @@ export class ExtensionLoader implements Loader {
         throw new I18nError(
           `No translation found for locale: ${locale}`,
           'TRANSLATION_NOT_FOUND',
-          { context: { locale } }
+          { context: { locale } },
         )
       }
 
       // 缓存结果
       this.loadedPackages.set(locale, extendedPackage)
       return extendedPackage
-
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof I18nError) {
         throw error
       }
@@ -165,7 +165,7 @@ export class ExtensionLoader implements Loader {
 
   /**
    * 添加全局扩展
-   * 
+   *
    * @param extensions 扩展列表
    */
   addGlobalExtensions(extensions: TranslationExtension[]): void {
@@ -182,7 +182,7 @@ export class ExtensionLoader implements Loader {
 
   /**
    * 添加语言特定扩展
-   * 
+   *
    * @param locale 语言代码
    * @param extensions 扩展列表
    */
@@ -202,7 +202,7 @@ export class ExtensionLoader implements Loader {
 
   /**
    * 添加单个翻译扩展
-   * 
+   *
    * @param locale 语言代码（可选，如果不指定则为全局扩展）
    * @param translations 翻译内容
    * @param strategy 扩展策略
@@ -214,25 +214,26 @@ export class ExtensionLoader implements Loader {
     translations: NestedObject,
     strategy?: ExtensionStrategy,
     priority?: number,
-    name?: string
+    name?: string,
   ): void {
     const extension: TranslationExtension = {
       translations,
       strategy: strategy || this.defaultStrategy,
       priority: priority || 0,
-      name: name || `Extension-${Date.now()}`
+      name: name || `Extension-${Date.now()}`,
     }
 
     if (locale) {
       this.addLanguageExtensions(locale, [extension])
-    } else {
+    }
+    else {
       this.addGlobalExtensions([extension])
     }
   }
 
   /**
    * 覆盖翻译内容
-   * 
+   *
    * @param locale 语言代码
    * @param translations 要覆盖的翻译内容
    * @param name 扩展名称
@@ -240,20 +241,20 @@ export class ExtensionLoader implements Loader {
   overrideTranslations(
     locale: string,
     translations: NestedObject,
-    name?: string
+    name?: string,
   ): void {
     this.addTranslationExtension(
       locale,
       translations,
       ExtensionStrategy.OVERRIDE,
       1000, // 高优先级
-      name || `Override-${locale}-${Date.now()}`
+      name || `Override-${locale}-${Date.now()}`,
     )
   }
 
   /**
    * 移除扩展
-   * 
+   *
    * @param locale 语言代码（可选，如果不指定则移除全局扩展）
    * @param name 扩展名称
    * @returns 是否成功移除
@@ -269,7 +270,8 @@ export class ExtensionLoader implements Loader {
           return true
         }
       }
-    } else {
+    }
+    else {
       const index = this.globalExtensions.findIndex(ext => ext.name === name)
       if (index !== -1) {
         this.globalExtensions.splice(index, 1)
@@ -282,14 +284,15 @@ export class ExtensionLoader implements Loader {
 
   /**
    * 清除所有扩展
-   * 
+   *
    * @param locale 语言代码（可选，如果不指定则清除全局扩展）
    */
   clearExtensions(locale?: string): void {
     if (locale) {
       this.languageExtensions.delete(locale)
       this.loadedPackages.delete(locale)
-    } else {
+    }
+    else {
       this.globalExtensions = []
       this.languageExtensions.clear()
       this.clearCache()
@@ -298,7 +301,7 @@ export class ExtensionLoader implements Loader {
 
   /**
    * 获取扩展列表
-   * 
+   *
    * @param locale 语言代码（可选）
    * @returns 扩展列表
    */
@@ -306,7 +309,7 @@ export class ExtensionLoader implements Loader {
     if (locale) {
       return [
         ...this.globalExtensions,
-        ...(this.languageExtensions.get(locale) || [])
+        ...(this.languageExtensions.get(locale) || []),
       ]
     }
     return [...this.globalExtensions]
@@ -314,14 +317,14 @@ export class ExtensionLoader implements Loader {
 
   /**
    * 应用扩展到语言包
-   * 
+   *
    * @param locale 语言代码
    * @param basePackage 基础语言包
    * @returns 扩展后的语言包
    */
   private async applyExtensions(
     locale: string,
-    basePackage?: LanguagePackage
+    basePackage?: LanguagePackage,
   ): Promise<LanguagePackage | undefined> {
     // 获取所有适用的扩展
     const extensions = this.getExtensions(locale)
@@ -339,9 +342,9 @@ export class ExtensionLoader implements Loader {
         region: '',
         direction: 'ltr',
         dateFormat: 'YYYY-MM-DD',
-        flag: ''
+        flag: '',
       },
-      translations: {}
+      translations: {},
     }
 
     // 按优先级应用扩展
@@ -361,7 +364,7 @@ export class ExtensionLoader implements Loader {
    */
   private applyExtension(
     package_: LanguagePackage,
-    extension: TranslationExtension
+    extension: TranslationExtension,
   ): LanguagePackage {
     const strategy = extension.strategy || this.defaultStrategy
 
@@ -388,14 +391,14 @@ export class ExtensionLoader implements Loader {
    */
   private overridePackage(
     package_: LanguagePackage,
-    translations: NestedObject
+    translations: NestedObject,
   ): LanguagePackage {
     return {
       ...package_,
       translations: {
         ...package_.translations,
-        ...translations
-      }
+        ...translations,
+      },
     }
   }
 
@@ -404,11 +407,11 @@ export class ExtensionLoader implements Loader {
    */
   private mergePackage(
     package_: LanguagePackage,
-    translations: NestedObject
+    translations: NestedObject,
   ): LanguagePackage {
     const extensionPackage: LanguagePackage = {
       info: package_.info,
-      translations
+      translations,
     }
 
     return mergeLanguagePackages(package_, extensionPackage, this.mergeOptions)
@@ -419,7 +422,7 @@ export class ExtensionLoader implements Loader {
    */
   private addOnlyPackage(
     package_: LanguagePackage,
-    translations: NestedObject
+    translations: NestedObject,
   ): LanguagePackage {
     const result = { ...package_ }
     const resultTranslations = { ...result.translations } as Record<string, any>
@@ -428,7 +431,7 @@ export class ExtensionLoader implements Loader {
 
     return {
       ...result,
-      translations: resultTranslations as NestedObject
+      translations: resultTranslations as NestedObject,
     }
   }
 
@@ -439,13 +442,14 @@ export class ExtensionLoader implements Loader {
     for (const [key, value] of Object.entries(source)) {
       if (!(key in target)) {
         target[key] = value
-      } else if (
-        typeof target[key] === 'object' &&
-        target[key] !== null &&
-        typeof value === 'object' &&
-        value !== null &&
-        !Array.isArray(target[key]) &&
-        !Array.isArray(value)
+      }
+      else if (
+        typeof target[key] === 'object'
+        && target[key] !== null
+        && typeof value === 'object'
+        && value !== null
+        && !Array.isArray(target[key])
+        && !Array.isArray(value)
       ) {
         this.addOnlyRecursive(target[key] as Record<string, any>, value as NestedObject)
       }
@@ -457,7 +461,7 @@ export class ExtensionLoader implements Loader {
    */
   private appendPackage(
     package_: LanguagePackage,
-    translations: NestedObject
+    translations: NestedObject,
   ): LanguagePackage {
     const result = { ...package_ }
     const resultTranslations = { ...result.translations } as Record<string, any>
@@ -466,7 +470,7 @@ export class ExtensionLoader implements Loader {
 
     return {
       ...result,
-      translations: resultTranslations as NestedObject
+      translations: resultTranslations as NestedObject,
     }
   }
 
@@ -479,21 +483,25 @@ export class ExtensionLoader implements Loader {
         const targetValue = target[key]
         if (typeof targetValue === 'string' && typeof value === 'string') {
           target[key] = `${targetValue} ${value}`
-        } else if (Array.isArray(targetValue) && Array.isArray(value)) {
+        }
+        else if (Array.isArray(targetValue) && Array.isArray(value)) {
           target[key] = [...targetValue, ...value]
-        } else if (
-          typeof targetValue === 'object' &&
-          targetValue !== null &&
-          typeof value === 'object' &&
-          value !== null &&
-          !Array.isArray(targetValue) &&
-          !Array.isArray(value)
+        }
+        else if (
+          typeof targetValue === 'object'
+          && targetValue !== null
+          && typeof value === 'object'
+          && value !== null
+          && !Array.isArray(targetValue)
+          && !Array.isArray(value)
         ) {
           this.appendRecursive(targetValue as Record<string, any>, value as NestedObject)
-        } else {
+        }
+        else {
           target[key] = value
         }
-      } else {
+      }
+      else {
         target[key] = value
       }
     }
@@ -506,7 +514,7 @@ export class ExtensionLoader implements Loader {
     if (extensions.length > this.maxExtensions) {
       throw new I18nError(
         `Too many extensions: ${extensions.length}, maximum allowed: ${this.maxExtensions}`,
-        'TOO_MANY_EXTENSIONS'
+        'TOO_MANY_EXTENSIONS',
       )
     }
 
@@ -514,7 +522,7 @@ export class ExtensionLoader implements Loader {
       if (!extension.translations || typeof extension.translations !== 'object') {
         throw new I18nError(
           'Extension must have valid translations object',
-          'INVALID_EXTENSION'
+          'INVALID_EXTENSION',
         )
       }
     }
@@ -550,7 +558,7 @@ export class ExtensionLoader implements Loader {
       globalExtensions: this.globalExtensions.length,
       languageExtensions: languageExtensionsCount,
       totalExtensions: this.globalExtensions.length + languageExtensionsCount,
-      cachedPackages: this.loadedPackages.size
+      cachedPackages: this.loadedPackages.size,
     }
   }
 }

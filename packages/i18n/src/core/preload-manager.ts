@@ -1,14 +1,14 @@
 /**
  * 预加载管理器
- * 
+ *
  * 管理I18n系统的预加载和懒加载功能，提供智能的资源加载策略
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
 
-import { TimeUtils } from '../utils/common'
 import type { Loader } from './types'
+import { TimeUtils } from '../utils/common'
 
 /**
  * 预加载配置接口
@@ -78,7 +78,7 @@ export class PreloadManager {
       timeout: 10000, // 10秒
       enablePrediction: true,
       predictionWindow: 10,
-      ...config
+      ...config,
     }
   }
 
@@ -88,12 +88,13 @@ export class PreloadManager {
   addPreloadItem(
     locale: string,
     namespace?: string,
-    priority: number = 1
+    priority: number = 1,
   ): void {
-    if (!this.config.enabled) return
+    if (!this.config.enabled)
+      return
 
     const key = this.generateKey(locale, namespace)
-    
+
     if (this.preloadQueue.has(key)) {
       // 更新优先级
       const item = this.preloadQueue.get(key)!
@@ -107,7 +108,7 @@ export class PreloadManager {
       priority,
       timestamp: TimeUtils.now(),
       attempts: 0,
-      status: 'pending'
+      status: 'pending',
     }
 
     this.preloadQueue.set(key, item)
@@ -125,7 +126,8 @@ export class PreloadManager {
         for (const namespace of namespaces) {
           promises.push(this.preloadResource(locale, namespace, 10))
         }
-      } else {
+      }
+      else {
         promises.push(this.preloadResource(locale, undefined, 10))
       }
     }
@@ -137,10 +139,11 @@ export class PreloadManager {
    * 智能预加载
    */
   smartPreload(): void {
-    if (!this.config.enablePrediction) return
+    if (!this.config.enablePrediction)
+      return
 
     const predictions = this.generatePredictions()
-    
+
     for (const [key, score] of predictions) {
       if (score > 0.7) { // 70%以上的概率
         const [locale, namespace] = this.parseKey(key)
@@ -155,9 +158,9 @@ export class PreloadManager {
   recordUsage(locale: string, namespace?: string): void {
     const key = this.generateKey(locale, namespace)
     const now = TimeUtils.now()
-    
+
     let stats = this.usageStats.get(key)
-    
+
     if (!stats) {
       stats = {
         locale,
@@ -165,7 +168,7 @@ export class PreloadManager {
         accessCount: 0,
         lastAccessed: now,
         averageInterval: 0,
-        trend: 'stable'
+        trend: 'stable',
       }
       this.usageStats.set(key, stats)
     }
@@ -193,7 +196,7 @@ export class PreloadManager {
     failed: number
     queueSize: number
   } {
-    let pending = 0, loading = 0, loaded = 0, failed = 0
+    let pending = 0; let loading = 0; let loaded = 0; let failed = 0
 
     for (const item of this.preloadQueue.values()) {
       switch (item.status) {
@@ -209,7 +212,7 @@ export class PreloadManager {
       loading,
       loaded,
       failed,
-      queueSize: this.preloadQueue.size
+      queueSize: this.preloadQueue.size,
     }
   }
 
@@ -240,10 +243,10 @@ export class PreloadManager {
   private async preloadResource(
     locale: string,
     namespace?: string,
-    priority: number = 1
+    priority: number = 1,
   ): Promise<void> {
     const key = this.generateKey(locale, namespace)
-    
+
     // 检查是否已经在加载
     if (this.loadingPromises.has(key)) {
       return this.loadingPromises.get(key)!
@@ -254,7 +257,8 @@ export class PreloadManager {
 
     try {
       await promise
-    } finally {
+    }
+    finally {
       this.loadingPromises.delete(key)
     }
   }
@@ -265,12 +269,13 @@ export class PreloadManager {
   private async executePreload(
     locale: string,
     priority: number,
-    namespace?: string
+    namespace?: string,
   ): Promise<void> {
     const key = this.generateKey(locale, namespace)
     const item = this.preloadQueue.get(key)
 
-    if (!item) return
+    if (!item)
+      return
 
     item.status = 'loading'
     item.attempts++
@@ -287,20 +292,22 @@ export class PreloadManager {
         : this.loader.load(locale)
 
       await Promise.race([loadPromise, timeoutPromise])
-      
+
       item.status = 'loaded'
-    } catch (error) {
+    }
+    catch (error) {
       item.status = 'failed'
       item.error = error as Error
-      
+
       // 重试逻辑
       if (item.attempts < 3) {
         setTimeout(() => {
           item.status = 'pending'
           this.schedulePreload()
-        }, Math.pow(2, item.attempts) * 1000) // 指数退避
+        }, 2 ** item.attempts * 1000) // 指数退避
       }
-    } finally {
+    }
+    finally {
       this.loadingCount--
     }
   }
@@ -309,7 +316,8 @@ export class PreloadManager {
    * 调度预加载
    */
   private schedulePreload(): void {
-    if (this.loadingCount >= this.config.maxConcurrent) return
+    if (this.loadingCount >= this.config.maxConcurrent)
+      return
 
     // 按优先级排序
     const pendingItems = Array.from(this.preloadQueue.values())
@@ -366,9 +374,11 @@ export class PreloadManager {
 
     if (recentAccesses > 5 && timeSpan < stats.averageInterval) {
       stats.trend = 'increasing'
-    } else if (recentAccesses < 2 || timeSpan > stats.averageInterval * 2) {
+    }
+    else if (recentAccesses < 2 || timeSpan > stats.averageInterval * 2) {
       stats.trend = 'decreasing'
-    } else {
+    }
+    else {
       stats.trend = 'stable'
     }
   }
@@ -405,7 +415,7 @@ export class PreloadManager {
  */
 export function createPreloadManager(
   loader: Loader,
-  config?: Partial<PreloadConfig>
+  config?: Partial<PreloadConfig>,
 ): PreloadManager {
   return new PreloadManager(loader, config)
 }

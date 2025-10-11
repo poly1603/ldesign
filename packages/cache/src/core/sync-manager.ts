@@ -1,6 +1,8 @@
 import type { CacheEvent, StorageEngine } from '../types'
-import type { CacheManager } from './cache-manager'
 import { EventEmitter } from '../utils'
+
+import type { CacheManager } from './cache-manager'
+
 
 /**
  * 同步配置
@@ -105,12 +107,10 @@ export class SyncManager {
    * 初始化 storage 事件监听
    */
   private initStorageEvent(): void {
-    if (typeof window === 'undefined') 
-      return
+    if (typeof window === 'undefined') { return }
 
     this.storageHandler = (e: StorageEvent) => {
-      if (!e.key?.startsWith('__sync__')) 
-        return
+      if (!e.key?.startsWith('__sync__')) { return }
       
       try {
         const message: SyncMessage = JSON.parse(e.newValue || '{}')
@@ -203,8 +203,7 @@ export class SyncManager {
    */
   private async handleSyncMessage(message: SyncMessage): Promise<void> {
     // 忽略自己发送的消息
-    if (message.source === this.sourceId) 
-      return
+    if (message.source === this.sourceId) { return }
 
     try {
       switch (message.type) {

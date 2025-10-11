@@ -23,6 +23,12 @@ export interface CacheOptions {
   ttl?: number
   /** 是否启用缓存 */
   enabled?: boolean
+  /** 内存压力阈值（字节），超过此值时自动清理 */
+  memoryThreshold?: number
+  /** 是否启用自动清理 */
+  enableAutoCleanup?: boolean
+  /** 自动清理间隔（毫秒） */
+  cleanupInterval?: number
 }
 
 /**
@@ -35,11 +41,23 @@ export class CacheManager<K = string, V = any> {
   private enabled: boolean
   private hits = 0
   private misses = 0
+  private memoryThreshold: number
+  private enableAutoCleanup: boolean
+  private cleanupInterval: number
+  private cleanupTimer: NodeJS.Timeout | null = null
+  private estimatedSize = 0
 
   constructor(options: CacheOptions = {}) {
     this.maxSize = options.maxSize ?? 50
     this.ttl = options.ttl ?? 0
     this.enabled = options.enabled ?? true
+    this.memoryThreshold = options.memoryThreshold ?? 10 * 1024 * 1024 // 10MB default
+    this.enableAutoCleanup = options.enableAutoCleanup ?? true
+    this.cleanupInterval = options.cleanupInterval ?? 60000 // 1分钟
+
+    if (this.enableAutoCleanup) {
+      this.startAutoCleanup()
+    }
   }
 
   /**
@@ -86,12 +104,20 @@ export class CacheManager<K = string, V = any> {
     }
 
     const now = Date.now()
-    this.cache.set(key, {
+    const entry = {
       value,
       timestamp: now,
       accessCount: 0,
       lastAccessTime: now,
-    })
+    }
+    
+    this.cache.set(key, entry)
+    this.updateEstimatedSize()
+    
+    // 检查内存压力
+    if (this.estimatedSize > this.memoryThreshold) {
+      this.performMemoryCleanup()
+    }
   }
 
   /**
@@ -220,6 +246,95 @@ export class CacheManager<K = string, V = any> {
    */
   entries(): Array<[K, V]> {
     return Array.from(this.cache.entries()).map(([key, entry]) => [key, entry.value])
+  }
+
+  /**
+   * 更新估算的缓存大小
+   */
+  private updateEstimatedSize(): void {
+    // 粗略估算：每个条目约200字节 + 键的大小
+    this.estimatedSize = this.cache.size * 200
+  }
+
+  /**
+   * 执行内存清理
+   */
+  private performMemoryCleanup(): void {
+    const targetSize = Math.floor(this.maxSize * 0.7) // 清理到70%容量
+    const toRemove = this.cache.size - targetSize
+
+    if (toRemove <= 0) return
+
+    // 按访问时间排序，移除最久未使用的条目
+    const entries = Array.from(this.cache.entries())
+      .sort((a, b) => a[1].lastAccessTime - b[1].lastAccessTime)
+      .slice(0, toRemove)
+
+    for (const [key] of entries) {
+      this.cache.delete(key)
+    }
+
+    this.updateEstimatedSize()
+  }
+
+  /**
+   * 启动自动清理
+   */
+  private startAutoCleanup(): void {
+    this.cleanupTimer = setInterval(() => {
+      this.cleanupExpired()
+    }, this.cleanupInterval)
+  }
+
+  /**
+   * 停止自动清理
+   */
+  private stopAutoCleanup(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+  }
+
+  /**
+   * 清理过期条目
+   */
+  private cleanupExpired(): void {
+    if (this.ttl <= 0) return
+
+    const now = Date.now()
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > this.ttl) {
+        this.cache.delete(key)
+      }
+    }
+
+    this.updateEstimatedSize()
+  }
+
+  /**
+   * 预热缓存
+   * @param entries 要预热的条目
+   */
+  warmup(entries: Array<[K, V]>): void {
+    for (const [key, value] of entries) {
+      this.set(key, value)
+    }
+  }
+
+  /**
+   * 获取估算的内存使用
+   */
+  getEstimatedSize(): number {
+    return this.estimatedSize
+  }
+
+  /**
+   * 销毁缓存管理器
+   */
+  destroy(): void {
+    this.stopAutoCleanup()
+    this.clear()
   }
 }
 

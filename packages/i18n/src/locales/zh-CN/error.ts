@@ -55,4 +55,3 @@ const error: ErrorTranslations = {
 }
 
 export default error
-

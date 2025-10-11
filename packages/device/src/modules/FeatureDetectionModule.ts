@@ -74,24 +74,24 @@ export interface FeatureDetectionEvents extends Record<string, unknown> {
 
 /**
  * 设备特性检测模块
- * 
+ *
  * 提供全面的设备特性检测功能，包括：
  * - 存储 API 支持检测
  * - 媒体格式支持检测
  * - 现代 Web API 支持检测
  * - 用户偏好设置检测
  * - 硬件能力检测
- * 
+ *
  * @example
  * ```typescript
  * const detector = new DeviceDetector()
  * const featureModule = await detector.loadModule<FeatureDetectionModule>('feature')
  * const features = featureModule.getData()
- * 
+ *
  * if (features.media.webp) {
  *   console.log('支持 WebP 格式')
  * }
- * 
+ *
  * if (features.preferences.darkMode) {
  *   console.log('用户偏好暗黑模式')
  * }
@@ -99,8 +99,7 @@ export interface FeatureDetectionEvents extends Record<string, unknown> {
  */
 export class FeatureDetectionModule
   extends EventEmitter<FeatureDetectionEvents>
-  implements DeviceModule
-{
+  implements DeviceModule {
   name = 'feature'
   private features: FeatureDetectionInfo | null = null
   private mediaQueryListeners: Map<string, MediaQueryList> = new Map()
@@ -110,7 +109,8 @@ export class FeatureDetectionModule
    * 初始化模块
    */
   async init(): Promise<void> {
-    if (this.isInitialized) return
+    if (this.isInitialized)
+      return
 
     this.features = await this.detectFeatures()
     this.setupMediaQueryListeners()
@@ -393,7 +393,8 @@ export class FeatureDetectionModule
    * 检查暗黑模式
    */
   private checkDarkMode(): boolean {
-    if (typeof window === 'undefined') return false
+    if (typeof window === 'undefined')
+      return false
     return window.matchMedia('(prefers-color-scheme: dark)').matches
   }
 
@@ -401,7 +402,8 @@ export class FeatureDetectionModule
    * 检查减少动画偏好
    */
   private checkReducedMotion(): boolean {
-    if (typeof window === 'undefined') return false
+    if (typeof window === 'undefined')
+      return false
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }
 
@@ -409,7 +411,8 @@ export class FeatureDetectionModule
    * 检查减少透明度偏好
    */
   private checkReducedTransparency(): boolean {
-    if (typeof window === 'undefined') return false
+    if (typeof window === 'undefined')
+      return false
     return window.matchMedia('(prefers-reduced-transparency: reduce)').matches
   }
 
@@ -417,7 +420,8 @@ export class FeatureDetectionModule
    * 检查高对比度偏好
    */
   private checkHighContrast(): boolean {
-    if (typeof window === 'undefined') return false
+    if (typeof window === 'undefined')
+      return false
     return window.matchMedia('(prefers-contrast: high)').matches
   }
 
@@ -425,9 +429,12 @@ export class FeatureDetectionModule
    * 检测指针类型
    */
   private detectPointerType(): 'fine' | 'coarse' | 'none' {
-    if (typeof window === 'undefined') return 'none'
-    if (window.matchMedia('(pointer: fine)').matches) return 'fine'
-    if (window.matchMedia('(pointer: coarse)').matches) return 'coarse'
+    if (typeof window === 'undefined')
+      return 'none'
+    if (window.matchMedia('(pointer: fine)').matches)
+      return 'fine'
+    if (window.matchMedia('(pointer: coarse)').matches)
+      return 'coarse'
     return 'none'
   }
 
@@ -435,7 +442,8 @@ export class FeatureDetectionModule
    * 检查悬停能力
    */
   private checkHoverCapability(): boolean {
-    if (typeof window === 'undefined') return false
+    if (typeof window === 'undefined')
+      return false
     return window.matchMedia('(hover: hover)').matches
   }
 
@@ -443,7 +451,8 @@ export class FeatureDetectionModule
    * 设置媒体查询监听器
    */
   private setupMediaQueryListeners(): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     // 监听暗黑模式变化
     const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)')
@@ -477,4 +486,3 @@ export class FeatureDetectionModule
     this.mediaQueryListeners.clear()
   }
 }
-

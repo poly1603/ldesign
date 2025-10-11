@@ -65,4 +65,3 @@ const datetime: DateTimeTranslations = {
 }
 
 export default datetime
-

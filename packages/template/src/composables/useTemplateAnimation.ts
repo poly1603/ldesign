@@ -4,50 +4,21 @@
  */
 
 import { computed, nextTick, ref, type Ref, watch } from 'vue'
-import type {
-  AnimationStyles,
-  AnimationMetrics,
-  AnimationTransitionClasses
+import {
+  AnimationType,
+  AnimationDirection,
+  type AnimationStyles,
+  type AnimationMetrics,
+  type AnimationTransitionClasses,
+  type AnimationConfig,
+  type AnimationStateData
 } from '../types/animation'
 
-/**
- * 动画类型枚举
- */
-export enum AnimationType {
-  FADE = 'fade',
-  SLIDE = 'slide',
-  SCALE = 'scale',
-  SLIDE_FADE = 'slide-fade',
-  SCALE_FADE = 'scale-fade',
-}
-
-/**
- * 动画方向枚举
- */
-export enum AnimationDirection {
-  UP = 'up',
-  DOWN = 'down',
-  LEFT = 'left',
-  RIGHT = 'right',
-}
-
-/**
- * 动画配置接口
- */
-export interface AnimationConfig {
-  /** 动画类型 */
-  type: AnimationType
-  /** 动画时长（毫秒） */
-  duration: number
-  /** 动画方向 */
-  direction?: AnimationDirection
-  /** 缓动函数 */
-  easing?: string
-  /** 延迟时间（毫秒） */
-  delay?: number
-  /** 是否启用动画 */
-  enabled?: boolean
-}
+// Re-export enums and types from animation types for convenience
+// Note: AnimationState enum is exported from types/animation.ts
+// AnimationStateData interface is for the composable state
+export { AnimationType, AnimationDirection } from '../types/animation'
+export type { AnimationConfig } from '../types/animation'
 
 /**
  * 默认动画配置
@@ -84,19 +55,7 @@ export const TEMPLATE_SWITCH_ANIMATION_CONFIG: AnimationConfig = {
   enabled: true,
 }
 
-/**
- * 动画状态接口
- */
-export interface AnimationState {
-  /** 是否正在进入 */
-  entering: boolean
-  /** 是否正在离开 */
-  leaving: boolean
-  /** 是否可见 */
-  visible: boolean
-  /** 动画是否完成 */
-  completed: boolean
-}
+// AnimationStateData is imported from types/animation.ts
 
 // 导入统一的接口定义
 import type { UseTemplateAnimationReturn } from '../types/animation'
@@ -114,7 +73,7 @@ export function useTemplateAnimation(
   })
 
   // 动画状态
-  const animationState = ref<AnimationState>({
+  const animationState = ref<AnimationStateData>({
     entering: false,
     leaving: false,
     visible: false,

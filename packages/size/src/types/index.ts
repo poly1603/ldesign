@@ -209,11 +209,11 @@ export interface SizeManager {
   /** 监听尺寸变化 */
   onSizeChange: (callback: (event: SizeChangeEvent) => void) => () => void
   /** 监听事件 */
-  on: (event: string, callback: Function) => void
+  on: (event: string, callback: (data?: unknown) => void) => void
   /** 移除事件监听 */
-  off: (event: string, callback: Function) => void
+  off: (event: string, callback: (data?: unknown) => void) => void
   /** 触发事件 */
-  emit: (event: string, data?: any) => void
+  emit: (event: string, data?: unknown) => void
   /** 初始化管理器 */
   init: () => void | Promise<void>
   /** 销毁管理器 */

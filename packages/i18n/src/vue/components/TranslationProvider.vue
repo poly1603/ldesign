@@ -1,24 +1,13 @@
 <!--
   TranslationProvider 翻译提供者组件
-  
+
   为子组件提供翻译上下文的容器组件
-  
+
   @example
   <TranslationProvider namespace="user">
     <UserProfile />
   </TranslationProvider>
 -->
-
-<template>
-  <div class="translation-provider">
-    <slot 
-      :t="scopedT" 
-      :te="scopedTe" 
-      :locale="currentLocale"
-      :namespace="namespace"
-    />
-  </div>
-</template>
 
 <script setup lang="ts">
 import { computed, inject, provide } from 'vue'
@@ -31,7 +20,7 @@ const props = withDefaults(defineProps<{
   /** 是否自动添加命名空间前缀 */
   autoPrefix?: boolean
 }>(), {
-  autoPrefix: true
+  autoPrefix: true,
 })
 
 /**
@@ -50,21 +39,21 @@ const currentLocale = computed(() => i18n.getCurrentLanguage())
 /**
  * 作用域翻译函数
  */
-const scopedT = (key: string, params?: Record<string, unknown>) => {
-  const fullKey = props.namespace && props.autoPrefix 
-    ? `${props.namespace}.${key}` 
+function scopedT(key: string, params?: Record<string, unknown>) {
+  const fullKey = props.namespace && props.autoPrefix
+    ? `${props.namespace}.${key}`
     : key
-  return i18n.t(fullKey, params)
+  return i18n!.t(fullKey, params)
 }
 
 /**
  * 作用域键存在检查函数
  */
-const scopedTe = (key: string, locale?: string) => {
-  const fullKey = props.namespace && props.autoPrefix 
-    ? `${props.namespace}.${key}` 
+function scopedTe(key: string, locale?: string) {
+  const fullKey = props.namespace && props.autoPrefix
+    ? `${props.namespace}.${key}`
     : key
-  return i18n.te(fullKey, locale)
+  return i18n!.exists?.(fullKey, locale) ?? false
 }
 
 /**
@@ -81,8 +70,17 @@ provide('scopedTe', scopedTe)
  */
 export default {
   name: 'TranslationProvider',
-  inheritAttrs: false
+  inheritAttrs: false,
 }
 </script>
 
-
+<template>
+  <div class="translation-provider">
+    <slot
+      :t="scopedT"
+      :te="scopedTe"
+      :locale="currentLocale"
+      :namespace="namespace"
+    />
+  </div>
+</template>

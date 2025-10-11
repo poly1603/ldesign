@@ -3,12 +3,12 @@
  * 测试插值、路径处理、复数化、验证等工具函数
  */
 
-import { describe, it, expect } from 'vitest'
-import { interpolate, hasInterpolation } from '../src/utils/interpolation'
-import { getNestedValue, setNestedValue, flattenObject, unflattenObject } from '../src/utils/path'
-import { processPluralization, hasPluralExpression, getPluralRule } from '../src/utils/pluralization'
-import { validateLanguageCode, validateTranslationKey, isValidLocale } from '../src/utils/validation'
-import { formatNumber, formatDate, formatCurrency } from '../src/utils/formatters'
+import { describe, expect, it } from 'vitest'
+import { formatCurrency, formatDate, formatNumber } from '../src/utils/formatters'
+import { hasInterpolation, interpolate } from '../src/utils/interpolation'
+import { flattenObject, getNestedValue, setNestedValue, unflattenObject } from '../src/utils/path'
+import { getPluralRule, hasPluralExpression, processPluralization } from '../src/utils/pluralization'
+import { isValidLocale, validateLanguageCode, validateTranslationKey } from '../src/utils/validation'
 
 describe('插值工具', () => {
   describe('interpolate', () => {
@@ -20,14 +20,14 @@ describe('插值工具', () => {
     it('应该正确处理多个插值', () => {
       const result = interpolate('Hello {name}, you are {age} years old', {
         name: 'John',
-        age: 25
+        age: 25,
       })
       expect(result).toBe('Hello John, you are 25 years old')
     })
 
     it('应该正确处理嵌套对象插值', () => {
       const result = interpolate('Hello {user.name}', {
-        user: { name: 'John' }
+        user: { name: 'John' },
       })
       expect(result).toBe('Hello John')
     })
@@ -58,10 +58,10 @@ describe('路径处理工具', () => {
       name: 'John',
       profile: {
         age: '25', // 改为字符串，因为 getNestedValue 只返回字符串
-        email: 'john@example.com'
-      }
+        email: 'john@example.com',
+      },
     },
-    items: ['item1', 'item2']
+    items: ['item1', 'item2'],
   }
 
   describe('getNestedValue', () => {
@@ -96,14 +96,14 @@ describe('路径处理工具', () => {
       const nested = {
         user: {
           name: 'John',
-          profile: { age: '25' }
-        }
+          profile: { age: '25' },
+        },
       }
 
       const flattened = flattenObject(nested)
       expect(flattened).toEqual({
         'user.name': 'John',
-        'user.profile.age': '25'
+        'user.profile.age': '25',
       })
     })
   })
@@ -112,15 +112,15 @@ describe('路径处理工具', () => {
     it('应该正确反扁平化对象', () => {
       const flattened = {
         'user.name': 'John',
-        'user.profile.age': 25
+        'user.profile.age': 25,
       }
 
       const nested = unflattenObject(flattened)
       expect(nested).toEqual({
         user: {
           name: 'John',
-          profile: { age: 25 }
-        }
+          profile: { age: 25 },
+        },
       })
     })
   })

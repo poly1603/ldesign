@@ -210,6 +210,12 @@ export class CookieStorage implements Storage {
 export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
   private cache: Map<string, CacheItem<T>> = new Map()
   private options: Required<CacheOptions>
+  private stats = {
+    hits: 0,
+    misses: 0,
+    evictions: 0,
+    expirations: 0,
+  }
 
   constructor(options?: CacheOptions) {
     this.options = {
@@ -222,12 +228,15 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
     const item = this.cache.get(key)
 
     if (!item) {
+      this.stats.misses++
       return undefined
     }
 
     // 检查是否过期
     if (Date.now() > item.expires) {
       this.cache.delete(key)
+      this.stats.expirations++
+      this.stats.misses++
       return undefined
     }
 
@@ -238,6 +247,7 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
     this.cache.delete(key)
     this.cache.set(key, item)
 
+    this.stats.hits++
     return item.value
   }
 
@@ -256,6 +266,7 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
       const firstKey = this.cache.keys().next().value
       if (firstKey) {
         this.cache.delete(firstKey)
+        this.stats.evictions++
       }
     }
 
@@ -297,28 +308,39 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
 
   /**
    * 清理过期项
+   * @returns 清理的过期条目数量
    */
-  cleanup(): void {
+  cleanup(): number {
     const now = Date.now()
+    let cleaned = 0
+    
     for (const [key, item] of this.cache.entries()) {
       if (now > item.expires) {
         this.cache.delete(key)
+        this.stats.expirations++
+        cleaned++
       }
     }
+    
+    return cleaned
   }
 
   /**
    * 获取缓存统计信息
    */
   getStats(): {
+    hits: number
+    misses: number
+    evictions: number
+    expirations: number
     size: number
-    maxSize: number
     hitRate: number
   } {
+    const total = this.stats.hits + this.stats.misses
     return {
+      ...this.stats,
       size: this.cache.size,
-      maxSize: this.options.maxSize,
-      hitRate: 0, // 简化实现，不计算命中率
+      hitRate: total > 0 ? this.stats.hits / total : 0,
     }
   }
 }

@@ -2,43 +2,42 @@
  * Vue I18n 增强功能测试
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createApp } from 'vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createI18nPlugin, useI18nEnhanced, useI18nScope } from '../src/vue'
-import TranslationMissing from '../src/vue/components/TranslationMissing.vue'
+import I18nL from '../src/vue/components/I18nL.vue'
 import I18nP from '../src/vue/components/I18nP.vue'
 import I18nR from '../src/vue/components/I18nR.vue'
-import I18nL from '../src/vue/components/I18nL.vue'
+import TranslationMissing from '../src/vue/components/TranslationMissing.vue'
 
 // Mock navigator.clipboard
 Object.assign(navigator, {
   clipboard: {
-    writeText: vi.fn(() => Promise.resolve())
-  }
+    writeText: vi.fn(() => Promise.resolve()),
+  },
 })
 
-describe('Vue I18n Enhanced Features', () => {
+describe('vue I18n Enhanced Features', () => {
   const messages = {
     'en': {
-      hello: 'Hello',
-      welcome: 'Welcome {name}',
-      item: 'item | items',
+      'hello': 'Hello',
+      'welcome': 'Welcome {name}',
+      'item': 'item | items',
       'item.one': 'one item',
       'item.other': '{count} items',
-      user: {
+      'user': {
         profile: {
-          name: 'Profile Name'
-        }
-      }
+          name: 'Profile Name',
+        },
+      },
     },
     'zh-CN': {
-      hello: '你好',
-      welcome: '欢迎 {name}',
-      item: '项目 | 项目',
+      'hello': '你好',
+      'welcome': '欢迎 {name}',
+      'item': '项目 | 项目',
       'item.one': '一个项目',
-      'item.other': '{count} 个项目'
-    }
+      'item.other': '{count} 个项目',
+    },
   }
 
   let plugin: any
@@ -48,11 +47,11 @@ describe('Vue I18n Enhanced Features', () => {
     plugin = createI18nPlugin({
       locale: 'en',
       fallbackLocale: 'en',
-      messages
+      messages,
     })
   })
 
-  describe('TranslationMissing Component', () => {
+  describe('translationMissing Component', () => {
     it('should display missing key in development mode', () => {
       // Mock development environment
       const originalEnv = process.env.NODE_ENV
@@ -60,11 +59,11 @@ describe('Vue I18n Enhanced Features', () => {
 
       wrapper = mount(TranslationMissing, {
         props: {
-          keypath: 'missing.key'
+          keypath: 'missing.key',
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.find('.translation-missing__key').text()).toBe('missing.key')
@@ -81,11 +80,11 @@ describe('Vue I18n Enhanced Features', () => {
       wrapper = mount(TranslationMissing, {
         props: {
           keypath: 'missing.key',
-          fallbackText: 'Fallback Text'
+          fallbackText: 'Fallback Text',
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.find('.translation-missing__fallback').text()).toBe('Fallback Text')
@@ -101,11 +100,11 @@ describe('Vue I18n Enhanced Features', () => {
       wrapper = mount(TranslationMissing, {
         props: {
           keypath: 'missing.key',
-          suggestions: ['hello', 'welcome']
+          suggestions: ['hello', 'welcome'],
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.find('.translation-missing__suggestions').exists()).toBe(true)
@@ -120,11 +119,11 @@ describe('Vue I18n Enhanced Features', () => {
 
       wrapper = mount(TranslationMissing, {
         props: {
-          keypath: 'missing.key'
+          keypath: 'missing.key',
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       const copyButton = wrapper.find('.translation-missing__copy')
@@ -144,13 +143,13 @@ describe('Vue I18n Enhanced Features', () => {
           const { tSafe } = useI18nEnhanced()
           const result = tSafe('hello')
           return { result }
-        }
+        },
       }
 
       wrapper = mount(TestComponent, {
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('Hello')
@@ -163,13 +162,13 @@ describe('Vue I18n Enhanced Features', () => {
           const { tSafe } = useI18nEnhanced()
           const result = tSafe('missing.key', { fallback: 'Default Text' })
           return { result }
-        }
+        },
       }
 
       wrapper = mount(TestComponent, {
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('Default Text')
@@ -182,13 +181,13 @@ describe('Vue I18n Enhanced Features', () => {
           const { tBatch } = useI18nEnhanced()
           const results = tBatch(['hello', 'welcome'])
           return { results }
-        }
+        },
       }
 
       wrapper = mount(TestComponent, {
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toContain('Hello')
@@ -204,13 +203,13 @@ describe('Vue I18n Enhanced Features', () => {
           const scope = useI18nScope({ namespace: 'user.profile' })
           const text = scope.t('name')
           return { text }
-        }
+        },
       }
 
       wrapper = mount(TestComponent, {
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('Profile Name')
@@ -224,13 +223,13 @@ describe('Vue I18n Enhanced Features', () => {
           const profileScope = userScope.createSubScope('profile')
           const text = profileScope.t('name')
           return { text }
-        }
+        },
       }
 
       wrapper = mount(TestComponent, {
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('Profile Name')
@@ -242,33 +241,33 @@ describe('Vue I18n Enhanced Features', () => {
         setup() {
           const scope = useI18nScope({
             namespace: 'nonexistent',
-            fallbackToGlobal: true
+            fallbackToGlobal: true,
           })
           const text = scope.t('hello')
           return { text }
-        }
+        },
       }
 
       wrapper = mount(TestComponent, {
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('Hello')
     })
   })
 
-  describe('I18nP Component', () => {
+  describe('i18nP Component', () => {
     it('should handle plural forms correctly', () => {
       wrapper = mount(I18nP, {
         props: {
           keypath: 'item',
-          count: 1
+          count: 1,
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('item')
@@ -276,11 +275,11 @@ describe('Vue I18n Enhanced Features', () => {
       wrapper = mount(I18nP, {
         props: {
           keypath: 'item',
-          count: 5
+          count: 5,
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('items')
@@ -290,11 +289,11 @@ describe('Vue I18n Enhanced Features', () => {
       wrapper = mount(I18nP, {
         props: {
           keypath: 'item',
-          count: 1
+          count: 1,
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       // Should try item.one first, then fallback to pipe-delimited
@@ -306,29 +305,29 @@ describe('Vue I18n Enhanced Features', () => {
         props: {
           keypath: 'item',
           count: 5,
-          includeCount: true
+          includeCount: true,
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toBe('5 items')
     })
   })
 
-  describe('I18nR Component', () => {
+  describe('i18nR Component', () => {
     it('should format relative time', () => {
       const pastDate = new Date(Date.now() - 60000) // 1 minute ago
 
       wrapper = mount(I18nR, {
         props: {
           value: pastDate,
-          updateInterval: 0 // Disable auto-update for testing
+          updateInterval: 0, // Disable auto-update for testing
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toMatch(/minute.*ago|ago.*minute/i)
@@ -340,27 +339,27 @@ describe('Vue I18n Enhanced Features', () => {
       wrapper = mount(I18nR, {
         props: {
           value: futureDate,
-          updateInterval: 0 // Disable auto-update for testing
+          updateInterval: 0, // Disable auto-update for testing
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       expect(wrapper.text()).toMatch(/in.*hour|hour.*in/i)
     })
   })
 
-  describe('I18nL Component', () => {
+  describe('i18nL Component', () => {
     it('should format conjunction lists', () => {
       wrapper = mount(I18nL, {
         props: {
           items: ['Apple', 'Banana', 'Orange'],
-          type: 'conjunction'
+          type: 'conjunction',
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       const text = wrapper.text()
@@ -374,11 +373,11 @@ describe('Vue I18n Enhanced Features', () => {
       wrapper = mount(I18nL, {
         props: {
           items: ['Red', 'Green'],
-          type: 'disjunction'
+          type: 'disjunction',
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       const text = wrapper.text()
@@ -391,11 +390,11 @@ describe('Vue I18n Enhanced Features', () => {
       wrapper = mount(I18nL, {
         props: {
           items: ['A', 'B', 'C', 'D', 'E'],
-          maxItems: 3
+          maxItems: 3,
         },
         global: {
-          plugins: [plugin]
-        }
+          plugins: [plugin],
+        },
       })
 
       const text = wrapper.text()

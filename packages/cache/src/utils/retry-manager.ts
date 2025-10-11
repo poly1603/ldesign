@@ -176,8 +176,7 @@ export class RetryManager {
    * 斐波那契数列
    */
   private fibonacci(n: number): number {
-    if (n <= 1) 
-      return n
+    if (n <= 1) { return n }
     let a = 0
     let b = 1
     for (let i = 2; i <= n; i++) {
@@ -201,7 +200,7 @@ export class RetryManager {
   /**
    * 休眠
    */
-  private sleep(ms: number): Promise<void> {
+  private async sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 }
@@ -303,8 +302,7 @@ export class CircuitBreaker {
    * 获取失败率
    */
   private getFailureRate(): number {
-    if (this.requests.length === 0) 
-      return 0
+    if (this.requests.length === 0) { return 0 }
     const failures = this.requests.filter(r => !r).length
     return failures / this.requests.length
   }
@@ -436,7 +434,7 @@ export function withRetry<T extends (...args: any[]) => Promise<any>>(
   const retryManager = new RetryManager()
   
   return (async (...args: Parameters<T>) => {
-    const result = await retryManager.retry(() => fn(...args), options)
+    const result = await retryManager.retry(async () => fn(...args), options)
     if (result.success) {
       return result.data
     }
@@ -454,7 +452,7 @@ export function withCircuitBreaker<T extends (...args: any[]) => Promise<any>>(
   const circuitBreaker = new CircuitBreaker(options)
   
   return (async (...args: Parameters<T>) => {
-    return circuitBreaker.execute(() => fn(...args))
+    return circuitBreaker.execute(async () => fn(...args))
   }) as T
 }
 
@@ -468,5 +466,5 @@ export function withFallback<T>(
   const handler = new FallbackHandler<T>()
   fallbacks.forEach(fb => handler.addFallback(fb))
   
-  return () => handler.execute(primary)
+  return async () => handler.execute(primary)
 }

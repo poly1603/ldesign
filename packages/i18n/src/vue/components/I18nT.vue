@@ -1,43 +1,13 @@
 <!--
   I18nT 翻译组件
-  
+
   用于声明式翻译的 Vue 组件
-  
+
   @example
   <I18nT keypath="hello" />
   <I18nT keypath="welcome" :params="{ name: 'Vue' }" />
   <I18nT keypath="user.profile.name" tag="span" />
 -->
-
-<template>
-  <component :is="tag" v-if="shouldRender">
-    <!-- HTML 渲染模式 -->
-    <span v-if="html" v-html="translatedText"></span>
-
-    <!-- 组件插值模式 -->
-    <template v-else-if="hasComponentInterpolation">
-      <template v-for="(part, index) in interpolatedParts" :key="index">
-        <!-- 文本部分 -->
-        <template v-if="part.type === 'text'">{{ part.content }}</template>
-
-        <!-- 组件部分 -->
-        <component v-else-if="part.type === 'component'" :is="part.component" v-bind="part.props">
-          {{ part.content }}
-        </component>
-
-        <!-- 插槽部分 -->
-        <slot v-else-if="part.type === 'slot'" :name="part.name" :content="part.content" :index="index">
-          {{ part.content }}
-        </slot>
-      </template>
-    </template>
-
-    <!-- 普通文本模式 -->
-    <template v-else>
-      {{ translatedText }}
-    </template>
-  </component>
-</template>
 
 <script setup lang="ts">
 import { computed, inject } from 'vue'
@@ -73,7 +43,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   tag: 'span',
   html: false,
-  enableComponentInterpolation: false
+  enableComponentInterpolation: false,
 })
 
 /**
@@ -100,12 +70,12 @@ const translatedText = computed(() => {
     }
 
     return i18n.t(props.keypath, props.params)
-  } catch (error) {
+  }
+  catch (error) {
     console.warn(`I18nT 翻译失败: ${props.keypath}`, error)
     return props.keypath // 降级显示键名
   }
 })
-
 /**
  * 是否应该渲染
  */
@@ -117,9 +87,9 @@ const shouldRender = computed(() => {
  * 是否有组件插值
  */
 const hasComponentInterpolation = computed(() => {
-  return props.enableComponentInterpolation &&
-    translatedText.value &&
-    (translatedText.value.includes('<') || translatedText.value.includes('{'))
+  return props.enableComponentInterpolation
+    && translatedText.value
+    && (translatedText.value.includes('<') || translatedText.value.includes('{'))
 })
 
 /**
@@ -170,7 +140,7 @@ const interpolatedParts = computed((): InterpolationPart[] => {
       type: 'component',
       content,
       component,
-      props
+      props,
     })
 
     lastIndex = startIndex + fullMatch.length
@@ -178,8 +148,8 @@ const interpolatedParts = computed((): InterpolationPart[] => {
 
   // 处理插槽标签
   componentRegex.lastIndex = 0 // 重置正则表达式
-  let workingText = text
-  let offset = 0
+  const workingText = text
+  const offset = 0
 
   while ((match = slotRegex.exec(text)) !== null) {
     const [fullMatch, slotName] = match
@@ -207,7 +177,7 @@ const interpolatedParts = computed((): InterpolationPart[] => {
       parts.push({
         type: 'slot',
         content: slotName,
-        name: slotName
+        name: slotName,
       })
 
       lastIndex = startIndex + fullMatch.length
@@ -237,6 +207,36 @@ const interpolatedParts = computed((): InterpolationPart[] => {
  */
 export default {
   name: 'I18nT',
-  inheritAttrs: false
+  inheritAttrs: false,
 }
 </script>
+
+<template>
+  <component :is="tag" v-if="shouldRender">
+    <!-- HTML 渲染模式 -->
+    <span v-if="html" v-html="translatedText"></span>
+
+    <!-- 组件插值模式 -->
+    <template v-else-if="hasComponentInterpolation">
+      <template v-for="(part, index) in interpolatedParts" :key="index">
+        <!-- 文本部分 -->
+        <template v-if="part.type === 'text'">{{ part.content }}</template>
+
+        <!-- 组件部分 -->
+        <component v-else-if="part.type === 'component'" :is="part.component" v-bind="part.props">
+          {{ part.content }}
+        </component>
+
+        <!-- 插槽部分 -->
+        <slot v-else-if="part.type === 'slot'" :name="part.name" :content="part.content" :index="index">
+          {{ part.content }}
+        </slot>
+      </template>
+    </template>
+
+    <!-- 普通文本模式 -->
+    <template v-else>
+      {{ translatedText }}
+    </template>
+  </component>
+</template>

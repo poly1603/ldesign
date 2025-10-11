@@ -1,194 +1,248 @@
-# LDesign Packages 批量打包工具
+# LDesign Scripts
 
-这是一个智能的 TypeScript 命令行工具，用于自动分析和构建 LDesign monorepo 中的所有包。
+项目级构建和工具脚本集合。
 
-## 🚀 功能特性
+## 📜 脚本列表
 
-- **自动包发现**: 扫描 `packages` 目录下的所有 `@ldesign` 包
-- **依赖关系分析**: 智能分析包之间的依赖关系，构建完整的依赖图
-- **拓扑排序**: 使用拓扑排序算法确定正确的构建顺序
-- **循环依赖检测**: 自动检测并报告循环依赖问题
-- **并行构建**: 支持同一层级包的并行构建，提高构建效率
-- **详细日志**: 提供丰富的日志输出和进度显示
-- **干运行模式**: 支持只分析不构建的预览模式
-- **错误处理**: 完善的错误处理和恢复机制
+### build-all.ts
 
-## 📦 依赖关系分析
+一键打包所有 packages 和 library 项目的脚本。
 
-工具会自动分析以下依赖关系：
+#### 功能特性
 
-1. **dependencies**: 生产环境依赖的其他 `@ldesign` 包
-2. **devDependencies**: 开发环境依赖的其他 `@ldesign` 包（排除 `@ldesign/builder`）
+- ✅ **智能构建顺序**：优先构建依赖包（kit → builder → launcher）
+- ✅ **自动分类**：区分优先级包、特殊包、标准包和 library 项目
+- ✅ **产物验证**：自动验证所有输出目录是否生成
+- ✅ **详细报告**：生成构建结果汇总和统计信息
+- ✅ **错误处理**：优先级包失败时终止构建
+- ✅ **彩色输出**：清晰的终端输出，易于阅读
 
-### 当前项目的依赖层级
-
-根据分析，当前项目的包依赖层级如下：
-
-```
-第1层（基础包）:
-├── @ldesign/kit
-├── @ldesign/launcher  
-├── @ldesign/http
-├── @ldesign/cache
-├── @ldesign/device
-├── @ldesign/store
-├── @ldesign/size
-├── @ldesign/i18n
-├── @ldesign/crypto
-└── @ldesign/webcomponent
-
-第2层:
-├── @ldesign/builder (依赖 kit)
-└── @ldesign/config-editor
-
-第3层:
-├── @ldesign/shared (依赖 builder)
-└── @ldesign/engine (依赖 builder)
-
-第4层:
-├── @ldesign/color (依赖 shared)
-├── @ldesign/api (依赖 http)
-└── @ldesign/router (依赖 device)
-
-第5层:
-└── @ldesign/theme (依赖 color)
-
-第6层:
-└── @ldesign/template (依赖 cache, device, engine, shared)
-```
-
-## 🛠️ 使用方法
-
-### 基本用法
+#### 使用方法
 
 ```bash
-# 串行构建所有包
-tsx scripts/build-packages.ts
+# 基本用法
+tsx scripts/build-all.ts
 
-# 并行构建同一层级的包（推荐）
-tsx scripts/build-packages.ts --parallel
+# 清理后构建
+tsx scripts/build-all.ts --clean
 
-# 只分析依赖关系，不执行构建
-tsx scripts/build-packages.ts --dry-run
+# 详细输出
+tsx scripts/build-all.ts --verbose
 
-# 显示详细日志
-tsx scripts/build-packages.ts --verbose
+# 干运行（不实际构建）
+tsx scripts/build-all.ts --dry-run
 
-# 组合使用
-tsx scripts/build-packages.ts --parallel --verbose
+# 组合选项
+tsx scripts/build-all.ts --clean --verbose
 ```
 
-### 命令行选项
+#### 命令行选项
 
-| 选项 | 描述 |
+| 选项 | 说明 |
 |------|------|
-| `--dry-run` | 只分析依赖关系，不执行实际的打包操作 |
-| `--verbose` | 显示详细的日志输出 |
-| `--parallel` | 并行构建同一层级的包（提高构建速度） |
-| `--help`, `-h` | 显示帮助信息 |
+| `--clean` | 构建前清理旧产物 |
+| `--verbose` | 输出详细信息，包括每个产物的验证结果 |
+| `--dry-run` | 模拟运行，不执行实际构建 |
+| `--skip-tests` | 跳过测试步骤（预留选项） |
 
-## 📊 输出示例
+#### 构建分类
 
-### 正常构建输出
+##### 1. 优先级包（Priority Packages）
+
+必须最先构建，其他包依赖这些包：
+
+- **@ldesign/kit**：Node.js 工具库（使用 tsup）
+  - 产物：`dist/`
+
+- **@ldesign/builder**：构建工具（使用 tsup）
+  - 产物：`dist/`
+
+- **@ldesign/launcher**：启动器（使用 tsup）
+  - 产物：`dist/`
+
+##### 2. 特殊包（Special Packages）
+
+使用特殊构建工具的包：
+
+- **@ldesign/webcomponent**：Web Components（使用 Stencil）
+  - 产物：`dist/`, `loader/`
+
+##### 3. 标准包（Standard Packages）
+
+使用 @ldesign/builder 构建的标准包：
+
+- api, cache, color, crypto, device, engine, http, i18n, router, shared, size, store, template
+- 产物：`es/`, `lib/`, `dist/`
+
+##### 4. Library 项目（Library Projects）
+
+library 目录下的项目，同样使用 @ldesign/builder：
+
+- cropper, editor, flowchart, form, pdf, qrcode
+- 产物：`es/`, `lib/`, `dist/`
+
+#### 产物验证
+
+脚本会自动验证以下产物目录：
+
+| 包类型 | 期望产物 | 说明 |
+|--------|---------|------|
+| 优先级包 | `dist/` | tsup 打包产物 |
+| 特殊包 (webcomponent) | `dist/`, `loader/` | Stencil 打包产物 |
+| 标准包 | `es/`, `lib/`, `dist/` | builder 打包产物 |
+| Library 项目 | `es/`, `lib/`, `dist/` | builder 打包产物 |
+
+#### 输出示例
 
 ```
-🏗️  LDesign Packages 批量打包工具
-ℹ 工作目录: /path/to/ldesign
-ℹ 包目录: /path/to/ldesign/packages
+================================================================================
+LDesign 一键打包脚本
+================================================================================
 
-📦 扫描 packages 目录...
-✓ 扫描完成，共发现 20 个包
+配置:
+  根目录: D:\WorkBench\ldesign
+  清理模式: ✅
+  详细输出: ✅
+  跳过测试: ❌
+  Dry Run: ❌
 
-🔍 验证依赖关系...
-✓ 依赖关系验证通过
+▶ 生成构建配置...
 
-🔗 构建依赖关系图...
-✓ 依赖图构建完成，共 20 个节点
+发现 24 个项目:
+  优先级包: 3
+  特殊包: 1
+  标准包: 14
+  Library 项目: 6
 
-📊 执行拓扑排序...
-✓ 拓扑排序完成，共 6 个层级
+================================================================================
+开始构建
+================================================================================
 
-📋 构建计划
-第 1 层:
-  构建: @ldesign/kit, @ldesign/launcher, @ldesign/http, @ldesign/cache, @ldesign/device, @ldesign/store
-第 2 层:
-  构建: @ldesign/builder
-第 3 层:
-  构建: @ldesign/shared, @ldesign/engine
+▶ 构建 @ldesign/kit
+✅ @ldesign/kit 构建成功 (12.35s)
+
+▶ 构建 @ldesign/builder
+✅ @ldesign/builder 构建成功 (18.72s)
+
 ...
 
-🚀 开始构建包...
+================================================================================
+构建结果汇总
+================================================================================
 
-第 1 层构建 (6 个包): @ldesign/kit, @ldesign/launcher, @ldesign/http, @ldesign/cache, @ldesign/device, @ldesign/store
-✓ @ldesign/kit 构建成功 (12.3s)
-✓ @ldesign/launcher 构建成功 (8.7s)
+优先级包:
+────────────────────────────────────────────────────────────────────────────────
+✅ @ldesign/kit
+   状态: SUCCESS
+   耗时: 12.35s
+   产物: 1/1
+
+✅ @ldesign/builder
+   状态: SUCCESS
+   耗时: 18.72s
+   产物: 1/1
+
 ...
 
-🎉 构建完成！共构建 18 个包，耗时 156.7s
+================================================================================
+统计信息
+================================================================================
+总计包数: 24
+✅ 成功: 24
+❌ 失败: 0
+
+总耗时: 5m 32s
+
+🎉 所有项目构建成功！
 ```
 
-### 干运行输出
+## 💡 使用建议
+
+### 日常开发
 
 ```bash
-tsx scripts/build-packages.ts --dry-run --verbose
+# 快速构建所有包
+tsx scripts/build-all.ts
+
+# 完全清理后构建
+tsx scripts/build-all.ts --clean
 ```
 
-会显示完整的依赖分析过程，但不执行实际构建。
+### CI/CD
 
-## 🔧 技术实现
+```bash
+# CI 环境中使用
+tsx scripts/build-all.ts --clean --verbose
 
-### 核心组件
+# 如果构建失败，脚本会以非零状态码退出
+```
 
-1. **PackageScanner**: 负责扫描和分析包信息
-2. **DependencyAnalyzer**: 负责构建依赖图和拓扑排序
-3. **PackageBuilder**: 负责执行实际的打包操作
-4. **Logger**: 提供丰富的日志输出
+### 调试
 
-### 算法特性
+```bash
+# 查看详细构建过程
+tsx scripts/build-all.ts --verbose
 
-- **拓扑排序**: 使用 Kahn 算法进行拓扑排序
-- **循环依赖检测**: 在排序过程中自动检测循环依赖
-- **并行优化**: 同一层级的包可以并行构建
-- **错误恢复**: 单个包构建失败不会影响其他包
+# 仅查看构建计划
+tsx scripts/build-all.ts --dry-run
+```
 
-## 🚨 注意事项
+## 🔧 依赖要求
 
-1. **构建脚本要求**: 只有包含 `build` 脚本的包才会被构建
-2. **依赖范围**: 只分析 `@ldesign` 命名空间下的包依赖
-3. **构建工具**: 使用 `pnpm run build` 执行构建
-4. **Windows 兼容**: 自动处理 Windows 平台的命令执行
+- **Node.js**: >= 16.0.0
+- **tsx**: 用于运行 TypeScript 脚本
+- **pnpm**: 包管理器
 
-## 🐛 故障排除
+## 📝 添加新包
 
-### 常见问题
+当添加新包时，脚本会自动检测并添加到构建列表：
 
-1. **循环依赖错误**
-   ```
-   检测到循环依赖: @ldesign/a, @ldesign/b
-   ```
-   解决方案: 检查并修复包之间的循环依赖关系
+1. 在 `packages/` 或 `library/` 目录下创建新包
+2. 确保包含 `package.json` 文件
+3. 在 `package.json` 中定义 `build` 脚本
+4. 运行 `tsx scripts/build-all.ts` 即可
 
-2. **包构建失败**
-   ```
-   @ldesign/xxx 构建失败: 命令执行失败 (退出码: 1)
-   ```
-   解决方案: 使用 `--verbose` 选项查看详细错误信息
+如果新包使用特殊构建工具或有特殊产物，需要修改 `build-all.ts` 中的配置。
 
-3. **找不到包**
-   ```
-   @ldesign/xxx 依赖的 @ldesign/yyy 不存在于当前包列表中
-   ```
-   解决方案: 确保所有依赖的包都存在于 packages 目录中
+## 🐛 故障排查
 
-## 📝 开发说明
+### 问题：优先级包构建失败
 
-如需修改或扩展此工具，请注意：
+**解决方案**：
+1. 检查 kit、builder、launcher 包的依赖是否安装
+2. 运行 `pnpm install` 重新安装依赖
+3. 单独进入包目录执行 `pnpm build` 查看详细错误
 
-1. 所有类都有完整的 TypeScript 类型定义
-2. 代码结构采用面向对象设计，易于扩展
-3. 详细的注释说明了每个方法的功能
-4. 错误处理覆盖了所有可能的异常情况
+### 问题：产物验证失败
+
+**解决方案**：
+1. 使用 `--verbose` 选项查看详细产物信息
+2. 检查 `.ldesign/builder.config.ts` 配置是否正确
+3. 确认 `package.json` 中的 `build` 脚本是否正确
+
+### 问题：构建速度慢
+
+**解决方案**：
+1. 使用 `--skip-tests` 跳过测试（如果适用）
+2. 仅构建修改的包，而不是全部构建
+3. 考虑增加系统资源分配
+
+## 📚 相关文档
+
+- [Builder 配置模板](../packages/.ldesign-builder-config-template.md)
+- [Builder 规范化报告](../packages/BUILDER_STANDARDIZATION_REPORT.md)
+- [Builder 文档](../packages/builder/README.md)
 
 ## 🤝 贡献
 
-欢迎提交 Issue 和 Pull Request 来改进这个工具！
+如需改进此脚本：
+
+1. 修改 `build-all.ts`
+2. 更新此 README
+3. 测试所有构建场景
+4. 提交 PR
+
+---
+
+**维护者**: LDesign Team  
+**最后更新**: 2025-10-11

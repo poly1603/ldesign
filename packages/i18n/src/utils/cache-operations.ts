@@ -1,13 +1,13 @@
 /**
  * 缓存操作工具
- * 
+ *
  * 提供统一的缓存操作接口，消除重复的缓存逻辑
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
 
-import { TimeUtils, CacheKeyUtils } from './common'
+import { TimeUtils } from './common'
 
 /**
  * 缓存项接口
@@ -57,7 +57,7 @@ export class CacheOperations<T = unknown> {
     misses: 0,
     totalRequests: 0,
     hitRate: 0,
-    size: 0
+    size: 0,
   }
 
   constructor(private config: CacheOperationConfig = {}) {}
@@ -86,7 +86,7 @@ export class CacheOperations<T = unknown> {
     // 更新访问信息
     item.accessCount++
     item.lastAccessed = TimeUtils.now()
-    
+
     this.stats.hits++
     this.updateHitRate()
     return item.value
@@ -110,7 +110,7 @@ export class CacheOperations<T = unknown> {
       ttl: effectiveTTL,
       accessCount: 1,
       lastAccessed: now,
-      size: this.calculateSize(value)
+      size: this.calculateSize(value),
     }
 
     this.cache.set(key, item)
@@ -214,14 +214,14 @@ export class CacheOperations<T = unknown> {
     return {
       isHealthy: issues.length === 0,
       issues,
-      recommendations
+      recommendations,
     }
   }
 
   /**
    * 预热缓存
    */
-  warmUp(entries: Array<{ key: string; value: T; ttl?: number }>): void {
+  warmUp(entries: Array<{ key: string, value: T, ttl?: number }>): void {
     for (const entry of entries) {
       this.set(entry.key, entry.value, entry.ttl)
     }
@@ -232,7 +232,7 @@ export class CacheOperations<T = unknown> {
    */
   getMultiple(keys: string[]): Map<string, T> {
     const results = new Map<string, T>()
-    
+
     for (const key of keys) {
       const value = this.get(key)
       if (value !== undefined) {
@@ -246,7 +246,7 @@ export class CacheOperations<T = unknown> {
   /**
    * 批量设置
    */
-  setMultiple(entries: Array<{ key: string; value: T; ttl?: number }>): void {
+  setMultiple(entries: Array<{ key: string, value: T, ttl?: number }>): void {
     for (const entry of entries) {
       this.set(entry.key, entry.value, entry.ttl)
     }
@@ -287,7 +287,8 @@ export class CacheOperations<T = unknown> {
   private calculateSize(value: T): number {
     try {
       return JSON.stringify(value).length * 2 // 粗略估算字节数
-    } catch {
+    }
+    catch {
       return 100 // 默认大小
     }
   }
@@ -311,7 +312,7 @@ export function createTranslationCache(config?: CacheOperationConfig): CacheOper
     enableTTL: true,
     maxSize: 1000,
     enableStats: true,
-    ...config
+    ...config,
   })
 }
 
@@ -324,6 +325,6 @@ export function createPackageCache(config?: CacheOperationConfig): CacheOperatio
     enableTTL: true,
     maxSize: 100,
     enableStats: true,
-    ...config
+    ...config,
   })
 }

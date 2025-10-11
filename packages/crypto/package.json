@@ -56,6 +56,16 @@
       "import": "./es/engine/*.js",
       "require": "./lib/engine/*.cjs"
     },
+    "./stream": {
+      "types": "./es/stream/index.d.ts",
+      "import": "./es/stream/index.js",
+      "require": "./lib/stream/index.cjs"
+    },
+    "./stream/*": {
+      "types": "./es/stream/*.d.ts",
+      "import": "./es/stream/*.js",
+      "require": "./lib/stream/*.cjs"
+    },
     "./types": {
       "types": "./es/types/index.d.ts",
       "import": "./es/types/index.js",
@@ -75,6 +85,16 @@
       "types": "./es/utils/*.d.ts",
       "import": "./es/utils/*.js",
       "require": "./lib/utils/*.cjs"
+    },
+    "./workers": {
+      "types": "./es/workers/index.d.ts",
+      "import": "./es/workers/index.js",
+      "require": "./lib/workers/index.cjs"
+    },
+    "./workers/*": {
+      "types": "./es/workers/*.d.ts",
+      "import": "./es/workers/*.js",
+      "require": "./lib/workers/*.cjs"
     }
   },
   "main": "./lib/index.cjs",

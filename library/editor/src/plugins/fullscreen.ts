@@ -26,6 +26,23 @@ function toggleFullscreen(editor: any): Command {
       editorElement.style.height = '100vh'
       editorElement.style.zIndex = '9999'
       editorElement.style.background = '#fff'
+      editorElement.style.display = 'flex'
+      editorElement.style.flexDirection = 'column'
+      editorElement.style.overflow = 'hidden'
+      
+      // 确保工具栏可见
+      const toolbar = editorElement.querySelector('.ldesign-editor-toolbar')
+      if (toolbar) {
+        toolbar.style.flexShrink = '0'
+      }
+      
+      // 调整内容区域
+      const content = editorElement.querySelector('.ldesign-editor-content')
+      if (content) {
+        content.style.flex = '1'
+        content.style.overflow = 'auto'
+        content.style.padding = '20px'
+      }
     } else {
       // 退出全屏
       editorElement.classList.remove('fullscreen')
@@ -36,6 +53,23 @@ function toggleFullscreen(editor: any): Command {
       editorElement.style.height = ''
       editorElement.style.zIndex = ''
       editorElement.style.background = ''
+      editorElement.style.display = ''
+      editorElement.style.flexDirection = ''
+      editorElement.style.overflow = ''
+      
+      // 恢复工具栏样式
+      const toolbar = editorElement.querySelector('.ldesign-editor-toolbar')
+      if (toolbar) {
+        toolbar.style.flexShrink = ''
+      }
+      
+      // 恢复内容区域样式
+      const content = editorElement.querySelector('.ldesign-editor-content')
+      if (content) {
+        content.style.flex = ''
+        content.style.overflow = ''
+        content.style.padding = ''
+      }
     }
 
     return true

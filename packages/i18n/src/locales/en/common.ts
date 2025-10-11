@@ -88,4 +88,3 @@ const common: CommonTranslations = {
 }
 
 export default common
-

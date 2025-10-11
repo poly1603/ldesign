@@ -1,6 +1,11 @@
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
+  // 输出格式配置
+  output: {
+    format: ['esm', 'cjs', 'umd']
+  },
+
   // 禁用构建后验证（库项目不需要运行测试验证）
   postBuildValidation: {
     enabled: false
@@ -41,12 +46,12 @@ export default defineConfig({
     'node:buffer',
     'node:child_process',
     'node:worker_threads'
-],
+  ],
 
   // 全局变量配置
   globals: {
     'vue': 'Vue'
-},
+  },
 
   // 日志级别设置为 silent，只显示错误信息
   logLevel: 'silent',

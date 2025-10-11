@@ -170,6 +170,132 @@ class WorkerInstance {
 }
 
 /**
+ * 优先级任务队列（最小堆实现）
+ * 
+ * 特性：
+ * - O(log n) 插入和删除
+ * - O(1) 获取最高优先级任务
+ * - 支持自定义优先级
+ * 
+ * @example
+ * ```ts
+ * const queue = new PriorityQueue<string>()
+ * queue.enqueue('low priority task', 10)
+ * queue.enqueue('high priority task', 1)
+ * console.log(queue.dequeue()) // 'high priority task'
+ * ```
+ */
+export class PriorityQueue<T> {
+  private heap: Array<{ priority: number, item: T, insertOrder: number }> = []
+  private insertCounter = 0
+  
+  /**
+   * 入队（数字越小优先级越高）
+   */
+  enqueue(item: T, priority: number = 0): void {
+    this.heap.push({ 
+      priority, 
+      item, 
+      insertOrder: this.insertCounter++ // 保证相同优先级按 FIFO
+    })
+    this.bubbleUp(this.heap.length - 1)
+  }
+  
+  /**
+   * 出队（获取最高优先级任务）
+   */
+  dequeue(): T | undefined {
+    if (this.heap.length === 0) return undefined
+    if (this.heap.length === 1) return this.heap.pop()!.item
+    
+    const root = this.heap[0].item
+    this.heap[0] = this.heap.pop()!
+    this.bubbleDown(0)
+    return root
+  }
+  
+  /**
+   * 查看队首
+   */
+  peek(): T | undefined {
+    return this.heap[0]?.item
+  }
+  
+  /**
+   * 队列长度
+   */
+  get size(): number {
+    return this.heap.length
+  }
+  
+  /**
+   * 是否为空
+   */
+  get isEmpty(): boolean {
+    return this.heap.length === 0
+  }
+  
+  /**
+   * 上浮
+   */
+  private bubbleUp(index: number): void {
+    while (index > 0) {
+      const parentIndex = Math.floor((index - 1) / 2)
+      const shouldSwap = 
+        this.heap[index].priority < this.heap[parentIndex].priority ||
+        (this.heap[index].priority === this.heap[parentIndex].priority && 
+         this.heap[index].insertOrder < this.heap[parentIndex].insertOrder)
+      
+      if (!shouldSwap) break
+      
+      [this.heap[index], this.heap[parentIndex]] = [this.heap[parentIndex], this.heap[index]]
+      index = parentIndex
+    }
+  }
+  
+  /**
+   * 下沉
+   */
+  private bubbleDown(index: number): void {
+    const length = this.heap.length
+    while (true) {
+      let smallest = index
+      const left = 2 * index + 1
+      const right = 2 * index + 2
+      
+      if (left < length) {
+        const shouldSwap = 
+          this.heap[left].priority < this.heap[smallest].priority ||
+          (this.heap[left].priority === this.heap[smallest].priority && 
+           this.heap[left].insertOrder < this.heap[smallest].insertOrder)
+        if (shouldSwap) smallest = left
+      }
+      
+      if (right < length) {
+        const shouldSwap = 
+          this.heap[right].priority < this.heap[smallest].priority ||
+          (this.heap[right].priority === this.heap[smallest].priority && 
+           this.heap[right].insertOrder < this.heap[smallest].insertOrder)
+        if (shouldSwap) smallest = right
+      }
+      
+      if (smallest === index) break
+      
+      [this.heap[index], this.heap[smallest]] = [this.heap[smallest], this.heap[index]]
+      index = smallest
+    }
+  }
+  
+  /**
+   * 清空队列
+   */
+  clear(): void {
+    this.heap = []
+    this.insertCounter = 0
+  }
+}
+
+/**
  * Worker 池管理器
  */
 export class WorkerPool {
@@ -201,6 +327,68 @@ export class WorkerPool {
 
     // 执行任务
     return worker.execute<T>(message, this.options.timeout)
+  }
+  
+  /**
+   * 带优先级和重试的任务执行
+   * 
+   * @param message 任务消息
+   * @param options 执行选项
+   * @returns 任务结果
+   * 
+   * @example
+   * ```ts
+   * const result = await pool.executeWithRetry({
+   *   type: 'generate',
+   *   payload: { primaryColor: '#165DFF' }
+   * }, {
+   *   priority: 'high',  // 高优先级
+   *   maxRetries: 3,     // 最多重试3次
+   *   retryDelay: 1000,  // 重试间隔
+   *   timeout: 30000     // 超时时间
+   * })
+   * ```
+   */
+  async executeWithRetry<T>(
+    message: Omit<WorkerMessage, 'id'>,
+    options: {
+      maxRetries?: number
+      retryDelay?: number
+      timeout?: number
+      priority?: 'high' | 'normal' | 'low'
+      onRetry?: (attempt: number, error: Error) => void
+    } = {}
+  ): Promise<T> {
+    const maxRetries = options.maxRetries ?? 3
+    const retryDelay = options.retryDelay ?? 1000
+    const timeout = options.timeout ?? this.options.timeout
+    
+    let lastError: Error | undefined
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const worker = this.getOrCreateWorker()
+        return await worker.execute<T>(message, timeout)
+      } catch (error) {
+        lastError = error as Error
+        
+        // 如果是最后一次尝试，直接抛出错误
+        if (attempt === maxRetries) {
+          throw new Error(`Worker task failed after ${maxRetries + 1} attempts: ${lastError.message}`)
+        }
+        
+        // 回调通知
+        if (options.onRetry) {
+          options.onRetry(attempt + 1, lastError)
+        }
+        
+        // 指数退避：第1次重试等待 1x delay，第2次等待 2x delay，以此类推
+        const delay = retryDelay * Math.pow(2, attempt)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+    
+    throw lastError!
   }
 
   /**

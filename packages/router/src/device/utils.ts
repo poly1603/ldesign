@@ -152,6 +152,9 @@ export function getDeviceFriendlyName(device: DeviceType): string {
     mobile: '移动设备',
     tablet: '平板设备',
     desktop: '桌面设备',
+    tv: '电视设备',
+    watch: '智能手表',
+    unknown: '未知设备',
   }
   return names[device] || device
 }
@@ -184,6 +187,9 @@ export function getDevicePriority(device: DeviceType): number {
     desktop: 1,
     tablet: 2,
     mobile: 3,
+    tv: 4,
+    watch: 5,
+    unknown: 999,
   }
   return priorities[device] || 999
 }

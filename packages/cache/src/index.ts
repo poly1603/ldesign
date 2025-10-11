@@ -19,17 +19,17 @@ import { getPresetOptions } from './presets'
 // 核心模块导出
 // ============================================================================
 
-// 缓存管理器
-export { CacheManager } from './core/cache-manager'
-
 // 缓存分析器
 export { CacheAnalyzer, createCacheAnalyzer } from './core/cache-analyzer'
+
 export type {
   AccessPattern,
   AnalysisReport,
   PerformanceMetrics as AnalyzerPerformanceMetrics,
-  OptimizationSuggestion
+  OptimizationSuggestion,
 } from './core/cache-analyzer'
+// 缓存管理器
+export { CacheManager } from './core/cache-manager'
 
 // 命名空间管理
 export { CacheNamespace, createNamespace } from './core/namespace-manager'
@@ -40,82 +40,51 @@ export { PerformanceMonitor } from './core/performance-monitor'
 export type {
   PerformanceMetrics as MonitorPerformanceMetrics,
   PerformanceMonitorOptions,
-  PerformanceStats
+  PerformanceStats,
 } from './core/performance-monitor'
-
-// 跨标签页同步
-export { SyncManager } from './core/sync-manager'
-export type { SyncOptions } from './core/sync-manager'
-
-// 缓存预热
-export { createWarmupManager, WarmupManager } from './core/warmup-manager'
-
-// 版本管理
-export { createVersionManager, VersionManager } from './core/version-manager'
-export type { VersionConfig, MigrationConfig, MigrationFunction } from './core/version-manager'
 
 // 快照管理
 export { createSnapshotManager, SnapshotManager } from './core/snapshot-manager'
-export type { CacheSnapshot, SnapshotOptions, RestoreOptions } from './core/snapshot-manager'
+export type { CacheSnapshot, RestoreOptions, SnapshotOptions } from './core/snapshot-manager'
 
+// 跨标签页同步
+export { SyncManager } from './core/sync-manager'
+
+export type { SyncOptions } from './core/sync-manager'
 // 标签管理
 export { createTagManager, TagManager } from './core/tag-manager'
+
 export type { TagConfig } from './core/tag-manager'
+// 版本管理
+export { createVersionManager, VersionManager } from './core/version-manager'
+
+export type { MigrationConfig, MigrationFunction, VersionConfig } from './core/version-manager'
+// 缓存预热
+export { createWarmupManager, WarmupManager } from './core/warmup-manager'
 
 // ============================================================================
 // 存储引擎导出
 // ============================================================================
 
-// 引擎工厂
-export { StorageEngineFactory } from './engines/factory'
+// 引擎插件
+export { createCacheEnginePlugin } from './engine/plugin'
+
+export type { CacheEnginePluginOptions } from './engine/plugin'
 
 // 基础引擎
 export { BaseStorageEngine } from './engines/base-engine'
-
 // 具体引擎实现
 export { CookieEngine } from './engines/cookie-engine'
+// 引擎工厂
+export { StorageEngineFactory } from './engines/factory'
 export { IndexedDBEngine } from './engines/indexeddb-engine'
 export { LocalStorageEngine } from './engines/local-storage-engine'
+
 export { MemoryEngine } from './engines/memory-engine'
 export { SessionStorageEngine } from './engines/session-storage-engine'
 
-// 引擎插件
-export { createCacheEnginePlugin } from './engine/plugin'
-export type { CacheEnginePluginOptions } from './engine/plugin'
-
 // ============================================================================
 // 策略模块导出
-// ============================================================================
-
-// 存储策略
-export { StorageStrategy } from './strategies/storage-strategy'
-
-// 淘汰策略
-export * from './strategies/eviction-strategies'
-
-// ============================================================================
-// 安全模块导出
-// ============================================================================
-
-// 安全管理器
-export { SecurityManager } from './security/security-manager'
-
-// 加密和混淆
-export { AESCrypto } from './security/aes-crypto'
-export { KeyObfuscator } from './security/key-obfuscator'
-
-// ============================================================================
-// 工具模块导出
-// ============================================================================
-
-// 重试和容错
-export { CircuitBreaker, RetryManager, withCircuitBreaker, withFallback } from './utils/retry-manager'
-
-// 其他工具
-export * from './utils'
-
-// ============================================================================
-// 预设配置导出
 // ============================================================================
 
 export {
@@ -123,14 +92,45 @@ export {
   createNodeCache,
   createOfflineCache,
   createSSRCache,
-  getPresetOptions
+  getPresetOptions,
 } from './presets'
+
+// 加密和混淆
+export { AESCrypto } from './security/aes-crypto'
+
+// ============================================================================
+// 安全模块导出
+// ============================================================================
+
+export { KeyObfuscator } from './security/key-obfuscator'
+
+// 安全管理器
+export { SecurityManager } from './security/security-manager'
+// 淘汰策略
+export * from './strategies/eviction-strategies'
+
+// ============================================================================
+// 工具模块导出
+// ============================================================================
+
+// 存储策略
+export { StorageStrategy } from './strategies/storage-strategy'
+
+export * from './types'
+
+// ============================================================================
+// 预设配置导出
+// ============================================================================
+
+// 其他工具
+export * from './utils'
 
 // ============================================================================
 // 类型定义导出
 // ============================================================================
 
-export * from './types'
+// 重试和容错
+export { CircuitBreaker, RetryManager, withCircuitBreaker, withFallback } from './utils/retry-manager'
 
 // ============================================================================
 // 环境检测和预设类型
@@ -247,7 +247,7 @@ export const cache = {
    * @param key - 缓存键
    * @returns 缓存值或 null
    */
-  get<T extends SerializableValue = SerializableValue>(key: string) {
+  async get<T extends SerializableValue = SerializableValue>(key: string) {
     return getDefaultCache().get<T>(key)
   },
 
@@ -257,10 +257,10 @@ export const cache = {
    * @param value - 缓存值
    * @param options - 设置选项
    */
-  set<T extends SerializableValue = SerializableValue>(
+  async set<T extends SerializableValue = SerializableValue>(
     key: string,
     value: T,
-    options?: import('./types').SetOptions
+    options?: import('./types').SetOptions,
   ) {
     return getDefaultCache().set<T>(key, value, options)
   },
@@ -269,7 +269,7 @@ export const cache = {
    * 删除指定键的缓存
    * @param key - 缓存键
    */
-  remove(key: string) {
+  async remove(key: string) {
     return getDefaultCache().remove(key)
   },
 
@@ -277,7 +277,7 @@ export const cache = {
    * 清空缓存
    * @param engine - 可选，指定要清空的存储引擎
    */
-  clear(engine?: import('./types').StorageEngine) {
+  async clear(engine?: import('./types').StorageEngine) {
     return getDefaultCache().clear(engine)
   },
 
@@ -286,7 +286,7 @@ export const cache = {
    * @param key - 缓存键
    * @returns 是否存在
    */
-  has(key: string) {
+  async has(key: string) {
     return getDefaultCache().has(key)
   },
 
@@ -295,7 +295,7 @@ export const cache = {
    * @param engine - 可选，指定存储引擎
    * @returns 键名数组
    */
-  keys(engine?: import('./types').StorageEngine) {
+  async keys(engine?: import('./types').StorageEngine) {
     return getDefaultCache().keys(engine)
   },
 
@@ -303,7 +303,7 @@ export const cache = {
    * 获取缓存统计信息
    * @returns 统计信息
    */
-  getStats() {
+  async getStats() {
     return getDefaultCache().getStats()
   },
 
@@ -314,10 +314,10 @@ export const cache = {
    * @param options - 设置选项
    * @returns 缓存值
    */
-  remember<T extends SerializableValue = SerializableValue>(
+  async remember<T extends SerializableValue = SerializableValue>(
     key: string,
     fetcher: () => Promise<T> | T,
-    options?: import('./types').SetOptions & { refresh?: boolean }
+    options?: import('./types').SetOptions & { refresh?: boolean },
   ) {
     return getDefaultCache().remember<T>(key, fetcher, options)
   },

@@ -116,12 +116,12 @@ export function createSizeEnginePlugin(
 
           // 设置尺寸变化回调
           if (options.onSizeChanged) {
-            sizeManager.on('size-changed', options.onSizeChanged)
+            sizeManager.on('size-changed', options.onSizeChanged as (data?: unknown) => void)
           }
 
           // 设置错误处理回调
           if (options.onError) {
-            sizeManager.on('error', options.onError)
+            sizeManager.on('error', options.onError as (data?: unknown) => void)
           }
 
           // 创建响应式状态
@@ -145,8 +145,8 @@ export function createSizeEnginePlugin(
             },
             getCurrentMode: () => sizeManager.getCurrentMode(),
             getAvailableModes: () => ['small', 'medium', 'large', 'extra-large'] as SizeMode[],
-            on: (event: any, callback: Function) => sizeManager.on(event, callback),
-            off: (event: any, callback: Function) => sizeManager.off(event, callback),
+            on: (event: any, callback: Function) => sizeManager.on(event, callback as (data?: unknown) => void),
+            off: (event: any, callback: Function) => sizeManager.off(event, callback as (data?: unknown) => void),
             emit: (event: any, data: any) => sizeManager.emit(event, data),
             destroy: () => sizeManager.destroy(),
             setMode: async (mode: SizeMode) => {

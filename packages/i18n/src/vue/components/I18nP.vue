@@ -1,19 +1,14 @@
 <!--
   I18nP 复数化翻译组件
-  
+
   用于处理复数形式的翻译，支持多种复数规则
-  
+
   @example
   <I18nP keypath="item" :count="1" />  <!-- "1 item" -->
   <I18nP keypath="item" :count="5" />  <!-- "5 items" -->
+
   <I18nP keypath="user.message" :count="0" :params="{ name: 'John' }" />
 -->
-
-<template>
-  <component :is="tag" v-if="translatedText">
-    {{ translatedText }}
-  </component>
-</template>
 
 <script setup lang="ts">
 import { computed, inject } from 'vue'
@@ -42,7 +37,7 @@ const props = withDefaults(defineProps<{
   includeCount?: boolean
 }>(), {
   tag: 'span',
-  includeCount: true
+  includeCount: true,
 })
 
 /**
@@ -56,16 +51,20 @@ if (!i18n) {
 /**
  * 获取复数规则
  */
-const getPluralRule = (count: number, locale: string): PluralRule => {
+function getPluralRule(count: number, locale: string): PluralRule {
   try {
     const pluralRules = new Intl.PluralRules(locale)
     return pluralRules.select(count) as PluralRule
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('获取复数规则失败，使用默认规则:', error)
     // 默认英语规则
-    if (count === 0) return 'zero'
-    if (count === 1) return 'one'
-    if (count === 2) return 'two'
+    if (count === 0)
+      return 'zero'
+    if (count === 1)
+      return 'one'
+    if (count === 2)
+      return 'two'
     return 'other'
   }
 }
@@ -73,34 +72,34 @@ const getPluralRule = (count: number, locale: string): PluralRule => {
 /**
  * 构建复数化键名
  */
-const buildPluralKey = (baseKey: string, rule: PluralRule): string => {
+function buildPluralKey(baseKey: string, rule: PluralRule): string {
   return `${baseKey}.${rule}`
 }
 
 /**
  * 获取降级键名列表
  */
-const getFallbackKeys = (baseKey: string, rule: PluralRule): string[] => {
+function getFallbackKeys(baseKey: string, rule: PluralRule): string[] {
   const keys = [buildPluralKey(baseKey, rule)]
-  
+
   // 添加常见的降级规则
   if (rule !== 'other') {
     keys.push(buildPluralKey(baseKey, 'other'))
   }
-  
+
   // 如果是 zero，尝试 one
   if (rule === 'zero') {
     keys.push(buildPluralKey(baseKey, 'one'))
   }
-  
+
   // 如果是 few 或 many，尝试 other
   if (rule === 'few' || rule === 'many') {
     keys.push(buildPluralKey(baseKey, 'other'))
   }
-  
+
   // 最后尝试基础键名（可能包含管道分隔的复数形式）
   keys.push(baseKey)
-  
+
   return keys
 }
 
@@ -108,25 +107,27 @@ const getFallbackKeys = (baseKey: string, rule: PluralRule): string[] => {
  * 处理管道分隔的复数形式
  * 例如: "item | items" 或 "no items | one item | {count} items"
  */
-const processPipeDelimitedPlural = (text: string, count: number): string => {
+function processPipeDelimitedPlural(text: string, count: number): string {
   const parts = text.split('|').map(part => part.trim())
-  
+
   if (parts.length === 1) {
     return text
   }
-  
+
   // 简单的二元复数形式 "item | items"
   if (parts.length === 2) {
     return count === 1 ? parts[0] : parts[1]
   }
-  
+
   // 复杂的多元复数形式 "no items | one item | {count} items"
   if (parts.length >= 3) {
-    if (count === 0 && parts[0]) return parts[0]
-    if (count === 1 && parts[1]) return parts[1]
+    if (count === 0 && parts[0])
+      return parts[0]
+    if (count === 1 && parts[1])
+      return parts[1]
     return parts[2] || parts[parts.length - 1]
   }
-  
+
   return text
 }
 
@@ -137,13 +138,13 @@ const translatedText = computed(() => {
   try {
     const currentLocale = props.locale || i18n.getCurrentLanguage()
     const rule = getPluralRule(props.count, currentLocale)
-    
+
     // 构建参数对象
     const translationParams = {
       ...props.params,
-      ...(props.includeCount ? { count: props.count } : {})
+      ...(props.includeCount ? { count: props.count } : {}),
     }
-    
+
     // 如果提供了自定义复数规则映射
     if (props.pluralRules && props.pluralRules[rule]) {
       const customKey = props.pluralRules[rule]!
@@ -151,28 +152,28 @@ const translatedText = computed(() => {
         return i18n.t(customKey, translationParams)
       }
     }
-    
+
     // 尝试标准的复数化键名
     const fallbackKeys = getFallbackKeys(props.keypath, rule)
-    
+
     for (const key of fallbackKeys) {
       if (i18n.te(key)) {
         const text = i18n.t(key, translationParams)
-        
+
         // 如果是基础键名，可能包含管道分隔的复数形式
         if (key === props.keypath && text.includes('|')) {
           return processPipeDelimitedPlural(text, props.count)
         }
-        
+
         return text
       }
     }
-    
+
     // 都不存在，返回键名作为降级
     console.warn(`I18nP 复数化翻译失败: ${props.keypath} (count: ${props.count}, rule: ${rule})`)
     return `${props.keypath} (${props.count})`
-    
-  } catch (error) {
+  }
+  catch (error) {
     console.warn(`I18nP 翻译失败: ${props.keypath}`, error)
     return `${props.keypath} (${props.count})`
   }
@@ -185,18 +186,24 @@ const translatedText = computed(() => {
  */
 export default {
   name: 'I18nP',
-  inheritAttrs: false
+  inheritAttrs: false,
 }
 </script>
+
+<template>
+  <component :is="tag" v-if="translatedText">
+    {{ translatedText }}
+  </component>
+</template>
 
 <style lang="less">
 .i18n-plural {
   display: inline;
-  
+
   &--missing {
     color: var(--ldesign-error-color-5, #e54848);
     font-style: italic;
-    
+
     &::before {
       content: '⚠️ ';
       font-style: normal;
@@ -207,7 +214,7 @@ export default {
 /* 开发模式样式 */
 .i18n-plural--dev {
   position: relative;
-  
+
   &::after {
     content: attr(data-plural-info);
     position: absolute;
@@ -224,7 +231,7 @@ export default {
     transition: opacity 0.2s ease;
     z-index: 1000;
   }
-  
+
   &:hover::after {
     opacity: 1;
   }

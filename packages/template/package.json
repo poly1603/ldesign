@@ -90,11 +90,6 @@
       "import": "./es/scanner/*.js",
       "require": "./lib/scanner/*.cjs"
     },
-    "./test-utils/*": {
-      "types": "./es/test-utils/*.d.ts",
-      "import": "./es/test-utils/*.js",
-      "require": "./lib/test-utils/*.cjs"
-    },
     "./types": {
       "types": "./es/types/index.d.ts",
       "import": "./es/types/index.js",
@@ -115,7 +110,7 @@
       "import": "./es/utils/*.js",
       "require": "./lib/utils/*.cjs"
     },
-    "./es/components/TemplateConfigPanel.vue.css": "./es/components/TemplateConfigPanel.vue.css",
+    "./es/components/PerformanceMonitor.vue.css": "./es/components/PerformanceMonitor.vue.css",
     "./es/components/TemplateRenderer.css": "./es/components/TemplateRenderer.css",
     "./es/components/TemplateSelector.css": "./es/components/TemplateSelector.css",
     "./es/composables/index.css": "./es/composables/index.css",
@@ -133,7 +128,7 @@
     "./es/templates/login/desktop/modern/index.vue.css": "./es/templates/login/desktop/modern/index.vue.css",
     "./es/templates/login/mobile/default/index.vue.css": "./es/templates/login/mobile/default/index.vue.css",
     "./es/templates/login/tablet/default/index.vue.css": "./es/templates/login/tablet/default/index.vue.css",
-    "./lib/components/TemplateConfigPanel.vue.css": "./lib/components/TemplateConfigPanel.vue.css",
+    "./lib/components/PerformanceMonitor.vue.css": "./lib/components/PerformanceMonitor.vue.css",
     "./lib/components/TemplateRenderer.css": "./lib/components/TemplateRenderer.css",
     "./lib/components/TemplateSelector.css": "./lib/components/TemplateSelector.css",
     "./lib/composables/index.css": "./lib/composables/index.css",

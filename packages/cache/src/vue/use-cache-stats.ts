@@ -1,6 +1,7 @@
-import type { CacheStats, StorageEngine } from '../types'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import type { CacheStats, StorageEngine } from '../types'
 import { formatBytes } from '../utils'
+
 import { useCacheManager } from './cache-provider'
 
 /**
@@ -65,8 +66,7 @@ export function useCacheStats(options?: {
 
   // 计算属性
   const formattedStats = computed(() => {
-    if (!stats.value)
-      return null
+    if (!stats.value) { return null }
 
     return {
       ...stats.value,
@@ -81,10 +81,10 @@ export function useCacheStats(options?: {
             hitRate:
               engineStats.hits + engineStats.misses > 0
                 ? (
-                    (engineStats.hits
-                      / (engineStats.hits + engineStats.misses))
-                    * 100
-                  ).toFixed(2)
+                  (engineStats.hits
+                    / (engineStats.hits + engineStats.misses))
+                  * 100
+                ).toFixed(2)
                 : '0.00',
           },
         ]),
@@ -96,8 +96,7 @@ export function useCacheStats(options?: {
    * 获取引擎使用情况
    */
   const engineUsage = computed(() => {
-    if (!stats.value)
-      return []
+    if (!stats.value) { return [] }
 
     return Object.entries(stats.value.engines).map(([engine, engineStats]) => ({
       engine: engine as StorageEngine,
@@ -116,8 +115,7 @@ export function useCacheStats(options?: {
    * 获取性能指标
    */
   const performanceMetrics = computed(() => {
-    if (!stats.value)
-      return null
+    if (!stats.value) { return null }
 
     const totalRequests = Object.values(stats.value.engines).reduce(
       (sum, engine) => sum + engine.hits + engine.misses,
@@ -140,7 +138,7 @@ export function useCacheStats(options?: {
   /**
    * 刷新统计信息
    */
-  const refresh = (): Promise<void> => {
+  const refresh = async (): Promise<void> => {
     return loadStats()
   }
 

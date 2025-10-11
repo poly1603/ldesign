@@ -1,4 +1,5 @@
 import type { CacheEvent, StorageEngine } from '../types'
+
 import type { CacheManager } from './cache-manager'
 
 /**
@@ -177,8 +178,9 @@ export class CacheAnalyzer {
    * 处理 get 事件
    */
   private handleGet<T>(event: CacheEvent<T>): void {
-    if (!this.shouldSample()) 
+    if (!this.shouldSample()) {
       return
+    }
     
     const pattern = this.getOrCreatePattern(event.key)
     pattern.accessCount++
@@ -198,13 +200,14 @@ export class CacheAnalyzer {
    * 处理 set 事件
    */
   private handleSet<T>(event: CacheEvent<T>): void {
-    if (!this.shouldSample()) 
+    if (!this.shouldSample()) {
       return
+    }
     
     const pattern = this.getOrCreatePattern(event.key)
     pattern.engine = event.engine
     
-    if (event.value && this.recordValues) {
+    if (event.value !== null && event.value !== undefined && this.recordValues) {
       try {
         pattern.size = new Blob([JSON.stringify(event.value)]).size
       }
@@ -218,8 +221,9 @@ export class CacheAnalyzer {
    * 处理 remove 事件
    */
   private handleRemove<T>(event: CacheEvent<T>): void {
-    if (!this.shouldSample()) 
+    if (!this.shouldSample()) {
       return
+    }
     this.recordPerformance('remove', event.timestamp)
   }
 
@@ -268,7 +272,7 @@ export class CacheAnalyzer {
       // 限制记录数
       if (this.accessRecords.size > this.maxRecords) {
         const oldestKey = this.accessRecords.keys().next().value
-        if (oldestKey) {
+        if (typeof oldestKey === 'string') {
           this.accessRecords.delete(oldestKey)
         }
       }
@@ -321,7 +325,7 @@ export class CacheAnalyzer {
       : globalThis.setInterval
     
     this.analysisTimer = setIntervalFn(() => {
-      this.performAnalysis()
+      void this.performAnalysis()
     }, interval) as unknown as number
   }
 
@@ -357,7 +361,7 @@ export class CacheAnalyzer {
       patterns,
       performance,
       storage,
-      stats,
+      stats as unknown as { hitRate: number, [key: string]: unknown },
     )
     
     // 计算总体统计
@@ -434,20 +438,21 @@ export class CacheAnalyzer {
     const metrics: PerformanceMetrics[] = []
     
     for (const [operation, durations] of this.performanceRecords) {
-      if (durations.length === 0) 
+      if (durations.length === 0) {
         continue
+      }
       
       const sorted = [...durations].sort((a, b) => a - b)
       const sum = sorted.reduce((a, b) => a + b, 0)
       
       metrics.push({
-        operation: operation as any,
+        operation: operation as 'get' | 'set' | 'remove' | 'clear',
         avgDuration: sum / sorted.length,
-        minDuration: sorted[0],
-        maxDuration: sorted[sorted.length - 1],
+        minDuration: sorted[0] ?? 0,
+        maxDuration: sorted[sorted.length - 1] ?? 0,
         count: sorted.length,
-        p95Duration: sorted[Math.floor(sorted.length * 0.95)],
-        p99Duration: sorted[Math.floor(sorted.length * 0.99)],
+        p95Duration: sorted[Math.floor(sorted.length * 0.95)] ?? 0,
+        p99Duration: sorted[Math.floor(sorted.length * 0.99)] ?? 0,
       })
     }
     
@@ -462,9 +467,13 @@ export class CacheAnalyzer {
     const results: StorageAnalysis[] = []
     
     for (const [engine, engineStats] of Object.entries(stats.engines)) {
+      const maxSize = 'maxSize' in engineStats && typeof engineStats.maxSize === 'number' 
+        ? engineStats.maxSize 
+        : Infinity
+      
       results.push({
         engine: engine as StorageEngine,
-        usage: engineStats.size / (engineStats as any).maxSize || 0,
+        usage: maxSize !== Infinity ? engineStats.size / maxSize : 0,
         itemCount: engineStats.itemCount,
         totalSize: engineStats.size,
         avgItemSize: engineStats.itemCount > 0 
@@ -485,17 +494,18 @@ export class CacheAnalyzer {
     patterns: AccessPattern[],
     performance: PerformanceMetrics[],
     storage: StorageAnalysis[],
-    stats: any,
+    stats: { hitRate: number, [key: string]: unknown },
   ): OptimizationSuggestion[] {
     const suggestions: OptimizationSuggestion[] = []
     
     // 检查命中率
-    if (stats.hitRate < 0.7) {
+    const hitRate = typeof stats.hitRate === 'number' ? stats.hitRate : 0
+    if (hitRate < 0.7) {
       suggestions.push({
         type: 'performance',
         severity: 'high',
         title: '低缓存命中率',
-        description: `当前缓存命中率为 ${(stats.hitRate * 100).toFixed(1)}%，低于推荐值 70%`,
+        description: `当前缓存命中率为 ${(hitRate * 100).toFixed(1)}%，低于推荐值 70%`,
         recommendation: '考虑增加缓存容量或调整缓存策略',
       })
     }
@@ -552,8 +562,9 @@ export class CacheAnalyzer {
       allDurations.push(...durations)
     }
     
-    if (allDurations.length === 0) 
+    if (allDurations.length === 0) {
       return 0
+    }
     
     return allDurations.reduce((a, b) => a + b, 0) / allDurations.length
   }
@@ -565,8 +576,9 @@ export class CacheAnalyzer {
     const totalOps = Array.from(this.performanceRecords.values())
       .reduce((sum, records) => sum + records.length, 0)
     
-    if (totalOps === 0) 
+    if (totalOps === 0) {
       return 0
+    }
     
     return this.errorRecords.length / (totalOps + this.errorRecords.length)
   }
@@ -585,7 +597,7 @@ export class CacheAnalyzer {
    * 销毁分析器
    */
   destroy(): void {
-    if (this.analysisTimer) {
+    if (typeof this.analysisTimer === 'number') {
       const clearIntervalFn = typeof window !== 'undefined'
         ? window.clearInterval
         : globalThis.clearInterval

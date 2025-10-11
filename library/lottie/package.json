@@ -1,0 +1,78 @@
+{
+  "name": "@ldesign/lottie",
+  "version": "1.0.0",
+  "description": "A powerful, feature-rich Lottie animation manager for any framework",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./vue": {
+      "types": "./dist/adapters/vue.d.ts",
+      "import": "./dist/adapters/vue.js",
+      "require": "./dist/adapters/vue.cjs"
+    },
+    "./react": {
+      "types": "./dist/adapters/react.d.ts",
+      "import": "./dist/adapters/react.js",
+      "require": "./dist/adapters/react.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "ldesign dev",
+    "build": "ldesign build",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "example:vanilla": "vite examples/vanilla",
+    "example:vue": "vite examples/vue",
+    "example:react": "vite examples/react"
+  },
+  "keywords": [
+    "lottie",
+    "animation",
+    "lottie-web",
+    "bodymovin",
+    "vue",
+    "react",
+    "framework-agnostic"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "dependencies": {
+    "lottie-web": "^5.12.2"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10",
+    "vitepress": "^1.0.0-rc.36",
+    "vue": "^3.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0",
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  }
+}

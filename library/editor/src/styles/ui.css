@@ -5,56 +5,129 @@
 /* 颜色选择器 */
 .editor-color-picker {
   background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  min-width: 240px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 260px;
+  max-width: 320px;
+}
+
+.editor-color-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .editor-color-preset {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  gap: 4px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.editor-color-recent {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .editor-color-item {
-  width: 20px;
-  height: 20px;
-  border: 1px solid #ddd;
-  border-radius: 2px;
+  width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  border-radius: 4px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.2s;
   padding: 0;
+  background-clip: padding-box;
 }
 
 .editor-color-item:hover {
-  transform: scale(1.2);
-  border-color: #333;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: scale(1.15);
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1;
 }
 
 .editor-color-custom {
-  padding-top: 8px;
-  border-top: 1px solid #eee;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
 }
 
-.editor-color-label {
+.editor-color-hex-group {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 12px;
+}
+
+.editor-color-hex-label {
   font-size: 12px;
-  color: #666;
+  font-weight: 500;
+  color: #374151;
+  min-width: 35px;
+}
+
+.editor-color-hex-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: 'Monaco', 'Consolas', monospace;
+  transition: all 0.2s;
+}
+
+.editor-color-hex-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.editor-color-hex-apply {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  background: #3b82f6;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.editor-color-hex-apply:hover {
+  background: #2563eb;
+}
+
+.editor-color-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-color-input-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  min-width: 55px;
 }
 
 .editor-color-input {
-  width: 40px;
-  height: 24px;
-  border: 1px solid #ddd;
-  border-radius: 2px;
+  flex: 1;
+  height: 32px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
   cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.editor-color-input:hover {
+  border-color: #3b82f6;
 }
 
 /* 下拉选择器 */

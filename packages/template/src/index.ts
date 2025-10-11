@@ -27,6 +27,9 @@ export { default } from './plugin'
 export * from './scanner'
 
 // 导出核心类型
+// Note: AnimationConfig, AnimationDirection, AnimationState, AnimationType
+// are defined in both ./composables and ./types. We re-export from types
+// to avoid ambiguity since types are the source of truth.
 export * from './types'
 
 // 导出工具函数

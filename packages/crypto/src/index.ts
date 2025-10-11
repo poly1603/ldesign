@@ -230,6 +230,94 @@ export {
   type SecureStorageOptions,
 } from './utils/secure-storage'
 
+// === 限流器 ===
+export {
+  RateLimiter,
+  createTokenBucketLimiter,
+  createSlidingWindowLimiter,
+  createFixedWindowLimiter,
+  type RateLimiterOptions,
+  type RateLimitStrategy,
+  type RateLimitStatus,
+} from './utils/rate-limiter'
+
+// === 错误处理 ===
+export {
+  CryptoError,
+  EncryptionError,
+  DecryptionError,
+  HashError,
+  KeyManagementError,
+  EncodingError,
+  RateLimitError,
+  ValidationError,
+  StorageError,
+  CryptoErrorFactory,
+  ErrorHandler,
+  CryptoErrorCode,
+} from './utils/errors'
+
+// === 性能基准测试 ===
+export {
+  Benchmark,
+  createBenchmark,
+  quickBenchmark,
+  compareBenchmark,
+  type BenchmarkResult,
+  type BenchmarkSuite,
+  type BenchmarkOptions,
+} from './utils/benchmark'
+
+// === 对象池 ===
+export {
+  ObjectPool,
+  EncryptResultPool,
+  DecryptResultPool,
+  globalEncryptResultPool,
+  globalDecryptResultPool,
+  acquireEncryptResult,
+  releaseEncryptResult,
+  acquireDecryptResult,
+  releaseDecryptResult,
+  createEncryptSuccess,
+  createEncryptFailure,
+  createDecryptSuccess,
+  createDecryptFailure,
+  getAllPoolStats,
+  clearAllPools,
+  type ObjectPoolOptions,
+  type ObjectPoolStats,
+} from './utils/object-pool'
+
+// === Worker 线程池 ===
+export {
+  WorkerPool,
+  getGlobalWorkerPool,
+  destroyGlobalWorkerPool,
+  type WorkerPoolOptions,
+  type WorkerPoolStats,
+  type WorkerMessage,
+  type WorkerResponse,
+} from './workers'
+
+// === 流式加密 ===
+export {
+  ChunkEncryptor,
+  ChunkDecryptor,
+  encryptFile,
+  decryptFile,
+  type StreamEncryptionOptions,
+  type StreamDecryptionOptions,
+  type StreamProgress,
+  type StreamEncryptionResult,
+  type StreamDecryptionResult,
+  type FileEncryptionOptions,
+  type FileDecryptionOptions,
+  type IStreamProcessor,
+  type IStreamEncryptor,
+  type IStreamDecryptor,
+} from './stream'
+
 const LDesignCrypto = {
   // === 核心功能 ===
   encrypt,

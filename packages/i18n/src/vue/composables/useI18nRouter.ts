@@ -1,6 +1,6 @@
 /**
  * useI18nRouter - 路由国际化组合式API
- * 
+ *
  * 提供路由相关的国际化功能，包括：
  * - 路由标题翻译
  * - 面包屑翻译
@@ -79,12 +79,12 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
     breadcrumbPrefix = 'routes.breadcrumbs',
     autoSetPageTitle = true,
     titleTemplate = '{title} - {siteName}',
-    localizeParams = false
+    localizeParams = false,
   } = options
 
   // 路由配置存储
   const routeConfigs = ref<Map<string, RouteConfig>>(new Map())
-  
+
   // 当前路由信息
   const currentRoute = ref<RouteConfig | null>(null)
 
@@ -109,7 +109,7 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
     const config = routeConfigs.value.get(routeName)
     if (config) {
       currentRoute.value = config
-      
+
       if (autoSetPageTitle) {
         updatePageTitle()
       }
@@ -121,20 +121,20 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
    */
   function getRouteTitle(routeName: string, params?: Record<string, unknown>): string {
     const config = routeConfigs.value.get(routeName)
-    
+
     if (config?.titleKey) {
       return i18n.t(config.titleKey, params)
     }
-    
+
     // 自动生成标题键
     const titleKey = `${titlePrefix}.${routeName}`
     const title = i18n.t(titleKey, params)
-    
+
     // 如果翻译不存在，使用路由名的友好格式
     if (title === titleKey) {
       return routeName.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
     }
-    
+
     return title
   }
 
@@ -143,14 +143,14 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
    */
   function getRouteDescription(routeName: string, params?: Record<string, unknown>): string {
     const config = routeConfigs.value.get(routeName)
-    
+
     if (config?.descriptionKey) {
       return i18n.t(config.descriptionKey, params)
     }
-    
+
     const descriptionKey = `${descriptionPrefix}.${routeName}`
     const description = i18n.t(descriptionKey, params)
-    
+
     return description === descriptionKey ? '' : description
   }
 
@@ -159,11 +159,11 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
    */
   function getRouteKeywords(routeName: string, params?: Record<string, unknown>): string {
     const config = routeConfigs.value.get(routeName)
-    
+
     if (config?.keywordsKey) {
       return i18n.t(config.keywordsKey, params)
     }
-    
+
     return ''
   }
 
@@ -172,11 +172,11 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
    */
   function getBreadcrumbTitle(routeName: string, params?: Record<string, unknown>): string {
     const config = routeConfigs.value.get(routeName)
-    
+
     if (config?.breadcrumbKey) {
       return i18n.t(config.breadcrumbKey, params)
     }
-    
+
     // 使用路由标题作为面包屑标题
     return getRouteTitle(routeName, params)
   }
@@ -187,32 +187,32 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
   function generateBreadcrumbs(routeName: string, params?: Record<string, unknown>): BreadcrumbItem[] {
     const breadcrumbs: BreadcrumbItem[] = []
     const visited = new Set<string>()
-    
+
     function buildBreadcrumb(name: string) {
       if (visited.has(name)) {
         return // 防止循环引用
       }
-      
+
       visited.add(name)
       const config = routeConfigs.value.get(name)
-      
+
       if (!config || config.hiddenInBreadcrumb) {
         return
       }
-      
+
       // 递归构建父级面包屑
       if (config.parent) {
         buildBreadcrumb(config.parent)
       }
-      
+
       breadcrumbs.push({
         name,
         title: getBreadcrumbTitle(name, params),
         path: config.path,
-        active: name === routeName
+        active: name === routeName,
       })
     }
-    
+
     buildBreadcrumb(routeName)
     return breadcrumbs
   }
@@ -224,20 +224,21 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
     if (!localizeParams) {
       return params
     }
-    
+
     const localizedParams: Record<string, unknown> = {}
-    
+
     for (const [key, value] of Object.entries(params)) {
       if (typeof value === 'string') {
         // 尝试翻译参数值
         const translationKey = `params.${key}.${value}`
         const translated = i18n.t(translationKey)
         localizedParams[key] = translated === translationKey ? value : translated
-      } else {
+      }
+      else {
         localizedParams[key] = value
       }
     }
-    
+
     return localizedParams
   }
 
@@ -269,10 +270,10 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
     if (typeof document === 'undefined') {
       return
     }
-    
+
     const description = getRouteDescription(routeName, params)
     const keywords = getRouteKeywords(routeName, params)
-    
+
     // 更新描述
     if (description) {
       let metaDescription = document.querySelector('meta[name="description"]')
@@ -283,7 +284,7 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
       }
       metaDescription.setAttribute('content', description)
     }
-    
+
     // 更新关键词
     if (keywords) {
       let metaKeywords = document.querySelector('meta[name="keywords"]')
@@ -303,8 +304,8 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
     const routes: Record<string, string> = {}
     const availableLocales = i18n.getAvailableLanguages()
     const currentLocale = i18n.getCurrentLanguage()
-    
-    availableLocales.forEach(locale => {
+
+    availableLocales.forEach((locale) => {
       if (locale !== currentLocale) {
         // 这里可以根据实际路由结构生成本地化路由
         // 简单示例：在路径前添加语言代码
@@ -314,7 +315,7 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
         }
       }
     })
-    
+
     return routes
   }
 
@@ -352,34 +353,34 @@ export function useI18nRouter(options: RouterI18nOptions = {}) {
     registerRoute,
     registerRoutes,
     setCurrentRoute,
-    
+
     // 信息获取
     getRouteTitle,
     getRouteDescription,
     getRouteKeywords,
     getBreadcrumbTitle,
-    
+
     // 面包屑
     generateBreadcrumbs,
-    
+
     // 参数本地化
     localizeRouteParams,
-    
+
     // 页面更新
     updatePageTitle,
     updatePageMeta,
-    
+
     // 多语言路由
     generateLocalizedRoutes,
-    
+
     // 响应式状态
     currentRoute: computed(() => currentRoute.value),
     currentTitle,
     currentDescription,
     currentBreadcrumbs,
-    
+
     // 路由配置
-    routeConfigs: computed(() => routeConfigs.value)
+    routeConfigs: computed(() => routeConfigs.value),
   }
 }
 
@@ -404,6 +405,6 @@ function createFallbackRouter() {
     currentTitle: computed(() => ''),
     currentDescription: computed(() => ''),
     currentBreadcrumbs: computed(() => []),
-    routeConfigs: computed(() => new Map())
+    routeConfigs: computed(() => new Map()),
   }
 }

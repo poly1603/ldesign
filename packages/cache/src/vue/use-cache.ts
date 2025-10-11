@@ -1,7 +1,9 @@
 import type { ComputedRef } from 'vue'
-import type { CacheStats, SerializableValue, SetOptions, UseCacheOptions } from '../types'
 import { computed, inject, onUnmounted, ref, watch } from 'vue'
+
+import type { CacheStats, SerializableValue, SetOptions, UseCacheOptions } from '../types'
 import { CacheManager } from '../core/cache-manager'
+
 import { CACHE_MANAGER_KEY } from './cache-provider'
 
 /**
@@ -377,9 +379,11 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
         try {
           await save(val, opts?.ttl ? { ttl: opts.ttl } : undefined)
           lastSaveTime = Date.now()
-        } catch (error) {
+        }
+        catch (error) {
           console.error('Auto-save failed:', error)
-        } finally {
+        }
+        finally {
           pending = false
         }
       }
@@ -387,7 +391,7 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
       const stop = watch(
         () => value.value,
         (val) => {
-          if (val === null || pending) return
+          if (val === null || pending) { return }
 
           // 清除之前的防抖定时器
           if (debounceTimer) {
@@ -408,7 +412,8 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
                 pending = true
                 performSave(val as T)
               }, throttleMs - timeSinceLastSave)
-            } else {
+            }
+            else {
               // 立即执行
               pending = true
               performSave(val as T)
@@ -417,7 +422,7 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
         },
         {
           deep: true,
-          immediate: opts?.immediate ?? false
+          immediate: opts?.immediate ?? false,
         },
       )
 
@@ -468,10 +473,10 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
     // 扩展的计算属性
     const isEmptyComputed = computed(() => {
       const val = value.value
-      if (val === null || val === undefined) return true
-      if (typeof val === 'string') return val === ''
-      if (Array.isArray(val)) return val.length === 0
-      if (typeof val === 'object') return Object.keys(val).length === 0
+      if (val === null || val === undefined) { return true }
+      if (typeof val === 'string') { return val === '' }
+      if (Array.isArray(val)) { return val.length === 0 }
+      if (typeof val === 'object') { return Object.keys(val).length === 0 }
       return false
     })
 
@@ -484,7 +489,8 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
       try {
         await save(newValue, options)
         onSuccess?.()
-      } catch (error) {
+      }
+      catch (error) {
         onError?.(error instanceof Error ? error : new Error(String(error)))
         throw error
       }
@@ -494,7 +500,8 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
       try {
         await load()
         onSuccess?.()
-      } catch (error) {
+      }
+      catch (error) {
         onError?.(error instanceof Error ? error : new Error(String(error)))
         throw error
       }
@@ -538,7 +545,7 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
   const useCacheValue = <T extends SerializableValue = SerializableValue>(
     key: string,
     defaultValue?: T,
-    options?: { ttl?: number, immediate?: boolean }
+    options?: { ttl?: number, immediate?: boolean },
   ) => {
     const cache = useReactiveCache<T>(key, defaultValue)
 
@@ -548,7 +555,7 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
       loading: cache.loading,
       error: cache.error,
       exists: cache.exists,
-      set: (value: T) => cache.set(value, options?.ttl ? { ttl: options.ttl } : undefined),
+      set: async (value: T) => cache.set(value, options?.ttl ? { ttl: options.ttl } : undefined),
       refresh: cache.refresh,
       remove: cache.remove,
       // 便捷的计算属性
@@ -566,7 +573,7 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
   const useCacheSync = <T extends SerializableValue = SerializableValue>(
     key: string,
     defaultValue?: T,
-    options?: { ttl?: number, throttle?: number }
+    options?: { ttl?: number, throttle?: number },
   ) => {
     const cache = useReactiveCache<T>(key, defaultValue)
     const throttleMs = options?.throttle ?? 300
@@ -579,7 +586,7 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
           // 使用节流避免频繁写入
           cache.set(newValue, options?.ttl ? { ttl: options.ttl } : undefined)
         }
-      }
+      },
     })
 
     return {

@@ -3,12 +3,12 @@
  * 验证多语言包在应用首次加载时是否正常工作
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import type { I18nEnginePluginOptions } from '../src/vue/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createI18n } from '../src/core/createI18n'
 import { createI18nEnginePlugin } from '../src/vue/engine-plugin'
-import type { I18nEnginePluginOptions } from '../src/vue/types'
 
-describe('First Load Translation', () => {
+describe('first Load Translation', () => {
   let mockEngine: any
   let mockVueApp: any
 
@@ -17,10 +17,10 @@ describe('First Load Translation', () => {
     mockVueApp = {
       provide: vi.fn(),
       config: {
-        globalProperties: {}
+        globalProperties: {},
       },
       use: vi.fn(),
-      directive: vi.fn()
+      directive: vi.fn(),
     }
 
     // 模拟引擎
@@ -30,15 +30,15 @@ describe('First Load Translation', () => {
         info: vi.fn(),
         debug: vi.fn(),
         error: vi.fn(),
-        warn: vi.fn()
+        warn: vi.fn(),
       },
       events: {
         emit: vi.fn(),
-        once: vi.fn()
+        once: vi.fn(),
       },
       state: {
-        set: vi.fn()
-      }
+        set: vi.fn(),
+      },
     }
   })
 
@@ -55,13 +55,13 @@ describe('First Load Translation', () => {
         messages: {
           'zh-CN': {
             hello: '你好',
-            welcome: '欢迎 {name}'
+            welcome: '欢迎 {name}',
           },
           'en': {
             hello: 'Hello',
-            welcome: 'Welcome {name}'
-          }
-        }
+            welcome: 'Welcome {name}',
+          },
+        },
       })
 
       // 同步初始化
@@ -78,10 +78,10 @@ describe('First Load Translation', () => {
       const i18n = createI18n({
         locale: 'en',
         messages: {
-          'en': {
-            test: 'Test message'
-          }
-        }
+          en: {
+            test: 'Test message',
+          },
+        },
       })
 
       // 即使没有调用 init，基础功能也应该可用
@@ -89,7 +89,7 @@ describe('First Load Translation', () => {
     })
   })
 
-  describe('Engine 插件集成', () => {
+  describe('engine 插件集成', () => {
     it('应该在插件安装时立即初始化 i18n', async () => {
       const options: I18nEnginePluginOptions = {
         locale: 'zh-CN',
@@ -98,16 +98,16 @@ describe('First Load Translation', () => {
           'zh-CN': {
             app: {
               title: '应用标题',
-              loading: '加载中...'
-            }
+              loading: '加载中...',
+            },
           },
           'en': {
             app: {
               title: 'App Title',
-              loading: 'Loading...'
-            }
-          }
-        }
+              loading: 'Loading...',
+            },
+          },
+        },
       }
 
       const plugin = createI18nEnginePlugin(options)
@@ -128,10 +128,10 @@ describe('First Load Translation', () => {
           'zh-CN': {
             ui: {
               button: '按钮',
-              label: '标签'
-            }
-          }
-        }
+              label: '标签',
+            },
+          },
+        },
       }
 
       const plugin = createI18nEnginePlugin(options)
@@ -141,7 +141,7 @@ describe('First Load Translation', () => {
         ...mockEngine,
         getApp: vi.fn()
           .mockReturnValueOnce(null) // 第一次调用返回 null
-          .mockReturnValue(mockVueApp) // 后续调用返回 app
+          .mockReturnValue(mockVueApp), // 后续调用返回 app
       }
 
       // 安装插件
@@ -150,7 +150,7 @@ describe('First Load Translation', () => {
       // 验证监听了 app:created 事件
       expect(mockEngineDelayed.events.once).toHaveBeenCalledWith(
         'app:created',
-        expect.any(Function)
+        expect.any(Function),
       )
 
       // 模拟触发 app:created 事件
@@ -171,8 +171,8 @@ describe('First Load Translation', () => {
         messages: {
           'ja': { greeting: 'こんにちは' },
           'en': { greeting: 'Hello' },
-          'zh-CN': { greeting: '你好' }
-        }
+          'zh-CN': { greeting: '你好' },
+        },
       }
 
       const plugin = createI18nEnginePlugin(options)
@@ -194,7 +194,7 @@ describe('First Load Translation', () => {
     it('应该在初始化失败时提供降级功能', async () => {
       const options: I18nEnginePluginOptions = {
         locale: 'invalid-locale',
-        messages: undefined // 没有提供消息
+        messages: undefined, // 没有提供消息
       }
 
       const plugin = createI18nEnginePlugin(options)
@@ -216,8 +216,8 @@ describe('First Load Translation', () => {
       const i18n = createI18n({
         locale: 'zh-CN',
         messages: {
-          'zh-CN': { test: '测试' }
-        }
+          'zh-CN': { test: '测试' },
+        },
       })
 
       // 多次调用 initSync 不应该有副作用
@@ -235,14 +235,14 @@ describe('First Load Translation', () => {
       const i18n = createI18n({
         locale: 'en',
         messages: {
-          'en': {
-            dynamic: 'Dynamic {value}'
-          }
+          en: {
+            dynamic: 'Dynamic {value}',
+          },
         },
         cache: {
           enabled: true,
-          maxSize: 100
-        }
+          maxSize: 100,
+        },
       })
 
       // 同一个键和参数应该返回缓存的结果
@@ -266,10 +266,10 @@ describe('实际使用场景', () => {
           'zh-CN': {
             component: {
               title: '组件标题',
-              description: '这是一个描述'
-            }
-          }
-        }
+              description: '这是一个描述',
+            },
+          },
+        },
       })
 
       // 同步初始化
@@ -283,7 +283,7 @@ describe('实际使用场景', () => {
 
       return {
         title,
-        description
+        description,
       }
     }
 
@@ -300,13 +300,13 @@ describe('实际使用场景', () => {
     const serverI18n = createI18n({
       locale: 'en',
       messages: {
-        'en': {
+        en: {
           ssr: {
             meta: 'Server rendered content',
-            title: 'Page Title'
-          }
-        }
-      }
+            title: 'Page Title',
+          },
+        },
+      },
     })
 
     // 同步初始化（SSR 必须同步）

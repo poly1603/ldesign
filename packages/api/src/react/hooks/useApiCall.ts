@@ -1,5 +1,5 @@
 import type { ApiCallOptions } from '../../types'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError, ApiErrorType } from '../../utils/ApiError'
 import { useApi } from '../provider'
 
@@ -76,13 +76,22 @@ export function useApiCall<T = unknown>(
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<ApiError | null>(null)
 
+  // 使用 ref 存储 options，避免每次都创建新的 execute 函数
+  const optionsRef = useRef(options)
+
+  // 更新 ref（不触发重新渲染）
+  useEffect(() => {
+    optionsRef.current = options
+  })
+
   const execute = useCallback(async (params?: unknown, callOpts?: ApiCallOptions) => {
     setLoading(true)
     setError(null)
     try {
-      const res = await api.call<T>(methodName, params, { ...options, ...callOpts })
+      const currentOptions = optionsRef.current
+      const res = await api.call<T>(methodName, params, { ...currentOptions, ...callOpts })
       setData(res)
-      options.onSuccess?.(res)
+      currentOptions?.onSuccess?.(res)
       return res
     }
     catch (e) {
@@ -96,14 +105,14 @@ export function useApiCall<T = unknown>(
           context: { methodName, params },
         })
       setError(apiError)
-      options.onError?.(apiError)
+      optionsRef.current?.onError?.(apiError)
       throw apiError
     }
     finally {
       setLoading(false)
-      options.onFinally?.()
+      optionsRef.current?.onFinally?.()
     }
-  }, [api, methodName, options])
+  }, [api, methodName])
 
   useEffect(() => {
     if (options.immediate)
@@ -158,11 +167,12 @@ export function useRequest<T = unknown>(
   })
 
   // 如果需要立即执行且有参数
+  // 只依赖 execute 函数，避免 state 整体变化导致的无限循环
   useEffect(() => {
     if (immediate) {
       state.execute(params).catch(() => {})
     }
-  }, [immediate, params, state])
+  }, [immediate, params, state.execute])
 
   return {
     ...state,

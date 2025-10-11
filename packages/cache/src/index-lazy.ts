@@ -6,7 +6,7 @@
 
 // 核心模块 - 立即加载
 export { CacheManager } from './core/cache-manager'
-export type { CacheOptions, CacheEvent, SetOptions } from './types'
+export type { CacheEvent, CacheOptions, SetOptions } from './types'
 
 // 懒加载模块
 export const lazyModules = {
@@ -47,13 +47,13 @@ export const lazyModules = {
       { LocalStorageEngine },
       { SessionStorageEngine },
       { IndexedDBEngine },
-      { CookieEngine }
+      { CookieEngine },
     ] = await Promise.all([
       import('./engines/memory-engine'),
       import('./engines/local-storage-engine'),
       import('./engines/session-storage-engine'),
       import('./engines/indexeddb-engine'),
-      import('./engines/cookie-engine')
+      import('./engines/cookie-engine'),
     ])
     
     return {
@@ -61,7 +61,7 @@ export const lazyModules = {
       LocalStorageEngine,
       SessionStorageEngine,
       IndexedDBEngine,
-      CookieEngine
+      CookieEngine,
     }
   },
 
@@ -70,17 +70,17 @@ export const lazyModules = {
     const [
       { SecurityManager },
       { AESCrypto },
-      { KeyObfuscator }
+      { KeyObfuscator },
     ] = await Promise.all([
       import('./security/security-manager'),
       import('./security/aes-crypto'),
-      import('./security/key-obfuscator')
+      import('./security/key-obfuscator'),
     ])
     
     return {
       SecurityManager,
       AESCrypto,
-      KeyObfuscator
+      KeyObfuscator,
     }
   },
 
@@ -88,15 +88,15 @@ export const lazyModules = {
   async loadStrategies() {
     const [
       { StorageStrategy },
-      evictionStrategies
+      evictionStrategies,
     ] = await Promise.all([
       import('./strategies/storage-strategy'),
-      import('./strategies/eviction-strategies')
+      import('./strategies/eviction-strategies'),
     ])
     
     return {
       StorageStrategy,
-      ...evictionStrategies
+      ...evictionStrategies,
     }
   },
 
@@ -112,19 +112,19 @@ export const lazyModules = {
       { useCache },
       { useCacheStats },
       vueHelpers,
-      { CacheProvider }
+      { CacheProvider },
     ] = await Promise.all([
       import('./vue/use-cache'),
       import('./vue/use-cache-stats'),
       import('./vue/use-cache-helpers'),
-      import('./vue/cache-provider')
+      import('./vue/cache-provider'),
     ])
 
     return {
       useCache,
       useCacheStats,
       ...vueHelpers,
-      CacheProvider
+      CacheProvider,
     }
   },
 
@@ -132,7 +132,7 @@ export const lazyModules = {
   async loadPresets() {
     const presets = await import('./presets')
     return presets
-  }
+  },
 }
 
 /**
@@ -150,7 +150,7 @@ export async function createLazyCacheManager(options?: any) {
 export async function loadCommonModules() {
   const [engines, utils] = await Promise.all([
     lazyModules.loadEngines(),
-    lazyModules.loadUtils()
+    lazyModules.loadUtils(),
   ])
   
   return { ...engines, ...utils }
@@ -164,19 +164,19 @@ export async function loadAdvancedModules() {
     performanceMonitor,
     syncManager,
     warmupManager,
-    cacheAnalyzer
+    cacheAnalyzer,
   ] = await Promise.all([
     lazyModules.loadPerformanceMonitor(),
     lazyModules.loadSyncManager(),
     lazyModules.loadWarmupManager(),
-    lazyModules.loadCacheAnalyzer()
+    lazyModules.loadCacheAnalyzer(),
   ])
   
   return {
     ...performanceMonitor,
     ...syncManager,
     ...warmupManager,
-    ...cacheAnalyzer
+    ...cacheAnalyzer,
   }
 }
 
@@ -191,7 +191,7 @@ export async function loadAllModules() {
     utils,
     vue,
     presets,
-    advanced
+    advanced,
   ] = await Promise.all([
     lazyModules.loadEngines(),
     lazyModules.loadSecurity(),
@@ -199,7 +199,7 @@ export async function loadAllModules() {
     lazyModules.loadUtils(),
     lazyModules.loadVue(),
     lazyModules.loadPresets(),
-    loadAdvancedModules()
+    loadAdvancedModules(),
   ])
   
   return {
@@ -209,7 +209,7 @@ export async function loadAllModules() {
     ...utils,
     ...vue,
     ...presets,
-    ...advanced
+    ...advanced,
   }
 }
 

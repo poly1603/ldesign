@@ -54,4 +54,3 @@ const validation: ValidationTranslations = {
 }
 
 export default validation
-

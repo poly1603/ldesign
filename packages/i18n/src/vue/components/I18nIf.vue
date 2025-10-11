@@ -1,28 +1,18 @@
 <!--
   I18nIf - 条件翻译组件
-  
+
   功能：
   - 基于条件选择不同的翻译内容
   - 支持多种条件类型（值比较、范围、正则等）
   - 支持嵌套条件和复杂逻辑
   - 支持默认翻译和降级处理
-  
+
   使用示例：
   <I18nIf :conditions="[
     { when: 'count > 0', keypath: 'items.available' },
     { when: 'count === 0', keypath: 'items.empty' }
   ]" :context="{ count: itemCount }" />
 -->
-
-<template>
-  <component :is="renderTag" v-if="shouldRender">
-    <I18nT 
-      :keypath="selectedKeypath" 
-      :params="mergedParams"
-      v-bind="translationProps"
-    />
-  </component>
-</template>
 
 <script setup lang="ts">
 import { computed, inject } from 'vue'
@@ -71,7 +61,7 @@ const props = withDefaults(defineProps<I18nIfProps>(), {
   context: () => ({}),
   params: () => ({}),
   defaultParams: () => ({}),
-  translationProps: () => ({})
+  translationProps: () => ({}),
 })
 
 // 注入 I18n 实例
@@ -106,7 +96,7 @@ function evaluateCondition(condition: string | ((context: any) => boolean), cont
     if (typeof condition === 'string') {
       // 创建安全的执行环境
       const safeContext = { ...context }
-      
+
       // 简单的表达式解析（支持基本的比较操作）
       const expression = condition
         .replace(/\b(\w+)\b/g, (match) => {
@@ -118,12 +108,13 @@ function evaluateCondition(condition: string | ((context: any) => boolean), cont
         })
 
       // 使用 Function 构造器安全执行表达式
-      const func = new Function('return ' + expression)
+      const func = new Function(`return ${expression}`)
       return Boolean(func())
     }
 
     return false
-  } catch (error) {
+  }
+  catch (error) {
     if (props.debug) {
       console.warn('I18nIf: 条件评估失败', condition, error)
     }
@@ -136,7 +127,7 @@ function evaluateCondition(condition: string | ((context: any) => boolean), cont
  */
 const selectedCondition = computed(() => {
   const context = { ...props.context }
-  
+
   for (const condition of sortedConditions.value) {
     if (evaluateCondition(condition.when, context)) {
       if (props.debug) {
@@ -166,12 +157,12 @@ const selectedKeypath = computed(() => {
 const mergedParams = computed(() => {
   const conditionParams = selectedCondition.value?.params || {}
   const defaultParams = selectedCondition.value ? {} : props.defaultParams
-  
+
   return {
     ...defaultParams,
     ...props.params,
     ...conditionParams,
-    ...props.context
+    ...props.context,
   }
 })
 
@@ -186,18 +177,18 @@ const shouldRender = computed(() => {
 <script lang="ts">
 /**
  * I18nIf - 条件翻译组件
- * 
+ *
  * 根据条件动态选择翻译内容，支持：
  * - 多种条件表达式
  * - 优先级排序
  * - 默认翻译
  * - 调试模式
- * 
+ *
  * @example
  * ```vue
  * <template>
  *   <!-- 基础条件翻译 -->
- *   <I18nIf 
+ *   <I18nIf
  *     :conditions="[
  *       { when: 'count > 0', keypath: 'items.available' },
  *       { when: 'count === 0', keypath: 'items.empty' }
@@ -205,17 +196,17 @@ const shouldRender = computed(() => {
  *     :context="{ count: itemCount }"
  *     default-keypath="items.unknown"
  *   />
- *   
+ *
  *   <!-- 使用函数条件 -->
- *   <I18nIf 
+ *   <I18nIf
  *     :conditions="[
- *       { 
- *         when: (ctx) => ctx.user.isVip, 
+ *       {
+ *         when: (ctx) => ctx.user.isVip,
  *         keypath: 'welcome.vip',
  *         priority: 10
  *       },
- *       { 
- *         when: (ctx) => ctx.user.isLoggedIn, 
+ *       {
+ *         when: (ctx) => ctx.user.isLoggedIn,
  *         keypath: 'welcome.user',
  *         priority: 5
  *       }
@@ -227,9 +218,19 @@ const shouldRender = computed(() => {
  * ```
  */
 export default {
-  name: 'I18nIf'
+  name: 'I18nIf',
 }
 </script>
+
+<template>
+  <component :is="renderTag" v-if="shouldRender">
+    <I18nT
+      :keypath="selectedKeypath"
+      :params="mergedParams"
+      v-bind="translationProps"
+    />
+  </component>
+</template>
 
 <style lang="less">
 .i18n-if {

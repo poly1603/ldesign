@@ -45,7 +45,6 @@ export default defineConfig({
     '@ldesign/api',
     '@ldesign/cache',
     '@ldesign/color',
-    '@ldesign/config-editor',
     '@ldesign/crypto',
     '@ldesign/device',
     '@ldesign/engine',

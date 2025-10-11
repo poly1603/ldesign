@@ -3,9 +3,9 @@
  * 测试语言存储和语言检测功能
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createStorage } from '../src/core/storage'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createDetector } from '../src/core/detector'
+import { createStorage } from '../src/core/storage'
 
 describe('存储功能', () => {
   beforeEach(() => {
@@ -21,17 +21,17 @@ describe('存储功能', () => {
       }),
       clear: vi.fn(() => {
         mockStorage.store = {}
-      })
+      }),
     }
 
     Object.defineProperty(window, 'localStorage', {
       value: mockStorage,
-      configurable: true
+      configurable: true,
     })
 
     Object.defineProperty(window, 'sessionStorage', {
       value: { ...mockStorage, store: {} },
-      configurable: true
+      configurable: true,
     })
   })
 
@@ -147,7 +147,7 @@ describe('语言检测功能', () => {
       // Mock navigator.language
       Object.defineProperty(navigator, 'language', {
         value: 'zh-CN',
-        configurable: true
+        configurable: true,
       })
 
       const detector = createDetector()
@@ -161,7 +161,7 @@ describe('语言检测功能', () => {
       // Mock navigator.languages
       Object.defineProperty(navigator, 'languages', {
         value: ['zh-CN', 'en-US', 'en'],
-        configurable: true
+        configurable: true,
       })
 
       const detector = createDetector()
@@ -175,7 +175,7 @@ describe('语言检测功能', () => {
       // Mock navigator 为 undefined
       Object.defineProperty(window, 'navigator', {
         value: undefined,
-        configurable: true
+        configurable: true,
       })
 
       const detector = createDetector('browser')
@@ -195,6 +195,4 @@ describe('语言检测功能', () => {
       expect(detected).toEqual(['zh-CN', 'en-US'])
     })
   })
-
-
 })

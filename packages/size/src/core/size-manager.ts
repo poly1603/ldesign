@@ -41,7 +41,7 @@ export class SizeManagerImpl implements SizeManager {
   private cssInjector: CSSInjector
   private storageManager: SizeStorageManager
   private listeners: Array<(event: SizeChangeEvent) => void> = []
-  private eventListeners: Map<string, Function[]> = new Map()
+  private eventListeners: Map<string, Array<(data?: unknown) => void>> = new Map()
 
   constructor(options?: SizeManagerOptions) {
     this.options = { ...DEFAULT_OPTIONS, ...options }
@@ -212,7 +212,7 @@ export class SizeManagerImpl implements SizeManager {
   /**
    * 监听事件
    */
-  on(event: string, callback: Function): void {
+  on(event: string, callback: (data?: unknown) => void): void {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, [])
     }
@@ -222,7 +222,7 @@ export class SizeManagerImpl implements SizeManager {
   /**
    * 移除事件监听
    */
-  off(event: string, callback: Function): void {
+  off(event: string, callback: (data?: unknown) => void): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
       const index = listeners.indexOf(callback)
@@ -235,7 +235,7 @@ export class SizeManagerImpl implements SizeManager {
   /**
    * 触发事件
    */
-  emit(event: string, data?: any): void {
+  emit(event: string, data?: unknown): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
       listeners.forEach((callback) => {

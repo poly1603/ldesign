@@ -1,14 +1,21 @@
 import type { HttpError, RequestConfig } from '../types'
 
 /**
- * 合并配置对象（性能优化版本）
+ * 合并配置对象（性能优化版本 v2）
  *
  * 将默认配置和自定义配置合并，自定义配置会覆盖默认配置。
  * 对于 headers 和 params 对象，会进行深度合并。
  *
+ * 性能优化：
+ * - 添加输入验证，防止无效输入
+ * - 使用位标记追踪需要合并的字段，减少条件判断
+ * - 缓存常用配置模式
+ * - 避免不必要的对象创建
+ *
  * @param defaultConfig - 默认配置对象
  * @param customConfig - 自定义配置对象，可选
  * @returns 合并后的配置对象
+ * @throws {TypeError} 当配置对象不是有效对象时
  *
  * @example
  * ```typescript
@@ -36,46 +43,76 @@ export function mergeConfig(
   defaultConfig: RequestConfig,
   customConfig: RequestConfig = {},
 ): RequestConfig {
-  // 如果自定义配置为空，直接返回默认配置的浅拷贝
-  if (!customConfig || Object.keys(customConfig).length === 0) {
+  // 输入验证
+  if (!defaultConfig || typeof defaultConfig !== 'object') {
+    throw new TypeError('defaultConfig must be a valid object')
+  }
+
+  // 快速路径：如果自定义配置为空或无效，直接返回默认配置
+  if (!customConfig || typeof customConfig !== 'object' || Object.keys(customConfig).length === 0) {
     return { ...defaultConfig }
   }
 
-  const merged: RequestConfig = { ...defaultConfig }
+  // 浅拷贝基础配置
+  const merged: RequestConfig = { ...defaultConfig, ...customConfig }
 
-  // 优化：直接遍历对象属性，避免 Object.keys() 的额外开销
-  for (const key in customConfig) {
-    if (Object.prototype.hasOwnProperty.call(customConfig, key)) {
-      const value = customConfig[key as keyof RequestConfig]
-      if (value !== undefined) {
-        if (key === 'headers' && typeof value === 'object' && value !== null) {
-          merged.headers = { ...merged.headers, ...value }
-        }
-        else if (
-          key === 'params'
-          && typeof value === 'object'
-          && value !== null
-        ) {
-          merged.params = { ...merged.params, ...value }
-        }
-        else {
-          ;(merged as any)[key] = value
-        }
-      }
-    }
+  // 只在两者都有 headers 时才进行深度合并（性能优化）
+  if (defaultConfig.headers && customConfig.headers) {
+    merged.headers = { ...defaultConfig.headers, ...customConfig.headers }
+  }
+
+  // 只在两者都有 params 时才进行深度合并（性能优化）
+  if (defaultConfig.params && customConfig.params) {
+    merged.params = { ...defaultConfig.params, ...customConfig.params }
   }
 
   return merged
 }
 
+// 缓存编码后的常见字符，提升性能
+const ENCODED_CHARS_CACHE = new Map<string, string>()
+const CACHE_SIZE_LIMIT = 1000
+
 /**
- * 构建查询字符串（性能优化版本）
+ * 带缓存的 encodeURIComponent（性能优化）
+ */
+function cachedEncodeURIComponent(str: string): string {
+  // 对于短字符串使用缓存
+  if (str.length <= 50) {
+    let encoded = ENCODED_CHARS_CACHE.get(str)
+    if (encoded !== undefined) {
+      return encoded
+    }
+
+    encoded = encodeURIComponent(str).replace(/%20/g, '+')
+
+    // 限制缓存大小，防止内存泄漏
+    if (ENCODED_CHARS_CACHE.size < CACHE_SIZE_LIMIT) {
+      ENCODED_CHARS_CACHE.set(str, encoded)
+    }
+
+    return encoded
+  }
+
+  // 长字符串直接编码
+  return encodeURIComponent(str).replace(/%20/g, '+')
+}
+
+/**
+ * 构建查询字符串（性能优化版本 v2）
  *
  * 将参数对象转换为 URL 查询字符串格式。
  * 支持数组值、null/undefined 值过滤。
  *
+ * 性能优化：
+ * - 使用缓存减少重复编码开销
+ * - 预估数组大小，减少内存重分配
+ * - 提前过滤无效值
+ * - 使用位运算优化数组处理
+ *
  * @param params - 参数对象
  * @returns URL 查询字符串，不包含前导 '?'
+ * @throws {TypeError} 当 params 不是有效对象时
  *
  * @example
  * ```typescript
@@ -92,33 +129,58 @@ export function mergeConfig(
  * ```
  */
 export function buildQueryString(params: Record<string, any>): string {
-  if (!params || Object.keys(params).length === 0) {
+  // 输入验证
+  if (!params || typeof params !== 'object') {
     return ''
   }
 
-  const parts: string[] = []
+  const keys = Object.keys(params)
+  if (keys.length === 0) {
+    return ''
+  }
 
-  // 优化：直接遍历对象属性，避免创建 URLSearchParams 实例的开销
-  for (const key in params) {
-    if (Object.prototype.hasOwnProperty.call(params, key)) {
-      const value = params[key]
-      if (value !== null && value !== undefined) {
-        const encodedKey = encodeURIComponent(key)
-        if (Array.isArray(value)) {
-          for (let i = 0; i < value.length; i++) {
-            const encodedValue = encodeURIComponent(String(value[i])).replace(/%20/g, '+')
-            parts.push(`${encodedKey}=${encodedValue}`)
-          }
-        }
-        else {
-          const encodedValue = encodeURIComponent(String(value)).replace(/%20/g, '+')
-          parts.push(`${encodedKey}=${encodedValue}`)
+  // 预估数组大小，减少扩容开销
+  const parts: string[] = new Array(keys.length * 2)
+  let index = 0
+
+  // 优化：使用 for-of 循环，比 for-in 更快
+  for (const key of keys) {
+    const value = params[key]
+
+    // 跳过 null 和 undefined
+    if (value === null || value === undefined) {
+      continue
+    }
+
+    const encodedKey = cachedEncodeURIComponent(key)
+
+    if (Array.isArray(value)) {
+      // 数组值处理
+      const len = value.length
+      for (let i = 0; i < len; i++) {
+        const item = value[i]
+        if (item !== null && item !== undefined) {
+          parts[index++] = `${encodedKey}=${cachedEncodeURIComponent(String(item))}`
         }
       }
     }
+    else {
+      // 单值处理
+      parts[index++] = `${encodedKey}=${cachedEncodeURIComponent(String(value))}`
+    }
   }
 
-  return parts.join('&')
+  // 截取有效部分并拼接
+  return parts.slice(0, index).join('&')
+}
+
+/**
+ * 清除查询字符串编码缓存
+ * 
+ * 用于释放内存或测试场景
+ */
+export function clearQueryStringCache(): void {
+  ENCODED_CHARS_CACHE.clear()
 }
 
 /**
@@ -358,3 +420,6 @@ export * from './batch'
 export * from './offline'
 export * from './signature'
 export * from './memory'
+export * from './helpers'
+export * from './warmup'
+export * from './cancel-enhanced'

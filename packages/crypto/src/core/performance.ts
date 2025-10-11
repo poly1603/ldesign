@@ -65,6 +65,10 @@ export interface PerformanceOptimizerConfig {
   autoCleanupInterval?: number
   /** 内存使用阈值（字节），超过此值将触发清理 */
   memoryThreshold?: number
+  /** 是否启用 Worker 并行处理 */
+  enableWorker?: boolean
+  /** Worker 线程池大小 */
+  workerPoolSize?: number
 }
 
 /**
@@ -85,6 +89,8 @@ export class PerformanceOptimizer {
   private autoCleanupInterval: number
   private memoryThreshold: number
   private cleanupTimer?: NodeJS.Timeout | number
+  private enableWorker: boolean
+  private workerPool: any // WorkerPool | null
 
   constructor(config: PerformanceOptimizerConfig = {}) {
     const {
@@ -94,12 +100,16 @@ export class PerformanceOptimizer {
       maxOperationTimes = 1000,
       autoCleanupInterval = 60 * 1000, // 默认 1 分钟清理一次
       memoryThreshold = 50 * 1024 * 1024, // 默认 50MB
+      enableWorker = false,
+      workerPoolSize,
     } = config
 
     this.enableCache = enableCache
     this.maxOperationTimes = maxOperationTimes
     this.autoCleanupInterval = autoCleanupInterval
     this.memoryThreshold = memoryThreshold
+    this.enableWorker = enableWorker
+    this.workerPool = null
 
     // 使用 LRU 缓存
     this.resultCache = new LRUCache({
@@ -107,6 +117,17 @@ export class PerformanceOptimizer {
       ttl: cacheTTL,
       updateAgeOnGet: true,
     })
+
+    // 初始化 Worker 池（如果启用）
+    if (this.enableWorker) {
+      try {
+        const { getGlobalWorkerPool } = require('../workers')
+        this.workerPool = getGlobalWorkerPool({ size: workerPoolSize })
+      } catch (error) {
+        console.warn('Failed to initialize worker pool, falling back to main thread:', error)
+        this.enableWorker = false
+      }
+    }
 
     // 启动自动清理
     if (this.autoCleanupInterval > 0) {
@@ -116,12 +137,35 @@ export class PerformanceOptimizer {
 
   /**
    * 批量加密
-   * 优化：使用 Promise.all 并行处理，移除未实现的 Worker 代码
+   * 优化：支持 Worker 并行处理或主线程并行处理
    */
   async batchEncrypt(
     operations: BatchOperation[],
   ): Promise<BatchResult<EncryptResult>[]> {
-    // 并行处理所有操作
+    // 如果启用 Worker 且 Worker 池可用
+    if (this.enableWorker && this.workerPool) {
+      try {
+        // 使用 Worker 池批量加密
+        const workerOps = operations.map(op => ({
+          data: op.data,
+          key: op.key,
+          algorithm: op.algorithm,
+          options: op.options,
+        }))
+        
+        const results = await this.workerPool.batchEncrypt(workerOps)
+        
+        return operations.map((op, index) => ({
+          id: op.id,
+          result: results[index],
+        }))
+      } catch (error) {
+        console.warn('Worker batch encrypt failed, falling back to main thread:', error)
+        // 失败时降级到主线程处理
+      }
+    }
+
+    // 主线程并行处理
     const promises = operations.map(async (operation) => {
       const cacheKey = this.generateCacheKey('encrypt', operation)
       let result = this.getFromCache(cacheKey) as EncryptResult | undefined
@@ -142,12 +186,35 @@ export class PerformanceOptimizer {
 
   /**
    * 批量解密
-   * 优化：使用 Promise.all 并行处理，移除未实现的 Worker 代码
+   * 优化：支持 Worker 并行处理或主线程并行处理
    */
   async batchDecrypt(
     operations: BatchOperation[],
   ): Promise<BatchResult<DecryptResult>[]> {
-    // 并行处理所有操作
+    // 如果启用 Worker 且 Worker 池可用
+    if (this.enableWorker && this.workerPool) {
+      try {
+        // 使用 Worker 池批量解密
+        const workerOps = operations.map(op => ({
+          data: op.data,
+          key: op.key,
+          algorithm: op.algorithm,
+          options: op.options,
+        }))
+        
+        const results = await this.workerPool.batchDecrypt(workerOps)
+        
+        return operations.map((op, index) => ({
+          id: op.id,
+          result: results[index],
+        }))
+      } catch (error) {
+        console.warn('Worker batch decrypt failed, falling back to main thread:', error)
+        // 失败时降级到主线程处理
+      }
+    }
+
+    // 主线程并行处理
     const promises = operations.map(async (operation) => {
       const cacheKey = this.generateCacheKey('decrypt', operation)
       let result = this.getFromCache(cacheKey) as DecryptResult | undefined
@@ -168,17 +235,49 @@ export class PerformanceOptimizer {
 
   /**
    * 执行加密操作
+   * 优化：使用真实的加密实现
    */
   private performEncryption(operation: BatchOperation): EncryptResult {
     const startTime = performance.now()
 
     try {
-      // 这里应该由外部传入具体的加密实现
-      // 为了避免循环依赖，暂时返回模拟结果
-      const result: EncryptResult = {
-        success: true,
-        data: `encrypted_${operation.data}`,
-        algorithm: operation.algorithm,
+      // 动态导入算法实现，避免循环依赖
+      let result: EncryptResult
+      
+      switch (operation.algorithm.toUpperCase()) {
+        case 'AES': {
+          // 延迟导入 AES
+          const { aes } = require('../algorithms')
+          result = aes.encrypt(operation.data, operation.key, operation.options)
+          break
+        }
+        case 'RSA': {
+          const { rsa } = require('../algorithms')
+          result = rsa.encrypt(operation.data, operation.key, operation.options)
+          break
+        }
+        case 'DES': {
+          const { des } = require('../algorithms')
+          result = des.encrypt(operation.data, operation.key, operation.options)
+          break
+        }
+        case '3DES': {
+          const { des3 } = require('../algorithms')
+          result = des3.encrypt(operation.data, operation.key, operation.options)
+          break
+        }
+        case 'BLOWFISH': {
+          const { blowfish } = require('../algorithms')
+          result = blowfish.encrypt(operation.data, operation.key, operation.options)
+          break
+        }
+        default:
+          result = {
+            success: false,
+            data: '',
+            algorithm: operation.algorithm,
+            error: `Unsupported algorithm: ${operation.algorithm}`,
+          }
       }
 
       const endTime = performance.now()
@@ -201,17 +300,48 @@ export class PerformanceOptimizer {
 
   /**
    * 执行解密操作
+   * 优化：使用真实的解密实现
    */
   private performDecryption(operation: BatchOperation): DecryptResult {
     const startTime = performance.now()
 
     try {
-      // 这里应该由外部传入具体的解密实现
-      // 为了避免循环依赖，暂时返回模拟结果
-      const result: DecryptResult = {
-        success: true,
-        data: operation.data.replace('encrypted_', ''),
-        algorithm: operation.algorithm,
+      // 动态导入算法实现，避免循环依赖
+      let result: DecryptResult
+      
+      switch (operation.algorithm.toUpperCase()) {
+        case 'AES': {
+          const { aes } = require('../algorithms')
+          result = aes.decrypt(operation.data, operation.key, operation.options)
+          break
+        }
+        case 'RSA': {
+          const { rsa } = require('../algorithms')
+          result = rsa.decrypt(operation.data, operation.key, operation.options)
+          break
+        }
+        case 'DES': {
+          const { des } = require('../algorithms')
+          result = des.decrypt(operation.data, operation.key, operation.options)
+          break
+        }
+        case '3DES': {
+          const { des3 } = require('../algorithms')
+          result = des3.decrypt(operation.data, operation.key, operation.options)
+          break
+        }
+        case 'BLOWFISH': {
+          const { blowfish } = require('../algorithms')
+          result = blowfish.decrypt(operation.data, operation.key, operation.options)
+          break
+        }
+        default:
+          result = {
+            success: false,
+            data: '',
+            algorithm: operation.algorithm,
+            error: `Unsupported algorithm: ${operation.algorithm}`,
+          }
       }
 
       const endTime = performance.now()
@@ -389,9 +519,29 @@ export class PerformanceOptimizer {
   /**
    * 销毁优化器
    */
-  destroy(): void {
+  async destroy(): Promise<void> {
     this.stopAutoCleanup()
     this.clearCache()
     this.operationTimes = []
+    
+    // 销毁 Worker 池
+    if (this.workerPool) {
+      try {
+        await this.workerPool.terminate()
+        this.workerPool = null
+      } catch (error) {
+        console.warn('Failed to terminate worker pool:', error)
+      }
+    }
+  }
+
+  /**
+   * 获取 Worker 池统计信息
+   */
+  getWorkerStats(): any {
+    if (this.workerPool) {
+      return this.workerPool.getStats()
+    }
+    return null
   }
 }

@@ -1,6 +1,11 @@
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
+  // 输出格式配置
+  output: {
+    format: ['esm', 'cjs', 'umd']
+  },
+
   // 禁用构建后验证（库项目不需要运行测试验证）
   postBuildValidation: {
     enabled: false

@@ -62,8 +62,7 @@ export abstract class BaseStorageEngine implements IStorageEngine {
     for (const key of keys) {
       try {
         const raw = await this.getItem(key)
-        if (!raw)
-          continue
+        if (!raw) { continue }
 
         // 先解析 TTL 包装（如有）
         const { value, expired } = this.parseTTLData(raw)
@@ -98,11 +97,14 @@ export abstract class BaseStorageEngine implements IStorageEngine {
       const code = data.charCodeAt(i)
       if (code < 128) {
         size += 1
-      } else if (code < 2048) {
+      }
+      else if (code < 2048) {
         size += 2
-      } else if (code < 65536) {
+      }
+      else if (code < 65536) {
         size += 3
-      } else {
+      }
+      else {
         size += 4
       }
     }
@@ -142,8 +144,7 @@ export abstract class BaseStorageEngine implements IStorageEngine {
    * 生成带TTL的数据
    */
   protected createTTLData(value: string, ttl?: number): string {
-    if (!ttl)
-      return value
+    if (!ttl) { return value }
 
     const expiresAt = Date.now() + ttl
     return JSON.stringify({

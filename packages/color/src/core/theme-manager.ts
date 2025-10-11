@@ -624,8 +624,12 @@ export class ThemeManager implements ThemeManagerInstance {
     // 移除主题样式
     this.removeTheme()
 
-    // 清空缓存
-    this.cache.clear()
+    // 销毁缓存（清理定时器并释放内存）
+    if ((this.cache as any).destroy) {
+      (this.cache as any).destroy()
+    } else {
+      this.cache.clear()
+    }
 
     // 移除所有事件监听器
     this.eventEmitter.removeAllListeners()
@@ -676,75 +680,260 @@ export class ThemeManager implements ThemeManagerInstance {
    *
    * 使用优化的LRU算法，提供O(1)的访问和更新性能
    * 支持自动过期和内存管理
-   */
-  /**
-   * 创建内部 LRU 缓存（O(1) 访问开销）
+   * 
+   * 优化特性：
+   * - 使用双向链表结构实现真正的 O(1) LRU 操作
+   * - 基于 TTL 的自动过期机制，减少内存占用
+   * - 定期清理过期条目，避免内存泄漏
+   * - 缓存统计信息，便于监控和调优
+   * 
+   * @returns 增强的 LRU 缓存实例
    */
   private createCache(): LRUCache<GeneratedTheme> {
-    const cache = new Map<string, { value: GeneratedTheme, accessed: number }>()
     const maxSize = typeof this.options.cache === 'object' ? this.options.cache.maxSize || 50 : 50
+    const ttl = 10 * 60 * 1000 // 10分钟TTL，主题数据不常变化
 
-    // 优化的LRU淘汰策略：使用双向链表概念但基于Map实现
-    let accessOrder: string[] = []
+    // 双向链表节点
+    interface CacheNode {
+      key: string
+      value: GeneratedTheme
+      expiresAt: number
+      prev: CacheNode | null
+      next: CacheNode | null
+    }
+
+    // 缓存统计
+    const stats = {
+      hits: 0,
+      misses: 0,
+      evictions: 0,
+      expirations: 0,
+    }
+
+    const cache = new Map<string, CacheNode>()
+    let head: CacheNode | null = null // 最近使用
+    let tail: CacheNode | null = null // 最久未使用
+
+    // 定期清理过期条目（每2分钟）
+    let cleanupTimer: NodeJS.Timeout | null = null
+    const startCleanup = () => {
+      cleanupTimer = setInterval(() => {
+        const now = Date.now()
+        const toDelete: string[] = []
+        
+        cache.forEach((node, key) => {
+          if (now > node.expiresAt) {
+            toDelete.push(key)
+            stats.expirations++
+          }
+        })
+        
+        toDelete.forEach(key => {
+          const node = cache.get(key)
+          if (node) {
+            removeNode(node)
+            cache.delete(key)
+          }
+        })
+      }, 2 * 60 * 1000)
+
+      // 允许进程退出
+      if (typeof process !== 'undefined' && cleanupTimer.unref) {
+        cleanupTimer.unref()
+      }
+    }
+
+    // 移除节点（从链表中）
+    const removeNode = (node: CacheNode) => {
+      if (node.prev) {
+        node.prev.next = node.next
+      } else {
+        head = node.next
+      }
+
+      if (node.next) {
+        node.next.prev = node.prev
+      } else {
+        tail = node.prev
+      }
+
+      node.prev = null
+      node.next = null
+    }
+
+    // 将节点移到链表头部（最近使用）
+    const moveToHead = (node: CacheNode) => {
+      if (node === head) return
+
+      removeNode(node)
+      node.next = head
+      node.prev = null
+
+      if (head) {
+        head.prev = node
+      }
+      head = node
+
+      if (!tail) {
+        tail = node
+      }
+    }
+
+    // 添加到链表头部
+    const addToHead = (node: CacheNode) => {
+      node.next = head
+      node.prev = null
+
+      if (head) {
+        head.prev = node
+      }
+      head = node
+
+      if (!tail) {
+        tail = node
+      }
+    }
+
+    // 移除尾部节点（最久未使用）
+    const removeTail = (): CacheNode | null => {
+      if (!tail) return null
+
+      const removed = tail
+      removeNode(removed)
+      return removed
+    }
+
+    startCleanup()
 
     return {
       get: (key: string) => {
-        const item = cache.get(key)
-        if (item) {
-          // 更新访问时间和访问顺序
-          item.accessed = Date.now()
-
-          // 将key移动到访问顺序的末尾（最近访问）
-          const index = accessOrder.indexOf(key)
-          if (index > -1) {
-            accessOrder.splice(index, 1)
-          }
-          accessOrder.push(key)
-
-          return item.value
+        const node = cache.get(key)
+        
+        if (!node) {
+          stats.misses++
+          return undefined
         }
-        return undefined
+
+        // 检查是否过期
+        if (Date.now() > node.expiresAt) {
+          removeNode(node)
+          cache.delete(key)
+          stats.expirations++
+          stats.misses++
+          return undefined
+        }
+
+        // 移到头部（最近使用）
+        moveToHead(node)
+        stats.hits++
+        return node.value
       },
+
       set: (key: string, value: GeneratedTheme) => {
-        // 如果key已存在，更新值并调整访问顺序
-        if (cache.has(key)) {
-          cache.set(key, { value, accessed: Date.now() })
-          const index = accessOrder.indexOf(key)
-          if (index > -1) {
-            accessOrder.splice(index, 1)
-          }
-          accessOrder.push(key)
+        const existing = cache.get(key)
+
+        if (existing) {
+          // 更新现有节点
+          existing.value = value
+          existing.expiresAt = Date.now() + ttl
+          moveToHead(existing)
           return
         }
 
-        // 如果缓存已满，删除最久未访问的项（LRU策略）
-        if (cache.size >= maxSize && accessOrder.length > 0) {
-          const oldestKey = accessOrder.shift() // 移除最旧的key
-          if (oldestKey) {
-            cache.delete(oldestKey)
-          }
+        // 创建新节点
+        const newNode: CacheNode = {
+          key,
+          value,
+          expiresAt: Date.now() + ttl,
+          prev: null,
+          next: null,
         }
 
-        // 添加新项
-        cache.set(key, { value, accessed: Date.now() })
-        accessOrder.push(key)
-      },
-      delete: (key: string) => {
-        const deleted = cache.delete(key)
-        if (deleted) {
-          const index = accessOrder.indexOf(key)
-          if (index > -1) {
-            accessOrder.splice(index, 1)
+        cache.set(key, newNode)
+        addToHead(newNode)
+
+        // 如果超过容量，移除最久未使用的
+        if (cache.size > maxSize) {
+          const removed = removeTail()
+          if (removed) {
+            cache.delete(removed.key)
+            stats.evictions++
           }
         }
-        return deleted
       },
+
+      delete: (key: string) => {
+        const node = cache.get(key)
+        if (!node) return false
+
+        removeNode(node)
+        cache.delete(key)
+        return true
+      },
+
       clear: () => {
         cache.clear()
-        accessOrder = []
+        head = null
+        tail = null
+        stats.hits = 0
+        stats.misses = 0
+        stats.evictions = 0
+        stats.expirations = 0
       },
+
       size: () => cache.size,
-      has: (key: string) => cache.has(key),
+
+      has: (key: string) => {
+        const node = cache.get(key)
+        if (!node) return false
+        
+        // 检查是否过期
+        if (Date.now() > node.expiresAt) {
+          removeNode(node)
+          cache.delete(key)
+          stats.expirations++
+          return false
+        }
+        
+        return true
+      },
+
+      // 获取缓存统计（扩展方法）
+      getStats: () => ({
+        ...stats,
+        size: cache.size,
+        hitRate: stats.hits + stats.misses > 0 
+          ? stats.hits / (stats.hits + stats.misses) 
+          : 0,
+      }),
+
+      // 手动清理过期条目（扩展方法）
+      cleanup: () => {
+        const now = Date.now()
+        let cleaned = 0
+        
+        cache.forEach((node, key) => {
+          if (now > node.expiresAt) {
+            removeNode(node)
+            cache.delete(key)
+            stats.expirations++
+            cleaned++
+          }
+        })
+        
+        return cleaned
+      },
+
+      // 销毁缓存（扩展方法）
+      destroy: () => {
+        if (cleanupTimer) {
+          clearInterval(cleanupTimer)
+          cleanupTimer = null
+        }
+        cache.clear()
+        head = null
+        tail = null
+      },
     }
   }
 
@@ -983,6 +1172,54 @@ export class ThemeManager implements ThemeManagerInstance {
 
   eventNames(): ThemeEventType[] {
     return this.eventEmitter.eventNames()
+  }
+
+  /**
+   * 获取缓存统计信息
+   * 
+   * 返回缓存的命中/未命中次数、淘汰/过期数量、当前大小和命中率
+   * 可用于监控和优化缓存策略
+   * 
+   * @returns 缓存统计对象
+   * @example
+   * ```ts
+   * const stats = themeManager.getCacheStats()
+   * console.log(`命中率: ${(stats.hitRate * 100).toFixed(2)}%`)
+   * console.log(`缓存大小: ${stats.size}`)
+   * ```
+   */
+  getCacheStats(): {
+    hits: number
+    misses: number
+    evictions: number
+    expirations: number
+    size: number
+    hitRate: number
+  } | null {
+    if ((this.cache as any).getStats) {
+      return (this.cache as any).getStats()
+    }
+    return null
+  }
+
+  /**
+   * 手动清理过期的缓存条目
+   * 
+   * 在内存压力大时可手动调用以释放内存
+   * 注意：缓存已有自动清理机制，一般不需要手动调用
+   * 
+   * @returns 清理的过期条目数量
+   * @example
+   * ```ts
+   * const cleaned = themeManager.cleanupCache()
+   * console.log(`清理了 ${cleaned} 个过期的缓存条目`)
+   * ```
+   */
+  cleanupCache(): number {
+    if ((this.cache as any).cleanup) {
+      return (this.cache as any).cleanup()
+    }
+    return 0
   }
 
   /**

@@ -25,7 +25,10 @@ import {
   SubscriptPlugin,
   HorizontalRulePlugin,
   IndentPlugin,
-  FullscreenPlugin
+  FullscreenPlugin,
+  LineHeightPlugin,
+  TextTransformPlugin,
+  FindReplacePlugin
 } from '@/plugins'
 import '@/styles/editor.css'
 
@@ -39,7 +42,7 @@ export function renderAdvancedExample(): HTMLElement {
   header.innerHTML = `
     <h1 class="example-title">高级功能示例</h1>
     <p class="example-description">
-      展示富文本编辑器的高级功能，包括表格、自定义插件、快捷键等。
+      展示富文本编辑器的高级功能，包括表格、查找替换、行高、文本转换等。
     </p>
     <span class="example-badge">高级功能</span>
   `
@@ -48,6 +51,14 @@ export function renderAdvancedExample(): HTMLElement {
   // 表格功能部分
   const tableSection = createTableSection()
   container.appendChild(tableSection)
+
+  // 查找替换部分
+  const findReplaceSection = createFindReplaceSection()
+  container.appendChild(findReplaceSection)
+
+  // 文本转换和行高部分
+  const textFeaturesSection = createTextFeaturesSection()
+  container.appendChild(textFeaturesSection)
 
   // 自定义插件部分
   const customPluginSection = createCustomPluginSection()
@@ -149,7 +160,7 @@ function createTableSection(): HTMLElement {
     editorWrapper.insertBefore(toolbar.getElement(), editorContainer)
 
     ;(window as any).tableEditor = editor
-  }, 100)
+  }, 200)
 
   const actions = document.createElement('div')
   actions.className = 'actions'
@@ -182,6 +193,171 @@ function createTableSection(): HTMLElement {
     </button>
   `
   section.appendChild(actions)
+
+  return section
+}
+
+function createFindReplaceSection(): HTMLElement {
+  const section = document.createElement('div')
+  section.className = 'example-section'
+
+  const title = document.createElement('h2')
+  title.className = 'section-title'
+  title.innerHTML = `
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/>
+      <path d="m21 21-4.35-4.35"/>
+    </svg>
+    查找和替换
+  `
+  section.appendChild(title)
+
+  const description = document.createElement('p')
+  description.className = 'section-description'
+  description.textContent = '强大的查找替换功能，支持正则表达式、区分大小写等选项。使用 Ctrl+F 快捷键快速打开。'
+  section.appendChild(description)
+
+  const editorWrapper = document.createElement('div')
+  editorWrapper.className = 'editor-wrapper'
+
+  const editorContainer = document.createElement('div')
+  editorContainer.id = 'find-replace-editor'
+  editorWrapper.appendChild(editorContainer)
+
+  section.appendChild(editorWrapper)
+
+  setTimeout(() => {
+    const editor = new Editor({
+      element: editorContainer,
+      content: `
+        <h2>查找替换演示</h2>
+        <p>这是一段示例文本。示例文本中包含多个<strong>示例</strong>关键词。</p>
+        <p>您可以使用查找功能定位文本，使用替换功能批量修改内容。</p>
+        <p>支持的功能：</p>
+        <ul>
+          <li>区分大小写匹配</li>
+          <li>全字匹配</li>
+          <li>正则表达式搜索</li>
+          <li>单个替换和批量替换</li>
+        </ul>
+      `,
+      plugins: [
+        BoldPlugin,
+        ItalicPlugin,
+        UnderlinePlugin,
+        HeadingPlugin,
+        BulletListPlugin,
+        FindReplacePlugin,
+        HistoryPlugin
+      ]
+    })
+
+    const toolbar = new Toolbar(editor, {})
+    editorWrapper.insertBefore(toolbar.getElement(), editorContainer)
+
+    ;(window as any).findReplaceEditor = editor
+  }, 200)
+
+  const actions = document.createElement('div')
+  actions.className = 'actions'
+  actions.innerHTML = `
+    <button class="btn btn-primary" onclick="window.findReplaceEditor?.commands.execute('openFindReplace')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
+      打开查找替换 (Ctrl+F)
+    </button>
+  `
+  section.appendChild(actions)
+
+  return section
+}
+
+function createTextFeaturesSection(): HTMLElement {
+  const section = document.createElement('div')
+  section.className = 'example-section'
+
+  const title = document.createElement('h2')
+  title.className = 'section-title'
+  title.innerHTML = `
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M4 7V4h16v3"/><path d="M9 20h6"/><line x1="12" y1="4" x2="12" y2="20"/>
+    </svg>
+    文本格式化功能
+  `
+  section.appendChild(title)
+
+  const description = document.createElement('p')
+  description.className = 'section-description'
+  description.textContent = '提供丰富的文本格式化选项，包括行高调整、大小写转换、全角半角转换等。'
+  section.appendChild(description)
+
+  const editorWrapper = document.createElement('div')
+  editorWrapper.className = 'editor-wrapper'
+
+  const editorContainer = document.createElement('div')
+  editorContainer.id = 'text-features-editor'
+  editorWrapper.appendChild(editorContainer)
+
+  section.appendChild(editorWrapper)
+
+  setTimeout(() => {
+    const editor = new Editor({
+      element: editorContainer,
+      content: `
+        <h2>文本格式化示例</h2>
+        <p style="line-height: 1.5">这是默认行高(1.5)的段落文本。您可以选中文本后使用行高工具调整段落的行间距。</p>
+        <p style="line-height: 2.5">这是较大行高(2.5)的段落文本，行间距更宽松，适合阅读长文本。</p>
+        <p>选中下面的文本，使用文本转换功能：</p>
+        <ul>
+          <li>hello world - 可以转换为大写、首字母大写等</li>
+          <li>UPPERCASE TEXT - 可以转换为小写</li>
+          <li>ＦｕｌｌＷｉｄｔｈ - 可以转换为半角</li>
+          <li>half-width - 可以转换为全角</li>
+        </ul>
+      `,
+      plugins: [
+        BoldPlugin,
+        ItalicPlugin,
+        UnderlinePlugin,
+        HeadingPlugin,
+        BulletListPlugin,
+        FontSizePlugin,
+        FontFamilyPlugin,
+        LineHeightPlugin,
+        TextTransformPlugin,
+        HistoryPlugin
+      ]
+    })
+
+    const toolbar = new Toolbar(editor, {})
+    editorWrapper.insertBefore(toolbar.getElement(), editorContainer)
+
+    ;(window as any).textFeaturesEditor = editor
+  }, 200)
+
+  const features = document.createElement('div')
+  features.className = 'features-grid'
+  features.innerHTML = `
+    <div class="feature-card">
+      <h3>行高调整</h3>
+      <p>支持 1.0 - 3.0 多种行高选项</p>
+    </div>
+    <div class="feature-card">
+      <h3>大小写转换</h3>
+      <p>大写、小写、首字母大写、句子大小写</p>
+    </div>
+    <div class="feature-card">
+      <h3>全角半角</h3>
+      <p>全角半角字符互相转换</p>
+    </div>
+    <div class="feature-card">
+      <h3>字体样式</h3>
+      <p>字体大小和字体家族选择</p>
+    </div>
+  `
+  section.appendChild(features)
 
   return section
 }
@@ -259,7 +435,7 @@ function createCustomPluginSection(): HTMLElement {
     editorWrapper.insertBefore(toolbar.getElement(), editorContainer)
 
     ;(window as any).customEditor = editor
-  }, 100)
+  }, 200)
 
   const emojis = [
     { emoji: '😀', name: '笑脸' },
@@ -448,7 +624,7 @@ function createThemeSection(): HTMLElement {
     editorWrapper.insertBefore(toolbar.getElement(), editorContainer)
 
     ;(window as any).themeEditor = editor
-  }, 100)
+  }, 200)
 
   const actions = document.createElement('div')
   actions.className = 'actions'

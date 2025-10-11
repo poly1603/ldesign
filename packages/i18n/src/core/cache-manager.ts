@@ -12,7 +12,7 @@
  * @version 2.0.0
  */
 
-import type { TranslationParams, CacheOptions } from './types'
+import type { CacheOptions, TranslationParams } from './types'
 import { TranslationCache } from './cache'
 import { FastCacheKeyGenerator } from './fast-cache-key'
 
@@ -32,7 +32,7 @@ export class CacheKeyGenerator {
   static generateTranslationKey(
     locale: string,
     key: string,
-    params: TranslationParams = {}
+    params: TranslationParams = {},
   ): string {
     return this.fastGenerator.generateTranslationKey(locale, key, params)
   }
@@ -78,7 +78,7 @@ export interface CacheStats {
 
 /**
  * 缓存管理器
- * 
+ *
  * 提供统一的缓存管理接口，支持多种缓存策略和优化
  */
 export class CacheManager {
@@ -95,7 +95,7 @@ export class CacheManager {
       misses: 0,
       hitRate: 0,
       size: 0,
-      memoryUsage: 0
+      memoryUsage: 0,
     }
   }
 
@@ -109,15 +109,16 @@ export class CacheManager {
   getTranslation(
     locale: string,
     key: string,
-    params: TranslationParams = {}
+    params: TranslationParams = {},
   ): string | undefined {
     this.stats.totalRequests++
 
     const cached = this.translationCache.getCachedTranslation(locale, key, params)
-    
+
     if (cached !== undefined) {
       this.stats.hits++
-    } else {
+    }
+    else {
       this.stats.misses++
     }
 
@@ -136,7 +137,7 @@ export class CacheManager {
     locale: string,
     key: string,
     params: TranslationParams,
-    value: string
+    value: string,
   ): void {
     this.translationCache.cacheTranslation(locale, key, params, value)
     this.updateStats()
@@ -168,9 +169,9 @@ export class CacheManager {
   warmUp(
     locale: string,
     keys: string[],
-    translator: (key: string) => string
+    translator: (key: string) => string,
   ): void {
-    const entries: Array<{ locale: string; key: string; params?: Record<string, any>; value: string }> = []
+    const entries: Array<{ locale: string, key: string, params?: Record<string, any>, value: string }> = []
 
     for (const key of keys) {
       try {
@@ -179,10 +180,11 @@ export class CacheManager {
           entries.push({
             locale,
             key,
-            value: translation
+            value: translation,
           })
         }
-      } catch (error) {
+      }
+      catch (error) {
         // 忽略翻译错误，继续处理其他键
         console.warn(`Failed to warm up cache for key: ${key}`, error)
       }
@@ -211,7 +213,7 @@ export class CacheManager {
       misses: 0,
       hitRate: 0,
       size: 0,
-      memoryUsage: 0
+      memoryUsage: 0,
     }
   }
 
@@ -248,7 +250,7 @@ export class CacheManager {
     return {
       isHealthy: issues.length === 0,
       issues,
-      recommendations
+      recommendations,
     }
   }
 
@@ -258,22 +260,23 @@ export class CacheManager {
    * @returns 翻译结果数组
    */
   batchGetTranslations(
-    requests: Array<{ locale: string; key: string; params?: TranslationParams }>
+    requests: Array<{ locale: string, key: string, params?: TranslationParams }>,
   ): Array<string | undefined> {
     const results: Array<string | undefined> = []
-    
+
     for (const req of requests) {
       const cached = this.translationCache.getCachedTranslation(req.locale, req.key, req.params)
       results.push(cached)
-      
+
       this.stats.totalRequests++
       if (cached !== undefined) {
         this.stats.hits++
-      } else {
+      }
+      else {
         this.stats.misses++
       }
     }
-    
+
     this.updateHitRate()
     return results
   }
@@ -288,14 +291,14 @@ export class CacheManager {
       key: string
       params?: TranslationParams
       value: string
-    }>
+    }>,
   ): void {
     for (const entry of entries) {
       this.translationCache.cacheTranslation(
         entry.locale,
         entry.key,
         entry.params || {},
-        entry.value
+        entry.value,
       )
     }
     this.updateStats()

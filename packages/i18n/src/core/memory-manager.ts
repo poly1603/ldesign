@@ -1,8 +1,8 @@
 /**
  * 内存管理器
- * 
+ *
  * 管理I18n系统的内存使用，提供内存压力检测和自动清理功能
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
@@ -87,7 +87,7 @@ export class MemoryManager {
       autoCleanup: true,
       emergencyThreshold: 0.95, // 95%
       cleanupStrategy: 'hybrid',
-      ...config
+      ...config,
     }
 
     this.stats = {
@@ -96,7 +96,7 @@ export class MemoryManager {
       translationMemory: 0,
       otherMemory: 0,
       pressureLevel: 0,
-      underPressure: false
+      underPressure: false,
     }
 
     if (this.config.autoCleanup) {
@@ -111,7 +111,7 @@ export class MemoryManager {
     key: string,
     size: number,
     type: 'cache' | 'translation' | 'other' = 'other',
-    priority: number = 1
+    priority: number = 1,
   ): void {
     const now = TimeUtils.now()
     const existingItem = this.items.get(key)
@@ -124,7 +124,8 @@ export class MemoryManager {
       existingItem.accessCount++
       existingItem.priority = priority
       existingItem.type = type
-    } else {
+    }
+    else {
       // 添加新项
       this.items.set(key, {
         key,
@@ -132,7 +133,7 @@ export class MemoryManager {
         lastAccessed: now,
         accessCount: 1,
         priority,
-        type
+        type,
       })
     }
 
@@ -145,7 +146,8 @@ export class MemoryManager {
    */
   removeItem(key: string): boolean {
     const item = this.items.get(key)
-    if (!item) return false
+    if (!item)
+      return false
 
     this.items.delete(key)
     this.updateStats(item.size, -1, item.type)
@@ -157,7 +159,8 @@ export class MemoryManager {
    */
   accessItem(key: string): void {
     const item = this.items.get(key)
-    if (!item) return
+    if (!item)
+      return
 
     item.lastAccessed = TimeUtils.now()
     item.accessCount++
@@ -228,7 +231,7 @@ export class MemoryManager {
    */
   getMemoryReport(): {
     stats: MemoryStats
-    topConsumers: Array<{ key: string; size: number; type: string }>
+    topConsumers: Array<{ key: string, size: number, type: string }>
     recommendations: string[]
   } {
     const topConsumers = Array.from(this.items.values())
@@ -237,7 +240,7 @@ export class MemoryManager {
       .map(item => ({
         key: item.key,
         size: item.size,
-        type: item.type
+        type: item.type,
       }))
 
     const recommendations = this.generateRecommendations()
@@ -245,7 +248,7 @@ export class MemoryManager {
     return {
       stats: this.getStats(),
       topConsumers,
-      recommendations
+      recommendations,
     }
   }
 
@@ -265,7 +268,8 @@ export class MemoryManager {
    * 启动自动清理
    */
   private startAutoCleanup(): void {
-    if (this.cleanupTimer) return
+    if (this.cleanupTimer)
+      return
 
     this.cleanupTimer = setInterval(() => {
       this.cleanup()
@@ -304,15 +308,17 @@ export class MemoryManager {
     // 懒检查：每50次操作才检查一次，除非已经在压力下
     this.operationCount++
     const shouldCheck = this.operationCount >= this.cleanupCheckThreshold || this.stats.underPressure
-    
-    if (!shouldCheck) return
-    
+
+    if (!shouldCheck)
+      return
+
     this.operationCount = 0
-    
+
     if (this.stats.pressureLevel > this.config.emergencyThreshold) {
       // 紧急清理
       this.emergencyCleanup()
-    } else if (this.stats.underPressure) {
+    }
+    else if (this.stats.underPressure) {
       // 常规清理
       this.cleanup()
     }
@@ -324,8 +330,8 @@ export class MemoryManager {
   private shouldCleanup(): boolean {
     const timeSinceLastCleanup = TimeUtils.now() - this.lastCleanup
     return (
-      this.stats.underPressure ||
-      timeSinceLastCleanup > this.config.cleanupInterval * 2
+      this.stats.underPressure
+      || timeSinceLastCleanup > this.config.cleanupInterval * 2
     )
   }
 
@@ -336,17 +342,17 @@ export class MemoryManager {
     // 优化：如果项目太多，使用采样而非完整扫描
     const allItems = Array.from(this.items.values())
     const sampleSize = Math.min(allItems.length, 500) // 最多采样500个
-    const items = allItems.length > sampleSize 
+    const items = allItems.length > sampleSize
       ? this.sampleItems(allItems, sampleSize)
       : allItems
-    
+
     const targetReduction = Math.max(
       this.stats.totalMemory * 0.1, // 至少清理10%
-      this.stats.totalMemory - this.config.maxMemory * this.config.pressureThreshold
+      this.stats.totalMemory - this.config.maxMemory * this.config.pressureThreshold,
     )
 
     let selectedItems: MemoryItem[] = []
-    let totalSize = 0
+    const totalSize = 0
 
     switch (this.config.cleanupStrategy) {
       case 'lru':
@@ -397,11 +403,11 @@ export class MemoryManager {
    */
   private selectByHybrid(items: MemoryItem[], targetSize: number): MemoryItem[] {
     const now = TimeUtils.now()
-    
+
     // 计算综合分数（越低越容易被清理）
     const scored = items.map(item => ({
       ...item,
-      score: this.calculateHybridScore(item, now)
+      score: this.calculateHybridScore(item, now),
     }))
 
     const sorted = scored.sort((a, b) => a.score - b.score)
@@ -422,9 +428,9 @@ export class MemoryManager {
     const normalizedPriority = item.priority / 10 // 假设最大优先级为10
 
     return (
-      normalizedAge * ageWeight +
-      (1 - normalizedFrequency) * frequencyWeight +
-      (1 - normalizedPriority) * priorityWeight
+      normalizedAge * ageWeight
+      + (1 - normalizedFrequency) * frequencyWeight
+      + (1 - normalizedPriority) * priorityWeight
     )
   }
 
@@ -436,7 +442,8 @@ export class MemoryManager {
     let totalSize = 0
 
     for (const item of items) {
-      if (totalSize >= targetSize) break
+      if (totalSize >= targetSize)
+        break
       selected.push(item)
       totalSize += item.size
     }
@@ -475,7 +482,7 @@ export class MemoryManager {
       translationMemory: 0,
       otherMemory: 0,
       pressureLevel: 0,
-      underPressure: false
+      underPressure: false,
     }
   }
 
@@ -485,11 +492,11 @@ export class MemoryManager {
   private sampleItems(items: MemoryItem[], sampleSize: number): MemoryItem[] {
     const sampled: MemoryItem[] = []
     const step = Math.floor(items.length / sampleSize)
-    
+
     for (let i = 0; i < items.length && sampled.length < sampleSize; i += step) {
       sampled.push(items[i])
     }
-    
+
     return sampled
   }
 }

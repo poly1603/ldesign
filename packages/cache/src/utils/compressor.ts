@@ -351,10 +351,8 @@ export class Compressor {
    */
   isCompressed(data: string): boolean {
     // 检查常见的压缩格式魔术字节
-    if (data.startsWith('H4sI')) 
-      return true // GZIP base64
-    if (data.startsWith('eJ')) 
-      return true // Deflate base64
+    if (data.startsWith('H4sI')) { return true } // GZIP base64
+    if (data.startsWith('eJ')) { return true } // Deflate base64
     
     // 检查熵值（压缩数据通常有较高的熵）
     const entropy = this.calculateEntropy(data)
@@ -464,8 +462,7 @@ export function withCompression<T extends { set: any, get: any, has?: any, remov
   proxy.get = async function (key: string) {
     const stored = await cache.get(key)
     
-    if (!stored) 
-      return null
+    if (!stored) { return null }
     
     // 检查是否是压缩数据
     if (stored && typeof stored === 'object' && stored.compressed && stored.algorithm) {

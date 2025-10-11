@@ -280,7 +280,6 @@
     "@ldesign/api": "workspace:*",
     "@ldesign/cache": "workspace:*",
     "@ldesign/color": "workspace:*",
-    "@ldesign/config-editor": "workspace:*",
     "@ldesign/crypto": "workspace:*",
     "@ldesign/device": "workspace:*",
     "@ldesign/engine": "workspace:*",

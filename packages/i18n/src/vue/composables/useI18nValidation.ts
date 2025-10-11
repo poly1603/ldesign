@@ -1,6 +1,6 @@
 /**
  * useI18nValidation - 表单验证翻译组合式API
- * 
+ *
  * 提供表单验证相关的翻译功能，包括：
  * - 验证错误消息翻译
  * - 字段标签翻译
@@ -8,23 +8,23 @@
  * - 动态验证消息生成
  */
 
-import { computed, inject, ref, reactive } from 'vue'
+import { computed, inject, reactive, ref } from 'vue'
 import { I18nInjectionKey } from '../plugin'
 
 /**
  * 验证规则类型
  */
-export type ValidationRule = 
-  | 'required' 
-  | 'email' 
-  | 'url' 
-  | 'number' 
-  | 'integer' 
-  | 'min' 
-  | 'max' 
-  | 'minLength' 
-  | 'maxLength' 
-  | 'pattern' 
+export type ValidationRule =
+  | 'required'
+  | 'email'
+  | 'url'
+  | 'number'
+  | 'integer'
+  | 'min'
+  | 'max'
+  | 'minLength'
+  | 'maxLength'
+  | 'pattern'
   | 'custom'
 
 /**
@@ -86,12 +86,12 @@ export function useI18nValidation(options: ValidationOptions = {}) {
     labelPrefix = 'fields',
     autoGenerateLabels = true,
     includeFieldName = true,
-    messageGenerator
+    messageGenerator,
   } = options
 
   // 字段配置存储
   const fieldConfigs = reactive<Map<string, FieldConfig>>(new Map())
-  
+
   // 验证错误存储
   const validationErrors = ref<ValidationError[]>([])
 
@@ -114,23 +114,23 @@ export function useI18nValidation(options: ValidationOptions = {}) {
    */
   function getFieldLabel(fieldName: string): string {
     const config = fieldConfigs.get(fieldName)
-    
+
     if (config?.labelKey) {
       return i18n.t(config.labelKey)
     }
-    
+
     if (autoGenerateLabels) {
       const labelKey = `${labelPrefix}.${fieldName}`
       const label = i18n.t(labelKey)
-      
+
       // 如果翻译不存在，使用字段名的友好格式
       if (label === labelKey) {
         return fieldName.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
       }
-      
+
       return label
     }
-    
+
     return fieldName
   }
 
@@ -139,11 +139,11 @@ export function useI18nValidation(options: ValidationOptions = {}) {
    */
   function getFieldDescription(fieldName: string): string {
     const config = fieldConfigs.get(fieldName)
-    
+
     if (config?.descriptionKey) {
       return i18n.t(config.descriptionKey)
     }
-    
+
     return ''
   }
 
@@ -152,11 +152,11 @@ export function useI18nValidation(options: ValidationOptions = {}) {
    */
   function getFieldPlaceholder(fieldName: string): string {
     const config = fieldConfigs.get(fieldName)
-    
+
     if (config?.placeholderKey) {
       return i18n.t(config.placeholderKey)
     }
-    
+
     // 自动生成占位符
     const label = getFieldLabel(fieldName)
     const placeholder = i18n.t('common.enter_field', { field: label })
@@ -168,19 +168,19 @@ export function useI18nValidation(options: ValidationOptions = {}) {
    * 获取验证错误消息
    */
   function getValidationMessage(
-    fieldName: string, 
-    rule: ValidationRule, 
-    params: Record<string, unknown> = {}
+    fieldName: string,
+    rule: ValidationRule,
+    params: Record<string, unknown> = {},
   ): string {
     const config = fieldConfigs.get(fieldName)
     const fieldLabel = getFieldLabel(fieldName)
-    
+
     // 构建消息参数
     const messageParams = {
       field: fieldLabel,
       fieldName,
       ...params,
-      ...(includeFieldName ? { fieldName } : {})
+      ...(includeFieldName ? { fieldName } : {}),
     }
 
     // 使用自定义消息生成器
@@ -213,7 +213,7 @@ export function useI18nValidation(options: ValidationOptions = {}) {
    */
   function getBuiltinMessage(rule: ValidationRule, params: Record<string, unknown>): string {
     const { field } = params
-    
+
     switch (rule) {
       case 'required':
         return `${field}是必填项`
@@ -244,23 +244,23 @@ export function useI18nValidation(options: ValidationOptions = {}) {
    * 添加验证错误
    */
   function addValidationError(
-    fieldName: string, 
-    rule: ValidationRule, 
-    params?: Record<string, unknown>
+    fieldName: string,
+    rule: ValidationRule,
+    params?: Record<string, unknown>,
   ) {
     const message = getValidationMessage(fieldName, rule, params)
     const error: ValidationError = {
       field: fieldName,
       rule,
       message,
-      params
+      params,
     }
-    
+
     // 移除同字段同规则的旧错误
     validationErrors.value = validationErrors.value.filter(
-      err => !(err.field === fieldName && err.rule === rule)
+      err => !(err.field === fieldName && err.rule === rule),
     )
-    
+
     validationErrors.value.push(error)
   }
 
@@ -270,11 +270,12 @@ export function useI18nValidation(options: ValidationOptions = {}) {
   function removeValidationError(fieldName: string, rule?: ValidationRule) {
     if (rule) {
       validationErrors.value = validationErrors.value.filter(
-        err => !(err.field === fieldName && err.rule === rule)
+        err => !(err.field === fieldName && err.rule === rule),
       )
-    } else {
+    }
+    else {
       validationErrors.value = validationErrors.value.filter(
-        err => err.field !== fieldName
+        err => err.field !== fieldName,
       )
     }
   }
@@ -328,10 +329,10 @@ export function useI18nValidation(options: ValidationOptions = {}) {
     const stats = {
       total: validationErrors.value.length,
       byField: {} as Record<string, number>,
-      byRule: {} as Record<string, number>
+      byRule: {} as Record<string, number>,
     }
 
-    validationErrors.value.forEach(error => {
+    validationErrors.value.forEach((error) => {
       stats.byField[error.field] = (stats.byField[error.field] || 0) + 1
       stats.byRule[error.rule] = (stats.byRule[error.rule] || 0) + 1
     })
@@ -343,32 +344,32 @@ export function useI18nValidation(options: ValidationOptions = {}) {
     // 字段管理
     registerField,
     registerFields,
-    
+
     // 字段信息获取
     getFieldLabel,
     getFieldDescription,
     getFieldPlaceholder,
-    
+
     // 验证消息
     getValidationMessage,
-    
+
     // 错误管理
     addValidationError,
     removeValidationError,
     clearValidationErrors,
-    
+
     // 错误查询
     getFieldErrors,
     getFirstFieldError,
     hasFieldError,
-    
+
     // 响应式状态
     allErrors,
     hasErrors,
     errorStats,
-    
+
     // 字段配置
-    fieldConfigs: computed(() => fieldConfigs)
+    fieldConfigs: computed(() => fieldConfigs),
   }
 }
 
@@ -377,7 +378,7 @@ export function useI18nValidation(options: ValidationOptions = {}) {
  */
 function createFallbackValidation() {
   const validationErrors = ref<ValidationError[]>([])
-  
+
   return {
     registerField: () => {},
     registerFields: () => {},
@@ -394,6 +395,6 @@ function createFallbackValidation() {
     allErrors: computed(() => []),
     hasErrors: computed(() => false),
     errorStats: computed(() => ({ total: 0, byField: {}, byRule: {} })),
-    fieldConfigs: computed(() => new Map())
+    fieldConfigs: computed(() => new Map()),
   }
 }

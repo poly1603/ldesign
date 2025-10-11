@@ -76,14 +76,12 @@
       "import": "./es/vue/*.js",
       "require": "./lib/vue/*.cjs"
     },
-    "./es/index.css": "./es/index.css",
     "./es/vue/components/DeviceInfo.vue.css": "./es/vue/components/DeviceInfo.vue.css",
     "./es/vue/components/NetworkStatus.vue.css": "./es/vue/components/NetworkStatus.vue.css",
-    "./lib/index.css": "./lib/index.css",
+    "./es/vue/index.css": "./es/vue/index.css",
     "./lib/vue/components/DeviceInfo.vue.css": "./lib/vue/components/DeviceInfo.vue.css",
     "./lib/vue/components/NetworkStatus.vue.css": "./lib/vue/components/NetworkStatus.vue.css",
-    "./dist/index.css": "./dist/index.css",
-    "./dist/index.min.css": "./dist/index.min.css"
+    "./lib/vue/index.css": "./lib/vue/index.css"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",

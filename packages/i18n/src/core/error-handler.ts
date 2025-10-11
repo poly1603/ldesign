@@ -1,8 +1,8 @@
 /**
  * 错误处理工具类
- * 
+ *
  * 提供统一的错误处理接口和策略
- * 
+ *
  * @author LDesign Team
  * @version 2.0.0
  */
@@ -20,7 +20,7 @@ export enum ErrorHandlingStrategy {
   /** 严格处理 - 抛出错误 */
   STRICT = 'strict',
   /** 降级处理 - 尝试降级方案 */
-  FALLBACK = 'fallback'
+  FALLBACK = 'fallback',
 }
 
 /**
@@ -80,7 +80,7 @@ export class ErrorHandler {
       strategies: new Map(),
       enableRecovery: true,
       maxRetries: 3,
-      ...config
+      ...config,
     }
   }
 
@@ -93,12 +93,13 @@ export class ErrorHandler {
   handle(error: Error, context: ErrorContext): ErrorHandlingResult {
     const i18nError = this.normalizeError(error, context)
     const strategy = this.getStrategy(i18nError)
-    
+
     // 调用错误回调
     if (this.config.onError) {
       try {
         this.config.onError(i18nError, context)
-      } catch (callbackError) {
+      }
+      catch (callbackError) {
         console.error('Error in error callback:', callbackError)
       }
     }
@@ -116,14 +117,14 @@ export class ErrorHandler {
   handleTranslationMissing(
     key: string,
     locale: string,
-    fallbackValue?: string
+    fallbackValue?: string,
   ): ErrorHandlingResult {
     const error = new TranslationKeyError(key, locale)
     const context: ErrorContext = {
       operation: 'translation',
       locale,
       key,
-      metadata: { fallbackValue }
+      metadata: { fallbackValue },
     }
 
     return this.handle(error, context)
@@ -137,13 +138,13 @@ export class ErrorHandler {
    */
   handleLanguageLoadError(
     locale: string,
-    originalError: Error
+    originalError: Error,
   ): ErrorHandlingResult {
     const error = new LanguageLoadError(locale, originalError)
     const context: ErrorContext = {
       operation: 'language_load',
       locale,
-      metadata: { originalError }
+      metadata: { originalError },
     }
 
     return this.handle(error, context)
@@ -165,7 +166,8 @@ export class ErrorHandler {
   resetRetryCount(key?: string): void {
     if (key) {
       this.retryCount.delete(key)
-    } else {
+    }
+    else {
       this.retryCount.clear()
     }
   }
@@ -190,9 +192,9 @@ export class ErrorHandler {
           locale: context.locale,
           key: context.key,
           originalError: error,
-          ...context.metadata
-        }
-      }
+          ...context.metadata,
+        },
+      },
     )
   }
 
@@ -215,7 +217,7 @@ export class ErrorHandler {
   private applyStrategy(
     error: I18nError,
     strategy: ErrorHandlingStrategy,
-    context: ErrorContext
+    context: ErrorContext,
   ): ErrorHandlingResult {
     const retryKey = `${context.operation}:${context.locale}:${context.key}`
     const currentRetries = this.retryCount.get(retryKey) || 0
@@ -227,7 +229,7 @@ export class ErrorHandler {
       case ErrorHandlingStrategy.WARN:
         console.warn(`[I18n Warning] ${error.message}`, {
           code: error.code,
-          context: context
+          context,
         })
         return { handled: true, shouldRetry: false }
 
@@ -239,13 +241,13 @@ export class ErrorHandler {
         if (fallbackResult.fallbackValue !== undefined) {
           return fallbackResult
         }
-        
+
         // 如果降级失败且启用重试
         if (this.config.enableRecovery && currentRetries < this.config.maxRetries) {
           this.retryCount.set(retryKey, currentRetries + 1)
           return { handled: false, shouldRetry: true }
         }
-        
+
         // 降级失败，使用警告策略
         return this.applyStrategy(error, ErrorHandlingStrategy.WARN, context)
 
@@ -267,7 +269,7 @@ export class ErrorHandler {
       return {
         handled: true,
         shouldRetry: false,
-        fallbackValue: context.metadata?.fallbackValue || context.key
+        fallbackValue: context.metadata?.fallbackValue || context.key,
       }
     }
 
@@ -276,7 +278,7 @@ export class ErrorHandler {
       // 可以尝试加载降级语言
       return {
         handled: false,
-        shouldRetry: true
+        shouldRetry: true,
       }
     }
 

@@ -1,31 +1,36 @@
-import { defineConfig } from '@ldesign/builder'
+﻿import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
-  // 禁用构建后验证（库项目不需要运行测试验证）
+  // Output format config
+  output: {
+    format: ['esm', 'cjs', 'umd']
+  },
+
+  // 绂佺敤鏋勫缓鍚庨獙璇侊紙搴撻」鐩笉闇€瑕佽繍琛屾祴璇曢獙璇侊級
   postBuildValidation: {
     enabled: false
   },
 
-  // 生成类型声明文件
-  dts: true,
+  // 鐢熸垚绫诲瀷澹版槑鏂囦欢
+  dts: false,
 
-  // 生成 source map
+  // 鐢熸垚 source map
   sourcemap: true,
 
-  // 清理输出目录
+  // 娓呯悊杈撳嚭鐩綍
   clean: true,
 
-  // 不压缩代码（开发阶段）
+  // 涓嶅帇缂╀唬鐮侊紙寮€鍙戦樁娈碉級
   minify: false,
 
-  // UMD 构建配置
+  // UMD 鏋勫缓閰嶇疆
   umd: {
     enabled: true,
-    minify: true, // UMD版本启用压缩
-    fileName: 'index.js', // 去掉 .umd 后缀
+    minify: true, // UMD鐗堟湰鍚敤鍘嬬缉
+    fileName: 'index.js', // 鍘绘帀 .umd 鍚庣紑
   },
 
-  // 外部依赖配置
+  // 澶栭儴渚濊禆閰嶇疆
   external: [
     'vue',
     'crypto-js',
@@ -46,7 +51,7 @@ export default defineConfig({
     'node:worker_threads',
   ],
 
-  // 全局变量配置
+  // 鍏ㄥ眬鍙橀噺閰嶇疆
   globals: {
     'vue': 'Vue',
     'crypto-js': 'CryptoJS',
@@ -54,17 +59,21 @@ export default defineConfig({
     'tslib': 'tslib',
   },
 
-  // 日志级别设置为 silent，只显示错误信息
+  // 鏃ュ織绾у埆璁剧疆涓?silent锛屽彧鏄剧ず閿欒淇℃伅
   logLevel: 'silent',
 
-  // 构建选项
+  // TypeScript 閰嶇疆
+  tsconfig: './tsconfig.rollup.json',
+
+  // 鏋勫缓閫夐」
   build: {
-    // 禁用构建警告
+    // 绂佺敤鏋勫缓璀﹀憡
     rollupOptions: {
       onwarn: (_warning, _warn) => {
-        // 完全静默，不输出任何警告
+        // 瀹屽叏闈欓粯锛屼笉杈撳嚭浠讳綍璀﹀憡
 
       },
     },
   },
 })
+

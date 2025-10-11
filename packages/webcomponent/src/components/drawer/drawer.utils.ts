@@ -173,94 +173,202 @@ export function unlockContainerScroll(container: HTMLElement): void {
 
 /** 锁定页面滚动 - 优化版本，防止页面抖动 */
 export function lockPageScroll(): void {
-  // 计算滚动条宽度
+  // 检查是否已经锁定
+  const lockCount = parseInt(document.body.getAttribute('data-scroll-lock-count') || '0');
+  
+  // 增加锁定计数（支持多个 drawer 同时打开）
+  document.body.setAttribute('data-scroll-lock-count', (lockCount + 1).toString());
+  
+  // 如果已经锁定过，不重复处理
+  if (lockCount > 0) {
+    return;
+  }
+  
+  // 保存当前滚动位置
+  const scrollY = window.scrollY || window.pageYOffset;
+  const scrollX = window.scrollX || window.pageXOffset;
+  document.body.setAttribute('data-scroll-y', scrollY.toString());
+  document.body.setAttribute('data-scroll-x', scrollX.toString());
+  
+  // 计算滚动条宽度（在设置 overflow: hidden 之前）
   const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
   
-  // 保存原始样式（用于恢复）
-  if (!document.body.hasAttribute('data-scroll-locked')) {
-    const originalOverflow = window.getComputedStyle(document.body).overflow;
-    const originalPaddingRight = window.getComputedStyle(document.body).paddingRight;
-    const originalPosition = window.getComputedStyle(document.body).position;
-    
-    document.body.setAttribute('data-scroll-locked', 'true');
-    document.body.setAttribute('data-original-overflow', originalOverflow);
-    document.body.setAttribute('data-original-padding-right', originalPaddingRight);
-    document.body.setAttribute('data-original-position', originalPosition);
-    
-    // 保存当前滚动位置
-    const scrollY = window.scrollY || window.pageYOffset;
-    document.body.setAttribute('data-scroll-y', scrollY.toString());
-  }
+  // 保存原始样式
+  const originalOverflow = window.getComputedStyle(document.body).overflow;
+  const originalOverflowX = window.getComputedStyle(document.body).overflowX;
+  const originalOverflowY = window.getComputedStyle(document.body).overflowY;
+  const originalPaddingRight = window.getComputedStyle(document.body).paddingRight;
+  const originalPosition = window.getComputedStyle(document.body).position;
   
-  // 锁定滚动
-  document.body.style.overflow = 'hidden';
+  document.body.setAttribute('data-original-overflow', originalOverflow);
+  document.body.setAttribute('data-original-overflow-x', originalOverflowX);
+  document.body.setAttribute('data-original-overflow-y', originalOverflowY);
+  document.body.setAttribute('data-original-padding-right', originalPaddingRight);
+  document.body.setAttribute('data-original-position', originalPosition);
+  document.body.setAttribute('data-scrollbar-width', scrollbarWidth.toString());
   
-  // 补偿滚动条宽度，防止内容抖动
+  // 锁定滚动 - 先设置 padding，再设置 overflow
+  // 这样可以避免瞬间的抖动
   if (scrollbarWidth > 0) {
-    const currentPadding = parseInt(document.body.getAttribute('data-original-padding-right') || '0');
+    const currentPadding = parseInt(originalPaddingRight) || 0;
     document.body.style.paddingRight = `${currentPadding + scrollbarWidth}px`;
     
-    // 同时补偿 fixed 元素（如头部导航栏）
-    const fixedElements = document.querySelectorAll('[data-fixed-compensate]');
-    fixedElements.forEach((el: Element) => {
-      const htmlEl = el as HTMLElement;
-      const originalPadding = window.getComputedStyle(htmlEl).paddingRight;
-      htmlEl.setAttribute('data-original-padding-right', originalPadding);
-      const currentPadding = parseInt(originalPadding) || 0;
-      htmlEl.style.paddingRight = `${currentPadding + scrollbarWidth}px`;
-    });
+    // 同时补偿所有 fixed 和 sticky 定位的元素
+    compensateFixedElements(scrollbarWidth);
   }
+  
+  // 然后再设置 overflow
+  requestAnimationFrame(() => {
+    document.body.style.overflow = 'hidden';
+  });
   
   // 移动设备的额外处理：使用 position: fixed 防止滚动突破
   // 仅在 iOS 上使用，因为 overflow:hidden 在 iOS 上不可靠
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
   if (isIOS) {
-    const scrollY = parseInt(document.body.getAttribute('data-scroll-y') || '0');
     document.body.style.position = 'fixed';
     document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = `-${scrollX}px`;
     document.body.style.width = '100%';
+    document.body.style.height = '100%';
   }
+}
+
+/** 补偿 fixed 和 sticky 元素的滚动条宽度 */
+function compensateFixedElements(scrollbarWidth: number): void {
+  // 查找所有 fixed 和 sticky 定位的元素
+  const allElements = document.querySelectorAll('*');
+  const elementsToCompensate: HTMLElement[] = [];
+  
+  allElements.forEach((el: Element) => {
+    const htmlEl = el as HTMLElement;
+    const computedStyle = window.getComputedStyle(htmlEl);
+    const position = computedStyle.position;
+    
+    // 补偿 fixed 或 sticky 元素，或者带有 data-fixed-compensate 属性的元素
+    if (
+      position === 'fixed' || 
+      position === 'sticky' || 
+      htmlEl.hasAttribute('data-fixed-compensate')
+    ) {
+      // 检查元素是否在视口右侧或全宽
+      const rect = htmlEl.getBoundingClientRect();
+      const isFullWidth = rect.width >= window.innerWidth - 20; // 允许一些容差
+      const isRightAligned = rect.right >= window.innerWidth - 20;
+      
+      if (isFullWidth || isRightAligned) {
+        elementsToCompensate.push(htmlEl);
+      }
+    }
+  });
+  
+  // 应用补偿
+  elementsToCompensate.forEach((htmlEl) => {
+    const originalPaddingRight = window.getComputedStyle(htmlEl).paddingRight;
+    const originalRight = window.getComputedStyle(htmlEl).right;
+    
+    htmlEl.setAttribute('data-original-padding-right', originalPaddingRight);
+    htmlEl.setAttribute('data-original-right', originalRight);
+    htmlEl.setAttribute('data-scroll-compensated', 'true');
+    
+    const currentPadding = parseInt(originalPaddingRight) || 0;
+    
+    // 如果元素使用了 right 定位，调整 right 值
+    if (originalRight !== 'auto' && originalRight !== '0px') {
+      const currentRight = parseInt(originalRight) || 0;
+      htmlEl.style.right = `${currentRight + scrollbarWidth}px`;
+    } else {
+      // 否则调整 padding-right
+      htmlEl.style.paddingRight = `${currentPadding + scrollbarWidth}px`;
+    }
+  });
 }
 
 /** 解锁页面滚动 - 优化版本，恢复原始状态 */
 export function unlockPageScroll(): void {
-  if (!document.body.hasAttribute('data-scroll-locked')) {
+  // 获取锁定计数
+  const lockCount = parseInt(document.body.getAttribute('data-scroll-lock-count') || '0');
+  
+  if (lockCount <= 0) {
+    return;
+  }
+  
+  // 减少锁定计数
+  const newLockCount = lockCount - 1;
+  document.body.setAttribute('data-scroll-lock-count', newLockCount.toString());
+  
+  // 如果还有其他 drawer 在显示，不解锁
+  if (newLockCount > 0) {
     return;
   }
   
   // 恢复原始样式
   const originalOverflow = document.body.getAttribute('data-original-overflow') || '';
+  const originalOverflowX = document.body.getAttribute('data-original-overflow-x') || '';
+  const originalOverflowY = document.body.getAttribute('data-original-overflow-y') || '';
   const originalPaddingRight = document.body.getAttribute('data-original-padding-right') || '';
   const originalPosition = document.body.getAttribute('data-original-position') || '';
   const scrollY = parseInt(document.body.getAttribute('data-scroll-y') || '0');
+  const scrollX = parseInt(document.body.getAttribute('data-scroll-x') || '0');
   
+  // 先恢复 overflow，再恢复 padding
+  // 这样可以避免瞬间的抖动
   document.body.style.overflow = originalOverflow;
-  document.body.style.paddingRight = originalPaddingRight;
+  if (originalOverflowX) document.body.style.overflowX = originalOverflowX;
+  if (originalOverflowY) document.body.style.overflowY = originalOverflowY;
+  
+  // 延迟恢复 padding，让浏览器先渲染出滚动条
+  requestAnimationFrame(() => {
+    document.body.style.paddingRight = originalPaddingRight;
+    
+    // 恢复所有被补偿的元素
+    restoreFixedElements();
+  });
   
   // 移除标记
-  document.body.removeAttribute('data-scroll-locked');
+  document.body.removeAttribute('data-scroll-lock-count');
   document.body.removeAttribute('data-original-overflow');
+  document.body.removeAttribute('data-original-overflow-x');
+  document.body.removeAttribute('data-original-overflow-y');
   document.body.removeAttribute('data-original-padding-right');
   document.body.removeAttribute('data-original-position');
   document.body.removeAttribute('data-scroll-y');
-  
-  // 恢复 fixed 元素的 padding
-  const fixedElements = document.querySelectorAll('[data-fixed-compensate][data-original-padding-right]');
-  fixedElements.forEach((el: Element) => {
-    const htmlEl = el as HTMLElement;
-    const originalPadding = htmlEl.getAttribute('data-original-padding-right') || '';
-    htmlEl.style.paddingRight = originalPadding;
-    htmlEl.removeAttribute('data-original-padding-right');
-  });
+  document.body.removeAttribute('data-scroll-x');
+  document.body.removeAttribute('data-scrollbar-width');
   
   // iOS 的特殊处理：恢复位置和滚动
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
   if (isIOS) {
     document.body.style.position = originalPosition;
     document.body.style.top = '';
+    document.body.style.left = '';
     document.body.style.width = '';
-    window.scrollTo(0, scrollY);
+    document.body.style.height = '';
+    window.scrollTo(scrollX, scrollY);
   }
+}
+
+/** 恢复 fixed 和 sticky 元素的原始状态 */
+function restoreFixedElements(): void {
+  const compensatedElements = document.querySelectorAll('[data-scroll-compensated="true"]');
+  
+  compensatedElements.forEach((el: Element) => {
+    const htmlEl = el as HTMLElement;
+    const originalPaddingRight = htmlEl.getAttribute('data-original-padding-right');
+    const originalRight = htmlEl.getAttribute('data-original-right');
+    
+    if (originalPaddingRight !== null) {
+      htmlEl.style.paddingRight = originalPaddingRight;
+      htmlEl.removeAttribute('data-original-padding-right');
+    }
+    
+    if (originalRight !== null) {
+      htmlEl.style.right = originalRight;
+      htmlEl.removeAttribute('data-original-right');
+    }
+    
+    htmlEl.removeAttribute('data-scroll-compensated');
+  });
 }
 
 /** 管理抽屉堆栈 */

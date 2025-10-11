@@ -1,23 +1,17 @@
 <!--
   I18nN 数字格式化组件
-  
+
   用于数字格式化的 Vue 组件
-  
+
   @example
   <I18nN :value="1234.56" />
   <I18nN :value="1234.56" format="currency" currency="USD" />
   <I18nN :value="0.85" format="percent" />
 -->
 
-<template>
-  <component :is="tag" v-if="formattedValue">
-    {{ formattedValue }}
-  </component>
-</template>
-
 <script setup lang="ts">
-import { computed, inject } from 'vue'
 import type { I18nInjectionKey } from '../types'
+import { computed, inject } from 'vue'
 import { formatCurrency } from '../../utils/formatters'
 
 /**
@@ -46,7 +40,7 @@ const props = withDefaults(defineProps<{
   tag: 'span',
   currency: 'USD',
   minimumFractionDigits: 0,
-  maximumFractionDigits: 3
+  maximumFractionDigits: 3,
 })
 
 /**
@@ -63,35 +57,35 @@ if (!i18n) {
 const formattedValue = computed(() => {
   try {
     const locale = props.locale || i18n.getCurrentLanguage()
-    
+
     switch (props.format) {
       case 'currency':
         return formatCurrency(props.value, {
           locale,
           currency: props.currency,
           minimumFractionDigits: props.minimumFractionDigits,
-          maximumFractionDigits: props.maximumFractionDigits
+          maximumFractionDigits: props.maximumFractionDigits,
         })
-      
+
       case 'percent':
         return new Intl.NumberFormat(locale, {
           style: 'percent',
           minimumFractionDigits: props.minimumFractionDigits,
-          maximumFractionDigits: props.maximumFractionDigits
+          maximumFractionDigits: props.maximumFractionDigits,
         }).format(props.value)
-      
+
       case 'decimal':
         return new Intl.NumberFormat(locale, {
           style: 'decimal',
           minimumFractionDigits: props.minimumFractionDigits,
-          maximumFractionDigits: props.maximumFractionDigits
+          maximumFractionDigits: props.maximumFractionDigits,
         }).format(props.value)
-      
+
       case 'number':
       default:
         return new Intl.NumberFormat(locale, {
           minimumFractionDigits: props.minimumFractionDigits,
-          maximumFractionDigits: props.maximumFractionDigits
+          maximumFractionDigits: props.maximumFractionDigits,
         }).format(props.value)
     }
   } catch (error) {
@@ -102,13 +96,14 @@ const formattedValue = computed(() => {
 </script>
 
 <script lang="ts">
-/**
- * 组件名称
- */
 export default {
   name: 'I18nN',
-  inheritAttrs: false
+  inheritAttrs: false,
 }
 </script>
 
-
+<template>
+  <component :is="tag" v-bind="$attrs">
+    {{ formattedValue }}
+  </component>
+</template>

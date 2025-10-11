@@ -9,6 +9,16 @@ import { type AsyncComponentLoader, type Component, defineAsyncComponent } from 
 import { componentCache } from './cache'
 
 /**
+ * 加载优先级
+ */
+export enum LoadPriority {
+  LOW = 0,
+  NORMAL = 1,
+  HIGH = 2,
+  CRITICAL = 3,
+}
+
+/**
  * 加载器配置选项
  */
 interface LoaderOptions {
@@ -26,6 +36,12 @@ interface LoaderOptions {
   loadingComponent?: Component | null
   /** 自定义错误组件 */
   errorComponent?: Component | null
+  /** 最大并发加载数 */
+  maxConcurrent?: number
+  /** 是否启用请求去重 */
+  enableDeduplication?: boolean
+  /** 默认优先级 */
+  defaultPriority?: LoadPriority
 }
 
 /**
@@ -41,11 +57,38 @@ interface LoadResult {
 }
 
 /**
+ * 加载任务接口
+ */
+interface LoadTask {
+  metadata: TemplateMetadata
+  priority: LoadPriority
+  resolve: (component: Component) => void
+  reject: (error: Error) => void
+  startTime: number
+}
+
+/**
  * 动态组件加载器
+ * 
+ * 性能优化：
+ * - 并发加载控制
+ * - 请求去重机制
+ * - 优先级队列
+ * - 智能重试策略
+ * - 性能监控
  */
 export class ComponentLoader {
-  private options: Required<LoaderOptions>
+  private options: Required<LoaderOptions> & { maxConcurrent: number; enableDeduplication: boolean; defaultPriority: LoadPriority }
   private loadingPromises = new Map<string, Promise<Component>>()
+  private activeLoads = new Set<string>()
+  private loadQueue: LoadTask[] = []
+  private loadStats = {
+    total: 0,
+    success: 0,
+    failed: 0,
+    cached: 0,
+    totalLoadTime: 0,
+  }
 
   constructor(options: LoaderOptions = {}) {
     this.options = {
@@ -56,16 +99,24 @@ export class ComponentLoader {
       showLoading: true,
       loadingComponent: null,
       errorComponent: null,
+      maxConcurrent: 3,
+      enableDeduplication: true,
+      defaultPriority: LoadPriority.NORMAL,
       ...options,
     }
   }
 
   /**
-   * 加载模板组件
+   * 加载模板组件（带优先级）
    */
-  async loadComponent(metadata: TemplateMetadata): Promise<LoadResult> {
+  async loadComponent(
+    metadata: TemplateMetadata,
+    priority: LoadPriority = this.options.defaultPriority
+  ): Promise<LoadResult> {
     const startTime = Date.now()
     const cacheKey = this.generateCacheKey(metadata)
+    
+    this.loadStats.total++
 
     // 检查缓存
     if (this.options.enableCache) {
@@ -75,6 +126,7 @@ export class ComponentLoader {
         metadata.name,
       )
       if (cachedComponent) {
+        this.loadStats.cached++
         return {
           component: cachedComponent,
           fromCache: true,
@@ -83,19 +135,21 @@ export class ComponentLoader {
       }
     }
 
-    // 检查是否正在加载
-    const existingPromise = this.loadingPromises.get(cacheKey)
-    if (existingPromise) {
-      const component = await existingPromise
-      return {
-        component,
-        fromCache: false,
-        loadTime: Date.now() - startTime,
+    // 请求去重：检查是否正在加载
+    if (this.options.enableDeduplication) {
+      const existingPromise = this.loadingPromises.get(cacheKey)
+      if (existingPromise) {
+        const component = await existingPromise
+        return {
+          component,
+          fromCache: false,
+          loadTime: Date.now() - startTime,
+        }
       }
     }
 
     // 创建加载Promise
-    const loadPromise = this.createLoadPromise(metadata)
+    const loadPromise = this.createPriorityLoadPromise(metadata, priority)
     this.loadingPromises.set(cacheKey, loadPromise)
 
     try {
@@ -110,15 +164,79 @@ export class ComponentLoader {
           component,
         )
       }
+      
+      const loadTime = Date.now() - startTime
+      this.loadStats.success++
+      this.loadStats.totalLoadTime += loadTime
 
       return {
         component,
         fromCache: false,
-        loadTime: Date.now() - startTime,
+        loadTime,
       }
-    }
-    finally {
+    } catch (error) {
+      this.loadStats.failed++
+      throw error
+    } finally {
       this.loadingPromises.delete(cacheKey)
+    }
+  }
+
+  /**
+   * 创建带优先级的加载 Promise
+   */
+  private createPriorityLoadPromise(
+    metadata: TemplateMetadata,
+    priority: LoadPriority
+  ): Promise<Component> {
+    return new Promise((resolve, reject) => {
+      const task: LoadTask = {
+        metadata,
+        priority,
+        resolve,
+        reject,
+        startTime: Date.now(),
+      }
+
+      // 添加到队列
+      this.loadQueue.push(task)
+      
+      // 按优先级排序
+      this.loadQueue.sort((a, b) => b.priority - a.priority)
+
+      // 尝试处理队列
+      this.processQueue()
+    })
+  }
+
+  /**
+   * 处理加载队列
+   */
+  private processQueue(): void {
+    // 检查并发限制
+    while (
+      this.activeLoads.size < this.options.maxConcurrent &&
+      this.loadQueue.length > 0
+    ) {
+      const task = this.loadQueue.shift()
+      if (!task) break
+
+      const cacheKey = this.generateCacheKey(task.metadata)
+      this.activeLoads.add(cacheKey)
+
+      // 执行加载
+      this.loadComponentWithRetry(task.metadata)
+        .then((component) => {
+          task.resolve(component)
+        })
+        .catch((error) => {
+          task.reject(error)
+        })
+        .finally(() => {
+          this.activeLoads.delete(cacheKey)
+          // 继续处理队列
+          this.processQueue()
+        })
     }
   }
 
@@ -248,9 +366,65 @@ export class ComponentLoader {
    * 获取加载统计信息
    */
   getLoadingStats() {
+    const avgLoadTime = this.loadStats.success > 0
+      ? this.loadStats.totalLoadTime / this.loadStats.success
+      : 0
+
     return {
       activeLoading: this.loadingPromises.size,
+      queuedTasks: this.loadQueue.length,
+      activeLoads: this.activeLoads.size,
+      stats: {
+        ...this.loadStats,
+        avgLoadTime,
+        successRate:
+          this.loadStats.total > 0
+            ? (this.loadStats.success / this.loadStats.total) * 100
+            : 0,
+        cacheHitRate:
+          this.loadStats.total > 0
+            ? (this.loadStats.cached / this.loadStats.total) * 100
+            : 0,
+      },
       cacheStats: componentCache.getStats(),
+    }
+  }
+
+  /**
+   * 重置统计信息
+   */
+  resetStats(): void {
+    this.loadStats = {
+      total: 0,
+      success: 0,
+      failed: 0,
+      cached: 0,
+      totalLoadTime: 0,
+    }
+  }
+
+  /**
+   * 获取当前负载情况
+   */
+  getLoadInfo() {
+    return {
+      concurrency: {
+        current: this.activeLoads.size,
+        max: this.options.maxConcurrent,
+        utilization:
+          (this.activeLoads.size / this.options.maxConcurrent) * 100,
+      },
+      queue: {
+        length: this.loadQueue.length,
+        priorities: this.loadQueue.reduce(
+          (acc, task) => {
+            acc[LoadPriority[task.priority]] =
+              (acc[LoadPriority[task.priority]] || 0) + 1
+            return acc
+          },
+          {} as Record<string, number>
+        ),
+      },
     }
   }
 }

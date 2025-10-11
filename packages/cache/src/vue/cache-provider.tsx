@@ -1,3 +1,4 @@
+import type { CacheOptions } from '../types'
 import {
   defineComponent,
   inject,
@@ -6,8 +7,6 @@ import {
   type PropType,
   provide,
 } from 'vue'
-
-import type { CacheOptions } from '../types'
 import { CacheManager } from '../core/cache-manager'
 
 // 注入键

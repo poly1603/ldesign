@@ -191,8 +191,7 @@ export class Prefetcher {
     const window = this.options.predictionWindow
     const recent = this.accessHistory.slice(-window - 1, -1)
     
-    if (recent.length < window) 
-      return
+    if (recent.length < window) { return }
 
     const pattern = recent.join('->')
     const existing = this.patterns.get(pattern) || {
@@ -251,8 +250,7 @@ export class Prefetcher {
     const window = this.options.predictionWindow
     const recent = this.accessHistory.slice(-window)
     
-    if (recent.length < window) 
-      return []
+    if (recent.length < window) { return [] }
 
     const currentPattern = recent.join('->')
     let totalMatches = 0
@@ -311,7 +309,7 @@ export class Prefetcher {
         await this.executeTasks()
       }
       else if (rule.delay) {
-        setTimeout(() => this.executeTasks(), rule.delay)
+        setTimeout(async () => this.executeTasks(), rule.delay)
       }
     }
   }

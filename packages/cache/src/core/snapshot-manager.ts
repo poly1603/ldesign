@@ -1,5 +1,6 @@
-import type { CacheManager } from './cache-manager'
 import type { SerializableValue, StorageEngine } from '../types'
+
+import type { CacheManager } from './cache-manager'
 
 /**
  * 快照数据结构
@@ -193,7 +194,8 @@ export class SnapshotManager {
       }
 
       return snapshot
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to import snapshot: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
@@ -235,13 +237,15 @@ export class SnapshotManager {
     for (const key of keys2) {
       if (!keys1.has(key)) {
         added.push(key)
-      } else {
+      }
+      else {
         const value1 = JSON.stringify(snapshot1.data[key])
         const value2 = JSON.stringify(snapshot2.data[key])
 
         if (value1 === value2) {
           unchanged.push(key)
-        } else {
+        }
+        else {
           modified.push(key)
         }
       }

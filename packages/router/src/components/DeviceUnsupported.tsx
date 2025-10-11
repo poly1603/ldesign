@@ -62,6 +62,9 @@ export default defineComponent({
       mobile: '移动设备',
       tablet: '平板设备',
       desktop: '桌面设备',
+      tv: '电视设备',
+      watch: '智能手表',
+      unknown: '未知设备',
     }
 
     // 当前设备名称
@@ -80,6 +83,9 @@ export default defineComponent({
         mobile: '📱',
         tablet: '📱',
         desktop: '🖥️',
+        tv: '📺',
+        watch: '⌚',
+        unknown: '❓',
       }
       return icons[props.device] || '📱'
     })

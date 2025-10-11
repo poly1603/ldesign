@@ -67,4 +67,3 @@ const business: BusinessTranslations = {
 }
 
 export default business
-

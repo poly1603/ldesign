@@ -101,12 +101,12 @@ export class CacheManager implements ICacheManager {
    * 启动清理定时器
    */
   private startCleanupTimer(): void {
-    if (this.options.cleanupInterval && this.options.cleanupInterval > 0) {
+    if (typeof this.options.cleanupInterval === 'number' && this.options.cleanupInterval > 0) {
       // 兼容浏览器与 Node/SSR 环境
       const setIntervalFn
         = typeof window !== 'undefined' && typeof window.setInterval === 'function'
           ? window.setInterval
-          : (globalThis as any).setInterval
+          : globalThis.setInterval
 
       this.cleanupTimer = setIntervalFn(() => {
         this.cleanup().catch((error) => {
@@ -121,7 +121,7 @@ export class CacheManager implements ICacheManager {
    */
   private async selectEngine(
     key: string,
-    value: any,
+    value: SerializableValue,
     options?: SetOptions,
   ): Promise<IStorageEngine> {
     if (options?.engine) {
@@ -169,15 +169,17 @@ export class CacheManager implements ICacheManager {
     // 回退到默认/推荐引擎（提高 SSR/Node 环境健壮性）
     const defaultEngine = this.options.defaultEngine || StorageEngineFactory.getRecommendedEngine()
     const engine = this.engines.get(defaultEngine)
-    if (engine) 
+    if (engine) {
       return engine
+    }
 
-    // 兜底：选择第一个可用引擎
+    // 兼底：选择第一个可用引擎
     const firstAvailable = Array.from(this.engines.values())[0]
-    if (firstAvailable) 
+    if (firstAvailable !== undefined) {
       return firstAvailable
+    }
 
-    throw new Error(`No storage engine is available`)
+    throw new Error('No storage engine is available')
   }
 
   /**
@@ -187,7 +189,7 @@ export class CacheManager implements ICacheManager {
     let processedKey = key
 
     // 添加前缀
-    if (this.options.keyPrefix) {
+    if (typeof this.options.keyPrefix === 'string' && this.options.keyPrefix.length > 0) {
       processedKey = `${this.options.keyPrefix}:${processedKey}`
     }
 
@@ -211,7 +213,7 @@ export class CacheManager implements ICacheManager {
     }
 
     // 移除前缀
-    if (this.options.keyPrefix) {
+    if (typeof this.options.keyPrefix === 'string' && this.options.keyPrefix.length > 0) {
       const prefix = `${this.options.keyPrefix}:`
       if (originalKey.startsWith(prefix)) {
         originalKey = originalKey.slice(prefix.length)
@@ -237,7 +239,7 @@ export class CacheManager implements ICacheManager {
    * ```
    */
   private async serializeValue(
-    value: any,
+    value: SerializableValue,
     options?: SetOptions,
   ): Promise<string> {
     try {
@@ -245,10 +247,13 @@ export class CacheManager implements ICacheManager {
       const needsEncryption = options?.encrypt || this.options.security?.encryption?.enabled
       const cacheKey = needsEncryption ? null : this.createSerializationCacheKey(value)
 
-      if (cacheKey && this.serializationCache.has(cacheKey)) {
+      if (cacheKey !== null && this.serializationCache.has(cacheKey)) {
         // 更新访问顺序
         this.serializationCacheOrder.set(cacheKey, this.serializationCacheCounter++)
-        return this.serializationCache.get(cacheKey)!
+        const cached = this.serializationCache.get(cacheKey)
+        if (cached !== undefined) {
+          return cached
+        }
       }
 
       // 检查循环引用
@@ -279,7 +284,8 @@ export class CacheManager implements ICacheManager {
         catch (error) {
           throw new Error(`Encryption failed during serialization: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
-      } else if (cacheKey) {
+      }
+      else if (cacheKey !== null) {
         // 缓存未加密的序列化结果
         this.cacheSerializationResult(cacheKey, serialized)
       }
@@ -304,11 +310,12 @@ export class CacheManager implements ICacheManager {
         return `${type}:${String(value)}`
       }
       // 对于小对象也可以缓存
-      if (type === 'object' && value && JSON.stringify(value).length < 100) {
+      if (type === 'object' && value !== null && JSON.stringify(value).length < 100) {
         return `object:${JSON.stringify(value)}`
       }
       return null
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -330,7 +337,7 @@ export class CacheManager implements ICacheManager {
         }
       }
 
-      if (oldestKey) {
+      if (oldestKey !== null) {
         this.serializationCache.delete(oldestKey)
         this.serializationCacheOrder.delete(oldestKey)
       }
@@ -394,7 +401,7 @@ export class CacheManager implements ICacheManager {
    * @param seen - 已访问的对象集合（用于检测循环引用）
    * @returns 移除循环引用后的对象
    */
-  private removeCircularReferences(obj: any, seen = new WeakSet()): any {
+  private removeCircularReferences(obj: SerializableValue, seen = new WeakSet()): SerializableValue {
     if (obj === null || typeof obj !== 'object') {
       return obj
     }
@@ -409,10 +416,10 @@ export class CacheManager implements ICacheManager {
       return obj.map(item => this.removeCircularReferences(item, seen))
     }
 
-    const result: any = {}
+    const result: Record<string, SerializableValue> = {}
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        result[key] = this.removeCircularReferences(obj[key], seen)
+        result[key] = this.removeCircularReferences((obj as Record<string, SerializableValue>)[key], seen)
       }
     }
 
@@ -444,7 +451,7 @@ export class CacheManager implements ICacheManager {
    * 注意：size 基于 JSON 字符串字节大小估算，若启用压缩请使用 compressor 统计真实值。
    */
   private createMetadata(
-    value: any,
+    value: SerializableValue,
     engine: StorageEngine,
     options?: SetOptions,
   ): CacheMetadata {
@@ -454,7 +461,7 @@ export class CacheManager implements ICacheManager {
     return {
       createdAt: now,
       lastAccessedAt: now,
-      expiresAt: options?.ttl ? now + options.ttl : undefined,
+      expiresAt: typeof options?.ttl === 'number' ? now + options.ttl : undefined,
       dataType: this.getDataType(value),
       size: new Blob([serialized]).size,
       accessCount: 0,
@@ -470,19 +477,25 @@ export class CacheManager implements ICacheManager {
   /**
    * 推断数据类型
    */
-  private getDataType(value: any): import('../types').DataType {
-    if (value === null || value === undefined)
+  private getDataType(value: SerializableValue): import('../types').DataType {
+    if (value === null || value === undefined) {
       return 'string'
-    if (typeof value === 'string')
+    }
+    if (typeof value === 'string') {
       return 'string'
-    if (typeof value === 'number')
+    }
+    if (typeof value === 'number') {
       return 'number'
-    if (typeof value === 'boolean')
+    }
+    if (typeof value === 'boolean') {
       return 'boolean'
-    if (Array.isArray(value))
+    }
+    if (Array.isArray(value)) {
       return 'array'
-    if (value instanceof ArrayBuffer || value instanceof Uint8Array)
+    }
+    if (value instanceof ArrayBuffer || value instanceof Uint8Array) {
       return 'binary'
+    }
     return 'object'
   }
 
@@ -499,7 +512,7 @@ export class CacheManager implements ICacheManager {
     // 性能优化：对高频事件进行节流
     const eventKey = `${type}:${key}:${engine}`
     const now = Date.now()
-    const lastEmitTime = this.eventThrottleMap.get(eventKey) || 0
+    const lastEmitTime = this.eventThrottleMap.get(eventKey) ?? 0
 
     // 对于某些事件类型进行节流（除了错误事件，错误事件需要立即发出）
     if (type !== 'error' && now - lastEmitTime < this.eventThrottleMs) {
@@ -538,7 +551,7 @@ export class CacheManager implements ICacheManager {
   /**
    * 发出策略选择事件
    */
-  private emitStrategyEvent<T = any>(
+  private emitStrategyEvent<T = SerializableValue>(
     key: string,
     engine: StorageEngine,
     value: T,
@@ -563,7 +576,7 @@ export class CacheManager implements ICacheManager {
 
     if (this.options.debug) {
       // eslint-disable-next-line no-console
-      console.log(`[CacheManager] strategy:`, event)
+      console.log('[CacheManager] strategy:', event)
     }
   }
 
@@ -668,18 +681,19 @@ export class CacheManager implements ICacheManager {
 
     for (const engineType of searchOrder) {
       const engine = this.engines.get(engineType)
-      if (!engine)
+      if (!engine) {
         continue
+      }
 
       try {
         // 从当前引擎获取原始数据
         const itemData = await engine.getItem(processedKey)
-        if (itemData) {
+        if (typeof itemData === 'string' && itemData.length > 0) {
           // 解析存储的数据结构 { value, metadata }
           const { value, metadata } = JSON.parse(itemData)
 
           // 检查缓存项是否已过期
-          if (metadata.expiresAt && Date.now() > metadata.expiresAt) {
+          if (typeof metadata.expiresAt === 'number' && Date.now() > metadata.expiresAt) {
             // 过期则从当前引擎中移除
             await engine.removeItem(processedKey)
             // 发出过期事件
@@ -692,8 +706,10 @@ export class CacheManager implements ICacheManager {
           metadata.accessCount++
 
           // 更新引擎命中统计
-          const stats = this.stats.get(engineType)!
-          stats.hits++
+          const stats = this.stats.get(engineType)
+          if (stats) {
+            stats.hits++
+          }
 
           // 反序列化缓存值（处理加密数据）
           const deserializedValue = await this.deserializeValue<T>(
@@ -706,7 +722,7 @@ export class CacheManager implements ICacheManager {
             const memoryEngine = this.engines.get('memory')
             if (memoryEngine) {
               try {
-                const ttlRemaining = metadata.expiresAt
+                const ttlRemaining = typeof metadata.expiresAt === 'number'
                   ? Math.max(0, metadata.expiresAt - Date.now())
                   : undefined
                 await memoryEngine.setItem(processedKey, itemData, ttlRemaining)
@@ -730,8 +746,10 @@ export class CacheManager implements ICacheManager {
 
     // 未找到，更新未命中统计
     for (const [engineType] of this.engines) {
-      const stats = this.stats.get(engineType)!
-      stats.misses++
+      const stats = this.stats.get(engineType)
+      if (stats) {
+        stats.misses++
+      }
     }
 
     return null
@@ -752,8 +770,9 @@ export class CacheManager implements ICacheManager {
 
     if (!options?.refresh) {
       const cached = await this.get<T>(key)
-      if (cached !== null)
+      if (cached !== null) {
         return cached
+      }
     }
     const value = await Promise.resolve().then(fetcher)
     await this.set<T>(key, value, options)
@@ -832,21 +851,24 @@ export class CacheManager implements ICacheManager {
         const group = engineGroups.get(engine.name) || []
         group.push({ ...item, index: i })
         engineGroups.set(engine.name, group)
-      } catch (error) {
+      }
+      catch (error) {
         // 记录验证或引擎选择失败的项目
         failedItems.push({
           index: i,
           key: item.key,
-          error: error instanceof Error ? error : new Error(String(error))
+          error: error instanceof Error ? error : new Error(String(error)),
         })
       }
     }
 
     // 并行处理各引擎组
-    const allResults = new Array(itemsArray.length)
+    const allResults: Array<PromiseSettledResult<{ success: boolean, key: string, error?: Error }> | undefined> = Array.from({ length: itemsArray.length })
     const enginePromises = Array.from(engineGroups.entries()).map(async ([engineType, group]) => {
       const engine = this.engines.get(engineType)
-      if (!engine) return
+      if (!engine) {
+        return
+      }
 
       // 批量处理同一引擎的项目
       const groupResults = await Promise.allSettled(
@@ -864,11 +886,12 @@ export class CacheManager implements ICacheManager {
             await engine.setItem(processedKey, itemData, (item.options || options)?.ttl)
             this.emitEvent('set', item.key, engineType, item.value)
             return { success: true, key: item.key }
-          } catch (error) {
+          }
+          catch (error) {
             this.emitEvent('error', item.key, engineType, item.value, error as Error)
             return { success: false, key: item.key, error: error as Error }
           }
-        })
+        }),
       )
 
       // 将结果放回原始位置
@@ -884,7 +907,7 @@ export class CacheManager implements ICacheManager {
     const failed: Array<{ key: string, error: Error }> = []
 
     // 先添加预处理阶段失败的项目
-    failedItems.forEach(item => {
+    failedItems.forEach((item) => {
       failed.push({ key: item.key, error: item.error })
     })
 
@@ -895,12 +918,20 @@ export class CacheManager implements ICacheManager {
       }
 
       const result = allResults[index]
-      if (result?.status === 'fulfilled' && result.value?.success) {
+      if (result && result.status === 'fulfilled' && result.value.success) {
         success.push(item.key)
-      } else {
-        const error = result?.status === 'rejected'
-          ? (result.reason instanceof Error ? result.reason : new Error(String(result.reason)))
-          : (result?.value?.error || new Error('Unknown error'))
+      }
+      else {
+        let error: Error
+        if (result && result.status === 'rejected') {
+          error = result.reason instanceof Error ? result.reason : new Error(String(result.reason))
+        }
+        else if (result && result.status === 'fulfilled' && result.value.error) {
+          error = result.value.error
+        }
+        else {
+          error = new Error('Unknown error')
+        }
         failed.push({ key: item.key, error })
       }
     })
@@ -931,16 +962,16 @@ export class CacheManager implements ICacheManager {
 
     // 性能优化：批量处理键，减少重复的键处理开销
     const processedKeys = await Promise.all(
-      keys.map(key => this.processKey(key))
+      keys.map(async key => this.processKey(key)),
     )
 
     // 按引擎优先级分组查找，优化查找策略
-    const results = new Array<T | null>(keys.length)
+    const results: Array<T | null> = Array.from({ length: keys.length }, () => null)
     const remainingIndices = new Set(keys.map((_, i) => i))
 
     // 按引擎优先级顺序查找
     for (const [engineType, engine] of this.engines) {
-      if (remainingIndices.size === 0) break
+      if (remainingIndices.size === 0) { break }
 
       const engineResults = await Promise.allSettled(
         Array.from(remainingIndices).map(async (index) => {
@@ -952,15 +983,17 @@ export class CacheManager implements ICacheManager {
               const { value, metadata } = JSON.parse(itemData)
 
               // 检查过期
-              if (metadata.expiresAt && Date.now() > metadata.expiresAt) {
+              if (typeof metadata.expiresAt === 'number' && Date.now() > metadata.expiresAt) {
                 await engine.removeItem(processedKey)
                 this.emitEvent('expired', keys[index], engineType)
                 return null
               }
 
               // 更新统计
-              const stats = this.stats.get(engineType)!
-              stats.hits++
+              const stats = this.stats.get(engineType)
+              if (stats) {
+                stats.hits++
+              }
 
               // 反序列化
               const deserializedValue = await this.deserializeValue<T>(
@@ -973,11 +1006,12 @@ export class CacheManager implements ICacheManager {
                 const memoryEngine = this.engines.get('memory')
                 if (memoryEngine) {
                   try {
-                    const ttlRemaining = metadata.expiresAt
+                    const ttlRemaining = typeof metadata.expiresAt === 'number'
                       ? Math.max(0, metadata.expiresAt - Date.now())
                       : undefined
                     await memoryEngine.setItem(processedKey, itemData, ttlRemaining)
-                  } catch (e) {
+                  }
+                  catch (e) {
                     console.warn('[CacheManager] Failed to promote item to memory:', e)
                   }
                 }
@@ -987,11 +1021,12 @@ export class CacheManager implements ICacheManager {
               return deserializedValue
             }
             return null
-          } catch (error) {
+          }
+          catch (error) {
             console.warn(`Error getting ${keys[index]} from ${engineType}:`, error)
             return null
           }
-        })
+        }),
       )
 
       // 处理结果并移除已找到的键
@@ -1007,19 +1042,21 @@ export class CacheManager implements ICacheManager {
     // 更新未命中统计
     if (remainingIndices.size > 0) {
       for (const [engineType] of this.engines) {
-        const stats = this.stats.get(engineType)!
-        stats.misses += remainingIndices.size
+        const stats = this.stats.get(engineType)
+        if (stats) {
+          stats.misses += remainingIndices.size
+        }
       }
     }
 
     // 填充未找到的键为null
-    remainingIndices.forEach(index => {
+    remainingIndices.forEach((index) => {
       results[index] = null
     })
 
     return Object.fromEntries(
       keys.map((key, index) => [key, results[index]]),
-    )
+    ) as Record<string, T | null>
   }
 
   /**
@@ -1046,7 +1083,7 @@ export class CacheManager implements ICacheManager {
     }
 
     const results = await Promise.allSettled(
-      keysArray.map(key => this.remove(key)),
+      keysArray.map(async key => this.remove(key)),
     )
 
     const success: string[] = []
@@ -1084,7 +1121,7 @@ export class CacheManager implements ICacheManager {
     await this.ensureInitialized()
 
     const results = await Promise.all(
-      keys.map(key => this.has(key).catch(() => false)),
+      keys.map(async key => this.has(key).catch(() => false)),
     )
 
     return Object.fromEntries(
@@ -1182,7 +1219,7 @@ export class CacheManager implements ICacheManager {
         try {
           const engineKeys = await storageEngine.keys()
           const processedKeys = await Promise.all(
-            engineKeys.map(k => this.unprocessKey(k)),
+            engineKeys.map(async k => this.unprocessKey(k)),
           )
           allKeys.push(...processedKeys)
         }
@@ -1331,7 +1368,8 @@ export class CacheManager implements ICacheManager {
     if (memoryEngine && typeof (memoryEngine as any).cleanup === 'function') {
       try {
         await (memoryEngine as any).cleanup()
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Error during memory engine cleanup:', error)
       }
     }

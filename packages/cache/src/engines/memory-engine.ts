@@ -1,5 +1,6 @@
 import type { StorageEngineConfig } from '../types'
 import { type EvictionStrategy, EvictionStrategyFactory } from '../strategies/eviction-strategies'
+
 import { BaseStorageEngine } from './base-engine'
 
 /**
@@ -55,6 +56,10 @@ export class MemoryEngine extends BaseStorageEngine {
   private cleanupTimer?: number
   /** 淘汰计数 */
   private evictionCount = 0
+  /** 大小计算缓存（LRU缓存，最多1000个条目） */
+  private sizeCache: Map<string, number> = new Map()
+  /** 大小缓存的最大条目数 */
+  private readonly SIZE_CACHE_LIMIT = 1000
 
   /**
    * 构造函数
@@ -282,26 +287,49 @@ export class MemoryEngine extends BaseStorageEngine {
 
   /**
    * 快速计算字符串大小（字节）
-   * 优化版本：使用字符串长度估算，避免创建Blob对象
+   * 优化版本：
+   * 1. 使用LRU缓存避免重复计算相同字符串
+   * 2. 使用更高效的UTF-8字节计算
    *
    * UTF-8编码规则：
    * - ASCII字符（0-127）：1字节
    * - 其他字符：平均3字节（简化估算）
    */
   private calculateSizeFast(str: string): number {
+    // 检查缓存
+    const cached = this.sizeCache.get(str)
+    if (cached !== undefined) {
+      return cached
+    }
+
+    // 计算大小
     let size = 0
     for (let i = 0; i < str.length; i++) {
       const code = str.charCodeAt(i)
       if (code < 128) {
         size += 1
-      } else if (code < 2048) {
+      }
+      else if (code < 2048) {
         size += 2
-      } else if (code < 65536) {
+      }
+      else if (code < 65536) {
         size += 3
-      } else {
+      }
+      else {
         size += 4
       }
     }
+
+    // 更新缓存（LRU策略）
+    if (this.sizeCache.size >= this.SIZE_CACHE_LIMIT) {
+      // 删除最早的条目（Map保持插入顺序）
+      const firstKey = this.sizeCache.keys().next().value
+      if (firstKey !== undefined) {
+        this.sizeCache.delete(firstKey)
+      }
+    }
+    this.sizeCache.set(str, size)
+
     return size
   }
 
@@ -506,6 +534,160 @@ export class MemoryEngine extends BaseStorageEngine {
   }
 
   /**
+   * 批量设置缓存项（优化版本）
+   * 
+   * @param items - 要设置的键值对数组
+   * @returns 设置结果数组
+   */
+  async batchSet(items: Array<{ key: string, value: string, ttl?: number }>): Promise<boolean[]> {
+    const results: boolean[] = []
+    const now = Date.now()
+
+    // 批量处理所有项
+    for (const { key, value, ttl } of items) {
+      try {
+        const keySize = this.calculateSizeFast(key)
+        const valueSize = this.calculateSizeFast(value)
+        const dataSize = keySize + valueSize
+
+        // 检查项数限制
+        if (this.storage.size >= this.maxItems && !this.storage.has(key)) {
+          await this.evictByStrategy()
+        }
+
+        // 如果是更新操作，先减去旧值的大小
+        const isUpdate = this.storage.has(key)
+        let oldSize = 0
+        if (isUpdate) {
+          const oldItem = this.storage.get(key)!
+          oldSize = keySize + this.calculateSizeFast(oldItem.value)
+        }
+
+        // 检查存储空间
+        const netSizeChange = dataSize - oldSize
+        if (!this.checkStorageSpace(netSizeChange)) {
+          await this.cleanup()
+          if (!this.checkStorageSpace(netSizeChange)) {
+            await this.evictUntilSpaceAvailable(netSizeChange)
+          }
+        }
+
+        const item: MemoryCacheItem = {
+          value,
+          createdAt: now,
+          expiresAt: ttl ? now + ttl : undefined,
+        }
+
+        this.storage.set(key, item)
+
+        // 增量更新大小
+        if (isUpdate) {
+          this._usedSize = this._usedSize - oldSize + dataSize
+          this.evictionStrategy.recordAccess(key)
+        }
+        else {
+          this._usedSize += dataSize
+          this.evictionStrategy.recordAdd(key, ttl)
+        }
+
+        results.push(true)
+      }
+      catch (error) {
+        console.error(`Failed to set ${key}:`, error)
+        results.push(false)
+      }
+    }
+
+    return results
+  }
+
+  /**
+   * 批量获取缓存项（优化版本）
+   * 
+   * @param keys - 要获取的键数组
+   * @returns 值数组（未找到的为 null）
+   */
+  async batchGet(keys: string[]): Promise<Array<string | null>> {
+    const results: Array<string | null> = []
+    const now = Date.now()
+    const expiredKeys: string[] = []
+    let expiredSize = 0
+
+    for (const key of keys) {
+      const item = this.storage.get(key)
+
+      if (!item) {
+        results.push(null)
+        continue
+      }
+
+      // 检查是否过期
+      if (item.expiresAt && now > item.expiresAt) {
+        expiredKeys.push(key)
+        expiredSize += this.calculateSizeFast(key) + this.calculateSizeFast(item.value)
+        results.push(null)
+        continue
+      }
+
+      // 记录访问
+      this.evictionStrategy.recordAccess(key)
+      results.push(item.value)
+    }
+
+    // 批量删除过期项
+    if (expiredKeys.length > 0) {
+      for (const key of expiredKeys) {
+        this.storage.delete(key)
+        this.evictionStrategy.removeKey(key)
+      }
+      this._usedSize -= expiredSize
+    }
+
+    return results
+  }
+
+  /**
+   * 批量删除缓存项（优化版本）
+   * 
+   * @param keys - 要删除的键数组
+   * @returns 删除结果数组
+   */
+  async batchRemove(keys: string[]): Promise<boolean[]> {
+    const results: boolean[] = []
+    let totalFreedSize = 0
+
+    for (const key of keys) {
+      const item = this.storage.get(key)
+      if (item) {
+        const itemSize = this.calculateSizeFast(key) + this.calculateSizeFast(item.value)
+        totalFreedSize += itemSize
+        this.storage.delete(key)
+        this.evictionStrategy.removeKey(key)
+        results.push(true)
+      }
+      else {
+        results.push(false)
+      }
+    }
+
+    if (totalFreedSize > 0) {
+      this._usedSize -= totalFreedSize
+    }
+
+    return results
+  }
+
+  /**
+   * 批量检查键是否存在（优化版本）
+   * 
+   * @param keys - 要检查的键数组
+   * @returns 存在性检查结果数组
+   */
+  async batchHas(keys: string[]): Promise<boolean[]> {
+    return keys.map(key => this.storage.has(key))
+  }
+
+  /**
    * 销毁引擎
    */
   async destroy(): Promise<void> {
@@ -520,6 +702,7 @@ export class MemoryEngine extends BaseStorageEngine {
 
     this.storage.clear()
     this.evictionStrategy.clear()
+    this.sizeCache.clear()
     this._usedSize = 0
   }
 }

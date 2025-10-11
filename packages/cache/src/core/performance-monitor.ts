@@ -165,8 +165,7 @@ export class PerformanceMonitor {
    * 记录性能指标
    */
   record(metrics: PerformanceMetrics): void {
-    if (!this.options.enabled) 
-      return
+    if (!this.options.enabled) { return }
 
     // 维护最大记录数
     if (this.metrics.length >= this.options.maxRecords) {
@@ -206,12 +205,9 @@ export class PerformanceMonitor {
 
     if (filter) {
       filtered = this.metrics.filter((m) => {
-        if (filter.operation && m.operation !== filter.operation) 
-          return false
-        if (filter.engine && m.engine !== filter.engine) 
-          return false
-        if (filter.since && m.timestamp < filter.since) 
-          return false
+        if (filter.operation && m.operation !== filter.operation) { return false }
+        if (filter.engine && m.engine !== filter.engine) { return false }
+        if (filter.since && m.timestamp < filter.since) { return false }
         return true
       })
     }

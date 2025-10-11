@@ -1,31 +1,21 @@
 <!--
   I18nDT - 日期时间格式化组件
-  
+
   功能：
   - 支持多种日期时间格式
   - 自动本地化日期时间显示
   - 支持相对时间和绝对时间
   - 支持时区转换
   - 支持自定义格式模板
-  
+
   使用示例：
   <I18nDT :value="new Date()" format="full" />
   <I18nDT :value="timestamp" format="relative" />
   <I18nDT :value="date" :options="{ timeZone: 'Asia/Shanghai' }" />
 -->
 
-<template>
-  <time 
-    :class="['i18n-datetime', datetimeClass]" 
-    :datetime="isoString"
-    :title="fullDateTime"
-  >
-    {{ formattedDateTime }}
-  </time>
-</template>
-
 <script setup lang="ts">
-import { computed, inject, ref, onMounted, onUnmounted } from 'vue'
+import { computed, inject, onMounted, onUnmounted, ref } from 'vue'
 import { I18nInjectionKey } from '../plugin'
 
 /**
@@ -57,7 +47,7 @@ export interface I18nDTProps {
 const props = withDefaults(defineProps<I18nDTProps>(), {
   format: 'medium',
   updateInterval: 60000, // 1分钟
-  showTimeZone: false
+  showTimeZone: false,
 })
 
 // 注入 I18n 实例
@@ -83,7 +73,8 @@ const currentLocale = computed(() => {
 const dateValue = computed(() => {
   if (props.value instanceof Date) {
     return props.value
-  } else if (typeof props.value === 'string' || typeof props.value === 'number') {
+  }
+  else if (typeof props.value === 'string' || typeof props.value === 'number') {
     return new Date(props.value)
   }
   return new Date()
@@ -113,28 +104,28 @@ const formatOptions = computed((): Intl.DateTimeFormatOptions => {
       options = {
         ...options,
         dateStyle: 'full',
-        timeStyle: 'full'
+        timeStyle: 'full',
       }
       break
     case 'long':
       options = {
         ...options,
         dateStyle: 'long',
-        timeStyle: 'long'
+        timeStyle: 'long',
       }
       break
     case 'medium':
       options = {
         ...options,
         dateStyle: 'medium',
-        timeStyle: 'medium'
+        timeStyle: 'medium',
       }
       break
     case 'short':
       options = {
         ...options,
         dateStyle: 'short',
-        timeStyle: 'short'
+        timeStyle: 'short',
       }
       break
   }
@@ -165,13 +156,16 @@ const formattedDateTime = computed(() => {
   try {
     if (props.format === 'relative') {
       return formatRelativeTime(dateValue.value)
-    } else if (props.format === 'custom' && props.template) {
+    }
+    else if (props.format === 'custom' && props.template) {
       return formatCustomTemplate(dateValue.value, props.template)
-    } else {
+    }
+    else {
       const formatter = new Intl.DateTimeFormat(currentLocale.value, formatOptions.value)
       return formatter.format(dateValue.value)
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('I18nDT: 日期时间格式化失败', error)
     return dateValue.value.toLocaleString()
   }
@@ -185,10 +179,11 @@ const fullDateTime = computed(() => {
     const formatter = new Intl.DateTimeFormat(currentLocale.value, {
       dateStyle: 'full',
       timeStyle: 'full',
-      timeZone: props.timeZone
+      timeZone: props.timeZone,
     })
     return formatter.format(dateValue.value)
-  } catch (error) {
+  }
+  catch (error) {
     return dateValue.value.toString()
   }
 })
@@ -201,8 +196,8 @@ const datetimeClass = computed(() => {
     `i18n-datetime--${props.format}`,
     {
       'i18n-datetime--with-timezone': props.showTimeZone,
-      'i18n-datetime--auto-update': props.updateInterval > 0 && props.format === 'relative'
-    }
+      'i18n-datetime--auto-update': props.updateInterval > 0 && props.format === 'relative',
+    },
   ]
 })
 
@@ -222,20 +217,25 @@ function formatRelativeTime(date: Date): string {
 
     if (Math.abs(diffSeconds) < 60) {
       return rtf.format(diffSeconds, 'second')
-    } else if (Math.abs(diffMinutes) < 60) {
+    }
+    else if (Math.abs(diffMinutes) < 60) {
       return rtf.format(diffMinutes, 'minute')
-    } else if (Math.abs(diffHours) < 24) {
+    }
+    else if (Math.abs(diffHours) < 24) {
       return rtf.format(diffHours, 'hour')
-    } else if (Math.abs(diffDays) < 30) {
+    }
+    else if (Math.abs(diffDays) < 30) {
       return rtf.format(diffDays, 'day')
-    } else {
+    }
+    else {
       // 超过30天使用绝对时间
       const formatter = new Intl.DateTimeFormat(currentLocale.value, {
-        dateStyle: 'medium'
+        dateStyle: 'medium',
       })
       return formatter.format(date)
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('I18nDT: 相对时间格式化失败', error)
     return date.toLocaleString()
   }
@@ -246,12 +246,12 @@ function formatRelativeTime(date: Date): string {
  */
 function formatCustomTemplate(date: Date, template: string): string {
   const tokens: Record<string, string> = {
-    'YYYY': date.getFullYear().toString(),
-    'MM': (date.getMonth() + 1).toString().padStart(2, '0'),
-    'DD': date.getDate().toString().padStart(2, '0'),
-    'HH': date.getHours().toString().padStart(2, '0'),
-    'mm': date.getMinutes().toString().padStart(2, '0'),
-    'ss': date.getSeconds().toString().padStart(2, '0')
+    YYYY: date.getFullYear().toString(),
+    MM: (date.getMonth() + 1).toString().padStart(2, '0'),
+    DD: date.getDate().toString().padStart(2, '0'),
+    HH: date.getHours().toString().padStart(2, '0'),
+    mm: date.getMinutes().toString().padStart(2, '0'),
+    ss: date.getSeconds().toString().padStart(2, '0'),
   }
 
   let result = template
@@ -295,60 +295,70 @@ onUnmounted(() => {
 <script lang="ts">
 /**
  * I18nDT - 日期时间格式化组件
- * 
+ *
  * 提供强大的日期时间格式化功能，支持：
  * - 多种格式化样式
  * - 相对时间显示
  * - 时区转换
  * - 自定义模板
  * - 自动更新
- * 
+ *
  * @example
  * ```vue
  * <template>
  *   <!-- 基础用法 -->
  *   <I18nDT :value="new Date()" format="medium" />
- *   
+ *
  *   <!-- 相对时间 -->
  *   <I18nDT :value="pastDate" format="relative" />
- *   
+ *
  *   <!-- 自定义格式 -->
  *   <I18nDT :value="date" format="custom" template="YYYY-MM-DD HH:mm" />
- *   
+ *
  *   <!-- 时区转换 -->
  *   <I18nDT :value="utcDate" time-zone="Asia/Shanghai" show-time-zone />
  * </template>
  * ```
  */
 export default {
-  name: 'I18nDT'
+  name: 'I18nDT',
 }
 </script>
+
+<template>
+  <time
+    class="i18n-datetime" :class="[datetimeClass]"
+    :datetime="isoString"
+    :title="fullDateTime"
+  >
+    {{ formattedDateTime }}
+  </time>
+</template>
 
 <style lang="less">
 .i18n-datetime {
   display: inline;
-  
+
   &--relative {
     color: var(--ldesign-text-color-secondary);
     font-style: italic;
   }
-  
+
   &--full {
     font-weight: 500;
   }
-  
+
   &--custom {
     font-family: monospace;
   }
-  
+
   &--with-timezone {
     .timezone {
       color: var(--ldesign-text-color-placeholder);
       font-size: 0.9em;
     }
   }
-  
+
   &--auto-update {
     cursor: help;
   }

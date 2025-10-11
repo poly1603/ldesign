@@ -1,17 +1,23 @@
-import { defineConfig } from '@ldesign/builder'
+﻿import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
-  // 生成类型声明文件
+  // Output format config
+  output: {
+    format: ['esm', 'cjs', 'umd']
+  },
+
+  // 鐢熸垚绫诲瀷澹版槑鏂囦欢
   dts: true,
 
-  // 生成 source map
+  // 鐢熸垚 source map
   sourcemap: true,
 
-  // 清理输出目录
+  // 娓呯悊杈撳嚭鐩綍
   clean: true,
 
-  // 不压缩代码（开发阶段）
+  // 涓嶅帇缂╀唬鐮侊紙寮€鍙戦樁娈碉級
   minify: false
 
-  // external、globals、libraryType、formats、plugins 等配置将由 @ldesign/builder 自动检测和生成
+  // external銆乬lobals銆乴ibraryType銆乫ormats銆乸lugins 绛夐厤缃皢鐢?@ldesign/builder 鑷姩妫€娴嬪拰鐢熸垚
 })
+

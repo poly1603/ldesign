@@ -731,6 +731,329 @@ function initSmoothDotsQR() {
   });
 }
 
+// Initialize perspective X transform (NEW ADVANCED ⭐)
+function initPerspectiveX() {
+  const container = document.getElementById('perspective-x-qr')!;
+  const input = document.getElementById('px-input') as HTMLInputElement;
+  const valueDisplay = document.getElementById('px-value')!;
+  const updateBtn = document.getElementById('px-update')!;
+
+  qrInstances.perspectiveX = createQRCode({
+    content: 'Perspective X Transform',
+    container,
+    style: {
+      size: 200,
+      dotStyle: 'rounded' as DotStyle,
+      gradient: {
+        type: 'linear',
+        colors: ['#667eea', '#764ba2'],
+        direction: 45,
+      },
+      transform: {
+        perspectiveX: parseFloat(input.value),
+      },
+    },
+  });
+
+  input.addEventListener('input', () => {
+    valueDisplay.textContent = input.value;
+  });
+
+  updateBtn.addEventListener('click', async () => {
+    await qrInstances.perspectiveX.update({
+      style: {
+        transform: {
+          perspectiveX: parseFloat(input.value),
+        },
+      },
+    });
+  });
+}
+
+// Initialize perspective Y transform (NEW ADVANCED ⭐)
+function initPerspectiveY() {
+  const container = document.getElementById('perspective-y-qr')!;
+  const input = document.getElementById('py-input') as HTMLInputElement;
+  const valueDisplay = document.getElementById('py-value')!;
+  const updateBtn = document.getElementById('py-update')!;
+
+  qrInstances.perspectiveY = createQRCode({
+    content: 'Perspective Y Transform',
+    container,
+    style: {
+      size: 200,
+      dotStyle: 'dots' as DotStyle,
+      gradient: {
+        type: 'radial',
+        colors: ['#f97316', '#dc2626'],
+        position: { x: 0.5, y: 0.5 },
+      },
+      transform: {
+        perspectiveY: parseFloat(input.value),
+      },
+    },
+  });
+
+  input.addEventListener('input', () => {
+    valueDisplay.textContent = input.value;
+  });
+
+  updateBtn.addEventListener('click', async () => {
+    await qrInstances.perspectiveY.update({
+      style: {
+        transform: {
+          perspectiveY: parseFloat(input.value),
+        },
+      },
+    });
+  });
+}
+
+// Initialize scale transform (NEW ADVANCED ⭐)
+function initScale() {
+  const container = document.getElementById('scale-qr')!;
+  const input = document.getElementById('scale-input') as HTMLInputElement;
+  const valueDisplay = document.getElementById('scale-value')!;
+  const updateBtn = document.getElementById('scale-update')!;
+
+  qrInstances.scale = createQRCode({
+    content: 'Scale Transform',
+    container,
+    style: {
+      size: 200,
+      dotStyle: 'diamond' as DotStyle,
+      fgColor: '#10b981',
+      transform: {
+        scale: parseFloat(input.value),
+      },
+    },
+  });
+
+  input.addEventListener('input', () => {
+    valueDisplay.textContent = input.value;
+  });
+
+  updateBtn.addEventListener('click', async () => {
+    await qrInstances.scale.update({
+      style: {
+        transform: {
+          scale: parseFloat(input.value),
+        },
+      },
+    });
+  });
+}
+
+// Initialize combined transform (NEW ADVANCED ⭐)
+function initCombinedTransform() {
+  const container = document.getElementById('combined-transform-qr')!;
+  const pxInput = document.getElementById('ct-px-input') as HTMLInputElement;
+  const pyInput = document.getElementById('ct-py-input') as HTMLInputElement;
+  const scaleInput = document.getElementById('ct-scale-input') as HTMLInputElement;
+  const pxValue = document.getElementById('ct-px-value')!;
+  const pyValue = document.getElementById('ct-py-value')!;
+  const scaleValue = document.getElementById('ct-scale-value')!;
+  const updateBtn = document.getElementById('ct-update')!;
+
+  qrInstances.combinedTransform = createQRCode({
+    content: 'Combined Transform',
+    container,
+    style: {
+      size: 200,
+      dotStyle: 'classy-rounded' as DotStyle,
+      gradient: {
+        type: 'linear',
+        colors: ['#ec4899', '#8b5cf6'],
+        direction: 90,
+      },
+      transform: {
+        perspectiveX: parseFloat(pxInput.value),
+        perspectiveY: parseFloat(pyInput.value),
+        scale: parseFloat(scaleInput.value),
+      },
+    },
+  });
+
+  pxInput.addEventListener('input', () => {
+    pxValue.textContent = pxInput.value;
+  });
+
+  pyInput.addEventListener('input', () => {
+    pyValue.textContent = pyInput.value;
+  });
+
+  scaleInput.addEventListener('input', () => {
+    scaleValue.textContent = scaleInput.value;
+  });
+
+  updateBtn.addEventListener('click', async () => {
+    await qrInstances.combinedTransform.update({
+      style: {
+        transform: {
+          perspectiveX: parseFloat(pxInput.value),
+          perspectiveY: parseFloat(pyInput.value),
+          scale: parseFloat(scaleInput.value),
+        },
+      },
+    });
+  });
+}
+
+// Initialize render layer (NEW ADVANCED ⭐)
+function initRenderLayer() {
+  const container = document.getElementById('render-layer-qr')!;
+  const select = document.getElementById('render-layer-select') as HTMLSelectElement;
+  const updateBtn = document.getElementById('render-layer-update')!;
+
+  qrInstances.renderLayer = createQRCode({
+    content: 'Render Layer Selection',
+    container,
+    style: {
+      size: 200,
+      fgColor: '#2563eb',
+      renderLayer: 'all' as any,
+    },
+  });
+
+  updateBtn.addEventListener('click', async () => {
+    await qrInstances.renderLayer.update({
+      style: {
+        renderLayer: select.value as any,
+      },
+    });
+  });
+}
+
+// Initialize margin noise (NEW ADVANCED ⭐)
+function initMarginNoise() {
+  const container = document.getElementById('margin-noise-qr')!;
+  const noiseCheck = document.getElementById('margin-noise-check') as HTMLInputElement;
+  const seedInput = document.getElementById('seed-input') as HTMLInputElement;
+  const seedValue = document.getElementById('seed-value')!;
+  const updateBtn = document.getElementById('margin-noise-update')!;
+
+  qrInstances.marginNoise = createQRCode({
+    content: 'Margin Noise Effect',
+    container,
+    style: {
+      size: 200,
+      dotStyle: 'rounded' as DotStyle,
+      fgColor: '#f59e0b',
+      margin: 6,
+      marginNoise: noiseCheck.checked,
+      seed: parseInt(seedInput.value),
+    },
+  });
+
+  seedInput.addEventListener('input', () => {
+    seedValue.textContent = seedInput.value;
+  });
+
+  updateBtn.addEventListener('click', async () => {
+    await qrInstances.marginNoise.update({
+      style: {
+        marginNoise: noiseCheck.checked,
+        seed: parseInt(seedInput.value),
+      },
+    });
+  });
+}
+
+// Initialize mask pattern (NEW ADVANCED ⭐)
+function initMaskPattern() {
+  const container = document.getElementById('mask-pattern-qr')!;
+  const select = document.getElementById('mask-pattern-select') as HTMLSelectElement;
+  const updateBtn = document.getElementById('mask-pattern-update')!;
+
+  qrInstances.maskPattern = createQRCode({
+    content: 'Mask Pattern Selection',
+    container,
+    maskPattern: -1,
+    style: {
+      size: 200,
+      dotStyle: 'dots' as DotStyle,
+      fgColor: '#8b5cf6',
+    },
+  });
+
+  updateBtn.addEventListener('click', async () => {
+    await qrInstances.maskPattern.update({
+      content: 'Mask Pattern: ' + select.value,
+      maskPattern: parseInt(select.value),
+    });
+  });
+}
+
+// Initialize crystalize effect (NEW ADVANCED ⭐)
+function initCrystalizeQR() {
+  const container = document.getElementById('crystalize-qr')!;
+  const select = document.getElementById('crystalize-effect-select') as HTMLSelectElement;
+  const updateBtn = document.getElementById('crystalize-update')!;
+  const downloadBtn = document.getElementById('crystalize-download')!;
+
+  qrInstances.crystalize = createQRCode({
+    content: 'Crystalize Effect Demo',
+    container,
+    style: {
+      size: 200,
+      dotStyle: 'rounded' as DotStyle,
+      gradient: {
+        type: 'linear',
+        colors: ['#16a085', '#1abc9c'],
+        direction: 45,
+      },
+      effect: select.value as any,
+    },
+  });
+
+  updateBtn.addEventListener('click', async () => {
+    await qrInstances.crystalize.update({
+      style: {
+        effect: select.value as any,
+      },
+    });
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    qrInstances.crystalize.download({ fileName: 'crystalize-qrcode', format: 'png' });
+  });
+}
+
+// Initialize liquidify effect (NEW ADVANCED ⭐)
+function initLiquidifyQR() {
+  const container = document.getElementById('liquidify-qr')!;
+  const select = document.getElementById('liquidify-effect-select') as HTMLSelectElement;
+  const updateBtn = document.getElementById('liquidify-update')!;
+  const downloadBtn = document.getElementById('liquidify-download')!;
+
+  qrInstances.liquidify = createQRCode({
+    content: 'Liquidify Effect Demo',
+    container,
+    style: {
+      size: 200,
+      dotStyle: 'dots' as DotStyle,
+      gradient: {
+        type: 'radial',
+        colors: ['#3498db', '#2980b9'],
+        position: { x: 0.5, y: 0.5 },
+      },
+      effect: select.value as any,
+    },
+  });
+
+  updateBtn.addEventListener('click', async () => {
+    await qrInstances.liquidify.update({
+      style: {
+        effect: select.value as any,
+      },
+    });
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    qrInstances.liquidify.download({ fileName: 'liquidify-qrcode', format: 'png' });
+  });
+}
+
 // Initialize all demos
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Initializing QR Code demos...');
@@ -763,6 +1086,17 @@ document.addEventListener('DOMContentLoaded', () => {
     initHexagonQR();
     initLiquidQR();
     initSmoothDotsQR();
+
+    // Advanced features demos ⭐⭐⭐
+    initPerspectiveX();
+    initPerspectiveY();
+    initScale();
+    initCombinedTransform();
+    initRenderLayer();
+    initMarginNoise();
+    initMaskPattern();
+    initCrystalizeQR();
+    initLiquidifyQR();
 
     console.log('✅ All demos initialized successfully!');
   } catch (error) {

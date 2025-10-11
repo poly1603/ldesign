@@ -697,3 +697,243 @@ export function cached(
     return descriptor
   }
 }
+
+/**
+ * 缓存预热策略
+ * 
+ * 提供智能的缓存预热功能，提高首屏加载性能
+ * 
+ * @example
+ * ```ts
+ * const warmup = new CacheWarmup(smartCache)
+ * 
+ * // 预热高频访问项
+ * await warmup.warmupHotItems(20)
+ * 
+ * // 预测性预热
+ * await warmup.predictiveWarmup('/dashboard')
+ * ```
+ */
+export class CacheWarmup {
+  private accessStats: Map<string, { count: number, lastAccess: number }> = new Map()
+  
+  constructor(private cache: SmartCache) {}
+  
+  /**
+   * 预热高频访问项
+   * @param limit 预热数量限制
+   */
+  async warmupHotItems(limit: number = 20): Promise<number> {
+    try {
+      // 获取所有键
+      const keys = await this.cache['db'].keys()
+      
+      // 按访问频率排序
+      const sorted = Array.from(this.accessStats.entries())
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, limit)
+        .map(([key]) => key)
+        .filter(key => keys.includes(key))
+      
+      // 预加载到内存
+      let warmed = 0
+      for (const key of sorted) {
+        const value = await this.cache.get(key)
+        if (value !== undefined) {
+          warmed++
+        }
+      }
+      
+      return warmed
+    } catch (error) {
+      console.error('Cache warmup failed:', error)
+      return 0
+    }
+  }
+  
+  /**
+   * 预测性预热
+   * @param currentRoute 当前路由
+   */
+  async predictiveWarmup(currentRoute: string): Promise<void> {
+    const predictions = this.predictNextAccess(currentRoute)
+    
+    // 使用低优先级在空闲时预热
+    for (const key of predictions) {
+      // 延迟执行，不阻塞主线程
+      setTimeout(async () => {
+        await this.cache.get(key)
+      }, 100)
+    }
+  }
+  
+  /**
+   * 预测下一次访问的键
+   */
+  private predictNextAccess(currentRoute: string): string[] {
+    // 简化的预测逻辑，基于路由关系
+    const predictions: string[] = []
+    
+    // 根据路由预测可能需要的主题
+    if (currentRoute.includes('dashboard')) {
+      predictions.push('theme:default', 'theme:light')
+    } else if (currentRoute.includes('settings')) {
+      predictions.push('theme:user-preference', 'theme:custom')
+    }
+    
+    return predictions
+  }
+  
+  /**
+   * 记录访问统计
+   */
+  recordAccess(key: string): void {
+    const stats = this.accessStats.get(key) || { count: 0, lastAccess: 0 }
+    stats.count++
+    stats.lastAccess = Date.now()
+    this.accessStats.set(key, stats)
+  }
+  
+  /**
+   * 获取访问统计
+   */
+  getAccessStats(): Array<{ key: string, count: number, lastAccess: number }> {
+    return Array.from(this.accessStats.entries()).map(([key, stats]) => ({
+      key,
+      ...stats,
+    }))
+  }
+}
+
+/**
+ * 缓存分析器
+ * 
+ * 分析缓存效率并提供优化建议
+ * 
+ * @example
+ * ```ts
+ * const analyzer = new CacheAnalyzer()
+ * const analysis = analyzer.analyzeCacheEfficiency(stats)
+ * 
+ * console.log(analysis.efficiency) // 'excellent' | 'good' | 'fair' | 'poor'
+ * console.log(analysis.recommendations)
+ * ```
+ */
+export class CacheAnalyzer {
+  /**
+   * 分析缓存效率
+   */
+  analyzeCacheEfficiency(stats: CacheStats): {
+    efficiency: 'excellent' | 'good' | 'fair' | 'poor'
+    recommendations: string[]
+    score: number
+  } {
+    const recommendations: string[] = []
+    let score = 100
+    
+    // 命中率分析
+    if (stats.hitRate < 0.5) {
+      recommendations.push('命中率过低（<50%），考虑增加缓存大小或调整 TTL')
+      score -= 30
+    } else if (stats.hitRate < 0.7) {
+      recommendations.push('命中率较低（<70%），建议优化缓存策略')
+      score -= 15
+    } else if (stats.hitRate < 0.85) {
+      recommendations.push('命中率良好，可考虑预热策略进一步提升')
+      score -= 5
+    }
+    
+    // 淘汰率分析
+    const evictionRate = stats.itemCount > 0 ? stats.evictions / stats.itemCount : 0
+    if (evictionRate > 0.3) {
+      recommendations.push(`淘汰率过高（${(evictionRate * 100).toFixed(1)}%），建议增加缓存容量`)
+      score -= 20
+    } else if (evictionRate > 0.15) {
+      recommendations.push(`淘汰率较高（${(evictionRate * 100).toFixed(1)}%），可考虑适当扩大缓存`)
+      score -= 10
+    }
+    
+    // 平均访问时间分析
+    if (stats.avgAccessTime > 100) {
+      recommendations.push(`访问时间过长（${stats.avgAccessTime.toFixed(1)}ms），考虑优化数据结构或启用压缩`)
+      score -= 15
+    } else if (stats.avgAccessTime > 50) {
+      recommendations.push(`访问时间较长（${stats.avgAccessTime.toFixed(1)}ms），可优化查询性能`)
+      score -= 8
+    }
+    
+    // 缓存大小分析
+    const sizeMB = stats.size / 1024 / 1024
+    if (sizeMB > 50) {
+      recommendations.push(`缓存占用过大（${sizeMB.toFixed(1)}MB），考虑启用压缩或减小 TTL`)
+      score -= 10
+    }
+    
+    // 如果没有问题，提供积极建议
+    if (recommendations.length === 0) {
+      recommendations.push('缓存运行良好，继续保持！')
+      if (stats.hitRate > 0.9) {
+        recommendations.push('命中率优秀，可考虑分享缓存配置经验')
+      }
+    }
+    
+    // 确定效率等级
+    let efficiency: 'excellent' | 'good' | 'fair' | 'poor'
+    if (score >= 90) {
+      efficiency = 'excellent'
+    } else if (score >= 75) {
+      efficiency = 'good'
+    } else if (score >= 60) {
+      efficiency = 'fair'
+    } else {
+      efficiency = 'poor'
+    }
+    
+    return { efficiency, recommendations, score }
+  }
+  
+  /**
+   * 生成缓存报告
+   */
+  generateReport(stats: CacheStats): string {
+    const analysis = this.analyzeCacheEfficiency(stats)
+    
+    const lines = [
+      '\n=================================',
+      '      缓存效率报告',
+      '=================================',
+      '',
+      `效率等级: ${this.getEfficiencyEmoji(analysis.efficiency)} ${analysis.efficiency.toUpperCase()}`,
+      `综合评分: ${analysis.score}/100`,
+      '',
+      '基础指标:',
+      `  命中率: ${(stats.hitRate * 100).toFixed(2)}%`,
+      `  命中次数: ${stats.hits}`,
+      `  未命中: ${stats.misses}`,
+      `  淘汰次数: ${stats.evictions}`,
+      `  平均访问时间: ${stats.avgAccessTime.toFixed(2)}ms`,
+      `  当前大小: ${(stats.size / 1024 / 1024).toFixed(2)}MB`,
+      `  条目数量: ${stats.itemCount}`,
+      '',
+      '优化建议:',
+      ...analysis.recommendations.map((r, i) => `  ${i + 1}. ${r}`),
+      '',
+      '=================================',
+    ]
+    
+    return lines.join('\n')
+  }
+  
+  /**
+   * 获取效率等级表情
+   */
+  private getEfficiencyEmoji(efficiency: string): string {
+    switch (efficiency) {
+      case 'excellent': return '⭐'
+      case 'good': return '✅'
+      case 'fair': return '⚠️'
+      case 'poor': return '❌'
+      default: return '❓'
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import type { PluralRule, PluralRules, TranslationParams } from '../core/types'
+import type { PluralRule, TranslationParams } from '../core/types'
 
 /**
  * 默认复数规则（英语规则）
@@ -95,6 +95,26 @@ export function getPluralRule(locale: string): PluralRule {
 
   // 返回默认规则
   return defaultPluralRule
+}
+
+/**
+ * 创建自定义复数规则
+ * @param locale 语言代码
+ * @param rule 复数规则函数
+ * @returns void
+ *
+ * @example
+ * ```typescript
+ * // 添加新语言的复数规则
+ * createPluralRule('custom', (count) => {
+ *   if (count === 0) return 0
+ *   if (count === 1) return 1
+ *   return 2
+ * })
+ * ```
+ */
+export function createPluralRule(locale: string, rule: PluralRule): void {
+  PLURAL_RULES[locale] = rule
 }
 
 /**

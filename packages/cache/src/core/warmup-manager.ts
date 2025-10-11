@@ -1,4 +1,5 @@
 import type { SetOptions } from '../types'
+
 import type { CacheManager } from './cache-manager'
 
 /**
@@ -174,8 +175,7 @@ export class WarmupManager {
     const visiting = new Set<string>()
 
     const visit = (item: WarmupItem) => {
-      if (visited.has(item.key)) 
-        return
+      if (visited.has(item.key)) { return }
       if (visiting.has(item.key)) {
         throw new Error(`Circular dependency detected: ${item.key}`)
       }
@@ -216,7 +216,7 @@ export class WarmupManager {
       const batch = items.slice(i, i + concurrency)
       
       await Promise.all(
-        batch.map(item => this.processItem(item, result)),
+        batch.map(async item => this.processItem(item, result)),
       )
     }
   }
@@ -292,7 +292,7 @@ export class WarmupManager {
   /**
    * 延迟函数
    */
-  private delay(ms: number): Promise<void> {
+  private async delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 

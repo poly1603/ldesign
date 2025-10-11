@@ -1,22 +1,16 @@
 <!--
   I18nChain - 翻译链组件
-  
+
   功能：
   - 支持翻译结果作为另一个翻译的键
   - 支持多级翻译链
   - 支持循环检测和防护
   - 支持链式参数传递
-  
+
   使用示例：
   <I18nChain keypath="dynamic.key" :max-depth="3" />
   <I18nChain :chain="['level1', 'level2', 'level3']" />
 -->
-
-<template>
-  <span :class="['i18n-chain', chainClass]" :title="debugInfo">
-    {{ finalTranslation }}
-  </span>
-</template>
 
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue'
@@ -52,7 +46,7 @@ const props = withDefaults(defineProps<I18nChainProps>(), {
   debug: false,
   enableCache: true,
   paramMode: 'merge',
-  circularDetection: true
+  circularDetection: true,
 })
 
 // 注入 I18n 实例
@@ -106,7 +100,7 @@ function resolveChain(initialKey: string, params: Record<string, unknown> = {}, 
   try {
     // 获取翻译结果
     const translation = i18n.t(initialKey, params)
-    
+
     // 如果翻译结果等于键名，说明没有找到翻译
     if (translation === initialKey) {
       return translation
@@ -115,12 +109,13 @@ function resolveChain(initialKey: string, params: Record<string, unknown> = {}, 
     // 检查翻译结果是否包含链分隔符
     if (translation.includes(props.separator)) {
       const nextKey = translation.split(props.separator)[0].trim()
-      
+
       // 处理参数传递
       let nextParams = params
       if (props.paramMode === 'accumulate') {
         nextParams = { ...params, [`chain_${depth}`]: translation }
-      } else if (props.paramMode === 'replace') {
+      }
+      else if (props.paramMode === 'replace') {
         nextParams = {}
       }
 
@@ -133,12 +128,14 @@ function resolveChain(initialKey: string, params: Record<string, unknown> = {}, 
     }
 
     return translation
-  } catch (error) {
+  }
+  catch (error) {
     if (props.debug) {
       console.warn('I18nChain: 翻译链解析失败', initialKey, error)
     }
     return initialKey
-  } finally {
+  }
+  finally {
     // 从循环检测集合中移除
     if (props.circularDetection) {
       circularKeys.value.delete(initialKey)
@@ -151,7 +148,7 @@ function resolveChain(initialKey: string, params: Record<string, unknown> = {}, 
  */
 function isLikelyTranslationKey(str: string): boolean {
   // 简单的启发式规则：包含点号且不包含空格
-  return /^[a-zA-Z][a-zA-Z0-9._-]*$/.test(str) && str.includes('.')
+  return /^[a-z][\w.-]*$/i.test(str) && str.includes('.')
 }
 
 /**
@@ -172,10 +169,12 @@ const finalTranslation = computed(() => {
   if (props.chain && props.chain.length > 0) {
     // 使用预定义链
     result = resolvePreDefinedChain()
-  } else if (props.keypath) {
+  }
+  else if (props.keypath) {
     // 使用动态链
     result = resolveChain(props.keypath, props.params || {})
-  } else {
+  }
+  else {
     result = ''
   }
 
@@ -204,14 +203,16 @@ function resolvePreDefinedChain(): string {
 
     try {
       result = i18n.t(key, currentParams)
-      
+
       // 处理参数传递
       if (props.paramMode === 'accumulate') {
         currentParams = { ...currentParams, [`chain_${i}`]: result }
-      } else if (props.paramMode === 'replace') {
+      }
+      else if (props.paramMode === 'replace') {
         currentParams = {}
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (props.debug) {
         console.warn('I18nChain: 预定义链解析失败', key, error)
       }
@@ -230,8 +231,8 @@ const chainClass = computed(() => {
     `i18n-chain--depth-${translationChain.value.length}`,
     {
       'i18n-chain--cached': props.enableCache && chainCache.value.has(cacheKey.value),
-      'i18n-chain--debug': props.debug
-    }
+      'i18n-chain--debug': props.debug,
+    },
   ]
 })
 
@@ -257,25 +258,25 @@ watch(() => [props.keypath, props.params, props.chain], () => {
 <script lang="ts">
 /**
  * I18nChain - 翻译链组件
- * 
+ *
  * 支持翻译结果作为下一个翻译的键，实现动态翻译链：
  * - 多级翻译解析
  * - 循环检测
  * - 参数传递
  * - 缓存优化
- * 
+ *
  * @example
  * ```vue
  * <template>
  *   <!-- 动态翻译链 -->
  *   <I18nChain keypath="user.role" :params="{ userId: 123 }" />
- *   
+ *
  *   <!-- 预定义翻译链 -->
  *   <I18nChain :chain="['step1', 'step2', 'step3']" />
- *   
+ *
  *   <!-- 带调试的翻译链 -->
- *   <I18nChain 
- *     keypath="dynamic.message" 
+ *   <I18nChain
+ *     keypath="dynamic.message"
  *     :max-depth="3"
  *     debug
  *     param-mode="accumulate"
@@ -284,23 +285,29 @@ watch(() => [props.keypath, props.params, props.chain], () => {
  * ```
  */
 export default {
-  name: 'I18nChain'
+  name: 'I18nChain',
 }
 </script>
+
+<template>
+  <span class="i18n-chain" :class="[chainClass]" :title="debugInfo">
+    {{ finalTranslation }}
+  </span>
+</template>
 
 <style lang="less">
 .i18n-chain {
   display: inline;
-  
+
   &--debug {
     border-bottom: 1px dashed var(--ldesign-border-color);
     cursor: help;
   }
-  
+
   &--cached {
     opacity: 0.9;
   }
-  
+
   &--depth-1 { color: var(--ldesign-text-color-primary); }
   &--depth-2 { color: var(--ldesign-brand-color); }
   &--depth-3 { color: var(--ldesign-warning-color); }

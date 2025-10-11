@@ -137,6 +137,38 @@ export enum LogoAspectRatio {
 }
 
 /**
+ * Safe space level for QR code
+ */
+export enum SafeSpace {
+  /** Full safe space around entire QR code */
+  Full = 'full',
+  /** Safe space around markers only */
+  Marker = 'marker',
+  /** Minimal safe space */
+  Minimal = 'minimal',
+  /** Extreme minimal safe space */
+  Extreme = 'extreme',
+  /** No safe space */
+  None = 'none',
+}
+
+/**
+ * Sub marker style
+ */
+export enum SubMarkerStyle {
+  /** Square sub marker */
+  Square = 'square',
+  /** Circle sub marker */
+  Circle = 'circle',
+  /** Rounded square sub marker */
+  Rounded = 'rounded',
+  /** Diamond sub marker */
+  Diamond = 'diamond',
+  /** Plus/cross sub marker */
+  Plus = 'plus',
+}
+
+/**
  * Gradient configuration
  */
 export interface GradientConfig {
@@ -174,6 +206,42 @@ export interface StrokeConfig {
   width: number;
   /** Stroke color */
   color: string;
+}
+
+/**
+ * Visual effect type
+ */
+export enum EffectType {
+  /** No effect */
+  None = 'none',
+  /** Crystalize effect - creates crystalline pattern */
+  Crystalize = 'crystalize',
+  /** Liquidify effect - creates liquid/fluid appearance */
+  Liquidify = 'liquidify',
+}
+
+/**
+ * Transform configuration for QR code
+ */
+export interface TransformConfig {
+  /** Perspective transformation on X axis (-1 to 1) */
+  perspectiveX?: number;
+  /** Perspective transformation on Y axis (-1 to 1) */
+  perspectiveY?: number;
+  /** Scale factor (0.1 to 2) */
+  scale?: number;
+}
+
+/**
+ * Sub marker configuration
+ */
+export interface SubMarkerConfig {
+  /** Sub marker style */
+  style?: SubMarkerStyle;
+  /** Sub marker color */
+  color?: string;
+  /** Enable sub markers */
+  enabled?: boolean;
 }
 
 /**
@@ -238,6 +306,22 @@ export interface QRCodeStyle {
   invert?: boolean;
   /** Render layer for selective module rendering */
   renderLayer?: RenderLayer;
+
+  /** Transform configuration */
+  transform?: TransformConfig;
+  /** Enable margin noise */
+  marginNoise?: boolean;
+  /** Random seed for noise generation */
+  seed?: number;
+  /** Safe space configuration */
+  safeSpace?: SafeSpace;
+  /** Sub marker configuration */
+  subMarker?: SubMarkerConfig;
+
+  /** Visual effect type */
+  effect?: EffectType;
+  /** Pixel size for each module (overrides default calculation) */
+  pixelSize?: number;
 }
 
 /**
@@ -289,6 +373,8 @@ export interface QRCodeConfig {
   logo?: LogoConfig;
   /** Type number (version) of QR code (1-40, auto if not specified) */
   typeNumber?: number;
+  /** Maximum type number (version) allowed (1-40) */
+  maxTypeNumber?: number;
   /** Mask pattern (0-7, or -1 for auto selection) */
   maskPattern?: -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 }

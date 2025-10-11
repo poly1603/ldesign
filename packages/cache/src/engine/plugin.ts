@@ -5,13 +5,6 @@
  */
 
 // 临时类型定义，等待 @ldesign/engine 包完成
-interface Plugin {
-  name: string
-  version?: string
-  install?: (app: any, options?: any) => void
-  destroy?: (app: any) => void
-}
-
 // import type { Plugin } from '@ldesign/engine/types'
 import type { CacheOptions } from '../types'
 import { CacheManager } from '../core/cache-manager'
@@ -20,6 +13,13 @@ import {
   CACHE_MANAGER_KEY,
   CacheProvider,
 } from '../vue/cache-provider'
+
+interface Plugin {
+  name: string
+  version?: string
+  install?: (app: any, options?: any) => void
+  destroy?: (app: any) => void
+}
 
 /**
  * Cache Engine 插件配置选项
@@ -163,7 +163,7 @@ export function createCacheEnginePlugin(
 
         // 定义实际的安装逻辑
         const performInstall = async () => {
-          engine.logger?.info(`[Cache Plugin] performInstall called`)
+          engine.logger?.info('[Cache Plugin] performInstall called')
 
           // 获取 Vue 应用实例
           const vueApp = engine.getApp()
@@ -173,7 +173,7 @@ export function createCacheEnginePlugin(
             )
           }
 
-          engine.logger?.info(`[Cache Plugin] Vue app found, proceeding with installation`)
+          engine.logger?.info('[Cache Plugin] Vue app found, proceeding with installation')
 
           // 记录插件安装开始
           engine.logger?.info(`Installing ${name} plugin...`, {
@@ -198,7 +198,7 @@ export function createCacheEnginePlugin(
 
             // 注册全局属性
             if (config.globalPropertyName) {
-              ; (vueApp.config.globalProperties as any)[config.globalPropertyName] = globalCache
+              ; (vueApp.config.globalProperties)[config.globalPropertyName] = globalCache
             }
 
             // 注册全局组件
@@ -235,16 +235,17 @@ export function createCacheEnginePlugin(
         // 获取 Vue 应用实例
         const vueApp = engine.getApp()
         if (!vueApp) {
-          engine.logger?.info(`[Cache Plugin] Vue app not found, registering event listener`)
+          engine.logger?.info('[Cache Plugin] Vue app not found, registering event listener')
           // 如果 Vue 应用还没有创建，等待 app:created 事件
           await new Promise<void>((resolve, reject) => {
             engine.events?.once('app:created', async () => {
               try {
-                engine.logger?.info(`[Cache Plugin] app:created event received, installing now`)
+                engine.logger?.info('[Cache Plugin] app:created event received, installing now')
                 await performInstall()
                 resolve()
-              } catch (error) {
-                engine.logger?.error(`[Cache Plugin] Failed to install after app creation:`, error)
+              }
+              catch (error) {
+                engine.logger?.error('[Cache Plugin] Failed to install after app creation:', error)
                 reject(error)
               }
             })

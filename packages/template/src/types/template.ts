@@ -208,6 +208,8 @@ export interface UseTemplateReturn {
   loading: Ref<boolean>
   /** 错误信息 */
   error: Ref<string | null>
+  /** 是否正在初始化 */
+  isInitializing: Ref<boolean>
   /** 当前设备类型 */
   deviceType: Ref<DeviceType>
   /** 切换模板 */
@@ -223,7 +225,7 @@ export interface UseTemplateReturn {
   /** 是否显示选择器 */
   showSelector: Ref<boolean>
   /** 选择器配置 */
-  selectorConfig: Ref<TemplateSelectorConfig>
+  selectorConfig: Ref<Partial<TemplateSelectorConfig>>
   /** 打开选择器 */
   openSelector: () => void
   /** 关闭选择器 */

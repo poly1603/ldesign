@@ -1,6 +1,6 @@
 /**
  * 内置翻译键类型定义
- * 
+ *
  * 定义所有内置翻译键的结构，确保类型安全
  */
 
@@ -14,7 +14,7 @@ export interface CommonTranslations {
   cancel: string
   yes: string
   no: string
-  
+
   /** 操作相关 */
   save: string
   delete: string
@@ -28,12 +28,12 @@ export interface CommonTranslations {
   clear: string
   close: string
   open: string
-  
+
   /** 搜索相关 */
   search: string
   filter: string
   sort: string
-  
+
   /** 导航相关 */
   back: string
   next: string
@@ -41,7 +41,7 @@ export interface CommonTranslations {
   first: string
   last: string
   home: string
-  
+
   /** 其他常用 */
   loading: string
   processing: string
@@ -59,31 +59,31 @@ export interface CommonTranslations {
   select: string
   selectAll: string
   unselectAll: string
-  
+
   /** 复制粘贴 */
   copy: string
   paste: string
   cut: string
-  
+
   /** 文件操作 */
   upload: string
   download: string
   export: string
   import: string
   print: string
-  
+
   /** 数据状态 */
   empty: string
   noData: string
   noResults: string
-  
+
   /** 分页 */
   page: string
   pageSize: string
   total: string
   totalPages: string
   currentPage: string
-  
+
   /** 布尔值 */
   true: string
   false: string
@@ -93,13 +93,13 @@ export interface CommonTranslations {
   off: string
   active: string
   inactive: string
-  
+
   /** 时间相关 */
   today: string
   yesterday: string
   tomorrow: string
   now: string
-  
+
   /** 操作结果 */
   operationSuccess: string
   operationFailed: string
@@ -149,7 +149,7 @@ export interface ValidationTranslations {
   mobile: string
   creditCard: string
   custom: string
-  
+
   /** 密码相关 */
   passwordStrength: string
   passwordWeak: string
@@ -184,13 +184,13 @@ export interface DateTimeTranslations {
   seconds: string
   millisecond: string
   milliseconds: string
-  
+
   /** 相对时间 */
   ago: string
   later: string
   justNow: string
   soon: string
-  
+
   /** 星期 */
   monday: string
   tuesday: string
@@ -199,7 +199,7 @@ export interface DateTimeTranslations {
   friday: string
   saturday: string
   sunday: string
-  
+
   /** 月份 */
   january: string
   february: string
@@ -213,7 +213,7 @@ export interface DateTimeTranslations {
   october: string
   november: string
   december: string
-  
+
   /** 时间段 */
   morning: string
   noon: string
@@ -221,12 +221,12 @@ export interface DateTimeTranslations {
   evening: string
   night: string
   midnight: string
-  
+
   /** 格式化相关 */
   dateFormat: string
   timeFormat: string
   dateTimeFormat: string
-  
+
   /** 选择器相关 */
   selectDate: string
   selectTime: string
@@ -256,14 +256,14 @@ export interface ErrorTranslations {
   error502: string
   error503: string
   error504: string
-  
+
   /** 网络错误 */
   networkError: string
   connectionLost: string
   connectionTimeout: string
   serverError: string
   clientError: string
-  
+
   /** 通用错误 */
   unknownError: string
   systemError: string
@@ -272,27 +272,27 @@ export interface ErrorTranslations {
   permissionDenied: string
   resourceNotFound: string
   serviceUnavailable: string
-  
+
   /** 操作错误 */
   loadFailed: string
   saveFailed: string
   deleteFailed: string
   updateFailed: string
   createFailed: string
-  
+
   /** 文件错误 */
   fileNotFound: string
   fileTooLarge: string
   fileTypeNotAllowed: string
   fileUploadFailed: string
   fileDownloadFailed: string
-  
+
   /** 数据错误 */
   dataFormatError: string
   dataParseError: string
   dataValidationError: string
   dataDuplicateError: string
-  
+
   /** 错误处理 */
   retry: string
   reportError: string
@@ -313,26 +313,26 @@ export interface NotificationTranslations {
   uploadSuccess: string
   downloadSuccess: string
   copySuccess: string
-  
+
   /** 警告消息 */
   unsavedChanges: string
   confirmDelete: string
   confirmCancel: string
   confirmLogout: string
   dataWillBeLost: string
-  
+
   /** 提示消息 */
   pleaseWait: string
   pleaseSelect: string
   pleaseEnter: string
   pleaseUpload: string
   pleaseConfirm: string
-  
+
   /** 信息消息 */
   newVersion: string
   maintenanceNotice: string
   systemUpdate: string
-  
+
   /** 权限消息 */
   loginRequired: string
   insufficientPermission: string
@@ -361,7 +361,7 @@ export interface UITranslations {
     filter: string
     clearFilter: string
   }
-  
+
   /** 表单相关 */
   form: {
     field: string
@@ -375,7 +375,7 @@ export interface UITranslations {
     reset: string
     clear: string
   }
-  
+
   /** 对话框相关 */
   dialog: {
     title: string
@@ -384,14 +384,14 @@ export interface UITranslations {
     cancel: string
     close: string
   }
-  
+
   /** 菜单相关 */
   menu: {
     expand: string
     collapse: string
     more: string
   }
-  
+
   /** 标签页相关 */
   tabs: {
     tab: string
@@ -400,7 +400,7 @@ export interface UITranslations {
     closeOtherTabs: string
     closeAllTabs: string
   }
-  
+
   /** 分页相关 */
   pagination: {
     first: string
@@ -414,7 +414,7 @@ export interface UITranslations {
     of: string
     items: string
   }
-  
+
   /** 进度相关 */
   progress: {
     loading: string
@@ -450,7 +450,7 @@ export interface BusinessTranslations {
     lastLogin: string
     registeredAt: string
   }
-  
+
   /** 认证相关 */
   auth: {
     login: string
@@ -464,7 +464,7 @@ export interface BusinessTranslations {
     rememberMe: string
     keepMeLoggedIn: string
   }
-  
+
   /** 文件相关 */
   file: {
     file: string
@@ -482,7 +482,7 @@ export interface BusinessTranslations {
     preview: string
     share: string
   }
-  
+
   /** 设置相关 */
   settings: {
     general: string

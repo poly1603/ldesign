@@ -15,7 +15,8 @@ ld-input,
 ld-card,
 ld-popup,
 ld-popconfirm,
-ldesign-input-number {
+ldesign-input-number,
+l-dropdown-panel {
   /* 重置所有继承的样式 */
   all: initial;
   
@@ -46,7 +47,8 @@ ld-card {
 .vp-doc ld-card *,
 .vp-doc ld-popup *,
 .vp-doc ld-popconfirm *,
-.vp-doc ldesign-input-number * {
+.vp-doc ldesign-input-number *,
+.vp-doc l-dropdown-panel * {
   all: unset;
 }
 
@@ -88,20 +90,202 @@ ld-input,
 ld-card,
 ld-popup,
 ld-popconfirm,
-ldesign-input-number {
+ldesign-input-number,
+l-dropdown-panel {
   pointer-events: auto;
 }
 
 /* 修复可能的 z-index 问题 */
 ld-popup,
-ld-popconfirm {
+ld-popconfirm,
+l-dropdown-panel {
   z-index: 9999;
 }
 
 /* 防止 VitePress 的代码高亮样式影响组件 */
 .vp-code-group ld-button,
 .vp-code-group ld-input,
-.vp-code-group ld-card {
+.vp-code-group ld-card,
+.vp-code-group l-dropdown-panel {
   all: initial;
   display: inline-block;
+}
+
+/* Dropdown Panel 特殊样式 */
+.demo-block l-dropdown-panel {
+  display: block;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* 移动端演示样式 */
+.mobile-demo-container {
+  max-width: 400px;
+  margin: 20px auto;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 12px;
+  padding: 20px;
+  background: var(--vp-c-bg-soft);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* 触发器按钮样式 */
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+.dropdown-trigger:hover {
+  border-color: #1890ff;
+}
+
+.dropdown-trigger:active {
+  background: #f8f8f8;
+  transform: scale(0.98);
+}
+
+.dropdown-trigger .label {
+  color: #1890ff;
+  font-weight: 500;
+}
+
+.dropdown-trigger .arrow {
+  font-size: 12px;
+  color: #999;
+  transition: transform 0.3s;
+}
+
+l-dropdown-panel[visible] .dropdown-trigger {
+  border-color: #1890ff;
+}
+
+l-dropdown-panel[visible] .dropdown-trigger .arrow {
+  transform: rotate(180deg);
+}
+
+/* 面板内容样式 */
+.dropdown-content {
+  background: white;
+}
+
+.dropdown-menu-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+.dropdown-menu-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-menu-item:hover {
+  background: #f5f5f5;
+}
+
+.dropdown-menu-item.selected {
+  color: #1890ff;
+  font-weight: 500;
+}
+
+.dropdown-menu-item.selected::after {
+  content: '✓';
+  position: absolute;
+  right: 20px;
+  color: #1890ff;
+}
+
+/* 筛选组样式 */
+.filter-group {
+  padding: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.filter-group:last-child {
+  border-bottom: none;
+}
+
+.filter-title {
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-chip {
+  padding: 8px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s;
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: white;
+}
+
+.filter-chip:hover {
+  border-color: #1890ff;
+}
+
+.filter-chip:active {
+  transform: scale(0.95);
+}
+
+.filter-chip.active {
+  background: #1890ff;
+  border-color: #1890ff;
+  color: white;
+}
+
+/* 控制按钮组 */
+.control-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.control-button {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #1890ff;
+  border-radius: 6px;
+  background: white;
+  color: #1890ff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.control-button:hover {
+  background: #e6f7ff;
+}
+
+.control-button:active {
+  background: #1890ff;
+  color: white;
 }
