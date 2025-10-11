@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avatar 组件演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      padding: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    h1 {
+      font-size: 36px;
+      margin-bottom: 12px;
+      color: #1a1a1a;
+      font-weight: 700;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 48px;
+      font-size: 16px;
+    }
+    
+    .section {
+      margin-bottom: 48px;
+    }
+    
+    .section-title {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #333;
+      font-weight: 600;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .section-desc {
+      color: #666;
+      margin-bottom: 24px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .demo-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .demo-label {
+      font-size: 14px;
+      color: #666;
+      min-width: 120px;
+      font-weight: 500;
+    }
+    
+    .demo-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+    
+    .divider {
+      height: 1px;
+      background: #e8e8e8;
+      margin: 48px 0;
+    }
+    
+    .feature-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #e6f7ff;
+      color: #1890ff;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    
+    .code-block {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Avatar 头像组件</h1>
+    <p class="subtitle">优化后的头像组件，支持多种展示形式和交互效果</p>
+    
+    <!-- 基础用法 -->
+    <div class="section">
+      <h2 class="section-title">基础用法</h2>
+      <p class="section-desc">支持三种展示形态：图片、图标、文字</p>
+      
+      <div class="demo-row">
+        <span class="demo-label">图片头像</span>
+        <div class="demo-content">
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=1"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=2" size="small"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=3" size="large"></ldesign-avatar>
+        </div>
+      </div>
+      
+      <div class="demo-row">
+        <span class="demo-label">图标头像</span>
+        <div class="demo-content">
+          <ldesign-avatar icon="user"></ldesign-avatar>
+          <ldesign-avatar icon="user-circle" background="#fa8c16"></ldesign-avatar>
+          <ldesign-avatar icon="shield" background="#52c41a"></ldesign-avatar>
+          <ldesign-avatar icon="star" background="#faad14"></ldesign-avatar>
+        </div>
+      </div>
+      
+      <div class="demo-row">
+        <span class="demo-label">文字头像</span>
+        <div class="demo-content">
+          <ldesign-avatar text="A" background="#1890ff"></ldesign-avatar>
+          <ldesign-avatar text="用户" background="#722ed1"></ldesign-avatar>
+          <ldesign-avatar text="张三" background="#eb2f96"></ldesign-avatar>
+          <ldesign-avatar text="李四" background="#13c2c2"></ldesign-avatar>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 尺寸 -->
+    <div class="section">
+      <h2 class="section-title">不同尺寸</h2>
+      <p class="section-desc">提供 small、medium、large 三种预设尺寸，也支持自定义像素值</p>
+      
+      <div class="demo-row">
+        <span class="demo-label">预设尺寸</span>
+        <div class="demo-content">
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=4" size="small"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=4" size="medium"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=4" size="large"></ldesign-avatar>
+        </div>
+      </div>
+      
+      <div class="demo-row">
+        <span class="demo-label">自定义尺寸</span>
+        <div class="demo-content">
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=5" size="28"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=5" size="36"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=5" size="56"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=5" size="72"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=5" size="96"></ldesign-avatar>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 形状 -->
+    <div class="section">
+      <h2 class="section-title">形状</h2>
+      <p class="section-desc">支持圆形（circle）和方形（square）两种形状</p>
+      
+      <div class="demo-row">
+        <span class="demo-label">圆形</span>
+        <div class="demo-content">
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=6" shape="circle"></ldesign-avatar>
+          <ldesign-avatar icon="user" shape="circle" background="#52c41a"></ldesign-avatar>
+          <ldesign-avatar text="圆" shape="circle" background="#1890ff"></ldesign-avatar>
+        </div>
+      </div>
+      
+      <div class="demo-row">
+        <span class="demo-label">方形</span>
+        <div class="demo-content">
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=7" shape="square"></ldesign-avatar>
+          <ldesign-avatar icon="user" shape="square" background="#fa8c16"></ldesign-avatar>
+          <ldesign-avatar text="方" shape="square" background="#722ed1"></ldesign-avatar>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 徽标 <span class="feature-badge">NEW</span> -->
+    <div class="section">
+      <h2 class="section-title">徽标功能 <span class="feature-badge">优化</span></h2>
+      <p class="section-desc">支持红点和数字徽标，可自定义位置和偏移量，徽标不会再被裁剪</p>
+      
+      <div class="demo-row">
+        <span class="demo-label">红点徽标</span>
+        <div class="demo-content">
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=8" badge="true"></ldesign-avatar>
+          <ldesign-avatar icon="user" background="#52c41a" badge="true"></ldesign-avatar>
+          <ldesign-avatar text="A" background="#1890ff" badge="true" badge-color="#52c41a"></ldesign-avatar>
+        </div>
+      </div>
+      
+      <div class="demo-row">
+        <span class="demo-label">数字徽标</span>
+        <div class="demo-content">
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=9" badge-value="5"></ldesign-avatar>
+          <ldesign-avatar icon="user" background="#fa8c16" badge-value="99"></ldesign-avatar>
+          <ldesign-avatar text="B" background="#722ed1" badge-value="999"></ldesign-avatar>
+        </div>
+      </div>
+      
+      <div class="demo-row">
+        <span class="demo-label">徽标位置</span>
+        <div class="demo-content">
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=10" badge-value="1" badge-position="top-right"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=10" badge-value="2" badge-position="top-left"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=10" badge-value="3" badge-position="bottom-right"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=10" badge-value="4" badge-position="bottom-left"></ldesign-avatar>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 状态指示器 <span class="feature-badge">NEW</span> -->
+    <div class="section">
+      <h2 class="section-title">状态指示器 <span class="feature-badge">NEW</span></h2>
+      <p class="section-desc">显示用户在线状态，支持 online、offline、busy、away 四种状态</p>
+      
+      <div class="demo-row">
+        <span class="demo-label">在线状态</span>
+        <div class="demo-content">
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=11" status="online"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=12" status="offline"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=13" status="busy"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=14" status="away"></ldesign-avatar>
+        </div>
+      </div>
+      
+      <div class="demo-row">
+        <span class="demo-label">状态 + 文字</span>
+        <div class="demo-content">
+          <ldesign-avatar text="在线" background="#52c41a" status="online"></ldesign-avatar>
+          <ldesign-avatar text="离线" background="#8c8c8c" status="offline"></ldesign-avatar>
+          <ldesign-avatar text="忙碌" background="#ff4d4f" status="busy"></ldesign-avatar>
+          <ldesign-avatar text="离开" background="#faad14" status="away"></ldesign-avatar>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 边框 <span class="feature-badge">NEW</span> -->
+    <div class="section">
+      <h2 class="section-title">边框样式 <span class="feature-badge">NEW</span></h2>
+      <p class="section-desc">可添加边框装饰，自定义边框颜色和宽度</p>
+      
+      <div class="demo-row">
+        <span class="demo-label">带边框</span>
+        <div class="demo-content">
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=15" border="true"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=16" border="true" border-color="#1890ff"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=17" border="true" border-color="#52c41a" border-width="3"></ldesign-avatar>
+          <ldesign-avatar text="边框" background="#722ed1" border="true" border-color="#eb2f96" border-width="4"></ldesign-avatar>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 可点击 <span class="feature-badge">NEW</span> -->
+    <div class="section">
+      <h2 class="section-title">可点击效果 <span class="feature-badge">NEW</span></h2>
+      <p class="section-desc">设置 clickable 属性后，悬浮时会有提升和阴影效果</p>
+      
+      <div class="demo-row">
+        <span class="demo-label">可点击</span>
+        <div class="demo-content">
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=18" clickable="true"></ldesign-avatar>
+          <ldesign-avatar icon="user" background="#1890ff" clickable="true"></ldesign-avatar>
+          <ldesign-avatar text="点我" background="#fa8c16" clickable="true"></ldesign-avatar>
+          <ldesign-avatar text="试试" background="#52c41a" clickable="true" badge-value="3"></ldesign-avatar>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 加载状态 <span class="feature-badge">NEW</span> -->
+    <div class="section">
+      <h2 class="section-title">加载状态 <span class="feature-badge">NEW</span></h2>
+      <p class="section-desc">显示加载中的状态，带旋转动画</p>
+      
+      <div class="demo-row">
+        <span class="demo-label">加载中</span>
+        <div class="demo-content">
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=19" loading="true"></ldesign-avatar>
+          <ldesign-avatar icon="user" background="#1890ff" loading="true"></ldesign-avatar>
+          <ldesign-avatar text="加载" background="#fa8c16" loading="true"></ldesign-avatar>
+          <ldesign-avatar src="https://i.pravatar.cc/100?img=20" size="large" loading="true"></ldesign-avatar>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 组合效果 -->
+    <div class="section">
+      <h2 class="section-title">组合效果</h2>
+      <p class="section-desc">多种特性可以组合使用</p>
+      
+      <div class="demo-row">
+        <span class="demo-label">综合示例</span>
+        <div class="demo-content">
+          <ldesign-avatar 
+            src="https://i.pravatar.cc/100?img=21" 
+            size="large"
+            border="true" 
+            border-color="#1890ff" 
+            border-width="3"
+            badge-value="99"
+            status="online"
+            clickable="true"></ldesign-avatar>
+          
+          <ldesign-avatar 
+            text="VIP" 
+            background="#fa8c16"
+            size="large"
+            shape="square"
+            border="true" 
+            border-color="#faad14"
+            badge-value="⭐"
+            clickable="true"></ldesign-avatar>
+          
+          <ldesign-avatar 
+            icon="shield" 
+            background="#52c41a"
+            size="large"
+            border="true" 
+            border-color="#95de64"
+            border-width="3"
+            status="busy"
+            clickable="true"></ldesign-avatar>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 头像组 -->
+    <div class="section">
+      <h2 class="section-title">头像组 <span class="feature-badge">优化</span></h2>
+      <p class="section-desc">头像组支持重叠展示，悬浮时有提升效果</p>
+      
+      <div class="demo-row">
+        <span class="demo-label">基础组合</span>
+        <div class="demo-content">
+          <ldesign-avatar-group>
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=22"></ldesign-avatar>
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=23"></ldesign-avatar>
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=24"></ldesign-avatar>
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=25"></ldesign-avatar>
+          </ldesign-avatar-group>
+        </div>
+      </div>
+      
+      <div class="demo-row">
+        <span class="demo-label">最大显示数</span>
+        <div class="demo-content">
+          <ldesign-avatar-group max="3">
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=26"></ldesign-avatar>
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=27"></ldesign-avatar>
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=28"></ldesign-avatar>
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=29"></ldesign-avatar>
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=30"></ldesign-avatar>
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=31"></ldesign-avatar>
+          </ldesign-avatar-group>
+        </div>
+      </div>
+      
+      <div class="demo-row">
+        <span class="demo-label">大尺寸组合</span>
+        <div class="demo-content">
+          <ldesign-avatar-group size="large" gap="12">
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=32" status="online"></ldesign-avatar>
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=33" status="busy"></ldesign-avatar>
+            <ldesign-avatar src="https://i.pravatar.cc/100?img=34" status="away"></ldesign-avatar>
+          </ldesign-avatar-group>
+        </div>
+      </div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div style="text-align: center; color: #999; font-size: 14px;">
+      <p>✨ 优化完成的 Avatar 组件 - 更精细的视觉效果和更丰富的交互体验</p>
+    </div>
+  </div>
+  
+  <script type="module">
+    // 如果你的组件已经打包，在这里引入
+    // import { defineCustomElements } from '../../dist/esm/loader';
+    // defineCustomElements();
+    
+    // 添加点击事件监听示例
+    document.querySelectorAll('ldesign-avatar[clickable="true"]').forEach(avatar => {
+      avatar.addEventListener('ldesignClick', (e) => {
+        console.log('Avatar clicked!', e.detail);
+      });
+    });
+  </script>
+</body>
+</html>

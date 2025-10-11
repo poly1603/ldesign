@@ -263,9 +263,39 @@ export namespace Components {
          */
         "badgeColor": string;
         /**
+          * 徽标偏移量
+          * @default [0, 0]
+         */
+        "badgeOffset": [number, number];
+        /**
+          * 徽标位置
+          * @default 'top-right'
+         */
+        "badgePosition": 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+        /**
           * 徽标数字，设置后显示计数气泡，优先级高于 badge
          */
         "badgeValue"?: number | string;
+        /**
+          * 是否显示边框
+          * @default false
+         */
+        "border": boolean;
+        /**
+          * 边框颜色
+          * @default '#e8e8e8'
+         */
+        "borderColor": string;
+        /**
+          * 边框宽度
+          * @default 2
+         */
+        "borderWidth": number;
+        /**
+          * 是否可点击（会添加悬浮效果）
+          * @default false
+         */
+        "clickable": boolean;
         /**
           * 文本/图标颜色
          */
@@ -284,6 +314,11 @@ export namespace Components {
           * 图标名称（Lucide），无 src 时生效
          */
         "icon"?: string;
+        /**
+          * 是否显示加载态
+          * @default false
+         */
+        "loading": boolean;
         /**
           * 响应式尺寸（使用 CSS clamp 设置宽高）
           * @default false
@@ -326,6 +361,14 @@ export namespace Components {
           * 响应式图片 srcset
          */
         "srcset"?: string;
+        /**
+          * 在线状态指示器
+         */
+        "status"?: 'online' | 'offline' | 'busy' | 'away';
+        /**
+          * 状态指示器颜色（覆盖默认）
+         */
+        "statusColor"?: string;
         /**
           * 文字内容（不传则使用默认插槽的文本节点）
          */
@@ -7322,9 +7365,39 @@ declare namespace LocalJSX {
          */
         "badgeColor"?: string;
         /**
+          * 徽标偏移量
+          * @default [0, 0]
+         */
+        "badgeOffset"?: [number, number];
+        /**
+          * 徽标位置
+          * @default 'top-right'
+         */
+        "badgePosition"?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+        /**
           * 徽标数字，设置后显示计数气泡，优先级高于 badge
          */
         "badgeValue"?: number | string;
+        /**
+          * 是否显示边框
+          * @default false
+         */
+        "border"?: boolean;
+        /**
+          * 边框颜色
+          * @default '#e8e8e8'
+         */
+        "borderColor"?: string;
+        /**
+          * 边框宽度
+          * @default 2
+         */
+        "borderWidth"?: number;
+        /**
+          * 是否可点击（会添加悬浮效果）
+          * @default false
+         */
+        "clickable"?: boolean;
         /**
           * 文本/图标颜色
          */
@@ -7343,6 +7416,11 @@ declare namespace LocalJSX {
           * 图标名称（Lucide），无 src 时生效
          */
         "icon"?: string;
+        /**
+          * 是否显示加载态
+          * @default false
+         */
+        "loading"?: boolean;
         /**
           * 点击
          */
@@ -7397,6 +7475,14 @@ declare namespace LocalJSX {
           * 响应式图片 srcset
          */
         "srcset"?: string;
+        /**
+          * 在线状态指示器
+         */
+        "status"?: 'online' | 'offline' | 'busy' | 'away';
+        /**
+          * 状态指示器颜色（覆盖默认）
+         */
+        "statusColor"?: string;
         /**
           * 文字内容（不传则使用默认插槽的文本节点）
          */

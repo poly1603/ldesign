@@ -63,6 +63,27 @@ export class LdesignAvatar {
   @Prop() badgeValue?: number | string;
   /** 徽标颜色（红点/气泡背景色） */
   @Prop() badgeColor: string = '#ff4d4f';
+  /** 徽标位置 */
+  @Prop() badgePosition: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' = 'top-right';
+  /** 徽标偏移量 */
+  @Prop() badgeOffset: [number, number] = [0, 0];
+
+  /** 在线状态指示器 */
+  @Prop() status?: 'online' | 'offline' | 'busy' | 'away';
+  /** 状态指示器颜色（覆盖默认） */
+  @Prop() statusColor?: string;
+
+  /** 是否可点击（会添加悬浮效果） */
+  @Prop() clickable: boolean = false;
+  /** 是否显示边框 */
+  @Prop() border: boolean = false;
+  /** 边框颜色 */
+  @Prop() borderColor: string = '#e8e8e8';
+  /** 边框宽度 */
+  @Prop() borderWidth: number = 2;
+
+  /** 是否显示加载态 */
+  @Prop() loading: boolean = false;
 
   /** 加载成功 */
   @Event() ldesignLoad: EventEmitter<{ width: number; height: number; src: string }>;
@@ -125,7 +146,7 @@ export class LdesignAvatar {
     stringEl.style.transform = 'scale(1)';
     const box = root.getBoundingClientRect();
     const maxW = Math.max(0, box.width - this.gap * 2);
-    // 使用 scrollWidth 更稳妥
+    // 使用 scrollWidth 更稳妇
     const strW = stringEl.scrollWidth || stringEl.offsetWidth || 0;
     if (maxW <= 0 || strW <= 0) {
       this.textScale = 1;
@@ -145,6 +166,10 @@ export class LdesignAvatar {
     else if (this.icon) cls.push('ldesign-avatar--icon');
     else cls.push('ldesign-avatar--text');
     if (this.responsive) cls.push('ldesign-avatar--responsive');
+    if (this.clickable) cls.push('ldesign-avatar--clickable');
+    if (this.border) cls.push('ldesign-avatar--border');
+    if (this.loading) cls.push('ldesign-avatar--loading');
+    if (this.status) cls.push('ldesign-avatar--has-status');
     return cls.join(' ');
   }
 
@@ -161,6 +186,10 @@ export class LdesignAvatar {
     }
     if (this.background) style.background = this.background;
     if (this.color) style.color = this.color;
+    if (this.border) {
+      style['--avatar-border-color'] = this.borderColor;
+      style['--avatar-border-width'] = `${this.borderWidth}px`;
+    }
     return style;
   }
 
@@ -207,11 +236,46 @@ export class LdesignAvatar {
   private renderBadge() {
     const hasCount = this.badgeValue !== undefined && this.badgeValue !== null && this.badgeValue !== '';
     if (!hasCount && !this.badge) return null;
-    const style = { background: this.badgeColor } as any;
+    const [offsetX, offsetY] = this.badgeOffset;
+    const style = { 
+      background: this.badgeColor,
+      transform: `translate(${offsetX}px, ${offsetY}px)`
+    } as any;
+    const positionClass = `ldesign-avatar__badge--${this.badgePosition}`;
     return (
-      <span class={{ 'ldesign-avatar__badge': true, 'ldesign-avatar__badge--dot': !hasCount, 'ldesign-avatar__badge--count': hasCount }} style={style}>
+      <span class={{ 
+        'ldesign-avatar__badge': true, 
+        'ldesign-avatar__badge--dot': !hasCount, 
+        'ldesign-avatar__badge--count': hasCount,
+        [positionClass]: true
+      }} style={style}>
         {hasCount ? String(this.badgeValue) : ''}
       </span>
+    );
+  }
+
+  private renderStatus() {
+    if (!this.status) return null;
+    const statusColors = {
+      online: '#52c41a',
+      offline: '#8c8c8c',
+      busy: '#ff4d4f',
+      away: '#faad14'
+    };
+    const style = {
+      background: this.statusColor || statusColors[this.status]
+    } as any;
+    return (
+      <span class="ldesign-avatar__status" style={style}></span>
+    );
+  }
+
+  private renderLoading() {
+    if (!this.loading) return null;
+    return (
+      <div class="ldesign-avatar__loading">
+        <div class="ldesign-avatar__loading-spinner"></div>
+      </div>
     );
   }
 
@@ -220,6 +284,8 @@ export class LdesignAvatar {
       <Host class={this.getRootClass()} style={this.getRootStyle()} onClick={this.handleClick}>
         {this.renderInner()}
         {this.renderBadge()}
+        {this.renderStatus()}
+        {this.renderLoading()}
       </Host>
     );
   }
