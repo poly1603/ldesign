@@ -851,6 +851,7 @@ export class ReferenceTracker {
  */
 export class GlobalMemoryManager {
   private static instance?: GlobalMemoryManager
+  private logger = getLogger('GlobalMemoryManager')
 
   private resourceManager = new ResourceManager()
   private leakDetector = new MemoryLeakDetector()
