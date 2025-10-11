@@ -202,7 +202,10 @@ export class InteractionManager {
 
     preventDefault(event)
 
-    const delta = -event.deltaY * this.wheelZoomRatio
+    // Normalize deltaY and apply zoom ratio
+    // deltaY is typically around 100 per wheel tick
+    // We want a small zoom step, so divide by 1000 to get 0.1 zoom step per tick
+    const delta = -event.deltaY * 0.001
     const point = getPointer(event)
 
     // Callback
@@ -239,25 +242,35 @@ export class InteractionManager {
       return action as Action
     }
 
-    // Check class names for action
-    if (target.classList.contains('cropper-face')) {
-      return 'move'
+    // Check class names for action - check target and parent elements
+    let element: HTMLElement | null = target
+    
+    // Search up the DOM tree up to 3 levels
+    for (let i = 0; i < 3 && element; i++) {
+      // Check class names for action
+      if (element.classList.contains('cropper-face')) {
+        return 'move'
+      }
+
+      if (element.classList.contains('point-n')) return 'n'
+      if (element.classList.contains('point-e')) return 'e'
+      if (element.classList.contains('point-s')) return 's'
+      if (element.classList.contains('point-w')) return 'w'
+      if (element.classList.contains('point-ne')) return 'ne'
+      if (element.classList.contains('point-nw')) return 'nw'
+      if (element.classList.contains('point-se')) return 'se'
+      if (element.classList.contains('point-sw')) return 'sw'
+
+      if (element.classList.contains('line-n')) return 'n'
+      if (element.classList.contains('line-e')) return 'e'
+      if (element.classList.contains('line-s')) return 's'
+      if (element.classList.contains('line-w')) return 'w'
+      
+      // Move to parent
+      element = element.parentElement
     }
 
-    if (target.classList.contains('point-n')) return 'n'
-    if (target.classList.contains('point-e')) return 'e'
-    if (target.classList.contains('point-s')) return 's'
-    if (target.classList.contains('point-w')) return 'w'
-    if (target.classList.contains('point-ne')) return 'ne'
-    if (target.classList.contains('point-nw')) return 'nw'
-    if (target.classList.contains('point-se')) return 'se'
-    if (target.classList.contains('point-sw')) return 'sw'
-
-    if (target.classList.contains('line-n')) return 'n'
-    if (target.classList.contains('line-e')) return 'e'
-    if (target.classList.contains('line-s')) return 's'
-    if (target.classList.contains('line-w')) return 'w'
-
+    // Default action is 'crop' (drag the image)
     return 'crop'
   }
 

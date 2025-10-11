@@ -249,11 +249,15 @@ export class Cropper {
       case 'move':
         if (this.options.cropBoxMovable) {
           this.cropBox.move(deltaX, deltaY)
+          this.applyViewModeConstraints()
         }
         break
 
       case 'crop':
-        // Move entire canvas
+        // Move entire image (not the crop box)
+        if (this.options.movable && this.imageProcessor) {
+          this.imageProcessor.move(deltaX, deltaY)
+        }
         break
 
       // Handle resize actions
@@ -267,6 +271,7 @@ export class Cropper {
       case 'nw':
         if (this.options.cropBoxResizable) {
           this.handleResize(action, deltaX, deltaY)
+          this.applyViewModeConstraints()
         }
         break
     }
@@ -347,13 +352,61 @@ export class Cropper {
   }
 
   /**
+   * Apply view mode constraints
+   */
+  private applyViewModeConstraints(): void {
+    if (!this.cropBox || !this.imageProcessor) return
+
+    const viewMode = this.options.viewMode || 0
+    if (viewMode === 0) return // No restrictions
+
+    const imageRect = this.imageProcessor.getDisplayRect()
+    if (!imageRect) return
+
+    const cropBoxData = this.cropBox.getData()
+
+    if (viewMode >= 1) {
+      // Restrict crop box to not exceed the image boundaries
+      const newData = { ...cropBoxData }
+
+      // Constrain position
+      newData.left = clamp(cropBoxData.left, imageRect.left, imageRect.left + imageRect.width - cropBoxData.width)
+      newData.top = clamp(cropBoxData.top, imageRect.top, imageRect.top + imageRect.height - cropBoxData.height)
+
+      // Constrain size
+      if (cropBoxData.left < imageRect.left || cropBoxData.left + cropBoxData.width > imageRect.left + imageRect.width) {
+        newData.width = Math.min(cropBoxData.width, imageRect.width)
+        newData.left = Math.max(imageRect.left, Math.min(cropBoxData.left, imageRect.left + imageRect.width - newData.width))
+      }
+
+      if (cropBoxData.top < imageRect.top || cropBoxData.top + cropBoxData.height > imageRect.top + imageRect.height) {
+        newData.height = Math.min(cropBoxData.height, imageRect.height)
+        newData.top = Math.max(imageRect.top, Math.min(cropBoxData.top, imageRect.top + imageRect.height - newData.height))
+      }
+
+      this.cropBox.setData(newData, false)
+    }
+  }
+
+  /**
    * Handle zoom
    */
   private handleZoom(delta: number, point: Point, event: WheelEvent | TouchEvent): void {
-    if (!this.options.zoomable) return
+    if (!this.options.zoomable || !this.imageProcessor) return
 
-    const newZoom = clamp(this.zoom + delta, 0.1, 10)
-    this.zoom = newZoom
+    const imageData = this.imageProcessor.getImageData()
+    if (!imageData) return
+
+    // Calculate new scale based on delta
+    const ratio = 1 + delta
+    const newScaleX = imageData.scaleX * ratio
+    const newScaleY = imageData.scaleY * ratio
+
+    // Apply the new scale
+    this.imageProcessor.scale(newScaleX, newScaleY)
+
+    // Update zoom tracking
+    this.zoom = (newScaleX + newScaleY) / 2
 
     if (this.container) {
       dispatch(this.container, 'zoom', { zoom: this.zoom, originalEvent: event })

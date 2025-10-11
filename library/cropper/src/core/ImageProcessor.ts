@@ -70,20 +70,21 @@ export class ImageProcessor {
     const containerWidth = containerRect.width
     const containerHeight = containerRect.height
     
-    // Calculate the display size to fit the image in the container
+    // Calculate the display size to cover the container (fill it completely)
     const imageAspect = this.imageData.naturalWidth / this.imageData.naturalHeight
     const containerAspect = containerWidth / containerHeight
     
     let displayWidth, displayHeight
     
+    // Use cover mode instead of contain mode
     if (imageAspect > containerAspect) {
-      // Image is wider than container
-      displayWidth = containerWidth
-      displayHeight = containerWidth / imageAspect
-    } else {
-      // Image is taller than container
+      // Image is wider - fit height and let width overflow
       displayHeight = containerHeight
       displayWidth = containerHeight * imageAspect
+    } else {
+      // Image is taller - fit width and let height overflow
+      displayWidth = containerWidth
+      displayHeight = containerWidth / imageAspect
     }
     
     // Update image data with display dimensions
@@ -261,15 +262,8 @@ export class ImageProcessor {
     options: GetCroppedCanvasOptions = {}
   ): HTMLCanvasElement | null {
     if (!this.imageElement || !this.imageData) {
-      console.log('getCroppedCanvas: Missing image element or image data')
       return null
     }
-    
-    console.log('getCroppedCanvas called with:', { 
-      cropBoxData, 
-      imageData: this.imageData,
-      options 
-    })
 
     const {
       width = cropBoxData.width,
@@ -286,8 +280,6 @@ export class ImageProcessor {
     // Clamp dimensions
     const finalWidth = clamp(width, minWidth, maxWidth)
     const finalHeight = clamp(height, minHeight, maxHeight)
-    
-    console.log('Canvas dimensions:', { finalWidth, finalHeight })
 
     // Create canvas
     const canvas = document.createElement('canvas')
@@ -341,21 +333,6 @@ export class ImageProcessor {
       cropRelativeToImageHeight * scaleFactorY,
       naturalHeight - sourceTop
     )
-    
-    console.log('Crop calculation:', {
-      imageLeft,
-      imageTop,
-      cropRelativeToImageLeft,
-      cropRelativeToImageTop,
-      cropRelativeToImageWidth,
-      cropRelativeToImageHeight,
-      scaleFactorX,
-      scaleFactorY,
-      sourceLeft,
-      sourceTop,
-      sourceWidth,
-      sourceHeight
-    })
 
     // Apply transformations if needed
     if (rotate !== 0 || scaleX !== 1 || scaleY !== 1) {
@@ -392,8 +369,6 @@ export class ImageProcessor {
         finalHeight
       )
     }
-    
-    console.log('Returning canvas:', canvas, 'Canvas has content:', canvas.width > 0 && canvas.height > 0)
 
     return canvas
   }
@@ -431,6 +406,15 @@ export class ImageProcessor {
    */
   getImageElement(): HTMLImageElement | null {
     return this.imageElement
+  }
+
+  /**
+   * Get current display rect of the image within container
+   */
+  getDisplayRect(): { left: number; top: number; width: number; height: number } | null {
+    if (!this.imageData) return null
+    const { left, top, width, height } = this.imageData
+    return { left, top, width, height }
   }
 
   /**

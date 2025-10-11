@@ -238,7 +238,7 @@ const loadSampleImage = () => {
 
 // Cropper events
 const onReady = () => {
-  console.log('Cropper is ready')
+  // Cropper is ready
 }
 
 const onCrop = (e: CustomEvent) => {
@@ -314,42 +314,27 @@ const reset = () => {
 
 // Export methods
 const getCroppedImage = async () => {
-  console.log('getCroppedImage called, cropperRef:', cropperRef.value)
   const canvas = cropperRef.value?.getCroppedCanvas({
     width: 400,
     height: 400,
     imageSmoothingQuality: 'high'
   })
   
-  console.log('Got canvas:', canvas)
-  
   if (canvas) {
     // Set the canvas first, which will trigger the v-if to render the preview container
     croppedCanvas.value = canvas
-    console.log('Set croppedCanvas.value:', croppedCanvas.value)
     
     // Wait for the DOM to update so that previewCanvas ref is available
     await nextTick()
     
-    console.log('After nextTick, previewCanvas.value:', previewCanvas.value)
-    
     if (previewCanvas.value) {
       const ctx = previewCanvas.value.getContext('2d')
-      console.log('Got context:', ctx)
       if (ctx) {
         previewCanvas.value.width = canvas.width
         previewCanvas.value.height = canvas.height
-        console.log('Drawing image to preview canvas, size:', canvas.width, 'x', canvas.height)
         ctx.drawImage(canvas, 0, 0)
-        console.log('Image drawn successfully')
-      } else {
-        console.error('Failed to get 2d context')
       }
-    } else {
-      console.error('previewCanvas is still null after nextTick')
     }
-  } else {
-    console.error('Failed to get cropped canvas')
   }
 }
 
