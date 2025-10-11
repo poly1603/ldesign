@@ -1,3 +1,4 @@
+// 核心功能
 export { LottieManager, lottieManager } from './core/LottieManager'
 export { LottieInstance } from './core/LottieInstance'
 export { InstancePool } from './core/InstancePool'
@@ -5,6 +6,24 @@ export { CacheManager } from './core/CacheManager'
 export { PerformanceMonitor } from './core/PerformanceMonitor'
 export { AnimationSequence } from './core/AnimationSequence'
 export { InteractiveController } from './core/InteractiveController'
+
+// 高级功能
+export { AudioSync } from './core/AudioSync'
+export { TransitionManager } from './core/TransitionManager'
+export { ThemeManager } from './core/ThemeManager'
+export { DataBinding } from './core/DataBinding'
+export { AccessibilityManager } from './core/AccessibilityManager'
+export { PreloadQueue } from './core/PreloadQueue'
+export { GestureController } from './core/GestureController'
+
+// 高级功能类型
+export type { AudioSyncConfig, AudioMarker } from './core/AudioSync'
+export type { TransitionConfig, TransitionType, TransitionDirection, EasingFunction } from './core/TransitionManager'
+export type { ThemeConfig, ColorMap, ColorReplaceOptions } from './core/ThemeManager'
+export type { DataBindingConfig } from './core/DataBinding'
+export type { AccessibilityConfig } from './core/AccessibilityManager'
+export type { PreloadItem, PreloadProgress, PreloadOptions } from './core/PreloadQueue'
+export type { GestureConfig, GestureType, GestureEvent } from './core/GestureController'
 
 // 导出设备检测工具
 export {

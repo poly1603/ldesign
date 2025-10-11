@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lottie 高级功能演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      font-size: 48px;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.9);
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 60px;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .demo-card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .demo-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    .demo-card h2 {
+      color: #667eea;
+      font-size: 24px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .demo-card h2::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 2px;
+    }
+
+    .demo-card p {
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .animation-container {
+      width: 100%;
+      height: 250px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+    }
+
+    .btn-secondary:hover {
+      box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+    }
+
+    .btn-success:hover {
+      box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+    }
+
+    .theme-selector {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .theme-btn {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 600;
+    }
+
+    .theme-btn.active {
+      border-color: #667eea;
+      box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+    }
+
+    .theme-light { background: #ffffff; color: #333; }
+    .theme-dark { background: #1a1a1a; color: #fff; }
+    .theme-sunset { background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%); color: #fff; }
+
+    .data-binding-demo {
+      margin-top: 20px;
+    }
+
+    .data-input {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .data-input label {
+      font-weight: 600;
+      color: #667eea;
+      min-width: 80px;
+    }
+
+    .data-input input,
+    .data-input select {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .data-input input:focus,
+    .data-input select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .info-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #e7eaf6;
+      color: #667eea;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    .gesture-info {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    @media (max-width: 768px) {
+      .demo-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+
+    /* 加载动画 */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #667eea;
+      font-size: 18px;
+    }
+
+    .loading::after {
+      content: '...';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Lottie 高级功能演示</h1>
+    <p class="subtitle">探索音效同步、过渡效果、主题系统、数据绑定、手势控制和无障碍支持等强大功能</p>
+
+    <div class="demo-grid">
+      <!-- 音效同步演示 -->
+      <div class="demo-card">
+        <h2>🎵 音效同步</h2>
+        <p>将动画与音频精确同步，支持标记点、音量控制和播放速率调整。</p>
+        <div id="audioSync" class="animation-container"></div>
+        <div class="controls">
+          <button class="btn" onclick="audioSyncDemo.play()">播放</button>
+          <button class="btn btn-secondary" onclick="audioSyncDemo.pause()">暂停</button>
+          <button class="btn" onclick="audioSyncDemo.setVolume(0.5)">50% 音量</button>
+          <button class="btn" onclick="audioSyncDemo.setSpeed(1.5)">1.5x 速度</button>
+        </div>
+        <div class="info-badge">支持 Web Audio API</div>
+      </div>
+
+      <!-- 过渡效果演示 -->
+      <div class="demo-card">
+        <h2>✨ 过渡效果</h2>
+        <p>为动画添加淡入淡出、滑动、缩放、旋转等多种过渡效果。</p>
+        <div id="transition" class="animation-container"></div>
+        <div class="controls">
+          <button class="btn" onclick="transitionDemo.fadeIn()">淡入</button>
+          <button class="btn" onclick="transitionDemo.slideIn()">滑入</button>
+          <button class="btn btn-secondary" onclick="transitionDemo.scale()">缩放</button>
+          <button class="btn btn-success" onclick="transitionDemo.rotate()">旋转</button>
+        </div>
+        <div class="info-badge">12+ 内置缓动函数</div>
+      </div>
+
+      <!-- 主题系统演示 -->
+      <div class="demo-card">
+        <h2>🎨 主题系统</h2>
+        <p>动态替换颜色，支持主题切换、亮度/饱和度/色调调整。</p>
+        <div id="theme" class="animation-container"></div>
+        <div class="theme-selector">
+          <button class="theme-btn theme-light active" onclick="themeDemo.switchTheme('light', this)">浅色</button>
+          <button class="theme-btn theme-dark" onclick="themeDemo.switchTheme('dark', this)">深色</button>
+          <button class="theme-btn theme-sunset" onclick="themeDemo.switchTheme('sunset', this)">夕阳</button>
+        </div>
+        <div class="controls">
+          <button class="btn" onclick="themeDemo.adjustBrightness(1.2)">增亮</button>
+          <button class="btn" onclick="themeDemo.adjustSaturation(1.5)">增饱和</button>
+          <button class="btn btn-secondary" onclick="themeDemo.hueShift(30)">色调偏移</button>
+        </div>
+      </div>
+
+      <!-- 数据绑定演示 -->
+      <div class="demo-card">
+        <h2>📊 数据驱动动画</h2>
+        <p>将数据绑定到动画属性，实时更新文本、位置、颜色等。</p>
+        <div id="dataBinding" class="animation-container"></div>
+        <div class="data-binding-demo">
+          <div class="data-input">
+            <label>文本:</label>
+            <input type="text" id="textInput" placeholder="输入文本" onchange="dataBindingDemo.updateText(this.value)">
+          </div>
+          <div class="data-input">
+            <label>透明度:</label>
+            <input type="range" id="opacityInput" min="0" max="1" step="0.1" value="1" onchange="dataBindingDemo.updateOpacity(this.value)">
+          </div>
+          <div class="data-input">
+            <label>缩放:</label>
+            <input type="range" id="scaleInput" min="0.5" max="2" step="0.1" value="1" onchange="dataBindingDemo.updateScale(this.value)">
+          </div>
+        </div>
+        <div class="info-badge">响应式数据更新</div>
+      </div>
+
+      <!-- 手势控制演示 -->
+      <div class="demo-card">
+        <h2>👆 手势控制</h2>
+        <p>支持触摸、滑动、捏合、旋转等多种手势操作。</p>
+        <div id="gesture" class="animation-container" style="border: 2px dashed #667eea;">
+          <div class="loading">触摸此区域进行交互</div>
+        </div>
+        <div class="gesture-info">
+          <strong>可用手势:</strong><br>
+          • 轻触: 播放/暂停<br>
+          • 左右滑动: 跳转帧<br>
+          • 双指捏合: 缩放动画<br>
+          • 双指旋转: 旋转动画
+        </div>
+      </div>
+
+      <!-- 预加载队列演示 -->
+      <div class="demo-card">
+        <h2>⚡ 预加载队列</h2>
+        <p>智能预加载管理，支持优先级、并发控制和进度追踪。</p>
+        <div id="preload" class="animation-container"></div>
+        <div class="controls">
+          <button class="btn" onclick="preloadDemo.startPreload()">开始预加载</button>
+          <button class="btn btn-secondary" onclick="preloadDemo.pausePreload()">暂停</button>
+          <button class="btn" onclick="preloadDemo.showProgress()">查看进度</button>
+        </div>
+        <div id="preloadProgress" class="info-badge" style="display: block; margin-top: 15px;">
+          准备就绪
+        </div>
+      </div>
+
+      <!-- 无障碍支持演示 -->
+      <div class="demo-card">
+        <h2>♿ 无障碍支持</h2>
+        <p>支持键盘导航、屏幕阅读器和减少动画偏好设置。</p>
+        <div id="accessibility" class="animation-container" tabindex="0"></div>
+        <div class="gesture-info">
+          <strong>键盘快捷键:</strong><br>
+          • 空格: 播放/暂停<br>
+          • 左/右箭头: 快退/快进<br>
+          • Home/End: 跳到开始/结束<br>
+          • R: 重新播放
+        </div>
+        <div class="info-badge">符合 WCAG 2.1 标准</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { 
+      lottieManager,
+      AudioSync,
+      TransitionManager,
+      ThemeManager,
+      DataBinding,
+      GestureController,
+      PreloadQueue,
+      AccessibilityManager
+    } from '../dist/index.js';
+
+    // 等待 DOM 加载完成
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 音效同步演示
+      window.audioSyncDemo = await initAudioSyncDemo();
+      
+      // 过渡效果演示
+      window.transitionDemo = await initTransitionDemo();
+      
+      // 主题系统演示
+      window.themeDemo = await initThemeDemo();
+      
+      // 数据绑定演示
+      window.dataBindingDemo = await initDataBindingDemo();
+      
+      // 手势控制演示
+      window.gestureDemo = await initGestureDemo();
+      
+      // 预加载队列演示
+      window.preloadDemo = initPreloadDemo();
+      
+      // 无障碍支持演示
+      window.accessibilityDemo = await initAccessibilityDemo();
+    });
+
+    // 音效同步演示初始化
+    async function initAudioSyncDemo() {
+      const instance = lottieManager.create({
+        container: '#audioSync',
+        path: './animations/loading.json',
+        autoplay: false,
+        loop: true
+      });
+      
+      await instance.load();
+      
+      // 创建音效同步实例（这里使用模拟音频）
+      const audioSync = new AudioSync(instance, {
+        audioSource: './sounds/demo.mp3', // 需要提供音频文件
+        markers: [
+          { name: 'start', frame: 0, time: 0 },
+          { name: 'middle', frame: 30, time: 1.5 },
+          { name: 'end', frame: 60, time: 3.0 }
+        ],
+        volume: 1,
+        loop: true
+      });
+      
+      return audioSync;
+    }
+
+    // 过渡效果演示初始化
+    async function initTransitionDemo() {
+      const instance = lottieManager.create({
+        container: '#transition',
+        path: './animations/success.json',
+        autoplay: false
+      });
+      
+      await instance.load();
+      
+      const transition = new TransitionManager(instance);
+      
+      return {
+        fadeIn: () => transition.fadeIn(600),
+        slideIn: () => transition.slideIn('left', 500),
+        scale: () => transition.scale(0, 1, 500),
+        rotate: () => transition.rotate(0, 360, 800)
+      };
+    }
+
+    // 主题系统演示初始化
+    async function initThemeDemo() {
+      const instance = lottieManager.create({
+        container: '#theme',
+        path: './animations/heart.json',
+        autoplay: true,
+        loop: true
+      });
+      
+      await instance.load();
+      
+      const themeManager = new ThemeManager(instance);
+      
+      // 注册主题
+      themeManager.registerThemes([
+        {
+          name: 'light',
+          colors: {
+            '#ff0000': '#667eea',
+            '#ff6b6b': '#764ba2'
+          }
+        },
+        {
+          name: 'dark',
+          colors: {
+            '#ff0000': '#4f46e5',
+            '#ff6b6b': '#7c3aed'
+          }
+        },
+        {
+          name: 'sunset',
+          colors: {
+            '#ff0000': '#ff6b6b',
+            '#ff6b6b': '#feca57'
+          }
+        }
+      ]);
+      
+      return {
+        switchTheme: (themeName, button) => {
+          themeManager.switchTheme(themeName);
+          document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+        },
+        adjustBrightness: (factor) => themeManager.adjustBrightness(factor),
+        adjustSaturation: (factor) => themeManager.adjustSaturation(factor),
+        hueShift: (degrees) => themeManager.applyHueShift(degrees)
+      };
+    }
+
+    // 数据绑定演示初始化
+    async function initDataBindingDemo() {
+      const instance = lottieManager.create({
+        container: '#dataBinding',
+        path: './animations/loading.json',
+        autoplay: true,
+        loop: true
+      });
+      
+      await instance.load();
+      
+      const dataBinding = new DataBinding(instance);
+      
+      return {
+        updateText: (value) => dataBinding.update('text', value),
+        updateOpacity: (value) => dataBinding.update('opacity', parseFloat(value)),
+        updateScale: (value) => dataBinding.update('scale', parseFloat(value))
+      };
+    }
+
+    // 手势控制演示初始化
+    async function initGestureDemo() {
+      const instance = lottieManager.create({
+        container: '#gesture',
+        path: './animations/rocket.json',
+        autoplay: false
+      });
+      
+      await instance.load();
+      
+      const gestureController = new GestureController(instance, {
+        enableTouch: true,
+        enableSwipe: true,
+        enablePinch: true,
+        enableRotate: true,
+        onTap: () => {
+          if (instance.isPaused()) {
+            instance.play();
+          } else {
+            instance.pause();
+          }
+        }
+      });
+      
+      return gestureController;
+    }
+
+    // 预加载队列演示初始化
+    function initPreloadDemo() {
+      const preloadQueue = new PreloadQueue({
+        concurrency: 3,
+        onProgress: (progress) => {
+          const element = document.getElementById('preloadProgress');
+          element.textContent = `加载进度: ${Math.round(progress.percentage)}% (${progress.loaded}/${progress.total})`;
+        }
+      });
+      
+      return {
+        startPreload: async () => {
+          const animations = [
+            { url: './animations/loading.json', priority: 10 },
+            { url: './animations/success.json', priority: 8 },
+            { url: './animations/heart.json', priority: 6 },
+            { url: './animations/rocket.json', priority: 4 },
+            { url: './animations/confetti.json', priority: 2 }
+          ];
+          
+          await preloadQueue.addMany(animations);
+          preloadQueue.start();
+        },
+        pausePreload: () => preloadQueue.pause(),
+        showProgress: () => {
+          const progress = preloadQueue.getProgress();
+          alert(`总进度: ${Math.round(progress.percentage)}%\n已加载: ${progress.loaded}/${progress.total}`);
+        }
+      };
+    }
+
+    // 无障碍支持演示初始化
+    async function initAccessibilityDemo() {
+      const instance = lottieManager.create({
+        container: '#accessibility',
+        path: './animations/confetti.json',
+        autoplay: false,
+        loop: true
+      });
+      
+      await instance.load();
+      
+      const accessibilityManager = new AccessibilityManager(instance, {
+        keyboardNavigation: true,
+        screenReader: true,
+        description: '庆祝动画：彩色纸屑从天空飘落',
+        title: '庆祝',
+        skipOption: false, // 示例中不显示跳过按钮
+        respectReducedMotion: true
+      });
+      
+      return accessibilityManager;
+    }
+  </script>
+</body>
+</html>
