@@ -1,0 +1,89 @@
+{
+  "name": "@ldesign/gridstack",
+  "version": "1.0.0",
+  "description": "A powerful gridstack wrapper with Vue, React and Vanilla JS support",
+  "keywords": [
+    "grid",
+    "gridstack",
+    "layout",
+    "drag-drop",
+    "vue",
+    "react",
+    "typescript"
+  ],
+  "author": "LDesign",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./vanilla": {
+      "types": "./dist/vanilla/index.d.ts",
+      "import": "./dist/vanilla/index.mjs",
+      "require": "./dist/vanilla/index.js"
+    },
+    "./vue": {
+      "types": "./dist/vue/index.d.ts",
+      "import": "./dist/vue/index.mjs",
+      "require": "./dist/vue/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
+    },
+    "./styles": "./dist/style.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && npm run build:types",
+    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "test:examples": "node test-examples.mjs",
+    "test:examples:ps": "powershell -ExecutionPolicy Bypass -File .\\test-examples.ps1",
+    "test:examples:install": "cd examples/vue-demo && pnpm install && cd ../react-demo && pnpm install && cd ../vanilla-demo && pnpm install"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "gridstack": "^10.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vite-plugin-dts": "^3.7.1",
+    "vitepress": "^1.0.0-rc.40",
+    "vue": "^3.4.15",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

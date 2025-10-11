@@ -4,7 +4,9 @@
  */
 
 import type { VueDirectiveBinding } from '../base/vue-directive-adapter'
+import { getLogger } from '../../logger/unified-logger'
 import { DirectiveBase } from '../base/directive-base'
+
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface ClickOutsideOptions {
@@ -15,6 +17,8 @@ export interface ClickOutsideOptions {
 }
 
 export class ClickOutsideDirective extends DirectiveBase {
+  private logger = getLogger('ClickOutsideDirective')
+
   constructor() {
     super({
       name: 'click-outside',
@@ -190,7 +194,7 @@ export const clickOutsideDirective = new ClickOutsideDirective()
 
 <script setup>
 const handleClickOutside = (event) => {
-  console.log('Clicked outside:', event)
+  this.logger.debug('Clicked outside:', event)
 }
 
 const isDisabled = ref(false)

@@ -13,7 +13,7 @@ import { computed, type ComputedRef, getCurrentInstance, inject } from 'vue'
  * import { useEngine } from '@ldesign/engine'
  *
  * const engine = useEngine()
- * console.log('App name:', engine.config.get('app.name'))
+ * logger.debug('App name:', engine.config.get('app.name'))
  * </script>
  * ```
  */

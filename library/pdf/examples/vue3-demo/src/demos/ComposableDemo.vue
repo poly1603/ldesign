@@ -1,208 +1,199 @@
 <template>
   <div class="demo">
-    <h2 class="demo-title">Composable 示例</h2>
-    <p class="demo-desc">使用 usePDFViewer composable 完全控制PDF查看器</p>
-
-    <div class="controls">
-      <button @click="previousPage" :disabled="currentPage <= 1" class="btn">
-        上一页
-      </button>
-      <input
-        v-model.number="pageInput"
-        type="number"
-        :min="1"
-        :max="totalPages"
-        class="page-input"
-        @keyup.enter="goToPage(pageInput)"
-      />
-      <span class="page-info">/ {{ totalPages }}</span>
-      <button @click="nextPage" :disabled="currentPage >= totalPages" class="btn">
-        下一页
-      </button>
-
-      <div class="divider"></div>
-
-      <button @click="zoomOut" class="btn">缩小</button>
-      <span class="scale-info">{{ Math.round(scale * 100) }}%</span>
-      <button @click="zoomIn" class="btn">放大</button>
-
-      <div class="divider"></div>
-
-      <button @click="rotate(90)" class="btn">旋转</button>
-      <button @click="print" class="btn">打印</button>
-      <button @click="download('my-pdf.pdf')" class="btn">下载</button>
-      <button @click="refresh" class="btn">刷新</button>
+    <div class="demo-header">
+      <h2>Composable API</h2>
+      <p>Using usePDFViewer composable for full control</p>
     </div>
 
     <div class="demo-content">
-      <div v-if="loading" class="loading">
-        加载中... {{ Math.round(progress * 100) }}%
-      </div>
-      <div v-if="error" class="error">
-        错误: {{ error.message }}
-      </div>
-      <div ref="containerRef" class="pdf-container"></div>
-    </div>
+      <aside class="sidebar">
+        <div class="controls">
+          <button @click="loadSample">Load Sample PDF</button>
 
-    <div class="demo-info">
-      <p>当前页: {{ currentPage }} / {{ totalPages }}</p>
-      <p>缩放: {{ Math.round(scale * 100) }}%</p>
-      <p v-if="documentInfo">标题: {{ documentInfo.title || '未知' }}</p>
+          <div class="control-group">
+            <h4>Navigation</h4>
+            <button @click="previousPage" :disabled="currentPage <= 1">
+              Previous Page
+            </button>
+            <button @click="nextPage" :disabled="currentPage >= totalPages">
+              Next Page
+            </button>
+          </div>
+
+          <div class="control-group">
+            <h4>Zoom</h4>
+            <button @click="setZoom('in')">Zoom In</button>
+            <button @click="setZoom('out')">Zoom Out</button>
+            <button @click="setZoom('fit-width')">Fit Width</button>
+          </div>
+
+          <div class="control-group">
+            <h4>Rotate</h4>
+            <button @click="rotate(90)">Rotate 90°</button>
+          </div>
+
+          <div class="stats">
+            <h4>Stats</h4>
+            <div>Page: {{ currentPage }} / {{ totalPages }}</div>
+            <div>Zoom: {{ Math.round(currentZoom * 100) }}%</div>
+            <div v-if="loading" class="loading">Loading...</div>
+            <div v-if="error" class="error">{{ error.message }}</div>
+          </div>
+        </div>
+      </aside>
+
+      <div ref="containerRef" class="viewer" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, toRef } from 'vue';
-import { usePDFViewer } from '@ldesign/pdf';
+import { ref, onMounted } from 'vue'
+import { usePDFViewer } from '@ldesign/pdf-viewer/vue'
 
-const props = defineProps<{
-  pdfUrl: string;
-}>();
-
-const pdfSource = toRef(props, 'pdfUrl');
+const containerRef = ref<HTMLElement>()
 
 const {
-  containerRef,
-  loading,
-  progress,
-  error,
   currentPage,
   totalPages,
-  scale,
-  documentInfo,
-  goToPage,
+  currentZoom,
+  loading,
+  error,
+  init,
+  loadDocument,
   nextPage,
   previousPage,
-  zoomIn,
-  zoomOut,
-  rotate,
-  print,
-  download,
-  refresh,
-} = usePDFViewer(pdfSource, {
+  setZoom,
+  rotate
+} = usePDFViewer({
   workerSrc: '/pdf.worker.min.mjs',
-  scale: 1.2,
-  quality: 'high',
-});
+  enableToolbar: true
+})
 
-const pageInput = ref(1);
+const loadSample = () => {
+  const url = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf'
+  loadDocument(url)
+}
+
+onMounted(async () => {
+  if (containerRef.value) {
+    await init(containerRef.value)
+    setTimeout(loadSample, 500)
+  }
+})
 </script>
 
 <style scoped>
 .demo {
-  height: 100%;
   display: flex;
   flex-direction: column;
+  height: 100%;
+}
+
+.demo-header {
   padding: 20px;
+  background: #f6f8fa;
+  border-bottom: 1px solid #d0d7de;
 }
 
-.demo-title {
-  margin: 0 0 8px;
-  font-size: 24px;
-  color: #333;
+.demo-header h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: #24292f;
 }
 
-.demo-desc {
-  margin: 0 0 16px;
-  color: #666;
+.demo-header p {
+  font-size: 14px;
+  color: #57606a;
+}
+
+.demo-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 280px;
+  background: #f6f8fa;
+  border-right: 1px solid #d0d7de;
+  overflow-y: auto;
 }
 
 .controls {
+  padding: 20px;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 6px;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.btn {
-  padding: 8px 16px;
-  border: 1px solid #e0e0e0;
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-group h4 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #57606a;
+  margin-bottom: 4px;
+}
+
+button {
+  padding: 8px 12px;
   background: white;
-  border-radius: 4px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s;
 }
 
-.btn:hover:not(:disabled) {
-  background: #f0f0f0;
-  border-color: #999;
+button:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #0969da;
 }
 
-.btn:disabled {
+button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.page-input {
-  width: 60px;
-  padding: 8px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  text-align: center;
-  font-size: 14px;
-}
-
-.page-info,
-.scale-info {
-  font-size: 14px;
-  color: #666;
-}
-
-.divider {
-  width: 1px;
-  height: 24px;
-  background: #e0e0e0;
-  margin: 0 8px;
-}
-
-.demo-content {
-  flex: 1;
-  position: relative;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-  background: white;
-}
-
-.loading,
-.error {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  padding: 20px;
-}
-
-.error {
-  color: #d32f2f;
-}
-
-.pdf-container {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 20px;
-}
-
-.demo-info {
-  margin-top: 16px;
+.stats {
   padding: 12px;
-  background: #f8f9fa;
+  background: white;
+  border: 1px solid #d0d7de;
   border-radius: 6px;
+  font-size: 14px;
 }
 
-.demo-info p {
+.stats h4 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #57606a;
+  margin-bottom: 8px;
+}
+
+.stats div {
   margin: 4px 0;
-  font-size: 14px;
-  color: #666;
+}
+
+.loading {
+  color: #0969da;
+  font-weight: 600;
+}
+
+.error {
+  color: #d73a49;
+  font-size: 12px;
+  word-wrap: break-word;
+}
+
+.viewer {
+  flex: 1;
+  overflow: hidden;
 }
 </style>

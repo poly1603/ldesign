@@ -4,7 +4,9 @@
  */
 
 import type { VueDirectiveBinding } from '../base/vue-directive-adapter'
+import { getLogger } from '../../logger/unified-logger'
 import { DirectiveBase } from '../base/directive-base'
+
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface DebounceOptions {
@@ -16,6 +18,8 @@ export interface DebounceOptions {
 }
 
 export class DebounceDirective extends DirectiveBase {
+  private logger = getLogger('DebounceDirective')
+
   constructor() {
     super({
       name: 'debounce',
@@ -253,23 +257,23 @@ export const debounceDirective = new DebounceDirective()
 
 <script setup>
 const handleInput = (event) => {
-  console.log('防抖输入:', event.target.value)
+  this.logger.debug('防抖输入:', event.target.value)
 }
 
 const handleClick = () => {
-  console.log('防抖点击')
+  this.logger.debug('防抖点击')
 }
 
 const handleSubmit = () => {
-  console.log('提交表单')
+  this.logger.debug('提交表单')
 }
 
 const handleSearch = (event) => {
-  console.log('搜索:', event.target.value)
+  this.logger.debug('搜索:', event.target.value)
 }
 
 const handleHover = () => {
-  console.log('鼠标悬停')
+  this.logger.debug('鼠标悬停')
 }
 </script>
 */

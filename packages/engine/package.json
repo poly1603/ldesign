@@ -20,6 +20,11 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
+    "./cache": {
+      "types": "./es/cache/index.d.ts",
+      "import": "./es/cache/index.js",
+      "require": "./lib/cache/index.cjs"
+    },
     "./cache/*": {
       "types": "./es/cache/*.d.ts",
       "import": "./es/cache/*.js",
@@ -95,6 +100,11 @@
       "import": "./es/events/*.js",
       "require": "./lib/events/*.cjs"
     },
+    "./hmr/*": {
+      "types": "./es/hmr/*.d.ts",
+      "import": "./es/hmr/*.js",
+      "require": "./lib/hmr/*.cjs"
+    },
     "./interceptors/*": {
       "types": "./es/interceptors/*.d.ts",
       "import": "./es/interceptors/*.js",
@@ -104,6 +114,11 @@
       "types": "./es/lifecycle/*.d.ts",
       "import": "./es/lifecycle/*.js",
       "require": "./lib/lifecycle/*.cjs"
+    },
+    "./logger": {
+      "types": "./es/logger/index.d.ts",
+      "import": "./es/logger/index.js",
+      "require": "./lib/logger/index.cjs"
     },
     "./logger/*": {
       "types": "./es/logger/*.d.ts",
@@ -129,6 +144,11 @@
       "types": "./es/notifications/*.d.ts",
       "import": "./es/notifications/*.js",
       "require": "./lib/notifications/*.cjs"
+    },
+    "./performance": {
+      "types": "./es/performance/index.d.ts",
+      "import": "./es/performance/index.js",
+      "require": "./lib/performance/index.cjs"
     },
     "./performance/*": {
       "types": "./es/performance/*.d.ts",

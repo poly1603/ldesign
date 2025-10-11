@@ -20,17 +20,12 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    /* Path mapping */
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    },
-
-    /* Type declarations */
+    /* Type Declarations */
     "declaration": true,
-    "declarationMap": true,
-    "emitDeclarationOnly": false
+    "declarationDir": "./dist",
+    "emitDeclarationOnly": false,
+    "outDir": "./dist"
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src/**/*.ts", "src/**/*.vue"],
+  "exclude": ["node_modules", "dist", "examples", "docs"]
 }

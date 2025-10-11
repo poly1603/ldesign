@@ -1,75 +1,85 @@
 /**
  * 事件发射器
+ * 用于实现观察者模式，支持事件的订阅和发布
  */
-
-type EventHandler<T = any> = (data: T) => void;
-
-export class EventEmitter<Events extends Record<string, any>> {
-  private _events: Map<keyof Events, Set<EventHandler>> = new Map();
+export class EventEmitter<T extends Record<string, any>> {
+  private events: Map<keyof T, Set<Function>> = new Map()
 
   /**
-   * 监听事件
+   * 订阅事件
+   * @param event 事件名称
+   * @param handler 事件处理函数
    */
-  on<K extends keyof Events>(event: K, handler: Events[K]): void {
-    if (!this._events.has(event)) {
-      this._events.set(event, new Set());
+  on<K extends keyof T>(event: K, handler: T[K]): void {
+    if (!this.events.has(event)) {
+      this.events.set(event, new Set())
     }
-    this._events.get(event)!.add(handler);
+    this.events.get(event)!.add(handler)
   }
 
   /**
-   * 取消监听
+   * 取消订阅事件
+   * @param event 事件名称
+   * @param handler 事件处理函数
    */
-  off<K extends keyof Events>(event: K, handler: Events[K]): void {
-    const handlers = this._events.get(event);
+  off<K extends keyof T>(event: K, handler: T[K]): void {
+    const handlers = this.events.get(event)
     if (handlers) {
-      handlers.delete(handler);
+      handlers.delete(handler)
+      if (handlers.size === 0) {
+        this.events.delete(event)
+      }
     }
   }
 
   /**
-   * 监听一次
+   * 订阅一次性事件
+   * @param event 事件名称
+   * @param handler 事件处理函数
    */
-  once<K extends keyof Events>(event: K, handler: Events[K]): void {
+  once<K extends keyof T>(event: K, handler: T[K]): void {
     const onceHandler = ((...args: any[]) => {
-      handler(...args);
-      this.off(event, onceHandler as any);
-    }) as Events[K];
-
-    this.on(event, onceHandler);
+      handler(...args)
+      this.off(event, onceHandler as T[K])
+    }) as T[K]
+    this.on(event, onceHandler)
   }
 
   /**
    * 触发事件
+   * @param event 事件名称
+   * @param args 事件参数
    */
-  emit<K extends keyof Events>(event: K, ...args: Parameters<Events[K]>): void {
-    const handlers = this._events.get(event);
+  emit<K extends keyof T>(event: K, ...args: Parameters<T[K]>): void {
+    const handlers = this.events.get(event)
     if (handlers) {
-      handlers.forEach((handler) => {
+      handlers.forEach(handler => {
         try {
-          handler(...args);
+          handler(...args)
         } catch (error) {
-          console.error(`事件处理器错误 [${String(event)}]:`, error);
+          console.error(`Error in event handler for "${String(event)}":`, error)
         }
-      });
+      })
     }
   }
 
   /**
-   * 移除所有监听器
+   * 移除所有事件监听器
+   * @param event 可选的事件名称，如果提供则只移除该事件的监听器
    */
-  removeAllListeners(event?: keyof Events): void {
+  removeAllListeners(event?: keyof T): void {
     if (event) {
-      this._events.delete(event);
+      this.events.delete(event)
     } else {
-      this._events.clear();
+      this.events.clear()
     }
   }
 
   /**
-   * 获取监听器数量
+   * 获取事件监听器数量
+   * @param event 事件名称
    */
-  listenerCount(event: keyof Events): number {
-    return this._events.get(event)?.size || 0;
+  listenerCount(event: keyof T): number {
+    return this.events.get(event)?.size || 0
   }
 }

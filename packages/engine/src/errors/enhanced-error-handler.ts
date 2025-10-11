@@ -1,4 +1,6 @@
 /**
+import { getLogger } from '../logger/unified-logger';
+
  * 增强型错误处理系统
  * 🛡️ 提供结构化错误、自动恢复和智能重试功能
  */
@@ -44,6 +46,8 @@ export enum ErrorCategory {
  * 🎯 提供更丰富的错误信息，便于调试和追踪
  */
 export class EngineError extends Error {
+  private logger = getLogger('EngineError')
+
   /** 错误代码 */
   readonly code: string
 
@@ -110,11 +114,13 @@ export class EngineError extends Error {
       recoverable: this.recoverable,
       timestamp: this.timestamp,
       stack: this.stackTrace,
-      cause: this.cause ? {
+      cause: this.cause
+? {
         name: this.cause.name,
         message: this.cause.message,
         stack: this.cause.stack,
-      } : undefined,
+      }
+: undefined,
     }
   }
 
@@ -145,10 +151,10 @@ export interface RecoveryStrategy {
   name: string
 
   /** 判断是否可以恢复 */
-  canRecover(error: EngineError): boolean
+  canRecover: (error: EngineError) => boolean
 
   /** 执行恢复 */
-  recover(error: EngineError): Promise<boolean>
+  recover: (error: EngineError) => Promise<boolean>
 
   /** 优先级（数字越大优先级越高） */
   priority?: number
@@ -176,7 +182,7 @@ export class NetworkErrorRecoveryStrategy implements RecoveryStrategy {
   async recover(error: EngineError): Promise<boolean> {
     this.retryCount++
 
-    console.log(`[Recovery] Attempting network recovery (${this.retryCount}/${this.maxRetries})`)
+    this.logger.debug(`[Recovery] Attempting network recovery (${this.retryCount}/${this.maxRetries})`)
 
     // 等待网络恢复
     if (!navigator.onLine) {
@@ -230,7 +236,7 @@ export class DataRecoveryStrategy implements RecoveryStrategy {
   }
 
   async recover(error: EngineError): Promise<boolean> {
-    console.log('[Recovery] Attempting data recovery from cache')
+    this.logger.debug('[Recovery] Attempting data recovery from cache')
 
     if (!this.cacheManager || !error.context?.cacheKey) {
       return false
@@ -239,7 +245,7 @@ export class DataRecoveryStrategy implements RecoveryStrategy {
     // 尝试从缓存获取数据
     const cachedData = this.cacheManager.get(error.context.cacheKey)
     if (cachedData !== undefined) {
-      console.log('[Recovery] Data recovered from cache')
+      this.logger.debug('[Recovery] Data recovered from cache')
       // 将缓存数据注入到error.context中
       error.context.recoveredData = cachedData
       return true
@@ -262,7 +268,7 @@ export class ConfigResetStrategy implements RecoveryStrategy {
   }
 
   async recover(error: EngineError): Promise<boolean> {
-    console.log('[Recovery] Resetting configuration to defaults')
+    this.logger.debug('[Recovery] Resetting configuration to defaults')
 
     // 这里应该实现配置重置逻辑
     // 通常需要访问配置管理器
@@ -378,14 +384,14 @@ export class EnhancedErrorManager {
     if (engineError.recoverable) {
       const recovered = await this.attemptRecovery(engineError)
       if (recovered) {
-        console.log(`[ErrorManager] Successfully recovered from error: ${engineError.code}`)
+        this.logger.debug(`[ErrorManager] Successfully recovered from error: ${engineError.code}`)
         return true
       }
     }
 
     // 如果是致命错误，记录到控制台
     if (engineError.severity === ErrorSeverity.FATAL) {
-      console.error('[ErrorManager] Fatal error occurred:', engineError.toJSON())
+      this.logger.error('[ErrorManager] Fatal error occurred:', engineError.toJSON())
     }
 
     return false
@@ -400,11 +406,11 @@ export class EnhancedErrorManager {
         try {
           const recovered = await strategy.recover(error)
           if (recovered) {
-            console.log(`[ErrorManager] Recovered using strategy: ${strategy.name}`)
+            this.logger.debug(`[ErrorManager] Recovered using strategy: ${strategy.name}`)
             return true
           }
         } catch (recoveryError) {
-          console.error(`[ErrorManager] Recovery strategy ${strategy.name} failed:`, recoveryError)
+          this.logger.error(`[ErrorManager] Recovery strategy ${strategy.name} failed:`, recoveryError)
         }
       }
     }
@@ -442,7 +448,7 @@ export class EnhancedErrorManager {
       try {
         handler(error)
       } catch (handlerError) {
-        console.error('[ErrorManager] Error in global handler:', handlerError)
+        this.logger.error('[ErrorManager] Error in global handler:', handlerError)
       }
     })
 
@@ -453,7 +459,7 @@ export class EnhancedErrorManager {
         try {
           handler(error)
         } catch (handlerError) {
-          console.error('[ErrorManager] Error in category handler:', handlerError)
+          this.logger.error('[ErrorManager] Error in category handler:', handlerError)
         }
       })
     }

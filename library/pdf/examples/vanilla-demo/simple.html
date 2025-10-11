@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple PDF Viewer Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f0f0;
+    }
+    .header {
+      padding: 20px;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 15px;
+    }
+    .load-btn {
+      padding: 12px 24px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .load-btn:hover {
+      background: #0052a3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,102,204,0.3);
+    }
+    #viewer {
+      height: calc(100vh - 120px);
+      margin: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🚀 Simple PDF Viewer</h1>
+    <button class="load-btn" id="loadBtn">Load Sample PDF</button>
+  </div>
+  
+  <div id="viewer"></div>
+
+  <script type="module">
+    import { SimplePDFViewer } from '@ldesign/pdf-viewer'
+
+    console.log('[APP] Starting Simple PDF Viewer Demo')
+
+    const viewer = new SimplePDFViewer('#viewer')
+    console.log('[APP] Viewer created')
+
+    document.getElementById('loadBtn').addEventListener('click', async () => {
+      console.log('[APP] Load button clicked')
+      const samplePDF = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf'
+      await viewer.loadDocument(samplePDF)
+    })
+  </script>
+</body>
+</html>

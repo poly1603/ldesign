@@ -147,7 +147,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
         if (this.logger) {
           this.logger.error(`Error in event handler for "${key}":`, error)
         } else {
-          console.error(`Error in event handler for "${key}":`, error)
+          this.logger.error(`Error in event handler for "${key}":`, error)
         }
       }
 
@@ -194,7 +194,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
 
     // 检查监听器数量限制
     if (listeners.length >= this.maxListeners) {
-      console.warn(
+      this.logger.warn(
         `MaxListenersExceededWarning: Possible EventManager memory leak detected. ` +
         `${listeners.length + 1} "${event}" listeners added. ` +
         `Use setMaxListeners() to increase limit.`

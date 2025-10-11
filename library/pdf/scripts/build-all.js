@@ -1,89 +1,51 @@
-#!/usr/bin/env node
+import { spawn } from 'child_process'
+import { fileURLToPath } from 'url'
+import { dirname, resolve } from 'path'
 
-/**
- * 构建所有项目的脚本
- */
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
-import { spawn } from 'child_process';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+const examplesDir = resolve(__dirname, '../examples')
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const rootDir = join(__dirname, '..');
+const examples = ['vanilla-demo', 'vue3-demo']
 
-// 构建任务配置
-const buildTasks = [
-  {
-    name: '主库',
-    cwd: rootDir,
-    command: 'pnpm',
-    args: ['build']
-  },
-  {
-    name: 'Vue3示例',
-    cwd: join(rootDir, 'examples/vue3-demo'),
-    command: 'pnpm',
-    args: ['build']
-  },
-  {
-    name: '原生JS示例',
-    cwd: join(rootDir, 'examples/vanilla-demo'),
-    command: 'pnpm',
-    args: ['build']
-  },
-  {
-    name: '文档',
-    cwd: rootDir,
-    command: 'pnpm',
-    args: ['docs:build']
-  }
-];
-
-// 执行构建任务
-async function runTask(task) {
+function runCommand(command, args, cwd) {
   return new Promise((resolve, reject) => {
-    console.log(`\n📦 构建 ${task.name}...`);
-    console.log(`   目录: ${task.cwd}`);
-    console.log(`   命令: ${task.command} ${task.args.join(' ')}\n`);
-
-    const child = spawn(task.command, task.args, {
-      cwd: task.cwd,
+    const child = spawn(command, args, {
+      cwd,
       stdio: 'inherit',
       shell: true
-    });
+    })
 
-    child.on('error', reject);
-    child.on('exit', (code) => {
-      if (code === 0) {
-        console.log(`\n✅ ${task.name} 构建成功\n`);
-        resolve();
+    child.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`Command failed with code ${code}`))
       } else {
-        reject(new Error(`${task.name} 构建失败，退出代码: ${code}`));
+        resolve()
       }
-    });
-  });
+    })
+  })
 }
 
-// 按顺序执行所有任务
-async function buildAll() {
-  console.log('🚀 开始构建所有项目...\n');
-  console.log('=' .repeat(50));
+async function main() {
+  console.log('Building main library...')
+  await runCommand('pnpm', ['build'], resolve(__dirname, '..'))
 
-  const startTime = Date.now();
-
-  try {
-    for (const task of buildTasks) {
-      await runTask(task);
+  for (const example of examples) {
+    console.log(`\nBuilding ${example}...`)
+    const exampleDir = resolve(examplesDir, example)
+    try {
+      await runCommand('pnpm', ['build'], exampleDir)
+      console.log(`✓ ${example} built successfully`)
+    } catch (error) {
+      console.error(`✗ ${example} build failed:`, error.message)
     }
-
-    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log('=' .repeat(50));
-    console.log(`\n🎉 所有项目构建完成！耗时: ${duration}秒\n`);
-  } catch (error) {
-    console.error('\n❌ 构建失败:', error.message);
-    process.exit(1);
   }
+
+  console.log('\n✓ All builds completed')
 }
 
-buildAll();
+main().catch((error) => {
+  console.error('Build failed:', error)
+  process.exit(1)
+})

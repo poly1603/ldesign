@@ -16,6 +16,7 @@ import { resizeDirective, vResize } from './resize'
 import { throttleDirective, vThrottle } from './throttle'
 import { tooltipDirective, vTooltip } from './tooltip'
 
+const logger = getLogger('index')
 export * from './click-outside'
 export * from './copy'
 export * from './debounce'
@@ -187,17 +188,19 @@ import { directiveInstances, vueDirectives } from '@/directives/modules'
 import { getDirectiveInfo, getAllDirectiveInfo } from '@/directives/modules'
 
 const clickOutsideInfo = getDirectiveInfo('click-outside')
-console.log(clickOutsideInfo)
+logger.debug(clickOutsideInfo)
 
 // 搜索指令
 import { searchDirectives } from '@/directives/modules'
 
 const performanceDirectives = searchDirectives('performance')
-console.log(performanceDirectives)
+logger.debug(performanceDirectives)
 
 // 按分类获取指令
 import { getDirectivesByCategory } from '@/directives/modules'
 
+import { getLogger } from '../../logger/unified-logger';
+
 const interactionDirectives = getDirectivesByCategory('interaction')
-console.log(interactionDirectives)
+logger.debug(interactionDirectives)
 */

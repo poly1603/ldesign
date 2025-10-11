@@ -4,15 +4,6 @@
  * 提供各种工具函数和实用工具
  */
 
-// Bundle优化工具
-export {
-  BundleOptimizer,
-  dynamicImport,
-  globalBundleOptimizer,
-  LazyLoad,
-  preloadCriticalModules
-} from './utils/bundle-optimizer'
-
 // 配置管理
 export {
   CompositeConfigLoader,
@@ -21,11 +12,20 @@ export {
   LocalStorageConfigLoader,
   MemoryConfigLoader,
 } from './config/loaders'
+
 export type {
   ConfigLoader,
   ConfigObject,
   ConfigValue,
 } from './config/loaders'
+// Bundle优化工具
+export {
+  BundleOptimizer,
+  dynamicImport,
+  globalBundleOptimizer,
+  LazyLoad,
+  preloadCriticalModules
+} from './utils/bundle-optimizer'
 export {
   applyConfigDefaults,
   ConfigValidators,
@@ -39,14 +39,15 @@ export type {
 } from './utils/config-validators'
 
 // Core Web Vitals 监控
-export {
-  type CoreWebVitalsMetrics,
-  CoreWebVitalsMonitor,
-  getCoreWebVitals,
-  getCoreWebVitalsScore,
-  globalCoreWebVitalsMonitor,
-  startCoreWebVitalsMonitoring
-} from './utils/core-web-vitals'
+// TODO: Fix import path
+// export {
+//   type CoreWebVitalsMetrics,
+//   CoreWebVitalsMonitor,
+//   getCoreWebVitals,
+//   getCoreWebVitalsScore,
+//   globalCoreWebVitalsMonitor,
+//   startCoreWebVitalsMonitoring
+// } from './utils/core-web-vitals'
 
 // 基础工具函数
 export {
@@ -72,16 +73,17 @@ export {
 } from './utils/index'
 
 // 日志系统
-export {
-  ConsoleLogHandler,
-  createModuleLogger,
-  EnhancedLogger,
-  ErrorTracker,
-  logger,
-  LogLevel,
-  MemoryLogHandler,
-  RemoteLogHandler
-} from './utils/logging-system'
+// TODO: Fix import path - file doesn't exist
+// export {
+//   ConsoleLogHandler,
+//   createModuleLogger,
+//   EnhancedLogger,
+//   ErrorTracker,
+//   logger,
+//   LogLevel,
+//   MemoryLogHandler,
+//   RemoteLogHandler
+// } from './utils/logging-system'
 
 // 内存管理工具
 export {
@@ -97,26 +99,28 @@ export {
 } from './utils/memory-manager'
 
 // 性能分析工具
-export {
-  BatchProcessor,
-  globalPerformanceAnalyzer,
-  measurePerformance,
-  ObjectPool,
-  PerformanceAnalyzer
-} from './utils/performance-analyzer'
+// TODO: Fix import path - file doesn't exist
+// export {
+//   BatchProcessor,
+//   globalPerformanceAnalyzer,
+//   measurePerformance,
+//   ObjectPool,
+//   PerformanceAnalyzer
+// } from './utils/performance-analyzer'
 
 // 实时性能监控
-export {
-  getPerformanceAlerts,
-  getRealtimePerformanceData,
-  globalRealtimePerformanceMonitor,
-  type PerformanceAlert,
-  type PerformanceThresholds,
-  type RealtimePerformanceData,
-  RealtimePerformanceMonitor,
-  startRealtimeMonitoring,
-  stopRealtimeMonitoring
-} from './utils/realtime-performance-monitor'
+// TODO: Fix import path - file doesn't exist
+// export {
+//   getPerformanceAlerts,
+//   getRealtimePerformanceData,
+//   globalRealtimePerformanceMonitor,
+//   type PerformanceAlert,
+//   type PerformanceThresholds,
+//   type RealtimePerformanceData,
+//   RealtimePerformanceMonitor,
+//   startRealtimeMonitoring,
+//   stopRealtimeMonitoring
+// } from './utils/realtime-performance-monitor'
 
 // 类型安全工具
 export {

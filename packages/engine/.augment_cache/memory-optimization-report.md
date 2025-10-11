@@ -1,7 +1,7 @@
 # 内存优化报告
 
-**日期**: 2025-09-30  
-**范围**: packages/engine/src  
+**日期**: 2025-09-30
+**范围**: packages/engine/src
 **目标**: 分析并优化内存占用，减少内存泄漏风险
 
 ---
@@ -242,7 +242,7 @@ class GlobalMemoryMonitor {
       if (typeof performance !== 'undefined' && performance.memory) {
         this.metrics.heapUsed = performance.memory.usedJSHeapSize
         this.metrics.heapTotal = performance.memory.totalJSHeapSize
-        
+
         // 警告阈值
         const usage = this.metrics.heapUsed / this.metrics.heapTotal
         if (usage > 0.9) {
@@ -296,4 +296,3 @@ class GlobalMemoryMonitor {
 2. 实现循环缓冲区
 3. 添加内存监控
 4. 编写内存优化文档
-

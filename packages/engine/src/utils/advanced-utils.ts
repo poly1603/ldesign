@@ -1,4 +1,6 @@
 /**
+import { getLogger } from '../logger/unified-logger';
+
  * 高级工具函数集合
  * 🚀 提供更多实用的工具函数，增强开发体验
  */
@@ -6,7 +8,7 @@
 /**
  * 智能重试函数（带指数退避）
  * 🔄 自动重试失败的异步操作，支持自定义重试策略
- * 
+ *
  * @example
  * ```typescript
  * const data = await retryWithBackoff(
@@ -70,10 +72,10 @@ export async function retryWithBackoff<T>(
 
       // 等待后重试
       await new Promise(resolve => setTimeout(resolve, delay))
-      
+
       // 计算下次延迟（指数退避）
       delay = Math.min(delay * backoffFactor, maxDelay)
-      
+
       // 添加抖动（jitter）避免雷鸣羊群效应
       delay = delay * (0.5 + Math.random() * 0.5)
     }
@@ -152,7 +154,7 @@ export const fp = {
   /**
    * 函数节点 - once执行
    * @example
-   * const initialize = once(() => console.log('Initialized'))
+   * const initialize = once(() => this.logger.debug('Initialized'))
    * initialize() // 打印 'Initialized'
    * initialize() // 什么都不做
    */
@@ -174,11 +176,13 @@ export const fp = {
  * 🔍 提供常用的数据验证功能
  */
 export class Validator {
+  private logger = getLogger('Validator')
+
   /**
    * 验证邮箱格式
    */
   static isEmail(value: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
     return emailRegex.test(value)
   }
 
@@ -238,7 +242,7 @@ export class Validator {
     let isEven = false
 
     for (let i = sanitized.length - 1; i >= 0; i--) {
-      let digit = parseInt(sanitized[i], 10)
+      let digit = Number.parseInt(sanitized[i], 10)
 
       if (isEven) {
         digit *= 2
@@ -260,7 +264,7 @@ export class Validator {
     if (parts.length !== 4) return false
 
     return parts.every(part => {
-      const num = parseInt(part, 10)
+      const num = Number.parseInt(part, 10)
       return num >= 0 && num <= 255 && part === String(num)
     })
   }
@@ -269,7 +273,7 @@ export class Validator {
    * 验证IPv6地址
    */
   static isIPv6(value: string): boolean {
-    const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/
+    const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]+|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|1?\d)?\d)\.){3}(25[0-5]|(2[0-4]|1?\d)?\d)|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1?\d)?\d)\.){3}(25[0-5]|(2[0-4]|1?\d)?\d))$/
     return ipv6Regex.test(value)
   }
 
@@ -289,14 +293,14 @@ export class Validator {
    * 验证十六进制颜色值
    */
   static isHexColor(value: string): boolean {
-    return /^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(value)
+    return /^#?([0-9A-F]{3}|[0-9A-F]{6})$/i.test(value)
   }
 }
 
 /**
  * 性能监控装饰器
  * ⚡ 自动监控方法执行性能
- * 
+ *
  * @example
  * ```typescript
  * class MyService {
@@ -324,18 +328,18 @@ export function measurePerformance(
 
       // 开发环境下输出性能日志
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[Performance] ${label}: ${duration.toFixed(2)}ms`)
+        this.logger.debug(`[Performance] ${label}: ${duration.toFixed(2)}ms`)
       }
 
       // 如果性能超过阈值，发出警告
       if (duration > 1000) {
-        console.warn(`[Performance Warning] ${label} took ${duration.toFixed(2)}ms`)
+        this.logger.warn(`[Performance Warning] ${label} took ${duration.toFixed(2)}ms`)
       }
 
       return result
     } catch (error) {
       const duration = performance.now() - start
-      console.error(`[Performance Error] ${label} failed after ${duration.toFixed(2)}ms`)
+      this.logger.error(`[Performance Error] ${label} failed after ${duration.toFixed(2)}ms`)
       throw error
     }
   }
@@ -346,7 +350,7 @@ export function measurePerformance(
 /**
  * 缓存装饰器
  * 💾 自动缓存方法结果
- * 
+ *
  * @example
  * ```typescript
  * class DataService {
@@ -389,11 +393,11 @@ export function cached(ttl = 60000) {
 /**
  * 异步队列
  * 🎯 控制异步操作的并发数
- * 
+ *
  * @example
  * ```typescript
  * const queue = new AsyncQueue(3) // 最多3个并发
- * 
+ *
  * const results = await Promise.all([
  *   queue.add(() => fetchData(1)),
  *   queue.add(() => fetchData(2)),
@@ -433,20 +437,20 @@ export class AsyncQueue {
 /**
  * 事件发射器（类型安全版本）
  * 📡 提供类型安全的事件发射和监听
- * 
+ *
  * @example
  * ```typescript
  * interface Events {
  *   'user:login': { userId: string; timestamp: number }
  *   'user:logout': { userId: string }
  * }
- * 
+ *
  * const emitter = new TypedEventEmitter<Events>()
- * 
+ *
  * emitter.on('user:login', (data) => {
- *   console.log(data.userId) // 类型安全！
+ *   this.logger.debug(data.userId) // 类型安全！
  * })
- * 
+ *
  * emitter.emit('user:login', { userId: '123', timestamp: Date.now() })
  * ```
  */
@@ -493,11 +497,11 @@ export class TypedEventEmitter<T extends Record<string, any>> {
 /**
  * 延迟加载类
  * 💤 延迟初始化重量级资源
- * 
+ *
  * @example
  * ```typescript
  * const heavyResource = new Lazy(() => createHeavyResource())
- * 
+ *
  * // 只在需要时才初始化
  * const resource = heavyResource.value
  * ```
@@ -607,9 +611,9 @@ export class ColorUtils {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
     return result
       ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
+          r: Number.parseInt(result[1], 16),
+          g: Number.parseInt(result[2], 16),
+          b: Number.parseInt(result[3], 16),
         }
       : null
   }
@@ -618,7 +622,7 @@ export class ColorUtils {
    * RGB转十六进制
    */
   static rgbToHex(r: number, g: number, b: number): string {
-    return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')
+    return `#${[r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')}`
   }
 
   /**

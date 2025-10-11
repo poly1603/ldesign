@@ -22,6 +22,8 @@ export interface InfiniteScrollOptions {
 }
 
 export class InfiniteScrollDirective extends DirectiveBase {
+  private logger = getLogger('InfiniteScrollDirective')
+
   constructor() {
     super({
       name: 'infinite-scroll',
@@ -404,6 +406,8 @@ export const infiniteScrollDirective = new InfiniteScrollDirective()
 <script setup>
 import { ref } from 'vue'
 
+import { getLogger } from '../../logger/unified-logger';
+
 const items = ref([])
 const loading = ref(false)
 const page = ref(1)
@@ -421,18 +425,18 @@ const loadMore = async () => {
     items.value.push(...newItems)
     page.value++
   } catch (error) {
-    console.error('加载失败:', error)
+    this.logger.error('加载失败:', error)
   } finally {
     loading.value = false
   }
 }
 
 const handleLoadComplete = () => {
-  console.log('加载完成')
+  this.logger.debug('加载完成')
 }
 
 const handleLoadError = (error) => {
-  console.error('加载错误:', error)
+  this.logger.error('加载错误:', error)
 }
 </script>
 

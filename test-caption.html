@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caption 位置与对齐测试</title>
+  <script type="module" src="http://192.168.3.227:5173/@ldesign/webcomponent"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .controls {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .control-group {
+      margin-bottom: 15px;
+    }
+    .control-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    .button-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 8px 16px;
+      border: 2px solid #e0e0e0;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    button:hover {
+      border-color: #5b8cff;
+      color: #5b8cff;
+    }
+    button.active {
+      background: #5b8cff;
+      color: white;
+      border-color: #5b8cff;
+    }
+    .trigger-btn {
+      padding: 12px 24px;
+      background: #5b8cff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .trigger-btn:hover {
+      background: #4a7ce8;
+    }
+    .info {
+      background: #e3f2fd;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-top: 20px;
+      color: #1565c0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Caption 位置与对齐测试</h1>
+    <p class="subtitle">测试图片标题和描述的不同位置和对齐方式</p>
+
+    <div class="controls">
+      <div class="control-group">
+        <label>Caption 位置：</label>
+        <div class="button-group">
+          <button id="pos-top">Top（顶部）</button>
+          <button id="pos-bottom" class="active">Bottom（底部）</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Caption 对齐方式：</label>
+        <div class="button-group">
+          <button id="align-left">Left（左对齐）</button>
+          <button id="align-center" class="active">Center（居中）</button>
+          <button id="align-right">Right（右对齐）</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>查看器模式：</label>
+        <div class="button-group">
+          <button id="mode-overlay" class="active">Overlay（全屏）</button>
+          <button id="mode-modal">Modal（小窗）</button>
+        </div>
+      </div>
+
+      <button class="trigger-btn" id="openBtn">打开图片查看器</button>
+    </div>
+
+    <div class="info">
+      💡 提示：Caption 现在简化为 top/bottom 两个位置，不会遮挡顶部缩略图和底部工具栏。可以通过 captionAlign 属性控制左中右对齐。
+    </div>
+  </div>
+
+  <ldesign-image-viewer id="viewer"></ldesign-image-viewer>
+
+  <script>
+    const viewer = document.getElementById('viewer');
+    const openBtn = document.getElementById('openBtn');
+
+    // 测试图片数据
+    const images = [
+      {
+        src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200',
+        thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200',
+        title: '山脉风光',
+        description: '这是一段描述文字，用于测试不同位置的Caption显示效果。可以看到文字是否清晰可读。'
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200',
+        thumbnail: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=200',
+        title: '森林小径',
+        description: '阳光透过树叶洒在林间小路上，营造出宁静祥和的氛围。'
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=1200',
+        thumbnail: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=200',
+        title: '海边日落',
+        description: '金色的夕阳映照在平静的海面上，天空被染成了橙红色。'
+      }
+    ];
+
+    viewer.images = JSON.stringify(images);
+    viewer.showThumbnails = true;
+    viewer.showCaption = true;
+
+    // 默认配置
+    let captionPosition = 'bottom';
+    let captionAlign = 'center';
+    let viewerMode = 'overlay';
+
+    // 位置切换
+    document.getElementById('pos-top').addEventListener('click', function() {
+      captionPosition = 'top';
+      updateActiveButton('pos', this);
+    });
+    document.getElementById('pos-bottom').addEventListener('click', function() {
+      captionPosition = 'bottom';
+      updateActiveButton('pos', this);
+    });
+
+    // 对齐切换
+    document.getElementById('align-left').addEventListener('click', function() {
+      captionAlign = 'left';
+      updateActiveButton('align', this);
+    });
+    document.getElementById('align-center').addEventListener('click', function() {
+      captionAlign = 'center';
+      updateActiveButton('align', this);
+    });
+    document.getElementById('align-right').addEventListener('click', function() {
+      captionAlign = 'right';
+      updateActiveButton('align', this);
+    });
+
+    // 模式切换
+    document.getElementById('mode-overlay').addEventListener('click', function() {
+      viewerMode = 'overlay';
+      updateActiveButton('mode', this);
+    });
+    document.getElementById('mode-modal').addEventListener('click', function() {
+      viewerMode = 'modal';
+      updateActiveButton('mode', this);
+    });
+
+    // 打开查看器
+    openBtn.addEventListener('click', () => {
+      viewer.captionPosition = captionPosition;
+      viewer.captionAlign = captionAlign;
+      viewer.viewerMode = viewerMode;
+      viewer.visible = true;
+    });
+
+    // 更新按钮激活状态
+    function updateActiveButton(group, activeBtn) {
+      const buttons = activeBtn.parentElement.querySelectorAll('button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      activeBtn.classList.add('active');
+    }
+
+    console.log('Caption 测试页面加载完成！');
+  </script>
+</body>
+</html>

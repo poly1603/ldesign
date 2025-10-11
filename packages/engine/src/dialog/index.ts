@@ -2,15 +2,18 @@
  * Dialog弹窗系统统一导出
  */
 
-import type { DialogManagerConfig, DialogOptions } from './dialog-manager'
-// 导出核心类
+import { getLogger } from '../logger/unified-logger'
 // 导入核心类用于创建实例
 import { DialogManager } from './dialog-manager'
+import type { DialogManagerConfig, DialogOptions, DialogInstance, DialogButton } from './dialog-manager'
 
+const logger = getLogger('index')
+
+// 导出核心类
 export { DialogManager } from './dialog-manager'
-export type { DialogManagerConfig } from './dialog-manager'
 
 // 导出类型定义
+export type { DialogManagerConfig, DialogOptions, DialogInstance, DialogButton } from './dialog-manager'
 export * from './types'
 
 /**
@@ -22,7 +25,12 @@ export function createDialogManager(
   const manager = new DialogManager(config)
   // 懒加载初始化
   if (typeof window !== 'undefined') {
-    manager.initialize().catch(console.error)
+    manager.initialize().catch(error => {
+      // 使用全局错误处理
+      if (typeof window !== 'undefined' && window.console) {
+        window.console.error('[DialogManager] Initialization error:', error)
+      }
+    })
   }
   return manager
 }
@@ -39,7 +47,12 @@ export function getGlobalDialogManager(): DialogManager {
   if (!globalDialogManager) {
     globalDialogManager = new DialogManager()
     // 自动初始化
-    globalDialogManager.initialize().catch(console.error)
+    globalDialogManager.initialize().catch(error => {
+      // 使用全局错误处理
+      if (typeof window !== 'undefined' && window.console) {
+        window.console.error('[DialogManager] Global initialization error:', error)
+      }
+    })
   }
   return globalDialogManager
 }
@@ -159,8 +172,8 @@ const customDialog = await dialogManager.open({
   resizable: true,
   animation: 'slide',
   animationDuration: 500,
-  onOpen: () => console.log('弹窗已打开'),
-  onClose: (result) => console.log('弹窗已关闭，结果：', result),
+  onOpen: () => logger.debug('弹窗已打开'),
+  onClose: (result) => logger.debug('弹窗已关闭，结果：', result),
   beforeClose: async (result) => {
     // 可以在这里进行异步验证
     return confirm('确定要关闭吗？')

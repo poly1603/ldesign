@@ -1,6 +1,9 @@
 /**
+import { getLogger } from '../logger/unified-logger';
+
+const logger = getLogger('config-validators');
  * 配置验证器模块
- * 
+ *
  * 提供配置验证相关的类型定义和工具函数
  */
 
@@ -56,7 +59,7 @@ export interface ConfigChangeEvent {
 
 /**
  * 验证配置类型
- * 
+ *
  * @param value 要验证的值
  * @param type 期望的类型
  * @returns 是否匹配类型
@@ -82,7 +85,7 @@ export function validateConfigType(value: unknown, type: string): boolean {
 
 /**
  * 验证配置对象
- * 
+ *
  * @param config 配置对象
  * @param schema 配置模式
  * @returns 验证错误列表
@@ -113,7 +116,7 @@ export function validateConfig(
       if (schemaItem.deprecated && value !== undefined) {
         const message
           = schemaItem.deprecationMessage || `Config ${fullPath} is deprecated`
-        console.warn(message)
+        logger.warn(message)
       }
 
       if (value === undefined || value === null)
@@ -150,7 +153,7 @@ export function validateConfig(
 
 /**
  * 应用配置默认值
- * 
+ *
  * @param config 配置对象
  * @param schema 配置模式
  */
@@ -175,7 +178,7 @@ export function applyConfigDefaults(
           obj[key] = schemaItem.validator.transform(obj[key])
         }
         catch (error) {
-          console.warn(`Failed to transform config ${key}:`, error)
+          logger.warn(`Failed to transform config ${key}:`, error)
         }
       }
 
@@ -262,4 +265,3 @@ export const ConfigValidators = {
     message: 'Must be an array of valid items',
   }),
 }
-

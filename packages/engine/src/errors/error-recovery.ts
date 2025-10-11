@@ -5,6 +5,8 @@
 
 import type { ErrorHandler } from '../types/enhanced'
 
+import { getLogger } from '../logger/unified-logger'
+
 /**
  * 错误恢复策略
  */
@@ -89,6 +91,8 @@ export interface ErrorReport {
  * 错误恢复管理器
  */
 export class ErrorRecoveryManager {
+  private logger = getLogger('ErrorRecoveryManager')
+
   private strategies: RecoveryStrategy[] = []
   private errorHistory: ErrorReport[] = []
   private errorHandlers: Map<string, ErrorHandler> = new Map()
@@ -206,7 +210,7 @@ export class ErrorRecoveryManager {
             value
           }
         } catch (recoveryError) {
-          console.error(`Recovery strategy ${strategy.name} failed:`, recoveryError)
+          this.logger.error(`Recovery strategy ${strategy.name} failed:`, recoveryError)
         }
       }
     }
@@ -423,7 +427,7 @@ export class ErrorRecoveryManager {
         })
       })
     } catch (error) {
-      console.error('Failed to report error:', error)
+      this.logger.error('Failed to report error:', error)
     }
   }
 

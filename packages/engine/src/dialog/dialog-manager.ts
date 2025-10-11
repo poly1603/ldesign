@@ -58,6 +58,11 @@ export interface DialogInstance {
   close: (result?: unknown) => Promise<void>
   update: (options: Partial<DialogOptions>) => void
   destroy: () => void
+  focus: () => void
+  blur: () => void
+  center: () => void
+  setPosition: (position: { top?: string | number; left?: string | number; right?: string | number; bottom?: string | number }) => void
+  setSize: (size: { width?: string | number; height?: string | number }) => void
 }
 
 export interface DialogManagerConfig {
@@ -560,6 +565,41 @@ export class DialogManager extends BaseManager<DialogManagerConfig> {
       destroy: () => {
         this.destroyInstance(instance)
       },
+      focus: () => {
+        element.focus()
+      },
+      blur: () => {
+        element.blur()
+      },
+      center: () => {
+        element.style.position = 'fixed'
+        element.style.left = '50%'
+        element.style.top = '50%'
+        element.style.transform = 'translate(-50%, -50%)'
+      },
+      setPosition: (position) => {
+        element.style.position = 'fixed'
+        if (position.top !== undefined) {
+          element.style.top = typeof position.top === 'number' ? `${position.top}px` : position.top
+        }
+        if (position.left !== undefined) {
+          element.style.left = typeof position.left === 'number' ? `${position.left}px` : position.left
+        }
+        if (position.right !== undefined) {
+          element.style.right = typeof position.right === 'number' ? `${position.right}px` : position.right
+        }
+        if (position.bottom !== undefined) {
+          element.style.bottom = typeof position.bottom === 'number' ? `${position.bottom}px` : position.bottom
+        }
+      },
+      setSize: (size) => {
+        if (size.width !== undefined) {
+          element.style.width = typeof size.width === 'number' ? `${size.width}px` : size.width
+        }
+        if (size.height !== undefined) {
+          element.style.height = typeof size.height === 'number' ? `${size.height}px` : size.height
+        }
+      },
     }
 
     return instance
@@ -932,6 +972,34 @@ export class DialogManager extends BaseManager<DialogManagerConfig> {
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('mouseup', handleMouseUp)
     })
+  }
+
+  /**
+   * 根据ID获取弹窗实例
+   */
+  getById(id: string): DialogInstance | null {
+    return this.instances.get(id) || null
+  }
+
+  /**
+   * 获取所有弹窗实例
+   */
+  getAll(): DialogInstance[] {
+    return Array.from(this.instances.values())
+  }
+
+  /**
+   * 获取所有可见的弹窗实例
+   */
+  getVisible(): DialogInstance[] {
+    return Array.from(this.instances.values()).filter(i => i.visible)
+  }
+
+  /**
+   * 更新配置
+   */
+  updateConfig(newConfig: Partial<DialogManagerConfig>): void {
+    Object.assign(this.config, newConfig)
   }
 
   /**

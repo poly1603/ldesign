@@ -1,405 +1,298 @@
-# @ldesign/pdf
+# @ldesign/pdf-viewer
 
-> 功能强大、高性能的PDF阅读器插件，支持Vue、React和原生JavaScript
+<p align="center">
+  <img src="https://img.shields.io/npm/v/@ldesign/pdf-viewer" alt="npm version">
+  <img src="https://img.shields.io/npm/l/@ldesign/pdf-viewer" alt="license">
+  <img src="https://img.shields.io/npm/dt/@ldesign/pdf-viewer" alt="downloads">
+</p>
 
-[![npm version](https://img.shields.io/npm/v/@ldesign/pdf.svg)](https://www.npmjs.com/package/@ldesign/pdf)
-[![license](https://img.shields.io/npm/l/@ldesign/pdf.svg)](https://github.com/ldesign/pdf/blob/main/LICENSE)
-[![downloads](https://img.shields.io/npm/dm/@ldesign/pdf.svg)](https://www.npmjs.com/package/@ldesign/pdf)
+一个功能强大、易于使用的 PDF 查看器库，支持在任何前端框架中使用。
 
 ## ✨ 特性
 
-- ⚡️ **高性能渲染** - 虚拟滚动、智能缓存、Web Worker
-- 🎨 **丰富配置** - 缩放、质量、布局等多种配置选项
-- 🔌 **插件系统** - 强大的插件系统，轻松扩展功能
-- 🛠️ **框架无关** - 支持Vue、React和原生JavaScript
-- 📦 **开箱即用** - 内置工具栏、搜索、缩略图、打印下载等功能
-- 🎯 **TypeScript** - 完整的TypeScript类型定义
-- 🔍 **全文搜索** - 支持正则表达式、大小写敏感等高级搜索
-- 📱 **响应式设计** - 自适应各种屏幕尺寸
+- 🚀 **开箱即用** - 简单的 API 设计，快速集成
+- 🎨 **高度可定制** - 丰富的配置选项，支持自定义工具栏和主题
+- 🔌 **框架无关** - 支持 Vanilla JS、Vue、React 等任意框架
+- ⚡️ **性能优越** - 智能缓存、虚拟滚动、按需渲染
+- 📱 **响应式设计** - 完美支持桌面端和移动端
+- 🔍 **功能丰富** - 页面导航、缩放、旋转、搜索、下载、打印
 
 ## 📦 安装
 
 ```bash
+# pnpm
+pnpm add @ldesign/pdf-viewer
+
 # npm
-npm install @ldesign/pdf pdfjs-dist
+npm install @ldesign/pdf-viewer
 
 # yarn
-yarn add @ldesign/pdf pdfjs-dist
-
-# pnpm
-pnpm add @ldesign/pdf pdfjs-dist
-```
-
-## ⚙️ Worker配置（重要！）
-
-PDF.js需要Worker文件才能正常工作。有两种配置方式：
-
-### 方式1：使用CDN（推荐，无需额外配置）
-
-```javascript
-workerSrc: 'https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.js'
-```
-
-### 方式2：使用本地文件
-
-```bash
-# 1. 复制worker文件到public目录
-cp node_modules/pdfjs-dist/build/pdf.worker.min.js public/
-
-# 2. 在代码中引用
-workerSrc: '/pdf.worker.min.js'
+yarn add @ldesign/pdf-viewer
 ```
 
 ## 🚀 快速开始
+
+### Vanilla JavaScript
+
+```javascript
+import { PDFViewer } from '@ldesign/pdf-viewer'
+
+const viewer = new PDFViewer({
+  container: '#viewer',
+  url: 'path/to/your.pdf',
+  workerSrc: '/pdf.worker.min.mjs'
+})
+
+viewer.on('document-loaded', (doc) => {
+  console.log('Loaded', doc.numPages, 'pages')
+})
+```
 
 ### Vue 3
 
 ```vue
 <template>
   <PDFViewer
-    source="https://example.com/sample.pdf"
-    :workerSrc="workerSrc"
+    url="path/to/your.pdf"
+    :worker-src="'/pdf.worker.min.mjs'"
+    @document-loaded="onLoaded"
   />
 </template>
 
 <script setup>
-import { PDFViewerComponent as PDFViewer } from '@ldesign/pdf/vue';
+import { PDFViewer } from '@ldesign/pdf-viewer/vue'
 
-// 使用CDN Worker（推荐）
-const workerSrc = 'https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.js';
-// 或使用本地文件: const workerSrc = '/pdf.worker.min.js';
+const onLoaded = (totalPages) => {
+  console.log('Total pages:', totalPages)
+}
 </script>
 ```
 
-### 原生 JavaScript
+## 📖 文档
+
+完整文档请访问：[https://ldesign.github.io/pdf-viewer](https://ldesign.github.io/pdf-viewer)
+
+- [快速开始](./docs/guide/quick-start.md)
+- [API 参考](./docs/api/)
+- [Vue 集成](./docs/guide/vue.md)
+- [配置选项](./docs/guide/configuration.md)
+
+## 🎯 核心功能
+
+### 基础功能
+
+- ✅ PDF 文档加载和渲染
+- ✅ 页面导航（上一页、下一页、跳转）
+- ✅ 缩放控制（放大、缩小、自适应）
+- ✅ 页面旋转（90°、180°、270°）
+- ✅ 文本选择和复制
+- ✅ 全文搜索
+- ✅ 下载和打印
+
+### 高级功能
+
+- ✅ 自定义工具栏
+- ✅ 主题定制
+- ✅ 事件系统
+- ✅ 页面缓存管理
+- ✅ 智能预渲染
+- ✅ 加载进度显示
+
+### 性能优化
+
+- ✅ LRU 缓存策略
+- ✅ 渲染任务管理
+- ✅ 按需加载
+- ⏳ 虚拟滚动（开发中）
+
+## 💡 使用示例
+
+### 加载不同来源的 PDF
 
 ```javascript
-import { PDFViewer } from '@ldesign/pdf';
+// 从 URL 加载
+viewer.loadDocument('https://example.com/document.pdf')
 
-const viewer = new PDFViewer({
-  container: '#pdf-container',
-  // 使用CDN Worker（推荐）
-  workerSrc: 'https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.js',
-  // 或使用本地文件: workerSrc: '/pdf.worker.min.js',
-});
+// 从本地文件加载
+const file = event.target.files[0]
+const buffer = await file.arrayBuffer()
+viewer.loadDocument(new Uint8Array(buffer))
 
-viewer.load('https://example.com/sample.pdf');
+// 从 Base64 加载
+const base64 = 'JVBERi0xLjcKCjEgMCBvYmoKPDwvVHlwZS9DYXRhbG9n...'
+const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+viewer.loadDocument(bytes)
 ```
 
-### 使用 Composable (Vue 3)
-
-```vue
-<template>
-  <div>
-    <div class="toolbar">
-      <button @click="previousPage">上一页</button>
-      <span>{{ currentPage }} / {{ totalPages }}</span>
-      <button @click="nextPage">下一页</button>
-      <button @click="zoomIn">放大</button>
-      <button @click="zoomOut">缩小</button>
-    </div>
-    <div ref="containerRef"></div>
-  </div>
-</template>
-
-<script setup>
-import { ref } from 'vue';
-import { usePDFViewer } from '@ldesign/pdf/vue';
-
-const pdfSource = ref('https://example.com/sample.pdf');
-
-const {
-  containerRef,
-  currentPage,
-  totalPages,
-  nextPage,
-  previousPage,
-  zoomIn,
-  zoomOut,
-} = usePDFViewer(pdfSource, {
-  workerSrc: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.js',
-});
-</script>
-```
-
-## 📖 核心功能
-
-### 页面导航
+### 页面操作
 
 ```javascript
-viewer.goToPage(5);      // 跳转到第5页
-viewer.nextPage();       // 下一页
-viewer.previousPage();   // 上一页
+// 跳转到指定页
+await viewer.goToPage(5)
+
+// 下一页
+await viewer.nextPage()
+
+// 上一页
+await viewer.previousPage()
+
+// 获取当前页码
+const page = viewer.getCurrentPage()
+
+// 获取总页数
+const total = viewer.getTotalPages()
 ```
 
 ### 缩放控制
 
 ```javascript
-viewer.setScale(1.5);           // 设置缩放比例为150%
-viewer.setScale('auto');        // 自动缩放
-viewer.setScale('page-fit');    // 适应页面
-viewer.setScale('page-width');  // 适应宽度
-viewer.zoomIn();                // 放大
-viewer.zoomOut();               // 缩小
+// 放大
+viewer.setZoom('in')
+
+// 缩小
+viewer.setZoom('out')
+
+// 设置具体缩放比例
+viewer.setZoom(1.5)
+
+// 自适应宽度
+viewer.setZoom('fit-width')
+
+// 自适应页面
+viewer.setZoom('fit-page')
 ```
 
-### 页面旋转
+### 文本搜索
 
 ```javascript
-viewer.rotate(90);    // 旋转90度
-viewer.rotate(-90);   // 逆时针旋转90度
+const results = await viewer.search('keyword')
+
+viewer.on('search-results', (results) => {
+  console.log(`Found ${results.length} matches`)
+  results.forEach(result => {
+    console.log(`Page ${result.pageNumber}: ${result.text}`)
+  })
+})
 ```
 
-### 搜索
-
-```javascript
-const results = await viewer.search('关键词', {
-  caseSensitive: false,
-  wholeWords: false,
-});
-
-console.log(`找到 ${results.length} 个匹配项`);
-```
-
-### 打印和下载
-
-```javascript
-// 打印
-await viewer.print();
-
-// 下载
-viewer.download('my-document.pdf');
-```
-
-### 获取信息
-
-```javascript
-// 文档信息
-const info = viewer.getDocumentInfo();
-console.log(info.title, info.author, info.numPages);
-
-// 页面信息
-const pageInfo = viewer.getPageInfo(1);
-console.log(pageInfo.width, pageInfo.height);
-
-// 大纲
-const outline = await viewer.getOutline();
-```
-
-### 缩略图
-
-```javascript
-const thumbnail = await viewer.getThumbnail(1);
-document.body.appendChild(thumbnail);
-```
-
-## ⚙️ 配置选项
+### 自定义工具栏和主题
 
 ```javascript
 const viewer = new PDFViewer({
-  // 基础配置
-  container: '#pdf-container',
-  workerSrc: '...',
-  scale: 'auto',              // 缩放模式
-  quality: 'high',            // 渲染质量
-  layout: 'continuous',       // 布局模式
-  initialPage: 1,             // 初始页码
+  container: '#viewer',
+  url: 'document.pdf',
 
-  // 缓存配置
-  cache: {
-    enabled: true,
-    maxPages: 50,
-    strategy: 'lru',          // 缓存策略: lru, fifo, lfu
-    preloadPages: 3,
+  // 工具栏配置
+  toolbar: {
+    showZoom: true,
+    showPageNav: true,
+    showDownload: true,
+    showPrint: true,
+    showRotate: true
   },
 
-  // 渲染配置
-  render: {
-    dpi: 150,
-    useWorker: true,
-    maxConcurrent: 5,
-  },
-
-  // 搜索配置
-  search: {
-    caseSensitive: false,
-    wholeWords: false,
-    regex: false,
-  },
-
-  // 缩略图配置
-  thumbnail: {
-    enabled: true,
-    width: 150,
-    height: 200,
-    lazyLoad: true,
-  },
-
-  // 事件监听
-  on: {
-    loadComplete: (info) => console.log('加载完成', info),
-    pageChange: (page) => console.log('页面切换', page),
-    scaleChange: (scale) => console.log('缩放改变', scale),
-  },
-});
+  // 主题配置
+  theme: {
+    primaryColor: '#7c3aed',
+    backgroundColor: '#1e293b',
+    toolbarBackground: '#0f172a',
+    textColor: '#f1f5f9'
+  }
+})
 ```
 
-## 🔌 插件系统
+## 🔧 开发
 
-```javascript
-const myPlugin = {
-  name: 'my-plugin',
-  version: '1.0.0',
-  install(viewer) {
-    console.log('插件安装');
-  },
-  hooks: {
-    beforeLoad: async (source) => {
-      console.log('加载前');
-    },
-    afterLoad: async (doc) => {
-      console.log('加载后');
-    },
-    beforeRender: async (page) => {
-      console.log('渲染前');
-    },
-    afterRender: async (page, canvas) => {
-      console.log('渲染后');
-    },
-  },
-};
-
-viewer.use(myPlugin);
-```
-
-## 🎯 事件系统
-
-```javascript
-// 监听事件
-viewer.on('loadComplete', (info) => {
-  console.log('文档加载完成', info);
-});
-
-viewer.on('pageChange', (page) => {
-  console.log('当前页:', page);
-});
-
-viewer.on('scaleChange', (scale) => {
-  console.log('缩放比例:', scale);
-});
-
-// 取消监听
-viewer.off('pageChange', handler);
-```
-
-## 🎨 UI定制
-
-### 隐藏默认工具栏
-
-```vue
-<PDFViewer
-  :source="pdfUrl"
-  :show-toolbar="false"
-  :show-search="false"
-/>
-```
-
-### 完全自定义
-
-```vue
-<template>
-  <div>
-    <!-- 自定义工具栏 -->
-    <div class="my-toolbar">
-      <button @click="previousPage">◀</button>
-      <span>{{ currentPage }} / {{ totalPages }}</span>
-      <button @click="nextPage">▶</button>
-    </div>
-
-    <!-- PDF容器 -->
-    <div ref="containerRef"></div>
-  </div>
-</template>
-
-<script setup>
-import { usePDFViewer } from '@ldesign/pdf/vue';
-
-const {
-  containerRef,
-  currentPage,
-  totalPages,
-  nextPage,
-  previousPage,
-} = usePDFViewer(pdfSource);
-</script>
-```
-
-## 📚 文档
-
-完整文档请访问：[https://ldesign.github.io/pdf](https://ldesign.github.io/pdf)
-
-- [快速开始](https://ldesign.github.io/pdf/guide/getting-started)
-- [配置选项](https://ldesign.github.io/pdf/guide/configuration)
-- [API参考](https://ldesign.github.io/pdf/api/)
-- [示例](https://ldesign.github.io/pdf/examples/)
-
-## 💻 本地开发
+### 克隆仓库
 
 ```bash
-# 克隆仓库
-git clone https://github.com/ldesign/pdf.git
-cd pdf
+git clone https://github.com/ldesign/pdf-viewer.git
+cd pdf-viewer
+```
 
-# 安装依赖
+### 安装依赖
+
+```bash
 pnpm install
+```
 
-# 运行Vue3示例
-cd examples/vue3-demo
+### 开发模式
+
+```bash
+# 运行 vanilla-demo
 pnpm dev
 
-# 构建库
-pnpm build
+# 运行 vue3-demo
+pnpm dev vue3-demo
 
 # 运行文档
 pnpm docs:dev
+```
+
+### 构建
+
+```bash
+# 构建库
+pnpm build
+
+# 构建所有（库 + 示例）
+pnpm build:all
 
 # 构建文档
 pnpm docs:build
 ```
 
+## 📁 项目结构
+
+```
+pdf-viewer/
+├── src/                    # 源代码
+│   ├── core/              # 核心功能
+│   │   ├── DocumentManager.ts
+│   │   ├── PageRenderer.ts
+│   │   └── PDFViewer.ts
+│   ├── adapters/          # 框架适配器
+│   │   └── vue/           # Vue 3 适配器
+│   ├── utils/             # 工具类
+│   └── types/             # TypeScript 类型定义
+├── examples/              # 示例项目
+│   ├── vanilla-demo/      # Vanilla JS 示例
+│   └── vue3-demo/         # Vue 3 示例
+├── docs/                  # 文档
+└── scripts/               # 构建脚本
+```
+
+## 🌐 浏览器支持
+
+- Chrome >= 90
+- Firefox >= 88
+- Safari >= 14
+- Edge >= 90
+
 ## 🤝 贡献
 
-欢迎贡献代码！请查看 [贡献指南](CONTRIBUTING.md)。
+欢迎贡献代码！请查看 [贡献指南](./CONTRIBUTING.md)。
 
-## 📝 许可证
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
 
-[MIT License](LICENSE)
+## 📄 许可证
+
+[MIT License](./LICENSE)
 
 ## 🙏 致谢
 
-- [PDF.js](https://github.com/mozilla/pdf.js) - Mozilla的PDF渲染库
-- [Vue.js](https://vuejs.org/) - 渐进式JavaScript框架
-- [Vite](https://vitejs.dev/) - 下一代前端构建工具
-- [VitePress](https://vitepress.dev/) - 静态站点生成器
+- 基于 [PDF.js](https://github.com/mozilla/pdf.js) 构建
+- 灵感来自各种优秀的 PDF 查看器库
 
-## 📊 浏览器支持
+## 📮 联系方式
 
-| Chrome | Edge | Firefox | Safari | Opera |
-|--------|------|---------|--------|-------|
-| 最新   | 最新 | 最新    | 最新   | 最新  |
-
-## 🔗 相关链接
-
-- [GitHub](https://github.com/ldesign/pdf)
-- [npm](https://www.npmjs.com/package/@ldesign/pdf)
-- [文档](https://ldesign.github.io/pdf)
-- [Issues](https://github.com/ldesign/pdf/issues)
-- [讨论区](https://github.com/ldesign/pdf/discussions)
-
-## ⭐ Star History
-
-如果这个项目对你有帮助，请给一个 ⭐️ Star！
+- 提交 Issue: [GitHub Issues](https://github.com/ldesign/pdf-viewer/issues)
+- 邮箱: support@ldesign.com
 
 ---
 
-Made with ❤️ by [ldesign](https://github.com/ldesign)
+<p align="center">Made with ❤️ by ldesign</p>

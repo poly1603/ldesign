@@ -20,7 +20,7 @@ import { computed, type ComputedRef, onUnmounted, ref, type Ref, watch } from 'v
  * watch(debouncedQuery, (newQuery) => {
  *   if (newQuery) {
  *     // 执行搜索
- *     console.log('搜索:', newQuery)
+ *     logger.debug('搜索:', newQuery)
  *   }
  * })
  * </script>
@@ -108,7 +108,7 @@ export function useThrottle<T>(value: Ref<T>, limit = 300): ComputedRef<T> {
  * import { useDebounceFn } from '@ldesign/engine'
  *
  * const debouncedSearch = useDebounceFn((query: string) => {
- *   console.log('搜索:', query)
+ *   logger.debug('搜索:', query)
  *   // 执行搜索逻辑
  * }, 300)
  *
@@ -160,7 +160,7 @@ export function useDebounceFn<T extends (...args: any[]) => any>(
  * import { useThrottleFn } from '@ldesign/engine'
  *
  * const throttledScroll = useThrottleFn(() => {
- *   console.log('滚动位置:', window.scrollY)
+ *   logger.debug('滚动位置:', window.scrollY)
  * }, 100)
  *
  * onMounted(() => {

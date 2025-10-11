@@ -7,12 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Dependencies
 node_modules
-.pnp
-.pnp.js
-
-# Build output
 dist
 dist-ssr
 *.local
@@ -28,21 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# Testing
-coverage
-*.lcov
-.nyc_output
-
-# VitePress
-docs/.vitepress/cache
-docs/.vitepress/dist
-
-# Temporary files
-*.tmp
-*.temp
+# Cache
 .cache
+.vitepress/cache
+.vitepress/dist

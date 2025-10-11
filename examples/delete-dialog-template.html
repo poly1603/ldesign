@@ -1,0 +1,48 @@
+<!-- 
+  删除确认 Dialog HTML 模板
+  将此代码复制粘贴到你的页面底部（</body> 标签之前）
+-->
+
+<!-- 删除确认 Dialog -->
+<div class="dialog-mask" id="deleteDialog">
+  <div class="dialog">
+    <div class="dialog-header">
+      <div class="dialog-title">删除确认</div>
+      <button class="dialog-close" onclick="closeDeleteDialog()">×</button>
+    </div>
+    <div class="dialog-body">
+      <div class="dialog-content">
+        <!-- 警告图标 -->
+        <div class="dialog-icon">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="28" cy="28" r="24" fill="#FFF3E0"/>
+            <path d="M28 16V30M28 34V36" stroke="#FF9800" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        
+        <!-- 提示消息 -->
+        <div class="dialog-message">
+          确定要删除报销单 <span class="dialog-highlight" id="deleteItemNo"></span> 吗？
+          <br><br>
+          此操作不可撤销，删除后数据将无法恢复。
+        </div>
+        
+        <!-- 详细信息（可选） -->
+        <div class="dialog-detail">
+          <div class="dialog-detail-row">
+            <span class="dialog-detail-label">请款公司：</span>
+            <span class="dialog-detail-value" id="deleteItemCompany"></span>
+          </div>
+          <div class="dialog-detail-row">
+            <span class="dialog-detail-label">支付金额：</span>
+            <span class="dialog-detail-value" id="deleteItemAmount"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-secondary" onclick="closeDeleteDialog()">取消</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">确认删除</button>
+    </div>
+  </div>
+</div>

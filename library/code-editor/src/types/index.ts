@@ -138,3 +138,6 @@ export interface EditorState {
   /** 是否只读 */
   readOnly: boolean
 }
+
+// 导出扩展类型
+export * from './extended'

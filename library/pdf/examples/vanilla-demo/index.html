@@ -1,135 +1,50 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>@ldesign/pdf - 原生JS示例</title>
-  <link rel="stylesheet" href="/style.css">
+  <title>PDF Viewer - Vanilla JS Demo</title>
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <div class="app">
     <header class="header">
-      <h1>@ldesign/pdf - 原生JavaScript示例</h1>
-      <p>功能强大的PDF阅读器插件</p>
+      <h1>PDF Viewer - Vanilla JS Demo</h1>
+      <div class="controls">
+        <input type="file" id="fileInput" accept=".pdf" />
+        <button id="loadSampleBtn">Load Sample PDF</button>
+      </div>
     </header>
 
-    <div class="container">
+    <main class="main">
       <aside class="sidebar">
-        <h2>示例列表</h2>
-        <nav class="nav">
-          <button class="nav-btn active" data-demo="basic">基础示例</button>
-          <button class="nav-btn" data-demo="advanced">高级功能</button>
-          <button class="nav-btn" data-demo="events">事件系统</button>
-          <button class="nav-btn" data-demo="plugins">插件系统</button>
-        </nav>
-
-        <div class="file-section">
-          <h3>上传PDF</h3>
-          <input type="file" id="file-input" accept=".pdf" class="file-input">
+        <h3>Features</h3>
+        <div class="feature-list">
+          <button id="fitWidthBtn">Fit Width</button>
+          <button id="fitPageBtn">Fit Page</button>
+          <button id="rotate90Btn">Rotate 90°</button>
+          <button id="searchBtn">Search "the"</button>
         </div>
 
-        <div class="info-section">
-          <h3>文档信息</h3>
-          <div id="doc-info" class="info-content">
-            <p>未加载文档</p>
+        <div class="info">
+          <h4>Status</h4>
+          <div id="status">Ready</div>
+
+          <h4>Stats</h4>
+          <div id="stats">
+            <p>Current Page: <span id="currentPage">-</span></p>
+            <p>Total Pages: <span id="totalPages">-</span></p>
+            <p>Zoom: <span id="zoomLevel">-</span></p>
           </div>
         </div>
+
+        <div class="search-results" id="searchResults"></div>
       </aside>
 
-      <main class="main">
-        <!-- 基础示例 -->
-        <div id="demo-basic" class="demo active">
-          <h2>基础示例</h2>
-          <p class="demo-desc">最简单的使用方式</p>
-
-          <div class="controls">
-            <button id="prev-btn" class="btn">上一页</button>
-            <input type="number" id="page-input" class="page-input" min="1" value="1">
-            <span id="page-total">/ 0</span>
-            <button id="next-btn" class="btn">下一页</button>
-            <div class="divider"></div>
-            <button id="zoom-out-btn" class="btn">缩小</button>
-            <span id="scale-display">100%</span>
-            <button id="zoom-in-btn" class="btn">放大</button>
-            <div class="divider"></div>
-            <button id="rotate-btn" class="btn">旋转</button>
-            <button id="print-btn" class="btn">打印</button>
-            <button id="download-btn" class="btn">下载</button>
-          </div>
-
-          <div id="pdf-container" class="pdf-container"></div>
-        </div>
-
-        <!-- 高级功能 -->
-        <div id="demo-advanced" class="demo">
-          <h2>高级功能示例</h2>
-          <p class="demo-desc">展示搜索、缩略图等高级功能</p>
-
-          <div class="controls">
-            <div class="control-group">
-              <label>缩放模式:</label>
-              <select id="scale-mode">
-                <option value="auto">自动</option>
-                <option value="page-fit">适应页面</option>
-                <option value="page-width">适应宽度</option>
-                <option value="1">100%</option>
-                <option value="1.5">150%</option>
-                <option value="2">200%</option>
-              </select>
-            </div>
-
-            <div class="control-group">
-              <label>质量:</label>
-              <select id="quality">
-                <option value="low">低</option>
-                <option value="medium" selected>中</option>
-                <option value="high">高</option>
-                <option value="ultra">超高</option>
-              </select>
-            </div>
-
-            <button id="apply-settings-btn" class="btn btn-primary">应用设置</button>
-          </div>
-
-          <div class="search-section">
-            <input type="text" id="search-input" class="search-input" placeholder="搜索...">
-            <button id="search-btn" class="btn">搜索</button>
-            <div id="search-results" class="search-results"></div>
-          </div>
-
-          <div id="pdf-container-advanced" class="pdf-container"></div>
-        </div>
-
-        <!-- 事件系统 -->
-        <div id="demo-events" class="demo">
-          <h2>事件系统示例</h2>
-          <p class="demo-desc">展示所有可用的事件</p>
-
-          <div id="pdf-container-events" class="pdf-container"></div>
-
-          <div class="event-log">
-            <h3>事件日志</h3>
-            <button id="clear-log-btn" class="btn btn-small">清空日志</button>
-            <div id="event-log" class="log-content"></div>
-          </div>
-        </div>
-
-        <!-- 插件系统 -->
-        <div id="demo-plugins" class="demo">
-          <h2>插件系统示例</h2>
-          <p class="demo-desc">自定义插件扩展功能</p>
-
-          <div class="plugin-info">
-            <h3>已加载插件</h3>
-            <ul id="plugin-list"></ul>
-          </div>
-
-          <div id="pdf-container-plugins" class="pdf-container"></div>
-        </div>
-      </main>
-    </div>
+      <div id="viewer" class="viewer-container"></div>
+    </main>
   </div>
 
-  <script type="module" src="/main.js"></script>
+  <script type="module" src="./main.js"></script>
 </body>
 </html>

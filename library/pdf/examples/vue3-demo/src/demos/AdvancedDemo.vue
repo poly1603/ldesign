@@ -1,158 +1,269 @@
 <template>
   <div class="demo">
-    <h2 class="demo-title">高级功能示例</h2>
-    <p class="demo-desc">展示更多高级功能和配置选项</p>
-
-    <div class="controls">
-      <div class="control-group">
-        <label>缩放模式:</label>
-        <select v-model="scaleMode">
-          <option value="auto">自动</option>
-          <option value="page-fit">适应页面</option>
-          <option value="page-width">适应宽度</option>
-          <option value="1">100%</option>
-          <option value="1.5">150%</option>
-          <option value="2">200%</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label>渲染质量:</label>
-        <select v-model="quality">
-          <option value="low">低</option>
-          <option value="medium">中</option>
-          <option value="high">高</option>
-          <option value="ultra">超高</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label>布局模式:</label>
-        <select v-model="layout">
-          <option value="single">单页</option>
-          <option value="continuous">连续</option>
-          <option value="double">双页</option>
-        </select>
-      </div>
+    <div class="demo-header">
+      <h2>Advanced Features</h2>
+      <p>Text search, file upload, and more advanced features</p>
     </div>
 
     <div class="demo-content">
-      <PDFViewerComponent
-        :source="pdfUrl"
-        :workerSrc="`/pdf.worker.min.mjs`"
-        :scale="scaleMode"
-        :quality="quality"
-        :layout="layout"
-        :enable-text-selection="true"
-        :enable-annotations="true"
-        :cache="{
-          enabled: true,
-          maxPages: 100,
-          strategy: 'lru',
-          preloadPages: 5,
-        }"
-        :render="{
-          dpi: 150,
-          useWorker: true,
-          maxConcurrent: 5,
-        }"
-        @load="handleLoad"
-      />
-    </div>
+      <aside class="sidebar">
+        <div class="controls">
+          <div class="control-group">
+            <h4>Load PDF</h4>
+            <input
+              type="file"
+              accept=".pdf"
+              @change="handleFileUpload"
+              class="file-input"
+            />
+            <button @click="loadSample">Load Sample</button>
+          </div>
 
-    <div class="demo-info">
-      <p v-if="docInfo">
-        文档标题: {{ docInfo.title || '未知' }} |
-        页数: {{ docInfo.numPages }} |
-        作者: {{ docInfo.author || '未知' }}
-      </p>
+          <div class="control-group">
+            <h4>Search</h4>
+            <input
+              v-model="searchText"
+              type="text"
+              placeholder="Enter search text"
+              @keyup.enter="performSearch"
+              class="search-input"
+            />
+            <button @click="performSearch">Search</button>
+          </div>
+
+          <div v-if="searchResults.length > 0" class="search-results">
+            <h4>Results ({{ searchResults.length }})</h4>
+            <div class="results-list">
+              <div
+                v-for="(result, index) in searchResults.slice(0, 10)"
+                :key="index"
+                class="result-item"
+              >
+                <div>Page {{ result.pageNumber }}</div>
+                <button @click="goToPage(result.pageNumber)">Go</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats">
+            <h4>Info</h4>
+            <div>Page: {{ currentPage }} / {{ totalPages }}</div>
+            <div>Zoom: {{ Math.round(currentZoom * 100) }}%</div>
+            <div v-if="loadingProgress">
+              Progress: {{ Math.round((loadingProgress.loaded / loadingProgress.total) * 100) }}%
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div ref="containerRef" class="viewer" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { PDFViewerComponent } from '@ldesign/pdf';
-import type { DocumentInfo } from '@ldesign/pdf';
+import { ref, onMounted } from 'vue'
+import { usePDFViewer } from '@ldesign/pdf-viewer/vue'
 
-const props = defineProps<{
-  pdfUrl: string;
-}>();
+const containerRef = ref<HTMLElement>()
+const searchText = ref('')
 
-const scaleMode = ref<any>('auto');
-const quality = ref<any>('medium');
-const layout = ref<any>('continuous');
-const docInfo = ref<DocumentInfo | null>(null);
+const {
+  currentPage,
+  totalPages,
+  currentZoom,
+  loadingProgress,
+  searchResults,
+  init,
+  loadDocument,
+  goToPage,
+  search
+} = usePDFViewer({
+  workerSrc: '/pdf.worker.min.mjs',
+  enableToolbar: true,
+  enableSearch: true
+})
 
-const handleLoad = () => {
-  console.log('PDF加载完成');
-};
+const loadSample = () => {
+  const url = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf'
+  loadDocument(url)
+}
+
+const handleFileUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+
+  if (file) {
+    const arrayBuffer = await file.arrayBuffer()
+    const uint8Array = new Uint8Array(arrayBuffer)
+    await loadDocument(uint8Array)
+  }
+}
+
+const performSearch = async () => {
+  if (searchText.value.trim()) {
+    await search(searchText.value.trim())
+  }
+}
+
+onMounted(async () => {
+  if (containerRef.value) {
+    await init(containerRef.value)
+    setTimeout(loadSample, 500)
+  }
+})
 </script>
 
 <style scoped>
 .demo {
-  height: 100%;
   display: flex;
   flex-direction: column;
+  height: 100%;
+}
+
+.demo-header {
   padding: 20px;
+  background: #f6f8fa;
+  border-bottom: 1px solid #d0d7de;
 }
 
-.demo-title {
-  margin: 0 0 8px;
-  font-size: 24px;
-  color: #333;
+.demo-header h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: #24292f;
 }
 
-.demo-desc {
-  margin: 0 0 16px;
-  color: #666;
-}
-
-.controls {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 6px;
-}
-
-.control-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.control-group label {
+.demo-header p {
   font-size: 14px;
-  color: #666;
-}
-
-.control-group select {
-  padding: 6px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 14px;
+  color: #57606a;
 }
 
 .demo-content {
   flex: 1;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  display: flex;
   overflow: hidden;
-  background: white;
 }
 
-.demo-info {
-  margin-top: 16px;
+.sidebar {
+  width: 300px;
+  background: #f6f8fa;
+  border-right: 1px solid #d0d7de;
+  overflow-y: auto;
+}
+
+.controls {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-group h4 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #57606a;
+  margin-bottom: 4px;
+}
+
+.file-input {
+  padding: 8px;
+  background: white;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.search-input {
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+button {
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background: #f3f4f6;
+  border-color: #0969da;
+}
+
+.search-results {
   padding: 12px;
-  background: #f8f9fa;
+  background: white;
+  border: 1px solid #d0d7de;
   border-radius: 6px;
 }
 
-.demo-info p {
-  margin: 0;
+.search-results h4 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #57606a;
+  margin-bottom: 8px;
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: #f6f8fa;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.result-item button {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.stats {
+  padding: 12px;
+  background: white;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
   font-size: 14px;
-  color: #666;
+}
+
+.stats h4 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #57606a;
+  margin-bottom: 8px;
+}
+
+.stats div {
+  margin: 4px 0;
+}
+
+.viewer {
+  flex: 1;
+  overflow: hidden;
 }
 </style>

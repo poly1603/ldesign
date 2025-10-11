@@ -1,173 +1,173 @@
+import type { CacheItem } from '../types'
+
 /**
  * 缓存管理器
+ * 使用LRU（Least Recently Used）算法管理缓存
  */
+export class CacheManager<T> {
+  private cache: Map<string, CacheItem<T>> = new Map()
+  private maxSize: number
+  private ttl: number // Time to live in milliseconds
 
-import type { CacheConfig } from '../types';
-
-interface CacheItem<T> {
-  key: string;
-  value: T;
-  timestamp: number;
-  accessCount: number;
-  lastAccess: number;
-}
-
-export class CacheManager {
-  private _config: Required<CacheConfig>;
-  private _cache: Map<string, CacheItem<any>> = new Map();
-  private _accessOrder: string[] = [];
-
-  constructor(config: CacheConfig = {}) {
-    this._config = {
-      enabled: config.enabled !== false,
-      maxPages: config.maxPages || 50,
-      strategy: config.strategy || 'lru',
-      preloadPages: config.preloadPages || 3,
-    };
+  /**
+   * @param maxSize 最大缓存数量
+   * @param ttl 缓存生存时间（毫秒），默认30分钟
+   */
+  constructor(maxSize: number = 50, ttl: number = 30 * 60 * 1000) {
+    this.maxSize = maxSize
+    this.ttl = ttl
   }
 
   /**
    * 设置缓存
+   * @param key 缓存键
+   * @param value 缓存值
    */
-  set<T>(key: string, value: T): void {
-    if (!this._config.enabled) return;
-
-    // 检查容量
-    if (this._cache.size >= this._config.maxPages) {
-      this._evict();
+  set(key: string, value: T): void {
+    // 如果缓存已满，删除最少使用的项
+    if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
+      const lruKey = this.findLRU()
+      if (lruKey) {
+        this.cache.delete(lruKey)
+      }
     }
 
-    const now = Date.now();
-    this._cache.set(key, {
+    const item: CacheItem<T> = {
       key,
       value,
-      timestamp: now,
-      accessCount: 1,
-      lastAccess: now,
-    });
+      timestamp: Date.now(),
+      accessCount: 0
+    }
 
-    this._updateAccessOrder(key);
+    this.cache.set(key, item)
   }
 
   /**
    * 获取缓存
+   * @param key 缓存键
+   * @returns 缓存值，如果不存在或已过期则返回undefined
    */
-  get<T>(key: string): T | null {
-    if (!this._config.enabled) return null;
+  get(key: string): T | undefined {
+    const item = this.cache.get(key)
 
-    const item = this._cache.get(key);
-    if (!item) return null;
+    if (!item) {
+      return undefined
+    }
+
+    // 检查是否过期
+    if (Date.now() - item.timestamp > this.ttl) {
+      this.cache.delete(key)
+      return undefined
+    }
 
     // 更新访问信息
-    item.accessCount++;
-    item.lastAccess = Date.now();
-    this._updateAccessOrder(key);
+    item.accessCount++
+    item.timestamp = Date.now()
 
-    return item.value as T;
+    return item.value
   }
 
   /**
-   * 检查是否存在
+   * 检查缓存是否存在
+   * @param key 缓存键
    */
   has(key: string): boolean {
-    return this._cache.has(key);
+    const item = this.cache.get(key)
+
+    if (!item) {
+      return false
+    }
+
+    // 检查是否过期
+    if (Date.now() - item.timestamp > this.ttl) {
+      this.cache.delete(key)
+      return false
+    }
+
+    return true
   }
 
   /**
    * 删除缓存
+   * @param key 缓存键
    */
-  delete(key: string): void {
-    this._cache.delete(key);
-    this._accessOrder = this._accessOrder.filter((k) => k !== key);
+  delete(key: string): boolean {
+    return this.cache.delete(key)
   }
 
   /**
-   * 清空缓存
+   * 清空所��缓存
    */
   clear(): void {
-    this._cache.clear();
-    this._accessOrder = [];
+    this.cache.clear()
   }
 
   /**
    * 获取缓存大小
    */
   get size(): number {
-    return this._cache.size;
+    return this.cache.size
   }
 
   /**
-   * 更新访问顺序
+   * 清理过期缓存
    */
-  private _updateAccessOrder(key: string): void {
-    // 移除旧位置
-    this._accessOrder = this._accessOrder.filter((k) => k !== key);
-    // 添加到末尾
-    this._accessOrder.push(key);
-  }
+  cleanup(): void {
+    const now = Date.now()
+    const keysToDelete: string[] = []
 
-  /**
-   * 驱逐策略
-   */
-  private _evict(): void {
-    switch (this._config.strategy) {
-      case 'lru':
-        this._evictLRU();
-        break;
-      case 'fifo':
-        this._evictFIFO();
-        break;
-      case 'lfu':
-        this._evictLFU();
-        break;
-    }
-  }
-
-  /**
-   * LRU驱逐（最近最少使用）
-   */
-  private _evictLRU(): void {
-    if (this._accessOrder.length === 0) return;
-
-    const keyToEvict = this._accessOrder[0];
-    this.delete(keyToEvict);
-  }
-
-  /**
-   * FIFO驱逐（先进先出）
-   */
-  private _evictFIFO(): void {
-    let oldestKey: string | null = null;
-    let oldestTime = Infinity;
-
-    for (const [key, item] of this._cache.entries()) {
-      if (item.timestamp < oldestTime) {
-        oldestTime = item.timestamp;
-        oldestKey = key;
+    this.cache.forEach((item, key) => {
+      if (now - item.timestamp > this.ttl) {
+        keysToDelete.push(key)
       }
-    }
+    })
 
-    if (oldestKey) {
-      this.delete(oldestKey);
-    }
+    keysToDelete.forEach(key => this.cache.delete(key))
   }
 
   /**
-   * LFU驱逐（最不经常使用）
+   * 查找最少使用的缓存项
+   * @private
    */
-  private _evictLFU(): void {
-    let lfuKey: string | null = null;
-    let minCount = Infinity;
+  private findLRU(): string | null {
+    let lruKey: string | null = null
+    let minAccessCount = Infinity
+    let oldestTime = Infinity
 
-    for (const [key, item] of this._cache.entries()) {
-      if (item.accessCount < minCount) {
-        minCount = item.accessCount;
-        lfuKey = key;
+    this.cache.forEach((item, key) => {
+      // 首先按访问次数排序，次数相同则按时间戳排序
+      if (item.accessCount < minAccessCount ||
+          (item.accessCount === minAccessCount && item.timestamp < oldestTime)) {
+        lruKey = key
+        minAccessCount = item.accessCount
+        oldestTime = item.timestamp
       }
-    }
+    })
 
-    if (lfuKey) {
-      this.delete(lfuKey);
+    return lruKey
+  }
+
+  /**
+   * 获取缓存统计信息
+   */
+  getStats() {
+    let totalAccessCount = 0
+    let oldestTimestamp = Date.now()
+    let newestTimestamp = 0
+
+    this.cache.forEach(item => {
+      totalAccessCount += item.accessCount
+      oldestTimestamp = Math.min(oldestTimestamp, item.timestamp)
+      newestTimestamp = Math.max(newestTimestamp, item.timestamp)
+    })
+
+    return {
+      size: this.cache.size,
+      maxSize: this.maxSize,
+      totalAccessCount,
+      averageAccessCount: this.cache.size > 0 ? totalAccessCount / this.cache.size : 0,
+      oldestTimestamp,
+      newestTimestamp
     }
   }
 }

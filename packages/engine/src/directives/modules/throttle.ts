@@ -4,7 +4,9 @@
  */
 
 import type { VueDirectiveBinding } from '../base/vue-directive-adapter'
+import { getLogger } from '../../logger/unified-logger'
 import { DirectiveBase } from '../base/directive-base'
+
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface ThrottleOptions {
@@ -16,6 +18,8 @@ export interface ThrottleOptions {
 }
 
 export class ThrottleDirective extends DirectiveBase {
+  private logger = getLogger('ThrottleDirective')
+
   constructor() {
     super({
       name: 'throttle',
@@ -268,27 +272,27 @@ export const throttleDirective = new ThrottleDirective()
 
 <script setup>
 const handleClick = () => {
-  console.log('节流点击')
+  this.logger.debug('节流点击')
 }
 
 const handleScroll = (event) => {
-  console.log('滚动位置:', event.target.scrollTop)
+  this.logger.debug('滚动位置:', event.target.scrollTop)
 }
 
 const handleSubmit = () => {
-  console.log('提交表单')
+  this.logger.debug('提交表单')
 }
 
 const handleInput = (event) => {
-  console.log('输入内容:', event.target.value)
+  this.logger.debug('输入内容:', event.target.value)
 }
 
 const handleMouseMove = (event) => {
-  console.log('鼠标位置:', event.clientX, event.clientY)
+  this.logger.debug('鼠标位置:', event.clientX, event.clientY)
 }
 
 const handleResize = () => {
-  console.log('窗口大小:', window.innerWidth, window.innerHeight)
+  this.logger.debug('窗口大小:', window.innerWidth, window.innerHeight)
 }
 </script>
 */

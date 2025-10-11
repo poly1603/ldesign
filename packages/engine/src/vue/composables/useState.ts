@@ -1,5 +1,6 @@
 import type { StateManager } from '../../types'
 import { computed, type ComputedRef, onUnmounted, ref, type Ref, watch } from 'vue'
+
 import { useEngine } from './useEngine'
 
 /**
@@ -243,7 +244,7 @@ export function usePersistentState<T>(
       try {
         window[storage].setItem(`engine:${key}`, JSON.stringify(value))
       } catch (error) {
-        console.warn(`Failed to persist state for key "${key}":`, error)
+        logger.warn(`Failed to persist state for key "${key}":`, error)
       }
     }
   }

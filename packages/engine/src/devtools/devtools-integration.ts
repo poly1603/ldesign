@@ -1,11 +1,13 @@
 /**
  * Vue DevTools 集成
- * 
+ *
  * 提供与 Vue DevTools 的深度集成,允许在开发工具中查看和调试引擎状态
  */
 
 import type { App } from 'vue'
 import type { Engine } from '../types'
+
+import { getLogger } from '../logger/unified-logger'
 
 export interface DevToolsTimelineEvent {
   time: number
@@ -59,6 +61,8 @@ export interface DevToolsOptions {
  * DevTools 集成管理器
  */
 export class DevToolsIntegration {
+  private logger = getLogger('DevToolsIntegration')
+
   private app?: App
   private engine?: Engine
   private options: Required<DevToolsOptions>
@@ -102,7 +106,7 @@ export class DevToolsIntegration {
     const devtoolsHook = (target as any).__VUE_DEVTOOLS_GLOBAL_HOOK__
 
     if (!devtoolsHook) {
-      console.warn('[Engine DevTools] Vue DevTools not detected')
+      this.logger.warn('[Engine DevTools] Vue DevTools not detected')
       return
     }
 
@@ -157,7 +161,7 @@ export class DevToolsIntegration {
         })
       })
     } catch (error) {
-      console.error('[Engine DevTools] Failed to register inspector:', error)
+      this.logger.error('[Engine DevTools] Failed to register inspector:', error)
     }
   }
 
@@ -199,7 +203,7 @@ export class DevToolsIntegration {
         }
       })
     } catch (error) {
-      console.error('[Engine DevTools] Failed to register timeline:', error)
+      this.logger.error('[Engine DevTools] Failed to register timeline:', error)
     }
   }
 
@@ -271,16 +275,16 @@ export class DevToolsIntegration {
 
     switch (nodeId) {
       case 'config':
-        state['Configuration'] = this.getConfigState()
+        state.Configuration = this.getConfigState()
         break
       case 'state':
-        state['State'] = this.getStateState()
+        state.State = this.getStateState()
         break
       case 'performance':
-        state['Performance'] = this.getPerformanceState()
+        state.Performance = this.getPerformanceState()
         break
       case 'errors':
-        state['Errors'] = this.getErrorsState()
+        state.Errors = this.getErrorsState()
         break
     }
 
@@ -358,7 +362,7 @@ export class DevToolsIntegration {
         })
       })
     } catch (error) {
-      console.error('[Engine DevTools] Failed to add timeline event:', error)
+      this.logger.error('[Engine DevTools] Failed to add timeline event:', error)
     }
   }
 
@@ -379,4 +383,3 @@ export class DevToolsIntegration {
 export function createDevToolsIntegration(options?: DevToolsOptions): DevToolsIntegration {
   return new DevToolsIntegration(options)
 }
-

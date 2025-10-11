@@ -1,11 +1,14 @@
 {
-  "name": "@ldesign/pdf-docs",
-  "version": "1.0.0",
+  "name": "pdf-viewer-docs",
   "private": true,
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vitepress dev",
     "build": "vitepress build",
     "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.0.0-rc.39"
   }
 }

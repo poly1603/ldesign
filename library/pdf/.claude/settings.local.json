@@ -1,17 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir -p src/core src/types src/utils src/plugins src/adapters examples/vue3-demo examples/vanilla-demo docs)",
-      "Bash(tree -L 2 -I 'node_modules')",
-      "Bash(node scripts/copy-worker.js)",
       "Bash(pnpm install)",
-      "Bash(pnpm config get registry)",
-      "Bash(pnpm install --registry https://registry.npmmirror.com)",
-      "Bash(pnpm dev)",
-      "Bash(pnpm build --registry https://registry.npmmirror.com)",
-      "Bash(pnpm vite build)",
-      "Bash(pnpm list pdfjs-dist)",
-      "Bash(tree -L 3 -I 'node_modules')"
+      "Bash(node scripts/copy-worker.js)"
     ],
     "deny": [],
     "ask": []

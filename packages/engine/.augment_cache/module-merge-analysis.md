@@ -1,7 +1,7 @@
 # 模块合并分析报告
 
-**分析日期**: 2025-09-30  
-**分析范围**: packages/engine/src  
+**分析日期**: 2025-09-30
+**分析范围**: packages/engine/src
 **目标**: 识别功能重复的模块并制定合并策略
 
 ## 📊 发现的重复模块
@@ -37,8 +37,8 @@
 | 内存管理 | 基础 | 高级 |
 
 #### 合并策略
-**保留**: `utils/logging-system.ts` (功能更完整)  
-**迁移**: `logger/logger.ts` 的简单API到 logging-system  
+**保留**: `utils/logging-system.ts` (功能更完整)
+**迁移**: `logger/logger.ts` 的简单API到 logging-system
 **影响**: 需要更新所有引用 `logger/logger.ts` 的代码
 
 ---
@@ -73,8 +73,8 @@
 | 统计信息 | 基础 | 详细 |
 
 #### 合并策略
-**保留**: 两者都保留，但重构为继承关系  
-**方案**: 
+**保留**: 两者都保留，但重构为继承关系
+**方案**:
 - `cache-manager.ts` 作为基础缓存实现
 - `advanced-cache.ts` 继承并扩展基础功能
 - 统一接口，避免重复代码
@@ -110,8 +110,8 @@
 | 类型安全 | 基础 | ✅ (更强) |
 
 #### 合并策略
-**保留**: `config/config-manager.ts` (核心功能)  
-**迁移**: `utils/config-manager.ts` 的加载器和验证器到 config-manager  
+**保留**: `config/config-manager.ts` (核心功能)
+**迁移**: `utils/config-manager.ts` 的加载器和验证器到 config-manager
 **影响**: 中等，需要重构配置加载逻辑
 
 ---
@@ -306,4 +306,3 @@
 - [ ] 运行完整测试套件
 - [ ] 验证功能完整性
 - [ ] 性能基准测试
-

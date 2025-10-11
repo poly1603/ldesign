@@ -1,0 +1,126 @@
+{
+  "timestamp": "2025-10-11T10:14:50.295Z",
+  "totalFixed": 30,
+  "files": [
+    {
+      "file": "src\\config\\loaders.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\devtools\\devtools-integration.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\dialog\\index.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\dialog\\plugins\\delete-confirm.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\base\\directive-base.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\base\\vue-directive-adapter.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\modules\\click-outside.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\modules\\copy.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\modules\\debounce.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\modules\\drag.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\modules\\index.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\modules\\infinite-scroll.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\modules\\lazy.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\modules\\resize.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\modules\\throttle.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\modules\\tooltip.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\directives\\utils\\directive-compatibility.ts",
+      "newPath": "../../logger/unified-logger"
+    },
+    {
+      "file": "src\\errors\\enhanced-error-handler.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\errors\\error-recovery.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\interceptors\\request-interceptor.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\message\\index.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\plugins\\plugin-sync.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\utils\\advanced-utils.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\utils\\bundle-optimizer.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\utils\\config-validators.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\utils\\event-enhancements.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\utils\\index.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\utils\\memory-manager.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\utils\\resource-preloader.ts",
+      "newPath": "../logger/unified-logger"
+    },
+    {
+      "file": "src\\utils\\storage.ts",
+      "newPath": "../logger/unified-logger"
+    }
+  ]
+}

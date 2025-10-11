@@ -8,14 +8,14 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/code-editor.es.js",
-      "require": "./dist/code-editor.umd.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/code-editor.umd.js"
     },
     "./vue": {
+      "types": "./dist/vue/index.d.ts",
       "import": "./dist/vue.es.js",
-      "require": "./dist/vue.umd.js",
-      "types": "./dist/vue/index.d.ts"
+      "require": "./dist/vue.umd.js"
     },
     "./dist/style.css": "./dist/style.css"
   },

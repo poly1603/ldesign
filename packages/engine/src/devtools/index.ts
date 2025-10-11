@@ -4,9 +4,8 @@
 
 export {
   createDevToolsIntegration,
+  type DevToolsInspectorState,
   DevToolsIntegration,
   type DevToolsOptions,
-  type DevToolsTimelineEvent,
-  type DevToolsInspectorState
+  type DevToolsTimelineEvent
 } from './devtools-integration'
-

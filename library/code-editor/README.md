@@ -2,6 +2,18 @@
 
 > 基于 Monaco Editor 的高性能、框架无关的代码编辑器组件
 
+## ✨ 新功能
+
+- 🚀 **友好的 Loading 提示** - 解决首次加载慢的问题，显示加载进度
+- ⚡ **性能优化** - 自动配置 Monaco Editor Workers，显著提升加载速度
+- 🎨 **Vue 代码高亮** - 完整支持 Vue 单文件组件语法
+- ⚛️ **TSX/JSX 支持** - React 开发友好，自动配置 TypeScript
+- ✨ **Emmet 代码补全** - HTML/CSS 快速编写，支持常用缩写
+- 🔌 **插件系统** - 动态加载功能模块，按需使用
+- 📦 **代码片段** - 内置常用代码片段补全
+
+查看详细更新：[PERFORMANCE.md](./PERFORMANCE.md)
+
 ## 特性
 
 - 🚀 **高性能**: 基于 Monaco Editor，提供流畅的编辑体验
@@ -30,6 +42,8 @@ pnpm add @ldesign/code-editor monaco-editor
 
 ### Vanilla JavaScript / TypeScript
 
+#### 基础编辑器
+
 ```typescript
 import { createCodeEditor } from '@ldesign/code-editor'
 
@@ -37,6 +51,39 @@ const editor = createCodeEditor('#editor', {
   value: 'console.log("Hello World!")',
   language: 'javascript',
   theme: 'vs-dark',
+  on: {
+    change: (value) => {
+      console.log('Code changed:', value)
+    }
+  }
+})
+```
+
+#### 增强型编辑器（推荐）
+
+```typescript
+import { createEnhancedCodeEditor } from '@ldesign/code-editor'
+
+const editor = createEnhancedCodeEditor('#editor', {
+  value: 'console.log("Hello World!")',
+  language: 'javascript',
+  theme: 'vs-dark',
+
+  // 显示友好的 Loading 动画
+  showLoading: true,
+  loadingText: '正在初始化编辑器...',
+
+  // 启用插件
+  plugins: {
+    emmet: true,       // Emmet 补全
+    snippets: true,    // 代码片段
+  },
+
+  // 监听加载状态
+  onLoadingChange: (state) => {
+    console.log(`${state.progress}%: ${state.message}`)
+  },
+
   on: {
     change: (value) => {
       console.log('Code changed:', value)
@@ -117,13 +164,14 @@ const { value, isReady, editorInstance } = useCodeEditor(editorRef, {
 ### 支持的语言
 
 - JavaScript / TypeScript
-- HTML / CSS / SCSS
+- **Vue (SFC)** ⭐ 新增
+- **JSX / TSX** ⭐ 新增
+- HTML / CSS / SCSS / LESS
 - JSON / YAML / XML
 - Python / Java / Go / Rust
 - C++ / C# / PHP / Ruby
 - Swift / Kotlin / Dart
-- Vue / Markdown
-- SQL / Shell / Dockerfile
+- Markdown / SQL / Shell / Dockerfile
 - 更多...
 
 ### 支持的主题

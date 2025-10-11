@@ -39,6 +39,65 @@ export {
   withRetry,
 } from './features/retry'
 
+// GraphQL 功能导出
+export {
+  createGraphQLClient,
+  GraphQLClient,
+  GraphQLClientError,
+  isGraphQLError,
+} from './features/graphql'
+
+export type {
+  GraphQLClientConfig,
+  GraphQLError,
+  GraphQLRequestConfig,
+  GraphQLResponse,
+  GraphQLVariables,
+} from './features/graphql'
+
+// WebSocket 功能导出
+export {
+  createWebSocketClient,
+  WebSocketClient,
+  WebSocketStatus,
+} from './features/websocket'
+
+export type {
+  WebSocketClientConfig,
+  WebSocketEventListener,
+  WebSocketEventType,
+  WebSocketMessage,
+} from './features/websocket'
+
+// SSE 功能导出
+export {
+  createSSEClient,
+  createSimpleSSEClient,
+  SimpleSSEClient,
+  SSEClient,
+  SSEStatus,
+} from './features/sse'
+
+export type {
+  SSEClientConfig,
+  SSEEvent,
+  SSEEventListener,
+} from './features/sse'
+
+// Mock 功能导出
+export {
+  createMockAdapter,
+  createMockInterceptor,
+  MockAdapter,
+} from './features/mock'
+
+export type {
+  MockMatcher,
+  MockResponse,
+  MockRule,
+  MockStats,
+} from './features/mock'
+
 // 拦截器导出
 export {
   authInterceptor,
@@ -316,6 +375,22 @@ export type {
   MemoryStats,
   MemoryUsage,
 } from './utils/memory'
+
+// 调试工具导出
+export {
+  createDebugInterceptor,
+  createHttpDebugger,
+  DebugLevel,
+  HttpDebugger,
+} from './utils/debugger'
+
+export type {
+  DebugEvent,
+  DebuggerConfig,
+  PerformanceMetrics as DebugPerformanceMetrics,
+  RequestLog,
+  ResponseLog,
+} from './utils/debugger'
 
 // Vue 相关导出
 export * from './vue'

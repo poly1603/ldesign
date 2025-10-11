@@ -1,12 +1,13 @@
 /**
  * 增强的管理器基类
  * 提供批处理、改进的事件系统和状态管理
- * 
+ *
  * @module enhanced-manager
  */
 
-import { AbstractBaseManager, IBaseManager } from './base-manager'
 import type { Engine } from '../types/engine'
+
+import { AbstractBaseManager } from './base-manager'
 
 /**
  * 批处理操作配置
@@ -88,18 +89,20 @@ export interface StateChangeEvent<T = any> {
 
 /**
  * 增强的管理器基类
- * 
+ *
  * @example
  * ```typescript
  * class UserManager extends EnhancedManager<UserConfig> {
+  private logger = getLogger('UserManager');
+
  *   protected async onInitialize() {
  *     // 初始化逻辑
  *   }
- * 
+ *
  *   protected async onDestroy() {
  *     // 清理逻辑
  *   }
- * 
+ *
  *   // 批量加载用户
  *   async loadUsers(ids: string[]) {
  *     return await this.batch(
@@ -140,7 +143,7 @@ export abstract class EnhancedManager<
 
   /**
    * 更新状态
-   * 
+   *
    * @param updates - 状态更新
    * @param silent - 是否静默更新（不触发事件）
    */
@@ -195,12 +198,12 @@ export abstract class EnhancedManager<
 
   /**
    * 批处理操作
-   * 
+   *
    * @param items - 要处理的项目列表
    * @param processor - 处理函数
    * @param options - 批处理选项
    * @returns 批处理结果
-   * 
+   *
    * @example
    * ```typescript
    * const result = await manager.batch(
@@ -211,7 +214,7 @@ export abstract class EnhancedManager<
    *     parallel: true,
    *     maxConcurrency: 5,
    *     onProgress: (completed, total) => {
-   *       console.log(`处理进度: ${completed}/${total}`)
+   *       this.logger.debug(`处理进度: ${completed}/${total}`)
    *     }
    *   }
    * )
@@ -308,7 +311,7 @@ export abstract class EnhancedManager<
 
   /**
    * 发送事件（增强版）
-   * 
+   *
    * @param event - 事件名称
    * @param data - 事件数据
    */
@@ -353,7 +356,7 @@ export abstract class EnhancedManager<
 
   /**
    * 监听事件（增强版）
-   * 
+   *
    * @param event - 事件名称
    * @param handler - 事件处理器
    * @param options - 监听器选项
@@ -386,7 +389,7 @@ export abstract class EnhancedManager<
 
   /**
    * 移除事件监听器
-   * 
+   *
    * @param event - 事件名称
    * @param listenerId - 监听器ID
    */
@@ -424,7 +427,7 @@ export abstract class EnhancedManager<
 
   /**
    * 等待特定事件
-   * 
+   *
    * @param event - 事件名称
    * @param timeout - 超时时间（毫秒）
    * @returns Promise，在事件触发时resolve

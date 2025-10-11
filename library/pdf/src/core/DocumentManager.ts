@@ -1,108 +1,183 @@
+import * as pdfjsLib from 'pdfjs-dist'
+import type { PDFDocumentProxy, PDFDocumentLoadingTask } from 'pdfjs-dist'
+import { EventEmitter } from '../utils/EventEmitter'
+import type { LoadProgress, PDFViewerEvents } from '../types'
+
 /**
  * 文档管理器
+ * 负责PDF文档的加载和管理
  */
+export class DocumentManager extends EventEmitter<PDFViewerEvents> {
+  private loadingTask: PDFDocumentLoadingTask | null = null
+  private document: PDFDocumentProxy | null = null
+  private workerSrc: string
 
-import * as pdfjsLib from 'pdfjs-dist';
-import type { PDFDocumentProxy, PDFDocumentLoadingTask } from 'pdfjs-dist';
-import type { PDFViewerConfig, PDFSource } from '../types';
-
-export class DocumentManager {
-  private _config: PDFViewerConfig;
-  private _document: PDFDocumentProxy | null = null;
-  private _loadingTask: PDFDocumentLoadingTask | null = null;
-
-  constructor(config: PDFViewerConfig) {
-    this._config = config;
+  constructor(workerSrc?: string) {
+    super()
+    this.workerSrc = workerSrc || this.getDefaultWorkerSrc()
+    this.initWorker()
   }
 
   /**
-   * 加载文档
+   * 初始化PDF.js Worker
    */
-  async load(
-    source: PDFSource,
-    onProgress?: (progress: number) => void
+  private initWorker(): void {
+    if (typeof window !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = this.workerSrc
+    }
+  }
+
+  /**
+   * 获取默认的Worker路径
+   */
+  private getDefaultWorkerSrc(): string {
+    // 尝试从CDN加载
+    const version = pdfjsLib.version || '4.0.379'
+    return `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.mjs`
+  }
+
+  /**
+   * 加���PDF文档
+   * @param source PDF文件URL或Uint8Array
+   * @param options 加载选项
+   */
+  async loadDocument(
+    source: string | Uint8Array,
+    options?: {
+      cMapUrl?: string
+      cMapPacked?: boolean
+      password?: string
+    }
   ): Promise<PDFDocumentProxy> {
-    // 取消之前的加载任务
-    if (this._loadingTask) {
-      this._loadingTask.destroy();
-      this._loadingTask = null;
-    }
-
-    // 销毁之前的文档
-    if (this._document) {
-      await this._document.destroy();
-      this._document = null;
-    }
-
     try {
-      // 准备加载参数
-      const loadingTask = pdfjsLib.getDocument(this._getLoadParams(source));
-
-      this._loadingTask = loadingTask;
-
-      // 监听进度
-      if (onProgress) {
-        loadingTask.onProgress = (progressData: any) => {
-          const progress = progressData.loaded / progressData.total;
-          onProgress(progress);
-        };
+      // 取消之前的加载任务
+      if (this.loadingTask) {
+        await this.loadingTask.destroy()
       }
 
-      // 加载文档
-      const doc = await loadingTask.promise;
-      this._document = doc;
-      this._loadingTask = null;
+      // 创建加载任务
+      this.loadingTask = pdfjsLib.getDocument({
+        url: typeof source === 'string' ? source : undefined,
+        data: source instanceof Uint8Array ? source : undefined,
+        cMapUrl: options?.cMapUrl || 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/cmaps/',
+        cMapPacked: options?.cMapPacked ?? true,
+        password: options?.password
+      })
 
-      return doc;
+      // 监听加载进度
+      this.loadingTask.onProgress = (progress: LoadProgress) => {
+        this.emit('loading-progress', progress)
+      }
+
+      // 等待文档加载完成
+      this.document = await this.loadingTask.promise
+
+      // 触发加载完成事件
+      this.emit('document-loaded', this.document)
+
+      return this.document
     } catch (error) {
-      this._loadingTask = null;
-      throw new Error(`PDF加载失败: ${(error as Error).message}`);
+      const err = error instanceof Error ? error : new Error(String(error))
+      this.emit('document-error', err)
+      throw err
     }
   }
 
   /**
-   * 获取文档
+   * 获取当前文档
    */
-  get document(): PDFDocumentProxy | null {
-    return this._document;
+  getDocument(): PDFDocumentProxy | null {
+    return this.document
   }
 
   /**
-   * 销毁
+   * 获取文档页数
    */
-  destroy(): void {
-    if (this._loadingTask) {
-      this._loadingTask.destroy();
-      this._loadingTask = null;
-    }
-
-    if (this._document) {
-      this._document.destroy();
-      this._document = null;
-    }
+  getPageCount(): number {
+    return this.document?.numPages || 0
   }
 
   /**
-   * 获取加载参数
+   * 获取指定页
+   * @param pageNumber 页码（1-based）
    */
-  private _getLoadParams(source: PDFSource): any {
-    const params: any = {};
-
-    if (typeof source === 'string') {
-      params.url = source;
-    } else if (source instanceof ArrayBuffer) {
-      params.data = new Uint8Array(source);
-    } else if (source instanceof Uint8Array) {
-      params.data = source;
-    } else if (source instanceof URL) {
-      params.url = source.toString();
+  async getPage(pageNumber: number) {
+    if (!this.document) {
+      throw new Error('No document loaded')
     }
 
-    // 添加其他配置
-    if (this._config.workerSrc) {
-      params.workerSrc = this._config.workerSrc;
+    if (pageNumber < 1 || pageNumber > this.document.numPages) {
+      throw new Error(`Invalid page number: ${pageNumber}`)
     }
 
-    return params;
+    return await this.document.getPage(pageNumber)
+  }
+
+  /**
+   * 获取��档元数据
+   */
+  async getMetadata() {
+    if (!this.document) {
+      throw new Error('No document loaded')
+    }
+
+    return await this.document.getMetadata()
+  }
+
+  /**
+   * 搜索文本
+   * @param text 搜索文本
+   */
+  async searchText(text: string) {
+    if (!this.document) {
+      throw new Error('No document loaded')
+    }
+
+    const results = []
+    const searchText = text.toLowerCase()
+
+    for (let pageNum = 1; pageNum <= this.document.numPages; pageNum++) {
+      const page = await this.document.getPage(pageNum)
+      const textContent = await page.getTextContent()
+
+      let pageText = ''
+      textContent.items.forEach((item: any) => {
+        if ('str' in item) {
+          pageText += item.str + ' '
+        }
+      })
+
+      const lowerPageText = pageText.toLowerCase()
+      let index = 0
+
+      while ((index = lowerPageText.indexOf(searchText, index)) !== -1) {
+        results.push({
+          pageNumber: pageNum,
+          text: pageText.substring(index, index + text.length),
+          index
+        })
+        index += searchText.length
+      }
+    }
+
+    this.emit('search-results', results)
+    return results
+  }
+
+  /**
+   * 销毁文档管理器
+   */
+  async destroy(): Promise<void> {
+    if (this.loadingTask) {
+      await this.loadingTask.destroy()
+      this.loadingTask = null
+    }
+
+    if (this.document) {
+      await this.document.destroy()
+      this.document = null
+    }
+
+    this.removeAllListeners()
   }
 }

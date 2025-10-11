@@ -282,4 +282,3 @@ function process(data: string | number): string {
 ---
 
 **注意**: 所有修改都保持了向后兼容性，不影响现有功能的使用。
-

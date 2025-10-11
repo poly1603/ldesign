@@ -4,7 +4,9 @@
  */
 
 import type { VueDirectiveBinding } from '../base/vue-directive-adapter'
+import { getLogger } from '../../logger/unified-logger'
 import { DirectiveBase } from '../base/directive-base'
+
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface LazyOptions {
@@ -26,6 +28,8 @@ export interface LazyOptions {
 }
 
 export class LazyDirective extends DirectiveBase {
+  private logger = getLogger('LazyDirective')
+
   private static observer?: IntersectionObserver
   private static observedElements = new WeakMap<HTMLElement, LazyOptions>()
 
@@ -326,20 +330,20 @@ export const lazyDirective = new LazyDirective()
 
 <script setup>
 const handleLazyLoad = (el, entry) => {
-  console.log('元素进入视口:', el, entry)
+  this.logger.debug('元素进入视口:', el, entry)
   // 自定义加载逻辑
 }
 
 const handleImageLoad = (el) => {
-  console.log('图片加载完成:', el)
+  this.logger.debug('图片加载完成:', el)
 }
 
 const handleImageError = (el, error) => {
-  console.error('图片加载失败:', el, error)
+  this.logger.error('图片加载失败:', el, error)
 }
 
 const handleImageEnter = (el, entry) => {
-  console.log('图片进入视口:', el, entry)
+  this.logger.debug('图片进入视口:', el, entry)
 }
 </script>
 

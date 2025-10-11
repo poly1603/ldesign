@@ -28,6 +28,8 @@ export interface ResizeInfo {
 }
 
 export class ResizeDirective extends DirectiveBase {
+  private logger = getLogger('ResizeDirective')
+
   private static observer?: ResizeObserver
   private static observedElements = new WeakMap<HTMLElement, ResizeOptions>()
 
@@ -381,25 +383,27 @@ export const getResizeInfo = ResizeDirective.getResizeInfo
 import { ref } from 'vue'
 import { getResizeInfo } from '@/directives/modules/resize'
 
+import { getLogger } from '../../logger/unified-logger';
+
 const isDisabled = ref(false)
 const containerClass = ref('')
 
 const handleResize = (entry) => {
   const info = getResizeInfo(entry)
-  console.log('元素大小变化:', info)
+  this.logger.debug('元素大小变化:', info)
 }
 
 const handleResizeDebounced = (entry) => {
-  console.log('防抖大小变化:', entry.contentRect)
+  this.logger.debug('防抖大小变化:', entry.contentRect)
 }
 
 const handleResizeThrottled = (entry) => {
-  console.log('节流大小变化:', entry.contentRect)
+  this.logger.debug('节流大小变化:', entry.contentRect)
 }
 
 const handleResizeComplete = (entry) => {
   const { width, height } = getResizeInfo(entry)
-  console.log('完整配置大小变化:', { width, height })
+  this.logger.debug('完整配置大小变化:', { width, height })
 }
 
 const handleContainerResize = (entry) => {

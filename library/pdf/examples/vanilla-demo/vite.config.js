@@ -1,13 +1,18 @@
-import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { defineConfig } from 'vite'
+import { resolve } from 'path'
+
+
 
 export default defineConfig({
+  server: {
+    port: 4444
+  },
   resolve: {
     alias: {
-      '@ldesign/pdf': resolve(__dirname, '../../src'),
-    },
+      '@ldesign/pdf-viewer': resolve(__dirname, '../../src'),
+    }
   },
-  server: {
-    port: 3001,
-  },
-});
+  optimizeDeps: {
+    exclude: ['pdfjs-dist']
+  }
+})

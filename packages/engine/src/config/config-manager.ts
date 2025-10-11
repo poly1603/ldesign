@@ -7,8 +7,8 @@ import type {
   UnwatchFunction,
   ValidationResult,
 } from '../types'
-import { getNestedValue, isObject, setNestedValue } from '../utils'
 import type { ConfigLoader, ConfigObject } from './loaders'
+import { getNestedValue, isObject, setNestedValue } from '../utils'
 
 /**
  * 配置管理器实现

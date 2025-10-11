@@ -1,3 +1,5 @@
+import { getLogger } from '../logger/unified-logger';
+
 /**
  * 打包优化工具
  * 🚀 提供代码分割、懒加载和打包优化功能
@@ -33,6 +35,8 @@ interface CodeSplitConfig {
  * 打包优化器
  */
 export class BundleOptimizer {
+  private logger = getLogger('BundleOptimizer')
+
   private lazyModules = new Map<string, LazyModuleConfig>()
   private loadedModules = new Map<string, any>()
   private loadingPromises = new Map<string, Promise<any>>()
@@ -117,7 +121,7 @@ export class BundleOptimizer {
       const module = await config.loader()
       return module.default || module
     } catch (error) {
-      console.error(`Failed to load lazy module "${config.name}":`, error)
+      this.logger.error(`Failed to load lazy module "${config.name}":`, error)
       throw error
     }
   }
@@ -129,7 +133,7 @@ export class BundleOptimizer {
     try {
       await this.loadModule(name)
     } catch (error) {
-      console.warn(`Failed to preload module "${name}":`, error)
+      this.logger.warn(`Failed to preload module "${name}":`, error)
     }
   }
 
@@ -221,7 +225,7 @@ export class BundleOptimizer {
         try {
           module.cleanup()
         } catch (error) {
-          console.warn(`Error cleaning up module "${name}":`, error)
+          this.logger.warn(`Error cleaning up module "${name}":`, error)
         }
       }
     }
@@ -305,12 +309,13 @@ export function preloadCriticalModules(): void {
   })
 
   // 预加载性能分析模块
-  globalBundleOptimizer.registerLazyModule({
-    name: 'performance-analyzer',
-    loader: () => import('./performance-analyzer'),
-    preload: true,
-    priority: 8
-  })
+  // TODO: Fix - performance-analyzer doesn't exist
+  // globalBundleOptimizer.registerLazyModule({
+  //   name: 'performance-analyzer',
+  //   loader: () => import('./performance-analyzer'),
+  //   preload: true,
+  //   priority: 8,
+  // })
 
   // 预加载内存管理模块
   globalBundleOptimizer.registerLazyModule({

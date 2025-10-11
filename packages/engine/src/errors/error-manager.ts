@@ -83,7 +83,7 @@ export class ErrorManagerImpl implements ErrorManager {
       try {
         handler(errorInfo)
       } catch (handlerError) {
-        console.error('Error in error handler:', handlerError)
+        this.logger.error('Error in error handler:', handlerError)
       }
     }
   }
@@ -432,7 +432,7 @@ export const errorHandlers = {
             body: JSON.stringify(payload),
           })
         } catch (error) {
-          console.error('Failed to report error to remote service:', error)
+          this.logger.error('Failed to report error to remote service:', error)
         }
       },
 
@@ -453,7 +453,7 @@ export const errorHandlers = {
 
           localStorage.setItem(key, JSON.stringify(errors))
         } catch (error) {
-          console.error('Failed to store error in localStorage:', error)
+          this.logger.error('Failed to store error in localStorage:', error)
         }
       },
 }

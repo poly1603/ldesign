@@ -6,6 +6,9 @@
 import type { Directive, DirectiveBinding } from 'vue'
 import type { DirectiveBase } from './directive-base'
 
+import { getLogger } from '../../logger/unified-logger'
+
+const logger = getLogger('vue-directive-adapter')
 export interface VueDirectiveBinding {
   value: unknown
   oldValue: unknown
@@ -48,7 +51,7 @@ function safeCallDirectiveMethod(
         method(el, binding)
       }
     } catch (error) {
-      console.error(`Error in directive method ${methodName}:`, error)
+      logger.error(`Error in directive method ${methodName}:`, error)
     }
   }
 }

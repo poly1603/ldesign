@@ -1,7 +1,7 @@
 /**
  * 增强的类型定义
  * 提供更强的类型安全和类型推断
- * 
+ *
  * @module enhanced-types
  */
 
@@ -478,7 +478,7 @@ export type Contravariant<T> = (value: T) => void
  * 双变类型
  * T既可以协变也可以逆变
  */
-export type Bivariant<T> = {
+export interface Bivariant<T> {
   value: T
   setValue: (value: T) => void
 }

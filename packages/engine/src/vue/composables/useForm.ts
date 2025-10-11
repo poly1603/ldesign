@@ -1,4 +1,5 @@
 import { computed, reactive, ref, type Ref } from 'vue'
+
 import { useEngine } from './useEngine'
 
 /**
@@ -68,7 +69,7 @@ export interface FormState<T extends Record<string, any>> {
  * })
  *
  * const onSubmit = handleSubmit(async (values) => {
- *   console.log('提交数据:', values)
+ *   logger.debug('提交数据:', values)
  *   // 提交逻辑
  * })
  * </script>
@@ -262,7 +263,7 @@ export function useForm<T extends Record<string, any>>(
             try {
               engine.notifications.show('请检查表单错误' as any)
             } catch {
-              console.warn('请检查表单错误')
+              logger.warn('请检查表单错误')
             }
           }
         }
@@ -271,7 +272,7 @@ export function useForm<T extends Record<string, any>>(
           try {
             engine.notifications.show('提交失败' as any)
           } catch {
-            console.warn('提交失败')
+            logger.warn('提交失败')
           }
         }
         engine.errors?.captureError(error as Error)

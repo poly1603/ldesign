@@ -1,3 +1,5 @@
+import { getLogger } from '../logger/unified-logger';
+
 /**
  * 内存管理和泄漏预防工具
  *
@@ -8,6 +10,8 @@
  * 定时器管理器 - 防止定时器泄漏
  */
 export class TimerManager {
+  private logger = getLogger('TimerManager')
+
   private timers = new Set<NodeJS.Timeout>()
   private intervals = new Set<NodeJS.Timeout>()
   private animationFrames = new Set<number>()
@@ -38,7 +42,7 @@ export class TimerManager {
         try {
           cb()
         } catch (error) {
-          console.error('Timer callback error:', error)
+          this.logger.error('Timer callback error:', error)
         }
       }
     }, delay)
@@ -347,6 +351,7 @@ export class ListenerManager {
  * 资源清理管理器
  */
 export class ResourceManager {
+  private logger = getLogger('ResourceManager')
   private resources = new Map<string, { resource: any; cleanup: (resource: any) => void; group?: string }>()
   private timerManager = new TimerManager()
   private listenerManager = new ListenerManager()
@@ -358,7 +363,7 @@ export class ResourceManager {
    */
   register(resource: any, cleanup: (resource: any) => void, group?: string): string {
     if (this.isDestroyed) {
-      console.warn('ResourceManager is already destroyed')
+      this.logger.warn('ResourceManager is already destroyed')
       return ''
     }
 
@@ -376,7 +381,7 @@ export class ResourceManager {
       try {
         resourceInfo.cleanup(resourceInfo.resource)
       } catch (error) {
-        console.error('Error during resource cleanup:', error)
+        this.logger.error('Error during resource cleanup:', error)
       }
       this.resources.delete(id)
     }
@@ -397,7 +402,7 @@ export class ResourceManager {
       try {
         resourceInfo.cleanup(resourceInfo.resource)
       } catch (error) {
-        console.error('Error during resource cleanup:', error)
+        this.logger.error('Error during resource cleanup:', error)
       }
     }
     this.resources.clear()
@@ -413,7 +418,7 @@ export class ResourceManager {
         try {
           resourceInfo.cleanup(resourceInfo.resource)
         } catch (error) {
-          console.error('Error during resource cleanup:', error)
+          this.logger.error('Error during resource cleanup:', error)
         }
         this.resources.delete(id)
       }
@@ -444,6 +449,7 @@ export class ResourceManager {
  * 内存泄漏检测器
  */
 export class MemoryLeakDetector {
+  private logger = getLogger('MemoryLeakDetector')
   private snapshots: Array<{
     timestamp: number
     heapUsed: number
@@ -469,7 +475,7 @@ export class MemoryLeakDetector {
    */
   startMonitoring(intervalMs: number = 30000): void {
     if (this.monitoringInterval) {
-      console.warn('Memory monitoring is already active')
+      this.logger.warn('Memory monitoring is already active')
       return
     }
 
@@ -1000,7 +1006,7 @@ export class GlobalMemoryManager {
     } else if (typeof window !== 'undefined' && (window as any).gc) {
       (window as any).gc()
     } else {
-      console.warn('Garbage collection is not available')
+      this.logger.warn('Garbage collection is not available')
     }
   }
 

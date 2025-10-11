@@ -1,4 +1,5 @@
 import { type Component, computed, onUnmounted, ref, type Ref } from 'vue'
+
 import { useEngine } from './useEngine'
 
 /**
@@ -67,7 +68,7 @@ export function useNotifications() {
     try {
       return notificationManager.show(message as any)
     } catch {
-      console.log(message)
+      logger.debug(message)
       return 'fallback-id'
     }
   }
@@ -358,7 +359,7 @@ export function useClipboard() {
 
       return true
     } catch (error) {
-      console.error('Failed to copy text:', error)
+      logger.error('Failed to copy text:', error)
       return false
     }
   }
@@ -371,7 +372,7 @@ export function useClipboard() {
     try {
       return await navigator.clipboard.readText()
     } catch (error) {
-      console.error('Failed to paste text:', error)
+      logger.error('Failed to paste text:', error)
       return null
     }
   }
@@ -425,7 +426,7 @@ export function useLocalStorage<T>(
       const item = window[storage].getItem(key)
       return item ? JSON.parse(item) : defaultValue
     } catch (error) {
-      console.error(`Error reading ${storage} key "${key}":`, error)
+      logger.error(`Error reading ${storage} key "${key}":`, error)
       return defaultValue
     }
   }
@@ -440,7 +441,7 @@ export function useLocalStorage<T>(
       window[storage].setItem(key, JSON.stringify(value))
       storedValue.value = value
     } catch (error) {
-      console.error(`Error setting ${storage} key "${key}":`, error)
+      logger.error(`Error setting ${storage} key "${key}":`, error)
     }
   }
 
@@ -454,7 +455,7 @@ export function useLocalStorage<T>(
       window[storage].removeItem(key)
       storedValue.value = defaultValue
     } catch (error) {
-      console.error(`Error removing ${storage} key "${key}":`, error)
+      logger.error(`Error removing ${storage} key "${key}":`, error)
     }
   }
 
@@ -467,7 +468,7 @@ export function useLocalStorage<T>(
       try {
         storedValue.value = e.newValue ? JSON.parse(e.newValue) : defaultValue
       } catch (error) {
-        console.error(`Error parsing ${storage} value for key "${key}":`, error)
+        logger.error(`Error parsing ${storage} value for key "${key}":`, error)
       }
     }
   }

@@ -1,0 +1,537 @@
+{
+  "timestamp": "2025-10-11T09:39:55.544Z",
+  "duplicatedCode": [],
+  "debugLogs": [
+    {
+      "file": "cache\\advanced-cache.ts",
+      "count": 2,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "cache\\cache-manager.ts",
+      "count": 3,
+      "types": [
+        "warn"
+      ]
+    },
+    {
+      "file": "config\\loaders.ts",
+      "count": 6,
+      "types": [
+        "warn",
+        "error"
+      ]
+    },
+    {
+      "file": "core\\enhanced-manager.ts",
+      "count": 1,
+      "types": [
+        "log"
+      ]
+    },
+    {
+      "file": "devtools\\devtools-integration.ts",
+      "count": 4,
+      "types": [
+        "warn",
+        "error"
+      ]
+    },
+    {
+      "file": "dialog\\index.ts",
+      "count": 4,
+      "types": [
+        "error",
+        "log"
+      ]
+    },
+    {
+      "file": "dialog\\plugins\\delete-confirm.example.ts",
+      "count": 22,
+      "types": [
+        "log",
+        "error"
+      ]
+    },
+    {
+      "file": "dialog\\plugins\\delete-confirm.ts",
+      "count": 2,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "directives\\base\\directive-base.ts",
+      "count": 4,
+      "types": [
+        "error",
+        "warn"
+      ]
+    },
+    {
+      "file": "directives\\base\\vue-directive-adapter.ts",
+      "count": 1,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "directives\\directive-manager.ts",
+      "count": 2,
+      "types": [
+        "warn",
+        "error"
+      ]
+    },
+    {
+      "file": "directives\\modules\\click-outside.ts",
+      "count": 1,
+      "types": [
+        "log"
+      ]
+    },
+    {
+      "file": "directives\\modules\\copy.ts",
+      "count": 2,
+      "types": [
+        "log",
+        "error"
+      ]
+    },
+    {
+      "file": "directives\\modules\\debounce.ts",
+      "count": 5,
+      "types": [
+        "log"
+      ]
+    },
+    {
+      "file": "directives\\modules\\drag.ts",
+      "count": 3,
+      "types": [
+        "log"
+      ]
+    },
+    {
+      "file": "directives\\modules\\index.ts",
+      "count": 3,
+      "types": [
+        "log"
+      ]
+    },
+    {
+      "file": "directives\\modules\\infinite-scroll.ts",
+      "count": 3,
+      "types": [
+        "error",
+        "log"
+      ]
+    },
+    {
+      "file": "directives\\modules\\lazy.ts",
+      "count": 4,
+      "types": [
+        "log",
+        "error"
+      ]
+    },
+    {
+      "file": "directives\\modules\\resize.ts",
+      "count": 4,
+      "types": [
+        "log"
+      ]
+    },
+    {
+      "file": "directives\\modules\\throttle.ts",
+      "count": 6,
+      "types": [
+        "log"
+      ]
+    },
+    {
+      "file": "directives\\modules\\tooltip.ts",
+      "count": 2,
+      "types": [
+        "log"
+      ]
+    },
+    {
+      "file": "directives\\utils\\directive-compatibility.ts",
+      "count": 1,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "errors\\enhanced-error-handler.ts",
+      "count": 10,
+      "types": [
+        "log",
+        "error"
+      ]
+    },
+    {
+      "file": "errors\\error-manager.ts",
+      "count": 3,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "errors\\error-recovery.ts",
+      "count": 2,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "events\\event-manager.ts",
+      "count": 2,
+      "types": [
+        "error",
+        "warn"
+      ]
+    },
+    {
+      "file": "interceptors\\request-interceptor.ts",
+      "count": 2,
+      "types": [
+        "debug",
+        "error"
+      ]
+    },
+    {
+      "file": "logger\\logger.ts",
+      "count": 2,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "message\\index.ts",
+      "count": 5,
+      "types": [
+        "error",
+        "log"
+      ]
+    },
+    {
+      "file": "performance\\performance-manager.ts",
+      "count": 1,
+      "types": [
+        "warn"
+      ]
+    },
+    {
+      "file": "plugins\\plugin-manager.ts",
+      "count": 1,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "plugins\\plugin-sync.ts",
+      "count": 2,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "utils\\advanced-utils.ts",
+      "count": 5,
+      "types": [
+        "log",
+        "warn",
+        "error"
+      ]
+    },
+    {
+      "file": "utils\\bundle-optimizer.ts",
+      "count": 4,
+      "types": [
+        "error",
+        "warn"
+      ]
+    },
+    {
+      "file": "utils\\cache-manager.ts",
+      "count": 2,
+      "types": [
+        "log",
+        "warn"
+      ]
+    },
+    {
+      "file": "utils\\config-validators.ts",
+      "count": 2,
+      "types": [
+        "warn"
+      ]
+    },
+    {
+      "file": "utils\\core-web-vitals.ts",
+      "count": 7,
+      "types": [
+        "warn",
+        "debug",
+        "error"
+      ]
+    },
+    {
+      "file": "utils\\event-enhancements.ts",
+      "count": 3,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "utils\\index.ts",
+      "count": 1,
+      "types": [
+        "log"
+      ]
+    },
+    {
+      "file": "utils\\logging-system.ts",
+      "count": 5,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "utils\\memory-manager.ts",
+      "count": 7,
+      "types": [
+        "error",
+        "warn"
+      ]
+    },
+    {
+      "file": "utils\\performance-analyzer.ts",
+      "count": 3,
+      "types": [
+        "warn",
+        "error"
+      ]
+    },
+    {
+      "file": "utils\\performance-monitor.ts",
+      "count": 3,
+      "types": [
+        "warn",
+        "error",
+        "log"
+      ]
+    },
+    {
+      "file": "utils\\performance-optimizer.ts",
+      "count": 1,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "utils\\realtime-performance-monitor.ts",
+      "count": 2,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "utils\\resource-preloader.ts",
+      "count": 1,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "utils\\storage.ts",
+      "count": 2,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "utils\\task-queue.ts",
+      "count": 1,
+      "types": [
+        "error"
+      ]
+    },
+    {
+      "file": "vue\\composables\\useAsync.ts",
+      "count": 2,
+      "types": [
+        "log"
+      ]
+    },
+    {
+      "file": "vue\\composables\\useEngine.ts",
+      "count": 1,
+      "types": [
+        "log"
+      ]
+    },
+    {
+      "file": "vue\\composables\\useForm.ts",
+      "count": 3,
+      "types": [
+        "log",
+        "warn"
+      ]
+    },
+    {
+      "file": "vue\\composables\\usePerformance.ts",
+      "count": 2,
+      "types": [
+        "log",
+        "warn"
+      ]
+    },
+    {
+      "file": "vue\\composables\\useState.ts",
+      "count": 1,
+      "types": [
+        "warn"
+      ]
+    },
+    {
+      "file": "vue\\composables\\useUI.ts",
+      "count": 7,
+      "types": [
+        "log",
+        "error"
+      ]
+    },
+    {
+      "file": "vue\\composables\\useUtils.ts",
+      "count": 3,
+      "types": [
+        "log"
+      ]
+    },
+    {
+      "file": "vue\\plugin.ts",
+      "count": 3,
+      "types": [
+        "log",
+        "warn",
+        "error"
+      ]
+    }
+  ],
+  "todoComments": [
+    {
+      "file": "directives\\index.ts",
+      "line": 8,
+      "content": "// TODO: ModernDirectiveManager 文件缺失，暂时注释"
+    },
+    {
+      "file": "directives\\index.ts",
+      "line": 23,
+      "content": "// TODO: ModernDirectiveManager 文件缺失，暂时注释"
+    },
+    {
+      "file": "directives\\index.ts",
+      "line": 54,
+      "content": "// TODO: ModernDirectiveManager 文件缺失，暂时导出 null"
+    }
+  ],
+  "largeFiles": [
+    {
+      "file": "notifications\\notification-manager.ts",
+      "size": "36.84KB",
+      "lines": 1313
+    },
+    {
+      "file": "performance\\performance-dashboard.ts",
+      "size": "32.73KB",
+      "lines": 1259
+    },
+    {
+      "file": "utils\\performance-analyzer.ts",
+      "size": "29.20KB",
+      "lines": 1071
+    },
+    {
+      "file": "utils\\memory-manager.ts",
+      "size": "28.09KB",
+      "lines": 1136
+    },
+    {
+      "file": "config\\config-manager.ts",
+      "size": "27.10KB",
+      "lines": 1045
+    },
+    {
+      "file": "performance\\performance-manager.ts",
+      "size": "26.85KB",
+      "lines": 995
+    },
+    {
+      "file": "dialog\\dialog-manager.ts",
+      "size": "26.38KB",
+      "lines": 1053
+    }
+  ],
+  "suggestions": [
+    {
+      "priority": "HIGH",
+      "title": "合并缓存管理器",
+      "description": "将 utils/cache-manager.ts、cache/cache-manager.ts 和 cache/advanced-cache.ts 合并为一个统一的高级缓存管理器",
+      "files": [
+        "src/cache/index.ts"
+      ],
+      "estimatedReduction": "~30KB"
+    },
+    {
+      "priority": "HIGH",
+      "title": "整合性能监控工具",
+      "description": "将分散的性能监控工具整合到 performance 目录下",
+      "files": [
+        "src/utils/performance-monitor.ts",
+        "src/utils/performance-analyzer.ts",
+        "src/utils/realtime-performance-monitor.ts"
+      ],
+      "estimatedReduction": "~40KB"
+    },
+    {
+      "priority": "MEDIUM",
+      "title": "统一日志系统",
+      "description": "合并 logger/logger.ts 和 utils/logging-system.ts",
+      "files": [
+        "src/logger/index.ts"
+      ],
+      "estimatedReduction": "~15KB"
+    },
+    {
+      "priority": "MEDIUM",
+      "title": "移除调试代码",
+      "description": "将所有 console.log 替换为统一的日志系统调用",
+      "estimatedReduction": "~5KB"
+    },
+    {
+      "priority": "LOW",
+      "title": "移动示例文件",
+      "description": "将 demo 和 example 文件移至 examples 目录",
+      "files": [
+        "src/dialog/plugins/delete-confirm.demo.html",
+        "src/dialog/plugins/delete-confirm.example.ts"
+      ],
+      "estimatedReduction": "~25KB"
+    },
+    {
+      "priority": "MEDIUM",
+      "title": "拆分大文件",
+      "description": "将超过 25KB 的文件拆分为更小的模块",
+      "files": [
+        "src/notifications/notification-manager.ts",
+        "src/performance/performance-dashboard.ts"
+      ],
+      "estimatedReduction": "改善代码可维护性"
+    }
+  ]
+}

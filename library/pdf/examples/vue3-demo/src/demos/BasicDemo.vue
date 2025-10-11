@@ -1,84 +1,62 @@
 <template>
   <div class="demo">
-    <h2 class="demo-title">基础示例</h2>
-    <p class="demo-desc">最简单的使用方式，只需传入PDF地址即可</p>
-
-    <div class="demo-content">
-      <PDFViewerComponent
-        :source="pdfUrl"
-        :workerSrc="`/pdf.worker.min.mjs`"
-        :show-toolbar="true"
-        :show-search="true"
-        :show-print="true"
-        :show-download="true"
-        @pageChange="handlePageChange"
-        @error="handleError"
-      />
+    <div class="demo-header">
+      <h2>Basic Usage</h2>
+      <p>Simple PDF viewer component with default settings</p>
     </div>
 
-    <div class="demo-info">
-      <p>当前页: {{ currentPage }}</p>
-    </div>
+    <PDFViewer
+      :url="pdfUrl"
+      :scale="1.0"
+      :enable-toolbar="true"
+      :worker-src="'/pdf.worker.min.mjs'"
+      @document-loaded="onDocumentLoaded"
+      @page-changed="onPageChanged"
+      @error="onError"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { PDFViewerComponent } from '@ldesign/pdf';
+import { ref } from 'vue'
+import { PDFViewer } from '@ldesign/pdf-viewer/vue'
 
-const props = defineProps<{
-  pdfUrl: string;
-}>();
+const pdfUrl = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf'
 
-const currentPage = ref(1);
+const onDocumentLoaded = (totalPages: number) => {
+  console.log('Document loaded, total pages:', totalPages)
+}
 
-const handlePageChange = (page: number) => {
-  currentPage.value = page;
-  console.log('页面切换:', page);
-};
+const onPageChanged = (pageNumber: number) => {
+  console.log('Page changed:', pageNumber)
+}
 
-const handleError = (error: Error) => {
-  console.error('加载错误:', error);
-};
+const onError = (error: Error) => {
+  console.error('PDF Error:', error)
+}
 </script>
 
 <style scoped>
 .demo {
-  height: 100%;
   display: flex;
   flex-direction: column;
+  height: 100%;
+}
+
+.demo-header {
   padding: 20px;
+  background: #f6f8fa;
+  border-bottom: 1px solid #d0d7de;
 }
 
-.demo-title {
-  margin: 0 0 8px;
-  font-size: 24px;
-  color: #333;
+.demo-header h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: #24292f;
 }
 
-.demo-desc {
-  margin: 0 0 20px;
-  color: #666;
-}
-
-.demo-content {
-  flex: 1;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-  background: white;
-}
-
-.demo-info {
-  margin-top: 16px;
-  padding: 12px;
-  background: #f8f9fa;
-  border-radius: 6px;
-}
-
-.demo-info p {
-  margin: 0;
+.demo-header p {
   font-size: 14px;
-  color: #666;
+  color: #57606a;
 }
 </style>

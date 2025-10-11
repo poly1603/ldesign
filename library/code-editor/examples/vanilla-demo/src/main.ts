@@ -1,5 +1,5 @@
-import { createCodeEditor } from '@ldesign/code-editor'
-import type { ICodeEditor } from '@ldesign/code-editor'
+import { createCodeEditor, createEnhancedCodeEditor } from '@ldesign/code-editor'
+import type { ICodeEditor, LoadingState } from '@ldesign/code-editor'
 import './style.css'
 
 // 示例代码
@@ -36,6 +36,54 @@ const service = new UserService();
 service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });
 `
 
+const vueCode = `<template>
+  <div class="hello">
+    <h1>{{ message }}</h1>
+    <button @click="handleClick">点击我</button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const message = ref('Hello Vue 3!')
+
+const handleClick = () => {
+  message.value = 'You clicked the button!'
+}
+</script>
+
+<style scoped>
+.hello {
+  text-align: center;
+  padding: 20px;
+}
+</style>
+`
+
+const tsxCode = `import React, { useState } from 'react'
+
+interface Props {
+  title: string
+}
+
+const Counter: React.FC<Props> = ({ title }) => {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div>
+      <h1>{title}</h1>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>
+        Increment
+      </button>
+    </div>
+  )
+}
+
+export default Counter
+`
+
 const htmlCode = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -56,19 +104,84 @@ const htmlCode = `<!DOCTYPE html>
 </html>
 `
 
+const emmetExample = `<!-- 试试输入以下 Emmet 缩写: -->
+<!-- div.container -->
+<!-- ul>li*3 -->
+<!-- table>tr*2>td*3 -->
+
+<div class="example">
+  <!-- 在这里输入 Emmet 缩写 -->
+</div>
+`
+
 // 初始化编辑器
+let editorEnhanced: ICodeEditor | null = null
+let editorVue: ICodeEditor | null = null
+let editorTsx: ICodeEditor | null = null
+let editorEmmet: ICodeEditor | null = null
 let editor1: ICodeEditor | null = null
 let editor2: ICodeEditor | null = null
+let editorSnippets: ICodeEditor | null = null
 let editor3: ICodeEditor | null = null
 let editor4: ICodeEditor | null = null
 let editor5: ICodeEditor | null = null
+
+// 示例: 增强型编辑器（带 Loading）
+editorEnhanced = createEnhancedCodeEditor('#editor-enhanced', {
+  value: jsCode,
+  language: 'javascript',
+  theme: 'vs-dark',
+  showLoading: true,
+  loadingText: '正在初始化编辑器...',
+  plugins: {
+    emmet: true,
+    snippets: true,
+    bracketMatching: true,
+    autoClosingTags: true
+  },
+  onLoadingChange: (state: LoadingState) => {
+    const statusEl = document.getElementById('loadingStatus')
+    const progressEl = document.getElementById('loadingProgress')
+    const messageEl = document.getElementById('loadingMessage')
+
+    if (statusEl) statusEl.textContent = state.isLoading ? '加载中' : '完成'
+    if (progressEl) progressEl.textContent = `${state.progress}%`
+    if (messageEl) messageEl.textContent = state.message
+  }
+})
+
+// 示例: Vue 代码高亮
+editorVue = createEnhancedCodeEditor('#editor-vue', {
+  value: vueCode,
+  language: 'vue',
+  theme: 'vs-dark',
+  plugins: {
+    emmet: true
+  }
+})
+
+// 示例: TSX 代码高亮
+editorTsx = createEnhancedCodeEditor('#editor-tsx', {
+  value: tsxCode,
+  language: 'tsx',
+  theme: 'vs-dark'
+})
+
+// 示例: Emmet 代码补全
+editorEmmet = createEnhancedCodeEditor('#editor-emmet', {
+  value: emmetExample,
+  language: 'html',
+  theme: 'vs-dark',
+  plugins: {
+    emmet: true
+  }
+})
 
 // 示例 1: 基础示例
 editor1 = createCodeEditor('#editor1', {
   value: jsCode,
   language: 'javascript',
-  theme: 'vs-dark',
-  height: '300px'
+  theme: 'vs-dark'
 })
 
 // 基础操作按钮
@@ -102,7 +215,7 @@ document.getElementById('redo')?.addEventListener('click', () => {
   }
 })
 
-// 示例 2: 主题和��言切换
+// 示例 2: 主题和语言切换
 editor2 = createCodeEditor('#editor2', {
   value: tsCode,
   language: 'typescript',
@@ -123,8 +236,17 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
     // 根据语言设置示例代码
     switch (language) {
       case 'javascript':
+        editor2.setValue(jsCode)
+        break
       case 'typescript':
-        editor2.setValue(language === 'javascript' ? jsCode : tsCode)
+        editor2.setValue(tsCode)
+        break
+      case 'vue':
+        editor2.setValue(vueCode)
+        break
+      case 'tsx':
+      case 'jsx':
+        editor2.setValue(tsxCode)
         break
       case 'html':
         editor2.setValue(htmlCode)
@@ -135,6 +257,16 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
       default:
         editor2.setValue(`// ${language} code here`)
     }
+  }
+})
+
+// 示例: 代码片段补全
+editorSnippets = createEnhancedCodeEditor('#editor-snippets', {
+  value: '// 试试输入: log, func, arrow, foreach, map, filter, promise, async\n',
+  language: 'javascript',
+  theme: 'vs-dark',
+  plugins: {
+    snippets: true
   }
 })
 
@@ -234,8 +366,13 @@ editor5 = createCodeEditor('#editor5', {
 
 // 清理
 window.addEventListener('beforeunload', () => {
+  editorEnhanced?.dispose()
+  editorVue?.dispose()
+  editorTsx?.dispose()
+  editorEmmet?.dispose()
   editor1?.dispose()
   editor2?.dispose()
+  editorSnippets?.dispose()
   editor3?.dispose()
   editor4?.dispose()
   editor5?.dispose()

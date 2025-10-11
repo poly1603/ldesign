@@ -4,7 +4,9 @@
  */
 
 import type { VueDirectiveBinding } from '../base/vue-directive-adapter'
+import { getLogger } from '../../logger/unified-logger'
 import { DirectiveBase } from '../base/directive-base'
+
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface CopyOptions {
@@ -19,6 +21,8 @@ export interface CopyOptions {
 }
 
 export class CopyDirective extends DirectiveBase {
+  private logger = getLogger('CopyDirective')
+
   constructor() {
     super({
       name: 'copy',
@@ -272,11 +276,11 @@ export const copyDirective = new CopyDirective()
 
 <script setup>
 const handleSuccess = (text) => {
-  console.log('复制成功:', text)
+  this.logger.debug('复制成功:', text)
 }
 
 const handleError = (error) => {
-  console.error('复制失败:', error)
+  this.logger.error('复制失败:', error)
 }
 </script>
 

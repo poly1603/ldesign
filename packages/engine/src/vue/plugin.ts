@@ -267,7 +267,7 @@ export async function installEngine(
  *   }
  * })
  *
- * console.log('应用已启动:', engine.config.get('app.name'))
+ * logger.debug('应用已启动:', engine.config.get('app.name'))
  * ```
  */
 export async function createAndMountApp(
@@ -316,7 +316,7 @@ export function defineEngineModel<T>(key: string, defaultValue: T) {
     get: () => defaultValue,
     set: (_value: T) => {
       // 运行时会被替换为实际的引擎状态操作
-      console.warn('defineEngineModel needs build-time support')
+      logger.warn('defineEngineModel needs build-time support')
     }
   }
 }
@@ -373,7 +373,7 @@ export function engineComponent(options: {
     if (errorBoundary) {
       enhancedComponent.errorCaptured = function (error: Error, instance: ComponentInternalInstance | null, info: string) {
         // 错误处理逻辑
-        console.error('Component error:', error, info)
+        logger.error('Component error:', error, info)
         return false
       }
     }

@@ -74,8 +74,11 @@
 ### 🚀 **快速体验 v0.2.1**
 
 ```typescript
-import { createEngine, createDevToolsIntegration } from '@ldesign/engine'
+import { createDevToolsIntegration, createEngine } from '@ldesign/engine'
+// 使用增强的工具函数
+import { debounce, throttle } from '@ldesign/engine/utils'
 import { createApp } from 'vue'
+
 import App from './App.vue'
 
 // 创建引擎实例
@@ -106,9 +109,6 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 app.mount('#app')
-
-// 使用增强的工具函数
-import { debounce, throttle } from '@ldesign/engine/utils'
 
 // 防抖函数 - 支持 cancel
 const debouncedSearch = debounce((query: string) => {
@@ -341,10 +341,10 @@ import { createDevToolsIntegration } from '@ldesign/engine'
 // 创建 DevTools 集成
 const devtools = createDevToolsIntegration({
   enabled: process.env.NODE_ENV !== 'production',
-  trackPerformance: true,    // 追踪性能事件
-  trackStateChanges: true,   // 追踪状态变化
-  trackErrors: true,         // 追踪错误
-  maxTimelineEvents: 1000    // 最大时间线事件数
+  trackPerformance: true, // 追踪性能事件
+  trackStateChanges: true, // 追踪状态变化
+  trackErrors: true, // 追踪错误
+  maxTimelineEvents: 1000 // 最大时间线事件数
 })
 
 // 初始化 DevTools

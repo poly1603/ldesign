@@ -347,7 +347,7 @@ export class PluginManagerImpl implements PluginManager {
             events: this.engine!.events,
           } as PluginContext<Engine>)
         } catch (error) {
-          console.error(`Error uninstalling plugin ${plugin.name}:`, error)
+          this.logger.error(`Error uninstalling plugin ${plugin.name}:`, error)
         }
       }
     }

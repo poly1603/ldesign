@@ -1,10 +1,10 @@
 import * as monaco from 'monaco-editor'
+import { normalizeLanguage } from '../utils/language-utils'
 import type {
   CodeEditorConfig,
   CodeEditorOptions,
   EditorLanguage,
   EditorTheme,
-  ICodeEditor,
   EditorState
 } from '../types'
 
@@ -69,9 +69,12 @@ export class CodeEditor implements ICodeEditor {
       monacoOptions = {}
     } = this.config
 
+    // Normalize language names (tsx -> typescriptreact, etc.)
+    const normalizedLanguage = normalizeLanguage(language)
+
     return {
       value,
-      language,
+      language: normalizedLanguage,
       theme,
       readOnly,
       fontSize,
@@ -222,7 +225,9 @@ export class CodeEditor implements ICodeEditor {
     if (!this.editor) return
     const model = this.editor.getModel()
     if (model) {
-      monaco.editor.setModelLanguage(model, language)
+      // Normalize language names
+      const normalizedLanguage = normalizeLanguage(language)
+      monaco.editor.setModelLanguage(model, normalizedLanguage)
     }
   }
 

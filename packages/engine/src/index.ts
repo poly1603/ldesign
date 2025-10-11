@@ -44,13 +44,48 @@ export * from './constants'
 export { EngineImpl } from './core/engine'
 // 核心功能 - 最常用的导出
 export { createAndMountApp, createApp, createEngine } from './core/factory'
+// DevTools 集成
+export { createDevToolsIntegration, DevToolsIntegration } from './devtools'
+
+export type { DevToolsInspectorState, DevToolsOptions, DevToolsTimelineEvent } from './devtools'
 export { createEventManager, ENGINE_EVENTS } from './events/event-manager'
 
-export { createLogger } from './logger/logger'
+// 🔥 HMR支持 - 热模块替换
+export { createHMRManager, HMRManager } from './hmr/hmr-manager'
+
+export type { HMRModule, HMROptions, HMRUpdateEvent } from './hmr/hmr-manager'
+
+// 日志系统
+export {
+  createLogger,
+  createUnifiedLogger,
+  defaultLogger,
+  ErrorTrackingPlugin,
+  type LogConfig,
+  Logger,
+  type LogPlugin,
+  type LogStats,
+  type LogTransport,
+  PerformancePlugin,
+  SamplingPlugin,
+  UnifiedLogger
+} from './logger'
+
+// 📊 性能仪表板
+export { createPerformanceDashboard, PerformanceDashboard } from './performance/performance-dashboard'
+export type { DashboardOptions, PerformanceMetrics } from './performance/performance-dashboard'
+
+// 🛍️ 插件市场
+export { createPluginMarketplace, PluginMarketplace } from './plugins/plugin-marketplace'
+export type {
+  MarketplaceOptions,
+  MarketplacePlugin,
+  PluginMetadata,
+  SearchOptions
+} from './plugins/plugin-marketplace'
 
 // 预设配置
 export { presets } from './presets'
-
 // 基础类型导出
 export type {
   ConfigManager,
@@ -60,18 +95,15 @@ export type {
   EventManager,
 } from './types'
 
+export type { LogEntry, LoggerOptions, LogLevel } from './types/logger'
 // 常用工具函数
 export { debounce, deepClone, generateId, throttle } from './utils/index'
-
-// DevTools 集成
-export { createDevToolsIntegration, DevToolsIntegration } from './devtools'
-export type { DevToolsOptions, DevToolsTimelineEvent, DevToolsInspectorState } from './devtools'
 
 // Vue集成 - 最常用的Vue功能
 export { useEngine } from './vue/composables/useEngine'
 
 // 版本信息
-export const version = '0.1.0'
+export const version = '0.2.0'
 
 export async function install(app: App, options: CreateEngineOptions = {}): Promise<Engine> {
   // 动态导入避免循环依赖

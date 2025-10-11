@@ -1,11 +1,13 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import {
-  type CoreWebVitalsMetrics,
-  globalCoreWebVitalsMonitor,
-  globalRealtimePerformanceMonitor,
-  type PerformanceAlert,
-  type RealtimePerformanceData
-} from '../../utils'
+// TODO: Fix imports when these modules are available
+// import {
+//   type CoreWebVitalsMetrics,
+//   globalCoreWebVitalsMonitor,
+//   globalRealtimePerformanceMonitor,
+//   type PerformanceAlert,
+//   type RealtimePerformanceData
+// } from '../../utils'
+
 import { useEngine } from './useEngine'
 
 /**
@@ -404,134 +406,104 @@ export function useCache() {
 
 /**
  * Core Web Vitals 监控组合式函数
- *
- * @returns Core Web Vitals 监控工具
- *
- * @example
- * ```vue
- * <script setup>
- * import { useCoreWebVitals } from '@ldesign/engine'
- *
- * const { metrics, score, isGood } = useCoreWebVitals()
- *
- * watch(metrics, (newMetrics) => {
- *   console.log('Core Web Vitals updated:', newMetrics)
- * })
- * </script>
- * ```
+ * TODO: Fix when globalCoreWebVitalsMonitor is available
  */
-export function useCoreWebVitals() {
-  const metrics = ref<CoreWebVitalsMetrics>({})
-  const score = ref(100)
-
-  onMounted(() => {
-    // 监听Core Web Vitals指标更新
-    globalCoreWebVitalsMonitor.onMetric((newMetrics) => {
-      metrics.value = newMetrics
-      score.value = globalCoreWebVitalsMonitor.getPerformanceScore()
-    })
-
-    // 启动监控
-    globalCoreWebVitalsMonitor.start()
-  })
-
-  onUnmounted(() => {
-    globalCoreWebVitalsMonitor.stop()
-  })
-
-  const isGood = computed(() => {
-    const m = metrics.value
-    return (
-      (!m.lcp || m.lcp.rating === 'good') &&
-      (!m.fcp || m.fcp.rating === 'good') &&
-      (!m.cls || m.cls.rating === 'good') &&
-      (!m.fid || m.fid.rating === 'good')
-    )
-  })
-
-  const hasIssues = computed(() => {
-    const m = metrics.value
-    return (
-      (m.lcp && m.lcp.rating === 'poor') ||
-      (m.fcp && m.fcp.rating === 'poor') ||
-      (m.cls && m.cls.rating === 'poor') ||
-      (m.fid && m.fid.rating === 'poor')
-    )
-  })
-
-  return {
-    metrics: computed(() => metrics.value),
-    score: computed(() => score.value),
-    isGood,
-    hasIssues
-  }
-}
+// export function useCoreWebVitals() {
+//   const metrics = ref<CoreWebVitalsMetrics>({})
+//   const score = ref(100)
+//
+//   onMounted(() => {
+//     // 监听Core Web Vitals指标更新
+//     globalCoreWebVitalsMonitor.onMetric((newMetrics) => {
+//       metrics.value = newMetrics
+//       score.value = globalCoreWebVitalsMonitor.getPerformanceScore()
+//     })
+//
+//     // 启动监控
+//     globalCoreWebVitalsMonitor.start()
+//   })
+//
+//   onUnmounted(() => {
+//     globalCoreWebVitalsMonitor.stop()
+//   })
+//
+//   const isGood = computed(() => {
+//     const m = metrics.value
+//     return (
+//       (!m.lcp || m.lcp.rating === 'good') &&
+//       (!m.fcp || m.fcp.rating === 'good') &&
+//       (!m.cls || m.cls.rating === 'good') &&
+//       (!m.fid || m.fid.rating === 'good')
+//     )
+//   })
+//
+//   const hasIssues = computed(() => {
+//     const m = metrics.value
+//     return (
+//       (m.lcp && m.lcp.rating === 'poor') ||
+//       (m.fcp && m.fcp.rating === 'poor') ||
+//       (m.cls && m.cls.rating === 'poor') ||
+//       (m.fid && m.fid.rating === 'poor')
+//     )
+//   })
+//
+//   return {
+//     metrics: computed(() => metrics.value),
+//     score: computed(() => score.value),
+//     isGood,
+//     hasIssues
+//   }
+// }
 
 /**
  * 实时性能监控组合式函数
- *
- * @returns 实时性能监控工具
- *
- * @example
- * ```vue
- * <script setup>
- * import { useRealtimePerformance } from '@ldesign/engine'
- *
- * const { data, alerts, isHealthy } = useRealtimePerformance()
- *
- * watch(alerts, (newAlerts) => {
- *   if (newAlerts.length > 0) {
- *     console.warn('Performance alerts:', newAlerts)
- *   }
- * })
- * </script>
- * ```
+ * TODO: Fix when globalRealtimePerformanceMonitor is available
  */
-export function useRealtimePerformance() {
-  const data = ref<RealtimePerformanceData | null>(null)
-  const alerts = ref<PerformanceAlert[]>([])
-
-  onMounted(() => {
-    // 监听实时性能数据更新
-    globalRealtimePerformanceMonitor.onData((newData) => {
-      data.value = newData
-    })
-
-    // 监听性能告警
-    globalRealtimePerformanceMonitor.onAlert((_alert) => {
-      alerts.value = globalRealtimePerformanceMonitor.getActiveAlerts()
-    })
-
-    // 启动监控
-    globalRealtimePerformanceMonitor.start()
-  })
-
-  onUnmounted(() => {
-    globalRealtimePerformanceMonitor.stop()
-  })
-
-  const isHealthy = computed(() => {
-    return alerts.value.filter(alert => alert.level === 'critical').length === 0
-  })
-
-  const memoryUsage = computed(() => {
-    return data.value?.system.memory.percentage || 0
-  })
-
-  const fps = computed(() => {
-    return data.value?.system.fps || 0
-  })
-
-  const domNodes = computed(() => {
-    return data.value?.dom.nodeCount || 0
-  })
-
-  return {
-    data: computed(() => data.value),
-    alerts: computed(() => alerts.value),
-    isHealthy,
-    memoryUsage,
-    fps,
-    domNodes
-  }
-}
+// export function useRealtimePerformance() {
+//   const data = ref<RealtimePerformanceData | null>(null)
+//   const alerts = ref<PerformanceAlert[]>([])
+//
+//   onMounted(() => {
+//     // 监听实时性能数据更新
+//     globalRealtimePerformanceMonitor.onData((newData) => {
+//       data.value = newData
+//     })
+//
+//     // 监听性能告警
+//     globalRealtimePerformanceMonitor.onAlert((_alert) => {
+//       alerts.value = globalRealtimePerformanceMonitor.getActiveAlerts()
+//     })
+//
+//     // 启动监控
+//     globalRealtimePerformanceMonitor.start()
+//   })
+//
+//   onUnmounted(() => {
+//     globalRealtimePerformanceMonitor.stop()
+//   })
+//
+//   const isHealthy = computed(() => {
+//     return alerts.value.filter(alert => alert.level === 'critical').length === 0
+//   })
+//
+//   const memoryUsage = computed(() => {
+//     return data.value?.system.memory.percentage || 0
+//   })
+//
+//   const fps = computed(() => {
+//     return data.value?.system.fps || 0
+//   })
+//
+//   const domNodes = computed(() => {
+//     return data.value?.dom.nodeCount || 0
+//   })
+//
+//   return {
+//     data: computed(() => data.value),
+//     alerts: computed(() => alerts.value),
+//     isHealthy,
+//     memoryUsage,
+//     fps,
+//     domNodes
+//   }
+// }

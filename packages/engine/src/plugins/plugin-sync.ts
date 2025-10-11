@@ -5,10 +5,14 @@
 
 import type { Plugin } from '../types'
 
+import { getLogger } from '../logger/unified-logger'
+
 /**
  * 插件就绪状态管理
  */
 export class PluginReadinessManager {
+  private logger = getLogger('PluginReadinessManager')
+
   private readyPlugins = new Set<string>()
   private pendingPlugins = new Map<string, Promise<void>>()
   private criticalPlugins = new Set<string>(['i18n', 'router', 'store'])
@@ -31,7 +35,7 @@ export class PluginReadinessManager {
       initPromise.then(() => {
         this.markReady(pluginName)
       }).catch((error) => {
-        console.error(`Plugin ${pluginName} initialization failed:`, error)
+        this.logger.error(`Plugin ${pluginName} initialization failed:`, error)
         // 即使失败也标记为就绪，避免阻塞
         this.markReady(pluginName)
       })
@@ -66,7 +70,7 @@ export class PluginReadinessManager {
         try {
           callback()
         } catch (error) {
-          console.error('Ready callback error:', error)
+          this.logger.error('Ready callback error:', error)
         }
       })
       this.readyCallbacks = []

@@ -1,158 +1,220 @@
+import type { PDFPageProxy, RenderTask } from 'pdfjs-dist'
+import { CacheManager } from '../utils/CacheManager'
+import type { PageRenderInfo, RotationAngle } from '../types'
+
 /**
  * 页面渲染器
+ * 负责PDF页面的渲染和缓存管理
  */
-
-import type { PDFPageProxy, PageViewport } from 'pdfjs-dist';
-import type { PDFViewerConfig, RenderTask } from '../types';
-
 export class PageRenderer {
-  private _config: PDFViewerConfig;
-  private _renderingTasks: Map<number, RenderTask> = new Map();
-  private _canvasPool: HTMLCanvasElement[] = [];
+  private cacheManager: CacheManager<HTMLCanvasElement>
+  private renderTasks: Map<number, RenderTask> = new Map()
+  private rotation: RotationAngle = 0
 
-  constructor(config: PDFViewerConfig) {
-    this._config = config;
+  constructor(maxCachePages: number = 20) {
+    this.cacheManager = new CacheManager<HTMLCanvasElement>(maxCachePages)
   }
 
   /**
-   * 渲染页面
+   * 渲染页面到Canvas
+   * @param page PDF页面对象
+   * @param container 容器元素
+   * @param scale 缩放比例
+   * @param rotation 旋转角度
    */
-  async render(
+  async renderPage(
     page: PDFPageProxy,
-    scale: number,
-    rotation: number = 0
-  ): Promise<HTMLCanvasElement> {
-    const pageNumber = page.pageNumber;
+    container: HTMLElement,
+    scale: number = 1.0,
+    rotation: RotationAngle = 0
+  ): Promise<PageRenderInfo> {
+    const pageNumber = page.pageNumber
+    const cacheKey = this.getCacheKey(pageNumber, scale, rotation)
 
-    // 取消之前的渲染任务
-    this.cancel(pageNumber);
+    // 取消该页面的之前的渲染任务
+    this.cancelRenderTask(pageNumber)
 
-    // 获取或创建canvas
-    const canvas = this._getCanvas();
-    const context = canvas.getContext('2d');
+    // 检查缓存
+    const cachedCanvas = this.cacheManager.get(cacheKey)
+    if (cachedCanvas) {
+      this.displayCanvas(container, cachedCanvas)
+      return { pageNumber, page, scale, rotation }
+    }
+
+    // 创建canvas
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d', { alpha: false })
 
     if (!context) {
-      throw new Error('无法创建Canvas上下文');
+      throw new Error('Failed to get canvas 2d context')
+    }
+
+    // 计算视口
+    const viewport = page.getViewport({ scale, rotation })
+
+    // 设置canvas尺寸
+    canvas.width = viewport.width
+    canvas.height = viewport.height
+    canvas.className = 'pdf-page-canvas'
+
+    // 开始渲染
+    const renderContext = {
+      canvasContext: context,
+      viewport
+    }
+
+    const renderTask = page.render(renderContext)
+    this.renderTasks.set(pageNumber, renderTask)
+
+    try {
+      await renderTask.promise
+
+      // 缓存渲染结果
+      this.cacheManager.set(cacheKey, canvas)
+
+      // 显示canvas
+      this.displayCanvas(container, canvas)
+
+      // 清理渲染任务
+      this.renderTasks.delete(pageNumber)
+
+      return { pageNumber, page, scale, rotation, task: renderTask }
+    } catch (error: any) {
+      // 如果是取消渲染，不抛出错误
+      if (error.name === 'RenderingCancelledException') {
+        return { pageNumber, page, scale, rotation }
+      }
+      throw error
+    }
+  }
+
+  /**
+   * 显示Canvas
+   */
+  private displayCanvas(container: HTMLElement, canvas: HTMLCanvasElement): void {
+    // 清空容器
+    container.innerHTML = ''
+
+    // 克隆canvas以避免缓存引用问题
+    const clonedCanvas = canvas.cloneNode(true) as HTMLCanvasElement
+    const clonedContext = clonedCanvas.getContext('2d')
+    const originalContext = canvas.getContext('2d')
+
+    if (clonedContext && originalContext) {
+      clonedContext.drawImage(canvas, 0, 0)
+    }
+
+    container.appendChild(clonedCanvas)
+  }
+
+  /**
+   * 取消页面渲染任务
+   * @param pageNumber 页码
+   */
+  cancelRenderTask(pageNumber: number): void {
+    const task = this.renderTasks.get(pageNumber)
+    if (task) {
+      task.cancel()
+      this.renderTasks.delete(pageNumber)
+    }
+  }
+
+  /**
+   * 取消所有渲染任务
+   */
+  cancelAllRenderTasks(): void {
+    this.renderTasks.forEach(task => task.cancel())
+    this.renderTasks.clear()
+  }
+
+  /**
+   * 设置旋转角度
+   * @param rotation 旋转角度
+   */
+  setRotation(rotation: RotationAngle): void {
+    this.rotation = rotation
+  }
+
+  /**
+   * 获取旋转角度
+   */
+  getRotation(): RotationAngle {
+    return this.rotation
+  }
+
+  /**
+   * 生成缓存键
+   */
+  private getCacheKey(pageNumber: number, scale: number, rotation: RotationAngle): string {
+    return `page-${pageNumber}-scale-${scale.toFixed(2)}-rotation-${rotation}`
+  }
+
+  /**
+   * 清空缓存
+   */
+  clearCache(): void {
+    this.cacheManager.clear()
+  }
+
+  /**
+   * 获取缓存统计信息
+   */
+  getCacheStats() {
+    return this.cacheManager.getStats()
+  }
+
+  /**
+   * 预渲染页面
+   * @param page PDF页面对象
+   * @param scale 缩放比例
+   * @param rotation 旋转角度
+   */
+  async prerenderPage(
+    page: PDFPageProxy,
+    scale: number = 1.0,
+    rotation: RotationAngle = 0
+  ): Promise<void> {
+    const pageNumber = page.pageNumber
+    const cacheKey = this.getCacheKey(pageNumber, scale, rotation)
+
+    // ��果已经缓存，则跳过
+    if (this.cacheManager.has(cacheKey)) {
+      return
+    }
+
+    // 创建临时canvas
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d', { alpha: false })
+
+    if (!context) {
+      throw new Error('Failed to get canvas 2d context')
+    }
+
+    const viewport = page.getViewport({ scale, rotation })
+    canvas.width = viewport.width
+    canvas.height = viewport.height
+
+    const renderContext = {
+      canvasContext: context,
+      viewport
     }
 
     try {
-      // 计算viewport
-      const viewport = page.getViewport({ scale, rotation });
-
-      // 设置canvas尺寸
-      this._setCanvasSize(canvas, viewport);
-
-      // 创建渲染任务
-      const renderContext = {
-        canvasContext: context,
-        viewport,
-      };
-
-      const renderTask = page.render(renderContext);
-
-      // 保存任务
-      this._renderingTasks.set(pageNumber, {
-        pageNumber,
-        page,
-        canvas,
-        scale,
-        rotation,
-        priority: 1,
-        cancel: () => renderTask.cancel(),
-        promise: renderTask.promise,
-      });
-
-      // 等待渲染完成
-      await renderTask.promise;
-
-      // 移除任务
-      this._renderingTasks.delete(pageNumber);
-
-      return canvas;
+      await page.render(renderContext).promise
+      this.cacheManager.set(cacheKey, canvas)
     } catch (error: any) {
-      this._renderingTasks.delete(pageNumber);
-
-      if (error?.name === 'RenderingCancelledException') {
-        throw new Error('渲染已取消');
+      // 忽略渲染错误
+      if (error.name !== 'RenderingCancelledException') {
+        console.warn(`Failed to prerender page ${pageNumber}:`, error)
       }
-
-      throw new Error(`渲染失败: ${error.message}`);
     }
   }
 
   /**
-   * 取消渲染
-   */
-  cancel(pageNumber: number): void {
-    const task = this._renderingTasks.get(pageNumber);
-    if (task && task.cancel) {
-      task.cancel();
-      this._renderingTasks.delete(pageNumber);
-    }
-  }
-
-  /**
-   * 取消所有渲染
-   */
-  cancelAll(): void {
-    this._renderingTasks.forEach((task) => {
-      if (task.cancel) {
-        task.cancel();
-      }
-    });
-    this._renderingTasks.clear();
-  }
-
-  /**
-   * 销毁
+   * 销毁渲染器
    */
   destroy(): void {
-    this.cancelAll();
-    this._canvasPool = [];
-  }
-
-  /**
-   * 获取canvas
-   */
-  private _getCanvas(): HTMLCanvasElement {
-    // 从池中获取或创建新的
-    return this._canvasPool.pop() || document.createElement('canvas');
-  }
-
-  /**
-   * 回收canvas
-   */
-  private _recycleCanvas(canvas: HTMLCanvasElement): void {
-    if (this._canvasPool.length < 10) {
-      // 清空canvas
-      const context = canvas.getContext('2d');
-      if (context) {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-      }
-      this._canvasPool.push(canvas);
-    }
-  }
-
-  /**
-   * 设置canvas尺寸
-   */
-  private _setCanvasSize(canvas: HTMLCanvasElement, viewport: PageViewport): void {
-    const dpi = this._config.render?.dpi || 96;
-    const outputScale = window.devicePixelRatio || 1;
-
-    // 计算实际尺寸
-    const scale = (dpi / 96) * outputScale;
-
-    canvas.width = Math.floor(viewport.width * scale);
-    canvas.height = Math.floor(viewport.height * scale);
-
-    canvas.style.width = `${Math.floor(viewport.width)}px`;
-    canvas.style.height = `${Math.floor(viewport.height)}px`;
-
-    // 缩放上下文以适应DPI
-    const context = canvas.getContext('2d');
-    if (context && scale !== 1) {
-      context.scale(scale, scale);
-    }
+    this.cancelAllRenderTasks()
+    this.clearCache()
   }
 }

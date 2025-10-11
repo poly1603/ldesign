@@ -1,4 +1,5 @@
 import { computed, onUnmounted, ref } from 'vue'
+
 import { useEngine } from './useEngine'
 
 /**
@@ -207,10 +208,10 @@ export function useRetry<T, Args extends any[] = []>(
  *   )
  *
  *   promise.then(data => {
- *     console.log('Data loaded:', data)
+ *     logger.debug('Data loaded:', data)
  *   }).catch(error => {
  *     if (error.name === 'AbortError') {
- *       console.log('Request was cancelled')
+ *       logger.debug('Request was cancelled')
  *     }
  *   })
  * }

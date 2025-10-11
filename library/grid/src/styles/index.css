@@ -1,0 +1,38 @@
+/* 自定义样式 */
+.grid-stack {
+  position: relative;
+}
+
+.grid-stack-item {
+  position: absolute;
+}
+
+.grid-stack-item-content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* 拖拽时的样式 */
+.grid-stack-item.ui-draggable-dragging {
+  opacity: 0.8;
+  z-index: 100;
+}
+
+/* 调整大小时的样式 */
+.grid-stack-item.ui-resizable-resizing {
+  opacity: 0.8;
+  z-index: 100;
+}
+
+/* 占位符样式 */
+.grid-stack-placeholder {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px dashed #ccc;
+}

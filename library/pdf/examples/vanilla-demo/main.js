@@ -1,345 +1,198 @@
-import { PDFViewer } from '@ldesign/pdf';
+import { PDFViewer } from '@ldesign/pdf-viewer'
+import { createIcons, icons } from 'lucide'
 
-const WORKER_SRC = '/pdf.worker.min.mjs';
-const DEFAULT_PDF = 'https://pdfobject.com/pdf/sample.pdf';
+// 示例PDF URL (使用Mozilla的示例PDF)
+const SAMPLE_PDF = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf'
 
-let currentViewer = null;
-let currentDemo = 'basic';
+// 创建查看器实例
+let viewer
+let continuousMode = true
 
-// 初始化
-document.addEventListener('DOMContentLoaded', () => {
-  initDemoNavigation();
-  initBasicDemo();
-  initFileUpload();
-});
+function initViewer() {
+  console.log('[INIT] Creating PDFViewer...')
+  
+  viewer = new PDFViewer({
+    container: '#viewer',
+    enableToolbar: true,
+    enableSearch: true,
+    enableThumbnails: true,
+    scale: 1.0,
+    workerSrc: '/pdf.worker.min.mjs'
+  })
 
-// 初始化示例导航
-function initDemoNavigation() {
-  const navButtons = document.querySelectorAll('.nav-btn');
-  const demos = document.querySelectorAll('.demo');
+  console.log('[INIT] PDFViewer created:', viewer)
 
-  navButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const demoId = btn.dataset.demo;
-
-      // 更新按钮状态
-      navButtons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      // 更新示例显示
-      demos.forEach((d) => d.classList.remove('active'));
-      document.getElementById(`demo-${demoId}`).classList.add('active');
-
-      // 切换示例
-      currentDemo = demoId;
-      switchDemo(demoId);
-    });
-  });
-}
-
-// 切换示例
-function switchDemo(demoId) {
-  // 销毁当前查看器
-  if (currentViewer) {
-    currentViewer.destroy();
-    currentViewer = null;
+  // 设置为连续模式
+  if (continuousMode) {
+    console.log('[INIT] Setting continuous mode...')
+    viewer.setRenderMode(true)
   }
 
-  // 初始化新示例
-  switch (demoId) {
-    case 'basic':
-      initBasicDemo();
-      break;
-    case 'advanced':
-      initAdvancedDemo();
-      break;
-    case 'events':
-      initEventsDemo();
-      break;
-    case 'plugins':
-      initPluginsDemo();
-      break;
-  }
+  // 监听事件
+  setupEventListeners()
+
+  // 更新状态
+  updateStatus('Viewer initialized. Please load a PDF.')
+  console.log('[INIT] Initialization complete')
 }
 
-// 基础示例
-function initBasicDemo() {
-  currentViewer = new PDFViewer({
-    container: '#pdf-container',
-    workerSrc: WORKER_SRC,
-    scale: 1.2,
-    quality: 'medium',
-    on: {
-      loadComplete: (info) => {
-        updateDocInfo(info);
-        updatePageControls();
-      },
-      pageChange: (page) => {
-        document.getElementById('page-input').value = page;
-        updatePageControls();
-      },
-      scaleChange: (scale) => {
-        document.getElementById('scale-display').textContent =
-          Math.round(scale * 100) + '%';
-      },
-    },
-  });
+function setupEventListeners() {
+  // 文档加载完成
+  viewer.on('document-loaded', (doc) => {
+    updateStatus('PDF loaded successfully')
+    updateStats()
+    
+    // 初始化 lucide 图标
+    setTimeout(() => initLucideIcons(), 100)
+  })
 
-  currentViewer.load(DEFAULT_PDF);
+  // 文档加载错误
+  viewer.on('document-error', (error) => {
+    updateStatus(`Error: ${error.message}`, true)
+  })
 
-  // 绑定控制按钮
-  const prevBtn = document.getElementById('prev-btn');
-  const nextBtn = document.getElementById('next-btn');
-  const pageInput = document.getElementById('page-input');
-  const zoomInBtn = document.getElementById('zoom-in-btn');
-  const zoomOutBtn = document.getElementById('zoom-out-btn');
-  const rotateBtn = document.getElementById('rotate-btn');
-  const printBtn = document.getElementById('print-btn');
-  const downloadBtn = document.getElementById('download-btn');
+  // 页面更改
+  viewer.on('page-changed', () => {
+    updateStats()
+  })
 
-  prevBtn.onclick = () => currentViewer.previousPage();
-  nextBtn.onclick = () => currentViewer.nextPage();
+  // 缩放更改
+  viewer.on('zoom-changed', () => {
+    updateStats()
+  })
 
-  pageInput.onchange = (e) => {
-    const page = parseInt(e.target.value);
-    if (page >= 1 && page <= currentViewer.totalPages) {
-      currentViewer.goToPage(page);
-    }
-  };
+  // 加载进度
+  viewer.on('loading-progress', (progress) => {
+    const percent = Math.round((progress.loaded / progress.total) * 100)
+    updateStatus(`Loading: ${percent}%`)
+  })
 
-  zoomInBtn.onclick = () => currentViewer.zoomIn(0.2);
-  zoomOutBtn.onclick = () => currentViewer.zoomOut(0.2);
-  rotateBtn.onclick = () => currentViewer.rotate(90);
-  printBtn.onclick = () => currentViewer.print();
-  downloadBtn.onclick = () => currentViewer.download('document.pdf');
+  // 搜索结果
+  viewer.on('search-results', (results) => {
+    displaySearchResults(results)
+  })
 
-  updatePageControls();
+  // 页面渲染完成
+  viewer.on('page-rendered', (info) => {
+    console.log('Page rendered:', info.pageNumber)
+  })
 }
 
-// 高级功能示例
-function initAdvancedDemo() {
-  currentViewer = new PDFViewer({
-    container: '#pdf-container-advanced',
-    workerSrc: WORKER_SRC,
-    scale: 'auto',
-    quality: 'medium',
-    cache: {
-      enabled: true,
-      maxPages: 100,
-      strategy: 'lru',
-      preloadPages: 5,
-    },
-    on: {
-      loadComplete: (info) => {
-        updateDocInfo(info);
-      },
-      searchComplete: (results) => {
-        displaySearchResults(results);
-      },
-    },
-  });
-
-  currentViewer.load(DEFAULT_PDF);
-
-  // 应用设置按钮
-  const applyBtn = document.getElementById('apply-settings-btn');
-  applyBtn.onclick = () => {
-    const scaleMode = document.getElementById('scale-mode').value;
-    const scale = isNaN(parseFloat(scaleMode)) ? scaleMode : parseFloat(scaleMode);
-    currentViewer.setScale(scale);
-  };
-
-  // 搜索功能
-  const searchBtn = document.getElementById('search-btn');
-  const searchInput = document.getElementById('search-input');
-
-  searchBtn.onclick = async () => {
-    const query = searchInput.value.trim();
-    if (query) {
-      const results = await currentViewer.search(query);
-      displaySearchResults(results);
-    }
-  };
-
-  searchInput.onkeypress = (e) => {
-    if (e.key === 'Enter') {
-      searchBtn.click();
-    }
-  };
+function updateStatus(message, isError = false) {
+  const statusEl = document.getElementById('status')
+  statusEl.textContent = message
+  statusEl.style.color = isError ? '#d73a49' : '#24292f'
 }
 
-// 事件系统示例
-function initEventsDemo() {
-  const logContainer = document.getElementById('event-log');
-  const clearBtn = document.getElementById('clear-log-btn');
-
-  clearBtn.onclick = () => {
-    logContainer.innerHTML = '';
-  };
-
-  function logEvent(eventName, data) {
-    const time = new Date().toLocaleTimeString();
-    const logItem = document.createElement('div');
-    logItem.className = 'log-item';
-    logItem.innerHTML = `
-      <span class="log-time">[${time}]</span>
-      <span class="log-event">${eventName}</span>
-      <span>${JSON.stringify(data, null, 2)}</span>
-    `;
-    logContainer.appendChild(logItem);
-    logContainer.scrollTop = logContainer.scrollHeight;
-  }
-
-  currentViewer = new PDFViewer({
-    container: '#pdf-container-events',
-    workerSrc: WORKER_SRC,
-    on: {
-      loadStart: (source) => logEvent('loadStart', { source }),
-      loadProgress: (progress) => logEvent('loadProgress', { progress }),
-      loadComplete: (info) => {
-        logEvent('loadComplete', info);
-        updateDocInfo(info);
-      },
-      loadError: (error) => logEvent('loadError', { message: error.message }),
-      pageChange: (page) => logEvent('pageChange', { page }),
-      scaleChange: (scale) => logEvent('scaleChange', { scale }),
-      renderStart: (page) => logEvent('renderStart', { page }),
-      renderComplete: (page) => logEvent('renderComplete', { page }),
-      renderError: (page, error) => logEvent('renderError', { page, error: error.message }),
-    },
-  });
-
-  currentViewer.load(DEFAULT_PDF);
+function updateStats() {
+  document.getElementById('currentPage').textContent = viewer.getCurrentPage()
+  document.getElementById('totalPages').textContent = viewer.getTotalPages()
+  document.getElementById('zoomLevel').textContent =
+    Math.round(viewer.getCurrentZoom() * 100) + '%'
 }
 
-// 插件系统示例
-function initPluginsDemo() {
-  // 自定义插件：页面计数器
-  const pageCounterPlugin = {
-    name: 'page-counter',
-    version: '1.0.0',
-    install(viewer) {
-      console.log('页面计数器插件已安装');
-    },
-    hooks: {
-      afterLoad: async (doc) => {
-        console.log(`文档共有 ${doc.numPages} 页`);
-      },
-      beforeRender: async (page) => {
-        console.log(`开始渲染第 ${page.pageNumber} 页`);
-      },
-      afterRender: async (page, canvas) => {
-        console.log(`第 ${page.pageNumber} 页渲染完成`);
-      },
-    },
-  };
-
-  // 自定义插件：性能监控
-  const performancePlugin = {
-    name: 'performance-monitor',
-    version: '1.0.0',
-    loadStartTime: 0,
-    renderStartTime: 0,
-    install(viewer) {
-      console.log('性能监控插件已安装');
-    },
-    hooks: {
-      beforeLoad: async (source) => {
-        this.loadStartTime = Date.now();
-      },
-      afterLoad: async (doc) => {
-        const loadTime = Date.now() - this.loadStartTime;
-        console.log(`文档加载耗时: ${loadTime}ms`);
-      },
-      beforeRender: async (page) => {
-        this.renderStartTime = Date.now();
-      },
-      afterRender: async (page, canvas) => {
-        const renderTime = Date.now() - this.renderStartTime;
-        console.log(`页面渲染耗时: ${renderTime}ms`);
-      },
-    },
-  };
-
-  currentViewer = new PDFViewer({
-    container: '#pdf-container-plugins',
-    workerSrc: WORKER_SRC,
-    plugins: [pageCounterPlugin, performancePlugin],
-    on: {
-      loadComplete: (info) => {
-        updateDocInfo(info);
-      },
-    },
-  });
-
-  currentViewer.load(DEFAULT_PDF);
-
-  // 显示插件列表
-  const pluginList = document.getElementById('plugin-list');
-  pluginList.innerHTML = `
-    <li>📊 ${pageCounterPlugin.name} v${pageCounterPlugin.version}</li>
-    <li>⚡ ${performancePlugin.name} v${performancePlugin.version}</li>
-  `;
-}
-
-// 文件上传
-function initFileUpload() {
-  const fileInput = document.getElementById('file-input');
-  fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file && currentViewer) {
-      const url = URL.createObjectURL(file);
-      currentViewer.load(url);
-    }
-  });
-}
-
-// 更新文档信息
-function updateDocInfo(info) {
-  const docInfo = document.getElementById('doc-info');
-  docInfo.innerHTML = `
-    <p><strong>标题:</strong> ${info.title || '未知'}</p>
-    <p><strong>作者:</strong> ${info.author || '未知'}</p>
-    <p><strong>页数:</strong> ${info.numPages}</p>
-    <p><strong>版本:</strong> ${info.pdfVersion || '未知'}</p>
-  `;
-}
-
-// 更新页面控制
-function updatePageControls() {
-  if (!currentViewer) return;
-
-  const prevBtn = document.getElementById('prev-btn');
-  const nextBtn = document.getElementById('next-btn');
-  const pageTotal = document.getElementById('page-total');
-
-  if (prevBtn) prevBtn.disabled = currentViewer.currentPage <= 1;
-  if (nextBtn) nextBtn.disabled = currentViewer.currentPage >= currentViewer.totalPages;
-  if (pageTotal) pageTotal.textContent = `/ ${currentViewer.totalPages}`;
-}
-
-// 显示搜索结果
 function displaySearchResults(results) {
-  const container = document.getElementById('search-results');
+  const resultsEl = document.getElementById('searchResults')
 
   if (results.length === 0) {
-    container.innerHTML = '<p>未找到匹配项</p>';
-    return;
+    resultsEl.innerHTML = '<p>No results found</p>'
+    return
   }
 
-  container.innerHTML = `
-    <p>找到 ${results.length} 个匹配项:</p>
-    ${results.map((result, index) => `
-      <div class="search-result-item" onclick="goToSearchResult(${result.pageNumber})">
-        <strong>第 ${result.pageNumber} 页</strong> - ${result.context || result.text}
-      </div>
-    `).join('')}
-  `;
+  resultsEl.innerHTML = `
+    <h4>Search Results (${results.length})</h4>
+    <ul>
+      ${results.slice(0, 10).map(result => `
+        <li>
+          Page ${result.pageNumber}: "${result.text}"
+          <button onclick="window.goToSearchResult(${result.pageNumber})">Go</button>
+        </li>
+      `).join('')}
+    </ul>
+  `
 }
 
-// 跳转到搜索结果
+// 全局函数供HTML调用
 window.goToSearchResult = (pageNumber) => {
-  if (currentViewer) {
-    currentViewer.goToPage(pageNumber);
+  viewer.goToPage(pageNumber)
+}
+
+// UI事件处理
+document.getElementById('fileInput')?.addEventListener('change', async (e) => {
+  const file = e.target.files?.[0]
+  if (file) {
+    try {
+      updateStatus('Loading file...')
+      const arrayBuffer = await file.arrayBuffer()
+      const uint8Array = new Uint8Array(arrayBuffer)
+      await viewer.loadDocument(uint8Array)
+    } catch (error) {
+      updateStatus(`Failed to load file: ${error.message}`, true)
+    }
   }
-};
+})
+
+document.getElementById('loadSampleBtn')?.addEventListener('click', async () => {
+  try {
+    console.log('[LOAD] Starting to load sample PDF:', SAMPLE_PDF)
+    updateStatus('Loading sample PDF...')
+    const doc = await viewer.loadDocument(SAMPLE_PDF)
+    console.log('[LOAD] PDF loaded successfully:', doc)
+  } catch (error) {
+    console.error('[LOAD] Failed to load:', error)
+    updateStatus(`Failed to load sample: ${error.message}`, true)
+  }
+})
+
+document.getElementById('fitWidthBtn')?.addEventListener('click', () => {
+  viewer.setZoom('fit-width')
+})
+
+document.getElementById('fitPageBtn')?.addEventListener('click', () => {
+  viewer.setZoom('fit-page')
+})
+
+document.getElementById('rotate90Btn')?.addEventListener('click', () => {
+  const currentRotation = viewer.pageRenderer?.getRotation() || 0
+  const newRotation = (currentRotation + 90) % 360
+  viewer.rotate(newRotation)
+})
+
+document.getElementById('searchBtn')?.addEventListener('click', async () => {
+  updateStatus('Searching...')
+  try {
+    await viewer.search('the')
+    updateStatus('Search completed')
+  } catch (error) {
+    updateStatus(`Search failed: ${error.message}`, true)
+  }
+})
+
+// 初始化 lucide 图标
+function initLucideIcons() {
+  const container = document.querySelector('.pdf-viewer-container')
+  if (!container) return
+  
+  // 替换所有 data-icon 属性为相应的 lucide 图标
+  const iconElements = container.querySelectorAll('[data-icon]')
+  iconElements.forEach((el) => {
+    const iconName = el.getAttribute('data-icon')
+    if (iconName && icons[iconName]) {
+      el.innerHTML = ''
+      const icon = document.createElement('i')
+      icon.setAttribute('data-lucide', iconName)
+      el.appendChild(icon)
+    }
+  })
+  
+  // 初始化所有 lucide 图标
+  createIcons({ icons })
+}
+
+// 初始化
+initViewer()
+
+// 自动加载示例PDF
+setTimeout(() => {
+  document.getElementById('loadSampleBtn')?.click()
+}, 500)

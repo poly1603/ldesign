@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>经费报销详情 - 集成Dialog删除确认</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      background: #f5f5f5;
+    }
+
+    .header {
+      background: #52c41a;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .header-title {
+      color: white;
+      font-size: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-return {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+
+    .btn-return:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .btn-edit {
+      background: #1890ff;
+      color: white;
+    }
+
+    .btn-edit:hover {
+      background: #40a9ff;
+    }
+
+    .btn-delete {
+      background: #ff4d4f;
+      color: white;
+    }
+
+    .btn-delete:hover {
+      background: #ff7875;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 24px;
+    }
+
+    .info-card {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .info-card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #52c41a;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .info-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .info-label {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .info-value {
+      font-size: 16px;
+      color: #333;
+      background: #fafafa;
+      padding: 10px 12px;
+      border-radius: 4px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-pending {
+      background: #fff7e6;
+      color: #fa8c16;
+    }
+
+    .amount-highlight {
+      color: #ff4d4f;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    /* Dialog 样式 */
+    .dialog-mask {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s;
+    }
+
+    .dialog-mask.show {
+      display: flex;
+    }
+
+    .dialog {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 480px;
+      animation: zoomIn 0.2s;
+      overflow: hidden;
+    }
+
+    .dialog-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dialog-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .dialog-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #999;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .dialog-close:hover {
+      background: #f5f5f5;
+      color: #666;
+    }
+
+    .dialog-body {
+      padding: 24px;
+    }
+
+    .dialog-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .dialog-icon {
+      animation: scaleIn 0.3s ease-out;
+    }
+
+    .dialog-message {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #333;
+      text-align: center;
+    }
+
+    .dialog-highlight {
+      color: #ff4d4f;
+      font-weight: 600;
+    }
+
+    .dialog-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .dialog-footer .btn {
+      min-width: 90px;
+    }
+
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #666;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .btn-danger {
+      background: #ff4d4f;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #d32f2f;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes zoomIn {
+      from { 
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to { 
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes scaleIn {
+      from { 
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to { 
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .info-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 头部 -->
+  <div class="header">
+    <div class="header-title">
+      <span>查看报销单</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-return" id="btnReturn">返回列表</button>
+      <button class="btn btn-edit" id="btnEdit">编辑</button>
+      <button class="btn btn-delete" id="btnDelete">删除</button>
+    </div>
+  </div>
+
+  <!-- 内容 -->
+  <div class="container">
+    <!-- 基本信息 -->
+    <div class="info-card">
+      <div class="info-card-title">基本信息</div>
+      <div class="info-row">
+        <div class="info-item">
+          <div class="info-label">单据编号</div>
+          <div class="info-value" id="billNo">BX20240518003</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">审批状态</div>
+          <div class="info-value">
+            <span class="status-badge status-pending">待审批中</span>
+          </div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-item">
+          <div class="info-label">请款公司</div>
+          <div class="info-value">深圳市ZZ股份合作公司</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">经办人</div>
+          <div class="info-value">王五</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-item">
+          <div class="info-label">申请日期</div>
+          <div class="info-value">2024-05-18</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">当前审批人</div>
+          <div class="info-value">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 报销信息 -->
+    <div class="info-card">
+      <div class="info-card-title">报销信息</div>
+      <div class="info-row">
+        <div class="info-item">
+          <div class="info-label">资金用途</div>
+          <div class="info-value">员工培训费用</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">支付金额（万元）</div>
+          <div class="info-value">
+            <span class="amount-highlight">12.30</span>
+          </div>
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">详细说明</div>
+        <div class="info-value">
+          本次报销用于采购项目所需办公设备，包括笔记本电脑3台、激光打印机1台、办公桌椅5套，经过内部采购部门比价，选择性价比最高的供应商采购，设备用于新入职员工使用，进一步提升办公效率。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认 Dialog -->
+  <div class="dialog-mask" id="deleteDialog">
+    <div class="dialog">
+      <div class="dialog-header">
+        <div class="dialog-title">删除确认</div>
+        <button class="dialog-close" onclick="closeDeleteDialog()">×</button>
+      </div>
+      <div class="dialog-body">
+        <div class="dialog-content">
+          <div class="dialog-icon">
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+              <circle cx="28" cy="28" r="24" fill="#FFF3E0"/>
+              <path d="M28 16V30M28 34V36" stroke="#FF9800" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="dialog-message">
+            确定要删除报销单 <span class="dialog-highlight" id="deleteItemName">BX20240518003</span> 吗？
+            <br><br>
+            此操作不可撤销，删除后数据将无法恢复。
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn btn-secondary" onclick="closeDeleteDialog()">取消</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 获取 URL 参数
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search)
+      return urlParams.get(param)
+    }
+
+    // 获取当前报销单ID（从URL参数或hash中获取）
+    function getCurrentExpenseId() {
+      // 方式1: 从查询参数获取 ?id=xxx
+      let id = getQueryParam('id')
+      
+      // 方式2: 从 hash 获取 #/expense/detail?id=xxx
+      if (!id) {
+        const hash = window.location.hash
+        const match = hash.match(/[?&]id=([^&]+)/)
+        if (match) {
+          id = match[1]
+        }
+      }
+      
+      return id || 'BX20240518003'
+    }
+
+    // 初始化页面数据
+    const expenseId = getCurrentExpenseId()
+    document.getElementById('billNo').textContent = expenseId
+    document.getElementById('deleteItemName').textContent = expenseId
+
+    // 返回按钮 - 返回到上一个路由（经费报销列表）
+    document.getElementById('btnReturn').addEventListener('click', function() {
+      // 方法1: 如果是通过列表页跳转过来的，使用 history.back()
+      if (document.referrer.includes('/expense') || document.referrer.includes('经费报销')) {
+        window.history.back()
+      } 
+      // 方法2: 直接跳转到经费报销列表页
+      else {
+        // 使用 hash 路由
+        window.location.hash = '#/expense'
+        
+        // 或者使用完整路径
+        // window.location.href = '/index.html#/expense'
+        
+        // 如果是 Vue Router 或其他路由库，使用对应的路由方法
+        // this.$router.push('/expense')
+        // this.$router.go(-1)
+      }
+    })
+
+    // 编辑按钮
+    document.getElementById('btnEdit').addEventListener('click', function() {
+      // 跳转到编辑页面
+      window.location.hash = `#/expense/edit?id=${expenseId}`
+    })
+
+    // 删除按钮 - 显示 Dialog 确认
+    document.getElementById('btnDelete').addEventListener('click', function() {
+      showDeleteDialog()
+    })
+
+    // 显示删除确认 Dialog
+    function showDeleteDialog() {
+      const dialog = document.getElementById('deleteDialog')
+      dialog.classList.add('show')
+      
+      // 阻止背景滚动
+      document.body.style.overflow = 'hidden'
+    }
+
+    // 关闭删除确认 Dialog
+    function closeDeleteDialog() {
+      const dialog = document.getElementById('deleteDialog')
+      dialog.classList.remove('show')
+      
+      // 恢复背景滚动
+      document.body.style.overflow = ''
+    }
+
+    // 确认删除
+    async function confirmDelete() {
+      try {
+        // 显示加载状态（可选）
+        const deleteBtn = document.querySelector('.btn-danger')
+        deleteBtn.textContent = '删除中...'
+        deleteBtn.disabled = true
+
+        // 调用删除 API
+        const response = await fetch(`/api/expense/delete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            id: expenseId
+          })
+        })
+
+        if (response.ok) {
+          // 删除成功
+          console.log('删除成功')
+          
+          // 关闭 Dialog
+          closeDeleteDialog()
+          
+          // 显示成功提示（可选）
+          alert('删除成功！')
+          
+          // 返回到列表页
+          setTimeout(() => {
+            window.location.hash = '#/expense'
+          }, 500)
+        } else {
+          // 删除失败
+          throw new Error('删除失败')
+        }
+      } catch (error) {
+        console.error('删除出错:', error)
+        alert('删除失败，请稍后重试')
+        
+        // 恢复按钮状态
+        const deleteBtn = document.querySelector('.btn-danger')
+        deleteBtn.textContent = '确认删除'
+        deleteBtn.disabled = false
+      }
+    }
+
+    // 点击遮罩层关闭 Dialog
+    document.getElementById('deleteDialog').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeDeleteDialog()
+      }
+    })
+
+    // ESC 键关闭 Dialog
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeDeleteDialog()
+      }
+    })
+
+    // 模拟数据加载
+    console.log('当前报销单ID:', expenseId)
+    console.log('页面初始化完成')
+  </script>
+</body>
+</html>

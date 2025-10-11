@@ -1,4 +1,6 @@
 /**
+import { getLogger } from '../logger/unified-logger';
+
  * 请求拦截器
  * 🎯 提供请求/响应拦截、重试、缓存等功能
  */
@@ -83,6 +85,8 @@ export interface ProgressEvent {
  * 请求拦截器管理器
  */
 export class RequestInterceptorManager {
+  private logger = getLogger('RequestInterceptorManager')
+
   private requestInterceptors: Array<{
     fulfilled: InterceptorFn<RequestConfig>
     rejected?: ErrorInterceptorFn<RequestConfig>
@@ -572,7 +576,7 @@ requestInterceptor.useRequestInterceptor(
 requestInterceptor.useResponseInterceptor(
   response => {
     // 记录响应日志
-    console.debug(`[Response] ${response.config.method} ${response.config.url}`, {
+    this.logger.debug(`[Response] ${response.config.method} ${response.config.url}`, {
       status: response.status,
       time: response.responseTime,
       fromCache: response.fromCache
@@ -581,7 +585,7 @@ requestInterceptor.useResponseInterceptor(
   },
   error => {
     // 统一错误处理
-    console.error('[Request Error]', error)
+    this.logger.error('[Request Error]', error)
     throw error
   }
 )

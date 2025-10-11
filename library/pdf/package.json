@@ -1,7 +1,7 @@
 {
-  "name": "@ldesign/pdf",
+  "name": "@ldesign/pdf-viewer",
   "version": "1.0.0",
-  "description": "功能强大的PDF阅读器插件，支持Vue、React和原生JavaScript",
+  "description": "A powerful, feature-rich PDF viewer library that works with any framework",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -13,48 +13,34 @@
       "require": "./dist/index.cjs"
     },
     "./vue": {
-      "types": "./dist/adapters/vue/index.d.ts",
-      "import": "./dist/adapters/vue/index.js",
-      "require": "./dist/adapters/vue/index.cjs"
-    },
-    "./style.css": "./dist/style.css"
+      "types": "./dist/vue/index.d.ts",
+      "import": "./dist/vue/index.js",
+      "require": "./dist/vue/index.cjs"
+    }
   },
   "files": [
-    "dist",
-    "README.md"
+    "dist"
   ],
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc && vite build",
-    "preview": "vite preview",
-    "postinstall": "node scripts/copy-worker.js",
-    "copy-worker": "node scripts/copy-worker.js",
+    "dev": "node scripts/dev.js",
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "build:all": "node scripts/build-all.js",
+    "copy:worker": "node scripts/copy-worker.js",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "dev:vue3": "node scripts/dev.js vue3",
-    "dev:vanilla": "node scripts/dev.js vanilla",
-    "dev:docs": "node scripts/dev.js docs",
-    "build:all": "node scripts/build-all.js",
-    "example:vue3": "cd examples/vue3-demo && pnpm dev",
-    "example:vanilla": "cd examples/vanilla-demo && pnpm dev"
+    "docs:preview": "vitepress preview docs"
   },
   "keywords": [
     "pdf",
+    "viewer",
     "pdf-viewer",
-    "pdf-reader",
+    "pdfjs",
     "vue",
-    "vue3",
     "react",
-    "typescript",
-    "pdfjs"
+    "framework-agnostic"
   ],
   "author": "ldesign",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/pdf"
-  },
   "peerDependencies": {
     "vue": "^3.0.0"
   },
@@ -69,12 +55,9 @@
   "devDependencies": {
     "@types/node": "^20.10.6",
     "@vitejs/plugin-vue": "^5.0.2",
-    "@vue/tsconfig": "^0.5.1",
     "typescript": "^5.3.3",
-    "vite": "^5.0.11",
-    "vite-plugin-dts": "^3.7.0",
-    "vitepress": "^1.0.0-rc.35",
-    "vue": "^3.4.3",
-    "vue-tsc": "^1.8.27"
+    "vite": "^5.0.10",
+    "vitepress": "^1.0.0-rc.39",
+    "vue": "^3.4.15"
   }
 }

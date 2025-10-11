@@ -23,7 +23,7 @@ import type {
 
 import type { Engine } from '../types/engine'
 import { type App, type Component, createApp, type Directive } from 'vue'
-import { type CacheConfig, type CacheManager, createCacheManager } from '../cache/cache-manager'
+import { type CacheConfig, type CacheManager, createCacheManager } from '../cache/unified-cache-manager'
 import {
   createConfigManager,
   defaultConfigSchema,
@@ -311,27 +311,65 @@ export class EngineImpl implements Engine {
    * @private
    */
   private setupConfigWatchers(): void {
-    // 监听调试模式变化
-    this.config.watch('debug', (newValue: unknown) => {
+    // 使用防抖优化配置监听，避免频繁触发
+    const debouncedDebugChange = this.debounce((newValue: unknown) => {
       this.logger.setLevel(newValue ? 'debug' : 'info')
       this.logger.info('Debug mode changed', { debug: newValue })
-    })
+    }, 300)
 
-    // 监听日志级别变化
-    this.config.watch('logger.level', (newValue: unknown) => {
+    // 监听调试模式变化
+    this.config.watch('debug', debouncedDebugChange)
+
+    // 使用防抖优化日志级别监听
+    const debouncedLevelChange = this.debounce((newValue: unknown) => {
       const allowed: LogLevel[] = ['debug', 'info', 'warn', 'error']
       const level = typeof newValue === 'string' && (allowed as string[]).includes(newValue)
         ? (newValue as LogLevel)
         : this.logger.getLevel()
       this.logger.setLevel(level)
       this.logger.info('Log level changed', { level })
-    })
+    }, 300)
+
+    // 监听日志级别变化
+    this.config.watch('logger.level', debouncedLevelChange)
+  }
+
+  /**
+   * 防抖函数 - 优化性能
+   * @private
+   */
+  private debounce<T extends (...args: any[]) => void>(
+    func: T,
+    wait: number
+  ): (...args: Parameters<T>) => void {
+    let timeout: NodeJS.Timeout | undefined
+    return (...args: Parameters<T>) => {
+      if (timeout) clearTimeout(timeout)
+      timeout = setTimeout(() => func(...args), wait)
+    }
   }
 
   // 核心方法
   async init(): Promise<void> {
-    // 初始化引擎
-    this._isReady = true
+    try {
+      // 执行初始化前的生命周期钩子
+      await this.lifecycle.execute('beforeInit', this)
+
+      // 执行插件初始化
+      await this.plugins.initializeAll()
+
+      // 标记引擎为就绪状态
+      this._isReady = true
+
+      // 执行初始化后的生命周期钩子
+      await this.lifecycle.execute('afterInit', this)
+
+      this.logger.info('Engine initialization completed successfully')
+    } catch (error) {
+      this.logger.error('Engine initialization failed', error)
+      this._isReady = false
+      throw error
+    }
   }
 
   isReady(): boolean {

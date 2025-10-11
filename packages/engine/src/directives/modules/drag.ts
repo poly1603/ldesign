@@ -4,7 +4,9 @@
  */
 
 import type { VueDirectiveBinding } from '../base/vue-directive-adapter'
+import { getLogger } from '../../logger/unified-logger'
 import { DirectiveBase } from '../base/directive-base'
+
 import { defineDirective } from '../base/vue-directive-adapter'
 
 export interface DragOptions {
@@ -43,6 +45,8 @@ export interface DragPosition {
 }
 
 export class DragDirective extends DirectiveBase {
+  private logger = getLogger('DragDirective')
+
   constructor() {
     super({
       name: 'drag',
@@ -530,15 +534,15 @@ export const dragDirective = new DragDirective()
 
 <script setup>
 const handleDragStart = (event, position) => {
-  console.log('开始拖拽:', position)
+  this.logger.debug('开始拖拽:', position)
 }
 
 const handleDrag = (event, position) => {
-  console.log('拖拽中:', position)
+  this.logger.debug('拖拽中:', position)
 }
 
 const handleDragEnd = (event, position) => {
-  console.log('拖拽结束:', position)
+  this.logger.debug('拖拽结束:', position)
 }
 </script>
 

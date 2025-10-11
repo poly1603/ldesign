@@ -37,6 +37,8 @@ export interface TooltipOptions {
 }
 
 export class TooltipDirective extends DirectiveBase {
+  private logger = getLogger('TooltipDirective')
+
   private static tooltipContainer?: HTMLElement
 
   constructor() {
@@ -564,14 +566,16 @@ export const tooltipDirective = new TooltipDirective()
 <script setup>
 import { ref } from 'vue'
 
+import { getLogger } from '../../logger/unified-logger';
+
 const isDisabled = ref(false)
 
 const handleTooltipShow = (tooltip) => {
-  console.log('提示显示:', tooltip)
+  this.logger.debug('提示显示:', tooltip)
 }
 
 const handleTooltipHide = (tooltip) => {
-  console.log('提示隐藏:', tooltip)
+  this.logger.debug('提示隐藏:', tooltip)
 }
 </script>
 */

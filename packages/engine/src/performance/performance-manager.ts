@@ -888,7 +888,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
         globalThis.performance.measure(name, startMark, endMark)
       } catch (error) {
         // 如果标记不存在，忽略错误
-        console.warn(`Performance measure failed: ${error}`)
+        this.logger.warn(`Performance measure failed: ${error}`)
       }
     }
   }

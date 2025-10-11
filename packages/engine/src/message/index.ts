@@ -2,10 +2,13 @@
  * 消息系统统一导出
  */
 
+import { getLogger } from '../logger/unified-logger'
 import type { MessageManagerConfig, MessageOptions } from './message-manager'
-// 导出核心类
+
 // 导入核心类用于创建实例
 import { MessageManager } from './message-manager'
+
+const logger = getLogger('index')
 
 export { MessageManager } from './message-manager'
 export type { MessageManagerConfig } from './message-manager'
@@ -35,7 +38,12 @@ export function createMessageManager(
   const manager = new MessageManager(config)
   // 懒加载初始化
   if (typeof window !== 'undefined') {
-    manager.initialize().catch(console.error)
+    manager.initialize().catch(error => {
+      // 使用全局错误处理
+      if (typeof window !== 'undefined' && window.console) {
+        window.console.error('[MessageManager] Initialization error:', error)
+      }
+    })
   }
   return manager
 }
@@ -52,7 +60,12 @@ export function getGlobalMessageManager(): MessageManager {
   if (!globalMessageManager) {
     globalMessageManager = new MessageManager()
     // 自动初始化
-    globalMessageManager.initialize().catch(console.error)
+    globalMessageManager.initialize().catch(error => {
+      // 使用全局错误处理
+      if (typeof window !== 'undefined' && window.console) {
+        window.console.error('[MessageManager] Global initialization error:', error)
+      }
+    })
   }
   return globalMessageManager
 }
@@ -163,8 +176,8 @@ messageManager.show({
   content: '数据保存成功！',
   duration: 4000,
   showClose: true,
-  onClick: () => console.log('消息被点击'),
-  onClose: () => console.log('消息已关闭')
+  onClick: () => logger.debug('消息被点击'),
+  onClose: () => logger.debug('消息已关闭')
 })
 
 // 使用构建器模式
@@ -175,7 +188,7 @@ const config = messageBuilder
   .title('提示')
   .duration(5000)
   .showClose(true)
-  .onClick(() => console.log('clicked'))
+  .onClick(() => logger.debug('clicked'))
   .build()
 
 message.show(config)

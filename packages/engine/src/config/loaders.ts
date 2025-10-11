@@ -1,10 +1,14 @@
 /**
+
  * 配置加载器模块
- * 
+ *
  * 提供多种配置加载器实现，支持从不同来源加载配置
  */
 
 // 配置项类型定义
+
+import { getLogger } from '../logger/unified-logger'
+
 export type ConfigValue = string | number | boolean | null | undefined | ConfigObject | ConfigValue[]
 
 export interface ConfigObject {
@@ -19,9 +23,9 @@ export interface ConfigLoader {
 
 /**
  * 环境变量配置加载器
- * 
+ *
  * 从环境变量中加载配置，支持自定义前缀
- * 
+ *
  * @example
  * ```ts
  * const loader = new EnvironmentConfigLoader('APP_')
@@ -29,6 +33,8 @@ export interface ConfigLoader {
  * ```
  */
 export class EnvironmentConfigLoader implements ConfigLoader {
+  private logger = getLogger('EnvironmentConfigLoader')
+
   constructor(private prefix: string = 'VUE_APP_') {}
 
   load(): ConfigObject {
@@ -85,9 +91,9 @@ export class EnvironmentConfigLoader implements ConfigLoader {
 
 /**
  * JSON 文件配置加载器
- * 
+ *
  * 从远程 JSON 文件加载配置，支持热重载
- * 
+ *
  * @example
  * ```ts
  * const loader = new JsonConfigLoader('/config.json')
@@ -106,7 +112,7 @@ export class JsonConfigLoader implements ConfigLoader {
       return await response.json()
     }
     catch (error) {
-      console.warn(`Failed to load config from ${this.configPath}:`, error)
+      this.logger.warn(`Failed to load config from ${this.configPath}:`, error)
       return {}
     }
   }
@@ -120,7 +126,7 @@ export class JsonConfigLoader implements ConfigLoader {
         callback(newConfig)
       }
       catch (error) {
-        console.error('Config watch error:', error)
+        this.logger.error('Config watch error:', error)
       }
     }, 5000) // 每5秒检查一次
 
@@ -130,9 +136,9 @@ export class JsonConfigLoader implements ConfigLoader {
 
 /**
  * 内存配置加载器
- * 
+ *
  * 从内存中加载配置，适用于测试和简单场景
- * 
+ *
  * @example
  * ```ts
  * const loader = new MemoryConfigLoader({ apiUrl: 'https://api.example.com' })
@@ -153,9 +159,9 @@ export class MemoryConfigLoader implements ConfigLoader {
 
 /**
  * LocalStorage 配置加载器
- * 
+ *
  * 从浏览器 LocalStorage 加载配置
- * 
+ *
  * @example
  * ```ts
  * const loader = new LocalStorageConfigLoader('app-config')
@@ -173,7 +179,7 @@ export class LocalStorageConfigLoader implements ConfigLoader {
       }
     }
     catch (error) {
-      console.warn(`Failed to load config from localStorage:`, error)
+      this.logger.warn(`Failed to load config from localStorage:`, error)
     }
     return {}
   }
@@ -183,7 +189,7 @@ export class LocalStorageConfigLoader implements ConfigLoader {
       localStorage.setItem(this.key, JSON.stringify(config))
     }
     catch (error) {
-      console.error(`Failed to save config to localStorage:`, error)
+      this.logger.error(`Failed to save config to localStorage:`, error)
     }
   }
 
@@ -196,7 +202,7 @@ export class LocalStorageConfigLoader implements ConfigLoader {
           callback(newConfig)
         }
         catch (error) {
-          console.error('Failed to parse storage event:', error)
+          this.logger.error('Failed to parse storage event:', error)
         }
       }
     }
@@ -208,9 +214,9 @@ export class LocalStorageConfigLoader implements ConfigLoader {
 
 /**
  * 组合配置加载器
- * 
+ *
  * 按顺序加载多个配置源，后面的配置会覆盖前面的
- * 
+ *
  * @example
  * ```ts
  * const loader = new CompositeConfigLoader([
@@ -233,7 +239,7 @@ export class CompositeConfigLoader implements ConfigLoader {
         config = { ...config, ...loadedConfig }
       }
       catch (error) {
-        console.error('Failed to load config from loader:', error)
+        this.logger.error('Failed to load config from loader:', error)
       }
     }
 
@@ -257,4 +263,3 @@ export class CompositeConfigLoader implements ConfigLoader {
     }
   }
 }
-
