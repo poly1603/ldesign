@@ -3,6 +3,8 @@ export { LottieInstance } from './core/LottieInstance'
 export { InstancePool } from './core/InstancePool'
 export { CacheManager } from './core/CacheManager'
 export { PerformanceMonitor } from './core/PerformanceMonitor'
+export { AnimationSequence } from './core/AnimationSequence'
+export { InteractiveController } from './core/InteractiveController'
 
 export type * from './types'
 
@@ -46,7 +48,7 @@ export async function loadLottie(
 }
 
 /**
- * 从数据快速创建并播放
+ * 从���据快速创建并播放
  */
 export function loadLottieFromData(
   container: HTMLElement | string,

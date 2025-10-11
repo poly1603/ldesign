@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lottie Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .animation-box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .animation-box h2 {
+      margin-top: 0;
+      color: #667eea;
+    }
+    .lottie {
+      width: 100%;
+      height: 250px;
+      background: #fafafa;
+      border-radius: 4px;
+    }
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      padding: 8px 16px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #5568d3;
+    }
+    .status {
+      margin-top: 10px;
+      padding: 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Lottie Animation Test</h1>
+  <p>Testing Lottie animations with real JSON data</p>
+
+  <div class="container">
+    <!-- Loading Animation -->
+    <div class="animation-box">
+      <h2>Loading Animation</h2>
+      <div id="loading" class="lottie"></div>
+      <div class="controls">
+        <button onclick="animations.loading.play()">Play</button>
+        <button onclick="animations.loading.pause()">Pause</button>
+        <button onclick="animations.loading.stop()">Stop</button>
+      </div>
+      <div class="status" id="loading-status">Status: Initializing...</div>
+    </div>
+
+    <!-- Success Animation -->
+    <div class="animation-box">
+      <h2>Success Animation</h2>
+      <div id="success" class="lottie"></div>
+      <div class="controls">
+        <button onclick="animations.success.play()">Play</button>
+        <button onclick="animations.success.pause()">Pause</button>
+        <button onclick="animations.success.stop()">Stop</button>
+      </div>
+      <div class="status" id="success-status">Status: Initializing...</div>
+    </div>
+
+    <!-- Heart Animation -->
+    <div class="animation-box">
+      <h2>Heart Animation</h2>
+      <div id="heart" class="lottie"></div>
+      <div class="controls">
+        <button onclick="animations.heart.play()">Play</button>
+        <button onclick="animations.heart.pause()">Pause</button>
+        <button onclick="animations.heart.stop()">Stop</button>
+      </div>
+      <div class="status" id="heart-status">Status: Initializing...</div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
+  <script>
+    const animations = {};
+
+    // Load animations
+    async function loadAnimation(name, containerId, path) {
+      const statusEl = document.getElementById(`${name}-status`);
+      try {
+        statusEl.textContent = 'Status: Loading...';
+        
+        const response = await fetch(path);
+        if (!response.ok) {
+          throw new Error(`Failed to load: ${response.statusText}`);
+        }
+        
+        const animationData = await response.json();
+        statusEl.textContent = 'Status: Creating animation...';
+        
+        animations[name] = lottie.loadAnimation({
+          container: document.getElementById(containerId),
+          renderer: 'svg',
+          loop: true,
+          autoplay: false,
+          animationData: animationData
+        });
+
+        animations[name].addEventListener('DOMLoaded', () => {
+          statusEl.textContent = 'Status: Ready ✓';
+          statusEl.style.background = '#e8f5e9';
+          statusEl.style.color = '#2e7d32';
+        });
+
+        animations[name].addEventListener('data_failed', () => {
+          statusEl.textContent = 'Status: Failed to load animation ✗';
+          statusEl.style.background = '#ffebee';
+          statusEl.style.color = '#c62828';
+        });
+
+      } catch (error) {
+        console.error(`Error loading ${name}:`, error);
+        statusEl.textContent = `Status: Error - ${error.message} ✗`;
+        statusEl.style.background = '#ffebee';
+        statusEl.style.color = '#c62828';
+      }
+    }
+
+    // Initialize all animations
+    loadAnimation('loading', 'loading', './assets/loading-spinner.json');
+    loadAnimation('success', 'success', './assets/success-checkmark.json');
+    loadAnimation('heart', 'heart', './assets/heart-beat.json');
+  </script>
+</body>
+</html>

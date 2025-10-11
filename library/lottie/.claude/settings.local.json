@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat package.json)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
