@@ -163,7 +163,7 @@ class MemoryMonitor {
 
   start(
     callback: (memory: PerformanceMetrics['memory']) => void,
-    interval = 5000
+    interval = 30000  // 增加采样间隔到30秒
   ): void {
     this.callback = callback
 
@@ -256,6 +256,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
   private memoryMonitor = new MemoryMonitor()
   private engine?: Engine
   private eventIdCounter = 0
+  private maxEvents = 50  // 限制最大事件数量
 
   constructor(thresholds: PerformanceThresholds = {}, engine?: Engine) {
     this.engine = engine
@@ -283,6 +284,15 @@ export class PerformanceManagerImpl implements PerformanceManager {
     }
 
     this.events.set(id, event)
+    
+    // 限制事件数量
+    if (this.events.size > this.maxEvents) {
+      const oldestKey = this.events.keys().next().value
+      if (oldestKey) {
+        this.events.delete(oldestKey)
+      }
+    }
+    
     return id
   }
 
@@ -379,9 +389,9 @@ export class PerformanceManagerImpl implements PerformanceManager {
 
     this.metrics.push(fullMetrics)
 
-    // 限制存储的指标数量
-    if (this.metrics.length > 1000) {
-      this.metrics = this.metrics.slice(-500)
+    // 限制存储的指标数量，减少内存占用
+    if (this.metrics.length > 100) {  // 降低存储限制
+      this.metrics = this.metrics.slice(-50)  // 只保留最近50条
     }
 
     // 检查指标违规

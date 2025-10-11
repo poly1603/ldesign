@@ -102,12 +102,12 @@ export class UnifiedCacheManager<T = unknown> {
    */
   private normalizeConfig(config: CacheConfig<T>): Required<CacheConfig<T>> {
     return {
-      maxSize: config.maxSize ?? 1000,
-      defaultTTL: config.defaultTTL ?? 0,
+      maxSize: config.maxSize ?? 100,  // 减少默认缓存大小从1000到100
+      defaultTTL: config.defaultTTL ?? 5 * 60 * 1000,  // 设置默认TTL为5分钟
       strategy: config.strategy ?? CacheStrategy.LRU,
-      enableStats: config.enableStats ?? true,
-      maxMemory: config.maxMemory ?? 0,
-      cleanupInterval: config.cleanupInterval ?? 60000,
+      enableStats: config.enableStats ?? false,  // 默认关闭统计以节省内存
+      maxMemory: config.maxMemory ?? 10 * 1024 * 1024,  // 限制最大内存10MB
+      cleanupInterval: config.cleanupInterval ?? 30000,  // 更频繁的清理（30秒）
       layers: config.layers ?? {},
       onEvict: config.onEvict ?? (() => {}),
       onError: config.onError ?? ((error) => this.logger?.error('Cache error', error))

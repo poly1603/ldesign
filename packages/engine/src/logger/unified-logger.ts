@@ -110,22 +110,22 @@ export class UnifiedLogger implements ILogger {
    */
   private normalizeConfig(config: LogConfig): Required<LogConfig> {
     return {
-      level: config.level ?? 'info',
+      level: config.level ?? 'warn',  // 生产环境默认只记录warn以上
       enabled: config.enabled ?? true,
-      maxLogs: config.maxLogs ?? 1000,
+      maxLogs: config.maxLogs ?? 100,  // 减少日志存储数量
       console: config.console ?? true,
       remote: config.remote ?? false,
       file: config.file ?? false,
       remoteUrl: config.remoteUrl ?? '',
       remoteHeaders: config.remoteHeaders ?? {},
-      remoteBatchSize: config.remoteBatchSize ?? 100,
-      remoteInterval: config.remoteInterval ?? 5000,
-      format: config.format ?? 'pretty',
-      timestamp: config.timestamp ?? true,
-      context: config.context ?? true,
+      remoteBatchSize: config.remoteBatchSize ?? 50,  // 减少批量大小
+      remoteInterval: config.remoteInterval ?? 10000,  // 减少发送频率
+      format: config.format ?? 'text',  // 使用更简单的格式
+      timestamp: config.timestamp ?? false,  // 默认关闭时间戳以节省内存
+      context: config.context ?? false,  // 默认关闭上下文
       async: config.async ?? false,
-      bufferSize: config.bufferSize ?? 100,
-      flushInterval: config.flushInterval ?? 1000,
+      bufferSize: config.bufferSize ?? 50,  // 减少缓冲区大小
+      flushInterval: config.flushInterval ?? 2000,  // 减少刷新频率
       filters: config.filters ?? [],
       plugins: config.plugins ?? []
     }

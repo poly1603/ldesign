@@ -18,6 +18,19 @@ export type {
   ConfigObject,
   ConfigValue,
 } from './config/loaders'
+// 快速设置工具 - 简化API使用
+export {
+  quickCache,
+  quickLogger,
+  quickPerformance,
+  quickSetup,
+  lightCache,
+  lightLogger,
+  getDefaultCache,
+  getDefaultLogger,
+  type QuickSetupResult
+} from './utils/quick-setup'
+
 // Bundle优化工具
 export {
   BundleOptimizer,
