@@ -125,25 +125,30 @@
       "import": "./es/plugins/*.js",
       "require": "./lib/plugins/*.cjs"
     },
-    "./security/*": {
-      "types": "./es/security/*.d.ts",
-      "import": "./es/security/*.js",
-      "require": "./lib/security/*.cjs"
+    "./security": {
+      "types": "./es/security/RouteSecurity.d.ts",
+      "import": "./es/security/RouteSecurity.js",
+      "require": "./lib/security/RouteSecurity.cjs"
     },
-    "./smart/*": {
-      "types": "./es/smart/*.d.ts",
-      "import": "./es/smart/*.js",
-      "require": "./lib/smart/*.cjs"
+    "./smart": {
+      "types": "./es/smart/SmartRouteManager.d.ts",
+      "import": "./es/smart/SmartRouteManager.js",
+      "require": "./lib/smart/SmartRouteManager.cjs"
     },
-    "./state/*": {
-      "types": "./es/state/*.d.ts",
-      "import": "./es/state/*.js",
-      "require": "./lib/state/*.cjs"
+    "./state": {
+      "types": "./es/state/route-state.d.ts",
+      "import": "./es/state/route-state.js",
+      "require": "./lib/state/route-state.cjs"
     },
-    "./testing/*": {
-      "types": "./es/testing/*.d.ts",
-      "import": "./es/testing/*.js",
-      "require": "./lib/testing/*.cjs"
+    "./testing": {
+      "types": "./es/testing/test-utils.d.ts",
+      "import": "./es/testing/test-utils.js",
+      "require": "./lib/testing/test-utils.cjs"
+    },
+    "./config": {
+      "types": "./es/config/performance-defaults.d.ts",
+      "import": "./es/config/performance-defaults.js",
+      "require": "./lib/config/performance-defaults.cjs"
     },
     "./types": {
       "types": "./es/types/index.d.ts",

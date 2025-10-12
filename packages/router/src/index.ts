@@ -323,12 +323,12 @@ export async function createFullRouter(options: {
     )
   }
 
-  // 缓存插件（优化：减少默认缓存大小）
+  // 缓存插件（优化：使用性能优化配置）
   if (options.cache?.enabled !== false) {
     plugins.push(
       cachePlugin.createCachePlugin({
         strategy: options.cache?.strategy || CacheStrategy.MEMORY,
-        maxSize: options.cache?.maxSize || 5, // 优化：从10降低到5
+        maxSize: options.cache?.maxSize || 3, // 优化：降低到 3MB
       }),
     )
   }
@@ -343,12 +343,12 @@ export async function createFullRouter(options: {
     )
   }
 
-  // 性能监控插件
+  // 性能监控插件（优化：更严格的阈值）
   if (options.performance?.enabled !== false) {
     plugins.push(
       performancePlugin.createPerformancePlugin({
-        warningThreshold: options.performance?.warningThreshold || 1000,
-        errorThreshold: options.performance?.errorThreshold || 3000,
+        warningThreshold: options.performance?.warningThreshold || 500, // 优化：降低到 500ms
+        errorThreshold: options.performance?.errorThreshold || 2000, // 优化：降低到 2000ms
       }),
     )
   }
@@ -487,6 +487,160 @@ export {
 } from './utils/lazy-load'
 
 export type { LazyLoadOptions } from './utils/lazy-load'
+
+// ==================== 性能监控导出 ====================
+export {
+  RoutePerformanceMonitor,
+  createRoutePerformanceMonitor,
+  createPerformanceMonitorPlugin,
+  getPerformanceMonitor,
+} from './utils/route-performance-monitor'
+
+export type {
+  RoutePerformanceMetric,
+  PerformanceMonitorConfig,
+} from './utils/route-performance-monitor'
+
+export {
+  RouteCacheWarmer,
+  createRouteCacheWarmer,
+  warmupRoutes,
+} from './utils/route-cache-warmer'
+
+export type {
+  WarmupConfig,
+  WarmupResult,
+} from './utils/route-cache-warmer'
+
+// ==================== 智能预取导出 ====================
+export {
+  IntelligentPrefetchManager,
+  createIntelligentPrefetch,
+  PrefetchPriority,
+  NetworkQuality,
+} from './utils/intelligent-prefetch'
+
+export type {
+  IntelligentPrefetchConfig,
+} from './utils/intelligent-prefetch'
+
+// ==================== 路由版本控制导出 ====================
+export {
+  RouteVersionControl,
+  setupRouteVersionControl,
+  getVersionControl,
+  createRouteVersion,
+  restoreRouteVersion,
+} from './features/RouteVersionControl'
+
+export type {
+  RouteVersion,
+  VersionDiff,
+  VersionControlConfig,
+} from './features/RouteVersionControl'
+
+// ==================== 路由性能分析器导出 ====================
+export {
+  RoutePerformanceAnalyzer,
+  setupPerformanceAnalyzer,
+  getPerformanceAnalyzer,
+  generatePerformanceReport,
+  getPerformanceSuggestions,
+} from './features/RoutePerformanceAnalyzer'
+
+export type {
+  PerformanceMetric,
+  PerformanceReport,
+  OptimizationSuggestion,
+  AnalyzerConfig,
+} from './features/RoutePerformanceAnalyzer'
+
+// ==================== 路由调试器导出 ====================
+export {
+  RouteDebugger,
+  setupRouteDebugger,
+  getRouteDebugger,
+  debugLog,
+  debugWarn,
+  debugError,
+} from './features/RouteDebugger'
+
+export type {
+  DebugEvent,
+  RouteTrace,
+  TraceStep,
+  Breakpoint,
+  DebuggerConfig,
+} from './features/RouteDebugger'
+
+// ==================== 统一内存管理器导出 ====================
+export {
+  UnifiedMemoryManager,
+  CachePriority,
+  getMemoryManager,
+  cacheGet,
+  cacheSet,
+  cleanupMemory,
+} from './utils/unified-memory-manager'
+
+export type {
+  CacheItem,
+  MemoryStats,
+  UnifiedMemoryConfig,
+} from './utils/unified-memory-manager'
+
+// ==================== 智能代码分割导出 ====================
+export {
+  CodeSplittingManager,
+  createCodeSplittingManager,
+  CodeSplittingPlugin,
+} from './features/code-splitting'
+
+export type {
+  SplittingStrategy,
+  ChunkPriority,
+  PreloadStrategy as CodeSplittingPreloadStrategy,
+  SplittingConfig,
+  SplittingAnalysis,
+  ChunkInfo,
+  ComponentLoadState,
+  LoadingMetrics as CodeSplittingMetrics,
+} from './features/code-splitting'
+
+// ==================== 安全功能导出 ====================
+export {
+  RouteSecurityManager,
+  AuthManager,
+  PermissionManager,
+  CSRFProtection,
+  XSSProtection,
+  setupRouteSecurity,
+  checkPermission,
+  isAuthenticated,
+  getCurrentUser,
+  sanitizeContent,
+} from './features/RouteSecurity'
+
+export type {
+  SecurityConfig,
+} from './features/RouteSecurity'
+
+// ==================== 智能路由管理导出 ====================
+export {
+  SmartRouteManager,
+  AutoRouteGenerator,
+  DynamicRouteLoader,
+  NestedRouteOptimizer,
+  RouteGroupManager,
+  setupSmartRouteManager,
+  getRouteStatistics,
+  addDynamicRoute,
+} from './features/SmartRouteManager'
+
+export type {
+  SmartRouteConfig,
+  RouteGroup,
+} from './features/SmartRouteManager'
 
 // ==================== 默认导出 ====================
 

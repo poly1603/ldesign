@@ -7,40 +7,36 @@ import {
   createRouter,
   createWebHistory,
   CacheManager,
-  SmartRouteManager,
-  RouteSecurityManager,
-  RouterDebugger,
-  LogLevel,
   type Router,
-  type RouteRecordRaw
+  type RouteRecordRaw,
+  type ScrollBehavior
 } from '../src';
 
 // ==================== 1. 初始化路由器 ====================
 
-const router = new Router({
-  mode: 'history',
-  base: '/app',
-  strict: false,
-  caseSensitive: false,
-  scrollBehavior: (to, from, savedPosition) => {
-    if (savedPosition) {
-      return savedPosition;
-    } else if (to.hash) {
-      return { selector: to.hash };
-    } else {
-      return { x: 0, y: 0 };
-    }
+const scrollBehavior: ScrollBehavior = (to, from, savedPosition) => {
+  if (savedPosition) {
+    return savedPosition;
+  } else if (to.hash) {
+    return { el: to.hash, behavior: 'smooth' };
+  } else {
+    return { top: 0, left: 0 };
   }
+};
+
+const router = createRouter({
+  history: createWebHistory('/app'),
+  routes: [], // Will be added later
+  scrollBehavior
 });
 
 // ==================== 2. 配置路由缓存 ====================
 
-const cache = new RouteCache({
+const cacheManager = new CacheManager({
   maxSize: 100,
   ttl: 5 * 60 * 1000, // 5分钟
-  storage: 'memory',
-  keyGenerator: (route) => `${route.path}:${JSON.stringify(route.params)}`,
-  shouldCache: (route) => {
+  keyGenerator: (route: any) => `${route.path}:${JSON.stringify(route.params)}`,
+  shouldCache: (route: any) => {
     // 不缓存管理页面
     return !route.path.startsWith('/admin');
   }
@@ -48,7 +44,7 @@ const cache = new RouteCache({
 
 // 集成缓存到路由器
 router.beforeEach(async (to, from, next) => {
-  const cachedData = await cache.get(to.path);
+  const cachedData = await cacheManager.get(to.path);
   if (cachedData) {
     console.log('Cache hit:', to.path);
     to.meta.cachedData = cachedData;
@@ -58,92 +54,23 @@ router.beforeEach(async (to, from, next) => {
 
 router.afterEach((to) => {
   if (to.meta.data && !to.meta.cachedData) {
-    cache.set(to.path, to.meta.data);
+    cacheManager.set(to.path, to.meta.data);
   }
 });
 
 // ==================== 3. 配置懒加载 ====================
-
-const lazyLoader = new RouteLazyLoader({
-  chunkNamePrefix: 'route',
-  preload: ['critical'],
-  timeout: 10000,
-  retry: 3,
-  onError: (error, route, retry) => {
-    console.error('Failed to load route:', route.path, error);
-    if (retry < 3) {
-      return true; // 重试
-    }
-    router.push('/error/500');
-    return false;
-  }
-});
+// Lazy loading is now handled directly in route definitions
 
 // ==================== 4. 配置预取 ====================
+// Prefetching configuration would go here
 
-const prefetcher = new RoutePrefetcher({
-  strategy: 'hover',
-  delay: 100,
-  concurrency: 2,
-  priority: ['high', 'normal', 'low'],
-  bandwidth: 'auto',
-  storage: 'memory',
-  exclude: [/^\/api\//, /^\/admin\//]
-});
+// ==================== 5. 配置路由 ====================
 
-// 监听路由链接
-if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', () => {
-    prefetcher.observe(document.querySelectorAll('a[href^="/"]'));
-  });
-}
-
-// ==================== 5. 配置渲染优化 ====================
-
-const renderer = new RouteRenderer({
-  mode: 'progressive',
-  placeholder: '<div class="loading">Loading...</div>',
-  errorFallback: '<div class="error">Failed to load page</div>',
-  transitions: {
-    enter: 'fade-in',
-    leave: 'fade-out',
-    duration: 300
-  },
-  ssr: false,
-  hydrate: false
-});
-
-// ==================== 6. 智能路由管理 ====================
-
-const smartManager = new SmartRouteManager({
-  autoGenerate: true,
-  patterns: {
-    pages: './src/pages',
-    layouts: './src/layouts',
-    api: './src/api'
-  },
-  conventions: {
-    index: 'index',
-    layout: '_layout',
-    error: '_error',
-    dynamic: /\[([^\]]+)\]/,
-    optional: /\[\[([^\]]+)\]\]/,
-    catch: /\[\.\.\.([^\]]+)\]/
-  },
-  optimization: {
-    splitChunks: true,
-    treeShaking: true,
-    minify: true
-  }
-});
 
 // 生成路由
-async function setupRoutes() {
-  // 自动生成基于文件的路由
-  const fileRoutes = await smartManager.generateRoutesFromFiles('./src/pages');
-  
-  // 手动添加特殊路由
-  const specialRoutes = [
+function setupRoutes(): RouteRecordRaw[] {
+  // 定义路由
+  const routes: RouteRecordRaw[] = [
     {
       path: '/',
       name: 'home',
@@ -157,7 +84,7 @@ async function setupRoutes() {
     {
       path: '/dashboard',
       name: 'dashboard',
-      component: () => lazyLoader.load(() => import('./pages/Dashboard.vue')),
+      component: () => import('./pages/Dashboard.vue'),
       meta: { 
         requiresAuth: true,
         roles: ['user', 'admin'],

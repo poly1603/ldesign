@@ -29,12 +29,12 @@ export type Required<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 /**
  * 提取函数参数类型
  */
-export type ExtractFunctionParams<T> = T extends (...args: infer P) => any ? P : never
+export type ExtractFunctionParams<T> = T extends (...args: infer P) => unknown ? P : never
 
 /**
  * 提取函数返回类型
  */
-export type ExtractFunctionReturn<T> = T extends (...args: any[]) => infer R ? R : never
+export type ExtractFunctionReturn<T> = T extends (...args: never[]) => infer R ? R : never
 
 // ==================== 路由类型增强 ====================
 
@@ -44,8 +44,8 @@ export type ExtractFunctionReturn<T> = T extends (...args: any[]) => infer R ? R
 export interface TypedRouteRecord<
   TPath extends string = string,
   TName extends string = string,
-  TParams extends Record<string, any> = Record<string, any>,
-  TMeta extends Record<string, any> = Record<string, any>,
+  TParams extends Record<string, unknown> = Record<string, unknown>,
+  TMeta extends Record<string, unknown> = Record<string, unknown>,
 > extends Omit<RouteRecordRaw, 'path' | 'name' | 'meta'> {
   path: TPath
   name?: TName
@@ -70,7 +70,7 @@ export type InferRouteParams<T extends string> =
 /**
  * 路由元信息类型推导
  */
-export type InferRouteMeta<T> = T extends TypedRouteRecord<any, any, any, infer M> ? M : Record<string, any>
+export type InferRouteMeta<T> = T extends TypedRouteRecord<string, string, Record<string, unknown>, infer M> ? M : Record<string, unknown>
 
 /**
  * 强类型路由导航
@@ -153,23 +153,33 @@ export type TypedNavigationGuard<
 > = (
   to: TTo,
   from: TFrom,
-  next: (to?: any) => void
+  next: (to?: string | RouteLocationNormalized | false | ((vm: Component) => void)) => void
 ) => void | Promise<void> | boolean | Promise<boolean>
+
+/**
+ * 用户信息接口
+ */
+export interface UserInfo {
+  id: string | number
+  name?: string
+  roles?: string[]
+  [key: string]: unknown
+}
 
 /**
  * 守卫执行上下文
  */
-export interface GuardContext {
+export interface GuardContext<TRouter = unknown> {
   /** 当前路由 */
   route: RouteLocationNormalized
   /** 路由器实例 */
-  router: any
+  router: TRouter
   /** 用户信息 */
-  user?: any
+  user?: UserInfo
   /** 权限信息 */
   permissions?: string[]
   /** 自定义数据 */
-  data?: Record<string, any>
+  data?: Record<string, unknown>
 }
 
 /**
@@ -191,7 +201,7 @@ export interface ConditionalGuardConfig {
 /**
  * 路由插件接口
  */
-export interface RouterPlugin<TOptions = any> {
+export interface RouterPlugin<TOptions = Record<string, unknown>> {
   /** 插件名称 */
   name: string
   /** 插件版本 */

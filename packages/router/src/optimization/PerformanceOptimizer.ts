@@ -53,8 +53,8 @@ export class RouteCacheManager {
   private strategy: 'lru' | 'lfu' | 'fifo'
 
   constructor(config: OptimizationConfig['cache'] = {}) {
-    this.maxSize = config.maxSize || 50
-    this.ttl = config.ttl || 5 * 60 * 1000 // 默认5分钟
+    this.maxSize = config.maxSize || 20 // 优化：从50降低到20
+    this.ttl = config.ttl || 3 * 60 * 1000 // 优化：从5分钟降低到3分钟
     this.strategy = config.strategy || 'lru'
 
     // 如果启用持久化，从 localStorage 恢复缓存

@@ -50,6 +50,14 @@ export interface MemoryThresholds {
   maxListeners: number
 }
 
+/** 默认内存阈值（优化后） */
+export const DEFAULT_MEMORY_THRESHOLDS: MemoryThresholds = {
+  warning: 15, // 优化：降低到 15MB
+  critical: 30, // 优化：降低到 30MB
+  maxCache: 3, // 优化：降低到 3MB
+  maxListeners: 200, // 优化：降低到 200
+}
+
 /**
  * 清理策略
  */
@@ -231,10 +239,10 @@ export class MemoryMonitor {
   }
 
   private thresholds: MemoryThresholds = {
-    warning: 30, // 30MB (优化：更早触发清理)
-    critical: 60, // 60MB (优化：降低严重阈值)
-    maxCache: 10, // 10MB (优化：减少缓存上限)
-    maxListeners: 500, // 优化：减少监听器上限
+    warning: 15, // 15MB (优化：更早触发清理)
+    critical: 30, // 30MB (优化：降低严重阈值)
+    maxCache: 3, // 3MB (优化：大幅减少缓存上限)
+    maxListeners: 200, // 优化：减少监听器上限
   }
 
   private listeners = new Set<EventListener>()
@@ -266,7 +274,7 @@ export class MemoryMonitor {
   /**
    * 开始监控（优化：增加默认间隔以减少CPU占用）
    */
-  startMonitoring(interval: number = 60000): void {
+  startMonitoring(interval: number = 120000): void { // 优化：从 60秒 增加到 120秒
     this.stopMonitoring()
 
     this.monitoringInterval = window.setInterval(() => {

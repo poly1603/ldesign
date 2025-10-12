@@ -8,6 +8,7 @@
 
 import { 
   createRouter,
+  createWebHashHistory,
   createRoutePerformanceMonitor,
   createRouteCacheWarmer,
   createPerformanceMonitorPlugin,
@@ -70,7 +71,7 @@ const routes: RouteRecordRaw[] = [
 
 const router = createRouter({
   routes,
-  history: 'hash',
+  history: createWebHashHistory(),
 })
 
 // ==================== 示例1: 路由性能监控 ====================
@@ -82,9 +83,9 @@ const monitorConfig: PerformanceMonitorConfig = {
   enabled: true,
   slowThreshold: 1000, // 超过1秒视为慢速路由
   maxRecords: 50,      // 最多保留50条记录
-  onReport: (metrics) => {
+  onReport: (metrics: any[]) => {
     // 当检测到慢速路由时触发
-    metrics.forEach(metric => {
+    metrics.forEach((metric: any) => {
       console.warn(`⚠️ 慢速路由检测:`)
       console.warn(`  路径: ${metric.path}`)
       console.warn(`  耗时: ${metric.duration.toFixed(2)}ms`)
@@ -125,7 +126,7 @@ setTimeout(async () => {
   const slowRoutes = performanceMonitor.getSlowRoutes()
   if (slowRoutes.length > 0) {
     console.log('\n🐌 慢速路由列表:')
-    slowRoutes.forEach(route => {
+    slowRoutes.forEach((route: any) => {
       console.log(`  - ${route.path}: ${route.duration.toFixed(2)}ms`)
     })
   }
@@ -144,13 +145,13 @@ const warmupConfig: WarmupConfig = {
   routes: ['/', '/about', '/products'], // 指定要预热的路由
   strategy: 'idle',  // 在浏览器空闲时预热
   concurrency: 3,    // 同时预热3个路由
-  onComplete: (results) => {
+  onComplete: (results: any[]) => {
     console.log('\n✅ 预热完成!')
-    console.log(`  成功: ${results.filter(r => r.success).length}`)
-    console.log(`  失败: ${results.filter(r => !r.success).length}`)
+    console.log(`  成功: ${results.filter((r: any) => r.success).length}`)
+    console.log(`  失败: ${results.filter((r: any) => !r.success).length}`)
     
     // 显示详细结果
-    results.forEach(result => {
+    results.forEach((result: any) => {
       const status = result.success ? '✓' : '✗'
       const duration = result.duration.toFixed(2)
       console.log(`  ${status} ${result.route} (${duration}ms)`)
@@ -159,7 +160,7 @@ const warmupConfig: WarmupConfig = {
       }
     })
   },
-  onError: (error, route) => {
+  onError: (error: any, route: any) => {
     console.error(`❌ 预热失败: ${route}`, error.message)
   },
 }
@@ -205,10 +206,10 @@ console.log('\n=== 示例4: 自动识别重要路由 ===')
 // 不指定routes，自动识别标记为preload或important的路由
 const autoWarmer = createRouteCacheWarmer(router, {
   strategy: 'idle',
-  onComplete: (results) => {
+  onComplete: (results: any[]) => {
     console.log('\n✅ 自动预热完成!')
     console.log(`  预热了 ${results.length} 个重要路由`)
-    results.forEach(r => {
+    results.forEach((r: any) => {
       console.log(`  - ${r.route}`)
     })
   },
