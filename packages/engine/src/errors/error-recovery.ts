@@ -5,7 +5,7 @@
 
 import type { ErrorHandler } from '../types/enhanced'
 
-import { getLogger } from '../logger/unified-logger'
+import { getLogger } from '../logger/logger'
 
 /**
  * 错误恢复策略

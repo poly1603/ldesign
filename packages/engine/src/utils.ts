@@ -18,6 +18,7 @@ export type {
   ConfigObject,
   ConfigValue,
 } from './config/loaders'
+
 // 快速设置工具 - 简化API使用
 export {
   quickCache,
@@ -30,37 +31,6 @@ export {
   getDefaultLogger,
   type QuickSetupResult
 } from './utils/quick-setup'
-
-// Bundle优化工具
-export {
-  BundleOptimizer,
-  dynamicImport,
-  globalBundleOptimizer,
-  LazyLoad,
-  preloadCriticalModules
-} from './utils/bundle-optimizer'
-export {
-  applyConfigDefaults,
-  ConfigValidators,
-  validateConfig,
-  validateConfigType,
-} from './utils/config-validators'
-export type {
-  ConfigChangeEvent,
-  ConfigSchema,
-  ConfigValidator,
-} from './utils/config-validators'
-
-// Core Web Vitals 监控
-// TODO: Fix import path
-// export {
-//   type CoreWebVitalsMetrics,
-//   CoreWebVitalsMonitor,
-//   getCoreWebVitals,
-//   getCoreWebVitalsScore,
-//   globalCoreWebVitalsMonitor,
-//   startCoreWebVitalsMonitoring
-// } from './utils/core-web-vitals'
 
 // 基础工具函数
 export {
@@ -84,73 +54,3 @@ export {
   throttle,
   unique
 } from './utils/index'
-
-// 日志系统
-// TODO: Fix import path - file doesn't exist
-// export {
-//   ConsoleLogHandler,
-//   createModuleLogger,
-//   EnhancedLogger,
-//   ErrorTracker,
-//   logger,
-//   LogLevel,
-//   MemoryLogHandler,
-//   RemoteLogHandler
-// } from './utils/logging-system'
-
-// 内存管理工具
-export {
-  createManagedPromise,
-  GlobalMemoryManager,
-  ListenerManager,
-  managedLifecycle,
-  MemoryLeakDetector,
-  memoryManager,
-  ReferenceTracker,
-  ResourceManager,
-  TimerManager
-} from './utils/memory-manager'
-
-// 性能分析工具
-// TODO: Fix import path - file doesn't exist
-// export {
-//   BatchProcessor,
-//   globalPerformanceAnalyzer,
-//   measurePerformance,
-//   ObjectPool,
-//   PerformanceAnalyzer
-// } from './utils/performance-analyzer'
-
-// 实时性能监控
-// TODO: Fix import path - file doesn't exist
-// export {
-//   getPerformanceAlerts,
-//   getRealtimePerformanceData,
-//   globalRealtimePerformanceMonitor,
-//   type PerformanceAlert,
-//   type PerformanceThresholds,
-//   type RealtimePerformanceData,
-//   RealtimePerformanceMonitor,
-//   startRealtimeMonitoring,
-//   stopRealtimeMonitoring
-// } from './utils/realtime-performance-monitor'
-
-// 类型安全工具
-export {
-  isArray,
-  isBoolean,
-  isNumber,
-  isString,
-  isValidObject,
-  PromiseUtil,
-  safeAsync,
-  safeDeepClone,
-  safeFilter,
-  safeGet,
-  safeGetNested,
-  safeJsonParse as safeJsonParseTyped,
-  safeJsonStringify as safeJsonStringifyTyped,
-  safeMap,
-  safeMerge,
-  TypedConfigWrapper
-} from './utils/type-safety'

@@ -5,7 +5,7 @@
 
 // 导出统一日志器
 // 创建默认实例
-import { createUnifiedLogger } from './unified-logger'
+import { createUnifiedLogger } from './logger'
 
 // 从 types 导出基础类型
 export type {
@@ -31,7 +31,7 @@ export {
   PerformancePlugin,
   SamplingPlugin,
   UnifiedLogger
-} from './unified-logger'
+} from './logger'
 
 export const defaultLogger = createUnifiedLogger({
   level: 'info',

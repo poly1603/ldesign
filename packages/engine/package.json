@@ -20,11 +20,6 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
-    "./cache": {
-      "types": "./es/cache/index.d.ts",
-      "import": "./es/cache/index.js",
-      "require": "./lib/cache/index.cjs"
-    },
     "./cache/*": {
       "types": "./es/cache/*.d.ts",
       "import": "./es/cache/*.js",
@@ -55,20 +50,10 @@
       "import": "./es/core/*.js",
       "require": "./lib/core/*.cjs"
     },
-    "./devtools": {
-      "types": "./es/devtools/index.d.ts",
-      "import": "./es/devtools/index.js",
-      "require": "./lib/devtools/index.cjs"
-    },
     "./devtools/*": {
       "types": "./es/devtools/*.d.ts",
       "import": "./es/devtools/*.js",
       "require": "./lib/devtools/*.cjs"
-    },
-    "./dialog": {
-      "types": "./es/dialog/index.d.ts",
-      "import": "./es/dialog/index.js",
-      "require": "./lib/dialog/index.cjs"
     },
     "./dialog/*": {
       "types": "./es/dialog/*.d.ts",
@@ -105,11 +90,6 @@
       "import": "./es/hmr/*.js",
       "require": "./lib/hmr/*.cjs"
     },
-    "./interceptors/*": {
-      "types": "./es/interceptors/*.d.ts",
-      "import": "./es/interceptors/*.js",
-      "require": "./lib/interceptors/*.cjs"
-    },
     "./lifecycle/*": {
       "types": "./es/lifecycle/*.d.ts",
       "import": "./es/lifecycle/*.js",
@@ -124,11 +104,6 @@
       "types": "./es/logger/*.d.ts",
       "import": "./es/logger/*.js",
       "require": "./lib/logger/*.cjs"
-    },
-    "./message": {
-      "types": "./es/message/index.d.ts",
-      "import": "./es/message/index.js",
-      "require": "./lib/message/index.cjs"
     },
     "./message/*": {
       "types": "./es/message/*.d.ts",
@@ -145,11 +120,6 @@
       "import": "./es/notifications/*.js",
       "require": "./lib/notifications/*.cjs"
     },
-    "./performance": {
-      "types": "./es/performance/index.d.ts",
-      "import": "./es/performance/index.js",
-      "require": "./lib/performance/index.cjs"
-    },
     "./performance/*": {
       "types": "./es/performance/*.d.ts",
       "import": "./es/performance/*.js",
@@ -160,20 +130,15 @@
       "import": "./es/plugins/*.js",
       "require": "./lib/plugins/*.cjs"
     },
-    "./presets": {
-      "types": "./es/presets/index.d.ts",
-      "import": "./es/presets/index.js",
-      "require": "./lib/presets/index.cjs"
-    },
-    "./presets/*": {
-      "types": "./es/presets/*.d.ts",
-      "import": "./es/presets/*.js",
-      "require": "./lib/presets/*.cjs"
-    },
     "./security/*": {
       "types": "./es/security/*.d.ts",
       "import": "./es/security/*.js",
       "require": "./lib/security/*.cjs"
+    },
+    "./shortcuts/*": {
+      "types": "./es/shortcuts/*.d.ts",
+      "import": "./es/shortcuts/*.js",
+      "require": "./lib/shortcuts/*.cjs"
     },
     "./state/*": {
       "types": "./es/state/*.d.ts",

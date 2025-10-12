@@ -4,7 +4,6 @@
  */
 
 import type { Engine } from '../types/engine'
-import { BaseManager } from '../core/base-manager'
 
 export interface DialogOptions {
   id?: string
@@ -75,10 +74,12 @@ export interface DialogManagerConfig {
   clickMaskClose?: boolean
 }
 
-export class DialogManager extends BaseManager<DialogManagerConfig> {
+export class DialogManager {
   private instances = new Map<string, DialogInstance>()
   private zIndexCounter = 0
   private idCounter = 0
+  private config: DialogManagerConfig
+  private engine?: Engine
 
   constructor(config: DialogManagerConfig = {}, engine?: Engine) {
     const defaults: DialogManagerConfig = {
@@ -90,23 +91,19 @@ export class DialogManager extends BaseManager<DialogManagerConfig> {
       escapeKeyClose: true,
       clickMaskClose: true,
     }
-    const merged: DialogManagerConfig = { ...defaults, ...config }
-    super('DialogManager', merged, engine)
+    this.config = { ...defaults, ...config }
+    this.engine = engine
   }
 
   /**
    * 初始化Dialog管理器
    */
   async initialize(): Promise<void> {
-    this.log('info', 'Initializing dialog manager...')
-
     // 绑定全局事件
     this.bindGlobalEvents()
 
     // 创建样式
     this.createStyles()
-
-    this.log('info', 'Dialog manager initialized')
   }
 
   /**

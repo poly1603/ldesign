@@ -4,295 +4,222 @@
  */
 
 import type { VueDirectiveBinding } from '../base/vue-directive-adapter'
-import { getLogger } from '../../logger/unified-logger'
 import { DirectiveBase } from '../base/directive-base'
-
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface ThrottleOptions {
-  handler: (event: Event) => void
+  handler?: (...args: any[]) => void
   delay?: number
+  event?: string
+  disabled?: boolean
   leading?: boolean
   trailing?: boolean
-  event?: string
 }
 
 export class ThrottleDirective extends DirectiveBase {
-  private logger = getLogger('ThrottleDirective')
-
   constructor() {
     super({
       name: 'throttle',
-      description: '节流处理，限制函数执行频率',
+      description: '节流处理，限制触发频率',
       version: '1.0.0',
       category: 'performance',
-      tags: ['throttle', 'performance', 'optimization'],
+      tags: ['throttle', 'performance', 'event'],
     })
   }
 
   public mounted(el: HTMLElement, binding: VueDirectiveBinding): void {
     const config = this.parseConfig(binding)
-
+    
     if (!config.handler || typeof config.handler !== 'function') {
-      this.warn('throttle directive requires a handler function')
+      this.warn('Throttle directive requires a handler function')
       return
     }
 
-    const throttleHandler = this.createThrottleHandler(config)
-    const event = config.event || binding.arg || 'click'
+    const delay = config.delay ?? 200
+    const event = config.event ?? 'click'
+    const leading = config.leading ?? true
+    const trailing = config.trailing ?? true
+    
+    let lastTime = 0
+    let timeoutId: NodeJS.Timeout | null = null
+    let lastArgs: any[] = []
+    
+    const throttledHandler = (...args: any[]) => {
+      if (config.disabled) return
+      
+      const now = Date.now()
+      const remaining = delay - (now - lastTime)
+      
+      lastArgs = args
+      
+      const execute = () => {
+        config.handler!(...lastArgs)
+        lastTime = Date.now()
+        timeoutId = null
+      }
+      
+      if (remaining <= 0 || remaining > delay) {
+        // If leading is enabled and enough time has passed
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+          timeoutId = null
+        }
+        
+        if (leading) {
+          execute()
+        } else {
+          lastTime = now
+        }
+        
+        if (trailing && !timeoutId) {
+          timeoutId = setTimeout(() => {
+            execute()
+          }, delay)
+        }
+      } else if (!timeoutId && trailing) {
+        // Schedule trailing execution
+        timeoutId = setTimeout(() => {
+          execute()
+        }, remaining)
+      }
+    }
 
-    // 存储处理器和配置
-    el._throttleHandler = throttleHandler
-    el._throttleConfig = config
+    // Store handlers and config for cleanup
+    directiveUtils.storeData(el, 'throttle-handler', throttledHandler)
+    directiveUtils.storeData(el, 'throttle-event', event)
+    directiveUtils.storeData(el, 'throttle-timeout', timeoutId)
 
-    // 添加事件监听器
-    this.addEventListener(el, event, throttleHandler)
+    // Add event listener
+    el.addEventListener(event, throttledHandler)
 
-    this.log(`Throttle directive mounted for event: ${event}`)
+    this.log(`Throttle directive mounted on element with ${delay}ms delay`, el)
   }
 
   public updated(el: HTMLElement, binding: VueDirectiveBinding): void {
-    if (directiveUtils.isValueChanged(binding)) {
-      this.unmounted(el)
-      this.mounted(el, binding)
+    // Clean up old handler
+    const oldHandler = directiveUtils.getData(el, 'throttle-handler')
+    const oldEvent = directiveUtils.getData(el, 'throttle-event')
+    const oldTimeout = directiveUtils.getData(el, 'throttle-timeout')
+
+    if (oldHandler && oldEvent) {
+      el.removeEventListener(oldEvent as string, oldHandler as EventListener)
     }
+
+    if (oldTimeout) {
+      clearTimeout(oldTimeout as NodeJS.Timeout)
+    }
+
+    // Re-mount with new config
+    this.mounted(el, binding)
+
+    this.log(`Throttle directive updated on element`, el)
   }
 
   public unmounted(el: HTMLElement): void {
-    // 清理定时器
-    if (el._throttleTimer) {
-      clearTimeout(el._throttleTimer)
-      delete el._throttleTimer
+    const handler = directiveUtils.getData(el, 'throttle-handler')
+    const event = directiveUtils.getData(el, 'throttle-event')
+    const timeout = directiveUtils.getData(el, 'throttle-timeout')
+    
+    if (handler && event) {
+      el.removeEventListener(event as string, handler as EventListener)
     }
-
-    // 清理事件监听器
-    this.removeAllEventListeners(el)
-
-    // 清理存储的数据
-    delete el._throttleHandler
-    delete el._throttleConfig
-    delete el._throttleLastTime
-    delete el._throttleLastArgs
-
-    this.log('Throttle directive unmounted')
+    
+    if (timeout) {
+      clearTimeout(timeout as NodeJS.Timeout)
+    }
+    
+    directiveUtils.removeData(el, 'throttle-handler')
+    directiveUtils.removeData(el, 'throttle-event')
+    directiveUtils.removeData(el, 'throttle-timeout')
+    
+    this.log(`Throttle directive unmounted from element`, el)
   }
 
   private parseConfig(binding: VueDirectiveBinding): ThrottleOptions {
     const value = binding.value
 
+    // Handle function as handler
     if (typeof value === 'function') {
-      return {
-        handler: value as EventListener,
-        delay: 300,
-        leading: true,
-        trailing: true,
-      }
+      return { handler: value }
     }
 
+    // Handle object config
     if (typeof value === 'object' && value !== null) {
-      const obj = value as Partial<ThrottleOptions> & { callback?: (...args: unknown[]) => void; event?: string }
-      return {
-        handler: obj.handler || obj.callback || (() => { }),
-        delay: obj.delay ?? 300,
-        leading: obj.leading !== false,
-        trailing: obj.trailing !== false,
-        event: obj.event,
-      }
+      return value as ThrottleOptions
     }
 
-    return {
-      handler: () => { },
-      delay: 300,
-      leading: true,
-      trailing: true,
-    }
+    return {}
   }
 
-  private createThrottleHandler(config: ThrottleOptions): EventListener {
-    return (event: Event) => {
-      const el = event.currentTarget as HTMLElement
-      const now = Date.now()
+  public getExample(): string {
+    return `
+<!-- Basic throttle with default 200ms delay -->
+<button v-throttle="handleClick">
+  Throttled Click
+</button>
 
-      // 存储最新的参数
-      el._throttleLastArgs = [event]
+<!-- Custom delay -->
+<div v-throttle="{
+  handler: handleScroll,
+  event: 'scroll',
+  delay: 500
+}" class="scrollable">
+  Scroll me (throttled)
+</div>
 
-      // 首次调用
-      if (!el._throttleLastTime) {
-        if (config.leading) {
-          config.handler.call(el, event)
-          el._throttleLastTime = now
-        } else {
-          el._throttleLastTime = now
-          this.scheduleTrailing(el, config)
-        }
-        return
-      }
+<!-- Leading and trailing options -->
+<button v-throttle="{
+  handler: handleInput,
+  delay: 300,
+  leading: false,
+  trailing: true
+}">
+  Trailing only
+</button>
 
-      const timeSinceLastCall = now - el._throttleLastTime
+<!-- Different event -->
+<input v-throttle="{
+  handler: handleKeyPress,
+  event: 'keydown',
+  delay: 100
+}" placeholder="Type here (throttled)">
 
-      // 在节流期间
-      if (timeSinceLastCall < config.delay!) {
-        // 如果支持trailing，安排尾部调用
-        if (config.trailing) {
-          this.scheduleTrailing(el, config)
-        }
-        return
-      }
-
-      // 超过节流时间，可以执行
-      config.handler.call(el, event)
-      el._throttleLastTime = now
-
-      // 清除可能存在的尾部调用
-      if (el._throttleTimer) {
-        clearTimeout(el._throttleTimer)
-        delete el._throttleTimer
-      }
-    }
-  }
-
-  private scheduleTrailing(el: HTMLElement, config: ThrottleOptions): void {
-    // 清除之前的尾部调用
-    if (el._throttleTimer) {
-      clearTimeout(el._throttleTimer)
-    }
-
-    el._throttleTimer = window.setTimeout(
-      () => {
-        const now = Date.now()
-        const timeSinceLastCall = now - el._throttleLastTime!
-
-        if (timeSinceLastCall >= config.delay!) {
-          // 执行尾部调用
-          if (el._throttleLastArgs && el._throttleLastArgs.length > 0) {
-            config.handler.call(el, el._throttleLastArgs[0] as Event)
-            el._throttleLastTime = now
-          }
-        }
-
-        delete el._throttleTimer
-      },
-      config.delay! - (Date.now() - el._throttleLastTime!)
-    )
-  }
-}
-
-// 创建Vue指令
-export const vThrottle = defineDirective('throttle', {
-  mounted(el: HTMLElement, binding: VueDirectiveBinding) {
-    const directive = new ThrottleDirective()
-    directive.mounted(el, binding)
-
-    if (!el._engineDirectives) {
-      el._engineDirectives = new Map()
-    }
-    el._engineDirectives.set('throttle', directive)
-  },
-
-  updated(el: HTMLElement, binding: VueDirectiveBinding) {
-    const directive = el._engineDirectives?.get(
-      'throttle'
-    ) as unknown as ThrottleDirective
-    if (directive) {
-      directive.updated(el, binding)
-    }
-  },
-
-  unmounted(el: HTMLElement) {
-    const directive = el._engineDirectives?.get(
-      'throttle'
-    ) as unknown as ThrottleDirective
-    if (directive) {
-      directive.unmounted(el)
-      el._engineDirectives?.delete('throttle')
-    }
-  },
-})
-
-// 扩展HTMLElement类型
-declare global {
-  interface HTMLElement {
-    _throttleHandler?: EventListener
-    _throttleConfig?: ThrottleOptions
-    _throttleTimer?: number
-    _throttleLastTime?: number
-    _throttleLastArgs?: Event[]
-  }
-}
-
-// 导出指令实例
-export const throttleDirective = new ThrottleDirective()
-
-// 使用示例
-/*
-<template>
-  <!-- 基础用法 - 默认300ms节流 -->
-  <button v-throttle:click="handleClick">节流点击</button>
-
-  <!-- 自定义节流时间 -->
-  <div v-throttle:scroll="{ handler: handleScroll, delay: 100 }"
-       style="height: 200px; overflow-y: auto;">
-    滚动内容...
-  </div>
-
-  <!-- 只在开始时执行 -->
-  <button v-throttle="{
-    handler: handleSubmit,
-    delay: 1000,
-    leading: true,
-    trailing: false
-  }">
-    只在开始执行
-  </button>
-
-  <!-- 只在结束时执行 -->
-  <input v-throttle:input="{
-    handler: handleInput,
-    delay: 500,
-    leading: false,
-    trailing: true
-  }" placeholder="只在结束执行">
-
-  <!-- 鼠标移动节流 -->
-  <div v-throttle:mousemove="{
-    handler: handleMouseMove,
-    delay: 16
-  }" style="width: 300px; height: 200px; border: 1px solid #ccc;">
-    鼠标移动区域
-  </div>
-
-  <!-- 窗口大小调整节流 -->
-  <div v-throttle:resize="{
-    handler: handleResize,
-    delay: 250
-  }">
-    窗口大小调整
-  </div>
-</template>
+<!-- Conditional throttle -->
+<button v-throttle="{
+  handler: saveProgress,
+  delay: 1000,
+  disabled: isSaving
+}">
+  Auto-save
+</button>
 
 <script setup>
 const handleClick = () => {
-  this.logger.debug('节流点击')
+  console.log('Button clicked (throttled)')
 }
 
 const handleScroll = (event) => {
-  this.logger.debug('滚动位置:', event.target.scrollTop)
+  console.log('Scrolling...', event.target.scrollTop)
 }
 
-const handleSubmit = () => {
-  this.logger.debug('提交表单')
+const handleInput = () => {
+  console.log('Input changed (throttled)')
 }
 
-const handleInput = (event) => {
-  this.logger.debug('输入内容:', event.target.value)
+const handleKeyPress = (event) => {
+  console.log('Key pressed:', event.key)
 }
 
-const handleMouseMove = (event) => {
-  this.logger.debug('鼠标位置:', event.clientX, event.clientY)
-}
-
-const handleResize = () => {
-  this.logger.debug('窗口大小:', window.innerWidth, window.innerHeight)
+const saveProgress = () => {
+  console.log('Auto-saving...')
 }
 </script>
-*/
+    `
+  }
+}
+
+// Export the directive definition
+export const vThrottle = defineDirective(new ThrottleDirective())
+
+// Export default for convenience
+export default vThrottle

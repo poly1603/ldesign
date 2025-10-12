@@ -6,7 +6,7 @@
 import type { Directive, DirectiveBinding } from 'vue'
 import type { DirectiveBase } from './directive-base'
 
-import { getLogger } from '../../logger/unified-logger'
+// import { getLogger } from '../../logger/logger' // 已移除日志
 
 const logger = getLogger('vue-directive-adapter')
 export interface VueDirectiveBinding {

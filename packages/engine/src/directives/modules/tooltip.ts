@@ -1,581 +1,360 @@
 /**
  * 工具提示指令
- * 鼠标悬停时显示提示信息
+ * 显示悬浮提示信息
  */
 
 import type { VueDirectiveBinding } from '../base/vue-directive-adapter'
 import { DirectiveBase } from '../base/directive-base'
-import { defineDirective } from '../base/vue-directive-adapter'
+import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface TooltipOptions {
   content?: string
-  placement?:
-  | 'top'
-  | 'bottom'
-  | 'left'
-  | 'right'
-  | 'top-start'
-  | 'top-end'
-  | 'bottom-start'
-  | 'bottom-end'
-  | 'left-start'
-  | 'left-end'
-  | 'right-start'
-  | 'right-end'
-  trigger?: 'hover' | 'click' | 'focus' | 'manual'
-  delay?: number | { show: number; hide: number }
-  offset?: number
+  placement?: 'top' | 'bottom' | 'left' | 'right' | 'auto'
+  delay?: number
   disabled?: boolean
-  theme?: 'dark' | 'light' | 'custom'
-  maxWidth?: string
-  zIndex?: number
-  arrow?: boolean
-  customClass?: string
+  trigger?: 'hover' | 'click' | 'focus'
+  className?: string
+  offset?: number
   html?: boolean
-  onShow?: (tooltip: HTMLElement) => void
-  onHide?: (tooltip: HTMLElement) => void
 }
 
 export class TooltipDirective extends DirectiveBase {
-  private logger = getLogger('TooltipDirective')
-
-  private static tooltipContainer?: HTMLElement
-
   constructor() {
     super({
       name: 'tooltip',
-      description: '工具提示指令，显示悬浮提示信息',
+      description: '显示工具提示',
       version: '1.0.0',
-      category: 'ui',
-      tags: ['tooltip', 'popover', 'ui', 'feedback'],
+      category: 'feedback',
+      tags: ['tooltip', 'popover', 'hint'],
     })
   }
 
   public mounted(el: HTMLElement, binding: VueDirectiveBinding): void {
     const config = this.parseConfig(binding)
-
-    // 存储配置
-    el._tooltipConfig = config
-
-    // 如果未禁用，绑定事件
-    if (!config.disabled) {
-      this.bindEvents(el, config)
+    
+    if (config.disabled || !config.content) {
+      return
     }
-
-    this.log('Tooltip directive mounted')
+    
+    this.setupTooltip(el, config)
+    this.log('Tooltip directive mounted', el)
   }
 
   public updated(el: HTMLElement, binding: VueDirectiveBinding): void {
-    const config = this.parseConfig(binding)
-    const oldConfig = el._tooltipConfig
-
-    // 更新配置
-    el._tooltipConfig = config
-
-    // 如果内容改变，更新tooltip
-    if (oldConfig?.content !== config.content && el._tooltipElement) {
-      this.updateTooltipContent(el._tooltipElement, config)
-    }
-
-    // 如果禁用状态改变，重新绑定事件
-    if (oldConfig?.disabled !== config.disabled) {
-      this.unbindEvents(el)
-      if (!config.disabled) {
-        this.bindEvents(el, config)
-      }
-    }
+    this.unmounted(el)
+    this.mounted(el, binding)
   }
 
   public unmounted(el: HTMLElement): void {
-    this.hideTooltip(el)
-    this.unbindEvents(el)
-    delete el._tooltipConfig
-
-    this.log('Tooltip directive unmounted')
+    this.cleanupTooltip(el)
+    this.log('Tooltip directive unmounted', el)
   }
 
-  private parseConfig(binding: VueDirectiveBinding): TooltipOptions {
-    const value = binding.value
-
-    if (typeof value === 'string') {
-      const argPlacement = binding.arg as TooltipOptions['placement'] | undefined
-      return {
-        content: value,
-        placement: argPlacement ?? 'top',
+  private setupTooltip(el: HTMLElement, config: TooltipOptions): void {
+    const trigger = config.trigger || 'hover'
+    const delay = config.delay || 0
+    let showTimer: number | null = null
+    let hideTimer: number | null = null
+    
+    const showTooltip = (): void => {
+      if (hideTimer) {
+        clearTimeout(hideTimer)
+        hideTimer = null
       }
-    }
-
-    if (typeof value === 'object' && value !== null) {
-      const obj = value as Partial<TooltipOptions> & { title?: string }
-      const argPlacement = binding.arg as TooltipOptions['placement'] | undefined
-      return {
-        content: obj.content || obj.title,
-        placement: obj.placement || argPlacement || 'top',
-        trigger: obj.trigger || 'hover',
-        delay: obj.delay || { show: 100, hide: 100 },
-        offset: obj.offset ?? 8,
-        disabled: obj.disabled ?? false,
-        theme: obj.theme || 'dark',
-        maxWidth: obj.maxWidth || '200px',
-        zIndex: obj.zIndex ?? 3000,
-        arrow: obj.arrow !== false,
-        customClass: obj.customClass,
-        html: obj.html ?? false,
-        onShow: obj.onShow,
-        onHide: obj.onHide,
-      }
-    }
-
-    return {
-      content: '',
-      placement: 'top',
-      trigger: 'hover',
-      delay: { show: 100, hide: 100 },
-      offset: 8,
-      theme: 'dark',
-      maxWidth: '200px',
-      zIndex: 3000,
-      arrow: true,
-    }
-  }
-
-  private bindEvents(el: HTMLElement, config: TooltipOptions): void {
-    const showDelay =
-      typeof config.delay === 'number'
-        ? config.delay
-        : config.delay?.show || 100
-    const hideDelay =
-      typeof config.delay === 'number'
-        ? config.delay
-        : config.delay?.hide || 100
-
-    switch (config.trigger) {
-      case 'hover':
-        this.addEventListener(el, 'mouseenter', () => {
-          el._tooltipShowTimer = window.setTimeout(() => {
-            this.showTooltip(el, config)
-          }, showDelay)
+      
+      showTimer = window.setTimeout(() => {
+        const tooltip = this.createTooltip(config)
+        this.positionTooltip(el, tooltip, config.placement || 'top', config.offset || 8)
+        document.body.appendChild(tooltip)
+        directiveUtils.storeData(el, 'tooltip-element', tooltip)
+        
+        // Add show animation
+        requestAnimationFrame(() => {
+          tooltip.style.opacity = '1'
+          tooltip.style.transform = 'scale(1)'
         })
-
-        this.addEventListener(el, 'mouseleave', () => {
-          if (el._tooltipShowTimer) {
-            clearTimeout(el._tooltipShowTimer)
-            delete el._tooltipShowTimer
+      }, delay)
+      
+      directiveUtils.storeData(el, 'tooltip-show-timer', showTimer)
+    }
+    
+    const hideTooltip = (): void => {
+      if (showTimer) {
+        clearTimeout(showTimer)
+        showTimer = null
+        directiveUtils.removeData(el, 'tooltip-show-timer')
+      }
+      
+      const tooltip = directiveUtils.getData(el, 'tooltip-element') as HTMLElement
+      if (!tooltip) return
+      
+      hideTimer = window.setTimeout(() => {
+        tooltip.style.opacity = '0'
+        tooltip.style.transform = 'scale(0.95)'
+        
+        setTimeout(() => {
+          if (tooltip.parentNode) {
+            tooltip.parentNode.removeChild(tooltip)
           }
-
-          el._tooltipHideTimer = window.setTimeout(() => {
-            this.hideTooltip(el)
-          }, hideDelay)
-        })
-        break
-
-      case 'click':
-        this.addEventListener(el, 'click', event => {
-          event.preventDefault()
-          if (el._tooltipElement) {
-            this.hideTooltip(el)
-          } else {
-            this.showTooltip(el, config)
-          }
-        })
-        break
-
-      case 'focus':
-        this.addEventListener(el, 'focus', () => {
-          this.showTooltip(el, config)
-        })
-
-        this.addEventListener(el, 'blur', () => {
-          this.hideTooltip(el)
-        })
-        break
+          directiveUtils.removeData(el, 'tooltip-element')
+        }, 200)
+      }, 100)
+      
+      directiveUtils.storeData(el, 'tooltip-hide-timer', hideTimer)
     }
+    
+    const handlers = {
+      show: showTooltip,
+      hide: hideTooltip,
+    }
+    
+    if (trigger === 'hover') {
+      el.addEventListener('mouseenter', handlers.show)
+      el.addEventListener('mouseleave', handlers.hide)
+    } else if (trigger === 'click') {
+      el.addEventListener('click', (e: Event) => {
+        const tooltip = directiveUtils.getData(el, 'tooltip-element')
+        if (tooltip) {
+          handlers.hide()
+        } else {
+          handlers.show()
+          e.stopPropagation()
+        }
+      })
+      
+      document.addEventListener('click', handlers.hide)
+    } else if (trigger === 'focus') {
+      el.addEventListener('focus', handlers.show)
+      el.addEventListener('blur', handlers.hide)
+    }
+    
+    directiveUtils.storeData(el, 'tooltip-handlers', handlers)
+    directiveUtils.storeData(el, 'tooltip-trigger', trigger)
   }
 
-  private unbindEvents(el: HTMLElement): void {
-    this.removeAllEventListeners(el)
-
-    // 清理定时器
-    if (el._tooltipShowTimer) {
-      clearTimeout(el._tooltipShowTimer)
-      delete el._tooltipShowTimer
+  private cleanupTooltip(el: HTMLElement): void {
+    const handlers = directiveUtils.getData(el, 'tooltip-handlers') as any
+    const trigger = directiveUtils.getData(el, 'tooltip-trigger') as string
+    const tooltip = directiveUtils.getData(el, 'tooltip-element') as HTMLElement
+    const showTimer = directiveUtils.getData(el, 'tooltip-show-timer') as number
+    const hideTimer = directiveUtils.getData(el, 'tooltip-hide-timer') as number
+    
+    if (showTimer) {
+      clearTimeout(showTimer)
     }
-
-    if (el._tooltipHideTimer) {
-      clearTimeout(el._tooltipHideTimer)
-      delete el._tooltipHideTimer
+    
+    if (hideTimer) {
+      clearTimeout(hideTimer)
     }
-  }
-
-  private showTooltip(el: HTMLElement, config: TooltipOptions): void {
-    if (!config.content || el._tooltipElement) {
-      return
+    
+    if (tooltip && tooltip.parentNode) {
+      tooltip.parentNode.removeChild(tooltip)
     }
-
-    // 创建tooltip容器
-    if (!TooltipDirective.tooltipContainer) {
-      TooltipDirective.tooltipContainer = document.createElement('div')
-      TooltipDirective.tooltipContainer.className = 'engine-tooltip-container'
-      document.body.appendChild(TooltipDirective.tooltipContainer)
-    }
-
-    // 创建tooltip元素
-    const tooltipEl = this.createTooltipElement(config)
-    el._tooltipElement = tooltipEl
-
-    // 添加到容器
-    TooltipDirective.tooltipContainer.appendChild(tooltipEl)
-
-    // 计算位置
-    this.positionTooltip(el, tooltipEl, config)
-
-    // 显示动画
-    requestAnimationFrame(() => {
-      tooltipEl.style.opacity = '1'
-      tooltipEl.style.transform = 'scale(1)'
-    })
-
-    // 触发显示回调
-    config.onShow?.(tooltipEl)
-  }
-
-  private hideTooltip(el: HTMLElement): void {
-    const tooltipEl = el._tooltipElement
-    if (!tooltipEl) {
-      return
-    }
-
-    const config = el._tooltipConfig
-
-    // 隐藏动画
-    tooltipEl.style.opacity = '0'
-    tooltipEl.style.transform = 'scale(0.8)'
-
-    setTimeout(() => {
-      if (tooltipEl.parentNode) {
-        tooltipEl.parentNode.removeChild(tooltipEl)
+    
+    if (handlers) {
+      if (trigger === 'hover') {
+        el.removeEventListener('mouseenter', handlers.show)
+        el.removeEventListener('mouseleave', handlers.hide)
+      } else if (trigger === 'click') {
+        document.removeEventListener('click', handlers.hide)
+      } else if (trigger === 'focus') {
+        el.removeEventListener('focus', handlers.show)
+        el.removeEventListener('blur', handlers.hide)
       }
-      delete el._tooltipElement
-    }, 200)
-
-    // 触发隐藏回调
-    config?.onHide?.(tooltipEl)
+    }
+    
+    directiveUtils.removeData(el, 'tooltip-element')
+    directiveUtils.removeData(el, 'tooltip-handlers')
+    directiveUtils.removeData(el, 'tooltip-trigger')
+    directiveUtils.removeData(el, 'tooltip-show-timer')
+    directiveUtils.removeData(el, 'tooltip-hide-timer')
   }
 
-  private createTooltipElement(config: TooltipOptions): HTMLElement {
-    const tooltipEl = document.createElement('div')
-    tooltipEl.className = `engine-tooltip engine-tooltip-${config.theme}`
-
-    if (config.customClass) {
-      tooltipEl.className += ` ${config.customClass}`
-    }
-
-    // 设置基础样式
-    Object.assign(tooltipEl.style, {
-      position: 'absolute',
-      maxWidth: config.maxWidth,
-      padding: '8px 12px',
-      borderRadius: '4px',
-      fontSize: '12px',
-      lineHeight: '1.4',
-      wordWrap: 'break-word',
-      zIndex: config.zIndex?.toString(),
-      opacity: '0',
-      transform: 'scale(0.8)',
-      transformOrigin: 'center',
-      transition: 'opacity 0.2s ease, transform 0.2s ease',
-      pointerEvents: 'none',
-    })
-
-    // 设置主题样式
-    this.applyThemeStyles(tooltipEl, config.theme!)
-
-    // 设置内容
-    this.updateTooltipContent(tooltipEl, config)
-
-    // 添加箭头
-    if (config.arrow) {
-      const arrowEl = document.createElement('div')
-      arrowEl.className = 'engine-tooltip-arrow'
-      this.styleArrow(arrowEl, config.theme!)
-      tooltipEl.appendChild(arrowEl)
-    }
-
-    return tooltipEl
-  }
-
-  private updateTooltipContent(
-    tooltipEl: HTMLElement,
-    config: TooltipOptions
-  ): void {
-    const contentEl =
-      tooltipEl.querySelector('.engine-tooltip-content') || tooltipEl
-
+  private createTooltip(config: TooltipOptions): HTMLElement {
+    const tooltip = document.createElement('div')
+    tooltip.className = `v-tooltip ${config.className || ''}`
+    
     if (config.html) {
-      contentEl.innerHTML = config.content || ''
+      tooltip.innerHTML = config.content || ''
     } else {
-      contentEl.textContent = config.content || ''
+      tooltip.textContent = config.content || ''
     }
-  }
-
-  private applyThemeStyles(tooltipEl: HTMLElement, theme: string): void {
-    switch (theme) {
-      case 'dark':
-        Object.assign(tooltipEl.style, {
-          background: '#303133',
-          color: '#fff',
-          border: '1px solid #303133',
-        })
-        break
-      case 'light':
-        Object.assign(tooltipEl.style, {
-          background: '#fff',
-          color: '#606266',
-          border: '1px solid #e4e7ed',
-          boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.1)',
-        })
-        break
-    }
-  }
-
-  private styleArrow(arrowEl: HTMLElement, theme: string): void {
-    Object.assign(arrowEl.style, {
-      position: 'absolute',
-      width: '0',
-      height: '0',
-      borderStyle: 'solid',
-    })
-
-    const borderColor = theme === 'dark' ? '#303133' : '#e4e7ed'
-    const backgroundColor = theme === 'dark' ? '#303133' : '#fff'
-
-    // 箭头样式将在定位时设置
-    arrowEl.dataset.theme = theme
-    arrowEl.dataset.borderColor = borderColor
-    arrowEl.dataset.backgroundColor = backgroundColor
+    
+    // Default styles
+    tooltip.style.position = 'fixed'
+    tooltip.style.zIndex = '10000'
+    tooltip.style.padding = '8px 12px'
+    tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.85)'
+    tooltip.style.color = 'white'
+    tooltip.style.fontSize = '12px'
+    tooltip.style.borderRadius = '4px'
+    tooltip.style.pointerEvents = 'none'
+    tooltip.style.transition = 'opacity 0.2s, transform 0.2s'
+    tooltip.style.opacity = '0'
+    tooltip.style.transform = 'scale(0.95)'
+    tooltip.style.maxWidth = '300px'
+    tooltip.style.wordWrap = 'break-word'
+    tooltip.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)'
+    
+    return tooltip
   }
 
   private positionTooltip(
     el: HTMLElement,
-    tooltipEl: HTMLElement,
-    config: TooltipOptions
+    tooltip: HTMLElement,
+    placement: string,
+    offset: number
   ): void {
     const rect = el.getBoundingClientRect()
-    const tooltipRect = tooltipEl.getBoundingClientRect()
-    const offset = config.offset || 8
-
+    const tooltipRect = {
+      width: tooltip.offsetWidth || 100,
+      height: tooltip.offsetHeight || 30,
+    }
+    
     let top = 0
     let left = 0
-
-    // 根据placement计算位置
-    switch (config.placement) {
+    
+    if (placement === 'auto') {
+      const viewportHeight = window.innerHeight
+      const viewportWidth = window.innerWidth
+      
+      if (rect.top > viewportHeight / 2) {
+        placement = 'top'
+      } else {
+        placement = 'bottom'
+      }
+      
+      if (rect.left < 100) {
+        placement = 'right'
+      } else if (rect.right > viewportWidth - 100) {
+        placement = 'left'
+      }
+    }
+    
+    switch (placement) {
       case 'top':
         top = rect.top - tooltipRect.height - offset
-        left = rect.left + (rect.width - tooltipRect.width) / 2
+        left = rect.left + rect.width / 2 - tooltipRect.width / 2
         break
       case 'bottom':
         top = rect.bottom + offset
-        left = rect.left + (rect.width - tooltipRect.width) / 2
+        left = rect.left + rect.width / 2 - tooltipRect.width / 2
         break
       case 'left':
-        top = rect.top + (rect.height - tooltipRect.height) / 2
+        top = rect.top + rect.height / 2 - tooltipRect.height / 2
         left = rect.left - tooltipRect.width - offset
         break
       case 'right':
-        top = rect.top + (rect.height - tooltipRect.height) / 2
+        top = rect.top + rect.height / 2 - tooltipRect.height / 2
         left = rect.right + offset
         break
-      // 更多placement选项...
     }
-
-    // 边界检测和调整
-    const viewport = {
-      width: window.innerWidth,
-      height: window.innerHeight,
-    }
-
-    if (left < 0) left = 8
-    if (left + tooltipRect.width > viewport.width) {
-      left = viewport.width - tooltipRect.width - 8
-    }
-    if (top < 0) top = 8
-    if (top + tooltipRect.height > viewport.height) {
-      top = viewport.height - tooltipRect.height - 8
-    }
-
-    // 设置位置
-    tooltipEl.style.top = `${top + window.scrollY}px`
-    tooltipEl.style.left = `${left + window.scrollX}px`
-
-    // 设置箭头位置
-    if (config.arrow) {
-      this.positionArrow(tooltipEl, config.placement!, rect, { top, left })
-    }
+    
+    // Keep tooltip within viewport
+    const margin = 10
+    left = Math.max(margin, Math.min(left, window.innerWidth - tooltipRect.width - margin))
+    top = Math.max(margin, Math.min(top, window.innerHeight - tooltipRect.height - margin))
+    
+    tooltip.style.top = `${top}px`
+    tooltip.style.left = `${left}px`
   }
 
-  private positionArrow(
-    tooltipEl: HTMLElement,
-    placement: string,
-    _targetRect: DOMRect,
-    _tooltipPos: { top: number; left: number }
-  ): void {
-    const arrowEl = tooltipEl.querySelector(
-      '.engine-tooltip-arrow'
-    ) as HTMLElement
-    if (!arrowEl) return
-
-    const borderColor = arrowEl.dataset.borderColor
-
-    // 重置箭头样式
-    Object.assign(arrowEl.style, {
-      top: 'auto',
-      left: 'auto',
-      right: 'auto',
-      bottom: 'auto',
-      borderWidth: '0',
-    })
-
-    switch (placement) {
-      case 'top':
-        Object.assign(arrowEl.style, {
-          bottom: '-6px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          borderWidth: '6px 6px 0 6px',
-          borderColor: `${borderColor} transparent transparent transparent`,
-        })
-        break
-      case 'bottom':
-        Object.assign(arrowEl.style, {
-          top: '-6px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          borderWidth: '0 6px 6px 6px',
-          borderColor: `transparent transparent ${borderColor} transparent`,
-        })
-        break
-      case 'left':
-        Object.assign(arrowEl.style, {
-          right: '-6px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          borderWidth: '6px 0 6px 6px',
-          borderColor: `transparent transparent transparent ${borderColor}`,
-        })
-        break
-      case 'right':
-        Object.assign(arrowEl.style, {
-          left: '-6px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          borderWidth: '6px 6px 6px 0',
-          borderColor: `transparent ${borderColor} transparent transparent`,
-        })
-        break
+  private parseConfig(binding: VueDirectiveBinding): TooltipOptions {
+    const value = binding.value
+    
+    if (typeof value === 'string') {
+      return { content: value }
     }
+    
+    if (typeof value === 'object' && value !== null) {
+      return value as TooltipOptions
+    }
+    
+    return {}
   }
-}
 
-// 创建Vue指令
-export const vTooltip = defineDirective('tooltip', {
-  mounted(el: HTMLElement, binding: VueDirectiveBinding) {
-    const directive = new TooltipDirective()
-    directive.mounted(el, binding)
+  public getExample(): string {
+    return `
+<!-- Basic tooltip -->
+<button v-tooltip="'This is a tooltip'">
+  Hover me
+</button>
 
-    if (!el._engineDirectives) {
-      el._engineDirectives = new Map()
-    }
-    el._engineDirectives.set('tooltip', directive)
-  },
+<!-- With placement -->
+<button v-tooltip="{
+  content: 'Top tooltip',
+  placement: 'top'
+}">
+  Top
+</button>
 
-  updated(el: HTMLElement, binding: VueDirectiveBinding) {
-    const directive = el._engineDirectives?.get(
-      'tooltip'
-    ) as unknown as TooltipDirective
-    if (directive) {
-      directive.updated(el, binding)
-    }
-  },
+<!-- With delay -->
+<button v-tooltip="{
+  content: 'Delayed tooltip',
+  delay: 500
+}">
+  Hover with delay
+</button>
 
-  unmounted(el: HTMLElement) {
-    const directive = el._engineDirectives?.get(
-      'tooltip'
-    ) as unknown as TooltipDirective
-    if (directive) {
-      directive.unmounted(el)
-      el._engineDirectives?.delete('tooltip')
-    }
-  },
-})
+<!-- Click trigger -->
+<button v-tooltip="{
+  content: 'Click to toggle',
+  trigger: 'click'
+}">
+  Click me
+</button>
 
-// 扩展HTMLElement类型
-declare global {
-  interface HTMLElement {
-    _tooltipConfig?: TooltipOptions
-    _tooltipElement?: HTMLElement
-    _tooltipShowTimer?: number
-    _tooltipHideTimer?: number
-  }
-}
+<!-- HTML content -->
+<button v-tooltip="{
+  content: '<strong>Bold</strong> <em>italic</em> text',
+  html: true
+}">
+  HTML tooltip
+</button>
 
-// 导出指令实例
-export const tooltipDirective = new TooltipDirective()
+<!-- Custom styling -->
+<button v-tooltip="{
+  content: 'Custom styled tooltip',
+  className: 'my-custom-tooltip'
+}">
+  Custom style
+</button>
 
-// 使用示例
-/*
-<template>
-  <!-- 基础用法 -->
-  <button v-tooltip="'这是一个提示'">悬停显示提示</button>
+<!-- Auto positioning -->
+<button v-tooltip="{
+  content: 'Auto-positioned tooltip',
+  placement: 'auto'
+}">
+  Auto position
+</button>
 
-  <!-- 指定位置 -->
-  <button v-tooltip:bottom="'底部提示'">底部提示</button>
-
-  <!-- 完整配置 -->
-  <button v-tooltip="{
-    content: '这是详细的提示信息',
-    placement: 'right',
-    trigger: 'click',
-    theme: 'light',
-    delay: { show: 200, hide: 100 },
-    maxWidth: '300px',
-    arrow: true,
-    onShow: handleTooltipShow,
-    onHide: handleTooltipHide
-  }">
-    点击显示提示
-  </button>
-
-  <!-- HTML内容 -->
-  <span v-tooltip="{
-    content: '<strong>粗体文本</strong><br>换行内容',
-    html: true,
-    theme: 'light'
-  }">
-    HTML提示
-  </span>
-
-  <!-- 禁用状态 -->
-  <button v-tooltip="{
-    content: '禁用的提示',
-    disabled: isDisabled
-  }">
-    条件提示
-  </button>
-</template>
+<!-- Disabled tooltip -->
+<button v-tooltip="{
+  content: 'This won\\'t show',
+  disabled: isDisabled
+}">
+  Conditionally disabled
+</button>
 
 <script setup>
 import { ref } from 'vue'
 
-import { getLogger } from '../../logger/unified-logger';
-
 const isDisabled = ref(false)
-
-const handleTooltipShow = (tooltip) => {
-  this.logger.debug('提示显示:', tooltip)
-}
-
-const handleTooltipHide = (tooltip) => {
-  this.logger.debug('提示隐藏:', tooltip)
-}
 </script>
-*/
+
+<style>
+.my-custom-tooltip {
+  background-color: #2196f3 !important;
+  font-size: 14px !important;
+  padding: 12px 16px !important;
+}
+</style>
+    `
+  }
+}
+
+// Export the directive definition
+export const vTooltip = defineDirective(new TooltipDirective())
+
+// Export default for convenience
+export default vTooltip

@@ -4,9 +4,7 @@
  */
 
 import type { VueDirectiveBinding } from '../base/vue-directive-adapter'
-import { getLogger } from '../../logger/unified-logger'
 import { DirectiveBase } from '../base/directive-base'
-
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface LazyOptions {
@@ -28,340 +26,262 @@ export interface LazyOptions {
 }
 
 export class LazyDirective extends DirectiveBase {
-  private logger = getLogger('LazyDirective')
-
-  private static observer?: IntersectionObserver
-  private static observedElements = new WeakMap<HTMLElement, LazyOptions>()
+  private observers: Map<Element, IntersectionObserver> = new Map()
+  private defaultPlaceholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect width="100" height="100" fill="%23f0f0f0"/%3E%3C/svg%3E'
+  private defaultError = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect width="100" height="100" fill="%23ff0000"/%3E%3C/svg%3E'
 
   constructor() {
     super({
       name: 'lazy',
-      description: '懒加载指令，元素进入视口时触发加载',
+      description: '懒加载元素，当进入视口时才加载',
       version: '1.0.0',
       category: 'performance',
-      tags: ['lazy', 'loading', 'performance', 'optimization'],
+      tags: ['lazy', 'load', 'performance', 'image'],
     })
   }
 
   public mounted(el: HTMLElement, binding: VueDirectiveBinding): void {
     const config = this.parseConfig(binding)
+    
+    // Setup element
+    this.setupElement(el, config)
 
-    // 存储配置
-    LazyDirective.observedElements.set(el, config)
-
-    // 创建或获取观察器
-    if (!LazyDirective.observer) {
-      LazyDirective.observer = this.createObserver()
+    // Create intersection observer
+    const observerOptions: IntersectionObserverInit = {
+      threshold: config.threshold ?? 0,
+      rootMargin: config.rootMargin ?? '0px',
+      root: config.root ?? null,
     }
 
-    // 设置初始状态
-    this.setupInitialState(el, config)
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          this.loadElement(el, config, entry)
+          
+          if (config.once !== false) {
+            observer.unobserve(el)
+            this.observers.delete(el)
+          }
+        }
+      })
+    }, observerOptions)
 
-    // 开始观察
-    LazyDirective.observer.observe(el)
+    observer.observe(el)
+    this.observers.set(el, observer)
 
-    this.log('Lazy directive mounted')
+    this.log(`Lazy loading directive mounted on element`, el)
   }
 
   public updated(el: HTMLElement, binding: VueDirectiveBinding): void {
-    if (directiveUtils.isValueChanged(binding)) {
-      const config = this.parseConfig(binding)
-      LazyDirective.observedElements.set(el, config)
+    // Clean up old observer
+    const oldObserver = this.observers.get(el)
+    if (oldObserver) {
+      oldObserver.disconnect()
+      this.observers.delete(el)
     }
+
+    // Re-mount with new config
+    this.mounted(el, binding)
+
+    this.log(`Lazy loading directive updated on element`, el)
   }
 
   public unmounted(el: HTMLElement): void {
-    // 停止观察
-    if (LazyDirective.observer) {
-      LazyDirective.observer.unobserve(el)
+    const observer = this.observers.get(el)
+    if (observer) {
+      observer.disconnect()
+      this.observers.delete(el)
     }
 
-    // 清理配置
-    LazyDirective.observedElements.delete(el)
+    // Clean up stored data
+    directiveUtils.removeData(el, 'lazy-loaded')
+    directiveUtils.removeData(el, 'lazy-loading')
+    directiveUtils.removeData(el, 'lazy-error')
 
-    // 清理类名
-    this.removeClass(el, 'lazy-loading')
-    this.removeClass(el, 'lazy-loaded')
-    this.removeClass(el, 'lazy-error')
+    this.log(`Lazy loading directive unmounted from element`, el)
+  }
 
-    this.log('Lazy directive unmounted')
+  private setupElement(el: HTMLElement, config: LazyOptions): void {
+    const isImage = el.tagName === 'IMG'
+
+    if (isImage && config.placeholder) {
+      (el as HTMLImageElement).src = config.placeholder
+    } else if (isImage && config.loading) {
+      (el as HTMLImageElement).src = config.loading
+    } else if (isImage) {
+      (el as HTMLImageElement).src = this.defaultPlaceholder
+    }
+
+    if (config.loadingClass) {
+      el.classList.add(config.loadingClass)
+    }
+
+    directiveUtils.storeData(el, 'lazy-loading', true)
+  }
+
+  private loadElement(el: HTMLElement, config: LazyOptions, entry: IntersectionObserverEntry): void {
+    const isLoaded = directiveUtils.getData(el, 'lazy-loaded')
+    if (isLoaded) return
+
+    // Call onEnter callback
+    if (config.onEnter) {
+      config.onEnter(el, entry)
+    }
+
+    // Handle callback
+    if (config.callback) {
+      config.callback(el, entry)
+      directiveUtils.storeData(el, 'lazy-loaded', true)
+      this.updateClasses(el, config, 'loaded')
+      return
+    }
+
+    // Handle image loading
+    if (el.tagName === 'IMG' && config.src) {
+      this.loadImage(el as HTMLImageElement, config)
+    } else {
+      // For non-image elements, just mark as loaded
+      directiveUtils.storeData(el, 'lazy-loaded', true)
+      this.updateClasses(el, config, 'loaded')
+      
+      if (config.onLoad) {
+        config.onLoad(el)
+      }
+    }
+  }
+
+  private loadImage(img: HTMLImageElement, config: LazyOptions): void {
+    const tempImg = new Image()
+
+    tempImg.onload = () => {
+      img.src = config.src!
+      directiveUtils.storeData(img, 'lazy-loaded', true)
+      directiveUtils.removeData(img, 'lazy-loading')
+      this.updateClasses(img, config, 'loaded')
+
+      if (config.onLoad) {
+        config.onLoad(img)
+      }
+
+      this.log(`Image loaded successfully: ${config.src}`)
+    }
+
+    tempImg.onerror = (event) => {
+      const error = new Error(`Failed to load image: ${config.src}`)
+      
+      if (config.error) {
+        img.src = config.error
+      } else {
+        img.src = this.defaultError
+      }
+
+      directiveUtils.storeData(img, 'lazy-error', true)
+      directiveUtils.removeData(img, 'lazy-loading')
+      this.updateClasses(img, config, 'error')
+
+      if (config.onError) {
+        config.onError(img, error)
+      }
+
+      this.warn(`Failed to load image: ${config.src}`)
+    }
+
+    tempImg.src = config.src!
+  }
+
+  private updateClasses(el: HTMLElement, config: LazyOptions, state: 'loading' | 'loaded' | 'error'): void {
+    // Remove all state classes
+    if (config.loadingClass) el.classList.remove(config.loadingClass)
+    if (config.loadedClass) el.classList.remove(config.loadedClass)
+    if (config.errorClass) el.classList.remove(config.errorClass)
+
+    // Add current state class
+    switch (state) {
+      case 'loading':
+        if (config.loadingClass) el.classList.add(config.loadingClass)
+        break
+      case 'loaded':
+        if (config.loadedClass) el.classList.add(config.loadedClass)
+        break
+      case 'error':
+        if (config.errorClass) el.classList.add(config.errorClass)
+        break
+    }
   }
 
   private parseConfig(binding: VueDirectiveBinding): LazyOptions {
     const value = binding.value
 
-    if (typeof value === 'function') {
-      return { callback: value as (el: HTMLElement, entry: IntersectionObserverEntry) => void }
-    }
-
+    // Handle string as src
     if (typeof value === 'string') {
       return { src: value }
     }
 
+    // Handle object config
     if (typeof value === 'object' && value !== null) {
-      const obj = value as Partial<LazyOptions>
-      return {
-        callback: obj.callback,
-        src: obj.src,
-        placeholder: obj.placeholder,
-        error: obj.error,
-        loading: obj.loading,
-        threshold: obj.threshold ?? 0.1,
-        rootMargin: obj.rootMargin ?? '50px',
-        root: obj.root ?? null,
-        once: obj.once !== false,
-        onLoad: obj.onLoad,
-        onError: obj.onError,
-        onEnter: obj.onEnter,
-        loadingClass: obj.loadingClass || 'lazy-loading',
-        loadedClass: obj.loadedClass || 'lazy-loaded',
-        errorClass: obj.errorClass || 'lazy-error',
-      }
+      return value as LazyOptions
     }
 
-    return {
-      threshold: 0.1,
-      rootMargin: '50px',
-      once: true,
+    // Handle function as callback
+    if (typeof value === 'function') {
+      return { callback: value }
     }
+
+    return {}
   }
 
-  private createObserver(): IntersectionObserver {
-    return new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const el = entry.target as HTMLElement
-            const config = LazyDirective.observedElements.get(el)
+  public getExample(): string {
+    return `
+<!-- Basic image lazy loading -->
+<img v-lazy="'/path/to/image.jpg'" alt="Lazy loaded image">
 
-            if (config) {
-              this.handleIntersection(el, entry, config)
-            }
-          }
-        })
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '50px',
-      }
-    )
-  }
+<!-- With placeholder and error image -->
+<img v-lazy="{
+  src: '/path/to/image.jpg',
+  placeholder: '/path/to/placeholder.jpg',
+  error: '/path/to/error.jpg',
+  threshold: 0.5,
+  rootMargin: '50px'
+}" alt="Lazy image with options">
 
-  private setupInitialState(el: HTMLElement, config: LazyOptions): void {
-    // 设置占位符
-    if (config.placeholder && el instanceof HTMLImageElement) {
-      el.src = config.placeholder
-    }
+<!-- With callbacks -->
+<img v-lazy="{
+  src: '/path/to/image.jpg',
+  onLoad: (el) => console.log('Loaded!', el),
+  onError: (el, error) => console.error('Failed!', error),
+  loadingClass: 'loading',
+  loadedClass: 'loaded',
+  errorClass: 'error'
+}" alt="Lazy image with callbacks">
 
-    // 添加加载中类名
-    if (config.loadingClass) {
-      this.addClass(el, config.loadingClass)
-    }
-
-    // 存储原始src
-    if (config.src && el instanceof HTMLImageElement) {
-      el.dataset.lazySrc = config.src
-    }
-  }
-
-  private async handleIntersection(
-    el: HTMLElement,
-    entry: IntersectionObserverEntry,
-    config: LazyOptions
-  ): Promise<void> {
-    try {
-      // 触发进入回调
-      config.onEnter?.(el, entry)
-
-      // 执行自定义回调
-      if (config.callback) {
-        config.callback(el, entry)
-      } else {
-        // 默认图片加载逻辑
-        await this.loadImage(el, config)
-      }
-
-      // 移除加载中类名，添加已加载类名
-      if (config.loadingClass) {
-        this.removeClass(el, config.loadingClass)
-      }
-      if (config.loadedClass) {
-        this.addClass(el, config.loadedClass)
-      }
-
-      // 触发加载完成回调
-      config.onLoad?.(el)
-
-      // 如果只加载一次，停止观察
-      if (config.once && LazyDirective.observer) {
-        LazyDirective.observer.unobserve(el)
-      }
-    } catch (error) {
-      this.handleLoadError(el, config, error as Error)
-    }
-  }
-
-  private loadImage(el: HTMLElement, config: LazyOptions): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!(el instanceof HTMLImageElement)) {
-        resolve()
-        return
-      }
-
-      const src = config.src || el.dataset.lazySrc
-      if (!src) {
-        resolve()
-        return
-      }
-
-      const img = new Image()
-
-      img.onload = () => {
-        el.src = src
-        resolve()
-      }
-
-      img.onerror = () => {
-        reject(new Error(`Failed to load image: ${src}`))
-      }
-
-      img.src = src
-    })
-  }
-
-  private handleLoadError(
-    el: HTMLElement,
-    config: LazyOptions,
-    error: Error
-  ): void {
-    // 移除加载中类名，添加错误类名
-    if (config.loadingClass) {
-      this.removeClass(el, config.loadingClass)
-    }
-    if (config.errorClass) {
-      this.addClass(el, config.errorClass)
-    }
-
-    // 设置错误图片
-    if (config.error && el instanceof HTMLImageElement) {
-      el.src = config.error
-    }
-
-    // 触发错误回调
-    config.onError?.(el, error)
-
-    this.error_log('Lazy load error:', error.message)
-  }
-}
-
-// 创建Vue指令
-export const vLazy = defineDirective('lazy', {
-  mounted(el: HTMLElement, binding: VueDirectiveBinding) {
-    const directive = new LazyDirective()
-    directive.mounted(el, binding)
-
-    if (!el._engineDirectives) {
-      el._engineDirectives = new Map()
-    }
-    el._engineDirectives.set('lazy', directive)
+<!-- Custom element with callback -->
+<div v-lazy="{
+  callback: (el, entry) => {
+    // Custom lazy loading logic
+    el.innerHTML = 'Content loaded!'
   },
-
-  updated(el: HTMLElement, binding: VueDirectiveBinding) {
-    const directive = el._engineDirectives?.get(
-      'lazy'
-    ) as unknown as LazyDirective
-    if (directive) {
-      directive.updated(el, binding)
-    }
-  },
-
-  unmounted(el: HTMLElement) {
-    const directive = el._engineDirectives?.get(
-      'lazy'
-    ) as unknown as LazyDirective
-    if (directive) {
-      directive.unmounted(el)
-      el._engineDirectives?.delete('lazy')
-    }
-  },
-})
-
-// 导出指令实例
-export const lazyDirective = new LazyDirective()
-
-// 使用示例
-/*
-<template>
-  <!-- 基础图片懒加载 -->
-  <img v-lazy="'/path/to/image.jpg'" alt="懒加载图片">
-
-  <!-- 带占位符的图片懒加载 -->
-  <img v-lazy="{
-    src: '/path/to/image.jpg',
-    placeholder: '/path/to/placeholder.jpg',
-    error: '/path/to/error.jpg'
-  }" alt="带占位符的懒加载">
-
-  <!-- 自定义回调 -->
-  <div v-lazy="{
-    callback: handleLazyLoad,
-    threshold: 0.5,
-    rootMargin: '100px'
-  }">
-    自定义懒加载内容
-  </div>
-
-  <!-- 完整配置 -->
-  <img v-lazy="{
-    src: '/path/to/image.jpg',
-    placeholder: '/path/to/loading.gif',
-    error: '/path/to/error.png',
-    threshold: [0, 0.25, 0.5, 0.75, 1],
-    rootMargin: '50px',
-    once: true,
-    onLoad: handleImageLoad,
-    onError: handleImageError,
-    onEnter: handleImageEnter,
-    loadingClass: 'image-loading',
-    loadedClass: 'image-loaded',
-    errorClass: 'image-error'
-  }" alt="完整配置懒加载">
-</template>
-
-<script setup>
-const handleLazyLoad = (el, entry) => {
-  this.logger.debug('元素进入视口:', el, entry)
-  // 自定义加载逻辑
-}
-
-const handleImageLoad = (el) => {
-  this.logger.debug('图片加载完成:', el)
-}
-
-const handleImageError = (el, error) => {
-  this.logger.error('图片加载失败:', el, error)
-}
-
-const handleImageEnter = (el, entry) => {
-  this.logger.debug('图片进入视口:', el, entry)
-}
-</script>
+  threshold: 1.0,
+  once: true
+}">
+  Loading...
+</div>
 
 <style>
-.lazy-loading {
-  opacity: 0.5;
-  filter: blur(2px);
-}
+.loading { opacity: 0.5; }
+.loaded { animation: fadeIn 0.3s; }
+.error { border: 2px solid red; }
 
-.lazy-loaded {
-  opacity: 1;
-  filter: none;
-  transition: opacity 0.3s, filter 0.3s;
-}
-
-.lazy-error {
-  opacity: 0.5;
-  filter: grayscale(100%);
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 </style>
-*/
+    `
+  }
+}
+
+// Export the directive definition
+export const vLazy = defineDirective(new LazyDirective())
+
+// Export default for convenience
+export default vLazy

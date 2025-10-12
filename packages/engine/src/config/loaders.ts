@@ -7,7 +7,7 @@
 
 // 配置项类型定义
 
-import { getLogger } from '../logger/unified-logger'
+import { getLogger } from '../logger/logger'
 
 export type ConfigValue = string | number | boolean | null | undefined | ConfigObject | ConfigValue[]
 

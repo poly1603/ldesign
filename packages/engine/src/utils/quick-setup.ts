@@ -4,10 +4,10 @@
  */
 
 import { createUnifiedCacheManager } from '../cache/unified-cache-manager'
-import { createUnifiedLogger } from '../logger/unified-logger'
+import { createUnifiedLogger } from '../logger/logger'
 import { createPerformanceManager } from '../performance/performance-manager'
 import type { CacheConfig } from '../cache/unified-cache-manager'
-import type { LogConfig } from '../logger/unified-logger'
+import type { LogConfig } from '../logger/logger'
 
 /**
  * 快速创建缓存管理器 - 使用优化的默认配置
@@ -180,4 +180,47 @@ export function getDefaultLogger() {
     _defaultLogger = lightLogger()
   }
   return _defaultLogger
+}
+
+// 导出给 createEngineApp 使用的函数
+export function createQuickLogger(options?: {
+  level?: 'debug' | 'info' | 'warn' | 'error'
+  maxLogs?: number
+  showTimestamp?: boolean
+  showContext?: boolean
+  prefix?: string
+}) {
+  return quickLogger({
+    level: options?.level,
+    console: true,
+    prefix: options?.prefix
+  })
+}
+
+export function createQuickCacheManager<T = unknown>(options?: {
+  maxSize?: number
+  defaultTTL?: number
+  cleanupInterval?: number
+  enableMemoryLimit?: boolean
+  memoryLimit?: number
+}) {
+  return quickCache<T>({
+    maxSize: options?.maxSize,
+    ttl: options?.defaultTTL,
+    persistent: false
+  })
+}
+
+export function createQuickPerformanceManager(options?: {
+  sampleRate?: number
+  monitorMemory?: boolean
+  monitorNetwork?: boolean
+  monitorComponents?: boolean
+  reportInterval?: number
+}) {
+  return quickPerformance({
+    monitoring: true,
+    fpsTracking: options?.monitorComponents ?? false,
+    memoryTracking: options?.monitorMemory ?? false
+  })
 }

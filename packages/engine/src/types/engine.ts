@@ -78,22 +78,6 @@ export interface Engine {
   validateManagers: () => { valid: boolean; errors: string[] }
 }
 
-// 创建引擎的选项
-export interface CreateEngineOptions {
-  config?: EnhancedEngineConfig
-  plugins?: Plugin[]
-  middleware?: Middleware[]
-
-  // 配置选项
-  configSchema?: Record<string, unknown>
-  enableAutoSave?: boolean
-  autoSaveInterval?: number
-
-  // 新增：自动挂载选项
-  rootComponent?: Component
-  mountElement?: string | Element
-  autoMount?: boolean
-}
 
 // 引擎状态
 export type EngineStatus =

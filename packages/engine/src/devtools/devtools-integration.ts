@@ -7,7 +7,7 @@
 import type { App } from 'vue'
 import type { Engine } from '../types'
 
-import { getLogger } from '../logger/unified-logger'
+import { getLogger } from '../logger/logger'
 
 export interface DevToolsTimelineEvent {
   time: number

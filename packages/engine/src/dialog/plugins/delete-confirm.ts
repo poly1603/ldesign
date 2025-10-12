@@ -5,7 +5,7 @@
 
 import type { DialogAPI, DialogConfig, DialogInstance, DialogPlugin } from '../types'
 
-import { getLogger } from '../../logger/unified-logger'
+// import { getLogger } from '../../logger/logger' // 已移除日志
 
 export interface DeleteConfirmOptions {
   /** 要删除的项目名称或描述 */

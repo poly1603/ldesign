@@ -4,7 +4,6 @@
  */
 
 import type { Engine } from '../types/engine'
-import { BaseManager } from '../core/base-manager'
 
 export interface MessageOptions {
   id?: string
@@ -41,10 +40,12 @@ export interface MessageManagerConfig {
   gap?: number
 }
 
-export class MessageManager extends BaseManager<MessageManagerConfig> {
+export class MessageManager {
   private instances = new Map<string, MessageInstance>()
   private container?: HTMLElement
   private idCounter = 0
+  private config: MessageManagerConfig
+  private engine?: Engine
 
   constructor(config: MessageManagerConfig = {}, engine?: Engine) {
     const defaults: MessageManagerConfig = {
@@ -55,20 +56,16 @@ export class MessageManager extends BaseManager<MessageManagerConfig> {
       zIndex: 3000,
       gap: 16,
     }
-    const merged: MessageManagerConfig = { ...defaults, ...config }
-    super('MessageManager', merged, engine)
+    this.config = { ...defaults, ...config }
+    this.engine = engine
   }
 
   /**
    * 初始化消息管理器
    */
   async initialize(): Promise<void> {
-    this.log('info', 'Initializing message manager...')
-
     // 创建消息容器
     this.createContainer()
-
-    this.log('info', 'Message manager initialized')
   }
 
   /**
@@ -118,7 +115,6 @@ export class MessageManager extends BaseManager<MessageManagerConfig> {
     // 显示消息
     this.showInstance(instance)
 
-    this.log('info', `Message shown: ${id}`)
     return instance
   }
 
@@ -603,18 +599,14 @@ export class MessageManager extends BaseManager<MessageManagerConfig> {
       // 触发关闭回调
       instance.options.onClose?.()
     }, 300)
-
-    this.log('info', `Message closed: ${instance.id}`)
   }
 
   /**
    * 获取统计信息
    */
   getStats() {
-    const baseStats = super.getStats()
     const visibleInstances = Array.from(this.instances.values()).filter(i => i.visible)
     return {
-      ...baseStats,
       totalMessages: visibleInstances.length,
       visibleMessages: visibleInstances.length,
       messageIds: visibleInstances.map(i => i.id),
@@ -637,7 +629,5 @@ export class MessageManager extends BaseManager<MessageManagerConfig> {
     if (styleEl && styleEl.parentNode) {
       styleEl.parentNode.removeChild(styleEl)
     }
-
-    await super.destroy()
   }
 }

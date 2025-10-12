@@ -4,94 +4,276 @@
  */
 
 import type { VueDirectiveBinding } from '../base/vue-directive-adapter'
-import { getLogger } from '../../logger/unified-logger'
 import { DirectiveBase } from '../base/directive-base'
-
-import { defineDirective } from '../base/vue-directive-adapter'
+import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface DragOptions {
   disabled?: boolean
-  handle?: string | HTMLElement
-  container?: string | HTMLElement
   axis?: 'x' | 'y' | 'both'
-  grid?: [number, number]
-  bounds?:
-  | {
-    left?: number
-    top?: number
-    right?: number
-    bottom?: number
-  }
-  | 'parent'
-  | string
-  onStart?: (event: MouseEvent, position: { x: number; y: number }) => void
-  onDrag?: (event: MouseEvent, position: { x: number; y: number }) => void
-  onEnd?: (event: MouseEvent, position: { x: number; y: number }) => void
+  handle?: string | HTMLElement
+  constraint?: DragConstraint
+  onStart?: (event: DragEvent) => void
+  onMove?: (event: DragEvent) => void
+  onEnd?: (event: DragEvent) => void
   cursor?: string
-  zIndex?: number
-  opacity?: number
-  clone?: boolean
-  revert?: boolean | 'invalid'
-  helper?: 'original' | 'clone' | ((event: MouseEvent) => HTMLElement)
+  preventDefault?: boolean
+  stopPropagation?: boolean
 }
 
-export interface DragPosition {
-  x: number
-  y: number
+export interface DragConstraint {
+  minX?: number
+  maxX?: number
+  minY?: number
+  maxY?: number
+  parent?: boolean
+  selector?: string
+}
+
+export interface DragState {
+  isDragging: boolean
   startX: number
   startY: number
-  deltaX: number
-  deltaY: number
+  currentX: number
+  currentY: number
+  offsetX: number
+  offsetY: number
+}
+
+export interface DragEvent {
+  el: HTMLElement
+  state: DragState
+  originalEvent: MouseEvent | TouchEvent
 }
 
 export class DragDirective extends DirectiveBase {
-  private logger = getLogger('DragDirective')
-
   constructor() {
     super({
       name: 'drag',
-      description: '拖拽指令，使元素可拖拽移动',
+      description: '使元素可拖拽移动',
       version: '1.0.0',
       category: 'interaction',
-      tags: ['drag', 'draggable', 'interaction', 'move'],
+      tags: ['drag', 'draggable', 'move', 'interaction'],
     })
   }
 
   public mounted(el: HTMLElement, binding: VueDirectiveBinding): void {
     const config = this.parseConfig(binding)
-
-    // 存储配置
-    el._dragConfig = config
-
-    // 如果未禁用，初始化拖拽
-    if (!config.disabled) {
-      this.initDrag(el, config)
+    
+    if (config.disabled) {
+      return
     }
 
-    this.log('Drag directive mounted')
+    // Initialize drag state
+    const state: DragState = {
+      isDragging: false,
+      startX: 0,
+      startY: 0,
+      currentX: 0,
+      currentY: 0,
+      offsetX: 0,
+      offsetY: 0,
+    }
+
+    // Get handle element
+    const handle = this.getHandle(el, config.handle)
+    
+    // Set initial position
+    if (!el.style.position || el.style.position === 'static') {
+      el.style.position = 'relative'
+    }
+
+    // Mouse/Touch event handlers
+    const handleStart = (e: MouseEvent | TouchEvent) => {
+      if (config.disabled) return
+
+      state.isDragging = true
+      
+      const point = this.getEventPoint(e)
+      state.startX = point.x - state.offsetX
+      state.startY = point.y - state.offsetY
+
+      // Set cursor
+      document.body.style.cursor = config.cursor ?? 'move'
+      el.style.cursor = config.cursor ?? 'move'
+
+      // Prevent text selection
+      document.body.style.userSelect = 'none'
+
+      // Call onStart callback
+      if (config.onStart) {
+        config.onStart({ el, state, originalEvent: e })
+      }
+
+      if (config.preventDefault) e.preventDefault()
+      if (config.stopPropagation) e.stopPropagation()
+
+      this.log('Drag started', state)
+    }
+
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      if (!state.isDragging) return
+
+      const point = this.getEventPoint(e)
+      let newX = point.x - state.startX
+      let newY = point.y - state.startY
+
+      // Apply axis constraints
+      if (config.axis === 'x') {
+        newY = state.offsetY
+      } else if (config.axis === 'y') {
+        newX = state.offsetX
+      }
+
+      // Apply boundary constraints
+      if (config.constraint) {
+        const bounds = this.getConstraintBounds(el, config.constraint)
+        newX = Math.max(bounds.minX, Math.min(newX, bounds.maxX))
+        newY = Math.max(bounds.minY, Math.min(newY, bounds.maxY))
+      }
+
+      state.currentX = newX
+      state.currentY = newY
+      state.offsetX = newX
+      state.offsetY = newY
+
+      // Apply transform
+      el.style.transform = `translate(${newX}px, ${newY}px)`
+
+      // Call onMove callback
+      if (config.onMove) {
+        config.onMove({ el, state, originalEvent: e })
+      }
+
+      if (config.preventDefault) e.preventDefault()
+      if (config.stopPropagation) e.stopPropagation()
+    }
+
+    const handleEnd = (e: MouseEvent | TouchEvent) => {
+      if (!state.isDragging) return
+
+      state.isDragging = false
+
+      // Reset cursor
+      document.body.style.cursor = ''
+      el.style.cursor = ''
+      document.body.style.userSelect = ''
+
+      // Call onEnd callback
+      if (config.onEnd) {
+        config.onEnd({ el, state, originalEvent: e })
+      }
+
+      this.log('Drag ended', state)
+    }
+
+    // Store handlers for cleanup
+    const handlers = { handleStart, handleMove, handleEnd }
+    directiveUtils.storeData(el, 'drag-handlers', handlers)
+    directiveUtils.storeData(el, 'drag-state', state)
+    directiveUtils.storeData(el, 'drag-handle', handle)
+
+    // Add event listeners
+    handle.addEventListener('mousedown', handleStart)
+    handle.addEventListener('touchstart', handleStart, { passive: !config.preventDefault })
+    
+    document.addEventListener('mousemove', handleMove)
+    document.addEventListener('touchmove', handleMove, { passive: !config.preventDefault })
+    
+    document.addEventListener('mouseup', handleEnd)
+    document.addEventListener('touchend', handleEnd)
+
+    // Set handle cursor
+    handle.style.cursor = config.cursor ?? 'move'
+
+    this.log(`Drag directive mounted on element`, el)
   }
 
   public updated(el: HTMLElement, binding: VueDirectiveBinding): void {
-    const config = this.parseConfig(binding)
-    const oldConfig = el._dragConfig
+    // Clean up old handlers
+    this.cleanup(el)
 
-    // 更新配置
-    el._dragConfig = config
+    // Re-mount with new config
+    this.mounted(el, binding)
 
-    // 如果禁用状态改变，重新初始化
-    if (oldConfig?.disabled !== config.disabled) {
-      this.destroyDrag(el)
-      if (!config.disabled) {
-        this.initDrag(el, config)
-      }
-    }
+    this.log(`Drag directive updated on element`, el)
   }
 
   public unmounted(el: HTMLElement): void {
-    this.destroyDrag(el)
-    delete el._dragConfig
+    this.cleanup(el)
+    this.log(`Drag directive unmounted from element`, el)
+  }
 
-    this.log('Drag directive unmounted')
+  private cleanup(el: HTMLElement): void {
+    const handlers = directiveUtils.getData(el, 'drag-handlers') as any
+    const handle = directiveUtils.getData(el, 'drag-handle') as HTMLElement
+
+    if (handlers && handle) {
+      handle.removeEventListener('mousedown', handlers.handleStart)
+      handle.removeEventListener('touchstart', handlers.handleStart)
+      
+      document.removeEventListener('mousemove', handlers.handleMove)
+      document.removeEventListener('touchmove', handlers.handleMove)
+      
+      document.removeEventListener('mouseup', handlers.handleEnd)
+      document.removeEventListener('touchend', handlers.handleEnd)
+    }
+
+    directiveUtils.removeData(el, 'drag-handlers')
+    directiveUtils.removeData(el, 'drag-state')
+    directiveUtils.removeData(el, 'drag-handle')
+  }
+
+  private getHandle(el: HTMLElement, handle?: string | HTMLElement): HTMLElement {
+    if (!handle) {
+      return el
+    }
+
+    if (typeof handle === 'string') {
+      const handleEl = el.querySelector(handle) as HTMLElement
+      return handleEl || el
+    }
+
+    return handle
+  }
+
+  private getEventPoint(e: MouseEvent | TouchEvent): { x: number; y: number } {
+    if ('touches' in e && e.touches.length > 0) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    }
+    return { x: (e as MouseEvent).clientX, y: (e as MouseEvent).clientY }
+  }
+
+  private getConstraintBounds(el: HTMLElement, constraint: DragConstraint) {
+    let minX = constraint.minX ?? -Infinity
+    let maxX = constraint.maxX ?? Infinity
+    let minY = constraint.minY ?? -Infinity
+    let maxY = constraint.maxY ?? Infinity
+
+    if (constraint.parent && el.parentElement) {
+      const parent = el.parentElement
+      const parentRect = parent.getBoundingClientRect()
+      const elRect = el.getBoundingClientRect()
+      
+      minX = 0
+      maxX = parentRect.width - elRect.width
+      minY = 0
+      maxY = parentRect.height - elRect.height
+    }
+
+    if (constraint.selector) {
+      const container = document.querySelector(constraint.selector) as HTMLElement
+      if (container) {
+        const containerRect = container.getBoundingClientRect()
+        const elRect = el.getBoundingClientRect()
+        
+        minX = containerRect.left - elRect.left
+        maxX = containerRect.right - elRect.right
+        minY = containerRect.top - elRect.top
+        maxY = containerRect.bottom - elRect.bottom
+      }
+    }
+
+    return { minX, maxX, minY, maxY }
   }
 
   private parseConfig(binding: VueDirectiveBinding): DragOptions {
@@ -102,479 +284,89 @@ export class DragDirective extends DirectiveBase {
     }
 
     if (typeof value === 'object' && value !== null) {
-      const obj = value as Partial<DragOptions>
-      return {
-        disabled: obj.disabled || false,
-        handle: obj.handle,
-        container: obj.container,
-        axis: obj.axis || 'both',
-        grid: obj.grid,
-        bounds: obj.bounds,
-        onStart: obj.onStart,
-        onDrag: obj.onDrag,
-        onEnd: obj.onEnd,
-        cursor: obj.cursor || 'move',
-        zIndex: obj.zIndex,
-        opacity: obj.opacity,
-        clone: obj.clone || false,
-        revert: obj.revert || false,
-        helper: obj.helper || 'original',
-      }
+      return value as DragOptions
     }
 
-    return {
-      disabled: false,
-      axis: 'both',
-      cursor: 'move',
-    }
+    return {}
   }
 
-  private initDrag(el: HTMLElement, config: DragOptions): void {
-    const handle = this.getHandle(el, config)
+  public getExample(): string {
+    return `
+<!-- Basic draggable element -->
+<div v-drag class="draggable-box">
+  Drag me!
+</div>
 
-    // 设置样式
-    if (el.style.position === '' || el.style.position === 'static') {
-      el.style.position = 'relative'
-    }
+<!-- Axis constraint -->
+<div v-drag="{ axis: 'x' }" class="slider">
+  Horizontal only
+</div>
 
-    handle.style.cursor = config.cursor || 'move'
-    handle.style.userSelect = 'none'
+<div v-drag="{ axis: 'y' }" class="slider">
+  Vertical only
+</div>
 
-    // 绑定事件
-    const mouseDownHandler = this.createMouseDownHandler(el, config)
-    handle.addEventListener('mousedown', mouseDownHandler)
+<!-- With handle -->
+<div v-drag="{ handle: '.handle' }" class="panel">
+  <div class="handle">⋮⋮ Drag Handle</div>
+  <div class="content">Panel content</div>
+</div>
 
-    // 存储处理器
-    el._dragMouseDownHandler = mouseDownHandler
-    el._dragHandle = handle
+<!-- Boundary constraints -->
+<div v-drag="{
+  constraint: {
+    parent: true
   }
+}" class="bounded-box">
+  Constrained to parent
+</div>
 
-  private destroyDrag(el: HTMLElement): void {
-    const handle = el._dragHandle
-    const mouseDownHandler = el._dragMouseDownHandler
+<!-- With callbacks -->
+<div v-drag="{
+  onStart: (e) => console.log('Drag started', e),
+  onMove: (e) => updatePosition(e),
+  onEnd: (e) => savePosition(e)
+}" class="tracked-box">
+  Tracked dragging
+</div>
 
-    if (handle && mouseDownHandler) {
-      handle.removeEventListener('mousedown', mouseDownHandler)
-      handle.style.cursor = ''
-      handle.style.userSelect = ''
-    }
-
-    // 清理拖拽状态
-    this.cleanupDragState(el)
-
-    delete el._dragMouseDownHandler
-    delete el._dragHandle
+<!-- Custom constraints -->
+<div v-drag="{
+  constraint: {
+    minX: 0,
+    maxX: 500,
+    minY: 0,
+    maxY: 300
   }
-
-  private getHandle(el: HTMLElement, config: DragOptions): HTMLElement {
-    if (!config.handle) {
-      return el
-    }
-
-    if (typeof config.handle === 'string') {
-      const handleEl = el.querySelector(config.handle) as HTMLElement
-      return handleEl || el
-    }
-
-    return config.handle
-  }
-
-  private createMouseDownHandler(
-    el: HTMLElement,
-    config: DragOptions
-  ): EventListener {
-    return (event: Event) => {
-      const mouseEvent = event as MouseEvent
-      mouseEvent.preventDefault()
-
-      // 检查是否应该开始拖拽
-      if (mouseEvent.button !== 0) return // 只响应左键
-
-      const startPosition = this.getStartPosition(el, mouseEvent)
-
-      // 创建拖拽状态
-      const dragState: DragState = {
-        isDragging: false,
-        startX: mouseEvent.clientX,
-        startY: mouseEvent.clientY,
-        currentX: startPosition.x,
-        currentY: startPosition.y,
-        originalX: startPosition.x,
-        originalY: startPosition.y,
-      }
-
-      el._dragState = dragState
-
-      // 创建事件处理器
-      const mouseMoveHandler = this.createMouseMoveHandler(
-        el,
-        config,
-        dragState
-      )
-      const mouseUpHandler = this.createMouseUpHandler(
-        el,
-        config,
-        dragState,
-        mouseMoveHandler
-      )
-
-      // 绑定全局事件
-      document.addEventListener('mousemove', mouseMoveHandler)
-      document.addEventListener('mouseup', mouseUpHandler)
-
-      // 存储处理器以便清理
-      el._dragMouseMoveHandler = mouseMoveHandler
-      el._dragMouseUpHandler = mouseUpHandler
-
-      // 触发开始回调
-      config.onStart?.(mouseEvent, { x: startPosition.x, y: startPosition.y })
-    }
-  }
-
-  private createMouseMoveHandler(
-    el: HTMLElement,
-    config: DragOptions,
-    dragState: DragState
-  ): EventListener {
-    return (event: Event) => {
-      const mouseEvent = event as MouseEvent
-      if (!dragState.isDragging) {
-        dragState.isDragging = true
-        this.onDragStart(el, config)
-      }
-
-      const deltaX = mouseEvent.clientX - dragState.startX
-      const deltaY = mouseEvent.clientY - dragState.startY
-
-      let newX = dragState.originalX + deltaX
-      let newY = dragState.originalY + deltaY
-
-      // 应用轴限制
-      if (config.axis === 'x') {
-        newY = dragState.originalY
-      } else if (config.axis === 'y') {
-        newX = dragState.originalX
-      }
-
-      // 应用网格对齐
-      if (config.grid) {
-        newX = Math.round(newX / config.grid[0]) * config.grid[0]
-        newY = Math.round(newY / config.grid[1]) * config.grid[1]
-      }
-
-      // 应用边界限制
-      const bounds = this.getBounds(el, config)
-      if (bounds && typeof bounds === 'object') {
-        if (bounds.left !== undefined) newX = Math.max(newX, bounds.left)
-        if (bounds.right !== undefined) newX = Math.min(newX, bounds.right)
-        if (bounds.top !== undefined) newY = Math.max(newY, bounds.top)
-        if (bounds.bottom !== undefined) newY = Math.min(newY, bounds.bottom)
-      }
-
-      // 更新位置
-      dragState.currentX = newX
-      dragState.currentY = newY
-
-      this.updatePosition(el, newX, newY)
-
-      // 触发拖拽回调
-      config.onDrag?.(mouseEvent, { x: newX, y: newY })
-    }
-  }
-
-  private createMouseUpHandler(
-    el: HTMLElement,
-    config: DragOptions,
-    dragState: DragState,
-    mouseMoveHandler: EventListener
-  ): EventListener {
-    return (event: Event) => {
-      const mouseEvent = event as MouseEvent
-      // 移除全局事件监听器
-      document.removeEventListener('mousemove', mouseMoveHandler)
-      document.removeEventListener('mouseup', el._dragMouseUpHandler!)
-
-      if (dragState.isDragging) {
-        this.onDragEnd(el, config, dragState)
-
-        // 触发结束回调
-        config.onEnd?.(mouseEvent, {
-          x: dragState.currentX,
-          y: dragState.currentY,
-        })
-      }
-
-      // 清理状态
-      this.cleanupDragState(el)
-    }
-  }
-
-  private getStartPosition(
-    el: HTMLElement,
-    _event: MouseEvent
-  ): { x: number; y: number } {
-    const computedStyle = getComputedStyle(el)
-
-    const left = Number.parseInt(computedStyle.left) || 0
-    const top = Number.parseInt(computedStyle.top) || 0
-
-    return { x: left, y: top }
-  }
-
-  private getBounds(
-    el: HTMLElement,
-    config: DragOptions
-  ): DragOptions['bounds'] | null {
-    if (!config.bounds) return null
-
-    if (typeof config.bounds === 'object' && config.bounds !== null) {
-      return config.bounds
-    }
-
-    if (config.bounds === 'parent') {
-      const parent = el.parentElement
-      if (parent) {
-        const parentRect = parent.getBoundingClientRect()
-        const elRect = el.getBoundingClientRect()
-
-        return {
-          left: 0,
-          top: 0,
-          right: parentRect.width - elRect.width,
-          bottom: parentRect.height - elRect.height,
-        }
-      }
-    }
-
-    if (typeof config.bounds === 'string') {
-      const container = document.querySelector(config.bounds) as HTMLElement
-      if (container) {
-        const containerRect = container.getBoundingClientRect()
-        const elRect = el.getBoundingClientRect()
-
-        return {
-          left: containerRect.left,
-          top: containerRect.top,
-          right: containerRect.right - elRect.width,
-          bottom: containerRect.bottom - elRect.height,
-        }
-      }
-    }
-
-    return null
-  }
-
-  private updatePosition(el: HTMLElement, x: number, y: number): void {
-    el.style.left = `${x}px`
-    el.style.top = `${y}px`
-  }
-
-  private onDragStart(el: HTMLElement, config: DragOptions): void {
-    // 添加拖拽样式
-    this.addClass(el, 'dragging')
-
-    // 设置z-index
-    if (config.zIndex) {
-      el.style.zIndex = config.zIndex.toString()
-    }
-
-    // 设置透明度
-    if (config.opacity !== undefined) {
-      el.style.opacity = config.opacity.toString()
-    }
-  }
-
-  private onDragEnd(
-    el: HTMLElement,
-    config: DragOptions,
-    dragState: DragState
-  ): void {
-    // 移除拖拽样式
-    this.removeClass(el, 'dragging')
-
-    // 恢复样式
-    if (config.zIndex) {
-      el.style.zIndex = ''
-    }
-
-    if (config.opacity !== undefined) {
-      el.style.opacity = ''
-    }
-
-    // 处理回退
-    if (config.revert) {
-      this.revertPosition(el, dragState)
-    }
-  }
-
-  private revertPosition(el: HTMLElement, dragState: DragState): void {
-    // 动画回到原位置
-    el.style.transition = 'all 0.3s ease'
-    this.updatePosition(el, dragState.originalX, dragState.originalY)
-
-    setTimeout(() => {
-      el.style.transition = ''
-    }, 300)
-  }
-
-  private cleanupDragState(el: HTMLElement): void {
-    delete el._dragState
-    delete el._dragMouseMoveHandler
-    delete el._dragMouseUpHandler
-  }
-}
-
-// 创建Vue指令
-export const vDrag = defineDirective('drag', {
-  mounted(el: HTMLElement, binding: VueDirectiveBinding) {
-    const directive = new DragDirective()
-    directive.mounted(el, binding)
-
-    if (!el._engineDirectives) {
-      el._engineDirectives = new Map()
-    }
-    el._engineDirectives.set('drag', directive)
-  },
-
-  updated(el: HTMLElement, binding: VueDirectiveBinding) {
-    const directive = el._engineDirectives?.get(
-      'drag'
-    ) as unknown as DragDirective
-    if (directive) {
-      directive.updated(el, binding)
-    }
-  },
-
-  unmounted(el: HTMLElement) {
-    const directive = el._engineDirectives?.get(
-      'drag'
-    ) as unknown as DragDirective
-    if (directive) {
-      directive.unmounted(el)
-      el._engineDirectives?.delete('drag')
-    }
-  },
-})
-
-// 扩展HTMLElement类型
-declare global {
-  interface HTMLElement {
-    _dragState?: DragState
-    _dragConfig?: DragOptions
-    _dragMouseDownHandler?: EventListener
-    _dragMouseMoveHandler?: EventListener
-    _dragMouseUpHandler?: EventListener
-    _dragHandle?: HTMLElement
-  }
-}
-
-// 导出指令实例
-interface DragState {
-  isDragging: boolean
-  startX: number
-  startY: number
-  currentX: number
-  currentY: number
-  originalX: number
-  originalY: number
-}
-
-export const dragDirective = new DragDirective()
-
-// 使用示例
-/*
-<template>
-  <!-- 基础拖拽 -->
-  <div v-drag class="draggable-box">
-    可拖拽的盒子
-  </div>
-
-  <!-- 指定拖拽手柄 -->
-  <div v-drag="{ handle: '.drag-handle' }" class="window">
-    <div class="drag-handle">拖拽手柄</div>
-    <div class="content">窗口内容</div>
-  </div>
-
-  <!-- 限制拖拽轴 -->
-  <div v-drag="{ axis: 'x' }" class="horizontal-slider">
-    只能水平拖拽
-  </div>
-
-  <!-- 完整配置 -->
-  <div v-drag="{
-    handle: '.title-bar',
-    bounds: 'parent',
-    axis: 'both',
-    grid: [10, 10],
-    cursor: 'grabbing',
-    opacity: 0.8,
-    zIndex: 1000,
-    onStart: handleDragStart,
-    onDrag: handleDrag,
-    onEnd: handleDragEnd
-  }" class="modal">
-    <div class="title-bar">标题栏</div>
-    <div class="modal-content">模态框内容</div>
-  </div>
-
-  <!-- 边界限制 -->
-  <div class="container">
-    <div v-drag="{
-      bounds: {
-        left: 0,
-        top: 0,
-        right: 300,
-        bottom: 200
-      }
-    }" class="bounded-element">
-      边界限制拖拽
-    </div>
-  </div>
-</template>
-
-<script setup>
-const handleDragStart = (event, position) => {
-  this.logger.debug('开始拖拽:', position)
-}
-
-const handleDrag = (event, position) => {
-  this.logger.debug('拖拽中:', position)
-}
-
-const handleDragEnd = (event, position) => {
-  this.logger.debug('拖拽结束:', position)
-}
-</script>
+}" class="limited-box">
+  Limited range
+</div>
 
 <style>
 .draggable-box {
   width: 100px;
   height: 100px;
-  background: #409eff;
+  background: #3498db;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
-.dragging {
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  transform: scale(1.05);
-}
-
-.drag-handle {
-  background: #333;
+.handle {
+  background: #2c3e50;
   color: white;
   padding: 8px;
   cursor: move;
 }
-
-.container {
-  position: relative;
-  width: 400px;
-  height: 300px;
-  border: 2px dashed #ccc;
-}
 </style>
-*/
+    `
+  }
+}
+
+// Export the directive definition
+export const vDrag = defineDirective(new DragDirective())
+
+// Export default for convenience
+export default vDrag

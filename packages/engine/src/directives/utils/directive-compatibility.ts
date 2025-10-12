@@ -11,9 +11,9 @@ import type {
   EngineDirective,
   VueDirectiveBinding,
 } from '../../types/directive'
-import { getLogger } from '../../logger/unified-logger'
+// import { getLogger } from '../../logger/logger' // 已移除日志
 
-const logger = getLogger('directive-compatibility')
+// const logger = getLogger('directive-compatibility') // 已移除日志
 
 /**
  * 检查指令类型
@@ -247,7 +247,7 @@ export function safeDirectiveCall<T extends unknown[]>(
     try {
       fn(...args)
     } catch (error) {
-      logger.error(`Error in directive ${context || 'unknown'}:`, error)
+      console.error(`Error in directive ${context || 'unknown'}:`, error)
     }
   }
 }

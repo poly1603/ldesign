@@ -4,105 +4,137 @@
  */
 
 import type { VueDirectiveBinding } from '../base/vue-directive-adapter'
-import { getLogger } from '../../logger/unified-logger'
 import { DirectiveBase } from '../base/directive-base'
-
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface CopyOptions {
-  text?: string
-  target?: string | HTMLElement
+  text?: string | (() => string)
   onSuccess?: (text: string) => void
   onError?: (error: Error) => void
-  successClass?: string
-  errorClass?: string
-  successDuration?: number
-  fallback?: boolean
+  disabled?: boolean
+  immediate?: boolean
 }
 
 export class CopyDirective extends DirectiveBase {
-  private logger = getLogger('CopyDirective')
-
   constructor() {
     super({
       name: 'copy',
-      description: '复制内容到剪贴板',
+      description: '点击复制内容到剪贴板',
       version: '1.0.0',
-      category: 'utility',
-      tags: ['copy', 'clipboard', 'utility'],
+      category: 'interaction',
+      tags: ['copy', 'clipboard', 'interaction'],
     })
   }
 
   public mounted(el: HTMLElement, binding: VueDirectiveBinding): void {
     const config = this.parseConfig(binding)
 
-    const handler = async (event: Event) => {
-      event.preventDefault()
+    const handleClick = async () => {
+      if (config.disabled) {
+        return
+      }
 
       try {
-        const textToCopy = this.getTextToCopy(el, config)
-
-        if (!textToCopy) {
-          throw new Error('No text to copy')
+        const textToCopy = this.getText(config, el)
+        await this.copyToClipboard(textToCopy)
+        
+        if (config.onSuccess) {
+          config.onSuccess(textToCopy)
         }
-
-        await this.copyToClipboard(textToCopy, config.fallback)
-
-        // 成功回调
-        config.onSuccess?.(textToCopy)
-
-        // 添加成功样式
-        if (config.successClass) {
-          this.addClass(el, config.successClass)
-
-          setTimeout(() => {
-            this.removeClass(el, config.successClass!)
-          }, config.successDuration || 1000)
-        }
-
-        this.log('Text copied successfully:', textToCopy)
+        
+        this.log(`Copied to clipboard: ${textToCopy}`)
       } catch (error) {
         const err = error as Error
-
-        // 错误回调
-        config.onError?.(err)
-
-        // 添加错误样式
-        if (config.errorClass) {
-          this.addClass(el, config.errorClass)
-
-          setTimeout(() => {
-            this.removeClass(el, config.errorClass!)
-          }, config.successDuration || 1000)
+        if (config.onError) {
+          config.onError(err)
         }
-
-        this.error_log('Failed to copy text:', err.message)
+        this.warn(`Failed to copy: ${err.message}`)
       }
     }
 
-    // 添加点击事件
-    this.addEventListener(el, 'click', handler)
+    // Store handler for cleanup
+    directiveUtils.storeData(el, 'copy-handler', handleClick)
 
-    // 添加复制样式
+    // Add click listener
+    el.addEventListener('click', handleClick)
+    
+    // Add cursor style
     el.style.cursor = 'pointer'
 
-    this.log('Copy directive mounted')
+    // Execute immediately if specified
+    if (config.immediate) {
+      handleClick()
+    }
+
+    this.log(`Copy directive mounted on element`, el)
   }
 
   public updated(el: HTMLElement, binding: VueDirectiveBinding): void {
-    if (directiveUtils.isValueChanged(binding)) {
-      this.unmounted(el)
-      this.mounted(el, binding)
+    // Remove old handler
+    const oldHandler = directiveUtils.getData(el, 'copy-handler')
+    if (oldHandler) {
+      el.removeEventListener('click', oldHandler as EventListener)
     }
+
+    // Re-mount with new config
+    this.mounted(el, binding)
+
+    this.log(`Copy directive updated on element`, el)
   }
 
   public unmounted(el: HTMLElement): void {
-    this.removeAllEventListeners(el)
+    const handler = directiveUtils.getData(el, 'copy-handler')
+    
+    if (handler) {
+      el.removeEventListener('click', handler as EventListener)
+      directiveUtils.removeData(el, 'copy-handler')
+    }
 
-    // 恢复样式
+    // Reset cursor style
     el.style.cursor = ''
 
-    this.log('Copy directive unmounted')
+    this.log(`Copy directive unmounted from element`, el)
+  }
+
+  private getText(config: CopyOptions, el: HTMLElement): string {
+    if (config.text) {
+      return typeof config.text === 'function' ? config.text() : config.text
+    }
+    
+    // Try to get text from element
+    const input = el as HTMLInputElement
+    if (input.value !== undefined) {
+      return input.value
+    }
+    
+    return el.textContent || ''
+  }
+
+  private async copyToClipboard(text: string): Promise<void> {
+    // Try modern Clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+      return
+    }
+
+    // Fallback to older method
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    textarea.style.left = '-999999px'
+    
+    document.body.appendChild(textarea)
+    textarea.select()
+    
+    try {
+      const successful = document.execCommand('copy')
+      if (!successful) {
+        throw new Error('Copy command failed')
+      }
+    } finally {
+      document.body.removeChild(textarea)
+    }
   }
 
   private parseConfig(binding: VueDirectiveBinding): CopyOptions {
@@ -112,187 +144,55 @@ export class CopyDirective extends DirectiveBase {
       return { text: value }
     }
 
+    if (typeof value === 'function') {
+      return { text: value }
+    }
+
     if (typeof value === 'object' && value !== null) {
-      const obj = value as Partial<CopyOptions>
-      return {
-        text: obj.text,
-        target: obj.target,
-        onSuccess: obj.onSuccess,
-        onError: obj.onError,
-        successClass: obj.successClass || 'copy-success',
-        errorClass: obj.errorClass || 'copy-error',
-        successDuration: obj.successDuration,
-        fallback: obj.fallback !== false,
-      }
+      return value as CopyOptions
     }
 
     return {}
   }
 
-  private getTextToCopy(el: HTMLElement, config: CopyOptions): string {
-    // 优先使用配置中的文本
-    if (config.text) {
-      return config.text
-    }
+  public getExample(): string {
+    return `
+<!-- Copy static text -->
+<button v-copy="'Hello, World!'">
+  Copy Text
+</button>
 
-    // 使用目标元素的文本
-    if (config.target) {
-      const targetEl =
-        typeof config.target === 'string'
-          ? (document.querySelector(config.target) as HTMLElement)
-          : config.target
+<!-- Copy from element content -->
+<div v-copy>
+  This content will be copied
+</div>
 
-      if (targetEl) {
-        return this.getElementText(targetEl)
-      }
-    }
+<!-- Copy from input value -->
+<input v-copy value="Copy this value" />
 
-    // 使用当前元素的文本
-    return this.getElementText(el)
-  }
+<!-- With options -->
+<button v-copy="{
+  text: 'Custom text to copy',
+  onSuccess: (text) => console.log('Copied:', text),
+  onError: (error) => console.error('Failed:', error),
+  disabled: false
+}">
+  Copy with Options
+</button>
 
-  private getElementText(el: HTMLElement): string {
-    // 如果是输入元素，获取其值
-    if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
-      return el.value
-    }
-
-    // 如果有data-copy属性，使用该属性值
-    const dataCopy = el.getAttribute('data-copy')
-    if (dataCopy) {
-      return dataCopy
-    }
-
-    // 使用元素的文本内容
-    return el.textContent || ''
-  }
-
-  private async copyToClipboard(text: string, fallback = true): Promise<void> {
-    // 优先使用现代API
-    if (navigator.clipboard && window.isSecureContext) {
-      try {
-        await navigator.clipboard.writeText(text)
-        return
-      } catch (error) {
-        if (!fallback) {
-          throw error
-        }
-        // 如果现代API失败且允许fallback，继续使用传统方法
-      }
-    }
-
-    // 传统方法
-    if (fallback) {
-      this.fallbackCopyToClipboard(text)
-    } else {
-      throw new Error('Clipboard API not available')
-    }
-  }
-
-  private fallbackCopyToClipboard(text: string): void {
-    const textArea = document.createElement('textarea')
-    textArea.value = text
-    textArea.style.position = 'fixed'
-    textArea.style.left = '-999999px'
-    textArea.style.top = '-999999px'
-
-    document.body.appendChild(textArea)
-    textArea.focus()
-    textArea.select()
-
-    try {
-      const successful = document.execCommand('copy')
-      if (!successful) {
-        throw new Error('execCommand copy failed')
-      }
-    } finally {
-      document.body.removeChild(textArea)
-    }
+<!-- Dynamic text -->
+<button v-copy="{
+  text: () => new Date().toISOString(),
+  onSuccess: () => showToast('Copied!')
+}">
+  Copy Current Time
+</button>
+    `
   }
 }
 
-// 创建Vue指令
-export const vCopy = defineDirective('copy', {
-  mounted(el: HTMLElement, binding: VueDirectiveBinding) {
-    const directive = new CopyDirective()
-    directive.mounted(el, binding)
+// Export the directive definition
+export const vCopy = defineDirective(new CopyDirective())
 
-    if (!el._engineDirectives) {
-      el._engineDirectives = new Map()
-    }
-    el._engineDirectives.set('copy', directive)
-  },
-
-  updated(el: HTMLElement, binding: VueDirectiveBinding) {
-    const directive = el._engineDirectives?.get(
-      'copy'
-    ) as unknown as CopyDirective
-    if (directive) {
-      directive.updated(el, binding)
-    }
-  },
-
-  unmounted(el: HTMLElement) {
-    const directive = el._engineDirectives?.get(
-      'copy'
-    ) as unknown as CopyDirective
-    if (directive) {
-      directive.unmounted(el)
-      el._engineDirectives?.delete('copy')
-    }
-  },
-})
-
-// 导出指令实例
-export const copyDirective = new CopyDirective()
-
-// 使用示例
-/*
-<template>
-  <!-- 基础用法 - 复制元素文本 -->
-  <button v-copy>复制我</button>
-
-  <!-- 复制指定文本 -->
-  <button v-copy="'Hello World'">复制Hello World</button>
-
-  <!-- 复制其他元素的内容 -->
-  <button v-copy="{ target: '#target-element' }">复制目标元素</button>
-
-  <!-- 完整配置 -->
-  <button v-copy="{
-    text: 'Custom text',
-    onSuccess: handleSuccess,
-    onError: handleError,
-    successClass: 'copy-success',
-    errorClass: 'copy-error',
-    successDuration: 2000
-  }">
-    高级复制
-  </button>
-
-  <!-- 使用data-copy属性 -->
-  <span v-copy data-copy="Secret text">点击复制隐藏文本</span>
-</template>
-
-<script setup>
-const handleSuccess = (text) => {
-  this.logger.debug('复制成功:', text)
-}
-
-const handleError = (error) => {
-  this.logger.error('复制失败:', error)
-}
-</script>
-
-<style>
-.copy-success {
-  background-color: #4caf50;
-  color: white;
-}
-
-.copy-error {
-  background-color: #f44336;
-  color: white;
-}
-</style>
-*/
+// Export default for convenience
+export default vCopy

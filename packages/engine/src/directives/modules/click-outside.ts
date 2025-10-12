@@ -4,9 +4,7 @@
  */
 
 import type { VueDirectiveBinding } from '../base/vue-directive-adapter'
-import { getLogger } from '../../logger/unified-logger'
 import { DirectiveBase } from '../base/directive-base'
-
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface ClickOutsideOptions {
@@ -17,7 +15,7 @@ export interface ClickOutsideOptions {
 }
 
 export class ClickOutsideDirective extends DirectiveBase {
-  private logger = getLogger('ClickOutsideDirective')
+  private documentHandler: ((e: Event) => void) | null = null
 
   constructor() {
     super({
@@ -44,159 +42,120 @@ export class ClickOutsideDirective extends DirectiveBase {
 
       const target = event.target as Node
 
-      // 检查点击是否在元素内部
-      if (el === target || el.contains(target)) {
+      // Check if click is inside the element
+      if (el.contains(target)) {
         return
       }
 
-      // 检查排除列表
-      if (config.exclude) {
-        const excludeElements = Array.isArray(config.exclude)
-          ? config.exclude
-          : [config.exclude]
-
-        for (const exclude of excludeElements) {
-          if (typeof exclude === 'string') {
-            const excludeEl = document.querySelector(exclude)
-            if (
-              excludeEl &&
-              (excludeEl === target || excludeEl.contains(target))
-            ) {
-              return
-            }
-          } else if (exclude instanceof HTMLElement) {
-            if (exclude === target || exclude.contains(target)) {
-              return
-            }
+      // Check excluded elements
+      if (config.exclude && config.exclude.length > 0) {
+        const isExcluded = config.exclude.some((item) => {
+          if (typeof item === 'string') {
+            const excludeEl = document.querySelector(item)
+            return excludeEl && excludeEl.contains(target)
+          } else if (item instanceof HTMLElement) {
+            return item.contains(target)
           }
+          return false
+        })
+
+        if (isExcluded) {
+          return
         }
       }
 
-      // 触发回调
-      config.handler?.(event)
+      // Trigger the handler
+      config.handler(event)
     }
 
-    // 存储处理器
-    el._clickOutsideHandler = handler
+    // Store handler for cleanup
+    this.documentHandler = handler
+    directiveUtils.storeData(el, 'click-outside-handler', handler)
 
-    // 添加事件监听器（使用被动监听器以优化滚动性能）
-    const useCapture = !!config.capture
-    document.addEventListener('click', handler, { capture: useCapture, passive: true })
-    // 记录以便正确移除监听器
-    el._clickOutsideCapture = useCapture
+    // Add event listener
+    document.addEventListener('click', handler, config.capture ?? true)
 
-    this.log('Click outside directive mounted')
+    this.log(`Directive mounted on element`, el)
   }
 
   public updated(el: HTMLElement, binding: VueDirectiveBinding): void {
-    // 如果配置改变，重新绑定
-    if (directiveUtils.isValueChanged(binding)) {
-      this.unmounted(el)
-      this.mounted(el, binding)
+    const config = this.parseConfig(binding)
+    const oldHandler = directiveUtils.getData(el, 'click-outside-handler')
+
+    // Remove old handler if exists
+    if (oldHandler) {
+      document.removeEventListener('click', oldHandler as EventListener, true)
+      document.removeEventListener('click', oldHandler as EventListener, false)
     }
+
+    // Mount new handler
+    this.mounted(el, binding)
+
+    this.log(`Directive updated on element`, el)
   }
 
-  public unmounted(el: HTMLElement): void {
-    if (el._clickOutsideHandler) {
-      // 使用相同的 capture 选项确保能够移除监听器
-      document.removeEventListener('click', el._clickOutsideHandler, !!el._clickOutsideCapture)
-      delete el._clickOutsideHandler
-      delete el._clickOutsideCapture
+  public unmounted(el: HTMLElement, binding: VueDirectiveBinding): void {
+    const handler = directiveUtils.getData(el, 'click-outside-handler')
+
+    if (handler) {
+      document.removeEventListener('click', handler as EventListener, true)
+      document.removeEventListener('click', handler as EventListener, false)
+      directiveUtils.removeData(el, 'click-outside-handler')
     }
 
-    this.log('Click outside directive unmounted')
+    this.documentHandler = null
+    this.log(`Directive unmounted from element`, el)
   }
 
   private parseConfig(binding: VueDirectiveBinding): ClickOutsideOptions {
     const value = binding.value
 
+    // Handle different binding formats
     if (typeof value === 'function') {
-      return { handler: value as (event: Event) => void }
+      return { handler: value }
     }
 
     if (typeof value === 'object' && value !== null) {
-      const obj = value as Partial<ClickOutsideOptions> & { handler?: (event: Event) => void }
       return {
-        handler: obj.handler,
-        exclude: obj.exclude,
-        capture: obj.capture,
-        disabled: obj.disabled,
+        handler: value.handler,
+        exclude: value.exclude,
+        capture: value.capture,
+        disabled: value.disabled,
       }
     }
 
-    // 未提供处理器时返回空配置，以便在 mounted 中发出警告
     return {}
   }
-}
 
-// 创建Vue指令
-export const vClickOutside = defineDirective('click-outside', {
-  mounted(el: HTMLElement, binding: VueDirectiveBinding) {
-    const directive = new ClickOutsideDirective()
-    directive.mounted(el, binding)
+  public getExample(): string {
+    return `
+<!-- Basic usage -->
+<div v-click-outside="handleClickOutside">
+  Click outside me
+</div>
 
-    // 存储指令实例
-    if (!el._engineDirectives) {
-      el._engineDirectives = new Map()
-    }
-    el._engineDirectives.set('click-outside', directive)
-  },
-
-  updated(el: HTMLElement, binding: VueDirectiveBinding) {
-    const directive = el._engineDirectives?.get(
-      'click-outside'
-    ) as unknown as ClickOutsideDirective
-    if (directive) {
-      directive.updated(el, binding)
-    }
-  },
-
-  unmounted(el: HTMLElement, _binding: VueDirectiveBinding) {
-    const directive = el._engineDirectives?.get(
-      'click-outside'
-    ) as unknown as ClickOutsideDirective
-    if (directive) {
-      directive.unmounted(el)
-      el._engineDirectives?.delete('click-outside')
-    }
-  },
-})
-
-// 扩展HTMLElement类型
-declare global {
-  interface HTMLElement {
-    _clickOutsideHandler?: (event: Event) => void
-    _clickOutsideCapture?: boolean
-  }
-}
-
-// 导出指令实例
-export const clickOutsideDirective = new ClickOutsideDirective()
-
-// 使用示例
-/*
-<template>
-  <!-- 基础用法 -->
-  <div v-click-outside="handleClickOutside">
-    点击外部关闭
-  </div>
-
-  <!-- 配置用法 -->
-  <div v-click-outside="{
-    handler: handleClickOutside,
-    exclude: ['.exclude-element'],
-    capture: true,
-    disabled: isDisabled
-  }">
-    高级配置
-  </div>
-</template>
+<!-- With options -->
+<div v-click-outside="{
+  handler: handleClickOutside,
+  exclude: ['.modal', '#dropdown'],
+  capture: true,
+  disabled: false
+}">
+  Advanced click outside
+</div>
 
 <script setup>
 const handleClickOutside = (event) => {
-  this.logger.debug('Clicked outside:', event)
+  console.log('Clicked outside!', event)
+  // Close dropdown, modal, etc.
+}
+</script>
+    `
+  }
 }
 
-const isDisabled = ref(false)
-</script>
-*/
+// Export the directive definition
+export const vClickOutside = defineDirective(new ClickOutsideDirective())
+
+// Export default for convenience
+export default vClickOutside

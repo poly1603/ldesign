@@ -1,6 +1,6 @@
 import type { App, Component, ComponentInternalInstance, Plugin, SetupContext } from 'vue'
-import type { CreateEngineOptions, Engine } from '../types'
-import { createEngine } from '../core/factory'
+import type { Engine } from '../types'
+import { createEngineApp } from '../core/create-engine-app'
 
 /**
  * 安全检查开发环境
@@ -26,7 +26,7 @@ function isDevelopment(): boolean {
 /**
  * Vue插件选项接口
  */
-export interface VueEnginePluginOptions extends CreateEngineOptions {
+export interface VueEnginePluginOptions {
   /** 是否在开发环境下启用调试模式 */
   debug?: boolean
   /** 是否自动注册全局组件 */
@@ -41,6 +41,10 @@ export interface VueEnginePluginOptions extends CreateEngineOptions {
   injectKey?: string
   /** 是否在window上暴露引擎实例（仅开发环境） */
   exposeGlobal?: boolean
+  /** 引擎配置 */
+  config?: Record<string, unknown>
+  /** 插件列表 */
+  plugins?: any[]
 }
 
 /**
@@ -79,91 +83,19 @@ export function createVueEnginePlugin(options: VueEnginePluginOptions = {}): Plu
     globalPropertyName = '$engine',
     injectKey = 'engine',
     exposeGlobal = isDevelopment(),
-    ...engineOptions
+    config = {},
+    plugins = []
   } = options
 
   return {
-    install(app: App) {
+    async install(app: App) {
       // 创建引擎实例
-      const engine = createEngine({
-        ...engineOptions,
+      const engine = await createEngineApp({
         config: {
           debug,
-          environment: 'development' as const,
-          ...engineOptions.config,
-          app: engineOptions.config?.app || { name: 'Vue App', version: '1.0.0' },
-          features: {
-            enableHotReload: true,
-            enableDevTools: true,
-            enablePerformanceMonitoring: true,
-            enableErrorReporting: true,
-            enableSecurityProtection: true,
-            enableCaching: true,
-            enableNotifications: true,
-            ...engineOptions.config?.features
-          },
-          logger: {
-            level: 'info',
-            maxLogs: 1000,
-            enableConsole: true,
-            enableStorage: false,
-            storageKey: 'engine-logs',
-            transports: [],
-            ...engineOptions.config?.logger
-          },
-          cache: {
-            enabled: true,
-            maxSize: 100,
-            defaultTTL: 300000,
-            strategy: 'lru',
-            enableStats: true,
-            cleanupInterval: 60000,
-            ...engineOptions.config?.cache
-          },
-          security: {
-            xss: {
-              enabled: true,
-              allowedTags: [],
-              allowedAttributes: {}
-            },
-            csrf: {
-              enabled: true,
-              tokenName: '_token',
-              headerName: 'X-CSRF-Token'
-            },
-            csp: {
-              enabled: true,
-              directives: {},
-              reportOnly: false
-            },
-            ...engineOptions.config?.security
-          },
-          performance: {
-            enabled: true,
-            sampleRate: 0.1,
-            maxEntries: 1000,
-            thresholds: {
-              responseTime: { good: 100, poor: 1000 },
-              fps: { good: 60, poor: 30 },
-              memory: { warning: 50, critical: 80 }
-            },
-            ...engineOptions.config?.performance
-          },
-          notifications: {
-            enabled: true,
-            maxNotifications: 5,
-            defaultDuration: 5000,
-            defaultPosition: 'top-right',
-            defaultTheme: 'auto',
-            ...engineOptions.config?.notifications
-          },
-          env: {
-            ...engineOptions.config?.env
-          },
-          custom: {
-            ...engineOptions.config?.custom
-          }
-        }
+          ...config
+        },
+        plugins
       })
 
       // 安装引擎到Vue应用
@@ -316,7 +248,7 @@ export function defineEngineModel<T>(key: string, defaultValue: T) {
     get: () => defaultValue,
     set: (_value: T) => {
       // 运行时会被替换为实际的引擎状态操作
-      logger.warn('defineEngineModel needs build-time support')
+      console.warn('defineEngineModel needs build-time support')
     }
   }
 }
@@ -373,7 +305,7 @@ export function engineComponent(options: {
     if (errorBoundary) {
       enhancedComponent.errorCaptured = function (error: Error, instance: ComponentInternalInstance | null, info: string) {
         // 错误处理逻辑
-        logger.error('Component error:', error, info)
+        console.error('Component error:', error, info)
         return false
       }
     }

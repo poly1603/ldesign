@@ -1,6 +1,4 @@
 /**
-import { getLogger } from '../../logger/unified-logger';
-
  * 指令基础类
  * 提供指令的基础功能和通用方法
  */
@@ -23,7 +21,6 @@ export interface DirectiveOptions {
 }
 
 export abstract class DirectiveBase implements EngineDirective {
-  private logger = getLogger('DirectiveBase')
 
   public readonly name: string
   public readonly description?: string
@@ -107,22 +104,20 @@ export abstract class DirectiveBase implements EngineDirective {
 
   error(error: Error): void {
     // 错误处理
-    this.logger.error(`Directive ${this.name} error:`, error)
+    console.error(`Directive ${this.name} error:`, error)
   }
 
   // 工具方法
   protected log(message: string, ...args: unknown[]): void {
-    if (this.config.logging) {
-      this.logger.warn(`[Directive:${this.name}]`, message, ...args)
-    }
+    // 移除日志功能以减少包体积
   }
 
   protected warn(message: string, ...args: unknown[]): void {
-    this.logger.warn(`[Directive:${this.name}]`, message, ...args)
+    // 移除日志功能以减少包体积
   }
 
   protected error_log(message: string, ...args: unknown[]): void {
-    this.logger.error(`[Directive:${this.name}]`, message, ...args)
+    // 移除日志功能以减少包体积
   }
 
   // 验证方法
