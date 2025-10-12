@@ -11,3 +11,15 @@ export {
   useEnginePlugins,
   useEngineState,
 } from './useEngine'
+
+// 功能特性组合式函数
+export {
+  useNotification,
+  useLogger,
+  useCache,
+  useEvents,
+  usePerformance,
+  useConfig,
+  useErrorHandler,
+  usePlugins,
+} from './useEngineFeatures'

@@ -15,6 +15,8 @@ import {
 } from '../utils/quick-setup'
 import { PerformanceBudgetManager, type PerformanceBudget, type PerformanceMetric } from '../performance/performance-budget'
 import { ShortcutsManager, type ShortcutHandler, type ShortcutOptions } from '../shortcuts/shortcuts-manager'
+import { ThemeManager, type ThemeManagerConfig } from '../theme/theme-manager'
+import type { Theme } from '../types/style'
 
 /**
  * 引擎应用配置选项

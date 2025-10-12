@@ -68,8 +68,18 @@ export type {
 } from './types/logger'
 
 // ==================== 实用工具导出 ====================
-// Vue组合式API
-export { useEngine } from './vue/composables/useEngine'
+// Vue组合式 API
+export { 
+  useEngine,
+  useNotification,
+  useLogger,
+  useCache,
+  useEvents,
+  usePerformance,
+  useConfig,
+  useErrorHandler,
+  usePlugins 
+} from './vue/composables'
 
 // 常用工具函数
 export { 
