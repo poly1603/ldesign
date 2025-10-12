@@ -1230,6 +1230,22 @@ export class I18n implements I18nInstance {
   }
 
   /**
+   * 获取当前语言（属性访问器）
+   */
+  get locale(): string {
+    return this.currentLocale
+  }
+
+  /**
+   * 设置当前语言（属性访问器）
+   */
+  set locale(value: string) {
+    this.changeLanguage(value).catch(error => {
+      console.error('Failed to change language:', error)
+    })
+  }
+
+  /**
    * 预加载语言
    * @param locale 语言代码
    */

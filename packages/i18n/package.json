@@ -1,7 +1,7 @@
 {
   "name": "@ldesign/i18n",
-  "version": "2.0.0",
-  "description": "现代化的国际化解决方案，支持任意前端框架，内置 Vue 3 集成",
+  "version": "3.0.0",
+  "description": "高性能、现代化的国际化解决方案，支持任意前端框架，内置 Vue 3 集成。包含统一缓存系统、性能监控、智能预加载等高级功能",
   "keywords": [
     "i18n",
     "internationalization",
@@ -24,6 +24,11 @@
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
+    },
+    "./core": {
+      "types": "./es/core/index.d.ts",
+      "import": "./es/core/index.js",
+      "require": "./lib/core/index.cjs"
     },
     "./core/*": {
       "types": "./es/core/*.d.ts",
@@ -49,6 +54,11 @@
       "types": "./es/types/*.d.ts",
       "import": "./es/types/*.js",
       "require": "./lib/types/*.cjs"
+    },
+    "./utils": {
+      "types": "./es/utils/index.d.ts",
+      "import": "./es/utils/index.js",
+      "require": "./lib/utils/index.cjs"
     },
     "./utils/*": {
       "types": "./es/utils/*.d.ts",

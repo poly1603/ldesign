@@ -143,6 +143,34 @@ importers:
         specifier: 3.0.8
         version: 3.0.8(typescript@5.9.2)
 
+  app_simple:
+    dependencies:
+      '@ldesign/engine':
+        specifier: workspace:*
+        version: link:../packages/engine
+      '@ldesign/i18n':
+        specifier: workspace:*
+        version: link:../packages/i18n
+      '@ldesign/router':
+        specifier: workspace:*
+        version: link:../packages/router
+      vue:
+        specifier: ^3.5.0
+        version: 3.5.22(typescript@5.9.2)
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.0
+        version: 5.2.4(vite@5.4.20(@types/node@24.5.2)(less@4.4.1)(sass-embedded@1.93.0)(sass@1.93.0)(stylus@0.64.0)(terser@5.44.0))(vue@3.5.22(typescript@5.9.2))
+      '@vue/tsconfig':
+        specifier: ^0.5.0
+        version: 0.5.1
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.2
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.20(@types/node@24.5.2)(less@4.4.1)(sass-embedded@1.93.0)(sass@1.93.0)(stylus@0.64.0)(terser@5.44.0)
+
   library/code-editor:
     devDependencies:
       '@types/node':

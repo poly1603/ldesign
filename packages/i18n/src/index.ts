@@ -10,6 +10,16 @@
 
 // ==================== 核心功能导出 ====================
 
+// AI 翻译器
+export {
+  AITranslator,
+  createAITranslator,
+} from './core/ai-translator'
+export type {
+  AIConfig,
+  AITranslatorOptions,
+} from './core/ai-translator'
+
 export {
   BatchManager,
   createBatchManager,
@@ -102,6 +112,16 @@ export type {
   MemoryStats,
 } from './core/memory-manager'
 
+// 内存优化器
+export {
+  MemoryOptimizer,
+  createMemoryOptimizer,
+  getGlobalMemoryOptimizer,
+} from './core/memory-optimizer'
+export type {
+  MemoryOptimizerConfig,
+} from './core/memory-optimizer'
+
 // 翻译合并工具
 export {
   deepMerge,
@@ -146,6 +166,23 @@ export {
 export type {
   PreloadConfig,
 } from './core/preload-manager'
+
+// 插件系统
+export {
+  PluginManager,
+  createPluginManager,
+  getGlobalPluginManager,
+  CachePlugin,
+  PerformancePlugin,
+  ValidationPlugin,
+} from './core/plugin-system'
+export type {
+  I18nPlugin,
+  PluginConfig,
+  PluginMetadata,
+  PluginHooks,
+  PluginManagerOptions,
+} from './core/plugin-system'
 // 新增：选择性和可扩展 I18n 创建函数
 export {
   type ConfigurableI18nOptions,
@@ -379,6 +416,13 @@ export const BUILD_INFO = {
 export {
   ValidationUtils,
 } from './utils/validation'
+
+// 统一工具库导出
+export {
+  UnifiedUtils,
+  utils,
+  // TimeUtils 已经从 './utils/common' 导出，避免重复
+} from './utils'
 
 export {
   installI18n,

@@ -8,6 +8,7 @@ import App from './App.vue'
 import { createRouter } from './router'
 import { engineConfig } from './config/app.config'
 import { auth } from './composables/useAuth'
+import { createI18nPlugin } from './config/i18n.config'
 
 /**
  * 启动应用
@@ -22,6 +23,9 @@ async function bootstrap() {
     // 创建路由器插件
     const routerPlugin = createRouter()
     
+    // 创建 i18n 插件
+    const i18nPlugin = await createI18nPlugin()
+    
     // 创建应用引擎
     const engine = await createEngineApp({
       // 根组件和挂载点
@@ -31,8 +35,8 @@ async function bootstrap() {
       // 使用配置文件
       config: engineConfig,
       
-      // 插件
-      plugins: [routerPlugin],
+      // 插件（路由器 + i18n）
+      plugins: [routerPlugin, i18nPlugin],
       
       // 错误处理
       onError: (error, context) => {

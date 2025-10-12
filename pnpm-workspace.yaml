@@ -2,6 +2,7 @@ packages:
   - packages/**
   - library/**
   - app
+  - app_simple
   - "!packages/icons/tdesign-icons-develop"
   - "!packages/icons/tdesign-icons-develop/**"
 

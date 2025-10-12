@@ -8,6 +8,89 @@
  */
 
 /**
+ * 时间工具
+ */
+export const TimeUtils = {
+  /**
+   * 获取当前时间戳
+   */
+  now(): number {
+    return Date.now()
+  },
+
+  /**
+   * 延迟执行
+   */
+  delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  },
+
+  /**
+   * 格式化时间戳
+   */
+  format(timestamp: number, format = 'YYYY-MM-DD HH:mm:ss'): string {
+    const date = new Date(timestamp)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const seconds = String(date.getSeconds()).padStart(2, '0')
+
+    return format
+      .replace('YYYY', String(year))
+      .replace('MM', month)
+      .replace('DD', day)
+      .replace('HH', hours)
+      .replace('mm', minutes)
+      .replace('ss', seconds)
+  },
+
+  /**
+   * 计算时间差
+   */
+  diff(start: number, end: number = Date.now()): {
+    ms: number
+    seconds: number
+    minutes: number
+    hours: number
+    days: number
+  } {
+    const ms = end - start
+    return {
+      ms,
+      seconds: ms / 1000,
+      minutes: ms / 60000,
+      hours: ms / 3600000,
+      days: ms / 86400000,
+    }
+  },
+
+  /**
+   * 格式化时间差
+   */
+  formatDuration(ms: number): string {
+    if (ms < 1000) {
+      return `${ms}ms`
+    }
+    if (ms < 60000) {
+      return `${(ms / 1000).toFixed(1)}s`
+    }
+    if (ms < 3600000) {
+      return `${(ms / 60000).toFixed(1)}m`
+    }
+    return `${(ms / 3600000).toFixed(1)}h`
+  },
+
+  /**
+   * 检查时间戳是否过期
+   */
+  isExpired(timestamp: number, ttl: number): boolean {
+    return Date.now() - timestamp > ttl
+  },
+}
+
+/**
  * 类型检查工具
  */
 export const TypeGuards = {
@@ -187,6 +270,20 @@ export const ObjectUtils = {
  */
 export const StringUtils = {
   /**
+   * 检查字符串是否为空或只包含空白字符
+   */
+  isBlank(str: string): boolean {
+    return str.trim().length === 0
+  },
+
+  /**
+   * 检查字符串是否非空
+   */
+  isNotBlank(str: string): boolean {
+    return str.trim().length > 0
+  },
+
+  /**
    * 首字母大写
    */
   capitalize(str: string): string {
@@ -216,56 +313,8 @@ export const StringUtils = {
     }
     return str.slice(0, length - suffix.length) + suffix
   },
-
-  /**
-   * 检查字符串是否为空或只包含空白字符
-   */
-  isBlank(str: string): boolean {
-    return str.trim().length === 0
-  },
 }
 
-/**
- * 时间工具
- */
-export const TimeUtils = {
-  /**
-   * 获取当前时间戳
-   */
-  now(): number {
-    return Date.now()
-  },
-
-  /**
-   * 格式化时间差
-   */
-  formatDuration(ms: number): string {
-    if (ms < 1000) {
-      return `${ms}ms`
-    }
-    if (ms < 60000) {
-      return `${(ms / 1000).toFixed(1)}s`
-    }
-    if (ms < 3600000) {
-      return `${(ms / 60000).toFixed(1)}m`
-    }
-    return `${(ms / 3600000).toFixed(1)}h`
-  },
-
-  /**
-   * 检查时间戳是否过期
-   */
-  isExpired(timestamp: number, ttl: number): boolean {
-    return Date.now() - timestamp > ttl
-  },
-
-  /**
-   * 延迟执行
-   */
-  delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
-  },
-}
 
 /**
  * 错误处理工具

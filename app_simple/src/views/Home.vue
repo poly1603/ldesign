@@ -1,59 +1,29 @@
 <template>
   <div class="home-container">
     <div class="hero">
-      <h1 class="hero-title">欢迎使用 LDesign Router</h1>
+      <h1 class="hero-title">{{ homeTitle }}</h1>
       <p class="hero-subtitle">
-        一个现代化、高性能、功能丰富的 Vue 3 路由解决方案
+        {{ homeDescription }}
       </p>
       
       <div class="hero-actions">
         <router-link to="/about" class="btn btn-primary">
-          了解更多
+          {{ commonAbout }}
         </router-link>
         <router-link to="/dashboard" class="btn btn-secondary">
-          进入仪表盘
+          {{ commonDashboard }}
         </router-link>
       </div>
     </div>
     
     <div class="features">
-      <h2 class="features-title">核心特性</h2>
+      <h2 class="features-title">{{ featuresTitle }}</h2>
       
       <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <h3>高性能</h3>
-          <p>智能预取、缓存优化、懒加载等多种性能优化策略</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">🔒</div>
-          <h3>安全可靠</h3>
-          <p>内置认证守卫、权限控制、XSS 防护等安全功能</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">📱</div>
-          <h3>响应式</h3>
-          <p>支持多设备适配，移动端、桌面端、平板端完美适应</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">🎨</div>
-          <h3>动画系统</h3>
-          <p>丰富的过渡动画效果，让路由切换更加流畅自然</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">🚀</div>
-          <h3>Engine 集成</h3>
-          <p>与 @ldesign/engine 深度集成，提供完整的应用开发体验</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">🛠️</div>
-          <h3>开发友好</h3>
-          <p>完善的 TypeScript 支持、开发工具、调试面板</p>
+        <div class="feature-card" v-for="feature in features" :key="feature.key">
+          <div class="feature-icon">{{ feature.icon }}</div>
+          <h3>{{ t(feature.title) }}</h3>
+          <p>{{ t(feature.description) }}</p>
         </div>
       </div>
     </div>
@@ -61,25 +31,77 @@
     <div class="stats">
       <div class="stat-item">
         <div class="stat-value">{{ routeCount }}</div>
-        <div class="stat-label">路由数量</div>
+        <div class="stat-label">{{ statsRoutes }}</div>
       </div>
       <div class="stat-item">
         <div class="stat-value">{{ visitCount }}</div>
-        <div class="stat-label">访问次数</div>
+        <div class="stat-label">{{ statsVisits }}</div>
       </div>
       <div class="stat-item">
         <div class="stat-value">{{ cacheSize }}KB</div>
-        <div class="stat-label">缓存大小</div>
+        <div class="stat-label">{{ statsCache }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from '@ldesign/router'
+import { useI18n } from '../composables/useI18n'
 
 const router = useRouter()
+const { t, locale } = useI18n()
+
+// 使用 computed 确保响应式更新
+const homeTitle = computed(() => t('page.home.subtitle'))
+const homeDescription = computed(() => t('page.home.description'))
+const commonAbout = computed(() => t('common.about'))
+const commonDashboard = computed(() => t('common.dashboard'))
+const featuresTitle = computed(() => t('features.title'))
+const statsRoutes = computed(() => t('stats.routes'))
+const statsVisits = computed(() => t('stats.visits'))
+const statsCache = computed(() => t('stats.cache'))
+
+// 特性列表
+const features = [
+  {
+    key: 'performance',
+    icon: '⚡',
+    title: 'features.performance.title',
+    description: 'features.performance.description'
+  },
+  {
+    key: 'security',
+    icon: '🔒',
+    title: 'features.security.title',
+    description: 'features.security.description'
+  },
+  {
+    key: 'responsive',
+    icon: '📱',
+    title: 'features.responsive.title',
+    description: 'features.responsive.description'
+  },
+  {
+    key: 'animation',
+    icon: '🎨',
+    title: 'features.animation.title',
+    description: 'features.animation.description'
+  },
+  {
+    key: 'engine',
+    icon: '🚀',
+    title: 'features.engine.title',
+    description: 'features.engine.description'
+  },
+  {
+    key: 'developer',
+    icon: '🛠️',
+    title: 'features.developer.title',
+    description: 'features.developer.description'
+  }
+]
 
 // 统计数据
 const routeCount = ref(0)

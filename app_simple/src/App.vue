@@ -4,15 +4,15 @@
     <nav class="navbar">
       <div class="nav-brand">
         <span class="logo">🚀</span>
-        <span class="brand-text">LDesign Router App</span>
+        <span class="brand-text">{{ t('nav.brand') }}</span>
       </div>
       
       <div class="nav-links">
         <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
-          首页
+          {{ t('common.home') }}
         </router-link>
         <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
-          关于
+          {{ t('common.about') }}
         </router-link>
         <router-link 
           v-if="isLoggedIn" 
@@ -20,18 +20,21 @@
           class="nav-link" 
           :class="{ active: $route.path === '/dashboard' }"
         >
-          仪表盘
+          {{ t('common.dashboard') }}
         </router-link>
         
         <div class="nav-spacer"></div>
         
+        <!-- 语言切换器 -->
+        <LocaleSelector class="nav-locale" />
+        
         <button v-if="!isLoggedIn" @click="goToLogin" class="nav-button login">
-          登录
+          {{ t('common.login') }}
         </button>
         <div v-else class="user-menu">
           <span class="username">{{ username }}</span>
           <button @click="logout" class="nav-button logout">
-            退出
+            {{ t('common.logout') }}
           </button>
         </div>
       </div>
@@ -48,7 +51,7 @@
     
     <!-- 页脚 -->
     <footer class="footer">
-      <p>&copy; 2024 LDesign Router App - Powered by @ldesign/engine & @ldesign/router</p>
+      <p>{{ t('footer.copyright') }}</p>
     </footer>
   </div>
 </template>
@@ -57,9 +60,12 @@
 import { computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from '@ldesign/router'
 import { auth } from '@/composables/useAuth'
+import { useI18n } from '@/composables/useI18n'
+import LocaleSelector from '@/components/LocaleSelector.vue'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 // 使用认证模块的状态
 const isLoggedIn = computed(() => auth.isLoggedIn.value)
@@ -203,6 +209,10 @@ onMounted(() => {
   padding: 8px 12px;
   background: rgba(102, 126, 234, 0.1);
   border-radius: 6px;
+}
+
+.nav-locale {
+  margin: 0 10px;
 }
 
 /* 主内容区域 */
