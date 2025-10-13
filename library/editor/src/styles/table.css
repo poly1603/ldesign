@@ -2,65 +2,95 @@
  * 表格样式
  */
 
-/* 编辑器中的表格样式 */
+/* 编辑器中的表格样式 - 使用更高优先级 */
 .ldesign-editor-content table {
-  border-collapse: collapse;
-  width: 100%;
-  max-width: 100%;
-  margin: 16px 0;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #fff;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 16px 0 !important;
+  border: 2px solid #d1d5db !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  background: #fff !important;
+  display: table !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
 .ldesign-editor-content table thead {
-  background: #f9fafb;
+  background: #f9fafb !important;
+  display: table-header-group !important;
 }
 
-.ldesign-editor-content table th {
-  padding: 12px 16px;
-  text-align: left;
-  font-weight: 600;
-  color: #374151;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  white-space: nowrap;
-  min-width: 80px;
-}
-
-.ldesign-editor-content table td {
-  padding: 12px 16px;
-  border: 1px solid #e5e7eb;
-  color: #4b5563;
-  min-width: 80px;
-  min-height: 36px;
+.ldesign-editor-content table tbody {
+  display: table-row-group !important;
 }
 
 .ldesign-editor-content table tr {
-  transition: background-color 0.2s;
+  display: table-row !important;
+}
+
+.ldesign-editor-content table th {
+  padding: 12px 16px !important;
+  text-align: left !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  color: #374151 !important;
+  border: 1px solid #e5e7eb !important;
+  background: #f9fafb !important;
+  white-space: nowrap !important;
+  min-width: 100px !important;
+  min-height: 40px !important;
+  height: 40px !important;
+  display: table-cell !important;
+  vertical-align: middle !important;
+}
+
+.ldesign-editor-content table td {
+  padding: 12px 16px !important;
+  border: 1px solid #e5e7eb !important;
+  font-size: 14px !important;
+  color: #4b5563 !important;
+  min-width: 100px !important;
+  min-height: 40px !important;
+  height: 40px !important;
+  display: table-cell !important;
+  background: #fff !important;
+  vertical-align: middle !important;
+}
+
+.ldesign-editor-content table tr {
+  transition: background-color 0.2s !important;
 }
 
 .ldesign-editor-content table tbody tr:hover {
-  background: #f9fafb;
+  background: #f9fafb !important;
 }
 
-.ldesign-editor-content table th:first-child,
-.ldesign-editor-content table td:first-child {
-  border-left: none;
+/* 保留内部边框，只在外围显示圆角 */
+.ldesign-editor-content table thead tr:first-child th:first-child {
+  border-top-left-radius: 6px !important;
 }
 
-.ldesign-editor-content table th:last-child,
-.ldesign-editor-content table td:last-child {
-  border-right: none;
+.ldesign-editor-content table thead tr:first-child th:last-child {
+  border-top-right-radius: 6px !important;
 }
 
-.ldesign-editor-content table thead tr:first-child th {
-  border-top: none;
+.ldesign-editor-content table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 6px !important;
 }
 
-.ldesign-editor-content table tbody tr:last-child td {
-  border-bottom: none;
+.ldesign-editor-content table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 6px !important;
+}
+
+/* 确保表格单元格可编辑时的样式 */
+.ldesign-editor-content table th[contenteditable="true"]:focus,
+.ldesign-editor-content table td[contenteditable="true"]:focus {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: -2px !important;
 }
 
 /* 表格网格选择器样式 */

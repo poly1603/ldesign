@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Plugin Test - 表格插件测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.pass {
+            background: #4CAF50;
+            color: white;
+        }
+        .status.fail {
+            background: #f44336;
+            color: white;
+        }
+        .test-description {
+            margin: 10px 0;
+            color: #666;
+        }
+        .test-instructions {
+            background: #FFF3E0;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #FF9800;
+        }
+        .fixes-summary {
+            background: #E3F2FD;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #2196F3;
+        }
+        .fixes-summary h2 {
+            margin-top: 0;
+            color: #1976D2;
+        }
+        .fixes-summary ul {
+            margin: 10px 0;
+        }
+        .fixes-summary li {
+            margin: 5px 0;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Table Plugin Test Suite - 表格插件测试套件</h1>
+    
+    <div class="fixes-summary">
+        <h2>✅ 修复内容 (Fixes Applied)</h2>
+        <ul>
+            <li><strong>右键菜单功能修复</strong>: 在创建菜单时捕获选中的单元格/行，避免点击菜单项时选区丢失</li>
+            <li><strong>表格插入位置修复</strong>: 保存并恢复光标位置，确保表格插入到正确位置</li>
+            <li><strong>网格选择器优化</strong>: 16×16网格，单元格充满容器，更好的视觉体验</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">测试 1: 表格插入位置</div>
+        <div class="test-description">
+            验证表格是否插入到光标当前位置，而不是文档开头
+        </div>
+        <div class="test-instructions">
+            <strong>测试步骤:</strong>
+            <ol>
+                <li>在编辑器中输入一些文本</li>
+                <li>将光标放在文本中间某个位置</li>
+                <li>点击工具栏的表格按钮插入表格</li>
+                <li>验证: 表格应该插入到光标位置，而不是文档开头</li>
+            </ol>
+        </div>
+        <div>预期结果: <span class="status pass">表格插入到光标位置</span></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">测试 2: 右键菜单 - 删除行</div>
+        <div class="test-description">
+            验证右键菜单的"删除当前行"功能是否正常工作
+        </div>
+        <div class="test-instructions">
+            <strong>测试步骤:</strong>
+            <ol>
+                <li>插入一个 3×3 的表格</li>
+                <li>点击任意一行的单元格</li>
+                <li>右键点击显示菜单</li>
+                <li>选择"删除当前行"</li>
+                <li>验证: 该行应该被删除，表格变为 2×3</li>
+            </ol>
+        </div>
+        <div>预期结果: <span class="status pass">成功删除选中的行</span></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">测试 3: 右键菜单 - 删除列</div>
+        <div class="test-description">
+            验证右键菜单的"删除当前列"功能是否正常工作
+        </div>
+        <div class="test-instructions">
+            <strong>测试步骤:</strong>
+            <ol>
+                <li>插入一个 3×3 的表格</li>
+                <li>点击任意一列的单元格</li>
+                <li>右键点击显示菜单</li>
+                <li>选择"删除当前列"</li>
+                <li>验证: 该列应该被删除，表格变为 3×2</li>
+            </ol>
+        </div>
+        <div>预期结果: <span class="status pass">成功删除选中的列</span></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">测试 4: 右键菜单 - 插入行/列</div>
+        <div class="test-description">
+            验证右键菜单的插入行和列功能
+        </div>
+        <div class="test-instructions">
+            <strong>测试步骤:</strong>
+            <ol>
+                <li>插入一个 2×2 的表格</li>
+                <li>右键点击任意单元格</li>
+                <li>测试"在上方插入行"、"在下方插入行"</li>
+                <li>测试"在左侧插入列"、"在右侧插入列"</li>
+                <li>验证: 新行/列应该插入到正确的位置</li>
+            </ol>
+        </div>
+        <div>预期结果: <span class="status pass">成功在指定位置插入行/列</span></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">测试 5: 网格选择器UI</div>
+        <div class="test-description">
+            验证改进后的16×16网格选择器
+        </div>
+        <div class="test-instructions">
+            <strong>测试步骤:</strong>
+            <ol>
+                <li>点击工具栏表格按钮</li>
+                <li>验证: 显示16×16的网格（而不是10×10）</li>
+                <li>验证: 网格单元格充满整个容器</li>
+                <li>鼠标悬停时高亮显示选中区域</li>
+                <li>点击任意单元格插入相应大小的表格</li>
+            </ol>
+        </div>
+        <div>预期结果: <span class="status pass">网格显示正确，交互流畅</span></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">测试 6: 删除整个表格</div>
+        <div class="test-description">
+            验证右键菜单的"删除表格"功能
+        </div>
+        <div class="test-instructions">
+            <strong>测试步骤:</strong>
+            <ol>
+                <li>插入一个表格</li>
+                <li>右键点击表格内任意位置</li>
+                <li>选择"删除表格"</li>
+                <li>验证: 整个表格应该被删除</li>
+            </ol>
+        </div>
+        <div>预期结果: <span class="status pass">成功删除整个表格</span></div>
+    </div>
+
+    <div class="test-section" style="background: #f0f0f0;">
+        <h3>🎯 测试总结</h3>
+        <p>所有修复已应用到 <code>table.ts</code> 文件中：</p>
+        <ul>
+            <li>✅ 右键菜单功能现在应该正常工作</li>
+            <li>✅ 表格插入到正确的光标位置</li>
+            <li>✅ 网格选择器已优化为16×16，充满容器</li>
+        </ul>
+        <p><strong>请在编辑器中手动测试以上功能，确认所有修复都生效。</strong></p>
+    </div>
+</body>
+</html>

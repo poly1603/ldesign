@@ -7,12 +7,321 @@ import type { Plugin, Command } from '../types'
 // import { showTableDialog } from '../ui/TableDialog'
 
 /**
+ * 创建表格右键菜单
+ */
+function createTableContextMenu(table: HTMLTableElement, x: number, y: number) {
+  // 移除已存在的菜单
+  const existingMenu = document.querySelector('.table-context-menu')
+  if (existingMenu) {
+    existingMenu.remove()
+  }
+
+  const menu = document.createElement('div')
+  menu.className = 'table-context-menu'
+  menu.style.cssText = `
+    position: fixed;
+    left: ${x}px;
+    top: ${y}px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 4px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10001;
+    min-width: 160px;
+  `
+
+  const menuItems = [
+    { text: '在上方插入行', icon: '⬆', action: () => insertRowAbove(table) },
+    { text: '在下方插入行', icon: '⬇', action: () => insertRowBelow(table) },
+    { text: '在左侧插入列', icon: '⬅', action: () => insertColumnLeft(table) },
+    { text: '在右侧插入列', icon: '➡', action: () => insertColumnRight(table) },
+    { divider: true },
+    { text: '删除当前行', icon: '🗑', action: () => deleteCurrentRow(table) },
+    { text: '删除当前列', icon: '🗑', action: () => deleteCurrentColumn(table) },
+    { divider: true },
+    { text: '删除表格', icon: '❌', action: () => deleteEntireTable(table) }
+  ]
+
+  menuItems.forEach(item => {
+    if (item.divider) {
+      const divider = document.createElement('div')
+      divider.style.cssText = 'height: 1px; background: #e5e7eb; margin: 4px 8px;'
+      menu.appendChild(divider)
+    } else {
+      const menuItem = document.createElement('div')
+      menuItem.style.cssText = `
+        padding: 8px 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #374151;
+        transition: background 0.2s;
+      `
+      menuItem.innerHTML = `<span style="width: 16px; text-align: center;">${item.icon}</span><span>${item.text}</span>`
+      menuItem.addEventListener('mouseenter', () => {
+        menuItem.style.background = '#f3f4f6'
+      })
+      menuItem.addEventListener('mouseleave', () => {
+        menuItem.style.background = 'transparent'
+      })
+      menuItem.addEventListener('click', () => {
+        item.action!()
+        menu.remove()
+      })
+      menu.appendChild(menuItem)
+    }
+  })
+
+  document.body.appendChild(menu)
+
+  // 点击其他地方关闭菜单
+  const closeMenu = (e: MouseEvent) => {
+    if (!menu.contains(e.target as Node)) {
+      menu.remove()
+      document.removeEventListener('click', closeMenu)
+    }
+  }
+  setTimeout(() => {
+    document.addEventListener('click', closeMenu)
+  }, 0)
+}
+
+// 获取当前单元格位置
+function getCellPosition(cell: HTMLElement): { row: number; col: number } | null {
+  if (!cell || (!cell.matches('td') && !cell.matches('th'))) return null
+  
+  const row = cell.parentElement as HTMLTableRowElement
+  const rowIndex = Array.from(row.parentElement!.children).indexOf(row)
+  const colIndex = Array.from(row.children).indexOf(cell)
+  
+  return { row: rowIndex, col: colIndex }
+}
+
+// 在上方插入行
+function insertRowAbove(table: HTMLTableElement) {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  
+  let node = selection.anchorNode
+  let targetRow: HTMLTableRowElement | null = null
+  
+  while (node && node !== table) {
+    if (node.nodeName === 'TR') {
+      targetRow = node as HTMLTableRowElement
+      break
+    }
+    node = node.parentNode
+  }
+  
+  if (!targetRow) return
+  
+  const newRow = targetRow.cloneNode(true) as HTMLTableRowElement
+  Array.from(newRow.cells).forEach(cell => {
+    cell.innerHTML = '&nbsp;'
+  })
+  targetRow.parentNode?.insertBefore(newRow, targetRow)
+  
+  // 触发更新
+  const event = new Event('input', { bubbles: true })
+  table.dispatchEvent(event)
+}
+
+// 在下方插入行
+function insertRowBelow(table: HTMLTableElement) {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  
+  let node = selection.anchorNode
+  let targetRow: HTMLTableRowElement | null = null
+  
+  while (node && node !== table) {
+    if (node.nodeName === 'TR') {
+      targetRow = node as HTMLTableRowElement
+      break
+    }
+    node = node.parentNode
+  }
+  
+  if (!targetRow) return
+  
+  const newRow = targetRow.cloneNode(true) as HTMLTableRowElement
+  Array.from(newRow.cells).forEach(cell => {
+    cell.innerHTML = '&nbsp;'
+  })
+  targetRow.parentNode?.insertBefore(newRow, targetRow.nextSibling)
+  
+  // 触发更新
+  const event = new Event('input', { bubbles: true })
+  table.dispatchEvent(event)
+}
+
+// 在左侧插入列
+function insertColumnLeft(table: HTMLTableElement) {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  
+  let node = selection.anchorNode
+  let targetCell: HTMLElement | null = null
+  
+  while (node && node !== table) {
+    if (node.nodeName === 'TD' || node.nodeName === 'TH') {
+      targetCell = node as HTMLElement
+      break
+    }
+    node = node.parentNode
+  }
+  
+  if (!targetCell) return
+  
+  const position = getCellPosition(targetCell)
+  if (!position) return
+  
+  // 在每一行的对应位置插入单元格
+  Array.from(table.rows).forEach(row => {
+    const newCell = row.cells[position.col].cloneNode(false) as HTMLElement
+    newCell.innerHTML = '&nbsp;'
+    newCell.setAttribute('contenteditable', 'true')
+    row.insertBefore(newCell, row.cells[position.col])
+  })
+  
+  // 触发更新
+  const event = new Event('input', { bubbles: true })
+  table.dispatchEvent(event)
+}
+
+// 在右侧插入列
+function insertColumnRight(table: HTMLTableElement) {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  
+  let node = selection.anchorNode
+  let targetCell: HTMLElement | null = null
+  
+  while (node && node !== table) {
+    if (node.nodeName === 'TD' || node.nodeName === 'TH') {
+      targetCell = node as HTMLElement
+      break
+    }
+    node = node.parentNode
+  }
+  
+  if (!targetCell) return
+  
+  const position = getCellPosition(targetCell)
+  if (!position) return
+  
+  // 在每一行的对应位置插入单元格
+  Array.from(table.rows).forEach(row => {
+    const newCell = row.cells[position.col].cloneNode(false) as HTMLElement
+    newCell.innerHTML = '&nbsp;'
+    newCell.setAttribute('contenteditable', 'true')
+    if (position.col + 1 < row.cells.length) {
+      row.insertBefore(newCell, row.cells[position.col + 1])
+    } else {
+      row.appendChild(newCell)
+    }
+  })
+  
+  // 触发更新
+  const event = new Event('input', { bubbles: true })
+  table.dispatchEvent(event)
+}
+
+// 删除当前行
+function deleteCurrentRow(table: HTMLTableElement) {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  
+  let node = selection.anchorNode
+  let targetRow: HTMLTableRowElement | null = null
+  
+  while (node && node !== table) {
+    if (node.nodeName === 'TR') {
+      targetRow = node as HTMLTableRowElement
+      break
+    }
+    node = node.parentNode
+  }
+  
+  if (!targetRow) return
+  
+  // 至少保留一行
+  const tbody = targetRow.parentElement
+  if (tbody && tbody.children.length > 1) {
+    targetRow.remove()
+    
+    // 触发更新
+    const event = new Event('input', { bubbles: true })
+    table.dispatchEvent(event)
+  }
+}
+
+// 删除当前列
+function deleteCurrentColumn(table: HTMLTableElement) {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  
+  let node = selection.anchorNode
+  let targetCell: HTMLElement | null = null
+  
+  while (node && node !== table) {
+    if (node.nodeName === 'TD' || node.nodeName === 'TH') {
+      targetCell = node as HTMLElement
+      break
+    }
+    node = node.parentNode
+  }
+  
+  if (!targetCell) return
+  
+  const position = getCellPosition(targetCell)
+  if (!position) return
+  
+  // 至少保留一列
+  const firstRow = table.rows[0]
+  if (firstRow && firstRow.cells.length > 1) {
+    // 从每一行删除对应位置的单元格
+    Array.from(table.rows).forEach(row => {
+      if (row.cells[position.col]) {
+        row.cells[position.col].remove()
+      }
+    })
+    
+    // 触发更新
+    const event = new Event('input', { bubbles: true })
+    table.dispatchEvent(event)
+  }
+}
+
+// 删除整个表格
+function deleteEntireTable(table: HTMLTableElement) {
+  table.remove()
+  
+  // 触发更新
+  const editorContent = document.querySelector('.ldesign-editor-content')
+  if (editorContent) {
+    const event = new Event('input', { bubbles: true })
+    editorContent.dispatchEvent(event)
+  }
+}
+
+/**
  * 创建表格元素
  */
 function createTableElement(rows: number, cols: number): HTMLTableElement {
   const table = document.createElement('table')
   // 不需要内联样式，使用 CSS 文件中的样式
   table.setAttribute('contenteditable', 'true')
+  
+  // 添加右键菜单事件
+  table.addEventListener('contextmenu', (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    createTableContextMenu(table, e.clientX, e.clientY)
+  })
 
   // 创建表头
   const thead = document.createElement('thead')
@@ -32,7 +341,8 @@ function createTableElement(rows: number, cols: number): HTMLTableElement {
     const tr = document.createElement('tr')
     for (let j = 0; j < cols; j++) {
       const td = document.createElement('td')
-      td.innerHTML = ''
+      // 添加默认内容以确保单元格有高度
+      td.innerHTML = '&nbsp;'
       td.setAttribute('contenteditable', 'true')
       tr.appendChild(td)
     }
@@ -57,6 +367,26 @@ const insertTable: Command = (state, dispatch) => {
 
   console.log('📋 [Table] Creating simple table selector')
   
+  // 在显示对话框之前，先保存当前的选区
+  const editorContent = document.querySelector('.ldesign-editor-content') as HTMLElement
+  if (!editorContent) {
+    console.log('❌ [Table] Editor content not found')
+    return false
+  }
+  
+  // 保存当前的选区信息
+  const originalSelection = window.getSelection()
+  let savedRange: Range | null = null
+  
+  if (originalSelection && originalSelection.rangeCount > 0) {
+    const range = originalSelection.getRangeAt(0)
+    if (editorContent.contains(range.commonAncestorContainer)) {
+      // 克隆range以保存位置
+      savedRange = range.cloneRange()
+      console.log('📋 [Table] Saved selection range:', savedRange)
+    }
+  }
+  
   try {
     // 创建简单直观的表格选择器
     const overlay = document.createElement('div')
@@ -72,37 +402,40 @@ const insertTable: Command = (state, dispatch) => {
       <style>
         .grid-table {
           display: grid;
-          grid-template-columns: repeat(10, 24px);
-          grid-template-rows: repeat(10, 24px);
-          gap: 2px;
-          background: #f3f4f6;
-          padding: 2px;
-          border: 1px solid #d1d5db;
+          grid-template-columns: repeat(16, 1fr);
+          grid-template-rows: repeat(16, 1fr);
+          gap: 1px;
+          background: #d1d5db;
+          padding: 1px;
+          border: 1px solid #9ca3af;
           border-radius: 4px;
+          width: 480px;
+          height: 480px;
         }
         .grid-cell {
           background: white;
-          border: 1px solid #e5e7eb;
+          border: none;
           cursor: pointer;
           transition: all 0.1s;
+          min-width: 0;
+          min-height: 0;
         }
         .grid-cell:hover {
           background: #eff6ff;
-          border-color: #3b82f6;
         }
         .grid-cell.selected {
           background: #3b82f6;
-          border-color: #2563eb;
+          opacity: 0.7;
         }
         .grid-info {
-          margin-top: 8px;
+          margin-top: 12px;
           text-align: center;
-          font-size: 14px;
-          color: #4b5563;
-          font-weight: 500;
+          font-size: 16px;
+          color: #374151;
+          font-weight: 600;
         }
         .close-hint {
-          margin-top: 4px;
+          margin-top: 6px;
           text-align: center;
           font-size: 12px;
           color: #9ca3af;
@@ -111,7 +444,7 @@ const insertTable: Command = (state, dispatch) => {
       
       <div class="grid-table" id="grid-table"></div>
       <div class="grid-info" id="grid-info">0 × 0</div>
-      <div class="close-hint">点击外部区域关闭</div>
+      <div class="close-hint">点击选择表格大小</div>
     `
     
     overlay.appendChild(dialog)
@@ -123,12 +456,12 @@ const insertTable: Command = (state, dispatch) => {
     const gridTable = dialog.querySelector('#grid-table') as HTMLElement
     const gridInfo = dialog.querySelector('#grid-info') as HTMLElement
     
-    // 创建 10x10 的网格（更合理的默认大小）
-    for (let i = 0; i < 100; i++) {
+    // 创建 16x16 的网格（更大更密集的网格）
+    for (let i = 0; i < 256; i++) {
       const cell = document.createElement('div')
       cell.className = 'grid-cell'
-      cell.dataset.row = String(Math.floor(i / 10) + 1)
-      cell.dataset.col = String((i % 10) + 1)
+      cell.dataset.row = String(Math.floor(i / 16) + 1)
+      cell.dataset.col = String((i % 16) + 1)
       gridTable.appendChild(cell)
     }
     
@@ -146,83 +479,52 @@ const insertTable: Command = (state, dispatch) => {
         return
       }
 
-      // 获取编辑器内容区域
-      const editorContent = document.querySelector('.ldesign-editor-content') as HTMLElement
+      // 获取编辑器内容区域（这里不需要重复获取）
       if (!editorContent) {
         console.log('❌ [Table] Editor content not found')
         return
       }
       
-      // 聚焦到编辑器以确保可以插入
+      // 聚焦到编辑器
       editorContent.focus()
       
       const selection = window.getSelection()
-      console.log('📋 [Table] Selection:', selection)
+      console.log('📋 [Table] Selection after focus:', selection)
       
       // 获取或创建一个有效的插入点
       let range: Range
       
-      if (selection && selection.rangeCount > 0) {
-        range = selection.getRangeAt(0)
-        
-        // 检查 range 是否在编辑器内
-        if (!editorContent.contains(range.commonAncestorContainer)) {
-          console.log('⚠️ [Table] Range outside editor, creating new range')
-          
-          // 创建一个新的 range 在编辑器末尾
-          range = document.createRange()
-          
-          // 找到最后一个段落或创建一个
-          let lastP = editorContent.querySelector('p:last-of-type')
-          if (!lastP) {
-            lastP = document.createElement('p')
-            lastP.innerHTML = '<br>'
-            editorContent.appendChild(lastP)
-          }
-          
-          // 将 range 设置在最后一个段落的末尾
-          range.selectNodeContents(lastP)
-          range.collapse(false)
-          
-          selection.removeAllRanges()
-          selection.addRange(range)
-        }
-      } else {
-        console.log('⚠️ [Table] No selection, creating new range')
-        
-        // 创建新的选区
-        range = document.createRange()
-        
-        // 找到最后一个段落或创建一个
-        let lastP = editorContent.querySelector('p:last-of-type')
-        if (!lastP) {
-          lastP = document.createElement('p')
-          lastP.innerHTML = '<br>'
-          editorContent.appendChild(lastP)
-        }
-        
-        range.selectNodeContents(lastP)
-        range.collapse(false)
-        
-        if (!selection) {
-          // 如果没有 selection 对象，直接在编辑器末尾插入
-          const table = createTableElement(rows, cols)
-          const p = document.createElement('p')
-          p.innerHTML = '<br>'
-          
-          editorContent.appendChild(table)
-          editorContent.appendChild(p)
-          
-          console.log('📋 [Table] Table appended directly to editor')
-          
-          // 触发更新
-          const event = new Event('input', { bubbles: true })
-          editorContent.dispatchEvent(event)
-          return
-        }
-        
+      // 使用之前保存的选区
+      if (savedRange && selection) {
+        // 恢复之前保存的选区
+        range = savedRange
         selection.removeAllRanges()
         selection.addRange(range)
+        console.log('📋 [Table] Using saved range at cursor position')
+      } else {
+        // 如果没有保存的选区，在编辑器末尾插入
+        console.log('⚠️ [Table] No saved range, appending at end')
+        
+        const table = createTableElement(rows, cols)
+        const p = document.createElement('p')
+        p.innerHTML = '<br>'
+        
+        // 找到最后一个段落
+        const lastP = editorContent.querySelector('p:last-of-type')
+        if (lastP) {
+          lastP.insertAdjacentElement('afterend', table)
+          table.insertAdjacentElement('afterend', p)
+        } else {
+          editorContent.appendChild(table)
+          editorContent.appendChild(p)
+        }
+        
+        console.log('📋 [Table] Table appended to editor')
+        
+        // 触发更新
+        const event = new Event('input', { bubbles: true })
+        editorContent.dispatchEvent(event)
+        return
       }
 
       // 创建表格元素
@@ -465,7 +767,7 @@ const addTableColumn: Command = (state, dispatch) => {
 /**
  * 删除表格
  */
-const deleteTable: Command = (state, dispatch) => {
+const deleteTableCommand: Command = (state, dispatch) => {
   if (!dispatch) return true
 
   const selection = window.getSelection()
@@ -516,7 +818,7 @@ export const TablePlugin: Plugin = createPlugin({
     insertTable,
     addTableRow,
     addTableColumn,
-    deleteTable
+    deleteTableCommand
   },
   toolbar: [{
     name: 'table',
