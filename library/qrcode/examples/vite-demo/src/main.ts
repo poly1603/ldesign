@@ -699,6 +699,7 @@ function initLiquidQR() {
   qrInstances.liquid = createQRCode({
     content: 'Liquid Style',
     container,
+    errorCorrectionLevel: 'H' as any, // Added high error correction
     style: {
       size: 200,
       dotStyle: 'liquid' as DotStyle,

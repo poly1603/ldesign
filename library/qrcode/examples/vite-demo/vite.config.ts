@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   server: {
     port: 3333,
+    host: true,
     open: true,
     force: true, // Force optimizer to re-bundle
   },

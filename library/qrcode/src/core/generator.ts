@@ -30,23 +30,25 @@ export class QRCodeGenerator {
     this.qr.addData(this.config.content);
     this.qr.make();
 
-    // If specific mask pattern is requested, apply it
-    if (this.config.maskPattern !== undefined && this.config.maskPattern !== -1) {
-      const moduleCount = this.qr.getModuleCount();
-      const originalMatrix = this.getOriginalMatrix();
-
-      // Apply the requested mask pattern
-      this.customMatrix = applyMaskPattern(originalMatrix, this.config.maskPattern, moduleCount);
-    } else if (this.config.maskPattern === -1) {
-      // Auto-select best mask pattern
-      const moduleCount = this.qr.getModuleCount();
-      const originalMatrix = this.getOriginalMatrix();
-      const bestPattern = findBestMaskPattern(originalMatrix, moduleCount);
-
-      this.customMatrix = applyMaskPattern(originalMatrix, bestPattern, moduleCount);
-    } else {
-      // Use library's default mask pattern
-      this.customMatrix = null;
+    // IMPORTANT: The qrcode-generator library already applies the best mask pattern
+    // internally when make() is called. Our custom mask pattern implementation
+    // was incorrectly re-applying masks, which corrupted the QR code.
+    // 
+    // For now, we'll disable custom mask patterns to ensure QR codes work correctly.
+    // If custom mask patterns are needed in the future, the implementation needs to:
+    // 1. Work with the raw data matrix BEFORE the library applies its mask
+    // 2. Properly handle all function patterns (timing, alignment, format info, etc.)
+    // 3. Recalculate and embed format/version information with the new mask pattern
+    
+    // Always use the library's built-in mask pattern selection
+    this.customMatrix = null;
+    
+    // Log warning if custom mask pattern was requested
+    if (this.config.maskPattern !== undefined && this.config.maskPattern !== null) {
+      console.warn(
+        'Custom mask patterns are currently disabled to ensure QR code compatibility. ' +
+        'The QR code will use the library\'s optimized mask pattern selection.'
+      );
     }
   }
 

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Fix Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background-color: #f0f0f0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      margin-top: 30px;
+    }
+    .test-card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+    .qr-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 250px;
+      margin: 20px 0;
+    }
+    .status {
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .status.success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status.error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .status.warning {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .content-text {
+      font-family: monospace;
+      background: #f5f5f5;
+      padding: 5px 10px;
+      border-radius: 3px;
+      margin: 10px 0;
+      word-break: break-all;
+    }
+    .controls {
+      margin: 20px 0;
+    }
+    input {
+      padding: 8px 12px;
+      margin-right: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 300px;
+    }
+    button {
+      padding: 8px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 QR Code Generation Test & Fix</h1>
+    
+    <div class="controls">
+      <input type="text" id="testContent" value="https://github.com" placeholder="Enter content to encode">
+      <button onclick="regenerateAll()">Regenerate All</button>
+    </div>
+
+    <div class="test-grid">
+      <!-- Test 1: Without Mask Pattern -->
+      <div class="test-card">
+        <h2>Test 1: No Mask Pattern</h2>
+        <div id="qr1" class="qr-container"></div>
+        <div class="content-text" id="content1"></div>
+        <div class="status" id="status1">Generating...</div>
+      </div>
+
+      <!-- Test 2: With Auto Mask Pattern -->
+      <div class="test-card">
+        <h2>Test 2: Auto Mask Pattern</h2>
+        <div id="qr2" class="qr-container"></div>
+        <div class="content-text" id="content2"></div>
+        <div class="status" id="status2">Generating...</div>
+      </div>
+
+      <!-- Test 3: With Specific Mask Pattern -->
+      <div class="test-card">
+        <h2>Test 3: Mask Pattern 0</h2>
+        <div id="qr3" class="qr-container"></div>
+        <div class="content-text" id="content3"></div>
+        <div class="status" id="status3">Generating...</div>
+      </div>
+
+      <!-- Test 4: Direct Library (qrcode-generator) -->
+      <div class="test-card">
+        <h2>Test 4: Direct Library</h2>
+        <div id="qr4" class="qr-container"></div>
+        <div class="content-text" id="content4"></div>
+        <div class="status" id="status4">Generating...</div>
+      </div>
+
+      <!-- Test 5: Fixed Implementation -->
+      <div class="test-card">
+        <h2>Test 5: Fixed Version</h2>
+        <div id="qr5" class="qr-container"></div>
+        <div class="content-text" id="content5"></div>
+        <div class="status" id="status5">Generating...</div>
+      </div>
+
+      <!-- Test 6: Comparison -->
+      <div class="test-card">
+        <h2>Test 6: Matrix Comparison</h2>
+        <div id="qr6" class="qr-container"></div>
+        <div class="content-text" id="content6"></div>
+        <div class="status" id="status6">Analyzing...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import qrcode-generator directly -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  
+  <script type="module">
+    import { createQRCode } from './dist/index.esm.js';
+
+    window.regenerateAll = function() {
+      const content = document.getElementById('testContent').value;
+      generateTests(content);
+    };
+
+    function generateTests(content) {
+      // Test 1: Without mask pattern (should use library's default)
+      try {
+        const container1 = document.getElementById('qr1');
+        container1.innerHTML = '';
+        createQRCode({
+          content: content,
+          container: container1,
+          errorCorrectionLevel: 'M',
+          style: {
+            size: 200,
+            fgColor: '#000000',
+            bgColor: '#ffffff',
+            dotStyle: 'square',
+          },
+        });
+        document.getElementById('content1').textContent = content;
+        document.getElementById('status1').className = 'status success';
+        document.getElementById('status1').textContent = '✓ Generated (No mask)';
+      } catch (error) {
+        document.getElementById('status1').className = 'status error';
+        document.getElementById('status1').textContent = '✗ Error: ' + error.message;
+      }
+
+      // Test 2: With auto mask pattern
+      try {
+        const container2 = document.getElementById('qr2');
+        container2.innerHTML = '';
+        createQRCode({
+          content: content,
+          container: container2,
+          errorCorrectionLevel: 'M',
+          maskPattern: -1, // Auto
+          style: {
+            size: 200,
+            fgColor: '#000000',
+            bgColor: '#ffffff',
+            dotStyle: 'square',
+          },
+        });
+        document.getElementById('content2').textContent = content;
+        document.getElementById('status2').className = 'status warning';
+        document.getElementById('status2').textContent = '⚠ Generated (Auto mask - might be broken)';
+      } catch (error) {
+        document.getElementById('status2').className = 'status error';
+        document.getElementById('status2').textContent = '✗ Error: ' + error.message;
+      }
+
+      // Test 3: With specific mask pattern
+      try {
+        const container3 = document.getElementById('qr3');
+        container3.innerHTML = '';
+        createQRCode({
+          content: content,
+          container: container3,
+          errorCorrectionLevel: 'M',
+          maskPattern: 0,
+          style: {
+            size: 200,
+            fgColor: '#000000',
+            bgColor: '#ffffff',
+            dotStyle: 'square',
+          },
+        });
+        document.getElementById('content3').textContent = content;
+        document.getElementById('status3').className = 'status warning';
+        document.getElementById('status3').textContent = '⚠ Generated (Pattern 0 - might be broken)';
+      } catch (error) {
+        document.getElementById('status3').className = 'status error';
+        document.getElementById('status3').textContent = '✗ Error: ' + error.message;
+      }
+
+      // Test 4: Direct library usage
+      try {
+        const container4 = document.getElementById('qr4');
+        container4.innerHTML = '';
+        
+        // Using qrcode-generator directly
+        const qr = qrcode(0, 'M');
+        qr.addData(content);
+        qr.make();
+        
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        const moduleCount = qr.getModuleCount();
+        const cellSize = 200 / moduleCount;
+        canvas.width = 200;
+        canvas.height = 200;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw QR code
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, 200, 200);
+        ctx.fillStyle = '#000000';
+        
+        for (let row = 0; row < moduleCount; row++) {
+          for (let col = 0; col < moduleCount; col++) {
+            if (qr.isDark(row, col)) {
+              ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+            }
+          }
+        }
+        
+        container4.appendChild(canvas);
+        document.getElementById('content4').textContent = content;
+        document.getElementById('status4').className = 'status success';
+        document.getElementById('status4').textContent = '✓ Direct library (Working reference)';
+      } catch (error) {
+        document.getElementById('status4').className = 'status error';
+        document.getElementById('status4').textContent = '✗ Error: ' + error.message;
+      }
+
+      // Test 5: Fixed implementation (without custom mask)
+      try {
+        const container5 = document.getElementById('qr5');
+        container5.innerHTML = '';
+        
+        // Create QR without any custom mask pattern
+        createQRCode({
+          content: content,
+          container: container5,
+          errorCorrectionLevel: 'M',
+          maskPattern: undefined, // Let library handle it
+          style: {
+            size: 200,
+            fgColor: '#000000',
+            bgColor: '#ffffff',
+            dotStyle: 'square',
+          },
+        });
+        
+        document.getElementById('content5').textContent = content;
+        document.getElementById('status5').className = 'status success';
+        document.getElementById('status5').textContent = '✓ Fixed (No custom mask)';
+      } catch (error) {
+        document.getElementById('status5').className = 'status error';
+        document.getElementById('status5').textContent = '✗ Error: ' + error.message;
+      }
+
+      // Test 6: Analysis
+      analyzeQRCodes();
+    }
+
+    function analyzeQRCodes() {
+      const container6 = document.getElementById('qr6');
+      const status6 = document.getElementById('status6');
+      const content6 = document.getElementById('content6');
+      
+      container6.innerHTML = '<div style="text-align: left; font-size: 12px; padding: 10px; background: #f8f8f8; border-radius: 5px;">';
+      
+      const canvas4 = document.querySelector('#qr4 canvas');
+      const canvas1 = document.querySelector('#qr1 canvas');
+      
+      if (canvas4 && canvas1) {
+        // Compare the two canvases
+        const ctx4 = canvas4.getContext('2d');
+        const ctx1 = canvas1.getContext('2d');
+        
+        const data4 = ctx4.getImageData(0, 0, 200, 200);
+        const data1 = ctx1.getImageData(0, 0, 200, 200);
+        
+        let differences = 0;
+        for (let i = 0; i < data4.data.length; i += 4) {
+          // Compare only the red channel (for black/white QR)
+          if (data4.data[i] !== data1.data[i]) {
+            differences++;
+          }
+        }
+        
+        const totalPixels = data4.data.length / 4;
+        const diffPercent = ((differences / totalPixels) * 100).toFixed(2);
+        
+        container6.innerHTML += `
+          <strong>Analysis Results:</strong><br>
+          Pixel differences: ${differences}/${totalPixels}<br>
+          Difference rate: ${diffPercent}%<br>
+          <br>
+          <strong>Diagnosis:</strong><br>
+        `;
+        
+        if (diffPercent > 5) {
+          container6.innerHTML += '❌ Significant differences detected!<br>';
+          container6.innerHTML += 'The mask pattern is corrupting the QR code.<br>';
+          status6.className = 'status error';
+          status6.textContent = '✗ QR code is corrupted';
+        } else {
+          container6.innerHTML += '✅ QR codes match!<br>';
+          status6.className = 'status success';
+          status6.textContent = '✓ QR code is valid';
+        }
+      } else {
+        container6.innerHTML = 'Waiting for QR codes to generate...';
+        status6.className = 'status warning';
+        status6.textContent = '⚠ Analysis pending';
+      }
+      
+      container6.innerHTML += '</div>';
+      content6.textContent = 'Comparing Test 1 vs Test 4';
+    }
+
+    // Initial generation
+    generateTests('https://github.com');
+
+    console.log('QR Code tests initialized');
+  </script>
+</body>
+</html>

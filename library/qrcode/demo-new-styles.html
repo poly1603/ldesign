@@ -262,7 +262,7 @@
         </div>
       </div>
 
-      <!-- 8. 多种样式混搭 -->
+      <!-- 8. 终极组合 -->
       <div class="card">
         <h2>终极组合</h2>
         <div class="qr-container" id="qr-ultimate"></div>
@@ -272,6 +272,62 @@
             <li>集合多种高级效果</li>
             <li>视觉效果震撼</li>
             <li>最高容错等级，完全可扫描</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 9. 高级液化效果 1 -->
+      <div class="card">
+        <h2>高级液化 <span class="badge new">NEW</span></h2>
+        <div class="qr-container" id="qr-advanced-liquid"></div>
+        <div class="description">
+          <strong>增强版液化效果</strong>
+          <ul class="features">
+            <li>更自然的有机流体形状</li>
+            <li>黑色纯色，经典风格</li>
+            <li>类似Anthony Fu风格的液化效果</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 10. 液化 + 单色 -->
+      <div class="card">
+        <h2>极简液化</h2>
+        <div class="qr-container" id="qr-minimal-liquid"></div>
+        <div class="description">
+          <strong>液化 + 深色主题</strong>
+          <ul class="features">
+            <li>深蓝色单色设计</li>
+            <li>流体形状，简约优雅</li>
+            <li>适合商务和专业场景</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 11. 液化 + 彩色眼睛 -->
+      <div class="card">
+        <h2>液化艺术</h2>
+        <div class="qr-container" id="qr-artistic-liquid"></div>
+        <div class="description">
+          <strong>液化 + 渐变眼睛</strong>
+          <ul class="features">
+            <li>液体模块配合彩色定位点</li>
+            <li>艺术感强烈</li>
+            <li>适合创意设计领域</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 12. 液化 + 阴影效果 -->
+      <div class="card">
+        <h2>液化光影</h2>
+        <div class="qr-container" id="qr-shadow-liquid"></div>
+        <div class="description">
+          <strong>液化 + 柔和阴影</strong>
+          <ul class="features">
+            <li>深度感的液体效果</li>
+            <li>微妙的阴影增强立体感</li>
+            <li>高端质感</li>
           </ul>
         </div>
       </div>
@@ -335,7 +391,7 @@
     createQRCode({
       content: 'https://example.com/liquid',
       container: document.getElementById('qr-liquid'),
-      errorCorrectionLevel: 'M',
+      errorCorrectionLevel: 'H', // Changed to H for better reliability
       style: {
         size: 240,
         dotStyle: 'liquid',
@@ -488,6 +544,76 @@
           blur: 8,
           color: 'rgba(0, 0, 0, 0.2)',
           offsetY: 4,
+        },
+      },
+    });
+
+    // 9. 高级液化效果 (纯黑色，类似Anthony Fu风格)
+    createQRCode({
+      content: 'https://github.com/antfu',
+      container: document.getElementById('qr-advanced-liquid'),
+      errorCorrectionLevel: 'H',
+      style: {
+        size: 240,
+        dotStyle: 'liquid',
+        fgColor: '#000000', // 纯黑色
+        bgColor: '#ffffff',
+      },
+    });
+
+    // 10. 极简液化 (深色主题)
+    createQRCode({
+      content: 'https://example.com/minimal-liquid',
+      container: document.getElementById('qr-minimal-liquid'),
+      errorCorrectionLevel: 'H',
+      style: {
+        size: 240,
+        dotStyle: 'liquid',
+        fgColor: '#1e293b', // 深蓝灰色
+        bgColor: '#ffffff',
+      },
+    });
+
+    // 11. 液化艺术 (液化 + 渐变眼睛)
+    createQRCode({
+      content: 'https://example.com/artistic',
+      container: document.getElementById('qr-artistic-liquid'),
+      errorCorrectionLevel: 'H',
+      style: {
+        size: 240,
+        dotStyle: 'liquid',
+        fgColor: '#334155',
+        eyeStyle: [
+          {
+            outer: { style: 'rounded', color: '#8b5cf6' },
+            inner: { style: 'rounded', color: '#7c3aed' },
+          },
+          {
+            outer: { style: 'rounded', color: '#ec4899' },
+            inner: { style: 'rounded', color: '#db2777' },
+          },
+          {
+            outer: { style: 'rounded', color: '#06b6d4' },
+            inner: { style: 'rounded', color: '#0891b2' },
+          },
+        ],
+      },
+    });
+
+    // 12. 液化光影 (液化 + 阴影)
+    createQRCode({
+      content: 'https://example.com/shadow-liquid',
+      container: document.getElementById('qr-shadow-liquid'),
+      errorCorrectionLevel: 'H',
+      style: {
+        size: 240,
+        dotStyle: 'liquid',
+        fgColor: '#0f172a',
+        shadow: {
+          blur: 4,
+          color: 'rgba(15, 23, 42, 0.2)',
+          offsetX: 2,
+          offsetY: 2,
         },
       },
     });
