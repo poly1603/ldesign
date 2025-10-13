@@ -3402,9 +3402,20 @@ export namespace Components {
     }
     /**
      * Message 全局提示
-     * 轻量级的全局反馈，常用于操作后的轻量提示
+     * 高性能轻量级的全局反馈组件
+     * 特性：
+     * - 支持多种消息类型
+     * - GPU 加速动画
+     * - 内存优化与对象池
+     * - 响应式设计
+     * - 暗黑模式支持
+     * - 无障碍访问
      */
     interface LdesignMessage {
+        /**
+          * 自定义类名
+         */
+        "className"?: string;
         /**
           * 是否显示关闭按钮
           * @default false
@@ -3420,6 +3431,15 @@ export namespace Components {
          */
         "duration": number;
         /**
+          * 是否支持HTML内容
+          * @default false
+         */
+        "html": boolean;
+        /**
+          * 最大宽度
+         */
+        "maxWidth"?: string;
+        /**
           * 简单文本内容（也可使用 slot 自定义内容）
          */
         "message"?: string;
@@ -3429,15 +3449,19 @@ export namespace Components {
          */
         "pauseOnHover": boolean;
         /**
-          * 出现位置（当前仅支持 top，预留 bottom 扩展）
+          * 出现位置
           * @default 'top'
          */
-        "placement": 'top' | 'bottom';
+        "placement": 'top' | 'top-left' | 'top-right' | 'bottom' | 'bottom-left' | 'bottom-right' | 'center';
         /**
           * 是否显示图标
           * @default true
          */
         "showIcon": boolean;
+        /**
+          * 标题内容
+         */
+        "title"?: string;
         /**
           * 提示类型
           * @default 'info'
@@ -7091,10 +7115,18 @@ declare global {
     };
     interface HTMLLdesignMessageElementEventMap {
         "ldesignClose": void;
+        "ldesignClick": void;
     }
     /**
      * Message 全局提示
-     * 轻量级的全局反馈，常用于操作后的轻量提示
+     * 高性能轻量级的全局反馈组件
+     * 特性：
+     * - 支持多种消息类型
+     * - GPU 加速动画
+     * - 内存优化与对象池
+     * - 响应式设计
+     * - 暗黑模式支持
+     * - 无障碍访问
      */
     interface HTMLLdesignMessageElement extends Components.LdesignMessage, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignMessageElementEventMap>(type: K, listener: (this: HTMLLdesignMessageElement, ev: LdesignMessageCustomEvent<HTMLLdesignMessageElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -11255,9 +11287,20 @@ declare namespace LocalJSX {
     }
     /**
      * Message 全局提示
-     * 轻量级的全局反馈，常用于操作后的轻量提示
+     * 高性能轻量级的全局反馈组件
+     * 特性：
+     * - 支持多种消息类型
+     * - GPU 加速动画
+     * - 内存优化与对象池
+     * - 响应式设计
+     * - 暗黑模式支持
+     * - 无障碍访问
      */
     interface LdesignMessage {
+        /**
+          * 自定义类名
+         */
+        "className"?: string;
         /**
           * 是否显示关闭按钮
           * @default false
@@ -11269,9 +11312,22 @@ declare namespace LocalJSX {
          */
         "duration"?: number;
         /**
+          * 是否支持HTML内容
+          * @default false
+         */
+        "html"?: boolean;
+        /**
+          * 最大宽度
+         */
+        "maxWidth"?: string;
+        /**
           * 简单文本内容（也可使用 slot 自定义内容）
          */
         "message"?: string;
+        /**
+          * 点击事件
+         */
+        "onLdesignClick"?: (event: LdesignMessageCustomEvent<void>) => void;
         /**
           * 关闭事件
          */
@@ -11282,15 +11338,19 @@ declare namespace LocalJSX {
          */
         "pauseOnHover"?: boolean;
         /**
-          * 出现位置（当前仅支持 top，预留 bottom 扩展）
+          * 出现位置
           * @default 'top'
          */
-        "placement"?: 'top' | 'bottom';
+        "placement"?: 'top' | 'top-left' | 'top-right' | 'bottom' | 'bottom-left' | 'bottom-right' | 'center';
         /**
           * 是否显示图标
           * @default true
          */
         "showIcon"?: boolean;
+        /**
+          * 标题内容
+         */
+        "title"?: string;
         /**
           * 提示类型
           * @default 'info'
@@ -14388,7 +14448,14 @@ declare module "@stencil/core" {
             "ldesign-menu": LocalJSX.LdesignMenu & JSXBase.HTMLAttributes<HTMLLdesignMenuElement>;
             /**
              * Message 全局提示
-             * 轻量级的全局反馈，常用于操作后的轻量提示
+             * 高性能轻量级的全局反馈组件
+             * 特性：
+             * - 支持多种消息类型
+             * - GPU 加速动画
+             * - 内存优化与对象池
+             * - 响应式设计
+             * - 暗黑模式支持
+             * - 无障碍访问
              */
             "ldesign-message": LocalJSX.LdesignMessage & JSXBase.HTMLAttributes<HTMLLdesignMessageElement>;
             /**

@@ -191,15 +191,32 @@
 
 用于页面顶部的滚动公告。开启 `marquee` 后会自动无缝滚动，默认向左移动，支持悬停暂停。
 
+### 普通轮播（保留边框）
+
 <div class="demo-container">
-  <ldesign-alert type="warning" banner marquee alert-title="轮播的公告">
+  <ldesign-alert type="warning" marquee alert-title="轮播的公告">
     React components, or just some text. I can be a React component, multiple components, or just some text.
   </ldesign-alert>
 </div>
 
 ```html
-<ldesign-alert type="warning" banner marquee alert-title="轮播的公告">
-  这是一条可以循环滚动的公告文本……
+<ldesign-alert type="warning" marquee alert-title="轮播的公告">
+  这是一条可以循环滚动的公告文本，保留完整边框……
+</ldesign-alert>
+```
+
+### Banner 轮播（保留边框）
+
+<div class="demo-container">
+  <ldesign-alert type="info" banner marquee>
+    📢 这是一条 Banner 模式的轮播公告，现在保留了左右边框。Banner 模式没有圆角，适合全宽展示。
+  </ldesign-alert>
+</div>
+
+```html
+<!-- Banner 模式依然保留边框 -->
+<ldesign-alert type="info" banner marquee>
+  Banner 轮播公告内容...
 </ldesign-alert>
 ```
 

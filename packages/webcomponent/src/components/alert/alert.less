@@ -13,6 +13,7 @@
   background-clip: padding-box;
   margin: 0; /* 组件默认不设置外边距，交由容器控制（避免与容器 gap 叠加） */
   position: relative;
+  overflow: visible; /* Change from hidden to visible to prevent border clipping */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -69,6 +70,8 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .ldesign-alert__icon-wrap {
@@ -106,6 +109,7 @@
 .ldesign-alert__content {
   flex: 1;
   min-width: 0; /* Prevent flex item from overflowing */
+  position: relative;
 }
 
  /* Marquee */
@@ -113,19 +117,6 @@
    position: relative;
    overflow: hidden;
    white-space: nowrap;
-   /* Prevent parent overflow from clipping borders */
-   margin: 0;
-   padding: 0;
- }
- 
- /* Ensure alert with marquee doesn't clip borders */
- .ldesign-alert:has(.ldesign-alert__marquee) {
-   overflow: visible;
- }
- 
- /* Alternative for browsers without :has support */
- .ldesign-alert--has-marquee {
-   overflow: visible;
  }
  
  .ldesign-alert__marquee-inner {
@@ -528,6 +519,13 @@
   border-radius: 0;
   margin: 0;
   padding: 10px 16px;
+  /* Banner 模式通常不需要左右边框，但如果需要可以注释掉下面两行 */
+  /* border-left: none; */
+  /* border-right: none; */
+}
+
+/* 如果需要无边框的 banner，使用这个类 */
+.ldesign-alert--banner.ldesign-alert--no-border {
   border-left: none;
   border-right: none;
 }

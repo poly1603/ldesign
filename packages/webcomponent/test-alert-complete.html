@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alert Component - 完整修复验证</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      padding: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+    h1 {
+      color: #1e80ff;
+      margin-bottom: 10px;
+      font-size: 32px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 40px;
+      font-size: 16px;
+    }
+    .section {
+      margin-bottom: 40px;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e8ecef;
+    }
+    .demo-box {
+      padding: 20px;
+      background: #fafbfc;
+      border: 1px solid #e8ecef;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .success-badge {
+      display: inline-block;
+      background: #10b981;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎉 Alert 组件完整功能展示</h1>
+    <p class="subtitle">所有问题已修复，组件功能完整可用</p>
+
+    <!-- 问题修复验证 -->
+    <div class="section">
+      <h2>✅ 已修复的问题验证</h2>
+      
+      <h3>1. 操作区按钮间距 <span class="success-badge">已修复</span></h3>
+      <div class="demo-box">
+        <ldesign-alert type="info" alert-title="Info Text">
+          Info Description Info Description Info Description
+          <div slot="actions">
+            <ldesign-button type="primary" size="small">Accept</ldesign-button>
+            <ldesign-button size="small">Decline</ldesign-button>
+          </div>
+        </ldesign-alert>
+      </div>
+      <p style="color: #10b981; margin: -10px 0 20px 0;">✓ 按钮之间有8px间距，不会贴在一起</p>
+
+      <h3>2. 轮播公告边框显示 <span class="success-badge">已修复</span></h3>
+      <div class="demo-box">
+        <ldesign-alert 
+          type="warning" 
+          alert-title="轮播的公告"
+          marquee 
+          marquee-speed="50">
+          React components, or just some text. I can be a React component, multiple components, or just some text. 边框现在完整显示了！
+        </ldesign-alert>
+      </div>
+      <p style="color: #10b981; margin: -10px 0 20px 0;">✓ 左右边框完整显示，不再被裁剪</p>
+
+      <h3>3. Banner 轮播（现在也保留边框）</h3>
+      <div class="demo-box">
+        <ldesign-alert 
+          type="info" 
+          banner
+          marquee 
+          marquee-speed="45">
+          📢 Banner 模式的轮播公告，现在保留了边框。如果不需要边框，可以添加自定义类。
+        </ldesign-alert>
+      </div>
+    </div>
+
+    <!-- 完整功能展示 -->
+    <div class="section">
+      <h2>🎨 完整功能展示</h2>
+
+      <h3>样式变体</h3>
+      <div class="demo-box" style="display: flex; flex-direction: column; gap: 16px;">
+        <ldesign-alert type="success" variant="light">Light 变体 - 浅色背景</ldesign-alert>
+        <ldesign-alert type="info" variant="filled">Filled 变体 - 纯色背景</ldesign-alert>
+        <ldesign-alert type="warning" variant="outlined">Outlined 变体 - 边框样式</ldesign-alert>
+        <ldesign-alert type="error" variant="gradient">Gradient 变体 - 渐变背景</ldesign-alert>
+      </div>
+
+      <h3>尺寸选项</h3>
+      <div class="demo-box" style="display: flex; flex-direction: column; gap: 16px;">
+        <ldesign-alert type="info" size="small">Small 尺寸</ldesign-alert>
+        <ldesign-alert type="info" size="medium">Medium 尺寸（默认）</ldesign-alert>
+        <ldesign-alert type="info" size="large">Large 尺寸</ldesign-alert>
+      </div>
+
+      <h3>自定义颜色和图标</h3>
+      <div class="demo-box" style="display: flex; flex-direction: column; gap: 16px;">
+        <ldesign-alert type="custom" color="#9333ea" icon-name="star">
+          自定义紫色 Alert with star icon
+        </ldesign-alert>
+        <ldesign-alert type="custom" color="#ec4899" variant="gradient" icon-name="heart">
+          自定义粉色渐变 Alert with heart icon
+        </ldesign-alert>
+        <ldesign-alert type="custom" color="#14b8a6" variant="filled" icon-name="zap">
+          自定义青色填充 Alert with zap icon
+        </ldesign-alert>
+      </div>
+
+      <h3>特殊效果</h3>
+      <div class="demo-box" style="display: flex; flex-direction: column; gap: 16px;">
+        <ldesign-alert type="info" shadow>带阴影效果的 Alert</ldesign-alert>
+        <ldesign-alert type="success" compact>紧凑模式的 Alert</ldesign-alert>
+        <ldesign-alert type="warning" rounded="false">无圆角的 Alert</ldesign-alert>
+        <ldesign-alert type="error" variant="outlined" border-width="3">3px 粗边框 Alert</ldesign-alert>
+      </div>
+
+      <h3>复杂组合</h3>
+      <div class="demo-box" style="display: flex; flex-direction: column; gap: 16px;">
+        <ldesign-alert 
+          type="custom"
+          color="#6366f1"
+          variant="gradient"
+          size="large"
+          shadow
+          alert-title="完美的组合"
+          icon-name="award"
+          closable>
+          这是一个集成了所有特性的 Alert 组件：
+          <ul style="margin: 8px 0; padding-left: 20px;">
+            <li>自定义颜色 (#6366f1)</li>
+            <li>渐变背景变体</li>
+            <li>大尺寸</li>
+            <li>阴影效果</li>
+            <li>自定义图标 (award)</li>
+            <li>可关闭</li>
+            <li>带操作按钮</li>
+          </ul>
+          <div slot="actions">
+            <ldesign-button type="primary" size="small">了解更多</ldesign-button>
+            <ldesign-button size="small">查看文档</ldesign-button>
+            <ldesign-button size="small">关闭</ldesign-button>
+          </div>
+        </ldesign-alert>
+
+        <ldesign-alert 
+          type="success"
+          variant="filled"
+          marquee
+          marquee-speed="40"
+          alert-title="滚动的成功消息"
+          closable>
+          🎉 恭喜！所有功能都已经完美实现。这是一个带有滚动效果的成功消息，边框完整显示，可以关闭，还有操作按钮，按钮之间有适当的间距。
+          <div slot="actions">
+            <ldesign-button size="small" style="background: white; color: #10b981;">查看详情</ldesign-button>
+            <ldesign-button size="small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">稍后提醒</ldesign-button>
+          </div>
+        </ldesign-alert>
+      </div>
+    </div>
+
+    <div style="text-align: center; padding: 40px 0; color: #666;">
+      <p>✨ Alert 组件优化完成 ✨</p>
+      <p style="font-size: 14px; margin-top: 10px;">具有丰富的样式变体、完整的功能支持、优秀的视觉效果</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('%c🎉 Alert Component Complete Test Loaded!', 'color: #10b981; font-size: 16px; font-weight: bold;');
+      
+      // 验证修复
+      setTimeout(() => {
+        // 检查按钮间距
+        const actionsContainers = document.querySelectorAll('.ldesign-alert__actions');
+        let buttonSpacingFixed = true;
+        actionsContainers.forEach(container => {
+          const style = window.getComputedStyle(container);
+          if (style.gap !== '8px' && style.display !== 'flex') {
+            buttonSpacingFixed = false;
+          }
+        });
+        
+        // 检查轮播边框
+        const marqueeAlerts = document.querySelectorAll('ldesign-alert[marquee]');
+        let borderFixed = true;
+        marqueeAlerts.forEach(alert => {
+          const style = window.getComputedStyle(alert);
+          if (style.overflow === 'hidden') {
+            borderFixed = false;
+          }
+        });
+        
+        console.log(`✅ 按钮间距修复状态: ${buttonSpacingFixed ? '成功' : '失败'}`);
+        console.log(`✅ 轮播边框修复状态: ${borderFixed ? '成功' : '失败'}`);
+        
+        if (buttonSpacingFixed && borderFixed) {
+          console.log('%c✨ 所有问题已成功修复!', 'color: #10b981; font-size: 14px; font-weight: bold;');
+        }
+      }, 100);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alert Component - Final Fix Test</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      padding: 40px;
+      background: #f5f7fa;
+      line-height: 1.6;
+    }
+    .test-section {
+      margin-bottom: 40px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .alert-container {
+      padding: 20px;
+      background: #fafafa;
+      border: 1px dashed #ddd;
+      margin-bottom: 20px;
+    }
+    .status {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e3f2fd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="color: #1e80ff;">🔧 Alert Component - 最终修复验证</h1>
+
+  <div class="test-section">
+    <h2>问题 1：操作区按钮间距（已修复）</h2>
+    <p style="color: #666;">✅ 已通过内联样式 style={{ display: 'flex', gap: '8px' }} 修复</p>
+    
+    <div class="alert-container">
+      <ldesign-alert type="info" alert-title="Info Text">
+        Info Description Info Description Info Description
+        <div slot="actions">
+          <ldesign-button type="primary" size="small">Accept</ldesign-button>
+          <ldesign-button size="small">Decline</ldesign-button>
+        </div>
+      </ldesign-alert>
+    </div>
+    
+    <div class="status">
+      ℹ️ 按钮之间应该有8px的间距，不会贴在一起
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>问题 2：轮播公告边框裁剪（已修复）</h2>
+    <p style="color: #666;">✅ 已通过设置 overflow: visible 修复，边框应该完整显示</p>
+    
+    <div class="alert-container">
+      <ldesign-alert 
+        type="warning" 
+        alert-title="轮播的公告"
+        marquee 
+        marquee-speed="50">
+        React components, or just some text. I can be a React component, multiple components, or just some text. 边框应该完整显示，不会被裁剪。
+      </ldesign-alert>
+    </div>
+    
+    <div class="status">
+      ℹ️ 警告框的边框应该完整显示，左右边框不应该被裁剪或消失
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>各种变体的轮播测试</h2>
+    
+    <h3>Light 变体（默认）</h3>
+    <div class="alert-container">
+      <ldesign-alert 
+        type="info" 
+        variant="light"
+        alert-title="Light Variant"
+        marquee>
+        这是 light 变体的轮播，边框应该完整显示
+      </ldesign-alert>
+    </div>
+
+    <h3>Outlined 变体（2px边框）</h3>
+    <div class="alert-container">
+      <ldesign-alert 
+        type="error" 
+        variant="outlined"
+        border-width="2"
+        alert-title="Outlined Variant"
+        marquee>
+        这是 outlined 变体的轮播，2px的边框应该完整显示，不被裁剪
+      </ldesign-alert>
+    </div>
+
+    <h3>Gradient 变体</h3>
+    <div class="alert-container">
+      <ldesign-alert 
+        type="success" 
+        variant="gradient"
+        alert-title="Gradient Variant"
+        marquee>
+        这是 gradient 变体的轮播，渐变背景和边框都应该完整显示
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>综合测试：轮播 + 操作按钮</h2>
+    
+    <div class="alert-container">
+      <ldesign-alert 
+        type="custom"
+        color="#7c3aed"
+        variant="gradient"
+        alert-title="综合测试"
+        marquee
+        closable>
+        这个Alert同时有轮播和操作按钮，边框应该完整，按钮应该有间距
+        <div slot="actions">
+          <ldesign-button type="primary" size="small">操作1</ldesign-button>
+          <ldesign-button size="small">操作2</ldesign-button>
+        </div>
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('=== Alert Component Final Fix Test ===');
+      
+      // 检查按钮间距
+      setTimeout(() => {
+        const actionsContainers = document.querySelectorAll('.ldesign-alert__actions');
+        actionsContainers.forEach((container, index) => {
+          const computedStyle = window.getComputedStyle(container);
+          console.log(`Actions Container ${index + 1}:`);
+          console.log(`  Display: ${computedStyle.display}`);
+          console.log(`  Gap: ${computedStyle.gap}`);
+        });
+        
+        // 检查Alert overflow
+        const alerts = document.querySelectorAll('ldesign-alert');
+        alerts.forEach((alert, index) => {
+          const computedStyle = window.getComputedStyle(alert);
+          const hasMarquee = alert.hasAttribute('marquee');
+          if (hasMarquee) {
+            console.log(`Alert ${index + 1} (with marquee):`);
+            console.log(`  Overflow: ${computedStyle.overflow}`);
+            console.log(`  Border: ${computedStyle.border}`);
+          }
+        });
+      }, 100);
+    });
+  </script>
+</body>
+</html>

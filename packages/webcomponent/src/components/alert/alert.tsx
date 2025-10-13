@@ -293,7 +293,7 @@ export class LdesignAlert {
               )}
             </div>
             {this.hasActions && (
-              <div class="ldesign-alert__actions" part="actions" style="display: flex; gap: 8px; align-items: center;">
+              <div class="ldesign-alert__actions" part="actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <slot name="actions"></slot>
               </div>
             )}

@@ -1,10 +1,19 @@
 import { Component, Prop, State, Event, EventEmitter, Method, Element, h, Host } from '@stencil/core';
+import { message as messageAPI, MessageOptions } from './message-manager';
 
-export type MessageType = 'info' | 'success' | 'warning' | 'error';
+export type MessageType = 'info' | 'success' | 'warning' | 'error' | 'loading';
 
 /**
  * Message 全局提示
- * 轻量级的全局反馈，常用于操作后的轻量提示
+ * 高性能轻量级的全局反馈组件
+ * 
+ * 特性：
+ * - 支持多种消息类型
+ * - GPU 加速动画
+ * - 内存优化与对象池
+ * - 响应式设计
+ * - 暗黑模式支持
+ * - 无障碍访问
  */
 @Component({
   tag: 'ldesign-message',
@@ -28,27 +37,51 @@ export class LdesignMessage {
 
   /** 简单文本内容（也可使用 slot 自定义内容） */
   @Prop() message?: string;
+  
+  /** 标题内容 */
+  @Prop() title?: string;
 
   /** 悬浮时是否暂停计时 */
   @Prop() pauseOnHover: boolean = true;
 
-  /** 出现位置（当前仅支持 top，预留 bottom 扩展） */
-  @Prop() placement: 'top' | 'bottom' = 'top';
+  /** 出现位置 */
+  @Prop() placement: 'top' | 'top-left' | 'top-right' | 'bottom' | 'bottom-left' | 'bottom-right' | 'center' = 'top';
+  
+  /** 最大宽度 */
+  @Prop() maxWidth?: string;
+  
+  /** 是否支持HTML内容 */
+  @Prop() html: boolean = false;
+  
+  /** 自定义类名 */
+  @Prop() className?: string;
 
   /** 内部：是否可见（用于过渡动画） */
   @State() private isVisible = false;
 
   /** 内部：是否处于关闭过渡阶段 */
   @State() private isClosing = false;
+  
+  /** 消息实例ID */
+  @State() private messageId?: string;
 
   /** 关闭事件 */
   @Event() ldesignClose: EventEmitter<void>;
+  
+  /** 点击事件 */
+  @Event() ldesignClick: EventEmitter<void>;
 
   private closeTimer?: number;
+  private useGlobalManager = false;
 
   connectedCallback() {
-    // 将自身移动到全局容器，保证堆叠与定位
-    this.ensureContainerAndMount();
+    // 检查是否使用全局管理器
+    if (this.el.hasAttribute('use-manager')) {
+      this.useGlobalManager = true;
+    } else {
+      // 将自身移动到全局容器，保证堆叠与定位
+      this.ensureContainerAndMount();
+    }
   }
 
   componentDidLoad() {
