@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filter Test</title>
+    <link rel="stylesheet" href="./dist/styles/editor.css">
+    <link rel="stylesheet" href="./dist/styles/image-enhanced.css">
+    <style>
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .test-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .test-item {
+            text-align: center;
+        }
+        .test-item img {
+            max-width: 100%;
+            height: auto;
+        }
+        .test-item label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .ldesign-image-wrapper {
+            display: inline-block;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Filter Test</h1>
+    
+    <div class="test-container">
+        <div class="test-item">
+            <div class="ldesign-image-wrapper">
+                <img src="https://via.placeholder.com/300" alt="No Filter">
+            </div>
+            <label>No Filter</label>
+        </div>
+        
+        <div class="test-item">
+            <div class="ldesign-image-wrapper filter-blur">
+                <img src="https://via.placeholder.com/300" alt="Blur">
+            </div>
+            <label>Blur Filter</label>
+        </div>
+        
+        <div class="test-item">
+            <div class="ldesign-image-wrapper filter-grayscale">
+                <img src="https://via.placeholder.com/300" alt="Grayscale">
+            </div>
+            <label>Grayscale Filter</label>
+        </div>
+        
+        <div class="test-item">
+            <div class="ldesign-image-wrapper filter-sepia">
+                <img src="https://via.placeholder.com/300" alt="Sepia">
+            </div>
+            <label>Sepia Filter</label>
+        </div>
+        
+        <div class="test-item">
+            <div class="ldesign-image-wrapper filter-brightness">
+                <img src="https://via.placeholder.com/300" alt="Brightness">
+            </div>
+            <label>Brightness Filter</label>
+        </div>
+        
+        <div class="test-item">
+            <div class="ldesign-image-wrapper filter-contrast">
+                <img src="https://via.placeholder.com/300" alt="Contrast">
+            </div>
+            <label>Contrast Filter</label>
+        </div>
+        
+        <div class="test-item">
+            <div class="ldesign-image-wrapper filter-saturate">
+                <img src="https://via.placeholder.com/300" alt="Saturate">
+            </div>
+            <label>Saturate Filter</label>
+        </div>
+        
+        <div class="test-item">
+            <div class="ldesign-image-wrapper filter-sharpen">
+                <img src="https://via.placeholder.com/300" alt="Sharpen">
+            </div>
+            <label>Sharpen Filter</label>
+        </div>
+        
+        <div class="test-item">
+            <div class="ldesign-image-wrapper filter-invert">
+                <img src="https://via.placeholder.com/300" alt="Invert">
+            </div>
+            <label>Invert Filter</label>
+        </div>
+    </div>
+    
+    <h2>Dynamic Test</h2>
+    <button onclick="testFilter()">Test Filter Toggle</button>
+    <div id="dynamic-test">
+        <div class="ldesign-image-wrapper" id="test-wrapper">
+            <img src="https://via.placeholder.com/400" alt="Dynamic Test">
+        </div>
+        <div id="status">Current filter: none</div>
+    </div>
+    
+    <script>
+        let filterIndex = 0;
+        const filters = ['none', 'filter-blur', 'filter-grayscale', 'filter-sepia', 'filter-brightness', 'filter-contrast'];
+        
+        function testFilter() {
+            const wrapper = document.getElementById('test-wrapper');
+            const status = document.getElementById('status');
+            
+            // Remove all filter classes
+            wrapper.className = 'ldesign-image-wrapper';
+            
+            // Add next filter
+            filterIndex = (filterIndex + 1) % filters.length;
+            if (filters[filterIndex] !== 'none') {
+                wrapper.classList.add(filters[filterIndex]);
+            }
+            
+            status.textContent = 'Current filter: ' + filters[filterIndex];
+        }
+    </script>
+</body>
+</html>

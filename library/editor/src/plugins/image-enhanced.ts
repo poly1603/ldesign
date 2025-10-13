@@ -3,8 +3,7 @@
  * 支持拖动调整大小、文本环绕、对齐等功能
  */
 
-import { createPlugin } from '../core/Plugin'
-import type { Plugin, Command } from '../types'
+import type { Plugin, PluginConfig, Command } from '../types'
 import { getImageContextMenu } from '../components/ImageContextMenu'
 import { getLucideIcon } from '../utils/icons'
 
@@ -154,17 +153,18 @@ export class ImageWrapper {
     // 切换当前图片的激活状态
     if (!isActive) {
       this.wrapper.classList.add('active')
-      this.showImageToolbar()
+      // 移除工具栏显示
+      // this.showImageToolbar()
     } else {
       this.wrapper.classList.remove('active')
-      this.hideImageToolbar()
+      // this.hideImageToolbar()
     }
   }
 
   private handleDocumentClick(e: MouseEvent): void {
     if (!this.wrapper.contains(e.target as Node)) {
       this.wrapper.classList.remove('active')
-      this.hideImageToolbar()
+      // this.hideImageToolbar()
     }
   }
 
@@ -358,7 +358,7 @@ export class ImageWrapper {
       { value: 'float-right', icon: getLucideIcon('wrapText'), title: '右侧浮动', shortcut: 'R' }
     ]
     
-    wrapOptions.forEach((option, index) => {
+    wrapOptions.forEach((option) => {
       const btn = document.createElement('button')
       btn.className = 'ldesign-image-toolbar-btn'
       
@@ -651,7 +651,7 @@ export class ImageWrapper {
 /**
  * 插入增强版图片
  */
-const insertEnhancedImage: Command = (state, dispatch, src?: string) => {
+const insertEnhancedImage: Command = (_state, dispatch, src?: string) => {
   if (!dispatch) return true
 
   const url = src || prompt('请输入图片地址:', 'https://')
@@ -677,7 +677,7 @@ const insertEnhancedImage: Command = (state, dispatch, src?: string) => {
 /**
  * 上传增强版图片
  */
-const uploadEnhancedImage: Command = (state, dispatch) => {
+const uploadEnhancedImage: Command = (_state, dispatch) => {
   if (!dispatch) return true
 
   const input = document.createElement('input')
@@ -721,7 +721,7 @@ const uploadEnhancedImage: Command = (state, dispatch) => {
 /**
  * 初始化已有图片
  */
-const initializeImages: Command = (state, dispatch) => {
+const initializeImages: Command = (_state, dispatch) => {
   if (!dispatch) return true
   
   const editorContent = document.querySelector('.ldesign-editor-content')

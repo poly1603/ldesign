@@ -268,46 +268,49 @@ export class ImageProcessor {
    */
   getCroppedCanvas(
     cropBoxData: { left: number; top: number; width: number; height: number },
-    options: GetCroppedCanvasOptions & { cropShape?: string } = {}
+    options: GetCroppedCanvasOptions & { cropShape?: string; fillBackground?: boolean } = {}
   ): HTMLCanvasElement | null {
-    if (!this.imageElement || !this.imageData) {
-      return null
+    if (!this.imageElement || !this.imageData) return null
+
+    const { maxWidth, maxHeight, minWidth, minHeight, fillColor } = options
+    let { width, height } = options
+    const { fillBackground = false } = options
+
+    const cropWidth = cropBoxData.width
+    const cropHeight = cropBoxData.height
+
+    // Calculate dimensions maintaining aspect ratio
+    if (!width && !height) {
+      width = cropWidth
+      height = cropHeight
+    } else if (!width) {
+      width = (height! * cropWidth) / cropHeight
+    } else if (!height) {
+      height = (width * cropHeight) / cropWidth
     }
 
-    const {
-      width = cropBoxData.width,
-      height = cropBoxData.height,
-      minWidth = 0,
-      minHeight = 0,
-      maxWidth = Infinity,
-      maxHeight = Infinity,
-      fillColor = 'transparent',
-      imageSmoothingEnabled = true,
-      imageSmoothingQuality = 'high'
-    } = options
+    // Apply constraints
+    const finalWidth = Math.min(Math.max(width!, minWidth || 0), maxWidth || Infinity)
+    const finalHeight = Math.min(Math.max(height!, minHeight || 0), maxHeight || Infinity)
 
-    // Clamp dimensions
-    const finalWidth = clamp(width, minWidth, maxWidth)
-    const finalHeight = clamp(height, minHeight, maxHeight)
-
-    // Create canvas
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
-
     if (!ctx) return null
 
     canvas.width = finalWidth
     canvas.height = finalHeight
-
-    // Set canvas options
-    ctx.imageSmoothingEnabled = imageSmoothingEnabled
-    ctx.imageSmoothingQuality = imageSmoothingQuality
 
     // Apply crop shape if specified
     const cropShape = options.cropShape || 'default'
     
     // Save the context state
     ctx.save()
+    
+    // For shaped exports, fill white background first (outside the clipping path)
+    if (fillBackground && (cropShape === 'circle' || cropShape === 'rounded')) {
+      ctx.fillStyle = 'white'
+      ctx.fillRect(0, 0, finalWidth, finalHeight)
+    }
     
     // Create clipping path based on shape
     if (cropShape === 'circle') {
@@ -336,82 +339,114 @@ export class ImageProcessor {
       ctx.clip()
     }
     
-    // Fill background
-    if (fillColor && fillColor !== 'transparent') {
+    // Fill background inside clipping path (if specified and not using fillBackground)
+    if (!fillBackground && fillColor && fillColor !== 'transparent') {
       ctx.fillStyle = fillColor
       ctx.fillRect(0, 0, finalWidth, finalHeight)
     }
 
-    const { rotate, scaleX, scaleY } = this.imageData
+    const { rotate, scaleX, scaleY, translateX, translateY } = this.imageData
 
-    // Calculate the actual source coordinates in the original image
-    // The cropBoxData is in the container coordinate system
-    // We need to convert it to coordinates relative to the image
+    // Get image dimensions
     const naturalWidth = this.imageElement.naturalWidth
     const naturalHeight = this.imageElement.naturalHeight
     const displayWidth = this.imageData.width
     const displayHeight = this.imageData.height
-    const imageLeft = this.imageData.left
-    const imageTop = this.imageData.top
+    
+    // Calculate the actual displayed position and size
+    // When scaling, the image scales from its center, so we need to account for that
+    const scaledWidth = displayWidth * Math.abs(scaleX)
+    const scaledHeight = displayHeight * Math.abs(scaleY)
+    
+    // The scaling happens from the center, so we need to adjust the position
+    const scaleOffsetX = (displayWidth - scaledWidth) / 2
+    const scaleOffsetY = (displayHeight - scaledHeight) / 2
+    
+    // Final image position after scaling and translation
+    const imageLeft = this.imageData.left + translateX + scaleOffsetX
+    const imageTop = this.imageData.top + translateY + scaleOffsetY
 
-    // Calculate crop box relative to image (not container)
-    const cropRelativeToImageLeft = cropBoxData.left - imageLeft
-    const cropRelativeToImageTop = cropBoxData.top - imageTop
-    const cropRelativeToImageWidth = cropBoxData.width
-    const cropRelativeToImageHeight = cropBoxData.height
+    // Calculate crop area relative to the scaled image
+    const cropLeft = cropBoxData.left - imageLeft
+    const cropTop = cropBoxData.top - imageTop
 
-    // Scale factor between display and natural size
-    const scaleFactorX = naturalWidth / displayWidth
-    const scaleFactorY = naturalHeight / displayHeight
+    // Check if we need to fill background (crop area extends beyond image)
+    const needsBackground = cropLeft < 0 || cropTop < 0 || 
+                          cropLeft + cropWidth > scaledWidth || 
+                          cropTop + cropHeight > scaledHeight
 
-    // Source rectangle in natural coordinates
-    const sourceLeft = Math.max(0, cropRelativeToImageLeft * scaleFactorX)
-    const sourceTop = Math.max(0, cropRelativeToImageTop * scaleFactorY)
-    const sourceWidth = Math.min(
-      cropRelativeToImageWidth * scaleFactorX,
-      naturalWidth - sourceLeft
-    )
-    const sourceHeight = Math.min(
-      cropRelativeToImageHeight * scaleFactorY,
-      naturalHeight - sourceTop
-    )
-
-    // Apply transformations if needed
-    if (rotate !== 0 || scaleX !== 1 || scaleY !== 1) {
-      ctx.save()
-      ctx.translate(finalWidth / 2, finalHeight / 2)
-      ctx.rotate((rotate * Math.PI) / 180)
-      ctx.scale(scaleX, scaleY)
-
-      // Draw image with transformations
-      ctx.drawImage(
-        this.imageElement,
-        sourceLeft,
-        sourceTop,
-        sourceWidth,
-        sourceHeight,
-        -finalWidth / 2,
-        -finalHeight / 2,
-        finalWidth,
-        finalHeight
-      )
-
-      ctx.restore()
-    } else {
-      // Draw image without transformations (faster path)
-      ctx.drawImage(
-        this.imageElement,
-        sourceLeft,
-        sourceTop,
-        sourceWidth,
-        sourceHeight,
-        0,
-        0,
-        finalWidth,
-        finalHeight
-      )
+    if (needsBackground) {
+      if (fillColor && fillColor !== 'transparent') {
+        ctx.fillStyle = fillColor
+        ctx.fillRect(0, 0, finalWidth, finalHeight)
+      } else if (fillBackground) {
+        ctx.fillStyle = 'white'
+        ctx.fillRect(0, 0, finalWidth, finalHeight)
+      }
     }
 
+    // Calculate the source rectangle in the natural image
+    // We need to map from display coordinates to natural image coordinates
+    // First, get the unscaled crop coordinates
+    const unscaledCropLeft = cropLeft / Math.abs(scaleX)
+    const unscaledCropTop = cropTop / Math.abs(scaleY)
+    const unscaledCropWidth = cropWidth / Math.abs(scaleX)
+    const unscaledCropHeight = cropHeight / Math.abs(scaleY)
+    
+    // Then map to natural image coordinates
+    const sourceX = Math.max(0, unscaledCropLeft) * (naturalWidth / displayWidth)
+    const sourceY = Math.max(0, unscaledCropTop) * (naturalHeight / displayHeight)
+    const sourceWidth = Math.min(unscaledCropWidth, displayWidth - Math.max(0, unscaledCropLeft)) * (naturalWidth / displayWidth)
+    const sourceHeight = Math.min(unscaledCropHeight, displayHeight - Math.max(0, unscaledCropTop)) * (naturalHeight / displayHeight)
+
+    // Calculate destination rectangle  
+    const destX = Math.max(0, -cropLeft) / cropWidth * finalWidth
+    const destY = Math.max(0, -cropTop) / cropHeight * finalHeight
+    const destWidth = Math.min(scaledWidth - Math.max(0, cropLeft), cropWidth) / cropWidth * finalWidth
+    const destHeight = Math.min(scaledHeight - Math.max(0, cropTop), cropHeight) / cropHeight * finalHeight
+
+    // Only draw if there's something to draw
+    if (sourceWidth > 0 && sourceHeight > 0 && destWidth > 0 && destHeight > 0) {
+      // Handle rotation and flipping
+      if (rotate !== 0 || scaleX < 0 || scaleY < 0) {
+        ctx.save()
+        ctx.translate(destX + destWidth / 2, destY + destHeight / 2)
+        ctx.rotate((rotate * Math.PI) / 180)
+        if (scaleX < 0) ctx.scale(-1, 1)
+        if (scaleY < 0) ctx.scale(1, -1)
+
+        ctx.drawImage(
+          this.imageElement,
+          sourceX,
+          sourceY,
+          sourceWidth,
+          sourceHeight,
+          -destWidth / 2,
+          -destHeight / 2,
+          destWidth,
+          destHeight
+        )
+
+        ctx.restore()
+      } else {
+        // Direct drawing without transformations
+        ctx.drawImage(
+          this.imageElement,
+          sourceX,
+          sourceY,
+          sourceWidth,
+          sourceHeight,
+          destX,
+          destY,
+          destWidth,
+          destHeight
+        )
+      }
+    }
+
+    // Restore the context state that was saved at the beginning
+    ctx.restore()
+    
     return canvas
   }
 
@@ -420,7 +455,7 @@ export class ImageProcessor {
    */
   async getCroppedBlob(
     cropBoxData: { left: number; top: number; width: number; height: number },
-    options: GetCroppedCanvasOptions & { type?: string; quality?: number } = {}
+    options: GetCroppedCanvasOptions & { type?: string; quality?: number; cropShape?: string; fillBackground?: boolean } = {}
   ): Promise<Blob | null> {
     const canvas = this.getCroppedCanvas(cropBoxData, options)
     if (!canvas) return null
@@ -434,7 +469,7 @@ export class ImageProcessor {
    */
   getCroppedDataURL(
     cropBoxData: { left: number; top: number; width: number; height: number },
-    options: GetCroppedCanvasOptions & { type?: string; quality?: number } = {}
+    options: GetCroppedCanvasOptions & { type?: string; quality?: number; cropShape?: string; fillBackground?: boolean } = {}
   ): string | null {
     const canvas = this.getCroppedCanvas(cropBoxData, options)
     if (!canvas) return null

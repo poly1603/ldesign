@@ -8,8 +8,9 @@ import type { I18nConfig, I18nInstance } from '../../types';
 import { OptimizedI18n } from '../../core/i18n-optimized';
 import { I18N_SYMBOL, i18nSymbol } from './constants';
 
-// Export plugin
-export { createI18nPlugin, LDesignI18nPlugin } from './plugin';
+// Import and re-export plugin
+import { createI18nPlugin, LDesignI18nPlugin } from './plugin';
+export { createI18nPlugin, LDesignI18nPlugin };
 
 // Export composables
 export { useI18n } from './composables/useI18n';
@@ -23,10 +24,10 @@ export { default as I18nText } from './components/I18nText.vue';
 export { default as I18nTranslate } from './components/I18nTranslate.vue';
 export { default as I18nNumber } from './components/I18nNumber.vue';
 export { default as I18nDate } from './components/I18nDate.vue';
-export { default as I18nTime } from './components/I18nTime.vue';
-export { default as I18nPlural } from './components/I18nPlural.vue';
-export { default as I18nSwitch } from './components/I18nSwitch.vue';
-export { default as LocaleSwither } from './components/LocaleSwitcher.vue';
+// export { default as I18nTime } from './components/I18nTime.vue';
+// export { default as I18nPlural } from './components/I18nPlural.vue';
+// export { default as I18nSwitch } from './components/I18nSwitch.vue';
+export { default as LocaleSwitcher } from './components/LocaleSwitcher.vue';
 
 // Export directives
 export { vT } from './directives/vT';

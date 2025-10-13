@@ -33,6 +33,7 @@ export interface PDFViewerOptions {
   enablePageNavigation?: boolean;
   enableTextSelection?: boolean;
   enableAnnotations?: boolean;
+  enableBookmarks?: boolean;
   enableThumbnails?: boolean;
   enableOutline?: boolean;
   enableHandTool?: boolean;
@@ -227,9 +228,20 @@ export interface PDFViewer {
   
   // Text and Annotations
   getSelectedText(): string;
-  addAnnotation(annotation: any): void;
+  addAnnotation(annotation: Omit<Annotation, 'id' | 'createdAt'>): Annotation | null;
   removeAnnotation(id: string): void;
-  getAnnotations(pageNumber?: number): any[];
+  getAnnotations(pageNumber?: number): Annotation[];
+  
+  // Bookmarks
+  addBookmark(bookmark: Omit<Bookmark, 'id' | 'createdAt'>): Bookmark | null;
+  addCurrentPageBookmark(title?: string): Bookmark | null;
+  removeBookmark(id: string): void;
+  getBookmarks(): Bookmark[];
+  goToBookmark(id: string): void;
+  
+  // Advanced
+  getViewport(): any;
+  scrollTo(x: number, y: number): void;
   
   // Utilities
   getCurrentPage(): number;
@@ -249,4 +261,132 @@ export interface SearchOptions {
   entireWord?: boolean;
   highlightAll?: boolean;
   findPrevious?: boolean;
+}
+
+// Annotation types
+export interface Annotation {
+  id: string;
+  type: 'highlight' | 'underline' | 'strikeout' | 'text' | 'drawing' | 'stamp';
+  pageNumber: number;
+  position: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  color?: string;
+  content?: string;
+  author?: string;
+  createdAt: Date;
+  modifiedAt?: Date;
+  replies?: AnnotationReply[];
+}
+
+export interface AnnotationReply {
+  id: string;
+  content: string;
+  author: string;
+  createdAt: Date;
+}
+
+export interface DrawingAnnotation extends Annotation {
+  type: 'drawing';
+  paths: DrawingPath[];
+}
+
+export interface DrawingPath {
+  points: { x: number; y: number }[];
+  strokeColor: string;
+  strokeWidth: number;
+}
+
+// Bookmark types
+export interface Bookmark {
+  id: string;
+  title: string;
+  pageNumber: number;
+  position?: { x: number; y: number };
+  parentId?: string;
+  children?: Bookmark[];
+  color?: string;
+  createdAt: Date;
+}
+
+// Print options
+export interface PrintOptions {
+  pageRange?: string; // e.g., "1-5,8,11-13"
+  scale?: 'auto' | 'actual' | 'custom';
+  customScale?: number;
+  orientation?: 'portrait' | 'landscape';
+  paperSize?: 'A4' | 'Letter' | 'Legal' | 'A3';
+  margins?: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
+  printAnnotations?: boolean;
+  printComments?: boolean;
+  grayscale?: boolean;
+}
+
+// Advanced search
+export interface AdvancedSearchOptions extends SearchOptions {
+  pageRange?: string;
+  searchIn?: ('content' | 'annotations' | 'bookmarks')[];
+  regex?: boolean;
+  maxResults?: number;
+}
+
+// Signature types
+export interface Signature {
+  id: string;
+  pageNumber: number;
+  position: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  image?: string; // base64 or URL
+  text?: string;
+  certificate?: SignatureCertificate;
+  timestamp: Date;
+}
+
+export interface SignatureCertificate {
+  subject: string;
+  issuer: string;
+  validFrom: Date;
+  validTo: Date;
+  serialNumber: string;
+}
+
+// Form types
+export interface FormField {
+  id: string;
+  name: string;
+  type: 'text' | 'checkbox' | 'radio' | 'select' | 'button' | 'signature';
+  pageNumber: number;
+  position: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  value?: any;
+  defaultValue?: any;
+  required?: boolean;
+  readonly?: boolean;
+  options?: string[]; // for select and radio
+}
+
+// Export options
+export interface ExportOptions {
+  format: 'pdf' | 'image' | 'text' | 'html';
+  pageRange?: string;
+  quality?: number; // for image export
+  imageFormat?: 'png' | 'jpeg' | 'webp';
+  includeAnnotations?: boolean;
+  includeBookmarks?: boolean;
 }

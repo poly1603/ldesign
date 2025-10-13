@@ -2,7 +2,7 @@
  * useLocale - Locale management hook
  */
 
-import { computed, type ComputedRef, type Ref } from 'vue';
+import { computed, ref, type ComputedRef, type Ref } from 'vue';
 import { useI18n } from './useI18n';
 import type { Locale } from '../../../types';
 
@@ -17,11 +17,11 @@ export function useLocale(): UseLocaleReturn {
   const { locale, availableLocales, setLocale } = useI18n();
 
   const isCurrentLocale = (checkLocale: Locale): boolean => {
-    return locale.value === checkLocale;
+    return locale?.value === checkLocale;
   };
 
   return {
-    locale,
+    locale: locale || ref('en_us'),
     availableLocales,
     setLocale,
     isCurrentLocale

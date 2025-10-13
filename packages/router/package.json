@@ -55,6 +55,11 @@
       "import": "./es/composables/*.js",
       "require": "./lib/composables/*.cjs"
     },
+    "./config/*": {
+      "types": "./es/config/*.d.ts",
+      "import": "./es/config/*.js",
+      "require": "./lib/config/*.cjs"
+    },
     "./core": {
       "types": "./es/core/index.d.ts",
       "import": "./es/core/index.js",
@@ -89,6 +94,11 @@
       "types": "./es/engine/*.d.ts",
       "import": "./es/engine/*.js",
       "require": "./lib/engine/*.cjs"
+    },
+    "./features/*": {
+      "types": "./es/features/*.d.ts",
+      "import": "./es/features/*.js",
+      "require": "./lib/features/*.cjs"
     },
     "./guards": {
       "types": "./es/guards/index.d.ts",
@@ -125,30 +135,15 @@
       "import": "./es/plugins/*.js",
       "require": "./lib/plugins/*.cjs"
     },
-    "./security": {
-      "types": "./es/security/RouteSecurity.d.ts",
-      "import": "./es/security/RouteSecurity.js",
-      "require": "./lib/security/RouteSecurity.cjs"
+    "./state/*": {
+      "types": "./es/state/*.d.ts",
+      "import": "./es/state/*.js",
+      "require": "./lib/state/*.cjs"
     },
-    "./smart": {
-      "types": "./es/smart/SmartRouteManager.d.ts",
-      "import": "./es/smart/SmartRouteManager.js",
-      "require": "./lib/smart/SmartRouteManager.cjs"
-    },
-    "./state": {
-      "types": "./es/state/route-state.d.ts",
-      "import": "./es/state/route-state.js",
-      "require": "./lib/state/route-state.cjs"
-    },
-    "./testing": {
-      "types": "./es/testing/test-utils.d.ts",
-      "import": "./es/testing/test-utils.js",
-      "require": "./lib/testing/test-utils.cjs"
-    },
-    "./config": {
-      "types": "./es/config/performance-defaults.d.ts",
-      "import": "./es/config/performance-defaults.js",
-      "require": "./lib/config/performance-defaults.cjs"
+    "./testing/*": {
+      "types": "./es/testing/*.d.ts",
+      "import": "./es/testing/*.js",
+      "require": "./lib/testing/*.cjs"
     },
     "./types": {
       "types": "./es/types/index.d.ts",

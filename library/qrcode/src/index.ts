@@ -5,6 +5,9 @@ import { SVGRenderer } from './renderers/svg';
 // Export types
 export * from './types';
 
+// Export adapters
+export * from './adapters';
+
 /**
  * QR Code class
  */

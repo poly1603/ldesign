@@ -433,7 +433,8 @@ const getCroppedImage = async () => {
   const canvas = cropperRef.value?.getCroppedCanvas({
     width: 400,
     height: 400,
-    imageSmoothingQuality: 'high'
+    imageSmoothingQuality: 'high',
+    applyShape: true // Apply crop box shape to the exported image
   })
   
   if (canvas) {
@@ -456,9 +457,14 @@ const getCroppedImage = async () => {
 
 const downloadImage = () => {
   if (croppedCanvas.value) {
+    const cropper = cropperRef.value?.getCropper()
     const link = document.createElement('a')
-    link.download = 'cropped-image.png'
-    link.href = croppedCanvas.value.toDataURL()
+    
+    // Get the appropriate format based on the crop box style
+    const exportFormat = cropper?.getExportFormat() || { type: 'image/png', extension: 'png', quality: 1 }
+    
+    link.download = `cropped-image.${exportFormat.extension}`
+    link.href = croppedCanvas.value.toDataURL(exportFormat.type, exportFormat.quality)
     link.click()
   }
 }

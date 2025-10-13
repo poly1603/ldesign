@@ -30,6 +30,7 @@ export interface UseI18nReturn {
   
   // Plural
   tc: (key: MessageKey, count: number, params?: InterpolationParams) => string;
+  tp: (key: MessageKey, count: number, params?: InterpolationParams) => string; // Alias for tc
   
   // Date & Number formatting
   d: (value: Date | number | string, format?: string) => string;
@@ -82,8 +83,8 @@ export function useI18n(options: UseI18nOptions = {}): UseI18nReturn {
   }
 
   // Create reactive refs
-  const locale = ref(i18n.locale);
-  const fallbackLocale = ref(i18n.fallbackLocale);
+  const locale = ref(i18n.locale || 'en_us');
+  const fallbackLocale = ref(i18n.fallbackLocale || 'en_us');
 
   // Sync locale changes
   watchEffect(() => {
@@ -167,7 +168,7 @@ export function useI18n(options: UseI18nOptions = {}): UseI18nReturn {
     locale.value = newLocale;
   };
 
-  const getLocale = (): Locale => locale.value;
+  const getLocale = (): Locale => locale.value || 'en_us';
 
   const setFallbackLocale = (newFallback: Locale | Locale[]): void => {
     i18n.fallbackLocale = newFallback;
@@ -202,6 +203,7 @@ export function useI18n(options: UseI18nOptions = {}): UseI18nReturn {
     tm,
     rt,
     tc,
+    tp: tc, // Alias for tc
     d,
     n,
     

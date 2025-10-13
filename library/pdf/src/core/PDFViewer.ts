@@ -1,6 +1,9 @@
 import { EventEmitter } from './EventEmitter';
 import { PDFRenderer } from './PDFRenderer';
 import { SearchManager } from '../features/SearchManager';
+import { AnnotationManager } from '../features/AnnotationManager';
+import { BookmarkManager } from '../features/BookmarkManager';
+import { PrintManager } from '../features/PrintManager';
 import { ToolbarManager } from '../ui/ToolbarManager';
 import { SidebarManager } from '../ui/SidebarManager';
 import type {
@@ -8,18 +11,23 @@ import type {
   PDFDocumentProxy,
   ViewerState,
   SearchResult,
-  SearchOptions
+  SearchOptions,
+  Annotation,
+  Bookmark,
+  PrintOptions
 } from '../types';
 
 export class PDFViewer extends EventEmitter implements PDFViewer {
   public options: PDFViewerOptions;
   public state: ViewerState;
   public document: PDFDocumentProxy | null = null;
-
-  private container: HTMLElement;
+  public container: HTMLElement;
   private viewerContainer: HTMLElement | null = null;
   private renderer: PDFRenderer;
   private searchManager: SearchManager | null = null;
+  private annotationManager: AnnotationManager | null = null;
+  private bookmarkManager: BookmarkManager | null = null;
+  private printManager: PrintManager | null = null;
   private toolbarManager: ToolbarManager | null = null;
   private sidebarManager: SidebarManager | null = null;
   private canvasContainer: HTMLElement | null = null;
@@ -69,6 +77,18 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
       
       if (this.options.enableSearch) {
         this.searchManager = new SearchManager(this);
+      }
+
+      if (this.options.enableAnnotations) {
+        this.annotationManager = new AnnotationManager(this);
+      }
+
+      if (this.options.enableBookmarks !== false) {
+        this.bookmarkManager = new BookmarkManager(this);
+      }
+
+      if (this.options.enablePrint) {
+        this.printManager = new PrintManager(this);
       }
 
       // Setup event listeners
@@ -294,14 +314,13 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
   /**
    * Feature methods
    */
-  print(): void {
-    if (!this.options.enablePrint) {
+  print(options?: PrintOptions): void {
+    if (!this.printManager) {
+      console.warn('Print manager not initialized');
       return;
     }
 
-    window.print();
-    
-    this.emit('print');
+    this.printManager.print(options);
     
     if (this.options.onPrint) {
       this.options.onPrint();
@@ -378,19 +397,93 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
     return window.getSelection()?.toString() || '';
   }
 
-  addAnnotation(annotation: any): void {
-    // Implementation for adding annotations
-    this.emit('annotation-add', annotation);
+  addAnnotation(annotation: Omit<Annotation, 'id' | 'createdAt'>): Annotation | null {
+    if (!this.annotationManager) {
+      console.warn('Annotation manager not initialized');
+      return null;
+    }
+    return this.annotationManager.addAnnotation(annotation);
   }
 
   removeAnnotation(id: string): void {
-    // Implementation for removing annotations
-    this.emit('annotation-remove', id);
+    if (!this.annotationManager) {
+      console.warn('Annotation manager not initialized');
+      return;
+    }
+    this.annotationManager.removeAnnotation(id);
   }
 
-  getAnnotations(pageNumber?: number): any[] {
-    // Implementation for getting annotations
-    return [];
+  getAnnotations(pageNumber?: number): Annotation[] {
+    if (!this.annotationManager) {
+      return [];
+    }
+    return pageNumber 
+      ? this.annotationManager.getPageAnnotations(pageNumber)
+      : this.annotationManager.getAllAnnotations();
+  }
+
+  /**
+   * Bookmark methods
+   */
+  addBookmark(bookmark: Omit<Bookmark, 'id' | 'createdAt'>): Bookmark | null {
+    if (!this.bookmarkManager) {
+      console.warn('Bookmark manager not initialized');
+      return null;
+    }
+    return this.bookmarkManager.addBookmark(bookmark);
+  }
+
+  addCurrentPageBookmark(title?: string): Bookmark | null {
+    if (!this.bookmarkManager) {
+      console.warn('Bookmark manager not initialized');
+      return null;
+    }
+    return this.bookmarkManager.addCurrentPageBookmark(title);
+  }
+
+  removeBookmark(id: string): void {
+    if (!this.bookmarkManager) {
+      console.warn('Bookmark manager not initialized');
+      return;
+    }
+    this.bookmarkManager.removeBookmark(id);
+  }
+
+  getBookmarks(): Bookmark[] {
+    if (!this.bookmarkManager) {
+      return [];
+    }
+    return this.bookmarkManager.getAllBookmarks();
+  }
+
+  goToBookmark(id: string): void {
+    if (!this.bookmarkManager) {
+      console.warn('Bookmark manager not initialized');
+      return;
+    }
+    this.bookmarkManager.goToBookmark(id);
+  }
+
+  /**
+   * Advanced methods
+   */
+  getViewport(): any {
+    if (!this.canvasContainer) {
+      return null;
+    }
+    return {
+      scrollLeft: this.canvasContainer.scrollLeft,
+      scrollTop: this.canvasContainer.scrollTop,
+      clientWidth: this.canvasContainer.clientWidth,
+      clientHeight: this.canvasContainer.clientHeight
+    };
+  }
+
+  scrollTo(x: number, y: number): void {
+    if (this.canvasContainer) {
+      this.canvasContainer.scrollLeft = x;
+      this.canvasContainer.scrollTop = y;
+    }
   }
 
   /**
@@ -422,6 +515,9 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
   destroy(): void {
     this.renderer.destroy();
     this.searchManager?.destroy();
+    this.annotationManager?.destroy();
+    this.bookmarkManager?.destroy();
+    this.printManager?.destroy();
     this.toolbarManager?.destroy();
     this.sidebarManager?.destroy();
     

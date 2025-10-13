@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue 3 QR Code Demo - All Features</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    #app {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+    
+    .header h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .header p {
+      font-size: 1.2em;
+      opacity: 0.9;
+    }
+    
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+    
+    .demo-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+    
+    .demo-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+    }
+    
+    .demo-title {
+      font-size: 1.4em;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .demo-tag {
+      font-size: 0.6em;
+      background: #667eea;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    
+    .demo-description {
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    
+    .controls {
+      margin-bottom: 20px;
+    }
+    
+    .control-group {
+      margin-bottom: 15px;
+    }
+    
+    .control-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+      font-weight: 500;
+    }
+    
+    .control-group input,
+    .control-group select,
+    .control-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    
+    .control-group input:focus,
+    .control-group select:focus,
+    .control-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .button:hover {
+      background: #5a67d8;
+    }
+    
+    .button-secondary {
+      background: #48bb78;
+    }
+    
+    .button-secondary:hover {
+      background: #38a169;
+    }
+    
+    .button-danger {
+      background: #f56565;
+    }
+    
+    .button-danger:hover {
+      background: #e53e3e;
+    }
+    
+    .qr-display {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .batch-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .batch-item {
+      text-align: center;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    
+    .batch-item img {
+      width: 100%;
+      height: auto;
+      margin-bottom: 5px;
+    }
+    
+    .batch-item .status {
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+    
+    .status-success {
+      background: #48bb78;
+      color: white;
+    }
+    
+    .status-error {
+      background: #f56565;
+      color: white;
+    }
+    
+    .status-generating {
+      background: #4299e1;
+      color: white;
+    }
+    
+    .status-pending {
+      background: #a0aec0;
+      color: white;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: #48bb78;
+      transition: width 0.3s;
+    }
+    
+    .directive-examples {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .directive-example {
+      text-align: center;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    
+    .directive-example h4 {
+      margin-top: 10px;
+      color: #555;
+    }
+    
+    /* Animations from the library */
+    @keyframes qrcode-fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes qrcode-scale-in {
+      from { transform: scale(0); }
+      to { transform: scale(1); }
+    }
+    
+    @keyframes qrcode-rotate-in {
+      from { 
+        transform: rotate(-180deg) scale(0);
+        opacity: 0;
+      }
+      to { 
+        transform: rotate(0) scale(1);
+        opacity: 1;
+      }
+    }
+    
+    .qrcode-fade-in {
+      animation: qrcode-fade-in 1s ease-in-out;
+    }
+    
+    .qrcode-scale-in {
+      animation: qrcode-scale-in 0.5s ease-in-out;
+    }
+    
+    .qrcode-rotate-in {
+      animation: qrcode-rotate-in 0.8s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="header">
+      <h1>🎨 Vue 3 QR Code Library</h1>
+      <p>Complete demonstration of all features: Components, Directives, Composables & More</p>
+    </div>
+    
+    <!-- Component Demo -->
+    <div class="demo-card">
+      <h2 class="demo-title">
+        Component Usage
+        <span class="demo-tag">Component</span>
+      </h2>
+      <p class="demo-description">
+        Basic QR code component with all props and events
+      </p>
+      <div class="controls">
+        <div class="control-group">
+          <label>Content:</label>
+          <input v-model="componentDemo.content" placeholder="Enter content for QR code">
+        </div>
+        <div class="control-group">
+          <label>Style:</label>
+          <select v-model="componentDemo.dotStyle">
+            <option value="square">Square</option>
+            <option value="dots">Dots</option>
+            <option value="rounded">Rounded</option>
+            <option value="classy">Classy</option>
+            <option value="classy-rounded">Classy Rounded</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Animation:</label>
+          <select v-model="componentDemo.animationType">
+            <option value="">None</option>
+            <option value="fade">Fade</option>
+            <option value="scale">Scale</option>
+            <option value="rotate">Rotate</option>
+          </select>
+        </div>
+      </div>
+      <div class="qr-display">
+        <qr-code
+          :content="componentDemo.content"
+          :dot-style="componentDemo.dotStyle"
+          :animated="!!componentDemo.animationType"
+          :animation-type="componentDemo.animationType || 'fade'"
+          :size="200"
+          @ready="onQRReady"
+          @click="onQRClick"
+          ref="qrComponent"
+        ></qr-code>
+      </div>
+      <button class="button" @click="downloadComponent">Download</button>
+      <button class="button button-secondary" @click="refreshComponent">Refresh</button>
+    </div>
+    
+    <!-- Directive Demo -->
+    <div class="demo-card">
+      <h2 class="demo-title">
+        Directive Usage
+        <span class="demo-tag">v-qrcode</span>
+      </h2>
+      <p class="demo-description">
+        Use QR codes as directives with modifiers
+      </p>
+      <div class="controls">
+        <div class="control-group">
+          <label>Directive Content:</label>
+          <input v-model="directiveDemo.content" placeholder="Enter content">
+        </div>
+      </div>
+      <div class="directive-examples">
+        <div class="directive-example">
+          <div v-qrcode="directiveDemo.content"></div>
+          <h4>Default</h4>
+        </div>
+        <div class="directive-example">
+          <div v-qrcode.small="directiveDemo.content"></div>
+          <h4>Small</h4>
+        </div>
+        <div class="directive-example">
+          <div v-qrcode.large="directiveDemo.content"></div>
+          <h4>Large</h4>
+        </div>
+        <div class="directive-example">
+          <div v-qrcode.dark="directiveDemo.content"></div>
+          <h4>Dark Theme</h4>
+        </div>
+        <div class="directive-example">
+          <div v-qrcode.svg="directiveDemo.content"></div>
+          <h4>SVG Render</h4>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Composable Demo -->
+    <div class="demo-card">
+      <h2 class="demo-title">
+        Composable Usage
+        <span class="demo-tag">useQRCode</span>
+      </h2>
+      <p class="demo-description">
+        Advanced QR code generation with composables
+      </p>
+      <div class="controls">
+        <div class="control-group">
+          <label>Content:</label>
+          <textarea v-model="composableDemo.content" rows="3" placeholder="Enter content"></textarea>
+        </div>
+        <div class="control-group">
+          <label>Colors:</label>
+          <div style="display: flex; gap: 10px;">
+            <input type="color" v-model="composableDemo.fgColor" style="width: 50%;">
+            <input type="color" v-model="composableDemo.bgColor" style="width: 50%;">
+          </div>
+        </div>
+      </div>
+      <div class="qr-display" ref="composableContainer"></div>
+      <div style="margin-bottom: 10px;">
+        <span v-if="composableQR.isGenerating">Generating...</span>
+        <span v-else-if="composableQR.isReady">✅ Ready</span>
+        <span v-else-if="composableQR.error" style="color: red;">❌ {{ composableQR.error.message }}</span>
+      </div>
+      <button class="button" @click="generateComposable">Generate</button>
+      <button class="button button-secondary" @click="composableQR.download('composable-qr')">Download</button>
+      <button class="button button-danger" @click="composableQR.destroy">Destroy</button>
+    </div>
+    
+    <!-- Batch Generation Demo -->
+    <div class="demo-card">
+      <h2 class="demo-title">
+        Batch Generation
+        <span class="demo-tag">useBatchQRCode</span>
+      </h2>
+      <p class="demo-description">
+        Generate multiple QR codes at once
+      </p>
+      <div class="controls">
+        <div class="control-group">
+          <label>Add Items (one per line):</label>
+          <textarea v-model="batchDemo.input" rows="3" placeholder="Item 1&#10;Item 2&#10;Item 3"></textarea>
+        </div>
+      </div>
+      <button class="button" @click="addBatchItems">Add Items</button>
+      <button class="button button-secondary" @click="batchQR.generateAll()">Generate All</button>
+      <button class="button button-secondary" @click="batchQR.downloadAll()">Download All</button>
+      <button class="button button-danger" @click="batchQR.clear()">Clear All</button>
+      
+      <div v-if="batchQR.isGenerating" class="progress-bar">
+        <div class="progress-fill" :style="{width: batchQR.progress + '%'}"></div>
+      </div>
+      
+      <div class="batch-items">
+        <div v-for="item in batchQR.items" :key="item.id" class="batch-item">
+          <img v-if="item.dataURL" :src="item.dataURL" alt="QR Code">
+          <div v-else style="width: 100%; height: 150px; background: #f0f0f0;"></div>
+          <div :class="['status', 'status-' + item.status]">
+            {{ item.status }}
+          </div>
+          <div style="font-size: 12px; margin-top: 5px;">{{ item.content }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Animation Showcase -->
+    <div class="demo-card">
+      <h2 class="demo-title">
+        Animation Showcase
+        <span class="demo-tag">Animations</span>
+      </h2>
+      <p class="demo-description">
+        Different animation types for QR codes
+      </p>
+      <div class="controls">
+        <div class="control-group">
+          <label>Test Content:</label>
+          <input v-model="animationDemo.content" placeholder="Enter content">
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+        <div style="text-align: center;">
+          <div class="qr-display" style="min-height: 150px;">
+            <qr-code
+              :content="animationDemo.content"
+              :animated="true"
+              animation-type="fade"
+              :animation-duration="1000"
+              :size="150"
+              :key="'fade-' + animationDemo.content"
+            ></qr-code>
+          </div>
+          <h4>Fade Animation</h4>
+        </div>
+        <div style="text-align: center;">
+          <div class="qr-display" style="min-height: 150px;">
+            <qr-code
+              :content="animationDemo.content"
+              :animated="true"
+              animation-type="scale"
+              :animation-duration="500"
+              :size="150"
+              :key="'scale-' + animationDemo.content"
+            ></qr-code>
+          </div>
+          <h4>Scale Animation</h4>
+        </div>
+        <div style="text-align: center;">
+          <div class="qr-display" style="min-height: 150px;">
+            <qr-code
+              :content="animationDemo.content"
+              :animated="true"
+              animation-type="rotate"
+              :animation-duration="800"
+              :size="150"
+              :key="'rotate-' + animationDemo.content"
+            ></qr-code>
+          </div>
+          <h4>Rotate Animation</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Vue 3 and Library Scripts -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script>
+    // Mock the QR code library functions for demo
+    // In real usage, these would come from the actual library
+    
+    const { createApp, ref, reactive, onMounted } = Vue;
+    
+    // Mock QRCode component
+    const QRCodeComponent = {
+      name: 'QRCode',
+      props: ['content', 'dotStyle', 'animated', 'animationType', 'animationDuration', 'size'],
+      template: `
+        <div :class="['qrcode-wrapper', animationClass]" :style="wrapperStyle">
+          <canvas ref="canvas"></canvas>
+        </div>
+      `,
+      setup(props, { emit, expose }) {
+        const canvas = ref(null);
+        const animationClass = ref('');
+        
+        const wrapperStyle = {
+          width: props.size + 'px',
+          height: props.size + 'px',
+          animationDuration: (props.animationDuration || 1000) + 'ms'
+        };
+        
+        const generate = () => {
+          if (canvas.value) {
+            const ctx = canvas.value.getContext('2d');
+            canvas.value.width = props.size || 200;
+            canvas.value.height = props.size || 200;
+            
+            // Simple mock QR code rendering
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.value.width, canvas.value.height);
+            
+            ctx.fillStyle = '#000000';
+            const moduleSize = (props.size || 200) / 25;
+            for (let i = 0; i < 25; i++) {
+              for (let j = 0; j < 25; j++) {
+                if (Math.random() > 0.3) {
+                  if (props.dotStyle === 'dots') {
+                    ctx.beginPath();
+                    ctx.arc(i * moduleSize + moduleSize/2, j * moduleSize + moduleSize/2, moduleSize/2.5, 0, Math.PI * 2);
+                    ctx.fill();
+                  } else if (props.dotStyle === 'rounded') {
+                    const radius = moduleSize / 4;
+                    ctx.beginPath();
+                    ctx.roundRect(i * moduleSize, j * moduleSize, moduleSize - 1, moduleSize - 1, radius);
+                    ctx.fill();
+                  } else {
+                    ctx.fillRect(i * moduleSize, j * moduleSize, moduleSize - 1, moduleSize - 1);
+                  }
+                }
+              }
+            }
+            
+            emit('ready', { canvas: canvas.value });
+          }
+        };
+        
+        const refresh = () => {
+          if (props.animated && props.animationType) {
+            animationClass.value = '';
+            setTimeout(() => {
+              animationClass.value = `qrcode-${props.animationType}-in`;
+            }, 10);
+          }
+          generate();
+        };
+        
+        const download = (fileName = 'qrcode') => {
+          if (canvas.value) {
+            const link = document.createElement('a');
+            link.download = fileName + '.png';
+            link.href = canvas.value.toDataURL();
+            link.click();
+          }
+        };
+        
+        onMounted(() => {
+          if (props.animated && props.animationType) {
+            animationClass.value = `qrcode-${props.animationType}-in`;
+          }
+          generate();
+        });
+        
+        expose({ refresh, download });
+        
+        return { canvas, animationClass, wrapperStyle };
+      }
+    };
+    
+    // Mock directive
+    const vQrcode = {
+      mounted(el, binding) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const size = binding.modifiers.small ? 100 : binding.modifiers.large ? 300 : 200;
+        
+        canvas.width = size;
+        canvas.height = size;
+        
+        // Background
+        ctx.fillStyle = binding.modifiers.dark ? '#000000' : '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        
+        // QR pattern
+        ctx.fillStyle = binding.modifiers.dark ? '#ffffff' : '#000000';
+        const moduleSize = size / 25;
+        for (let i = 0; i < 25; i++) {
+          for (let j = 0; j < 25; j++) {
+            if (Math.random() > 0.3) {
+              ctx.fillRect(i * moduleSize, j * moduleSize, moduleSize - 1, moduleSize - 1);
+            }
+          }
+        }
+        
+        el.appendChild(canvas);
+      },
+      updated(el, binding) {
+        el.innerHTML = '';
+        vQrcode.mounted(el, binding);
+      }
+    };
+    
+    // Mock composables
+    const useQRCode = (initialConfig = {}) => {
+      const container = ref(null);
+      const isReady = ref(false);
+      const isGenerating = ref(false);
+      const error = ref(null);
+      
+      const generate = (config = {}) => {
+        isGenerating.value = true;
+        setTimeout(() => {
+          if (container.value) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 200;
+            canvas.height = 200;
+            
+            ctx.fillStyle = config.bgColor || '#ffffff';
+            ctx.fillRect(0, 0, 200, 200);
+            
+            ctx.fillStyle = config.fgColor || '#000000';
+            const moduleSize = 8;
+            for (let i = 0; i < 25; i++) {
+              for (let j = 0; j < 25; j++) {
+                if (Math.random() > 0.3) {
+                  ctx.fillRect(i * moduleSize, j * moduleSize, moduleSize - 1, moduleSize - 1);
+                }
+              }
+            }
+            
+            container.value.innerHTML = '';
+            container.value.appendChild(canvas);
+            isReady.value = true;
+          }
+          isGenerating.value = false;
+        }, 500);
+      };
+      
+      const download = (fileName = 'qrcode') => {
+        const canvas = container.value?.querySelector('canvas');
+        if (canvas) {
+          const link = document.createElement('a');
+          link.download = fileName + '.png';
+          link.href = canvas.toDataURL();
+          link.click();
+        }
+      };
+      
+      const destroy = () => {
+        if (container.value) {
+          container.value.innerHTML = '';
+          isReady.value = false;
+        }
+      };
+      
+      return { container, isReady, isGenerating, error, generate, download, destroy };
+    };
+    
+    const useBatchQRCode = () => {
+      const items = ref([]);
+      const isGenerating = ref(false);
+      const progress = ref(0);
+      
+      const addItem = (content) => {
+        const id = 'qr-' + Date.now() + '-' + Math.random();
+        items.value.push({
+          id,
+          content,
+          status: 'pending'
+        });
+        return id;
+      };
+      
+      const generateAll = () => {
+        isGenerating.value = true;
+        progress.value = 0;
+        
+        let completed = 0;
+        const total = items.value.length;
+        
+        items.value.forEach((item, index) => {
+          setTimeout(() => {
+            item.status = 'generating';
+            
+            setTimeout(() => {
+              // Create mock data URL
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              canvas.width = 150;
+              canvas.height = 150;
+              
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, 150, 150);
+              
+              ctx.fillStyle = '#000000';
+              const moduleSize = 6;
+              for (let i = 0; i < 25; i++) {
+                for (let j = 0; j < 25; j++) {
+                  if (Math.random() > 0.3) {
+                    ctx.fillRect(i * moduleSize, j * moduleSize, moduleSize - 1, moduleSize - 1);
+                  }
+                }
+              }
+              
+              item.dataURL = canvas.toDataURL();
+              item.status = 'success';
+              
+              completed++;
+              progress.value = (completed / total) * 100;
+              
+              if (completed === total) {
+                isGenerating.value = false;
+              }
+            }, 300);
+          }, index * 200);
+        });
+      };
+      
+      const downloadAll = () => {
+        items.value.forEach((item, index) => {
+          if (item.dataURL) {
+            const link = document.createElement('a');
+            link.download = `qrcode-${index + 1}.png`;
+            link.href = item.dataURL;
+            link.click();
+          }
+        });
+      };
+      
+      const clear = () => {
+        items.value = [];
+        progress.value = 0;
+      };
+      
+      return { items, isGenerating, progress, addItem, generateAll, downloadAll, clear };
+    };
+    
+    // Vue App
+    createApp({
+      components: {
+        'qr-code': QRCodeComponent
+      },
+      directives: {
+        qrcode: vQrcode
+      },
+      setup() {
+        // Component demo
+        const componentDemo = reactive({
+          content: 'https://example.com',
+          dotStyle: 'square',
+          animationType: ''
+        });
+        const qrComponent = ref(null);
+        
+        // Directive demo
+        const directiveDemo = reactive({
+          content: 'Hello Vue Directive!'
+        });
+        
+        // Composable demo
+        const composableDemo = reactive({
+          content: 'Composable QR Code',
+          fgColor: '#000000',
+          bgColor: '#ffffff'
+        });
+        const composableContainer = ref(null);
+        const composableQR = useQRCode();
+        
+        // Batch demo
+        const batchDemo = reactive({
+          input: 'Product 1\nProduct 2\nProduct 3'
+        });
+        const batchQR = useBatchQRCode();
+        
+        // Animation demo
+        const animationDemo = reactive({
+          content: 'Animated QR'
+        });
+        
+        // Methods
+        const onQRReady = (instance) => {
+          console.log('QR Code ready:', instance);
+        };
+        
+        const onQRClick = () => {
+          alert('QR Code clicked!');
+        };
+        
+        const downloadComponent = () => {
+          if (qrComponent.value) {
+            qrComponent.value.download('component-qr');
+          }
+        };
+        
+        const refreshComponent = () => {
+          if (qrComponent.value) {
+            qrComponent.value.refresh();
+          }
+        };
+        
+        const generateComposable = () => {
+          composableQR.generate({
+            content: composableDemo.content,
+            fgColor: composableDemo.fgColor,
+            bgColor: composableDemo.bgColor
+          });
+        };
+        
+        const addBatchItems = () => {
+          const items = batchDemo.input.split('\n').filter(item => item.trim());
+          items.forEach(item => {
+            batchQR.addItem(item.trim());
+          });
+          batchDemo.input = '';
+        };
+        
+        onMounted(() => {
+          composableQR.container.value = composableContainer.value;
+          generateComposable();
+        });
+        
+        return {
+          // Data
+          componentDemo,
+          directiveDemo,
+          composableDemo,
+          batchDemo,
+          animationDemo,
+          
+          // Refs
+          qrComponent,
+          composableContainer,
+          
+          // Composables
+          composableQR,
+          batchQR,
+          
+          // Methods
+          onQRReady,
+          onQRClick,
+          downloadComponent,
+          refreshComponent,
+          generateComposable,
+          addBatchItems
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

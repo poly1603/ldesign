@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PDF Plugin Example - Using Built Version</title>
+  <style>
+    body { 
+      margin: 0; 
+      display: flex; 
+      height: 100vh; 
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .controls { 
+      width: 280px; 
+      padding: 20px; 
+      background: #f5f5f5; 
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      overflow-y: auto;
+    }
+    .controls h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    .controls h3 {
+      margin-top: 25px;
+      margin-bottom: 10px;
+      color: #555;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    button { 
+      display: block; 
+      width: 100%; 
+      margin: 8px 0; 
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    button.secondary {
+      background: #2196F3;
+    }
+    button.secondary:hover {
+      background: #0b7dda;
+    }
+    #viewer { 
+      flex: 1; 
+      background: #ddd;
+      position: relative;
+    }
+    #status {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <h2>📄 PDF Plugin Demo</h2>
+    <p style="color: #666; font-size: 14px;">Using built dist/ files</p>
+    
+    <button onclick="loadPDF()" style="background: #ff5722;">🚀 Load Sample PDF</button>
+    
+    <h3>Navigation</h3>
+    <button class="secondary" onclick="viewer.firstPage()">⏮ First</button>
+    <button class="secondary" onclick="viewer.previousPage()">⬅ Previous</button>
+    <button class="secondary" onclick="viewer.nextPage()">Next ➡</button>
+    <button class="secondary" onclick="viewer.lastPage()">Last ⏭</button>
+    
+    <h3>Zoom</h3>
+    <button onclick="viewer.zoomIn()">🔍 Zoom In</button>
+    <button onclick="viewer.zoomOut()">🔍 Zoom Out</button>
+    
+    <h3>Features</h3>
+    <button onclick="testAnnotation()">✏️ Add Annotation</button>
+    <button onclick="testBookmark()">🔖 Add Bookmark</button>
+    <button onclick="viewer.print()">🖨️ Print</button>
+    
+    <h3>Info</h3>
+    <div id="info" style="font-size: 12px; color: #666; padding: 10px; background: white; border-radius: 4px;">
+      Ready to load PDF
+    </div>
+  </div>
+  
+  <div id="viewer">
+    <div id="status">No PDF loaded</div>
+  </div>
+  
+  <!-- Load PDF.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  
+  <!-- Load our built plugin -->
+  <script src="../../dist/pdf-viewer.js"></script>
+  
+  <script>
+    // Set PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    // Create viewer using the global PDFViewer from dist
+    const viewer = PDFViewer.create({
+      container: document.getElementById('viewer'),
+      enableSearch: true,
+      enablePrint: true,
+      enableAnnotations: true,
+      enableBookmarks: true,
+      onInit: (v) => {
+        console.log('✅ PDF Viewer initialized from dist/pdf-viewer.js');
+        document.getElementById('info').innerHTML = '✅ Plugin loaded from dist/';
+      },
+      onDocumentLoad: () => {
+        updateStatus();
+      },
+      onPageChange: () => {
+        updateStatus();
+      }
+    });
+    
+    function updateStatus() {
+      if (viewer.isReady()) {
+        document.getElementById('status').textContent = 
+          `Page ${viewer.getCurrentPage()} of ${viewer.getTotalPages()} | Scale: ${Math.round(viewer.getScale() * 100)}%`;
+      }
+    }
+    
+    function loadPDF() {
+      const url = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
+      viewer.loadDocument(url);
+      document.getElementById('info').innerHTML = '📥 Loading PDF...';
+    }
+    
+    function testAnnotation() {
+      if (!viewer.isReady()) {
+        alert('Please load a PDF first');
+        return;
+      }
+      
+      const note = prompt('Enter annotation text:');
+      if (note) {
+        viewer.addAnnotation({
+          type: 'text',
+          pageNumber: viewer.getCurrentPage(),
+          position: { x: 100, y: 100, width: 30, height: 30 },
+          content: note,
+          author: 'Demo User'
+        });
+        document.getElementById('info').innerHTML = '✏️ Annotation added';
+      }
+    }
+    
+    function testBookmark() {
+      if (!viewer.isReady()) {
+        alert('Please load a PDF first');
+        return;
+      }
+      
+      const title = prompt('Bookmark title:') || `Page ${viewer.getCurrentPage()}`;
+      viewer.addCurrentPageBookmark(title);
+      document.getElementById('info').innerHTML = '🔖 Bookmark added: ' + title;
+    }
+    
+    console.log('========================================');
+    console.log('PDF Plugin Demo - Using Built Version');
+    console.log('Plugin loaded from: dist/pdf-viewer.js');
+    console.log('All features from src/ are compiled in dist/');
+    console.log('========================================');
+  </script>
+</body>
+</html>

@@ -566,18 +566,46 @@ export class Cropper {
   /**
    * Get cropped canvas
    */
-  getCroppedCanvas(options: GetCroppedCanvasOptions & { applyShape?: boolean } = {}): HTMLCanvasElement | null {
+  getCroppedCanvas(options: GetCroppedCanvasOptions & { applyShape?: boolean; autoFormat?: boolean } = {}): HTMLCanvasElement | null {
     if (!this.ready || !this.imageProcessor || !this.cropBox) return null
 
     const cropBoxData = this.cropBox.getData()
     
+    // Enhanced options with shape and background handling
+    const enhancedOptions: any = { ...options }
+    
     // Add crop shape if applyShape is true
-    const enhancedOptions = { ...options }
     if (options.applyShape && this.options.cropBoxStyle !== 'default') {
       enhancedOptions.cropShape = this.options.cropBoxStyle
+      
+      // For rounded and circle shapes, add white background outside the shape
+      if (this.options.cropBoxStyle === 'circle' || this.options.cropBoxStyle === 'rounded') {
+        enhancedOptions.fillBackground = true
+      }
     }
     
     return this.imageProcessor.getCroppedCanvas(cropBoxData, enhancedOptions)
+  }
+
+  /**
+   * Get the appropriate export format based on crop box style
+   */
+  getExportFormat(): { type: string; extension: string; quality: number } {
+    // For circle and rounded styles, use PNG to preserve transparency
+    // For other styles, use JPG for better compression
+    if (this.options.cropBoxStyle === 'circle' || this.options.cropBoxStyle === 'rounded') {
+      return {
+        type: 'image/png',
+        extension: 'png',
+        quality: 1
+      }
+    } else {
+      return {
+        type: 'image/jpeg',
+        extension: 'jpg',
+        quality: 0.95
+      }
+    }
   }
 
   /**

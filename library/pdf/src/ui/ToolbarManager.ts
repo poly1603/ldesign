@@ -23,14 +23,22 @@ export class ToolbarManager {
     const toolbar = document.createElement('div');
     toolbar.className = 'pdf-toolbar';
     
-    // Previous page button
-    const prevBtn = this.createButton('previous', '⟨', 'Previous Page', () => {
-      this.viewer.previousPage();
+    // Left section
+    const leftSection = document.createElement('div');
+    leftSection.className = 'pdf-toolbar-section';
+    
+    // Sidebar toggle button
+    const sidebarBtn = this.createButton('sidebar', this.createIcon('menu'), 'Toggle Sidebar', () => {
+      this.viewer.toggleSidebar();
     });
     
     // Page navigation
     const pageNav = document.createElement('div');
     pageNav.className = 'pdf-page-navigation';
+    
+    const prevBtn = this.createButton('previous', this.createIcon('chevron-left'), 'Previous Page', () => {
+      this.viewer.previousPage();
+    });
     
     this.pageInput = document.createElement('input');
     this.pageInput.type = 'number';
@@ -40,21 +48,29 @@ export class ToolbarManager {
     
     const pageLabel = document.createElement('span');
     pageLabel.className = 'pdf-page-label';
-    pageLabel.textContent = ' / 0';
+    pageLabel.textContent = '/ 0';
     
-    pageNav.appendChild(this.pageInput);
-    pageNav.appendChild(pageLabel);
-    
-    // Next page button
-    const nextBtn = this.createButton('next', '⟩', 'Next Page', () => {
+    const nextBtn = this.createButton('next', this.createIcon('chevron-right'), 'Next Page', () => {
       this.viewer.nextPage();
     });
     
-    // Separator
-    const separator1 = this.createSeparator();
+    pageNav.appendChild(prevBtn);
+    pageNav.appendChild(this.pageInput);
+    pageNav.appendChild(pageLabel);
+    pageNav.appendChild(nextBtn);
+    
+    leftSection.appendChild(sidebarBtn);
+    leftSection.appendChild(pageNav);
+    
+    // Center section
+    const centerSection = document.createElement('div');
+    centerSection.className = 'pdf-toolbar-section';
     
     // Zoom controls
-    const zoomOutBtn = this.createButton('zoom-out', '−', 'Zoom Out', () => {
+    const zoomControls = document.createElement('div');
+    zoomControls.className = 'pdf-zoom-controls';
+    
+    const zoomOutBtn = this.createButton('zoom-out', this.createIcon('zoom-out'), 'Zoom Out', () => {
       this.viewer.zoomOut();
     });
     
@@ -79,79 +95,110 @@ export class ToolbarManager {
       this.scaleSelect!.appendChild(opt);
     });
     
-    const zoomInBtn = this.createButton('zoom-in', '+', 'Zoom In', () => {
+    const zoomInBtn = this.createButton('zoom-in', this.createIcon('zoom-in'), 'Zoom In', () => {
       this.viewer.zoomIn();
     });
     
-    // Separator
-    const separator2 = this.createSeparator();
+    zoomControls.appendChild(zoomOutBtn);
+    zoomControls.appendChild(this.scaleSelect);
+    zoomControls.appendChild(zoomInBtn);
+    
+    centerSection.appendChild(zoomControls);
+    
+    // Right section
+    const rightSection = document.createElement('div');
+    rightSection.className = 'pdf-toolbar-section';
     
     // Rotate button
-    const rotateBtn = this.createButton('rotate', '↻', 'Rotate', () => {
+    const rotateBtn = this.createButton('rotate', this.createIcon('rotate-cw'), 'Rotate', () => {
       this.viewer.rotate();
     });
     
     // Search button
-    const searchBtn = this.createButton('search', '🔍', 'Search', () => {
+    const searchBtn = this.createButton('search', this.createIcon('search'), 'Search', () => {
       this.viewer.emit('search-toggle', !this.viewer.state.isSearchOpen);
     });
     
-    // Separator
-    const separator3 = this.createSeparator();
-    
     // Print button
-    const printBtn = this.createButton('print', '🖨', 'Print', () => {
+    const printBtn = this.createButton('print', this.createIcon('printer'), 'Print', () => {
       this.viewer.print();
     });
     
     // Download button
-    const downloadBtn = this.createButton('download', '⬇', 'Download', () => {
+    const downloadBtn = this.createButton('download', this.createIcon('download'), 'Download', () => {
       this.viewer.download();
     });
     
     // Fullscreen button
-    const fullscreenBtn = this.createButton('fullscreen', '⛶', 'Fullscreen', () => {
+    const fullscreenBtn = this.createButton('fullscreen', this.createIcon('maximize'), 'Fullscreen', () => {
       this.viewer.toggleFullscreen();
     });
     
-    // Sidebar toggle
-    const sidebarBtn = this.createButton('sidebar', '☰', 'Toggle Sidebar', () => {
-      this.viewer.toggleSidebar();
-    });
+    rightSection.appendChild(rotateBtn);
+    rightSection.appendChild(searchBtn);
+    rightSection.appendChild(this.createSeparator());
+    rightSection.appendChild(printBtn);
+    rightSection.appendChild(downloadBtn);
+    rightSection.appendChild(fullscreenBtn);
     
-    // Append all elements
-    toolbar.appendChild(sidebarBtn);
-    toolbar.appendChild(prevBtn);
-    toolbar.appendChild(pageNav);
-    toolbar.appendChild(nextBtn);
-    toolbar.appendChild(separator1);
-    toolbar.appendChild(zoomOutBtn);
-    toolbar.appendChild(this.scaleSelect);
-    toolbar.appendChild(zoomInBtn);
-    toolbar.appendChild(separator2);
-    toolbar.appendChild(rotateBtn);
-    toolbar.appendChild(searchBtn);
-    toolbar.appendChild(separator3);
-    toolbar.appendChild(printBtn);
-    toolbar.appendChild(downloadBtn);
-    toolbar.appendChild(fullscreenBtn);
+    // Append all sections
+    toolbar.appendChild(leftSection);
+    toolbar.appendChild(centerSection);
+    toolbar.appendChild(rightSection);
     
     this.container = toolbar;
     
     // Add to viewer container
-    const viewerContainer = this.viewer.options.container;
-    if (viewerContainer instanceof HTMLElement) {
-      viewerContainer.insertBefore(toolbar, viewerContainer.firstChild);
+    const viewerElement = this.viewer.container?.querySelector('.pdf-viewer');
+    if (viewerElement) {
+      viewerElement.insertBefore(toolbar, viewerElement.firstChild);
     }
   }
 
-  private createButton(className: string, icon: string, title: string, onClick: () => void): HTMLButtonElement {
+  private createButton(className: string, icon: string | SVGElement, title: string, onClick: () => void): HTMLButtonElement {
     const button = document.createElement('button');
     button.className = `pdf-toolbar-button pdf-${className}`;
-    button.innerHTML = icon;
+    if (typeof icon === 'string') {
+      button.innerHTML = icon;
+    } else {
+      button.appendChild(icon);
+    }
     button.title = title;
     button.addEventListener('click', onClick);
     return button;
+  }
+
+  private createIcon(name: string): SVGElement {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '18');
+    svg.setAttribute('height', '18');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    
+    // Define icon paths based on Lucide icons
+    const paths: { [key: string]: string } = {
+      'menu': 'M3 12h18M3 6h18M3 18h18',
+      'chevron-left': 'M15 18l-6-6 6-6',
+      'chevron-right': 'M9 18l6-6-6-6',
+      'zoom-in': 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7',
+      'zoom-out': 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM7 10h6',
+      'rotate-cw': 'M23 4v6h-6M1 20v-6h6m16.5-3a9 9 0 11-3 7.5',
+      'search': 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
+      'printer': 'M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z',
+      'download': 'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3',
+      'maximize': 'M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3'
+    };
+    
+    const pathData = paths[name] || '';
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathData);
+    svg.appendChild(path);
+    
+    return svg;
   }
 
   private createSeparator(): HTMLElement {

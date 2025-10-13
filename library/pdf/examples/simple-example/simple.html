@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PDF Plugin - Simplest Example</title>
+  <style>
+    body { margin: 0; display: flex; height: 100vh; font-family: Arial; }
+    .sidebar { width: 250px; padding: 20px; background: #f0f0f0; }
+    .sidebar button { display: block; width: 100%; margin: 5px 0; padding: 8px; }
+    #viewer { flex: 1; background: #e0e0e0; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h3>PDF Plugin Demo</h3>
+    <button onclick="loadSample()">Load Sample PDF</button>
+    <button onclick="viewer.previousPage()">Previous</button>
+    <button onclick="viewer.nextPage()">Next</button>
+    <button onclick="viewer.zoomIn()">Zoom In</button>
+    <button onclick="viewer.zoomOut()">Zoom Out</button>
+    <button onclick="addNote()">Add Note</button>
+    <button onclick="viewer.print()">Print</button>
+  </div>
+  <div id="viewer"></div>
+  
+  <script type="module">
+    // Import the plugin from src
+    import { createPDFViewer } from '../../src/index.js';
+    
+    // Create viewer
+    window.viewer = createPDFViewer({
+      container: document.getElementById('viewer'),
+      enableAnnotations: true,
+      enableBookmarks: true,
+      enablePrint: true
+    });
+    
+    // Load sample PDF
+    window.loadSample = () => {
+      viewer.loadDocument('https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf');
+    };
+    
+    // Add note
+    window.addNote = () => {
+      const text = prompt('Enter note:');
+      if (text) {
+        viewer.addAnnotation({
+          type: 'text',
+          pageNumber: viewer.getCurrentPage(),
+          position: { x: 100, y: 100, width: 30, height: 30 },
+          content: text
+        });
+      }
+    };
+    
+    console.log('PDF Plugin loaded from src/');
+  </script>
+</body>
+</html>

@@ -96,7 +96,7 @@ export const RouterView = defineComponent({
 
     // 监听路由变化
     watch(
-      () => route.value,
+      () => route?.value,
       async (newRoute) => {
         if (!newRoute?.matched?.length) {
           currentComponent.value = null
@@ -107,7 +107,7 @@ export const RouterView = defineComponent({
         // 根据当前RouterView的深度找到对应的路由记录
         // 深度从0开始，第一层RouterView（深度1）渲染matched[0]，第二层渲染matched[1]，以此类推
         const matchedIndex = currentDepth - 1
-        const matched = newRoute.matched[matchedIndex]
+        const matched = newRoute.matched?.[matchedIndex]
         const component = matched?.components?.[props.name]
 
 
@@ -167,8 +167,8 @@ export const RouterView = defineComponent({
         // 对于父路由组件，使用路由名称而不是完整路径作为key
         // 这样子路由切换时父组件不会重新挂载
         const matchedIndex = currentDepth - 1
-        const matched = route.value.matched[matchedIndex]
-        const componentKey = matched?.name || route.value.path
+        const matched = route?.value?.matched?.[matchedIndex]
+        const componentKey = matched?.name || route?.value?.path || 'default'
 
         return h(component, {
           key: componentKey,
@@ -207,7 +207,7 @@ export const RouterView = defineComponent({
       if (slots.default) {
         const slotContent = slots.default({
           Component: component,
-          route: route.value,
+          route: route?.value || {},
         })
         return wrapWithKeepAlive(slotContent)
       }

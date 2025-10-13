@@ -585,6 +585,24 @@ export class OptimizedI18n implements I18nInstance {
     this.setMessages(locale, merged, namespace);
   }
   
+  // ============== Event Methods ==============
+  
+  on(event: I18nEventType, listener: I18nEventListener): void {
+    this.eventEmitter.on(event, listener);
+  }
+  
+  off(event: I18nEventType, listener: I18nEventListener): void {
+    this.eventEmitter.off(event, listener);
+  }
+  
+  once(event: I18nEventType, listener: I18nEventListener): void {
+    this.eventEmitter.once(event, listener);
+  }
+  
+  emit(event: I18nEventType, data: I18nEventData): void {
+    this.eventEmitter.emit(event, data);
+  }
+  
   // ============== Other methods remain the same ==============
   
   // ... (rest of the methods like namespace management, formatting, events, plugins, etc.)

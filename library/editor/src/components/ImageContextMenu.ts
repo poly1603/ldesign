@@ -15,6 +15,7 @@ export interface ContextMenuItem {
 
 export class ImageContextMenu {
   private menu: HTMLDivElement
+  private menuContent: HTMLDivElement
   private currentImage: HTMLElement | null = null
   private visible = false
 
@@ -30,6 +31,11 @@ export class ImageContextMenu {
     menu.style.display = 'none'
     menu.style.position = 'fixed'
     menu.style.zIndex = '10000'
+    
+    // 创建内容滚动容器
+    this.menuContent = document.createElement('div')
+    this.menuContent.className = 'ldesign-image-context-menu-content'
+    menu.appendChild(this.menuContent)
     
     return menu
   }
@@ -131,6 +137,21 @@ export class ImageContextMenu {
   public hide(): void {
     if (!this.visible) return
     
+    // 清理所有子菜单
+    this.menuContent.querySelectorAll('.ldesign-context-menu-item').forEach(item => {
+      const cleanup = (item as any).__cleanup
+      if (cleanup) {
+        cleanup()
+      }
+    })
+    
+    // 清理所有可能遗留的子菜单
+    document.querySelectorAll('.ldesign-context-submenu').forEach(submenu => {
+      if (document.body.contains(submenu)) {
+        document.body.removeChild(submenu)
+      }
+    })
+    
     // 添加隐藏动画类
     this.menu.classList.add('hiding')
     this.visible = false
@@ -140,6 +161,7 @@ export class ImageContextMenu {
       if (!this.visible) {
         this.menu.style.display = 'none'
         this.menu.classList.remove('hiding')
+        this.menuContent.innerHTML = '' // 清空内容以释放事件监听器
         this.currentImage = null
       }
     }, 150)
@@ -149,16 +171,16 @@ export class ImageContextMenu {
     if (!this.currentImage) return
     
     const items = this.getMenuItems()
-    this.menu.innerHTML = ''
+    this.menuContent.innerHTML = ''
     
     items.forEach(item => {
       if (item.divider) {
         const divider = document.createElement('div')
         divider.className = 'ldesign-context-menu-divider'
-        this.menu.appendChild(divider)
+        this.menuContent.appendChild(divider)
       } else {
         const menuItem = this.createMenuItem(item)
-        this.menu.appendChild(menuItem)
+        this.menuContent.appendChild(menuItem)
       }
     })
   }
@@ -194,37 +216,122 @@ export class ImageContextMenu {
       arrow.innerHTML = getLucideIcon('chevronRight')
       menuItem.appendChild(arrow)
       
-      // 创建子菜单
+      // 创建子菜单并添加到body
       const submenu = this.createSubmenu(item.submenu)
-      menuItem.appendChild(submenu)
+      document.body.appendChild(submenu)
       
-      // 鼠标悬停时调整子菜单位置
+      // 鼠标悬停时显示并调整子菜单位置
+      let hideTimeout: number | null = null
+      
       menuItem.addEventListener('mouseenter', () => {
+        // 清除隐藏定时器
+        if (hideTimeout) {
+          clearTimeout(hideTimeout)
+          hideTimeout = null
+        }
+        
+        // 隐藏其他可能打开的子菜单
+        document.querySelectorAll('.ldesign-context-submenu').forEach(s => {
+          if (s !== submenu) {
+            (s as HTMLElement).style.display = 'none'
+          }
+        })
+        
+        // 显示子菜单
+        submenu.style.display = 'block'
+        
+        // 获取位置信息
         const itemRect = menuItem.getBoundingClientRect()
+        const menuRect = this.menu.getBoundingClientRect()
+        
+        // 初始位置：在菜单项右侧
+        let left = itemRect.right - 4
+        let top = itemRect.top
+        
+        // 临时设置位置以获取准确的尺寸
+        submenu.style.left = `${left}px`
+        submenu.style.top = `${top}px`
+        
+        // 强制重排以获取正确的尺寸
         const submenuRect = submenu.getBoundingClientRect()
         const windowHeight = window.innerHeight
         const windowWidth = window.innerWidth
         
-        // 默认在右侧显示
-        submenu.style.left = 'calc(100% - 4px)'
-        submenu.style.right = 'auto'
-        
         // 如果右侧空间不足，显示在左侧
-        if (itemRect.right + submenuRect.width > windowWidth - 10) {
-          submenu.style.left = 'auto'
-          submenu.style.right = 'calc(100% - 4px)'
+        if (left + submenuRect.width > windowWidth - 10) {
+          left = itemRect.left - submenuRect.width + 4
         }
         
         // 垂直位置调整
-        const submenuHeight = Math.min(submenuRect.height, windowHeight * 0.5)
-        if (itemRect.top + submenuHeight > windowHeight - 10) {
+        if (top + submenuRect.height > windowHeight - 10) {
           // 如果超出底部，向上调整
-          const offset = itemRect.top + submenuHeight - windowHeight + 10
-          submenu.style.top = `-${offset + 6}px`
-        } else {
-          submenu.style.top = '-6px'
+          top = Math.max(10, windowHeight - submenuRect.height - 10)
+        }
+        
+        // 设置最终位置
+        submenu.style.left = `${left}px`
+        submenu.style.top = `${top}px`
+        submenu.style.visibility = 'visible'
+        submenu.style.opacity = '1'
+        submenu.style.transform = 'translateX(0)'
+      })
+      
+      // 鼠标离开时隐藏子菜单
+      menuItem.addEventListener('mouseleave', (e) => {
+        const relatedTarget = e.relatedTarget as HTMLElement
+        
+        // 如果鼠标移动到了子菜单上，不隐藏
+        if (relatedTarget && submenu.contains(relatedTarget)) {
+          return
+        }
+        
+        // 延迟隐藏
+        hideTimeout = window.setTimeout(() => {
+          submenu.style.visibility = 'hidden'
+          submenu.style.opacity = '0'
+          submenu.style.transform = 'translateX(-10px)'
+          setTimeout(() => {
+            submenu.style.display = 'none'
+          }, 200)
+        }, 150)
+      })
+      
+      // 子菜单的鼠标事件处理
+      submenu.addEventListener('mouseenter', () => {
+        // 清除隐藏定时器
+        if (hideTimeout) {
+          clearTimeout(hideTimeout)
+          hideTimeout = null
         }
       })
+      
+      submenu.addEventListener('mouseleave', (e) => {
+        const relatedTarget = e.relatedTarget as HTMLElement
+        
+        // 如果鼠标移回到父菜单项，保持显示
+        if (relatedTarget && menuItem.contains(relatedTarget)) {
+          return
+        }
+        
+        // 否则隐藏子菜单
+        hideTimeout = window.setTimeout(() => {
+          submenu.style.visibility = 'hidden'
+          submenu.style.opacity = '0'
+          submenu.style.transform = 'translateX(-10px)'
+          setTimeout(() => {
+            submenu.style.display = 'none'
+          }, 200)
+        }, 150)
+      })
+      
+      // 清理函数 - 当主菜单隐藏时移除子菜单
+      const cleanup = () => {
+        if (document.body.contains(submenu)) {
+          document.body.removeChild(submenu)
+        }
+      }
+      // 保存清理函数以便后续调用
+      ;(menuItem as any).__cleanup = cleanup
     }
     
     // 点击事件
@@ -249,7 +356,43 @@ export class ImageContextMenu {
         divider.className = 'ldesign-context-menu-divider'
         submenu.appendChild(divider)
       } else {
-        const menuItem = this.createMenuItem(item)
+        // Create submenu item directly instead of recursive createMenuItem
+        const menuItem = document.createElement('div')
+        menuItem.className = 'ldesign-context-menu-item'
+        
+        // Icon
+        if (item.icon) {
+          const icon = document.createElement('span')
+          icon.className = 'ldesign-context-menu-icon'
+          icon.innerHTML = item.icon
+          menuItem.appendChild(icon)
+        }
+        
+        // Label
+        if (item.label) {
+          const label = document.createElement('span')
+          label.className = 'ldesign-context-menu-label'
+          label.textContent = item.label
+          menuItem.appendChild(label)
+        }
+        
+        // Click handler for submenu items
+        if (item.action) {
+          menuItem.addEventListener('click', (e) => {
+            e.stopPropagation()
+            e.preventDefault()
+            
+            // Execute the action
+            item.action!()
+            
+            // Hide the main menu
+            this.hide()
+          })
+          
+          // Add hover effect
+          menuItem.style.cursor = 'pointer'
+        }
+        
         submenu.appendChild(menuItem)
       }
     })
@@ -266,73 +409,38 @@ export class ImageContextMenu {
     return [
       {
         label: '调整大小',
-        icon: getLucideIcon('resize'),
+        icon: getLucideIcon('maximize2'),
         submenu: [
           {
             label: '25%',
-            icon: getLucideIcon('minimize'),
             action: () => this.setImageSize('25%')
           },
           {
             label: '50%',
-            icon: getLucideIcon('minimize'),
             action: () => this.setImageSize('50%')
           },
           {
             label: '75%',
-            icon: getLucideIcon('maximize'),
             action: () => this.setImageSize('75%')
           },
           {
             label: '100%',
-            icon: getLucideIcon('maximize'),
             action: () => this.setImageSize('100%')
-          },
-          {
-            label: '原始大小',
-            icon: getLucideIcon('image'),
-            action: () => this.setImageSize('auto')
           },
           { divider: true },
           {
-            label: '自定义尺寸...',
-            icon: getLucideIcon('resize'),
+            label: '自定义...',
+            icon: getLucideIcon('settings'),
             action: () => this.showCustomSizeDialog()
           }
         ]
       },
       {
-        label: '填充模式',
-        icon: getLucideIcon('maximize'),
-        submenu: [
-          {
-            label: '填充 (Fill)',
-            action: () => this.setObjectFit('fill')
-          },
-          {
-            label: '包含 (Contain)',
-            action: () => this.setObjectFit('contain')
-          },
-          {
-            label: '覆盖 (Cover)',
-            action: () => this.setObjectFit('cover')
-          },
-          {
-            label: '无 (None)',
-            action: () => this.setObjectFit('none')
-          },
-          {
-            label: '缩小 (Scale-down)',
-            action: () => this.setObjectFit('scale-down')
-          }
-        ]
-      },
-      {
-        label: '对齊方式',
+        label: '对齐方式',
         icon: getLucideIcon('alignCenter'),
         submenu: [
           {
-            label: '左对齊',
+            label: '左对齐',
             icon: getLucideIcon('alignLeft'),
             action: () => this.setImageAlign('left')
           },
@@ -342,121 +450,31 @@ export class ImageContextMenu {
             action: () => this.setImageAlign('center')
           },
           {
-            label: '右对齊',
+            label: '右对齐',
             icon: getLucideIcon('alignRight'),
             action: () => this.setImageAlign('right')
           }
         ]
       },
       {
-        label: '文本环绕',
-        icon: getLucideIcon('wrapText'),
-        submenu: [
-          {
-            label: '行内',
-            icon: getLucideIcon('alignCenter'),
-            action: () => this.setWrapMode('inline')
-          },
-          {
-            label: '块级',
-            icon: getLucideIcon('square'),
-            action: () => this.setWrapMode('block')
-          },
-          {
-            label: '左浮动',
-            icon: getLucideIcon('floatLeft'),
-            action: () => this.setWrapMode('float-left')
-          },
-          {
-            label: '右浮动',
-            icon: getLucideIcon('floatRight'),
-            action: () => this.setWrapMode('float-right')
-          }
-        ]
-      },
-      { divider: true },
-      {
-        label: '边框',
-        icon: getLucideIcon('square'),
-        submenu: [
-          {
-            label: '无边框',
-            action: () => this.setBorder('none')
-          },
-          {
-            label: '细边框',
-            action: () => this.setBorder('thin')
-          },
-          {
-            label: '中边框',
-            action: () => this.setBorder('medium')
-          },
-          {
-            label: '粗边框',
-            action: () => this.setBorder('thick')
-          }
-        ]
-      },
-      {
-        label: '圆角',
-        icon: getLucideIcon('cornerRadius'),
-        submenu: [
-          {
-            label: '无圆角',
-            action: () => this.setBorderRadius('none')
-          },
-          {
-            label: '小圆角',
-            action: () => this.setBorderRadius('sm')
-          },
-          {
-            label: '中圆角',
-            action: () => this.setBorderRadius('md')
-          },
-          {
-            label: '大圆角',
-            action: () => this.setBorderRadius('lg')
-          },
-          {
-            label: '圆形',
-            icon: getLucideIcon('circle'),
-            action: () => this.setBorderRadius('full')
-          }
-        ]
-      },
-      {
-        label: '阴影',
-        icon: getLucideIcon('shadow'),
-        submenu: [
-          {
-            label: '无阴影',
-            action: () => this.setShadow('none')
-          },
-          {
-            label: '小阴影',
-            action: () => this.setShadow('sm')
-          },
-          {
-            label: '中阴影',
-            action: () => this.setShadow('md')
-          },
-          {
-            label: '大阴影',
-            action: () => this.setShadow('lg')
-          }
-        ]
-      },
-      { divider: true },
-      {
         label: '滤镜效果',
-        icon: getLucideIcon('palette'),
+        icon: getLucideIcon('sparkles'),
         submenu: [
           {
             label: '无滤镜',
             action: () => this.setFilter('none')
           },
+          { divider: true },
           {
-            label: '灰度',
+            label: '模糊',
+            action: () => this.setFilter('blur')
+          },
+          {
+            label: '锐化',
+            action: () => this.setFilter('sharpen')
+          },
+          {
+            label: '黑白',
             action: () => this.setFilter('grayscale')
           },
           {
@@ -464,69 +482,21 @@ export class ImageContextMenu {
             action: () => this.setFilter('sepia')
           },
           {
-            label: '轻微模糊',
-            action: () => this.setFilter('blur-light')
-          },
-          {
-            label: '中度模糊',
-            action: () => this.setFilter('blur-medium')
-          },
-          {
-            label: '强烈模糊',
-            action: () => this.setFilter('blur-heavy')
-          },
-          { divider: true },
-          {
-            label: '增亮 20%',
-            action: () => this.setFilter('brightness-120')
-          },
-          {
-            label: '增亮 40%',
-            action: () => this.setFilter('brightness-140')
-          },
-          {
-            label: '减暗 20%',
-            action: () => this.setFilter('brightness-80')
-          },
-          {
-            label: '减暗 40%',
-            action: () => this.setFilter('brightness-60')
-          },
-          { divider: true },
-          {
-            label: '高对比度',
-            action: () => this.setFilter('contrast-high')
-          },
-          {
-            label: '低对比度',
-            action: () => this.setFilter('contrast-low')
-          },
-          { divider: true },
-          {
-            label: '高饱和度',
-            action: () => this.setFilter('saturate-high')
-          },
-          {
-            label: '低饱和度',
-            action: () => this.setFilter('saturate-low')
-          },
-          { divider: true },
-          {
-            label: '色相旋转 90°',
-            action: () => this.setFilter('hue-rotate-90')
-          },
-          {
-            label: '色相旋转 180°',
-            action: () => this.setFilter('hue-rotate-180')
-          },
-          {
-            label: '色相旋转 270°',
-            action: () => this.setFilter('hue-rotate-270')
-          },
-          { divider: true },
-          {
-            label: '反色',
+            label: '反转',
             action: () => this.setFilter('invert')
+          },
+          { divider: true },
+          {
+            label: '亮度增强',
+            action: () => this.setFilter('brightness')
+          },
+          {
+            label: '对比度增强',
+            action: () => this.setFilter('contrast')
+          },
+          {
+            label: '饱和度增强',
+            action: () => this.setFilter('saturate')
           }
         ]
       },
@@ -538,19 +508,20 @@ export class ImageContextMenu {
       },
       {
         label: '替换图片',
-        icon: getLucideIcon('replace'),
+        icon: getLucideIcon('upload'),
         action: () => this.replaceImage()
-      },
-      {
-        label: '删除图片',
-        icon: getLucideIcon('trash'),
-        action: () => this.deleteImage()
       },
       { divider: true },
       {
         label: '图片属性',
         icon: getLucideIcon('info'),
         action: () => this.showImageProperties()
+      },
+      { divider: true },
+      {
+        label: '删除',
+        icon: getLucideIcon('trash2'),
+        action: () => this.deleteImage()
       }
     ]
   }
@@ -690,31 +661,47 @@ export class ImageContextMenu {
   }
 
   private setFilter(filter: string): void {
-    if (!this.currentImage) return
+    if (!this.currentImage) {
+      console.error('No current image');
+      return;
+    }
     const img = this.currentImage.querySelector('img') as HTMLImageElement
-    if (!img) return
+    if (!img) {
+      console.error('No img element found in wrapper');
+      return;
+    }
+    
+    console.log('Setting filter:', filter);
+    console.log('Current wrapper classes before:', this.currentImage.className);
     
     // 清除所有滤镜类 - 更高效的方式
     const filterClasses = Array.from(this.currentImage.classList)
       .filter(cls => cls.startsWith('filter-'))
     
+    console.log('Removing filter classes:', filterClasses);
     filterClasses.forEach(cls => {
       this.currentImage!.classList.remove(cls)
     })
     
-    // 如果不是“无滤镜”，添加新的滤镜类
+    // 如果不是"无滤镜"，添加新的滤镜类
     if (filter !== 'none') {
-      this.currentImage.classList.add(`filter-${filter}`)
+      const filterClass = `filter-${filter}`;
+      console.log('Adding filter class:', filterClass);
+      this.currentImage.classList.add(filterClass)
       
       // 为某些特殊滤镜添加额外的视觉反馈
       if (filter.includes('blur')) {
         img.style.transition = 'filter 0.3s ease'
       }
     } else {
+      console.log('Resetting to no filter');
       // 重置滤镜
       img.style.filter = ''
       img.style.transition = ''
     }
+    
+    console.log('Current wrapper classes after:', this.currentImage.className);
+    console.log('Computed filter style:', window.getComputedStyle(img).filter);
     
     this.triggerContentChange()
   }

@@ -34,6 +34,12 @@ async function bootstrap() {
       // 插件（路由器）
       plugins: [routerPlugin],
       
+      // Vue应用配置
+      setupApp: async (app) => {
+        // 暂时不设置任何内容
+        console.log('✅ 应用设置完成')
+      },
+      
       // 错误处理
       onError: (error, context) => {
         console.error(`[应用错误] ${context}:`, error)
@@ -42,6 +48,7 @@ async function bootstrap() {
       // 引擎就绪
       onReady: (engine) => {
         console.log('✅ 引擎已就绪')
+        
         if (import.meta.env.DEV) {
           // 开发环境暴露引擎实例
           ;(window as any).__ENGINE__ = engine

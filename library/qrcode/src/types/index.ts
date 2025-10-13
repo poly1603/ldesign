@@ -220,8 +220,6 @@ export enum EffectType {
   None = 'none',
   /** Crystalize effect - creates crystalline pattern */
   Crystalize = 'crystalize',
-  /** Smooth flow effect - creates organic fluid shapes with connected modules */
-  SmoothFlow = 'smooth-flow',
 }
 
 /**
@@ -236,19 +234,6 @@ export interface TransformConfig {
   scale?: number;
 }
 
-/**
- * Smooth flow effect configuration
- */
-export interface SmoothFlowConfig {
-  /** Flow intensity (0.1-1, default: 0.5) */
-  intensity?: number;
-  /** Connection threshold for merging nearby modules (2-8, default: 4) */
-  connectionThreshold?: number;
-  /** Whether to preserve critical QR patterns (default: true) */
-  preserveCritical?: boolean;
-  /** Smoothness level (1-5, default: 3) */
-  smoothness?: number;
-}
 
 /**
  * Sub marker configuration
@@ -338,8 +323,6 @@ export interface QRCodeStyle {
 
   /** Visual effect type */
   effect?: EffectType;
-  /** Smooth flow effect configuration (when effect is 'smooth-flow') */
-  smoothFlowConfig?: SmoothFlowConfig;
   /** Pixel size for each module (overrides default calculation) */
   pixelSize?: number;
 }

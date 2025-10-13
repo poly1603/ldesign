@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Viewer - Modern Beautiful UI</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Oxygen', 'Ubuntu', sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    #pdf-viewer-container {
+      width: 100vw;
+      height: 100vh;
+    }
+    
+    /* Welcome Screen */
+    .welcome-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      transition: opacity 0.5s, visibility 0.5s;
+    }
+    
+    .welcome-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    
+    .welcome-content {
+      text-align: center;
+      color: white;
+      padding: 40px;
+      max-width: 600px;
+    }
+    
+    .welcome-title {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      animation: slideInDown 0.6s ease-out;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .welcome-subtitle {
+      font-size: 1.25rem;
+      opacity: 0.95;
+      margin-bottom: 3rem;
+      animation: slideInUp 0.6s ease-out;
+      line-height: 1.6;
+    }
+    
+    .welcome-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .file-upload-btn,
+    .sample-btn {
+      display: inline-block;
+      padding: 1rem 2rem;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50px;
+      color: white;
+      font-size: 1.125rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: fadeIn 0.8s ease-out;
+      text-decoration: none;
+    }
+    
+    .file-upload-btn:hover,
+    .sample-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .file-upload-btn:active,
+    .sample-btn:active {
+      transform: translateY(0);
+    }
+    
+    #file-input {
+      display: none;
+    }
+    
+    .welcome-features {
+      margin-top: 4rem;
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      animation: fadeIn 1s ease-out;
+    }
+    
+    .feature-item {
+      text-align: center;
+      color: white;
+      opacity: 0.9;
+    }
+    
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .feature-text {
+      font-size: 0.875rem;
+    }
+    
+    @keyframes slideInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    /* Loading Indicator */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+    }
+    
+    .loading-overlay.active {
+      display: flex;
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Welcome Screen -->
+  <div class="welcome-screen" id="welcome-screen">
+    <div class="welcome-content">
+      <h1 class="welcome-title">✨ Modern PDF Viewer</h1>
+      <p class="welcome-subtitle">
+        Experience the future of PDF viewing with our beautiful, feature-rich viewer.
+        Built with cutting-edge technology for seamless document interaction.
+      </p>
+      
+      <div class="welcome-buttons">
+        <label for="file-input" class="file-upload-btn">
+          📄 Choose Your PDF
+        </label>
+        <button class="sample-btn" id="load-sample">
+          📚 Load Sample PDF
+        </button>
+      </div>
+      
+      <input type="file" id="file-input" accept=".pdf">
+      
+      <div class="welcome-features">
+        <div class="feature-item">
+          <div class="feature-icon">🎨</div>
+          <div class="feature-text">Beautiful UI</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-text">Fast & Smooth</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📝</div>
+          <div class="feature-text">Annotations</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔍</div>
+          <div class="feature-text">Smart Search</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+  
+  <!-- PDF Viewer Container -->
+  <div id="pdf-viewer-container"></div>
+  
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

@@ -5,10 +5,23 @@ import type { PDFViewerOptions } from './types';
 // Export types
 export * from './types';
 
+// Import styles
+import './styles/pdf-viewer-modern.css';
+
 // Export core classes
 export { PDFViewer } from './core/PDFViewer';
 export { PDFRenderer } from './core/PDFRenderer';
 export { EventEmitter } from './core/EventEmitter';
+
+// Export feature managers
+export { AnnotationManager } from './features/AnnotationManager';
+export { BookmarkManager } from './features/BookmarkManager';
+export { PrintManager } from './features/PrintManager';
+export { SearchManager } from './features/SearchManager';
+
+// Export UI managers
+export { ToolbarManager } from './ui/ToolbarManager';
+export { SidebarManager } from './ui/SidebarManager';
 
 // Main export function
 export function createPDFViewer(options: PDFViewerOptions): PDFViewer {

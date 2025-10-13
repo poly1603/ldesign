@@ -65,10 +65,10 @@ export default [
   createDtsConfig('src/index.ts', 'dist/index.d.ts'),
 
   // Vue adapter
-  createConfig('src/adapters/vue.ts', 'vue', { vue: 'Vue' }),
-  createDtsConfig('src/adapters/vue.ts', 'dist/vue.d.ts'),
+  createConfig('src/adapters/vue/index.ts', 'vue', { vue: 'Vue' }),
+  createDtsConfig('src/adapters/vue/index.ts', 'dist/vue.d.ts'),
 
   // React adapter
-  createConfig('src/adapters/react.tsx', 'react', { react: 'React', 'react-dom': 'ReactDOM' }),
-  createDtsConfig('src/adapters/react.tsx', 'dist/react.d.ts'),
+  createConfig('src/adapters/react/index.tsx', 'react', { react: 'React', 'react-dom': 'ReactDOM' }),
+  createDtsConfig('src/adapters/react/index.tsx', 'dist/react.d.ts'),
 ];

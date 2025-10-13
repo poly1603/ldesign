@@ -1,4 +1,3 @@
-import * as pdfjsLib from 'pdfjs-dist';
 import type { 
   PDFDocumentProxy, 
   PDFPageProxy, 
@@ -6,6 +5,21 @@ import type {
   RenderParameters,
   RenderTask
 } from '../types';
+
+// Dynamic PDF.js import
+let pdfjsLib: any = null;
+
+// Initialize PDF.js
+async function initPdfJs() {
+  if (!pdfjsLib) {
+    pdfjsLib = await import('pdfjs-dist');
+    // Set worker
+    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  }
+  return pdfjsLib;
+}
 
 export interface RenderOptions {
   scale?: number;
@@ -22,10 +36,7 @@ export class PDFRenderer {
   private canvasCache: Map<number, HTMLCanvasElement> = new Map();
 
   constructor() {
-    // Initialize PDF.js worker
-    if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
-    }
+    // PDF.js will be initialized on first use
   }
 
   /**
@@ -33,6 +44,9 @@ export class PDFRenderer {
    */
   async loadDocument(source: string | ArrayBuffer | Uint8Array, options?: any): Promise<PDFDocumentProxy> {
     try {
+      // Initialize PDF.js if needed
+      const pdfjs = await initPdfJs();
+      
       // Destroy existing document if any
       if (this.document) {
         await this.destroy();
@@ -50,7 +64,7 @@ export class PDFRenderer {
       }
 
       // Load the document
-      const loadingTask = pdfjsLib.getDocument(loadingParams);
+      const loadingTask = pdfjs.getDocument(loadingParams);
       
       loadingTask.onProgress = (progress: any) => {
         if (options?.onProgress) {
@@ -154,6 +168,7 @@ export class PDFRenderer {
     scale: number = 1.5,
     rotation: number = 0
   ): Promise<void> {
+    const pdfjs = await initPdfJs();
     const page = await this.getPage(pageNumber);
     const viewport = page.getViewport({ scale, rotation });
     
@@ -178,7 +193,7 @@ export class PDFRenderer {
       span.textContent = item.str;
       span.style.position = 'absolute';
       
-      const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+      const tx = pdfjs.Util.transform(viewport.transform, item.transform);
       span.style.left = `${tx[4]}px`;
       span.style.top = `${tx[5]}px`;
       span.style.fontSize = `${Math.abs(tx[0])}px`;

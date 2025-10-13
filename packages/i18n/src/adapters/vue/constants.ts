@@ -7,6 +7,7 @@ import type { I18nInstance } from '../../types';
 
 // Injection keys
 export const I18N_SYMBOL = Symbol('i18n') as InjectionKey<I18nInstance>;
+export const I18N_INJECTION_KEY = I18N_SYMBOL; // Main injection key
 export const i18nSymbol = I18N_SYMBOL; // Alias for compatibility
 
 // Default options

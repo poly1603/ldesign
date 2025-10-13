@@ -27,8 +27,10 @@ export class SidebarManager {
     const tabs = document.createElement('div');
     tabs.className = 'pdf-sidebar-tabs';
     
-    const thumbnailsTab = this.createTab('thumbnails', '📄', 'Thumbnails');
-    const outlineTab = this.createTab('outline', '📑', 'Bookmarks');
+    const thumbnailsTab = this.createTab('thumbnails', 'Thumbnails', 'Thumbnails');
+    const outlineTab = this.createTab('outline', 'Bookmarks', 'Bookmarks');
+    
+    thumbnailsTab.classList.add('active');
     
     tabs.appendChild(thumbnailsTab);
     tabs.appendChild(outlineTab);
@@ -56,11 +58,11 @@ export class SidebarManager {
     this.container = sidebar;
     
     // Add to viewer container
-    const viewerContainer = this.viewer.options.container;
-    if (viewerContainer instanceof HTMLElement) {
-      const viewerContent = viewerContainer.querySelector('.pdf-viewer');
-      if (viewerContent) {
-        viewerContainer.insertBefore(sidebar, viewerContent);
+    const viewerElement = this.viewer.container?.querySelector('.pdf-viewer');
+    if (viewerElement) {
+      const canvasContainer = viewerElement.querySelector('.pdf-canvas-container');
+      if (canvasContainer) {
+        viewerElement.insertBefore(sidebar, canvasContainer);
       }
     }
     
@@ -77,10 +79,10 @@ export class SidebarManager {
     }
   }
 
-  private createTab(name: string, icon: string, title: string): HTMLElement {
+  private createTab(name: string, text: string, title: string): HTMLElement {
     const tab = document.createElement('button');
     tab.className = `pdf-sidebar-tab pdf-tab-${name}`;
-    tab.innerHTML = `<span class="tab-icon">${icon}</span>`;
+    tab.textContent = text;
     tab.title = title;
     tab.addEventListener('click', () => this.switchPanel(name));
     return tab;
@@ -166,21 +168,39 @@ export class SidebarManager {
 
   private async renderThumbnail(pageNumber: number, canvas: HTMLCanvasElement): Promise<void> {
     try {
-      // This would use the renderer to generate a thumbnail
-      // For now, it's a placeholder
+      if (!this.viewer.document) {
+        return;
+      }
+      
+      const page = await this.viewer.document.getPage(pageNumber);
+      const viewport = page.getViewport({ scale: 0.3 });
+      
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        canvas.width = 100;
-        canvas.height = 150;
-        ctx.fillStyle = '#f0f0f0';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#666';
-        ctx.font = '20px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(pageNumber.toString(), 50, 75);
+        await page.render({
+          canvasContext: ctx,
+          viewport: viewport
+        }).promise;
       }
     } catch (error) {
       console.error(`Failed to render thumbnail for page ${pageNumber}:`, error);
+      // Fallback to placeholder
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        canvas.width = 100;
+        canvas.height = 140;
+        ctx.fillStyle = '#f8f9fa';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#dee2e6';
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#6c757d';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(pageNumber.toString(), 50, 75);
+      }
     }
   }
 
