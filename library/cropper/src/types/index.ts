@@ -111,9 +111,15 @@ export interface CropperOptions {
 
   // Highlight
   highlight?: boolean
+  
+  // Highlight opacity (0-1, default: 0.05)
+  highlightOpacity?: number
 
   // Background
   background?: boolean
+  
+  // Modal opacity (0-1, default: 0.5)
+  modalOpacity?: number
 
   // Auto crop
   autoCrop?: boolean

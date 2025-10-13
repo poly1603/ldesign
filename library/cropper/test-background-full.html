@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Background Full Coverage Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-item {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: #f9f9f9;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .test-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .test-desc {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .cropper-wrapper {
+            height: 400px;
+            position: relative;
+            background: #fff;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #f9f9f9;
+            border-top: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #39f;
+            color: white;
+            cursor: pointer;
+            margin: 0 5px;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #28e;
+        }
+    </style>
+    
+    <!-- Include cropper styles -->
+    <style>
+        /* Cropper styles - essential parts */
+        .cropper-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            user-select: none;
+            direction: ltr;
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .cropper-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(45deg, #e0e0e0 25%, transparent 25%),
+                linear-gradient(-45deg, #e0e0e0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e0e0e0 75%),
+                linear-gradient(-45deg, transparent 75%, #e0e0e0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            background-color: #fff;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .cropper-canvas {
+            position: absolute;
+            z-index: 1;
+        }
+        
+        .cropper-modal {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        .cropper-crop-box {
+            position: absolute;
+            z-index: 3;
+        }
+        
+        .cropper-view-box {
+            display: block;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            outline: 2px solid #39f;
+            outline-offset: -1px;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+        }
+        
+        .cropper-face {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-color: transparent;
+            cursor: move;
+        }
+        
+        .cropper-dashed {
+            position: absolute;
+            display: block;
+            border: 0 dashed rgba(255, 255, 255, 0.4);
+            opacity: 0.8;
+            pointer-events: none;
+        }
+        
+        .cropper-dashed.dashed-h {
+            top: 33.33333%;
+            left: 0;
+            width: 100%;
+            height: 33.33333%;
+            border-top-width: 1px;
+            border-bottom-width: 1px;
+        }
+        
+        .cropper-dashed.dashed-v {
+            top: 0;
+            left: 33.33333%;
+            width: 33.33333%;
+            height: 100%;
+            border-right-width: 1px;
+            border-left-width: 1px;
+        }
+        
+        .cropper-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            display: block;
+            width: 0;
+            height: 0;
+            opacity: 0.95;
+            pointer-events: none;
+        }
+        
+        .cropper-center::before,
+        .cropper-center::after {
+            position: absolute;
+            display: block;
+            content: ' ';
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .cropper-center::before {
+            top: 0;
+            left: -4px;
+            width: 9px;
+            height: 1px;
+        }
+        
+        .cropper-center::after {
+            top: -4px;
+            left: 0;
+            width: 1px;
+            height: 9px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Background Full Coverage Test</h1>
+        <p class="description">测试背景格纹是否完全铺满容器，不受图片比例影响</p>
+        
+        <div class="test-grid">
+            <!-- Landscape Image Test -->
+            <div class="test-item">
+                <div class="test-header">
+                    <div class="test-title">横向图片 (16:9)</div>
+                    <div class="test-desc">宽图片，上下会有空白，背景应铺满</div>
+                </div>
+                <div class="cropper-wrapper" id="cropper1"></div>
+            </div>
+            
+            <!-- Portrait Image Test -->
+            <div class="test-item">
+                <div class="test-header">
+                    <div class="test-title">纵向图片 (9:16)</div>
+                    <div class="test-desc">高图片，左右会有空白，背景应铺满</div>
+                </div>
+                <div class="cropper-wrapper" id="cropper2"></div>
+            </div>
+            
+            <!-- Square Image Test -->
+            <div class="test-item">
+                <div class="test-header">
+                    <div class="test-title">正方形图片 (1:1)</div>
+                    <div class="test-desc">正方形图片，可能有边距，背景应铺满</div>
+                </div>
+                <div class="cropper-wrapper" id="cropper3"></div>
+            </div>
+            
+            <!-- QR Code Test -->
+            <div class="test-item">
+                <div class="test-header">
+                    <div class="test-title">二维码图片</div>
+                    <div class="test-desc">小尺寸正方形，背景应铺满整个容器</div>
+                </div>
+                <div class="cropper-wrapper" id="cropper4"></div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="toggleBackground()">切换背景</button>
+            <button class="btn" onclick="changeImages()">更换图片</button>
+            <button class="btn" onclick="resetAll()">重置所有</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Import the compiled library
+        import { Cropper } from './dist/index.js';
+        
+        const croppers = [];
+        const images = {
+            landscape: 'https://picsum.photos/800/450',
+            portrait: 'https://picsum.photos/450/800',
+            square: 'https://picsum.photos/600/600',
+            qrcode: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6%2BR8AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAA7AAAAOwBeShxvQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAABLSURBVCiRY/z//z8DFsDS0lKGkZGRgZmZGR8bRmBiYmJkYmJCYWOAhYVFBiaTgImJCZuamprPjIyMDAwMDAwMVEg9oxpINwG0ewgAKGkKHgnJq0AAAAAASUVORK5CYII='
+        };
+        
+        // Initialize croppers
+        function initCroppers() {
+            // Landscape
+            croppers[0] = new Cropper('cropper1', {
+                src: images.landscape,
+                viewMode: 1,
+                dragMode: 'move',
+                initialAspectRatio: 1,
+                aspectRatio: 1,
+                autoCrop: true,
+                initialCropBoxSize: 0.5,
+                background: true,
+                modal: true,
+                guides: true,
+                center: true,
+                highlight: true,
+                cropBoxMovable: true,
+                cropBoxResizable: true
+            });
+            
+            // Portrait
+            croppers[1] = new Cropper('cropper2', {
+                src: images.portrait,
+                viewMode: 1,
+                dragMode: 'move',
+                initialAspectRatio: 1,
+                aspectRatio: 1,
+                autoCrop: true,
+                initialCropBoxSize: 0.5,
+                background: true,
+                modal: true,
+                guides: true,
+                center: true,
+                highlight: true,
+                cropBoxMovable: true,
+                cropBoxResizable: true
+            });
+            
+            // Square
+            croppers[2] = new Cropper('cropper3', {
+                src: images.square,
+                viewMode: 1,
+                dragMode: 'move',
+                initialAspectRatio: 1,
+                aspectRatio: 1,
+                autoCrop: true,
+                initialCropBoxSize: 0.5,
+                background: true,
+                modal: true,
+                guides: true,
+                center: true,
+                highlight: true,
+                cropBoxMovable: true,
+                cropBoxResizable: true
+            });
+            
+            // QR Code
+            croppers[3] = new Cropper('cropper4', {
+                src: images.qrcode,
+                viewMode: 1,
+                dragMode: 'move',
+                initialAspectRatio: 1,
+                aspectRatio: 1,
+                autoCrop: true,
+                initialCropBoxSize: 0.5,
+                background: true,
+                modal: true,
+                guides: true,
+                center: true,
+                highlight: true,
+                cropBoxMovable: true,
+                cropBoxResizable: true
+            });
+        }
+        
+        // Toggle background
+        window.toggleBackground = function() {
+            const bgElements = document.querySelectorAll('.cropper-bg');
+            bgElements.forEach(bg => {
+                bg.style.display = bg.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+        
+        // Change images
+        window.changeImages = function() {
+            croppers.forEach((cropper, index) => {
+                if (cropper) {
+                    const types = ['landscape', 'portrait', 'square', 'qrcode'];
+                    const newSrc = index === 3 ? images.qrcode : `https://picsum.photos/seed/${Date.now()}-${index}/${index === 0 ? '800/450' : index === 1 ? '450/800' : '600/600'}`;
+                    cropper.replace(newSrc);
+                }
+            });
+        }
+        
+        // Reset all
+        window.resetAll = function() {
+            croppers.forEach(cropper => {
+                if (cropper) {
+                    cropper.reset();
+                }
+            });
+        }
+        
+        // Initialize on load
+        initCroppers();
+    </script>
+</body>
+</html>

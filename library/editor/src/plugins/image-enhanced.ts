@@ -6,6 +6,7 @@
 import { createPlugin } from '../core/Plugin'
 import type { Plugin, Command } from '../types'
 import { getImageContextMenu } from '../components/ImageContextMenu'
+import { getLucideIcon } from '../utils/icons'
 
 /**
  * 图片包装器类
@@ -283,25 +284,67 @@ export class ImageWrapper {
 
   private showImageToolbar(): void {
     // 创建或显示图片工具栏
-    let toolbar = document.querySelector('.ldesign-image-toolbar') as HTMLDivElement
+    let toolbar = this.wrapper.querySelector('.ldesign-image-toolbar') as HTMLDivElement
+    
     if (!toolbar) {
       toolbar = this.createImageToolbar()
-      document.body.appendChild(toolbar)
+      // 将工具栏添加到图片包装器内部
+      this.wrapper.appendChild(toolbar)
     }
     
-    // 定位工具栏
-    const rect = this.wrapper.getBoundingClientRect()
-    toolbar.style.display = 'flex'
-    toolbar.style.position = 'absolute'
-    toolbar.style.left = `${rect.left}px`
-    toolbar.style.top = `${rect.top - 40}px`
-    toolbar.setAttribute('data-target-image', this.wrapper.id || '')
+    // 延迟计算位置，确保 DOM 已经更新
+    requestAnimationFrame(() => {
+      // 显示工具栏
+      toolbar.classList.add('show')
+      
+      // 计算位置，使工具栏显示在图片上方
+      const toolbarHeight = toolbar.offsetHeight || 40
+      
+      // 获取编辑器容器的位置信息
+      const editorContent = this.wrapper.closest('.ldesign-editor-content') as HTMLElement
+      const wrapperRect = this.wrapper.getBoundingClientRect()
+      const editorRect = editorContent ? editorContent.getBoundingClientRect() : null
+      
+      // 计算上方可用空间
+      const spaceAbove = editorRect 
+        ? wrapperRect.top - editorRect.top 
+        : wrapperRect.top
+      
+      if (spaceAbove >= toolbarHeight + 15) {
+        // 上方有足够空间，显示在图片上方
+        toolbar.style.position = 'absolute'
+        toolbar.style.top = `-${toolbarHeight + 8}px`
+        toolbar.style.bottom = 'auto'
+      } else {
+        // 上方空间不足，显示在图片内部顶部
+        toolbar.style.position = 'absolute'
+        toolbar.style.top = '8px'
+        toolbar.style.bottom = 'auto'
+        // 添加背景半透明效果，以便更好地看清工具栏
+        toolbar.style.background = 'rgba(255, 255, 255, 0.95)'
+      }
+      
+      // 水平居中
+      toolbar.style.left = '50%'
+      toolbar.style.transform = 'translateX(-50%)'
+      
+      // 确保工具栏不会超出屏幕左右边界
+      const toolbarRect = toolbar.getBoundingClientRect()
+      if (toolbarRect.left < 10) {
+        toolbar.style.left = '10px'
+        toolbar.style.transform = 'none'
+      } else if (toolbarRect.right > window.innerWidth - 10) {
+        toolbar.style.left = 'auto'
+        toolbar.style.right = '10px'
+        toolbar.style.transform = 'none'
+      }
+    })
   }
 
   private hideImageToolbar(): void {
-    const toolbar = document.querySelector('.ldesign-image-toolbar')
+    const toolbar = this.wrapper.querySelector('.ldesign-image-toolbar')
     if (toolbar) {
-      (toolbar as HTMLElement).style.display = 'none'
+      toolbar.classList.remove('show')
     }
   }
 
@@ -311,16 +354,19 @@ export class ImageWrapper {
     
     // 文本环绕选项
     const wrapOptions = [
-      { value: 'inline', icon: '⬛', title: '行内' },
-      { value: 'block', icon: '◼', title: '块级' },
-      { value: 'float-left', icon: '◧', title: '左浮动' },
-      { value: 'float-right', icon: '◨', title: '右浮动' }
+      { value: 'inline', icon: getLucideIcon('alignCenter'), title: '行内显示' },
+      { value: 'block', icon: getLucideIcon('square'), title: '块级显示' },
+      { value: 'float-left', icon: getLucideIcon('floatLeft'), title: '左侧浮动' },
+      { value: 'float-right', icon: getLucideIcon('floatRight'), title: '右侧浮动' }
     ]
     
     wrapOptions.forEach(option => {
       const btn = document.createElement('button')
       btn.className = 'ldesign-image-toolbar-btn'
-      btn.innerHTML = option.icon
+      btn.innerHTML = `
+        <span class="icon">${option.icon}</span>
+        <span class="label">${option.title}</span>
+      `
       btn.title = option.title
       btn.setAttribute('data-wrap', option.value)
       btn.onclick = () => this.setWrapMode(option.value)
@@ -334,15 +380,18 @@ export class ImageWrapper {
     
     // 对齐选项
     const alignOptions = [
-      { value: 'left', icon: '◤', title: '左对齐' },
-      { value: 'center', icon: '◉', title: '居中' },
-      { value: 'right', icon: '◥', title: '右对齐' }
+      { value: 'left', icon: getLucideIcon('alignLeft'), title: '左对齐' },
+      { value: 'center', icon: getLucideIcon('alignCenter'), title: '居中对齐' },
+      { value: 'right', icon: getLucideIcon('alignRight'), title: '右对齐' }
     ]
     
     alignOptions.forEach(option => {
       const btn = document.createElement('button')
       btn.className = 'ldesign-image-toolbar-btn'
-      btn.innerHTML = option.icon
+      btn.innerHTML = `
+        <span class="icon">${option.icon}</span>
+        <span class="label">${option.title}</span>
+      `
       btn.title = option.title
       btn.setAttribute('data-align', option.value)
       btn.onclick = () => this.setAlignment(option.value)

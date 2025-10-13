@@ -3669,7 +3669,7 @@ export namespace Components {
          */
         "restore": () => Promise<void>;
         /**
-          * @default 'copy'
+          * @default 'square-arrow-down-right'
          */
         "restoreIcon": string;
         /**
@@ -11476,7 +11476,7 @@ declare namespace LocalJSX {
          */
         "resizable"?: boolean;
         /**
-          * @default 'copy'
+          * @default 'square-arrow-down-right'
          */
         "restoreIcon"?: string;
         /**

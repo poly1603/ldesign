@@ -25,10 +25,25 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
+    "./vue": {
+      "types": "./es/adapters/vue/index.d.ts",
+      "import": "./es/adapters/vue/index.js",
+      "require": "./lib/adapters/vue/index.cjs"
+    },
+    "./react": {
+      "types": "./es/adapters/react/index.d.ts",
+      "import": "./es/adapters/react/index.js",
+      "require": "./lib/adapters/react/index.cjs"
+    },
     "./adapters/vue": {
-      "types": "./es/adapters/vue.d.ts",
-      "import": "./es/adapters/vue.js",
-      "require": "./lib/adapters/vue.cjs"
+      "types": "./es/adapters/vue/index.d.ts",
+      "import": "./es/adapters/vue/index.js",
+      "require": "./lib/adapters/vue/index.cjs"
+    },
+    "./adapters/react": {
+      "types": "./es/adapters/react/index.d.ts",
+      "import": "./es/adapters/react/index.js",
+      "require": "./lib/adapters/react/index.cjs"
     },
     "./core": {
       "types": "./es/core/index.d.ts",

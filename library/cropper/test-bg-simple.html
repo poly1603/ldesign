@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Background Test</title>
+    <style>
+        body {
+            margin: 20px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .test-container {
+            width: 800px;
+            height: 600px;
+            border: 3px solid #333;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        
+        .info {
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background: #39f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #28e;
+        }
+    </style>
+    
+    <!-- Include cropper styles -->
+    <link rel="stylesheet" href="./dist/style.css">
+</head>
+<body>
+    <h1>背景格纹铺满测试</h1>
+    <div class="info">
+        测试不同比例的图片，背景格纹应该始终铺满整个容器（红框内）
+    </div>
+    
+    <div class="controls">
+        <button onclick="loadImage('landscape')">横向图片 (宽)</button>
+        <button onclick="loadImage('portrait')">纵向图片 (高)</button>
+        <button onclick="loadImage('square')">正方形图片</button>
+        <button onclick="loadImage('tiny')">小图片</button>
+        <button onclick="toggleBg()">切换背景</button>
+    </div>
+    
+    <div class="test-container" id="cropperContainer"></div>
+    
+    <div class="info" id="imageInfo">
+        等待加载图片...
+    </div>
+    
+    <script type="module">
+        import { Cropper } from './dist/index.js';
+        
+        let cropper = null;
+        
+        const images = {
+            landscape: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="200"%3E%3Crect fill="%2339f" width="400" height="200"/%3E%3Ctext x="200" y="100" text-anchor="middle" fill="white" font-size="24"%3E400x200%3C/text%3E%3C/svg%3E',
+            portrait: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="400"%3E%3Crect fill="%23f39" width="200" height="400"/%3E%3Ctext x="100" y="200" text-anchor="middle" fill="white" font-size="24"%3E200x400%3C/text%3E%3C/svg%3E',
+            square: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="300"%3E%3Crect fill="%233f9" width="300" height="300"/%3E%3Ctext x="150" y="150" text-anchor="middle" fill="white" font-size="24"%3E300x300%3C/text%3E%3C/svg%3E',
+            tiny: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23f93" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" fill="white" font-size="16"%3E100x100%3C/text%3E%3C/svg%3E'
+        };
+        
+        window.loadImage = function(type) {
+            if (cropper) {
+                cropper.destroy();
+            }
+            
+            document.getElementById('imageInfo').textContent = `加载${type}图片...`;
+            
+            cropper = new Cropper('cropperContainer', {
+                src: images[type],
+                viewMode: 1,
+                dragMode: 'move',
+                initialAspectRatio: 1,
+                aspectRatio: 1,
+                autoCrop: true,
+                initialCropBoxSize: 0.5,
+                background: true,  // 确保背景启用
+                modal: true,
+                guides: true,
+                center: true,
+                highlight: true,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                ready: function() {
+                    const imageData = cropper.getImageData();
+                    if (imageData) {
+                        document.getElementById('imageInfo').innerHTML = `
+                            图片类型: ${type}<br>
+                            原始尺寸: ${imageData.naturalWidth}x${imageData.naturalHeight}<br>
+                            显示尺寸: ${Math.round(imageData.width)}x${Math.round(imageData.height)}<br>
+                            位置: (${Math.round(imageData.left)}, ${Math.round(imageData.top)})<br>
+                            <span style="color: red">背景应该铺满整个容器（800x600）</span>
+                        `;
+                    }
+                    
+                    // 检查背景元素
+                    const bg = document.querySelector('.cropper-bg');
+                    if (bg) {
+                        const bgRect = bg.getBoundingClientRect();
+                        const containerRect = document.getElementById('cropperContainer').getBoundingClientRect();
+                        console.log('Background size:', bgRect.width, 'x', bgRect.height);
+                        console.log('Container size:', containerRect.width, 'x', containerRect.height);
+                        if (bgRect.width !== containerRect.width || bgRect.height !== containerRect.height) {
+                            console.error('背景没有铺满容器！');
+                        } else {
+                            console.log('背景正确铺满容器！');
+                        }
+                    } else {
+                        console.error('背景元素未找到！');
+                    }
+                }
+            });
+        };
+        
+        window.toggleBg = function() {
+            const bg = document.querySelector('.cropper-bg');
+            if (bg) {
+                bg.style.display = bg.style.display === 'none' ? '' : 'none';
+            }
+        };
+        
+        // 默认加载横向图片
+        loadImage('landscape');
+    </script>
+</body>
+</html>

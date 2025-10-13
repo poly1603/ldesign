@@ -6,6 +6,7 @@ import { createCanvasGradient } from './styles/gradients';
 import { drawEye, getEyePositions, isInEye } from './styles/eyes';
 import { applyShadow, clearShadow, drawBackgroundImage } from './styles/effects';
 import { renderLiquidFlow } from './styles/liquid-flow'
+import { renderImprovedLiquidFlow, renderLiquidWithRegions } from './styles/improved-liquid'
 
 /**
  * Default style configuration
@@ -599,8 +600,11 @@ export class CanvasRenderer {
       this.ctx.fillStyle = this.style.fgColor;
     }
     
-    // Use the high-quality liquid flow rendering
-    renderLiquidFlow(this.ctx, modules, moduleSize, margin);
+    // Use the improved liquid flow rendering
+    // You can switch between different implementations:
+    // renderLiquidFlow(this.ctx, modules, moduleSize, margin); // Original
+    renderImprovedLiquidFlow(this.ctx, modules, moduleSize, margin); // Improved marching squares
+    // renderLiquidWithRegions(this.ctx, modules, moduleSize, margin); // Region-based
     
     // Clear shadow before drawing eyes
     if (this.config.style?.shadow) {

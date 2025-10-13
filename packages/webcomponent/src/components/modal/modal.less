@@ -239,25 +239,11 @@
     border-radius: var(--ld-modal-header-btn-radius, 4px);
     cursor: pointer !important; // 强制显示指针光标
     color: var(--ld-modal-header-btn-color, #6b7280);
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: all 0.2s ease;
     outline: none;
     box-sizing: border-box;
     touch-action: manipulation; // 优化触摸响应
     -webkit-tap-highlight-color: transparent; // 移除移动端点击高亮
-
-    &:hover {
-      background: var(--ld-modal-header-btn-hover-bg, rgba(0, 0, 0, 0.06));
-      color: var(--ld-modal-header-btn-hover-color, #374151);
-    }
-
-    &:active {
-      background: var(--ld-modal-header-btn-active-bg, rgba(0, 0, 0, 0.1));
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--ldesign-brand-color, #7c3aed);
-      outline-offset: 2px;
-    }
 
     // 确保图标居中
     ldesign-icon {
@@ -267,11 +253,39 @@
       font-size: 18px;
     }
   }
+
+  // 最大化按钮使用主色调
+  &__maximize {
+    &:hover {
+      background: var(--ldesign-brand-color-light, rgba(124, 58, 237, 0.1));
+      color: var(--ldesign-brand-color, #7c3aed);
+    }
+
+    &:active {
+      background: var(--ldesign-brand-color-light, rgba(124, 58, 237, 0.15));
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ldesign-brand-color, #7c3aed);
+      outline-offset: 2px;
+    }
+  }
   
-  // 关闭按钮特殊样式 - 悬浮时红色
-  &__close:hover {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+  // 关闭按钮特殊样式 - 红色系
+  &__close {
+    &:hover {
+      background: var(--ld-modal-close-hover-bg, rgba(239, 68, 68, 0.1));
+      color: var(--ld-modal-close-hover-color, #ef4444);
+    }
+
+    &:active {
+      background: var(--ld-modal-close-active-bg, rgba(239, 68, 68, 0.15));
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ld-modal-close-hover-color, #ef4444);
+      outline-offset: 2px;
+    }
   }
 
   &__body {
@@ -291,25 +305,25 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: var(--ld-modal-footer-btn-gap, 12px);
+    gap: var(--ld-modal-footer-btn-gap, 8px);
     flex-shrink: 0;
 
     // 兜底：某些环境 gap 无效时，保证按钮间距
     > ldesign-button + ldesign-button,
     > * + ldesign-button,
     > ldesign-button + * {
-      margin-left: var(--ld-modal-footer-btn-gap, 12px);
+      margin-left: var(--ld-modal-footer-btn-gap, 8px);
     }
 
     // 按钮组容器样式
     &-group {
       display: flex;
       align-items: center;
-      gap: var(--ld-modal-footer-btn-gap, 12px);
+      gap: var(--ld-modal-footer-btn-gap, 8px);
 
       // 兜底样式
       > ldesign-button + ldesign-button {
-        margin-left: var(--ld-modal-footer-btn-gap, 12px);
+        margin-left: var(--ld-modal-footer-btn-gap, 8px);
       }
     }
 

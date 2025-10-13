@@ -13,9 +13,11 @@ export interface CropBoxOptions {
   maxWidth?: number
   maxHeight?: number
   modal?: boolean
+  modalOpacity?: number
   guides?: boolean
   center?: boolean
   highlight?: boolean
+  highlightOpacity?: number
   background?: boolean
 }
 
@@ -29,9 +31,11 @@ export class CropBox {
   private maxWidth?: number
   private maxHeight?: number
   private modal?: boolean
+  private modalOpacity: number
   private guides?: boolean
   private center?: boolean
   private highlight?: boolean
+  private highlightOpacity: number
   private background?: boolean
 
   // UI Elements
@@ -52,9 +56,11 @@ export class CropBox {
     this.maxWidth = options.maxWidth
     this.maxHeight = options.maxHeight
     this.modal = options.modal ?? true
+    this.modalOpacity = options.modalOpacity ?? 0.3  // Lighter default opacity
     this.guides = options.guides ?? true
     this.center = options.center ?? true
     this.highlight = options.highlight ?? true
+    this.highlightOpacity = options.highlightOpacity ?? 0.03  // Lighter highlight
     this.background = options.background ?? false // Background is now handled by Cropper
 
     this.element = this.createCropBox()
@@ -79,6 +85,10 @@ export class CropBox {
     const face = createElement('div', 'cropper-face')
     if (this.highlight) {
       addClass(face, 'cropper-highlight')
+      // Apply highlight opacity
+      setStyle(face, {
+        backgroundColor: `rgba(255, 255, 255, ${this.highlightOpacity})`
+      })
     }
 
     // Create dashed lines (guides)
@@ -141,6 +151,10 @@ export class CropBox {
     // Create and append modal (overlay)
     if (this.modal) {
       this.modalElement = createElement('div', 'cropper-modal')
+      // Apply modal opacity
+      setStyle(this.modalElement, {
+        backgroundColor: `rgba(0, 0, 0, ${this.modalOpacity})`
+      })
       this.container.appendChild(this.modalElement)
     }
 

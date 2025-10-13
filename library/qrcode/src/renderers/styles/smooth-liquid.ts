@@ -64,7 +64,7 @@ function findConnectedRegion(
     if (!modules[row][col]) continue;
     
     visited.add(key);
-    region.push({row, col, x: col, y: row});
+  region.push({row, col});
     
     // Check 8-connected neighbors for smoother connections
     const neighbors = [
@@ -312,100 +312,139 @@ export function renderSmoothLiquidCanvas(
   margin: number
 ): void {
   const moduleCount = modules.length;
+  const canvasSize = (moduleCount + margin * 2) * moduleSize;
   
-  // Create higher resolution for smoother rendering
-  const scale = 3; // Render at 3x resolution for smoother curves
-  const scaledModuleSize = moduleSize * scale;
-  const scaledMargin = margin * scale;
-  
-  // Create temporary canvas for high-res rendering
+  // Create temporary canvas for rendering
   const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = ctx.canvas.width * scale;
-  tempCanvas.height = ctx.canvas.height * scale;
+  tempCanvas.width = canvasSize;
+  tempCanvas.height = canvasSize;
   const tempCtx = tempCanvas.getContext('2d')!;
   
-  // Set fill style
+  // Copy fill style
   tempCtx.fillStyle = ctx.fillStyle;
   
-  // Create metaball field
-  const field: number[][] = [];
-  const fieldSize = (moduleCount + margin * 2) * scale * 10;
+  // Draw using simple metaball approach
+  const visited = new Set<string>();
   
-  // Initialize field
-  for (let y = 0; y < fieldSize; y++) {
-    field[y] = [];
-    for (let x = 0; x < fieldSize; x++) {
-      field[y][x] = 0;
-    }
-  }
-  
-  // Generate metaball field values
-  const influence = moduleSize * scale * 8; // Influence radius
-  const strength = 1.5; // Metaball strength
-  
+  // Find and draw connected regions
   for (let row = 0; row < moduleCount; row++) {
     for (let col = 0; col < moduleCount; col++) {
-      if (modules[row][col]) {
-        const cx = (col + margin) * scale * 10 + scale * 5;
-        const cy = (row + margin) * scale * 10 + scale * 5;
-        
-        // Add metaball influence
-        for (let y = Math.max(0, cy - influence); y < Math.min(fieldSize, cy + influence); y++) {
-          for (let x = Math.max(0, cx - influence); x < Math.min(fieldSize, cx + influence); x++) {
-            const dx = x - cx;
-            const dy = y - cy;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            if (dist < influence) {
-              // Metaball formula with smooth falloff
-              const normalizedDist = dist / influence;
-              const value = Math.pow(1 - normalizedDist, strength);
-              field[y][x] += value;
-            }
-          }
+      const key = `${row},${col}`;
+      if (modules[row][col] && !visited.has(key)) {
+        const region = findConnectedRegion(modules, row, col, visited);
+        if (region.length > 0) {
+          drawMetaballRegion(tempCtx, region, moduleSize, margin);
         }
       }
     }
   }
   
-  // Extract contour using marching squares and draw
-  const threshold = 0.5;
-  tempCtx.beginPath();
+  // Apply smoothing via filter
+  tempCtx.filter = 'blur(1px)';
+  tempCtx.drawImage(tempCanvas, 0, 0);
   
-  // Use image data for smooth rendering
-  const imageData = tempCtx.createImageData(tempCanvas.width, tempCanvas.height);
+  // Draw to main canvas
+  ctx.drawImage(tempCanvas, 0, 0, canvasSize, canvasSize, 
+                0, 0, ctx.canvas.width, ctx.canvas.height);
+}
+
+/**
+ * Draw a metaball region on the canvas
+ */
+function drawMetaballRegion(
+  ctx: CanvasRenderingContext2D,
+  region: Module[],
+  moduleSize: number,
+  margin: number
+): void {
+  if (region.length === 0) return;
+  
+  // Single module - draw smooth circle
+  if (region.length === 1) {
+    const m = region[0];
+    const cx = (m.col + margin) * moduleSize + moduleSize / 2;
+    const cy = (m.row + margin) * moduleSize + moduleSize / 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, moduleSize * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+    return;
+  }
+  
+  // Multiple modules - create metaball effect
+  const resolution = 2; // Lower resolution for performance
+  const threshold = 0.5;
+  const radius = moduleSize * 0.7;
+  
+  // Find bounding box
+  const minRow = Math.min(...region.map(m => m.row));
+  const maxRow = Math.max(...region.map(m => m.row));
+  const minCol = Math.min(...region.map(m => m.col));
+  const maxCol = Math.max(...region.map(m => m.col));
+  
+  const startX = (minCol + margin - 1) * moduleSize;
+  const startY = (minRow + margin - 1) * moduleSize;
+  const endX = (maxCol + margin + 2) * moduleSize;
+  const endY = (maxRow + margin + 2) * moduleSize;
+  
+  // Create path for the region
+  ctx.beginPath();
+  
+  // Sample points and check if inside metaball field
+  const imageData = ctx.createImageData(
+    Math.ceil((endX - startX) / resolution), 
+    Math.ceil((endY - startY) / resolution)
+  );
   const data = imageData.data;
   
-  for (let y = 0; y < tempCanvas.height; y++) {
-    for (let x = 0; x < tempCanvas.width; x++) {
-      const fieldX = Math.floor(x / scale * 10);
-      const fieldY = Math.floor(y / scale * 10);
+  for (let y = startY; y < endY; y += resolution) {
+    for (let x = startX; x < endX; x += resolution) {
+      let fieldValue = 0;
       
-      if (fieldX < fieldSize && fieldY < fieldSize && field[fieldY][fieldX] > threshold) {
-        const alpha = Math.min(255, Math.floor(field[fieldY][fieldX] * 255));
-        const idx = (y * tempCanvas.width + x) * 4;
+      // Calculate metaball field value at this point
+      for (const module of region) {
+        const cx = (module.col + margin) * moduleSize + moduleSize / 2;
+        const cy = (module.row + margin) * moduleSize + moduleSize / 2;
+        const dx = x - cx;
+        const dy = y - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
         
-        // Get color from fillStyle
-        const fillColor = parseColor(ctx.fillStyle);
-        data[idx] = fillColor.r;
-        data[idx + 1] = fillColor.g;
-        data[idx + 2] = fillColor.b;
-        data[idx + 3] = alpha;
+        if (dist < radius * 2) {
+          // Metaball formula
+          fieldValue += Math.pow(radius / Math.max(dist, 0.1), 2.2);
+        }
+      }
+      
+      // Draw pixel if above threshold
+      if (fieldValue >= threshold) {
+        const px = Math.floor((x - startX) / resolution);
+        const py = Math.floor((y - startY) / resolution);
+        if (px >= 0 && px < imageData.width && py >= 0 && py < imageData.height) {
+          const idx = (py * imageData.width + px) * 4;
+          const fillColor = parseColor(ctx.fillStyle);
+          const alpha = Math.min(255, Math.floor(fieldValue * 127 + 128));
+          data[idx] = fillColor.r;
+          data[idx + 1] = fillColor.g;
+          data[idx + 2] = fillColor.b;
+          data[idx + 3] = alpha;
+        }
       }
     }
   }
   
-  // Apply Gaussian blur for smoother edges
-  gaussianBlur(imageData, tempCanvas.width, tempCanvas.height, 2);
+  // Create temporary canvas for this region
+  const regionCanvas = document.createElement('canvas');
+  regionCanvas.width = imageData.width;
+  regionCanvas.height = imageData.height;
+  const regionCtx = regionCanvas.getContext('2d')!;
   
-  tempCtx.putImageData(imageData, 0, 0);
+  regionCtx.putImageData(imageData, 0, 0);
   
-  // Draw the high-res result back to original canvas
+  // Draw back with smoothing
   ctx.save();
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 
-                0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.drawImage(regionCanvas, 0, 0, regionCanvas.width, regionCanvas.height,
+                startX, startY, endX - startX, endY - startY);
   ctx.restore();
 }
 

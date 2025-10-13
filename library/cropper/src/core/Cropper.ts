@@ -31,9 +31,11 @@ const DEFAULTS = {
   checkCrossOrigin: true,
   checkOrientation: true,
   modal: true,
+  modalOpacity: 0.3,  // Default modal opacity (lighter mask)
   guides: true,
   center: true,
   highlight: true,
+  highlightOpacity: 0.03,  // Default highlight opacity (3% - lighter)
   background: true,
   autoCrop: true,
   autoCropArea: 0.8, // Deprecated, use initialCropBoxSize instead
@@ -174,9 +176,11 @@ export class Cropper {
       maxWidth: this.options.maxCropBoxWidth,
       maxHeight: this.options.maxCropBoxHeight,
       modal: this.options.modal,
+      modalOpacity: this.options.modalOpacity,
       guides: this.options.guides,
       center: this.options.center,
       highlight: this.options.highlight,
+      highlightOpacity: this.options.highlightOpacity,
       background: this.options.background
     })
 

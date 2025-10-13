@@ -425,60 +425,149 @@ export class AppComponent {
         </div>
     </div>
 
-    <!-- Include the PDF Viewer Library -->
+    <!-- Include PDF.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    
+    <!-- Include the built PDF Viewer Plugin -->
+    <link rel="stylesheet" href="./dist/pdf-viewer.css">
+    <script src="./dist/pdf-viewer.min.js"></script>
+    
     <script type="module">
-        // For demo purposes, we'll create a mock implementation
-        // In production, this would be loaded from the built library
-        
         let viewer;
         
+        // Sample PDF URLs with CORS proxy fallback
+        const samplePDFs = [
+            { name: 'PDF.js Sample', url: 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/examples/learning/helloworld.pdf' },
+            { name: 'Lorem Ipsum', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+            { name: 'Sample Document', url: 'https://pdfobject.com/pdf/sample.pdf' }
+        ];
+        let currentPDFIndex = 0;
+        
         window.onload = function() {
-            // Initialize the viewer with a sample PDF
+            // Initialize the viewer
             initializeViewer();
         };
         
         function initializeViewer() {
-            // Create a simple demo implementation
-            const container = document.getElementById('pdfViewer');
-            container.innerHTML = `
-                <div style="padding: 20px; text-align: center; color: #666;">
-                    <h3>PDF Viewer Ready</h3>
-                    <p>Click "Load Sample PDF" or "Open Local File" to get started</p>
-                    <p style="margin-top: 20px; font-size: 12px;">
-                        Note: This is a demo page. Install the package via npm to use in your project.
-                    </p>
-                </div>
-            `;
-            
-            // Create mock viewer object for demo
-            viewer = {
-                nextPage: () => console.log('Next page'),
-                previousPage: () => console.log('Previous page'),
-                goToPage: (n) => console.log(`Go to page ${n}`),
-                zoomIn: () => console.log('Zoom in'),
-                zoomOut: () => console.log('Zoom out'),
-                setScale: (n) => console.log(`Set scale to ${n}`),
-                rotateClockwise: () => console.log('Rotate clockwise'),
-                print: () => window.print(),
-                download: () => console.log('Download PDF'),
-                fitToWidth: () => console.log('Fit to width'),
-                fitToHeight: () => console.log('Fit to height')
-            };
-            
-            window.viewer = viewer;
+            try {
+                // Initialize the Universal PDF Viewer
+                viewer = new window.UniversalPDFViewer({
+                    container: '#pdfViewer',
+                    theme: 'light',
+                    enableToolbar: true,
+                    enableSearch: true,
+                    enablePrint: true,
+                    enableDownload: true,
+                    defaultScale: 1.0,
+                    corsProxy: 'https://cors-anywhere.herokuapp.com/'
+                });
+                
+                // Set up event listeners
+                viewer.on('pageChanged', ({ currentPage, totalPages }) => {
+                    console.log(`Page ${currentPage} of ${totalPages}`);
+                });
+                
+                viewer.on('scaleChanged', ({ scale }) => {
+                    console.log(`Scale changed to ${scale}`);
+                });
+                
+                viewer.on('documentLoaded', () => {
+                    console.log('Document loaded successfully');
+                });
+                
+                viewer.on('error', (error) => {
+                    console.error('PDF Viewer Error:', error);
+                    alert(`Error: ${error.message}`);
+                });
+                
+                window.viewer = viewer;
+                
+                // Show ready message
+                const container = document.getElementById('pdfViewer');
+                if (!viewer.pdfUrl) {
+                    container.innerHTML = `
+                        <div style="padding: 40px; text-align: center; color: #666; background: #f8f9fa; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                            <h3 style="margin-bottom: 20px;">🎯 PDF Viewer Ready</h3>
+                            <p style="margin-bottom: 30px;">Click "Load Sample PDF" or "Open Local File" to get started</p>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                                ${samplePDFs.map((pdf, i) => `
+                                    <button class="demo-btn" onclick="loadSpecificPDF(${i})">${pdf.name}</button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to initialize PDF viewer:', error);
+                // Fallback to mock implementation if the plugin fails to load
+                viewer = {
+                    nextPage: () => console.log('Next page'),
+                    previousPage: () => console.log('Previous page'),
+                    goToPage: (n) => console.log(`Go to page ${n}`),
+                    zoomIn: () => console.log('Zoom in'),
+                    zoomOut: () => console.log('Zoom out'),
+                    setScale: (n) => console.log(`Set scale to ${n}`),
+                    rotateClockwise: () => console.log('Rotate clockwise'),
+                    print: () => window.print(),
+                    download: () => console.log('Download PDF'),
+                    fitToWidth: () => console.log('Fit to width'),
+                    fitToHeight: () => console.log('Fit to height'),
+                    loadPDF: (url) => console.log(`Loading PDF from ${url}`)
+                };
+                
+                window.viewer = viewer;
+                
+                const container = document.getElementById('pdfViewer');
+                container.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #666;">
+                        <h3>⚠️ PDF Viewer Plugin Not Loaded</h3>
+                        <p>The PDF viewer plugin could not be initialized. Mock implementation is active.</p>
+                        <p style="margin-top: 20px; font-size: 12px;">
+                            Error: ${error.message}
+                        </p>
+                    </div>
+                `;
+            }
         }
         
         window.loadSamplePDF = function() {
-            alert('Sample PDF loaded! (This would load a real PDF in production)');
+            loadSpecificPDF(currentPDFIndex);
+            currentPDFIndex = (currentPDFIndex + 1) % samplePDFs.length;
+        };
+        
+        window.loadSpecificPDF = function(index) {
+            const pdf = samplePDFs[index];
+            console.log(`Loading PDF: ${pdf.name}`);
+            
+            if (viewer && viewer.loadPDF) {
+                viewer.loadPDF(pdf.url).catch(error => {
+                    console.error('Failed to load PDF:', error);
+                    // Try with CORS proxy
+                    const proxyUrl = `https://cors-anywhere.herokuapp.com/${pdf.url}`;
+                    return viewer.loadPDF(proxyUrl);
+                });
+            } else {
+                alert(`Loading: ${pdf.name}\nURL: ${pdf.url}`);
+            }
         };
         
         window.openLocalFile = function() {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = '.pdf';
-            input.onchange = (e) => {
+            input.onchange = async (e) => {
                 const file = e.target.files[0];
-                if (file) {
+                if (file && viewer && viewer.loadPDF) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const arrayBuffer = event.target.result;
+                        viewer.loadPDF(arrayBuffer);
+                    };
+                    reader.readAsArrayBuffer(file);
+                } else if (file) {
                     alert(`Selected file: ${file.name}`);
                 }
             };

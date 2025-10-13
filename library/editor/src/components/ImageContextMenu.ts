@@ -84,26 +84,52 @@ export class ImageContextMenu {
     // 移除隐藏动画类
     this.menu.classList.remove('hiding')
     
-    // 显示菜单
+    // 先设置到临时位置以获取尺寸
     this.menu.style.display = 'block'
     this.menu.style.opacity = '0'
+    this.menu.style.left = '0px'
+    this.menu.style.top = '0px'
     
     // 计算位置，防止超出屏幕
     requestAnimationFrame(() => {
       const menuRect = this.menu.getBoundingClientRect()
       const windowWidth = window.innerWidth
       const windowHeight = window.innerHeight
+      const padding = 10
       
       let posX = x
       let posY = y
       
-      if (x + menuRect.width > windowWidth) {
-        posX = windowWidth - menuRect.width - 10
+      // 水平位置调整
+      if (x + menuRect.width + padding > windowWidth) {
+        // 如果右边空间不足，尝试显示在左边
+        posX = Math.max(padding, x - menuRect.width)
       }
       
-      if (y + menuRect.height > windowHeight) {
-        posY = windowHeight - menuRect.height - 10
+      // 垂直位置调整
+      // 由于菜单有最大高度限制(70vh)，我们需要考虑实际可见高度
+      const maxMenuHeight = windowHeight * 0.7
+      const actualMenuHeight = Math.min(menuRect.height, maxMenuHeight)
+      
+      if (y + actualMenuHeight + padding > windowHeight) {
+        // 如果下方空间不足，向上调整
+        posY = Math.max(padding, windowHeight - actualMenuHeight - padding)
       }
+      
+      // 确保不超出左边和顶部边界
+      posX = Math.max(padding, posX)
+      posY = Math.max(padding, posY)
+      
+      this.menu.style.left = `${posX}px`
+      this.menu.style.top = `${posY}px`
+      this.menu.style.opacity = '1'
+      this.visible = true
+    })
+  }
+      
+      // 确保不超出屏幕边界
+      posX = Math.max(10, Math.min(posX, windowWidth - menuRect.width - 10))
+      posY = Math.max(10, Math.min(posY, windowHeight - 100))
       
       this.menu.style.left = `${posX}px`
       this.menu.style.top = `${posY}px`
@@ -179,6 +205,34 @@ export class ImageContextMenu {
       // 创建子菜单
       const submenu = this.createSubmenu(item.submenu)
       menuItem.appendChild(submenu)
+      
+      // 鼠标悬停时调整子菜单位置
+      menuItem.addEventListener('mouseenter', () => {
+        const itemRect = menuItem.getBoundingClientRect()
+        const submenuRect = submenu.getBoundingClientRect()
+        const windowHeight = window.innerHeight
+        const windowWidth = window.innerWidth
+        
+        // 默认在右侧显示
+        submenu.style.left = 'calc(100% - 4px)'
+        submenu.style.right = 'auto'
+        
+        // 如果右侧空间不足，显示在左侧
+        if (itemRect.right + submenuRect.width > windowWidth - 10) {
+          submenu.style.left = 'auto'
+          submenu.style.right = 'calc(100% - 4px)'
+        }
+        
+        // 垂直位置调整
+        const submenuHeight = Math.min(submenuRect.height, windowHeight * 0.5)
+        if (itemRect.top + submenuHeight > windowHeight - 10) {
+          // 如果超出底部，向上调整
+          const offset = itemRect.top + submenuHeight - windowHeight + 10
+          submenu.style.top = `-${offset + 6}px`
+        } else {
+          submenu.style.top = '-6px'
+        }
+      })
     }
     
     // 点击事件
@@ -418,18 +472,69 @@ export class ImageContextMenu {
             action: () => this.setFilter('sepia')
           },
           {
-            label: '模糊',
-            action: () => this.setFilter('blur')
+            label: '轻微模糊',
+            action: () => this.setFilter('blur-light')
           },
           {
-            label: '增亮',
-            icon: getLucideIcon('sun'),
-            action: () => this.setFilter('brightness')
+            label: '中度模糊',
+            action: () => this.setFilter('blur-medium')
           },
           {
-            label: '增强对比度',
-            icon: getLucideIcon('contrast'),
-            action: () => this.setFilter('contrast')
+            label: '强烈模糊',
+            action: () => this.setFilter('blur-heavy')
+          },
+          { divider: true },
+          {
+            label: '增亮 20%',
+            action: () => this.setFilter('brightness-120')
+          },
+          {
+            label: '增亮 40%',
+            action: () => this.setFilter('brightness-140')
+          },
+          {
+            label: '减暗 20%',
+            action: () => this.setFilter('brightness-80')
+          },
+          {
+            label: '减暗 40%',
+            action: () => this.setFilter('brightness-60')
+          },
+          { divider: true },
+          {
+            label: '高对比度',
+            action: () => this.setFilter('contrast-high')
+          },
+          {
+            label: '低对比度',
+            action: () => this.setFilter('contrast-low')
+          },
+          { divider: true },
+          {
+            label: '高饱和度',
+            action: () => this.setFilter('saturate-high')
+          },
+          {
+            label: '低饱和度',
+            action: () => this.setFilter('saturate-low')
+          },
+          { divider: true },
+          {
+            label: '色相旋转 90°',
+            action: () => this.setFilter('hue-rotate-90')
+          },
+          {
+            label: '色相旋转 180°',
+            action: () => this.setFilter('hue-rotate-180')
+          },
+          {
+            label: '色相旋转 270°',
+            action: () => this.setFilter('hue-rotate-270')
+          },
+          { divider: true },
+          {
+            label: '反色',
+            action: () => this.setFilter('invert')
           }
         ]
       },
@@ -594,18 +699,29 @@ export class ImageContextMenu {
 
   private setFilter(filter: string): void {
     if (!this.currentImage) return
+    const img = this.currentImage.querySelector('img') as HTMLImageElement
+    if (!img) return
     
-    // 清除所有滤镜类
-    this.currentImage.classList.remove(
-      'filter-grayscale',
-      'filter-sepia',
-      'filter-blur',
-      'filter-brightness',
-      'filter-contrast'
-    )
+    // 清除所有滤镜类 - 更高效的方式
+    const filterClasses = Array.from(this.currentImage.classList)
+      .filter(cls => cls.startsWith('filter-'))
     
+    filterClasses.forEach(cls => {
+      this.currentImage!.classList.remove(cls)
+    })
+    
+    // 如果不是“无滤镜”，添加新的滤镜类
     if (filter !== 'none') {
       this.currentImage.classList.add(`filter-${filter}`)
+      
+      // 为某些特殊滤镜添加额外的视觉反馈
+      if (filter.includes('blur')) {
+        img.style.transition = 'filter 0.3s ease'
+      }
+    } else {
+      // 重置滤镜
+      img.style.filter = ''
+      img.style.transition = ''
     }
     
     this.triggerContentChange()
@@ -817,10 +933,14 @@ export class ImageContextMenu {
         img.style.maxWidth = 'none'
         img.style.objectFit = img.style.objectFit || 'contain'
         this.currentImage.style.width = `${width}px`
+        this.currentImage.style.height = `${height}px`
         this.triggerContentChange()
       }
       
+      // 关闭对话框
       document.body.removeChild(dialog)
+      // 隐藏菜单
+      this.hide()
     })
     
     // ESC关闭

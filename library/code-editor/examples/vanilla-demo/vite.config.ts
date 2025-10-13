@@ -18,7 +18,8 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3000,
+    port: 3008,
+    host: true,
     fs: {
       // Allow serving files from monaco-editor node_modules
       allow: ['..', '../..']

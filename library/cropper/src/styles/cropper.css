@@ -18,7 +18,7 @@
   direction: ltr;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
-  background-color: #f5f5f5;
+  /* Remove background-color to show the background pattern */
 }
 
 .cropper-container img {
@@ -34,11 +34,7 @@
 
 .cropper-canvas {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  overflow: hidden;
+  /* Size will be set by JavaScript based on image dimensions */
   z-index: 1;
 }
 
@@ -56,7 +52,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  /* Background color will be set via JavaScript with configurable opacity */
   pointer-events: none;
   z-index: 2;
 }
@@ -74,7 +70,7 @@
   overflow: hidden;
   outline: 2px solid var(--cropper-theme-color);
   outline-offset: -1px;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);  /* Lighter mask */
 }
 
 .cropper-dashed {
@@ -335,7 +331,7 @@
 
 /* Highlight area */
 .cropper-crop-box .cropper-face.cropper-highlight {
-  background-color: rgba(255, 255, 255, 0.1);
+  /* Background color will be set via JavaScript with configurable opacity */
 }
 
 /* Hidden */
@@ -353,49 +349,118 @@
 .cropper-toolbar {
   display: flex;
   gap: 8px;
-  padding: 12px;
+  padding: 8px;
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .cropper-toolbar-group {
   display: flex;
-  gap: 4px;
-  padding: 4px;
-  background-color: #f5f5f5;
+  gap: 2px;
+  padding: 2px;
+  background-color: #f8f8f8;
   border-radius: 6px;
+  border: 1px solid #e5e5e5;
 }
 
 .cropper-toolbar-button {
-  padding: 8px 12px;
+  padding: 8px;
   border: none;
-  border-radius: 4px;
-  background-color: #fff;
-  color: #333;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #555;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
+  transition: all 0.2s ease;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  position: relative;
+}
+
+/* Icon-only button styles */
+.cropper-toolbar-button.cropper-toolbar-icon {
+  padding: 6px;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.cropper-toolbar-button.cropper-toolbar-icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
 }
 
 .cropper-toolbar-button:hover {
   background-color: var(--cropper-theme-color);
   color: #fff;
-  transform: translateY(-1px);
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(57, 159, 255, 0.3);
+}
+
+/* Primary button style for main actions */
+.cropper-toolbar-button.cropper-toolbar-primary {
+  background-color: var(--cropper-theme-color);
+  color: #fff;
+}
+
+.cropper-toolbar-button.cropper-toolbar-primary:hover {
+  background-color: #2980eb;
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(57, 159, 255, 0.4);
 }
 
 .cropper-toolbar-button:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 .cropper-toolbar-button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none;
+  background-color: transparent;
+  color: #999;
+}
+
+.cropper-toolbar-button:disabled:hover {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* Tooltip styles for better UX */
+.cropper-toolbar-button[title] {
+  position: relative;
+}
+
+.cropper-toolbar-button[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 5px;
+  padding: 4px 8px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  animation: tooltip-fade-in 0.2s ease-in-out forwards;
+  animation-delay: 0.5s;
+}
+
+@keyframes tooltip-fade-in {
+  to {
+    opacity: 1;
+  }
 }
 
 /* Preview styles */

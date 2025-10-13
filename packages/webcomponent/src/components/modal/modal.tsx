@@ -47,7 +47,7 @@ export class LdesignModal {
   /** 图标可配置 */
   @Prop() closeIcon: string = 'x';
   @Prop() maximizeIcon: string = 'square';
-  @Prop() restoreIcon: string = 'copy';
+  @Prop() restoreIcon: string = 'square-arrow-down-right';
 
   /**
    * 模态框尺寸

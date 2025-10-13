@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opacity Configuration Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .main-layout {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .cropper-section {
+            flex: 1;
+        }
+        
+        .cropper-wrapper {
+            width: 100%;
+            height: 500px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .controls-section {
+            width: 350px;
+        }
+        
+        .control-group {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .control-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .control-item {
+            margin-bottom: 15px;
+        }
+        
+        .control-label {
+            display: block;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .control-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #39f;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #39f;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .value-display {
+            min-width: 60px;
+            text-align: right;
+            font-weight: 600;
+            color: #39f;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background: #39f;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .btn:hover {
+            background: #28e;
+        }
+        
+        .btn-secondary {
+            background: #666;
+        }
+        
+        .btn-secondary:hover {
+            background: #555;
+        }
+        
+        .info-panel {
+            background: #f0f9ff;
+            border: 1px solid #bae0ff;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .info-title {
+            font-weight: 600;
+            color: #0066cc;
+            margin-bottom: 8px;
+        }
+        
+        .info-text {
+            color: #333;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .preset-btn {
+            padding: 8px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .preset-btn:hover {
+            border-color: #39f;
+            background: #f0f9ff;
+        }
+    </style>
+    
+    <link rel="stylesheet" href="./dist/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 遮罩透明度配置测试</h1>
+        <p class="description">动态调整遮罩和裁剪区域的透明度，实现个性化的视觉效果</p>
+        
+        <div class="main-layout">
+            <div class="cropper-section">
+                <div class="cropper-wrapper" id="cropperContainer"></div>
+            </div>
+            
+            <div class="controls-section">
+                <div class="control-group">
+                    <h3 class="control-title">透明度设置</h3>
+                    
+                    <div class="control-item">
+                        <label class="control-label">遮罩透明度 (Modal Opacity)</label>
+                        <div class="control-input">
+                            <input type="range" id="modalOpacity" class="slider" 
+                                   min="0" max="100" value="50" step="5">
+                            <span class="value-display" id="modalOpacityValue">50%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-item">
+                        <label class="control-label">裁剪区域透明度 (Highlight Opacity)</label>
+                        <div class="control-input">
+                            <input type="range" id="highlightOpacity" class="slider" 
+                                   min="0" max="30" value="5" step="1">
+                            <span class="value-display" id="highlightOpacityValue">5%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="preset-buttons">
+                        <button class="preset-btn" onclick="setPreset('light')">浅色模式</button>
+                        <button class="preset-btn" onclick="setPreset('normal')">标准模式</button>
+                        <button class="preset-btn" onclick="setPreset('dark')">深色模式</button>
+                        <button class="preset-btn" onclick="setPreset('clear')">透明模式</button>
+                    </div>
+                    
+                    <button class="btn" onclick="applySetting()">应用设置</button>
+                    <button class="btn btn-secondary" onclick="resetDefault()" style="margin-top: 10px">恢复默认</button>
+                </div>
+                
+                <div class="control-group">
+                    <h3 class="control-title">其他选项</h3>
+                    
+                    <div class="control-item">
+                        <label>
+                            <input type="checkbox" id="modalEnabled" checked> 启用遮罩
+                        </label>
+                    </div>
+                    
+                    <div class="control-item">
+                        <label>
+                            <input type="checkbox" id="highlightEnabled" checked> 启用裁剪区高亮
+                        </label>
+                    </div>
+                    
+                    <div class="control-item">
+                        <label>
+                            <input type="checkbox" id="guidesEnabled" checked> 显示辅助线
+                        </label>
+                    </div>
+                    
+                    <button class="btn btn-secondary" onclick="changeImage()">更换图片</button>
+                </div>
+                
+                <div class="info-panel">
+                    <div class="info-title">💡 提示</div>
+                    <div class="info-text">
+                        • 遮罩透明度控制外部暗色区域的深浅<br>
+                        • 裁剪区域透明度控制选中区域的高亮效果<br>
+                        • 默认值：遮罩 50%，高亮 5%<br>
+                        • 可以实时调整并查看效果
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { Cropper } from './dist/index.js';
+        
+        let cropper = null;
+        let currentImage = 0;
+        
+        const images = [
+            'https://picsum.photos/800/600?random=1',
+            'https://picsum.photos/800/600?random=2',
+            'https://picsum.photos/800/600?random=3',
+            'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="600" height="400"%3E%3Cdefs%3E%3ClinearGradient id="grad" x1="0%25" y1="0%25" x2="100%25" y2="100%25"%3E%3Cstop offset="0%25" style="stop-color:rgb(255,255,0);stop-opacity:1" /%3E%3Cstop offset="100%25" style="stop-color:rgb(255,0,0);stop-opacity:1" /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="600" height="400" fill="url(%23grad)" /%3E%3Ctext x="300" y="200" text-anchor="middle" fill="white" font-size="24"%3ETest Image%3C/text%3E%3C/svg%3E'
+        ];
+        
+        // Initialize cropper with current settings
+        function initCropper() {
+            if (cropper) {
+                cropper.destroy();
+            }
+            
+            const modalOpacity = document.getElementById('modalOpacity').value / 100;
+            const highlightOpacity = document.getElementById('highlightOpacity').value / 100;
+            const modal = document.getElementById('modalEnabled').checked;
+            const highlight = document.getElementById('highlightEnabled').checked;
+            const guides = document.getElementById('guidesEnabled').checked;
+            
+            cropper = new Cropper('cropperContainer', {
+                src: images[currentImage],
+                viewMode: 1,
+                dragMode: 'move',
+                initialAspectRatio: 1,
+                aspectRatio: 1,
+                autoCrop: true,
+                initialCropBoxSize: 0.5,
+                modal: modal,
+                modalOpacity: modalOpacity,
+                highlight: highlight,
+                highlightOpacity: highlightOpacity,
+                guides: guides,
+                center: true,
+                background: true,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                ready: function() {
+                    console.log(`Cropper ready - Modal: ${modalOpacity}, Highlight: ${highlightOpacity}`);
+                }
+            });
+        }
+        
+        // Update slider value displays
+        document.getElementById('modalOpacity').addEventListener('input', function(e) {
+            document.getElementById('modalOpacityValue').textContent = e.target.value + '%';
+        });
+        
+        document.getElementById('highlightOpacity').addEventListener('input', function(e) {
+            document.getElementById('highlightOpacityValue').textContent = e.target.value + '%';
+        });
+        
+        // Apply settings
+        window.applySetting = function() {
+            initCropper();
+        };
+        
+        // Reset to default
+        window.resetDefault = function() {
+            document.getElementById('modalOpacity').value = 50;
+            document.getElementById('modalOpacityValue').textContent = '50%';
+            document.getElementById('highlightOpacity').value = 5;
+            document.getElementById('highlightOpacityValue').textContent = '5%';
+            document.getElementById('modalEnabled').checked = true;
+            document.getElementById('highlightEnabled').checked = true;
+            document.getElementById('guidesEnabled').checked = true;
+            initCropper();
+        };
+        
+        // Set preset
+        window.setPreset = function(preset) {
+            switch(preset) {
+                case 'light':
+                    document.getElementById('modalOpacity').value = 20;
+                    document.getElementById('modalOpacityValue').textContent = '20%';
+                    document.getElementById('highlightOpacity').value = 2;
+                    document.getElementById('highlightOpacityValue').textContent = '2%';
+                    break;
+                case 'normal':
+                    document.getElementById('modalOpacity').value = 50;
+                    document.getElementById('modalOpacityValue').textContent = '50%';
+                    document.getElementById('highlightOpacity').value = 5;
+                    document.getElementById('highlightOpacityValue').textContent = '5%';
+                    break;
+                case 'dark':
+                    document.getElementById('modalOpacity').value = 80;
+                    document.getElementById('modalOpacityValue').textContent = '80%';
+                    document.getElementById('highlightOpacity').value = 10;
+                    document.getElementById('highlightOpacityValue').textContent = '10%';
+                    break;
+                case 'clear':
+                    document.getElementById('modalOpacity').value = 10;
+                    document.getElementById('modalOpacityValue').textContent = '10%';
+                    document.getElementById('highlightOpacity').value = 0;
+                    document.getElementById('highlightOpacityValue').textContent = '0%';
+                    break;
+            }
+            initCropper();
+        };
+        
+        // Change image
+        window.changeImage = function() {
+            currentImage = (currentImage + 1) % images.length;
+            initCropper();
+        };
+        
+        // Auto-apply on checkbox change
+        document.getElementById('modalEnabled').addEventListener('change', initCropper);
+        document.getElementById('highlightEnabled').addEventListener('change', initCropper);
+        document.getElementById('guidesEnabled').addEventListener('change', initCropper);
+        
+        // Initialize with default settings
+        initCropper();
+    </script>
+</body>
+</html>

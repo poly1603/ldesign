@@ -148,43 +148,69 @@
 
 /* 图片工具栏 */
 .ldesign-image-toolbar {
-  position: fixed;
+  position: absolute;
   display: none;
-  align-items: center;
-  gap: 2px;
-  padding: 6px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1001;
-  transition: all 0.2s;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 0, 0, 0.15),
+    0 6px 10px -5px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-50%) translateY(-5px);
+  pointer-events: none;
 }
 
 .ldesign-image-toolbar-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
+  gap: 6px;
+  padding: 8px 12px;
   border: none;
-  border-radius: 4px;
   background: transparent;
   color: #4b5563;
-  font-size: 16px;
+  font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
   outline: none;
+  white-space: nowrap;
+  position: relative;
+}
+
+.ldesign-image-toolbar-btn .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.ldesign-image-toolbar-btn .icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ldesign-image-toolbar-btn .label {
+  font-weight: 500;
 }
 
 .ldesign-image-toolbar-btn:hover {
   background: #f3f4f6;
-  color: #1f2937;
+  color: #111827;
 }
 
 .ldesign-image-toolbar-btn:active {
   background: #e5e7eb;
+  transform: scale(0.98);
 }
 
 .ldesign-image-toolbar-btn.active {
@@ -192,11 +218,42 @@
   color: #fff;
 }
 
+.ldesign-image-toolbar-btn.active:hover {
+  background: #2563eb;
+}
+
 .ldesign-image-toolbar-separator {
   width: 1px;
-  height: 20px;
+  height: auto;
   background: #e5e7eb;
-  margin: 0 4px;
+  margin: 0;
+}
+
+/* 工具栏动画 */
+@keyframes toolbarSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ldesign-image-toolbar.show {
+  display: flex;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+/* 图片激活时显示工具栏 */
+.ldesign-image-wrapper.active .ldesign-image-toolbar {
+  display: flex;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
 }
 
 /* 文本环绕模式 */
@@ -324,16 +381,83 @@
   filter: sepia(100%);
 }
 
-.ldesign-image-wrapper.filter-blur img {
-  filter: blur(2px);
+/* 模糊效果 */
+.ldesign-image-wrapper.filter-blur-light img {
+  filter: blur(1px);
 }
 
-.ldesign-image-wrapper.filter-brightness img {
+.ldesign-image-wrapper.filter-blur-medium img {
+  filter: blur(3px);
+}
+
+.ldesign-image-wrapper.filter-blur-heavy img {
+  filter: blur(5px);
+}
+
+/* 亮度效果 */
+.ldesign-image-wrapper.filter-brightness-120 img {
   filter: brightness(1.2);
 }
 
-.ldesign-image-wrapper.filter-contrast img {
-  filter: contrast(1.2);
+.ldesign-image-wrapper.filter-brightness-140 img {
+  filter: brightness(1.4);
+}
+
+.ldesign-image-wrapper.filter-brightness-80 img {
+  filter: brightness(0.8);
+}
+
+.ldesign-image-wrapper.filter-brightness-60 img {
+  filter: brightness(0.6);
+}
+
+/* 对比度效果 */
+.ldesign-image-wrapper.filter-contrast-high img {
+  filter: contrast(1.5);
+}
+
+.ldesign-image-wrapper.filter-contrast-low img {
+  filter: contrast(0.7);
+}
+
+/* 饱和度效果 */
+.ldesign-image-wrapper.filter-saturate-high img {
+  filter: saturate(2);
+}
+
+.ldesign-image-wrapper.filter-saturate-low img {
+  filter: saturate(0.5);
+}
+
+/* 色相旋转 */
+.ldesign-image-wrapper.filter-hue-rotate-90 img {
+  filter: hue-rotate(90deg);
+}
+
+.ldesign-image-wrapper.filter-hue-rotate-180 img {
+  filter: hue-rotate(180deg);
+}
+
+.ldesign-image-wrapper.filter-hue-rotate-270 img {
+  filter: hue-rotate(270deg);
+}
+
+/* 反色 */
+.ldesign-image-wrapper.filter-invert img {
+  filter: invert(100%);
+}
+
+/* 组合效果 */
+.ldesign-image-wrapper.filter-vintage img {
+  filter: sepia(50%) saturate(1.5) contrast(1.2);
+}
+
+.ldesign-image-wrapper.filter-cold img {
+  filter: hue-rotate(180deg) saturate(0.7);
+}
+
+.ldesign-image-wrapper.filter-warm img {
+  filter: hue-rotate(30deg) saturate(1.3) brightness(1.1);
 }
 
 /* 过渡效果 */

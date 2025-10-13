@@ -14,12 +14,33 @@
   padding: 6px;
   min-width: 200px;
   max-width: 300px;
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   font-size: 13px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
   user-select: none;
   -webkit-user-select: none;
   backdrop-filter: blur(20px) saturate(180%);
   transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* 美化滚动条 */
+.ldesign-image-context-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ldesign-image-context-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ldesign-image-context-menu::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.ldesign-image-context-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
 }
 
 /* 菜单项 */
@@ -93,12 +114,33 @@
     0 0 0 1px rgba(0, 0, 0, 0.05);
   padding: 6px;
   min-width: 160px;
+  max-height: 50vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   z-index: 10001;
   backdrop-filter: blur(20px) saturate(180%);
   display: none;
   opacity: 0;
   transform: translateX(-10px);
   transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* 子菜单滚动条 */
+.ldesign-context-submenu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ldesign-context-submenu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ldesign-context-submenu::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 2px;
+}
+
+.ldesign-context-submenu::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
 }
 
 /* 悬停时显示子菜单 */
