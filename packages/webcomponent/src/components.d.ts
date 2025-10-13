@@ -16,17 +16,17 @@ import { DropdownItem, DropdownNode, DropdownPlacement, DropdownTrigger, Dropdow
 import { ImageViewerItem } from "./components/image-viewer/image-viewer";
 import { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
 import { MessageType } from "./components/message/message";
-import { ModalAnimation, ModalSize, ModalVariant } from "./components/modal/modal";
+import { ModalAnimation, ModalHeaderConfig, ModalSize, ModalTheme, ModalVariant } from "./components/modal/modal";
 import { NotificationPlacement, NotificationType } from "./components/notification/notification";
 import { PickerOption } from "./components/picker/picker";
-import { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
-import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
+import { PopconfirmIcon, PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
+import { PopupAnimation, PopupPlacement, PopupSize, PopupTrigger } from "./components/popup/popup";
 import { Element } from "@stencil/core";
 import { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 import { TabMeta, TabsPlacement, TabsType } from "./components/tabs/tabs";
 import { TagData } from "./components/tag-group/tag-group";
 import { Breakpoints as Breakpoints1, TimePickerLocale, TimePickerOverlay, TimePickerSize, TimePickerTrigger, TimePreset } from "./components/time-picker/time-picker";
-import { TooltipPlacement } from "./components/tooltip/tooltip";
+import { TooltipAnimation, TooltipPlacement, TooltipSize, TooltipTrigger } from "./components/tooltip/tooltip";
 import { TransferItem } from "./components/transfer/transfer";
 import { TreeNode } from "./components/tree/tree";
 export { ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, Size, Theme } from "./types";
@@ -40,17 +40,17 @@ export { DropdownItem, DropdownNode, DropdownPlacement, DropdownTrigger, Dropdow
 export { ImageViewerItem } from "./components/image-viewer/image-viewer";
 export { MenuItem, SubmenuTrigger, VerticalExpand } from "./components/menu/menu";
 export { MessageType } from "./components/message/message";
-export { ModalAnimation, ModalSize, ModalVariant } from "./components/modal/modal";
+export { ModalAnimation, ModalHeaderConfig, ModalSize, ModalTheme, ModalVariant } from "./components/modal/modal";
 export { NotificationPlacement, NotificationType } from "./components/notification/notification";
 export { PickerOption } from "./components/picker/picker";
-export { PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
-export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
+export { PopconfirmIcon, PopconfirmPlacement, PopconfirmTrigger } from "./components/popconfirm/popconfirm";
+export { PopupAnimation, PopupPlacement, PopupSize, PopupTrigger } from "./components/popup/popup";
 export { Element } from "@stencil/core";
 export { SelectOption, SelectPlacement, SelectTrigger } from "./components/select/select";
 export { TabMeta, TabsPlacement, TabsType } from "./components/tabs/tabs";
 export { TagData } from "./components/tag-group/tag-group";
 export { Breakpoints as Breakpoints1, TimePickerLocale, TimePickerOverlay, TimePickerSize, TimePickerTrigger, TimePreset } from "./components/time-picker/time-picker";
-export { TooltipPlacement } from "./components/tooltip/tooltip";
+export { TooltipAnimation, TooltipPlacement, TooltipSize, TooltipTrigger } from "./components/tooltip/tooltip";
 export { TransferItem } from "./components/transfer/transfer";
 export { TreeNode } from "./components/tree/tree";
 export namespace Components {
@@ -3412,6 +3412,11 @@ export namespace Components {
          */
         "animation": ModalAnimation;
         /**
+          * 新增：是否显示动画效果
+          * @default true
+         */
+        "animationEnabled": boolean;
+        /**
           * 新增：自动检测系统深色模式
           * @default true
          */
@@ -3429,6 +3434,20 @@ export namespace Components {
           * 向导步进前置钩子：返回 false 阻止切换
          */
         "beforeStepChange"?: (from: number, to: number) => boolean | Promise<boolean>;
+        /**
+          * 新增：模糊程度
+          * @default 10
+         */
+        "blurAmount": number;
+        /**
+          * 新增：模糊背景
+          * @default false
+         */
+        "blurBackground": boolean;
+        /**
+          * 新增：内容内边距
+         */
+        "bodyPadding"?: string | number;
         "breakpoints"?: { xs: number; sm: number; md: number; lg: number };
         /**
           * @default '取消'
@@ -3453,6 +3472,11 @@ export namespace Components {
          */
         "close": () => Promise<void>;
         /**
+          * 新增：是否显示关闭动画
+          * @default true
+         */
+        "closeAnimation": boolean;
+        /**
           * 图标可配置
           * @default 'x'
          */
@@ -3463,15 +3487,39 @@ export namespace Components {
          */
         "currentStep": number;
         /**
+          * 新增：自定义按钮
+         */
+        "customButtons"?: Array<{
+    text: string;
+    type?: ButtonType;
+    loading?: boolean;
+    disabled?: boolean;
+    onClick?: () => void | Promise<void>;
+  }>;
+        /**
+          * 新增：自定义类名
+         */
+        "customClass"?: string;
+        /**
           * 新增：深色模式
           * @default false
          */
         "darkMode": boolean;
         /**
+          * 新增：是否允许双击标题栏最大化
+          * @default true
+         */
+        "dblclickMaximize": boolean;
+        /**
           * 是否销毁子元素
           * @default false
          */
         "destroyOnClose": boolean;
+        /**
+          * 新增：是否禁用过渡效果
+          * @default false
+         */
+        "disableTransition": boolean;
         /**
           * Drawer 滑动关闭阈值（距离）：默认 '30%'（以抽屉宽度为基准）
          */
@@ -3502,9 +3550,23 @@ export namespace Components {
          */
         "enablePictureInPicture": boolean;
         /**
+          * 新增：底部按钮对齐
+          * @default 'right'
+         */
+        "footerAlign": 'left' | 'center' | 'right' | 'space-between';
+        /**
+          * 新增：是否默认满屏
+          * @default false
+         */
+        "fullscreen": boolean;
+        /**
           * 容器（选择器或元素）：若提供，则在加载时把组件节点移动到该容器下
          */
         "getContainer"?: string | HTMLElement;
+        /**
+          * 新增：头部配置
+         */
+        "headerConfig"?: ModalHeaderConfig;
         /**
           * 自定义高度
          */
@@ -3556,7 +3618,7 @@ export namespace Components {
          */
         "maximize": () => Promise<void>;
         /**
-          * @default 'maximize-2'
+          * @default 'square'
          */
         "maximizeIcon": string;
         "minHeight"?: number;
@@ -3607,7 +3669,7 @@ export namespace Components {
          */
         "restore": () => Promise<void>;
         /**
-          * @default 'minimize-2'
+          * @default 'copy'
          */
         "restoreIcon": string;
         /**
@@ -3615,10 +3677,40 @@ export namespace Components {
          */
         "show": () => Promise<void>;
         /**
+          * 新增：是否显示取消按钮
+          * @default true
+         */
+        "showCancelButton": boolean;
+        /**
+          * 新增：是否显示底部分割线
+          * @default true
+         */
+        "showFooterDivider": boolean;
+        /**
+          * 新增：是否显示满屏按钮
+          * @default false
+         */
+        "showFullscreenButton": boolean;
+        /**
+          * 新增：是否显示头部分割线
+          * @default true
+         */
+        "showHeaderDivider": boolean;
+        /**
+          * 新增：是否显示确认按钮
+          * @default true
+         */
+        "showOkButton": boolean;
+        /**
           * 新增：是否显示进度指示器
           * @default false
          */
         "showProgress": boolean;
+        /**
+          * 新增：是否显示阴影
+          * @default true
+         */
+        "showShadow": boolean;
         /**
           * 模态框尺寸
           * @default 'medium'
@@ -3628,6 +3720,11 @@ export namespace Components {
           * 步骤标题（JS 赋值）
          */
         "steps"?: string[];
+        /**
+          * 新增：主题
+          * @default 'light'
+         */
+        "theme": ModalTheme;
         /**
           * 切换最大化状态
          */
@@ -3650,6 +3747,11 @@ export namespace Components {
           * 响应式变体：根据断点自动切换
          */
         "variantAt"?: Partial<Record<'xs'|'sm'|'md'|'lg', ModalVariant>>;
+        /**
+          * 新增：支持虚拟化滚动
+          * @default false
+         */
+        "virtualScroll": boolean;
         /**
           * 是否显示模态框
           * @default false
@@ -4003,14 +4105,25 @@ export namespace Components {
     }
     /**
      * Popconfirm 气泡确认框
-     * 基于 Popup 进行封装，提供确认/取消操作
+     * 基于最新 Popup 进行封装，提供确认/取消操作
+     * 支持动画、主题、尺寸等特性
      */
     interface LdesignPopconfirm {
+        /**
+          * 动画类型（继承自 popup）
+          * @default 'scale'
+         */
+        "animation": 'fade' | 'scale' | 'slide';
         /**
           * 箭头（默认显示），透传给 Popup
           * @default true
          */
         "arrow": boolean;
+        /**
+          * 自动关闭延迟（毫秒），0 表示不自动关闭
+          * @default 0
+         */
+        "autoCloseDelay": number;
         /**
           * @default '取消'
          */
@@ -4026,6 +4139,11 @@ export namespace Components {
          */
         "closeOnOutside": boolean;
         /**
+          * 确认按钮加载状态
+          * @default false
+         */
+        "confirmLoading": boolean;
+        /**
           * 辅助说明（可选，支持默认 slot 覆盖）
          */
         "description"?: string;
@@ -4034,10 +4152,20 @@ export namespace Components {
          */
         "hideDelay": number;
         /**
-          * 图标名称（可用 slot=icon 覆盖）
-          * @default 'help-circle'
+          * 图标类型/名称
+          * @default 'question'
          */
-        "icon": string;
+        "icon": PopconfirmIcon;
+        /**
+          * 是否显示加载状态
+          * @default false
+         */
+        "loading": boolean;
+        /**
+          * 与触发元素的距离
+          * @default 8
+         */
+        "offsetDistance": number;
         /**
           * 确认/取消按钮文本
           * @default '确定'
@@ -4063,6 +4191,16 @@ export namespace Components {
           * @default 0
          */
         "showDelay": number;
+        /**
+          * 是否显示图标
+          * @default true
+         */
+        "showIcon": boolean;
+        /**
+          * 尺寸（影响内容区域大小）
+          * @default 'medium'
+         */
+        "size": 'small' | 'medium' | 'large';
         /**
           * 主题（浅色/深色），透传给 Popup
           * @default 'light'
@@ -4091,6 +4229,11 @@ export namespace Components {
      */
     interface LdesignPopup {
         /**
+          * 动画类型
+          * @default 'scale'
+         */
+        "animation": PopupAnimation;
+        /**
           * @default 'self'
          */
         "appendTo": 'self' | 'body' | 'closest-popup';
@@ -4098,6 +4241,16 @@ export namespace Components {
           * @default true
          */
         "arrow": boolean;
+        /**
+          * 自动关闭延迟（ms），0表示不自动关闭
+          * @default 0
+         */
+        "autoCloseDelay": number;
+        /**
+          * 是否显示关闭按钮
+          * @default false
+         */
+        "closable": boolean;
         /**
           * @default true
          */
@@ -4124,12 +4277,17 @@ export namespace Components {
          */
         "interactive": boolean;
         /**
+          * 加载状态
+          * @default false
+         */
+        "loading": boolean;
+        /**
           * @default false
          */
         "lockOnScroll": boolean;
         "maxWidth"?: number | string;
         /**
-          * 动画位移距离（px），用于“朝触发器靠近”的起始位移
+          * 动画位移距离（px），用于"朝触发器靠近"的起始位移
           * @default 10
          */
         "motionDistance": number;
@@ -4153,6 +4311,10 @@ export namespace Components {
          */
         "placement": PopupPlacement;
         /**
+          * 自定义弹层类名
+         */
+        "popupClass"?: string;
+        /**
           * @default 'dialog'
          */
         "popupRole": string;
@@ -4161,6 +4323,10 @@ export namespace Components {
           * @default 0
          */
         "showDelay": number;
+        /**
+          * 预设尺寸
+         */
+        "size"?: PopupSize;
         /**
           * @default 'auto'
          */
@@ -5632,14 +5798,29 @@ export namespace Components {
     }
     /**
      * Tooltip 工具提示组件
-     * 基于 Popup 的轻量封装
+     * 基于最新 Popup 的轻量封装，继承所有新特性
      */
     interface LdesignTooltip {
+        /**
+          * 动画类型
+          * @default 'scale'
+         */
+        "animation": TooltipAnimation;
         /**
           * 是否显示箭头
           * @default true
          */
         "arrow": boolean;
+        /**
+          * 自动关闭延迟
+          * @default 0
+         */
+        "autoCloseDelay": number;
+        /**
+          * 是否显示关闭按钮（仅click触发时有效）
+          * @default false
+         */
+        "closable": boolean;
         /**
           * 提示内容
          */
@@ -5655,13 +5836,33 @@ export namespace Components {
          */
         "hideDelay": number;
         /**
+          * 是否可交互（hover时鼠标可以移入tooltip）
+          * @default false
+         */
+        "interactive": boolean;
+        /**
+          * 是否在滚动时锁定位置
+          * @default false
+         */
+        "lockOnScroll": boolean;
+        /**
           * 最大宽度
           * @default 250
          */
-        "maxWidth": number;
+        "maxWidth": number | string;
         /**
-          * 与触发元素的间距（默认 tooltip 更大一些）
-          * @default 16
+          * 动画位移距离
+          * @default 10
+         */
+        "motionDistance": number;
+        /**
+          * 动画时长
+          * @default 200
+         */
+        "motionDuration": number;
+        /**
+          * 与触发元素的间距
+          * @default 8
          */
         "offsetDistance": number | string;
         /**
@@ -5675,10 +5876,37 @@ export namespace Components {
          */
         "showDelay": number;
         /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size": TooltipSize;
+        /**
           * 主题：深色/浅色（默认深色）
           * @default 'dark'
          */
         "theme": 'dark' | 'light';
+        /**
+          * 自定义类名
+         */
+        "tooltipClass"?: string;
+        /**
+          * 标题（可选）
+         */
+        "tooltipTitle"?: string;
+        /**
+          * 触发方式
+          * @default 'hover'
+         */
+        "trigger": TooltipTrigger;
+        /**
+          * 是否受控显示
+          * @default false
+         */
+        "visible": boolean;
+        /**
+          * 宽度（覆盖maxWidth）
+         */
+        "width"?: number | string;
     }
     /**
      * Transfer 穿梭框
@@ -6938,7 +7166,8 @@ declare global {
     }
     /**
      * Popconfirm 气泡确认框
-     * 基于 Popup 进行封装，提供确认/取消操作
+     * 基于最新 Popup 进行封装，提供确认/取消操作
+     * 支持动画、主题、尺寸等特性
      */
     interface HTMLLdesignPopconfirmElement extends Components.LdesignPopconfirm, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignPopconfirmElementEventMap>(type: K, listener: (this: HTMLLdesignPopconfirmElement, ev: LdesignPopconfirmCustomEvent<HTMLLdesignPopconfirmElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -7390,7 +7619,7 @@ declare global {
     };
     /**
      * Tooltip 工具提示组件
-     * 基于 Popup 的轻量封装
+     * 基于最新 Popup 的轻量封装，继承所有新特性
      */
     interface HTMLLdesignTooltipElement extends Components.LdesignTooltip, HTMLStencilElement {
     }
@@ -10993,6 +11222,11 @@ declare namespace LocalJSX {
          */
         "animation"?: ModalAnimation;
         /**
+          * 新增：是否显示动画效果
+          * @default true
+         */
+        "animationEnabled"?: boolean;
+        /**
           * 新增：自动检测系统深色模式
           * @default true
          */
@@ -11010,6 +11244,20 @@ declare namespace LocalJSX {
           * 向导步进前置钩子：返回 false 阻止切换
          */
         "beforeStepChange"?: (from: number, to: number) => boolean | Promise<boolean>;
+        /**
+          * 新增：模糊程度
+          * @default 10
+         */
+        "blurAmount"?: number;
+        /**
+          * 新增：模糊背景
+          * @default false
+         */
+        "blurBackground"?: boolean;
+        /**
+          * 新增：内容内边距
+         */
+        "bodyPadding"?: string | number;
         "breakpoints"?: { xs: number; sm: number; md: number; lg: number };
         /**
           * @default '取消'
@@ -11030,6 +11278,11 @@ declare namespace LocalJSX {
          */
         "closable"?: boolean;
         /**
+          * 新增：是否显示关闭动画
+          * @default true
+         */
+        "closeAnimation"?: boolean;
+        /**
           * 图标可配置
           * @default 'x'
          */
@@ -11040,15 +11293,39 @@ declare namespace LocalJSX {
          */
         "currentStep"?: number;
         /**
+          * 新增：自定义按钮
+         */
+        "customButtons"?: Array<{
+    text: string;
+    type?: ButtonType;
+    loading?: boolean;
+    disabled?: boolean;
+    onClick?: () => void | Promise<void>;
+  }>;
+        /**
+          * 新增：自定义类名
+         */
+        "customClass"?: string;
+        /**
           * 新增：深色模式
           * @default false
          */
         "darkMode"?: boolean;
         /**
+          * 新增：是否允许双击标题栏最大化
+          * @default true
+         */
+        "dblclickMaximize"?: boolean;
+        /**
           * 是否销毁子元素
           * @default false
          */
         "destroyOnClose"?: boolean;
+        /**
+          * 新增：是否禁用过渡效果
+          * @default false
+         */
+        "disableTransition"?: boolean;
         /**
           * Drawer 滑动关闭阈值（距离）：默认 '30%'（以抽屉宽度为基准）
          */
@@ -11079,9 +11356,23 @@ declare namespace LocalJSX {
          */
         "enablePictureInPicture"?: boolean;
         /**
+          * 新增：底部按钮对齐
+          * @default 'right'
+         */
+        "footerAlign"?: 'left' | 'center' | 'right' | 'space-between';
+        /**
+          * 新增：是否默认满屏
+          * @default false
+         */
+        "fullscreen"?: boolean;
+        /**
           * 容器（选择器或元素）：若提供，则在加载时把组件节点移动到该容器下
          */
         "getContainer"?: string | HTMLElement;
+        /**
+          * 新增：头部配置
+         */
+        "headerConfig"?: ModalHeaderConfig;
         /**
           * 自定义高度
          */
@@ -11125,7 +11416,7 @@ declare namespace LocalJSX {
          */
         "maximizable"?: boolean;
         /**
-          * @default 'maximize-2'
+          * @default 'square'
          */
         "maximizeIcon"?: string;
         "minHeight"?: number;
@@ -11185,14 +11476,44 @@ declare namespace LocalJSX {
          */
         "resizable"?: boolean;
         /**
-          * @default 'minimize-2'
+          * @default 'copy'
          */
         "restoreIcon"?: string;
+        /**
+          * 新增：是否显示取消按钮
+          * @default true
+         */
+        "showCancelButton"?: boolean;
+        /**
+          * 新增：是否显示底部分割线
+          * @default true
+         */
+        "showFooterDivider"?: boolean;
+        /**
+          * 新增：是否显示满屏按钮
+          * @default false
+         */
+        "showFullscreenButton"?: boolean;
+        /**
+          * 新增：是否显示头部分割线
+          * @default true
+         */
+        "showHeaderDivider"?: boolean;
+        /**
+          * 新增：是否显示确认按钮
+          * @default true
+         */
+        "showOkButton"?: boolean;
         /**
           * 新增：是否显示进度指示器
           * @default false
          */
         "showProgress"?: boolean;
+        /**
+          * 新增：是否显示阴影
+          * @default true
+         */
+        "showShadow"?: boolean;
         /**
           * 模态框尺寸
           * @default 'medium'
@@ -11202,6 +11523,11 @@ declare namespace LocalJSX {
           * 步骤标题（JS 赋值）
          */
         "steps"?: string[];
+        /**
+          * 新增：主题
+          * @default 'light'
+         */
+        "theme"?: ModalTheme;
         /**
           * 距离顶部的距离
          */
@@ -11220,6 +11546,11 @@ declare namespace LocalJSX {
           * 响应式变体：根据断点自动切换
          */
         "variantAt"?: Partial<Record<'xs'|'sm'|'md'|'lg', ModalVariant>>;
+        /**
+          * 新增：支持虚拟化滚动
+          * @default false
+         */
+        "virtualScroll"?: boolean;
         /**
           * 是否显示模态框
           * @default false
@@ -11586,14 +11917,25 @@ declare namespace LocalJSX {
     }
     /**
      * Popconfirm 气泡确认框
-     * 基于 Popup 进行封装，提供确认/取消操作
+     * 基于最新 Popup 进行封装，提供确认/取消操作
+     * 支持动画、主题、尺寸等特性
      */
     interface LdesignPopconfirm {
+        /**
+          * 动画类型（继承自 popup）
+          * @default 'scale'
+         */
+        "animation"?: 'fade' | 'scale' | 'slide';
         /**
           * 箭头（默认显示），透传给 Popup
           * @default true
          */
         "arrow"?: boolean;
+        /**
+          * 自动关闭延迟（毫秒），0 表示不自动关闭
+          * @default 0
+         */
+        "autoCloseDelay"?: number;
         /**
           * @default '取消'
          */
@@ -11609,6 +11951,11 @@ declare namespace LocalJSX {
          */
         "closeOnOutside"?: boolean;
         /**
+          * 确认按钮加载状态
+          * @default false
+         */
+        "confirmLoading"?: boolean;
+        /**
           * 辅助说明（可选，支持默认 slot 覆盖）
          */
         "description"?: string;
@@ -11617,10 +11964,20 @@ declare namespace LocalJSX {
          */
         "hideDelay"?: number;
         /**
-          * 图标名称（可用 slot=icon 覆盖）
-          * @default 'help-circle'
+          * 图标类型/名称
+          * @default 'question'
          */
-        "icon"?: string;
+        "icon"?: PopconfirmIcon;
+        /**
+          * 是否显示加载状态
+          * @default false
+         */
+        "loading"?: boolean;
+        /**
+          * 与触发元素的距离
+          * @default 8
+         */
+        "offsetDistance"?: number;
         /**
           * 确认/取消按钮文本
           * @default '确定'
@@ -11659,6 +12016,16 @@ declare namespace LocalJSX {
          */
         "showDelay"?: number;
         /**
+          * 是否显示图标
+          * @default true
+         */
+        "showIcon"?: boolean;
+        /**
+          * 尺寸（影响内容区域大小）
+          * @default 'medium'
+         */
+        "size"?: 'small' | 'medium' | 'large';
+        /**
           * 主题（浅色/深色），透传给 Popup
           * @default 'light'
          */
@@ -11686,6 +12053,11 @@ declare namespace LocalJSX {
      */
     interface LdesignPopup {
         /**
+          * 动画类型
+          * @default 'scale'
+         */
+        "animation"?: PopupAnimation;
+        /**
           * @default 'self'
          */
         "appendTo"?: 'self' | 'body' | 'closest-popup';
@@ -11693,6 +12065,16 @@ declare namespace LocalJSX {
           * @default true
          */
         "arrow"?: boolean;
+        /**
+          * 自动关闭延迟（ms），0表示不自动关闭
+          * @default 0
+         */
+        "autoCloseDelay"?: number;
+        /**
+          * 是否显示关闭按钮
+          * @default false
+         */
+        "closable"?: boolean;
         /**
           * @default true
          */
@@ -11719,12 +12101,17 @@ declare namespace LocalJSX {
          */
         "interactive"?: boolean;
         /**
+          * 加载状态
+          * @default false
+         */
+        "loading"?: boolean;
+        /**
           * @default false
          */
         "lockOnScroll"?: boolean;
         "maxWidth"?: number | string;
         /**
-          * 动画位移距离（px），用于“朝触发器靠近”的起始位移
+          * 动画位移距离（px），用于"朝触发器靠近"的起始位移
           * @default 10
          */
         "motionDistance"?: number;
@@ -11749,6 +12136,10 @@ declare namespace LocalJSX {
          */
         "placement"?: PopupPlacement;
         /**
+          * 自定义弹层类名
+         */
+        "popupClass"?: string;
+        /**
           * @default 'dialog'
          */
         "popupRole"?: string;
@@ -11757,6 +12148,10 @@ declare namespace LocalJSX {
           * @default 0
          */
         "showDelay"?: number;
+        /**
+          * 预设尺寸
+         */
+        "size"?: PopupSize;
         /**
           * @default 'auto'
          */
@@ -13314,14 +13709,29 @@ declare namespace LocalJSX {
     }
     /**
      * Tooltip 工具提示组件
-     * 基于 Popup 的轻量封装
+     * 基于最新 Popup 的轻量封装，继承所有新特性
      */
     interface LdesignTooltip {
+        /**
+          * 动画类型
+          * @default 'scale'
+         */
+        "animation"?: TooltipAnimation;
         /**
           * 是否显示箭头
           * @default true
          */
         "arrow"?: boolean;
+        /**
+          * 自动关闭延迟
+          * @default 0
+         */
+        "autoCloseDelay"?: number;
+        /**
+          * 是否显示关闭按钮（仅click触发时有效）
+          * @default false
+         */
+        "closable"?: boolean;
         /**
           * 提示内容
          */
@@ -13337,13 +13747,33 @@ declare namespace LocalJSX {
          */
         "hideDelay"?: number;
         /**
+          * 是否可交互（hover时鼠标可以移入tooltip）
+          * @default false
+         */
+        "interactive"?: boolean;
+        /**
+          * 是否在滚动时锁定位置
+          * @default false
+         */
+        "lockOnScroll"?: boolean;
+        /**
           * 最大宽度
           * @default 250
          */
-        "maxWidth"?: number;
+        "maxWidth"?: number | string;
         /**
-          * 与触发元素的间距（默认 tooltip 更大一些）
-          * @default 16
+          * 动画位移距离
+          * @default 10
+         */
+        "motionDistance"?: number;
+        /**
+          * 动画时长
+          * @default 200
+         */
+        "motionDuration"?: number;
+        /**
+          * 与触发元素的间距
+          * @default 8
          */
         "offsetDistance"?: number | string;
         /**
@@ -13357,10 +13787,37 @@ declare namespace LocalJSX {
          */
         "showDelay"?: number;
         /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size"?: TooltipSize;
+        /**
           * 主题：深色/浅色（默认深色）
           * @default 'dark'
          */
         "theme"?: 'dark' | 'light';
+        /**
+          * 自定义类名
+         */
+        "tooltipClass"?: string;
+        /**
+          * 标题（可选）
+         */
+        "tooltipTitle"?: string;
+        /**
+          * 触发方式
+          * @default 'hover'
+         */
+        "trigger"?: TooltipTrigger;
+        /**
+          * 是否受控显示
+          * @default false
+         */
+        "visible"?: boolean;
+        /**
+          * 宽度（覆盖maxWidth）
+         */
+        "width"?: number | string;
     }
     /**
      * Transfer 穿梭框
@@ -13873,7 +14330,8 @@ declare module "@stencil/core" {
             "ldesign-picker": LocalJSX.LdesignPicker & JSXBase.HTMLAttributes<HTMLLdesignPickerElement>;
             /**
              * Popconfirm 气泡确认框
-             * 基于 Popup 进行封装，提供确认/取消操作
+             * 基于最新 Popup 进行封装，提供确认/取消操作
+             * 支持动画、主题、尺寸等特性
              */
             "ldesign-popconfirm": LocalJSX.LdesignPopconfirm & JSXBase.HTMLAttributes<HTMLLdesignPopconfirmElement>;
             /**
@@ -14009,7 +14467,7 @@ declare module "@stencil/core" {
             "ldesign-time-picker": LocalJSX.LdesignTimePicker & JSXBase.HTMLAttributes<HTMLLdesignTimePickerElement>;
             /**
              * Tooltip 工具提示组件
-             * 基于 Popup 的轻量封装
+             * 基于最新 Popup 的轻量封装，继承所有新特性
              */
             "ldesign-tooltip": LocalJSX.LdesignTooltip & JSXBase.HTMLAttributes<HTMLLdesignTooltipElement>;
             /**

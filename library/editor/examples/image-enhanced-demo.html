@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强版图片编辑器示例</title>
+    <link rel="stylesheet" href="../dist/editor.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .feature-list {
+            background: #f9fafb;
+            border-left: 4px solid #3b82f6;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+        }
+        .feature-list h3 {
+            margin-top: 0;
+            color: #1f2937;
+        }
+        .feature-list ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .feature-list li {
+            margin: 8px 0;
+            color: #4b5563;
+        }
+        .editor-wrapper {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+        #editor {
+            min-height: 500px;
+        }
+        .tips {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fef3c7;
+            border-radius: 6px;
+            color: #92400e;
+        }
+        .tips strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 增强版图片编辑器</h1>
+        <p class="description">
+            支持拖动调整大小、文本环绕、对齐方式等高级图片编辑功能的富文本编辑器
+        </p>
+
+        <div class="feature-list">
+            <h3>✨ 主要功能</h3>
+            <ul>
+                <li><strong>拖动调整大小：</strong>点击图片显示调整手柄，拖动角落或边缘调整大小</li>
+                <li><strong>保持宽高比：</strong>按住 Shift 键拖动保持原始宽高比</li>
+                <li><strong>文本环绕：</strong>支持行内、块级、左浮动、右浮动等多种环绕模式</li>
+                <li><strong>对齐方式：</strong>左对齐、居中、右对齐快速切换</li>
+                <li><strong>实时尺寸提示：</strong>调整大小时显示当前尺寸</li>
+                <li><strong>多图片上传：</strong>支持一次选择多张图片上传</li>
+                <li><strong>响应式设计：</strong>自动适应不同屏幕尺寸</li>
+            </ul>
+        </div>
+
+        <div class="editor-wrapper">
+            <div id="editor"></div>
+        </div>
+
+        <div class="tips">
+            <strong>💡 使用提示：</strong>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+                <li>点击工具栏的图片按钮上传图片，或直接粘贴图片</li>
+                <li>点击已插入的图片激活编辑模式</li>
+                <li>拖动蓝色手柄调整图片大小</li>
+                <li>使用顶部工具栏设置文本环绕和对齐方式</li>
+                <li>点击编辑器其他区域退出图片编辑模式</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import { LDesignEditor } from '../dist/editor.js'
+        
+        // 创建编辑器实例
+        const editor = new LDesignEditor('#editor', {
+            placeholder: '开始输入内容，点击工具栏图片按钮上传图片...',
+            height: 500,
+            // 启用图片相关插件
+            plugins: [
+                'base',
+                'format',
+                'color',
+                'list',
+                'indent',
+                'align',
+                'link',
+                'image',      // 增强版图片插件
+                'imageStyle', // 图片样式插件
+                'table',
+                'code',
+                'history'
+            ],
+            // 初始内容，包含示例图片
+            content: `
+                <h2>欢迎使用增强版图片编辑器！</h2>
+                <p>这是一个功能强大的富文本编辑器，特别优化了图片编辑功能。您可以：</p>
+                <ul>
+                    <li>上传本地图片或输入图片URL</li>
+                    <li>拖动调整图片大小</li>
+                    <li>设置文本环绕方式</li>
+                    <li>调整图片对齐方式</li>
+                </ul>
+                <p>下面是一个示例图片，点击它试试看：</p>
+                <img src="https://via.placeholder.com/400x300/3b82f6/ffffff?text=示例图片" alt="示例图片" style="width: 400px;">
+                <p>您可以尝试不同的文本环绕效果。这段文字会根据图片的环绕设置自动调整布局。当图片设置为左浮动时，文字会环绕在图片右侧；当设置为右浮动时，文字会环绕在图片左侧。</p>
+                <p>编辑器支持多种图片格式，包括 JPG、PNG、GIF、WebP 等。同时也支持批量上传，您可以一次选择多张图片进行上传。</p>
+            `,
+            // 图片上传配置
+            imageUpload: {
+                // 自定义上传处理
+                handler: async (file) => {
+                    // 这里可以实现自己的上传逻辑
+                    // 返回图片URL
+                    return new Promise((resolve) => {
+                        const reader = new FileReader()
+                        reader.onload = (e) => {
+                            resolve(e.target.result)
+                        }
+                        reader.readAsDataURL(file)
+                    })
+                }
+            }
+        })
+
+        // 监听内容变化
+        editor.on('change', (content) => {
+            console.log('内容已更新:', content)
+        })
+
+        // 添加一些全局快捷键
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+S 保存
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault()
+                const content = editor.getContent()
+                console.log('保存内容:', content)
+                alert('内容已保存到控制台！')
+            }
+        })
+
+        // 将编辑器实例暴露到全局，方便调试
+        window.editor = editor
+    </script>
+</body>
+</html>

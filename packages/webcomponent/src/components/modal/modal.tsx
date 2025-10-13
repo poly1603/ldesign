@@ -8,9 +8,19 @@ const __modalStack: any[] = [];
 
 export type ModalVariant = 'modal' | 'drawer-left' | 'drawer-right' | 'bottom-sheet';
 
-export type ModalSize = 'small' | 'medium' | 'large' | 'full';
+export type ModalSize = 'small' | 'medium' | 'large' | 'full' | 'auto';
 
-export type ModalAnimation = 'fade' | 'zoom' | 'slide-down' | 'slide-up' | 'slide-left' | 'slide-right' | 'zoom-origin' | 'elastic' | 'wobble' | 'flip';
+export type ModalAnimation = 'fade' | 'zoom' | 'slide-down' | 'slide-up' | 'slide-left' | 'slide-right' | 'zoom-origin' | 'elastic' | 'wobble' | 'flip' | 'bounce' | 'rotate' | 'blur';
+
+export type ModalTheme = 'light' | 'dark' | 'glass' | 'gradient' | 'neumorphism';
+
+export interface ModalHeaderConfig {
+  icon?: string;
+  iconColor?: string;
+  subtitle?: string;
+  badge?: string | number;
+  badgeType?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
+}
 
 /**
  * Modal 模态框组件
@@ -36,8 +46,8 @@ export class LdesignModal {
 
   /** 图标可配置 */
   @Prop() closeIcon: string = 'x';
-  @Prop() maximizeIcon: string = 'maximize-2';
-  @Prop() restoreIcon: string = 'minimize-2';
+  @Prop() maximizeIcon: string = 'square';
+  @Prop() restoreIcon: string = 'copy';
 
   /**
    * 模态框尺寸
@@ -196,6 +206,53 @@ export class LdesignModal {
   @Prop() loading: boolean = false;
   /** 新增：加载文字 */
   @Prop() loadingText: string = '加载中...';
+  
+  /** 新增：主题 */
+  @Prop() theme: ModalTheme = 'light';
+  /** 新增：模糊背景 */
+  @Prop() blurBackground: boolean = false;
+  /** 新增：模糊程度 */
+  @Prop() blurAmount: number = 10;
+  /** 新增：头部配置 */
+  @Prop() headerConfig?: ModalHeaderConfig;
+  /** 新增：是否显示头部分割线 */
+  @Prop() showHeaderDivider: boolean = true;
+  /** 新增：是否显示底部分割线 */
+  @Prop() showFooterDivider: boolean = true;
+  /** 新增：内容内边距 */
+  @Prop() bodyPadding?: string | number;
+  /** 新增：是否显示动画效果 */
+  @Prop() animationEnabled: boolean = true;
+  /** 新增：是否允许双击标题栏最大化 */
+  @Prop() dblclickMaximize: boolean = true;
+  /** 新增：是否显示阴影 */
+  @Prop() showShadow: boolean = true;
+  /** 新增：自定义类名 */
+  @Prop() customClass?: string;
+  /** 新增：是否禁用过渡效果 */
+  @Prop() disableTransition: boolean = false;
+  /** 新增：是否显示满屏按钮 */
+  @Prop() showFullscreenButton: boolean = false;
+  /** 新增：是否默认满屏 */
+  @Prop() fullscreen: boolean = false;
+  /** 新增：底部按钮对齐 */
+  @Prop() footerAlign: 'left' | 'center' | 'right' | 'space-between' = 'right';
+  /** 新增：是否显示取消按钮 */
+  @Prop() showCancelButton: boolean = true;
+  /** 新增：是否显示确认按钮 */
+  @Prop() showOkButton: boolean = true;
+  /** 新增：自定义按钮 */
+  @Prop() customButtons?: Array<{
+    text: string;
+    type?: ButtonType;
+    loading?: boolean;
+    disabled?: boolean;
+    onClick?: () => void | Promise<void>;
+  }>;
+  /** 新增：支持虚拟化滚动 */
+  @Prop() virtualScroll: boolean = false;
+  /** 新增：是否显示关闭动画 */
+  @Prop() closeAnimation: boolean = true;
 
   /**
    * 模态框状态

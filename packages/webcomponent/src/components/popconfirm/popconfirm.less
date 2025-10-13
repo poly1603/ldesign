@@ -1,11 +1,19 @@
-// Popconfirm 样式
+// Popconfirm 样式 - 基于最新 Popup 组件的设计风格
 .ldesign-popconfirm {
-  // 在组件/文档站未完成升级或未通过 Popup 承载时，默认隐藏内容，避免页面初始就显示。
-  // 只有当内容被放入 .ldesign-popup__content 中时才显示（见下面的覆盖规则）。
+  // 默认隐藏内容，只有当内容被放入 Popup 容器时才显示
   &__content {
     display: none;
     align-items: flex-start;
-    max-width: 280px;
+    padding: 12px;
+    min-width: 240px;
+    max-width: 360px;
+    
+    // 无图标时的样式调整
+    &--no-icon {
+      .ldesign-popconfirm__main {
+        margin-left: 0;
+      }
+    }
   }
 
   // 当内容真正渲染到 Popup 的浮层容器内时，显示为弹层布局
@@ -14,45 +22,99 @@
   }
 
   &__icon {
+    flex-shrink: 0;
     margin-right: 12px;
     line-height: 1;
-    color: #f59e0b; // 默认提示色（amber）
-
+    display: flex;
+    align-items: center;
+    
     ldesign-icon {
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
+      display: block;
     }
   }
 
   &__main {
-    min-width: 180px;
+    flex: 1;
+    min-width: 0; // 保证内容可以正常折行
   }
 
   &__title {
     font-size: 14px;
     font-weight: 600;
     color: var(--ldesign-text-color, #1f2937);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    line-height: 1.5;
   }
 
   &__desc {
     font-size: 13px;
     color: var(--ldesign-text-color-secondary, #6b7280);
-    margin-bottom: 10px;
+    margin-bottom: 16px;
     line-height: 1.5;
+    
+    &:empty {
+      display: none;
+    }
   }
 
-  /* Dark 主题适配：当父级 Popup 处于 dark 主题时，覆盖文字与图标颜色，保证对比度 */
+  // 尺寸变体
+  &--small {
+    .ldesign-popconfirm__content {
+      min-width: 200px;
+      max-width: 280px;
+      padding: 8px 10px;
+    }
+    
+    .ldesign-popconfirm__title {
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    
+    .ldesign-popconfirm__desc {
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .ldesign-popconfirm__icon ldesign-icon {
+      width: 16px;
+      height: 16px;
+    }
+  }
+  
+  &--large {
+    .ldesign-popconfirm__content {
+      min-width: 300px;
+      max-width: 420px;
+      padding: 16px;
+    }
+    
+    .ldesign-popconfirm__title {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    
+    .ldesign-popconfirm__desc {
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    
+    .ldesign-popconfirm__icon ldesign-icon {
+      width: 24px;
+      height: 24px;
+    }
+  }
+  
+  /* Dark 主题适配 */
+  .ldesign-popup--dark &__title,
   ldesign-popup[theme="dark"] &__title {
     color: var(--ldesign-text-color-dark, #f9fafb);
   }
 
+  .ldesign-popup--dark &__desc,
   ldesign-popup[theme="dark"] &__desc {
     color: var(--ldesign-text-color-secondary-dark, #d1d5db);
-  }
-
-  ldesign-popup[theme="dark"] &__icon {
-    color: #fbbf24; /* amber-400，在深色背景上更清晰 */
   }
 
   // Dark 模式下的按钮主题变量（仅作用于气泡中的按钮，不影响全局）
@@ -77,5 +139,36 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
+    margin-top: 4px;
+    
+    // 按钮在小尺寸下的间距调整
+    .ldesign-popconfirm--small & {
+      gap: 6px;
+    }
+    
+    // 按钮在大尺寸下的间距调整
+    .ldesign-popconfirm--large & {
+      gap: 10px;
+    }
+  }
+  
+  // 动画效果增强
+  .ldesign-popup__content & {
+    &__content {
+      display: flex;
+      animation: ldesign-popconfirm-show 0.2s ease-out;
+    }
+  }
+}
+
+// 入场动画
+@keyframes ldesign-popconfirm-show {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }

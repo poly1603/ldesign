@@ -120,6 +120,9 @@ export interface CropperOptions {
 
   // Auto crop area
   autoCropArea?: number
+  
+  // Initial crop box size ratio (relative to the smaller dimension)
+  initialCropBoxSize?: number
 
   // Movable
   movable?: boolean

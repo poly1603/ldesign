@@ -1054,6 +1054,38 @@ function initSmoothFlowQR() {
   });
 }
 
+// Initialize ultra smooth effect (NEWEST ADVANCED ⭐⭐⭐)
+function initUltraSmoothQR() {
+  const container = document.getElementById('ultra-smooth-qr')!;
+  const updateBtn = document.getElementById('ultra-smooth-update')!;
+  const downloadBtn = document.getElementById('ultra-smooth-download')!;
+
+  qrInstances.ultraSmooth = createQRCode({
+    content: 'Ultra Smooth QR Code',
+    container,
+    errorCorrectionLevel: 'H' as any,
+    style: {
+      size: 200,
+      dotStyle: 'ultra-smooth' as DotStyle, // Use ultra-smooth dot style
+      gradient: {
+        type: 'linear',
+        colors: ['#e91e63', '#9c27b0'],
+        direction: 135,
+      }
+    },
+  });
+
+  updateBtn.addEventListener('click', async () => {
+    await qrInstances.ultraSmooth.update({
+      content: `Updated at ${new Date().toLocaleTimeString()}`,
+    });
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    qrInstances.ultraSmooth.download({ fileName: 'ultra-smooth-qrcode', format: 'png' });
+  });
+}
+
 // Initialize all demos
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Initializing QR Code demos...');
@@ -1097,6 +1129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initMaskPattern();
     initCrystalizeQR();
     initSmoothFlowQR();
+    initUltraSmoothQR();
 
     console.log('✅ All demos initialized successfully!');
   } catch (error) {

@@ -5,6 +5,7 @@ import { drawDot } from './styles/dots';
 import { createCanvasGradient } from './styles/gradients';
 import { drawEye, getEyePositions, isInEye } from './styles/eyes';
 import { applyShadow, clearShadow, drawBackgroundImage } from './styles/effects';
+import { renderLiquidFlow } from './styles/liquid-flow'
 
 /**
  * Default style configuration
@@ -117,6 +118,9 @@ export class CanvasRenderer {
     if (dotStyle === DotStyle.SmoothFlow || dotStyle === DotStyle.Liquid) {
       // Use smooth flow rendering for connected liquid modules
       this.renderSmoothFlow(moduleCount, margin, moduleSize);
+    } else if (dotStyle === DotStyle.UltraSmooth) {
+      // Use ultra-smooth liquid rendering for the best flowing effect
+      this.renderUltraSmoothLiquid(moduleCount, margin, moduleSize);
     } else {
 
       // Apply shadow if configured
@@ -558,6 +562,58 @@ export class CanvasRenderer {
   }
 
   /**
+   * Render QR code with ultra-smooth liquid effect
+   */
+  private renderUltraSmoothLiquid(moduleCount: number, margin: number, moduleSize: number): void {
+    // Create a 2D array of boolean values for modules
+    const modules: boolean[][] = [];
+    const eyePositions = getEyePositions(moduleCount);
+    
+    for (let row = 0; row < moduleCount; row++) {
+      modules[row] = [];
+      for (let col = 0; col < moduleCount; col++) {
+        // Exclude eye areas if custom eye style is configured
+        if (this.config.style?.eyeStyle && isInEye(row, col, eyePositions)) {
+          modules[row][col] = false;
+        } else {
+          modules[row][col] = this.generator.isDark(row, col);
+        }
+      }
+    }
+    
+    // Apply shadow if configured
+    if (this.config.style?.shadow) {
+      applyShadow(this.ctx, this.config.style.shadow);
+    }
+    
+    // Setup fill style
+    if (this.config.style?.gradient) {
+      const gradient = createCanvasGradient(
+        this.ctx,
+        this.config.style.gradient,
+        this.style.size,
+        this.style.size
+      );
+      this.ctx.fillStyle = gradient;
+    } else {
+      this.ctx.fillStyle = this.style.fgColor;
+    }
+    
+    // Use the high-quality liquid flow rendering
+    renderLiquidFlow(this.ctx, modules, moduleSize, margin);
+    
+    // Clear shadow before drawing eyes
+    if (this.config.style?.shadow) {
+      clearShadow(this.ctx);
+    }
+    
+    // Draw custom eye styles if configured
+    if (this.config.style?.eyeStyle) {
+      this.drawEyes(eyePositions, moduleSize, margin);
+    }
+  }
+
+  /**
    * Render QR code with smooth flow effect (liquid style)
    */
   private renderSmoothFlow(moduleCount: number, margin: number, moduleSize: number): void {
@@ -690,8 +746,8 @@ export class CanvasRenderer {
     hasBottomLeft: boolean,
     hasBottomRight: boolean
   ): void {
-    const radius = size * 0.48; // Even larger radius for maximum fluidity
-    const offset = size * 0.05; // Tiny offset for organic variations
+    const radius = size * 0.45; // Optimized radius for smoother flow
+    const smoothness = 0.35; // Control point distance for bezier curves
     
     this.ctx.beginPath();
     
@@ -699,149 +755,179 @@ export class CanvasRenderer {
     const cx = x + size / 2;
     const cy = y + size / 2;
     
-    // If isolated or only diagonal neighbors, draw a circle
+    // If isolated or only diagonal neighbors, draw a smooth circle
     if (!hasTop && !hasRight && !hasBottom && !hasLeft) {
-      this.ctx.arc(cx, cy, size * 0.42, 0, Math.PI * 2);
+      this.ctx.arc(cx, cy, size * 0.35, 0, Math.PI * 2);
       this.ctx.fill();
       return;
     }
     
-    // Complex path drawing with smooth transitions
-    const corners = [
-      { // Top-left
-        connected: hasTop || hasLeft,
-        diagonal: hasTopLeft,
-        x: x, y: y
-      },
-      { // Top-right
-        connected: hasTop || hasRight,
-        diagonal: hasTopRight,
-        x: x + size, y: y
-      },
-      { // Bottom-right
-        connected: hasBottom || hasRight,
-        diagonal: hasBottomRight,
-        x: x + size, y: y + size
-      },
-      { // Bottom-left
-        connected: hasBottom || hasLeft,
-        diagonal: hasBottomLeft,
-        x: x, y: y + size
+    // Simplified smooth path drawing for better liquid effect
+    const connectionCount = (hasTop ? 1 : 0) + (hasRight ? 1 : 0) + 
+                           (hasBottom ? 1 : 0) + (hasLeft ? 1 : 0);
+    
+    // For modules with many connections, use a more fluid approach
+    if (connectionCount >= 3) {
+      // Draw a filled rectangle with smoothed corners where not connected
+      this.ctx.moveTo(x + (hasLeft || hasTop ? 0 : radius), y + (hasTop ? 0 : radius));
+    
+      // Top edge
+      if (hasTop) {
+        this.ctx.lineTo(x + size - (hasRight || hasTop ? 0 : radius), y);
+      } else {
+        // Smooth arc for disconnected top
+        this.ctx.arcTo(x + size / 2, y, x + size - (hasRight ? 0 : radius), y + (hasRight ? 0 : radius), radius);
       }
-    ];
     
-    // Draw smooth blob shape
-    this.ctx.moveTo(x + (hasLeft ? 0 : radius), y + (hasTop ? 0 : offset));
-    
-    // Top edge
-    if (hasTop) {
-      this.ctx.lineTo(x + size - (hasRight ? 0 : offset), y);
-    } else {
-      // Smooth curve for disconnected top
-      const cp1x = x + size * 0.3;
-      const cp2x = x + size * 0.7;
-      this.ctx.bezierCurveTo(
-        cp1x, y - offset,
-        cp2x, y - offset,
-        x + size - radius, y
-      );
-    }
-    
-    // Top-right corner
-    if (hasTop && hasRight) {
-      if (hasTopRight) {
-        // Smooth outward curve when diagonal is connected
+      // Top-right corner
+      if (!hasTop && !hasRight) {
+        this.ctx.arcTo(x + size, y, x + size, y + radius, radius);
+      } else if (hasTop && hasRight && !hasTopRight) {
+        // Inner corner smoothing
         this.ctx.lineTo(x + size, y);
       } else {
-        // Sharp inside corner
-        this.ctx.lineTo(x + size - offset, y);
-        this.ctx.quadraticCurveTo(x + size, y, x + size, y + offset);
+        this.ctx.lineTo(x + size, y + (hasRight ? 0 : radius));
       }
-    } else if (hasTop || hasRight) {
-      this.ctx.quadraticCurveTo(x + size, y, x + size, y + (hasRight ? offset : radius));
-    } else {
-      this.ctx.arc(x + size - radius, y + radius, radius, -Math.PI/2, 0, false);
-    }
     
-    // Right edge
-    if (hasRight) {
-      this.ctx.lineTo(x + size, y + size - (hasBottom ? 0 : offset));
-    } else {
-      const cp1y = y + size * 0.3;
-      const cp2y = y + size * 0.7;
-      this.ctx.bezierCurveTo(
-        x + size + offset, cp1y,
-        x + size + offset, cp2y,
-        x + size, y + size - radius
-      );
-    }
+      // Right edge
+      if (hasRight) {
+        this.ctx.lineTo(x + size, y + size - (hasBottom || hasRight ? 0 : radius));
+      } else {
+        this.ctx.arcTo(x + size, y + size / 2, x + size - (hasBottom ? 0 : radius), y + size, radius);
+      }
     
-    // Bottom-right corner
-    if (hasBottom && hasRight) {
-      if (hasBottomRight) {
+      // Bottom-right corner
+      if (!hasBottom && !hasRight) {
+        this.ctx.arcTo(x + size, y + size, x + size - radius, y + size, radius);
+      } else if (hasBottom && hasRight && !hasBottomRight) {
         this.ctx.lineTo(x + size, y + size);
       } else {
-        this.ctx.lineTo(x + size, y + size - offset);
-        this.ctx.quadraticCurveTo(x + size, y + size, x + size - offset, y + size);
+        this.ctx.lineTo(x + (hasBottom ? size : size - radius), y + size);
       }
-    } else if (hasBottom || hasRight) {
-      this.ctx.quadraticCurveTo(x + size, y + size, x + (hasBottom ? size - offset : size - radius), y + size);
-    } else {
-      this.ctx.arc(x + size - radius, y + size - radius, radius, 0, Math.PI/2, false);
-    }
     
-    // Bottom edge
-    if (hasBottom) {
-      this.ctx.lineTo(x + (hasLeft ? 0 : offset), y + size);
-    } else {
-      const cp1x = x + size * 0.7;
-      const cp2x = x + size * 0.3;
-      this.ctx.bezierCurveTo(
-        cp1x, y + size + offset,
-        cp2x, y + size + offset,
-        x + radius, y + size
-      );
-    }
+      // Bottom edge
+      if (hasBottom) {
+        this.ctx.lineTo(x + (hasLeft || hasBottom ? 0 : radius), y + size);
+      } else {
+        this.ctx.arcTo(x + size / 2, y + size, x + (hasLeft ? 0 : radius), y + size - (hasLeft ? 0 : radius), radius);
+      }
     
-    // Bottom-left corner
-    if (hasBottom && hasLeft) {
-      if (hasBottomLeft) {
+      // Bottom-left corner
+      if (!hasBottom && !hasLeft) {
+        this.ctx.arcTo(x, y + size, x, y + size - radius, radius);
+      } else if (hasBottom && hasLeft && !hasBottomLeft) {
         this.ctx.lineTo(x, y + size);
       } else {
-        this.ctx.lineTo(x + offset, y + size);
-        this.ctx.quadraticCurveTo(x, y + size, x, y + size - offset);
+        this.ctx.lineTo(x, y + (hasLeft ? size : size - radius));
       }
-    } else if (hasBottom || hasLeft) {
-      this.ctx.quadraticCurveTo(x, y + size, x, y + (hasLeft ? size - offset : size - radius));
-    } else {
-      this.ctx.arc(x + radius, y + size - radius, radius, Math.PI/2, Math.PI, false);
+    
+      // Left edge
+      if (hasLeft) {
+        this.ctx.lineTo(x, y + (hasTop || hasLeft ? 0 : radius));
+      } else {
+        this.ctx.arcTo(x, y + size / 2, x + (hasTop ? 0 : radius), y, radius);
+      }
+    
+      // Top-left corner (closing)
+      if (!hasTop && !hasLeft) {
+        this.ctx.arcTo(x, y, x + radius, y, radius);
+      } else if (hasTop && hasLeft && !hasTopLeft) {
+        this.ctx.lineTo(x, y);
+      }
+      
+      this.ctx.closePath();
+      this.ctx.fill();
+      return;
     }
     
-    // Left edge
+    // For modules with fewer connections, use a more organic approach
+    // This creates smoother, more liquid-like connections
+    const cp = size * smoothness; // Control point offset
+    
+    // Start from a strategic point
     if (hasLeft) {
-      this.ctx.lineTo(x, y + (hasTop ? 0 : offset));
+      this.ctx.moveTo(x, y + size * 0.3);
+    } else if (hasTop) {
+      this.ctx.moveTo(x + size * 0.3, y);
     } else {
-      const cp1y = y + size * 0.7;
-      const cp2y = y + size * 0.3;
+      this.ctx.moveTo(x + radius, y + radius * 0.5);
+    }
+    
+    // Draw smooth curves based on connections
+    if (hasTop) {
+      this.ctx.lineTo(x + size * 0.7, y);
+      if (!hasRight) {
+        this.ctx.bezierCurveTo(
+          x + size - cp, y,
+          x + size, y + cp,
+          x + size - radius * 0.3, y + radius
+        );
+      } else {
+        this.ctx.lineTo(x + size, y);
+      }
+    } else {
       this.ctx.bezierCurveTo(
-        x - offset, cp1y,
-        x - offset, cp2y,
-        x, y + radius
+        x + size * 0.5, y - cp * 0.3,
+        x + size * 0.8, y + cp * 0.5,
+        x + size - (hasRight ? 0 : radius), y + (hasRight ? 0 : radius)
       );
     }
     
-    // Top-left corner (closing)
-    if (hasTop && hasLeft) {
-      if (hasTopLeft) {
-        this.ctx.lineTo(x, y);
+    if (hasRight) {
+      this.ctx.lineTo(x + size, y + size * 0.7);
+      if (!hasBottom) {
+        this.ctx.bezierCurveTo(
+          x + size, y + size - cp,
+          x + size - cp, y + size,
+          x + size - radius, y + size - radius * 0.3
+        );
       } else {
-        this.ctx.lineTo(x, y + offset);
-        this.ctx.quadraticCurveTo(x, y, x + offset, y);
+        this.ctx.lineTo(x + size, y + size);
       }
-    } else if (hasTop || hasLeft) {
-      this.ctx.quadraticCurveTo(x, y, x + (hasTop ? offset : radius), y);
     } else {
-      this.ctx.arc(x + radius, y + radius, radius, Math.PI, Math.PI * 1.5, false);
+      this.ctx.bezierCurveTo(
+        x + size + cp * 0.3, y + size * 0.5,
+        x + size - cp * 0.5, y + size * 0.8,
+        x + (hasBottom ? size : size - radius), y + size - (hasBottom ? 0 : radius)
+      );
+    }
+    
+    if (hasBottom) {
+      this.ctx.lineTo(x + size * 0.3, y + size);
+      if (!hasLeft) {
+        this.ctx.bezierCurveTo(
+          x + cp, y + size,
+          x, y + size - cp,
+          x + radius * 0.3, y + size - radius
+        );
+      } else {
+        this.ctx.lineTo(x, y + size);
+      }
+    } else {
+      this.ctx.bezierCurveTo(
+        x + size * 0.5, y + size + cp * 0.3,
+        x + size * 0.2, y + size - cp * 0.5,
+        x + (hasLeft ? 0 : radius), y + size - (hasLeft ? 0 : radius)
+      );
+    }
+    
+    if (hasLeft) {
+      this.ctx.lineTo(x, y + size * 0.3);
+      if (!hasTop) {
+        this.ctx.bezierCurveTo(
+          x, y + cp,
+          x + cp, y,
+          x + radius, y + radius * 0.3
+        );
+      } else {
+        this.ctx.lineTo(x, y);
+      }
+    } else {
+      this.ctx.bezierCurveTo(
+        x - cp * 0.3, y + size * 0.5,
+        x + cp * 0.5, y + size * 0.2,
+        x + (hasTop ? 0 : radius), y + (hasTop ? 0 : radius)
+      );
     }
     
     this.ctx.closePath();

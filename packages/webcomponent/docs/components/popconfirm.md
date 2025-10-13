@@ -1,6 +1,6 @@
 # Popconfirm 气泡确认框
 
-用于在操作前进行二次确认，常用于删除、危险操作等场景。基于 Popup 封装，支持多种触发方式与主题。
+用于在操作前进行二次确认，常用于删除、危险操作等场景。基于最新的 Popup 组件封装，支持动画、尺寸、加载状态等丰富特性。
 
 ## 基础用法
 
@@ -54,6 +54,137 @@
 ```html
 <ldesign-popconfirm popconfirm-title="确定？" trigger="click">
   <ldesign-button slot="trigger">点击</ldesign-button>
+</ldesign-popconfirm>
+```
+
+## 不同图标类型
+
+支持多种预设图标类型：`info`、`success`、`warning`、`error`、`question`。
+
+<div class="demo-container">
+  <div class="demo-row" style="display:flex; gap:16px; flex-wrap:wrap;">
+    <ldesign-popconfirm popconfirm-title="信息提示" icon="info">
+      <ldesign-button slot="trigger">Info</ldesign-button>
+    </ldesign-popconfirm>
+    <ldesign-popconfirm popconfirm-title="操作成功" icon="success">
+      <ldesign-button slot="trigger" type="success">成功</ldesign-button>
+    </ldesign-popconfirm>
+    <ldesign-popconfirm popconfirm-title="警告信息" icon="warning">
+      <ldesign-button slot="trigger" type="warning">警告</ldesign-button>
+    </ldesign-popconfirm>
+    <ldesign-popconfirm popconfirm-title="危险操作" icon="error">
+      <ldesign-button slot="trigger" type="danger">错误</ldesign-button>
+    </ldesign-popconfirm>
+  </div>
+</div>
+
+```html
+<ldesign-popconfirm popconfirm-title="信息提示" icon="info">
+  <ldesign-button slot="trigger">Info</ldesign-button>
+</ldesign-popconfirm>
+```
+
+## 尺寸变体
+
+提供三种预设尺寸：`small`、`medium`（默认）、`large`。
+
+<div class="demo-container">
+  <div class="demo-row" style="display:flex; gap:16px; flex-wrap:wrap;">
+    <ldesign-popconfirm popconfirm-title="小尺寸确认框" size="small">
+      <ldesign-button slot="trigger" size="small">Small</ldesign-button>
+    </ldesign-popconfirm>
+    <ldesign-popconfirm popconfirm-title="中等尺寸确认框" description="这是默认的中等尺寸" size="medium">
+      <ldesign-button slot="trigger">Medium</ldesign-button>
+    </ldesign-popconfirm>
+    <ldesign-popconfirm popconfirm-title="大尺寸确认框" description="大尺寸适合显示更多内容，可以包含详细的说明信息" size="large">
+      <ldesign-button slot="trigger" size="large">Large</ldesign-button>
+    </ldesign-popconfirm>
+  </div>
+</div>
+
+```html
+<ldesign-popconfirm popconfirm-title="小尺寸确认框" size="small">
+  <ldesign-button slot="trigger" size="small">Small</ldesign-button>
+</ldesign-popconfirm>
+```
+
+## 动画效果
+
+支持三种动画类型：`fade`、`scale`（默认）、`slide`。
+
+<div class="demo-container">
+  <div class="demo-row" style="display:flex; gap:16px; flex-wrap:wrap;">
+    <ldesign-popconfirm popconfirm-title="淡入淡出效果" animation="fade">
+      <ldesign-button slot="trigger">Fade</ldesign-button>
+    </ldesign-popconfirm>
+    <ldesign-popconfirm popconfirm-title="缩放效果" animation="scale">
+      <ldesign-button slot="trigger">Scale</ldesign-button>
+    </ldesign-popconfirm>
+    <ldesign-popconfirm popconfirm-title="滑动效果" animation="slide">
+      <ldesign-button slot="trigger">Slide</ldesign-button>
+    </ldesign-popconfirm>
+  </div>
+</div>
+
+```html
+<ldesign-popconfirm popconfirm-title="淡入淡出效果" animation="fade">
+  <ldesign-button slot="trigger">Fade</ldesign-button>
+</ldesign-popconfirm>
+```
+
+## 加载状态
+
+支持确认按钮加载状态和整体加载状态。
+
+<div class="demo-container">
+  <div class="demo-row" style="display:flex; gap:16px; flex-wrap:wrap;">
+    <ldesign-popconfirm 
+      id="pc-loading" 
+      popconfirm-title="确定删除？" 
+      description="点击确定后会显示加载状态"
+      trigger="click">
+      <ldesign-button slot="trigger" type="danger">模拟异步删除</ldesign-button>
+    </ldesign-popconfirm>
+    <ldesign-popconfirm popconfirm-title="正在加载..." loading>
+      <ldesign-button slot="trigger">整体加载</ldesign-button>
+    </ldesign-popconfirm>
+  </div>
+</div>
+
+<script>
+  // 模拟异步操作
+  const pcLoading = document.getElementById('pc-loading');
+  if (pcLoading) {
+    pcLoading.addEventListener('ldesignConfirm', () => {
+      pcLoading.confirmLoading = true;
+      setTimeout(() => {
+        pcLoading.confirmLoading = false;
+        pcLoading.visible = false;
+      }, 2000);
+    });
+  }
+</script>
+
+## 自动关闭
+
+通过 `auto-close-delay` 属性设置自动关闭延迟。
+
+<div class="demo-container">
+  <ldesign-popconfirm 
+    popconfirm-title="操作成功" 
+    description="3秒后自动关闭"
+    auto-close-delay="3000"
+    icon="success">
+    <ldesign-button slot="trigger" type="success">自动关闭</ldesign-button>
+  </ldesign-popconfirm>
+</div>
+
+```html
+<ldesign-popconfirm 
+  popconfirm-title="操作成功" 
+  auto-close-delay="3000"
+  icon="success">
+  <ldesign-button slot="trigger">自动关闭</ldesign-button>
 </ldesign-popconfirm>
 ```
 
@@ -139,7 +270,15 @@ onUnmounted(()=>{ listeners.forEach(off=>off()) })
 | ok-text | 确认按钮文案 | `string` | `确定` |
 | cancel-text | 取消按钮文案 | `string` | `取消` |
 | ok-type | 确认按钮类型 | `'primary' \| 'secondary' \| 'outline' \| 'text' \| 'danger'` | `'primary'` |
-| icon | 左侧图标 | `string` | `help-circle` |
+| cancel-type | 取消按钮类型 | `'primary' \| 'secondary' \| 'outline' \| 'text' \| 'danger'` | `'outline'` |
+| icon | 图标类型/名称 | `'info' \| 'success' \| 'warning' \| 'error' \| 'question' \| string` | `'question'` |
+| show-icon | 是否显示图标 | `boolean` | `true` |
+| animation | 动画类型 | `'fade' \| 'scale' \| 'slide'` | `'scale'` |
+| size | 尺寸 | `'small' \| 'medium' \| 'large'` | `'medium'` |
+| loading | 整体加载状态 | `boolean` | `false` |
+| confirm-loading | 确认按钮加载状态 | `boolean` | `false` |
+| auto-close-delay | 自动关闭延迟（毫秒） | `number` | `0` |
+| offset-distance | 与触发元素的距离 | `number` | `8` |
 
 ### Events
 

@@ -24,7 +24,7 @@ import { clamp } from '../utils/math'
 const DEFAULTS = {
   viewMode: 0 as const,
   dragMode: 'crop' as const,
-  initialAspectRatio: NaN,
+  initialAspectRatio: 1, // Default to square
   aspectRatio: NaN,
   responsive: true,
   restore: true,
@@ -36,7 +36,8 @@ const DEFAULTS = {
   highlight: true,
   background: true,
   autoCrop: true,
-  autoCropArea: 0.8,
+  autoCropArea: 0.8, // Deprecated, use initialCropBoxSize instead
+  initialCropBoxSize: 0.5, // Default to 50% of the smaller dimension
   movable: true,
   rotatable: true,
   scalable: true,
@@ -100,6 +101,11 @@ export class Cropper {
     // Create wrapper
     this.wrapper = createElement('div', 'cropper-container')
     this.container.appendChild(this.wrapper)
+    
+    // Add background immediately if enabled
+    if (this.options.background) {
+      this.addBackground()
+    }
 
     // Create image processor
     this.imageProcessor = new ImageProcessor(this.wrapper)
@@ -156,9 +162,13 @@ export class Cropper {
     const imageData = this.imageProcessor.getImageData()
     if (!imageData) return
 
+    // Get the display rectangle of the image (including its offset in the container)
+    const displayRect = this.imageProcessor.getDisplayRect()
+    if (!displayRect) return
+
     // Create crop box
     this.cropBox = new CropBox(this.wrapper, {
-      aspectRatio: this.options.aspectRatio || undefined,
+      aspectRatio: this.options.aspectRatio || this.options.initialAspectRatio || undefined,
       minWidth: this.options.minCropBoxWidth,
       minHeight: this.options.minCropBoxHeight,
       maxWidth: this.options.maxCropBoxWidth,
@@ -175,15 +185,55 @@ export class Cropper {
 
     // Auto crop
     if (this.options.autoCrop) {
-      const area = this.options.autoCropArea || 0.8
-      const width = imageData.width * area
-      const height = this.options.aspectRatio
-        ? width / this.options.aspectRatio
-        : imageData.height * area
+      // Use initialCropBoxSize if provided, otherwise use autoCropArea for backwards compatibility
+      const sizeRatio = this.options.initialCropBoxSize ?? this.options.autoCropArea ?? 0.5
+      
+      // Use aspect ratio if provided, otherwise use initialAspectRatio (default to 1 for square)
+      const aspectRatio = this.options.aspectRatio || this.options.initialAspectRatio || 1
+      
+      let width, height
+
+      // Calculate initial crop box size based on the smaller dimension of the image
+      const minImageDimension = Math.min(displayRect.width, displayRect.height)
+      
+      if (aspectRatio === 1) {
+        // For square crop box
+        width = minImageDimension * sizeRatio
+        height = width
+      } else if (aspectRatio > 1) {
+        // Landscape orientation
+        // Start with the smaller dimension and calculate based on aspect ratio
+        height = minImageDimension * sizeRatio
+        width = height * aspectRatio
+        
+        // If width exceeds the image width, scale down
+        if (width > displayRect.width * 0.9) {
+          width = displayRect.width * sizeRatio
+          height = width / aspectRatio
+        }
+      } else {
+        // Portrait orientation
+        width = minImageDimension * sizeRatio
+        height = width / aspectRatio
+        
+        // If height exceeds the image height, scale down
+        if (height > displayRect.height * 0.9) {
+          height = displayRect.height * sizeRatio
+          width = height * aspectRatio
+        }
+      }
+
+      // Ensure crop box doesn't exceed image boundaries
+      width = Math.min(width, displayRect.width * 0.95)
+      height = Math.min(height, displayRect.height * 0.95)
+
+      // Center the crop box relative to the actual image position in the container
+      const left = displayRect.left + (displayRect.width - width) / 2
+      const top = displayRect.top + (displayRect.height - height) / 2
 
       this.cropBox.setData({
-        left: (imageData.width - width) / 2,
-        top: (imageData.height - height) / 2,
+        left,
+        top,
         width,
         height
       })
@@ -564,6 +614,21 @@ export class Cropper {
   move(deltaX: number, deltaY: number): void {
     if (!this.ready || !this.imageProcessor || !this.options.translatable) return
     this.imageProcessor.move(deltaX, deltaY)
+  }
+
+  /**
+   * Add background to the container
+   */
+  private addBackground(): void {
+    if (!this.wrapper) return
+    
+    // Check if background already exists
+    const existingBg = this.wrapper.querySelector('.cropper-bg')
+    if (!existingBg) {
+      const backgroundElement = createElement('div', 'cropper-bg')
+      // Insert as first child to ensure it's at the bottom
+      this.wrapper.insertBefore(backgroundElement, this.wrapper.firstChild)
+    }
   }
 
   /**

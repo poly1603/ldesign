@@ -2,17 +2,17 @@
  * @ldesign/i18n - Framework-agnostic i18n solution
  * A powerful, extensible internationalization library for any JavaScript framework
  * 
- * @version 1.0.0
+ * @version 2.0.0
  * @author LDesign Team
  * @license MIT
  */
 
 // Core exports
-export { I18n } from './core/i18n';
+export { I18n, OptimizedI18n } from './core/i18n-optimized';
 export { InterpolationEngine } from './core/interpolation';
 export { PluralizationEngine } from './core/pluralization';
-// export type { PluralCategory } from './core/pluralization'; // Type export not supported by build tool
-export { 
+export type { PluralCategory } from './core/pluralization';
+export {
   LRUCache,
   WeakCache,
   StorageCache,
@@ -20,87 +20,147 @@ export {
   createCache
 } from './core/cache';
 
-// Type exports - commented out due to build tool limitations
-// export type {
-//   // Basic types
-//   Locale,
-//   MessageKey,
-//   MessageValue,
-//   Messages,
-//   InterpolationParams,
-//   PluralRule,
-//   
-//   // Core interfaces
-//   I18nInstance,
-//   I18nConfig,
-//   I18nContext,
-//   I18nPlugin,
-//   TranslationFunction,
-//   TranslateOptions,
-//   InterpolationOptions,
-//   LanguagePackage,
-//   
-//   // Component interfaces
-//   MessageLoader,
-//   MessageStorage,
-//   LanguageDetector,
-//   Cache,
-//   Formatter,
-//   
-//   // Configuration
-//   CacheConfig,
-//   DetectionConfig,
-//   InterpolationConfig,
-//   
-//   // Events
-//   I18nEventType,
-//   I18nEventData,
-//   I18nEventListener,
-//   
-//   // Error handling
-//   MissingKeyHandler,
-//   ErrorHandler,
-//   
-//   // Framework
-//   FrameworkAdapter,
-//   
-//   // Utility types
-//   DeepPartial,
-//   ValueOf,
-//   PromiseOr
-// } from './types';
+// Type exports - properly structured for build tools
+export type {
+  // Basic types
+  Locale,
+  MessageKey,
+  MessageValue,
+  Messages,
+  InterpolationParams,
+  PluralRule,
+
+  // Core interfaces
+  I18nInstance,
+  I18nConfig,
+  I18nContext,
+  I18nPlugin,
+  TranslationFunction,
+  TranslateOptions,
+  InterpolationOptions,
+  LanguagePackage,
+
+  // Component interfaces
+  MessageLoader,
+  MessageStorage,
+  LanguageDetector,
+  Cache,
+  Formatter,
+
+  // Configuration
+  CacheConfig,
+  DetectionConfig,
+  InterpolationConfig,
+
+  // Events
+  I18nEventType,
+  I18nEventData,
+  I18nEventListener,
+
+  // Error handling
+  MissingKeyHandler,
+  ErrorHandler,
+
+  // Framework
+  FrameworkAdapter,
+
+  // Utility types
+  DeepPartial,
+  ValueOf,
+  PromiseOr
+} from './types';
 
 // Utility exports
 export * from './utils/helpers';
+export * from './utils/bundle-optimization';
+
+// Advanced features (lazy-loadable)
+export const LazyFeatures = {
+  async loadABTesting() {
+    const module = await import('./core/ab-testing');
+    return module;
+  },
+
+  async loadQualityScorer() {
+    const module = await import('./core/quality-scorer');
+    return module;
+  },
+
+  async loadCollaborativeEditor() {
+    const module = await import('./core/collaborative-editor');
+    return module;
+  },
+
+  async loadOfflineFirst() {
+    const module = await import('./core/offline-first');
+    return module;
+  },
+
+  async loadPerformanceMonitor() {
+    const module = await import('./core/performance-monitor');
+    return module;
+  },
+
+  async loadContextAware() {
+    const module = await import('./core/context-aware');
+    return module;
+  },
+
+  async loadIntelligentPreheater() {
+    const module = await import('./core/intelligent-preheater');
+    return module;
+  },
+
+  async loadMemoryOptimizer() {
+    const module = await import('./core/memory-optimizer');
+    return module;
+  },
+
+  async loadAdvancedFormatter() {
+    const module = await import('./core/advanced-formatter');
+    return module;
+  },
+};
+
+// Plugin loader for lazy loading
+export const PluginLoader = {
+  async load(pluginName: string) {
+    const { lazyLoadPlugin } = await import('./utils/bundle-optimization');
+    return lazyLoadPlugin(pluginName);
+  },
+};
 
 // Factory function to create i18n instance
-import { I18n } from './core/i18n';
+import { OptimizedI18n } from './core/i18n-optimized';
+import type { I18nConfig, I18nInstance } from './types';
 
 /**
- * Create a new i18n instance
+ * Create a new optimized i18n instance
+ * @param config - Configuration options
+ * @returns Configured i18n instance
  */
-export function createI18n(config) {
-  const instance = new I18n(config);
-  
+export function createI18n(config?: I18nConfig): I18nInstance {
+  const instance = new OptimizedI18n(config || {});
+
   // Auto-initialize if messages are provided
   if (config?.messages) {
     instance.init().catch(err => {
       console.error('Failed to initialize i18n:', err);
     });
   }
-  
+
   return instance;
 }
 
 /**
  * Global i18n instance for convenience
  */
-let globalI18n = null;
+let globalI18n: I18nInstance | null = null;
 
 /**
  * Get or create global i18n instance
  */
-export function useI18n(config) {
+export function useI18n(config?: I18nConfig): I18nInstance {
   if (!globalI18n) {
     globalI18n = createI18n(config);
   }
@@ -110,14 +170,14 @@ export function useI18n(config) {
 /**
  * Set global i18n instance
  */
-export function setGlobalI18n(instance) {
+export function setGlobalI18n(instance: I18nInstance): void {
   globalI18n = instance;
 }
 
 /**
  * Get global i18n instance (throws if not set)
  */
-export function getGlobalI18n() {
+export function getGlobalI18n(): I18nInstance {
   if (!globalI18n) {
     throw new Error('Global i18n instance not initialized. Call useI18n() or setGlobalI18n() first.');
   }
@@ -127,7 +187,7 @@ export function getGlobalI18n() {
 /**
  * Clear global i18n instance
  */
-export function clearGlobalI18n() {
+export function clearGlobalI18n(): void {
   if (globalI18n) {
     globalI18n.destroy();
     globalI18n = null;
@@ -137,15 +197,44 @@ export function clearGlobalI18n() {
 /**
  * Quick translation function using global instance
  */
-export function t(key, params) {
+export function t(key: MessageKey, params?: InterpolationParams): string {
   return useI18n().t(key, params);
 }
 
 /**
  * Version and build info
  */
-export const VERSION = '1.0.0';
+export const VERSION = '2.0.0';
 export const BUILD_DATE = new Date().toISOString();
 
+// Framework-specific adapters (lazy-loadable)
+export const Adapters = {
+  async vue() {
+    const module = await import('./adapters/vue');
+    return module;
+  },
+
+  // Future framework support
+  async react() {
+    throw new Error('React adapter not yet implemented');
+  },
+
+  async angular() {
+    throw new Error('Angular adapter not yet implemented');
+  },
+
+  async svelte() {
+    throw new Error('Svelte adapter not yet implemented');
+  },
+};
+
+// Performance utilities
+export { ObjectPool, FastCacheKeyBuilder } from './core/i18n-optimized';
+
+// Re-export types for convenience
+export type MessageKey = string;
+export type Locale = string;
+export type InterpolationParams = Record<string, any>;
+
 // Default export
-export default I18n;
+export default OptimizedI18n;

@@ -57,9 +57,10 @@ export class ImageProcessor {
   render(): void {
     if (!this.imageElement || !this.imageData) return
 
-    // Clear container
-    while (this.container.firstChild) {
-      this.container.removeChild(this.container.firstChild)
+    // Clear only the canvas element, not the entire container
+    const existingCanvas = this.container.querySelector('.cropper-canvas')
+    if (existingCanvas) {
+      this.container.removeChild(existingCanvas)
     }
 
     // Create image wrapper
@@ -70,21 +71,21 @@ export class ImageProcessor {
     const containerWidth = containerRect.width
     const containerHeight = containerRect.height
     
-    // Calculate the display size to cover the container (fill it completely)
+    // Calculate the display size to fit the container (contain mode)
     const imageAspect = this.imageData.naturalWidth / this.imageData.naturalHeight
     const containerAspect = containerWidth / containerHeight
     
     let displayWidth, displayHeight
     
-    // Use cover mode instead of contain mode
+    // Use contain mode to ensure the entire image is visible
     if (imageAspect > containerAspect) {
-      // Image is wider - fit height and let width overflow
-      displayHeight = containerHeight
-      displayWidth = containerHeight * imageAspect
-    } else {
-      // Image is taller - fit width and let height overflow
+      // Image is wider - fit width and adjust height
       displayWidth = containerWidth
       displayHeight = containerWidth / imageAspect
+    } else {
+      // Image is taller - fit height and adjust width
+      displayHeight = containerHeight
+      displayWidth = containerHeight * imageAspect
     }
     
     // Update image data with display dimensions
@@ -112,7 +113,15 @@ export class ImageProcessor {
     })
     
     wrapper.appendChild(this.imageElement)
-    this.container.appendChild(wrapper)
+    
+    // Insert canvas after background but before other elements
+    const bgElement = this.container.querySelector('.cropper-bg')
+    if (bgElement && bgElement.nextSibling) {
+      this.container.insertBefore(wrapper, bgElement.nextSibling)
+    } else {
+      this.container.appendChild(wrapper)
+    }
+    
     this.updateTransform()
   }
 

@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import path from 'path';
 
 export default defineConfig({
   server: {
@@ -11,4 +12,9 @@ export default defineConfig({
     force: true, // Force re-optimization of dependencies
   },
   cacheDir: 'node_modules/.vite-temp', // Use different cache directory
+  resolve: {
+    alias: {
+      '@ldesign/qrcode': path.resolve(__dirname, '../../dist/index.esm.js')
+    }
+  }
 });

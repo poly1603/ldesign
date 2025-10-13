@@ -18,6 +18,12 @@ export interface PDFViewerOptions {
   theme: 'light' | 'dark';
   locale: string;
   customToolbar?: ToolbarConfig;
+  // Enhanced loading options
+  corsProxy?: string;
+  loadTimeout?: number;
+  maxRetries?: number;
+  retryDelay?: number;
+  fallbackProxies?: string[];
 }
 
 export interface PDFViewerState {

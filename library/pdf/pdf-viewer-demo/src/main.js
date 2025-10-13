@@ -1,4 +1,5 @@
 import './style.css'
+import { samplePDFs, getReliableSamples, getPdfUrl, handlePdfError, fallbackPDFs } from './pdfSamples.js'
 
 // 模拟 UniversalPDFViewer 插件（实际使用时从构建后的插件导入）
 // import UniversalPDFViewer from '../../../dist/pdf-viewer.js'
@@ -260,8 +261,23 @@ class UniversalPDFViewer {
       this.showStatus('正在加载 PDF...');
       this.emit('loading', { url });
       
-      const loadingTask = window.pdfjsLib.getDocument(url);
-      this.pdfDoc = await loadingTask.promise;
+      // 尝试直接加载
+      let loadingTask;
+      try {
+        loadingTask = window.pdfjsLib.getDocument(url);
+        this.pdfDoc = await loadingTask.promise;
+      } catch (error) {
+        // 如果失败，尝试使用CORS代理
+        if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+          console.log('尝试使用CORS代理...');
+          const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
+          loadingTask = window.pdfjsLib.getDocument(proxyUrl);
+          this.pdfDoc = await loadingTask.promise;
+        } else {
+          throw error;
+        }
+      }
+      
       this.totalPages = this.pdfDoc.numPages;
       
       // 更新页数显示
@@ -331,6 +347,10 @@ class UniversalPDFViewer {
       
       const ctx = canvas.getContext('2d');
       
+      // 设置高质量渲染
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
       // Draw loading indicator
       ctx.fillStyle = '#f0f0f0';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -341,7 +361,8 @@ class UniversalPDFViewer {
       
       const renderContext = {
         canvasContext: ctx,
-        viewport: viewport
+        viewport: viewport,
+        intent: 'display'
       };
       
       await page.render(renderContext).promise;
@@ -466,17 +487,19 @@ class UniversalPDFViewer {
     }, 100);
   }
 
-  zoomIn() {
+  async zoomIn() {
     this.scale = Math.min(this.scale * 1.2, 5.0);
     this.updateZoomDisplay();
-    this.queueRenderPage(this.currentPage);
+    await this.renderAllPages();
+    await this.generateThumbnails();
     this.logEvent(`放大到 ${Math.round(this.scale * 100)}%`);
   }
 
-  zoomOut() {
+  async zoomOut() {
     this.scale = Math.max(this.scale * 0.8, 0.25);
     this.updateZoomDisplay();
-    this.queueRenderPage(this.currentPage);
+    await this.renderAllPages();
+    await this.generateThumbnails();
     this.logEvent(`缩小到 ${Math.round(this.scale * 100)}%`);
   }
 
@@ -486,22 +509,48 @@ class UniversalPDFViewer {
     this.queueRenderPage(this.currentPage);
   }
 
-  fitToWidth() {
+  async fitToWidth() {
     if (!this.pdfDoc) return;
-    // 简化实现
-    this.scale = 1.0;
-    this.updateZoomDisplay();
-    this.queueRenderPage(this.currentPage);
-    this.logEvent('适应宽度');
+    
+    try {
+      const page = await this.pdfDoc.getPage(this.currentPage);
+      const viewport = page.getViewport({ scale: 1.0 });
+      const containerWidth = this.contentContainer.clientWidth - 64; // 减去 padding
+      
+      this.scale = containerWidth / viewport.width;
+      this.scale = Math.min(Math.max(this.scale, 0.25), 5.0); // 限制缩放范围
+      
+      this.updateZoomDisplay();
+      await this.renderAllPages();
+      await this.generateThumbnails();
+      this.logEvent('适应宽度');
+    } catch (error) {
+      console.error('fitToWidth 失败:', error);
+    }
   }
 
-  fitToPage() {
+  async fitToPage() {
     if (!this.pdfDoc) return;
-    // 简化实现
-    this.scale = 0.8;
-    this.updateZoomDisplay();
-    this.queueRenderPage(this.currentPage);
-    this.logEvent('适应页面');
+    
+    try {
+      const page = await this.pdfDoc.getPage(this.currentPage);
+      const viewport = page.getViewport({ scale: 1.0 });
+      const containerWidth = this.contentContainer.clientWidth - 64;
+      const containerHeight = this.contentContainer.clientHeight - 64;
+      
+      const scaleWidth = containerWidth / viewport.width;
+      const scaleHeight = containerHeight / viewport.height;
+      
+      this.scale = Math.min(scaleWidth, scaleHeight);
+      this.scale = Math.min(Math.max(this.scale, 0.25), 5.0); // 限制缩放范围
+      
+      this.updateZoomDisplay();
+      await this.renderAllPages();
+      await this.generateThumbnails();
+      this.logEvent('适应页面');
+    } catch (error) {
+      console.error('fitToPage 失败:', error);
+    }
   }
 
   rotate() {
@@ -546,6 +595,37 @@ class UniversalPDFViewer {
     const status = this.container.querySelector('#pdfStatus');
     if (status) {
       status.style.display = 'none';
+    }
+  }
+
+  showErrorMessage(url, error) {
+    const suggestions = handlePdfError(url, error);
+    const container = this.contentContainer || this.container;
+    
+    if (container) {
+      const errorHtml = `
+        <div class="pdf-error-container" style="padding: 2rem; text-align: center;">
+          <h3 style="color: #d32f2f;">加载 PDF 失败</h3>
+          <p style="color: #666; margin: 1rem 0;">${error.message}</p>
+          <div class="suggestions" style="margin-top: 1.5rem;">
+            <p style="font-weight: bold; margin-bottom: 1rem;">建议：</p>
+            ${suggestions.map(s => `<p style="margin: 0.5rem 0;">${s}</p>`).join('')}
+          </div>
+          <div class="fallback-options" style="margin-top: 2rem;">
+            <p style="margin-bottom: 1rem;">尝试加载备用 PDF：</p>
+            <div class="fallback-buttons" style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+              ${fallbackPDFs.slice(0, 3).map(pdf => `
+                <button class="btn-primary" onclick="loadPDFUrl('${pdf.url}')" 
+                  style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                  ${pdf.name}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+      
+      container.innerHTML = errorHtml;
     }
   }
 
@@ -721,19 +801,120 @@ class UniversalPDFViewer {
 // 初始化应用
 let pdfViewer = null;
 
-// 示例 PDF URLs
+// 示例 PDF URLs - 包含各种类型的PDF文档
 const samplePDFs = [
-  'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/examples/learning/helloworld.pdf',
-  'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 
-  'https://www.africau.edu/images/default/sample.pdf'
+  // Mozilla PDF.js 官方示例
+  {
+    name: 'PDF.js 示例文档',
+    url: 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/examples/learning/helloworld.pdf',
+    description: '简单的Hello World PDF',
+    pages: 1
+  },
+  // PDF.js 测试文档
+  {
+    name: 'PDF 测试文档',
+    url: 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf',
+    description: '多页文档，包含图表和文本',
+    pages: 14
+  },
+  // 学术论文示例
+  {
+    name: '压缩感知介绍 (英文)',
+    url: 'https://www.math.umd.edu/~rdevore/publications/EA4.pdf',
+    description: '学术论文，包含数学公式和图表'
+  },
+  // Web技术文档
+  {
+    name: 'JavaScript 指南 (MDN)',
+    url: 'https://media.readthedocs.org/pdf/javascript-tutorial/latest/javascript-tutorial.pdf',
+    description: '编程教程，代码示例'
+  },
+  // 图文混排示例
+  {
+    name: 'Lorem Ipsum 示例',
+    url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    description: '图文混排测试文档'
+  },
+  // NASA技术文档
+  {
+    name: 'NASA 系统工程手册',
+    url: 'https://www.nasa.gov/sites/default/files/atoms/files/nasa_systems_engineering_handbook_0.pdf',
+    description: '专业技术文档，图表丰富'
+  },
+  // 开源书籍
+  {
+    name: 'Eloquent JavaScript (编程书籍)',
+    url: 'https://eloquentjavascript.net/Eloquent_JavaScript.pdf',
+    description: '完整编程书籍，代码和插图'
+  },
+  // 数据可视化示例
+  {
+    name: 'D3.js 教程文档',
+    url: 'https://uwdata.github.io/visualization-curriculum/pdfs/d3-intro.pdf',
+    description: '数据可视化，包含图表'
+  },
+  // 设计类文档
+  {
+    name: 'Material Design 指南',
+    url: 'https://material.io/archive/guidelines/assets/0B0J8hsRkk91LRjJCNmpWUGdtbG8/material-design-introduction.pdf',
+    description: '设计规范，大量配图'
+  },
+  // 技术规范
+  {
+    name: 'HTTP/2 规范文档',
+    url: 'https://http2.github.io/http2-spec/http2-spec.pdf',
+    description: '技术规范，包含流程图'
+  },
+  // 机器学习文档
+  {
+    name: '深度学习入门',
+    url: 'https://www.deeplearningbook.org/contents/intro.pdf',
+    description: '机器学习教材节选'
+  },
+  // 备用示例PDF
+  {
+    name: 'PDF 测试文档 (W3C)',
+    url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    description: '标准测试文档'
+  },
+  {
+    name: 'Canvas API 教程',
+    url: 'https://raw.githubusercontent.com/willianjusten/awesome-canvas/master/canvas.pdf',
+    description: 'HTML5 Canvas 编程'
+  },
+  {
+    name: '简单多页PDF',
+    url: 'https://css4.pub/2017/newsletter/drylab.pdf',
+    description: '基础多页文档测试'
+  },
+  {
+    name: 'React 入门指南',  
+    url: 'https://legacy.gitbook.com/download/pdf/book/mongkuen/react',
+    description: 'React框架基础教程'
+  },
+  {
+    name: '响应式设计示例',
+    url: 'https://msu.edu/~urban/sme865/resources/responsive_web_design.pdf',
+    description: '网页设计最佳实践'
+  }
 ];
 
 // 全局函数，供 HTML 中的按钮调用
 window.loadSamplePDF = function(index) {
-  const url = samplePDFs[index - 1];
-  if (url) {
-    loadPDFUrl(url);
+  const pdf = samplePDFs[index - 1];
+  if (pdf && pdf.url) {
+    loadPDFUrl(pdf.url);
+    // 更新选择器
+    const pdfSelect = document.getElementById('pdfSelect');
+    if (pdfSelect) {
+      pdfSelect.value = pdf.url;
+    }
   }
+};
+
+// 按名称加载PDF
+window.loadSamplePDFByName = function(url) {
+  loadPDFUrl(url);
 };
 
 // 页面加载完成后初始化
@@ -743,10 +924,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // 填充示例 PDF 选择器
   const pdfSelect = document.getElementById('pdfSelect');
   if (pdfSelect) {
-    pdfSelect.options[1].value = samplePDFs[0];
-    pdfSelect.options[2].value = samplePDFs[1];
-    pdfSelect.options[3].value = samplePDFs[2];
+    // 清空现有选项
+    pdfSelect.innerHTML = '<option value="">选择一个PDF文件...</option>';
+    
+    // 添加所有示例PDF
+    samplePDFs.forEach((pdf, index) => {
+      const option = document.createElement('option');
+      option.value = pdf.url;
+      option.textContent = `${pdf.name} - ${pdf.description}`;
+      pdfSelect.appendChild(option);
+    });
   }
+  
+  // 更新占位符中的按钮
+  updatePlaceholderButtons();
 });
 
 function setupDemoControls() {
@@ -815,34 +1006,68 @@ function setupDemoControls() {
   });
 }
 
-window.loadPDFUrl = function(url) {
-  // 销毁现有查看器
-  if (pdfViewer) {
-    pdfViewer.destroy();
+window.loadPDFUrl = async function(url) {
+  try {
+    // 销毁现有查看器
+    if (pdfViewer) {
+      pdfViewer.destroy();
+    }
+    
+    // 显示加载提示
+    const container = document.querySelector('#pdfViewerContainer');
+    if (container) {
+      container.innerHTML = '<div class="placeholder"><div class="placeholder-content"><h3>正在加载 PDF...</h3><p>' + url + '</p></div></div>';
+    }
+    
+    // 创建新查看器
+    pdfViewer = new UniversalPDFViewer({
+      container: '#pdfViewerContainer',
+      pdfUrl: url,
+      height: '700px',  // 可设置固定高度
+      maxHeight: '85vh', // 最大高度限制
+      theme: document.body.getAttribute('data-theme') || 'light',
+      defaultScale: 1.0,
+      enableToolbar: document.getElementById('showToolbar')?.checked,
+      enableSearch: document.getElementById('enableSearch')?.checked,
+      enablePrint: document.getElementById('enablePrint')?.checked,
+      enableDownload: document.getElementById('enableDownload')?.checked
+    });
+    
+    // 监听事件
+    pdfViewer.on('loaded', (data) => {
+      console.log('PDF loaded:', data);
+      logToEventLog(`PDF 加载成功: ${data.totalPages} 页`, 'success');
+    });
+    
+    pdfViewer.on('error', (error) => {
+      console.error('PDF loading error:', error);
+      logToEventLog(`PDF 加载失败: ${error.message}`, 'error');
+      
+      // 显示错误信息
+      if (container) {
+        container.innerHTML = `
+          <div class="placeholder">
+            <div class="placeholder-content">
+              <h3>❌ PDF 加载失败</h3>
+              <p style="color: #e74c3c;">${error.message}</p>
+              <p>请尝试其他示例文档或检查URL</p>
+              <div class="sample-buttons">
+                <button onclick="loadSamplePDF(1)" class="btn-primary">加载示例 1</button>
+                <button onclick="loadSamplePDF(4)" class="btn-primary">加载示例 4</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    });
+    
+    pdfViewer.on('pageChanged', (data) => {
+      console.log('Page changed:', data);
+    });
+  } catch (error) {
+    console.error('加载 PDF 失败:', error);
+    logToEventLog(`加载失败: ${error.message}`, 'error');
   }
-  
-  // 创建新查看器
-  pdfViewer = new UniversalPDFViewer({
-    container: '#pdfViewerContainer',
-    pdfUrl: url,
-    height: '700px',  // 可设置固定高度
-    maxHeight: '85vh', // 最大高度限制
-    theme: document.body.getAttribute('data-theme') || 'light',
-    defaultScale: 1.0,
-    enableToolbar: document.getElementById('showToolbar')?.checked,
-    enableSearch: document.getElementById('enableSearch')?.checked,
-    enablePrint: document.getElementById('enablePrint')?.checked,
-    enableDownload: document.getElementById('enableDownload')?.checked
-  });
-  
-  // 监听事件
-  pdfViewer.on('loaded', (data) => {
-    console.log('PDF loaded:', data);
-  });
-  
-  pdfViewer.on('pageChanged', (data) => {
-    console.log('Page changed:', data);
-  });
 }
 
 function loadPDFFile(file) {
@@ -890,6 +1115,66 @@ function applyTheme(theme) {
       btn.classList.add('active');
     }
   });
+}
+
+// 记录到事件日志
+function logToEventLog(message, type = 'info') {
+  const eventLog = document.querySelector('#eventLog');
+  if (eventLog) {
+    const entry = document.createElement('div');
+    entry.className = `log-entry log-${type}`;
+    const time = new Date().toLocaleTimeString();
+    entry.innerHTML = `<span style="color: #999;">[${time}]</span> ${message}`;
+    eventLog.appendChild(entry);
+    eventLog.scrollTop = eventLog.scrollHeight;
+    
+    // 限制日志数量
+    const entries = eventLog.querySelectorAll('.log-entry');
+    if (entries.length > 50) {
+      entries[0].remove();
+    }
+  }
+}
+
+// 更新占位符中的示例按钮
+function updatePlaceholderButtons() {
+  const placeholder = document.querySelector('.placeholder-content');
+  if (!placeholder) return;
+  
+  // 找到或创建按钮容器
+  let buttonsContainer = placeholder.querySelector('.sample-buttons');
+  if (!buttonsContainer) {
+    buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'sample-buttons';
+    placeholder.appendChild(buttonsContainer);
+  }
+  
+  // 清空并重新添加按钮
+  buttonsContainer.innerHTML = '';
+  
+  // 只显示前5个示例作为快速访问按钮
+  const maxButtons = Math.min(5, samplePDFs.length);
+  for (let i = 0; i < maxButtons; i++) {
+    const pdf = samplePDFs[i];
+    const button = document.createElement('button');
+    button.className = 'btn-primary';
+    button.textContent = pdf.name;
+    button.title = pdf.description;
+    button.onclick = () => loadSamplePDFByName(pdf.url);
+    button.style.margin = '0.25rem';
+    button.style.fontSize = '0.85rem';
+    buttonsContainer.appendChild(button);
+  }
+  
+  // 添加更多选项提示
+  if (samplePDFs.length > maxButtons) {
+    const moreText = document.createElement('p');
+    moreText.style.marginTop = '1rem';
+    moreText.style.fontSize = '0.9rem';
+    moreText.style.color = '#666';
+    moreText.textContent = `更多示例请使用左侧选择器 (共${samplePDFs.length}个示例)`;
+    buttonsContainer.appendChild(moreText);
+  }
 }
 
 // 导出全局变量供控制台调试

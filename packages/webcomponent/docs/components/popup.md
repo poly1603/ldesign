@@ -187,6 +187,161 @@
 </ldesign-popup>
 ```
 
+## 自动关闭
+
+通过 `auto-close-delay` 属性可以设置弹层自动关闭的延迟时间。
+
+<div class="demo-container">
+  <ldesign-popup content="3秒后自动关闭" auto-close-delay="3000" trigger="click">
+    <ldesign-button slot="trigger">自动关闭</ldesign-button>
+  </ldesign-popup>
+</div>
+
+```html
+<ldesign-popup content="3秒后自动关闭" auto-close-delay="3000" trigger="click">
+  <ldesign-button slot="trigger">自动关闭</ldesign-button>
+</ldesign-popup>
+```
+
+## 可关闭按钮
+
+通过 `closable` 属性显示关闭按钮，常用于有标题的弹层。
+
+<div class="demo-container">
+  <ldesign-popup popup-title="消息提示" content="点击右上角的关闭按钮可以关闭弹层" closable trigger="click">
+    <ldesign-button slot="trigger">显示关闭按钮</ldesign-button>
+  </ldesign-popup>
+</div>
+
+```html
+<ldesign-popup popup-title="消息提示" content="点击右上角的关闭按钮可以关闭弹层" closable trigger="click">
+  <ldesign-button slot="trigger">显示关闭按钮</ldesign-button>
+</ldesign-popup>
+```
+
+## 加载状态
+
+通过 `loading` 属性显示加载状态。
+
+<div class="demo-container">
+  <ldesign-popup loading trigger="click">
+    <ldesign-button slot="trigger">加载中</ldesign-button>
+  </ldesign-popup>
+</div>
+
+```html
+<ldesign-popup loading trigger="click">
+  <ldesign-button slot="trigger">加载中</ldesign-button>
+</ldesign-popup>
+```
+
+## 预设尺寸
+
+通过 `size` 属性设置预设尺寸：`small`、`medium`（默认）、`large`。
+
+<div class="demo-container">
+  <div class="demo-row" style="display:flex; gap:16px; flex-wrap:wrap;">
+    <ldesign-popup content="小尺寸弹层" size="small">
+      <ldesign-button slot="trigger">Small</ldesign-button>
+    </ldesign-popup>
+    <ldesign-popup content="默认中等尺寸弹层，内容适中">
+      <ldesign-button slot="trigger">Medium</ldesign-button>
+    </ldesign-popup>
+    <ldesign-popup content="大尺寸弹层，可以容纳更多内容。这个弹层有更大的宽度和更大的字体。" size="large">
+      <ldesign-button slot="trigger">Large</ldesign-button>
+    </ldesign-popup>
+  </div>
+</div>
+
+```html
+<ldesign-popup content="小尺寸弹层" size="small">
+  <ldesign-button slot="trigger">Small</ldesign-button>
+</ldesign-popup>
+
+<ldesign-popup content="默认中等尺寸弹层" size="medium">
+  <ldesign-button slot="trigger">Medium</ldesign-button>
+</ldesign-popup>
+
+<ldesign-popup content="大尺寸弹层" size="large">
+  <ldesign-button slot="trigger">Large</ldesign-button>
+</ldesign-popup>
+```
+
+## 动画类型
+
+通过 `animation` 属性设置不同的动画效果：`fade`、`scale`（默认）、`slide`。
+
+<div class="demo-container">
+  <div class="demo-row" style="display:flex; gap:16px; flex-wrap:wrap;">
+    <ldesign-popup content="淡入淡出效果" animation="fade" trigger="click">
+      <ldesign-button slot="trigger">Fade</ldesign-button>
+    </ldesign-popup>
+    <ldesign-popup content="缩放效果" animation="scale" trigger="click">
+      <ldesign-button slot="trigger">Scale</ldesign-button>
+    </ldesign-popup>
+    <ldesign-popup content="滑动效果" animation="slide" trigger="click">
+      <ldesign-button slot="trigger">Slide</ldesign-button>
+    </ldesign-popup>
+  </div>
+</div>
+
+```html
+<ldesign-popup content="淡入淡出效果" animation="fade" trigger="click">
+  <ldesign-button slot="trigger">Fade</ldesign-button>
+</ldesign-popup>
+
+<ldesign-popup content="缩放效果" animation="scale" trigger="click">
+  <ldesign-button slot="trigger">Scale</ldesign-button>
+</ldesign-popup>
+
+<ldesign-popup content="滑动效果" animation="slide" trigger="click">
+  <ldesign-button slot="trigger">Slide</ldesign-button>
+</ldesign-popup>
+```
+
+## 自定义类名
+
+通过 `popup-class` 属性为弹层添加自定义样式类。
+
+<div class="demo-container">
+  <ldesign-popup content="自定义样式的弹层" popup-class="my-custom-popup" trigger="click">
+    <ldesign-button slot="trigger">自定义样式</ldesign-button>
+  </ldesign-popup>
+</div>
+
+<style>
+.my-custom-popup {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  color: white !important;
+  box-shadow: 0 10px 30px rgba(103, 75, 162, 0.3) !important;
+}
+.my-custom-popup .ldesign-popup__body,
+.my-custom-popup .ldesign-popup__title {
+  color: white !important;
+}
+</style>
+
+```html
+<!-- 在你的 CSS 文件中定义自定义样式 -->
+<style>
+  .my-custom-popup {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: 0 10px 30px rgba(103, 75, 162, 0.3) !important;
+  }
+  .my-custom-popup .ldesign-popup__body,
+  .my-custom-popup .ldesign-popup__title {
+    color: white !important;
+  }
+</style>
+
+<ldesign-popup content="自定义样式的弹层" popup-class="my-custom-popup" trigger="click">
+  <ldesign-button slot="trigger">自定义样式</ldesign-button>
+</ldesign-popup>
+```
+
 ## 交互内容（可悬停在浮层上）
 
 默认情况下，hover 模式可以把鼠标移入弹出层继续交互（interactive=true）。为了更平滑地从触发器移动到浮层，建议设置一个小的 `hide-delay`（150–300ms）。
@@ -251,53 +406,26 @@ Popup 支持内置的浅色（默认）与深色主题，通过 `theme` 设置�
 通过 `trigger="manual"` 与 `visible` 属性，可以完全由代码控制显示/隐藏。
 
 <div class="demo-container">
-  <ldesign-button id="btn-open" style="margin-right: 8px;">打开</ldesign-button>
-  <ldesign-button id="btn-close" type="outline">关闭</ldesign-button>
+  <ldesign-button onclick="document.getElementById('popup-manual').visible = true" style="margin-right: 8px;">打开</ldesign-button>
+  <ldesign-button onclick="document.getElementById('popup-manual').visible = false" type="outline">关闭</ldesign-button>
   <ldesign-popup id="popup-manual" trigger="manual" content="由代码控制的弹出层">
     <ldesign-button slot="trigger">手动控制</ldesign-button>
   </ldesign-popup>
 </div>
 
-<script setup>
-import { onMounted, onUnmounted } from 'vue'
-
-let eventListeners = []
-
-function addEventListenerSafe(el, evt, handler) {
-  if (el) {
-    el.addEventListener(evt, handler)
-    eventListeners.push({ el, evt, handler })
-  }
-}
-
-function cleanup() {
-  eventListeners.forEach(({ el, evt, handler }) => el.removeEventListener(evt, handler))
-  eventListeners = []
-}
-
-onMounted(() => {
-  cleanup()
-  const popup = document.getElementById('popup-manual')
-  const openBtn = document.getElementById('btn-open')
-  const closeBtn = document.getElementById('btn-close')
-
-  if (openBtn && popup) addEventListenerSafe(openBtn, 'click', () => { popup.visible = true })
-  if (closeBtn && popup) addEventListenerSafe(closeBtn, 'click', () => { popup.visible = false })
-})
-
-onUnmounted(() => cleanup())
-</script>
-
 ```html
+<ldesign-button id="btn-open">打开</ldesign-button>
+<ldesign-button id="btn-close">关闭</ldesign-button>
 <ldesign-popup id="popup-manual" trigger="manual" content="由代码控制的弹出层">
   <ldesign-button slot="trigger">手动控制</ldesign-button>
 </ldesign-popup>
+```
 
-<script>
-  const p = document.getElementById('popup-manual');
-  document.getElementById('btn-open').onclick = () => p.visible = true;
-  document.getElementById('btn-close').onclick = () => p.visible = false;
-</script>
+```javascript
+// JavaScript 控制代码
+const popup = document.getElementById('popup-manual');
+document.getElementById('btn-open').onclick = () => popup.visible = true;
+document.getElementById('btn-close').onclick = () => popup.visible = false;
 ```
 
 ## 键盘与外部点击关闭
@@ -362,25 +490,31 @@ Popup 与 Modal / Drawer 共享 Overlay 令牌中的层级控制，默认使用�
 
 ### 属性
 
-||| 属性名 | 类型 | 默认值 | 说明 |
-|||--------|------|--------|------|
-||| `visible` | `boolean` | `false` | 是否显示弹出层 |
-||| `placement` | `PopupPlacement` | `'bottom'` | 弹出位置 |
-||| `trigger` | `'hover' \| 'click' \| 'focus' \| 'manual' \| 'contextmenu'` | `'hover'` | 触发方式 |
-||| `interactive` | `boolean` | `true` | hover 触发时，鼠标移入弹出层是否保持打开 |
-||| `close-on-outside` | `boolean` | `true` | 是否点击浮层外关闭（常用于 click 触发） |
-||| `close-on-esc` | `boolean` | `true` | 是否支持 Esc 键关闭 |
-||| `content` | `string` | - | 弹出层内容 |
-||| `popup-title` | `string` | - | 弹出层标题 |
-||| `offset-distance` | `number` | `8` | 与触发元素的距离；当 `arrow=true` 时表示“到箭头尖端”的距离，`arrow=false` 时表示“到弹层边缘”的距离 |
-||| `disabled` | `boolean` | `false` | 是否禁用 |
-||| `arrow` | `boolean` | `true` | 是否显示箭头 |
-||| `lock-on-scroll` | `boolean` | `false` | 滚动时锁定位置（不随滚动重新定位） |
-||| `width` | `number \\| string` | - | 弹出层宽度 |
-||| `max-width` | `number \| string` | - | 最大宽度 |
-||| `theme` | `'light' \| 'dark'` | `'light'` | 主题风格（浅色/深色） |
-||| `show-delay` | `number` | `0` | 延迟显示时间（毫秒） |
-||| `hide-delay` | `number` | `0` | 延迟隐藏时间（毫秒） |
+|| 属性名 | 类型 | 默认值 | 说明 |
+||--------|------|--------|------|
+|| `visible` | `boolean` | `false` | 是否显示弹出层 |
+|| `placement` | `PopupPlacement` | `'bottom'` | 弹出位置 |
+|| `trigger` | `'hover' \| 'click' \| 'focus' \| 'manual' \| 'contextmenu'` | `'hover'` | 触发方式 |
+|| `interactive` | `boolean` | `true` | hover 触发时，鼠标移入弹出层是否保持打开 |
+|| `close-on-outside` | `boolean` | `true` | 是否点击浮层外关闭（常用于 click 触发） |
+|| `close-on-esc` | `boolean` | `true` | 是否支持 Esc 键关闭 |
+|| `content` | `string` | - | 弹出层内容 |
+|| `popup-title` | `string` | - | 弹出层标题 |
+|| `offset-distance` | `number` | `8` | 与触发元素的距离；当 `arrow=true` 时表示"到箭头尖端"的距离，`arrow=false` 时表示"到弹层边缘"的距离 |
+|| `disabled` | `boolean` | `false` | 是否禁用 |
+|| `arrow` | `boolean` | `true` | 是否显示箭头 |
+|| `lock-on-scroll` | `boolean` | `false` | 滚动时锁定位置（不随滚动重新定位） |
+|| `width` | `number \| string` | - | 弹出层宽度 |
+|| `max-width` | `number \| string` | - | 最大宽度 |
+|| `theme` | `'light' \| 'dark'` | `'light'` | 主题风格（浅色/深色） |
+|| `show-delay` | `number` | `0` | 延迟显示时间（毫秒） |
+|| `hide-delay` | `number` | `0` | 延迟隐藏时间（毫秒） |
+|| `auto-close-delay` | `number` | `0` | 自动关闭延迟（毫秒），0 表示不自动关闭 |
+|| `closable` | `boolean` | `false` | 是否显示关闭按钮 |
+|| `loading` | `boolean` | `false` | 是否显示加载状态 |
+|| `popup-class` | `string` | - | 自定义弹层类名 |
+|| `size` | `'small' \| 'medium' \| 'large'` | - | 预设尺寸 |
+|| `animation` | `'fade' \| 'scale' \| 'slide'` | `'scale'` | 动画类型 |
 
 ### 事件
 

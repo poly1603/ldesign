@@ -4,6 +4,8 @@ import { computePosition, flip, shift, offset, arrow, autoUpdate, Placement, Vir
 // Public types
 export type PopupTrigger = 'hover' | 'click' | 'focus' | 'manual' | 'contextmenu';
 export type PopupPlacement = Placement;
+export type PopupSize = 'small' | 'medium' | 'large';
+export type PopupAnimation = 'fade' | 'scale' | 'slide';
 
 /**
  * ldesign-popup（重写版）
@@ -49,8 +51,20 @@ export class LdesignPopup {
   @Prop({ reflect: true }) motionEnabled: boolean = true;
   /** 动画时长（ms） */
   @Prop() motionDuration: number = 200;
-  /** 动画位移距离（px），用于“朝触发器靠近”的起始位移 */
+  /** 动画位移距离（px），用于"朝触发器靠近"的起始位移 */
   @Prop() motionDistance: number = 10;
+  /** 自动关闭延迟（ms），0表示不自动关闭 */
+  @Prop() autoCloseDelay: number = 0;
+  /** 是否显示关闭按钮 */
+  @Prop() closable: boolean = false;
+  /** 加载状态 */
+  @Prop() loading: boolean = false;
+  /** 自定义弹层类名 */
+  @Prop() popupClass?: string;
+  /** 预设尺寸 */
+  @Prop() size?: PopupSize;
+  /** 动画类型 */
+  @Prop() animation: PopupAnimation = 'scale';
 
   // ── State ──────────────────────────────────────────────────────
   @State() isVisible: boolean = false;
@@ -71,6 +85,7 @@ export class LdesignPopup {
   private showTimer?: number;
   private hideTimer?: number;
   private contentHoverBound = false;
+  private autoCloseTimer?: number;
 
   // ── Events ─────────────────────────────────────────────────────
   @Event() ldesignVisibleChange: EventEmitter<boolean>;
@@ -102,6 +117,7 @@ export class LdesignPopup {
   disconnectedCallback() {
     this.cleanup?.();
     this.clearTimers();
+    this.clearAutoCloseTimer();
     this.unbindTriggerEvents();
     this.unbindDocumentEvents();
     this.removeFromContainerIfNeeded();
@@ -230,6 +246,7 @@ export class LdesignPopup {
   };
   private onFocus = () => this.show();
   private onBlur = () => this.hide();
+  private onCloseClick = () => this.hide();
 
   // ── Helpers ────────────────────────────────────────────────────
   private nextFrame(): Promise<void> { return new Promise(r => requestAnimationFrame(() => r())); }
@@ -384,6 +401,7 @@ export class LdesignPopup {
       await this.updatePosition();
       await this.playOpenMotion();
       this.bindContentHoverIfNeeded();
+      this.setupAutoClose();
       this.ldesignVisibleChange.emit(true);
     };
     if (delay) this.showTimer = window.setTimeout(run, delay); else run();
@@ -395,6 +413,7 @@ export class LdesignPopup {
       this.motion = 'closed';
       this.cleanup?.();
       this.unbindContentHover();
+      this.clearAutoCloseTimer();
       this.contextVirtualRef = undefined;
       this.removeFromContainerIfNeeded();
       this.ldesignVisibleChange.emit(false);
@@ -448,6 +467,20 @@ export class LdesignPopup {
   }
 
   private clearTimers() { if (this.showTimer) { clearTimeout(this.showTimer); this.showTimer = undefined; } if (this.hideTimer) { clearTimeout(this.hideTimer); this.hideTimer = undefined; } }
+  
+  private setupAutoClose() {
+    if (this.autoCloseDelay > 0) {
+      this.clearAutoCloseTimer();
+      this.autoCloseTimer = window.setTimeout(() => this.hide(), this.autoCloseDelay);
+    }
+  }
+  
+  private clearAutoCloseTimer() {
+    if (this.autoCloseTimer) {
+      clearTimeout(this.autoCloseTimer);
+      this.autoCloseTimer = undefined;
+    }
+  }
 
   // ── Content hover ──────────────────────────────────────────────
   private bindContentHoverIfNeeded() {
@@ -470,9 +503,27 @@ export class LdesignPopup {
     const style: any = { position: this.getStrategy(), visibility: this.positioned ? 'visible' : 'hidden' };
     const w = this.toPx(this.width); if (w) style.width = w;
     const mw = this.toPx(this.maxWidth); if (mw) style.maxWidth = mw;
+    
+    // 预设尺寸
+    if (this.size === 'small') {
+      style.minWidth = '80px';
+      style.maxWidth = '240px';
+    } else if (this.size === 'large') {
+      style.minWidth = '200px';
+      style.maxWidth = '480px';
+    }
+    
     style['--ldp-motion'] = this.motionEnabled ? `${this.motionDuration}ms` : '0ms';
     style['--ldp-motion-distance'] = `${this.motionDistance}px`;
     return style;
+  }
+  
+  private getPopupClasses() {
+    const classes = ['ldesign-popup__content'];
+    if (this.popupClass) classes.push(this.popupClass);
+    if (this.animation && this.motionEnabled) classes.push(`ldesign-popup__content--${this.animation}`);
+    if (this.size) classes.push(`ldesign-popup__content--${this.size}`);
+    return classes.join(' ');
   }
 
   render() {
@@ -480,11 +531,31 @@ export class LdesignPopup {
       <Host class={{ 'ldesign-popup': true, 'ldesign-popup--disabled': this.disabled, 'ldesign-popup--dark': this.theme === 'dark' }}>
         <div class="ldesign-popup__trigger"><slot name="trigger" /></div>
         {this.isVisible && (
-          <div id={this.uid} class="ldesign-popup__content" data-state={this.motionEnabled ? this.motion : 'open'} style={this.getPopupStyle()} role={this.popupRole} aria-hidden={!this.isVisible}>
+          <div id={this.uid} class={this.getPopupClasses()} data-state={this.motionEnabled ? this.motion : 'open'} style={this.getPopupStyle()} role={this.popupRole} aria-hidden={!this.isVisible}>
             {this.arrow && (<div class="ldesign-popup__arrow"></div>)}
             <div class="ldesign-popup__inner">
-              {this.popupTitle && (<div class="ldesign-popup__title">{this.popupTitle}</div>)}
-              <div class="ldesign-popup__body">{this.content ? (<div innerHTML={this.content}></div>) : (<slot />)}</div>
+              {this.popupTitle && (<div class="ldesign-popup__title">
+                {this.popupTitle}
+                {this.closable && (
+                  <button class="ldesign-popup__close" onClick={this.onCloseClick} aria-label="关闭">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    </svg>
+                  </button>
+                )}
+              </div>)}
+              <div class="ldesign-popup__body">
+                {this.loading ? (
+                  <div class="ldesign-popup__loading">
+                    <div class="ldesign-popup__spinner"></div>
+                    <span>加载中...</span>
+                  </div>
+                ) : this.content ? (
+                  <div innerHTML={this.content}></div>
+                ) : (
+                  <slot />
+                )}
+              </div>
             </div>
           </div>
         )}

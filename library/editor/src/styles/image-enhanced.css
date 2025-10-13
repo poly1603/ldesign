@@ -1,0 +1,389 @@
+/**
+ * 增强版图片样式
+ * 支持拖动调整大小、文本环绕、对齐等功能
+ */
+
+/* 图片包装器 */
+.ldesign-image-wrapper {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  margin: 0;
+  vertical-align: top;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+
+.ldesign-image-wrapper img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  user-drag: none;
+  -webkit-user-drag: none;
+}
+
+/* 激活状态 */
+.ldesign-image-wrapper.active {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* 调整大小手柄 */
+.ldesign-image-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #3b82f6;
+  border: 2px solid #fff;
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* 激活时显示手柄 */
+.ldesign-image-wrapper.active .ldesign-image-handle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 调整大小时的手柄样式 */
+.ldesign-image-wrapper.resizing .ldesign-image-handle {
+  opacity: 1 !important;
+}
+
+/* 手柄位置 */
+.ldesign-image-handle-nw {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+
+.ldesign-image-handle-ne {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+
+.ldesign-image-handle-sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+
+.ldesign-image-handle-se {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+
+.ldesign-image-handle-n {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: n-resize;
+}
+
+.ldesign-image-handle-s {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: s-resize;
+}
+
+.ldesign-image-handle-e {
+  top: 50%;
+  right: -5px;
+  transform: translateY(-50%);
+  cursor: e-resize;
+}
+
+.ldesign-image-handle-w {
+  top: 50%;
+  left: -5px;
+  transform: translateY(-50%);
+  cursor: w-resize;
+}
+
+/* 手柄悬停效果 */
+.ldesign-image-handle:hover {
+  transform: scale(1.2);
+  background: #2563eb;
+}
+
+.ldesign-image-handle-n:hover,
+.ldesign-image-handle-s:hover {
+  transform: translateX(-50%) scale(1.2);
+}
+
+.ldesign-image-handle-e:hover,
+.ldesign-image-handle-w:hover {
+  transform: translateY(-50%) scale(1.2);
+}
+
+/* 尺寸提示 */
+.ldesign-image-size-tooltip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  display: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+}
+
+/* 图片工具栏 */
+.ldesign-image-toolbar {
+  position: fixed;
+  display: none;
+  align-items: center;
+  gap: 2px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  transition: all 0.2s;
+}
+
+.ldesign-image-toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #4b5563;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.ldesign-image-toolbar-btn:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.ldesign-image-toolbar-btn:active {
+  background: #e5e7eb;
+}
+
+.ldesign-image-toolbar-btn.active {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.ldesign-image-toolbar-separator {
+  width: 1px;
+  height: 20px;
+  background: #e5e7eb;
+  margin: 0 4px;
+}
+
+/* 文本环绕模式 */
+.ldesign-image-wrapper.wrap-inline {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 2px 5px;
+}
+
+.ldesign-image-wrapper.wrap-block {
+  display: block;
+  margin: 10px auto;
+}
+
+.ldesign-image-wrapper.wrap-float-left {
+  float: left;
+  margin: 5px 15px 10px 0;
+}
+
+.ldesign-image-wrapper.wrap-float-right {
+  float: right;
+  margin: 5px 0 10px 15px;
+}
+
+/* 清除浮动 */
+.ldesign-editor-content::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .ldesign-image-wrapper {
+    max-width: 100% !important;
+  }
+  
+  .ldesign-image-wrapper.wrap-float-left,
+  .ldesign-image-wrapper.wrap-float-right {
+    float: none;
+    display: block;
+    margin: 15px auto;
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .ldesign-image-handle,
+  .ldesign-image-toolbar,
+  .ldesign-image-size-tooltip {
+    display: none !important;
+  }
+  
+  .ldesign-image-wrapper {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* 动画效果 */
+@keyframes imageInsert {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ldesign-image-wrapper.inserting {
+  animation: imageInsert 0.3s ease-out;
+}
+
+/* 阴影效果选项 */
+.ldesign-image-wrapper.shadow-sm {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.ldesign-image-wrapper.shadow-md {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.ldesign-image-wrapper.shadow-lg {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.10);
+}
+
+/* 边框样式选项 */
+.ldesign-image-wrapper.border-thin {
+  border: 1px solid #e5e7eb;
+}
+
+.ldesign-image-wrapper.border-medium {
+  border: 2px solid #d1d5db;
+}
+
+.ldesign-image-wrapper.border-thick {
+  border: 3px solid #9ca3af;
+}
+
+/* 圆角选项 */
+.ldesign-image-wrapper.rounded-sm img {
+  border-radius: 4px;
+}
+
+.ldesign-image-wrapper.rounded-md img {
+  border-radius: 8px;
+}
+
+.ldesign-image-wrapper.rounded-lg img {
+  border-radius: 16px;
+}
+
+.ldesign-image-wrapper.rounded-full img {
+  border-radius: 50%;
+}
+
+/* 滤镜效果 */
+.ldesign-image-wrapper.filter-grayscale img {
+  filter: grayscale(100%);
+}
+
+.ldesign-image-wrapper.filter-sepia img {
+  filter: sepia(100%);
+}
+
+.ldesign-image-wrapper.filter-blur img {
+  filter: blur(2px);
+}
+
+.ldesign-image-wrapper.filter-brightness img {
+  filter: brightness(1.2);
+}
+
+.ldesign-image-wrapper.filter-contrast img {
+  filter: contrast(1.2);
+}
+
+/* 过渡效果 */
+.ldesign-image-wrapper img {
+  transition: filter 0.3s, transform 0.3s, opacity 0.3s;
+}
+
+/* object-fit 样式 */
+.ldesign-image-wrapper.fit-fill img {
+  object-fit: fill;
+}
+
+.ldesign-image-wrapper.fit-contain img {
+  object-fit: contain;
+  background: #f9fafb;
+}
+
+.ldesign-image-wrapper.fit-cover img {
+  object-fit: cover;
+}
+
+.ldesign-image-wrapper.fit-none img {
+  object-fit: none;
+}
+
+.ldesign-image-wrapper.fit-scale-down img {
+  object-fit: scale-down;
+  background: #f9fafb;
+}
+
+/* 固定尺寸样式 */
+.ldesign-image-wrapper.fixed-size {
+  overflow: hidden;
+  display: inline-block;
+}
+
+.ldesign-image-wrapper.fixed-size img {
+  width: 100%;
+  height: 100%;
+}
+
+/* 悬停效果 */
+.ldesign-image-wrapper.hover-zoom:hover img {
+  transform: scale(1.05);
+}
+
+.ldesign-image-wrapper.hover-shadow:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.ldesign-image-wrapper.hover-opacity:hover img {
+  opacity: 0.8;
+}

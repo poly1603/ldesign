@@ -2,6 +2,12 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist/types/src/display/api';
 import { EventEmitter } from '../utils/EventEmitter';
 import { PDFViewerOptions, ViewMode, PDFViewerState } from '../types';
+import { 
+  PDFLoadConfig, 
+  loadPdfWithRetry, 
+  handlePdfError,
+  PDFLoadError 
+} from '../utils/pdfLoader';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -23,6 +29,7 @@ export class PDFViewer extends EventEmitter {
   private searchResults: any[] = [];
   private currentSearchIndex: number = -1;
   private state: PDFViewerState;
+  private loadConfig: PDFLoadConfig;
 
   constructor(container: HTMLElement, options: Partial<PDFViewerOptions> = {}) {
     super();
@@ -37,6 +44,13 @@ export class PDFViewer extends EventEmitter {
       isLoading: false,
       searchActive: false,
       fullscreen: false
+    };
+    this.loadConfig = {
+      corsProxy: this.options.corsProxy,
+      timeout: this.options.loadTimeout || 30000,
+      maxRetries: this.options.maxRetries || 3,
+      retryDelay: this.options.retryDelay || 1000,
+      fallbackProxies: this.options.fallbackProxies
     };
     this.init();
   }
@@ -189,9 +203,28 @@ export class PDFViewer extends EventEmitter {
       this.setLoading(true);
       this.emit('loading', { source });
 
-      // Load the PDF document
-      const loadingTask = pdfjsLib.getDocument(source);
-      this.pdfDoc = await loadingTask.promise;
+      // Load the PDF document with enhanced error handling
+      if (typeof source === 'string') {
+        // Use enhanced loading with retry and proxy support for URLs
+        const loadFunction = async (url: string) => {
+          const loadingTask = pdfjsLib.getDocument(url);
+          return await loadingTask.promise;
+        };
+        
+        try {
+          this.pdfDoc = await loadPdfWithRetry(source, loadFunction, this.loadConfig);
+        } catch (error) {
+          const pdfError = handlePdfError(error);
+          this.setLoading(false);
+          this.emit('error', pdfError);
+          throw pdfError;
+        }
+      } else {
+        // Direct loading for ArrayBuffer or Uint8Array
+        const loadingTask = pdfjsLib.getDocument(source);
+        this.pdfDoc = await loadingTask.promise;
+      }
+
       this.totalPages = this.pdfDoc.numPages;
       this.state.totalPages = this.totalPages;
 
@@ -208,9 +241,10 @@ export class PDFViewer extends EventEmitter {
         metadata
       });
     } catch (error) {
+      const pdfError = handlePdfError(error);
       this.setLoading(false);
-      this.emit('error', error);
-      throw error;
+      this.emit('error', pdfError);
+      throw pdfError;
     }
   }
 

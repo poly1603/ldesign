@@ -55,7 +55,7 @@ export class CropBox {
     this.guides = options.guides ?? true
     this.center = options.center ?? true
     this.highlight = options.highlight ?? true
-    this.background = options.background ?? true
+    this.background = options.background ?? false // Background is now handled by Cropper
 
     this.element = this.createCropBox()
     this.data = {
@@ -138,12 +138,6 @@ export class CropBox {
    * Render crop box to DOM
    */
   render(): void {
-    // Create and append background
-    if (this.background) {
-      this.backgroundElement = createElement('div', 'cropper-bg')
-      this.container.appendChild(this.backgroundElement)
-    }
-
     // Create and append modal (overlay)
     if (this.modal) {
       this.modalElement = createElement('div', 'cropper-modal')

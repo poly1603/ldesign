@@ -1,0 +1,221 @@
+/**
+ * 图片右键菜单样式
+ */
+
+/* 主菜单容器 */
+.ldesign-image-context-menu {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(209, 213, 219, 0.8);
+  border-radius: 8px;
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  padding: 6px;
+  min-width: 200px;
+  max-width: 300px;
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  backdrop-filter: blur(20px) saturate(180%);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* 菜单项 */
+.ldesign-context-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 7px 10px;
+  margin: 2px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+  color: #374151;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ldesign-context-menu-item:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.ldesign-context-menu-item:active {
+  background-color: #e5e7eb;
+  transform: scale(0.98);
+}
+
+/* 有子菜单的项 */
+.ldesign-context-menu-item.has-submenu {
+  padding-right: 24px;
+}
+
+/* 菜单图标 */
+.ldesign-context-menu-icon {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+/* 菜单标签 */
+.ldesign-context-menu-label {
+  flex: 1;
+  color: #1f2937;
+}
+
+/* 子菜单箭头 */
+.ldesign-context-menu-arrow {
+  position: absolute;
+  right: 8px;
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+/* 子菜单容器 */
+.ldesign-context-submenu {
+  position: absolute;
+  left: calc(100% - 4px);
+  top: -6px;
+  margin-left: 0;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(209, 213, 219, 0.8);
+  border-radius: 8px;
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  padding: 6px;
+  min-width: 160px;
+  z-index: 10001;
+  backdrop-filter: blur(20px) saturate(180%);
+  display: none;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* 悬停时显示子菜单 */
+.ldesign-context-menu-item:hover > .ldesign-context-submenu {
+  display: block;
+  animation: submenuFadeIn 0.2s ease forwards;
+}
+
+@keyframes submenuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 子菜单中的子菜单 */
+.ldesign-context-submenu .ldesign-context-submenu {
+  margin-left: 2px;
+}
+
+/* 分隔线 */
+.ldesign-context-menu-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 4px 0;
+}
+
+/* 禁用状态 */
+.ldesign-context-menu-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 快捷键提示 */
+.ldesign-context-menu-shortcut {
+  margin-left: 16px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* 状态标记（如勾选） */
+.ldesign-context-menu-check {
+  position: absolute;
+  left: 8px;
+  font-size: 12px;
+  color: #3b82f6;
+}
+
+/* 确保始终使用白色背景 */
+.ldesign-image-context-menu,
+.ldesign-context-submenu {
+  background: #ffffff !important;
+  border-color: #d1d5db !important;
+}
+
+/* 动画效果 */
+@keyframes contextMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes contextMenuFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(-5px);
+  }
+}
+
+.ldesign-image-context-menu {
+  animation: contextMenuFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ldesign-image-context-menu.hiding {
+  animation: contextMenuFadeOut 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .ldesign-image-context-menu {
+    font-size: 14px;
+    min-width: 200px;
+  }
+
+  .ldesign-context-menu-item {
+    padding: 10px 14px;
+  }
+
+  .ldesign-context-submenu {
+    position: fixed;
+    left: 10px !important;
+    right: 10px;
+    top: auto !important;
+    bottom: 10px;
+    width: auto;
+    margin-left: 0;
+  }
+}
+
+/* 防止文字选中 */
+.ldesign-image-context-menu * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}

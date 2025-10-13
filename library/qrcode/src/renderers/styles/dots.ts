@@ -49,6 +49,10 @@ export function drawDot(
       // Smooth flow is handled differently in canvas renderer
       drawCircle(ctx, x, y, size);
       break;
+    case DotStyle.UltraSmooth:
+      // Ultra smooth is handled differently in canvas renderer
+      drawCircle(ctx, x, y, size);
+      break;
     default:
       drawSquare(ctx, x, y, size);
   }
@@ -303,6 +307,8 @@ export function getDotSVGPath(
       return getLiquidSVGPath(x, y, size);
     case DotStyle.SmoothDots:
       return getCircleSVGPath(x, y, size); // Use circle for SVG smooth dots
+    case DotStyle.UltraSmooth:
+      return getCircleSVGPath(x, y, size); // Use circle for SVG ultra smooth
     default:
       return `M ${x} ${y} h ${size} v ${size} h ${-size} Z`;
   }

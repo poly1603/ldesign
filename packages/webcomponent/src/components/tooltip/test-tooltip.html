@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ldesign-tooltip 优化测试</title>
+    <style>
+      :root { 
+        --gap: 24px;
+      }
+      body { 
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Microsoft Yahei", "Noto Sans", sans-serif; 
+        padding: 24px; 
+        color: #111827; 
+        background: #f8fafc; 
+        line-height: 1.6;
+      }
+      h2 { 
+        margin: 32px 0 16px; 
+        color: #1f2937;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+      }
+      .demo-section {
+        margin: 32px 0;
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .demo-row { 
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 16px 0;
+      }
+      .desc { 
+        font-size: 14px; 
+        color: #6b7280; 
+        margin-bottom: 16px; 
+      }
+      
+      /* 自定义tooltip样式 */
+      .custom-tooltip {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+      }
+      .custom-tooltip .ldesign-popup__arrow {
+        background: #764ba2 !important;
+        border: none !important;
+      }
+      
+      .text-demo {
+        line-height: 2;
+        font-size: 15px;
+      }
+      .tooltip-trigger {
+        color: #3b82f6;
+        text-decoration: underline;
+        cursor: help;
+      }
+    </style>
+    <script type="module">
+      import { defineCustomElements } from '../../../loader/index.js';
+      defineCustomElements();
+      
+      window.addEventListener('DOMContentLoaded', () => {
+        // 手动控制示例
+        const manualTooltip = document.getElementById('manual-tooltip');
+        const showBtn = document.getElementById('show-tooltip');
+        const hideBtn = document.getElementById('hide-tooltip');
+        
+        if (showBtn && manualTooltip) {
+          showBtn.addEventListener('click', () => {
+            manualTooltip.visible = true;
+          });
+        }
+        
+        if (hideBtn && manualTooltip) {
+          hideBtn.addEventListener('click', () => {
+            manualTooltip.visible = false;
+          });
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <h1>✨ ldesign-tooltip 优化测试</h1>
+    <p>基于最新的 Popup 组件优化，继承所有新特性</p>
+    
+    <div class="demo-section">
+      <h2>1. 尺寸变体</h2>
+      <div class="desc">三种预设尺寸，适应不同使用场景</div>
+      <div class="demo-row">
+        <ldesign-tooltip content="小尺寸提示" size="small">
+          <ldesign-button size="small">Small</ldesign-button>
+        </ldesign-tooltip>
+        
+        <ldesign-tooltip content="中等尺寸提示，这是默认大小" size="medium">
+          <ldesign-button>Medium (默认)</ldesign-button>
+        </ldesign-tooltip>
+        
+        <ldesign-tooltip content="大尺寸提示，适合显示较多内容。可以包含更详细的说明信息。" size="large">
+          <ldesign-button size="large">Large</ldesign-button>
+        </ldesign-tooltip>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>2. 动画效果</h2>
+      <div class="desc">三种动画类型，提供不同的视觉体验</div>
+      <div class="demo-row">
+        <ldesign-tooltip content="淡入淡出效果" animation="fade" placement="top">
+          <ldesign-button>Fade 动画</ldesign-button>
+        </ldesign-tooltip>
+        
+        <ldesign-tooltip content="缩放效果（默认）" animation="scale" placement="top">
+          <ldesign-button>Scale 动画</ldesign-button>
+        </ldesign-tooltip>
+        
+        <ldesign-tooltip content="滑动效果" animation="slide" placement="top">
+          <ldesign-button>Slide 动画</ldesign-button>
+        </ldesign-tooltip>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>3. 触发方式</h2>
+      <div class="desc">支持多种触发方式</div>
+      <div class="demo-row">
+        <ldesign-tooltip content="鼠标悬停显示（默认）" trigger="hover">
+          <ldesign-button>Hover 触发</ldesign-button>
+        </ldesign-tooltip>
+        
+        <ldesign-tooltip content="点击显示，再次点击关闭" trigger="click" closable>
+          <ldesign-button>Click 触发</ldesign-button>
+        </ldesign-tooltip>
+        
+        <ldesign-tooltip content="聚焦时显示" trigger="focus">
+          <input placeholder="Focus 触发" style="padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;" />
+        </ldesign-tooltip>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>4. 主题样式</h2>
+      <div class="desc">支持深色和浅色两种主题</div>
+      <div class="demo-row">
+        <ldesign-tooltip content="深色主题（默认）" theme="dark">
+          <ldesign-button>Dark 深色</ldesign-button>
+        </ldesign-tooltip>
+        
+        <ldesign-tooltip content="浅色主题" theme="light">
+          <ldesign-button>Light 浅色</ldesign-button>
+        </ldesign-tooltip>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>5. 可交互提示</h2>
+      <div class="desc">允许鼠标移入提示内容区域</div>
+      <div class="demo-row">
+        <ldesign-tooltip 
+          content="鼠标可以移入这个提示框，适合包含链接或需要复制的内容" 
+          interactive 
+          hide-delay="300"
+          size="large">
+          <ldesign-button>可交互提示</ldesign-button>
+        </ldesign-tooltip>
+        
+        <ldesign-tooltip 
+          content="不可交互，鼠标移入会立即关闭" 
+          interactive="false">
+          <ldesign-button>不可交互</ldesign-button>
+        </ldesign-tooltip>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>6. 带标题的提示</h2>
+      <div class="desc">通过 tooltip-title 属性添加标题</div>
+      <div class="demo-row">
+        <ldesign-tooltip 
+          tooltip-title="提示标题" 
+          content="这是详细的提示内容说明"
+          size="medium">
+          <ldesign-button>带标题（中）</ldesign-button>
+        </ldesign-tooltip>
+        
+        <ldesign-tooltip 
+          tooltip-title="功能说明" 
+          content="大尺寸的带标题提示，可以显示更多信息。这里可以包含功能的详细说明。"
+          size="large"
+          theme="light">
+          <ldesign-button>带标题（大）</ldesign-button>
+        </ldesign-tooltip>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>7. 自动关闭</h2>
+      <div class="desc">设置自动关闭延迟时间</div>
+      <div class="demo-row">
+        <ldesign-tooltip 
+          content="3秒后自动关闭" 
+          auto-close-delay="3000" 
+          trigger="click">
+          <ldesign-button>3秒自动关闭</ldesign-button>
+        </ldesign-tooltip>
+        
+        <ldesign-tooltip 
+          content="5秒后自动关闭" 
+          auto-close-delay="5000" 
+          trigger="click"
+          theme="light">
+          <ldesign-button>5秒自动关闭</ldesign-button>
+        </ldesign-tooltip>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>8. 手动控制</h2>
+      <div class="desc">通过 JavaScript 手动控制显示/隐藏</div>
+      <div class="demo-row">
+        <ldesign-button id="show-tooltip">显示提示</ldesign-button>
+        <ldesign-button id="hide-tooltip" type="outline">隐藏提示</ldesign-button>
+        <ldesign-tooltip 
+          id="manual-tooltip" 
+          content="手动控制的提示" 
+          trigger="manual"
+          placement="right">
+          <span style="margin-left:16px;padding:8px;background:#f3f4f6;border-radius:4px;">目标元素</span>
+        </ldesign-tooltip>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>9. 自定义样式</h2>
+      <div class="desc">通过 tooltip-class 属性添加自定义样式</div>
+      <div class="demo-row">
+        <ldesign-tooltip 
+          content="渐变背景的自定义样式" 
+          tooltip-class="custom-tooltip"
+          theme="dark">
+          <ldesign-button>自定义样式</ldesign-button>
+        </ldesign-tooltip>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>10. 在文本中使用</h2>
+      <div class="desc">Tooltip 可以嵌入到文本内容中</div>
+      <div class="text-demo">
+        这是一段包含
+        <ldesign-tooltip content="这是第一个提示信息" size="small">
+          <span class="tooltip-trigger">提示文字1</span>
+        </ldesign-tooltip>
+        的文本内容。你还可以在
+        <ldesign-tooltip content="这是另一个提示，使用浅色主题" theme="light">
+          <strong class="tooltip-trigger">重要文字</strong>
+        </ldesign-tooltip>
+        上添加提示。甚至可以在
+        <ldesign-tooltip 
+          tooltip-title="详细说明" 
+          content="这是一个带标题的详细提示内容"
+          size="large"
+          interactive>
+          <span class="tooltip-trigger">复杂内容</span>
+        </ldesign-tooltip>
+        上使用更复杂的提示。
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>11. 位置展示</h2>
+      <div class="desc">支持12个方向的弹出位置</div>
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; max-width: 600px; margin: 24px auto;">
+        <div></div>
+        <ldesign-tooltip content="Top Start" placement="top-start">
+          <ldesign-button style="width:100%;">TS</ldesign-button>
+        </ldesign-tooltip>
+        <ldesign-tooltip content="Top" placement="top">
+          <ldesign-button style="width:100%;">Top</ldesign-button>
+        </ldesign-tooltip>
+        <ldesign-tooltip content="Top End" placement="top-end">
+          <ldesign-button style="width:100%;">TE</ldesign-button>
+        </ldesign-tooltip>
+        <div></div>
+        
+        <ldesign-tooltip content="Left Start" placement="left-start">
+          <ldesign-button style="width:100%;">LS</ldesign-button>
+        </ldesign-tooltip>
+        <div></div>
+        <div></div>
+        <div></div>
+        <ldesign-tooltip content="Right Start" placement="right-start">
+          <ldesign-button style="width:100%;">RS</ldesign-button>
+        </ldesign-tooltip>
+        
+        <ldesign-tooltip content="Left" placement="left">
+          <ldesign-button style="width:100%;">Left</ldesign-button>
+        </ldesign-tooltip>
+        <div></div>
+        <div></div>
+        <div></div>
+        <ldesign-tooltip content="Right" placement="right">
+          <ldesign-button style="width:100%;">Right</ldesign-button>
+        </ldesign-tooltip>
+        
+        <ldesign-tooltip content="Left End" placement="left-end">
+          <ldesign-button style="width:100%;">LE</ldesign-button>
+        </ldesign-tooltip>
+        <div></div>
+        <div></div>
+        <div></div>
+        <ldesign-tooltip content="Right End" placement="right-end">
+          <ldesign-button style="width:100%;">RE</ldesign-button>
+        </ldesign-tooltip>
+        
+        <div></div>
+        <ldesign-tooltip content="Bottom Start" placement="bottom-start">
+          <ldesign-button style="width:100%;">BS</ldesign-button>
+        </ldesign-tooltip>
+        <ldesign-tooltip content="Bottom" placement="bottom">
+          <ldesign-button style="width:100%;">Bottom</ldesign-button>
+        </ldesign-tooltip>
+        <ldesign-tooltip content="Bottom End" placement="bottom-end">
+          <ldesign-button style="width:100%;">BE</ldesign-button>
+        </ldesign-tooltip>
+        <div></div>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>12. 组合使用</h2>
+      <div class="desc">结合多个特性使用</div>
+      <div class="demo-row">
+        <ldesign-tooltip 
+          tooltip-title="完整功能展示" 
+          content="这是一个结合了多个特性的提示：大尺寸、可交互、浅色主题、自动关闭"
+          size="large"
+          theme="light"
+          interactive
+          trigger="click"
+          closable
+          auto-close-delay="10000"
+          animation="scale"
+          placement="top">
+          <ldesign-button type="primary" size="large">综合示例</ldesign-button>
+        </ldesign-tooltip>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,6 +1,6 @@
 # Tooltip 工具提示
 
-简洁的文字提示气泡框，基于 @floating-ui/dom 实现。
+简洁的文字提示气泡框，基于最新的 Popup 组件封装，支持丰富的交互和样式特性。
 
 ## 基础用法
 
@@ -198,6 +198,86 @@
 </ldesign-tooltip>
 ```
 
+## 尺寸变体
+
+提供三种预设尺寸：`small`、`medium`（默认）、`large`。
+
+<div class="demo-container">
+  <div class="demo-row" style="display:flex; gap:16px; flex-wrap:wrap;">
+    <ldesign-tooltip content="小尺寸" size="small">
+      <ldesign-button size="small">Small</ldesign-button>
+    </ldesign-tooltip>
+    <ldesign-tooltip content="中等尺寸，适合大多数场景" size="medium">
+      <ldesign-button>Medium</ldesign-button>
+    </ldesign-tooltip>
+    <ldesign-tooltip content="大尺寸，适合显示较多内容" size="large">
+      <ldesign-button size="large">Large</ldesign-button>
+    </ldesign-tooltip>
+  </div>
+</div>
+
+```html
+<ldesign-tooltip content="小尺寸" size="small">
+  <ldesign-button>Small</ldesign-button>
+</ldesign-tooltip>
+```
+
+## 动画效果
+
+支持三种动画类型：`fade`、`scale`（默认）、`slide`。
+
+<div class="demo-container">
+  <div class="demo-row" style="display:flex; gap:16px; flex-wrap:wrap;">
+    <ldesign-tooltip content="淡入淡出" animation="fade">
+      <ldesign-button>Fade</ldesign-button>
+    </ldesign-tooltip>
+    <ldesign-tooltip content="缩放效果" animation="scale">
+      <ldesign-button>Scale</ldesign-button>
+    </ldesign-tooltip>
+    <ldesign-tooltip content="滑动效果" animation="slide">
+      <ldesign-button>Slide</ldesign-button>
+    </ldesign-tooltip>
+  </div>
+</div>
+
+## 触发方式
+
+支持 `hover`、`click`、`focus`、`manual` 四种触发方式。
+
+<div class="demo-container">
+  <div class="demo-row" style="display:flex; gap:16px; flex-wrap:wrap;">
+    <ldesign-tooltip content="悬停显示" trigger="hover">
+      <ldesign-button>Hover</ldesign-button>
+    </ldesign-tooltip>
+    <ldesign-tooltip content="点击显示" trigger="click" closable>
+      <ldesign-button>Click</ldesign-button>
+    </ldesign-tooltip>
+    <ldesign-tooltip content="聚焦显示" trigger="focus">
+      <input placeholder="Focus me" style="padding:8px;border:1px solid #ddd;border-radius:4px;" />
+    </ldesign-tooltip>
+  </div>
+</div>
+
+## 可交互提示
+
+通过 `interactive` 允许鼠标移入提示内容。
+
+<div class="demo-container">
+  <ldesign-tooltip content="鼠标可以移入提示框" interactive hide-delay="200">
+    <ldesign-button>可交互</ldesign-button>
+  </ldesign-tooltip>
+</div>
+
+## 带标题的提示
+
+通过 `tooltip-title` 添加标题。
+
+<div class="demo-container">
+  <ldesign-tooltip tooltip-title="标题" content="这是详细内容" size="large">
+    <ldesign-button>带标题</ldesign-button>
+  </ldesign-tooltip>
+</div>
+
 ## 在文本中使用
 
 Tooltip 可以与文本内容结合使用（为避免 HTML 块级元素嵌套问题，示例中不再使用 p 包裹，自定义元素用 span 包裹）。
@@ -242,8 +322,19 @@ Tooltip 可以与文本内容结合使用（为避免 HTML 块级元素嵌套问
 | `arrow` | `boolean` | `true` | 是否显示箭头 |
 | `show-delay` | `number` | `100` | 延迟显示时间（毫秒） |
 | `hide-delay` | `number` | `100` | 延迟隐藏时间（毫秒） |
-| `max-width` | `number` | `250` | 最大宽度（像素） |
+| `max-width` | `number \| string` | `250` | 最大宽度 |
+| `width` | `number \| string` | - | 宽度（覆盖maxWidth） |
 | `theme` | `'dark' \| 'light'` | `'dark'` | 主题样式 |
+| `trigger` | `'hover' \| 'click' \| 'focus' \| 'manual'` | `'hover'` | 触发方式 |
+| `size` | `'small' \| 'medium' \| 'large'` | `'medium'` | 尺寸 |
+| `animation` | `'fade' \| 'scale' \| 'slide'` | `'scale'` | 动画类型 |
+| `interactive` | `boolean` | `false` | 是否可交互 |
+| `auto-close-delay` | `number` | `0` | 自动关闭延迟 |
+| `closable` | `boolean` | `false` | 显示关闭按钮 |
+| `tooltip-class` | `string` | - | 自定义类名 |
+| `visible` | `boolean` | `false` | 受控显示状态 |
+| `tooltip-title` | `string` | - | 标题 |
+| `offset-distance` | `number \| string` | `8` | 与触发元素距离 |
 
 ### 插槽
 

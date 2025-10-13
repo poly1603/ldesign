@@ -1,56 +1,246 @@
-// Tooltip 组件样式（基于 Popup 渲染，仅保持内联布局，不覆盖 Popup 箭头与定位）
-.lesign-tooltip {}
-
+// Tooltip 组件样式 - 基于最新 Popup 组件
 .ldesign-tooltip {
   position: relative;
   display: inline-block;
-}
-
-/* 保持 Tooltip 文本略小一些，可按需调优 */
-.ldesign-tooltip .ldesign-popup__content {
-  padding: 0;
-  font-size: 12px;
-  line-height: 1.4;
-  border-radius: 4px;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-}
-
-/* Tooltip 内边距由 inner 控制，避免与 Popup 内部 padding 叠加 */
-.ldesign-tooltip .ldesign-popup__inner {
-  padding: 4px 8px;
-}
-
-// 动画关键帧
-@keyframes ldesign-tooltip-fade-in {
-  from {
-    opacity: 0;
+  
+  // 触发器样式
+  &__trigger {
+    display: inline-block;
   }
+}
 
-  to {
+// Tooltip 弹层样式
+.ldesign-tooltip__popup {
+  // 默认中等尺寸
+  &.ldesign-popup__content {
+    font-size: 13px;
+    line-height: 1.5;
+    border-radius: 6px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    
+    .ldesign-popup__inner {
+      padding: 8px 12px;
+    }
+    
+    .ldesign-popup__title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .ldesign-popup__body {
+      font-size: 13px;
+    }
+  }
+  
+  // 小尺寸
+  &--small.ldesign-popup__content {
+    font-size: 12px;
+    
+    .ldesign-popup__inner {
+      padding: 4px 8px;
+    }
+    
+    .ldesign-popup__title {
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+    
+    .ldesign-popup__body {
+      font-size: 12px;
+    }
+  }
+  
+  // 大尺寸
+  &--large.ldesign-popup__content {
+    font-size: 14px;
+    
+    .ldesign-popup__inner {
+      padding: 12px 16px;
+    }
+    
+    .ldesign-popup__title {
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+    
+    .ldesign-popup__body {
+      font-size: 14px;
+    }
+  }
+}
+
+// 尺寸变体样式
+.ldesign-tooltip {
+  // 小尺寸
+  &--small {
+    .ldesign-popup__content {
+      min-width: 60px;
+      max-width: 200px;
+    }
+  }
+  
+  // 中等尺寸（默认）
+  &--medium {
+    .ldesign-popup__content {
+      min-width: 80px;
+      max-width: 300px;
+    }
+  }
+  
+  // 大尺寸
+  &--large {
+    .ldesign-popup__content {
+      min-width: 120px;
+      max-width: 400px;
+    }
+  }
+}
+
+// 主题样式增强
+.ldesign-tooltip {
+  // 深色主题（默认）
+  &--dark {
+    .ldesign-popup__content {
+      background: rgba(0, 0, 0, 0.9);
+      border-color: transparent;
+      color: #ffffff;
+      
+      .ldesign-popup__arrow {
+        background: rgba(0, 0, 0, 0.9);
+        border-color: transparent;
+      }
+    }
+  }
+  
+  // 浅色主题
+  &--light {
+    .ldesign-popup__content {
+      background: #ffffff;
+      border-color: #e5e7eb;
+      color: #1f2937;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      
+      .ldesign-popup__arrow {
+        background: #ffffff;
+        border-color: #e5e7eb;
+      }
+    }
+  }
+}
+
+// 可交互样式
+.ldesign-tooltip--interactive {
+  .ldesign-popup__content {
+    cursor: default;
+  }
+}
+
+// 关闭按钮样式（仅click触发时显示）
+.ldesign-tooltip .ldesign-popup__close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 2px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: currentColor;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  
+  &:hover {
     opacity: 1;
   }
+  
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 }
 
-@keyframes ldesign-tooltip-zoom-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
+// 加载状态
+.ldesign-tooltip .ldesign-popup__loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  
+  .ldesign-popup__spinner {
+    width: 14px;
+    height: 14px;
+    border-width: 1.5px;
   }
+}
 
-  to {
+// 自定义动画效果
+@keyframes ldesign-tooltip-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ldesign-tooltip-scale {
+  from { 
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to { 
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes ldesign-tooltip-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 特殊场景样式
+.ldesign-tooltip {
+  // 长文本提示
+  &__popup--multiline.ldesign-popup__content {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  
+  // 单行文本
+  &__popup--nowrap.ldesign-popup__content {
+    white-space: nowrap;
   }
 }
 
 // 响应式设计
 @media (max-width: 768px) {
   .ldesign-tooltip {
-    &__content {
+    .ldesign-popup__content {
       max-width: calc(100vw - 32px) !important;
+    }
+    
+    &--small .ldesign-popup__content {
+      font-size: 11px;
+      .ldesign-popup__inner {
+        padding: 3px 6px;
+      }
+    }
+    
+    &--medium .ldesign-popup__content {
+      font-size: 12px;
+      .ldesign-popup__inner {
+        padding: 6px 10px;
+      }
+    }
+    
+    &--large .ldesign-popup__content {
       font-size: 13px;
-      padding: 8px 10px;
+      .ldesign-popup__inner {
+        padding: 10px 14px;
+      }
     }
   }
 }

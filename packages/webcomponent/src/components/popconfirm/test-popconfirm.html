@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ldesign-popconfirm 美化测试</title>
+    <style>
+      :root { 
+        --gap: 24px;
+        --ldesign-info-color: #3b82f6;
+        --ldesign-success-color: #10b981;
+        --ldesign-warning-color: #f59e0b;
+        --ldesign-error-color: #ef4444;
+      }
+      body { 
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Microsoft Yahei", "Noto Sans", sans-serif; 
+        padding: 24px; 
+        color: #111827; 
+        background: #f8fafc; 
+        line-height: 1.6;
+      }
+      h2 { 
+        margin: 32px 0 16px; 
+        color: #1f2937;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+      }
+      .demo-section {
+        margin: 32px 0;
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .demo-row { 
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 16px 0;
+      }
+      .desc { 
+        font-size: 14px; 
+        color: #6b7280; 
+        margin-bottom: 16px; 
+      }
+      .btn {
+        padding: 8px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn:hover {
+        background: #f3f4f6;
+      }
+    </style>
+    <script type="module">
+      import { defineCustomElements } from '../../../loader/index.js';
+      defineCustomElements();
+      
+      window.addEventListener('DOMContentLoaded', () => {
+        // 模拟异步确认操作
+        const asyncConfirm = document.getElementById('async-confirm');
+        if (asyncConfirm) {
+          asyncConfirm.addEventListener('ldesignConfirm', () => {
+            console.log('开始异步操作...');
+            asyncConfirm.confirmLoading = true;
+            
+            // 模拟异步操作
+            setTimeout(() => {
+              console.log('操作完成！');
+              asyncConfirm.confirmLoading = false;
+              asyncConfirm.visible = false;
+            }, 2000);
+          });
+        }
+        
+        // 手动控制示例
+        const manualPopconfirm = document.getElementById('manual-popconfirm');
+        const openBtn = document.getElementById('open-manual');
+        if (openBtn && manualPopconfirm) {
+          openBtn.addEventListener('click', () => {
+            manualPopconfirm.visible = true;
+          });
+          
+          manualPopconfirm.addEventListener('ldesignConfirm', () => {
+            console.log('手动确认');
+            manualPopconfirm.visible = false;
+          });
+          
+          manualPopconfirm.addEventListener('ldesignCancel', () => {
+            console.log('手动取消');
+            manualPopconfirm.visible = false;
+          });
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <h1>🎨 ldesign-popconfirm 美化测试</h1>
+    <p>基于最新的 Popup 组件进行美化和完善</p>
+    
+    <div class="demo-section">
+      <h2>1. 图标类型</h2>
+      <div class="desc">支持多种预设图标类型，每种类型有对应的颜色</div>
+      <div class="demo-row">
+        <ldesign-popconfirm popconfirm-title="信息提示" description="这是一条信息提示" icon="info">
+          <ldesign-button slot="trigger">Info 信息</ldesign-button>
+        </ldesign-popconfirm>
+        
+        <ldesign-popconfirm popconfirm-title="操作成功！" description="您的操作已成功完成" icon="success">
+          <ldesign-button slot="trigger" type="success">Success 成功</ldesign-button>
+        </ldesign-popconfirm>
+        
+        <ldesign-popconfirm popconfirm-title="警告信息" description="请注意相关风险" icon="warning">
+          <ldesign-button slot="trigger" type="warning">Warning 警告</ldesign-button>
+        </ldesign-popconfirm>
+        
+        <ldesign-popconfirm popconfirm-title="危险操作" description="此操作不可恢复" icon="error">
+          <ldesign-button slot="trigger" type="danger">Error 错误</ldesign-button>
+        </ldesign-popconfirm>
+        
+        <ldesign-popconfirm popconfirm-title="确认操作？" description="默认的问号图标" icon="question">
+          <ldesign-button slot="trigger">Question 询问</ldesign-button>
+        </ldesign-popconfirm>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>2. 尺寸变体</h2>
+      <div class="desc">三种预设尺寸，适应不同场景需求</div>
+      <div class="demo-row">
+        <ldesign-popconfirm 
+          popconfirm-title="小尺寸确认框" 
+          size="small"
+          icon="info">
+          <ldesign-button slot="trigger" size="small">Small 小尺寸</ldesign-button>
+        </ldesign-popconfirm>
+        
+        <ldesign-popconfirm 
+          popconfirm-title="中等尺寸确认框" 
+          description="这是默认的中等尺寸，适合大多数场景"
+          size="medium"
+          icon="warning">
+          <ldesign-button slot="trigger">Medium 中等（默认）</ldesign-button>
+        </ldesign-popconfirm>
+        
+        <ldesign-popconfirm 
+          popconfirm-title="大尺寸确认框" 
+          description="大尺寸适合显示更多内容，可以包含详细的说明信息。这个确认框有更大的宽度和更大的字体。"
+          size="large"
+          icon="error">
+          <ldesign-button slot="trigger" size="large">Large 大尺寸</ldesign-button>
+        </ldesign-popconfirm>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>3. 动画效果</h2>
+      <div class="desc">三种动画类型，提供不同的视觉体验</div>
+      <div class="demo-row">
+        <ldesign-popconfirm 
+          popconfirm-title="淡入淡出效果" 
+          description="平滑的透明度过渡"
+          animation="fade"
+          placement="top">
+          <ldesign-button slot="trigger">Fade 淡入淡出</ldesign-button>
+        </ldesign-popconfirm>
+        
+        <ldesign-popconfirm 
+          popconfirm-title="缩放效果" 
+          description="从小到大的缩放动画"
+          animation="scale"
+          placement="top">
+          <ldesign-button slot="trigger">Scale 缩放（默认）</ldesign-button>
+        </ldesign-popconfirm>
+        
+        <ldesign-popconfirm 
+          popconfirm-title="滑动效果" 
+          description="从触发器方向滑入"
+          animation="slide"
+          placement="top">
+          <ldesign-button slot="trigger">Slide 滑动</ldesign-button>
+        </ldesign-popconfirm>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>4. 加载状态</h2>
+      <div class="desc">支持确认按钮加载状态，适合异步操作</div>
+      <div class="demo-row">
+        <ldesign-popconfirm 
+          id="async-confirm"
+          popconfirm-title="确定删除这条记录吗？" 
+          description="删除后不可恢复，点击确定后会显示2秒加载状态"
+          icon="warning"
+          ok-type="danger">
+          <ldesign-button slot="trigger" type="danger">异步删除</ldesign-button>
+        </ldesign-popconfirm>
+        
+        <ldesign-popconfirm 
+          popconfirm-title="正在加载中..." 
+          loading
+          icon="info">
+          <ldesign-button slot="trigger">整体加载状态</ldesign-button>
+        </ldesign-popconfirm>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>5. 自动关闭</h2>
+      <div class="desc">设置自动关闭延迟，适合成功提示等场景</div>
+      <div class="demo-row">
+        <ldesign-popconfirm 
+          popconfirm-title="操作成功！" 
+          description="3秒后自动关闭"
+          auto-close-delay="3000"
+          icon="success">
+          <ldesign-button slot="trigger" type="success">自动关闭（3秒）</ldesign-button>
+        </ldesign-popconfirm>
+        
+        <ldesign-popconfirm 
+          popconfirm-title="提交成功" 
+          description="5秒后自动消失"
+          auto-close-delay="5000"
+          icon="success"
+          size="small">
+          <ldesign-button slot="trigger">自动关闭（5秒）</ldesign-button>
+        </ldesign-popconfirm>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>6. 主题样式</h2>
+      <div class="desc">支持浅色和深色主题</div>
+      <div class="demo-row">
+        <ldesign-popconfirm 
+          popconfirm-title="浅色主题" 
+          description="默认的浅色主题样式"
+          theme="light"
+          icon="info">
+          <ldesign-button slot="trigger">Light 浅色</ldesign-button>
+        </ldesign-popconfirm>
+        
+        <ldesign-popconfirm 
+          popconfirm-title="深色主题" 
+          description="深色背景下的样式"
+          theme="dark"
+          icon="warning">
+          <ldesign-button slot="trigger">Dark 深色</ldesign-button>
+        </ldesign-popconfirm>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>7. 自定义按钮样式</h2>
+      <div class="desc">可以自定义确认和取消按钮的类型</div>
+      <div class="demo-row">
+        <ldesign-popconfirm 
+          popconfirm-title="确定删除？" 
+          ok-type="danger"
+          cancel-type="text"
+          ok-text="删除"
+          cancel-text="取消">
+          <ldesign-button slot="trigger">危险操作</ldesign-button>
+        </ldesign-popconfirm>
+        
+        <ldesign-popconfirm 
+          popconfirm-title="是否同意？" 
+          ok-type="success"
+          cancel-type="outline"
+          ok-text="同意"
+          cancel-text="拒绝"
+          icon="question">
+          <ldesign-button slot="trigger">自定义按钮</ldesign-button>
+        </ldesign-popconfirm>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>8. 无图标模式</h2>
+      <div class="desc">可以隐藏图标，适合简洁的场景</div>
+      <div class="demo-row">
+        <ldesign-popconfirm 
+          popconfirm-title="确认操作？" 
+          description="这是一个没有图标的确认框"
+          show-icon="false">
+          <ldesign-button slot="trigger">无图标</ldesign-button>
+        </ldesign-popconfirm>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>9. 手动控制</h2>
+      <div class="desc">通过 trigger="manual" 手动控制显示隐藏</div>
+      <div class="demo-row">
+        <button id="open-manual" class="btn">打开确认框</button>
+        <ldesign-popconfirm 
+          id="manual-popconfirm"
+          popconfirm-title="手动控制的确认框" 
+          description="通过 JavaScript 控制"
+          trigger="manual"
+          icon="info">
+          <span slot="trigger"></span>
+        </ldesign-popconfirm>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h2>10. 组合使用</h2>
+      <div class="desc">结合多个特性使用</div>
+      <div class="demo-row">
+        <ldesign-popconfirm 
+          popconfirm-title="删除文件？" 
+          description="此操作将永久删除文件，无法恢复"
+          icon="error"
+          size="large"
+          animation="scale"
+          ok-type="danger"
+          ok-text="确认删除"
+          cancel-text="取消"
+          theme="light"
+          placement="top">
+          <ldesign-button slot="trigger" type="danger">综合示例</ldesign-button>
+        </ldesign-popconfirm>
+      </div>
+    </div>
+  </body>
+</html>

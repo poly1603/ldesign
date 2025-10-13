@@ -101,6 +101,89 @@
     margin: 0;
     padding: 0;
   }
+  
+  // 关闭按钮
+  &__close {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    padding: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--ldesign-text-color-secondary, #6b7280);
+    transition: color 0.2s;
+    
+    &:hover {
+      color: var(--ldesign-text-color, #1f2937);
+    }
+  }
+  
+  // 加载状态
+  &__loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    color: var(--ldesign-text-color-secondary, #6b7280);
+  }
+  
+  &__spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--ldesign-border-color, #e5e7eb);
+    border-top-color: var(--ldesign-primary-color, #6d3ae2);
+    border-radius: 50%;
+    animation: ldesign-popup-spin 0.8s linear infinite;
+  }
+  
+  // 不同动画类型
+  &__content--fade {
+    &[data-state="open"] { opacity: 1; }
+    &:not([data-state="open"]) { 
+      opacity: 0; 
+      transform: none !important;
+    }
+  }
+  
+  &__content--slide {
+    &[data-placement^="top"][data-state="open"] { transform: translateY(0); }
+    &[data-placement^="top"]:not([data-state="open"]) { transform: translateY(var(--ldp-motion-distance, 10px)); }
+    &[data-placement^="bottom"][data-state="open"] { transform: translateY(0); }
+    &[data-placement^="bottom"]:not([data-state="open"]) { transform: translateY(calc(-1 * var(--ldp-motion-distance, 10px))); }
+    &[data-placement^="left"][data-state="open"] { transform: translateX(0); }
+    &[data-placement^="left"]:not([data-state="open"]) { transform: translateX(var(--ldp-motion-distance, 10px)); }
+    &[data-placement^="right"][data-state="open"] { transform: translateX(0); }
+    &[data-placement^="right"]:not([data-state="open"]) { transform: translateX(calc(-1 * var(--ldp-motion-distance, 10px))); }
+  }
+  
+  // 预设尺寸样式
+  &__content--small {
+    .ldesign-popup__inner {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    .ldesign-popup__title {
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .ldesign-popup__body {
+      font-size: 12px;
+    }
+  }
+  
+  &__content--large {
+    .ldesign-popup__inner {
+      padding: 12px 16px;
+    }
+    .ldesign-popup__title {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .ldesign-popup__body {
+      font-size: 14px;
+    }
+  }
 
   // 主题：dark
   &--dark {
@@ -108,6 +191,8 @@
     .ldesign-popup__arrow { background: var(--ldesign-bg-color-dark, #374151); border-color: var(--ldesign-border-color-dark, #4b5563); }
     .ldesign-popup__title { color: var(--ldesign-text-color-dark, #f9fafb); }
     .ldesign-popup__body { color: var(--ldesign-text-color-secondary-dark, #d1d5db); }
+    .ldesign-popup__close { color: var(--ldesign-text-color-secondary-dark, #d1d5db); }
+    .ldesign-popup__close:hover { color: var(--ldesign-text-color-dark, #f9fafb); }
   }
 
   // 禁用
@@ -122,5 +207,6 @@
 @keyframes ldesign-popup-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes ldesign-popup-slide-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes ldesign-popup-zoom-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes ldesign-popup-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 @media (max-width: 768px) { .ldesign-popup { &__content { max-width: calc(100vw - 32px); } } }

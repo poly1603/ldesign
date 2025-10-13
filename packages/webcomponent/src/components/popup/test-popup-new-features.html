@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ldesign-popup 新功能测试</title>
+    <style>
+      :root { --gap: 24px; }
+      body { 
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Microsoft Yahei", "Noto Sans", sans-serif; 
+        padding: 24px; 
+        color: #111827; 
+        background: #f8fafc; 
+      }
+      h2 { 
+        margin: 32px 0 12px; 
+        color: #1f2937;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+      }
+      .grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+        gap: var(--gap); 
+        margin: 16px 0;
+      }
+      .cell { 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        min-height: 60px; 
+        background: #ffffff; 
+        border: 1px solid #e5e7eb; 
+        border-radius: 10px; 
+        padding: 12px; 
+      }
+      .btn { 
+        appearance: none; 
+        border: none; 
+        outline: none; 
+        padding: 10px 16px; 
+        border-radius: 8px; 
+        background: #6d3ae2; 
+        color: #fff; 
+        font-weight: 600; 
+        cursor: pointer; 
+        transition: background 0.2s;
+      }
+      .btn:hover {
+        background: #5b2bc7;
+      }
+      .panel { 
+        background: #fff; 
+        border: 1px solid #e5e7eb; 
+        border-radius: 12px; 
+        padding: 20px; 
+        margin-bottom: 24px; 
+      }
+      .desc { 
+        font-size: 14px; 
+        color: #6b7280; 
+        margin-bottom: 16px; 
+      }
+      .demo-section {
+        margin: 32px 0;
+      }
+      
+      /* 自定义弹层样式 */
+      .gradient-popup {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        color: white !important;
+        box-shadow: 0 10px 30px rgba(103, 75, 162, 0.3) !important;
+      }
+      .gradient-popup .ldesign-popup__body,
+      .gradient-popup .ldesign-popup__title {
+        color: white !important;
+      }
+      
+      .success-popup {
+        background: #10b981 !important;
+        border: none !important;
+        color: white !important;
+      }
+      .success-popup .ldesign-popup__body,
+      .success-popup .ldesign-popup__title {
+        color: white !important;
+      }
+    </style>
+    <script type="module">
+      // 使用构建后生成的 loader 注册所有自定义元素
+      import { defineCustomElements } from '../../../loader/index.js';
+      defineCustomElements();
+      
+      // 页面加载后的初始化
+      window.addEventListener('DOMContentLoaded', () => {
+        // 手动控制示例
+        const manualPopup = document.getElementById('manual-popup');
+        const manualBtn = document.getElementById('manual-btn');
+        if (manualBtn && manualPopup) {
+          manualBtn.addEventListener('click', () => {
+            manualPopup.visible = !manualPopup.visible;
+          });
+        }
+        
+        // 动态加载内容示例
+        const dynamicPopup = document.getElementById('dynamic-popup');
+        const loadBtn = document.getElementById('load-content-btn');
+        if (loadBtn && dynamicPopup) {
+          loadBtn.addEventListener('click', () => {
+            dynamicPopup.loading = true;
+            dynamicPopup.visible = true;
+            
+            // 模拟异步加载
+            setTimeout(() => {
+              dynamicPopup.loading = false;
+              dynamicPopup.content = '内容加载完成！这是从服务器获取的数据。';
+            }, 2000);
+          });
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <h1>🎯 ldesign-popup 新功能测试</h1>
+    
+    <div class="demo-section">
+      <h2>1. 自动关闭功能</h2>
+      <div class="desc">设置 auto-close-delay 属性，弹层会在指定时间后自动关闭</div>
+      <div class="grid">
+        <div class="cell">
+          <ldesign-popup content="2秒后自动关闭" auto-close-delay="2000" trigger="click">
+            <button class="btn" slot="trigger">2秒自动关闭</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup content="5秒后自动关闭" auto-close-delay="5000" trigger="click">
+            <button class="btn" slot="trigger">5秒自动关闭</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup popup-title="通知" content="这条通知将在3秒后消失" auto-close-delay="3000" trigger="click" closable>
+            <button class="btn" slot="trigger">带标题自动关闭</button>
+          </ldesign-popup>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>2. 关闭按钮</h2>
+      <div class="desc">设置 closable 属性显示关闭按钮</div>
+      <div class="grid">
+        <div class="cell">
+          <ldesign-popup popup-title="提示" content="点击右上角关闭按钮" closable trigger="click">
+            <button class="btn" slot="trigger">显示关闭按钮</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup popup-title="深色主题" content="深色主题下的关闭按钮" closable trigger="click" theme="dark">
+            <button class="btn" slot="trigger">深色+关闭按钮</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup closable trigger="click">
+            <button class="btn" slot="trigger">自定义内容+关闭</button>
+            <div style="padding: 12px;">
+              <h4 style="margin: 0 0 8px 0;">自定义内容</h4>
+              <p style="margin: 0;">这是一个带关闭按钮的自定义内容弹层</p>
+            </div>
+          </ldesign-popup>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>3. 加载状态</h2>
+      <div class="desc">设置 loading 属性显示加载动画</div>
+      <div class="grid">
+        <div class="cell">
+          <ldesign-popup loading trigger="click">
+            <button class="btn" slot="trigger">加载中...</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup loading trigger="click" size="large">
+            <button class="btn" slot="trigger">大尺寸加载</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <button class="btn" id="load-content-btn">动态加载内容</button>
+          <ldesign-popup id="dynamic-popup" trigger="manual" closable popup-title="异步内容">
+          </ldesign-popup>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>4. 预设尺寸</h2>
+      <div class="desc">通过 size 属性设置预设尺寸：small、medium、large</div>
+      <div class="grid">
+        <div class="cell">
+          <ldesign-popup content="小尺寸弹层" size="small" trigger="hover">
+            <button class="btn" slot="trigger">Small</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup content="默认中等尺寸弹层，适合大多数场景使用" trigger="hover">
+            <button class="btn" slot="trigger">Medium (默认)</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup content="大尺寸弹层，可以容纳更多内容。这个弹层有更大的宽度、更大的内边距和更大的字体，适合展示详细信息或复杂内容。" size="large" trigger="hover">
+            <button class="btn" slot="trigger">Large</button>
+          </ldesign-popup>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>5. 动画类型</h2>
+      <div class="desc">通过 animation 属性设置不同的动画效果</div>
+      <div class="grid">
+        <div class="cell">
+          <ldesign-popup content="淡入淡出效果" animation="fade" trigger="click" placement="top">
+            <button class="btn" slot="trigger">Fade 动画</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup content="缩放效果（默认）" animation="scale" trigger="click" placement="top">
+            <button class="btn" slot="trigger">Scale 动画</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup content="滑动效果" animation="slide" trigger="click" placement="top">
+            <button class="btn" slot="trigger">Slide 动画</button>
+          </ldesign-popup>
+        </div>
+      </div>
+      
+      <div class="desc" style="margin-top: 16px;">不同方向的动画效果</div>
+      <div class="grid">
+        <div class="cell">
+          <ldesign-popup content="从上方滑入" animation="slide" trigger="click" placement="bottom">
+            <button class="btn" slot="trigger">向下滑动</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup content="从左侧滑入" animation="slide" trigger="click" placement="right">
+            <button class="btn" slot="trigger">向右滑动</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup content="从右侧滑入" animation="slide" trigger="click" placement="left">
+            <button class="btn" slot="trigger">向左滑动</button>
+          </ldesign-popup>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>6. 自定义类名</h2>
+      <div class="desc">通过 popup-class 属性添加自定义样式</div>
+      <div class="grid">
+        <div class="cell">
+          <ldesign-popup content="渐变背景弹层" popup-class="gradient-popup" trigger="click">
+            <button class="btn" slot="trigger">渐变样式</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup popup-title="成功" content="操作成功完成！" popup-class="success-popup" closable trigger="click">
+            <button class="btn" slot="trigger">成功样式</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup popup-class="gradient-popup" trigger="click" size="large">
+            <button class="btn" slot="trigger">组合样式</button>
+            <div style="padding: 16px;">
+              <h3 style="margin: 0 0 12px 0; color: white;">自定义内容</h3>
+              <p style="margin: 0; color: rgba(255,255,255,0.9);">
+                这是一个结合了自定义类名、大尺寸和自定义内容的弹层示例
+              </p>
+            </div>
+          </ldesign-popup>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>7. 组合功能测试</h2>
+      <div class="desc">测试多个新功能的组合使用</div>
+      <div class="grid">
+        <div class="cell">
+          <ldesign-popup 
+            popup-title="组合示例1" 
+            content="小尺寸 + 自动关闭 + 关闭按钮" 
+            size="small" 
+            auto-close-delay="4000" 
+            closable 
+            trigger="click"
+            animation="fade">
+            <button class="btn" slot="trigger">组合1</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup 
+            popup-title="组合示例2" 
+            content="大尺寸 + 深色主题 + 滑动动画" 
+            size="large" 
+            theme="dark"
+            animation="slide"
+            trigger="click"
+            placement="top">
+            <button class="btn" slot="trigger">组合2</button>
+          </ldesign-popup>
+        </div>
+        <div class="cell">
+          <ldesign-popup 
+            popup-title="完整功能" 
+            content="所有新功能的展示"
+            size="large"
+            closable
+            auto-close-delay="10000"
+            animation="scale"
+            popup-class="gradient-popup"
+            trigger="click"
+            placement="top">
+            <button class="btn" slot="trigger">全功能展示</button>
+          </ldesign-popup>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>8. 手动控制</h2>
+      <div class="desc">通过 JavaScript 手动控制弹层的显示/隐藏</div>
+      <div class="grid">
+        <div class="cell">
+          <button class="btn" id="manual-btn">切换弹层</button>
+          <ldesign-popup 
+            id="manual-popup" 
+            trigger="manual" 
+            popup-title="手动控制"
+            content="通过 JavaScript 控制的弹层"
+            closable
+            placement="right">
+            <span slot="trigger"></span>
+          </ldesign-popup>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>9. 响应式测试</h2>
+      <div class="desc">测试不同屏幕尺寸下的表现</div>
+      <div class="grid">
+        <div class="cell">
+          <ldesign-popup 
+            content="这是一个很长的内容，用于测试弹层在小屏幕设备上的响应式表现。弹层应该会自动调整宽度以适应屏幕。"
+            trigger="click">
+            <button class="btn" slot="trigger">响应式测试</button>
+          </ldesign-popup>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

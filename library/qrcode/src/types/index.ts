@@ -66,6 +66,8 @@ export enum DotStyle {
   SmoothDots = 'smooth-dots',
   /** Smooth flow style - connected liquid modules */
   SmoothFlow = 'smooth-flow',
+  /** Ultra smooth style - like ink flowing, uses advanced metaball algorithm */
+  UltraSmooth = 'ultra-smooth',
 }
 
 /**
