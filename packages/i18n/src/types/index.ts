@@ -1,247 +1,359 @@
 /**
- * @ldesign/i18n 类型定义
- *
- * 统一导出所有类型定义，提供完整的 TypeScript 支持
- *
- * @author LDesign Team
- * @version 2.0.0
+ * @ldesign/i18n - Type Definitions
+ * Core type definitions for the i18n system
  */
 
-// ==================== 重新导出核心类型 ====================
+// ============== Basic Types ==============
 
-// 从核心模块导出所有类型
-export type {
-  // 批量翻译
-  BatchTranslationResult,
-  CacheItem,
-  CacheOptions,
-  CacheStats,
-  // 检测器相关
-  Detector,
-  EventEmitter,
-  I18nEventArgsMap,
-
-  // 事件系统
-  I18nEventType,
-
-  // 基础接口
-  I18nInstance,
-  I18nOptions,
-
-  LanguageChangedEventArgs,
-
-  LanguageInfo,
-  LanguagePackage,
-  LoadedEventArgs,
-  // 加载器相关
-  Loader,
-
-  LoadErrorEventArgs,
-  // 缓存相关
-  LRUCache,
-  // 工具类型
-  NestedObject,
-  OptimizationSuggestion,
-  // 性能监控
-  PerformanceMetrics,
-  // 存储相关
-  Storage,
-  StorageType,
-
-  TranslationFunction,
-  TranslationMissingEventArgs,
-
-  TranslationOptions,
-
-  TranslationParams,
-} from '../core/types'
-
-// ==================== 重新导出 Vue 类型（占位） ====================
-// 注意：如需导出 Vue 专属的增强类型，请从 './vue/types' 明确导出现有类型。当前不导出不存在的增强类型文件。
-
-// ==================== 工具类型定义 ====================
+export type Locale = string;
+export type MessageKey = string;
+export type MessageValue = string | Record<string, any>;
+export type InterpolationParams = Record<string, any>;
+export type PluralRule = (count: number, locale: Locale) => string;
 
 /**
- * 深度只读类型
- *
- * 将对象的所有属性递归设置为只读
+ * Translation messages structure
  */
-export type DeepReadonly<T> = {
-  readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P]
+export interface Messages {
+  [key: string]: MessageValue | Messages;
 }
 
 /**
- * 可选的深度部分类型
- *
- * 将对象的所有属性递归设置为可选
+ * Language package containing all translations for a locale
  */
-export type DeepOptional<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepOptional<T[P]> : T[P]
+export interface LanguagePackage {
+  locale: Locale;
+  messages: Messages;
+  metadata?: {
+    name?: string;
+    direction?: 'ltr' | 'rtl';
+    fallback?: Locale;
+    [key: string]: any;
+  };
 }
 
 /**
- * 非空类型
- *
- * 排除 null 和 undefined
+ * Translation options
  */
-export type NonNullable<T> = T extends null | undefined ? never : T
-
-/**
- * 函数参数类型提取
- *
- * 提取函数的参数类型
- */
-export type Parameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never
-
-/**
- * 函数返回类型提取
- *
- * 提取函数的返回类型
- */
-export type ReturnType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? R : any
-
-/**
- * 构造函数参数类型提取
- *
- * 提取构造函数的参数类型
- */
-export type ConstructorParameters<T extends abstract new (...args: any) => any> = T extends abstract new (...args: infer P) => any ? P : never
-
-/**
- * 实例类型提取
- *
- * 提取构造函数的实例类型
- */
-export type InstanceType<T extends abstract new (...args: any) => any> = T extends abstract new (...args: any) => infer R ? R : any
-
-// ==================== 条件类型工具 ====================
-
-/**
- * 如果条件为真则返回类型 T，否则返回类型 F
- */
-export type If<C extends boolean, T, F> = C extends true ? T : F
-
-/**
- * 检查类型是否相等
- */
-export type Equals<X, Y> = (<T>() => T extends X ? 1 : 2) extends (<T>() => T extends Y ? 1 : 2) ? true : false
-
-/**
- * 检查类型是否为 any
- */
-export type IsAny<T> = 0 extends (1 & T) ? true : false
-
-/**
- * 检查类型是否为 never
- */
-export type IsNever<T> = [T] extends [never] ? true : false
-
-/**
- * 检查类型是否为 unknown
- */
-export type IsUnknown<T> = IsAny<T> extends true ? false : unknown extends T ? true : false
-
-// ==================== 字符串操作类型 ====================
-
-/**
- * 首字母大写
- */
-export type Capitalize<S extends string> = S extends `${infer F}${infer R}` ? `${Uppercase<F>}${R}` : S
-
-/**
- * 首字母小写
- */
-export type Uncapitalize<S extends string> = S extends `${infer F}${infer R}` ? `${Lowercase<F>}${R}` : S
-
-/**
- * 字符串替换
- */
-export type Replace<S extends string, From extends string, To extends string> = S extends `${infer L}${From}${infer R}` ? `${L}${To}${R}` : S
-
-/**
- * 字符串分割
- */
-export type Split<S extends string, D extends string> = S extends `${infer T}${D}${infer U}` ? [T, ...Split<U, D>] : [S]
-
-// ==================== 数组操作类型 ====================
-
-/**
- * 数组头部元素类型
- */
-export type Head<T extends readonly any[]> = T extends readonly [infer H, ...any[]] ? H : never
-
-/**
- * 数组尾部元素类型
- */
-export type Tail<T extends readonly any[]> = T extends readonly [any, ...infer R] ? R : []
-
-/**
- * 数组长度类型
- */
-export type Length<T extends readonly any[]> = T['length']
-
-/**
- * 数组反转类型
- */
-export type Reverse<T extends readonly any[]> = T extends readonly [...infer Rest, infer Last] ? [Last, ...Reverse<Rest>] : []
-
-// ==================== 对象操作类型 ====================
-
-/**
- * 对象键类型
- */
-export type Keys<T> = keyof T
-
-/**
- * 对象值类型
- */
-export type Values<T> = T[keyof T]
-
-/**
- * 对象条目类型
- */
-export type Entries<T> = {
-  [K in keyof T]: [K, T[K]]
-}[keyof T]
-
-/**
- * 从对象中排除指定键
- */
-export type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>
-
-/**
- * 从对象中选择指定键
- */
-export type Pick<T, K extends keyof T> = {
-  [P in K]: T[P]
+export interface TranslateOptions {
+  locale?: Locale;
+  fallbackLocale?: Locale | Locale[];
+  params?: InterpolationParams;
+  defaultValue?: string;
+  count?: number;
+  context?: string;
+  namespace?: string;
+  interpolation?: InterpolationOptions;
 }
 
 /**
- * 对象部分类型
+ * Interpolation options
  */
-export type Partial<T> = {
-  [P in keyof T]?: T[P]
+export interface InterpolationOptions {
+  prefix?: string;
+  suffix?: string;
+  escapeValue?: boolean;
+  formatter?: (value: any, format?: string, locale?: Locale) => string;
+}
+
+// ============== Core Interfaces ==============
+
+/**
+ * Message loader interface
+ */
+export interface MessageLoader {
+  load(locale: Locale, namespace?: string): Promise<Messages>;
+  loadSync(locale: Locale, namespace?: string): Messages | null;
+  isLoaded(locale: Locale, namespace?: string): boolean;
+  preload?(locales: Locale[], namespaces?: string[]): Promise<void>;
+  reload?(locale?: Locale, namespace?: string): Promise<void>;
 }
 
 /**
- * 对象必需类型
+ * Message storage interface
  */
-export type Required<T> = {
-  [P in keyof T]-?: T[P]
+export interface MessageStorage {
+  get(locale: Locale, namespace?: string): Messages | null;
+  set(locale: Locale, messages: Messages, namespace?: string): void;
+  has(locale: Locale, namespace?: string): boolean;
+  remove(locale: Locale, namespace?: string): void;
+  clear(): void;
+  getAll(): Map<string, Messages>;
 }
 
 /**
- * 对象只读类型
+ * Cache interface
  */
-export type Readonly<T> = {
-  readonly [P in keyof T]: T[P]
+export interface Cache<K = any, V = any> {
+  get(key: K): V | undefined;
+  set(key: K, value: V, ttl?: number): void;
+  has(key: K): boolean;
+  delete(key: K): boolean;
+  clear(): void;
+  size: number;
 }
 
 /**
- * 记录类型
+ * Language detector interface
  */
-export type Record<K extends keyof any, T> = {
-  [P in K]: T
+export interface LanguageDetector {
+  detect(): Locale | null;
+  cacheUserLanguage?(locale: Locale): void;
+  lookup?: Record<string, () => Locale | null>;
 }
 
-// ==================== 结束 ====================
+/**
+ * Formatter interface
+ */
+export interface Formatter {
+  format(value: any, format: string, locale: Locale, options?: any): string;
+}
+
+/**
+ * Plugin interface
+ */
+export interface I18nPlugin {
+  name: string;
+  version?: string;
+  install(i18n: I18nInstance): void | Promise<void>;
+  uninstall?(i18n: I18nInstance): void | Promise<void>;
+}
+
+// ============== Configuration ==============
+
+/**
+ * Main i18n configuration
+ */
+export interface I18nConfig {
+  // Basic settings
+  locale?: Locale;
+  fallbackLocale?: Locale | Locale[];
+  messages?: Record<Locale, Messages>;
+  
+  // Advanced settings
+  namespaces?: string[];
+  defaultNamespace?: string;
+  namespaceSeparator?: string;
+  keySeparator?: string;
+  pluralSeparator?: string;
+  contextSeparator?: string;
+  
+  // Features
+  lazy?: boolean;
+  cache?: boolean | CacheConfig;
+  detection?: boolean | DetectionConfig;
+  interpolation?: InterpolationConfig;
+  
+  // Components
+  loader?: MessageLoader;
+  storage?: MessageStorage;
+  detector?: LanguageDetector;
+  formatters?: Record<string, Formatter>;
+  plugins?: I18nPlugin[];
+  
+  // Behavior
+  missingKeyHandler?: MissingKeyHandler;
+  errorHandler?: ErrorHandler;
+  debug?: boolean;
+  silent?: boolean;
+  warnOnMissing?: boolean;
+}
+
+/**
+ * Cache configuration
+ */
+export interface CacheConfig {
+  enabled?: boolean;
+  ttl?: number;
+  maxSize?: number;
+  strategy?: 'lru' | 'lfu' | 'fifo';
+  storage?: 'memory' | 'localStorage' | 'sessionStorage' | Cache;
+}
+
+/**
+ * Detection configuration
+ */
+export interface DetectionConfig {
+  order?: string[];
+  lookupQuerystring?: string;
+  lookupCookie?: string;
+  lookupLocalStorage?: string;
+  lookupSessionStorage?: string;
+  lookupFromPathIndex?: number;
+  lookupFromSubdomainIndex?: number;
+  caches?: string[];
+  cookieOptions?: any;
+}
+
+/**
+ * Interpolation configuration
+ */
+export interface InterpolationConfig {
+  prefix?: string;
+  suffix?: string;
+  escapeValue?: boolean;
+  nestingPrefix?: string;
+  nestingSuffix?: string;
+  formatSeparator?: string;
+  formatter?: (value: any, format?: string, locale?: Locale) => string;
+}
+
+// ============== Events ==============
+
+/**
+ * Event types
+ */
+export type I18nEventType = 
+  | 'loaded'
+  | 'loading'
+  | 'loadError'
+  | 'localeChanged'
+  | 'namespaceLoaded'
+  | 'missingKey'
+  | 'fallback'
+  | 'initialized'
+  | 'pluginInstalled'
+  | 'pluginUninstalled';
+
+/**
+ * Event data
+ */
+export interface I18nEventData {
+  type: I18nEventType;
+  locale?: Locale;
+  namespace?: string;
+  key?: string;
+  fallback?: Locale;
+  error?: Error;
+  plugin?: string;
+  [key: string]: any;
+}
+
+/**
+ * Event listener
+ */
+export type I18nEventListener = (event: I18nEventData) => void;
+
+// ============== Error Handling ==============
+
+/**
+ * Missing key handler
+ */
+export type MissingKeyHandler = (
+  key: string,
+  locale: Locale,
+  namespace?: string,
+  fallbackValue?: string
+) => string;
+
+/**
+ * Error handler
+ */
+export type ErrorHandler = (
+  error: Error,
+  context?: Record<string, any>
+) => void;
+
+// ============== Runtime Interfaces ==============
+
+/**
+ * Translation function
+ */
+export interface TranslationFunction {
+  (key: MessageKey, options?: TranslateOptions): string;
+  (key: MessageKey, params?: InterpolationParams): string;
+  (key: MessageKey, defaultValue?: string, params?: InterpolationParams): string;
+}
+
+/**
+ * Main i18n instance interface
+ */
+export interface I18nInstance {
+  // Core properties
+  readonly version: string;
+  readonly config: Readonly<I18nConfig>;
+  locale: Locale;
+  fallbackLocale: Locale | Locale[];
+  
+  // Core methods
+  t: TranslationFunction;
+  translate(key: MessageKey, options?: TranslateOptions): string;
+  exists(key: MessageKey, options?: TranslateOptions): boolean;
+  
+  // Locale management
+  setLocale(locale: Locale): Promise<void>;
+  getLocale(): Locale;
+  addLocale(locale: Locale, messages: Messages): void;
+  removeLocale(locale: Locale): void;
+  hasLocale(locale: Locale): boolean;
+  getAvailableLocales(): Locale[];
+  
+  // Message management
+  addMessages(locale: Locale, messages: Messages, namespace?: string): void;
+  setMessages(locale: Locale, messages: Messages, namespace?: string): void;
+  getMessages(locale?: Locale, namespace?: string): Messages | null;
+  mergeMessages(locale: Locale, messages: Messages, namespace?: string): void;
+  
+  // Namespace management
+  loadNamespace(namespace: string, locale?: Locale): Promise<void>;
+  hasNamespace(namespace: string, locale?: Locale): boolean;
+  
+  // Formatting
+  format(value: any, format: string, locale?: Locale, options?: any): string;
+  number(value: number, options?: Intl.NumberFormatOptions): string;
+  currency(value: number, currency: string, options?: Intl.NumberFormatOptions): string;
+  date(value: Date | string | number, options?: Intl.DateTimeFormatOptions): string;
+  relativeTime(value: Date | string | number, options?: Intl.RelativeTimeFormatOptions): string;
+  
+  // Pluralization
+  plural(key: MessageKey, count: number, options?: TranslateOptions): string;
+  
+  // Event management
+  on(event: I18nEventType, listener: I18nEventListener): () => void;
+  off(event: I18nEventType, listener: I18nEventListener): void;
+  once(event: I18nEventType, listener: I18nEventListener): void;
+  emit(event: I18nEventType, data?: Omit<I18nEventData, 'type'>): void;
+  
+  // Plugin management
+  use(plugin: I18nPlugin): Promise<void>;
+  unuse(plugin: I18nPlugin | string): Promise<void>;
+  
+  // Lifecycle
+  init(config?: Partial<I18nConfig>): Promise<void>;
+  ready(): Promise<void>;
+  destroy(): void;
+  
+  // Utilities
+  clone(config?: Partial<I18nConfig>): I18nInstance;
+  createContext(namespace: string): I18nContext;
+}
+
+/**
+ * Namespaced context
+ */
+export interface I18nContext {
+  namespace: string;
+  t: TranslationFunction;
+  exists(key: MessageKey, options?: Omit<TranslateOptions, 'namespace'>): boolean;
+}
+
+// ============== Framework Adapters ==============
+
+/**
+ * Framework adapter interface
+ */
+export interface FrameworkAdapter<T = any> {
+  name: string;
+  install(app: T, i18n: I18nInstance): void;
+  uninstall?(app: T): void;
+}
+
+// ============== Export utility types ==============
+
+export type DeepPartial<T> = T extends object ? {
+  [P in keyof T]?: DeepPartial<T[P]>;
+} : T;
+
+export type ValueOf<T> = T[keyof T];
+
+export type PromiseOr<T> = T | Promise<T>;

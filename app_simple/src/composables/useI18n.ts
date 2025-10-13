@@ -1,18 +1,22 @@
 /**
  * i18n Composable
  * 
- * 提供简单优雅的多语言功能
+ * Provides i18n functionality using @ldesign/i18n
  */
 
-import { inject, computed, ref, triggerRef } from 'vue'
-import type { I18n } from '@ldesign/i18n'
-import { SUPPORTED_LOCALES, type SupportedLocale } from '../config/i18n.config'
+import { inject, computed, ref } from 'vue'
+import { 
+  getI18n,
+  SUPPORTED_LOCALES,
+  localeUtils,
+  type SupportedLocale 
+} from '../i18n'
 
-// 全局共享的 locale ref
+// Global shared locale ref
 let globalLocale: any = null
 
 /**
- * 使用 i18n
+ * Use i18n
  * 
  * @example
  * ```vue
@@ -23,21 +27,25 @@ let globalLocale: any = null
  * <template>
  *   <div>{{ t('common.welcome') }}</div>
  *   <select @change="changeLocale($event.target.value)">
- *     <option value="zh-CN">中文</option>
+     <option value="zh-CN">Chinese</option>
  *     <option value="en-US">English</option>
  *   </select>
  * </template>
  * ```
  */
 export function useI18n() {
-  // 注入 i18n 实例
-  const i18n = inject<I18n>('i18n')
+  // Get i18n instance from injection or global
+  let i18n = inject<any>('i18n')
   
   if (!i18n) {
-    throw new Error('i18n is not installed. Please make sure to install i18n plugin.')
+    // Try to get global instance
+    i18n = getI18n()
+    if (!i18n) {
+      throw new Error('i18n is not installed. Please make sure to install i18n plugin.')
+    }
   }
 
-  // 全局共享的 locale ref，所有组件共用
+  // Global shared locale ref, shared by all components
   if (!globalLocale) {
     globalLocale = ref(i18n.locale || 'zh-CN')
   }
@@ -50,85 +58,99 @@ export function useI18n() {
     }
   })
 
-  // 翻译函数 - 需要响应式地返回翻译结果
+  // Translation function - needs to return translation results reactively
   const t = (key: string, params?: Record<string, any>) => {
-    // 使用 locale.value 触发响应式依赖
+    // Use locale.value to trigger reactive dependency
     const _ = locale.value
     return i18n.t(key, params)
   }
 
-  // 批量翻译
+  // Batch translation
   const tm = (key: string) => {
     return i18n.tm(key)
   }
 
-  // 复数翻译
+  // Plural translation
   const tc = (key: string, count: number, params?: Record<string, any>) => {
     return i18n.tc(key, count, params)
   }
 
-  // 日期格式化
+  // Date formatting
   const d = (date: Date | number | string, format?: string) => {
     return i18n.d(date, format)
   }
 
-  // 数字格式化
+  // Number formatting
   const n = (number: number, format?: string) => {
     return i18n.n(number, format)
   }
 
-  // 切换语言
+  // Change language
   const changeLocale = async (newLocale: SupportedLocale) => {
     if (newLocale === locale.value) return
     
     try {
-      // 直接切换语言，i18n 内部会处理加载
-      await i18n.changeLanguage(newLocale)
-      // 更新全局的 locale ref，触发所有组件重新渲染
+      // Switch language
+      if (i18n.changeLocale) {
+        await i18n.changeLocale(newLocale)
+      } else if (i18n.setLocale) {
+        i18n.setLocale(newLocale)
+      } else {
+        i18n.locale = newLocale
+      }
+      // Update global locale ref to trigger re-render of all components
       globalLocale.value = newLocale
+      // Save preference
+      localeUtils.saveLocale(newLocale)
       console.log(`Language changed to: ${newLocale}`)
     } catch (error) {
       console.error(`Failed to change locale to ${newLocale}:`, error)
     }
   }
 
-  // 检查是否支持某语言
+  // Check if a language is supported
   const isLocaleSupported = (locale: string): locale is SupportedLocale => {
-    return locale in SUPPORTED_LOCALES
+    return SUPPORTED_LOCALES.some(l => l.code === locale)
   }
 
-  // 获取所有支持的语言
+  // Get all supported languages
   const availableLocales = computed(() => {
-    return Object.keys(SUPPORTED_LOCALES) as SupportedLocale[]
+    return SUPPORTED_LOCALES.map(l => l.code)
   })
 
-  // 获取语言显示名称
+  // Get language display name
   const getLocaleName = (locale: SupportedLocale) => {
-    return SUPPORTED_LOCALES[locale]
+    return localeUtils.getLocaleName(locale)
+  }
+
+  // Get language flag
+  const getLocaleFlag = (locale: string) => {
+    return localeUtils.getLocaleFlag(locale)
   }
 
   return {
-    // 核心功能
+    // Core functions
     t,
     tm,
     tc,
     d,
     n,
     
-    // 语言管理
+    // Language management
     locale,
     changeLocale,
     isLocaleSupported,
     availableLocales,
     getLocaleName,
+    getLocaleFlag,
     
-    // 原始 i18n 实例（高级用法）
+    // Raw i18n instance (for advanced usage)
     i18n,
   }
 }
 
 /**
- * 用于语言切换器组件
+ * For language switcher components
  */
 export function useLocaleSelector() {
   const { locale, availableLocales, getLocaleName, changeLocale } = useI18n()

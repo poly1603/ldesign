@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡片模式和受控模式测试</title>
+    <script type="module" src="./dist/ldesign/ldesign.esm.js"></script>
+    <link rel="stylesheet" href="./dist/ldesign/ldesign.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 8px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            border-color: #40a9ff;
+            color: #40a9ff;
+        }
+        
+        button.primary {
+            background: #1890ff;
+            color: white;
+            border-color: #1890ff;
+        }
+        
+        button.primary:hover {
+            background: #40a9ff;
+            border-color: #40a9ff;
+        }
+        
+        .status {
+            padding: 10px;
+            background: #f0f2f5;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #595959;
+        }
+        
+        .test-description {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+            color: #0050b3;
+            font-size: 14px;
+        }
+        
+        /* 调试用样式 */
+        .debug-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #fff;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            padding: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            max-width: 300px;
+            font-size: 12px;
+        }
+        
+        .debug-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        code {
+            background: #f0f2f5;
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>卡片模式和受控模式测试</h1>
+        
+        <!-- 卡片模式测试 -->
+        <div class="section">
+            <h2 class="section-title">卡片模式</h2>
+            <div class="test-description">
+                📦 卡片模式下，每个面板应该独立显示为卡片样式，有独立的边框和阴影
+            </div>
+            
+            <ldesign-collapse mode="card">
+                <ldesign-collapse-panel name="card1" title="卡片 1">
+                    <div style="padding: 16px;">
+                        <p>这是卡片模式的第一个面板。</p>
+                        <p>每个面板应该有独立的边框和圆角。</p>
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="card2" title="卡片 2">
+                    <div style="padding: 16px;">
+                        <p>这是卡片模式的第二个面板。</p>
+                        <p>鼠标悬停时应该有阴影效果。</p>
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="card3" title="卡片 3">
+                    <div style="padding: 16px;">
+                        <p>这是卡片模式的第三个面板。</p>
+                        <p>展开时应该有更明显的阴影。</p>
+                    </div>
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+        </div>
+        
+        <!-- 受控模式测试 -->
+        <div class="section">
+            <h2 class="section-title">受控模式</h2>
+            <div class="test-description">
+                🎮 通过 value 属性控制展开的面板，点击按钮可以控制特定面板的展开/收起
+            </div>
+            
+            <div class="controls">
+                <button onclick="setControlledValue(['panel1'])">只展开面板1</button>
+                <button onclick="setControlledValue(['panel2'])">只展开面板2</button>
+                <button onclick="setControlledValue(['panel1', 'panel2'])">展开1和2</button>
+                <button onclick="setControlledValue([])">全部收起</button>
+                <button onclick="setControlledValue(['panel1', 'panel2', 'panel3'])">全部展开</button>
+            </div>
+            
+            <ldesign-collapse id="controlledCollapse" value="[]">
+                <ldesign-collapse-panel name="panel1" title="受控面板 1">
+                    <div style="padding: 16px;">
+                        受控模式下，展开状态由 value 属性控制。
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="panel2" title="受控面板 2">
+                    <div style="padding: 16px;">
+                        点击上方按钮可以控制面板的展开状态。
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="panel3" title="受控面板 3">
+                    <div style="padding: 16px;">
+                        也可以同时展开多个面板。
+                    </div>
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+            
+            <div class="status" id="controlledStatus">
+                当前展开的面板：无
+            </div>
+        </div>
+        
+        <!-- 混合测试：卡片模式 + 受控模式 -->
+        <div class="section">
+            <h2 class="section-title">卡片模式 + 受控模式</h2>
+            <div class="test-description">
+                🎯 同时使用卡片样式和受控模式
+            </div>
+            
+            <div class="controls">
+                <button onclick="setMixedValue(['mix1'])">展开第一个</button>
+                <button onclick="setMixedValue(['mix2'])">展开第二个</button>
+                <button onclick="setMixedValue(['mix1', 'mix2'])">全部展开</button>
+                <button onclick="setMixedValue([])">全部收起</button>
+            </div>
+            
+            <ldesign-collapse id="mixedCollapse" mode="card" value="[]">
+                <ldesign-collapse-panel name="mix1" title="混合模式卡片 1">
+                    <div style="padding: 16px;">
+                        这个面板同时使用了卡片样式和受控模式。
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="mix2" title="混合模式卡片 2">
+                    <div style="padding: 16px;">
+                        样式和功能应该都正常工作。
+                    </div>
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+        </div>
+    </div>
+    
+    <div class="debug-info">
+        <div class="debug-title">调试信息</div>
+        <div id="debugContent">等待操作...</div>
+    </div>
+    
+    <script>
+        // 受控模式设置值
+        function setControlledValue(panels) {
+            const collapse = document.getElementById('controlledCollapse');
+            collapse.setAttribute('value', JSON.stringify(panels));
+            updateControlledStatus(panels);
+            updateDebug(`设置受控值: ${JSON.stringify(panels)}`);
+        }
+        
+        // 混合模式设置值
+        function setMixedValue(panels) {
+            const collapse = document.getElementById('mixedCollapse');
+            collapse.setAttribute('value', JSON.stringify(panels));
+            updateDebug(`设置混合模式值: ${JSON.stringify(panels)}`);
+        }
+        
+        // 更新状态显示
+        function updateControlledStatus(panels) {
+            const status = document.getElementById('controlledStatus');
+            if (panels.length === 0) {
+                status.textContent = '当前展开的面板：无';
+            } else {
+                status.textContent = `当前展开的面板：${panels.join(', ')}`;
+            }
+        }
+        
+        // 更新调试信息
+        function updateDebug(message) {
+            const debug = document.getElementById('debugContent');
+            const time = new Date().toLocaleTimeString('zh-CN');
+            debug.innerHTML = `<strong>[${time}]</strong><br>${message}`;
+        }
+        
+        // 监听变化事件
+        document.addEventListener('DOMContentLoaded', function() {
+            // 监听受控模式的变化
+            const controlledCollapse = document.getElementById('controlledCollapse');
+            controlledCollapse.addEventListener('change', (e) => {
+                console.log('受控模式变化:', e.detail);
+                updateControlledStatus(e.detail.openPanels || []);
+                updateDebug(`变化事件: ${JSON.stringify(e.detail)}`);
+            });
+            
+            // 监听混合模式的变化
+            const mixedCollapse = document.getElementById('mixedCollapse');
+            mixedCollapse.addEventListener('change', (e) => {
+                console.log('混合模式变化:', e.detail);
+                updateDebug(`混合模式变化: ${JSON.stringify(e.detail)}`);
+            });
+            
+            // 检查元素是否正确注册
+            setTimeout(() => {
+                const collapses = document.querySelectorAll('ldesign-collapse');
+                updateDebug(`找到 ${collapses.length} 个折叠组件`);
+                
+                // 检查是否有卡片样式类
+                collapses.forEach((collapse, index) => {
+                    const hasCardClass = collapse.classList.contains('ldesign-collapse--card');
+                    const mode = collapse.getAttribute('mode');
+                    console.log(`组件 ${index + 1}: mode="${mode}", hasCardClass=${hasCardClass}`);
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>

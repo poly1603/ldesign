@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal PDF Viewer - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .demo-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeIn 1s ease;
+        }
+        
+        .demo-header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .demo-header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            animation: slideUp 0.8s ease;
+        }
+        
+        .demo-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .viewer-container {
+            height: 700px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .demo-controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .demo-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .demo-btn:active {
+            transform: translateY(0);
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card .icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .feature-card p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .sample-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sample-list li {
+            padding: 10px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .sample-list li:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🎯 Universal PDF Viewer</h1>
+            <p>A beautiful, feature-rich PDF viewer that works with any framework</p>
+        </div>
+
+        <!-- Main Demo Section -->
+        <div class="demo-section">
+            <h2>📄 Live Demo</h2>
+            
+            <div class="demo-controls">
+                <button class="demo-btn" onclick="loadSamplePDF()">Load Sample PDF</button>
+                <button class="demo-btn" onclick="openLocalFile()">Open Local File</button>
+                <button class="demo-btn" onclick="toggleTheme()">Toggle Theme</button>
+                <button class="demo-btn" onclick="viewer.fitToWidth()">Fit to Width</button>
+                <button class="demo-btn" onclick="viewer.fitToHeight()">Fit to Height</button>
+                <button class="demo-btn" onclick="viewer.print()">Print</button>
+            </div>
+            
+            <div id="pdfViewer" class="viewer-container"></div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="demo-section">
+            <h2>✨ Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="icon">📖</div>
+                    <h3>Page Navigation</h3>
+                    <p>Easy navigation through pages with keyboard shortcuts</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🔍</div>
+                    <h3>Zoom & Search</h3>
+                    <p>Powerful zoom controls and text search functionality</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🎨</div>
+                    <h3>Theme Support</h3>
+                    <p>Beautiful light and dark themes with smooth transitions</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📱</div>
+                    <h3>Responsive</h3>
+                    <p>Works perfectly on desktop, tablet, and mobile devices</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">⚡</div>
+                    <h3>Fast Rendering</h3>
+                    <p>Optimized performance with PDF.js rendering engine</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🔧</div>
+                    <h3>Customizable</h3>
+                    <p>Highly customizable toolbar and UI components</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Examples -->
+        <div class="demo-section">
+            <h2>💻 Usage Examples</h2>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('vanilla')">Vanilla JS</button>
+                <button class="tab" onclick="showTab('react')">React</button>
+                <button class="tab" onclick="showTab('vue')">Vue</button>
+                <button class="tab" onclick="showTab('angular')">Angular</button>
+            </div>
+            
+            <div id="vanilla" class="tab-content active">
+                <div class="code-block">
+                    <pre>// Import the library
+import UniversalPDFViewer from 'universal-pdf-viewer';
+
+// Initialize the viewer
+const viewer = new UniversalPDFViewer({
+    container: '#pdfViewer',
+    pdfUrl: 'path/to/your.pdf',
+    theme: 'light',
+    enableToolbar: true,
+    enableSearch: true,
+    enablePrint: true,
+    defaultScale: 1.0
+});
+
+// Listen to events
+viewer.on('pageChanged', ({ currentPage, totalPages }) => {
+    console.log(`Page ${currentPage} of ${totalPages}`);
+});
+
+// Control programmatically
+viewer.nextPage();
+viewer.zoomIn();
+viewer.search('keyword');</pre>
+                </div>
+            </div>
+            
+            <div id="react" class="tab-content">
+                <div class="code-block">
+                    <pre>import React from 'react';
+import { PDFViewer } from 'universal-pdf-viewer/react';
+
+function App() {
+    const handlePageChange = (page, total) => {
+        console.log(`Page ${page} of ${total}`);
+    };
+
+    return (
+        &lt;PDFViewer
+            pdfUrl="path/to/your.pdf"
+            enableToolbar={true}
+            enableSearch={true}
+            theme="light"
+            onPageChange={handlePageChange}
+            style={{ height: '600px' }}
+        /&gt;
+    );
+}
+
+export default App;</pre>
+                </div>
+            </div>
+            
+            <div id="vue" class="tab-content">
+                <div class="code-block">
+                    <pre>&lt;template&gt;
+    &lt;PDFViewer
+        ref="pdfViewer"
+        :pdf-url="pdfUrl"
+        :enable-toolbar="true"
+        :enable-search="true"
+        theme="light"
+        @page-change="onPageChange"
+        height="600px"
+    /&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+import { PDFViewer } from 'universal-pdf-viewer/vue';
+
+export default {
+    components: { PDFViewer },
+    data() {
+        return {
+            pdfUrl: 'path/to/your.pdf'
+        };
+    },
+    methods: {
+        onPageChange({ currentPage, totalPages }) {
+            console.log(`Page ${currentPage} of ${totalPages}`);
+        }
+    }
+};
+&lt;/script&gt;</pre>
+                </div>
+            </div>
+            
+            <div id="angular" class="tab-content">
+                <div class="code-block">
+                    <pre>// app.module.ts
+import { PDFViewerModule } from 'universal-pdf-viewer/angular';
+
+@NgModule({
+    imports: [PDFViewerModule]
+})
+export class AppModule { }
+
+// app.component.ts
+@Component({
+    template: `
+        &lt;pdf-viewer
+            [pdfUrl]="pdfUrl"
+            [enableToolbar]="true"
+            [enableSearch]="true"
+            theme="light"
+            (pageChange)="onPageChange($event)"
+        &gt;&lt;/pdf-viewer&gt;
+    `
+})
+export class AppComponent {
+    pdfUrl = 'path/to/your.pdf';
+    
+    onPageChange(event: any) {
+        console.log(`Page ${event.currentPage} of ${event.totalPages}`);
+    }
+}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Reference -->
+        <div class="demo-section">
+            <h2>📚 API Methods</h2>
+            <ul class="sample-list">
+                <li onclick="viewer.nextPage()">➡️ <strong>nextPage()</strong> - Navigate to next page</li>
+                <li onclick="viewer.previousPage()">⬅️ <strong>previousPage()</strong> - Navigate to previous page</li>
+                <li onclick="viewer.goToPage(1)">📄 <strong>goToPage(n)</strong> - Jump to specific page</li>
+                <li onclick="viewer.zoomIn()">🔍+ <strong>zoomIn()</strong> - Increase zoom level</li>
+                <li onclick="viewer.zoomOut()">🔍- <strong>zoomOut()</strong> - Decrease zoom level</li>
+                <li onclick="viewer.setScale(1.5)">📏 <strong>setScale(n)</strong> - Set specific zoom scale</li>
+                <li onclick="viewer.rotateClockwise()">🔄 <strong>rotate()</strong> - Rotate the document</li>
+                <li onclick="viewer.print()">🖨️ <strong>print()</strong> - Print the document</li>
+                <li onclick="viewer.download()">⬇️ <strong>download()</strong> - Download the PDF</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Include the PDF Viewer Library -->
+    <script type="module">
+        // For demo purposes, we'll create a mock implementation
+        // In production, this would be loaded from the built library
+        
+        let viewer;
+        
+        window.onload = function() {
+            // Initialize the viewer with a sample PDF
+            initializeViewer();
+        };
+        
+        function initializeViewer() {
+            // Create a simple demo implementation
+            const container = document.getElementById('pdfViewer');
+            container.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: #666;">
+                    <h3>PDF Viewer Ready</h3>
+                    <p>Click "Load Sample PDF" or "Open Local File" to get started</p>
+                    <p style="margin-top: 20px; font-size: 12px;">
+                        Note: This is a demo page. Install the package via npm to use in your project.
+                    </p>
+                </div>
+            `;
+            
+            // Create mock viewer object for demo
+            viewer = {
+                nextPage: () => console.log('Next page'),
+                previousPage: () => console.log('Previous page'),
+                goToPage: (n) => console.log(`Go to page ${n}`),
+                zoomIn: () => console.log('Zoom in'),
+                zoomOut: () => console.log('Zoom out'),
+                setScale: (n) => console.log(`Set scale to ${n}`),
+                rotateClockwise: () => console.log('Rotate clockwise'),
+                print: () => window.print(),
+                download: () => console.log('Download PDF'),
+                fitToWidth: () => console.log('Fit to width'),
+                fitToHeight: () => console.log('Fit to height')
+            };
+            
+            window.viewer = viewer;
+        }
+        
+        window.loadSamplePDF = function() {
+            alert('Sample PDF loaded! (This would load a real PDF in production)');
+        };
+        
+        window.openLocalFile = function() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    alert(`Selected file: ${file.name}`);
+                }
+            };
+            input.click();
+        };
+        
+        window.toggleTheme = function() {
+            const container = document.getElementById('pdfViewer');
+            const currentTheme = container.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            container.setAttribute('data-theme', newTheme);
+            container.style.background = newTheme === 'dark' ? '#1a1a1a' : 'white';
+        };
+        
+        window.showTab = function(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        };
+    </script>
+</body>
+</html>

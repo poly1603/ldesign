@@ -7,7 +7,7 @@ import type { RouterEnginePlugin } from '@ldesign/router'
 import { auth } from '@/composables/useAuth'
 
 const LOGIN_PATH = '/login'
-const DEFAULT_REDIRECT = '/dashboard'
+const DEFAULT_REDIRECT = '/'  // 默认重定向到首页而不是 dashboard
 
 /**
  * 设置认证守卫
@@ -38,7 +38,11 @@ export function setupAuthGuard(router: RouterEnginePlugin) {
     
     // 已登录用户访问登录页，重定向到首页或原始目标
     if (to.path === LOGIN_PATH && auth.isLoggedIn.value) {
-      const redirect = (to.query.redirect as string) || DEFAULT_REDIRECT
+      // 避免循环重定向，如果 redirect 是登录页本身，则跳转到首页
+      let redirect = (to.query.redirect as string) || DEFAULT_REDIRECT
+      if (redirect === LOGIN_PATH) {
+        redirect = DEFAULT_REDIRECT
+      }
       next(redirect)
       return
     }

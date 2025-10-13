@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可排序折叠面板测试 - 带箭头动画</title>
+    <script src="dist/ldesign/ldesign.esm.js" type="module"></script>
+    <link rel="stylesheet" href="dist/ldesign/ldesign.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .status {
+            padding: 15px;
+            background: #f0f8ff;
+            border-left: 4px solid #1890ff;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .panel-content {
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 4px;
+            line-height: 1.6;
+        }
+        
+        .animation-info {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #ff6b00;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #764ba2;
+        }
+        
+        .drag-hint {
+            background: #e8f4fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #1890ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 可排序折叠面板测试</h1>
+        <p class="subtitle">验证拖拽排序功能和箭头旋转动画</p>
+        
+        <div class="animation-info">
+            ⚡ 注意观察箭头图标的旋转动画效果（90度旋转）
+        </div>
+        
+        <!-- 测试1: 可排序折叠面板 -->
+        <div class="test-section">
+            <h2 class="section-title">1. 可拖拽排序的折叠面板</h2>
+            <div class="drag-hint">
+                💡 提示：拖拽面板头部可以重新排序，展开/收起时观察箭头动画
+            </div>
+            
+            <div class="controls">
+                <button onclick="toggleSortable()">切换排序功能</button>
+                <button onclick="expandAll1()">展开全部</button>
+                <button onclick="collapseAll1()">收起全部</button>
+                <button onclick="resetOrder()">重置顺序</button>
+            </div>
+            
+            <div class="status" id="status1">
+                排序功能：<span id="sortable-status">启用</span> | 
+                展开状态：<span id="panels-status">[]</span>
+            </div>
+            
+            <ldesign-collapse 
+                id="collapse1" 
+                sortable
+                animation-duration="300"
+                animation-easing="cubic-bezier(0.4, 0, 0.2, 1)"
+            >
+                <ldesign-collapse-panel name="panel1" header="📦 面板 1 - 产品介绍">
+                    <div class="panel-content">
+                        <strong>产品特点：</strong><br>
+                        • 高性能组件库<br>
+                        • 支持主题定制<br>
+                        • 完善的文档支持<br>
+                        • 丰富的动画效果<br>
+                        <br>
+                        拖拽此面板头部可以改变顺序！
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="panel2" header="🎯 面板 2 - 核心功能">
+                    <div class="panel-content">
+                        <strong>核心功能包括：</strong><br>
+                        • 拖拽排序<br>
+                        • 平滑动画<br>
+                        • 手风琴模式<br>
+                        • 键盘导航<br>
+                        • 触摸手势支持<br>
+                        <br>
+                        注意箭头图标的旋转动画！
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="panel3" header="🚀 面板 3 - 快速开始">
+                    <div class="panel-content">
+                        <strong>使用步骤：</strong><br>
+                        1. 安装组件库<br>
+                        2. 引入样式文件<br>
+                        3. 注册组件<br>
+                        4. 开始使用<br>
+                        <br>
+                        这个面板也可以被拖动！
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="panel4" header="💡 面板 4 - 最佳实践">
+                    <div class="panel-content">
+                        <strong>最佳实践建议：</strong><br>
+                        • 合理使用动画效果<br>
+                        • 保持交互一致性<br>
+                        • 优化性能表现<br>
+                        • 提供键盘支持<br>
+                        • 注意无障碍访问<br>
+                    </div>
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+        </div>
+        
+        <!-- 测试2: 不同动画配置 -->
+        <div class="test-section">
+            <h2 class="section-title">2. 不同动画配置测试</h2>
+            
+            <div class="controls">
+                <button onclick="setFastAnimation()">快速动画 (150ms)</button>
+                <button onclick="setSlowAnimation()">慢速动画 (600ms)</button>
+                <button onclick="setSpringAnimation()">弹性动画</button>
+                <button onclick="setSmoothAnimation()">平滑动画</button>
+            </div>
+            
+            <ldesign-collapse 
+                id="collapse2"
+                animation-duration="300"
+                icon-rotation="180"
+            >
+                <ldesign-collapse-panel header="🎨 180度旋转动画" name="animation1">
+                    <div class="panel-content">
+                        这个面板的箭头会旋转180度！<br>
+                        动画时长可以通过按钮调整。
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel header="🔄 默认90度旋转" name="animation2">
+                    <div class="panel-content">
+                        标准的90度旋转效果。<br>
+                        尝试不同的动画预设！
+                    </div>
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+        </div>
+        
+        <!-- 测试3: 嵌套面板 -->
+        <div class="test-section">
+            <h2 class="section-title">3. 嵌套折叠面板</h2>
+            
+            <ldesign-collapse id="collapse3">
+                <ldesign-collapse-panel header="🏠 父级面板" name="parent1">
+                    <div class="panel-content">
+                        <p>这是父级面板的内容</p>
+                        
+                        <ldesign-collapse>
+                            <ldesign-collapse-panel header="📂 子面板 1" name="child1">
+                                <div class="panel-content">
+                                    子面板 1 的内容，注意箭头动画是独立的
+                                </div>
+                            </ldesign-collapse-panel>
+                            
+                            <ldesign-collapse-panel header="📁 子面板 2" name="child2">
+                                <div class="panel-content">
+                                    子面板 2 的内容，每个面板都有独立的动画
+                                </div>
+                            </ldesign-collapse-panel>
+                        </ldesign-collapse>
+                    </div>
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+        </div>
+    </div>
+    
+    <script>
+        // 获取组件引用
+        const collapse1 = document.getElementById('collapse1');
+        const collapse2 = document.getElementById('collapse2');
+        const collapse3 = document.getElementById('collapse3');
+        
+        // 监听事件
+        collapse1.addEventListener('ldesignChange', (e) => {
+            updateStatus();
+            console.log('展开面板变化:', e.detail);
+        });
+        
+        collapse1.addEventListener('ldesignSortChange', (e) => {
+            console.log('排序变化:', e.detail);
+            alert(`面板 "${e.detail.panelName}" 从位置 ${e.detail.from + 1} 移动到位置 ${e.detail.to + 1}`);
+        });
+        
+        // 切换排序功能
+        function toggleSortable() {
+            collapse1.sortable = !collapse1.sortable;
+            document.getElementById('sortable-status').textContent = 
+                collapse1.sortable ? '启用' : '禁用';
+        }
+        
+        // 展开全部
+        function expandAll1() {
+            collapse1.expandAll();
+            updateStatus();
+        }
+        
+        // 收起全部
+        function collapseAll1() {
+            collapse1.collapseAll();
+            updateStatus();
+        }
+        
+        // 重置顺序
+        function resetOrder() {
+            const container = collapse1;
+            const panels = Array.from(container.querySelectorAll('ldesign-collapse-panel'));
+            
+            // 按照 name 属性排序
+            panels.sort((a, b) => {
+                const nameA = a.getAttribute('name');
+                const nameB = b.getAttribute('name');
+                return nameA.localeCompare(nameB);
+            });
+            
+            // 重新插入到容器中
+            panels.forEach(panel => {
+                container.appendChild(panel);
+            });
+            
+            alert('面板顺序已重置！');
+        }
+        
+        // 更新状态显示
+        function updateStatus() {
+            const openPanels = collapse1.value || [];
+            document.getElementById('panels-status').textContent = 
+                JSON.stringify(openPanels);
+        }
+        
+        // 动画配置函数
+        function setFastAnimation() {
+            collapse2.animationDuration = 150;
+            Array.from(collapse2.querySelectorAll('ldesign-collapse-panel')).forEach(panel => {
+                panel.animationDuration = 150;
+            });
+            console.log('设置快速动画 (150ms)');
+        }
+        
+        function setSlowAnimation() {
+            collapse2.animationDuration = 600;
+            Array.from(collapse2.querySelectorAll('ldesign-collapse-panel')).forEach(panel => {
+                panel.animationDuration = 600;
+            });
+            console.log('设置慢速动画 (600ms)');
+        }
+        
+        function setSpringAnimation() {
+            collapse2.animationEasing = 'cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+            Array.from(collapse2.querySelectorAll('ldesign-collapse-panel')).forEach(panel => {
+                panel.animationEasing = 'cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                panel.animationPreset = 'spring';
+            });
+            console.log('设置弹性动画');
+        }
+        
+        function setSmoothAnimation() {
+            collapse2.animationEasing = 'cubic-bezier(0.4, 0, 0.2, 1)';
+            Array.from(collapse2.querySelectorAll('ldesign-collapse-panel')).forEach(panel => {
+                panel.animationEasing = 'cubic-bezier(0.4, 0, 0.2, 1)';
+                panel.animationPreset = 'smooth';
+            });
+            console.log('设置平滑动画');
+        }
+        
+        // 初始化状态
+        updateStatus();
+    </script>
+</body>
+</html>

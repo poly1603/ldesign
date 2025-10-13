@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拖拽调试测试</title>
+    <script src="dist/ldesign/ldesign.esm.js" type="module"></script>
+    <link rel="stylesheet" href="dist/ldesign/ldesign.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background: #40a9ff;
+        }
+        
+        .panel-content {
+            padding: 10px;
+            background: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>拖拽功能调试</h1>
+        
+        <div class="controls">
+            <button onclick="enableSorting()">启用排序</button>
+            <button onclick="disableSorting()">禁用排序</button>
+            <button onclick="checkState()">检查状态</button>
+            <button onclick="simulateDrag()">模拟拖拽</button>
+            <button onclick="clearLog()">清除日志</button>
+        </div>
+        
+        <div class="debug-info" id="debugLog">
+            <div>等待操作...</div>
+        </div>
+        
+        <ldesign-collapse id="testCollapse" sortable>
+            <ldesign-collapse-panel name="panel1" header="面板 1">
+                <div class="panel-content">这是面板 1 的内容</div>
+            </ldesign-collapse-panel>
+            
+            <ldesign-collapse-panel name="panel2" header="面板 2">
+                <div class="panel-content">这是面板 2 的内容</div>
+            </ldesign-collapse-panel>
+            
+            <ldesign-collapse-panel name="panel3" header="面板 3">
+                <div class="panel-content">这是面板 3 的内容</div>
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+    </div>
+    
+    <script>
+        const logContainer = document.getElementById('debugLog');
+        const collapse = document.getElementById('testCollapse');
+        
+        function log(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            logEntry.textContent = `[${time}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            logContainer.innerHTML = '<div>日志已清除</div>';
+        }
+        
+        function enableSorting() {
+            collapse.sortable = true;
+            log('已启用排序功能', 'success');
+            checkState();
+        }
+        
+        function disableSorting() {
+            collapse.sortable = false;
+            log('已禁用排序功能', 'success');
+            checkState();
+        }
+        
+        function checkState() {
+            log('=== 状态检查 ===');
+            
+            // 检查 collapse 的 sortable 属性
+            log(`Collapse sortable: ${collapse.sortable}`);
+            
+            // 检查每个面板的状态
+            const panels = Array.from(collapse.querySelectorAll('ldesign-collapse-panel'));
+            panels.forEach((panel, index) => {
+                const name = panel.getAttribute('name');
+                const draggable = panel.getAttribute('draggable');
+                const sortableProp = panel.sortable;
+                const hasClass = panel.classList.contains('ldesign-collapse-panel--sortable');
+                log(`面板 ${name}: draggable="${draggable}", sortable=${sortableProp}, has-class=${hasClass}`);
+            });
+            
+            // 显示当前顺序
+            const order = panels.map(p => p.getAttribute('name')).join(' -> ');
+            log(`当前顺序: ${order}`);
+        }
+        
+        function simulateDrag() {
+            log('=== 开始模拟拖拽 ===');
+            
+            const panel1 = collapse.querySelector('ldesign-collapse-panel[name="panel1"]');
+            const panel3 = collapse.querySelector('ldesign-collapse-panel[name="panel3"]');
+            
+            if (!panel1 || !panel3) {
+                log('未找到面板元素', 'error');
+                return;
+            }
+            
+            try {
+                // 创建 DataTransfer 对象
+                const dt = new DataTransfer();
+                
+                // 创建拖拽开始事件
+                const dragStartEvent = new DragEvent('dragstart', {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer: dt
+                });
+                
+                log('触发 dragstart on panel1');
+                panel1.dispatchEvent(dragStartEvent);
+                
+                // 创建拖拽经过事件
+                const dragOverEvent = new DragEvent('dragover', {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer: dt
+                });
+                
+                log('触发 dragover on panel3');
+                panel3.dispatchEvent(dragOverEvent);
+                
+                // 创建放置事件
+                const dropEvent = new DragEvent('drop', {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer: dt
+                });
+                
+                log('触发 drop on panel3');
+                panel3.dispatchEvent(dropEvent);
+                
+                // 创建拖拽结束事件
+                const dragEndEvent = new DragEvent('dragend', {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer: dt
+                });
+                
+                log('触发 dragend on panel1');
+                panel1.dispatchEvent(dragEndEvent);
+                
+                // 检查结果
+                setTimeout(() => {
+                    log('=== 拖拽后状态 ===');
+                    checkState();
+                }, 100);
+                
+            } catch (error) {
+                log(`模拟拖拽失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 监听事件
+        collapse.addEventListener('ldesignSortChange', (e) => {
+            log(`排序变化事件: from=${e.detail.from}, to=${e.detail.to}, panel=${e.detail.panelName}`, 'success');
+        });
+        
+        // 监听原生拖拽事件
+        document.addEventListener('dragstart', (e) => {
+            if (e.target.closest('ldesign-collapse-panel')) {
+                log(`原生 dragstart: ${e.target.closest('ldesign-collapse-panel').getAttribute('name')}`);
+            }
+        });
+        
+        document.addEventListener('dragend', (e) => {
+            if (e.target.closest('ldesign-collapse-panel')) {
+                log(`原生 dragend: ${e.target.closest('ldesign-collapse-panel').getAttribute('name')}`);
+            }
+        });
+        
+        document.addEventListener('dragover', (e) => {
+            if (e.target.closest('ldesign-collapse-panel')) {
+                const name = e.target.closest('ldesign-collapse-panel').getAttribute('name');
+                // 避免过多日志
+                if (!window.lastDragOver || window.lastDragOver !== name) {
+                    log(`原生 dragover: ${name}`);
+                    window.lastDragOver = name;
+                }
+            }
+        });
+        
+        document.addEventListener('drop', (e) => {
+            if (e.target.closest('ldesign-collapse-panel')) {
+                log(`原生 drop: ${e.target.closest('ldesign-collapse-panel').getAttribute('name')}`);
+            }
+        });
+        
+        // 初始检查
+        setTimeout(() => {
+            log('页面加载完成');
+            checkState();
+        }, 1000);
+    </script>
+</body>
+</html>

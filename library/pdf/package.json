@@ -1,63 +1,51 @@
 {
-  "name": "@ldesign/pdf-viewer",
+  "name": "universal-pdf-viewer",
   "version": "1.0.0",
-  "description": "A powerful, feature-rich PDF viewer library that works with any framework",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./vue": {
-      "types": "./dist/vue/index.d.ts",
-      "import": "./dist/vue/index.js",
-      "require": "./dist/vue/index.cjs"
-    }
-  },
-  "files": [
-    "dist"
-  ],
+  "description": "A beautiful, feature-rich PDF viewer plugin that works with any framework",
+  "main": "dist/pdf-viewer.js",
+  "module": "dist/pdf-viewer.esm.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
-    "dev": "node scripts/dev.js",
-    "build": "vite build && tsc --emitDeclarationOnly",
-    "build:all": "node scripts/build-all.js",
-    "copy:worker": "node scripts/copy-worker.js",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "serve": "http-server -p 8080",
+    "test": "jest",
+    "lint": "eslint src/**/*.{js,ts}",
+    "format": "prettier --write src/**/*.{js,ts,css}"
   },
   "keywords": [
     "pdf",
     "viewer",
     "pdf-viewer",
-    "pdfjs",
-    "vue",
     "react",
+    "vue",
+    "angular",
+    "vanilla",
     "framework-agnostic"
   ],
-  "author": "ldesign",
+  "author": "",
   "license": "MIT",
-  "peerDependencies": {
-    "vue": "^3.0.0"
-  },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  },
   "dependencies": {
-    "pdfjs-dist": "^4.0.379"
+    "pdfjs-dist": "^3.11.174"
   },
   "devDependencies": {
-    "@types/node": "^20.10.6",
-    "@vitejs/plugin-vue": "^5.0.2",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.10",
-    "vitepress": "^1.0.0-rc.39",
-    "vue": "^3.4.15"
-  }
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@types/node": "^20.10.5",
+    "eslint": "^8.56.0",
+    "http-server": "^14.1.1",
+    "jest": "^29.7.0",
+    "prettier": "^3.1.1",
+    "rollup": "^4.9.1",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-css-only": "^4.5.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "^5.3.3"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ]
 }

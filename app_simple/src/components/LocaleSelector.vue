@@ -30,11 +30,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useLocaleSelector } from '../composables/useI18n'
-import type { SupportedLocale } from '../config/i18n.config'
+import { useLocaleSelector, useI18n } from '../composables/useI18n'
+import type { SupportedLocale } from '../i18n'
 
 // 使用语言选择器
 const { currentLocale, localeOptions, changeLocale } = useLocaleSelector()
+
+// 使用 i18n 获取国旗函数
+const { getLocaleFlag } = useI18n()
 
 // 下拉菜单状态
 const isOpen = ref(false)
@@ -45,15 +48,8 @@ const currentLocaleName = computed(() => {
   return option?.label || currentLocale.value
 })
 
-// 获取国旗 emoji
-const getFlag = (locale: string) => {
-  const flags: Record<string, string> = {
-    'zh-CN': '🇨🇳',
-    'en-US': '🇺🇸',
-    'ja-JP': '🇯🇵',
-  }
-  return flags[locale] || '🌐'
-}
+// 获取国旗 emoji - 直接使用共享的方法
+const getFlag = (locale: string) => getLocaleFlag(locale)
 
 // 处理语言切换
 const handleChange = async (locale: SupportedLocale) => {

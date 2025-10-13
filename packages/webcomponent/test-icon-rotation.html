@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图标旋转动画测试</title>
+    <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+    <style>
+        body {
+            padding: 40px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+        }
+        .demo-section {
+            margin-bottom: 40px;
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        h2 {
+            margin-top: 0;
+            color: #1f2329;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        .test-box {
+            border: 1px solid #e5e6eb;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f5f7fa;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-section">
+        <h2>🔄 图标旋转动画测试</h2>
+        
+        <div class="test-box">
+            <h3>1. 基础旋转（默认90度）</h3>
+            <ldesign-collapse>
+                <ldesign-collapse-panel header="点击查看箭头旋转">
+                    箭头应该从指向右边（→）旋转到指向下方（↓）
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+            <div class="status">期望：箭头旋转90度，动画时长约300ms</div>
+        </div>
+
+        <div class="test-box">
+            <h3>2. 180度翻转</h3>
+            <ldesign-collapse>
+                <ldesign-collapse-panel header="180度翻转" icon-rotation="180" expand-icon="chevron-down">
+                    使用向下箭头，展开时翻转180度
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+            <div class="status">期望：向下箭头（↓）旋转到向上（↑）</div>
+        </div>
+
+        <div class="test-box">
+            <h3>3. 反向旋转</h3>
+            <ldesign-collapse>
+                <ldesign-collapse-panel header="反向旋转" reverse-icon-rotation>
+                    箭头反向旋转-90度
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+            <div class="status">期望：箭头向上旋转而不是向下</div>
+        </div>
+
+        <div class="test-box">
+            <h3>4. 慢速动画测试（1秒）</h3>
+            <ldesign-collapse animation-duration="1000">
+                <ldesign-collapse-panel header="慢速旋转">
+                    动画持续1秒，可以清楚看到旋转过程
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+            <div class="status">期望：缓慢旋转，便于观察动画细节</div>
+        </div>
+
+        <div class="test-box">
+            <h3>5. 多个面板同时测试</h3>
+            <ldesign-collapse>
+                <ldesign-collapse-panel header="面板 A" name="a">
+                    内容 A - 查看箭头旋转
+                </ldesign-collapse-panel>
+                <ldesign-collapse-panel header="面板 B" name="b">
+                    内容 B - 每个箭头独立旋转
+                </ldesign-collapse-panel>
+                <ldesign-collapse-panel header="面板 C" name="c">
+                    内容 C - 动画应该流畅
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+            <div class="status">期望：每个面板的箭头独立旋转，互不影响</div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🎯 检查要点</h2>
+        <ul>
+            <li>✅ 箭头初始状态指向右边（→）</li>
+            <li>✅ 点击展开时箭头平滑旋转到指向下方（↓）</li>
+            <li>✅ 旋转动画流畅，无卡顿</li>
+            <li>✅ 收起时箭头反向旋转回原位</li>
+            <li>✅ 多个面板的箭头动画互不干扰</li>
+            <li>✅ 自定义角度（180度等）正常工作</li>
+        </ul>
+    </div>
+
+    <script>
+        // 监听面板变化
+        document.addEventListener('DOMContentLoaded', () => {
+            const collapses = document.querySelectorAll('ldesign-collapse');
+            collapses.forEach(collapse => {
+                collapse.addEventListener('ldesignChange', (e) => {
+                    console.log('展开项变化:', e.detail);
+                });
+                
+                collapse.addEventListener('ldesignToggle', (e) => {
+                    console.log('切换面板:', e.detail);
+                    
+                    // 检查箭头元素的旋转状态
+                    setTimeout(() => {
+                        const arrow = collapse.querySelector('.ldesign-collapse-panel__arrow');
+                        if (arrow) {
+                            const transform = window.getComputedStyle(arrow).transform;
+                            console.log('箭头 transform:', transform);
+                        }
+                    }, 100);
+                });
+            });
+            
+            // 检查CSS类
+            const panels = document.querySelectorAll('ldesign-collapse-panel');
+            panels.forEach(panel => {
+                const arrow = panel.querySelector('.ldesign-collapse-panel__arrow');
+                if (arrow) {
+                    console.log('Arrow classes:', arrow.className);
+                    console.log('Arrow styles:', window.getComputedStyle(arrow).cssText);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

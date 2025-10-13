@@ -25,6 +25,11 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
+    "./adapters/vue": {
+      "types": "./es/adapters/vue.d.ts",
+      "import": "./es/adapters/vue.js",
+      "require": "./lib/adapters/vue.cjs"
+    },
     "./core": {
       "types": "./es/core/index.d.ts",
       "import": "./es/core/index.js",

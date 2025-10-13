@@ -1020,38 +1020,37 @@ function initCrystalizeQR() {
   });
 }
 
-// Initialize liquidify effect (NEW ADVANCED ⭐)
-function initLiquidifyQR() {
-  const container = document.getElementById('liquidify-qr')!;
-  const select = document.getElementById('liquidify-effect-select') as HTMLSelectElement;
-  const updateBtn = document.getElementById('liquidify-update')!;
-  const downloadBtn = document.getElementById('liquidify-download')!;
+// Initialize smooth flow effect (NEW ADVANCED ⭐)
+function initSmoothFlowQR() {
+  const container = document.getElementById('smooth-flow-qr')!;
+  const updateBtn = document.getElementById('smooth-flow-update')!;
+  const downloadBtn = document.getElementById('smooth-flow-download')!;
 
-  qrInstances.liquidify = createQRCode({
-    content: 'Liquidify Effect Demo',
+  qrInstances.smoothFlow = createQRCode({
+    content: 'Smooth Flow QR Code',
     container,
+    errorCorrectionLevel: 'H' as any,
     style: {
       size: 200,
-      dotStyle: 'dots' as DotStyle,
+      dotStyle: 'liquid' as DotStyle, // Use liquid dot style
       gradient: {
-        type: 'radial',
+        type: 'linear',
         colors: ['#3498db', '#2980b9'],
-        position: { x: 0.5, y: 0.5 },
-      },
-      effect: select.value as any,
+        direction: 45,
+      }
     },
   });
 
   updateBtn.addEventListener('click', async () => {
-    await qrInstances.liquidify.update({
+    await qrInstances.smoothFlow.update({
       style: {
-        effect: select.value as any,
+        dotStyle: 'liquid' as DotStyle,
       },
     });
   });
 
   downloadBtn.addEventListener('click', () => {
-    qrInstances.liquidify.download({ fileName: 'liquidify-qrcode', format: 'png' });
+    qrInstances.smoothFlow.download({ fileName: 'smooth-flow-qrcode', format: 'png' });
   });
 }
 
@@ -1097,7 +1096,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initMarginNoise();
     initMaskPattern();
     initCrystalizeQR();
-    initLiquidifyQR();
+    initSmoothFlowQR();
 
     console.log('✅ All demos initialized successfully!');
   } catch (error) {

@@ -45,6 +45,10 @@ export function drawDot(
     case DotStyle.SmoothDots:
       drawSmoothDots(ctx, x, y, size);
       break;
+    case DotStyle.SmoothFlow:
+      // Smooth flow is handled differently in canvas renderer
+      drawCircle(ctx, x, y, size);
+      break;
     default:
       drawSquare(ctx, x, y, size);
   }

@@ -200,14 +200,23 @@ export function createTableDialog(options: TableDialogOptions): HTMLElement {
  * 显示表格插入对话框
  */
 export function showTableDialog(options: TableDialogOptions): void {
+  console.log('🎯 [TableDialog] showTableDialog called')
+  console.log('🎯 [TableDialog] document.body exists:', !!document.body)
+  
   // 移除已存在的对话框
   const existing = document.querySelector('.editor-dialog-overlay')
   if (existing) {
+    console.log('🎯 [TableDialog] Removing existing dialog')
     existing.remove()
   }
 
+  console.log('🎯 [TableDialog] Creating new dialog')
   const dialog = createTableDialog(options)
+  console.log('🎯 [TableDialog] Dialog created:', !!dialog)
+  
+  console.log('🎯 [TableDialog] Appending to body')
   document.body.appendChild(dialog)
+  console.log('🎯 [TableDialog] Dialog appended to body')
 
   // 聚焦到第一个输入框
   setTimeout(() => {

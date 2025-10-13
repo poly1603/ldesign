@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collapse 组件测试</title>
+    <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+    <style>
+        body {
+            padding: 40px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+        }
+        .demo-section {
+            margin-bottom: 40px;
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        h2 {
+            margin-top: 0;
+            color: #1f2329;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        h3 {
+            color: #646a73;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        .demo-row {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-section">
+        <h2>🎨 动画效果测试</h2>
+        
+        <h3>1. 标准旋转动画（90度）</h3>
+        <ldesign-collapse>
+            <ldesign-collapse-panel header="标准旋转" icon-rotation="90">
+                默认90度旋转，查看图标是否有旋转动画
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="面板 2">
+                内容 2
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+
+        <h3 style="margin-top: 30px;">2. 180度翻转动画</h3>
+        <ldesign-collapse>
+            <ldesign-collapse-panel header="翻转效果" icon-rotation="180" expand-icon="chevron-down">
+                180度翻转动画效果
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+
+        <h3 style="margin-top: 30px;">3. 弹性动画（Spring）</h3>
+        <ldesign-collapse animation-duration="500">
+            <ldesign-collapse-panel header="弹性效果" animation-preset="spring" icon-rotation="180">
+                🎉 弹簧效果的展开动画，图标应该有流畅的旋转
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="面板 2" animation-preset="spring">
+                弹性动画内容
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+
+        <h3 style="margin-top: 30px;">4. 内容渐显动画</h3>
+        <ldesign-collapse>
+            <ldesign-collapse-panel header="淡入效果" content-animation="fade">
+                ✨ 内容淡入效果
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="滑入效果" content-animation="slide">
+                📥 内容滑入效果
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="缩放效果" content-animation="scale">
+                🔍 内容缩放效果
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+
+        <h3 style="margin-top: 30px;">5. 主题色彩</h3>
+        <ldesign-collapse theme="primary" default-value='["1"]'>
+            <ldesign-collapse-panel name="1" header="Primary 主题">
+                主题色展示，图标应该有颜色变化和旋转动画
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel name="2" header="面板 2">
+                内容 2
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+
+        <h3 style="margin-top: 30px;">6. 卡片模式</h3>
+        <ldesign-collapse card-style>
+            <ldesign-collapse-panel header="卡片 1">
+                🎴 卡片模式，每个面板独立
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="卡片 2">
+                🌈 鼠标悬停有阴影效果
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+
+        <h3 style="margin-top: 30px;">7. 不同尺寸</h3>
+        <div class="demo-row">
+            <p>Small 尺寸</p>
+            <ldesign-collapse size="small">
+                <ldesign-collapse-panel header="小尺寸">小尺寸内容</ldesign-collapse-panel>
+            </ldesign-collapse>
+        </div>
+        <div class="demo-row">
+            <p>Large 尺寸</p>
+            <ldesign-collapse size="large">
+                <ldesign-collapse-panel header="大尺寸">大尺寸内容</ldesign-collapse-panel>
+            </ldesign-collapse>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🔍 问题排查</h2>
+        <p>检查以下内容是否正常：</p>
+        <ul>
+            <li>✅ 图标点击时是否有旋转动画（应该旋转90度或指定角度）</li>
+            <li>✅ 内容区域展开是否有高度动画</li>
+            <li>✅ 不同的 animation-preset 是否有不同的缓动效果</li>
+            <li>✅ content-animation 是否生效（淡入、滑入、缩放）</li>
+            <li>✅ 主题色是否正确显示</li>
+            <li>✅ 卡片模式是否有独立样式</li>
+            <li>✅ 不同尺寸是否有差异</li>
+        </ul>
+    </div>
+
+    <script>
+        // 测试 API
+        setTimeout(() => {
+            console.log('Collapse 组件已加载');
+            const collapse = document.querySelector('ldesign-collapse');
+            console.log('Collapse 实例:', collapse);
+        }, 1000);
+    </script>
+</body>
+</html>

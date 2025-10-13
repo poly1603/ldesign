@@ -1,591 +1,417 @@
 /**
- * 缓存配置接口
+ * @ldesign/i18n - Cache System
+ * High-performance caching for translations and resources
  */
-export interface CacheConfig {
-  /** 最大缓存大小 */
-  maxSize?: number
-  /** 生存时间（毫秒） */
-  ttl?: number
-  /** 是否启用 LRU 策略 */
-  enableLRU?: boolean
-  /** 缓存策略 */
-  strategy?: 'lru' | 'lfu' | 'fifo'
-}
+
+import type { Cache } from '../types';
 
 /**
- * 缓存项接口
+ * LRU Cache implementation
  */
-interface CacheItem<T> {
-  value: T
-  timestamp: number
-  accessCount: number
-  lastAccessed: number
-}
-
-/**
- * CacheItem对象池（减少GC压力）
- *
- * 优化特性：
- * - 使用 WeakMap 跟踪对象元数据
- * - 自动调整池大小
- * - 统计对象复用率
- */
-class CacheItemPool<T> {
-  private pool: CacheItem<T>[] = []
-  private maxSize: number
-  private minSize: number
-  private acquireCount = 0
-  private releaseCount = 0
-  // 使用 WeakMap 跟踪对象元数据，避免内存泄漏
-  private itemMetadata = new WeakMap<CacheItem<T>, { createdAt: number, reuseCount: number }>()
-
-  constructor(maxSize: number = 50, minSize: number = 10) {
-    this.maxSize = maxSize
-    this.minSize = minSize
+export class LRUCache<K = string, V = any> implements Cache<K, V> {
+  private maxSize: number;
+  private cache: Map<K, { value: V; expires?: number }> = new Map();
+  private accessOrder: K[] = [];
+  private defaultTTL?: number;
+  
+  constructor(maxSize = 1000, defaultTTL?: number) {
+    this.maxSize = maxSize;
+    this.defaultTTL = defaultTTL;
   }
-
-  acquire(value: T, timestamp: number): CacheItem<T> {
-    this.acquireCount++
-    let item: CacheItem<T>
-
-    if (this.pool.length > 0) {
-      item = this.pool.pop()!
-      item.value = value
-      item.timestamp = timestamp
-      item.accessCount = 0
-      item.lastAccessed = timestamp
-
-      // 更新复用计数
-      const metadata = this.itemMetadata.get(item)
-      if (metadata) {
-        metadata.reuseCount++
+  
+  get(key: K): V | undefined {
+    const item = this.cache.get(key);
+    
+    if (!item) {
+      return undefined;
+    }
+    
+    // Check expiration
+    if (item.expires && Date.now() > item.expires) {
+      this.delete(key);
+      return undefined;
+    }
+    
+    // Update access order (move to end)
+    this.updateAccessOrder(key);
+    
+    return item.value;
+  }
+  
+  set(key: K, value: V, ttl?: number): void {
+    // Remove oldest if at capacity
+    if (!this.cache.has(key) && this.cache.size >= this.maxSize) {
+      const oldestKey = this.accessOrder.shift();
+      if (oldestKey !== undefined) {
+        this.cache.delete(oldestKey);
       }
     }
-    else {
-      item = {
-        value,
-        timestamp,
-        accessCount: 0,
-        lastAccessed: timestamp,
-      }
-
-      // 初始化元数据
-      this.itemMetadata.set(item, {
-        createdAt: Date.now(),
-        reuseCount: 0,
-      })
-    }
-
-    return item
+    
+    // Calculate expiration
+    const effectiveTTL = ttl ?? this.defaultTTL;
+    const expires = effectiveTTL ? Date.now() + effectiveTTL : undefined;
+    
+    // Set value
+    this.cache.set(key, { value, expires });
+    
+    // Update access order
+    this.updateAccessOrder(key);
   }
-
-  release(item: CacheItem<T>): void {
-    this.releaseCount++
-
-    if (this.pool.length < this.maxSize) {
-      // 清理引用，避免内存泄漏
-      (item as any).value = null
-      this.pool.push(item)
+  
+  has(key: K): boolean {
+    const item = this.cache.get(key);
+    
+    if (!item) {
+      return false;
     }
-
-    // 自动调整：如果池太大，缩减到最小值
-    if (this.pool.length > this.maxSize * 1.5) {
-      this.shrink()
+    
+    // Check expiration
+    if (item.expires && Date.now() > item.expires) {
+      this.delete(key);
+      return false;
     }
+    
+    return true;
   }
-
+  
+  delete(key: K): boolean {
+    const index = this.accessOrder.indexOf(key);
+    if (index > -1) {
+      this.accessOrder.splice(index, 1);
+    }
+    return this.cache.delete(key);
+  }
+  
   clear(): void {
-    this.pool = []
-    this.acquireCount = 0
-    this.releaseCount = 0
+    this.cache.clear();
+    this.accessOrder = [];
   }
-
+  
+  get size(): number {
+    // Clean up expired items before returning size
+    this.cleanupExpired();
+    return this.cache.size;
+  }
+  
+  private updateAccessOrder(key: K): void {
+    const index = this.accessOrder.indexOf(key);
+    if (index > -1) {
+      this.accessOrder.splice(index, 1);
+    }
+    this.accessOrder.push(key);
+  }
+  
+  private cleanupExpired(): void {
+    const now = Date.now();
+    const expiredKeys: K[] = [];
+    
+    this.cache.forEach((item, key) => {
+      if (item.expires && now > item.expires) {
+        expiredKeys.push(key);
+      }
+    });
+    
+    expiredKeys.forEach(key => this.delete(key));
+  }
+  
   /**
-   * 获取对象池统计信息
+   * Get cache statistics
    */
   getStats(): {
-    poolSize: number
-    acquireCount: number
-    releaseCount: number
-    hitRate: number
+    size: number;
+    maxSize: number;
+    hitRate: number;
+    missRate: number;
   } {
-    const hitRate = this.acquireCount > 0
-      ? this.releaseCount / this.acquireCount
-      : 0
-
     return {
-      poolSize: this.pool.length,
-      acquireCount: this.acquireCount,
-      releaseCount: this.releaseCount,
-      hitRate,
-    }
-  }
-
-  /**
-   * 缩小池大小
-   */
-  private shrink(): void {
-    const targetSize = Math.max(this.minSize, Math.floor(this.maxSize * 0.5))
-    if (this.pool.length > targetSize) {
-      this.pool.length = targetSize
-    }
+      size: this.size,
+      maxSize: this.maxSize,
+      hitRate: 0, // Would need to track hits/misses for this
+      missRate: 0
+    };
   }
 }
 
 /**
- * 缓存统计信息
+ * Memory-efficient cache with weak references
  */
-export interface CacheStats {
-  size: number
-  maxSize: number
-  hitCount: number
-  missCount: number
-  hitRate: number
-  evictionCount: number
-}
-
-/**
- * 高性能缓存类
- */
-export class PerformanceCache<T = any> {
-  private cache = new Map<string, CacheItem<T>>()
-  private accessOrder: string[] = []
-  private accessSet = new Set<string>() // 快速查找访问顺序
-  private config: Required<CacheConfig>
-  private stats = {
-    hitCount: 0,
-    missCount: 0,
-    evictionCount: 0,
-  }
-
-  // 对象池用于复用CacheItem
-  private itemPool: CacheItemPool<T>
-  // 懒清理跟踪
-  private lastCleanupTime = 0
-  private cleanupThreshold = 100 // 每100次操作检查一次
-  private operationCount = 0
-
-  constructor(config: CacheConfig = {}) {
-    this.config = {
-      maxSize: 1000,
-      ttl: 300000, // 5 minutes
-      enableLRU: true,
-      strategy: 'lru',
-      ...config,
-    }
-    // 初始化对象池，大小为最大缓存大小的10%
-    this.itemPool = new CacheItemPool<T>(Math.max(10, Math.floor(this.config.maxSize * 0.1)))
-  }
-
-  /**
-   * 设置缓存项
-   * @param key 键
-   * @param value 值
-   */
-  set(key: string, value: T): void {
-    const now = Date.now()
-
-    // 懒清理：每100次操作或距离上次清理超过30秒才执行
-    this.operationCount++
-    if (this.operationCount >= this.cleanupThreshold || now - this.lastCleanupTime > 30000) {
-      this.cleanupExpired()
-      this.lastCleanupTime = now
-      this.operationCount = 0
-    }
-
-    // 如果已存在，更新值
-    if (this.cache.has(key)) {
-      const item = this.cache.get(key)!
-      item.value = value
-      item.timestamp = now
-      item.lastAccessed = now
-      this.updateAccessOrder(key)
-      return
-    }
-
-    // 检查是否需要驱逐
-    if (this.cache.size >= this.config.maxSize) {
-      this.evict()
-    }
-
-    // 添加新项（使用对象池）
-    const item = this.itemPool.acquire(value, now)
-    this.cache.set(key, item)
-
-    this.accessOrder.push(key)
-  }
-
-  /**
-   * 获取缓存项
-   * @param key 键
-   * @returns 值或 undefined
-   */
-  get(key: string): T | undefined {
-    const item = this.cache.get(key)
-
+export class WeakCache<K extends object, V = any> {
+  private cache: WeakMap<K, { value: V; expires?: number }> = new WeakMap();
+  private timers: Map<K, NodeJS.Timeout> = new Map();
+  
+  get(key: K): V | undefined {
+    const item = this.cache.get(key);
+    
     if (!item) {
-      this.stats.missCount++
-      return undefined
+      return undefined;
     }
-
-    // 检查是否过期
-    if (this.isExpired(item)) {
-      this.cache.delete(key)
-      this.removeFromAccessOrder(key)
-      this.stats.missCount++
-      return undefined
+    
+    // Check expiration
+    if (item.expires && Date.now() > item.expires) {
+      this.delete(key);
+      return undefined;
     }
-
-    // 更新访问信息
-    item.accessCount++
-    item.lastAccessed = Date.now()
-    this.updateAccessOrder(key)
-
-    this.stats.hitCount++
-    return item.value
+    
+    return item.value;
   }
-
-  /**
-   * 检查键是否存在
-   * @param key 键
-   * @returns 是否存在
-   */
-  has(key: string): boolean {
-    const item = this.cache.get(key)
-    if (!item)
-      return false
-
-    if (this.isExpired(item)) {
-      this.cache.delete(key)
-      this.removeFromAccessOrder(key)
-      return false
+  
+  set(key: K, value: V, ttl?: number): void {
+    // Clear existing timer if any
+    const existingTimer = this.timers.get(key);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      this.timers.delete(key);
     }
-
-    return true
-  }
-
-  /**
-   * 删除缓存项
-   * @param key 键
-   * @returns 是否删除成功
-   */
-  delete(key: string): boolean {
-    const item = this.cache.get(key)
-    const deleted = this.cache.delete(key)
-    if (deleted) {
-      this.removeFromAccessOrder(key)
-      // 释放回对象池
-      if (item) {
-        this.itemPool.release(item)
-      }
-    }
-    return deleted
-  }
-
-  /**
-   * 清空缓存
-   */
-  clear(): void {
-    // 释放所有项回对象池
-    for (const item of this.cache.values()) {
-      this.itemPool.release(item)
-    }
-    this.cache.clear()
-    this.accessOrder = []
-    this.accessSet.clear()
-    this.stats = {
-      hitCount: 0,
-      missCount: 0,
-      evictionCount: 0,
+    
+    // Calculate expiration
+    const expires = ttl ? Date.now() + ttl : undefined;
+    
+    // Set value
+    this.cache.set(key, { value, expires });
+    
+    // Set cleanup timer if TTL specified
+    if (ttl) {
+      const timer = setTimeout(() => {
+        this.delete(key);
+      }, ttl);
+      this.timers.set(key, timer);
     }
   }
-
-  /**
-   * 获取缓存统计信息
-   * @returns 统计信息
-   */
-  getStats(): CacheStats {
-    const totalAccess = this.stats.hitCount + this.stats.missCount
-    return {
-      size: this.cache.size,
-      maxSize: this.config.maxSize,
-      hitCount: this.stats.hitCount,
-      missCount: this.stats.missCount,
-      hitRate: totalAccess > 0 ? this.stats.hitCount / totalAccess : 0,
-      evictionCount: this.stats.evictionCount,
-    }
+  
+  has(key: K): boolean {
+    return this.cache.has(key);
   }
-
-  /**
-   * 获取所有键
-   * @returns 键数组
-   */
-  keys(): string[] {
-    return Array.from(this.cache.keys())
-  }
-
-  /**
-   * 获取缓存大小
-   * @returns 大小
-   */
-  size(): number {
-    return this.cache.size
-  }
-
-  /**
-   * 检查项是否过期
-   * @param item 缓存项
-   * @returns 是否过期
-   */
-  private isExpired(item: CacheItem<T>): boolean {
-    return Date.now() - item.timestamp > this.config.ttl
-  }
-
-  /**
-   * 清理过期项
-   */
-  private cleanupExpired(): void {
-    // 优化：如果缓存为空或太小，跳过清理
-    if (this.cache.size === 0 || this.cache.size < 10) {
-      return
+  
+  delete(key: K): boolean {
+    // Clear timer if any
+    const timer = this.timers.get(key);
+    if (timer) {
+      clearTimeout(timer);
+      this.timers.delete(key);
     }
-
-    const now = Date.now()
-    const expiredKeys: string[] = []
-    let checkedCount = 0
-    const maxChecks = Math.min(this.cache.size, 100) // 每次最多检查100个
-
-    // 只检查一部分项目，避免完整遍历
-    for (const [key, item] of this.cache) {
-      if (checkedCount++ >= maxChecks)
-        break
-
-      if (now - item.timestamp > this.config.ttl) {
-        expiredKeys.push(key)
-      }
-    }
-
-    // 批量删除
-    for (const key of expiredKeys) {
-      const item = this.cache.get(key)
-      this.cache.delete(key)
-      this.removeFromAccessOrder(key)
-      if (item) {
-        this.itemPool.release(item)
-      }
-    }
-  }
-
-  /**
-   * 驱逐缓存项
-   */
-  private evict(): void {
-    if (this.cache.size === 0)
-      return
-
-    let keyToEvict: string
-
-    switch (this.config.strategy) {
-      case 'lru':
-        keyToEvict = this.accessOrder[0]
-        break
-      case 'lfu':
-        keyToEvict = this.findLFUKey()
-        break
-      case 'fifo':
-        keyToEvict = this.accessOrder[0]
-        break
-      default:
-        keyToEvict = this.accessOrder[0]
-    }
-
-    // 获取项并释放回对象池
-    const item = this.cache.get(keyToEvict)
-    this.cache.delete(keyToEvict)
-    this.removeFromAccessOrder(keyToEvict)
-    if (item) {
-      this.itemPool.release(item)
-    }
-    this.stats.evictionCount++
-  }
-
-  /**
-   * 查找最少使用频率的键
-   * @returns 键
-   */
-  private findLFUKey(): string {
-    let minAccessCount = Infinity
-    let lfuKey = ''
-
-    for (const [key, item] of this.cache) {
-      if (item.accessCount < minAccessCount) {
-        minAccessCount = item.accessCount
-        lfuKey = key
-      }
-    }
-
-    return lfuKey
-  }
-
-  /**
-   * 更新访问顺序
-   * @param key 键
-   */
-  private updateAccessOrder(key: string): void {
-    if (!this.config.enableLRU)
-      return
-
-    // 使用Set进行快速查找，避免O(n)的indexOf
-    if (this.accessSet.has(key)) {
-      // 只有在Set中存在时才从数组中移除（延迟操作）
-      const index = this.accessOrder.indexOf(key)
-      if (index > -1) {
-        this.accessOrder.splice(index, 1)
-      }
-    }
-    this.accessOrder.push(key)
-    this.accessSet.add(key)
-  }
-
-  /**
-   * 从访问顺序中移除键
-   * @param key 键
-   */
-  private removeFromAccessOrder(key: string): void {
-    // 使用Set快速检查是否存在
-    if (this.accessSet.has(key)) {
-      const index = this.accessOrder.indexOf(key)
-      if (index > -1) {
-        this.accessOrder.splice(index, 1)
-      }
-      this.accessSet.delete(key)
-    }
+    
+    return this.cache.delete(key);
   }
 }
 
 /**
- * 翻译缓存类
+ * Storage-based cache (localStorage/sessionStorage)
  */
-export class TranslationCache extends PerformanceCache<string> {
-  // 使用静态快速缓存键生成器实例（单例模式，避免重复创建）
-  private static keyGenerator: any = null
-
-  /**
-   * 获取缓存键生成器（懒加载）
-   */
-  private static getKeyGenerator(): any {
-    if (!this.keyGenerator) {
-      // 动态导入避免循环依赖
-      try {
-        const { FastCacheKeyGenerator } = require('./fast-cache-key')
-        this.keyGenerator = new FastCacheKeyGenerator({ compact: true, sortParams: true })
+export class StorageCache implements Cache<string, any> {
+  private storage: Storage;
+  private prefix: string;
+  private maxSize: number;
+  
+  constructor(
+    storage: Storage = typeof window !== 'undefined' ? window.localStorage : null!,
+    prefix = 'i18n_cache_',
+    maxSize = 100
+  ) {
+    this.storage = storage;
+    this.prefix = prefix;
+    this.maxSize = maxSize;
+  }
+  
+  get(key: string): any {
+    if (!this.storage) return undefined;
+    
+    try {
+      const item = this.storage.getItem(this.prefix + key);
+      if (!item) return undefined;
+      
+      const parsed = JSON.parse(item);
+      
+      // Check expiration
+      if (parsed.expires && Date.now() > parsed.expires) {
+        this.delete(key);
+        return undefined;
       }
-      catch {
-        // 回退到简单生成器
-        this.keyGenerator = {
-          generateTranslationKey: (locale: string, key: string, params?: Record<string, any>) => {
-            if (!params || Object.keys(params).length === 0) {
-              return `${locale}:${key}`
+      
+      return parsed.value;
+    } catch (error) {
+      return undefined;
+    }
+  }
+  
+  set(key: string, value: any, ttl?: number): void {
+    if (!this.storage) return;
+    
+    try {
+      // Check size limit
+      if (this.size >= this.maxSize) {
+        this.evictOldest();
+      }
+      
+      const expires = ttl ? Date.now() + ttl : undefined;
+      const item = JSON.stringify({ value, expires, timestamp: Date.now() });
+      
+      this.storage.setItem(this.prefix + key, item);
+    } catch (error) {
+      // Storage might be full or disabled
+      console.warn('Failed to cache item:', error);
+    }
+  }
+  
+  has(key: string): boolean {
+    return this.get(key) !== undefined;
+  }
+  
+  delete(key: string): boolean {
+    if (!this.storage) return false;
+    
+    try {
+      this.storage.removeItem(this.prefix + key);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  
+  clear(): void {
+    if (!this.storage) return;
+    
+    const keysToRemove: string[] = [];
+    
+    for (let i = 0; i < this.storage.length; i++) {
+      const key = this.storage.key(i);
+      if (key?.startsWith(this.prefix)) {
+        keysToRemove.push(key);
+      }
+    }
+    
+    keysToRemove.forEach(key => this.storage.removeItem(key));
+  }
+  
+  get size(): number {
+    if (!this.storage) return 0;
+    
+    let count = 0;
+    for (let i = 0; i < this.storage.length; i++) {
+      const key = this.storage.key(i);
+      if (key?.startsWith(this.prefix)) {
+        count++;
+      }
+    }
+    return count;
+  }
+  
+  private evictOldest(): void {
+    if (!this.storage) return;
+    
+    let oldestKey: string | null = null;
+    let oldestTime = Infinity;
+    
+    for (let i = 0; i < this.storage.length; i++) {
+      const key = this.storage.key(i);
+      if (key?.startsWith(this.prefix)) {
+        try {
+          const item = this.storage.getItem(key);
+          if (item) {
+            const parsed = JSON.parse(item);
+            if (parsed.timestamp < oldestTime) {
+              oldestTime = parsed.timestamp;
+              oldestKey = key;
             }
-            const paramStr = JSON.stringify(params)
-            return `${locale}:${key}:${paramStr}`
-          },
+          }
+        } catch {
+          // Ignore parse errors
         }
       }
     }
-    return this.keyGenerator
+    
+    if (oldestKey) {
+      this.storage.removeItem(oldestKey);
+    }
   }
+}
 
-  /**
-   * 生成缓存键（优化版本，使用FastCacheKeyGenerator）
-   * @param locale 语言代码
-   * @param key 翻译键
-   * @param params 参数
-   * @returns 缓存键
-   */
-  static generateKey(locale: string, key: string, params?: Record<string, any>): string {
-    return this.getKeyGenerator().generateTranslationKey(locale, key, params)
+/**
+ * Multi-tier cache system
+ */
+export class MultiTierCache<K = string, V = any> implements Cache<K, V> {
+  private tiers: Cache<K, V>[] = [];
+  
+  constructor(...tiers: Cache<K, V>[]) {
+    this.tiers = tiers;
   }
-
-  /**
-   * 缓存翻译结果
-   * @param locale 语言代码
-   * @param key 翻译键
-   * @param params 参数
-   * @param result 翻译结果
-   */
-  cacheTranslation(locale: string, key: string, params: Record<string, any> | undefined, result: string): void {
-    const cacheKey = TranslationCache.generateKey(locale, key, params)
-    this.set(cacheKey, result)
-  }
-
-  /**
-   * 获取缓存的翻译结果
-   * @param locale 语言代码
-   * @param key 翻译键
-   * @param params 参数
-   * @returns 翻译结果或 undefined
-   */
-  getCachedTranslation(locale: string, key: string, params?: Record<string, any>): string | undefined {
-    const cacheKey = TranslationCache.generateKey(locale, key, params)
-    return this.get(cacheKey)
-  }
-
-  /**
-   * 清除指定语言的所有缓存
-   * @param locale 语言代码
-   */
-  clearLocale(locale: string): void {
-    const keysToDelete: string[] = []
-    for (const key of this.keys()) {
-      if (key.startsWith(`${locale}:`)) {
-        keysToDelete.push(key)
+  
+  get(key: K): V | undefined {
+    for (let i = 0; i < this.tiers.length; i++) {
+      const value = this.tiers[i].get(key);
+      if (value !== undefined) {
+        // Promote to higher tiers
+        for (let j = 0; j < i; j++) {
+          this.tiers[j].set(key, value);
+        }
+        return value;
       }
     }
-    for (const key of keysToDelete) {
-      this.delete(key)
-    }
+    return undefined;
   }
-
-  /**
-   * 预热缓存
-   * @param entries 缓存条目数组
-   */
-  warmUp(entries: Array<{ locale: string, key: string, params?: Record<string, any>, value: string }>): void {
-    for (const entry of entries) {
-      this.cacheTranslation(entry.locale, entry.key, entry.params, entry.value)
-    }
+  
+  set(key: K, value: V, ttl?: number): void {
+    // Set in all tiers
+    this.tiers.forEach(tier => tier.set(key, value, ttl));
   }
-
-  /**
-   * 清理过期缓存
-   */
-  cleanup(): void {
-    // 调用父类的清理方法
-    const stats = this.getStats()
-    if (stats.size > stats.maxSize * 0.8) {
-      // 清理最少使用的 20% 缓存
-      const keysToDelete = Math.floor(stats.size * 0.2)
-      const allKeys = this.keys()
-      for (let i = 0; i < keysToDelete && i < allKeys.length; i++) {
-        this.delete(allKeys[i])
+  
+  has(key: K): boolean {
+    return this.tiers.some(tier => tier.has(key));
+  }
+  
+  delete(key: K): boolean {
+    let deleted = false;
+    this.tiers.forEach(tier => {
+      if (tier.delete(key)) {
+        deleted = true;
       }
-    }
+    });
+    return deleted;
   }
+  
+  clear(): void {
+    this.tiers.forEach(tier => tier.clear());
+  }
+  
+  get size(): number {
+    // Return size of the first tier (primary cache)
+    return this.tiers[0]?.size || 0;
+  }
+}
 
-  /**
-   * 获取内存使用量（估算）
-   * @returns 内存使用量（字节）
-   */
-  getMemoryUsage(): number {
-    let totalSize = 0
-    for (const key of this.keys()) {
-      const value = this.get(key)
-      if (value) {
-        // 估算：键长度 + 值长度 + 对象开销
-        totalSize += key.length * 2 + value.length * 2 + 64
+/**
+ * Create appropriate cache based on environment
+ */
+export function createCache<K = string, V = any>(
+  options: {
+    type?: 'memory' | 'storage' | 'multi';
+    maxSize?: number;
+    ttl?: number;
+    storage?: 'local' | 'session';
+  } = {}
+): Cache<K, V> {
+  const { type = 'memory', maxSize = 1000, ttl, storage = 'local' } = options;
+  
+  switch (type) {
+    case 'storage':
+      if (typeof window === 'undefined') {
+        // Fallback to memory cache in non-browser environments
+        return new LRUCache<K, V>(maxSize, ttl);
       }
-    }
-    return totalSize
+      return new StorageCache(
+        storage === 'session' ? window.sessionStorage : window.localStorage
+      ) as any;
+    
+    case 'multi':
+      if (typeof window === 'undefined') {
+        return new LRUCache<K, V>(maxSize, ttl);
+      }
+      return new MultiTierCache<K, V>(
+        new LRUCache<K, V>(maxSize / 2, ttl),
+        new StorageCache(window.localStorage) as any
+      );
+    
+    case 'memory':
+    default:
+      return new LRUCache<K, V>(maxSize, ttl);
   }
 }

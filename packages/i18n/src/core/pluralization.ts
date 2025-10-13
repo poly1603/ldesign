@@ -1,305 +1,334 @@
 /**
- * 多元化类别
+ * @ldesign/i18n - Pluralization Engine
+ * Handles plural forms for different languages
  */
-export enum PluralCategory {
-  ZERO = 'zero',
-  ONE = 'one',
-  TWO = 'two',
-  FEW = 'few',
-  MANY = 'many',
-  OTHER = 'other',
-}
+
+// import type { Locale, PluralRule } from '../types';
+import { parseLocale } from '../utils/helpers';
+
+// Type definitions
+type Locale = string;
+type PluralRule = (count: number, locale?: string) => string;
 
 /**
- * 多元化规则函数类型
+ * Plural categories defined by CLDR
  */
-export type PluralRuleFunction = (count: number, ordinal?: boolean) => PluralCategory
+export type PluralCategory = 'zero' | 'one' | 'two' | 'few' | 'many' | 'other';
 
 /**
- * 多元化选项
+ * Plural rules for different languages
+ * Based on Unicode CLDR plural rules
  */
-export interface PluralOptions {
-  /** 是否为序数 */
-  ordinal?: boolean
-  /** 自定义规则 */
-  customRule?: PluralRuleFunction
-}
+const PLURAL_RULES: Record<string, PluralRule> = {
+  // Chinese, Japanese, Korean - no plurals
+  zh: () => 'other',
+  ja: () => 'other',
+  ko: () => 'other',
+  
+  // English, German, Dutch, Italian, Spanish, Portuguese
+  en: (count: number) => count === 1 ? 'one' : 'other',
+  de: (count: number) => count === 1 ? 'one' : 'other',
+  nl: (count: number) => count === 1 ? 'one' : 'other',
+  it: (count: number) => count === 1 ? 'one' : 'other',
+  es: (count: number) => count === 1 ? 'one' : 'other',
+  pt: (count: number) => count === 0 || count === 1 ? 'one' : 'other',
+  
+  // French
+  fr: (count: number) => count === 0 || count === 1 ? 'one' : 'other',
+  
+  // Russian, Ukrainian, Serbian
+  ru: (count: number) => {
+    const mod10 = count % 10;
+    const mod100 = count % 100;
+    
+    if (mod10 === 1 && mod100 !== 11) return 'one';
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'few';
+    return 'many';
+  },
+  uk: (count: number) => {
+    const mod10 = count % 10;
+    const mod100 = count % 100;
+    
+    if (mod10 === 1 && mod100 !== 11) return 'one';
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'few';
+    return 'many';
+  },
+  
+  // Polish
+  pl: (count: number) => {
+    if (count === 1) return 'one';
+    const mod10 = count % 10;
+    const mod100 = count % 100;
+    
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'few';
+    return 'many';
+  },
+  
+  // Czech, Slovak
+  cs: (count: number) => {
+    if (count === 1) return 'one';
+    if (count >= 2 && count <= 4) return 'few';
+    return 'other';
+  },
+  sk: (count: number) => {
+    if (count === 1) return 'one';
+    if (count >= 2 && count <= 4) return 'few';
+    return 'other';
+  },
+  
+  // Arabic
+  ar: (count: number) => {
+    if (count === 0) return 'zero';
+    if (count === 1) return 'one';
+    if (count === 2) return 'two';
+    const mod100 = count % 100;
+    if (mod100 >= 3 && mod100 <= 10) return 'few';
+    if (mod100 >= 11 && mod100 <= 99) return 'many';
+    return 'other';
+  },
+  
+  // Hebrew
+  he: (count: number) => {
+    if (count === 1) return 'one';
+    if (count === 2) return 'two';
+    if (count > 10 && count % 10 === 0) return 'many';
+    return 'other';
+  },
+  
+  // Turkish, Azerbaijani
+  tr: () => 'other',
+  az: () => 'other',
+  
+  // Hindi
+  hi: (count: number) => count === 0 || count === 1 ? 'one' : 'other',
+};
 
-/**
- * 增强的多元化引擎
- */
 export class PluralizationEngine {
-  private rules = new Map<string, PluralRuleFunction>()
-  private cache = new Map<string, PluralCategory>()
-
-  constructor() {
-    this.initializeDefaultRules()
+  private rules: Map<string, PluralRule> = new Map();
+  private defaultRule: PluralRule = () => 'other';
+  private separator: string;
+  
+  constructor(separator = '_') {
+    this.separator = separator;
+    this.loadBuiltInRules();
   }
-
+  
   /**
-   * 获取多元化类别
-   * @param locale 语言代码
-   * @param count 数量
-   * @param options 选项
-   * @returns 多元化类别
+   * Load built-in plural rules
    */
-  getCategory(locale: string, count: number, options: PluralOptions = {}): PluralCategory {
-    const cacheKey = `${locale}:${count}:${options.ordinal || false}`
-
-    // 检查缓存
-    if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey)!
-    }
-
-    let category: PluralCategory
-
-    // 使用自定义规则
-    if (options.customRule) {
-      category = options.customRule(count, options.ordinal)
-    }
-    else {
-      // 使用内置规则
-      const rule = this.rules.get(locale) || this.rules.get('en')!
-      category = rule(count, options.ordinal)
-    }
-
-    // 缓存结果
-    this.cache.set(cacheKey, category)
-
-    return category
+  private loadBuiltInRules(): void {
+    Object.entries(PLURAL_RULES).forEach(([locale, rule]) => {
+      this.rules.set(locale, rule);
+    });
   }
-
+  
   /**
-   * 注册多元化规则
-   * @param locale 语言代码
-   * @param rule 规则函数
+   * Add custom plural rule for a locale
    */
-  registerRule(locale: string, rule: PluralRuleFunction): void {
-    this.rules.set(locale, rule)
-    // 清除相关缓存
-    this.clearCacheForLocale(locale)
+  addRule(locale: Locale, rule: PluralRule): void {
+    const { language } = parseLocale(locale);
+    this.rules.set(language, rule);
   }
-
+  
   /**
-   * 获取支持的语言列表
-   * @returns 语言代码数组
+   * Get plural rule for a locale
    */
-  getSupportedLocales(): string[] {
-    return Array.from(this.rules.keys())
+  getRule(locale: Locale): PluralRule {
+    const { language } = parseLocale(locale);
+    return this.rules.get(language) || this.defaultRule;
   }
-
+  
   /**
-   * 清除缓存
-   * @param locale 可选的语言代码
+   * Get plural category for a count in a locale
    */
-  clearCache(locale?: string): void {
-    if (locale) {
-      this.clearCacheForLocale(locale)
-    }
-    else {
-      this.cache.clear()
-    }
+  getCategory(count: number, locale: Locale): PluralCategory {
+    const rule = this.getRule(locale);
+    return rule(count, locale) as PluralCategory;
   }
-
+  
   /**
-   * 初始化默认规则
+   * Select the appropriate plural form from a message object
    */
-  private initializeDefaultRules(): void {
-    // 英语规则
-    this.rules.set('en', (count: number, ordinal = false) => {
-      if (ordinal) {
-        const mod10 = count % 10
-        const mod100 = count % 100
-        if (mod10 === 1 && mod100 !== 11)
-          return PluralCategory.ONE
-        if (mod10 === 2 && mod100 !== 12)
-          return PluralCategory.TWO
-        if (mod10 === 3 && mod100 !== 13)
-          return PluralCategory.FEW
-        return PluralCategory.OTHER
-      }
-      return count === 1 ? PluralCategory.ONE : PluralCategory.OTHER
-    })
-
-    // 中文规则（简体和繁体）
-    const chineseRule = () => PluralCategory.OTHER
-    this.rules.set('zh', chineseRule)
-    this.rules.set('zh-CN', chineseRule)
-    this.rules.set('zh-TW', chineseRule)
-
-    // 日语规则
-    this.rules.set('ja', () => PluralCategory.OTHER)
-
-    // 俄语规则
-    this.rules.set('ru', (count: number, ordinal = false) => {
-      if (ordinal)
-        return PluralCategory.OTHER
-
-      const mod10 = count % 10
-      const mod100 = count % 100
-
-      if (mod10 === 1 && mod100 !== 11)
-        return PluralCategory.ONE
-      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14))
-        return PluralCategory.FEW
-      return PluralCategory.MANY
-    })
-
-    // 法语规则
-    this.rules.set('fr', (count: number, ordinal = false) => {
-      if (ordinal) {
-        return count === 1 ? PluralCategory.ONE : PluralCategory.OTHER
-      }
-      return count >= 0 && count < 2 ? PluralCategory.ONE : PluralCategory.OTHER
-    })
-
-    // 德语规则
-    this.rules.set('de', (count: number, ordinal = false) => {
-      if (ordinal)
-        return PluralCategory.OTHER
-      return count === 1 ? PluralCategory.ONE : PluralCategory.OTHER
-    })
-
-    // 西班牙语规则
-    this.rules.set('es', (count: number, ordinal = false) => {
-      if (ordinal)
-        return PluralCategory.OTHER
-      return count === 1 ? PluralCategory.ONE : PluralCategory.OTHER
-    })
-
-    // 阿拉伯语规则
-    this.rules.set('ar', (count: number, ordinal = false) => {
-      if (ordinal)
-        return PluralCategory.OTHER
-
-      if (count === 0)
-        return PluralCategory.ZERO
-      if (count === 1)
-        return PluralCategory.ONE
-      if (count === 2)
-        return PluralCategory.TWO
-      if (count % 100 >= 3 && count % 100 <= 10)
-        return PluralCategory.FEW
-      if (count % 100 >= 11 && count % 100 <= 99)
-        return PluralCategory.MANY
-      return PluralCategory.OTHER
-    })
-
-    // 波兰语规则
-    this.rules.set('pl', (count: number, ordinal = false) => {
-      if (ordinal)
-        return PluralCategory.OTHER
-
-      if (count === 1)
-        return PluralCategory.ONE
-
-      const mod10 = count % 10
-      const mod100 = count % 100
-
-      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
-        return PluralCategory.FEW
-      }
-
-      return PluralCategory.MANY
-    })
-  }
-
-  /**
-   * 清除特定语言的缓存
-   * @param locale 语言代码
-   */
-  private clearCacheForLocale(locale: string): void {
-    const keysToDelete: string[] = []
-
-    for (const key of this.cache.keys()) {
-      if (key.startsWith(`${locale}:`)) {
-        keysToDelete.push(key)
-      }
-    }
-
-    for (const key of keysToDelete) {
-      this.cache.delete(key)
-    }
-  }
-}
-
-/**
- * 多元化工具函数
- */
-export class PluralUtils {
-  /**
-   * 解析多元化字符串
-   * @param pluralString 多元化字符串，格式如 "zero:没有|one:一个|other:{{count}}个"
-   * @returns 解析后的对象
-   */
-  static parsePluralString(pluralString: string): Record<PluralCategory, string> {
-    const result: Partial<Record<PluralCategory, string>> = {}
-
-    const parts = pluralString.split('|')
-
-    for (const part of parts) {
-      const [category, text] = part.split(':')
-      if (category && text && Object.values(PluralCategory).includes(category as PluralCategory)) {
-        result[category as PluralCategory] = text.trim()
-      }
-    }
-
-    return result as Record<PluralCategory, string>
-  }
-
-  /**
-   * 格式化多元化文本
-   * @param pluralObject 多元化对象
-   * @param category 类别
-   * @param count 数量
-   * @param params 参数
-   * @returns 格式化后的文本
-   */
-  static formatPluralText(
-    pluralObject: Record<PluralCategory, string>,
-    category: PluralCategory,
+  selectPlural(
+    messages: Record<string, string> | string,
     count: number,
-    params: Record<string, any> = {},
+    locale: Locale
   ): string {
-    let text = pluralObject[category] || pluralObject[PluralCategory.OTHER] || ''
-
-    // 替换 count 参数
-    text = text.replace(/\{\{count\}\}/g, count.toString())
-
-    // 替换其他参数
-    for (const [key, value] of Object.entries(params)) {
-      const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
-      text = text.replace(regex, String(value))
+    // If it's a simple string, return it
+    if (typeof messages === 'string') {
+      return messages;
     }
-
-    return text
-  }
-
-  /**
-   * 验证多元化对象
-   * @param pluralObject 多元化对象
-   * @returns 是否有效
-   */
-  static validatePluralObject(pluralObject: any): pluralObject is Record<PluralCategory, string> {
-    if (!pluralObject || typeof pluralObject !== 'object') {
-      return false
+    
+    const category = this.getCategory(count, locale);
+    
+    // Try to find exact match
+    if (messages[category]) {
+      return messages[category];
     }
-
-    // 至少需要有 other 类别
-    if (!pluralObject[PluralCategory.OTHER]) {
-      return false
+    
+    // Try count-specific form (e.g., "0", "1", "2")
+    if (messages[String(count)]) {
+      return messages[String(count)];
     }
-
-    // 检查所有值是否为字符串
-    for (const value of Object.values(pluralObject)) {
-      if (typeof value !== 'string') {
-        return false
+    
+    // Fallback chain
+    const fallbackChain: PluralCategory[] = ['other', 'many', 'few', 'two', 'one', 'zero'];
+    for (const fallback of fallbackChain) {
+      if (messages[fallback]) {
+        return messages[fallback];
       }
     }
-
-    return true
+    
+    // If nothing found, return the first available form
+    const keys = Object.keys(messages);
+    return keys.length > 0 ? messages[keys[0]] : '';
+  }
+  
+  /**
+   * Parse a plural message string into forms
+   * Format: "one:item|few:items|many:items|other:items"
+   * Or: "0:no items|1:one item|other:{{count}} items"
+   */
+  parsePluralString(message: string, separator = '|'): Record<string, string> {
+    const forms: Record<string, string> = {};
+    const parts = message.split(separator);
+    
+    for (const part of parts) {
+      const colonIndex = part.indexOf(':');
+      if (colonIndex > 0) {
+        const key = part.substring(0, colonIndex).trim();
+        const value = part.substring(colonIndex + 1).trim();
+        forms[key] = value;
+      } else {
+        // If no key specified, treat as "other"
+        forms.other = part.trim();
+      }
+    }
+    
+    return forms;
+  }
+  
+  /**
+   * Format a plural message with count
+   */
+  format(
+    message: string | Record<string, string>,
+    count: number,
+    locale: Locale,
+    params?: Record<string, any>
+  ): string {
+    // Parse if it's a string with plural forms
+    const messages = typeof message === 'string' && message.includes('|')
+      ? this.parsePluralString(message)
+      : message;
+    
+    // Select the appropriate form
+    const selected = this.selectPlural(messages, count, locale);
+    
+    // Replace count placeholder
+    let result = selected.replace(/\{\{count\}\}/g, String(count));
+    result = result.replace(/\{\{n\}\}/g, String(count));
+    
+    // Replace other parameters
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+        result = result.replace(regex, String(value));
+      });
+    }
+    
+    return result;
+  }
+  
+  /**
+   * Check if a message contains plural forms
+   */
+  hasPluralForms(message: string, separator = '|'): boolean {
+    if (!message || typeof message !== 'string') return false;
+    
+    // Check for separator-based format
+    if (message.includes(separator)) {
+      const parts = message.split(separator);
+      return parts.some(part => part.includes(':'));
+    }
+    
+    return false;
+  }
+  
+  /**
+   * Extract all plural forms from a message
+   */
+  extractPluralForms(message: string, separator = '|'): string[] {
+    if (!this.hasPluralForms(message, separator)) {
+      return [message];
+    }
+    
+    const forms = this.parsePluralString(message, separator);
+    return Object.values(forms);
+  }
+  
+  /**
+   * Validate plural forms for a locale
+   */
+  validatePluralForms(
+    message: string | Record<string, string>,
+    locale: Locale
+  ): boolean {
+    const messages = typeof message === 'string'
+      ? this.parsePluralString(message)
+      : message;
+    
+    // Must have at least "other" form
+    if (!messages.other && Object.keys(messages).length > 0) {
+      // Check if we have numbered forms that can serve as fallback
+      return Object.keys(messages).some(key => !isNaN(Number(key)));
+    }
+    
+    return true;
+  }
+  
+  /**
+   * Get supported plural categories for a locale
+   */
+  getSupportedCategories(locale: Locale): PluralCategory[] {
+    const { language } = parseLocale(locale);
+    
+    // Special cases for languages with specific plural forms
+    switch (language) {
+      case 'zh':
+      case 'ja':
+      case 'ko':
+      case 'tr':
+      case 'az':
+        return ['other'];
+      
+      case 'en':
+      case 'de':
+      case 'nl':
+      case 'it':
+      case 'es':
+      case 'pt':
+      case 'fr':
+      case 'hi':
+        return ['one', 'other'];
+      
+      case 'ru':
+      case 'uk':
+      case 'pl':
+        return ['one', 'few', 'many'];
+      
+      case 'cs':
+      case 'sk':
+        return ['one', 'few', 'other'];
+      
+      case 'ar':
+        return ['zero', 'one', 'two', 'few', 'many', 'other'];
+      
+      case 'he':
+        return ['one', 'two', 'many', 'other'];
+      
+      default:
+        return ['one', 'other'];
+    }
   }
 }
-
-// 导出全局实例
-export const pluralizationEngine = new PluralizationEngine()

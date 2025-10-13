@@ -2,31 +2,31 @@
   <div class="login-container">
     <div class="login-card">
       <div class="login-header">
-        <h1 class="login-title">🔐 登录</h1>
-        <p class="login-subtitle">欢迎回到 LDesign Router App</p>
+        <h1 class="login-title">{{ t('page.login.title') }}</h1>
+        <p class="login-subtitle">{{ t('page.login.subtitle') }}</p>
       </div>
       
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <label for="username" class="form-label">用户名</label>
+          <label for="username" class="form-label">{{ t('page.login.username') }}</label>
           <input
             id="username"
             v-model="username"
             type="text"
             class="form-input"
-            placeholder="请输入用户名"
+            :placeholder="t('page.login.usernamePlaceholder')"
             required
           />
         </div>
         
         <div class="form-group">
-          <label for="password" class="form-label">密码</label>
+          <label for="password" class="form-label">{{ t('page.login.password') }}</label>
           <input
             id="password"
             v-model="password"
             type="password"
             class="form-input"
-            placeholder="请输入密码"
+            :placeholder="t('page.login.passwordPlaceholder')"
             required
           />
         </div>
@@ -38,7 +38,7 @@
               type="checkbox"
               class="checkbox-input"
             />
-            <span>记住我</span>
+            <span>{{ t('page.login.rememberMe') }}</span>
           </label>
         </div>
         
@@ -47,13 +47,13 @@
         </div>
         
         <button type="submit" class="submit-button" :disabled="loading">
-          {{ loading ? '登录中...' : '登录' }}
+          {{ loading ? t('page.login.loggingIn') : t('page.login.loginButton') }}
         </button>
       </form>
       
       <div class="login-footer">
-        <p class="hint">提示：使用 admin/admin 或 user/user 登录</p>
-        <router-link to="/" class="back-link">← 返回首页</router-link>
+        <p class="hint">{{ t('page.login.hint') }}</p>
+        <router-link to="/" class="back-link">{{ t('page.login.backToHome') }}</router-link>
       </div>
     </div>
   </div>
@@ -63,9 +63,11 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from '@ldesign/router'
 import { auth } from '@/composables/useAuth'
+import { useI18n } from '@/composables/useI18n'
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 
 // 表单数据
 const username = ref('')
@@ -90,22 +92,26 @@ const handleLogin = async () => {
       localStorage.setItem('rememberMe', 'true')
     }
     
-    // 获取重定向地址或跳转到仪表盘
-    const redirect = (route.query?.redirect as string) || '/dashboard'
-    await router.push(redirect)
-    
     // 触发成功提示
     console.log('✅ 登录成功！')
+    
+    // 获取重定向地址，如果没有就跳转到首页
+    const redirect = (route.query?.redirect as string) || '/'
+    
+    // 使用 replace 而不是 push，避免历史记录问题
+    await router.replace(redirect)
   } else {
     // 登录失败
-    error.value = result.error || '用户名或密码错误'
+    error.value = result.error || t('page.login.errors.invalidCredentials')
   }
 }
 
 // 组件挂载时检查是否已登录
 onMounted(() => {
   if (auth.isLoggedIn.value) {
-    router.push('/dashboard')
+    // 已登录的用户访问登录页，重定向到首页或查询参数中指定的页面
+    const redirect = (route.query?.redirect as string) || '/'
+    router.replace(redirect)
   }
 })
 </script>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icon Rotation Debug</title>
+  <script type="module" src="/build/ldesign-webcomponent.esm.js"></script>
+  <script nomodule src="/build/ldesign-webcomponent.js"></script>
+  <style>
+    body {
+      padding: 40px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    .debug-section {
+      margin-bottom: 40px;
+    }
+    .debug-info {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Icon Rotation Debug Test</h1>
+  
+  <div class="debug-section">
+    <h2>Basic Collapse Panel</h2>
+    <ldesign-collapse id="test-collapse">
+      <ldesign-collapse-panel header="Test Panel 1" active>
+        <p>This is the content of panel 1</p>
+      </ldesign-collapse-panel>
+      <ldesign-collapse-panel header="Test Panel 2">
+        <p>This is the content of panel 2</p>
+      </ldesign-collapse-panel>
+    </ldesign-collapse>
+    <div id="debug-info" class="debug-info">
+      Waiting for initialization...
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const debugInfo = document.getElementById('debug-info');
+      
+      // Wait for web components to be defined
+      customElements.whenDefined('ldesign-collapse-panel').then(() => {
+        const panel1 = document.querySelector('ldesign-collapse-panel[header="Test Panel 1"]');
+        const panel2 = document.querySelector('ldesign-collapse-panel[header="Test Panel 2"]');
+        
+        function updateDebugInfo() {
+          const shadow1 = panel1.shadowRoot;
+          const shadow2 = panel2.shadowRoot;
+          
+          if (!shadow1 || !shadow2) {
+            debugInfo.innerHTML = 'Shadow DOM not accessible';
+            return;
+          }
+          
+          const arrow1 = shadow1.querySelector('.ldesign-collapse-panel__arrow');
+          const arrow2 = shadow2.querySelector('.ldesign-collapse-panel__arrow');
+          const icon1 = arrow1?.querySelector('.ldesign-icon');
+          const icon2 = arrow2?.querySelector('.ldesign-icon');
+          
+          const computedStyle1 = arrow1 ? window.getComputedStyle(arrow1) : null;
+          const computedStyle2 = arrow2 ? window.getComputedStyle(arrow2) : null;
+          const iconStyle1 = icon1 ? window.getComputedStyle(icon1) : null;
+          const iconStyle2 = icon2 ? window.getComputedStyle(icon2) : null;
+          
+          debugInfo.innerHTML = `
+            <strong>Panel 1 (${panel1.active ? 'ACTIVE' : 'INACTIVE'}):</strong><br>
+            Arrow classes: ${arrow1?.className || 'N/A'}<br>
+            Arrow transform: ${computedStyle1?.transform || 'N/A'}<br>
+            Arrow transition: ${computedStyle1?.transition || 'N/A'}<br>
+            Icon transform: ${iconStyle1?.transform || 'N/A'}<br>
+            Icon transition: ${iconStyle1?.transition || 'N/A'}<br>
+            <br>
+            <strong>Panel 2 (${panel2.active ? 'ACTIVE' : 'INACTIVE'}):</strong><br>
+            Arrow classes: ${arrow2?.className || 'N/A'}<br>
+            Arrow transform: ${computedStyle2?.transform || 'N/A'}<br>
+            Arrow transition: ${computedStyle2?.transition || 'N/A'}<br>
+            Icon transform: ${iconStyle2?.transform || 'N/A'}<br>
+            Icon transition: ${iconStyle2?.transition || 'N/A'}<br>
+          `;
+        }
+        
+        // Initial debug info
+        setTimeout(updateDebugInfo, 100);
+        
+        // Add event listeners
+        panel1.addEventListener('click', () => {
+          console.log('Panel 1 clicked, active:', panel1.active);
+          setTimeout(updateDebugInfo, 10);
+          setTimeout(updateDebugInfo, 100);
+          setTimeout(updateDebugInfo, 300);
+        });
+        
+        panel2.addEventListener('click', () => {
+          console.log('Panel 2 clicked, active:', panel2.active);
+          setTimeout(updateDebugInfo, 10);
+          setTimeout(updateDebugInfo, 100);
+          setTimeout(updateDebugInfo, 300);
+        });
+        
+        // Monitor for changes
+        const observer = new MutationObserver(() => {
+          updateDebugInfo();
+        });
+        
+        if (shadow1) {
+          observer.observe(shadow1, { attributes: true, subtree: true, attributeFilter: ['class'] });
+        }
+        if (shadow2) {
+          observer.observe(shadow2, { attributes: true, subtree: true, attributeFilter: ['class'] });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

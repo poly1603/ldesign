@@ -111,69 +111,76 @@ export class CanvasRenderer {
     // Get eye positions
     const eyePositions = getEyePositions(moduleCount);
     const dotStyle = (this.config.style?.dotStyle || DEFAULT_STYLE.dotStyle) as DotStyle;
-
-    // Apply shadow if configured
-    if (this.config.style?.shadow) {
-      applyShadow(this.ctx, this.config.style.shadow);
-    }
-
-    // Setup fill style (gradient or solid color)
-    if (this.config.style?.gradient) {
-      const gradient = createCanvasGradient(
-        this.ctx,
-        this.config.style.gradient,
-        this.style.size,
-        this.style.size
-      );
-      this.ctx.fillStyle = gradient;
+    
+    // Check if we need special rendering for liquid/flow styles
+    if (dotStyle === 'smooth-flow' || dotStyle === 'liquid') {
+      // Use smooth flow rendering for connected liquid modules
+      this.renderSmoothFlow(moduleCount, margin, moduleSize);
     } else {
-      this.ctx.fillStyle = this.style.fgColor;
-    }
 
-    // Get render layer setting
-    const renderLayer = this.config.style?.renderLayer || 'all';
+      // Apply shadow if configured
+      if (this.config.style?.shadow) {
+        applyShadow(this.ctx, this.config.style.shadow);
+      }
 
-    // Draw QR modules (excluding eyes if custom eye style is configured)
-    for (let row = 0; row < moduleCount; row++) {
-      for (let col = 0; col < moduleCount; col++) {
-        if (this.generator.isDark(row, col)) {
-          // Check if this module should be rendered based on renderLayer setting
-          const isInEyeArea = isInEye(row, col, eyePositions);
-          const isFunctionModule = this.generator.isFunctionModule(row, col);
-          const isDataModule = this.generator.isDataModule(row, col);
-          const isTimingModule = this.generator.isTimingPattern(row, col);
+      // Setup fill style (gradient or solid color)
+      if (this.config.style?.gradient) {
+        const gradient = createCanvasGradient(
+          this.ctx,
+          this.config.style.gradient,
+          this.style.size,
+          this.style.size
+        );
+        this.ctx.fillStyle = gradient;
+      } else {
+        this.ctx.fillStyle = this.style.fgColor;
+      }
 
-          // Filter based on renderLayer
-          if (renderLayer === 'function' && !isFunctionModule) continue;
-          if (renderLayer === 'data' && !isDataModule) continue;
-          if (renderLayer === 'guide' && !isTimingModule) continue;
-          if (renderLayer === 'marker' && !isInEyeArea) continue;
+      // Get render layer setting
+      const renderLayer = this.config.style?.renderLayer || 'all';
 
-          // Skip if this module is part of an eye and custom eye style is configured
-          if (this.config.style?.eyeStyle && isInEyeArea) {
-            continue;
+      // Draw QR modules (excluding eyes if custom eye style is configured)
+      for (let row = 0; row < moduleCount; row++) {
+        for (let col = 0; col < moduleCount; col++) {
+          if (this.generator.isDark(row, col)) {
+            // Check if this module should be rendered based on renderLayer setting
+            const isInEyeArea = isInEye(row, col, eyePositions);
+            const isFunctionModule = this.generator.isFunctionModule(row, col);
+            const isDataModule = this.generator.isDataModule(row, col);
+            const isTimingModule = this.generator.isTimingPattern(row, col);
+
+            // Filter based on renderLayer
+            if (renderLayer === 'function' && !isFunctionModule) continue;
+            if (renderLayer === 'data' && !isDataModule) continue;
+            if (renderLayer === 'guide' && !isTimingModule) continue;
+            if (renderLayer === 'marker' && !isInEyeArea) continue;
+
+            // Skip if this module is part of an eye and custom eye style is configured
+            if (this.config.style?.eyeStyle && isInEyeArea) {
+              continue;
+            }
+
+            const x = (col + margin) * moduleSize;
+            const y = (row + margin) * moduleSize;
+
+            drawDot(this.ctx, x, y, moduleSize, dotStyle, this.style.cornerRadius);
           }
-
-          const x = (col + margin) * moduleSize;
-          const y = (row + margin) * moduleSize;
-
-          drawDot(this.ctx, x, y, moduleSize, dotStyle, this.style.cornerRadius);
         }
+      }
+
+      // Clear shadow before drawing eyes
+      if (this.config.style?.shadow) {
+        clearShadow(this.ctx);
+      }
+
+      // Draw custom eye styles if configured
+      if (this.config.style?.eyeStyle) {
+        this.drawEyes(eyePositions, moduleSize, margin);
       }
     }
 
-    // Clear shadow before drawing eyes
-    if (this.config.style?.shadow) {
-      clearShadow(this.ctx);
-    }
-
-    // Draw custom eye styles if configured
-    if (this.config.style?.eyeStyle) {
-      this.drawEyes(eyePositions, moduleSize, margin);
-    }
-
-    // Apply visual effects if configured
-    if (this.config.style?.effect && this.config.style.effect !== 'none') {
+    // Apply other visual effects if configured (not smooth-flow)
+    if (this.config.style?.effect && this.config.style.effect !== 'none' && this.config.style.effect !== 'smooth-flow') {
       this.applyEffect(this.config.style.effect);
     }
 
@@ -492,15 +499,12 @@ export class CanvasRenderer {
    */
   private applyEffect(effectType: EffectType): void {
     const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-
+    
     if (effectType === 'crystalize') {
       // Crystalize effect: creates crystalline patterns
       this.applyCrystalizeEffect(imageData);
-    } else if (effectType === 'liquidify') {
-      // Liquidify effect: creates liquid/fluid appearance
-      this.applyLiquidifyEffect(imageData);
     }
-
+    
     this.ctx.putImageData(imageData, 0, 0);
   }
 
@@ -553,39 +557,121 @@ export class CanvasRenderer {
   }
 
   /**
-   * Apply liquidify effect
+   * Render QR code with smooth flow effect (liquid style)
    */
-  private applyLiquidifyEffect(imageData: ImageData): void {
-    const data = imageData.data;
-    const width = imageData.width;
-    const height = imageData.height;
-    const strength = 6; // Distortion strength
-
-    // Create a copy of the original data
-    const original = new Uint8ClampedArray(data);
-
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        // Calculate distortion using sine waves
-        const distortX = Math.sin(y * 0.05) * strength;
-        const distortY = Math.cos(x * 0.05) * strength;
-
-        // Source coordinates with distortion
-        const srcX = Math.round(x + distortX);
-        const srcY = Math.round(y + distortY);
-
-        // Bounds check
-        if (srcX >= 0 && srcX < width && srcY >= 0 && srcY < height) {
-          const srcIdx = (srcY * width + srcX) * 4;
-          const dstIdx = (y * width + x) * 4;
-
-          data[dstIdx] = original[srcIdx];
-          data[dstIdx + 1] = original[srcIdx + 1];
-          data[dstIdx + 2] = original[srcIdx + 2];
-          data[dstIdx + 3] = original[srcIdx + 3];
+  private renderSmoothFlow(moduleCount: number, margin: number, moduleSize: number): void {
+    // Get eye positions
+    const eyePositions = getEyePositions(moduleCount);
+    
+    // Apply shadow if configured
+    if (this.config.style?.shadow) {
+      applyShadow(this.ctx, this.config.style.shadow);
+    }
+    
+    // Setup fill style for modules
+    if (this.config.style?.gradient) {
+      const gradient = createCanvasGradient(
+        this.ctx,
+        this.config.style.gradient,
+        this.style.size,
+        this.style.size
+      );
+      this.ctx.fillStyle = gradient;
+    } else {
+      this.ctx.fillStyle = this.style.fgColor;
+    }
+    
+    // Draw QR modules with liquid style
+    for (let row = 0; row < moduleCount; row++) {
+      for (let col = 0; col < moduleCount; col++) {
+        if (this.generator.isDark(row, col)) {
+          const x = (col + margin) * moduleSize;
+          const y = (row + margin) * moduleSize;
+          
+          // Check if in eye area
+          if (this.config.style?.eyeStyle && isInEye(row, col, eyePositions)) {
+            continue; // Skip, will be drawn by drawEyes
+          }
+          
+          // Check neighbors for liquid connection
+          const hasTop = row > 0 && this.generator.isDark(row - 1, col);
+          const hasRight = col < moduleCount - 1 && this.generator.isDark(row, col + 1);
+          const hasBottom = row < moduleCount - 1 && this.generator.isDark(row + 1, col);
+          const hasLeft = col > 0 && this.generator.isDark(row, col - 1);
+          
+          // Draw liquid-style module
+          this.drawLiquidModule(x, y, moduleSize, hasTop, hasRight, hasBottom, hasLeft);
         }
       }
     }
+    
+    // Clear shadow before drawing eyes
+    if (this.config.style?.shadow) {
+      clearShadow(this.ctx);
+    }
+    
+    // Draw custom eye styles if configured
+    if (this.config.style?.eyeStyle) {
+      this.drawEyes(eyePositions, moduleSize, margin);
+    }
+  }
+  
+  /**
+   * Draw a liquid-style module that connects smoothly with neighbors
+   */
+  private drawLiquidModule(
+    x: number,
+    y: number,
+    size: number,
+    hasTop: boolean,
+    hasRight: boolean,
+    hasBottom: boolean,
+    hasLeft: boolean
+  ): void {
+    const r = size * 0.37; // Radius for corners
+    const c = size * 0.5;  // Center offset
+    
+    this.ctx.beginPath();
+    
+    // Start from top-left
+    this.ctx.moveTo(x + (hasLeft ? 0 : r), y + (hasTop ? 0 : r));
+    
+    // Top edge
+    if (hasTop) {
+      this.ctx.lineTo(x + size - (hasRight ? 0 : r), y);
+    } else {
+      this.ctx.lineTo(x + size - r, y);
+      this.ctx.arcTo(x + size, y, x + size, y + r, r);
+    }
+    
+    // Right edge
+    if (hasRight) {
+      this.ctx.lineTo(x + size, y + size - (hasBottom ? 0 : r));
+    } else {
+      this.ctx.lineTo(x + size, y + r);
+      this.ctx.lineTo(x + size, y + size - r);
+      this.ctx.arcTo(x + size, y + size, x + size - r, y + size, r);
+    }
+    
+    // Bottom edge
+    if (hasBottom) {
+      this.ctx.lineTo(x + (hasLeft ? 0 : r), y + size);
+    } else {
+      this.ctx.lineTo(x + r, y + size);
+      this.ctx.arcTo(x, y + size, x, y + size - r, r);
+    }
+    
+    // Left edge
+    if (hasLeft) {
+      this.ctx.lineTo(x, y + (hasTop ? 0 : r));
+    } else {
+      this.ctx.lineTo(x, y + size - r);
+      this.ctx.lineTo(x, y + r);
+      this.ctx.arcTo(x, y, x + r, y, r);
+    }
+    
+    this.ctx.closePath();
+    this.ctx.fill();
   }
 
   /**

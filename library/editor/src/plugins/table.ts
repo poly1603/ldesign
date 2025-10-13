@@ -4,7 +4,7 @@
 
 import { createPlugin } from '../core/Plugin'
 import type { Plugin, Command } from '../types'
-import { showTableDialog } from '../ui/TableDialog'
+// import { showTableDialog } from '../ui/TableDialog'
 
 /**
  * 创建表格元素
@@ -64,10 +64,68 @@ const insertTable: Command = (state, dispatch) => {
     return true
   }
 
-  console.log('📋 [Table] Showing table dialog')
-  showTableDialog({
-    onConfirm: (rows, cols) => {
-      console.log(`📋 [Table] Dialog confirmed: ${rows}x${cols}`)
+  console.log('📋 [Table] Creating table dialog inline')
+  
+  try {
+    // 直接内联创建对话框
+    const overlay = document.createElement('div')
+    overlay.className = 'editor-dialog-overlay'
+    overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;'
+    
+    const dialog = document.createElement('div')
+    dialog.className = 'editor-dialog editor-table-dialog'
+    dialog.style.cssText = 'background: white; border-radius: 8px; padding: 20px; min-width: 400px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);'
+    
+    dialog.innerHTML = `
+      <div style="font-size: 18px; font-weight: 600; margin-bottom: 20px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="3" y1="15" x2="21" y2="15"/>
+          <line x1="9" y1="3" x2="9" y2="21"/>
+          <line x1="15" y1="3" x2="15" y2="21"/>
+        </svg>
+        插入表格
+      </div>
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500;">表格大小</label>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input type="number" id="table-rows" min="1" max="50" value="3" style="flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;" placeholder="行数">
+          <span style="font-weight: 500; color: #6b7280;">×</span>
+          <input type="number" id="table-cols" min="1" max="50" value="3" style="flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;" placeholder="列数">
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button id="table-cancel" style="padding: 8px 16px; border: 1px solid #d1d5db; background: white; border-radius: 4px; cursor: pointer;">取消</button>
+        <button id="table-insert" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">插入</button>
+      </div>
+    `
+    
+    overlay.appendChild(dialog)
+    document.body.appendChild(overlay)
+    
+    console.log('📋 [Table] Dialog created and appended')
+    
+    // 绑定事件
+    const insertBtn = dialog.querySelector('#table-insert')
+    const cancelBtn = dialog.querySelector('#table-cancel')
+    const rowsInput = dialog.querySelector('#table-rows') as HTMLInputElement
+    const colsInput = dialog.querySelector('#table-cols') as HTMLInputElement
+    
+    const closeDialog = () => {
+      overlay.remove()
+    }
+    
+    cancelBtn?.addEventListener('click', closeDialog)
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeDialog()
+    })
+    
+    insertBtn?.addEventListener('click', () => {
+      const rows = parseInt(rowsInput.value) || 3
+      const cols = parseInt(colsInput.value) || 3
+      console.log(`📋 [Table] Inserting table: ${rows}x${cols}`)
+      closeDialog()
       if (rows < 1 || cols < 1) {
         console.log('❌ [Table] Invalid rows or cols')
         return
@@ -113,8 +171,13 @@ const insertTable: Command = (state, dispatch) => {
           console.log('❌ [Table] No editorContent found in document')
         }
       }, 0)
-    }
-  })
+    })
+
+    console.log('✅ [Table] Dialog setup complete')
+  } catch (error) {
+    console.error('❌ [Table] Error creating dialog:', error)
+    console.error('❌ [Table] Error stack:', (error as Error).stack)
+  }
 
   console.log('✅ [Table] Command returning true')
   return true

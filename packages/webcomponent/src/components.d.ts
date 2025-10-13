@@ -1007,6 +1007,7 @@ export namespace Components {
     /**
      * Collapse 折叠面板
      * - 支持受控/非受控、手风琴模式、动画、禁用
+     * - 支持尺寸变体、主题、展开/收起全部、嵌套等高级功能
      */
     interface LdesignCollapse {
         /**
@@ -1015,10 +1016,34 @@ export namespace Components {
          */
         "accordion": boolean;
         /**
+          * 动画持续时间（毫秒）
+          * @default 200
+         */
+        "animationDuration": number;
+        /**
+          * 动画缓动函数
+          * @default 'ease'
+         */
+        "animationEasing": string;
+        /**
           * 边框样式
           * @default true
          */
         "bordered": boolean;
+        /**
+          * 卡片模式
+          * @default false
+         */
+        "cardStyle": boolean;
+        /**
+          * 收起全部面板
+         */
+        "collapseAll": () => Promise<void>;
+        /**
+          * 内容加载方式
+          * @default 'sync'
+         */
+        "contentLoading": 'sync' | 'async' | 'lazy';
         /**
           * 默认展开的面板标识列表（非受控）
           * @default []
@@ -1030,19 +1055,90 @@ export namespace Components {
          */
         "disabled": boolean;
         /**
+          * 展开全部面板
+         */
+        "expandAll": () => Promise<void>;
+        /**
           * 展开图标位置
           * @default 'left'
          */
         "expandIconPlacement": 'left' | 'right';
+        /**
+          * 获取当前展开的面板
+         */
+        "getOpenPanels": () => Promise<string[]>;
         /**
           * 幽灵（无背景，仅分隔线）
           * @default false
          */
         "ghost": boolean;
         /**
-          * 展开的面板标识列表（受控）
+          * 是否高亮搜索结果
+          * @default true
          */
-        "value"?: string[];
+        "highlightSearch": boolean;
+        /**
+          * 是否可通过键盘导航
+          * @default true
+         */
+        "keyboardNavigation": boolean;
+        /**
+          * 异步加载函数
+         */
+        "loadContent"?: (name: string) => Promise<string>;
+        /**
+          * 折叠模式：普通、紧凑、分离
+          * @default 'default'
+         */
+        "mode": 'default' | 'compact' | 'separated';
+        /**
+          * 嵌套缩进（像素）
+          * @default 20
+         */
+        "nestingIndent": number;
+        /**
+          * 圆角样式
+          * @default 'medium'
+         */
+        "rounded": 'none' | 'small' | 'medium' | 'large';
+        /**
+          * 搜索过滤关键词
+          * @default ''
+         */
+        "searchKeyword": string;
+        /**
+          * 是否显示阴影
+          * @default false
+         */
+        "shadow": boolean;
+        /**
+          * 是否显示展开图标
+          * @default true
+         */
+        "showExpandIcon": boolean;
+        /**
+          * 尺寸变体
+          * @default 'medium'
+         */
+        "size": 'small' | 'medium' | 'large';
+        /**
+          * 是否可拖拽排序
+          * @default false
+         */
+        "sortable": boolean;
+        /**
+          * 主题颜色
+          * @default 'default'
+         */
+        "theme": 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+        /**
+          * 切换指定面板
+         */
+        "togglePanel": (name: string) => Promise<void>;
+        /**
+          * 展开的面板标识列表（受控） - 可以是数组或JSON字符串
+         */
+        "value"?: string[] | string;
     }
     /**
      * CollapsePanel 折叠面板项
@@ -1054,6 +1150,44 @@ export namespace Components {
          */
         "active": boolean;
         /**
+          * 动画延迟
+          * @default 0
+         */
+        "animationDelay": number;
+        /**
+          * 动画持续时间（毫秒）
+          * @default 200
+         */
+        "animationDuration": number;
+        /**
+          * 动画缓动函数
+          * @default 'ease'
+         */
+        "animationEasing": string;
+        /**
+          * 动画曲线预设
+          * @default 'default'
+         */
+        "animationPreset": 'default' | 'spring' | 'bounce' | 'smooth' | 'sharp';
+        /**
+          * 自定义折叠图标
+         */
+        "collapsedIcon"?: string;
+        /**
+          * 内容动画类型
+          * @default 'fade'
+         */
+        "contentAnimation": 'none' | 'fade' | 'slide' | 'scale' | 'slide-fade';
+        /**
+          * 内容淡入延迟
+          * @default 100
+         */
+        "contentFadeDelay": number;
+        /**
+          * 内容内边距
+         */
+        "contentPadding"?: string;
+        /**
           * 收起后是否销毁内容（优先级高于 lazy）
           * @default false
          */
@@ -1063,6 +1197,10 @@ export namespace Components {
           * @default false
          */
         "disabled": boolean;
+        /**
+          * 空状态文本
+         */
+        "emptyText"?: string;
         /**
           * 展开图标名称（默认 chevron-right）
           * @default 'chevron-right'
@@ -1074,6 +1212,10 @@ export namespace Components {
          */
         "expandIconPlacement": 'left' | 'right';
         /**
+          * 自定义展开图标
+         */
+        "expandedIcon"?: string;
+        /**
           * 右侧附加区（可用 slot="extra" 覆盖）
          */
         "extra"?: string;
@@ -1082,14 +1224,63 @@ export namespace Components {
          */
         "header"?: string;
         /**
+          * 头部背景色
+         */
+        "headerBackground"?: string;
+        /**
+          * 图标旋转角度
+          * @default 90
+         */
+        "iconRotation": number;
+        /**
           * 首次激活才渲染内容（懒渲染）
           * @default false
          */
         "lazy": boolean;
         /**
+          * 是否加载中
+          * @default false
+         */
+        "loading": boolean;
+        /**
           * 面板唯一标识（由父级匹配）
          */
         "name"?: string;
+        /**
+          * 嵌套层级
+          * @default 0
+         */
+        "nestingLevel": number;
+        /**
+          * 是否反向旋转图标
+          * @default false
+         */
+        "reverseIconRotation": boolean;
+        /**
+          * 是否显示分隔线
+          * @default true
+         */
+        "showDivider": boolean;
+        /**
+          * 是否显示展开图标
+          * @default true
+         */
+        "showExpandIcon": boolean;
+        /**
+          * 尺寸变体
+          * @default 'medium'
+         */
+        "size": 'small' | 'medium' | 'large';
+        /**
+          * 是否可排序（由父级传入）
+          * @default false
+         */
+        "sortable": boolean;
+        /**
+          * 主题颜色
+          * @default 'default'
+         */
+        "theme": 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
     }
     /**
      * ColorInput 颜色输入（内置 Popup + ColorPicker）
@@ -6131,10 +6322,16 @@ declare global {
     interface HTMLLdesignCollapseElementEventMap {
         "ldesignChange": string[];
         "ldesignToggle": { name: string; open: boolean; openKeys: string[] };
+        "ldesignExpandAll": string[];
+        "ldesignCollapseAll": void;
+        "ldesignBeforeExpand": { name: string; cancel: () => void };
+        "ldesignBeforeCollapse": { name: string; cancel: () => void };
+        "ldesignSortChange": { from: number; to: number; panelName: string };
     }
     /**
      * Collapse 折叠面板
      * - 支持受控/非受控、手风琴模式、动画、禁用
+     * - 支持尺寸变体、主题、展开/收起全部、嵌套等高级功能
      */
     interface HTMLLdesignCollapseElement extends Components.LdesignCollapse, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignCollapseElementEventMap>(type: K, listener: (this: HTMLLdesignCollapseElement, ev: LdesignCollapseCustomEvent<HTMLLdesignCollapseElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -6152,6 +6349,11 @@ declare global {
     };
     interface HTMLLdesignCollapsePanelElementEventMap {
         "ldesignCollapseItemToggle": { name: string };
+        "ldesignPanelDragStart": { name: string; event: DragEvent };
+        "ldesignPanelDragEnd": { event: DragEvent };
+        "ldesignPanelDragOver": { name: string; event: DragEvent };
+        "ldesignPanelDragLeave": { name: string; event: DragEvent };
+        "ldesignPanelDrop": { name: string; event: DragEvent };
     }
     /**
      * CollapsePanel 折叠面板项
@@ -8291,6 +8493,7 @@ declare namespace LocalJSX {
     /**
      * Collapse 折叠面板
      * - 支持受控/非受控、手风琴模式、动画、禁用
+     * - 支持尺寸变体、主题、展开/收起全部、嵌套等高级功能
      */
     interface LdesignCollapse {
         /**
@@ -8299,10 +8502,30 @@ declare namespace LocalJSX {
          */
         "accordion"?: boolean;
         /**
+          * 动画持续时间（毫秒）
+          * @default 200
+         */
+        "animationDuration"?: number;
+        /**
+          * 动画缓动函数
+          * @default 'ease'
+         */
+        "animationEasing"?: string;
+        /**
           * 边框样式
           * @default true
          */
         "bordered"?: boolean;
+        /**
+          * 卡片模式
+          * @default false
+         */
+        "cardStyle"?: boolean;
+        /**
+          * 内容加载方式
+          * @default 'sync'
+         */
+        "contentLoading"?: 'sync' | 'async' | 'lazy';
         /**
           * 默认展开的面板标识列表（非受控）
           * @default []
@@ -8324,17 +8547,96 @@ declare namespace LocalJSX {
          */
         "ghost"?: boolean;
         /**
+          * 是否高亮搜索结果
+          * @default true
+         */
+        "highlightSearch"?: boolean;
+        /**
+          * 是否可通过键盘导航
+          * @default true
+         */
+        "keyboardNavigation"?: boolean;
+        /**
+          * 异步加载函数
+         */
+        "loadContent"?: (name: string) => Promise<string>;
+        /**
+          * 折叠模式：普通、紧凑、分离
+          * @default 'default'
+         */
+        "mode"?: 'default' | 'compact' | 'separated';
+        /**
+          * 嵌套缩进（像素）
+          * @default 20
+         */
+        "nestingIndent"?: number;
+        /**
+          * 面板收起前事件
+         */
+        "onLdesignBeforeCollapse"?: (event: LdesignCollapseCustomEvent<{ name: string; cancel: () => void }>) => void;
+        /**
+          * 面板展开前事件
+         */
+        "onLdesignBeforeExpand"?: (event: LdesignCollapseCustomEvent<{ name: string; cancel: () => void }>) => void;
+        /**
           * 展开项变化
          */
         "onLdesignChange"?: (event: LdesignCollapseCustomEvent<string[]>) => void;
+        /**
+          * 收起全部事件
+         */
+        "onLdesignCollapseAll"?: (event: LdesignCollapseCustomEvent<void>) => void;
+        /**
+          * 展开全部事件
+         */
+        "onLdesignExpandAll"?: (event: LdesignCollapseCustomEvent<string[]>) => void;
+        /**
+          * 排序变化事件
+         */
+        "onLdesignSortChange"?: (event: LdesignCollapseCustomEvent<{ from: number; to: number; panelName: string }>) => void;
         /**
           * 单项切换事件
          */
         "onLdesignToggle"?: (event: LdesignCollapseCustomEvent<{ name: string; open: boolean; openKeys: string[] }>) => void;
         /**
-          * 展开的面板标识列表（受控）
+          * 圆角样式
+          * @default 'medium'
          */
-        "value"?: string[];
+        "rounded"?: 'none' | 'small' | 'medium' | 'large';
+        /**
+          * 搜索过滤关键词
+          * @default ''
+         */
+        "searchKeyword"?: string;
+        /**
+          * 是否显示阴影
+          * @default false
+         */
+        "shadow"?: boolean;
+        /**
+          * 是否显示展开图标
+          * @default true
+         */
+        "showExpandIcon"?: boolean;
+        /**
+          * 尺寸变体
+          * @default 'medium'
+         */
+        "size"?: 'small' | 'medium' | 'large';
+        /**
+          * 是否可拖拽排序
+          * @default false
+         */
+        "sortable"?: boolean;
+        /**
+          * 主题颜色
+          * @default 'default'
+         */
+        "theme"?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+        /**
+          * 展开的面板标识列表（受控） - 可以是数组或JSON字符串
+         */
+        "value"?: string[] | string;
     }
     /**
      * CollapsePanel 折叠面板项
@@ -8346,6 +8648,44 @@ declare namespace LocalJSX {
          */
         "active"?: boolean;
         /**
+          * 动画延迟
+          * @default 0
+         */
+        "animationDelay"?: number;
+        /**
+          * 动画持续时间（毫秒）
+          * @default 200
+         */
+        "animationDuration"?: number;
+        /**
+          * 动画缓动函数
+          * @default 'ease'
+         */
+        "animationEasing"?: string;
+        /**
+          * 动画曲线预设
+          * @default 'default'
+         */
+        "animationPreset"?: 'default' | 'spring' | 'bounce' | 'smooth' | 'sharp';
+        /**
+          * 自定义折叠图标
+         */
+        "collapsedIcon"?: string;
+        /**
+          * 内容动画类型
+          * @default 'fade'
+         */
+        "contentAnimation"?: 'none' | 'fade' | 'slide' | 'scale' | 'slide-fade';
+        /**
+          * 内容淡入延迟
+          * @default 100
+         */
+        "contentFadeDelay"?: number;
+        /**
+          * 内容内边距
+         */
+        "contentPadding"?: string;
+        /**
           * 收起后是否销毁内容（优先级高于 lazy）
           * @default false
          */
@@ -8355,6 +8695,10 @@ declare namespace LocalJSX {
           * @default false
          */
         "disabled"?: boolean;
+        /**
+          * 空状态文本
+         */
+        "emptyText"?: string;
         /**
           * 展开图标名称（默认 chevron-right）
           * @default 'chevron-right'
@@ -8366,6 +8710,10 @@ declare namespace LocalJSX {
          */
         "expandIconPlacement"?: 'left' | 'right';
         /**
+          * 自定义展开图标
+         */
+        "expandedIcon"?: string;
+        /**
           * 右侧附加区（可用 slot="extra" 覆盖）
          */
         "extra"?: string;
@@ -8374,18 +8722,75 @@ declare namespace LocalJSX {
          */
         "header"?: string;
         /**
+          * 头部背景色
+         */
+        "headerBackground"?: string;
+        /**
+          * 图标旋转角度
+          * @default 90
+         */
+        "iconRotation"?: number;
+        /**
           * 首次激活才渲染内容（懒渲染）
           * @default false
          */
         "lazy"?: boolean;
         /**
+          * 是否加载中
+          * @default false
+         */
+        "loading"?: boolean;
+        /**
           * 面板唯一标识（由父级匹配）
          */
         "name"?: string;
         /**
+          * 嵌套层级
+          * @default 0
+         */
+        "nestingLevel"?: number;
+        /**
           * 冒泡给父级，用于切换
          */
         "onLdesignCollapseItemToggle"?: (event: LdesignCollapsePanelCustomEvent<{ name: string }>) => void;
+        "onLdesignPanelDragEnd"?: (event: LdesignCollapsePanelCustomEvent<{ event: DragEvent }>) => void;
+        "onLdesignPanelDragLeave"?: (event: LdesignCollapsePanelCustomEvent<{ name: string; event: DragEvent }>) => void;
+        "onLdesignPanelDragOver"?: (event: LdesignCollapsePanelCustomEvent<{ name: string; event: DragEvent }>) => void;
+        /**
+          * 拖拽事件
+         */
+        "onLdesignPanelDragStart"?: (event: LdesignCollapsePanelCustomEvent<{ name: string; event: DragEvent }>) => void;
+        "onLdesignPanelDrop"?: (event: LdesignCollapsePanelCustomEvent<{ name: string; event: DragEvent }>) => void;
+        /**
+          * 是否反向旋转图标
+          * @default false
+         */
+        "reverseIconRotation"?: boolean;
+        /**
+          * 是否显示分隔线
+          * @default true
+         */
+        "showDivider"?: boolean;
+        /**
+          * 是否显示展开图标
+          * @default true
+         */
+        "showExpandIcon"?: boolean;
+        /**
+          * 尺寸变体
+          * @default 'medium'
+         */
+        "size"?: 'small' | 'medium' | 'large';
+        /**
+          * 是否可排序（由父级传入）
+          * @default false
+         */
+        "sortable"?: boolean;
+        /**
+          * 主题颜色
+          * @default 'default'
+         */
+        "theme"?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
     }
     /**
      * ColorInput 颜色输入（内置 Popup + ColorPicker）
@@ -13305,6 +13710,7 @@ declare module "@stencil/core" {
             /**
              * Collapse 折叠面板
              * - 支持受控/非受控、手风琴模式、动画、禁用
+             * - 支持尺寸变体、主题、展开/收起全部、嵌套等高级功能
              */
             "ldesign-collapse": LocalJSX.LdesignCollapse & JSXBase.HTMLAttributes<HTMLLdesignCollapseElement>;
             /**

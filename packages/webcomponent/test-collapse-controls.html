@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>折叠面板控制测试</title>
+    <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+    <style>
+        body {
+            padding: 40px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+        }
+        .demo-section {
+            margin-bottom: 40px;
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        h2 {
+            margin-top: 0;
+            color: #1f2329;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            border: 1px solid #d9d9d9;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            border-color: #40a9ff;
+            color: #40a9ff;
+        }
+        button:active {
+            background: #f0f0f0;
+        }
+        .test-box {
+            border: 1px solid #e5e6eb;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .drag-handle {
+            cursor: move;
+            color: #999;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-section">
+        <h2>📁 基础展开/收起控制</h2>
+        
+        <div class="controls">
+            <button onclick="expandAll('collapse1')">展开全部</button>
+            <button onclick="collapseAll('collapse1')">收起全部</button>
+            <button onclick="togglePanel('collapse1', 'panel2')">切换面板2</button>
+            <button onclick="getOpenPanels('collapse1')">获取展开的面板</button>
+        </div>
+        
+        <ldesign-collapse id="collapse1">
+            <ldesign-collapse-panel header="面板 1" name="panel1">
+                这是面板 1 的内容
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="面板 2" name="panel2">
+                这是面板 2 的内容
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="面板 3" name="panel3">
+                这是面板 3 的内容
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="面板 4" name="panel4">
+                这是面板 4 的内容
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+        
+        <div id="status1" style="margin-top: 20px; padding: 10px; background: #f5f7fa; border-radius: 4px;">
+            状态: 等待操作...
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🔄 拖拽排序测试</h2>
+        
+        <div class="controls">
+            <button onclick="toggleSortable()">切换拖拽模式</button>
+            <button onclick="expandAll('collapse2')">展开全部</button>
+            <button onclick="collapseAll('collapse2')">收起全部</button>
+        </div>
+        
+        <ldesign-collapse id="collapse2" sortable>
+            <ldesign-collapse-panel header="📝 可拖拽面板 A" name="panelA">
+                <span class="drag-handle">☰</span>内容 A - 拖动标题栏来重新排序
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="📊 可拖拽面板 B" name="panelB">
+                <span class="drag-handle">☰</span>内容 B - 拖动标题栏来重新排序
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="📈 可拖拽面板 C" name="panelC">
+                <span class="drag-handle">☰</span>内容 C - 拖动标题栏来重新排序
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="📉 可拖拽面板 D" name="panelD">
+                <span class="drag-handle">☰</span>内容 D - 拖动标题栏来重新排序
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+        
+        <div id="status2" style="margin-top: 20px; padding: 10px; background: #f5f7fa; border-radius: 4px;">
+            拖拽模式: 已启用
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🌲 嵌套折叠面板测试</h2>
+        
+        <div class="controls">
+            <button onclick="expandAll('collapse3')">展开外层全部</button>
+            <button onclick="collapseAll('collapse3')">收起外层全部</button>
+        </div>
+        
+        <ldesign-collapse id="collapse3">
+            <ldesign-collapse-panel header="外层面板 1" name="outer1">
+                <p>这是外层面板 1 的内容</p>
+                
+                <ldesign-collapse id="nested1">
+                    <ldesign-collapse-panel header="内层面板 1-1" name="inner1-1">
+                        内层内容 1-1
+                    </ldesign-collapse-panel>
+                    <ldesign-collapse-panel header="内层面板 1-2" name="inner1-2">
+                        内层内容 1-2
+                    </ldesign-collapse-panel>
+                </ldesign-collapse>
+            </ldesign-collapse-panel>
+            
+            <ldesign-collapse-panel header="外层面板 2" name="outer2">
+                <p>这是外层面板 2 的内容</p>
+                
+                <ldesign-collapse id="nested2" default-value='["inner2-1"]'>
+                    <ldesign-collapse-panel header="内层面板 2-1" name="inner2-1">
+                        内层内容 2-1（默认展开）
+                    </ldesign-collapse-panel>
+                    <ldesign-collapse-panel header="内层面板 2-2" name="inner2-2">
+                        内层内容 2-2
+                    </ldesign-collapse-panel>
+                    <ldesign-collapse-panel header="内层面板 2-3" name="inner2-3">
+                        内层内容 2-3
+                    </ldesign-collapse-panel>
+                </ldesign-collapse>
+            </ldesign-collapse-panel>
+            
+            <ldesign-collapse-panel header="外层面板 3（无嵌套）" name="outer3">
+                <p>这是外层面板 3 的内容，没有嵌套的子面板</p>
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+        
+        <div id="status3" style="margin-top: 20px; padding: 10px; background: #f5f7fa; border-radius: 4px;">
+            说明: 展开外层面板时，内层面板应保持默认状态（不自动全部展开）
+        </div>
+    </div>
+
+    <script>
+        // 展开全部
+        async function expandAll(collapseId) {
+            const collapse = document.getElementById(collapseId);
+            if (collapse && collapse.expandAll) {
+                await collapse.expandAll();
+                updateStatus(collapseId, '已展开全部面板');
+            }
+        }
+        
+        // 收起全部
+        async function collapseAll(collapseId) {
+            const collapse = document.getElementById(collapseId);
+            if (collapse && collapse.collapseAll) {
+                await collapse.collapseAll();
+                updateStatus(collapseId, '已收起全部面板');
+            }
+        }
+        
+        // 切换指定面板
+        async function togglePanel(collapseId, panelName) {
+            const collapse = document.getElementById(collapseId);
+            if (collapse && collapse.togglePanel) {
+                await collapse.togglePanel(panelName);
+                updateStatus(collapseId, `已切换面板: ${panelName}`);
+            }
+        }
+        
+        // 获取展开的面板
+        async function getOpenPanels(collapseId) {
+            const collapse = document.getElementById(collapseId);
+            if (collapse && collapse.getOpenPanels) {
+                const openPanels = await collapse.getOpenPanels();
+                updateStatus(collapseId, `当前展开的面板: ${openPanels.length > 0 ? openPanels.join(', ') : '无'}`);
+            }
+        }
+        
+        // 切换拖拽模式
+        function toggleSortable() {
+            const collapse = document.getElementById('collapse2');
+            if (collapse) {
+                collapse.sortable = !collapse.sortable;
+                document.getElementById('status2').textContent = `拖拽模式: ${collapse.sortable ? '已启用' : '已禁用'}`;
+            }
+        }
+        
+        // 更新状态显示
+        function updateStatus(collapseId, message) {
+            const statusMap = {
+                'collapse1': 'status1',
+                'collapse2': 'status2',
+                'collapse3': 'status3'
+            };
+            const statusEl = document.getElementById(statusMap[collapseId]);
+            if (statusEl) {
+                statusEl.textContent = `状态: ${message}`;
+            }
+        }
+        
+        // 监听事件
+        document.addEventListener('DOMContentLoaded', () => {
+            // 监听展开/收起事件
+            const collapses = document.querySelectorAll('ldesign-collapse');
+            collapses.forEach(collapse => {
+                collapse.addEventListener('ldesignChange', (e) => {
+                    console.log('展开项变化:', e.detail);
+                });
+                
+                collapse.addEventListener('ldesignExpandAll', (e) => {
+                    console.log('展开全部:', e.detail);
+                });
+                
+                collapse.addEventListener('ldesignCollapseAll', (e) => {
+                    console.log('收起全部');
+                });
+                
+                collapse.addEventListener('ldesignSortChange', (e) => {
+                    console.log('排序变化:', e.detail);
+                    updateStatus('collapse2', `排序变化: ${e.detail.panelName} 从位置 ${e.detail.from} 移到 ${e.detail.to}`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

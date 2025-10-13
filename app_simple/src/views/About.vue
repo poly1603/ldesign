@@ -1,51 +1,44 @@
 <template>
   <div class="about-container">
     <div class="about-content">
-      <h1 class="about-title">关于 LDesign Router</h1>
+      <h1 class="about-title">{{ t('page.about.title') }}</h1>
       
       <div class="about-section">
-        <h2>📖 项目简介</h2>
-        <p>
-          LDesign Router 是一个现代化、高性能、功能丰富的 Vue 3 路由解决方案。
-          它完全独立于 vue-router，提供了更好的开发体验和性能优化。
-        </p>
+        <h2>{{ t('page.about.intro.title') }}</h2>
+        <p>{{ t('page.about.intro.content') }}</p>
       </div>
       
       <div class="about-section">
-        <h2>🎯 设计目标</h2>
+        <h2>{{ t('page.about.goals.title') }}</h2>
         <ul>
-          <li>提供简洁而强大的 API</li>
-          <li>优化性能，减少内存占用</li>
-          <li>完善的 TypeScript 支持</li>
-          <li>与 @ldesign/engine 深度集成</li>
-          <li>丰富的功能扩展</li>
+          <li v-for="(item, index) in goalItems" :key="index">{{ item }}</li>
         </ul>
       </div>
       
       <div class="about-section">
-        <h2>✨ 核心功能</h2>
+        <h2>{{ t('page.about.features.title') }}</h2>
         <div class="feature-list">
           <div class="feature-item">
-            <h3>智能预取</h3>
-            <p>基于用户行为和网络条件智能预取路由资源，提升导航速度</p>
+            <h3>{{ t('page.about.features.smartPrefetch.title') }}</h3>
+            <p>{{ t('page.about.features.smartPrefetch.description') }}</p>
           </div>
           <div class="feature-item">
-            <h3>缓存管理</h3>
-            <p>多级缓存策略，支持内存、会话、本地存储等多种缓存方式</p>
+            <h3>{{ t('page.about.features.cacheManagement.title') }}</h3>
+            <p>{{ t('page.about.features.cacheManagement.description') }}</p>
           </div>
           <div class="feature-item">
-            <h3>性能监控</h3>
-            <p>实时监控路由性能，提供详细的性能报告和优化建议</p>
+            <h3>{{ t('page.about.features.performanceMonitoring.title') }}</h3>
+            <p>{{ t('page.about.features.performanceMonitoring.description') }}</p>
           </div>
           <div class="feature-item">
-            <h3>安全保护</h3>
-            <p>内置 XSS、CSRF 防护，支持认证守卫和权限控制</p>
+            <h3>{{ t('page.about.features.securityProtection.title') }}</h3>
+            <p>{{ t('page.about.features.securityProtection.description') }}</p>
           </div>
         </div>
       </div>
       
       <div class="about-section">
-        <h2>🔧 技术栈</h2>
+        <h2>{{ t('page.about.techStack.title') }}</h2>
         <div class="tech-stack">
           <span class="tech-badge">Vue 3</span>
           <span class="tech-badge">TypeScript</span>
@@ -56,23 +49,23 @@
       </div>
       
       <div class="about-section">
-        <h2>📊 版本信息</h2>
+        <h2>{{ t('page.about.version.title') }}</h2>
         <table class="version-table">
           <tbody>
             <tr>
-              <td>当前版本</td>
+              <td>{{ t('page.about.version.current') }}</td>
               <td>v1.0.0</td>
             </tr>
             <tr>
-              <td>Vue 版本</td>
+              <td>{{ t('page.about.version.vueVersion') }}</td>
               <td>v3.4+</td>
             </tr>
             <tr>
-              <td>Node 版本</td>
+              <td>{{ t('page.about.version.nodeVersion') }}</td>
               <td>v16+</td>
             </tr>
             <tr>
-              <td>许可证</td>
+              <td>{{ t('page.about.version.license') }}</td>
               <td>MIT</td>
             </tr>
           </tbody>
@@ -80,27 +73,46 @@
       </div>
       
       <div class="about-section">
-        <h2>🤝 贡献</h2>
-        <p>
-          欢迎贡献代码、提交问题或建议。您可以通过以下方式参与项目：
-        </p>
+        <h2>{{ t('page.about.contribute.title') }}</h2>
+        <p>{{ t('page.about.contribute.content') }}</p>
         <div class="contribute-links">
-          <a href="#" class="contribute-link">GitHub</a>
-          <a href="#" class="contribute-link">文档</a>
-          <a href="#" class="contribute-link">讨论区</a>
+          <a href="#" class="contribute-link">{{ t('page.about.contribute.links.github') }}</a>
+          <a href="#" class="contribute-link">{{ t('page.about.contribute.links.docs') }}</a>
+          <a href="#" class="contribute-link">{{ t('page.about.contribute.links.discussions') }}</a>
         </div>
       </div>
       
       <div class="about-footer">
-        <p>Made with ❤️ by LDesign Team</p>
-        <p class="copyright">© 2024 LDesign. All rights reserved.</p>
+        <p>{{ t('page.about.footer.madeWith') }}</p>
+        <p class="copyright">{{ t('page.about.footer.copyright') }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
+import { useI18n } from '../composables/useI18n'
+
+const { t, locale } = useI18n()
+
+// Compute goal items based on current locale
+const goalItems = computed(() => {
+  const goals = locale.value === 'zh-CN' ? [
+    '提供简洁而强大的 API',
+    '优化性能，减少内存占用',
+    '完善的 TypeScript 支持',
+    '与 @ldesign/engine 深度集成',
+    '丰富的功能扩展'
+  ] : [
+    'Provide simple yet powerful API',
+    'Optimize performance, reduce memory usage',
+    'Complete TypeScript support',
+    'Deep integration with @ldesign/engine',
+    'Rich feature extensions'
+  ]
+  return goals
+})
 
 onMounted(() => {
   console.log('About page mounted')

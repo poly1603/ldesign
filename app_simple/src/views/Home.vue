@@ -53,7 +53,7 @@ import { useI18n } from '../composables/useI18n'
 const router = useRouter()
 const { t, locale } = useI18n()
 
-// 使用 computed 确保响应式更新
+// Use computed to ensure reactive updates
 const homeTitle = computed(() => t('page.home.subtitle'))
 const homeDescription = computed(() => t('page.home.description'))
 const commonAbout = computed(() => t('common.about'))
@@ -63,7 +63,7 @@ const statsRoutes = computed(() => t('stats.routes'))
 const statsVisits = computed(() => t('stats.visits'))
 const statsCache = computed(() => t('stats.cache'))
 
-// 特性列表
+// Features list
 const features = [
   {
     key: 'performance',
@@ -103,21 +103,21 @@ const features = [
   }
 ]
 
-// 统计数据
+// Statistics data
 const routeCount = ref(0)
 const visitCount = ref(0)
 const cacheSize = ref(0)
 
 onMounted(() => {
-  // 获取路由数量
+  // Get route count
   routeCount.value = router.getRoutes().length
   
-  // 获取访问次数（从 localStorage 获取）
+  // Get visit count (from localStorage)
   const visits = parseInt(localStorage.getItem('visitCount') || '0') + 1
   localStorage.setItem('visitCount', visits.toString())
   visitCount.value = visits
   
-  // 计算缓存大小（示例）
+  // Calculate cache size (example)
   const cacheStr = JSON.stringify(localStorage)
   cacheSize.value = Math.round(new Blob([cacheStr]).size / 1024)
 })
@@ -130,7 +130,7 @@ onMounted(() => {
   padding: 20px;
 }
 
-/* Hero 区域 */
+/* Hero section */
 .hero {
   text-align: center;
   padding: 60px 20px;
@@ -193,7 +193,7 @@ onMounted(() => {
   color: white;
 }
 
-/* 特性展示 */
+/* Features display */
 .features {
   margin-bottom: 40px;
 }

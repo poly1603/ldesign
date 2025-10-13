@@ -1,0 +1,803 @@
+:root {
+  --primary-color: #646cff;
+  --primary-hover: #535bf2;
+  --bg-color: #f5f5f5;
+  --text-color: #333;
+  --border-color: #ddd;
+  --card-bg: white;
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #e0e0e0;
+  --border-color: #404040;
+  --card-bg: #2a2a2a;
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: white;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.25rem;
+}
+
+.header p {
+  font-size: 1rem;
+  opacity: 0.95;
+}
+
+/* App Container - 左右布局 */
+.app-container {
+  flex: 1;
+  display: flex;
+  height: calc(100vh - 100px);
+  overflow: hidden;
+}
+
+/* 左侧边栏 */
+.sidebar {
+  width: 320px;
+  background: var(--card-bg);
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-content {
+  padding: 1.5rem;
+}
+
+.sidebar h2 {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+}
+
+.sidebar h3 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+/* 控制部分 */
+.control-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.control-section:last-child {
+  border-bottom: none;
+}
+
+/* Main Viewer */
+.main-viewer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-color);
+}
+
+.control-group {
+  margin-bottom: 1rem;
+}
+
+.control-group label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.control-group select,
+.control-group input[type="file"],
+.control-group input[type="text"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  transition: border-color 0.3s;
+}
+
+.control-group select:focus,
+.control-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.url-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.url-input-group input {
+  flex: 1;
+}
+
+.url-input-group button {
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.url-input-group button:hover {
+  background: var(--primary-hover);
+}
+
+/* Viewer Options */
+.viewer-options {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.viewer-options h3 {
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.options-grid label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.options-grid input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Theme Selector */
+.theme-selector {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.theme-selector h3 {
+  margin-bottom: 1rem;
+}
+
+.theme-options {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.theme-btn {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.theme-btn:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.theme-btn.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* 新增的样式 */
+.btn-primary {
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+/* Checkbox styles */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Theme buttons */
+.theme-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.theme-buttons .theme-btn {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+/* Event log */
+.event-log-content {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.75rem;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 0.75rem;
+}
+
+/* Sample buttons */
+.sample-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+/* PDF Viewer Container */
+.pdf-viewer-container {
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 600px;
+  background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+}
+
+.placeholder-content {
+  text-align: center;
+  color: #666;
+}
+
+.placeholder-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.placeholder h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* PDF Viewer Styles - 主题变量 */
+.pdf-viewer-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  --pdf-bg: #f5f5f5;
+  --pdf-toolbar-bg: #ffffff;
+  --pdf-toolbar-border: #e0e0e0;
+  --pdf-btn-bg: transparent;
+  --pdf-btn-hover: #f0f0f0;
+  --pdf-btn-active: #e0e0e0;
+  --pdf-text: #333333;
+  --pdf-border: #ddd;
+  --pdf-thumbnails-bg: #fafafa;
+  --pdf-thumbnail-active: #646cff;
+}
+
+.pdf-viewer-wrapper[data-theme="dark"] {
+  --pdf-bg: #1e1e1e;
+  --pdf-toolbar-bg: #2d2d2d;
+  --pdf-toolbar-border: #444;
+  --pdf-btn-bg: transparent;
+  --pdf-btn-hover: #3a3a3a;
+  --pdf-btn-active: #4a4a4a;
+  --pdf-text: #e0e0e0;
+  --pdf-border: #444;
+  --pdf-thumbnails-bg: #252525;
+  --pdf-thumbnail-active: #7480ff;
+}
+
+.pdf-viewer-wrapper[data-theme="sepia"] {
+  --pdf-bg: #f4ecd8;
+  --pdf-toolbar-bg: #ede0c8;
+  --pdf-toolbar-border: #d4c4a8;
+  --pdf-btn-bg: transparent;
+  --pdf-btn-hover: #e4d4b8;
+  --pdf-btn-active: #d4c4a8;
+  --pdf-text: #5c4b37;
+  --pdf-border: #d4c4a8;
+  --pdf-thumbnails-bg: #ede0c8;
+  --pdf-thumbnail-active: #8b7355;
+}
+
+/* 工具栏样式 */
+.pdf-viewer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--pdf-toolbar-bg);
+  border-bottom: 1px solid var(--pdf-toolbar-border);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toolbar-btn {
+  padding: 0.5rem;
+  background: var(--pdf-btn-bg);
+  color: var(--pdf-text);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.toolbar-btn:hover {
+  background: var(--pdf-btn-hover);
+  border-color: var(--pdf-border);
+}
+
+.toolbar-btn:active {
+  background: var(--pdf-btn-active);
+}
+
+.toolbar-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background: var(--pdf-border);
+  margin: 0 0.5rem;
+}
+
+.page-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--pdf-text);
+  font-size: 0.9rem;
+}
+
+.page-info input {
+  width: 50px;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--pdf-border);
+  background: var(--pdf-toolbar-bg);
+  color: var(--pdf-text);
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.zoom-info {
+  min-width: 60px;
+  text-align: center;
+  color: var(--pdf-text);
+  font-size: 0.9rem;
+}
+
+/* PDF 主体布局 */
+.pdf-viewer-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  background: var(--pdf-bg);
+}
+
+/* 缩略图侧边栏 */
+.pdf-thumbnails {
+  width: 200px;
+  background: var(--pdf-thumbnails-bg);
+  border-right: 1px solid var(--pdf-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: margin-left 0.3s;
+}
+
+.pdf-thumbnails.hidden {
+  margin-left: -200px;
+}
+
+.thumbnails-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--pdf-border);
+  background: var(--pdf-toolbar-bg);
+}
+
+.thumbnails-header h3 {
+  font-size: 0.9rem;
+  color: var(--pdf-text);
+  margin: 0;
+}
+
+.thumbnails-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.thumbnail-item {
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: all 0.2s;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.thumbnail-item:hover {
+  border-color: var(--pdf-border);
+  transform: translateX(5px);
+}
+
+.thumbnail-item.active {
+  border-color: var(--pdf-thumbnail-active);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.3);
+}
+
+.thumbnail-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.thumbnail-label {
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--pdf-text);
+  background: var(--pdf-thumbnails-bg);
+}
+
+/* PDF 内容区域 */
+.pdf-viewer-content {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  background: var(--pdf-bg);
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+#pdfCanvas {
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.pdf-status {
+  display: none;
+  padding: 1rem;
+  background: #f0ad4e;
+  color: white;
+  text-align: center;
+}
+
+/* Features Demo */
+.features-demo {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.features-demo h2 {
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature-card {
+  padding: 1.5rem;
+  background: var(--bg-color);
+  border-radius: 8px;
+  text-align: center;
+  transition: transform 0.3s;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.feature-card p {
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+/* API Examples */
+.api-examples {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.api-examples h2 {
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+}
+
+.code-tabs {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tab-buttons {
+  display: flex;
+  background: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.tab-btn:hover {
+  background: rgba(100, 108, 255, 0.1);
+}
+
+.tab-btn.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+.tab-content {
+  background: #2d2d2d;
+  padding: 1.5rem;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+.tab-panel pre {
+  margin: 0;
+  overflow-x: auto;
+}
+
+.tab-panel code {
+  color: #f8f8f2;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Event Log */
+.event-log {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.event-log h2 {
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+}
+
+.log-container {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.clear-btn {
+  padding: 0.5rem 1rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.clear-btn:hover {
+  background: #c82333;
+}
+
+.log-content {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+}
+
+.log-entry {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-time {
+  color: var(--primary-color);
+  margin-right: 0.5rem;
+}
+
+.log-error {
+  color: #dc3545;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+.footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .controls-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pdf-viewer-toolbar {
+    justify-content: center;
+  }
+  
+  .theme-options {
+    justify-content: center;
+  }
+}

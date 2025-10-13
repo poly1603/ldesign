@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单拖拽测试</title>
+    <script src="dist/ldesign/ldesign.esm.js" type="module"></script>
+    <link rel="stylesheet" href="dist/ldesign/ldesign.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h1 { font-size: 20px; margin-bottom: 20px; }
+        button { 
+            margin: 5px;
+            padding: 8px 16px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #status {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>拖拽排序测试</h1>
+        
+        <div>
+            <button onclick="toggleSort()">切换排序</button>
+            <button onclick="checkPanels()">检查面板状态</button>
+            <button onclick="expandAll()">全部展开</button>
+            <button onclick="collapseAll()">全部收起</button>
+        </div>
+        
+        <div id="status">Ready</div>
+        
+        <ldesign-collapse id="myCollapse" sortable="true">
+            <ldesign-collapse-panel name="panel1" header="Panel 1">
+                Content of Panel 1
+            </ldesign-collapse-panel>
+            
+            <ldesign-collapse-panel name="panel2" header="Panel 2">
+                Content of Panel 2
+            </ldesign-collapse-panel>
+            
+            <ldesign-collapse-panel name="panel3" header="Panel 3">
+                Content of Panel 3
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+    </div>
+    
+    <script>
+        const collapse = document.getElementById('myCollapse');
+        const status = document.getElementById('status');
+        
+        function log(msg) {
+            status.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            console.log(msg);
+        }
+        
+        function toggleSort() {
+            collapse.sortable = !collapse.sortable;
+            log(`Sortable: ${collapse.sortable}`);
+            // 强制更新
+            setTimeout(() => checkPanels(), 100);
+        }
+        
+        function checkPanels() {
+            const panels = Array.from(collapse.querySelectorAll('ldesign-collapse-panel'));
+            const info = panels.map(p => {
+                const header = p.shadowRoot?.querySelector('.ldesign-collapse-panel__header') || 
+                               p.querySelector('.ldesign-collapse-panel__header');
+                return {
+                    name: p.getAttribute('name'),
+                    sortable: p.sortable,
+                    draggable: header?.getAttribute('draggable')
+                };
+            });
+            log('Panels: ' + JSON.stringify(info));
+        }
+        
+        function expandAll() {
+            collapse.expandAll();
+            log('All panels expanded');
+        }
+        
+        function collapseAll() {
+            collapse.collapseAll();
+            log('All panels collapsed');
+        }
+        
+        // 监听拖拽事件
+        collapse.addEventListener('ldesignSortChange', (e) => {
+            log(`Sort changed: from ${e.detail.from} to ${e.detail.to}, panel: ${e.detail.panelName}`);
+        });
+        
+        // 监听原生拖拽事件
+        document.addEventListener('dragstart', (e) => {
+            const panel = e.target.closest('ldesign-collapse-panel');
+            if (panel) {
+                log(`Drag start: ${panel.getAttribute('name')}`);
+            }
+        });
+        
+        document.addEventListener('dragend', (e) => {
+            const panel = e.target.closest('ldesign-collapse-panel');
+            if (panel) {
+                log(`Drag end: ${panel.getAttribute('name')}`);
+            }
+        });
+        
+        // 初始检查
+        setTimeout(() => {
+            log('Page loaded');
+            checkPanels();
+        }, 500);
+    </script>
+</body>
+</html>

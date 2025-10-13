@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>展开/收起全部测试</title>
+    <link rel="stylesheet" href="dist/ldesign/ldesign.css">
+    <script type="module" src="dist/ldesign/ldesign.esm.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #1677ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #4096ff;
+        }
+        
+        button:active {
+            background: #0958d9;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f5ff;
+            border-left: 4px solid #1677ff;
+            border-radius: 4px;
+        }
+        
+        .log-output {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px;
+        }
+        
+        .log-entry.info { color: #1677ff; }
+        .log-entry.success { color: #52c41a; }
+        .log-entry.error { color: #ff4d4f; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>展开/收起全部功能测试</h1>
+        
+        <div class="controls">
+            <button onclick="testExpandAll()">展开全部</button>
+            <button onclick="testCollapseAll()">收起全部</button>
+            <button onclick="testTogglePanel()">切换面板2</button>
+            <button onclick="testGetOpenPanels()">获取展开状态</button>
+            <button onclick="clearLog()">清空日志</button>
+        </div>
+        
+        <ldesign-collapse id="testCollapse">
+            <ldesign-collapse-panel header="面板 1" name="panel1">
+                这是面板 1 的内容。
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="面板 2" name="panel2">
+                这是面板 2 的内容。
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="面板 3" name="panel3">
+                这是面板 3 的内容。
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel header="面板 4 (禁用)" name="panel4" disabled>
+                这是面板 4 的内容（已禁用）。
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+        
+        <div class="status" id="status">
+            状态：等待操作...
+        </div>
+        
+        <div class="log-output" id="logOutput">
+            <div class="log-entry info">日志输出：</div>
+        </div>
+    </div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const logOutput = document.getElementById('logOutput');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logOutput.appendChild(entry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message) {
+            document.getElementById('status').textContent = `状态：${message}`;
+        }
+        
+        function clearLog() {
+            document.getElementById('logOutput').innerHTML = '<div class="log-entry info">日志输出：</div>';
+            log('日志已清空', 'info');
+        }
+        
+        async function testExpandAll() {
+            const collapse = document.getElementById('testCollapse');
+            log('开始执行 expandAll 方法...', 'info');
+            
+            try {
+                if (!collapse.expandAll) {
+                    log('错误：expandAll 方法不存在！', 'error');
+                    updateStatus('expandAll 方法未找到');
+                    return;
+                }
+                
+                await collapse.expandAll();
+                log('expandAll 执行成功', 'success');
+                
+                // 验证状态
+                const panels = Array.from(collapse.querySelectorAll('ldesign-collapse-panel'));
+                const status = panels.map(p => ({
+                    name: p.getAttribute('name'),
+                    active: p.hasAttribute('active'),
+                    disabled: p.hasAttribute('disabled')
+                }));
+                
+                log(`面板状态: ${JSON.stringify(status)}`, 'info');
+                
+                const activePanels = status.filter(s => s.active && !s.disabled);
+                updateStatus(`已展开 ${activePanels.length} 个面板`);
+                
+            } catch (error) {
+                log(`错误: ${error.message}`, 'error');
+                updateStatus('操作失败');
+            }
+        }
+        
+        async function testCollapseAll() {
+            const collapse = document.getElementById('testCollapse');
+            log('开始执行 collapseAll 方法...', 'info');
+            
+            try {
+                if (!collapse.collapseAll) {
+                    log('错误：collapseAll 方法不存在！', 'error');
+                    updateStatus('collapseAll 方法未找到');
+                    return;
+                }
+                
+                await collapse.collapseAll();
+                log('collapseAll 执行成功', 'success');
+                
+                // 验证状态
+                const panels = Array.from(collapse.querySelectorAll('ldesign-collapse-panel'));
+                const status = panels.map(p => ({
+                    name: p.getAttribute('name'),
+                    active: p.hasAttribute('active')
+                }));
+                
+                log(`面板状态: ${JSON.stringify(status)}`, 'info');
+                
+                const activePanels = status.filter(s => s.active);
+                updateStatus(`已收起全部，当前展开 ${activePanels.length} 个面板`);
+                
+            } catch (error) {
+                log(`错误: ${error.message}`, 'error');
+                updateStatus('操作失败');
+            }
+        }
+        
+        async function testTogglePanel() {
+            const collapse = document.getElementById('testCollapse');
+            log('开始切换 panel2...', 'info');
+            
+            try {
+                if (!collapse.togglePanel) {
+                    log('错误：togglePanel 方法不存在！', 'error');
+                    updateStatus('togglePanel 方法未找到');
+                    return;
+                }
+                
+                await collapse.togglePanel('panel2');
+                log('togglePanel 执行成功', 'success');
+                
+                const panel2 = collapse.querySelector('[name="panel2"]');
+                const isActive = panel2.hasAttribute('active');
+                updateStatus(`面板2 ${isActive ? '已展开' : '已收起'}`);
+                
+            } catch (error) {
+                log(`错误: ${error.message}`, 'error');
+                updateStatus('操作失败');
+            }
+        }
+        
+        async function testGetOpenPanels() {
+            const collapse = document.getElementById('testCollapse');
+            log('获取展开的面板...', 'info');
+            
+            try {
+                if (!collapse.getOpenPanels) {
+                    log('错误：getOpenPanels 方法不存在！', 'error');
+                    updateStatus('getOpenPanels 方法未找到');
+                    return;
+                }
+                
+                const openPanels = await collapse.getOpenPanels();
+                log(`展开的面板: ${openPanels.length > 0 ? openPanels.join(', ') : '无'}`, 'success');
+                updateStatus(`当前展开 ${openPanels.length} 个面板: ${openPanels.join(', ') || '无'}`);
+                
+            } catch (error) {
+                log(`错误: ${error.message}`, 'error');
+                updateStatus('操作失败');
+            }
+        }
+        
+        // 组件加载完成后的检查
+        document.addEventListener('DOMContentLoaded', () => {
+            // 等待 Web Components 定义完成
+            customElements.whenDefined('ldesign-collapse').then(() => {
+                log('ldesign-collapse 组件已加载', 'success');
+                
+                const collapse = document.getElementById('testCollapse');
+                
+                // 检查方法是否存在
+                const methods = ['expandAll', 'collapseAll', 'togglePanel', 'getOpenPanels'];
+                methods.forEach(method => {
+                    if (collapse[method]) {
+                        log(`✓ ${method} 方法存在`, 'success');
+                    } else {
+                        log(`✗ ${method} 方法不存在`, 'error');
+                    }
+                });
+                
+                // 监听事件
+                collapse.addEventListener('ldesignChange', (e) => {
+                    log(`事件: ldesignChange - ${JSON.stringify(e.detail)}`, 'info');
+                });
+                
+                collapse.addEventListener('ldesignExpandAll', (e) => {
+                    log(`事件: ldesignExpandAll - ${JSON.stringify(e.detail)}`, 'info');
+                });
+                
+                collapse.addEventListener('ldesignCollapseAll', () => {
+                    log('事件: ldesignCollapseAll', 'info');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

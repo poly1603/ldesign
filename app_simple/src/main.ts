@@ -8,7 +8,7 @@ import App from './App.vue'
 import { createRouter } from './router'
 import { engineConfig } from './config/app.config'
 import { auth } from './composables/useAuth'
-import { createI18nPlugin } from './config/i18n.config'
+import { createI18nPlugin } from './i18n'
 
 /**
  * 启动应用

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>折叠面板综合功能测试</title>
+    <script type="module" src="./dist/ldesign/ldesign.esm.js"></script>
+    <link rel="stylesheet" href="./dist/ldesign/ldesign.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+        }
+        
+        .btn-info {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+        }
+        
+        .status-box {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .status-title {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        .status-content {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .feature-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .feature-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        
+        .feature-description {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        /* 自定义折叠面板样式 */
+        ldesign-collapse {
+            margin-top: 20px;
+        }
+        
+        ldesign-collapse-panel {
+            margin-bottom: 10px;
+        }
+        
+        .panel-content {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            line-height: 1.6;
+        }
+        
+        .drag-hint {
+            background: #fff5f5;
+            border: 1px dashed #fc8181;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+            color: #c53030;
+            font-size: 14px;
+        }
+        
+        .log-container {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #1a202c;
+            color: #68d391;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .log-entry {
+            margin-bottom: 4px;
+            padding: 2px 0;
+        }
+        
+        .log-time {
+            color: #4299e1;
+            margin-right: 8px;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+            }
+        }
+        
+        .highlight {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 折叠面板综合功能测试</h1>
+        
+        <!-- 基础功能测试 -->
+        <div class="test-section">
+            <h2 class="section-title">📋 基础功能测试</h2>
+            
+            <div class="controls">
+                <button class="btn btn-primary" onclick="expandAll()">展开全部</button>
+                <button class="btn btn-warning" onclick="collapseAll()">收起全部</button>
+                <button class="btn btn-secondary" onclick="togglePanel('panel2')">切换面板2</button>
+                <button class="btn btn-info" onclick="getOpenStatus()">获取展开状态</button>
+            </div>
+            
+            <ldesign-collapse id="basicCollapse" accordion="false">
+                <ldesign-collapse-panel name="panel1" title="面板 1 - 基础内容" icon-rotation="90">
+                    <div class="panel-content">
+                        <p>这是第一个面板的内容。</p>
+                        <p>图标旋转角度：90度</p>
+                        <p>点击标题可以展开/收起面板</p>
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="panel2" title="面板 2 - 图标旋转180度" icon-rotation="180">
+                    <div class="panel-content">
+                        <p>这个面板的图标旋转角度为180度。</p>
+                        <p>注意观察图标的旋转动画效果。</p>
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="panel3" title="面板 3 - 图标旋转45度" icon-rotation="45">
+                    <div class="panel-content">
+                        <p>这个面板的图标旋转角度为45度。</p>
+                        <p>适合特殊的UI设计需求。</p>
+                    </div>
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+            
+            <div class="status-box">
+                <div class="status-title">状态信息：</div>
+                <div class="status-content" id="statusInfo">等待操作...</div>
+            </div>
+        </div>
+        
+        <!-- 拖拽排序测试 -->
+        <div class="test-section">
+            <h2 class="section-title">🔄 拖拽排序功能</h2>
+            
+            <div class="drag-hint">
+                💡 提示：拖动面板标题栏可以重新排序（需要开启 sortable 属性）
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" onclick="toggleSortable()">切换拖拽状态</button>
+                <button class="btn btn-secondary" onclick="resetOrder()">重置顺序</button>
+            </div>
+            
+            <ldesign-collapse id="sortableCollapse" sortable="true">
+                <ldesign-collapse-panel name="item1" title="🍎 苹果 - 可拖拽" icon-rotation="90">
+                    <div class="panel-content">
+                        苹果是一种营养丰富的水果，含有丰富的维生素和矿物质。
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="item2" title="🍊 橙子 - 可拖拽" icon-rotation="90">
+                    <div class="panel-content">
+                        橙子富含维生素C，对提高免疫力很有帮助。
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="item3" title="🍌 香蕉 - 可拖拽" icon-rotation="90">
+                    <div class="panel-content">
+                        香蕉含有丰富的钾元素，是运动后的理想食物。
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="item4" title="🍇 葡萄 - 可拖拽" icon-rotation="90">
+                    <div class="panel-content">
+                        葡萄含有抗氧化物质，对心血管健康有益。
+                    </div>
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+            
+            <div class="log-container" id="dragLog">
+                <div class="log-entry">等待拖拽操作...</div>
+            </div>
+        </div>
+        
+        <!-- 嵌套面板测试 -->
+        <div class="test-section">
+            <h2 class="section-title">🗂️ 嵌套面板测试</h2>
+            
+            <ldesign-collapse id="nestedCollapse">
+                <ldesign-collapse-panel name="parent1" title="父级面板 1" icon-rotation="90">
+                    <div class="panel-content">
+                        <p>这是父级面板的内容</p>
+                        
+                        <ldesign-collapse>
+                            <ldesign-collapse-panel name="child1" title="子面板 1-1" icon-rotation="45">
+                                <div class="panel-content">子面板1-1的内容</div>
+                            </ldesign-collapse-panel>
+                            
+                            <ldesign-collapse-panel name="child2" title="子面板 1-2" icon-rotation="45">
+                                <div class="panel-content">子面板1-2的内容</div>
+                            </ldesign-collapse-panel>
+                        </ldesign-collapse>
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="parent2" title="父级面板 2" icon-rotation="90">
+                    <div class="panel-content">
+                        <p>另一个父级面板</p>
+                        
+                        <ldesign-collapse>
+                            <ldesign-collapse-panel name="child3" title="子面板 2-1" icon-rotation="45">
+                                <div class="panel-content">
+                                    更深层的嵌套：
+                                    <ldesign-collapse>
+                                        <ldesign-collapse-panel name="grandchild1" title="孙面板" icon-rotation="270">
+                                            <div class="panel-content">这是第三层嵌套的内容</div>
+                                        </ldesign-collapse-panel>
+                                    </ldesign-collapse>
+                                </div>
+                            </ldesign-collapse-panel>
+                        </ldesign-collapse>
+                    </div>
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+        </div>
+        
+        <!-- 手风琴模式测试 -->
+        <div class="test-section">
+            <h2 class="section-title">🎹 手风琴模式</h2>
+            
+            <p style="color: #718096; margin-bottom: 15px;">
+                手风琴模式下，同时只能展开一个面板
+            </p>
+            
+            <ldesign-collapse accordion="true">
+                <ldesign-collapse-panel name="accordion1" title="选项 A" icon-rotation="90">
+                    <div class="panel-content">
+                        在手风琴模式下，打开此面板会自动关闭其他面板。
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="accordion2" title="选项 B" icon-rotation="90">
+                    <div class="panel-content">
+                        点击此面板，选项 A 会自动收起。
+                    </div>
+                </ldesign-collapse-panel>
+                
+                <ldesign-collapse-panel name="accordion3" title="选项 C" icon-rotation="90">
+                    <div class="panel-content">
+                        这种模式适合在有限空间内展示内容。
+                    </div>
+                </ldesign-collapse-panel>
+            </ldesign-collapse>
+        </div>
+        
+        <!-- 功能特性说明 -->
+        <div class="test-section">
+            <h2 class="section-title">✨ 已实现的功能特性</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-title">🎨 平滑动画</div>
+                    <div class="feature-description">
+                        面板展开/收起时有平滑的高度过渡动画，图标旋转动画流畅无抖动。
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">🔄 多角度旋转</div>
+                    <div class="feature-description">
+                        支持45°、90°、180°、270°等多种图标旋转角度配置。
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">📦 批量操作</div>
+                    <div class="feature-description">
+                        支持展开全部、收起全部、切换指定面板等批量操作方法。
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">🎯 拖拽排序</div>
+                    <div class="feature-description">
+                        启用sortable属性后，可通过拖拽面板标题来重新排序。
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">🗂️ 嵌套支持</div>
+                    <div class="feature-description">
+                        支持多层嵌套，每层独立控制，互不干扰。
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">🎹 手风琴模式</div>
+                    <div class="feature-description">
+                        启用accordion属性后，同时只能展开一个面板。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 基础功能
+        async function expandAll() {
+            const collapse = document.getElementById('basicCollapse');
+            await collapse.expandAll();
+            updateStatus('已展开所有面板');
+        }
+        
+        async function collapseAll() {
+            const collapse = document.getElementById('basicCollapse');
+            await collapse.collapseAll();
+            updateStatus('已收起所有面板');
+        }
+        
+        async function togglePanel(panelName) {
+            const collapse = document.getElementById('basicCollapse');
+            await collapse.togglePanel(panelName);
+            updateStatus(`已切换面板: ${panelName}`);
+        }
+        
+        async function getOpenStatus() {
+            const collapse = document.getElementById('basicCollapse');
+            const openPanels = await collapse.getOpenPanels();
+            updateStatus(`当前展开的面板: ${openPanels.length > 0 ? openPanels.join(', ') : '无'}`);
+        }
+        
+        function updateStatus(message) {
+            const statusDiv = document.getElementById('statusInfo');
+            const time = new Date().toLocaleTimeString('zh-CN');
+            statusDiv.innerHTML = `[${time}] ${message}`;
+            statusDiv.parentElement.classList.add('highlight');
+            setTimeout(() => {
+                statusDiv.parentElement.classList.remove('highlight');
+            }, 2000);
+        }
+        
+        // 拖拽排序功能
+        let sortableEnabled = true;
+        function toggleSortable() {
+            const collapse = document.getElementById('sortableCollapse');
+            sortableEnabled = !sortableEnabled;
+            collapse.setAttribute('sortable', sortableEnabled);
+            addDragLog(`拖拽功能已${sortableEnabled ? '启用' : '禁用'}`);
+        }
+        
+        function resetOrder() {
+            const collapse = document.getElementById('sortableCollapse');
+            const panels = Array.from(collapse.querySelectorAll('ldesign-collapse-panel'));
+            
+            // 按原始顺序排序
+            panels.sort((a, b) => {
+                const aName = a.getAttribute('name');
+                const bName = b.getAttribute('name');
+                return aName.localeCompare(bName);
+            });
+            
+            // 重新插入DOM
+            panels.forEach(panel => collapse.appendChild(panel));
+            addDragLog('面板顺序已重置');
+        }
+        
+        function addDragLog(message) {
+            const logContainer = document.getElementById('dragLog');
+            const time = new Date().toLocaleTimeString('zh-CN');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
+            
+            // 保持最新的日志在顶部
+            if (logContainer.firstChild) {
+                logContainer.insertBefore(logEntry, logContainer.firstChild);
+            } else {
+                logContainer.appendChild(logEntry);
+            }
+            
+            // 限制日志数量
+            while (logContainer.children.length > 10) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+        
+        // 监听拖拽事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const sortableCollapse = document.getElementById('sortableCollapse');
+            
+            // 监听拖拽开始
+            sortableCollapse.addEventListener('dragstart', (e) => {
+                if (e.target.tagName === 'LDESIGN-COLLAPSE-PANEL') {
+                    const panelName = e.target.getAttribute('name');
+                    const title = e.target.getAttribute('title');
+                    addDragLog(`开始拖拽: ${title}`);
+                }
+            });
+            
+            // 监听拖拽结束
+            sortableCollapse.addEventListener('dragend', (e) => {
+                if (e.target.tagName === 'LDESIGN-COLLAPSE-PANEL') {
+                    addDragLog('拖拽结束');
+                }
+            });
+            
+            // 监听放置事件
+            sortableCollapse.addEventListener('drop', (e) => {
+                addDragLog('面板顺序已更新');
+            });
+            
+            // 监听所有折叠面板的展开/收起事件
+            document.querySelectorAll('ldesign-collapse').forEach(collapse => {
+                collapse.addEventListener('change', (e) => {
+                    console.log('面板状态变化:', e.detail);
+                });
+            });
+            
+            // 初始化状态
+            updateStatus('页面已加载，所有功能就绪');
+            addDragLog('拖拽功能已启用，可以开始测试');
+        });
+    </script>
+</body>
+</html>
