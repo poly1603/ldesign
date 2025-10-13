@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alert Component - Specific Issues Test</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      padding: 40px;
+      background: #f5f7fa;
+      line-height: 1.6;
+    }
+    .test-section {
+      margin-bottom: 40px;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e8ecef;
+    }
+    .demo-group {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .note {
+      background: #f0f9ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    
+    /* Custom button styles for testing */
+    .custom-button {
+      padding: 6px 16px;
+      border: 1px solid #d1d5db;
+      background: white;
+      color: #374151;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .custom-button:hover {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+    }
+    
+    .custom-button.primary {
+      background: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+    
+    .custom-button.primary:hover {
+      background: #2563eb;
+      border-color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="color: #1e80ff; margin-bottom: 40px;">🔍 Alert Component - 问题测试页面</h1>
+
+  <!-- Issue 1: 带操作区按钮间距 -->
+  <div class="test-section">
+    <h2>问题 1：带操作区（Actions）按钮间距</h2>
+    
+    <div class="note">
+      ✅ 修复方案：在 actions slot 容器中添加 display: flex 和 gap: 8px
+    </div>
+
+    <div class="demo-group">
+      <h3>使用 ldesign-button 组件（需要手动添加间距）</h3>
+      <ldesign-alert type="info" alert-title="Info Text">
+        Info Description Info Description Info Description
+        <div slot="actions" style="display: flex; gap: 8px;">
+          <ldesign-button type="primary" size="small">Accept</ldesign-button>
+          <ldesign-button size="small">Decline</ldesign-button>
+        </div>
+      </ldesign-alert>
+
+      <h3>使用原生按钮测试（应该自动有间距）</h3>
+      <ldesign-alert type="warning" alert-title="Warning Alert">
+        测试原生按钮的间距表现
+        <div slot="actions">
+          <button class="custom-button primary">主要操作</button>
+          <button class="custom-button">次要操作</button>
+          <button class="custom-button">取消</button>
+        </div>
+      </ldesign-alert>
+
+      <h3>混合使用</h3>
+      <ldesign-alert type="success" variant="gradient" alert-title="Mixed Buttons">
+        混合使用不同类型的按钮
+        <div slot="actions" style="display: flex; gap: 8px; align-items: center;">
+          <ldesign-button type="primary" size="small">LDesign Button</ldesign-button>
+          <button class="custom-button">Native Button</button>
+          <span style="color: #6b7280;">|</span>
+          <a href="#" style="color: #3b82f6; text-decoration: none;">Link Action</a>
+        </div>
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <!-- Issue 2: 轮播公告边框裁剪 -->
+  <div class="test-section">
+    <h2>问题 2：轮播公告（Marquee）边框裁剪</h2>
+    
+    <div class="note">
+      ✅ 修复方案：移除了遮罩效果，避免边框被裁剪
+    </div>
+
+    <div class="demo-group">
+      <h3>普通 Alert 轮播（有边框）</h3>
+      <ldesign-alert 
+        type="warning" 
+        alert-title="轮播的公告"
+        marquee 
+        marquee-speed="50">
+        React components, or just some text. I can be a React component, multiple components, or just some text. 这段文字会循环滚动，边框应该完整显示，不会被裁剪。
+      </ldesign-alert>
+
+      <h3>Light 变体轮播</h3>
+      <ldesign-alert 
+        type="info" 
+        variant="light"
+        alert-title="系统通知"
+        marquee 
+        marquee-speed="40">
+        📢 重要通知：边框应该完整显示，文字滚动时不会影响边框的完整性。这是一条测试消息，用于验证边框是否被裁剪。
+      </ldesign-alert>
+
+      <h3>Outlined 变体轮播（粗边框）</h3>
+      <ldesign-alert 
+        type="error" 
+        variant="outlined"
+        border-width="2"
+        alert-title="错误提示"
+        marquee 
+        marquee-speed="45">
+        ⚠️ 这是一个带有2px边框的outlined变体，边框应该完整显示，不会被裁剪。滚动内容不会影响边框的视觉效果。
+      </ldesign-alert>
+
+      <h3>Gradient 变体轮播</h3>
+      <ldesign-alert 
+        type="success" 
+        variant="gradient"
+        marquee 
+        marquee-speed="55">
+        🎉 渐变背景的Alert，边框同样应该完整显示。这是一条成功消息，将会持续滚动显示...
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <!-- Banner 轮播测试 -->
+  <div class="test-section" style="overflow: visible;">
+    <h2>Banner 轮播测试（无边框）</h2>
+    
+    <div style="margin: -24px; margin-top: 20px;">
+      <ldesign-alert 
+        type="warning" 
+        banner
+        marquee 
+        marquee-speed="45">
+        🚀 Banner模式的轮播公告：没有左右边框，内容应该充满整个宽度。这条消息会持续滚动，展示完整的内容...
+      </ldesign-alert>
+      
+      <ldesign-alert 
+        type="info" 
+        variant="filled"
+        banner
+        marquee 
+        marquee-speed="50">
+        📅 Filled Banner：背景色充满整个宽度，文字滚动流畅，视觉效果统一。
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <!-- 综合测试 -->
+  <div class="test-section">
+    <h2>综合测试：同时包含两个问题的场景</h2>
+    
+    <div class="demo-group">
+      <ldesign-alert 
+        type="custom"
+        color="#7c3aed"
+        variant="gradient"
+        alert-title="带操作按钮的轮播公告"
+        marquee
+        marquee-speed="40"
+        closable>
+        这是一个同时测试轮播边框和操作按钮间距的综合示例。边框应该完整，按钮间距应该合适。
+        <div slot="actions" style="display: flex; gap: 8px;">
+          <ldesign-button type="primary" size="small">了解更多</ldesign-button>
+          <ldesign-button size="small">稍后提醒</ldesign-button>
+        </div>
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('Alert Component Issues Test Loaded!');
+      
+      // 检查按钮间距
+      const actionsContainers = document.querySelectorAll('.ldesign-alert__actions');
+      actionsContainers.forEach((container, index) => {
+        const children = container.children;
+        if (children.length > 1) {
+          const gap = window.getComputedStyle(children[1]).marginLeft;
+          console.log(`Actions container ${index + 1} - Button gap: ${gap}`);
+        }
+      });
+      
+      // 检查轮播边框
+      const marqueeAlerts = document.querySelectorAll('.ldesign-alert__marquee');
+      marqueeAlerts.forEach((marquee, index) => {
+        const alert = marquee.closest('.ldesign-alert');
+        const borderStyle = window.getComputedStyle(alert).border;
+        console.log(`Marquee alert ${index + 1} - Border: ${borderStyle}`);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -141,7 +141,7 @@ export class AutoRouteGenerator {
 
     // 生成组件导入
     const component = this.config.importMode === 'async'
-      ? () => import(file)
+      ? () => import(/* @vite-ignore */ file)
       : require(file).default
 
     return {

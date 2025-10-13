@@ -8,40 +8,10 @@
  * Reduces initial bundle size by loading plugins on demand
  */
 export async function lazyLoadPlugin(pluginName: string): Promise<any> {
-  switch (pluginName) {
-    case 'ai-translator':
-      return import('../plugins/ai-translator');
-    case 'ai-context-translator':
-      return import('../plugins/ai-context-translator');
-    case 'analytics-dashboard':
-      return import('../plugins/analytics-dashboard');
-    case 'blockchain-validator':
-      return import('../plugins/blockchain-validator');
-    case 'crowdsourcing-platform':
-      return import('../plugins/crowdsourcing-platform');
-    case 'edge-computing':
-      return import('../plugins/edge-computing');
-    case 'gpu-accelerator':
-      return import('../plugins/gpu-accelerator');
-    case 'immersive-translator':
-      return import('../plugins/immersive-translator');
-    case 'ml-optimizer':
-      return import('../plugins/ml-optimizer');
-    case 'neural-network':
-      return import('../plugins/neural-network');
-    case 'quantum-accelerator':
-      return import('../plugins/quantum-accelerator');
-    case 'realtime-sync':
-      return import('../plugins/realtime-sync');
-    case 'smart-cache':
-      return import('../plugins/smart-cache');
-    case 'version-control':
-      return import('../plugins/version-control');
-    case 'wasm-optimizer':
-      return import('../plugins/wasm-optimizer');
-    default:
-      throw new Error(`Unknown plugin: ${pluginName}`);
-  }
+  // Plugins will be implemented in the future
+  // For now, return a placeholder
+  console.warn(`Plugin ${pluginName} is not yet implemented`);
+  return Promise.resolve(null);
 }
 
 /**
@@ -54,24 +24,24 @@ export const FEATURES = {
   INTERPOLATION: true,
   PLURALIZATION: true,
   
-  // Optional features (can be disabled via build flags)
-  CACHE: process.env.I18N_FEATURE_CACHE !== 'false',
-  LAZY_LOADING: process.env.I18N_FEATURE_LAZY !== 'false',
-  FORMATTING: process.env.I18N_FEATURE_FORMAT !== 'false',
-  PLUGINS: process.env.I18N_FEATURE_PLUGINS !== 'false',
-  DETECTION: process.env.I18N_FEATURE_DETECTION !== 'false',
-  NAMESPACES: process.env.I18N_FEATURE_NAMESPACES !== 'false',
-  EVENTS: process.env.I18N_FEATURE_EVENTS !== 'false',
+  // Optional features (enabled by default in browser)
+  CACHE: true,
+  LAZY_LOADING: true,
+  FORMATTING: true,
+  PLUGINS: true,
+  DETECTION: true,
+  NAMESPACES: true,
+  EVENTS: true,
   
-  // Advanced features (disabled by default for smaller bundle)
-  AB_TESTING: process.env.I18N_FEATURE_AB_TESTING === 'true',
-  QUALITY_SCORING: process.env.I18N_FEATURE_QUALITY === 'true',
-  COLLABORATIVE: process.env.I18N_FEATURE_COLLAB === 'true',
-  OFFLINE_FIRST: process.env.I18N_FEATURE_OFFLINE === 'true',
-  PERFORMANCE_MONITOR: process.env.I18N_FEATURE_PERF === 'true',
-  CONTEXT_AWARE: process.env.I18N_FEATURE_CONTEXT === 'true',
-  INTELLIGENT_PREHEATER: process.env.I18N_FEATURE_PREHEAT === 'true',
-  MEMORY_OPTIMIZER: process.env.I18N_FEATURE_MEMORY === 'true',
+  // Advanced features (can be enabled if needed)
+  AB_TESTING: false,
+  QUALITY_SCORING: false,
+  COLLABORATIVE: false,
+  OFFLINE_FIRST: false,
+  PERFORMANCE_MONITOR: false,
+  CONTEXT_AWARE: false,
+  INTELLIGENT_PREHEATER: false,
+  MEMORY_OPTIMIZER: false,
 } as const;
 
 /**
@@ -118,15 +88,11 @@ export function createMinimalI18n(config: any) {
 export * from '../core/interpolation';
 export * from '../core/pluralization';
 
-// Only export cache if enabled
-if (FEATURES.CACHE) {
-  export * from '../core/cache';
-}
+// Export cache features
+export * from '../core/cache';
 
-// Only export formatters if enabled
-if (FEATURES.FORMATTING) {
-  export * from '../core/advanced-formatter';
-}
+// Export formatter features  
+// export * from '../core/formatter'; // TODO: Add when formatter module is created
 
 /**
  * Webpack/Rollup magic comments for code splitting
@@ -178,11 +144,11 @@ export const MODULE_FEDERATION_CONFIG = {
  */
 export const ESM_ONLY = {
   // Use native dynamic imports
-  dynamicImport: (path: string) => import(path),
+  dynamicImport: (path: string) => import(/* @vite-ignore */ path),
   
   // Use native async/await
   asyncLoader: async (locale: string) => {
-    const module = await import(`../locales/${locale}.js`);
+    const module = await import(/* @vite-ignore */ `../locales/${locale}.js`);
     return module.default;
   },
   
@@ -202,11 +168,11 @@ export const ESM_ONLY = {
  * Build-time constants for dead code elimination
  */
 export const BUILD_FLAGS = {
-  IS_PRODUCTION: process.env.NODE_ENV === 'production',
-  IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
-  IS_TEST: process.env.NODE_ENV === 'test',
-  VERSION: process.env.I18N_VERSION || '1.0.0',
-  BUILD_DATE: process.env.I18N_BUILD_DATE || new Date().toISOString(),
+  IS_PRODUCTION: typeof window !== 'undefined' && !(window as any).__DEV__,
+  IS_DEVELOPMENT: typeof window !== 'undefined' && (window as any).__DEV__ === true,
+  IS_TEST: false,
+  VERSION: '2.0.0',
+  BUILD_DATE: new Date().toISOString(),
 } as const;
 
 /**

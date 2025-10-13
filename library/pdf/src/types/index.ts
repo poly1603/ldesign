@@ -1,94 +1,252 @@
-export type ViewMode = 'single' | 'continuous' | 'double' | 'thumbnail';
-
+/**
+ * PDF Viewer Configuration Options
+ */
 export interface PDFViewerOptions {
-  defaultScale: number;
-  minScale: number;
-  maxScale: number;
-  viewMode: ViewMode;
-  enableToolbar: boolean;
-  enableNavigation: boolean;
-  enableZoom: boolean;
-  enableSearch: boolean;
-  enablePrint: boolean;
-  enableDownload: boolean;
-  enableFullscreen: boolean;
-  enableRotation: boolean;
-  enableThumbnails: boolean;
-  enableAnnotations: boolean;
-  theme: 'light' | 'dark';
-  locale: string;
-  customToolbar?: ToolbarConfig;
-  // Enhanced loading options
-  corsProxy?: string;
-  loadTimeout?: number;
-  maxRetries?: number;
-  retryDelay?: number;
-  fallbackProxies?: string[];
-}
-
-export interface PDFViewerState {
-  currentPage: number;
-  totalPages: number;
-  scale: number;
-  rotation: number;
-  viewMode: ViewMode;
-  isLoading: boolean;
-  searchActive: boolean;
-  fullscreen: boolean;
+  // Basic Configuration
+  container: HTMLElement | string;
+  url?: string;
+  data?: ArrayBuffer | Uint8Array;
+  
+  // Display Options
+  width?: number | string;
+  height?: number | string;
+  initialScale?: number | 'page-fit' | 'page-width' | 'page-height' | 'auto';
+  minScale?: number;
+  maxScale?: number;
+  rotation?: 0 | 90 | 180 | 270;
+  pageMode?: 'single' | 'continuous' | 'book';
+  
+  // UI Configuration
+  toolbar?: boolean | ToolbarConfig;
+  sidebar?: boolean | SidebarConfig;
+  contextMenu?: boolean | ContextMenuConfig;
+  theme?: 'light' | 'dark' | 'auto' | CustomTheme;
+  language?: string;
+  
+  // Features
+  enableSearch?: boolean;
+  enablePrint?: boolean;
+  enableDownload?: boolean;
+  enableFullscreen?: boolean;
+  enableRotation?: boolean;
+  enableZoom?: boolean;
+  enablePageNavigation?: boolean;
+  enableTextSelection?: boolean;
+  enableAnnotations?: boolean;
+  enableThumbnails?: boolean;
+  enableOutline?: boolean;
+  enableHandTool?: boolean;
+  
+  // Advanced Options
+  workerSrc?: string;
+  cMapUrl?: string;
+  cMapPacked?: boolean;
+  standardFontDataUrl?: string;
+  withCredentials?: boolean;
+  password?: string;
+  
+  // Performance
+  renderingMode?: 'canvas' | 'svg' | 'custom';
+  textLayerMode?: 0 | 1 | 2; // 0: disabled, 1: enabled, 2: enhanced
+  annotationMode?: 0 | 1 | 2; // 0: disabled, 1: enabled, 2: forms
+  
+  // Callbacks
+  onInit?: (viewer: PDFViewer) => void;
+  onDocumentLoad?: (document: PDFDocumentProxy) => void;
+  onPageChange?: (pageNumber: number, totalPages: number) => void;
+  onScaleChange?: (scale: number) => void;
+  onError?: (error: Error) => void;
+  onProgress?: (loaded: number, total: number) => void;
+  onPasswordRequired?: () => string | Promise<string>;
+  onPrint?: () => void;
+  onDownload?: () => void;
+  onAnnotationClick?: (annotation: any) => void;
+  onTextSelection?: (text: string) => void;
+  onSearch?: (query: string, results: SearchResult[]) => void;
 }
 
 export interface ToolbarConfig {
-  items?: ToolbarItem[];
+  show?: boolean;
   position?: 'top' | 'bottom';
-  style?: Partial<CSSStyleDeclaration>;
+  items?: ToolbarItem[];
+  customButtons?: CustomButton[];
 }
 
 export interface ToolbarItem {
-  type: 'button' | 'separator' | 'group' | 'input' | 'select';
-  id?: string;
+  name: string;
+  show?: boolean;
   icon?: string;
   label?: string;
   tooltip?: string;
-  action?: string;
-  items?: ToolbarItem[];
-  disabled?: boolean;
-  hidden?: boolean;
-  className?: string;
+}
+
+export interface CustomButton {
+  id: string;
+  icon?: string;
+  label?: string;
+  tooltip?: string;
+  position?: number;
+  onClick: () => void;
+}
+
+export interface SidebarConfig {
+  show?: boolean;
+  position?: 'left' | 'right';
+  defaultPanel?: 'thumbnails' | 'outline' | 'attachments' | 'layers';
+  width?: number | string;
+  collapsible?: boolean;
+}
+
+export interface ContextMenuConfig {
+  enabled?: boolean;
+  items?: ContextMenuItem[];
+}
+
+export interface ContextMenuItem {
+  id: string;
+  label: string;
+  icon?: string;
+  shortcut?: string;
+  onClick: () => void;
+  condition?: () => boolean;
+}
+
+export interface CustomTheme {
+  name: string;
+  colors?: {
+    primary?: string;
+    secondary?: string;
+    background?: string;
+    text?: string;
+    toolbar?: string;
+    sidebar?: string;
+    [key: string]: string | undefined;
+  };
+  fonts?: {
+    family?: string;
+    size?: string;
+  };
 }
 
 export interface SearchResult {
   page: number;
-  index: number;
+  matches: SearchMatch[];
+}
+
+export interface SearchMatch {
   text: string;
-  context?: string;
+  position: { x: number; y: number; width: number; height: number };
 }
 
-export interface PDFMetadata {
-  title?: string;
-  author?: string;
-  subject?: string;
-  keywords?: string;
-  creator?: string;
-  producer?: string;
-  creationDate?: Date;
-  modificationDate?: Date;
+export interface PDFDocumentProxy {
+  numPages: number;
+  fingerprint: string;
+  getPage(pageNumber: number): Promise<PDFPageProxy>;
+  getMetadata(): Promise<any>;
+  getOutline(): Promise<any>;
+  getAttachments(): Promise<any>;
+  destroy(): void;
 }
 
-export interface PDFViewerEvents {
-  initialized: (state: PDFViewerState) => void;
-  loading: (data: { source: string | ArrayBuffer | Uint8Array }) => void;
-  loaded: (data: { totalPages: number; metadata: PDFMetadata }) => void;
-  error: (error: Error) => void;
-  pageChanged: (data: { currentPage: number; totalPages: number }) => void;
-  pageRendered: (data: { pageNumber: number; scale: number; rotation: number }) => void;
-  scaleChanged: (data: { scale: number }) => void;
-  rotationChanged: (data: { rotation: number }) => void;
-  viewModeChanged: (data: { mode: ViewMode }) => void;
-  searchComplete: (data: { query: string; results: SearchResult[]; totalResults: number }) => void;
-  searchCleared: () => void;
-  fullscreenChanged: (data: { fullscreen: boolean }) => void;
-  themeChanged: (data: { theme: 'light' | 'dark' }) => void;
-  downloaded: (data: { filename?: string }) => void;
-  destroyed: () => void;
-  metadata: (metadata: PDFMetadata) => void;
+export interface PDFPageProxy {
+  pageNumber: number;
+  rotate: number;
+  getViewport(params: { scale: number; rotation?: number }): PDFPageViewport;
+  render(params: RenderParameters): RenderTask;
+  getTextContent(): Promise<any>;
+  getAnnotations(): Promise<any>;
+}
+
+export interface PDFPageViewport {
+  width: number;
+  height: number;
+  scale: number;
+  rotation: number;
+  transform: number[];
+  clone(params?: { scale?: number; rotation?: number }): PDFPageViewport;
+}
+
+export interface RenderParameters {
+  canvasContext: CanvasRenderingContext2D;
+  viewport: PDFPageViewport;
+  transform?: number[];
+  intent?: string;
+  enableWebGL?: boolean;
+  renderInteractiveForms?: boolean;
+  imageLayer?: any;
+}
+
+export interface RenderTask {
+  promise: Promise<void>;
+  cancel(): void;
+}
+
+export interface ViewerState {
+  currentPage: number;
+  totalPages: number;
+  scale: number;
+  rotation: number;
+  pageMode: string;
+  isFullscreen: boolean;
+  isSearchOpen: boolean;
+  isSidebarOpen: boolean;
+}
+
+export interface PDFViewer {
+  // Properties
+  options: PDFViewerOptions;
+  state: ViewerState;
+  document: PDFDocumentProxy | null;
+  
+  // Methods
+  init(): Promise<void>;
+  loadDocument(url: string | ArrayBuffer | Uint8Array): Promise<void>;
+  destroy(): void;
+  
+  // Navigation
+  nextPage(): void;
+  previousPage(): void;
+  goToPage(pageNumber: number): void;
+  firstPage(): void;
+  lastPage(): void;
+  
+  // View Control
+  zoomIn(): void;
+  zoomOut(): void;
+  setScale(scale: number | string): void;
+  rotate(angle?: number): void;
+  setPageMode(mode: 'single' | 'continuous' | 'book'): void;
+  
+  // Features
+  print(): void;
+  download(filename?: string): void;
+  toggleFullscreen(): void;
+  toggleSidebar(): void;
+  search(query: string, options?: SearchOptions): Promise<SearchResult[]>;
+  clearSearch(): void;
+  
+  // Text and Annotations
+  getSelectedText(): string;
+  addAnnotation(annotation: any): void;
+  removeAnnotation(id: string): void;
+  getAnnotations(pageNumber?: number): any[];
+  
+  // Utilities
+  getCurrentPage(): number;
+  getTotalPages(): number;
+  getScale(): number;
+  getRotation(): number;
+  isReady(): boolean;
+  
+  // Event Management
+  on(event: string, handler: Function): void;
+  off(event: string, handler?: Function): void;
+  emit(event: string, ...args: any[]): void;
+}
+
+export interface SearchOptions {
+  caseSensitive?: boolean;
+  entireWord?: boolean;
+  highlightAll?: boolean;
+  findPrevious?: boolean;
 }

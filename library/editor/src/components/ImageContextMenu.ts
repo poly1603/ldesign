@@ -3,9 +3,10 @@
  */
 
 import { getLucideIcon } from '../utils/icons'
+import { Modal, Toast } from './UIComponents'
 
 export interface ContextMenuItem {
-  label: string
+  label?: string
   icon?: string
   action?: () => void
   submenu?: ContextMenuItem[]
@@ -126,17 +127,6 @@ export class ImageContextMenu {
       this.visible = true
     })
   }
-      
-      // 确保不超出屏幕边界
-      posX = Math.max(10, Math.min(posX, windowWidth - menuRect.width - 10))
-      posY = Math.max(10, Math.min(posY, windowHeight - 100))
-      
-      this.menu.style.left = `${posX}px`
-      this.menu.style.top = `${posY}px`
-      this.menu.style.opacity = '1'
-      this.visible = true
-    })
-  }
 
   public hide(): void {
     if (!this.visible) return
@@ -190,10 +180,12 @@ export class ImageContextMenu {
     }
     
     // 标签
-    const label = document.createElement('span')
-    label.className = 'ldesign-context-menu-label'
-    label.textContent = item.label
-    menuItem.appendChild(label)
+    if (item.label) {
+      const label = document.createElement('span')
+      label.className = 'ldesign-context-menu-label'
+      label.textContent = item.label
+      menuItem.appendChild(label)
+    }
     
     // 子菜单箭头
     if (item.submenu) {
@@ -790,40 +782,72 @@ export class ImageContextMenu {
     const img = this.currentImage.querySelector('img') as HTMLImageElement
     if (!img) return
     
-    const info = `
-图片信息：
-━━━━━━━━━━━━━━━━━━━━
-文件名：${img.alt || '未命名'}
-原始尺寸：${img.naturalWidth} × ${img.naturalHeight} 像素
-当前尺寸：${img.offsetWidth} × ${img.offsetHeight} 像素
-文件地址：${img.src.substring(0, 50)}...
-    `.trim()
+    // 获取文件名
+    const fileName = img.alt || img.src.split('/').pop()?.split('?')[0] || '未命名'
     
-    alert(info)
+    // 创建内容元素
+    const content = document.createElement('div')
+    content.innerHTML = `
+      <div style="space-y-3;">
+        <div style="padding: 16px; background: #f9fafb; border-radius: 8px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; margin-bottom: 12px;">
+            ${getLucideIcon('image')}
+            <span style="margin-left: 8px; font-weight: 600; color: #111827;">${fileName}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 14px;">
+            <span style="color: #6b7280;">原始尺寸:</span>
+            <span style="color: #111827; font-weight: 500;">${img.naturalWidth} × ${img.naturalHeight} 像素</span>
+            
+            <span style="color: #6b7280;">当前尺寸:</span>
+            <span style="color: #111827; font-weight: 500;">${img.offsetWidth} × ${img.offsetHeight} 像素</span>
+            
+            <span style="color: #6b7280;">缩放比例:</span>
+            <span style="color: #111827; font-weight: 500;">${Math.round(img.offsetWidth / img.naturalWidth * 100)}%</span>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; margin-bottom: 6px; font-size: 13px; color: #6b7280; font-weight: 500;">图片地址</label>
+          <div style="position: relative;">
+            <input type="text" readonly value="${img.src}" 
+              style="width: 100%; padding: 8px 12px; padding-right: 40px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; color: #374151; background: #f9fafb; cursor: text;"
+              onfocus="this.select()" />
+            <button onclick="navigator.clipboard.writeText('${img.src}'); this.innerHTML='${getLucideIcon('check')}'; setTimeout(() => this.innerHTML='${getLucideIcon('copy')}', 2000)"
+              style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); padding: 6px; background: white; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
+              onmouseover="this.style.background='#f3f4f6'"
+              onmouseout="this.style.background='white'">
+              ${getLucideIcon('copy')}
+            </button>
+          </div>
+        </div>
+        
+        <div style="margin-top: 16px; padding: 12px; background: #eff6ff; border: 1px solid #dbeafe; border-radius: 6px;">
+          <div style="display: flex; align-items: start; font-size: 13px; color: #1e40af;">
+            ${getLucideIcon('info')}
+            <div style="margin-left: 8px;">
+              <div style="font-weight: 500; margin-bottom: 4px;">提示</div>
+              <div style="color: #3730a3;">右键点击图片可以访问更多编辑选项，包括调整大小、添加滤镜、设置边框等。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `
+    
+    // 创建模态框
+    new Modal({
+      title: '图片属性',
+      content: content,
+      width: 480,
+      confirmText: '确定',
+      showCancel: false,
+      onConfirm: () => {
+        // 模态框会自动关闭
+      }
+    })
   }
 
   private showToast(message: string): void {
-    const toast = document.createElement('div')
-    toast.className = 'ldesign-toast'
-    toast.textContent = message
-    toast.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 4px;
-      z-index: 10001;
-      font-size: 14px;
-    `
-    
-    document.body.appendChild(toast)
-    
-    setTimeout(() => {
-      toast.remove()
-    }, 2000)
+    Toast.show(message, 'success', 3000)
   }
 
   private setObjectFit(fit: string): void {
@@ -849,60 +873,50 @@ export class ImageContextMenu {
     const img = this.currentImage.querySelector('img') as HTMLImageElement
     if (!img) return
     
-    // 创建对话框
-    const dialog = document.createElement('div')
-    dialog.className = 'ldesign-size-dialog'
-    dialog.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-      z-index: 10002;
-      min-width: 300px;
-    `
-    
     // 获取当前尺寸
     const currentWidth = img.offsetWidth
     const currentHeight = img.offsetHeight
+    const aspectRatio = currentWidth / currentHeight
     
-    dialog.innerHTML = `
-      <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #111827;">设置图片尺寸</h3>
-      <div style="margin-bottom: 12px;">
-        <label style="display: block; margin-bottom: 4px; font-size: 13px; color: #4b5563;">宽度 (px):</label>
-        <input type="number" id="img-width" value="${currentWidth}" style="width: 100%; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px;" />
-      </div>
-      <div style="margin-bottom: 12px;">
-        <label style="display: block; margin-bottom: 4px; font-size: 13px; color: #4b5563;">高度 (px):</label>
-        <input type="number" id="img-height" value="${currentHeight}" style="width: 100%; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px;" />
+    // 创建内容元素
+    const content = document.createElement('div')
+    content.innerHTML = `
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151; font-weight: 500;">宽度 (px)</label>
+        <input type="number" id="img-width" value="${currentWidth}" 
+          style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;" 
+          onfocus="this.style.borderColor='#3b82f6'; this.style.outline='none'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)'"
+          onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'" />
       </div>
       <div style="margin-bottom: 16px;">
-        <label style="display: flex; align-items: center; font-size: 13px; color: #4b5563; cursor: pointer;">
-          <input type="checkbox" id="keep-ratio" checked style="margin-right: 6px;" />
-          保持宽高比
+        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151; font-weight: 500;">高度 (px)</label>
+        <input type="number" id="img-height" value="${currentHeight}" 
+          style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+          onfocus="this.style.borderColor='#3b82f6'; this.style.outline='none'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)'"
+          onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'" />
+      </div>
+      <div style="margin-bottom: 8px;">
+        <label style="display: flex; align-items: center; font-size: 14px; color: #374151; cursor: pointer; user-select: none;">
+          <input type="checkbox" id="keep-ratio" checked 
+            style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" />
+          <span style="display: flex; align-items: center;">
+            ${getLucideIcon('link')}
+            <span style="margin-left: 4px;">保持宽高比</span>
+          </span>
         </label>
       </div>
-      <div style="display: flex; gap: 8px; justify-content: flex-end;">
-        <button id="cancel-btn" style="padding: 6px 16px; border: 1px solid #d1d5db; border-radius: 4px; background: white; color: #4b5563; font-size: 13px; cursor: pointer;">取消</button>
-        <button id="apply-btn" style="padding: 6px 16px; border: none; border-radius: 4px; background: #3b82f6; color: white; font-size: 13px; cursor: pointer;">应用</button>
+      <div style="padding: 12px; background: #f9fafb; border-radius: 6px; margin-top: 16px;">
+        <div style="display: flex; align-items: center; font-size: 12px; color: #6b7280;">
+          ${getLucideIcon('info')}
+          <span style="margin-left: 8px;">原始尺寸: ${img.naturalWidth} × ${img.naturalHeight} px</span>
+        </div>
       </div>
     `
     
-    document.body.appendChild(dialog)
-    
-    // 获取元素
-    const widthInput = dialog.querySelector('#img-width') as HTMLInputElement
-    const heightInput = dialog.querySelector('#img-height') as HTMLInputElement
-    const keepRatioCheckbox = dialog.querySelector('#keep-ratio') as HTMLInputElement
-    const cancelBtn = dialog.querySelector('#cancel-btn') as HTMLButtonElement
-    const applyBtn = dialog.querySelector('#apply-btn') as HTMLButtonElement
-    
-    // 宽高比
-    const aspectRatio = currentWidth / currentHeight
+    // 获取输入元素
+    const widthInput = content.querySelector('#img-width') as HTMLInputElement
+    const heightInput = content.querySelector('#img-height') as HTMLInputElement
+    const keepRatioCheckbox = content.querySelector('#keep-ratio') as HTMLInputElement
     
     // 事件处理
     widthInput.addEventListener('input', () => {
@@ -919,42 +933,44 @@ export class ImageContextMenu {
       }
     })
     
-    cancelBtn.addEventListener('click', () => {
-      document.body.removeChild(dialog)
+    // 创建模态框
+    new Modal({
+      title: '设置图片尺寸',
+      content: content,
+      width: 360,
+      confirmText: '应用',
+      cancelText: '取消',
+      showCancel: true,
+      onConfirm: () => {
+        const width = parseInt(widthInput.value) || 0
+        const height = parseInt(heightInput.value) || 0
+        
+        if (width > 0 && height > 0) {
+          img.style.width = `${width}px`
+          img.style.height = `${height}px`
+          img.style.maxWidth = 'none'
+          img.style.objectFit = img.style.objectFit || 'contain'
+          if (this.currentImage) {
+            this.currentImage.style.width = `${width}px`
+            this.currentImage.style.height = `${height}px`
+          }
+          this.triggerContentChange()
+        }
+        
+        // 隐藏右键菜单
+        this.hide()
+      },
+      onCancel: () => {
+        // 隐藏右键菜单
+        this.hide()
+      }
     })
     
-    applyBtn.addEventListener('click', () => {
-      const width = parseInt(widthInput.value) || 0
-      const height = parseInt(heightInput.value) || 0
-      
-      if (width > 0 && height > 0) {
-        img.style.width = `${width}px`
-        img.style.height = `${height}px`
-        img.style.maxWidth = 'none'
-        img.style.objectFit = img.style.objectFit || 'contain'
-        this.currentImage.style.width = `${width}px`
-        this.currentImage.style.height = `${height}px`
-        this.triggerContentChange()
-      }
-      
-      // 关闭对话框
-      document.body.removeChild(dialog)
-      // 隐藏菜单
-      this.hide()
-    })
-    
-    // ESC关闭
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        document.body.removeChild(dialog)
-        document.removeEventListener('keydown', handleEsc)
-      }
-    }
-    document.addEventListener('keydown', handleEsc)
-    
-    // 自动聚焦
-    widthInput.focus()
-    widthInput.select()
+    // 自动聚焦并选中宽度输入框
+    setTimeout(() => {
+      widthInput.focus()
+      widthInput.select()
+    }, 100)
   }
 
   private triggerContentChange(): void {

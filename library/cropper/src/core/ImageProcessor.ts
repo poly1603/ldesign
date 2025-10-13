@@ -268,7 +268,7 @@ export class ImageProcessor {
    */
   getCroppedCanvas(
     cropBoxData: { left: number; top: number; width: number; height: number },
-    options: GetCroppedCanvasOptions = {}
+    options: GetCroppedCanvasOptions & { cropShape?: string } = {}
   ): HTMLCanvasElement | null {
     if (!this.imageElement || !this.imageData) {
       return null
@@ -303,6 +303,39 @@ export class ImageProcessor {
     ctx.imageSmoothingEnabled = imageSmoothingEnabled
     ctx.imageSmoothingQuality = imageSmoothingQuality
 
+    // Apply crop shape if specified
+    const cropShape = options.cropShape || 'default'
+    
+    // Save the context state
+    ctx.save()
+    
+    // Create clipping path based on shape
+    if (cropShape === 'circle') {
+      // Circle shape
+      const centerX = finalWidth / 2
+      const centerY = finalHeight / 2
+      const radius = Math.min(finalWidth, finalHeight) / 2
+      ctx.beginPath()
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI)
+      ctx.closePath()
+      ctx.clip()
+    } else if (cropShape === 'rounded') {
+      // Rounded rectangle
+      const radius = Math.min(finalWidth, finalHeight) * 0.1 // 10% radius
+      ctx.beginPath()
+      ctx.moveTo(radius, 0)
+      ctx.lineTo(finalWidth - radius, 0)
+      ctx.quadraticCurveTo(finalWidth, 0, finalWidth, radius)
+      ctx.lineTo(finalWidth, finalHeight - radius)
+      ctx.quadraticCurveTo(finalWidth, finalHeight, finalWidth - radius, finalHeight)
+      ctx.lineTo(radius, finalHeight)
+      ctx.quadraticCurveTo(0, finalHeight, 0, finalHeight - radius)
+      ctx.lineTo(0, radius)
+      ctx.quadraticCurveTo(0, 0, radius, 0)
+      ctx.closePath()
+      ctx.clip()
+    }
+    
     // Fill background
     if (fillColor && fillColor !== 'transparent') {
       ctx.fillStyle = fillColor

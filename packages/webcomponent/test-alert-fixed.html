@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alert Component - Fixed Issues Demo</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      padding: 40px;
+      background: #f5f7fa;
+      line-height: 1.6;
+    }
+    .section {
+      margin-bottom: 40px;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+    .section h2 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e8ecef;
+      font-size: 20px;
+    }
+    .demo-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    .demo-group h3 {
+      color: #606266;
+      margin-bottom: 12px;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    .demo-group h3:first-child {
+      margin-top: 0;
+    }
+    .center-content {
+      text-align: center;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="color: #1e80ff; margin-bottom: 40px;">🔧 Alert Component - 样式问题修复演示</h1>
+
+  <!-- Issue 1: 可关闭图标美化 -->
+  <div class="section">
+    <h2>1. 可关闭图标样式美化</h2>
+    <p style="color: #666; margin-bottom: 16px;">
+      ✅ 关闭按钮现在有更好的视觉效果：增加了内边距、hover效果、缩放动画、以及点击反馈
+    </p>
+    <div class="demo-group">
+      <ldesign-alert type="error" alert-title="Error Text" closable>
+        Error Description Error Description Error Description Error Description Error Description
+      </ldesign-alert>
+      
+      <ldesign-alert type="warning" variant="light" alert-title="Warning Alert" closable>
+        关闭按钮在hover时会有背景色和放大效果，点击时有缩小反馈
+      </ldesign-alert>
+      
+      <ldesign-alert type="success" variant="filled" alert-title="Filled Variant" closable>
+        在filled变体中，关闭按钮颜色会自动适配为白色
+      </ldesign-alert>
+
+      <ldesign-alert type="info" variant="gradient" shadow closable alert-title="Beautiful Alert">
+        渐变背景配合阴影效果，关闭按钮样式协调统一
+      </ldesign-alert>
+    </div>
+
+    <h3>不同尺寸的关闭按钮</h3>
+    <div class="demo-group">
+      <ldesign-alert type="info" size="small" closable>
+        Small size - 关闭按钮也相应变小 (16px)
+      </ldesign-alert>
+      <ldesign-alert type="info" size="medium" closable>
+        Medium size - 标准关闭按钮大小 (18px)
+      </ldesign-alert>
+      <ldesign-alert type="info" size="large" closable>
+        Large size - 更大的关闭按钮 (20px)
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <!-- Issue 2: 带操作区的间隔优化 -->
+  <div class="section">
+    <h2>2. 带操作区 (Actions) 的间隔优化</h2>
+    <p style="color: #666; margin-bottom: 16px;">
+      ✅ 操作按钮之间有8px间隔，操作区距离内容有12px间隔（大尺寸为14px）
+    </p>
+    <div class="demo-group">
+      <ldesign-alert type="info" alert-title="Info Text">
+        Info Description Info Description Info Description
+        <div slot="actions">
+          <ldesign-button type="primary" size="small" style="margin-right: 8px;">Accept</ldesign-button>
+          <ldesign-button size="small">Decline</ldesign-button>
+        </div>
+      </ldesign-alert>
+
+      <ldesign-alert type="warning" variant="light" alert-title="需要您的确认" closable>
+        这是一个需要用户操作的警告信息，请仔细阅读后选择相应的操作。按钮之间有适当的间隔，不会显得拥挤。
+        <div slot="actions" style="display: flex; gap: 8px;">
+          <ldesign-button type="primary" size="small">确认操作</ldesign-button>
+          <ldesign-button size="small">稍后处理</ldesign-button>
+          <ldesign-button size="small">取消</ldesign-button>
+        </div>
+      </ldesign-alert>
+
+      <ldesign-alert type="success" variant="gradient" size="large" alert-title="大尺寸Alert带操作">
+        大尺寸的Alert中，操作区的上边距会更大（14px），保持视觉协调
+        <div slot="actions" style="display: flex; gap: 8px;">
+          <ldesign-button type="primary" size="small">主要操作</ldesign-button>
+          <ldesign-button size="small">次要操作</ldesign-button>
+        </div>
+      </ldesign-alert>
+
+      <ldesign-alert type="error" variant="filled" alert-title="错误提示" closable>
+        在filled变体中，操作按钮也能很好地展示
+        <div slot="actions" style="display: flex; gap: 8px;">
+          <ldesign-button size="small" style="background: white; color: #ef4444;">重试</ldesign-button>
+          <ldesign-button size="small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">忽略</ldesign-button>
+        </div>
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <!-- Issue 3: 轮播公告裁剪问题修复 -->
+  <div class="section">
+    <h2>3. 轮播公告（Marquee）边缘裁剪问题修复</h2>
+    <p style="color: #666; margin-bottom: 16px;">
+      ✅ 添加了内边距和渐变遮罩，文字不会被突然裁剪，两端有柔和的淡出效果
+    </p>
+    
+    <h3>普通轮播（带边框，有渐变遮罩）</h3>
+    <div class="demo-group">
+      <ldesign-alert 
+        type="warning" 
+        alert-title="轮播的公告"
+        marquee 
+        marquee-speed="50">
+        React components, or just some text. I can be a React component, multiple components, or just some text. 这段文字会循环滚动，两端有渐变遮罩效果，不会突然被裁剪。
+      </ldesign-alert>
+
+      <ldesign-alert 
+        type="info" 
+        variant="light"
+        alert-title="系统通知"
+        marquee 
+        marquee-speed="40"
+        closable>
+        📢 重要通知：系统将于今晚进行维护升级，预计时间为23:00-02:00，期间部分服务可能无法正常使用，请提前做好准备。感谢您的理解与支持！
+      </ldesign-alert>
+
+      <ldesign-alert 
+        type="success" 
+        variant="gradient"
+        marquee 
+        marquee-speed="60">
+        🎉 恭喜您！您的订单已成功处理，商品将在24小时内发货。订单号：#2024010123456，您可以在个人中心查看物流信息。
+      </ldesign-alert>
+    </div>
+
+    <h3>Banner 轮播（无边框，全宽展示）</h3>
+    <div class="demo-group" style="margin: -24px; margin-top: 20px;">
+      <ldesign-alert 
+        type="warning" 
+        banner
+        marquee 
+        marquee-speed="45">
+        🚀 新功能发布：我们推出了全新的数据分析面板，支持实时数据监控、自定义报表、智能预警等功能。立即体验，让数据驱动您的业务决策！此消息会持续滚动显示...
+      </ldesign-alert>
+
+      <ldesign-alert 
+        type="info" 
+        variant="filled"
+        banner
+        marquee 
+        marquee-speed="50">
+        📅 活动预告：年度技术大会将于下月15日在北京国际会议中心举行，诚邀您参加。报名截止日期：本月30日。更多详情请访问官网。
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <!-- 综合示例 -->
+  <div class="section">
+    <h2>4. 综合效果展示</h2>
+    <p style="color: #666; margin-bottom: 16px;">
+      所有修复效果的综合展示，确保各个功能协调工作
+    </p>
+    <div class="demo-group">
+      <ldesign-alert 
+        type="custom"
+        color="#7c3aed"
+        variant="gradient"
+        size="large"
+        shadow
+        alert-title="完美的Alert组件"
+        icon-name="award"
+        closable>
+        这个Alert展示了所有修复后的特性：
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li>美化的关闭按钮，带hover和点击效果</li>
+          <li>操作按钮之间有合适的间隔</li>
+          <li>大尺寸下所有元素比例协调</li>
+        </ul>
+        <div slot="actions" style="display: flex; gap: 8px;">
+          <ldesign-button type="primary" size="small">了解更多</ldesign-button>
+          <ldesign-button size="small">查看文档</ldesign-button>
+          <ldesign-button size="small">关闭</ldesign-button>
+        </div>
+      </ldesign-alert>
+
+      <ldesign-alert 
+        type="info"
+        variant="outlined"
+        border-width="2"
+        alert-title="带滚动的综合示例"
+        marquee
+        marquee-speed="40"
+        closable>
+        这是一个包含所有修复特性的滚动公告：美化的关闭按钮、柔和的边缘渐变、适当的内容间距。所有这些改进让Alert组件更加美观和易用。文字会持续滚动，两端不会被突然裁剪...
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <div class="center-content">
+    <p style="color: #666; margin: 0;">
+      ✨ 所有样式问题已修复完成！Alert组件现在拥有更好的视觉效果和用户体验。
+    </p>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('Alert Component Fixed Issues Demo Loaded!');
+      
+      // 监听关闭事件
+      document.addEventListener('ldesignClose', (e) => {
+        console.log('Alert closed:', e.target);
+      });
+
+      // 为按钮添加点击事件（演示用）
+      document.querySelectorAll('ldesign-button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const text = e.target.textContent;
+          console.log(`Button clicked: ${text}`);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

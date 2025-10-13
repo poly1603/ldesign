@@ -12,7 +12,7 @@ import type {
  * 代码编辑器核心类
  * 基于 Monaco Editor 的高性能、框架无关的代码编辑器
  */
-export class CodeEditor implements ICodeEditor {
+export class CodeEditor {
   private editor: monaco.editor.IStandaloneCodeEditor | null = null
   private container: HTMLElement
   private config: CodeEditorConfig

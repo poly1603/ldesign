@@ -4,37 +4,34 @@
     <nav class="navbar">
       <div class="nav-brand">
         <span class="logo">🚀</span>
-        <span class="brand-text">{{ t('nav.brand') }}</span>
+        <span class="brand-text">LDesign Simple App</span>
       </div>
       
       <div class="nav-links">
         <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
-          {{ t('common.home') }}
+          首页
         </router-link>
         <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
-          {{ t('common.about') }}
+          关于
         </router-link>
-        <router-link 
+        <router-link
           v-if="isLoggedIn" 
           to="/dashboard" 
           class="nav-link" 
           :class="{ active: $route.path === '/dashboard' }"
         >
-          {{ t('common.dashboard') }}
+          仪表盘
         </router-link>
         
         <div class="nav-spacer"></div>
         
-        <!-- 语言切换器 -->
-        <LocaleSelector class="nav-locale" />
-        
         <button v-if="!isLoggedIn" @click="goToLogin" class="nav-button login">
-          {{ t('common.login') }}
+          登录
         </button>
         <div v-else class="user-menu">
           <span class="username">{{ username }}</span>
           <button @click="logout" class="nav-button logout">
-            {{ t('common.logout') }}
+            退出
           </button>
         </div>
       </div>
@@ -51,21 +48,18 @@
     
     <!-- 页脚 -->
     <footer class="footer">
-      <p>{{ t('footer.copyright') }}</p>
+      <p>© 2024 LDesign. 保留所有权利。</p>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from '@ldesign/router'
 import { auth } from '@/composables/useAuth'
-import { useI18n } from '@/composables/useI18n'
-import LocaleSelector from '@/components/LocaleSelector.vue'
 
 const route = useRoute()
 const router = useRouter()
-const { t } = useI18n()
 
 // 使用认证模块的状态
 const isLoggedIn = computed(() => auth.isLoggedIn.value)

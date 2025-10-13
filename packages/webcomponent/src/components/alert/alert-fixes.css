@@ -1,0 +1,27 @@
+/* Alert Component Fixes for Slot Content */
+
+/* Fix button spacing in actions slot */
+ldesign-alert .ldesign-alert__actions > ::slotted(*) {
+  margin-right: 8px !important;
+}
+
+ldesign-alert .ldesign-alert__actions > ::slotted(*:last-child) {
+  margin-right: 0 !important;
+}
+
+/* Alternative: For content inside slot */
+ldesign-alert [slot="actions"] {
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+
+/* Fix marquee border clipping */
+ldesign-alert.ldesign-alert--has-marquee {
+  overflow: visible !important;
+}
+
+/* Ensure marquee content doesn't affect layout */
+ldesign-alert .ldesign-alert__marquee {
+  contain: layout style paint;
+}

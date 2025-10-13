@@ -5,8 +5,6 @@ import { drawDot } from './styles/dots';
 import { createCanvasGradient } from './styles/gradients';
 import { drawEye, getEyePositions, isInEye } from './styles/eyes';
 import { applyShadow, clearShadow, drawBackgroundImage } from './styles/effects';
-import { renderLiquidFlow } from './styles/liquid-flow'
-import { renderImprovedLiquidFlow, renderLiquidWithRegions } from './styles/improved-liquid'
 
 /**
  * Default style configuration
@@ -114,79 +112,70 @@ export class CanvasRenderer {
     // Get eye positions
     const eyePositions = getEyePositions(moduleCount);
     const dotStyle = (this.config.style?.dotStyle || DEFAULT_STYLE.dotStyle) as DotStyle;
-    
-    // Check if we need special rendering for liquid/flow styles
-    if (dotStyle === DotStyle.SmoothFlow || dotStyle === DotStyle.Liquid) {
-      // Use smooth flow rendering for connected liquid modules
-      this.renderSmoothFlow(moduleCount, margin, moduleSize);
-    } else if (dotStyle === DotStyle.UltraSmooth) {
-      // Use ultra-smooth liquid rendering for the best flowing effect
-      this.renderUltraSmoothLiquid(moduleCount, margin, moduleSize);
+
+    // Apply shadow if configured
+    if (this.config.style?.shadow) {
+      applyShadow(this.ctx, this.config.style.shadow);
+    }
+
+    // Setup fill style (gradient or solid color)
+    if (this.config.style?.gradient) {
+      const gradient = createCanvasGradient(
+        this.ctx,
+        this.config.style.gradient,
+        this.style.size,
+        this.style.size
+      );
+      this.ctx.fillStyle = gradient;
     } else {
+      this.ctx.fillStyle = this.style.fgColor;
+    }
 
-      // Apply shadow if configured
-      if (this.config.style?.shadow) {
-        applyShadow(this.ctx, this.config.style.shadow);
-      }
+    // Get render layer setting
+    const renderLayer = this.config.style?.renderLayer || 'all';
 
-      // Setup fill style (gradient or solid color)
-      if (this.config.style?.gradient) {
-        const gradient = createCanvasGradient(
-          this.ctx,
-          this.config.style.gradient,
-          this.style.size,
-          this.style.size
-        );
-        this.ctx.fillStyle = gradient;
-      } else {
-        this.ctx.fillStyle = this.style.fgColor;
-      }
+    // Draw QR modules (excluding eyes if custom eye style is configured)
+    for (let row = 0; row < moduleCount; row++) {
+      for (let col = 0; col < moduleCount; col++) {
+        if (this.generator.isDark(row, col)) {
+          // Check if this module should be rendered based on renderLayer setting
+          const isInEyeArea = isInEye(row, col, eyePositions);
+          const isFunctionModule = this.generator.isFunctionModule(row, col);
+          const isDataModule = this.generator.isDataModule(row, col);
+          const isTimingModule = this.generator.isTimingPattern(row, col);
 
-      // Get render layer setting
-      const renderLayer = this.config.style?.renderLayer || 'all';
+          // Filter based on renderLayer
+          if (renderLayer === 'function' && !isFunctionModule) continue;
+          if (renderLayer === 'data' && !isDataModule) continue;
+          if (renderLayer === 'guide' && !isTimingModule) continue;
+          if (renderLayer === 'marker' && !isInEyeArea) continue;
 
-      // Draw QR modules (excluding eyes if custom eye style is configured)
-      for (let row = 0; row < moduleCount; row++) {
-        for (let col = 0; col < moduleCount; col++) {
-          if (this.generator.isDark(row, col)) {
-            // Check if this module should be rendered based on renderLayer setting
-            const isInEyeArea = isInEye(row, col, eyePositions);
-            const isFunctionModule = this.generator.isFunctionModule(row, col);
-            const isDataModule = this.generator.isDataModule(row, col);
-            const isTimingModule = this.generator.isTimingPattern(row, col);
-
-            // Filter based on renderLayer
-            if (renderLayer === 'function' && !isFunctionModule) continue;
-            if (renderLayer === 'data' && !isDataModule) continue;
-            if (renderLayer === 'guide' && !isTimingModule) continue;
-            if (renderLayer === 'marker' && !isInEyeArea) continue;
-
-            // Skip if this module is part of an eye and custom eye style is configured
-            if (this.config.style?.eyeStyle && isInEyeArea) {
-              continue;
-            }
-
-            const x = (col + margin) * moduleSize;
-            const y = (row + margin) * moduleSize;
-
-            drawDot(this.ctx, x, y, moduleSize, dotStyle, this.style.cornerRadius);
+          // Skip if this module is part of an eye and custom eye style is configured
+          if (this.config.style?.eyeStyle && isInEyeArea) {
+            continue;
           }
+
+          const x = (col + margin) * moduleSize;
+          const y = (row + margin) * moduleSize;
+
+          drawDot(this.ctx, x, y, moduleSize, dotStyle, this.style.cornerRadius);
         }
-      }
-
-      // Clear shadow before drawing eyes
-      if (this.config.style?.shadow) {
-        clearShadow(this.ctx);
-      }
-
-      // Draw custom eye styles if configured
-      if (this.config.style?.eyeStyle) {
-        this.drawEyes(eyePositions, moduleSize, margin);
       }
     }
 
-    // Apply other visual effects if configured (not smooth-flow)
-    if (this.config.style?.effect && this.config.style.effect !== 'none' && this.config.style.effect !== 'smooth-flow') {
+    // Clear shadow before drawing eyes
+    if (this.config.style?.shadow) {
+      clearShadow(this.ctx);
+    }
+
+    // Draw custom eye styles if configured
+    if (this      // Draw custom eye styles if configured
+      if (this.config.style?.eyeStyle) {
+        this.drawEyes(eyePositions, moduleSize, margin);
+      }
+
+    // Apply other visual effects if configured
+    if (this.config.style?.effect && this.config.style.effect !== 'none') {
       this.applyEffect(this.config.style.effect);
     }
 
@@ -600,11 +589,12 @@ export class CanvasRenderer {
       this.ctx.fillStyle = this.style.fgColor;
     }
     
-    // Use the improved liquid flow rendering
+    // Use path-based liquid flow for precise control
     // You can switch between different implementations:
-    // renderLiquidFlow(this.ctx, modules, moduleSize, margin); // Original
-    renderImprovedLiquidFlow(this.ctx, modules, moduleSize, margin); // Improved marching squares
-    // renderLiquidWithRegions(this.ctx, modules, moduleSize, margin); // Region-based
+    renderSimpleRoundedLiquid(this.ctx, modules, moduleSize, margin); // Simple rounded - RECOMMENDED!
+    // renderPathLiquid(this.ctx, modules, moduleSize, margin); // Complex path-based
+    // renderMorphologyLiquid(this.ctx, modules, moduleSize, margin); // Morphology-based
+    // renderSimpleGooEffect(this.ctx, modules, moduleSize, margin); // Simple goo effect
     
     // Clear shadow before drawing eyes
     if (this.config.style?.shadow) {
@@ -621,6 +611,21 @@ export class CanvasRenderer {
    * Render QR code with smooth flow effect (liquid style)
    */
   private renderSmoothFlow(moduleCount: number, margin: number, moduleSize: number): void {
+    // Use Anthony Fu's liquid flow implementation
+    renderAntfuLiquidFlow(
+      this.ctx,
+      this.generator,
+      moduleCount,
+      margin,
+      moduleSize,
+      this.style,
+      this.config,
+      {
+        blurRadius: 6,
+        threshold: 128
+      }
+    );
+    return;
     // Get eye positions
     const eyePositions = getEyePositions(moduleCount);
     

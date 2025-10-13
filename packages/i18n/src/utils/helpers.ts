@@ -241,7 +241,7 @@ export function debounce<T extends (...args: any[]) => any>(
   fn: T,
   delay: number
 ): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout;
+  let timeoutId: ReturnType<typeof setTimeout>;
   
   return function (this: any, ...args: Parameters<T>) {
     clearTimeout(timeoutId);
@@ -318,7 +318,7 @@ export class EventEmitter {
  * Warn helper for development
  */
 export function warn(message: string, ...args: any[]): void {
-  if (process.env.NODE_ENV !== 'production') {
+  if (typeof window !== 'undefined' && (window as any).__DEV__ === true) {
     console.warn(`[@ldesign/i18n] ${message}`, ...args);
   }
 }
@@ -327,7 +327,7 @@ export function warn(message: string, ...args: any[]): void {
  * Error helper for development
  */
 export function error(message: string, ...args: any[]): void {
-  if (process.env.NODE_ENV !== 'production') {
+  if (typeof window !== 'undefined' && (window as any).__DEV__ === true) {
     console.error(`[@ldesign/i18n] ${message}`, ...args);
   }
 }

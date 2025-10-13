@@ -78,6 +78,7 @@
     }
   },
   "dependencies": {
-    "qrcode-generator": "^1.4.4"
+    "qrcode-generator": "^1.4.4",
+    "stackblur-canvas": "^2.7.0"
   }
 }

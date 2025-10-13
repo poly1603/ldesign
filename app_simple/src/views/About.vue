@@ -1,44 +1,44 @@
 <template>
   <div class="about-container">
     <div class="about-content">
-      <h1 class="about-title">{{ t('page.about.title') }}</h1>
+      <h1 class="about-title">关于 LDesign</h1>
       
       <div class="about-section">
-        <h2>{{ t('page.about.intro.title') }}</h2>
-        <p>{{ t('page.about.intro.content') }}</p>
+        <h2>项目介绍</h2>
+        <p>LDesign 是一个基于 Vue 3 构建的现代企业级应用框架。</p>
       </div>
       
       <div class="about-section">
-        <h2>{{ t('page.about.goals.title') }}</h2>
+        <h2>我们的目标</h2>
         <ul>
           <li v-for="(item, index) in goalItems" :key="index">{{ item }}</li>
         </ul>
       </div>
       
       <div class="about-section">
-        <h2>{{ t('page.about.features.title') }}</h2>
+        <h2>核心特性</h2>
         <div class="feature-list">
           <div class="feature-item">
-            <h3>{{ t('page.about.features.smartPrefetch.title') }}</h3>
-            <p>{{ t('page.about.features.smartPrefetch.description') }}</p>
+            <h3>智能预取</h3>
+            <p>智能预加载和缓存，实现最佳性能。</p>
           </div>
           <div class="feature-item">
-            <h3>{{ t('page.about.features.cacheManagement.title') }}</h3>
-            <p>{{ t('page.about.features.cacheManagement.description') }}</p>
+            <h3>缓存管理</h3>
+            <p>高级缓存策略，支持自动失效。</p>
           </div>
           <div class="feature-item">
-            <h3>{{ t('page.about.features.performanceMonitoring.title') }}</h3>
-            <p>{{ t('page.about.features.performanceMonitoring.description') }}</p>
+            <h3>性能监控</h3>
+            <p>实时性能指标和优化建议。</p>
           </div>
           <div class="feature-item">
-            <h3>{{ t('page.about.features.securityProtection.title') }}</h3>
-            <p>{{ t('page.about.features.securityProtection.description') }}</p>
+            <h3>安全防护</h3>
+            <p>内置安全功能和 XSS 防护。</p>
           </div>
         </div>
       </div>
       
       <div class="about-section">
-        <h2>{{ t('page.about.techStack.title') }}</h2>
+        <h2>技术栈</h2>
         <div class="tech-stack">
           <span class="tech-badge">Vue 3</span>
           <span class="tech-badge">TypeScript</span>
@@ -49,23 +49,23 @@
       </div>
       
       <div class="about-section">
-        <h2>{{ t('page.about.version.title') }}</h2>
+        <h2>版本信息</h2>
         <table class="version-table">
           <tbody>
             <tr>
-              <td>{{ t('page.about.version.current') }}</td>
+              <td>当前版本</td>
               <td>v1.0.0</td>
             </tr>
             <tr>
-              <td>{{ t('page.about.version.vueVersion') }}</td>
+              <td>Vue 版本</td>
               <td>v3.4+</td>
             </tr>
             <tr>
-              <td>{{ t('page.about.version.nodeVersion') }}</td>
+              <td>Node 版本</td>
               <td>v16+</td>
             </tr>
             <tr>
-              <td>{{ t('page.about.version.license') }}</td>
+              <td>许可证</td>
               <td>MIT</td>
             </tr>
           </tbody>
@@ -73,46 +73,34 @@
       </div>
       
       <div class="about-section">
-        <h2>{{ t('page.about.contribute.title') }}</h2>
-        <p>{{ t('page.about.contribute.content') }}</p>
+        <h2>参与贡献</h2>
+        <p>我们欢迎社区贡献！查看我们的 GitHub 仓库以开始参与。</p>
         <div class="contribute-links">
-          <a href="#" class="contribute-link">{{ t('page.about.contribute.links.github') }}</a>
-          <a href="#" class="contribute-link">{{ t('page.about.contribute.links.docs') }}</a>
-          <a href="#" class="contribute-link">{{ t('page.about.contribute.links.discussions') }}</a>
+          <a href="#" class="contribute-link">GitHub 仓库</a>
+          <a href="#" class="contribute-link">文档</a>
+          <a href="#" class="contribute-link">讨论区</a>
         </div>
       </div>
       
       <div class="about-footer">
-        <p>{{ t('page.about.footer.madeWith') }}</p>
-        <p class="copyright">{{ t('page.about.footer.copyright') }}</p>
+        <p>由 LDesign 团队用 ❤️ 制作</p>
+        <p class="copyright">© 2024 LDesign. 保留所有权利。</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
-import { useI18n } from '../composables/useI18n'
+import { onMounted } from 'vue'
 
-const { t, locale } = useI18n()
-
-// Compute goal items based on current locale
-const goalItems = computed(() => {
-  const goals = locale.value === 'zh-CN' ? [
-    '提供简洁而强大的 API',
-    '优化性能，减少内存占用',
-    '完善的 TypeScript 支持',
-    '与 @ldesign/engine 深度集成',
-    '丰富的功能扩展'
-  ] : [
-    'Provide simple yet powerful API',
-    'Optimize performance, reduce memory usage',
-    'Complete TypeScript support',
-    'Deep integration with @ldesign/engine',
-    'Rich feature extensions'
-  ]
-  return goals
-})
+// 静态目标项
+const goalItems = [
+  '提供简洁而强大的 API',
+  '优化性能，减少内存占用',
+  '完善的 TypeScript 支持',
+  '与 @ldesign/engine 深度集成',
+  '丰富的功能扩展'
+]
 
 onMounted(() => {
   console.log('About page mounted')

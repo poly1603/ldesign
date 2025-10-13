@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Alert Component Demo</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      padding: 40px;
+      background: #f5f7fa;
+      line-height: 1.6;
+    }
+    .section {
+      margin-bottom: 40px;
+    }
+    .section h2 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e8ecef;
+    }
+    .demo-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    .demo-group h3 {
+      color: #606266;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="color: #1e80ff; margin-bottom: 40px;">🎨 Enhanced Alert Component Demo</h1>
+
+  <!-- Basic Types Section -->
+  <div class="section">
+    <h2>Alert Types</h2>
+    <div class="demo-group">
+      <ldesign-alert type="info">Default info alert with light variant</ldesign-alert>
+      <ldesign-alert type="success">Success! Your changes have been saved</ldesign-alert>
+      <ldesign-alert type="warning">Warning: Please check your input</ldesign-alert>
+      <ldesign-alert type="error">Error: Something went wrong</ldesign-alert>
+      <ldesign-alert type="custom" color="#9b59b6">Custom purple alert with custom color</ldesign-alert>
+      <ldesign-alert type="custom" color="#e91e63" icon-name="heart">Custom pink alert with heart icon</ldesign-alert>
+    </div>
+  </div>
+
+  <!-- Style Variants Section -->
+  <div class="section">
+    <h2>Style Variants</h2>
+    
+    <h3>Light Variant (Default)</h3>
+    <div class="demo-group">
+      <ldesign-alert type="info" variant="light">Light info variant with subtle background</ldesign-alert>
+      <ldesign-alert type="success" variant="light">Light success variant</ldesign-alert>
+      <ldesign-alert type="warning" variant="light">Light warning variant</ldesign-alert>
+      <ldesign-alert type="error" variant="light">Light error variant</ldesign-alert>
+    </div>
+
+    <h3>Filled Variant</h3>
+    <div class="demo-group">
+      <ldesign-alert type="info" variant="filled">Filled info variant with solid background</ldesign-alert>
+      <ldesign-alert type="success" variant="filled">Filled success variant - stands out more!</ldesign-alert>
+      <ldesign-alert type="warning" variant="filled" closable>Filled warning variant with close button</ldesign-alert>
+      <ldesign-alert type="error" variant="filled">Filled error variant for critical alerts</ldesign-alert>
+    </div>
+
+    <h3>Outlined Variant</h3>
+    <div class="demo-group">
+      <ldesign-alert type="info" variant="outlined">Outlined info variant with border only</ldesign-alert>
+      <ldesign-alert type="success" variant="outlined">Outlined success variant</ldesign-alert>
+      <ldesign-alert type="warning" variant="outlined" border-width="3">Outlined warning with 3px border</ldesign-alert>
+      <ldesign-alert type="error" variant="outlined">Outlined error variant</ldesign-alert>
+    </div>
+
+    <h3>Gradient Variant</h3>
+    <div class="demo-group">
+      <ldesign-alert type="info" variant="gradient">Beautiful gradient info variant</ldesign-alert>
+      <ldesign-alert type="success" variant="gradient" shadow>Gradient success with shadow effect</ldesign-alert>
+      <ldesign-alert type="warning" variant="gradient">Gradient warning variant</ldesign-alert>
+      <ldesign-alert type="error" variant="gradient">Gradient error variant</ldesign-alert>
+    </div>
+  </div>
+
+  <!-- Sizes Section -->
+  <div class="section">
+    <h2>Alert Sizes</h2>
+    <div class="demo-group">
+      <ldesign-alert type="info" size="small" alert-title="Small Alert">
+        This is a small alert with compact spacing and smaller text.
+      </ldesign-alert>
+      <ldesign-alert type="success" size="medium" alert-title="Medium Alert (Default)">
+        This is the default medium size alert with normal spacing.
+      </ldesign-alert>
+      <ldesign-alert type="warning" size="large" alert-title="Large Alert">
+        This is a large alert with more padding and larger text for important messages.
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <!-- Special Effects Section -->
+  <div class="section">
+    <h2>Special Effects</h2>
+    
+    <h3>Shadow Effect</h3>
+    <div class="demo-group">
+      <ldesign-alert type="info" shadow alert-title="Elevated Alert">
+        This alert has a shadow and will lift up on hover.
+      </ldesign-alert>
+      <ldesign-alert type="success" variant="gradient" shadow>
+        Combining gradient with shadow for a modern look
+      </ldesign-alert>
+    </div>
+
+    <h3>Compact Mode</h3>
+    <div class="demo-group">
+      <ldesign-alert type="info" compact>Compact alert with minimal padding</ldesign-alert>
+      <ldesign-alert type="warning" compact alert-title="Compact with Title">
+        Useful when you need to save space but still show important info.
+      </ldesign-alert>
+    </div>
+
+    <h3>Custom Icons</h3>
+    <div class="demo-group">
+      <ldesign-alert type="info" icon-name="star" alert-title="Featured Content">
+        Alert with a star icon to highlight featured content.
+      </ldesign-alert>
+      <ldesign-alert type="success" icon-name="heart" variant="filled">
+        Success alert with heart icon
+      </ldesign-alert>
+      <ldesign-alert type="custom" color="#ff6b6b" icon-name="zap" alert-title="Lightning Fast!">
+        Custom alert with lightning icon and custom color.
+      </ldesign-alert>
+    </div>
+
+    <h3>Without Rounded Corners</h3>
+    <div class="demo-group">
+      <ldesign-alert type="info" rounded="false">Sharp corners for a more angular design</ldesign-alert>
+      <ldesign-alert type="error" variant="filled" rounded="false">
+        Filled alert without rounded corners
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <!-- Complex Examples Section -->
+  <div class="section">
+    <h2>Complex Examples</h2>
+    <div class="demo-group">
+      <ldesign-alert 
+        type="success" 
+        variant="gradient" 
+        size="large" 
+        shadow 
+        alert-title="Deployment Successful!" 
+        icon-name="check-circle"
+        closable>
+        Your application has been successfully deployed to production. All systems are operational.
+        <div slot="actions">
+          <ldesign-button type="primary" size="small">View Details</ldesign-button>
+          <ldesign-button size="small">Dismiss</ldesign-button>
+        </div>
+      </ldesign-alert>
+
+      <ldesign-alert 
+        type="custom" 
+        color="#8b5cf6" 
+        variant="filled" 
+        shadow 
+        alert-title="Premium Feature" 
+        icon-name="crown">
+        This is a premium feature. Upgrade your account to unlock all capabilities.
+        <div slot="actions">
+          <ldesign-button type="primary" size="small">Upgrade Now</ldesign-button>
+        </div>
+      </ldesign-alert>
+
+      <ldesign-alert 
+        type="warning" 
+        variant="outlined" 
+        border-width="2"
+        alert-title="System Maintenance" 
+        closable>
+        We'll be performing scheduled maintenance on Saturday, 2 AM - 4 AM EST.
+      </ldesign-alert>
+
+      <ldesign-alert 
+        type="info" 
+        banner 
+        variant="filled"
+        marquee
+        marquee-speed="40">
+        📢 Important Announcement: New features have been added to the platform! Check out our documentation for more details. This message will scroll continuously for better visibility.
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <!-- Banner Examples -->
+  <div class="section">
+    <h2>Banner Alerts</h2>
+    <div class="demo-group">
+      <ldesign-alert type="info" banner>Standard banner alert stretching across the container</ldesign-alert>
+      <ldesign-alert type="success" variant="filled" banner>
+        ✅ All systems operational - Last checked 5 minutes ago
+      </ldesign-alert>
+      <ldesign-alert type="warning" variant="gradient" banner closable>
+        ⚠️ Scheduled maintenance window: Tonight at 11 PM
+      </ldesign-alert>
+    </div>
+  </div>
+
+  <script>
+    // Add some interactivity
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('Enhanced Alert Component Demo Loaded!');
+      
+      // Handle close events
+      document.addEventListener('ldesignClose', (e) => {
+        console.log('Alert closed:', e.target);
+      });
+    });
+  </script>
+</body>
+</html>

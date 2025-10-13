@@ -125,7 +125,6 @@ Type: `Promise<string[]>`
  - [ldesign-mention](../mention)
  - [ldesign-menu](../menu)
  - [ldesign-message](../message)
- - [ldesign-modal](../modal)
  - [ldesign-notification](../notification)
  - [ldesign-pagination](../pagination)
  - [ldesign-popconfirm](../popconfirm)
@@ -159,7 +158,6 @@ graph TD;
   ldesign-mention --> ldesign-icon
   ldesign-menu --> ldesign-icon
   ldesign-message --> ldesign-icon
-  ldesign-modal --> ldesign-icon
   ldesign-notification --> ldesign-icon
   ldesign-pagination --> ldesign-icon
   ldesign-popconfirm --> ldesign-icon

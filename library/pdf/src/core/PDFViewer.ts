@@ -1,172 +1,541 @@
-import * as pdfjsLib from 'pdfjs-dist';
-import { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist/types/src/display/api';
-import { EventEmitter } from '../utils/EventEmitter';
-import { PDFViewerOptions, ViewMode, PDFViewerState } from '../types';
-import { 
-  PDFLoadConfig, 
-  loadPdfWithRetry, 
-  handlePdfError,
-  PDFLoadError 
-} from '../utils/pdfLoader';
+import { EventEmitter } from './EventEmitter';
+import { PDFRenderer } from './PDFRenderer';
+import { SearchManager } from '../features/SearchManager';
+import { ToolbarManager } from '../ui/ToolbarManager';
+import { SidebarManager } from '../ui/SidebarManager';
+import type {
+  PDFViewerOptions,
+  PDFDocumentProxy,
+  ViewerState,
+  SearchResult,
+  SearchOptions
+} from '../types';
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+export class PDFViewer extends EventEmitter implements PDFViewer {
+  public options: PDFViewerOptions;
+  public state: ViewerState;
+  public document: PDFDocumentProxy | null = null;
 
-export class PDFViewer extends EventEmitter {
   private container: HTMLElement;
-  private options: PDFViewerOptions;
-  private pdfDoc: PDFDocumentProxy | null = null;
-  private currentPage: number = 1;
-  private totalPages: number = 0;
-  private scale: number = 1.0;
-  private rotation: number = 0;
-  private viewMode: ViewMode = 'single';
-  private isLoading: boolean = false;
-  private renderTask: any = null;
-  private canvas: HTMLCanvasElement | null = null;
-  private textLayer: HTMLDivElement | null = null;
-  private annotationLayer: HTMLDivElement | null = null;
-  private searchResults: any[] = [];
-  private currentSearchIndex: number = -1;
-  private state: PDFViewerState;
-  private loadConfig: PDFLoadConfig;
+  private viewerContainer: HTMLElement | null = null;
+  private renderer: PDFRenderer;
+  private searchManager: SearchManager | null = null;
+  private toolbarManager: ToolbarManager | null = null;
+  private sidebarManager: SidebarManager | null = null;
+  private canvasContainer: HTMLElement | null = null;
+  private textLayerContainer: HTMLElement | null = null;
+  private annotationLayerContainer: HTMLElement | null = null;
+  private currentCanvas: HTMLCanvasElement | null = null;
+  private isInitialized: boolean = false;
 
-  constructor(container: HTMLElement, options: Partial<PDFViewerOptions> = {}) {
+  constructor(options: PDFViewerOptions) {
     super();
-    this.container = container;
     this.options = this.mergeOptions(options);
+    this.container = this.getContainer(options.container);
+    this.renderer = new PDFRenderer();
+    
     this.state = {
       currentPage: 1,
       totalPages: 0,
-      scale: this.options.defaultScale || 1.0,
-      rotation: 0,
-      viewMode: this.options.viewMode || 'single',
-      isLoading: false,
-      searchActive: false,
-      fullscreen: false
+      scale: this.getInitialScale(),
+      rotation: options.rotation || 0,
+      pageMode: options.pageMode || 'single',
+      isFullscreen: false,
+      isSearchOpen: false,
+      isSidebarOpen: options.sidebar !== false
     };
-    this.loadConfig = {
-      corsProxy: this.options.corsProxy,
-      timeout: this.options.loadTimeout || 30000,
-      maxRetries: this.options.maxRetries || 3,
-      retryDelay: this.options.retryDelay || 1000,
-      fallbackProxies: this.options.fallbackProxies
-    };
-    this.init();
   }
 
-  private mergeOptions(options: Partial<PDFViewerOptions>): PDFViewerOptions {
-    return {
-      defaultScale: 1.0,
+  /**
+   * Initialize the viewer
+   */
+  async init(): Promise<void> {
+    if (this.isInitialized) {
+      return;
+    }
+
+    try {
+      // Setup viewer structure
+      this.setupViewerStructure();
+      
+      // Initialize components
+      if (this.options.toolbar !== false) {
+        this.toolbarManager = new ToolbarManager(this, this.options.toolbar);
+      }
+      
+      if (this.options.sidebar !== false) {
+        this.sidebarManager = new SidebarManager(this, this.options.sidebar);
+      }
+      
+      if (this.options.enableSearch) {
+        this.searchManager = new SearchManager(this);
+      }
+
+      // Setup event listeners
+      this.setupEventListeners();
+
+      // Load initial document if provided
+      if (this.options.url || this.options.data) {
+        await this.loadDocument(this.options.url || this.options.data!);
+      }
+
+      this.isInitialized = true;
+      this.emit('init', this);
+      
+      if (this.options.onInit) {
+        this.options.onInit(this);
+      }
+    } catch (error) {
+      this.handleError(error as Error);
+    }
+  }
+
+  /**
+   * Load a PDF document
+   */
+  async loadDocument(source: string | ArrayBuffer | Uint8Array): Promise<void> {
+    try {
+      this.emit('loading-start');
+      
+      const loadOptions = {
+        password: this.options.password,
+        withCredentials: this.options.withCredentials,
+        cMapUrl: this.options.cMapUrl,
+        cMapPacked: this.options.cMapPacked,
+        standardFontDataUrl: this.options.standardFontDataUrl,
+        onProgress: (loaded: number, total: number) => {
+          this.emit('progress', loaded, total);
+          if (this.options.onProgress) {
+            this.options.onProgress(loaded, total);
+          }
+        }
+      };
+
+      // Handle password-protected PDFs
+      if (!loadOptions.password && this.options.onPasswordRequired) {
+        loadOptions.password = await this.options.onPasswordRequired();
+      }
+
+      this.document = await this.renderer.loadDocument(source, loadOptions);
+      this.state.totalPages = this.document.numPages;
+      this.state.currentPage = 1;
+
+      // Render first page
+      await this.renderCurrentPage();
+
+      // Generate thumbnails if sidebar is enabled
+      if (this.sidebarManager && this.options.enableThumbnails !== false) {
+        this.sidebarManager.generateThumbnails();
+      }
+
+      this.emit('document-loaded', this.document);
+      
+      if (this.options.onDocumentLoad) {
+        this.options.onDocumentLoad(this.document);
+      }
+    } catch (error) {
+      this.handleError(error as Error);
+    }
+  }
+
+  /**
+   * Render the current page
+   */
+  private async renderCurrentPage(): Promise<void> {
+    if (!this.document || !this.canvasContainer) {
+      return;
+    }
+
+    try {
+      // Create or reuse canvas
+      if (!this.currentCanvas) {
+        this.currentCanvas = document.createElement('canvas');
+        this.currentCanvas.className = 'pdf-canvas';
+        this.canvasContainer.appendChild(this.currentCanvas);
+      }
+
+      // Render page
+      await this.renderer.renderPage(this.state.currentPage, this.currentCanvas, {
+        scale: this.state.scale,
+        rotation: this.state.rotation,
+        background: '#ffffff',
+        renderTextLayer: this.options.textLayerMode !== 0,
+        renderAnnotations: this.options.annotationMode !== 0
+      });
+
+      // Render text layer if enabled
+      if (this.options.textLayerMode !== 0 && this.textLayerContainer) {
+        await this.renderer.renderTextLayer(
+          this.state.currentPage,
+          this.textLayerContainer,
+          this.state.scale,
+          this.state.rotation
+        );
+      }
+
+      // Render annotations if enabled
+      if (this.options.annotationMode !== 0 && this.annotationLayerContainer) {
+        await this.renderer.renderAnnotations(
+          this.state.currentPage,
+          this.annotationLayerContainer,
+          this.state.scale,
+          this.state.rotation
+        );
+      }
+
+      this.emit('page-rendered', this.state.currentPage);
+    } catch (error) {
+      this.handleError(error as Error);
+    }
+  }
+
+  /**
+   * Navigation methods
+   */
+  nextPage(): void {
+    if (this.state.currentPage < this.state.totalPages) {
+      this.goToPage(this.state.currentPage + 1);
+    }
+  }
+
+  previousPage(): void {
+    if (this.state.currentPage > 1) {
+      this.goToPage(this.state.currentPage - 1);
+    }
+  }
+
+  goToPage(pageNumber: number): void {
+    if (pageNumber < 1 || pageNumber > this.state.totalPages) {
+      return;
+    }
+
+    this.state.currentPage = pageNumber;
+    this.renderCurrentPage();
+    
+    this.emit('page-change', pageNumber, this.state.totalPages);
+    
+    if (this.options.onPageChange) {
+      this.options.onPageChange(pageNumber, this.state.totalPages);
+    }
+  }
+
+  firstPage(): void {
+    this.goToPage(1);
+  }
+
+  lastPage(): void {
+    this.goToPage(this.state.totalPages);
+  }
+
+  /**
+   * View control methods
+   */
+  zoomIn(): void {
+    this.setScale(this.state.scale * 1.25);
+  }
+
+  zoomOut(): void {
+    this.setScale(this.state.scale * 0.8);
+  }
+
+  setScale(scale: number | string): void {
+    let newScale: number;
+
+    if (typeof scale === 'string') {
+      switch (scale) {
+        case 'page-fit':
+          newScale = this.calculatePageFitScale();
+          break;
+        case 'page-width':
+          newScale = this.calculatePageWidthScale();
+          break;
+        case 'page-height':
+          newScale = this.calculatePageHeightScale();
+          break;
+        case 'auto':
+          newScale = this.calculateAutoScale();
+          break;
+        default:
+          newScale = parseFloat(scale) || 1;
+      }
+    } else {
+      newScale = scale;
+    }
+
+    // Apply min/max constraints
+    const minScale = this.options.minScale || 0.25;
+    const maxScale = this.options.maxScale || 4;
+    newScale = Math.min(Math.max(newScale, minScale), maxScale);
+
+    if (newScale !== this.state.scale) {
+      this.state.scale = newScale;
+      this.renderCurrentPage();
+      
+      this.emit('scale-change', newScale);
+      
+      if (this.options.onScaleChange) {
+        this.options.onScaleChange(newScale);
+      }
+    }
+  }
+
+  rotate(angle: number = 90): void {
+    this.state.rotation = (this.state.rotation + angle) % 360;
+    this.renderCurrentPage();
+    this.emit('rotation-change', this.state.rotation);
+  }
+
+  setPageMode(mode: 'single' | 'continuous' | 'book'): void {
+    this.state.pageMode = mode;
+    this.renderCurrentPage();
+    this.emit('page-mode-change', mode);
+  }
+
+  /**
+   * Feature methods
+   */
+  print(): void {
+    if (!this.options.enablePrint) {
+      return;
+    }
+
+    window.print();
+    
+    this.emit('print');
+    
+    if (this.options.onPrint) {
+      this.options.onPrint();
+    }
+  }
+
+  download(filename?: string): void {
+    if (!this.options.enableDownload || !this.options.url) {
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.href = this.options.url;
+    link.download = filename || 'document.pdf';
+    link.click();
+    
+    this.emit('download');
+    
+    if (this.options.onDownload) {
+      this.options.onDownload();
+    }
+  }
+
+  toggleFullscreen(): void {
+    if (!this.options.enableFullscreen) {
+      return;
+    }
+
+    if (!this.state.isFullscreen) {
+      this.container.requestFullscreen();
+      this.state.isFullscreen = true;
+    } else {
+      document.exitFullscreen();
+      this.state.isFullscreen = false;
+    }
+    
+    this.emit('fullscreen-change', this.state.isFullscreen);
+  }
+
+  toggleSidebar(): void {
+    this.state.isSidebarOpen = !this.state.isSidebarOpen;
+    
+    if (this.sidebarManager) {
+      this.sidebarManager.toggle();
+    }
+    
+    this.emit('sidebar-toggle', this.state.isSidebarOpen);
+  }
+
+  async search(query: string, options?: SearchOptions): Promise<SearchResult[]> {
+    if (!this.searchManager) {
+      return [];
+    }
+
+    const results = await this.searchManager.search(query, options);
+    
+    if (this.options.onSearch) {
+      this.options.onSearch(query, results);
+    }
+    
+    return results;
+  }
+
+  clearSearch(): void {
+    if (this.searchManager) {
+      this.searchManager.clear();
+    }
+  }
+
+  /**
+   * Text and annotation methods
+   */
+  getSelectedText(): string {
+    return window.getSelection()?.toString() || '';
+  }
+
+  addAnnotation(annotation: any): void {
+    // Implementation for adding annotations
+    this.emit('annotation-add', annotation);
+  }
+
+  removeAnnotation(id: string): void {
+    // Implementation for removing annotations
+    this.emit('annotation-remove', id);
+  }
+
+  getAnnotations(pageNumber?: number): any[] {
+    // Implementation for getting annotations
+    return [];
+  }
+
+  /**
+   * Utility methods
+   */
+  getCurrentPage(): number {
+    return this.state.currentPage;
+  }
+
+  getTotalPages(): number {
+    return this.state.totalPages;
+  }
+
+  getScale(): number {
+    return this.state.scale;
+  }
+
+  getRotation(): number {
+    return this.state.rotation;
+  }
+
+  isReady(): boolean {
+    return this.isInitialized && this.document !== null;
+  }
+
+  /**
+   * Destroy the viewer
+   */
+  destroy(): void {
+    this.renderer.destroy();
+    this.searchManager?.destroy();
+    this.toolbarManager?.destroy();
+    this.sidebarManager?.destroy();
+    
+    this.removeAllListeners();
+    
+    if (this.viewerContainer) {
+      this.viewerContainer.remove();
+    }
+    
+    this.isInitialized = false;
+    this.emit('destroy');
+  }
+
+  /**
+   * Private helper methods
+   */
+  private mergeOptions(options: PDFViewerOptions): PDFViewerOptions {
+    const defaults: Partial<PDFViewerOptions> = {
+      initialScale: 'auto',
       minScale: 0.25,
-      maxScale: 5.0,
-      viewMode: 'single',
-      enableToolbar: true,
-      enableNavigation: true,
-      enableZoom: true,
+      maxScale: 4,
+      rotation: 0,
+      pageMode: 'single',
+      toolbar: true,
+      sidebar: true,
+      theme: 'light',
+      language: 'en',
       enableSearch: true,
       enablePrint: true,
       enableDownload: true,
       enableFullscreen: true,
       enableRotation: true,
-      enableThumbnails: false,
+      enableZoom: true,
+      enablePageNavigation: true,
+      enableTextSelection: true,
       enableAnnotations: true,
-      theme: 'light',
-      locale: 'en',
-      ...options
+      enableThumbnails: true,
+      enableOutline: true,
+      enableHandTool: false,
+      renderingMode: 'canvas',
+      textLayerMode: 1,
+      annotationMode: 1
     };
+
+    return { ...defaults, ...options };
   }
 
-  private init(): void {
-    this.setupContainer();
-    this.createCanvas();
-    this.createLayers();
-    this.setupEventListeners();
-    this.emit('initialized', this.state);
-  }
-
-  private setupContainer(): void {
-    this.container.classList.add('pdf-viewer-container');
-    if (this.options.theme) {
-      this.container.setAttribute('data-theme', this.options.theme);
+  private getContainer(container: HTMLElement | string): HTMLElement {
+    if (typeof container === 'string') {
+      const element = document.querySelector(container);
+      if (!element) {
+        throw new Error(`Container element not found: ${container}`);
+      }
+      return element as HTMLElement;
     }
+    return container;
   }
 
-  private createCanvas(): void {
-    this.canvas = document.createElement('canvas');
-    this.canvas.className = 'pdf-viewer-canvas';
-    this.container.appendChild(this.canvas);
-  }
-
-  private createLayers(): void {
-    // Text selection layer
-    this.textLayer = document.createElement('div');
-    this.textLayer.className = 'pdf-viewer-text-layer';
-    this.container.appendChild(this.textLayer);
-
-    // Annotations layer
-    if (this.options.enableAnnotations) {
-      this.annotationLayer = document.createElement('div');
-      this.annotationLayer.className = 'pdf-viewer-annotation-layer';
-      this.container.appendChild(this.annotationLayer);
+  private setupViewerStructure(): void {
+    // Clear container
+    this.container.innerHTML = '';
+    
+    // Create main viewer container
+    this.viewerContainer = document.createElement('div');
+    this.viewerContainer.className = 'pdf-viewer';
+    this.viewerContainer.setAttribute('data-theme', this.options.theme as string);
+    
+    // Create canvas container
+    this.canvasContainer = document.createElement('div');
+    this.canvasContainer.className = 'pdf-canvas-container';
+    
+    // Create text layer container
+    if (this.options.textLayerMode !== 0) {
+      this.textLayerContainer = document.createElement('div');
+      this.textLayerContainer.className = 'pdf-text-layer';
+      this.canvasContainer.appendChild(this.textLayerContainer);
     }
+    
+    // Create annotation layer container
+    if (this.options.annotationMode !== 0) {
+      this.annotationLayerContainer = document.createElement('div');
+      this.annotationLayerContainer.className = 'pdf-annotation-layer';
+      this.canvasContainer.appendChild(this.annotationLayerContainer);
+    }
+    
+    this.viewerContainer.appendChild(this.canvasContainer);
+    this.container.appendChild(this.viewerContainer);
   }
 
   private setupEventListeners(): void {
-    // Keyboard navigation
-    document.addEventListener('keydown', this.handleKeydown.bind(this));
-
-    // Mouse wheel zoom
-    if (this.options.enableZoom) {
-      this.container.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
-    }
-
-    // Touch gestures for mobile
-    let touchStartDistance = 0;
-    this.container.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 2) {
-        touchStartDistance = Math.hypot(
-          e.touches[0].pageX - e.touches[1].pageX,
-          e.touches[0].pageY - e.touches[1].pageY
-        );
-      }
+    // Keyboard shortcuts
+    document.addEventListener('keydown', this.handleKeyDown.bind(this));
+    
+    // Fullscreen change
+    document.addEventListener('fullscreenchange', () => {
+      this.state.isFullscreen = !!document.fullscreenElement;
+      this.emit('fullscreen-change', this.state.isFullscreen);
     });
-
-    this.container.addEventListener('touchmove', (e) => {
-      if (e.touches.length === 2 && touchStartDistance > 0) {
-        e.preventDefault();
-        const distance = Math.hypot(
-          e.touches[0].pageX - e.touches[1].pageX,
-          e.touches[0].pageY - e.touches[1].pageY
-        );
-        const scale = distance / touchStartDistance;
-        this.setScale(this.scale * scale);
-        touchStartDistance = distance;
-      }
-    });
+    
+    // Window resize
+    window.addEventListener('resize', this.handleResize.bind(this));
   }
 
-  private handleKeydown(event: KeyboardEvent): void {
-    if (!this.pdfDoc) return;
+  private handleKeyDown(event: KeyboardEvent): void {
+    if (!this.isReady()) {
+      return;
+    }
 
     switch (event.key) {
       case 'ArrowLeft':
-      case 'PageUp':
-        event.preventDefault();
         this.previousPage();
         break;
       case 'ArrowRight':
-      case 'PageDown':
-        event.preventDefault();
         this.nextPage();
-        break;
-      case 'Home':
-        event.preventDefault();
-        this.goToPage(1);
-        break;
-      case 'End':
-        event.preventDefault();
-        this.goToPage(this.totalPages);
         break;
       case '+':
       case '=':
@@ -184,482 +553,62 @@ export class PDFViewer extends EventEmitter {
       case '0':
         if (event.ctrlKey || event.metaKey) {
           event.preventDefault();
-          this.resetZoom();
+          this.setScale(1);
+        }
+        break;
+      case 'f':
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          if (this.searchManager) {
+            this.state.isSearchOpen = !this.state.isSearchOpen;
+            this.emit('search-toggle', this.state.isSearchOpen);
+          }
         }
         break;
     }
   }
 
-  private handleWheel(event: WheelEvent): void {
-    if (event.ctrlKey || event.metaKey) {
-      event.preventDefault();
-      const delta = event.deltaY > 0 ? -0.1 : 0.1;
-      this.setScale(this.scale + delta);
+  private handleResize(): void {
+    if (this.options.initialScale === 'auto' || 
+        this.options.initialScale === 'page-fit' ||
+        this.options.initialScale === 'page-width') {
+      this.setScale(this.options.initialScale);
     }
   }
 
-  public async loadPDF(source: string | ArrayBuffer | Uint8Array): Promise<void> {
-    try {
-      this.setLoading(true);
-      this.emit('loading', { source });
-
-      // Load the PDF document with enhanced error handling
-      if (typeof source === 'string') {
-        // Use enhanced loading with retry and proxy support for URLs
-        const loadFunction = async (url: string) => {
-          const loadingTask = pdfjsLib.getDocument(url);
-          return await loadingTask.promise;
-        };
-        
-        try {
-          this.pdfDoc = await loadPdfWithRetry(source, loadFunction, this.loadConfig);
-        } catch (error) {
-          const pdfError = handlePdfError(error);
-          this.setLoading(false);
-          this.emit('error', pdfError);
-          throw pdfError;
-        }
-      } else {
-        // Direct loading for ArrayBuffer or Uint8Array
-        const loadingTask = pdfjsLib.getDocument(source);
-        this.pdfDoc = await loadingTask.promise;
-      }
-
-      this.totalPages = this.pdfDoc.numPages;
-      this.state.totalPages = this.totalPages;
-
-      // Load metadata
-      const metadata = await this.pdfDoc.getMetadata();
-      this.emit('metadata', metadata);
-
-      // Render first page
-      await this.renderPage(this.currentPage);
-      
-      this.setLoading(false);
-      this.emit('loaded', {
-        totalPages: this.totalPages,
-        metadata
-      });
-    } catch (error) {
-      const pdfError = handlePdfError(error);
-      this.setLoading(false);
-      this.emit('error', pdfError);
-      throw pdfError;
+  private getInitialScale(): number {
+    if (typeof this.options.initialScale === 'number') {
+      return this.options.initialScale;
     }
+    return 1; // Will be calculated on first render
   }
 
-  private async renderPage(pageNum: number): Promise<void> {
-    if (!this.pdfDoc || !this.canvas) return;
-
-    // Cancel any ongoing render task
-    if (this.renderTask) {
-      await this.renderTask.cancel();
-    }
-
-    try {
-      const page = await this.pdfDoc.getPage(pageNum);
-      const viewport = page.getViewport({ 
-        scale: this.scale, 
-        rotation: this.rotation 
-      });
-
-      // Set canvas dimensions
-      const context = this.canvas.getContext('2d');
-      if (!context) return;
-
-      this.canvas.width = viewport.width;
-      this.canvas.height = viewport.height;
-
-      // Clear canvas
-      context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-      // Render PDF page
-      const renderContext = {
-        canvasContext: context,
-        viewport: viewport
-      };
-
-      this.renderTask = page.render(renderContext);
-      await this.renderTask.promise;
-
-      // Render text layer for selection
-      if (this.textLayer) {
-        await this.renderTextLayer(page, viewport);
-      }
-
-      // Render annotations
-      if (this.annotationLayer && this.options.enableAnnotations) {
-        await this.renderAnnotations(page, viewport);
-      }
-
-      this.emit('pageRendered', { 
-        pageNumber: pageNum, 
-        scale: this.scale,
-        rotation: this.rotation
-      });
-    } catch (error) {
-      if (error instanceof Error && error.name !== 'RenderingCancelledException') {
-        this.emit('error', error);
-        throw error;
-      }
-    }
+  private calculatePageFitScale(): number {
+    // Implementation to calculate scale to fit page
+    return 1;
   }
 
-  private async renderTextLayer(page: PDFPageProxy, viewport: any): Promise<void> {
-    if (!this.textLayer) return;
+  private calculatePageWidthScale(): number {
+    // Implementation to calculate scale to fit width
+    return 1;
+  }
 
-    // Clear existing text layer
-    this.textLayer.innerHTML = '';
-    this.textLayer.style.width = viewport.width + 'px';
-    this.textLayer.style.height = viewport.height + 'px';
+  private calculatePageHeightScale(): number {
+    // Implementation to calculate scale to fit height
+    return 1;
+  }
 
-    // Get text content
-    const textContent = await page.getTextContent();
+  private calculateAutoScale(): number {
+    // Implementation to calculate auto scale
+    return this.calculatePageWidthScale();
+  }
+
+  private handleError(error: Error): void {
+    console.error('PDF Viewer Error:', error);
+    this.emit('error', error);
     
-    // Render text layer
-    pdfjsLib.renderTextLayer({
-      textContent: textContent,
-      container: this.textLayer,
-      viewport: viewport,
-      textDivs: []
-    });
-  }
-
-  private async renderAnnotations(page: PDFPageProxy, viewport: any): Promise<void> {
-    if (!this.annotationLayer || !this.pdfDoc) return;
-
-    // Clear existing annotations
-    this.annotationLayer.innerHTML = '';
-    this.annotationLayer.style.width = viewport.width + 'px';
-    this.annotationLayer.style.height = viewport.height + 'px';
-
-    // Get annotations
-    const annotations = await page.getAnnotations();
-    
-    // Render annotation layer
-    pdfjsLib.AnnotationLayer.render({
-      viewport: viewport.clone({ dontFlip: true }),
-      div: this.annotationLayer,
-      annotations: annotations,
-      page: page,
-      linkService: {
-        getDestinationHash: (dest: any) => '#',
-        getAnchorUrl: (hash: string) => hash,
-        navigateTo: (dest: any) => { /* Handle navigation */ }
-      }
-    });
-  }
-
-  // Navigation methods
-  public nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.goToPage(this.currentPage + 1);
+    if (this.options.onError) {
+      this.options.onError(error);
     }
-  }
-
-  public previousPage(): void {
-    if (this.currentPage > 1) {
-      this.goToPage(this.currentPage - 1);
-    }
-  }
-
-  public goToPage(pageNum: number): void {
-    if (pageNum < 1 || pageNum > this.totalPages) return;
-    
-    this.currentPage = pageNum;
-    this.state.currentPage = pageNum;
-    this.renderPage(pageNum);
-    this.emit('pageChanged', { 
-      currentPage: this.currentPage, 
-      totalPages: this.totalPages 
-    });
-  }
-
-  // Zoom methods
-  public zoomIn(): void {
-    this.setScale(Math.min(this.scale + 0.25, this.options.maxScale));
-  }
-
-  public zoomOut(): void {
-    this.setScale(Math.max(this.scale - 0.25, this.options.minScale));
-  }
-
-  public setScale(scale: number): void {
-    const newScale = Math.min(Math.max(scale, this.options.minScale), this.options.maxScale);
-    if (newScale !== this.scale) {
-      this.scale = newScale;
-      this.state.scale = newScale;
-      this.renderPage(this.currentPage);
-      this.emit('scaleChanged', { scale: this.scale });
-    }
-  }
-
-  public resetZoom(): void {
-    this.setScale(this.options.defaultScale);
-  }
-
-  public fitToWidth(): void {
-    if (!this.canvas) return;
-    const containerWidth = this.container.clientWidth;
-    const pageWidth = this.canvas.width / this.scale;
-    this.setScale(containerWidth / pageWidth);
-  }
-
-  public fitToHeight(): void {
-    if (!this.canvas) return;
-    const containerHeight = this.container.clientHeight;
-    const pageHeight = this.canvas.height / this.scale;
-    this.setScale(containerHeight / pageHeight);
-  }
-
-  // Rotation methods
-  public rotate(angle: number): void {
-    this.rotation = (this.rotation + angle) % 360;
-    this.state.rotation = this.rotation;
-    this.renderPage(this.currentPage);
-    this.emit('rotationChanged', { rotation: this.rotation });
-  }
-
-  public rotateClockwise(): void {
-    this.rotate(90);
-  }
-
-  public rotateCounterClockwise(): void {
-    this.rotate(-90);
-  }
-
-  // Search functionality
-  public async search(query: string): Promise<void> {
-    if (!this.pdfDoc || !query) return;
-
-    this.searchResults = [];
-    this.currentSearchIndex = -1;
-    this.state.searchActive = true;
-
-    for (let i = 1; i <= this.totalPages; i++) {
-      const page = await this.pdfDoc.getPage(i);
-      const textContent = await page.getTextContent();
-      const text = textContent.items.map((item: any) => item.str).join(' ');
-      
-      const regex = new RegExp(query, 'gi');
-      let match;
-      while ((match = regex.exec(text)) !== null) {
-        this.searchResults.push({
-          page: i,
-          index: match.index,
-          text: match[0]
-        });
-      }
-    }
-
-    if (this.searchResults.length > 0) {
-      this.currentSearchIndex = 0;
-      this.goToPage(this.searchResults[0].page);
-      this.highlightSearchResult(this.searchResults[0]);
-    }
-
-    this.emit('searchComplete', {
-      query,
-      results: this.searchResults,
-      totalResults: this.searchResults.length
-    });
-  }
-
-  public nextSearchResult(): void {
-    if (this.searchResults.length === 0) return;
-    
-    this.currentSearchIndex = (this.currentSearchIndex + 1) % this.searchResults.length;
-    const result = this.searchResults[this.currentSearchIndex];
-    this.goToPage(result.page);
-    this.highlightSearchResult(result);
-  }
-
-  public previousSearchResult(): void {
-    if (this.searchResults.length === 0) return;
-    
-    this.currentSearchIndex = this.currentSearchIndex - 1;
-    if (this.currentSearchIndex < 0) {
-      this.currentSearchIndex = this.searchResults.length - 1;
-    }
-    const result = this.searchResults[this.currentSearchIndex];
-    this.goToPage(result.page);
-    this.highlightSearchResult(result);
-  }
-
-  public clearSearch(): void {
-    this.searchResults = [];
-    this.currentSearchIndex = -1;
-    this.state.searchActive = false;
-    this.clearHighlights();
-    this.emit('searchCleared');
-  }
-
-  private highlightSearchResult(result: any): void {
-    // Implementation for highlighting search results in the text layer
-    if (!this.textLayer) return;
-    
-    // Clear previous highlights
-    this.clearHighlights();
-    
-    // Add highlight class to matching text
-    const textDivs = this.textLayer.querySelectorAll('span');
-    textDivs.forEach(div => {
-      if (div.textContent?.toLowerCase().includes(result.text.toLowerCase())) {
-        div.classList.add('highlight');
-      }
-    });
-  }
-
-  private clearHighlights(): void {
-    if (!this.textLayer) return;
-    const highlights = this.textLayer.querySelectorAll('.highlight');
-    highlights.forEach(el => el.classList.remove('highlight'));
-  }
-
-  // Print functionality
-  public async print(): Promise<void> {
-    if (!this.pdfDoc) return;
-
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const printDocument = printWindow.document;
-    printDocument.write('<html><head><title>Print PDF</title></head><body></body></html>');
-
-    for (let i = 1; i <= this.totalPages; i++) {
-      const page = await this.pdfDoc.getPage(i);
-      const viewport = page.getViewport({ scale: 1.5 });
-      
-      const canvas = printDocument.createElement('canvas');
-      const context = canvas.getContext('2d');
-      if (!context) continue;
-
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-
-      await page.render({
-        canvasContext: context,
-        viewport: viewport
-      }).promise;
-
-      printDocument.body.appendChild(canvas);
-      if (i < this.totalPages) {
-        printDocument.body.appendChild(printDocument.createElement('div')).style.pageBreakAfter = 'always';
-      }
-    }
-
-    printWindow.print();
-    printWindow.close();
-  }
-
-  // Download functionality
-  public async download(filename?: string): Promise<void> {
-    if (!this.pdfDoc) return;
-
-    const data = await this.pdfDoc.getData();
-    const blob = new Blob([data], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename || 'document.pdf';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    this.emit('downloaded', { filename });
-  }
-
-  // Fullscreen functionality
-  public enterFullscreen(): void {
-    if (this.container.requestFullscreen) {
-      this.container.requestFullscreen();
-    } else if ((this.container as any).webkitRequestFullscreen) {
-      (this.container as any).webkitRequestFullscreen();
-    } else if ((this.container as any).msRequestFullscreen) {
-      (this.container as any).msRequestFullscreen();
-    }
-    this.state.fullscreen = true;
-    this.emit('fullscreenChanged', { fullscreen: true });
-  }
-
-  public exitFullscreen(): void {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if ((document as any).webkitExitFullscreen) {
-      (document as any).webkitExitFullscreen();
-    } else if ((document as any).msExitFullscreen) {
-      (document as any).msExitFullscreen();
-    }
-    this.state.fullscreen = false;
-    this.emit('fullscreenChanged', { fullscreen: false });
-  }
-
-  public toggleFullscreen(): void {
-    if (this.state.fullscreen) {
-      this.exitFullscreen();
-    } else {
-      this.enterFullscreen();
-    }
-  }
-
-  // View mode methods
-  public setViewMode(mode: ViewMode): void {
-    this.viewMode = mode;
-    this.state.viewMode = mode;
-    this.renderPage(this.currentPage);
-    this.emit('viewModeChanged', { mode });
-  }
-
-  // Theme methods
-  public setTheme(theme: 'light' | 'dark'): void {
-    this.options.theme = theme;
-    this.container.setAttribute('data-theme', theme);
-    this.emit('themeChanged', { theme });
-  }
-
-  // Utility methods
-  private setLoading(loading: boolean): void {
-    this.isLoading = loading;
-    this.state.isLoading = loading;
-    this.container.classList.toggle('loading', loading);
-  }
-
-  public getState(): PDFViewerState {
-    return { ...this.state };
-  }
-
-  public getCurrentPage(): number {
-    return this.currentPage;
-  }
-
-  public getTotalPages(): number {
-    return this.totalPages;
-  }
-
-  public getScale(): number {
-    return this.scale;
-  }
-
-  public destroy(): void {
-    // Clean up event listeners
-    document.removeEventListener('keydown', this.handleKeydown.bind(this));
-    
-    // Cancel render task
-    if (this.renderTask) {
-      this.renderTask.cancel();
-    }
-
-    // Clear container
-    this.container.innerHTML = '';
-    
-    // Destroy PDF document
-    if (this.pdfDoc) {
-      this.pdfDoc.destroy();
-      this.pdfDoc = null;
-    }
-
-    this.emit('destroyed');
   }
 }

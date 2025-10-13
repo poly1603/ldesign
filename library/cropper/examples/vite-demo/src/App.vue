@@ -60,6 +60,7 @@
                 :zoom-on-wheel="true"
                 :scale-step="scaleStep"
                 :theme-color="themeColor"
+                :crop-box-style="cropBoxStyle"
                 @ready="onReady"
                 @crop="onCrop"
               />
@@ -121,6 +122,19 @@
                   <option value="crop">Crop</option>
                   <option value="move">Move</option>
                   <option value="none">None</option>
+                </select>
+              </div>
+
+              <div class="control-row">
+                <label>Crop Box Style:</label>
+                <select v-model="cropBoxStyle" @change="handleStyleChange">
+                  <option value="default">Default</option>
+                  <option value="rounded">Rounded</option>
+                  <option value="circle">Circle</option>
+                  <option value="minimal">Minimal</option>
+                  <option value="dotted">Dotted</option>
+                  <option value="solid">Solid</option>
+                  <option value="gradient">Gradient</option>
                 </select>
               </div>
 
@@ -240,6 +254,7 @@ const scaleStep = ref(0.1)
 const showAdvanced = ref(false)
 const isDragging = ref(false)
 const placeholderText = ref('点击或拖拽图片到这里')
+const cropBoxStyle = ref<'default' | 'rounded' | 'circle' | 'minimal' | 'dotted' | 'solid' | 'gradient'>('default')
 
 // Sample image URL
 const sampleImageUrl = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800'
@@ -403,6 +418,14 @@ const handleSkew = (axis: 'x' | 'y', value: number) => {
 
 const reset = () => {
   cropperRef.value?.reset()
+}
+
+// Handle style change
+const handleStyleChange = () => {
+  const cropper = cropperRef.value?.getCropper()
+  if (cropper) {
+    cropper.setCropBoxStyle(cropBoxStyle.value)
+  }
 }
 
 // Export methods

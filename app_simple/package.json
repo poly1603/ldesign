@@ -10,8 +10,7 @@
   "dependencies": {
     "vue": "^3.5.0",
     "@ldesign/engine": "workspace:*",
-    "@ldesign/router": "workspace:*",
-    "@ldesign/i18n": "workspace:*"
+    "@ldesign/router": "workspace:*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",

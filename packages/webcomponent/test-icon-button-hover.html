@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Button Hover Effects Test - 图标按钮悬停效果测试</title>
+    <link rel="stylesheet" href="./src/global/global.less">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 24px;
+        }
+        
+        h2 {
+            color: #444;
+            margin-top: 32px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        /* 模拟 Header 样式 */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e8e8e8;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .header-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* 示例行 */
+        .demo-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+        
+        .demo-label {
+            min-width: 120px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .demo-buttons {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+        }
+        
+        /* 图标样式 */
+        .icon {
+            font-size: 18px;
+        }
+        
+        /* 暗色主题测试 */
+        .dark-theme {
+            background: #1f1f1f;
+            color: #fff;
+        }
+        
+        .dark-theme .header {
+            background: #141414;
+            border-bottom-color: #303030;
+        }
+        
+        .dark-theme .header-title {
+            color: #fff;
+        }
+        
+        .dark-theme .demo-row {
+            background: #2a2a2a;
+        }
+        
+        .dark-theme .demo-label {
+            color: #aaa;
+        }
+        
+        /* 状态提示 */
+        .status-tip {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e6f7ff;
+            color: #1890ff;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        
+        .success-tip {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+        
+        .warning-tip {
+            background: #fff7e6;
+            color: #faad14;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 模拟 Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="header-title">图标按钮悬停效果测试</div>
+                <span class="status-tip success-tip">样式已优化</span>
+            </div>
+            <div class="header-tools">
+                <button class="icon-btn" title="搜索">
+                    <span class="icon">🔍</span>
+                </button>
+                <button class="icon-btn" title="通知">
+                    <span class="icon">🔔</span>
+                </button>
+                <button class="icon-btn" title="设置">
+                    <span class="icon">⚙️</span>
+                </button>
+                <button class="icon-btn" title="用户">
+                    <span class="icon">👤</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="section" style="margin-top: 24px;">
+            <h1>Icon Button Hover Effects</h1>
+            <p class="subtitle">测试各种图标按钮的悬停效果，确保样式统一且不混乱</p>
+            
+            <h2>1. 基础图标按钮</h2>
+            <div class="demo-row">
+                <div class="demo-label">通用图标按钮：</div>
+                <div class="demo-buttons">
+                    <button class="icon-btn">
+                        <span class="icon">💾</span>
+                    </button>
+                    <button class="icon-button">
+                        <span class="icon">✏️</span>
+                    </button>
+                    <button class="btn-icon">
+                        <span class="icon">🗑️</span>
+                    </button>
+                    <button class="tool-btn">
+                        <span class="icon">📋</span>
+                    </button>
+                    <button class="action-btn">
+                        <span class="icon">📤</span>
+                    </button>
+                </div>
+            </div>
+            
+            <h2>2. LDesign 按钮组件</h2>
+            <div class="demo-row">
+                <div class="demo-label">组件图标按钮：</div>
+                <div class="demo-buttons">
+                    <button class="ldesign-button ldesign-button--icon-only">
+                        <span class="ldesign-button__icon">➕</span>
+                    </button>
+                    <button class="ldesign-button ldesign-button--icon-only ldesign-button--primary">
+                        <span class="ldesign-button__icon">❤️</span>
+                    </button>
+                    <button class="ldesign-button ldesign-button--icon-only ldesign-button--circle">
+                        <span class="ldesign-button__icon">🔄</span>
+                    </button>
+                </div>
+            </div>
+            
+            <h2>3. 不同尺寸</h2>
+            <div class="demo-row">
+                <div class="demo-label">尺寸变化：</div>
+                <div class="demo-buttons">
+                    <button class="ldesign-button ldesign-button--icon-only ldesign-button--sm">
+                        <span class="ldesign-button__icon">📧</span>
+                    </button>
+                    <button class="ldesign-button ldesign-button--icon-only">
+                        <span class="ldesign-button__icon">📧</span>
+                    </button>
+                    <button class="ldesign-button ldesign-button--icon-only ldesign-button--lg">
+                        <span class="ldesign-button__icon">📧</span>
+                    </button>
+                </div>
+            </div>
+            
+            <h2>4. 禁用状态</h2>
+            <div class="demo-row">
+                <div class="demo-label">禁用按钮：</div>
+                <div class="demo-buttons">
+                    <button class="icon-btn" disabled>
+                        <span class="icon">🚫</span>
+                    </button>
+                    <button class="ldesign-button ldesign-button--icon-only ldesign-button--disabled">
+                        <span class="ldesign-button__icon">⛔</span>
+                    </button>
+                </div>
+            </div>
+            
+            <h2>5. 悬停效果测试</h2>
+            <div class="demo-row">
+                <div class="demo-label">悬停状态：</div>
+                <div class="demo-buttons">
+                    <button class="icon-btn" title="悬停查看效果">
+                        <span class="icon">👆</span>
+                    </button>
+                    <span class="status-tip">将鼠标悬停在按钮上查看优化后的效果</span>
+                </div>
+            </div>
+            
+            <h2>6. 暗色主题支持</h2>
+            <div class="demo-row dark-theme">
+                <div class="demo-label">暗色模式：</div>
+                <div class="demo-buttons">
+                    <button class="icon-btn">
+                        <span class="icon">🌙</span>
+                    </button>
+                    <button class="icon-button">
+                        <span class="icon">⭐</span>
+                    </button>
+                    <button class="tool-btn">
+                        <span class="icon">🌟</span>
+                    </button>
+                </div>
+            </div>
+            
+            <h2>效果说明</h2>
+            <ul style="color: #666; line-height: 1.8;">
+                <li>✅ 统一的悬停效果：背景色变化、阴影效果、微小的上移动画</li>
+                <li>✅ 图标放大效果：悬停时图标会轻微放大（scale 1.1）</li>
+                <li>✅ 焦点样式：键盘导航时有清晰的焦点轮廓</li>
+                <li>✅ 平滑过渡：使用 cubic-bezier 缓动函数实现流畅动画</li>
+                <li>✅ 激活状态：点击时有明显的按下反馈</li>
+                <li>✅ 暗色模式：自动适应暗色主题</li>
+                <li>✅ 禁用状态：正确处理禁用按钮的样式</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // 测试焦点样式
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Icon button hover effects test loaded');
+            console.log('优化内容：');
+            console.log('1. 修复了鼠标悬停时样式混乱的问题');
+            console.log('2. 添加了统一的过渡动画效果');
+            console.log('3. 优化了焦点和激活状态样式');
+            console.log('4. 支持暗色模式自适应');
+        });
+        
+        // 添加点击反馈
+        document.querySelectorAll('button').forEach(btn => {
+            if (!btn.disabled && !btn.classList.contains('ldesign-button--disabled')) {
+                btn.addEventListener('click', function(e) {
+                    if (this.querySelector('.icon, .ldesign-button__icon')) {
+                        console.log('Button clicked:', this.title || 'Icon Button');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

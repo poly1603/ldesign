@@ -43,8 +43,6 @@ export class ImageWrapper {
 
   private initializeImage(): void {
     // 保存原始图片的属性
-    const src = this.img.src
-    const alt = this.img.alt || ''
     const style = this.img.getAttribute('style') || ''
     const className = this.img.className || ''
     
@@ -136,7 +134,7 @@ export class ImageWrapper {
     // 监听所有手柄的鼠标事件
     const handles = this.wrapper.querySelectorAll('.ldesign-image-handle')
     handles.forEach(handle => {
-      handle.addEventListener('mousedown', this.handleMouseDown.bind(this))
+      handle.addEventListener('mousedown', this.handleMouseDown.bind(this) as EventListener)
     })
 
     // 全局事件
@@ -354,22 +352,32 @@ export class ImageWrapper {
     
     // 文本环绕选项
     const wrapOptions = [
-      { value: 'inline', icon: getLucideIcon('alignCenter'), title: '行内显示' },
-      { value: 'block', icon: getLucideIcon('square'), title: '块级显示' },
-      { value: 'float-left', icon: getLucideIcon('floatLeft'), title: '左侧浮动' },
-      { value: 'float-right', icon: getLucideIcon('floatRight'), title: '右侧浮动' }
+      { value: 'inline', icon: getLucideIcon('alignJustify'), title: '行内显示', shortcut: 'I' },
+      { value: 'block', icon: getLucideIcon('square'), title: '块级显示', shortcut: 'B' },
+      { value: 'float-left', icon: getLucideIcon('wrapText'), title: '左侧浮动', shortcut: 'L' },
+      { value: 'float-right', icon: getLucideIcon('wrapText'), title: '右侧浮动', shortcut: 'R' }
     ]
     
-    wrapOptions.forEach(option => {
+    wrapOptions.forEach((option, index) => {
       const btn = document.createElement('button')
       btn.className = 'ldesign-image-toolbar-btn'
+      
+      // 对于右侧浮动，使用旋转的图标
+      const iconHtml = option.value === 'float-right' 
+        ? `<span style="transform: scaleX(-1)">${option.icon}</span>`
+        : option.icon
+      
       btn.innerHTML = `
-        <span class="icon">${option.icon}</span>
-        <span class="label">${option.title}</span>
+        <span class="icon">${iconHtml}</span>
       `
-      btn.title = option.title
+      btn.title = `${option.title} (${option.shortcut})`
       btn.setAttribute('data-wrap', option.value)
-      btn.onclick = () => this.setWrapMode(option.value)
+      btn.setAttribute('aria-label', option.title)
+      btn.onclick = (e) => {
+        e.stopPropagation()
+        this.setWrapMode(option.value)
+        this.updateToolbarActiveStates()
+      }
       toolbar.appendChild(btn)
     })
     
@@ -380,9 +388,9 @@ export class ImageWrapper {
     
     // 对齐选项
     const alignOptions = [
-      { value: 'left', icon: getLucideIcon('alignLeft'), title: '左对齐' },
-      { value: 'center', icon: getLucideIcon('alignCenter'), title: '居中对齐' },
-      { value: 'right', icon: getLucideIcon('alignRight'), title: '右对齐' }
+      { value: 'left', icon: getLucideIcon('alignLeft'), title: '左对齐', shortcut: '←' },
+      { value: 'center', icon: getLucideIcon('alignCenter'), title: '居中', shortcut: 'C' },
+      { value: 'right', icon: getLucideIcon('alignRight'), title: '右对齐', shortcut: '→' }
     ]
     
     alignOptions.forEach(option => {
@@ -390,11 +398,46 @@ export class ImageWrapper {
       btn.className = 'ldesign-image-toolbar-btn'
       btn.innerHTML = `
         <span class="icon">${option.icon}</span>
-        <span class="label">${option.title}</span>
       `
-      btn.title = option.title
+      btn.title = `${option.title} (${option.shortcut})`
       btn.setAttribute('data-align', option.value)
-      btn.onclick = () => this.setAlignment(option.value)
+      btn.setAttribute('aria-label', option.title)
+      btn.onclick = (e) => {
+        e.stopPropagation()
+        this.setAlignment(option.value)
+        this.updateToolbarActiveStates()
+      }
+      toolbar.appendChild(btn)
+    })
+    
+    // 分隔符
+    const separator2 = document.createElement('div')
+    separator2.className = 'ldesign-image-toolbar-separator'
+    toolbar.appendChild(separator2)
+    
+    // 额外操作按钮
+    const extraActions = [
+      { value: 'settings', icon: getLucideIcon('settings'), title: '图片设置', shortcut: 'S' },
+      { value: 'filter', icon: getLucideIcon('palette'), title: '滤镜效果', shortcut: 'F' },
+      { value: 'delete', icon: getLucideIcon('trash2'), title: '删除图片', shortcut: 'Del' }
+    ]
+    
+    extraActions.forEach(action => {
+      const btn = document.createElement('button')
+      btn.className = 'ldesign-image-toolbar-btn'
+      if (action.value === 'delete') {
+        btn.className += ' danger'
+      }
+      btn.innerHTML = `
+        <span class="icon">${action.icon}</span>
+      `
+      btn.title = `${action.title} (${action.shortcut})`
+      btn.setAttribute('data-action', action.value)
+      btn.setAttribute('aria-label', action.title)
+      btn.onclick = (e) => {
+        e.stopPropagation()
+        this.handleToolbarAction(action.value)
+      }
       toolbar.appendChild(btn)
     })
     
@@ -490,6 +533,79 @@ export class ImageWrapper {
     this.triggerContentChange()
   }
 
+  private updateToolbarActiveStates(): void {
+    const toolbar = this.wrapper.querySelector('.ldesign-image-toolbar')
+    if (!toolbar) return
+    
+    // 更新文本环绕按钮状态
+    toolbar.querySelectorAll('[data-wrap]').forEach(btn => {
+      btn.classList.remove('active')
+    })
+    
+    // 更新对齐按钮状态
+    toolbar.querySelectorAll('[data-align]').forEach(btn => {
+      btn.classList.remove('active')
+    })
+    
+    // 根据当前样式设置激活状态
+    const currentWrap = this.wrapper.style.float ? 
+      `float-${this.wrapper.style.float}` : 
+      (this.wrapper.style.display === 'block' ? 'block' : 'inline')
+    
+    const wrapBtn = toolbar.querySelector(`[data-wrap="${currentWrap}"]`)
+    if (wrapBtn) {
+      wrapBtn.classList.add('active')
+    }
+    
+    // 根据当前对齐方式设置激活状态
+    let currentAlign = 'left'
+    if (this.wrapper.style.marginLeft === 'auto' && this.wrapper.style.marginRight === 'auto') {
+      currentAlign = 'center'
+    } else if (this.wrapper.style.marginLeft === 'auto') {
+      currentAlign = 'right'
+    }
+    
+    const alignBtn = toolbar.querySelector(`[data-align="${currentAlign}"]`)
+    if (alignBtn) {
+      alignBtn.classList.add('active')
+    }
+  }
+  
+  private handleToolbarAction(action: string): void {
+    switch (action) {
+      case 'settings':
+        // 显示图片设置面板
+        this.showImageSettings()
+        break
+      case 'filter':
+        // 显示滤镜选项
+        this.showFilterOptions()
+        break
+      case 'delete':
+        // 删除图片
+        if (confirm('确定要删除这张图片吗？')) {
+          this.wrapper.remove()
+          this.triggerContentChange()
+        }
+        break
+    }
+  }
+  
+  private showImageSettings(): void {
+    // 显示右键菜单作为设置面板
+    const contextMenu = getImageContextMenu()
+    const rect = this.wrapper.getBoundingClientRect()
+    contextMenu.show(rect.right + 10, rect.top, this.wrapper)
+  }
+  
+  private showFilterOptions(): void {
+    // 创建滤镜选择面板 - 显示完整的右键菜单
+    const contextMenu = getImageContextMenu()
+    const rect = this.wrapper.getBoundingClientRect()
+    // 显示右键菜单，用户可以选择滤镜选项
+    contextMenu.show(rect.right + 10, rect.top, this.wrapper)
+  }
+  
   private setAlignment(align: string): void {
     // 只对块级元素有效
     if (this.wrapper.style.float === 'left' || this.wrapper.style.float === 'right') {
@@ -617,24 +733,38 @@ const initializeImages: Command = (state, dispatch) => {
 }
 
 /**
- * 增强版图片插件
+ * 自定义增强版图片插件类
  */
-export const ImageEnhancedPlugin: Plugin = createPlugin({
-  name: 'imageEnhanced',
-  commands: {
-    insertEnhancedImage,
-    uploadEnhancedImage,
-    initializeImages
-  },
-  toolbar: [{
-    name: 'imageEnhanced',
-    title: '插入图片',
-    icon: 'image',
-    command: uploadEnhancedImage
-  }],
-  init: (editor) => {
+class ImageEnhancedPluginClass {
+  name = 'imageEnhanced'
+  config: PluginConfig
+  private observer?: MutationObserver
+
+  constructor() {
+    this.config = {
+      name: 'imageEnhanced',
+      commands: {
+        insertEnhancedImage,
+        uploadEnhancedImage,
+        initializeImages
+      },
+      toolbar: [{
+        name: 'imageEnhanced',
+        title: '插入图片',
+        icon: 'image',
+        command: uploadEnhancedImage
+      }]
+    }
+  }
+
+  install(editor: HTMLElement): void {
+    // 注册命令
+    if (this.config.commands) {
+      // Commands would be registered by the editor framework
+    }
+
     // 监听编辑器内容变化，自动包装新插入的图片
-    const observer = new MutationObserver((mutations) => {
+    this.observer = new MutationObserver((mutations) => {
       mutations.forEach(mutation => {
         mutation.addedNodes.forEach(node => {
           if (node.nodeName === 'IMG') {
@@ -649,7 +779,7 @@ export const ImageEnhancedPlugin: Plugin = createPlugin({
     
     const content = editor.querySelector('.ldesign-editor-content')
     if (content) {
-      observer.observe(content, {
+      this.observer.observe(content, {
         childList: true,
         subtree: true
       })
@@ -658,4 +788,15 @@ export const ImageEnhancedPlugin: Plugin = createPlugin({
       ImageWrapper.wrapExistingImages(content as HTMLElement)
     }
   }
-})
+
+  destroy(): void {
+    if (this.observer) {
+      this.observer.disconnect()
+    }
+  }
+}
+
+/**
+ * 增强版图片插件
+ */
+export const ImageEnhancedPlugin: Plugin = new ImageEnhancedPluginClass()

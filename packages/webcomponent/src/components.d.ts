@@ -6,7 +6,7 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, Size, Theme } from "./types";
-import { AlertType } from "./components/alert/alert";
+import { AlertSize, AlertType, AlertVariant } from "./components/alert/alert";
 import { ButtonColor, ButtonHTMLType, ButtonSize, ButtonVariant } from "./components/button/interface";
 import { CalEvent } from "./components/calendar/calendar";
 import { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
@@ -30,7 +30,7 @@ import { TooltipAnimation, TooltipPlacement, TooltipSize, TooltipTrigger } from 
 import { TransferItem } from "./components/transfer/transfer";
 import { TreeNode } from "./components/tree/tree";
 export { ButtonIconPosition, ButtonShape, ButtonType, MentionEntity, MentionItem, MentionModel, MentionSegment, MentionTriggerConfig, Size, Theme } from "./types";
-export { AlertType } from "./components/alert/alert";
+export { AlertSize, AlertType, AlertVariant } from "./components/alert/alert";
 export { ButtonColor, ButtonHTMLType, ButtonSize, ButtonVariant } from "./components/button/interface";
 export { CalEvent } from "./components/calendar/calendar";
 export { Breakpoints, CascaderOption, CascaderOverlay, CascaderTrigger } from "./components/cascader/cascader";
@@ -170,7 +170,7 @@ export namespace Components {
     }
     /**
      * Alert 警告信息
-     * 用于在页面中展示重要的提示信息，支持四种状态、标题/描述、操作区与可关闭。
+     * 用于在页面中展示重要的提示信息，支持多种状态、样式变体、尺寸、标题/描述、操作区与可关闭。
      */
     interface LdesignAlert {
         /**
@@ -178,10 +178,20 @@ export namespace Components {
          */
         "alertTitle"?: string;
         /**
+          * 是否启用动画效果
+          * @default true
+         */
+        "animated": boolean;
+        /**
           * 横幅样式（常用于页面顶部）
           * @default false
          */
         "banner": boolean;
+        /**
+          * 自定义边框宽度
+          * @default 1
+         */
+        "borderWidth": number;
         /**
           * 是否显示关闭按钮
           * @default false
@@ -192,9 +202,22 @@ export namespace Components {
          */
         "close": () => Promise<void>;
         /**
+          * 自定义颜色（仅在 type 为 custom 时生效）
+         */
+        "color"?: string;
+        /**
+          * 是否为紧凑模式
+          * @default false
+         */
+        "compact": boolean;
+        /**
           * 描述（也可通过默认 slot 自定义内容）
          */
         "description"?: string;
+        /**
+          * 自定义图标名称
+         */
+        "iconName"?: string;
         /**
           * 启用滚动公告（Marquee）
           * @default false
@@ -221,15 +244,35 @@ export namespace Components {
          */
         "marqueeSpeed": number;
         /**
+          * 是否圆角
+          * @default true
+         */
+        "rounded": boolean;
+        /**
+          * 是否带有阴影效果
+          * @default false
+         */
+        "shadow": boolean;
+        /**
           * 是否显示图标
           * @default true
          */
         "showIcon": boolean;
         /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size": AlertSize;
+        /**
           * 警告类型
           * @default 'info'
          */
         "type": AlertType;
+        /**
+          * 样式变体
+          * @default 'light'
+         */
+        "variant": AlertVariant;
     }
     /**
      * Avatar 头像
@@ -3478,7 +3521,7 @@ export namespace Components {
         "closeAnimation": boolean;
         /**
           * 图标可配置
-          * @default 'x'
+          * @default 'close'
          */
         "closeIcon": string;
         /**
@@ -3618,7 +3661,7 @@ export namespace Components {
          */
         "maximize": () => Promise<void>;
         /**
-          * @default 'square'
+          * @default 'maximize'
          */
         "maximizeIcon": string;
         "minHeight"?: number;
@@ -3669,7 +3712,7 @@ export namespace Components {
          */
         "restore": () => Promise<void>;
         /**
-          * @default 'square-arrow-down-right'
+          * @default 'restore'
          */
         "restoreIcon": string;
         /**
@@ -6348,7 +6391,7 @@ declare global {
     }
     /**
      * Alert 警告信息
-     * 用于在页面中展示重要的提示信息，支持四种状态、标题/描述、操作区与可关闭。
+     * 用于在页面中展示重要的提示信息，支持多种状态、样式变体、尺寸、标题/描述、操作区与可关闭。
      */
     interface HTMLLdesignAlertElement extends Components.LdesignAlert, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignAlertElementEventMap>(type: K, listener: (this: HTMLLdesignAlertElement, ev: LdesignAlertCustomEvent<HTMLLdesignAlertElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -7852,7 +7895,7 @@ declare namespace LocalJSX {
     }
     /**
      * Alert 警告信息
-     * 用于在页面中展示重要的提示信息，支持四种状态、标题/描述、操作区与可关闭。
+     * 用于在页面中展示重要的提示信息，支持多种状态、样式变体、尺寸、标题/描述、操作区与可关闭。
      */
     interface LdesignAlert {
         /**
@@ -7860,19 +7903,42 @@ declare namespace LocalJSX {
          */
         "alertTitle"?: string;
         /**
+          * 是否启用动画效果
+          * @default true
+         */
+        "animated"?: boolean;
+        /**
           * 横幅样式（常用于页面顶部）
           * @default false
          */
         "banner"?: boolean;
+        /**
+          * 自定义边框宽度
+          * @default 1
+         */
+        "borderWidth"?: number;
         /**
           * 是否显示关闭按钮
           * @default false
          */
         "closable"?: boolean;
         /**
+          * 自定义颜色（仅在 type 为 custom 时生效）
+         */
+        "color"?: string;
+        /**
+          * 是否为紧凑模式
+          * @default false
+         */
+        "compact"?: boolean;
+        /**
           * 描述（也可通过默认 slot 自定义内容）
          */
         "description"?: string;
+        /**
+          * 自定义图标名称
+         */
+        "iconName"?: string;
         /**
           * 启用滚动公告（Marquee）
           * @default false
@@ -7903,15 +7969,35 @@ declare namespace LocalJSX {
          */
         "onLdesignClose"?: (event: LdesignAlertCustomEvent<void>) => void;
         /**
+          * 是否圆角
+          * @default true
+         */
+        "rounded"?: boolean;
+        /**
+          * 是否带有阴影效果
+          * @default false
+         */
+        "shadow"?: boolean;
+        /**
           * 是否显示图标
           * @default true
          */
         "showIcon"?: boolean;
         /**
+          * 尺寸
+          * @default 'medium'
+         */
+        "size"?: AlertSize;
+        /**
           * 警告类型
           * @default 'info'
          */
         "type"?: AlertType;
+        /**
+          * 样式变体
+          * @default 'light'
+         */
+        "variant"?: AlertVariant;
     }
     /**
      * Avatar 头像
@@ -11284,7 +11370,7 @@ declare namespace LocalJSX {
         "closeAnimation"?: boolean;
         /**
           * 图标可配置
-          * @default 'x'
+          * @default 'close'
          */
         "closeIcon"?: string;
         /**
@@ -11416,7 +11502,7 @@ declare namespace LocalJSX {
          */
         "maximizable"?: boolean;
         /**
-          * @default 'square'
+          * @default 'maximize'
          */
         "maximizeIcon"?: string;
         "minHeight"?: number;
@@ -11476,7 +11562,7 @@ declare namespace LocalJSX {
          */
         "resizable"?: boolean;
         /**
-          * @default 'square-arrow-down-right'
+          * @default 'restore'
          */
         "restoreIcon"?: string;
         /**
@@ -14103,7 +14189,7 @@ declare module "@stencil/core" {
             "ldesign-affix": LocalJSX.LdesignAffix & JSXBase.HTMLAttributes<HTMLLdesignAffixElement>;
             /**
              * Alert 警告信息
-             * 用于在页面中展示重要的提示信息，支持四种状态、标题/描述、操作区与可关闭。
+             * 用于在页面中展示重要的提示信息，支持多种状态、样式变体、尺寸、标题/描述、操作区与可关闭。
              */
             "ldesign-alert": LocalJSX.LdesignAlert & JSXBase.HTMLAttributes<HTMLLdesignAlertElement>;
             /**

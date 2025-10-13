@@ -27,7 +27,7 @@ export class PluginManager {
   /**
    * 加载插件
    */
-  async loadPlugin(name: string, config: PluginConfig = {}): Promise<void> {
+  async loadPlugin(name: string, _config: PluginConfig = {}): Promise<void> {
     if (this.loadedPlugins.has(name)) {
       return
     }
@@ -128,7 +128,15 @@ export class PluginManager {
 export function registerCommonSnippets() {
   // JavaScript/TypeScript 代码片段
   monaco.languages.registerCompletionItemProvider('javascript', {
-    provideCompletionItems: () => {
+    provideCompletionItems: (model, position) => {
+      const word = model.getWordUntilPosition(position)
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn
+      }
+
       return {
         suggestions: [
           {
@@ -136,70 +144,80 @@ export function registerCommonSnippets() {
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: 'console.log(${1:value});',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: '输出到控制台'
+            documentation: '输出到控制台',
+            range
           },
           {
             label: 'func',
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: 'function ${1:name}(${2:params}) {\n\t${0}\n}',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: '创建函数'
+            documentation: '创建函数',
+            range
           },
           {
             label: 'arrow',
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: 'const ${1:name} = (${2:params}) => {\n\t${0}\n}',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: '创建箭头函数'
+            documentation: '创建箭头函数',
+            range
           },
           {
             label: 'foreach',
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: '${1:array}.forEach((${2:item}) => {\n\t${0}\n});',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'forEach 循环'
+            documentation: 'forEach 循环',
+            range
           },
           {
             label: 'map',
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: '${1:array}.map((${2:item}) => ${0})',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'map 映射'
+            documentation: 'map 映射',
+            range
           },
           {
             label: 'filter',
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: '${1:array}.filter((${2:item}) => ${0})',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'filter 过滤'
+            documentation: 'filter 过滤',
+            range
           },
           {
             label: 'reduce',
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: '${1:array}.reduce((${2:acc}, ${3:item}) => {\n\t${0}\n}, ${4:initial})',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'reduce 归约'
+            documentation: 'reduce 归约',
+            range
           },
           {
             label: 'promise',
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: 'new Promise((resolve, reject) => {\n\t${0}\n})',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: '创建 Promise'
+            documentation: '创建 Promise',
+            range
           },
           {
             label: 'async',
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: 'async function ${1:name}(${2:params}) {\n\t${0}\n}',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: '创建异步函数'
+            documentation: '创建异步函数',
+            range
           },
           {
             label: 'try',
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: 'try {\n\t${1}\n} catch (error) {\n\t${0}\n}',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'try-catch 错误处理'
+            documentation: 'try-catch 错误处理',
+            range
           },
         ]
       }
@@ -208,7 +226,15 @@ export function registerCommonSnippets() {
 
   // TypeScript 代码片段
   monaco.languages.registerCompletionItemProvider('typescript', {
-    provideCompletionItems: () => {
+    provideCompletionItems: (model, position) => {
+      const word = model.getWordUntilPosition(position)
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn
+      }
+
       return {
         suggestions: [
           {
@@ -216,28 +242,32 @@ export function registerCommonSnippets() {
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: 'interface ${1:Name} {\n\t${0}\n}',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: '创建接口'
+            documentation: '创建接口',
+            range
           },
           {
             label: 'type',
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: 'type ${1:Name} = ${0}',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: '创建类型别名'
+            documentation: '创建类型别名',
+            range
           },
           {
             label: 'class',
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: 'class ${1:Name} {\n\tconstructor(${2:params}) {\n\t\t${0}\n\t}\n}',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: '创建类'
+            documentation: '创建类',
+            range
           },
           {
             label: 'enum',
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: 'enum ${1:Name} {\n\t${0}\n}',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: '创建枚举'
+            documentation: '创建枚举',
+            range
           },
         ]
       }

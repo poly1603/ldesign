@@ -4,7 +4,7 @@
 
 import type { CropBoxData, Rectangle } from '../types'
 import { clamp } from '../utils/math'
-import { createElement, setStyle, addClass } from '../utils/dom'
+import { createElement, setStyle, addClass, removeClass } from '../utils/dom'
 
 export interface CropBoxOptions {
   aspectRatio?: number
@@ -19,6 +19,7 @@ export interface CropBoxOptions {
   highlight?: boolean
   highlightOpacity?: number
   background?: boolean
+  style?: 'default' | 'rounded' | 'circle' | 'minimal' | 'dotted' | 'solid' | 'gradient'
 }
 
 export class CropBox {
@@ -37,6 +38,7 @@ export class CropBox {
   private highlight?: boolean
   private highlightOpacity: number
   private background?: boolean
+  private style: string
 
   // UI Elements
   private modalElement?: HTMLDivElement
@@ -60,8 +62,9 @@ export class CropBox {
     this.guides = options.guides ?? true
     this.center = options.center ?? true
     this.highlight = options.highlight ?? true
-    this.highlightOpacity = options.highlightOpacity ?? 0.03  // Lighter highlight
+    this.highlightOpacity = options.highlightOpacity ?? 0.03
     this.background = options.background ?? false // Background is now handled by Cropper
+    this.style = options.style || 'default'
 
     this.element = this.createCropBox()
     this.data = {
@@ -77,19 +80,14 @@ export class CropBox {
    */
   private createCropBox(): HTMLDivElement {
     const cropBox = createElement('div', 'cropper-crop-box')
+    addClass(cropBox, `style-${this.style}`)
 
     // Create view box (inner container)
     this.viewBoxElement = createElement('div', 'cropper-view-box')
 
     // Create face (center draggable area)
     const face = createElement('div', 'cropper-face')
-    if (this.highlight) {
-      addClass(face, 'cropper-highlight')
-      // Apply highlight opacity
-      setStyle(face, {
-        backgroundColor: `rgba(255, 255, 255, ${this.highlightOpacity})`
-      })
-    }
+    // Remove highlight background as it creates unwanted white overlay
 
     // Create dashed lines (guides)
     this.dashedElements = []
@@ -245,6 +243,20 @@ export class CropBox {
     if (aspectRatio && this.data.width) {
       this.setData({ height: this.data.width / aspectRatio })
     }
+  }
+
+  /**
+   * Set crop box style
+   */
+  setStyle(style: string): void {
+    // Remove old style class
+    removeClass(this.element, `style-${this.style}`)
+    
+    // Update style
+    this.style = style
+    
+    // Add new style class
+    addClass(this.element, `style-${this.style}`)
   }
 
   /**

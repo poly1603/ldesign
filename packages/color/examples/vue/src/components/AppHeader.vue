@@ -92,15 +92,53 @@ const { currentTheme, currentMode, isDark, availableThemes, toggleMode } = useTh
 }
 
 .header-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
   background: rgba(255, 255, 255, 0.1);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
 }
 
+/* 悬停效果优化 */
 .header-actions .btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 激活状态 */
+.header-actions .btn:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 焦点状态 */
+.header-actions .btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* 图标动画 */
+.header-actions .btn .icon {
+  transition: transform 0.3s ease;
+}
+
+.header-actions .btn:hover .icon {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .icon {

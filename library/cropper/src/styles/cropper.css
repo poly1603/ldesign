@@ -57,6 +57,12 @@
   z-index: 2;
 }
 
+/* Special modal for rounded and circle styles */
+.cropper-modal.modal-rounded,
+.cropper-modal.modal-circle {
+  background: transparent !important;
+}
+
 .cropper-crop-box {
   position: absolute;
   /* Initial position and size will be set by JavaScript */
@@ -71,6 +77,8 @@
   outline: 2px solid var(--cropper-theme-color);
   outline-offset: -1px;
   box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);  /* Lighter mask */
+  position: relative;
+  box-sizing: border-box;
 }
 
 .cropper-dashed {
@@ -145,7 +153,7 @@
 }
 
 .cropper-face:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.01);  /* Very subtle hover effect */
 }
 
 /* Lines (edges) */
@@ -329,9 +337,9 @@
   cursor: crosshair;
 }
 
-/* Highlight area */
+/* Highlight area - removed to prevent white overlay */
 .cropper-crop-box .cropper-face.cropper-highlight {
-  /* Background color will be set via JavaScript with configurable opacity */
+  background-color: transparent !important;
 }
 
 /* Hidden */
@@ -528,6 +536,225 @@
 
 .cropper-fade-in {
   animation: cropper-fade-in 0.3s ease-in-out;
+}
+
+/* Crop Box Styles */
+
+/* Default style (current style) */
+.cropper-crop-box.style-default .cropper-view-box {
+  outline: 2px solid var(--cropper-theme-color);
+  outline-offset: -1px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);
+}
+
+/* Rounded style */
+.cropper-crop-box.style-rounded .cropper-view-box {
+  outline: 2px solid var(--cropper-theme-color);
+  outline-offset: -1px;
+  border-radius: 20px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);
+}
+
+/* Style adjustment for rounded */
+.cropper-crop-box.style-rounded .cropper-face {
+  border-radius: 17px;
+}
+
+.cropper-crop-box.style-rounded .cropper-dashed {
+  border-radius: 15px;
+}
+
+.cropper-crop-box.style-rounded .cropper-face {
+  border-radius: 14px;
+}
+
+.cropper-crop-box.style-rounded .cropper-dashed {
+  border-radius: 14px;
+}
+
+/* Adjust lines for rounded corners */
+.cropper-crop-box.style-rounded .cropper-line.line-n,
+.cropper-crop-box.style-rounded .cropper-line.line-s {
+  left: 16px;
+  right: 16px;
+  width: calc(100% - 32px);
+}
+
+.cropper-crop-box.style-rounded .cropper-line.line-e,
+.cropper-crop-box.style-rounded .cropper-line.line-w {
+  top: 16px;
+  bottom: 16px;
+  height: calc(100% - 32px);
+}
+
+/* Hide corner resize points that would be outside rounded corners */
+.cropper-crop-box.style-rounded .cropper-point.point-ne,
+.cropper-crop-box.style-rounded .cropper-point.point-nw,
+.cropper-crop-box.style-rounded .cropper-point.point-se,
+.cropper-crop-box.style-rounded .cropper-point.point-sw {
+  border-radius: 50%;
+}
+
+/* Circle style */  
+.cropper-crop-box.style-circle .cropper-view-box {
+  outline: 2px solid var(--cropper-theme-color);
+  outline-offset: -1px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);
+}
+
+/* Style adjustment for circle */
+.cropper-crop-box.style-circle .cropper-face {
+  border-radius: 50%;
+}
+
+.cropper-crop-box.style-circle .cropper-dashed {
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+.cropper-crop-box.style-circle .cropper-face {
+  border-radius: 50%;
+}
+
+.cropper-crop-box.style-circle .cropper-dashed {
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+/* Hide corner points for circle style */
+.cropper-crop-box.style-circle .cropper-point.point-ne,
+.cropper-crop-box.style-circle .cropper-point.point-nw,
+.cropper-crop-box.style-circle .cropper-point.point-se,
+.cropper-crop-box.style-circle .cropper-point.point-sw {
+  display: none;
+}
+
+/* Hide lines for circle style */
+.cropper-crop-box.style-circle .cropper-line {
+  display: none;
+}
+
+/* Position edge points correctly on the circle */
+.cropper-crop-box.style-circle .cropper-point.point-n {
+  top: -8px;
+  left: 50%;
+  margin-left: -6px;
+}
+
+.cropper-crop-box.style-circle .cropper-point.point-s {
+  bottom: -8px;
+  left: 50%;
+  margin-left: -6px;
+}
+
+.cropper-crop-box.style-circle .cropper-point.point-e {
+  right: -8px;
+  top: 50%;
+  margin-top: -6px;
+}
+
+.cropper-crop-box.style-circle .cropper-point.point-w {
+  left: -8px;
+  top: 50%;
+  margin-top: -6px;
+}
+
+/* Minimal style */
+.cropper-crop-box.style-minimal .cropper-view-box {
+  outline: 1px solid rgba(255, 255, 255, 0.8);
+  outline-offset: -1px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.25);
+}
+
+.cropper-crop-box.style-minimal .cropper-point {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.cropper-crop-box.style-minimal .cropper-dashed {
+  opacity: 0.3;
+}
+
+/* Dotted style */
+.cropper-crop-box.style-dotted .cropper-view-box {
+  outline: 3px dotted var(--cropper-theme-color);
+  outline-offset: -2px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes cropper-rotate-border {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 40px 40px;
+  }
+}
+
+/* Solid style */
+.cropper-crop-box.style-solid .cropper-view-box {
+  outline: 3px solid var(--cropper-theme-color);
+  outline-offset: -2px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4),
+              0 0 20px rgba(57, 159, 255, 0.3);
+}
+
+.cropper-crop-box.style-solid .cropper-point {
+  width: 12px;
+  height: 12px;
+  background-color: #fff;
+  border: 3px solid var(--cropper-theme-color);
+}
+
+.cropper-crop-box.style-solid .cropper-line {
+  background-color: transparent;
+  opacity: 1;
+}
+
+.cropper-crop-box.style-solid .cropper-line:hover {
+  background-color: var(--cropper-theme-color);
+  opacity: 0.3;
+}
+
+/* Gradient style */
+.cropper-crop-box.style-gradient .cropper-view-box {
+  outline: 2px solid transparent;
+  outline-offset: -1px;
+  border: 2px solid transparent;
+  background-image: linear-gradient(white, white),
+                    linear-gradient(45deg, #39f, #9c27b0);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);
+}
+
+.cropper-crop-box.style-gradient .cropper-point {
+  background: linear-gradient(45deg, #39f, #9c27b0);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(57, 159, 255, 0.5);
+}
+
+.cropper-crop-box.style-gradient .cropper-dashed {
+  border-color: rgba(255, 255, 255, 0.6);
+  opacity: 0.8;
+}
+
+/* Style-specific adjustments for center cross */
+.cropper-crop-box.style-circle .cropper-center,
+.cropper-crop-box.style-rounded .cropper-center {
+  opacity: 0.7;
+}
+
+.cropper-crop-box.style-minimal .cropper-center::before,
+.cropper-crop-box.style-minimal .cropper-center::after {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.cropper-crop-box.style-gradient .cropper-center::before,
+.cropper-crop-box.style-gradient .cropper-center::after {
+  background-color: rgba(255, 255, 255, 0.8);
 }
 
 /* Placeholder styles */

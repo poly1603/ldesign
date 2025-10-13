@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal Icon-Only Close Button Test</title>
+    <script type="module" src="./src/components/modal/modal.tsx"></script>
+    <script type="module" src="./src/components/button/button.tsx"></script>
+    <script type="module" src="./src/components/icon/icon.tsx"></script>
+    <link rel="stylesheet" href="./src/components/modal/modal.less">
+    <link rel="stylesheet" href="./src/components/button/button.less">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+        
+        .demo-section {
+            margin-bottom: 24px;
+        }
+        
+        .demo-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #444;
+        }
+        
+        .demo-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .highlight-box {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+        
+        .highlight-box h3 {
+            color: #0284c7;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+        
+        .highlight-box ul {
+            margin: 0;
+            padding-left: 24px;
+            color: #555;
+        }
+        
+        .highlight-box li {
+            margin: 4px 0;
+        }
+        
+        /* Modal 内容样式 */
+        .modal-content {
+            padding: 20px;
+        }
+        
+        .modal-content h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .modal-content p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Modal 图标关闭按钮测试</h1>
+        <p class="subtitle">优化后的 Modal 右上角直接使用图标，无需 button 包裹</p>
+        
+        <div class="highlight-box">
+            <h3>✨ 优化内容</h3>
+            <ul>
+                <li>移除了关闭按钮的 button 包裹，直接使用 ldesign-icon</li>
+                <li>图标尺寸更小巧（从 28px 减小到 24px）</li>
+                <li>温和的悬停效果：仅添加淡淡的主色调背景</li>
+                <li>统一使用主色调，不再使用红色系</li>
+                <li>快速、平滑的过渡动画（0.2s ease）</li>
+                <li>保持了良好的可访问性（role="button" 和 tabindex）</li>
+            </ul>
+        </div>
+        
+        <div class="demo-section">
+            <div class="demo-title">基础 Modal</div>
+            <div class="demo-buttons">
+                <ldesign-button type="primary" onclick="openBasicModal()">
+                    打开基础 Modal
+                </ldesign-button>
+                <ldesign-button type="secondary" onclick="openDraggableModal()">
+                    可拖拽 Modal
+                </ldesign-button>
+                <ldesign-button onclick="openMaximizableModal()">
+                    可最大化 Modal
+                </ldesign-button>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <div class="demo-title">不同大小</div>
+            <div class="demo-buttons">
+                <ldesign-button type="default" onclick="openSmallModal()">
+                    小尺寸 Modal
+                </ldesign-button>
+                <ldesign-button type="default" onclick="openLargeModal()">
+                    大尺寸 Modal
+                </ldesign-button>
+                <ldesign-button type="default" onclick="openFullModal()">
+                    全屏 Modal
+                </ldesign-button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <ldesign-modal id="basicModal" modal-title="基础 Modal" closable>
+        <div class="modal-content">
+            <h3>图标优化效果展示</h3>
+            <p>
+                请注意观察右上角的关闭图标：
+            </p>
+            <ul>
+                <li>🎯 直接使用图标元素，没有额外的 button 包裹</li>
+                <li>🔍 图标尺寸更小巧精致（24px）</li>
+                <li>🎨 悬停时显示淡雅的主色调背景</li>
+                <li>💜 统一使用主色调，视觉更协调</li>
+                <li>⚡ 响应速度更快，交互更流畅</li>
+            </ul>
+        </div>
+    </ldesign-modal>
+    
+    <ldesign-modal id="draggableModal" modal-title="可拖拽 Modal" closable draggable>
+        <div class="modal-content">
+            <h3>拖拽功能测试</h3>
+            <p>
+                这个 Modal 可以通过标题栏拖拽移动。图标区域不会触发拖拽，确保点击交互正常。
+            </p>
+            <p>
+                试试拖动标题栏来移动窗口，点击关闭图标仍然可以正常关闭。
+            </p>
+        </div>
+    </ldesign-modal>
+    
+    <ldesign-modal id="maximizableModal" modal-title="可最大化 Modal" closable maximizable draggable>
+        <div class="modal-content">
+            <h3>最大化功能测试</h3>
+            <p>
+                这个 Modal 同时具有最大化和关闭图标。两个图标都直接使用 ldesign-icon 元素。
+            </p>
+            <ul>
+                <li>最大化图标：使用主题色，悬停时显示淡雅背景</li>
+                <li>关闭图标：同样使用主题色，保持视觉统一</li>
+            </ul>
+            <p>
+                点击最大化图标可以全屏显示，再次点击恢复原始大小。
+            </p>
+        </div>
+    </ldesign-modal>
+    
+    <ldesign-modal id="smallModal" modal-title="小尺寸 Modal" closable width="400">
+        <div class="modal-content">
+            <p>这是一个小尺寸的 Modal，宽度为 400px。</p>
+        </div>
+    </ldesign-modal>
+    
+    <ldesign-modal id="largeModal" modal-title="大尺寸 Modal" closable width="800">
+        <div class="modal-content">
+            <h3>表单示例</h3>
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" placeholder="请输入用户名">
+            </div>
+            <div class="form-group">
+                <label>邮箱</label>
+                <input type="email" placeholder="请输入邮箱">
+            </div>
+            <div class="form-group">
+                <label>留言</label>
+                <textarea rows="4" placeholder="请输入留言内容"></textarea>
+            </div>
+        </div>
+    </ldesign-modal>
+    
+    <ldesign-modal id="fullModal" modal-title="全屏 Modal" closable maximizable>
+        <div class="modal-content">
+            <h3>全屏模式</h3>
+            <p>这个 Modal 会自动以最大化状态打开。</p>
+        </div>
+    </ldesign-modal>
+    
+    <script>
+        // Modal 控制函数
+        function openBasicModal() {
+            const modal = document.getElementById('basicModal');
+            modal.visible = true;
+        }
+        
+        function openDraggableModal() {
+            const modal = document.getElementById('draggableModal');
+            modal.visible = true;
+        }
+        
+        function openMaximizableModal() {
+            const modal = document.getElementById('maximizableModal');
+            modal.visible = true;
+        }
+        
+        function openSmallModal() {
+            const modal = document.getElementById('smallModal');
+            modal.visible = true;
+        }
+        
+        function openLargeModal() {
+            const modal = document.getElementById('largeModal');
+            modal.visible = true;
+        }
+        
+        function openFullModal() {
+            const modal = document.getElementById('fullModal');
+            modal.visible = true;
+            // 自动最大化
+            setTimeout(() => {
+                modal.toggleMaximize();
+            }, 100);
+        }
+        
+        // 监听 Modal 事件
+        document.addEventListener('DOMContentLoaded', () => {
+            const modals = document.querySelectorAll('ldesign-modal');
+            modals.forEach(modal => {
+                modal.addEventListener('ldesignClose', (e) => {
+                    console.log('Modal closed:', e.target.id);
+                });
+                
+                modal.addEventListener('ldesignOk', (e) => {
+                    console.log('Modal confirmed:', e.target.id);
+                });
+            });
+            
+            console.log('✅ Modal 图标优化完成！');
+            console.log('主要改进：');
+            console.log('1. 移除了关闭按钮的 button 包裹');
+            console.log('2. 直接使用 ldesign-icon 元素');
+            console.log('3. 优化了悬停动画效果');
+            console.log('4. 保持了良好的可访问性');
+        });
+    </script>
+</body>
+</html>

@@ -164,12 +164,13 @@
 
   &__header {
     position: relative;
-    padding: var(--ld-modal-header-padding, 20px 24px 16px);
+    padding: 12px 0 12px 20px; // 合理的上下padding，左侧padding，右侧无padding
     border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
+    min-height: 48px;
 
     &--shadow {
       border-bottom-color: transparent;
@@ -199,10 +200,10 @@
   }
 
   &__title {
-    font-size: var(--ld-modal-title-font-size, 16px);
-    font-weight: 600;
-    color: var(--ldesign-text-color, #1f2937);
-    line-height: var(--ld-modal-title-line-height, 1.5);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--ldesign-text-color, #333);
+    line-height: 24px; // 正常行高
     margin: 0;
     flex: 1;
     user-select: none;
@@ -215,78 +216,79 @@
   &__actions {
     display: flex;
     align-items: center;
-    gap: var(--ld-modal-header-action-gap, 8px);
-    margin-left: 16px;
+    gap: 2px; // 按钮之间有小间隙
+    margin-left: auto;
     flex-shrink: 0;
     position: relative;
-    z-index: 10; // 更高的层级确保按钮在拖拽层之上
-    pointer-events: auto; // 确保按钮可点击
-    isolation: isolate; // 创建新的堆叠上下文
+    z-index: 10;
+    pointer-events: auto;
+    isolation: isolate;
   }
 
+  // Windows 风格窗口控制按钮 - 正方形
   &__maximize,
   &__close {
-    position: relative;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: var(--ld-modal-header-btn-size, 32px);
-    height: var(--ld-modal-header-btn-size, 32px);
+    width: 36px;
+    height: 36px; // 正方形按钮
     padding: 0;
-    margin: 0;
-    border: none;
     background: transparent;
-    border-radius: var(--ld-modal-header-btn-radius, 4px);
-    cursor: pointer !important; // 强制显示指针光标
-    color: var(--ld-modal-header-btn-color, #6b7280);
-    transition: all 0.2s ease;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.7);
+    transition: background-color 0.15s ease, color 0.15s ease;
     outline: none;
     box-sizing: border-box;
-    touch-action: manipulation; // 优化触摸响应
-    -webkit-tap-highlight-color: transparent; // 移除移动端点击高亮
-
-    // 确保图标居中
-    ldesign-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    
+    // SVG 图标样式
+    svg {
+      display: block;
+      width: 12px;
+      height: 12px;
     }
-  }
-
-  // 最大化按钮使用主色调
-  &__maximize {
+    
+    // 悬停效果
     &:hover {
-      background: var(--ldesign-brand-color-light, rgba(124, 58, 237, 0.1));
-      color: var(--ldesign-brand-color, #7c3aed);
+      background: rgba(0, 0, 0, 0.06);
+      color: rgba(0, 0, 0, 0.9);
     }
-
+    
+    // 激活效果
     &:active {
-      background: var(--ldesign-brand-color-light, rgba(124, 58, 237, 0.15));
+      background: rgba(0, 0, 0, 0.1);
     }
-
+    
+    // 焦点样式
     &:focus-visible {
-      outline: 2px solid var(--ldesign-brand-color, #7c3aed);
-      outline-offset: 2px;
+      outline: 2px solid #0078d4;
+      outline-offset: -2px;
     }
   }
   
-  // 关闭按钮特殊样式 - 红色系
+  // 关闭按钮特殊悬停效果
   &__close {
+    margin-right: 6px; // 右侧稍微留一点边距
+    
     &:hover {
-      background: var(--ld-modal-close-hover-bg, rgba(239, 68, 68, 0.1));
-      color: var(--ld-modal-close-hover-color, #ef4444);
+      background: #e81123;
+      color: white;
     }
-
+    
     &:active {
-      background: var(--ld-modal-close-active-bg, rgba(239, 68, 68, 0.15));
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--ld-modal-close-hover-color, #ef4444);
-      outline-offset: 2px;
+      background: #f1707a;
+      color: white;
     }
   }
+
+  // 最大化图标和关闭图标都使用统一的主色调
+  // 不需要额外的特定样式，继承上面的通用样式即可
 
   &__body {
     padding: var(--ld-modal-body-padding, 20px 24px);
@@ -698,11 +700,11 @@
   --ld-modal-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.5);
   --ldesign-bg-color-hover: #374151;
   --ldesign-bg-color-active: #4b5563;
-  --ld-modal-header-btn-bg: rgba(255, 255, 255, 0.05);
-  --ld-modal-header-btn-hover-bg: rgba(255, 255, 255, 0.1);
-  --ld-modal-header-btn-active-bg: rgba(255, 255, 255, 0.15);
+  --ld-modal-header-btn-bg: transparent;
+  --ld-modal-header-btn-hover-bg: rgba(147, 51, 234, 0.1);
+  --ld-modal-header-btn-active-bg: rgba(147, 51, 234, 0.15);
   --ld-modal-header-btn-color: #9ca3af;
-  --ld-modal-header-btn-hover-color: #f3f4f6;
+  --ld-modal-header-btn-hover-color: #a78bfa;
   
   .ldesign-modal__dialog {
     background: var(--ldesign-bg-color);

@@ -2,6 +2,7 @@ import { Component, Prop, State, Element, Event, EventEmitter, Watch, Method, h,
 import { lockPageScroll, unlockPageScroll } from '../../utils/scroll-lock';
 import type { ButtonType } from '../../types';
 import { generateId } from '../../utils';
+import { CloseIcon, MaximizeIcon, RestoreIcon } from './window-icons';
 
 // 简单的全局栈管理，确保 ESC 仅关闭栈顶弹窗
 const __modalStack: any[] = [];
@@ -45,9 +46,9 @@ export class LdesignModal {
   @Prop() modalTitle?: string;
 
   /** 图标可配置 */
-  @Prop() closeIcon: string = 'x';
-  @Prop() maximizeIcon: string = 'square';
-  @Prop() restoreIcon: string = 'square-arrow-down-right';
+  @Prop() closeIcon: string = 'close';
+  @Prop() maximizeIcon: string = 'maximize';
+  @Prop() restoreIcon: string = 'restore';
 
   /**
    * 模态框尺寸
@@ -765,18 +766,23 @@ export class LdesignModal {
   private handleDragStart = (event: MouseEvent | TouchEvent) => {
     if (!this.isDraggable || !this.modalElement) return;
     
-    // 检查是否点击了按钮或其子元素，如果是则不启动拖拽
+    // 检查是否点击了按钮、图标或其子元素，如果是则不启动拖拽
     const target = event.target as HTMLElement;
     if (target) {
-      // 检查是否点击了按钮或按钮内的元素
-      const isButton = target.closest('ldesign-button') || 
-                       target.closest('.ldesign-modal__close') || 
-                       target.closest('.ldesign-modal__maximize') ||
-                       target.closest('.ldesign-modal__actions') ||
-                       target.tagName === 'LDESIGN-BUTTON' ||
-                       target.tagName === 'LDESIGN-ICON';
-      if (isButton) {
-        return; // 不启动拖拽，让按钮正常工作
+      // 检查是否点击了按钮、图标或操作区域
+      const isInteractiveElement = 
+        target.closest('ldesign-button') || 
+        target.closest('ldesign-icon') ||
+        target.closest('.ldesign-modal__close') || 
+        target.closest('.ldesign-modal__maximize') ||
+        target.closest('.ldesign-modal__actions') ||
+        target.tagName === 'LDESIGN-BUTTON' ||
+        target.tagName === 'LDESIGN-ICON' ||
+        target.classList.contains('ldesign-modal__close') ||
+        target.classList.contains('ldesign-modal__maximize');
+      
+      if (isInteractiveElement) {
+        return; // 不启动拖拽，让图标/按钮正常工作
       }
     }
 
@@ -2059,54 +2065,45 @@ export class LdesignModal {
 
                   <div class="ldesign-modal__actions">
                     {this.maximizable && (
-                      <ldesign-button
+                      <span
                         class="ldesign-modal__maximize"
                         onClick={(e) => {
                           e.stopPropagation();
                           this.handleMaximizeClick();
                         }}
                         onPointerDown={(e) => {
-                          // 使用 pointerdown 事件，它同时支持鼠标和触摸
                           e.stopPropagation();
                         }}
                         onTouchStart={(e) => {
-                          // 阻止触摸事件传播到父元素
                           e.stopPropagation();
                         }}
-                        type="text"
-                        size="small"
-                        title={this.isMaximized ? '恢复' : '最大化'}
+                        title={this.isMaximized ? '还原' : '最大化'}
+                        role="button"
+                        tabindex="0"
                       >
-                        <slot name="maximize-icon">
-                          <ldesign-icon name={this.isMaximized ? this.restoreIcon : this.maximizeIcon} size="small" />
-                        </slot>
-                      </ldesign-button>
+                        {this.isMaximized ? <RestoreIcon /> : <MaximizeIcon />}
+                      </span>
                     )}
 
                     {this.closable && (
-                      <ldesign-button
+                      <span
                         class="ldesign-modal__close"
                         onClick={(e) => {
                           e.stopPropagation();
                           this.handleCloseClick(e as any);
                         }}
                         onPointerDown={(e) => {
-                          // 使用 pointerdown 事件，它同时支持鼠标和触摸
                           e.stopPropagation();
                         }}
                         onTouchStart={(e) => {
-                          // 阻止触摸事件传播到父元素
                           e.stopPropagation();
                         }}
-                        type="text"
-                        size="small"
                         title="关闭"
-                        shape="square"
+                        role="button"
+                        tabindex="0"
                       >
-                        <slot name="close-icon">
-                          <ldesign-icon name={this.closeIcon} size="small" />
-                        </slot>
-                      </ldesign-button>
+                        <CloseIcon />
+                      </span>
                     )}
                   </div>
                 </div>

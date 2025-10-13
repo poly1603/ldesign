@@ -8,7 +8,7 @@ import * as monaco from 'monaco-editor'
  * 配置 Monaco Editor Workers
  * 这样可以显著提升加载性能
  */
-export function setupMonacoWorkers() {
+export function setupMonacoWorkers(_config?: any): void {
   // vite-plugin-monaco-editor 会自动处理 worker 配置
   // 我们只需要确保 MonacoEnvironment 存在
   // @ts-ignore

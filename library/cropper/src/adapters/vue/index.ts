@@ -91,6 +91,26 @@ export const VueCropper = defineComponent({
     responsive: {
       type: Boolean,
       default: true
+    },
+    cropBoxStyle: {
+      type: String as PropType<'default' | 'rounded' | 'circle' | 'minimal' | 'dotted' | 'solid' | 'gradient'>,
+      default: 'default'
+    },
+    themeColor: {
+      type: String,
+      default: '#39f'
+    },
+    skewable: {
+      type: Boolean,
+      default: true
+    },
+    translatable: {
+      type: Boolean,
+      default: true
+    },
+    scaleStep: {
+      type: Number,
+      default: 0.1
     }
   },
   emits: ['ready', 'cropstart', 'cropmove', 'cropend', 'crop', 'zoom'],
@@ -122,6 +142,11 @@ export const VueCropper = defineComponent({
         center: props.center,
         highlight: props.highlight,
         responsive: props.responsive,
+        cropBoxStyle: props.cropBoxStyle,
+        themeColor: props.themeColor,
+        skewable: props.skewable,
+        translatable: props.translatable,
+        scaleStep: props.scaleStep,
         ready: (e) => emit('ready', e),
         cropstart: (e) => emit('cropstart', e),
         cropmove: (e) => emit('cropmove', e),
@@ -159,6 +184,26 @@ export const VueCropper = defineComponent({
       (newRatio) => {
         if (cropperInstance.value) {
           cropperInstance.value.setData({ width: 0, height: 0 })
+        }
+      }
+    )
+
+    // Watch cropBoxStyle changes
+    watch(
+      () => props.cropBoxStyle,
+      (newStyle) => {
+        if (cropperInstance.value) {
+          cropperInstance.value.setCropBoxStyle(newStyle)
+        }
+      }
+    )
+
+    // Watch themeColor changes
+    watch(
+      () => props.themeColor,
+      (newColor) => {
+        if (newColor) {
+          document.documentElement.style.setProperty('--cropper-theme-color', newColor)
         }
       }
     )

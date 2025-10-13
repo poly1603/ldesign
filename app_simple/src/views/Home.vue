@@ -22,8 +22,8 @@
       <div class="features-grid">
         <div class="feature-card" v-for="feature in features" :key="feature.key">
           <div class="feature-icon">{{ feature.icon }}</div>
-          <h3>{{ t(feature.title) }}</h3>
-          <p>{{ t(feature.description) }}</p>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
         </div>
       </div>
     </div>
@@ -46,60 +46,58 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from '@ldesign/router'
-import { useI18n } from '../composables/useI18n'
 
 const router = useRouter()
-const { t, locale } = useI18n()
 
-// Use computed to ensure reactive updates
-const homeTitle = computed(() => t('page.home.subtitle'))
-const homeDescription = computed(() => t('page.home.description'))
-const commonAbout = computed(() => t('common.about'))
-const commonDashboard = computed(() => t('common.dashboard'))
-const featuresTitle = computed(() => t('features.title'))
-const statsRoutes = computed(() => t('stats.routes'))
-const statsVisits = computed(() => t('stats.visits'))
-const statsCache = computed(() => t('stats.cache'))
+// Static text values
+const homeTitle = '欢迎使用 LDesign 极简应用'
+const homeDescription = '基于 Vue 3 + LDesign Engine 构建的现代化应用'
+const commonAbout = '关于'
+const commonDashboard = '仪表盘'
+const featuresTitle = '核心特性'
+const statsRoutes = '路由数量'
+const statsVisits = '访问次数'
+const statsCache = '缓存大小'
 
 // Features list
 const features = [
   {
     key: 'performance',
     icon: '⚡',
-    title: 'features.performance.title',
-    description: 'features.performance.description'
+    title: '极致性能',
+    description: '基于 Vue 3 的响应式系统，提供出色的运行时性能'
   },
   {
     key: 'security',
     icon: '🔒',
-    title: 'features.security.title',
-    description: 'features.security.description'
+    title: '安全可靠',
+    description: '内置安全最佳实践，保护您的应用和数据'
   },
   {
     key: 'responsive',
     icon: '📱',
-    title: 'features.responsive.title',
-    description: 'features.responsive.description'
+    title: '响应式设计',
+    description: '完美适配各种设备，提供一致的用户体验'
   },
   {
     key: 'animation',
     icon: '🎨',
-    title: 'features.animation.title',
-    description: 'features.animation.description'
+    title: '流畅动画',
+    description: '精心设计的动画效果，提升用户交互体验'
   },
   {
     key: 'engine',
     icon: '🚀',
-    title: 'features.engine.title',
-    description: 'features.engine.description'
+    title: 'LDesign 引擎',
+    description: '强大的引擎系统，提供完整的应用架构支持'
   },
   {
     key: 'developer',
     icon: '🛠️',
-    title: 'features.developer.title',
-    description: 'features.developer.description'
+    title: '开发友好',
+    description: '完善的开发工具和文档，让开发更加高效'
   }
 ]
 

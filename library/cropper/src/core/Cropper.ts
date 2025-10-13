@@ -37,6 +37,7 @@ const DEFAULTS = {
   highlight: true,
   highlightOpacity: 0.03,  // Default highlight opacity (3% - lighter)
   background: true,
+  cropBoxStyle: 'default' as const,
   autoCrop: true,
   autoCropArea: 0.8, // Deprecated, use initialCropBoxSize instead
   initialCropBoxSize: 0.5, // Default to 50% of the smaller dimension
@@ -206,7 +207,8 @@ export class Cropper {
       center: this.options.center,
       highlight: this.options.highlight,
       highlightOpacity: this.options.highlightOpacity,
-      background: this.options.background
+      background: this.options.background,
+      style: this.options.cropBoxStyle
     })
 
     // Render crop box
@@ -564,11 +566,18 @@ export class Cropper {
   /**
    * Get cropped canvas
    */
-  getCroppedCanvas(options?: GetCroppedCanvasOptions): HTMLCanvasElement | null {
-    if (!this.ready || !this.cropBox || !this.imageProcessor) return null
+  getCroppedCanvas(options: GetCroppedCanvasOptions & { applyShape?: boolean } = {}): HTMLCanvasElement | null {
+    if (!this.ready || !this.imageProcessor || !this.cropBox) return null
 
     const cropBoxData = this.cropBox.getData()
-    return this.imageProcessor.getCroppedCanvas(cropBoxData, options)
+    
+    // Add crop shape if applyShape is true
+    const enhancedOptions = { ...options }
+    if (options.applyShape && this.options.cropBoxStyle !== 'default') {
+      enhancedOptions.cropShape = this.options.cropBoxStyle
+    }
+    
+    return this.imageProcessor.getCroppedCanvas(cropBoxData, enhancedOptions)
   }
 
   /**
@@ -683,6 +692,15 @@ export class Cropper {
   clear(): void {
     if (!this.ready || !this.cropBox) return
     this.cropBox.hide()
+  }
+
+  /**
+   * Set crop box style
+   */
+  setCropBoxStyle(style: 'default' | 'rounded' | 'circle' | 'minimal' | 'dotted' | 'solid' | 'gradient'): void {
+    if (!this.cropBox) return
+    this.cropBox.setStyle(style)
+    this.options.cropBoxStyle = style
   }
 
   /**

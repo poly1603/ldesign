@@ -1,6 +1,7 @@
 import { createCodeEditor, createEnhancedCodeEditor } from '@ldesign/code-editor'
 import type { ICodeEditor, LoadingState } from '@ldesign/code-editor'
 import './style.css'
+import './advanced-demo' // 导入高级功能演示
 
 // 示例代码
 const jsCode = `function fibonacci(n) {

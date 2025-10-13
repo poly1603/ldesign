@@ -126,7 +126,7 @@ export class ErrorHandler {
   private errorCallbacks: Map<I18nErrorType, ((error: I18nError) => void)[]> = new Map();
 
   constructor(options: { isDev?: boolean; maxLogSize?: number } = {}) {
-    this.isDev = options.isDev ?? (process.env.NODE_ENV === 'development');
+    this.isDev = options.isDev ?? (typeof window !== 'undefined' && (window as any).__DEV__ === true);
     this.maxLogSize = options.maxLogSize ?? 100;
   }
 
@@ -412,14 +412,14 @@ export const globalErrorHandler = new ErrorHandler();
 /**
  * Utility function for safe translation with error boundary
  */
-export function safeTran  slate(
+export function safeTranslate(
   translateFn: () => string,
   fallback: string
 ): string {
   try {
     return translateFn();
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
+    if (typeof window !== 'undefined' && (window as any).__DEV__ === true) {
       console.error('[I18n] Translation failed:', error);
     }
     return fallback;
@@ -502,7 +502,7 @@ export const assert = {
  * Development-only warning utility
  */
 export function warn(message: string, details?: any): void {
-  if (process.env.NODE_ENV === 'development') {
+  if (typeof window !== 'undefined' && (window as any).__DEV__ === true) {
     console.warn(`[I18n Warning] ${message}`, details || '');
   }
 }
@@ -511,7 +511,7 @@ export function warn(message: string, details?: any): void {
  * Development-only info utility
  */
 export function info(message: string, details?: any): void {
-  if (process.env.NODE_ENV === 'development') {
+  if (typeof window !== 'undefined' && (window as any).__DEV__ === true) {
     console.info(`[I18n Info] ${message}`, details || '');
   }
 }

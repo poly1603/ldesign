@@ -302,24 +302,52 @@ onUnmounted(() => {
     .border-radius();
     font-size: var(--ls-font-size-xs);
     color: var(--ldesign-text-color-secondary);
-  }
-  
+  // 工具栏按钮样式优化
   .theme-toggle,
   .github-link {
     .flex-center();
     width: 40px;
     height: 40px;
     .border-radius();
-    .transition();
-    background: none;
-    border: none;
+    background-color: transparent;
+    border: 1px solid transparent;
     cursor: pointer;
     color: var(--ldesign-text-color-secondary);
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
-    &:hover {
-      background-color: var(--ldesign-bg-color-container-hover);
-      color: var(--ldesign-brand-color);
+    // 添加焦点样式
+    &:focus-visible {
+      outline: 2px solid var(--ldesign-brand-color);
+      outline-offset: 2px;
     }
+    
+    // 优化悬停效果
+    &:hover {
+      background-color: var(--ldesign-gray-color-1);
+      color: var(--ldesign-brand-color);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      
+      .theme-icon,
+      .github-icon {
+        transform: scale(1.1);
+      }
+    }
+    
+    // 激活状态
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    // 图标过渡动画
+    .theme-icon,
+    .github-icon {
+      transition: transform 0.3s ease;
+      font-size: 18px;
+    }
+  }
   }
 }
 

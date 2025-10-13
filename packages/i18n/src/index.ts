@@ -8,7 +8,7 @@
  */
 
 // Core exports
-export { I18n, OptimizedI18n } from './core/i18n-optimized';
+export { OptimizedI18n, OptimizedI18n as I18n } from './core/i18n-optimized';
 export { InterpolationEngine } from './core/interpolation';
 export { PluralizationEngine } from './core/pluralization';
 export type { PluralCategory } from './core/pluralization';

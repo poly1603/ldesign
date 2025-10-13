@@ -42,7 +42,7 @@ import {
 const VERSION = '2.0.0';
 
 // Object pool for reducing GC pressure
-class ObjectPool<T> {
+export class ObjectPool<T> {
   private pool: T[] = [];
   private factory: () => T;
   private reset: (obj: T) => void;
@@ -70,7 +70,7 @@ class ObjectPool<T> {
 }
 
 // Fast cache key generation using string concatenation
-class FastCacheKeyBuilder {
+export class FastCacheKeyBuilder {
   private static readonly separator = '\x00'; // Use null character as separator for uniqueness
   private buffer: string[] = [];
 
@@ -120,7 +120,7 @@ export class OptimizedI18n implements I18nInstance {
   private hotPathCache = new Map<string, string>(); // Small cache for most frequent translations
   private readonly HOT_PATH_CACHE_SIZE = 50;
   private accessCount = new Map<string, number>();
-  private readonly isDev = process.env.NODE_ENV === 'development';
+  private readonly isDev = typeof window !== 'undefined' && (window as any).__DEV__ === true;
   
   constructor(config: I18nConfig = {}) {
     this.config = Object.freeze({ ...config });
@@ -169,6 +169,26 @@ export class OptimizedI18n implements I18nInstance {
     
     // Bind translation function with fast path
     this.t = this.createOptimizedTranslate();
+  }
+  
+  // ============== Initialization ==============
+  
+  async init(): Promise<void> {
+    // Mark as initialized
+    this.initialized = true;
+    
+    // Load initial locale if loader is available
+    if (this.loader && !this.hasLocale(this._locale)) {
+      try {
+        const messages = await this.loader.load(this._locale);
+        this.addMessages(this._locale, messages);
+      } catch (error) {
+        console.warn(`Failed to load initial locale ${this._locale}:`, error);
+      }
+    }
+    
+    // Emit ready event
+    this.emit('ready', { locale: this._locale });
   }
   
   // ============== Properties ==============

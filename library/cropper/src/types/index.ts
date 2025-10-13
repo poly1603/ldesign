@@ -8,6 +8,9 @@ export type ViewMode = 0 | 1 | 2 | 3
 // Drag modes
 export type DragMode = 'crop' | 'move' | 'none'
 
+// Crop box styles
+export type CropBoxStyle = 'default' | 'rounded' | 'circle' | 'minimal' | 'dotted' | 'solid' | 'gradient'
+
 // Image formats
 export type ImageFormat = 'image/png' | 'image/jpeg' | 'image/webp'
 
@@ -153,6 +156,9 @@ export interface CropperOptions {
 
   // Theme color
   themeColor?: string
+
+  // Crop box style
+  cropBoxStyle?: CropBoxStyle
 
   // Zoom on touch
   zoomOnTouch?: boolean

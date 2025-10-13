@@ -1,10 +1,12 @@
 import { Component, Prop, State, Event, EventEmitter, Method, Element, h, Host } from '@stencil/core';
 
-export type AlertType = 'info' | 'success' | 'warning' | 'error';
+export type AlertType = 'info' | 'success' | 'warning' | 'error' | 'custom';
+export type AlertVariant = 'filled' | 'outlined' | 'light' | 'gradient';
+export type AlertSize = 'small' | 'medium' | 'large';
 
 /**
  * Alert 警告信息
- * 用于在页面中展示重要的提示信息，支持四种状态、标题/描述、操作区与可关闭。
+ * 用于在页面中展示重要的提示信息，支持多种状态、样式变体、尺寸、标题/描述、操作区与可关闭。
  */
 @Component({
   tag: 'ldesign-alert',
@@ -16,6 +18,12 @@ export class LdesignAlert {
 
   /** 警告类型 */
   @Prop() type: AlertType = 'info';
+
+  /** 样式变体 */
+  @Prop() variant: AlertVariant = 'light';
+
+  /** 尺寸 */
+  @Prop() size: AlertSize = 'medium';
 
   /** 标题（避开标准 HTMLElement.title 冲突） */
   @Prop() alertTitle?: string;
@@ -29,8 +37,29 @@ export class LdesignAlert {
   /** 是否显示图标 */
   @Prop() showIcon: boolean = true;
 
+  /** 自定义图标名称 */
+  @Prop() iconName?: string;
+
+  /** 自定义颜色（仅在 type 为 custom 时生效） */
+  @Prop() color?: string;
+
   /** 横幅样式（常用于页面顶部） */
   @Prop() banner: boolean = false;
+
+  /** 是否带有阴影效果 */
+  @Prop() shadow: boolean = false;
+
+  /** 是否启用动画效果 */
+  @Prop() animated: boolean = true;
+
+  /** 是否为紧凑模式 */
+  @Prop() compact: boolean = false;
+
+  /** 是否圆角 */
+  @Prop() rounded: boolean = true;
+
+  /** 自定义边框宽度 */
+  @Prop() borderWidth: number = 1;
 
   /** 启用滚动公告（Marquee） */
   @Prop() marquee: boolean = false;
@@ -164,6 +193,11 @@ export class LdesignAlert {
   }
 
   private getIconName() {
+    // 如果提供了自定义图标名称，优先使用
+    if (this.iconName) {
+      return this.iconName;
+    }
+    
     switch (this.type) {
       case 'success':
         return 'check-circle';
@@ -171,6 +205,8 @@ export class LdesignAlert {
         return 'alert-triangle';
       case 'error':
         return 'x-circle';
+      case 'custom':
+        return 'star'; // 默认自定义图标
       default:
         return 'info';
     }
@@ -180,7 +216,14 @@ export class LdesignAlert {
     return [
       'ldesign-alert',
       `ldesign-alert--${this.type}`,
+      `ldesign-alert--${this.variant}`,
+      `ldesign-alert--${this.size}`,
       this.banner ? 'ldesign-alert--banner' : '',
+      this.shadow ? 'ldesign-alert--shadow' : '',
+      this.animated ? 'ldesign-alert--animated' : '',
+      this.compact ? 'ldesign-alert--compact' : '',
+      !this.rounded ? 'ldesign-alert--no-rounded' : '',
+      this.marquee ? 'ldesign-alert--has-marquee' : '',
       this.isClosing ? 'ldesign-alert--leaving' : '',
     ]
       .filter(Boolean)
@@ -196,8 +239,21 @@ export class LdesignAlert {
         }
       : undefined;
 
+    const customStyles: any = {};
+    if (this.type === 'custom' && this.color) {
+      customStyles['--alert-custom-color'] = this.color;
+    }
+    if (this.borderWidth !== 1) {
+      customStyles['--alert-border-width'] = `${this.borderWidth}px`;
+    }
+
     return (
-      <Host role="alert" aria-live="polite" class={this.getHostClass()}>
+      <Host 
+        role="alert" 
+        aria-live="polite" 
+        class={this.getHostClass()}
+        style={{ ...customStyles }}
+      >
         <div class="ldesign-alert__inner">
           {this.showIcon && (
             <span class="ldesign-alert__icon-wrap">
@@ -237,7 +293,7 @@ export class LdesignAlert {
               )}
             </div>
             {this.hasActions && (
-              <div class="ldesign-alert__actions">
+              <div class="ldesign-alert__actions" part="actions" style="display: flex; gap: 8px; align-items: center;">
                 <slot name="actions"></slot>
               </div>
             )}

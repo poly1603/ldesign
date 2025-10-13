@@ -22,7 +22,7 @@ export default defineConfig({
     host: true,
     fs: {
       // Allow serving files from monaco-editor node_modules
-      allow: ['..', '../..']
+      allow: ['..', '../..', '../../../..', '../../../../node_modules']
     }
   }
 })
