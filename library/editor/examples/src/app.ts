@@ -68,9 +68,9 @@ export function createApp(): HTMLElement {
 
   app.appendChild(main)
 
-  // 默认显示基础示例
-  showExample('basic')
-
+  // 初始化时根据 URL hash 或默认显示基础示例
+  // 注意：移到 DOMContentLoaded 后处理，避免双重初始化
+  
   return app
 }
 
@@ -180,11 +180,13 @@ window.addEventListener('hashchange', () => {
 // 初始化时检查 hash
 window.addEventListener('DOMContentLoaded', () => {
   const hash = window.location.hash.slice(1) as ExampleType
-  if (hash && examples.some(e => e.id === hash)) {
-    showExample(hash)
-    // 更新导航激活状态
-    document.querySelectorAll('.nav-item').forEach((el, index) => {
-      el.classList.toggle('active', examples[index].id === hash)
-    })
-  }
+  const targetExample = hash && examples.some(e => e.id === hash) ? hash : 'basic'
+  
+  // 显示目标示例
+  showExample(targetExample)
+  
+  // 更新导航激活状态
+  document.querySelectorAll('.nav-item').forEach((el, index) => {
+    el.classList.toggle('active', examples[index].id === targetExample)
+  })
 })

@@ -12,6 +12,7 @@ export function renderVueExample(): HTMLElement {
   const container = document.createElement('div')
   container.className = 'example-container'
   container.id = 'vue-example-root'
+  container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; min-height: 400px; color: #999;">正在加载 Vue 编辑器...</div>'
 
   // Vue 应用定义
   const VueExample = defineComponent({
@@ -253,10 +254,21 @@ onMounted(() => {
   })
 
   // 创建并挂载 Vue 应用
-  setTimeout(() => {
-    const vueApp = createApp(VueExample)
-    vueApp.mount('#vue-example-root')
-  }, 200)
+  // 使用微任务确保 DOM 准备好后挂载
+  Promise.resolve().then(() => {
+    if (!document.body.contains(container)) {
+      // 容器还没有添加到 DOM，等待下一帧
+      requestAnimationFrame(() => {
+        container.innerHTML = '' // 清除加载提示
+        const vueApp = createApp(VueExample)
+        vueApp.mount('#vue-example-root')
+      })
+    } else {
+      container.innerHTML = '' // 清除加载提示
+      const vueApp = createApp(VueExample)
+      vueApp.mount('#vue-example-root')
+    }
+  })
 
   return container
 }

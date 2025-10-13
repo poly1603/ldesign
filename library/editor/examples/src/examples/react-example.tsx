@@ -254,12 +254,15 @@ function App() {
 export function renderReactExample(): HTMLElement {
   const container = document.createElement('div')
   container.id = 'react-example-root'
+  container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; min-height: 400px; color: #999;">正在加载 React 编辑器...</div>'
 
   // 渲染 React 应用
-  setTimeout(() => {
+  // 使用 requestAnimationFrame 保持一致的初始化时机
+  requestAnimationFrame(() => {
+    container.innerHTML = '' // 清除加载提示
     const root = createRoot(container)
-    root.render(<ReactExample />)
-  }, 100)
+    root.render(<ReactExample />);
+  })
 
   return container
 }

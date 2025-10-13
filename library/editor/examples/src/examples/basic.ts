@@ -91,12 +91,29 @@ function createEditorSection(): HTMLElement {
 
   const editorContainer = document.createElement('div')
   editorContainer.id = 'basic-editor'
+  editorContainer.style.minHeight = '400px'
+  editorContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; padding: 40px; color: #999;">正在加载编辑器...</div>'
   editorWrapper.appendChild(editorContainer)
 
   section.appendChild(editorWrapper)
 
   // 初始化编辑器
-  setTimeout(() => {
+  // 使用微任务确保 DOM 完全渲染后初始化
+  Promise.resolve().then(() => {
+    // 确保容器已经在 DOM 中
+    if (!document.body.contains(editorContainer)) {
+      // 如果容器还没有添加到 DOM，等待下一帧
+      requestAnimationFrame(() => {
+        editorContainer.innerHTML = '' // 清除加载提示
+        initializeEditor()
+      })
+    } else {
+      editorContainer.innerHTML = '' // 清除加载提示
+      initializeEditor()
+    }
+  })
+
+  function initializeEditor() {
     const editor = new Editor({
       element: editorContainer,
       content: `
@@ -197,7 +214,7 @@ greet('World')</code></pre>
 
     // 存储编辑器实例供按钮使用
     ;(window as any).basicEditor = editor
-  }, 200)
+  }
 
   // 操作按钮
   const actions = document.createElement('div')
