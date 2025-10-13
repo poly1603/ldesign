@@ -54,8 +54,8 @@ export class LdesignCollapse {
   @Prop() cardStyle: boolean = false;
   /** 是否可拖拽排序 */
   @Prop() sortable: boolean = false;
-  /** 折叠模式：普通、紧凑、分离 */
-  @Prop() mode: 'default' | 'compact' | 'separated' = 'default';
+  /** 折叠模式：普通、紧凑、分离、卡片 */
+  @Prop() mode: 'default' | 'compact' | 'separated' | 'card' = 'default';
   /** 内容加载方式 */
   @Prop() contentLoading: 'sync' | 'async' | 'lazy' = 'sync';
   /** 异步加载函数 */

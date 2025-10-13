@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修复验证测试</title>
+    <script type="module" src="./dist/ldesign/ldesign.esm.js"></script>
+    <link rel="stylesheet" href="./dist/ldesign/ldesign.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h2 {
+            color: #333;
+            margin: 30px 0 10px;
+            font-size: 18px;
+        }
+        
+        .controls {
+            margin: 15px 0;
+        }
+        
+        button {
+            padding: 8px 16px;
+            margin-right: 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            border-color: #40a9ff;
+            color: #40a9ff;
+        }
+        
+        .info {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #0050b3;
+        }
+        
+        .log {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            padding: 10px;
+            max-width: 400px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>修复验证测试</h1>
+        
+        <h2>1. 卡片模式样式测试 (mode="card")</h2>
+        <div class="info">✅ 每个面板应该有独立的边框、圆角和阴影</div>
+        <ldesign-collapse mode="card">
+            <ldesign-collapse-panel name="card1" title="卡片模式面板 1">
+                <div style="padding: 16px;">
+                    卡片模式内容 1 - 应该有独立边框
+                </div>
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel name="card2" title="卡片模式面板 2">
+                <div style="padding: 16px;">
+                    卡片模式内容 2 - 应该有间距
+                </div>
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+        
+        <h2>2. 受控模式测试 (value属性控制)</h2>
+        <div class="info">✅ 通过value属性控制展开状态，支持JSON字符串</div>
+        <div class="controls">
+            <button onclick="setControlled([])">全部收起</button>
+            <button onclick="setControlled(['ctrl1'])">只展开第一个</button>
+            <button onclick="setControlled(['ctrl2'])">只展开第二个</button>
+            <button onclick="setControlled(['ctrl1', 'ctrl2'])">全部展开</button>
+        </div>
+        <ldesign-collapse id="controlled" value="[]">
+            <ldesign-collapse-panel name="ctrl1" title="受控面板 1">
+                <div style="padding: 16px;">
+                    受控内容 1
+                </div>
+            </ldesign-collapse-panel>
+            <ldesign-collapse-panel name="ctrl2" title="受控面板 2">
+                <div style="padding: 16px;">
+                    受控内容 2
+                </div>
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+        
+        <h2>3. 头部padding测试</h2>
+        <div class="info">✅ 检查左侧padding是否合理（应该是16px，不是36px）</div>
+        <ldesign-collapse>
+            <ldesign-collapse-panel name="pad1" title="默认padding">
+                <div style="padding: 16px;">
+                    检查header的padding-left值
+                </div>
+            </ldesign-collapse-panel>
+        </ldesign-collapse>
+        
+        <h2>4. 测试日志</h2>
+        <div id="status" style="padding: 10px; background: #f0f2f5; border-radius: 4px; margin-top: 10px;">
+            等待测试...
+        </div>
+    </div>
+    
+    <div class="log" id="log">
+        <strong>测试日志：</strong><br>
+    </div>
+    
+    <script>
+        const log = (msg) => {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString('zh-CN');
+            logEl.innerHTML += `[${time}] ${msg}<br>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        };
+        
+        const setControlled = (panels) => {
+            const collapse = document.getElementById('controlled');
+            const valueStr = JSON.stringify(panels);
+            collapse.setAttribute('value', valueStr);
+            log(`设置受控值: ${valueStr}`);
+            updateStatus();
+        };
+        
+        const updateStatus = () => {
+            const status = document.getElementById('status');
+            const controlled = document.getElementById('controlled');
+            const panels = controlled.querySelectorAll('ldesign-collapse-panel');
+            const activeNames = [];
+            panels.forEach(p => {
+                if (p.classList.contains('ldesign-collapse-panel--active')) {
+                    activeNames.push(p.getAttribute('name'));
+                }
+            });
+            status.innerHTML = `当前展开: ${activeNames.length > 0 ? activeNames.join(', ') : '无'}`;
+        };
+        
+        // 页面加载完成后的检查
+        document.addEventListener('DOMContentLoaded', () => {
+            log('页面加载完成');
+            
+            // 1. 检查卡片模式样式
+            const cardCollapse = document.querySelector('ldesign-collapse[mode="card"]');
+            if (cardCollapse) {
+                const hasCardClass = cardCollapse.classList.contains('ldesign-collapse--card');
+                log(`卡片模式类: ${hasCardClass ? '✅ 已应用' : '❌ 未应用'}`);
+                
+                const panel = cardCollapse.querySelector('ldesign-collapse-panel');
+                if (panel) {
+                    const styles = window.getComputedStyle(panel);
+                    log(`卡片边框: ${styles.border || '无'}`);
+                    log(`卡片圆角: ${styles.borderRadius || '无'}`);
+                }
+            }
+            
+            // 2. 检查受控模式
+            const controlled = document.getElementById('controlled');
+            controlled.addEventListener('change', (e) => {
+                log(`变化事件: ${JSON.stringify(e.detail)}`);
+                updateStatus();
+            });
+            
+            // 3. 检查padding
+            const defaultPanel = document.querySelector('ldesign-collapse-panel[name="pad1"]');
+            if (defaultPanel) {
+                const header = defaultPanel.querySelector('.ldesign-collapse-panel__header');
+                if (header) {
+                    const styles = window.getComputedStyle(header);
+                    const paddingLeft = styles.paddingLeft;
+                    log(`头部左padding: ${paddingLeft} ${paddingLeft === '16px' ? '✅' : '❌'}`);
+                }
+            }
+            
+            updateStatus();
+        });
+    </script>
+</body>
+</html>

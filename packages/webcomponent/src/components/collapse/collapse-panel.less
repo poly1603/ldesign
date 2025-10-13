@@ -34,7 +34,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 16px;
+  padding: 12px 12px 12px 8px;  // 减小左边padding，保持右边padding
   cursor: pointer;
   user-select: none;
   position: relative;
@@ -80,8 +80,8 @@
 .@{panel}__arrow {
   position: relative;
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 16px;    // 减小容器宽度
+  height: 16px;   // 减小容器高度
   flex-shrink: 0;
   vertical-align: middle;
   
@@ -103,18 +103,19 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 16px;
-    height: 16px;
+    width: 12px;    // 减小图标宽度
+    height: 12px;   // 减小图标高度
     transform: translate(-50%, -50%) rotate(0deg);
     transform-origin: center center;
     transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     display: block;
+    font-size: 12px;  // 确保字体大小也匹配
   }
   
   svg {
     display: block;
-    width: 16px;
-    height: 16px;
+    width: 12px;    // 减小SVG宽度
+    height: 12px;   // 减小SVG高度
   }
 }
 
@@ -186,7 +187,7 @@
 }
 
 .@{panel}__content-inner {
-  padding: 12px 16px;
+  padding: 12px 12px 12px 8px;  // 与header保持一致的padding
 }
 
 /* 内容动画包装器 */

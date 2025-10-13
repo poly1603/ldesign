@@ -19,6 +19,11 @@ class UniversalPDFViewer {
     this.canvas = null;
     this.ctx = null;
     this.events = {};
+    this.pageCanvases = [];
+    this.isScrolling = false;
+    this.scrollTimeout = null;
+    this.rotation = 0;
+    this.isScrollingThumbnails = false;
     
     this.init();
   }
@@ -26,7 +31,7 @@ class UniversalPDFViewer {
   init() {
     // 创建 PDF 查看器结构
     this.container.innerHTML = `
-      <div class="pdf-viewer-wrapper" data-theme="light">
+      <div class="pdf-viewer-wrapper" data-theme="light" style="height: ${this.options.height || '800px'}; max-height: ${this.options.maxHeight || '90vh'}">
         <div class="pdf-viewer-toolbar">
           <div class="toolbar-group">
             <button class="toolbar-btn" id="toggleThumbnails" title="切换缩略图">
@@ -106,17 +111,19 @@ class UniversalPDFViewer {
               <!-- 缩略图将动态生成 -->
             </div>
           </aside>
-          <div class="pdf-viewer-content">
-            <canvas id="pdfCanvas"></canvas>
-            <div id="textLayer" class="textLayer"></div>
+          <div class="pdf-viewer-content" id="pdfContent">
+            <div class="pdf-pages-container" id="pdfPagesContainer">
+              <!-- 页面画布将动态生成 -->
+            </div>
           </div>
         </div>
         <div class="pdf-status" id="pdfStatus"></div>
       </div>
     `;
     
-    this.canvas = this.container.querySelector('#pdfCanvas');
-    this.ctx = this.canvas.getContext('2d');
+    // 不再使用单个 canvas
+    this.pagesContainer = this.container.querySelector('#pdfPagesContainer');
+    this.contentContainer = this.container.querySelector('#pdfContent');
     
     this.setupEventListeners();
     this.loadPdfJs();
@@ -198,6 +205,24 @@ class UniversalPDFViewer {
     printBtn?.addEventListener('click', () => this.print());
     downloadBtn?.addEventListener('click', () => this.download());
     
+    // 滚动事件监听
+    if (this.contentContainer) {
+      this.contentContainer.addEventListener('scroll', () => this.handleScroll());
+    }
+    
+    // 为缩略图容器添加滚动事件监听器
+    const thumbnailsContainer = document.getElementById('thumbnailsContainer');
+    if (thumbnailsContainer) {
+      let thumbnailScrollTimeout;
+      thumbnailsContainer.addEventListener('scroll', () => {
+        this.isScrollingThumbnails = true;
+        clearTimeout(thumbnailScrollTimeout);
+        thumbnailScrollTimeout = setTimeout(() => {
+          this.isScrollingThumbnails = false;
+        }, 150);
+      });
+    }
+    
     // 键盘快捷键
     document.addEventListener('keydown', (e) => this.handleKeyboard(e));
   }
@@ -243,11 +268,11 @@ class UniversalPDFViewer {
       const pageCount = this.container.querySelector('#pageCount');
       if (pageCount) pageCount.textContent = this.totalPages;
       
-      // 渲染第一页
-      this.renderPage(1);
+      // 渲染所有页面
+      await this.renderAllPages();
       
       // 生成缩略图
-      this.generateThumbnails();
+      await this.generateThumbnails();
       
       this.emit('loaded', { totalPages: this.totalPages });
       this.hideStatus();
@@ -261,69 +286,184 @@ class UniversalPDFViewer {
     }
   }
 
-  async renderPage(num) {
+  async renderAllPages() {
     if (!this.pdfDoc) return;
     
-    this.pageRendering = true;
+    this.showStatus('正在渲染页面...');
+    this.pagesContainer.innerHTML = '';
+    this.pageCanvases = [];
+    
+    for (let pageNum = 1; pageNum <= this.totalPages; pageNum++) {
+      const pageContainer = document.createElement('div');
+      pageContainer.className = 'pdf-page';
+      pageContainer.id = `page-${pageNum}`;
+      pageContainer.dataset.pageNumber = pageNum;
+      
+      const canvas = document.createElement('canvas');
+      canvas.className = 'pdf-page-canvas';
+      
+      const pageNumber = document.createElement('div');
+      pageNumber.className = 'pdf-page-number';
+      pageNumber.textContent = `页 ${pageNum}`;
+      
+      pageContainer.appendChild(canvas);
+      pageContainer.appendChild(pageNumber);
+      this.pagesContainer.appendChild(pageContainer);
+      
+      this.pageCanvases.push({ pageNum, canvas, container: pageContainer });
+      
+      // 异步渲染每一页
+      this.renderSinglePage(pageNum, canvas);
+    }
+    
+    this.hideStatus();
+  }
+  
+  async renderSinglePage(pageNum, canvas) {
+    if (!this.pdfDoc) return;
     
     try {
-      const page = await this.pdfDoc.getPage(num);
-      const viewport = page.getViewport({ scale: this.scale });
+      const page = await this.pdfDoc.getPage(pageNum);
+      const viewport = page.getViewport({ scale: this.scale, rotation: this.rotation });
       
-      this.canvas.height = viewport.height;
-      this.canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      
+      const ctx = canvas.getContext('2d');
+      
+      // Draw loading indicator
+      ctx.fillStyle = '#f0f0f0';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#666';
+      ctx.font = '20px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`加载页面 ${pageNum}...`, canvas.width / 2, canvas.height / 2);
       
       const renderContext = {
-        canvasContext: this.ctx,
+        canvasContext: ctx,
         viewport: viewport
       };
       
-      const renderTask = page.render(renderContext);
-      await renderTask.promise;
-      
-      this.pageRendering = false;
-      
-      if (this.pageNumPending !== null) {
-        this.renderPage(this.pageNumPending);
-        this.pageNumPending = null;
-      }
-      
-      // 更新页码输入框
-      const pageNumInput = this.container.querySelector('#pageNum');
-      if (pageNumInput) pageNumInput.value = num;
-      
-      this.emit('pageChanged', { currentPage: num, totalPages: this.totalPages });
-      this.logEvent(`切换到第 ${num} 页`);
+      await page.render(renderContext).promise;
     } catch (error) {
-      this.pageRendering = false;
-      this.emit('error', error);
+      console.error(`渲染页 ${pageNum} 失败:`, error);
     }
+  }
+  
+  async renderPage(num) {
+    // 保留此方法以便向后兼容，但实际上滚动到指定页
+    this.scrollToPage(num);
   }
 
   queueRenderPage(num) {
-    if (this.pageRendering) {
-      this.pageNumPending = num;
-    } else {
-      this.renderPage(num);
-    }
+    // 重新渲染所有页面（缩放时）
+    this.renderAllPages();
   }
 
   previousPage() {
     if (this.currentPage <= 1) return;
     this.currentPage--;
-    this.queueRenderPage(this.currentPage);
+    this.scrollToPage(this.currentPage);
+    this.updateActiveThumbnail();
   }
-
+  
   nextPage() {
     if (this.currentPage >= this.totalPages) return;
     this.currentPage++;
-    this.queueRenderPage(this.currentPage);
+    this.scrollToPage(this.currentPage);
+    this.updateActiveThumbnail();
   }
-
+  
   goToPage(pageNum) {
     if (pageNum < 1 || pageNum > this.totalPages) return;
     this.currentPage = pageNum;
-    this.queueRenderPage(this.currentPage);
+    this.scrollToPage(this.currentPage);
+    this.updateActiveThumbnail();
+  }
+  
+  scrollToPage(pageNum) {
+    const pageElement = document.getElementById(`page-${pageNum}`);
+    if (pageElement && this.contentContainer) {
+      // 更新 current 类
+      const pages = this.pagesContainer.querySelectorAll('.pdf-page');
+      pages.forEach(page => {
+        if (parseInt(page.dataset.pageNumber) === pageNum) {
+          page.classList.add('current');
+        } else {
+          page.classList.remove('current');
+        }
+      });
+      
+      // 滚动到指定页面
+      const offsetTop = pageElement.offsetTop - this.contentContainer.offsetTop;
+      this.contentContainer.scrollTo({
+        top: offsetTop,
+        behavior: 'smooth'
+      });
+      
+      // 更新页码输入框
+      const pageNumInput = this.container.querySelector('#pageNum');
+      if (pageNumInput) pageNumInput.value = pageNum;
+      
+      this.emit('pageChanged', { currentPage: pageNum, totalPages: this.totalPages });
+      this.logEvent(`切换到第 ${pageNum} 页`);
+    }
+  }
+  
+  handleScroll() {
+    if (!this.pagesContainer || this.isScrolling) return;
+    
+    // 确保缩略图面板不会被意外隐藏
+    const thumbnailPanel = this.container.querySelector('#thumbnailsPanel');
+    if (thumbnailPanel && thumbnailPanel.classList.contains('hidden')) {
+      // 如果缩略图被意外隐藏，不执行滚动处理
+      return;
+    }
+    
+    // 清除之前的超时
+    clearTimeout(this.scrollTimeout);
+    
+    this.scrollTimeout = setTimeout(() => {
+      // 获取当前可视区域的中心点
+      const containerRect = this.contentContainer.getBoundingClientRect();
+      const centerY = containerRect.top + containerRect.height / 2;
+      
+      // 找出在中心点的页面
+      let currentVisiblePage = 1;
+      const pages = this.pagesContainer.querySelectorAll('.pdf-page');
+      
+      // 首先移除所有 current 类
+      pages.forEach(page => page.classList.remove('current'));
+      
+      for (let i = 0; i < pages.length; i++) {
+        const pageRect = pages[i].getBoundingClientRect();
+        if (pageRect.top <= centerY && pageRect.bottom >= centerY) {
+          currentVisiblePage = parseInt(pages[i].dataset.pageNumber);
+          pages[i].classList.add('current');
+          break;
+        } else if (pageRect.top > centerY) {
+          // 如果页面在中心点之下，使用前一页
+          currentVisiblePage = Math.max(1, parseInt(pages[i].dataset.pageNumber) - 1);
+          if (i > 0) pages[i - 1].classList.add('current');
+          break;
+        }
+      }
+      
+      // 更新当前页码
+      if (this.currentPage !== currentVisiblePage) {
+        this.currentPage = currentVisiblePage;
+        
+        // 更新页码显示
+        const pageNumInput = this.container.querySelector('#pageNum');
+        if (pageNumInput) pageNumInput.value = currentVisiblePage;
+        
+        // 更新缩略图高亮
+        this.updateActiveThumbnail();
+        
+        // 触发事件
+        this.emit('pageChanged', { currentPage: currentVisiblePage, totalPages: this.totalPages });
+      }
+    }, 100);
   }
 
   zoomIn() {
@@ -365,9 +505,9 @@ class UniversalPDFViewer {
   }
 
   rotate() {
-    // 简化实现 - 仅记录事件
-    this.logEvent('旋转页面 90°');
-    alert('旋转功能演示');
+    this.rotation = (this.rotation + 90) % 360;
+    this.renderAllPages();
+    this.logEvent(`旋转页面 ${this.rotation}°`);
   }
 
   print() {
@@ -456,14 +596,29 @@ class UniversalPDFViewer {
     const container = this.container.querySelector('#thumbnailsContainer');
     if (!container) return;
     
+    // 保存当前滚动位置
+    const currentScrollTop = container.scrollTop;
     container.innerHTML = '';
     
-    for (let i = 1; i <= this.totalPages; i++) {
+    // 使用 DocumentFragment 提高性能
+    const fragment = document.createDocumentFragment();
+    
+    // 限制最大缩略图数量以提高性能
+    const maxThumbnails = Math.min(this.totalPages, 100);
+    
+    for (let i = 1; i <= maxThumbnails; i++) {
       const page = await this.pdfDoc.getPage(i);
-      const viewport = page.getViewport({ scale: 0.3 });
+      
+      // 计算缩略图尺寸，保持宽高比
+      const desiredWidth = 180; // 缩略图容器宽度减去padding
+      const pageViewport = page.getViewport({ scale: 1.0 });
+      const scale = desiredWidth / pageViewport.width;
+      const viewport = page.getViewport({ scale: scale });
       
       const thumbnailItem = document.createElement('div');
       thumbnailItem.className = 'thumbnail-item';
+      thumbnailItem.dataset.pageNumber = i; // 添加页码数据属性
+      
       if (i === this.currentPage) {
         thumbnailItem.classList.add('active');
       }
@@ -474,9 +629,14 @@ class UniversalPDFViewer {
       canvas.height = viewport.height;
       canvas.width = viewport.width;
       
+      // 设置高质量渲染
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = 'high';
+      
       const renderContext = {
         canvasContext: context,
-        viewport: viewport
+        viewport: viewport,
+        intent: 'display'
       };
       
       await page.render(renderContext).promise;
@@ -487,21 +647,69 @@ class UniversalPDFViewer {
       
       thumbnailItem.appendChild(canvas);
       thumbnailItem.appendChild(label);
-      thumbnailItem.addEventListener('click', () => this.goToPage(i));
+      thumbnailItem.addEventListener('click', () => {
+        this.goToPage(i);
+      });
       
-      container.appendChild(thumbnailItem);
+      fragment.appendChild(thumbnailItem);
+    }
+    
+    container.appendChild(fragment);
+    
+    // 恢复滚动位置或滚动到当前页
+    if (currentScrollTop > 0) {
+      container.scrollTop = currentScrollTop;
+    } else {
+      this.scrollThumbnailToActive();
     }
   }
 
   updateActiveThumbnail() {
     const thumbnails = this.container.querySelectorAll('.thumbnail-item');
-    thumbnails.forEach((thumb, index) => {
-      if (index + 1 === this.currentPage) {
+    const thumbnailsContainer = this.container.querySelector('#thumbnailsContainer');
+    
+    thumbnails.forEach((thumb) => {
+      const pageNum = parseInt(thumb.dataset.pageNumber);
+      if (pageNum === this.currentPage) {
         thumb.classList.add('active');
+        
+        // Auto-scroll thumbnail into view with better logic
+        if (thumbnailsContainer && !this.isScrollingThumbnails) {
+          this.scrollThumbnailToActive();
+        }
       } else {
         thumb.classList.remove('active');
       }
     });
+  }
+  
+  scrollThumbnailToActive() {
+    // 如果用户正在滚动缩略图，不要自动滚动
+    if (this.isScrollingThumbnails) return;
+    
+    const thumbnailsContainer = this.container.querySelector('#thumbnailsContainer');
+    const activeThumbnail = this.container.querySelector('.thumbnail-item.active');
+    
+    if (thumbnailsContainer && activeThumbnail) {
+      const thumbTop = activeThumbnail.offsetTop;
+      const thumbHeight = activeThumbnail.offsetHeight;
+      const containerHeight = thumbnailsContainer.clientHeight;
+      const containerScrollTop = thumbnailsContainer.scrollTop;
+      
+      // 计算缩略图的中心位置
+      const thumbCenter = thumbTop + thumbHeight / 2;
+      const containerCenter = containerScrollTop + containerHeight / 2;
+      
+      // 如果缩略图不在视口中心附近，滚动到中心
+      if (Math.abs(thumbCenter - containerCenter) > containerHeight / 4) {
+        const targetScrollTop = thumbTop - (containerHeight / 2) + (thumbHeight / 2);
+        
+        thumbnailsContainer.scrollTo({
+          top: Math.max(0, targetScrollTop),
+          behavior: 'smooth'
+        });
+      }
+    }
   }
 
   destroy() {
@@ -617,6 +825,8 @@ window.loadPDFUrl = function(url) {
   pdfViewer = new UniversalPDFViewer({
     container: '#pdfViewerContainer',
     pdfUrl: url,
+    height: '700px',  // 可设置固定高度
+    maxHeight: '85vh', // 最大高度限制
     theme: document.body.getAttribute('data-theme') || 'light',
     defaultScale: 1.0,
     enableToolbar: document.getElementById('showToolbar')?.checked,

@@ -185,6 +185,21 @@ export class Document {
       }
     }
 
+    // 表格 - 保留原始 HTML
+    if (tagName === 'table') {
+      return {
+        type: 'table',
+        attrs: {
+          html: element.outerHTML
+        }
+      }
+    }
+
+    // 忽略表格内部元素（它们会被表格整体处理）
+    if (tagName === 'thead' || tagName === 'tbody' || tagName === 'tr' || tagName === 'th' || tagName === 'td') {
+      return null
+    }
+
     // 默认作为段落处理
     return {
       type: 'paragraph',
@@ -295,6 +310,9 @@ export class Document {
         return `<li>${content}</li>`
       case 'image':
         return `<img src="${node.attrs?.src || ''}" alt="${node.attrs?.alt || ''}" ${node.attrs?.title ? `title="${node.attrs.title}"` : ''}>`
+      case 'table':
+        // 直接返回原始的表格 HTML
+        return node.attrs?.html || '<table></table>'
       default:
         return content
     }

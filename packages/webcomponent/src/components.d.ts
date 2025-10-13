@@ -1087,10 +1087,10 @@ export namespace Components {
          */
         "loadContent"?: (name: string) => Promise<string>;
         /**
-          * 折叠模式：普通、紧凑、分离
+          * 折叠模式：普通、紧凑、分离、卡片
           * @default 'default'
          */
-        "mode": 'default' | 'compact' | 'separated';
+        "mode": 'default' | 'compact' | 'separated' | 'card';
         /**
           * 嵌套缩进（像素）
           * @default 20
@@ -8561,10 +8561,10 @@ declare namespace LocalJSX {
          */
         "loadContent"?: (name: string) => Promise<string>;
         /**
-          * 折叠模式：普通、紧凑、分离
+          * 折叠模式：普通、紧凑、分离、卡片
           * @default 'default'
          */
-        "mode"?: 'default' | 'compact' | 'separated';
+        "mode"?: 'default' | 'compact' | 'separated' | 'card';
         /**
           * 嵌套缩进（像素）
           * @default 20

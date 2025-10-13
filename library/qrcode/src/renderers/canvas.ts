@@ -1,4 +1,5 @@
-import type { QRCodeConfig, QRCodeStyle, LogoConfig, DotStyle, LogoShape, LogoAspectRatio, EffectType } from '../types';
+import type { QRCodeConfig, QRCodeStyle, LogoConfig, LogoShape, LogoAspectRatio, EffectType } from '../types';
+import { DotStyle } from '../types';
 import { QRCodeGenerator } from '../core/generator';
 import { drawDot } from './styles/dots';
 import { createCanvasGradient } from './styles/gradients';
@@ -14,7 +15,7 @@ const DEFAULT_STYLE: Partial<QRCodeStyle> & { fgColor: string; bgColor: string; 
   size: 200,
   margin: 4,
   cornerRadius: 0,
-  dotStyle: 'square' as DotStyle,
+  dotStyle: DotStyle.Square,
   rotate: 0,
   invert: false,
 };
@@ -113,7 +114,7 @@ export class CanvasRenderer {
     const dotStyle = (this.config.style?.dotStyle || DEFAULT_STYLE.dotStyle) as DotStyle;
     
     // Check if we need special rendering for liquid/flow styles
-    if (dotStyle === 'smooth-flow' || dotStyle === 'liquid') {
+    if (dotStyle === DotStyle.SmoothFlow || dotStyle === DotStyle.Liquid) {
       // Use smooth flow rendering for connected liquid modules
       this.renderSmoothFlow(moduleCount, margin, moduleSize);
     } else {
@@ -581,7 +582,54 @@ export class CanvasRenderer {
       this.ctx.fillStyle = this.style.fgColor;
     }
     
-    // Draw QR modules with liquid style
+    // First pass: collect all dark modules into connected groups
+    const visited = new Set<string>();
+    const groups: Array<Array<{row: number, col: number}>> = [];
+    
+    for (let row = 0; row < moduleCount; row++) {
+      for (let col = 0; col < moduleCount; col++) {
+        const key = `${row},${col}`;
+        if (this.generator.isDark(row, col) && !visited.has(key)) {
+          // Start a new group
+          const group: Array<{row: number, col: number}> = [];
+          const queue = [{row, col}];
+          
+          while (queue.length > 0) {
+            const current = queue.shift()!;
+            const currentKey = `${current.row},${current.col}`;
+            
+            if (visited.has(currentKey)) continue;
+            visited.add(currentKey);
+            group.push(current);
+            
+            // Check all 8 neighbors for liquid grouping
+            const neighbors = [
+              {r: current.row - 1, c: current.col},     // top
+              {r: current.row - 1, c: current.col + 1}, // top-right
+              {r: current.row, c: current.col + 1},     // right
+              {r: current.row + 1, c: current.col + 1}, // bottom-right
+              {r: current.row + 1, c: current.col},     // bottom
+              {r: current.row + 1, c: current.col - 1}, // bottom-left
+              {r: current.row, c: current.col - 1},     // left
+              {r: current.row - 1, c: current.col - 1}  // top-left
+            ];
+            
+            for (const n of neighbors) {
+              if (n.r >= 0 && n.r < moduleCount && n.c >= 0 && n.c < moduleCount) {
+                const nKey = `${n.r},${n.c}`;
+                if (this.generator.isDark(n.r, n.c) && !visited.has(nKey)) {
+                  queue.push({row: n.r, col: n.c});
+                }
+              }
+            }
+          }
+          
+          groups.push(group);
+        }
+      }
+    }
+    
+    // Second pass: draw each module with neighbor awareness
     for (let row = 0; row < moduleCount; row++) {
       for (let col = 0; col < moduleCount; col++) {
         if (this.generator.isDark(row, col)) {
@@ -593,14 +641,24 @@ export class CanvasRenderer {
             continue; // Skip, will be drawn by drawEyes
           }
           
-          // Check neighbors for liquid connection
+          // Check orthogonal neighbors for liquid connection
           const hasTop = row > 0 && this.generator.isDark(row - 1, col);
           const hasRight = col < moduleCount - 1 && this.generator.isDark(row, col + 1);
           const hasBottom = row < moduleCount - 1 && this.generator.isDark(row + 1, col);
           const hasLeft = col > 0 && this.generator.isDark(row, col - 1);
           
-          // Draw liquid-style module
-          this.drawLiquidModule(x, y, moduleSize, hasTop, hasRight, hasBottom, hasLeft);
+          // Check diagonal neighbors for smoother connections
+          const hasTopLeft = row > 0 && col > 0 && this.generator.isDark(row - 1, col - 1);
+          const hasTopRight = row > 0 && col < moduleCount - 1 && this.generator.isDark(row - 1, col + 1);
+          const hasBottomLeft = row < moduleCount - 1 && col > 0 && this.generator.isDark(row + 1, col - 1);
+          const hasBottomRight = row < moduleCount - 1 && col < moduleCount - 1 && this.generator.isDark(row + 1, col + 1);
+          
+          // Draw liquid-style module with diagonal awareness
+          this.drawLiquidModuleEnhanced(
+            x, y, moduleSize,
+            hasTop, hasRight, hasBottom, hasLeft,
+            hasTopLeft, hasTopRight, hasBottomLeft, hasBottomRight
+          );
         }
       }
     }
@@ -617,6 +675,180 @@ export class CanvasRenderer {
   }
   
   /**
+   * Enhanced liquid module drawing with diagonal neighbor awareness
+   */
+  private drawLiquidModuleEnhanced(
+    x: number,
+    y: number,
+    size: number,
+    hasTop: boolean,
+    hasRight: boolean,
+    hasBottom: boolean,
+    hasLeft: boolean,
+    hasTopLeft: boolean,
+    hasTopRight: boolean,
+    hasBottomLeft: boolean,
+    hasBottomRight: boolean
+  ): void {
+    const radius = size * 0.48; // Even larger radius for maximum fluidity
+    const offset = size * 0.05; // Tiny offset for organic variations
+    
+    this.ctx.beginPath();
+    
+    // Draw based on connection patterns for organic blob effect
+    const cx = x + size / 2;
+    const cy = y + size / 2;
+    
+    // If isolated or only diagonal neighbors, draw a circle
+    if (!hasTop && !hasRight && !hasBottom && !hasLeft) {
+      this.ctx.arc(cx, cy, size * 0.42, 0, Math.PI * 2);
+      this.ctx.fill();
+      return;
+    }
+    
+    // Complex path drawing with smooth transitions
+    const corners = [
+      { // Top-left
+        connected: hasTop || hasLeft,
+        diagonal: hasTopLeft,
+        x: x, y: y
+      },
+      { // Top-right
+        connected: hasTop || hasRight,
+        diagonal: hasTopRight,
+        x: x + size, y: y
+      },
+      { // Bottom-right
+        connected: hasBottom || hasRight,
+        diagonal: hasBottomRight,
+        x: x + size, y: y + size
+      },
+      { // Bottom-left
+        connected: hasBottom || hasLeft,
+        diagonal: hasBottomLeft,
+        x: x, y: y + size
+      }
+    ];
+    
+    // Draw smooth blob shape
+    this.ctx.moveTo(x + (hasLeft ? 0 : radius), y + (hasTop ? 0 : offset));
+    
+    // Top edge
+    if (hasTop) {
+      this.ctx.lineTo(x + size - (hasRight ? 0 : offset), y);
+    } else {
+      // Smooth curve for disconnected top
+      const cp1x = x + size * 0.3;
+      const cp2x = x + size * 0.7;
+      this.ctx.bezierCurveTo(
+        cp1x, y - offset,
+        cp2x, y - offset,
+        x + size - radius, y
+      );
+    }
+    
+    // Top-right corner
+    if (hasTop && hasRight) {
+      if (hasTopRight) {
+        // Smooth outward curve when diagonal is connected
+        this.ctx.lineTo(x + size, y);
+      } else {
+        // Sharp inside corner
+        this.ctx.lineTo(x + size - offset, y);
+        this.ctx.quadraticCurveTo(x + size, y, x + size, y + offset);
+      }
+    } else if (hasTop || hasRight) {
+      this.ctx.quadraticCurveTo(x + size, y, x + size, y + (hasRight ? offset : radius));
+    } else {
+      this.ctx.arc(x + size - radius, y + radius, radius, -Math.PI/2, 0, false);
+    }
+    
+    // Right edge
+    if (hasRight) {
+      this.ctx.lineTo(x + size, y + size - (hasBottom ? 0 : offset));
+    } else {
+      const cp1y = y + size * 0.3;
+      const cp2y = y + size * 0.7;
+      this.ctx.bezierCurveTo(
+        x + size + offset, cp1y,
+        x + size + offset, cp2y,
+        x + size, y + size - radius
+      );
+    }
+    
+    // Bottom-right corner
+    if (hasBottom && hasRight) {
+      if (hasBottomRight) {
+        this.ctx.lineTo(x + size, y + size);
+      } else {
+        this.ctx.lineTo(x + size, y + size - offset);
+        this.ctx.quadraticCurveTo(x + size, y + size, x + size - offset, y + size);
+      }
+    } else if (hasBottom || hasRight) {
+      this.ctx.quadraticCurveTo(x + size, y + size, x + (hasBottom ? size - offset : size - radius), y + size);
+    } else {
+      this.ctx.arc(x + size - radius, y + size - radius, radius, 0, Math.PI/2, false);
+    }
+    
+    // Bottom edge
+    if (hasBottom) {
+      this.ctx.lineTo(x + (hasLeft ? 0 : offset), y + size);
+    } else {
+      const cp1x = x + size * 0.7;
+      const cp2x = x + size * 0.3;
+      this.ctx.bezierCurveTo(
+        cp1x, y + size + offset,
+        cp2x, y + size + offset,
+        x + radius, y + size
+      );
+    }
+    
+    // Bottom-left corner
+    if (hasBottom && hasLeft) {
+      if (hasBottomLeft) {
+        this.ctx.lineTo(x, y + size);
+      } else {
+        this.ctx.lineTo(x + offset, y + size);
+        this.ctx.quadraticCurveTo(x, y + size, x, y + size - offset);
+      }
+    } else if (hasBottom || hasLeft) {
+      this.ctx.quadraticCurveTo(x, y + size, x, y + (hasLeft ? size - offset : size - radius));
+    } else {
+      this.ctx.arc(x + radius, y + size - radius, radius, Math.PI/2, Math.PI, false);
+    }
+    
+    // Left edge
+    if (hasLeft) {
+      this.ctx.lineTo(x, y + (hasTop ? 0 : offset));
+    } else {
+      const cp1y = y + size * 0.7;
+      const cp2y = y + size * 0.3;
+      this.ctx.bezierCurveTo(
+        x - offset, cp1y,
+        x - offset, cp2y,
+        x, y + radius
+      );
+    }
+    
+    // Top-left corner (closing)
+    if (hasTop && hasLeft) {
+      if (hasTopLeft) {
+        this.ctx.lineTo(x, y);
+      } else {
+        this.ctx.lineTo(x, y + offset);
+        this.ctx.quadraticCurveTo(x, y, x + offset, y);
+      }
+    } else if (hasTop || hasLeft) {
+      this.ctx.quadraticCurveTo(x, y, x + (hasTop ? offset : radius), y);
+    } else {
+      this.ctx.arc(x + radius, y + radius, radius, Math.PI, Math.PI * 1.5, false);
+    }
+    
+    this.ctx.closePath();
+    this.ctx.fill();
+  }
+  
+  /**
    * Draw a liquid-style module that connects smoothly with neighbors
    */
   private drawLiquidModule(
@@ -628,46 +860,89 @@ export class CanvasRenderer {
     hasBottom: boolean,
     hasLeft: boolean
   ): void {
-    const r = size * 0.37; // Radius for corners
-    const c = size * 0.5;  // Center offset
+    const radius = size * 0.45; // Larger radius for more fluid look
+    const inset = size * 0.08; // Small inset for organic feel
     
     this.ctx.beginPath();
     
-    // Start from top-left
-    this.ctx.moveTo(x + (hasLeft ? 0 : r), y + (hasTop ? 0 : r));
+    // Top-left corner
+    if (hasTop && hasLeft) {
+      this.ctx.moveTo(x, y);
+    } else if (hasTop) {
+      this.ctx.moveTo(x + inset, y);
+      this.ctx.quadraticCurveTo(x, y, x, y + inset);
+    } else if (hasLeft) {
+      this.ctx.moveTo(x, y + inset);
+      this.ctx.quadraticCurveTo(x, y, x + inset, y);
+    } else {
+      this.ctx.moveTo(x + radius, y);
+      this.ctx.quadraticCurveTo(x, y, x, y + radius);
+    }
     
     // Top edge
     if (hasTop) {
-      this.ctx.lineTo(x + size - (hasRight ? 0 : r), y);
+      this.ctx.lineTo(x + size - (hasRight ? 0 : inset), y);
     } else {
-      this.ctx.lineTo(x + size - r, y);
-      this.ctx.arcTo(x + size, y, x + size, y + r, r);
+      this.ctx.lineTo(x + size - radius, y);
+    }
+    
+    // Top-right corner
+    if (hasTop && hasRight) {
+      this.ctx.lineTo(x + size, y);
+    } else if (hasTop) {
+      this.ctx.quadraticCurveTo(x + size, y, x + size, y + inset);
+    } else if (hasRight) {
+      this.ctx.quadraticCurveTo(x + size, y, x + size, y + radius);
+    } else {
+      this.ctx.quadraticCurveTo(x + size, y, x + size, y + radius);
     }
     
     // Right edge
     if (hasRight) {
-      this.ctx.lineTo(x + size, y + size - (hasBottom ? 0 : r));
+      this.ctx.lineTo(x + size, y + size - (hasBottom ? 0 : inset));
     } else {
-      this.ctx.lineTo(x + size, y + r);
-      this.ctx.lineTo(x + size, y + size - r);
-      this.ctx.arcTo(x + size, y + size, x + size - r, y + size, r);
+      this.ctx.lineTo(x + size, y + size - radius);
+    }
+    
+    // Bottom-right corner
+    if (hasBottom && hasRight) {
+      this.ctx.lineTo(x + size, y + size);
+    } else if (hasBottom) {
+      this.ctx.quadraticCurveTo(x + size, y + size, x + size - inset, y + size);
+    } else if (hasRight) {
+      this.ctx.quadraticCurveTo(x + size, y + size, x + size - radius, y + size);
+    } else {
+      this.ctx.quadraticCurveTo(x + size, y + size, x + size - radius, y + size);
     }
     
     // Bottom edge
     if (hasBottom) {
-      this.ctx.lineTo(x + (hasLeft ? 0 : r), y + size);
+      this.ctx.lineTo(x + (hasLeft ? 0 : inset), y + size);
     } else {
-      this.ctx.lineTo(x + r, y + size);
-      this.ctx.arcTo(x, y + size, x, y + size - r, r);
+      this.ctx.lineTo(x + radius, y + size);
+    }
+    
+    // Bottom-left corner
+    if (hasBottom && hasLeft) {
+      this.ctx.lineTo(x, y + size);
+    } else if (hasBottom) {
+      this.ctx.quadraticCurveTo(x, y + size, x, y + size - inset);
+    } else if (hasLeft) {
+      this.ctx.quadraticCurveTo(x, y + size, x, y + size - radius);
+    } else {
+      this.ctx.quadraticCurveTo(x, y + size, x, y + size - radius);
     }
     
     // Left edge
     if (hasLeft) {
-      this.ctx.lineTo(x, y + (hasTop ? 0 : r));
+      this.ctx.lineTo(x, y + (hasTop ? 0 : inset));
     } else {
-      this.ctx.lineTo(x, y + size - r);
-      this.ctx.lineTo(x, y + r);
-      this.ctx.arcTo(x, y, x + r, y, r);
+      this.ctx.lineTo(x, y + radius);
+    }
+    
+    // Close path with smooth curve if needed
+    if (!hasTop && !hasLeft) {
+      this.ctx.quadraticCurveTo(x, y, x + radius, y);
     }
     
     this.ctx.closePath();

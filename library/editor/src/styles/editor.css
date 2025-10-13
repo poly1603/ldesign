@@ -4,6 +4,7 @@
 
 @import './ui.css';
 @import './dialog.css';
+@import './table.css';
 
 .ldesign-editor {
   display: flex;

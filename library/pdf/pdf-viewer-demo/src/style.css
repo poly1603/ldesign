@@ -353,9 +353,13 @@ body {
 
 /* PDF Viewer Styles - 主题变量 */
 .pdf-viewer-wrapper {
-  height: 100%;
+  height: 800px; /* 固定高度，可以根据需要调整 */
+  max-height: 90vh; /* 最大高度不超过视口的90% */
   display: flex;
   flex-direction: column;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   --pdf-bg: #f5f5f5;
   --pdf-toolbar-bg: #ffffff;
   --pdf-toolbar-border: #e0e0e0;
@@ -479,21 +483,32 @@ body {
   display: flex;
   overflow: hidden;
   background: var(--pdf-bg);
+  min-height: 0; /* 重要：确保 flex 子元素可以缩小 */
+  position: relative; /* 为子元素提供定位上下文 */
+  align-items: stretch; /* 确保子元素拉伸到相同高度 */
 }
 
 /* 缩略图侧边栏 */
 .pdf-thumbnails {
-  width: 200px;
+  width: 220px;
+  min-width: 220px; /* 防止缩小 */
+  max-width: 220px; /* 防止过度扩张 */
+  flex-shrink: 0; /* 防止在 flex 布局中缩小 */
+  flex-grow: 0; /* 防止扩张 */
   background: var(--pdf-thumbnails-bg);
   border-right: 1px solid var(--pdf-border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: margin-left 0.3s;
+  transition: margin-left 0.3s ease-in-out;
+  position: relative; /* 确保稳定定位 */
+  z-index: 10; /* 确保在其他元素之上 */
+  height: 100%; /* 确保高度填满父容器 */
 }
 
 .pdf-thumbnails.hidden {
-  margin-left: -200px;
+  margin-left: -220px;
+  pointer-events: none; /* 禁用隐藏时的事件 */
 }
 
 .thumbnails-header {
@@ -511,30 +526,72 @@ body {
 .thumbnails-container {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
+  overflow-x: hidden;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
+  min-height: 0; /* 确保可以正常滚动 */
+  max-height: 100%; /* 限制最大高度 */
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--pdf-border) transparent;
+  scroll-behavior: smooth; /* 平滑滚动 */
+}
+
+/* Webkit 滚动条样式 */
+.thumbnails-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.thumbnails-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thumbnails-container::-webkit-scrollbar-thumb {
+  background-color: var(--pdf-border);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.thumbnails-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--pdf-thumbnail-active);
 }
 
 .thumbnail-item {
   cursor: pointer;
   border: 2px solid transparent;
-  border-radius: 4px;
+  border-radius: 6px;
   overflow: hidden;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   background: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  flex-shrink: 0; /* 防止缩略图项缩小 */
+  width: 100%; /* 确保宽度填满容器 */
 }
 
 .thumbnail-item:hover {
   border-color: var(--pdf-border);
-  transform: translateX(5px);
+  transform: scale(1.02);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .thumbnail-item.active {
   border-color: var(--pdf-thumbnail-active);
-  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.3);
+  box-shadow: 0 3px 10px rgba(100, 108, 255, 0.4);
+  transform: scale(1.05);
+  background: linear-gradient(135deg, white, rgba(100, 108, 255, 0.05));
+}
+
+.thumbnail-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--pdf-thumbnail-active);
 }
 
 .thumbnail-canvas {
@@ -554,14 +611,91 @@ body {
 /* PDF 内容区域 */
 .pdf-viewer-content {
   flex: 1;
-  overflow: auto;
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: auto;
   position: relative;
   background: var(--pdf-bg);
-  display: flex;
-  justify-content: center;
   padding: 2rem;
+  scroll-behavior: smooth;
+  min-height: 0; /* 确保 flex 子元素可以正常滚动 */
+  min-width: 0; /* 防止内容区域过度扩张 */
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--pdf-border) var(--pdf-bg);
+  transition: margin-left 0.3s ease-in-out; /* 平滑过渡 */
 }
 
+/* Webkit 滚动条样式 - PDF 内容区域 */
+.pdf-viewer-content::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.pdf-viewer-content::-webkit-scrollbar-track {
+  background: var(--pdf-bg);
+}
+
+.pdf-viewer-content::-webkit-scrollbar-thumb {
+  background-color: var(--pdf-border);
+  border-radius: 6px;
+  border: 3px solid var(--pdf-bg);
+}
+
+.pdf-viewer-content::-webkit-scrollbar-thumb:hover {
+  background-color: var(--pdf-thumbnail-active);
+}
+
+.pdf-viewer-content::-webkit-scrollbar-corner {
+  background: var(--pdf-bg);
+}
+
+/* PDF 页面容器 */
+.pdf-pages-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding-bottom: 2rem;
+}
+
+/* 单个 PDF 页面 */
+.pdf-page {
+  position: relative;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* PDF 页面画布 */
+.pdf-page-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* 页码标签 */
+.pdf-page-number {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+/* 当前页面的页码标签突出显示 */
+.pdf-page.current .pdf-page-number {
+  background: var(--pdf-thumbnail-active);
+  transform: scale(1.1);
+}
+
+/* 旧的单个 canvas 样式（保留以兼容） */
 #pdfCanvas {
   max-width: 100%;
   height: auto;

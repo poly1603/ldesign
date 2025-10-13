@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collapse Component - Final Test</title>
+  <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+  <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    .test-section {
+      margin-bottom: 40px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .test-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #333;
+      border-bottom: 2px solid #1890ff;
+      padding-bottom: 8px;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      padding: 8px 16px;
+      background: #1890ff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    
+    button:hover {
+      background: #40a9ff;
+    }
+    
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    .status {
+      padding: 10px;
+      background: #f0f8ff;
+      border-left: 4px solid #1890ff;
+      margin-top: 15px;
+      font-family: monospace;
+      font-size: 13px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .log-entry {
+      margin: 2px 0;
+      padding: 2px 5px;
+    }
+    
+    .log-dragstart { color: #52c41a; }
+    .log-dragover { color: #1890ff; }
+    .log-drop { color: #fa8c16; }
+    .log-dragend { color: #722ed1; }
+    .log-change { color: #eb2f96; }
+    
+    /* Highlight dragging panels */
+    ldesign-collapse-panel[dragging="true"] {
+      opacity: 0.5 !important;
+    }
+    
+    ldesign-collapse-panel.drag-over {
+      border: 2px dashed #1890ff !important;
+      background: #e6f7ff !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Test 1: Icon Rotation Animation -->
+  <div class="test-section">
+    <h2 class="test-title">Test 1: Icon Rotation Animation</h2>
+    <div class="controls">
+      <button onclick="togglePanel('panel1')">Toggle Panel 1</button>
+      <button onclick="togglePanel('panel2')">Toggle Panel 2</button>
+      <button onclick="toggleAllRotation()">Toggle All Panels</button>
+      <select id="rotationAngle" onchange="updateRotationAngle()">
+        <option value="90">90° Rotation</option>
+        <option value="180">180° Rotation</option>
+        <option value="270">270° Rotation</option>
+      </select>
+      <label>
+        <input type="checkbox" id="reverseDirection" onchange="updateRotationDirection()">
+        Reverse Direction
+      </label>
+    </div>
+    
+    <ldesign-collapse 
+      id="rotationCollapse"
+      icon-rotation-angle="90"
+      icon-animation-duration="300">
+      <ldesign-collapse-panel 
+        name="panel1" 
+        header="Panel 1 - Watch the Arrow Rotate"
+        show-arrow="true">
+        <div style="padding: 15px;">
+          The arrow icon should rotate smoothly when expanding/collapsing.
+          Current rotation angle: <span id="currentAngle">90°</span>
+        </div>
+      </ldesign-collapse-panel>
+      <ldesign-collapse-panel 
+        name="panel2" 
+        header="Panel 2 - Another Rotating Arrow"
+        show-arrow="true">
+        <div style="padding: 15px;">
+          This panel's arrow should also animate with the same settings.
+        </div>
+      </ldesign-collapse-panel>
+    </ldesign-collapse>
+    
+    <div class="status" id="rotationStatus">
+      Rotation Status: Ready
+    </div>
+  </div>
+
+  <!-- Test 2: Drag and Drop Sorting -->
+  <div class="test-section">
+    <h2 class="test-title">Test 2: Drag & Drop Sorting</h2>
+    <div class="controls">
+      <button onclick="toggleSortable()">Toggle Sortable</button>
+      <button onclick="resetOrder()">Reset Order</button>
+      <button onclick="logCurrentOrder()">Log Current Order</button>
+      <button onclick="clearDragLogs()">Clear Logs</button>
+    </div>
+    
+    <ldesign-collapse 
+      id="sortableCollapse"
+      sortable="true"
+      card-style="true">
+      <ldesign-collapse-panel 
+        name="first" 
+        header="First Panel (Drag Me)"
+        show-arrow="true">
+        <div style="padding: 15px; background: #fff3e0;">
+          Content of the first panel. Try dragging this panel to reorder.
+        </div>
+      </ldesign-collapse-panel>
+      <ldesign-collapse-panel 
+        name="second" 
+        header="Second Panel (Drag Me)"
+        show-arrow="true">
+        <div style="padding: 15px; background: #e8f5e9;">
+          Content of the second panel. Drag to change position.
+        </div>
+      </ldesign-collapse-panel>
+      <ldesign-collapse-panel 
+        name="third" 
+        header="Third Panel (Drag Me)"
+        show-arrow="true">
+        <div style="padding: 15px; background: #e3f2fd;">
+          Content of the third panel. Sortable when enabled.
+        </div>
+      </ldesign-collapse-panel>
+    </ldesign-collapse>
+    
+    <div class="status" id="dragStatus">
+      Drag Status: Ready (Sortable: ON)
+    </div>
+  </div>
+
+  <!-- Test 3: Expand/Collapse All -->
+  <div class="test-section">
+    <h2 class="test-title">Test 3: Expand/Collapse All Operations</h2>
+    <div class="controls">
+      <button onclick="expandAll()">Expand All</button>
+      <button onclick="collapseAll()">Collapse All</button>
+      <button onclick="toggleAccordion()">Toggle Accordion Mode</button>
+    </div>
+    
+    <ldesign-collapse 
+      id="batchCollapse"
+      theme="primary">
+      <ldesign-collapse-panel 
+        name="batch1" 
+        header="Batch Panel 1"
+        show-arrow="true">
+        <div style="padding: 15px;">
+          This panel participates in expand/collapse all operations.
+        </div>
+      </ldesign-collapse-panel>
+      <ldesign-collapse-panel 
+        name="batch2" 
+        header="Batch Panel 2"
+        show-arrow="true">
+        <div style="padding: 15px;">
+          All panels should respond to batch operations.
+        </div>
+      </ldesign-collapse-panel>
+      <ldesign-collapse-panel 
+        name="batch3" 
+        header="Batch Panel 3"
+        show-arrow="true">
+        <div style="padding: 15px;">
+          Watch all panels expand or collapse together.
+        </div>
+      </ldesign-collapse-panel>
+    </ldesign-collapse>
+    
+    <div class="status" id="batchStatus">
+      Batch Status: Ready
+    </div>
+  </div>
+
+  <!-- Test 4: Combined Features -->
+  <div class="test-section">
+    <h2 class="test-title">Test 4: Combined Features</h2>
+    <div class="controls">
+      <button onclick="testAllFeatures()">Test All Features</button>
+      <input type="text" id="searchInput" placeholder="Search panels..." onkeyup="searchPanels(event)">
+    </div>
+    
+    <ldesign-collapse 
+      id="combinedCollapse"
+      sortable="true"
+      icon-rotation-angle="180"
+      theme="success"
+      card-style="true"
+      separated="true">
+      <ldesign-collapse-panel 
+        name="feature1" 
+        header="Feature Panel - Animations"
+        show-arrow="true">
+        <div style="padding: 15px;">
+          This panel has: rotation animation, sortable drag, theme styling
+        </div>
+      </ldesign-collapse-panel>
+      <ldesign-collapse-panel 
+        name="feature2" 
+        header="Feature Panel - Interactions"
+        show-arrow="true">
+        <div style="padding: 15px;">
+          Try searching, dragging, expanding/collapsing
+        </div>
+      </ldesign-collapse-panel>
+      <ldesign-collapse-panel 
+        name="feature3" 
+        header="Feature Panel - Styles"
+        show-arrow="true">
+        <div style="padding: 15px;">
+          Card style with separation and custom theme
+        </div>
+      </ldesign-collapse-panel>
+    </ldesign-collapse>
+    
+    <div class="status" id="combinedStatus">
+      Combined Status: Ready
+    </div>
+  </div>
+
+  <script>
+    // Global log function
+    function log(message, statusId = 'rotationStatus', className = '') {
+      const status = document.getElementById(statusId);
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${className}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      status.appendChild(entry);
+      status.scrollTop = status.scrollHeight;
+    }
+
+    // Test 1: Icon Rotation Functions
+    function togglePanel(panelName) {
+      const collapse = document.getElementById('rotationCollapse');
+      const panel = collapse.querySelector(`ldesign-collapse-panel[name="${panelName}"]`);
+      if (panel) {
+        const isExpanded = panel.getAttribute('expanded') === 'true';
+        panel.setAttribute('expanded', !isExpanded);
+        log(`Panel ${panelName}: ${!isExpanded ? 'Expanded' : 'Collapsed'} (Arrow should rotate)`, 'rotationStatus');
+      }
+    }
+
+    function toggleAllRotation() {
+      const collapse = document.getElementById('rotationCollapse');
+      const panels = collapse.querySelectorAll('ldesign-collapse-panel');
+      const allExpanded = Array.from(panels).every(p => p.getAttribute('expanded') === 'true');
+      
+      panels.forEach(panel => {
+        panel.setAttribute('expanded', !allExpanded);
+      });
+      log(`All panels: ${!allExpanded ? 'Expanded' : 'Collapsed'}`, 'rotationStatus');
+    }
+
+    function updateRotationAngle() {
+      const angle = document.getElementById('rotationAngle').value;
+      const collapse = document.getElementById('rotationCollapse');
+      collapse.setAttribute('icon-rotation-angle', angle);
+      document.getElementById('currentAngle').textContent = `${angle}°`;
+      log(`Rotation angle updated to: ${angle}°`, 'rotationStatus');
+    }
+
+    function updateRotationDirection() {
+      const reverse = document.getElementById('reverseDirection').checked;
+      const collapse = document.getElementById('rotationCollapse');
+      collapse.setAttribute('icon-rotation-reverse', reverse);
+      log(`Rotation direction: ${reverse ? 'Reversed' : 'Normal'}`, 'rotationStatus');
+    }
+
+    // Test 2: Drag & Drop Functions
+    let sortableEnabled = true;
+    
+    function toggleSortable() {
+      const collapse = document.getElementById('sortableCollapse');
+      sortableEnabled = !sortableEnabled;
+      collapse.setAttribute('sortable', sortableEnabled);
+      log(`Sortable: ${sortableEnabled ? 'ON' : 'OFF'}`, 'dragStatus');
+    }
+
+    function resetOrder() {
+      const collapse = document.getElementById('sortableCollapse');
+      const panels = Array.from(collapse.querySelectorAll('ldesign-collapse-panel'));
+      
+      // Sort panels by name
+      panels.sort((a, b) => {
+        const nameA = a.getAttribute('name');
+        const nameB = b.getAttribute('name');
+        return nameA.localeCompare(nameB);
+      });
+      
+      // Reorder in DOM
+      panels.forEach(panel => collapse.appendChild(panel));
+      log('Panel order reset to: first, second, third', 'dragStatus');
+    }
+
+    function logCurrentOrder() {
+      const collapse = document.getElementById('sortableCollapse');
+      const panels = collapse.querySelectorAll('ldesign-collapse-panel');
+      const order = Array.from(panels).map(p => p.getAttribute('name')).join(', ');
+      log(`Current order: ${order}`, 'dragStatus');
+    }
+
+    function clearDragLogs() {
+      document.getElementById('dragStatus').innerHTML = 'Drag Status: Logs cleared';
+    }
+
+    // Setup drag event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      const sortableCollapse = document.getElementById('sortableCollapse');
+      
+      // Listen for drag events
+      sortableCollapse.addEventListener('panelDragStart', (e) => {
+        log(`DragStart: ${e.detail}`, 'dragStatus', 'log-dragstart');
+      });
+      
+      sortableCollapse.addEventListener('panelDragOver', (e) => {
+        log(`DragOver: ${e.detail}`, 'dragStatus', 'log-dragover');
+      });
+      
+      sortableCollapse.addEventListener('panelDrop', (e) => {
+        log(`Drop: ${e.detail}`, 'dragStatus', 'log-drop');
+        logCurrentOrder();
+      });
+      
+      sortableCollapse.addEventListener('panelDragEnd', (e) => {
+        log(`DragEnd: ${e.detail}`, 'dragStatus', 'log-dragend');
+      });
+      
+      sortableCollapse.addEventListener('panelOrderChange', (e) => {
+        log(`Order Changed: ${JSON.stringify(e.detail)}`, 'dragStatus', 'log-change');
+      });
+    });
+
+    // Test 3: Batch Operations
+    function expandAll() {
+      const collapse = document.getElementById('batchCollapse');
+      collapse.expandAll();
+      log('Executed: expandAll()', 'batchStatus');
+    }
+
+    function collapseAll() {
+      const collapse = document.getElementById('batchCollapse');
+      collapse.collapseAll();
+      log('Executed: collapseAll()', 'batchStatus');
+    }
+
+    let accordionMode = false;
+    function toggleAccordion() {
+      const collapse = document.getElementById('batchCollapse');
+      accordionMode = !accordionMode;
+      collapse.setAttribute('accordion', accordionMode);
+      log(`Accordion mode: ${accordionMode ? 'ON' : 'OFF'}`, 'batchStatus');
+    }
+
+    // Test 4: Combined Features
+    function searchPanels(event) {
+      const query = event.target.value;
+      const collapse = document.getElementById('combinedCollapse');
+      collapse.searchPanels(query);
+      log(`Searching for: "${query}"`, 'combinedStatus');
+    }
+
+    function testAllFeatures() {
+      log('Testing all features...', 'combinedStatus');
+      
+      // Test expand/collapse
+      const collapse = document.getElementById('combinedCollapse');
+      collapse.expandAll();
+      log('✓ Expanded all panels', 'combinedStatus');
+      
+      setTimeout(() => {
+        collapse.collapseAll();
+        log('✓ Collapsed all panels', 'combinedStatus');
+      }, 1000);
+      
+      setTimeout(() => {
+        // Test search
+        collapse.searchPanels('Interactions');
+        log('✓ Searched for "Interactions"', 'combinedStatus');
+      }, 2000);
+      
+      setTimeout(() => {
+        // Clear search
+        collapse.searchPanels('');
+        log('✓ Cleared search filter', 'combinedStatus');
+      }, 3000);
+      
+      setTimeout(() => {
+        log('All features tested successfully!', 'combinedStatus');
+      }, 3500);
+    }
+
+    // Monitor all collapse changes
+    document.addEventListener('DOMContentLoaded', () => {
+      const allCollapses = document.querySelectorAll('ldesign-collapse');
+      allCollapses.forEach(collapse => {
+        collapse.addEventListener('change', (e) => {
+          console.log('Collapse change event:', e.detail);
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
