@@ -63,7 +63,17 @@ const DEFAULTS = {
   maxCropBoxHeight: Infinity,
   alt: '',
   crossorigin: '',
-  themeColor: '#39f'
+  themeColor: '#39f',
+  placeholder: {
+    text: 'Click or drag image here',
+    subtext: 'Supports: JPG, PNG, GIF, WEBP',
+    icon: '',
+    clickToUpload: true,
+    dragAndDrop: true,
+    acceptedFiles: 'image/*',
+    maxFileSize: 10, // MB
+    className: ''
+  }
 }
 
 export class Cropper {
@@ -74,6 +84,8 @@ export class Cropper {
   private cropBox: CropBox | null = null
   private imageProcessor: ImageProcessor | null = null
   private interactionManager: InteractionManager | null = null
+  private placeholderElement: HTMLElement | null = null
+  private fileInput: HTMLInputElement | null = null
   private ready = false
   private disabled = false
   private currentAction: Action = 'crop'
@@ -112,9 +124,17 @@ export class Cropper {
     // Create image processor
     this.imageProcessor = new ImageProcessor(this.wrapper)
 
-    // Load image if src provided
+    // Merge placeholder options with defaults
+    this.options.placeholder = {
+      ...DEFAULTS.placeholder,
+      ...this.options.placeholder
+    }
+
+    // Load image if src provided, otherwise show placeholder
     if (this.options.src) {
       await this.replace(this.options.src)
+    } else {
+      this.showPlaceholder()
     }
   }
 
@@ -125,6 +145,9 @@ export class Cropper {
     if (!this.imageProcessor || !this.wrapper) return
 
     try {
+      // Hide placeholder if it exists
+      this.hidePlaceholder()
+
       // Load image
       await this.imageProcessor.load(
         src,
@@ -151,6 +174,8 @@ export class Cropper {
       }
     } catch (error) {
       console.error('Failed to load image:', error)
+      // Show placeholder again if image load fails
+      this.showPlaceholder()
       throw error
     }
   }
@@ -677,6 +702,197 @@ export class Cropper {
     this.disabled = false
     if (this.interactionManager) {
       this.interactionManager.enable()
+    }
+  }
+
+  /**
+   * Show placeholder
+   */
+  private showPlaceholder(): void {
+    if (!this.wrapper || this.placeholderElement) return
+
+    const placeholder = this.options.placeholder
+    if (!placeholder) return
+
+    // Create placeholder element
+    this.placeholderElement = createElement('div', 'cropper-placeholder')
+    if (placeholder.className) {
+      addClass(this.placeholderElement, placeholder.className)
+    }
+
+    // Add icon
+    if (placeholder.icon) {
+      const iconElement = createElement('div', 'cropper-placeholder-icon')
+      iconElement.innerHTML = placeholder.icon
+      this.placeholderElement.appendChild(iconElement)
+    } else {
+      // Default SVG icon
+      const iconElement = createElement('div', 'cropper-placeholder-icon')
+      iconElement.innerHTML = `
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+      `
+      this.placeholderElement.appendChild(iconElement)
+    }
+
+    // Add text
+    if (placeholder.text) {
+      const textElement = createElement('div', 'cropper-placeholder-text')
+      textElement.textContent = placeholder.text
+      this.placeholderElement.appendChild(textElement)
+    }
+
+    // Add subtext
+    if (placeholder.subtext) {
+      const subtextElement = createElement('div', 'cropper-placeholder-subtext')
+      subtextElement.textContent = placeholder.subtext
+      this.placeholderElement.appendChild(subtextElement)
+    }
+
+    // Create hidden file input
+    if (placeholder.clickToUpload || placeholder.dragAndDrop) {
+      this.fileInput = document.createElement('input')
+      this.fileInput.type = 'file'
+      this.fileInput.accept = placeholder.acceptedFiles || 'image/*'
+      this.fileInput.style.display = 'none'
+      this.wrapper.appendChild(this.fileInput)
+
+      // Handle file input change
+      this.fileInput.addEventListener('change', this.handleFileSelect.bind(this))
+    }
+
+    // Add click handler
+    if (placeholder.clickToUpload) {
+      this.placeholderElement.style.cursor = 'pointer'
+      this.placeholderElement.addEventListener('click', () => {
+        if (this.fileInput) {
+          this.fileInput.click()
+        }
+      })
+    }
+
+    // Add drag and drop handlers
+    if (placeholder.dragAndDrop) {
+      this.placeholderElement.addEventListener('dragover', this.handleDragOver.bind(this))
+      this.placeholderElement.addEventListener('dragleave', this.handleDragLeave.bind(this))
+      this.placeholderElement.addEventListener('drop', this.handleDrop.bind(this))
+    }
+
+    this.wrapper.appendChild(this.placeholderElement)
+  }
+
+  /**
+   * Hide placeholder
+   */
+  private hidePlaceholder(): void {
+    if (this.placeholderElement && this.placeholderElement.parentNode) {
+      this.placeholderElement.parentNode.removeChild(this.placeholderElement)
+      this.placeholderElement = null
+    }
+  }
+
+  /**
+   * Handle file selection
+   */
+  private handleFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement
+    if (input.files && input.files[0]) {
+      this.loadFile(input.files[0])
+    }
+  }
+
+  /**
+   * Handle drag over
+   */
+  private handleDragOver(event: DragEvent): void {
+    event.preventDefault()
+    event.stopPropagation()
+    if (this.placeholderElement) {
+      addClass(this.placeholderElement, 'cropper-placeholder-dragover')
+    }
+  }
+
+  /**
+   * Handle drag leave
+   */
+  private handleDragLeave(event: DragEvent): void {
+    event.preventDefault()
+    event.stopPropagation()
+    if (this.placeholderElement) {
+      removeClass(this.placeholderElement, 'cropper-placeholder-dragover')
+    }
+  }
+
+  /**
+   * Handle drop
+   */
+  private handleDrop(event: DragEvent): void {
+    event.preventDefault()
+    event.stopPropagation()
+    
+    if (this.placeholderElement) {
+      removeClass(this.placeholderElement, 'cropper-placeholder-dragover')
+    }
+
+    const files = event.dataTransfer?.files
+    if (files && files[0]) {
+      // Check if it's an image file
+      if (files[0].type.startsWith('image/')) {
+        this.loadFile(files[0])
+      } else {
+        this.handleUploadError('Please drop an image file')
+      }
+    }
+  }
+
+  /**
+   * Load file
+   */
+  private loadFile(file: File): void {
+    const placeholder = this.options.placeholder
+    
+    // Check file size
+    if (placeholder?.maxFileSize) {
+      const maxSizeInBytes = placeholder.maxFileSize * 1024 * 1024
+      if (file.size > maxSizeInBytes) {
+        this.handleUploadError(`File size must be less than ${placeholder.maxFileSize}MB`)
+        return
+      }
+    }
+
+    // Create object URL and load image
+    const url = URL.createObjectURL(file)
+    
+    // Load the image
+    this.replace(url).then(() => {
+      // Dispatch upload event
+      if (this.container) {
+        dispatch(this.container, 'upload', { file, url })
+      }
+      if (this.options.upload) {
+        this.options.upload(new CustomEvent('upload', { detail: { file, url } }))
+      }
+    }).catch((error) => {
+      URL.revokeObjectURL(url)
+      this.handleUploadError('Failed to load image')
+    })
+  }
+
+  /**
+   * Handle upload error
+   */
+  private handleUploadError(message: string): void {
+    console.error('Upload error:', message)
+    
+    // Dispatch error event
+    if (this.container) {
+      dispatch(this.container, 'uploadError', { message })
+    }
+    if (this.options.uploadError) {
+      this.options.uploadError(new CustomEvent('uploadError', { detail: { message } }))
     }
   }
 

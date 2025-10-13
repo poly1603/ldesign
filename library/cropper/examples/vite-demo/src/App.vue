@@ -10,8 +10,21 @@
       <section class="demo-section">
         <h2>1. Load Image</h2>
         <div class="controls">
-          <input type="file" accept="image/*" @change="handleFileChange" />
-          <button @click="loadSampleImage">Load Sample Image</button>
+          <input 
+            type="file" 
+            ref="fileInput"
+            accept="image/*" 
+            @change="handleFileChange" 
+            style="display: none;"
+          />
+          <input 
+            type="text" 
+            v-model="placeholderText" 
+            placeholder="自定义占位符文字"
+            style="margin-right: 10px; padding: 5px;"
+          />
+          <button @click="updatePlaceholder">更新占位符</button>
+          <button @click="loadSampleImage" style="margin-left: 10px;">Load Sample Image</button>
         </div>
       </section>
 
@@ -22,7 +35,12 @@
         <div class="cropper-layout">
           <!-- Main Cropper -->
           <div class="cropper-main">
-            <div class="cropper-wrapper">
+            <div class="cropper-wrapper" 
+                 @click="handlePlaceholderClick"
+                 @dragover="handleDragOver"
+                 @dragleave="handleDragLeave"
+                 @drop="handleDrop"
+                 :class="{ 'dragging': isDragging }">
               <VueCropper
                 v-if="imageSrc"
                 ref="cropperRef"
@@ -45,8 +63,14 @@
                 @ready="onReady"
                 @crop="onCrop"
               />
-              <div v-else class="placeholder">
-                Please load an image to start cropping
+              <div v-else class="placeholder" style="pointer-events: none;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px; opacity: 0.5;">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <div style="font-size: 18px; font-weight: 500; margin-bottom: 8px;">{{ placeholderText }}</div>
+                <div style="font-size: 14px; opacity: 0.7;">支持点击选择或拖拽图片到此处</div>
               </div>
             </div>
 
@@ -204,6 +228,7 @@ import '@ldesign/cropper/style.css'
 // Refs
 const cropperRef = ref()
 const previewCanvas = ref<HTMLCanvasElement>()
+const fileInput = ref<HTMLInputElement>()
 const imageSrc = ref('')
 const aspectRatio = ref(NaN)
 const viewMode = ref<0 | 1 | 2 | 3>(0)
@@ -213,6 +238,8 @@ const croppedCanvas = ref<HTMLCanvasElement | null>(null)
 const themeColor = ref('#39f')
 const scaleStep = ref(0.1)
 const showAdvanced = ref(false)
+const isDragging = ref(false)
+const placeholderText = ref('点击或拖拽图片到这里')
 
 // Sample image URL
 const sampleImageUrl = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800'
@@ -223,11 +250,77 @@ const handleFileChange = (e: Event) => {
   const file = target.files?.[0]
 
   if (file) {
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      imageSrc.value = event.target?.result as string
+    loadFile(file)
+  }
+}
+
+// Load file
+const loadFile = (file: File) => {
+  // Check if it's an image
+  if (!file.type.startsWith('image/')) {
+    alert('请选择图片文件')
+    return
+  }
+
+  // Check file size (10MB limit)
+  const maxSize = 10 * 1024 * 1024
+  if (file.size > maxSize) {
+    alert('图片大小不能超过10MB')
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = (event) => {
+    imageSrc.value = event.target?.result as string
+  }
+  reader.readAsDataURL(file)
+}
+
+// Handle placeholder click
+const handlePlaceholderClick = () => {
+  if (!imageSrc.value && fileInput.value) {
+    fileInput.value.click()
+  }
+}
+
+// Handle drag over
+const handleDragOver = (e: DragEvent) => {
+  if (!imageSrc.value) {
+    e.preventDefault()
+    e.stopPropagation()
+    isDragging.value = true
+  }
+}
+
+// Handle drag leave
+const handleDragLeave = (e: DragEvent) => {
+  if (!imageSrc.value) {
+    e.preventDefault()
+    e.stopPropagation()
+    isDragging.value = false
+  }
+}
+
+// Handle drop
+const handleDrop = (e: DragEvent) => {
+  if (!imageSrc.value) {
+    e.preventDefault()
+    e.stopPropagation()
+    isDragging.value = false
+
+    const files = e.dataTransfer?.files
+    if (files && files[0]) {
+      loadFile(files[0])
     }
-    reader.readAsDataURL(file)
+  }
+}
+
+// Update placeholder
+const updatePlaceholder = () => {
+  // Force re-render by toggling imageSrc
+  if (!imageSrc.value) {
+    // Just update the reactive value
+    placeholderText.value = placeholderText.value || '点击或拖拽图片到这里'
   }
 }
 
@@ -451,15 +544,31 @@ watch(themeColor, (newColor) => {
   border-radius: 8px;
   overflow: hidden;
   position: relative;
+  border: 2px dashed transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.cropper-wrapper:hover:has(.placeholder) {
+  background: #f0f0f0;
+  border-color: #39f;
+}
+
+.cropper-wrapper.dragging {
+  background: #e8f4ff;
+  border-color: #39f;
+  border-style: solid;
 }
 
 .placeholder {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
   color: #999;
   font-size: 1.1rem;
+  user-select: none;
 }
 
 .toolbar-container {

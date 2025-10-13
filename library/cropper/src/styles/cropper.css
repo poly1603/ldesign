@@ -529,3 +529,103 @@
 .cropper-fade-in {
   animation: cropper-fade-in 0.3s ease-in-out;
 }
+
+/* Placeholder styles */
+.cropper-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #fafafa;
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.cropper-placeholder:hover {
+  border-color: var(--cropper-theme-color);
+  background-color: #f0f8ff;
+}
+
+.cropper-placeholder-dragover {
+  border-color: var(--cropper-theme-color);
+  background-color: #e6f3ff;
+  border-width: 3px;
+}
+
+.cropper-placeholder-icon {
+  margin-bottom: 16px;
+  color: #999;
+  transition: color 0.3s ease;
+}
+
+.cropper-placeholder-icon svg {
+  width: 64px;
+  height: 64px;
+}
+
+.cropper-placeholder:hover .cropper-placeholder-icon {
+  color: var(--cropper-theme-color);
+}
+
+.cropper-placeholder-text {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.cropper-placeholder-subtext {
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+  padding: 0 20px;
+  max-width: 80%;
+  line-height: 1.5;
+}
+
+/* Upload button style */
+.cropper-placeholder[style*="cursor: pointer"]:hover {
+  transform: scale(1.02);
+}
+
+/* Drag and drop animation */
+@keyframes cropper-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(57, 159, 255, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(57, 159, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(57, 159, 255, 0);
+  }
+}
+
+.cropper-placeholder-dragover {
+  animation: cropper-pulse 1.5s infinite;
+}
+
+/* Mobile responsive */
+@media (max-width: 767px) {
+  .cropper-placeholder-text {
+    font-size: 16px;
+  }
+  
+  .cropper-placeholder-subtext {
+    font-size: 12px;
+  }
+  
+  .cropper-placeholder-icon svg {
+    width: 48px;
+    height: 48px;
+  }
+}

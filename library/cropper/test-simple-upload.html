@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Upload Test</title>
+  <link rel="stylesheet" href="./dist/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .container {
+      width: 100%;
+      height: 500px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .controls {
+      margin: 20px 0;
+    }
+    button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      background: #39f;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2980eb;
+    }
+    .info {
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>图片裁剪器 - 上传测试</h1>
+  
+  <div class="info">
+    <p>测试功能：</p>
+    <ul>
+      <li>自定义占位符文字</li>
+      <li>点击选择图片</li>
+      <li>拖拽上传图片</li>
+    </ul>
+  </div>
+
+  <div id="cropper-container" class="container"></div>
+
+  <div class="controls">
+    <button id="test-custom-text">测试自定义文字</button>
+    <button id="test-english-text">Test English Text</button>
+    <button id="load-url">从URL加载图片</button>
+    <button id="get-crop">获取裁剪结果</button>
+  </div>
+
+  <div id="output" class="info">
+    <p>事件日志：</p>
+  </div>
+
+  <script type="module">
+    import { Cropper } from './dist/index.js';
+
+    let cropper = null;
+    const output = document.getElementById('output');
+
+    function log(message) {
+      const time = new Date().toLocaleTimeString();
+      output.innerHTML += `<div>[${time}] ${message}</div>`;
+    }
+
+    // 初始化裁剪器 - 中文占位符
+    function initChineseCropper() {
+      if (cropper) {
+        cropper.destroy();
+      }
+
+      cropper = new Cropper('cropper-container', {
+        aspectRatio: 16 / 9,
+        placeholder: {
+          text: '点击或拖拽图片到这里',
+          subtext: '支持 JPG、PNG、GIF、WEBP 格式（最大 10MB）',
+          clickToUpload: true,
+          dragAndDrop: true,
+          acceptedFiles: 'image/*',
+          maxFileSize: 10
+        },
+        ready: (event) => {
+          log('裁剪器已就绪');
+        },
+        upload: (event) => {
+          const { file } = event.detail;
+          log(`已上传图片: ${file.name} (${(file.size / 1024).toFixed(2)}KB)`);
+        },
+        uploadError: (event) => {
+          const { message } = event.detail;
+          log(`上传错误: ${message}`);
+        }
+      });
+
+      log('初始化中文占位符裁剪器');
+    }
+
+    // 初始化裁剪器 - 英文占位符
+    function initEnglishCropper() {
+      if (cropper) {
+        cropper.destroy();
+      }
+
+      cropper = new Cropper('cropper-container', {
+        aspectRatio: 1,
+        placeholder: {
+          text: 'Drop your image here or click to browse',
+          subtext: 'PNG, JPG, GIF up to 10MB',
+          clickToUpload: true,
+          dragAndDrop: true,
+          maxFileSize: 10
+        },
+        ready: (event) => {
+          log('Cropper ready');
+        },
+        upload: (event) => {
+          const { file } = event.detail;
+          log(`Image uploaded: ${file.name}`);
+        },
+        uploadError: (event) => {
+          const { message } = event.detail;
+          log(`Upload error: ${message}`);
+        }
+      });
+
+      log('Initialized English placeholder cropper');
+    }
+
+    // 页面加载完成后初始化
+    window.addEventListener('DOMContentLoaded', () => {
+      initChineseCropper();
+    });
+
+    // 测试自定义中文文字
+    document.getElementById('test-custom-text').addEventListener('click', () => {
+      initChineseCropper();
+    });
+
+    // 测试英文文字
+    document.getElementById('test-english-text').addEventListener('click', () => {
+      initEnglishCropper();
+    });
+
+    // 从URL加载图片
+    document.getElementById('load-url').addEventListener('click', () => {
+      const url = prompt('请输入图片URL:');
+      if (url && cropper) {
+        cropper.replace(url).then(() => {
+          log('成功从URL加载图片');
+        }).catch((error) => {
+          log('加载图片失败: ' + error.message);
+        });
+      }
+    });
+
+    // 获取裁剪结果
+    document.getElementById('get-crop').addEventListener('click', () => {
+      if (cropper) {
+        try {
+          const canvas = cropper.getCroppedCanvas({
+            width: 300,
+            height: 200
+          });
+          
+          if (canvas) {
+            canvas.toBlob((blob) => {
+              const url = URL.createObjectURL(blob);
+              window.open(url, '_blank');
+              log('裁剪结果已在新窗口打开');
+            });
+          } else {
+            log('请先选择并裁剪图片');
+          }
+        } catch (error) {
+          log('获取裁剪结果失败: ' + error.message);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

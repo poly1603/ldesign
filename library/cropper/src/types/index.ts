@@ -205,6 +205,26 @@ export interface CropperOptions {
   // Crossorigin attribute
   crossorigin?: string
 
+  // Placeholder options
+  placeholder?: {
+    // Main text shown when no image
+    text?: string
+    // Subtitle or instruction text
+    subtext?: string
+    // Icon or image to show
+    icon?: string
+    // Enable click to upload
+    clickToUpload?: boolean
+    // Enable drag and drop
+    dragAndDrop?: boolean
+    // Accepted file types
+    acceptedFiles?: string
+    // Max file size in MB
+    maxFileSize?: number
+    // Custom class for styling
+    className?: string
+  }
+
   // Events
   ready?: (event: CustomEvent) => void
   cropstart?: (event: CustomEvent) => void
@@ -212,6 +232,8 @@ export interface CropperOptions {
   cropend?: (event: CustomEvent) => void
   crop?: (event: CustomEvent) => void
   zoom?: (event: CustomEvent) => void
+  upload?: (event: CustomEvent) => void
+  uploadError?: (event: CustomEvent) => void
 }
 
 // Get cropped canvas options
