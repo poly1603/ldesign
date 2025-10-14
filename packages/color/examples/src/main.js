@@ -3,7 +3,9 @@ import {
   generateThemePalettes,
   generateThemedCssVariables,
   injectThemedCssVariables,
-  setThemeMode
+  setThemeMode,
+  generateThemeCssVars,
+  applyThemeCssVars
 } from '@ldesign/color/core'
 import { runAnalysis } from './analyze.js'
 
@@ -21,6 +23,25 @@ app.innerHTML = `
         <div class="color-input-group">
           <input type="color" id="primaryColor" value="#1890ff">
           <input type="text" id="primaryHex" value="#1890ff">
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <label for="cssPrefix">CSS Var Prefix:</label>
+        <input type="text" id="cssPrefix" placeholder="e.g., tw-, app-" value="">
+      </div>
+      
+      <div class="control-group">
+        <label>CSS Var Suffix Format:</label>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="suffixFormat" value="tailwind" checked>
+            Tailwind (50, 100, 200...)
+          </label>
+          <label>
+            <input type="radio" name="suffixFormat" value="numeric">
+            Numeric (1, 2, 3...)
+          </label>
         </div>
       </div>
       
@@ -210,18 +231,68 @@ function displayTheme(mode) {
   renderPalette(theme.info, 'info-palette')
   renderPalette(theme.gray, 'gray-palette')
   
-  // Generate themed CSS variables for both modes
-  const cssVars = generateThemedCssVariables({
-    light: generatedThemes.light,
-    dark: generatedThemes.dark
+  // Get CSS variable configuration from UI
+  const prefix = document.getElementById('cssPrefix').value || ''
+  const suffixFormat = document.querySelector('input[name="suffixFormat"]:checked').value
+  
+  // Prepare theme object for CSS var generation
+  const themeForCss = {
+    colors: {
+      primary: theme.primary,
+      success: theme.success,
+      warning: theme.warning,
+      danger: theme.danger,
+      info: theme.info
+    },
+    grays: theme.gray
+  }
+  
+  // Generate CSS variables with custom configuration
+  const cssVars = generateThemeCssVars(themeForCss, {
+    prefix,
+    suffixFormat
   })
-  document.getElementById('css-output').textContent = cssVars
+  
+  // Display complete CSS with both light and dark mode variables if available
+  let fullCss = ''
+  if (generatedThemes.light && generatedThemes.dark) {
+    const lightTheme = {
+      colors: {
+        primary: generatedThemes.light.primary,
+        success: generatedThemes.light.success,
+        warning: generatedThemes.light.warning,
+        danger: generatedThemes.light.danger,
+        info: generatedThemes.light.info
+      },
+      grays: generatedThemes.light.gray
+    }
+    const darkTheme = {
+      colors: {
+        primary: generatedThemes.dark.primary,
+        success: generatedThemes.dark.success,
+        warning: generatedThemes.dark.warning,
+        danger: generatedThemes.dark.danger,
+        info: generatedThemes.dark.info
+      },
+      grays: generatedThemes.dark.gray
+    }
+    
+    const lightCss = generateThemeCssVars(lightTheme, { prefix, suffixFormat })
+    const darkCss = generateThemeCssVars(darkTheme, { prefix, suffixFormat })
+    
+    fullCss = `/* Light Mode */\n:root {\n${lightCss}\n}\n\n/* Dark Mode */\n:root[data-theme-mode="dark"] {\n${darkCss}\n}`
+  } else {
+    fullCss = `:root {\n${cssVars}\n}`
+  }
+  
+  document.getElementById('css-output').textContent = fullCss
   
   // Auto apply if checked
   if (document.getElementById('autoApply').checked) {
-    injectThemedCssVariables({
-      light: generatedThemes.light,
-      dark: generatedThemes.dark
+    applyThemeCssVars(themeForCss, {
+      prefix,
+      suffixFormat,
+      styleId: `ldesign-theme-${mode}`
     })
     
     // Apply the current theme mode using the proper function

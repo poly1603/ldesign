@@ -193,6 +193,125 @@ export function generateTailwindTheme(
 }
 
 /**
+ * CSS Variable suffix format options
+ */
+export type CssVarSuffixFormat = 'tailwind' | 'numeric';
+
+/**
+ * Options for CSS variable generation
+ */
+export interface CssVarOptions {
+  /** Prefix for CSS variable names (e.g., 'tw-', 'app-'). Default is empty */
+  prefix?: string;
+  /** Suffix format: 'tailwind' for (50, 100, 200...), 'numeric' for (1, 2, 3...) */
+  suffixFormat?: CssVarSuffixFormat;
+}
+
+/**
+ * Generate CSS variables from a Tailwind palette
+ * 
+ * @param palette - Tailwind palette object
+ * @param name - Color name (e.g., 'primary', 'success')
+ * @param options - CSS variable generation options
+ * @returns CSS variables as string
+ */
+export function generatePaletteCssVars(
+  palette: { [key: string]: string },
+  name: string,
+  options: CssVarOptions = {}
+): string {
+  const { prefix = '', suffixFormat = 'tailwind' } = options;
+  const cssVars: string[] = [];
+  
+  Object.entries(palette).forEach(([shade, color], index) => {
+    let suffix: string;
+    
+    if (suffixFormat === 'numeric') {
+      // Use 1-based numeric index
+      suffix = String(index + 1);
+    } else {
+      // Use Tailwind shade names (50, 100, 200, etc.)
+      suffix = shade;
+    }
+    
+    const varName = `--${prefix}${name}-color-${suffix}`;
+    cssVars.push(`  ${varName}: ${color};`);
+  });
+  
+  return cssVars.join('\n');
+}
+
+/**
+ * Generate CSS variables for a complete theme
+ * 
+ * @param theme - Complete theme object with colors and grays
+ * @param options - CSS variable generation options  
+ * @returns CSS variables as string
+ */
+export function generateThemeCssVars(
+  theme: {
+    colors: { [colorName: string]: { [shade: string]: string } };
+    grays?: { [shade: string]: string };
+  },
+  options: CssVarOptions = {}
+): string {
+  const cssVars: string[] = [];
+  
+  // Generate variables for each color
+  Object.entries(theme.colors).forEach(([colorName, palette]) => {
+    cssVars.push(generatePaletteCssVars(palette, colorName, options));
+  });
+  
+  // Generate variables for grays if present
+  if (theme.grays) {
+    cssVars.push(generatePaletteCssVars(theme.grays, 'gray', options));
+  }
+  
+  return cssVars.join('\n');
+}
+
+/**
+ * Insert CSS variables into document head
+ * 
+ * @param cssVars - CSS variables string
+ * @param id - Style element ID for updating existing styles
+ */
+export function insertCssVars(cssVars: string, id: string = 'tailwind-palette-vars'): void {
+  if (typeof document === 'undefined') return;
+  
+  // Remove existing style element if present
+  const existing = document.getElementById(id);
+  if (existing) {
+    existing.remove();
+  }
+  
+  // Create new style element
+  const style = document.createElement('style');
+  style.id = id;
+  style.textContent = `:root {\n${cssVars}\n}`;
+  
+  document.head.appendChild(style);
+}
+
+/**
+ * Generate and insert theme CSS variables in one step
+ * 
+ * @param theme - Complete theme object
+ * @param options - CSS variable generation options
+ */
+export function applyThemeCssVars(
+  theme: {
+    colors: { [colorName: string]: { [shade: string]: string } };
+    grays?: { [shade: string]: string };
+  },
+  options: CssVarOptions & { styleId?: string } = {}
+): void {
+  const { styleId = 'tailwind-palette-vars', ...cssVarOptions } = options;
+  const cssVars = generateThemeCssVars(theme, cssVarOptions);
+  insertCssVars(cssVars, styleId);
+}
+
+/**
  * Generate multiple color palettes like tailwindcss-palette-generator
  */
 export function generateTailwindPalettes(

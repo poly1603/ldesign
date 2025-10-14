@@ -92,7 +92,13 @@ export {
   generateTailwindGrayScale,
   generateTailwindTheme,
   generateTailwindPalettes,
-  TAILWIND_SHADES
+  generatePaletteCssVars,
+  generateThemeCssVars,
+  insertCssVars,
+  applyThemeCssVars,
+  TAILWIND_SHADES,
+  type CssVarSuffixFormat,
+  type CssVarOptions
 } from './tailwindPalette';
 
 // Dark mode palette generation

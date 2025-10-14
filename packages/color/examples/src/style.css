@@ -84,8 +84,27 @@ input[type="text"]:focus {
   border-color: var(--color-primary-6, #1890ff);
 }
 
-input[type="checkbox"] {
+input[type="checkbox"],
+input[type="radio"] {
   margin-right: 0.5rem;
+}
+
+#cssPrefix {
+  width: 200px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+  font-weight: normal;
+  cursor: pointer;
 }
 
 .actions {
