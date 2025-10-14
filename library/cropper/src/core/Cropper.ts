@@ -66,6 +66,7 @@ const DEFAULTS = {
   alt: '',
   crossorigin: '',
   themeColor: '#39f',
+  toolbar: true,  // Default to show toolbar
   placeholder: {
     text: 'Click or drag image here',
     subtext: 'Supports: JPG, PNG, GIF, WEBP',
@@ -304,7 +305,11 @@ export class Cropper {
    * Initialize toolbar
    */
   private initToolbar(): void {
-    if (!this.container || !this.options.toolbar) return
+    console.log('initToolbar called, options.toolbar:', this.options.toolbar)
+    if (!this.container || !this.options.toolbar) {
+      console.log('Toolbar not initialized - container:', !!this.container, 'toolbar option:', this.options.toolbar)
+      return
+    }
 
     // Destroy existing toolbar if any
     if (this.toolbar) {
@@ -316,8 +321,23 @@ export class Cropper {
       ? {} // Use default options if true
       : this.options.toolbar
 
-    // Create toolbar with options
-    this.toolbar = new Toolbar(this, this.container, toolbarOptions)
+    // Create a toolbar container wrapper if not exists
+    let toolbarContainer = this.container.querySelector('.cropper-toolbar-container') as HTMLElement
+    if (!toolbarContainer) {
+      toolbarContainer = document.createElement('div')
+      toolbarContainer.className = 'cropper-toolbar-container'
+      // Insert toolbar container after the cropper wrapper
+      if (this.wrapper && this.wrapper.nextSibling) {
+        this.container.insertBefore(toolbarContainer, this.wrapper.nextSibling)
+      } else {
+        this.container.appendChild(toolbarContainer)
+      }
+    }
+
+    // Create toolbar with options, using the toolbar container
+    console.log('Creating toolbar with options:', toolbarOptions, 'container:', toolbarContainer)
+    this.toolbar = new Toolbar(this, toolbarContainer, toolbarOptions)
+    console.log('Toolbar created:', this.toolbar)
 
     // Listen to toolbar crop event
     this.container.addEventListener('toolbar:crop', (event: any) => {

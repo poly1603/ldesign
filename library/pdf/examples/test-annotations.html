@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF注释功能测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        #app {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .file-input-label:hover {
+            background: #0056b3;
+        }
+
+        #viewer-container {
+            flex: 1;
+            position: relative;
+            background: white;
+            overflow: auto;
+        }
+
+        .status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 4px;
+        }
+
+        .info h3 {
+            margin: 0 0 10px 0;
+        }
+
+        .info ul {
+            margin: 5px 0 0 20px;
+        }
+
+        .info li {
+            padding: 2px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="header">
+            <div class="file-input-wrapper">
+                <input type="file" id="fileInput" accept=".pdf">
+                <label for="fileInput" class="file-input-label">选择PDF文件</label>
+            </div>
+            <span id="fileName"></span>
+            <button onclick="testAnnotations()">测试注释工具</button>
+        </div>
+        
+        <div id="viewer-container">
+            <div class="info">
+                <h3>📝 注释功能测试说明</h3>
+                <p>1. 选择一个PDF文件</p>
+                <p>2. 点击"测试注释工具"按钮或使用工具栏上的注释按钮</p>
+                <p>3. 支持的注释工具：</p>
+                <ul>
+                    <li><strong>矩形</strong> - 绘制矩形框</li>
+                    <li><strong>圆形</strong> - 绘制圆形</li>
+                    <li><strong>箭头</strong> - 绘制箭头</li>
+                    <li><strong>画笔</strong> - 自由绘制</li>
+                    <li><strong>文本</strong> - 添加文本注释（点击后输入）</li>
+                    <li><strong>橡皮擦</strong> - 擦除注释</li>
+                </ul>
+                <p>4. 快捷键：</p>
+                <ul>
+                    <li><strong>Ctrl+Z</strong> - 撤销</li>
+                    <li><strong>Ctrl+Y</strong> - 重做</li>
+                    <li><strong>数字键1-6</strong> - 快速切换工具</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="status" id="status"></div>
+    </div>
+
+    <!-- 引入PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+
+    <!-- 引入插件 -->
+    <link rel="stylesheet" href="../dist/styles/modern.css">
+    <script src="../dist/pdf-viewer.js"></script>
+
+    <script>
+        let viewer = null;
+
+        function showStatus(message) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.classList.add('show');
+            setTimeout(() => {
+                status.classList.remove('show');
+            }, 3000);
+        }
+
+        async function loadPDF(file) {
+            const container = document.getElementById('viewer-container');
+            
+            // 清除提示信息
+            const info = container.querySelector('.info');
+            if (info) info.remove();
+            
+            // 清理旧的viewer
+            if (viewer) {
+                viewer.destroy();
+            }
+            
+            // 创建新的viewer
+            viewer = new PDFViewer.PDFViewer(container, {
+                theme: 'modern',
+                enableToolbar: true,
+                enableAnnotations: true,
+                enableSearch: true,
+                enableBookmarks: true,
+                sidebarWidth: 250,
+                defaultZoom: 'page-width'
+            });
+            
+            // 加载PDF
+            const fileUrl = URL.createObjectURL(file);
+            await viewer.loadPDF(fileUrl);
+            
+            showStatus('PDF已加载，注释工具已启用');
+            
+            // 监听注释事件
+            viewer.on('annotation-added', (annotation) => {
+                console.log('Annotation added:', annotation);
+                showStatus(`已添加${annotation.type}注释`);
+            });
+        }
+
+        function testAnnotations() {
+            if (!viewer) {
+                showStatus('请先选择PDF文件');
+                return;
+            }
+            
+            showStatus('开始测试注释工具...');
+            
+            // 模拟点击注释按钮，展开注释工具栏
+            const annotBtn = document.querySelector('.pdf-annotations');
+            if (annotBtn) {
+                annotBtn.click();
+                showStatus('注释工具栏已打开');
+                
+                // 延迟后自动选择矩形工具
+                setTimeout(() => {
+                    const rectBtn = document.querySelector('#rect');
+                    if (rectBtn) {
+                        rectBtn.click();
+                        showStatus('已选择矩形工具 - 请在PDF上绘制');
+                    }
+                }, 500);
+            }
+        }
+
+        // 文件选择事件
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                document.getElementById('fileName').textContent = file.name;
+                await loadPDF(file);
+            } else {
+                showStatus('请选择有效的PDF文件');
+            }
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (!viewer) return;
+            
+            // 数字键快速切换工具
+            if (e.key >= '1' && e.key <= '6' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const tools = ['rect', 'circle', 'arrow', 'pen', 'text', 'eraser'];
+                const toolIndex = parseInt(e.key) - 1;
+                if (toolIndex < tools.length) {
+                    const toolBtn = document.querySelector(`#${tools[toolIndex]}`);
+                    if (toolBtn) {
+                        toolBtn.click();
+                        const toolNames = ['矩形', '圆形', '箭头', '画笔', '文本', '橡皮擦'];
+                        showStatus(`切换到${toolNames[toolIndex]}工具`);
+                    }
+                }
+            }
+            
+            // Ctrl+Z 撤销
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                const undoBtn = document.querySelector('#undo');
+                if (undoBtn) {
+                    undoBtn.click();
+                    showStatus('撤销');
+                }
+            }
+            
+            // Ctrl+Y 重做
+            if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+                e.preventDefault();
+                const redoBtn = document.querySelector('#redo');
+                if (redoBtn) {
+                    redoBtn.click();
+                    showStatus('重做');
+                }
+            }
+        });
+
+        // 自动加载示例PDF（如果存在）
+        fetch('../assets/sample.pdf')
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                }
+            })
+            .then(blob => {
+                if (blob) {
+                    const file = new File([blob], 'sample.pdf', { type: 'application/pdf' });
+                    document.getElementById('fileName').textContent = 'sample.pdf';
+                    loadPDF(file);
+                }
+            })
+            .catch(() => {
+                console.log('No sample PDF found');
+            });
+    </script>
+</body>
+</html>

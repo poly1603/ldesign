@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign Editor - 媒体对话框测试</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <link rel="stylesheet" href="/src/styles/media-dialog.css">
+    <link rel="stylesheet" href="/src/styles/image-crop-dialog.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .test-section h2 {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        .test-btn:hover {
+            background: #2563eb;
+        }
+        
+        .test-btn.secondary {
+            background: #6b7280;
+        }
+        
+        .test-btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .test-btn.success {
+            background: #10b981;
+        }
+        
+        .test-btn.success:hover {
+            background: #059669;
+        }
+        
+        #editor {
+            min-height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            background: white;
+        }
+        
+        .sample-images {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .sample-image {
+            width: 150px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .sample-image:hover {
+            border-color: #3b82f6;
+            transform: scale(1.05);
+        }
+        
+        .result-area {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f9ff;
+            border-radius: 6px;
+            border: 1px solid #bae6fd;
+            min-height: 100px;
+        }
+        
+        .result-area h3 {
+            margin-top: 0;
+            color: #0369a1;
+            font-size: 16px;
+        }
+        
+        #result-content {
+            color: #334155;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 LDesign Editor - 媒体对话框测试</h1>
+        
+        <div class="test-section">
+            <h2>📦 媒体插入对话框</h2>
+            <p>点击下面的按钮测试不同类型的媒体插入对话框：</p>
+            <div class="button-group">
+                <button class="test-btn" id="testImageInsert">
+                    📷 插入图片
+                </button>
+                <button class="test-btn secondary" id="testVideoInsert">
+                    🎬 插入视频
+                </button>
+                <button class="test-btn success" id="testAudioInsert">
+                    🎵 插入音频
+                </button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>✂️ 图片裁剪对话框</h2>
+            <p>选择一张图片来测试裁剪功能：</p>
+            <div class="sample-images">
+                <img src="https://picsum.photos/400/300?random=1" alt="Sample 1" class="sample-image">
+                <img src="https://picsum.photos/400/300?random=2" alt="Sample 2" class="sample-image">
+                <img src="https://picsum.photos/400/300?random=3" alt="Sample 3" class="sample-image">
+                <img src="https://via.placeholder.com/400x300/4a9eff/ffffff?text=LDesign" alt="Sample 4" class="sample-image">
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📝 编辑器区域</h2>
+            <div id="toolbar"></div>
+            <div id="editor" contenteditable="true">
+                <h2>富文本编辑器</h2>
+                <p>在这里测试媒体插入功能。你可以：</p>
+                <ul>
+                    <li>点击上方按钮插入图片、视频或音频</li>
+                    <li>选择本地文件或输入网络地址</li>
+                    <li>对插入的图片进行裁剪和变换</li>
+                </ul>
+                <p>插入的媒体将显示在此处...</p>
+            </div>
+        </div>
+        
+        <div class="result-area">
+            <h3>📊 操作结果</h3>
+            <div id="result-content">等待操作...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 导入对话框组件
+        import { MediaInsertDialog } from '/src/ui/MediaInsertDialog.ts'
+        import { ImageCropDialog } from '/src/ui/ImageCropDialog.ts'
+        import { Editor } from '@ldesign/editor'
+        
+        // 创建一个简单的编辑器实例
+        const editorElement = document.getElementById('editor')
+        const resultContent = document.getElementById('result-content')
+        
+        // 更新结果显示
+        function updateResult(message) {
+            const timestamp = new Date().toLocaleTimeString()
+            resultContent.textContent = `[${timestamp}] ${message}`
+        }
+        
+        // 测试图片插入对话框
+        document.getElementById('testImageInsert').addEventListener('click', () => {
+            const dialog = new MediaInsertDialog({
+                editor: { getSelection: () => window.getSelection() },
+                title: '插入图片',
+                mediaType: 'image',
+                onInsert: (url, file) => {
+                    if (file) {
+                        updateResult(`选择了本地图片: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`)
+                    } else {
+                        updateResult(`选择了网络图片: ${url}`)
+                    }
+                    
+                    // 在编辑器中插入图片
+                    const img = document.createElement('img')
+                    img.src = url
+                    img.style.maxWidth = '100%'
+                    img.style.height = 'auto'
+                    img.style.borderRadius = '4px'
+                    img.style.margin = '10px 0'
+                    
+                    // 为图片添加点击事件，打开裁剪对话框
+                    img.addEventListener('click', () => {
+                        const cropDialog = new ImageCropDialog({
+                            imageUrl: img.src,
+                            onComplete: (data) => {
+                                if (data.croppedUrl) {
+                                    img.src = data.croppedUrl
+                                    updateResult(`图片已裁剪: ${data.width}x${data.height}, 旋转: ${data.rotate}°`)
+                                }
+                            },
+                            onCancel: () => {
+                                updateResult('取消了图片裁剪')
+                            }
+                        })
+                        cropDialog.show()
+                    })
+                    
+                    editorElement.appendChild(img)
+                },
+                onCancel: () => {
+                    updateResult('取消了图片插入')
+                }
+            })
+            dialog.show()
+        })
+        
+        // 测试视频插入对话框
+        document.getElementById('testVideoInsert').addEventListener('click', () => {
+            const dialog = new MediaInsertDialog({
+                editor: { getSelection: () => window.getSelection() },
+                title: '插入视频',
+                mediaType: 'video',
+                onInsert: (url, file) => {
+                    if (file) {
+                        updateResult(`选择了本地视频: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`)
+                    } else {
+                        updateResult(`选择了网络视频: ${url}`)
+                    }
+                    
+                    // 在编辑器中插入视频
+                    const video = document.createElement('video')
+                    video.src = url
+                    video.controls = true
+                    video.style.maxWidth = '100%'
+                    video.style.height = 'auto'
+                    video.style.borderRadius = '4px'
+                    video.style.margin = '10px 0'
+                    editorElement.appendChild(video)
+                },
+                onCancel: () => {
+                    updateResult('取消了视频插入')
+                }
+            })
+            dialog.show()
+        })
+        
+        // 测试音频插入对话框
+        document.getElementById('testAudioInsert').addEventListener('click', () => {
+            const dialog = new MediaInsertDialog({
+                editor: { getSelection: () => window.getSelection() },
+                title: '插入音频',
+                mediaType: 'audio',
+                onInsert: (url, file) => {
+                    if (file) {
+                        updateResult(`选择了本地音频: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`)
+                    } else {
+                        updateResult(`选择了网络音频: ${url}`)
+                    }
+                    
+                    // 在编辑器中插入音频
+                    const audio = document.createElement('audio')
+                    audio.src = url
+                    audio.controls = true
+                    audio.style.width = '100%'
+                    audio.style.margin = '10px 0'
+                    editorElement.appendChild(audio)
+                },
+                onCancel: () => {
+                    updateResult('取消了音频插入')
+                }
+            })
+            dialog.show()
+        })
+        
+        // 为示例图片添加点击事件
+        document.querySelectorAll('.sample-image').forEach(img => {
+            img.addEventListener('click', () => {
+                const dialog = new ImageCropDialog({
+                    imageUrl: img.src,
+                    onComplete: (data) => {
+                        updateResult(`完成裁剪: 
+原始URL: ${data.originalUrl}
+裁剪区域: ${data.x}, ${data.y}, ${data.width}x${data.height}
+旋转: ${data.rotate}°
+缩放: X=${data.scaleX}, Y=${data.scaleY}`)
+                        
+                        // 在编辑器中插入裁剪后的图片
+                        if (data.croppedUrl) {
+                            const newImg = document.createElement('img')
+                            newImg.src = data.croppedUrl
+                            newImg.style.maxWidth = '100%'
+                            newImg.style.height = 'auto'
+                            newImg.style.borderRadius = '4px'
+                            newImg.style.margin = '10px 0'
+                            editorElement.appendChild(newImg)
+                        }
+                    },
+                    onCancel: () => {
+                        updateResult('取消了图片裁剪')
+                    }
+                })
+                dialog.show()
+            })
+        })
+        
+        console.log('✅ 媒体对话框测试页面已加载')
+        updateResult('页面已加载，点击按钮开始测试...')
+    </script>
+</body>
+</html>

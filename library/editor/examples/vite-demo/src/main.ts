@@ -5,9 +5,11 @@
  */
 
 import './style.css'
+import './styles/media-dialog.css'
 
 // 使用简化版编辑器，自动配置完整工具栏
 import { SimpleEditor } from '@/SimpleEditor'
+import { MediaPlugin } from './plugins/media'
 
 console.log('🚀 正在初始化 LDesign Editor...')
 
@@ -74,10 +76,17 @@ const editor = new SimpleEditor({
 
 console.log('🎨 SimpleEditor 已初始化，自动配置了完整工具栏！')
 
+// 初始化媒体插件
+const mediaPlugin = new MediaPlugin()
+mediaPlugin.initialize(simpleEditor.getEditor())
+console.log('📦 媒体插件已加载 - 支持本地文件选择和网络URL输入')
+
 // 暴露到全局，方便调试
 ;(window as any).simpleEditor = simpleEditor
 ;(window as any).editor = simpleEditor.getEditor()
 ;(window as any).toolbar = simpleEditor.getToolbar()
+;(window as any).mediaPlugin = mediaPlugin
+;(window as any).__ldesignToolbar = simpleEditor.getToolbar()
 
 console.log('✅ LDesign Editor 初始化完成！')
 console.log('💡 提示：')

@@ -5,6 +5,7 @@
 
 import { Editor } from './core/Editor'
 import { Toolbar } from './ui/Toolbar'
+import { DEFAULT_TOOLBAR_ITEMS } from './ui/defaultToolbar'
 import './styles/editor.css'
 
 // 导入所有常用插件
@@ -153,10 +154,10 @@ export class SimpleEditor {
       ]
     })
 
-    // 初始化工具栏（会自动从插件收集工具栏配置）
+    // 初始化工具栏，使用完整的默认工具栏配置
     this.toolbar = new Toolbar(this.editor, {
-      container: toolbarContainer
-      // 不指定 items，Toolbar 会自动从插件收集工具栏项
+      container: toolbarContainer,
+      items: DEFAULT_TOOLBAR_ITEMS // 直接使用默认工具栏配置
     })
 
     // 添加样式

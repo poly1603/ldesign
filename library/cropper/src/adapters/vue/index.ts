@@ -12,7 +12,7 @@ import {
   type PropType
 } from 'vue'
 import { Cropper } from '../../core/Cropper'
-import type { CropperOptions, GetCroppedCanvasOptions } from '../../types'
+import type { CropperOptions, GetCroppedCanvasOptions, ToolbarOptions } from '../../types'
 import '../../styles/cropper.css'
 
 export const VueCropper = defineComponent({
@@ -108,10 +108,17 @@ export const VueCropper = defineComponent({
       type: Boolean,
       default: true
     },
-    scaleStep: {
-      type: Number,
-      default: 0.1
-    }
+  scaleStep: {
+    type: Number,
+    default: 0.1
+  },
+  toolbar: {
+    type: [Boolean, Object] as PropType<boolean | ToolbarOptions>,
+    default: true
+  },
+  onToolbarCrop: {
+    type: Function as PropType<(canvas: HTMLCanvasElement) => void>
+  }
   },
   emits: ['ready', 'cropstart', 'cropmove', 'cropend', 'crop', 'zoom'],
   setup(props, { emit, expose }) {
@@ -147,6 +154,8 @@ export const VueCropper = defineComponent({
         skewable: props.skewable,
         translatable: props.translatable,
         scaleStep: props.scaleStep,
+        toolbar: props.toolbar,
+        onToolbarCrop: props.onToolbarCrop,
         ready: (e) => emit('ready', e),
         cropstart: (e) => emit('cropstart', e),
         cropmove: (e) => emit('cropmove', e),

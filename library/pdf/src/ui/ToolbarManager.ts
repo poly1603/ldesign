@@ -867,8 +867,8 @@ export class ToolbarManager {
    */
   private setAnnotationMode(mode: string | null): void {
     // Clear previous mode
-    if (this.annotationMode) {
-      const prevBtn = this.container?.querySelector(`.pdf-${this.annotationMode}`) as HTMLElement;
+    if (this.annotationMode && this.annotationToolbar) {
+      const prevBtn = this.annotationToolbar.querySelector(`button[id="${this.annotationMode}"]`) as HTMLElement;
       if (prevBtn) {
         prevBtn.style.background = '';
         prevBtn.style.color = '';
@@ -877,9 +877,9 @@ export class ToolbarManager {
     
     this.annotationMode = mode;
     
-    if (mode) {
+    if (mode && this.annotationToolbar) {
       // Highlight active button
-      const activeBtn = this.container?.querySelector(`.pdf-${mode}`) as HTMLElement;
+      const activeBtn = this.annotationToolbar.querySelector(`button[id="${mode}"]`) as HTMLElement;
       if (activeBtn) {
         activeBtn.style.background = 'var(--pdf-active, #4a90e2)';
         activeBtn.style.color = 'white';
@@ -888,8 +888,16 @@ export class ToolbarManager {
       // Setup annotation layer
       this.setupAnnotationLayer();
       
-      // Show mode
-      this.showToast(`${mode === 'rect' ? 'Rectangle' : mode === 'arrow' ? 'Arrow' : 'Pen'} mode activated`);
+      // Show mode message
+      const modeNames: Record<string, string> = {
+        'rect': 'Rectangle',
+        'circle': 'Circle', 
+        'arrow': 'Arrow',
+        'pen': 'Free Draw',
+        'text': 'Text',
+        'eraser': 'Eraser'
+      };
+      this.showToast(`${modeNames[mode] || mode} mode activated`);
     } else {
       // Clean up
       this.removeAnnotationLayer();
@@ -964,6 +972,13 @@ export class ToolbarManager {
     const rect = this.annotationLayer.getBoundingClientRect();
     this.startX = e.clientX - rect.left;
     this.startY = e.clientY - rect.top;
+    
+    // Handle text mode specially - add text immediately on click
+    if (this.annotationMode === 'text') {
+      this.addTextAnnotation(this.startX, this.startY);
+      return;
+    }
+    
     this.isDrawing = true;
     
     if (this.annotationMode === 'pen') {
@@ -1024,9 +1039,14 @@ export class ToolbarManager {
     const endX = e.clientX - rect.left;
     const endY = e.clientY - rect.top;
     
-    // Handle text mode specially
+    // Skip if it's text mode (already handled in mousedown)
     if (this.annotationMode === 'text') {
-      this.addTextAnnotation(endX, endY);
+      this.isDrawing = false;
+      return;
+    }
+    
+    // Skip eraser mode - it doesn't create annotations
+    if (this.annotationMode === 'eraser') {
       this.isDrawing = false;
       return;
     }
@@ -1178,7 +1198,7 @@ export class ToolbarManager {
    * Add text annotation
    */
   private addTextAnnotation(x: number, y: number): void {
-    const text = prompt('Enter text:');
+    const text = prompt('Enter annotation text:');
     if (text) {
       const annotation = {
         type: 'text',
@@ -1189,13 +1209,19 @@ export class ToolbarManager {
         endY: y,
         fontSize: 16,
         pageNumber: this.viewer.getCurrentPage(),
-        color: this.currentColor
+        color: this.currentColor,
+        lineWidth: this.currentLineWidth
       };
       
       this.undoStack.push([...this.annotations]);
       this.redoStack = [];
       this.annotations.push(annotation);
-      this.redrawAnnotations();
+      
+      if (this.annotationContext && this.annotationLayer) {
+        this.annotationContext.clearRect(0, 0, this.annotationLayer.width, this.annotationLayer.height);
+        this.redrawAnnotations();
+      }
+      this.showToast(`Text annotation added: "${text.substring(0, 20)}${text.length > 20 ? '...' : ''}"`);  
     }
   }
   
@@ -1203,39 +1229,43 @@ export class ToolbarManager {
    * Erase annotations at point
    */
   private eraseAt(x: number, y: number): void {
-    const tolerance = 10; // Erase tolerance in pixels
+    const eraserSize = 10; // Eraser radius
     const currentPage = this.viewer.getCurrentPage();
     
-    // Filter out annotations near the erase point
-    const remaining = this.annotations.filter(annotation => {
+    // Filter out annotations that are hit by the eraser
+    const remainingAnnotations = this.annotations.filter(annotation => {
       if (annotation.pageNumber !== currentPage) return true;
       
-      // Check if point is near annotation
+      // Check if annotation is within eraser range
       if (annotation.type === 'pen' && annotation.path) {
-        // Check if any point in path is near
-        return !annotation.path.some((point: any) => 
-          Math.abs(point.x - x) < tolerance && Math.abs(point.y - y) < tolerance
+        // For pen paths, check each point
+        return !annotation.path.some(point => 
+          Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2)) < eraserSize
         );
-      } else if (annotation.type === 'text') {
-        // Check if near text position
-        return !(Math.abs(annotation.startX - x) < tolerance * 2 && Math.abs(annotation.startY - y) < tolerance * 2);
       } else {
-        // Check if inside rectangle/arrow bounds
-        const minX = Math.min(annotation.startX, annotation.endX);
-        const maxX = Math.max(annotation.startX, annotation.endX);
-        const minY = Math.min(annotation.startY, annotation.endY);
-        const maxY = Math.max(annotation.startY, annotation.endY);
-        return !(x >= minX - tolerance && x <= maxX + tolerance && 
-                 y >= minY - tolerance && y <= maxY + tolerance);
+        // For shapes, check if eraser hits the shape bounds
+        const minX = Math.min(annotation.startX, annotation.endX) - eraserSize;
+        const maxX = Math.max(annotation.startX, annotation.endX) + eraserSize;
+        const minY = Math.min(annotation.startY, annotation.endY) - eraserSize;
+        const maxY = Math.max(annotation.startY, annotation.endY) + eraserSize;
+        
+        return !(x >= minX && x <= maxX && y >= minY && y <= maxY);
       }
     });
     
-    if (remaining.length !== this.annotations.length) {
+    if (remainingAnnotations.length < this.annotations.length) {
       this.undoStack.push([...this.annotations]);
-      this.annotations = remaining;
-      this.redrawAnnotations();
+      this.annotations = remainingAnnotations;
+      this.redoStack = [];
+      
+      // Clear and redraw
+      if (this.annotationContext && this.annotationLayer) {
+        this.annotationContext.clearRect(0, 0, this.annotationLayer.width, this.annotationLayer.height);
+        this.redrawAnnotations();
+      }
     }
   }
+  
   
   /**
    * Show toast notification

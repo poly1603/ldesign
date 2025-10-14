@@ -34,6 +34,7 @@ export class Toolbar {
   private disabled = false
 
   constructor(cropper: Cropper, container: HTMLElement, options: ToolbarOptions = {}) {
+    console.log('Toolbar constructor called', { cropper, container, options })
     this.cropper = cropper
     this.container = container
     this.options = {
@@ -45,10 +46,14 @@ export class Toolbar {
       theme: 'auto',
       ...options
     }
+    console.log('Toolbar options after merge:', this.options)
 
     this.initializeButtons()
     if (this.options.visible) {
+      console.log('Calling render because visible is true')
       this.render()
+    } else {
+      console.log('Not rendering - visible is false')
     }
   }
 
@@ -93,7 +98,13 @@ export class Toolbar {
       title: 'Zoom In',
       group: 'zoom',
       icon: this.getIcon('zoom-in'),
-      action: () => this.cropper.zoom(0.1)
+      action: () => {
+        const imageData = this.cropper.getImageData()
+        if (imageData) {
+          const step = 0.1
+          this.cropper.scale(imageData.scaleX + step, imageData.scaleY + step)
+        }
+      }
     })
 
     this.addButton({
@@ -101,7 +112,13 @@ export class Toolbar {
       title: 'Zoom Out',
       group: 'zoom',
       icon: this.getIcon('zoom-out'),
-      action: () => this.cropper.zoom(-0.1)
+      action: () => {
+        const imageData = this.cropper.getImageData()
+        if (imageData) {
+          const step = 0.1
+          this.cropper.scale(imageData.scaleX - step, imageData.scaleY - step)
+        }
+      }
     })
 
     // Move buttons
@@ -232,12 +249,15 @@ export class Toolbar {
   }
 
   public render(): void {
+    console.log('Toolbar.render() called')
     if (this.element) {
+      console.log('Destroying existing toolbar element')
       this.destroy()
     }
 
     this.element = document.createElement('div')
     this.element.className = `cropper-toolbar cropper-toolbar-${this.options.position}`
+    console.log('Created toolbar element with class:', this.element.className)
     
     if (this.options.compact) {
       this.element.classList.add('cropper-toolbar-compact')
@@ -278,7 +298,9 @@ export class Toolbar {
     })
 
     // Append toolbar to container
+    console.log('Appending toolbar to container:', this.container)
     this.container.appendChild(this.element)
+    console.log('Toolbar appended, element in DOM:', document.contains(this.element))
   }
 
   private createButton(button: ToolbarButton): HTMLButtonElement {
