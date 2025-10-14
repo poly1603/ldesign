@@ -134,7 +134,16 @@ export class Editor {
       AllPlugins.WordCountPlugin,
       AllPlugins.ExportMarkdownPlugin,
       AllPlugins.MediaDialogPlugin,  // 媒体插入对话框（图片、视频、音频）
-      AllPlugins.ContextMenuPlugin
+      AllPlugins.ContextMenuPlugin,
+      
+      // 图片编辑功能插件 - 创建实例
+      new AllPlugins.MediaContextMenuPlugin(),  // 媒体右键菜单（滤镜、环绕、边框等）
+      new AllPlugins.ImageResizePlugin({  // 图片调整大小功能
+        minWidth: 50,
+        minHeight: 50,
+        preserveAspectRatio: true,
+        showDimensions: true
+      })
     ]
   }
 

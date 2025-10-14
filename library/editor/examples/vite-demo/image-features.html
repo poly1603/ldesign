@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Features Demo - Resize & Context Menu</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .demo-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 1400px;
+      overflow: hidden;
+    }
+    
+    .demo-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 30px;
+      text-align: center;
+      color: white;
+    }
+    
+    .demo-header h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    
+    .demo-header p {
+      opacity: 0.9;
+      font-size: 16px;
+    }
+    
+    .demo-body {
+      display: flex;
+      min-height: 600px;
+    }
+    
+    .demo-sidebar {
+      width: 320px;
+      background: #f7f8fa;
+      padding: 20px;
+      border-right: 1px solid #e1e8ed;
+      overflow-y: auto;
+    }
+    
+    .demo-content {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .feature-section {
+      margin-bottom: 25px;
+    }
+    
+    .feature-section h3 {
+      font-size: 14px;
+      color: #667eea;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #667eea;
+    }
+    
+    .action-button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: white;
+      border: 2px solid #e1e8ed;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .action-button:hover {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .action-button.primary {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+    
+    .action-button.primary:hover {
+      background: #764ba2;
+      border-color: #764ba2;
+    }
+    
+    .feature-list {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .feature-list h4 {
+      font-size: 13px;
+      color: #333;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    
+    .feature-list ul {
+      list-style: none;
+      font-size: 12px;
+      color: #666;
+      line-height: 1.8;
+    }
+    
+    .feature-list li:before {
+      content: "✓";
+      color: #667eea;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    
+    .tips-box {
+      background: #f0f4ff;
+      border: 1px solid #667eea;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 12px;
+      color: #333;
+      margin-top: 15px;
+    }
+    
+    .tips-box strong {
+      color: #667eea;
+    }
+    
+    #editor {
+      flex: 1;
+      border: 2px solid #e1e8ed;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .status-bar {
+      background: #f7f8fa;
+      padding: 10px 15px;
+      border-top: 1px solid #e1e8ed;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #666;
+      margin-top: 15px;
+      border-radius: 8px;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #4caf50;
+      border-radius: 50%;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
+    @media (max-width: 768px) {
+      .demo-body {
+        flex-direction: column;
+      }
+      
+      .demo-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e1e8ed;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <div class="demo-header">
+      <h1>🎨 Advanced Image Features Demo</h1>
+      <p>Drag to resize • Right-click for styles • Double-click for properties</p>
+    </div>
+    
+    <div class="demo-body">
+      <div class="demo-sidebar">
+        <div class="feature-section">
+          <h3>Insert Media</h3>
+          <button class="action-button primary" onclick="insertImage('landscape')">
+            📷 Insert Landscape Image
+          </button>
+          <button class="action-button primary" onclick="insertImage('portrait')">
+            🖼️ Insert Portrait Image
+          </button>
+          <button class="action-button primary" onclick="insertImage('square')">
+            ⬜ Insert Square Image
+          </button>
+          <button class="action-button" onclick="insertVideo()">
+            🎥 Insert Video
+          </button>
+          <button class="action-button" onclick="insertAudio()">
+            🎵 Insert Audio
+          </button>
+        </div>
+        
+        <div class="feature-section">
+          <div class="feature-list">
+            <h4>🔧 Resize Features</h4>
+            <ul>
+              <li>Click image to show handles</li>
+              <li>Drag corners/edges to resize</li>
+              <li>Maintains aspect ratio</li>
+              <li>Shows live dimensions</li>
+              <li>Press ESC to cancel</li>
+            </ul>
+          </div>
+          
+          <div class="feature-list">
+            <h4>🎨 Context Menu</h4>
+            <ul>
+              <li>Right-click for menu</li>
+              <li>Apply filters & effects</li>
+              <li>Change alignment</li>
+              <li>Add borders & shadows</li>
+              <li>Copy/Delete options</li>
+            </ul>
+          </div>
+          
+          <div class="feature-list">
+            <h4>⚙️ Properties Dialog</h4>
+            <ul>
+              <li>Double-click to open</li>
+              <li>Edit URL & alt text</li>
+              <li>Precise size control</li>
+              <li>Advanced styling</li>
+              <li>Live preview</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="tips-box">
+          <strong>💡 Pro Tips:</strong><br>
+          • Hold Shift while resizing to ignore aspect ratio<br>
+          • Use arrow keys to fine-tune position<br>
+          • Ctrl+Z to undo changes
+        </div>
+      </div>
+      
+      <div class="demo-content">
+        <div id="editor"></div>
+        <div class="status-bar">
+          <span><span class="status-indicator"></span><span id="status">Ready</span></span>
+          <span id="stats">Words: 0 | Images: 0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { Editor } from '/src/index.ts';
+    
+    // Create editor with all image features
+    const editor = new Editor('#editor', {
+      placeholder: 'Start typing or insert images to test features...',
+      content: `
+        <h2>Welcome to the Advanced Image Editor! 🚀</h2>
+        <p>This editor demonstrates powerful image manipulation capabilities:</p>
+        <ul>
+          <li><strong>Resize by dragging</strong> - Click any image to show resize handles</li>
+          <li><strong>Style with context menu</strong> - Right-click for styling options</li>
+          <li><strong>Edit properties</strong> - Double-click for detailed settings</li>
+        </ul>
+        <p>Here's a sample image to get started:</p>
+        <img src="https://picsum.photos/600/400" alt="Sample Image" style="display: block; margin: 20px auto; border-radius: 8px;">
+        <p>Try clicking on it to resize, or right-click for more options!</p>
+      `
+    });
+    
+    // Sample image sources
+    const imageSources = {
+      landscape: 'https://picsum.photos/800/450',
+      portrait: 'https://picsum.photos/450/800',
+      square: 'https://picsum.photos/600/600'
+    };
+    
+    // Insert image function
+    window.insertImage = function(type) {
+      const random = Math.floor(Math.random() * 1000);
+      const src = `${imageSources[type]}?random=${random}`;
+      const width = type === 'landscape' ? 600 : type === 'portrait' ? 300 : 400;
+      
+      editor.insertHTML(`
+        <img src="${src}" alt="${type} image" width="${width}" 
+             style="display: block; margin: 20px auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+      `);
+      
+      updateStatus(`${type} image inserted! Click to resize or right-click for options.`);
+      updateStats();
+    };
+    
+    // Insert video function
+    window.insertVideo = function() {
+      editor.insertHTML(`
+        <video width="600" controls style="display: block; margin: 20px auto; border-radius: 8px;">
+          <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      `);
+      
+      updateStatus('Video inserted! Right-click for playback options.');
+      updateStats();
+    };
+    
+    // Insert audio function
+    window.insertAudio = function() {
+      editor.insertHTML(`
+        <audio controls style="display: block; margin: 20px auto; width: 300px;">
+          <source src="https://www.w3schools.com/html/horse.mp3" type="audio/mpeg">
+          Your browser does not support the audio element.
+        </audio>
+      `);
+      
+      updateStatus('Audio inserted! Right-click for controls.');
+      updateStats();
+    };
+    
+    // Update status message
+    function updateStatus(message) {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = message;
+      setTimeout(() => {
+        statusEl.textContent = 'Ready';
+      }, 3000);
+    }
+    
+    // Update statistics
+    function updateStats() {
+      const content = editor.contentElement;
+      if (!content) return;
+      
+      const text = content.textContent || '';
+      const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+      const images = content.querySelectorAll('img').length;
+      
+      document.getElementById('stats').textContent = `Words: ${words} | Images: ${images}`;
+    }
+    
+    // Listen for editor changes
+    editor.on('change', () => {
+      updateStats();
+    });
+    
+    // Listen for image resize events (if implemented)
+    editor.on('imageResize', (data) => {
+      updateStatus(`Image resized to ${data.width}×${data.height}`);
+    });
+    
+    // Initial stats
+    updateStats();
+    
+    console.log('✅ Editor initialized with ImageResize and MediaContextMenu plugins');
+  </script>
+</body>
+</html>

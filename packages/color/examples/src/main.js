@@ -1,4 +1,4 @@
-import { 
+import {
   generateTailwindTheme,
   generateThemePalettes,
   generateThemedCssVariables,
@@ -15,8 +15,6 @@ const app = document.getElementById('app')
 // Create the UI
 app.innerHTML = `
   <div class="container">
-    <h1>🎨 @ldesign/color - Color Palette Generator</h1>
-    
     <div class="controls">
       <div class="control-group">
         <label for="primaryColor">Primary Color:</label>
@@ -28,7 +26,7 @@ app.innerHTML = `
       
       <div class="control-group">
         <label for="cssPrefix">CSS Var Prefix:</label>
-        <input type="text" id="cssPrefix" placeholder="e.g., tw-, app-" value="">
+        <input type="text" id="cssPrefix" placeholder="e.g., td, app" value="" title="Enter prefix without dash, it will be added automatically">
       </div>
       
       <div class="control-group">
@@ -96,7 +94,8 @@ app.innerHTML = `
       </div>
     </div>
 
-    <div class="palettes">
+    <div class="content">
+      <div class="palettes">
       <section class="palette-section">
         <h3>Primary</h3>
         <div class="palette-grid" id="primary-palette"></div>
@@ -162,6 +161,7 @@ app.innerHTML = `
       <h3>Generated CSS Variables</h3>
       <pre id="css-output"></pre>
     </div>
+    </div>
   </div>
 `
 
@@ -169,16 +169,16 @@ app.innerHTML = `
 function renderPalette(palette, containerId) {
   const container = document.getElementById(containerId)
   container.innerHTML = ''
-  
+
   // Define the order for shades
   // Regular colors use 12 shades, grays use 14 shades
   const regularShadeOrder = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950', '1000']
   const grayShadeOrder = ['50', '100', '150', '200', '300', '400', '500', '600', '700', '800', '850', '900', '950', '1000']
-  
+
   // Determine which order to use based on whether this is the gray palette
   const isGray = containerId.includes('gray')
   const shadeOrder = isGray ? grayShadeOrder : regularShadeOrder
-  
+
   // Sort and display based on the defined order
   shadeOrder.forEach(level => {
     if (palette[level]) {
@@ -186,11 +186,11 @@ function renderPalette(palette, containerId) {
       const box = document.createElement('div')
       box.className = 'color-box'
       box.style.backgroundColor = colorHex
-      
+
       // Determine text color based on lightness for better contrast
       const isLight = parseInt(level) <= 400
       box.style.color = isLight ? '#000' : '#fff'
-      
+
       box.innerHTML = `
         <span class="color-level">${level}</span>
         <span class="color-value">${colorHex}</span>
@@ -211,11 +211,11 @@ function showToast(message) {
   toast.className = 'toast'
   toast.textContent = message
   document.body.appendChild(toast)
-  
+
   setTimeout(() => {
     toast.classList.add('show')
   }, 10)
-  
+
   setTimeout(() => {
     toast.classList.remove('show')
     setTimeout(() => toast.remove(), 300)
@@ -229,16 +229,16 @@ let generatedThemes = { light: null, dark: null }
 // Generate and display theme
 function generateAndDisplayTheme() {
   const primaryHex = document.getElementById('primaryColor').value
-  
+
   // Generate both light and dark themes
   const themes = generateThemePalettes(primaryHex, {
     preserveInput: true
   })
-  
+
   // Store themes
   generatedThemes.light = themes.light
   generatedThemes.dark = themes.dark
-  
+
   // Display current theme
   displayTheme(currentTheme)
 }
@@ -246,11 +246,11 @@ function generateAndDisplayTheme() {
 // Display a specific theme (light or dark)
 function displayTheme(mode) {
   const theme = mode === 'dark' ? generatedThemes.dark : generatedThemes.light
-  
+
   if (!theme) {
     return
   }
-  
+
   // Render all palettes
   renderPalette(theme.primary, 'primary-palette')
   renderPalette(theme.success, 'success-palette')
@@ -258,11 +258,11 @@ function displayTheme(mode) {
   renderPalette(theme.danger, 'danger-palette')
   renderPalette(theme.info, 'info-palette')
   renderPalette(theme.gray, 'gray-palette')
-  
+
   // Get CSS variable configuration from UI
   const prefix = document.getElementById('cssPrefix').value || ''
   const suffixFormat = document.querySelector('input[name="suffixFormat"]:checked').value
-  
+
   // Get custom name mappings
   const nameMap = {}
   const colorNames = ['primary', 'success', 'warning', 'danger', 'info', 'gray']
@@ -272,7 +272,7 @@ function displayTheme(mode) {
       nameMap[name] = customName
     }
   })
-  
+
   // Prepare theme object for CSS var generation
   const themeForCss = {
     colors: {
@@ -284,14 +284,14 @@ function displayTheme(mode) {
     },
     grays: theme.gray
   }
-  
+
   // Generate CSS variables with custom configuration
   const cssVars = generateThemeCssVars(themeForCss, {
     prefix,
     suffixFormat,
     nameMap
   })
-  
+
   // Display complete CSS with both light and dark mode variables if available
   let fullCss = ''
   if (generatedThemes.light && generatedThemes.dark) {
@@ -315,17 +315,17 @@ function displayTheme(mode) {
       },
       grays: generatedThemes.dark.gray
     }
-    
+
     const lightCss = generateThemeCssVars(lightTheme, { prefix, suffixFormat, nameMap })
     const darkCss = generateThemeCssVars(darkTheme, { prefix, suffixFormat, nameMap })
-    
+
     fullCss = `/* Light Mode */\n:root {\n${lightCss}\n}\n\n/* Dark Mode */\n:root[data-theme-mode="dark"] {\n${darkCss}\n}`
   } else {
     fullCss = `:root {\n${cssVars}\n}`
   }
-  
+
   document.getElementById('css-output').textContent = fullCss
-  
+
   // Auto apply if checked
   if (document.getElementById('autoApply').checked) {
     applyThemeCssVars(themeForCss, {
@@ -334,7 +334,7 @@ function displayTheme(mode) {
       nameMap,
       styleId: `ldesign-theme-${mode}`
     })
-    
+
     // Apply the current theme mode using the proper function
     setThemeMode(mode)
   }
@@ -347,7 +347,7 @@ function exportCSS() {
     showToast('Please generate a theme first')
     return
   }
-  
+
   const blob = new Blob([css], { type: 'text/css' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

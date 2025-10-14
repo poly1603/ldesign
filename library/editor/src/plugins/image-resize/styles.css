@@ -1,0 +1,213 @@
+/* Image Resize Overlay */
+.image-resize-overlay {
+  position: absolute;
+  border: 2px solid #0066cc;
+  pointer-events: none;
+  z-index: 10000;
+  box-sizing: border-box;
+}
+
+/* Resize Handles */
+.image-resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #fff;
+  border: 2px solid #0066cc;
+  border-radius: 50%;
+  pointer-events: auto;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* Handle Positions */
+.image-resize-handle.handle-nw {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+
+.image-resize-handle.handle-n {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: n-resize;
+}
+
+.image-resize-handle.handle-ne {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+
+.image-resize-handle.handle-e {
+  top: 50%;
+  right: -5px;
+  transform: translateY(-50%);
+  cursor: e-resize;
+}
+
+.image-resize-handle.handle-se {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+
+.image-resize-handle.handle-s {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: s-resize;
+}
+
+.image-resize-handle.handle-sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+
+.image-resize-handle.handle-w {
+  top: 50%;
+  left: -5px;
+  transform: translateY(-50%);
+  cursor: w-resize;
+}
+
+/* Hover effects */
+.image-resize-handle:hover {
+  background-color: #0066cc;
+  transform: scale(1.2);
+}
+
+.image-resize-handle.handle-n:hover,
+.image-resize-handle.handle-s:hover {
+  transform: translateX(-50%) scale(1.2);
+}
+
+.image-resize-handle.handle-e:hover,
+.image-resize-handle.handle-w:hover {
+  transform: translateY(-50%) scale(1.2);
+}
+
+/* Dimensions Display */
+.image-resize-dimensions {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: monospace;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Resizing State */
+body.image-resizing {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+body.image-resizing * {
+  cursor: inherit !important;
+}
+
+/* Image being resized */
+.ldesign-editor img {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.ldesign-editor img[data-resizing="true"] {
+  opacity: 0.8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .image-resize-handle {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .image-resize-handle.handle-nw,
+  .image-resize-handle.handle-n,
+  .image-resize-handle.handle-ne {
+    top: -7px;
+  }
+  
+  .image-resize-handle.handle-se,
+  .image-resize-handle.handle-s,
+  .image-resize-handle.handle-sw {
+    bottom: -7px;
+  }
+  
+  .image-resize-handle.handle-nw,
+  .image-resize-handle.handle-w,
+  .image-resize-handle.handle-sw {
+    left: -7px;
+  }
+  
+  .image-resize-handle.handle-ne,
+  .image-resize-handle.handle-e,
+  .image-resize-handle.handle-se {
+    right: -7px;
+  }
+}
+
+/* Animation for showing overlay */
+@keyframes resize-overlay-show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.image-resize-overlay {
+  animation: resize-overlay-show 0.2s ease-out;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .image-resize-overlay {
+    border-color: #4da6ff;
+  }
+  
+  .image-resize-handle {
+    background-color: #1a1a1a;
+    border-color: #4da6ff;
+  }
+  
+  .image-resize-handle:hover {
+    background-color: #4da6ff;
+  }
+  
+  .image-resize-dimensions {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #000;
+  }
+}
+
+/* Accessibility: Focus styles */
+.image-resize-handle:focus {
+  outline: 2px solid #ff6600;
+  outline-offset: 2px;
+}
+
+/* Print styles - hide resize controls */
+@media print {
+  .image-resize-overlay,
+  .image-resize-handle,
+  .image-resize-dimensions {
+    display: none !important;
+  }
+}

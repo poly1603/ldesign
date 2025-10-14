@@ -39,7 +39,7 @@ export class Toolbar {
     this.options = {
       visible: true,
       position: 'top',
-      groups: ['transform', 'flip', 'zoom', 'move', 'control'],
+      groups: ['file', 'transform', 'flip', 'zoom', 'ratio', 'move', 'control', 'history', 'presets', 'export', 'actions'],
       showAdvanced: false,
       compact: false,
       theme: 'auto',
@@ -141,6 +141,47 @@ export class Toolbar {
       }
     })
 
+    // New: Quick zoom presets
+    this.addButton({
+      id: 'zoom-25',
+      title: 'Zoom 25%',
+      group: 'zoom',
+      icon: this.getIcon('zoom-25'),
+      action: () => {
+        this.cropper.scale(0.25, 0.25)
+      }
+    })
+
+    this.addButton({
+      id: 'zoom-50',
+      title: 'Zoom 50%',
+      group: 'zoom',
+      icon: this.getIcon('zoom-50'),
+      action: () => {
+        this.cropper.scale(0.5, 0.5)
+      }
+    })
+
+    this.addButton({
+      id: 'zoom-100',
+      title: 'Zoom 100%',
+      group: 'zoom',
+      icon: this.getIcon('zoom-100'),
+      action: () => {
+        this.cropper.scale(1, 1)
+      }
+    })
+
+    this.addButton({
+      id: 'zoom-200',
+      title: 'Zoom 200%',
+      group: 'zoom',
+      icon: this.getIcon('zoom-200'),
+      action: () => {
+        this.cropper.scale(2, 2)
+      }
+    })
+
     this.addButton({
       id: 'zoom-fit',
       title: 'Fit to Container',
@@ -229,6 +270,18 @@ export class Toolbar {
       action: () => this.cropper.setAspectRatio(4 / 3)
     })
 
+    // New: Lock aspect ratio toggle
+    this.addButton({
+      id: 'ratio-lock',
+      title: 'Lock Aspect Ratio',
+      group: 'ratio',
+      icon: this.getIcon('lock'),
+      action: () => {
+        const event = new CustomEvent('toolbar:ratio-lock', { bubbles: true })
+        this.container.dispatchEvent(event)
+      }
+    })
+
     // Advanced skew buttons (if enabled)
     if (this.options.showAdvanced) {
       this.addButton({
@@ -279,6 +332,30 @@ export class Toolbar {
       group: 'control',
       icon: this.getIcon('clear'),
       action: () => this.cropper.clear()
+    })
+
+    // New: Auto rotate correction
+    this.addButton({
+      id: 'auto-rotate',
+      title: 'Auto Rotate Correction',
+      group: 'control',
+      icon: this.getIcon('auto-rotate'),
+      action: () => {
+        const event = new CustomEvent('toolbar:auto-rotate', { bubbles: true })
+        this.container.dispatchEvent(event)
+      }
+    })
+
+    // New: Grid toggle
+    this.addButton({
+      id: 'grid-toggle',
+      title: 'Toggle Grid',
+      group: 'control',
+      icon: this.getIcon('grid'),
+      action: () => {
+        const event = new CustomEvent('toolbar:grid-toggle', { bubbles: true })
+        this.container.dispatchEvent(event)
+      }
     })
 
     // Undo/Redo buttons (will be managed by HistoryManager)
@@ -378,6 +455,119 @@ export class Toolbar {
       }
     })
 
+    // New: Export format options
+    this.addButton({
+      id: 'export-png',
+      title: 'Export as PNG',
+      group: 'export',
+      icon: this.getIcon('export-png'),
+      action: () => {
+        const canvas = this.cropper.getCroppedCanvas()
+        if (canvas) {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `cropped-${Date.now()}.png`
+              a.click()
+              URL.revokeObjectURL(url)
+            }
+          }, 'image/png')
+        }
+      }
+    })
+
+    this.addButton({
+      id: 'export-jpeg',
+      title: 'Export as JPEG',
+      group: 'export',
+      icon: this.getIcon('export-jpeg'),
+      action: () => {
+        const canvas = this.cropper.getCroppedCanvas()
+        if (canvas) {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `cropped-${Date.now()}.jpg`
+              a.click()
+              URL.revokeObjectURL(url)
+            }
+          }, 'image/jpeg', 0.92)
+        }
+      }
+    })
+
+    this.addButton({
+      id: 'export-webp',
+      title: 'Export as WebP',
+      group: 'export',
+      icon: this.getIcon('export-webp'),
+      action: () => {
+        const canvas = this.cropper.getCroppedCanvas()
+        if (canvas) {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `cropped-${Date.now()}.webp`
+              a.click()
+              URL.revokeObjectURL(url)
+            }
+          }, 'image/webp', 0.92)
+        }
+      }
+    })
+
+    // New: Quick preset sizes
+    this.addButton({
+      id: 'preset-avatar',
+      title: 'Avatar (200x200)',
+      group: 'presets',
+      icon: this.getIcon('preset-avatar'),
+      action: () => {
+        this.cropper.setAspectRatio(1)
+        const event = new CustomEvent('toolbar:preset', { 
+          detail: { width: 200, height: 200 },
+          bubbles: true 
+        })
+        this.container.dispatchEvent(event)
+      }
+    })
+
+    this.addButton({
+      id: 'preset-cover',
+      title: 'Cover (1920x1080)',
+      group: 'presets',
+      icon: this.getIcon('preset-cover'),
+      action: () => {
+        this.cropper.setAspectRatio(16 / 9)
+        const event = new CustomEvent('toolbar:preset', { 
+          detail: { width: 1920, height: 1080 },
+          bubbles: true 
+        })
+        this.container.dispatchEvent(event)
+      }
+    })
+
+    this.addButton({
+      id: 'preset-social',
+      title: 'Social Media (1200x630)',
+      group: 'presets',
+      icon: this.getIcon('preset-social'),
+      action: () => {
+        this.cropper.setAspectRatio(1200 / 630)
+        const event = new CustomEvent('toolbar:preset', { 
+          detail: { width: 1200, height: 630 },
+          bubbles: true 
+        })
+        this.container.dispatchEvent(event)
+      }
+    })
+
     // Add custom buttons if provided
     if (this.options.customButtons) {
       this.options.customButtons.forEach(button => this.addButton(button))
@@ -453,7 +643,32 @@ export class Toolbar {
       'ratio-free': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="5 5"/></svg>',
       'ratio-square': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><text x="12" y="15" text-anchor="middle" font-size="8" fill="currentColor">1:1</text></svg>',
       'ratio-16-9': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><text x="12" y="14" text-anchor="middle" font-size="7" fill="currentColor">16:9</text></svg>',
-      'ratio-4-3': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><text x="12" y="14" text-anchor="middle" font-size="7" fill="currentColor">4:3</text></svg>'
+      'ratio-4-3': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><text x="12" y="14" text-anchor="middle" font-size="7" fill="currentColor">4:3</text></svg>',
+      
+      // Lock icon (Official Lucide Lock)
+      'lock': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+      
+      // Grid icon (Official Lucide Grid3x3)
+      'grid': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>',
+      
+      // Auto rotate icon
+      'auto-rotate': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><text x="12" y="14" text-anchor="middle" font-size="6" fill="currentColor">AUTO</text></svg>',
+      
+      // Quick zoom percentage icons
+      'zoom-25': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><text x="11" y="14" text-anchor="middle" font-size="6" fill="currentColor">25%</text></svg>',
+      'zoom-50': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><text x="11" y="14" text-anchor="middle" font-size="6" fill="currentColor">50%</text></svg>',
+      'zoom-100': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><text x="11" y="14" text-anchor="middle" font-size="6" fill="currentColor">100%</text></svg>',
+      'zoom-200': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><text x="11" y="14" text-anchor="middle" font-size="6" fill="currentColor">200%</text></svg>',
+      
+      // Export format icons
+      'export-png': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><text x="12" y="18" text-anchor="middle" font-size="4" fill="currentColor">PNG</text></svg>',
+      'export-jpeg': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><text x="12" y="18" text-anchor="middle" font-size="4" fill="currentColor">JPG</text></svg>',
+      'export-webp': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><text x="12" y="18" text-anchor="middle" font-size="4" fill="currentColor">WEBP</text></svg>',
+      
+      // Preset icons
+      'preset-avatar': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20a6 6 0 0 1 12 0"/></svg>',
+      'preset-cover': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 11h10"/><path d="M7 14h6"/></svg>',
+      'preset-social': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg>'
     }
     return icons[name] || ''
   }
@@ -476,7 +691,7 @@ export class Toolbar {
     }
 
     // Create button groups
-    const groups = this.options.groups || ['file', 'transform', 'flip', 'zoom', 'ratio', 'move', 'control', 'history', 'actions']
+    const groups = this.options.groups || ['file', 'transform', 'flip', 'zoom', 'ratio', 'move', 'control', 'history', 'presets', 'export', 'actions']
     if (this.options.showAdvanced && !groups.includes('skew')) {
       const controlIndex = groups.indexOf('control')
       if (controlIndex > -1) {

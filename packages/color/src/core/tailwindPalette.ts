@@ -222,7 +222,7 @@ export type CssVarSuffixFormat = 'tailwind' | 'numeric';
  * Options for CSS variable generation
  */
 export interface CssVarOptions {
-  /** Prefix for CSS variable names (e.g., 'tw-', 'app-'). Default is empty */
+  /** Prefix for CSS variable names (e.g., 'tw', 'app'). A dash will be automatically added after the prefix. Default is empty */
   prefix?: string;
   /** Suffix format: 'tailwind' for (50, 100, 200...), 'numeric' for (1, 2, 3...) */
   suffixFormat?: CssVarSuffixFormat;
@@ -257,7 +257,9 @@ export function generatePaletteCssVars(
       suffix = shade;
     }
     
-    const varName = `--${prefix}${name}-color-${suffix}`;
+    // Auto-add dash after prefix if prefix is provided and doesn't already end with a dash
+    const prefixWithDash = prefix ? (prefix.endsWith('-') ? prefix : prefix + '-') : '';
+    const varName = `--${prefixWithDash}${name}-color-${suffix}`;
     cssVars.push(`  ${varName}: ${color};`);
   });
   

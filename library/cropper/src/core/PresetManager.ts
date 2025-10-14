@@ -345,8 +345,8 @@ export class PresetManager {
       // Calculate the target aspect ratio
       const targetAspectRatio = preset.aspectRatio || (preset.width && preset.height ? preset.width / preset.height : NaN)
       
-      // First, clear any existing aspect ratio to avoid conflicts (without auto-adjusting size)
-      this.cropper.cropBox.setAspectRatio(NaN, false)
+      // First, clear any existing aspect ratio to avoid conflicts
+      this.cropper.setAspectRatio(NaN)
       
       // Calculate optimal crop box dimensions
       let cropWidth, cropHeight, cropLeft, cropTop
@@ -410,8 +410,8 @@ export class PresetManager {
       } else {
         // No aspect ratio, use current crop box size or default
         const currentCrop = this.cropper.getCropBoxData()
-        cropWidth = currentCrop.width || containerData.width * 0.5
-        cropHeight = currentCrop.height || containerData.height * 0.5
+        cropWidth = currentCrop?.width || containerData.width * 0.5
+        cropHeight = currentCrop?.height || containerData.height * 0.5
       }
       
       // Center the crop box
@@ -430,9 +430,9 @@ export class PresetManager {
         height: cropHeight
       })
       
-      // Now set the aspect ratio to lock it (without auto-adjusting the already set size)
+      // Now set the aspect ratio to lock it
       if (!isNaN(targetAspectRatio)) {
-        this.cropper.cropBox.setAspectRatio(targetAspectRatio, false)
+        this.cropper.setAspectRatio(targetAspectRatio)
       }
       
       console.log('Applied preset:', preset.name, {

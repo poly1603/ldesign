@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>增强工具栏演示</title>
+  <link rel="stylesheet" href="../dist/style.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    .header p {
+      font-size: 1.2em;
+      opacity: 0.9;
+    }
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 30px;
+    }
+    .cropper-section {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    #cropper-container {
+      width: 100%;
+      height: 600px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .panel {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    .panel h3 {
+      margin: 0 0 15px 0;
+      font-size: 1.2em;
+      color: #333;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 8px;
+    }
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .feature-list li {
+      padding: 10px;
+      margin: 5px 0;
+      background: #f7f7f7;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      transition: background 0.3s;
+    }
+    .feature-list li:hover {
+      background: #e9ecef;
+    }
+    .feature-icon {
+      width: 24px;
+      height: 24px;
+      margin-right: 12px;
+      color: #667eea;
+    }
+    .controls-panel {
+      display: grid;
+      gap: 12px;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .control-group label {
+      font-size: 0.9em;
+      color: #666;
+      font-weight: 500;
+    }
+    .control-group input,
+    .control-group select {
+      padding: 8px 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    .control-group input:focus,
+    .control-group select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .btn-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #667eea;
+      color: white;
+    }
+    .btn:hover {
+      background: #5a67d8;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    .btn-secondary {
+      background: #48bb78;
+    }
+    .btn-secondary:hover {
+      background: #38a169;
+    }
+    .btn-danger {
+      background: #f56565;
+    }
+    .btn-danger:hover {
+      background: #e53e3e;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      font-size: 0.9em;
+    }
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px dotted #e0e0e0;
+    }
+    .info-label {
+      color: #666;
+    }
+    .info-value {
+      font-weight: 600;
+      color: #333;
+      font-family: monospace;
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background: #f0f9ff;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+    .status-indicator.active {
+      background: #d1fae5;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+      }
+    }
+    /* Custom toolbar styles */
+    .cropper-toolbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      padding: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    }
+    .cropper-toolbar-group {
+      border-right: 1px solid #e0e0e0;
+      padding: 0 8px;
+    }
+    .cropper-toolbar-group:last-child {
+      border-right: none;
+    }
+    .cropper-toolbar-button {
+      transition: all 0.2s;
+    }
+    .cropper-toolbar-button:hover {
+      background: #f0f0f0;
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚀 增强工具栏功能演示</h1>
+      <p>探索新增的快捷工具和实用功能</p>
+    </div>
+    
+    <div class="main-content">
+      <div class="cropper-section">
+        <div id="cropper-container"></div>
+      </div>
+      
+      <div class="sidebar">
+        <div class="panel">
+          <h3>✨ 新增功能</h3>
+          <ul class="feature-list">
+            <li>
+              <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="5" y="11" width="14" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <span>宽高比锁定切换</span>
+            </li>
+            <li>
+              <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+              </svg>
+              <span>自动旋转纠正</span>
+            </li>
+            <li>
+              <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>
+              </svg>
+              <span>网格显示切换</span>
+            </li>
+            <li>
+              <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+              <span>快速缩放按钮组</span>
+            </li>
+            <li>
+              <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>多格式导出 (PNG/JPEG/WebP)</span>
+            </li>
+            <li>
+              <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+              </svg>
+              <span>预设尺寸快速选择</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="panel">
+          <h3>🎮 控制面板</h3>
+          <div class="controls-panel">
+            <div class="control-group">
+              <label>工具栏位置</label>
+              <select id="toolbar-position">
+                <option value="top">顶部</option>
+                <option value="bottom">底部</option>
+                <option value="left">左侧</option>
+                <option value="right">右侧</option>
+                <option value="floating">浮动</option>
+              </select>
+            </div>
+            
+            <div class="control-group">
+              <label>主题模式</label>
+              <select id="toolbar-theme">
+                <option value="auto">自动</option>
+                <option value="light">浅色</option>
+                <option value="dark">深色</option>
+              </select>
+            </div>
+            
+            <div class="status-indicator" id="grid-status">
+              <div class="status-dot"></div>
+              <span>网格: 关闭</span>
+            </div>
+            
+            <div class="status-indicator" id="ratio-lock-status">
+              <div class="status-dot"></div>
+              <span>宽高比锁定: 关闭</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="panel">
+          <h3>📊 裁剪信息</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">裁剪宽度:</span>
+              <span class="info-value" id="crop-width">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">裁剪高度:</span>
+              <span class="info-value" id="crop-height">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">宽高比:</span>
+              <span class="info-value" id="crop-ratio">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">缩放级别:</span>
+              <span class="info-value" id="zoom-level">100%</span>
+            </div>
+          </div>
+          
+          <div class="btn-group" style="margin-top: 15px;">
+            <button class="btn btn-secondary" onclick="testExport('png')">导出 PNG</button>
+            <button class="btn btn-secondary" onclick="testExport('jpeg')">导出 JPEG</button>
+            <button class="btn btn-secondary" onclick="testExport('webp')">导出 WebP</button>
+            <button class="btn btn-danger" onclick="resetCropper()">重置</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Cropper } from '../dist/index.js'
+    
+    let cropper = null
+    let gridVisible = false
+    let ratioLocked = false
+    
+    function updateInfo() {
+      if (!cropper) return
+      
+      const cropBoxData = cropper.getCropBoxData()
+      const imageData = cropper.getImageData()
+      
+      if (cropBoxData) {
+        document.getElementById('crop-width').textContent = Math.round(cropBoxData.width) + 'px'
+        document.getElementById('crop-height').textContent = Math.round(cropBoxData.height) + 'px'
+        document.getElementById('crop-ratio').textContent = (cropBoxData.width / cropBoxData.height).toFixed(2)
+      }
+      
+      if (imageData) {
+        document.getElementById('zoom-level').textContent = Math.round(imageData.scaleX * 100) + '%'
+      }
+    }
+    
+    // Grid toggle handler
+    function toggleGrid() {
+      gridVisible = !gridVisible
+      const status = document.getElementById('grid-status')
+      if (gridVisible) {
+        status.classList.add('active')
+        status.innerHTML = '<div class="status-dot"></div><span>网格: 开启</span>'
+        // Add grid overlay
+        const cropBox = document.querySelector('.cropper-crop-box')
+        if (cropBox) {
+          cropBox.style.backgroundImage = 'linear-gradient(rgba(255,255,255,.15) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,.15) 2px, transparent 2px)'
+          cropBox.style.backgroundSize = '33.33% 33.33%'
+        }
+      } else {
+        status.classList.remove('active')
+        status.innerHTML = '<div class="status-dot"></div><span>网格: 关闭</span>'
+        const cropBox = document.querySelector('.cropper-crop-box')
+        if (cropBox) {
+          cropBox.style.backgroundImage = ''
+        }
+      }
+    }
+    
+    // Ratio lock handler
+    function toggleRatioLock() {
+      ratioLocked = !ratioLocked
+      const status = document.getElementById('ratio-lock-status')
+      if (ratioLocked) {
+        status.classList.add('active')
+        status.innerHTML = '<div class="status-dot"></div><span>宽高比锁定: 开启</span>'
+        const cropBoxData = cropper.getCropBoxData()
+        if (cropBoxData) {
+          cropper.setAspectRatio(cropBoxData.width / cropBoxData.height)
+        }
+      } else {
+        status.classList.remove('active')
+        status.innerHTML = '<div class="status-dot"></div><span>宽高比锁定: 关闭</span>'
+        cropper.setAspectRatio(NaN)
+      }
+    }
+    
+    // Auto rotate handler
+    function autoRotate() {
+      // Simulate auto rotation detection
+      // In real implementation, this would analyze image EXIF data or use image analysis
+      const angles = [0, 90, 180, 270]
+      const randomAngle = angles[Math.floor(Math.random() * angles.length)]
+      cropper.rotateTo(randomAngle)
+      console.log('Auto rotated to:', randomAngle)
+    }
+    
+    // Export functions
+    window.testExport = function(format) {
+      const canvas = cropper.getCroppedCanvas()
+      if (!canvas) return
+      
+      let mimeType = 'image/png'
+      let extension = 'png'
+      let quality = 1
+      
+      switch(format) {
+        case 'jpeg':
+          mimeType = 'image/jpeg'
+          extension = 'jpg'
+          quality = 0.92
+          break
+        case 'webp':
+          mimeType = 'image/webp'
+          extension = 'webp'
+          quality = 0.92
+          break
+      }
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `cropped-${Date.now()}.${extension}`
+          a.click()
+          URL.revokeObjectURL(url)
+          
+          // Show size info
+          const sizeMB = (blob.size / 1024 / 1024).toFixed(2)
+          console.log(`Exported ${format.toUpperCase()}: ${sizeMB}MB`)
+        }
+      }, mimeType, quality)
+    }
+    
+    window.resetCropper = function() {
+      cropper.reset()
+      updateInfo()
+    }
+    
+    // Initialize
+    const container = document.getElementById('cropper-container')
+    cropper = new Cropper(container, {
+      src: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1200&q=80',
+      viewMode: 1,
+      aspectRatio: NaN,
+      toolbar: true,
+      ready: () => {
+        updateInfo()
+        
+        // Listen to toolbar events
+        container.addEventListener('toolbar:grid-toggle', toggleGrid)
+        container.addEventListener('toolbar:ratio-lock', toggleRatioLock)
+        container.addEventListener('toolbar:auto-rotate', autoRotate)
+        container.addEventListener('toolbar:preset', (e) => {
+          console.log('Preset applied:', e.detail)
+          updateInfo()
+        })
+        
+        // Toolbar position change
+        document.getElementById('toolbar-position').addEventListener('change', (e) => {
+          if (cropper.toolbar) {
+            cropper.toolbar.setPosition(e.target.value)
+          }
+        })
+        
+        // Toolbar theme change
+        document.getElementById('toolbar-theme').addEventListener('change', (e) => {
+          const toolbar = document.querySelector('.cropper-toolbar')
+          if (toolbar) {
+            toolbar.classList.remove('cropper-toolbar-dark')
+            if (e.target.value === 'dark') {
+              toolbar.classList.add('cropper-toolbar-dark')
+            }
+          }
+        })
+      },
+      crop: () => {
+        updateInfo()
+      }
+    })
+    
+    window.cropper = cropper
+  </script>
+</body>
+</html>

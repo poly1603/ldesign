@@ -24,10 +24,13 @@ export * from './find-replace'
 export * from './word-count'
 export * from './export-markdown'
 export * from './media-dialog'
+export * from './media-context-menu'
+export * from './image-resize'
 
 // 导出右键菜单插件
 import ContextMenuPlugin from './context-menu'
 export { ContextMenuPlugin }
+
 
 // 默认插件集合
 export { BoldPlugin, ItalicPlugin, UnderlinePlugin, StrikePlugin, CodePlugin, ClearFormatPlugin } from './formatting'
@@ -52,3 +55,5 @@ export { FindReplacePlugin } from './find-replace'
 export { WordCountPlugin, getWordCount, showWordCountDialog } from './word-count'
 export { ExportMarkdownPlugin, htmlToMarkdown } from './export-markdown'
 export { MediaDialogPlugin } from './media-dialog'
+export { MediaContextMenuPlugin } from './media-context-menu'
+export { ImageResizePlugin } from './image-resize'

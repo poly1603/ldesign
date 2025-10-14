@@ -139,6 +139,9 @@ function initCropper(imageSrc = null) {
       maxFileSize: 20,
       className: 'custom-placeholder'
     },
+    presets: {
+      includeDefaults: true
+    },
     ready: handleCropperReady,
     cropstart: handleCropStart,
     crop: handleCrop,
@@ -157,6 +160,11 @@ function handleCropperReady(event) {
   console.log('裁剪器已准备就绪', event)
   updateStatus('就绪')
   updateDataDisplay()
+  
+  // 监听预设应用事件
+  if (window.appState.cropper && window.appState.cropper.element) {
+    window.appState.cropper.element.addEventListener('preset:applied', handlePresetApplied)
+  }
 }
 
 // 处理裁剪开始
@@ -168,6 +176,7 @@ function handleCropStart(event) {
 // 处理裁剪中
 function handleCrop(event) {
   updateDataDisplay()
+  updateExportDimensionsFromCropBox()
 }
 
 // 处理裁剪结束
@@ -196,6 +205,26 @@ function handleUploadError(event) {
   const { message } = event.detail
   console.error('上传错误:', message)
   showErrorToast(message)
+}
+
+// 处理预设应用事件
+function handlePresetApplied(event) {
+  const { preset } = event.detail
+  console.log('预设已应用:', preset)
+  
+  // 更新导出尺寸
+  const exportWidth = document.getElementById('export-width')
+  const exportHeight = document.getElementById('export-height')
+  
+  if (exportWidth && exportHeight && preset) {
+    if (preset.width && preset.height) {
+      exportWidth.value = preset.width
+      exportHeight.value = preset.height
+    } else {
+      // 如果预设没有具体尺寸，使用当前裁剪框的宽高比计算
+      updateExportDimensionsFromCropBox()
+    }
+  }
 }
 
 // 更新状态显示
@@ -337,6 +366,36 @@ function showWelcomeToast() {
   showToast('欢迎使用 @ldesign/cropper 图片裁剪器！', 'info')
 }
 
+// 从裁剪框更新导出尺寸
+function updateExportDimensionsFromCropBox() {
+  if (!window.appState.cropper) return
+  
+  const cropData = window.appState.cropper.getCropBoxData()
+  const imageData = window.appState.cropper.getImageData()
+  
+  if (!cropData || !imageData) return
+  
+  const exportWidth = document.getElementById('export-width')
+  const exportHeight = document.getElementById('export-height')
+  
+  if (exportWidth && exportHeight) {
+    // Keep aspect ratio but scale to reasonable export size
+    const aspectRatio = cropData.width / cropData.height
+    
+    // Use current values as base, or default to crop box size
+    let width = parseInt(exportWidth.value) || Math.round(cropData.width)
+    let height = parseInt(exportHeight.value) || Math.round(cropData.height)
+    
+    // If aspect ratio changed significantly, update one dimension
+    const currentAspectRatio = width / height
+    if (Math.abs(aspectRatio - currentAspectRatio) > 0.01) {
+      // Keep width, adjust height to match crop box aspect ratio
+      height = Math.round(width / aspectRatio)
+      exportHeight.value = height
+    }
+  }
+}
+
 // 导出全局函数
 window.initCropper = initCropper
 window.showToast = showToast
@@ -346,6 +405,7 @@ window.updateDataDisplay = updateDataDisplay
 window.updateZoomDisplay = updateZoomDisplay
 window.saveToHistory = saveToHistory
 window.updateHistoryButtons = updateHistoryButtons
+window.updateExportDimensionsFromCropBox = updateExportDimensionsFromCropBox
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', initApp)

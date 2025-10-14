@@ -170,30 +170,30 @@ export function generateDarkSemanticColors(primaryHex: string) {
       l: 50 
     }).toHex(),
     
-    // Success: green-shifted
+    // Success: shift towards green while keeping some primary characteristics
     success: new Color({ 
-      h: 142, 
+      h: (primaryHsl.h * 0.3 + 142 * 0.7) % 360,  // Blend primary hue with green
       s: Math.min(primaryHsl.s * 0.9, 70), 
       l: 45 
     }).toHex(),
     
-    // Warning: warm orange
+    // Warning: shift towards orange/amber
     warning: new Color({ 
-      h: 38, 
+      h: (primaryHsl.h * 0.2 + 38 * 0.8) % 360,  // Blend primary hue with orange
       s: Math.min(primaryHsl.s * 1.1, 85), 
       l: 50 
     }).toHex(),
     
-    // Danger: red-shifted
+    // Danger: shift towards red
     danger: new Color({ 
-      h: 4, 
+      h: (primaryHsl.h * 0.2 + 4 * 0.8) % 360,  // Blend primary hue with red
       s: Math.min(primaryHsl.s, 75), 
       l: 50 
     }).toHex(),
     
-    // Info: cool blue
+    // Info: shift towards blue
     info: new Color({ 
-      h: 210, 
+      h: (primaryHsl.h * 0.3 + 210 * 0.7) % 360,  // Blend primary hue with blue
       s: Math.min(primaryHsl.s * 0.85, 70), 
       l: 50 
     }).toHex()
@@ -254,30 +254,30 @@ export function generateThemePalettes(primaryHex: string, options: {
       l: 50 
     }).toHex(),
     
-    // Success: green-shifted hue with adjusted saturation
+    // Success: shift towards green while keeping some primary characteristics
     success: new Color({ 
-      h: 142,  // Green hue
+      h: (primaryHsl.h * 0.3 + 142 * 0.7) % 360,  // Blend primary hue with green
       s: Math.min(primaryHsl.s * 0.9, 70),  // Slightly less saturated
       l: 45 
     }).toHex(),
     
-    // Warning: warm orange/amber
+    // Warning: shift towards orange/amber
     warning: new Color({ 
-      h: 38,  // Orange hue
+      h: (primaryHsl.h * 0.2 + 38 * 0.8) % 360,  // Blend primary hue with orange
       s: Math.min(primaryHsl.s * 1.1, 85),  // Slightly more saturated
       l: 50 
     }).toHex(),
     
-    // Danger: red-shifted with maintained saturation
+    // Danger: shift towards red
     danger: new Color({ 
-      h: 4,  // Red hue  
+      h: (primaryHsl.h * 0.2 + 4 * 0.8) % 360,  // Blend primary hue with red
       s: Math.min(primaryHsl.s, 75),  // Similar saturation to primary
       l: 50 
     }).toHex(),
     
-    // Info: cool blue, relative to primary
+    // Info: shift towards blue
     info: new Color({ 
-      h: 210,  // Blue hue
+      h: (primaryHsl.h * 0.3 + 210 * 0.7) % 360,  // Blend primary hue with blue
       s: Math.min(primaryHsl.s * 0.85, 70),  // Slightly less saturated
       l: 50 
     }).toHex()

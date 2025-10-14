@@ -306,14 +306,10 @@
   margin: 10px auto;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
   cursor: pointer;
 }
 
-.ldesign-editor-content img:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  transform: scale(1.02);
-}
+/* Removed all hover effects for images - no visual changes on hover */
 
 /* 视频样式 */
 .ldesign-editor-content video {
