@@ -3,6 +3,7 @@ import {
   generateCSSVariables,
   insertCSSVariables
 } from '@ldesign/color/core'
+import { runAnalysis } from './analyze.js'
 
 // Initialize app
 const app = document.getElementById('app')
@@ -108,8 +109,14 @@ function renderPalette(palette, containerId) {
   const container = document.getElementById(containerId)
   container.innerHTML = ''
   
-  // Define the order for all shades (now all palettes use the same 12 shades)
-  const shadeOrder = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950', '1000']
+  // Define the order for shades
+  // Regular colors use 12 shades, grays use 14 shades
+  const regularShadeOrder = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950', '1000']
+  const grayShadeOrder = ['50', '100', '150', '200', '300', '400', '500', '600', '700', '800', '850', '900', '950', '1000']
+  
+  // Determine which order to use based on whether this is the gray palette
+  const isGray = containerId.includes('gray')
+  const shadeOrder = isGray ? grayShadeOrder : regularShadeOrder
   
   // Sort and display based on the defined order
   shadeOrder.forEach(level => {
@@ -227,3 +234,9 @@ document.getElementById('primaryHex').addEventListener('input', (e) => {
 
 // Initial generation
 generateAndDisplayTheme()
+
+// Run analysis in console
+setTimeout(() => {
+  console.log('Running color analysis...')
+  runAnalysis()
+}, 500)

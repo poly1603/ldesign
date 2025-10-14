@@ -114,34 +114,34 @@ export function generateTailwindSemanticColors(primaryColor: ColorInput): {
 }
 
 /**
- * Generate gray scale with optional tinting
- * Uses standard Tailwind gray shades for consistency
+ * Generate pure gray scale (no tinting)
+ * Provides 14 shades for more granular options
  */
-export function generateTailwindGrayScale(tintColor?: ColorInput): { [key: string]: string } {
-  let tintHue = 210; // Default blue-gray
-  let tintSaturation = 5; // Very low saturation
-  
-  if (tintColor) {
-    const color = new Color(tintColor);
-    const hsl = color.toHSL();
-    tintHue = hsl.h;
-    tintSaturation = Math.max(3, Math.min(10, hsl.s * 0.1)); // 3-10% of original saturation
-  }
-  
+export function generateTailwindGrayScale(): { [key: string]: string } {
   const grays: { [key: string]: string } = {};
   
-  // Use same shades as other colors for consistency (12 shades)
-  // Using the same TAILWIND_SHADES for visual harmony
-  TAILWIND_SHADES.forEach(({ name, lightness }) => {
-    // Adjust saturation based on lightness - less at extremes
-    let adjustedSaturation = tintSaturation;
-    if (lightness > 90 || lightness < 10) {
-      adjustedSaturation *= 0.3; // Very low saturation at extremes
-    } else if (lightness > 70 || lightness < 30) {
-      adjustedSaturation *= 0.6; // Lower saturation
-    }
-    
-    const grayColor = Color.fromHSL(tintHue, adjustedSaturation, lightness);
+  // Extended gray scale with 14 shades for more options
+  // Pure grayscale with saturation = 0
+  const grayShades = [
+    { name: '50', lightness: 98 },
+    { name: '100', lightness: 95 },
+    { name: '150', lightness: 93 },
+    { name: '200', lightness: 88 },
+    { name: '300', lightness: 80 },
+    { name: '400', lightness: 71 },
+    { name: '500', lightness: 60 },
+    { name: '600', lightness: 48 },
+    { name: '700', lightness: 37 },
+    { name: '800', lightness: 27 },
+    { name: '850', lightness: 20 },
+    { name: '900', lightness: 14 },
+    { name: '950', lightness: 9 },
+    { name: '1000', lightness: 5 }
+  ];
+  
+  grayShades.forEach(({ name, lightness }) => {
+    // Pure gray with hue=0, saturation=0
+    const grayColor = Color.fromHSL(0, 0, lightness);
     grays[name] = grayColor.toHex();
   });
   
@@ -186,7 +186,7 @@ export function generateTailwindTheme(
   }
   
   if (includeGrays) {
-    theme.grays = generateTailwindGrayScale(primaryColor);
+    theme.grays = generateTailwindGrayScale();
   }
   
   return theme;
