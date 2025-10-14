@@ -46,6 +46,36 @@ app.innerHTML = `
       </div>
       
       <div class="control-group">
+        <label>Custom Color Names (optional):</label>
+        <div class="name-mapping">
+          <div class="mapping-row">
+            <span>primary →</span>
+            <input type="text" id="name-primary" placeholder="e.g., brand" class="mapping-input">
+          </div>
+          <div class="mapping-row">
+            <span>success →</span>
+            <input type="text" id="name-success" placeholder="e.g., good" class="mapping-input">
+          </div>
+          <div class="mapping-row">
+            <span>warning →</span>
+            <input type="text" id="name-warning" placeholder="e.g., caution" class="mapping-input">
+          </div>
+          <div class="mapping-row">
+            <span>danger →</span>
+            <input type="text" id="name-danger" placeholder="e.g., error" class="mapping-input">
+          </div>
+          <div class="mapping-row">
+            <span>info →</span>
+            <input type="text" id="name-info" placeholder="e.g., notice" class="mapping-input">
+          </div>
+          <div class="mapping-row">
+            <span>gray →</span>
+            <input type="text" id="name-gray" placeholder="e.g., neutral" class="mapping-input">
+          </div>
+        </div>
+      </div>
+      
+      <div class="control-group">
         <label>
           <input type="checkbox" id="autoApply" checked>
           Auto apply to page
@@ -202,8 +232,6 @@ function generateAndDisplayTheme() {
   
   // Generate both light and dark themes
   const themes = generateThemePalettes(primaryHex, {
-    includeSemantics: true,
-    includeGrays: true,
     preserveInput: true
   })
   
@@ -235,6 +263,16 @@ function displayTheme(mode) {
   const prefix = document.getElementById('cssPrefix').value || ''
   const suffixFormat = document.querySelector('input[name="suffixFormat"]:checked').value
   
+  // Get custom name mappings
+  const nameMap = {}
+  const colorNames = ['primary', 'success', 'warning', 'danger', 'info', 'gray']
+  colorNames.forEach(name => {
+    const customName = document.getElementById(`name-${name}`).value.trim()
+    if (customName) {
+      nameMap[name] = customName
+    }
+  })
+  
   // Prepare theme object for CSS var generation
   const themeForCss = {
     colors: {
@@ -250,7 +288,8 @@ function displayTheme(mode) {
   // Generate CSS variables with custom configuration
   const cssVars = generateThemeCssVars(themeForCss, {
     prefix,
-    suffixFormat
+    suffixFormat,
+    nameMap
   })
   
   // Display complete CSS with both light and dark mode variables if available
@@ -277,8 +316,8 @@ function displayTheme(mode) {
       grays: generatedThemes.dark.gray
     }
     
-    const lightCss = generateThemeCssVars(lightTheme, { prefix, suffixFormat })
-    const darkCss = generateThemeCssVars(darkTheme, { prefix, suffixFormat })
+    const lightCss = generateThemeCssVars(lightTheme, { prefix, suffixFormat, nameMap })
+    const darkCss = generateThemeCssVars(darkTheme, { prefix, suffixFormat, nameMap })
     
     fullCss = `/* Light Mode */\n:root {\n${lightCss}\n}\n\n/* Dark Mode */\n:root[data-theme-mode="dark"] {\n${darkCss}\n}`
   } else {
@@ -292,6 +331,7 @@ function displayTheme(mode) {
     applyThemeCssVars(themeForCss, {
       prefix,
       suffixFormat,
+      nameMap,
       styleId: `ldesign-theme-${mode}`
     })
     

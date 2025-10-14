@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>主题切换动画效果展示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, var(--primary-color, #4a90e2) 0%, var(--primary-color-light, #7cb3f1) 100%);
+      min-height: 100vh;
+      padding: 20px;
+      transition: background 0.5s ease;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      text-align: center;
+      color: white;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.1rem;
+      margin-bottom: 40px;
+    }
+    
+    .controls {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .control-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .control-group {
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+    
+    select, input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.3s;
+      background: white;
+    }
+    
+    select:hover, input:hover {
+      border-color: var(--primary-color, #4a90e2);
+    }
+    
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--primary-color, #4a90e2);
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    }
+    
+    .animation-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .animation-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .animation-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--primary-color, #4a90e2);
+      transform: scaleX(0);
+      transition: transform 0.3s;
+    }
+    
+    .animation-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .animation-card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .animation-card.active {
+      background: var(--primary-color, #4a90e2);
+      color: white;
+    }
+    
+    .animation-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    
+    .animation-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+    }
+    
+    .animation-desc {
+      font-size: 0.85rem;
+      color: #666;
+      line-height: 1.4;
+    }
+    
+    .animation-card.active .animation-desc {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .demo-area {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .demo-content {
+      display: grid;
+      gap: 20px;
+    }
+    
+    .demo-section {
+      padding: 20px;
+      background: var(--primary-color-light, #f0f4f8);
+      border-radius: 12px;
+      border-left: 4px solid var(--primary-color, #4a90e2);
+    }
+    
+    .demo-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--primary-color, #4a90e2);
+      margin-bottom: 10px;
+    }
+    
+    .demo-text {
+      color: #555;
+      line-height: 1.6;
+    }
+    
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .theme-btn {
+      padding: 12px;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    
+    .theme-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .apply-btn {
+      background: var(--primary-color, #4a90e2);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 20px;
+    }
+    
+    .apply-btn:hover {
+      background: var(--primary-color-dark, #3a7bc8);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(74, 144, 226, 0.3);
+    }
+    
+    .animation-preview {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .preview-box {
+      width: 100px;
+      height: 100px;
+      margin: 20px auto;
+      background: var(--primary-color, #4a90e2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+      h1 { font-size: 2rem; }
+      .control-row { flex-direction: column; }
+      .control-group { width: 100%; }
+      .animation-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 主题切换动画效果展示</h1>
+    <p class="subtitle">探索19种精心设计的主题切换动画，为您的政务系统增添生动体验</p>
+    
+    <div class="controls">
+      <div class="control-row">
+        <div class="control-group">
+          <label for="themeSelect">选择主题</label>
+          <select id="themeSelect">
+            <option value="governmentBlue">政务蓝</option>
+            <option value="kleinBlue">克莱因蓝</option>
+            <option value="prussianBlue">普鲁士蓝</option>
+            <option value="periwinkleBlue">长春花蓝</option>
+            <option value="peacockBlue">孔雀蓝</option>
+            <option value="skyBlue">天空蓝</option>
+            <option value="darkGrayGreen">深灰绿</option>
+            <option value="darkGray">深灰色</option>
+            <option value="lightGray">浅灰色</option>
+            <option value="flowerGrayBlue">薄花灰蓝</option>
+            <option value="lightTan">浅驼色</option>
+            <option value="wiseGold">睿智金</option>
+            <option value="brightYellow">靓丽黄</option>
+            <option value="tangerineOrange">桔橙色</option>
+            <option value="hermesOrange">爱马仕橙</option>
+            <option value="orpiment">雌黄</option>
+            <option value="lightYellow">淡黄</option>
+            <option value="avocadoGreen">牛油果绿</option>
+            <option value="cuteGreen">萌萌绿</option>
+            <option value="tiffanyBlue">蒂芬尼蓝</option>
+            <option value="bluishPurple">青紫</option>
+            <option value="trueCrimson">真朱粉</option>
+            <option value="palePink">苍粉</option>
+            <option value="chinaRed">中国红</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <label for="durationInput">动画时长 (毫秒)</label>
+          <input type="number" id="durationInput" value="500" min="100" max="2000" step="100">
+        </div>
+        
+        <div class="control-group">
+          <label>&nbsp;</label>
+          <button class="apply-btn" onclick="applyTheme()">应用主题</button>
+        </div>
+      </div>
+    </div>
+    
+    <h2 style="color: white; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">选择动画效果</h2>
+    
+    <div class="animation-grid">
+      <div class="animation-card" data-animation="fade">
+        <div class="animation-icon">🌫️</div>
+        <div class="animation-name">淡入淡出</div>
+        <div class="animation-desc">平滑过渡，优雅简约</div>
+      </div>
+      
+      <div class="animation-card" data-animation="slide">
+        <div class="animation-icon">➡️</div>
+        <div class="animation-name">滑动</div>
+        <div class="animation-desc">横向滑入，动感流畅</div>
+      </div>
+      
+      <div class="animation-card" data-animation="zoom">
+        <div class="animation-icon">🔍</div>
+        <div class="animation-name">缩放</div>
+        <div class="animation-desc">中心缩放，聚焦效果</div>
+      </div>
+      
+      <div class="animation-card" data-animation="flip">
+        <div class="animation-icon">🔄</div>
+        <div class="animation-name">翻转</div>
+        <div class="animation-desc">3D翻转，立体感强</div>
+      </div>
+      
+      <div class="animation-card" data-animation="morph">
+        <div class="animation-icon">🔮</div>
+        <div class="animation-name">变形</div>
+        <div class="animation-desc">形态渐变，科技感</div>
+      </div>
+      
+      <div class="animation-card" data-animation="circle">
+        <div class="animation-icon">⭕</div>
+        <div class="animation-name">圆形展开</div>
+        <div class="animation-desc">由中心扩散，涟漪效果</div>
+      </div>
+      
+      <div class="animation-card" data-animation="curtain">
+        <div class="animation-icon">🎭</div>
+        <div class="animation-name">幕布</div>
+        <div class="animation-desc">幕布拉开，戏剧效果</div>
+      </div>
+      
+      <div class="animation-card" data-animation="wave">
+        <div class="animation-icon">🌊</div>
+        <div class="animation-name">波浪</div>
+        <div class="animation-desc">波动效果，活泼生动</div>
+      </div>
+      
+      <div class="animation-card" data-animation="pixelate">
+        <div class="animation-icon">🎮</div>
+        <div class="animation-name">像素化</div>
+        <div class="animation-desc">像素风格，复古感</div>
+      </div>
+      
+      <div class="animation-card" data-animation="blur">
+        <div class="animation-icon">💨</div>
+        <div class="animation-name">模糊</div>
+        <div class="animation-desc">焦点变化，柔和过渡</div>
+      </div>
+      
+      <div class="animation-card" data-animation="rotate">
+        <div class="animation-icon">🔃</div>
+        <div class="animation-name">旋转</div>
+        <div class="animation-desc">360度旋转，动感十足</div>
+      </div>
+      
+      <div class="animation-card" data-animation="diagonal">
+        <div class="animation-icon">↗️</div>
+        <div class="animation-name">对角线</div>
+        <div class="animation-desc">斜向切换，独特视角</div>
+      </div>
+      
+      <div class="animation-card" data-animation="split">
+        <div class="animation-icon">✂️</div>
+        <div class="animation-name">分割</div>
+        <div class="animation-desc">左右分离，创意十足</div>
+      </div>
+      
+      <div class="animation-card" data-animation="fold">
+        <div class="animation-icon">📖</div>
+        <div class="animation-name">折叠</div>
+        <div class="animation-desc">纸张折叠，立体翻页</div>
+      </div>
+      
+      <div class="animation-card" data-animation="door">
+        <div class="animation-icon">🚪</div>
+        <div class="animation-name">开门</div>
+        <div class="animation-desc">推门而入，空间感强</div>
+      </div>
+      
+      <div class="animation-card" data-animation="tv">
+        <div class="animation-icon">📺</div>
+        <div class="animation-name">电视机</div>
+        <div class="animation-desc">CRT关机效果，怀旧</div>
+      </div>
+      
+      <div class="animation-card" data-animation="glitch">
+        <div class="animation-icon">🎲</div>
+        <div class="animation-name">故障</div>
+        <div class="animation-desc">数字故障，赛博朋克</div>
+      </div>
+      
+      <div class="animation-card" data-animation="bounce">
+        <div class="animation-icon">⚡</div>
+        <div class="animation-name">弹跳</div>
+        <div class="animation-desc">Q弹效果，活力四射</div>
+      </div>
+      
+      <div class="animation-card" data-animation="elastic">
+        <div class="animation-icon">🎯</div>
+        <div class="animation-name">弹性</div>
+        <div class="animation-desc">橡皮筋效果，趣味十足</div>
+      </div>
+    </div>
+    
+    <div class="demo-area">
+      <h2 style="color: #333; margin-bottom: 20px;">示例内容区域</h2>
+      <div class="demo-content">
+        <div class="demo-section">
+          <div class="demo-title">政务服务大厅</div>
+          <div class="demo-text">
+            为民服务，高效便捷。我们致力于提供一站式政务服务，让数据多跑路，群众少跑腿。
+            通过数字化转型，打造智慧政务新模式。
+          </div>
+        </div>
+        
+        <div class="demo-section">
+          <div class="demo-title">在线办事指南</div>
+          <div class="demo-text">
+            简化流程，提高效率。所有政务服务事项均可在线查询、申请和办理。
+            实时追踪办理进度，享受便捷的政务服务体验。
+          </div>
+        </div>
+        
+        <div class="animation-preview">
+          <div class="preview-box">预览区域</div>
+          <p style="color: #666; margin-top: 10px;">选择动画效果后，点击"应用主题"查看效果</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { SimpleThemeManager } from './packages/shared/color-generate/dist/index.js'
+    
+    const themeManager = new SimpleThemeManager()
+    let selectedAnimation = 'fade'
+    
+    // 动画卡片点击事件
+    document.querySelectorAll('.animation-card').forEach(card => {
+      card.addEventListener('click', function() {
+        // 移除其他卡片的激活状态
+        document.querySelectorAll('.animation-card').forEach(c => c.classList.remove('active'))
+        // 添加当前卡片的激活状态
+        this.classList.add('active')
+        selectedAnimation = this.dataset.animation
+      })
+    })
+    
+    // 设置默认选中第一个动画
+    document.querySelector('.animation-card').classList.add('active')
+    
+    // 应用主题函数
+    window.applyTheme = function() {
+      const theme = document.getElementById('themeSelect').value
+      const duration = parseInt(document.getElementById('durationInput').value)
+      
+      console.log(`应用主题: ${theme}, 动画: ${selectedAnimation}, 时长: ${duration}ms`)
+      
+      // 应用主题
+      themeManager.setTheme(theme, {
+        type: selectedAnimation,
+        duration: duration
+      })
+      
+      // 更新预览框文字
+      const previewBox = document.querySelector('.preview-box')
+      previewBox.textContent = selectedAnimation.toUpperCase()
+      
+      // 添加一个视觉反馈
+      previewBox.style.transform = 'scale(0.9)'
+      setTimeout(() => {
+        previewBox.style.transform = 'scale(1)'
+      }, 100)
+    }
+    
+    // 初始化主题
+    themeManager.setTheme('governmentBlue')
+  </script>
+</body>
+</html>

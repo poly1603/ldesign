@@ -3,47 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LDesign Editor - Vite + TypeScript Demo</title>
+  <title>LDesign Editor 示例</title>
 </head>
 <body>
   <div id="app">
-    <header class="header">
-      <h1>📝 LDesign Editor</h1>
-      <p class="subtitle">Vite + TypeScript 演示示例</p>
-    </header>
-
-    <main class="container">
-      <div class="editor-wrapper">
-        <div id="toolbar"></div>
-        <div id="editor" class="editor-content"></div>
-      </div>
-
-      <aside class="info-panel">
-        <h3>🎯 功能特性</h3>
-        <ul>
-          <li>✨ 富文本编辑</li>
-          <li>🖼️ 图片插入与编辑</li>
-          <li>📋 表格支持</li>
-          <li>🔗 超链接</li>
-          <li>📝 代码块</li>
-          <li>🎨 文本格式化</li>
-          <li>⌨️ 快捷键支持</li>
-          <li>🔍 查找替换</li>
-        </ul>
-
-        <h3>🔧 快捷键</h3>
-        <ul class="shortcuts">
-          <li><kbd>Ctrl+B</kbd> 加粗</li>
-          <li><kbd>Ctrl+I</kbd> 斜体</li>
-          <li><kbd>Ctrl+U</kbd> 下划线</li>
-          <li><kbd>Ctrl+Z</kbd> 撤销</li>
-          <li><kbd>Ctrl+Y</kbd> 重做</li>
-          <li><kbd>Ctrl+F</kbd> 查找</li>
-        </ul>
-      </aside>
-    </main>
+    <div id="editor"></div>
   </div>
-
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

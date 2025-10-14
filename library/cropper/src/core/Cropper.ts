@@ -18,6 +18,8 @@ import { CropBox } from './CropBox'
 import { ImageProcessor } from './ImageProcessor'
 import { InteractionManager } from './InteractionManager'
 import { Toolbar, type ToolbarOptions } from './Toolbar'
+import { HistoryManager, type HistoryOptions } from './HistoryManager'
+import { PresetManager, type PresetOptions } from './PresetManager'
 import { getElement, createElement, addClass, removeClass, setStyle } from '../utils/dom'
 import { dispatch } from '../utils/events'
 import { clamp } from '../utils/math'
@@ -80,7 +82,7 @@ const DEFAULTS = {
 }
 
 export class Cropper {
-  private element: string | Element
+  public element: HTMLElement  // Public element property for HistoryManager
   private container: HTMLElement | null = null
   private wrapper: HTMLElement | null = null
   private options: CropperOptions
@@ -88,16 +90,23 @@ export class Cropper {
   private imageProcessor: ImageProcessor | null = null
   private interactionManager: InteractionManager | null = null
   private toolbar: Toolbar | null = null
+  private historyManager: HistoryManager | null = null
+  private presetManager: PresetManager | null = null
   private placeholderElement: HTMLElement | null = null
   private fileInput: HTMLInputElement | null = null
-  private ready = false
+  public ready = false  // Changed to public for HistoryManager access
   private disabled = false
   private currentAction: Action = 'crop'
   private dragMode: DragMode = 'crop'
   private zoom = 1
 
-  constructor(element: string | Element, options: CropperOptions = {}) {
-    this.element = element
+  constructor(elementParam: string | Element, options: CropperOptions = {}) {
+    // Get the actual element
+    const el = getElement(elementParam)
+    if (!el) {
+      throw new Error('Container element not found')
+    }
+    this.element = el as HTMLElement
     this.options = { ...DEFAULTS, ...options }
     this.dragMode = this.options.dragMode || 'crop'
 
@@ -108,13 +117,8 @@ export class Cropper {
    * Initialize cropper
    */
   private async init(): Promise<void> {
-    // Get container element
-    const el = getElement(this.element)
-    if (!el) {
-      throw new Error('Container element not found')
-    }
-
-    this.container = el as HTMLElement
+    // Use the element property directly
+    this.container = this.element
 
     // Create wrapper
     this.wrapper = createElement('div', 'cropper-container')
@@ -166,6 +170,12 @@ export class Cropper {
 
       // Initialize toolbar if enabled
       this.initToolbar()
+
+      // Initialize history manager
+      this.initHistoryManager()
+
+      // Initialize preset manager
+      this.initPresetManager()
 
       // Mark as ready
       this.ready = true
@@ -560,8 +570,9 @@ export class Cropper {
 
     const cropBoxData = this.cropBox.getData()
     const imageData = this.imageProcessor.getImageData()
+    const displayRect = this.imageProcessor.getDisplayRect()
 
-    if (!imageData) {
+    if (!imageData || !displayRect) {
       return {
         x: 0, y: 0, width: 0, height: 0,
         rotate: 0, scaleX: 1, scaleY: 1,
@@ -570,11 +581,27 @@ export class Cropper {
       }
     }
 
+    // Calculate crop coordinates relative to the original image
+    // Account for image position, scale and transforms
+    const scaleX = imageData.scaleX
+    const scaleY = imageData.scaleY
+    const imageLeft = displayRect.left + imageData.translateX
+    const imageTop = displayRect.top + imageData.translateY
+    
+    // Convert crop box coordinates to image coordinates
+    const relativeX = (cropBoxData.left - imageLeft) / Math.abs(scaleX)
+    const relativeY = (cropBoxData.top - imageTop) / Math.abs(scaleY)
+    const relativeWidth = cropBoxData.width / Math.abs(scaleX)
+    const relativeHeight = cropBoxData.height / Math.abs(scaleY)
+    
+    // Map to natural image dimensions
+    const ratio = imageData.naturalWidth / imageData.width
+    
     const data: CropData = {
-      x: cropBoxData.left,
-      y: cropBoxData.top,
-      width: cropBoxData.width,
-      height: cropBoxData.height,
+      x: relativeX * ratio,
+      y: relativeY * ratio,
+      width: relativeWidth * ratio,
+      height: relativeHeight * ratio,
       rotate: imageData.rotate,
       scaleX: imageData.scaleX,
       scaleY: imageData.scaleY,
@@ -608,6 +635,90 @@ export class Cropper {
   setData(data: Partial<CropBoxData>): void {
     if (!this.ready || !this.cropBox) return
     this.cropBox.setData(data)
+  }
+
+  /**
+   * Get container data
+   */
+  getContainerData(): ContainerData | null {
+    if (!this.container) return null
+    return {
+      width: this.container.clientWidth,
+      height: this.container.clientHeight
+    }
+  }
+
+  /**
+   * Get canvas data
+   */
+  getCanvasData(): CanvasData | null {
+    if (!this.imageProcessor) return null
+    const rect = this.imageProcessor.getDisplayRect()
+    const imageData = this.imageProcessor.getImageData()
+    if (!rect || !imageData) return null
+    return {
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
+      naturalWidth: imageData.naturalWidth,
+      naturalHeight: imageData.naturalHeight
+    }
+  }
+
+  /**
+   * Set canvas data
+   */
+  setCanvasData(data: Partial<CanvasData>): void {
+    if (!this.ready || !this.imageProcessor) return
+    // Canvas data is managed by imageProcessor through transforms
+    // This would require implementing a method to set the display rect
+    // For now, this is a placeholder
+  }
+
+  /**
+   * Get crop box data
+   */
+  getCropBoxData(): CropBoxData | null {
+    if (!this.cropBox) return null
+    return this.cropBox.getData()
+  }
+
+  /**
+   * Set crop box data
+   */
+  setCropBoxData(data: Partial<CropBoxData>): void {
+    if (!this.ready || !this.cropBox) return
+    this.cropBox.setData(data)
+  }
+
+  /**
+   * Set aspect ratio
+   */
+  setAspectRatio(aspectRatio: number): void {
+    if (!this.ready || !this.cropBox) return
+    this.options.aspectRatio = aspectRatio
+    this.cropBox.setAspectRatio(aspectRatio)
+  }
+
+  /**
+   * Set options dynamically
+   */
+  setOptions(options: Partial<CropperOptions>): void {
+    this.options = { ...this.options, ...options }
+    
+    // Apply certain options immediately if cropper is ready
+    if (this.ready) {
+      if (options.aspectRatio !== undefined && this.cropBox) {
+        this.cropBox.setAspectRatio(options.aspectRatio)
+      }
+      if (options.cropBoxStyle !== undefined && this.cropBox) {
+        this.cropBox.setStyle(options.cropBoxStyle)
+      }
+      if (options.dragMode !== undefined) {
+        this.dragMode = options.dragMode
+      }
+    }
   }
 
   /**
@@ -992,10 +1103,75 @@ export class Cropper {
   }
 
   /**
+   * Initialize history manager
+   */
+  private initHistoryManager(): void {
+    if (!this.options.history) return
+
+    const historyOptions = typeof this.options.history === 'object' ? this.options.history : {}
+    this.historyManager = new HistoryManager(this, historyOptions)
+
+    // Listen for history change events to update toolbar buttons
+    this.historyManager.on('change', (data: { canUndo: boolean, canRedo: boolean }) => {
+      if (this.toolbar) {
+        this.toolbar.updateButton('undo', { disabled: !data.canUndo })
+        this.toolbar.updateButton('redo', { disabled: !data.canRedo })
+      }
+    })
+
+    // Listen for toolbar undo/redo events
+    if (this.container) {
+      this.container.addEventListener('toolbar:undo', () => {
+        if (this.historyManager) {
+          this.historyManager.undo()
+        }
+      })
+
+      this.container.addEventListener('toolbar:redo', () => {
+        if (this.historyManager) {
+          this.historyManager.redo()
+        }
+      })
+    }
+  }
+
+  /**
+   * Initialize preset manager
+   */
+  private initPresetManager(): void {
+    if (!this.options.presets) return
+
+    const presetOptions = typeof this.options.presets === 'object' ? this.options.presets : {}
+    this.presetManager = new PresetManager(this, presetOptions)
+  }
+
+  /**
+   * Get history manager
+   */
+  public getHistoryManager(): HistoryManager | null {
+    return this.historyManager
+  }
+
+  /**
+   * Get preset manager
+   */
+  public getPresetManager(): PresetManager | null {
+    return this.presetManager
+  }
+
+  /**
    * Destroy
    */
   destroy(): void {
     if (!this.container) return
+
+    if (this.historyManager) {
+      this.historyManager.destroy()
+    }
+
+    if (this.presetManager) {
+      this.presetManager.destroy()
+    }
 
     if (this.toolbar) {
       this.toolbar.destroy()
@@ -1023,6 +1199,8 @@ export class Cropper {
     this.imageProcessor = null
     this.interactionManager = null
     this.toolbar = null
+    this.historyManager = null
+    this.presetManager = null
     this.ready = false
   }
 }

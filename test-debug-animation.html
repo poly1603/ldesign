@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试动画问题</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .test-card {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: var(--td-brand-color-1, #f0f7ff);
+        }
+        
+        .t-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: var(--td-brand-color, #0052d9);
+            color: white;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .td-tag {
+            padding: 4px 8px;
+            background: var(--td-brand-color-2, #d9e1ff);
+            color: var(--td-brand-color-8, #052b87);
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px;
+        }
+        
+        .controls {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .controls button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        
+        #log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+        }
+        
+        .log-time {
+            color: #999;
+        }
+        
+        .log-error {
+            color: #f00;
+        }
+        
+        .log-success {
+            color: #0f0;
+        }
+        
+        .log-info {
+            color: #ff0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 调试主题切换动画</h1>
+    
+    <div class="controls">
+        <h3>测试控制台</h3>
+        
+        <div>
+            <button onclick="testDirect()">直接测试（不通过setTheme）</button>
+            <button onclick="testSetTheme()">测试 setTheme</button>
+            <button onclick="testWithOptions()">测试带选项的 setTheme</button>
+            <button onclick="checkInstance()">检查全局实例</button>
+            <button onclick="clearLog()">清空日志</button>
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <button onclick="manualCascade()">手动级联动画</button>
+            <button onclick="checkElements()">检查目标元素</button>
+            <button onclick="testViewTransition()">测试 View Transition API</button>
+        </div>
+    </div>
+    
+    <div class="test-grid">
+        <div class="test-card t-1">
+            <h3>测试卡片 1</h3>
+            <button class="t-button">T按钮</button>
+            <span class="td-tag">TD标签</span>
+        </div>
+        
+        <div class="test-card td-2">
+            <h3>测试卡片 2</h3>
+            <button class="t-button">T按钮</button>
+            <span class="td-tag">TD标签</span>
+        </div>
+        
+        <div class="test-card t-3">
+            <h3>测试卡片 3</h3>
+            <button class="t-button">T按钮</button>
+            <span class="td-tag">TD标签</span>
+        </div>
+    </div>
+    
+    <div id="log"></div>
+    
+    <script type="module">
+        import { setTheme, getCurrentTheme } from '../ldesign-all/packages/shared/color-generate/es/simple.js';
+        
+        // 日志函数
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-${type}">${message}</span>`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(`[${type}]`, message);
+        }
+        
+        // 清空日志
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        // 直接测试动画（不通过setTheme）
+        window.testDirect = function() {
+            log('开始直接测试动画效果...', 'info');
+            
+            const elements = document.querySelectorAll('[class*="t-"], [class*="td-"]');
+            log(`找到 ${elements.length} 个目标元素`, 'success');
+            
+            // 为每个元素添加过渡
+            elements.forEach((el, index) => {
+                el.style.transition = `all 300ms ease ${index * 50}ms`;
+                log(`元素 ${index}: ${el.className} - 添加过渡延迟 ${index * 50}ms`, 'info');
+            });
+            
+            // 模拟改变CSS变量
+            setTimeout(() => {
+                document.documentElement.style.setProperty('--td-brand-color', '#ff6b6b');
+                document.documentElement.style.setProperty('--td-brand-color-1', '#ffe0e0');
+                document.documentElement.style.setProperty('--td-brand-color-2', '#ffb3b3');
+                document.documentElement.style.setProperty('--td-brand-color-8', '#cc0000');
+                log('CSS变量已更新', 'success');
+                
+                // 清理过渡
+                setTimeout(() => {
+                    elements.forEach(el => {
+                        el.style.transition = '';
+                    });
+                    log('过渡样式已清理', 'info');
+                }, 1500);
+            }, 100);
+        }
+        
+        // 测试 setTheme 基础调用
+        window.testSetTheme = function() {
+            log('测试基础 setTheme 调用...', 'info');
+            try {
+                const result = setTheme('techBlue');
+                log(`setTheme 返回: ${result}`, 'success');
+                log(`返回对象类型: ${typeof result}`, 'info');
+                if (result) {
+                    log(`有属性: ${Object.keys(result).join(', ')}`, 'info');
+                }
+            } catch (error) {
+                log(`错误: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试带选项的 setTheme
+        window.testWithOptions = function() {
+            log('测试带动画选项的 setTheme...', 'info');
+            
+            const options = {
+                transition: 'cascade',
+                duration: 500,
+                cascadeDelay: 100
+            };
+            
+            log(`调用选项: ${JSON.stringify(options)}`, 'info');
+            
+            try {
+                const result = setTheme('mintGreen', options);
+                log(`setTheme 返回成功`, 'success');
+                
+                // 检查实例的选项
+                if (result && result.options) {
+                    log(`实例选项: enableTransition = ${result.options.enableTransition}`, 'info');
+                    log(`实例选项: transitionOptions = ${JSON.stringify(result.options.transitionOptions)}`, 'info');
+                }
+                
+                // 检查是否有过渡样式
+                setTimeout(() => {
+                    const elements = document.querySelectorAll('[class*="t-"], [class*="td-"]');
+                    let hasTransition = false;
+                    elements.forEach((el, index) => {
+                        if (el.style.transition) {
+                            hasTransition = true;
+                            log(`元素 ${index} 有过渡: ${el.style.transition}`, 'success');
+                        }
+                    });
+                    if (!hasTransition) {
+                        log('警告: 没有元素有过渡样式！', 'error');
+                    }
+                }, 100);
+                
+            } catch (error) {
+                log(`错误: ${error.message}`, 'error');
+                log(`错误堆栈: ${error.stack}`, 'error');
+            }
+        }
+        
+        // 检查全局实例
+        window.checkInstance = function() {
+            log('检查全局主题实例...', 'info');
+            const instance = getCurrentTheme();
+            if (instance) {
+                log('找到全局实例', 'success');
+                log(`实例类型: ${instance.constructor.name}`, 'info');
+                log(`实例选项: ${JSON.stringify(instance.options)}`, 'info');
+                
+                // 测试直接调用动画方法
+                if (instance.applyCascadeTransition) {
+                    log('实例有 applyCascadeTransition 方法', 'success');
+                } else {
+                    log('警告: 实例没有 applyCascadeTransition 方法！', 'error');
+                }
+                
+                // 尝试手动调用
+                if (instance.updateTheme) {
+                    log('尝试手动调用 updateTheme...', 'info');
+                    instance.setTransitionOptions({
+                        transition: 'cascade',
+                        duration: 800,
+                        cascadeDelay: 80
+                    });
+                    instance.updateTheme('coralOrange');
+                    log('手动调用完成', 'success');
+                }
+                
+            } else {
+                log('没有找到全局实例', 'error');
+            }
+        }
+        
+        // 手动实现级联动画
+        window.manualCascade = function() {
+            log('手动实现级联动画...', 'info');
+            
+            const colors = ['#2196f3', '#4caf50', '#ff9800', '#9c27b0', '#0052d9'];
+            let colorIndex = 0;
+            
+            const animate = () => {
+                const elements = document.querySelectorAll('[class*="t-"], [class*="td-"]');
+                const color = colors[colorIndex % colors.length];
+                
+                log(`切换到颜色: ${color}`, 'info');
+                
+                elements.forEach((el, index) => {
+                    el.style.transition = `background-color 300ms ease ${index * 50}ms`;
+                    setTimeout(() => {
+                        el.style.backgroundColor = color + '20';
+                    }, 10);
+                });
+                
+                document.documentElement.style.setProperty('--td-brand-color', color);
+                
+                setTimeout(() => {
+                    elements.forEach(el => {
+                        el.style.transition = '';
+                        el.style.backgroundColor = '';
+                    });
+                }, 1500);
+                
+                colorIndex++;
+            };
+            
+            animate();
+        }
+        
+        // 检查目标元素
+        window.checkElements = function() {
+            log('检查页面元素...', 'info');
+            
+            const selectors = [
+                '[class*="t-"]',
+                '[class*="td-"]',
+                '.t-button',
+                '.td-tag',
+                '.test-card'
+            ];
+            
+            selectors.forEach(selector => {
+                const elements = document.querySelectorAll(selector);
+                log(`${selector}: 找到 ${elements.length} 个元素`, elements.length > 0 ? 'success' : 'error');
+            });
+            
+            // 列出所有找到的类名
+            const allElements = document.querySelectorAll('[class*="t-"], [class*="td-"]');
+            const classNames = new Set();
+            allElements.forEach(el => {
+                el.classList.forEach(cls => classNames.add(cls));
+            });
+            log(`所有类名: ${Array.from(classNames).join(', ')}`, 'info');
+        }
+        
+        // 测试 View Transition API
+        window.testViewTransition = function() {
+            log('测试 View Transition API...', 'info');
+            
+            if ('startViewTransition' in document) {
+                log('浏览器支持 View Transition API', 'success');
+                
+                // 测试一个简单的过渡
+                document.startViewTransition(() => {
+                    document.body.style.backgroundColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+                    log('View Transition 执行成功', 'success');
+                });
+            } else {
+                log('浏览器不支持 View Transition API', 'error');
+            }
+        }
+        
+        // 初始化
+        log('调试工具已加载', 'success');
+        log('等待命令...', 'info');
+    </script>
+</body>
+</html>

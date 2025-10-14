@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Transitions API 测试</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 40px;
+            background: var(--td-bg-color-page, #f5f5f5);
+            color: var(--td-text-color-primary, #333);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .theme-colors {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .color-block {
+            height: 100px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .color-block:hover {
+            transform: scale(1.05);
+        }
+        
+        .brand-1 { background: var(--td-brand-color-1, #f2f3ff); color: #333; }
+        .brand-2 { background: var(--td-brand-color-2, #d9e1ff); color: #333; }
+        .brand-3 { background: var(--td-brand-color-3, #b3c5ff); }
+        .brand-4 { background: var(--td-brand-color-4, #8cabff); }
+        .brand-5 { background: var(--td-brand-color-5, #618dff); }
+        .brand-6 { background: var(--td-brand-color-6, #366ef4); }
+        .brand-7 { background: var(--td-brand-color-7, #0052d9); }
+        .brand-8 { background: var(--td-brand-color-8, #003cab); }
+        .brand-9 { background: var(--td-brand-color-9, #002a7c); }
+        .brand-10 { background: var(--td-brand-color-10, #001a57); }
+        
+        .control-panel {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--td-brand-color, #0052d9);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--td-brand-color-8, #003cab);
+        }
+        
+        .btn-secondary {
+            background: #e5e5e5;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .status {
+            padding: 15px;
+            background: #f0f9ff;
+            border-left: 4px solid #0052d9;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        
+        .status.error {
+            background: #fff0f0;
+            border-color: #e34d59;
+        }
+        
+        .status.success {
+            background: #f0fff4;
+            border-color: #00a870;
+        }
+        
+        h1 {
+            color: var(--td-text-color-primary, #333);
+            margin-bottom: 30px;
+        }
+        
+        .test-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .info-card {
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 8px;
+        }
+        
+        .info-card h3 {
+            margin: 0 0 10px 0;
+            color: var(--td-brand-color, #0052d9);
+        }
+        
+        .info-card p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 主题切换动画测试</h1>
+        
+        <div class="control-panel">
+            <h2>控制面板</h2>
+            
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="testDefaultAnimation()">
+                    默认动画（View Transitions）
+                </button>
+                <button class="btn btn-primary" onclick="testCascadeAnimation()">
+                    级联动画（Cascade）
+                </button>
+                <button class="btn btn-primary" onclick="testSmoothAnimation()">
+                    平滑动画（Smooth）
+                </button>
+                <button class="btn btn-primary" onclick="testFadeAnimation()">
+                    淡入淡出（Fade）
+                </button>
+                <button class="btn btn-primary" onclick="testNoAnimation()">
+                    无动画（Instant）
+                </button>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="switchTheme('default')">默认蓝</button>
+                <button class="btn btn-secondary" onclick="switchTheme('techBlue')">科技蓝</button>
+                <button class="btn btn-secondary" onclick="switchTheme('mintGreen')">薄荷绿</button>
+                <button class="btn btn-secondary" onclick="switchTheme('coralOrange')">珊瑚橙</button>
+                <button class="btn btn-secondary" onclick="switchTheme('purpleViolet')">紫罗兰</button>
+                <button class="btn btn-secondary" onclick="switchTheme('chinaRed')">中国红</button>
+            </div>
+            
+            <div id="status" class="status">
+                准备就绪，请选择动画类型并切换主题
+            </div>
+            
+            <div class="test-info">
+                <div class="info-card">
+                    <h3>当前设置</h3>
+                    <p>动画类型: <code id="currentAnimation">默认</code></p>
+                    <p>当前主题: <code id="currentTheme">default</code></p>
+                    <p>浏览器支持: <code id="browserSupport">检测中...</code></p>
+                </div>
+                <div class="info-card">
+                    <h3>说明</h3>
+                    <p>• 默认使用 View Transitions API</p>
+                    <p>• 级联动画适合列表场景</p>
+                    <p>• 平滑动画适合大幅度变化</p>
+                    <p>• 淡入淡出有白色遮罩效果</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="theme-colors">
+            <div class="color-block brand-1">Brand 1</div>
+            <div class="color-block brand-2">Brand 2</div>
+            <div class="color-block brand-3">Brand 3</div>
+            <div class="color-block brand-4">Brand 4</div>
+            <div class="color-block brand-5">Brand 5</div>
+            <div class="color-block brand-6">Brand 6</div>
+            <div class="color-block brand-7">Brand 7</div>
+            <div class="color-block brand-8">Brand 8</div>
+            <div class="color-block brand-9">Brand 9</div>
+            <div class="color-block brand-10">Brand 10</div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { setTheme, getCurrentTheme } from '../ldesign-all/packages/shared/color-generate/es/simple.js';
+        
+        let currentAnimationType = 'default';
+        
+        // 检查浏览器支持
+        const supportsViewTransitions = 'startViewTransition' in document;
+        document.getElementById('browserSupport').textContent = 
+            supportsViewTransitions ? '✅ 支持 View Transitions' : '❌ 不支持 View Transitions';
+        
+        // 初始化主题
+        setTheme('default');
+        
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            console.log(`[${type}] ${message}`);
+        }
+        
+        // 测试默认动画（View Transitions API）
+        window.testDefaultAnimation = function() {
+            currentAnimationType = 'default';
+            document.getElementById('currentAnimation').textContent = '默认 (View Transitions)';
+            updateStatus('已切换到默认动画模式（View Transitions API），现在切换主题试试', 'success');
+        }
+        
+        // 测试级联动画
+        window.testCascadeAnimation = function() {
+            currentAnimationType = 'cascade';
+            document.getElementById('currentAnimation').textContent = '级联 (Cascade)';
+            updateStatus('已切换到级联动画模式，元素将逐个变化', 'success');
+        }
+        
+        // 测试平滑动画
+        window.testSmoothAnimation = function() {
+            currentAnimationType = 'smooth';
+            document.getElementById('currentAnimation').textContent = '平滑 (Smooth)';
+            updateStatus('已切换到平滑动画模式，适合大幅度颜色变化', 'success');
+        }
+        
+        // 测试淡入淡出动画
+        window.testFadeAnimation = function() {
+            currentAnimationType = 'fade';
+            document.getElementById('currentAnimation').textContent = '淡入淡出 (Fade)';
+            updateStatus('已切换到淡入淡出模式，会有白色遮罩效果', 'success');
+        }
+        
+        // 测试无动画
+        window.testNoAnimation = function() {
+            currentAnimationType = 'instant';
+            document.getElementById('currentAnimation').textContent = '无动画 (Instant)';
+            updateStatus('已关闭动画，主题将立即切换', 'success');
+        }
+        
+        // 切换主题
+        window.switchTheme = function(themeName) {
+            document.getElementById('currentTheme').textContent = themeName;
+            
+            let options = {};
+            
+            // 根据当前动画类型设置选项
+            if (currentAnimationType === 'default') {
+                // 默认模式：不设置 transition 字段，让其使用 View Transitions API
+                updateStatus(`切换到 ${themeName} 主题（使用 View Transitions API）`);
+            } else {
+                // 其他模式：设置 transition 字段
+                options = {
+                    transition: currentAnimationType,
+                    duration: 500,
+                    cascadeDelay: 50
+                };
+                updateStatus(`切换到 ${themeName} 主题（使用 ${currentAnimationType} 动画）`);
+            }
+            
+            // 记录动画开始时间
+            const startTime = performance.now();
+            
+            // 执行主题切换
+            try {
+                const result = setTheme(themeName, options);
+                
+                // 检查实例状态
+                if (result && result.options) {
+                    console.log('主题实例选项:', result.options);
+                }
+                
+                // 监听动画完成
+                requestAnimationFrame(() => {
+                    const endTime = performance.now();
+                    const duration = Math.round(endTime - startTime);
+                    console.log(`动画执行时间: ${duration}ms`);
+                });
+                
+            } catch (error) {
+                updateStatus(`切换失败: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        // 检查 View Transitions API 是否在工作
+        if (supportsViewTransitions) {
+            // 监听 View Transition
+            const originalStartViewTransition = document.startViewTransition;
+            document.startViewTransition = function(...args) {
+                console.log('View Transition 被调用了！');
+                updateStatus('View Transition API 正在执行...', 'info');
+                return originalStartViewTransition.apply(this, args);
+            };
+        }
+        
+        // 初始状态
+        testDefaultAnimation();
+    </script>
+</body>
+</html>

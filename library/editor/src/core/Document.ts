@@ -185,6 +185,45 @@ export class Document {
       }
     }
 
+    // 视频
+    if (tagName === 'video') {
+      // 优先从 <source> 子节点读取 src/type
+      let src = element.getAttribute('src')
+      let type = element.getAttribute('type')
+      const source = element.querySelector('source')
+      if (source) {
+        src = src || source.getAttribute('src') || undefined as any
+        type = type || source.getAttribute('type') || undefined as any
+      }
+      return {
+        type: 'video',
+        attrs: {
+          src,
+          type,
+          controls: element.hasAttribute('controls') ? true : undefined
+        }
+      }
+    }
+
+    // 音频
+    if (tagName === 'audio') {
+      let src = element.getAttribute('src')
+      let type = element.getAttribute('type')
+      const source = element.querySelector('source')
+      if (source) {
+        src = src || source.getAttribute('src') || undefined as any
+        type = type || source.getAttribute('type') || undefined as any
+      }
+      return {
+        type: 'audio',
+        attrs: {
+          src,
+          type,
+          controls: element.hasAttribute('controls') ? true : undefined
+        }
+      }
+    }
+
     // 表格 - 保留原始 HTML
     if (tagName === 'table') {
       return {
@@ -309,7 +348,20 @@ export class Document {
       case 'listItem':
         return `<li>${content}</li>`
       case 'image':
-        return `<img src="${node.attrs?.src || ''}" alt="${node.attrs?.alt || ''}" ${node.attrs?.title ? `title="${node.attrs.title}"` : ''}>`
+        return `<img src="${node.attrs?.src || ''}" alt="${node.attrs?.alt || ''}" ${node.attrs?.title ? `title=\"${node.attrs.title}\"` : ''}>`
+      case 'video': {
+        const src = node.attrs?.src || ''
+        const type = node.attrs?.type ? ` type=\"${node.attrs.type}\"` : ''
+        const controls = node.attrs?.controls === false ? '' : ' controls'
+        // 使用 video[src] 简化生成，保证样式匹配
+        return `<video${controls} src="${src}"${type} style="max-width: 100%; height: auto; display: block; margin: 10px auto;"></video>`
+      }
+      case 'audio': {
+        const src = node.attrs?.src || ''
+        const type = node.attrs?.type ? ` type=\"${node.attrs.type}\"` : ''
+        const controls = node.attrs?.controls === false ? '' : ' controls'
+        return `<audio${controls} src="${src}"${type} style="width: 100%; max-width: 400px; display: block; margin: 10px auto;"></audio>`
+      }
       case 'table':
         // 直接返回原始的表格 HTML
         return node.attrs?.html || '<table></table>'

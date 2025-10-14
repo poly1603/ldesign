@@ -78,6 +78,7 @@ export function generateTailwindScale(
 
 /**
  * Generate semantic colors (primary, success, warning, danger, info) with Tailwind scales
+ * Colors are generated based on the primary color for better harmony
  */
 export function generateTailwindSemanticColors(primaryColor: ColorInput): {
   primary: { [key: string]: string };
@@ -89,18 +90,38 @@ export function generateTailwindSemanticColors(primaryColor: ColorInput): {
   const primary = new Color(primaryColor);
   const primaryHsl = primary.toHSL();
   
-  // Define semantic color bases
-  // These are carefully chosen to create harmonious relationships
+  // Define semantic color bases based on primary color characteristics
+  // These create harmonious relationships while maintaining semantic meaning
   const semanticBases = {
     primary: primary,
-    // Success: green at similar saturation
-    success: Color.fromHSL(130, primaryHsl.s * 0.9, 46),
-    // Warning: amber/orange  
-    warning: Color.fromHSL(43, Math.min(primaryHsl.s * 1.1, 100), 46),
-    // Danger: red
-    danger: Color.fromHSL(4, primaryHsl.s, 46),
-    // Info: blue
-    info: Color.fromHSL(210, primaryHsl.s * 0.85, 46)
+    
+    // Success: green hue with saturation based on primary
+    success: Color.fromHSL(
+      142,  // Green hue (slightly blue-shifted for modern look)
+      Math.min(Math.max(primaryHsl.s * 0.9, 45), 70),  // Controlled saturation
+      45  // Balanced lightness
+    ),
+    
+    // Warning: warm orange/amber with boosted saturation
+    warning: Color.fromHSL(
+      38,  // Orange hue
+      Math.min(Math.max(primaryHsl.s * 1.1, 60), 85),  // Higher saturation for visibility
+      50  // Balanced lightness
+    ),
+    
+    // Danger: red with saturation based on primary
+    danger: Color.fromHSL(
+      4,  // Red hue (slightly orange-shifted for warmth)
+      Math.min(Math.max(primaryHsl.s, 50), 75),  // Maintain good saturation
+      50  // Balanced lightness
+    ),
+    
+    // Info: blue with slightly reduced saturation
+    info: Color.fromHSL(
+      210,  // Blue hue
+      Math.min(Math.max(primaryHsl.s * 0.85, 40), 70),  // Controlled saturation
+      50  // Balanced lightness
+    )
   };
   
   const result: any = {};
@@ -205,6 +226,8 @@ export interface CssVarOptions {
   prefix?: string;
   /** Suffix format: 'tailwind' for (50, 100, 200...), 'numeric' for (1, 2, 3...) */
   suffixFormat?: CssVarSuffixFormat;
+  /** Custom name mappings for colors (e.g., { primary: 'brand', success: 'good' }) */
+  nameMap?: { [key: string]: string };
 }
 
 /**
@@ -255,16 +278,21 @@ export function generateThemeCssVars(
   },
   options: CssVarOptions = {}
 ): string {
+  const { nameMap = {} } = options;
   const cssVars: string[] = [];
   
   // Generate variables for each color
   Object.entries(theme.colors).forEach(([colorName, palette]) => {
-    cssVars.push(generatePaletteCssVars(palette, colorName, options));
+    // Use custom name from nameMap if provided, otherwise use original name
+    const varName = nameMap[colorName] || colorName;
+    cssVars.push(generatePaletteCssVars(palette, varName, options));
   });
   
   // Generate variables for grays if present
   if (theme.grays) {
-    cssVars.push(generatePaletteCssVars(theme.grays, 'gray', options));
+    // Also check if gray has a custom name mapping
+    const grayName = nameMap['gray'] || nameMap['grays'] || 'gray';
+    cssVars.push(generatePaletteCssVars(theme.grays, grayName, options));
   }
   
   return cssVars.join('\n');

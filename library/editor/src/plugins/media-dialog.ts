@@ -18,19 +18,26 @@ class MediaDialog {
    * Show the media dialog
    */
   show(type: 'image' | 'video' | 'audio', callback: (url: string, file?: File) => void) {
+    console.log('[MediaDialog.show] Called with type:', type)
+    // Ensure any previous dialog is closed BEFORE setting the new callback
+    // Important: previously createDialog() would call close() which cleared the callback set here
+    // That caused this.callback to be null when clicking the Insert button.
+    this.close()
     this.callback = callback
+    console.log('[MediaDialog.show] Callback set. Creating dialog now.')
     this.createDialog(type)
+    console.log('[MediaDialog.show] createDialog completed')
   }
   
   /**
    * Create the dialog elements
    */
   private createDialog(type: 'image' | 'video' | 'audio') {
-    // Remove existing dialog if any
-    this.close()
+    console.log('[MediaDialog.createDialog] Starting creation for type:', type)
     
     // Create overlay
     this.overlay = document.createElement('div')
+    console.log('[MediaDialog.createDialog] Overlay created:', this.overlay)
     this.overlay.className = 'ldesign-media-overlay'
     this.overlay.style.cssText = `
       position: fixed;
@@ -76,8 +83,8 @@ class MediaDialog {
     
     const icons = {
       image: 'image',
-      video: 'video',
-      audio: 'music'
+      video: 'image', // 使用 image 作为备用
+      audio: 'image'  // 使用 image 作为备用
     }
     
     this.dialog.innerHTML = `
@@ -87,20 +94,20 @@ class MediaDialog {
           ${typeLabels[type]}
         </h3>
         <button class="close-btn" style="background: none; border: none; cursor: pointer; padding: 4px; color: #6b7280; transition: color 0.2s;">
-          <span style="width: 20px; height: 20px; display: block;">${getLucideIcon('x')}</span>
+          <span style="width: 20px; height: 20px; display: block;">×</span>
         </button>
       </div>
       
       <div class="dialog-tabs" style="display: flex; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
         <button class="tab-btn active" data-tab="local" style="flex: 1; padding: 12px; background: white; border: none; border-bottom: 2px solid #3b82f6; cursor: pointer; font-weight: 500; color: #3b82f6; transition: all 0.2s;">
           <span style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-            <span style="width: 16px; height: 16px;">${getLucideIcon('upload')}</span>
+            <span style="width: 16px; height: 16px;">↑</span>
             本地文件
           </span>
         </button>
         <button class="tab-btn" data-tab="url" style="flex: 1; padding: 12px; background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-weight: 500; color: #6b7280; transition: all 0.2s;">
           <span style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-            <span style="width: 16px; height: 16px;">${getLucideIcon('link')}</span>
+            <span style="width: 16px; height: 16px;">${getLucideIcon('link') || '🔗'}</span>
             网络地址
           </span>
         </button>
@@ -111,8 +118,8 @@ class MediaDialog {
         <div class="tab-content" data-tab="local" style="display: block;">
           <div class="upload-area" style="border: 2px dashed #d1d5db; border-radius: 8px; padding: 40px; text-align: center; background: #f9fafb; transition: all 0.3s; cursor: pointer;">
             <input type="file" accept="${acceptTypes[type]}" style="display: none;" class="file-input">
-            <div style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9ca3af;">
-              ${getLucideIcon('upload-cloud')}
+            <div style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9ca3af; font-size: 32px;">
+              ☁️
             </div>
             <p style="margin: 0 0 8px 0; font-size: 16px; color: #374151;">点击或拖拽文件到这里</p>
             <p style="margin: 0; font-size: 14px; color: #6b7280;">支持 ${type === 'image' ? 'JPG, PNG, GIF, SVG' : type === 'video' ? 'MP4, WebM, OGG' : 'MP3, WAV, OGG'} 格式</p>
@@ -125,7 +132,7 @@ class MediaDialog {
                 <div class="file-size" style="font-size: 12px; color: #6b7280; margin-top: 2px;"></div>
               </div>
               <button class="remove-file" style="background: none; border: none; cursor: pointer; padding: 4px; color: #ef4444;">
-                <span style="width: 16px; height: 16px; display: block;">${getLucideIcon('x')}</span>
+                <span style="width: 16px; height: 16px; display: block;">×</span>
               </button>
             </div>
           </div>
@@ -203,11 +210,17 @@ class MediaDialog {
     document.head.appendChild(style)
     
     // Add event handlers
+    console.log('[MediaDialog.createDialog] Setting up event handlers')
     this.setupEventHandlers()
     
     // Append to body
+    console.log('[MediaDialog.createDialog] Appending dialog to overlay')
     this.overlay.appendChild(this.dialog)
+    console.log('[MediaDialog.createDialog] Appending overlay to body')
+    console.log('[MediaDialog.createDialog] document.body exists:', !!document.body)
     document.body.appendChild(this.overlay)
+    console.log('[MediaDialog.createDialog] Dialog appended to DOM successfully!')
+    console.log('[MediaDialog.createDialog] Overlay in DOM:', document.body.contains(this.overlay))
   }
   
   /**
@@ -341,19 +354,55 @@ class MediaDialog {
     const insertBtn = this.dialog.querySelector<HTMLButtonElement>('.insert-btn')!
     insertBtn.addEventListener('click', () => {
       const activeTab = this.dialog!.querySelector<HTMLButtonElement>('.tab-btn.active')!.dataset.tab
+      console.log('[MediaDialog] Insert button clicked. Active tab:', activeTab)
       
+      // Preserve callback before close(), because close() clears it
+      const cb = this.callback
+      if (!cb) {
+        console.warn('[MediaDialog] No callback set at insert time')
+      }
+
       if (activeTab === 'local' && selectedFile) {
+        console.log('[MediaDialog] Inserting from local file:', {
+          name: selectedFile.name,
+          type: selectedFile.type,
+          size: selectedFile.size
+        })
         // Convert file to data URL
+        const fileToInsert = selectedFile
         const reader = new FileReader()
         reader.onload = (e) => {
           const dataUrl = e.target?.result as string
-          this.callback?.(dataUrl, selectedFile)
+          console.log('[MediaDialog] FileReader onload, dataUrl length:', dataUrl?.length)
+          // Close dialog before insertion to avoid focus/selection issues
           this.close()
+          try {
+            console.log('[MediaDialog] Calling callback with dataUrl and file')
+            cb?.(dataUrl, fileToInsert)
+            console.log('[MediaDialog] Callback finished')
+          } catch (err) {
+            console.error('[MediaDialog] Callback error:', err)
+          }
         }
-        reader.readAsDataURL(selectedFile)
+        try {
+          reader.readAsDataURL(fileToInsert)
+        } catch (err) {
+          console.error('[MediaDialog] readAsDataURL error:', err)
+        }
       } else if (activeTab === 'url' && selectedUrl) {
-        this.callback?.(selectedUrl)
+        const url = selectedUrl.trim()
+        console.log('[MediaDialog] Inserting from URL:', url)
+        // Close dialog before insertion to avoid focus/selection issues
         this.close()
+        try {
+          console.log('[MediaDialog] Calling callback with URL')
+          cb?.(url)
+          console.log('[MediaDialog] Callback finished')
+        } catch (err) {
+          console.error('[MediaDialog] Callback error:', err)
+        }
+      } else {
+        console.warn('[MediaDialog] Insert button clicked but no valid input. Selected file:', !!selectedFile, 'Selected URL:', selectedUrl)
       }
     })
     
@@ -409,68 +458,126 @@ export const MediaDialogPlugin: Plugin = {
   name: 'media-dialog',
   
   install(editor: any) {
+    console.log('[MediaDialogPlugin] Installing plugin...')
     // Initialize media dialog
     if (!mediaDialog) {
+      console.log('[MediaDialogPlugin] Creating MediaDialog instance')
       mediaDialog = new MediaDialog()
     }
     
     // Register image insertion command (only if not already registered)
     if (!editor.commands.get('insertImage')) {
+      console.log('[MediaDialogPlugin] Registering command: insertImage')
       editor.commands.register('insertImage', () => {
+        console.log('[MediaDialog] insertImage command triggered')
+        console.log('[MediaDialog] typeof editor.insertHTML:', typeof editor.insertHTML)
+        // 进入弹窗前保存当前选区，以便插入时能回到光标处
+        try { editor.saveSelection?.() } catch {}
         mediaDialog!.show('image', (url, file) => {
-          const alt = file ? file.name : 'Image'
-          const html = `<img src="${url}" alt="${alt}" style="max-width: 100%; height: auto; display: block; margin: 10px auto;">`
-          document.execCommand('insertHTML', false, html)
+          try {
+            console.log('[MediaDialog] Image callback - url:', url, 'file:', file)
+            const alt = file ? file.name : 'Image'
+            const html = `<img src="${url}" alt="${alt}" style="max-width: 100%; height: auto; display: block; margin: 10px auto;">`
+            console.log('[MediaDialog] Inserting image HTML length:', html.length)
+            
+            // 使用编辑器的 insertHTML 方法
+            if (typeof editor.insertHTML === 'function') {
+              editor.insertHTML(html)
+              console.log('[MediaDialog] Image inserted via editor.insertHTML')
+            } else {
+              console.warn('[MediaDialog] editor.insertHTML not found, trying execCommand fallback')
+              document.execCommand('insertHTML', false, html)
+            }
+          } catch (err) {
+            console.error('[MediaDialog] Error while inserting image:', err)
+          }
         })
+        return true
       })
+    } else {
+      console.log('[MediaDialogPlugin] Command already exists: insertImage')
     }
     
     // Register video insertion command (only if not already registered)
     if (!editor.commands.get('insertVideo')) {
+      console.log('[MediaDialogPlugin] Registering command: insertVideo')
       editor.commands.register('insertVideo', () => {
-      mediaDialog!.show('video', (url, file) => {
-        // Check if it's a platform video
-        if (url.includes('youtube.com') || url.includes('youtu.be')) {
-          const videoId = url.split('v=')[1] || url.split('/').pop()
-          const embedUrl = `https://www.youtube.com/embed/${videoId}`
-          const html = `<iframe width="560" height="315" src="${embedUrl}" frameborder="0" allowfullscreen style="display: block; margin: 10px auto;"></iframe>`
-          document.execCommand('insertHTML', false, html)
-        } else if (url.includes('bilibili.com')) {
-          const bvid = url.match(/BV\w+/)?.[0]
-          if (bvid) {
-            const html = `<iframe src="//player.bilibili.com/player.html?bvid=${bvid}" width="560" height="315" frameborder="0" allowfullscreen style="display: block; margin: 10px auto;"></iframe>`
-            document.execCommand('insertHTML', false, html)
+        console.log('[MediaDialog] insertVideo command triggered')
+        console.log('[MediaDialog] typeof editor.insertHTML:', typeof editor.insertHTML)
+        try { editor.saveSelection?.() } catch {}
+        mediaDialog!.show('video', (url, file) => {
+          try {
+            console.log('[MediaDialog] Video callback - url:', url, 'file:', file)
+            let html = ''
+            
+            // Check if it's a platform video
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+              const videoId = url.split('v=')[1] || url.split('/').pop()
+              const embedUrl = `https://www.youtube.com/embed/${videoId}`
+              html = `<iframe width="560" height="315" src="${embedUrl}" frameborder="0" allowfullscreen style="display: block; margin: 10px auto;"></iframe>`
+            } else if (url.includes('bilibili.com')) {
+              const bvid = url.match(/BV\w+/)?.[0]
+              if (bvid) {
+                html = `<iframe src="//player.bilibili.com/player.html?bvid=${bvid}" width="560" height="315" frameborder="0" allowfullscreen style="display: block; margin: 10px auto;"></iframe>`
+              }
+            } else {
+              // Regular video
+              html = `<video controls style=\"max-width: 100%; height: auto; display: block; margin: 10px auto;\">\n              <source src=\"${url}\" type=\"${file ? file.type : 'video/mp4'}\">\n              您的浏览器不支持视频标签。\n            </video>`
+            }
+            
+            if (html) {
+              console.log('[MediaDialog] Inserting video HTML length:', html.length)
+              if (typeof editor.insertHTML === 'function') {
+                editor.insertHTML(html)
+                console.log('[MediaDialog] Video inserted via editor.insertHTML')
+              } else {
+                console.warn('[MediaDialog] editor.insertHTML not found, trying execCommand fallback')
+                document.execCommand('insertHTML', false, html)
+              }
+            } else {
+              console.warn('[MediaDialog] Video HTML not generated')
+            }
+          } catch (err) {
+            console.error('[MediaDialog] Error while inserting video:', err)
           }
-        } else {
-          // Regular video
-          const html = `
-            <video controls style="max-width: 100%; height: auto; display: block; margin: 10px auto;">
-              <source src="${url}" type="${file ? file.type : 'video/mp4'}">
-              您的浏览器不支持视频标签。
-            </video>
-          `
-          document.execCommand('insertHTML', false, html)
-        }
         })
+        return true
       })
+    } else {
+      console.log('[MediaDialogPlugin] Command already exists: insertVideo')
     }
     
     // Register audio insertion command (only if not already registered)
     if (!editor.commands.get('insertAudio')) {
+      console.log('[MediaDialogPlugin] Registering command: insertAudio')
       editor.commands.register('insertAudio', () => {
-      mediaDialog!.show('audio', (url, file) => {
-        const html = `
-          <audio controls style="width: 100%; max-width: 400px; display: block; margin: 10px auto;">
-            <source src="${url}" type="${file ? file.type : 'audio/mpeg'}">
-            您的浏览器不支持音频标签。
-          </audio>
-        `
-          document.execCommand('insertHTML', false, html)
+        console.log('[MediaDialog] insertAudio command triggered')
+        console.log('[MediaDialog] typeof editor.insertHTML:', typeof editor.insertHTML)
+        try { editor.saveSelection?.() } catch {}
+        mediaDialog!.show('audio', (url, file) => {
+          try {
+            console.log('[MediaDialog] Audio callback - url:', url, 'file:', file)
+            const html = `<audio controls style=\"width: 100%; max-width: 400px; display: block; margin: 10px auto;\">\n            <source src=\"${url}\" type=\"${file ? file.type : 'audio/mpeg'}\">\n            您的浏览器不支持音频标签。\n          </audio>`
+            
+            console.log('[MediaDialog] Inserting audio HTML length:', html.length)
+            if (typeof editor.insertHTML === 'function') {
+              editor.insertHTML(html)
+              console.log('[MediaDialog] Audio inserted via editor.insertHTML')
+            } else {
+              console.warn('[MediaDialog] editor.insertHTML not found, trying execCommand fallback')
+              document.execCommand('insertHTML', false, html)
+            }
+          } catch (err) {
+            console.error('[MediaDialog] Error while inserting audio:', err)
+          }
         })
+        return true
       })
+    } else {
+      console.log('[MediaDialogPlugin] Command already exists: insertAudio')
     }
     
-    console.log('[MediaDialogPlugin] Enhanced media dialog plugin installed')
+    console.log('[MediaDialogPlugin] Installation complete. Commands:', editor.commands.getCommands?.())
   }
 }
 

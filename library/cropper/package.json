@@ -13,21 +13,22 @@
       "require": "./dist/index.cjs"
     },
     "./vue": {
-      "types": "./dist/vue.d.ts",
-      "import": "./dist/vue.js",
-      "require": "./dist/vue.cjs"
+      "types": "./dist/adapters/vue/index.d.ts",
+      "import": "./dist/adapters/vue/index.js",
+      "require": "./dist/adapters/vue/index.cjs"
     },
     "./react": {
-      "types": "./dist/react.d.ts",
-      "import": "./dist/react.js",
-      "require": "./dist/react.cjs"
+      "types": "./dist/adapters/react/index.d.ts",
+      "import": "./dist/adapters/react/index.js",
+      "require": "./dist/adapters/react/index.cjs"
     },
     "./angular": {
-      "types": "./dist/angular.d.ts",
-      "import": "./dist/angular.js",
-      "require": "./dist/angular.cjs"
+      "types": "./dist/adapters/angular/index.d.ts",
+      "import": "./dist/adapters/angular/index.js",
+      "require": "./dist/adapters/angular/index.cjs"
     },
-    "./style.css": "./dist/style.css"
+    "./style.css": "./dist/style.css",
+    "./dist/style.css": "./dist/style.css"
   },
   "files": [
     "dist",

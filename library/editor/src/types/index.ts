@@ -146,6 +146,8 @@ export interface EditorOptions {
   element?: HTMLElement | string
   content?: string | Node
   plugins?: (Plugin | string)[]
+  toolbar?: boolean  // false 不创建工具栏，true 或省略则创建
+  toolbarItems?: ToolbarItem[]  // 自定义工具栏项
   editable?: boolean
   autofocus?: boolean
   placeholder?: string

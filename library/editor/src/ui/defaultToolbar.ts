@@ -276,30 +276,7 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
     name: 'table',
     title: '插入表格',
     icon: 'table',
-    command: () => {
-      const rows = prompt('行数:', '3')
-      const cols = prompt('列数:', '3')
-      
-      if (rows && cols) {
-        const rowCount = parseInt(rows)
-        const colCount = parseInt(cols)
-        
-        let html = '<table border="1" style="border-collapse: collapse; width: 100%;">'
-        html += '<tbody>'
-        
-        for (let i = 0; i < rowCount; i++) {
-          html += '<tr>'
-          for (let j = 0; j < colCount; j++) {
-            html += `<td style="border: 1px solid #ddd; padding: 8px;">单元格</td>`
-          }
-          html += '</tr>'
-        }
-        
-        html += '</tbody></table>'
-        document.execCommand('insertHTML', false, html)
-      }
-      return true
-    },
+    command: 'insertTable', // 使用命令名称，由 TablePlugin 处理
   },
   {
     name: 'horizontalRule',

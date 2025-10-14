@@ -4,154 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LDesign Editor - 增强的富文本编辑器演示</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      padding: 40px 20px;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    
-    header {
-      text-align: center;
-      color: white;
-      margin-bottom: 40px;
-    }
-    
-    h1 {
-      font-size: 42px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    }
-    
-    .subtitle {
-      font-size: 18px;
-      opacity: 0.95;
-      margin-bottom: 30px;
-    }
-    
-    .features {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      flex-wrap: wrap;
-      margin-bottom: 40px;
-    }
-    
-    .feature {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: white;
-      background: rgba(255, 255, 255, 0.15);
-      padding: 8px 16px;
-      border-radius: 20px;
-      backdrop-filter: blur(10px);
-    }
-    
-    .feature-icon {
-      font-size: 20px;
-    }
-    
-    .editor-wrapper {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      padding: 30px;
-    }
-    
-    .editor-title {
-      font-size: 20px;
-      font-weight: 600;
-      color: #1f2937;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    #editor {
-      min-height: 400px;
-    }
-    
-    .tips {
-      margin-top: 30px;
-      padding: 20px;
-      background: #f0f9ff;
-      border-left: 4px solid #3b82f6;
-      border-radius: 8px;
-    }
-    
-    .tips h3 {
-      color: #1e40af;
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-    
-    .tips ul {
-      color: #3730a3;
-      margin-left: 20px;
-    }
-    
-    .tips li {
-      margin: 8px 0;
-      line-height: 1.6;
-    }
-    
-    .demo-content {
-      margin-top: 30px;
-      padding: 20px;
-      background: #fafafa;
-      border-radius: 8px;
-    }
-    
-    .demo-content h3 {
-      color: #374151;
-      margin-bottom: 10px;
-    }
-    
-    .demo-buttons {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 15px;
-    }
-    
-    .demo-button {
-      padding: 8px 16px;
-      background: #3b82f6;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background 0.2s;
-    }
-    
-    .demo-button:hover {
-      background: #2563eb;
-    }
-    
-    .demo-button.secondary {
-      background: #10b981;
-    }
-    
-    .demo-button.secondary:hover {
-      background: #059669;
-    }
-  </style>
+  <!-- 编辑器核心样式 -->
+  <link rel="stylesheet" href="./dist/editor.css">
+  <!-- Demo 页面增强样式 -->
+  <link rel="stylesheet" href="demo-styles.css">
 </head>
 <body>
   <div class="container">
@@ -239,7 +95,7 @@
         'history'           // 历史记录插件
       ],
       onChange: (html) => {
-        console.log('内容变化:', html)
+        // 内容变化回调
       }
     })
     

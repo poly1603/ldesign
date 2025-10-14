@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Media Insertion Diagnostic</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      opacity: 0.9;
+      font-size: 16px;
+    }
+    
+    .content {
+      padding: 30px;
+    }
+    
+    #editor {
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      min-height: 300px;
+      padding: 20px;
+      margin-bottom: 30px;
+      background: #fafafa;
+    }
+    
+    .section {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .section h2 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 20px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+    
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    button {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button.test {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    button.check {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+    
+    button.danger {
+      background: linear-gradient(135deg, #ff6a00 0%, #ee0979 100%);
+    }
+    
+    .console {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      max-height: 400px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    
+    .log-entry {
+      margin: 3px 0;
+      padding: 5px 10px;
+      border-left: 3px solid transparent;
+      border-radius: 3px;
+    }
+    
+    .log-success {
+      color: #4fc3f7;
+      border-left-color: #4fc3f7;
+      background: rgba(79, 195, 247, 0.1);
+    }
+    
+    .log-error {
+      color: #ff5252;
+      border-left-color: #ff5252;
+      background: rgba(255, 82, 82, 0.1);
+    }
+    
+    .log-warning {
+      color: #ffc107;
+      border-left-color: #ffc107;
+      background: rgba(255, 193, 7, 0.1);
+    }
+    
+    .log-info {
+      color: #9e9e9e;
+      border-left-color: #9e9e9e;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+    
+    .status-ok {
+      background: #4caf50;
+      color: white;
+    }
+    
+    .status-error {
+      background: #f44336;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔍 Media Insertion Diagnostic Tool</h1>
+      <p>Complete diagnostic tool for debugging media insertion issues</p>
+    </div>
+    
+    <div class="content">
+      <div id="editor"></div>
+      
+      <div class="section">
+        <h2>🎯 Quick Tests</h2>
+        <div class="button-grid">
+          <button class="test" onclick="testDirectInsert()">Test Direct Insert</button>
+          <button class="test" onclick="testImageCommand()">Test Image Command</button>
+          <button class="test" onclick="testVideoCommand()">Test Video Command</button>
+          <button class="test" onclick="testAudioCommand()">Test Audio Command</button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2>🔬 Diagnostics</h2>
+        <div class="button-grid">
+          <button class="check" onclick="checkEditorState()">Check Editor State</button>
+          <button class="check" onclick="checkInsertHTML()">Check insertHTML Method</button>
+          <button class="check" onclick="checkCommands()">Check Commands</button>
+          <button class="check" onclick="checkPlugins()">Check Plugins</button>
+          <button class="check" onclick="checkContentElement()">Check Content Element</button>
+          <button class="check" onclick="checkSelection()">Check Selection</button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2>🛠️ Utilities</h2>
+        <div class="button-grid">
+          <button onclick="getEditorContent()">Get Content</button>
+          <button onclick="focusEditor()">Focus Editor</button>
+          <button class="danger" onclick="clearConsole()">Clear Console</button>
+          <button class="danger" onclick="resetEditor()">Reset Editor</button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2>📋 Console Output</h2>
+        <div class="console" id="console"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Editor } from '../../src/core/Editor.js';
+    
+    let editor = null;
+    const consoleEl = document.getElementById('console');
+    
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+      const time = new Date().toLocaleTimeString();
+      entry.innerHTML = `<strong>[${time}]</strong> ${message}`;
+      consoleEl.appendChild(entry);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+      console.log(`[${type}] ${message}`);
+    }
+    
+    // Initialize editor
+    try {
+      log('🚀 Initializing editor...', 'info');
+      
+      const container = document.getElementById('editor');
+      editor = new Editor({
+        element: container,
+        placeholder: 'Start typing here...',
+        autofocus: true,
+        content: '<h2>Welcome to Diagnostic Tool</h2><p>The editor is ready for testing.</p>'
+      });
+      
+      window.editor = editor;
+      
+      log('✅ Editor initialized successfully', 'success');
+      
+      // Immediate checks
+      setTimeout(() => {
+        log('Running initial checks...', 'info');
+        checkEditorState();
+        checkInsertHTML();
+        checkCommands();
+      }, 500);
+      
+    } catch (error) {
+      log(`❌ Failed to initialize editor: ${error.message}`, 'error');
+      console.error(error);
+    }
+    
+    // Test functions
+    window.testDirectInsert = function() {
+      log('=== Testing Direct HTML Insertion ===', 'info');
+      try {
+        const html = `<p style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0;">
+          <strong>Direct Insert Test</strong><br>
+          This content was inserted directly using editor.insertHTML()<br>
+          Time: ${new Date().toLocaleTimeString()}
+        </p>`;
+        
+        if (editor && typeof editor.insertHTML === 'function') {
+          editor.contentElement.focus();
+          editor.insertHTML(html);
+          log('✅ Direct insert successful', 'success');
+        } else {
+          log('❌ insertHTML method not available', 'error');
+        }
+      } catch (error) {
+        log(`❌ Direct insert failed: ${error.message}`, 'error');
+      }
+    };
+    
+    window.testImageCommand = function() {
+      log('=== Testing insertImage Command ===', 'info');
+      try {
+        if (editor.commands && editor.commands.executeCommand) {
+          const result = editor.commands.executeCommand('insertImage');
+          log(`📸 insertImage command executed. Result: ${result}`, result ? 'success' : 'warning');
+        } else {
+          log('❌ Command manager not available', 'error');
+        }
+      } catch (error) {
+        log(`❌ Command execution failed: ${error.message}`, 'error');
+      }
+    };
+    
+    window.testVideoCommand = function() {
+      log('=== Testing insertVideo Command ===', 'info');
+      try {
+        if (editor.commands && editor.commands.executeCommand) {
+          const result = editor.commands.executeCommand('insertVideo');
+          log(`🎥 insertVideo command executed. Result: ${result}`, result ? 'success' : 'warning');
+        } else {
+          log('❌ Command manager not available', 'error');
+        }
+      } catch (error) {
+        log(`❌ Command execution failed: ${error.message}`, 'error');
+      }
+    };
+    
+    window.testAudioCommand = function() {
+      log('=== Testing insertAudio Command ===', 'info');
+      try {
+        if (editor.commands && editor.commands.executeCommand) {
+          const result = editor.commands.executeCommand('insertAudio');
+          log(`🎵 insertAudio command executed. Result: ${result}`, result ? 'success' : 'warning');
+        } else {
+          log('❌ Command manager not available', 'error');
+        }
+      } catch (error) {
+        log(`❌ Command execution failed: ${error.message}`, 'error');
+      }
+    };
+    
+    // Diagnostic functions
+    window.checkEditorState = function() {
+      log('=== Checking Editor State ===', 'info');
+      
+      if (!editor) {
+        log('❌ Editor is null', 'error');
+        return;
+      }
+      
+      log('✅ Editor instance exists', 'success');
+      log(`📊 Editor type: ${editor.constructor.name}`, 'info');
+      log(`📊 Editable: ${editor.isEditable ? editor.isEditable() : 'N/A'}`, 'info');
+    };
+    
+    window.checkInsertHTML = function() {
+      log('=== Checking insertHTML Method ===', 'info');
+      
+      if (!editor) {
+        log('❌ Editor is null', 'error');
+        return;
+      }
+      
+      const hasMethod = typeof editor.insertHTML === 'function';
+      log(`${hasMethod ? '✅' : '❌'} insertHTML method ${hasMethod ? 'EXISTS' : 'NOT FOUND'}`, hasMethod ? 'success' : 'error');
+      
+      if (hasMethod) {
+        log(`📊 Method type: ${typeof editor.insertHTML}`, 'info');
+        log(`📊 Method signature: ${editor.insertHTML.toString().substring(0, 100)}...`, 'info');
+      }
+    };
+    
+    window.checkCommands = function() {
+      log('=== Checking Commands ===', 'info');
+      
+      if (!editor || !editor.commands) {
+        log('❌ Command manager not available', 'error');
+        return;
+      }
+      
+      const commands = editor.commands.getCommands ? editor.commands.getCommands() : Object.keys(editor.commands.commands || {});
+      log(`📊 Total commands registered: ${commands.length}`, 'info');
+      
+      const mediaCommands = ['insertImage', 'insertVideo', 'insertAudio', 'insertTable'];
+      mediaCommands.forEach(cmd => {
+        const exists = commands.includes(cmd);
+        log(`${exists ? '✅' : '❌'} Command '${cmd}' ${exists ? 'registered' : 'NOT registered'}`, 
+            exists ? 'success' : 'warning');
+      });
+      
+      log(`📋 All commands: ${commands.join(', ')}`, 'info');
+    };
+    
+    window.checkPlugins = function() {
+      log('=== Checking Plugins ===', 'info');
+      
+      if (!editor || !editor.plugins) {
+        log('❌ Plugin manager not available', 'error');
+        return;
+      }
+      
+      const plugins = editor.plugins.getPlugins ? editor.plugins.getPlugins() : [];
+      log(`📊 Total plugins loaded: ${plugins.length}`, 'info');
+      
+      if (plugins.length > 0) {
+        plugins.forEach((plugin, index) => {
+          const name = plugin.name || 'unnamed';
+          log(`  ${index + 1}. ${name}`, 'info');
+        });
+      }
+      
+      // Check for MediaDialogPlugin specifically
+      const hasMediaPlugin = plugins.some(p => p.name === 'media-dialog');
+      log(`${hasMediaPlugin ? '✅' : '❌'} MediaDialogPlugin ${hasMediaPlugin ? 'loaded' : 'NOT loaded'}`, 
+          hasMediaPlugin ? 'success' : 'warning');
+    };
+    
+    window.checkContentElement = function() {
+      log('=== Checking Content Element ===', 'info');
+      
+      if (!editor) {
+        log('❌ Editor is null', 'error');
+        return;
+      }
+      
+      const contentElement = editor.contentElement;
+      
+      if (!contentElement) {
+        log('❌ contentElement is null', 'error');
+        return;
+      }
+      
+      log('✅ contentElement exists', 'success');
+      log(`📊 Tag: ${contentElement.tagName}`, 'info');
+      log(`📊 contentEditable: ${contentElement.contentEditable}`, 'info');
+      log(`📊 Has focus: ${document.activeElement === contentElement}`, 'info');
+      log(`📊 Content length: ${contentElement.innerHTML.length} chars`, 'info');
+    };
+    
+    window.checkSelection = function() {
+      log('=== Checking Selection ===', 'info');
+      
+      const selection = window.getSelection();
+      
+      if (!selection) {
+        log('❌ No selection available', 'error');
+        return;
+      }
+      
+      log('✅ Selection API available', 'success');
+      log(`📊 Range count: ${selection.rangeCount}`, 'info');
+      
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        log(`📊 Collapsed: ${range.collapsed}`, 'info');
+        log(`📊 Selected text: "${selection.toString()}"`, 'info');
+        
+        if (editor && editor.contentElement) {
+          const inEditor = editor.contentElement.contains(range.commonAncestorContainer);
+          log(`📊 Selection in editor: ${inEditor}`, inEditor ? 'success' : 'warning');
+        }
+      } else {
+        log('⚠️ No ranges in selection', 'warning');
+      }
+    };
+    
+    // Utility functions
+    window.getEditorContent = function() {
+      log('=== Getting Editor Content ===', 'info');
+      
+      if (!editor) {
+        log('❌ Editor is null', 'error');
+        return;
+      }
+      
+      try {
+        const content = editor.contentElement ? editor.contentElement.innerHTML : '';
+        log(`📊 Content length: ${content.length} characters`, 'info');
+        log(`📄 Content preview: ${content.substring(0, 200)}...`, 'info');
+        console.log('Full content:', content);
+      } catch (error) {
+        log(`❌ Failed to get content: ${error.message}`, 'error');
+      }
+    };
+    
+    window.focusEditor = function() {
+      log('=== Focusing Editor ===', 'info');
+      
+      if (!editor || !editor.contentElement) {
+        log('❌ Editor or contentElement not available', 'error');
+        return;
+      }
+      
+      try {
+        editor.contentElement.focus();
+        log('✅ Editor focused', 'success');
+      } catch (error) {
+        log(`❌ Failed to focus: ${error.message}`, 'error');
+      }
+    };
+    
+    window.clearConsole = function() {
+      consoleEl.innerHTML = '';
+      log('Console cleared', 'info');
+    };
+    
+    window.resetEditor = function() {
+      log('=== Resetting Editor ===', 'info');
+      
+      if (!editor || !editor.contentElement) {
+        log('❌ Editor not available', 'error');
+        return;
+      }
+      
+      try {
+        editor.contentElement.innerHTML = '<p>Editor has been reset. Ready for new tests.</p>';
+        log('✅ Editor reset complete', 'success');
+      } catch (error) {
+        log(`❌ Failed to reset: ${error.message}`, 'error');
+      }
+    };
+  </script>
+</body>
+</html>

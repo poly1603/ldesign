@@ -184,6 +184,19 @@ export interface CropperOptions {
   // Toolbar options
   toolbar?: boolean | ToolbarOptions
 
+  // History options
+  history?: boolean | {
+    maxSize?: number
+    autoSave?: boolean
+    saveInterval?: number
+  }
+
+  // Preset options
+  presets?: boolean | {
+    includeDefaults?: boolean
+    customPresets?: any[]
+  }
+
   // Zoom on touch
   zoomOnTouch?: boolean
 
@@ -276,6 +289,8 @@ export interface GetCroppedCanvasOptions {
   maxWidth?: number
   maxHeight?: number
   fillColor?: string
+  fillBackground?: boolean
+  cropShape?: string
   imageSmoothingEnabled?: boolean
   imageSmoothingQuality?: ImageSmoothingQuality
 }

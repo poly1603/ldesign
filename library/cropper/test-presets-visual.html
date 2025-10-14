@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Preset Test</title>
+  <link rel="stylesheet" href="./dist/cropper.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .header p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+    
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 300px 1fr 300px;
+      gap: 20px;
+      align-items: start;
+    }
+    
+    .preset-panel {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .preset-panel h2 {
+      padding: 15px 20px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-size: 1.2rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    .preset-group {
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .preset-group-title {
+      padding: 12px 20px;
+      background: #f5f5f5;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .preset-group-title:hover {
+      background: #eeeeee;
+    }
+    
+    .preset-group-title::after {
+      content: '▼';
+      font-size: 12px;
+      transition: transform 0.3s;
+    }
+    
+    .preset-group.collapsed .preset-group-title::after {
+      transform: rotate(-90deg);
+    }
+    
+    .preset-list {
+      display: block;
+      padding: 0;
+    }
+    
+    .preset-group.collapsed .preset-list {
+      display: none;
+    }
+    
+    .preset-item {
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border-left: 3px solid transparent;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .preset-item:hover {
+      background: #f8f8f8;
+      border-left-color: #667eea;
+    }
+    
+    .preset-item.active {
+      background: linear-gradient(to right, rgba(102, 126, 234, 0.1), transparent);
+      border-left-color: #764ba2;
+      font-weight: 600;
+    }
+    
+    .preset-info {
+      flex: 1;
+    }
+    
+    .preset-name {
+      color: #333;
+      margin-bottom: 2px;
+    }
+    
+    .preset-desc {
+      font-size: 11px;
+      color: #999;
+    }
+    
+    .preset-ratio {
+      font-size: 12px;
+      color: #667eea;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    
+    .cropper-wrapper {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    
+    #cropper-container {
+      height: 600px;
+      background: #f0f0f0;
+    }
+    
+    .info-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    
+    .info-panel h3 {
+      margin-bottom: 15px;
+      color: #333;
+      font-size: 1.1rem;
+    }
+    
+    .info-item {
+      margin-bottom: 12px;
+      padding: 10px;
+      background: #f8f8f8;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    
+    .info-label {
+      font-weight: 600;
+      color: #667eea;
+      display: inline-block;
+      width: 100px;
+    }
+    
+    .info-value {
+      color: #333;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .controls {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    button {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button.secondary {
+      background: #6c757d;
+      box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    }
+    
+    button.secondary:hover {
+      box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    }
+    
+    .ratio-display {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(102, 126, 234, 0.9);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    @media (max-width: 1200px) {
+      .main-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .preset-panel, .info-panel {
+        max-width: 800px;
+        margin: 0 auto 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🖼️ Cropper Preset Visual Test</h1>
+    <p>Click on any preset to see how it adjusts the crop box</p>
+  </div>
+  
+  <div class="main-container">
+    <div class="preset-panel">
+      <h2>📐 Presets</h2>
+      <div id="presetList"></div>
+    </div>
+    
+    <div class="cropper-wrapper">
+      <div class="ratio-display" id="ratioDisplay">No Preset</div>
+      <div id="cropper-container"></div>
+    </div>
+    
+    <div class="info-panel">
+      <h3>📊 Current Status</h3>
+      <div class="info-item">
+        <span class="info-label">Preset:</span>
+        <span class="info-value" id="currentPreset">None</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Aspect Ratio:</span>
+        <span class="info-value" id="currentRatio">Free</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Crop Box:</span>
+        <span class="info-value" id="cropSize">0x0</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Position:</span>
+        <span class="info-value" id="cropPosition">(0, 0)</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Container:</span>
+        <span class="info-value" id="containerSize">0x0</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button onclick="cropImage()">🎯 Crop Image</button>
+    <button onclick="rotateImage()">🔄 Rotate 90°</button>
+    <button onclick="flipImage()">↔️ Flip H</button>
+    <button onclick="clearPreset()" class="secondary">❌ Clear Preset</button>
+    <button onclick="resetAll()" class="secondary">🔄 Reset All</button>
+  </div>
+  
+  <script type="module">
+    import Cropper from './dist/cropper.esm.js';
+    
+    let cropper;
+    let presetManager;
+    let currentPresetId = null;
+    
+    // Initialize cropper
+    cropper = new Cropper('cropper-container', {
+      src: 'https://picsum.photos/1200/800',
+      aspectRatio: 0,
+      viewMode: 1,
+      autoCrop: true,
+      presets: {
+        includeDefaults: true
+      }
+    });
+    
+    // Wait for initialization
+    setTimeout(initializeUI, 500);
+    
+    function initializeUI() {
+      presetManager = cropper.getPresetManager();
+      if (!presetManager) {
+        console.error('Preset manager not available');
+        return;
+      }
+      
+      renderPresets();
+      updateInfo();
+      
+      // Update info on crop box change
+      setInterval(updateInfo, 100);
+    }
+    
+    function renderPresets() {
+      const presets = presetManager.getAllPresets();
+      const grouped = {};
+      
+      // Group by category
+      presets.forEach(preset => {
+        if (!grouped[preset.category]) {
+          grouped[preset.category] = [];
+        }
+        grouped[preset.category].push(preset);
+      });
+      
+      const categoryNames = {
+        'aspect': '📐 Aspect Ratios',
+        'social': '📱 Social Media',
+        'document': '📄 Documents',
+        'size': '📏 Common Sizes'
+      };
+      
+      const container = document.getElementById('presetList');
+      container.innerHTML = '';
+      
+      Object.keys(grouped).forEach(category => {
+        const group = document.createElement('div');
+        group.className = 'preset-group';
+        
+        const title = document.createElement('div');
+        title.className = 'preset-group-title';
+        title.innerHTML = `<span>${categoryNames[category] || category}</span>`;
+        title.onclick = () => group.classList.toggle('collapsed');
+        
+        const list = document.createElement('div');
+        list.className = 'preset-list';
+        
+        grouped[category].forEach(preset => {
+          const item = document.createElement('div');
+          item.className = 'preset-item';
+          item.dataset.presetId = preset.id;
+          
+          const info = document.createElement('div');
+          info.className = 'preset-info';
+          
+          const name = document.createElement('div');
+          name.className = 'preset-name';
+          name.textContent = preset.name;
+          
+          const desc = document.createElement('div');
+          desc.className = 'preset-desc';
+          if (preset.width && preset.height) {
+            desc.textContent = `${preset.width}×${preset.height}px`;
+          } else if (preset.description) {
+            desc.textContent = preset.description;
+          }
+          
+          info.appendChild(name);
+          if (desc.textContent) info.appendChild(desc);
+          
+          const ratio = document.createElement('div');
+          ratio.className = 'preset-ratio';
+          if (preset.aspectRatio) {
+            const ratioText = formatRatio(preset.aspectRatio);
+            ratio.textContent = ratioText;
+          } else {
+            ratio.textContent = 'Free';
+          }
+          
+          item.appendChild(info);
+          item.appendChild(ratio);
+          
+          item.onclick = () => applyPreset(preset.id);
+          
+          list.appendChild(item);
+        });
+        
+        group.appendChild(title);
+        group.appendChild(list);
+        container.appendChild(group);
+      });
+    }
+    
+    function applyPreset(presetId) {
+      const success = presetManager.applyPreset(presetId);
+      if (success) {
+        currentPresetId = presetId;
+        
+        // Update active state
+        document.querySelectorAll('.preset-item').forEach(item => {
+          item.classList.toggle('active', item.dataset.presetId === presetId);
+        });
+        
+        const preset = presetManager.getPreset(presetId);
+        updateRatioDisplay(preset);
+        updateInfo();
+      }
+    }
+    
+    function updateRatioDisplay(preset) {
+      const display = document.getElementById('ratioDisplay');
+      if (preset) {
+        const ratioText = preset.aspectRatio ? formatRatio(preset.aspectRatio) : 'Free';
+        display.textContent = `${preset.name} (${ratioText})`;
+      } else {
+        display.textContent = 'No Preset';
+      }
+    }
+    
+    function formatRatio(ratio) {
+      if (!ratio) return 'Free';
+      
+      // Common ratios
+      const commonRatios = {
+        1: '1:1',
+        1.333: '4:3',
+        1.5: '3:2',
+        1.777: '16:9',
+        2.333: '21:9',
+        3: '3:1',
+        4: '4:1',
+        0.75: '3:4',
+        0.5625: '9:16',
+        0.707: 'A4'
+      };
+      
+      const rounded = Math.round(ratio * 1000) / 1000;
+      for (let [value, text] of Object.entries(commonRatios)) {
+        if (Math.abs(rounded - parseFloat(value)) < 0.01) {
+          return text;
+        }
+      }
+      
+      return ratio.toFixed(2);
+    }
+    
+    function updateInfo() {
+      const cropData = cropper.getCropBoxData();
+      const containerData = cropper.getContainerData();
+      const preset = currentPresetId ? presetManager.getPreset(currentPresetId) : null;
+      
+      document.getElementById('currentPreset').textContent = preset ? preset.name : 'None';
+      document.getElementById('currentRatio').textContent = 
+        preset && preset.aspectRatio ? formatRatio(preset.aspectRatio) : 'Free';
+      document.getElementById('cropSize').textContent = 
+        `${Math.round(cropData.width)}×${Math.round(cropData.height)}`;
+      document.getElementById('cropPosition').textContent = 
+        `(${Math.round(cropData.left)}, ${Math.round(cropData.top)})`;
+      document.getElementById('containerSize').textContent = 
+        `${containerData.width}×${containerData.height}`;
+    }
+    
+    // Global functions
+    window.cropImage = function() {
+      const canvas = cropper.getCroppedCanvas({ maxWidth: 800 });
+      if (canvas) {
+        const win = window.open();
+        win.document.write(`<img src="${canvas.toDataURL()}" style="max-width: 100%;">`);
+      }
+    };
+    
+    window.rotateImage = function() {
+      cropper.rotate(90);
+    };
+    
+    window.flipImage = function() {
+      cropper.flipHorizontal();
+    };
+    
+    window.clearPreset = function() {
+      if (presetManager) {
+        presetManager.clearPreset();
+        currentPresetId = null;
+        document.querySelectorAll('.preset-item').forEach(item => {
+          item.classList.remove('active');
+        });
+        updateRatioDisplay(null);
+        updateInfo();
+      }
+    };
+    
+    window.resetAll = function() {
+      cropper.reset();
+      clearPreset();
+    };
+  </script>
+</body>
+</html>

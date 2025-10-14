@@ -90,13 +90,22 @@ export class PluginManager {
    * 注册插件
    */
   register(plugin: PluginType): void {
+    console.log(`[PluginManager] Registering plugin: "${plugin.name}"`)
+    
     if (this.plugins.has(plugin.name)) {
-      console.warn(`Plugin "${plugin.name}" is already registered`)
+      console.warn(`[PluginManager] Plugin "${plugin.name}" is already registered`)
       return
     }
 
     this.plugins.set(plugin.name, plugin)
-    plugin.install?.(this.editor)
+    
+    if (plugin.install) {
+      console.log(`[PluginManager] Installing plugin: "${plugin.name}"`)
+      plugin.install(this.editor)
+      console.log(`[PluginManager] Plugin installed: "${plugin.name}"`)
+    } else {
+      console.log(`[PluginManager] Plugin "${plugin.name}" has no install method`)
+    }
   }
 
   /**

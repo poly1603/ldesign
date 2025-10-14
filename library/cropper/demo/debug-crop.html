@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Crop - 调试裁剪</title>
+  <link rel="stylesheet" href="../dist/style.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: monospace;
+      background: #222;
+      color: #fff;
+    }
+    .debug-container {
+      display: grid;
+      grid-template-columns: 600px 1fr;
+      gap: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    #cropper-container {
+      width: 600px;
+      height: 600px;
+      background: #333;
+      border: 2px solid #555;
+    }
+    .debug-panel {
+      background: #333;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .debug-section {
+      margin-bottom: 30px;
+      padding: 15px;
+      background: #444;
+      border-radius: 4px;
+    }
+    .debug-section h3 {
+      margin: 0 0 15px 0;
+      color: #4CAF50;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+    .debug-data {
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .debug-data .key {
+      color: #FFA726;
+      display: inline-block;
+      width: 150px;
+    }
+    .debug-data .value {
+      color: #66BB6A;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: monospace;
+    }
+    button:hover {
+      background: #66BB6A;
+    }
+    .preview-container {
+      margin-top: 20px;
+      border: 1px dashed #666;
+      padding: 10px;
+      min-height: 200px;
+    }
+    #preview-canvas {
+      border: 1px solid #4CAF50;
+      max-width: 100%;
+      display: none;
+    }
+    #preview-canvas.show {
+      display: block;
+    }
+    .log-container {
+      background: #222;
+      padding: 10px;
+      border-radius: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 11px;
+    }
+    .log-entry {
+      margin: 2px 0;
+      padding: 2px 5px;
+      border-left: 3px solid #555;
+    }
+    .log-entry.info { border-color: #2196F3; }
+    .log-entry.success { border-color: #4CAF50; }
+    .log-entry.warning { border-color: #FFA726; }
+    .log-entry.error { border-color: #F44336; }
+  </style>
+</head>
+<body>
+  <div class="debug-container">
+    <div>
+      <div id="cropper-container"></div>
+      <div style="margin-top: 20px;">
+        <button onclick="setSquareRatio()">设置 1:1 正方形</button>
+        <button onclick="debugCrop()">执行裁剪</button>
+        <button onclick="reset()">重置</button>
+      </div>
+    </div>
+    
+    <div class="debug-panel">
+      <div class="debug-section">
+        <h3>🎯 裁剪框数据 (CropBox)</h3>
+        <div id="cropbox-data" class="debug-data"></div>
+      </div>
+      
+      <div class="debug-section">
+        <h3>🖼️ 图片数据 (Image)</h3>
+        <div id="image-data" class="debug-data"></div>
+      </div>
+      
+      <div class="debug-section">
+        <h3>📐 显示矩形 (Display Rect)</h3>
+        <div id="display-rect" class="debug-data"></div>
+      </div>
+      
+      <div class="debug-section">
+        <h3>📊 计算数据 (Calculated)</h3>
+        <div id="calculated-data" class="debug-data"></div>
+      </div>
+      
+      <div class="debug-section">
+        <h3>🎨 预览结果</h3>
+        <div class="preview-container">
+          <canvas id="preview-canvas"></canvas>
+          <div id="canvas-info" class="debug-data"></div>
+        </div>
+      </div>
+      
+      <div class="debug-section">
+        <h3>📝 调试日志</h3>
+        <div id="log-container" class="log-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Cropper } from '../dist/index.js'
+    
+    let cropper = null
+    const logs = []
+    
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractional: 3 })
+      logs.unshift({ timestamp, message, type })
+      
+      const container = document.getElementById('log-container')
+      const entry = document.createElement('div')
+      entry.className = `log-entry ${type}`
+      entry.textContent = `[${timestamp}] ${message}`
+      container.insertBefore(entry, container.firstChild)
+      
+      // Keep only last 50 logs
+      if (container.children.length > 50) {
+        container.removeChild(container.lastChild)
+      }
+      
+      console.log(`[${type.toUpperCase()}]`, message)
+    }
+    
+    function updateDebugData() {
+      if (!cropper) return
+      
+      // Get all data
+      const cropBoxData = cropper.getCropBoxData()
+      const imageData = cropper.getImageData()
+      const data = cropper.getData(true)
+      
+      // Get display rect through internal access (for debugging)
+      let displayRect = null
+      if (cropper.imageProcessor) {
+        displayRect = cropper.imageProcessor.getDisplayRect()
+      }
+      
+      // Update CropBox data
+      document.getElementById('cropbox-data').innerHTML = cropBoxData ? `
+        <div><span class="key">left:</span> <span class="value">${cropBoxData.left.toFixed(2)}px</span></div>
+        <div><span class="key">top:</span> <span class="value">${cropBoxData.top.toFixed(2)}px</span></div>
+        <div><span class="key">width:</span> <span class="value">${cropBoxData.width.toFixed(2)}px</span></div>
+        <div><span class="key">height:</span> <span class="value">${cropBoxData.height.toFixed(2)}px</span></div>
+        <div><span class="key">aspect ratio:</span> <span class="value">${(cropBoxData.width / cropBoxData.height).toFixed(3)}</span></div>
+      ` : 'No data'
+      
+      // Update Image data
+      document.getElementById('image-data').innerHTML = imageData ? `
+        <div><span class="key">naturalWidth:</span> <span class="value">${imageData.naturalWidth}px</span></div>
+        <div><span class="key">naturalHeight:</span> <span class="value">${imageData.naturalHeight}px</span></div>
+        <div><span class="key">width:</span> <span class="value">${imageData.width.toFixed(2)}px</span></div>
+        <div><span class="key">height:</span> <span class="value">${imageData.height.toFixed(2)}px</span></div>
+        <div><span class="key">left:</span> <span class="value">${imageData.left.toFixed(2)}px</span></div>
+        <div><span class="key">top:</span> <span class="value">${imageData.top.toFixed(2)}px</span></div>
+        <div><span class="key">scaleX:</span> <span class="value">${imageData.scaleX}</span></div>
+        <div><span class="key">scaleY:</span> <span class="value">${imageData.scaleY}</span></div>
+        <div><span class="key">rotate:</span> <span class="value">${imageData.rotate}°</span></div>
+      ` : 'No data'
+      
+      // Update Display Rect
+      document.getElementById('display-rect').innerHTML = displayRect ? `
+        <div><span class="key">left:</span> <span class="value">${displayRect.left.toFixed(2)}px</span></div>
+        <div><span class="key">top:</span> <span class="value">${displayRect.top.toFixed(2)}px</span></div>
+        <div><span class="key">width:</span> <span class="value">${displayRect.width.toFixed(2)}px</span></div>
+        <div><span class="key">height:</span> <span class="value">${displayRect.height.toFixed(2)}px</span></div>
+      ` : 'No data'
+      
+      // Calculate relative positions
+      if (cropBoxData && displayRect) {
+        const relativeLeft = cropBoxData.left - displayRect.left
+        const relativeTop = cropBoxData.top - displayRect.top
+        
+        document.getElementById('calculated-data').innerHTML = `
+          <div><span class="key">crop relative to image X:</span> <span class="value">${relativeLeft.toFixed(2)}px</span></div>
+          <div><span class="key">crop relative to image Y:</span> <span class="value">${relativeTop.toFixed(2)}px</span></div>
+          <div><span class="key">crop/image width ratio:</span> <span class="value">${(cropBoxData.width / displayRect.width).toFixed(3)}</span></div>
+          <div><span class="key">crop/image height ratio:</span> <span class="value">${(cropBoxData.height / displayRect.height).toFixed(3)}</span></div>
+        `
+      }
+    }
+    
+    window.setSquareRatio = function() {
+      if (cropper) {
+        log('Setting aspect ratio to 1:1', 'info')
+        cropper.setAspectRatio(1)
+        updateDebugData()
+        
+        const cropBoxData = cropper.getCropBoxData()
+        if (cropBoxData) {
+          log(`CropBox after setAspectRatio: ${cropBoxData.width.toFixed(2)} x ${cropBoxData.height.toFixed(2)}`, 'info')
+        }
+      }
+    }
+    
+    window.debugCrop = function() {
+      if (!cropper) {
+        log('Cropper not initialized', 'error')
+        return
+      }
+      
+      log('Starting crop operation...', 'info')
+      
+      const cropBoxData = cropper.getCropBoxData()
+      const imageData = cropper.getImageData()
+      
+      log(`CropBox: ${cropBoxData.width.toFixed(2)} x ${cropBoxData.height.toFixed(2)} at (${cropBoxData.left.toFixed(2)}, ${cropBoxData.top.toFixed(2)})`, 'info')
+      log(`Image: ${imageData.width.toFixed(2)} x ${imageData.height.toFixed(2)} at (${imageData.left.toFixed(2)}, ${imageData.top.toFixed(2)})`, 'info')
+      
+      try {
+        const canvas = cropper.getCroppedCanvas({
+          width: 400,
+          height: 400
+        })
+        
+        if (canvas) {
+          log(`Canvas created: ${canvas.width} x ${canvas.height}`, 'success')
+          
+          // Show in preview
+          const preview = document.getElementById('preview-canvas')
+          const ctx = preview.getContext('2d')
+          preview.width = canvas.width
+          preview.height = canvas.height
+          ctx.drawImage(canvas, 0, 0)
+          preview.classList.add('show')
+          
+          document.getElementById('canvas-info').innerHTML = `
+            <div><span class="key">Canvas Width:</span> <span class="value">${canvas.width}px</span></div>
+            <div><span class="key">Canvas Height:</span> <span class="value">${canvas.height}px</span></div>
+            <div><span class="key">Aspect Ratio:</span> <span class="value">${(canvas.width / canvas.height).toFixed(3)}</span></div>
+          `
+        } else {
+          log('Failed to create canvas', 'error')
+        }
+      } catch (error) {
+        log(`Error during crop: ${error.message}`, 'error')
+        console.error(error)
+      }
+    }
+    
+    window.reset = function() {
+      if (cropper) {
+        log('Resetting cropper', 'info')
+        cropper.reset()
+        updateDebugData()
+      }
+    }
+    
+    // Initialize cropper
+    const container = document.getElementById('cropper-container')
+    cropper = new Cropper(container, {
+      src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
+      viewMode: 1,
+      aspectRatio: NaN,
+      toolbar: true,
+      ready: (event) => {
+        log('Cropper ready', 'success')
+        updateDebugData()
+        
+        // Make cropper accessible for debugging
+        window.cropper = cropper
+      },
+      cropstart: (event) => {
+        log('Crop started', 'info')
+      },
+      crop: (event) => {
+        updateDebugData()
+      },
+      cropend: (event) => {
+        log('Crop ended', 'info')
+        updateDebugData()
+      }
+    })
+  </script>
+</body>
+</html>

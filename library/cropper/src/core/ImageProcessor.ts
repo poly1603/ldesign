@@ -265,10 +265,12 @@ export class ImageProcessor {
 
   /**
    * Get cropped canvas
+   * @param cropBoxData - The crop box position and size in container coordinates
+   * @param options - Canvas options
    */
   getCroppedCanvas(
     cropBoxData: { left: number; top: number; width: number; height: number },
-    options: GetCroppedCanvasOptions & { cropShape?: string; fillBackground?: boolean } = {}
+    options: GetCroppedCanvasOptions = {}
   ): HTMLCanvasElement | null {
     if (!this.imageElement || !this.imageData) return null
 
@@ -278,20 +280,52 @@ export class ImageProcessor {
 
     const cropWidth = cropBoxData.width
     const cropHeight = cropBoxData.height
+    const cropAspectRatio = cropWidth / cropHeight
 
-    // Calculate dimensions maintaining aspect ratio
+    // Calculate output dimensions maintaining the EXACT aspect ratio of the crop box
     if (!width && !height) {
+      // No size specified, use crop box size
       width = cropWidth
       height = cropHeight
-    } else if (!width) {
-      width = (height! * cropWidth) / cropHeight
-    } else if (!height) {
-      height = (width * cropHeight) / cropWidth
+    } else if (width && !height) {
+      // Width specified, calculate height to maintain aspect ratio
+      height = width / cropAspectRatio
+    } else if (!width && height) {
+      // Height specified, calculate width to maintain aspect ratio
+      width = height * cropAspectRatio
+    } else if (width && height) {
+      // Both specified, adjust to maintain aspect ratio
+      const specifiedRatio = width / height
+      if (Math.abs(specifiedRatio - cropAspectRatio) > 0.01) {
+        // Aspect ratios don't match, adjust to maintain crop box ratio
+        if (width / cropAspectRatio <= height) {
+          height = width / cropAspectRatio
+        } else {
+          width = height * cropAspectRatio
+        }
+      }
     }
 
-    // Apply constraints
-    const finalWidth = Math.min(Math.max(width!, minWidth || 0), maxWidth || Infinity)
-    const finalHeight = Math.min(Math.max(height!, minHeight || 0), maxHeight || Infinity)
+    // Apply constraints while maintaining aspect ratio
+    let finalWidth = width!
+    let finalHeight = height!
+    
+    if (maxWidth && finalWidth > maxWidth) {
+      finalWidth = maxWidth
+      finalHeight = finalWidth / cropAspectRatio
+    }
+    if (maxHeight && finalHeight > maxHeight) {
+      finalHeight = maxHeight
+      finalWidth = finalHeight * cropAspectRatio
+    }
+    if (minWidth && finalWidth < minWidth) {
+      finalWidth = minWidth
+      finalHeight = finalWidth / cropAspectRatio
+    }
+    if (minHeight && finalHeight < minHeight) {
+      finalHeight = minHeight
+      finalWidth = finalHeight * cropAspectRatio
+    }
 
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
@@ -353,20 +387,17 @@ export class ImageProcessor {
     const displayWidth = this.imageData.width
     const displayHeight = this.imageData.height
     
-    // Calculate the actual displayed position and size
-    // When scaling, the image scales from its center, so we need to account for that
-    const scaledWidth = displayWidth * Math.abs(scaleX)
-    const scaledHeight = displayHeight * Math.abs(scaleY)
+    // Get the actual display rect of the transformed image
+    const displayRect = this.getDisplayRect()
+    if (!displayRect) return null
     
-    // The scaling happens from the center, so we need to adjust the position
-    const scaleOffsetX = (displayWidth - scaledWidth) / 2
-    const scaleOffsetY = (displayHeight - scaledHeight) / 2
-    
-    // Final image position after scaling and translation
-    const imageLeft = this.imageData.left + translateX + scaleOffsetX
-    const imageTop = this.imageData.top + translateY + scaleOffsetY
+    // The displayRect contains the actual position and size of the scaled image
+    const imageLeft = displayRect.left
+    const imageTop = displayRect.top
+    const scaledWidth = displayRect.width 
+    const scaledHeight = displayRect.height
 
-    // Calculate crop area relative to the scaled image
+    // Calculate crop area relative to the transformed image position
     const cropLeft = cropBoxData.left - imageLeft
     const cropTop = cropBoxData.top - imageTop
 
@@ -385,25 +416,79 @@ export class ImageProcessor {
       }
     }
 
-    // Calculate the source rectangle in the natural image
-    // We need to map from display coordinates to natural image coordinates
-    // First, get the unscaled crop coordinates
-    const unscaledCropLeft = cropLeft / Math.abs(scaleX)
-    const unscaledCropTop = cropTop / Math.abs(scaleY)
-    const unscaledCropWidth = cropWidth / Math.abs(scaleX)
-    const unscaledCropHeight = cropHeight / Math.abs(scaleY)
+    // Calculate what part of the natural image corresponds to the crop box
+    // The key here is mapping from the visually scaled coordinates to natural image coordinates
+    // displayRect already contains the scaled dimensions (width * scaleX, height * scaleY)
     
-    // Then map to natural image coordinates
-    const sourceX = Math.max(0, unscaledCropLeft) * (naturalWidth / displayWidth)
-    const sourceY = Math.max(0, unscaledCropTop) * (naturalHeight / displayHeight)
-    const sourceWidth = Math.min(unscaledCropWidth, displayWidth - Math.max(0, unscaledCropLeft)) * (naturalWidth / displayWidth)
-    const sourceHeight = Math.min(unscaledCropHeight, displayHeight - Math.max(0, unscaledCropTop)) * (naturalHeight / displayHeight)
-
-    // Calculate destination rectangle  
-    const destX = Math.max(0, -cropLeft) / cropWidth * finalWidth
-    const destY = Math.max(0, -cropTop) / cropHeight * finalHeight
-    const destWidth = Math.min(scaledWidth - Math.max(0, cropLeft), cropWidth) / cropWidth * finalWidth
-    const destHeight = Math.min(scaledHeight - Math.max(0, cropTop), cropHeight) / cropHeight * finalHeight
+    // IMPORTANT FIX: The mapping ratio should use the original display dimensions,
+    // not the scaled dimensions. The display dimensions represent the container size
+    // that the natural image is fitted into, before any zoom transformations.
+    const baseScaleX = displayWidth / naturalWidth
+    const baseScaleY = displayHeight / naturalHeight
+    
+    // The actual display is further scaled by scaleX and scaleY
+    // So the total scaling from natural to displayed is baseScale * scale
+    const totalScaleX = baseScaleX * Math.abs(scaleX)
+    const totalScaleY = baseScaleY * Math.abs(scaleY)
+    
+    // Map the crop box position and size to natural image coordinates
+    // These coordinates are relative to the scaled image display position
+    let sourceX = Math.max(0, cropLeft) / totalScaleX
+    let sourceY = Math.max(0, cropTop) / totalScaleY
+    let sourceWidth = cropWidth / totalScaleX
+    let sourceHeight = cropHeight / totalScaleY
+    
+    // Handle cases where crop box extends beyond image bounds
+    if (cropLeft < 0) {
+      // Crop box starts before image, adjust source width
+      sourceWidth = Math.min(cropWidth + cropLeft, scaledWidth) / totalScaleX
+      sourceX = 0
+    } else if (cropLeft + cropWidth > scaledWidth) {
+      // Crop box extends past image right edge
+      sourceWidth = (scaledWidth - cropLeft) / totalScaleX
+    }
+    
+    if (cropTop < 0) {
+      // Crop box starts above image, adjust source height
+      sourceHeight = Math.min(cropHeight + cropTop, scaledHeight) / totalScaleY
+      sourceY = 0
+    } else if (cropTop + cropHeight > scaledHeight) {
+      // Crop box extends past image bottom edge
+      sourceHeight = (scaledHeight - cropTop) / totalScaleY
+    }
+    
+    // Ensure source coordinates are within natural image bounds
+    sourceX = Math.max(0, Math.min(sourceX, naturalWidth))
+    sourceY = Math.max(0, Math.min(sourceY, naturalHeight))
+    sourceWidth = Math.max(0, Math.min(sourceWidth, naturalWidth - sourceX))
+    sourceHeight = Math.max(0, Math.min(sourceHeight, naturalHeight - sourceY))
+    
+    // Calculate destination rectangle
+    // If the crop box extends beyond the image, we need to adjust the destination
+    let destX = 0
+    let destY = 0
+    let destWidth = finalWidth
+    let destHeight = finalHeight
+    
+    // Adjust destination if crop box starts outside image bounds
+    if (cropLeft < 0) {
+      const offsetRatio = -cropLeft / cropWidth
+      destX = finalWidth * offsetRatio
+      destWidth = finalWidth * (1 - offsetRatio)
+    }
+    if (cropTop < 0) {
+      const offsetRatio = -cropTop / cropHeight
+      destY = finalHeight * offsetRatio
+      destHeight = finalHeight * (1 - offsetRatio)
+    }
+    
+    // Adjust destination size if crop box extends beyond image
+    if (cropLeft >= 0 && cropLeft + cropWidth > scaledWidth) {
+      destWidth = finalWidth * ((scaledWidth - cropLeft) / cropWidth)
+    }
+    if (cropTop >= 0 && cropTop + cropHeight > scaledHeight) {
+      destHeight = finalHeight * ((scaledHeight - cropTop) / cropHeight)
+    }
 
     // Only draw if there's something to draw
     if (sourceWidth > 0 && sourceHeight > 0 && destWidth > 0 && destHeight > 0) {
@@ -487,11 +572,60 @@ export class ImageProcessor {
 
   /**
    * Get current display rect of the image within container
+   * This returns the actual bounding rect after all transformations (scale, rotate, translate)
    */
   getDisplayRect(): { left: number; top: number; width: number; height: number } | null {
     if (!this.imageData) return null
-    const { left, top, width, height } = this.imageData
-    return { left, top, width, height }
+    
+    const { left, top, width, height, scaleX, scaleY, rotate, translateX, translateY } = this.imageData
+    
+    // Calculate the actual dimensions after scaling
+    const actualWidth = Math.abs(width * scaleX)
+    const actualHeight = Math.abs(height * scaleY)
+    
+    // For rotation, we need to calculate the bounding box that contains the rotated rectangle
+    if (rotate !== 0) {
+      // Convert rotation to radians
+      const rad = (rotate * Math.PI) / 180
+      const cos = Math.abs(Math.cos(rad))
+      const sin = Math.abs(Math.sin(rad))
+      
+      // Calculate bounding box dimensions for rotated rectangle
+      const rotatedWidth = actualWidth * cos + actualHeight * sin
+      const rotatedHeight = actualWidth * sin + actualHeight * cos
+      
+      // Calculate the center position considering translation
+      // The center is scaled from the original center
+      const centerX = left + width / 2 + translateX
+      const centerY = top + height / 2 + translateY
+      
+      return {
+        left: centerX - rotatedWidth / 2,
+        top: centerY - rotatedHeight / 2,
+        width: rotatedWidth,
+        height: rotatedHeight
+      }
+    } else {
+      // Without rotation, apply scaling and translation
+      // CSS transform scale scales from the center of the element
+      // So we need to calculate the new position after scaling from center
+      
+      // Original center position
+      const centerX = left + width / 2
+      const centerY = top + height / 2
+      
+      // After scaling from center, the new top-left position is:
+      // center - (scaledSize / 2)
+      const scaledLeft = centerX - actualWidth / 2 + translateX
+      const scaledTop = centerY - actualHeight / 2 + translateY
+      
+      return {
+        left: scaledLeft,
+        top: scaledTop,
+        width: actualWidth,
+        height: actualHeight
+      }
+    }
   }
 
   /**

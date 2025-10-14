@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test InsertHTML Method</title>
+  <link rel="stylesheet" href="../../dist/editor.css">
+  <link rel="stylesheet" href="../../dist/reset.css">
+  <link rel="stylesheet" href="../../dist/table.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    #editor-container {
+      border: 1px solid #ccc;
+      min-height: 400px;
+      margin-bottom: 20px;
+    }
+    .test-controls {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      background-color: #f5f5f5;
+    }
+    .test-controls button {
+      margin: 5px;
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .test-controls button:hover {
+      background-color: #0056b3;
+    }
+    .log-output {
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+    .log-entry {
+      margin: 2px 0;
+      padding: 2px 0;
+      border-bottom: 1px solid #333;
+    }
+    .log-success {
+      color: #4fc3f7;
+    }
+    .log-error {
+      color: #ff5252;
+    }
+    .log-warning {
+      color: #ffc107;
+    }
+    .log-info {
+      color: #9e9e9e;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test InsertHTML Method</h1>
+  
+  <div id="editor-container"></div>
+  
+  <div class="test-controls">
+    <h2>Direct InsertHTML Tests</h2>
+    
+    <button onclick="testInsertText()">Insert Plain Text</button>
+    <button onclick="testInsertImage()">Insert Test Image</button>
+    <button onclick="testInsertVideo()">Insert Test Video</button>
+    <button onclick="testInsertAudio()">Insert Test Audio</button>
+    <button onclick="testInsertTable()">Insert Test Table</button>
+    <button onclick="testInsertLink()">Insert Test Link</button>
+    <button onclick="testInsertComplex()">Insert Complex HTML</button>
+    
+    <h3>Test with Commands</h3>
+    <button onclick="testImageCommand()">Test insertImage Command</button>
+    <button onclick="testVideoCommand()">Test insertVideo Command</button>
+    <button onclick="testAudioCommand()">Test insertAudio Command</button>
+    
+    <h3>Manual HTML Input</h3>
+    <textarea id="htmlInput" style="width: 100%; height: 80px; margin: 10px 0;" placeholder="Enter HTML to insert..."></textarea>
+    <br>
+    <button onclick="insertCustomHTML()">Insert Custom HTML</button>
+    
+    <h3>Console Output:</h3>
+    <div id="logOutput" class="log-output"></div>
+    
+    <br>
+    <button onclick="clearLog()">Clear Log</button>
+    <button onclick="getEditorContent()">Get Editor Content</button>
+  </div>
+
+  <script type="module">
+    import LDesignEditor from '../../dist/editor.js';
+    
+    let editor = null;
+    
+    // Custom logging
+    window.log = function(message, type = 'info') {
+      const logOutput = document.getElementById('logOutput');
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+      const timestamp = new Date().toLocaleTimeString();
+      entry.textContent = `[${timestamp}] ${message}`;
+      logOutput.appendChild(entry);
+      logOutput.scrollTop = logOutput.scrollHeight;
+      
+      // Also log to console
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    };
+    
+    // Initialize editor
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        log('Initializing editor...', 'info');
+        
+        // Get container
+        const container = document.getElementById('editor-container');
+        
+        // Initialize with default plugins
+        editor = new LDesignEditor(container);
+        window.editor = editor; // Make globally accessible
+        
+        log('Editor initialized successfully', 'success');
+        
+        // Check if insertHTML method exists
+        if (typeof editor.insertHTML === 'function') {
+          log('✓ editor.insertHTML method exists', 'success');
+        } else {
+          log('✗ editor.insertHTML method NOT found', 'error');
+        }
+        
+        // Check available commands
+        if (editor.commandManager) {
+          const commands = editor.commandManager.getAllCommands ? 
+            editor.commandManager.getAllCommands() : 
+            Object.keys(editor.commandManager.commands || {});
+          log(`Available commands: ${commands.join(', ')}`, 'info');
+        }
+        
+        // Set some initial content
+        editor.setContent('<p>Welcome to the InsertHTML Test Page!</p><p>Click the buttons above to test different insertion methods.</p>');
+        
+      } catch (error) {
+        log(`Failed to initialize editor: ${error.message}`, 'error');
+        console.error('Full error:', error);
+      }
+    });
+    
+    // Test functions
+    window.testInsertText = function() {
+      try {
+        log('Testing plain text insertion...', 'info');
+        const text = 'This is plain text inserted at ' + new Date().toLocaleTimeString();
+        editor.insertHTML(`<span style="color: blue;">${text}</span>`);
+        log('Plain text inserted', 'success');
+      } catch (error) {
+        log(`Failed to insert text: ${error.message}`, 'error');
+      }
+    };
+    
+    window.testInsertImage = function() {
+      try {
+        log('Testing image insertion...', 'info');
+        const imageHTML = '<img src="https://via.placeholder.com/300x200" alt="Test Image" style="max-width: 100%; height: auto;">';
+        editor.insertHTML(imageHTML);
+        log('Image inserted', 'success');
+      } catch (error) {
+        log(`Failed to insert image: ${error.message}`, 'error');
+      }
+    };
+    
+    window.testInsertVideo = function() {
+      try {
+        log('Testing video insertion...', 'info');
+        const videoHTML = '<video controls style="max-width: 100%; height: auto;"><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">Your browser does not support the video tag.</video>';
+        editor.insertHTML(videoHTML);
+        log('Video inserted', 'success');
+      } catch (error) {
+        log(`Failed to insert video: ${error.message}`, 'error');
+      }
+    };
+    
+    window.testInsertAudio = function() {
+      try {
+        log('Testing audio insertion...', 'info');
+        const audioHTML = '<audio controls><source src="https://www.w3schools.com/html/horse.mp3" type="audio/mpeg">Your browser does not support the audio tag.</audio>';
+        editor.insertHTML(audioHTML);
+        log('Audio inserted', 'success');
+      } catch (error) {
+        log(`Failed to insert audio: ${error.message}`, 'error');
+      }
+    };
+    
+    window.testInsertTable = function() {
+      try {
+        log('Testing table insertion...', 'info');
+        const tableHTML = `
+          <table border="1" style="border-collapse: collapse; width: 100%;">
+            <tr>
+              <th style="padding: 10px;">Header 1</th>
+              <th style="padding: 10px;">Header 2</th>
+              <th style="padding: 10px;">Header 3</th>
+            </tr>
+            <tr>
+              <td style="padding: 10px;">Cell 1</td>
+              <td style="padding: 10px;">Cell 2</td>
+              <td style="padding: 10px;">Cell 3</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px;">Cell 4</td>
+              <td style="padding: 10px;">Cell 5</td>
+              <td style="padding: 10px;">Cell 6</td>
+            </tr>
+          </table>
+        `;
+        editor.insertHTML(tableHTML);
+        log('Table inserted', 'success');
+      } catch (error) {
+        log(`Failed to insert table: ${error.message}`, 'error');
+      }
+    };
+    
+    window.testInsertLink = function() {
+      try {
+        log('Testing link insertion...', 'info');
+        const linkHTML = '<a href="https://www.example.com" target="_blank">Test Link (opens in new tab)</a>';
+        editor.insertHTML(linkHTML);
+        log('Link inserted', 'success');
+      } catch (error) {
+        log(`Failed to insert link: ${error.message}`, 'error');
+      }
+    };
+    
+    window.testInsertComplex = function() {
+      try {
+        log('Testing complex HTML insertion...', 'info');
+        const complexHTML = `
+          <div style="border: 2px solid #4CAF50; padding: 20px; margin: 10px 0; background-color: #f0f8ff;">
+            <h3 style="color: #333;">Complex Content Block</h3>
+            <p>This is a paragraph with <strong>bold</strong>, <em>italic</em>, and <u>underlined</u> text.</p>
+            <ul>
+              <li>List item 1</li>
+              <li>List item 2 with <code>inline code</code></li>
+              <li>List item 3</li>
+            </ul>
+            <blockquote style="border-left: 4px solid #ccc; padding-left: 10px; color: #666;">
+              "This is a blockquote within the complex content."
+            </blockquote>
+            <p>Timestamp: ${new Date().toLocaleString()}</p>
+          </div>
+        `;
+        editor.insertHTML(complexHTML);
+        log('Complex HTML inserted', 'success');
+      } catch (error) {
+        log(`Failed to insert complex HTML: ${error.message}`, 'error');
+      }
+    };
+    
+    window.testImageCommand = function() {
+      try {
+        log('Testing insertImage command...', 'info');
+        if (editor.commandManager && editor.commandManager.executeCommand) {
+          editor.commandManager.executeCommand('insertImage');
+          log('insertImage command executed', 'success');
+        } else {
+          log('Command manager not available', 'error');
+        }
+      } catch (error) {
+        log(`Failed to execute insertImage command: ${error.message}`, 'error');
+      }
+    };
+    
+    window.testVideoCommand = function() {
+      try {
+        log('Testing insertVideo command...', 'info');
+        if (editor.commandManager && editor.commandManager.executeCommand) {
+          editor.commandManager.executeCommand('insertVideo');
+          log('insertVideo command executed', 'success');
+        } else {
+          log('Command manager not available', 'error');
+        }
+      } catch (error) {
+        log(`Failed to execute insertVideo command: ${error.message}`, 'error');
+      }
+    };
+    
+    window.testAudioCommand = function() {
+      try {
+        log('Testing insertAudio command...', 'info');
+        if (editor.commandManager && editor.commandManager.executeCommand) {
+          editor.commandManager.executeCommand('insertAudio');
+          log('insertAudio command executed', 'success');
+        } else {
+          log('Command manager not available', 'error');
+        }
+      } catch (error) {
+        log(`Failed to execute insertAudio command: ${error.message}`, 'error');
+      }
+    };
+    
+    window.insertCustomHTML = function() {
+      try {
+        const input = document.getElementById('htmlInput');
+        const html = input.value.trim();
+        
+        if (!html) {
+          log('Please enter some HTML to insert', 'warning');
+          return;
+        }
+        
+        log(`Inserting custom HTML: ${html.substring(0, 100)}...`, 'info');
+        editor.insertHTML(html);
+        log('Custom HTML inserted', 'success');
+        
+        // Clear input
+        input.value = '';
+      } catch (error) {
+        log(`Failed to insert custom HTML: ${error.message}`, 'error');
+      }
+    };
+    
+    window.getEditorContent = function() {
+      try {
+        const content = editor.getContent();
+        log('Editor content retrieved (check console for full content)', 'info');
+        console.log('Full editor content:', content);
+        
+        // Show first 500 chars in log
+        const preview = content.length > 500 ? content.substring(0, 500) + '...' : content;
+        log(`Content preview: ${preview}`, 'info');
+      } catch (error) {
+        log(`Failed to get editor content: ${error.message}`, 'error');
+      }
+    };
+    
+    window.clearLog = function() {
+      document.getElementById('logOutput').innerHTML = '';
+      log('Log cleared', 'info');
+    };
+  </script>
+</body>
+</html>

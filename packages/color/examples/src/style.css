@@ -107,6 +107,46 @@ input[type="radio"] {
   cursor: pointer;
 }
 
+/* Name Mapping */
+.name-mapping {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.mapping-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mapping-row span {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+  min-width: 70px;
+}
+
+.mapping-input {
+  flex: 1;
+  padding: 0.4rem 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: border-color 0.3s;
+}
+
+.mapping-input:focus {
+  outline: none;
+  border-color: var(--primary-color-6, #1890ff);
+}
+
+.mapping-input::placeholder {
+  color: #aaa;
+  font-size: 0.85rem;
+}
+
 .actions {
   display: flex;
   gap: 1rem;

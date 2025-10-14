@@ -161,15 +161,51 @@ export function generateDarkSemanticColors(primaryHex: string) {
   const primary = new Color(primaryHex);
   const primaryHsl = primary.toHSL();
   
+  // Generate semantic colors based on primary color for consistency
+  const semanticColors = {
+    // Secondary: complementary color
+    secondary: new Color({ 
+      h: (primaryHsl.h + 180) % 360, 
+      s: primaryHsl.s * 0.7, 
+      l: 50 
+    }).toHex(),
+    
+    // Success: green-shifted
+    success: new Color({ 
+      h: 142, 
+      s: Math.min(primaryHsl.s * 0.9, 70), 
+      l: 45 
+    }).toHex(),
+    
+    // Warning: warm orange
+    warning: new Color({ 
+      h: 38, 
+      s: Math.min(primaryHsl.s * 1.1, 85), 
+      l: 50 
+    }).toHex(),
+    
+    // Danger: red-shifted
+    danger: new Color({ 
+      h: 4, 
+      s: Math.min(primaryHsl.s, 75), 
+      l: 50 
+    }).toHex(),
+    
+    // Info: cool blue
+    info: new Color({ 
+      h: 210, 
+      s: Math.min(primaryHsl.s * 0.85, 70), 
+      l: 50 
+    }).toHex()
+  };
+  
   return {
     primary: generateTailwindDarkScale(primaryHex),
-    secondary: generateTailwindDarkScale(
-      new Color({ h: (primaryHsl.h + 180) % 360, s: primaryHsl.s * 0.7, l: 50 }).toHex()
-    ),
-    success: generateTailwindDarkScale('#10b981'),
-    warning: generateTailwindDarkScale('#f59e0b'),
-    danger: generateTailwindDarkScale('#ef4444'),
-    info: generateTailwindDarkScale('#3b82f6'),
+    secondary: generateTailwindDarkScale(semanticColors.secondary),
+    success: generateTailwindDarkScale(semanticColors.success),
+    warning: generateTailwindDarkScale(semanticColors.warning),
+    danger: generateTailwindDarkScale(semanticColors.danger),
+    info: generateTailwindDarkScale(semanticColors.info),
     gray: generateTailwindDarkGrayScale()
   };
 }
@@ -198,25 +234,76 @@ export interface ThemePalettes {
   };
 }
 
-export function generateThemePalettes(primaryHex: string): ThemePalettes {
+export function generateThemePalettes(primaryHex: string, options: {
+  preserveInput?: boolean;
+} = {}): ThemePalettes {
+  const {
+    preserveInput = true
+  } = options;
+  
   const primary = new Color(primaryHex);
   const primaryHsl = primary.toHSL();
   
+  // Generate semantic colors based on primary color
+  // Using color theory to create harmonious relationships
+  const semanticColors = {
+    // Secondary: complementary color (180° opposite)
+    secondary: new Color({ 
+      h: (primaryHsl.h + 180) % 360, 
+      s: primaryHsl.s * 0.7, 
+      l: 50 
+    }).toHex(),
+    
+    // Success: green-shifted hue with adjusted saturation
+    success: new Color({ 
+      h: 142,  // Green hue
+      s: Math.min(primaryHsl.s * 0.9, 70),  // Slightly less saturated
+      l: 45 
+    }).toHex(),
+    
+    // Warning: warm orange/amber
+    warning: new Color({ 
+      h: 38,  // Orange hue
+      s: Math.min(primaryHsl.s * 1.1, 85),  // Slightly more saturated
+      l: 50 
+    }).toHex(),
+    
+    // Danger: red-shifted with maintained saturation
+    danger: new Color({ 
+      h: 4,  // Red hue  
+      s: Math.min(primaryHsl.s, 75),  // Similar saturation to primary
+      l: 50 
+    }).toHex(),
+    
+    // Info: cool blue, relative to primary
+    info: new Color({ 
+      h: 210,  // Blue hue
+      s: Math.min(primaryHsl.s * 0.85, 70),  // Slightly less saturated
+      l: 50 
+    }).toHex()
+  };
+  
   // Generate light mode palettes
   const light = {
-    primary: generateTailwindScale(primaryHex),
-    secondary: generateTailwindScale(
-      new Color({ h: (primaryHsl.h + 180) % 360, s: primaryHsl.s * 0.7, l: 50 }).toHex()
-    ),
-    success: generateTailwindScale('#10b981'),
-    warning: generateTailwindScale('#f59e0b'),
-    danger: generateTailwindScale('#ef4444'),
-    info: generateTailwindScale('#3b82f6'),
+    primary: generateTailwindScale(primaryHex, preserveInput),
+    secondary: generateTailwindScale(semanticColors.secondary, preserveInput),
+    success: generateTailwindScale(semanticColors.success, preserveInput),
+    warning: generateTailwindScale(semanticColors.warning, preserveInput),
+    danger: generateTailwindScale(semanticColors.danger, preserveInput),
+    info: generateTailwindScale(semanticColors.info, preserveInput),
     gray: generateTailwindGrayScale()
   };
   
   // Generate dark mode palettes
-  const dark = generateDarkSemanticColors(primaryHex);
+  const dark = {
+    primary: generateTailwindDarkScale(primaryHex),
+    secondary: generateTailwindDarkScale(semanticColors.secondary),
+    success: generateTailwindDarkScale(semanticColors.success),
+    warning: generateTailwindDarkScale(semanticColors.warning),
+    danger: generateTailwindDarkScale(semanticColors.danger),
+    info: generateTailwindDarkScale(semanticColors.info),
+    gray: generateTailwindDarkGrayScale()
+  };
   
   return { light, dark };
 }

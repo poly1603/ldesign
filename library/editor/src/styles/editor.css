@@ -6,7 +6,6 @@
 @import './ui.css';
 @import './dialog.css';
 @import './table.css';
-/* @import './image-enhanced.css'; */ /* 文件不存在 */
 @import './context-menu.css';
 
 .ldesign-editor {
@@ -18,6 +17,29 @@
   background: #fff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', '微软雅黑', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', 'WenQuanYi Micro Hei', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   height: 100%; /* 确保编辑器容器有高度 */
+  min-height: 100%; /* 最小高度 */
+}
+
+/* 编辑器包装容器 */
+.ldesign-editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  min-height: 400px;
+}
+
+/* 工具栏容器 */
+.ldesign-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  flex-wrap: wrap;
 }
 
 /* 工具栏 */
@@ -85,7 +107,7 @@
 .ldesign-editor-content {
   flex: 1;
   min-height: 200px;
-  max-height: 600px; /* 设置最大高度以启用滚动 */
+  max-height: none; /* 移除最大高度限制 */
   height: 100%; /* 确保有高度 */
   padding: 16px 20px;
   outline: none !important; /* 移除焦点黑边 */

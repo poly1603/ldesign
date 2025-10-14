@@ -199,10 +199,59 @@ export class CropBox {
   }
 
   /**
-   * Get crop box data
+   * Get data
    */
   getData(): CropBoxData {
     return { ...this.data }
+  }
+
+  /**
+   * Set aspect ratio
+   */
+  setAspectRatio(aspectRatio: number, adjustSize: boolean = true): void {
+    this.aspectRatio = aspectRatio
+    
+    // Only update the current crop box size if adjustSize is true
+    if (adjustSize && !isNaN(aspectRatio) && aspectRatio > 0) {
+      const currentRatio = this.data.width / this.data.height
+      
+      // Only adjust if the difference is significant (more than 1%)
+      if (Math.abs(currentRatio - aspectRatio) > 0.01) {
+        const containerRect = this.container.getBoundingClientRect()
+        const maxWidth = containerRect.width * 0.9
+        const maxHeight = containerRect.height * 0.9
+        
+        let newWidth = this.data.width
+        let newHeight = this.data.height
+        
+        if (currentRatio > aspectRatio) {
+          // Current box is wider than new ratio, adjust width
+          newWidth = this.data.height * aspectRatio
+          if (newWidth > maxWidth) {
+            newWidth = maxWidth
+            newHeight = newWidth / aspectRatio
+          }
+        } else {
+          // Current box is taller than new ratio, adjust height
+          newHeight = this.data.width / aspectRatio
+          if (newHeight > maxHeight) {
+            newHeight = maxHeight
+            newWidth = newHeight * aspectRatio
+          }
+        }
+        
+        // Center the adjusted crop box
+        const left = Math.max(0, (containerRect.width - newWidth) / 2)
+        const top = Math.max(0, (containerRect.height - newHeight) / 2)
+        
+        this.setData({ 
+          left,
+          top,
+          width: newWidth,
+          height: newHeight 
+        })
+      }
+    }
   }
 
   /**
@@ -232,17 +281,6 @@ export class CropBox {
    */
   resize(width: number, height: number): void {
     this.setData({ width, height })
-  }
-
-  /**
-   * Set aspect ratio
-   */
-  setAspectRatio(aspectRatio?: number): void {
-    this.aspectRatio = aspectRatio
-
-    if (aspectRatio && this.data.width) {
-      this.setData({ height: this.data.width / aspectRatio })
-    }
   }
 
   /**

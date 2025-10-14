@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Editor - 完整功能测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.95;
+    }
+    
+    .editor-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+    
+    .editor-title {
+      font-size: 1.5rem;
+      color: #333;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .editor-container {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      min-height: 500px;
+    }
+    
+    .test-controls {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .control-group {
+      margin-bottom: 20px;
+    }
+    
+    .control-group h3 {
+      color: #555;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+    
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #5a67d8;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-secondary {
+      background: #48bb78;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #38a169;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+    }
+    
+    .btn-warning {
+      background: #ed8936;
+      color: white;
+    }
+    
+    .btn-warning:hover {
+      background: #dd6b20;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(237, 137, 54, 0.4);
+    }
+    
+    .btn-info {
+      background: #4299e1;
+      color: white;
+    }
+    
+    .btn-info:hover {
+      background: #3182ce;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+    }
+    
+    .status-bar {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f7fafc;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .status-bar h4 {
+      color: #2d3748;
+      margin-bottom: 5px;
+    }
+    
+    .status-bar p {
+      color: #718096;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚀 LDesign Editor</h1>
+      <p>功能完整的现代化富文本编辑器</p>
+    </div>
+    
+    <div class="editor-card">
+      <h2 class="editor-title">
+        <span>📝</span>
+        <span>编辑器实例</span>
+      </h2>
+      <div id="editor" class="editor-container"></div>
+    </div>
+    
+    <div class="test-controls">
+      <div class="control-group">
+        <h3>🎨 内容操作</h3>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="insertSampleContent()">插入示例内容</button>
+          <button class="btn btn-secondary" onclick="insertTable()">插入表格</button>
+          <button class="btn btn-info" onclick="insertCodeBlock()">插入代码块</button>
+          <button class="btn btn-warning" onclick="clearContent()">清空内容</button>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <h3>📸 媒体插入</h3>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="insertImage()">插入图片</button>
+          <button class="btn btn-secondary" onclick="insertVideo()">插入视频</button>
+          <button class="btn btn-info" onclick="insertAudio()">插入音频</button>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <h3>🔧 编辑器控制</h3>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getHTML()">获取HTML</button>
+          <button class="btn btn-secondary" onclick="getText()">获取纯文本</button>
+          <button class="btn btn-info" onclick="setReadOnly()">设为只读</button>
+          <button class="btn btn-warning" onclick="setEditable()">设为可编辑</button>
+        </div>
+      </div>
+      
+      <div class="status-bar">
+        <h4>状态信息</h4>
+        <p id="status">编辑器已就绪</p>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    // 动态导入编辑器模块
+    async function initEditor() {
+      try {
+        // 导入编辑器样式
+        const styleModules = [
+          '/src/styles/editor.css',
+          '/src/styles/reset.css',
+          '/src/styles/table.css'
+        ];
+        
+        for (const module of styleModules) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = module;
+          document.head.appendChild(link);
+        }
+        
+        // 导入编辑器核心模块
+        const { Editor } = await import('/src/core/Editor.ts');
+        
+        // 创建编辑器实例（无需指定插件，默认加载所有功能）
+        const editor = new Editor({
+          element: '#editor',
+          placeholder: '开始输入内容...',
+          autofocus: true,
+          onChange: (html) => {
+            updateStatus('内容已更新');
+          }
+        });
+        
+        // 设置初始内容
+        editor.setHTML(`
+          <h1>欢迎使用 LDesign Editor</h1>
+          <p>这是一个功能齐全的富文本编辑器，支持各种文本格式和媒体内容。</p>
+          <h2>主要特性</h2>
+          <ul>
+            <li><strong>丰富的格式选项</strong> - 支持加粗、斜体、下划线等</li>
+            <li><strong>多级标题</strong> - 从H1到H6的标题支持</li>
+            <li><strong>列表功能</strong> - 有序和无序列表</li>
+            <li><strong>表格编辑</strong> - 创建和编辑复杂表格</li>
+            <li><strong>媒体支持</strong> - 图片、视频、音频嵌入</li>
+            <li><strong>代码高亮</strong> - 支持多种编程语言</li>
+          </ul>
+          <p>试试工具栏上的各种功能吧！</p>
+        `);
+        
+        // 将编辑器实例暴露到全局
+        window.editor = editor;
+        
+        // 定义测试函数
+        window.insertSampleContent = () => {
+          const html = `
+            <h2>示例文章</h2>
+            <p>这是一段包含各种格式的示例文本。<strong>这是加粗文字</strong>，<em>这是斜体文字</em>，
+            <u>这是下划线文字</u>，<s>这是删除线文字</s>。</p>
+            <blockquote>
+              <p>这是一段引用文字，通常用于引用他人的话语或重要观点。</p>
+            </blockquote>
+            <h3>代码示例</h3>
+            <pre><code>function hello() {
+  console.log("Hello, LDesign Editor!");
+}</code></pre>
+          `;
+          editor.insertHTML(html);
+          updateStatus('已插入示例内容');
+        };
+        
+        window.insertTable = () => {
+          const table = `
+            <table>
+              <tr><th>姓名</th><th>年龄</th><th>职业</th></tr>
+              <tr><td>张三</td><td>28</td><td>工程师</td></tr>
+              <tr><td>李四</td><td>32</td><td>设计师</td></tr>
+              <tr><td>王五</td><td>25</td><td>产品经理</td></tr>
+            </table>
+          `;
+          editor.insertHTML(table);
+          updateStatus('已插入表格');
+        };
+        
+        window.insertCodeBlock = () => {
+          const code = `<pre><code class="language-javascript">
+// LDesign Editor 示例代码
+const editor = new Editor({
+  element: '#editor',
+  plugins: ['formatting', 'heading', 'list'],
+  placeholder: '开始输入...'
+});
+
+editor.on('change', (html) => {
+  console.log('Content changed:', html);
+});</code></pre>`;
+          editor.insertHTML(code);
+          updateStatus('已插入代码块');
+        };
+        
+        window.clearContent = () => {
+          editor.clear();
+          updateStatus('已清空内容');
+        };
+        
+        window.insertImage = () => {
+          editor.commands.execute('insertImage');
+          updateStatus('打开图片插入对话框');
+        };
+        
+        window.insertVideo = () => {
+          editor.commands.execute('insertVideo');
+          updateStatus('打开视频插入对话框');
+        };
+        
+        window.insertAudio = () => {
+          editor.commands.execute('insertAudio');
+          updateStatus('打开音频插入对话框');
+        };
+        
+        window.getHTML = () => {
+          const html = editor.getHTML();
+          console.log('HTML内容:', html);
+          alert('HTML内容已输出到控制台');
+          updateStatus('已获取HTML内容');
+        };
+        
+        window.getText = () => {
+          const text = editor.getText();
+          console.log('纯文本内容:', text);
+          alert(`纯文本内容: ${text.substring(0, 100)}...`);
+          updateStatus('已获取纯文本内容');
+        };
+        
+        window.setReadOnly = () => {
+          editor.setReadOnly(true);
+          updateStatus('编辑器已设为只读');
+        };
+        
+        window.setEditable = () => {
+          editor.setReadOnly(false);
+          updateStatus('编辑器已设为可编辑');
+        };
+        
+        window.updateStatus = (message) => {
+          document.getElementById('status').textContent = message;
+        };
+        
+        updateStatus('编辑器初始化成功');
+        
+      } catch (error) {
+        console.error('编辑器初始化失败:', error);
+        document.getElementById('status').textContent = '编辑器初始化失败: ' + error.message;
+      }
+    }
+    
+    // 初始化编辑器
+    initEditor();
+  </script>
+</body>
+</html>

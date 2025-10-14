@@ -53,6 +53,18 @@ export class Toolbar {
   }
 
   private initializeButtons(): void {
+    // File operations
+    this.addButton({
+      id: 'upload',
+      title: 'Upload Image',
+      group: 'file',
+      icon: this.getIcon('upload'),
+      action: () => {
+        const event = new CustomEvent('toolbar:upload', { bubbles: true })
+        this.container.dispatchEvent(event)
+      }
+    })
+
     // Transform buttons
     this.addButton({
       id: 'rotate-left',
@@ -68,6 +80,19 @@ export class Toolbar {
       group: 'transform',
       icon: this.getIcon('rotate-right'),
       action: () => this.cropper.rotate(90)
+    })
+
+    this.addButton({
+      id: 'rotate-custom',
+      title: 'Custom Rotate',
+      group: 'transform',
+      icon: this.getIcon('rotate-custom'),
+      action: () => {
+        const angle = prompt('Enter rotation angle (degrees):', '45')
+        if (angle) {
+          this.cropper.rotate(parseFloat(angle))
+        }
+      }
     })
 
     // Flip buttons
@@ -116,6 +141,28 @@ export class Toolbar {
       }
     })
 
+    this.addButton({
+      id: 'zoom-fit',
+      title: 'Fit to Container',
+      group: 'zoom',
+      icon: this.getIcon('zoom-fit'),
+      action: () => {
+        // Reset zoom to fit container
+        const event = new CustomEvent('toolbar:fit', { bubbles: true })
+        this.container.dispatchEvent(event)
+      }
+    })
+
+    this.addButton({
+      id: 'zoom-actual',
+      title: 'Actual Size (1:1)',
+      group: 'zoom',
+      icon: this.getIcon('zoom-actual'),
+      action: () => {
+        this.cropper.scale(1, 1)
+      }
+    })
+
     // Move buttons
     this.addButton({
       id: 'move-left',
@@ -147,6 +194,39 @@ export class Toolbar {
       group: 'move',
       icon: this.getIcon('arrow-down'),
       action: () => this.cropper.move(0, 10)
+    })
+
+    // Aspect ratio presets
+    this.addButton({
+      id: 'ratio-free',
+      title: 'Free Ratio',
+      group: 'ratio',
+      icon: this.getIcon('ratio-free'),
+      action: () => this.cropper.setAspectRatio(NaN)
+    })
+
+    this.addButton({
+      id: 'ratio-square',
+      title: 'Square (1:1)',
+      group: 'ratio',
+      icon: this.getIcon('ratio-square'),
+      action: () => this.cropper.setAspectRatio(1)
+    })
+
+    this.addButton({
+      id: 'ratio-16-9',
+      title: '16:9',
+      group: 'ratio',
+      icon: this.getIcon('ratio-16-9'),
+      action: () => this.cropper.setAspectRatio(16 / 9)
+    })
+
+    this.addButton({
+      id: 'ratio-4-3',
+      title: '4:3',
+      group: 'ratio',
+      icon: this.getIcon('ratio-4-3'),
+      action: () => this.cropper.setAspectRatio(4 / 3)
     })
 
     // Advanced skew buttons (if enabled)
@@ -194,9 +274,96 @@ export class Toolbar {
     })
 
     this.addButton({
+      id: 'clear',
+      title: 'Clear Crop Box',
+      group: 'control',
+      icon: this.getIcon('clear'),
+      action: () => this.cropper.clear()
+    })
+
+    // Undo/Redo buttons (will be managed by HistoryManager)
+    this.addButton({
+      id: 'undo',
+      title: 'Undo',
+      group: 'history',
+      icon: this.getIcon('undo'),
+      action: () => {
+        const event = new CustomEvent('toolbar:undo', { bubbles: true })
+        this.container.dispatchEvent(event)
+      },
+      disabled: true
+    })
+
+    this.addButton({
+      id: 'redo',
+      title: 'Redo',
+      group: 'history',
+      icon: this.getIcon('redo'),
+      action: () => {
+        const event = new CustomEvent('toolbar:redo', { bubbles: true })
+        this.container.dispatchEvent(event)
+      },
+      disabled: true
+    })
+
+    // Export/Action buttons
+    this.addButton({
+      id: 'download',
+      title: 'Download Image',
+      group: 'actions',
+      icon: this.getIcon('download'),
+      action: () => {
+        const canvas = this.cropper.getCroppedCanvas()
+        if (canvas) {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `cropped-${Date.now()}.png`
+              a.click()
+              URL.revokeObjectURL(url)
+            }
+          })
+        }
+      }
+    })
+
+    this.addButton({
+      id: 'copy',
+      title: 'Copy to Clipboard',
+      group: 'actions',
+      icon: this.getIcon('copy'),
+      action: async () => {
+        const canvas = this.cropper.getCroppedCanvas()
+        if (canvas && 'clipboard' in navigator) {
+          try {
+            canvas.toBlob(async (blob) => {
+              if (blob) {
+                const item = new ClipboardItem({ 'image/png': blob })
+                await navigator.clipboard.write([item])
+                const event = new CustomEvent('toolbar:copy', { 
+                  detail: { success: true },
+                  bubbles: true 
+                })
+                this.container.dispatchEvent(event)
+              }
+            })
+          } catch (err) {
+            const event = new CustomEvent('toolbar:copy', { 
+              detail: { success: false, error: err },
+              bubbles: true 
+            })
+            this.container.dispatchEvent(event)
+          }
+        }
+      }
+    })
+
+    this.addButton({
       id: 'crop',
       title: 'Crop',
-      group: 'control',
+      group: 'actions',
       icon: this.getIcon('crop'),
       action: () => {
         const canvas = this.cropper.getCroppedCanvas()
@@ -252,8 +419,41 @@ export class Toolbar {
       // Reset icon (Official Lucide RefreshCw)
       'reset': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>',
       
+      // Clear icon (Official Lucide X)
+      'clear': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+      
+      // Undo icon (Official Lucide Undo2)
+      'undo': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>',
+      
+      // Redo icon (Official Lucide Redo2)
+      'redo': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"/></svg>',
+      
+      // Download icon (Official Lucide Download)
+      'download': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+      
+      // Copy icon (Official Lucide Copy)
+      'copy': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+      
       // Crop icon (Official Lucide Crop)
-      'crop': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>'
+      'crop': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>',
+      
+      // Upload icon (Official Lucide Upload)
+      'upload': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+      
+      // Custom rotate icon (Official Lucide RotateCw with number)
+      'rotate-custom': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><text x="12" y="14" text-anchor="middle" font-size="8" fill="currentColor">°</text></svg>',
+      
+      // Zoom fit icon (Official Lucide Maximize2)
+      'zoom-fit': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>',
+      
+      // Zoom actual icon (1:1)
+      'zoom-actual': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><text x="11" y="14" text-anchor="middle" font-size="8" fill="currentColor">1:1</text></svg>',
+      
+      // Aspect ratio icons
+      'ratio-free': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="5 5"/></svg>',
+      'ratio-square': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><text x="12" y="15" text-anchor="middle" font-size="8" fill="currentColor">1:1</text></svg>',
+      'ratio-16-9': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><text x="12" y="14" text-anchor="middle" font-size="7" fill="currentColor">16:9</text></svg>',
+      'ratio-4-3': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><text x="12" y="14" text-anchor="middle" font-size="7" fill="currentColor">4:3</text></svg>'
     }
     return icons[name] || ''
   }
@@ -276,9 +476,12 @@ export class Toolbar {
     }
 
     // Create button groups
-    const groups = this.options.groups || ['transform', 'flip', 'zoom', 'move', 'control']
+    const groups = this.options.groups || ['file', 'transform', 'flip', 'zoom', 'ratio', 'move', 'control', 'history', 'actions']
     if (this.options.showAdvanced && !groups.includes('skew')) {
-      groups.splice(groups.length - 1, 0, 'skew')
+      const controlIndex = groups.indexOf('control')
+      if (controlIndex > -1) {
+        groups.splice(controlIndex, 0, 'skew')
+      }
     }
 
     groups.forEach(groupName => {

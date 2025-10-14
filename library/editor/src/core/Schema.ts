@@ -161,6 +161,38 @@ export const defaultSchema = new Schema({
       },
       parseDOM: [{ tag: 'img' }],
       toDOM: (node) => ['img', node.attrs || {}]
+    },
+    video: {
+      group: 'block',
+      inline: false,
+      attrs: {
+        src: { default: null },
+        type: { default: null },
+        controls: { default: true }
+      },
+      parseDOM: [{ tag: 'video' }],
+      toDOM: (node) => {
+        const attrs: any = { controls: node.attrs?.controls !== false }
+        if (node.attrs?.src) attrs.src = node.attrs.src
+        if (node.attrs?.type) attrs.type = node.attrs.type
+        return ['video', attrs]
+      }
+    },
+    audio: {
+      group: 'block',
+      inline: false,
+      attrs: {
+        src: { default: null },
+        type: { default: null },
+        controls: { default: true }
+      },
+      parseDOM: [{ tag: 'audio' }],
+      toDOM: (node) => {
+        const attrs: any = { controls: node.attrs?.controls !== false }
+        if (node.attrs?.src) attrs.src = node.attrs.src
+        if (node.attrs?.type) attrs.type = node.attrs.type
+        return ['audio', attrs]
+      }
     }
   },
   marks: {
