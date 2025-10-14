@@ -708,6 +708,8 @@ export class Cropper {
     }
 
     if (this.cropBox) {
+      // Destroy the existing crop box before creating a new one
+      this.cropBox.destroy()
       this.initCropBox()
     }
 

@@ -25,25 +25,15 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
-    "./vue": {
-      "types": "./es/adapters/vue/index.d.ts",
-      "import": "./es/adapters/vue/index.js",
-      "require": "./lib/adapters/vue/index.cjs"
+    "./adapters": {
+      "types": "./es/adapters/index.d.ts",
+      "import": "./es/adapters/index.js",
+      "require": "./lib/adapters/index.cjs"
     },
-    "./react": {
-      "types": "./es/adapters/react/index.d.ts",
-      "import": "./es/adapters/react/index.js",
-      "require": "./lib/adapters/react/index.cjs"
-    },
-    "./adapters/vue": {
-      "types": "./es/adapters/vue/index.d.ts",
-      "import": "./es/adapters/vue/index.js",
-      "require": "./lib/adapters/vue/index.cjs"
-    },
-    "./adapters/react": {
-      "types": "./es/adapters/react/index.d.ts",
-      "import": "./es/adapters/react/index.js",
-      "require": "./lib/adapters/react/index.cjs"
+    "./adapters/*": {
+      "types": "./es/adapters/*.d.ts",
+      "import": "./es/adapters/*.js",
+      "require": "./lib/adapters/*.cjs"
     },
     "./core": {
       "types": "./es/core/index.d.ts",
@@ -55,15 +45,30 @@
       "import": "./es/core/*.js",
       "require": "./lib/core/*.cjs"
     },
-    "./locales": {
-      "types": "./es/locales/index.d.ts",
-      "import": "./es/locales/index.js",
-      "require": "./lib/locales/index.cjs"
+    "./engine": {
+      "types": "./es/engine/index.d.ts",
+      "import": "./es/engine/index.js",
+      "require": "./lib/engine/index.cjs"
     },
-    "./locales/*": {
-      "types": "./es/locales/*.d.ts",
-      "import": "./es/locales/*.js",
-      "require": "./lib/locales/*.cjs"
+    "./engine/*": {
+      "types": "./es/engine/*.d.ts",
+      "import": "./es/engine/*.js",
+      "require": "./lib/engine/*.cjs"
+    },
+    "./plugins": {
+      "types": "./es/plugins/index.d.ts",
+      "import": "./es/plugins/index.js",
+      "require": "./lib/plugins/index.cjs"
+    },
+    "./plugins/*": {
+      "types": "./es/plugins/*.d.ts",
+      "import": "./es/plugins/*.js",
+      "require": "./lib/plugins/*.cjs"
+    },
+    "./presets/*": {
+      "types": "./es/presets/*.d.ts",
+      "import": "./es/presets/*.js",
+      "require": "./lib/presets/*.cjs"
     },
     "./types": {
       "types": "./es/types/index.d.ts",
@@ -85,40 +90,8 @@
       "import": "./es/utils/*.js",
       "require": "./lib/utils/*.cjs"
     },
-    "./vue": {
-      "types": "./es/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.cjs"
-    },
-    "./vue/*": {
-      "types": "./es/vue/*.d.ts",
-      "import": "./es/vue/*.js",
-      "require": "./lib/vue/*.cjs"
-    },
-    "./es/index.css": "./es/index.css",
-    "./es/vue/components/I18nC.vue.css": "./es/vue/components/I18nC.vue.css",
-    "./es/vue/components/I18nChain.vue.css": "./es/vue/components/I18nChain.vue.css",
-    "./es/vue/components/I18nDT.vue.css": "./es/vue/components/I18nDT.vue.css",
-    "./es/vue/components/I18nIf.vue.css": "./es/vue/components/I18nIf.vue.css",
-    "./es/vue/components/I18nL.vue.css": "./es/vue/components/I18nL.vue.css",
-    "./es/vue/components/I18nP.vue.css": "./es/vue/components/I18nP.vue.css",
-    "./es/vue/components/I18nR.vue.css": "./es/vue/components/I18nR.vue.css",
-    "./es/vue/components/LanguageSwitcher.vue.css": "./es/vue/components/LanguageSwitcher.vue.css",
-    "./es/vue/components/TranslationMissing.vue.css": "./es/vue/components/TranslationMissing.vue.css",
-    "./es/vue/composables/useI18nEnhanced.css": "./es/vue/composables/useI18nEnhanced.css",
-    "./lib/index.css": "./lib/index.css",
-    "./lib/vue/components/I18nC.vue.css": "./lib/vue/components/I18nC.vue.css",
-    "./lib/vue/components/I18nChain.vue.css": "./lib/vue/components/I18nChain.vue.css",
-    "./lib/vue/components/I18nDT.vue.css": "./lib/vue/components/I18nDT.vue.css",
-    "./lib/vue/components/I18nIf.vue.css": "./lib/vue/components/I18nIf.vue.css",
-    "./lib/vue/components/I18nL.vue.css": "./lib/vue/components/I18nL.vue.css",
-    "./lib/vue/components/I18nP.vue.css": "./lib/vue/components/I18nP.vue.css",
-    "./lib/vue/components/I18nR.vue.css": "./lib/vue/components/I18nR.vue.css",
-    "./lib/vue/components/LanguageSwitcher.vue.css": "./lib/vue/components/LanguageSwitcher.vue.css",
-    "./lib/vue/components/TranslationMissing.vue.css": "./lib/vue/components/TranslationMissing.vue.css",
-    "./lib/vue/composables/useI18nEnhanced.css": "./lib/vue/composables/useI18nEnhanced.css",
-    "./dist/index.css": "./dist/index.css",
-    "./dist/index.min.css": "./dist/index.min.css"
+    "./es/adapters/vue/plugin.css": "./es/adapters/vue/plugin.css",
+    "./lib/adapters/vue/plugin.css": "./lib/adapters/vue/plugin.css"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
@@ -134,7 +107,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "ldesign-builder build -f esm,cjs,umd",
+    "build": "ldesign-builder build -f esm,cjs",
     "build:verbose": "rollup -c",
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",

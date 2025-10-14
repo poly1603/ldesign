@@ -148,6 +148,9 @@ importers:
       '@ldesign/engine':
         specifier: workspace:*
         version: link:../packages/engine
+      '@ldesign/i18n':
+        specifier: workspace:*
+        version: link:../packages/i18n
       '@ldesign/router':
         specifier: workspace:*
         version: link:../packages/router

@@ -21,7 +21,7 @@ export const publicRoutes: RouteRecordRaw[] = [
     name: 'home',
     component: Home,
     meta: {
-      title: '首页',
+      titleKey: 'nav.home',
       requiresAuth: false,
       layout: 'default'
     }
@@ -31,7 +31,7 @@ export const publicRoutes: RouteRecordRaw[] = [
     name: 'login',
     component: Login,
     meta: {
-      title: '登录',
+      titleKey: 'nav.login',
       requiresAuth: false,
       layout: 'auth' // 使用认证布局
     }
@@ -41,7 +41,7 @@ export const publicRoutes: RouteRecordRaw[] = [
     name: 'about',
     component: About,
     meta: {
-      title: '关于',
+      titleKey: 'nav.about',
       requiresAuth: false,
       layout: 'default'
     }
@@ -58,7 +58,7 @@ export const authRoutes: RouteRecordRaw[] = [
     name: 'dashboard',
     component: Dashboard,
     meta: {
-      title: '仪表盘',
+      titleKey: 'nav.dashboard',
       requiresAuth: false,  // 暂时禁用认证要求以便测试
       layout: 'default',
       roles: ['user', 'admin'] // 角色权限
@@ -75,7 +75,7 @@ export const errorRoutes: RouteRecordRaw[] = [
     name: 'not-found',
     component: () => import('@/views/errors/NotFound.vue'),
     meta: {
-      title: '404 - 页面未找到',
+      titleKey: 'errors.404.title',
       layout: 'blank'
     }
   }

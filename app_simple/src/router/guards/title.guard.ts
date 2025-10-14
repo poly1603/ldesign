@@ -5,19 +5,24 @@
 
 import type { RouterEnginePlugin } from '@ldesign/router'
 import { APP_NAME } from '@/config/app.config'
+import { useI18n } from '@/i18n'
 
 /**
  * 设置页面标题守卫
  */
 export function setupTitleGuard(router: RouterEnginePlugin) {
   router.afterEach((to) => {
-    // 获取页面标题
-    const title = to.meta?.title as string | undefined
+    const { t } = useI18n()
     
-    if (title) {
-      document.title = `${title} - ${APP_NAME}`
+    // 获取页面标题键
+    const titleKey = to.meta?.titleKey as string | undefined
+    
+    if (titleKey) {
+      // 使用 i18n 翻译标题
+      const translatedTitle = t(titleKey)
+      document.title = `${translatedTitle} - ${t('app.name')}`
     } else {
-      document.title = APP_NAME
+      document.title = t('app.name')
     }
   })
 }

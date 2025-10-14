@@ -4,7 +4,6 @@
  */
 
 import type { Plugin, PluginConfig, Command } from '../types'
-import { getImageContextMenu } from '../components/ImageContextMenu'
 import { getLucideIcon } from '../utils/icons'
 
 /**
@@ -115,19 +114,11 @@ export class ImageWrapper {
       this.toggleActive()
     })
 
-    // 右键菜单
+    // 右键菜单已禁用
     this.wrapper.addEventListener('contextmenu', (e) => {
-      e.preventDefault()
+      // 允许默认右键菜单
+      // e.preventDefault() // 注释掉以允许浏览器默认右键菜单
       e.stopPropagation()
-      
-      // 显示右键菜单
-      const contextMenu = getImageContextMenu()
-      contextMenu.show(e.clientX, e.clientY, this.wrapper)
-      
-      // 激活图片
-      if (!this.wrapper.classList.contains('active')) {
-        this.toggleActive()
-      }
     })
 
     // 监听所有手柄的鼠标事件
@@ -592,18 +583,13 @@ export class ImageWrapper {
   }
   
   private showImageSettings(): void {
-    // 显示右键菜单作为设置面板
-    const contextMenu = getImageContextMenu()
-    const rect = this.wrapper.getBoundingClientRect()
-    contextMenu.show(rect.right + 10, rect.top, this.wrapper)
+    // 右键菜单已禁用
+    console.log('Image settings disabled - right-click menu removed')
   }
   
   private showFilterOptions(): void {
-    // 创建滤镜选择面板 - 显示完整的右键菜单
-    const contextMenu = getImageContextMenu()
-    const rect = this.wrapper.getBoundingClientRect()
-    // 显示右键菜单，用户可以选择滤镜选项
-    contextMenu.show(rect.right + 10, rect.top, this.wrapper)
+    // 右键菜单已禁用
+    console.log('Filter options disabled - right-click menu removed')
   }
   
   private setAlignment(align: string): void {

@@ -709,12 +709,4 @@ export class TextEmbedding {
   }
 }
 
-// Export everything
-export {
-  Layer,
-  DenseLayer,
-  LSTMLayer,
-  AttentionLayer,
-  Matrix,
-  ActivationFunctions
-};
+// Classes are already exported with 'export class' keyword

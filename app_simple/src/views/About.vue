@@ -1,71 +1,55 @@
 <template>
   <div class="about-container">
     <div class="about-content">
-      <h1 class="about-title">关于 LDesign</h1>
+      <h1 class="about-title">{{ t('about.title') }}</h1>
       
       <div class="about-section">
-        <h2>项目介绍</h2>
-        <p>LDesign 是一个基于 Vue 3 构建的现代企业级应用框架。</p>
+        <h2>{{ t('about.subtitle') }}</h2>
+        <p>{{ t('about.description') }}</p>
       </div>
       
       <div class="about-section">
-        <h2>我们的目标</h2>
+        <h2>{{ t('about.goals.title') || '我们的目标' }}</h2>
         <ul>
           <li v-for="(item, index) in goalItems" :key="index">{{ item }}</li>
         </ul>
       </div>
       
       <div class="about-section">
-        <h2>核心特性</h2>
+        <h2>{{ t('about.features.title') }}</h2>
         <div class="feature-list">
-          <div class="feature-item">
-            <h3>智能预取</h3>
-            <p>智能预加载和缓存，实现最佳性能。</p>
-          </div>
-          <div class="feature-item">
-            <h3>缓存管理</h3>
-            <p>高级缓存策略，支持自动失效。</p>
-          </div>
-          <div class="feature-item">
-            <h3>性能监控</h3>
-            <p>实时性能指标和优化建议。</p>
-          </div>
-          <div class="feature-item">
-            <h3>安全防护</h3>
-            <p>内置安全功能和 XSS 防护。</p>
+          <div class="feature-item" v-for="feature in features" :key="feature.key">
+            <h3>{{ feature.title }}</h3>
+            <p>{{ feature.desc }}</p>
           </div>
         </div>
       </div>
       
       <div class="about-section">
-        <h2>技术栈</h2>
+        <h2>{{ t('about.techStack') || '技术栈' }}</h2>
         <div class="tech-stack">
-          <span class="tech-badge">Vue 3</span>
-          <span class="tech-badge">TypeScript</span>
-          <span class="tech-badge">Vite</span>
-          <span class="tech-badge">Rollup</span>
-          <span class="tech-badge">ESBuild</span>
+          <span class="tech-badge" v-for="tech in techStack" :key="tech">{{ tech }}</span>
         </div>
       </div>
       
       <div class="about-section">
-        <h2>版本信息</h2>
+        <h2>{{ t('about.version') }}</h2>
         <table class="version-table">
           <tbody>
             <tr>
-              <td>当前版本</td>
+              <td>{{ t('about.version') }}</td>
               <td>v1.0.0</td>
             </tr>
             <tr>
-              <td>Vue 版本</td>
+              <td>Vue {{ t('about.version') }}</td>
               <td>v3.4+</td>
             </tr>
             <tr>
-              <td>Node 版本</td>
+              <td>Node {{ t('about.version') }}</td>
               <td>v16+</td>
             </tr>
             <tr>
-              <td>许可证</td>
+              <td>{{ t('about.license') }}</td>
               <td>MIT</td>
             </tr>
           </tbody>
@@ -73,34 +57,64 @@
       </div>
       
       <div class="about-section">
-        <h2>参与贡献</h2>
-        <p>我们欢迎社区贡献！查看我们的 GitHub 仓库以开始参与。</p>
+        <h2>{{ t('about.contact.title') }}</h2>
+        <p>{{ t('about.team.description') }}</p>
         <div class="contribute-links">
-          <a href="#" class="contribute-link">GitHub 仓库</a>
-          <a href="#" class="contribute-link">文档</a>
-          <a href="#" class="contribute-link">讨论区</a>
+          <a href="#" class="contribute-link">{{ t('about.repository') }}</a>
+          <a href="#" class="contribute-link">{{ t('home.viewDocs') }}</a>
+          <a href="#" class="contribute-link">{{ t('about.contact.community') || '讨论区' }}</a>
         </div>
       </div>
       
       <div class="about-footer">
-        <p>由 LDesign 团队用 ❤️ 制作</p>
-        <p class="copyright">© 2024 LDesign. 保留所有权利。</p>
+        <p>{{ t('about.team.title') }}</p>
+        <p class="copyright">{{ t('app.copyright') }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
+import { useI18n } from '@/i18n'
 
-// 静态目标项
-const goalItems = [
-  '提供简洁而强大的 API',
-  '优化性能，减少内存占用',
-  '完善的 TypeScript 支持',
-  '与 @ldesign/engine 深度集成',
-  '丰富的功能扩展'
-]
+const { t } = useI18n()
+
+// 目标项列表
+const goalItems = computed(() => [
+  t('about.goals.api') || '提供简洁而强大的 API',
+  t('about.goals.performance') || '优化性能，减少内存占用',
+  t('about.goals.typescript') || '完善的 TypeScript 支持',
+  t('about.goals.integration') || '与 @ldesign/engine 深度集成',
+  t('about.goals.extensible') || '丰富的功能扩展'
+])
+
+// 特性列表
+const features = computed(() => [
+  {
+    key: 'vue3',
+    title: t('about.features.items.vue3'),
+    desc: t('about.features.vue3Desc') || '基于 Vue 3 构建，提供出色的性能'
+  },
+  {
+    key: 'typescript',
+    title: t('about.features.items.typescript'),
+    desc: t('home.features.list.typescriptDesc')
+  },
+  {
+    key: 'vite',
+    title: t('about.features.items.vite'),
+    desc: t('about.features.viteDesc') || '快速的开发服务器和构建工具'
+  },
+  {
+    key: 'i18n',
+    title: t('about.features.items.i18n'),
+    desc: t('about.features.i18nDesc') || '完整的国际化支持'
+  }
+])
+
+// 技术栈
+const techStack = ['Vue 3', 'TypeScript', 'Vite', 'Rollup', 'ESBuild', 'i18n']
 
 onMounted(() => {
   console.log('About page mounted')

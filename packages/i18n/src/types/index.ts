@@ -348,6 +348,19 @@ export interface FrameworkAdapter<T = any> {
   uninstall?(app: T): void;
 }
 
+// ============== Engine Plugin ==============
+
+/**
+ * Engine plugin interface for @ldesign/engine integration
+ */
+export interface EnginePlugin {
+  name: string;
+  version?: string;
+  install(app: any): void | Promise<void>;
+  onReady?(): void | Promise<void>;
+  api?: Record<string, any>;
+}
+
 // ============== Export utility types ==============
 
 export type DeepPartial<T> = T extends object ? {

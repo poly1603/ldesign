@@ -2,14 +2,14 @@
   <div class="error-page">
     <div class="error-content">
       <h1 class="error-code">404</h1>
-      <h2 class="error-title">页面未找到</h2>
-      <p class="error-message">抱歉，您访问的页面不存在或已被移除。</p>
+      <h2 class="error-title">{{ t('errors.404.title') }}</h2>
+      <p class="error-message">{{ t('errors.404.message') }}</p>
       <div class="error-actions">
         <button @click="goHome" class="btn btn-primary">
-          返回首页
+          {{ t('errors.404.action') }}
         </button>
         <button @click="goBack" class="btn btn-secondary">
-          返回上一页
+          {{ t('errors.404.back') }}
         </button>
       </div>
     </div>
@@ -18,8 +18,10 @@
 
 <script setup lang="ts">
 import { useRouter } from '@ldesign/router'
+import { useI18n } from '@/i18n'
 
 const router = useRouter()
+const { t } = useI18n()
 
 const goHome = () => {
   router.push('/')

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片编辑功能测试</title>
+  <link rel="stylesheet" href="./dist/index.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    
+    #editor {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      min-height: 500px;
+      padding: 20px;
+      background: white;
+    }
+    
+    .test-info {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .test-info h2 {
+      margin-top: 0;
+      color: #0369a1;
+    }
+    
+    .test-info ul {
+      margin-bottom: 0;
+      line-height: 1.8;
+    }
+    
+    .console-output {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 20px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .console-line {
+      margin-bottom: 5px;
+    }
+    
+    .console-line.info {
+      color: #58a6ff;
+    }
+    
+    .console-line.success {
+      color: #7ee83f;
+    }
+    
+    .console-line.error {
+      color: #f85149;
+    }
+  </style>
+</head>
+<body>
+  <h1>📸 图片编辑功能测试</h1>
+  
+  <div class="test-info">
+    <h2>测试说明</h2>
+    <ul>
+      <li><strong>插入图片：</strong> 在编辑器中粘贴图片URL或使用工具栏插入</li>
+      <li><strong>右键菜单：</strong> 右键点击图片查看编辑菜单</li>
+      <li><strong>滤镜效果：</strong> 选择滤镜选项，图片应立即应用效果</li>
+      <li><strong>调整大小：</strong> 选择大小选项，图片应立即调整</li>
+      <li><strong>对齐方式：</strong> 选择对齐选项，图片应立即改变位置</li>
+    </ul>
+  </div>
+  
+  <div id="editor" class="ldesign-editor-content" contenteditable="true">
+    <p>这是一个测试编辑器。你可以在这里添加图片并测试编辑功能。</p>
+    
+    <p>下面是一张示例图片，右键点击它测试功能：</p>
+    
+    <div class="ldesign-image-wrapper" style="display: inline-block;">
+      <img src="https://picsum.photos/600/400?random=1" alt="测试图片" style="max-width: 100%; height: auto;">
+    </div>
+    
+    <p>你也可以添加更多图片进行测试。</p>
+  </div>
+  
+  <div class="console-output" id="console">
+    <div class="console-line info">控制台输出：</div>
+  </div>
+  
+  <script type="module">
+    // 导入图片增强插件
+    import { ImageWrapper } from './src/plugins/image-enhanced.js';
+    import { getImageContextMenu } from './src/components/ImageContextMenu.js';
+    
+    // 捕获控制台输出
+    const consoleOutput = document.getElementById('console');
+    const originalLog = console.log;
+    const originalError = console.error;
+    
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      const line = document.createElement('div');
+      line.className = 'console-line success';
+      line.textContent = '✓ ' + args.join(' ');
+      consoleOutput.appendChild(line);
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    };
+    
+    console.error = function(...args) {
+      originalError.apply(console, args);
+      const line = document.createElement('div');
+      line.className = 'console-line error';
+      line.textContent = '✗ ' + args.join(' ');
+      consoleOutput.appendChild(line);
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    };
+    
+    // 初始化编辑器
+    const editor = document.getElementById('editor');
+    
+    // 为现有图片添加增强功能
+    function enhanceImages() {
+      const images = editor.querySelectorAll('img');
+      images.forEach(img => {
+        if (!img.closest('.ldesign-image-wrapper')) {
+          new ImageWrapper(img);
+          console.log('图片已增强:', img.src);
+        }
+      });
+    }
+    
+    // 初始化
+    enhanceImages();
+    
+    // 监听新图片插入
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeName === 'IMG') {
+            new ImageWrapper(node);
+            console.log('新图片已增强:', node.src);
+          } else if (node.querySelectorAll) {
+            const imgs = node.querySelectorAll('img');
+            imgs.forEach(img => {
+              if (!img.closest('.ldesign-image-wrapper')) {
+                new ImageWrapper(img);
+                console.log('新图片已增强:', img.src);
+              }
+            });
+          }
+        });
+      });
+    });
+    
+    observer.observe(editor, {
+      childList: true,
+      subtree: true
+    });
+    
+    console.log('编辑器已初始化，图片编辑功能已启用');
+    
+    // 测试滤镜功能
+    window.testFilter = function(filterName) {
+      const wrapper = document.querySelector('.ldesign-image-wrapper.active');
+      if (wrapper) {
+        const img = wrapper.querySelector('img');
+        if (img) {
+          // 直接应用滤镜
+          switch(filterName) {
+            case 'blur':
+              img.style.filter = 'blur(4px)';
+              break;
+            case 'grayscale':
+              img.style.filter = 'grayscale(1)';
+              break;
+            case 'sepia':
+              img.style.filter = 'sepia(1)';
+              break;
+            case 'brightness':
+              img.style.filter = 'brightness(1.3)';
+              break;
+            case 'none':
+              img.style.filter = '';
+              break;
+          }
+          console.log('滤镜已应用:', filterName);
+        }
+      } else {
+        console.error('请先点击选中一张图片');
+      }
+    };
+    
+    // 测试大小调整
+    window.testSize = function(size) {
+      const wrapper = document.querySelector('.ldesign-image-wrapper.active');
+      if (wrapper) {
+        const img = wrapper.querySelector('img');
+        if (img) {
+          img.style.width = size;
+          img.style.height = 'auto';
+          wrapper.style.width = size;
+          console.log('图片大小已调整为:', size);
+        }
+      } else {
+        console.error('请先点击选中一张图片');
+      }
+    };
+    
+    // 添加快捷测试按钮
+    const testButtons = document.createElement('div');
+    testButtons.style.marginTop = '20px';
+    testButtons.innerHTML = `
+      <button onclick="testFilter('blur')">测试模糊</button>
+      <button onclick="testFilter('grayscale')">测试黑白</button>
+      <button onclick="testFilter('sepia')">测试褐色</button>
+      <button onclick="testFilter('brightness')">测试增亮</button>
+      <button onclick="testFilter('none')">清除滤镜</button>
+      <button onclick="testSize('50%')">50%大小</button>
+      <button onclick="testSize('75%')">75%大小</button>
+      <button onclick="testSize('100%')">100%大小</button>
+    `;
+    document.body.appendChild(testButtons);
+  </script>
+</body>
+</html>

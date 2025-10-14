@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Editor v2 Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", "微软雅黑", sans-serif;
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #f9fafb;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    
+    .instructions {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .instructions h2 {
+      color: #666;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    
+    .instructions ul {
+      line-height: 1.8;
+      color: #666;
+    }
+    
+    .content {
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      min-height: 500px;
+    }
+    
+    .sample-text {
+      margin: 20px 0;
+      line-height: 1.6;
+      color: #333;
+    }
+    
+    img {
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    img:hover {
+      transform: scale(1.02);
+    }
+    
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+    
+    .status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 500;
+      display: none;
+    }
+    
+    .status.show {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>📸 Image Editor v2 测试页面</h1>
+  
+  <div class="instructions">
+    <h2>使用说明：</h2>
+    <ul>
+      <li><strong>选择图片：</strong> 点击任意图片选中（蓝色边框）</li>
+      <li><strong>右键菜单：</strong> 右键点击图片打开编辑菜单</li>
+      <li><strong>功能测试：</strong></li>
+      <ul>
+        <li>✅ 调整大小（小/中/大/原始/自定义）</li>
+        <li>✅ 对齐方式（左/中/右）</li>
+        <li>✅ 文字环绕（左浮动/右浮动/无）</li>
+        <li>✅ 滤镜效果（模糊/亮度/对比度/黑白等）</li>
+        <li>✅ 复制图片/链接</li>
+        <li>✅ 替换图片</li>
+        <li>✅ 添加说明文字</li>
+        <li>✅ 删除图片</li>
+      </ul>
+      <li><strong>取消选择：</strong> 点击空白处取消选中</li>
+    </ul>
+  </div>
+  
+  <div class="content">
+    <h2>示例内容</h2>
+    
+    <p class="sample-text">
+      这是一段示例文本。下面有一些图片可以用来测试图片编辑功能。每张图片都可以右键点击进行编辑。
+    </p>
+    
+    <img src="https://picsum.photos/400/300?random=1" alt="Sample Image 1" />
+    
+    <p class="sample-text">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+      Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+    </p>
+    
+    <img src="https://picsum.photos/350/250?random=2" alt="Sample Image 2" />
+    
+    <p class="sample-text">
+      你可以尝试调整图片大小、添加滤镜效果、设置对齐方式等。所有的修改都是实时的，可以立即看到效果。
+      使用文字环绕功能可以让文本围绕图片排列，非常适合文章排版。
+    </p>
+    
+    <div class="image-grid">
+      <img src="https://picsum.photos/250/250?random=3" alt="Grid Image 1" />
+      <img src="https://picsum.photos/250/250?random=4" alt="Grid Image 2" />
+      <img src="https://picsum.photos/250/250?random=5" alt="Grid Image 3" />
+    </div>
+    
+    <p class="sample-text">
+      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+      Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </p>
+    
+    <img src="https://picsum.photos/600/400?random=6" alt="Large Image" />
+    
+    <p class="sample-text">
+      测试完成后，你可以查看浏览器控制台（F12）来查看操作日志。每个操作都会在控制台输出相应的信息。
+    </p>
+  </div>
+  
+  <div class="status" id="status">
+    ✨ Image Editor v2 已加载
+  </div>
+  
+  <script type="module">
+    // Import and initialize the Image Editor v2
+    import ImageEditorV2 from './src/plugins/image-editor-v2.js';
+    
+    // Show status message
+    const status = document.getElementById('status');
+    status.classList.add('show');
+    setTimeout(() => {
+      status.classList.remove('show');
+    }, 3000);
+    
+    // Initialize the editor
+    const editor = new ImageEditorV2();
+    console.log('✅ Image Editor v2 initialized and ready!');
+    
+    // Add some helper functions for testing
+    window.testFilter = function(filterName) {
+      const img = document.querySelector('.ie-selected');
+      if (img) {
+        // Remove all filter classes
+        const filterClasses = [
+          'ie-filter-none', 'ie-filter-blur', 'ie-filter-brightness',
+          'ie-filter-contrast', 'ie-filter-grayscale', 'ie-filter-sepia',
+          'ie-filter-saturate', 'ie-filter-hue-rotate', 'ie-filter-invert'
+        ];
+        filterClasses.forEach(cls => img.classList.remove(cls));
+        
+        // Add new filter
+        img.classList.add(`ie-filter-${filterName}`);
+        console.log(`Applied filter: ${filterName}`);
+      } else {
+        console.log('No image selected. Click an image first.');
+      }
+    };
+    
+    window.testSize = function(size) {
+      const img = document.querySelector('.ie-selected');
+      if (img) {
+        img.classList.remove('ie-size-small', 'ie-size-medium', 'ie-size-large');
+        if (size !== 'original') {
+          img.classList.add(`ie-size-${size}`);
+        }
+        console.log(`Set size to: ${size}`);
+      } else {
+        console.log('No image selected. Click an image first.');
+      }
+    };
+    
+    window.testAlign = function(align) {
+      const img = document.querySelector('.ie-selected');
+      if (img) {
+        img.classList.remove('ie-align-left', 'ie-align-center', 'ie-align-right');
+        img.classList.add(`ie-align-${align}`);
+        console.log(`Set alignment to: ${align}`);
+      } else {
+        console.log('No image selected. Click an image first.');
+      }
+    };
+    
+    console.log('💡 Tip: You can also test functions from console:');
+    console.log('  - testFilter("blur")');
+    console.log('  - testFilter("grayscale")');
+    console.log('  - testSize("small")');
+    console.log('  - testSize("large")');
+    console.log('  - testAlign("center")');
+    console.log('  - testAlign("right")');
+  </script>
+</body>
+</html>

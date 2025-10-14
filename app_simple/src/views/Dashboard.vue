@@ -1,29 +1,29 @@
 <template>
   <div class="dashboard-container">
     <div class="dashboard-header">
-      <h1 class="dashboard-title">仪表盘</h1>
-      <p class="dashboard-subtitle">欢迎回来，{{ username }}！</p>
+      <h1 class="dashboard-title">{{ t('dashboard.title') }}</h1>
+      <p class="dashboard-subtitle">{{ t('dashboard.subtitle', { username }) }}</p>
     </div>
     
     <div class="dashboard-grid">
       <!-- 路由信息卡片 -->
       <div class="dashboard-card">
-        <h3 class="card-title">📍 当前路由信息</h3>
+        <h3 class="card-title">📍 {{ t('dashboard.currentRoute') || '当前路由信息' }}</h3>
         <div class="card-content">
           <div class="info-row">
-            <span class="info-label">路径：</span>
+            <span class="info-label">{{ t('common.path') || '路径' }}：</span>
             <span class="info-value">{{ route.path }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">名称：</span>
-            <span class="info-value">{{ route.name || '(未命名)' }}</span>
+            <span class="info-label">{{ t('common.name') || '名称' }}：</span>
+            <span class="info-value">{{ route.name || `(${t('common.unnamed') || '未命名'})` }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">参数：</span>
+            <span class="info-label">{{ t('common.params') || '参数' }}：</span>
             <span class="info-value">{{ JSON.stringify(route.params) }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">查询：</span>
+            <span class="info-label">{{ t('common.query') || '查询' }}：</span>
             <span class="info-value">{{ JSON.stringify(route.query) }}</span>
           </div>
         </div>
@@ -31,33 +31,33 @@
       
       <!-- Engine 状态卡片 -->
       <div class="dashboard-card">
-        <h3 class="card-title">⚙️ Engine 状态</h3>
+        <h3 class="card-title">⚙️ {{ t('dashboard.engineStatus') || 'Engine 状态' }}</h3>
         <div class="card-content">
           <div class="info-row">
-            <span class="info-label">应用名称：</span>
+            <span class="info-label">{{ t('dashboard.appName') || '应用名称' }}：</span>
             <span class="info-value">{{ engineInfo.name }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">版本：</span>
+            <span class="info-label">{{ t('about.version') }}：</span>
             <span class="info-value">{{ engineInfo.version }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">环境：</span>
+            <span class="info-label">{{ t('dashboard.environment') || '环境' }}：</span>
             <span class="info-value">{{ engineInfo.environment }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">调试模式：</span>
-            <span class="info-value">{{ engineInfo.debug ? '开启' : '关闭' }}</span>
+            <span class="info-label">{{ t('dashboard.debugMode') || '调试模式' }}：</span>
+            <span class="info-value">{{ engineInfo.debug ? t('common.on') || '开启' : t('common.off') || '关闭' }}</span>
           </div>
         </div>
       </div>
       
       <!-- 路由历史卡片 -->
       <div class="dashboard-card">
-        <h3 class="card-title">📜 路由历史</h3>
+        <h3 class="card-title">📜 {{ t('dashboard.routeHistory') || '路由历史' }}</h3>
         <div class="card-content">
           <div v-if="routeHistory.length === 0" class="empty-state">
-            暂无历史记录
+            {{ t('dashboard.noHistory') || '暂无历史记录' }}
           </div>
           <div v-else class="history-list">
             <div v-for="(item, index) in routeHistory" :key="index" class="history-item">
@@ -70,43 +70,43 @@
       
       <!-- 快速操作卡片 -->
       <div class="dashboard-card">
-        <h3 class="card-title">🚀 快速操作</h3>
+        <h3 class="card-title">🚀 {{ t('dashboard.quickActions.title') }}</h3>
         <div class="card-content">
           <button @click="navigateTo('/')" class="action-button">
-            🏠 返回首页
+            🏠 {{ t('errors.404.action') }}
           </button>
           <button @click="navigateTo('/about')" class="action-button">
-            ℹ️ 关于页面
+            ℹ️ {{ t('nav.about') }}
           </button>
           <button @click="refreshRoute" class="action-button">
-            🔄 刷新路由
+            🔄 {{ t('common.refresh') }}
           </button>
           <button @click="clearHistory" class="action-button danger">
-            🗑️ 清除历史
+            🗑️ {{ t('common.clear') }} {{ t('dashboard.history') || '历史' }}
           </button>
         </div>
       </div>
       
       <!-- 性能监控卡片 -->
       <div class="dashboard-card wide">
-        <h3 class="card-title">📊 性能监控</h3>
+        <h3 class="card-title">📊 {{ t('dashboard.performanceMonitor') || '性能监控' }}</h3>
         <div class="card-content">
           <div class="performance-grid">
             <div class="performance-item">
               <div class="performance-value">{{ performance.navigationTime }}ms</div>
-              <div class="performance-label">导航时间</div>
+              <div class="performance-label">{{ t('dashboard.navigationTime') || '导航时间' }}</div>
             </div>
             <div class="performance-item">
               <div class="performance-value">{{ performance.cacheHitRate }}%</div>
-              <div class="performance-label">缓存命中率</div>
+              <div class="performance-label">{{ t('dashboard.cacheHitRate') || '缓存命中率' }}</div>
             </div>
             <div class="performance-item">
               <div class="performance-value">{{ performance.totalNavigations }}</div>
-              <div class="performance-label">总导航次数</div>
+              <div class="performance-label">{{ t('dashboard.totalNavigations') || '总导航次数' }}</div>
             </div>
             <div class="performance-item">
               <div class="performance-value">{{ performance.memoryUsage }}MB</div>
-              <div class="performance-label">内存使用</div>
+              <div class="performance-label">{{ t('dashboard.memoryUsage') || '内存使用' }}</div>
             </div>
           </div>
         </div>
@@ -114,15 +114,15 @@
       
       <!-- 路由列表卡片 -->
       <div class="dashboard-card wide">
-        <h3 class="card-title">📝 所有路由</h3>
+        <h3 class="card-title">📝 {{ t('dashboard.allRoutes') || '所有路由' }}</h3>
         <div class="card-content">
           <table class="route-table">
             <thead>
               <tr>
-                <th>路径</th>
-                <th>名称</th>
-                <th>认证</th>
-                <th>操作</th>
+                <th>{{ t('common.path') || '路径' }}</th>
+                <th>{{ t('common.name') || '名称' }}</th>
+                <th>{{ t('dashboard.auth') || '认证' }}</th>
+                <th>{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -131,15 +131,15 @@
                 <td>{{ route.name || '-' }}</td>
                 <td>
                   <span v-if="route.meta?.requiresAuth" class="badge badge-warning">
-                    需要认证
+                    {{ t('dashboard.requiresAuth') || '需要认证' }}
                   </span>
                   <span v-else class="badge badge-success">
-                    公开
+                    {{ t('dashboard.public') || '公开' }}
                   </span>
                 </td>
                 <td>
                   <button @click="navigateTo(route.path)" class="link-button">
-                    访问
+                    {{ t('common.visit') || '访问' }}
                   </button>
                 </td>
               </tr>
@@ -154,16 +154,18 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from '@ldesign/router'
+import { useI18n } from '@/i18n'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 // 用户信息
 const username = ref('')
 
 // Engine 信息
 const engineInfo = ref({
-  name: 'LDesign Simple App',
+  name: t('app.name'),
   version: '1.0.0',
   environment: 'development',
   debug: true
@@ -233,8 +235,8 @@ const updatePerformance = () => {
 let performanceTimer: any = null
 
 onMounted(() => {
-  // 获取用户信息
-  username.value = localStorage.getItem('username') || 'Guest'
+// 获取用户信息
+  username.value = localStorage.getItem('username') || t('common.guest')
   
   // 获取 Engine 信息
   const engine = (window as any).__ENGINE__
@@ -253,7 +255,7 @@ onMounted(() => {
     try {
       routeHistory.value = JSON.parse(savedHistory)
     } catch (e) {
-      console.error('Failed to load route history')
+      console.error(t('dashboard.errors.loadHistory'))
     }
   }
   

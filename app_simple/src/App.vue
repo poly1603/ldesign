@@ -4,15 +4,15 @@
     <nav class="navbar">
       <div class="nav-brand">
         <span class="logo">🚀</span>
-        <span class="brand-text">LDesign Simple App</span>
+        <span class="brand-text">{{ t('app.name') }}</span>
       </div>
       
       <div class="nav-links">
         <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
-          首页
+          {{ t('nav.home') }}
         </router-link>
         <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
-          关于
+          {{ t('nav.about') }}
         </router-link>
         <router-link
           v-if="isLoggedIn" 
@@ -20,18 +20,21 @@
           class="nav-link" 
           :class="{ active: $route.path === '/dashboard' }"
         >
-          仪表盘
+          {{ t('nav.dashboard') }}
         </router-link>
         
         <div class="nav-spacer"></div>
         
+        <!-- 语言切换器 -->
+        <LanguageSwitcher class="nav-locale" />
+        
         <button v-if="!isLoggedIn" @click="goToLogin" class="nav-button login">
-          登录
+          {{ t('nav.login') }}
         </button>
         <div v-else class="user-menu">
           <span class="username">{{ username }}</span>
           <button @click="logout" class="nav-button logout">
-            退出
+            {{ t('nav.logout') }}
           </button>
         </div>
       </div>
@@ -48,7 +51,7 @@
     
     <!-- 页脚 -->
     <footer class="footer">
-      <p>© 2024 LDesign. 保留所有权利。</p>
+      <p>{{ t('app.copyright') }}</p>
     </footer>
   </div>
 </template>
@@ -56,10 +59,13 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from '@ldesign/router'
+import { useI18n } from '@/i18n'
 import { auth } from '@/composables/useAuth'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 // 使用认证模块的状态
 const isLoggedIn = computed(() => auth.isLoggedIn.value)

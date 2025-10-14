@@ -27,11 +27,13 @@ export default defineConfig({
   extractCss: false,
   injectCss: true,
 
-  // UMD 鏋勫缓閰嶇疆
+  // UMD 构建配置
   umd: {
     enabled: true,
-    minify: true, // UMD鐗堟湰鍚敤鍘嬬缉
-    fileName: 'index.js', // 鍘绘帀 .umd 鍚庣紑
+    entry: 'src/index-lib.ts',  // 指定 UMD 入口文件
+    minify: true, // UMD版本启用压缩
+    fileName: 'index.js', // 去掉 .umd 后缀
+    name: 'LDesignI18n',  // 全局变量名
   },
 
   // 澶栭儴渚濊禆閰嶇疆

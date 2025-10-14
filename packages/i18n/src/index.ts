@@ -228,13 +228,33 @@ export const Adapters = {
   },
 };
 
+// Engine Plugin Integration
+export {
+  createI18nEnginePlugin,
+  createDefaultI18nEnginePlugin,
+  i18nPlugin,
+  type I18nEnginePluginOptions
+} from './engine';
+
+// Vue Adapter exports for convenience
+export {
+  createVueI18n,
+  useI18n as useVueI18n,  // Rename to avoid conflict
+  vI18n,
+  I18nT,
+  useTranslation,
+  usePlural,
+  useNumber,
+  useDate,
+  useCurrency,
+  useRelativeTime,
+  type UseI18nComposable
+} from './adapters/vue';
+
 // Performance utilities
 export { ObjectPool, FastCacheKeyBuilder } from './core/i18n-optimized';
 
-// Re-export types for convenience
-export type MessageKey = string;
-export type Locale = string;
-export type InterpolationParams = Record<string, any>;
+// Type aliases for convenience (not re-exported to avoid conflicts)
 
 // Default export
 export default OptimizedI18n;

@@ -109,6 +109,17 @@ export class ToolbarManager {
     const rightSection = document.createElement('div');
     rightSection.className = 'pdf-toolbar-section';
     
+    // Page mode toggle
+    const pageModeBtn = this.createButton('page-mode', 
+      this.viewer.state.pageMode === 'continuous' ? this.createIcon('layers') : this.createIcon('file'),
+      this.viewer.state.pageMode === 'continuous' ? 'Single Page' : 'Continuous', 
+      () => {
+        const newMode = this.viewer.state.pageMode === 'continuous' ? 'single' : 'continuous';
+        this.viewer.setPageMode(newMode);
+        this.updatePageModeButton();
+      }
+    );
+    
     // Rotate button
     const rotateBtn = this.createButton('rotate', this.createIcon('rotate-cw'), 'Rotate', () => {
       this.viewer.rotate();
@@ -134,6 +145,7 @@ export class ToolbarManager {
       this.viewer.toggleFullscreen();
     });
     
+    rightSection.appendChild(pageModeBtn);
     rightSection.appendChild(rotateBtn);
     rightSection.appendChild(searchBtn);
     rightSection.appendChild(this.createSeparator());
@@ -190,7 +202,9 @@ export class ToolbarManager {
       'search': 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
       'printer': 'M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z',
       'download': 'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3',
-      'maximize': 'M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3'
+      'maximize': 'M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3',
+      'file': 'M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z',
+      'layers': 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
     };
     
     const pathData = paths[name] || '';
@@ -305,6 +319,19 @@ export class ToolbarManager {
     }
     
     this.scaleSelect.value = selectedValue;
+  }
+
+  /**
+   * Update page mode button
+   */
+  private updatePageModeButton(): void {
+    const btn = this.container?.querySelector('.pdf-page-mode') as HTMLButtonElement;
+    if (btn) {
+      const isContinuous = this.viewer.state.pageMode === 'continuous';
+      btn.innerHTML = '';
+      btn.appendChild(this.createIcon(isContinuous ? 'file' : 'layers'));
+      btn.title = isContinuous ? 'Single Page' : 'Continuous';
+    }
   }
 
   /**

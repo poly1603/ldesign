@@ -34,7 +34,9 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
   private textLayerContainer: HTMLElement | null = null;
   private annotationLayerContainer: HTMLElement | null = null;
   private currentCanvas: HTMLCanvasElement | null = null;
+  private pageCanvases: Map<number, HTMLCanvasElement> = new Map();
   private isInitialized: boolean = false;
+  private scrollTimeout: NodeJS.Timeout | null = null;
 
   constructor(options: PDFViewerOptions) {
     super();
@@ -140,6 +142,9 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
       this.state.totalPages = this.document.numPages;
       this.state.currentPage = 1;
 
+      // Emit page-change event to update toolbar with initial page and total pages
+      this.emit('page-change', this.state.currentPage, this.state.totalPages);
+
       // Render first page
       await this.renderCurrentPage();
 
@@ -159,7 +164,7 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
   }
 
   /**
-   * Render the current page
+   * Render the current page(s) based on mode
    */
   private async renderCurrentPage(): Promise<void> {
     if (!this.document || !this.canvasContainer) {
@@ -167,45 +172,94 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
     }
 
     try {
-      // Create or reuse canvas
-      if (!this.currentCanvas) {
-        this.currentCanvas = document.createElement('canvas');
-        this.currentCanvas.className = 'pdf-canvas';
-        this.canvasContainer.appendChild(this.currentCanvas);
-      }
-
-      // Render page
-      await this.renderer.renderPage(this.state.currentPage, this.currentCanvas, {
-        scale: this.state.scale,
-        rotation: this.state.rotation,
-        background: '#ffffff',
-        renderTextLayer: this.options.textLayerMode !== 0,
-        renderAnnotations: this.options.annotationMode !== 0
-      });
-
-      // Render text layer if enabled
-      if (this.options.textLayerMode !== 0 && this.textLayerContainer) {
-        await this.renderer.renderTextLayer(
-          this.state.currentPage,
-          this.textLayerContainer,
-          this.state.scale,
-          this.state.rotation
-        );
-      }
-
-      // Render annotations if enabled
-      if (this.options.annotationMode !== 0 && this.annotationLayerContainer) {
-        await this.renderer.renderAnnotations(
-          this.state.currentPage,
-          this.annotationLayerContainer,
-          this.state.scale,
-          this.state.rotation
-        );
+      if (this.state.pageMode === 'continuous') {
+        // Render all pages in continuous mode
+        await this.renderAllPages();
+      } else {
+        // Render single page
+        await this.renderSinglePage(this.state.currentPage);
       }
 
       this.emit('page-rendered', this.state.currentPage);
     } catch (error) {
       this.handleError(error as Error);
+    }
+  }
+
+  /**
+   * Render a single page
+   */
+  private async renderSinglePage(pageNumber: number): Promise<void> {
+    if (!this.document || !this.canvasContainer) {
+      return;
+    }
+
+    // Clear previous content in single page mode
+    this.canvasContainer.innerHTML = '';
+    this.pageCanvases.clear();
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'pdf-canvas';
+    canvas.dataset.pageNumber = pageNumber.toString();
+    this.canvasContainer.appendChild(canvas);
+    this.currentCanvas = canvas;
+    this.pageCanvases.set(pageNumber, canvas);
+
+    await this.renderer.renderPage(pageNumber, canvas, {
+      scale: this.state.scale,
+      rotation: this.state.rotation,
+      background: '#ffffff',
+      renderTextLayer: this.options.textLayerMode !== 0,
+      renderAnnotations: this.options.annotationMode !== 0
+    });
+  }
+
+  /**
+   * Render all pages in continuous mode
+   */
+  private async renderAllPages(): Promise<void> {
+    if (!this.document || !this.canvasContainer) {
+      return;
+    }
+
+    // Clear and setup for continuous mode
+    if (this.pageCanvases.size === 0) {
+      this.canvasContainer.innerHTML = '';
+      
+      // Create all page containers
+      for (let i = 1; i <= this.state.totalPages; i++) {
+        const pageWrapper = document.createElement('div');
+        pageWrapper.className = 'pdf-page-wrapper';
+        pageWrapper.dataset.pageNumber = i.toString();
+        
+        const canvas = document.createElement('canvas');
+        canvas.className = 'pdf-canvas';
+        canvas.dataset.pageNumber = i.toString();
+        
+        pageWrapper.appendChild(canvas);
+        this.canvasContainer.appendChild(pageWrapper);
+        this.pageCanvases.set(i, canvas);
+        
+        // Render each page
+        this.renderer.renderPage(i, canvas, {
+          scale: this.state.scale,
+          rotation: this.state.rotation,
+          background: '#ffffff',
+          renderTextLayer: this.options.textLayerMode !== 0,
+          renderAnnotations: this.options.annotationMode !== 0
+        });
+      }
+    } else {
+      // Re-render existing pages with new scale
+      for (const [pageNum, canvas] of this.pageCanvases) {
+        await this.renderer.renderPage(pageNum, canvas, {
+          scale: this.state.scale,
+          rotation: this.state.rotation,
+          background: '#ffffff',
+          renderTextLayer: this.options.textLayerMode !== 0,
+          renderAnnotations: this.options.annotationMode !== 0
+        });
+      }
     }
   }
 
@@ -230,7 +284,14 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
     }
 
     this.state.currentPage = pageNumber;
-    this.renderCurrentPage();
+    
+    if (this.state.pageMode === 'continuous') {
+      // In continuous mode, scroll to the page
+      this.scrollToPage(pageNumber);
+    } else {
+      // In single page mode, render the page
+      this.renderCurrentPage();
+    }
     
     this.emit('page-change', pageNumber, this.state.totalPages);
     
@@ -306,7 +367,25 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
   }
 
   setPageMode(mode: 'single' | 'continuous' | 'book'): void {
+    if (this.state.pageMode === mode) {
+      return;
+    }
+    
     this.state.pageMode = mode;
+    this.pageCanvases.clear();
+    
+    // Update the data-page-mode attribute on the viewer container
+    if (this.viewerContainer) {
+      this.viewerContainer.setAttribute('data-page-mode', mode);
+    }
+    
+    // Setup scroll listener for continuous mode
+    if (mode === 'continuous' && this.canvasContainer) {
+      this.canvasContainer.addEventListener('scroll', this.handleScroll.bind(this));
+    } else if (this.canvasContainer) {
+      this.canvasContainer.removeEventListener('scroll', this.handleScroll.bind(this));
+    }
+    
     this.renderCurrentPage();
     this.emit('page-mode-change', mode);
   }
@@ -584,6 +663,7 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
     this.viewerContainer = document.createElement('div');
     this.viewerContainer.className = 'pdf-viewer';
     this.viewerContainer.setAttribute('data-theme', this.options.theme as string);
+    this.viewerContainer.setAttribute('data-page-mode', this.state.pageMode);
     
     // Create canvas container
     this.canvasContainer = document.createElement('div');
@@ -669,6 +749,72 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
         this.options.initialScale === 'page-fit' ||
         this.options.initialScale === 'page-width') {
       this.setScale(this.options.initialScale);
+    }
+  }
+
+  /**
+   * Handle scroll event in continuous mode
+   */
+  private handleScroll(): void {
+    if (this.state.pageMode !== 'continuous' || !this.canvasContainer) {
+      return;
+    }
+
+    // Clear previous timeout
+    if (this.scrollTimeout) {
+      clearTimeout(this.scrollTimeout);
+    }
+
+    // Debounce scroll event
+    this.scrollTimeout = setTimeout(() => {
+      const scrollTop = this.canvasContainer!.scrollTop;
+      const containerHeight = this.canvasContainer!.clientHeight;
+      
+      // Find the current visible page
+      let currentPage = 1;
+      let accumulatedHeight = 0;
+      
+      const pages = this.canvasContainer!.querySelectorAll('.pdf-page-wrapper');
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i] as HTMLElement;
+        const pageHeight = page.offsetHeight;
+        
+        if (scrollTop < accumulatedHeight + pageHeight / 2) {
+          currentPage = i + 1;
+          break;
+        }
+        
+        accumulatedHeight += pageHeight + 20; // 20px gap between pages
+      }
+      
+      // Update current page if changed
+      if (currentPage !== this.state.currentPage) {
+        this.state.currentPage = currentPage;
+        this.emit('page-change', currentPage, this.state.totalPages);
+        
+        if (this.options.onPageChange) {
+          this.options.onPageChange(currentPage, this.state.totalPages);
+        }
+        
+        // Update thumbnail highlight
+        if (this.sidebarManager) {
+          this.sidebarManager.highlightThumbnail(currentPage);
+        }
+      }
+    }, 100);
+  }
+
+  /**
+   * Scroll to a specific page in continuous mode
+   */
+  scrollToPage(pageNumber: number): void {
+    if (this.state.pageMode !== 'continuous' || !this.canvasContainer) {
+      return;
+    }
+
+    const pageElement = this.canvasContainer.querySelector(`[data-page-number="${pageNumber}"]`);
+    if (pageElement) {
+      pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 

@@ -198,6 +198,7 @@ export interface PDFViewer {
   options: PDFViewerOptions;
   state: ViewerState;
   document: PDFDocumentProxy | null;
+  container: HTMLElement;
   
   // Methods
   init(): Promise<void>;

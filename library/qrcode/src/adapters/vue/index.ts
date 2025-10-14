@@ -1,3 +1,40 @@
+// Main exports from component modules
+export { default as QRCode } from './components/QRCode.vue';
+
+// Export composables
+export {
+  useQRCode,
+  useBatchQRCode,
+  useQRCodeFromURL,
+  useQRCodeInput,
+  useQRCodeTheme,
+  useQRCodeShare,
+  useQRCodeValidation,
+  UseQRCodeOptions,
+  UseQRCodeReturn,
+  BatchQRCodeItem,
+  QRCodeTheme,
+} from './composables/useQRCode';
+
+// Export directives
+export {
+  vQRCode,
+  vQRCodeReactive,
+  vQRCodeLazy,
+} from './directives/v-qrcode';
+
+// Re-export types for convenience
+export type {
+  QRCodeConfig,
+  QRCodeInstance,
+  ErrorCorrectionLevel,
+  RenderType,
+  LogoConfig,
+  QRCodeStyle,
+  DotStyle,
+} from '../../types';
+
+// Import necessary Vue utilities for legacy components and plugin
 import {
   defineComponent,
   h,
@@ -24,6 +61,7 @@ import type {
   DotStyle,
 } from '../../types';
 import { createQRCode } from '../../index';
+import { vQRCode } from './directives/v-qrcode';
 
 // ========== Enhanced Component ==========
 
@@ -828,8 +866,11 @@ export const QRCodePlugin: Plugin = {
       directiveName = 'qrcode',
     } = options;
     
+    // Import components and directives
+    const QRCodeComponent = require('./components/QRCode.vue').default;
+    
     // Register component
-    app.component(componentName, QRCode);
+    app.component(componentName, QRCodeComponent);
     
     // Register directive
     app.directive(directiveName, vQRCode);

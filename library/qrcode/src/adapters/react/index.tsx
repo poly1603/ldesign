@@ -1,3 +1,33 @@
+// Main exports from component modules
+export { QRCode, QRCodeProps, QRCodeRef } from './components/QRCode';
+export { default } from './components/QRCode';
+
+// Export hooks
+export {
+  useQRCode,
+  useBatchQRCode,
+  useQRCodeFromURL,
+  useQRCodeInput,
+  useQRCodeTheme,
+  useQRCodeShare,
+  UseQRCodeOptions,
+  UseQRCodeReturn,
+  BatchQRCodeItem,
+  QRCodeTheme,
+} from './hooks/useQRCode';
+
+// Re-export types for convenience
+export type {
+  QRCodeConfig,
+  QRCodeInstance,
+  ErrorCorrectionLevel,
+  RenderType,
+  LogoConfig,
+  QRCodeStyle,
+  DotStyle,
+} from '../../types';
+
+// Import necessary React utilities for legacy components
 import React, {
   useEffect,
   useRef,

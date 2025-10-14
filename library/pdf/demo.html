@@ -63,6 +63,7 @@
             border-radius: 8px;
             overflow: hidden;
             margin: 20px 0;
+            position: relative;
         }
         
         .demo-controls {
@@ -219,6 +220,41 @@
         .sample-list li:hover {
             background: #e9ecef;
             transform: translateX(5px);
+        }
+        
+        /* Loading and Error states */
+        .pdf-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+            gap: 20px;
+        }
+        
+        .pdf-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #4a90e2;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .pdf-error {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #f44336;
+            font-size: 16px;
+            padding: 20px;
+            text-align: center;
         }
     </style>
 </head>
@@ -439,157 +475,468 @@ export class AppComponent {
     
     <!-- Include the built PDF Viewer Plugin with Clean Styles -->
     <link rel="stylesheet" href="./src/styles/pdf-viewer.css">
-    <script src="./dist/pdf-viewer.min.js"></script>
     
-    <script type="module">
-        let viewer;
+    <script>
+        // Enhanced PDF Viewer Implementation
+        class EnhancedPDFViewer {
+            constructor(options) {
+                this.container = document.querySelector(options.container);
+                this.pdfDoc = null;
+                this.pageNum = 1;
+                this.scale = 1.0;
+                this.pageMode = 'single'; // 'single' or 'continuous'
+                this.init();
+            }
         
-        // Sample PDF URLs with CORS proxy fallback
-        const samplePDFs = [
-            { name: 'PDF.js Sample', url: 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/examples/learning/helloworld.pdf' },
-            { name: 'Lorem Ipsum', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
-            { name: 'Sample Document', url: 'https://pdfobject.com/pdf/sample.pdf' }
-        ];
-        let currentPDFIndex = 0;
-        
-        window.onload = function() {
-            // Initialize the viewer
-            initializeViewer();
-        };
-        
-        function initializeViewer() {
-            try {
-                // Initialize the Universal PDF Viewer
-                viewer = new window.UniversalPDFViewer({
-                    container: '#pdfViewer',
-                    theme: 'light',
-                    enableToolbar: true,
-                    enableSearch: true,
-                    enablePrint: true,
-                    enableDownload: true,
-                    defaultScale: 1.0,
-                    corsProxy: 'https://cors-anywhere.herokuapp.com/'
-                });
-                
-                // Set up event listeners
-                viewer.on('pageChanged', ({ currentPage, totalPages }) => {
-                    console.log(`Page ${currentPage} of ${totalPages}`);
-                });
-                
-                viewer.on('scaleChanged', ({ scale }) => {
-                    console.log(`Scale changed to ${scale}`);
-                });
-                
-                viewer.on('documentLoaded', () => {
-                    console.log('Document loaded successfully');
-                });
-                
-                viewer.on('error', (error) => {
-                    console.error('PDF Viewer Error:', error);
-                    alert(`Error: ${error.message}`);
-                });
-                
-                window.viewer = viewer;
-                
-                // Show ready message
-                const container = document.getElementById('pdfViewer');
-                if (!viewer.pdfUrl) {
-                    container.innerHTML = `
-                        <div style="padding: 40px; text-align: center; color: #666; background: #f8f9fa; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                            <h3 style="margin-bottom: 20px;">🎯 PDF Viewer Ready</h3>
-                            <p style="margin-bottom: 30px;">Click "Load Sample PDF" or "Open Local File" to get started</p>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-                                ${samplePDFs.map((pdf, i) => `
-                                    <button class="demo-btn" onclick="loadSpecificPDF(${i})">${pdf.name}</button>
-                                `).join('')}
+            init() {
+                // Create viewer structure
+                this.container.innerHTML = `
+                    <div class="pdf-viewer" data-theme="light" data-page-mode="single">
+                        <div class="pdf-toolbar">
+                            <div class="pdf-toolbar-section">
+                                <button class="pdf-toolbar-button" onclick="viewer.toggleSidebar()" title="Toggle Sidebar">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                                    </svg>
+                                </button>
+                                <div class="pdf-page-navigation">
+                                    <button class="pdf-toolbar-button" onclick="viewer.previousPage()">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="15 18 9 12 15 6"></polyline>
+                                        </svg>
+                                    </button>
+                                    <input type="number" class="pdf-page-input" id="pageNum" value="1" min="1">
+                                    <span class="pdf-page-label">/ <span id="totalPages">0</span></span>
+                                    <button class="pdf-toolbar-button" onclick="viewer.nextPage()">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="pdf-toolbar-section">
+                                <div class="pdf-zoom-controls">
+                                    <button class="pdf-toolbar-button" onclick="viewer.zoomOut()">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="11" cy="11" r="8"></circle>
+                                            <path d="m21 21-4.35-4.35"></path>
+                                            <line x1="8" y1="11" x2="14" y2="11"></line>
+                                        </svg>
+                                    </button>
+                                    <select class="pdf-scale-select" id="scaleSelect">
+                                        <option value="0.5">50%</option>
+                                        <option value="0.75">75%</option>
+                                        <option value="1" selected>100%</option>
+                                        <option value="1.25">125%</option>
+                                        <option value="1.5">150%</option>
+                                        <option value="2">200%</option>
+                                    </select>
+                                    <button class="pdf-toolbar-button" onclick="viewer.zoomIn()">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="11" cy="11" r="8"></circle>
+                                            <path d="m21 21-4.35-4.35"></path>
+                                            <line x1="11" y1="8" x2="11" y2="14"></line>
+                                            <line x1="8" y1="11" x2="14" y2="11"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="pdf-toolbar-section">
+                                <button class="pdf-toolbar-button" onclick="viewer.togglePageMode()" title="Toggle Page Mode">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                                    </svg>
+                                </button>
+                                <button class="pdf-toolbar-button" onclick="openLocalFile()" title="Open File">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"></path>
+                                    </svg>
+                                </button>
+                                <button class="pdf-toolbar-button" onclick="loadSamplePDF()" title="Load Sample">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </button>
+                                <button class="pdf-toolbar-button" onclick="viewer.print()" title="Print">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"></path>
+                                        <rect x="6" y="14" width="12" height="8"></rect>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Failed to initialize PDF viewer:', error);
-                // Fallback to mock implementation if the plugin fails to load
-                viewer = {
-                    nextPage: () => console.log('Next page'),
-                    previousPage: () => console.log('Previous page'),
-                    goToPage: (n) => console.log(`Go to page ${n}`),
-                    zoomIn: () => console.log('Zoom in'),
-                    zoomOut: () => console.log('Zoom out'),
-                    setScale: (n) => console.log(`Set scale to ${n}`),
-                    rotateClockwise: () => console.log('Rotate clockwise'),
-                    print: () => window.print(),
-                    download: () => console.log('Download PDF'),
-                    fitToWidth: () => console.log('Fit to width'),
-                    fitToHeight: () => console.log('Fit to height'),
-                    loadPDF: (url) => console.log(`Loading PDF from ${url}`)
-                };
-                
-                window.viewer = viewer;
-                
-                const container = document.getElementById('pdfViewer');
-                container.innerHTML = `
-                    <div style="padding: 20px; text-align: center; color: #666;">
-                        <h3>⚠️ PDF Viewer Plugin Not Loaded</h3>
-                        <p>The PDF viewer plugin could not be initialized. Mock implementation is active.</p>
-                        <p style="margin-top: 20px; font-size: 12px;">
-                            Error: ${error.message}
-                        </p>
+                        
+                        <div class="pdf-sidebar">
+                            <div class="pdf-sidebar-tabs">
+                                <button class="pdf-sidebar-tab active">Thumbnails</button>
+                                <button class="pdf-sidebar-tab">Bookmarks</button>
+                            </div>
+                            <div class="pdf-sidebar-content">
+                                <div class="pdf-thumbnails-panel" id="thumbnails">
+                                    <!-- Thumbnails will be generated here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="pdf-canvas-container">
+                            <!-- Canvas will be added dynamically -->
+                        </div>
                     </div>
                 `;
+                
+                // Setup event listeners
+                document.getElementById('pageNum').addEventListener('change', (e) => {
+                    this.goToPage(parseInt(e.target.value));
+                });
+                
+                document.getElementById('scaleSelect').addEventListener('change', (e) => {
+                    this.setScale(parseFloat(e.target.value));
+                });
+            }
+        
+            async loadPDF(url) {
+                try {
+                    // Show loading state
+                    const container = document.querySelector('.pdf-canvas-container');
+                    container.innerHTML = '<div class="pdf-loading"><div class="pdf-spinner"></div><div>Loading PDF...</div></div>';
+                    
+                    this.pdfDoc = await pdfjsLib.getDocument(url).promise;
+                    
+                    // Update total pages immediately after loading
+                    const totalPagesElement = document.getElementById('totalPages');
+                    if (totalPagesElement) {
+                        totalPagesElement.textContent = this.pdfDoc.numPages;
+                    }
+                    
+                    const pageNumInput = document.getElementById('pageNum');
+                    if (pageNumInput) {
+                        pageNumInput.max = this.pdfDoc.numPages;
+                    }
+                    
+                    // Reset to first page
+                    this.pageNum = 1;
+                    
+                    await this.renderPage(this.pageNum);
+                    await this.generateThumbnails();
+                } catch (error) {
+                    console.error('Error loading PDF:', error);
+                    const container = document.querySelector('.pdf-canvas-container');
+                    container.innerHTML = '<div class="pdf-error">Failed to load PDF. Please try again.</div>';
+                }
+            }
+            
+            async renderPage(num) {
+                if (!this.pdfDoc) return;
+                
+                if (this.pageMode === 'continuous') {
+                    await this.renderAllPages();
+                    this.scrollToPage(num);
+                } else {
+                    // Single page mode
+                    const container = document.querySelector('.pdf-canvas-container');
+                    container.innerHTML = '';
+                    
+                    // Reset container styles for single page mode
+                    container.style.display = 'flex';
+                    container.style.flexDirection = 'row';
+                    container.style.alignItems = 'center';
+                    container.style.justifyContent = 'center';
+                    container.style.gap = '';
+                    container.style.padding = '20px';
+                    container.style.overflowY = 'auto';
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'pdf-canvas';
+                    canvas.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1)';
+                    canvas.style.background = 'white';
+                    canvas.style.borderRadius = '4px';
+                    container.appendChild(canvas);
+                    
+                    const page = await this.pdfDoc.getPage(num);
+                    const viewport = page.getViewport({scale: this.scale});
+                    
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    
+                    const ctx = canvas.getContext('2d');
+                    await page.render({
+                        canvasContext: ctx,
+                        viewport: viewport
+                    }).promise;
+                    
+                    document.getElementById('pageNum').value = num;
+                }
+            }
+            
+            async renderAllPages() {
+                const container = document.querySelector('.pdf-canvas-container');
+                container.innerHTML = '';
+                
+                // Set container styles for vertical scrolling
+                container.style.display = 'flex';
+                container.style.flexDirection = 'column';
+                container.style.alignItems = 'center';
+                container.style.gap = '20px';
+                container.style.padding = '20px';
+                container.style.overflowY = 'auto';
+                
+                for (let i = 1; i <= this.pdfDoc.numPages; i++) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'pdf-page-wrapper';
+                    wrapper.dataset.pageNumber = i;
+                    wrapper.style.background = 'white';
+                    wrapper.style.borderRadius = '4px';
+                    wrapper.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1)';
+                    wrapper.style.marginBottom = '20px';
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'pdf-canvas';
+                    canvas.style.display = 'block';
+                    
+                    wrapper.appendChild(canvas);
+                    container.appendChild(wrapper);
+                    
+                    const page = await this.pdfDoc.getPage(i);
+                    const viewport = page.getViewport({scale: this.scale});
+                    
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    
+                    const ctx = canvas.getContext('2d');
+                    await page.render({
+                        canvasContext: ctx,
+                        viewport: viewport
+                    }).promise;
+                }
+                
+                // Setup scroll listener
+                container.addEventListener('scroll', () => this.handleScroll());
+            }
+            
+            handleScroll() {
+                clearTimeout(this.scrollTimeout);
+                this.scrollTimeout = setTimeout(() => {
+                    const container = document.querySelector('.pdf-canvas-container');
+                    const pages = container.querySelectorAll('.pdf-page-wrapper');
+                    const containerRect = container.getBoundingClientRect();
+                    
+                    // Find the page that's most visible in the viewport
+                    for (let i = 0; i < pages.length; i++) {
+                        const rect = pages[i].getBoundingClientRect();
+                        // Check if page is visible in the container
+                        const pageTop = rect.top - containerRect.top;
+                        const pageBottom = rect.bottom - containerRect.top;
+                        const containerHeight = containerRect.height;
+                        
+                        // If page is visible in the top half of the container
+                        if (pageTop < containerHeight / 2 && pageBottom > 0) {
+                            this.pageNum = i + 1;
+                            document.getElementById('pageNum').value = this.pageNum;
+                            this.updateThumbnails();
+                            
+                            // Scroll thumbnail into view
+                            const thumbnailItem = document.querySelectorAll('.pdf-thumbnail-item')[i];
+                            if (thumbnailItem) {
+                                thumbnailItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                            break;
+                        }
+                    }
+                }, 100);
+            }
+            
+            scrollToPage(num) {
+                const page = document.querySelector(`[data-page-number="${num}"]`);
+                if (page) {
+                    page.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+            
+            async generateThumbnails() {
+                if (!this.pdfDoc) return;
+                
+                const container = document.getElementById('thumbnails');
+                container.innerHTML = '';
+                
+                // Generate thumbnails for all pages (or limit to 100 for large PDFs)
+                const maxThumbnails = Math.min(this.pdfDoc.numPages, 100);
+                for (let i = 1; i <= maxThumbnails; i++) {
+                    const item = document.createElement('div');
+                    item.className = 'pdf-thumbnail-item';
+                    if (i === this.pageNum) item.classList.add('active');
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'pdf-thumbnail-canvas';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'pdf-thumbnail-label';
+                    label.textContent = `Page ${i}`;
+                    
+                    item.appendChild(canvas);
+                    item.appendChild(label);
+                    container.appendChild(item);
+                    
+                    item.onclick = () => this.goToPage(i);
+                    
+                    // Render thumbnail
+                    const page = await this.pdfDoc.getPage(i);
+                    const viewport = page.getViewport({scale: 0.2});
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    await page.render({
+                        canvasContext: ctx,
+                        viewport: viewport
+                    }).promise;
+                }
+            }
+            
+            goToPage(num) {
+                if (!this.pdfDoc) return;
+                
+                if (num >= 1 && num <= this.pdfDoc.numPages) {
+                    this.pageNum = num;
+                    
+                    if (this.pageMode === 'continuous') {
+                        this.scrollToPage(num);
+                    } else {
+                        this.renderPage(num);
+                    }
+                    
+                    this.updateThumbnails();
+                }
+            }
+            
+            updateThumbnails() {
+                document.querySelectorAll('.pdf-thumbnail-item').forEach((el, i) => {
+                    el.classList.toggle('active', i + 1 === this.pageNum);
+                });
+            }
+            
+            nextPage() {
+                if (this.pdfDoc && this.pageNum < this.pdfDoc.numPages) {
+                    this.goToPage(this.pageNum + 1);
+                }
+            }
+            
+            previousPage() {
+                if (this.pdfDoc && this.pageNum > 1) {
+                    this.goToPage(this.pageNum - 1);
+                }
+            }
+            
+            setScale(scale) {
+                this.scale = scale;
+                if (this.pdfDoc) {
+                    if (this.pageMode === 'continuous') {
+                        // Save current page before re-render
+                        const currentPage = this.pageNum;
+                        this.renderAllPages().then(() => {
+                            // Restore scroll position to current page
+                            this.scrollToPage(currentPage);
+                        });
+                    } else {
+                        this.renderPage(this.pageNum);
+                    }
+                }
+            }
+            
+            zoomIn() {
+                if (!this.pdfDoc) return;
+                this.setScale(Math.min(this.scale * 1.2, 3));
+                document.getElementById('scaleSelect').value = this.scale.toFixed(2);
+            }
+            
+            zoomOut() {
+                if (!this.pdfDoc) return;
+                this.setScale(Math.max(this.scale / 1.2, 0.3));
+                document.getElementById('scaleSelect').value = this.scale.toFixed(2);
+            }
+            
+            toggleSidebar() {
+                document.querySelector('.pdf-sidebar').classList.toggle('hidden');
+            }
+            
+            togglePageMode() {
+                this.pageMode = this.pageMode === 'single' ? 'continuous' : 'single';
+                const viewer = document.querySelector('.pdf-viewer');
+                viewer.setAttribute('data-page-mode', this.pageMode);
+                
+                if (this.pdfDoc) {
+                    this.renderPage(this.pageNum);
+                }
+            }
+            
+            print() {
+                if (this.pdfDoc) {
+                    window.print();
+                }
+            }
+            
+            async openLocalFile() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.pdf';
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.type === 'application/pdf') {
+                        const fileReader = new FileReader();
+                        fileReader.onload = async () => {
+                            const typedarray = new Uint8Array(fileReader.result);
+                            await this.loadPDF(typedarray);
+                        };
+                        fileReader.readAsArrayBuffer(file);
+                    }
+                };
+                input.click();
             }
         }
         
-        window.loadSamplePDF = function() {
-            loadSpecificPDF(currentPDFIndex);
-            currentPDFIndex = (currentPDFIndex + 1) % samplePDFs.length;
-        };
         
-        window.loadSpecificPDF = function(index) {
-            const pdf = samplePDFs[index];
-            console.log(`Loading PDF: ${pdf.name}`);
+        // Set PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        // Sample PDFs
+        const samplePDFs = [
+            { name: 'PDF.js Sample', url: 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/examples/learning/helloworld.pdf' },
+            { name: 'Sample Document', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+        ];
+        
+        let viewer;
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', function() {
+            viewer = new EnhancedPDFViewer({
+                container: '#pdfViewer'
+            });
+            window.viewer = viewer;
             
-            if (viewer && viewer.loadPDF) {
-                viewer.loadPDF(pdf.url).catch(error => {
-                    console.error('Failed to load PDF:', error);
-                    // Try with CORS proxy
-                    const proxyUrl = `https://cors-anywhere.herokuapp.com/${pdf.url}`;
-                    return viewer.loadPDF(proxyUrl);
-                });
-            } else {
-                alert(`Loading: ${pdf.name}\nURL: ${pdf.url}`);
+            // Auto load sample
+            setTimeout(() => {
+                loadSamplePDF();
+            }, 500);
+        });
+        
+        function loadSamplePDF() {
+            if (viewer && samplePDFs[0]) {
+                viewer.loadPDF(samplePDFs[0].url);
             }
-        };
+        }
         
-        window.openLocalFile = function() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.pdf';
-            input.onchange = async (e) => {
-                const file = e.target.files[0];
-                if (file && viewer && viewer.loadPDF) {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        const arrayBuffer = event.target.result;
-                        viewer.loadPDF(arrayBuffer);
-                    };
-                    reader.readAsArrayBuffer(file);
-                } else if (file) {
-                    alert(`Selected file: ${file.name}`);
-                }
-            };
-            input.click();
-        };
+        function openLocalFile() {
+            if (viewer) {
+                viewer.openLocalFile();
+            }
+        }
         
-        window.toggleTheme = function() {
-            const container = document.getElementById('pdfViewer');
-            const currentTheme = container.getAttribute('data-theme') || 'light';
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            container.setAttribute('data-theme', newTheme);
-            container.style.background = newTheme === 'dark' ? '#1a1a1a' : 'white';
-        };
-        
-        window.showTab = function(tabName) {
-            // Hide all tabs
+        // Tab switching
+        function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -597,10 +944,15 @@ export class AppComponent {
                 tab.classList.remove('active');
             });
             
-            // Show selected tab
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-        };
+            const targetTab = document.getElementById(tabName);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+        }
     </script>
 </body>
 </html>

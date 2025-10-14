@@ -219,6 +219,13 @@ export class SidebarManager {
   }
 
   /**
+   * Public method to highlight thumbnail
+   */
+  public highlightThumbnail(pageNumber: number): void {
+    this.highlightCurrentThumbnail(pageNumber);
+  }
+
+  /**
    * Load and display document outline
    */
   private async loadOutline(): Promise<void> {

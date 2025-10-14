@@ -1,23 +1,26 @@
 <template>
   <div class="home-container">
     <div class="hero">
-      <h1 class="hero-title">{{ homeTitle }}</h1>
+      <h1 class="hero-title">{{ t('home.title') }}</h1>
       <p class="hero-subtitle">
-        {{ homeDescription }}
+        {{ t('home.subtitle') }}
+      </p>
+      <p class="hero-description">
+        {{ t('home.description') }}
       </p>
       
       <div class="hero-actions">
         <router-link to="/about" class="btn btn-primary">
-          {{ commonAbout }}
+          {{ t('home.learnMore') }}
         </router-link>
         <router-link to="/dashboard" class="btn btn-secondary">
-          {{ commonDashboard }}
+          {{ t('home.getStarted') }}
         </router-link>
       </div>
     </div>
     
     <div class="features">
-      <h2 class="features-title">{{ featuresTitle }}</h2>
+      <h2 class="features-title">{{ t('home.features.title') }}</h2>
       
       <div class="features-grid">
         <div class="feature-card" v-for="feature in features" :key="feature.key">
@@ -31,75 +34,49 @@
     <div class="stats">
       <div class="stat-item">
         <div class="stat-value">{{ routeCount }}</div>
-        <div class="stat-label">{{ statsRoutes }}</div>
+        <div class="stat-label">路由数量</div>
       </div>
       <div class="stat-item">
         <div class="stat-value">{{ visitCount }}</div>
-        <div class="stat-label">{{ statsVisits }}</div>
+        <div class="stat-label">访问次数</div>
       </div>
       <div class="stat-item">
         <div class="stat-value">{{ cacheSize }}KB</div>
-        <div class="stat-label">{{ statsCache }}</div>
+        <div class="stat-label">缓存大小</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from '@ldesign/router'
+import { useI18n } from '@/i18n'
 
 const router = useRouter()
+const { t } = useI18n()
 
-// Static text values
-const homeTitle = '欢迎使用 LDesign 极简应用'
-const homeDescription = '基于 Vue 3 + LDesign Engine 构建的现代化应用'
-const commonAbout = '关于'
-const commonDashboard = '仪表盘'
-const featuresTitle = '核心特性'
-const statsRoutes = '路由数量'
-const statsVisits = '访问次数'
-const statsCache = '缓存大小'
-
-// Features list
-const features = [
+// Features list with i18n support
+const features = computed(() => [
   {
     key: 'performance',
     icon: '⚡',
-    title: '极致性能',
-    description: '基于 Vue 3 的响应式系统，提供出色的运行时性能'
+    title: t('home.features.list.performance'),
+    description: t('home.features.list.performanceDesc')
   },
   {
-    key: 'security',
-    icon: '🔒',
-    title: '安全可靠',
-    description: '内置安全最佳实践，保护您的应用和数据'
+    key: 'modular',
+    icon: '📦',
+    title: t('home.features.list.modular'),
+    description: t('home.features.list.modularDesc')
   },
   {
-    key: 'responsive',
-    icon: '📱',
-    title: '响应式设计',
-    description: '完美适配各种设备，提供一致的用户体验'
-  },
-  {
-    key: 'animation',
-    icon: '🎨',
-    title: '流畅动画',
-    description: '精心设计的动画效果，提升用户交互体验'
-  },
-  {
-    key: 'engine',
-    icon: '🚀',
-    title: 'LDesign 引擎',
-    description: '强大的引擎系统，提供完整的应用架构支持'
-  },
-  {
-    key: 'developer',
-    icon: '🛠️',
-    title: '开发友好',
-    description: '完善的开发工具和文档，让开发更加高效'
+    key: 'typescript',
+    icon: '📝',
+    title: t('home.features.list.typescript'),
+    description: t('home.features.list.typescriptDesc')
   }
-]
+])
 
 // Statistics data
 const routeCount = ref(0)
@@ -150,6 +127,12 @@ onMounted(() => {
 .hero-subtitle {
   font-size: 20px;
   color: #666;
+  margin: 0 0 10px 0;
+}
+
+.hero-description {
+  font-size: 16px;
+  color: #888;
   margin: 0 0 40px 0;
 }
 

@@ -2,31 +2,31 @@
   <div class="login-container">
     <div class="login-card">
       <div class="login-header">
-        <h1 class="login-title">欢迎回来</h1>
-        <p class="login-subtitle">登录以继续访问您的控制台</p>
+        <h1 class="login-title">{{ t('login.title') }}</h1>
+        <p class="login-subtitle">{{ t('login.subtitle') }}</p>
       </div>
       
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <label for="username" class="form-label">用户名</label>
+          <label for="username" class="form-label">{{ t('login.username') }}</label>
           <input
             id="username"
             v-model="username"
             type="text"
             class="form-input"
-            placeholder="请输入您的用户名"
+            :placeholder="t('login.usernamePlaceholder')"
             required
           />
         </div>
         
         <div class="form-group">
-          <label for="password" class="form-label">密码</label>
+          <label for="password" class="form-label">{{ t('login.password') }}</label>
           <input
             id="password"
             v-model="password"
             type="password"
             class="form-input"
-            placeholder="请输入您的密码"
+            :placeholder="t('login.passwordPlaceholder')"
             required
           />
         </div>
@@ -38,7 +38,7 @@
               type="checkbox"
               class="checkbox-input"
             />
-            <span>记住我</span>
+            <span>{{ t('login.rememberMe') }}</span>
           </label>
         </div>
         
@@ -47,13 +47,13 @@
         </div>
         
         <button type="submit" class="submit-button" :disabled="loading">
-          {{ loading ? '登录中...' : '登录' }}
+          {{ loading ? t('login.submitting') : t('login.submit') }}
         </button>
       </form>
       
       <div class="login-footer">
-        <p class="hint">使用 admin/admin 登录</p>
-        <router-link to="/" class="back-link">返回首页</router-link>
+        <p class="hint">{{ t('login.hint') || '使用 admin/admin 登录' }}</p>
+        <router-link to="/" class="back-link">{{ t('common.back') }}</router-link>
       </div>
     </div>
   </div>
@@ -62,10 +62,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from '@ldesign/router'
+import { useI18n } from '@/i18n'
 import { auth } from '@/composables/useAuth'
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 
 // 表单数据
 const username = ref('')
@@ -100,7 +102,7 @@ const handleLogin = async () => {
     await router.replace(redirect)
   } else {
     // 登录失败
-    error.value = result.error || '用户名或密码无效'
+    error.value = result.error || t('login.errors.invalid')
   }
 }
 

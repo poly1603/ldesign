@@ -4,6 +4,7 @@
  */
 
 import { createEngineApp } from '@ldesign/engine'
+import { createI18nEnginePlugin } from './i18n'
 import App from './App.vue'
 import { createRouter } from './router'
 import { engineConfig } from './config/app.config'
@@ -22,6 +23,15 @@ async function bootstrap() {
     // 创建路由器插件
     const routerPlugin = createRouter()
     
+    // 创建 i18n 插件
+    const i18nPlugin = createI18nEnginePlugin({
+      locale: 'zh-CN',
+      fallbackLocale: 'en-US',
+      detectBrowserLanguage: true,
+      persistLanguage: true,
+      showMissingKeys: import.meta.env.DEV
+    })
+    
     // 创建应用引擎
     const engine = await createEngineApp({
       // 根组件和挂载点
@@ -31,14 +41,17 @@ async function bootstrap() {
       // 使用配置文件
       config: engineConfig,
       
-      // 插件（路由器）
-      plugins: [routerPlugin],
+      // 插件（路由器和国际化）
+      plugins: [routerPlugin, i18nPlugin],
       
-      // Vue应用配置
-      setupApp: async (app) => {
-        // 暂时不设置任何内容
-        console.log('✅ 应用设置完成')
-      },
+    // Vue应用配置
+    setupApp: async (app) => {
+      // 安装 i18n Vue 插件
+      if (i18nPlugin.vuePlugin) {
+        app.use(i18nPlugin.vuePlugin)
+      }
+      console.log('✅ 应用设置完成')
+    },
       
       // 错误处理
       onError: (error, context) => {

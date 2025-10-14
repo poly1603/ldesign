@@ -382,8 +382,15 @@ export class ImageContextMenu {
             e.stopPropagation()
             e.preventDefault()
             
+            console.log('Submenu item clicked:', item.label)
+            
             // Execute the action
-            item.action!()
+            try {
+              item.action!()
+              console.log('Action executed successfully for:', item.label)
+            } catch (error) {
+              console.error('Error executing action for', item.label, error)
+            }
             
             // Hide the main menu
             this.hide()
@@ -531,28 +538,32 @@ export class ImageContextMenu {
     const img = this.currentImage.querySelector('img') as HTMLImageElement
     if (!img) return
     
-    if (size === 'auto') {
+    console.log('Setting image size to:', size);
+    
+    // 重置样式
+    img.style.width = '';
+    img.style.height = '';
+    img.style.maxWidth = '';
+    this.currentImage.style.width = '';
+    
+    if (size === '100%') {
+      img.style.width = '100%'
+      img.style.height = 'auto'
+      this.currentImage.style.width = '100%'
+    } else if (size === 'auto') {
       img.style.width = 'auto'
       img.style.height = 'auto'
       img.style.maxWidth = '100%'
       this.currentImage.style.width = 'auto'
     } else {
-      // 计算实际宽度
-      const editorContent = this.currentImage.closest('.ldesign-editor-content') as HTMLElement
-      if (editorContent) {
-        const maxWidth = editorContent.offsetWidth
-        const targetWidth = Math.min(maxWidth * (parseInt(size) / 100), maxWidth)
-        img.style.width = `${targetWidth}px`
-        img.style.height = 'auto'
-        img.style.maxWidth = '100%'
-        this.currentImage.style.width = `${targetWidth}px`
-      } else {
-        img.style.width = size
-        img.style.height = 'auto'
-        img.style.maxWidth = '100%'
-        this.currentImage.style.width = size
-      }
+      // 设置百分比宽度
+      img.style.width = size;
+      img.style.height = 'auto';
+      img.style.maxWidth = '100%';
+      this.currentImage.style.width = size;
     }
+    
+    console.log('Image size set - img width:', img.style.width, 'wrapper width:', this.currentImage.style.width);
     
     this.triggerContentChange()
   }
@@ -672,36 +683,44 @@ export class ImageContextMenu {
     }
     
     console.log('Setting filter:', filter);
-    console.log('Current wrapper classes before:', this.currentImage.className);
     
-    // 清除所有滤镜类 - 更高效的方式
-    const filterClasses = Array.from(this.currentImage.classList)
-      .filter(cls => cls.startsWith('filter-'))
-    
-    console.log('Removing filter classes:', filterClasses);
-    filterClasses.forEach(cls => {
-      this.currentImage!.classList.remove(cls)
-    })
-    
-    // 如果不是"无滤镜"，添加新的滤镜类
-    if (filter !== 'none') {
-      const filterClass = `filter-${filter}`;
-      console.log('Adding filter class:', filterClass);
-      this.currentImage.classList.add(filterClass)
-      
-      // 为某些特殊滤镜添加额外的视觉反馈
-      if (filter.includes('blur')) {
-        img.style.transition = 'filter 0.3s ease'
-      }
-    } else {
-      console.log('Resetting to no filter');
-      // 重置滤镜
-      img.style.filter = ''
-      img.style.transition = ''
+    // 直接设置img元素的filter样式
+    switch(filter) {
+      case 'none':
+        img.style.filter = '';
+        break;
+      case 'blur':
+        img.style.filter = 'blur(4px)';
+        break;
+      case 'sharpen':
+        img.style.filter = 'contrast(1.5) brightness(1.1)';
+        break;
+      case 'grayscale':
+        img.style.filter = 'grayscale(1)';
+        break;
+      case 'sepia':
+        img.style.filter = 'sepia(1)';
+        break;
+      case 'invert':
+        img.style.filter = 'invert(1)';
+        break;
+      case 'brightness':
+        img.style.filter = 'brightness(1.3)';
+        break;
+      case 'contrast':
+        img.style.filter = 'contrast(1.3)';
+        break;
+      case 'saturate':
+        img.style.filter = 'saturate(1.5)';
+        break;
+      default:
+        img.style.filter = '';
     }
     
-    console.log('Current wrapper classes after:', this.currentImage.className);
-    console.log('Computed filter style:', window.getComputedStyle(img).filter);
+    // 添加平滑过渡效果
+    img.style.transition = 'filter 0.3s ease';
+    
+    console.log('Filter applied:', filter, 'Result:', img.style.filter);
     
     this.triggerContentChange()
   }
