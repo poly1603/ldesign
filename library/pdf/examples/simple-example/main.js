@@ -1,6 +1,5 @@
 // Import PDF plugin from src directory using Vite alias
-import { PDFViewer } from '@pdf-plugin';
-import '@pdf-plugin/styles/pdf-viewer-modern.css';
+import { PDFViewer, SimpleToolbar } from '@pdf-plugin';
 
 // Sample PDF URL
 const SAMPLE_PDF = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
@@ -15,36 +14,67 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   let viewer = null;
   
-  // Initialize viewer
-  async function initViewer() {
+  // Initialize viewer with URL
+  async function initViewerWithURL(url) {
     try {
+      // Clean up previous viewer if exists
+      if (viewer) {
+        viewer.destroy();
+        viewerContainer.innerHTML = '';
+      }
+      
+      // Create viewer container
+      const viewerDiv = document.createElement('div');
+      viewerDiv.style.height = '100%';
+      viewerDiv.style.display = 'flex';
+      viewerDiv.style.flexDirection = 'column';
+      
+      // Create toolbar container
+      const toolbarDiv = document.createElement('div');
+      viewerDiv.appendChild(toolbarDiv);
+      
+      // Create canvas container
+      const canvasDiv = document.createElement('div');
+      canvasDiv.style.flex = '1';
+      canvasDiv.style.overflow = 'hidden';
+      viewerDiv.appendChild(canvasDiv);
+      
+      viewerContainer.appendChild(viewerDiv);
+      
+      // Create PDF viewer
       viewer = new PDFViewer({
-        container: viewerContainer,
+        container: canvasDiv,
+        pdfUrl: url,
+        initialScale: 1.5,
+        fitMode: 'width',
         enableSearch: true,
-        enableAnnotations: true,
-        enableBookmarks: true,
-        enablePrint: true,
-        enableThumbnails: true,
-        toolbar: true,
-        sidebar: true,
-        theme: 'modern',
-        defaultScale: 'page-width',
-        onInit: (v) => {
-          console.log('✨ PDF Viewer initialized!');
-        },
-        onDocumentLoad: (doc) => {
-          console.log(`📄 Document loaded: ${doc.numPages} pages`);
-          hideWelcomeScreen();
-          hideLoading();
-        },
-        onError: (error) => {
-          console.error('❌ Error:', error);
-          hideLoading();
-          alert(`Error: ${error.message}`);
-        }
+        enableDownload: true,
+        enablePrint: true
       });
       
-      await viewer.init();
+      // Create toolbar
+      const toolbar = new SimpleToolbar({
+        viewer: viewer,
+        container: toolbarDiv,
+        showSearch: true,
+        showDownload: true,
+        showPrint: true
+      });
+      
+      // Listen to events
+      viewer.on('document-loaded', (data) => {
+        console.log(`📄 Document loaded: ${data.numPages} pages`);
+        hideWelcomeScreen();
+        hideLoading();
+      });
+      
+      viewer.on('error', (error) => {
+        console.error('❌ Error:', error);
+        hideLoading();
+        alert(`Error loading PDF`);
+      });
+      
+      console.log('✨ PDF Viewer initialized!');
     } catch (error) {
       console.error('Failed to initialize viewer:', error);
       hideLoading();
@@ -61,10 +91,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     showLoading();
     
     try {
-      if (!viewer) await initViewer();
-      
-      const arrayBuffer = await file.arrayBuffer();
-      await viewer.loadDocument(arrayBuffer);
+      const url = URL.createObjectURL(file);
+      await initViewerWithURL(url);
     } catch (error) {
       console.error('Failed to load PDF:', error);
       hideLoading();
@@ -76,11 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     showLoading();
     
     try {
-      if (!viewer) await initViewer();
-      
-      const response = await fetch(SAMPLE_PDF);
-      const arrayBuffer = await response.arrayBuffer();
-      await viewer.loadDocument(arrayBuffer);
+      await initViewerWithURL(SAMPLE_PDF);
     } catch (error) {
       console.error('Failed to load sample:', error);
       hideLoading();
@@ -130,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
-    if (!viewer || !viewer.document) return;
+    if (!viewer) return;
     
     // Navigation
     if (e.key === 'ArrowLeft') viewer.previousPage();

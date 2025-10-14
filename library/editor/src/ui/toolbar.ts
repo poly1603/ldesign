@@ -168,6 +168,16 @@ export class Toolbar {
         return
       }
 
+      // Check if this is a media insertion command that might have been overridden
+      if (['image', 'video', 'audio', 'file'].includes(item.name)) {
+        // Try to use the editor's command registry first
+        const command = `insert${item.name.charAt(0).toUpperCase() + item.name.slice(1)}`
+        if (this.editor.commands && this.editor.commands.execute) {
+          this.editor.commands.execute(command)
+          return
+        }
+      }
+      
       // 默认命令执行
       const state = this.editor.getState()
       item.command(state, this.editor.dispatch.bind(this.editor))

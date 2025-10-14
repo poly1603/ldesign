@@ -1,57 +1,106 @@
-import './styles/pdf-viewer.css';
+/**
+ * PDF Library - Core Functions with Thumbnails
+ * PDF库 - 包含缩略图功能
+ */
+
+// 导入组件
 import { PDFViewer } from './core/PDFViewer';
-import type { PDFViewerOptions } from './types';
+import { SimpleToolbar } from './ui/SimpleToolbar';
+import { SidebarManager } from './ui/SidebarManager';
+import { EventEmitter } from './core/EventEmitter';
 
-// Export types
-export * from './types';
-
-// Import styles
-import './styles/pdf-viewer-modern.css';
-
-// Export core classes
+// 重新导出组件
 export { PDFViewer } from './core/PDFViewer';
-export { PDFRenderer } from './core/PDFRenderer';
-export { EventEmitter } from './core/EventEmitter';
+export type { PDFViewerOptions, ViewerState } from './core/PDFViewer';
 
-// Export feature managers
-export { AnnotationManager } from './features/AnnotationManager';
-export { BookmarkManager } from './features/BookmarkManager';
-export { PrintManager } from './features/PrintManager';
-export { SearchManager } from './features/SearchManager';
-
-// Export UI managers
-export { ToolbarManager } from './ui/ToolbarManager';
+// UI组件
+export { SimpleToolbar } from './ui/SimpleToolbar';
+export type { SimpleToolbarOptions } from './ui/SimpleToolbar';
 export { SidebarManager } from './ui/SidebarManager';
 
-// Main export function
-export function createPDFViewer(options: PDFViewerOptions): PDFViewer {
-  const viewer = new PDFViewer(options);
+// 事件发射器
+export { EventEmitter } from './core/EventEmitter';
+
+// 类型定义
+export * from './types';
+
+/**
+ * 快速创建PDF查看器的便捷函数
+ */
+export function createPDFViewer(
+  container: HTMLElement,
+  pdfUrl: string,
+  options?: {
+    showToolbar?: boolean;
+    toolbarContainer?: HTMLElement;
+    initialScale?: number;
+    fitMode?: 'width' | 'height' | 'page' | 'auto';
+    enableSearch?: boolean;
+    enableDownload?: boolean;
+    enablePrint?: boolean;
+  }
+): { viewer: PDFViewer; toolbar?: SimpleToolbar } {
+  // 创建查看器容器
+  const viewerContainer = document.createElement('div');
+  viewerContainer.style.cssText = 'width: 100%; height: 100%; position: relative;';
   
-  // Auto-initialize if container is provided
-  if (options.container) {
-    viewer.init().catch(error => {
-      console.error('Failed to initialize PDF viewer:', error);
-      if (options.onError) {
-        options.onError(error);
-      }
+  // 创建工具栏容器
+  let toolbarContainer: HTMLElement | null = null;
+  let toolbar: SimpleToolbar | undefined;
+  
+  if (options?.showToolbar !== false) {
+    toolbarContainer = options?.toolbarContainer || document.createElement('div');
+    if (!options?.toolbarContainer) {
+      container.appendChild(toolbarContainer);
+    }
+  }
+  
+  // 添加查看器容器
+  container.appendChild(viewerContainer);
+  
+  // 创建PDF查看器
+  const viewer = new PDFViewer({
+    container: viewerContainer,
+    pdfUrl,
+    initialScale: options?.initialScale || 1.5,
+    fitMode: options?.fitMode || 'auto',
+    enableSearch: options?.enableSearch !== false,
+    enableDownload: options?.enableDownload !== false,
+    enablePrint: options?.enablePrint !== false
+  });
+  
+  // 创建工具栏
+  if (toolbarContainer) {
+    toolbar = new SimpleToolbar({
+      viewer,
+      container: toolbarContainer,
+      showSearch: options?.enableSearch !== false,
+      showDownload: options?.enableDownload !== false,
+      showPrint: options?.enablePrint !== false
     });
   }
   
-  return viewer;
+  return { viewer, toolbar };
 }
 
-// Default export
+/**
+ * 默认导出 - 用于快速集成
+ */
 export default {
-  create: createPDFViewer,
   PDFViewer,
-  version: '1.0.0'
+  SimpleToolbar,
+  createPDFViewer,
+  version: '2.0.0'
 };
 
-// Global variable for non-module usage
+/**
+ * 全局变量 - 用于非模块化使用
+ */
 if (typeof window !== 'undefined') {
-  (window as any).PDFViewer = {
-    create: createPDFViewer,
+  (window as any).PDFViewerLib = {
+    createPDFViewer,
     PDFViewer,
-    version: '1.0.0'
+    SimpleToolbar,
+    version: '2.0.0'
   };
 }

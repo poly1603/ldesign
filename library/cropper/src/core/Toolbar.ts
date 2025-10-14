@@ -34,7 +34,6 @@ export class Toolbar {
   private disabled = false
 
   constructor(cropper: Cropper, container: HTMLElement, options: ToolbarOptions = {}) {
-    console.log('Toolbar constructor called', { cropper, container, options })
     this.cropper = cropper
     this.container = container
     this.options = {
@@ -46,14 +45,10 @@ export class Toolbar {
       theme: 'auto',
       ...options
     }
-    console.log('Toolbar options after merge:', this.options)
 
     this.initializeButtons()
     if (this.options.visible) {
-      console.log('Calling render because visible is true')
       this.render()
-    } else {
-      console.log('Not rendering - visible is false')
     }
   }
 
@@ -227,37 +222,49 @@ export class Toolbar {
   }
 
   private getIcon(name: string): string {
+    // Using Lucide icons for a consistent, modern look
+    // Official Lucide icons with correct SVG paths
     const icons: Record<string, string> = {
-      'rotate-left': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12a9.5 9.5 0 1 0 9.5-9.5v3.5L7 1"/></svg>',
-      'rotate-right': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 12a9.5 9.5 0 1 1-9.5-9.5v3.5l5-5"/></svg>',
-      'flip-horizontal': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M16 16l4-4-4-4M8 8L4 12l4 4"/></svg>',
-      'flip-vertical': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M16 8l-4-4-4 4M8 16l4 4 4-4"/></svg>',
-      'zoom-in': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/></svg>',
-      'zoom-out': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M8 11h6"/></svg>',
-      'arrow-left': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>',
-      'arrow-right': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M19 12l-7 7M19 12l-7-7"/></svg>',
-      'arrow-up': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M12 5l-7 7M12 5l7 7"/></svg>',
-      'arrow-down': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M12 19l7-7M12 19l-7-7"/></svg>',
-      'skew-x-left': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L9 21M15 3v6M9 15v6"/></svg>',
-      'skew-x-right': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l12 18M9 3v6M15 15v6"/></svg>',
-      'skew-y-up': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l18-12M3 15h6M15 9h6"/></svg>',
-      'skew-y-down': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 12M3 9h6M15 15h6"/></svg>',
-      'reset': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 1 9 9 9 9 0 0 1-9-9z"/><path d="M12 6v6l4 2"/><path d="M3 3l3 3M21 21l-3-3"/></svg>',
+      // Rotate icons (Official Lucide RotateCcw and RotateCw)
+      'rotate-left': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>',
+      'rotate-right': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>',
+      
+      // Flip icons (Lucide FlipHorizontal and FlipVertical2)
+      'flip-horizontal': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><path d="M12 20v2"/><path d="M12 14v2"/><path d="M12 8v2"/><path d="M12 2v2"/></svg>',
+      'flip-vertical': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"/><path d="M4 12h2"/><path d="M10 12h2"/><path d="M16 12h2"/><path d="M22 12h-2"/></svg>',
+      
+      // Zoom icons (Official Lucide ZoomIn and ZoomOut)
+      'zoom-in': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>',
+      'zoom-out': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="8" y1="11" x2="14" y2="11"/></svg>',
+      
+      // Move icons (Official Lucide ArrowLeft, ArrowRight, ArrowUp, ArrowDown)
+      'arrow-left': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>',
+      'arrow-right': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
+      'arrow-up': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>',
+      'arrow-down': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>',
+      
+      // Transform icons (Using Lucide Move3d and similar)
+      'skew-x-left': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14l-2 18H7z"/><path d="M9 9h6"/><path d="M8 15h8"/></svg>',
+      'skew-x-right': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21h14L17 3H5z"/><path d="M9 15h6"/><path d="M8 9h8"/></svg>',
+      'skew-y-up': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14l18-2V3z"/><path d="M9 9v6"/><path d="M15 8v8"/></svg>',
+      'skew-y-down': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5v14L3 17V3z"/><path d="M15 9v6"/><path d="M9 8v8"/></svg>',
+      
+      // Reset icon (Official Lucide RefreshCw)
+      'reset': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>',
+      
+      // Crop icon (Official Lucide Crop)
       'crop': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>'
     }
     return icons[name] || ''
   }
 
   public render(): void {
-    console.log('Toolbar.render() called')
     if (this.element) {
-      console.log('Destroying existing toolbar element')
       this.destroy()
     }
 
     this.element = document.createElement('div')
     this.element.className = `cropper-toolbar cropper-toolbar-${this.options.position}`
-    console.log('Created toolbar element with class:', this.element.className)
     
     if (this.options.compact) {
       this.element.classList.add('cropper-toolbar-compact')
@@ -298,9 +305,7 @@ export class Toolbar {
     })
 
     // Append toolbar to container
-    console.log('Appending toolbar to container:', this.container)
     this.container.appendChild(this.element)
-    console.log('Toolbar appended, element in DOM:', document.contains(this.element))
   }
 
   private createButton(button: ToolbarButton): HTMLButtonElement {

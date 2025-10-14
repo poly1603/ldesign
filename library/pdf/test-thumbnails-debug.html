@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF缩略图测试</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+    h1 { margin-bottom: 20px; color: #333; }
+    
+    .container {
+      display: flex;
+      gap: 20px;
+      height: calc(100vh - 100px);
+    }
+    
+    /* 左侧缩略图面板 */
+    .thumbnails-panel {
+      width: 250px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 15px;
+      overflow-y: auto;
+    }
+    
+    .thumbnails-panel h2 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #555;
+      border-bottom: 2px solid #4a90e2;
+      padding-bottom: 8px;
+    }
+    
+    .thumbnail-item {
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #fafafa;
+    }
+    
+    .thumbnail-item:hover {
+      border-color: #4a90e2;
+      background: #f0f8ff;
+      transform: scale(1.05);
+    }
+    
+    .thumbnail-item.active {
+      border-color: #4a90e2;
+      background: #e7f1fb;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+    }
+    
+    .thumbnail-canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: white;
+      border: 1px solid #ddd;
+    }
+    
+    .thumbnail-label {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+    }
+    
+    .thumbnail-item.active .thumbnail-label {
+      color: #4a90e2;
+      font-weight: bold;
+    }
+    
+    /* 右侧主视图 */
+    .main-view {
+      flex: 1;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .main-canvas {
+      max-width: 100%;
+      height: auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      background: white;
+    }
+    
+    /* 控制按钮 */
+    .controls {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    
+    .controls button {
+      padding: 10px 20px;
+      background: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .controls button:hover {
+      background: #357abd;
+    }
+    
+    .controls input[type="file"] {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    
+    /* 状态信息 */
+    .status {
+      padding: 10px 20px;
+      background: #f8f9fa;
+      border-radius: 5px;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .status.success { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #721c24; }
+    .status.loading { background: #fff3cd; color: #856404; }
+    
+    /* 调试控制台 */
+    .debug-console {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 200px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 10px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      border-top: 3px solid #4a90e2;
+      z-index: 1000;
+    }
+    
+    .debug-log { margin: 2px 0; }
+    .debug-log.info { color: #4a90e2; }
+    .debug-log.success { color: #4ec9b0; }
+    .debug-log.error { color: #f48771; }
+    .debug-log.warn { color: #ce9178; }
+  </style>
+</head>
+<body>
+  <h1>📄 PDF 缩略图测试</h1>
+  
+  <div class="controls">
+    <input type="file" id="fileInput" accept=".pdf">
+    <button id="loadLocalBtn">加载本地示例</button>
+    <button id="clearConsoleBtn">清除日志</button>
+    <span class="status" id="status">准备就绪</span>
+  </div>
+  
+  <div class="container">
+    <!-- 左侧缩略图 -->
+    <div class="thumbnails-panel">
+      <h2>页面缩略图 (<span id="pageCount">0</span>)</h2>
+      <div id="thumbnails">
+        <!-- 缩略图将在这里生成 -->
+      </div>
+    </div>
+    
+    <!-- 右侧主视图 -->
+    <div class="main-view">
+      <canvas id="mainCanvas" class="main-canvas"></canvas>
+    </div>
+  </div>
+  
+  <!-- 调试控制台 -->
+  <div class="debug-console" id="debugConsole">
+    <div class="debug-log info">🔧 调试控制台已启动...</div>
+  </div>
+
+  <!-- 引入PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  
+  <script>
+    // 设置 PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    // 调试日志函数
+    function debugLog(message, type = 'info') {
+      const console = document.getElementById('debugConsole');
+      const log = document.createElement('div');
+      log.className = `debug-log ${type}`;
+      const time = new Date().toLocaleTimeString();
+      const icon = {
+        info: 'ℹ️',
+        success: '✅',
+        error: '❌',
+        warn: '⚠️'
+      }[type] || '📝';
+      log.textContent = `[${time}] ${icon} ${message}`;
+      console.appendChild(log);
+      console.scrollTop = console.scrollHeight;
+      
+      // 同时输出到浏览器控制台
+      window.console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+    
+    // PDF查看器类
+    class SimplePDFViewer {
+      constructor() {
+        this.pdfDoc = null;
+        this.currentPage = 1;
+        this.scale = 1.5;
+        this.mainCanvas = document.getElementById('mainCanvas');
+        this.mainCtx = this.mainCanvas.getContext('2d');
+        this.thumbnailsContainer = document.getElementById('thumbnails');
+        
+        this.init();
+      }
+      
+      init() {
+        debugLog('初始化PDF查看器');
+        
+        // 文件输入
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file && file.type === 'application/pdf') {
+            debugLog(`选择文件: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`, 'info');
+            const url = URL.createObjectURL(file);
+            this.loadPDF(url);
+          }
+        });
+        
+        // 加载本地示例
+        document.getElementById('loadLocalBtn').addEventListener('click', () => {
+          debugLog('加载本地示例PDF', 'info');
+          this.loadPDF('./sample.pdf');
+        });
+        
+        // 清除日志
+        document.getElementById('clearConsoleBtn').addEventListener('click', () => {
+          document.getElementById('debugConsole').innerHTML = '<div class="debug-log info">🔧 调试控制台已清空</div>';
+        });
+      }
+      
+      async loadPDF(url) {
+        try {
+          debugLog(`开始加载PDF: ${url}`, 'info');
+          this.updateStatus('正在加载...', 'loading');
+          
+          // 加载PDF文档
+          const loadingTask = pdfjsLib.getDocument(url);
+          
+          loadingTask.onProgress = (progress) => {
+            if (progress.total > 0) {
+              const percent = Math.round((progress.loaded / progress.total) * 100);
+              debugLog(`加载进度: ${percent}%`, 'info');
+            }
+          };
+          
+          this.pdfDoc = await loadingTask.promise;
+          
+          debugLog(`✨ PDF加载成功! 总页数: ${this.pdfDoc.numPages}`, 'success');
+          document.getElementById('pageCount').textContent = this.pdfDoc.numPages;
+          
+          // 渲染第一页
+          await this.renderPage(1);
+          
+          // 生成所有缩略图
+          await this.generateAllThumbnails();
+          
+          this.updateStatus(`已加载 ${this.pdfDoc.numPages} 页`, 'success');
+          
+        } catch (error) {
+          debugLog(`加载PDF失败: ${error.message}`, 'error');
+          this.updateStatus('加载失败', 'error');
+        }
+      }
+      
+      async renderPage(pageNum) {
+        try {
+          debugLog(`渲染主页面: ${pageNum}`, 'info');
+          
+          const page = await this.pdfDoc.getPage(pageNum);
+          const viewport = page.getViewport({ scale: this.scale });
+          
+          this.mainCanvas.height = viewport.height;
+          this.mainCanvas.width = viewport.width;
+          
+          const renderContext = {
+            canvasContext: this.mainCtx,
+            viewport: viewport
+          };
+          
+          await page.render(renderContext).promise;
+          
+          this.currentPage = pageNum;
+          this.updateActiveThumbnail(pageNum);
+          
+          debugLog(`页面 ${pageNum} 渲染完成`, 'success');
+          
+        } catch (error) {
+          debugLog(`渲染页面 ${pageNum} 失败: ${error.message}`, 'error');
+        }
+      }
+      
+      async generateAllThumbnails() {
+        debugLog(`开始生成 ${this.pdfDoc.numPages} 个缩略图`, 'info');
+        this.thumbnailsContainer.innerHTML = '';
+        
+        for (let i = 1; i <= this.pdfDoc.numPages; i++) {
+          // 创建缩略图容器
+          const item = document.createElement('div');
+          item.className = 'thumbnail-item';
+          if (i === 1) item.classList.add('active');
+          item.dataset.pageNum = i;
+          
+          const canvas = document.createElement('canvas');
+          canvas.className = 'thumbnail-canvas';
+          
+          const label = document.createElement('div');
+          label.className = 'thumbnail-label';
+          label.textContent = `第 ${i} 页`;
+          
+          item.appendChild(canvas);
+          item.appendChild(label);
+          this.thumbnailsContainer.appendChild(item);
+          
+          // 点击事件
+          item.addEventListener('click', () => {
+            debugLog(`点击缩略图: 跳转到第 ${i} 页`, 'info');
+            this.renderPage(i);
+          });
+          
+          // 渲染缩略图（异步，不阻塞）
+          this.renderThumbnail(i, canvas);
+        }
+        
+        debugLog('所有缩略图容器已创建', 'success');
+      }
+      
+      async renderThumbnail(pageNum, canvas) {
+        try {
+          debugLog(`渲染缩略图 ${pageNum}`, 'info');
+          
+          const page = await this.pdfDoc.getPage(pageNum);
+          const viewport = page.getViewport({ scale: 0.3 }); // 缩略图使用小比例
+          
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          
+          const ctx = canvas.getContext('2d');
+          const renderContext = {
+            canvasContext: ctx,
+            viewport: viewport
+          };
+          
+          await page.render(renderContext).promise;
+          
+          debugLog(`缩略图 ${pageNum} 渲染成功 (${viewport.width}x${viewport.height})`, 'success');
+          
+        } catch (error) {
+          debugLog(`缩略图 ${pageNum} 渲染失败: ${error.message}`, 'error');
+          
+          // 显示错误占位符
+          const ctx = canvas.getContext('2d');
+          canvas.width = 150;
+          canvas.height = 200;
+          ctx.fillStyle = '#f8d7da';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = '#721c24';
+          ctx.font = '14px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('加载失败', 75, 100);
+        }
+      }
+      
+      updateActiveThumbnail(pageNum) {
+        document.querySelectorAll('.thumbnail-item').forEach((item, index) => {
+          if (index + 1 === pageNum) {
+            item.classList.add('active');
+            item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            debugLog(`激活缩略图 ${pageNum}`, 'info');
+          } else {
+            item.classList.remove('active');
+          }
+        });
+      }
+      
+      updateStatus(text, type = 'normal') {
+        const status = document.getElementById('status');
+        status.textContent = text;
+        status.className = `status ${type}`;
+      }
+    }
+    
+    // 初始化查看器
+    let viewer;
+    window.addEventListener('DOMContentLoaded', () => {
+      debugLog('页面加载完成，初始化查看器', 'success');
+      viewer = new SimplePDFViewer();
+      
+      // 自动加载本地示例（1秒后）
+      setTimeout(() => {
+        debugLog('自动加载本地示例PDF', 'info');
+        document.getElementById('loadLocalBtn').click();
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

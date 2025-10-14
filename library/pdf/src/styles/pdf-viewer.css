@@ -285,52 +285,88 @@
   min-height: 0; /* Important for flexbox shrinking */
 }
 
-/* Clean Thumbnails */
+/* Enhanced Thumbnails */
 .pdf-thumbnails-panel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  padding: 12px;
 }
 
 .pdf-thumbnail-item {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px;
-  border: 2px solid transparent;
+  padding: 10px;
+  border: 3px solid transparent;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: var(--pdf-toolbar-bg);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .pdf-thumbnail-item:hover {
-  background: var(--pdf-hover);
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px var(--pdf-shadow);
+  background: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .pdf-thumbnail-item.active {
-  border-color: var(--pdf-active);
-  background: var(--pdf-hover);
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+  border-color: #4a90e2;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.2),
+              0 4px 12px rgba(74, 144, 226, 0.3);
+  transform: scale(1.05);
+}
+
+.pdf-thumbnail-item.active::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 8px;
+  background: linear-gradient(45deg, #4a90e2, #63a4ff);
+  z-index: -1;
+  opacity: 0.3;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
 }
 
 .pdf-thumbnail-canvas {
   width: 100%;
-  max-width: 180px;
+  max-width: 200px;
   height: auto;
   border-radius: 4px;
-  box-shadow: 0 2px 8px var(--pdf-shadow);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   background: white;
+  border: 1px solid #e0e0e0;
 }
 
 .pdf-thumbnail-label {
   margin-top: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--pdf-text);
-  opacity: 0.8;
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+  text-align: center;
+  width: 100%;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.pdf-thumbnail-item.active .pdf-thumbnail-label {
+  color: #4a90e2;
+  background: white;
+  font-weight: 700;
 }
 
 /* Outline */

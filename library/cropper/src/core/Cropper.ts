@@ -305,11 +305,7 @@ export class Cropper {
    * Initialize toolbar
    */
   private initToolbar(): void {
-    console.log('initToolbar called, options.toolbar:', this.options.toolbar)
-    if (!this.container || !this.options.toolbar) {
-      console.log('Toolbar not initialized - container:', !!this.container, 'toolbar option:', this.options.toolbar)
-      return
-    }
+    if (!this.container || !this.options.toolbar) return
 
     // Destroy existing toolbar if any
     if (this.toolbar) {
@@ -335,9 +331,7 @@ export class Cropper {
     }
 
     // Create toolbar with options, using the toolbar container
-    console.log('Creating toolbar with options:', toolbarOptions, 'container:', toolbarContainer)
     this.toolbar = new Toolbar(this, toolbarContainer, toolbarOptions)
-    console.log('Toolbar created:', this.toolbar)
 
     // Listen to toolbar crop event
     this.container.addEventListener('toolbar:crop', (event: any) => {

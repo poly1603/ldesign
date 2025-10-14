@@ -1,863 +1,630 @@
 import { EventEmitter } from './EventEmitter';
-import { PDFRenderer } from './PDFRenderer';
-import { SearchManager } from '../features/SearchManager';
-import { AnnotationManager } from '../features/AnnotationManager';
-import { BookmarkManager } from '../features/BookmarkManager';
-import { PrintManager } from '../features/PrintManager';
-import { ToolbarManager } from '../ui/ToolbarManager';
 import { SidebarManager } from '../ui/SidebarManager';
-import type {
-  PDFViewerOptions,
-  PDFDocumentProxy,
-  ViewerState,
-  SearchResult,
-  SearchOptions,
-  Annotation,
-  Bookmark,
-  PrintOptions
-} from '../types';
+import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
+import type { SidebarConfig } from '../types';
 
-export class PDFViewer extends EventEmitter implements PDFViewer {
-  public options: PDFViewerOptions;
-  public state: ViewerState;
-  public document: PDFDocumentProxy | null = null;
+export interface PDFViewerOptions {
+  container: HTMLElement;
+  pdfUrl?: string;
+  initialScale?: number;
+  fitMode?: 'width' | 'height' | 'page' | 'auto';
+  enableSearch?: boolean;
+  enableDownload?: boolean;
+  enablePrint?: boolean;
+  enableThumbnails?: boolean;
+  enableSidebar?: boolean;
+  sidebarConfig?: SidebarConfig | boolean;
+}
+
+export interface ViewerState {
+  currentPage: number;
+  totalPages: number;
+  scale: number;
+  rotation: number;
+  isLoading: boolean;
+}
+
+/**
+ * PDF核心查看器 - 包含缩略图功能
+ */
+export class PDFViewer extends EventEmitter {
   public container: HTMLElement;
-  private viewerContainer: HTMLElement | null = null;
   private mainContainer: HTMLElement | null = null;
-  private renderer: PDFRenderer;
-  private searchManager: SearchManager | null = null;
-  private annotationManager: AnnotationManager | null = null;
-  private bookmarkManager: BookmarkManager | null = null;
-  private printManager: PrintManager | null = null;
-  private toolbarManager: ToolbarManager | null = null;
-  private sidebarManager: SidebarManager | null = null;
-  private canvasContainer: HTMLElement | null = null;
-  private textLayerContainer: HTMLElement | null = null;
-  private annotationLayerContainer: HTMLElement | null = null;
-  private currentCanvas: HTMLCanvasElement | null = null;
-  private pageCanvases: Map<number, HTMLCanvasElement> = new Map();
-  private isInitialized: boolean = false;
-  private scrollTimeout: NodeJS.Timeout | null = null;
+  private canvas: HTMLCanvasElement | null = null;
+  private ctx: CanvasRenderingContext2D | null = null;
+  public document: PDFDocumentProxy | null = null;
+  private pdfDoc: PDFDocumentProxy | null = null;
+  private currentPageNum: number = 1;
+  private pageRendering: boolean = false;
+  private pageNumPending: number | null = null;
+  private scale: number = 1.5;
+  private rotation: number = 0;
+  private fitMode: 'width' | 'height' | 'page' | 'auto' = 'auto';
+  private options: PDFViewerOptions;
+  public sidebarManager: SidebarManager | null = null;
 
   constructor(options: PDFViewerOptions) {
     super();
-    this.options = this.mergeOptions(options);
-    this.container = this.getContainer(options.container);
-    this.renderer = new PDFRenderer();
-    
-    this.state = {
-      currentPage: 1,
-      totalPages: 0,
-      scale: this.getInitialScale(),
-      rotation: options.rotation || 0,
-      pageMode: options.pageMode || 'single',
-      isFullscreen: false,
-      isSearchOpen: false,
-      isSidebarOpen: options.sidebar !== false
+    this.options = {
+      initialScale: 1.5,
+      fitMode: 'auto',
+      enableSearch: true,
+      enableDownload: true,
+      enablePrint: true,
+      enableThumbnails: true,
+      enableSidebar: true,
+      sidebarConfig: true,
+      ...options
     };
+    this.container = options.container;
+    this.scale = this.options.initialScale!;
+    this.fitMode = this.options.fitMode!;
+    
+    this.init();
   }
 
   /**
-   * Initialize the viewer
+   * 初始化查看器
    */
-  async init(): Promise<void> {
-    if (this.isInitialized) {
-      return;
+  private init(): void {
+    this.setupMainContainer();
+    this.setupCanvas();
+    this.setupStyles();
+    this.setupSidebar();
+    
+    if (this.options.pdfUrl) {
+      this.loadPDF(this.options.pdfUrl);
     }
+  }
 
+  /**
+   * 设置主容器
+   */
+  private setupMainContainer(): void {
+    // 创建主查看器容器
+    const viewerElement = document.createElement('div');
+    viewerElement.className = 'pdf-viewer';
+    viewerElement.style.cssText = 'width: 100%; height: 100%; display: flex; flex-direction: column;';
+    
+    // 创建内容区域
+    this.mainContainer = document.createElement('div');
+    this.mainContainer.className = 'pdf-main';
+    this.mainContainer.style.cssText = 'flex: 1; display: flex; overflow: hidden;';
+    
+    viewerElement.appendChild(this.mainContainer);
+    this.container.appendChild(viewerElement);
+  }
+
+  /**
+   * 设置侧边栏
+   */
+  private setupSidebar(): void {
+    if (this.options.enableSidebar && this.options.enableThumbnails) {
+      const config = typeof this.options.sidebarConfig === 'object' 
+        ? this.options.sidebarConfig 
+        : true;
+      
+      this.sidebarManager = new SidebarManager(this, config);
+    }
+  }
+
+  /**
+   * 设置Canvas
+   */
+  private setupCanvas(): void {
+    if (!this.mainContainer) return;
+    
+    // 创建Canvas容器
+    const canvasWrapper = document.createElement('div');
+    canvasWrapper.className = 'pdf-canvas-container';
+    canvasWrapper.style.cssText = 'flex: 1; overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: 20px; background: #f5f5f5;';
+    
+    // 创建Canvas
+    this.canvas = document.createElement('canvas');
+    this.canvas.className = 'pdf-canvas';
+    
+    canvasWrapper.appendChild(this.canvas);
+    this.mainContainer.appendChild(canvasWrapper);
+    
+    this.ctx = this.canvas.getContext('2d');
+  }
+
+  /**
+   * 设置样式
+   */
+  private setupStyles(): void {
+    const styleId = 'simple-pdf-viewer-styles';
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      .pdf-canvas-wrapper {
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background: #f5f5f5;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 20px;
+      }
+      
+      .pdf-canvas {
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        max-width: 100%;
+        height: auto;
+      }
+      
+      .pdf-loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        font-size: 18px;
+        color: #666;
+      }
+      
+      .pdf-error {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        color: #f44336;
+        font-size: 16px;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  /**
+   * 加载PDF文档
+   */
+  async loadPDF(url: string): Promise<void> {
     try {
-      // Setup viewer structure
-      this.setupViewerStructure();
+      this.showLoading();
       
-      // Initialize components
-      if (this.options.toolbar !== false) {
-        this.toolbarManager = new ToolbarManager(this, this.options.toolbar);
-      }
+      // 动态导入pdf.js
+      const pdfjsLib = await import('pdfjs-dist');
       
-      if (this.options.sidebar !== false) {
-        this.sidebarManager = new SidebarManager(this, this.options.sidebar);
+      // 设置worker
+      if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
       }
       
-      if (this.options.enableSearch) {
-        this.searchManager = new SearchManager(this);
-      }
-
-      if (this.options.enableAnnotations) {
-        this.annotationManager = new AnnotationManager(this);
-      }
-
-      if (this.options.enableBookmarks !== false) {
-        this.bookmarkManager = new BookmarkManager(this);
-      }
-
-      if (this.options.enablePrint) {
-        this.printManager = new PrintManager(this);
-      }
-
-      // Setup event listeners
-      this.setupEventListeners();
-
-      // Load initial document if provided
-      if (this.options.url || this.options.data) {
-        await this.loadDocument(this.options.url || this.options.data!);
-      }
-
-      this.isInitialized = true;
-      this.emit('init', this);
+      // 加载PDF文档
+      const loadingTask = pdfjsLib.getDocument(url);
+      this.pdfDoc = await loadingTask.promise;
+      this.document = this.pdfDoc; // 同步document属性供SidebarManager使用
       
-      if (this.options.onInit) {
-        this.options.onInit(this);
-      }
+      this.emit('document-loaded', {
+        numPages: this.pdfDoc.numPages,
+        fingerprint: (this.pdfDoc as any).fingerprint
+      });
+      
+      // 渲染第一页
+      await this.renderPage(1);
+      
+      this.hideLoading();
     } catch (error) {
-      this.handleError(error as Error);
+      this.showError(`Failed to load PDF: ${error}`);
+      this.emit('error', error);
     }
   }
 
   /**
-   * Load a PDF document
+   * 渲染指定页
    */
-  async loadDocument(source: string | ArrayBuffer | Uint8Array): Promise<void> {
+  private async renderPage(pageNum: number): Promise<void> {
+    if (!this.pdfDoc || !this.canvas || !this.ctx) return;
+    
+    this.pageRendering = true;
+    
     try {
-      this.emit('loading-start');
+      // 获取页面
+      const page = await this.pdfDoc.getPage(pageNum);
       
-      const loadOptions = {
-        password: this.options.password,
-        withCredentials: this.options.withCredentials,
-        cMapUrl: this.options.cMapUrl,
-        cMapPacked: this.options.cMapPacked,
-        standardFontDataUrl: this.options.standardFontDataUrl,
-        onProgress: (loaded: number, total: number) => {
-          this.emit('progress', loaded, total);
-          if (this.options.onProgress) {
-            this.options.onProgress(loaded, total);
-          }
-        }
+      // 计算缩放
+      const scale = this.calculateScale(page);
+      const viewport = page.getViewport({ scale, rotation: this.rotation });
+      
+      // 设置Canvas尺寸
+      this.canvas.height = viewport.height;
+      this.canvas.width = viewport.width;
+      
+      // 渲染页面
+      const renderContext = {
+        canvasContext: this.ctx,
+        viewport: viewport
       };
-
-      // Handle password-protected PDFs
-      if (!loadOptions.password && this.options.onPasswordRequired) {
-        loadOptions.password = await this.options.onPasswordRequired();
-      }
-
-      this.document = await this.renderer.loadDocument(source, loadOptions);
-      this.state.totalPages = this.document.numPages;
-      this.state.currentPage = 1;
-
-      // Emit page-change event to update toolbar with initial page and total pages
-      this.emit('page-change', this.state.currentPage, this.state.totalPages);
-
-      // Render first page
-      await this.renderCurrentPage();
-
-      // Generate thumbnails if sidebar is enabled
-      if (this.sidebarManager && this.options.enableThumbnails !== false) {
-        this.sidebarManager.generateThumbnails();
-      }
-
-      this.emit('document-loaded', this.document);
       
-      if (this.options.onDocumentLoad) {
-        this.options.onDocumentLoad(this.document);
+      const renderTask = page.render(renderContext);
+      await renderTask.promise;
+      
+      this.pageRendering = false;
+      this.currentPageNum = pageNum;
+      
+      // 更新状态
+      this.emit('page-rendered', {
+        pageNumber: pageNum,
+        totalPages: this.pdfDoc.numPages,
+        scale: scale
+      });
+      
+      // 如果有待渲染的页面，继续渲染
+      if (this.pageNumPending !== null) {
+        const pending = this.pageNumPending;
+        this.pageNumPending = null;
+        await this.renderPage(pending);
       }
     } catch (error) {
-      this.handleError(error as Error);
+      this.emit('render-error', error);
+      this.pageRendering = false;
     }
   }
 
   /**
-   * Render the current page(s) based on mode
+   * 计算缩放比例
    */
-  private async renderCurrentPage(): Promise<void> {
-    if (!this.document || !this.canvasContainer) {
-      return;
-    }
-
-    try {
-      if (this.state.pageMode === 'continuous') {
-        // Render all pages in continuous mode
-        await this.renderAllPages();
-      } else {
-        // Render single page
-        await this.renderSinglePage(this.state.currentPage);
-      }
-
-      this.emit('page-rendered', this.state.currentPage);
-    } catch (error) {
-      this.handleError(error as Error);
+  private calculateScale(page: PDFPageProxy): number {
+    const viewport = page.getViewport({ scale: 1.0 });
+    const containerWidth = this.container.clientWidth - 40; // 减去padding
+    const containerHeight = this.container.clientHeight - 40;
+    
+    switch (this.fitMode) {
+      case 'width':
+        return containerWidth / viewport.width;
+      case 'height':
+        return containerHeight / viewport.height;
+      case 'page':
+        return Math.min(
+          containerWidth / viewport.width,
+          containerHeight / viewport.height
+        );
+      case 'auto':
+      default:
+        return this.scale;
     }
   }
 
   /**
-   * Render a single page
+   * 排队渲染页面
    */
-  private async renderSinglePage(pageNumber: number): Promise<void> {
-    if (!this.document || !this.canvasContainer) {
-      return;
-    }
-
-    // Clear previous content in single page mode
-    this.canvasContainer.innerHTML = '';
-    this.pageCanvases.clear();
-
-    const canvas = document.createElement('canvas');
-    canvas.className = 'pdf-canvas';
-    canvas.dataset.pageNumber = pageNumber.toString();
-    this.canvasContainer.appendChild(canvas);
-    this.currentCanvas = canvas;
-    this.pageCanvases.set(pageNumber, canvas);
-
-    await this.renderer.renderPage(pageNumber, canvas, {
-      scale: this.state.scale,
-      rotation: this.state.rotation,
-      background: '#ffffff',
-      renderTextLayer: this.options.textLayerMode !== 0,
-      renderAnnotations: this.options.annotationMode !== 0
-    });
-  }
-
-  /**
-   * Render all pages in continuous mode
-   */
-  private async renderAllPages(): Promise<void> {
-    if (!this.document || !this.canvasContainer) {
-      return;
-    }
-
-    // Clear and setup for continuous mode
-    if (this.pageCanvases.size === 0) {
-      this.canvasContainer.innerHTML = '';
-      
-      // Create all page containers
-      for (let i = 1; i <= this.state.totalPages; i++) {
-        const pageWrapper = document.createElement('div');
-        pageWrapper.className = 'pdf-page-wrapper';
-        pageWrapper.dataset.pageNumber = i.toString();
-        
-        const canvas = document.createElement('canvas');
-        canvas.className = 'pdf-canvas';
-        canvas.dataset.pageNumber = i.toString();
-        
-        pageWrapper.appendChild(canvas);
-        this.canvasContainer.appendChild(pageWrapper);
-        this.pageCanvases.set(i, canvas);
-        
-        // Render each page
-        this.renderer.renderPage(i, canvas, {
-          scale: this.state.scale,
-          rotation: this.state.rotation,
-          background: '#ffffff',
-          renderTextLayer: this.options.textLayerMode !== 0,
-          renderAnnotations: this.options.annotationMode !== 0
-        });
-      }
+  private queueRenderPage(pageNum: number): void {
+    if (this.pageRendering) {
+      this.pageNumPending = pageNum;
     } else {
-      // Re-render existing pages with new scale
-      for (const [pageNum, canvas] of this.pageCanvases) {
-        await this.renderer.renderPage(pageNum, canvas, {
-          scale: this.state.scale,
-          rotation: this.state.rotation,
-          background: '#ffffff',
-          renderTextLayer: this.options.textLayerMode !== 0,
-          renderAnnotations: this.options.annotationMode !== 0
-        });
-      }
+      this.renderPage(pageNum);
     }
   }
 
   /**
-   * Navigation methods
+   * 上一页
+   */
+  previousPage(): void {
+    if (this.currentPageNum <= 1) return;
+    this.currentPageNum--;
+    this.queueRenderPage(this.currentPageNum);
+    this.emit('page-changed', this.currentPageNum);
+  }
+
+  /**
+   * 下一页
    */
   nextPage(): void {
-    if (this.state.currentPage < this.state.totalPages) {
-      this.goToPage(this.state.currentPage + 1);
-    }
-  }
-
-  previousPage(): void {
-    if (this.state.currentPage > 1) {
-      this.goToPage(this.state.currentPage - 1);
-    }
-  }
-
-  goToPage(pageNumber: number): void {
-    if (pageNumber < 1 || pageNumber > this.state.totalPages) {
-      return;
-    }
-
-    this.state.currentPage = pageNumber;
-    
-    if (this.state.pageMode === 'continuous') {
-      // In continuous mode, scroll to the page
-      this.scrollToPage(pageNumber);
-    } else {
-      // In single page mode, render the page
-      this.renderCurrentPage();
-    }
-    
-    this.emit('page-change', pageNumber, this.state.totalPages);
-    
-    if (this.options.onPageChange) {
-      this.options.onPageChange(pageNumber, this.state.totalPages);
-    }
-  }
-
-  firstPage(): void {
-    this.goToPage(1);
-  }
-
-  lastPage(): void {
-    this.goToPage(this.state.totalPages);
+    if (!this.pdfDoc || this.currentPageNum >= this.pdfDoc.numPages) return;
+    this.currentPageNum++;
+    this.queueRenderPage(this.currentPageNum);
+    this.emit('page-changed', this.currentPageNum);
   }
 
   /**
-   * View control methods
+   * 跳转到指定页
+   */
+  goToPage(pageNum: number): void {
+    if (!this.pdfDoc) return;
+    
+    pageNum = Math.max(1, Math.min(pageNum, this.pdfDoc.numPages));
+    if (pageNum === this.currentPageNum) return;
+    
+    this.currentPageNum = pageNum;
+    this.queueRenderPage(this.currentPageNum);
+    this.emit('page-changed', this.currentPageNum);
+  }
+
+  /**
+   * 放大
    */
   zoomIn(): void {
-    this.setScale(this.state.scale * 1.25);
-  }
-
-  zoomOut(): void {
-    this.setScale(this.state.scale * 0.8);
-  }
-
-  setScale(scale: number | string): void {
-    let newScale: number;
-
-    if (typeof scale === 'string') {
-      switch (scale) {
-        case 'page-fit':
-          newScale = this.calculatePageFitScale();
-          break;
-        case 'page-width':
-          newScale = this.calculatePageWidthScale();
-          break;
-        case 'page-height':
-          newScale = this.calculatePageHeightScale();
-          break;
-        case 'auto':
-          newScale = this.calculateAutoScale();
-          break;
-        default:
-          newScale = parseFloat(scale) || 1;
-      }
-    } else {
-      newScale = scale;
-    }
-
-    // Apply min/max constraints
-    const minScale = this.options.minScale || 0.25;
-    const maxScale = this.options.maxScale || 4;
-    newScale = Math.min(Math.max(newScale, minScale), maxScale);
-
-    if (newScale !== this.state.scale) {
-      this.state.scale = newScale;
-      this.renderCurrentPage();
-      
-      this.emit('scale-change', newScale);
-      
-      if (this.options.onScaleChange) {
-        this.options.onScaleChange(newScale);
-      }
-    }
-  }
-
-  rotate(angle: number = 90): void {
-    this.state.rotation = (this.state.rotation + angle) % 360;
-    this.renderCurrentPage();
-    this.emit('rotation-change', this.state.rotation);
-  }
-
-  setPageMode(mode: 'single' | 'continuous' | 'book'): void {
-    if (this.state.pageMode === mode) {
-      return;
-    }
-    
-    this.state.pageMode = mode;
-    this.pageCanvases.clear();
-    
-    // Update the data-page-mode attribute on the viewer container
-    if (this.viewerContainer) {
-      this.viewerContainer.setAttribute('data-page-mode', mode);
-    }
-    
-    // Setup scroll listener for continuous mode
-    if (mode === 'continuous' && this.canvasContainer) {
-      this.canvasContainer.addEventListener('scroll', this.handleScroll.bind(this));
-    } else if (this.canvasContainer) {
-      this.canvasContainer.removeEventListener('scroll', this.handleScroll.bind(this));
-    }
-    
-    this.renderCurrentPage();
-    this.emit('page-mode-change', mode);
+    this.scale = Math.min(this.scale * 1.2, 5);
+    this.fitMode = 'auto';
+    this.queueRenderPage(this.currentPageNum);
+    this.emit('zoom-changed', this.scale);
   }
 
   /**
-   * Feature methods
+   * 缩小
    */
-  print(options?: PrintOptions): void {
-    if (!this.printManager) {
-      console.warn('Print manager not initialized');
-      return;
-    }
-
-    this.printManager.print(options);
-    
-    if (this.options.onPrint) {
-      this.options.onPrint();
-    }
+  zoomOut(): void {
+    this.scale = Math.max(this.scale / 1.2, 0.5);
+    this.fitMode = 'auto';
+    this.queueRenderPage(this.currentPageNum);
+    this.emit('zoom-changed', this.scale);
   }
 
-  download(filename?: string): void {
-    if (!this.options.enableDownload || !this.options.url) {
-      return;
-    }
-
-    const link = document.createElement('a');
-    link.href = this.options.url;
-    link.download = filename || 'document.pdf';
-    link.click();
-    
-    this.emit('download');
-    
-    if (this.options.onDownload) {
-      this.options.onDownload();
-    }
+  /**
+   * 重置缩放
+   */
+  resetZoom(): void {
+    this.scale = this.options.initialScale!;
+    this.fitMode = 'auto';
+    this.queueRenderPage(this.currentPageNum);
+    this.emit('zoom-changed', this.scale);
   }
 
-  toggleFullscreen(): void {
-    if (!this.options.enableFullscreen) {
-      return;
-    }
-
-    if (!this.state.isFullscreen) {
-      this.container.requestFullscreen();
-      this.state.isFullscreen = true;
-    } else {
-      document.exitFullscreen();
-      this.state.isFullscreen = false;
-    }
-    
-    this.emit('fullscreen-change', this.state.isFullscreen);
+  /**
+   * 设置缩放
+   */
+  setZoom(scale: number): void {
+    this.scale = Math.max(0.5, Math.min(scale, 5));
+    this.fitMode = 'auto';
+    this.queueRenderPage(this.currentPageNum);
+    this.emit('zoom-changed', this.scale);
   }
 
-  toggleSidebar(): void {
-    this.state.isSidebarOpen = !this.state.isSidebarOpen;
-    
-    if (this.sidebarManager) {
-      this.sidebarManager.toggle();
-    }
-    
-    this.emit('sidebar-toggle', this.state.isSidebarOpen);
+  /**
+   * 适应宽度
+   */
+  fitToWidth(): void {
+    this.fitMode = 'width';
+    this.queueRenderPage(this.currentPageNum);
   }
 
-  async search(query: string, options?: SearchOptions): Promise<SearchResult[]> {
-    if (!this.searchManager) {
-      return [];
-    }
+  /**
+   * 适应高度
+   */
+  fitToHeight(): void {
+    this.fitMode = 'height';
+    this.queueRenderPage(this.currentPageNum);
+  }
 
-    const results = await this.searchManager.search(query, options);
+  /**
+   * 适应页面
+   */
+  fitToPage(): void {
+    this.fitMode = 'page';
+    this.queueRenderPage(this.currentPageNum);
+  }
+
+  /**
+   * 旋转页面
+   */
+  rotate(degrees: number = 90): void {
+    this.rotation = (this.rotation + degrees) % 360;
+    this.queueRenderPage(this.currentPageNum);
+    this.emit('rotation-changed', this.rotation);
+  }
+
+  /**
+   * 获取当前页码
+   */
+  getCurrentPage(): number {
+    return this.currentPageNum;
+  }
+
+  /**
+   * 获取总页数
+   */
+  getTotalPages(): number {
+    return this.pdfDoc ? this.pdfDoc.numPages : 0;
+  }
+
+  /**
+   * 监听事件(为SidebarManager提供类型安全的on方法)
+   */
+  on(event: string, handler: Function): void {
+    super.on(event, handler);
+  }
+
+  /**
+   * 搜索文本
+   */
+  async searchText(query: string): Promise<any[]> {
+    if (!this.pdfDoc || !query) return [];
     
-    if (this.options.onSearch) {
-      this.options.onSearch(query, results);
+    const results = [];
+    
+    for (let i = 1; i <= this.pdfDoc.numPages; i++) {
+      const page = await this.pdfDoc.getPage(i);
+      const textContent = await page.getTextContent();
+      
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ')
+        .toLowerCase();
+      
+      if (pageText.includes(query.toLowerCase())) {
+        results.push({
+          pageNumber: i,
+          text: pageText
+        });
+      }
     }
     
+    this.emit('search-completed', { query, results });
     return results;
   }
 
-  clearSearch(): void {
-    if (this.searchManager) {
-      this.searchManager.clear();
+  /**
+   * 下载PDF
+   */
+  async download(filename?: string): Promise<void> {
+    if (!this.pdfDoc) return;
+    
+    try {
+      const data = await this.pdfDoc.getData();
+      const blob = new Blob([data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'document.pdf';
+      a.click();
+      
+      URL.revokeObjectURL(url);
+      this.emit('download-completed');
+    } catch (error) {
+      this.emit('download-error', error);
     }
   }
 
   /**
-   * Text and annotation methods
+   * 打印PDF
    */
-  getSelectedText(): string {
-    return window.getSelection()?.toString() || '';
-  }
-
-  addAnnotation(annotation: Omit<Annotation, 'id' | 'createdAt'>): Annotation | null {
-    if (!this.annotationManager) {
-      console.warn('Annotation manager not initialized');
-      return null;
+  async print(): Promise<void> {
+    if (!this.pdfDoc) return;
+    
+    try {
+      // 创建打印iframe
+      const printIframe = document.createElement('iframe');
+      printIframe.style.position = 'absolute';
+      printIframe.style.width = '0';
+      printIframe.style.height = '0';
+      printIframe.style.border = 'none';
+      document.body.appendChild(printIframe);
+      
+      const printWindow = printIframe.contentWindow;
+      if (!printWindow) return;
+      
+      // 渲染所有页面到打印窗口
+      const printDoc = printWindow.document;
+      printDoc.open();
+      printDoc.write('<html><head><title>Print</title></head><body>');
+      
+      for (let i = 1; i <= this.pdfDoc.numPages; i++) {
+        const page = await this.pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 });
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          await page.render({
+            canvasContext: ctx,
+            viewport: viewport
+          }).promise;
+          
+          printDoc.write(`<img src="${canvas.toDataURL()}" style="max-width:100%;page-break-after:always;">`);
+        }
+      }
+      
+      printDoc.write('</body></html>');
+      printDoc.close();
+      
+      // 打印
+      setTimeout(() => {
+        printWindow.print();
+        setTimeout(() => {
+          document.body.removeChild(printIframe);
+        }, 1000);
+      }, 500);
+      
+      this.emit('print-completed');
+    } catch (error) {
+      this.emit('print-error', error);
     }
-    return this.annotationManager.addAnnotation(annotation);
-  }
-
-  removeAnnotation(id: string): void {
-    if (!this.annotationManager) {
-      console.warn('Annotation manager not initialized');
-      return;
-    }
-    this.annotationManager.removeAnnotation(id);
-  }
-
-  getAnnotations(pageNumber?: number): Annotation[] {
-    if (!this.annotationManager) {
-      return [];
-    }
-    return pageNumber 
-      ? this.annotationManager.getPageAnnotations(pageNumber)
-      : this.annotationManager.getAllAnnotations();
   }
 
   /**
-   * Bookmark methods
+   * 获取当前状态
    */
-  addBookmark(bookmark: Omit<Bookmark, 'id' | 'createdAt'>): Bookmark | null {
-    if (!this.bookmarkManager) {
-      console.warn('Bookmark manager not initialized');
-      return null;
-    }
-    return this.bookmarkManager.addBookmark(bookmark);
-  }
-
-  addCurrentPageBookmark(title?: string): Bookmark | null {
-    if (!this.bookmarkManager) {
-      console.warn('Bookmark manager not initialized');
-      return null;
-    }
-    return this.bookmarkManager.addCurrentPageBookmark(title);
-  }
-
-  removeBookmark(id: string): void {
-    if (!this.bookmarkManager) {
-      console.warn('Bookmark manager not initialized');
-      return;
-    }
-    this.bookmarkManager.removeBookmark(id);
-  }
-
-  getBookmarks(): Bookmark[] {
-    if (!this.bookmarkManager) {
-      return [];
-    }
-    return this.bookmarkManager.getAllBookmarks();
-  }
-
-  goToBookmark(id: string): void {
-    if (!this.bookmarkManager) {
-      console.warn('Bookmark manager not initialized');
-      return;
-    }
-    this.bookmarkManager.goToBookmark(id);
-  }
-
-  /**
-   * Advanced methods
-   */
-  getViewport(): any {
-    if (!this.canvasContainer) {
-      return null;
-    }
+  getState(): ViewerState {
     return {
-      scrollLeft: this.canvasContainer.scrollLeft,
-      scrollTop: this.canvasContainer.scrollTop,
-      clientWidth: this.canvasContainer.clientWidth,
-      clientHeight: this.canvasContainer.clientHeight
+      currentPage: this.currentPageNum,
+      totalPages: this.pdfDoc?.numPages || 0,
+      scale: this.scale,
+      rotation: this.rotation,
+      isLoading: this.pageRendering
     };
   }
 
-  scrollTo(x: number, y: number): void {
-    if (this.canvasContainer) {
-      this.canvasContainer.scrollLeft = x;
-      this.canvasContainer.scrollTop = y;
-    }
-  }
-
   /**
-   * Utility methods
+   * 获取当前页码
    */
   getCurrentPage(): number {
-    return this.state.currentPage;
-  }
-
-  getTotalPages(): number {
-    return this.state.totalPages;
-  }
-
-  getScale(): number {
-    return this.state.scale;
-  }
-
-  getRotation(): number {
-    return this.state.rotation;
-  }
-
-  isReady(): boolean {
-    return this.isInitialized && this.document !== null;
+    return this.currentPageNum;
   }
 
   /**
-   * Destroy the viewer
+   * 获取总页数
+   */
+  getTotalPages(): number {
+    return this.pdfDoc?.numPages || 0;
+  }
+
+  /**
+   * 显示加载中
+   */
+  private showLoading(): void {
+    const loading = document.createElement('div');
+    loading.className = 'pdf-loading';
+    loading.id = 'pdf-loading';
+    loading.innerHTML = 'Loading PDF...';
+    this.container.appendChild(loading);
+  }
+
+  /**
+   * 隐藏加载中
+   */
+  private hideLoading(): void {
+    const loading = document.getElementById('pdf-loading');
+    loading?.remove();
+  }
+
+  /**
+   * 显示错误
+   */
+  private showError(message: string): void {
+    this.hideLoading();
+    const error = document.createElement('div');
+    error.className = 'pdf-error';
+    error.innerHTML = `⚠ ${message}`;
+    this.container.appendChild(error);
+  }
+
+  /**
+   * 销毁查看器
    */
   destroy(): void {
-    this.renderer.destroy();
-    this.searchManager?.destroy();
-    this.annotationManager?.destroy();
-    this.bookmarkManager?.destroy();
-    this.printManager?.destroy();
-    this.toolbarManager?.destroy();
-    this.sidebarManager?.destroy();
+    // 清理侧边栏
+    if (this.sidebarManager) {
+      this.sidebarManager.destroy();
+      this.sidebarManager = null;
+    }
     
+    // 清理PDF文档
+    if (this.pdfDoc) {
+      this.pdfDoc.destroy();
+      this.pdfDoc = null;
+      this.document = null;
+    }
+    
+    // 清理Canvas
+    if (this.canvas) {
+      this.canvas.remove();
+      this.canvas = null;
+    }
+    
+    // 清理主容器
+    if (this.mainContainer) {
+      this.mainContainer.remove();
+      this.mainContainer = null;
+    }
+    
+    this.ctx = null;
     this.removeAllListeners();
-    
-    if (this.viewerContainer) {
-      this.viewerContainer.remove();
-    }
-    
-    this.isInitialized = false;
-    this.emit('destroy');
-  }
-
-  /**
-   * Private helper methods
-   */
-  private mergeOptions(options: PDFViewerOptions): PDFViewerOptions {
-    const defaults: Partial<PDFViewerOptions> = {
-      initialScale: 'auto',
-      minScale: 0.25,
-      maxScale: 4,
-      rotation: 0,
-      pageMode: 'single',
-      toolbar: true,
-      sidebar: true,
-      theme: 'light',
-      language: 'en',
-      enableSearch: true,
-      enablePrint: true,
-      enableDownload: true,
-      enableFullscreen: true,
-      enableRotation: true,
-      enableZoom: true,
-      enablePageNavigation: true,
-      enableTextSelection: true,
-      enableAnnotations: true,
-      enableThumbnails: true,
-      enableOutline: true,
-      enableHandTool: false,
-      renderingMode: 'canvas',
-      textLayerMode: 1,
-      annotationMode: 1
-    };
-
-    return { ...defaults, ...options };
-  }
-
-  private getContainer(container: HTMLElement | string): HTMLElement {
-    if (typeof container === 'string') {
-      const element = document.querySelector(container);
-      if (!element) {
-        throw new Error(`Container element not found: ${container}`);
-      }
-      return element as HTMLElement;
-    }
-    return container;
-  }
-
-  private setupViewerStructure(): void {
-    // Clear container
-    this.container.innerHTML = '';
-    
-    // Create main viewer container
-    this.viewerContainer = document.createElement('div');
-    this.viewerContainer.className = 'pdf-viewer';
-    this.viewerContainer.setAttribute('data-theme', this.options.theme as string);
-    this.viewerContainer.setAttribute('data-page-mode', this.state.pageMode);
-    
-    // Create main content wrapper (sidebar + canvas)
-    this.mainContainer = document.createElement('div');
-    this.mainContainer.className = 'pdf-main';
-    
-    // Create canvas container
-    this.canvasContainer = document.createElement('div');
-    this.canvasContainer.className = 'pdf-canvas-container';
-    
-    // Create text layer container
-    if (this.options.textLayerMode !== 0) {
-      this.textLayerContainer = document.createElement('div');
-      this.textLayerContainer.className = 'pdf-text-layer';
-      this.canvasContainer.appendChild(this.textLayerContainer);
-    }
-    
-    // Create annotation layer container
-    if (this.options.annotationMode !== 0) {
-      this.annotationLayerContainer = document.createElement('div');
-      this.annotationLayerContainer.className = 'pdf-annotation-layer';
-      this.canvasContainer.appendChild(this.annotationLayerContainer);
-    }
-    
-    // Assemble structure
-    this.mainContainer.appendChild(this.canvasContainer);
-    this.viewerContainer.appendChild(this.mainContainer);
-    this.container.appendChild(this.viewerContainer);
-  }
-
-  private setupEventListeners(): void {
-    // Keyboard shortcuts
-    document.addEventListener('keydown', this.handleKeyDown.bind(this));
-    
-    // Fullscreen change
-    document.addEventListener('fullscreenchange', () => {
-      this.state.isFullscreen = !!document.fullscreenElement;
-      this.emit('fullscreen-change', this.state.isFullscreen);
-    });
-    
-    // Window resize
-    window.addEventListener('resize', this.handleResize.bind(this));
-  }
-
-  private handleKeyDown(event: KeyboardEvent): void {
-    if (!this.isReady()) {
-      return;
-    }
-
-    switch (event.key) {
-      case 'ArrowLeft':
-        this.previousPage();
-        break;
-      case 'ArrowRight':
-        this.nextPage();
-        break;
-      case '+':
-      case '=':
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          this.zoomIn();
-        }
-        break;
-      case '-':
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          this.zoomOut();
-        }
-        break;
-      case '0':
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          this.setScale(1);
-        }
-        break;
-      case 'f':
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          if (this.searchManager) {
-            this.state.isSearchOpen = !this.state.isSearchOpen;
-            this.emit('search-toggle', this.state.isSearchOpen);
-          }
-        }
-        break;
-    }
-  }
-
-  private handleResize(): void {
-    if (this.options.initialScale === 'auto' || 
-        this.options.initialScale === 'page-fit' ||
-        this.options.initialScale === 'page-width') {
-      this.setScale(this.options.initialScale);
-    }
-  }
-
-  /**
-   * Handle scroll event in continuous mode
-   */
-  private handleScroll(): void {
-    if (this.state.pageMode !== 'continuous' || !this.canvasContainer) {
-      return;
-    }
-
-    // Clear previous timeout
-    if (this.scrollTimeout) {
-      clearTimeout(this.scrollTimeout);
-    }
-
-    // Debounce scroll event
-    this.scrollTimeout = setTimeout(() => {
-      const scrollTop = this.canvasContainer!.scrollTop;
-      const containerHeight = this.canvasContainer!.clientHeight;
-      
-      // Find the current visible page
-      let currentPage = 1;
-      let accumulatedHeight = 0;
-      
-      const pages = this.canvasContainer!.querySelectorAll('.pdf-page-wrapper');
-      for (let i = 0; i < pages.length; i++) {
-        const page = pages[i] as HTMLElement;
-        const pageHeight = page.offsetHeight;
-        
-        if (scrollTop < accumulatedHeight + pageHeight / 2) {
-          currentPage = i + 1;
-          break;
-        }
-        
-        accumulatedHeight += pageHeight + 20; // 20px gap between pages
-      }
-      
-      // Update current page if changed
-      if (currentPage !== this.state.currentPage) {
-        this.state.currentPage = currentPage;
-        this.emit('page-change', currentPage, this.state.totalPages);
-        
-        if (this.options.onPageChange) {
-          this.options.onPageChange(currentPage, this.state.totalPages);
-        }
-        
-        // Update thumbnail highlight
-        if (this.sidebarManager) {
-          this.sidebarManager.highlightThumbnail(currentPage);
-        }
-      }
-    }, 100);
-  }
-
-  /**
-   * Scroll to a specific page in continuous mode
-   */
-  scrollToPage(pageNumber: number): void {
-    if (this.state.pageMode !== 'continuous' || !this.canvasContainer) {
-      return;
-    }
-
-    const pageElement = this.canvasContainer.querySelector(`[data-page-number="${pageNumber}"]`);
-    if (pageElement) {
-      pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-
-  private getInitialScale(): number {
-    if (typeof this.options.initialScale === 'number') {
-      return this.options.initialScale;
-    }
-    return 1; // Will be calculated on first render
-  }
-
-  private calculatePageFitScale(): number {
-    // Implementation to calculate scale to fit page
-    return 1;
-  }
-
-  private calculatePageWidthScale(): number {
-    // Implementation to calculate scale to fit width
-    return 1;
-  }
-
-  private calculatePageHeightScale(): number {
-    // Implementation to calculate scale to fit height
-    return 1;
-  }
-
-  private calculateAutoScale(): number {
-    // Implementation to calculate auto scale
-    return this.calculatePageWidthScale();
-  }
-
-  private handleError(error: Error): void {
-    console.error('PDF Viewer Error:', error);
-    this.emit('error', error);
-    
-    if (this.options.onError) {
-      this.options.onError(error);
-    }
   }
 }

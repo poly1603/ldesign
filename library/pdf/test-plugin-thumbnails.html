@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF插件测试 - 集成缩略图功能</title>
+  
+  <!-- 引入PDF插件样式 -->
+  <link rel="stylesheet" href="./src/styles/pdf-viewer.css">
+  <link rel="stylesheet" href="./src/styles/pdf-viewer-modern.css">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    #app {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .header {
+      background: #2c3e50;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    
+    .controls input[type="file"] {
+      padding: 0.5rem;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    
+    .controls button {
+      padding: 0.5rem 1rem;
+      background: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    
+    .controls button:hover {
+      background: #357abd;
+    }
+    
+    .status {
+      margin-left: auto;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    #pdf-container {
+      flex: 1;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+    
+    /* 确保侧边栏样式正确 */
+    .pdf-sidebar {
+      width: 260px !important;
+      background: white !important;
+      border-right: 1px solid #e0e0e0 !important;
+    }
+    
+    .pdf-thumbnails-panel {
+      padding: 8px !important;
+    }
+    
+    .pdf-thumbnail-item {
+      margin-bottom: 12px !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+    }
+    
+    .pdf-thumbnail-item:hover {
+      transform: scale(1.02) !important;
+    }
+    
+    .pdf-thumbnail-item.active {
+      border-color: #4a90e2 !important;
+      background: #e7f1fb !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="header">
+      <h1>🎯 PDF插件测试 - 缩略图功能</h1>
+      
+      <div class="controls">
+        <input type="file" id="fileInput" accept=".pdf">
+        <button id="loadSampleBtn">加载示例PDF</button>
+        <button id="toggleSidebarBtn">切换侧边栏</button>
+      </div>
+      
+      <div class="status" id="status">准备就绪</div>
+    </div>
+    
+    <div id="pdf-container"></div>
+  </div>
+
+  <!-- 引入PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  
+  <script type="module">
+    // 设置 PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    // 导入PDF插件
+    import { PDFViewer, SimpleToolbar } from './src/index.js';
+    
+    let viewer = null;
+    let toolbar = null;
+    
+    // 初始化PDF查看器
+    function initPDFViewer(url) {
+      // 清理旧实例
+      if (viewer) {
+        viewer.destroy();
+        viewer = null;
+      }
+      if (toolbar) {
+        toolbar.destroy();
+        toolbar = null;
+      }
+      
+      const container = document.getElementById('pdf-container');
+      container.innerHTML = '';
+      
+      // 创建带缩略图的PDF查看器
+      viewer = new PDFViewer({
+        container: container,
+        pdfUrl: url,
+        initialScale: 1.5,
+        fitMode: 'width',
+        enableSearch: true,
+        enableDownload: true,
+        enablePrint: true,
+        enableThumbnails: true,  // 启用缩略图
+        enableSidebar: true,     // 启用侧边栏
+        sidebarConfig: {
+          show: true,
+          position: 'left',
+          defaultPanel: 'thumbnails',
+          width: 260,
+          collapsible: true
+        }
+      });
+      
+      // 监听事件
+      viewer.on('document-loaded', (data) => {
+        console.log('✅ PDF加载成功:', data);
+        updateStatus(`已加载: ${data.numPages} 页`, 'success');
+      });
+      
+      viewer.on('page-changed', (pageNum) => {
+        console.log('📄 页面切换:', pageNum);
+        updateStatus(`当前页: ${pageNum} / ${viewer.getTotalPages()}`);
+      });
+      
+      viewer.on('error', (error) => {
+        console.error('❌ 加载错误:', error);
+        updateStatus('加载失败', 'error');
+      });
+      
+      // 创建工具栏（可选）
+      const toolbarContainer = document.createElement('div');
+      toolbarContainer.style.cssText = 'background: white; border-bottom: 1px solid #e0e0e0; padding: 10px;';
+      container.insertBefore(toolbarContainer, container.firstChild);
+      
+      toolbar = new SimpleToolbar({
+        viewer: viewer,
+        container: toolbarContainer,
+        showSearch: true,
+        showDownload: true,
+        showPrint: true,
+        showRotate: true,
+        showZoom: true
+      });
+    }
+    
+    // 更新状态
+    function updateStatus(text, type = 'normal') {
+      const status = document.getElementById('status');
+      status.textContent = text;
+      
+      // 重置样式
+      status.style.background = 'rgba(255, 255, 255, 0.1)';
+      status.style.color = 'white';
+      
+      if (type === 'success') {
+        status.style.background = 'rgba(76, 175, 80, 0.3)';
+      } else if (type === 'error') {
+        status.style.background = 'rgba(244, 67, 54, 0.3)';
+      }
+    }
+    
+    // 事件监听器
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && file.type === 'application/pdf') {
+        const url = URL.createObjectURL(file);
+        console.log('📁 加载本地文件:', file.name);
+        updateStatus('正在加载...');
+        initPDFViewer(url);
+      }
+    });
+    
+    document.getElementById('loadSampleBtn').addEventListener('click', () => {
+      const sampleUrl = './sample.pdf';
+      console.log('📄 加载示例PDF:', sampleUrl);
+      updateStatus('正在加载示例...');
+      initPDFViewer(sampleUrl);
+    });
+    
+    document.getElementById('toggleSidebarBtn').addEventListener('click', () => {
+      if (viewer && viewer.sidebarManager) {
+        viewer.sidebarManager.toggle();
+        console.log('🔄 切换侧边栏');
+      }
+    });
+    
+    // 页面加载完成后的初始化
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 PDF插件测试页面已就绪');
+      console.log('📌 特性: 集成缩略图、侧边栏、工具栏');
+      
+      // 自动加载示例PDF
+      setTimeout(() => {
+        console.log('⏱️ 自动加载示例PDF...');
+        document.getElementById('loadSampleBtn').click();
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

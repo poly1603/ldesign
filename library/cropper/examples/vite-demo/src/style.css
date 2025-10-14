@@ -65,6 +65,21 @@ body {
   margin-bottom: 20px;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
+  position: relative;
+}
+
+/* Vue cropper container should handle the toolbar */
+.vue-cropper-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+/* The actual cropper container inside Vue component */
+.vue-cropper-container .cropper-container {
+  flex: 1;
+  position: relative;
   overflow: hidden;
 }
 
