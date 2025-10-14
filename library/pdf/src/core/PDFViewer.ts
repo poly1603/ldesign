@@ -8,6 +8,7 @@ export interface PDFViewerOptions {
   pdfUrl?: string;
   initialScale?: number;
   fitMode?: 'width' | 'height' | 'page' | 'auto';
+  pageMode?: 'single' | 'continuous';
   enableSearch?: boolean;
   enableDownload?: boolean;
   enablePrint?: boolean;
@@ -30,6 +31,7 @@ export interface ViewerState {
 export class PDFViewer extends EventEmitter {
   public container: HTMLElement;
   private mainContainer: HTMLElement | null = null;
+  private canvasContainer: HTMLElement | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
   public document: PDFDocumentProxy | null = null;
@@ -40,14 +42,18 @@ export class PDFViewer extends EventEmitter {
   private scale: number = 1.5;
   private rotation: number = 0;
   private fitMode: 'width' | 'height' | 'page' | 'auto' = 'auto';
+  private pageMode: 'single' | 'continuous' = 'single';
   private options: PDFViewerOptions;
   public sidebarManager: SidebarManager | null = null;
+  private scrollTimeout: any = null;
+  private allCanvases: HTMLCanvasElement[] = [];
 
   constructor(options: PDFViewerOptions) {
     super();
     this.options = {
       initialScale: 1.5,
       fitMode: 'auto',
+      pageMode: 'single',
       enableSearch: true,
       enableDownload: true,
       enablePrint: true,
@@ -59,6 +65,7 @@ export class PDFViewer extends EventEmitter {
     this.container = options.container;
     this.scale = this.options.initialScale!;
     this.fitMode = this.options.fitMode!;
+    this.pageMode = this.options.pageMode || 'single';
     
     this.init();
   }
@@ -115,18 +122,27 @@ export class PDFViewer extends EventEmitter {
     if (!this.mainContainer) return;
     
     // 创建Canvas容器
-    const canvasWrapper = document.createElement('div');
-    canvasWrapper.className = 'pdf-canvas-container';
-    canvasWrapper.style.cssText = 'flex: 1; overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: 20px; background: #f5f5f5;';
+    this.canvasContainer = document.createElement('div');
+    this.canvasContainer.className = 'pdf-canvas-container';
     
-    // 创建Canvas
-    this.canvas = document.createElement('canvas');
-    this.canvas.className = 'pdf-canvas';
+    if (this.pageMode === 'continuous') {
+      this.canvasContainer.style.cssText = 'flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px; background: #f5f5f5;';
+    } else {
+      this.canvasContainer.style.cssText = 'flex: 1; overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: 20px; background: #f5f5f5;';
+    }
     
-    canvasWrapper.appendChild(this.canvas);
-    this.mainContainer.appendChild(canvasWrapper);
+    // 创建Canvas (单页模式)
+    if (this.pageMode === 'single') {
+      this.canvas = document.createElement('canvas');
+      this.canvas.className = 'pdf-canvas';
+      this.canvasContainer.appendChild(this.canvas);
+      this.ctx = this.canvas.getContext('2d');
+    }
     
-    this.ctx = this.canvas.getContext('2d');
+    this.mainContainer.appendChild(this.canvasContainer);
+    
+    // 添加滚动监听
+    this.setupScrollListener();
   }
 
   /**
@@ -217,7 +233,17 @@ export class PDFViewer extends EventEmitter {
    * 渲染指定页
    */
   private async renderPage(pageNum: number): Promise<void> {
-    if (!this.pdfDoc || !this.canvas || !this.ctx) return;
+    if (!this.pdfDoc) return;
+    
+    // 如果是连续模式，渲染所有页面
+    if (this.pageMode === 'continuous') {
+      await this.renderAllPages();
+      this.scrollToPage(pageNum);
+      return;
+    }
+    
+    // 单页模式
+    if (!this.canvas || !this.ctx) return;
     
     this.pageRendering = true;
     
@@ -425,6 +451,142 @@ export class PDFViewer extends EventEmitter {
    */
   on(event: string, handler: Function): void {
     super.on(event, handler);
+  }
+
+  /**
+   * 设置滚动监听
+   */
+  private setupScrollListener(): void {
+    if (!this.canvasContainer) return;
+    
+    this.canvasContainer.addEventListener('scroll', () => {
+      if (this.scrollTimeout) {
+        clearTimeout(this.scrollTimeout);
+      }
+      
+      this.scrollTimeout = setTimeout(() => {
+        if (this.pageMode === 'continuous') {
+          this.detectCurrentPage();
+        }
+      }, 150);
+    });
+  }
+
+  /**
+   * 检测当前可见页面
+   */
+  private detectCurrentPage(): void {
+    if (!this.canvasContainer || this.pageMode !== 'continuous') return;
+    
+    const containerRect = this.canvasContainer.getBoundingClientRect();
+    const centerY = containerRect.top + containerRect.height / 2;
+    
+    const canvases = this.canvasContainer.querySelectorAll('.pdf-canvas');
+    let currentPage = 1;
+    
+    for (let i = 0; i < canvases.length; i++) {
+      const canvas = canvases[i] as HTMLElement;
+      const rect = canvas.getBoundingClientRect();
+      
+      if (rect.top <= centerY && rect.bottom >= centerY) {
+        currentPage = i + 1;
+        break;
+      }
+    }
+    
+    if (currentPage !== this.currentPageNum) {
+      this.currentPageNum = currentPage;
+      this.emit('page-change', currentPage);
+      
+      // 通知缩略图更新
+      if (this.sidebarManager) {
+        this.sidebarManager.highlightThumbnail(currentPage);
+      }
+    }
+  }
+
+  /**
+   * 切换页面模式
+   */
+  setPageMode(mode: 'single' | 'continuous'): void {
+    if (this.pageMode === mode) return;
+    
+    this.pageMode = mode;
+    this.rebuildCanvas();
+    
+    if (this.pdfDoc) {
+      if (mode === 'single') {
+        this.renderPage(this.currentPageNum);
+      } else {
+        this.renderAllPages();
+      }
+    }
+    
+    this.emit('page-mode-changed', mode);
+  }
+
+  /**
+   * 重新构建Canvas
+   */
+  private rebuildCanvas(): void {
+    if (this.canvasContainer) {
+      this.canvasContainer.remove();
+    }
+    
+    this.allCanvases = [];
+    this.setupCanvas();
+  }
+
+  /**
+   * 渲染所有页面
+   */
+  async renderAllPages(): Promise<void> {
+    if (!this.pdfDoc || !this.canvasContainer) return;
+    
+    this.canvasContainer.innerHTML = '';
+    this.allCanvases = [];
+    
+    for (let i = 1; i <= this.pdfDoc.numPages; i++) {
+      const pageWrapper = document.createElement('div');
+      pageWrapper.className = 'pdf-page-wrapper';
+      pageWrapper.style.cssText = 'position: relative; margin: 0 auto; background: white; border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);';
+      pageWrapper.dataset.pageNumber = i.toString();
+      
+      const canvas = document.createElement('canvas');
+      canvas.className = 'pdf-canvas';
+      canvas.style.cssText = 'display: block; max-width: 100%;';
+      
+      pageWrapper.appendChild(canvas);
+      this.canvasContainer.appendChild(pageWrapper);
+      this.allCanvases.push(canvas);
+      
+      // 异步渲染页面
+      this.renderPageToCanvas(i, canvas);
+    }
+  }
+
+  /**
+   * 渲染指定页面到Canvas
+   */
+  private async renderPageToCanvas(pageNum: number, canvas: HTMLCanvasElement): Promise<void> {
+    try {
+      const page = await this.pdfDoc!.getPage(pageNum);
+      const scale = this.calculateScale(page);
+      const viewport = page.getViewport({ scale, rotation: this.rotation });
+      
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        await page.render({
+          canvasContext: ctx,
+          viewport: viewport
+        }).promise;
+      }
+    } catch (error) {
+      console.error(`Failed to render page ${pageNum}:`, error);
+    }
   }
 
   /**

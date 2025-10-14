@@ -8,6 +8,10 @@ export { Cropper } from './core/Cropper'
 export { CropBox } from './core/CropBox'
 export { ImageProcessor } from './core/ImageProcessor'
 export { InteractionManager } from './core/InteractionManager'
+export { Toolbar } from './core/Toolbar'
+
+// Framework Adapters
+export * from './adapters'
 
 // Types
 export type {

@@ -168,19 +168,21 @@ export class Toolbar {
         return
       }
 
-      // Check if this is a media insertion command that might have been overridden
-      if (['image', 'video', 'audio', 'file'].includes(item.name)) {
-        // Try to use the editor's command registry first
-        const command = `insert${item.name.charAt(0).toUpperCase() + item.name.slice(1)}`
+      // 如果command是字符串（命令名称），通过命令管理器执行
+      if (typeof item.command === 'string') {
         if (this.editor.commands && this.editor.commands.execute) {
-          this.editor.commands.execute(command)
+          console.log(`[Toolbar] Executing string command: ${item.command}`)
+          this.editor.commands.execute(item.command)
           return
         }
       }
       
-      // 默认命令执行
-      const state = this.editor.getState()
-      item.command(state, this.editor.dispatch.bind(this.editor))
+      // 如果是函数，直接执行
+      if (typeof item.command === 'function') {
+        console.log(`[Toolbar] Executing function command for: ${item.name}`)
+        const state = this.editor.getState()
+        item.command(state, this.editor.dispatch.bind(this.editor))
+      }
     })
 
     return button

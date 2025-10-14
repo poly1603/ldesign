@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>富文本编辑器测试 - 改进验证</title>
+  <link rel="stylesheet" href="./dist/editor.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+    
+    .editor-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e8f4fd;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #0066cc;
+    }
+    
+    .test-section {
+      margin-top: 30px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .test-section h3 {
+      margin-top: 0;
+      color: #555;
+    }
+    
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .test-btn {
+      padding: 10px 15px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .test-btn:hover {
+      background: #45a049;
+    }
+    
+    .test-btn.secondary {
+      background: #2196F3;
+    }
+    
+    .test-btn.secondary:hover {
+      background: #1976D2;
+    }
+    
+    .test-btn.warning {
+      background: #ff9800;
+    }
+    
+    .test-btn.warning:hover {
+      background: #e68900;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 富文本编辑器 - 功能改进测试</h1>
+  
+  <div class="editor-container">
+    <div id="editor"></div>
+  </div>
+  
+  <div class="status">
+    💡 <strong>改进内容验证：</strong>
+    <ul style="margin: 10px 0 0 20px;">
+      <li>✅ 内容区域自动滚动条（内容超过600px高度时显示）</li>
+      <li>✅ 获取焦点时无黑色边框</li>
+      <li>✅ 优化的图片、视频、音频插入功能</li>
+    </ul>
+  </div>
+  
+  <div class="test-section">
+    <h3>快速测试功能</h3>
+    <div class="test-grid">
+      <button class="test-btn" onclick="testScrollbar()">测试滚动条</button>
+      <button class="test-btn" onclick="testFocus()">测试焦点样式</button>
+      <button class="test-btn secondary" onclick="insertTestImage()">插入测试图片</button>
+      <button class="test-btn secondary" onclick="insertTestVideo()">插入测试视频</button>
+      <button class="test-btn secondary" onclick="insertTestAudio()">插入测试音频</button>
+      <button class="test-btn warning" onclick="clearContent()">清空内容</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Editor, MediaDialogPlugin, ImagePlugin } from './dist/index.js'
+    
+    // 创建编辑器实例
+    const editor = new Editor({
+      element: '#editor',
+      placeholder: '开始输入内容...',
+      autofocus: true,
+      plugins: [
+        MediaDialogPlugin,  // 先加载MediaDialogPlugin
+        ImagePlugin        // 再加载ImagePlugin
+      ],
+      onChange: (content) => {
+        console.log('Content changed:', content)
+      }
+    })
+    
+    // 设置初始内容
+    editor.setHTML(`
+      <h1>欢迎使用改进后的编辑器</h1>
+      <p>这个编辑器已经完成以下改进：</p>
+      <ul>
+        <li><strong>智能滚动条：</strong> 当内容超过最大高度（600px）时自动显示优雅的滚动条</li>
+        <li><strong>无黑边聚焦：</strong> 获取焦点时不会出现难看的黑色边框</li>
+        <li><strong>优化的媒体插入：</strong> 改进的图片、视频、音频插入体验</li>
+      </ul>
+      <p>您可以使用上方的工具栏或下方的测试按钮来体验这些功能。</p>
+    `)
+    
+    // 将编辑器暴露到全局作用域
+    window.editor = editor
+    
+    // 测试函数
+    window.testScrollbar = function() {
+      const longContent = Array(50).fill('<p>这是一段测试内容，用于验证滚动条功能。当内容超过编辑器最大高度时，会自动显示美观的滚动条。</p>').join('')
+      editor.setHTML(editor.getHTML() + longContent)
+      alert('已添加长内容，请查看滚动条效果！')
+    }
+    
+    window.testFocus = function() {
+      editor.blur()
+      setTimeout(() => {
+        editor.focus()
+        alert('编辑器已聚焦，注意观察是否有黑色边框（应该没有）')
+      }, 100)
+    }
+    
+    window.insertTestImage = function() {
+      const imageHTML = '<img src="https://via.placeholder.com/600x400/4CAF50/ffffff?text=测试图片" alt="测试图片" style="max-width: 100%; height: auto; display: block; margin: 10px auto; border-radius: 8px;">'
+      document.execCommand('insertHTML', false, imageHTML)
+    }
+    
+    window.insertTestVideo = function() {
+      const videoHTML = `
+        <video controls style="max-width: 100%; height: auto; display: block; margin: 10px auto; border-radius: 8px;">
+          <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+          您的浏览器不支持视频标签。
+        </video>
+      `
+      document.execCommand('insertHTML', false, videoHTML)
+    }
+    
+    window.insertTestAudio = function() {
+      const audioHTML = `
+        <audio controls style="width: 100%; max-width: 500px; display: block; margin: 10px auto;">
+          <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+          您的浏览器不支持音频标签。
+        </audio>
+      `
+      document.execCommand('insertHTML', false, audioHTML)
+    }
+    
+    window.clearContent = function() {
+      if (confirm('确定要清空所有内容吗？')) {
+        editor.clear()
+      }
+    }
+  </script>
+</body>
+</html>

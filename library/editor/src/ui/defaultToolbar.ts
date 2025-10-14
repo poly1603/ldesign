@@ -232,118 +232,19 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
     name: 'image',
     title: '插入图片',
     icon: 'image',
-    command: () => {
-      // 创建文件输入元素
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = 'image/*'
-      input.onchange = (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0]
-        if (file) {
-          // 如果是本地文件，使用 FileReader 读取
-          const reader = new FileReader()
-          reader.onload = (event) => {
-            const dataUrl = event.target?.result
-            document.execCommand('insertHTML', false, `<img src="${dataUrl}" alt="${file.name}" style="max-width: 100%; height: auto;">`)
-          }
-          reader.readAsDataURL(file)
-        }
-      }
-      
-      // 还可以支持 URL 输入
-      const useUrl = confirm('点击“确定”从本地选择图片，点击“取消”输入图片URL')
-      if (useUrl) {
-        input.click()
-      } else {
-        const url = prompt('请输入图片地址:')
-        if (url) {
-          document.execCommand('insertHTML', false, `<img src="${url}" alt="图片" style="max-width: 100%; height: auto;">`)
-        }
-      }
-      return true
-    },
+    command: 'insertImage', // 使用命令名称，由MediaDialogPlugin处理
   },
   {
     name: 'video',
     title: '插入视频',
     icon: 'video',
-    command: () => {
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = 'video/*'
-      input.onchange = (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0]
-        if (file) {
-          // 为视频创建 blob URL
-          const videoUrl = URL.createObjectURL(file)
-          const videoHtml = `
-            <video controls style="max-width: 100%; height: auto;">
-              <source src="${videoUrl}" type="${file.type}">
-              您的浏览器不支持视频标签。
-            </video>
-          `
-          document.execCommand('insertHTML', false, videoHtml)
-        }
-      }
-      
-      const useLocal = confirm('点击“确定”从本地选择视频，点击“取消”输入视频URL')
-      if (useLocal) {
-        input.click()
-      } else {
-        const url = prompt('请输入视频地址 (支持mp4, YouTube, Bilibili等):')
-        if (url) {
-          // 检测是否为嵌入式视频
-          if (url.includes('youtube.com') || url.includes('youtu.be')) {
-            const videoId = url.split('v=')[1] || url.split('/').pop()
-            const embedUrl = `https://www.youtube.com/embed/${videoId}`
-            document.execCommand('insertHTML', false, `<iframe width="560" height="315" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>`)
-          } else if (url.includes('bilibili.com')) {
-            const bvid = url.match(/BV\w+/)?.[0]
-            if (bvid) {
-              document.execCommand('insertHTML', false, `<iframe src="//player.bilibili.com/player.html?bvid=${bvid}" width="560" height="315" frameborder="0" allowfullscreen></iframe>`)
-            }
-          } else {
-            // 普通视频链接
-            document.execCommand('insertHTML', false, `<video controls src="${url}" style="max-width: 100%;"></video>`)
-          }
-        }
-      }
-      return true
-    },
+    command: 'insertVideo', // 使用命令名称，由MediaDialogPlugin处理
   },
   {
     name: 'audio',
     title: '插入音频',
     icon: 'audio',
-    command: () => {
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = 'audio/*'
-      input.onchange = (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0]
-        if (file) {
-          const audioUrl = URL.createObjectURL(file)
-          const audioHtml = `
-            <audio controls style="width: 100%; max-width: 400px;">
-              <source src="${audioUrl}" type="${file.type}">
-              您的浏览器不支持音频标签。
-            </audio>
-          `
-          document.execCommand('insertHTML', false, audioHtml)
-        }
-      }
-      
-      const useLocal = confirm('点击“确定”从本地选择音频，点击“取消”输入音频URL')
-      if (useLocal) {
-        input.click()
-      } else {
-        const url = prompt('请输入音频地址:')
-        if (url) {
-          document.execCommand('insertHTML', false, `<audio controls src="${url}" style="width: 100%; max-width: 400px;"></audio>`)
-        }
-      }
-      return true
-    },
+    command: 'insertAudio', // 使用命令名称，由MediaDialogPlugin处理
   },
   {
     name: 'file',

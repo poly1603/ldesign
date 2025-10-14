@@ -136,7 +136,7 @@ export interface ToolbarItem {
   name: string
   title: string
   icon: string
-  command: Command
+  command: Command | string  // 支持函数或命令名称字符串
   active?: (state: EditorState) => boolean
   disabled?: (state: EditorState) => boolean
 }
@@ -158,9 +158,18 @@ export interface EditorOptions {
 // 插件接口
 export interface Plugin {
   name: string
-  config: PluginConfig
+  config?: PluginConfig  // 使config可选
   install?: (editor: any) => void
   destroy?: () => void
+}
+
+// Editor类型
+export interface Editor {
+  commands: any
+  dispatch: any
+  plugins: any
+  getState: () => EditorState
+  [key: string]: any
 }
 
 // 键盘事件

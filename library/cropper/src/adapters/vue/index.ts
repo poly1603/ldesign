@@ -1,5 +1,5 @@
 /**
- * Vue 3 Adapter
+ * Vue 3 Adapter - Complete implementation with Component, Composable, and Directive
  */
 
 import {
@@ -14,6 +14,12 @@ import {
 import { Cropper } from '../../core/Cropper'
 import type { CropperOptions, GetCroppedCanvasOptions, ToolbarOptions } from '../../types'
 import '../../styles/cropper.css'
+
+// Export composable and directive
+export { useCropper } from './useCropper'
+export type { UseCropperOptions } from './useCropper'
+export { vCropper, cropperDirective, getCropperInstance } from './directive'
+export type { CropperDirectiveValue } from './directive'
 
 export const VueCropper = defineComponent({
   name: 'VueCropper',

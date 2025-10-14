@@ -414,18 +414,20 @@ export const MediaDialogPlugin: Plugin = {
       mediaDialog = new MediaDialog()
     }
     
-    // Override image insertion command
-    const originalImageCommand = editor.commands.get('insertImage')
-    editor.commands.register('insertImage', () => {
-      mediaDialog!.show('image', (url, file) => {
-        const alt = file ? file.name : 'Image'
-        const html = `<img src="${url}" alt="${alt}" style="max-width: 100%; height: auto; display: block; margin: 10px auto;">`
-        document.execCommand('insertHTML', false, html)
+    // Register image insertion command (only if not already registered)
+    if (!editor.commands.get('insertImage')) {
+      editor.commands.register('insertImage', () => {
+        mediaDialog!.show('image', (url, file) => {
+          const alt = file ? file.name : 'Image'
+          const html = `<img src="${url}" alt="${alt}" style="max-width: 100%; height: auto; display: block; margin: 10px auto;">`
+          document.execCommand('insertHTML', false, html)
+        })
       })
-    })
+    }
     
-    // Override video insertion command
-    editor.commands.register('insertVideo', () => {
+    // Register video insertion command (only if not already registered)
+    if (!editor.commands.get('insertVideo')) {
+      editor.commands.register('insertVideo', () => {
       mediaDialog!.show('video', (url, file) => {
         // Check if it's a platform video
         if (url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -449,11 +451,13 @@ export const MediaDialogPlugin: Plugin = {
           `
           document.execCommand('insertHTML', false, html)
         }
+        })
       })
-    })
+    }
     
-    // Override audio insertion command  
-    editor.commands.register('insertAudio', () => {
+    // Register audio insertion command (only if not already registered)
+    if (!editor.commands.get('insertAudio')) {
+      editor.commands.register('insertAudio', () => {
       mediaDialog!.show('audio', (url, file) => {
         const html = `
           <audio controls style="width: 100%; max-width: 400px; display: block; margin: 10px auto;">
@@ -461,9 +465,10 @@ export const MediaDialogPlugin: Plugin = {
             您的浏览器不支持音频标签。
           </audio>
         `
-        document.execCommand('insertHTML', false, html)
+          document.execCommand('insertHTML', false, html)
+        })
       })
-    })
+    }
     
     console.log('[MediaDialogPlugin] Enhanced media dialog plugin installed')
   }

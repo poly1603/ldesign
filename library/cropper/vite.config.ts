@@ -8,9 +8,9 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        vue: resolve(__dirname, 'src/vue.ts'),
-        react: resolve(__dirname, 'src/react.ts'),
-        angular: resolve(__dirname, 'src/angular.ts')
+        'adapters/vue/index': resolve(__dirname, 'src/adapters/vue/index.ts'),
+        'adapters/react/index': resolve(__dirname, 'src/adapters/react/index.tsx'),
+        'adapters/angular/index': resolve(__dirname, 'src/adapters/angular/index.ts')
       },
       name: 'LDesignCropper',
       formats: ['es', 'cjs'],

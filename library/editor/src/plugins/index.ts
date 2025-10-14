@@ -24,6 +24,7 @@ export * from './text-transform'
 export * from './find-replace'
 export * from './word-count'
 export * from './export-markdown'
+export * from './media-dialog'
 
 // 导出右键菜单插件
 import ContextMenuPlugin from './context-menu'
@@ -52,3 +53,4 @@ export { TextTransformPlugin, UpperCasePlugin, LowerCasePlugin, CapitalizePlugin
 export { FindReplacePlugin } from './find-replace'
 export { WordCountPlugin, getWordCount, showWordCountDialog } from './word-count'
 export { ExportMarkdownPlugin, htmlToMarkdown } from './export-markdown'
+export { MediaDialogPlugin } from './media-dialog'

@@ -1,5 +1,5 @@
 /**
- * React Adapter
+ * React Adapter - Complete implementation with Component and Hook
  */
 
 import React, {
@@ -12,6 +12,10 @@ import React, {
 import { Cropper } from '../../core/Cropper'
 import type { CropperOptions, GetCroppedCanvasOptions, CropData } from '../../types'
 import '../../styles/cropper.css'
+
+// Export hook
+export { useCropper } from './useCropper'
+export type { UseCropperOptions } from './useCropper'
 
 export interface ReactCropperProps extends Omit<CropperOptions, 'ready' | 'crop' | 'cropstart' | 'cropmove' | 'cropend' | 'zoom'> {
   style?: CSSProperties

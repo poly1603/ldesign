@@ -55,6 +55,13 @@ export class CommandManager {
   }
 
   /**
+   * 获取命令
+   */
+  get(name: string): Command | undefined {
+    return this.commands.get(name)
+  }
+
+  /**
    * 获取所有命令
    */
   getCommands(): string[] {

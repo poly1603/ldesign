@@ -318,31 +318,26 @@ export const ImagePlugin: Plugin = {
     // 初始化右键菜单
     const contextMenu = new ImageContextMenu(editor)
     
-    // 注册命令
-    editor.commands.register('insertImage', () => {
-      const url = prompt('请输入图片地址:', 'https://')
-      if (url) {
-        document.execCommand('insertImage', false, url)
-      }
-    })
-    
-    editor.commands.register('uploadImage', () => {
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = 'image/*'
-      input.onchange = (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0]
-        if (file) {
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            const url = e.target?.result as string
-            document.execCommand('insertImage', false, url)
+    // 注册上传图片命令（不注册insertImage，由MediaDialogPlugin处理）
+    if (!editor.commands.get('uploadImage')) {
+      editor.commands.register('uploadImage', () => {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = 'image/*'
+        input.onchange = (e) => {
+          const file = (e.target as HTMLInputElement).files?.[0]
+          if (file) {
+            const reader = new FileReader()
+            reader.onload = (e) => {
+              const url = e.target?.result as string
+              document.execCommand('insertImage', false, url)
+            }
+            reader.readAsDataURL(file)
           }
-          reader.readAsDataURL(file)
         }
-      }
-      input.click()
-    })
+        input.click()
+      })
+    }
     
     console.log('[ImagePlugin] 已加载')
   }

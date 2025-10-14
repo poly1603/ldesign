@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Editor - 增强的富文本编辑器演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+    
+    h1 {
+      font-size: 42px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .subtitle {
+      font-size: 18px;
+      opacity: 0.95;
+      margin-bottom: 30px;
+    }
+    
+    .features {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+    
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 8px 16px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .feature-icon {
+      font-size: 20px;
+    }
+    
+    .editor-wrapper {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 30px;
+    }
+    
+    .editor-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    #editor {
+      min-height: 400px;
+    }
+    
+    .tips {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f0f9ff;
+      border-left: 4px solid #3b82f6;
+      border-radius: 8px;
+    }
+    
+    .tips h3 {
+      color: #1e40af;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    
+    .tips ul {
+      color: #3730a3;
+      margin-left: 20px;
+    }
+    
+    .tips li {
+      margin: 8px 0;
+      line-height: 1.6;
+    }
+    
+    .demo-content {
+      margin-top: 30px;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 8px;
+    }
+    
+    .demo-content h3 {
+      color: #374151;
+      margin-bottom: 10px;
+    }
+    
+    .demo-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+    
+    .demo-button {
+      padding: 8px 16px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    
+    .demo-button:hover {
+      background: #2563eb;
+    }
+    
+    .demo-button.secondary {
+      background: #10b981;
+    }
+    
+    .demo-button.secondary:hover {
+      background: #059669;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>✨ LDesign Editor</h1>
+      <p class="subtitle">功能强大、扩展性强的现代富文本编辑器</p>
+      <div class="features">
+        <div class="feature">
+          <span class="feature-icon">📸</span>
+          <span>优化的图片插入</span>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">🎬</span>
+          <span>视频嵌入支持</span>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">🎵</span>
+          <span>音频播放器</span>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">📜</span>
+          <span>智能滚动条</span>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">🎨</span>
+          <span>无黑边聚焦</span>
+        </div>
+      </div>
+    </header>
+    
+    <div class="editor-wrapper">
+      <div class="editor-title">
+        <span>📝</span>
+        <span>编辑器演示</span>
+      </div>
+      <div id="editor"></div>
+      
+      <div class="tips">
+        <h3>💡 增强功能说明：</h3>
+        <ul>
+          <li><strong>智能滚动条：</strong>内容区域超出最大高度（600px）时，自动显示优雅的滚动条，支持平滑滚动</li>
+          <li><strong>无黑边聚焦：</strong>编辑器获取焦点时没有默认的黑色边框，保持清爽的视觉效果</li>
+          <li><strong>增强的媒体插入：</strong>
+            <ul style="margin-top: 8px;">
+              <li>🖼️ <strong>图片：</strong>支持本地上传、URL链接，拖拽上传，右键菜单编辑</li>
+              <li>🎥 <strong>视频：</strong>支持本地文件、YouTube、Bilibili等平台嵌入</li>
+              <li>🔊 <strong>音频：</strong>支持各种音频格式，美观的播放器样式</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="demo-content">
+        <h3>快速测试：</h3>
+        <div class="demo-buttons">
+          <button class="demo-button" onclick="insertSampleImage()">插入示例图片</button>
+          <button class="demo-button" onclick="insertSampleVideo()">插入示例视频</button>
+          <button class="demo-button" onclick="insertSampleAudio()">插入示例音频</button>
+          <button class="demo-button secondary" onclick="addLongContent()">添加长内容（测试滚动）</button>
+          <button class="demo-button secondary" onclick="clearEditor()">清空内容</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 加载编辑器 -->
+  <script type="module">
+    import { Editor, MediaDialogPlugin, ImagePlugin } from './dist/index.js'
+    
+    // 创建编辑器实例
+    const editor = new Editor({
+      element: '#editor',
+      placeholder: '开始输入内容，或使用工具栏插入媒体...',
+      autofocus: true,
+      plugins: [
+        MediaDialogPlugin,  // 增强的媒体对话框插件
+        ImagePlugin,        // 图片右键菜单插件
+        'formatting',       // 格式化插件
+        'heading',          // 标题插件
+        'list',             // 列表插件
+        'link',             // 链接插件
+        'table',            // 表格插件
+        'color',            // 颜色插件
+        'align',            // 对齐插件
+        'history'           // 历史记录插件
+      ],
+      onChange: (html) => {
+        console.log('内容变化:', html)
+      }
+    })
+    
+    // 将编辑器实例暴露到全局，方便测试
+    window.editor = editor
+    
+    // 测试函数
+    window.insertSampleImage = function() {
+      editor.commands.execute('insertImage')
+    }
+    
+    window.insertSampleVideo = function() {
+      editor.commands.execute('insertVideo')
+    }
+    
+    window.insertSampleAudio = function() {
+      editor.commands.execute('insertAudio')
+    }
+    
+    window.addLongContent = function() {
+      const currentContent = editor.getHTML()
+      const longContent = `
+        <h2>长内容测试 - 滚动条演示</h2>
+        <p>这是一段用于测试滚动条功能的长内容。当内容超过编辑器的最大高度（600px）时，会自动显示优雅的滚动条。</p>
+        <h3>特性列表</h3>
+        <ul>
+          <li>自定义滚动条样式，与编辑器主题协调</li>
+          <li>平滑滚动体验</li>
+          <li>响应式设计，适配各种屏幕尺寸</li>
+          <li>细腻的hover效果</li>
+        </ul>
+        <blockquote>
+          <p>引用文本示例：优秀的用户体验来自于对细节的关注。</p>
+        </blockquote>
+        <h3>代码示例</h3>
+        <pre><code>// JavaScript 示例代码
+function createEditor() {
+  const editor = new Editor({
+    element: '#editor',
+    plugins: ['formatting', 'media']
+  })
+  return editor
+}</code></pre>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+        <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <hr>
+        <p>继续添加更多内容以触发滚动条...</p>
+        ${Array(10).fill('<p>这是额外的段落内容，用于填充空间并展示滚动效果。每个段落都包含足够的文本来占据一定的垂直空间。</p>').join('')}
+      `
+      editor.setHTML(currentContent + longContent)
+    }
+    
+    window.clearEditor = function() {
+      editor.clear()
+    }
+    
+    // 初始内容
+    editor.setHTML(`
+      <h1>欢迎使用 LDesign Editor！</h1>
+      <p>这是一个功能丰富的富文本编辑器，具有以下增强特性：</p>
+      <ul>
+        <li><strong>优雅的滚动条：</strong>当内容超出最大高度时自动显示</li>
+        <li><strong>无黑边聚焦：</strong>获取焦点时保持清爽的视觉效果</li>
+        <li><strong>增强的媒体插入：</strong>现代化的对话框，支持拖拽上传</li>
+      </ul>
+      <p>点击工具栏中的图片、视频、音频按钮来体验增强的媒体插入功能，或使用下方的快速测试按钮。</p>
+    `)
+  </script>
+</body>
+</html>

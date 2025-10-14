@@ -1,50 +1,43 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "jsx": "preserve",
-    "jsxImportSource": "vue",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "useDefineForClassFields": true,
     "baseUrl": ".",
     "rootDir": "src",
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@ldesign/color": ["src/index.ts"]
     },
     "resolveJsonModule": true,
-    "types": ["vite/client", "node"],
+    "types": ["node"],
     "allowJs": false,
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noImplicitReturns": true,
     "declaration": true,
     "declarationMap": true,
-    "downlevelIteration": true,
-    "outDir": "dist",
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "isolatedModules": true,
-    "skipLibCheck": true
+    "noEmit": true
   },
-  "include": ["src/**/*", "src/types/vue-shim.d.ts", "src/types/env.d.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": [
     "node_modules",
     "dist",
-    "esm",
-    "cjs",
-    "types",
-    "__tests__",
-    "tests",
-    "test",
-    "e2e",
+    "es",
+    "lib",
     "examples",
-    "*.test.ts",
-    "*.spec.ts",
+    "tests",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "**/*.d.ts"
   ]
 }
