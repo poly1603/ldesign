@@ -1,0 +1,245 @@
+/**
+ * @ldesign/color - Tailwind-style Palette Generation
+ * 
+ * Generates color palettes using the exact algorithm from tailwindcss-palette-generator
+ * This creates 12-level color scales by adjusting only lightness while preserving hue and saturation
+ */
+
+import { Color } from './Color';
+import { ColorInput } from '../types';
+
+/**
+ * Default Tailwind shade configuration with optimized lightness values
+ * These values are specifically chosen for optimal visual balance
+ * Adjusted to prevent overly dark shades at the end
+ */
+export const TAILWIND_SHADES = [
+  { name: '50', lightness: 98 },
+  { name: '100', lightness: 95 },
+  { name: '200', lightness: 90 },
+  { name: '300', lightness: 82 },
+  { name: '400', lightness: 64 },
+  { name: '500', lightness: 46 },
+  { name: '600', lightness: 35 },
+  { name: '700', lightness: 27 },
+  { name: '800', lightness: 20 },
+  { name: '900', lightness: 15 },
+  { name: '950', lightness: 10 },
+  { name: '1000', lightness: 7 }  // Adjusted to be less extreme while still providing depth
+];
+
+/**
+ * Generate a Tailwind-style color scale from a base color
+ * Uses the exact algorithm from tailwindcss-palette-generator
+ * 
+ * @param baseColor - The base color to generate shades from
+ * @param preserve - Whether to preserve the original color at its closest shade
+ * @returns Object with shade names as keys and hex colors as values
+ */
+export function generateTailwindScale(
+  baseColor: ColorInput,
+  preserve: boolean = true
+): { [key: string]: string } {
+  const color = new Color(baseColor);
+  const hsl = color.toHSL();
+  const palette: { [key: string]: string } = {};
+  
+  // Track lightness deltas if preserving the original color
+  const lightnessDelta: { [key: string]: number } = {};
+  const inputLightness = hsl.l;
+  
+  // Generate each shade by keeping hue and saturation constant, only changing lightness
+  TAILWIND_SHADES.forEach(({ name, lightness }) => {
+    // Create new color with same hue and saturation, but different lightness (converted to 0-100 scale)
+    const shadeColor = Color.fromHSL(
+      hsl.h,  // Keep original hue
+      hsl.s,  // Keep original saturation  
+      lightness // Use the Tailwind lightness value
+    );
+    
+    palette[name] = shadeColor.toHex();
+    
+    // Calculate how far this shade is from the original color's lightness
+    if (preserve) {
+      lightnessDelta[name] = Math.abs(inputLightness - lightness);
+    }
+  });
+  
+  // If preserving, replace the closest shade with the original color
+  if (preserve) {
+    const closestShade = Object.keys(lightnessDelta).sort(
+      (a, b) => lightnessDelta[a] - lightnessDelta[b]
+    )[0];
+    palette[closestShade] = color.toHex();
+  }
+  
+  return palette;
+}
+
+/**
+ * Generate semantic colors (primary, success, warning, danger, info) with Tailwind scales
+ */
+export function generateTailwindSemanticColors(primaryColor: ColorInput): {
+  primary: { [key: string]: string };
+  success: { [key: string]: string };
+  warning: { [key: string]: string };
+  danger: { [key: string]: string };
+  info: { [key: string]: string };
+} {
+  const primary = new Color(primaryColor);
+  const primaryHsl = primary.toHSL();
+  
+  // Define semantic color bases
+  // These are carefully chosen to create harmonious relationships
+  const semanticBases = {
+    primary: primary,
+    // Success: green at similar saturation
+    success: Color.fromHSL(130, primaryHsl.s * 0.9, 46),
+    // Warning: amber/orange  
+    warning: Color.fromHSL(43, Math.min(primaryHsl.s * 1.1, 100), 46),
+    // Danger: red
+    danger: Color.fromHSL(4, primaryHsl.s, 46),
+    // Info: blue
+    info: Color.fromHSL(210, primaryHsl.s * 0.85, 46)
+  };
+  
+  const result: any = {};
+  
+  Object.entries(semanticBases).forEach(([name, baseColor]) => {
+    // Convert Color to hex string for generateTailwindScale
+    result[name] = generateTailwindScale(baseColor.toHex(), true);
+  });
+  
+  return result;
+}
+
+/**
+ * Generate gray scale with optional tinting
+ * Uses standard Tailwind gray shades for consistency
+ */
+export function generateTailwindGrayScale(tintColor?: ColorInput): { [key: string]: string } {
+  let tintHue = 210; // Default blue-gray
+  let tintSaturation = 5; // Very low saturation
+  
+  if (tintColor) {
+    const color = new Color(tintColor);
+    const hsl = color.toHSL();
+    tintHue = hsl.h;
+    tintSaturation = Math.max(3, Math.min(10, hsl.s * 0.1)); // 3-10% of original saturation
+  }
+  
+  const grays: { [key: string]: string } = {};
+  
+  // Use same shades as other colors for consistency (12 shades)
+  // Using the same TAILWIND_SHADES for visual harmony
+  TAILWIND_SHADES.forEach(({ name, lightness }) => {
+    // Adjust saturation based on lightness - less at extremes
+    let adjustedSaturation = tintSaturation;
+    if (lightness > 90 || lightness < 10) {
+      adjustedSaturation *= 0.3; // Very low saturation at extremes
+    } else if (lightness > 70 || lightness < 30) {
+      adjustedSaturation *= 0.6; // Lower saturation
+    }
+    
+    const grayColor = Color.fromHSL(tintHue, adjustedSaturation, lightness);
+    grays[name] = grayColor.toHex();
+  });
+  
+  return grays;
+}
+
+/**
+ * Generate a complete Tailwind-style theme
+ */
+export function generateTailwindTheme(
+  primaryColor: ColorInput,
+  options: {
+    includeSemantics?: boolean;
+    includeGrays?: boolean;
+    preserveInput?: boolean;
+  } = {}
+): {
+  colors: {
+    primary: { [key: string]: string };
+    success?: { [key: string]: string };
+    warning?: { [key: string]: string };
+    danger?: { [key: string]: string };
+    info?: { [key: string]: string };
+  };
+  grays?: { [key: string]: string };
+} {
+  const {
+    includeSemantics = true,
+    includeGrays = true,
+    preserveInput = true
+  } = options;
+  
+  const theme: any = {
+    colors: {}
+  };
+  
+  if (includeSemantics) {
+    const semanticColors = generateTailwindSemanticColors(primaryColor);
+    theme.colors = semanticColors;
+  } else {
+    theme.colors.primary = generateTailwindScale(primaryColor, preserveInput);
+  }
+  
+  if (includeGrays) {
+    theme.grays = generateTailwindGrayScale(primaryColor);
+  }
+  
+  return theme;
+}
+
+/**
+ * Generate multiple color palettes like tailwindcss-palette-generator
+ */
+export function generateTailwindPalettes(
+  colors: ColorInput | ColorInput[],
+  options: {
+    names?: string[];
+    preserve?: boolean;
+  } = {}
+): { [key: string]: { [key: string]: string } } {
+  const {
+    names = [
+      'primary',
+      'secondary', 
+      'tertiary',
+      'quaternary',
+      'quinary',
+      'senary',
+      'septenary',
+      'octonary',
+      'nonary',
+      'denary'
+    ],
+    preserve = true
+  } = options;
+  
+  // Normalize input to array of ColorInput
+  let colorArray: ColorInput[];
+  if (Array.isArray(colors)) {
+    // If colors is already an array and it's a number array (RGB), wrap it
+    if (colors.length > 0 && typeof colors[0] === 'number') {
+      // It's an RGB array, use it as a single color
+      colorArray = [colors as ColorInput];
+    } else {
+      // It's an array of color inputs
+      colorArray = colors as ColorInput[];
+    }
+  } else {
+    // Single color input
+    colorArray = [colors];
+  }
+  
+  const palette: { [key: string]: { [key: string]: string } } = {};
+  
+  colorArray.forEach((color, index) => {
+    const name = names[index] || `color${index + 1}`;
+    palette[name] = generateTailwindScale(color, preserve);
+  });
+  
+  return palette;
+}

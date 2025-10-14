@@ -79,7 +79,18 @@ export {
   generateSmartPalette,
   generateAccessiblePairs,
   DEFAULT_SHADES,
+  GRAY_SHADES,
   MATERIAL_SHADES,
   ANTD_SHADES,
   type ShadeConfig
 } from './naturalPalette';
+
+// Tailwind-style palette generation
+export {
+  generateTailwindScale,
+  generateTailwindSemanticColors,
+  generateTailwindGrayScale,
+  generateTailwindTheme,
+  generateTailwindPalettes,
+  TAILWIND_SHADES
+} from './tailwindPalette';

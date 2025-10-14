@@ -5,10 +5,10 @@
  */
 
 import type { RGB, HSL, HSV, ColorInput, ColorFormat, BlendMode, HarmonyType, WCAGLevel, TextSize } from '../types';
-import { rgbToHsl, hslToRgb, rgbToHsv, hsvToRgb, rgbToHex, hexToRgb } from './conversions';
+import { rgbToHsl, hslToRgb, rgbToHsv, hsvToRgb, rgbToHex } from './conversions';
 import { getLuminance, getContrast, isWCAGCompliant } from './analysis';
 import { mix, blend } from './manipulations';
-import { validateRGB, validateHSL, validateHSV, validateHex, parseColorInput } from '../utils/validators';
+import { parseColorInput, validateRGB } from '../utils/validators';
 import { clamp, round } from '../utils/math';
 import { ColorCache } from '../utils/cache';
 
@@ -264,7 +264,7 @@ export class Color {
   /**
    * Set alpha value
    */
-  alpha(value: number): Color {
+  setAlpha(value: number): Color {
     const color = this.clone();
     color._alpha = clamp(value, 0, 1);
     return color;
@@ -274,7 +274,7 @@ export class Color {
    * Fade the color (reduce alpha)
    */
   fade(amount: number): Color {
-    return this.alpha(clamp(this._alpha - amount / 100, 0, 1));
+    return this.setAlpha(clamp(this._alpha - amount / 100, 0, 1));
   }
 
   // ============================================

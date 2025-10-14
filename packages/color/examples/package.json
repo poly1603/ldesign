@@ -1,0 +1,15 @@
+{
+	"name": "@ldesign/color-examples",
+	"version": "1.0.0",
+	"description": "Examples for @ldesign/color package",
+	"private": true,
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview"
+	},
+	"devDependencies": {
+		"vite": "^5.0.3"
+	},
+	"type": "module"
+}

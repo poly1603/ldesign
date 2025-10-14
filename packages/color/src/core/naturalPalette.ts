@@ -204,52 +204,77 @@ export interface ShadeConfig {
 }
 
 /**
- * Default shade configurations
+ * Default shade configurations (12 levels)
  */
 export const DEFAULT_SHADES: ShadeConfig[] = [
   { name: '50', lightness: 98 },
   { name: '100', lightness: 95 },
   { name: '200', lightness: 90 },
   { name: '300', lightness: 82 },
-  { name: '400', lightness: 64 },
-  { name: '500', lightness: 46 },
-  { name: '600', lightness: 33 },
-  { name: '700', lightness: 24 },
-  { name: '800', lightness: 14 },
-  { name: '900', lightness: 7 },
-  { name: '950', lightness: 4 }
+  { name: '400', lightness: 71 },
+  { name: '500', lightness: 60 },
+  { name: '600', lightness: 48 },
+  { name: '700', lightness: 37 },
+  { name: '800', lightness: 27 },
+  { name: '900', lightness: 18 },
+  { name: '950', lightness: 10 },
+  { name: '1000', lightness: 4 }
 ];
 
 /**
- * Material Design shade configuration
+ * Gray shade configurations (14 levels)
+ */
+export const GRAY_SHADES: ShadeConfig[] = [
+  { name: '50', lightness: 98 },
+  { name: '100', lightness: 96 },
+  { name: '150', lightness: 93 },
+  { name: '200', lightness: 88 },
+  { name: '300', lightness: 80 },
+  { name: '400', lightness: 71 },
+  { name: '500', lightness: 60 },
+  { name: '600', lightness: 48 },
+  { name: '700', lightness: 37 },
+  { name: '800', lightness: 27 },
+  { name: '850', lightness: 20 },
+  { name: '900', lightness: 14 },
+  { name: '950', lightness: 8 },
+  { name: '1000', lightness: 3 }
+];
+
+/**
+ * Material Design shade configuration (12 levels)
  */
 export const MATERIAL_SHADES: ShadeConfig[] = [
-  { name: '50', lightness: 96 },
-  { name: '100', lightness: 90 },
-  { name: '200', lightness: 80 },
-  { name: '300', lightness: 67 },
-  { name: '400', lightness: 55 },
-  { name: '500', lightness: 45 },
-  { name: '600', lightness: 37 },
-  { name: '700', lightness: 30 },
-  { name: '800', lightness: 22 },
-  { name: '900', lightness: 15 }
+  { name: '50', lightness: 97 },
+  { name: '100', lightness: 93 },
+  { name: '200', lightness: 85 },
+  { name: '300', lightness: 74 },
+  { name: '400', lightness: 63 },
+  { name: '500', lightness: 52 },
+  { name: '600', lightness: 42 },
+  { name: '700', lightness: 33 },
+  { name: '800', lightness: 25 },
+  { name: '900', lightness: 17 },
+  { name: 'A400', lightness: 10 },
+  { name: 'A700', lightness: 5 }
 ];
 
 /**
- * Ant Design shade configuration
+ * Ant Design shade configuration (12 levels)
  */
 export const ANTD_SHADES: ShadeConfig[] = [
-  { name: 1, lightness: 95 },
-  { name: 2, lightness: 85 },
-  { name: 3, lightness: 75 },
-  { name: 4, lightness: 65 },
-  { name: 5, lightness: 55 },
-  { name: 6, lightness: 45 },
-  { name: 7, lightness: 35 },
-  { name: 8, lightness: 25 },
-  { name: 9, lightness: 15 },
-  { name: 10, lightness: 5 }
+  { name: 1, lightness: 97 },
+  { name: 2, lightness: 91 },
+  { name: 3, lightness: 82 },
+  { name: 4, lightness: 72 },
+  { name: 5, lightness: 62 },
+  { name: 6, lightness: 52 },
+  { name: 7, lightness: 42 },
+  { name: 8, lightness: 32 },
+  { name: 9, lightness: 22 },
+  { name: 10, lightness: 13 },
+  { name: 11, lightness: 7 },
+  { name: 12, lightness: 3 }
 ];
 
 /**
@@ -343,7 +368,7 @@ export function generateNaturalGrayScale(
 ): { [key: string | number]: string } {
   const {
     tintHue = 210, // Default to blue-gray
-    shades = DEFAULT_SHADES
+    shades = GRAY_SHADES  // Use 14-level gray shades by default
   } = options;
   
   return shades.reduce((obj: Record<string | number, string>, shade) => {
@@ -478,17 +503,17 @@ export function generateAccessiblePairs(
     do {
       targetColor = color.darken(darkness);
       darkness += 5;
-    } while (color.contrast(targetColor) < targetContrast && darkness < 100);
+    } while (color.contrast(targetColor.toHex()) < targetContrast && darkness < 100);
   } else {
     // Base is dark, find light foreground
     let lightness = 20;
     do {
       targetColor = color.lighten(lightness);
       lightness += 5;
-    } while (color.contrast(targetColor) < targetContrast && lightness < 100);
+    } while (color.contrast(targetColor.toHex()) < targetContrast && lightness < 100);
   }
   
-  const actualContrast = color.contrast(targetColor);
+  const actualContrast = color.contrast(targetColor.toHex());
   
   return {
     background: color.toHex(),

@@ -5,7 +5,7 @@
  */
 
 import { Color } from './Color';
-import { RGB, HSL, ColorInput, ThemeColors } from '../types';
+import { ColorInput } from '../types';
 import { clamp } from '../utils/math';
 
 /**
@@ -120,7 +120,6 @@ export function generateSemanticColors(primaryColor: ColorInput): {
   info: string;
 } {
   const primary = new Color(primaryColor);
-  const primaryHue = primary.toHSL().h;
   
   // Define semantic hues
   const semanticHues = {
@@ -195,7 +194,6 @@ export function generateThemePalette(
 } {
   const {
     generateScales = true,
-    scaleSteps = 10,
     includeGrays = true,
     graySteps = 10
   } = options;
