@@ -61,6 +61,8 @@
                 :scale-step="scaleStep"
                 :theme-color="themeColor"
                 :crop-box-style="cropBoxStyle"
+                :toolbar="toolbarOptions"
+                :on-toolbar-crop="handleToolbarCrop"
                 @ready="onReady"
                 @crop="onCrop"
               />
@@ -75,20 +77,7 @@
               </div>
             </div>
 
-            <!-- Toolbar -->
-            <div v-if="imageSrc" class="toolbar-container">
-              <CropperToolbar
-                :disabled="!imageSrc"
-                :show-advanced="showAdvanced"
-                @rotate="handleRotate"
-                @flip="handleFlip"
-                @zoom="handleZoom"
-                @move="handleMove"
-                @skew="handleSkew"
-                @reset="reset"
-                @crop="getCroppedImage"
-              />
-            </div>
+            <!-- Toolbar is now integrated into the core -->
 
             <!-- Configuration Panel -->
             <div class="config-panel">
@@ -234,9 +223,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, computed } from 'vue'
 import { VueCropper } from '@ldesign/cropper/vue'
-import CropperToolbar from '../../../src/components/CropperToolbar.vue'
 import '@ldesign/cropper/style.css'
 
 // Refs
@@ -255,6 +243,15 @@ const showAdvanced = ref(false)
 const isDragging = ref(false)
 const placeholderText = ref('点击或拖拽图片到这里')
 const cropBoxStyle = ref<'default' | 'rounded' | 'circle' | 'minimal' | 'dotted' | 'solid' | 'gradient'>('default')
+
+// Toolbar options - reactive so it updates with showAdvanced
+const toolbarOptions = computed(() => ({
+  visible: true,
+  position: 'top' as const,
+  showAdvanced: showAdvanced.value,
+  compact: false,
+  theme: 'auto' as const
+}))
 
 // Sample image URL
 const sampleImageUrl = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800'
@@ -353,71 +350,24 @@ const onCrop = (e: CustomEvent) => {
   cropData.value = e.detail
 }
 
-// Toolbar handlers
-const handleRotate = (degrees: number) => {
-  cropperRef.value?.rotate(degrees)
-}
-
-const handleFlip = (direction: 'horizontal' | 'vertical') => {
-  const cropper = cropperRef.value?.getCropper()
-  if (cropper) {
-    const imageData = cropper.getImageData()
-    if (direction === 'horizontal') {
-      cropperRef.value?.scaleX(-imageData.scaleX)
-    } else {
-      cropperRef.value?.scaleY(-imageData.scaleY)
+// Handle toolbar crop event (when crop button is clicked in toolbar)
+const handleToolbarCrop = async (canvas: HTMLCanvasElement) => {
+  if (canvas) {
+    // Set the canvas first, which will trigger the v-if to render the preview container
+    croppedCanvas.value = canvas
+    
+    // Wait for the DOM to update so that previewCanvas ref is available
+    await nextTick()
+    
+    if (previewCanvas.value) {
+      const ctx = previewCanvas.value.getContext('2d')
+      if (ctx) {
+        previewCanvas.value.width = canvas.width
+        previewCanvas.value.height = canvas.height
+        ctx.drawImage(canvas, 0, 0)
+      }
     }
   }
-}
-
-const handleZoom = (direction: 'in' | 'out') => {
-  const cropper = cropperRef.value?.getCropper()
-  if (cropper) {
-    const imageData = cropper.getImageData()
-    const step = scaleStep.value
-    if (direction === 'in') {
-      cropperRef.value?.scale(imageData.scaleX + step, imageData.scaleY + step)
-    } else {
-      cropperRef.value?.scale(imageData.scaleX - step, imageData.scaleY - step)
-    }
-  }
-}
-
-const handleMove = (direction: 'left' | 'right' | 'up' | 'down') => {
-  const step = 10
-  const cropper = cropperRef.value?.getCropper()
-  if (cropper) {
-    switch (direction) {
-      case 'left':
-        cropper.move(-step, 0)
-        break
-      case 'right':
-        cropper.move(step, 0)
-        break
-      case 'up':
-        cropper.move(0, -step)
-        break
-      case 'down':
-        cropper.move(0, step)
-        break
-    }
-  }
-}
-
-const handleSkew = (axis: 'x' | 'y', value: number) => {
-  const cropper = cropperRef.value?.getCropper()
-  if (cropper) {
-    const imageData = cropper.getImageData()
-    if (axis === 'x') {
-      cropper.skew(imageData.skewX + value, imageData.skewY)
-    } else {
-      cropper.skew(imageData.skewX, imageData.skewY + value)
-    }
-  }
-}
-
-const reset = () => {
-  cropperRef.value?.reset()
 }
 
 // Handle style change

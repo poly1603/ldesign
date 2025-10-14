@@ -41,7 +41,12 @@ export default {
     learnMore: '了解更多',
     viewDocs: '查看文档',
     currentTime: '当前时间',
-    welcomeMessage: '你好，{name}！欢迎使用 LDesign。'
+    welcomeMessage: '你好，{name}！欢迎使用 LDesign。',
+    stats: {
+      routes: '路由数量',
+      visits: '访问次数',
+      cacheSize: '缓存大小'
+    }
   },
 
   // 关于页面
@@ -71,7 +76,10 @@ export default {
         i18n: '国际化支持',
         router: '智能路由系统',
         engine: '强大的引擎核心'
-      }
+      },
+      vue3Desc: '基于 Vue 3 构建，提供出色的性能',
+      viteDesc: '快速的开发服务器和构建工具',
+      i18nDesc: '完整的国际化支持'
     },
     team: {
       title: '开发团队',
@@ -81,7 +89,8 @@ export default {
       title: '联系我们',
       email: '邮箱',
       github: 'GitHub',
-      website: '官网'
+      website: '官网',
+      community: '讨论区'
     }
   },
 
@@ -179,6 +188,8 @@ export default {
     on: '开启',
     off: '关闭',
     visit: '访问',
+    actions: '操作',
+    clear: '清除',
     guest: '访客',
     error: '错误',
     success: '成功',

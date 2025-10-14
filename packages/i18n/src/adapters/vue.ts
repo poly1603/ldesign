@@ -86,7 +86,7 @@ export function useI18n(config?: I18nConfig): UseI18nComposable {
   });
   
   // Initialize if not already done
-  if (!injected) {
+  if (!injected && config?.messages) {
     i18n.init().then(() => {
       isReady.value = true;
     });
@@ -105,9 +105,16 @@ export function useI18n(config?: I18nConfig): UseI18nComposable {
     locale.value = newLocale;
   };
   
+  // 让 t 对 locale 产生响应式依赖，切换语言时可触发组件重渲染
+  const reactiveT: I18nInstance['t'] = ((key: any, params?: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _ = locale.value;
+    return i18n.t(key, params);
+  }) as any;
+
   return {
     i18n,
-    t: i18n.t,
+    t: reactiveT,
     locale,
     setLocale,
     availableLocales,

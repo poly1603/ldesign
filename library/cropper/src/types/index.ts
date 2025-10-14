@@ -2,6 +2,27 @@
  * Cropper Types
  */
 
+// Toolbar types
+export interface ToolbarButton {
+  id: string
+  title: string
+  icon: string
+  group: string
+  action: () => void
+  disabled?: boolean
+}
+
+export interface ToolbarOptions {
+  visible?: boolean
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'floating'
+  groups?: string[]
+  buttons?: string[]
+  customButtons?: ToolbarButton[]
+  showAdvanced?: boolean
+  compact?: boolean
+  theme?: 'light' | 'dark' | 'auto'
+}
+
 // View modes
 export type ViewMode = 0 | 1 | 2 | 3
 
@@ -160,6 +181,9 @@ export interface CropperOptions {
   // Crop box style
   cropBoxStyle?: CropBoxStyle
 
+  // Toolbar options
+  toolbar?: boolean | ToolbarOptions
+
   // Zoom on touch
   zoomOnTouch?: boolean
 
@@ -240,6 +264,7 @@ export interface CropperOptions {
   zoom?: (event: CustomEvent) => void
   upload?: (event: CustomEvent) => void
   uploadError?: (event: CustomEvent) => void
+  onToolbarCrop?: (canvas: HTMLCanvasElement) => void
 }
 
 // Get cropped canvas options

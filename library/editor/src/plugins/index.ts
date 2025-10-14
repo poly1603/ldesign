@@ -9,7 +9,7 @@ export * from './blockquote'
 export * from './codeblock'
 export * from './link'
 export * from './image'
-export * from './image-style'
+// export * from './image-style' // 文件不存在
 export * from './table'
 export * from './history'
 export * from './align'
@@ -25,6 +25,10 @@ export * from './find-replace'
 export * from './word-count'
 export * from './export-markdown'
 
+// 导出右键菜单插件
+import ContextMenuPlugin from './context-menu'
+export { ContextMenuPlugin }
+
 // 默认插件集合
 export { BoldPlugin, ItalicPlugin, UnderlinePlugin, StrikePlugin, CodePlugin, ClearFormatPlugin } from './formatting'
 export { HeadingPlugin } from './heading'
@@ -33,7 +37,7 @@ export { BlockquotePlugin } from './blockquote'
 export { CodeBlockPlugin } from './codeblock'
 export { LinkPlugin } from './link'
 export { ImagePlugin } from './image'
-export { ImageStylePlugin, IMAGE_STYLE_PRESETS } from './image-style'
+// export { ImageStylePlugin, IMAGE_STYLE_PRESETS } from './image-style' // 文件不存在
 export { TablePlugin } from './table'
 export { HistoryPlugin } from './history'
 export { AlignPlugin } from './align'

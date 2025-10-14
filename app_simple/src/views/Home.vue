@@ -10,12 +10,12 @@
       </p>
       
       <div class="hero-actions">
-        <router-link to="/about" class="btn btn-primary">
+        <RouterLink to="/about" class="btn btn-primary">
           {{ t('home.learnMore') }}
-        </router-link>
-        <router-link to="/dashboard" class="btn btn-secondary">
+        </RouterLink>
+        <RouterLink to="/dashboard" class="btn btn-secondary">
           {{ t('home.getStarted') }}
-        </router-link>
+        </RouterLink>
       </div>
     </div>
     
@@ -34,15 +34,15 @@
     <div class="stats">
       <div class="stat-item">
         <div class="stat-value">{{ routeCount }}</div>
-        <div class="stat-label">路由数量</div>
+        <div class="stat-label">{{ t('home.stats.routes') }}</div>
       </div>
       <div class="stat-item">
         <div class="stat-value">{{ visitCount }}</div>
-        <div class="stat-label">访问次数</div>
+        <div class="stat-label">{{ t('home.stats.visits') }}</div>
       </div>
       <div class="stat-item">
         <div class="stat-value">{{ cacheSize }}KB</div>
-        <div class="stat-label">缓存大小</div>
+        <div class="stat-label">{{ t('home.stats.cacheSize') }}</div>
       </div>
     </div>
   </div>

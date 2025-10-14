@@ -1,0 +1,13 @@
+// Export Vue adapter namespace
+export * as Vue from './vue';
+
+// Export React adapter namespace
+export * as React from './react';
+
+// Re-export commonly used types and interfaces
+export type {
+  QRCodeConfig,
+  QRCodeStyle,
+  ErrorCorrectionLevel,
+  DotStyle,
+} from '../types';

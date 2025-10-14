@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Office Document Renderer - Example</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Office Document Renderer Demo</h1>
+      <p>High-performance rendering for Word, Excel, and PowerPoint files</p>
+    </header>
+
+    <main>
+      <div class="controls">
+        <div class="upload-section">
+          <h2>Upload Document</h2>
+          <input type="file" id="fileInput" accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx">
+          <button id="loadFileBtn" disabled>Load Document</button>
+        </div>
+
+        <div class="url-section">
+          <h2>Load from URL</h2>
+          <input type="url" id="urlInput" placeholder="Enter document URL">
+          <button id="loadUrlBtn">Load from URL</button>
+        </div>
+
+        <div class="samples-section">
+          <h2>Sample Documents</h2>
+          <div class="sample-buttons">
+            <button class="sample-btn" data-type="word">Sample Word</button>
+            <button class="sample-btn" data-type="excel">Sample Excel</button>
+            <button class="sample-btn" data-type="powerpoint">Sample PowerPoint</button>
+          </div>
+        </div>
+
+        <div class="options-section">
+          <h2>Render Options</h2>
+          <label>
+            <input type="checkbox" id="toolbarOption" checked> Show Toolbar
+          </label>
+          <label>
+            <input type="checkbox" id="paginationOption" checked> Enable Pagination
+          </label>
+          <label>
+            <input type="checkbox" id="searchOption" checked> Enable Search
+          </label>
+          <label>
+            <input type="checkbox" id="virtualScrollOption"> Virtual Scrolling
+          </label>
+          <label>
+            Theme:
+            <select id="themeSelect">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="viewer-container">
+        <div id="documentViewer">
+          <div class="placeholder">
+            <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p>Upload or select a document to preview</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-panel">
+        <h3>Document Info</h3>
+        <div id="documentInfo">
+          <p>No document loaded</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

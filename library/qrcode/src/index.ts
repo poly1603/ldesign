@@ -5,8 +5,7 @@ import { SVGRenderer } from './renderers/svg';
 // Export types
 export * from './types';
 
-// Export adapters
-export * from './adapters';
+// Adapters are available at './adapters/react' and './adapters/vue'
 
 /**
  * QR Code class

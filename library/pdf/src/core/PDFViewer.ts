@@ -23,6 +23,7 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
   public document: PDFDocumentProxy | null = null;
   public container: HTMLElement;
   private viewerContainer: HTMLElement | null = null;
+  private mainContainer: HTMLElement | null = null;
   private renderer: PDFRenderer;
   private searchManager: SearchManager | null = null;
   private annotationManager: AnnotationManager | null = null;
@@ -665,6 +666,10 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
     this.viewerContainer.setAttribute('data-theme', this.options.theme as string);
     this.viewerContainer.setAttribute('data-page-mode', this.state.pageMode);
     
+    // Create main content wrapper (sidebar + canvas)
+    this.mainContainer = document.createElement('div');
+    this.mainContainer.className = 'pdf-main';
+    
     // Create canvas container
     this.canvasContainer = document.createElement('div');
     this.canvasContainer.className = 'pdf-canvas-container';
@@ -683,7 +688,9 @@ export class PDFViewer extends EventEmitter implements PDFViewer {
       this.canvasContainer.appendChild(this.annotationLayerContainer);
     }
     
-    this.viewerContainer.appendChild(this.canvasContainer);
+    // Assemble structure
+    this.mainContainer.appendChild(this.canvasContainer);
+    this.viewerContainer.appendChild(this.mainContainer);
     this.container.appendChild(this.viewerContainer);
   }
 

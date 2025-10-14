@@ -53,7 +53,7 @@
       
       <div class="login-footer">
         <p class="hint">{{ t('login.hint') || '使用 admin/admin 登录' }}</p>
-        <router-link to="/" class="back-link">{{ t('common.back') }}</router-link>
+        <RouterLink to="/" class="back-link">{{ t('common.back') }}</RouterLink>
       </div>
     </div>
   </div>

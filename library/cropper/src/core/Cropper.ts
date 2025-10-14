@@ -17,6 +17,7 @@ import type {
 import { CropBox } from './CropBox'
 import { ImageProcessor } from './ImageProcessor'
 import { InteractionManager } from './InteractionManager'
+import { Toolbar, type ToolbarOptions } from './Toolbar'
 import { getElement, createElement, addClass, removeClass, setStyle } from '../utils/dom'
 import { dispatch } from '../utils/events'
 import { clamp } from '../utils/math'
@@ -85,6 +86,7 @@ export class Cropper {
   private cropBox: CropBox | null = null
   private imageProcessor: ImageProcessor | null = null
   private interactionManager: InteractionManager | null = null
+  private toolbar: Toolbar | null = null
   private placeholderElement: HTMLElement | null = null
   private fileInput: HTMLInputElement | null = null
   private ready = false
@@ -160,6 +162,9 @@ export class Cropper {
 
       // Initialize interaction manager
       this.initInteractionManager()
+
+      // Initialize toolbar if enabled
+      this.initToolbar()
 
       // Mark as ready
       this.ready = true
@@ -293,6 +298,34 @@ export class Cropper {
         wheelZoomRatio: this.options.wheelZoomRatio
       }
     )
+  }
+
+  /**
+   * Initialize toolbar
+   */
+  private initToolbar(): void {
+    if (!this.container || !this.options.toolbar) return
+
+    // Destroy existing toolbar if any
+    if (this.toolbar) {
+      this.toolbar.destroy()
+    }
+
+    // Handle both boolean and object toolbar options
+    const toolbarOptions = typeof this.options.toolbar === 'boolean' 
+      ? {} // Use default options if true
+      : this.options.toolbar
+
+    // Create toolbar with options
+    this.toolbar = new Toolbar(this, this.container, toolbarOptions)
+
+    // Listen to toolbar crop event
+    this.container.addEventListener('toolbar:crop', (event: any) => {
+      const canvas = event.detail.canvas
+      if (canvas && this.options.onToolbarCrop) {
+        this.options.onToolbarCrop(canvas)
+      }
+    })
   }
 
   /**
@@ -950,6 +983,10 @@ export class Cropper {
   destroy(): void {
     if (!this.container) return
 
+    if (this.toolbar) {
+      this.toolbar.destroy()
+    }
+
     if (this.interactionManager) {
       this.interactionManager.destroy()
     }
@@ -971,6 +1008,7 @@ export class Cropper {
     this.cropBox = null
     this.imageProcessor = null
     this.interactionManager = null
+    this.toolbar = null
     this.ready = false
   }
 }

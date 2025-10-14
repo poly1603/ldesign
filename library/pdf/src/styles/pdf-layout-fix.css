@@ -1,0 +1,483 @@
+/* PDF Viewer Layout Fix - 解决元素重叠问题 */
+
+/* ==================== 全局布局修复 ==================== */
+
+/* 主容器布局 - 使用更精确的flexbox布局 */
+.pdf-viewer {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  isolation: isolate; /* 创建新的层叠上下文，防止子元素z-index影响 */
+}
+
+/* ==================== Z-Index 层级管理 ==================== */
+:root {
+  /* 定义清晰的z-index层级 */
+  --z-canvas: 1;           /* 画布层 */
+  --z-text-layer: 2;       /* 文本选择层 */
+  --z-annotation: 3;       /* 注释层 */
+  --z-highlight: 10;      /* 搜索高亮 */
+  --z-sidebar: 100;        /* 侧边栏 */
+  --z-toolbar: 200;        /* 工具栏 */
+  --z-modal: 300;          /* 模态框 */
+  --z-tooltip: 400;        /* 工具提示 */
+  --z-loading: 500;        /* 加载指示器 */
+  --z-maximum: 999;        /* 最高层级 */
+}
+
+/* ==================== 工具栏布局优化 ==================== */
+.pdf-toolbar {
+  position: relative; /* 改为relative，避免脱离文档流 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  min-height: 56px;
+  max-height: 56px; /* 固定高度防止内容溢出 */
+  flex-shrink: 0; /* 防止被压缩 */
+  z-index: var(--z-toolbar);
+  gap: 12px;
+  overflow-x: auto; /* 内容过多时允许横向滚动 */
+  overflow-y: hidden;
+}
+
+/* 工具栏响应式调整 */
+.pdf-toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* 防止按钮文字换行 */
+.pdf-toolbar-button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ==================== 侧边栏布局优化 ==================== */
+.pdf-sidebar {
+  position: fixed; /* 使用fixed定位，独立于主内容区域 */
+  left: 0;
+  top: 56px; /* 精确匹配工具栏高度 */
+  bottom: 0;
+  width: 260px;
+  z-index: var(--z-sidebar);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden; /* 防止内容溢出 */
+}
+
+/* 侧边栏内容滚动优化 */
+.pdf-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px;
+  min-height: 0; /* 重要：允许flexbox子项收缩 */
+  scrollbar-width: thin; /* Firefox */
+}
+
+/* Webkit滚动条样式 */
+.pdf-sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pdf-sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pdf-sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+/* ==================== 主内容区域布局优化 ==================== */
+.pdf-canvas-container {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start; /* 改为flex-start，防止单页模式下内容居中导致的滚动问题 */
+  justify-content: center;
+  padding: 20px;
+  /* 使用CSS变量控制边距，方便动态调整 */
+  --sidebar-width: 260px;
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 0; /* 允许容器收缩 */
+  /* 明确设置高度计算 */
+  height: calc(100vh - 56px); /* 减去工具栏高度 */
+  box-sizing: border-box;
+}
+
+/* 侧边栏隐藏时的布局 */
+.pdf-sidebar.hidden ~ .pdf-canvas-container,
+.pdf-canvas-container.sidebar-hidden {
+  --sidebar-width: 0px;
+  margin-left: 0;
+}
+
+/* 连续页面模式布局 */
+.pdf-viewer[data-page-mode="continuous"] .pdf-canvas-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: auto; /* 允许横向滚动 */
+}
+
+/* 单页模式布局 */
+.pdf-viewer[data-page-mode="single"] .pdf-canvas-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto; /* 确保大尺寸PDF可以滚动 */
+}
+
+/* ==================== 页面包装器优化 ==================== */
+.pdf-page-wrapper {
+  position: relative;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+  display: block;
+  /* 重要：设置包含块用于绝对定位的子元素 */
+  contain: layout style;
+  /* 防止内部元素溢出 */
+  overflow: visible;
+  /* 创建新的层叠上下文 */
+  isolation: isolate;
+  /* 防止缩放时模糊 */
+  will-change: transform;
+}
+
+/* 连续模式下的页面间距 */
+.pdf-viewer[data-page-mode="continuous"] .pdf-page-wrapper {
+  margin-bottom: 20px;
+}
+
+.pdf-viewer[data-page-mode="continuous"] .pdf-page-wrapper:last-child {
+  margin-bottom: 0;
+}
+
+/* ==================== Canvas 和层级优化 ==================== */
+.pdf-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  position: relative;
+  z-index: var(--z-canvas);
+  /* 防止图像模糊 */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  /* 防止用户拖拽 */
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 文本层定位优化 */
+.pdf-text-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: var(--z-text-layer);
+  opacity: 0; /* 完全透明，只用于文本选择 */
+  line-height: 1;
+  /* 允许文本选择但不影响其他交互 */
+  pointer-events: none;
+}
+
+.pdf-text-layer > span {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  pointer-events: auto; /* 允许文本选择 */
+  /* 防止选中时的背景色影响视觉 */
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 优化文本选择样式 */
+.pdf-text-layer ::selection {
+  background: rgba(0, 100, 200, 0.3);
+}
+
+.pdf-text-layer ::-moz-selection {
+  background: rgba(0, 100, 200, 0.3);
+}
+
+/* 注释层定位优化 */
+.pdf-annotation-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-annotation);
+  overflow: visible; /* 允许注释溢出 */
+  pointer-events: none; /* 默认不捕获事件 */
+}
+
+/* 注释元素可交互 */
+.pdf-annotation-layer a,
+.pdf-annotation-layer .annotation-element,
+.pdf-annotation-layer [data-annotation-id] {
+  position: absolute;
+  pointer-events: auto; /* 允许交互 */
+  cursor: pointer;
+}
+
+/* 链接注释样式 */
+.pdf-annotation-layer .linkAnnotation {
+  display: block;
+  background: transparent;
+}
+
+.pdf-annotation-layer .linkAnnotation:hover {
+  background: rgba(255, 255, 0, 0.2);
+}
+
+/* ==================== 搜索高亮优化 ==================== */
+.pdf-search-highlight {
+  position: absolute;
+  background-color: rgba(255, 237, 0, 0.4);
+  z-index: var(--z-highlight);
+  pointer-events: none;
+  mix-blend-mode: multiply; /* 使用混合模式避免完全遮挡文本 */
+}
+
+.pdf-search-highlight.current {
+  background-color: rgba(255, 140, 0, 0.6);
+}
+
+/* ==================== 缩略图布局优化 ==================== */
+.pdf-thumbnails-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px;
+}
+
+.pdf-thumbnail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  /* 防止缩略图变形 */
+  aspect-ratio: 1 / 1.414; /* A4纸张比例 */
+  overflow: hidden;
+}
+
+.pdf-thumbnail-canvas {
+  width: 100%;
+  height: auto;
+  object-fit: contain; /* 保持比例 */
+}
+
+/* ==================== 加载和错误状态优化 ==================== */
+.pdf-loading,
+.pdf-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-loading);
+}
+
+/* ==================== 全屏模式优化 ==================== */
+.pdf-viewer.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-maximum);
+  background: rgba(0, 0, 0, 0.95);
+}
+
+.pdf-viewer.fullscreen .pdf-canvas-container {
+  background: transparent;
+}
+
+/* ==================== 响应式布局优化 ==================== */
+
+/* 平板设备 */
+@media (max-width: 768px) {
+  .pdf-sidebar {
+    width: 240px;
+  }
+  
+  .pdf-canvas-container {
+    --sidebar-width: 240px;
+  }
+  
+  /* 平板上默认隐藏侧边栏 */
+  .pdf-sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .pdf-sidebar.mobile-visible {
+    transform: translateX(0);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .pdf-canvas-container {
+    margin-left: 0;
+  }
+  
+  .pdf-toolbar {
+    padding: 8px 12px;
+  }
+}
+
+/* 手机设备 */
+@media (max-width: 480px) {
+  .pdf-sidebar {
+    width: 100%;
+    max-width: 100vw;
+  }
+  
+  .pdf-toolbar {
+    min-height: 48px;
+    max-height: 48px;
+    padding: 8px;
+  }
+  
+  .pdf-canvas-container {
+    height: calc(100vh - 48px);
+    padding: 10px;
+  }
+  
+  /* 移动端工具栏按钮调整 */
+  .pdf-toolbar-button {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  /* 隐藏部分工具栏元素 */
+  .pdf-toolbar-separator,
+  .pdf-scale-select {
+    display: none;
+  }
+  
+  /* 简化页面导航 */
+  .pdf-page-navigation {
+    padding: 2px 8px;
+  }
+  
+  .pdf-page-input {
+    width: 40px;
+    height: 28px;
+    font-size: 12px;
+  }
+}
+
+/* ==================== 打印样式优化 ==================== */
+@media print {
+  /* 隐藏UI元素 */
+  .pdf-toolbar,
+  .pdf-sidebar,
+  .pdf-loading,
+  .pdf-error {
+    display: none !important;
+  }
+  
+  /* 调整内容区域 */
+  .pdf-canvas-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  /* 移除阴影和边框 */
+  .pdf-page-wrapper,
+  .pdf-canvas {
+    box-shadow: none !important;
+    border: none !important;
+  }
+  
+  /* 确保页面分页 */
+  .pdf-page-wrapper {
+    page-break-after: always;
+    break-after: page;
+  }
+  
+  .pdf-page-wrapper:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+}
+
+/* ==================== 辅助功能优化 ==================== */
+
+/* 键盘导航焦点样式 */
+.pdf-toolbar-button:focus-visible,
+.pdf-sidebar-tab:focus-visible,
+.pdf-thumbnail-item:focus-visible {
+  outline: 2px solid #4A90E2;
+  outline-offset: 2px;
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  .pdf-viewer {
+    border: 1px solid currentColor;
+  }
+  
+  .pdf-toolbar,
+  .pdf-sidebar {
+    border: 1px solid currentColor;
+  }
+}
+
+/* 减少动画模式 */
+@media (prefers-reduced-motion: reduce) {
+  .pdf-sidebar,
+  .pdf-canvas-container,
+  .pdf-thumbnail-item,
+  .pdf-toolbar-button {
+    transition: none !important;
+  }
+}
+
+/* ==================== 性能优化 ==================== */
+
+/* 使用GPU加速 */
+.pdf-canvas-container {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* 优化大文档滚动性能 */
+.pdf-viewer[data-page-mode="continuous"] .pdf-canvas-container {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+}
+
+/* 防止不必要的重绘 */
+.pdf-page-wrapper {
+  contain: layout style paint;
+}

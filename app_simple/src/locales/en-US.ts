@@ -41,7 +41,12 @@ export default {
     learnMore: 'Learn More',
     viewDocs: 'View Docs',
     currentTime: 'Current Time',
-    welcomeMessage: 'Hello, {name}! Welcome to LDesign.'
+    welcomeMessage: 'Hello, {name}! Welcome to LDesign.',
+    stats: {
+      routes: 'Routes',
+      visits: 'Visits',
+      cacheSize: 'Cache Size'
+    }
   },
 
   // About Page
@@ -71,7 +76,10 @@ export default {
         i18n: 'Internationalization',
         router: 'Smart Router System',
         engine: 'Powerful Engine Core'
-      }
+      },
+      vue3Desc: 'Built on Vue 3, providing excellent performance',
+      viteDesc: 'Fast development server and build tool',
+      i18nDesc: 'Complete internationalization support'
     },
     team: {
       title: 'Development Team',
@@ -81,7 +89,8 @@ export default {
       title: 'Contact Us',
       email: 'Email',
       github: 'GitHub',
-      website: 'Website'
+      website: 'Website',
+      community: 'Community'
     }
   },
 
@@ -179,6 +188,8 @@ export default {
     on: 'On',
     off: 'Off',
     visit: 'Visit',
+    actions: 'Actions',
+    clear: 'Clear',
     guest: 'Guest',
     error: 'Error',
     success: 'Success',
@@ -221,6 +232,11 @@ export default {
 
   // Error Messages
   errors: {
+    startup: {
+      title: 'Application Failed to Start',
+      message: 'Unknown error',
+      action: 'Reload'
+    },
     404: {
       title: 'Page Not Found',
       message: 'Sorry, the page you are looking for does not exist.',

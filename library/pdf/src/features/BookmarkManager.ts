@@ -63,18 +63,28 @@ export class BookmarkManager extends EventEmitter {
   /**
    * Add bookmark for current page
    */
-  addCurrentPageBookmark(title?: string): Bookmark {
-    const currentPage = this.viewer.getCurrentPage();
-    const viewport = this.viewer.getViewport();
-    
-    return this.addBookmark({
-      title: title || `Page ${currentPage}`,
-      pageNumber: currentPage,
-      position: viewport ? { 
-        x: viewport.scrollLeft || 0, 
-        y: viewport.scrollTop || 0 
-      } : undefined
-    });
+  addCurrentPageBookmark(title?: string): Bookmark | null {
+    try {
+      const currentPage = this.viewer.getCurrentPage();
+      const viewport = this.viewer.getViewport();
+      
+      if (!currentPage || currentPage === 0) {
+        console.warn('No page loaded to bookmark');
+        return null;
+      }
+      
+      return this.addBookmark({
+        title: title || `Page ${currentPage}`,
+        pageNumber: currentPage,
+        position: viewport ? { 
+          x: viewport.scrollLeft || 0, 
+          y: viewport.scrollTop || 0 
+        } : undefined
+      });
+    } catch (error) {
+      console.error('Failed to add bookmark:', error);
+      return null;
+    }
   }
 
   /**

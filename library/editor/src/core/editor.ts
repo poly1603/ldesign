@@ -22,6 +22,7 @@ export class Editor {
   public commands: CommandManager
   public keymap: KeymapManager
   public plugins: PluginManager
+  public contextMenuManager?: any // 右键菜单管理器
 
   // 选项
   private options: EditorOptions
@@ -29,7 +30,7 @@ export class Editor {
 
   // DOM
   private element: HTMLElement | null = null
-  private contentElement: HTMLElement | null = null
+  public contentElement: HTMLElement | null = null
 
   // 状态
   private destroyed: boolean = false
@@ -58,7 +59,8 @@ export class Editor {
     if (options.plugins) {
       options.plugins.forEach(plugin => {
         if (typeof plugin === 'string') {
-          // TODO: 从内置插件加载
+          // 从内置插件加载
+          this.loadBuiltinPlugin(plugin)
         } else {
           this.plugins.register(plugin)
         }
@@ -193,6 +195,32 @@ export class Editor {
     }
   }
 
+  /**
+   * 加载内置插件
+   */
+  private loadBuiltinPlugin(name: string): void {
+    // 动态导入插件
+    switch(name) {
+      case 'image':
+        import('../plugins/image').then(module => {
+          this.plugins.register(module.ImagePlugin)
+          console.log(`[编辑器] 加载插件: ${name}`)
+        })
+        break
+      case 'formatting':
+        import('../plugins/formatting').then(module => {
+          if (module.BoldPlugin) this.plugins.register(module.BoldPlugin)
+          if (module.ItalicPlugin) this.plugins.register(module.ItalicPlugin)
+          if (module.UnderlinePlugin) this.plugins.register(module.UnderlinePlugin)
+          console.log(`[编辑器] 加载插件: ${name}`)
+        })
+        break
+      // 其他插件可以在这里添加
+      default:
+        console.warn(`未知插件: ${name}`)
+    }
+  }
+  
   /**
    * 获取编辑器状态
    */

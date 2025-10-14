@@ -46,9 +46,9 @@ async function bootstrap() {
       
     // Vue应用配置
     setupApp: async (app) => {
-      // 安装 i18n Vue 插件
-      if (i18nPlugin.vuePlugin) {
-        app.use(i18nPlugin.vuePlugin)
+      // 手动安装 i18n Vue 插件
+      if (i18nPlugin.setupVueApp) {
+        i18nPlugin.setupVueApp(app);
       }
       console.log('✅ 应用设置完成')
     },
@@ -61,6 +61,31 @@ async function bootstrap() {
       // 引擎就绪
       onReady: (engine) => {
         console.log('✅ 引擎已就绪')
+
+        // 语言切换时同步更新页面标题
+        try {
+          const api = (engine as any).api
+          const router = (engine as any).router
+          const i18n = api?.i18n
+          if (i18n && router && typeof i18n.on === 'function') {
+            i18n.on('localeChanged', () => {
+              try {
+                const current = typeof router.getCurrentRoute === 'function' ? router.getCurrentRoute().value : null
+                const titleKey = current?.meta?.titleKey
+                const t = typeof api?.t === 'function' ? api.t.bind(api) : ((k: string) => k)
+                if (titleKey) {
+                  document.title = `${t(titleKey)} - ${t('app.name')}`
+                } else {
+                  document.title = t('app.name')
+                }
+              } catch (e) {
+                console.warn('Failed to update title on locale change:', e)
+              }
+            })
+          }
+        } catch (e) {
+          console.warn('i18n title sync setup failed:', e)
+        }
         
         if (import.meta.env.DEV) {
           // 开发环境暴露引擎实例

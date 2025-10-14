@@ -5,7 +5,7 @@
 @import './ui.css';
 @import './dialog.css';
 @import './table.css';
-@import './image-enhanced.css';
+/* @import './image-enhanced.css'; */ /* 文件不存在 */
 @import './context-menu.css';
 
 .ldesign-editor {

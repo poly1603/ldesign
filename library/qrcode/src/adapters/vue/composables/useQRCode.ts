@@ -12,7 +12,7 @@ import type {
   QRCodeInstance,
   ErrorCorrectionLevel,
   RenderType,
-} from '../../../types';
+} from '../../../types/index';
 import { createQRCode } from '../../../index';
 
 // ========== useQRCode Composable ==========

@@ -1,5 +1,5 @@
 import { Directive, DirectiveBinding } from 'vue';
-import type { QRCodeConfig, QRCodeInstance } from '../../../types';
+import type { QRCodeConfig, QRCodeInstance } from '../../../types/index';
 import { createQRCode } from '../../../index';
 
 interface QRCodeDirectiveBinding extends DirectiveBinding {

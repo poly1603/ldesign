@@ -5,434 +5,436 @@ import './App.css'
 import { 
   QRCode, 
   useQRCode, 
-  useBatchQRCode,
-  useQRCodeInput,
-  useQRCodeTheme,
   QRCodeRef 
 } from '@qrcode-lib/adapters/react'
 
 function App() {
-  const [activeExample, setActiveExample] = useState('basic')
-
   return (
     <div className="App">
-      <h1>QRCode React Examples</h1>
+      <header className="header">
+        <h1>🎯 QRCode Library React Demo</h1>
+        <p>Explore various QR code styles and features</p>
+      </header>
       
-      <div className="nav-tabs">
-        <button 
-          className={activeExample === 'basic' ? 'active' : ''}
-          onClick={() => setActiveExample('basic')}
-        >
-          Basic Example
-        </button>
-        <button 
-          className={activeExample === 'advanced' ? 'active' : ''}
-          onClick={() => setActiveExample('advanced')}
-        >
-          Advanced Styling
-        </button>
-        <button 
-          className={activeExample === 'hooks' ? 'active' : ''}
-          onClick={() => setActiveExample('hooks')}
-        >
-          Hooks Example
-        </button>
-        <button 
-          className={activeExample === 'batch' ? 'active' : ''}
-          onClick={() => setActiveExample('batch')}
-        >
-          Batch Generation
-        </button>
-        <button 
-          className={activeExample === 'interactive' ? 'active' : ''}
-          onClick={() => setActiveExample('interactive')}
-        >
-          Interactive
-        </button>
-      </div>
-
-      <div className="example-content">
-        {activeExample === 'basic' && <BasicExample />}
-        {activeExample === 'advanced' && <AdvancedExample />}
-        {activeExample === 'hooks' && <HooksExample />}
-        {activeExample === 'batch' && <BatchExample />}
-        {activeExample === 'interactive' && <InteractiveExample />}
+      <div className="demos-container">
+        <BasicDemo />
+        <StyledDemo />
+        <GradientDemo />
+        <LogoDemo />
+        <ErrorCorrectionDemo />
+        <SizeDemo />
+        <DotsDemo />
+        <DiamondDemo />
+        <StarDemo />
+        <ClassyDemo />
+        <CustomEyesDemo />
+        <ShadowDemo />
+        <MaskDemo />
+        <AdvancedTransformDemo />
       </div>
     </div>
   )
 }
 
-// Basic Example Component
-function BasicExample() {
-  const [content, setContent] = useState('https://github.com')
-  const qrRef = useRef<QRCodeRef>(null)
-
-  const handleDownload = () => {
-    qrRef.current?.download('my-qrcode', 'png')
-  }
-
+// Basic Demo
+function BasicDemo() {
   return (
-    <div className="example-section">
-      <h2 className="example-title">Basic QR Code</h2>
-      
-      <div className="controls">
-        <div className="control-group">
-          <label>Content:</label>
-          <input 
-            type="text" 
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Enter content"
-          />
-        </div>
-        
-        <div className="control-group">
-          <button onClick={handleDownload}>Download QR Code</button>
-        </div>
-      </div>
-
-      <div className="qr-display">
+    <div className="demo-card">
+      <h2>📱 Basic QR Code</h2>
+      <div className="qr-wrapper">
         <QRCode
-          ref={qrRef}
-          content={content}
+          content="https://github.com"
           size={200}
-          fgColor="#000000"
-          bgColor="#ffffff"
-          onReady={() => console.log('QR Code is ready!')}
         />
       </div>
-
-      <div className="code-block">
-        <pre>{`<QRCode
-  ref={qrRef}
-  content="${content}"
+      <div className="demo-code">
+        <code>
+{`<QRCode
+  content="https://github.com"
   size={200}
-  fgColor="#000000"
-  bgColor="#ffffff"
-  onReady={() => console.log('QR Code is ready!')}
-/>`}</pre>
+/>`}
+        </code>
       </div>
     </div>
   )
 }
 
-// Advanced Styling Example
-function AdvancedExample() {
-  const [config, setConfig] = useState({
-    content: 'Advanced QR Code Example',
-    size: 250,
-    errorCorrectionLevel: 'H' as const,
-    dotStyle: 'rounded' as const,
-    cornerRadius: 10,
-    fgColor: '#4F46E5',
-    bgColor: '#F3F4F6',
-    logo: {
-      url: 'https://via.placeholder.com/50',
-      size: 50,
-      margin: 5,
-    }
-  })
-
+// Styled Demo
+function StyledDemo() {
   return (
-    <div className="example-section">
-      <h2 className="example-title">Advanced Styling</h2>
-      
-      <div className="controls">
-        <div className="control-group">
-          <label>Dot Style:</label>
-          <select 
-            value={config.dotStyle}
-            onChange={(e) => setConfig({...config, dotStyle: e.target.value as any})}
-          >
-            <option value="square">Square</option>
-            <option value="rounded">Rounded</option>
-            <option value="dots">Dots</option>
-            <option value="classy">Classy</option>
-            <option value="diamond">Diamond</option>
-          </select>
-        </div>
-        
-        <div className="control-group">
-          <label>Foreground Color:</label>
-          <input 
-            type="color" 
-            value={config.fgColor}
-            onChange={(e) => setConfig({...config, fgColor: e.target.value})}
-          />
-        </div>
-        
-        <div className="control-group">
-          <label>Background Color:</label>
-          <input 
-            type="color" 
-            value={config.bgColor}
-            onChange={(e) => setConfig({...config, bgColor: e.target.value})}
-          />
-        </div>
-        
-        <div className="control-group">
-          <label>Size:</label>
-          <input 
-            type="range" 
-            min="100" 
-            max="400" 
-            value={config.size}
-            onChange={(e) => setConfig({...config, size: Number(e.target.value)})}
-          />
-          <span>{config.size}px</span>
-        </div>
-      </div>
-
-      <div className="qr-display">
+    <div className="demo-card">
+      <h2>🎨 Styled QR Code</h2>
+      <div className="qr-wrapper">
         <QRCode
-          content={config.content}
-          size={config.size}
-          errorCorrectionLevel={config.errorCorrectionLevel}
-          dotStyle={config.dotStyle}
-          cornerRadius={config.cornerRadius}
-          fgColor={config.fgColor}
-          bgColor={config.bgColor}
-          logo={config.logo}
-          animated={true}
-          animationType="scale"
+          content="https://example.com"
+          size={200}
+          fgColor="#FF6B6B"
+          bgColor="#FFF5F5"
+          margin={4}
         />
       </div>
-    </div>
-  )
-}
-
-// Hooks Example
-function HooksExample() {
-  const { 
-    containerRef, 
-    generate, 
-    download, 
-    isGenerating,
-    error 
-  } = useQRCode()
-
-  const [content, setContent] = useState('')
-
-  const handleGenerate = () => {
-    if (content) {
-      generate({
-        content,
-        errorCorrectionLevel: 'M',
-        renderType: 'canvas',
-        style: {
-          size: 256,
-          fgColor: '#2563eb',
-          bgColor: '#ffffff',
-        }
-      })
-    }
-  }
-
-  return (
-    <div className="example-section">
-      <h2 className="example-title">useQRCode Hook</h2>
-      
-      <div className="controls">
-        <div className="control-group">
-          <label>Content:</label>
-          <textarea 
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Enter content to generate QR code"
-            rows={3}
-          />
-        </div>
-        
-        <div className="control-group">
-          <button onClick={handleGenerate} disabled={isGenerating}>
-            {isGenerating ? 'Generating...' : 'Generate QR Code'}
-          </button>
-          <button onClick={() => download('qr-hook-example')}>
-            Download
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <div className="error-message">Error: {error.message}</div>
-      )}
-
-      <div className="qr-display">
-        <div ref={containerRef} />
-      </div>
-
-      <div className="code-block">
-        <pre>{`const { containerRef, generate, download } = useQRCode()
-
-// Generate QR code
-generate({
-  content: "${content}",
-  style: { size: 256 }
-})
-
-// Download
-download('filename')`}</pre>
+      <div className="demo-code">
+        <code>
+{`<QRCode
+  content="https://example.com"
+  fgColor="#FF6B6B"
+  bgColor="#FFF5F5"
+  margin={4}
+/>`}
+        </code>
       </div>
     </div>
   )
 }
 
-// Batch Generation Example
-function BatchExample() {
-  const { 
-    items, 
-    addItem, 
-    removeItem, 
-    generateAll, 
-    downloadAll,
-    isGenerating,
-    progress 
-  } = useBatchQRCode()
-
-  const [newContent, setNewContent] = useState('')
-
-  const handleAdd = () => {
-    if (newContent) {
-      addItem(newContent, {
-        style: {
-          size: 150,
-          margin: 2,
-        }
-      })
-      setNewContent('')
-    }
-  }
-
+// Gradient Demo
+function GradientDemo() {
   return (
-    <div className="example-section">
-      <h2 className="example-title">Batch QR Code Generation</h2>
-      
-      <div className="controls">
-        <div className="control-group">
-          <label>Add Content:</label>
-          <input 
-            type="text" 
-            value={newContent}
-            onChange={(e) => setNewContent(e.target.value)}
-            placeholder="Enter content"
-            onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
-          />
-        </div>
-        
-        <div className="control-group">
-          <button onClick={handleAdd}>Add to Batch</button>
-          <button onClick={() => generateAll()} disabled={items.length === 0}>
-            Generate All ({items.length})
-          </button>
-          <button onClick={() => downloadAll()} disabled={items.length === 0}>
-            Download All
-          </button>
-        </div>
+    <div className="demo-card">
+      <h2>🌈 Gradient QR Code</h2>
+      <div className="qr-wrapper">
+        <QRCode
+          content="Gradient Example"
+          size={200}
+          gradient={{
+            type: 'linear',
+            colors: ['#FF6B6B', '#4ECDC4']
+          }}
+        />
       </div>
+      <div className="demo-code">
+        <code>
+{`<QRCode
+  content="Gradient Example"
+  gradient={{
+    type: 'linear',
+    colors: ['#FF6B6B', '#4ECDC4']
+  }}
+/>`}
+        </code>
+      </div>
+    </div>
+  )
+}
 
-      {isGenerating && (
-        <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${progress}%` }} />
-          <span>{Math.round(progress)}%</span>
-        </div>
-      )}
+// Logo Demo
+function LogoDemo() {
+  return (
+    <div className="demo-card">
+      <h2>🖼️ QR Code with Logo</h2>
+      <div className="qr-wrapper">
+        <QRCode
+          content="Logo Example"
+          size={200}
+          logo={{
+            url: 'https://via.placeholder.com/50',
+            size: 50,
+            margin: 5
+          }}
+          errorCorrectionLevel="H"
+        />
+      </div>
+      <div className="demo-code">
+        <code>
+{`<QRCode
+  content="Logo Example"
+  logo={{
+    url: 'logo.png',
+    size: 50,
+    margin: 5
+  }}
+  errorCorrectionLevel="H"
+/>`}
+        </code>
+      </div>
+    </div>
+  )
+}
 
-      <div className="batch-grid">
-        {items.map((item) => (
-          <div key={item.id} className="batch-item">
-            <div className="batch-item-header">
-              <span>{item.content.substring(0, 20)}...</span>
-              <button onClick={() => removeItem(item.id)}>×</button>
-            </div>
-            {item.dataURL && (
-              <img src={item.dataURL} alt="QR Code" />
-            )}
-            <span className={`status status-${item.status}`}>
-              {item.status}
-            </span>
-          </div>
+// Error Correction Demo
+function ErrorCorrectionDemo() {
+  const [level, setLevel] = useState<'L' | 'M' | 'Q' | 'H'>('M')
+  
+  return (
+    <div className="demo-card">
+      <h2>🛡️ Error Correction Levels</h2>
+      <div className="controls-row">
+        {(['L', 'M', 'Q', 'H'] as const).map(l => (
+          <button
+            key={l}
+            className={level === l ? 'active' : ''}
+            onClick={() => setLevel(l)}
+          >
+            {l} ({l === 'L' ? '7%' : l === 'M' ? '15%' : l === 'Q' ? '25%' : '30%'})
+          </button>
         ))}
       </div>
+      <div className="qr-wrapper">
+        <QRCode
+          content="Error Correction Demo"
+          size={200}
+          errorCorrectionLevel={level}
+        />
+      </div>
     </div>
   )
 }
 
-// Interactive Example with Theme
-function InteractiveExample() {
-  const { value, debouncedValue, inputProps } = useQRCodeInput('Type to generate QR code...')
-  const { currentTheme, toggleDarkMode, isDarkMode } = useQRCodeTheme()
-  const [renderType, setRenderType] = useState<'canvas' | 'svg'>('canvas')
-  const [animated, setAnimated] = useState(true)
-
+// Size Demo
+function SizeDemo() {
+  const [size, setSize] = useState(200)
+  
   return (
-    <div className="example-section">
-      <h2 className="example-title">Interactive QR Code</h2>
-      
-      <div className="controls">
-        <div className="control-group">
-          <label>Live Input (with debouncing):</label>
-          <textarea 
-            {...inputProps}
-            placeholder="Type something..."
-            rows={3}
-          />
-        </div>
-        
-        <div className="control-group">
-          <label>
-            <input 
-              type="checkbox" 
-              checked={isDarkMode}
-              onChange={toggleDarkMode}
-            />
-            Dark Mode
-          </label>
-        </div>
-        
-        <div className="control-group">
-          <label>
-            <input 
-              type="checkbox" 
-              checked={animated}
-              onChange={(e) => setAnimated(e.target.checked)}
-            />
-            Animated
-          </label>
-        </div>
-        
-        <div className="control-group">
-          <label>Render Type:</label>
-          <select 
-            value={renderType}
-            onChange={(e) => setRenderType(e.target.value as 'canvas' | 'svg')}
-          >
-            <option value="canvas">Canvas</option>
-            <option value="svg">SVG</option>
-          </select>
-        </div>
+    <div className="demo-card">
+      <h2>📏 Dynamic Size</h2>
+      <div className="controls-row">
+        <input
+          type="range"
+          min="100"
+          max="300"
+          value={size}
+          onChange={(e) => setSize(Number(e.target.value))}
+        />
+        <span>{size}px</span>
       </div>
+      <div className="qr-wrapper">
+        <QRCode
+          content="Size Demo"
+          size={size}
+        />
+      </div>
+    </div>
+  )
+}
 
-      <div className="qr-display" style={{ 
-        background: isDarkMode ? '#1a1a1a' : '#ffffff' 
-      }}>
-        {debouncedValue && (
+// Dots Demo
+function DotsDemo() {
+  return (
+    <div className="demo-card">
+      <h2>⚫ Dots Style</h2>
+      <div className="qr-wrapper">
+        <QRCode
+          content="Dots Style"
+          size={200}
+          dotStyle="dots"
+          fgColor="#6366F1"
+        />
+      </div>
+      <div className="demo-code">
+        <code>
+{`<QRCode
+  content="Dots Style"
+  dotStyle="dots"
+  fgColor="#6366F1"
+/>`}
+        </code>
+      </div>
+    </div>
+  )
+}
+
+// Diamond Demo
+function DiamondDemo() {
+  return (
+    <div className="demo-card">
+      <h2>💎 Diamond Style</h2>
+      <div className="qr-wrapper">
+        <QRCode
+          content="Diamond Style"
+          size={200}
+          dotStyle="diamond"
+          fgColor="#8B5CF6"
+        />
+      </div>
+      <div className="demo-code">
+        <code>
+{`<QRCode
+  content="Diamond Style"
+  dotStyle="diamond"
+  fgColor="#8B5CF6"
+/>`}
+        </code>
+      </div>
+    </div>
+  )
+}
+
+// Star Demo
+function StarDemo() {
+  return (
+    <div className="demo-card">
+      <h2>⭐ Star Style</h2>
+      <div className="qr-wrapper">
+        <QRCode
+          content="Star Style"
+          size={200}
+          dotStyle="star"
+          fgColor="#F59E0B"
+        />
+      </div>
+      <div className="demo-code">
+        <code>
+{`<QRCode
+  content="Star Style"
+  dotStyle="star"
+  fgColor="#F59E0B"
+/>`}
+        </code>
+      </div>
+    </div>
+  )
+}
+
+// Classy Demo
+function ClassyDemo() {
+  return (
+    <div className="demo-card">
+      <h2>🎩 Classy Style</h2>
+      <div className="qr-wrapper">
+        <QRCode
+          content="Classy Style"
+          size={200}
+          dotStyle="classy"
+          fgColor="#1F2937"
+        />
+      </div>
+      <div className="demo-code">
+        <code>
+{`<QRCode
+  content="Classy Style"
+  dotStyle="classy"
+  fgColor="#1F2937"
+/>`}
+        </code>
+      </div>
+    </div>
+  )
+}
+
+// Custom Eyes Demo
+function CustomEyesDemo() {
+  return (
+    <div className="demo-card">
+      <h2>👁️ Custom Eyes</h2>
+      <div className="qr-wrapper">
+        <QRCode
+          content="Custom Eyes"
+          size={200}
+          eyeStyle="circle"
+          eyeColor="#DC2626"
+        />
+      </div>
+      <div className="demo-code">
+        <code>
+{`<QRCode
+  content="Custom Eyes"
+  eyeStyle="circle"
+  eyeColor="#DC2626"
+/>`}
+        </code>
+      </div>
+    </div>
+  )
+}
+
+// Shadow Demo
+function ShadowDemo() {
+  return (
+    <div className="demo-card">
+      <h2>🌑 Shadow Effect</h2>
+      <div className="qr-wrapper" style={{ padding: '20px' }}>
+        <div style={{
+          boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+          borderRadius: '8px',
+          display: 'inline-block'
+        }}>
           <QRCode
-            content={debouncedValue}
-            renderType={renderType}
-            size={250}
-            fgColor={currentTheme.fgColor}
-            bgColor={currentTheme.bgColor}
-            animated={animated}
-            animationType="fade"
-            animationDuration={500}
+            content="Shadow Effect"
+            size={200}
           />
-        )}
+        </div>
       </div>
+      <div className="demo-code">
+        <code>
+{`<div style={{
+  boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+}}>
+  <QRCode content="Shadow Effect" />
+</div>`}
+        </code>
+      </div>
+    </div>
+  )
+}
 
-      <div className="info">
-        <p>Input value: {value}</p>
-        <p>Debounced value: {debouncedValue}</p>
-        <p>Theme: {isDarkMode ? 'Dark' : 'Light'}</p>
+// Mask Demo
+function MaskDemo() {
+  return (
+    <div className="demo-card">
+      <h2>🎭 Mask Pattern</h2>
+      <div className="qr-wrapper">
+        <QRCode
+          content="Mask Pattern"
+          size={200}
+          maskPattern={2}
+          fgColor="#059669"
+        />
+      </div>
+      <div className="demo-code">
+        <code>
+{`<QRCode
+  content="Mask Pattern"
+  maskPattern={2}
+  fgColor="#059669"
+/>`}
+        </code>
+      </div>
+    </div>
+  )
+}
+
+// Advanced Transform Demo
+function AdvancedTransformDemo() {
+  const [rotation, setRotation] = useState(0)
+  const [scale, setScale] = useState(1)
+  
+  return (
+    <div className="demo-card">
+      <h2>🔄 Transform Effects</h2>
+      <div className="controls-row">
+        <label>
+          Rotation: {rotation}°
+          <input
+            type="range"
+            min="0"
+            max="360"
+            value={rotation}
+            onChange={(e) => setRotation(Number(e.target.value))}
+          />
+        </label>
+        <label>
+          Scale: {scale.toFixed(1)}x
+          <input
+            type="range"
+            min="0.5"
+            max="1.5"
+            step="0.1"
+            value={scale}
+            onChange={(e) => setScale(Number(e.target.value))}
+          />
+        </label>
+      </div>
+      <div className="qr-wrapper">
+        <div style={{
+          transform: `rotate(${rotation}deg) scale(${scale})`,
+          transition: 'transform 0.3s ease'
+        }}>
+          <QRCode
+            content="Transform Demo"
+            size={200}
+            fgColor="#7C3AED"
+          />
+        </div>
       </div>
     </div>
   )

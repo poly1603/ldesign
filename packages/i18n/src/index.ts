@@ -237,9 +237,9 @@ export {
 } from './engine';
 
 // Vue Adapter exports for convenience
+import { useI18n as vueUseI18n } from './adapters/vue';
 export {
   createVueI18n,
-  useI18n as useVueI18n,  // Rename to avoid conflict
   vI18n,
   I18nT,
   useTranslation,
@@ -250,6 +250,9 @@ export {
   useRelativeTime,
   type UseI18nComposable
 } from './adapters/vue';
+
+// Export Vue's useI18n separately to avoid naming conflict
+export { vueUseI18n as useVueI18n };
 
 // Performance utilities
 export { ObjectPool, FastCacheKeyBuilder } from './core/i18n-optimized';

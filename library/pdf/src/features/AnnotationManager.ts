@@ -26,30 +26,19 @@ export class AnnotationManager extends EventEmitter {
    * Setup annotation layer
    */
   private setupAnnotationLayer(): void {
-    const container = this.viewer.options.container as HTMLElement;
-    this.annotationLayer = document.createElement('div');
-    this.annotationLayer.className = 'pdf-annotation-layer';
-    this.annotationLayer.style.position = 'absolute';
-    this.annotationLayer.style.top = '0';
-    this.annotationLayer.style.left = '0';
-    this.annotationLayer.style.width = '100%';
-    this.annotationLayer.style.height = '100%';
-    this.annotationLayer.style.pointerEvents = 'auto';
-    this.annotationLayer.style.zIndex = '100';
-    container.appendChild(this.annotationLayer);
+    // Don't create a separate blocking layer - use the existing annotation layers
+    // in each page wrapper or canvas container
+    // This method is now a no-op but kept for compatibility
+    // Annotations will be rendered within individual page annotation layers
   }
 
   /**
    * Bind event listeners
    */
   private bindEvents(): void {
-    if (this.annotationLayer) {
-      this.annotationLayer.addEventListener('click', this.handleClick.bind(this));
-      this.annotationLayer.addEventListener('mousedown', this.handleMouseDown.bind(this));
-      this.annotationLayer.addEventListener('mousemove', this.handleMouseMove.bind(this));
-      this.annotationLayer.addEventListener('mouseup', this.handleMouseUp.bind(this));
-    }
-
+    // Event listeners will be attached to individual page annotation layers
+    // when they are created, not to a global blocking layer
+    
     // Listen to page changes
     this.viewer.on('page-changed', () => {
       this.renderAnnotations();
@@ -131,8 +120,10 @@ export class AnnotationManager extends EventEmitter {
    */
   startDrawing(color: string = '#000000', strokeWidth: number = 2): void {
     this.isDrawingMode = true;
-    if (this.annotationLayer) {
-      this.annotationLayer.style.cursor = 'crosshair';
+    // Update cursor on canvas container instead of annotation layer
+    const canvasContainer = document.querySelector('.pdf-canvas-container') as HTMLElement;
+    if (canvasContainer) {
+      canvasContainer.style.cursor = 'crosshair';
     }
     
     this.currentDrawingPath = {
@@ -147,8 +138,10 @@ export class AnnotationManager extends EventEmitter {
    */
   stopDrawing(): void {
     this.isDrawingMode = false;
-    if (this.annotationLayer) {
-      this.annotationLayer.style.cursor = 'default';
+    // Reset cursor on canvas container
+    const canvasContainer = document.querySelector('.pdf-canvas-container') as HTMLElement;
+    if (canvasContainer) {
+      canvasContainer.style.cursor = 'default';
     }
     this.currentDrawingPath = null;
   }

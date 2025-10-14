@@ -8,20 +8,20 @@
       </div>
       
       <div class="nav-links">
-        <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
+      <RouterLink to="/" class="nav-link" :class="{ active: $route.path === '/' }">
           {{ t('nav.home') }}
-        </router-link>
-        <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
+        </RouterLink>
+        <RouterLink to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
           {{ t('nav.about') }}
-        </router-link>
-        <router-link
+        </RouterLink>
+        <RouterLink
           v-if="isLoggedIn" 
           to="/dashboard" 
           class="nav-link" 
           :class="{ active: $route.path === '/dashboard' }"
         >
           {{ t('nav.dashboard') }}
-        </router-link>
+        </RouterLink>
         
         <div class="nav-spacer"></div>
         
@@ -42,11 +42,7 @@
     
     <!-- 路由视图 -->
     <main class="main-content">
-      <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
+      <RouterView transition="fade" />
     </main>
     
     <!-- 页脚 -->

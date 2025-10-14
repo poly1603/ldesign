@@ -31,7 +31,7 @@ import type {
   LogoConfig,
   QRCodeStyle,
   DotStyle,
-} from '../../../types';
+} from '../../../types/index';
 import { createQRCode } from '../../../index';
 
 export default defineComponent({

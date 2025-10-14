@@ -1,0 +1,495 @@
+/**
+ * Office Document Renderer - Default Styles
+ * Include this file for default styling, or create your own custom styles
+ */
+
+/* Base viewer styles */
+.od-word-viewer,
+.od-excel-viewer,
+.od-ppt-viewer {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+.od-word-viewer *,
+.od-excel-viewer *,
+.od-ppt-viewer * {
+  box-sizing: border-box;
+}
+
+/* Toolbar styles */
+.od-word-toolbar,
+.od-excel-toolbar,
+.od-ppt-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f5f5f5;
+}
+
+.od-toolbar-button {
+  padding: 6px 12px;
+  border: 1px solid #d0d0d0;
+  background-color: #ffffff;
+  color: #333333;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  min-width: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.od-toolbar-button:hover {
+  background-color: #f0f0f0;
+  border-color: #b0b0b0;
+}
+
+.od-toolbar-button:active {
+  background-color: #e0e0e0;
+}
+
+.od-toolbar-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Word document styles */
+.od-word-content {
+  padding: 20px;
+  background-color: #ffffff;
+  overflow: auto;
+}
+
+.od-word-content h1,
+.od-word-content h2,
+.od-word-content h3,
+.od-word-content h4,
+.od-word-content h5,
+.od-word-content h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.od-word-content p {
+  margin-bottom: 1em;
+  line-height: 1.6;
+}
+
+.od-word-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.od-word-content table td,
+.od-word-content table th {
+  border: 1px solid #dddddd;
+  padding: 8px;
+}
+
+.od-word-content table th {
+  background-color: #f0f0f0;
+  font-weight: 600;
+}
+
+.od-word-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.od-highlight {
+  background-color: #ffeb3b;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+/* Excel styles */
+.od-excel-content {
+  flex: 1;
+  overflow: auto;
+  padding: 10px;
+}
+
+.od-excel-table-container {
+  min-width: 100%;
+}
+
+.od-excel-table-container table {
+  border-collapse: collapse;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 13px;
+}
+
+.od-excel-table-container td,
+.od-excel-table-container th {
+  border: 1px solid #d0d0d0;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
+.od-excel-table-container th {
+  background-color: #f0f0f0;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.od-excel-table-container tr:hover {
+  background-color: #f5f5f5;
+}
+
+.od-excel-table-container td[contenteditable="true"] {
+  outline: none;
+  cursor: text;
+}
+
+.od-excel-table-container td[contenteditable="true"]:focus {
+  outline: 2px solid #4caf50;
+  outline-offset: -2px;
+}
+
+.od-sheet-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  background-color: #e8e8e8;
+  border-bottom: 1px solid #d0d0d0;
+  overflow-x: auto;
+}
+
+.od-sheet-tab {
+  padding: 6px 16px;
+  border: none;
+  background-color: #d8d8d8;
+  color: #333333;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.od-sheet-tab:hover {
+  background-color: #c8c8c8;
+}
+
+.od-sheet-tab.active {
+  background-color: #ffffff;
+  font-weight: 600;
+}
+
+.od-formula-bar {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.od-filter-button {
+  margin-left: 4px;
+  padding: 0 4px;
+  background: none;
+  border: none;
+  color: #666666;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.od-filter-button:hover {
+  color: #333333;
+}
+
+/* PowerPoint styles */
+.od-ppt-viewer {
+  background-color: #1a1a1a;
+}
+
+.od-ppt-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.od-ppt-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.od-slide {
+  background-color: #ffffff;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.od-slide h1 {
+  font-size: 48px;
+  margin: 0 0 20px 0;
+  color: #1a1a1a;
+}
+
+.od-slide h2 {
+  font-size: 36px;
+  margin: 0 0 16px 0;
+  color: #333333;
+}
+
+.od-slide p {
+  font-size: 20px;
+  line-height: 1.6;
+  color: #555555;
+}
+
+.od-slide ul {
+  font-size: 20px;
+  line-height: 1.8;
+  color: #555555;
+}
+
+.od-ppt-thumbnails {
+  width: 150px;
+  background-color: #0d0d0d;
+  padding: 10px;
+  overflow-y: auto;
+  border-right: 1px solid #333333;
+}
+
+.od-thumbnail {
+  padding: 10px;
+  background-color: #2a2a2a;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  margin-bottom: 10px;
+}
+
+.od-thumbnail:hover {
+  background-color: #3a3a3a;
+}
+
+.od-thumbnail.active {
+  background-color: #333333;
+  border-color: #4caf50;
+}
+
+.od-ppt-notes {
+  background-color: #f5f5f5;
+  padding: 15px;
+  border-top: 1px solid #d0d0d0;
+  overflow-y: auto;
+}
+
+.od-ppt-notes h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #333333;
+}
+
+.od-notes-content {
+  font-size: 13px;
+  color: #666666;
+  line-height: 1.6;
+}
+
+.od-ppt-navigation {
+  padding: 15px;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  border-top: 1px solid #d0d0d0;
+}
+
+.od-nav-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.od-nav-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.od-nav-button:active {
+  transform: translateY(0);
+}
+
+.od-nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.od-slide-indicator {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.od-slide-counter {
+  margin-left: auto;
+  font-size: 13px;
+  color: #cccccc;
+}
+
+/* Page navigation */
+.od-page-navigation {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.od-page-btn {
+  padding: 4px 12px;
+  min-width: 32px;
+}
+
+.od-page-info {
+  font-size: 13px;
+  color: #666666;
+  white-space: nowrap;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Loading spinner */
+.od-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.od-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4caf50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .od-word-toolbar,
+  .od-excel-toolbar,
+  .od-ppt-toolbar {
+    flex-wrap: wrap;
+    padding: 8px;
+  }
+
+  .od-toolbar-button {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .od-ppt-thumbnails {
+    width: 100px;
+  }
+
+  .od-slide h1 {
+    font-size: 32px;
+  }
+
+  .od-slide h2 {
+    font-size: 24px;
+  }
+
+  .od-slide p,
+  .od-slide ul {
+    font-size: 16px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .od-word-toolbar,
+  .od-excel-toolbar,
+  .od-ppt-toolbar,
+  .od-ppt-navigation,
+  .od-sheet-tabs,
+  .od-ppt-thumbnails {
+    display: none !important;
+  }
+
+  .od-word-content,
+  .od-excel-content,
+  .od-slide {
+    background-color: white !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Scrollbar styles */
+.od-word-content::-webkit-scrollbar,
+.od-excel-content::-webkit-scrollbar,
+.od-ppt-thumbnails::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.od-word-content::-webkit-scrollbar-track,
+.od-excel-content::-webkit-scrollbar-track,
+.od-ppt-thumbnails::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.od-word-content::-webkit-scrollbar-thumb,
+.od-excel-content::-webkit-scrollbar-thumb,
+.od-ppt-thumbnails::-webkit-scrollbar-thumb {
+  background: #888888;
+  border-radius: 4px;
+}
+
+.od-word-content::-webkit-scrollbar-thumb:hover,
+.od-excel-content::-webkit-scrollbar-thumb:hover,
+.od-ppt-thumbnails::-webkit-scrollbar-thumb:hover {
+  background: #555555;
+}

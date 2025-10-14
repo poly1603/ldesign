@@ -60,9 +60,18 @@ export class SidebarManager {
     // Add to viewer container
     const viewerElement = this.viewer.container?.querySelector('.pdf-viewer');
     if (viewerElement) {
+      // Prefer inserting into the main content wrapper
+      const mainContainer = viewerElement.querySelector('.pdf-main');
       const canvasContainer = viewerElement.querySelector('.pdf-canvas-container');
-      if (canvasContainer) {
-        viewerElement.insertBefore(sidebar, canvasContainer);
+      if (mainContainer && canvasContainer && canvasContainer.parentElement === mainContainer) {
+        mainContainer.insertBefore(sidebar, canvasContainer);
+      } else if (canvasContainer) {
+        // Fallback: insert before canvas container in viewer
+        (canvasContainer.parentElement || viewerElement).insertBefore(sidebar, canvasContainer);
+      } else if (mainContainer) {
+        mainContainer.insertBefore(sidebar, mainContainer.firstChild);
+      } else {
+        viewerElement.insertBefore(sidebar, viewerElement.firstChild);
       }
     }
     

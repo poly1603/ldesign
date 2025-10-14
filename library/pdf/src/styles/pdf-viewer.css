@@ -35,15 +35,18 @@
 
 /* Clean Toolbar */
 .pdf-toolbar {
+  position: relative; /* Important for search box positioning */
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
   background: var(--pdf-toolbar-bg);
   border-bottom: 1px solid var(--pdf-border);
-  z-index: 100;
+  z-index: 200; /* Increased for proper layering */
   gap: 16px;
   min-height: 56px;
+  max-height: 56px; /* Fixed height to prevent overflow */
+  flex-shrink: 0; /* Prevent shrinking */
   flex-wrap: nowrap;
 }
 
@@ -67,6 +70,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 36px;
   width: 36px;
   height: 36px;
   border: none;
@@ -77,6 +81,7 @@
   transition: all 0.2s ease;
   font-size: 16px;
   position: relative;
+  padding: 0;
 }
 
 .pdf-toolbar-button:hover:not(:disabled) {
@@ -156,23 +161,90 @@
   border-color: var(--pdf-active);
 }
 
+/* Search Box */
+.pdf-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--pdf-toolbar-bg);
+  border: 1px solid var(--pdf-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--pdf-shadow);
+}
+
+.pdf-search-input {
+  width: 200px;
+  height: 32px;
+  border: 1px solid var(--pdf-border);
+  border-radius: 6px;
+  padding: 0 12px;
+  background: var(--pdf-bg);
+  color: var(--pdf-text);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.pdf-search-input:focus {
+  border-color: var(--pdf-active);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  width: 250px;
+}
+
+.pdf-search-box .pdf-toolbar-button {
+  min-width: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+/* Toast notification */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Main content wrapper (sidebar + canvas) */
+.pdf-main {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  overflow: hidden;
+  height: calc(100vh - 56px); /* below toolbar */
+  min-height: 0; /* allow children to shrink */
+}
+
 /* Clean Sidebar */
 .pdf-sidebar {
-  position: absolute;
-  left: 0;
-  top: 56px; /* Below toolbar */
-  bottom: 0;
+  position: relative; /* participate in flex layout */
   width: 260px;
   background: var(--pdf-sidebar-bg);
   border-right: 1px solid var(--pdf-border);
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 90;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+  overflow: hidden; /* Prevent content overflow */
 }
 
 .pdf-sidebar.hidden {
-  transform: translateX(-100%);
+  display: none;
 }
 
 .pdf-sidebar-tabs {
@@ -208,7 +280,9 @@
 .pdf-sidebar-content {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 8px;
+  min-height: 0; /* Important for flexbox shrinking */
 }
 
 /* Clean Thumbnails */
@@ -280,15 +354,14 @@
   align-items: center;
   justify-content: center;
   background: var(--pdf-bg);
-  margin-left: 260px; /* Space for sidebar */
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 20px;
   min-height: 0; /* Important for flexbox overflow */
-  height: calc(100vh - 56px); /* Set explicit height for scrolling */
+  height: 100%;
+  box-sizing: border-box; /* Include padding in height */
 }
 
 .pdf-sidebar.hidden ~ .pdf-canvas-container {
-  margin-left: 0;
+  margin-left: 0; /* no-op, canvas takes remaining space in flex */
 }
 
 /* Page wrapper for continuous mode */
@@ -300,6 +373,8 @@
   margin: 0 auto;
   display: block;
   overflow: visible; /* Ensure children are visible */
+  isolation: isolate; /* Create stacking context */
+  contain: layout style; /* Optimize rendering */
 }
 
 /* Continuous mode specific styles */
@@ -341,9 +416,10 @@
   right: 0;
   bottom: 0;
   overflow: hidden;
-  opacity: 0.2;
+  opacity: 0; /* Fully transparent for text selection only */
   line-height: 1;
   pointer-events: none;
+  z-index: 2; /* Above canvas but below annotations */
 }
 
 .pdf-text-layer > span {
@@ -367,25 +443,36 @@
   right: 0;
   bottom: 0;
   pointer-events: none;
+  z-index: 3; /* Above text layer but below UI elements */
+  overflow: visible; /* Allow annotations to extend */
 }
 
-.pdf-annotation-layer a {
+.pdf-annotation-layer a,
+.pdf-annotation-layer .annotation-element {
   position: absolute;
   pointer-events: auto;
+}
+
+/* Ensure annotation layer in page wrapper doesn't block scrolling */
+.pdf-page-wrapper .pdf-annotation-layer {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
 /* Search Highlights */
 .pdf-search-highlight {
   position: absolute;
-  background-color: yellow;
-  opacity: 0.3;
+  background-color: rgba(255, 237, 0, 0.4);
+  opacity: 1; /* Use rgba for transparency instead */
   pointer-events: none;
   z-index: 10;
+  mix-blend-mode: multiply; /* Better blending with content */
 }
 
 .pdf-search-highlight.current {
-  background-color: orange;
-  opacity: 0.5;
+  background-color: rgba(255, 140, 0, 0.6);
+  opacity: 1; /* Use rgba for transparency */
 }
 
 /* Clean Loading Spinner */

@@ -9,6 +9,7 @@ import { showColorPicker } from './ColorPicker'
 import { showDropdown } from './Dropdown'
 import { FONT_SIZES, FONT_FAMILIES } from '../plugins/font'
 import { LINE_HEIGHTS } from '../plugins/line-height'
+import { DEFAULT_TOOLBAR_ITEMS } from './defaultToolbar'
 
 export interface ToolbarOptions {
   items?: ToolbarItem[]
@@ -42,9 +43,14 @@ export class Toolbar {
    * 渲染工具栏
    */
   private render(): void {
+    console.log('[Toolbar] Starting render...')
+    console.log('[Toolbar] Options:', this.options)
+    
     const items = this.options.items || this.getDefaultItems()
+    console.log('[Toolbar] Items to render:', items.length, items)
 
     items.forEach((item, index) => {
+      console.log(`[Toolbar] Creating button for: ${item.name}`)
       // 创建按钮
       const button = this.createButton(item)
       this.buttons.set(item.name, button)
@@ -60,8 +66,14 @@ export class Toolbar {
 
     // 如果提供了容器，插入到容器中
     if (this.options.container) {
+      console.log('[Toolbar] Appending to container:', this.options.container)
       this.options.container.appendChild(this.element)
+    } else {
+      console.log('[Toolbar] No container provided')
     }
+    
+    console.log('[Toolbar] Render complete. Element:', this.element)
+    console.log('[Toolbar] Element children:', this.element.children.length)
   }
 
   /**
@@ -169,7 +181,7 @@ export class Toolbar {
    */
   private shouldAddSeparator(index: number, items: ToolbarItem[]): boolean {
     // 在特定组之间添加分隔符
-    const separatorAfter = ['redo', 'clearFormat', 'heading3', 'orderedList', 'codeBlock', 'image', 'alignJustify', 'backgroundColor', 'fontFamily', 'lineHeight', 'subscript', 'outdent', 'findReplace']
+    const separatorAfter = ['redo', 'code', 'paragraph', 'codeblock', 'taskList', 'indent', 'alignJustify', 'horizontalRule', 'backgroundColor', 'removeFormat']
     return separatorAfter.includes(items[index].name) && index < items.length - 1
   }
 
@@ -201,16 +213,32 @@ export class Toolbar {
   /**
    * 获取默认工具栏项
    */
-  private getDefaultItems(): ToolbarItem[] {
+  public getDefaultItems(): ToolbarItem[] {
     const items: ToolbarItem[] = []
 
+    console.log('[Toolbar] Getting default items...')
+    const plugins = this.editor.plugins.getAll()
+    console.log('[Toolbar] Total plugins:', plugins.length)
+
     // 从所有插件收集工具栏项
-    this.editor.plugins.getAll().forEach(plugin => {
-      if (plugin.config.toolbar) {
+    plugins.forEach(plugin => {
+      console.log(`[Toolbar] Checking plugin: ${plugin.name}`, plugin)
+      if (plugin.config && plugin.config.toolbar) {
+        console.log(`[Toolbar] Found toolbar config in ${plugin.name}:`, plugin.config.toolbar)
         items.push(...plugin.config.toolbar)
+      } else {
+        console.log(`[Toolbar] No toolbar config in ${plugin.name}`)
       }
     })
 
+    console.log('[Toolbar] Total toolbar items collected from plugins:', items.length)
+    
+    // 如果插件没有提供工具栏配置，使用默认配置
+    if (items.length === 0) {
+      console.log('[Toolbar] No items from plugins, using default toolbar')
+      return DEFAULT_TOOLBAR_ITEMS
+    }
+    
     return items
   }
 
