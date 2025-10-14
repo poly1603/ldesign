@@ -1,7 +1,9 @@
 import { 
   generateTailwindTheme,
-  generateCSSVariables,
-  insertCSSVariables
+  generateThemePalettes,
+  generateThemedCssVariables,
+  injectThemedCssVariables,
+  setThemeMode
 } from '@ldesign/color/core'
 import { runAnalysis } from './analyze.js'
 
@@ -27,6 +29,14 @@ app.innerHTML = `
           <input type="checkbox" id="autoApply" checked>
           Auto apply to page
         </label>
+      </div>
+      
+      <div class="control-group">
+        <label>Theme Mode:</label>
+        <div class="theme-toggle">
+          <button id="lightMode" class="theme-btn active">☀️ Light</button>
+          <button id="darkMode" class="theme-btn">🌙 Dark</button>
+        </div>
       </div>
       
       <div class="actions">
@@ -161,38 +171,61 @@ function showToast(message) {
   }, 2000)
 }
 
+// Track current theme mode
+let currentTheme = 'light'
+let generatedThemes = { light: null, dark: null }
+
 // Generate and display theme
 function generateAndDisplayTheme() {
   const primaryHex = document.getElementById('primaryColor').value
   
-  // Generate Tailwind-style theme with semantic colors and grays
-  const theme = generateTailwindTheme(primaryHex, {
+  // Generate both light and dark themes
+  const themes = generateThemePalettes(primaryHex, {
     includeSemantics: true,
     includeGrays: true,
     preserveInput: true
   })
   
-  // Render all palettes
-  renderPalette(theme.colors.primary, 'primary-palette')
-  renderPalette(theme.colors.success, 'success-palette')
-  renderPalette(theme.colors.warning, 'warning-palette')
-  renderPalette(theme.colors.danger, 'danger-palette')
-  renderPalette(theme.colors.info, 'info-palette')
-  renderPalette(theme.grays, 'gray-palette')
+  // Store themes
+  generatedThemes.light = themes.light
+  generatedThemes.dark = themes.dark
   
-  // Generate CSS variables
-  const cssVars = generateCSSVariables({
-    ...theme.colors,
-    gray: theme.grays
+  // Display current theme
+  displayTheme(currentTheme)
+}
+
+// Display a specific theme (light or dark)
+function displayTheme(mode) {
+  const theme = mode === 'dark' ? generatedThemes.dark : generatedThemes.light
+  
+  if (!theme) {
+    return
+  }
+  
+  // Render all palettes
+  renderPalette(theme.primary, 'primary-palette')
+  renderPalette(theme.success, 'success-palette')
+  renderPalette(theme.warning, 'warning-palette')
+  renderPalette(theme.danger, 'danger-palette')
+  renderPalette(theme.info, 'info-palette')
+  renderPalette(theme.gray, 'gray-palette')
+  
+  // Generate themed CSS variables for both modes
+  const cssVars = generateThemedCssVariables({
+    light: generatedThemes.light,
+    dark: generatedThemes.dark
   })
   document.getElementById('css-output').textContent = cssVars
   
   // Auto apply if checked
   if (document.getElementById('autoApply').checked) {
-    insertCSSVariables({
-      ...theme.colors,
-      gray: theme.grays
+    injectThemedCssVariables({
+      light: generatedThemes.light,
+      dark: generatedThemes.dark
     })
+    
+    // Apply the current theme mode using the proper function
+    setThemeMode(mode)
   }
 }
 
@@ -217,6 +250,23 @@ function exportCSS() {
 // Event listeners
 document.getElementById('generateBtn').addEventListener('click', generateAndDisplayTheme)
 document.getElementById('exportBtn').addEventListener('click', exportCSS)
+
+// Theme mode toggle
+document.getElementById('lightMode').addEventListener('click', () => {
+  currentTheme = 'light'
+  document.getElementById('lightMode').classList.add('active')
+  document.getElementById('darkMode').classList.remove('active')
+  displayTheme('light')
+  setThemeMode('light')
+})
+
+document.getElementById('darkMode').addEventListener('click', () => {
+  currentTheme = 'dark'
+  document.getElementById('darkMode').classList.add('active')
+  document.getElementById('lightMode').classList.remove('active')
+  displayTheme('dark')
+  setThemeMode('dark')
+})
 
 // Sync color inputs
 document.getElementById('primaryColor').addEventListener('input', (e) => {

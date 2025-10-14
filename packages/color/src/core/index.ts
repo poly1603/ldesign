@@ -94,3 +94,24 @@ export {
   generateTailwindPalettes,
   TAILWIND_SHADES
 } from './tailwindPalette';
+
+// Dark mode palette generation
+export {
+  generateTailwindDarkScale,
+  generateDarkSemanticColors,
+  generateTailwindDarkGrayScale,
+  generateThemePalettes,
+  type ThemePalettes
+} from '../palette/darkMode';
+
+// CSS Variables and theming
+export {
+  generateThemedCssVariables,
+  generateSemanticCssVariables,
+  injectThemedCssVariables,
+  setThemeMode,
+  getThemeMode,
+  toggleThemeMode,
+  initThemeMode,
+  saveThemeMode
+} from '../palette/cssVariables';

@@ -122,6 +122,105 @@ input[type="checkbox"] {
   background: var(--color-gray-7, #444);
 }
 
+/* Theme Toggle */
+.theme-toggle {
+  display: flex;
+  gap: 0.5rem;
+  background: #f5f5f5;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.theme-btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #666;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.theme-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.theme-btn.active {
+  background: white;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Light Mode (default) */
+:root,
+:root[data-theme-mode='light'] {
+  background: #f5f5f5;
+}
+
+:root body,
+:root[data-theme-mode='light'] body {
+  background: #f5f5f5;
+  color: #333;
+}
+
+/* Dark Mode Support */
+:root[data-theme-mode='dark'] {
+  background: #1a1a1a;
+}
+
+:root[data-theme-mode='dark'] body {
+  background: #1a1a1a;
+  color: #e0e0e0;
+}
+
+:root[data-theme-mode='dark'] .container {
+  background: #1a1a1a;
+}
+
+:root[data-theme-mode='dark'] .controls,
+:root[data-theme-mode='dark'] .palette-section,
+:root[data-theme-mode='dark'] .demo-section,
+:root[data-theme-mode='dark'] .css-output-section {
+  background: #2a2a2a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-theme-mode='dark'] h1,
+:root[data-theme-mode='dark'] h3,
+:root[data-theme-mode='dark'] h4 {
+  color: #f0f0f0;
+}
+
+:root[data-theme-mode='dark'] label {
+  color: #d0d0d0;
+}
+
+:root[data-theme-mode='dark'] input[type="text"] {
+  background: #333;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+:root[data-theme-mode='dark'] .theme-toggle {
+  background: #333;
+}
+
+:root[data-theme-mode='dark'] .theme-btn {
+  color: #999;
+}
+
+:root[data-theme-mode='dark'] .theme-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme-mode='dark'] .theme-btn.active {
+  background: #444;
+  color: #f0f0f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 /* Palettes */
 .palettes {
   margin-bottom: 2rem;
