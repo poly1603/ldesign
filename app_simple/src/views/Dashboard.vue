@@ -8,7 +8,7 @@
     <div class="dashboard-grid">
       <!-- 路由信息卡片 -->
       <div class="dashboard-card">
-        <h3 class="card-title">📍 {{ t('dashboard.currentRoute') || '当前路由信息' }}</h3>
+        <h3 class="card-title"><MapPin class="icon" /> {{ t('dashboard.currentRoute') || '当前路由信息' }}</h3>
         <div class="card-content">
           <div class="info-row">
             <span class="info-label">{{ t('common.path') || '路径' }}：</span>
@@ -31,7 +31,7 @@
       
       <!-- Engine 状态卡片 -->
       <div class="dashboard-card">
-        <h3 class="card-title">⚙️ {{ t('dashboard.engineStatus') || 'Engine 状态' }}</h3>
+        <h3 class="card-title"><Settings class="icon" /> {{ t('dashboard.engineStatus') || 'Engine 状态' }}</h3>
         <div class="card-content">
           <div class="info-row">
             <span class="info-label">{{ t('dashboard.appName') || '应用名称' }}：</span>
@@ -54,7 +54,7 @@
       
       <!-- 路由历史卡片 -->
       <div class="dashboard-card">
-        <h3 class="card-title">📜 {{ t('dashboard.routeHistory') || '路由历史' }}</h3>
+        <h3 class="card-title"><ScrollText class="icon" /> {{ t('dashboard.routeHistory') || '路由历史' }}</h3>
         <div class="card-content">
           <div v-if="routeHistory.length === 0" class="empty-state">
             {{ t('dashboard.noHistory') || '暂无历史记录' }}
@@ -70,26 +70,26 @@
       
       <!-- 快速操作卡片 -->
       <div class="dashboard-card">
-        <h3 class="card-title">🚀 {{ t('dashboard.quickActions.title') }}</h3>
+        <h3 class="card-title"><Rocket class="icon" /> {{ t('dashboard.quickActions.title') }}</h3>
         <div class="card-content">
           <button @click="navigateTo('/')" class="action-button">
-            🏠 {{ t('errors.404.action') }}
+            <Home class="button-icon" /> {{ t('errors.404.action') }}
           </button>
           <button @click="navigateTo('/about')" class="action-button">
-            ℹ️ {{ t('nav.about') }}
+            <Info class="button-icon" /> {{ t('nav.about') }}
           </button>
           <button @click="refreshRoute" class="action-button">
-            🔄 {{ t('common.refresh') }}
+            <RefreshCw class="button-icon" /> {{ t('common.refresh') }}
           </button>
           <button @click="clearHistory" class="action-button danger">
-            🗑️ {{ t('common.clear') }} {{ t('dashboard.history') || '历史' }}
+            <Trash2 class="button-icon" /> {{ t('common.clear') }} {{ t('dashboard.history') || '历史' }}
           </button>
         </div>
       </div>
       
       <!-- 性能监控卡片 -->
       <div class="dashboard-card wide">
-        <h3 class="card-title">📊 {{ t('dashboard.performanceMonitor') || '性能监控' }}</h3>
+        <h3 class="card-title"><BarChart3 class="icon" /> {{ t('dashboard.performanceMonitor') || '性能监控' }}</h3>
         <div class="card-content">
           <div class="performance-grid">
             <div class="performance-item">
@@ -114,7 +114,7 @@
       
       <!-- 路由列表卡片 -->
       <div class="dashboard-card wide">
-        <h3 class="card-title">📝 {{ t('dashboard.allRoutes') || '所有路由' }}</h3>
+        <h3 class="card-title"><FileText class="icon" /> {{ t('dashboard.allRoutes') || '所有路由' }}</h3>
         <div class="card-content">
           <table class="route-table">
             <thead>
@@ -155,6 +155,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from '@ldesign/router'
 import { useI18n } from '@/i18n'
+import { MapPin, Settings, ScrollText, Rocket, Home, Info, RefreshCw, Trash2, BarChart3, FileText } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -294,13 +295,13 @@ onBeforeUnmount(() => {
 
 .dashboard-title {
   font-size: 36px;
-  color: var(--ld-color-gray-800, #2c3e50);
+  color: var(--color-text-primary);
   margin: 0 0 10px 0;
 }
 
 .dashboard-subtitle {
   font-size: 18px;
-  color: var(--ld-color-gray-600, #666);
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
@@ -313,9 +314,9 @@ onBeforeUnmount(() => {
 
 /* 卡片样式 */
 .dashboard-card {
-  background: var(--ld-color-gray-50, white);
+  background: var(--color-background);
   border-radius: 12px;
-  box-shadow: 0 5px 20px var(--ld-color-gray-200, rgba(0, 0, 0, 0.05));
+  box-shadow: 0 5px 20px var(--color-border-light);
   overflow: hidden;
 }
 
@@ -325,11 +326,20 @@ onBeforeUnmount(() => {
 
 .card-title {
   font-size: 18px;
-  color: var(--ld-color-gray-800, #2c3e50);
+  color: var(--color-text-primary);
   margin: 0;
   padding: 20px;
-  background: var(--ld-color-gray-50, #f8f9fa);
-  border-bottom: 1px solid var(--ld-color-gray-300, #e0e0e0);
+  background: var(--color-background-secondary);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-primary-default);
 }
 
 .card-content {
@@ -341,7 +351,7 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid var(--ld-color-gray-200, #f0f0f0);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .info-row:last-child {
@@ -350,11 +360,11 @@ onBeforeUnmount(() => {
 
 .info-label {
   font-weight: 600;
-  color: var(--ld-color-gray-600, #666);
+  color: var(--color-text-secondary);
 }
 
 .info-value {
-  color: var(--ld-color-gray-800, #2c3e50);
+  color: var(--color-text-primary);
   font-family: monospace;
 }
 
@@ -368,27 +378,29 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: space-between;
   padding: 8px;
-  border-bottom: 1px solid var(--ld-color-gray-200, #f0f0f0);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .history-time {
-  color: var(--ld-color-gray-500, #999);
+  color: var(--color-text-tertiary);
   font-size: 12px;
 }
 
 .history-path {
-  color: var(--ld-color-gray-800, #2c3e50);
+  color: var(--color-text-primary);
   font-family: monospace;
 }
 
 /* 操作按钮 */
 .action-button {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
-  background: var(--ld-color-primary-500);
-  color: var(--ld-color-gray-50, white);
+  background: var(--color-primary-default);
+  color: var(--color-gray-50);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -396,17 +408,22 @@ onBeforeUnmount(() => {
   text-align: left;
 }
 
+.button-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .action-button:hover {
-  background: var(--ld-color-primary-600);
+  background: var(--color-primary-hover);
   transform: translateX(5px);
 }
 
 .action-button.danger {
-  background: var(--ld-color-danger-500);
+  background: var(--color-danger-default);
 }
 
 .action-button.danger:hover {
-  background: var(--ld-color-danger-600);
+  background: var(--color-danger-hover);
 }
 
 /* 性能监控 */
@@ -423,12 +440,12 @@ onBeforeUnmount(() => {
 .performance-value {
   font-size: 24px;
   font-weight: bold;
-  color: var(--ld-color-primary-500);
+  color: var(--color-primary-default);
 }
 
 .performance-label {
   font-size: 12px;
-  color: var(--ld-color-gray-600, #666);
+  color: var(--color-text-secondary);
   margin-top: 5px;
   text-transform: uppercase;
 }
@@ -442,13 +459,13 @@ onBeforeUnmount(() => {
 .route-table th {
   text-align: left;
   padding: 10px;
-  background: var(--ld-color-gray-50, #f8f9fa);
-  border-bottom: 2px solid var(--ld-color-gray-300, #e0e0e0);
+  background: var(--color-background-secondary);
+  border-bottom: 2px solid var(--color-border);
 }
 
 .route-table td {
   padding: 10px;
-  border-bottom: 1px solid var(--ld-color-gray-200, #f0f0f0);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .badge {
@@ -459,33 +476,33 @@ onBeforeUnmount(() => {
 }
 
 .badge-success {
-  background: var(--ld-color-success-100);
-  color: var(--ld-color-success-700);
+  background: var(--color-success-100);
+  color: var(--color-success-active);
 }
 
 .badge-warning {
-  background: var(--ld-color-warning-100);
-  color: var(--ld-color-warning-700);
+  background: var(--color-warning-100);
+  color: var(--color-warning-active);
 }
 
 .link-button {
   padding: 4px 12px;
   background: transparent;
-  color: var(--ld-color-primary-500);
-  border: 1px solid var(--ld-color-primary-500);
+  color: var(--color-primary-default);
+  border: 1px solid var(--color-primary-default);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .link-button:hover {
-  background: var(--ld-color-primary-500);
-  color: var(--ld-color-gray-50, white);
+  background: var(--color-primary-default);
+  color: var(--color-gray-50);
 }
 
 .empty-state {
   text-align: center;
-  color: var(--ld-color-gray-500, #999);
+  color: var(--color-text-tertiary);
   padding: 20px;
 }
 

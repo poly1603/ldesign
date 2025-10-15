@@ -20,7 +20,7 @@ export default {
    inlineDynamicImports: true
   }
  ],
-external: ['docx-preview', 'xlsx', 'x-data-spreadsheet', 'pptxjs', 'jszip', 'vue', 'react'],
+external: ['docx-preview', 'xlsx', 'x-data-spreadsheet', 'jszip', 'vue', 'react'],
  plugins: [
   resolve({
    browser: true

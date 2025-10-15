@@ -12,7 +12,6 @@
   "docx-preview": "^0.3.7",
   "xlsx": "^0.18.5",
   "x-data-spreadsheet": "^1.1.9",
-  "pptxjs": "^1.9.0",
   "jszip": "^3.10.1"
  },
  "devDependencies": {

@@ -7,7 +7,7 @@ import type { Plugin, Command } from '../types'
 // import { showTableDialog } from '../ui/TableDialog'
 
 /**
- * 创建表格右键菜单
+ * 创建表格右键菜单 - 完全重构版本
  */
 function createTableContextMenu(table: HTMLTableElement, x: number, y: number) {
   // 移除已存在的菜单
@@ -16,6 +16,7 @@ function createTableContextMenu(table: HTMLTableElement, x: number, y: number) {
     existingMenu.remove()
   }
 
+  // 创建菜单
   const menu = document.createElement('div')
   menu.className = 'table-context-menu'
   menu.style.cssText = `
@@ -23,70 +24,162 @@ function createTableContextMenu(table: HTMLTableElement, x: number, y: number) {
     left: ${x}px;
     top: ${y}px;
     background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    padding: 4px 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 10001;
-    min-width: 160px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 6px 0;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+    z-index: 99999;
+    min-width: 200px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    font-size: 14px;
   `
 
+  // 简化的菜单项 - 完全扁平化，没有子菜单
   const menuItems = [
-    { text: '在上方插入行', icon: '⬆', action: () => insertRowAbove(table) },
-    { text: '在下方插入行', icon: '⬇', action: () => insertRowBelow(table) },
-    { text: '在左侧插入列', icon: '⬅', action: () => insertColumnLeft(table) },
-    { text: '在右侧插入列', icon: '➡', action: () => insertColumnRight(table) },
+    { text: '插入上方行', icon: '↑', action: () => insertRowAbove(table) },
+    { text: '插入下方行', icon: '↓', action: () => insertRowBelow(table) },
+    { text: '插入左侧列', icon: '←', action: () => insertColumnLeft(table) },
+    { text: '插入右侧列', icon: '→', action: () => insertColumnRight(table) },
     { divider: true },
-    { text: '删除当前行', icon: '🗑', action: () => deleteCurrentRow(table) },
-    { text: '删除当前列', icon: '🗑', action: () => deleteCurrentColumn(table) },
+    { text: '合并单元格', icon: '□', action: () => mergeCells(table) },
+    { text: '拆分单元格', icon: '▦', action: () => splitCell(table) },
+    { text: '设为表头', icon: 'H', action: () => toggleTableHeader(table) },
     { divider: true },
-    { text: '删除表格', icon: '❌', action: () => deleteEntireTable(table) }
+    { text: '增加列宽', icon: '↔', action: () => increaseColumnWidth(table) },
+    { text: '减少列宽', icon: '↔', action: () => decreaseColumnWidth(table) },
+    { divider: true },
+    { text: '删除行', icon: '－', action: () => deleteCurrentRow(table), danger: true },
+    { text: '删除列', icon: '｜', action: () => deleteCurrentColumn(table), danger: true },
+    { text: '清空内容', icon: '⌫', action: () => clearTable(table), danger: true },
+    { divider: true },
+    { text: '删除表格', icon: '✕', action: () => deleteEntireTable(table), danger: true }
   ]
 
+  // 渲染菜单项
   menuItems.forEach(item => {
     if (item.divider) {
       const divider = document.createElement('div')
-      divider.style.cssText = 'height: 1px; background: #e5e7eb; margin: 4px 8px;'
+      divider.style.cssText = `
+        height: 1px;
+        background: #e5e7eb;
+        margin: 6px 12px;
+      `
       menu.appendChild(divider)
     } else {
       const menuItem = document.createElement('div')
       menuItem.style.cssText = `
-        padding: 8px 16px;
+        padding: 8px 16px 8px 12px;
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        color: #374151;
-        transition: background 0.2s;
+        gap: 10px;
+        color: ${item.danger ? '#dc2626' : '#374151'};
+        transition: all 0.15s;
+        user-select: none;
+        white-space: nowrap;
       `
-      menuItem.innerHTML = `<span style="width: 16px; text-align: center;">${item.icon}</span><span>${item.text}</span>`
+      
+      // 创建图标
+      const icon = document.createElement('span')
+      icon.style.cssText = `
+        width: 20px;
+        text-align: center;
+        opacity: 0.7;
+        font-size: 16px;
+      `
+      icon.textContent = item.icon
+      
+      // 创建文本
+      const text = document.createElement('span')
+      text.textContent = item.text
+      
+      menuItem.appendChild(icon)
+      menuItem.appendChild(text)
+      
+      // 交互效果
       menuItem.addEventListener('mouseenter', () => {
-        menuItem.style.background = '#f3f4f6'
+        menuItem.style.background = item.danger ? '#fee2e2' : '#f3f4f6'
+        menuItem.style.paddingLeft = '16px'
       })
+      
       menuItem.addEventListener('mouseleave', () => {
         menuItem.style.background = 'transparent'
+        menuItem.style.paddingLeft = '12px'
       })
-      menuItem.addEventListener('click', () => {
+      
+      // 点击执行
+      menuItem.addEventListener('click', (e) => {
+        e.stopPropagation()
         item.action!()
         menu.remove()
       })
+      
       menu.appendChild(menuItem)
     }
   })
 
   document.body.appendChild(menu)
 
-  // 点击其他地方关闭菜单
+  // 调整位置，确保不超出屏幕
+  requestAnimationFrame(() => {
+    const rect = menu.getBoundingClientRect()
+    
+    // 右边界检查
+    if (rect.right > window.innerWidth - 10) {
+      menu.style.left = `${window.innerWidth - rect.width - 10}px`
+    }
+    
+    // 下边界检查
+    if (rect.bottom > window.innerHeight - 10) {
+      menu.style.top = `${window.innerHeight - rect.height - 10}px`
+    }
+    
+    // 左边界检查
+    if (rect.left < 10) {
+      menu.style.left = '10px'
+    }
+    
+    // 上边界检查
+    if (rect.top < 10) {
+      menu.style.top = '10px'
+    }
+  })
+
+  // 点击其他地方关闭
   const closeMenu = (e: MouseEvent) => {
     if (!menu.contains(e.target as Node)) {
       menu.remove()
-      document.removeEventListener('click', closeMenu)
+      document.removeEventListener('mousedown', closeMenu)
+      document.removeEventListener('contextmenu', closeContextMenu)
     }
   }
+  
+  // 右键其他地方也关闭
+  const closeContextMenu = (e: MouseEvent) => {
+    if (!menu.contains(e.target as Node)) {
+      e.preventDefault()
+      menu.remove()
+      document.removeEventListener('mousedown', closeMenu)
+      document.removeEventListener('contextmenu', closeContextMenu)
+    }
+  }
+  
+  // 延迟添加事件，避免立即触发
   setTimeout(() => {
-    document.addEventListener('click', closeMenu)
-  }, 0)
+    document.addEventListener('mousedown', closeMenu)
+    document.addEventListener('contextmenu', closeContextMenu)
+  }, 100)
+
+  // ESC键关闭
+  const handleEscape = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      menu.remove()
+      document.removeEventListener('keydown', handleEscape)
+      document.removeEventListener('mousedown', closeMenu)
+      document.removeEventListener('contextmenu', closeContextMenu)
+    }
+  }
+  document.addEventListener('keydown', handleEscape)
 }
 
 // 获取当前单元格位置
@@ -298,14 +391,233 @@ function deleteCurrentColumn(table: HTMLTableElement) {
 
 // 删除整个表格
 function deleteEntireTable(table: HTMLTableElement) {
-  table.remove()
+  // 确认删除
+  if (confirm('确定要删除整个表格吗？')) {
+    table.remove()
+    
+    // 触发更新
+    const editorContent = document.querySelector('.ldesign-editor-content')
+    if (editorContent) {
+      const event = new Event('input', { bubbles: true })
+      editorContent.dispatchEvent(event)
+    }
+  }
+}
+
+// 清除表格内容
+function clearTable(table: HTMLTableElement) {
+  const cells = table.querySelectorAll('td')
+  cells.forEach(cell => {
+    cell.innerHTML = '&nbsp;'
+  })
   
   // 触发更新
-  const editorContent = document.querySelector('.ldesign-editor-content')
-  if (editorContent) {
-    const event = new Event('input', { bubbles: true })
-    editorContent.dispatchEvent(event)
+  const event = new Event('input', { bubbles: true })
+  table.dispatchEvent(event)
+}
+
+// 合并单元格
+function mergeCells(table: HTMLTableElement) {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) {
+    alert('请先选中要合并的单元格')
+    return
   }
+  
+  // 获取选中的单元格
+  const range = selection.getRangeAt(0)
+  const startCell = range.startContainer.nodeType === Node.TEXT_NODE
+    ? range.startContainer.parentElement?.closest('td, th')
+    : (range.startContainer as Element).closest('td, th')
+  const endCell = range.endContainer.nodeType === Node.TEXT_NODE
+    ? range.endContainer.parentElement?.closest('td, th')
+    : (range.endContainer as Element).closest('td, th')
+  
+  if (!startCell || !endCell || startCell === endCell) {
+    alert('请选择多个单元格进行合并')
+    return
+  }
+  
+  // 简单实现：合并到第一个单元格
+  const firstCell = startCell as HTMLTableCellElement
+  
+  // 设置 colspan 和 rowspan
+  firstCell.setAttribute('colspan', '2')
+  
+  // 合并内容
+  const contents = [startCell.textContent || '']
+  
+  // 删除其他单元格
+  if (endCell && endCell !== startCell) {
+    contents.push(endCell.textContent || '')
+    endCell.remove()
+  }
+  
+  firstCell.textContent = contents.filter(c => c.trim()).join(' ')
+  
+  // 触发更新
+  const event = new Event('input', { bubbles: true })
+  table.dispatchEvent(event)
+}
+
+// 拆分单元格
+function splitCell(table: HTMLTableElement) {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  
+  let node = selection.anchorNode
+  let targetCell: HTMLTableCellElement | null = null
+  
+  while (node && node !== table) {
+    if (node.nodeName === 'TD' || node.nodeName === 'TH') {
+      targetCell = node as HTMLTableCellElement
+      break
+    }
+    node = node.parentNode
+  }
+  
+  if (!targetCell) return
+  
+  const colspan = parseInt(targetCell.getAttribute('colspan') || '1')
+  const rowspan = parseInt(targetCell.getAttribute('rowspan') || '1')
+  
+  if (colspan === 1 && rowspan === 1) {
+    alert('该单元格未被合并，无需拆分')
+    return
+  }
+  
+  // 移除合并属性
+  targetCell.removeAttribute('colspan')
+  targetCell.removeAttribute('rowspan')
+  
+  // 在当前单元格后添加新单元格
+  const row = targetCell.parentElement as HTMLTableRowElement
+  for (let i = 1; i < colspan; i++) {
+    const newCell = document.createElement(targetCell.tagName.toLowerCase()) as HTMLTableCellElement
+    newCell.innerHTML = '&nbsp;'
+    newCell.setAttribute('contenteditable', 'true')
+    row.insertBefore(newCell, targetCell.nextSibling)
+  }
+  
+  // 触发更新
+  const event = new Event('input', { bubbles: true })
+  table.dispatchEvent(event)
+}
+
+// 切换表头
+function toggleTableHeader(table: HTMLTableElement) {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  
+  let node = selection.anchorNode
+  let targetCell: HTMLElement | null = null
+  
+  while (node && node !== table) {
+    if (node.nodeName === 'TD' || node.nodeName === 'TH') {
+      targetCell = node as HTMLElement
+      break
+    }
+    node = node.parentNode
+  }
+  
+  if (!targetCell) return
+  
+  const row = targetCell.parentElement as HTMLTableRowElement
+  const cells = Array.from(row.cells)
+  
+  // 如果当前行都是TH，转换为TD；否则转换为TH
+  const isHeader = cells.every(cell => cell.tagName === 'TH')
+  
+  cells.forEach(cell => {
+    const newCell = document.createElement(isHeader ? 'td' : 'th')
+    newCell.innerHTML = cell.innerHTML
+    newCell.setAttribute('contenteditable', 'true')
+    // 复制其他属性
+    Array.from(cell.attributes).forEach(attr => {
+      if (attr.name !== 'contenteditable') {
+        newCell.setAttribute(attr.name, attr.value)
+      }
+    })
+    cell.parentNode?.replaceChild(newCell, cell)
+  })
+  
+  // 触发更新
+  const event = new Event('input', { bubbles: true })
+  table.dispatchEvent(event)
+}
+
+// 调整列宽 - 增加
+function increaseColumnWidth(table: HTMLTableElement) {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  
+  let node = selection.anchorNode
+  let targetCell: HTMLElement | null = null
+  
+  while (node && node !== table) {
+    if (node.nodeName === 'TD' || node.nodeName === 'TH') {
+      targetCell = node as HTMLElement
+      break
+    }
+    node = node.parentNode
+  }
+  
+  if (!targetCell) return
+  
+  const position = getCellPosition(targetCell)
+  if (!position) return
+  
+  // 增加当前列的宽度
+  Array.from(table.rows).forEach(row => {
+    const cell = row.cells[position.col]
+    if (cell) {
+      const currentWidth = cell.offsetWidth
+      const newWidth = currentWidth + 20
+      cell.style.width = `${newWidth}px`
+      cell.style.minWidth = `${newWidth}px`
+    }
+  })
+  
+  // 触发更新
+  const event = new Event('input', { bubbles: true })
+  table.dispatchEvent(event)
+}
+
+// 调整列宽 - 减少
+function decreaseColumnWidth(table: HTMLTableElement) {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  
+  let node = selection.anchorNode
+  let targetCell: HTMLElement | null = null
+  
+  while (node && node !== table) {
+    if (node.nodeName === 'TD' || node.nodeName === 'TH') {
+      targetCell = node as HTMLElement
+      break
+    }
+    node = node.parentNode
+  }
+  
+  if (!targetCell) return
+  
+  const position = getCellPosition(targetCell)
+  if (!position) return
+  
+  // 减少当前列的宽度
+  Array.from(table.rows).forEach(row => {
+    const cell = row.cells[position.col]
+    if (cell) {
+      const currentWidth = cell.offsetWidth
+      const newWidth = Math.max(60, currentWidth - 20) // 最小60px
+      cell.style.width = `${newWidth}px`
+      cell.style.minWidth = `${newWidth}px`
+    }
+  })
+  
+  // 触发更新
+  const event = new Event('input', { bubbles: true })
+  table.dispatchEvent(event)
 }
 
 /**

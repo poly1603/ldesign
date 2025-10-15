@@ -56,6 +56,8 @@ export function useTemplate(options: UseTemplateOptions) {
 
   // 加载模板组件
   const loadTemplate = async (name?: string) => {
+    console.log('[useTemplate] loadTemplate called with name:', name, 'device:', device.value)
+    
     // 避免重复加载
     if (loading.value) {
       console.log('[useTemplate] Already loading, skipping...')
@@ -135,7 +137,7 @@ export function useTemplate(options: UseTemplateOptions) {
   }
 
   // 监听设备变化，自动重新加载模板
-  watch(device, async (newDevice, oldDevice) => {
+  watch(device, (newDevice, oldDevice) => {
     // 只在自动设备切换模式下重新加载
     if (!autoDeviceSwitch) return
     if (newDevice === oldDevice) return
@@ -154,6 +156,9 @@ export function useTemplate(options: UseTemplateOptions) {
     
     console.log('[useTemplate] Device changed from', lastDevice, 'to:', newDevice)
     
+    // 立即更新lastDevice以防止重复触发
+    lastDevice = newDevice
+    
     // 清除之前的定时器
     if (loadDebounceTimer) {
       clearTimeout(loadDebounceTimer)
@@ -163,19 +168,19 @@ export function useTemplate(options: UseTemplateOptions) {
     // 防抖处理
     loadDebounceTimer = setTimeout(async () => {
       // 再次检查是否真的需要加载
-      if (device.value === lastDevice || loading.value) {
-        console.log('[useTemplate] Conditions changed, skipping load')
+      if (loading.value) {
+        console.log('[useTemplate] Still loading, skipping')
         return
       }
       
       await loadTemplates()
-      // 设备变化时，尝试加载当前模板名称，如果没有则使用undefined让manager找默认模板
-      const targetName = metadata.value?.name || templateName || undefined
-      await loadTemplate(targetName)
+      // 设备变化时，不传递任何名称，让manager使用getDefault找到标记为isDefault的模板
+      // 只有当用户明确通过props传递了templateName时才使用
+      await loadTemplate(templateName || undefined)
       
       loadDebounceTimer = null
     }, 300) // 增加防抖时间到300ms
-  }, { flush: 'post' })
+  })
 
   // 初始化
   onMounted(async () => {

@@ -33,7 +33,6 @@
  "dependencies": {
   "docx-preview": "^0.3.7",
   "jszip": "^3.10.1",
-  "pptxjs": "^1.9.0",
   "x-data-spreadsheet": "^1.1.9",
   "xlsx": "^0.18.5"
  },

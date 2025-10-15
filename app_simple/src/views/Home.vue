@@ -24,7 +24,7 @@
 
       <div class="features-grid">
         <div class="feature-card" v-for="feature in features" :key="feature.key">
-          <div class="feature-icon">{{ feature.icon }}</div>
+          <component :is="feature.icon" class="feature-icon" />
           <h3>{{ feature.title }}</h3>
           <p>{{ feature.description }}</p>
         </div>
@@ -52,6 +52,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from '@ldesign/router'
 import { useI18n } from '@/i18n'
+import { Zap, Package, FileText } from 'lucide-vue-next'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -60,19 +61,19 @@ const { t } = useI18n()
 const features = computed(() => [
   {
     key: 'performance',
-    icon: '⚡',
+    icon: Zap,
     title: t('home.features.list.performance'),
     description: t('home.features.list.performanceDesc')
   },
   {
     key: 'modular',
-    icon: '📦',
+    icon: Package,
     title: t('home.features.list.modular'),
     description: t('home.features.list.modularDesc')
   },
   {
     key: 'typescript',
-    icon: '📝',
+    icon: FileText,
     title: t('home.features.list.typescript'),
     description: t('home.features.list.typescriptDesc')
   }
@@ -109,9 +110,9 @@ onMounted(() => {
 .hero {
   text-align: center;
   padding: 60px 20px;
-  background: var(--ld-color-gray-50, white);
+  background: var(--color-background);
   border-radius: 16px;
-  box-shadow: 0 10px 30px var(--ld-color-gray-200, rgba(0, 0, 0, 0.05));
+  box-shadow: 0 10px 30px var(--color-border-light);
   margin-bottom: 40px;
 }
 
@@ -124,13 +125,13 @@ onMounted(() => {
 
 .hero-subtitle {
   font-size: 20px;
-  color: var(--ld-color-gray-600, #666);
+  color: var(--color-text-secondary);
   margin: 0 0 10px 0;
 }
 
 .hero-description {
   font-size: 16px;
-  color: var(--ld-color-gray-500, #888);
+  color: var(--color-text-tertiary);
   margin: 0 0 40px 0;
 }
 
@@ -152,24 +153,24 @@ onMounted(() => {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
-  color: var(--ld-color-gray-50, white);
+  background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-active) 100%);
+  color: var(--color-gray-50);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px var(--ld-color-primary-300, rgba(102, 126, 234, 0.3));
+  box-shadow: 0 10px 30px var(--color-primary-300);
 }
 
 .btn-secondary {
-  background: var(--ld-color-gray-50, white);
-  color: var(--ld-color-primary-500);
-  border: 2px solid var(--ld-color-primary-500);
+  background: var(--color-background);
+  color: var(--color-primary-default);
+  border: 2px solid var(--color-primary-default);
 }
 
 .btn-secondary:hover {
-  background: var(--ld-color-primary-500);
-  color: var(--ld-color-gray-50, white);
+  background: var(--color-primary-default);
+  color: var(--color-gray-50);
 }
 
 /* Features display */
@@ -180,7 +181,7 @@ onMounted(() => {
 .features-title {
   text-align: center;
   font-size: 36px;
-  color: var(--ld-color-gray-800, #2c3e50);
+  color: var(--color-text-primary);
   margin: 0 0 40px 0;
 }
 
@@ -191,44 +192,46 @@ onMounted(() => {
 }
 
 .feature-card {
-  background: var(--ld-color-gray-50, white);
+  background: var(--color-background);
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 5px 20px var(--ld-color-gray-200, rgba(0, 0, 0, 0.05));
+  box-shadow: 0 5px 20px var(--color-border-light);
   text-align: center;
   transition: all 0.3s;
 }
 
 .feature-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 40px var(--ld-color-gray-300, rgba(0, 0, 0, 0.1));
+  box-shadow: 0 10px 40px var(--color-gray-300);
 }
 
 .feature-icon {
-  font-size: 48px;
-  margin-bottom: 20px;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 20px;
+  color: var(--color-primary-default);
 }
 
 .feature-card h3 {
   font-size: 20px;
-  color: var(--ld-color-gray-800, #2c3e50);
+  color: var(--color-text-primary);
   margin: 0 0 10px 0;
 }
 
 .feature-card p {
-  color: var(--ld-color-gray-600, #666);
+  color: var(--color-text-secondary);
   margin: 0;
   line-height: 1.6;
 }
 
 /* 统计数据 */
 .stats {
-  background: var(--ld-color-gray-50, white);
+  background: var(--color-background);
   border-radius: 12px;
   padding: 40px;
   display: flex;
   justify-content: space-around;
-  box-shadow: 0 5px 20px var(--ld-color-gray-200, rgba(0, 0, 0, 0.05));
+  box-shadow: 0 5px 20px var(--color-border-light);
   flex-wrap: wrap;
   gap: 30px;
 }
@@ -240,13 +243,13 @@ onMounted(() => {
 .stat-value {
   font-size: 36px;
   font-weight: 800;
-  color: var(--ld-color-primary-500);
+  color: var(--color-primary-default);
   margin-bottom: 10px;
 }
 
 .stat-label {
   font-size: 14px;
-  color: var(--ld-color-gray-600, #666);
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 1px;
 }

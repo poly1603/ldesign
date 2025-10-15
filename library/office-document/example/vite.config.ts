@@ -13,6 +13,6 @@ export default defineConfig({
   }
  },
  optimizeDeps: {
-  include: ['docx-preview', 'xlsx', 'x-data-spreadsheet', 'pptxjs', 'jszip']
+  include: ['docx-preview', 'xlsx', 'x-data-spreadsheet', 'jszip']
  }
 });

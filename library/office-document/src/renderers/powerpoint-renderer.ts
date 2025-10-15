@@ -1,9 +1,9 @@
-import pptxjs from 'pptxjs';
+import JSZip from 'jszip';
 import type { IDocumentRenderer, DocumentMetadata, ViewerOptions } from '../types';
 
 /**
  * PowerPoint Document Renderer
- * Uses pptxjs for high-fidelity rendering with styles and layouts
+ * Uses JSZip to parse PPTX files and render slides
  */
 export class PowerPointRenderer implements IDocumentRenderer {
  private container: HTMLElement | null = null;
@@ -45,12 +45,25 @@ export class PowerPointRenderer implements IDocumentRenderer {
    wrapper.appendChild(this.pptxContainer);
    container.appendChild(wrapper);
 
-   // Render PPTX using pptxjs
-   await pptxjs.load(data, this.pptxContainer);
+   // Parse PPTX using JSZip
+   const zip = await JSZip.loadAsync(data);
+   
+   // Get all slide files
+   const slideFiles = Object.keys(zip.files)
+    .filter(name => name.startsWith('ppt/slides/slide') && name.endsWith('.xml'))
+    .sort((a, b) => {
+     const numA = parseInt(a.match(/slide(\d+)\.xml/)?.[1] || '0');
+     const numB = parseInt(b.match(/slide(\d+)\.xml/)?.[1] || '0');
+     return numA - numB;
+    });
 
-   // Get slide count after rendering
+   this.slideCount = slideFiles.length;
+
+   // Render slides
+   await this.renderSlides(zip, slideFiles);
+
+   // Get slide elements
    const slides = this.pptxContainer.querySelectorAll('.slide');
-   this.slideCount = slides.length;
 
    // Add navigation controls if enabled
    if (options.powerpoint?.showNavigation !== false && this.slideCount > 0) {
@@ -68,6 +81,113 @@ export class PowerPointRenderer implements IDocumentRenderer {
    const err = error instanceof Error ? error : new Error('Failed to render PowerPoint document');
    options.onError?.(err);
    throw err;
+  }
+ }
+
+ /**
+  * Render slides from PPTX
+  */
+ private async renderSlides(zip: JSZip, slideFiles: string[]): Promise<void> {
+  if (!this.pptxContainer) return;
+
+  for (let i = 0; i < slideFiles.length; i++) {
+   const slideFile = slideFiles[i];
+   const slideXml = await zip.file(slideFile)?.async('text');
+   
+   if (!slideXml) continue;
+
+   // Create slide element
+   const slideDiv = document.createElement('div');
+   slideDiv.className = 'slide';
+   slideDiv.style.cssText = `
+    width: 100%;
+    max-width: 960px;
+    margin: 20px auto;
+    aspect-ratio: 16/9;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 40px;
+    box-sizing: border-box;
+    position: relative;
+   `;
+
+   // Extract text content from XML
+   const parser = new DOMParser();
+   const xmlDoc = parser.parseFromString(slideXml, 'text/xml');
+   const textElements = xmlDoc.getElementsByTagName('a:t');
+   
+   const slideContent = document.createElement('div');
+   slideContent.style.cssText = `
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-size: 18px;
+    color: #333;
+   `;
+
+   // Add slide number
+   const slideNumber = document.createElement('div');
+   slideNumber.className = 'slide-number';
+   slideNumber.textContent = `Slide ${i + 1}`;
+   slideNumber.style.cssText = `
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 12px;
+    color: #999;
+   `;
+   slideDiv.appendChild(slideNumber);
+
+   // Extract and render text
+   const texts: string[] = [];
+   for (let j = 0; j < textElements.length; j++) {
+    const textContent = textElements[j].textContent;
+    if (textContent && textContent.trim()) {
+     texts.push(textContent.trim());
+    }
+   }
+
+   if (texts.length > 0) {
+    // First text as title
+    if (texts[0]) {
+     const title = document.createElement('h2');
+     title.textContent = texts[0];
+     title.style.cssText = `
+      font-size: 32px;
+      font-weight: bold;
+      margin: 0 0 20px 0;
+      color: #1a1a1a;
+     `;
+     slideContent.appendChild(title);
+    }
+
+    // Rest as content
+    for (let k = 1; k < texts.length; k++) {
+     const p = document.createElement('p');
+     p.textContent = texts[k];
+     p.style.cssText = `
+      margin: 10px 0;
+      line-height: 1.6;
+     `;
+     slideContent.appendChild(p);
+    }
+   } else {
+    // No text found
+    const placeholder = document.createElement('div');
+    placeholder.textContent = 'Slide content not available';
+    placeholder.style.cssText = `
+     color: #999;
+     font-style: italic;
+     text-align: center;
+     margin-top: 40%;
+    `;
+    slideContent.appendChild(placeholder);
+   }
+
+   slideDiv.appendChild(slideContent);
+   this.pptxContainer.appendChild(slideDiv);
   }
  }
 

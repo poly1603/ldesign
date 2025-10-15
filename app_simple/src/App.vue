@@ -3,7 +3,7 @@
     <!-- 导航栏 -->
     <nav class="navbar">
       <div class="nav-brand">
-        <span class="logo">🚀</span>
+        <Rocket class="logo" />
         <span class="brand-text">{{ t('app.name') }}</span>
       </div>
 
@@ -58,6 +58,7 @@ import { useI18n } from '@/i18n'
 import { auth } from '@/composables/useAuth'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import { VueThemePicker } from '@ldesign/color/vue'
+import { Rocket } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -101,9 +102,9 @@ onMounted(() => {
 
 /* 导航栏样式 */
 .navbar {
-  background: var(--ld-color-gray-50, rgba(255, 255, 255, 0.95));
+  background: var(--color-background-secondary);
   backdrop-filter: blur(10px);
-  box-shadow: 0 2px 10px var(--ld-color-gray-200, rgba(0, 0, 0, 0.1));
+  box-shadow: 0 2px 10px var(--color-border-light);
   padding: 0 20px;
   display: flex;
   align-items: center;
@@ -118,13 +119,15 @@ onMounted(() => {
   align-items: center;
   font-size: 20px;
   font-weight: bold;
-  color: var(--ld-color-gray-900, #2c3e50);
+  color: var(--color-text-primary);
   margin-right: 40px;
 }
 
 .logo {
-  font-size: 28px;
+  width: 28px;
+  height: 28px;
   margin-right: 10px;
+  color: var(--color-primary-default);
 }
 
 .brand-text {
@@ -138,7 +141,7 @@ onMounted(() => {
 }
 
 .nav-link {
-  color: var(--ld-color-gray-900, #2c3e50);
+  color: var(--color-text-primary);
   text-decoration: none;
   padding: 8px 16px;
   margin: 0 5px;
@@ -148,13 +151,13 @@ onMounted(() => {
 }
 
 .nav-link:hover {
-  background: var(--ld-color-primary-100, rgba(102, 126, 234, 0.1));
-  color: var(--ld-color-primary, #667eea);
+  background: var(--color-primary-100);
+  color: var(--color-primary-default);
 }
 
 .nav-link.active {
-  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
-  color: var(--ld-color-gray-50, white);
+  background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-active) 100%);
+  color: var(--color-gray-50);
 }
 
 .nav-spacer {
@@ -172,23 +175,23 @@ onMounted(() => {
 }
 
 .nav-button.login {
-  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
-  color: var(--ld-color-gray-50, white);
+  background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-active) 100%);
+  color: var(--color-gray-50);
 }
 
 .nav-button.login:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px var(--ld-color-primary-300, rgba(102, 126, 234, 0.3));
+  box-shadow: 0 5px 15px var(--color-primary-300);
 }
 
 .nav-button.logout {
-  background: var(--ld-color-danger-500, #e74c3c);
+  background: var(--color-danger-default);
   color: white;
   margin-left: 10px;
 }
 
 .nav-button.logout:hover {
-  background: var(--ld-color-danger-600, #c0392b);
+  background: var(--color-danger-hover);
 }
 
 .user-menu {
@@ -197,11 +200,11 @@ onMounted(() => {
 }
 
 .username {
-  color: var(--ld-color-gray-800, #2c3e50);
+  color: var(--color-text-primary);
   font-weight: 600;
   margin-right: 10px;
   padding: 8px 12px;
-  background: var(--ld-color-primary-100, rgba(102, 126, 234, 0.1));
+  background: var(--color-primary-100);
   border-radius: 6px;
 }
 
@@ -221,8 +224,8 @@ onMounted(() => {
 
 /* 页脚 */
 .footer {
-  background: var(--ld-color-gray-800, rgba(0, 0, 0, 0.1));
-  color: var(--ld-color-gray-50, white);
+  background: var(--color-gray-800);
+  color: var(--color-gray-50);
   text-align: center;
   padding: 20px;
   font-size: 14px;

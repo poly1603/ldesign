@@ -93,7 +93,7 @@ const handleLogin = async () => {
     }
     
     // 触发成功提示
-    console.log('✅ 登录成功！')
+    console.log('登录成功！')
     
     // 获取重定向地址，如果没有就跳转到首页
     const redirect = (route.query?.redirect as string) || '/'
@@ -126,17 +126,17 @@ onMounted(() => {
 }
 
 .login-card {
-  background: var(--ld-color-gray-50, white);
+  background: var(--color-background);
   border-radius: 16px;
-  box-shadow: 0 20px 60px var(--ld-color-gray-300, rgba(0, 0, 0, 0.1));
+  box-shadow: 0 20px 60px var(--color-gray-300);
   width: 100%;
   max-width: 400px;
   overflow: hidden;
 }
 
 .login-header {
-  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
-  color: var(--ld-color-gray-50, white);
+  background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-active) 100%);
+  color: var(--color-gray-50);
   padding: 30px;
   text-align: center;
 }
@@ -163,7 +163,7 @@ onMounted(() => {
 .form-label {
   display: block;
   margin-bottom: 8px;
-  color: var(--ld-color-gray-800, #2c3e50);
+  color: var(--color-text-primary);
   font-size: 14px;
   font-weight: 600;
 }
@@ -171,7 +171,7 @@ onMounted(() => {
 .form-input {
   width: 100%;
   padding: 12px;
-  border: 2px solid var(--ld-color-gray-300, #e0e0e0);
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   font-size: 14px;
   transition: all 0.3s;
@@ -180,8 +180,8 @@ onMounted(() => {
 
 .form-input:focus {
   outline: none;
-  border-color: var(--ld-color-primary-500);
-  box-shadow: 0 0 0 3px var(--ld-color-primary-100);
+  border-color: var(--color-primary-default);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
 }
 
 .checkbox-group {
@@ -193,7 +193,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   cursor: pointer;
-  color: var(--ld-color-gray-800, #2c3e50);
+  color: var(--color-text-primary);
   font-size: 14px;
 }
 
@@ -205,8 +205,8 @@ onMounted(() => {
 }
 
 .error-message {
-  background: var(--ld-color-danger-100);
-  color: var(--ld-color-danger-700);
+  background: var(--color-danger-100);
+  color: var(--color-danger-active);
   padding: 10px;
   border-radius: 6px;
   margin-bottom: 20px;
@@ -217,8 +217,8 @@ onMounted(() => {
 .submit-button {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
-  color: var(--ld-color-gray-50, white);
+  background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-active) 100%);
+  color: var(--color-gray-50);
   border: none;
   border-radius: 8px;
   font-size: 16px;
@@ -229,7 +229,7 @@ onMounted(() => {
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px var(--ld-color-primary-300, rgba(102, 126, 234, 0.3));
+  box-shadow: 0 10px 30px var(--color-primary-300);
 }
 
 .submit-button:disabled {
@@ -239,18 +239,18 @@ onMounted(() => {
 
 .login-footer {
   padding: 20px 30px;
-  background: var(--ld-color-gray-50, #f8f9fa);
+  background: var(--color-background-secondary);
   text-align: center;
 }
 
 .hint {
-  color: var(--ld-color-gray-600, #666);
+  color: var(--color-text-secondary);
   font-size: 13px;
   margin: 0 0 10px 0;
 }
 
 .back-link {
-  color: var(--ld-color-primary-500);
+  color: var(--color-primary-default);
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
@@ -258,6 +258,6 @@ onMounted(() => {
 }
 
 .back-link:hover {
-  color: var(--ld-color-primary-700);
+  color: var(--color-primary-active);
 }
 </style>

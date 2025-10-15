@@ -166,9 +166,16 @@ function handleSelect(templateName: string) {
   emit('change', templateName)
 }
 
+// 记录上次发送的设备类型
+let lastEmittedDevice: string | null = null
+
 // 监听设备变化
 watch(device, (newDevice) => {
-  emit('device-change', newDevice)
+  // 只在设备真正变化时发送事件
+  if (newDevice !== lastEmittedDevice) {
+    lastEmittedDevice = newDevice
+    emit('device-change', newDevice)
+  }
 })
 
 // 自动隐藏功能

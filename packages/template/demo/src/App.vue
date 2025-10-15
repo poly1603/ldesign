@@ -43,11 +43,21 @@ function handleTemplateChange(templateName: string) {
 // 处理设备变化
 function handleDeviceChange(device: string) {
   console.log('设备变化:', device)
+  
+  // 只在设备真的变化时处理
+  if (currentDevice.value === device) {
+    return
+  }
+  
   currentDevice.value = device
+  
+  // 设备变化时清空当前模板，让系统自动选择新设备的默认模板
+  currentTemplate.value = ''
 
   // 设备变化时使用不同的动画
   transitionName.value = 'template-scale'
-  templateKey.value++
+  // 不要在设备变化时更新 templateKey，这会导致组件重新挂载
+  // templateKey.value++
 }
 
 // 处理模板加载完成
@@ -96,7 +106,7 @@ const templateProps = {
       @before-leave="handleBeforeLeave"
       @enter="handleEnter"
     >
-      <div :key="templateKey" class="template-container">
+      <div :key="currentTemplate + '_' + currentDevice.value" class="template-container">
         <TemplateRenderer
           category="login"
           :template-name="currentTemplate || undefined"

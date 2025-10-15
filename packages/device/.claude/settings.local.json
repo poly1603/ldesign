@@ -8,7 +8,9 @@
       "Bash(npx tsc:*)",
       "Bash(test:*)",
       "Bash(rm:*)",
-      "Bash(if not exist guide mkdir guide)"
+      "Bash(if not exist guide mkdir guide)",
+      "Bash(pnpm docs:build:*)",
+      "Read(//d/WorkBench/ldesign/**)"
     ],
     "deny": [],
     "ask": []

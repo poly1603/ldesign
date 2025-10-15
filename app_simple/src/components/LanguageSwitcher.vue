@@ -3,7 +3,7 @@
     <button @click="toggleDropdown" class="language-button" :title="t('nav.language')">
       <span class="flag">{{ currentLocaleFlag }}</span>
       <span class="name">{{ currentLocaleName }}</span>
-      <span class="arrow" :class="{ open: isOpen }">▼</span>
+      <ChevronDown class="arrow" :class="{ open: isOpen }" />
     </button>
     <transition name="dropdown">
       <div v-if="isOpen" class="language-dropdown" @click.stop>
@@ -16,7 +16,7 @@
         >
           <span class="flag">{{ locale.flag }}</span>
           <span class="name">{{ locale.name }}</span>
-          <span v-if="currentLocale === locale.code" class="check">✓</span>
+          <Check v-if="currentLocale === locale.code" class="check" />
         </button>
       </div>
     </transition>
@@ -27,6 +27,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '@/i18n'
 import { availableLocales } from '@/locales'
+import { ChevronDown, Check } from 'lucide-vue-next'
 
 const { locale, setLocale, t } = useI18n()
 const isOpen = ref(false)
@@ -73,10 +74,10 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: var(--ld-color-primary-100);
-  border: 1px solid var(--ld-color-primary-200);
+  background: var(--color-primary-100);
+  border: 1px solid var(--color-primary-200);
   border-radius: 8px;
-  color: var(--ld-color-gray-800);
+  color: var(--color-text-primary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -84,8 +85,8 @@ onUnmounted(() => {
 }
 
 .language-button:hover {
-  background: var(--ld-color-primary-200);
-  border-color: var(--ld-color-primary-300);
+  background: var(--color-primary-200);
+  border-color: var(--color-primary-300);
 }
 
 .flag {
@@ -93,7 +94,8 @@ onUnmounted(() => {
 }
 
 .arrow {
-  font-size: 10px;
+  width: 16px;
+  height: 16px;
   transition: transform 0.3s;
 }
 
@@ -106,10 +108,10 @@ onUnmounted(() => {
   top: 100%;
   right: 0;
   margin-top: 8px;
-  background: var(--ld-color-gray-50, white);
-  border: 1px solid var(--ld-color-gray-200);
+  background: var(--color-background);
+  border: 1px solid var(--color-border-light);
   border-radius: 8px;
-  box-shadow: 0 4px 12px var(--ld-color-gray-300, rgba(0, 0, 0, 0.1));
+  box-shadow: 0 4px 12px var(--color-gray-300);
   overflow: hidden;
   z-index: 1000;
   min-width: 160px;
@@ -123,7 +125,7 @@ onUnmounted(() => {
   padding: 10px 16px;
   background: none;
   border: none;
-  color: var(--ld-color-gray-800);
+  color: var(--color-text-primary);
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s;
@@ -131,12 +133,12 @@ onUnmounted(() => {
 }
 
 .language-option:hover {
-  background: var(--ld-color-primary-100);
+  background: var(--color-primary-100);
 }
 
 .language-option.active {
-  background: var(--ld-color-primary-100);
-  color: var(--ld-color-primary-500);
+  background: var(--color-primary-100);
+  color: var(--color-primary-default);
   font-weight: 600;
 }
 
@@ -145,8 +147,9 @@ onUnmounted(() => {
 }
 
 .check {
-  color: var(--ld-color-primary-500);
-  font-weight: bold;
+  width: 16px;
+  height: 16px;
+  color: var(--color-primary-default);
 }
 
 /* Dropdown animation */
