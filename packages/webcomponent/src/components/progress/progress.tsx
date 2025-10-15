@@ -1,4 +1,4 @@
-import { Component, Prop, h, Host, State } from '@stencil/core';
+import { Component, Prop, h, Host, State, Event, EventEmitter, Watch } from '@stencil/core';
 import { Size } from '../../types';
 
 /**
@@ -85,7 +85,78 @@ export class LdesignProgress {
   /** 条纹动画（active 状态下默认开启） */
   @Prop() striped: boolean = true;
 
+  /** 不确定状态（显示循环动画，忽略 percent） */
+  @Prop() indeterminate: boolean = false;
+
+  /** 启用百分比过渡动画 */
+  @Prop() animate: boolean = false;
+
+  /** 进度条阴影 */
+  @Prop() shadow: boolean = false;
+
+  /** 发光效果 */
+  @Prop() glow: boolean = false;
+
+  /** 脉冲动画 */
+  @Prop() pulse: boolean = false;
+
+  /** 百分比变化时触发 */
+  @Event() percentChange!: EventEmitter<number>;
+
+  /** 进度完成时触发 */
+  @Event() complete!: EventEmitter<void>;
+
   @State() private hideInnerText: boolean = false;
+  @State() private animatedPercent: number = 0;
+
+  private gradientId: string = '';
+  private animationFrame: number = 0;
+  private prevPercent: number = 0;
+
+  @Watch('percent')
+  percentChanged(newVal: number, oldVal: number) {
+    if (newVal !== oldVal) {
+      this.percentChange.emit(newVal);
+      if (newVal >= 100 && oldVal < 100) {
+        this.complete.emit();
+      }
+      if (this.animate) {
+        this.animatePercent(oldVal, newVal);
+      } else {
+        this.animatedPercent = newVal;
+      }
+    }
+  }
+
+  private animatePercent(from: number, to: number) {
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+    }
+
+    const duration = 500; // 500ms
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // 使用缓动函数
+      const eased = this.easeOutCubic(progress);
+      this.animatedPercent = from + (to - from) * eased;
+
+      if (progress < 1) {
+        this.animationFrame = requestAnimationFrame(animate);
+      } else {
+        this.animatedPercent = to;
+      }
+    };
+
+    animate();
+  }
+
+  private easeOutCubic(t: number): number {
+    return 1 - Math.pow(1 - t, 3);
+  }
 
   private clamp(v: number, min = 0, max = 100) {
     if (!isFinite(v as any)) return min;
@@ -93,7 +164,8 @@ export class LdesignProgress {
   }
 
   private get mergedPercent() {
-    return this.clamp(this.percent);
+    if (this.indeterminate) return 30; // 不确定状态显示30%
+    return this.clamp(this.animate ? this.animatedPercent : this.percent);
   }
 
   private get mergedSuccess() {
@@ -133,7 +205,8 @@ export class LdesignProgress {
   private getInfoContent() {
     const status = this.getStatus();
     const isDefaultFormat = this.format === '{percent}%';
-    let content: any = this.format.replace('{percent}', String(Math.round(this.mergedPercent)));
+    const displayPercent = Math.round(this.animate ? this.animatedPercent : this.mergedPercent);
+    let content: any = this.format.replace('{percent}', String(displayPercent));
     if (isDefaultFormat) {
       if (status === 'success') {
         content = <ldesign-icon name="check" size="small" />;
@@ -145,7 +218,7 @@ export class LdesignProgress {
   }
 
   private renderInfo() {
-    if (!this.showInfo) return null;
+    if (!this.showInfo || this.indeterminate) return null;
     return <span class="ldesign-progress__text">{this.getInfoContent()}</span>;
   }
 
@@ -163,12 +236,16 @@ export class LdesignProgress {
       status !== 'normal' ? `ldesign-progress--${status}` : '',
       this.striped && status === 'active' ? 'ldesign-progress--striped' : '',
       this.infoPosition ? `ldesign-progress--info-${this.infoPosition}` : '',
+      this.indeterminate ? 'ldesign-progress--indeterminate' : '',
+      this.shadow ? 'ldesign-progress--shadow' : '',
+      this.glow ? 'ldesign-progress--glow' : '',
+      this.pulse ? 'ldesign-progress--pulse' : '',
     ]
       .filter(Boolean)
       .join(' ');
 
     const barStyle: any = {
-      width: `${percent}%`,
+      width: this.indeterminate ? '30%' : `${percent}%`,
       height: `${height}px`,
       background: this.strokeColor || 'var(--ldesign-brand-color, #5e2aa7)',
       borderRadius: `${height / 2}px`,
@@ -198,7 +275,7 @@ export class LdesignProgress {
           <div class="ldesign-progress__outer" style={railStyle}>
             {success != null && <div class="ldesign-progress__success" style={successStyle} />}
             <div class="ldesign-progress__inner" style={barStyle} />
-            {this.showInfo ? <span class="ldesign-progress__text ldesign-progress__text--inside">{this.getInfoContent()}</span> : null}
+            {this.showInfo && !this.indeterminate ? <span class="ldesign-progress__text ldesign-progress__text--inside">{this.getInfoContent()}</span> : null}
           </div>
         </Host>
       );
@@ -289,13 +366,15 @@ export class LdesignProgress {
 
     const { r, strokeWidth, circumference, visibleLen, dashOffset } = this.getCircleGeometry();
 
-    const gradId = `ldp-grad-${Math.random().toString(36).slice(2, 9)}`;
-
     const rootCls = [
       'ldesign-progress',
       this.type === 'dashboard' ? 'ldesign-progress--dashboard' : (this.type === 'semicircle' ? 'ldesign-progress--semicircle' : 'ldesign-progress--circle'),
       `ldesign-progress--${this.size}`,
       status !== 'normal' ? `ldesign-progress--${status}` : '',
+      this.indeterminate ? 'ldesign-progress--indeterminate' : '',
+      this.shadow ? 'ldesign-progress--shadow' : '',
+      this.glow ? 'ldesign-progress--glow' : '',
+      this.pulse ? 'ldesign-progress--pulse' : '',
     ]
       .filter(Boolean)
       .join(' ');
@@ -358,8 +437,9 @@ export class LdesignProgress {
     const sizePx = this.width || 120;
     const hostStyle: any = this.type === 'semicircle' ? { width: `${sizePx}px`, height: `${Math.round(sizePx / 2)}px` } : { width: `${sizePx}px`, height: `${sizePx}px` };
 
-    const showInnerText = this.showInfo && !this.hideInnerText && sizePx > 20;
-    const text = this.format.replace('{percent}', String(Math.round(percent)));
+    const showInnerText = this.showInfo && !this.hideInnerText && sizePx > 20 && !this.indeterminate;
+    const displayPercent = Math.round(this.animate ? this.animatedPercent : percent);
+    const text = this.format.replace('{percent}', String(displayPercent));
     const isDefaultFormat = this.format === '{percent}%';
 
     return (
@@ -367,7 +447,7 @@ export class LdesignProgress {
         <svg class="ldesign-progress__circle" viewBox="0 0 100 100" role="img" aria-label={`${percent}%`} style={this.type === 'semicircle' ? ({ width: '100%', height: 'auto' } as any) : undefined}>
           {(this.gradientFrom && this.gradientTo) ? (
             <defs>
-              <linearGradient id={gradId} {...this.getGradientVector()}>
+              <linearGradient id={this.gradientId} {...this.getGradientVector()}>
                 <stop offset="0%" stop-color={this.gradientFrom} />
                 <stop offset="100%" stop-color={this.gradientTo} />
               </linearGradient>
@@ -406,7 +486,7 @@ export class LdesignProgress {
               cy="50"
               r={r}
               fill="none"
-              stroke={(this.gradientFrom && this.gradientTo) ? `url(#${gradId})` : (this.strokeColor || 'var(--ldesign-brand-color, #5e2aa7)')}
+              stroke={(this.gradientFrom && this.gradientTo) ? `url(#${this.gradientId})` : (this.strokeColor || 'var(--ldesign-brand-color, #5e2aa7)')}
               stroke-width={strokeWidth}
               stroke-linecap={this.strokeLinecap}
               stroke-dasharray={mainDash}
@@ -429,6 +509,7 @@ export class LdesignProgress {
             )}
           </span>
         ) : null}
+        <slot name="circle-content"></slot>
       </Host>
     );
   }
@@ -448,6 +529,7 @@ export class LdesignProgress {
       'ldesign-progress--steps',
       `ldesign-progress--${this.size}`,
       status !== 'normal' ? `ldesign-progress--${status}` : '',
+      this.shadow ? 'ldesign-progress--shadow' : '',
     ]
       .filter(Boolean)
       .join(' ');
@@ -476,10 +558,20 @@ export class LdesignProgress {
   }
 
   componentWillLoad() {
+    // 生成固定的 gradientId（避免每次 render 都变化）
+    this.gradientId = `ldp-grad-${Math.random().toString(36).slice(2, 9)}`;
     // 决定是否在环形内隐藏文本（width 太小时）
     this.hideInnerText = (this.width || 0) <= 20;
     // 规范化初始值
-    this.percent = this.mergedPercent;
+    this.percent = this.clamp(this.percent);
+    this.animatedPercent = this.percent;
+    this.prevPercent = this.percent;
+  }
+
+  disconnectedCallback() {
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+    }
   }
 
   render() {
@@ -488,7 +580,7 @@ export class LdesignProgress {
       return this.renderSteps();
     }
 
-    if (this.type === 'circle' || this.type === 'dashboard') {
+    if (this.type === 'circle' || this.type === 'dashboard' || this.type === 'semicircle') {
       return this.renderCircleLike();
     }
 

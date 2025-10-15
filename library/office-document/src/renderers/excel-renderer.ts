@@ -45,7 +45,9 @@ export class ExcelRenderer implements IDocumentRenderer {
    // Convert workbook to x-data-spreadsheet format
    const xsData = this.convertWorkbookToXS(this.workbook);
 
-   // Initialize x-data-spreadsheet
+   // Initialize x-data-spreadsheet with correct data format
+   const spreadsheetData = xsData.length > 0 ? xsData : [{ name: 'Sheet1', rows: {} }];
+   
    this.spreadsheet = new Spreadsheet(wrapper, {
     mode: options.excel?.enableEditing ? 'edit' : 'read',
     showToolbar: options.excel?.showFormulaBar || false,
@@ -67,8 +69,11 @@ export class ExcelRenderer implements IDocumentRenderer {
     }
    });
 
-   // Load data
-   this.spreadsheet.loadData(xsData);
+   // Load data - x-data-spreadsheet expects array of sheet objects
+   if (spreadsheetData.length > 0) {
+    // loadData expects the data in a specific format
+    this.spreadsheet.loadData(spreadsheetData);
+   }
 
    // Call onLoad callback
    options.onLoad?.();
@@ -83,7 +88,9 @@ export class ExcelRenderer implements IDocumentRenderer {
   * Convert SheetJS workbook to x-data-spreadsheet format
   */
  private convertWorkbookToXS(workbook: XLSX.WorkBook): any {
-  return workbook.SheetNames.map((sheetName, sheetIndex) => {
+  const sheets: any[] = [];
+  
+  workbook.SheetNames.forEach((sheetName) => {
    const worksheet = workbook.Sheets[sheetName];
    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
    
@@ -101,14 +108,22 @@ export class ExcelRenderer implements IDocumentRenderer {
      if (cell) {
       const cellData: any = {};
       
-      // Set text/value
+      // Set text/value based on cell type
       if (cell.v !== undefined) {
-       cellData.text = String(cell.v);
-      }
-      
-      // Set number format
-      if (cell.t === 'n') {
-       cellData.type = 'number';
+       if (cell.t === 'n') {
+        // Number
+        cellData.text = cell.w || String(cell.v);
+       } else if (cell.t === 'd') {
+        // Date
+        cellData.text = cell.w || cell.v.toLocaleDateString();
+       } else if (cell.f) {
+        // Formula
+        cellData.text = cell.w || String(cell.v);
+        cellData.formula = cell.f;
+       } else {
+        // String or other
+        cellData.text = String(cell.v);
+       }
       }
       
       // Add cell style if available
@@ -119,7 +134,9 @@ export class ExcelRenderer implements IDocumentRenderer {
        if (cell.s.font) {
         if (cell.s.font.bold) style.bold = true;
         if (cell.s.font.italic) style.italic = true;
-        if (cell.s.font.name) style.font = cell.s.font.name;
+        if (cell.s.font.underline) style.underline = true;
+        if (cell.s.font.strike) style.strike = true;
+        if (cell.s.font.name) style.font = { name: cell.s.font.name };
         if (cell.s.font.sz) style.fontSize = cell.s.font.sz;
         if (cell.s.font.color) style.color = this.rgbToHex(cell.s.font.color);
        }
@@ -136,6 +153,26 @@ export class ExcelRenderer implements IDocumentRenderer {
         }
         if (cell.s.alignment.vertical) {
          style.valign = cell.s.alignment.vertical;
+        }
+        if (cell.s.alignment.wrapText) {
+         style.textwrap = true;
+        }
+       }
+       
+       // Border
+       if (cell.s.border) {
+        const border: any[] = [];
+        if (cell.s.border.top) border.push('top');
+        if (cell.s.border.bottom) border.push('bottom');
+        if (cell.s.border.left) border.push('left');
+        if (cell.s.border.right) border.push('right');
+        if (border.length > 0) {
+         style.border = {
+          top: cell.s.border.top ? ['thin', '#000'] : null,
+          bottom: cell.s.border.bottom ? ['thin', '#000'] : null,
+          left: cell.s.border.left ? ['thin', '#000'] : null,
+          right: cell.s.border.right ? ['thin', '#000'] : null
+         };
         }
        }
        
@@ -156,20 +193,35 @@ export class ExcelRenderer implements IDocumentRenderer {
    // Set column widths
    if (worksheet['!cols']) {
     worksheet['!cols'].forEach((col: any, index: number) => {
-     if (col.wpx) {
-      cols[index] = { width: col.wpx };
+     if (col && col.wpx) {
+      cols[index] = { width: Math.round(col.wpx) };
+     } else if (col && col.width) {
+      cols[index] = { width: Math.round(col.width * 10) };
      }
     });
    }
 
-   return {
+   // Set row heights
+   const rowHeights: any = {};
+   if (worksheet['!rows']) {
+    worksheet['!rows'].forEach((row: any, index: number) => {
+     if (row && row.hpx) {
+      if (!rows[index]) rows[index] = { cells: {} };
+      rows[index].height = Math.round(row.hpx);
+     }
+    });
+   }
+
+   sheets.push({
     name: sheetName,
     rows,
     cols,
     merges: worksheet['!merges'] || [],
-    freeze: 'A1'
-   };
+    freeze: worksheet['!freeze'] || 'A1'
+   });
   });
+  
+  return sheets;
  }
 
  /**

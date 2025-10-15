@@ -7,181 +7,7 @@ import type { Plugin, Command } from '../types'
 import { registerContextMenu } from '../core/ContextMenuManager'
 // import { showTableDialog } from '../ui/TableDialog'
 
-/**
- * 创建表格右键菜单 - 完全重构版本
- */
-function createTableContextMenu(table: HTMLTableElement, x: number, y: number) {
-  // 移除已存在的菜单
-  const existingMenu = document.querySelector('.table-context-menu')
-  if (existingMenu) {
-    existingMenu.remove()
-  }
-
-  // 创建菜单
-  const menu = document.createElement('div')
-  menu.className = 'table-context-menu'
-  menu.style.cssText = `
-    position: fixed;
-    left: ${x}px;
-    top: ${y}px;
-    background: white;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    padding: 6px 0;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
-    z-index: 99999;
-    min-width: 200px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
-    font-size: 14px;
-  `
-
-  // 简化的菜单项 - 完全扁平化，没有子菜单
-  const menuItems = [
-    { text: '插入上方行', icon: '↑', action: () => insertRowAbove(table) },
-    { text: '插入下方行', icon: '↓', action: () => insertRowBelow(table) },
-    { text: '插入左侧列', icon: '←', action: () => insertColumnLeft(table) },
-    { text: '插入右侧列', icon: '→', action: () => insertColumnRight(table) },
-    { divider: true },
-    { text: '合并单元格', icon: '□', action: () => mergeCells(table) },
-    { text: '拆分单元格', icon: '▦', action: () => splitCell(table) },
-    { text: '设为表头', icon: 'H', action: () => toggleTableHeader(table) },
-    { divider: true },
-    { text: '增加列宽', icon: '↔', action: () => increaseColumnWidth(table) },
-    { text: '减少列宽', icon: '↔', action: () => decreaseColumnWidth(table) },
-    { divider: true },
-    { text: '删除行', icon: '－', action: () => deleteCurrentRow(table), danger: true },
-    { text: '删除列', icon: '｜', action: () => deleteCurrentColumn(table), danger: true },
-    { text: '清空内容', icon: '⌫', action: () => clearTable(table), danger: true },
-    { divider: true },
-    { text: '删除表格', icon: '✕', action: () => deleteEntireTable(table), danger: true }
-  ]
-
-  // 渲染菜单项
-  menuItems.forEach(item => {
-    if (item.divider) {
-      const divider = document.createElement('div')
-      divider.style.cssText = `
-        height: 1px;
-        background: #e5e7eb;
-        margin: 6px 12px;
-      `
-      menu.appendChild(divider)
-    } else {
-      const menuItem = document.createElement('div')
-      menuItem.style.cssText = `
-        padding: 8px 16px 8px 12px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: ${item.danger ? '#dc2626' : '#374151'};
-        transition: all 0.15s;
-        user-select: none;
-        white-space: nowrap;
-      `
-      
-      // 创建图标
-      const icon = document.createElement('span')
-      icon.style.cssText = `
-        width: 20px;
-        text-align: center;
-        opacity: 0.7;
-        font-size: 16px;
-      `
-      icon.textContent = item.icon
-      
-      // 创建文本
-      const text = document.createElement('span')
-      text.textContent = item.text
-      
-      menuItem.appendChild(icon)
-      menuItem.appendChild(text)
-      
-      // 交互效果
-      menuItem.addEventListener('mouseenter', () => {
-        menuItem.style.background = item.danger ? '#fee2e2' : '#f3f4f6'
-        menuItem.style.paddingLeft = '16px'
-      })
-      
-      menuItem.addEventListener('mouseleave', () => {
-        menuItem.style.background = 'transparent'
-        menuItem.style.paddingLeft = '12px'
-      })
-      
-      // 点击执行
-      menuItem.addEventListener('click', (e) => {
-        e.stopPropagation()
-        item.action!()
-        menu.remove()
-      })
-      
-      menu.appendChild(menuItem)
-    }
-  })
-
-  document.body.appendChild(menu)
-
-  // 调整位置，确保不超出屏幕
-  requestAnimationFrame(() => {
-    const rect = menu.getBoundingClientRect()
-    
-    // 右边界检查
-    if (rect.right > window.innerWidth - 10) {
-      menu.style.left = `${window.innerWidth - rect.width - 10}px`
-    }
-    
-    // 下边界检查
-    if (rect.bottom > window.innerHeight - 10) {
-      menu.style.top = `${window.innerHeight - rect.height - 10}px`
-    }
-    
-    // 左边界检查
-    if (rect.left < 10) {
-      menu.style.left = '10px'
-    }
-    
-    // 上边界检查
-    if (rect.top < 10) {
-      menu.style.top = '10px'
-    }
-  })
-
-  // 点击其他地方关闭
-  const closeMenu = (e: MouseEvent) => {
-    if (!menu.contains(e.target as Node)) {
-      menu.remove()
-      document.removeEventListener('mousedown', closeMenu)
-      document.removeEventListener('contextmenu', closeContextMenu)
-    }
-  }
-  
-  // 右键其他地方也关闭
-  const closeContextMenu = (e: MouseEvent) => {
-    if (!menu.contains(e.target as Node)) {
-      e.preventDefault()
-      menu.remove()
-      document.removeEventListener('mousedown', closeMenu)
-      document.removeEventListener('contextmenu', closeContextMenu)
-    }
-  }
-  
-  // 延迟添加事件，避免立即触发
-  setTimeout(() => {
-    document.addEventListener('mousedown', closeMenu)
-    document.addEventListener('contextmenu', closeContextMenu)
-  }, 100)
-
-  // ESC键关闭
-  const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      menu.remove()
-      document.removeEventListener('keydown', handleEscape)
-      document.removeEventListener('mousedown', closeMenu)
-      document.removeEventListener('contextmenu', closeContextMenu)
-    }
-  }
-  document.addEventListener('keydown', handleEscape)
-}
+// createTableContextMenu 函数已移除，使用 ContextMenuManager 统一管理
 
 // 获取当前单元格位置
 function getCellPosition(cell: HTMLElement): { row: number; col: number } | null {
@@ -1288,39 +1114,58 @@ export const TablePlugin: Plugin = createPlugin({
     active: isInTable()
   }],
   // 初始化时注册表格右键菜单
-  init: () => {
-    // 注册表格右键菜单到 ContextMenuManager
-    registerContextMenu({
-      id: 'table-context-menu',
-      selector: '.ldesign-editor-content table, .ldesign-editor-content td, .ldesign-editor-content th',
-      priority: 10, // 高优先级，优先于默认菜单
-      items: (context) => {
-        // 找到表格元素
-        const table = context.element.closest('table') as HTMLTableElement
-        if (!table) return []
-        
-        return [
-          { label: '插入上方行', icon: '↑', action: () => insertRowAbove(table) },
-          { label: '插入下方行', icon: '↓', action: () => insertRowBelow(table) },
-          { label: '插入左侧列', icon: '←', action: () => insertColumnLeft(table) },
-          { label: '插入右侧列', icon: '→', action: () => insertColumnRight(table) },
-          { divider: true },
-          { label: '合并单元格', icon: '□', action: () => mergeCells(table) },
-          { label: '拆分单元格', icon: '▦', action: () => splitCell(table) },
-          { label: '设为表头', icon: 'H', action: () => toggleTableHeader(table) },
-          { divider: true },
-          { label: '增加列宽', icon: '↔', action: () => increaseColumnWidth(table) },
-          { label: '减少列宽', icon: '↔', action: () => decreaseColumnWidth(table) },
-          { divider: true },
-          { label: '删除行', icon: '－', action: () => deleteCurrentRow(table), className: 'danger' },
-          { label: '删除列', icon: '｜', action: () => deleteCurrentColumn(table), className: 'danger' },
-          { label: '清空内容', icon: '⌫', action: () => clearTable(table), className: 'danger' },
-          { divider: true },
-          { label: '删除表格', icon: '✕', action: () => deleteEntireTable(table), className: 'danger' }
-        ]
-      }
-    })
+  init: (editor: any) => {
+    console.log('[TablePlugin] init 被调用')
     
-    console.log('[TablePlugin] 表格右键菜单已注册到 ContextMenuManager')
+    // 延迟注册，确保 ContextMenuManager 已经初始化
+    setTimeout(() => {
+      console.log('[TablePlugin] 开始注册表格右键菜单')
+      
+      // 注册表格右键菜单到 ContextMenuManager
+      registerContextMenu({
+        id: 'table-context-menu',
+        selector: '.ldesign-editor-content table, .ldesign-editor-content table td, .ldesign-editor-content table th',
+        priority: 100, // 设置更高优先级
+        condition: (element) => {
+          // 确保元素在表格内
+          const table = element.closest('table')
+          return !!table && table.closest('.ldesign-editor-content') !== null
+        },
+        items: (context) => {
+          console.log('[TablePlugin] 生成表格菜单项, context:', context)
+          
+          // 找到表格元素
+          const table = context.element.closest('table') as HTMLTableElement
+          if (!table) {
+            console.log('[TablePlugin] 未找到表格元素')
+            return []
+          }
+          
+          console.log('[TablePlugin] 找到表格元素:', table)
+          
+          return [
+            { label: '插入上方行', action: () => insertRowAbove(table) },
+            { label: '插入下方行', action: () => insertRowBelow(table) },
+            { label: '插入左侧列', action: () => insertColumnLeft(table) },
+            { label: '插入右侦列', action: () => insertColumnRight(table) },
+            { divider: true },
+            { label: '合并单元格', action: () => mergeCells(table) },
+            { label: '拆分单元格', action: () => splitCell(table) },
+            { label: '设为表头', action: () => toggleTableHeader(table) },
+            { divider: true },
+            { label: '增加列宽', action: () => increaseColumnWidth(table) },
+            { label: '减少列宽', action: () => decreaseColumnWidth(table) },
+            { divider: true },
+            { label: '删除行', action: () => deleteCurrentRow(table), className: 'danger' },
+            { label: '删除列', action: () => deleteCurrentColumn(table), className: 'danger' },
+            { label: '清空内容', action: () => clearTable(table), className: 'danger' },
+            { divider: true },
+            { label: '删除表格', action: () => deleteEntireTable(table), className: 'danger' }
+          ]
+        }
+      })
+      
+      console.log('[TablePlugin] 表格右键菜单已注册')
+    }, 100)
   }
 })

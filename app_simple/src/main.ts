@@ -10,6 +10,8 @@ import { createRouter } from './router'
 import { engineConfig } from './config/app.config'
 import { auth } from './composables/useAuth'
 import { createColorPlugin } from '@ldesign/color'
+import { createTemplateManager } from '@ldesign/template'
+import { registerBuiltinTemplates } from './templates/register'
 
 /**
  * 启动应用
@@ -32,6 +34,22 @@ async function bootstrap() {
       persistLanguage: true,
       showMissingKeys: import.meta.env.DEV
     })
+
+    // 创建模板管理器
+    const templateManager = createTemplateManager({
+      cache: {
+        enabled: true,
+        maxSize: 50,
+        ttl: 3600000
+      },
+      device: {
+        detectOnMount: true,
+        detectOnResize: true
+      }
+    })
+    
+    // 注册内置模板
+    registerBuiltinTemplates(templateManager)
 
     // 创建 Color 插件（主题系统）
     const colorPlugin = createColorPlugin({
@@ -104,6 +122,13 @@ async function bootstrap() {
       
     // Vue应用配置
     setupApp: async (app) => {
+      // 手动注册 Template 管理器和组件
+      const { TEMPLATE_MANAGER_KEY, TemplateRenderer, TemplateSelector } = await import('@ldesign/template')
+      app.provide(TEMPLATE_MANAGER_KEY, templateManager)
+      app.config.globalProperties.$templateManager = templateManager
+      app.component('TemplateRenderer', TemplateRenderer)
+      app.component('TemplateSelector', TemplateSelector)
+      
       // 安装 Color 主题插件（提供全局主题管理和持久化）
       app.use(colorPlugin)
 

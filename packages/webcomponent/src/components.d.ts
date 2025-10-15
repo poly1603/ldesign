@@ -4418,6 +4418,11 @@ export namespace Components {
      */
     interface LdesignProgress {
         /**
+          * 启用百分比过渡动画
+          * @default false
+         */
+        "animate": boolean;
+        /**
           * 圆形分段之间的间隔角度（度数）
           * @default 2
          */
@@ -4441,6 +4446,11 @@ export namespace Components {
          */
         "gapPosition": 'top' | 'right' | 'bottom' | 'left';
         /**
+          * 发光效果
+          * @default false
+         */
+        "glow": boolean;
+        /**
           * 渐变方向：horizontal | vertical | diagonal
           * @default 'horizontal'
          */
@@ -4450,6 +4460,11 @@ export namespace Components {
          */
         "gradientFrom"?: string;
         "gradientTo"?: string;
+        /**
+          * 不确定状态（显示循环动画，忽略 percent）
+          * @default false
+         */
+        "indeterminate": boolean;
         /**
           * 线形文本位置
           * @default 'right'
@@ -4461,10 +4476,20 @@ export namespace Components {
          */
         "percent": number;
         /**
+          * 脉冲动画
+          * @default false
+         */
+        "pulse": boolean;
+        /**
           * 半圆位置（type=semicircle），top 表示显示上半圆，bottom 表示下半圆
           * @default 'top'
          */
         "semiPosition": 'top' | 'bottom';
+        /**
+          * 进度条阴影
+          * @default false
+         */
+        "shadow": boolean;
         /**
           * 是否显示信息文本（line：默认右侧；circle/dashboard：内部）
           * @default true
@@ -6292,6 +6317,10 @@ export interface LdesignPopupCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignPopupElement;
 }
+export interface LdesignProgressCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignProgressElement;
+}
 export interface LdesignRadioCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignRadioElement;
@@ -7285,11 +7314,23 @@ declare global {
         prototype: HTMLLdesignPopupElement;
         new (): HTMLLdesignPopupElement;
     };
+    interface HTMLLdesignProgressElementEventMap {
+        "percentChange": number;
+        "complete": void;
+    }
     /**
      * Progress 进度条
      * 支持：线形、环形、仪表盘、步骤条，多尺寸/状态/文本/自定义颜色等
      */
     interface HTMLLdesignProgressElement extends Components.LdesignProgress, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignProgressElementEventMap>(type: K, listener: (this: HTMLLdesignProgressElement, ev: LdesignProgressCustomEvent<HTMLLdesignProgressElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignProgressElementEventMap>(type: K, listener: (this: HTMLLdesignProgressElement, ev: LdesignProgressCustomEvent<HTMLLdesignProgressElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
     var HTMLLdesignProgressElement: {
         prototype: HTMLLdesignProgressElement;
@@ -12322,6 +12363,11 @@ declare namespace LocalJSX {
      */
     interface LdesignProgress {
         /**
+          * 启用百分比过渡动画
+          * @default false
+         */
+        "animate"?: boolean;
+        /**
           * 圆形分段之间的间隔角度（度数）
           * @default 2
          */
@@ -12345,6 +12391,11 @@ declare namespace LocalJSX {
          */
         "gapPosition"?: 'top' | 'right' | 'bottom' | 'left';
         /**
+          * 发光效果
+          * @default false
+         */
+        "glow"?: boolean;
+        /**
           * 渐变方向：horizontal | vertical | diagonal
           * @default 'horizontal'
          */
@@ -12355,20 +12406,43 @@ declare namespace LocalJSX {
         "gradientFrom"?: string;
         "gradientTo"?: string;
         /**
+          * 不确定状态（显示循环动画，忽略 percent）
+          * @default false
+         */
+        "indeterminate"?: boolean;
+        /**
           * 线形文本位置
           * @default 'right'
          */
         "infoPosition"?: 'right' | 'left' | 'inside' | 'bottom';
+        /**
+          * 进度完成时触发
+         */
+        "onComplete"?: (event: LdesignProgressCustomEvent<void>) => void;
+        /**
+          * 百分比变化时触发
+         */
+        "onPercentChange"?: (event: LdesignProgressCustomEvent<number>) => void;
         /**
           * 百分比 0-100
           * @default 0
          */
         "percent"?: number;
         /**
+          * 脉冲动画
+          * @default false
+         */
+        "pulse"?: boolean;
+        /**
           * 半圆位置（type=semicircle），top 表示显示上半圆，bottom 表示下半圆
           * @default 'top'
          */
         "semiPosition"?: 'top' | 'bottom';
+        /**
+          * 进度条阴影
+          * @default false
+         */
+        "shadow"?: boolean;
         /**
           * 是否显示信息文本（line：默认右侧；circle/dashboard：内部）
           * @default true

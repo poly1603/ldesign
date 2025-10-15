@@ -1,216 +1,230 @@
 /* Light Mode (Default) */
 :root,
 :root[theme-mode="light"] {
-  /* Brand Colors */
-  --ld-brand-color-1: #f2f3ff;
-  --ld-brand-color-2: #d9e1ff;
-  --ld-brand-color-3: #b5c7ff;
-  --ld-brand-color-4: #8eabff;
-  --ld-brand-color-5: #618dff;
-  --ld-brand-color-6: #366ef4;
-  --ld-brand-color-7: #0052d9;
-  --ld-brand-color-8: #003cab;
-  --ld-brand-color-9: #002a7c;
-  --ld-brand-color-10: #001a57;
-  /* Warning Colors */
-  --ld-warning-color-1: #fff1e9;
-  --ld-warning-color-2: #ffd9c2;
-  --ld-warning-color-3: #ffb98c;
-  --ld-warning-color-4: #fa9550;
-  --ld-warning-color-5: #e37318;
-  --ld-warning-color-6: #be5a00;
-  --ld-warning-color-7: #954500;
-  --ld-warning-color-8: #713300;
-  --ld-warning-color-9: #532300;
-  --ld-warning-color-10: #3b1700;
+  /* Brand Colors - 品牌色 */
+  --td-brand-color-1: #f2f3ff;
+  --td-brand-color-2: #d9e1ff;
+  --td-brand-color-3: #b5c7ff;
+  --td-brand-color-4: #8eabff;
+  --td-brand-color-5: #618dff;
+  --td-brand-color-6: #366ef4;
+  --td-brand-color-7: #0052d9;
+  --td-brand-color-8: #003cab;
+  --td-brand-color-9: #002a7c;
+  --td-brand-color-10: #001a57;
+  /* Warning Colors - 警告色 */
+  --td-warning-color-1: #fff1e9;
+  --td-warning-color-2: #ffd9c2;
+  --td-warning-color-3: #ffb98c;
+  --td-warning-color-4: #fa9550;
+  --td-warning-color-5: #e37318;
+  --td-warning-color-6: #be5a00;
+  --td-warning-color-7: #954500;
+  --td-warning-color-8: #713300;
+  --td-warning-color-9: #532300;
+  --td-warning-color-10: #3b1700;
   
-  /* Error Colors */
-  --ld-error-color-1: #fff0ed;
-  --ld-error-color-2: #ffd8d2;
-  --ld-error-color-3: #ffb9b0;
-  --ld-error-color-4: #ff9285;
-  --ld-error-color-5: #f6685d;
-  --ld-error-color-6: #d54941;
-  --ld-error-color-7: #ad352f;
-  --ld-error-color-8: #881f1c;
-  --ld-error-color-9: #68070a;
-  --ld-error-color-10: #490002;
+  /* Error Colors - 错误色 */
+  --td-error-color-1: #fff0ed;
+  --td-error-color-2: #ffd8d2;
+  --td-error-color-3: #ffb9b0;
+  --td-error-color-4: #ff9285;
+  --td-error-color-5: #f6685d;
+  --td-error-color-6: #d54941;
+  --td-error-color-7: #ad352f;
+  --td-error-color-8: #881f1c;
+  --td-error-color-9: #68070a;
+  --td-error-color-10: #490002;
   
-  /* Success Colors */
-  --ld-success-color-1: #e3f9e9;
-  --ld-success-color-2: #c6f3d7;
-  --ld-success-color-3: #92dab2;
-  --ld-success-color-4: #56c08d;
-  --ld-success-color-5: #2ba471;
-  --ld-success-color-6: #008858;
-  --ld-success-color-7: #006c45;
-  --ld-success-color-8: #005334;
-  --ld-success-color-9: #003b23;
-  --ld-success-color-10: #002515;
+  /* Success Colors - 成功色 */
+  --td-success-color-1: #e3f9e9;
+  --td-success-color-2: #c6f3d7;
+  --td-success-color-3: #92dab2;
+  --td-success-color-4: #56c08d;
+  --td-success-color-5: #2ba471;
+  --td-success-color-6: #008858;
+  --td-success-color-7: #006c45;
+  --td-success-color-8: #005334;
+  --td-success-color-9: #003b23;
+  --td-success-color-10: #002515;
   
-  /* Gray Colors */
-  --ld-gray-color-1: #f3f3f3;
-  --ld-gray-color-2: #eeeeee;
-  --ld-gray-color-3: #e8e8e8;
-  --ld-gray-color-4: #dddddd;
-  --ld-gray-color-5: #c6c6c6;
-  --ld-gray-color-6: #a6a6a6;
-  --ld-gray-color-7: #8b8b8b;
-  --ld-gray-color-8: #777777;
-  --ld-gray-color-9: #5e5e5e;
-  --ld-gray-color-10: #4b4b4b;
-  --ld-gray-color-11: #393939;
-  --ld-gray-color-12: #2c2c2c;
-  --ld-gray-color-13: #242424;
-  --ld-gray-color-14: #181818;
+  /* Gray Colors - 中性色 */
+  --td-gray-color-1: #f3f3f3;
+  --td-gray-color-2: #eeeeee;
+  --td-gray-color-3: #e8e8e8;
+  --td-gray-color-4: #dddddd;
+  --td-gray-color-5: #c6c6c6;
+  --td-gray-color-6: #a6a6a6;
+  --td-gray-color-7: #8b8b8b;
+  --td-gray-color-8: #777777;
+  --td-gray-color-9: #5e5e5e;
+  --td-gray-color-10: #4b4b4b;
+  --td-gray-color-11: #393939;
+  --td-gray-color-12: #2c2c2c;
+  --td-gray-color-13: #242424;
+  --td-gray-color-14: #181818;
 
-  /* Font Colors */
-  --ld-font-white-1: rgba(255, 255, 255, 100%);
-  --ld-font-white-2: rgba(255, 255, 255, 55%);
-  --ld-font-white-3: rgba(255, 255, 255, 35%);
-  --ld-font-white-4: rgba(255, 255, 255, 22%);
-  --ld-font-gray-1: rgba(0, 0, 0, 90%);
-  --ld-font-gray-2: rgba(0, 0, 0, 60%);
-  --ld-font-gray-3: rgba(0, 0, 0, 40%);
-  --ld-font-gray-4: rgba(0, 0, 0, 26%);
+  /* Font Colors - 文字 & 图标颜色 */
+  --td-font-white-1: rgba(255, 255, 255, 100%);
+  --td-font-white-2: rgba(255, 255, 255, 55%);
+  --td-font-white-3: rgba(255, 255, 255, 35%);
+  --td-font-white-4: rgba(255, 255, 255, 22%);
+  --td-font-gray-1: rgba(0, 0, 0, 90%);
+  --td-font-gray-2: rgba(0, 0, 0, 60%);
+  --td-font-gray-3: rgba(0, 0, 0, 40%);
+  --td-font-gray-4: rgba(0, 0, 0, 26%);
 
-  /* Base Colors */
-  --ld-brand-color: var(--ld-brand-color-7);
-  --ld-warning-color: var(--ld-warning-color-5);
-  --ld-error-color: var(--ld-error-color-6);
-  --ld-success-color: var(--ld-success-color-5);
+  /* 基础颜色 Base Colors */
+  --td-brand-color: var(--td-brand-color-7);        /* 色彩-品牌-可操作 */
+  --td-warning-color: var(--td-warning-color-5);    /* 色彩-功能-警告 */
+  --td-error-color: var(--td-error-color-6);        /* 色彩-功能-失败 */
+  --td-success-color: var(--td-success-color-5);    /* 色彩-功能-成功 */
 
-  /* Brand Color States */
-  --ld-brand-color-hover: var(--ld-brand-color-6);
-  --ld-brand-color-focus: var(--ld-brand-color-2);
-  --ld-brand-color-active: var(--ld-brand-color-8);
-  --ld-brand-color-disabled: var(--ld-brand-color-3);
-  --ld-brand-color-light: var(--ld-brand-color-1);
-  --ld-brand-color-light-hover: var(--ld-brand-color-2);
+  /* 基础颜色的扩展 用于 hover / 聚焦 / 禁用 / 点击 等状态 */
+  --td-brand-color-hover: var(--td-brand-color-6);          /* hover态 */
+  --td-brand-color-focus: var(--td-brand-color-2);          /* focus态，包括鼠标和键盘 */
+  --td-brand-color-active: var(--td-brand-color-8);         /* 点击态 */
+  --td-brand-color-disabled: var(--td-brand-color-3);       /* 禁用态 */
+  --td-brand-color-light: var(--td-brand-color-1);          /* 浅色的选中态 */
+  --td-brand-color-light-hover: var(--td-brand-color-2);
 
-  /* Warning Color States */
-  --ld-warning-color-hover: var(--ld-warning-color-4);
-  --ld-warning-color-focus: var(--ld-warning-color-2);
-  --ld-warning-color-active: var(--ld-warning-color-6);
-  --ld-warning-color-disabled: var(--ld-warning-color-3);
-  --ld-warning-color-light: var(--ld-warning-color-1);
-  --ld-warning-color-light-hover: var(--ld-warning-color-2);
+  /* 警告色扩展 Warning Color States */
+  --td-warning-color-hover: var(--td-warning-color-4);
+  --td-warning-color-focus: var(--td-warning-color-2);
+  --td-warning-color-active: var(--td-warning-color-6);
+  --td-warning-color-disabled: var(--td-warning-color-3);
+  --td-warning-color-light: var(--td-warning-color-1);
+  --td-warning-color-light-hover: var(--td-warning-color-2);
 
-  /* Error Color States */
-  --ld-error-color-hover: var(--ld-error-color-5);
-  --ld-error-color-focus: var(--ld-error-color-2);
-  --ld-error-color-active: var(--ld-error-color-7);
-  --ld-error-color-disabled: var(--ld-error-color-3);
-  --ld-error-color-light: var(--ld-error-color-1);
-  --ld-error-color-light-hover: var(--ld-error-color-2);
+  /* 失败/错误色扩展 Error Color States */
+  --td-error-color-hover: var(--td-error-color-5);
+  --td-error-color-focus: var(--td-error-color-2);
+  --td-error-color-active: var(--td-error-color-7);
+  --td-error-color-disabled: var(--td-error-color-3);
+  --td-error-color-light: var(--td-error-color-1);
+  --td-error-color-light-hover: var(--td-error-color-2);
 
-  /* Success Color States */
-  --ld-success-color-hover: var(--ld-success-color-4);
-  --ld-success-color-focus: var(--ld-success-color-2);
-  --ld-success-color-active: var(--ld-success-color-6);
-  --ld-success-color-disabled: var(--ld-success-color-3);
-  --ld-success-color-light: var(--ld-success-color-1);
-  --ld-success-color-light-hover: var(--ld-success-color-2);
+  /* 成功色扩展 Success Color States */
+  --td-success-color-hover: var(--td-success-color-4);
+  --td-success-color-focus: var(--td-success-color-2);
+  --td-success-color-active: var(--td-success-color-6);
+  --td-success-color-disabled: var(--td-success-color-3);
+  --td-success-color-light: var(--td-success-color-1);
+  --td-success-color-light-hover: var(--td-success-color-2);
 
-  /* Masks */
-  --ld-mask-active: rgba(0, 0, 0, 60%);
-  --ld-mask-disabled: rgba(255, 255, 255, 60%);
-  --ld-mask-background: rgba(255, 255, 255, 96%);
+  /* 遮罩 Masks */
+  --td-mask-active: rgba(0, 0, 0, 60%);               /* 遮罩-弹出 */
+  --td-mask-disabled: rgba(255, 255, 255, 60%);       /* 遮罩-禁用 */
+  --td-mask-background: rgba(255, 255, 255, 96%);     /* 二维码遮罩 */
 
-  /* Background Colors */
-  --ld-bg-color-page: var(--ld-gray-color-2);
-  --ld-bg-color-container: #ffffff;
-  --ld-bg-color-container-hover: var(--ld-gray-color-1);
-  --ld-bg-color-container-active: var(--ld-gray-color-3);
-  --ld-bg-color-container-select: #ffffff;
-  --ld-bg-color-secondarycontainer: var(--ld-gray-color-1);
-  --ld-bg-color-secondarycontainer-hover: var(--ld-gray-color-2);
-  --ld-bg-color-secondarycontainer-active: var(--ld-gray-color-4);
-  --ld-bg-color-component: var(--ld-gray-color-3);
-  --ld-bg-color-component-hover: var(--ld-gray-color-4);
-  --ld-bg-color-component-active: var(--ld-gray-color-6);
-  --ld-bg-color-secondarycomponent: var(--ld-gray-color-4);
-  --ld-bg-color-secondarycomponent-hover: var(--ld-gray-color-5);
-  --ld-bg-color-secondarycomponent-active: var(--ld-gray-color-6);
-  --ld-bg-color-component-disabled: var(--ld-gray-color-2);
-  --ld-bg-color-specialcomponent: #ffffff;
+  /* 背景色 Background Colors */
+  --td-bg-color-page: var(--td-gray-color-2);                        /* 色彩 - page */
+  --td-bg-color-container: #ffffff;                                  /* 色彩 - 容器 */
+  --td-bg-color-container-hover: var(--td-gray-color-1);             /* 色彩 - 容器 - hover */
+  --td-bg-color-container-active: var(--td-gray-color-3);            /* 色彩 - 容器 - active */
+  --td-bg-color-container-select: #ffffff;                           /* 色彩 - 容器 - select */
+  --td-bg-color-secondarycontainer: var(--td-gray-color-1);          /* 色彩 - 次级容器 */
+  --td-bg-color-secondarycontainer-hover: var(--td-gray-color-2);    /* 色彩 - 次级容器 - hover */
+  --td-bg-color-secondarycontainer-active: var(--td-gray-color-4);   /* 色彩 - 次级容器 - active */
+  --td-bg-color-component: var(--td-gray-color-3);                   /* 色彩 - 组件 */
+  --td-bg-color-component-hover: var(--td-gray-color-4);             /* 色彩 - 组件 - hover */
+  --td-bg-color-component-active: var(--td-gray-color-6);            /* 色彩 - 组件 - active */
+  --td-bg-color-secondarycomponent: var(--td-gray-color-4);          /* 色彩 - 次级组件 */
+  --td-bg-color-secondarycomponent-hover: var(--td-gray-color-5);    /* 色彩 - 次级组件 - hover */
+  --td-bg-color-secondarycomponent-active: var(--td-gray-color-6);   /* 色彩 - 次级组件 - active */
+  --td-bg-color-component-disabled: var(--td-gray-color-2);          /* 色彩 - 组件 - disabled */
+  /* 特殊组件背景色，目前只用于 button、input 组件多主题场景，浅色主题下固定为白色，深色主题下为 transparent 适配背景颜色 */
+  --td-bg-color-specialcomponent: #ffffff;
 
-  /* Text Colors */
-  --ld-text-color-primary: var(--ld-font-gray-1);
-  --ld-text-color-secondary: var(--ld-font-gray-2);
-  --ld-text-color-placeholder: var(--ld-font-gray-3);
-  --ld-text-color-disabled: var(--ld-font-gray-4);
-  --ld-text-color-anti: #ffffff;
-  --ld-text-color-brand: var(--ld-brand-color-7);
-  --ld-text-color-link: var(--ld-brand-color-8);
-  --ld-text-color-watermark: rgba(0, 0, 0, 10%);
+  /* 文本颜色 Text Colors */
+  --td-text-color-primary: var(--td-font-gray-1);       /* 色彩-文字-主要 */
+  --td-text-color-secondary: var(--td-font-gray-2);     /* 色彩-文字-次要 */
+  --td-text-color-placeholder: var(--td-font-gray-3);   /* 色彩-文字-占位符/说明 */
+  --td-text-color-disabled: var(--td-font-gray-4);      /* 色彩-文字-禁用 */
+  --td-text-color-anti: #ffffff;                        /* 色彩-文字-反色 */
+  --td-text-color-brand: var(--td-brand-color-7);       /* 色彩-文字-品牌 */
+  --td-text-color-link: var(--td-brand-color-8);        /* 色彩-文字-链接 */
+  --td-text-color-watermark: rgba(0, 0, 0, 10%);        /* 色彩-文字-水印颜色 */
 
-  /* Border Colors */
-  --ld-border-level-1-color: var(--ld-gray-color-3);
-  --ld-component-stroke: var(--ld-gray-color-3);
-  --ld-border-level-2-color: var(--ld-gray-color-4);
-  --ld-component-border: var(--ld-gray-color-4);
+  /* 分割线 & 边框 Border Colors */
+  --td-border-level-1-color: var(--td-gray-color-3);    /* 分割线 */
+  --td-component-stroke: var(--td-gray-color-3);        
+  --td-border-level-2-color: var(--td-gray-color-4);    /* 边框 */
+  --td-component-border: var(--td-gray-color-4);
 
-  /* Shadows */
-  --ld-shadow-1: 0 1px 10px rgba(0, 0, 0, 5%), 0 4px 5px rgba(0, 0, 0, 8%), 0 2px 4px -1px rgba(0, 0, 0, 12%);
-  --ld-shadow-2: 0 3px 14px 2px rgba(0, 0, 0, 5%), 0 8px 10px 1px rgba(0, 0, 0, 6%), 0 5px 5px -3px rgba(0, 0, 0, 10%);
-  --ld-shadow-3: 0 6px 30px 5px rgba(0, 0, 0, 5%), 0 16px 24px 2px rgba(0, 0, 0, 4%), 0 8px 10px -5px rgba(0, 0, 0, 8%);
+  /* 阴影 Shadows */
+  /* 基础/下层 投影 hover 使用的组件包括：表格 */
+  --td-shadow-1: 0 1px 10px rgba(0, 0, 0, 5%), 0 4px 5px rgba(0, 0, 0, 8%), 0 2px 4px -1px rgba(0, 0, 0, 12%);
+  /* 中层投影 下拉 使用的组件包括：下拉菜单 / 气泡确认框 / 选择器 */
+  --td-shadow-2: 0 3px 14px 2px rgba(0, 0, 0, 5%), 0 8px 10px 1px rgba(0, 0, 0, 6%), 0 5px 5px -3px rgba(0, 0, 0, 10%);
+  /* 上层投影（警示/弹窗）使用的组件包括：全局提示 / 消息通知 */
+  --td-shadow-3: 0 6px 30px 5px rgba(0, 0, 0, 5%), 0 16px 24px 2px rgba(0, 0, 0, 4%), 0 8px 10px -5px rgba(0, 0, 0, 8%);
   
-  /* Inset Shadows */
-  --ld-shadow-inset-top: inset 0 0.5px 0 #dcdcdc;
-  --ld-shadow-inset-right: inset 0.5px 0 0 #dcdcdc;
-  --ld-shadow-inset-bottom: inset 0 -0.5px 0 #dcdcdc;
-  --ld-shadow-inset-left: inset -0.5px 0 0 #dcdcdc;
+  /* 内投影 用于弹窗类组件（气泡确认框 / 全局提示 / 消息通知）的内描边 */
+  --td-shadow-inset-top: inset 0 0.5px 0 #dcdcdc;
+  --td-shadow-inset-right: inset 0.5px 0 0 #dcdcdc;
+  --td-shadow-inset-bottom: inset 0 -0.5px 0 #dcdcdc;
+  --td-shadow-inset-left: inset -0.5px 0 0 #dcdcdc;
 
-  /* Table Shadow */
-  --ld-table-shadow-color: rgba(0, 0, 0, 8%);
+  /* table 特定阴影 */
+  --td-table-shadow-color: rgba(0, 0, 0, 8%);
 
-  /* Scrollbar Colors */
-  --ld-scrollbar-color: rgba(0, 0, 0, 10%);
-  --ld-scrollbar-hover-color: rgba(0, 0, 0, 30%);
-  --ld-scroll-track-color: #ffffff;
+  /* 滚动条颜色 Scrollbar Colors */
+  --td-scrollbar-color: rgba(0, 0, 0, 10%);             /* 滚动条颜色 */
+  --td-scrollbar-hover-color: rgba(0, 0, 0, 30%);      /* 滚动条悬浮颜色（ hover ） */
+  --td-scroll-track-color: #ffffff;                     /* 滚动条轨道颜色，不能是带透明度，否则纵向滚动时，横向滚动条会穿透 */
 
-  /* Legacy Compatibility Aliases */
-  --color-primary-default: var(--ld-brand-color);
-  --color-primary-hover: var(--ld-brand-color-hover);
-  --color-primary-active: var(--ld-brand-color-active);
-  --color-primary-100: var(--ld-brand-color-1);
-  --color-primary-200: var(--ld-brand-color-2);
-  --color-primary-300: var(--ld-brand-color-3);
-  --color-primary-400: var(--ld-brand-color-4);
-  --color-primary-500: var(--ld-brand-color-5);
-  --color-primary-600: var(--ld-brand-color-6);
-  --color-primary-700: var(--ld-brand-color-7);
+  /* 兼容性别名 Legacy Compatibility Aliases - 为了保持现有代码的兼容性 */
+  --color-primary-default: var(--td-brand-color);
+  --color-primary-hover: var(--td-brand-color-hover);
+  --color-primary-active: var(--td-brand-color-active);
+  --color-primary-100: var(--td-brand-color-1);
+  --color-primary-200: var(--td-brand-color-2);
+  --color-primary-300: var(--td-brand-color-3);
+  --color-primary-400: var(--td-brand-color-4);
+  --color-primary-500: var(--td-brand-color-5);
+  --color-primary-600: var(--td-brand-color-6);
+  --color-primary-700: var(--td-brand-color-7);
   
-  --color-success-default: var(--ld-success-color);
-  --color-success-hover: var(--ld-success-color-hover);
-  --color-success-active: var(--ld-success-color-active);
-  --color-success-100: var(--ld-success-color-1);
+  --color-success-default: var(--td-success-color);
+  --color-success-hover: var(--td-success-color-hover);
+  --color-success-active: var(--td-success-color-active);
+  --color-success-100: var(--td-success-color-1);
   
-  --color-warning-default: var(--ld-warning-color);
-  --color-warning-hover: var(--ld-warning-color-hover);
-  --color-warning-active: var(--ld-warning-color-active);
-  --color-warning-100: var(--ld-warning-color-1);
+  --color-warning-default: var(--td-warning-color);
+  --color-warning-hover: var(--td-warning-color-hover);
+  --color-warning-active: var(--td-warning-color-active);
+  --color-warning-100: var(--td-warning-color-1);
   
-  --color-danger-default: var(--ld-error-color);
-  --color-danger-hover: var(--ld-error-color-hover);
-  --color-danger-active: var(--ld-error-color-active);
-  --color-danger-100: var(--ld-error-color-1);
+  --color-danger-default: var(--td-error-color);
+  --color-danger-hover: var(--td-error-color-hover);
+  --color-danger-active: var(--td-error-color-active);
+  --color-danger-100: var(--td-error-color-1);
   
-  --color-background: var(--ld-bg-color-container);
-  --color-background-secondary: var(--ld-bg-color-secondarycontainer);
+  --color-background: var(--td-bg-color-container);
+  --color-background-secondary: var(--td-bg-color-secondarycontainer);
   
-  --color-text-primary: var(--ld-text-color-primary);
-  --color-text-secondary: var(--ld-text-color-secondary);
-  --color-text-tertiary: var(--ld-text-color-placeholder);
+  --color-text-primary: var(--td-text-color-primary);
+  --color-text-secondary: var(--td-text-color-secondary);
+  --color-text-tertiary: var(--td-text-color-placeholder);
   
-  --color-border: var(--ld-component-border);
-  --color-border-light: var(--ld-border-level-1-color);
+  --color-border: var(--td-component-border);
+  --color-border-light: var(--td-border-level-1-color);
   
-  --color-gray-50: var(--ld-gray-color-1);
-  --color-gray-100: var(--ld-gray-color-2);
-  --color-gray-200: var(--ld-gray-color-3);
-  --color-gray-300: var(--ld-gray-color-4);
+  --color-gray-50: var(--td-gray-color-1);
+  --color-gray-100: var(--td-gray-color-2);
+  --color-gray-200: var(--td-gray-color-3);
+  --color-gray-300: var(--td-gray-color-4);
+  
+  /* 旧版 ld 前缀兼容 */
+  --ld-bg-color-container: var(--td-bg-color-container);
+  --ld-bg-color-component: var(--td-bg-color-component);
+  --ld-bg-color-component-hover: var(--td-bg-color-component-hover);
+  --ld-text-color-primary: var(--td-text-color-primary);
+  --ld-brand-color: var(--td-brand-color);
+  --ld-brand-color-light: var(--td-brand-color-light);
+  --ld-component-border: var(--td-component-border);
+  --ld-shadow-2: var(--td-shadow-2);
 }
 
 /* Dark Mode */

@@ -1,18 +1,7 @@
 {
   "name": "@ldesign/template",
-  "type": "module",
   "version": "0.1.0",
   "description": "🎨 多模板管理及动态渲染系统 - 为 Vue 3 而生的模板管理解决方案，支持智能预加载、懒加载、虚拟滚动等性能优化功能",
-  "author": "ldesign",
-  "license": "MIT",
-  "homepage": "https://github.com/ldesign-org/template#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign-org/template.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign-org/template/issues"
-  },
   "keywords": [
     "vue",
     "vue3",
@@ -29,66 +18,62 @@
     "performance-monitor",
     "intersection-observer"
   ],
+  "author": "ldesign",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign-org/template#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign-org/template.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign-org/template/issues"
+  },
+  "type": "module",
   "exports": {
     ".": {
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
-    "./components": {
-      "types": "./es/components/index.d.ts",
-      "import": "./es/components/index.js",
-      "require": "./lib/components/index.cjs"
-    },
-    "./components/*": {
-      "types": "./es/components/*.d.ts",
-      "import": "./es/components/*.js",
-      "require": "./lib/components/*.cjs"
-    },
-    "./composables": {
-      "types": "./es/composables/index.d.ts",
-      "import": "./es/composables/index.js",
-      "require": "./lib/composables/index.cjs"
-    },
-    "./composables/*": {
-      "types": "./es/composables/*.d.ts",
-      "import": "./es/composables/*.js",
-      "require": "./lib/composables/*.cjs"
-    },
-    "./config": {
-      "types": "./es/config/index.d.ts",
-      "import": "./es/config/index.js",
-      "require": "./lib/config/index.cjs"
-    },
-    "./config/*": {
-      "types": "./es/config/*.d.ts",
-      "import": "./es/config/*.js",
-      "require": "./lib/config/*.cjs"
+    "./core": {
+      "types": "./es/core/index.d.ts",
+      "import": "./es/core/index.js",
+      "require": "./lib/core/index.cjs"
     },
     "./core/*": {
       "types": "./es/core/*.d.ts",
       "import": "./es/core/*.js",
       "require": "./lib/core/*.cjs"
     },
-    "./locales": {
-      "types": "./es/locales/index.d.ts",
-      "import": "./es/locales/index.js",
-      "require": "./lib/locales/index.cjs"
+    "./plugins": {
+      "types": "./es/plugins/index.d.ts",
+      "import": "./es/plugins/index.js",
+      "require": "./lib/plugins/index.cjs"
     },
-    "./locales/*": {
-      "types": "./es/locales/*.d.ts",
-      "import": "./es/locales/*.js",
-      "require": "./lib/locales/*.cjs"
+    "./plugins/*": {
+      "types": "./es/plugins/*.d.ts",
+      "import": "./es/plugins/*.js",
+      "require": "./lib/plugins/*.cjs"
     },
-    "./scanner": {
-      "types": "./es/scanner/index.d.ts",
-      "import": "./es/scanner/index.js",
-      "require": "./lib/scanner/index.cjs"
+    "./runtime": {
+      "types": "./es/runtime/index.d.ts",
+      "import": "./es/runtime/index.js",
+      "require": "./lib/runtime/index.cjs"
     },
-    "./scanner/*": {
-      "types": "./es/scanner/*.d.ts",
-      "import": "./es/scanner/*.js",
-      "require": "./lib/scanner/*.cjs"
+    "./runtime/*": {
+      "types": "./es/runtime/*.d.ts",
+      "import": "./es/runtime/*.js",
+      "require": "./lib/runtime/*.cjs"
+    },
+    "./templates": {
+      "types": "./es/templates/index.d.ts",
+      "import": "./es/templates/index.js",
+      "require": "./lib/templates/index.cjs"
+    },
+    "./templates/*": {
+      "types": "./es/templates/*.d.ts",
+      "import": "./es/templates/*.js",
+      "require": "./lib/templates/*.cjs"
     },
     "./types": {
       "types": "./es/types/index.d.ts",
@@ -110,61 +95,66 @@
       "import": "./es/utils/*.js",
       "require": "./lib/utils/*.cjs"
     },
-    "./es/components/PerformanceMonitor.vue.css": "./es/components/PerformanceMonitor.vue.css",
-    "./es/components/TemplateRenderer.css": "./es/components/TemplateRenderer.css",
-    "./es/components/TemplateSelector.css": "./es/components/TemplateSelector.css",
-    "./es/composables/index.css": "./es/composables/index.css",
+    "./vue": {
+      "types": "./es/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.cjs"
+    },
+    "./vue/*": {
+      "types": "./es/vue/*.d.ts",
+      "import": "./es/vue/*.js",
+      "require": "./lib/vue/*.cjs"
+    },
     "./es/index.css": "./es/index.css",
-    "./es/templates/dashboard/desktop/classic/index.vue.css": "./es/templates/dashboard/desktop/classic/index.vue.css",
     "./es/templates/dashboard/desktop/default/index.vue.css": "./es/templates/dashboard/desktop/default/index.vue.css",
-    "./es/templates/dashboard/desktop/minimal/index.vue.css": "./es/templates/dashboard/desktop/minimal/index.vue.css",
-    "./es/templates/dashboard/desktop/modern/index.vue.css": "./es/templates/dashboard/desktop/modern/index.vue.css",
-    "./es/templates/dashboard/mobile/default/index.vue.css": "./es/templates/dashboard/mobile/default/index.vue.css",
-    "./es/templates/dashboard/mobile/modern/index.vue.css": "./es/templates/dashboard/mobile/modern/index.vue.css",
-    "./es/templates/dashboard/tablet/default/index.vue.css": "./es/templates/dashboard/tablet/default/index.vue.css",
-    "./es/templates/dashboard/tablet/modern/index.vue.css": "./es/templates/dashboard/tablet/modern/index.vue.css",
-    "./es/templates/login/desktop/creative/index.vue.css": "./es/templates/login/desktop/creative/index.vue.css",
+    "./es/templates/dashboard/desktop/sidebar/index.vue.css": "./es/templates/dashboard/desktop/sidebar/index.vue.css",
+    "./es/templates/dashboard/mobile/simple/index.vue.css": "./es/templates/dashboard/mobile/simple/index.vue.css",
+    "./es/templates/dashboard/mobile/tabs/index.vue.css": "./es/templates/dashboard/mobile/tabs/index.vue.css",
+    "./es/templates/dashboard/tablet/grid/index.vue.css": "./es/templates/dashboard/tablet/grid/index.vue.css",
+    "./es/templates/dashboard/tablet/simple/index.vue.css": "./es/templates/dashboard/tablet/simple/index.vue.css",
     "./es/templates/login/desktop/default/index.vue.css": "./es/templates/login/desktop/default/index.vue.css",
-    "./es/templates/login/desktop/modern/index.vue.css": "./es/templates/login/desktop/modern/index.vue.css",
+    "./es/templates/login/desktop/split/index.vue.css": "./es/templates/login/desktop/split/index.vue.css",
+    "./es/templates/login/mobile/card/index.vue.css": "./es/templates/login/mobile/card/index.vue.css",
     "./es/templates/login/mobile/default/index.vue.css": "./es/templates/login/mobile/default/index.vue.css",
-    "./es/templates/login/tablet/default/index.vue.css": "./es/templates/login/tablet/default/index.vue.css",
-    "./lib/components/PerformanceMonitor.vue.css": "./lib/components/PerformanceMonitor.vue.css",
-    "./lib/components/TemplateRenderer.css": "./lib/components/TemplateRenderer.css",
-    "./lib/components/TemplateSelector.css": "./lib/components/TemplateSelector.css",
-    "./lib/composables/index.css": "./lib/composables/index.css",
+    "./es/templates/login/tablet/landscape/index.vue.css": "./es/templates/login/tablet/landscape/index.vue.css",
+    "./es/templates/login/tablet/simple/index.vue.css": "./es/templates/login/tablet/simple/index.vue.css",
+    "./es/vue/components/EnhancedTemplateSwitcher.vue.css": "./es/vue/components/EnhancedTemplateSwitcher.vue.css",
+    "./es/vue/components/TemplateRenderer.vue.css": "./es/vue/components/TemplateRenderer.vue.css",
+    "./es/vue/components/TemplateSelector.vue.css": "./es/vue/components/TemplateSelector.vue.css",
+    "./es/vue/components/TemplateSwitcher.vue.css": "./es/vue/components/TemplateSwitcher.vue.css",
     "./lib/index.css": "./lib/index.css",
-    "./lib/templates/dashboard/desktop/classic/index.vue.css": "./lib/templates/dashboard/desktop/classic/index.vue.css",
     "./lib/templates/dashboard/desktop/default/index.vue.css": "./lib/templates/dashboard/desktop/default/index.vue.css",
-    "./lib/templates/dashboard/desktop/minimal/index.vue.css": "./lib/templates/dashboard/desktop/minimal/index.vue.css",
-    "./lib/templates/dashboard/desktop/modern/index.vue.css": "./lib/templates/dashboard/desktop/modern/index.vue.css",
-    "./lib/templates/dashboard/mobile/default/index.vue.css": "./lib/templates/dashboard/mobile/default/index.vue.css",
-    "./lib/templates/dashboard/mobile/modern/index.vue.css": "./lib/templates/dashboard/mobile/modern/index.vue.css",
-    "./lib/templates/dashboard/tablet/default/index.vue.css": "./lib/templates/dashboard/tablet/default/index.vue.css",
-    "./lib/templates/dashboard/tablet/modern/index.vue.css": "./lib/templates/dashboard/tablet/modern/index.vue.css",
-    "./lib/templates/login/desktop/creative/index.vue.css": "./lib/templates/login/desktop/creative/index.vue.css",
+    "./lib/templates/dashboard/desktop/sidebar/index.vue.css": "./lib/templates/dashboard/desktop/sidebar/index.vue.css",
+    "./lib/templates/dashboard/mobile/simple/index.vue.css": "./lib/templates/dashboard/mobile/simple/index.vue.css",
+    "./lib/templates/dashboard/mobile/tabs/index.vue.css": "./lib/templates/dashboard/mobile/tabs/index.vue.css",
+    "./lib/templates/dashboard/tablet/grid/index.vue.css": "./lib/templates/dashboard/tablet/grid/index.vue.css",
+    "./lib/templates/dashboard/tablet/simple/index.vue.css": "./lib/templates/dashboard/tablet/simple/index.vue.css",
     "./lib/templates/login/desktop/default/index.vue.css": "./lib/templates/login/desktop/default/index.vue.css",
-    "./lib/templates/login/desktop/modern/index.vue.css": "./lib/templates/login/desktop/modern/index.vue.css",
+    "./lib/templates/login/desktop/split/index.vue.css": "./lib/templates/login/desktop/split/index.vue.css",
+    "./lib/templates/login/mobile/card/index.vue.css": "./lib/templates/login/mobile/card/index.vue.css",
     "./lib/templates/login/mobile/default/index.vue.css": "./lib/templates/login/mobile/default/index.vue.css",
-    "./lib/templates/login/tablet/default/index.vue.css": "./lib/templates/login/tablet/default/index.vue.css",
+    "./lib/templates/login/tablet/landscape/index.vue.css": "./lib/templates/login/tablet/landscape/index.vue.css",
+    "./lib/templates/login/tablet/simple/index.vue.css": "./lib/templates/login/tablet/simple/index.vue.css",
+    "./lib/vue/components/EnhancedTemplateSwitcher.vue.css": "./lib/vue/components/EnhancedTemplateSwitcher.vue.css",
+    "./lib/vue/components/TemplateRenderer.vue.css": "./lib/vue/components/TemplateRenderer.vue.css",
+    "./lib/vue/components/TemplateSelector.vue.css": "./lib/vue/components/TemplateSelector.vue.css",
+    "./lib/vue/components/TemplateSwitcher.vue.css": "./lib/vue/components/TemplateSwitcher.vue.css",
     "./dist/index.css": "./dist/index.css",
     "./dist/index.min.css": "./dist/index.min.css"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
+  "types": "./es/index.d.ts",
   "unpkg": "./dist/index.min.js",
   "jsdelivr": "./dist/index.min.js",
-  "types": "./es/index.d.ts",
   "files": [
-    "LICENSE",
     "README.md",
-    "dist",
+    "LICENSE",
+    "package.json",
     "es",
     "lib",
-    "package.json"
+    "dist"
   ],
-  "engines": {
-    "node": ">=16.0.0"
-  },
   "scripts": {
     "build": "ldesign-builder build",
     "build:watch": "ldesign-builder watch",
@@ -201,14 +191,6 @@
     "build:validate": "pnpm run build && tsx scripts/validate-build.ts",
     "build:dev": "ldesign-builder build --dev"
   },
-  "peerDependencies": {
-    "vue": "^3.3.0"
-  },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  },
   "dependencies": {
     "@ldesign/cache": "workspace:*",
     "@ldesign/device": "workspace:*",
@@ -217,6 +199,9 @@
     "@ldesign/webcomponent": "workspace:*",
     "@vueuse/core": "^13.7.0",
     "lucide-vue-next": "^0.544.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
@@ -249,10 +234,18 @@
     "vue": "^3.4.15",
     "vue-tsc": "^3.0.5"
   },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "size-limit": [
     {
       "path": "dist/index.js",
       "limit": "55 KB"
     }
-  ]
+  ],
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  }
 }

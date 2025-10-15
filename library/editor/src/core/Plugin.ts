@@ -175,9 +175,18 @@ export function createPlugin(config: PluginConfig): PluginType {
       if (config.schema) {
         editor.extendSchema(config.schema)
       }
+      
+      // 调用 init 钩子
+      if (config.init) {
+        console.log(`[Plugin] Calling init for plugin: ${config.name}`)
+        config.init(editor)
+      }
     },
     destroy() {
-      // 清理逻辑
+      // 调用 destroy 钩子
+      if (config.destroy) {
+        config.destroy()
+      }
     }
   }
 }

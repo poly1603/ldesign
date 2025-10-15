@@ -1,7 +1,14 @@
 <template>
   <div class="app-container">
-    <!-- 导航栏 -->
-    <nav class="navbar">
+    <!-- 对于blank布局，只渲染路由内容 -->
+    <template v-if="$route.meta?.layout === 'blank'">
+      <RouterView transition="fade" />
+    </template>
+    
+    <!-- 默认布局 -->
+    <template v-else>
+      <!-- 导航栏 -->
+      <nav class="navbar">
       <div class="nav-brand">
         <Rocket class="logo" />
         <span class="brand-text">{{ t('app.name') }}</span>
@@ -47,10 +54,11 @@
       <RouterView transition="fade" />
     </main>
 
-    <!-- 页脚 -->
-    <footer class="footer">
-      <p>{{ t('app.copyright') }}</p>
-    </footer>
+      <!-- 页脚 -->
+      <footer class="footer">
+        <p>{{ t('app.copyright') }}</p>
+      </footer>
+    </template>
   </div>
 </template>
 

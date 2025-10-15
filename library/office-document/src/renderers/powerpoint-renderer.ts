@@ -85,14 +85,19 @@ export class PowerPointRenderer implements IDocumentRenderer {
  }
 
  /**
-  * Render slides from PPTX
+  * Render slides from PPTX with improved layout and styling
   */
  private async renderSlides(zip: JSZip, slideFiles: string[]): Promise<void> {
   if (!this.pptxContainer) return;
 
+  // Try to get theme colors
+  const themeXml = await zip.file('ppt/theme/theme1.xml')?.async('text');
+  const themeColors = this.extractThemeColors(themeXml);
+
   for (let i = 0; i < slideFiles.length; i++) {
    const slideFile = slideFiles[i];
    const slideXml = await zip.file(slideFile)?.async('text');
+   const slideRelXml = await zip.file(slideFile.replace('slides/', 'slides/_rels/').replace('.xml', '.xml.rels'))?.async('text');
    
    if (!slideXml) continue;
 
@@ -105,89 +110,205 @@ export class PowerPointRenderer implements IDocumentRenderer {
     margin: 20px auto;
     aspect-ratio: 16/9;
     background: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    padding: 40px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     box-sizing: border-box;
     position: relative;
+    overflow: hidden;
    `;
 
-   // Extract text content from XML
+   // Parse slide XML
    const parser = new DOMParser();
    const xmlDoc = parser.parseFromString(slideXml, 'text/xml');
-   const textElements = xmlDoc.getElementsByTagName('a:t');
    
+   // Check for background color or image
+   const bg = xmlDoc.querySelector('bg');
+   const bgFill = bg?.querySelector('solidFill');
+   if (bgFill) {
+    const srgbClr = bgFill.querySelector('srgbClr');
+    if (srgbClr) {
+     const val = srgbClr.getAttribute('val');
+     if (val) {
+      slideDiv.style.background = `#${val}`;
+     }
+    }
+   }
+
+   // Create content container
    const slideContent = document.createElement('div');
    slideContent.style.cssText = `
     width: 100%;
     height: 100%;
+    padding: 48px;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    font-size: 18px;
-    color: #333;
+    position: relative;
    `;
 
-   // Add slide number
-   const slideNumber = document.createElement('div');
-   slideNumber.className = 'slide-number';
-   slideNumber.textContent = `Slide ${i + 1}`;
-   slideNumber.style.cssText = `
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    font-size: 12px;
-    color: #999;
-   `;
-   slideDiv.appendChild(slideNumber);
+   // Extract shapes and text
+   const shapes = xmlDoc.querySelectorAll('sp');
+   const contentElements: Array<{text: string, style: any, order: number}> = [];
+   
+   shapes.forEach((shape, shapeIndex) => {
+    // Get text from shape
+    const textBody = shape.querySelector('txBody');
+    if (!textBody) return;
+    
+    const paragraphs = textBody.querySelectorAll('p');
+    paragraphs.forEach(p => {
+     const runs = p.querySelectorAll('r');
+     let paragraphText = '';
+     let fontSize = 18;
+     let isBold = false;
+     let color = '#000000';
+     
+     runs.forEach(run => {
+      const text = run.querySelector('t')?.textContent || '';
+      const rPr = run.querySelector('rPr');
+      
+      if (rPr) {
+       // Font size
+       const sz = rPr.getAttribute('sz');
+       if (sz) {
+        fontSize = parseInt(sz) / 100; // Convert from hundredths of points
+       }
+       
+       // Bold
+       if (rPr.getAttribute('b') === '1') {
+        isBold = true;
+       }
+       
+       // Color
+       const solidFill = rPr.querySelector('solidFill');
+       const srgbClr = solidFill?.querySelector('srgbClr');
+       if (srgbClr) {
+        const val = srgbClr.getAttribute('val');
+        if (val) color = `#${val}`;
+       }
+      }
+      
+      paragraphText += text;
+     });
+     
+     if (paragraphText.trim()) {
+      contentElements.push({
+       text: paragraphText.trim(),
+       style: {
+        fontSize,
+        fontWeight: isBold ? 'bold' : 'normal',
+        color
+       },
+       order: shapeIndex
+      });
+     }
+    });
+   });
 
-   // Extract and render text
-   const texts: string[] = [];
-   for (let j = 0; j < textElements.length; j++) {
-    const textContent = textElements[j].textContent;
-    if (textContent && textContent.trim()) {
-     texts.push(textContent.trim());
-    }
-   }
-
-   if (texts.length > 0) {
-    // First text as title
-    if (texts[0]) {
-     const title = document.createElement('h2');
-     title.textContent = texts[0];
-     title.style.cssText = `
-      font-size: 32px;
-      font-weight: bold;
-      margin: 0 0 20px 0;
-      color: #1a1a1a;
-     `;
-     slideContent.appendChild(title);
-    }
-
-    // Rest as content
-    for (let k = 1; k < texts.length; k++) {
-     const p = document.createElement('p');
-     p.textContent = texts[k];
-     p.style.cssText = `
-      margin: 10px 0;
-      line-height: 1.6;
-     `;
-     slideContent.appendChild(p);
-    }
+   // Render content elements
+   if (contentElements.length > 0) {
+    contentElements.forEach((element, index) => {
+     if (index === 0 && element.style.fontSize > 24) {
+      // Title
+      const title = document.createElement('h1');
+      title.textContent = element.text;
+      title.style.cssText = `
+       font-size: ${element.style.fontSize}px;
+       font-weight: ${element.style.fontWeight};
+       color: ${element.style.color};
+       margin: 0 0 24px 0;
+       line-height: 1.2;
+      `;
+      slideContent.appendChild(title);
+     } else if (element.text.startsWith('•') || element.text.startsWith('-')) {
+      // Bullet point
+      const li = document.createElement('div');
+      li.textContent = element.text;
+      li.style.cssText = `
+       font-size: ${element.style.fontSize}px;
+       font-weight: ${element.style.fontWeight};
+       color: ${element.style.color};
+       margin: 8px 0 8px 24px;
+       line-height: 1.5;
+      `;
+      slideContent.appendChild(li);
+     } else {
+      // Regular paragraph
+      const p = document.createElement('p');
+      p.textContent = element.text;
+      p.style.cssText = `
+       font-size: ${element.style.fontSize}px;
+       font-weight: ${element.style.fontWeight};
+       color: ${element.style.color};
+       margin: 12px 0;
+       line-height: 1.6;
+      `;
+      slideContent.appendChild(p);
+     }
+    });
    } else {
-    // No text found
+    // No content - show placeholder
     const placeholder = document.createElement('div');
-    placeholder.textContent = 'Slide content not available';
+    placeholder.textContent = '[Slide contains non-text content]';
     placeholder.style.cssText = `
      color: #999;
      font-style: italic;
      text-align: center;
-     margin-top: 40%;
+     margin: auto;
+     font-size: 16px;
     `;
     slideContent.appendChild(placeholder);
    }
 
+   // Add slide number
+   const slideNumber = document.createElement('div');
+   slideNumber.className = 'slide-number';
+   slideNumber.textContent = `${i + 1} / ${slideFiles.length}`;
+   slideNumber.style.cssText = `
+    position: absolute;
+    bottom: 16px;
+    right: 24px;
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+   `;
+
    slideDiv.appendChild(slideContent);
+   slideDiv.appendChild(slideNumber);
    this.pptxContainer.appendChild(slideDiv);
+  }
+ }
+
+ /**
+  * Extract theme colors from theme XML
+  */
+ private extractThemeColors(themeXml: string | undefined): any {
+  if (!themeXml) return {};
+  
+  try {
+   const parser = new DOMParser();
+   const xmlDoc = parser.parseFromString(themeXml, 'text/xml');
+   const colors: any = {};
+   
+   // Extract color scheme
+   const colorScheme = xmlDoc.querySelector('clrScheme');
+   if (colorScheme) {
+    const colorElements = colorScheme.children;
+    for (let i = 0; i < colorElements.length; i++) {
+     const elem = colorElements[i];
+     const srgbClr = elem.querySelector('srgbClr');
+     if (srgbClr) {
+      const val = srgbClr.getAttribute('val');
+      if (val) {
+       colors[elem.tagName] = `#${val}`;
+      }
+     }
+    }
+   }
+   
+   return colors;
+  } catch (error) {
+   console.warn('Failed to parse theme:', error);
+   return {};
   }
  }
 

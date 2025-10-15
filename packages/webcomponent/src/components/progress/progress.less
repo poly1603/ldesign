@@ -1,173 +1,331 @@
-/* Progress 组件样式 */
-.ldesign-progress {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--ldesign-text-color-secondary);
+/*  Progress  组件样式  */
+.ldesign-progress  {
+    position:  relative;
+    display:  inline-flex;
+    align-items:  center;
+    gap:  8px;
+    color:  var(--ldesign-text-color-secondary);
 
-  /* line */
-  &--line {
-    width: 100%;
-    min-width: 120px;
-  }
+    /*  line  */
+    &--line  {
+        width:  100%;
+        min-width:  120px;
+    }
 
-  &__outer {
-    position: relative;
-    flex: 1 1 auto;
-    background: var(--ldesign-gray-color-2, #dbdbdb);
-    border-radius: 9999px;
-    overflow: hidden;
-  }
+    &__outer  {
+        position:  relative;
+        flex:  1  1  auto;
+        background:  var(--ldesign-gray-color-2,  #dbdbdb);
+        border-radius:  9999px;
+        overflow:  hidden;
+    }
 
-  &__success,
-  &__inner {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    border-radius: inherit;
-    transition: width 0.3s ease;
-  }
+    &__success,
+    &__inner  {
+        position:  absolute;
+        left:  0;
+        top:  0;
+        height:  100%;
+        border-radius:  inherit;
+        transition:  width  0.3s  ease,  box-shadow  0.3s  ease;
+    }
 
-  &__success {
-    background: var(--ldesign-success-color, #42bd42);
-  }
+    &__success  {
+        background:  var(--ldesign-success-color,  #42bd42);
+    }
 
-  &__inner {
-    background: var(--ldesign-brand-color, #5e2aa7);
-  }
+    &__inner  {
+        background:  var(--ldesign-brand-color,  #5e2aa7);
+    }
 
-  /* striped animation */
-  &--striped &__inner {
-    background-image: linear-gradient(
-      45deg,
-      rgba(255, 255, 255, 0.25) 25%,
-      transparent 25%,
-      transparent 50%,
-      rgba(255, 255, 255, 0.25) 50%,
-      rgba(255, 255, 255, 0.25) 75%,
-      transparent 75%,
-      transparent
-    );
-    background-size: 24px 24px;
-    animation: ldesign-progress-stripes 1s linear infinite;
-  }
+    /*  阴影效果  */
+    &--shadow  {
+        .ldesign-progress__inner  {
+            box-shadow:  0  2px  8px  rgba(0,  0,  0,  0.15);
+        }
+        .ldesign-progress__circle-path  {
+            filter:  drop-shadow(0  2px  4px  rgba(0,  0,  0,  0.2));
+        }
+    }
 
-  @keyframes ldesign-progress-stripes {
-    0% { background-position: 24px 0; }
-    100% { background-position: 0 0; }
-  }
+    /*  发光效果  */
+    &--glow  {
+        .ldesign-progress__inner  {
+            box-shadow:  0  0  10px  currentColor,  0  0  20px  currentColor;
+        }
+        .ldesign-progress__circle-path  {
+            filter:  drop-shadow(0  0  8px  currentColor);
+        }
+    }
 
-  /* info text */
-  &__text {
-    white-space: nowrap;
-    font-size: 12px;
-    line-height: 1;
-  }
+    /*  脉冲动画  */
+    &--pulse  {
+        .ldesign-progress__inner  {
+            animation:  ldesign-progress-pulse  2s  ease-in-out  infinite;
+        }
+        .ldesign-progress__circle-path  {
+            animation:  ldesign-progress-pulse-opacity  2s  ease-in-out  infinite;
+        }
+    }
 
-  &--info-bottom {
-    flex-direction: column;
-    align-items: center;
-  }
+    @keyframes  ldesign-progress-pulse  {
+        0%,  100%  {
+            opacity:  1;
+            transform:  scaleY(1);
+        }
+        50%  {
+            opacity:  0.85;
+            transform:  scaleY(0.98);
+        }
+    }
 
-  &--info-left {
-    .ldesign-progress__text { order: -1; margin-right: 8px; }
-  }
+    @keyframes  ldesign-progress-pulse-opacity  {
+        0%,  100%  {
+            opacity:  1;
+        }
+        50%  {
+            opacity:  0.85;
+        }
+    }
 
-  &__text--inside {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #fff;
-    font-weight: 600;
-    z-index: 2;
-    pointer-events: none;
-  }
+    /*  不确定状态动画  */
+    &--indeterminate  {
+        .ldesign-progress__inner  {
+            animation:  ldesign-progress-indeterminate  1.5s  ease-in-out  infinite;
+            transform-origin:  left  center;
+        }
 
-  /* circle / dashboard */
-  &--circle,
-  &--dashboard {
-    display: inline-flex;
-    width: auto;
-    height: auto;
-    vertical-align: middle;
-  }
+        &.ldesign-progress--circle,
+        &.ldesign-progress--dashboard,
+        &.ldesign-progress--semicircle  {
+            .ldesign-progress__circle-path  {
+                animation:  ldesign-progress-circle-indeterminate  1.5s  ease-in-out  infinite;
+                transform-origin:  center;
+            }
+        }
+    }
 
-  &__circle {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
+    @keyframes  ldesign-progress-indeterminate  {
+        0%  {
+            left:  -30%;
+        }
+        100%  {
+            left:  100%;
+        }
+    }
 
-  &--semicircle {
-    overflow: hidden;
-  }
+    @keyframes  ldesign-progress-circle-indeterminate  {
+        0%  {
+            stroke-dasharray:  1px,  200px;
+            stroke-dashoffset:  0;
+        }
+        50%  {
+            stroke-dasharray:  100px,  200px;
+            stroke-dashoffset:  -50px;
+        }
+        100%  {
+            stroke-dasharray:  100px,  200px;
+            stroke-dashoffset:  -150px;
+        }
+    }
 
-  &__text-inset {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 14px;
-    color: var(--ldesign-text-color-primary);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
+    /*  striped  animation  */
+    &--striped  &__inner  {
+        background-image:  linear-gradient(
+            45deg,
+            rgba(255,  255,  255,  0.25)  25%,
+            transparent  25%,
+            transparent  50%,
+            rgba(255,  255,  255,  0.25)  50%,
+            rgba(255,  255,  255,  0.25)  75%,
+            transparent  75%,
+            transparent
+        );
+        background-size:  24px  24px;
+        animation:  ldesign-progress-stripes  1s  linear  infinite;
+    }
 
-  &__circle-trail {
-    opacity: 0.35;
-  }
+    @keyframes  ldesign-progress-stripes  {
+        0%  {  background-position:  24px  0;  }
+        100%  {  background-position:  0  0;  }
+    }
 
-  &__circle-success {
-    opacity: 0.9;
-  }
+    /*  info  text  */
+    &__text  {
+        white-space:  nowrap;
+        font-size:  12px;
+        line-height:  1;
+        transition:  color  0.3s  ease;
+    }
 
-  &__circle-path {
-    transition: stroke-dasharray 0.3s ease;
-  }
+    &--info-bottom  {
+        flex-direction:  column;
+        align-items:  center;
+    }
 
-  /* steps */
-  &--steps {
-    min-width: 160px;
-  }
+    &--info-left  {
+        .ldesign-progress__text  {  order:  -1;  margin-right:  8px;  }
+    }
 
-  &__steps {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 1fr;
-    align-items: stretch;
-    width: 100%;
-    background: transparent;
-  }
+    &__text--inside  {
+        position:  absolute;
+        left:  12px;
+        top:  50%;
+        transform:  translateY(-50%);
+        color:  #fff;
+        font-weight:  600;
+        z-index:  2;
+        pointer-events:  none;
+        text-shadow:  0  1px  2px  rgba(0,  0,  0,  0.2);
+    }
 
-  &__step {
-    display: block;
-    height: 100%;
-    border-radius: 9999px;
-    background: var(--ldesign-gray-color-2, #dbdbdb);
-  }
+    /*  circle  /  dashboard  */
+    &--circle,
+    &--dashboard,
+    &--semicircle  {
+        display:  inline-flex;
+        width:  auto;
+        height:  auto;
+        vertical-align:  middle;
+    }
 
-  /* sizes - adjust info text */
-  &--small {
-    .ldesign-progress__text { font-size: 12px; }
-  }
-  &--medium {
-    .ldesign-progress__text { font-size: 13px; }
-  }
-  &--large {
-    .ldesign-progress__text { font-size: 14px; }
-  }
+    &__circle  {
+        display:  block;
+        width:  100%;
+        height:  100%;
+    }
 
-  /* statuses (text color only, bar color通过内联 style 覆盖) */
-  &--success {
-    .ldesign-progress__text,
-    .ldesign-progress__text-inset { color: var(--ldesign-success-color, #42bd42); }
-  }
-  &--exception {
-    .ldesign-progress__text,
-    .ldesign-progress__text-inset { color: var(--ldesign-error-color, #e54848); }
-  }
+    &--semicircle  {
+        overflow:  hidden;
+    }
+
+    &__text-inset  {
+        position:  absolute;
+        left:  50%;
+        top:  50%;
+        transform:  translate(-50%,  -50%);
+        font-size:  14px;
+        color:  var(--ldesign-text-color-primary);
+        display:  inline-flex;
+        align-items:  center;
+        justify-content:  center;
+        font-weight:  500;
+        transition:  all  0.3s  ease;
+    }
+
+    &__circle-trail  {
+        opacity:  0.35;
+        transition:  opacity  0.3s  ease;
+    }
+
+    &__circle-success  {
+        opacity:  0.9;
+        transition:  opacity  0.3s  ease,  stroke-dasharray  0.3s  ease;
+    }
+
+    &__circle-path  {
+        transition:  stroke-dasharray  0.3s  ease,  opacity  0.3s  ease;
+    }
+
+    /*  steps  */
+    &--steps  {
+        min-width:  160px;
+    }
+
+    &__steps  {
+        display:  grid;
+        grid-auto-flow:  column;
+        grid-auto-columns:  1fr;
+        align-items:  stretch;
+        width:  100%;
+        background:  transparent;
+    }
+
+    &__step  {
+        display:  block;
+        height:  100%;
+        border-radius:  9999px;
+        background:  var(--ldesign-gray-color-2,  #dbdbdb);
+        transition:  background  0.3s  ease,  transform  0.2s  ease;
+
+        &:hover  {
+            transform:  scaleY(1.1);
+        }
+    }
+
+    /*  sizes  -  adjust  info  text  */
+    &--small  {
+        .ldesign-progress__text  {  font-size:  12px;  }
+        .ldesign-progress__text-inset  {  font-size:  12px;  }
+    }
+    &--medium  {
+        .ldesign-progress__text  {  font-size:  13px;  }
+        .ldesign-progress__text-inset  {  font-size:  14px;  }
+    }
+    &--large  {
+        .ldesign-progress__text  {  font-size:  14px;  }
+        .ldesign-progress__text-inset  {  font-size:  16px;  }
+    }
+
+    /*  statuses  (text  color  only,  bar  color通过内联  style  覆盖)  */
+    &--success  {
+        .ldesign-progress__text,
+        .ldesign-progress__text-inset  {
+            color:  var(--ldesign-success-color,  #42bd42);
+        }
+        .ldesign-progress__inner  {
+            background:  var(--ldesign-success-color,  #42bd42);
+        }
+        .ldesign-progress__circle-path  {
+            stroke:  var(--ldesign-success-color,  #42bd42);
+        }
+    }
+    &--exception  {
+        .ldesign-progress__text,
+        .ldesign-progress__text-inset  {
+            color:  var(--ldesign-error-color,  #e54848);
+        }
+        .ldesign-progress__inner  {
+            background:  var(--ldesign-error-color,  #e54848);
+        }
+        .ldesign-progress__circle-path  {
+            stroke:  var(--ldesign-error-color,  #e54848);
+        }
+    }
+    &--active  {
+        .ldesign-progress__inner,
+        .ldesign-progress__circle-path  {
+            opacity:  1;
+        }
+    }
+
+    /*  响应式和可访问性增强  */
+    @media  (prefers-reduced-motion:  reduce)  {
+        *,
+        *::before,
+        *::after  {
+            animation-duration:  0.01ms  !important;
+            animation-iteration-count:  1  !important;
+            transition-duration:  0.01ms  !important;
+        }
+    }
+
+    /*  hover  效果  */
+    &:not(&--indeterminate)  {
+        &:hover  {
+            .ldesign-progress__inner  {
+                opacity:  0.95;
+            }
+            .ldesign-progress__circle-path  {
+                opacity:  0.95;
+            }
+        }
+    }
+
+    /*  聚焦样式（用于可访问性）  */
+    &:focus-within  {
+        outline:  2px  solid  var(--ldesign-brand-color,  #5e2aa7);
+        outline-offset:  2px;
+        border-radius:  4px;
+    }
 }

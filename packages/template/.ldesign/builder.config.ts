@@ -3,7 +3,7 @@ import { defineConfig } from '@ldesign/builder'
 export default defineConfig({
   // Output format config
   output: {
-    format: ['esm', 'cjs', 'umd'],
+    format: ['esm', 'cjs'], // 移除umd格式
   },
 
   // 绂佺敤鏋勫缓鍚庨獙璇侊紙搴撻」鐩笉闇€瑕佽繍琛屾祴璇曢獙璇侊級
@@ -23,11 +23,11 @@ export default defineConfig({
   // 涓嶅帇缂╀唬鐮侊紙寮€鍙戦樁娈碉級
   minify: false,
 
-  // UMD 鏋勫缓閰嶇疆
+  // UMD 构建配置
   umd: {
-    enabled: true,
-    minify: true, // UMD鐗堟湰鍚敤鍘嬬缉
-    fileName: 'index.js', // 鍘绘帀 .umd 鍚庣紑
+    enabled: false, // 禁用UMD构建，因为没有index-lib.ts文件
+    minify: true,
+    fileName: 'index.js',
   },
 
   // 澶栭儴渚濊禆閰嶇疆

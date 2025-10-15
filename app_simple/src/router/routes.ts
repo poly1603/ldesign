@@ -8,6 +8,7 @@ import type { RouteRecordRaw } from '@ldesign/router'
 // 路由懒加载
 const Home = () => import('@/views/Home.vue')
 const Login = () => import('@/views/Login.vue')
+const LoginTemplate = () => import('@/views/LoginTemplate.vue')
 const Dashboard = () => import('@/views/Dashboard.vue')
 const About = () => import('@/views/About.vue')
 
@@ -29,11 +30,21 @@ export const publicRoutes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'login',
-    component: Login,
+    component: LoginTemplate, // 使用模板系统的登录页
     meta: {
       titleKey: 'nav.login',
       requiresAuth: false,
-      layout: 'auth' // 使用认证布局
+      layout: 'blank' // 使用空白布局，让模板完全控制页面
+    }
+  },
+  {
+    path: '/login-classic',
+    name: 'login-classic',
+    component: Login, // 经典登录页（保留作为备用）
+    meta: {
+      titleKey: 'nav.login',
+      requiresAuth: false,
+      layout: 'auth'
     }
   },
   {
