@@ -245,7 +245,13 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
           const fileSize = (file.size / 1024).toFixed(2) // KB
           const fileHtml = `
             <a href="${fileUrl}" download="${file.name}" style="display: inline-flex; align-items: center; padding: 8px 12px; background: #f3f4f6; border-radius: 6px; text-decoration: none; color: #374151;">
-              <span style="margin-right: 8px;">📄</span>
+              <svg style="margin-right: 8px; width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
               <span>${file.name}</span>
               <span style="margin-left: 8px; color: #6b7280; font-size: 0.875em;">(${fileSize} KB)</span>
             </a>
@@ -414,7 +420,16 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
       `
       
       dialog.innerHTML = `
-        <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">📊 字数统计</h3>
+        <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          字数统计
+        </h3>
         <div style="line-height: 1.8;">
           <div><strong>字数：</strong> ${words}</div>
           <div><strong>字符（含空格）：</strong> ${characters}</div>

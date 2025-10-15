@@ -102,20 +102,27 @@ class MediaDialog {
           ${typeLabels[type]}
         </h3>
         <button class="close-btn" style="background: none; border: none; cursor: pointer; padding: 4px; color: #6b7280; transition: color 0.2s;">
-          <span style="width: 20px; height: 20px; display: block;">×</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
         </button>
       </div>
       
       <div class="dialog-tabs" style="display: flex; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
         <button class="tab-btn active" data-tab="local" style="flex: 1; padding: 12px; background: white; border: none; border-bottom: 2px solid #3b82f6; cursor: pointer; font-weight: 500; color: #3b82f6; transition: all 0.2s;">
           <span style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-            <span style="width: 16px; height: 16px;">↑</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
             本地文件
           </span>
         </button>
         <button class="tab-btn" data-tab="url" style="flex: 1; padding: 12px; background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-weight: 500; color: #6b7280; transition: all 0.2s;">
           <span style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-            <span style="width: 16px; height: 16px;">${getLucideIcon('link') || '🔗'}</span>
+            <span style="width: 16px; height: 16px;">${getLucideIcon('link')}</span>
             网络地址
           </span>
         </button>
@@ -126,8 +133,12 @@ class MediaDialog {
         <div class="tab-content" data-tab="local" style="display: block;">
           <div class="upload-area" style="border: 2px dashed #d1d5db; border-radius: 8px; padding: 40px; text-align: center; background: #f9fafb; transition: all 0.3s; cursor: pointer;">
             <input type="file" accept="${acceptTypes[type]}" multiple style="display: none;" class="file-input">
-            <div style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9ca3af; font-size: 32px;">
-              ☁️
+            <div style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9ca3af;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v9"/>
+                <path d="m16 6-4-4-4 4"/>
+                <rect width="20" height="8" x="2" y="14" rx="2"/>
+              </svg>
             </div>
             <p style="margin: 0 0 8px 0; font-size: 16px; color: #374151;">点击或拖拽文件到这里</p>
             <p style="margin: 0; font-size: 14px; color: #6b7280;">支持 ${type === 'image' ? 'JPG, PNG, GIF, SVG' : type === 'video' ? 'MP4, WebM, OGG' : 'MP3, WAV, OGG'} 格式（可多选）</p>
@@ -140,7 +151,10 @@ class MediaDialog {
                 <div class="file-size" style="font-size: 12px; color: #6b7280; margin-top: 2px;"></div>
               </div>
               <button class="remove-file" style="background: none; border: none; cursor: pointer; padding: 4px; color: #ef4444;">
-                <span style="width: 16px; height: 16px; display: block;">×</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
               </button>
             </div>
           </div>

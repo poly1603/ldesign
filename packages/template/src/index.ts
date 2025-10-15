@@ -36,5 +36,14 @@ export {
 // Vue 组件
 export { TemplateRenderer, TemplateSelector } from './components'
 
+// 插件系统
+export {
+  createTemplatePlugin,
+  useTemplatePlugin,
+  TemplatePluginSymbol,
+  type TemplatePlugin,
+  type TemplatePluginOptions,
+} from './plugin'
+
 // 默认导出
 export { getManager as default } from './core'
