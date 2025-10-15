@@ -315,8 +315,7 @@ export const ImagePlugin: Plugin = {
   name: 'image',
   
   install(editor: any) {
-    // 初始化右键菜单
-    const contextMenu = new ImageContextMenu(editor)
+    // 使用 MediaContextMenuPlugin 提供的统一右键菜单，避免重复绑定
     
     // 注册上传图片命令（不注册insertImage，由MediaDialogPlugin处理）
     if (!editor.commands.get('uploadImage')) {
@@ -330,7 +329,14 @@ export const ImagePlugin: Plugin = {
             const reader = new FileReader()
             reader.onload = (e) => {
               const url = e.target?.result as string
-              document.execCommand('insertImage', false, url)
+              // 默认左对齐地插入图片
+              const alt = file.name || 'Image'
+              const html = `<img src="${url}" alt="${alt}" style="max-width: 100%; height: auto; display: block; margin: 10px 0;">`
+              if (typeof editor.insertHTML === 'function') {
+                editor.insertHTML(html)
+              } else {
+                document.execCommand('insertHTML', false, html)
+              }
             }
             reader.readAsDataURL(file)
           }

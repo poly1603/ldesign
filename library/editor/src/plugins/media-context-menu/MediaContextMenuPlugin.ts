@@ -1,7 +1,9 @@
 import { Plugin } from '../../types';
 import { Editor } from '../../core/Editor';
-import { ContextMenu, ContextMenuItem } from './ContextMenu';
 import { MediaPropertiesDialog } from './MediaPropertiesDialog';
+import { registerContextMenu, getContextMenuManager } from '../../core/ContextMenuManager';
+import type { MenuItem } from '../../components/ContextMenuSystem';
+import { getLucideIcon } from '../../utils/icons';
 
 /**
  * Media Context Menu Plugin
@@ -10,52 +12,59 @@ import { MediaPropertiesDialog } from './MediaPropertiesDialog';
 export class MediaContextMenuPlugin implements Plugin {
   name = 'MediaContextMenu';
   editor: Editor | null = null;
-  private contextMenu: ContextMenu | null = null;
   private propertiesDialog: MediaPropertiesDialog | null = null;
+  private registeredMenuIds: string[] = [];
 
   install(editor: Editor): void {
     this.editor = editor;
     this.propertiesDialog = new MediaPropertiesDialog(editor);
-    this.setupContextMenu();
+
+    // Register menus with the global ContextMenuManager so they take precedence
+    this.registerWithManager();
     this.bindEvents();
     console.log('[MediaContextMenu] Plugin installed');
   }
 
-  private setupContextMenu() {
+  // Register media menus with the shared manager (high priority)
+  private registerWithManager() {
     if (!this.editor) return;
 
-    this.contextMenu = new ContextMenu({
-      items: [],
-      className: 'media-context-menu',
-      onOpen: (target) => {
-        console.log('[MediaContextMenu] Menu opened for:', target.tagName);
-      },
-      onClose: () => {
-        console.log('[MediaContextMenu] Menu closed');
-      }
+    const manager = getContextMenuManager();
+    if (this.editor.contentElement) {
+      manager.setContainer(this.editor.contentElement);
+    }
+
+    // Image menu
+    registerContextMenu({
+      id: 'media-image-menu',
+      selector: '.ldesign-editor-content img',
+      priority: 20, // higher than paragraph/table
+      items: (ctx) => this.getImageMenuItems(ctx.element as HTMLImageElement) as unknown as MenuItem[]
     });
+
+    // Video menu
+    registerContextMenu({
+      id: 'media-video-menu',
+      selector: '.ldesign-editor-content video',
+      priority: 20,
+      items: (ctx) => this.getVideoMenuItems(ctx.element as HTMLVideoElement) as unknown as MenuItem[]
+    });
+
+    // Audio menu
+    registerContextMenu({
+      id: 'media-audio-menu',
+      selector: '.ldesign-editor-content audio',
+      priority: 20,
+      items: (ctx) => this.getAudioMenuItems(ctx.element as HTMLAudioElement) as unknown as MenuItem[]
+    });
+
+    this.registeredMenuIds = ['media-image-menu', 'media-video-menu', 'media-audio-menu'];
   }
 
   private bindEvents() {
     if (!this.editor || !this.editor.contentElement) return;
 
-    // Prevent default context menu on media elements
-    this.editor.contentElement.addEventListener('contextmenu', (e) => {
-      const target = e.target as HTMLElement;
-      
-      if (this.isMediaElement(target)) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const items = this.getMenuItemsForElement(target);
-        if (this.contextMenu && items.length > 0) {
-          this.contextMenu.updateItems(items);
-          this.contextMenu.open(e.clientX, e.clientY, target);
-        }
-      }
-    });
-
-    // Add double-click to open properties
+    // Only keep double-click behavior. Context menu is handled by ContextMenuManager now.
     this.editor.contentElement.addEventListener('dblclick', (e) => {
       const target = e.target as HTMLElement;
       if (this.isMediaElement(target)) {
@@ -70,183 +79,184 @@ export class MediaContextMenuPlugin implements Plugin {
     return tagName === 'img' || tagName === 'video' || tagName === 'audio';
   }
 
-  private getMenuItemsForElement(element: HTMLElement): ContextMenuItem[] {
+  private getMenuItemsForElement(element: HTMLElement): MenuItem[] {
     const tagName = element.tagName.toLowerCase();
 
     switch (tagName) {
       case 'img':
-        return this.getImageMenuItems(element as HTMLImageElement);
+        return this.getImageMenuItems(element as HTMLImageElement) as unknown as MenuItem[];
       case 'video':
-        return this.getVideoMenuItems(element as HTMLVideoElement);
+        return this.getVideoMenuItems(element as HTMLVideoElement) as unknown as MenuItem[];
       case 'audio':
-        return this.getAudioMenuItems(element as HTMLAudioElement);
+        return this.getAudioMenuItems(element as HTMLAudioElement) as unknown as MenuItem[];
       default:
         return [];
     }
   }
 
-  private getImageMenuItems(img: HTMLImageElement): ContextMenuItem[] {
+  private getImageMenuItems(img: HTMLImageElement): MenuItem[] {
     return [
       {
         id: 'properties',
         label: '图片属性',
-        icon: '⚙️',
+        icon: getLucideIcon('settings'),
         shortcut: 'Alt+Enter',
-        action: (target) => this.openProperties(target)
+        action: (ctx) => this.openProperties(ctx?.element || ctx)
       },
-      { separator: true },
+      { divider: true },
       {
         id: 'filters',
         label: '滤镜效果',
-        icon: '🎨',
+        icon: getLucideIcon('palette'),
         submenu: [
           {
             id: 'filter-none',
             label: '无滤镜',
             checked: !img.style.filter,
-            action: (target) => this.applyFilter(target, '')
+            action: (ctx) => this.applyFilter(ctx?.element || ctx, '')
           },
-          { separator: true },
+          { divider: true },
           {
             id: 'filter-grayscale',
             label: '黑白',
-            action: (target) => this.applyFilter(target, 'grayscale(100%)')
+            action: (ctx) => this.applyFilter(ctx?.element || ctx, 'grayscale(100%)')
           },
           {
             id: 'filter-sepia',
             label: '复古',
-            action: (target) => this.applyFilter(target, 'sepia(100%)')
+            action: (ctx) => this.applyFilter(ctx?.element || ctx, 'sepia(100%)')
           },
           {
             id: 'filter-blur',
             label: '模糊',
-            action: (target) => this.applyFilter(target, 'blur(3px)')
+            action: (ctx) => this.applyFilter(ctx?.element || ctx, 'blur(3px)')
           },
           {
             id: 'filter-brightness',
             label: '增亮',
-            action: (target) => this.applyFilter(target, 'brightness(1.5)')
+            action: (ctx) => this.applyFilter(ctx?.element || ctx, 'brightness(1.5)')
           },
           {
             id: 'filter-contrast',
             label: '高对比度',
-            action: (target) => this.applyFilter(target, 'contrast(1.5)')
+            action: (ctx) => this.applyFilter(ctx?.element || ctx, 'contrast(1.5)')
           },
           {
             id: 'filter-invert',
             label: '反色',
-            action: (target) => this.applyFilter(target, 'invert(100%)')
+            action: (ctx) => this.applyFilter(ctx?.element || ctx, 'invert(100%)')
           }
         ]
       },
       {
         id: 'size',
         label: '尺寸',
-        icon: '📏',
+        icon: getLucideIcon('maximize'),
         submenu: [
           {
             id: 'size-small',
             label: '小 (25%)',
-            action: (target) => this.setImageSize(target, '25%')
+            action: (ctx) => this.setImageSize(ctx?.element || ctx, '25%')
           },
           {
             id: 'size-medium',
             label: '中 (50%)',
-            action: (target) => this.setImageSize(target, '50%')
+            action: (ctx) => this.setImageSize(ctx?.element || ctx, '50%')
           },
           {
             id: 'size-large',
             label: '大 (75%)',
-            action: (target) => this.setImageSize(target, '75%')
+            action: (ctx) => this.setImageSize(ctx?.element || ctx, '75%')
           },
           {
             id: 'size-full',
             label: '原始大小',
-            action: (target) => this.setImageSize(target, 'auto')
+            action: (ctx) => this.setImageSize(ctx?.element || ctx, 'auto')
           },
-          { separator: true },
+          { divider: true },
           {
             id: 'size-custom',
             label: '自定义...',
-            action: (target) => this.openSizeDialog(target)
+            action: (ctx) => this.openSizeDialog(ctx?.element || ctx)
           }
         ]
       },
       {
         id: 'align',
         label: '对齐方式',
-        icon: '↔️',
+        icon: getLucideIcon('alignJustify'),
         submenu: [
           {
             id: 'align-left',
             label: '左对齐',
-            action: (target) => this.setAlignment(target, 'left')
+            action: (ctx) => this.setAlignment(ctx?.element || ctx, 'left')
           },
           {
             id: 'align-center',
             label: '居中',
-            action: (target) => this.setAlignment(target, 'center')
+            action: (ctx) => this.setAlignment(ctx?.element || ctx, 'center')
           },
           {
             id: 'align-right',
             label: '右对齐',
-            action: (target) => this.setAlignment(target, 'right')
+            action: (ctx) => this.setAlignment(ctx?.element || ctx, 'right')
           }
         ]
       },
       {
         id: 'float',
         label: '文字环绕',
-        icon: '📝',
+        icon: getLucideIcon('wrapText'),
         submenu: [
           {
             id: 'float-none',
             label: '无环绕',
             checked: !img.style.float,
-            action: (target) => this.setFloat(target, 'none')
+            action: (ctx) => this.setFloat(ctx?.element || ctx, 'none')
           },
           {
             id: 'float-left',
             label: '左侧环绕',
-            action: (target) => this.setFloat(target, 'left')
+            action: (ctx) => this.setFloat(ctx?.element || ctx, 'left')
           },
           {
             id: 'float-right',
             label: '右侧环绕',
-            action: (target) => this.setFloat(target, 'right')
+            action: (ctx) => this.setFloat(ctx?.element || ctx, 'right')
           }
         ]
       },
       {
         id: 'border',
         label: '边框',
-        icon: '🖼️',
+        icon: getLucideIcon('square'),
         submenu: [
           {
             id: 'border-none',
             label: '无边框',
             checked: !img.style.border,
-            action: (target) => this.setBorder(target, 'none')
+            action: (ctx) => this.setBorder(ctx?.element || ctx, 'none')
           },
           {
             id: 'border-thin',
             label: '细边框',
-            action: (target) => this.setBorder(target, '1px solid #ccc')
+            action: (ctx) => this.setBorder(ctx?.element || ctx, '1px solid #ccc')
           },
           {
             id: 'border-medium',
             label: '中等边框',
-            action: (target) => this.setBorder(target, '2px solid #999')
+            action: (ctx) => this.setBorder(ctx?.element || ctx, '2px solid #999')
           },
           {
             id: 'border-thick',
             label: '粗边框',
-            action: (target) => this.setBorder(target, '3px solid #666')
+            action: (ctx) => this.setBorder(ctx?.element || ctx, '3px solid #666')
           },
           {
             id: 'border-rounded',
             label: '圆角边框',
-            action: (target) => {
+            action: (ctx) => {
+              const target = ctx?.element || ctx;
               this.setBorder(target, '2px solid #999');
               (target as HTMLElement).style.borderRadius = '8px';
             }
@@ -256,248 +266,252 @@ export class MediaContextMenuPlugin implements Plugin {
       {
         id: 'shadow',
         label: '阴影',
-        icon: '🌑',
+        icon: getLucideIcon('droplet'),
         submenu: [
           {
             id: 'shadow-none',
             label: '无阴影',
             checked: !img.style.boxShadow,
-            action: (target) => this.setShadow(target, 'none')
+            action: (ctx) => this.setShadow(ctx?.element || ctx, 'none')
           },
           {
             id: 'shadow-small',
             label: '小阴影',
-            action: (target) => this.setShadow(target, '0 2px 4px rgba(0,0,0,0.1)')
+            action: (ctx) => this.setShadow(ctx?.element || ctx, '0 2px 4px rgba(0,0,0,0.1)')
           },
           {
             id: 'shadow-medium',
             label: '中等阴影',
-            action: (target) => this.setShadow(target, '0 4px 8px rgba(0,0,0,0.15)')
+            action: (ctx) => this.setShadow(ctx?.element || ctx, '0 4px 8px rgba(0,0,0,0.15)')
           },
           {
             id: 'shadow-large',
             label: '大阴影',
-            action: (target) => this.setShadow(target, '0 8px 16px rgba(0,0,0,0.2)')
+            action: (ctx) => this.setShadow(ctx?.element || ctx, '0 8px 16px rgba(0,0,0,0.2)')
           }
         ]
       },
-      { separator: true },
+      { divider: true },
       {
         id: 'copy-image',
         label: '复制图片',
-        icon: '📋',
+        icon: getLucideIcon('copy'),
         shortcut: 'Ctrl+C',
-        action: (target) => this.copyImage(target as HTMLImageElement)
+        action: (ctx) => this.copyImage((ctx?.element || ctx) as HTMLImageElement)
       },
       {
         id: 'save-as',
         label: '另存为...',
-        icon: '💾',
+        icon: getLucideIcon('download'),
         shortcut: 'Ctrl+S',
-        action: (target) => this.saveImage(target as HTMLImageElement)
+        action: (ctx) => this.saveImage((ctx?.element || ctx) as HTMLImageElement)
       },
-      { separator: true },
+      { divider: true },
       {
         id: 'delete',
         label: '删除',
-        icon: '🗑️',
+        icon: getLucideIcon('trash2'),
         shortcut: 'Delete',
-        action: (target) => this.deleteElement(target)
+        action: (ctx) => this.deleteElement(ctx?.element || ctx)
       }
     ];
   }
 
-  private getVideoMenuItems(video: HTMLVideoElement): ContextMenuItem[] {
+  private getVideoMenuItems(video: HTMLVideoElement): MenuItem[] {
     return [
       {
         id: 'properties',
         label: '视频属性',
-        icon: '⚙️',
+        icon: getLucideIcon('settings'),
         shortcut: 'Alt+Enter',
-        action: (target) => this.openProperties(target)
+        action: (ctx) => this.openProperties(ctx?.element || ctx)
       },
-      { separator: true },
+      { divider: true },
       {
         id: 'playback',
         label: '播放控制',
-        icon: '▶️',
+        icon: getLucideIcon('play'),
         submenu: [
           {
             id: 'play-pause',
             label: video.paused ? '播放' : '暂停',
-            action: (target) => this.togglePlayPause(target as HTMLVideoElement)
+            action: (ctx) => this.togglePlayPause((ctx?.element || ctx) as HTMLVideoElement)
           },
           {
             id: 'mute',
             label: video.muted ? '取消静音' : '静音',
-            action: (target) => this.toggleMute(target as HTMLVideoElement)
+            action: (ctx) => this.toggleMute((ctx?.element || ctx) as HTMLVideoElement)
           },
-          { separator: true },
+          { divider: true },
           {
             id: 'speed-0.5',
             label: '0.5x 速度',
-            action: (target) => this.setPlaybackSpeed(target as HTMLVideoElement, 0.5)
+            action: (ctx) => this.setPlaybackSpeed((ctx?.element || ctx) as HTMLVideoElement, 0.5)
           },
           {
             id: 'speed-1',
             label: '正常速度',
             checked: video.playbackRate === 1,
-            action: (target) => this.setPlaybackSpeed(target as HTMLVideoElement, 1)
+            action: (ctx) => this.setPlaybackSpeed((ctx?.element || ctx) as HTMLVideoElement, 1)
           },
           {
             id: 'speed-1.5',
             label: '1.5x 速度',
-            action: (target) => this.setPlaybackSpeed(target as HTMLVideoElement, 1.5)
+            action: (ctx) => this.setPlaybackSpeed((ctx?.element || ctx) as HTMLVideoElement, 1.5)
           },
           {
             id: 'speed-2',
             label: '2x 速度',
-            action: (target) => this.setPlaybackSpeed(target as HTMLVideoElement, 2)
+            action: (ctx) => this.setPlaybackSpeed((ctx?.element || ctx) as HTMLVideoElement, 2)
           }
         ]
       },
       {
         id: 'size',
         label: '尺寸',
-        icon: '📏',
+        icon: getLucideIcon('maximize'),
         submenu: [
           {
             id: 'size-small',
             label: '小 (320px)',
-            action: (target) => this.setVideoSize(target, 320)
+            action: (ctx) => this.setVideoSize(ctx?.element || ctx, 320)
           },
           {
             id: 'size-medium',
             label: '中 (640px)',
-            action: (target) => this.setVideoSize(target, 640)
+            action: (ctx) => this.setVideoSize(ctx?.element || ctx, 640)
           },
           {
             id: 'size-large',
             label: '大 (960px)',
-            action: (target) => this.setVideoSize(target, 960)
+            action: (ctx) => this.setVideoSize(ctx?.element || ctx, 960)
           },
           {
             id: 'size-full',
             label: '全宽',
-            action: (target) => this.setVideoSize(target, -1)
+            action: (ctx) => this.setVideoSize(ctx?.element || ctx, -1)
           }
         ]
       },
       {
         id: 'align',
         label: '对齐方式',
-        icon: '↔️',
+        icon: getLucideIcon('alignJustify'),
         submenu: [
           {
             id: 'align-left',
             label: '左对齐',
-            action: (target) => this.setAlignment(target, 'left')
+            action: (ctx) => this.setAlignment(ctx?.element || ctx, 'left')
           },
           {
             id: 'align-center',
             label: '居中',
-            action: (target) => this.setAlignment(target, 'center')
+            action: (ctx) => this.setAlignment(ctx?.element || ctx, 'center')
           },
           {
             id: 'align-right',
             label: '右对齐',
-            action: (target) => this.setAlignment(target, 'right')
+            action: (ctx) => this.setAlignment(ctx?.element || ctx, 'right')
           }
         ]
       },
-      { separator: true },
+      { divider: true },
       {
         id: 'loop',
         label: '循环播放',
+        icon: getLucideIcon('repeat'),
         checked: video.loop,
-        action: (target) => this.toggleLoop(target as HTMLVideoElement)
+        action: (ctx) => this.toggleLoop((ctx?.element || ctx) as HTMLVideoElement)
       },
       {
         id: 'controls',
         label: '显示控件',
+        icon: getLucideIcon('eye'),
         checked: video.controls,
-        action: (target) => this.toggleControls(target as HTMLVideoElement)
+        action: (ctx) => this.toggleControls((ctx?.element || ctx) as HTMLVideoElement)
       },
-      { separator: true },
+      { divider: true },
       {
         id: 'delete',
         label: '删除',
-        icon: '🗑️',
+        icon: getLucideIcon('trash2'),
         shortcut: 'Delete',
-        action: (target) => this.deleteElement(target)
+        action: (ctx) => this.deleteElement(ctx?.element || ctx)
       }
     ];
   }
 
-  private getAudioMenuItems(audio: HTMLAudioElement): ContextMenuItem[] {
+  private getAudioMenuItems(audio: HTMLAudioElement): MenuItem[] {
     return [
       {
         id: 'properties',
         label: '音频属性',
-        icon: '⚙️',
+        icon: getLucideIcon('settings'),
         shortcut: 'Alt+Enter',
-        action: (target) => this.openProperties(target)
+        action: (ctx) => this.openProperties(ctx?.element || ctx)
       },
-      { separator: true },
+      { divider: true },
       {
         id: 'playback',
         label: '播放控制',
-        icon: '🎵',
+        icon: getLucideIcon('music'),
         submenu: [
           {
             id: 'play-pause',
             label: audio.paused ? '播放' : '暂停',
-            action: (target) => this.togglePlayPause(target as HTMLAudioElement)
+            action: (ctx) => this.togglePlayPause((ctx?.element || ctx) as HTMLAudioElement)
           },
           {
             id: 'mute',
             label: audio.muted ? '取消静音' : '静音',
-            action: (target) => this.toggleMute(target as HTMLAudioElement)
+            action: (ctx) => this.toggleMute((ctx?.element || ctx) as HTMLAudioElement)
           },
-          { separator: true },
+          { divider: true },
           {
             id: 'speed-0.5',
             label: '0.5x 速度',
-            action: (target) => this.setPlaybackSpeed(target as HTMLAudioElement, 0.5)
+            action: (ctx) => this.setPlaybackSpeed((ctx?.element || ctx) as HTMLAudioElement, 0.5)
           },
           {
             id: 'speed-1',
             label: '正常速度',
             checked: audio.playbackRate === 1,
-            action: (target) => this.setPlaybackSpeed(target as HTMLAudioElement, 1)
+            action: (ctx) => this.setPlaybackSpeed((ctx?.element || ctx) as HTMLAudioElement, 1)
           },
           {
             id: 'speed-1.5',
             label: '1.5x 速度',
-            action: (target) => this.setPlaybackSpeed(target as HTMLAudioElement, 1.5)
+            action: (ctx) => this.setPlaybackSpeed((ctx?.element || ctx) as HTMLAudioElement, 1.5)
           },
           {
             id: 'speed-2',
             label: '2x 速度',
-            action: (target) => this.setPlaybackSpeed(target as HTMLAudioElement, 2)
+            action: (ctx) => this.setPlaybackSpeed((ctx?.element || ctx) as HTMLAudioElement, 2)
           }
         ]
       },
-      { separator: true },
+      { divider: true },
       {
         id: 'loop',
         label: '循环播放',
+        icon: getLucideIcon('repeat'),
         checked: audio.loop,
-        action: (target) => this.toggleLoop(target as HTMLAudioElement)
+        action: (ctx) => this.toggleLoop((ctx?.element || ctx) as HTMLAudioElement)
       },
       {
         id: 'controls',
         label: '显示控件',
+        icon: getLucideIcon('eye'),
         checked: audio.controls,
-        action: (target) => this.toggleControls(target as HTMLAudioElement)
+        action: (ctx) => this.toggleControls((ctx?.element || ctx) as HTMLAudioElement)
       },
-      { separator: true },
+      { divider: true },
       {
         id: 'delete',
         label: '删除',
-        icon: '🗑️',
+        icon: getLucideIcon('trash2'),
         shortcut: 'Delete',
-        action: (target) => this.deleteElement(target)
+        action: (ctx) => this.deleteElement(ctx?.element || ctx)
       }
     ];
   }
@@ -665,9 +679,15 @@ export class MediaContextMenuPlugin implements Plugin {
   }
 
   destroy(): void {
-    if (this.contextMenu) {
-      this.contextMenu.destroy();
-      this.contextMenu = null;
+    // Unregister menus from manager
+    if (this.registeredMenuIds.length) {
+      try {
+        const manager = getContextMenuManager();
+        this.registeredMenuIds.forEach(id => {
+          try { (manager as any).unregister(id); } catch {}
+        });
+      } catch {}
+      this.registeredMenuIds = [];
     }
     if (this.propertiesDialog) {
       this.propertiesDialog.destroy();

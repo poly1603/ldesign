@@ -477,7 +477,7 @@ export const MediaDialogPlugin: Plugin = {
           try {
             console.log('[MediaDialog] Image callback - url:', url, 'file:', file)
             const alt = file ? file.name : 'Image'
-            const html = `<img src="${url}" alt="${alt}" style="max-width: 100%; height: auto; display: block; margin: 10px auto;">`
+            const html = `<img src="${url}" alt="${alt}" style="max-width: 100%; height: auto; display: block; margin: 10px 0;">`
             console.log('[MediaDialog] Inserting image HTML length:', html.length)
             
             // 使用编辑器的 insertHTML 方法
@@ -514,15 +514,15 @@ export const MediaDialogPlugin: Plugin = {
             if (url.includes('youtube.com') || url.includes('youtu.be')) {
               const videoId = url.split('v=')[1] || url.split('/').pop()
               const embedUrl = `https://www.youtube.com/embed/${videoId}`
-              html = `<iframe width="560" height="315" src="${embedUrl}" frameborder="0" allowfullscreen style="display: block; margin: 10px auto;"></iframe>`
+              html = `<iframe width="560" height="315" src="${embedUrl}" frameborder="0" allowfullscreen style="display: block; margin: 10px 0;"></iframe>`
             } else if (url.includes('bilibili.com')) {
               const bvid = url.match(/BV\w+/)?.[0]
               if (bvid) {
-                html = `<iframe src="//player.bilibili.com/player.html?bvid=${bvid}" width="560" height="315" frameborder="0" allowfullscreen style="display: block; margin: 10px auto;"></iframe>`
+                html = `<iframe src="//player.bilibili.com/player.html?bvid=${bvid}" width="560" height="315" frameborder="0" allowfullscreen style="display: block; margin: 10px 0;"></iframe>`
               }
             } else {
               // Regular video
-              html = `<video controls style=\"max-width: 100%; height: auto; display: block; margin: 10px auto;\">\n              <source src=\"${url}\" type=\"${file ? file.type : 'video/mp4'}\">\n              您的浏览器不支持视频标签。\n            </video>`
+              html = `<video controls style=\"max-width: 100%; height: auto; display: block; margin: 10px 0;\">\n              <source src=\"${url}\" type=\"${file ? file.type : 'video/mp4'}\">\n              您的浏览器不支持视频标签。\n            </video>`
             }
             
             if (html) {
@@ -557,7 +557,7 @@ export const MediaDialogPlugin: Plugin = {
         mediaDialog!.show('audio', (url, file) => {
           try {
             console.log('[MediaDialog] Audio callback - url:', url, 'file:', file)
-            const html = `<audio controls style=\"width: 100%; max-width: 400px; display: block; margin: 10px auto;\">\n            <source src=\"${url}\" type=\"${file ? file.type : 'audio/mpeg'}\">\n            您的浏览器不支持音频标签。\n          </audio>`
+            const html = `<audio controls style=\"width: 100%; max-width: 400px; display: block; margin: 10px 0;\">\n            <source src=\"${url}\" type=\"${file ? file.type : 'audio/mpeg'}\">\n            您的浏览器不支持音频标签。\n          </audio>`
             
             console.log('[MediaDialog] Inserting audio HTML length:', html.length)
             if (typeof editor.insertHTML === 'function') {

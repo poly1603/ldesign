@@ -28,6 +28,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:fast": "vite build",
     "preview": "vite preview",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
