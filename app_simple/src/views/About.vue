@@ -129,9 +129,9 @@ onMounted(() => {
 }
 
 .about-content {
-  background: var(--color-background);
+  background: var(--color-bg-container);
   border-radius: 16px;
-  box-shadow: 0 10px 40px var(--color-border-light);
+  box-shadow: var(--shadow-lg);
   padding: 40px;
 }
 
@@ -179,7 +179,7 @@ onMounted(() => {
 
 .feature-item {
   padding: 20px;
-  background: var(--color-background-secondary);
+  background: var(--color-bg-container-secondary);
   border-radius: 8px;
 }
 
@@ -206,7 +206,7 @@ onMounted(() => {
   display: inline-block;
   padding: 8px 16px;
   background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-active) 100%);
-  color: var(--color-gray-50);
+  color: var(--color-text-inverse);
   border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
@@ -241,7 +241,7 @@ onMounted(() => {
 
 .contribute-link {
   padding: 10px 20px;
-  background: var(--color-background);
+  background: var(--color-bg-container);
   color: var(--color-primary-default);
   border: 2px solid var(--color-primary-default);
   border-radius: 6px;
@@ -252,7 +252,7 @@ onMounted(() => {
 
 .contribute-link:hover {
   background: var(--color-primary-default);
-  color: var(--color-gray-50);
+  color: var(--color-text-inverse);
 }
 
 /* 页脚 */

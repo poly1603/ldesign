@@ -9,16 +9,457 @@ import { registerContextMenu } from '../core/ContextMenuManager'
 
 // createTableContextMenu 函数已移除，使用 ContextMenuManager 统一管理
 
-// 获取当前单元格位置
-function getCellPosition(cell: HTMLElement): { row: number; col: number } | null {
-  if (!cell || (!cell.matches('td') && !cell.matches('th'))) return null
-  
-  const row = cell.parentElement as HTMLTableRowElement
-  const rowIndex = Array.from(row.parentElement!.children).indexOf(row)
-  const colIndex = Array.from(row.children).indexOf(cell)
-  
-  return { row: rowIndex, col: colIndex }
+// 表格选择功能
+interface TableSelection {
+  startCell: HTMLTableCellElement | null
+  endCell: HTMLTableCellElement | null
+  selectedCells: Set<HTMLTableCellElement>
 }
+
+const tableSelections = new WeakMap<HTMLTableElement, TableSelection>()
+
+/**
+ * 设置表格选择功能 - 简化版
+ */
+function setupTableSelection(table: HTMLTableElement) {
+  let isSelecting = false
+  let startCell: HTMLTableCellElement | null = null
+  let selectedCells = new Set<HTMLTableCellElement>()
+  let cachedGrid: (HTMLTableCellElement | null)[][] | null = null
+  
+  // 清除选择
+  const clearSelection = () => {
+    selectedCells.forEach(cell => {
+      cell.classList.remove('table-cell-selected')
+    })
+    selectedCells.clear()
+    startCell = null
+    isSelecting = false
+    cachedGrid = null // 清除缓存的网格
+    // 移除selecting类
+    table.classList.remove('selecting')
+  }
+  
+  // 选中整列
+  const selectColumn = (colIndex: number) => {
+    clearSelection()
+    Array.from(table.rows).forEach(row => {
+      const cell = row.cells[colIndex]
+      if (cell) {
+        cell.classList.add('table-cell-selected')
+        selectedCells.add(cell as HTMLTableCellElement)
+      }
+    })
+    saveSelection()
+  }
+  
+  // 选中整行
+  const selectRow = (rowIndex: number) => {
+    clearSelection()
+    const row = table.rows[rowIndex]
+    if (row) {
+      Array.from(row.cells).forEach(cell => {
+        cell.classList.add('table-cell-selected')
+        selectedCells.add(cell as HTMLTableCellElement)
+      })
+    }
+    saveSelection()
+  }
+  
+  // 获取单元格的实际位置（考虑合并单元格）
+  const getCellPosition = (cell: HTMLTableCellElement, grid?: (HTMLTableCellElement | null)[][]): {row: number, col: number, rowEnd: number, colEnd: number} => {
+    // 使用传入的网格或创建新的
+    const logicalGrid = grid || createLogicalGrid()
+    
+    // 在网格中查找单元格的位置
+    let cellRow = -1, cellCol = -1
+    let cellRowEnd = -1, cellColEnd = -1
+    
+    for (let r = 0; r < logicalGrid.length; r++) {
+      for (let c = 0; c < logicalGrid[r].length; c++) {
+        if (logicalGrid[r][c] === cell) {
+          if (cellRow === -1) {
+            cellRow = r
+            cellCol = c
+          }
+          cellRowEnd = r
+          cellColEnd = c
+        }
+      }
+    }
+    
+    return {
+      row: cellRow,
+      col: cellCol,
+      rowEnd: cellRowEnd,
+      colEnd: cellColEnd
+    }
+  }
+  
+  // 创建一个二维数组来跟踪表格的逻辑结构
+  const createLogicalGrid = () => {
+    const rowCount = table.rows.length
+    const colCount = Math.max(...Array.from(table.rows).map(row => {
+      let count = 0
+      Array.from(row.cells).forEach(cell => {
+        count += parseInt(cell.getAttribute('colspan') || '1')
+      })
+      return count
+    }))
+    
+    // 创建二维数组，记录每个逻辑位置对应的实际单元格
+    const grid: (HTMLTableCellElement | null)[][] = Array(rowCount).fill(null).map(() => Array(colCount).fill(null))
+    
+    for (let r = 0; r < table.rows.length; r++) {
+      const row = table.rows[r]
+      let logicalCol = 0
+      
+      for (let c = 0; c < row.cells.length; c++) {
+        const cell = row.cells[c] as HTMLTableCellElement
+        const rowspan = parseInt(cell.getAttribute('rowspan') || '1')
+        const colspan = parseInt(cell.getAttribute('colspan') || '1')
+        
+        // 找到下一个可用的逻辑列
+        while (logicalCol < colCount && grid[r][logicalCol] !== null) {
+          logicalCol++
+        }
+        
+        // 填充合并的单元格区域
+        for (let dr = 0; dr < rowspan && r + dr < rowCount; dr++) {
+          for (let dc = 0; dc < colspan && logicalCol + dc < colCount; dc++) {
+            grid[r + dr][logicalCol + dc] = cell
+          }
+        }
+        
+        logicalCol += colspan
+      }
+    }
+    
+    return grid
+  }
+  
+  // 更新选择区域
+  const updateSelection = (endCell: HTMLTableCellElement) => {
+    if (!startCell) return
+    
+    // 清除之前的选择
+    selectedCells.forEach(cell => {
+      cell.classList.remove('table-cell-selected')
+    })
+    selectedCells.clear()
+    
+    // 创建或使用缓存的逻辑网格
+    if (!cachedGrid) {
+      cachedGrid = createLogicalGrid()
+    }
+    const grid = cachedGrid
+    
+    // 获取起始和结束单元格的逻辑位置
+    const startPos = getCellPosition(startCell, grid)
+    const endPos = getCellPosition(endCell, grid)
+    
+    // 计算选择范围（考虑合并单元格的完整区域）
+    let minRow = Math.min(startPos.row, endPos.row)
+    let maxRow = Math.max(startPos.rowEnd, endPos.rowEnd)
+    let minCol = Math.min(startPos.col, endPos.col)
+    let maxCol = Math.max(startPos.colEnd, endPos.colEnd)
+    
+    // 扩展选择范围以包含所有部分选中的合并单元格
+    let expanded = true
+    while (expanded) {
+      expanded = false
+      
+      for (let r = minRow; r <= maxRow && r < grid.length; r++) {
+        for (let c = minCol; c <= maxCol && c < grid[r].length; c++) {
+          const cell = grid[r][c]
+          if (cell && !selectedCells.has(cell)) {
+            const pos = getCellPosition(cell)
+            if (pos.row < minRow) {
+              minRow = pos.row
+              expanded = true
+            }
+            if (pos.rowEnd > maxRow) {
+              maxRow = pos.rowEnd
+              expanded = true
+            }
+            if (pos.col < minCol) {
+              minCol = pos.col
+              expanded = true
+            }
+            if (pos.colEnd > maxCol) {
+              maxCol = pos.colEnd
+              expanded = true
+            }
+          }
+        }
+      }
+    }
+    
+    // 选中范围内的所有单元格
+    const addedCells = new Set<HTMLTableCellElement>()
+    for (let r = minRow; r <= maxRow && r < grid.length; r++) {
+      for (let c = minCol; c <= maxCol && c < grid[r].length; c++) {
+        const cell = grid[r][c]
+        if (cell && !addedCells.has(cell)) {
+          cell.classList.add('table-cell-selected')
+          selectedCells.add(cell)
+          addedCells.add(cell)
+        }
+      }
+    }
+    
+    saveSelection()
+  }
+  
+  // 保存选择状态
+  const saveSelection = () => {
+    tableSelections.set(table, {
+      startCell,
+      endCell: null,
+      selectedCells
+    })
+  }
+  
+  // 表头右键选中整列
+  table.addEventListener('contextmenu', (e) => {
+    const cell = (e.target as HTMLElement).closest('th') as HTMLTableCellElement
+    if (cell) {
+      const row = cell.parentElement as HTMLTableRowElement
+      const colIndex = Array.from(row.cells).indexOf(cell)
+      selectColumn(colIndex)
+    }
+  })
+  
+  // 鼠标按下开始选择
+  table.addEventListener('mousedown', (e) => {
+    // 如果是右键，不处理
+    if (e.button === 2) return
+    
+    const target = e.target as HTMLElement
+    const cell = target.closest('td, th') as HTMLTableCellElement
+    if (!cell) return
+    
+    // 忽略调整列宽的手柄
+    if (target.classList.contains('table-column-resizer')) {
+      return
+    }
+    
+    // 如果点击的就是单元格本身（不是拖拽选择），让它正常获取焦点
+    if (target === cell || cell.contains(target)) {
+      // 如果没有按住Shift、Ctrl或Alt键，就是普通点击，让单元格正常获取焦点
+      if (!e.shiftKey && !e.ctrlKey && !e.altKey) {
+        // 清除选择但不阻止默认行为，让单元格可以编辑
+        clearSelection()
+        return
+      }
+    }
+    
+    // Ctrl+点击选中整行
+    if (e.ctrlKey) {
+      const row = cell.parentElement as HTMLTableRowElement
+      const rowIndex = Array.from(table.rows).indexOf(row)
+      selectRow(rowIndex)
+      e.preventDefault()
+      return
+    }
+    
+    // Alt+点击选中整列
+    if (e.altKey) {
+      const row = cell.parentElement as HTMLTableRowElement
+      const colIndex = Array.from(row.cells).indexOf(cell)
+      selectColumn(colIndex)
+      e.preventDefault()
+      return
+    }
+    
+    // Shift+点击进行范围选择
+    if (e.shiftKey && startCell) {
+      e.preventDefault()
+      updateSelection(cell)
+      return
+    }
+    
+    // 开始拖拽选择（只在按住Shift时）
+    if (e.shiftKey) {
+      clearSelection()
+      isSelecting = true
+      startCell = cell
+      cachedGrid = null
+      cell.classList.add('table-cell-selected')
+      selectedCells.add(cell)
+      saveSelection()
+      // 添加selecting类来禁用文本选择
+      table.classList.add('selecting')
+      e.preventDefault()
+    }
+  })
+  
+  // 鼠标移动更新选择
+  table.addEventListener('mousemove', (e) => {
+    // 只有在按住Shift键并且正在选择时才更新
+    if (!isSelecting || !startCell || !e.shiftKey) {
+      if (isSelecting && !e.shiftKey) {
+        // 如果松开了Shift键，停止选择
+        isSelecting = false
+      }
+      return
+    }
+    
+    const cell = (e.target as HTMLElement).closest('td, th') as HTMLTableCellElement
+    if (cell && table.contains(cell)) {
+      updateSelection(cell)
+    }
+  })
+  
+  // 鼠标松开结束选择
+  const handleMouseUp = () => {
+    isSelecting = false
+    // 移除selecting类
+    table.classList.remove('selecting')
+  }
+  document.addEventListener('mouseup', handleMouseUp)
+  
+  // 在表格被移除时清理事件监听器
+  const cleanupObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
+        for (const node of mutation.removedNodes) {
+          if (node === table || (node as Element)?.contains?.(table)) {
+            document.removeEventListener('mouseup', handleMouseUp)
+            cleanupObserver.disconnect()
+            return
+          }
+        }
+      }
+    }
+  })
+  
+  // 监听父元素的变化
+  if (table.parentElement) {
+    cleanupObserver.observe(table.parentElement, { childList: true, subtree: true })
+  }
+  
+  // 防止选择时的文本选中
+  table.addEventListener('selectstart', (e) => {
+    if (isSelecting) {
+      e.preventDefault()
+    }
+  })
+  
+  // 添加列宽调整功能
+  setupColumnResize(table)
+  
+  // 监听表格结构变化，清除缓存的网格
+  const observer = new MutationObserver(() => {
+    cachedGrid = null
+  })
+  
+  observer.observe(table, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['colspan', 'rowspan']
+  })
+}
+
+/**
+ * 设置列宽调整功能
+ */
+function setupColumnResize(table: HTMLTableElement) {
+  const headerCells = table.querySelectorAll('th')
+  
+  headerCells.forEach((th, index) => {
+    // 不在最后一列添加调整手柄
+    if (index === headerCells.length - 1) return
+    
+    const resizer = document.createElement('div')
+    resizer.className = 'table-column-resizer'
+    resizer.style.cssText = `
+      position: absolute;
+      right: -3px;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      cursor: col-resize;
+      z-index: 10;
+      background: transparent;
+    `
+    
+    // 悬停效果
+    resizer.addEventListener('mouseenter', () => {
+      resizer.style.background = 'rgba(59, 130, 246, 0.5)'
+    })
+    
+    resizer.addEventListener('mouseleave', () => {
+      resizer.style.background = 'transparent'
+    })
+    
+    // 拖拽调整列宽
+    let startX = 0
+    let startWidth = 0
+    let currentColumn = index
+    
+    resizer.addEventListener('mousedown', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      
+      startX = e.clientX
+      startWidth = th.offsetWidth
+      
+      // 添加拖拽时的样式
+      table.classList.add('resizing')
+      document.body.style.cursor = 'col-resize'
+      
+      const handleMouseMove = (e: MouseEvent) => {
+        const diff = e.clientX - startX
+        const newWidth = Math.max(60, startWidth + diff)
+        
+        // 只更新左侧列（当前列）的所有单元格宽度
+        Array.from(table.rows).forEach(row => {
+          const cell = row.cells[currentColumn]
+          if (cell) {
+            cell.style.width = `${newWidth}px`
+            cell.style.minWidth = `${newWidth}px`
+            cell.style.maxWidth = `${newWidth}px`
+          }
+        })
+        
+        // 设置表格为固定布局，防止其他列自动调整
+        table.style.tableLayout = 'fixed'
+      }
+      
+      const handleMouseUp = () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+        
+        // 移除拖拽时的样式
+        table.classList.remove('resizing')
+        document.body.style.cursor = ''
+        
+        // 触发更新
+        const event = new Event('input', { bubbles: true })
+        table.dispatchEvent(event)
+      }
+      
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    })
+    
+    th.style.position = 'relative'
+    th.appendChild(resizer)
+  })
+}
+
+/**
+ * 获取选中的单元格
+ */
+function getSelectedCells(table: HTMLTableElement): HTMLTableCellElement[] {
+  const selection = tableSelections.get(table)
+  if (!selection) return []
+  return Array.from(selection.selectedCells)
+}
+
+// getCellPosition 函数已经不需要，直接使用 DOM API
 
 // 在上方插入行
 function insertRowAbove(table: HTMLTableElement) {
@@ -96,15 +537,15 @@ function insertColumnLeft(table: HTMLTableElement) {
   
   if (!targetCell) return
   
-  const position = getCellPosition(targetCell)
-  if (!position) return
+  const targetRow = targetCell.parentElement as HTMLTableRowElement
+  const colIndex = Array.from(targetRow.cells).indexOf(targetCell)
   
   // 在每一行的对应位置插入单元格
   Array.from(table.rows).forEach(row => {
-    const newCell = row.cells[position.col].cloneNode(false) as HTMLElement
+    const newCell = row.cells[colIndex].cloneNode(false) as HTMLElement
     newCell.innerHTML = '&nbsp;'
     newCell.setAttribute('contenteditable', 'true')
-    row.insertBefore(newCell, row.cells[position.col])
+    row.insertBefore(newCell, row.cells[colIndex])
   })
   
   // 触发更新
@@ -130,16 +571,16 @@ function insertColumnRight(table: HTMLTableElement) {
   
   if (!targetCell) return
   
-  const position = getCellPosition(targetCell)
-  if (!position) return
+  const targetRow = targetCell.parentElement as HTMLTableRowElement
+  const colIndex = Array.from(targetRow.cells).indexOf(targetCell)
   
   // 在每一行的对应位置插入单元格
   Array.from(table.rows).forEach(row => {
-    const newCell = row.cells[position.col].cloneNode(false) as HTMLElement
+    const newCell = row.cells[colIndex].cloneNode(false) as HTMLElement
     newCell.innerHTML = '&nbsp;'
     newCell.setAttribute('contenteditable', 'true')
-    if (position.col + 1 < row.cells.length) {
-      row.insertBefore(newCell, row.cells[position.col + 1])
+    if (colIndex + 1 < row.cells.length) {
+      row.insertBefore(newCell, row.cells[colIndex + 1])
     } else {
       row.appendChild(newCell)
     }
@@ -197,16 +638,16 @@ function deleteCurrentColumn(table: HTMLTableElement) {
   
   if (!targetCell) return
   
-  const position = getCellPosition(targetCell)
-  if (!position) return
+  const targetRow = targetCell.parentElement as HTMLTableRowElement
+  const colIndex = Array.from(targetRow.cells).indexOf(targetCell)
   
   // 至少保留一列
   const firstRow = table.rows[0]
   if (firstRow && firstRow.cells.length > 1) {
     // 从每一行删除对应位置的单元格
     Array.from(table.rows).forEach(row => {
-      if (row.cells[position.col]) {
-        row.cells[position.col].remove()
+      if (row.cells[colIndex]) {
+        row.cells[colIndex].remove()
       }
     })
     
@@ -245,42 +686,123 @@ function clearTable(table: HTMLTableElement) {
 
 // 合并单元格
 function mergeCells(table: HTMLTableElement) {
-  const selection = window.getSelection()
-  if (!selection || selection.rangeCount === 0) {
-    alert('请先选中要合并的单元格')
-    return
-  }
+  const selectedCells = getSelectedCells(table)
   
-  // 获取选中的单元格
-  const range = selection.getRangeAt(0)
-  const startCell = range.startContainer.nodeType === Node.TEXT_NODE
-    ? range.startContainer.parentElement?.closest('td, th')
-    : (range.startContainer as Element).closest('td, th')
-  const endCell = range.endContainer.nodeType === Node.TEXT_NODE
-    ? range.endContainer.parentElement?.closest('td, th')
-    : (range.endContainer as Element).closest('td, th')
-  
-  if (!startCell || !endCell || startCell === endCell) {
+  if (selectedCells.length < 2) {
     alert('请选择多个单元格进行合并')
     return
   }
   
-  // 简单实现：合并到第一个单元格
-  const firstCell = startCell as HTMLTableCellElement
-  
-  // 设置 colspan 和 rowspan
-  firstCell.setAttribute('colspan', '2')
-  
-  // 合并内容
-  const contents = [startCell.textContent || '']
-  
-  // 删除其他单元格
-  if (endCell && endCell !== startCell) {
-    contents.push(endCell.textContent || '')
-    endCell.remove()
+  // 创建逻辑网格来准确判断选择区域
+  const createLogicalGrid = () => {
+    const rowCount = table.rows.length
+    const colCount = Math.max(...Array.from(table.rows).map(row => {
+      let count = 0
+      Array.from(row.cells).forEach(cell => {
+        count += parseInt(cell.getAttribute('colspan') || '1')
+      })
+      return count
+    }))
+    
+    const grid: (HTMLTableCellElement | null)[][] = Array(rowCount).fill(null).map(() => Array(colCount).fill(null))
+    
+    for (let r = 0; r < table.rows.length; r++) {
+      const row = table.rows[r]
+      let logicalCol = 0
+      
+      for (let c = 0; c < row.cells.length; c++) {
+        const cell = row.cells[c] as HTMLTableCellElement
+        const rowspan = parseInt(cell.getAttribute('rowspan') || '1')
+        const colspan = parseInt(cell.getAttribute('colspan') || '1')
+        
+        while (logicalCol < colCount && grid[r][logicalCol] !== null) {
+          logicalCol++
+        }
+        
+        for (let dr = 0; dr < rowspan && r + dr < rowCount; dr++) {
+          for (let dc = 0; dc < colspan && logicalCol + dc < colCount; dc++) {
+            grid[r + dr][logicalCol + dc] = cell
+          }
+        }
+        
+        logicalCol += colspan
+      }
+    }
+    
+    return grid
   }
   
-  firstCell.textContent = contents.filter(c => c.trim()).join(' ')
+  const grid = createLogicalGrid()
+  
+  // 找出选中区域的边界
+  let minRow = Infinity, maxRow = -1
+  let minCol = Infinity, maxCol = -1
+  let topLeftCell: HTMLTableCellElement | null = null
+  
+  // 遍历逻辑网格找出选中单元格的实际范围
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      const cell = grid[r][c]
+      if (cell && selectedCells.includes(cell)) {
+        if (r < minRow) {
+          minRow = r
+          minCol = c // Reset column when finding new top row
+          topLeftCell = cell
+        } else if (r === minRow && c < minCol) {
+          minCol = c
+          topLeftCell = cell
+        }
+        maxRow = Math.max(maxRow, r)
+        maxCol = Math.max(maxCol, c)
+      }
+    }
+  }
+  
+  // 检查选择区域是否为矩形
+  for (let r = minRow; r <= maxRow; r++) {
+    for (let c = minCol; c <= maxCol; c++) {
+      const cell = grid[r][c]
+      if (!cell || !selectedCells.includes(cell)) {
+        alert('请选择一个完整的矩形区域进行合并')
+        return
+      }
+    }
+  }
+  
+  // 使用找到的左上角单元格
+  if (!topLeftCell) {
+    alert('无法找到合并的起始单元格')
+    return
+  }
+  
+  // 收集所有内容
+  const contents: string[] = []
+  const cellsToRemove = new Set<HTMLTableCellElement>()
+  
+  selectedCells.forEach(cell => {
+    const text = cell.textContent?.trim()
+    if (text && text !== '\xa0' && text !== '') contents.push(text)
+    if (cell !== topLeftCell) {
+      cellsToRemove.add(cell)
+    }
+  })
+  
+  // 设置合并属性
+  const rowSpan = maxRow - minRow + 1
+  const colSpan = maxCol - minCol + 1
+  topLeftCell.setAttribute('rowspan', String(rowSpan))
+  topLeftCell.setAttribute('colspan', String(colSpan))
+  topLeftCell.textContent = contents.join(' ') || '\xa0'
+  
+  // 删除其他单元格
+  cellsToRemove.forEach(cell => {
+    cell.remove()
+  })
+  
+  // 清除选择
+  selectedCells.forEach(cell => {
+    cell.classList.remove('table-cell-selected')
+  })
   
   // 触发更新
   const event = new Event('input', { bubbles: true })
@@ -391,12 +913,12 @@ function increaseColumnWidth(table: HTMLTableElement) {
   
   if (!targetCell) return
   
-  const position = getCellPosition(targetCell)
-  if (!position) return
+  const targetRow = targetCell.parentElement as HTMLTableRowElement
+  const colIndex = Array.from(targetRow.cells).indexOf(targetCell)
   
   // 增加当前列的宽度
   Array.from(table.rows).forEach(row => {
-    const cell = row.cells[position.col]
+    const cell = row.cells[colIndex]
     if (cell) {
       const currentWidth = cell.offsetWidth
       const newWidth = currentWidth + 20
@@ -428,12 +950,12 @@ function decreaseColumnWidth(table: HTMLTableElement) {
   
   if (!targetCell) return
   
-  const position = getCellPosition(targetCell)
-  if (!position) return
+  const targetRow = targetCell.parentElement as HTMLTableRowElement
+  const colIndex = Array.from(targetRow.cells).indexOf(targetCell)
   
   // 减少当前列的宽度
   Array.from(table.rows).forEach(row => {
-    const cell = row.cells[position.col]
+    const cell = row.cells[colIndex]
     if (cell) {
       const currentWidth = cell.offsetWidth
       const newWidth = Math.max(60, currentWidth - 20) // 最小60px
@@ -450,10 +972,16 @@ function decreaseColumnWidth(table: HTMLTableElement) {
 /**
  * 创建表格元素
  */
-function createTableElement(rows: number, cols: number): HTMLTableElement {
+function createTableElement(rows: number, cols: number): HTMLElement {
+  // 创建表格包装器
+  const wrapper = document.createElement('div')
+  wrapper.className = 'table-wrapper'
+  wrapper.style.position = 'relative'
+  wrapper.style.display = 'inline-block'
+  
   const table = document.createElement('table')
-  // 不需要内联样式，使用 CSS 文件中的样式
-  table.setAttribute('contenteditable', 'true')
+  // 表格本身不要设置 contenteditable，只在单元格上设置
+  table.style.position = 'relative'
   
   // 不再直接绑定右键事件，使用 ContextMenuManager
 
@@ -483,8 +1011,14 @@ function createTableElement(rows: number, cols: number): HTMLTableElement {
     tbody.appendChild(tr)
   }
   table.appendChild(tbody)
-
-  return table
+  
+  // 将表格添加到包装器
+  wrapper.appendChild(table)
+  
+  // 设置选择功能（需要在表格添加到包装器后）
+  setTimeout(() => setupTableSelection(table), 0)
+  
+  return wrapper
 }
 
 /**
@@ -791,17 +1325,17 @@ const insertTable: Command = (state, dispatch) => {
         // 如果没有保存的选区，在编辑器末尾插入
         console.log('⚠️ [Table] No saved range, appending at end')
         
-        const table = createTableElement(rows, cols)
+        const tableWrapper = createTableElement(rows, cols)
         const p = document.createElement('p')
         p.innerHTML = '<br>'
         
         // 找到最后一个段落
         const lastP = editorContent.querySelector('p:last-of-type')
         if (lastP) {
-          lastP.insertAdjacentElement('afterend', table)
-          table.insertAdjacentElement('afterend', p)
+          lastP.insertAdjacentElement('afterend', tableWrapper)
+          tableWrapper.insertAdjacentElement('afterend', p)
         } else {
-          editorContent.appendChild(table)
+          editorContent.appendChild(tableWrapper)
           editorContent.appendChild(p)
         }
         
@@ -814,7 +1348,8 @@ const insertTable: Command = (state, dispatch) => {
       }
 
       // 创建表格元素
-      const table = createTableElement(rows, cols)
+      const tableWrapper = createTableElement(rows, cols)
+      const table = tableWrapper.querySelector('table')
       console.log('📋 [Table] Table element created:', table)
       
       // 调试：检查插入前的状态
@@ -838,33 +1373,33 @@ const insertTable: Command = (state, dispatch) => {
           
           if (p && p.tagName === 'P') {
             // 在段落后插入
-            p.insertAdjacentElement('afterend', table)
+            p.insertAdjacentElement('afterend', tableWrapper)
             
             // 添加一个新段落
             const newP = document.createElement('p')
             newP.innerHTML = '<br>'
-            table.insertAdjacentElement('afterend', newP)
+            tableWrapper.insertAdjacentElement('afterend', newP)
             
             console.log('📋 [Table] Inserted after paragraph')
           } else {
-            range.insertNode(table)
+            range.insertNode(tableWrapper)
             console.log('📋 [Table] Inserted at range')
           }
         } else {
-          range.insertNode(table)
+          range.insertNode(tableWrapper)
           console.log('📋 [Table] Inserted at range')
         }
       } catch (error) {
         console.log('⚠️ [Table] Error inserting, appending to end:', error)
-        editorContent.appendChild(table)
+        editorContent.appendChild(tableWrapper)
       }
       
       // 确保表格后有段落
-      let nextP = table.nextElementSibling
+      let nextP = tableWrapper.nextElementSibling
       if (!nextP || nextP.tagName !== 'P') {
         nextP = document.createElement('p')
         nextP.innerHTML = '<br>'
-        table.insertAdjacentElement('afterend', nextP)
+        tableWrapper.insertAdjacentElement('afterend', nextP)
       }
       
       // 调试：检查插入后的状态

@@ -1,47 +1,84 @@
-// DatePicker 样式（与 TimePicker 保持一致的触发器外观）
+// DatePicker 简洁大方设计
 .ldesign-date-picker {
   display: inline-block;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
 
-  &--disabled { opacity: 0.6; pointer-events: none; }
+  &--disabled { 
+    opacity: 0.5; 
+    pointer-events: none;
+  }
 }
 
-/* 触发器 */
+/* 触发器 - 简洁设计 */
 .ldp-trigger {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 32px;
-  padding: 4px 10px;
+  height: 36px;
+  padding: 0 12px;
   min-width: 200px;
-  border: 1px solid var(--ldesign-border-color, #e5e7eb);
+  border: 1px solid #d9d9d9;
   border-radius: 6px;
   cursor: pointer;
-  background: var(--ldesign-bg-color, #ffffff);
-  color: var(--ldesign-text-color, #111827);
+  background: #ffffff;
+  color: #333333;
   font-size: 14px;
-  line-height: 22px;
+  line-height: 1.5;
+  transition: all 0.25s;
 
-  &:hover { border-color: var(--ldesign-border-color-hover, #d1d5db); }
-  &--disabled { cursor: not-allowed; }
+  &:hover { 
+    border-color: #3b82f6;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+  }
+  
+  &--disabled { 
+    cursor: not-allowed;
+    background: #f5f5f5;
+    color: #999999;
+    border-color: #e0e0e0;
+  }
 }
-.ldp-text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ldp-text--placeholder { color: var(--ldesign-text-color-secondary, #6b7280); }
-.ldp-suffix { display: inline-flex; color: var(--ldesign-text-color-secondary, #6b7280); }
 
-/* 弹层内容 */
+.ldp-text { 
+  flex: 1; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis;
+}
+
+.ldp-text--placeholder { 
+  color: #9ca3af;
+}
+
+.ldp-suffix { 
+  display: inline-flex; 
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* 弹层内容 - 简洁卡片设计 */
 .ldp-panel { 
-  padding: 6px;
-  box-sizing: border-box;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08), 0 3px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
 }
 
-/* 头部 */
+/* 头部 - 简洁风格 */
 .ldp-header { 
   display: flex; 
   align-items: center; 
   justify-content: space-between; 
-  padding: 12px; 
-  border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
-  flex-wrap: nowrap; /* 头部不换行 */
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+  min-height: 48px;
 }
 .ldp-header-group { display: inline-flex; align-items: center; gap: 4px; }
 .ldp-header-center { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
@@ -52,177 +89,227 @@
   width: 28px; 
   height: 28px; 
   border: none; 
-  background: none; 
+  background: transparent;
   cursor: pointer; 
-  border-radius: 50%;
-  color: #606266;
+  border-radius: 4px;
+  color: #9ca3af;
   transition: all 0.2s;
+  
+  &:hover { 
+    background: #f3f4f6;
+    color: #374151;
+  }
+  
+  &:active {
+    background: #e5e7eb;
+  }
 }
-.ldp-nav--double { width: 32px; gap: 0; }
-.ldp-nav--double ldesign-icon:first-child { margin-right: -2px; }
-.ldp-nav:hover { 
-  background: #f5f7fa; 
-  color: #409eff;
+
+.ldp-nav--double { 
+  width: 28px;
+  
+  ldesign-icon:first-child { 
+    margin-right: -4px; 
+  }
 }
 .ldp-head-text { 
   flex: 0; 
   text-align: center; 
   font-weight: 500;
   font-size: 15px;
-  color: #303133;
+  color: #111827;
   border: none;
-  background: none;
+  background: transparent;
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
   transition: all 0.2s;
-  white-space: nowrap; /* 如 9月 不换行 */
-}
-.ldp-head-text:hover { 
-  color: #409eff; 
-  background: #ecf5ff;
+  white-space: nowrap;
+  
+  &:hover { 
+    background: #f3f4f6;
+  }
 }
 
-/* 年份面板 */
-.ldp-year { width: 260px; }
+/* 年份面板 - 简洁设计 */
+.ldp-year { 
+  width: 350px;
+  padding: 16px;
+  background: #ffffff;
+}
+
 .ldp-year-grid { 
   display: grid; 
   grid-template-columns: repeat(3, 1fr); 
-  gap: 12px; 
-  padding: 12px;
-}
-.ldp-year-item { 
-  height: 48px; 
-  border: none; 
-  background: none; 
-  color: #606266; 
-  border-radius: 8px; 
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-.ldp-year-item:hover:not(.disabled) { 
-  background: #ecf5ff; 
-  color: #409eff; 
-}
-.ldp-year-item.current { 
-  color: #409eff; 
-  font-weight: 500; 
-}
-.ldp-year-item.selected { 
-  background: #409eff; 
-  color: #fff; 
-  font-weight: 500;
-}
-.ldp-year-item.selected:hover {
-  background: #66b1ff;
-}
-.ldp-year-item.disabled { 
-  color: #c0c4cc; 
-  cursor: not-allowed; 
-  background: #f5f7fa; 
+  gap: 10px;
+  padding: 10px 0;
 }
 
-/* 月份面板 */
-.ldp-month { width: 260px; }
+.ldp-year-item { 
+  height: 48px; 
+  border: none;
+  background: transparent;
+  color: #1a1a1a;
+  border-radius: 8px; 
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: normal;
+  transition: all 0.15s;
+  
+  &:hover:not(.disabled) { 
+    background: #f5f5f5;
+  }
+  
+  &.current { 
+    color: #2b7ff6;
+    font-weight: 500;
+  }
+  
+  &.selected { 
+    background: #2b7ff6;
+    color: #ffffff;
+    font-weight: 500;
+    
+    &:hover {
+      background: #1e6fd9;
+    }
+  }
+  
+  &.disabled { 
+    color: #cccccc;
+    cursor: not-allowed;
+  }
+}
+
+/* 月份面板 - 简洁设计 */
+.ldp-month { 
+  width: 350px;
+  padding: 16px;
+  background: #ffffff;
+}
+
 .ldp-month-grid { 
   display: grid; 
   grid-template-columns: repeat(3, 1fr); 
-  gap: 12px; 
-  padding: 12px;
+  gap: 10px;
+  padding: 10px 0;
 }
+
 .ldp-month-item { 
-  height: 56px; 
-  border: none; 
-  background: none; 
-  color: #606266; 
+  height: 54px; 
+  border: none;
+  background: transparent;
+  color: #1a1a1a;
   border-radius: 8px; 
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-.ldp-month-item:hover:not(.disabled) { 
-  background: #ecf5ff; 
-  color: #409eff; 
-}
-.ldp-month-item.current { 
-  color: #409eff; 
-  font-weight: 500; 
-}
-.ldp-month-item.selected { 
-  background: #409eff; 
-  color: #fff;
-  font-weight: 500;
-}
-.ldp-month-item.selected:hover {
-  background: #66b1ff;
-}
-.ldp-month-item.disabled { 
-  color: #c0c4cc; 
-  cursor: not-allowed; 
-  background: #f5f7fa; 
+  font-size: 15px;
+  font-weight: normal;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover:not(.disabled) { 
+    background: #f5f5f5;
+  }
+  
+  &.current { 
+    color: #2b7ff6;
+    font-weight: 500;
+  }
+  
+  &.selected { 
+    background: #2b7ff6;
+    color: #ffffff;
+    font-weight: 500;
+    
+    &:hover {
+      background: #1e6fd9;
+    }
+  }
+  
+  &.disabled { 
+    color: #cccccc;
+    cursor: not-allowed;
+  }
 }
 
 /* 季度面板 */
-.ldp-quarter { width: 260px; }
+.ldp-quarter { 
+  width: 350px;
+  padding: 16px;
+  background: #ffffff;
+}
+
 .ldp-quarter-grid { 
   display: grid; 
-  grid-template-columns: repeat(4, 1fr); 
-  gap: 12px; 
-  padding: 12px;
+  grid-template-columns: repeat(2, 1fr); 
+  gap: 10px; 
+  padding: 10px 0;
 }
+
 .ldp-quarter-item { 
-  padding: 12px 0;
+  padding: 16px 0;
   border: none; 
-  background: #fafafa; 
-  color: #606266; 
+  background: transparent; 
+  color: #1a1a1a; 
   border-radius: 8px; 
   cursor: pointer;
   text-align: center;
-  transition: all 0.2s;
+  transition: all 0.15s;
+  
+  &:hover:not(.disabled) { 
+    background: #f5f5f5; 
+  }
+  
+  &.current { 
+    color: #2b7ff6;
+    font-weight: 500;
+  }
+  
+  &.selected { 
+    background: #2b7ff6; 
+    color: #ffffff;
+    font-weight: 500;
+    
+    &:hover {
+      background: #1e6fd9;
+    }
+  }
 }
-.ldp-quarter-item:hover:not(.disabled) { 
-  background: #ecf5ff; 
-  color: #409eff; 
-}
-.ldp-quarter-item.current { 
-  color: #409eff; 
-  border: 1px solid #c6e2ff;
-  background: #fff;
-}
-.ldp-quarter-item.selected { 
-  background: #409eff; 
-  color: #fff; 
-}
-.ldp-quarter-item.selected:hover {
-  background: #66b1ff;
-}
+
 .ldp-quarter-label { 
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
 }
-/* 取消月份范围展示，保持与截图一致 */
-.ldp-quarter-months { display: none; }
 
-/* 日期面板 */
-.ldp-date { 
-  width: 260px;
+.ldp-quarter-months { 
+  display: none; 
 }
+
+/* 日期面板 - 简洁设计 */
+.ldp-date { 
+  width: 320px;
+  padding: 0;
+  background: #ffffff;
+}
+
 .ldp-weekdays { 
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  padding: 4px 6px;
-  border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
+  padding: 8px 16px;
   gap: 0;
+  border-bottom: 1px solid #f0f0f0;
 }
+
 .ldp-weekday { 
-  height: 24px; 
+  height: 32px; 
   display: flex; 
   align-items: center; 
   justify-content: center; 
-  color: #909399; 
-  font-size: 11px; 
-  font-weight: 400;
+  color: #6b7280;
+  font-size: 13px; 
+  font-weight: 500;
   white-space: nowrap;
 }
 .ldp-weeknum-header {
@@ -250,16 +337,17 @@
 .ldp-days { 
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  padding: 6px;
-  gap: 1px;
+  padding: 12px 16px;
+  gap: 4px;
+  row-gap: 4px;
 }
 
 /* With week numbers */
 .ldp-date--with-weeks .ldp-weekdays {
-  grid-template-columns: 28px repeat(7, 1fr);
+  grid-template-columns: 32px repeat(7, 1fr);
 }
 .ldp-date--with-weeks .ldp-days {
-  grid-template-columns: 28px repeat(7, 1fr);
+  grid-template-columns: 32px repeat(7, 1fr);
 }
 
 /* Week mode: 每周一行，父容器不使用 grid，避免内容折行 */
@@ -268,57 +356,67 @@
 }
 
 .ldp-day { 
-  height: 28px; 
-  width: 28px;
+  height: 36px; 
+  width: 36px;
   display: flex; 
   align-items: center; 
   justify-content: center; 
   border: none; 
-  background: none; 
-  color: #303133; 
-  font-size: 12px; 
-  border-radius: 50%; 
+  background: transparent; 
+  color: #1f2937; 
+  font-size: 14px; 
+  font-weight: 400;
+  border-radius: 6px; 
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
   position: relative;
-}
-.ldp-day:hover:not(.disabled):not(.other) { 
-  color: #409eff; 
-  background: #ecf5ff; 
-}
-.ldp-day.other { 
-  color: #dcdfe6; 
-}
-.ldp-day.today { 
-  color: #409eff; 
-  font-weight: 700;
-}
-.ldp-day.today::after { 
-  content: ''; 
-  position: absolute; 
-  bottom: 4px; 
-  left: 50%; 
-  transform: translateX(-50%); 
-  width: 4px; 
-  height: 4px; 
-  border-radius: 50%;
-  background: #409eff;
-}
-.ldp-day.selected { 
-  color: #fff; 
-  background: #409eff; 
-  font-weight: 700;
-}
-.ldp-day.selected:hover {
-  background: #66b1ff;
-}
-.ldp-day.disabled { 
-  color: #c0c4cc; 
-  cursor: not-allowed; 
-  background: transparent;
-}
-.ldp-day.disabled:hover {
-  background: transparent;
+  
+  &:hover:not(.disabled):not(.other) { 
+    background: #f3f4f6;
+  }
+  
+  &.other { 
+    color: #d1d5db;
+  }
+  
+  &.today { 
+    color: #3b82f6;
+    font-weight: 500;
+    position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      background: #3b82f6;
+      border-radius: 50%;
+    }
+  }
+  
+  &.selected { 
+    background: #3b82f6;
+    color: #ffffff;
+    font-weight: 500;
+    border-radius: 6px;
+    
+    &:hover {
+      background: #2563eb;
+    }
+  }
+  
+  &.disabled { 
+    color: #d1d5db;
+    cursor: not-allowed;
+    background: transparent;
+    
+    &:hover {
+      background: transparent;
+    }
+  }
 }
 
 /* 周选择模式 */
@@ -386,18 +484,22 @@
   gap: 4px;
   padding: 4px 8px;
   border-radius: 4px;
-  background: none;
+  background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
-  color: #303133;
-  transition: all 0.2s;
-  white-space: nowrap; /* 如 2025年 ▼ 不换行 */
-}
-.ldp-year-selector:hover {
-  background: #ecf5ff;
-  color: #409eff;
+  color: #333333;
+  transition: all 0.15s;
+  white-space: nowrap;
+  
+  &:hover {
+    background: #f5f5f5;
+  }
+  
+  &--open {
+    background: #f5f5f5;
+  }
 }
 
 /* Datetime 布局 */
@@ -491,8 +593,9 @@
 .ldp-year-selector-icon {
   font-size: 10px;
   opacity: 0.6;
-  transition: transform 0.2s;
+  transition: transform 0.15s;
 }
+
 .ldp-year-selector--open .ldp-year-selector-icon {
   transform: rotate(180deg);
 }
@@ -500,46 +603,83 @@
 /* 年份快速选择面板 */
 .ldp-year-quick {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 50%;
   transform: translateX(-50%);
-  margin-top: 4px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  z-index: 10;
-  padding: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  padding: 4px;
   min-width: 200px;
   max-height: 240px;
   overflow-y: auto;
+  
+  /* 自定义滚动条 */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #d9d9d9;
+    border-radius: 3px;
+    
+    &:hover {
+      background: #b3b3b3;
+    }
+  }
 }
 
 /* 底部（今天） */
-.ldp-footer { border-top: 1px solid var(--ldesign-border-color, #e5e7eb); padding: 8px 12px; text-align: center; }
-.ldp-today { border: none; background: none; cursor: pointer; color: #409eff; font-size: 14px; padding: 4px 8px; border-radius: 4px; }
-.ldp-today:hover { background: #ecf5ff; }
+.ldp-footer { 
+  border-top: 1px solid #f0f0f0; 
+  padding: 12px; 
+  text-align: center; 
+}
+
+.ldp-today { 
+  border: none; 
+  background: transparent; 
+  cursor: pointer; 
+  color: #1890ff; 
+  font-size: 14px; 
+  padding: 6px 16px; 
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-weight: normal;
+  
+  &:hover { 
+    background: #e6f7ff; 
+  }
+}
 .ldp-year-quick-item {
   display: block;
   width: 100%;
   padding: 8px 12px;
   border: none;
-  background: none;
+  background: transparent;
   text-align: left;
   cursor: pointer;
   font-size: 14px;
-  color: #606266;
+  color: #333333;
   border-radius: 4px;
   transition: all 0.15s;
-}
-.ldp-year-quick-item:hover {
-  background: #f5f7fa;
-  color: #409eff;
-}
-.ldp-year-quick-item.selected {
-  color: #409eff;
-  font-weight: 500;
-  background: #ecf5ff;
+  
+  &:hover {
+    background: #f5f5f5;
+  }
+  
+  &.selected {
+    color: #2b7ff6;
+    font-weight: 500;
+    background: #e6f2ff;
+  }
 }
 .ldp-header--with-year {
   position: relative;

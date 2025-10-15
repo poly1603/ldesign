@@ -21,6 +21,7 @@ export const QUARTER_NAMES = ['Q1', 'Q2', 'Q3', 'Q4'];
 
 // 星期名称
 export const WEEKDAY_NAMES = ['日', '一', '二', '三', '四', '五', '六'];
+export const WEEKDAY_NAMES_FULL = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
 /**
  * 格式化日期

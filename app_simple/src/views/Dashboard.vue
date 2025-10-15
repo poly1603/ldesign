@@ -314,9 +314,9 @@ onBeforeUnmount(() => {
 
 /* 卡片样式 */
 .dashboard-card {
-  background: var(--color-background);
+  background: var(--color-bg-container);
   border-radius: 12px;
-  box-shadow: 0 5px 20px var(--color-border-light);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 
@@ -329,7 +329,7 @@ onBeforeUnmount(() => {
   color: var(--color-text-primary);
   margin: 0;
   padding: 20px;
-  background: var(--color-background-secondary);
+  background: var(--color-bg-container-secondary);
   border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
@@ -400,7 +400,7 @@ onBeforeUnmount(() => {
   padding: 10px;
   margin-bottom: 10px;
   background: var(--color-primary-default);
-  color: var(--color-gray-50);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -459,7 +459,7 @@ onBeforeUnmount(() => {
 .route-table th {
   text-align: left;
   padding: 10px;
-  background: var(--color-background-secondary);
+  background: var(--color-bg-container-secondary);
   border-bottom: 2px solid var(--color-border);
 }
 
@@ -476,13 +476,13 @@ onBeforeUnmount(() => {
 }
 
 .badge-success {
-  background: var(--color-success-100);
-  color: var(--color-success-active);
+  background: var(--color-success-lighter);
+  color: var(--color-success-default);
 }
 
 .badge-warning {
-  background: var(--color-warning-100);
-  color: var(--color-warning-active);
+  background: var(--color-warning-lighter);
+  color: var(--color-warning-default);
 }
 
 .link-button {
@@ -497,7 +497,7 @@ onBeforeUnmount(() => {
 
 .link-button:hover {
   background: var(--color-primary-default);
-  color: var(--color-gray-50);
+  color: var(--color-text-inverse);
 }
 
 .empty-state {

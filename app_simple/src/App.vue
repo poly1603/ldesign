@@ -4,55 +4,55 @@
     <template v-if="$route.meta?.layout === 'blank'">
       <RouterView transition="fade" />
     </template>
-    
+
     <!-- 默认布局 -->
     <template v-else>
       <!-- 导航栏 -->
       <nav class="navbar">
-      <div class="nav-brand">
-        <Rocket class="logo" />
-        <span class="brand-text">{{ t('app.name') }}</span>
-      </div>
-
-      <div class="nav-links">
-        <RouterLink to="/" class="nav-link" :class="{ active: $route.path === '/' }">
-          {{ t('nav.home') }}
-        </RouterLink>
-        <RouterLink to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
-          {{ t('nav.about') }}
-        </RouterLink>
-        <RouterLink v-if="isLoggedIn" to="/dashboard" class="nav-link"
-          :class="{ active: $route.path === '/dashboard' }">
-          {{ t('nav.dashboard') }}
-        </RouterLink>
-
-        <div class="nav-spacer"></div>
-
-        <!-- 语言切换器 -->
-        <LanguageSwitcher class="nav-locale" />
-
-        <!-- 主题模式切换器（亮/暗/跟随系统） -->
-        <VueThemeModeSwitcher class="nav-theme-mode" />
-        
-        <!-- 主题颜色切换器 -->
-        <VueThemePicker class="nav-theme" />
-
-        <button v-if="!isLoggedIn" @click="goToLogin" class="nav-button login">
-          {{ t('nav.login') }}
-        </button>
-        <div v-else class="user-menu">
-          <span class="username">{{ username }}</span>
-          <button @click="logout" class="nav-button logout">
-            {{ t('nav.logout') }}
-          </button>
+        <div class="nav-brand">
+          <Rocket class="logo" />
+          <span class="brand-text">{{ t('app.name') }}</span>
         </div>
-      </div>
-    </nav>
 
-    <!-- 路由视图 -->
-    <main class="main-content">
-      <RouterView transition="fade" />
-    </main>
+        <div class="nav-links">
+          <RouterLink to="/" class="nav-link" :class="{ active: $route.path === '/' }">
+            {{ t('nav.home') }}
+          </RouterLink>
+          <RouterLink to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
+            {{ t('nav.about') }}
+          </RouterLink>
+          <RouterLink v-if="isLoggedIn" to="/dashboard" class="nav-link"
+            :class="{ active: $route.path === '/dashboard' }">
+            {{ t('nav.dashboard') }}
+          </RouterLink>
+
+          <div class="nav-spacer"></div>
+
+          <!-- 语言切换器 -->
+          <LanguageSwitcher class="nav-locale" />
+
+          <!-- 主题模式切换器（亮/暗/跟随系统） -->
+          <VueThemeModeSwitcher class="nav-theme-mode" />
+
+          <!-- 主题颜色切换器 -->
+          <VueThemePicker class="nav-theme" />
+
+          <button v-if="!isLoggedIn" @click="goToLogin" class="nav-button login">
+            {{ t('nav.login') }}
+          </button>
+          <div v-else class="user-menu">
+            <span class="username">{{ username }}</span>
+            <button @click="logout" class="nav-button logout">
+              {{ t('nav.logout') }}
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 路由视图 -->
+      <main class="main-content">
+        <RouterView transition="fade" />
+      </main>
 
       <!-- 页脚 -->
       <footer class="footer">
@@ -103,19 +103,25 @@ onMounted(() => {
 </script>
 
 <style scoped>
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
 .app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: var(--color-background);
+  background: var(--color-bg-page);
 }
 
 /* 导航栏样式 */
 .navbar {
-  background: var(--color-background-secondary);
+  background: var(--color-bg-container);
   backdrop-filter: blur(10px);
-  box-shadow: 0 2px 10px var(--color-border-light);
+  box-shadow: var(--shadow-sm);
   padding: 0 20px;
   display: flex;
   align-items: center;
@@ -162,13 +168,13 @@ onMounted(() => {
 }
 
 .nav-link:hover {
-  background: var(--color-primary-100);
+  background: var(--color-primary-lighter);
   color: var(--color-primary-default);
 }
 
 .nav-link.active {
   background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-active) 100%);
-  color: var(--color-gray-50);
+  color: var(--color-text-inverse);
 }
 
 .nav-spacer {
@@ -187,17 +193,17 @@ onMounted(() => {
 
 .nav-button.login {
   background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-active) 100%);
-  color: var(--color-gray-50);
+  color: var(--color-text-inverse);
 }
 
 .nav-button.login:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px var(--color-primary-300);
+  box-shadow: var(--shadow-lg);
 }
 
 .nav-button.logout {
   background: var(--color-danger-default);
-  color: white;
+  color: var(--color-text-inverse);
   margin-left: 10px;
 }
 
@@ -215,7 +221,7 @@ onMounted(() => {
   font-weight: 600;
   margin-right: 10px;
   padding: 8px 12px;
-  background: var(--color-primary-100);
+  background: var(--color-primary-lighter);
   border-radius: 6px;
 }
 
@@ -236,8 +242,8 @@ onMounted(() => {
 
 /* 页脚 */
 .footer {
-  background: var(--color-gray-800);
-  color: var(--color-gray-50);
+  background: var(--color-bg-container-tertiary);
+  color: var(--color-text-inverse);
   text-align: center;
   padding: 20px;
   font-size: 14px;

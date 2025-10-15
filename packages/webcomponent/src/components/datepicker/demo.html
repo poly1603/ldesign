@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign Date Picker - 简洁大方设计</title>
+    <script type="module" src="../../../dist/webcomponent/webcomponent.esm.js"></script>
+    <link rel="stylesheet" href="../../../dist/webcomponent/webcomponent.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            color: #333333;
+            font-size: 42px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            color: #666666;
+            font-size: 18px;
+            font-weight: 400;
+        }
+
+        .demo-section {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #333333;
+            margin-bottom: 24px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 20px;
+            background: #2b7ff6;
+            border-radius: 1px;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .demo-item {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .demo-label {
+            font-size: 13px;
+            color: #666666;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            color: #333333;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e5e5e5;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .code-block code {
+            color: #666666;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 6px;
+            border: 1px solid #e5e5e5;
+            font-size: 14px;
+            color: #333333;
+        }
+
+        .feature-icon {
+            width: 20px;
+            height: 20px;
+            background: #2b7ff6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .demo-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .result-display {
+            padding: 10px 14px;
+            background: #f0f7ff;
+            border-radius: 6px;
+            border: 1px solid #d4e5ff;
+            font-size: 14px;
+            color: #333333;
+            min-width: 180px;
+        }
+
+        .result-display span {
+            color: #2b7ff6;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LDesign Date Picker</h1>
+            <p class="subtitle">简洁大方的日期选择器组件</p>
+        </div>
+
+        <!-- 基础用法 -->
+        <div class="demo-section">
+            <h2 class="section-title">基础用法</h2>
+            <div class="demo-grid">
+                <div class="demo-item">
+                    <label class="demo-label">基础选择器</label>
+                    <ldesign-date-picker 
+                        id="basic-picker"
+                        placeholder="选择日期">
+                    </ldesign-date-picker>
+                </div>
+                
+                <div class="demo-item">
+                    <label class="demo-label">带默认值</label>
+                    <ldesign-date-picker 
+                        default-value="2025-01-15"
+                        placeholder="选择日期">
+                    </ldesign-date-picker>
+                </div>
+
+                <div class="demo-item">
+                    <label class="demo-label">禁用状态</label>
+                    <ldesign-date-picker 
+                        disabled
+                        default-value="2025-01-15"
+                        placeholder="选择日期">
+                    </ldesign-date-picker>
+                </div>
+            </div>
+
+            <div class="demo-row" style="margin-top: 20px;">
+                <div class="result-display">
+                    选中的日期: <span id="selected-date">未选择</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 不同模式 -->
+        <div class="demo-section">
+            <h2 class="section-title">选择模式</h2>
+            <div class="demo-grid">
+                <div class="demo-item">
+                    <label class="demo-label">日期选择</label>
+                    <ldesign-date-picker 
+                        mode="date"
+                        placeholder="选择日期">
+                    </ldesign-date-picker>
+                </div>
+
+                <div class="demo-item">
+                    <label class="demo-label">周选择</label>
+                    <ldesign-date-picker 
+                        mode="week"
+                        placeholder="选择周"
+                        show-week-numbers="true">
+                    </ldesign-date-picker>
+                </div>
+
+                <div class="demo-item">
+                    <label class="demo-label">月份选择</label>
+                    <ldesign-date-picker 
+                        mode="month"
+                        placeholder="选择月份">
+                    </ldesign-date-picker>
+                </div>
+
+                <div class="demo-item">
+                    <label class="demo-label">季度选择</label>
+                    <ldesign-date-picker 
+                        mode="quarter"
+                        placeholder="选择季度">
+                    </ldesign-date-picker>
+                </div>
+
+                <div class="demo-item">
+                    <label class="demo-label">年份选择</label>
+                    <ldesign-date-picker 
+                        mode="year"
+                        placeholder="选择年份">
+                    </ldesign-date-picker>
+                </div>
+            </div>
+        </div>
+
+        <!-- 高级配置 -->
+        <div class="demo-section">
+            <h2 class="section-title">高级配置</h2>
+            <div class="demo-grid">
+                <div class="demo-item">
+                    <label class="demo-label">自定义格式</label>
+                    <ldesign-date-picker 
+                        format="YYYY年MM月DD日"
+                        placeholder="YYYY年MM月DD日">
+                    </ldesign-date-picker>
+                </div>
+
+                <div class="demo-item">
+                    <label class="demo-label">显示周数</label>
+                    <ldesign-date-picker 
+                        show-week-numbers="true"
+                        placeholder="选择日期">
+                    </ldesign-date-picker>
+                </div>
+
+                <div class="demo-item">
+                    <label class="demo-label">限制日期范围</label>
+                    <ldesign-date-picker 
+                        id="range-picker"
+                        min-date="2025-01-01"
+                        max-date="2025-12-31"
+                        placeholder="2025年内">
+                    </ldesign-date-picker>
+                </div>
+
+                <div class="demo-item">
+                    <label class="demo-label">周一作为第一天</label>
+                    <ldesign-date-picker 
+                        first-day-of-week="1"
+                        placeholder="选择日期">
+                    </ldesign-date-picker>
+                </div>
+            </div>
+        </div>
+
+        <!-- 特性展示 -->
+        <div class="demo-section">
+            <h2 class="section-title">组件特性</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>简洁大方设计</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>流畅交互体验</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>清晰的视觉层次</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>多种选择模式</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>自定义日期格式</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>日期范围限制</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>国际化支持</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>响应式设计</span>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <code>// 基础用法</code><br>
+                &lt;ldesign-date-picker placeholder="选择日期"&gt;&lt;/ldesign-date-picker&gt;<br><br>
+                
+                <code>// 配置选项</code><br>
+                &lt;ldesign-date-picker<br>
+                &nbsp;&nbsp;mode="week"<br>
+                &nbsp;&nbsp;format="YYYY-MM-DD"<br>
+                &nbsp;&nbsp;show-week-numbers="true"<br>
+                &nbsp;&nbsp;min-date="2025-01-01"<br>
+                &nbsp;&nbsp;max-date="2025-12-31"&gt;<br>
+                &lt;/ldesign-date-picker&gt;
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 监听基础选择器的变化
+        document.getElementById('basic-picker').addEventListener('ldesignChange', (e) => {
+            document.getElementById('selected-date').textContent = e.detail || '未选择';
+        });
+
+        // 禁用特定日期示例
+        document.getElementById('range-picker').disabledDate = (date) => {
+            // 禁用周末
+            return date.getDay() === 0 || date.getDay() === 6;
+        };
+
+        // 添加页面加载动画
+        window.addEventListener('load', () => {
+            const sections = document.querySelectorAll('.demo-section');
+            sections.forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    section.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

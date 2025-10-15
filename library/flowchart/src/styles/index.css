@@ -1,182 +1,210 @@
 /**
- * ApprovalFlow 样式
- */
+    *    审批流程图编辑器样式
+    */
 
-.approval-flow-container {
-  position: relative;
-  overflow: hidden;
-  background-color: #f5f5f5;
+/*    导入工具栏样式    */
+@import    './toolbar.css';
+.approval-flow-editor-wrapper    {
+        position:    relative;
+        width:    100%;
+        height:    100%;
 }
 
-.approval-flow-container * {
-  box-sizing: border-box;
+.approval-flow-editor-container    {
+        width:    100%;
+        height:    100%;
+        background-color:    #f5f5f5;
 }
 
-/* LogicFlow 样式覆盖 */
-.lf-canvas-overlay {
-  pointer-events: none;
+.approval-flow-editor-minimap    {
+        position:    absolute;
+        right:    20px;
+        bottom:    20px;
+        border:    1px    solid    #e0e0e0;
+        border-radius:    4px;
+        background-color:    #fff;
+        box-shadow:    0    2px    8px    rgba(0,    0,    0,    0.1);
+        overflow:    hidden;
 }
 
-/* 节点文本样式 */
-.lf-node-text {
-  user-select: none;
+/**
+    *    X6    样式覆盖
+    */
+.x6-graph    {
+        width:    100%;
+        height:    100%;
 }
 
-/* 边文本样式 */
-.lf-edge-text {
-  user-select: none;
-  font-size: 12px;
-  fill: #666;
+.x6-graph-svg    {
+        background-color:    transparent;
 }
 
-/* 选中样式 */
-.lf-node-selected .lf-node-outline,
-.lf-edge-selected .lf-edge-outline {
-  stroke: #1890ff;
-  stroke-width: 2;
+/**
+    *    节点选中样式
+    */
+.x6-widget-selection    .x6-widget-selection-box    {
+        border:    2px    solid    #5f95ff;
+        border-radius:    4px;
 }
 
-/* 悬停样式 */
-.lf-node:hover {
-  cursor: pointer;
+.x6-widget-selection    .x6-widget-selection-box:hover    {
+        border-color:    #4080ff;
 }
 
-/* 锚点样式 */
-.lf-anchor {
-  r: 4;
-  fill: #1890ff;
-  stroke: #ffffff;
-  stroke-width: 2;
+/**
+    *    连接桩样式
+    */
+.x6-port-body    {
+        cursor:    crosshair;
 }
 
-.lf-anchor:hover {
-  r: 5;
-  fill: #40a9ff;
+.x6-port-body:hover    {
+        fill:    #5f95ff    !important;
+        stroke:    #5f95ff    !important;
 }
 
-/* 网格样式 */
-.lf-grid {
-  background-size: 20px 20px;
-  background-image:
-    linear-gradient(to right, #e0e0e0 1px, transparent 1px),
-    linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
+/**
+    *    边样式
+    */
+.x6-edge    {
+        cursor:    pointer;
 }
 
-/* 小地图样式 */
-.lf-mini-map {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.x6-edge:hover    .x6-edge-path    {
+        stroke:    #5f95ff;
+        stroke-width:    3;
 }
 
-/* 工具栏样式 */
-.lf-toolbar {
-  position: absolute;
-  display: flex;
-  gap: 8px;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.x6-edge-selected    .x6-edge-path    {
+        stroke:    #5f95ff;
+        stroke-width:    3;
 }
 
-.lf-toolbar.top {
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+/**
+    *    网格样式
+    */
+.x6-graph-grid    {
+        z-index:    0;
 }
 
-.lf-toolbar.left {
-  top: 50%;
-  left: 10px;
-  transform: translateY(-50%);
-  flex-direction: column;
+/**
+    *    对齐线样式
+    */
+.x6-widget-snapline    {
+        z-index:    10;
 }
 
-.lf-toolbar.right {
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  flex-direction: column;
+.x6-widget-snapline-vertical,
+.x6-widget-snapline-horizontal    {
+        stroke:    #5f95ff;
+        stroke-width:    1;
+        stroke-dasharray:    5,    5;
 }
 
-.lf-toolbar.bottom {
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+/**
+    *    工具栏样式
+    */
+.x6-widget-transform    {
+        margin:    -2px    0    0    -2px;
+        padding:    0;
+        border:    1px    solid    #5f95ff;
+        border-radius:    2px;
 }
 
-.lf-toolbar-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  background: #ffffff;
-  cursor: pointer;
-  transition: all 0.3s;
+.x6-widget-transform    >    div    {
+        border:    1px    solid    #5f95ff;
 }
 
-.lf-toolbar-button:hover {
-  border-color: #1890ff;
-  color: #1890ff;
-  background: #e6f7ff;
+.x6-widget-transform    >    div:hover    {
+        background-color:    #5f95ff;
 }
 
-.lf-toolbar-button:active {
-  background: #bae7ff;
+/**
+    *    选择框样式
+    */
+.x6-rubberband    {
+        fill:    #5f95ff;
+        fill-opacity:    0.1;
+        stroke:    #5f95ff;
+        stroke-width:    1;
 }
 
-.lf-toolbar-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/**
+    *    小地图样式
+    */
+.x6-widget-minimap    {
+        border:    1px    solid    #e0e0e0;
+        background-color:    #fff;
 }
 
-/* 对齐线样式 */
-.lf-snapline {
-  stroke: #1890ff;
-  stroke-width: 1;
-  stroke-dasharray: 5, 5;
-  pointer-events: none;
+.x6-widget-minimap-viewport    {
+        border:    2px    solid    #5f95ff;
 }
 
-/* 只读模式样式 */
-.approval-flow-container.readonly {
-  background-color: #fafafa;
+/**
+    *    滚动条样式
+    */
+.x6-graph-scroller::-webkit-scrollbar    {
+        width:    8px;
+        height:    8px;
 }
 
-.approval-flow-container.readonly .lf-node,
-.approval-flow-container.readonly .lf-edge {
-  cursor: default !important;
+.x6-graph-scroller::-webkit-scrollbar-thumb    {
+        background-color:    #bfbfbf;
+        border-radius:    4px;
 }
 
-/* 动画 */
-@keyframes node-pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
+.x6-graph-scroller::-webkit-scrollbar-thumb:hover    {
+        background-color:    #999;
 }
 
-.lf-node-animating {
-  animation: node-pulse 1s ease-in-out infinite;
+.x6-graph-scroller::-webkit-scrollbar-track    {
+        background-color:    #f5f5f5;
 }
 
-/* 响应式 */
-@media (max-width: 768px) {
-  .lf-toolbar {
-    padding: 4px;
-    gap: 4px;
-  }
+/**
+    *    节点标签样式
+    */
+.x6-node-label    {
+        user-select:    none;
+        pointer-events:    none;
+}
 
-  .lf-toolbar-button {
-    width: 28px;
-    height: 28px;
-  }
+/**
+    *    边标签样式
+    */
+.x6-edge-label    {
+        user-select:    none;
+        pointer-events:    none;
+}
+
+/**
+    *    只读模式样式
+    */
+.approval-flow-editor-wrapper.readonly    .x6-node,
+.approval-flow-editor-wrapper.readonly    .x6-edge    {
+        pointer-events:    none;
+}
+
+/**
+    *    加载动画
+    */
+@keyframes    pulse    {
+        0%    {
+                opacity:    1;
+        }
+        50%    {
+                opacity:    0.5;
+        }
+        100%    {
+                opacity:    1;
+        }
+}
+
+.approval-flow-editor-loading    {
+        position:    absolute;
+        top:    50%;
+        left:    50%;
+        transform:    translate(-50%,    -50%);
+        animation:    pulse    1.5s    ease-in-out    infinite;
 }

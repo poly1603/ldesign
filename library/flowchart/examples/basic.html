@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>基础示例 - 审批流程图编辑器</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f5;
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .header .back-btn {
+      display: inline-block;
+      color: white;
+      text-decoration: none;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 10px;
+      transition: all 0.3s;
+    }
+
+    .header .back-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .container {
+      display: flex;
+      height: calc(100vh - 100px);
+      gap: 0;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .node-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #f5f5f5;
+      border-radius: 6px;
+      cursor: move;
+      text-align: center;
+      font-size: 14px;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+      user-select: none;
+    }
+
+    .node-item:hover {
+      transform: translateX(4px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .node-item.start { background: #f6ffed; border-color: #52c41a; color: #52c41a; }
+    .node-item.approval { background: #eff4ff; border-color: #5f95ff; color: #5f95ff; }
+    .node-item.condition { background: #fff7e6; border-color: #ffa940; color: #ffa940; }
+    .node-item.cc { background: #e6fffb; border-color: #13c2c2; color: #13c2c2; }
+    .node-item.parallel { background: #f9f0ff; border-color: #722ed1; color: #722ed1; }
+    .node-item.end { background: #fff1f0; border-color: #ff4d4f; color: #ff4d4f; }
+
+    .main {
+      flex: 1;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 移除自定义工具栏样式，使用内置工具栏 */
+
+    .editor-wrapper {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #editor {
+      width: 100%;
+      height: 100%;
+    }
+
+    .tips {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.75);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      line-height: 1.6;
+      max-width: 300px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .tips h4 {
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .tips p {
+      margin: 4px 0;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="./" class="back-btn">← 返回</a>
+    <h1>📝 基础示例</h1>
+    <p>从左侧拖拽节点到画布，点击连接桩创建连线</p>
+  </div>
+
+  <div class="container">
+    <div class="main">
+      <div class="editor-wrapper">
+        <div id="editor"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { ApprovalFlowEditor } from '@ldesign/flowchart'
+
+    // 创建编辑器实例（启用内置工具栏）
+    const editor = new ApprovalFlowEditor({
+      container: '#editor',
+      toolbar: true,  // 启用内置工具栏
+      data: {
+        nodes: [
+          { id: 'start-1', type: 'start', x: 400, y: 100, label: '开始' },
+          { id: 'approval-1', type: 'approval', x: 350, y: 220, label: '部门审批' },
+          { id: 'condition-1', type: 'condition', x: 360, y: 340, label: '金额判断' },
+          { id: 'approval-2', type: 'approval', x: 250, y: 460, label: '总监审批' },
+          { id: 'approval-3', type: 'approval', x: 450, y: 460, label: '经理审批' },
+          { id: 'cc-1', type: 'cc', x: 350, y: 580, label: '财务抄送' },
+          { id: 'end-1', type: 'end', x: 400, y: 700, label: '结束' }
+        ],
+        edges: [
+          { source: 'start-1', target: 'approval-1' },
+          { source: 'approval-1', target: 'condition-1' },
+          { source: 'condition-1', target: 'approval-2', label: '> 10000' },
+          { source: 'condition-1', target: 'approval-3', label: '<= 10000' },
+          { source: 'approval-2', target: 'cc-1' },
+          { source: 'approval-3', target: 'cc-1' },
+          { source: 'cc-1', target: 'end-1' }
+        ]
+      }
+    })
+  </script>
+</body>
+</html>

@@ -1,238 +1,212 @@
-# 快速开始指南
+#    快速开始指南
 
-这份指南将帮助你在 5 分钟内快速上手 ApprovalFlow。
+##    🚀    5分钟上手
 
-## 1. 安装
+###    第一步:    安装依赖
+
+在项目根目录运行:
 
 ```bash
-npm install @ldesign/approval-flow @logicflow/core
+pnpm    install
 ```
 
-## 2. 引入样式
+###    第二步:    查看示例
 
-```js
-import '@logicflow/core/dist/style/index.css';
+启动开发服务器:
+
+```bash
+pnpm    dev
 ```
 
-## 3. 选择你的框架
+打开浏览器访问:    http://localhost:5173/examples/index.html
 
-### Vue 3
+###    第三步:    在你的项目中使用
+
+####    方式一:    Vue    组件(推荐)
 
 ```vue
 <template>
-  <div class="container">
-    <ApprovalFlow
-      ref="editorRef"
-      :data="flowData"
-      width="100%"
-      height="600px"
-      @node:click="handleNodeClick"
+    <ApprovalFlowEditor
+        :data="flowData"
+        :readonly="false"
+        @change="handleChange"
     />
-  </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import { ApprovalFlow } from '@ldesign/approval-flow/vue';
+<script    setup>
+import    {    ref    }    from    'vue'
+import    {    ApprovalFlowEditor    }    from    '@ldesign/flowchart'
+import    '@ldesign/flowchart/dist/index.css'
 
-const editorRef = ref();
+const    flowData    =    ref({
+    nodes:    [
+        {
+            id:    'start',
+            type:    'start',
+            x:    100,
+            y:    100,
+            label:    '开始'
+        }
+    ],
+    edges:    []
+})
 
-const flowData = ref({
-  nodes: [
-    { id: '1', type: 'start', name: '开始' },
-    { id: '2', type: 'approval', name: '审批', approvers: [{ id: '1', name: '张三' }] },
-    { id: '3', type: 'end', name: '结束' },
-  ],
-  edges: [
-    { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
-    { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
-  ],
-});
-
-const handleNodeClick = (node) => {
-  console.log('点击节点:', node);
-};
+const    handleChange    =    (data)    =>    {
+    console.log('数据变化:',    data)
+}
 </script>
-
-<style>
-.container {
-  width: 100%;
-  height: 600px;
-}
-</style>
 ```
 
-### React
-
-```tsx
-import { useRef } from 'react';
-import { ApprovalFlow } from '@ldesign/approval-flow/react';
-import '@logicflow/core/dist/style/index.css';
-
-function App() {
-  const editorRef = useRef();
-
-  const flowData = {
-    nodes: [
-      { id: '1', type: 'start', name: '开始' },
-      { id: '2', type: 'approval', name: '审批', approvers: [{ id: '1', name: '张三' }] },
-      { id: '3', type: 'end', name: '结束' },
-    ],
-    edges: [
-      { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
-      { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
-    ],
-  };
-
-  return (
-    <div style={{ width: '100%', height: '600px' }}>
-      <ApprovalFlow
-        ref={editorRef}
-        data={flowData}
-        width="100%"
-        height="600px"
-        onNodeClick={(node) => console.log('点击节点:', node)}
-      />
-    </div>
-  );
-}
-
-export default App;
-```
-
-### 原生 JavaScript
+####    方式二:    原生    JavaScript
 
 ```html
-<!DOCTYPE html>
+<!DOCTYPE    html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>ApprovalFlow Demo</title>
-  <link rel="stylesheet" href="node_modules/@logicflow/core/dist/style/index.css">
-  <style>
-    #editor { width: 100%; height: 600px; }
-  </style>
+    <link    rel="stylesheet"    href="node_modules/@ldesign/flowchart/dist/index.css">
 </head>
 <body>
-  <div id="editor"></div>
+    <div    id="app"    style="width:    100%;    height:    600px;"></div>
 
-  <script type="module">
-    import { ApprovalFlowEditor } from '@ldesign/approval-flow';
+    <script    type="module">
+        import    {    ApprovalFlowEditor    }    from    '@ldesign/flowchart'
 
-    const editor = new ApprovalFlowEditor({
-      container: '#editor',
-      width: '100%',
-      height: '600px',
-    });
+        const    editor    =    new    ApprovalFlowEditor({
+            container:    '#app',
+            data:    {
+                nodes:    [
+                    {    id:    'start',    type:    'start',    x:    100,    y:    100,    label:    '开始'    }
+                ],
+                edges:    []
+            }
+        })
 
-    editor.setData({
-      nodes: [
-        { id: '1', type: 'start', name: '开始' },
-        { id: '2', type: 'approval', name: '审批', approvers: [{ id: '1', name: '张三' }] },
-        { id: '3', type: 'end', name: '结束' },
-      ],
-      edges: [
-        { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
-        { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
-      ],
-    });
-
-    editor.on('node:click', (node) => {
-      console.log('点击节点:', node);
-    });
-  </script>
+        editor.on('change',    (data)    =>    console.log(data))
+    </script>
 </body>
 </html>
 ```
 
-## 4. 常用操作
+##    📦    项目结构
 
-### 添加节点
-
-```js
-// 添加审批节点
-const nodeId = editor.addNode({
-  type: 'approval',
-  name: '部门审批',
-  approvers: [
-    { id: '1', name: '张三', role: '部门经理' }
-  ],
-});
+```
+flowchart/
+├──    src/                            #    源代码
+│      ├──    core/                        #    核心功能
+│      │      └──    ApprovalFlowEditor.ts        #    编辑器主类
+│      ├──    nodes/                      #    节点定义
+│      │      └──    index.ts                  #    节点注册
+│      ├──    types/                      #    类型定义
+│      │      └──    index.ts                  #    类型导出
+│      ├──    styles/                    #    样式文件
+│      │      └──    index.css                #    主样式
+│      ├──    vue.ts                      #    Vue组件
+│      └──    index.ts                    #    入口文件
+├──    examples/                      #    示例
+│      ├──    index.html                  #    原生JS示例
+│      └──    vue-demo.vue                #    Vue组件示例
+├──    package.json
+├──    tsconfig.json
+├──    vite.config.ts
+├──    README.md                        #    项目说明
+├──    USAGE.md                          #    使用文档
+└──    QUICK_START.md                    #    快速开始
 ```
 
-### 更新节点
+##    🎨    节点类型
 
-```js
-editor.updateNode(nodeId, {
-  name: '更新后的名称',
-  approvers: [
-    { id: '1', name: '张三' },
-    { id: '2', name: '李四' },
-  ],
-});
+|    节点类型    |    说明    |    颜色    |    形状    |
+|------------|--------|--------|--------|
+|    start          |    开始节点    |    绿色    |    圆形    |
+|    approval    |    审批节点    |    蓝色    |    矩形    |
+|    condition    |    条件节点    |    橙色    |    菱形    |
+|    cc                |    抄送节点    |    青色    |    矩形    |
+|    parallel    |    并行节点    |    紫色    |    菱形    |
+|    end              |    结束节点    |    红色    |    圆形    |
+
+##    ⌨️    键盘快捷键
+
+-    `Ctrl/Cmd    +    C`:    复制选中节点
+-    `Ctrl/Cmd    +    V`:    粘贴节点
+-    `Ctrl/Cmd    +    Z`:    撤销
+-    `Ctrl/Cmd    +    Shift    +    Z`:    重做
+-    `Delete`:    删除选中元素
+
+##    💡    常用功能
+
+###    添加节点
+
+```typescript
+editor.addNode({
+    id:    'node-1',
+    type:    'approval',
+    x:    200,
+    y:    200,
+    label:    '审批节点'
+})
 ```
 
-### 验证流程
+###    获取数据
 
-```js
-const result = editor.validate();
-if (result.valid) {
-  console.log('验证通过');
-} else {
-  console.log('验证失败:', result.errors);
-}
+```typescript
+const    data    =    editor.getData()
+console.log(data)
 ```
 
-### 获取数据
+###    导出图片
 
-```js
-const data = editor.getData();
-console.log('流程数据:', data);
+```typescript
+const    png    =    await    editor.toPNG()
+const    a    =    document.createElement('a')
+a.href    =    png
+a.download    =    'flowchart.png'
+a.click()
 ```
 
-### 导出流程
+###    撤销/重做
 
-```js
-// 导出为 JSON
-const json = await editor.export({ type: 'json' });
-
-// 导出为图片
-const png = await editor.export({
-  type: 'png',
-  filename: 'flowchart.png',
-});
+```typescript
+editor.undo()    //    撤销
+editor.redo()    //    重做
 ```
 
-## 5. 运行示例
+###    缩放
 
-### 运行 Vue 示例
-
-```bash
-cd examples/vue-demo
-npm install
-npm run dev
+```typescript
+editor.zoom(0.1)                            //    放大
+editor.zoom(-0.1)                          //    缩小
+editor.zoomToFit()                          //    适应画布
+editor.centerContent()                  //    居中
 ```
 
-访问 http://localhost:3000 查看示例。
+##    🔧    配置选项
 
-## 6. 查看文档
-
-```bash
-npm run docs:dev
+```typescript
+const    editor    =    new    ApprovalFlowEditor({
+    container:    '#app',                  //    容器(必填)
+    readonly:    false,                        //    是否只读
+    grid:    true,                                  //    显示网格
+    gridSize:    10,                              //    网格大小
+    minimap:    true,                            //    小地图
+    snapline:    true,                          //    对齐线
+    keyboard:    true,                          //    键盘快捷键
+    history:    true,                            //    撤销重做
+    clipboard:    true,                        //    剪贴板
+    selecting:    true,                        //    选择功能
+    width:    800,                                  //    画布宽度
+    height:    600                                  //    画布高度
+})
 ```
 
-访问 http://localhost:5173 查看完整文档。
+##    📚    更多文档
 
-## 下一步
+-    [完整    API    文档](./USAGE.md)
+-    [AntV    X6    官方文档](https://x6.antv.antgroup.com/)
 
-- 📖 查看[完整文档](./docs/index.md)
-- 🎯 了解[节点类型](./docs/guide/node-types.md)
-- ⚙️ 查看[配置选项](./docs/guide/configuration.md)
-- 🎨 学习[事件系统](./docs/guide/events.md)
-- 💡 浏览[API 文档](./docs/api/editor.md)
+##    💬    问题反馈
 
-## 需要帮助？
+如有问题,请提交    Issue。
 
-- 📋 [GitHub Issues](https://github.com/ldesign/approval-flow/issues)
-- 📧 Email: support@ldesign.com
-- 💬 [讨论区](https://github.com/ldesign/approval-flow/discussions)
+##    📄    许可证
+
+MIT    License

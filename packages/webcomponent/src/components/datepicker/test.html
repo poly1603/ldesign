@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date Picker 测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            padding: 50px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #1a1a1a;
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        .demo-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-left: 12px;
+            border-left: 3px solid #2b7ff6;
+        }
+
+        .demo-row {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .demo-item {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .demo-label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        /* 模拟组件样式 */
+        .date-picker-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .date-picker-input {
+            width: 240px;
+            height: 42px;
+            padding: 0 40px 0 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            color: #1a1a1a;
+            background: white;
+            outline: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .date-picker-input:hover {
+            border-color: #2b7ff6;
+        }
+
+        .date-picker-input:focus {
+            border-color: #2b7ff6;
+            box-shadow: 0 0 0 2px rgba(43, 127, 246, 0.1);
+        }
+
+        .date-picker-input::placeholder {
+            color: #999;
+        }
+
+        .date-picker-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            pointer-events: none;
+        }
+
+        .date-picker-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f0f0f0;
+            width: 350px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: all 0.2s;
+        }
+
+        .date-picker-panel.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .nav-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: #8a8a8a;
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .nav-btn:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .month-year {
+            font-size: 16px;
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            padding: 12px 16px 8px;
+            gap: 0;
+        }
+
+        .weekday {
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            padding: 0 16px 16px;
+            gap: 4px;
+            row-gap: 4px;
+        }
+
+        .day {
+            height: 42px;
+            width: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            color: #1a1a1a;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+
+        .day:hover {
+            background: #f8f9fa;
+        }
+
+        .day.other {
+            color: #d0d0d0;
+        }
+
+        .day.today {
+            color: #2b7ff6;
+            font-weight: 600;
+        }
+
+        .day.today::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            background: #2b7ff6;
+            border-radius: 50%;
+        }
+
+        .day.selected {
+            background: #2b7ff6;
+            color: white;
+            font-weight: 500;
+        }
+
+        .day.selected:hover {
+            background: #1e6fd9;
+        }
+
+        .panel-footer {
+            border-top: 1px solid #f5f5f5;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .today-btn {
+            border: none;
+            background: transparent;
+            color: #2b7ff6;
+            font-size: 15px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-weight: 500;
+        }
+
+        .today-btn:hover {
+            background: #f0f7ff;
+        }
+
+        .comparison {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        .comparison-item {
+            flex: 1;
+        }
+
+        .comparison-title {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            color: #2b7ff6;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Date Picker 优化设计</h1>
+        <p class="subtitle">简洁大方的日期选择器，提供更好的用户体验</p>
+
+        <div class="demo-section">
+            <h2 class="section-title">基础用法</h2>
+            <div class="demo-row">
+                <div class="demo-item">
+                    <label class="demo-label">默认状态</label>
+                    <div class="date-picker-wrapper">
+                        <input type="text" class="date-picker-input" placeholder="请选择日期" readonly onclick="togglePanel(this)">
+                        <span class="date-picker-icon">📅</span>
+                        <div class="date-picker-panel" id="panel1">
+                            <div class="panel-header">
+                                <button class="nav-btn">‹</button>
+                                <div class="month-year">2025年 10月</div>
+                                <button class="nav-btn">›</button>
+                            </div>
+                            <div class="weekdays">
+                                <div class="weekday">一</div>
+                                <div class="weekday">二</div>
+                                <div class="weekday">三</div>
+                                <div class="weekday">四</div>
+                                <div class="weekday">五</div>
+                                <div class="weekday">六</div>
+                                <div class="weekday">日</div>
+                            </div>
+                            <div class="days">
+                                <div class="day other">29</div>
+                                <div class="day other">30</div>
+                                <div class="day">1</div>
+                                <div class="day">2</div>
+                                <div class="day">3</div>
+                                <div class="day">4</div>
+                                <div class="day">5</div>
+                                <div class="day">6</div>
+                                <div class="day">7</div>
+                                <div class="day">8</div>
+                                <div class="day">9</div>
+                                <div class="day">10</div>
+                                <div class="day">11</div>
+                                <div class="day">12</div>
+                                <div class="day">13</div>
+                                <div class="day">14</div>
+                                <div class="day today selected">15</div>
+                                <div class="day">16</div>
+                                <div class="day">17</div>
+                                <div class="day">18</div>
+                                <div class="day">19</div>
+                                <div class="day">20</div>
+                                <div class="day">21</div>
+                                <div class="day">22</div>
+                                <div class="day">23</div>
+                                <div class="day">24</div>
+                                <div class="day">25</div>
+                                <div class="day">26</div>
+                                <div class="day">27</div>
+                                <div class="day">28</div>
+                                <div class="day">29</div>
+                                <div class="day">30</div>
+                                <div class="day">31</div>
+                                <div class="day other">1</div>
+                                <div class="day other">2</div>
+                            </div>
+                            <div class="panel-footer">
+                                <button class="today-btn">今天</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-item">
+                    <label class="demo-label">已选择日期</label>
+                    <div class="date-picker-wrapper">
+                        <input type="text" class="date-picker-input" value="2025-10-15" readonly>
+                        <span class="date-picker-icon">📅</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="section-title">设计改进对比</h2>
+            <div class="comparison">
+                <div class="comparison-item">
+                    <h3 class="comparison-title">之前的问题</h3>
+                    <ul class="feature-list">
+                        <li style="color: #999; text-decoration: line-through;">文字太小，阅读困难</li>
+                        <li style="color: #999; text-decoration: line-through;">间距过于紧凑</li>
+                        <li style="color: #999; text-decoration: line-through;">视觉层次不清晰</li>
+                        <li style="color: #999; text-decoration: line-through;">交互反馈不明显</li>
+                    </ul>
+                </div>
+                <div class="comparison-item">
+                    <h3 class="comparison-title">优化后的改进</h3>
+                    <ul class="feature-list">
+                        <li>字体大小增加到 16px，更易阅读</li>
+                        <li>日期格子增大到 42x42px</li>
+                        <li>增加适当的间距和留白</li>
+                        <li>清晰的 hover 和选中状态</li>
+                        <li>面板宽度增加到 350px</li>
+                        <li>添加"今天"快捷按钮</li>
+                        <li>优化的颜色对比度</li>
+                        <li>流畅的过渡动画</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="section-title">关键样式数值</h2>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 14px; line-height: 1.8;">
+                <div><strong>面板尺寸：</strong></div>
+                <div style="margin-left: 20px; color: #666;">
+                    width: 350px;<br>
+                    padding: 16px;<br>
+                    border-radius: 12px;
+                </div>
+                <div style="margin-top: 12px;"><strong>日期格子：</strong></div>
+                <div style="margin-left: 20px; color: #666;">
+                    width: 42px;<br>
+                    height: 42px;<br>
+                    font-size: 16px;<br>
+                    gap: 4px;
+                </div>
+                <div style="margin-top: 12px;"><strong>颜色方案：</strong></div>
+                <div style="margin-left: 20px; color: #666;">
+                    主色: #2b7ff6<br>
+                    文字: #1a1a1a<br>
+                    边框: #e0e0e0<br>
+                    背景: #ffffff
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePanel(input) {
+            const panel = input.nextElementSibling.nextElementSibling;
+            panel.classList.toggle('show');
+            
+            // 点击其他地方关闭
+            setTimeout(() => {
+                document.addEventListener('click', function closePanel(e) {
+                    if (!input.parentElement.contains(e.target)) {
+                        panel.classList.remove('show');
+                        document.removeEventListener('click', closePanel);
+                    }
+                });
+            }, 0);
+        }
+
+        // 模拟日期选择
+        document.querySelectorAll('.day:not(.other)').forEach(day => {
+            day.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // 移除其他选中
+                this.parentElement.querySelectorAll('.selected').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                // 选中当前
+                this.classList.add('selected');
+                // 更新输入框
+                const input = this.closest('.date-picker-wrapper').querySelector('input');
+                const month = this.closest('.date-picker-panel').querySelector('.month-year').textContent;
+                input.value = `${month} ${this.textContent}日`;
+                // 关闭面板
+                setTimeout(() => {
+                    this.closest('.date-picker-panel').classList.remove('show');
+                }, 200);
+            });
+        });
+
+        // 今天按钮
+        document.querySelectorAll('.today-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const today = new Date();
+                const input = this.closest('.date-picker-wrapper').querySelector('input');
+                input.value = today.toLocaleDateString('zh-CN');
+                this.closest('.date-picker-panel').classList.remove('show');
+            });
+        });
+    </script>
+</body>
+</html>

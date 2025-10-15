@@ -21,16 +21,16 @@ const loading = ref(false)
 
 async function handleSubmit() {
   if (!props.onLogin)
-return
+    return
 
   loading.value = true
   try {
     await props.onLogin(formData)
   }
- catch (error) {
+  catch (error) {
     console.error('Login failed:', error)
   }
- finally {
+  finally {
     loading.value = false
   }
 }
@@ -65,24 +65,12 @@ function handleForgotPassword() {
       <form class="login-form" @submit.prevent="handleSubmit">
         <div class="form-group">
           <label for="username">用户名 / 邮箱</label>
-          <input
-            id="username"
-            v-model="formData.username"
-            type="text"
-            placeholder="请输入用户名或邮箱"
-            required
-          >
+          <input id="username" v-model="formData.username" type="text" placeholder="请输入用户名或邮箱" required>
         </div>
 
         <div class="form-group">
           <label for="password">密码</label>
-          <input
-            id="password"
-            v-model="formData.password"
-            type="password"
-            placeholder="请输入密码"
-            required
-          >
+          <input id="password" v-model="formData.password" type="password" placeholder="请输入密码" required>
         </div>
 
         <div v-if="showRemember || showForgotPassword" class="form-options">

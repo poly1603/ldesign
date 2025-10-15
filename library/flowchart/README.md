@@ -1,154 +1,135 @@
-# @ldesign/approval-flow
+# @ldesign/flowchart
 
-> 基于 LogicFlow 的强大、灵活、易用的审批流程图编辑器
-
-[![NPM version](https://img.shields.io/npm/v/@ldesign/approval-flow.svg)](https://www.npmjs.com/package/@ldesign/approval-flow)
-[![License](https://img.shields.io/npm/l/@ldesign/approval-flow.svg)](https://github.com/ldesign/approval-flow/blob/main/LICENSE)
+一个基于 AntV X6 的强大审批流程图编辑器，支持流程图的编辑和预览功能。
 
 ## ✨ 特性
 
-- 🎨 **功能强大** - 支持开始、审批、条件、并行、抄送、结束等多种节点类型
-- ⚡ **配置丰富** - 提供丰富的配置选项，包括主题、工具栏、网格、缩放等
-- 🚀 **使用简单** - API 设计简洁直观，支持 Vue、React 等主流框架
-- 📱 **框架无关** - 核心库不依赖任何框架，可在任意 JavaScript 环境中使用
-- 🔧 **TypeScript** - 使用 TypeScript 编写，提供完整的类型定义
-- 📦 **体积小巧** - 基于 LogicFlow 核心，体积小巧，性能优异
+- 🚀 **高性能**: 基于 AntV X6，支持大规模节点渲染
+- 🎨 **易于定制**: 丰富的配置选项，支持自定义节点和样式
+- 💪 **功能强大**: 内置多种审批节点类型（开始、审批、条件、抄送、并行、结束）
+- 📦 **开箱即用**: 提供 Vue 组件封装，简单易用
+- 🔧 **插件系统**: 支持撤销重做、小地图、对齐线等丰富插件
+- 📱 **响应式**: 支持缩放、拖拽、框选等交互操作
+
+## 🚀 快速开始
+
+### 查看示例
+
+```bash
+# 安装根目录依赖
+pnpm install
+
+# 启动示例项目
+pnpm dev
+```
+
+然后访问 `http://localhost:5173` 即可查看三个示例：
+- 📝 **基础示例** - 原生JS实现，适合快速上手
+- 💚 **Vue组件** - Vue 3组件封装，适合Vue项目集成
+- ⚡ **高级功能** - 完整功能演示，包含小地图、导入导出等
 
 ## 📦 安装
 
 ```bash
-# npm
-npm install @ldesign/approval-flow @logicflow/core
-
-# yarn
-yarn add @ldesign/approval-flow @logicflow/core
-
-# pnpm
-pnpm add @ldesign/approval-flow @logicflow/core
+npm install @ldesign/flowchart
+# or
+pnpm add @ldesign/flowchart
+# or
+yarn add @ldesign/flowchart
 ```
 
 ## 🔨 使用
 
-### Vue 3
+### Vue 组件方式
 
 ```vue
 <template>
-  <ApprovalFlow
-    :data="flowData"
-    @node:click="handleNodeClick"
-  />
+    <ApprovalFlowEditor
+        :data="flowData"
+        :readonly="false"
+        @change="handleChange"
+        @node-click="handleNodeClick"
+    />
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import { ApprovalFlow } from '@ldesign/approval-flow/vue';
-import '@logicflow/core/dist/style/index.css';
+<script setup lang="ts">
+import { ref } from 'vue'
+import { ApprovalFlowEditor } from '@ldesign/flowchart'
+import '@ldesign/flowchart/dist/index.css'
 
 const flowData = ref({
-  nodes: [
-    { id: '1', type: 'start', name: '开始' },
-    { id: '2', type: 'approval', name: '审批' },
-    { id: '3', type: 'end', name: '结束' },
-  ],
-  edges: [
-    { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
-    { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
-  ],
-});
+    nodes: [
+        { id: 'start', type: 'start', x: 100, y: 100, label: '开始' }
+    ],
+    edges: []
+})
+
+const handleChange = (data) => {
+    console.log('流程图数据变化:', data)
+}
 
 const handleNodeClick = (node) => {
-  console.log('节点点击:', node);
-};
+    console.log('节点点击:', node)
+}
 </script>
 ```
 
-### React
+### 原生 JS 方式
 
-```tsx
-import { useRef } from 'react';
-import { ApprovalFlow } from '@ldesign/approval-flow/react';
-import '@logicflow/core/dist/style/index.css';
-
-function App() {
-  const editorRef = useRef();
-
-  const flowData = {
-    nodes: [
-      { id: '1', type: 'start', name: '开始' },
-      { id: '2', type: 'approval', name: '审批' },
-      { id: '3', type: 'end', name: '结束' },
-    ],
-    edges: [
-      { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
-      { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
-    ],
-  };
-
-  return (
-    <ApprovalFlow
-      ref={editorRef}
-      data={flowData}
-      onNodeClick={(node) => console.log('节点点击:', node)}
-    />
-  );
-}
-```
-
-### 原生 JavaScript
-
-```js
-import { ApprovalFlowEditor } from '@ldesign/approval-flow';
-import '@logicflow/core/dist/style/index.css';
+```typescript
+import { ApprovalFlowEditor } from '@ldesign/flowchart'
+import '@ldesign/flowchart/dist/index.css'
 
 const editor = new ApprovalFlowEditor({
-  container: '#editor',
-  width: '100%',
-  height: '600px',
-});
+    container: document.getElementById('app'),
+    readonly: false,
+    grid: true,
+    minimap: true
+})
 
+// 设置数据
 editor.setData({
-  nodes: [
-    { id: '1', type: 'start', name: '开始' },
-    { id: '2', type: 'approval', name: '审批' },
-    { id: '3', type: 'end', name: '结束' },
-  ],
-  edges: [
-    { id: 'e1', sourceNodeId: '1', targetNodeId: '2' },
-    { id: 'e2', sourceNodeId: '2', targetNodeId: '3' },
-  ],
-});
+    nodes: [
+        { id: 'start', type: 'start', x: 100, y: 100, label: '开始' }
+    ],
+    edges: []
+})
 
-editor.on('node:click', (node) => {
-  console.log('节点点击:', node);
-});
+// 监听事件
+editor.on('change', (data) => {
+    console.log('数据变化:', data)
+})
 ```
 
-## 📚 文档
+## 📖 文档
 
-完整文档请访问：[文档站点](https://docs.ldesign.com/approval-flow)
-
-- [快速开始](https://docs.ldesign.com/approval-flow/guide/getting-started)
-- [节点类型](https://docs.ldesign.com/approval-flow/guide/node-types)
-- [配置选项](https://docs.ldesign.com/approval-flow/guide/configuration)
-- [API 参考](https://docs.ldesign.com/approval-flow/api/editor)
+- [快速开始](./QUICK_START.md) - 5分钟上手指南
+- [使用指南](./USAGE.md) - 完整API文档
+- [示例项目](./examples/README.md) - 丰富的示例代码
 
 ## 🎯 节点类型
 
-- **开始节点** - 流程的起点
-- **审批节点** - 支持单人审批、会签、或签、顺序审批
-- **条件节点** - 根据条件进行分支判断
-- **并行节点** - 支持多个分支并行执行
-- **抄送节点** - 通知相关人员
-- **结束节点** - 流程的终点
+- **start**: 开始节点（绿色圆形）
+- **approval**: 审批节点（蓝色矩形）
+- **condition**: 条件节点（橙色菱形）
+- **cc**: 抄送节点（青色矩形）
+- **parallel**: 并行节点（紫色菱形）
+- **end**: 结束节点（红色圆形）
 
-## 🤝 贡献
+## 🔑 核心功能
 
-欢迎贡献代码、报告问题或提出建议！
+- ✅ 拖拽添加节点
+- ✅ 节点连接和编辑
+- ✅ 撤销/重做
+- ✅ 复制/粘贴
+- ✅ 键盘快捷键
+- ✅ 框选和多选
+- ✅ 对齐线辅助
+- ✅ 小地图导航
+- ✅ 导出JSON/PNG/SVG
+- ✅ 只读模式
+- ✅ 响应式布局
 
-## 📄 许可证
+## 📄 License
 
-[MIT](./LICENSE)
-
-## 🙏 致谢
-
-本项目基于 [LogicFlow](https://site.logic-flow.cn/) 构建，感谢 LogicFlow 团队的优秀工作。
+MIT

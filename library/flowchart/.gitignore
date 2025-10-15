@@ -1,7 +1,35 @@
-node_modules
-dist
+#  Dependencies
+node_modules/
+.pnpm-store/
+
+#  Build  outputs
+dist/
+*.tsbuildinfo
+
+#  IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+#  OS
 .DS_Store
+Thumbs.db
+
+#  Logs
 *.log
-coverage
-.vitepress/cache
-.vitepress/dist
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+#  Environment
+.env
+.env.local
+.env.*.local
+
+#  Temporary  files
+.tmp/
+temp/
+*.tmp

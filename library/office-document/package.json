@@ -32,6 +32,7 @@
  "license": "MIT",
  "dependencies": {
   "docx-preview": "^0.3.7",
+  "exceljs": "^4.4.0",
   "jszip": "^3.10.1",
   "x-data-spreadsheet": "^1.1.9",
   "xlsx": "^0.18.5"

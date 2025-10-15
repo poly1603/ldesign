@@ -1,31 +1,22 @@
-# 源代码
+#  Source  files
 src/
-__tests__/
 examples/
 docs/
 
-# 配置文件
-.vitepress/
-*.config.ts
-*.config.js
-tsconfig*.json
-vitest.config.ts
-vite.config.ts
-
-# 开发文件
+#  Config  files
 .gitignore
+.npmignore
+tsconfig.json
+vite.config.ts
 .editorconfig
-.prettierrc
-.eslintrc
 
-# 文档
-*.md
-!README.md
-!LICENSE
-!CHANGELOG.md
-
-# 其他
-node_modules/
-coverage/
-.DS_Store
+#  Development
 *.log
+.DS_Store
+.vscode/
+.idea/
+
+#  Tests
+__tests__/
+*.test.ts
+*.spec.ts

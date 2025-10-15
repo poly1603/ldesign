@@ -4,7 +4,7 @@
  * Color theme plugin for Vue 3 applications
  */
 
-import type { App, Plugin } from 'vue'
+import type { App } from 'vue'
 import { ThemeManager, type ThemeOptions, type ThemeState } from '../themes/themeManager'
 import { presetThemes, type PresetTheme } from '../themes/presets'
 
@@ -206,7 +206,7 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
     storageType: options.storageType || 'localStorage' as const,
     storage: options.storage,
     autoApply: options.autoApply !== false,
-    defaultTheme: options.defaultTheme,
+    defaultTheme: options.defaultTheme || 'blue',
     includeSemantics: options.includeSemantics !== false,
     includeGrays: options.includeGrays !== false,
     presets: options.presets || 'all' as const,

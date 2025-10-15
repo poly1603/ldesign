@@ -110,9 +110,9 @@ onMounted(() => {
 .hero {
   text-align: center;
   padding: 60px 20px;
-  background: var(--color-background);
+  background: var(--color-bg-container);
   border-radius: 16px;
-  box-shadow: 0 10px 30px var(--color-border-light);
+  box-shadow: var(--shadow-md);
   margin-bottom: 40px;
 }
 
@@ -154,23 +154,23 @@ onMounted(() => {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-active) 100%);
-  color: var(--color-gray-50);
+  color: var(--color-text-inverse);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px var(--color-primary-300);
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-secondary {
-  background: var(--color-background);
+  background: var(--color-bg-container);
   color: var(--color-primary-default);
   border: 2px solid var(--color-primary-default);
 }
 
 .btn-secondary:hover {
   background: var(--color-primary-default);
-  color: var(--color-gray-50);
+  color: var(--color-text-inverse);
 }
 
 /* Features display */
@@ -192,17 +192,17 @@ onMounted(() => {
 }
 
 .feature-card {
-  background: var(--color-background);
+  background: var(--color-bg-container);
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 5px 20px var(--color-border-light);
+  box-shadow: var(--shadow-sm);
   text-align: center;
   transition: all 0.3s;
 }
 
 .feature-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 40px var(--color-gray-300);
+  box-shadow: var(--shadow-lg);
 }
 
 .feature-icon {
@@ -226,12 +226,12 @@ onMounted(() => {
 
 /* 统计数据 */
 .stats {
-  background: var(--color-background);
+  background: var(--color-bg-container);
   border-radius: 12px;
   padding: 40px;
   display: flex;
   justify-content: space-around;
-  box-shadow: 0 5px 20px var(--color-border-light);
+  box-shadow: var(--shadow-sm);
   flex-wrap: wrap;
   gap: 30px;
 }

@@ -11,6 +11,7 @@ export default defineConfig({
       '@ldesign/router': resolve(__dirname, '../packages/router/src'),
       '@ldesign/i18n': resolve(__dirname, '../packages/i18n/src'),
       '@ldesign/color': resolve(__dirname, '../packages/color/src'),
+      '@ldesign/template': resolve(__dirname, '../packages/template/src'),
     }
   },
   server: {

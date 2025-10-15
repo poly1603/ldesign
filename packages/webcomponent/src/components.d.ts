@@ -4432,6 +4432,16 @@ export namespace Components {
          */
         "circleSteps"?: number;
         /**
+          * 仪表盘变体（仅dashboard类型）：standard | bottom | left | right | fan
+          * @default 'standard'
+         */
+        "dashboardVariant": 'standard' | 'bottom' | 'left' | 'right' | 'fan';
+        /**
+          * 3D效果（仅line类型）
+          * @default false
+         */
+        "effect3d": boolean;
+        /**
           * 文本格式化，使用 {percent} 占位符，例如："{percent} / 100"
           * @default '{percent}%'
          */
@@ -4459,6 +4469,10 @@ export namespace Components {
           * 环形渐变（可选，仅 circle/dashboard）：起止色
          */
         "gradientFrom"?: string;
+        /**
+          * 渐变分段（创建分段渐变效果）
+         */
+        "gradientSegments"?: Array<{offset: number; color: string}>;
         "gradientTo"?: string;
         /**
           * 不确定状态（显示循环动画，忽略 percent）
@@ -4470,6 +4484,14 @@ export namespace Components {
           * @default 'right'
          */
         "infoPosition": 'right' | 'left' | 'inside' | 'bottom';
+        /**
+          * 多层进度（用于显示多个数据）
+         */
+        "layers"?: Array<{percent: number; color: string; label?: string}>;
+        /**
+          * 动态标记点
+         */
+        "markers"?: Array<{position: number; color?: string; label?: string}>;
         /**
           * 百分比 0-100
           * @default 0
@@ -4547,6 +4569,11 @@ export namespace Components {
          */
         "successPercent"?: number;
         /**
+          * 视觉主题：default | neon | gradient3d | candy | water | glass | metallic
+          * @default 'default'
+         */
+        "theme": 'default' | 'neon' | 'gradient3d' | 'candy' | 'water' | 'glass' | 'metallic';
+        /**
           * 未完成轨道颜色
          */
         "trailColor"?: string;
@@ -4555,6 +4582,11 @@ export namespace Components {
           * @default 'line'
          */
         "type": 'line' | 'circle' | 'dashboard' | 'steps' | 'semicircle';
+        /**
+          * 波浪动画（仅line类型）
+          * @default false
+         */
+        "wave": boolean;
         /**
           * 外径宽度（仅 circle/dashboard），单位 px
           * @default 120
@@ -12377,6 +12409,16 @@ declare namespace LocalJSX {
          */
         "circleSteps"?: number;
         /**
+          * 仪表盘变体（仅dashboard类型）：standard | bottom | left | right | fan
+          * @default 'standard'
+         */
+        "dashboardVariant"?: 'standard' | 'bottom' | 'left' | 'right' | 'fan';
+        /**
+          * 3D效果（仅line类型）
+          * @default false
+         */
+        "effect3d"?: boolean;
+        /**
           * 文本格式化，使用 {percent} 占位符，例如："{percent} / 100"
           * @default '{percent}%'
          */
@@ -12404,6 +12446,10 @@ declare namespace LocalJSX {
           * 环形渐变（可选，仅 circle/dashboard）：起止色
          */
         "gradientFrom"?: string;
+        /**
+          * 渐变分段（创建分段渐变效果）
+         */
+        "gradientSegments"?: Array<{offset: number; color: string}>;
         "gradientTo"?: string;
         /**
           * 不确定状态（显示循环动画，忽略 percent）
@@ -12415,6 +12461,14 @@ declare namespace LocalJSX {
           * @default 'right'
          */
         "infoPosition"?: 'right' | 'left' | 'inside' | 'bottom';
+        /**
+          * 多层进度（用于显示多个数据）
+         */
+        "layers"?: Array<{percent: number; color: string; label?: string}>;
+        /**
+          * 动态标记点
+         */
+        "markers"?: Array<{position: number; color?: string; label?: string}>;
         /**
           * 进度完成时触发
          */
@@ -12500,6 +12554,11 @@ declare namespace LocalJSX {
          */
         "successPercent"?: number;
         /**
+          * 视觉主题：default | neon | gradient3d | candy | water | glass | metallic
+          * @default 'default'
+         */
+        "theme"?: 'default' | 'neon' | 'gradient3d' | 'candy' | 'water' | 'glass' | 'metallic';
+        /**
           * 未完成轨道颜色
          */
         "trailColor"?: string;
@@ -12508,6 +12567,11 @@ declare namespace LocalJSX {
           * @default 'line'
          */
         "type"?: 'line' | 'circle' | 'dashboard' | 'steps' | 'semicircle';
+        /**
+          * 波浪动画（仅line类型）
+          * @default false
+         */
+        "wave"?: boolean;
         /**
           * 外径宽度（仅 circle/dashboard），单位 px
           * @default 120

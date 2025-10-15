@@ -107,6 +107,7 @@ export {
   // Components
   TemplateRenderer,
   TemplateSelector,
+  EnhancedTemplateSwitcher,
 
   // Composables
   useDevice,

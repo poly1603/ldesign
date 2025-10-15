@@ -142,6 +142,15 @@ export class LdesignDatePicker {
     this.viewYear = year;
     this.yearSelectorOpen = false;
   };
+  
+  private selectToday = () => {
+    const today = new Date();
+    this.viewYear = today.getFullYear();
+    this.viewMonth = today.getMonth();
+    this.selected = today;
+    this.commitValue(today);
+    this.close();
+  };
 
   private renderYearPanel() {
     const years = generateYearList(this.viewYear, this.selected?.getFullYear() || null, this.parsedMin, this.parsedMax);
@@ -345,6 +354,9 @@ export class LdesignDatePicker {
               </button>
             ]))
           )}
+        </div>
+        <div class="ldp-footer">
+          <button class="ldp-today" onClick={this.selectToday} type="button">今天</button>
         </div>
       </div>
     );

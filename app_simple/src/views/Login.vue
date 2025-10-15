@@ -1,110 +1,128 @@
 <template>
-  <div class="login-container">
-    <div class="login-card">
-      <div class="login-header">
-        <h1 class="login-title">{{ t('login.title') }}</h1>
-        <p class="login-subtitle">{{ t('login.subtitle') }}</p>
-      </div>
-      
-      <form @submit.prevent="handleLogin" class="login-form">
-        <div class="form-group">
-          <label for="username" class="form-label">{{ t('login.username') }}</label>
-          <input
-            id="username"
-            v-model="username"
-            type="text"
-            class="form-input"
-            :placeholder="t('login.usernamePlaceholder')"
-            required
-          />
-        </div>
-        
-        <div class="form-group">
-          <label for="password" class="form-label">{{ t('login.password') }}</label>
-          <input
-            id="password"
-            v-model="password"
-            type="password"
-            class="form-input"
-            :placeholder="t('login.passwordPlaceholder')"
-            required
-          />
-        </div>
-        
-        <div class="form-group checkbox-group">
-          <label class="checkbox-label">
-            <input
-              v-model="rememberMe"
-              type="checkbox"
-              class="checkbox-input"
-            />
-            <span>{{ t('login.rememberMe') }}</span>
-          </label>
-        </div>
-        
-        <div v-if="error" class="error-message">
-          {{ error }}
-        </div>
-        
-        <button type="submit" class="submit-button" :disabled="loading">
-          {{ loading ? t('login.submitting') : t('login.submit') }}
-        </button>
-      </form>
-      
-      <div class="login-footer">
-        <p class="hint">{{ t('login.hint') || '使用 admin/admin 登录' }}</p>
-        <RouterLink to="/" class="back-link">{{ t('common.back') }}</RouterLink>
-      </div>
-    </div>
-  </div>
+  <TemplateRenderer 
+    category="login" 
+    :template-name="currentTemplate || undefined" 
+    :responsive="true"
+    :props="templateProps" 
+    @template-loaded="handleTemplateLoaded"
+  >
+    <template #switcher>
+      <EnhancedTemplateSwitcher 
+        category="login" 
+        :current-template="currentTemplate" 
+        :config="switcherConfig"
+        @change="handleTemplateChange" 
+        @device-change="handleDeviceChange" 
+      />
+    </template>
+  </TemplateRenderer>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import type { SwitcherConfig } from '@ldesign/template'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from '@ldesign/router'
 import { useI18n } from '@/i18n'
 import { auth } from '@/composables/useAuth'
+import { EnhancedTemplateSwitcher, TemplateRenderer } from '@ldesign/template'
+
+// 导入模板样式
+import '@ldesign/template/es/index.css'
+import '@ldesign/template/es/templates/login/desktop/default/index.vue.css'
+import '@ldesign/template/es/templates/login/desktop/split/index.vue.css'
+import '@ldesign/template/es/templates/login/mobile/default/index.vue.css'
+import '@ldesign/template/es/templates/login/mobile/card/index.vue.css'
+import '@ldesign/template/es/templates/login/tablet/simple/index.vue.css'
+import '@ldesign/template/es/templates/login/tablet/landscape/index.vue.css'
+import '@ldesign/template/es/vue/components/EnhancedTemplateSwitcher.vue.css'
+import '@ldesign/template/es/vue/components/TemplateRenderer.vue.css'
 
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
 
-// 表单数据
-const username = ref('')
-const password = ref('')
-const rememberMe = ref(false)
-const loading = auth.isLoading
-const error = ref('')
+// 当前模板名称 - 留空让TemplateRenderer根据设备自动选择
+const currentTemplate = ref<string>('')
 
-// 处理登录
-const handleLogin = async () => {
-  error.value = ''
-  
-  // 使用认证模块登录
-  const result = await auth.login({
-    username: username.value,
-    password: password.value
-  })
-  
-  if (result.success) {
-    if (rememberMe.value) {
-      // 如果选择记住我，可以设置更长的过期时间
-      localStorage.setItem('rememberMe', 'true')
-    }
-    
-    // 触发成功提示
-    console.log('登录成功！')
-    
-    // 获取重定向地址，如果没有就跳转到首页
-    const redirect = (route.query?.redirect as string) || '/'
-    
-    // 使用 replace 而不是 push，避免历史记录问题
-    await router.replace(redirect)
-  } else {
-    // 登录失败
-    error.value = result.error || t('login.errors.invalid')
+// 切换器配置
+const switcherConfig = computed<SwitcherConfig>(() => ({
+  position: 'top-right',
+  style: 'floating',
+  selectorType: 'dropdown', // 可以改为 'buttons' 或 'cards'
+  collapsible: false,
+  showDevice: true,
+  showLabel: true,
+  showInfo: true, // 显示作者和版本信息
+  animation: 'fade',
+  animationDuration: 300,
+  sortBy: 'default',
+  sortOrder: 'asc',
+}))
+
+// 处理模板切换
+function handleTemplateChange(templateName: string) {
+  console.log('[Login] 切换模板到:', templateName)
+  currentTemplate.value = templateName
+}
+
+// 处理设备变化
+function handleDeviceChange(device: string) {
+  console.log('[Login] 检测到设备变化:', device)
+  // 设备变化时重置模板，让TemplateRenderer自动选择新设备的默认模板
+  currentTemplate.value = ''
+}
+
+// 处理模板加载完成
+function handleTemplateLoaded(info: { name: string; device: string }) {
+  console.log('[Login] 模板已加载:', info.name, '(设备:', info.device + ')')
+  // 更新当前模板名称
+  if (currentTemplate.value !== info.name) {
+    currentTemplate.value = info.name
   }
 }
+
+
+// 登录处理函数
+const error = ref('')
+const handleLogin = async (data: { username: string; password: string; remember?: boolean }) => {
+  error.value = ''
+
+  // 使用认证模块登录
+  const result = await auth.login({
+    username: data.username,
+    password: data.password
+  })
+
+  if (result.success) {
+    if (data.remember) {
+      localStorage.setItem('rememberMe', 'true')
+    }
+
+    console.log('登录成功！')
+
+    // 获取重定向地址
+    const redirect = (route.query?.redirect as string) || '/'
+    await router.replace(redirect)
+  } else {
+    error.value = result.error || t('login.errors.invalid')
+    throw new Error(error.value)
+  }
+}
+
+// 模板属性
+const templateProps = computed(() => ({
+  title: t('login.title'),
+  subtitle: t('login.subtitle'),
+  onLogin: handleLogin,
+  onRegister: () => {
+    console.log('跳转到注册页')
+    // router.push('/register')
+  },
+  onForgotPassword: () => {
+    console.log('跳转到忘记密码页')
+    // router.push('/forgot-password')
+  },
+}))
 
 // 组件挂载时检查是否已登录
 onMounted(() => {
@@ -117,147 +135,169 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.login-container {
-  min-height: calc(100vh - 140px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.login-card {
-  background: var(--color-background);
-  border-radius: 16px;
-  box-shadow: 0 20px 60px var(--color-gray-300);
+.login-page {
   width: 100%;
-  max-width: 400px;
+  min-height: 100vh;
+  position: relative;
   overflow: hidden;
 }
 
-.login-header {
-  background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-active) 100%);
-  color: var(--color-gray-50);
-  padding: 30px;
-  text-align: center;
+.template-container {
+  width: 100%;
+  min-height: 100vh;
 }
 
-.login-title {
-  font-size: 32px;
-  margin: 0 0 10px 0;
+/* 模板切换器容器 */
+.template-switcher-wrapper {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.login-subtitle {
+.device-info {
+  margin-bottom: 10px;
   font-size: 14px;
-  opacity: 0.9;
-  margin: 0;
+  font-weight: 600;
+  color: #667eea;
 }
 
-.login-form {
-  padding: 30px;
+/* 模板切换器 */
+.template-switcher {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: var(--color-bg-container);
+  backdrop-filter: blur(10px);
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 180px;
 }
 
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--color-text-primary);
-  font-size: 14px;
+.switcher-header {
+  font-size: 13px;
+  color: var(--color-text-secondary);
   font-weight: 600;
 }
 
-.form-input {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid var(--color-border);
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.3s;
-  box-sizing: border-box;
+.device-label {
+  color: var(--color-primary-default);
 }
 
-.form-input:focus {
+.switcher-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.switcher-controls label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.template-select {
+  padding: 6px 10px;
+  border: 2px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg-container);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s;
+  flex: 1;
+}
+
+.template-select:hover {
+  border-color: var(--color-primary-default);
+}
+
+.template-select:focus {
   outline: none;
   border-color: var(--color-primary-default);
-  box-shadow: 0 0 0 3px var(--color-primary-100);
+  box-shadow: var(--shadow-outline);
 }
 
-.checkbox-group {
-  display: flex;
-  align-items: center;
+/* 淡入淡出动画 */
+.template-fade-enter-active,
+.template-fade-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  color: var(--color-text-primary);
-  font-size: 14px;
+.template-fade-enter-from,
+.template-fade-leave-to {
+  opacity: 0;
 }
 
-.checkbox-input {
-  margin-right: 8px;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
+/* 滑动动画 */
+.template-slide-enter-active,
+.template-slide-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.error-message {
-  background: var(--color-danger-100);
-  color: var(--color-danger-active);
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  font-size: 14px;
+.template-slide-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.template-slide-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+/* 缩放动画 */
+.template-scale-enter-active,
+.template-scale-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.template-scale-enter-from,
+.template-scale-leave-to {
+  transform: scale(0.95);
+  opacity: 0;
+}
+
+/* 确保模板能正确渲染 */
+:deep(.template-loading),
+:deep(.template-error) {
+  padding: 20px;
   text-align: center;
-}
-
-.submit-button {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-active) 100%);
-  color: var(--color-gray-50);
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.submit-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px var(--color-primary-300);
-}
-
-.submit-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.login-footer {
-  padding: 20px 30px;
-  background: var(--color-background-secondary);
-  text-align: center;
-}
-
-.hint {
   color: var(--color-text-secondary);
-  font-size: 13px;
-  margin: 0 0 10px 0;
 }
 
-.back-link {
-  color: var(--color-primary-default);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-  transition: color 0.3s;
+:deep(.template-error) {
+  color: var(--color-danger-default);
 }
 
-.back-link:hover {
-  color: var(--color-primary-active);
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .template-controls {
+    top: 10px;
+    right: 10px;
+    padding: 10px;
+    min-width: 150px;
+  }
+
+  .device-info,
+  .template-selector-wrapper {
+    font-size: 12px;
+  }
+
+  .debug-panel {
+    bottom: 10px;
+    left: 10px;
+    padding: 12px;
+    max-width: 200px;
+  }
 }
 </style>

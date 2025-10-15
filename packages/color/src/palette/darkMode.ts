@@ -74,20 +74,21 @@ export function generateTailwindDarkScale(baseColor: string): Record<string, str
   const color = new Color(baseColor);
   const hsl = color.toHSL();
   
-  // Dark mode lightness values (inverted and adjusted from light mode)
+  // Dark mode lightness values (properly inverted from light mode)
+  // In dark mode: lower shades should be darker, higher shades should be lighter
   const darkLightness: Record<string, number> = {
-    '50': 8,    // Very dark (was very light in light mode)
-    '100': 12,
-    '200': 18,
-    '300': 25,
-    '400': 35,
-    '500': 45,  // Mid-tone, slightly darker than light mode's 50%
-    '600': 55,
-    '700': 65,
-    '800': 75,
-    '900': 85,
-    '950': 90,
-    '1000': 94  // Very light (was very dark in light mode)
+    '50': 90,   // Very light (was very light 98% in light mode, now used for highlights)
+    '100': 85,  // Light
+    '200': 75,  // 
+    '300': 65,  // 
+    '400': 55,  // 
+    '500': 45,  // Mid-tone, suitable for primary actions
+    '600': 35,  // 
+    '700': 25,  // 
+    '800': 18,  // 
+    '900': 12,  // Dark
+    '950': 8,   // Very dark
+    '1000': 4   // Near black (was very dark in light mode)
   };
   
   const palette: Record<string, string> = {};
@@ -127,21 +128,24 @@ export function generateTailwindDarkScale(baseColor: string): Record<string, str
  * Pure grayscale optimized for dark backgrounds
  */
 export function generateTailwindDarkGrayScale(): Record<string, string> {
+  // In dark mode, grays should be inverted:
+  // - Lower numbers (50-200) should be light for text/highlights
+  // - Higher numbers (800-1000) should be dark for backgrounds
   const darkGrays: Record<string, number> = {
-    '50': 7,     // Near black
-    '100': 10,
-    '150': 12,
-    '200': 16,
-    '300': 22,
-    '400': 32,
-    '500': 45,
-    '600': 58,
-    '700': 70,
-    '800': 80,
-    '850': 85,
-    '900': 90,
-    '950': 94,
-    '1000': 97   // Near white
+    '50': 97,    // Near white (for primary text)
+    '100': 94,   // Very light gray
+    '150': 90,   // 
+    '200': 85,   // Light gray (for secondary text)
+    '300': 70,   // 
+    '400': 58,   // Medium gray (for tertiary text)
+    '500': 45,   // Mid gray
+    '600': 32,   // 
+    '700': 22,   // Dark gray (for borders)
+    '800': 16,   // Very dark gray (for elevated surfaces)
+    '850': 12,   // 
+    '900': 10,   // Near black (for containers)
+    '950': 7,    // 
+    '1000': 4    // Pure black (for page background)
   };
   
   const palette: Record<string, string> = {};

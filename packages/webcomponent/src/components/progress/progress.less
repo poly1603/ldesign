@@ -328,4 +328,357 @@
         outline-offset:  2px;
         border-radius:  4px;
     }
+
+    /*  波浪动画效果  */
+    &--wave  {
+        .ldesign-progress__wave  {
+            position:  absolute;
+            top:  0;
+            left:  -100%;
+            width:  200%;
+            height:  100%;
+            background:  linear-gradient(
+                90deg,  
+                transparent,  
+                rgba(255,  255,  255,  0.3)  20%,  
+                rgba(255,  255,  255,  0.5)  50%,  
+                rgba(255,  255,  255,  0.3)  80%,  
+                transparent
+            );
+            animation:  ldesign-progress-wave  3s  ease-in-out  infinite;
+        }
+    }
+
+    @keyframes  ldesign-progress-wave  {
+        0%  {  transform:  translateX(0);  }
+        100%  {  transform:  translateX(50%);  }
+    }
+
+    /*  3D效果  */
+    &--3d  {
+        .ldesign-progress__outer  {
+            box-shadow:  inset  0  2px  4px  rgba(0,  0,  0,  0.2);
+            background:  linear-gradient(180deg,  
+                rgba(0,  0,  0,  0.1)  0%,  
+                transparent  50%,  
+                rgba(255,  255,  255,  0.1)  100%
+            ),  var(--ldesign-gray-color-2,  #dbdbdb);
+        }
+
+        .ldesign-progress__inner  {
+            box-shadow:  
+                inset  0  2px  4px  rgba(255,  255,  255,  0.3),
+                0  1px  2px  rgba(0,  0,  0,  0.2);
+            background-image:  linear-gradient(
+                180deg,  
+                rgba(255,  255,  255,  0.2)  0%,  
+                transparent  50%,  
+                rgba(0,  0,  0,  0.2)  100%
+            );
+            background-size:  100%  100%;
+        }
+    }
+
+    /*  主题样式：霓虹灯  */
+    &--theme-neon  {
+        background:  #000;
+        padding:  8px;
+        border-radius:  8px;
+        
+        .ldesign-progress__outer  {
+            background:  rgba(255,  255,  255,  0.1);
+            box-shadow:  
+                inset  0  0  10px  rgba(255,  0,  255,  0.2),
+                0  0  10px  rgba(255,  0,  255,  0.1);
+        }
+
+        .ldesign-progress__inner  {
+            background:  linear-gradient(90deg,  #ff00ff,  #00ffff);
+            box-shadow:  
+                0  0  10px  currentColor,
+                0  0  20px  currentColor,
+                0  0  30px  currentColor,
+                inset  0  0  10px  rgba(255,  255,  255,  0.5);
+            animation:  ldesign-progress-neon-pulse  2s  ease-in-out  infinite;
+        }
+
+        .ldesign-progress__text  {
+            color:  #00ffff;
+            text-shadow:  0  0  10px  currentColor;
+        }
+    }
+
+    @keyframes  ldesign-progress-neon-pulse  {
+        0%,  100%  {  opacity:  1;  }
+        50%  {  opacity:  0.8;  }
+    }
+
+    /*  主题样式：3D渐变  */
+    &--theme-gradient3d  {
+        .ldesign-progress__outer  {
+            background:  linear-gradient(180deg,  #e0e0e0,  #f5f5f5);
+            box-shadow:  
+                inset  0  2px  4px  rgba(0,  0,  0,  0.2),
+                0  1px  2px  rgba(255,  255,  255,  0.5);
+        }
+
+        .ldesign-progress__inner  {
+            background:  linear-gradient(135deg,  
+                #667eea  0%,  
+                #764ba2  25%,  
+                #f093fb  50%,  
+                #fbd786  75%,
+                #f7797d  100%
+            );
+            box-shadow:  
+                inset  0  -2px  4px  rgba(0,  0,  0,  0.2),
+                inset  0  2px  4px  rgba(255,  255,  255,  0.3),
+                0  2px  8px  rgba(102,  126,  234,  0.4);
+            position:  relative;
+            overflow:  hidden;
+            
+            &::after  {
+                content:  '';
+                position:  absolute;
+                top:  0;
+                left:  -100%;
+                width:  100%;
+                height:  100%;
+                background:  linear-gradient(
+                    90deg,  
+                    transparent,  
+                    rgba(255,  255,  255,  0.4),  
+                    transparent
+                );
+                animation:  ldesign-progress-shimmer  2s  infinite;
+            }
+        }
+    }
+
+    @keyframes  ldesign-progress-shimmer  {
+        0%  {  transform:  translateX(0);  }
+        100%  {  transform:  translateX(200%);  }
+    }
+
+    /*  主题样式：糖果  */
+    &--theme-candy  {
+        .ldesign-progress__outer  {
+            background:  linear-gradient(90deg,  #ffeaa7,  #fdcb6e);
+            box-shadow:  inset  0  2px  4px  rgba(0,  0,  0,  0.1);
+        }
+
+        .ldesign-progress__inner  {
+            background:  repeating-linear-gradient(
+                -45deg,
+                #ff6b6b,
+                #ff6b6b  10px,
+                #feca57  10px,
+                #feca57  20px,
+                #48dbfb  20px,
+                #48dbfb  30px,
+                #ff9ff3  30px,
+                #ff9ff3  40px
+            );
+            background-size:  56px  100%;
+            animation:  ldesign-progress-candy-slide  1s  linear  infinite;
+            border-radius:  inherit;
+            box-shadow:  
+                inset  0  2px  4px  rgba(255,  255,  255,  0.5),
+                0  2px  4px  rgba(0,  0,  0,  0.1);
+        }
+    }
+
+    @keyframes  ldesign-progress-candy-slide  {
+        0%  {  background-position:  0  0;  }
+        100%  {  background-position:  56px  0;  }
+    }
+
+    /*  主题样式：水波  */
+    &--theme-water  {
+        .ldesign-progress__outer  {
+            background:  linear-gradient(180deg,  #e3f2fd,  #bbdefb);
+            box-shadow:  inset  0  2px  4px  rgba(33,  150,  243,  0.2);
+        }
+
+        .ldesign-progress__inner  {
+            background:  linear-gradient(90deg,  #0288d1,  #03a9f4,  #29b6f6);
+            position:  relative;
+            overflow:  hidden;
+            
+            &::before,
+            &::after  {
+                content:  '';
+                position:  absolute;
+                top:  -50%;
+                width:  200%;
+                height:  200%;
+                border-radius:  40%;
+                background:  rgba(255,  255,  255,  0.2);
+            }
+            
+            &::before  {
+                left:  -100%;
+                animation:  ldesign-progress-water-wave  3s  linear  infinite;
+            }
+            
+            &::after  {
+                left:  -100%;
+                animation:  ldesign-progress-water-wave  3s  linear  infinite  1.5s;
+            }
+        }
+    }
+
+    @keyframes  ldesign-progress-water-wave  {
+        0%  {  transform:  rotate(0deg);  }
+        100%  {  transform:  rotate(360deg);  }
+    }
+
+    /*  主题样式：玻璃质感  */
+    &--theme-glass  {
+        .ldesign-progress__outer  {
+            background:  rgba(255,  255,  255,  0.1);
+            backdrop-filter:  blur(10px);
+            box-shadow:  
+                inset  0  2px  4px  rgba(255,  255,  255,  0.2),
+                0  8px  32px  rgba(0,  0,  0,  0.1);
+            border:  1px  solid  rgba(255,  255,  255,  0.2);
+        }
+
+        .ldesign-progress__inner  {
+            background:  linear-gradient(
+                90deg,
+                rgba(255,  255,  255,  0.3),
+                rgba(255,  255,  255,  0.1)
+            );
+            backdrop-filter:  blur(20px);
+            box-shadow:  
+                inset  0  2px  4px  rgba(255,  255,  255,  0.5),
+                0  4px  16px  rgba(0,  0,  0,  0.1);
+            border:  1px  solid  rgba(255,  255,  255,  0.3);
+        }
+    }
+
+    /*  主题样式：金属质感  */
+    &--theme-metallic  {
+        .ldesign-progress__outer  {
+            background:  linear-gradient(180deg,  #c0c0c0,  #808080);
+            box-shadow:  
+                inset  0  2px  4px  rgba(0,  0,  0,  0.3),
+                0  1px  2px  rgba(255,  255,  255,  0.5);
+        }
+
+        .ldesign-progress__inner  {
+            background:  linear-gradient(
+                180deg,
+                #f0f0f0  0%,
+                #e0e0e0  45%,
+                #d0d0d0  50%,
+                #c0c0c0  55%,
+                #b0b0b0  100%
+            );
+            box-shadow:  
+                inset  0  2px  4px  rgba(255,  255,  255,  0.5),
+                inset  0  -2px  4px  rgba(0,  0,  0,  0.2),
+                0  2px  4px  rgba(0,  0,  0,  0.2);
+            position:  relative;
+            
+            &::after  {
+                content:  '';
+                position:  absolute;
+                top:  0;
+                left:  0;
+                right:  0;
+                height:  50%;
+                background:  linear-gradient(
+                    180deg,
+                    rgba(255,  255,  255,  0.3),
+                    transparent
+                );
+                border-radius:  inherit;
+            }
+        }
+    }
+
+    /*  多层进度条样式  */
+    &__layer  {
+        position:  absolute;
+        left:  0;
+        top:  0;
+        height:  100%;
+        border-radius:  inherit;
+        transition:  width  0.3s  ease;
+        display:  flex;
+        align-items:  center;
+        justify-content:  flex-end;
+        padding-right:  8px;
+    }
+
+    &__layer-label  {
+        color:  white;
+        font-size:  10px;
+        font-weight:  600;
+        text-shadow:  0  1px  2px  rgba(0,  0,  0,  0.3);
+    }
+
+    /*  标记点样式  */
+    &__marker  {
+        position:  absolute;
+        top:  -8px;
+        transform:  translateX(-50%);
+        display:  flex;
+        flex-direction:  column;
+        align-items:  center;
+        z-index:  10;
+    }
+
+    &__marker-dot  {
+        width:  12px;
+        height:  12px;
+        border-radius:  50%;
+        background:  currentColor;
+        box-shadow:  0  2px  4px  rgba(0,  0,  0,  0.2);
+        border:  2px  solid  white;
+    }
+
+    &__marker-label  {
+        margin-top:  4px;
+        font-size:  11px;
+        white-space:  nowrap;
+        color:  var(--ldesign-text-color-secondary);
+    }
+
+    /*  仪表盘变体样式  */
+    &--dashboard-bottom  {
+        .ldesign-progress__circle  {
+            transform:  rotate(180deg);
+        }
+        .ldesign-progress__text-inset  {
+            transform:  translate(-50%,  -50%)  rotate(-180deg);
+        }
+    }
+
+    &--dashboard-left  {
+        .ldesign-progress__circle  {
+            transform:  rotate(90deg);
+        }
+        .ldesign-progress__text-inset  {
+            transform:  translate(-50%,  -50%)  rotate(-90deg);
+        }
+    }
+
+    &--dashboard-right  {
+        .ldesign-progress__circle  {
+            transform:  rotate(-90deg);
+        }
+        .ldesign-progress__text-inset  {
+            transform:  translate(-50%,  -50%)  rotate(90deg);
+        }
+    }
+
+    &--dashboard-fan  {
+        .ldesign-progress__circle-path  {
+            stroke-linecap:  round;
+            filter:  drop-shadow(0  0  8px  currentColor);
+        }
+    }
 }

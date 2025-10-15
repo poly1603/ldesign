@@ -98,6 +98,290 @@
 <ldesign-progress  type="circle"  percent="75"  pulse></ldesign-progress>
 ```
 
+## 🆕 视觉主题样式
+
+提供多种预设主题，打造独特的视觉效果。
+
+### 霓虹灯主题（Neon）
+
+<div class="demo-container" style="display:flex;flex-direction:column;gap:16px;">
+	<ldesign-progress percent="70" theme="neon"></ldesign-progress>
+	<ldesign-progress percent="50" theme="neon" status="active"></ldesign-progress>
+	<div style="display:flex;gap:20px;align-items:center;">
+		<ldesign-progress type="circle" width="120" percent="75" theme="neon"></ldesign-progress>
+	</div>
+</div>
+
+```html
+<ldesign-progress percent="70" theme="neon"></ldesign-progress>
+<ldesign-progress type="circle" width="120" percent="75" theme="neon"></ldesign-progress>
+```
+
+### 3D渐变主题（Gradient3D）
+
+<div class="demo-container" style="display:flex;flex-direction:column;gap:16px;">
+	<ldesign-progress percent="65" theme="gradient3d"></ldesign-progress>
+	<ldesign-progress percent="80" theme="gradient3d" status="active"></ldesign-progress>
+</div>
+
+```html
+<ldesign-progress percent="65" theme="gradient3d"></ldesign-progress>
+```
+
+### 糖果主题（Candy）
+
+<div class="demo-container" style="display:flex;flex-direction:column;gap:16px;">
+	<ldesign-progress percent="60" theme="candy"></ldesign-progress>
+	<ldesign-progress percent="75" theme="candy" wave></ldesign-progress>
+</div>
+
+```html
+<ldesign-progress percent="60" theme="candy"></ldesign-progress>
+<ldesign-progress percent="75" theme="candy" wave></ldesign-progress>
+```
+
+### 水波主题（Water）
+
+<div class="demo-container" style="display:flex;flex-direction:column;gap:16px;">
+	<ldesign-progress percent="55" theme="water"></ldesign-progress>
+	<ldesign-progress percent="70" theme="water" animate></ldesign-progress>
+</div>
+
+```html
+<ldesign-progress percent="55" theme="water"></ldesign-progress>
+```
+
+### 玻璃质感主题（Glass）
+
+<div class="demo-container" style="display:flex;flex-direction:column;gap:16px;background:linear-gradient(135deg,#667eea,#764ba2);padding:20px;border-radius:8px;">
+	<ldesign-progress percent="60" theme="glass"></ldesign-progress>
+	<ldesign-progress percent="80" theme="glass" shadow></ldesign-progress>
+</div>
+
+```html
+<ldesign-progress percent="60" theme="glass"></ldesign-progress>
+```
+
+### 金属质感主题（Metallic）
+
+<div class="demo-container" style="display:flex;flex-direction:column;gap:16px;">
+	<ldesign-progress percent="70" theme="metallic"></ldesign-progress>
+	<ldesign-progress percent="85" theme="metallic" size="large"></ldesign-progress>
+</div>
+
+```html
+<ldesign-progress percent="70" theme="metallic"></ldesign-progress>
+```
+
+## 🆕 波浪动画效果
+
+为线形进度条添加流动的波浪光效。
+
+<div class="demo-container" style="display:flex;flex-direction:column;gap:16px;">
+	<ldesign-progress percent="60" wave stroke-color="#3b82f6"></ldesign-progress>
+	<ldesign-progress percent="75" wave stroke-color="#8b5cf6" shadow></ldesign-progress>
+	<ldesign-progress percent="50" wave glow gradient-from="#ec4899" gradient-to="#8b5cf6"></ldesign-progress>
+</div>
+
+```html
+<ldesign-progress percent="60" wave stroke-color="#3b82f6"></ldesign-progress>
+<ldesign-progress percent="75" wave stroke-color="#8b5cf6" shadow></ldesign-progress>
+```
+
+## 🆕 3D立体效果
+
+为进度条添加3D立体视觉效果。
+
+<div class="demo-container" style="display:flex;flex-direction:column;gap:16px;">
+	<ldesign-progress percent="65" effect3d></ldesign-progress>
+	<ldesign-progress percent="80" effect3d shadow stroke-color="#10b981"></ldesign-progress>
+	<ldesign-progress percent="55" effect3d wave stroke-color="#f59e0b"></ldesign-progress>
+</div>
+
+```html
+<ldesign-progress percent="65" effect3d></ldesign-progress>
+<ldesign-progress percent="80" effect3d shadow stroke-color="#10b981"></ldesign-progress>
+```
+
+## 🆕 多层进度条
+
+支持同时显示多个进度值，用于对比或展示复合数据。
+
+<div class="demo-container" style="display:flex;flex-direction:column;gap:20px;">
+	<div style="min-width:400px;">
+		<div style="margin-bottom:8px;font-size:13px;color:#666;">年度对比</div>
+		<ldesign-progress 
+			layers='[{"percent":85,"color":"#5cc3ff","label":"2024"},{"percent":70,"color":"#1677ff","label":"2023"},{"percent":55,"color":"#0958d9","label":"2022"}]'
+			stroke-width="12">
+		</ldesign-progress>
+	</div>
+	<div style="min-width:400px;">
+		<div style="margin-bottom:8px;font-size:13px;color:#666;">项目进度</div>
+		<ldesign-progress 
+			layers='[{"percent":90,"color":"#52c41a","label":"完成"},{"percent":65,"color":"#faad14","label":"进行中"},{"percent":30,"color":"#ff4d4f","label":"计划"}]'
+			shadow>
+		</ldesign-progress>
+	</div>
+</div>
+
+```html
+<ldesign-progress 
+	layers='[
+		{"percent":85,"color":"#5cc3ff","label":"2024"},
+		{"percent":70,"color":"#1677ff","label":"2023"},
+		{"percent":55,"color":"#0958d9","label":"2022"}
+	]'
+	stroke-width="12">
+</ldesign-progress>
+```
+
+## 🆕 渐变分段
+
+创建分段渐变效果，实现更丰富的颜色过渡。
+
+<div class="demo-container" style="display:flex;flex-direction:column;gap:16px;">
+	<ldesign-progress 
+		percent="75"
+		gradient-segments='[{"offset":0,"color":"#ff0000"},{"offset":33,"color":"#ffff00"},{"offset":66,"color":"#00ff00"},{"offset":100,"color":"#0000ff"}]'>
+	</ldesign-progress>
+	<ldesign-progress 
+		percent="80"
+		gradient-segments='[{"offset":0,"color":"#667eea"},{"offset":50,"color":"#764ba2"},{"offset":100,"color":"#f093fb"}]'
+		shadow>
+	</ldesign-progress>
+</div>
+
+```html
+<ldesign-progress 
+	percent="75"
+	gradient-segments='[
+		{"offset":0,"color":"#ff0000"},
+		{"offset":33,"color":"#ffff00"},
+		{"offset":66,"color":"#00ff00"},
+		{"offset":100,"color":"#0000ff"}
+	]'>
+</ldesign-progress>
+```
+
+## 🆕 动态标记点
+
+在进度条上添加标记点，标识关键节点。
+
+<div class="demo-container" style="display:flex;flex-direction:column;gap:24px;">
+	<div style="min-width:400px;padding-top:20px;">
+		<ldesign-progress 
+			percent="65"
+			markers='[{"position":25,"color":"#f59e0b","label":"Q1"},{"position":50,"color":"#10b981","label":"Q2"},{"position":75,"color":"#3b82f6","label":"Q3"},{"position":100,"color":"#8b5cf6","label":"Q4"}]'
+			stroke-color="#06b6d4">
+		</ldesign-progress>
+	</div>
+	<div style="min-width:400px;padding-top:20px;">
+		<ldesign-progress 
+			percent="70"
+			markers='[{"position":20,"label":"开始"},{"position":50,"label":"中期检查"},{"position":80,"label":"目标"}]'
+			shadow>
+		</ldesign-progress>
+	</div>
+</div>
+
+```html
+<ldesign-progress 
+	percent="65"
+	markers='[
+		{"position":25,"color":"#f59e0b","label":"Q1"},
+		{"position":50,"color":"#10b981","label":"Q2"},
+		{"position":75,"color":"#3b82f6","label":"Q3"},
+		{"position":100,"color":"#8b5cf6","label":"Q4"}
+	]'
+	stroke-color="#06b6d4">
+</ldesign-progress>
+```
+
+## 🆕 仪表盘变体
+
+提供不同方向和样式的仪表盘。
+
+<div class="demo-container" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
+	<div style="text-align:center;">
+		<ldesign-progress type="dashboard" width="140" percent="75" dashboard-variant="standard"></ldesign-progress>
+		<div style="margin-top:8px;font-size:12px;color:#666;">标准</div>
+	</div>
+	<div style="text-align:center;">
+		<ldesign-progress type="dashboard" width="140" percent="75" dashboard-variant="bottom" stroke-color="#52c41a"></ldesign-progress>
+		<div style="margin-top:8px;font-size:12px;color:#666;">底部</div>
+	</div>
+	<div style="text-align:center;">
+		<ldesign-progress type="dashboard" width="140" percent="75" dashboard-variant="left" stroke-color="#faad14"></ldesign-progress>
+		<div style="margin-top:8px;font-size:12px;color:#666;">左侧</div>
+	</div>
+	<div style="text-align:center;">
+		<ldesign-progress type="dashboard" width="140" percent="75" dashboard-variant="right" stroke-color="#ff4d4f"></ldesign-progress>
+		<div style="margin-top:8px;font-size:12px;color:#666;">右侧</div>
+	</div>
+	<div style="text-align:center;">
+		<ldesign-progress type="dashboard" width="140" percent="75" dashboard-variant="fan" gradient-from="#a78bfa" gradient-to="#8b5cf6"></ldesign-progress>
+		<div style="margin-top:8px;font-size:12px;color:#666;">扇形</div>
+	</div>
+</div>
+
+```html
+<ldesign-progress type="dashboard" percent="75" dashboard-variant="standard"></ldesign-progress>
+<ldesign-progress type="dashboard" percent="75" dashboard-variant="bottom"></ldesign-progress>
+<ldesign-progress type="dashboard" percent="75" dashboard-variant="left"></ldesign-progress>
+<ldesign-progress type="dashboard" percent="75" dashboard-variant="right"></ldesign-progress>
+<ldesign-progress type="dashboard" percent="75" dashboard-variant="fan"></ldesign-progress>
+```
+
+## 🆕 组合效果示例
+
+将多种效果组合使用，创造独特的视觉体验。
+
+<div class="demo-container" style="display:flex;flex-direction:column;gap:20px;">
+	<div style="min-width:400px;">
+		<div style="margin-bottom:8px;font-size:13px;color:#666;">霓虹灯 + 波浪 + 动画</div>
+		<ldesign-progress percent="70" theme="neon" wave animate></ldesign-progress>
+	</div>
+	<div style="min-width:400px;">
+		<div style="margin-bottom:8px;font-size:13px;color:#666;">3D + 阴影 + 脉冲</div>
+		<ldesign-progress percent="65" effect3d shadow pulse stroke-color="#8b5cf6"></ldesign-progress>
+	</div>
+	<div style="min-width:400px;">
+		<div style="margin-bottom:8px;font-size:13px;color:#666;">糖果主题 + 标记点</div>
+		<ldesign-progress 
+			percent="75" 
+			theme="candy" 
+			markers='[{"position":30,"label":"30%"},{"position":60,"label":"60%"},{"position":90,"label":"90%"}]'>
+		</ldesign-progress>
+	</div>
+	<div style="min-width:400px;padding-top:20px;">
+		<div style="margin-bottom:8px;font-size:13px;color:#666;">多层 + 标记 + 渐变</div>
+		<ldesign-progress 
+			layers='[{"percent":80,"color":"#a78bfa"},{"percent":60,"color":"#c4b5fd"}]'
+			markers='[{"position":50,"label":"中点"},{"position":80,"label":"目标"}]'
+			gradient-from="#fbbf24" 
+			gradient-to="#f59e0b"
+			percent="90">
+		</ldesign-progress>
+	</div>
+</div>
+
+```html
+<!-- 霓虹灯 + 波浪 + 动画 -->
+<ldesign-progress percent="70" theme="neon" wave animate></ldesign-progress>
+
+<!-- 3D + 阴影 + 脉冲 -->
+<ldesign-progress percent="65" effect3d shadow pulse stroke-color="#8b5cf6"></ldesign-progress>
+
+<!-- 多层 + 标记 + 渐变 -->
+<ldesign-progress 
+	layers='[{"percent":80,"color":"#a78bfa"},{"percent":60,"color":"#c4b5fd"}]'
+	markers='[{"position":50,"label":"中点"},{"position":80,"label":"目标"}]'
+	gradient-from="#fbbf24" 
+	gradient-to="#f59e0b"
+	percent="90">
+</ldesign-progress>
+```
+
 ##  🆕  事件监听
 
 监听进度变化和完成事件。
@@ -474,6 +758,13 @@ applyGap();
 |  🆕  `shadow`  |  阴影效果  |  `boolean`  |  `false`  |
 |  🆕  `glow`  |  发光效果  |  `boolean`  |  `false`  |
 |  🆕  `pulse`  |  脉冲动画  |  `boolean`  |  `false`  |
+|  🆕  `theme`  |  视觉主题：default/neon/gradient3d/candy/water/glass/metallic  |  `string`  |  `'default'`  |
+|  🆕  `wave`  |  波浪动画（仅line类型）  |  `boolean`  |  `false`  |
+|  🆕  `effect3d`  |  3D效果（仅line类型）  |  `boolean`  |  `false`  |
+|  🆕  `dashboardVariant`  |  仪表盘变体：standard/bottom/left/right/fan  |  `string`  |  `'standard'`  |
+|  🆕  `layers`  |  多层进度配置  |  `Array<{percent,color,label}>`  |  -  |
+|  🆕  `gradientSegments`  |  渐变分段配置  |  `Array<{offset,color}>`  |  -  |
+|  🆕  `markers`  |  标记点配置  |  `Array<{position,color?,label?}>`  |  -  |
 
 ###  Events
 

@@ -8,9 +8,9 @@ import type { RouteRecordRaw } from '@ldesign/router'
 // 路由懒加载
 const Home = () => import('@/views/Home.vue')
 const Login = () => import('@/views/Login.vue')
-const LoginTemplate = () => import('@/views/LoginTemplate.vue')
 const Dashboard = () => import('@/views/Dashboard.vue')
 const About = () => import('@/views/About.vue')
+const TemplateDemo = () => import('@/pages/TemplateDemo.vue')
 
 /**
  * 公开路由
@@ -30,11 +30,11 @@ export const publicRoutes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'login',
-    component: LoginTemplate, // 使用模板系统的登录页
+    component: Login, // 使用原始登录页
     meta: {
       titleKey: 'nav.login',
       requiresAuth: false,
-      layout: 'blank' // 使用空白布局，让模板完全控制页面
+      layout: 'auth'
     }
   },
   {
@@ -55,6 +55,16 @@ export const publicRoutes: RouteRecordRaw[] = [
       titleKey: 'nav.about',
       requiresAuth: false,
       layout: 'default'
+    }
+  },
+  {
+    path: '/template-demo',
+    name: 'template-demo',
+    component: TemplateDemo,
+    meta: {
+      titleKey: 'nav.templateDemo',
+      requiresAuth: false,
+      layout: 'blank'
     }
   },
 ]

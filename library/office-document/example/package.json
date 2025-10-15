@@ -10,9 +10,12 @@
  },
  "dependencies": {
   "docx-preview": "^0.3.7",
-  "xlsx": "^0.18.5",
+  "exceljs": "^4.4.0",
+  "jszip": "^3.10.1",
+  "officegen": "^0.6.5",
+  "pptxgenjs": "^4.0.1",
   "x-data-spreadsheet": "^1.1.9",
-  "jszip": "^3.10.1"
+  "xlsx": "^0.18.5"
  },
  "devDependencies": {
   "typescript": "^5.3.3",

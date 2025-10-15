@@ -99,6 +99,26 @@ export class LdesignProgress {
 
   /** 脉冲动画 */
   @Prop() pulse: boolean = false;
+  /** 视觉主题：default | neon | gradient3d | candy | water | glass | metallic */
+  @Prop() theme: 'default' | 'neon' | 'gradient3d' | 'candy' | 'water' | 'glass' | 'metallic' = 'default';
+
+  /** 仪表盘变体（仅dashboard类型）：standard | bottom | left | right | fan */
+  @Prop() dashboardVariant: 'standard' | 'bottom' | 'left' | 'right' | 'fan' = 'standard';
+  
+  /** 波浪动画（仅line类型） */
+  @Prop() wave: boolean = false;
+  
+  /** 3D效果（仅line类型） */
+  @Prop() effect3d: boolean = false;
+  
+  /** 多层进度（用于显示多个数据） */
+  @Prop() layers?: Array<{percent: number; color: string; label?: string}>;
+  
+  /** 渐变分段（创建分段渐变效果） */
+  @Prop() gradientSegments?: Array<{offset: number; color: string}>;
+  
+  /** 动态标记点 */
+  @Prop() markers?: Array<{position: number; color?: string; label?: string}>;
 
   /** 百分比变化时触发 */
   @Event() percentChange!: EventEmitter<number>;
@@ -240,14 +260,26 @@ export class LdesignProgress {
       this.shadow ? 'ldesign-progress--shadow' : '',
       this.glow ? 'ldesign-progress--glow' : '',
       this.pulse ? 'ldesign-progress--pulse' : '',
+      this.wave ? 'ldesign-progress--wave' : '',
+      this.effect3d ? 'ldesign-progress--3d' : '',
+      this.theme !== 'default' ? `ldesign-progress--theme-${this.theme}` : '',
     ]
       .filter(Boolean)
       .join(' ');
 
+    // 处理渐变分段
+    let backgroundStyle = this.strokeColor || 'var(--ldesign-brand-color, #5e2aa7)';
+    if (this.gradientSegments && this.gradientSegments.length > 0) {
+      const gradientStops = this.gradientSegments
+        .map(seg => `${seg.color} ${seg.offset}%`)
+        .join(', ');
+      backgroundStyle = `linear-gradient(90deg, ${gradientStops})`;
+    }
+    
     const barStyle: any = {
       width: this.indeterminate ? '30%' : `${percent}%`,
       height: `${height}px`,
-      background: this.strokeColor || 'var(--ldesign-brand-color, #5e2aa7)',
+      background: backgroundStyle,
       borderRadius: `${height / 2}px`,
     };
 
@@ -267,14 +299,55 @@ export class LdesignProgress {
       : undefined;
 
     const info = this.renderInfo();
+    
+    // 渲染多层进度条
+    const renderLayers = () => {
+      if (!this.layers || this.layers.length === 0) return null;
+      return this.layers.map((layer, idx) => (
+        <div 
+          class="ldesign-progress__layer" 
+          style={{
+            width: `${this.clamp(layer.percent)}%`,
+            height: `${height}px`,
+            background: layer.color,
+            borderRadius: `${height / 2}px`,
+            opacity: 0.8 - idx * 0.1,
+            zIndex: this.layers.length - idx,
+          }}
+        >
+          {layer.label && <span class="ldesign-progress__layer-label">{layer.label}</span>}
+        </div>
+      ));
+    };
+    
+    // 渲染标记点
+    const renderMarkers = () => {
+      if (!this.markers || this.markers.length === 0) return null;
+      return this.markers.map(marker => (
+        <div 
+          class="ldesign-progress__marker"
+          style={{
+            left: `${this.clamp(marker.position)}%`,
+            color: marker.color || 'var(--ldesign-brand-color)',
+          }}
+        >
+          <div class="ldesign-progress__marker-dot"></div>
+          {marker.label && <span class="ldesign-progress__marker-label">{marker.label}</span>}
+        </div>
+      ));
+    };
 
     // inside 模式：文本放到条内层
     if (this.infoPosition === 'inside') {
       return (
         <Host class={rootCls}>
           <div class="ldesign-progress__outer" style={railStyle}>
+            {renderLayers()}
             {success != null && <div class="ldesign-progress__success" style={successStyle} />}
-            <div class="ldesign-progress__inner" style={barStyle} />
+            <div class="ldesign-progress__inner" style={barStyle}>
+              {this.wave && <div class="ldesign-progress__wave"></div>}
+            </div>
+            {renderMarkers()}
             {this.showInfo && !this.indeterminate ? <span class="ldesign-progress__text ldesign-progress__text--inside">{this.getInfoContent()}</span> : null}
           </div>
         </Host>
@@ -286,8 +359,12 @@ export class LdesignProgress {
         <Host class={rootCls}>
           {info}
           <div class="ldesign-progress__outer" style={railStyle}>
+            {renderLayers()}
             {success != null && <div class="ldesign-progress__success" style={successStyle} />}
-            <div class="ldesign-progress__inner" style={barStyle} />
+            <div class="ldesign-progress__inner" style={barStyle}>
+              {this.wave && <div class="ldesign-progress__wave"></div>}
+            </div>
+            {renderMarkers()}
           </div>
         </Host>
       );
@@ -297,8 +374,12 @@ export class LdesignProgress {
       return (
         <Host class={rootCls}>
           <div class="ldesign-progress__outer" style={railStyle}>
+            {renderLayers()}
             {success != null && <div class="ldesign-progress__success" style={successStyle} />}
-            <div class="ldesign-progress__inner" style={barStyle} />
+            <div class="ldesign-progress__inner" style={barStyle}>
+              {this.wave && <div class="ldesign-progress__wave"></div>}
+            </div>
+            {renderMarkers()}
           </div>
           {info}
         </Host>
@@ -309,8 +390,12 @@ export class LdesignProgress {
     return (
       <Host class={rootCls}>
         <div class="ldesign-progress__outer" style={railStyle}>
+          {renderLayers()}
           {success != null && <div class="ldesign-progress__success" style={successStyle} />}
-          <div class="ldesign-progress__inner" style={barStyle} />
+          <div class="ldesign-progress__inner" style={barStyle}>
+            {this.wave && <div class="ldesign-progress__wave"></div>}
+          </div>
+          {renderMarkers()}
         </div>
         {info}
       </Host>
@@ -336,6 +421,16 @@ export class LdesignProgress {
   private getGapPosition(): 'top' | 'right' | 'bottom' | 'left' {
     if (this.type === 'semicircle') {
       return this.semiPosition === 'top' ? 'bottom' : 'top';
+    }
+    // 处理dashboard变体的缺口位置
+    if (this.type === 'dashboard' && this.dashboardVariant !== 'standard') {
+      const variantMap: any = {
+        'bottom': 'bottom',
+        'left': 'left', 
+        'right': 'right',
+        'fan': 'bottom'
+      };
+      return variantMap[this.dashboardVariant] || this.gapPosition;
     }
     return this.gapPosition;
   }
@@ -375,6 +470,8 @@ export class LdesignProgress {
       this.shadow ? 'ldesign-progress--shadow' : '',
       this.glow ? 'ldesign-progress--glow' : '',
       this.pulse ? 'ldesign-progress--pulse' : '',
+      this.theme !== 'default' ? `ldesign-progress--theme-${this.theme}` : '',
+      this.type === 'dashboard' && this.dashboardVariant !== 'standard' ? `ldesign-progress--dashboard-${this.dashboardVariant}` : '',
     ]
       .filter(Boolean)
       .join(' ');
@@ -530,6 +627,7 @@ export class LdesignProgress {
       `ldesign-progress--${this.size}`,
       status !== 'normal' ? `ldesign-progress--${status}` : '',
       this.shadow ? 'ldesign-progress--shadow' : '',
+      this.theme !== 'default' ? `ldesign-progress--theme-${this.theme}` : '',
     ]
       .filter(Boolean)
       .join(' ');

@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Read(//d/**)",
+      "Bash(awk:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

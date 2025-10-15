@@ -103,11 +103,31 @@ export class ContextMenuSystem {
       }
     })
     
-    // 滚动时关闭菜单
-    document.addEventListener('scroll', () => {
-      if (this.visible) {
-        this.hide()
+    // 滚动时处理菜单
+    let scrollTimeout: number | null = null
+    document.addEventListener('scroll', (e) => {
+      if (!this.visible) return
+      
+      // 如果是菜单内部的滚动，不关闭
+      const target = e.target as HTMLElement
+      if (this.container.contains(target) || 
+          Array.from(this.submenuMap.values()).some(submenu => submenu.contains(target))) {
+        return
       }
+      
+      // 延迟关闭，避免误触
+      if (scrollTimeout) clearTimeout(scrollTimeout)
+      scrollTimeout = window.setTimeout(() => {
+        // 只有大幅滚动才关闭菜单
+        if (this.visible) {
+          const rect = this.container.getBoundingClientRect()
+          // 如果菜单还在视口内，不关闭
+          if (rect.top >= -rect.height && rect.bottom <= window.innerHeight + rect.height) {
+            return
+          }
+          this.hide()
+        }
+      }, 300)
     }, true)
     
     // 窗口大小改变时关闭菜单

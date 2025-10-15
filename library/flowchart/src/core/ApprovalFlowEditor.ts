@@ -1,603 +1,667 @@
-import LogicFlow, { Definition } from '@logicflow/core';
-import '@logicflow/core/dist/style/index.css';
-import {
-  EditorConfig,
-  EditorEvents,
-  FlowChartData,
-  NodeData,
-  EdgeData,
-  ValidationResult,
-  ExportConfig,
-  ApprovalNodeType,
-} from '../types';
-import { registerNodes } from '../nodes';
+import  {  Graph,  Node,  Edge  }  from  '@antv/x6'
+import  {  Snapline  }  from  '@antv/x6-plugin-snapline'
+import  {  Keyboard  }  from  '@antv/x6-plugin-keyboard'
+import  {  Clipboard  }  from  '@antv/x6-plugin-clipboard'
+import  {  History  }  from  '@antv/x6-plugin-history'
+import  {  Selection  }  from  '@antv/x6-plugin-selection'
+import  {  MiniMap  }  from  '@antv/x6-plugin-minimap'
+import  {  Scroller  }  from  '@antv/x6-plugin-scroller'
+import  {  Transform  }  from  '@antv/x6-plugin-transform'
+import  {  Dnd  }  from  '@antv/x6-plugin-dnd'
+import  {  registerNodes,  registerEdges  }  from  '../nodes'
+import  {  Toolbar,  ToolbarOptions  }  from  '../components/Toolbar'
+import  type  {  EditorOptions,  FlowData,  FlowNode,  FlowEdge,  EditorEvents  }  from  '../types'
 
 /**
- * 审批流程图编辑器核心类
- */
-export class ApprovalFlowEditor {
-  private lf: LogicFlow | null = null;
-  private container: HTMLElement | null = null;
-  private config: Required<EditorConfig>;
-  private events: EditorEvents = {};
+  *  审批流程图编辑器
+  */
+export  class  ApprovalFlowEditor  {
+    private  graph:  Graph
+    private  readonly:  boolean
+    private  toolbar:  Toolbar  |  null  =  null
+    private  eventHandlers:  Map<string,  Set<Function>>  =  new  Map()
 
-  constructor(config: EditorConfig) {
-    this.config = this.normalizeConfig(config);
-    this.init();
-  }
+    constructor(options:  EditorOptions)  {
+        this.readonly  =  options.readonly  ||  false
 
-  /**
-   * 初始化编辑器
-   */
-  private init(): void {
-    // 获取容器元素
-    if (typeof this.config.container === 'string') {
-      const element = document.querySelector(this.config.container);
-      if (!element) {
-        throw new Error(`Container element not found: ${this.config.container}`);
-      }
-      this.container = element as HTMLElement;
-    } else {
-      this.container = this.config.container;
-    }
+        //  注册自定义节点和边
+        registerNodes()
+        registerEdges()
 
-    // 设置容器样式
-    this.container.style.width = typeof this.config.width === 'number'
-      ? `${this.config.width}px`
-      : this.config.width;
-    this.container.style.height = typeof this.config.height === 'number'
-      ? `${this.config.height}px`
-      : this.config.height;
+        //  获取容器
+        const  container  =  typeof  options.container  ===  'string'
+            ?  document.querySelector(options.container)
+            :  options.container
 
-    // 初始化 LogicFlow
-    const lfConfig: Definition = {
-      container: this.container,
-      grid: this.config.grid.visible ? {
-        size: this.config.grid.size,
-        type: this.config.grid.type,
-        visible: true,
-      } : false,
-      keyboard: {
-        enabled: this.config.keyboard.enabled,
-      },
-      stopScrollGraph: this.config.readonly,
-      stopZoomGraph: this.config.readonly,
-      stopMoveGraph: this.config.readonly,
-      adjustEdge: !this.config.readonly,
-      adjustEdgeStartAndEnd: !this.config.readonly,
-      adjustNodePosition: !this.config.readonly,
-      hideAnchors: this.config.readonly,
-      hoverOutline: !this.config.readonly,
-      nodeSelectedOutline: !this.config.readonly,
-      edgeSelectedOutline: !this.config.readonly,
-      ...(this.config.zoom.minZoom && { minZoom: this.config.zoom.minZoom }),
-      ...(this.config.zoom.maxZoom && { maxZoom: this.config.zoom.maxZoom }),
-    };
-
-    this.lf = new LogicFlow(lfConfig);
-
-    // 注册自定义节点
-    registerNodes(this.lf);
-
-    // 设置默认缩放
-    if (this.config.zoom.defaultZoom) {
-      this.lf.zoom(this.config.zoom.defaultZoom);
-    }
-
-    // 绑定事件
-    this.bindEvents();
-
-    // 如果是只读模式，禁用所有交互
-    if (this.config.readonly) {
-      this.setReadonly(true);
-    }
-  }
-
-  /**
-   * 规范化配置
-   */
-  private normalizeConfig(config: EditorConfig): Required<EditorConfig> {
-    return {
-      container: config.container,
-      readonly: config.readonly ?? false,
-      width: config.width ?? '100%',
-      height: config.height ?? '100%',
-      grid: {
-        visible: config.grid?.visible ?? true,
-        size: config.grid?.size ?? 20,
-        type: config.grid?.type ?? 'dot',
-      },
-      zoom: {
-        minZoom: config.zoom?.minZoom ?? 0.2,
-        maxZoom: config.zoom?.maxZoom ?? 4,
-        defaultZoom: config.zoom?.defaultZoom ?? 1,
-      },
-      toolbar: {
-        visible: config.toolbar?.visible ?? true,
-        position: config.toolbar?.position ?? 'top',
-        tools: config.toolbar?.tools ?? ['undo', 'redo', 'zoom-in', 'zoom-out', 'fit', 'download'],
-      },
-      miniMap: {
-        visible: config.miniMap?.visible ?? false,
-        position: config.miniMap?.position ?? 'right-bottom',
-      },
-      theme: {
-        name: config.theme?.name ?? 'default',
-        colors: config.theme?.colors ?? {},
-      },
-      keyboard: {
-        enabled: config.keyboard?.enabled ?? true,
-      },
-      snapline: {
-        enabled: config.snapline?.enabled ?? true,
-      },
-    };
-  }
-
-  /**
-   * 绑定事件
-   */
-  private bindEvents(): void {
-    if (!this.lf) return;
-
-    // 节点事件
-    this.lf.on('node:click', ({ data }) => {
-      this.events['node:click']?.(this.transformNodeData(data));
-    });
-
-    this.lf.on('node:dblclick', ({ data }) => {
-      this.events['node:dblclick']?.(this.transformNodeData(data));
-    });
-
-    this.lf.on('node:add', ({ data }) => {
-      this.events['node:add']?.(this.transformNodeData(data));
-      this.emitDataChange();
-    });
-
-    this.lf.on('node:delete', ({ data }) => {
-      this.events['node:delete']?.(this.transformNodeData(data));
-      this.emitDataChange();
-    });
-
-    // 边事件
-    this.lf.on('edge:click', ({ data }) => {
-      this.events['edge:click']?.(this.transformEdgeData(data));
-    });
-
-    this.lf.on('edge:add', ({ data }) => {
-      this.events['edge:add']?.(this.transformEdgeData(data));
-      this.emitDataChange();
-    });
-
-    this.lf.on('edge:delete', ({ data }) => {
-      this.events['edge:delete']?.(this.transformEdgeData(data));
-      this.emitDataChange();
-    });
-
-    // 选中事件
-    this.lf.on('selection:selected', () => {
-      const selection = this.lf!.getSelectElements(true);
-      this.events['selection:change']?.({
-        nodes: selection.nodes.map(n => this.transformNodeData(n)),
-        edges: selection.edges.map(e => this.transformEdgeData(e)),
-      });
-    });
-  }
-
-  /**
-   * 转换节点数据
-   */
-  private transformNodeData(data: any): NodeData {
-    return {
-      id: data.id,
-      type: data.type as ApprovalNodeType,
-      name: data.text?.value || data.properties?.name || '',
-      description: data.properties?.description,
-      approvalMode: data.properties?.approvalMode,
-      approvers: data.properties?.approvers,
-      conditions: data.properties?.conditions,
-      ccUsers: data.properties?.ccUsers,
-      properties: data.properties,
-    };
-  }
-
-  /**
-   * 转换边数据
-   */
-  private transformEdgeData(data: any): EdgeData {
-    return {
-      id: data.id,
-      sourceNodeId: data.sourceNodeId,
-      targetNodeId: data.targetNodeId,
-      name: data.text?.value || data.properties?.name,
-      condition: data.properties?.condition,
-      properties: data.properties,
-    };
-  }
-
-  /**
-   * 触发数据变化事件
-   */
-  private emitDataChange(): void {
-    const data = this.getData();
-    this.events['data:change']?.(data);
-  }
-
-  /**
-   * 注册事件监听
-   */
-  on<K extends keyof EditorEvents>(event: K, handler: EditorEvents[K]): void {
-    this.events[event] = handler;
-  }
-
-  /**
-   * 移除事件监听
-   */
-  off<K extends keyof EditorEvents>(event: K): void {
-    delete this.events[event];
-  }
-
-  /**
-   * 设置数据
-   */
-  setData(data: FlowChartData): void {
-    if (!this.lf) return;
-
-    const graphData = {
-      nodes: data.nodes.map(node => ({
-        id: node.id,
-        type: node.type,
-        x: 100,
-        y: 100,
-        text: node.name,
-        properties: {
-          name: node.name,
-          description: node.description,
-          approvalMode: node.approvalMode,
-          approvers: node.approvers,
-          conditions: node.conditions,
-          ccUsers: node.ccUsers,
-          ...node.properties,
-        },
-      })),
-      edges: data.edges.map(edge => ({
-        id: edge.id,
-        type: 'polyline',
-        sourceNodeId: edge.sourceNodeId,
-        targetNodeId: edge.targetNodeId,
-        text: edge.name,
-        properties: {
-          name: edge.name,
-          condition: edge.condition,
-          ...edge.properties,
-        },
-      })),
-    };
-
-    this.lf.render(graphData);
-  }
-
-  /**
-   * 获取数据
-   */
-  getData(): FlowChartData {
-    if (!this.lf) {
-      return { nodes: [], edges: [] };
-    }
-
-    const graphData = this.lf.getGraphData();
-    return {
-      nodes: graphData.nodes.map(node => this.transformNodeData(node)),
-      edges: graphData.edges.map(edge => this.transformEdgeData(edge)),
-    };
-  }
-
-  /**
-   * 添加节点
-   */
-  addNode(node: Partial<NodeData> & { type: ApprovalNodeType }): string {
-    if (!this.lf) throw new Error('Editor not initialized');
-
-    const nodeConfig = {
-      type: node.type,
-      x: 100,
-      y: 100,
-      text: node.name || '',
-      properties: {
-        name: node.name,
-        description: node.description,
-        approvalMode: node.approvalMode,
-        approvers: node.approvers,
-        conditions: node.conditions,
-        ccUsers: node.ccUsers,
-        ...node.properties,
-      },
-    };
-
-    const result = this.lf.addNode(nodeConfig);
-    return result.id;
-  }
-
-  /**
-   * 更新节点
-   */
-  updateNode(nodeId: string, data: Partial<NodeData>): void {
-    if (!this.lf) return;
-
-    const nodeData = this.lf.getNodeDataById(nodeId);
-    if (!nodeData) return;
-
-    this.lf.setProperties(nodeId, {
-      ...nodeData.properties,
-      name: data.name,
-      description: data.description,
-      approvalMode: data.approvalMode,
-      approvers: data.approvers,
-      conditions: data.conditions,
-      ccUsers: data.ccUsers,
-      ...data.properties,
-    });
-
-    if (data.name) {
-      this.lf.updateText(nodeId, data.name);
-    }
-  }
-
-  /**
-   * 删除节点
-   */
-  deleteNode(nodeId: string): void {
-    if (!this.lf) return;
-    this.lf.deleteNode(nodeId);
-  }
-
-  /**
-   * 删除边
-   */
-  deleteEdge(edgeId: string): void {
-    if (!this.lf) return;
-    this.lf.deleteEdge(edgeId);
-  }
-
-  /**
-   * 验证流程图
-   */
-  validate(): ValidationResult {
-    const data = this.getData();
-    const errors: ValidationResult['errors'] = [];
-
-    // 检查是否有开始节点
-    const startNodes = data.nodes.filter(n => n.type === ApprovalNodeType.START);
-    if (startNodes.length === 0) {
-      errors.push({
-        type: 'missing-start',
-        message: '流程图必须有一个开始节点',
-      });
-    } else if (startNodes.length > 1) {
-      errors.push({
-        type: 'multiple-start',
-        message: '流程图只能有一个开始节点',
-      });
-    }
-
-    // 检查是否有结束节点
-    const endNodes = data.nodes.filter(n => n.type === ApprovalNodeType.END);
-    if (endNodes.length === 0) {
-      errors.push({
-        type: 'missing-end',
-        message: '流程图必须至少有一个结束节点',
-      });
-    }
-
-    // 检查审批节点是否配置了审批人
-    data.nodes.forEach(node => {
-      if (node.type === ApprovalNodeType.APPROVAL) {
-        if (!node.approvers || node.approvers.length === 0) {
-          errors.push({
-            type: 'missing-approvers',
-            message: `审批节点"${node.name}"未配置审批人`,
-            nodeId: node.id,
-          });
+        if  (!container)  {
+            throw  new  Error('Container  not  found')
         }
-      }
-    });
 
-    // 检查条件节点是否配置了条件
-    data.nodes.forEach(node => {
-      if (node.type === ApprovalNodeType.CONDITION) {
-        if (!node.conditions || node.conditions.length === 0) {
-          errors.push({
-            type: 'missing-conditions',
-            message: `条件节点"${node.name}"未配置条件`,
-            nodeId: node.id,
-          });
+        //  创建画布
+        this.graph  =  new  Graph({
+            container:  container  as  HTMLElement,
+            width:  options.width  ||  800,
+            height:  options.height  ||  600,
+            grid:  options.grid  !==  false  ?  {
+                size:  options.gridSize  ||  10,
+                visible:  true,
+                type:  'dot',
+                args:  {
+                    color:  '#D0D0D0',
+                    thickness:  1
+                }
+            }  :  false,
+            panning:  !this.readonly  ?  {
+                enabled:  true,
+                modifiers:  'shift'
+            }  :  false,
+            mousewheel:  {
+                enabled:  true,
+                modifiers:  ['ctrl',  'meta'],
+                minScale:  0.5,
+                maxScale:  2
+            },
+            connecting:  !this.readonly  ?  {
+                snap:  true,
+                allowBlank:  false,
+                allowLoop:  false,
+                allowNode:  false,
+                allowEdge:  false,
+                allowMulti:  false,
+                highlight:  true,
+                connector:  'rounded',
+                router:  {
+                    name:  'manhattan',
+                    args:  {
+                        padding:  10
+                    }
+                },
+                createEdge()  {
+                    return  this.createEdge({
+                        shape:  'approval-edge',
+                        zIndex:  -1
+                    })
+                },
+                validateConnection({  targetMagnet  })  {
+                    return  !!targetMagnet
+                }
+            }  :  undefined,
+            highlighting:  {
+                magnetAvailable:  {
+                    name:  'stroke',
+                    args:  {
+                        attrs:  {
+                            fill:  '#5F95FF',
+                            stroke:  '#5F95FF'
+                        }
+                    }
+                }
+            },
+            interacting:  this.readonly  ?  false  :  undefined,
+            autoResize:  true
+        })
+
+        //  初始化插件
+        this.initPlugins(options)
+
+        //  设置初始数据
+        if  (options.data)  {
+            this.setData(options.data)
         }
-      }
-    });
 
-    // 检查节点连接
-    data.nodes.forEach(node => {
-      const incomingEdges = data.edges.filter(e => e.targetNodeId === node.id);
-      const outgoingEdges = data.edges.filter(e => e.sourceNodeId === node.id);
-
-      if (node.type === ApprovalNodeType.START && incomingEdges.length > 0) {
-        errors.push({
-          type: 'invalid-connection',
-          message: `开始节点"${node.name}"不能有输入连线`,
-          nodeId: node.id,
-        });
-      }
-
-      if (node.type === ApprovalNodeType.END && outgoingEdges.length > 0) {
-        errors.push({
-          type: 'invalid-connection',
-          message: `结束节点"${node.name}"不能有输出连线`,
-          nodeId: node.id,
-        });
-      }
-
-      if (node.type !== ApprovalNodeType.START && incomingEdges.length === 0) {
-        errors.push({
-          type: 'disconnected-node',
-          message: `节点"${node.name}"没有输入连线`,
-          nodeId: node.id,
-        });
-      }
-
-      if (node.type !== ApprovalNodeType.END && outgoingEdges.length === 0) {
-        errors.push({
-          type: 'disconnected-node',
-          message: `节点"${node.name}"没有输出连线`,
-          nodeId: node.id,
-        });
-      }
-    });
-
-    return {
-      valid: errors.length === 0,
-      errors,
-    };
-  }
-
-  /**
-   * 设置只读模式
-   */
-  setReadonly(readonly: boolean): void {
-    if (!this.lf) return;
-
-    this.config.readonly = readonly;
-
-    if (readonly) {
-      this.lf.updateEditConfig({
-        stopScrollGraph: true,
-        stopZoomGraph: true,
-        stopMoveGraph: true,
-        adjustEdge: false,
-        adjustEdgeStartAndEnd: false,
-        adjustNodePosition: false,
-        hideAnchors: true,
-      });
-    } else {
-      this.lf.updateEditConfig({
-        stopScrollGraph: false,
-        stopZoomGraph: false,
-        stopMoveGraph: false,
-        adjustEdge: true,
-        adjustEdgeStartAndEnd: true,
-        adjustNodePosition: true,
-        hideAnchors: false,
-      });
+        //  绑定事件
+        this.bindEvents()
     }
-  }
 
-  /**
-   * 缩放
-   */
-  zoom(scale?: number): void {
-    if (!this.lf) return;
+    /**
+      *  初始化插件
+      */
+    private  initPlugins(options:  EditorOptions)  {
+        //  对齐线
+        if  (options.snapline  !==  false  &&  !this.readonly)  {
+            this.graph.use(
+                new  Snapline({
+                    enabled:  true
+                })
+            )
+        }
 
-    if (scale !== undefined) {
-      this.lf.zoom(scale);
+        //  键盘快捷键
+        if  (options.keyboard  !==  false  &&  !this.readonly)  {
+            this.graph.use(
+                new  Keyboard({
+                    enabled:  true
+                })
+            )
+
+            //  绑定快捷键
+            this.graph.bindKey(['meta+c',  'ctrl+c'],  ()  =>  {
+                const  cells  =  this.graph.getSelectedCells()
+                if  (cells.length)  {
+                    this.graph.copy(cells)
+                }
+                return  false
+            })
+
+            this.graph.bindKey(['meta+x',  'ctrl+x'],  ()  =>  {
+                const  cells  =  this.graph.getSelectedCells()
+                if  (cells.length)  {
+                    this.graph.cut(cells)
+                }
+                return  false
+            })
+
+            this.graph.bindKey(['meta+v',  'ctrl+v'],  ()  =>  {
+                if  (!this.graph.isClipboardEmpty())  {
+                    const  cells  =  this.graph.paste({  offset:  32  })
+                    this.graph.cleanSelection()
+                    this.graph.select(cells)
+                }
+                return  false
+            })
+
+            this.graph.bindKey(['backspace',  'delete'],  ()  =>  {
+                const  cells  =  this.graph.getSelectedCells()
+                if  (cells.length)  {
+                    this.graph.removeCells(cells)
+                }
+            })
+
+            this.graph.bindKey(['meta+z',  'ctrl+z'],  ()  =>  {
+                if  (this.graph.canUndo())  {
+                    this.graph.undo()
+                }
+                return  false
+            })
+
+            this.graph.bindKey(['meta+shift+z',  'ctrl+shift+z'],  ()  =>  {
+                if  (this.graph.canRedo())  {
+                    this.graph.redo()
+                }
+                return  false
+            })
+        }
+
+        //  剪贴板
+        if  (options.clipboard  !==  false  &&  !this.readonly)  {
+            this.graph.use(
+                new  Clipboard({
+                    enabled:  true
+                })
+            )
+        }
+
+        //  撤销重做
+        if  (options.history  !==  false  &&  !this.readonly)  {
+            this.graph.use(
+                new  History({
+                    enabled:  true
+                })
+            )
+        }
+
+        //  选择
+        if  (options.selecting  !==  false  &&  !this.readonly)  {
+            this.graph.use(
+                new  Selection({
+                    enabled:  true,
+                    multiple:  true,
+                    rubberband:  true,
+                    movable:  true,
+                    showNodeSelectionBox:  true
+                })
+            )
+        }
+
+        //  小地图
+        if  (options.minimap  &&  !this.readonly)  {
+            this.graph.use(
+                new  MiniMap({
+                    container:  options.minimapOptions?.container,
+                    width:  options.minimapOptions?.width  ||  200,
+                    height:  options.minimapOptions?.height  ||  160,
+                    padding:  options.minimapOptions?.padding  ||  10
+                })
+            )
+        }
+
+        //  工具栏
+        if  (options.toolbar  !==  false  &&  !this.readonly)  {
+            const  toolbarOptions  =  typeof  options.toolbar  ===  'object'  
+                ?  options.toolbar  
+                :  {  container:  this.graph.container  as  HTMLElement  }
+            
+            this.toolbar  =  new  Toolbar(this,  toolbarOptions)
+        }
+
+        //  滚动
+        if  (!this.readonly)  {
+            this.graph.use(
+                new  Scroller({
+                    enabled:  true,
+                    pannable:  true,
+                    pageVisible:  false,
+                    pageBreak:  false
+                })
+            )
+        }
+
+        //  变换
+        if  (!this.readonly)  {
+            this.graph.use(
+                new  Transform({
+                    resizing:  {
+                        enabled:  true,
+                        minWidth:  60,
+                        minHeight:  40,
+                        orthogonal:  false
+                    },
+                    rotating:  false
+                })
+            )
+        }
     }
-  }
 
-  /**
-   * 放大
-   */
-  zoomIn(): void {
-    if (!this.lf) return;
-    const currentZoom = this.lf.getTransform().SCALE_X;
-    this.lf.zoom(currentZoom + 0.1);
-  }
+    /**
+      *  绑定事件
+      */
+    private  bindEvents()  {
+        //  节点事件
+        this.graph.on('node:click',  ({  node  })  =>  {
+            this.emit('node:click',  node)
+        })
 
-  /**
-   * 缩小
-   */
-  zoomOut(): void {
-    if (!this.lf) return;
-    const currentZoom = this.lf.getTransform().SCALE_X;
-    this.lf.zoom(currentZoom - 0.1);
-  }
+        this.graph.on('node:dblclick',  ({  node  })  =>  {
+            this.emit('node:dblclick',  node)
+        })
 
-  /**
-   * 适应画布
-   */
-  fit(): void {
-    if (!this.lf) return;
-    this.lf.fitView();
-  }
+        this.graph.on('node:selected',  ({  node  })  =>  {
+            this.emit('node:selected',  node)
+        })
 
-  /**
-   * 重置缩放
-   */
-  resetZoom(): void {
-    if (!this.lf) return;
-    this.lf.resetZoom();
-  }
+        //  边事件
+        this.graph.on('edge:click',  ({  edge  })  =>  {
+            this.emit('edge:click',  edge)
+        })
 
-  /**
-   * 撤销
-   */
-  undo(): void {
-    if (!this.lf) return;
-    this.lf.undo();
-  }
+        this.graph.on('edge:dblclick',  ({  edge  })  =>  {
+            this.emit('edge:dblclick',  edge)
+        })
 
-  /**
-   * 重做
-   */
-  redo(): void {
-    if (!this.lf) return;
-    this.lf.redo();
-  }
+        //  画布事件
+        this.graph.on('blank:click',  ()  =>  {
+            this.emit('blank:click')
+        })
 
-  /**
-   * 导出
-   */
-  async export(config: ExportConfig): Promise<string | Blob> {
-    if (!this.lf) throw new Error('Editor not initialized');
-
-    switch (config.type) {
-      case 'json':
-        return JSON.stringify(this.getData(), null, 2);
-
-      case 'png':
-      case 'jpg':
-        const imageData = await this.lf.getSnapshot(
-          config.filename || 'flowchart',
-          config.backgroundColor || '#ffffff',
-          config.type
-        );
-        return imageData;
-
-      default:
-        throw new Error(`Unsupported export type: ${config.type}`);
+        //  数据变化事件
+        if  (!this.readonly)  {
+            this.graph.on('node:added  node:removed  node:changed  edge:added  edge:removed  edge:changed',  ()  =>  {
+                this.emit('change',  this.getData())
+            })
+        }
     }
-  }
 
-  /**
-   * 清空画布
-   */
-  clear(): void {
-    if (!this.lf) return;
-    this.lf.clearData();
-  }
+    /**
+      *  设置数据
+      */
+    setData(data:  FlowData)  {
+        const  {  nodes,  edges  }  =  data
 
-  /**
-   * 销毁编辑器
-   */
-  destroy(): void {
-    if (this.lf) {
-      this.lf.destroy();
-      this.lf = null;
+        //  清空画布
+        this.graph.clearCells()
+
+        //  添加节点
+        nodes.forEach((node)  =>  {
+            this.graph.addNode({
+                id:  node.id,
+                shape:  node.type,
+                x:  node.x,
+                y:  node.y,
+                width:  node.width,
+                height:  node.height,
+                label:  node.label,
+                data:  node.data
+            })
+        })
+
+        //  添加边
+        edges.forEach((edge)  =>  {
+            this.graph.addEdge({
+                id:  edge.id,
+                shape:  'approval-edge',
+                source:  edge.source,
+                target:  edge.target,
+                label:  edge.label,
+                data:  edge.data
+            })
+        })
+
+        //  居中显示
+        this.centerContent()
     }
-    this.events = {};
-  }
 
-  /**
-   * 获取 LogicFlow 实例
-   */
-  getLogicFlow(): LogicFlow | null {
-    return this.lf;
-  }
+    /**
+      *  获取数据
+      */
+    getData():  FlowData  {
+        const  nodes:  FlowNode[]  =  []
+        const  edges:  FlowEdge[]  =  []
+
+        this.graph.getNodes().forEach((node)  =>  {
+            const  position  =  node.position()
+            const  size  =  node.size()
+
+            nodes.push({
+                id:  node.id,
+                type:  node.shape,
+                x:  position.x,
+                y:  position.y,
+                width:  size.width,
+                height:  size.height,
+                label:  node.getAttrByPath('label/text')  ||  '',
+                data:  node.getData()
+            })
+        })
+
+        this.graph.getEdges().forEach((edge)  =>  {
+            const  source  =  edge.getSourceCellId()
+            const  target  =  edge.getTargetCellId()
+
+            if  (source  &&  target)  {
+                edges.push({
+                    id:  edge.id,
+                    source,
+                    target,
+                    label:  edge.getAttrByPath('label/text')  ||  '',
+                    data:  edge.getData()
+                })
+            }
+        })
+
+        return  {  nodes,  edges  }
+    }
+
+    /**
+      *  添加节点
+      */
+    addNode(node:  FlowNode)  {
+        return  this.graph.addNode({
+            id:  node.id,
+            shape:  node.type,
+            x:  node.x,
+            y:  node.y,
+            width:  node.width,
+            height:  node.height,
+            label:  node.label,
+            data:  node.data
+        })
+    }
+
+    /**
+      *  删除节点
+      */
+    removeNode(nodeId:  string)  {
+        const  node  =  this.graph.getCellById(nodeId)
+        if  (node)  {
+            this.graph.removeCell(node)
+        }
+    }
+
+    /**
+      *  更新节点
+      */
+    updateNode(nodeId:  string,  data:  Partial<FlowNode>)  {
+        const  node  =  this.graph.getCellById(nodeId)  as  Node
+        if  (node)  {
+            if  (data.label  !==  undefined)  {
+                node.setAttrByPath('label/text',  data.label)
+            }
+            if  (data.x  !==  undefined  ||  data.y  !==  undefined)  {
+                node.position(data.x  ||  node.position().x,  data.y  ||  node.position().y)
+            }
+            if  (data.width  !==  undefined  ||  data.height  !==  undefined)  {
+                const  size  =  node.size()
+                node.size(data.width  ||  size.width,  data.height  ||  size.height)
+            }
+            if  (data.data)  {
+                node.setData(data.data)
+            }
+        }
+    }
+
+    /**
+      *  居中显示内容
+      */
+    centerContent()  {
+        this.graph.centerContent()
+    }
+
+    /**
+      *  缩放
+      */
+    zoom(factor:  number,  options?:  {  center?:  {  x:  number;  y:  number  }  })  {
+        this.graph.zoom(factor,  options)
+        this.emit('scale:change')
+    }
+
+    /**
+      *  缩放到指定比例
+      */
+    zoomTo(ratio:  number,  options?:  {  center?:  {  x:  number;  y:  number  }  })  {
+        this.graph.zoomTo(ratio,  options)
+        this.emit('scale:change')
+    }
+
+    /**
+      *  缩放到适应
+      */
+    zoomToFit(options?:  {  padding?:  number;  maxScale?:  number  })  {
+        this.graph.zoomToFit({
+            padding:  options?.padding  ||  20,
+            maxScale:  options?.maxScale  ||  1
+        })
+    }
+
+    /**
+      *  撤销
+      */
+    undo()  {
+        if  (this.graph.canUndo())  {
+            this.graph.undo()
+            this.emit('history:change')
+        }
+    }
+
+    /**
+      *  重做
+      */
+    redo()  {
+        if  (this.graph.canRedo())  {
+            this.graph.redo()
+            this.emit('history:change')
+        }
+    }
+
+    /**
+      *  是否可以撤销
+      */
+    canUndo()  {
+        return  this.graph.canUndo()
+    }
+
+    /**
+      *  是否可以重做
+      */
+    canRedo()  {
+        return  this.graph.canRedo()
+    }
+
+    /**
+      *  清空画布
+      */
+    clear()  {
+        this.graph.clearCells()
+    }
+
+    /**
+      *  清空画布（别名）
+      */
+    clearGraph()  {
+        this.clear()
+    }
+
+    /**
+      *  导出JSON
+      */
+    toJSON()  {
+        return  this.graph.toJSON()
+    }
+
+    /**
+      *  从JSON导入
+      */
+    fromJSON(data:  any)  {
+        this.graph.fromJSON(data)
+    }
+
+    /**
+      *  导出PNG
+      */
+    async  toPNG(options?:  {  backgroundColor?:  string;  padding?:  number  }):  Promise<string>  {
+        //  使用  X6  的  export  功能
+        return  await  (this.graph  as  any).exportPNG({
+            backgroundColor:  options?.backgroundColor  ||  '#ffffff',
+            padding:  options?.padding  ||  20
+        })  ||  ''
+    }
+
+    /**
+      *  导出PNG文件
+      */
+    async  exportPNG(filename:  string  =  'flowchart.png',  options?:  {  backgroundColor?:  string;  padding?:  number  })  {
+        const  dataUri  =  await  this.toPNG(options)
+        const  link  =  document.createElement('a')
+        link.href  =  dataUri
+        link.download  =  filename
+        link.click()
+    }
+
+    /**
+      *  导出SVG
+      */
+    async  toSVG():  Promise<string>  {
+        //  使用  X6  的  export  功能
+        return  await  (this.graph  as  any).exportSVG()  ||  ''
+    }
+
+    /**
+      *  事件监听
+      */
+    on<K  extends  keyof  EditorEvents>(event:  K,  handler:  EditorEvents[K])  {
+        if  (!this.eventHandlers.has(event))  {
+            this.eventHandlers.set(event,  new  Set())
+        }
+        this.eventHandlers.get(event)!.add(handler  as  Function)
+    }
+
+    /**
+      *  移除事件监听
+      */
+    off<K  extends  keyof  EditorEvents>(event:  K,  handler:  EditorEvents[K])  {
+        const  handlers  =  this.eventHandlers.get(event)
+        if  (handlers)  {
+            handlers.delete(handler  as  Function)
+        }
+    }
+
+    /**
+      *  触发事件
+      */
+    private  emit(event:  string,  ...args:  any[])  {
+        const  handlers  =  this.eventHandlers.get(event)
+        if  (handlers)  {
+            handlers.forEach((handler)  =>  handler(...args))
+        }
+    }
+
+    /**
+      *  获取Graph实例
+      */
+    getGraph()  {
+        return  this.graph
+    }
+
+    /**
+      *  切换全屏
+      */
+    toggleFullscreen()  {
+        const  container  =  this.getContainer()
+        if  (!document.fullscreenElement)  {
+            container.requestFullscreen()
+        }  else  {
+            document.exitFullscreen()
+        }
+    }
+
+    /**
+      *  验证流程
+      */
+    validate():  {  valid:  boolean;  errors:  string[]  }  {
+        const  errors:  string[]  =  []
+        const  nodes  =  this.graph.getNodes()
+        const  edges  =  this.graph.getEdges()
+        
+        //  检查是否有节点
+        if  (nodes.length  ===  0)  {
+            errors.push('流程图中没有节点')
+        }
+        
+        //  检查是否有开始节点
+        const  startNodes  =  nodes.filter(node  =>  node.shape  ===  'start-node')
+        if  (startNodes.length  ===  0)  {
+            errors.push('没有开始节点')
+        }  else  if  (startNodes.length  >  1)  {
+            errors.push('不能有多个开始节点')
+        }
+        
+        //  检查是否有结束节点
+        const  endNodes  =  nodes.filter(node  =>  node.shape  ===  'end-node')
+        if  (endNodes.length  ===  0)  {
+            errors.push('没有结束节点')
+        }
+        
+        //  检查没有连接的节点
+        nodes.forEach(node  =>  {
+            const  connectedEdges  =  edges.filter(
+                edge  =>  edge.getSourceCellId()  ===  node.id  ||  edge.getTargetCellId()  ===  node.id
+            )
+            if  (connectedEdges.length  ===  0  &&  node.shape  !==  'start-node'  &&  node.shape  !==  'end-node')  {
+                errors.push(`节点  "${node.getAttrByPath('label/text')  ||  node.id}"  没有连接`)
+            }
+        })
+        
+        return  {
+            valid:  errors.length  ===  0,
+            errors
+        }
+    }
+
+    /**
+      *  获取容器
+      */
+    getContainer():  HTMLElement  {
+        return  this.graph.container  as  HTMLElement
+    }
+
+    /**
+      *  销毁
+      */
+    destroy()  {
+        if  (this.toolbar)  {
+            this.toolbar.destroy()
+            this.toolbar  =  null
+        }
+        this.eventHandlers.clear()
+        this.graph.dispose()
+    }
 }
