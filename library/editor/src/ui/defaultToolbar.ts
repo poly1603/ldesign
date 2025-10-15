@@ -136,10 +136,7 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
     name: 'codeblock',
     title: '代码块',
     icon: 'code-2',
-    command: () => {
-      document.execCommand('insertHTML', false, '<pre><code>// 在这里输入代码</code></pre>')
-      return true
-    },
+    command: 'insertCodeBlock', // 使用插件命令
   },
   
   // 列表

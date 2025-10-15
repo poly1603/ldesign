@@ -96,35 +96,46 @@ export class EnhancedExcelRenderer implements IDocumentRenderer {
     style.textContent = `
       .excel-table {
         border-collapse: collapse;
-        font-family: 'Microsoft YaHei', 'Arial', sans-serif;
-        font-size: 12px;
+        font-family: 'Calibri', 'Microsoft YaHei', 'Arial', sans-serif;
+        font-size: 11px;
         background: white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        table-layout: fixed;
+        width: auto;
+        margin: 0;
       }
       
       .excel-table th,
       .excel-table td {
-        border: 1px solid #d0d0d0;
-        padding: 4px 8px;
+        border: 1px solid #d0d7e5;
+        padding: 2px 6px;
         text-align: left;
         white-space: nowrap;
         min-height: 20px;
+        height: 20px;
         position: relative;
+        vertical-align: middle;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        box-sizing: border-box;
       }
       
       .excel-table th {
-        background: #f0f0f0;
-        font-weight: bold;
+        background: #e7e6e6;
+        font-weight: normal;
         text-align: center;
-        border-color: #b0b0b0;
+        border-color: #a0a0a0;
+        font-size: 11px;
+        color: #333;
       }
       
       .excel-table td {
         background: white;
+        color: #000;
       }
       
       .excel-table td.number {
         text-align: right;
+        padding-right: 8px;
       }
       
       .excel-table td.date {
@@ -133,28 +144,45 @@ export class EnhancedExcelRenderer implements IDocumentRenderer {
       
       .excel-table td.merged {
         text-align: center;
-        font-weight: bold;
+        vertical-align: middle;
+        font-weight: normal;
+        background: #f9f9f9;
+        white-space: normal;
+        word-wrap: break-word;
       }
       
       .excel-table tr:hover td {
-        background: #f9f9f9;
+        background: #e8f4ff;
+      }
+      
+      .excel-table tr:hover td.merged {
+        background: #e0e0e0;
       }
       
       .excel-header-row {
-        background: #e8e8e8;
+        background: #e7e6e6;
         position: sticky;
         top: 0;
         z-index: 10;
+        box-shadow: 0 1px 0 0 #a0a0a0;
+      }
+      
+      .excel-header-row th {
+        padding: 4px 8px;
+        font-weight: normal;
       }
       
       .excel-header-col {
-        background: #e8e8e8;
+        background: #e7e6e6;
         position: sticky;
         left: 0;
         z-index: 9;
         text-align: center;
-        font-weight: bold;
-        min-width: 40px;
+        font-weight: normal;
+        width: 50px;
+        min-width: 50px;
+        max-width: 50px;
+        box-shadow: 1px 0 0 0 #a0a0a0;
       }
       
       .excel-header-corner {
@@ -162,7 +190,9 @@ export class EnhancedExcelRenderer implements IDocumentRenderer {
         left: 0;
         top: 0;
         z-index: 11;
-        background: #d8d8d8;
+        background: #d4d0ce;
+        border-right: 2px solid #a0a0a0;
+        border-bottom: 2px solid #a0a0a0;
       }
       
       .sheet-tabs {
@@ -233,51 +263,76 @@ export class EnhancedExcelRenderer implements IDocumentRenderer {
     // Get column widths
     const cols = worksheet['!cols'] || [];
     
+    // Get row heights
+    const rows = worksheet['!rows'] || [];
+    
+    // Create wrapper for better scrolling
+    const tableWrapper = document.createElement('div');
+    tableWrapper.style.cssText = `
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      position: relative;
+      background: white;
+    `;
+    
     // Create table
     const table = document.createElement('table');
     table.className = 'excel-table';
-    table.style.cssText = 'width: auto; margin: 0 auto;';
+    table.style.cssText = 'border-collapse: collapse; table-layout: fixed; width: auto;';
 
-    // Create header row (column labels)
-    const headerRow = document.createElement('tr');
-    headerRow.className = 'excel-header-row';
+    // Create header row (column labels) - only if not hidden by large merge
+    const hasLargeTitleMerge = merges.some(merge => 
+      merge.s.r === 0 && merge.s.c === 0 && 
+      (merge.e.c >= range.e.c - 2 || merge.e.r >= 1)
+    );
     
-    // Empty corner cell
-    const cornerCell = document.createElement('th');
-    cornerCell.className = 'excel-header-corner';
-    cornerCell.textContent = '';
-    headerRow.appendChild(cornerCell);
-    
-    // Column headers (A, B, C, ...)
-    for (let c = range.s.c; c <= range.e.c; c++) {
-      const th = document.createElement('th');
-      th.textContent = XLSX.utils.encode_col(c);
-      th.style.minWidth = this.getColumnWidth(cols, c);
-      headerRow.appendChild(th);
+    if (!hasLargeTitleMerge) {
+      const headerRow = document.createElement('tr');
+      headerRow.className = 'excel-header-row';
+      
+      // Empty corner cell
+      const cornerCell = document.createElement('th');
+      cornerCell.className = 'excel-header-corner';
+      cornerCell.textContent = '';
+      cornerCell.style.cssText = 'width: 50px; min-width: 50px;';
+      headerRow.appendChild(cornerCell);
+      
+      // Column headers (A, B, C, ...)
+      for (let c = range.s.c; c <= range.e.c; c++) {
+        const th = document.createElement('th');
+        th.textContent = XLSX.utils.encode_col(c);
+        const width = this.getColumnWidth(cols, c);
+        th.style.width = width;
+        th.style.minWidth = width;
+        th.style.maxWidth = this.getColumnMaxWidth(cols, c);
+        th.style.textAlign = 'center';
+        headerRow.appendChild(th);
+      }
+      table.appendChild(headerRow);
     }
-    table.appendChild(headerRow);
 
     // Track merged cells
-    const mergedCells = new Set<string>();
-    const mergeMap = new Map<string, { rowspan: number; colspan: number; content: any }>();
+    const mergedCells = new Map<string, boolean>();
+    const mergeMap = new Map<string, { rowspan: number; colspan: number; isStart: boolean }>();
     
     // Process merges
     merges.forEach(merge => {
-      const startCell = XLSX.utils.encode_cell({ r: merge.s.r, c: merge.s.c });
-      const rowspan = merge.e.r - merge.s.r + 1;
-      const colspan = merge.e.c - merge.s.c + 1;
-      
-      mergeMap.set(startCell, {
-        rowspan,
-        colspan,
-        content: worksheet[startCell]
-      });
-      
-      // Mark all cells in merge range as merged
       for (let r = merge.s.r; r <= merge.e.r; r++) {
         for (let c = merge.s.c; c <= merge.e.c; c++) {
           const addr = XLSX.utils.encode_cell({ r, c });
-          mergedCells.add(addr);
+          if (r === merge.s.r && c === merge.s.c) {
+            // This is the start cell of the merge
+            mergeMap.set(addr, {
+              rowspan: merge.e.r - merge.s.r + 1,
+              colspan: merge.e.c - merge.s.c + 1,
+              isStart: true
+            });
+            mergedCells.set(addr, true);
+          } else {
+            // This cell is covered by the merge
+            mergedCells.set(addr, false);
+          }
         }
       }
     });
@@ -286,18 +341,29 @@ export class EnhancedExcelRenderer implements IDocumentRenderer {
     for (let r = range.s.r; r <= range.e.r; r++) {
       const row = document.createElement('tr');
       
-      // Row header (row number)
-      const rowHeader = document.createElement('th');
-      rowHeader.className = 'excel-header-col';
-      rowHeader.textContent = String(r + 1);
-      row.appendChild(rowHeader);
+      // Set row height if specified
+      if (rows[r] && rows[r].hpt) {
+        row.style.height = `${rows[r].hpt}pt`;
+      } else if (rows[r] && rows[r].hpx) {
+        row.style.height = `${rows[r].hpx}px`;
+      }
+      
+      // Row header (row number) - only if not a large title
+      if (!hasLargeTitleMerge) {
+        const rowHeader = document.createElement('th');
+        rowHeader.className = 'excel-header-col';
+        rowHeader.textContent = String(r + 1);
+        rowHeader.style.cssText = 'width: 50px; min-width: 50px; text-align: center;';
+        row.appendChild(rowHeader);
+      }
 
       for (let c = range.s.c; c <= range.e.c; c++) {
         const cellAddress = XLSX.utils.encode_cell({ r, c });
         
-        // Skip if this cell is part of a merge (but not the start cell)
-        if (mergedCells.has(cellAddress) && !mergeMap.has(cellAddress)) {
-          continue;
+        // Check if this cell should be skipped (part of a merge but not the start)
+        const mergedStatus = mergedCells.get(cellAddress);
+        if (mergedStatus === false) {
+          continue; // Skip cells that are covered by a merge
         }
 
         const cell = worksheet[cellAddress];
@@ -305,13 +371,28 @@ export class EnhancedExcelRenderer implements IDocumentRenderer {
         
         // Handle merged cells
         const mergeInfo = mergeMap.get(cellAddress);
-        if (mergeInfo) {
+        if (mergeInfo && mergeInfo.isStart) {
           td.rowSpan = mergeInfo.rowspan;
           td.colSpan = mergeInfo.colspan;
           td.className = 'merged';
-          td.style.textAlign = 'center';
-          td.style.verticalAlign = 'middle';
-          td.style.fontWeight = 'bold';
+          
+          // Check if this is a large title merge (spans most columns and/or multiple rows)
+          const isLargeTitle = (mergeInfo.colspan >= (range.e.c - range.s.c) * 0.7) || 
+                               (r === 0 && mergeInfo.rowspan > 1);
+          
+          if (isLargeTitle) {
+            td.style.cssText = `
+              text-align: center; 
+              vertical-align: middle; 
+              font-size: 16px; 
+              font-weight: bold; 
+              padding: 12px;
+              background: #f5f5f5;
+              border: 2px solid #d0d0d0;
+            `;
+          } else {
+            td.style.cssText = 'text-align: center; vertical-align: middle; background: #f9f9f9;';
+          }
         }
 
         // Set content and styles
@@ -319,14 +400,28 @@ export class EnhancedExcelRenderer implements IDocumentRenderer {
           const value = this.getCellValue(cell);
           td.textContent = value;
 
-          // Apply cell styles
-          this.applyCellStyles(td, cell, worksheet);
+          // Apply cell styles (but don't override merge styles)
+          if (!mergeInfo || !mergeInfo.isStart) {
+            this.applyCellStyles(td, cell, worksheet);
+          } else {
+            // For merged cells, selectively apply some styles
+            if (cell.s && cell.s.font) {
+              if (cell.s.font.bold) td.style.fontWeight = 'bold';
+              if (cell.s.font.sz) td.style.fontSize = `${cell.s.font.sz}pt`;
+              if (cell.s.font.color) {
+                const color = this.parseColor(cell.s.font.color);
+                if (color) td.style.color = color;
+              }
+            }
+          }
           
           // Detect data type for styling
-          if (cell.t === 'n') {
+          if (cell.t === 'n' && !mergeInfo) {
             td.classList.add('number');
+            td.style.textAlign = 'right';
           } else if (cell.t === 'd') {
             td.classList.add('date');
+            td.style.textAlign = 'center';
           } else if (cell.f) {
             td.classList.add('cell-formula');
             td.title = `Formula: ${cell.f}`;
@@ -339,10 +434,16 @@ export class EnhancedExcelRenderer implements IDocumentRenderer {
             td.classList.add('cell-hyperlink');
             td.onclick = () => window.open(cell.l.Target, '_blank');
           }
+        } else if (!mergeInfo) {
+          // Empty cell - add non-breaking space to maintain cell height
+          td.innerHTML = '&nbsp;';
         }
 
         // Set column width
-        td.style.minWidth = this.getColumnWidth(cols, c);
+        const width = this.getColumnWidth(cols, c);
+        td.style.width = width;
+        td.style.minWidth = width;
+        td.style.maxWidth = this.getColumnMaxWidth(cols, c);
         
         row.appendChild(td);
       }
@@ -350,8 +451,9 @@ export class EnhancedExcelRenderer implements IDocumentRenderer {
       table.appendChild(row);
     }
 
+    tableWrapper.appendChild(table);
     container.innerHTML = '';
-    container.appendChild(table);
+    container.appendChild(tableWrapper);
   }
 
   /**
@@ -550,17 +652,42 @@ export class EnhancedExcelRenderer implements IDocumentRenderer {
    * Get column width
    */
   private getColumnWidth(cols: any[], colIndex: number): string {
-    if (!cols || !cols[colIndex]) return '80px';
+    if (!cols || !cols[colIndex]) return '85px';
     
     const col = cols[colIndex];
     if (col.wpx) {
-      return `${col.wpx}px`;
+      return `${Math.max(col.wpx, 50)}px`;
+    } else if (col.wch) {
+      // Character width to pixels (more accurate conversion)
+      return `${Math.max(Math.round(col.wch * 7.5), 50)}px`;
     } else if (col.width) {
-      // Excel width units to pixels (approximate)
-      return `${Math.round(col.width * 7)}px`;
+      // Excel width units to pixels (more accurate)
+      return `${Math.max(Math.round(col.width * 7.5), 50)}px`;
+    } else if (col.hidden) {
+      return '0px';
     }
     
-    return '80px';
+    return '85px';
+  }
+
+  /**
+   * Get column max width
+   */
+  private getColumnMaxWidth(cols: any[], colIndex: number): string {
+    if (!cols || !cols[colIndex]) return '400px';
+    
+    const col = cols[colIndex];
+    if (col.wpx) {
+      return `${Math.min(col.wpx * 1.5, 600)}px`;
+    } else if (col.wch) {
+      return `${Math.min(col.wch * 12, 600)}px`;
+    } else if (col.width) {
+      return `${Math.min(col.width * 12, 600)}px`;
+    } else if (col.hidden) {
+      return '0px';
+    }
+    
+    return '400px';
   }
 
   /**
@@ -569,12 +696,22 @@ export class EnhancedExcelRenderer implements IDocumentRenderer {
   private getCellValue(cell: any): string {
     if (cell.v === undefined || cell.v === null) return '';
     
-    // Formatted text
-    if (cell.w !== undefined) return cell.w;
+    // Formatted text (prefer formatted value)
+    if (cell.w !== undefined && cell.w !== null && cell.w !== '') {
+      return String(cell.w).trim();
+    }
+    
+    // Rich text
+    if (cell.r && Array.isArray(cell.r)) {
+      return cell.r.map((r: any) => r.t || '').join('');
+    }
     
     // Date
     if (cell.t === 'd') {
-      return cell.v.toLocaleDateString();
+      if (cell.v instanceof Date) {
+        return cell.v.toLocaleDateString();
+      }
+      return String(cell.v);
     }
     
     // Boolean
@@ -584,11 +721,26 @@ export class EnhancedExcelRenderer implements IDocumentRenderer {
     
     // Error
     if (cell.t === 'e') {
-      return cell.v;
+      return `#${cell.v}!`;
     }
     
-    // Default
-    return String(cell.v);
+    // Number with specific format
+    if (cell.t === 'n' && cell.z) {
+      // Try to format number if format string is available
+      if (typeof cell.v === 'number') {
+        // Handle percentage
+        if (cell.z.includes('%')) {
+          return `${(cell.v * 100).toFixed(2)}%`;
+        }
+        // Handle currency or accounting
+        if (cell.z.includes('¥') || cell.z.includes('$')) {
+          return `¥${cell.v.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+      }
+    }
+    
+    // String or default
+    return String(cell.v).trim();
   }
 
   /**

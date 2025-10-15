@@ -309,11 +309,31 @@ function applySyntaxHighlighting(codeElement: HTMLElement, language: string) {
     java: highlightJava,
     cpp: highlightCpp,
     csharp: highlightCSharp,
+    c: highlightCpp, // C uses similar highlighting to C++
+    php: highlightJavaScript, // PHP uses similar highlighting for now
+    ruby: highlightPython, // Ruby uses similar highlighting for now
+    go: highlightJavaScript, // Go uses similar highlighting for now
+    rust: highlightJavaScript, // Rust uses similar highlighting for now
+    swift: highlightJavaScript, // Swift uses similar highlighting for now
+    kotlin: highlightJava, // Kotlin uses similar highlighting to Java
+    yaml: highlightJSON, // YAML uses similar highlighting to JSON
+    bash: highlightBash,
+    shell: highlightBash,
+    sh: highlightBash,
+    xml: highlightHTML, // XML uses similar highlighting to HTML
+    markdown: highlightMarkdown,
   }
 
-  const highlighter = highlighters[language]
+  // 转换为小写以确保匹配
+  const lowerLang = language.toLowerCase()
+  const highlighter = highlighters[lowerLang]
+  
+  console.log('[CodeBlock] Language:', language, 'Lowercase:', lowerLang, 'Highlighter found:', !!highlighter)
+  
   if (highlighter) {
     codeElement.innerHTML = highlighter(code)
+  } else {
+    console.warn('[CodeBlock] No highlighter found for language:', language)
   }
 }
 
@@ -630,6 +650,90 @@ function highlightCSharp(code: string): string {
   return code
 }
 
+// Bash/Shell 高亮
+function highlightBash(code: string): string {
+  // 保存字符串和注释
+  const strings: string[] = []
+  const comments: string[] = []
+  let stringIndex = 0
+  let commentIndex = 0
+
+  // 提取字符串
+  code = code.replace(/(["'`])(?:(?=(\\?))\2[\s\S])*?\1/g, (match) => {
+    strings.push(match)
+    return `__STRING_${stringIndex++}__`
+  })
+
+  // 提取注释
+  code = code.replace(/(#.*$)/gm, (match) => {
+    comments.push(match)
+    return `__COMMENT_${commentIndex++}__`
+  })
+
+  // 关键字
+  const keywords = /\b(if|then|else|elif|fi|for|do|done|while|until|case|esac|function|return|break|continue|exit|export|source|alias|echo|read|cd|ls|mkdir|rm|cp|mv|cat|grep|sed|awk|find|chmod|chown|sudo|apt|yum|npm|git|docker|kubectl)\b/g
+  code = code.replace(keywords, '<span style="color: #c678dd; font-weight: 600;">$1</span>')
+
+  // 变量
+  code = code.replace(/(\$\w+|\${[^}]+})/g, '<span style="color: #e06c75;">$1</span>')
+
+  // 数字
+  code = code.replace(/\b(\d+)\b/g, '<span style="color: #d19a66;">$1</span>')
+
+  // 还原注释
+  for (let i = 0; i < comments.length; i++) {
+    code = code.replace(`__COMMENT_${i}__`, `<span style="color: #5c6370; font-style: italic;">${escapeHtml(comments[i])}</span>`)
+  }
+
+  // 还原字符串
+  for (let i = 0; i < strings.length; i++) {
+    code = code.replace(`__STRING_${i}__`, `<span style="color: #98c379;">${escapeHtml(strings[i])}</span>`)
+  }
+
+  return code
+}
+
+// Markdown 高亮
+function highlightMarkdown(code: string): string {
+  // 代码块
+  code = code.replace(/```[\s\S]*?```/g, (match) => {
+    return `<span style="color: #98c379; background: rgba(0,0,0,0.2); padding: 2px 4px; border-radius: 3px;">${escapeHtml(match)}</span>`
+  })
+
+  // 内联代码
+  code = code.replace(/`[^`]+`/g, (match) => {
+    return `<span style="color: #98c379; background: rgba(0,0,0,0.2); padding: 2px 4px; border-radius: 3px;">${escapeHtml(match)}</span>`
+  })
+
+  // 标题
+  code = code.replace(/^(#{1,6})\s+(.*)$/gm, (match, hashes, title) => {
+    return `<span style="color: #e06c75; font-weight: 600;">${escapeHtml(hashes)}</span> <span style="color: #61afef; font-weight: 600;">${escapeHtml(title)}</span>`
+  })
+
+  // 链接
+  code = code.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+    return `<span style="color: #61afef;">[${escapeHtml(text)}]</span><span style="color: #56b6c2;">(${escapeHtml(url)})</span>`
+  })
+
+  // 加粗
+  code = code.replace(/\*\*([^*]+)\*\*|__([^_]+)__/g, (match, bold1, bold2) => {
+    const text = bold1 || bold2
+    return `<span style="color: #d19a66; font-weight: 600;">${escapeHtml(match)}</span>`
+  })
+
+  // 斜体
+  code = code.replace(/\*([^*]+)\*|_([^_]+)_/g, (match) => {
+    return `<span style="color: #d19a66; font-style: italic;">${escapeHtml(match)}</span>`
+  })
+
+  // 列表
+  code = code.replace(/^(\s*[-*+]|\s*\d+\.)\s+/gm, (match) => {
+    return `<span style="color: #c678dd;">${escapeHtml(match)}</span>`
+  })
+
+  return code
+}
+
 // HTML转义函数
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
@@ -831,6 +935,8 @@ const insertCodeBlock: Command = (state, dispatch) => {
     
     // 应用语法高亮
     if (language && language !== 'plaintext') {
+      // 调试信息
+      console.log('[CodeBlock] Applying syntax highlighting for language:', language)
       applySyntaxHighlighting(code, language)
     }
 
@@ -891,31 +997,18 @@ const insertCodeBlock: Command = (state, dispatch) => {
       }
     })
 
-    // 监听内容变化以更新行号和语法高亮
+    // 监听内容变化以更新行号
     code.addEventListener('input', () => {
       updateLineNumbers()
-      // 保存光标位置
-      const selection = window.getSelection()
-      const range = selection?.getRangeAt(0)
-      const offset = range?.startOffset || 0
-      
-      // 重新应用语法高亮
+      // 暂时禁用实时语法高亮，因为它会干扰编辑
+      // 可以考虑在失去焦点时或通过按钮手动触发高亮
+    })
+    
+    // 在失去焦点时重新应用语法高亮
+    code.addEventListener('blur', () => {
       if (language && language !== 'plaintext') {
-        const plainText = code.textContent || ''
+        console.log('[CodeBlock] Reapplying syntax highlighting on blur')
         applySyntaxHighlighting(code, language)
-        
-        // 恢复光标位置（简化版本）
-        try {
-          const newRange = document.createRange()
-          if (code.firstChild) {
-            newRange.setStart(code.firstChild, Math.min(offset, code.textContent?.length || 0))
-            newRange.collapse(true)
-            selection?.removeAllRanges()
-            selection?.addRange(newRange)
-          }
-        } catch (e) {
-          // 忽略光标恢复错误
-        }
       }
     })
     

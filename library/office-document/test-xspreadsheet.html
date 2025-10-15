@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>x-data-spreadsheet 测试</title>
+  <link rel="stylesheet" href="https://unpkg.com/x-data-spreadsheet@1.1.9/dist/xspreadsheet.css">
+  <script src="https://unpkg.com/x-data-spreadsheet@1.1.9/dist/xspreadsheet.js"></script>
+</head>
+<body>
+  <div id="spreadsheet"></div>
+  
+  <script>
+    // 测试x-data-spreadsheet的正确数据格式
+    const data = [
+      {
+        name: 'Sheet1',
+        rows: {
+          0: {
+            cells: {
+              0: { text: 'Hello' },
+              1: { text: 'World' }
+            }
+          },
+          1: {
+            cells: {
+              0: { text: 'Test' },
+              1: { text: '123' }
+            }
+          }
+        },
+        cols: {
+          0: { width: 120 },
+          1: { width: 100 }
+        }
+      }
+    ];
+    
+    // 创建spreadsheet
+    const s = x_spreadsheet('#spreadsheet', {
+      mode: 'edit',
+      showToolbar: true,
+      showGrid: true,
+      showContextmenu: true
+    });
+    
+    // 加载数据
+    s.loadData(data);
+    
+    // 打印数据结构供参考
+    console.log('Loaded data:', data);
+    
+    // 获取当前数据
+    setTimeout(() => {
+      const currentData = s.getData();
+      console.log('Current data from spreadsheet:', currentData);
+    }, 1000);
+  </script>
+</body>
+</html>

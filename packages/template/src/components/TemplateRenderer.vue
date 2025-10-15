@@ -37,17 +37,18 @@
     <TemplateSelector
       v-if="showSelector && component"
       :category="category"
-      :device="device"
-      :current-template="name"
+      :device="currentDevice"
+      :current-template="currentName"
       @select="handleTemplateSelect"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, toRefs } from 'vue'
+import { computed, toRefs, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useTemplate } from '../composables/useTemplate'
-import type { TemplateLoadOptions } from '../types'
+import type { TemplateLoadOptions, DeviceType } from '../types'
+import { getManager } from '../core'
 import TemplateSelector from './TemplateSelector.vue'
 
 /**
@@ -57,10 +58,14 @@ const props = withDefaults(
   defineProps<{
     /** 模板分类 */
     category: string
-    /** 设备类型 */
-    device: string
-    /** 模板名称 */
-    name: string
+    /** 设备类型（可选，不传则自动检测） */
+    device?: string
+    /** 模板名称（可选，不传则自动选择默认） */
+    name?: string
+    /** 是否自动检测设备（当不传device时默认开启） */
+    autoDetect?: boolean
+    /** 是否自动加载默认模板（当不传name时默认开启） */
+    autoLoadDefault?: boolean
     /** 传递给模板组件的属性 */
     componentProps?: Record<string, any>
     /** 加载选项 */
@@ -69,6 +74,10 @@ const props = withDefaults(
     showSelector?: boolean
   }>(),
   {
+    device: undefined,
+    name: undefined,
+    autoDetect: undefined, // 会在下面根据条件设置
+    autoLoadDefault: undefined, // 会在下面根据条件设置
     componentProps: () => ({}),
     loadOptions: undefined,
     showSelector: true,
@@ -83,16 +92,121 @@ const emit = defineEmits<{
   error: [error: Error]
   reload: []
   'template-change': [templateName: string]
+  'device-change': [device: string]
+  // 转发模板组件的所有事件
+  [key: string]: any[]
 }>()
+
+const manager = getManager()
+
+// 决定是否自动检测和自动加载
+const shouldAutoDetect = computed(() => props.autoDetect ?? !props.device)
+const shouldAutoLoadDefault = computed(() => props.autoLoadDefault ?? !props.name)
+
+// 设备类型（自动检测或手动指定）
+const currentDevice = ref<string>(props.device || 'desktop')
+// 模板名称（自动选择或手动指定）
+const currentName = ref<string>(props.name || 'default')
+
+// 检测设备类型
+const detectDevice = (): DeviceType => {
+  if (typeof window === 'undefined') return 'desktop'
+  const width = window.innerWidth
+  if (width < 768) return 'mobile'
+  if (width < 1024) return 'tablet'
+  return 'desktop'
+}
+
+// 加载默认模板
+const loadDefaultTemplate = async (dev: string) => {
+  if (!shouldAutoLoadDefault.value) return
+  
+  try {
+    const defaultTemplate = await manager.getDefaultTemplate(props.category, dev as DeviceType)
+    if (defaultTemplate?.name) {
+      currentName.value = defaultTemplate.name
+      emit('template-change', defaultTemplate.name)
+    }
+  } catch (e) {
+    console.error('加载默认模板失败:', e)
+  }
+}
+
+// 窗口大小变化处理（防抖）
+let resizeTimer: ReturnType<typeof setTimeout> | null = null
+const handleResize = () => {
+  if (resizeTimer) clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(() => {
+    if (shouldAutoDetect.value) {
+      const newDevice = detectDevice()
+      if (currentDevice.value !== newDevice) {
+        currentDevice.value = newDevice
+        emit('device-change', newDevice)
+        loadDefaultTemplate(newDevice)
+      }
+    }
+  }, 150)
+}
+
+// 监听外部传入的 device 和 name 变化
+watch(() => props.device, (newDevice) => {
+  if (newDevice && newDevice !== currentDevice.value) {
+    currentDevice.value = newDevice
+    if (shouldAutoLoadDefault.value) {
+      loadDefaultTemplate(newDevice)
+    }
+  }
+})
+
+watch(() => props.name, (newName) => {
+  if (newName && newName !== currentName.value) {
+    currentName.value = newName
+  }
+})
+
+// 生命周期
+const isInitialized = ref(false)
+
+onMounted(async () => {
+  if (!isInitialized.value) {
+    // 初始化管理器
+    await manager.initialize()
+    
+    // 自动检测设备
+    if (shouldAutoDetect.value) {
+      currentDevice.value = detectDevice()
+      emit('device-change', currentDevice.value)
+    }
+    
+    // 自动加载默认模板
+    if (shouldAutoLoadDefault.value) {
+      await loadDefaultTemplate(currentDevice.value)
+    }
+    
+    isInitialized.value = true
+    
+    // 监听窗口变化
+    if (shouldAutoDetect.value) {
+      window.addEventListener('resize', handleResize)
+    }
+  }
+})
+
+onUnmounted(() => {
+  if (shouldAutoDetect.value) {
+    window.removeEventListener('resize', handleResize)
+    if (resizeTimer) clearTimeout(resizeTimer)
+  }
+})
 
 /**
  * 使用模板
  */
-const { category, device, name } = toRefs(props)
+const { category } = toRefs(props)
 const { component, loading, error, load, reload } = useTemplate(
   category,
-  device,
-  name,
+  currentDevice as any,
+  currentName as any,
   props.loadOptions
 )
 
