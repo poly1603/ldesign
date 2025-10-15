@@ -79,39 +79,44 @@ export function useTemplate(options: UseTemplateOptions) {
       error.value = err as Error
       console.error('[useTemplate] Failed to load template:', err)
       
-      // 尝试加载该设备的第一个可用模板
-      try {
-        const availableTemplates = manager.query({
-          category,
-          device: device.value,
-        })
-        
-        if (availableTemplates.length > 0) {
-          console.log('[useTemplate] Falling back to first available template:', availableTemplates[0].metadata.name)
-          const fallbackResult = await manager.load(
-            category, 
-            device.value, 
-            availableTemplates[0].metadata.name
-          )
+      // 只在没有明确指定模板名称时尝试回退
+      if (!name) {
+        // 尝试加载该设备的第一个可用模板
+        try {
+          const availableTemplates = manager.query({
+            category,
+            device: device.value,
+          })
           
-          if (fallbackResult.component) {
-            component.value = markRaw(fallbackResult.component)
-            metadata.value = fallbackResult.metadata
-            lastDevice = device.value
-            error.value = null // 清除错误，因为我们找到了回退方案
+          // 优先选择默认模板，如果没有则选择第一个
+          const defaultTemplate = availableTemplates.find(t => t.metadata.isDefault)
+          const fallbackTemplate = defaultTemplate || availableTemplates[0]
+          
+          if (fallbackTemplate) {
+            console.log('[useTemplate] Falling back to template:', fallbackTemplate.metadata.name)
+            const fallbackResult = await manager.load(
+              category, 
+              device.value, 
+              fallbackTemplate.metadata.name
+            )
+            
+            if (fallbackResult.component) {
+              component.value = markRaw(fallbackResult.component)
+              metadata.value = fallbackResult.metadata
+              lastDevice = device.value
+              error.value = null // 清除错误，因为我们找到了回退方案
+              console.log('[useTemplate] Fallback successful')
+            }
+          } else {
+            // 如果没有任何可用模板，保持错误状态
+            console.error('[useTemplate] No templates available for device:', device.value)
           }
-        } else {
-          // 如果没有任何可用模板，保持错误状态但不清空组件
-          console.error('[useTemplate] No templates available for device:', device.value)
+        } catch (fallbackErr) {
+          console.error('[useTemplate] Fallback failed:', fallbackErr)
+          // 保持原始错误
         }
-      } catch (fallbackErr) {
-        console.error('[useTemplate] Fallback failed:', fallbackErr)
-        // 保持原始错误
       }
     } finally {
-      loading.value = false
-    }
-  }
       loading.value = false
     }
   }
@@ -171,10 +176,6 @@ export function useTemplate(options: UseTemplateOptions) {
       loadDebounceTimer = null
     }, 300) // 增加防抖时间到300ms
   }, { flush: 'post' })
-        await loadTemplate(undefined)
-      }
-    }, 100) // 100ms 防抖
-  })
 
   // 初始化
   onMounted(async () => {
