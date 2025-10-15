@@ -192,11 +192,12 @@ export class ExcelRenderer implements IDocumentRenderer {
     this.spreadsheet.changeSheet(sheetIndex);
    }
   }
+ }
 
- /**
-  * Get document metadata
-  */
- async getMetadata(data: ArrayBuffer): Promise<DocumentMetadata> {
+/**
+ * Get document metadata
+ */
+async getMetadata(data: ArrayBuffer): Promise<DocumentMetadata> {
   try {
    const uint8Array = new Uint8Array(data);
    const workbook = XLSX.read(uint8Array, { type: 'array' });

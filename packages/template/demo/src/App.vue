@@ -6,7 +6,6 @@ import { EnhancedTemplateSwitcher, TemplateRenderer } from '../../src/vue/compon
 // 当前模板和设备
 const currentTemplate = ref('')
 const currentDevice = ref('desktop')
-const templateKey = ref(0)
 
 // 切换器配置
 const switcherConfig: SwitcherConfig = {
@@ -37,18 +36,20 @@ function handleTemplateChange(templateName: string) {
 
   // 更新模板
   currentTemplate.value = templateName
-  templateKey.value++ // 强制重新渲染
 }
+
+// 记录上次的设备类型
+let lastDevice = ''
 
 // 处理设备变化
 function handleDeviceChange(device: string) {
-  console.log('设备变化:', device)
-  
   // 只在设备真的变化时处理
-  if (currentDevice.value === device) {
+  if (lastDevice === device || currentDevice.value === device) {
     return
   }
   
+  console.log('设备变化:', device)
+  lastDevice = device
   currentDevice.value = device
   
   // 设备变化时清空当前模板，让系统自动选择新设备的默认模板
@@ -63,8 +64,10 @@ function handleDeviceChange(device: string) {
 // 处理模板加载完成
 function handleTemplateLoaded(templateName: string) {
   console.log('模板已加载:', templateName)
-  if (!currentTemplate.value) {
+  // 只在模板名称真正变化时更新
+  if (!currentTemplate.value || currentTemplate.value !== templateName) {
     currentTemplate.value = templateName
+    // 不要更新 templateKey，避免组件重新挂载
   }
 }
 
@@ -106,7 +109,8 @@ const templateProps = {
       @before-leave="handleBeforeLeave"
       @enter="handleEnter"
     >
-      <div :key="currentTemplate + '_' + currentDevice.value" class="template-container">
+      <!-- 不使用 key，避免组件重新挂载 -->
+      <div class="template-container">
         <TemplateRenderer
           category="login"
           :template-name="currentTemplate || undefined"

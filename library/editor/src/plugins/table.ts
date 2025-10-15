@@ -4,6 +4,7 @@
 
 import { createPlugin } from '../core/Plugin'
 import type { Plugin, Command } from '../types'
+import { registerContextMenu } from '../core/ContextMenuManager'
 // import { showTableDialog } from '../ui/TableDialog'
 
 /**
@@ -628,12 +629,7 @@ function createTableElement(rows: number, cols: number): HTMLTableElement {
   // 不需要内联样式，使用 CSS 文件中的样式
   table.setAttribute('contenteditable', 'true')
   
-  // 添加右键菜单事件
-  table.addEventListener('contextmenu', (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    createTableContextMenu(table, e.clientX, e.clientY)
-  })
+  // 不再直接绑定右键事件，使用 ContextMenuManager
 
   // 创建表头
   const thead = document.createElement('thead')
@@ -1290,5 +1286,41 @@ export const TablePlugin: Plugin = createPlugin({
     icon: 'table',
     command: insertTable,
     active: isInTable()
-  }]
+  }],
+  // 初始化时注册表格右键菜单
+  init: () => {
+    // 注册表格右键菜单到 ContextMenuManager
+    registerContextMenu({
+      id: 'table-context-menu',
+      selector: '.ldesign-editor-content table, .ldesign-editor-content td, .ldesign-editor-content th',
+      priority: 10, // 高优先级，优先于默认菜单
+      items: (context) => {
+        // 找到表格元素
+        const table = context.element.closest('table') as HTMLTableElement
+        if (!table) return []
+        
+        return [
+          { label: '插入上方行', icon: '↑', action: () => insertRowAbove(table) },
+          { label: '插入下方行', icon: '↓', action: () => insertRowBelow(table) },
+          { label: '插入左侧列', icon: '←', action: () => insertColumnLeft(table) },
+          { label: '插入右侧列', icon: '→', action: () => insertColumnRight(table) },
+          { divider: true },
+          { label: '合并单元格', icon: '□', action: () => mergeCells(table) },
+          { label: '拆分单元格', icon: '▦', action: () => splitCell(table) },
+          { label: '设为表头', icon: 'H', action: () => toggleTableHeader(table) },
+          { divider: true },
+          { label: '增加列宽', icon: '↔', action: () => increaseColumnWidth(table) },
+          { label: '减少列宽', icon: '↔', action: () => decreaseColumnWidth(table) },
+          { divider: true },
+          { label: '删除行', icon: '－', action: () => deleteCurrentRow(table), className: 'danger' },
+          { label: '删除列', icon: '｜', action: () => deleteCurrentColumn(table), className: 'danger' },
+          { label: '清空内容', icon: '⌫', action: () => clearTable(table), className: 'danger' },
+          { divider: true },
+          { label: '删除表格', icon: '✕', action: () => deleteEntireTable(table), className: 'danger' }
+        ]
+      }
+    })
+    
+    console.log('[TablePlugin] 表格右键菜单已注册到 ContextMenuManager')
+  }
 })

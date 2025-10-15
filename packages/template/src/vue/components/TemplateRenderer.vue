@@ -52,11 +52,15 @@ const {
   autoDeviceSwitch: props.responsive,
 })
 
+// 记录当前实际加载的模板名称
+let currentLoadedTemplate: string | undefined = undefined
+
 // 监听 templateName 变化
 watch(() => props.templateName, async (newName, oldName) => {
-  // 只在有明确的模板名称时切换
-  if (newName && newName !== oldName) {
+  // 只在有明确的模板名称且与当前加载的不同时切换
+  if (newName && newName !== oldName && newName !== currentLoadedTemplate) {
     console.log('[TemplateRenderer] Switching to template:', newName)
+    currentLoadedTemplate = newName
     await switchTemplate(newName)
   }
 }, { immediate: false })
@@ -69,13 +73,21 @@ watch(component, (newComp) => {
 // 监听模板变化
 watch(currentTemplate, (newTemplate) => {
   if (newTemplate) {
-    emit('template-change', newTemplate.name)
+    currentLoadedTemplate = newTemplate.name
+    // 只在模板名称真正变化时发出事件
+    if (newTemplate.name !== props.templateName) {
+      emit('template-change', newTemplate.name)
+    }
   }
 })
 
+// 记录上次发出的设备类型
+let lastEmittedDevice: DeviceType | null = null
+
 // 监听设备变化
 watch(currentDevice, (newDevice) => {
-  if (newDevice) {
+  if (newDevice && newDevice !== lastEmittedDevice) {
+    lastEmittedDevice = newDevice
     emit('device-change', newDevice)
   }
 })

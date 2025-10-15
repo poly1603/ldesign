@@ -24,7 +24,10 @@
         <!-- 语言切换器 -->
         <LanguageSwitcher class="nav-locale" />
 
-        <!-- 主题切换器 -->
+        <!-- 主题模式切换器（亮/暗/跟随系统） -->
+        <VueThemeModeSwitcher class="nav-theme-mode" />
+        
+        <!-- 主题颜色切换器 -->
         <VueThemePicker class="nav-theme" />
 
         <button v-if="!isLoggedIn" @click="goToLogin" class="nav-button login">
@@ -57,7 +60,7 @@ import { useRoute, useRouter } from '@ldesign/router'
 import { useI18n } from '@/i18n'
 import { auth } from '@/composables/useAuth'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
-import { VueThemePicker } from '@ldesign/color/vue'
+import { VueThemePicker, VueThemeModeSwitcher } from '@ldesign/color/vue'
 import { Rocket } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -209,6 +212,7 @@ onMounted(() => {
 }
 
 .nav-locale,
+.nav-theme-mode,
 .nav-theme {
   margin: 0 10px;
 }
