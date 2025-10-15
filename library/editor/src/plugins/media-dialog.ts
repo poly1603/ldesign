@@ -117,12 +117,12 @@ class MediaDialog {
         <!-- Local File Tab -->
         <div class="tab-content" data-tab="local" style="display: block;">
           <div class="upload-area" style="border: 2px dashed #d1d5db; border-radius: 8px; padding: 40px; text-align: center; background: #f9fafb; transition: all 0.3s; cursor: pointer;">
-            <input type="file" accept="${acceptTypes[type]}" style="display: none;" class="file-input">
+            <input type="file" accept="${acceptTypes[type]}" multiple style="display: none;" class="file-input">
             <div style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9ca3af; font-size: 32px;">
               ☁️
             </div>
             <p style="margin: 0 0 8px 0; font-size: 16px; color: #374151;">点击或拖拽文件到这里</p>
-            <p style="margin: 0; font-size: 14px; color: #6b7280;">支持 ${type === 'image' ? 'JPG, PNG, GIF, SVG' : type === 'video' ? 'MP4, WebM, OGG' : 'MP3, WAV, OGG'} 格式</p>
+            <p style="margin: 0; font-size: 14px; color: #6b7280;">支持 ${type === 'image' ? 'JPG, PNG, GIF, SVG' : type === 'video' ? 'MP4, WebM, OGG' : 'MP3, WAV, OGG'} 格式（可多选）</p>
           </div>
           <div class="file-preview" style="margin-top: 16px; display: none;">
             <div style="padding: 12px; background: #f3f4f6; border-radius: 6px; display: flex; align-items: center; gap: 12px;">
@@ -142,9 +142,9 @@ class MediaDialog {
         <div class="tab-content" data-tab="url" style="display: none;">
           <div style="margin-bottom: 16px;">
             <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: #374151;">
-              ${type === 'video' ? '视频地址（支持YouTube、Bilibili等）' : type === 'audio' ? '音频地址' : '图片地址'}
+              ${type === 'video' ? '视频地址（支持YouTube、Bilibili等，每行一个）' : type === 'audio' ? '音频地址（每行一个）' : '图片地址（每行一个）'}
             </label>
-            <input type="url" class="url-input" placeholder="https://" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; outline: none;">
+            <textarea class="url-input" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg" rows="4" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; outline: none; resize: vertical; font-family: inherit;"></textarea>
           </div>
           ${type === 'image' ? `
           <div style="margin-top: 16px; padding: 12px; background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 6px;">
@@ -156,7 +156,7 @@ class MediaDialog {
         </div>
       </div>
       
-      <div class="dialog-footer" style="padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 12px; background: #f9fafb;">
+      <div class="dialog-footer" style="padding: 16px 24px; border-top: 1px solid #e5e7eb; display: none; justify-content: flex-end; gap: 12px; background: #f9fafb;">
         <button class="cancel-btn" style="padding: 8px 16px; background: white; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; font-size: 14px; color: #374151; transition: all 0.2s;">
           取消
         </button>
@@ -259,6 +259,14 @@ class MediaDialog {
           content.style.display = content.dataset.tab === tabName ? 'block' : 'none'
         })
         
+        // Show/hide footer based on active tab
+        const footer = this.dialog!.querySelector<HTMLDivElement>('.dialog-footer')!
+        if (tabName === 'local') {
+          footer.style.display = 'none'
+        } else {
+          footer.style.display = 'flex'
+        }
+        
         // Update insert button state
         this.updateInsertButton()
       })
@@ -287,16 +295,50 @@ class MediaDialog {
       
       const files = e.dataTransfer?.files
       if (files && files.length > 0) {
-        handleFileSelect(files[0])
+        // 支持多文件拖放，自动插入
+        handleMultipleFiles(files)
       }
     })
     
     fileInput.addEventListener('change', (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0]
-      if (file) {
-        handleFileSelect(file)
+      const files = (e.target as HTMLInputElement).files
+      if (files && files.length > 0) {
+        // 支持多文件选择，自动插入
+        handleMultipleFiles(files)
       }
     })
+    
+    // 处理多个文件，自动插入
+    const handleMultipleFiles = (files: FileList) => {
+      const cb = this.callback
+      if (!cb) {
+        console.warn('[MediaDialog] No callback available')
+        return
+      }
+      
+      console.log(`[MediaDialog] Processing ${files.length} file(s) for auto-insertion`)
+      
+      // 关闭对话框
+      this.close()
+      
+      // 处理每个文件
+      Array.from(files).forEach((file, index) => {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const dataUrl = e.target?.result as string
+          try {
+            console.log(`[MediaDialog] Auto-inserting file ${index + 1}/${files.length}: ${file.name}`)
+            cb(dataUrl, file)
+          } catch (err) {
+            console.error(`[MediaDialog] Error inserting file ${file.name}:`, err)
+          }
+        }
+        reader.onerror = () => {
+          console.error(`[MediaDialog] Failed to read file: ${file.name}`)
+        }
+        reader.readAsDataURL(file)
+      })
+    }
     
     const handleFileSelect = (file: File) => {
       selectedFile = file
@@ -322,9 +364,9 @@ class MediaDialog {
     })
     
     // URL input
-    const urlInput = this.dialog.querySelector<HTMLInputElement>('.url-input')!
+    const urlInput = this.dialog.querySelector<HTMLTextAreaElement>('.url-input')!
     urlInput.addEventListener('input', (e) => {
-      selectedUrl = (e.target as HTMLInputElement).value
+      selectedUrl = (e.target as HTMLTextAreaElement).value
       this.updateInsertButton()
     })
     
@@ -360,49 +402,31 @@ class MediaDialog {
       const cb = this.callback
       if (!cb) {
         console.warn('[MediaDialog] No callback set at insert time')
+        return
       }
 
-      if (activeTab === 'local' && selectedFile) {
-        console.log('[MediaDialog] Inserting from local file:', {
-          name: selectedFile.name,
-          type: selectedFile.type,
-          size: selectedFile.size
-        })
-        // Convert file to data URL
-        const fileToInsert = selectedFile
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          const dataUrl = e.target?.result as string
-          console.log('[MediaDialog] FileReader onload, dataUrl length:', dataUrl?.length)
-          // Close dialog before insertion to avoid focus/selection issues
-          this.close()
-          try {
-            console.log('[MediaDialog] Calling callback with dataUrl and file')
-            cb?.(dataUrl, fileToInsert)
-            console.log('[MediaDialog] Callback finished')
-          } catch (err) {
-            console.error('[MediaDialog] Callback error:', err)
-          }
-        }
-        try {
-          reader.readAsDataURL(fileToInsert)
-        } catch (err) {
-          console.error('[MediaDialog] readAsDataURL error:', err)
-        }
-      } else if (activeTab === 'url' && selectedUrl) {
-        const url = selectedUrl.trim()
-        console.log('[MediaDialog] Inserting from URL:', url)
-        // Close dialog before insertion to avoid focus/selection issues
+      if (activeTab === 'url' && selectedUrl) {
+        // 支持多个 URL（每行一个）
+        const urls = selectedUrl.split('\n')
+          .map(u => u.trim())
+          .filter(u => u.length > 0)
+        
+        console.log(`[MediaDialog] Inserting ${urls.length} URL(s)`)
+        
+        // Close dialog before insertion
         this.close()
-        try {
-          console.log('[MediaDialog] Calling callback with URL')
-          cb?.(url)
-          console.log('[MediaDialog] Callback finished')
-        } catch (err) {
-          console.error('[MediaDialog] Callback error:', err)
-        }
+        
+        // Insert each URL
+        urls.forEach((url, index) => {
+          try {
+            console.log(`[MediaDialog] Inserting URL ${index + 1}/${urls.length}:`, url)
+            cb(url)
+          } catch (err) {
+            console.error(`[MediaDialog] Error inserting URL ${url}:`, err)
+          }
+        })
       } else {
-        console.warn('[MediaDialog] Insert button clicked but no valid input. Selected file:', !!selectedFile, 'Selected URL:', selectedUrl)
+        console.warn('[MediaDialog] Insert button clicked but no valid URL input')
       }
     })
     
