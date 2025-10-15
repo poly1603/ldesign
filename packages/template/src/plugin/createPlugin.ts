@@ -75,12 +75,33 @@ export interface TemplatePluginOptions {
   detectDevice?: () => 'desktop' | 'tablet' | 'mobile'
 
   /**
+   * Remember user preferences
+   * @default false
+   */
+  rememberPreferences?: boolean
+
+  /**
+   * Storage key for preferences
+   * @default 'ldesign-template-prefs'
+   */
+  preferencesKey?: string
+
+  /**
    * Hooks
    */
   hooks?: {
     beforeLoad?: (templatePath: string) => void | Promise<void>
     afterLoad?: (templatePath: string, component: any) => void | Promise<void>
     onError?: (error: Error) => void
+  }
+}
+
+/**
+ * User preferences structure
+ */
+export interface TemplatePreferences {
+  [category: string]: {
+    [device: string]: string // template name
   }
 }
 
@@ -112,6 +133,26 @@ export interface TemplatePlugin {
    * Get default template
    */
   getDefaultTemplate: (category: string, device: string) => Promise<any>
+
+  /**
+   * Get preferred template (from user preferences or default)
+   */
+  getPreferredTemplate: (category: string, device: string) => Promise<any>
+
+  /**
+   * Save user preference
+   */
+  savePreference: (category: string, device: string, templateName: string) => void
+
+  /**
+   * Get user preferences
+   */
+  getPreferences: () => TemplatePreferences
+
+  /**
+   * Clear user preferences
+   */
+  clearPreferences: () => void
 
   /**
    * Scan templates
@@ -170,6 +211,8 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
     defaultDevice: options.defaultDevice || 'desktop',
     autoDetect: options.autoDetect !== false,
     detectDevice: options.detectDevice || defaultDetectDevice,
+    rememberPreferences: options.rememberPreferences || false,
+    preferencesKey: options.preferencesKey || 'ldesign-template-prefs',
     hooks: options.hooks || {},
   }
 
@@ -237,6 +280,92 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
     }
   }
 
+  // User preferences management
+  let preferences: TemplatePreferences = {}
+
+  // Load preferences from storage
+  const loadPreferences = (): TemplatePreferences => {
+    if (!mergedOptions.rememberPreferences) return {}
+    
+    try {
+      const stored = localStorage.getItem(mergedOptions.preferencesKey)
+      if (stored) {
+        preferences = JSON.parse(stored)
+        return preferences
+      }
+    } catch (error) {
+      console.error('Failed to load template preferences:', error)
+    }
+    return {}
+  }
+
+  // Save preferences to storage
+  const savePreferencesToStorage = () => {
+    if (!mergedOptions.rememberPreferences) return
+    
+    try {
+      localStorage.setItem(mergedOptions.preferencesKey, JSON.stringify(preferences))
+    } catch (error) {
+      console.error('Failed to save template preferences:', error)
+    }
+  }
+
+  // Save user preference
+  const savePreference = (category: string, device: string, templateName: string) => {
+    if (!mergedOptions.rememberPreferences) return
+    
+    if (!preferences[category]) {
+      preferences[category] = {}
+    }
+    preferences[category][device] = templateName
+    savePreferencesToStorage()
+  }
+
+  // Get user preferences
+  const getPreferences = (): TemplatePreferences => {
+    return { ...preferences }
+  }
+
+  // Clear user preferences
+  const clearPreferences = () => {
+    preferences = {}
+    if (mergedOptions.rememberPreferences) {
+      try {
+        localStorage.removeItem(mergedOptions.preferencesKey)
+      } catch (error) {
+        console.error('Failed to clear template preferences:', error)
+      }
+    }
+  }
+
+  // Get preferred template (from preferences or default)
+  const getPreferredTemplate = async (category: string, device: string): Promise<any> => {
+    // First, check user preferences
+    if (mergedOptions.rememberPreferences) {
+      const userPref = preferences[category]?.[device]
+      if (userPref) {
+        try {
+          // Try to load the preferred template
+          const template = await manager.loadTemplate(category, device, userPref)
+          if (template) {
+            console.log(`[Template Plugin] Loading user preferred template: ${userPref} for ${category}/${device}`)
+            return { name: userPref, component: template }
+          }
+        } catch (error) {
+          console.warn(`Failed to load preferred template ${userPref}, falling back to default`, error)
+        }
+      }
+    }
+    
+    // Fall back to default template
+    return getDefaultTemplate(category, device)
+  }
+
+  // Load preferences on initialization
+  if (mergedOptions.rememberPreferences) {
+    loadPreferences()
+  }
+
   // Create plugin instance
   const plugin: TemplatePlugin = {
     manager,
@@ -244,6 +373,10 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
     initialize,
     loadTemplate,
     getDefaultTemplate,
+    getPreferredTemplate,
+    savePreference,
+    getPreferences,
+    clearPreferences,
     scanTemplates: () => manager.scanTemplates(),
     clearCache: () => manager.clearCache(),
     detectDevice: mergedOptions.detectDevice,
@@ -254,6 +387,11 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
 
       // Add global property
       app.config.globalProperties.$template = plugin
+      
+      // Also expose to window for easy access by components
+      if (typeof window !== 'undefined') {
+        (window as any).__TEMPLATE_PLUGIN__ = plugin
+      }
 
       // Register global components
       app.component('TemplateRenderer', async () => {

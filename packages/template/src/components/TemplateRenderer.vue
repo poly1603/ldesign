@@ -117,18 +117,32 @@ const detectDevice = (): DeviceType => {
   return 'desktop'
 }
 
-// 加载默认模板
+// 加载默认模板（或用户偏好模板）
 const loadDefaultTemplate = async (dev: string) => {
   if (!shouldAutoLoadDefault.value) return
   
   try {
+    // 尝试从插件获取用户偏好
+    const templatePlugin = (window as any).__TEMPLATE_PLUGIN__
+    
+    if (templatePlugin?.getPreferredTemplate) {
+      // 使用插件的偏好管理
+      const preferred = await templatePlugin.getPreferredTemplate(props.category, dev)
+      if (preferred?.name) {
+        currentName.value = preferred.name
+        emit('template-change', preferred.name)
+        return
+      }
+    }
+    
+    // 没有插件或偏好，使用默认
     const defaultTemplate = await manager.getDefaultTemplate(props.category, dev as DeviceType)
     if (defaultTemplate?.name) {
       currentName.value = defaultTemplate.name
       emit('template-change', defaultTemplate.name)
     }
   } catch (e) {
-    console.error('加载默认模板失败:', e)
+    console.error('加载模板失败:', e)
   }
 }
 
@@ -237,7 +251,15 @@ const eventName = computed(() => {
  * 处理模板选择
  */
 const handleTemplateSelect = (templateName: string) => {
+  // 更新当前模板
+  currentName.value = templateName
   emit('template-change', templateName)
+  
+  // 保存用户偏好
+  const templatePlugin = (window as any).__TEMPLATE_PLUGIN__
+  if (templatePlugin?.savePreference) {
+    templatePlugin.savePreference(props.category, currentDevice.value, templateName)
+  }
 }
 </script>
 

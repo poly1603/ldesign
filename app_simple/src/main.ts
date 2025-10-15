@@ -36,7 +36,13 @@ async function bootstrap() {
 
     // 创建模板插件 - 简单一行搮定
     const templatePlugin = createTemplatePlugin({
-      debug: import.meta.env.DEV, // 开发环境显示调试信息
+      autoInit: true,
+      autoDetect: true,
+      cache: {
+        enabled: true,  // 启用组件缓存
+      },
+      rememberPreferences: true, // 记住用户选择的模板
+      preferencesKey: 'app-template-prefs', // 存储键名
     })
 
     // 创建 Color 插件（主题系统）
